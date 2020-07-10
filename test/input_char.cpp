@@ -4,12 +4,7 @@
 
 #include "test_utils.hpp"
 
-template <typename T>
-struct is_char: public std::is_same<T, char>
-{
-};
-
-void STRF_HD test_input_char()
+void STRF_TEST_FUNC test_input_char()
 {
     TEST("a")    ( 'a' );
     TEST("a")    ( strf::fmt('a') );

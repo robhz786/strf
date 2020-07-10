@@ -59,13 +59,13 @@ class facet_base
 {
 public:
 
-    constexpr facet_base(int v, ctor_log* log = nullptr)
+    constexpr STRF_HD facet_base(int v, ctor_log* log = nullptr)
         : value(v)
         , log_(log)
     {
     }
 
-    constexpr facet_base(const facet_base& f)
+    constexpr STRF_HD facet_base(const facet_base& f)
         : value(f.value)
         , log_(f.log_)
     {
@@ -75,7 +75,7 @@ public:
         }
     }
 
-    constexpr facet_base(facet_base&& f)
+    constexpr STRF_HD facet_base(facet_base&& f)
         : value(f.value)
         , log_(f.log_)
     {
@@ -97,7 +97,7 @@ class facet: public facet_base
 {
 public:
 
-    constexpr facet(int v, ctor_log* log = nullptr)
+    constexpr STRF_HD facet(int v, ctor_log* log = nullptr)
         : facet_base(v, log)
     {
     }
@@ -137,7 +137,7 @@ using derives_from_x = std::is_base_of<class_x, T>;
 template <typename T>
 using is_64 = std::integral_constant<bool, sizeof(T) == 8>;
 
-static void  basic_tests()
+static void STRF_TEST_FUNC basic_tests()
 {
     auto f1_10 = facet<1>{10};
     auto f2_20 = facet<2>{20};
@@ -197,7 +197,7 @@ static void  basic_tests()
 }
 
 
-static void test_constrained_fpe()
+static void STRF_TEST_FUNC test_constrained_fpe()
 {
     { // check constexpr
 
@@ -307,7 +307,7 @@ static void test_constrained_fpe()
     }
 }
 
-inline void compilation_tests()
+inline void STRF_TEST_FUNC compilation_tests()
 {
     bool test1 = ! std::is_copy_constructible
         <strf::constrained_fpe<is_64, facet<0, enable_only_move>>>
@@ -354,7 +354,7 @@ inline void compilation_tests()
     TEST_TRUE(test8);
 }
 
-void test_facets_pack()
+void STRF_TEST_FUNC test_facets_pack()
 {
     basic_tests();
     test_constrained_fpe();

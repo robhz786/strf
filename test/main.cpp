@@ -26,31 +26,63 @@ strf::outbuff& test_outbuff()
 
 } // namespace test_utils
 
-void test_join();
-void test_cfile_writer();
-void test_cstr_writer();
+void test_tr_string();
+void test_dynamic_charset();
+void test_encode_char();
+void test_encode_fill();
 void test_input_bool();
 void test_input_char();
-void test_input_facets_pack();
 void test_input_float();
 void test_input_int();
-void test_input_range();
+void test_input_ptr();
 void test_input_string();
+void test_input_facets_pack();
+void test_input_range();
+void test_numpunct();
+void test_join();
+void test_facets_pack_merge();
+void test_facets_pack();
+void test_reserve();
+void test_width_t();
+void test_width_calculator();
+void test_utf_to_utf();
+void test_single_byte_encodings();
+void test_cstr_writer();
+void test_locale();
+void test_cfile_writer();
+void test_streambuf_writer();
+void test_string_writer();
 
 int main() {
     strf::narrow_cfile_writer<char> test_outbuff(stdout);
-    test_utils::set_test_outbuff(test_outbuff);    
+    test_utils::set_test_outbuff(test_outbuff);
 
-    test_join();
-    test_cfile_writer();
-    test_cstr_writer();
+    test_tr_string();
+    test_dynamic_charset();
+    test_encode_char();
+    test_encode_fill();
     test_input_bool();
     test_input_char();
-    test_input_facets_pack();
     test_input_float();
     test_input_int();
-    test_input_range();
+    test_input_ptr();
     test_input_string();
+    test_input_facets_pack();
+    test_input_range();
+    test_numpunct();
+    test_join();
+    test_facets_pack_merge();
+    test_facets_pack();
+    test_reserve();
+    test_width_t();
+    test_width_calculator();
+    test_utf_to_utf();
+    test_single_byte_encodings();
+    test_cstr_writer();
+    test_locale();
+    test_cfile_writer();
+    test_streambuf_writer();
+    test_string_writer();
 
     int err_count = test_utils::test_err_count();
     if (err_count == 0) {

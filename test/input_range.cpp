@@ -3,9 +3,48 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include "test_utils.hpp"
-#include <array>
 
-void test_input_range()
+template <typename T>
+struct const_iterator
+{
+    using value_type = T;
+    const T& STRF_HD operator*() const { return *ptr; }
+    const_iterator STRF_HD operator++() { ++ptr; return *this; }
+    const_iterator STRF_HD operator++(int) { ++ptr; return const_iterator{ptr - 1}; }
+    bool STRF_HD operator==(const const_iterator& other) const { return ptr == other.ptr; }
+    bool STRF_HD operator!=(const const_iterator& other) const { return ptr != other.ptr; }
+
+    const T* ptr;
+};
+
+namespace std {
+
+template <typename T>
+struct iterator_traits<const_iterator<T>>
+{
+    using value_type = T;
+};
+
+} // namespace std;
+
+template <typename T, std::size_t N>
+struct simple_array
+{
+    T array[N != 0 ? N : 1];
+    using const_iterator = ::const_iterator<T>;
+
+    const const_iterator STRF_HD begin() const
+    {
+        return {(const T*)array};
+    }
+    const const_iterator STRF_HD end() const
+    {
+        return {array + N};
+    }
+};
+
+
+void STRF_TEST_FUNC test_input_range()
 {
     {
         int arr[] = {11, 22, 33, 44};
@@ -62,8 +101,9 @@ void test_input_range()
             , strf::join_right(15, '.')(+strf::fmt(strf::range(arr)) > 4)
             , "---" );
     }
+
     {
-        std::array<const char*, 3> vec{ { "aa", "bb", "cc" } };
+        simple_array<const char*, 3> vec{ { "aa", "bb", "cc" } };
         TEST("aabbcc") (strf::range(vec));
         TEST("..aa..bb..cc") (strf::right(strf::range(vec), 4, '.'));
         TEST("..aa..bb..cc--")
@@ -121,7 +161,7 @@ void test_input_range()
              (strf::join_right(7)("--", strf::separated_range(vec, ", "), "--"));
     }
     {
-        std::array<int, 3> stl_array{ {11, 22, 33} };
+        simple_array<int, 3> stl_array{ {11, 22, 33} };
         TEST( "112233")        (strf::range(stl_array));
         TEST( "11, 22, 33")    (strf::separated_range(stl_array,  ", "));
         TEST(u"+11+22+33")     (+strf::fmt_range(stl_array));
@@ -138,7 +178,7 @@ void test_input_range()
         TEST(u"+11") (+strf::fmt_separated_range(arr,  u", "));
         TEST( "0xb") (*strf::hex(strf::separated_range(arr,   ", ")));
 
-        std::array<int, 1> stl_arr{{11}};
+        simple_array<int, 1> stl_arr{{11}};
 
         TEST( "11") (strf::range(stl_arr));
         TEST( "+11") (+strf::fmt_range(stl_arr));
@@ -150,7 +190,7 @@ void test_input_range()
 
     }
     {  // Emtpy range
-        std::array<int, 0> stl_arr{{}};
+        simple_array<int, 0> stl_arr{{}};
         TEST( "") (strf::range(stl_arr));
         TEST(u"") (+strf::fmt_range(stl_arr));
         TEST( "") (*strf::hex(strf::range(stl_arr)));
@@ -162,7 +202,7 @@ void test_input_range()
     {   // Range transformed by functor
         auto func = [](int x){ return strf::join('<', -x, '>'); };
         int arr [3] = {11, 22, 33};
-        std::array<int, 3> stl_arr{{11, 22, 33}};
+        simple_array<int, 3> stl_arr{{11, 22, 33}};
 
         TEST("<-11><-22><-33>") ( strf::range(arr, func) );
         TEST("<-11><-22><-33>") ( strf::range(stl_arr, func) );

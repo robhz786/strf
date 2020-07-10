@@ -2,8 +2,6 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <strf.hpp>
-#include <limits>
 #include "test_utils.hpp"
 
 template <typename CharT>
@@ -57,7 +55,7 @@ struct my_bool_printing_override
 template <typename T>
 struct is_bool: std::is_same<T, bool> {};
 
-int main()
+void STRF_TEST_FUNC test_printable_overriding()
 {
     auto f = strf::constrain<is_bool>(my_bool_printing_override{});
 
@@ -65,7 +63,5 @@ int main()
     TEST("no").with(f)  (false);
     TEST("no").with(my_bool_printing_override{}) (false);
     TEST("123").with(f) (123);
-
-    return test_finish();
 }
 

@@ -3,9 +3,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include "test_utils.hpp"
-#include <limits>
 
-void test_input_int()
+void STRF_TEST_FUNC test_input_int()
 {
     TEST ( "0") ( 0 );
     TEST (u"0") ( 0 );
@@ -41,23 +40,17 @@ void test_input_int()
     TEST (U"-123") ( strf::fmt(-123) );
     TEST (L"-123") ( strf::fmt(-123) );
 
-    TEST ( std::to_string(INT32_MAX).c_str()) ( INT32_MAX );
-    TEST (std::to_wstring(INT32_MAX).c_str()) ( INT32_MAX );
+    TEST ( "2147483647")   (2147483647);                //  INT32_MAX
+    TEST ("-2147483648")   (-2147483647 - 1);           //  INT32_MIN
+    TEST ( "4294967295")   (4294967295u);               // UINT32_MAX
+    TEST ("-2147483648")   (-2147483647 - 1);           //  INT32_MIN
+    TEST ( "4294967295")   (strf::fmt(4294967295u));    // UINT32_MAX
 
-    TEST ( std::to_string(INT32_MIN).c_str()) ( INT32_MIN );
-    TEST (std::to_wstring(INT32_MIN).c_str()) ( INT32_MIN );
-
-    TEST ( std::to_string(UINT32_MAX).c_str()) ( UINT32_MAX );
-    TEST (std::to_wstring(UINT32_MAX).c_str()) ( UINT32_MAX );
-
-    TEST ( std::to_string(INT32_MAX).c_str()) ( strf::fmt(INT32_MAX) );
-    TEST (std::to_wstring(INT32_MAX).c_str()) ( strf::fmt(INT32_MAX) );
-
-    TEST ( std::to_string(INT32_MIN).c_str()) ( strf::fmt(INT32_MIN) );
-    TEST (std::to_wstring(INT32_MIN).c_str()) ( strf::fmt(INT32_MIN) );
-
-    TEST ( std::to_string(UINT32_MAX).c_str()) ( strf::fmt(UINT32_MAX) );
-    TEST (std::to_wstring(UINT32_MAX).c_str()) ( strf::fmt(UINT32_MAX) );
+    TEST ( L"2147483647")   (2147483647);                //  INT32_MAX
+    TEST (L"-2147483648")   (-2147483647 - 1);           //  INT32_MIN
+    TEST ( L"4294967295")   (4294967295u);               // UINT32_MAX
+    TEST (L"-2147483648")  (strf::fmt(-2147483647 - 1)); //  INT32_MIN
+    TEST ( L"4294967295")   (strf::fmt(4294967295u));    // UINT32_MAX
 
     TEST("f")                        ( strf::hex(0xf) );
     TEST("ff")                       ( strf::hex(0xff) );
@@ -170,15 +163,15 @@ void test_input_int()
     TEST ("....0.....")  (  strf::center(0,    10, '.') );
     TEST ("...123....")  (  strf::center(123u, 10, '.') );
 
-    // hexadecimal letter case
-    TEST("0X1234567890ABCDEF").with(strf::uppercase) ( *strf::hex(0x1234567890abcdefLL) );
-    TEST("0x1234567890ABCDEF").with(strf::mixedcase) ( *strf::hex(0x1234567890abcdefLL) );
-    TEST("0x1234567890abcdef").with(strf::lowercase) ( *strf::hex(0x1234567890abcdefLL) );
+    // // hexadecimal letter case
+    TEST("0X1234567890ABCDEF").with(strf::lettercase::upper) ( *strf::hex(0x1234567890abcdefLL) );
+    TEST("0x1234567890ABCDEF").with(strf::lettercase::mixed) ( *strf::hex(0x1234567890abcdefLL) );
+    TEST("0x1234567890abcdef").with(strf::lettercase::lower) ( *strf::hex(0x1234567890abcdefLL) );
 
     // binary letter case
-    TEST("0B111").with(strf::uppercase) ( *strf::bin(7) );
-    TEST("0b111").with(strf::mixedcase) ( *strf::bin(7) );
-    TEST("0b111").with(strf::lowercase) ( *strf::bin(7) );
+    TEST("0B111").with(strf::lettercase::upper) ( *strf::bin(7) );
+    TEST("0b111").with(strf::lettercase::mixed) ( *strf::bin(7) );
+    TEST("0b111").with(strf::lettercase::lower) ( *strf::bin(7) );
 
     // hexadecimal aligment
     TEST("        aa")   (  strf::hex(0xAA)>10 );
@@ -280,7 +273,6 @@ void test_input_int()
     TEST("aa") ( +strf::hex(0xAA) );
     TEST("11") ( +strf::bin(3) );
     TEST("77") ( +strf::oct(077) );
-
 
     // inside joins
 
@@ -566,7 +558,7 @@ void test_input_int()
         TEST(u8" 0x1\U0010FFFF000").with(punct) (strf::join_right(8)(*strf::hex(0x1000) > 8));
         TEST(u8"---0x1\U0010FFFF000").with(punct)
             (strf::join_right(8)(u8"---", *strf::hex(0x1000)));
-    }
+    }//---
 
     {
         TEST("1'7'7'7'7'7'7'7'7'7'7'7'7'7'7'7'7'7'7'7'7'7")
@@ -632,27 +624,28 @@ void test_input_int()
         .with(strf::numpunct<2>{1}.thousands_sep(0xFFFFFF))
             ( strf::bin(0xF) );
     }
+}
 
-    {   // print void*
-        void* ptr = strf::detail::bit_cast<void*, std::size_t>(0xABC);
+void STRF_TEST_FUNC test_input_ptr()
+{
+    void* ptr = strf::detail::bit_cast<void*, std::size_t>(0xABC);
 
-        TEST("0xabc") (ptr);
-        TEST("...0xabc") (strf::right(ptr, 8, '.'));
-        TEST("...0xabc  ") (strf::join(strf::right(ptr, 8, '.')) < 10);
-        TEST("...0xABC").with(strf::mixedcase) (strf::right(ptr, 8, '.'));
-        TEST("...0XABC")
-            .with(strf::constrain<std::is_pointer>(strf::uppercase))
-            (strf::right(ptr, 8, '.'));
+    TEST("0xabc") (ptr);
+    TEST("...0xabc") (strf::right(ptr, 8, '.'));
+    TEST("...0xabc  ") (strf::join(strf::right(ptr, 8, '.')) < 10);
+    TEST("...0xABC").with(strf::lettercase::mixed) (strf::right(ptr, 8, '.'));
+    TEST("...0XABC")
+        .with(strf::constrain<std::is_pointer>(strf::lettercase::upper))
+        (strf::right(ptr, 8, '.'));
 
-        ptr = strf::detail::bit_cast<void*, std::size_t>(0xABCDEF1234);
+    ptr = strf::detail::bit_cast<void*, std::size_t>(0xABCDEF1234);
 
-        TEST("0xab'cd'ef'12'34")
-            .with(strf::numpunct<16>{2}.thousands_sep('\''))
-            (ptr);
+    TEST("0xab'cd'ef'12'34")
+        .with(strf::numpunct<16>{2}.thousands_sep('\''))
+        (ptr);
 
-        TEST("0x....ab'cd'ef'12'34")
-            .with(strf::numpunct<16>{2}.thousands_sep('\''))
-            (strf::split(ptr, 20, '.'));
-    }
+    TEST("0x....ab'cd'ef'12'34")
+        .with(strf::numpunct<16>{2}.thousands_sep('\''))
+        (strf::split(ptr, 20, '.'));
 }
 

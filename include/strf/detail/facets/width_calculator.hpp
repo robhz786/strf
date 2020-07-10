@@ -182,7 +182,7 @@ public:
         std::size_t codepoints_count;
     };
 
-    STRF_HD result get_result()
+    result STRF_HD get_result()
     {
         recycle();
         this->set_good(false);
@@ -201,7 +201,7 @@ private:
 };
 
 template <typename WFunc>
-void width_accumulator<WFunc>::recycle()
+void STRF_HD width_accumulator<WFunc>::recycle()
 {
     auto end = this->pointer();
     this->set_pointer(buff_);
@@ -286,7 +286,7 @@ private:
 
 
 template <typename CharWidthFunc>
-width_by_func<CharWidthFunc> make_width_calculator(CharWidthFunc f)
+width_by_func<CharWidthFunc> STRF_HD make_width_calculator(CharWidthFunc f)
 {
     return width_by_func<CharWidthFunc>{f};
 }

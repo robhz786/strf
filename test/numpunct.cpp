@@ -4,7 +4,7 @@
 
 #include "test_utils.hpp"
 
-void test_numpunct()
+void STRF_TEST_FUNC test_numpunct()
 {
     {
         strf::numpunct<10> grouper(4);

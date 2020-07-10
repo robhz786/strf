@@ -8,7 +8,7 @@
 using char8_t = char;
 #endif
 
-void test_input_string()
+void STRF_TEST_FUNC test_input_string()
 {
     {
         TEST("   abc")   ( strf::right("abc", 6) );
@@ -25,9 +25,9 @@ void test_input_string()
         TEST("abcdefghi")    ( strf::right("", 0), strf::right("abc", 0), strf::left("def", 0), strf::center("ghi", 0) );
     }
     {
-        wchar_t abc[] = L"abc";
-        wchar_t def[] = L"def";
-        wchar_t ghi[] = L"ghi";
+        const wchar_t abc[] = L"abc";
+        const wchar_t def[] = L"def";
+        const wchar_t ghi[] = L"ghi";
         TEST(L"abc")      ( abc );
         TEST(L"   abc")   ( strf::right(abc, 6) );
         TEST(L"abc...")   ( strf::left    (abc, 6, '.') );
@@ -44,7 +44,7 @@ void test_input_string()
     }
 
 #if ! defined(STRF_FREESTANDING)
-    
+
     {
         std::string abc{ "abc" };
 
@@ -133,9 +133,9 @@ void test_input_string()
         TEST(u"--\u0080--\u07ff--\u0800--\uffff--\U00010000--\U0010ffff")
             ( strf::conv(U"--\u0080--\u07ff--\u0800--\uffff--\U00010000--\U0010ffff") );
 
-        char32_t abc[] = U"abc";
-        char32_t def[] = U"def";
-        char32_t ghi[] = U"ghi";
+        const char32_t abc[] = U"abc";
+        const char32_t def[] = U"def";
+        const char32_t ghi[] = U"ghi";
         TEST("abc")      ( strf::conv(abc) );
         TEST("   abc")   ( strf::conv(abc) > 6 );
         TEST("abc...")   ( strf::conv(abc).fill('.') < 6 );

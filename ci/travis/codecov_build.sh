@@ -21,15 +21,12 @@ cmake -DSTRF_BUILD_TESTS=ON \
       -DCMAKE_BUILD_TYPE=Debug \
       -G "Unix Makefiles" ..
 
-cmake --build .
+make test-static-lib
 
 lcov --gcov-tool=$GCOV --initial --base-directory $script_dir \
      --directory=$root_dir --capture --output-file all.info
 
-for t in ./test/*-header-only
-do
-    $t
-done
+./test/static-lib
 
 lcov --gcov-tool=$GCOV --rc lcov_branch_coverage=1 \
      --base-directory $script_dir --directory=$root_dir \

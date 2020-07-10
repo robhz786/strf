@@ -13,13 +13,13 @@ class reservation_tester : public strf::basic_outbuff<char>
 
 public:
 
-    reservation_tester()
+    STRF_HD reservation_tester()
         : strf::basic_outbuff<char>{ buff_, buff_ + buff_size_ }
         , buff_{0}
     {
     }
 
-    reservation_tester(std::size_t size)
+    STRF_HD reservation_tester(std::size_t size)
         : strf::basic_outbuff<char>{ buff_, buff_ + buff_size_ }
         , buff_{0}
         , reserved_size_{size}
@@ -28,7 +28,12 @@ public:
 
 #if defined(STRF_NO_CXX17_COPY_ELISION)
 
-    reservation_tester(reservation_tester&& other);
+    STRF_HD reservation_tester(const reservation_tester& other)
+        : strf::basic_outbuff<char>{ buff_, buff_ + buff_size_ }
+        , buff_{0}
+        , reserved_size_{other. reserved_size_}
+    {
+    }
 
 #else // defined(STRF_NO_CXX17_COPY_ELISION)
 
@@ -37,12 +42,12 @@ public:
 
 #endif // defined(STRF_NO_CXX17_COPY_ELISION)
 
-    void recycle() override
+    void STRF_HD recycle() override
     {
         this->set_pointer(buff_);
     }
 
-    std::size_t finish()
+    std::size_t STRF_HD finish()
     {
         return reserved_size_;
     }
@@ -59,23 +64,23 @@ public:
 
     using char_type = char;
 
-    reservation_tester create() const
+    reservation_tester STRF_HD create() const
     {
         return reservation_tester{};
     }
-    reservation_tester create(std::size_t size) const
+    reservation_tester STRF_HD create(std::size_t size) const
     {
         return reservation_tester{size};
     }
 };
 
-constexpr auto reservation_test()
+constexpr auto STRF_HD reservation_test()
 {
     return strf::destination_no_reserve<reservation_tester_creator>();
 }
 
 
-void test_reserve()
+void STRF_TEST_FUNC test_reserve()
 {
     // on non-const rval ref
     constexpr std::size_t not_reserved = 0;

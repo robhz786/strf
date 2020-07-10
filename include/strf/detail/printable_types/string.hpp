@@ -156,12 +156,12 @@ public:
             , strf::tag<strf::sani_format_with_encoding<Encoding>>{}
             , enc };
     }
-    constexpr auto sani() const
+    constexpr STRF_HD auto sani() const
     {
         return sanitize_encoding();
     }
     template <typename Encoding>
-    constexpr auto sani(Encoding enc) const
+    constexpr STRF_HD auto sani(Encoding enc) const
     {
         return sanitize_from_encoding(enc);
     }
@@ -192,7 +192,7 @@ class conv_format_with_encoding_fn
 {
 public:
 
-    conv_format_with_encoding_fn(Encoding e)
+    STRF_HD conv_format_with_encoding_fn(Encoding e)
         : encoding_(e)
     {
     }
@@ -201,13 +201,13 @@ public:
         ( const conv_format_with_encoding_fn& other ) noexcept = default;
 
     template <typename U>
-    explicit conv_format_with_encoding_fn
+    STRF_HD explicit conv_format_with_encoding_fn
         ( const strf::conv_format_with_encoding_fn<U, Encoding>& other ) noexcept
         : encoding_(other.get_encoding())
     {
     }
 
-    Encoding get_encoding() const
+    STRF_HD Encoding get_encoding() const
     {
         return encoding_;
     }
@@ -1098,7 +1098,7 @@ class aligned_conv_string_printer: public printer<DestCharT>
 public:
 
     template <typename Preview, typename FPack, typename CvFormat>
-    aligned_conv_string_printer
+    STRF_HD aligned_conv_string_printer
         ( const strf::detail::fmt_string_printer_input
             < DestCharT, SrcCharT, false, true, CvFormat, Preview, FPack >&
             input )
@@ -1120,7 +1120,7 @@ public:
     }
 
     template <typename Preview, typename FPack, typename CvFormat>
-    aligned_conv_string_printer
+    STRF_HD aligned_conv_string_printer
         ( const strf::detail::fmt_string_printer_input
             < DestCharT, SrcCharT, true, true, CvFormat, Preview, FPack >&
             input )
@@ -1347,7 +1347,7 @@ public:
 
     template < typename Preview, typename FPack, typename SrcCharT
              , bool HasPrecision, typename CvFormat >
-    conv_string_printer_variant
+    STRF_HD conv_string_printer_variant
         ( const strf::detail::fmt_string_printer_input
             < DestCharT, SrcCharT, HasPrecision, false, CvFormat, Preview, FPack >&
             input )
@@ -1363,7 +1363,7 @@ public:
         }
     }
 
-    ~conv_string_printer_variant()
+    STRF_HD ~conv_string_printer_variant()
     {
         const strf::printer<DestCharT>& p = *this;
         p.~printer();
@@ -1374,7 +1374,7 @@ public:
 #  pragma GCC diagnostic ignored "-Wstrict-aliasing"
 #endif
 
-    operator const strf::printer<DestCharT>& () const
+    STRF_HD operator const strf::printer<DestCharT>& () const
     {
         return * reinterpret_cast<const strf::printer<DestCharT>*>(&pool_);
     }
@@ -1400,7 +1400,7 @@ public:
 
     template < typename Preview, typename FPack, typename SrcCharT
              , bool HasPrecision, typename CvFormat >
-    aligned_conv_string_printer_variant
+    STRF_HD aligned_conv_string_printer_variant
         ( const strf::detail::fmt_string_printer_input
             < DestCharT, SrcCharT, HasPrecision, true, CvFormat, Preview, FPack >&
             input )
@@ -1418,7 +1418,7 @@ public:
         }
     }
 
-    ~aligned_conv_string_printer_variant()
+    STRF_HD ~aligned_conv_string_printer_variant()
     {
         const strf::printer<DestCharT>& p = *this;
         p.~printer();
@@ -1429,7 +1429,7 @@ public:
 #  pragma GCC diagnostic ignored "-Wstrict-aliasing"
 #endif
 
-    operator const strf::printer<DestCharT>& () const
+    STRF_HD operator const strf::printer<DestCharT>& () const
     {
         return * reinterpret_cast<const strf::printer<DestCharT>*>(&pool_);
     }

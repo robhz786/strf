@@ -4,7 +4,7 @@
 
 #include "test_utils.hpp"
 
-void test_join()
+void STRF_TEST_FUNC test_join()
 {
     TEST("   abcdef123   ") (strf::join("abc", "de", "f", 123) ^ 15);
     TEST("   abcdef123") (strf::join("abc", "de", "f", 123).split_pos(-5) % 12);

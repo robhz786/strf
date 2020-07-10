@@ -5,6 +5,10 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
+#if ! defined(STRF_TEST_FUNC)
+#define STRF_TEST_FUNC
+#endif
+
 #if ! defined(STRF_FREESTANDING)
 #  include <cstdio>
 #  include <string>
@@ -138,6 +142,10 @@ inline void STRF_HD turn_into_bad(strf::basic_outbuff<CharT>& ob)
 
 int& STRF_HD test_err_count();
 
+class test_scope;
+
+test_scope*& STRF_HD current_test_scope();
+test_scope*& STRF_HD first_test_scope();
 strf::outbuff& STRF_HD test_outbuff();
 
 class test_scope
@@ -147,18 +155,26 @@ public:
     STRF_HD test_scope(const test_scope&) = delete;
 
     STRF_HD  test_scope()
-        : parent_(curr_test_scope())
+        : parent_(test_utils::current_test_scope())
     {
-        parent_->child_ = this;
-        curr_test_scope() = this;
+        if (parent_) {
+            parent_->child_ = this;
+        } else {
+            test_utils::first_test_scope() = this;
+        }
+        test_utils::current_test_scope() = this;
         description_[0] = '\0';
     }
 
     STRF_HD ~test_scope()
     {
+        if (current_test_scope() == this) {
+            current_test_scope() = parent_;
+        }
         if (parent_) {
             parent_->child_ = child_;
-            curr_test_scope() = parent_;
+        } else {
+            first_test_scope() = child_;
         }
         if (child_) {
             child_ -> parent_ = parent_;
@@ -172,7 +188,7 @@ public:
 
     static void STRF_HD print_stack(strf::outbuff& out)
     {
-        test_scope* first = root().child_;
+        test_scope* first = test_utils::first_test_scope();
         if (first != nullptr) {
             strf::write(out, "\n    ( ");
             strf::write(out, first->description_);
@@ -193,23 +209,13 @@ private:
         description_[0] = '\0';
     }
 
-    static test_scope& STRF_HD root()
-    {
-        static test_scope r{test_scope::root_tag{}};
-        return r;
-    }
-
-    static test_scope*& STRF_HD curr_test_scope()
-    {
-        static test_scope* curr = &root();
-        return curr;
-    }
-
-
     test_scope* parent_ = nullptr;
     test_scope* child_ = nullptr;
     char description_[200];
 };
+
+void STRF_HD print_test_message_header(const char* filename, int line);
+void STRF_HD print_test_message_end(const char* funcname);
 
 template <typename ... Args>
 void STRF_HD test_message
@@ -218,11 +224,10 @@ void STRF_HD test_message
     , const char* funcname
     , const Args& ... args )
 {
-    to(test_outbuff()) (filename, ':', line, ": ", args...);
-    test_scope::print_stack(test_outbuff());
-    to(test_outbuff()) ("\n    In function '", funcname, "'\n");
+    test_utils::print_test_message_header(filename, line);
+    to(test_utils::test_outbuff()) (args...);
+    test_utils::print_test_message_end(funcname);
 }
-
 
 template <typename ... Args>
 void STRF_HD test_failure
@@ -236,7 +241,7 @@ void STRF_HD test_failure
 }
 
 template <typename CharOut>
-class STRF_HD input_tester
+class input_tester
     : public strf::basic_outbuff<CharOut>
 {
 
@@ -278,7 +283,8 @@ private:
                                 , function_, msg_args... );
     }
 
-    bool STRF_HD wrongly_reserved_(std::size_t result_size) const;
+    bool STRF_HD wrong_size_(std::size_t result_size) const;
+    bool STRF_HD wrong_content_( strf::detail::simple_string_view<CharOut> result ) const;
 
     strf::detail::simple_string_view<CharOut> expected_;
     std::size_t reserved_size_;
@@ -292,8 +298,7 @@ private:
     bool source_location_printed_ = false;
 
     CharOut* pointer_before_overflow_ = nullptr;
-    //constexpr static std::size_t buffer_size_ = 500;
-    enum {buffer_size_ = 500};
+    enum {buffer_size_ = 280};
     CharOut buffer_[buffer_size_];
 };
 
@@ -350,29 +355,39 @@ void STRF_HD input_tester<CharOut>::finish()
 {
     auto pointer = pointer_before_overflow_ ? pointer_before_overflow_ : this->pointer();
     strf::detail::simple_string_view<CharOut> result{buffer_, pointer};
-
-    if ( result.size() != expected_.size()
-      || ! strf::detail::str_equal<CharOut>( expected_.begin()
-                                           , result.begin()
-                                           , expected_.size() ))
-    {
-        test_failure_( "\n  expected: \"", strf::conv(expected_), '\"'
-                     , "\n  obtained: \"", strf::conv(result), "\"" );
-
-    }
-    if(wrongly_reserved_(result.size())) {
-        test_failure_( "\n  reserved size  : ", reserved_size_
-                     , "\n  necessary size : ", result.size() );
+    bool failed_content = wrong_content_(result);
+    bool failed_size = wrong_size_(result.size());
+    if (failed_size || failed_content){
+        ++ test_err_count();
+        print_test_message_header(src_filename_, src_line_);
+        auto& tout = test_utils::test_outbuff();
+        if (failed_content) {
+            strf::to(tout) ("\n  expected: \"", strf::conv(expected_));
+            strf::to(tout) ("\"\n  obtained: \"", strf::conv(result), '\"');
+        }
+        if (failed_size) {
+            strf::to(tout) ("\n  reserved size  : ", reserved_size_);
+            strf::to(tout) ("\n  necessary size : ", result.size());
+        }
+        print_test_message_end(function_);
     }
 }
 
 template <typename CharOut>
-bool STRF_HD input_tester<CharOut>::wrongly_reserved_(std::size_t result_size) const
+bool STRF_HD input_tester<CharOut>::wrong_content_
+    ( strf::detail::simple_string_view<CharOut> result ) const
+{
+   return ( result.size() != expected_.size()
+         || ! strf::detail::str_equal<CharOut>
+            ( expected_.begin(), result.begin(), expected_.size() ));
+}
+
+template <typename CharOut>
+bool STRF_HD input_tester<CharOut>::wrong_size_(std::size_t result_size) const
 {
     return ( reserved_size_ < result_size
-          || ( ( static_cast<double>(reserved_size_)
-               / static_cast<double>(result_size) )
-             > reserve_factor_ ) );
+          || ( static_cast<double>(reserved_size_) * reserve_factor_
+             > static_cast<double>(result_size) ) );
 }
 
 template <typename CharT>
@@ -497,27 +512,27 @@ constexpr bool STRF_HD equal(const T&a, const U&b)
     if (!(expr))                                                        \
         test_utils::test_failure                                        \
             ( __FILE__, __LINE__, BOOST_CURRENT_FUNCTION                \
-            , "test (" #expr ") failed. " );                            \
+            , "TEST_TRUE (" #expr ") failed. " );                            \
 
 #define TEST_FALSE(expr)                                                \
     if ((expr))                                                         \
         test_utils::test_failure                                        \
             ( __FILE__, __LINE__, BOOST_CURRENT_FUNCTION                \
-            , "test (" #expr ") failed. " );                            \
+            , "TEST_FALSE (" #expr ") failed. " );                            \
 
 #define TEST_EQ(a, b)                                                   \
     if (!test_utils::equal((a), (b)))                                   \
         test_utils::test_failure                                        \
             ( __FILE__, __LINE__, BOOST_CURRENT_FUNCTION                \
-            , " test (", (a), " == ", (b), ") failed. " );
+            , "TEST_EQ (", (a), ", ", (b), ") failed. " );
 
 #define TEST_CSTR_EQ(s1, s2)                                            \
-    for ( std::size_t len1 = strf::detail::str_length(s1)               \
-        ; len1 == strf::detail::str_length(s2); ) {                     \
-        if (! strf::detail::str_equal(s1, s2, len1))                    \
+    for ( std::size_t len1 = strf::detail::str_length(s1); 1;){         \
+        if ( len1 != strf::detail::str_length(s2)                       \
+          || ! strf::detail::str_equal(s1, s2, len1))                   \
             test_utils::test_failure                                    \
                 ( __FILE__, __LINE__, BOOST_CURRENT_FUNCTION            \
-                , "test (s1 == s2) failed. Where:\n    s1 is \"", (s1)  \
+                , "TEST_CSTR_EQ(s1, s2) failed. Where:\n    s1 is \"", (s1)  \
                 , "\"\n    s2 is \"", (s2), '\"' );                     \
         break;                                                          \
     }                                                                   \

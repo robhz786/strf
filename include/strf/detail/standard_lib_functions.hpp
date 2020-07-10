@@ -51,7 +51,7 @@ namespace detail {
 #ifdef __cpp_lib_bitops
 
 template< class To, class From >
-constexpr To bit_cast(const From& from) noexcept
+constexpr To STRF_HD bit_cast(const From& from) noexcept
 {
     static_assert(sizeof(To) == sizeof(From), "");
     return std::bit_cast<To, From>(from);
@@ -60,7 +60,7 @@ constexpr To bit_cast(const From& from) noexcept
 #else // __cpp_lib_bitops
 
 template< class To, class From >
-To bit_cast(const From& from) noexcept
+To STRF_HD bit_cast(const From& from) noexcept
 {
     static_assert(sizeof(To) == sizeof(From), "");
 

@@ -2322,7 +2322,7 @@ class hex_double_printer: public strf::printer<CharT>
 public:
 
     template <typename FloatT, typename Preview, typename FPack>
-    hex_double_printer
+    STRF_HD hex_double_printer
         ( const strf::detail::fmt_double_printer_input
             < CharT, FloatT, strf::float_notation::hex, false, Preview, FPack >&
             input )
@@ -2353,7 +2353,7 @@ public:
     }
 
     template <typename FloatT, typename Preview, typename FPack>
-    hex_double_printer
+    STRF_HD hex_double_printer
         ( const strf::detail::fmt_double_printer_input
             < CharT, FloatT, strf::float_notation::hex, true, Preview, FPack >&
             input )

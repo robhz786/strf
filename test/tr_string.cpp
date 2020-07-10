@@ -11,7 +11,7 @@ public:
 
     err_handler(const err_handler&) = default;
 
-    err_handler(strf::outbuff& log)
+    STRF_HD err_handler(strf::outbuff& log)
         : log_(log)
     {
     }
@@ -31,7 +31,7 @@ private:
     strf::outbuff& log_;
 };
 
-void test_tr_string()
+void STRF_TEST_FUNC test_tr_string()
 {
     // basic test
     TEST("aaa__..bbb__ 0xa")

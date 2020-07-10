@@ -4,7 +4,7 @@
 
 #include "test_utils.hpp"
 
-void test_width_t()
+void STRF_TEST_FUNC test_width_t()
 {
     using namespace strf::width_literal;
 
