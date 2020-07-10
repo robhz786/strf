@@ -12,11 +12,11 @@ option(
 option(
   STRF_FREESTANDING
   "Avoid as must as possible using hosted standard headers."
-  ${STRF_CUDA_SUPPORT} )
+  ${STRF_FREESTANDING} )
 option(
   STRF_WITH_CSTRING
   "Use header <cstring> even when STRF_FREESTANDING is ON."
-  ${STRF_CUDA_SUPPORT} )
+  ${STRF_WITH_CSTRING} )
 option(
   STRF_BUILD_TESTS
   "Build unit tests"

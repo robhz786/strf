@@ -12,8 +12,9 @@
 #endif
 
 #include <type_traits>
-#include <utility>    // not freestanding, but almost
 #include <limits>
+#include <new>
+#include <utility>    // not freestanding, but almost
 
 #if ! defined(STRF_FREESTANDING)
 #    define STRF_WITH_CSTRING
@@ -68,7 +69,7 @@ To bit_cast(const From& from) noexcept
     memcpy(&to, &from, sizeof(to));
     return to;
 #else
-    return reinterpret_cast<const To*>(&from);
+    return *reinterpret_cast<const To*>(&from);
 #endif
 }
 
