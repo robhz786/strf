@@ -20,7 +20,7 @@ inline auto get_arg(arg_idx<10>){ return strf::hex(1234) > 10; }
 inline auto get_arg(arg_idx<11>){ return +strf::dec(1234) < 10; }
 inline auto get_arg(arg_idx<12>){ return strf::hex(1234u); }
 inline auto get_arg(arg_idx<13>){ return strf::hex(1234u) > 10; }
-inline auto get_arg(arg_idx<14>){ return +strf::dec(1234u) < 10; }
+inline auto get_arg(arg_idx<14>){ return strf::dec(1234u) < 10; }
 inline auto get_arg(arg_idx<15>){ return *strf::sci(123.4) > 10; }
 inline auto get_arg(arg_idx<16>){ return *strf::fixed(123.4) > 10; }
 inline auto get_arg(arg_idx<17>){ return *strf::gen(123.4) > 10; }
