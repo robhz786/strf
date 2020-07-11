@@ -13,7 +13,7 @@ http://www.boost.org/LICENSE_1_0.txt
 :toclevels: 3
 :icons: font
 
-:strf-version: e0a273a17f8d540673761dbeb60e529db63be9d5
+:strf-version: v0.12.1
 :strf-src-root: https://github.com/robhz786/strf/blob/{strf-version}
 
 == Runtime performance
