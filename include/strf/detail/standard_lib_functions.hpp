@@ -244,6 +244,32 @@ inline STRF_HD void copy_n
     impl::copy(src, count, dest);
 }
 
+// template< class T >
+// constexpr T&& forward( std::remove_reference_t<T>&& t ) noexcept
+// {
+//     return static_cast<T&&>(t);
+// }
+
+
+namespace detail_tag_invoke_ns {
+
+STRF_HD inline void tag_invoke(){};
+
+struct tag_invoke_fn
+{
+    template <typename Cpo, typename ... Args>
+    constexpr STRF_HD auto operator()(Cpo cpo, Args&&... args) const
+        noexcept(noexcept(tag_invoke(cpo, (Args&&)(args)...)))
+        -> decltype(tag_invoke(cpo, (Args&&)(args)...))
+    {
+        return tag_invoke(cpo, (Args&&)(args)...);
+    }
+};
+
+} // namespace detail_tag_invoke_ns
+
+constexpr strf::detail::detail_tag_invoke_ns::tag_invoke_fn tag_invoke {};
+
 } // namespace detail
 } // namespace strf
 

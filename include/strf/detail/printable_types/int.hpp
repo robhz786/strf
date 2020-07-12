@@ -183,30 +183,61 @@ using int_with_format = strf::value_with_format
     , strf::int_format<Base>
     , strf::alignment_format_q<HasAlignment> >;
 
-template <typename IntT>
-using int_fmt_traits = strf::make_fmt_traits<strf::int_with_format<IntT>>;
-
-constexpr STRF_HD strf::int_fmt_traits<short>
-get_fmt_traits(strf::tag<>, short) { return {}; }
-constexpr STRF_HD strf::int_fmt_traits<int>
-get_fmt_traits(strf::tag<>, int) { return {}; }
-constexpr STRF_HD strf::int_fmt_traits<long>
-get_fmt_traits(strf::tag<>, long) { return {}; }
-constexpr STRF_HD strf::int_fmt_traits<long long>
-get_fmt_traits(strf::tag<>, long long) { return {}; }
-
-constexpr STRF_HD strf::int_fmt_traits<unsigned short>
-get_fmt_traits(strf::tag<>, unsigned short) { return {}; }
-constexpr STRF_HD strf::int_fmt_traits<unsigned int>
-get_fmt_traits(strf::tag<>, unsigned int) { return {}; }
-constexpr STRF_HD strf::int_fmt_traits<unsigned long>
-get_fmt_traits(strf::tag<>, unsigned long) { return {}; }
-constexpr STRF_HD strf::int_fmt_traits<unsigned long long>
-get_fmt_traits(strf::tag<>, unsigned long long) { return {}; }
-
-constexpr STRF_HD strf::make_fmt_traits
-    < strf::value_with_format<const void*, strf::alignment_format> >
-get_fmt_traits(strf::tag<>, const void*) { return {}; }
+constexpr STRF_HD auto tag_invoke(strf::fmt_tag, signed char x) noexcept
+    -> strf::int_with_format<signed char>
+{
+    return strf::int_with_format<signed char>{strf::int_tag<signed char>{x}};
+}
+constexpr STRF_HD auto tag_invoke(strf::fmt_tag, short x) noexcept
+    -> strf::int_with_format<short>
+{
+    return strf::int_with_format<short>{strf::int_tag<short>{x}};
+}
+constexpr STRF_HD auto tag_invoke(strf::fmt_tag, int x) noexcept
+    -> strf::int_with_format<int>
+{
+    return strf::int_with_format<int>{strf::int_tag<int>{x}};
+}
+constexpr STRF_HD auto tag_invoke(strf::fmt_tag, long x) noexcept
+    -> strf::int_with_format<long>
+{
+    return strf::int_with_format<long>{strf::int_tag<long>{x}};
+}
+constexpr STRF_HD auto tag_invoke(strf::fmt_tag, long long x) noexcept
+    -> strf::int_with_format<long long>
+{
+    return strf::int_with_format<long long>{strf::int_tag<long long>{x}};
+}
+constexpr STRF_HD auto tag_invoke(strf::fmt_tag, unsigned char x) noexcept
+    -> strf::int_with_format<unsigned char>
+{
+    return strf::int_with_format<unsigned char>{strf::int_tag<unsigned char>{x}};
+}
+constexpr STRF_HD auto tag_invoke(strf::fmt_tag, unsigned short x) noexcept
+    -> strf::int_with_format<unsigned short>
+{
+    return strf::int_with_format<unsigned short>{strf::int_tag<unsigned short>{x}};
+}
+constexpr STRF_HD auto tag_invoke(strf::fmt_tag, unsigned int x) noexcept
+    -> strf::int_with_format<unsigned int>
+{
+    return strf::int_with_format<unsigned int>{strf::int_tag<unsigned int>{x}};
+}
+constexpr STRF_HD auto tag_invoke(strf::fmt_tag, unsigned long x) noexcept
+    -> strf::int_with_format<unsigned long>
+{
+    return strf::int_with_format<unsigned long>{strf::int_tag<unsigned long>{x}};
+}
+constexpr STRF_HD auto tag_invoke(strf::fmt_tag, unsigned long long x) noexcept
+    -> strf::int_with_format<unsigned long long>
+{
+    return strf::int_with_format<unsigned long long>{strf::int_tag<unsigned long long>{x}};
+}
+constexpr STRF_HD auto tag_invoke(strf::fmt_tag, const void* x) noexcept
+-> strf::value_with_format<const void*, strf::alignment_format>
+{
+    return strf::value_with_format<const void*, strf::alignment_format>{x};
+}
 
 namespace detail {
 
@@ -345,6 +376,11 @@ struct voidptr_printable_traits
 } // namespace detail
 
 template <typename CharT, typename FPack, typename Preview>
+constexpr STRF_HD strf::detail::int_printable_traits<CharT, FPack, Preview, signed char>
+get_printable_traits(Preview&, signed char)
+{ return {}; }
+
+template <typename CharT, typename FPack, typename Preview>
 constexpr STRF_HD strf::detail::int_printable_traits<CharT, FPack, Preview, short>
 get_printable_traits(Preview&, short)
 { return {}; }
@@ -362,6 +398,11 @@ get_printable_traits(Preview&, long)
 template <typename CharT, typename FPack, typename Preview>
 constexpr STRF_HD strf::detail::int_printable_traits<CharT, FPack, Preview, long long>
 get_printable_traits(Preview&, long long)
+{ return {}; }
+
+template <typename CharT, typename FPack, typename Preview>
+constexpr STRF_HD strf::detail::int_printable_traits<CharT, FPack, Preview, unsigned char>
+get_printable_traits(Preview&, unsigned char)
 { return {}; }
 
 template <typename CharT, typename FPack, typename Preview>
@@ -440,7 +481,8 @@ public:
     STRF_HD void print_to(strf::basic_outbuff<CharT>& ob) const override;
 
 private:
-
+    template <typename Preview>
+    STRF_HD void init_(Preview& p, signed char value){ init2_(p, value); }
     template <typename Preview>
     STRF_HD void init_(Preview& p, short value){ init2_(p, value); }
     template <typename Preview>
@@ -449,6 +491,8 @@ private:
     STRF_HD void init_(Preview& p, long value){ init2_(p, value); }
     template <typename Preview>
     STRF_HD void init_(Preview& p, long long value){ init2_(p, value); }
+    template <typename Preview>
+    STRF_HD void init_(Preview& p, unsigned char value){ init2_(p, value); }
     template <typename Preview>
     STRF_HD void init_(Preview& p, unsigned short value){ init2_(p, value); }
     template <typename Preview>

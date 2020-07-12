@@ -19,7 +19,7 @@ public:
     template < typename StringType
              , typename = decltype(std::declval<const StringType&>().data())
              , typename = decltype(std::declval<const StringType&>().size())  >
-    STRF_HD simple_string_view(const StringType& s)
+    constexpr STRF_HD simple_string_view(const StringType& s)
         : begin_(s.data())
         , len_(s.size())
     {
@@ -343,86 +343,115 @@ using string_with_format = strf::value_with_format
     , strf::alignment_format_q<HasAlignment>
     , strf::no_conv_format<CharIn> >;
 
-namespace detail {
-
-template <typename CharIn>
-struct string_fmt_traits
-{
-    using fmt_type = strf::string_with_format<CharIn>;
-};
-
-} // namespace detail
-
 #if defined(STRF_HAS_STD_STRING_DECLARATION)
 
 template <typename CharIn, typename Traits, typename Allocator>
-constexpr STRF_HD strf::detail::string_fmt_traits<CharIn>
-get_fmt_traits(strf::tag<>, std::basic_string<CharIn, Traits, Allocator>)
-{ return {}; }
+constexpr STRF_HD auto tag_invoke
+    (strf::fmt_tag, const std::basic_string<CharIn, Traits, Allocator>& str) noexcept
+    -> strf::string_with_format<CharIn>
+{
+    return strf::string_with_format<CharIn>{str};
+}
 
 #endif // defined(STRF_HAS_STD_STRING_DECLARATION)
 
 template <typename CharIn>
-constexpr STRF_HD strf::detail::string_fmt_traits<CharIn>
-get_fmt_traits(strf::tag<>, strf::detail::simple_string_view<CharIn>)
-{ return {}; }
+constexpr STRF_HD auto tag_invoke
+    (strf::fmt_tag, strf::detail::simple_string_view<CharIn> str) noexcept
+    -> strf::string_with_format<CharIn>
+{
+    return strf::string_with_format<CharIn>{str};
+}
 
 #if defined(STRF_HAS_STD_STRING_VIEW)
 
 template <typename CharIn, typename Traits>
-constexpr STRF_HD strf::detail::string_fmt_traits<CharIn>
-get_fmt_traits(strf::tag<>, std::basic_string_view<CharIn, Traits>)
-{ return {}; }
+STRF_CONSTEXPR_CHAR_TRAITS STRF_HD auto tag_invoke
+    (strf::fmt_tag, std::basic_string_view<CharIn, Traits> str) noexcept
+    -> strf::string_with_format<CharIn>
+{
+    return strf::string_with_format<CharIn>{str};
+}
 
 #if defined(__cpp_char8_t)
 
-constexpr STRF_HD strf::detail::string_fmt_traits<char8_t>
-get_fmt_traits(strf::tag<>, std::basic_string_view<char8_t>)
-{ return {}; }
+constexpr STRF_HD auto tag_invoke
+    (strf::fmt_tag, std::basic_string_view<char8_t> str) noexcept
+    -> strf::string_with_format<char8_t>
+{
+    return strf::string_with_format<char8_t>{str};
+}
 
 #endif // defined(__cpp_char8_t)
 
-constexpr STRF_HD strf::detail::string_fmt_traits<char>
-get_fmt_traits(strf::tag<>, std::basic_string_view<char>)
-{ return {}; }
+STRF_CONSTEXPR_CHAR_TRAITS
+STRF_HD auto tag_invoke(strf::fmt_tag, std::basic_string_view<char> str) noexcept
+    -> strf::string_with_format<char>
+{
+    return strf::string_with_format<char>{str};
+}
 
-constexpr STRF_HD strf::detail::string_fmt_traits<char16_t>
-get_fmt_traits(strf::tag<>, std::basic_string_view<char16_t>)
-{ return {}; }
+STRF_CONSTEXPR_CHAR_TRAITS
+STRF_HD auto tag_invoke(strf::fmt_tag, std::basic_string_view<char16_t> str) noexcept
+    -> strf::string_with_format<char16_t>
+{
+    return strf::string_with_format<char16_t>{str};
+}
 
-constexpr STRF_HD strf::detail::string_fmt_traits<char32_t>
-get_fmt_traits(strf::tag<>, std::basic_string_view<char32_t>)
-{ return {}; }
+STRF_CONSTEXPR_CHAR_TRAITS
+STRF_HD auto tag_invoke(strf::fmt_tag, std::basic_string_view<char32_t> str) noexcept
+    -> strf::string_with_format<char32_t>
+{
+    return strf::string_with_format<char32_t>{str};
+}
 
-constexpr STRF_HD strf::detail::string_fmt_traits<wchar_t>
-get_fmt_traits(strf::tag<>, std::basic_string_view<wchar_t>)
-{ return {}; }
+STRF_CONSTEXPR_CHAR_TRAITS
+STRF_HD auto tag_invoke(strf::fmt_tag, std::basic_string_view<wchar_t> str) noexcept
+    -> strf::string_with_format<wchar_t>
+{
+    return strf::string_with_format<wchar_t>{str};
+}
 
 #endif // defined(STRF_HAS_STD_STRING_VIEW)
 
 #if defined(__cpp_char8_t)
 
-constexpr STRF_HD strf::detail::string_fmt_traits<char8_t>
-get_fmt_traits(strf::tag<>, const char8_t*)
-{ return {}; }
+STRF_CONSTEXPR_CHAR_TRAITS
+STRF_HD auto tag_invoke(strf::fmt_tag, const char8_t* str) noexcept
+    -> strf::string_with_format<char8_t>
+{
+    return strf::string_with_format<char8_t>{str};
+}
 
 #endif
 
-constexpr STRF_HD strf::detail::string_fmt_traits<char>
-get_fmt_traits(strf::tag<>, const char*)
-{ return {}; }
+STRF_CONSTEXPR_CHAR_TRAITS
+STRF_HD auto tag_invoke(strf::fmt_tag, const char* str) noexcept
+    -> strf::string_with_format<char>
+{
+    return strf::string_with_format<char>{str};
+}
 
-constexpr STRF_HD strf::detail::string_fmt_traits<char16_t>
-get_fmt_traits(strf::tag<>, const char16_t*)
-{ return {}; }
+STRF_CONSTEXPR_CHAR_TRAITS
+STRF_HD auto tag_invoke(strf::fmt_tag, const char16_t* str) noexcept
+    -> strf::string_with_format<char16_t>
+{
+    return strf::string_with_format<char16_t>{str};
+}
 
-constexpr STRF_HD strf::detail::string_fmt_traits<char32_t>
-get_fmt_traits(strf::tag<>, const char32_t*)
-{ return {}; }
+STRF_CONSTEXPR_CHAR_TRAITS
+STRF_HD auto tag_invoke(strf::fmt_tag, const char32_t* str) noexcept
+    -> strf::string_with_format<char32_t>
+{
+    return strf::string_with_format<char32_t>{str};
+}
 
-constexpr STRF_HD strf::detail::string_fmt_traits<wchar_t>
-get_fmt_traits(strf::tag<>, const wchar_t*)
-{ return {}; }
+STRF_CONSTEXPR_CHAR_TRAITS
+STRF_HD auto tag_invoke(strf::fmt_tag, const wchar_t* str) noexcept
+    -> strf::string_with_format<wchar_t>
+{
+    return strf::string_with_format<wchar_t>{str};
+}
 
 namespace detail {
 

@@ -5,7 +5,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <strf/detail/strf_def.hpp>
+#include <strf/detail/standard_lib_functions.hpp> // strf::detail::tag_invoke
 
 namespace strf {
 
@@ -457,174 +457,164 @@ struct quantity_format
     using fn = strf::quantity_format_fn<T>;
 };
 
-template <typename>
-inline void get_fmt_traits() {}
-
-template <typename T>
-struct fmt_traits
-    : decltype(get_fmt_traits(strf::tag<>{}, std::declval<T>()))
-{
-};
-
-template <typename FmtType>
-struct make_fmt_traits
-{
-    using fmt_type = FmtType;
-};
-
-template <typename T>
-using fmt_type = typename fmt_traits<T>::fmt_type;
-
 inline namespace format_functions {
 
-template <typename T>
-constexpr STRF_HD strf::fmt_type<T> fmt(const T& value)
-{
-    using fmt_value_type = typename strf::fmt_type<T>::value_type;
-    return strf::fmt_type<T>{fmt_value_type{value}};
-}
+struct fmt_tag {
+    template <typename T>
+    auto operator()(T&& value) const
+        noexcept(noexcept(strf::detail::tag_invoke(*(const fmt_tag*)0, value)))
+        -> decltype(strf::detail::tag_invoke(*(const fmt_tag*)0, value))
+    {
+        return strf::detail::tag_invoke(*this, value);
+    }
+};
+
+constexpr fmt_tag fmt {};
 
 template <typename T>
-constexpr STRF_HD auto hex(const T& value)
+constexpr STRF_HD auto hex(T&& value)
 {
     return fmt(value).hex();
 }
 
 template <typename T>
-constexpr STRF_HD auto dec(const T& value)
+constexpr STRF_HD auto dec(T&& value)
 {
     return fmt(value).dec();
 }
 
 template <typename T>
-constexpr STRF_HD auto oct(const T& value)
+constexpr STRF_HD auto oct(T&& value)
 {
     return fmt(value).oct();
 }
 
 template <typename T>
-constexpr STRF_HD auto bin(const T& value)
+constexpr STRF_HD auto bin(T&& value)
 {
     return fmt(value).bin();
 }
 
 template <typename T>
-constexpr STRF_HD auto left(const T& value, std::int16_t width)
+constexpr STRF_HD auto left(T&& value, std::int16_t width)
 {
     return fmt(value) < width;
 }
 
 template <typename T>
-constexpr STRF_HD auto right(const T& value, std::int16_t width)
+constexpr STRF_HD auto right(T&& value, std::int16_t width)
 {
     return fmt(value) > width;
 }
 
 template <typename T>
-constexpr STRF_HD auto split(const T& value, std::int16_t width)
+constexpr STRF_HD auto split(T&& value, std::int16_t width)
 {
     return fmt(value) % width;
 }
 
 template <typename T>
-constexpr STRF_HD auto center(const T& value, std::int16_t width)
+constexpr STRF_HD auto center(T&& value, std::int16_t width)
 {
     return fmt(value) ^ width;
 }
 
 template <typename T>
-constexpr STRF_HD auto left(const T& value, std::int16_t width, char32_t fill)
+constexpr STRF_HD auto left(T&& value, std::int16_t width, char32_t fill)
 {
     return fmt(value).fill(fill) < width;
 }
 
 template <typename T>
-constexpr STRF_HD auto right(const T& value, std::int16_t width, char32_t fill)
+constexpr STRF_HD auto right(T&& value, std::int16_t width, char32_t fill)
 {
     return fmt(value).fill(fill) > width;
 }
 
 template <typename T>
-constexpr STRF_HD auto split(const T& value, std::int16_t width, char32_t fill)
+constexpr STRF_HD auto split(T&& value, std::int16_t width, char32_t fill)
 {
     return fmt(value).fill(fill) % width;
 }
 
 template <typename T>
-constexpr STRF_HD auto center(const T& value, std::int16_t width, char32_t fill)
+constexpr STRF_HD auto center(T&& value, std::int16_t width, char32_t fill)
 {
     return fmt(value).fill(fill) ^ width;
 }
 
 template <typename T, typename I>
-constexpr STRF_HD auto multi(const T& value, I count)
+constexpr STRF_HD auto multi(T&& value, I count)
 {
     return fmt(value).multi(count);
 }
 
 template <typename T>
-constexpr STRF_HD auto fixed(const T& value)
+constexpr STRF_HD auto fixed(T&& value)
 {
     return fmt(value).fixed();
 }
 
 template <typename T>
-constexpr STRF_HD auto sci(const T& value)
+constexpr STRF_HD auto sci(T&& value)
 {
     return fmt(value).sci();
 }
 
 template <typename T>
-constexpr STRF_HD auto gen(const T& value)
+constexpr STRF_HD auto gen(T&& value)
 {
     return fmt(value).gen();
 }
 
 template <typename T, typename P>
-constexpr STRF_HD auto fixed(const T& value, P precision)
+constexpr STRF_HD auto fixed(T&& value, P precision)
 {
     return fmt(value).fixed().p(precision);
 }
 
 template <typename T, typename P>
-constexpr STRF_HD auto sci(const T& value, P precision)
+constexpr STRF_HD auto sci(T&& value, P precision)
 {
     return fmt(value).sci().p(precision);
 }
 
 template <typename T, typename P>
-constexpr STRF_HD auto gen(const T& value, P precision)
+constexpr STRF_HD auto gen(T&& value, P precision)
 {
     return fmt(value).gen().p(precision);
 }
 
 template <typename T>
-constexpr STRF_HD auto conv(const T& value)
+constexpr STRF_HD auto conv(T&& value)
 {
     return fmt(value).convert_encoding(); // defined in no_conv_format_fn
 }
 
 template <typename T, typename E>
-constexpr STRF_HD auto conv(const T& value, const E& e)
+constexpr STRF_HD auto conv(T&& value, const E& e)
 {
     return fmt(value).convert_from_encoding(e);  // defined in no_conv_format_fn
 }
 
 template <typename T>
-constexpr STRF_HD auto sani(const T& value)
+constexpr STRF_HD auto sani(T&& value)
 {
     return fmt(value).sanitize_encoding();  // defined in no_conv_format_fn
 
 }
 template <typename T, typename E>
-constexpr STRF_HD auto sani(const T& value, const E& e)
+constexpr STRF_HD auto sani(T&& value, const E& e)
 {
     return fmt(value).sanitize_from_encoding(e);  // defined in no_conv_format_fn
 }
 
 } // inline namespace format_functions
-} // namespace strf
 
+template <typename T>
+using fmt_type = std::remove_cv_t<std::remove_reference_t<decltype(strf::fmt(std::declval<T>()))>>;
+
+} // namespace strf
 
 #endif  // STRF_DETAIL_FORMAT_FUNCTIONS_HPP
 

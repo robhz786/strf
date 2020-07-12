@@ -738,29 +738,28 @@ STRF_HD void sep_transformed_range_printer<CharT, FPack, It, UnaryOp>::print_to
 } // namespace detail
 
 template <typename It>
-struct fmt_traits<strf::range_p<It>>
-    : public make_fmt_traits<strf::range_with_format<It>>
+STRF_HD auto tag_invoke(strf::fmt_tag, const strf::range_p<It>& r)
+    noexcept(noexcept(strf::range_with_format<It>{r}))
+    -> strf::range_with_format<It>
 {
-};
+    return strf::range_with_format<It>{r};
+}
 
 template <typename It, typename CharT>
-struct fmt_traits<strf::separated_range_p<It, CharT>>
-    : public make_fmt_traits<strf::sep_range_with_format<It, CharT>>
+STRF_HD auto tag_invoke(strf::fmt_tag, const strf::separated_range_p<It, CharT>& r)
+    noexcept(noexcept(strf::sep_range_with_format<It, CharT>{r}))
+    -> strf::sep_range_with_format<It, CharT>
 {
-};
+    return strf::sep_range_with_format<It, CharT>{r};
+}
+
 template <typename It, typename UnaryOp>
-struct fmt_traits<strf::transformed_range_p<It, UnaryOp>>
-{
-    static_assert( sizeof(strf::transformed_range_p<It, UnaryOp>)
-                 , "fmt function not supported when applying a function to the range" );
-};
+void tag_invoke(strf::fmt_tag, const strf::transformed_range_p<It, UnaryOp>&) = delete;
 
 template <typename It, typename CharT, typename UnaryOp>
-struct fmt_traits<strf::separated_transformed_range_p<It, CharT, UnaryOp>>
-{
-    static_assert( sizeof(strf::transformed_range_p<It, UnaryOp>)
-                 , "fmt function not supported when applying a function to the range" );
-};
+void tag_invoke
+    ( strf::fmt_tag
+    , const strf::separated_transformed_range_p<It, CharT, UnaryOp>& ) = delete;
 
 template <typename It>
 inline STRF_HD auto range(It begin, It end)

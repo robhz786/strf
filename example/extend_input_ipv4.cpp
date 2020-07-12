@@ -54,13 +54,16 @@ template <typename CharT, typename FPack, typename Preview>
 ipv4_printable_traits<CharT, FPack, Preview> get_printable_traits
 (Preview&, xxx::ipv4address_with_format);
 
-constexpr strf::make_fmt_traits<ipv4address_with_format>
-get_fmt_traits(strf::tag<>, ipv4address)
+} // namespace xxx
+
+namespace strf {
+
+    constexpr xxx::ipv4address_with_format tag_invoke(strf::fmt_tag, xxx::ipv4address x) noexcept
 {
-    return {};
+    return xxx::ipv4address_with_format{ x };
 }
 
-} // namespace xxx
+} // namespace strf
 
 int main()
 {

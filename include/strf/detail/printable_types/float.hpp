@@ -406,22 +406,18 @@ using float_with_format = value_with_format
     , strf::float_format<Notation>
     , strf::alignment_format_q<Align> >;
 
-namespace detail {
-
-template <typename FloatT>
-struct float_fmt_traits
+constexpr STRF_HD auto tag_invoke(strf::fmt_tag, float x) noexcept
+    -> strf::float_with_format<float>
 {
-    using fmt_type = strf::float_with_format<FloatT>;
-};
+    return strf::float_with_format<float>{x};
+}
+constexpr STRF_HD auto tag_invoke(strf::fmt_tag, double x) noexcept
+    -> strf::float_with_format<double>
+{
+    return strf::float_with_format<double>{x};
+}
 
-} // namespace detail
-
-void get_fmt_traits(long double) = delete;
-constexpr strf::detail::float_fmt_traits<double> get_fmt_traits(strf::tag<>, double)
-{ return {}; }
-constexpr strf::detail::float_fmt_traits<float> get_fmt_traits(strf::tag<>, float)
-{ return {}; }
-
+void tag_invoke(strf::fmt_tag, long double x) = delete;
 
 namespace detail {
 
@@ -547,25 +543,25 @@ struct double_printer_data
 
 template <strf::float_notation Notation>
 STRF_HD double_printer_data init_double_printer_data
-    ( detail::double_dec d, float_format_data fmt );
+    ( detail::double_dec d, float_format_data fdata );
 
 template <strf::float_notation Notation>
 inline STRF_HD double_printer_data init_double_printer_data
-    ( float f, float_format_data fmt )
+    ( float f, float_format_data fdata )
 {
-    return init_double_printer_data<Notation>(detail::decode(f), fmt);
+    return init_double_printer_data<Notation>(detail::decode(f), fdata);
 }
 
 template <strf::float_notation Notation>
 inline STRF_HD double_printer_data init_double_printer_data
-    ( double d, float_format_data fmt )
+    ( double d, float_format_data fdata )
 {
-    return init_double_printer_data<Notation>(detail::decode(d), fmt);
+    return init_double_printer_data<Notation>(detail::decode(d), fdata);
 }
 
 template <strf::float_notation Notation>
 STRF_HD double_printer_data init_double_printer_data
-    ( detail::double_dec dd, float_format_data fmt )
+    ( detail::double_dec dd, float_format_data fdata )
 {
     static_assert(Notation != strf::float_notation::hex, "");
     double_printer_data data;
@@ -574,57 +570,57 @@ STRF_HD double_printer_data init_double_printer_data
     data.negative = dd.negative;
     data.infinity = dd.infinity;
     data.nan      = dd.nan;
-    data.showsign = fmt.showpos || data.negative;
+    data.showsign = fdata.showpos || data.negative;
 
     if (data.nan || data.infinity) {
         data.showpoint = false;
         data.sci_notation = false;
         data.m10_digcount = 0;
         data.extra_zeros = 0;
-    } else if (fmt.precision == (unsigned)-1) {
+    } else if (fdata.precision == (unsigned)-1) {
         data.m10_digcount = strf::detail::count_digits<10>(data.m10);
         data.extra_zeros = 0;
         STRF_IF_CONSTEXPR (Notation == float_notation::general) {
             data.sci_notation
-                = (data.e10 > 4 + (!fmt.showpoint && data.m10_digcount != 1))
+                = (data.e10 > 4 + (!fdata.showpoint && data.m10_digcount != 1))
                || (data.e10 < ( -(int)data.m10_digcount - 2
-                               - (fmt.showpoint || data.m10_digcount != 1) ));
-            data.showpoint = fmt.showpoint
+                               - (fdata.showpoint || data.m10_digcount != 1) ));
+            data.showpoint = fdata.showpoint
                     || (data.sci_notation && data.m10_digcount != 1)
                     || (!data.sci_notation && data.e10 < 0);
         }
         STRF_IF_CONSTEXPR (Notation == float_notation::fixed) {
             data.sci_notation = false;
-            data.showpoint = fmt.showpoint || (data.e10 < 0);
+            data.showpoint = fdata.showpoint || (data.e10 < 0);
         }
         STRF_IF_CONSTEXPR (Notation == float_notation::scientific) {
            data.sci_notation = true;
-           data.showpoint = fmt.showpoint || (data.m10_digcount != 1);
+           data.showpoint = fdata.showpoint || (data.m10_digcount != 1);
         }
     } else {
         data.m10_digcount = strf::detail::count_digits<10>(data.m10);
         int xz; // number of zeros to be added or ( if negative ) digits to be removed
         STRF_IF_CONSTEXPR (Notation == float_notation::general) {
-            int p = fmt.precision + (fmt.precision == 0);
+            int p = fdata.precision + (fdata.precision == 0);
             int sci_notation_exp = data.e10 + (int)data.m10_digcount - 1;
             data.sci_notation = (sci_notation_exp < -4 || sci_notation_exp >= p);
-            data.showpoint = fmt.showpoint
+            data.showpoint = fdata.showpoint
                 || (data.sci_notation && data.m10_digcount != 1)
                 || (!data.sci_notation && data.e10 < 0);
-            xz = ((unsigned)p < data.m10_digcount || fmt.showpoint)
+            xz = ((unsigned)p < data.m10_digcount || fdata.showpoint)
                * (p - (int)data.m10_digcount);
          }
         STRF_IF_CONSTEXPR (Notation == float_notation::fixed) {
             const int frac_digits = (data.e10 < 0) * -data.e10;
-            xz = (fmt.precision - frac_digits);
+            xz = (fdata.precision - frac_digits);
             data.sci_notation = false;
-            data.showpoint = fmt.showpoint || (fmt.precision != 0);
+            data.showpoint = fdata.showpoint || (fdata.precision != 0);
         }
         STRF_IF_CONSTEXPR (Notation == float_notation::scientific) {
             const unsigned frac_digits = data.m10_digcount - 1;
-            xz = (fmt.precision - frac_digits);
+            xz = (fdata.precision - frac_digits);
             data.sci_notation = true;
-            data.showpoint = fmt.showpoint || (fmt.precision != 0);
+            data.showpoint = fdata.showpoint || (fdata.precision != 0);
         }
         if (xz < 0) {
             data.extra_zeros = 0;
@@ -644,7 +640,7 @@ STRF_HD double_printer_data init_double_printer_data
                 }
                 int frac_digits = data.sci_notation * (data.m10_digcount - 1)
                                 - !data.sci_notation * (data.e10 < 0) * data.e10;
-                data.showpoint = fmt.showpoint || (frac_digits != 0);
+                data.showpoint = fdata.showpoint || (frac_digits != 0);
             }
          } else {
             data.extra_zeros = xz;
@@ -1207,14 +1203,14 @@ public:
     {
         static_assert(Notation != strf::float_notation::hex, "");
 
-        const auto fmt = input.vwf.get_float_format_data();
-        data_ = strf::detail::init_double_printer_data<Notation>(input.vwf.value(), fmt);
+        const auto fdata = input.vwf.get_float_format_data();
+        data_ = strf::detail::init_double_printer_data<Notation>(input.vwf.value(), fdata);
         auto enc = get_facet<strf::char_encoding_c<CharT>, FloatT>(input.fp);
         auto punct = strf::get_facet<strf::numpunct_c<10>, FloatT>(input.fp);
         grouping_ = punct.grouping();
         decimal_point_ = punct.decimal_point();
         thousands_sep_ = punct.thousands_sep();
-        init_(enc, Notation == float_notation::general, fmt.showpoint);
+        init_(enc, Notation == float_notation::general, fdata.showpoint);
         STRF_IF_CONSTEXPR (Preview::width_required) {
             input.preview.subtract_width(content_width_());
         }
@@ -1233,14 +1229,14 @@ public:
     {
         static_assert(Notation != strf::float_notation::hex, "");
 
-        const auto fmt = input.vwf.get_float_format_data();
-        data_ = strf::detail::init_double_printer_data<Notation>(input.vwf.value(), fmt);
+        const auto fdata = input.vwf.get_float_format_data();
+        data_ = strf::detail::init_double_printer_data<Notation>(input.vwf.value(), fdata);
         auto enc = get_facet<strf::char_encoding_c<CharT>, FloatT>(input.fp);
         auto punct = strf::get_facet<strf::numpunct_c<10>, FloatT>(input.fp);
         grouping_ = punct.grouping();
         decimal_point_ = punct.decimal_point();
         thousands_sep_ = punct.thousands_sep();
-        init_(enc, Notation == float_notation::general, fmt.showpoint);
+        init_(enc, Notation == float_notation::general, fdata.showpoint);
         init_(input.preview, input.vwf.width(), input.vwf.alignment(), enc);
     }
 
@@ -2269,7 +2265,7 @@ struct hex_double_printer_data
 #if ! defined(STRF_OMIT_IMPL)
 
 STRF_FUNC_IMPL STRF_HD strf::detail::hex_double_printer_data init_hex_double_printer_data
-    ( float_format_data fmt, double x ) noexcept
+    ( float_format_data fdata, double x ) noexcept
 {
     strf::detail::hex_double_printer_data data;
 
@@ -2278,31 +2274,31 @@ STRF_FUNC_IMPL STRF_HD strf::detail::hex_double_printer_data init_hex_double_pri
     data.mantissa = bits & 0xFFFFFFFFFFFFFull;
     data.exponent = static_cast<std::int32_t>((bits << 1) >> 53) - 1023;
     data.negative = bits & (1ull << 63);
-    data.showsign = data.negative || fmt.showpos;
+    data.showsign = data.negative || fdata.showpos;
     if (data.exponent != 1024) {
         if ((bits & 0x7FFFFFFFFFFFFFFFull) == 0) {
             data.exponent_digcount = 1;
             data.mantissa_digcount = 0;
-            data.extra_zeros = (fmt.precision != (unsigned)-1) * fmt.precision;
-            data.showpoint = data.extra_zeros || fmt.showpoint;
+            data.extra_zeros = (fdata.precision != (unsigned)-1) * fdata.precision;
+            data.showpoint = data.extra_zeros || fdata.showpoint;
         } else {
             data.exponent_digcount = strf::detail::exponent_hex_digcount(std::abs(data.exponent));
             if (data.mantissa == 0){
                 data.mantissa_digcount = 0;
-                data.extra_zeros = (fmt.precision != (unsigned)-1) * fmt.precision;
-                data.showpoint = data.extra_zeros || fmt.showpoint;
-            } else if (fmt.precision == (unsigned)-1) {
+                data.extra_zeros = (fdata.precision != (unsigned)-1) * fdata.precision;
+                data.showpoint = data.extra_zeros || fdata.showpoint;
+            } else if (fdata.precision == (unsigned)-1) {
                 data.mantissa_digcount = strf::detail::mantissa_hex_digcount(data.mantissa);
                 data.extra_zeros = 0;
                 data.showpoint = true;
             } else {
                 data.mantissa_digcount = strf::detail::mantissa_hex_digcount(data.mantissa);
-                if (fmt.precision >= data.mantissa_digcount) {
-                    data.extra_zeros = fmt.precision - data.mantissa_digcount;
+                if (fdata.precision >= data.mantissa_digcount) {
+                    data.extra_zeros = fdata.precision - data.mantissa_digcount;
                     data.showpoint = true;
                 } else {
                     // round mantissa if necessary
-                    unsigned s = (13 - fmt.precision) << 2;
+                    unsigned s = (13 - fdata.precision) << 2;
                     auto d = 1ull << s;
                     auto mask = d - 1;
                     auto mantissa_low = data.mantissa & mask;
@@ -2311,8 +2307,8 @@ STRF_FUNC_IMPL STRF_HD strf::detail::hex_double_printer_data init_hex_double_pri
                     } else if (mantissa_low == (d >> 1) && (data.mantissa & d)) {
                         data.mantissa += d;
                     }
-                    data.mantissa_digcount = fmt.precision;
-                    data.showpoint = fmt.precision || fmt.showpoint;
+                    data.mantissa_digcount = fdata.precision;
+                    data.showpoint = fdata.precision || fdata.showpoint;
                 }
             }
         }
@@ -2323,7 +2319,7 @@ STRF_FUNC_IMPL STRF_HD strf::detail::hex_double_printer_data init_hex_double_pri
 #else // ! defined(STRF_OMIT_IMPL)
 
 STRF_HD strf::detail::hex_double_printer_data init_hex_double_printer_data
-    ( float_format_data fmt, double d ) noexcept;
+    ( float_format_data fdata, double d ) noexcept;
 
 #endif // ! defined(STRF_OMIT_IMPL)
 

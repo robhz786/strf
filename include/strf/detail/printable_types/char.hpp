@@ -26,29 +26,34 @@ using char_with_format = strf::value_with_format
 
 #if defined(__cpp_char8_t)
 
-template <> struct fmt_traits<char8_t>
+constexpr STRF_HD auto tag_invoke(strf::fmt_tag, char8_t c) noexcept
+    -> strf::char_with_format<char8_t>
 {
-    using fmt_type = strf::char_with_format<char8_t>;
-};
+    return strf::char_with_format<char8_t>{strf::char_tag<char8_t>{c}};
+}
 
 #endif // defined(__cpp_char8_t)
 
-template <> struct fmt_traits<char>
+constexpr STRF_HD auto tag_invoke(strf::fmt_tag, char c) noexcept
+    -> strf::char_with_format<char>
 {
-    using fmt_type = strf::char_with_format<char>;
-};
-template <> struct fmt_traits<char16_t>
+    return strf::char_with_format<char>{strf::char_tag<char>{c}};
+}
+constexpr STRF_HD auto tag_invoke(strf::fmt_tag, char16_t c) noexcept
+    -> strf::char_with_format<char16_t>
 {
-    using fmt_type = strf::char_with_format<char16_t>;
-};
-template <> struct fmt_traits<char32_t>
+    return strf::char_with_format<char16_t>{strf::char_tag<char16_t>{c}};
+}
+constexpr STRF_HD auto tag_invoke(strf::fmt_tag, char32_t c) noexcept
+    -> strf::char_with_format<char32_t>
 {
-    using fmt_type = strf::char_with_format<char32_t>;
-};
-template <> struct fmt_traits<wchar_t>
+    return strf::char_with_format<char32_t>{strf::char_tag<char32_t>{c}};
+}
+constexpr STRF_HD auto tag_invoke(strf::fmt_tag, wchar_t c) noexcept
+    -> strf::char_with_format<wchar_t>
 {
-    using fmt_type = strf::char_with_format<wchar_t>;
-};
+    return strf::char_with_format<wchar_t>{strf::char_tag<wchar_t>{c}};
+}
 
 namespace detail {
 
