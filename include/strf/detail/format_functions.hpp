@@ -457,11 +457,9 @@ struct quantity_format
     using fn = strf::quantity_format_fn<T>;
 };
 
-inline namespace format_functions {
-
 struct fmt_tag {
     template <typename T>
-    auto operator()(T&& value) const
+    constexpr STRF_HD auto operator()(T&& value) const
         noexcept(noexcept(strf::detail::tag_invoke(*(const fmt_tag*)0, value)))
         -> decltype(strf::detail::tag_invoke(*(const fmt_tag*)0, value))
     {
@@ -469,145 +467,235 @@ struct fmt_tag {
     }
 };
 
+inline namespace format_functions {
+
 constexpr fmt_tag fmt {};
 
-template <typename T>
-constexpr STRF_HD auto hex(T&& value)
-{
-    return fmt(value).hex();
-}
+} // inline namespace format_functions
 
-template <typename T>
-constexpr STRF_HD auto dec(T&& value)
-{
-    return fmt(value).dec();
-}
+namespace detail_format_functions {
 
-template <typename T>
-constexpr STRF_HD auto oct(T&& value)
-{
-    return fmt(value).oct();
-}
+struct hex_fn {
+    template <typename T>
+    constexpr STRF_HD auto operator()(T&& value) const
+        noexcept(noexcept(strf::fmt(value).hex()))
+        -> std::remove_reference_t<decltype(strf::fmt(value).hex())>
+    {
+        return strf::fmt(value).hex();
+    }
+};
 
-template <typename T>
-constexpr STRF_HD auto bin(T&& value)
-{
-    return fmt(value).bin();
-}
+struct dec_fn {
+    template <typename T>
+    constexpr STRF_HD auto operator()(T&& value) const
+        noexcept(noexcept(strf::fmt(value).dec()))
+        -> std::remove_reference_t<decltype(strf::fmt(value).dec())>
+    {
+        return strf::fmt(value).dec();
+    }
+};
 
-template <typename T>
-constexpr STRF_HD auto left(T&& value, std::int16_t width)
-{
-    return fmt(value) < width;
-}
+struct oct_fn {
+    template <typename T>
+    constexpr STRF_HD auto operator()(T&& value) const
+        noexcept(noexcept(strf::fmt(value).oct()))
+        -> std::remove_reference_t<decltype(strf::fmt(value).oct())>
+    {
+        return strf::fmt(value).oct();
+    }
+};
 
-template <typename T>
-constexpr STRF_HD auto right(T&& value, std::int16_t width)
-{
-    return fmt(value) > width;
-}
+struct bin_fn {
+    template <typename T>
+    constexpr STRF_HD auto operator()(T&& value) const
+        noexcept(noexcept(strf::fmt(value).bin()))
+        -> std::remove_reference_t<decltype(strf::fmt(value).bin())>
+    {
+        return strf::fmt(value).bin();
+    }
+};
 
-template <typename T>
-constexpr STRF_HD auto split(T&& value, std::int16_t width)
-{
-    return fmt(value) % width;
-}
+struct fixed_fn {
+    template <typename T>
+    constexpr STRF_HD auto operator()(T&& value) const
+        noexcept(noexcept(strf::fmt(value).fixed()))
+        -> std::remove_reference_t<decltype(strf::fmt(value).fixed())>
+    {
+        return strf::fmt(value).fixed();
+    }
+    template <typename T>
+        constexpr STRF_HD auto operator()(T&& value, unsigned precision) const
+        noexcept(noexcept(strf::fmt(value).fixed().p(precision)))
+        -> std::remove_reference_t<decltype(strf::fmt(value).fixed().p(precision))>
+    {
+        return strf::fmt(value).fixed().p(precision);
+    }
+};
 
-template <typename T>
-constexpr STRF_HD auto center(T&& value, std::int16_t width)
-{
-    return fmt(value) ^ width;
-}
+struct sci_fn {
+    template <typename T>
+    constexpr STRF_HD auto operator()(T&& value) const
+        noexcept(noexcept(strf::fmt(value).sci()))
+        -> std::remove_reference_t<decltype(strf::fmt(value).sci())>
+    {
+        return strf::fmt(value).sci();
+    }
+    template <typename T>
+    constexpr STRF_HD auto operator()(T&& value, unsigned precision) const
+        noexcept(noexcept(strf::fmt(value).sci().p(precision)))
+        -> std::remove_reference_t<decltype(strf::fmt(value).sci().p(precision))>
+    {
+        return strf::fmt(value).sci().p(precision);
+    }
+};
 
-template <typename T>
-constexpr STRF_HD auto left(T&& value, std::int16_t width, char32_t fill)
-{
-    return fmt(value).fill(fill) < width;
-}
+struct gen_fn {
+    template <typename T>
+    constexpr STRF_HD auto operator()(T&& value) const
+        noexcept(noexcept(strf::fmt(value).gen()))
+        -> std::remove_reference_t<decltype(strf::fmt(value).gen())>
+    {
+        return strf::fmt(value).gen();
+    }
+    template <typename T>
+        constexpr STRF_HD auto operator()(T&& value, unsigned precision) const
+        noexcept(noexcept(strf::fmt(value).gen().p(precision)))
+        -> std::remove_reference_t<decltype(strf::fmt(value).gen().p(precision))>
+    {
+        return strf::fmt(value).gen().p(precision);
+    }
+};
 
-template <typename T>
-constexpr STRF_HD auto right(T&& value, std::int16_t width, char32_t fill)
-{
-    return fmt(value).fill(fill) > width;
-}
+struct multi_fn {
+    template <typename T, typename C>
+    constexpr STRF_HD auto operator()(T&& value, C&& count) const
+        noexcept(noexcept(strf::fmt(value).multi(count)))
+        -> std::remove_reference_t<decltype(strf::fmt(value).multi(count))>
+    {
+        return strf::fmt(value).multi(count);
+    }
+};
 
-template <typename T>
-constexpr STRF_HD auto split(T&& value, std::int16_t width, char32_t fill)
-{
-    return fmt(value).fill(fill) % width;
-}
+struct conv_fn {
+    template <typename T>
+    constexpr STRF_HD auto operator()(T&& value) const
+        noexcept(noexcept(strf::fmt(value).convert_encoding()))
+        -> std::remove_reference_t<decltype(strf::fmt(value).convert_encoding())>
+    {
+        return strf::fmt(value).convert_encoding();
+    }
+    template <typename T, typename E>
+        constexpr STRF_HD auto operator()(T&& value, E&& enc) const
+        noexcept(noexcept(strf::fmt(value).convert_from_encoding(enc)))
+        -> std::remove_reference_t<decltype(strf::fmt(value).convert_from_encoding(enc))>
+    {
+        return strf::fmt(value).convert_from_encoding(enc);
+    }
+};
 
-template <typename T>
-constexpr STRF_HD auto center(T&& value, std::int16_t width, char32_t fill)
-{
-    return fmt(value).fill(fill) ^ width;
-}
+struct sani_fn {
+    template <typename T>
+    constexpr STRF_HD auto operator()(T&& value) const
+        noexcept(noexcept(strf::fmt(value).sanitize_encoding()))
+        -> std::remove_reference_t<decltype(strf::fmt(value).sanitize_encoding())>
+    {
+        return strf::fmt(value).sanitize_encoding();
+    }
+    template <typename T, typename E>
+        constexpr STRF_HD auto operator()(T&& value, E&& enc) const
+        noexcept(noexcept(strf::fmt(value).sanitize_from_encoding(enc)))
+        -> std::remove_reference_t<decltype(strf::fmt(value).sanitize_from_encoding(enc))>
+    {
+        return strf::fmt(value).sanitize_from_encoding(enc);
+    }
+};
 
-template <typename T, typename I>
-constexpr STRF_HD auto multi(T&& value, I count)
-{
-    return fmt(value).multi(count);
-}
+struct right_fn {
+    template <typename T>
+    constexpr STRF_HD auto operator()(T&& value, std::int16_t width) const
+        noexcept(noexcept(strf::fmt(value) > width))
+        -> std::remove_reference_t<decltype(strf::fmt(value) > width)>
+    {
+        return strf::fmt(value) > width;
+    }
+    template <typename T>
+    constexpr STRF_HD auto operator()(T&& value, std::int16_t width, char32_t fill) const
+        noexcept(noexcept(strf::fmt(value).fill(fill) > width))
+        -> std::remove_reference_t<decltype(strf::fmt(value).fill(fill) > width)>
+    {
+        return strf::fmt(value).fill(fill) > width;
+    }
+};
 
-template <typename T>
-constexpr STRF_HD auto fixed(T&& value)
-{
-    return fmt(value).fixed();
-}
+struct left_fn {
+    template <typename T>
+    constexpr STRF_HD auto operator()(T&& value, std::int16_t width) const
+        noexcept(noexcept(strf::fmt(value) < width))
+        -> std::remove_reference_t<decltype(strf::fmt(value) < width)>
+    {
+        return strf::fmt(value) < width;
+    }
+    template <typename T>
+    constexpr STRF_HD auto operator()(T&& value, std::int16_t width, char32_t fill) const
+        noexcept(noexcept(strf::fmt(value).fill(fill) < width))
+        -> std::remove_reference_t<decltype(strf::fmt(value).fill(fill) < width)>
+    {
+        return strf::fmt(value).fill(fill) < width;
+    }
+};
 
-template <typename T>
-constexpr STRF_HD auto sci(T&& value)
-{
-    return fmt(value).sci();
-}
+struct center_fn {
+    template <typename T>
+    constexpr STRF_HD auto operator()(T&& value, std::int16_t width) const
+        noexcept(noexcept(strf::fmt(value) ^ width))
+        -> std::remove_reference_t<decltype(strf::fmt(value) ^ width)>
+    {
+        return strf::fmt(value) ^ width;
+    }
+    template <typename T>
+    constexpr STRF_HD auto operator()(T&& value, std::int16_t width, char32_t fill) const
+        noexcept(noexcept(strf::fmt(value).fill(fill) ^ width))
+        -> std::remove_reference_t<decltype(strf::fmt(value).fill(fill) ^ width)>
+    {
+        return strf::fmt(value).fill(fill) ^ width;
+    }
+};
 
-template <typename T>
-constexpr STRF_HD auto gen(T&& value)
-{
-    return fmt(value).gen();
-}
+struct split_fn {
+    template <typename T>
+    constexpr STRF_HD auto operator()(T&& value, std::int16_t width) const
+        noexcept(noexcept(strf::fmt(value) % width))
+        -> std::remove_reference_t<decltype(strf::fmt(value) % width)>
+    {
+        return strf::fmt(value) % width;
+    }
+    template <typename T>
+    constexpr STRF_HD auto operator()(T&& value, std::int16_t width, char32_t fill) const
+        noexcept(noexcept(strf::fmt(value).fill(fill) % width))
+        -> std::remove_reference_t<decltype(strf::fmt(value).fill(fill) % width)>
+    {
+        return strf::fmt(value).fill(fill) % width;
+    }
+};
 
-template <typename T, typename P>
-constexpr STRF_HD auto fixed(T&& value, P precision)
-{
-    return fmt(value).fixed().p(precision);
-}
+} // namespace detail_format_functions
 
-template <typename T, typename P>
-constexpr STRF_HD auto sci(T&& value, P precision)
-{
-    return fmt(value).sci().p(precision);
-}
+inline namespace format_functions {
 
-template <typename T, typename P>
-constexpr STRF_HD auto gen(T&& value, P precision)
-{
-    return fmt(value).gen().p(precision);
-}
-
-template <typename T>
-constexpr STRF_HD auto conv(T&& value)
-{
-    return fmt(value).convert_encoding(); // defined in no_conv_format_fn
-}
-
-template <typename T, typename E>
-constexpr STRF_HD auto conv(T&& value, const E& e)
-{
-    return fmt(value).convert_from_encoding(e);  // defined in no_conv_format_fn
-}
-
-template <typename T>
-constexpr STRF_HD auto sani(T&& value)
-{
-    return fmt(value).sanitize_encoding();  // defined in no_conv_format_fn
-
-}
-template <typename T, typename E>
-constexpr STRF_HD auto sani(T&& value, const E& e)
-{
-    return fmt(value).sanitize_from_encoding(e);  // defined in no_conv_format_fn
-}
+constexpr strf::detail_format_functions::hex_fn    hex {};
+constexpr strf::detail_format_functions::dec_fn    dec {};
+constexpr strf::detail_format_functions::oct_fn    oct {};
+constexpr strf::detail_format_functions::bin_fn    bin {};
+constexpr strf::detail_format_functions::fixed_fn  fixed {};
+constexpr strf::detail_format_functions::sci_fn    sci {};
+constexpr strf::detail_format_functions::gen_fn    gen {};
+constexpr strf::detail_format_functions::multi_fn  multi {};
+constexpr strf::detail_format_functions::conv_fn   conv {};
+constexpr strf::detail_format_functions::sani_fn   sani {};
+constexpr strf::detail_format_functions::right_fn  right {};
+constexpr strf::detail_format_functions::left_fn   left {};
+constexpr strf::detail_format_functions::center_fn center {};
+constexpr strf::detail_format_functions::split_fn  split {};
 
 } // inline namespace format_functions
 
