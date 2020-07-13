@@ -282,20 +282,38 @@ public:
 };
 
 
-template <typename CharT>
 struct printing_c;
 
-template <typename CharT>
 struct default_printing_facet
 {
-    const printer_input_tag<CharT> make_printer_input;
-    //constexpr static printer_input_tag<CharT> make_printer_input = {};
+#if defined(__cpp_inline_variable)
+
+    template <typename CharT>
+    constexpr static printer_input_tag<CharT> make_printer_input = {};
+
+#else
+
+private:
+
+    template <typename CharT>
+    using tag_ = printer_input_tag<CharT>;
+
+public:
+
+    template <typename CharT, typename Arg, typename FPack, typename Preview>
+    constexpr STRF_HD auto make_printer_input(Arg&& arg, const FPack& fp, Preview& preview) const
+        noexcept(noexcept(strf::detail::tag_invoke(tag_<CharT>(), arg, fp, preview)))
+        -> decltype(strf::detail::tag_invoke(tag_<CharT>(), arg, fp, preview))
+    {
+        return strf::detail::tag_invoke(tag_<CharT>(), arg, fp, preview);
+    }
+
+#endif
 };
 
-template <typename CharT>
 struct printing_c
 {
-    static constexpr STRF_HD strf::default_printing_facet<CharT> get_default() noexcept
+    static constexpr STRF_HD strf::default_printing_facet get_default() noexcept
     {
         return {};
     }
@@ -316,8 +334,8 @@ template <typename CharT, typename Arg, typename FPack, typename Preview>
 constexpr STRF_HD decltype(auto) make_printer_input
     (Arg&& arg, const FPack& fp, Preview& preview)
 {
-    return strf::get_facet<strf::printing_c<CharT>, Arg>(fp)
-        .make_printer_input(arg, fp, preview);
+    return strf::get_facet<strf::printing_c, Arg>(fp)
+        .template make_printer_input<CharT>(arg, fp, preview);
 }
 
 #else
@@ -331,8 +349,8 @@ struct make_printer_input_impl
     constexpr STRF_HD decltype(auto) operator()
         (const Arg& arg, const FPack& fp, Preview& preview) const
     {
-        return strf::get_facet<strf::printing_c<CharT>, Arg>(fp)
-            .make_printer_input(arg, fp, preview);
+        return strf::get_facet<strf::printing_c, Arg>(fp)
+            .template make_printer_input<CharT>(arg, fp, preview);
     }
 };
 

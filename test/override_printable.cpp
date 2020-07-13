@@ -41,12 +41,11 @@ private:
     bool value_;
 };
 
-template <typename CharT>
 struct my_bool_printing_override
 {
-    using category = strf::printing_c<CharT>;
+    using category = strf::printing_c;
 
-    template <typename FPack, typename Preview>
+    template <typename CharT, typename FPack, typename Preview>
     constexpr static STRF_HD auto make_printer_input
         (bool x, const FPack& fp, Preview& preview) noexcept
         -> strf::usual_printer_input<CharT, FPack, Preview, my_bool_printer<CharT>, bool>
@@ -60,11 +59,11 @@ struct is_bool: std::is_same<T, bool> {};
 
 int main()
 {
-    auto f = strf::constrain<is_bool>(my_bool_printing_override<char>{});
+    auto f = strf::constrain<is_bool>(my_bool_printing_override{});
 
     TEST("yes").with(f) (true);
     TEST("no").with(f)  (false);
-    TEST("no").with(my_bool_printing_override<char>{}) (false);
+    TEST("no").with(my_bool_printing_override{}) (false);
     TEST("123").with(f) (123);
 
     return test_finish();
