@@ -264,46 +264,63 @@ inline STRF_HD void write_args
 
 } // namespace detail
 
-template < typename CharT, typename FPack, typename Preview
-         , typename Printer, typename Arg >
-struct usual_printer_input
-{
-    using fpack_type = FPack;
-    using preview_type = Preview;
-    using printer_type = Printer;
-
-    FPack fp;
-    Preview& preview;
-    Arg arg;
-};
-
-template <typename CharT>
-struct printer_input_maker_c;
-
 template <typename CharT>
 struct printer_input_tag
 {
-    using category = strf::printer_input_maker_c<CharT>;
+private:
+    static const printer_input_tag<CharT>& tag_();
+
+public:
 
     template <typename Arg, typename FPack, typename Preview>
     constexpr STRF_HD auto operator()(Arg&& arg, const FPack& fp, Preview& preview) const
-        noexcept(noexcept(strf::detail::tag_invoke
-                          (*(const printer_input_tag*)0, arg, fp, preview)))
-        -> decltype(strf::detail::tag_invoke
-                    (*(const printer_input_tag*)0, arg, fp, preview))
+        noexcept(noexcept(strf::detail::tag_invoke(tag_(), arg, fp, preview)))
+        -> decltype(strf::detail::tag_invoke(tag_(), arg, fp, preview))
     {
         return strf::detail::tag_invoke(*this, arg, fp, preview);
     }
 };
 
+
 template <typename CharT>
-struct printer_input_maker_c
+struct printing_c;
+
+template <typename CharT>
+struct default_printing_facet
 {
-    static constexpr STRF_HD strf::printer_input_tag<CharT> get_default() noexcept
+    const printer_input_tag<CharT> make_printer_input;
+    //constexpr static printer_input_tag<CharT> make_printer_input = {};
+};
+
+template <typename CharT>
+struct printing_c
+{
+    static constexpr STRF_HD strf::default_printing_facet<CharT> get_default() noexcept
     {
-        return strf::printer_input_tag<CharT>{};
+        return {};
     }
 };
+
+#if defined (STRF_NO_GLOBAL_CONSTEXPR_VARIABLE)
+
+template <typename CharT, typename Arg, typename FPack, typename Preview>
+constexpr STRF_HD decltype(auto) make_default_printer_input
+    (Arg&& arg, const FPack& fp, Preview& preview)
+{
+    strf::printer_input_tag<CharT> tag;
+    return tag(arg, fp, preview);
+}
+
+
+template <typename CharT, typename Arg, typename FPack, typename Preview>
+constexpr STRF_HD decltype(auto) make_printer_input
+    (Arg&& arg, const FPack& fp, Preview& preview)
+{
+    return strf::get_facet<strf::printing_c<CharT>, Arg>(fp)
+        .make_printer_input(arg, fp, preview);
+}
+
+#else
 
 namespace detail {
 
@@ -314,40 +331,18 @@ struct make_printer_input_impl
     constexpr STRF_HD decltype(auto) operator()
         (const Arg& arg, const FPack& fp, Preview& preview) const
     {
-        return strf::get_facet<strf::printer_input_maker_c<CharT>, Arg>(fp)
-            (arg, fp, preview);
+        return strf::get_facet<strf::printing_c<CharT>, Arg>(fp)
+            .make_printer_input(arg, fp, preview);
     }
 };
 
 } // namespace detail
 
-#if defined (STRF_NO_GLOBAL_CONSTEXPR_VARIABLE)
-
-template <typename CharT, typename Arg, typename FPack, typename Preview>
-constexpr STRF_HD decltype(auto) make_default_printer_input
-    (const Arg& arg, const FPack& fp, Preview& preview)
-{
-    return strf::get_facet<strf::printer_input_maker_c<CharT>, Arg>(fp)
-        (arg, fp, preview);
-}
-
-
-template <typename CharT, typename Arg, typename FPack, typename Preview>
-constexpr STRF_HD decltype(auto) make_printer_input
-    (const Arg& arg, const FPack& fp, Preview& preview)
-{
-    return strf::get_facet<strf::printer_input_maker_c<CharT>, Arg>(fp)
-        (arg, fp, preview);
-}
-
-#else
+template <typename CharT>
+constexpr strf::printer_input_tag<CharT> make_default_printer_input = {};
 
 template <typename CharT>
 constexpr strf::detail::make_printer_input_impl<CharT> make_printer_input = {};
-
-template <typename CharT>
-constexpr strf::printer_input_tag<CharT> make_default_printer_input
-    = strf::printer_input_tag<CharT>();
 
 #endif // defined (STRF_NO_GLOBAL_CONSTEXPR_VARIABLE)
 
@@ -360,18 +355,40 @@ struct printer_impl_helper
     static Preview& preview();
     static const Arg& arg();
 
+    using default_printer_input = decltype
+        ( strf::make_default_printer_input<CharT>(arg(), fp(), preview()) );
+
     using printer_input = decltype
         ( strf::make_printer_input<CharT>(arg(), fp(), preview()) );
 
+    using default_printer = typename default_printer_input::printer_type;
     using printer = typename printer_input::printer_type;
 };
 
 } // namespace detail
 
 template <typename CharT, typename FPack, typename Preview, typename Arg>
+using default_printer_impl = typename strf::detail::printer_impl_helper
+    < CharT, FPack, Preview, Arg >
+    ::default_printer;
+
+template <typename CharT, typename FPack, typename Preview, typename Arg>
 using printer_impl = typename strf::detail::printer_impl_helper
     < CharT, FPack, Preview, Arg >
     ::printer;
+
+template < typename CharT, typename FPack, typename Preview
+         , typename Printer, typename Arg >
+struct usual_printer_input
+{
+    using fpack_type = FPack;
+    using preview_type = Preview;
+    using printer_type = Printer;
+
+    FPack fp;
+    Preview& preview;
+    Arg arg;
+};
 
 } // namespace strf
 
