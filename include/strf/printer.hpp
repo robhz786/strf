@@ -297,10 +297,6 @@ struct printer_input_tag
 };
 
 template <typename CharT>
-constexpr strf::printer_input_tag<CharT> make_default_printer_input
-    = strf::printer_input_tag<CharT>();
-
-template <typename CharT>
 struct printer_input_maker_c
 {
     static constexpr STRF_HD strf::printer_input_tag<CharT> get_default() noexcept
@@ -325,8 +321,35 @@ struct make_printer_input_impl
 
 } // namespace detail
 
+#if defined (STRF_NO_GLOBAL_CONSTEXPR_VARIABLE)
+
+template <typename CharT, typename Arg, typename FPack, typename Preview>
+constexpr STRF_HD decltype(auto) make_default_printer_input
+    (const Arg& arg, const FPack& fp, Preview& preview)
+{
+    return strf::get_facet<strf::printer_input_maker_c<CharT>, Arg>(fp)
+        (arg, fp, preview);
+}
+
+
+template <typename CharT, typename Arg, typename FPack, typename Preview>
+constexpr STRF_HD decltype(auto) make_printer_input
+    (const Arg& arg, const FPack& fp, Preview& preview)
+{
+    return strf::get_facet<strf::printer_input_maker_c<CharT>, Arg>(fp)
+        (arg, fp, preview);
+}
+
+#else
+
 template <typename CharT>
 constexpr strf::detail::make_printer_input_impl<CharT> make_printer_input = {};
+
+template <typename CharT>
+constexpr strf::printer_input_tag<CharT> make_default_printer_input
+    = strf::printer_input_tag<CharT>();
+
+#endif // defined (STRF_NO_GLOBAL_CONSTEXPR_VARIABLE)
 
 namespace detail {
 

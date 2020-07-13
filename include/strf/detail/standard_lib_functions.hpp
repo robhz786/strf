@@ -268,7 +268,21 @@ struct tag_invoke_fn
 
 } // namespace detail_tag_invoke_ns
 
+#if defined (STRF_NO_GLOBAL_CONSTEXPR_VARIABLE)
+
+template <typename Cpo, typename ... Args>
+constexpr STRF_HD auto tag_invoke(Cpo cpo, Args&&... args)
+    noexcept(noexcept(tag_invoke(cpo, (Args&&)(args)...)))
+    -> decltype(tag_invoke(cpo, (Args&&)(args)...))
+{
+    return tag_invoke(cpo, (Args&&)(args)...);
+}
+
+#else
+
 constexpr strf::detail::detail_tag_invoke_ns::tag_invoke_fn tag_invoke {};
+
+#endif // defined (STRF_NO_GLOBAL_CONSTEXPR_VARIABLE)
 
 } // namespace detail
 } // namespace strf
