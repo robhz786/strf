@@ -11,6 +11,10 @@
 #include <strf/detail/format_functions.hpp>
 
 namespace strf {
+namespace detail {
+template <typename> class char_printer;
+template <typename> class fmt_char_printer;
+} // namespace detail
 
 template <typename CharT>
 struct char_tag
@@ -55,59 +59,74 @@ constexpr STRF_HD auto tag_invoke(strf::fmt_tag, wchar_t c) noexcept
     return strf::char_with_format<wchar_t>{strf::char_tag<wchar_t>{c}};
 }
 
-namespace detail {
-
-template <typename> class char_printer;
-template <typename> class fmt_char_printer;
-
-template <typename DestCharT, typename FPack, typename SrcCharT>
-struct char_printable_traits
-    : strf::usual_printable_traits
-        < DestCharT, FPack, strf::detail::char_printer<DestCharT> >
-{
-     static_assert( std::is_same<SrcCharT, DestCharT>::value
-                  , "Character type mismatch.");
-};
-
-} // namespace detail
-
 template <typename CharT, typename FPack, typename Preview>
-struct printable_traits<CharT, FPack, Preview, char>
-    : strf::detail::char_printable_traits<CharT, FPack, char>
-{ };
+constexpr STRF_HD auto tag_invoke
+    ( strf::printer_input_tag<CharT>, char x, const FPack& fp, Preview& preview ) noexcept
+    -> strf::usual_printer_input
+        < CharT, FPack, Preview, strf::detail::char_printer<CharT>, CharT >
+{
+    static_assert( std::is_same<CharT, char>::value, "Character type mismatch.");
+    return {fp, preview, x};
+}
 
 #if defined(__cpp_char8_t)
 
 template <typename CharT, typename FPack, typename Preview>
-struct printable_traits<CharT, FPack, Preview, char8_t>
-    : strf::detail::char_printable_traits<CharT, FPack, char8_t>
-{ };
+constexpr STRF_HD auto tag_invoke
+    ( strf::printer_input_tag<CharT>, char8_t x, const FPack& fp, Preview& preview ) noexcept
+    -> strf::usual_printer_input
+        < CharT, FPack, Preview, strf::detail::char_printer<CharT>, CharT >
+{
+    static_assert( std::is_same<CharT, char8_t>::value, "Character type mismatch.");
+    return {fp, preview, x};
+}
 
 #endif // defined(__cpp_char8_t)
 
 template <typename CharT, typename FPack, typename Preview>
-struct printable_traits<CharT, FPack, Preview, char16_t>
-    : strf::detail::char_printable_traits<CharT, FPack, char16_t>
-{ };
-
-template <typename CharT, typename FPack, typename Preview>
-struct printable_traits<CharT, FPack, Preview, char32_t>
-    : strf::detail::char_printable_traits<CharT, FPack, char32_t>
-{ };
-
-template <typename CharT, typename FPack, typename Preview>
-struct printable_traits<CharT, FPack, Preview, wchar_t>
-    : strf::detail::char_printable_traits<CharT, FPack, wchar_t>
-{ };
-
-template <typename DestCharT, typename FPack, typename Preview, typename SrcCharT>
-struct printable_traits<DestCharT, FPack, Preview, strf::char_with_format<SrcCharT>>
-    : strf::usual_printable_traits
-        < DestCharT, FPack, strf::detail::fmt_char_printer<DestCharT> >
+constexpr STRF_HD auto tag_invoke
+    ( strf::printer_input_tag<CharT>, char16_t x, const FPack& fp, Preview& preview ) noexcept
+    -> strf::usual_printer_input
+        < CharT, FPack, Preview, strf::detail::char_printer<CharT>, CharT >
 {
-    static_assert( std::is_same<SrcCharT, DestCharT>::value
-                 , "Character type mismatch.");
-};
+    static_assert( std::is_same<CharT, char16_t>::value, "Character type mismatch.");
+    return {fp, preview, x};
+}
+
+template <typename CharT, typename FPack, typename Preview>
+constexpr STRF_HD auto tag_invoke
+    ( strf::printer_input_tag<CharT>, char32_t x, const FPack& fp, Preview& preview ) noexcept
+    -> strf::usual_printer_input
+        < CharT, FPack, Preview, strf::detail::char_printer<CharT>, CharT >
+{
+    static_assert( std::is_same<CharT, char32_t>::value, "Character type mismatch.");
+    return {fp, preview, x};
+}
+
+template <typename CharT, typename FPack, typename Preview>
+constexpr STRF_HD auto tag_invoke
+    ( strf::printer_input_tag<CharT>, wchar_t x, const FPack& fp, Preview& preview ) noexcept
+    -> strf::usual_printer_input
+        < CharT, FPack, Preview, strf::detail::char_printer<CharT>, CharT >
+{
+    static_assert( std::is_same<CharT, wchar_t>::value, "Character type mismatch.");
+    return {fp, preview, x};
+}
+
+template <typename DestCharT, typename SrcCharT, typename FPack, typename Preview>
+constexpr STRF_HD auto tag_invoke
+    ( strf::printer_input_tag<DestCharT>
+    , strf::char_with_format<SrcCharT> x
+    , const FPack& fp
+    , Preview& preview ) noexcept
+    -> strf::usual_printer_input
+        < DestCharT, FPack, Preview
+        , strf::detail::fmt_char_printer<DestCharT>
+        , strf::char_with_format<SrcCharT> >
+{
+    static_assert( std::is_same<DestCharT, SrcCharT>::value, "Character type mismatch.");
+    return {fp, preview, x};
+}
 
 namespace detail {
 

@@ -147,21 +147,19 @@ public:
 
 template< typename CharT, typename FPack, typename Preview
         , bool HasSplitPos, bool HasAlignment, typename ... Args>
-struct printable_traits
-    < CharT, FPack, Preview
+constexpr STRF_HD auto tag_invoke
+    ( strf::printer_input_tag<CharT>
     , strf::value_with_format
         < strf::detail::simple_tuple<Args...>
         , strf::split_pos_format<HasSplitPos>
-        , strf::alignment_format_q<HasAlignment> > >
-{
-    template<typename Arg>
-    constexpr static STRF_HD strf::detail::join_printer_input
+        , strf::alignment_format_q<HasAlignment> > x
+    , const FPack& fp
+    , Preview& preview ) noexcept
+    -> strf::detail::join_printer_input
         < CharT, FPack, Preview, HasSplitPos, HasAlignment, Args... >
-    make_input(const FPack& fp, Preview& preview, const Arg& arg)
-    {
-        return {fp, preview, arg};
-    }
-};
+{
+    return {fp, preview, x};
+}
 
 namespace detail {
 

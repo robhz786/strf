@@ -298,21 +298,36 @@ xxx::base64_input_with_format tag_invoke(strf::fmt_tag, xxx::base64_input x)
 }
 
 template <typename CharT, typename FPack, typename Preview>
-struct printable_traits<CharT, FPack, Preview, xxx::base64_input>
-    : strf::usual_printable_traits<CharT, FPack, xxx::base64_printer<CharT>>
-{
-    static_assert(!Preview::require_width, "");
-};
-
-template <typename CharT, typename FPack, typename Preview>
-struct printable_traits<CharT, FPack, Preview, xxx::base64_input_with_format>
-    : strf::usual_printable_traits<CharT, FPack, xxx::base64_printer<CharT>>
+constexpr STRF_HD auto tag_invoke
+    ( strf::printer_input_tag<CharT>
+    , xxx::base64_input x
+    , const FPack& fp
+    , Preview& preview ) noexcept
+    -> strf::usual_printer_input
+        < CharT, FPack, Preview
+        , xxx::base64_printer<CharT>
+        , xxx::base64_input >
 {
     static_assert(!Preview::width_required, "");
-};
-
+    return {fp, preview, x};
 }
 
+template <typename CharT, typename FPack, typename Preview>
+constexpr STRF_HD auto tag_invoke
+    ( strf::printer_input_tag<CharT>
+    , xxx::base64_input_with_format x
+    , const FPack& fp
+    , Preview& preview ) noexcept
+    -> strf::usual_printer_input
+        < CharT, FPack, Preview
+        , xxx::base64_printer<CharT>
+        , xxx::base64_input_with_format >
+{
+    static_assert(!Preview::width_required, "");
+    return {fp, preview, x};
+}
+
+} // namespace strf
 
 void tests()
 {

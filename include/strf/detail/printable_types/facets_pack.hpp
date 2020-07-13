@@ -44,34 +44,24 @@ namespace detail {
 template < typename, typename, typename, typename, typename ... >
 class facets_pack_printer;
 
-template < typename CharT
-         , typename ParentFPack
-         , typename Preview
-         , typename ChildFPack
-         , typename ... Args >
-struct facets_pack_printer_input
-{
-    using printer_type = strf::detail::facets_pack_printer
-        < CharT, ParentFPack, Preview, ChildFPack, Args... >;
-
-    ParentFPack fp;
-    Preview& preview;
-    strf::inner_pack_with_args<ChildFPack, Args...> arg;
-};
-
 } // namespace detail
+
 
 template < typename CharT, typename FPack, typename Preview
          , typename ChildFPack, typename... Args >
-struct printable_traits
-    < CharT, FPack, Preview
-    , strf::inner_pack_with_args<ChildFPack, Args...> >
-    : strf::usual_printable_traits
-        < CharT, FPack
+constexpr STRF_HD auto tag_invoke
+    ( strf::printer_input_tag<CharT>
+    , const strf::inner_pack_with_args<ChildFPack, Args...>& x
+    , const FPack& fp
+    , Preview& preview ) noexcept
+    -> strf::usual_printer_input
+        < CharT, FPack, Preview
         , strf::detail::facets_pack_printer
-            < CharT, FPack, Preview, ChildFPack, Args... > >
+            < CharT, FPack, Preview, ChildFPack, Args... >
+        , strf::inner_pack_with_args<ChildFPack, Args...> >
 {
-};
+    return {fp, preview, x};
+}
 
 namespace detail {
 

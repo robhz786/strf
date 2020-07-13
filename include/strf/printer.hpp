@@ -264,17 +264,6 @@ inline STRF_HD void write_args
 
 } // namespace detail
 
-template <typename CharT>
-inline STRF_HD void get_printable_traits() {};
-
-template <typename CharT, typename FPack, typename Preview, typename Arg>
-struct printable_traits
-    : decltype( get_printable_traits<CharT, FPack>
-                  ( std::declval<Preview&>()
-                  , std::declval<Arg>() ) )
-{
-};
-
 template < typename CharT, typename FPack, typename Preview
          , typename Printer, typename Arg >
 struct usual_printer_input
@@ -288,63 +277,56 @@ struct usual_printer_input
     Arg arg;
 };
 
-template <typename CharT, typename FPack, typename Printer>
-struct usual_printable_traits
+template <typename CharT>
+struct printer_input_maker_c;
+
+template <typename CharT>
+struct printer_input_tag
 {
-    template <typename Preview, typename Arg>
-    constexpr static STRF_HD
-    strf::usual_printer_input<CharT, FPack, Preview, Printer, Arg>
-    make_input (const FPack& fp, Preview& preview, const Arg& arg)
+    using category = strf::printer_input_maker_c<CharT>;
+
+    template <typename Arg, typename FPack, typename Preview>
+    constexpr STRF_HD auto operator()(Arg&& arg, const FPack& fp, Preview& preview) const
+        noexcept(noexcept(strf::detail::tag_invoke
+                          (*(const printer_input_tag*)0, arg, fp, preview)))
+        -> decltype(strf::detail::tag_invoke
+                    (*(const printer_input_tag*)0, arg, fp, preview))
     {
-        return {fp, preview, arg};
+        return strf::detail::tag_invoke(*this, arg, fp, preview);
     }
 };
 
-template <typename CharT, typename FPack, typename Printer>
-struct usual_printable_traits_by_cref
+template <typename CharT>
+constexpr strf::printer_input_tag<CharT> make_default_printer_input
+    = strf::printer_input_tag<CharT>();
+
+template <typename CharT>
+struct printer_input_maker_c
 {
-    template <typename Preview, typename Arg>
-    constexpr static STRF_HD
-    strf::usual_printer_input<CharT, FPack, Preview, Printer, const Arg&>
-    make_input (const FPack& fp, Preview& preview, const Arg& arg)
+    static constexpr STRF_HD strf::printer_input_tag<CharT> get_default() noexcept
     {
-        return {fp, preview, arg};
+        return strf::printer_input_tag<CharT>{};
     }
 };
 
-class printable_traits_finder_c;
+namespace detail {
 
-class printable_traits_finder
+template <typename CharT>
+struct make_printer_input_impl
 {
-public:
-    using category = strf::printable_traits_finder_c;
-
-    template < typename CharT, typename FPack
-             , typename Preview, typename Arg >
-    using type = strf::printable_traits<CharT, FPack, Preview, Arg>;
-};
-
-class printable_traits_finder_c
-{
-public:
-    constexpr static STRF_HD strf::printable_traits_finder get_default()
+    template <typename Arg, typename FPack, typename Preview>
+    constexpr STRF_HD decltype(auto) operator()
+        (const Arg& arg, const FPack& fp, Preview& preview) const
     {
-        return {};
+        return strf::get_facet<strf::printer_input_maker_c<CharT>, Arg>(fp)
+            (arg, fp, preview);
     }
 };
 
-template <typename CharT, typename FPack, typename Preview, typename Arg>
-using printable_traits_alias = typename
-    decltype(strf::get_facet<printable_traits_finder_c, Arg>(std::declval<const FPack&>()))
-    :: template type<CharT, FPack, Preview, Arg>;
+} // namespace detail
 
-template <typename CharT, typename FPack, typename Preview, typename Arg>
-constexpr STRF_HD auto make_printer_input
-    ( const FPack& fp, Preview& preview, const Arg& arg )
-{
-    using pt = strf::printable_traits_alias<CharT, FPack, Preview, Arg>;
-    return pt::make_input(fp, preview, arg);
-}
+template <typename CharT>
+constexpr strf::detail::make_printer_input_impl<CharT> make_printer_input = {};
 
 namespace detail {
 
@@ -356,7 +338,7 @@ struct printer_impl_helper
     static const Arg& arg();
 
     using printer_input = decltype
-        ( strf::make_printer_input<CharT>(fp(), preview(), arg()) );
+        ( strf::make_printer_input<CharT>(arg(), fp(), preview()) );
 
     using printer = typename printer_input::printer_type;
 };

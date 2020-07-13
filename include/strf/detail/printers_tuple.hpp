@@ -122,8 +122,8 @@ public:
         , Preview& preview
         , const strf::detail::simple_tuple<Args...>& args )
         : indexed_printer<I, Printers>
-          ( strf::printable_traits_alias<CharT, const FPack&, Preview, Args>::make_input
-            ( fp, preview, args.template get<I>() ) ) ...
+            ( strf::make_printer_input<CharT>
+                ( args.template get<I>(), fp, preview ) ) ...
     {
     }
 
