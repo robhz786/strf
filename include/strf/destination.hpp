@@ -29,14 +29,15 @@ struct destination_tag {};
 template < template <typename, typename> class DestinationTmpl
          , class OutbuffCreator
          , class FPack
-         , class PreviewType
-         , class CharT = typename OutbuffCreator::char_type >
+         , class PreviewType >
 class destination_common
 {
     using destination_type_ = DestinationTmpl<OutbuffCreator, FPack>;
 
+    using char_type_ = typename OutbuffCreator::char_type;
+
     template <typename Arg>
-    using printer_ = strf::printer_impl<CharT, FPack, PreviewType, Arg>;
+    using printer_ = strf::printer_impl<char_type_, FPack, PreviewType, Arg>;
 
 public:
 
@@ -135,7 +136,7 @@ public:
             ( preview
             , as_printer_cref_
               ( printer_<Args>
-                ( strf::make_printer_input<CharT>
+                ( strf::make_printer_input<char_type_>
                   ( args, self.fpack_, preview ) ) )... );
     }
 
@@ -143,7 +144,7 @@ public:
 
     template <typename ... Args>
     decltype(auto) STRF_HD tr
-        ( const std::basic_string_view<CharT>& str
+        ( const std::basic_string_view<char_type_>& str
         , const Args& ... args ) const &
     {
         return tr_write_(str.data(), str.size(), args...);
@@ -152,29 +153,29 @@ public:
 #else
 
     template <typename ... Args>
-    decltype(auto) STRF_HD tr(const CharT* str, const Args& ... args) const &
+    decltype(auto) STRF_HD tr(const char_type_* str, const Args& ... args) const &
     {
-        return tr_write_(str, strf::detail::str_length<CharT>(str), args...);
+        return tr_write_(str, strf::detail::str_length<char_type_>(str), args...);
     }
 
 #endif
 
 private:
 
-    static inline const strf::printer<CharT>&
-    STRF_HD as_printer_cref_(const strf::printer<CharT>& p)
+    static inline const strf::printer<char_type_>&
+    STRF_HD as_printer_cref_(const strf::printer<char_type_>& p)
     {
         return p;
     }
-    static inline const strf::printer<CharT>*
-    STRF_HD as_printer_cptr_(const strf::printer<CharT>& p)
+    static inline const strf::printer<char_type_>*
+    STRF_HD as_printer_cptr_(const strf::printer<char_type_>& p)
     {
          return &p;
     }
 
     template < typename ... Args >
     decltype(auto) STRF_HD tr_write_
-        ( const CharT* str
+        ( const char_type_* str
         , std::size_t str_len
         , const Args& ... args) const &
     {
@@ -184,8 +185,8 @@ private:
 
     template < std::size_t ... I, typename ... Args >
     decltype(auto) STRF_HD tr_write_2_
-        ( const CharT* str
-        , const CharT* str_end
+        ( const char_type_* str
+        , const char_type_* str_end
         , std::index_sequence<I...>
         , const Args& ... args) const &
     {
@@ -199,20 +200,20 @@ private:
             , preview_arr
             , { as_printer_cptr_
                 ( printer_<Args>
-                  ( strf::make_printer_input<CharT>
+                  ( strf::make_printer_input<char_type_>
                     ( args, fpack, preview_arr[I] ) ) )... } );
     }
 
     template < typename Preview, typename ... Args >
     decltype(auto) STRF_HD tr_write_3_
-        ( const CharT* str
-        , const CharT* str_end
+        ( const char_type_* str
+        , const char_type_* str_end
         , Preview* preview_arr
-        , std::initializer_list<const strf::printer<CharT>*> args ) const &
+        , std::initializer_list<const strf::printer<char_type_>*> args ) const &
     {
         const auto& self = static_cast<const destination_type_&>(*this);
 
-        using catenc = strf::char_encoding_c<CharT>;
+        using catenc = strf::char_encoding_c<char_type_>;
         auto enc = strf::get_facet<catenc, void>(self.fpack_);
 
         using caterr = strf::tr_error_notifier_c;
@@ -247,19 +248,18 @@ class destination_no_reserve
         < strf::destination_no_reserve
         , OutbuffCreator
         , FPack
-        , strf::print_preview<strf::preview_size::no, strf::preview_width::no> >
+        , strf::no_print_preview >
 {
     using common_ = strf::detail::destination_common
         < strf::destination_no_reserve
         , OutbuffCreator
         , FPack
-        , strf::print_preview<strf::preview_size::no, strf::preview_width::no> >;
+        , strf::no_print_preview >;
 
-    template <template <typename, typename> class, class, class, class, class>
+    template <template <typename, typename> class, class, class, class>
     friend class strf::detail::destination_common;
 
-    using preview_type_
-        = strf::print_preview<strf::preview_size::no, strf::preview_width::no>;
+    using preview_type_ = strf::no_print_preview;
 
 public:
 
@@ -365,19 +365,18 @@ class destination_with_given_size
         < strf::destination_with_given_size
         , OutbuffCreator
         , FPack
-        , strf::print_preview<strf::preview_size::no, strf::preview_width::no> >
+        , strf::no_print_preview >
 {
     using common_ = strf::detail::destination_common
         < strf::destination_with_given_size
         , OutbuffCreator
         , FPack
-        , strf::print_preview<strf::preview_size::no, strf::preview_width::no> >;
+        , strf::no_print_preview >;
 
-    template < template <typename, typename> class, class,class, class, class>
+    template < template <typename, typename> class, class,class, class>
     friend class strf::detail::destination_common;
 
-    using preview_type_
-        = strf::print_preview<strf::preview_size::no, strf::preview_width::no>;
+    using preview_type_ = strf::no_print_preview;
 
 public:
 
@@ -492,7 +491,7 @@ class destination_calc_size
         , FPack
         , strf::print_preview<strf::preview_size::yes, strf::preview_width::no> >;
 
-    template < template <typename, typename> class, class, class, class, class>
+    template < template <typename, typename> class, class, class, class>
     friend class strf::detail::destination_common;
 
     using preview_type_

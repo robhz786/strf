@@ -228,11 +228,11 @@ public:
     }
 };
 
+using no_print_preview = strf::print_preview<strf::preview_size::no, strf::preview_width::no>;
+
 namespace detail {
 
 #if defined(__cpp_fold_expressions)
-
-
 
 template <typename CharT, typename ... Printers>
 inline STRF_HD void write_args( strf::basic_outbuff<CharT>& ob
@@ -348,6 +348,8 @@ struct make_printer_input_impl
     template <typename Arg, typename FPack, typename Preview>
     constexpr STRF_HD decltype(auto) operator()
         (const Arg& arg, const FPack& fp, Preview& preview) const
+        noexcept(noexcept(strf::get_facet<strf::printing_c, Arg>(fp)
+                          .template make_printer_input<CharT>(arg, fp, preview)))
     {
         return strf::get_facet<strf::printing_c, Arg>(fp)
             .template make_printer_input<CharT>(arg, fp, preview);

@@ -459,21 +459,6 @@ struct fast_punct_double_printer_input
     FloatT value;
 };
 
-template < typename CharT, typename FPack, typename Preview, typename FloatT >
-struct fast_double_printable_traits
-{
-    using printer_input_type = std::conditional_t
-        < strf::detail::has_punct<CharT, FPack, FloatT, 10>
-        , strf::detail::fast_punct_double_printer_input<CharT, FPack, Preview, FloatT>
-        , strf::detail::fast_double_printer_input<CharT, Preview, FloatT> >;
-
-    constexpr static STRF_HD printer_input_type
-    make_input(const FPack& fp, Preview& preview, FloatT arg)
-    {
-        return {fp, preview, arg};
-    }
-};
-
 template < typename CharT, typename FPack, typename Preview, typename FloatT
          , strf::float_notation Notation, bool HasAlignment >
 struct fmt_double_printer_input
