@@ -120,11 +120,10 @@ constexpr STRF_HD auto tag_invoke
     , const FPack& fp
     , Preview& preview ) noexcept
     -> strf::usual_printer_input
-        < CharT, FPack, Preview
-        , strf::detail::range_printer<CharT, FPack, It>
-        , strf::range_p<It> >
+        < CharT, strf::range_p<It>, FPack, Preview
+        , strf::detail::range_printer<CharT, FPack, It> >
 {
-    return {fp, preview, x};
+    return {x, fp, preview};
 }
 
 template <typename CharT, typename FPack, typename Preview, typename It>
@@ -134,11 +133,10 @@ constexpr STRF_HD auto tag_invoke
     , const FPack& fp
     , Preview& preview ) noexcept
     -> strf::usual_printer_input
-        < CharT, FPack, Preview
-        , strf::detail::separated_range_printer<CharT, FPack, It>
-        , strf::separated_range_p<It, CharT> >
+        < CharT, strf::separated_range_p<It, CharT>, FPack, Preview
+        , strf::detail::separated_range_printer<CharT, FPack, It> >
 {
-    return {fp, preview, x};
+    return {x, fp, preview};
 }
 
 template < typename CharT, typename FPack, typename Preview
@@ -149,11 +147,10 @@ constexpr STRF_HD auto tag_invoke
     , const FPack& fp
     , Preview& preview ) noexcept
     -> strf::usual_printer_input
-        < CharT, FPack, Preview
-        , strf::detail::fmt_range_printer<CharT, FPack, It, Fmts...>
-        , strf::value_with_format<strf::range_p<It>, Fmts ...> >
+        < CharT, strf::value_with_format<strf::range_p<It>, Fmts ...>, FPack, Preview
+        , strf::detail::fmt_range_printer<CharT, FPack, It, Fmts...> >
 {
-    return {fp, preview, x};
+    return {x, fp, preview};
 }
 
 template < typename CharT, typename FPack, typename Preview
@@ -164,11 +161,11 @@ constexpr STRF_HD auto tag_invoke
     , const FPack& fp
     , Preview& preview ) noexcept
     -> strf::usual_printer_input
-        < CharT, FPack, Preview
-        , strf::detail::fmt_separated_range_printer<CharT, FPack, It, Fmts...>
-        , strf::value_with_format<strf::separated_range_p<It, CharT>, Fmts ...> >
+        < CharT, strf::value_with_format<strf::separated_range_p<It, CharT>, Fmts ...>
+        , FPack, Preview
+        , strf::detail::fmt_separated_range_printer<CharT, FPack, It, Fmts...> >
 {
-    return {fp, preview, x};
+    return {x, fp, preview};
 }
 
 template < typename CharT, typename FPack, typename Preview
@@ -179,11 +176,10 @@ constexpr STRF_HD auto tag_invoke
     , const FPack& fp
     , Preview& preview ) noexcept
     -> strf::usual_printer_input
-        < CharT, FPack, Preview
-        , strf::detail::transformed_range_printer<CharT, FPack, It, UnaryOp>
-        , strf::transformed_range_p<It, UnaryOp> >
+        < CharT, strf::transformed_range_p<It, UnaryOp>, FPack, Preview
+        , strf::detail::transformed_range_printer<CharT, FPack, It, UnaryOp> >
 {
-    return {fp, preview, x};
+    return {x, fp, preview};
 }
 
 template < typename CharT, typename FPack, typename Preview
@@ -194,11 +190,10 @@ constexpr STRF_HD auto tag_invoke
     , const FPack& fp
     , Preview& preview ) noexcept
     -> strf::usual_printer_input
-        < CharT, FPack, Preview
-        , strf::detail::sep_transformed_range_printer<CharT, FPack, It, UnaryOp>
-        , strf::separated_transformed_range_p<It, CharT, UnaryOp> >
+        < CharT, strf::separated_transformed_range_p<It, CharT, UnaryOp>, FPack, Preview
+        , strf::detail::sep_transformed_range_printer<CharT, FPack, It, UnaryOp> >
 {
-    return {fp, preview, x};
+    return {x, fp, preview};
 }
 
 namespace detail {

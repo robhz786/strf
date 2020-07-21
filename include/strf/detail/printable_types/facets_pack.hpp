@@ -55,12 +55,10 @@ constexpr STRF_HD auto tag_invoke
     , const FPack& fp
     , Preview& preview ) noexcept
     -> strf::usual_printer_input
-        < CharT, FPack, Preview
-        , strf::detail::facets_pack_printer
-            < CharT, FPack, Preview, ChildFPack, Args... >
-        , strf::inner_pack_with_args<ChildFPack, Args...> >
+        < CharT, strf::inner_pack_with_args<ChildFPack, Args...>, FPack, Preview
+        , strf::detail::facets_pack_printer<CharT, FPack, Preview, ChildFPack, Args...> >
 {
-    return {fp, preview, x};
+    return {x, fp, preview};
 }
 
 namespace detail {

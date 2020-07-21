@@ -304,12 +304,11 @@ constexpr STRF_HD auto tag_invoke
     , const FPack& fp
     , Preview& preview ) noexcept
     -> strf::usual_printer_input
-        < CharT, FPack, Preview
-        , xxx::base64_printer<CharT>
-        , xxx::base64_input >
+        < CharT, xxx::base64_input, FPack, Preview
+        , xxx::base64_printer<CharT> >
 {
     static_assert(!Preview::width_required, "");
-    return {fp, preview, x};
+    return {x, fp, preview};
 }
 
 template <typename CharT, typename FPack, typename Preview>
@@ -319,12 +318,11 @@ constexpr STRF_HD auto tag_invoke
     , const FPack& fp
     , Preview& preview ) noexcept
     -> strf::usual_printer_input
-        < CharT, FPack, Preview
-        , xxx::base64_printer<CharT>
-        , xxx::base64_input_with_format >
+        < CharT, xxx::base64_input_with_format, FPack, Preview
+        , xxx::base64_printer<CharT> >
 {
     static_assert(!Preview::width_required, "");
-    return {fp, preview, x};
+    return {x, fp, preview};
 }
 
 } // namespace strf

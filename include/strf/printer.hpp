@@ -397,17 +397,32 @@ using printer_impl = typename strf::detail::printer_impl_helper
     < CharT, FPack, Preview, Arg >
     ::printer;
 
-template < typename CharT, typename FPack, typename Preview
-         , typename Printer, typename Arg >
+template <typename CharT, typename Arg, typename FPack, typename Preview, typename Printer>
 struct usual_printer_input
 {
+    usual_printer_input(const usual_printer_input&) = default;
+    usual_printer_input(usual_printer_input&&) = default;
+
+    template <typename... F, typename T>
+    usual_printer_input
+        ( strf::facets_pack<F...> fp_, Preview& preview_, const T& arg_ )
+            : arg(arg_), fp(fp_), preview(preview_)
+    {
+    }
+    template <typename... F, typename T>
+    usual_printer_input
+        ( const T& arg_ , strf::facets_pack<F...> fp_, Preview& preview_ )
+            : arg(arg_), fp(fp_), preview(preview_)
+    {
+    }
+
     using fpack_type = FPack;
     using preview_type = Preview;
     using printer_type = Printer;
 
+    Arg arg;
     FPack fp;
     Preview& preview;
-    Arg arg;
 };
 
 } // namespace strf

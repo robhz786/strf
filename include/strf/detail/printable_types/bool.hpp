@@ -26,9 +26,9 @@ constexpr STRF_HD auto tag_invoke
     , const FPack& fp
     , Preview& preview ) noexcept
     -> strf::usual_printer_input
-        < CharT, FPack, Preview, strf::detail::bool_printer<CharT>, bool>
+    < CharT, bool, FPack, Preview, strf::detail::bool_printer<CharT> >
 {
-    return {fp, preview, x};
+    return {x, fp, preview};
 }
 
 template <typename CharT, typename FPack, typename Preview>
@@ -38,11 +38,10 @@ constexpr STRF_HD auto tag_invoke
     , const FPack& fp
     , Preview& preview ) noexcept
     -> strf::usual_printer_input
-        < CharT, FPack, Preview
-        , strf::detail::fmt_bool_printer<CharT>
-        , strf::value_with_format<bool, strf::alignment_format> >
+        < CharT, strf::value_with_format<bool, strf::alignment_format>, FPack, Preview
+        , strf::detail::fmt_bool_printer<CharT> >
 {
-    return {fp, preview, x};
+    return {x, fp, preview};
 }
 
 constexpr STRF_HD auto tag_invoke(strf::fmt_tag, bool b) noexcept

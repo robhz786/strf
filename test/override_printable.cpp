@@ -48,9 +48,9 @@ struct my_bool_printing_override
     template <typename CharT, typename FPack, typename Preview>
     constexpr static STRF_HD auto make_printer_input
         (bool x, const FPack& fp, Preview& preview) noexcept
-        -> strf::usual_printer_input<CharT, FPack, Preview, my_bool_printer<CharT>, bool>
+        -> strf::usual_printer_input<CharT, bool, FPack, Preview, my_bool_printer<CharT>>
     {
-        return {fp, preview, x};
+        return {x, fp, preview};
     }
 };
 

@@ -63,10 +63,10 @@ template <typename CharT, typename FPack, typename Preview>
 constexpr STRF_HD auto tag_invoke
     ( strf::printer_input_tag<CharT>, char x, const FPack& fp, Preview& preview ) noexcept
     -> strf::usual_printer_input
-        < CharT, FPack, Preview, strf::detail::char_printer<CharT>, CharT >
+        < CharT, CharT, FPack, Preview, strf::detail::char_printer<CharT>>
 {
     static_assert( std::is_same<CharT, char>::value, "Character type mismatch.");
-    return {fp, preview, x};
+    return {x, fp, preview};
 }
 
 #if defined(__cpp_char8_t)
@@ -75,10 +75,10 @@ template <typename CharT, typename FPack, typename Preview>
 constexpr STRF_HD auto tag_invoke
     ( strf::printer_input_tag<CharT>, char8_t x, const FPack& fp, Preview& preview ) noexcept
     -> strf::usual_printer_input
-        < CharT, FPack, Preview, strf::detail::char_printer<CharT>, CharT >
+        < CharT, CharT, FPack, Preview, strf::detail::char_printer<CharT> >
 {
     static_assert( std::is_same<CharT, char8_t>::value, "Character type mismatch.");
-    return {fp, preview, x};
+    return {x, fp, preview};
 }
 
 #endif // defined(__cpp_char8_t)
@@ -87,30 +87,30 @@ template <typename CharT, typename FPack, typename Preview>
 constexpr STRF_HD auto tag_invoke
     ( strf::printer_input_tag<CharT>, char16_t x, const FPack& fp, Preview& preview ) noexcept
     -> strf::usual_printer_input
-        < CharT, FPack, Preview, strf::detail::char_printer<CharT>, CharT >
+        < CharT, CharT, FPack, Preview, strf::detail::char_printer<CharT> >
 {
     static_assert( std::is_same<CharT, char16_t>::value, "Character type mismatch.");
-    return {fp, preview, x};
+    return {x, fp, preview};
 }
 
 template <typename CharT, typename FPack, typename Preview>
 constexpr STRF_HD auto tag_invoke
     ( strf::printer_input_tag<CharT>, char32_t x, const FPack& fp, Preview& preview ) noexcept
     -> strf::usual_printer_input
-        < CharT, FPack, Preview, strf::detail::char_printer<CharT>, CharT >
+        < CharT, CharT, FPack, Preview, strf::detail::char_printer<CharT> >
 {
     static_assert( std::is_same<CharT, char32_t>::value, "Character type mismatch.");
-    return {fp, preview, x};
+    return {x, fp, preview};
 }
 
 template <typename CharT, typename FPack, typename Preview>
 constexpr STRF_HD auto tag_invoke
     ( strf::printer_input_tag<CharT>, wchar_t x, const FPack& fp, Preview& preview ) noexcept
     -> strf::usual_printer_input
-        < CharT, FPack, Preview, strf::detail::char_printer<CharT>, CharT >
+        < CharT, CharT, FPack, Preview, strf::detail::char_printer<CharT>>
 {
     static_assert( std::is_same<CharT, wchar_t>::value, "Character type mismatch.");
-    return {fp, preview, x};
+    return {x, fp, preview};
 }
 
 template <typename DestCharT, typename SrcCharT, typename FPack, typename Preview>
@@ -120,12 +120,11 @@ constexpr STRF_HD auto tag_invoke
     , const FPack& fp
     , Preview& preview ) noexcept
     -> strf::usual_printer_input
-        < DestCharT, FPack, Preview
-        , strf::detail::fmt_char_printer<DestCharT>
-        , strf::char_with_format<SrcCharT> >
+        < DestCharT, strf::char_with_format<SrcCharT>, FPack, Preview
+        , strf::detail::fmt_char_printer<DestCharT> >
 {
     static_assert( std::is_same<DestCharT, SrcCharT>::value, "Character type mismatch.");
-    return {fp, preview, x};
+    return {x, fp, preview};
 }
 
 namespace detail {
@@ -134,13 +133,14 @@ template <typename CharT>
 class char_printer: public strf::printer<CharT>
 {
 public:
-    template <typename FPack, typename Preview, typename... T>
+    template <typename... T>
     STRF_HD char_printer
-        ( const strf::usual_printer_input<CharT, FPack, Preview, T...>& input )
+        ( const strf::usual_printer_input<CharT, T...>& input )
         : ch_(static_cast<CharT>(input.arg))
     {
         input.preview.add_size(1);
-        STRF_IF_CONSTEXPR(Preview::width_required) {
+        using preview_type = typename strf::usual_printer_input<CharT, T...>::preview_type;
+        STRF_IF_CONSTEXPR(preview_type::width_required) {
             decltype(auto) wcalc = get_facet<strf::width_calculator_c, CharT>(input.fp);
             auto enc = get_facet<strf::char_encoding_c<CharT>, CharT>(input.fp);
             auto w = wcalc.char_width(enc, static_cast<CharT>(ch_));
