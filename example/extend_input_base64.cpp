@@ -297,32 +297,32 @@ xxx::base64_input_with_format tag_invoke(strf::fmt_tag, xxx::base64_input x)
     return xxx::base64_input_with_format{ x };
 }
 
-template <typename CharT, typename FPack, typename Preview>
+template <typename CharT, typename Preview, typename FPack>
 constexpr STRF_HD auto tag_invoke
     ( strf::printer_input_tag<CharT>
     , xxx::base64_input x
-    , const FPack& fp
-    , Preview& preview ) noexcept
+    , Preview& preview
+    , const FPack& fp ) noexcept
     -> strf::usual_printer_input
-        < CharT, xxx::base64_input, FPack, Preview
+        < CharT, xxx::base64_input, Preview, FPack
         , xxx::base64_printer<CharT> >
 {
     static_assert(!Preview::width_required, "");
-    return {x, fp, preview};
+    return {x, preview, fp};
 }
 
-template <typename CharT, typename FPack, typename Preview>
+template <typename CharT, typename Preview, typename FPack>
 constexpr STRF_HD auto tag_invoke
     ( strf::printer_input_tag<CharT>
     , xxx::base64_input_with_format x
-    , const FPack& fp
-    , Preview& preview ) noexcept
+    , Preview& preview
+    , const FPack& fp ) noexcept
     -> strf::usual_printer_input
-        < CharT, xxx::base64_input_with_format, FPack, Preview
+        < CharT, xxx::base64_input_with_format, Preview, FPack
         , xxx::base64_printer<CharT> >
 {
     static_assert(!Preview::width_required, "");
-    return {x, fp, preview};
+    return {x, preview, fp};
 }
 
 } // namespace strf

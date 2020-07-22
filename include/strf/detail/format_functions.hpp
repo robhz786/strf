@@ -574,6 +574,7 @@ constexpr STRF_HD auto conv(T&& value)
 {
     return strf::fmt(value).convert_encoding();
 }
+
 template <typename T, typename E>
     constexpr STRF_HD auto conv(T&& value, E&& enc)
     noexcept(noexcept(strf::fmt(value).convert_from_encoding(enc)))
@@ -589,6 +590,7 @@ constexpr STRF_HD auto sani(T&& value)
 {
     return strf::fmt(value).sanitize_encoding();
 }
+
 template <typename T, typename E>
     constexpr STRF_HD auto sani(T&& value, E&& enc)
     noexcept(noexcept(strf::fmt(value).sanitize_from_encoding(enc)))
@@ -620,7 +622,7 @@ constexpr STRF_HD auto left(T&& value, std::int16_t width)
 {
     return strf::fmt(value) < width;
 }
-    
+
 template <typename T>
 constexpr STRF_HD auto left(T&& value, std::int16_t width, char32_t fill)
     noexcept(noexcept(strf::fmt(value).fill(fill) < width))
@@ -636,6 +638,7 @@ constexpr STRF_HD auto center(T&& value, std::int16_t width)
 {
     return strf::fmt(value) ^ width;
 }
+
 template <typename T>
 constexpr STRF_HD auto center(T&& value, std::int16_t width, char32_t fill)
     noexcept(noexcept(strf::fmt(value).fill(fill) ^ width))
@@ -659,7 +662,7 @@ constexpr STRF_HD auto split(T&& value, std::int16_t width, char32_t fill)
 {
     return strf::fmt(value).fill(fill) % width;
 }
-       
+
 } // inline namespace format_functions
 
 #else  // defined (STRF_NO_GLOBAL_CONSTEXPR_VARIABLE)

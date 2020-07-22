@@ -26,12 +26,12 @@ constexpr xxx::ipv4address_with_format tag_invoke(strf::fmt_tag, xxx::ipv4addres
     return xxx::ipv4address_with_format{ x };
 }
 
-template <typename CharT, typename FPack, typename Preview>
+template <typename CharT, typename Preview, typename FPack>
 constexpr auto tag_invoke
     ( strf::printer_input_tag<CharT>
     , xxx::ipv4address_with_format arg
-    , const FPack& fp
-    , Preview& preview ) noexcept
+    , Preview& preview
+    , const FPack& fp ) noexcept
 {
     return strf::make_default_printer_input<CharT>
         ( strf::join
@@ -40,15 +40,15 @@ constexpr auto tag_invoke
             , arg.value().bytes[2], CharT{'.'}
             , arg.value().bytes[3] )
             .set(arg.get_alignment_format_data())
-        , fp, preview );
+        , preview, fp );
 }
 
-template <typename CharT, typename FPack, typename Preview>
+template <typename CharT, typename Preview, typename FPack>
 constexpr auto tag_invoke
     ( strf::printer_input_tag<CharT>
     , xxx::ipv4address arg
-    , const FPack& fp
-    , Preview& preview ) noexcept
+    , Preview& preview
+    , const FPack& fp ) noexcept
 {
     return strf::make_default_printer_input<CharT>
         ( strf::join
@@ -56,7 +56,7 @@ constexpr auto tag_invoke
             , arg.bytes[1], CharT{'.'}
             , arg.bytes[2], CharT{'.'}
             , arg.bytes[3] )
-        , fp, preview );
+        , preview, fp );
 }
 
 } // namespace strf

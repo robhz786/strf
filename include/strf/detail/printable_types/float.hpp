@@ -427,16 +427,16 @@ template <typename> class double_printer;
 template <typename> class punct_double_printer;
 template <typename> class hex_double_printer;
 
-template < typename CharT, typename Preview, typename FloatT>
+template < typename CharT, typename FloatT, typename Preview>
 struct fast_double_printer_input
 {
     using printer_type = strf::detail::fast_double_printer<CharT>;
 
     template <typename FPack>
-    STRF_HD fast_double_printer_input(const FPack& fp, Preview& preview_, FloatT arg_)
+    STRF_HD fast_double_printer_input(FloatT arg_, Preview& preview_, const FPack& fp_)
         : preview(preview_)
         , value(arg_)
-        , lcase(strf::get_facet<strf::lettercase_c, float>(fp))
+        , lcase(strf::get_facet<strf::lettercase_c, float>(fp_))
     {
     }
 
@@ -449,81 +449,72 @@ struct fast_double_printer_input
 };
 
 
-template <typename CharT, typename FPack, typename Preview, typename FloatT>
-struct fast_punct_double_printer_input
-{
-    using printer_type = strf::detail::fast_punct_double_printer<CharT>;
+template <typename CharT, typename FloatT, typename Preview, typename FPack>
+using fast_punct_double_printer_input =
+    strf::usual_printer_input< CharT, FloatT, Preview, FPack
+                             , strf::detail::fast_punct_double_printer<CharT> >;
 
-    FPack fp;
-    Preview& preview;
-    FloatT value;
-};
-
-template < typename CharT, typename FPack, typename Preview, typename FloatT
-         , strf::float_notation Notation, bool HasAlignment >
-struct fmt_double_printer_input
-{
-    using printer_type = std::conditional_t
-        < Notation == float_notation::hex
-        , strf::detail::hex_double_printer<CharT>
+template < typename CharT, typename FloatT, strf::float_notation Notation
+         , bool HasAlignment, typename Preview, typename FPack >
+using fmt_double_printer_input =
+    strf::usual_printer_input
+        < CharT, strf::float_with_format<FloatT, Notation, HasAlignment>, Preview, FPack
         , std::conditional_t
-            < strf::detail::has_punct<CharT, FPack, FloatT, 10>
-            , strf::detail::punct_double_printer<CharT>
-            , strf::detail::double_printer<CharT> > >;
-
-    FPack fp;
-    Preview& preview;
-    strf::float_with_format<FloatT, Notation, HasAlignment> vwf;
-};
+            < Notation == float_notation::hex
+            , strf::detail::hex_double_printer<CharT>
+            , std::conditional_t
+                < strf::detail::has_punct<CharT, FPack, FloatT, 10>
+                , strf::detail::punct_double_printer<CharT>
+                , strf::detail::double_printer<CharT> > > >;
 
 } // namespace detail
 
-template <typename CharT, typename FPack, typename Preview>
+template <typename CharT, typename Preview, typename FPack>
 constexpr STRF_HD auto tag_invoke
     ( strf::printer_input_tag<CharT>
     , float x
-    , const FPack& fp
-    , Preview& preview ) noexcept
+    , Preview& preview
+    , const FPack& fp ) noexcept
     -> std::conditional_t
         < strf::detail::has_punct<CharT, FPack, float, 10>
-        , strf::detail::fast_punct_double_printer_input<CharT, FPack, Preview, float>
-        , strf::detail::fast_double_printer_input<CharT, Preview, float> >
+        , strf::detail::fast_punct_double_printer_input<CharT, float, Preview, FPack>
+        , strf::detail::fast_double_printer_input<CharT, float, Preview> >
 {
-    return {fp, preview, x};
+    return {x, preview, fp};
 }
 
-template <typename CharT, typename FPack, typename Preview>
+template <typename CharT, typename Preview, typename FPack>
 constexpr STRF_HD auto tag_invoke
     ( strf::printer_input_tag<CharT>
     , double x
-    , const FPack& fp
-    , Preview& preview ) noexcept
+    , Preview& preview
+    , const FPack& fp ) noexcept
     -> std::conditional_t
         < strf::detail::has_punct<CharT, FPack, double, 10>
-        , strf::detail::fast_punct_double_printer_input<CharT, FPack, Preview, double>
-        , strf::detail::fast_double_printer_input<CharT, Preview, double> >
+        , strf::detail::fast_punct_double_printer_input<CharT, double, Preview, FPack>
+        , strf::detail::fast_double_printer_input<CharT, double, Preview> >
 {
-    return {fp, preview, x};
+    return {x, preview, fp};
 }
 
-template <typename CharT, typename FPack, typename Preview>
+template <typename CharT, typename Preview, typename FPack>
 void tag_invoke
     ( strf::printer_input_tag<CharT>
     , long double x
-    , const FPack& fp
-    , Preview& preview ) noexcept = delete;
+    , Preview& preview
+    , const FPack& fp ) noexcept = delete;
 
-template < typename CharT, typename FPack, typename Preview
-         , typename FloatT, strf::float_notation Notation, bool HasAlignment >
+template < typename CharT, typename FloatT, strf::float_notation Notation
+         , bool HasAlignment, typename Preview, typename FPack >
 constexpr STRF_HD auto tag_invoke
     ( strf::printer_input_tag<CharT>
     , strf::float_with_format<FloatT, Notation, HasAlignment> x
-    , const FPack& fp
-    , Preview& preview ) noexcept
+    , Preview& preview
+    , const FPack& fp ) noexcept
     -> strf::detail::fmt_double_printer_input
-        < CharT, FPack, Preview, FloatT, Notation, HasAlignment >
+        < CharT, FloatT, Notation, HasAlignment, Preview, FPack >
 {
-    return {fp, preview, x};
+    return {x, preview, fp};
 }
 
 namespace detail {
@@ -1196,17 +1187,17 @@ class punct_double_printer: public strf::printer<CharT>
 {
 public:
 
-    template < typename FPack, typename Preview, typename FloatT
-             , strf::float_notation Notation >
+    template < typename Preview, strf::float_notation Notation
+             , typename FPack, typename FloatT >
     STRF_HD punct_double_printer
         ( const strf::detail::fmt_double_printer_input
-            < CharT, FPack, Preview, FloatT, Notation, false >& input )
+            < CharT, FloatT, Notation, false, Preview, FPack >& input )
         : lettercase_(strf::get_facet<strf::lettercase_c, FloatT>(input.fp))
     {
         static_assert(Notation != strf::float_notation::hex, "");
 
-        const auto fdata = input.vwf.get_float_format_data();
-        data_ = strf::detail::init_double_printer_data<Notation>(input.vwf.value(), fdata);
+        const auto fdata = input.arg.get_float_format_data();
+        data_ = strf::detail::init_double_printer_data<Notation>(input.arg.value(), fdata);
         auto enc = get_facet<strf::char_encoding_c<CharT>, FloatT>(input.fp);
         auto punct = strf::get_facet<strf::numpunct_c<10>, FloatT>(input.fp);
         grouping_ = punct.grouping();
@@ -1221,25 +1212,25 @@ public:
         }
     }
 
-    template < typename FPack, typename Preview, typename FloatT
-             , strf::float_notation Notation >
+    template < typename Preview, strf::float_notation Notation
+             , typename FPack, typename FloatT >
     STRF_HD punct_double_printer
         ( const strf::detail::fmt_double_printer_input
-            < CharT, FPack, Preview, FloatT, Notation, true >& input )
-        : fillchar_(input.vwf.fill())
+            < CharT, FloatT, Notation, true, Preview, FPack >& input )
+        : fillchar_(input.arg.fill())
         , lettercase_(strf::get_facet<strf::lettercase_c, FloatT>(input.fp))
     {
         static_assert(Notation != strf::float_notation::hex, "");
 
-        const auto fdata = input.vwf.get_float_format_data();
-        data_ = strf::detail::init_double_printer_data<Notation>(input.vwf.value(), fdata);
+        const auto fdata = input.arg.get_float_format_data();
+        data_ = strf::detail::init_double_printer_data<Notation>(input.arg.value(), fdata);
         auto enc = get_facet<strf::char_encoding_c<CharT>, FloatT>(input.fp);
         auto punct = strf::get_facet<strf::numpunct_c<10>, FloatT>(input.fp);
         grouping_ = punct.grouping();
         decimal_point_ = punct.decimal_point();
         thousands_sep_ = punct.thousands_sep();
         init_(enc, Notation == float_notation::general, fdata.showpoint);
-        init_(input.preview, input.vwf.width(), input.vwf.alignment(), enc);
+        init_(input.preview, input.arg.width(), input.arg.alignment(), enc);
     }
 
 
@@ -1545,13 +1536,13 @@ class double_printer final: public strf::printer<CharT>
 {
 public:
 
-    template < typename FPack, typename Preview, typename FloatT
-             , strf::float_notation Notation >
+    template < typename FloatT, strf::float_notation Notation
+             , typename Preview, typename FPack >
     STRF_HD double_printer
         ( const strf::detail::fmt_double_printer_input
-            < CharT, FPack, Preview, FloatT, Notation, false >& input )
+            < CharT, FloatT, Notation, false, Preview, FPack >& input )
         : data_( strf::detail::init_double_printer_data<Notation>
-                    ( input.vwf.value(), input.vwf.get_float_format_data() ) )
+                    ( input.arg.value(), input.arg.get_float_format_data() ) )
         , lettercase_(strf::get_facet<strf::lettercase_c, FloatT>(input.fp))
     {
         static_assert(Notation != strf::float_notation::hex, "");
@@ -1561,20 +1552,20 @@ public:
         input.preview.add_size(content_width);
     }
 
-    template < typename FPack, typename Preview, typename FloatT
-             , strf::float_notation Notation  >
+    template < typename FloatT, strf::float_notation Notation
+             , typename Preview, typename FPack >
     STRF_HD double_printer
         ( const strf::detail::fmt_double_printer_input
-            < CharT, FPack, Preview, FloatT, Notation, true >& input )
+            < CharT, FloatT, Notation, true, Preview, FPack >& input )
         : data_( strf::detail::init_double_printer_data<Notation>
-                    ( input.vwf.value(), input.vwf.get_float_format_data() ) )
-        , fillchar_(input.vwf.fill())
+                    ( input.arg.value(), input.arg.get_float_format_data() ) )
+        , fillchar_(input.arg.fill())
         , lettercase_(strf::get_facet<strf::lettercase_c, FloatT>(input.fp))
     {
         static_assert(Notation != strf::float_notation::hex, "");
 
         auto enc = strf::get_facet<strf::char_encoding_c<CharT>, FloatT>(input.fp);
-        init_(input.preview, input.vwf.width(), input.vwf.alignment(), enc);
+        init_(input.preview, input.arg.width(), input.arg.alignment(), enc);
     }
 
     STRF_HD void print_to(strf::basic_outbuff<CharT>&) const override;
@@ -1793,9 +1784,9 @@ class fast_double_printer: public strf::printer<CharT>
 {
 public:
 
-    template <typename Preview, typename FloatT>
+    template <typename FloatT, typename Preview>
     STRF_HD fast_double_printer
-        ( strf::detail::fast_double_printer_input<CharT, Preview, FloatT> input) noexcept
+        ( strf::detail::fast_double_printer_input<CharT, FloatT, Preview> input) noexcept
         : fast_double_printer(input.value, input.lcase)
     {
         std::size_t s = 0;
@@ -1978,11 +1969,11 @@ class fast_punct_double_printer: public strf::printer<CharT>
 {
 public:
 
-    template <typename FPack, typename Preview, typename FloatT>
+    template <typename FloatT, typename Preview, typename FPack>
     STRF_HD fast_punct_double_printer
         ( const strf::detail::fast_punct_double_printer_input
-              < CharT, FPack, Preview, FloatT >& input )
-        : value_(decode(input.value))
+              < CharT, FloatT, Preview, FPack >& input )
+        : value_(decode(input.arg))
         , m10_digcount_(strf::detail::count_digits<10>(value_.m10))
         , sep_count_(0)
         , lettercase_(strf::get_facet<strf::lettercase_c, FloatT>(input.fp))
@@ -2330,13 +2321,13 @@ class hex_double_printer: public strf::printer<CharT>
 {
 public:
 
-    template <typename FPack, typename Preview, typename FloatT>
+    template <typename FloatT, typename Preview, typename FPack>
     hex_double_printer
         ( const strf::detail::fmt_double_printer_input
-            < CharT, FPack, Preview, FloatT, strf::float_notation::hex, false >&
+            < CharT, FloatT, strf::float_notation::hex, false, Preview, FPack >&
             input )
         : data_( strf::detail::init_hex_double_printer_data
-                   ( input.vwf.get_float_format_data(), input.vwf.value() ) )
+                   ( input.arg.get_float_format_data(), input.arg.value() ) )
         , lettercase_(strf::get_facet<strf::lettercase_c, FloatT>(input.fp))
     {
         if (data_.exponent != 1024) {
@@ -2361,13 +2352,13 @@ public:
         }
     }
 
-    template <typename FPack, typename Preview, typename FloatT>
+    template <typename FloatT, typename Preview, typename FPack>
     hex_double_printer
         ( const strf::detail::fmt_double_printer_input
-            < CharT, FPack, Preview, FloatT, strf::float_notation::hex, true >&
+            < CharT, FloatT, strf::float_notation::hex, true, Preview, FPack >&
             input )
         : data_( strf::detail::init_hex_double_printer_data
-                   ( input.vwf.get_float_format_data(), input.vwf.value() ) )
+                   ( input.arg.get_float_format_data(), input.arg.value() ) )
         , lettercase_(strf::get_facet<strf::lettercase_c, FloatT>(input.fp))
     {
         int content_width_without_point = 0;
@@ -2382,12 +2373,12 @@ public:
             content_width_without_point = 3 + data_.showsign;
         }
         int content_width = content_width_without_point + data_.showpoint;
-        auto fillcount = init_fills_(content_width, input.vwf.get_alignment_format_data());
+        auto fillcount = init_fills_(content_width, input.arg.get_alignment_format_data());
         input.preview.checked_subtract_width(content_width + fillcount);
         STRF_IF_CONSTEXPR (Preview::size_required) {
             input.preview.add_size(content_width_without_point);
             input.preview.add_size(pointsize_);
-            input.preview.add_size(fillcount * enc.encoded_char_size(input.vwf.fill()));
+            input.preview.add_size(fillcount * enc.encoded_char_size(input.arg.fill()));
         }
     }
 

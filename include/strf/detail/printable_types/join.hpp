@@ -119,33 +119,33 @@ struct aligned_join_t
 
 namespace detail {
 
-template<typename CharT, typename FPack, typename Preview, typename ... Args>
+template<typename CharT, typename Preview, typename FPack, typename ... Args>
 class join_printer;
 
-template<typename CharT, typename FPack, typename Preview, typename ... Args>
+template<typename CharT, typename Preview, typename FPack, typename ... Args>
 class aligned_join_printer;
 
-template< typename CharT, typename FPack, typename Preview
+template< typename CharT, typename Preview, typename FPack
         , bool HasSplitPos, bool HasAlignment, typename ... Args>
 class join_printer_input
 {
 public:
     using printer_type = std::conditional_t
         < HasAlignment
-        , strf::detail::aligned_join_printer<CharT, FPack, Preview, Args ...>
-        , strf::detail::join_printer<CharT, FPack, Preview, Args ...> >;
+        , strf::detail::aligned_join_printer<CharT, Preview, FPack, Args ...>
+        , strf::detail::join_printer<CharT, Preview, FPack, Args ...> >;
 
-    FPack fp;
-    Preview& preview;
     strf::value_with_format
         < strf::detail::simple_tuple<Args...>
         , strf::split_pos_format<HasSplitPos>
         , strf::alignment_format_q<HasAlignment> > arg;
+    Preview& preview;
+    FPack fp;
 };
 
 } // namespace detail
 
-template< typename CharT, typename FPack, typename Preview
+template< typename CharT, typename Preview, typename FPack
         , bool HasSplitPos, bool HasAlignment, typename ... Args>
 constexpr STRF_HD auto tag_invoke
     ( strf::printer_input_tag<CharT>
@@ -153,12 +153,12 @@ constexpr STRF_HD auto tag_invoke
         < strf::detail::simple_tuple<Args...>
         , strf::split_pos_format<HasSplitPos>
         , strf::alignment_format_q<HasAlignment> > x
-    , const FPack& fp
-    , Preview& preview ) noexcept
+    , Preview& preview
+    , const FPack& fp ) noexcept
     -> strf::detail::join_printer_input
-        < CharT, FPack, Preview, HasSplitPos, HasAlignment, Args... >
+        < CharT, Preview, FPack, HasSplitPos, HasAlignment, Args... >
 {
-    return {fp, preview, x};
+    return {x, preview, fp};
 }
 
 namespace detail {
@@ -182,16 +182,16 @@ STRF_HD void print_split
     , unsigned fillcount
     , char32_t fillchar
     , std::ptrdiff_t split_pos
-    , const Printer& p
+    , const Printer& first_printer
     , const Printers& ... printers )
 {
     if (split_pos > 0) {
-        p.print_to(ob);
+        first_printer.print_to(ob);
         print_split
             ( ob, encode_fill, fillcount, fillchar, split_pos - 1, printers... );
     } else {
         encode_fill(ob, fillcount, fillchar);
-        strf::detail::write_args(ob, p, printers...);
+        strf::detail::write_args(ob, first_printer, printers...);
     }
 }
 
@@ -217,13 +217,13 @@ class aligned_join_printer_impl: public printer<CharT>
 
 public:
 
-    template < typename FPack, strf::preview_size ReqSize, bool HasSplitPos
+    template < strf::preview_size ReqSize, bool HasSplitPos, typename FPack
              , typename ... Args >
     STRF_HD aligned_join_printer_impl
         ( const strf::detail::join_printer_input
               < CharT
-              , FPack
               , strf::print_preview<ReqSize, strf::preview_width::no>
+              , FPack
               , HasSplitPos
               , true, Args ...>& input )
         : split_pos_(input.arg.split_pos())
@@ -231,14 +231,13 @@ public:
     {
         auto enc = get_facet_<strf::char_encoding_c<CharT>>(input.fp);
         encode_fill_func_ = enc.encode_fill_func();
-        strf::print_preview<ReqSize, strf::preview_width::yes> p { afmt_.width };
-        new (printers_ptr_()) printers_tuple_
-            { input.fp, p, input.arg.value() };
-        if (p.remaining_width() > 0) {
-            fillcount_ = p.remaining_width().round();
+        strf::print_preview<ReqSize, strf::preview_width::yes> preview { afmt_.width };
+        new (printers_ptr_()) printers_tuple_{input.arg.value(), preview, input.fp};
+        if (preview.remaining_width() > 0) {
+            fillcount_ = preview.remaining_width().round();
         }
         STRF_IF_CONSTEXPR (static_cast<bool>(ReqSize)) {
-            input.preview.add_size(p.get_size());
+            input.preview.add_size(preview.get_size());
             if (fillcount_ > 0) {
                 auto fcharsize = enc.encoded_char_size(afmt_.fill);
                 input.preview.add_size(fillcount_ * fcharsize);
@@ -246,13 +245,13 @@ public:
         }
     }
 
-    template < typename FPack, strf::preview_size ReqSize, bool HasSplitPos
+    template < strf::preview_size ReqSize, bool HasSplitPos, typename FPack
              , typename ... Args >
     STRF_HD aligned_join_printer_impl
         ( const strf::detail::join_printer_input
               < CharT
-              , FPack
               , strf::print_preview<ReqSize, strf::preview_width::yes>
+              , FPack
               , HasSplitPos
               , true, Args ...>& input )
         : split_pos_(input.arg.split_pos())
@@ -269,17 +268,16 @@ public:
             wmax = input.preview.remaining_width();
             diff = input.preview.remaining_width() - afmt_.width;
         }
-        strf::print_preview<ReqSize, strf::preview_width::yes> p{wmax};
+        strf::print_preview<ReqSize, strf::preview_width::yes> preview{wmax};
         // to-do: what if the line below throws ?
-        new (printers_ptr_()) printers_tuple_
-            { input.fp, p, input.arg.value() };
-        if (p.remaining_width() > diff) {
-            fillcount_ = (p.remaining_width() - diff).round();
+        new (printers_ptr_()) printers_tuple_{input.arg.value(), preview, input.fp};
+        if (preview.remaining_width() > diff) {
+            fillcount_ = (preview.remaining_width() - diff).round();
         }
-        width_t width = fillcount_ + wmax - p.remaining_width();
+        width_t width = fillcount_ + wmax - preview.remaining_width();
         input.preview.subtract_width(width);
         STRF_IF_CONSTEXPR (static_cast<bool>(ReqSize)) {
-            input.preview.add_size(p.get_size());
+            input.preview.add_size(preview.get_size());
             if (fillcount_ > 0) {
                 auto fcharsize = enc.encoded_char_size(afmt_.fill);
                 input.preview.add_size( fillcount_ * fcharsize);
@@ -375,30 +373,29 @@ STRF_HD void aligned_join_printer_impl<CharT, Printers...>::print_split_
         ( printers_(), ob, encode_fill_func_, fillcount_, afmt_.fill, split_pos_ );
 }
 
-template<typename CharT, typename FPack, typename Preview, typename ... Args>
+template<typename CharT, typename Preview, typename FPack, typename ... Args>
 using aligned_join_printer_impl_of = strf::detail::aligned_join_printer_impl
     < CharT
     , strf::printer_impl
-        < CharT
-        , FPack
+        < CharT, Args
         , strf::print_preview
             < static_cast<strf::preview_size>(Preview::size_required)
             , strf::preview_width::yes >
-        , Args >... >;
+        , FPack > ... >;
 
-template<typename CharT, typename FPack, typename Preview, typename ... Args>
+template<typename CharT, typename Preview, typename FPack, typename ... Args>
 class aligned_join_printer
     : public strf::detail::aligned_join_printer_impl_of
-        < CharT, FPack, Preview, Args... >
+        < CharT, Preview, FPack, Args... >
 {
 public:
 
     template <typename FPack2, bool HasSplitPos>
     constexpr STRF_HD aligned_join_printer
         ( const strf::detail::join_printer_input
-            < CharT, FPack2, Preview, HasSplitPos, true, Args... >& input )
+            < CharT, Preview, FPack2, HasSplitPos, true, Args... >& input )
         : strf::detail::aligned_join_printer_impl_of
-            < CharT, FPack, Preview, Args... > (input)
+            < CharT, Preview, FPack, Args... > (input)
     {
     }
 
@@ -411,12 +408,12 @@ template<typename CharT, typename ... Printers>
 class join_printer_impl: public printer<CharT> {
 public:
 
-    template<typename FPack, typename Preview, typename ... Args>
+    template<typename Preview, typename FPack, typename ... Args>
     STRF_HD join_printer_impl
-        ( const FPack& fp
+        ( const strf::detail::simple_tuple<Args...>& args
         , Preview& preview
-        , const strf::detail::simple_tuple<Args...>& args )
-        : printers_{fp, preview, args}
+        , const FPack& fp )
+        : printers_{args, preview, fp}
     {
     }
 
@@ -434,20 +431,20 @@ private:
     strf::detail::printers_tuple<CharT, Printers...> printers_;
 };
 
-template <typename CharT, typename FPack, typename Preview, typename ... Args>
+template <typename CharT, typename Preview, typename FPack, typename ... Args>
 class join_printer
     : public strf::detail::join_printer_impl
-        < CharT, strf::printer_impl<CharT, FPack, Preview, Args> ... >
+        < CharT, strf::printer_impl<CharT, Args, Preview, FPack> ... >
 {
 public:
 
     template <typename FPack2, bool HasSplitPos>
     STRF_HD join_printer
         ( const strf::detail::join_printer_input
-              < CharT, FPack2, Preview, HasSplitPos, false, Args... >& input )
+              < CharT, Preview, FPack2, HasSplitPos, false, Args... >& input )
         : strf::detail::join_printer_impl
-            < CharT, strf::printer_impl<CharT, FPack, Preview, Args>... >
-            ( input.fp, input.preview, input.arg.value() )
+            < CharT, strf::printer_impl<CharT, Args, Preview, FPack>... >
+            ( input.arg.value(), input.preview, input.fp )
     {
     }
 

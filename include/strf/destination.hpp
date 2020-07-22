@@ -27,9 +27,7 @@ namespace detail {
 struct destination_tag {};
 
 template < template <typename, typename> class DestinationTmpl
-         , class OutbuffCreator
-         , class FPack
-         , class PreviewType >
+         , class OutbuffCreator, class Preview, class FPack >
 class destination_common
 {
     using destination_type_ = DestinationTmpl<OutbuffCreator, FPack>;
@@ -37,7 +35,7 @@ class destination_common
     using char_type_ = typename OutbuffCreator::char_type;
 
     template <typename Arg>
-    using printer_ = strf::printer_impl<char_type_, FPack, PreviewType, Arg>;
+    using printer_ = strf::printer_impl<char_type_, Arg, Preview, FPack>;
 
 public:
 
@@ -131,13 +129,13 @@ public:
     decltype(auto) STRF_HD operator()(const Args& ... args) const &
     {
         const auto& self = static_cast<const destination_type_&>(*this);
-        PreviewType preview;
+        Preview preview;
         return self.write_
             ( preview
             , as_printer_cref_
               ( printer_<Args>
                 ( strf::make_printer_input<char_type_>
-                  ( args, self.fpack_, preview ) ) )... );
+                  ( args, preview, self.fpack_ ) ) )... );
     }
 
 #if defined(STRF_HAS_STD_STRING_VIEW)
@@ -191,7 +189,7 @@ private:
         , const Args& ... args) const &
     {
         constexpr std::size_t args_count = sizeof...(args);
-        PreviewType preview_arr[args_count ? args_count : 1];
+        Preview preview_arr[args_count ? args_count : 1];
         const auto& fpack = static_cast<const destination_type_&>(*this).fpack_;
         (void)fpack;
         return tr_write_3_
@@ -201,10 +199,10 @@ private:
             , { as_printer_cptr_
                 ( printer_<Args>
                   ( strf::make_printer_input<char_type_>
-                    ( args, fpack, preview_arr[I] ) ) )... } );
+                    ( args, preview_arr[I], fpack ) ) )... } );
     }
 
-    template < typename Preview, typename ... Args >
+    template <typename ... Args>
     decltype(auto) STRF_HD tr_write_3_
         ( const char_type_* str
         , const char_type_* str_end
@@ -220,7 +218,7 @@ private:
         decltype(auto) err_hdl = strf::get_facet<caterr, void>(self.fpack_);
         using err_hdl_type = std::remove_cv_t<std::remove_reference_t<decltype(err_hdl)>>;
 
-        PreviewType preview;
+        Preview preview;
         strf::detail::tr_string_printer<decltype(enc), err_hdl_type>
             tr_printer(preview, preview_arr, args, str, str_end, enc, err_hdl);
 
@@ -247,14 +245,14 @@ class destination_no_reserve
     : private strf::detail::destination_common
         < strf::destination_no_reserve
         , OutbuffCreator
-        , FPack
-        , strf::no_print_preview >
+        , strf::no_print_preview
+        , FPack >
 {
     using common_ = strf::detail::destination_common
         < strf::destination_no_reserve
         , OutbuffCreator
-        , FPack
-        , strf::no_print_preview >;
+        , strf::no_print_preview
+        , FPack >;
 
     template <template <typename, typename> class, class, class, class>
     friend class strf::detail::destination_common;
@@ -364,14 +362,14 @@ class destination_with_given_size
     : public strf::detail::destination_common
         < strf::destination_with_given_size
         , OutbuffCreator
-        , FPack
-        , strf::no_print_preview >
+        , strf::no_print_preview
+        , FPack >
 {
     using common_ = strf::detail::destination_common
         < strf::destination_with_given_size
         , OutbuffCreator
-        , FPack
-        , strf::no_print_preview >;
+        , strf::no_print_preview
+        , FPack >;
 
     template < template <typename, typename> class, class,class, class>
     friend class strf::detail::destination_common;
@@ -482,14 +480,14 @@ class destination_calc_size
     : public strf::detail::destination_common
         < strf::destination_calc_size
         , OutbuffCreator
-        , FPack
-        , strf::print_preview<strf::preview_size::yes, strf::preview_width::no> >
+        , strf::print_preview<strf::preview_size::yes, strf::preview_width::no>
+        , FPack >
 {
     using common_ = strf::detail::destination_common
         < strf::destination_calc_size
         , OutbuffCreator
-        , FPack
-        , strf::print_preview<strf::preview_size::yes, strf::preview_width::no> >;
+        , strf::print_preview<strf::preview_size::yes, strf::preview_width::no>
+        , FPack >;
 
     template < template <typename, typename> class, class, class, class>
     friend class strf::detail::destination_common;

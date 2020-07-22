@@ -116,14 +116,14 @@ public:
 
     static constexpr std::size_t size = sizeof...(Printers);
 
-    template < typename FPack, typename Preview, typename ... Args >
+    template < typename Preview, typename FPack, typename ... Args >
     STRF_HD printers_tuple_impl
-        ( const FPack& fp
+        ( const strf::detail::simple_tuple<Args...>& args
         , Preview& preview
-        , const strf::detail::simple_tuple<Args...>& args )
+        , const FPack& fp )
         : indexed_printer<I, Printers>
             ( strf::make_printer_input<CharT>
-                ( args.template get<I>(), fp, preview ) ) ...
+                ( args.template get<I>(), preview, fp ) ) ...
     {
     }
 
@@ -150,19 +150,19 @@ using printers_tuple = printers_tuple_impl
         , std::make_index_sequence<sizeof...(Printers)>
         , Printers... >;
 
-template < typename CharT, typename FPack, typename Preview
+template < typename CharT, typename Preview, typename FPack
          , typename ISeq, typename ... Args >
 class printers_tuple_alias
 {
 public:
     using type = printers_tuple_impl
-        <CharT, ISeq, strf::printer_impl<CharT, FPack, Preview, Args> ...>;
+        <CharT, ISeq, strf::printer_impl<CharT, Args, Preview, FPack> ...>;
 };
 
-template < typename CharT, typename FPack, typename Preview, typename ... Args >
+template < typename CharT, typename Preview, typename FPack, typename ... Args >
 using printers_tuple_from_args
 = typename printers_tuple_alias
-    < CharT, FPack, Preview, std::make_index_sequence<sizeof...(Args)>, Args ...>
+    < CharT, Preview, FPack, std::make_index_sequence<sizeof...(Args)>, Args ...>
     :: type;
 
 } // namespace detail

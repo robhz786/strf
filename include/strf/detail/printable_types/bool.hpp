@@ -19,29 +19,29 @@ template <typename CharT> class fmt_bool_printer;
 
 } // namespace detail
 
-template <typename CharT, typename FPack, typename Preview>
+template <typename CharT, typename Preview, typename FPack>
 constexpr STRF_HD auto tag_invoke
     ( strf::printer_input_tag<CharT>
     , bool x
-    , const FPack& fp
-    , Preview& preview ) noexcept
+    , Preview& preview
+    , const FPack& fp ) noexcept
     -> strf::usual_printer_input
-    < CharT, bool, FPack, Preview, strf::detail::bool_printer<CharT> >
+    < CharT, bool, Preview, FPack, strf::detail::bool_printer<CharT> >
 {
-    return {x, fp, preview};
+    return {x, preview, fp};
 }
 
-template <typename CharT, typename FPack, typename Preview>
+template <typename CharT, typename Preview, typename FPack>
 constexpr STRF_HD auto tag_invoke
     ( strf::printer_input_tag<CharT>
     , strf::value_with_format<bool, strf::alignment_format> x
-    , const FPack& fp
-    , Preview& preview ) noexcept
+    , Preview& preview
+    , const FPack& fp ) noexcept
     -> strf::usual_printer_input
-        < CharT, strf::value_with_format<bool, strf::alignment_format>, FPack, Preview
+        < CharT, strf::value_with_format<bool, strf::alignment_format>, Preview, FPack
         , strf::detail::fmt_bool_printer<CharT> >
 {
-    return {x, fp, preview};
+    return {x, preview, fp};
 }
 
 constexpr STRF_HD auto tag_invoke(strf::fmt_tag, bool b) noexcept

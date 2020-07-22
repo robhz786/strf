@@ -45,12 +45,12 @@ struct my_bool_printing_override
 {
     using category = strf::printing_c;
 
-    template <typename CharT, typename FPack, typename Preview>
+    template <typename CharT, typename Preview, typename FPack>
     constexpr static STRF_HD auto make_printer_input
-        (bool x, const FPack& fp, Preview& preview) noexcept
-        -> strf::usual_printer_input<CharT, bool, FPack, Preview, my_bool_printer<CharT>>
+        (bool x, Preview& preview, const FPack& fp) noexcept
+        -> strf::usual_printer_input<CharT, bool, Preview, FPack, my_bool_printer<CharT>>
     {
-        return {x, fp, preview};
+        return {x, preview, fp};
     }
 };
 

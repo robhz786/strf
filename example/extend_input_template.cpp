@@ -15,14 +15,14 @@ struct base {
 
 namespace strf {
 
-template <typename CharT, typename T, typename FPack, typename Preview>
+template <typename CharT, typename T, typename Preview, typename FPack>
 inline auto tag_invoke
     ( strf::printer_input_tag<CharT>
     , const xxx::base<T>& x
-    , const FPack& fp
-    , Preview& preview ) noexcept
+    , Preview& preview
+    , const FPack& fp ) noexcept
 {
-    return strf::make_default_printer_input<CharT>(x.value, fp, preview);
+    return strf::make_default_printer_input<CharT>(x.value, preview, fp);
 }
 
 } // namespace strf
