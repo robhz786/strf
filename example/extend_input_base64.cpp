@@ -8,93 +8,79 @@
 
 namespace xxx {
 
-struct base64_facet_c;
+    struct base64_facet_c;
 
-struct base64_facet
-{
-    using category = base64_facet_c;
-
-    unsigned line_length = 64;
-    char eol[2] = {'\r', '\n'};
-    char char62 = '+';
-    char char63 = '/';
-
-    bool single_line() const
+    struct base64_facet
     {
-        return line_length == 0 || eol[0] == '\0';
-    }
-};
+        using category = base64_facet_c;
 
-struct base64_facet_c
-{
-    static constexpr bool constrainable = true;
+        unsigned line_length = 64;
+        char eol[2] = { '\r', '\n' };
+        char char62 = '+';
+        char char63 = '/';
 
-    constexpr static base64_facet get_default()
-    {
-        return {};
-    }
-};
-
-struct base64_input
-{
-    const void* bytes = nullptr;
-    std::size_t num_bytes = 0;
-};
-
-struct base64_format
-{
-    template <typename T>
-    class fn
-    {
-    public:
-
-        fn() = default;
-
-        template <typename U>
-        fn(const fn<U>& other) : indentation_(other.indentation())
+        bool single_line() const
         {
+            return line_length == 0 || eol[0] == '\0';
         }
-
-        T&& indentation(unsigned _) &&
-        {
-            indentation_ = _;
-            return static_cast<T&&>(*this);
-        }
-
-        unsigned indentation() const
-        {
-            return indentation_;
-        }
-
-    private:
-
-        unsigned indentation_ = 0;
     };
-};
+
+    struct base64_facet_c
+    {
+        static constexpr bool constrainable = true;
+
+        constexpr static base64_facet get_default()
+        {
+            return {};
+        }
+    };
+
+    struct base64_input
+    {
+        const void* bytes = nullptr;
+        std::size_t num_bytes = 0;
+    };
+
+    struct base64_format
+    {
+        template <typename T>
+        class fn
+        {
+        public:
+
+            fn() = default;
+
+            template <typename U>
+            fn(const fn<U>& other) : indentation_(other.indentation())
+            {
+            }
+
+            T&& indentation(unsigned _)&&
+            {
+                indentation_ = _;
+                return static_cast<T&&>(*this);
+            }
+
+            unsigned indentation() const
+            {
+                return indentation_;
+            }
+
+        private:
+
+            unsigned indentation_ = 0;
+        };
+    };
 
 
-using base64_input_with_format = strf::value_with_format< base64_input
-                                                        , base64_format >;
+    using base64_input_with_format = strf::value_with_format< base64_input
+        , base64_format >;
 
-inline auto base64(const void* bytes, std::size_t num_bytes)
-{
-    base64_input data{reinterpret_cast<const unsigned char*>(bytes), num_bytes};
-    return base64_input_with_format{data};
-}
-
-} // namespace xxx
-
-// To enable `base64_input` to work in `fmt_range`:
-namespace strf {
-
-template <> struct fmt_traits<xxx::base64_input>
-{
-    using fmt_type = xxx::base64_input_with_format;
-};
-
-} // namespace strf
-
-namespace xxx {
+    inline auto base64(const void* bytes, std::size_t num_bytes)
+    {
+        base64_input data{ reinterpret_cast<const unsigned char*>(bytes), num_bytes };
+        return base64_input_with_format{ data };
+    }
 
 template <typename CharT>
 class base64_printer: public strf::printer<CharT>
@@ -306,22 +292,40 @@ void base64_printer<CharT>::write_end_of_line_(strf::basic_outbuff<CharT>& ob) c
 
 namespace strf {
 
-template <typename CharT, typename FPack, typename Preview>
-struct printable_traits<CharT, FPack, Preview, xxx::base64_input>
-    : strf::usual_printable_traits<CharT, FPack, xxx::base64_printer<CharT>>
+xxx::base64_input_with_format tag_invoke(strf::fmt_tag, xxx::base64_input x)
 {
-    static_assert(!Preview::require_width, "");
-};
-
-template <typename CharT, typename FPack, typename Preview>
-struct printable_traits<CharT, FPack, Preview, xxx::base64_input_with_format>
-    : strf::usual_printable_traits<CharT, FPack, xxx::base64_printer<CharT>>
-{
-    static_assert(!Preview::width_required, "");
-};
-
+    return xxx::base64_input_with_format{ x };
 }
 
+template <typename CharT, typename Preview, typename FPack>
+constexpr STRF_HD auto tag_invoke
+    ( strf::printer_input_tag<CharT>
+    , xxx::base64_input x
+    , Preview& preview
+    , const FPack& fp ) noexcept
+    -> strf::usual_printer_input
+        < CharT, xxx::base64_input, Preview, FPack
+        , xxx::base64_printer<CharT> >
+{
+    static_assert(!Preview::width_required, "");
+    return {x, preview, fp};
+}
+
+template <typename CharT, typename Preview, typename FPack>
+constexpr STRF_HD auto tag_invoke
+    ( strf::printer_input_tag<CharT>
+    , xxx::base64_input_with_format x
+    , Preview& preview
+    , const FPack& fp ) noexcept
+    -> strf::usual_printer_input
+        < CharT, xxx::base64_input_with_format, Preview, FPack
+        , xxx::base64_printer<CharT> >
+{
+    static_assert(!Preview::width_required, "");
+    return {x, preview, fp};
+}
+
+} // namespace strf
 
 void tests()
 {

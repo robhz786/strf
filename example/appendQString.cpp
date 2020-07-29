@@ -118,24 +118,6 @@ public:
 
     QStringAppenderFactory(const QStringAppenderFactory& str) = default;
 
-    template <typename ... Printers>
-    finish_type write(const Printers& ... printers) const
-    {
-        QStringAppender ob(str_);
-        strf::detail::write_args(ob, printers...);;
-        return ob.finish();
-    }
-
-    template <typename ... Printers>
-    finish_type sized_write( std::size_t size
-                           , const Printers& ... printers ) const
-    {
-        str_.reserve(str_.size() + size);
-        QStringAppender ob(str_);
-        strf::detail::write_args(ob, printers...);;
-        return ob.finish();
-    }
-
     QStringAppender create() const
     {
         return QStringAppender{str_};

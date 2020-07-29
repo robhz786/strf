@@ -19,27 +19,36 @@ template <typename CharT> class fmt_bool_printer;
 
 } // namespace detail
 
-template <>
-struct fmt_traits<bool>
+template <typename CharT, typename Preview, typename FPack>
+constexpr STRF_HD auto tag_invoke
+    ( strf::printer_input_tag<CharT>
+    , bool x
+    , Preview& preview
+    , const FPack& fp ) noexcept
+    -> strf::usual_printer_input
+    < CharT, bool, Preview, FPack, strf::detail::bool_printer<CharT> >
 {
-    using fmt_type = strf::value_with_format<bool, strf::alignment_format>;
-};
+    return {x, preview, fp};
+}
 
-template <typename CharT, typename FPack, typename Preview>
-struct printable_traits<CharT, FPack, Preview, bool>
-    : strf::usual_printable_traits
-        < CharT, FPack, strf::detail::bool_printer<CharT> >
+template <typename CharT, typename Preview, typename FPack>
+constexpr STRF_HD auto tag_invoke
+    ( strf::printer_input_tag<CharT>
+    , strf::value_with_format<bool, strf::alignment_format> x
+    , Preview& preview
+    , const FPack& fp ) noexcept
+    -> strf::usual_printer_input
+        < CharT, strf::value_with_format<bool, strf::alignment_format>, Preview, FPack
+        , strf::detail::fmt_bool_printer<CharT> >
 {
-};
+    return {x, preview, fp};
+}
 
-template <typename CharT, typename FPack, typename Preview>
-struct printable_traits
-    < CharT, FPack, Preview
-    , strf::value_with_format<bool, strf::alignment_format> >
-    : strf::usual_printable_traits
-        < CharT, FPack, strf::detail::fmt_bool_printer<CharT> >
+constexpr STRF_HD auto tag_invoke(strf::fmt_tag, bool b) noexcept
+    -> strf::value_with_format<bool, strf::alignment_format>
 {
-};
+    return strf::value_with_format<bool, strf::alignment_format>(b);
+}
 
 namespace detail {
 

@@ -60,21 +60,6 @@ public:
 
     using char_type = char;
 
-    template <typename ... Printers>
-    std::size_t write(const Printers& ... printers) const
-    {
-        reservation_tester ob;
-        strf::detail::write_args(ob, printers...);;
-        return ob.finish();
-    }
-
-    template <typename ... Printers>
-    std::size_t sized_write(std::size_t size, const Printers& ... printers) const
-    {
-        reservation_tester ob{size};
-        strf::detail::write_args(ob, printers...);;
-        return ob.finish();
-    }
     reservation_tester create() const
     {
         return reservation_tester{};

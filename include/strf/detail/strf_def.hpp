@@ -107,6 +107,10 @@
 
 #endif // __CUDACC__
 
+#ifdef __CUDA_ARCH__
+#define STRF_NO_GLOBAL_CONSTEXPR_VARIABLE
+#endif
+
 namespace strf {
 
 namespace detail

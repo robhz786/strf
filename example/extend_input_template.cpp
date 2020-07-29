@@ -11,20 +11,21 @@ struct base {
     base(const T& t) : value(t) {}
     T value;
 };
-
-template <typename CharT, typename FPack, typename Preview, typename T>
-struct base_printable_traits {
-    constexpr static auto make_input
-        ( const FPack&, Preview& preview, const xxx::base<T>& x ) {
-        return strf::make_printer_input<CharT>(strf::pack(), preview, x.value);
-    }
-};
-
-template <typename CharT, typename FPack, typename Preview, typename T>
-base_printable_traits<CharT, FPack, Preview, T> get_printable_traits
-( Preview&, const xxx::base<T>&);
-
 } // namespace xxx
+
+namespace strf {
+
+template <typename CharT, typename T, typename Preview, typename FPack>
+inline auto tag_invoke
+    ( strf::printer_input_tag<CharT>
+    , const xxx::base<T>& x
+    , Preview& preview
+    , const FPack& fp ) noexcept
+{
+    return strf::make_default_printer_input<CharT>(x.value, preview, fp);
+}
+
+} // namespace strf
 
 namespace yyy {
 

@@ -4,96 +4,59 @@ Distributed under the Boost Software License, Version 1.0.
 See accompanying file LICENSE_1_0.txt or copy at
 http://www.boost.org/LICENSE_1_0.txt
 ////
+
 [[format_function_aliases]]
 [source,cpp,subs=normal]
 ----
 namespace strf {
 inline namespace format_functions {
 
-template <typename T>
-constexpr auto hex(const T& value)
-{
-    return fmt(value).hex();
-}
-
-template <typename T>
-constexpr auto dec(const T& value)
-{
-    return fmt(value).dec();
-}
-
-template <typename T>
-constexpr auto oct(const T& value)
-{
-    return fmt(value).oct();
-}
-
-template <typename T>
-constexpr auto bin(const T& value)
-{
-    return fmt(value).bin();
-}
-
-template <typename T>
-constexpr auto left(const T& value, int width)
-{
-    return fmt(value) < width;
-}
-
-template <typename T>
-constexpr auto right(const T& value, int width)
-{
-    return fmt(value) > width;
-}
-
-template <typename T>
-constexpr auto split(const T& value, int width)
-{
-    return fmt(value) % width;
-}
-
-template <typename T>
-constexpr auto center(const T& value, int width)
-{
-    return fmt(value) ^ width;
-}
-
-template <typename T>
-constexpr auto left(const T& value, int width, char32_t fill)
-{
-    return fmt(value).fill(fill) < width;
-}
-
-template <typename T>
-constexpr auto right(const T& value, int width, char32_t fill)
-{
-    return fmt(value).fill(fill) > width;
-}
-
-template <typename T>
-constexpr auto conv(const T& value)
-{
-    return fmt(value).conv();
-}
-
-template <typename T, typename CharEncoding>
-constexpr auto conv(const T& value, const CharEncoding& cs)
-{
-    return fmt(value).conv(cs);
-}
-
-template <typename T>
-constexpr auto sani(const T& value)
-{
-    return fmt(value).sani();
-}
-
-template <typename T, typename CharEncoding>
-constexpr auto sani(const T& value, const CharEncoding& cs)
-{
-    return fmt(value).sani(cs);
-}
+constexpr /{asterisk} \... {asterisk}/ hex {};
+constexpr /{asterisk} \... {asterisk}/ dec {};
+constexpr /{asterisk} \... {asterisk}/ oct {};
+constexpr /{asterisk} \... {asterisk}/ bin {};
+constexpr /{asterisk} \... {asterisk}/ fixed {};
+constexpr /{asterisk} \... {asterisk}/ sci {};
+constexpr /{asterisk} \... {asterisk}/ gen {};
+constexpr /{asterisk} \... {asterisk}/ multi {};
+constexpr /{asterisk} \... {asterisk}/ conv {};
+constexpr /{asterisk} \... {asterisk}/ sani {};
+constexpr /{asterisk} \... {asterisk}/ right {};
+constexpr /{asterisk} \... {asterisk}/ left {};
+constexpr /{asterisk} \... {asterisk}/ center {};
+constexpr /{asterisk} \... {asterisk}/ split {};
 
 } // inline namespace format_functions
 } // namespace strf
 ----
+
+The `format_functions` inline namespace contains callable objects
+that work as alias to format functions
+
+[%header,cols="22,25"]
+|===
+| Expression | Equivalent Expression
+|`strf::left(_arg_, _width_)`        |`strf::fmt(_arg_) < _width_`
+|`strf::right(_arg_, _width_)`       |`strf::fmt(_arg_) > _width_`
+|`strf::center(_arg_, _width_)`      |`strf::fmt(_arg_) ^ _width_`
+|`strf::split(_arg_, _width_)`       |`strf::fmt(_arg_) % _width_`
+|`strf::left(_arg_, _width_, _ch_)`  |`strf::fmt(_arg_).fill(_ch_) < _width_`
+|`strf::right(_arg_, _width_, _ch_)` |`strf::fmt(_arg_).fill(_ch_) > _width_`
+|`strf::center(_arg_, _width_, _ch_)`|`strf::fmt(_arg_).fill(_ch_) ^ _width_`
+|`strf::split(_arg_, _width_, _ch_)` |`strf::fmt(_arg_).fill(_ch_) % _width_`
+|`strf::bin(_arg_)`                  |`strf::fmt(_arg_).bin()`
+|`strf::dec(_arg_)`                  |`strf::fmt(_arg_).oct()`
+|`strf::oct(_arg_)`                  |`strf::fmt(_arg_).dec()`
+|`strf::hex(_arg_)`                  |`strf::fmt(_arg_).hex()`
+|`strf::sci(_arg_)`                  |`strf::fmt(_arg_).sic()`
+|`strf::fixed(_arg_)`                |`strf::fmt(_arg_).fixed()`
+|`strf::gen(_arg_)`                  |`strf::fmt(_arg_).gen()`
+|`strf::sci(_arg_, _precision_)`     |`strf::fmt(_arg_).sic().p(_precision_)`
+|`strf::fixed(_arg_, _precision_)`   |`strf::fmt(_arg_).fixed().p(_precision_)`
+|`strf::gen(_arg_, _precision_)`     |`strf::fmt(_arg_).gen().p(_precision_)`
+|`strf::multi(_arg_, _count_)`       |`strf::fmt(_arg_).multi(_count_)`
+|`strf::sani(_arg_, _enc_)`          |`strf::fmt(_arg_).sani(_enc_)`
+|`strf::conv(_arg_, _enc_)`          |`strf::fmt(_arg_).conv(_enc_)`
+|`strf::sani(_arg_)`                 |`strf::fmt(_arg_).sani()`
+|`strf::conv(_arg_)`                 |`strf::fmt(_arg_).cont()`
+|===

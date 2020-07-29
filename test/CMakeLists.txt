@@ -19,6 +19,7 @@ set(tests
   input_string
   input_facets_pack
   input_range
+  override_printable
   numpunct
   join
   facets_pack_merge
