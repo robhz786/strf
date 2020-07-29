@@ -7,7 +7,6 @@
 
 #include <strf/printer.hpp>
 #include <strf/facets_pack.hpp>
-#include <strf/detail/format_functions.hpp>
 #include <strf/detail/facets/char_encoding.hpp>
 #include <strf/detail/facets/numpunct.hpp>
 #include <strf/detail/int_digits.hpp>

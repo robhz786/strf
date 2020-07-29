@@ -7,7 +7,6 @@
 
 #include <strf/detail/facets/char_encoding.hpp>
 #include <strf/detail/printers_tuple.hpp>
-#include <strf/detail/format_functions.hpp>
 
 #if defined(_MSC_VER)
 #include <tuple>

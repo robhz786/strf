@@ -8,7 +8,6 @@
 #include <strf/printer.hpp>
 #include <strf/facets_pack.hpp>
 #include <strf/detail/facets/width_calculator.hpp>
-#include <strf/detail/format_functions.hpp>
 
 namespace strf {
 namespace detail {
