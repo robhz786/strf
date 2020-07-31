@@ -81,7 +81,7 @@ template < typename Iterator
          , typename VF = strf::fmt_type<V> >
 using range_with_format
     = strf::detail::mp_replace_front
-        < VF, strf::range_p<Iterator> >;
+        < VF, strf::print_traits<strf::range_p<Iterator>> >;
 
 template < typename Iterator
          , typename CharT
@@ -89,7 +89,7 @@ template < typename Iterator
          , typename VF = strf::fmt_type<V> >
 using sep_range_with_format
     = strf::detail::mp_replace_front
-        < VF, strf::separated_range_p<Iterator, CharT> >;
+        < VF, strf::print_traits<strf::separated_range_p<Iterator, CharT>> >;
 
 namespace detail {
 
@@ -113,88 +113,111 @@ class sep_transformed_range_printer;
 
 } // namespace detail
 
-template <typename CharT, typename Preview, typename FPack, typename It>
-constexpr STRF_HD auto tag_invoke
-    ( strf::printer_input_tag<CharT>
-    , strf::range_p<It> x
-    , Preview& preview
-    , const FPack& fp ) noexcept
-    -> strf::usual_printer_input
-        < CharT, strf::range_p<It>, Preview, FPack
-        , strf::detail::range_printer<CharT, FPack, It> >
+template <typename It>
+struct print_traits<strf::range_p<It>> 
 {
-    return {x, preview, fp};
-}
+    using facet_tag = void;
+    using forwarded_type = strf::range_p<It>;
+    using fmt_type = strf::range_with_format<It>;
 
-template <typename CharT, typename Preview, typename FPack, typename It>
-constexpr STRF_HD auto tag_invoke
-    ( strf::printer_input_tag<CharT>
-    , const strf::separated_range_p<It, CharT>& x
-    , Preview& preview
-    , const FPack& fp ) noexcept
-    -> strf::usual_printer_input
-        < CharT, strf::separated_range_p<It, CharT>, Preview, FPack
-        , strf::detail::separated_range_printer<CharT, FPack, It> >
-{
-    return {x, preview, fp};
-}
+    template <typename CharT, typename Preview, typename FPack>
+    STRF_HD constexpr static auto make_input
+        ( forwarded_type x, Preview& preview, const FPack& fp)
+        -> strf::usual_printer_input
+            < CharT, forwarded_type, Preview, FPack
+            , strf::detail::range_printer<CharT, FPack, It> >
+    {
+        return {x, preview, fp};
+    }
 
-template < typename CharT, typename Preview, typename FPack
-         , typename It, typename... Fmts >
-constexpr STRF_HD auto tag_invoke
-    ( strf::printer_input_tag<CharT>
-    , const strf::value_with_format<strf::range_p<It>, Fmts ...>& x
-    , Preview& preview
-    , const FPack& fp ) noexcept
-    -> strf::usual_printer_input
-        < CharT, strf::value_with_format<strf::range_p<It>, Fmts ...>, Preview, FPack
-        , strf::detail::fmt_range_printer<CharT, FPack, It, Fmts...> >
-{
-    return {x, preview, fp};
-}
+    template <typename CharT, typename Preview, typename FPack, typename... Fmts>
+    STRF_HD constexpr static auto make_input
+        ( strf::value_with_format<strf::print_traits<strf::range_p<It>>, Fmts...> x
+        , Preview& preview
+        , const FPack& fp )
+        ->  strf::usual_printer_input
+            < CharT
+            , strf::value_with_format<strf::print_traits<strf::range_p<It>>, Fmts ...>
+            , Preview, FPack
+            , strf::detail::fmt_range_printer<CharT, FPack, It, Fmts...> >
+    {
+        return {x, preview, fp};
+    }
+};
 
-template < typename CharT, typename Preview, typename FPack
-         , typename It, typename... Fmts >
-constexpr STRF_HD auto tag_invoke
-    ( strf::printer_input_tag<CharT>
-    , const strf::value_with_format<strf::separated_range_p<It, CharT>, Fmts ...>& x
-    , Preview& preview
-    , const FPack& fp ) noexcept
-    -> strf::usual_printer_input
-        < CharT, strf::value_with_format<strf::separated_range_p<It, CharT>, Fmts ...>
-        , Preview, FPack
-        , strf::detail::fmt_separated_range_printer<CharT, FPack, It, Fmts...> >
+template <typename It, typename SepCharT>
+struct print_traits<strf::separated_range_p<It, SepCharT>>
 {
-    return {x, preview, fp};
-}
+    using facet_tag = void;
+    using forwarded_type = strf::separated_range_p<It, SepCharT>;
+    using fmt_type = strf::sep_range_with_format<It, SepCharT>;
 
-template < typename CharT, typename Preview, typename FPack
-         , typename It, typename UnaryOp >
-constexpr STRF_HD auto tag_invoke
-    ( strf::printer_input_tag<CharT>
-    , const strf::transformed_range_p<It, UnaryOp>& x
-    , Preview& preview
-    , const FPack& fp ) noexcept
-    -> strf::usual_printer_input
-        < CharT, strf::transformed_range_p<It, UnaryOp>, Preview, FPack
-        , strf::detail::transformed_range_printer<CharT, FPack, It, UnaryOp> >
-{
-    return {x, preview, fp};
-}
+    template <typename DestCharT, typename Preview, typename FPack>
+    STRF_HD constexpr static auto make_input
+        ( forwarded_type x, Preview& preview, const FPack& fp)
+        -> strf::usual_printer_input
+            < DestCharT, forwarded_type, Preview, FPack
+            , strf::detail::separated_range_printer<DestCharT, FPack, It> >
+    {
+        static_assert( std::is_same<SepCharT, DestCharT>::value
+                     , "Character type of range separator string is different." );
+        return {x, preview, fp};
+    }
 
-template < typename CharT, typename Preview, typename FPack
-         , typename It, typename UnaryOp >
-constexpr STRF_HD auto tag_invoke
-    ( strf::printer_input_tag<CharT>
-    , const strf::separated_transformed_range_p<It, CharT, UnaryOp>& x
-    , Preview& preview
-    , const FPack& fp ) noexcept
-    -> strf::usual_printer_input
-        < CharT, strf::separated_transformed_range_p<It, CharT, UnaryOp>, Preview, FPack
-        , strf::detail::sep_transformed_range_printer<CharT, FPack, It, UnaryOp> >
+    template <typename DestCharT, typename Preview, typename FPack, typename... Fmts>
+    STRF_HD constexpr static auto make_input
+        ( strf::value_with_format
+            < strf::print_traits<strf::separated_range_p<It, SepCharT>>, Fmts... > x
+        , Preview& preview
+        , const FPack& fp )
+        ->  strf::usual_printer_input
+            < DestCharT
+            , strf::value_with_format
+                < strf::print_traits<strf::separated_range_p<It, SepCharT>>, Fmts... >
+            , Preview, FPack
+            , strf::detail::fmt_separated_range_printer<DestCharT, FPack, It, Fmts...> >
+    {
+        static_assert( std::is_same<SepCharT, DestCharT>::value
+                     , "Character type of range separator string is different." );
+        return {x, preview, fp};
+    }
+};
+
+template <typename It, typename UnaryOp>
+struct print_traits<strf::transformed_range_p<It, UnaryOp>>
 {
-    return {x, preview, fp};
-}
+    using facet_tag = void;
+    using forwarded_type = strf::transformed_range_p<It, UnaryOp>;
+
+    template <typename CharT, typename Preview, typename FPack>
+    STRF_HD constexpr static auto make_input
+        ( forwarded_type x, Preview& preview, const FPack& fp)
+        -> strf::usual_printer_input
+            < CharT, forwarded_type, Preview, FPack
+            , strf::detail::transformed_range_printer<CharT, FPack, It, UnaryOp> >
+    {
+        return {x, preview, fp};
+    }
+};
+
+template <typename It, typename SepCharT, typename UnaryOp>
+struct print_traits<strf::separated_transformed_range_p<It, SepCharT, UnaryOp>>
+{
+    using facet_tag = void;
+    using forwarded_type = strf::separated_transformed_range_p<It, SepCharT, UnaryOp>;
+
+    template <typename DestCharT, typename Preview, typename FPack>
+    STRF_HD constexpr static auto make_input
+        ( forwarded_type x, Preview& preview, const FPack& fp)
+        -> strf::usual_printer_input
+            < DestCharT, forwarded_type, Preview, FPack
+            , strf::detail::sep_transformed_range_printer<DestCharT, FPack, It, UnaryOp> >
+    {
+        static_assert( std::is_same<SepCharT, DestCharT>::value
+                     , "Character type of range separator string is different." );
+        return {x, preview, fp};
+    }
+};
 
 namespace detail {
 
@@ -386,7 +409,7 @@ class fmt_range_printer: public strf::printer<CharT>
 
     using fmt_type_adapted_ = detail::mp_replace_front
         < value_fmt_type_adapted_
-        , strf::range_p<It> >;
+        , strf::print_traits<strf::range_p<It>> >;
 
 public:
 
@@ -470,7 +493,7 @@ class fmt_separated_range_printer: public strf::printer<CharT>
 
     using fmt_type_adapted_ = detail::mp_replace_front
         < value_fmt_type_adapted_
-        , strf::separated_range_p<It, CharT> >;
+        , strf::print_traits<strf::separated_range_p<It, CharT>> >;
 
 public:
 
@@ -772,30 +795,6 @@ STRF_HD void sep_transformed_range_printer<CharT, FPack, It, UnaryOp>::print_to
 }
 
 } // namespace detail
-
-template <typename It>
-STRF_HD auto tag_invoke(strf::fmt_tag, const strf::range_p<It>& r)
-    noexcept(noexcept(strf::range_with_format<It>{r}))
-    -> strf::range_with_format<It>
-{
-    return strf::range_with_format<It>{r};
-}
-
-template <typename It, typename CharT>
-STRF_HD auto tag_invoke(strf::fmt_tag, const strf::separated_range_p<It, CharT>& r)
-    noexcept(noexcept(strf::sep_range_with_format<It, CharT>{r}))
-    -> strf::sep_range_with_format<It, CharT>
-{
-    return strf::sep_range_with_format<It, CharT>{r};
-}
-
-template <typename It, typename UnaryOp>
-void tag_invoke(strf::fmt_tag, const strf::transformed_range_p<It, UnaryOp>&) = delete;
-
-template <typename It, typename CharT, typename UnaryOp>
-void tag_invoke
-    ( strf::fmt_tag
-    , const strf::separated_transformed_range_p<It, CharT, UnaryOp>& ) = delete;
 
 template <typename It>
 inline STRF_HD auto range(It begin, It end)

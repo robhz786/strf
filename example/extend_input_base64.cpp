@@ -8,79 +8,96 @@
 
 namespace xxx {
 
-    struct base64_facet_c;
+struct base64_facet_c;
 
-    struct base64_facet
+struct base64_facet
+{
+    using category = base64_facet_c;
+
+    unsigned line_length = 64;
+    char eol[2] = { '\r', '\n' };
+    char char62 = '+';
+    char char63 = '/';
+
+    bool single_line() const
     {
-        using category = base64_facet_c;
-
-        unsigned line_length = 64;
-        char eol[2] = { '\r', '\n' };
-        char char62 = '+';
-        char char63 = '/';
-
-        bool single_line() const
-        {
-            return line_length == 0 || eol[0] == '\0';
-        }
-    };
-
-    struct base64_facet_c
-    {
-        static constexpr bool constrainable = true;
-
-        constexpr static base64_facet get_default()
-        {
-            return {};
-        }
-    };
-
-    struct base64_input
-    {
-        const void* bytes = nullptr;
-        std::size_t num_bytes = 0;
-    };
-
-    struct base64_format
-    {
-        template <typename T>
-        class fn
-        {
-        public:
-
-            fn() = default;
-
-            template <typename U>
-            fn(const fn<U>& other) : indentation_(other.indentation())
-            {
-            }
-
-            T&& indentation(unsigned _)&&
-            {
-                indentation_ = _;
-                return static_cast<T&&>(*this);
-            }
-
-            unsigned indentation() const
-            {
-                return indentation_;
-            }
-
-        private:
-
-            unsigned indentation_ = 0;
-        };
-    };
-
-
-    using base64_input_with_format = strf::value_with_format< base64_input
-        , base64_format >;
-
-    inline auto base64(const void* bytes, std::size_t num_bytes)
-    {
-        base64_input data{ reinterpret_cast<const unsigned char*>(bytes), num_bytes };
-        return base64_input_with_format{ data };
+        return line_length == 0 || eol[0] == '\0';
     }
+};
+
+struct base64_facet_c
+{
+    static constexpr bool constrainable = true;
+
+    constexpr static base64_facet get_default()
+    {
+        return {};
+    }
+};
+
+struct base64_input
+{
+    const void* bytes = nullptr;
+    std::size_t num_bytes = 0;
+};
+
+struct base64_format
+{
+    template <typename T>
+    class fn
+    {
+    public:
+
+        fn() = default;
+
+        template <typename U>
+        fn(const fn<U>& other) : indentation_(other.indentation())
+        {
+        }
+
+        T&& indentation(unsigned _)&&
+        {
+            indentation_ = _;
+            return static_cast<T&&>(*this);
+        }
+
+        unsigned indentation() const
+        {
+            return indentation_;
+        }
+
+    private:
+
+        unsigned indentation_ = 0;
+    };
+};
+
+struct base64_printing;
+
+template <typename CharT>
+class base64_printer;
+
+using base64_input_with_format = strf::value_with_format<base64_printing, base64_format>;
+
+struct base64_printing
+{
+    using facet_tag = base64_input;
+    using forwarded_type = base64_input;
+    using fmt_type = base64_input_with_format;
+
+    template <typename CharT, typename Preview, typename FPack>
+    static void make_input(base64_input x, Preview& preview, const FPack& fp)
+    {
+    }
+
+    template <typename CharT, typename Preview, typename FPack>
+    static auto make_input(base64_input_with_format x, Preview& preview, const FPack& fp)
+        -> strf::usual_printer_input
+            < CharT, base64_input_with_format, Preview, FPack, base64_printer<CharT> >
+    {
+        return {x, preview, fp};
+    }
+};
 
 template <typename CharT>
 class base64_printer: public strf::printer<CharT>
@@ -288,41 +305,19 @@ void base64_printer<CharT>::write_end_of_line_(strf::basic_outbuff<CharT>& ob) c
     ob.advance(facet_.eol[1] == '\0' ? 1 : 2);
 }
 
-} //namespace xxx
+inline auto base64(const void* bytes, std::size_t num_bytes)
+{
+    base64_input data{ reinterpret_cast<const unsigned char*>(bytes), num_bytes };
+    return base64_input_with_format{ data };
+}
+
+} // namespace xxx
 
 namespace strf {
 
-xxx::base64_input_with_format tag_invoke(strf::fmt_tag, xxx::base64_input x)
+xxx::base64_printing tag_invoke(strf::print_traits_tag, xxx::base64_input)
 {
-    return xxx::base64_input_with_format{ x };
-}
-
-template <typename CharT, typename Preview, typename FPack>
-constexpr STRF_HD auto tag_invoke
-    ( strf::printer_input_tag<CharT>
-    , xxx::base64_input x
-    , Preview& preview
-    , const FPack& fp ) noexcept
-    -> strf::usual_printer_input
-        < CharT, xxx::base64_input, Preview, FPack
-        , xxx::base64_printer<CharT> >
-{
-    static_assert(!Preview::width_required, "");
-    return {x, preview, fp};
-}
-
-template <typename CharT, typename Preview, typename FPack>
-constexpr STRF_HD auto tag_invoke
-    ( strf::printer_input_tag<CharT>
-    , xxx::base64_input_with_format x
-    , Preview& preview
-    , const FPack& fp ) noexcept
-    -> strf::usual_printer_input
-        < CharT, xxx::base64_input_with_format, Preview, FPack
-        , xxx::base64_printer<CharT> >
-{
-    static_assert(!Preview::width_required, "");
-    return {x, preview, fp};
+    return {};
 }
 
 } // namespace strf

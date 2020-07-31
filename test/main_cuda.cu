@@ -73,15 +73,15 @@ __global__ void kernel_main
     test_input_facets_pack();
     test_input_float();
     test_input_int();
-    // test_input_ptr();             // run never ends
+    test_input_ptr();
     // test_input_range();           // to-do
     test_input_string();
-    // test_printable_overriding();  // failing: strf::constrain seems to not work here
+    test_printable_overriding();
     test_join();
     test_miscellaneous();
     test_numpunct();
     test_reserve();
-    // test_single_byte_encodings(); // run never ends
+    test_single_byte_encodings(); // run never ends
     test_tr_string();
     // test_utf_to_utf();            // to-do
     test_width_t();

@@ -576,7 +576,7 @@ class facets_pack<>
 public:
 
     template <typename Category, typename Tag>
-    STRF_HD decltype(auto) get_facet() const
+    constexpr STRF_HD decltype(auto) get_facet() const
     {
         return Category::get_default();
     }

@@ -41,14 +41,22 @@ private:
 
 struct my_bool_printing_override
 {
-    using category = strf::printing_c;
+    using category = strf::print_override_c;
 
     template <typename CharT, typename Preview, typename FPack>
-    constexpr static STRF_HD auto make_printer_input
+    constexpr static STRF_HD auto make_input
         (bool x, Preview& preview, const FPack& fp) noexcept
         -> strf::usual_printer_input<CharT, bool, Preview, FPack, my_bool_printer<CharT>>
     {
         return {x, preview, fp};
+    }
+
+    template <typename CharT, typename... T, typename Preview, typename FPack>
+    constexpr static STRF_HD auto make_input
+        (strf::value_with_format<T...> x, Preview& preview, const FPack& fp) noexcept
+    {
+        return strf::make_printer_input<CharT>
+            ( strf::join(x.value()).set(x.get_alignment_format_data()), preview, fp );
     }
 };
 
@@ -59,8 +67,8 @@ void STRF_TEST_FUNC test_printable_overriding()
 {
     auto f = strf::constrain<is_bool>(my_bool_printing_override{});
 
-    TEST("yes").with(f) (true);
-    TEST("no").with(f)  (false);
+    TEST("yes/no").with(f) (true, '/', false);
+    TEST("..yes../..no..").with(f) (strf::center(true, 7, '.'), '/', strf::center(false, 6, '.'));
     TEST("no").with(my_bool_printing_override{}) (false);
     TEST("123").with(f) (123);
 }

@@ -10,10 +10,6 @@
 namespace strf {
 namespace detail {
 
-template <typename Arg>
-using opt_val_or_cref = std::conditional_t
-    < std::is_array<Arg>::value, const Arg&, Arg > ;
-
 template <std::size_t I, typename T>
 struct indexed_obj
 {
@@ -50,6 +46,9 @@ public:
     {
     }
 
+    constexpr STRF_HD explicit simple_tuple_impl(const simple_tuple_impl&) = default;
+    constexpr STRF_HD explicit simple_tuple_impl(simple_tuple_impl&&) = default;
+
     template <std::size_t J>
     constexpr STRF_HD const auto& get() const
     {
@@ -68,12 +67,10 @@ class simple_tuple
 };
 
 template <typename ... Args>
-constexpr STRF_HD strf::detail::simple_tuple
-    < strf::detail::opt_val_or_cref<Args>... >
+constexpr STRF_HD strf::detail::simple_tuple<Args...>
 make_simple_tuple(const Args& ... args)
 {
-    return strf::detail::simple_tuple
-        < strf::detail::opt_val_or_cref<Args>... >
+    return strf::detail::simple_tuple<Args...>
     { strf::detail::simple_tuple_from_args{}, args... };
 }
 

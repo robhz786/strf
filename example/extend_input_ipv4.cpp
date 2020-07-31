@@ -13,51 +13,47 @@ struct ipv4address
     unsigned char bytes[4];
 };
 
-//  The `alignment_format` class template provides the format functions
-//  related to alignment.
-using ipv4address_with_format = strf::value_with_format<ipv4address, strf::alignment_format>;
-
 } // namespace xxx
 
 namespace strf {
 
-constexpr xxx::ipv4address_with_format tag_invoke(strf::fmt_tag, xxx::ipv4address x) noexcept
-{
-    return xxx::ipv4address_with_format{ x };
-}
+template <>
+struct print_traits<xxx::ipv4address> {
 
-template <typename CharT, typename Preview, typename FPack>
-constexpr auto tag_invoke
-    ( strf::printer_input_tag<CharT>
-    , xxx::ipv4address_with_format arg
-    , Preview& preview
-    , const FPack& fp ) noexcept
-{
-    return strf::make_default_printer_input<CharT>
-        ( strf::join
-            ( arg.value().bytes[0], CharT{'.'}
-            , arg.value().bytes[1], CharT{'.'}
-            , arg.value().bytes[2], CharT{'.'}
-            , arg.value().bytes[3] )
-            .set(arg.get_alignment_format_data())
-        , preview, fp );
-}
+    using facet_tag = xxx::ipv4address;
+    using forwarded_type = xxx::ipv4address;
+    using fmt_type =  strf::value_with_format
+        < strf::print_traits<xxx::ipv4address>
+        , strf::alignment_format>;
 
-template <typename CharT, typename Preview, typename FPack>
-constexpr auto tag_invoke
-    ( strf::printer_input_tag<CharT>
-    , xxx::ipv4address arg
-    , Preview& preview
-    , const FPack& fp ) noexcept
-{
-    return strf::make_default_printer_input<CharT>
-        ( strf::join
-            ( arg.bytes[0], CharT{'.'}
-            , arg.bytes[1], CharT{'.'}
-            , arg.bytes[2], CharT{'.'}
-            , arg.bytes[3] )
-        , preview, fp );
-}
+    template <typename CharT>
+    static auto transform_arg(forwarded_type arg)
+    {
+        constexpr CharT dot = '.';
+        const auto* bytes = arg.bytes;
+        return strf::join(bytes[0], dot, bytes[1], dot, bytes[2], dot, bytes[3]);
+    }
+
+    template <typename CharT, typename Preview, typename FPack>
+    static auto make_input(forwarded_type arg, Preview& preview, const FPack& fp)
+    {
+        auto arg2 = transform_arg<CharT>(arg);
+        return strf::make_default_printer_input<CharT>(arg2, preview, fp);
+    }
+
+    template <typename CharT, typename Preview, typename FPack>
+    static auto make_input(fmt_type arg, Preview& preview, const FPack& fp)
+    {
+        auto join = transform_arg<CharT>(arg.value());
+        auto aligned_join = join.set(arg.get_alignment_format_data());
+        return strf::make_default_printer_input<CharT>(aligned_join, preview, fp);
+    }
+};
+
+// constexpr ipv4address_printing tag_invoke(strf::print_traits_tag, xxx::ipv4address) noexcept
+// {
+//     return {};
+// }
 
 } // namespace strf
 

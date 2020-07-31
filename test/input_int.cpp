@@ -558,7 +558,7 @@ void STRF_TEST_FUNC test_input_int()
         TEST(u8" 0x1\U0010FFFF000").with(punct) (strf::join_right(8)(*strf::hex(0x1000) > 8));
         TEST(u8"---0x1\U0010FFFF000").with(punct)
             (strf::join_right(8)(u8"---", *strf::hex(0x1000)));
-    }//---
+    }
 
     {
         TEST("1'7'7'7'7'7'7'7'7'7'7'7'7'7'7'7'7'7'7'7'7'7")

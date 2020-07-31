@@ -10,121 +10,73 @@
 #include <strf/detail/facets/width_calculator.hpp>
 
 namespace strf {
+
 namespace detail {
 template <typename> class char_printer;
 template <typename> class fmt_char_printer;
 } // namespace detail
 
 template <typename CharT>
-struct char_tag
+struct char_printing
 {
-    CharT ch;
+    using facet_tag = CharT;
+    using forwarded_type = CharT;
+    using fmt_type = strf::value_with_format
+        < char_printing
+        , strf::quantity_format
+        , strf::alignment_format >;
+
+    template <typename CharU, typename Preview, typename FPack>
+    constexpr STRF_HD static auto make_input
+        ( CharU x, Preview& preview, const FPack& fp ) noexcept
+        -> strf::usual_printer_input
+            < CharU, CharU, Preview, FPack, strf::detail::char_printer<CharT> >
+    {
+        return {x, preview, fp};
+    }
+
+    template <typename CharU, typename Preview, typename FPack>
+    constexpr STRF_HD static auto make_input
+        ( fmt_type x, Preview& preview, const FPack& fp ) noexcept
+        -> strf::usual_printer_input
+            < CharU, fmt_type, Preview, FPack, strf::detail::fmt_char_printer<CharT> >
+    {
+        return {x, preview, fp};
+    }
 };
 
-template <typename CharT>
-using char_with_format = strf::value_with_format
-    < char_tag<CharT>
-    , strf::quantity_format
-    , strf::alignment_format >;
+#if defined(__cpp_char8_t)
+template <> struct print_traits<char8_t> : public char_printing <char8_t> {};
+#endif // defined(__cpp_char8_t)
+
+template <> struct print_traits<char>     : public char_printing <char> {};
+template <> struct print_traits<char16_t> : public char_printing <char16_t> {};
+template <> struct print_traits<char32_t> : public char_printing <char32_t> {};
+template <> struct print_traits<wchar_t>  : public char_printing <wchar_t> {};
 
 #if defined(__cpp_char8_t)
 
-constexpr STRF_HD auto tag_invoke(strf::fmt_tag, char8_t c) noexcept
-    -> strf::char_with_format<char8_t>
-{
-    return strf::char_with_format<char8_t>{strf::char_tag<char8_t>{c}};
-}
+constexpr STRF_HD auto tag_invoke(strf::print_traits_tag, char8_t) noexcept
+    -> strf::char_printing<char8_t>
+    { return {}; }
 
 #endif // defined(__cpp_char8_t)
 
-constexpr STRF_HD auto tag_invoke(strf::fmt_tag, char c) noexcept
-    -> strf::char_with_format<char>
-{
-    return strf::char_with_format<char>{strf::char_tag<char>{c}};
-}
-constexpr STRF_HD auto tag_invoke(strf::fmt_tag, char16_t c) noexcept
-    -> strf::char_with_format<char16_t>
-{
-    return strf::char_with_format<char16_t>{strf::char_tag<char16_t>{c}};
-}
-constexpr STRF_HD auto tag_invoke(strf::fmt_tag, char32_t c) noexcept
-    -> strf::char_with_format<char32_t>
-{
-    return strf::char_with_format<char32_t>{strf::char_tag<char32_t>{c}};
-}
-constexpr STRF_HD auto tag_invoke(strf::fmt_tag, wchar_t c) noexcept
-    -> strf::char_with_format<wchar_t>
-{
-    return strf::char_with_format<wchar_t>{strf::char_tag<wchar_t>{c}};
-}
+constexpr STRF_HD auto tag_invoke(strf::print_traits_tag, char) noexcept
+    -> strf::char_printing<char>
+    { return {}; }
 
-template <typename CharT, typename Preview, typename FPack>
-constexpr STRF_HD auto tag_invoke
-    ( strf::printer_input_tag<CharT>, char x, Preview& preview, const FPack& fp ) noexcept
-    -> strf::usual_printer_input
-        < CharT, CharT, Preview, FPack, strf::detail::char_printer<CharT>>
-{
-    static_assert( std::is_same<CharT, char>::value, "Character type mismatch.");
-    return {x, preview, fp};
-}
+constexpr STRF_HD auto tag_invoke(strf::print_traits_tag, char16_t) noexcept
+    -> strf::char_printing<char16_t>
+    { return {}; }
 
-#if defined(__cpp_char8_t)
+constexpr STRF_HD auto tag_invoke(strf::print_traits_tag, char32_t) noexcept
+    -> strf::char_printing<char32_t>
+    { return {}; }
 
-template <typename CharT, typename Preview, typename FPack>
-constexpr STRF_HD auto tag_invoke
-    ( strf::printer_input_tag<CharT>, char8_t x, Preview& preview, const FPack& fp ) noexcept
-    -> strf::usual_printer_input
-        < CharT, CharT, Preview, FPack, strf::detail::char_printer<CharT> >
-{
-    static_assert( std::is_same<CharT, char8_t>::value, "Character type mismatch.");
-    return {x, preview, fp};
-}
-
-#endif // defined(__cpp_char8_t)
-
-template <typename CharT, typename Preview, typename FPack>
-constexpr STRF_HD auto tag_invoke
-    ( strf::printer_input_tag<CharT>, char16_t x, Preview& preview, const FPack& fp ) noexcept
-    -> strf::usual_printer_input
-        < CharT, CharT, Preview, FPack, strf::detail::char_printer<CharT> >
-{
-    static_assert( std::is_same<CharT, char16_t>::value, "Character type mismatch.");
-    return {x, preview, fp};
-}
-
-template <typename CharT, typename Preview, typename FPack>
-constexpr STRF_HD auto tag_invoke
-    ( strf::printer_input_tag<CharT>, char32_t x, Preview& preview, const FPack& fp ) noexcept
-    -> strf::usual_printer_input
-        < CharT, CharT, Preview, FPack, strf::detail::char_printer<CharT> >
-{
-    static_assert( std::is_same<CharT, char32_t>::value, "Character type mismatch.");
-    return {x, preview, fp};
-}
-
-template <typename CharT, typename Preview, typename FPack>
-constexpr STRF_HD auto tag_invoke
-    ( strf::printer_input_tag<CharT>, wchar_t x, Preview& preview, const FPack& fp ) noexcept
-    -> strf::usual_printer_input
-        < CharT, CharT, Preview, FPack, strf::detail::char_printer<CharT>>
-{
-    static_assert( std::is_same<CharT, wchar_t>::value, "Character type mismatch.");
-    return {x, preview, fp};
-}
-
-template <typename DestCharT, typename SrcCharT, typename Preview, typename FPack>
-constexpr STRF_HD auto tag_invoke
-    ( strf::printer_input_tag<DestCharT>
-    , strf::char_with_format<SrcCharT> x
-    , Preview& preview
-    , const FPack& fp ) noexcept
-    -> strf::usual_printer_input
-        < DestCharT, strf::char_with_format<SrcCharT>, Preview, FPack
-        , strf::detail::fmt_char_printer<DestCharT> >
-{
-    static_assert( std::is_same<DestCharT, SrcCharT>::value, "Character type mismatch.");
-    return {x, preview, fp};
-}
+constexpr STRF_HD auto tag_invoke(strf::print_traits_tag, wchar_t) noexcept
+    -> strf::char_printing<wchar_t>
+    { return {}; }
 
 namespace detail {
 
@@ -173,7 +125,7 @@ public:
         ( const usual_printer_input<CharT, T...>& input )
         : count_(input.arg.count())
         , afmt_(input.arg.get_alignment_format_data())
-        , ch_(static_cast<CharT>(input.arg.value().ch))
+        , ch_(static_cast<CharT>(input.arg.value()))
     {
         auto enc = get_facet_<strf::char_encoding_c<CharT>>(input.fp);
         decltype(auto) wcalc = get_facet_<strf::width_calculator_c>(input.fp);

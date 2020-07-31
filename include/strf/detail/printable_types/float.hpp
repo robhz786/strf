@@ -397,28 +397,6 @@ struct float_format
     using fn = float_format_fn<T, Notation>;
 };
 
-template
-    < typename FloatT
-    , strf::float_notation Notation = strf::float_notation::general
-    , bool Align = false >
-using float_with_format = value_with_format
-    < FloatT
-    , strf::float_format<Notation>
-    , strf::alignment_format_q<Align> >;
-
-constexpr STRF_HD auto tag_invoke(strf::fmt_tag, float x) noexcept
-    -> strf::float_with_format<float>
-{
-    return strf::float_with_format<float>{x};
-}
-constexpr STRF_HD auto tag_invoke(strf::fmt_tag, double x) noexcept
-    -> strf::float_with_format<double>
-{
-    return strf::float_with_format<double>{x};
-}
-
-void tag_invoke(strf::fmt_tag, long double x) = delete;
-
 namespace detail {
 
 template <typename> class fast_double_printer;
@@ -426,6 +404,17 @@ template <typename> class fast_punct_double_printer;
 template <typename> class double_printer;
 template <typename> class punct_double_printer;
 template <typename> class hex_double_printer;
+
+template <typename> struct float_printing;
+
+template
+    < typename FloatT
+    , strf::float_notation Notation = strf::float_notation::general
+    , bool Align = false >
+using float_with_format = value_with_format
+    < strf::detail::float_printing<FloatT>
+    , strf::float_format<Notation>
+    , strf::alignment_format_q<Align> >;
 
 template < typename CharT, typename FloatT, typename Preview>
 struct fast_double_printer_input
@@ -458,7 +447,7 @@ template < typename CharT, typename FloatT, strf::float_notation Notation
          , bool HasAlignment, typename Preview, typename FPack >
 using fmt_double_printer_input =
     strf::usual_printer_input
-        < CharT, strf::float_with_format<FloatT, Notation, HasAlignment>, Preview, FPack
+        < CharT, strf::detail::float_with_format<FloatT, Notation, HasAlignment>, Preview, FPack
         , std::conditional_t
             < Notation == float_notation::hex
             , strf::detail::hex_double_printer<CharT>
@@ -467,55 +456,51 @@ using fmt_double_printer_input =
                 , strf::detail::punct_double_printer<CharT>
                 , strf::detail::double_printer<CharT> > > >;
 
+template <typename FloatT>
+struct float_printing
+{
+    using facet_tag = FloatT;
+    using forwarded_type = FloatT;
+    using fmt_type = strf::detail::float_with_format<FloatT>;
+
+    template <typename CharT, typename Preview, typename FPack>
+    STRF_HD constexpr static auto make_input
+        ( FloatT x, Preview& preview, const FPack& fp) noexcept
+        -> std::conditional_t
+            < strf::detail::has_punct<CharT, FPack, FloatT, 10>
+            , strf::detail::fast_punct_double_printer_input<CharT, FloatT, Preview, FPack>
+            , strf::detail::fast_double_printer_input<CharT, FloatT, Preview> >
+    {
+        return {x, preview, fp};
+    }
+
+    template < typename CharT, typename Preview, typename FPack
+             , strf::float_notation Notation, bool HasAlignment >
+    STRF_HD constexpr static auto make_input
+        ( strf::detail::float_with_format<FloatT, Notation, HasAlignment> x
+        , Preview& preview
+        , const FPack& fp ) noexcept
+        -> strf::detail::fmt_double_printer_input
+            < CharT, FloatT, Notation, HasAlignment, Preview, FPack >
+    {
+        return {x, preview, fp};
+    }
+};
+
 } // namespace detail
 
-template <typename CharT, typename Preview, typename FPack>
-constexpr STRF_HD auto tag_invoke
-    ( strf::printer_input_tag<CharT>
-    , float x
-    , Preview& preview
-    , const FPack& fp ) noexcept
-    -> std::conditional_t
-        < strf::detail::has_punct<CharT, FPack, float, 10>
-        , strf::detail::fast_punct_double_printer_input<CharT, float, Preview, FPack>
-        , strf::detail::fast_double_printer_input<CharT, float, Preview> >
-{
-    return {x, preview, fp};
-}
+template <> struct print_traits<float>:  public strf::detail::float_printing<float> {};
+template <> struct print_traits<double>: public strf::detail::float_printing<double> {};
 
-template <typename CharT, typename Preview, typename FPack>
-constexpr STRF_HD auto tag_invoke
-    ( strf::printer_input_tag<CharT>
-    , double x
-    , Preview& preview
-    , const FPack& fp ) noexcept
-    -> std::conditional_t
-        < strf::detail::has_punct<CharT, FPack, double, 10>
-        , strf::detail::fast_punct_double_printer_input<CharT, double, Preview, FPack>
-        , strf::detail::fast_double_printer_input<CharT, double, Preview> >
-{
-    return {x, preview, fp};
-}
+STRF_HD constexpr auto tag_invoke(strf::print_traits_tag, float)
+    -> strf::detail::float_printing<float>
+    { return {}; }
 
-template <typename CharT, typename Preview, typename FPack>
-void tag_invoke
-    ( strf::printer_input_tag<CharT>
-    , long double x
-    , Preview& preview
-    , const FPack& fp ) noexcept = delete;
+STRF_HD constexpr auto tag_invoke(strf::print_traits_tag, double)
+    -> strf::detail::float_printing<double>
+    { return {}; }
 
-template < typename CharT, typename FloatT, strf::float_notation Notation
-         , bool HasAlignment, typename Preview, typename FPack >
-constexpr STRF_HD auto tag_invoke
-    ( strf::printer_input_tag<CharT>
-    , strf::float_with_format<FloatT, Notation, HasAlignment> x
-    , Preview& preview
-    , const FPack& fp ) noexcept
-    -> strf::detail::fmt_double_printer_input
-        < CharT, FloatT, Notation, HasAlignment, Preview, FPack >
-{
-    return {x, preview, fp};
-}
+void tag_invoke(strf::print_traits_tag, long double) = delete;
 
 namespace detail {
 

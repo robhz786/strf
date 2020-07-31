@@ -15,6 +15,7 @@
 #include <limits>
 #include <new>
 #include <utility>    // not freestanding, but almost
+                      // std::declval, std::move, std::forward
 
 #if ! defined(STRF_FREESTANDING)
 #    define STRF_WITH_CSTRING

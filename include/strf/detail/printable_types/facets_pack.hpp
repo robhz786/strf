@@ -29,13 +29,14 @@ struct inner_pack
 
     FPack fp;
 
-    template <typename ... Args>
-    constexpr strf::inner_pack_with_args
-        < FPack
-        , strf::detail::opt_val_or_cref<Args>... >
-    STRF_HD operator()(const Args& ... args) const
+    template <typename... Args>
+    constexpr strf::inner_pack_with_args<FPack, strf::forwarded_printable_type<Args>...>
+    STRF_HD operator()(const Args&... args) const
     {
-        return { fp, strf::detail::make_simple_tuple(args ...) };
+        return { fp
+               , strf::detail::simple_tuple<strf::forwarded_printable_type<Args>...>
+                   { strf::detail::simple_tuple_from_args{}
+                   , static_cast<strf::forwarded_printable_type<Args>>(args)... } };
     }
 };
 
@@ -46,20 +47,23 @@ class facets_pack_printer;
 
 } // namespace detail
 
-
-template < typename CharT, typename Preview, typename FPack
-         , typename ChildFPack, typename... Args >
-constexpr STRF_HD auto tag_invoke
-    ( strf::printer_input_tag<CharT>
-    , const strf::inner_pack_with_args<ChildFPack, Args...>& x
-    , Preview& preview
-    , const FPack& fp ) noexcept
-    -> strf::usual_printer_input
-        < CharT, strf::inner_pack_with_args<ChildFPack, Args...>, Preview, FPack
-        , strf::detail::facets_pack_printer<CharT, Preview, FPack, ChildFPack, Args...> >
+template <typename ChildFPack, typename... Args>
+struct print_traits<strf::inner_pack_with_args<ChildFPack, Args...>>
 {
-    return {x, preview, fp};
-}
+    using facet_tag = void; // not_overridable
+    using forwarded_type = strf::inner_pack_with_args<ChildFPack, Args...>;
+
+    template < typename CharT, typename Preview, typename FPack>
+    STRF_HD constexpr static auto make_input
+        ( const forwarded_type& x, Preview& preview, const FPack& fp)
+        -> strf::usual_printer_input
+            < CharT, forwarded_type, Preview, FPack
+            , strf::detail::facets_pack_printer
+                < CharT, Preview, FPack, ChildFPack, Args... > >
+    {
+        return {x, preview, fp};
+    }
+};
 
 namespace detail {
 

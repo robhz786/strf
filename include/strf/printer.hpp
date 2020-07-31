@@ -338,57 +338,57 @@ using fmt_replace
     = typename strf::detail::fmt_replace_impl<From, List>
     ::template type_tmpl<To>;
 
-template <typename ValueType, class ... Fmts>
+template <typename PrintingTraits, class ... Fmts>
 class value_with_format;
 
-template <typename ValueType, class ... Fmts>
+template <typename PrintingTraits, class ... Fmts>
 class value_with_format
-    : public Fmts::template fn<value_with_format<ValueType, Fmts ...>> ...
+    : public Fmts::template fn<value_with_format<PrintingTraits, Fmts ...>> ...
 {
 public:
+    using printing_traits = PrintingTraits;
+    using value_type = typename PrintingTraits::forwarded_type;
 
-    using value_type = ValueType;
+    template <typename ... OtherFmts>
+    using replace_fmts = strf::value_with_format<PrintingTraits, OtherFmts ...>;
 
-    template <typename ... OhterFmts>
-    using replace_fmts = strf::value_with_format<ValueType, OhterFmts ...>;
-
-    explicit constexpr STRF_HD value_with_format(const ValueType& v)
+    explicit constexpr STRF_HD value_with_format(const value_type& v)
         : value_(v)
     {
     }
 
-    template <typename OtherValueType>
+    template <typename OtherPrintingTraits>
     constexpr STRF_HD value_with_format
-        ( const ValueType& v
-        , const strf::value_with_format<OtherValueType, Fmts...>& f )
-        : Fmts::template fn<value_with_format<ValueType, Fmts...>>
+        ( const value_type& v
+        , const strf::value_with_format<OtherPrintingTraits, Fmts...>& f )
+        : Fmts::template fn<value_with_format<PrintingTraits, Fmts...>>
             ( static_cast
               < const typename Fmts
-             :: template fn<value_with_format<OtherValueType, Fmts...>>& >(f) )
+             :: template fn<value_with_format<OtherPrintingTraits, Fmts...>>& >(f) )
         ...
         , value_(v)
     {
     }
 
-    template <typename OtherValueType>
+    template <typename OtherPrintingTraits>
     constexpr STRF_HD value_with_format
-        ( const ValueType& v
-        , strf::value_with_format<OtherValueType, Fmts...>&& f )
-        : Fmts::template fn<value_with_format<ValueType, Fmts...>>
+        ( const value_type& v
+        , strf::value_with_format<OtherPrintingTraits, Fmts...>&& f )
+        : Fmts::template fn<value_with_format<PrintingTraits, Fmts...>>
             ( static_cast
               < typename Fmts
-             :: template fn<value_with_format<OtherValueType, Fmts...>> &&>(f) )
+             :: template fn<value_with_format<OtherPrintingTraits, Fmts...>> &&>(f) )
         ...
-        , value_(static_cast<ValueType&&>(v))
+        , value_(static_cast<value_type&&>(v))
     {
     }
 
     template <typename ... F, typename ... FInit>
     constexpr STRF_HD value_with_format
-        ( const ValueType& v
+        ( const value_type& v
         , strf::tag<F...>
         , FInit&& ... finit )
-        : F::template fn<value_with_format<ValueType, Fmts...>>
+        : F::template fn<value_with_format<PrintingTraits, Fmts...>>
             (std::forward<FInit>(finit))
         ...
         , value_(v)
@@ -397,11 +397,11 @@ public:
 
     template <typename ... OtherFmts>
     constexpr STRF_HD value_with_format
-        ( const strf::value_with_format<ValueType, OtherFmts...>& f )
-        : Fmts::template fn<value_with_format<ValueType, Fmts...>>
+        ( const strf::value_with_format<PrintingTraits, OtherFmts...>& f )
+        : Fmts::template fn<value_with_format<PrintingTraits, Fmts...>>
             ( static_cast
               < const typename OtherFmts
-             :: template fn<value_with_format<ValueType, OtherFmts ...>>& >(f) )
+             :: template fn<value_with_format<PrintingTraits, OtherFmts ...>>& >(f) )
         ...
         , value_(f.value())
     {
@@ -409,177 +409,46 @@ public:
 
     template <typename ... OtherFmts>
     constexpr STRF_HD value_with_format
-        ( strf::value_with_format<ValueType, OtherFmts...>&& f )
-        : Fmts::template fn<value_with_format<ValueType, Fmts...>>
+        ( strf::value_with_format<PrintingTraits, OtherFmts...>&& f )
+        : Fmts::template fn<value_with_format<PrintingTraits, Fmts...>>
             ( static_cast
               < typename OtherFmts
-             :: template fn<value_with_format<ValueType, OtherFmts ...>>&& >(f) )
+             :: template fn<value_with_format<PrintingTraits, OtherFmts ...>>&& >(f) )
         ...
-        , value_(static_cast<ValueType&&>(f.value()))
+        , value_(static_cast<value_type&&>(f.value()))
     {
     }
 
     template <typename Fmt, typename FmtInit, typename ... OtherFmts>
     constexpr STRF_HD value_with_format
-        ( const strf::value_with_format<ValueType, OtherFmts...>& f
+        ( const strf::value_with_format<PrintingTraits, OtherFmts...>& f
         , strf::tag<Fmt>
         , FmtInit&& fmt_init )
-        : Fmts::template fn<value_with_format<ValueType, Fmts...>>
+        : Fmts::template fn<value_with_format<PrintingTraits, Fmts...>>
             ( strf::detail::fmt_forward_switcher
                   < Fmt
                   , Fmts
-                  , strf::value_with_format<ValueType, OtherFmts...> >
+                  , strf::value_with_format<PrintingTraits, OtherFmts...> >
               :: template f<FmtInit>(fmt_init, f) )
             ...
         , value_(f.value())
     {
     }
 
-    constexpr STRF_HD const ValueType& value() const
+    constexpr STRF_HD const value_type& value() const
     {
         return value_;
     }
 
-    constexpr STRF_HD ValueType& value()
+    constexpr STRF_HD value_type& value()
     {
         return value_;
     }
 
 private:
 
-    ValueType value_;
+    value_type value_;
 };
-
-template <typename CharT>
-struct printer_input_tag
-{
-private:
-    static const printer_input_tag<CharT>& tag_();
-
-public:
-
-    template <typename Arg, typename Preview, typename FPack>
-    constexpr STRF_HD auto operator()(Arg&& arg, Preview& preview, const FPack& fp) const
-        noexcept(noexcept(strf::detail::tag_invoke(tag_(), arg, preview, fp)))
-        -> decltype(strf::detail::tag_invoke(tag_(), arg, preview, fp))
-    {
-        return strf::detail::tag_invoke(*this, arg, preview, fp);
-    }
-};
-
-
-struct printing_c;
-
-struct default_printing_facet
-{
-#if defined(__cpp_inline_variable)
-
-    template <typename CharT>
-    constexpr static printer_input_tag<CharT> make_printer_input = {};
-
-#else
-
-private:
-
-    template <typename CharT>
-    using tag_ = printer_input_tag<CharT>;
-
-public:
-
-    template <typename CharT, typename Arg, typename Preview, typename FPack>
-    constexpr STRF_HD auto make_printer_input(Arg&& arg, Preview& preview, const FPack& fp) const
-        noexcept(noexcept(strf::detail::tag_invoke(tag_<CharT>(), arg, preview, fp)))
-        -> decltype(strf::detail::tag_invoke(tag_<CharT>(), arg, preview, fp))
-    {
-        return strf::detail::tag_invoke(tag_<CharT>(), arg, preview, fp);
-    }
-
-#endif
-};
-
-struct printing_c
-{
-    static constexpr STRF_HD strf::default_printing_facet get_default() noexcept
-    {
-        return {};
-    }
-};
-
-#if defined (STRF_NO_GLOBAL_CONSTEXPR_VARIABLE)
-
-template <typename CharT, typename Arg, typename Preview, typename FPack>
-constexpr STRF_HD decltype(auto) make_default_printer_input
-    (Arg&& arg, Preview& preview, const FPack& fp)
-{
-    strf::printer_input_tag<CharT> tag;
-    return tag(arg, preview, fp);
-}
-
-
-template <typename CharT, typename Arg, typename Preview, typename FPack>
-constexpr STRF_HD decltype(auto) make_printer_input
-    (Arg&& arg, Preview& preview, const FPack& fp)
-{
-    return strf::get_facet<strf::printing_c, Arg>(fp)
-        .template make_printer_input<CharT>(arg, preview, fp);
-}
-
-#else
-
-namespace detail {
-
-template <typename CharT>
-struct make_printer_input_impl
-{
-    template <typename Arg, typename Preview, typename FPack>
-    constexpr STRF_HD decltype(auto) operator()
-        (const Arg& arg, Preview& preview, const FPack& fp) const
-        noexcept(noexcept(strf::get_facet<strf::printing_c, Arg>(fp)
-                          .template make_printer_input<CharT>(arg, preview, fp)))
-    {
-        return strf::get_facet<strf::printing_c, Arg>(fp)
-            .template make_printer_input<CharT>(arg, preview, fp);
-    }
-};
-
-} // namespace detail
-
-template <typename CharT>
-constexpr strf::printer_input_tag<CharT> make_default_printer_input = {};
-
-template <typename CharT>
-constexpr strf::detail::make_printer_input_impl<CharT> make_printer_input = {};
-
-#endif // defined (STRF_NO_GLOBAL_CONSTEXPR_VARIABLE)
-
-namespace detail {
-
-template <typename CharT, typename Arg, typename Preview, typename FPack>
-struct printer_impl_helper
-{
-    static const FPack& fp();
-    static Preview& preview();
-    static const Arg& arg();
-
-    using default_printer_input = decltype
-        ( strf::make_default_printer_input<CharT>(arg(), preview(), fp()) );
-
-    using printer_input = decltype
-        ( strf::make_printer_input<CharT>(arg(), preview(), fp()) );
-
-    using default_printer = typename default_printer_input::printer_type;
-    using printer = typename printer_input::printer_type;
-};
-
-} // namespace detail
-
-template <typename CharT, typename Arg, typename Preview, typename FPack>
-using default_printer_impl =
-    typename strf::detail::printer_impl_helper<CharT, Arg, Preview, FPack>::default_printer;
-
-template <typename CharT, typename Arg, typename Preview, typename FPack>
-using printer_impl =
-    typename strf::detail::printer_impl_helper<CharT, Arg, Preview, FPack>::printer;
 
 template <typename CharT, typename Arg, typename Preview, typename FPack, typename Printer>
 struct usual_printer_input;
@@ -591,7 +460,7 @@ template< typename CharT
         , typename FPack
         , typename Printer >
 struct usual_printer_input
-    <CharT, Arg, strf::print_preview<PreviewSize, PreviewWidth>, FPack, Printer>
+    < CharT, Arg, strf::print_preview<PreviewSize, PreviewWidth>, FPack, Printer >
 {
     using char_type = CharT;
     using arg_type = Arg;
@@ -604,38 +473,209 @@ struct usual_printer_input
     FPack fp;
 };
 
-struct fmt_tag {
-    template <typename T>
-    constexpr STRF_HD auto operator()(T&& value) const
-        noexcept(noexcept(strf::detail::tag_invoke(*(const fmt_tag*)0, value)))
-        -> decltype(strf::detail::tag_invoke(*(const fmt_tag*)0, value))
+template<typename T>
+struct print_traits;
+
+
+template<typename PrintTraits, typename... Fmts>
+struct print_traits<strf::value_with_format<PrintTraits, Fmts...>> : PrintTraits
+{
+};
+
+namespace detail {
+
+template <typename T>
+struct has_print_traits
+{
+    template <typename U, typename = typename strf::print_traits<U>::forwarded_type>
+    static std::true_type test(const U*);
+
+    template <typename U>
+    static std::false_type test(...);
+
+    using T_ = std::remove_cv_t<std::remove_reference_t<T>>;
+    using result = decltype(test<T_>((const T_*)0));
+
+    constexpr static bool value = result::value;
+};
+
+} // namespace detail
+
+struct print_traits_tag
+{
+private:
+    static const print_traits_tag& tag_();
+
+public:
+
+    template < typename Arg
+             , typename = std::enable_if_t<strf::detail::has_print_traits<Arg>::value> >
+    constexpr STRF_HD auto operator()(Arg&& arg) const
+        -> strf::print_traits<Arg>
     {
-        return strf::detail::tag_invoke(*this, value);
+        return {};
+    }
+    
+    template < typename Arg
+             , typename = std::enable_if_t< ! strf::detail::has_print_traits<Arg>::value> >
+    constexpr STRF_HD auto operator()(Arg&& arg) const
+        -> decltype(strf::detail::tag_invoke(tag_(), arg))
+    {
+        return strf::detail::tag_invoke(*this, arg);
     }
 };
+
+namespace detail {
+
+template <typename T>
+struct printing_traits_finder
+{
+    using printing_traits = decltype
+        (std::declval<strf::print_traits_tag>()(std::declval<T>()));
+    using forwarded_type = typename printing_traits::forwarded_type;
+
+    template <typename CharT, typename Preview, typename FPack>
+    using default_printer_input = decltype
+        ( printing_traits::template make_input<CharT>
+               ( std::declval<forwarded_type>()
+               , std::declval<Preview&>()
+               , std::declval<const FPack&>() ) );
+
+};
+
+template <typename... T>
+struct printing_traits_finder<strf::value_with_format<T...>>
+{
+    using printing_traits = typename strf::value_with_format<T...>::printing_traits;
+    using forwarded_type = strf::value_with_format<T...>;
+    using fmt_type = strf::value_with_format<T...>;
+
+    template <typename CharT, typename Preview, typename FPack>
+    using default_printer_input = decltype
+        ( printing_traits::template make_input<CharT>
+               ( std::declval<forwarded_type>()
+               , std::declval<Preview&>()
+               , std::declval<const FPack&>() ) );
+};
+
+template <typename T>
+struct fmt_type_finder
+{
+    using printing_traits = typename printing_traits_finder<T>::printing_traits;
+    using fmt_type = typename printing_traits::fmt_type;
+};
+
+template <typename... T>
+struct fmt_type_finder<strf::value_with_format<T...>>
+{
+    using fmt_type = strf::value_with_format<T...>;
+};
+
+} // detail
+
+template <typename T>
+using get_printing_traits = typename
+    detail::printing_traits_finder<std::remove_cv_t<std::remove_reference_t<T>>>
+    ::printing_traits;
+
+template <typename T>
+using forwarded_printable_type = typename
+    detail::printing_traits_finder<std::remove_cv_t<std::remove_reference_t<T>>>
+    ::forwarded_type;
+
+template <typename T>
+using fmt_type = typename
+    detail::fmt_type_finder<std::remove_cv_t<std::remove_reference_t<T>>>
+    ::fmt_type;
+
+template <typename T>
+using fmt_value_type = typename fmt_type<T>::value_type;
+
+template <typename T>
+using facet_tag = typename get_printing_traits<T>::facet_tag;
+
+template <typename CharT, typename Arg, typename Preview, typename FPack>
+constexpr STRF_HD auto make_default_printer_input
+    ( const Arg& arg, Preview& preview, const FPack& fp )
+    noexcept(noexcept
+             (strf::get_printing_traits<Arg>::template make_input<CharT>
+              (static_cast<strf::forwarded_printable_type<Arg>>(arg), preview, fp)))
+{
+    using traits = strf::get_printing_traits<Arg>;
+    using fwd_type = strf::forwarded_printable_type<Arg>;
+    return traits::template make_input<CharT>(static_cast<fwd_type>(arg), preview, fp);
+}
+
+struct print_override_c;
+
+struct no_print_override
+{
+    using category = print_override_c;
+
+    template <typename CharT, typename Arg, typename Preview, typename FPack>
+    constexpr static STRF_HD auto make_input(Arg&& arg, Preview& preview, const FPack& fp)
+        noexcept(noexcept(strf::make_default_printer_input<CharT>(arg, preview, fp)))
+    {
+       return strf::make_default_printer_input<CharT>(arg, preview, fp);
+    }
+};
+
+struct print_override_c
+{
+    constexpr static STRF_HD no_print_override get_default() noexcept
+    {
+        return {};
+    }
+};
+
+template <typename CharT, typename Arg, typename Preview, typename FPack>
+constexpr STRF_HD auto make_printer_input(const Arg& arg, Preview& preview, const FPack& fp)
+{
+    return strf::get_facet<print_override_c, strf::facet_tag<Arg>>(fp)
+        .template make_input<CharT>(arg, preview, fp);
+}
+
+template <typename CharT, typename Arg, typename Preview, typename FPack>
+using printer_input_type = decltype
+    ( strf::make_printer_input<CharT>( std::declval<Arg>()
+                                     , std::declval<Preview&>()
+                                     , std::declval<const FPack&>() ) );
+
+template <typename CharT, typename Arg, typename Preview, typename FPack>
+using printer_impl = typename printer_input_type<CharT, Arg, Preview, FPack>::printer_type;
 
 inline namespace format_functions {
 
 #if defined (STRF_NO_GLOBAL_CONSTEXPR_VARIABLE)
 
 template <typename T>
-constexpr STRF_HD auto fmt(T&& value)
-    noexcept(noexcept(strf::detail::tag_invoke(strf::fmt_tag{}, value)))
-    -> decltype(strf::detail::tag_invoke(strf::fmt_tag{}, value))
+constexpr STRF_HD fmt_type<T> fmt(T&& value)
+    noexcept(noexcept(fmt_type<T>{fmt_value_type<T>{value}}))
 {
-    return strf::detail::tag_invoke(strf::fmt_tag{}, value);
+    return fmt_type<T>{fmt_value_type<T>{value}};
 }
 
 #else //defined (STRF_NO_GLOBAL_CONSTEXPR_VARIABLE)
 
-constexpr fmt_tag fmt {};
+namespace detail_format_functions {
+
+struct fmt_fn
+{
+    template <typename T>
+    constexpr STRF_HD fmt_type<T> operator()(T&& value) const
+        noexcept(noexcept(fmt_type<T>{fmt_value_type<T>{value}}))
+    {
+        return fmt_type<T>{fmt_value_type<T>{value}};
+    }
+};
+
+} // namespace detail_format_functions
+
+constexpr detail_format_functions::fmt_fn fmt {};
 
 #endif
 
 } // inline namespace format_functions
-
-template <typename T>
-using fmt_type = std::remove_cv_t<std::remove_reference_t<decltype(strf::fmt(std::declval<T>()))>>;
 
 template <bool HasAlignment>
 struct alignment_format_q;
