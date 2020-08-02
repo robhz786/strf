@@ -29,20 +29,20 @@ struct print_traits<bool>
 
     template <typename CharT, typename Preview, typename FPack>
     constexpr STRF_HD static auto make_input
-        ( bool x, Preview& preview, const FPack& fp ) noexcept
+        ( Preview& preview, const FPack& fp, bool x ) noexcept
         -> strf::usual_printer_input
-            < CharT, bool, Preview, FPack, strf::detail::bool_printer<CharT> >
+            < CharT, Preview, FPack, bool, strf::detail::bool_printer<CharT> >
     {
-        return {x, preview, fp};
+        return {preview, fp, x};
     }
 
     template <typename CharT, typename Preview, typename FPack>
     constexpr STRF_HD static auto make_input
-        ( fmt_type x, Preview& preview, const FPack& fp ) noexcept
+        ( Preview& preview, const FPack& fp, fmt_type x ) noexcept
         -> strf::usual_printer_input
-            < CharT, fmt_type, Preview, FPack, strf::detail::fmt_bool_printer<CharT> >
+            < CharT, Preview, FPack, fmt_type, strf::detail::fmt_bool_printer<CharT> >
     {
-        return {x, preview, fp};
+        return {preview, fp, x};
     }
 };
 

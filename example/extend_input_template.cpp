@@ -21,9 +21,9 @@ struct base_printing {
     using forwarded_type = const xxx::base<T>&;
 
     template <typename CharT, typename Preview, typename FPack>
-    static auto make_input(forwarded_type x, Preview& preview, const FPack& fp ) noexcept
+    static auto make_input(Preview& preview, const FPack& fp, forwarded_type x ) noexcept
     {
-        return strf::make_default_printer_input<CharT>(x.value, preview, fp);
+        return strf::make_default_printer_input<CharT>(preview, fp, x.value);
     }
 };
 

@@ -35,18 +35,18 @@ struct print_traits<xxx::ipv4address> {
     }
 
     template <typename CharT, typename Preview, typename FPack>
-    static auto make_input(forwarded_type arg, Preview& preview, const FPack& fp)
+    static auto make_input(Preview& preview, const FPack& fp, forwarded_type arg)
     {
         auto arg2 = transform_arg<CharT>(arg);
-        return strf::make_default_printer_input<CharT>(arg2, preview, fp);
+        return strf::make_default_printer_input<CharT>(preview, fp, arg2);
     }
 
     template <typename CharT, typename Preview, typename FPack>
-    static auto make_input(fmt_type arg, Preview& preview, const FPack& fp)
+    static auto make_input(Preview& preview, const FPack& fp, fmt_type arg)
     {
         auto join = transform_arg<CharT>(arg.value());
         auto aligned_join = join.set(arg.get_alignment_format_data());
-        return strf::make_default_printer_input<CharT>(aligned_join, preview, fp);
+        return strf::make_default_printer_input<CharT>(preview, fp, aligned_join);
     }
 };
 

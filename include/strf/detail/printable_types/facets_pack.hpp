@@ -55,13 +55,13 @@ struct print_traits<strf::inner_pack_with_args<ChildFPack, Args...>>
 
     template < typename CharT, typename Preview, typename FPack>
     STRF_HD constexpr static auto make_input
-        ( const forwarded_type& x, Preview& preview, const FPack& fp)
+        (Preview& preview, const FPack& fp,  const forwarded_type& x)
         -> strf::usual_printer_input
-            < CharT, forwarded_type, Preview, FPack
+            < CharT, Preview, FPack, forwarded_type
             , strf::detail::facets_pack_printer
                 < CharT, Preview, FPack, ChildFPack, Args... > >
     {
-        return {x, preview, fp};
+        return {preview, fp, x};
     }
 };
 

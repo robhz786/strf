@@ -16,32 +16,34 @@ template <typename> class char_printer;
 template <typename> class fmt_char_printer;
 } // namespace detail
 
-template <typename CharT>
+template <typename SrcCharT>
 struct char_printing
 {
-    using facet_tag = CharT;
-    using forwarded_type = CharT;
+    using facet_tag = SrcCharT;
+    using forwarded_type = SrcCharT;
     using fmt_type = strf::value_with_format
         < char_printing
         , strf::quantity_format
         , strf::alignment_format >;
 
-    template <typename CharU, typename Preview, typename FPack>
+    template <typename DestCharT, typename Preview, typename FPack>
     constexpr STRF_HD static auto make_input
-        ( CharU x, Preview& preview, const FPack& fp ) noexcept
+        ( Preview& preview, const FPack& fp, SrcCharT x ) noexcept
         -> strf::usual_printer_input
-            < CharU, CharU, Preview, FPack, strf::detail::char_printer<CharT> >
+            < DestCharT, Preview, FPack, SrcCharT, strf::detail::char_printer<DestCharT> >
     {
-        return {x, preview, fp};
+        static_assert( std::is_same<SrcCharT, DestCharT>::value, "Character type mismatch.");
+        return {preview, fp, x};
     }
 
-    template <typename CharU, typename Preview, typename FPack>
+    template <typename DestCharT, typename Preview, typename FPack>
     constexpr STRF_HD static auto make_input
-        ( fmt_type x, Preview& preview, const FPack& fp ) noexcept
+        ( Preview& preview, const FPack& fp, fmt_type x ) noexcept
         -> strf::usual_printer_input
-            < CharU, fmt_type, Preview, FPack, strf::detail::fmt_char_printer<CharT> >
+            < DestCharT, Preview, FPack, fmt_type, strf::detail::fmt_char_printer<DestCharT> >
     {
-        return {x, preview, fp};
+        static_assert( std::is_same<SrcCharT, DestCharT>::value, "Character type mismatch.");
+        return {preview, fp, x};
     }
 };
 

@@ -86,16 +86,16 @@ struct base64_printing
     using fmt_type = base64_input_with_format;
 
     template <typename CharT, typename Preview, typename FPack>
-    static void make_input(base64_input x, Preview& preview, const FPack& fp)
+    static void make_input(Preview& preview, const FPack& fp, base64_input x)
     {
     }
 
     template <typename CharT, typename Preview, typename FPack>
-    static auto make_input(base64_input_with_format x, Preview& preview, const FPack& fp)
+    static auto make_input(Preview& preview, const FPack& fp, base64_input_with_format x)
         -> strf::usual_printer_input
-            < CharT, base64_input_with_format, Preview, FPack, base64_printer<CharT> >
+            < CharT, Preview, FPack, base64_input_with_format, base64_printer<CharT> >
     {
-        return {x, preview, fp};
+        return {preview, fp, x};
     }
 };
 

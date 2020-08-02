@@ -120,7 +120,7 @@ public:
         , const FPack& fp )
         : indexed_printer<I, Printers>
             ( strf::make_printer_input<CharT>
-                ( args.template get<I>(), preview, fp ) ) ...
+              ( preview, fp, args.template get<I>() ) ) ...
     {
     }
 
@@ -148,12 +148,12 @@ using printers_tuple = printers_tuple_impl
         , Printers... >;
 
 template < typename CharT, typename Preview, typename FPack
-         , typename ISeq, typename ... Args >
+         , typename ISeq, typename... Args >
 class printers_tuple_alias
 {
 public:
     using type = printers_tuple_impl
-        <CharT, ISeq, strf::printer_impl<CharT, Args, Preview, FPack> ...>;
+        <CharT, ISeq, strf::printer_impl<CharT, Preview, FPack, Args> ...>;
 };
 
 template < typename CharT, typename Preview, typename FPack, typename ... Args >

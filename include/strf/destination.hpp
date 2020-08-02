@@ -35,7 +35,7 @@ class destination_common
     using char_type_ = typename OutbuffCreator::char_type;
 
     template <typename Arg>
-    using printer_ = strf::printer_impl<char_type_, Arg, Preview, FPack>;
+    using printer_ = strf::printer_impl<char_type_, Preview, FPack, Arg>;
 
 public:
 
@@ -135,7 +135,7 @@ public:
             , as_printer_cref_
               ( printer_<Args>
                 ( strf::make_printer_input<char_type_>
-                  ( args, preview, self.fpack_ ) ) )... );
+                  ( preview, self.fpack_, args ) ) )... );
     }
 
 #if defined(STRF_HAS_STD_STRING_VIEW)
@@ -199,7 +199,7 @@ private:
             , { as_printer_cptr_
                 ( printer_<Args>
                   ( strf::make_printer_input<char_type_>
-                    ( args, preview_arr[I], fpack ) ) )... } );
+                    ( preview_arr[I], fpack, args ) ) )... } );
     }
 
     template <typename ... Args>

@@ -450,17 +450,17 @@ private:
     value_type value_;
 };
 
-template <typename CharT, typename Arg, typename Preview, typename FPack, typename Printer>
+template <typename CharT, typename Preview, typename FPack, typename Arg, typename Printer>
 struct usual_printer_input;
 
 template< typename CharT
-        , typename Arg
         , strf::preview_size PreviewSize
         , strf::preview_width PreviewWidth
         , typename FPack
+        , typename Arg
         , typename Printer >
 struct usual_printer_input
-    < CharT, Arg, strf::print_preview<PreviewSize, PreviewWidth>, FPack, Printer >
+    < CharT, strf::print_preview<PreviewSize, PreviewWidth>, FPack, Arg, Printer >
 {
     using char_type = CharT;
     using arg_type = Arg;
@@ -468,14 +468,13 @@ struct usual_printer_input
     using fpack_type = FPack;
     using printer_type = Printer;
 
-    Arg arg;
     preview_type& preview;
     FPack fp;
+    Arg arg;
 };
 
 template<typename T>
 struct print_traits;
-
 
 template<typename PrintTraits, typename... Fmts>
 struct print_traits<strf::value_with_format<PrintTraits, Fmts...>> : PrintTraits
@@ -510,8 +509,7 @@ public:
 
     template < typename Arg
              , typename = std::enable_if_t<strf::detail::has_print_traits<Arg>::value> >
-    constexpr STRF_HD auto operator()(Arg&& arg) const
-        -> strf::print_traits<Arg>
+    constexpr STRF_HD auto operator()(Arg&&) const -> strf::print_traits<Arg>
     {
         return {};
     }
@@ -537,9 +535,9 @@ struct printing_traits_finder
     template <typename CharT, typename Preview, typename FPack>
     using default_printer_input = decltype
         ( printing_traits::template make_input<CharT>
-               ( std::declval<forwarded_type>()
-               , std::declval<Preview&>()
-               , std::declval<const FPack&>() ) );
+               ( std::declval<Preview&>()
+               , std::declval<const FPack&>()
+               , std::declval<forwarded_type>() ) );
 
 };
 
@@ -553,9 +551,9 @@ struct printing_traits_finder<strf::value_with_format<T...>>
     template <typename CharT, typename Preview, typename FPack>
     using default_printer_input = decltype
         ( printing_traits::template make_input<CharT>
-               ( std::declval<forwarded_type>()
-               , std::declval<Preview&>()
-               , std::declval<const FPack&>() ) );
+               ( std::declval<Preview&>()
+               , std::declval<const FPack&>()
+               , std::declval<forwarded_type>() ) );
 };
 
 template <typename T>
@@ -594,16 +592,16 @@ using fmt_value_type = typename fmt_type<T>::value_type;
 template <typename T>
 using facet_tag = typename get_printing_traits<T>::facet_tag;
 
-template <typename CharT, typename Arg, typename Preview, typename FPack>
+template <typename CharT, typename Preview, typename FPack, typename Arg>
 constexpr STRF_HD auto make_default_printer_input
-    ( const Arg& arg, Preview& preview, const FPack& fp )
+    ( Preview& preview, const FPack& fp, const Arg& arg)
     noexcept(noexcept
              (strf::get_printing_traits<Arg>::template make_input<CharT>
-              (static_cast<strf::forwarded_printable_type<Arg>>(arg), preview, fp)))
+              (preview, fp, static_cast<strf::forwarded_printable_type<Arg>>(arg))))
 {
     using traits = strf::get_printing_traits<Arg>;
     using fwd_type = strf::forwarded_printable_type<Arg>;
-    return traits::template make_input<CharT>(static_cast<fwd_type>(arg), preview, fp);
+    return traits::template make_input<CharT>(preview, fp, static_cast<fwd_type>(arg));
 }
 
 struct print_override_c;
@@ -612,11 +610,11 @@ struct no_print_override
 {
     using category = print_override_c;
 
-    template <typename CharT, typename Arg, typename Preview, typename FPack>
-    constexpr static STRF_HD auto make_input(Arg&& arg, Preview& preview, const FPack& fp)
-        noexcept(noexcept(strf::make_default_printer_input<CharT>(arg, preview, fp)))
+    template <typename CharT, typename Preview, typename FPack, typename Arg>
+    constexpr static STRF_HD auto make_input(Preview& preview, const FPack& fp, Arg&& arg)
+        noexcept(noexcept(strf::make_default_printer_input<CharT>(preview, fp, arg)))
     {
-       return strf::make_default_printer_input<CharT>(arg, preview, fp);
+        return strf::make_default_printer_input<CharT>(preview, fp, arg);
     }
 };
 
@@ -628,21 +626,21 @@ struct print_override_c
     }
 };
 
-template <typename CharT, typename Arg, typename Preview, typename FPack>
-constexpr STRF_HD auto make_printer_input(const Arg& arg, Preview& preview, const FPack& fp)
+template <typename CharT, typename Preview, typename FPack, typename Arg>
+constexpr STRF_HD auto make_printer_input(Preview& preview, const FPack& fp, const Arg& arg)
 {
     return strf::get_facet<print_override_c, strf::facet_tag<Arg>>(fp)
-        .template make_input<CharT>(arg, preview, fp);
+        .template make_input<CharT>(preview, fp, arg);
 }
 
-template <typename CharT, typename Arg, typename Preview, typename FPack>
+template <typename CharT, typename Preview, typename FPack, typename Arg>
 using printer_input_type = decltype
-    ( strf::make_printer_input<CharT>( std::declval<Arg>()
-                                     , std::declval<Preview&>()
-                                     , std::declval<const FPack&>() ) );
+    ( strf::make_printer_input<CharT>( std::declval<Preview&>()
+                                     , std::declval<const FPack&>()
+                                     , std::declval<Arg>() ) );
 
-template <typename CharT, typename Arg, typename Preview, typename FPack>
-using printer_impl = typename printer_input_type<CharT, Arg, Preview, FPack>::printer_type;
+template <typename CharT, typename Preview, typename FPack, typename Arg>
+using printer_impl = typename printer_input_type<CharT, Preview, FPack, Arg>::printer_type;
 
 inline namespace format_functions {
 

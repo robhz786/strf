@@ -121,12 +121,12 @@ public:
         , strf::detail::aligned_join_printer<CharT, Preview, FPack, FwdArgs...>
         , strf::detail::join_printer<CharT, Preview, FPack, FwdArgs...> >;
 
+    Preview& preview;
+    FPack fp;
     strf::value_with_format
         < strf::detail::join_printing<FwdArgs...>
         , strf::split_pos_format<HasSplitPos>
         , strf::alignment_format_q<HasAlignment> > arg;
-    Preview& preview;
-    FPack fp;
 };
 
 template <typename... FwdArgs>
@@ -146,11 +146,11 @@ struct join_printing
     template< typename CharT, typename Preview, typename FPack
             , bool HasSplitPos, bool HasAlignment >
     STRF_HD constexpr static auto make_input
-        ( fmt_tmpl<HasSplitPos, HasAlignment> x, Preview& preview, const FPack& fp)
+        ( Preview& preview, const FPack& fp, fmt_tmpl<HasSplitPos, HasAlignment> x)
         -> join_printer_input
             < CharT, Preview, FPack, HasSplitPos, HasAlignment, FwdArgs... >
     {
-        return {x, preview, fp};
+        return {preview, fp, x};
     }
 };
 
@@ -402,11 +402,12 @@ template<typename CharT, typename Preview, typename FPack, typename... Args>
 using aligned_join_printer_impl_of = strf::detail::aligned_join_printer_impl
     < CharT
     , strf::printer_impl
-        < CharT, Args
+        < CharT
         , strf::print_preview
             < static_cast<strf::preview_size>(Preview::size_required)
             , strf::preview_width::yes >
-        , FPack >... >;
+        , FPack
+        , Args >... >;
 
 template<typename CharT, typename Preview, typename FPack, typename... FwdArgs>
 class aligned_join_printer
@@ -459,7 +460,7 @@ private:
 template <typename CharT, typename Preview, typename FPack, typename... FwdArgs>
 class join_printer
     : public strf::detail::join_printer_impl
-        < CharT, strf::printer_impl<CharT, FwdArgs, Preview, FPack>... >
+        < CharT, strf::printer_impl<CharT, Preview, FPack, FwdArgs>... >
 {
 public:
 
@@ -468,7 +469,7 @@ public:
         ( const strf::detail::join_printer_input
               < CharT, Preview, FPack2, HasSplitPos, false, FwdArgs... >& input )
         : strf::detail::join_printer_impl
-            < CharT, strf::printer_impl<CharT, FwdArgs, Preview, FPack>... >
+            < CharT, strf::printer_impl<CharT, Preview, FPack, FwdArgs>... >
             ( input.arg.value().args, input.preview, input.fp )
     {
     }

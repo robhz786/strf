@@ -45,18 +45,18 @@ struct my_bool_printing_override
 
     template <typename CharT, typename Preview, typename FPack>
     constexpr static STRF_HD auto make_input
-        (bool x, Preview& preview, const FPack& fp) noexcept
-        -> strf::usual_printer_input<CharT, bool, Preview, FPack, my_bool_printer<CharT>>
+        (Preview& preview, const FPack& fp, bool x) noexcept
+        -> strf::usual_printer_input<CharT, Preview, FPack, bool, my_bool_printer<CharT>>
     {
-        return {x, preview, fp};
+        return {preview, fp, x};
     }
 
-    template <typename CharT, typename... T, typename Preview, typename FPack>
+    template <typename CharT, typename Preview, typename FPack, typename... T>
     constexpr static STRF_HD auto make_input
-        (strf::value_with_format<T...> x, Preview& preview, const FPack& fp) noexcept
+        (Preview& preview, const FPack& fp, strf::value_with_format<T...> x) noexcept
     {
         return strf::make_printer_input<CharT>
-            ( strf::join(x.value()).set(x.get_alignment_format_data()), preview, fp );
+            ( preview, fp, strf::join(x.value()).set(x.get_alignment_format_data())  );
     }
 };
 
