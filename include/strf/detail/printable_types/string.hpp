@@ -470,7 +470,7 @@ struct string_printing
         < SrcCharT, false, false, strf::no_conv_format<SrcCharT> >;
 
     template <typename DestCharT, typename Preview, typename FPack>
-    constexpr STRF_HD static auto make_input
+    constexpr STRF_HD static auto make_printer_input
         (Preview& preview, const FPack& fp,  forwarded_type x ) noexcept
         -> strf::detail::string_printer_input<DestCharT, Preview, FPack>
     {
@@ -483,7 +483,7 @@ struct string_printing
 
     template < typename DestCharT, typename Preview, typename FPack
              , bool HasPrecision, bool HasAlignment, typename CvFormat >
-    constexpr STRF_HD static auto make_input
+    constexpr STRF_HD static auto make_printer_input
         ( Preview& preview
         , const FPack& fp
         , const strf::detail::string_with_format

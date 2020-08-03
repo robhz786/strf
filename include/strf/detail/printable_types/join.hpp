@@ -145,7 +145,7 @@ struct join_printing
 
     template< typename CharT, typename Preview, typename FPack
             , bool HasSplitPos, bool HasAlignment >
-    STRF_HD constexpr static auto make_input
+    STRF_HD constexpr static auto make_printer_input
         ( Preview& preview, const FPack& fp, fmt_tmpl<HasSplitPos, HasAlignment> x)
         -> join_printer_input
             < CharT, Preview, FPack, HasSplitPos, HasAlignment, FwdArgs... >

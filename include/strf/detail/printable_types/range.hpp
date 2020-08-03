@@ -121,7 +121,7 @@ struct print_traits<strf::range_p<It>>
     using fmt_type = strf::range_with_format<It>;
 
     template <typename CharT, typename Preview, typename FPack>
-    STRF_HD constexpr static auto make_input
+    STRF_HD constexpr static auto make_printer_input
         (Preview& preview, const FPack& fp,  forwarded_type x)
         -> strf::usual_printer_input
             < CharT, Preview, FPack, forwarded_type
@@ -131,7 +131,7 @@ struct print_traits<strf::range_p<It>>
     }
 
     template <typename CharT, typename Preview, typename FPack, typename... Fmts>
-    STRF_HD constexpr static auto make_input
+    STRF_HD constexpr static auto make_printer_input
         ( Preview& preview
         , const FPack& fp
         , strf::value_with_format<strf::print_traits<strf::range_p<It>>, Fmts...> x )
@@ -153,7 +153,7 @@ struct print_traits<strf::separated_range_p<It, SepCharT>>
     using fmt_type = strf::sep_range_with_format<It, SepCharT>;
 
     template <typename DestCharT, typename Preview, typename FPack>
-    STRF_HD constexpr static auto make_input
+    STRF_HD constexpr static auto make_printer_input
         (Preview& preview, const FPack& fp,  forwarded_type x)
         -> strf::usual_printer_input
             < DestCharT, Preview, FPack, forwarded_type
@@ -165,7 +165,7 @@ struct print_traits<strf::separated_range_p<It, SepCharT>>
     }
 
     template <typename DestCharT, typename Preview, typename FPack, typename... Fmts>
-    STRF_HD constexpr static auto make_input
+    STRF_HD constexpr static auto make_printer_input
         ( Preview& preview
         , const FPack& fp
         , strf::value_with_format
@@ -190,7 +190,7 @@ struct print_traits<strf::transformed_range_p<It, UnaryOp>>
     using forwarded_type = strf::transformed_range_p<It, UnaryOp>;
 
     template <typename CharT, typename Preview, typename FPack>
-    STRF_HD constexpr static auto make_input
+    STRF_HD constexpr static auto make_printer_input
         (Preview& preview, const FPack& fp,  forwarded_type x)
         -> strf::usual_printer_input
             < CharT, Preview, FPack, forwarded_type
@@ -207,7 +207,7 @@ struct print_traits<strf::separated_transformed_range_p<It, SepCharT, UnaryOp>>
     using forwarded_type = strf::separated_transformed_range_p<It, SepCharT, UnaryOp>;
 
     template <typename DestCharT, typename Preview, typename FPack>
-    STRF_HD constexpr static auto make_input
+    STRF_HD constexpr static auto make_printer_input
         (Preview& preview, const FPack& fp,  forwarded_type x)
         -> strf::usual_printer_input
             < DestCharT, Preview, FPack, forwarded_type

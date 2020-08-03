@@ -271,7 +271,7 @@ struct int_printing
     using fmt_type = strf::int_with_format<IntT, 10, false>;
 
     template <typename CharT, typename Preview, typename FPack>
-    constexpr STRF_HD static auto make_input
+    constexpr STRF_HD static auto make_printer_input
         (Preview& preview, const FPack& fp,  IntT x ) noexcept
         -> strf::detail::int_printer_input<CharT, Preview, FPack, IntT>
     {
@@ -280,7 +280,7 @@ struct int_printing
 
     template < typename CharT, typename Preview, typename FPack
              , int Base, bool HasAlignment >
-    constexpr STRF_HD static auto make_input
+    constexpr STRF_HD static auto make_printer_input
         ( Preview& preview
         , const FPack& fp
         , strf::int_with_format<IntT, Base, HasAlignment> x ) noexcept
@@ -370,7 +370,7 @@ struct voidptr_printing
         < voidptr_printing, strf::alignment_format_q<true> >;
 
     template <typename CharT, typename Preview, typename FPack>
-    constexpr STRF_HD static auto make_input
+    constexpr STRF_HD static auto make_printer_input
     ( Preview& preview, const FPack& fp, const void* x ) noexcept
     {
         auto f1 = strf::get_facet<strf::numpunct_c<16>, const void*>(fp);
@@ -382,7 +382,7 @@ struct voidptr_printing
     }
 
     template <typename CharT, typename Preview, typename FPack>
-    constexpr STRF_HD static auto make_input
+    constexpr STRF_HD static auto make_printer_input
         (Preview& preview, const FPack& fp,  fmt_type x ) noexcept
     {
         auto f1 = strf::get_facet<strf::numpunct_c<16>, const void*>(fp);

@@ -44,7 +44,7 @@ struct my_bool_printing_override
     using category = strf::print_override_c;
 
     template <typename CharT, typename Preview, typename FPack>
-    constexpr static STRF_HD auto make_input
+    constexpr static STRF_HD auto make_printer_input
         (Preview& preview, const FPack& fp, bool x) noexcept
         -> strf::usual_printer_input<CharT, Preview, FPack, bool, my_bool_printer<CharT>>
     {
@@ -52,7 +52,7 @@ struct my_bool_printing_override
     }
 
     template <typename CharT, typename Preview, typename FPack, typename... T>
-    constexpr static STRF_HD auto make_input
+    constexpr static STRF_HD auto make_printer_input
         (Preview& preview, const FPack& fp, strf::value_with_format<T...> x) noexcept
     {
         return strf::make_printer_input<CharT>

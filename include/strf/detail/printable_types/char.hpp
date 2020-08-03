@@ -27,7 +27,7 @@ struct char_printing
         , strf::alignment_format >;
 
     template <typename DestCharT, typename Preview, typename FPack>
-    constexpr STRF_HD static auto make_input
+    constexpr STRF_HD static auto make_printer_input
         ( Preview& preview, const FPack& fp, SrcCharT x ) noexcept
         -> strf::usual_printer_input
             < DestCharT, Preview, FPack, SrcCharT, strf::detail::char_printer<DestCharT> >
@@ -37,7 +37,7 @@ struct char_printing
     }
 
     template <typename DestCharT, typename Preview, typename FPack>
-    constexpr STRF_HD static auto make_input
+    constexpr STRF_HD static auto make_printer_input
         ( Preview& preview, const FPack& fp, fmt_type x ) noexcept
         -> strf::usual_printer_input
             < DestCharT, Preview, FPack, fmt_type, strf::detail::fmt_char_printer<DestCharT> >

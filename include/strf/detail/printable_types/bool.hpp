@@ -28,7 +28,7 @@ struct print_traits<bool>
         , strf::alignment_format >;
 
     template <typename CharT, typename Preview, typename FPack>
-    constexpr STRF_HD static auto make_input
+    constexpr STRF_HD static auto make_printer_input
         ( Preview& preview, const FPack& fp, bool x ) noexcept
         -> strf::usual_printer_input
             < CharT, Preview, FPack, bool, strf::detail::bool_printer<CharT> >
@@ -37,7 +37,7 @@ struct print_traits<bool>
     }
 
     template <typename CharT, typename Preview, typename FPack>
-    constexpr STRF_HD static auto make_input
+    constexpr STRF_HD static auto make_printer_input
         ( Preview& preview, const FPack& fp, fmt_type x ) noexcept
         -> strf::usual_printer_input
             < CharT, Preview, FPack, fmt_type, strf::detail::fmt_bool_printer<CharT> >

@@ -465,7 +465,7 @@ struct float_printing
     using fmt_type = strf::detail::float_with_format<FloatT>;
 
     template <typename CharT, typename Preview, typename FPack>
-    STRF_HD constexpr static auto make_input
+    STRF_HD constexpr static auto make_printer_input
         ( Preview& preview, const FPack& fp,  FloatT x ) noexcept
         -> std::conditional_t
             < strf::detail::has_punct<CharT, FPack, FloatT, 10>
@@ -477,7 +477,7 @@ struct float_printing
 
     template < typename CharT, typename Preview, typename FPack
              , strf::float_notation Notation, bool HasAlignment >
-    STRF_HD constexpr static auto make_input
+    STRF_HD constexpr static auto make_printer_input
         ( Preview& preview
         , const FPack& fp
         , strf::detail::float_with_format<FloatT, Notation, HasAlignment> x) noexcept
