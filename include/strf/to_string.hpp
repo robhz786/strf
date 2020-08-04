@@ -33,16 +33,8 @@ public:
         str_.reserve(size);
     }
 
-#if defined(STRF_NO_CXX17_COPY_ELISION)
-
-    basic_string_appender(basic_string_appender&&);
-
-#else // defined(STRF_NO_CXX17_COPY_ELISION)
-
     basic_string_appender(const basic_string_appender&) = delete;
     basic_string_appender(basic_string_appender&&) = delete;
-
-#endif // defined(STRF_NO_CXX17_COPY_ELISION)
 
     void recycle() override
     {
@@ -81,20 +73,18 @@ class basic_string_maker final: public strf::basic_outbuff<CharT>
 
 public:
 
-    basic_string_maker() : strf::basic_outbuff<CharT>(buf_, buf_size_)
+    basic_string_maker()
+        : strf::basic_outbuff<CharT>(buf_, buf_size_)
     {
     }
 
-#if defined(STRF_NO_CXX17_COPY_ELISION)
-
-    basic_string_maker(basic_string_maker&&);
-
-#else  // defined(STRF_NO_CXX17_COPY_ELISION)
+    basic_string_maker(strf::tag<void>)
+        : basic_string_maker()
+    {
+    }
 
     basic_string_maker(const basic_string_maker&) = delete;
     basic_string_maker(basic_string_maker&&) = delete;
-
-#endif // defined(STRF_NO_CXX17_COPY_ELISION)
 
     ~basic_string_maker() = default;
 
@@ -143,16 +133,8 @@ public:
         this->set_end(&*str_.begin() + count);
     }
 
-#if defined(STRF_NO_CXX17_COPY_ELISION)
-
-    basic_sized_string_maker(basic_sized_string_maker&&);
-
-#else // defined(STRF_NO_CXX17_COPY_ELISION)
-
     basic_sized_string_maker(const basic_sized_string_maker&) = delete;
     basic_sized_string_maker(basic_sized_string_maker&&) = delete;
-
-#endif // defined(STRF_NO_CXX17_COPY_ELISION)
 
     void recycle() override
     {
@@ -207,6 +189,7 @@ public:
 
     using char_type = CharT;
     using outbuff_type = strf::basic_string_appender<CharT, Traits, Allocator>;
+    using sized_outbuff_type = outbuff_type;
     using finish_type = void;
 
     basic_string_appender_creator
@@ -217,15 +200,14 @@ public:
 
     basic_string_appender_creator(const basic_string_appender_creator&) = default;
 
-    outbuff_type create() const
+    std::basic_string<CharT, Traits, Allocator>& create() const noexcept
     {
-        return outbuff_type{str_};
+        return str_;
     }
-
-    outbuff_type create(std::size_t size) const
+    std::basic_string<CharT, Traits, Allocator>& create(std::size_t size) const noexcept
     {
-        str_.reserve(str_.size() + size);
-        return outbuff_type{str_};
+         str_.reserve(str_.size() + size);
+         return str_;
     }
 
 private:
@@ -242,15 +224,16 @@ public:
 
     using char_type = CharT;
     using finish_type = std::basic_string<CharT, Traits, Allocator>;
+    using outbuff_type = strf::basic_string_maker<CharT, Traits, Allocator>;
+    using sized_outbuff_type = strf::basic_sized_string_maker<CharT, Traits, Allocator>;
 
-    strf::basic_string_maker<CharT, Traits, Allocator> create() const
+    strf::tag<void> create() const noexcept
     {
-        return strf::basic_string_maker<CharT, Traits, Allocator>{};
+        return strf::tag<void>{};
     }
-    strf::basic_sized_string_maker<CharT, Traits, Allocator>
-    create(std::size_t size) const
+    std::size_t create(std::size_t size) const noexcept
     {
-        return strf::basic_sized_string_maker<CharT, Traits, Allocator>{size};
+        return size;
     }
 };
 

@@ -13,7 +13,7 @@ class reservation_tester : public strf::basic_outbuff<char>
 
 public:
 
-    STRF_HD reservation_tester()
+    STRF_HD reservation_tester(strf::tag<void>)
         : strf::basic_outbuff<char>{ buff_, buff_ + buff_size_ }
         , buff_{0}
     {
@@ -26,21 +26,8 @@ public:
     {
     }
 
-#if defined(STRF_NO_CXX17_COPY_ELISION)
-
-    STRF_HD reservation_tester(const reservation_tester& other)
-        : strf::basic_outbuff<char>{ buff_, buff_ + buff_size_ }
-        , buff_{0}
-        , reserved_size_{other. reserved_size_}
-    {
-    }
-
-#else // defined(STRF_NO_CXX17_COPY_ELISION)
-
     reservation_tester(const reservation_tester&) = delete;
     reservation_tester(reservation_tester&&) = delete;
-
-#endif // defined(STRF_NO_CXX17_COPY_ELISION)
 
     void STRF_HD recycle() override
     {
@@ -63,14 +50,16 @@ class reservation_tester_creator
 public:
 
     using char_type = char;
+    using outbuff_type = reservation_tester;
+    using sized_outbuff_type = reservation_tester;
 
-    reservation_tester STRF_HD create() const
+    strf::tag<void> STRF_HD create() const
     {
-        return reservation_tester{};
+        return strf::tag<void>{};
     }
-    reservation_tester STRF_HD create(std::size_t size) const
+    std::size_t STRF_HD create(std::size_t size) const
     {
-        return reservation_tester{size};
+        return size;
     }
 };
 

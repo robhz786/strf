@@ -114,7 +114,7 @@ class sep_transformed_range_printer;
 } // namespace detail
 
 template <typename It>
-struct print_traits<strf::range_p<It>> 
+struct print_traits<strf::range_p<It>>
 {
     using facet_tag = void;
     using forwarded_type = strf::range_p<It>;

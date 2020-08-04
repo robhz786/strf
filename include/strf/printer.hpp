@@ -513,7 +513,7 @@ public:
     {
         return {};
     }
-    
+
     template < typename Arg
              , typename = std::enable_if_t< ! strf::detail::has_print_traits<Arg>::value> >
     constexpr STRF_HD auto operator()(Arg&& arg) const

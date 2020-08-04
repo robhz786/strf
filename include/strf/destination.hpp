@@ -348,7 +348,7 @@ private:
         ( const preview_type_&
         , const Printers& ... printers) const
     {
-        decltype(auto) ob = outbuff_creator_.create();
+        typename OutbuffCreator::outbuff_type ob{outbuff_creator_.create()};
         strf::detail::write_args(ob, printers...);
         return strf::detail::finish(strf::rank<2>(), ob);
     }
@@ -465,7 +465,7 @@ private:
         ( const preview_type_&
         , const Printers& ... printers) const
     {
-        decltype(auto) ob = outbuff_creator_.create(size_);
+        typename OutbuffCreator::sized_outbuff_type ob{outbuff_creator_.create(size_)};
         strf::detail::write_args(ob, printers...);
         return strf::detail::finish(strf::rank<2>(), ob);
     }
@@ -584,7 +584,8 @@ private:
         ( const preview_type_& preview
         , const Printers& ... printers ) const
     {
-        decltype(auto) ob = outbuff_creator_.create(preview.get_size());
+        std::size_t size = preview.get_size();
+        typename OutbuffCreator::sized_outbuff_type ob{outbuff_creator_.create(size)};
         strf::detail::write_args(ob, printers...);
         return strf::detail::finish(strf::rank<2>(), ob);
     }
@@ -601,6 +602,7 @@ class outbuff_reference
 public:
 
     using char_type = CharT;
+    using outbuff_type = strf::basic_outbuff<CharT>&;
 
     explicit STRF_HD outbuff_reference(strf::basic_outbuff<CharT>& ob) noexcept
         : ob_(ob)
@@ -634,6 +636,7 @@ public:
 
     using char_type = CharT;
     using finish_type = typename basic_cstr_writer<CharT>::result;
+    using outbuff_type = basic_cstr_writer<CharT>;
 
     constexpr STRF_HD
     basic_cstr_writer_creator(CharT* dest, CharT* dest_end) noexcept
@@ -643,9 +646,9 @@ public:
         STRF_ASSERT(dest < dest_end);
     }
 
-    STRF_HD basic_cstr_writer<CharT> create() const
+    STRF_HD typename basic_cstr_writer<CharT>::range create() const noexcept
     {
-        return basic_cstr_writer<CharT>{dest_, dest_end_};
+        return typename basic_cstr_writer<CharT>::range{dest_, dest_end_};
     }
 
 private:

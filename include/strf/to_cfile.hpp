@@ -27,12 +27,7 @@ public:
     STRF_HD narrow_cfile_writer() = delete;
 
     narrow_cfile_writer(const narrow_cfile_writer&) = delete;
-
-#ifdef STRF_NO_CXX17_COPY_ELISION
-    STRF_HD narrow_cfile_writer(narrow_cfile_writer&&);
-#else
     narrow_cfile_writer(narrow_cfile_writer&&) = delete;
-#endif
 
     STRF_HD ~narrow_cfile_writer()
     {
@@ -90,17 +85,8 @@ public:
     }
 
     wide_cfile_writer() = delete;
-
-#ifdef STRF_NO_CXX17_COPY_ELISION
-
-    wide_cfile_writer(wide_cfile_writer&&);
-
-#else // defined(STRF_NO_CXX17_COPY_ELISION)
-
     wide_cfile_writer(const wide_cfile_writer&) = delete;
     wide_cfile_writer(wide_cfile_writer&&) = delete;
-
-#endif // defined(STRF_NO_CXX17_COPY_ELISION)
 
     STRF_HD ~wide_cfile_writer()
     {
@@ -160,9 +146,9 @@ public:
     constexpr narrow_cfile_writer_creator
         (const narrow_cfile_writer_creator&) = default;
 
-    STRF_HD outbuff_type create() const
+    STRF_HD FILE* create() const
     {
-        return outbuff_type{file_};
+        return file_;
     }
 
 private:
@@ -183,9 +169,9 @@ public:
 
     constexpr wide_cfile_writer_creator(const wide_cfile_writer_creator&) = default;
 
-    STRF_HD outbuff_type create() const
+    STRF_HD FILE* create() const noexcept
     {
-        return outbuff_type{file_};
+        return file_;
     }
 
 private:

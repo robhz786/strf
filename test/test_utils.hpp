@@ -247,6 +247,21 @@ class input_tester
 
 public:
 
+    struct input{
+        strf::detail::simple_string_view<CharOut> expected;
+        const char* src_filename;
+        int src_line;
+        const char* function;
+        double reserve_factor;
+        std::size_t size = 0;
+    };
+
+    STRF_HD input_tester(input i)
+        : input_tester{ i.expected, i.src_filename, i.src_line, i.function
+                      , i.reserve_factor, i.size }
+    {
+    }
+
     STRF_HD input_tester
         ( strf::detail::simple_string_view<CharOut> expected
         , const char* src_filename
@@ -255,16 +270,8 @@ public:
         , double reserve_factor
         , std::size_t size = 0 );
 
-#ifdef STRF_NO_CXX17_COPY_ELISION
-
-    STRF_HD input_tester(input_tester&& r);
-
-#else
-
     STRF_HD input_tester(input_tester&& r) = delete;
     STRF_HD input_tester(const input_tester& r) = delete;
-
-#endif
 
     STRF_HD ~input_tester();
 
@@ -396,6 +403,7 @@ class input_tester_creator
 public:
 
     using char_type = CharT;
+    using sized_outbuff_type = test_utils::input_tester<CharT>;
 
     STRF_HD input_tester_creator
         ( strf::detail::simple_string_view<CharT> expected
@@ -414,10 +422,9 @@ public:
     input_tester_creator(const input_tester_creator& ) = default;
     input_tester_creator(input_tester_creator&& ) = default;
 
-    test_utils::input_tester<CharT> STRF_HD create(std::size_t size) const
+    typename test_utils::input_tester<CharT>::input STRF_HD create(std::size_t size) const
     {
-        return test_utils::input_tester<CharT>
-            { expected_, filename_, line_, function_, reserve_factor_, size };
+        return { expected_, filename_, line_, function_, reserve_factor_, size };
     }
 
 private:

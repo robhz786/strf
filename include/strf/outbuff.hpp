@@ -225,6 +225,14 @@ class basic_cstr_writer final: public strf::basic_outbuff_noexcept<CharT>
 {
 public:
 
+    struct range{ CharT* dest; CharT* dest_end; };
+
+    STRF_HD basic_cstr_writer(range r) noexcept
+        : basic_outbuff_noexcept<CharT>(r.dest, r.dest_end - 1)
+    {
+        STRF_ASSERT(r.dest < r.dest_end);
+    }
+
     STRF_HD basic_cstr_writer(CharT* dest, CharT* dest_end) noexcept
         : basic_outbuff_noexcept<CharT>(dest, dest_end - 1)
     {
