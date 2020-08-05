@@ -153,7 +153,7 @@ class printers_tuple_alias
 {
 public:
     using type = printers_tuple_impl
-        <CharT, ISeq, strf::printer_impl<CharT, Preview, FPack, Args> ...>;
+        <CharT, ISeq, strf::printer_type<CharT, Preview, FPack, Args> ...>;
 };
 
 template < typename CharT, typename Preview, typename FPack, typename ... Args >

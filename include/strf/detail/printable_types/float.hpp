@@ -411,7 +411,7 @@ template
     < typename FloatT
     , strf::float_notation Notation = strf::float_notation::general
     , bool Align = false >
-using float_with_format = value_with_format
+using float_with_format = strf::value_with_format
     < strf::detail::float_printing<FloatT>
     , strf::float_format<Notation>
     , strf::alignment_format_q<Align> >;

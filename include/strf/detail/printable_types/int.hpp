@@ -371,7 +371,7 @@ struct voidptr_printing
 
     template <typename CharT, typename Preview, typename FPack>
     constexpr STRF_HD static auto make_printer_input
-    ( Preview& preview, const FPack& fp, const void* x ) noexcept
+        ( Preview& preview, const FPack& fp, const void* x ) noexcept
     {
         auto f1 = strf::get_facet<strf::numpunct_c<16>, const void*>(fp);
         auto f2 = strf::get_facet<strf::lettercase_c, const void*>(fp);
@@ -383,7 +383,7 @@ struct voidptr_printing
 
     template <typename CharT, typename Preview, typename FPack>
     constexpr STRF_HD static auto make_printer_input
-        (Preview& preview, const FPack& fp,  fmt_type x ) noexcept
+        ( Preview& preview, const FPack& fp,  fmt_type x ) noexcept
     {
         auto f1 = strf::get_facet<strf::numpunct_c<16>, const void*>(fp);
         auto f2 = strf::get_facet<strf::lettercase_c, const void*>(fp);

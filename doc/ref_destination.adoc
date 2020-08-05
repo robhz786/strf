@@ -5,7 +5,7 @@ See accompanying file LICENSE_1_0.txt or copy at
 http://www.boost.org/LICENSE_1_0.txt
 ////
 
-:printer_impl: <<printer_impl,printer_impl>>
+:printer_type: <<printer_type,printer_type>>
 :printer: <<printer,printer>>
 :tag: <<tag,tag>>
 :print_preview: <<print_preview,print_preview>>
@@ -281,7 +281,7 @@ typename OutbuffCreator::outbuff_type ob{_outbuff_creator.create()};
 ----
 using preview_type = {print_preview}<preview_size::no, preview_width::no>;
 preview_type preview;
-using printer_type = {printer_impl}<char_type, preview_type, FPack, Arg>;
+using printer_type = {printer_type}<char_type, preview_type, FPack, Arg>;
 printer_type p{ {make_printer_input}<char_type>(preview, &#95;fpack, arg) };
 static_cast<const {printer}<char_type>&>(p).print_to(ob);
 ----
@@ -556,7 +556,7 @@ template <typename\... Args>
 /{asterisk}\...{asterisk}/ operator()(const Args&\... args) const;
 ----
 Compile-time requirements::
-- All types in `Args\...` are <<PrintableWithSizePreview,_PrintableWithSizePreview_>>.
+- All types in `Args\...` are <<Printable,_Printable_>>.
 Effect::
 . Creates an object `preview` of type
   `{print_preview}<preview_size::yes, preview_width::no>`.
@@ -570,7 +570,7 @@ preview_type preview;
 +
 [source,cpp,subs=normal]
 ----
-using printer_type = {printer_impl}<char_type, preview_type, FPack, Arg>;
+using printer_type = {printer_type}<char_type, preview_type, FPack, Arg>;
 printer_type p{ {make_printer_input}<char_type>(preview, &#95;fpack, arg) };
 ----
 . Creates/get the <<basic_outbuff,outbuff>> object doing
@@ -604,7 +604,7 @@ template <typename ... Args>
           , const Args&\... args) const;
 ----
 Compile-time requirements::
-- All types in `Args\...` are <<PrintableWithSizePreview,_PrintableWithSizePreview_>>.
+- All types in `Args\...` are <<Printable,_Printable_>>.
 Effect:: __to-do__
 
 ////
@@ -614,7 +614,7 @@ Effect:: __to-do__
 ----
 print_preview<preview_size::yes, preview_width::no> preview;
 auto p = static_cast< const {printer}<sizeof(CharT)>& >
-    ( {printer_impl}<CharT, FPack, T>{ fpack, preview, x, {tag}<CharT>{} } )
+    ( {printer_type}<CharT, FPack, T>{ fpack, preview, x, {tag}<CharT>{} } )
 ----
 . Calculates the size of the content to be printed according to the
   <<tr_string,tr-string syntax>> and using the `preview` objects
@@ -886,7 +886,7 @@ decltype(auto) ob = _outbuff_creator.create(_size)
 ----
 using preview_type = {print_preview}<preview_size::no, preview_width::no>;
 preview_type preview;
-using printer_type = {printer_impl}<char_type, preview_type, FPack, Arg>;
+using printer_type = {printer_type}<char_type, preview_type, FPack, Arg>;
 printer_type p{ {make_printer_input}<char_type>(preview, &#95;fpack, arg) };
 static_cast<const {printer}<char_type>&>(p).print_to(ob);
 ----
@@ -925,7 +925,7 @@ decltype(auto) ob = _outbuff_creator.create(_size)
 [source,cpp,subs=normal]
 ----
 auto p = static_cast< const {printer}<sizeof(CharT)>& >
-    ( {printer_impl}<CharT, FPack, T>{fpack, preview, x, chtag} )
+    ( {printer_type}<CharT, FPack, T>{fpack, preview, x, chtag} )
 ----
 , where `preview` is an instance of `preview<false, false>`,
 abs `chtag` is an expression of type `{tag}<CharT>`.

@@ -35,7 +35,7 @@ class destination_common
     using char_type_ = typename OutbuffCreator::char_type;
 
     template <typename Arg>
-    using printer_ = strf::printer_impl<char_type_, Preview, FPack, Arg>;
+    using printer_ = strf::printer_type<char_type_, Preview, FPack, Arg>;
 
 public:
 

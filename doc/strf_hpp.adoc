@@ -7,10 +7,11 @@ http://www.boost.org/LICENSE_1_0.txt
 [[main]]
 = `<strf.hpp>` Header file reference
 :source-highlighter: prettify
-:sectnums:
 :toc: left
 :toc-title: <strf.hpp>
 :toclevels: 2
+:sectnums:
+:sectnumlevels: 2
 :icons: font
 
 :value_with_format: <<value_with_format,value_with_format>>
@@ -54,15 +55,15 @@ even when `STRF_FREESTANDING` is defined.
 ////
 
 include::ref_facets_pack.adoc[]
+include::ref_printer.adoc[]
+include::ref_format_functions.adoc[]
+include::ref_printable_types.adoc[]
 include::ref_destination.adoc[]
 include::ref_tr-string.adoc[]
-include::ref_printable_types.adoc[]
 include::ref_char_encoding.adoc[]
 include::ref_width.adoc[]
 
-// include::ref_printer.adoc[]
 // include::ref_input_types.adoc[]
-// include::ref_format_functions.adoc[]
 
 == Numeric punctuation
 

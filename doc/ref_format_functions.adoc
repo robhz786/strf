@@ -5,18 +5,122 @@ See accompanying file LICENSE_1_0.txt or copy at
 http://www.boost.org/LICENSE_1_0.txt
 ////
 
+:fmt_type: <<fmt_type,fmt_type>>
+:fmt: <<fmt,fmt>>
+
 == Format functions
+
+=== Global format functions
+[[format_function_aliases]]
+[source,cpp,subs=normal]
+----
+namespace strf {
+inline namespace format_functions {
+
+constexpr /{asterisk}...{asterisk}/ hex {};
+constexpr /{asterisk}...{asterisk}/ dec {};
+constexpr /{asterisk}...{asterisk}/ oct {};
+constexpr /{asterisk}...{asterisk}/ bin {};
+constexpr /{asterisk}...{asterisk}/ fixed {};
+constexpr /{asterisk}...{asterisk}/ sci {};
+constexpr /{asterisk}...{asterisk}/ gen {};
+constexpr /{asterisk}...{asterisk}/ multi {};
+constexpr /{asterisk}...{asterisk}/ conv {};
+constexpr /{asterisk}...{asterisk}/ sani {};
+constexpr /{asterisk}...{asterisk}/ right {};
+constexpr /{asterisk}...{asterisk}/ left {};
+constexpr /{asterisk}...{asterisk}/ center {};
+constexpr /{asterisk}...{asterisk}/ split {};
+
+} // inline namespace format_functions
+} // namespace strf
+----
+
+The `format_functions` inline namespace contains callable objects
+that work as alias to format functions
+
+[%header,cols="22,25"]
+|===
+| Expression | Equivalent Expression
+|`left(_arg_, _width_)`        |`{fmt}(_arg_) < _width_`
+|`right(_arg_, _width_)`       |`{fmt}(_arg_) > _width_`
+|`center(_arg_, _width_)`      |`{fmt}(_arg_) ^ _width_`
+|`split(_arg_, _width_)`       |`{fmt}(_arg_) % _width_`
+|`left(_arg_, _width_, _ch_)`  |`{fmt}(_arg_).fill(_ch_) < _width_`
+|`right(_arg_, _width_, _ch_)` |`{fmt}(_arg_).fill(_ch_) > _width_`
+|`center(_arg_, _width_, _ch_)`|`{fmt}(_arg_).fill(_ch_) ^ _width_`
+|`split(_arg_, _width_, _ch_)` |`{fmt}(_arg_).fill(_ch_) % _width_`
+|`bin(_arg_)`                  |`{fmt}(_arg_).bin()`
+|`dec(_arg_)`                  |`{fmt}(_arg_).oct()`
+|`oct(_arg_)`                  |`{fmt}(_arg_).dec()`
+|`hex(_arg_)`                  |`{fmt}(_arg_).hex()`
+|`sci(_arg_)`                  |`{fmt}(_arg_).sic()`
+|`fixed(_arg_)`                |`{fmt}(_arg_).fixed()`
+|`gen(_arg_)`                  |`{fmt}(_arg_).gen()`
+|`sci(_arg_, _precision_)`     |`{fmt}(_arg_).sic().p(_precision_)`
+|`fixed(_arg_, _precision_)`   |`{fmt}(_arg_).fixed().p(_precision_)`
+|`gen(_arg_, _precision_)`     |`{fmt}(_arg_).gen().p(_precision_)`
+|`multi(_arg_, _count_)`       |`{fmt}(_arg_).multi(_count_)`
+|`sani(_arg_, _enc_)`          |`{fmt}(_arg_).sani(_enc_)`
+|`conv(_arg_, _enc_)`          |`{fmt}(_arg_).conv(_enc_)`
+|`sani(_arg_)`                 |`{fmt}(_arg_).sani()`
+|`conv(_arg_)`                 |`{fmt}(_arg_).cont()`
+|===
+
+=== Callable object `fmt` [[fmt]]
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template <typename T>
+using fmt_value_type = typename {fmt_type}<T>::value_type;
+
+constexpr struct /{asterisk}...{asterisk}/ {
+    template <typename T>
+    constexpr {fmt_type}<T> operator()(T&& value) const
+        noexcept(noexcept({fmt_type}<T>fmt_value_type<T>{(T&&)value}}))
+    {
+        return {fmt_type}<T>{fmt_value_type<T>{(T&&)value}};
+    }
+} fmt;
+
+} // namespace strf
+----
+
+=== Type alias template `fmt_type` [[fmt_type]]
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template <typename T>
+using fmt_type = /{asterisk}...{asterisk}/;
+
+} // namespace strf
+----
+
+`fmt_type<T>` is:
+
+* `T`, when `T` is `{value_with_format}</{asterisk} ... {asterisk}/>`
+* `{print_traits_of}<T>::<<PrintTraits,fmt_type>>`, otherwise
+
+`fmt_type<T>` is always expected to be an instance of `{value_with_format}` class template.
 
 [[value_with_format]]
 === Class template `value_with_format`
 [source,cpp]
 ----
-template <typename ValueType, class ... Fmts>
+namespace strf {
+
+template <typename ValueType, class... Fmts>
 class value_with_format;
+
+} // namespace strf
 ----
 ::
 Compile-time requirements:::
-- All types in `Fmt\...` satisfy <<Formatter,Formatter>>.
+- All types in `Fmt\...` satisfy <<Format,Format>>.
 - All types in `Fmt\...` are different.
 
 The purpose of the `value_with_format` class template is to aid
@@ -31,9 +135,9 @@ type, and the types in `Fmts\...` defines the format functions.
 ----
 namespace strf {
 
-template <typename ValueType, class ... Fmts>
+template <typename ValueType, class... Fmts>
 class value_with_format
-    : public Fmts::template fn<value_with_format<ValueType, Fmts ...>> ...
+    : public Fmts::template fn<value_with_format<ValueType, Fmts...>>...
 {
 public:
 
@@ -52,13 +156,11 @@ public:
         , value_with_format<OtherValueType, Fmts...>&& );
 
 
-    template <typename ... OtherFmts>
-    constexpr value_with_format
-        ( const value_with_format<ValueType, OtherFmts...>& );
+    template <typename... OtherFmts>
+    constexpr value_with_format(const value_with_format<ValueType, OtherFmts...>&);
 
-    template <typename ... OtherFmts>
-    constexpr value_with_format
-        ( value_with_format<ValueType, OtherFmts...>&& );
+    template <typename... OtherFmts>
+    constexpr value_with_format(value_with_format<ValueType, OtherFmts...>&&);
 
 
     constexpr const ValueType& value() const;
@@ -68,15 +170,15 @@ public:
 ----
 To-do
 
-[[Formatter]]
-=== Type requirement _Formatter_
+[[Format]]
+=== Type requirement _Format_
 
 // This is the requirement for a type to be a paramenter of the `value_with_format`
 // template.
-A type `Fmt` is a _Formatter_ if it has a member `fn` that is a type template
+A type `Fmt` is a _Format_ if it has a member `fn` that is a type template
 with one template type parameter such that, given any types `T` and `U`:
 
-- `Fmt::template fn<T>` is well formed if `T` is `value_with_format<ValueType, Fmts \...>`.
+- `Fmt::template fn<T>` is well formed if `T` is `value_with_format<ValueType, Fmts\...>`.
   In this case, note that `Fmt` is in `Fmts\...` and `T` derives from `Fmt::template fn<T>`.
 - `Fmt::template fn<T>` is default constructible, assuming it is well formed.
 - `Fmt::template fn<T>` can be constructed from `const Fmt::template fn<U>&`,
@@ -120,7 +222,7 @@ with one template type parameter such that, given any types `T` and `U`:
 // ----
 
 [[alignment_format]]
-=== _Formatter_ `alignment_format`
+=== _Format_ `alignment_format`
 
 [source,cpp,subs=normal]
 ----
@@ -160,7 +262,7 @@ public:
     constexpr T&& operator<(int width) && noexcept; // left
     constexpr T&& operator>(int width) && noexcept; // right
     constexpr T&& operator^(int width) && noexcept; // center
-    constexpr T&& operator%(int width) && noexcept; // split, a.k.a internal
+    constexpr T&& operator%(int width) && noexcept; // split, aka internal
     constexpr T&& fill(char32_t ch) && noexcept;
 
     // <<alignment_format_fn_observers,observers>>
@@ -353,7 +455,7 @@ constexpr bool operator!=(alignment_format_data lhs, alignment_format_data rhs) 
 ----
 
 [[int_format]]
-=== _Formatter_ `int_format`
+=== _Format_ `int_format`
 
 [source,cpp,subs=normal]
 ----
@@ -514,7 +616,7 @@ Return value:::
 ====
 
 [[float_format]]
-=== _Formatter_ `float_format`
+=== _Format_ `float_format`
 
 [source,cpp,subs=normal]
 ----
@@ -681,7 +783,7 @@ showpoint:: Prints the decimal point even when there are no fractional digits.
 showpos:: Prints the positive sign `'+'` when the value is positive.
 
 [[quantity_format]]
-=== _Formatter_ `quantity_format`
+=== _Format_ `quantity_format`
 [source,cpp]
 ----
 namespace strf {
@@ -748,6 +850,3 @@ Postconditions::: `count() == count`
 Return value::: `static_cast<T&&>(*this)`
 ====
 
-=== Global format functions
-
-include::ref_global_format_functions.adoc[]

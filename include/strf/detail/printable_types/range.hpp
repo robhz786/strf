@@ -168,8 +168,7 @@ struct print_traits<strf::separated_range_p<It, SepCharT>>
     STRF_HD constexpr static auto make_printer_input
         ( Preview& preview
         , const FPack& fp
-        , strf::value_with_format
-            < strf::print_traits<strf::separated_range_p<It, SepCharT>>, Fmts... > x )
+        , strf::value_with_format<strf::print_traits<strf::separated_range_p<It, SepCharT>>, Fmts...> x )
         ->  strf::usual_printer_input
             < DestCharT
             , Preview, FPack
@@ -244,7 +243,7 @@ public:
 private:
 
     template <typename Preview>
-    using printer_type_ = strf::printer_impl
+    using printer_type_ = strf::printer_type
         < CharT, Preview, FPack, std::remove_cv_t<value_type> >;
 
     STRF_HD void preview_
@@ -310,7 +309,7 @@ public:
 private:
 
     template <typename Preview>
-    using printer_type_ = strf::printer_impl
+    using printer_type_ = strf::printer_type
         < CharT, Preview, FPack, std::remove_cv_t<value_type> >;
 
     constexpr STRF_HD void preview_
@@ -427,7 +426,7 @@ public:
 private:
 
     template <typename Preview>
-    using printer_type_ = strf::printer_impl
+    using printer_type_ = strf::printer_type
         < CharT, Preview, FPack, value_fmt_type_adapted_ >;
 
     STRF_HD void preview_
@@ -511,7 +510,7 @@ public:
 private:
 
     template <typename Preview>
-    using printer_type_ = strf::printer_impl
+    using printer_type_ = strf::printer_type
         < CharT, Preview, FPack, value_fmt_type_adapted_ >;
 
     STRF_HD void preview_
@@ -630,7 +629,7 @@ public:
 private:
 
     template <typename Preview>
-    using printer_type_ = strf::printer_impl
+    using printer_type_ = strf::printer_type
         < CharT
         , Preview, FPack
         , std::remove_reference_t
@@ -702,7 +701,7 @@ public:
 private:
 
     template <typename Preview>
-    using printer_type_ = strf::printer_impl
+    using printer_type_ = strf::printer_type
         < CharT
         , Preview, FPack
         , std::remove_reference_t

@@ -288,7 +288,4 @@ Return type and value:: Same as `to(dest, (std::size_t)(end - dest))`;
 `operator%(std::int16_t width)`::: Split the content, as in `std::internal`.
 `fill(char32_t ch)`::: Set the fill character.
 
-=== Format function aliases
-
-include::ref_global_format_functions.adoc[]
 
