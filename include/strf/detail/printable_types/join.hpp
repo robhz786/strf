@@ -398,16 +398,21 @@ STRF_HD void aligned_join_printer_impl<CharT, Printers...>::print_split_
         ( printers_(), ob, encode_fill_func_, fillcount_, afmt_.fill, split_pos_ );
 }
 
+template <typename CharT, typename Preview, typename FPack, typename Arg>
+struct print_impl_with_width_preview_;
+
+template < typename CharT, strf::preview_size PrevSize, strf::preview_width PrevWidth
+         , typename FPack, typename Arg >
+struct print_impl_with_width_preview_<CharT, print_preview<PrevSize, PrevWidth>, FPack, Arg>
+{
+    using type = strf::printer_impl
+        < CharT, strf::print_preview <PrevSize, strf::preview_width::yes>, FPack, Arg >;
+};
+
 template<typename CharT, typename Preview, typename FPack, typename... Args>
 using aligned_join_printer_impl_of = strf::detail::aligned_join_printer_impl
     < CharT
-    , strf::printer_impl
-        < CharT
-        , strf::print_preview
-            < static_cast<strf::preview_size>(Preview::size_required)
-            , strf::preview_width::yes >
-        , FPack
-        , Args >... >;
+    , typename print_impl_with_width_preview_<CharT, Preview, FPack, Args>::type... >;
 
 template<typename CharT, typename Preview, typename FPack, typename... FwdArgs>
 class aligned_join_printer
