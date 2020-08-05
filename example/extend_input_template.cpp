@@ -21,14 +21,14 @@ struct base_printing {
     using forwarded_type = const xxx::base<T>&;
 
     template <typename CharT, typename Preview, typename FPack>
-    static auto make_printer_input(Preview& preview, const FPack& fp, forwarded_type x ) noexcept
+    static auto make_printer_input(Preview& preview, const FPack& fp, forwarded_type x) noexcept
     {
         return strf::make_default_printer_input<CharT>(preview, fp, x.value);
     }
 };
 
 template <typename T>
-inline base_printing<T> tag_invoke(strf::print_traits_tag, const xxx::base<T>& x)
+inline base_printing<T> tag_invoke(strf::print_traits_tag, const xxx::base<T>&)
     { return {}; }
 
 } // namespace strf
