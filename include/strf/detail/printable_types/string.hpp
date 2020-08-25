@@ -71,40 +71,40 @@ private:
 } // namespace detail
 
 template <typename CharT>
-struct no_conv_format;
+struct no_conv_formatter;
 
 template <typename CharT>
-struct conv_format;
+struct conv_formatter;
 
 template <typename Encoding>
-struct conv_format_with_encoding;
+struct conv_formatter_with_encoding;
 
 template <typename CharT>
-struct sani_format;
+struct sani_formatter;
 
 template <typename Encoding>
-struct sani_format_with_encoding;
+struct sani_formatter_with_encoding;
 
 template <typename T, typename CharT>
-class no_conv_format_fn
+class no_conv_formatter_fn
 {
 public:
 
-    constexpr STRF_HD no_conv_format_fn() noexcept
+    constexpr STRF_HD no_conv_formatter_fn() noexcept
     {
     }
 
     template <typename U>
-    constexpr STRF_HD explicit no_conv_format_fn
-        ( const no_conv_format_fn<U, CharT>& ) noexcept
+    constexpr STRF_HD explicit no_conv_formatter_fn
+        ( const no_conv_formatter_fn<U, CharT>& ) noexcept
     {
     }
 
     constexpr STRF_HD auto convert_encoding() const
     {
         using return_type = strf::fmt_replace< T
-                                             , strf::no_conv_format<CharT>
-                                             , strf::conv_format<CharT> >;
+                                             , strf::no_conv_formatter<CharT>
+                                             , strf::conv_formatter<CharT> >;
         return return_type{ static_cast<const T&>(*this) };
     }
 
@@ -115,12 +115,12 @@ public:
                      , "This encoding is associated with another character type." );
         using return_type = strf::fmt_replace
             < T
-            , strf::no_conv_format<CharT>
-            , strf::conv_format_with_encoding<Encoding> >;
+            , strf::no_conv_formatter<CharT>
+            , strf::conv_formatter_with_encoding<Encoding> >;
 
         return return_type
             { static_cast<const T&>(*this)
-            , strf::tag<strf::conv_format_with_encoding<Encoding>>{}
+            , strf::tag<strf::conv_formatter_with_encoding<Encoding>>{}
             , enc };
     }
     constexpr STRF_HD auto conv() const
@@ -136,8 +136,8 @@ public:
     constexpr STRF_HD auto sanitize_encoding() const
     {
         using return_type = strf::fmt_replace< T
-                                             , strf::no_conv_format<CharT>
-                                             , strf::sani_format<CharT> >;
+                                             , strf::no_conv_formatter<CharT>
+                                             , strf::sani_formatter<CharT> >;
         return return_type{ static_cast<const T&>(*this) };
     }
     template <typename Encoding>
@@ -147,12 +147,12 @@ public:
                      , "This encoding is associated with another character type." );
         using return_type = strf::fmt_replace
             < T
-            , strf::no_conv_format<CharT>
-            , strf::sani_format_with_encoding<Encoding> >;
+            , strf::no_conv_formatter<CharT>
+            , strf::sani_formatter_with_encoding<Encoding> >;
 
         return return_type
             { static_cast<const T&>(*this)
-            , strf::tag<strf::sani_format_with_encoding<Encoding>>{}
+            , strf::tag<strf::sani_formatter_with_encoding<Encoding>>{}
             , enc };
     }
     constexpr STRF_HD auto sani() const
@@ -167,41 +167,41 @@ public:
 };
 
 template <typename T, typename CharT>
-struct conv_format_fn
+struct conv_formatter_fn
 {
-    constexpr STRF_HD conv_format_fn() noexcept
+    constexpr STRF_HD conv_formatter_fn() noexcept
     {
     }
 
     template <typename U>
-    constexpr STRF_HD explicit conv_format_fn
-        ( const conv_format_fn<U, CharT>& ) noexcept
+    constexpr STRF_HD explicit conv_formatter_fn
+        ( const conv_formatter_fn<U, CharT>& ) noexcept
     {
     }
 
     template <typename U>
-    constexpr STRF_HD explicit conv_format_fn
-        ( const strf::no_conv_format_fn<U, CharT>& ) noexcept
+    constexpr STRF_HD explicit conv_formatter_fn
+        ( const strf::no_conv_formatter_fn<U, CharT>& ) noexcept
     {
     }
 };
 
 template <typename T, typename Encoding>
-class conv_format_with_encoding_fn
+class conv_formatter_with_encoding_fn
 {
 public:
 
-    STRF_HD conv_format_with_encoding_fn(Encoding e)
+    STRF_HD conv_formatter_with_encoding_fn(Encoding e)
         : encoding_(e)
     {
     }
 
-    conv_format_with_encoding_fn
-        ( const conv_format_with_encoding_fn& other ) noexcept = default;
+    conv_formatter_with_encoding_fn
+        ( const conv_formatter_with_encoding_fn& other ) noexcept = default;
 
     template <typename U>
-    STRF_HD explicit conv_format_with_encoding_fn
-        ( const strf::conv_format_with_encoding_fn<U, Encoding>& other ) noexcept
+    STRF_HD explicit conv_formatter_with_encoding_fn
+        ( const strf::conv_formatter_with_encoding_fn<U, Encoding>& other ) noexcept
         : encoding_(other.get_encoding())
     {
     }
@@ -217,48 +217,48 @@ private:
 };
 
 template <typename CharT>
-struct no_conv_format
+struct no_conv_formatter
 {
     template <typename T>
-    using fn = strf::no_conv_format_fn<T, CharT>;
+    using fn = strf::no_conv_formatter_fn<T, CharT>;
 };
 
 template <typename CharT>
-struct conv_format
+struct conv_formatter
 {
     template <typename T>
-    using fn = strf::conv_format_fn<T, CharT>;
+    using fn = strf::conv_formatter_fn<T, CharT>;
 };
 
 template <typename Encoding>
-struct conv_format_with_encoding
+struct conv_formatter_with_encoding
 {
     template <typename T>
-    using fn = strf::conv_format_with_encoding_fn<T, Encoding>;
+    using fn = strf::conv_formatter_with_encoding_fn<T, Encoding>;
 };
 
 template <typename CharT>
-struct sani_format
+struct sani_formatter
 {
     template <typename T>
-    using fn = strf::conv_format_fn<T, CharT>;
+    using fn = strf::conv_formatter_fn<T, CharT>;
 };
 
 template <typename Encoding>
-struct sani_format_with_encoding
+struct sani_formatter_with_encoding
 {
     template <typename T>
-    using fn = strf::conv_format_with_encoding_fn<T, Encoding>;
+    using fn = strf::conv_formatter_with_encoding_fn<T, Encoding>;
 };
 
 template <typename T, bool Active>
-class string_precision_format_fn;
+class string_precision_formatter_fn;
 
 template <bool Active>
-struct string_precision_format
+struct string_precision_formatter
 {
     template <typename T>
-    using fn = strf::string_precision_format_fn<T, Active>;
+    using fn = strf::string_precision_formatter_fn<T, Active>;
 };
 
 template <bool Active>
@@ -273,16 +273,16 @@ struct string_precision<true>
 };
 
 template <typename T>
-class string_precision_format_fn<T, true>
+class string_precision_formatter_fn<T, true>
 {
 public:
-    constexpr STRF_HD string_precision_format_fn(strf::width_t p) noexcept
+    constexpr STRF_HD string_precision_formatter_fn(strf::width_t p) noexcept
         : precision_(p)
     {
     }
     template <typename U>
-    constexpr STRF_HD string_precision_format_fn
-        ( strf::string_precision_format_fn<U, true> other ) noexcept
+    constexpr STRF_HD string_precision_formatter_fn
+        ( strf::string_precision_formatter_fn<U, true> other ) noexcept
         : precision_(other.precision())
     {
     }
@@ -307,26 +307,26 @@ private:
 
 
 template <typename T>
-class string_precision_format_fn<T, false>
+class string_precision_formatter_fn<T, false>
 {
     using adapted_derived_type_
         = strf::fmt_replace< T
-                           , strf::string_precision_format<false>
-                           , strf::string_precision_format<true> >;
+                           , strf::string_precision_formatter<false>
+                           , strf::string_precision_formatter<true> >;
 public:
 
-    constexpr STRF_HD string_precision_format_fn() noexcept
+    constexpr STRF_HD string_precision_formatter_fn() noexcept
     {
     }
     template <typename U>
-    constexpr STRF_HD string_precision_format_fn
-        ( strf::string_precision_format_fn<U, false> ) noexcept
+    constexpr STRF_HD string_precision_formatter_fn
+        ( strf::string_precision_formatter_fn<U, false> ) noexcept
     {
     }
     constexpr STRF_HD adapted_derived_type_ p(strf::width_t precision) const noexcept
     {
         return { static_cast<const T&>(*this)
-               , strf::tag<string_precision_format<true> >{}
+               , strf::tag<string_precision_formatter<true> >{}
                , precision };
     }
     constexpr STRF_HD auto get_string_precision() const noexcept
@@ -374,7 +374,7 @@ struct mp_string_printer
 template <typename DestCharT, typename SrcCharT, bool HasPrecision, bool HasAlignment >
 struct mp_string_printer
     < DestCharT, SrcCharT, HasPrecision, HasAlignment
-    , strf::no_conv_format<SrcCharT> >
+    , strf::no_conv_formatter<SrcCharT> >
 {
     static_assert( std::is_same<SrcCharT, DestCharT>::value
                  , "Character type mismatch. Use `conv` function." );
@@ -388,7 +388,7 @@ struct mp_string_printer
 template < typename DestCharT, typename SrcCharT, bool HasPrecision, bool HasAlignment >
 struct mp_string_printer
     < DestCharT, SrcCharT, HasPrecision, HasAlignment
-    , strf::conv_format<SrcCharT> >
+    , strf::conv_formatter<SrcCharT> >
 {
     using type = std::conditional_t
         < std::is_same<SrcCharT,DestCharT>::value
@@ -414,7 +414,7 @@ template < typename DestCharT, typename SrcCharT, bool HasPrecision
          , bool HasAlignment, typename Encoding >
 struct mp_string_printer
     < DestCharT, SrcCharT, HasPrecision, HasAlignment
-    , strf::conv_format_with_encoding<Encoding> >
+    , strf::conv_formatter_with_encoding<Encoding> >
 {
     static_assert( std::is_same<typename Encoding::char_type, SrcCharT>::value
                  , "This encoding is associated with another character type." );
@@ -437,10 +437,10 @@ template <typename SrcCharT>
 struct string_printing;
 
 template <typename SrcCharT, bool HasPrecision, bool HasAlignment, typename CvFormat>
-using string_with_format = strf::value_with_format
+using string_with_formatters = strf::value_with_formatters
     < string_printing<SrcCharT>
-    , strf::string_precision_format<HasPrecision>
-    , strf::alignment_format_q<HasAlignment>
+    , strf::string_precision_formatter<HasPrecision>
+    , strf::alignment_formatter_q<HasAlignment>
     , CvFormat >;
 
 template < typename DestCharT, typename SrcCharT
@@ -452,7 +452,7 @@ struct fmt_string_printer_input
         < DestCharT, SrcCharT, HasPrecision, HasAlignment, CvFormat>
         :: type;
 
-    strf::detail::string_with_format<SrcCharT, HasPrecision, HasAlignment, CvFormat> arg;
+    strf::detail::string_with_formatters<SrcCharT, HasPrecision, HasAlignment, CvFormat> arg;
     Preview& preview;
     FPack fp;
 };
@@ -466,8 +466,8 @@ struct string_printing
     using facet_tag = strf::string_input_tag<SrcCharT>;
 #endif
     using forwarded_type = strf::detail::simple_string_view<SrcCharT>;
-    using fmt_type = strf::detail::string_with_format
-        < SrcCharT, false, false, strf::no_conv_format<SrcCharT> >;
+    using fmt_type = strf::detail::string_with_formatters
+        < SrcCharT, false, false, strf::no_conv_formatter<SrcCharT> >;
 
     template <typename DestCharT, typename Preview, typename FPack>
     constexpr STRF_HD static auto make_printer_input
@@ -486,7 +486,7 @@ struct string_printing
     constexpr STRF_HD static auto make_printer_input
         ( Preview& preview
         , const FPack& fp
-        , const strf::detail::string_with_format
+        , const strf::detail::string_with_formatters
             < SrcCharT, HasPrecision, HasAlignment, CvFormat >& x ) noexcept
         -> strf::detail::fmt_string_printer_input
             < DestCharT, SrcCharT, HasPrecision, HasAlignment, CvFormat, Preview, FPack>
@@ -680,7 +680,7 @@ public:
             input )
         : str_(input.arg.value().data())
         , len_(input.arg.value().size())
-        , afmt_(input.arg.get_alignment_format_data())
+        , afmt_(input.arg.get_alignment_format())
     {
 
         decltype(auto) wcalc = get_facet_<strf::width_calculator_c>(input.fp);
@@ -703,7 +703,7 @@ public:
             < DestCharT, SrcCharT, true, true, CvFormat, Preview, FPack >&
             input )
         : str_(input.arg.value().begin())
-        , afmt_(input.arg.get_alignment_format_data())
+        , afmt_(input.arg.get_alignment_format())
     {
         decltype(auto) wcalc = get_facet_<strf::width_calculator_c>(input.fp);
         auto src_enc = get_facet_<strf::char_encoding_c<SrcCharT>>(input.fp);
@@ -726,7 +726,7 @@ private:
     const SrcCharT* str_;
     std::size_t len_;
     strf::encode_fill_f<DestCharT> encode_fill_;
-    strf::alignment_format_data afmt_;
+    strf::alignment_format afmt_;
     std::int16_t left_fillcount_;
     std::int16_t right_fillcount_;
 
@@ -811,7 +811,7 @@ template < typename DestCharT, typename Preview, typename FPack
 constexpr STRF_HD decltype(auto) get_src_encoding
     ( const strf::detail::fmt_string_printer_input
         < DestCharT, SrcCharT, HasP, HasA
-        , strf::conv_format_with_encoding<SrcEncoding>, Preview, FPack>&
+        , strf::conv_formatter_with_encoding<SrcEncoding>, Preview, FPack>&
       input )
 {
     static_assert( std::is_same<typename SrcEncoding::char_type, SrcCharT>::value
@@ -824,7 +824,7 @@ template < typename DestCharT, typename Preview, typename FPack
 constexpr STRF_HD decltype(auto) get_src_encoding
     ( const strf::detail::fmt_string_printer_input
         < DestCharT, SrcCharT, HasP, HasA
-        , strf::sani_format_with_encoding<SrcEncoding>, Preview, FPack >&
+        , strf::sani_formatter_with_encoding<SrcEncoding>, Preview, FPack >&
       input )
 {
     static_assert( std::is_same<typename SrcEncoding::char_type, SrcCharT>::value
@@ -836,7 +836,7 @@ template < typename DestCharT, typename Preview, typename FPack
          , typename SrcCharT, bool HasP, bool HasA >
 constexpr STRF_HD decltype(auto) get_src_encoding
     ( const strf::detail::fmt_string_printer_input
-        < DestCharT, SrcCharT, HasP, HasA, strf::conv_format<SrcCharT>, Preview, FPack >&
+        < DestCharT, SrcCharT, HasP, HasA, strf::conv_formatter<SrcCharT>, Preview, FPack >&
       input )
 {
     return strf::get_facet
@@ -848,7 +848,7 @@ template < typename DestCharT, typename Preview, typename FPack
          , typename SrcCharT, bool HasP, bool HasA >
 constexpr STRF_HD decltype(auto) get_src_encoding
     ( const strf::detail::fmt_string_printer_input
-        < DestCharT, SrcCharT, HasP, HasA, strf::sani_format<SrcCharT>, Preview, FPack >&
+        < DestCharT, SrcCharT, HasP, HasA, strf::sani_formatter<SrcCharT>, Preview, FPack >&
       input )
 {
     return strf::get_facet
@@ -981,7 +981,7 @@ public:
             input )
         : str_(input.arg.value().data())
         , len_(input.arg.value().size())
-        , afmt_(input.arg.get_alignment_format_data())
+        , afmt_(input.arg.get_alignment_format())
         , inv_seq_notifier_(get_facet_<strf::invalid_seq_notifier_c, SrcCharT>(input.fp))
         , surr_poli_(get_facet_<strf::surrogate_policy_c, SrcCharT>(input.fp))
     {
@@ -1003,7 +1003,7 @@ public:
             input )
         : str_(input.arg.value().data())
         , len_(input.arg.value().size())
-        , afmt_(input.arg.get_alignment_format_data())
+        , afmt_(input.arg.get_alignment_format())
         , inv_seq_notifier_(get_facet_<strf::invalid_seq_notifier_c, SrcCharT>(input.fp))
         , surr_poli_(get_facet_<strf::surrogate_policy_c, SrcCharT>(input.fp))
     {
@@ -1028,7 +1028,7 @@ private:
 
     const SrcCharT* str_;
     std::size_t len_;
-    strf::alignment_format_data afmt_;
+    strf::alignment_format afmt_;
     union {
         strf::transcode_f<SrcCharT, DestCharT>  transcode_;
         strf::transcode_f<SrcCharT, char32_t>  src_to_u32_;

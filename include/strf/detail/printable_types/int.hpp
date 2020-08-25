@@ -18,45 +18,45 @@
 namespace strf {
 
 template <int Base>
-struct int_format;
+struct int_formatter;
 
-struct int_format_data
+struct int_format
 {
     unsigned precision = 0;
     bool showbase = false;
     bool showpos = false;
 };
 
-constexpr STRF_HD bool operator==( strf::int_format_data lhs
-                                 , strf::int_format_data rhs) noexcept
+constexpr STRF_HD bool operator==( strf::int_format lhs
+                                 , strf::int_format rhs) noexcept
 {
     return lhs.precision == rhs.precision
         && lhs.showbase == rhs.showbase
         && lhs.showpos == rhs.showpos;
 }
 
-constexpr STRF_HD bool operator!=( strf::int_format_data lhs
-                                 , strf::int_format_data rhs) noexcept
+constexpr STRF_HD bool operator!=( strf::int_format lhs
+                                 , strf::int_format rhs) noexcept
 {
     return ! (lhs == rhs);
 }
 
 template <class T, int Base>
-class int_format_fn
+class int_formatter_fn
 {
 private:
 
     template <int OtherBase>
     using adapted_derived_type_
-        = strf::fmt_replace<T, int_format<Base>, int_format<OtherBase> >;
+        = strf::fmt_replace<T, int_formatter<Base>, int_formatter<OtherBase> >;
 
 public:
 
-    constexpr STRF_HD int_format_fn()  noexcept { }
+    constexpr STRF_HD int_formatter_fn()  noexcept { }
 
     template <typename U, int OtherBase>
-    constexpr STRF_HD int_format_fn(const int_format_fn<U, OtherBase> & u) noexcept
-        : data_(u.get_int_format_data())
+    constexpr STRF_HD int_formatter_fn(const int_formatter_fn<U, OtherBase> & u) noexcept
+        : data_(u.get_int_format())
     {
     }
 
@@ -153,21 +153,21 @@ public:
     {
         return data_.showpos;
     }
-    constexpr STRF_HD strf::int_format_data get_int_format_data() const noexcept
+    constexpr STRF_HD strf::int_format get_int_format() const noexcept
     {
         return data_;
     }
 
 private:
 
-    strf::int_format_data data_;
+    strf::int_format data_;
 };
 
 template <int Base>
-struct int_format
+struct int_formatter
 {
     template <typename T>
-    using fn = strf::int_format_fn<T, Base>;
+    using fn = strf::int_formatter_fn<T, Base>;
 };
 
 namespace detail {
@@ -176,10 +176,10 @@ template <typename IntT> struct int_printing;
 } // namespace detail
 
 template <typename IntT, int Base, bool HasAlignment>
-using int_with_format = strf::value_with_format
+using int_with_formatters = strf::value_with_formatters
     < strf::detail::int_printing<IntT>
-    , strf::int_format<Base>
-    , strf::alignment_format_q<HasAlignment> >;
+    , strf::int_formatter<Base>
+    , strf::alignment_formatter_q<HasAlignment> >;
 
 namespace detail {
 
@@ -268,7 +268,7 @@ struct int_printing
 {
     using facet_tag = IntT;
     using forwarded_type = IntT;
-    using fmt_type = strf::int_with_format<IntT, 10, false>;
+    using fmt_type = strf::int_with_formatters<IntT, 10, false>;
 
     template <typename CharT, typename Preview, typename FPack>
     constexpr STRF_HD static auto make_printer_input
@@ -283,9 +283,9 @@ struct int_printing
     constexpr STRF_HD static auto make_printer_input
         ( Preview& preview
         , const FPack& fp
-        , strf::int_with_format<IntT, Base, HasAlignment> x ) noexcept
+        , strf::int_with_formatters<IntT, Base, HasAlignment> x ) noexcept
         -> strf::usual_printer_input
-            < CharT, Preview, FPack, strf::int_with_format<IntT, Base, HasAlignment>
+            < CharT, Preview, FPack, strf::int_with_formatters<IntT, Base, HasAlignment>
             , std::conditional_t
                 < HasAlignment
                 , strf::detail::full_fmt_int_printer<CharT, Base>
@@ -366,8 +366,8 @@ struct voidptr_printing
     using facet_tag = const void*;
     using forwarded_type = const void*;
 
-    using fmt_type = strf::value_with_format
-        < voidptr_printing, strf::alignment_format_q<true> >;
+    using fmt_type = strf::value_with_formatters
+        < voidptr_printing, strf::alignment_formatter_q<true> >;
 
     template <typename CharT, typename Preview, typename FPack>
     constexpr STRF_HD static auto make_printer_input
@@ -390,7 +390,7 @@ struct voidptr_printing
         auto f3 = strf::get_facet<strf::char_encoding_c<CharT>, const void*>(fp);
         auto fp2 = strf::pack(f1, f2, f3);
         auto x2 = *strf::hex(strf::detail::bit_cast<std::size_t>(x.value()))
-                  .set(x.get_alignment_format_data());
+                  .set(x.get_alignment_format());
         return strf::make_default_printer_input<CharT>(preview, fp2, x2);
     }
 };
@@ -557,7 +557,7 @@ public:
     STRF_HD partial_fmt_int_printer
         ( const strf::usual_printer_input<T...> & i)
         : partial_fmt_int_printer
-          ( i.arg.value(), i.arg.get_int_format_data()
+          ( i.arg.value(), i.arg.get_int_format()
           , i.preview, i.fp )
     {
     }
@@ -567,7 +567,7 @@ public:
              , typename IntT
              , typename IntTag = IntT >
     STRF_HD partial_fmt_int_printer
-        ( IntT value, int_format_data fdata, Preview& preview, const FPack& fp )
+        ( IntT value, int_format fdata, Preview& preview, const FPack& fp )
         : lettercase_(get_facet<strf::lettercase_c, IntTag>(fp))
     {
         init_<IntT>( value, fdata );
@@ -615,7 +615,7 @@ private:
     std::uint8_t prefixsize_ = 0;
 
     template <typename IntT>
-    STRF_HD void init_(IntT value, strf::int_format_data fmt);
+    STRF_HD void init_(IntT value, strf::int_format fmt);
 
     template <typename Encoding>
     STRF_HD void init_punct_(Encoding enc);
@@ -625,7 +625,7 @@ template <typename CharT, int Base>
 template <typename IntT>
 STRF_HD void partial_fmt_int_printer<CharT, Base>::init_
     ( IntT value
-    , strf::int_format_data fmt )
+    , strf::int_format fmt )
 {
     using unsigned_type = std::make_unsigned_t<IntT>;
     STRF_IF_CONSTEXPR (Base == 10) {
@@ -776,7 +776,7 @@ public:
     template <typename IntT, typename Preview, typename FPack, typename P>
     STRF_HD full_fmt_int_printer
         ( const strf::usual_printer_input
-            < CharT, Preview, FPack, strf::int_with_format<IntT, Base, true>, P >& i ) noexcept;
+            < CharT, Preview, FPack, strf::int_with_formatters<IntT, Base, true>, P >& i ) noexcept;
 
     STRF_HD ~full_fmt_int_printer();
 
@@ -787,7 +787,7 @@ private:
     strf::detail::partial_fmt_int_printer<CharT, Base> ichars_;
     strf::encode_fill_f<CharT> encode_fill_;
     unsigned fillcount_ = 0;
-    strf::alignment_format_data afmt_;
+    strf::alignment_format afmt_;
 
     template <typename Encoding>
     STRF_HD  void calc_fill_size_
@@ -818,9 +818,9 @@ template <typename CharT, int Base>
 template < typename IntT, typename T1, typename T2, typename T3 >
 inline STRF_HD full_fmt_int_printer<CharT, Base>::full_fmt_int_printer
     ( const strf::usual_printer_input
-        < CharT, T1, T2, strf::int_with_format<IntT, Base, true>, T3 >& i ) noexcept
-    : ichars_(i.arg.value(), i.arg.get_int_format_data(), i.preview, i.fp)
-    , afmt_(i.arg.get_alignment_format_data())
+        < CharT, T1, T2, strf::int_with_formatters<IntT, Base, true>, T3 >& i ) noexcept
+    : ichars_(i.arg.value(), i.arg.get_int_format(), i.preview, i.fp)
+    , afmt_(i.arg.get_alignment_format())
 {
     auto content_width = ichars_.width();
     if (afmt_.width > content_width) {

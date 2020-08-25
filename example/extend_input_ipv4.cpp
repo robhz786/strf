@@ -22,9 +22,9 @@ struct print_traits<xxx::ipv4address> {
 
     using facet_tag = xxx::ipv4address;
     using forwarded_type = xxx::ipv4address;
-    using fmt_type =  strf::value_with_format
+    using fmt_type =  strf::value_with_formatters
         < strf::print_traits<xxx::ipv4address>
-        , strf::alignment_format>;
+        , strf::alignment_formatter>;
 
     template <typename CharT>
     static auto transform_arg(forwarded_type arg)
@@ -45,7 +45,7 @@ struct print_traits<xxx::ipv4address> {
     static auto make_printer_input(Preview& preview, const FPack& fp, fmt_type arg)
     {
         auto join = transform_arg<CharT>(arg.value());
-        auto aligned_join = join.set(arg.get_alignment_format_data());
+        auto aligned_join = join.set(arg.get_alignment_format());
         return strf::make_default_printer_input<CharT>(preview, fp, aligned_join);
     }
 };

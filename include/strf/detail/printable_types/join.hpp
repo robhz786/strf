@@ -15,27 +15,27 @@
 namespace strf {
 
 template<bool HasSplitPos>
-struct split_pos_format;
+struct split_pos_formatter;
 
 template<typename T, bool HasSplitPos>
-class split_pos_format_fn;
+class split_pos_formatter_fn;
 
 template<typename T>
-class split_pos_format_fn<T, true> {
+class split_pos_formatter_fn<T, true> {
 public:
 
-    constexpr STRF_HD split_pos_format_fn() noexcept
+    constexpr STRF_HD split_pos_formatter_fn() noexcept
     {
     }
 
-    constexpr STRF_HD explicit split_pos_format_fn(std::ptrdiff_t pos) noexcept
+    constexpr STRF_HD explicit split_pos_formatter_fn(std::ptrdiff_t pos) noexcept
         : pos_(pos)
     {
     }
 
     template <typename U, bool B>
-    constexpr STRF_HD explicit split_pos_format_fn
-        ( const split_pos_format_fn<U, B>& r ) noexcept
+    constexpr STRF_HD explicit split_pos_formatter_fn
+        ( const split_pos_formatter_fn<U, B>& r ) noexcept
         : pos_(r.split_pos())
     {
     }
@@ -57,27 +57,27 @@ private:
 };
 
 template<typename T>
-class split_pos_format_fn<T, false>
+class split_pos_formatter_fn<T, false>
 {
     using adapted_derived_type_ = strf::fmt_replace
         < T
-        , strf::split_pos_format<false>
-        , strf::split_pos_format<true> >;
+        , strf::split_pos_formatter<false>
+        , strf::split_pos_formatter<true> >;
 public:
 
-    constexpr STRF_HD split_pos_format_fn() noexcept
+    constexpr STRF_HD split_pos_formatter_fn() noexcept
     {
     }
 
     template<typename U>
-    constexpr STRF_HD explicit split_pos_format_fn(const strf::split_pos_format_fn<U, false>&) noexcept
+    constexpr STRF_HD explicit split_pos_formatter_fn(const strf::split_pos_formatter_fn<U, false>&) noexcept
     {
     }
 
     constexpr STRF_HD adapted_derived_type_ split_pos(std::ptrdiff_t pos) const noexcept
     {
         return { static_cast<const T&>(*this)
-               , strf::tag<strf::split_pos_format<true>> {}
+               , strf::tag<strf::split_pos_formatter<true>> {}
                , pos};
     }
 
@@ -88,10 +88,10 @@ public:
 };
 
 template<bool HasSplitPos>
-struct split_pos_format
+struct split_pos_formatter
 {
     template<typename T>
-    using fn = strf::split_pos_format_fn<T, HasSplitPos>;
+    using fn = strf::split_pos_formatter_fn<T, HasSplitPos>;
 };
 
 namespace detail {
@@ -123,10 +123,10 @@ public:
 
     Preview& preview;
     FPack fp;
-    strf::value_with_format
+    strf::value_with_formatters
         < strf::detail::join_printing<FwdArgs...>
-        , strf::split_pos_format<HasSplitPos>
-        , strf::alignment_format_q<HasAlignment> > arg;
+        , strf::split_pos_formatter<HasSplitPos>
+        , strf::alignment_formatter_q<HasAlignment> > arg;
 };
 
 template <typename... FwdArgs>
@@ -136,10 +136,10 @@ struct join_printing
     using forwarded_type = strf::detail::join_t<FwdArgs...>;
 
     template <bool HasSplitPos, bool HasAlignment>
-    using fmt_tmpl = strf::value_with_format
+    using fmt_tmpl = strf::value_with_formatters
         < join_printing<FwdArgs...>
-        , strf::split_pos_format<HasSplitPos>
-        , strf::alignment_format_q<HasAlignment> >;
+        , strf::split_pos_formatter<HasSplitPos>
+        , strf::alignment_formatter_q<HasAlignment> >;
 
     using fmt_type = fmt_tmpl<false, false>;
 
@@ -170,19 +170,19 @@ struct aligned_join_maker
     std::ptrdiff_t split_pos = 1;
 
     template<typename... Args>
-    constexpr STRF_HD strf::value_with_format
+    constexpr STRF_HD strf::value_with_formatters
         < strf::detail::join_printing<strf::forwarded_printable_type<Args>...>
-        , strf::split_pos_format<true>
-        , strf::alignment_format_q<true> >
+        , strf::split_pos_formatter<true>
+        , strf::alignment_formatter_q<true> >
     operator()(const Args&... args) const
     {
         return { { strf::detail::simple_tuple<strf::forwarded_printable_type<Args>...>
                      { strf::detail::simple_tuple_from_args{}
                      , static_cast<strf::forwarded_printable_type<Args>>(args)... } }
-               , strf::tag< strf::split_pos_format<true>
-                          , strf::alignment_format_q<true> > {}
+               , strf::tag< strf::split_pos_formatter<true>
+                          , strf::alignment_formatter_q<true> > {}
                , split_pos
-               , strf::alignment_format_data {fillchar, width, align}};
+               , strf::alignment_format {fillchar, width, align}};
     }
 };
 
@@ -252,7 +252,7 @@ public:
               , HasSplitPos
               , true, FwdArgs...>& input )
         : split_pos_(input.arg.split_pos())
-        , afmt_(input.arg.get_alignment_format_data())
+        , afmt_(input.arg.get_alignment_format())
     {
         auto enc = get_facet_<strf::char_encoding_c<CharT>>(input.fp);
         encode_fill_func_ = enc.encode_fill_func();
@@ -280,7 +280,7 @@ public:
               , HasSplitPos
               , true, FwdArgs...>& input )
         : split_pos_(input.arg.split_pos())
-        , afmt_(input.arg.get_alignment_format_data())
+        , afmt_(input.arg.get_alignment_format())
     {
         auto enc = get_facet_<strf::char_encoding_c<CharT>>(input.fp);
         encode_fill_func_ = enc.encode_fill_func();
@@ -353,7 +353,7 @@ private:
 #endif
     printers_tuple_storage_ pool_;
     std::ptrdiff_t split_pos_;
-    strf::alignment_format_data afmt_;
+    strf::alignment_format afmt_;
     strf::encode_fill_f<CharT> encode_fill_func_;
     strf::width_t width_;
     std::int16_t fillcount_ = 0;
@@ -487,16 +487,16 @@ public:
 } // namespace detail
 
 template<typename... Args>
-constexpr STRF_HD strf::value_with_format
+constexpr STRF_HD strf::value_with_formatters
     < strf::detail::join_printing<strf::forwarded_printable_type<Args>...>
-    , strf::split_pos_format<false>
-    , strf::alignment_format_q<false> >
+    , strf::split_pos_formatter<false>
+    , strf::alignment_formatter_q<false> >
 join(const Args&... args)
 {
-    return strf::value_with_format
+    return strf::value_with_formatters
         < strf::detail::join_printing<strf::forwarded_printable_type<Args>...>
-        , strf::split_pos_format<false>
-        , strf::alignment_format_q<false> >
+        , strf::split_pos_formatter<false>
+        , strf::alignment_formatter_q<false> >
         { strf::detail::join_t<strf::forwarded_printable_type<Args>...>
             { strf::detail::simple_tuple<strf::forwarded_printable_type<Args>...>
                 { strf::detail::simple_tuple_from_args{}

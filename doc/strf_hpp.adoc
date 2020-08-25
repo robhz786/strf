@@ -14,13 +14,15 @@ http://www.boost.org/LICENSE_1_0.txt
 :sectnumlevels: 2
 :icons: font
 
-:value_with_format: <<value_with_format,value_with_format>>
+:value_with_formatters: <<value_with_format,value_with_formatters>>
+:alignment_formatter: <<alignment_formatter,alignment_formatter>>
+:alignment_formatter_q: <<alignment_formatter,alignment_formatter_q>>
 :alignment_format: <<alignment_format,alignment_format>>
-:alignment_format_q: <<alignment_format,alignment_format_q>>
+:int_formatter: <<int_formatter,int_formatter>>
 :int_format: <<int_format,int_format>>
+:float_formatter: <<float_formatter,float_formatter>>
 :float_format: <<float_format,float_format>>
-:float_format_data: <<float_format_data,float_format_data>>
-:alignment_format_data: <<alignment_format_data,alignment_format_data>>
+
 :pack: <<pack,pack>>
 :facets_pack: <<facets_pack,facets_pack>>
 :tag: <<tag,tag>>

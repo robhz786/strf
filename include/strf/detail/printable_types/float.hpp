@@ -249,49 +249,49 @@ detail::double_dec decode(float f);
 
 enum class float_notation{fixed, scientific, general, hex};
 
-struct float_format_data
+struct float_format
 {
     unsigned precision = (unsigned)-1;
     bool showpoint = false;
     bool showpos = false;
 };
 
-constexpr STRF_HD bool operator==( strf::float_format_data lhs
-                                 , strf::float_format_data rhs ) noexcept
+constexpr STRF_HD bool operator==( strf::float_format lhs
+                                 , strf::float_format rhs ) noexcept
 {
     return lhs.precision == rhs.precision
         && lhs.showpoint == rhs.showpoint
         && lhs.showpos == rhs.showpos ;
 }
 
-constexpr STRF_HD bool operator!=( strf::float_format_data lhs
-                                 , strf::float_format_data rhs ) noexcept
+constexpr STRF_HD bool operator!=( strf::float_format lhs
+                                 , strf::float_format rhs ) noexcept
 {
     return ! (lhs == rhs);
 }
 
 template <strf::float_notation Notation>
-struct float_format;
+struct float_formatter;
 
 template <typename T, strf::float_notation Notation = strf::float_notation::general>
-class float_format_fn
+class float_formatter_fn
 {
     template <strf::float_notation OtherNotation>
     using adapted_derived_type_
-        = strf::fmt_replace<T, float_format<Notation>, float_format<OtherNotation> >;
+        = strf::fmt_replace<T, float_formatter<Notation>, float_formatter<OtherNotation> >;
 
 public:
 
-    constexpr float_format_fn() noexcept = default;
+    constexpr float_formatter_fn() noexcept = default;
 
-    constexpr STRF_HD explicit float_format_fn(const strf::float_format_data& data) noexcept
+    constexpr STRF_HD explicit float_formatter_fn(const strf::float_format& data) noexcept
         : data_(data)
     {
     }
 
     template <typename U, strf::float_notation N>
-    constexpr STRF_HD explicit float_format_fn(const float_format_fn<U, N>& other) noexcept
-        : data_(other.get_float_format_data())
+    constexpr STRF_HD explicit float_formatter_fn(const float_formatter_fn<U, N>& other) noexcept
+        : data_(other.get_float_format())
     {
     }
     constexpr STRF_HD T&& operator+() && noexcept
@@ -380,21 +380,21 @@ public:
         return adapted_derived_type_<N>{ static_cast<const T&>(*this) };
     }
 
-    constexpr strf::float_format_data get_float_format_data() const noexcept
+    constexpr strf::float_format get_float_format() const noexcept
     {
         return data_;
     }
 
 private:
 
-    strf::float_format_data data_;
+    strf::float_format data_;
 };
 
 template <strf::float_notation Notation>
-struct float_format
+struct float_formatter
 {
     template <typename T>
-    using fn = float_format_fn<T, Notation>;
+    using fn = float_formatter_fn<T, Notation>;
 };
 
 namespace detail {
@@ -411,10 +411,10 @@ template
     < typename FloatT
     , strf::float_notation Notation = strf::float_notation::general
     , bool Align = false >
-using float_with_format = strf::value_with_format
+using float_with_formatters = strf::value_with_formatters
     < strf::detail::float_printing<FloatT>
-    , strf::float_format<Notation>
-    , strf::alignment_format_q<Align> >;
+    , strf::float_formatter<Notation>
+    , strf::alignment_formatter_q<Align> >;
 
 template < typename CharT, typename Preview, typename FloatT>
 struct fast_double_printer_input
@@ -448,7 +448,7 @@ template < typename CharT, typename Preview, typename FPack
 using fmt_double_printer_input =
     strf::usual_printer_input
         < CharT, Preview, FPack
-        , strf::detail::float_with_format<FloatT, Notation, HasAlignment>
+        , strf::detail::float_with_formatters<FloatT, Notation, HasAlignment>
         , std::conditional_t
             < Notation == float_notation::hex
             , strf::detail::hex_double_printer<CharT>
@@ -462,7 +462,7 @@ struct float_printing
 {
     using facet_tag = FloatT;
     using forwarded_type = FloatT;
-    using fmt_type = strf::detail::float_with_format<FloatT>;
+    using fmt_type = strf::detail::float_with_formatters<FloatT>;
 
     template <typename CharT, typename Preview, typename FPack>
     STRF_HD constexpr static auto make_printer_input
@@ -480,7 +480,7 @@ struct float_printing
     STRF_HD constexpr static auto make_printer_input
         ( Preview& preview
         , const FPack& fp
-        , strf::detail::float_with_format<FloatT, Notation, HasAlignment> x) noexcept
+        , strf::detail::float_with_formatters<FloatT, Notation, HasAlignment> x) noexcept
         -> strf::detail::fmt_double_printer_input
             < CharT, Preview, FPack, FloatT, Notation, HasAlignment >
     {
@@ -522,25 +522,25 @@ struct double_printer_data
 
 template <strf::float_notation Notation>
 STRF_HD double_printer_data init_double_printer_data
-    ( detail::double_dec d, float_format_data fdata );
+    ( detail::double_dec d, float_format fdata );
 
 template <strf::float_notation Notation>
 inline STRF_HD double_printer_data init_double_printer_data
-    ( float f, float_format_data fdata )
+    ( float f, float_format fdata )
 {
     return init_double_printer_data<Notation>(detail::decode(f), fdata);
 }
 
 template <strf::float_notation Notation>
 inline STRF_HD double_printer_data init_double_printer_data
-    ( double d, float_format_data fdata )
+    ( double d, float_format fdata )
 {
     return init_double_printer_data<Notation>(detail::decode(d), fdata);
 }
 
 template <strf::float_notation Notation>
 STRF_HD double_printer_data init_double_printer_data
-    ( detail::double_dec dd, float_format_data fdata )
+    ( detail::double_dec dd, float_format fdata )
 {
     static_assert(Notation != strf::float_notation::hex, "");
     double_printer_data data;
@@ -1182,7 +1182,7 @@ public:
     {
         static_assert(Notation != strf::float_notation::hex, "");
 
-        const auto fdata = input.arg.get_float_format_data();
+        const auto fdata = input.arg.get_float_format();
         data_ = strf::detail::init_double_printer_data<Notation>(input.arg.value(), fdata);
         auto enc = get_facet<strf::char_encoding_c<CharT>, FloatT>(input.fp);
         auto punct = strf::get_facet<strf::numpunct_c<10>, FloatT>(input.fp);
@@ -1208,7 +1208,7 @@ public:
     {
         static_assert(Notation != strf::float_notation::hex, "");
 
-        const auto fdata = input.arg.get_float_format_data();
+        const auto fdata = input.arg.get_float_format();
         data_ = strf::detail::init_double_printer_data<Notation>(input.arg.value(), fdata);
         auto enc = get_facet<strf::char_encoding_c<CharT>, FloatT>(input.fp);
         auto punct = strf::get_facet<strf::numpunct_c<10>, FloatT>(input.fp);
@@ -1528,7 +1528,7 @@ public:
         ( const strf::detail::fmt_double_printer_input
             < CharT, Preview, FPack, FloatT, Notation, false >& input )
         : data_( strf::detail::init_double_printer_data<Notation>
-                    ( input.arg.value(), input.arg.get_float_format_data() ) )
+                    ( input.arg.value(), input.arg.get_float_format() ) )
         , lettercase_(strf::get_facet<strf::lettercase_c, FloatT>(input.fp))
     {
         static_assert(Notation != strf::float_notation::hex, "");
@@ -1544,7 +1544,7 @@ public:
         ( const strf::detail::fmt_double_printer_input
             < CharT, Preview, FPack, FloatT, Notation, true >& input )
         : data_( strf::detail::init_double_printer_data<Notation>
-                    ( input.arg.value(), input.arg.get_float_format_data() ) )
+                    ( input.arg.value(), input.arg.get_float_format() ) )
         , fillchar_(input.arg.fill())
         , lettercase_(strf::get_facet<strf::lettercase_c, FloatT>(input.fp))
     {
@@ -2244,7 +2244,7 @@ struct hex_double_printer_data
 #if ! defined(STRF_OMIT_IMPL)
 
 STRF_FUNC_IMPL STRF_HD strf::detail::hex_double_printer_data init_hex_double_printer_data
-    ( float_format_data fdata, double x ) noexcept
+    ( float_format fdata, double x ) noexcept
 {
     strf::detail::hex_double_printer_data data;
 
@@ -2298,7 +2298,7 @@ STRF_FUNC_IMPL STRF_HD strf::detail::hex_double_printer_data init_hex_double_pri
 #else // ! defined(STRF_OMIT_IMPL)
 
 STRF_HD strf::detail::hex_double_printer_data init_hex_double_printer_data
-    ( float_format_data fdata, double d ) noexcept;
+    ( float_format fdata, double d ) noexcept;
 
 #endif // ! defined(STRF_OMIT_IMPL)
 
@@ -2313,7 +2313,7 @@ public:
             < CharT, Preview, FPack, FloatT, strf::float_notation::hex, false >&
             input )
         : data_( strf::detail::init_hex_double_printer_data
-                   ( input.arg.get_float_format_data(), input.arg.value() ) )
+                   ( input.arg.get_float_format(), input.arg.value() ) )
         , lettercase_(strf::get_facet<strf::lettercase_c, FloatT>(input.fp))
     {
         if (data_.exponent != 1024) {
@@ -2344,7 +2344,7 @@ public:
             < CharT, Preview, FPack, FloatT, strf::float_notation::hex, true >&
             input )
         : data_( strf::detail::init_hex_double_printer_data
-                   ( input.arg.get_float_format_data(), input.arg.value() ) )
+                   ( input.arg.get_float_format(), input.arg.value() ) )
         , lettercase_(strf::get_facet<strf::lettercase_c, FloatT>(input.fp))
     {
         int content_width_without_point = 0;
@@ -2359,7 +2359,7 @@ public:
             content_width_without_point = 3 + data_.showsign;
         }
         int content_width = content_width_without_point + data_.showpoint;
-        auto fillcount = init_fills_(content_width, input.arg.get_alignment_format_data());
+        auto fillcount = init_fills_(content_width, input.arg.get_alignment_format());
         input.preview.checked_subtract_width(content_width + fillcount);
         STRF_IF_CONSTEXPR (Preview::size_required) {
             input.preview.add_size(content_width_without_point);
@@ -2390,7 +2390,7 @@ private:
         }
     }
 
-    STRF_HD std::uint16_t init_fills_(int content_width, strf::alignment_format_data afmt)
+    STRF_HD std::uint16_t init_fills_(int content_width, strf::alignment_format afmt)
     {
         if (content_width < afmt.width) {
             fillchar_ = afmt.fill;

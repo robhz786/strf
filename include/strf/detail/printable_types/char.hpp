@@ -21,10 +21,10 @@ struct char_printing
 {
     using facet_tag = SrcCharT;
     using forwarded_type = SrcCharT;
-    using fmt_type = strf::value_with_format
+    using fmt_type = strf::value_with_formatters
         < char_printing
-        , strf::quantity_format
-        , strf::alignment_format >;
+        , strf::quantity_formatter
+        , strf::alignment_formatter >;
 
     template <typename DestCharT, typename Preview, typename FPack>
     constexpr STRF_HD static auto make_printer_input
@@ -126,7 +126,7 @@ public:
     STRF_HD fmt_char_printer
         ( const usual_printer_input<CharT, T...>& input )
         : count_(input.arg.count())
-        , afmt_(input.arg.get_alignment_format_data())
+        , afmt_(input.arg.get_alignment_format())
         , ch_(static_cast<CharT>(input.arg.value()))
     {
         auto enc = get_facet_<strf::char_encoding_c<CharT>>(input.fp);
@@ -141,7 +141,7 @@ private:
 
     strf::encode_fill_f<CharT> encode_fill_fn_;
     std::size_t count_;
-    const strf::alignment_format_data afmt_;
+    const strf::alignment_format afmt_;
     std::uint16_t left_fillcount_;
     std::uint16_t right_fillcount_;
     CharT ch_;

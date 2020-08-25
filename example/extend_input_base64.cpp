@@ -41,7 +41,7 @@ struct base64_input
     std::size_t num_bytes = 0;
 };
 
-struct base64_format
+struct base64_formatter
 {
     template <typename T>
     class fn
@@ -77,18 +77,19 @@ struct base64_printing;
 template <typename CharT>
 class base64_printer;
 
-using base64_input_with_format = strf::value_with_format<base64_printing, base64_format>;
+using base64_input_with_formatters =
+    strf::value_with_formatters<base64_printing, base64_formatter>;
 
 struct base64_printing
 {
     using facet_tag = base64_input;
     using forwarded_type = base64_input;
-    using fmt_type = base64_input_with_format;
+    using fmt_type = base64_input_with_formatters;
 
     template <typename CharT, typename Preview, typename FPack>
-    static auto make_printer_input(Preview& preview, const FPack& fp, base64_input_with_format x)
+    static auto make_printer_input(Preview& preview, const FPack& fp, base64_input_with_formatters x)
         -> strf::usual_printer_input
-            < CharT, Preview, FPack, base64_input_with_format, base64_printer<CharT> >
+            < CharT, Preview, FPack, base64_input_with_formatters, base64_printer<CharT> >
     {
         return {preview, fp, x};
     }
@@ -113,7 +114,7 @@ public:
     base64_printer
         ( base64_facet facet
         , strf::print_preview<PreviewSize, strf::preview_width::no>& preview
-        , const base64_input_with_format& fmt );
+        , const base64_input_with_formatters& fmt );
 
     void print_to(strf::basic_outbuff<CharT>& ob) const override;
 
@@ -143,7 +144,7 @@ private:
     CharT encode_(std::uint8_t hextet) const;
 
     const base64_facet facet_;
-    const base64_input_with_format fmt_;
+    const base64_input_with_formatters fmt_;
 };
 
 template <typename CharT>
@@ -151,7 +152,7 @@ template <strf::preview_size PreviewSize>
 base64_printer<CharT>::base64_printer
     ( base64_facet facet
     , strf::print_preview<PreviewSize, strf::preview_width::no>& preview
-    , const base64_input_with_format& fmt )
+    , const base64_input_with_formatters& fmt )
     : facet_(facet)
     , fmt_(fmt)
 {
@@ -303,7 +304,7 @@ void base64_printer<CharT>::write_end_of_line_(strf::basic_outbuff<CharT>& ob) c
 inline auto base64(const void* bytes, std::size_t num_bytes)
 {
     base64_input data{ reinterpret_cast<const unsigned char*>(bytes), num_bytes };
-    return base64_input_with_format{ data };
+    return base64_input_with_formatters{ data };
 }
 
 } // namespace xxx

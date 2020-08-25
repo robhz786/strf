@@ -23,9 +23,9 @@ struct print_traits<bool>
 {
     using facet_tag = bool;
     using forwarded_type = bool;
-    using fmt_type = strf::value_with_format
+    using fmt_type = strf::value_with_formatters
         < strf::print_traits<bool>
-        , strf::alignment_format >;
+        , strf::alignment_formatter >;
 
     template <typename CharT, typename Preview, typename FPack>
     constexpr STRF_HD static auto make_printer_input
@@ -108,7 +108,7 @@ public:
     STRF_HD fmt_bool_printer
         ( const strf::usual_printer_input<CharT, T...>& input )
         : value_(input.arg.value())
-        , afmt_(input.arg.get_alignment_format_data())
+        , afmt_(input.arg.get_alignment_format())
         , lettercase_(strf::get_facet<strf::lettercase_c, bool>(input.fp))
     {
         auto enc = strf::get_facet<char_encoding_c<CharT>, bool>(input.fp);
@@ -132,7 +132,7 @@ private:
     strf::encode_fill_f<CharT> encode_fill_;
     std::uint16_t fillcount_;
     bool value_;
-    strf::alignment_format_data afmt_;
+    strf::alignment_format afmt_;
     strf::lettercase lettercase_;
 };
 

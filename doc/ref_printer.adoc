@@ -11,7 +11,7 @@ http://www.boost.org/LICENSE_1_0.txt
 
 :print_preview: <<print_preview, print_preview>>
 :facets_pack: <<facets_pack, facets_pack>>
-:value_with_format: <<value_with_format, value_with_format>>
+:value_with_formatters: <<value_with_formatters, value_with_formatters>>
 
 
 :PrintTraits: <<PrintTraits,PrintTraits>>
@@ -61,7 +61,7 @@ template <typename T> using print_traits_of = /{asterisk} see below\... {asteris
 `print_traits_of<T>` is:
 
 *  `print_traits_of<std::remove_cvref<T>>`, if `T` is a reference type or has any cv-qualifier
-*  otherwise, it is `Traits`, when `T` is `{value_with_format}<Traits, /{asterisk}\... {asterisk}/>`
+*  otherwise, it is `Traits`, when `T` is `{value_with_formatters}<Traits, /{asterisk}\... {asterisk}/>`
 *  otherwise, it is `print_traits<T>` if such template specialization is defined
 *  otherwise, it is `decltype(tag_invoke(print_traits_tag{}, std::declval<T>()))`
 
@@ -77,7 +77,7 @@ using forwarded_printable_type = /{asterisk} see below\... {asterisk}/;
 } // namespace strf
 ----
 
-* `forwarded_printable_type<T>` is `T`, when `T` a `{value_with_format}</{asterisk}\... {asterisk}/>`
+* `forwarded_printable_type<T>` is `T`, when `T` a `{value_with_formatters}</{asterisk}\... {asterisk}/>`
 * otherwise, it is `typename {print_traits_of}<T>::forwarded_type`
 
 [[PrintTraits]]
@@ -115,7 +115,7 @@ Usually is it `std::remove_cv_t<std::remove_reference<forwarded_type>>`
 ----
 T::fmt_type;
 ----
-A type alias to a `{value_with_format}<T, /{asterisk}\...{asterisk}/>` type.
+A type alias to a `{value_with_formatters}<T, /{asterisk}\...{asterisk}/>` type.
 It is the return type of `fmt(std::declval<P>())`
 ====
 
