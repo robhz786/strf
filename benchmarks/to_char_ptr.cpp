@@ -70,10 +70,6 @@ int main(int argc, char** argv)
     strf::to(stdout)
         ( "\n where :"
           "\n    " STR(FIXTURE_STR)
-          "\n    " STR(FMT_FIXTURE_STR)
-          "\n    " STR(FMT_FIXTURE1)
-          "\n    " STR(FMT_FIXTURE2)
-          "\n    " STR(FMT_FIXTURE3)
           "\n" );
 
     return 0;
