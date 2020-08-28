@@ -7,6 +7,7 @@ http://www.boost.org/LICENSE_1_0.txt
 
 :fmt_type: <<fmt_type,fmt_type>>
 :fmt: <<fmt,fmt>>
+:width_t: <<width_t,width_t>>
 
 == Format functions
 
@@ -259,14 +260,14 @@ public:
     constexpr explitic alignment_formatter_fn(const alignment_formatter_fn<U, B>& u) noexcept;
 
     // <<alignment_formatter_fn_format_functions,format functions>>
-    constexpr T&& operator<(int width) && noexcept; // left
-    constexpr T&& operator>(int width) && noexcept; // right
-    constexpr T&& operator^(int width) && noexcept; // center
-    constexpr T&& operator%(int width) && noexcept; // split, aka internal
+    constexpr T&& operator<({width_t} width) && noexcept; // left
+    constexpr T&& operator>({width_t} width) && noexcept; // right
+    constexpr T&& operator^({width_t} width) && noexcept; // center
+    constexpr T&& operator%({width_t} width) && noexcept; // split, aka internal
     constexpr T&& fill(char32_t ch) && noexcept;
 
     // <<alignment_formatter_fn_observers,observers>>
-    constexpr int width() const noexcept;
+    constexpr {width_t} width() const noexcept;
     constexpr text_alignment alignment() const noexcept;
     constexpr char32_t fill() const noexcept;
     constexpr {alignment_format} get_alignmet_format() const noexcept;
@@ -286,16 +287,16 @@ public:
     constexpr explicit alignment_formatter_fn(const alignment_formatter_fn<U, false>&) noexcept;
 
     // <<alignment_formatter_fn_observers,observers>>
-    constexpr int width() const noexcept;
+    constexpr {width_t} width() const noexcept;
     constexpr text_alignment alignment() const noexcept;
     constexpr char32_t fill() const noexcept;
     constexpr {alignment_format} get_alignmet_format() const noexcept;
 
     // <<alignment_formatter_fn_format_functions,format functions>>
-    constexpr converted_fmt operator<(int width) const noexcept;
-    constexpr converted_fmt operator>(int width) const noexcept;
-    constexpr converted_fmt operator^(int width) const noexcept;
-    constexpr converted_fmt operator%(int width) const noexcept;
+    constexpr converted_fmt operator<({width_t} width) const noexcept;
+    constexpr converted_fmt operator>({width_t} width) const noexcept;
+    constexpr converted_fmt operator^({width_t} width) const noexcept;
+    constexpr converted_fmt operator%({width_t} width) const noexcept;
     constexpr converted_fmt fill(char32_t ch) const noexcept;
 };
 
@@ -337,7 +338,7 @@ Return value:::
 ====
 [source,cpp]
 ----
-constexpr int width() const noexcept;
+constexpr {width_t} width() const noexcept;
 ----
 ::
 Return value::: `get_alignmet_format().width`
@@ -370,7 +371,7 @@ Return value::: `get_alignmet_format().fill`
 ====
 [source,cpp]
 ----
-constexpr /*return type */ operator<(int width) /* qualifier */ noexcept;
+constexpr /*return type */ operator<({width_t} width) /* qualifier */ noexcept;
 ----
 ::
 Posconditions::: The return value `r` satisfies:
@@ -384,7 +385,7 @@ Return value:::
 ====
 [source,cpp]
 ----
-constexpr /*return type */ operator>(int width) /* qualifier */ noexcept;
+constexpr /*return type */ operator>({width_t} width) /* qualifier */ noexcept;
 ----
 ::
 Posconditions::: The return value `r` satisfies:
@@ -397,7 +398,7 @@ Return value:::
 ====
 [source,cpp]
 ----
-constexpr /*return type */ operator^(int width) /* qualifier */ noexcept;
+constexpr /*return type */ operator^({width_t} width) /* qualifier */ noexcept;
 ----
 ::
 Posconditions::: The return value `r` satisfies:
@@ -410,7 +411,7 @@ Return value:::
 ====
 [source,cpp]
 ----
-constexpr /*return type */ operator%(int width) /* qualifier */ noexcept;
+constexpr /*return type */ operator%({width_t} width) /* qualifier */ noexcept;
 ----
 ::
 Posconditions::: The return value `r` satisfies:
@@ -445,7 +446,7 @@ enum class text_alignment {left, right, split, center};
 struct alignment_format
 {
     char32_t fill = U' ';
-    int width = 0;
+    {width_t} width = 0;
     text_alignment alignment = text_alignment::right;
 };
 

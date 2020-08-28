@@ -693,7 +693,7 @@ enum class text_alignment {left, right, split, center};
 struct alignment_format
 {
     char32_t fill = U' ';
-    std::int16_t width = 0;
+    strf::width_t width = 0;
     strf::text_alignment alignment = strf::text_alignment::right;
 };
 
@@ -745,25 +745,25 @@ public:
     {
     }
 
-    constexpr STRF_HD T&& operator<(std::int16_t width) && noexcept
+    constexpr STRF_HD T&& operator<(strf::width_t width) && noexcept
     {
         data_.alignment = strf::text_alignment::left;
         data_.width = width;
         return as_derived_rval_ref();
     }
-    constexpr STRF_HD T&& operator>(std::int16_t width) && noexcept
+    constexpr STRF_HD T&& operator>(strf::width_t width) && noexcept
     {
         data_.alignment = strf::text_alignment::right;
         data_.width = width;
         return as_derived_rval_ref();
     }
-    constexpr STRF_HD T&& operator^(std::int16_t width) && noexcept
+    constexpr STRF_HD T&& operator^(strf::width_t width) && noexcept
     {
         data_.alignment = strf::text_alignment::center;
         data_.width = width;
         return as_derived_rval_ref();
     }
-    constexpr STRF_HD T&& operator%(std::int16_t width) && noexcept
+    constexpr STRF_HD T&& operator%(strf::width_t width) && noexcept
     {
         data_.alignment = strf::text_alignment::split;
         data_.width = width;
@@ -779,7 +779,7 @@ public:
         data_ = data;
         return as_derived_rval_ref();
     }
-    constexpr STRF_HD std::int16_t width() const noexcept
+    constexpr STRF_HD strf::width_t width() const noexcept
     {
         return data_.width;
     }
@@ -827,28 +827,28 @@ public:
     {
     }
 
-    constexpr STRF_HD adapted_derived_type operator<(std::int16_t width) const noexcept
+    constexpr STRF_HD adapted_derived_type operator<(strf::width_t width) const noexcept
     {
         return adapted_derived_type
             { static_cast<const T&>(*this)
             , strf::tag<alignment_formatter_q<true>>{}
             , strf::alignment_format{U' ', width, strf::text_alignment::left} };
     }
-    constexpr STRF_HD adapted_derived_type operator>(std::int16_t width) const noexcept
+    constexpr STRF_HD adapted_derived_type operator>(strf::width_t width) const noexcept
     {
         return adapted_derived_type
             { static_cast<const T&>(*this)
             , strf::tag<alignment_formatter_q<true>>{}
             , strf::alignment_format{U' ', width, strf::text_alignment::right} };
     }
-    constexpr STRF_HD adapted_derived_type operator^(std::int16_t width) const noexcept
+    constexpr STRF_HD adapted_derived_type operator^(strf::width_t width) const noexcept
     {
         return adapted_derived_type
             { static_cast<const T&>(*this)
             , strf::tag<alignment_formatter_q<true>>{}
             , strf::alignment_format{U' ', width, strf::text_alignment::center} };
     }
-    constexpr STRF_HD adapted_derived_type operator%(std::int16_t width) const noexcept
+    constexpr STRF_HD adapted_derived_type operator%(strf::width_t width) const noexcept
     {
         return adapted_derived_type
             { static_cast<const T&>(*this)
@@ -869,7 +869,7 @@ public:
             , strf::tag<strf::alignment_formatter_q<true>>{}
             , data };
     }
-    constexpr STRF_HD std::int16_t width() const noexcept
+    constexpr STRF_HD strf::width_t width() const noexcept
     {
         return 0;
     }
@@ -1065,7 +1065,7 @@ template <typename T, typename E>
 }
 
 template <typename T>
-constexpr STRF_HD auto right(T&& value, std::int16_t width)
+constexpr STRF_HD auto right(T&& value, strf::width_t width)
     noexcept(noexcept(strf::fmt(value) > width))
     -> std::remove_reference_t<decltype(strf::fmt(value) > width)>
 {
@@ -1073,7 +1073,7 @@ constexpr STRF_HD auto right(T&& value, std::int16_t width)
 }
 
 template <typename T>
-constexpr STRF_HD auto right(T&& value, std::int16_t width, char32_t fill)
+constexpr STRF_HD auto right(T&& value, strf::width_t width, char32_t fill)
     noexcept(noexcept(strf::fmt(value).fill(fill) > width))
     -> std::remove_reference_t<decltype(strf::fmt(value).fill(fill) > width)>
 {
@@ -1081,7 +1081,7 @@ constexpr STRF_HD auto right(T&& value, std::int16_t width, char32_t fill)
 }
 
 template <typename T>
-constexpr STRF_HD auto left(T&& value, std::int16_t width)
+constexpr STRF_HD auto left(T&& value, strf::width_t width)
     noexcept(noexcept(strf::fmt(value) < width))
     -> std::remove_reference_t<decltype(strf::fmt(value) < width)>
 {
@@ -1089,7 +1089,7 @@ constexpr STRF_HD auto left(T&& value, std::int16_t width)
 }
 
 template <typename T>
-constexpr STRF_HD auto left(T&& value, std::int16_t width, char32_t fill)
+constexpr STRF_HD auto left(T&& value, strf::width_t width, char32_t fill)
     noexcept(noexcept(strf::fmt(value).fill(fill) < width))
     -> std::remove_reference_t<decltype(strf::fmt(value).fill(fill) < width)>
 {
@@ -1097,7 +1097,7 @@ constexpr STRF_HD auto left(T&& value, std::int16_t width, char32_t fill)
 }
 
 template <typename T>
-constexpr STRF_HD auto center(T&& value, std::int16_t width)
+constexpr STRF_HD auto center(T&& value, strf::width_t width)
     noexcept(noexcept(strf::fmt(value) ^ width))
     -> std::remove_reference_t<decltype(strf::fmt(value) ^ width)>
 {
@@ -1105,7 +1105,7 @@ constexpr STRF_HD auto center(T&& value, std::int16_t width)
 }
 
 template <typename T>
-constexpr STRF_HD auto center(T&& value, std::int16_t width, char32_t fill)
+constexpr STRF_HD auto center(T&& value, strf::width_t width, char32_t fill)
     noexcept(noexcept(strf::fmt(value).fill(fill) ^ width))
     -> std::remove_reference_t<decltype(strf::fmt(value).fill(fill) ^ width)>
 {
@@ -1113,7 +1113,7 @@ constexpr STRF_HD auto center(T&& value, std::int16_t width, char32_t fill)
 }
 
 template <typename T>
-constexpr STRF_HD auto split(T&& value, std::int16_t width)
+constexpr STRF_HD auto split(T&& value, strf::width_t width)
     noexcept(noexcept(strf::fmt(value) % width))
     -> std::remove_reference_t<decltype(strf::fmt(value) % width)>
 {
@@ -1121,7 +1121,7 @@ constexpr STRF_HD auto split(T&& value, std::int16_t width)
 }
 
 template <typename T>
-constexpr STRF_HD auto split(T&& value, std::int16_t width, char32_t fill)
+constexpr STRF_HD auto split(T&& value, strf::width_t width, char32_t fill)
     noexcept(noexcept(strf::fmt(value).fill(fill) % width))
     -> std::remove_reference_t<decltype(strf::fmt(value).fill(fill) % width)>
 {
@@ -1269,14 +1269,14 @@ struct sani_fn {
 
 struct right_fn {
     template <typename T>
-    constexpr STRF_HD auto operator()(T&& value, std::int16_t width) const
+    constexpr STRF_HD auto operator()(T&& value, strf::width_t width) const
         noexcept(noexcept(strf::fmt(value) > width))
         -> std::remove_reference_t<decltype(strf::fmt(value) > width)>
     {
         return strf::fmt(value) > width;
     }
     template <typename T>
-    constexpr STRF_HD auto operator()(T&& value, std::int16_t width, char32_t fill) const
+    constexpr STRF_HD auto operator()(T&& value, strf::width_t width, char32_t fill) const
         noexcept(noexcept(strf::fmt(value).fill(fill) > width))
         -> std::remove_reference_t<decltype(strf::fmt(value).fill(fill) > width)>
     {
@@ -1286,14 +1286,14 @@ struct right_fn {
 
 struct left_fn {
     template <typename T>
-    constexpr STRF_HD auto operator()(T&& value, std::int16_t width) const
+    constexpr STRF_HD auto operator()(T&& value, strf::width_t width) const
         noexcept(noexcept(strf::fmt(value) < width))
         -> std::remove_reference_t<decltype(strf::fmt(value) < width)>
     {
         return strf::fmt(value) < width;
     }
     template <typename T>
-    constexpr STRF_HD auto operator()(T&& value, std::int16_t width, char32_t fill) const
+    constexpr STRF_HD auto operator()(T&& value, strf::width_t width, char32_t fill) const
         noexcept(noexcept(strf::fmt(value).fill(fill) < width))
         -> std::remove_reference_t<decltype(strf::fmt(value).fill(fill) < width)>
     {
@@ -1303,14 +1303,14 @@ struct left_fn {
 
 struct center_fn {
     template <typename T>
-    constexpr STRF_HD auto operator()(T&& value, std::int16_t width) const
+    constexpr STRF_HD auto operator()(T&& value, strf::width_t width) const
         noexcept(noexcept(strf::fmt(value) ^ width))
         -> std::remove_reference_t<decltype(strf::fmt(value) ^ width)>
     {
         return strf::fmt(value) ^ width;
     }
     template <typename T>
-    constexpr STRF_HD auto operator()(T&& value, std::int16_t width, char32_t fill) const
+    constexpr STRF_HD auto operator()(T&& value, strf::width_t width, char32_t fill) const
         noexcept(noexcept(strf::fmt(value).fill(fill) ^ width))
         -> std::remove_reference_t<decltype(strf::fmt(value).fill(fill) ^ width)>
     {
@@ -1320,14 +1320,14 @@ struct center_fn {
 
 struct split_fn {
     template <typename T>
-    constexpr STRF_HD auto operator()(T&& value, std::int16_t width) const
+    constexpr STRF_HD auto operator()(T&& value, strf::width_t width) const
         noexcept(noexcept(strf::fmt(value) % width))
         -> std::remove_reference_t<decltype(strf::fmt(value) % width)>
     {
         return strf::fmt(value) % width;
     }
     template <typename T>
-    constexpr STRF_HD auto operator()(T&& value, std::int16_t width, char32_t fill) const
+    constexpr STRF_HD auto operator()(T&& value, strf::width_t width, char32_t fill) const
         noexcept(noexcept(strf::fmt(value).fill(fill) % width))
         -> std::remove_reference_t<decltype(strf::fmt(value).fill(fill) % width)>
     {

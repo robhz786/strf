@@ -1216,7 +1216,7 @@ public:
         decimal_point_ = punct.decimal_point();
         thousands_sep_ = punct.thousands_sep();
         init_(enc, Notation == float_notation::general, fdata.showpoint);
-        init_(input.preview, input.arg.width(), input.arg.alignment(), enc);
+        init_(input.preview, input.arg.width().round(), input.arg.alignment(), enc);
     }
 
 
@@ -1551,7 +1551,7 @@ public:
         static_assert(Notation != strf::float_notation::hex, "");
 
         auto enc = strf::get_facet<strf::char_encoding_c<CharT>, FloatT>(input.fp);
-        init_(input.preview, input.arg.width(), input.arg.alignment(), enc);
+        init_(input.preview, input.arg.width().round(), input.arg.alignment(), enc);
     }
 
     STRF_HD void print_to(strf::basic_outbuff<CharT>&) const override;
@@ -2392,9 +2392,10 @@ private:
 
     STRF_HD std::uint16_t init_fills_(int content_width, strf::alignment_format afmt)
     {
-        if (content_width < afmt.width) {
+        auto fmt_width = afmt.width.round();
+        if (content_width < fmt_width) {
             fillchar_ = afmt.fill;
-            std::uint16_t fillcount = afmt.width - (std::uint16_t)content_width;
+            std::uint16_t fillcount = fmt_width - (std::uint16_t)content_width;
             switch(afmt.alignment) {
                 case strf::text_alignment::left:
                     right_fillcount_ = fillcount;

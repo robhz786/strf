@@ -112,11 +112,12 @@ public:
         , lettercase_(strf::get_facet<strf::lettercase_c, bool>(input.fp))
     {
         auto enc = strf::get_facet<char_encoding_c<CharT>, bool>(input.fp);
-        std::uint16_t w = 5 - (int)input.arg.value();
-        if (afmt_.width > w) {
+        std::int16_t w = 5 - (int)input.arg.value();
+        auto fmt_width = afmt_.width.round();
+        if (fmt_width > w) {
             encode_fill_ = enc.encode_fill_func();
-            fillcount_ = static_cast<std::uint16_t>(afmt_.width - w);
-            input.preview.subtract_width(afmt_.width);
+            fillcount_ = static_cast<std::uint16_t>(fmt_width - w);
+            input.preview.subtract_width(fmt_width);
             input.preview.add_size(w + fillcount_ * enc.encoded_char_size(afmt_.fill));
         } else {
             fillcount_ = 0;

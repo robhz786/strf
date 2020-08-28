@@ -164,7 +164,7 @@ struct print_traits<strf::detail::join_t<FwdArgs...>>
 
 struct aligned_join_maker
 {
-    std::int16_t width = 0;
+    strf::width_t width = 0;
     strf::text_alignment align = strf::text_alignment::right;
     char32_t fillchar = U' ';
     std::ptrdiff_t split_pos = 1;
@@ -504,7 +504,7 @@ join(const Args&... args)
 }
 
 constexpr STRF_HD strf::aligned_join_maker join_align
-    ( std::int16_t width
+    ( strf::width_t width
     , strf::text_alignment align
     , char32_t fillchar = U' '
     , int split_pos = 0 )
@@ -512,28 +512,28 @@ constexpr STRF_HD strf::aligned_join_maker join_align
     return {width, align, fillchar, split_pos};
 }
 
-constexpr STRF_HD strf::aligned_join_maker join_center(std::int16_t width, char32_t fillchar = U' ') noexcept
+constexpr STRF_HD strf::aligned_join_maker join_center(strf::width_t width, char32_t fillchar = U' ') noexcept
 {
     return {width, strf::text_alignment::center, fillchar, 0};
 }
 
-constexpr STRF_HD strf::aligned_join_maker join_left(std::int16_t width, char32_t fillchar = U' ') noexcept
+constexpr STRF_HD strf::aligned_join_maker join_left(strf::width_t width, char32_t fillchar = U' ') noexcept
 {
     return {width, strf::text_alignment::left, fillchar, 0};
 }
 
-constexpr STRF_HD strf::aligned_join_maker join_right(std::int16_t width, char32_t fillchar = U' ') noexcept
+constexpr STRF_HD strf::aligned_join_maker join_right(strf::width_t width, char32_t fillchar = U' ') noexcept
 {
     return {width, strf::text_alignment::right, fillchar, 0};
 }
 
-constexpr STRF_HD strf::aligned_join_maker join_split(std::int16_t width, char32_t fillchar,
+constexpr STRF_HD strf::aligned_join_maker join_split(strf::width_t width, char32_t fillchar,
     std::ptrdiff_t split_pos) noexcept
 {
     return {width, strf::text_alignment::split, fillchar, split_pos};
 }
 
-constexpr STRF_HD strf::aligned_join_maker join_split(std::int16_t width, std::ptrdiff_t split_pos) noexcept
+constexpr STRF_HD strf::aligned_join_maker join_split(strf::width_t width, std::ptrdiff_t split_pos) noexcept
 {
     return {width, strf::text_alignment::split, U' ', split_pos};
 }

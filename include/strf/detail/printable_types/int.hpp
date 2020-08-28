@@ -823,8 +823,9 @@ inline STRF_HD full_fmt_int_printer<CharT, Base>::full_fmt_int_printer
     , afmt_(i.arg.get_alignment_format())
 {
     auto content_width = ichars_.width();
-    if (afmt_.width > content_width) {
-        fillcount_ = afmt_.width - content_width;
+    auto fmt_width = afmt_.width.round();
+    if (fmt_width > content_width) {
+        fillcount_ = fmt_width - content_width;
         i.preview.subtract_width(static_cast<std::int16_t>(fillcount_));
     }
     auto enc = get_facet<strf::char_encoding_c<CharT>, IntT>(i.fp);

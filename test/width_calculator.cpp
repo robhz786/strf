@@ -75,7 +75,7 @@ void STRF_TEST_FUNC test_width_calculator()
         (strf::fmt(u8"\u2E3A\u2E3A\u2014") > 12);
 
     TEST_FAST_WIDTH( u"         \u2E3A\u2E3A\u2014")
-        (strf::fmt( u"\u2E3A\u2E3A\u2014") > 12);
+        (strf::fmt( u"\u2E3A\u2E3A\u2014") > 12.1_w);
 
     TEST_FAST_WIDTH( U"         \u2E3A\u2E3A\u2014")
         (strf::fmt( U"\u2E3A\u2E3A\u2014") > 12);
