@@ -70,7 +70,7 @@ set(tests_on_cuda_device
    input_facets_pack
    input_float
    input_int
-#  input_range # failed to compile: std::begin not allowed in device code
+   input_range # failed to compile: std::begin not allowed in device code
    input_string
    override_printable
    join

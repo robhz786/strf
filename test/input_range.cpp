@@ -101,7 +101,6 @@ void STRF_TEST_FUNC test_input_range()
             , strf::join_right(15, '.')(+strf::fmt(strf::range(arr)) > 4)
             , "---" );
     }
-
     {
         simple_array<const char*, 3> vec{ { "aa", "bb", "cc" } };
         TEST("aabbcc") (strf::range(vec));
@@ -162,6 +161,7 @@ void STRF_TEST_FUNC test_input_range()
     }
     {
         simple_array<int, 3> stl_array{ {11, 22, 33} };
+        TEST( "112233")        (strf::range({11, 22, 33}));
         TEST( "112233")        (strf::range(stl_array));
         TEST( "11, 22, 33")    (strf::separated_range(stl_array,  ", "));
         TEST(u"+11+22+33")     (+strf::fmt_range(stl_array));
