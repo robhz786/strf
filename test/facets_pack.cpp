@@ -14,45 +14,10 @@ struct ctor_log
 
 enum facet_conf
 {
-    enable_copy_and_move  = 0,
-    enable_copy           = 1 << 1,
-    enable_only_move      = 2 << 1,
-    disable_copy_and_move = 3 << 1,
-    ctors_bits            = 3 << 1
-};
-
-template <facet_conf>
-struct cond_cp_mv;
-
-template <>
-struct cond_cp_mv<disable_copy_and_move>
-{
-    constexpr cond_cp_mv()  = default;
-    constexpr cond_cp_mv(const cond_cp_mv&) = delete;
-    constexpr cond_cp_mv(cond_cp_mv&&) = delete;
-};
-
-template <>
-struct cond_cp_mv<enable_copy_and_move>
-{
-    constexpr cond_cp_mv()  = default;
-    constexpr cond_cp_mv(const cond_cp_mv&) = default;
-    constexpr cond_cp_mv(cond_cp_mv&&) = default;
-};
-
-template <>
-struct cond_cp_mv<enable_copy>
-{
-    constexpr cond_cp_mv()  = default;
-    constexpr cond_cp_mv(const cond_cp_mv&) = default;
-    constexpr cond_cp_mv(cond_cp_mv&&) = delete;
-};
-template <>
-struct cond_cp_mv<enable_only_move>
-{
-    constexpr cond_cp_mv()  = default;
-    constexpr cond_cp_mv(const cond_cp_mv&) = delete;
-    constexpr cond_cp_mv(cond_cp_mv&&) = default;
+    enable_copy_and_move  ,
+    enable_copy           ,
+    enable_only_move      ,
+    disable_copy_and_move ,
 };
 
 class facet_base
@@ -92,26 +57,58 @@ private:
     ctor_log* log_;
 };
 
-template < int N, facet_conf Conf = facet_conf::enable_copy_and_move >
-class facet: public facet_base
-{
-public:
+template <int N, facet_conf Conf = facet_conf::enable_copy_and_move>
+struct facet;
 
+template <int N>
+struct facet<N, facet_conf::enable_copy_and_move> : public facet_base
+{
     constexpr STRF_HD facet(int v, ctor_log* log = nullptr)
         : facet_base(v, log)
     {
     }
-
     constexpr facet(const facet& f) = default;
     constexpr facet(facet&& f) = default;
 
     using category = fcategory<N>;
+};
 
-private:
+template <int N>
+struct facet<N, facet_conf::enable_copy> : public facet_base
+{
+    constexpr STRF_HD facet(int v, ctor_log* log = nullptr)
+        : facet_base(v, log)
+    {
+    }
+    constexpr facet(const facet& f) = default;
 
-    // suppress default copy and move constructor according to
-    // template parameter
-    cond_cp_mv<static_cast<facet_conf>(Conf & ctors_bits)> cond_cp_mv_;
+    using category = fcategory<N>;
+};
+
+template <int N>
+struct facet<N, facet_conf::enable_only_move> : public facet_base
+{
+    constexpr STRF_HD facet(int v, ctor_log* log = nullptr)
+        : facet_base(v, log)
+    {
+    }
+    constexpr facet(const facet& f) = delete;
+    constexpr facet(facet&& f) = default;
+
+    using category = fcategory<N>;
+};
+
+template <int N>
+struct facet<N, facet_conf::disable_copy_and_move> : public facet_base
+{
+    constexpr STRF_HD facet(int v, ctor_log* log = nullptr)
+        : facet_base(v, log)
+    {
+    }
+    constexpr facet(const facet& f) = delete;
+    constexpr facet(facet&& f) = delete;
+
+    using category = fcategory<N>;
 };
 
 template <int N> struct fcategory
