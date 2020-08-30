@@ -615,7 +615,7 @@ public:
     using value_type = strf::detail::iterator_value_type<It>;
 
     template <typename... T>
-    transformed_range_printer
+    STRF_HD transformed_range_printer
         ( const strf::usual_printer_input<T...>& input )
         : fp_(input.fp)
         , begin_(input.arg.begin)

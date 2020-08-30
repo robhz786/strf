@@ -74,7 +74,7 @@ __global__ void kernel_main
     test_input_float();
     test_input_int();
     test_input_ptr();
-    // test_input_range();           // to-do
+    test_input_range();           // to-do
     test_input_string();
     test_printable_overriding();
     test_join();
