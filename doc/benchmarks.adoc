@@ -70,131 +70,131 @@ cmake --build . --target bench-to_string-header-only
 `strf` &#x2715; `{fmt}` &#x2715; `sprintf`
 ////
 
-:to_char_ptr_ho_msvc_a1:  15.0 ns
-:to_char_ptr_ho_msvc_a2:  34.5 ns
-:to_char_ptr_ho_msvc_a3:  47.1 ns
-:to_char_ptr_ho_msvc_a4:  97.7 ns
-:to_char_ptr_ho_msvc_b1:  26.1 ns
-:to_char_ptr_ho_msvc_b2:  49.7 ns
-:to_char_ptr_ho_msvc_b3:  62.8 ns
-:to_char_ptr_ho_msvc_b4:   105 ns
-:to_char_ptr_ho_msvc_c1:  7.67 ns
-:to_char_ptr_ho_msvc_c2:  12.6 ns
-:to_char_ptr_ho_msvc_c3:  92.1 ns
-:to_char_ptr_ho_msvc_c4:  94.2 ns
-:to_char_ptr_ho_msvc_d1:  36.1 ns
-:to_char_ptr_ho_msvc_d2:  56.3 ns
-:to_char_ptr_ho_msvc_d3:   151 ns
-:to_char_ptr_ho_msvc_d4:   169 ns
-:to_char_ptr_ho_msvc_e1:   138 ns
-:to_char_ptr_ho_msvc_e2:   298 ns
-:to_char_ptr_ho_msvc_e3:   315 ns
-:to_char_ptr_ho_msvc_e4:   445 ns
+:to_char_ptr_ho_msvc_a1: 15.0 ns
+:to_char_ptr_ho_msvc_a2: 34.5 ns
+:to_char_ptr_ho_msvc_a3: 47.5 ns
+:to_char_ptr_ho_msvc_a4: 98.4 ns
+:to_char_ptr_ho_msvc_b1: 26.7 ns
+:to_char_ptr_ho_msvc_b2: 50.0 ns
+:to_char_ptr_ho_msvc_b3: 62.8 ns
+:to_char_ptr_ho_msvc_b4:  105 ns
+:to_char_ptr_ho_msvc_c1: 6.56 ns
+:to_char_ptr_ho_msvc_c2: 12.8 ns
+:to_char_ptr_ho_msvc_c3: 98.4 ns
+:to_char_ptr_ho_msvc_c4:  100 ns
+:to_char_ptr_ho_msvc_d1: 36.9 ns
+:to_char_ptr_ho_msvc_d2: 54.4 ns
+:to_char_ptr_ho_msvc_d3:  150 ns
+:to_char_ptr_ho_msvc_d4:  169 ns
+:to_char_ptr_ho_msvc_e1:  153 ns
+:to_char_ptr_ho_msvc_e2:  305 ns
+:to_char_ptr_ho_msvc_e3:  315 ns
+:to_char_ptr_ho_msvc_e4:  492 ns
 
-:to_char_ptr_st_msvc_a1:  17.2 ns
-:to_char_ptr_st_msvc_a2:  32.2 ns
-:to_char_ptr_st_msvc_a3:  48.1 ns
-:to_char_ptr_st_msvc_a4:  81.6 ns
-:to_char_ptr_st_msvc_b1:  25.1 ns
-:to_char_ptr_st_msvc_b2:  44.9 ns
-:to_char_ptr_st_msvc_b3:  65.6 ns
-:to_char_ptr_st_msvc_b4:   105 ns
-:to_char_ptr_st_msvc_c1:  6.98 ns
-:to_char_ptr_st_msvc_c2:  13.1 ns
-:to_char_ptr_st_msvc_c3:  92.1 ns
-:to_char_ptr_st_msvc_c4:  94.2 ns
-:to_char_ptr_st_msvc_d1:  36.1 ns
-:to_char_ptr_st_msvc_d2:  54.7 ns
-:to_char_ptr_st_msvc_d3:   150 ns
-:to_char_ptr_st_msvc_d4:   165 ns
-:to_char_ptr_st_msvc_e1:   140 ns
-:to_char_ptr_st_msvc_e2:   293 ns
-:to_char_ptr_st_msvc_e3:   307 ns
-:to_char_ptr_st_msvc_e4:   445 ns
+:to_char_ptr_st_msvc_a1: 17.6 ns
+:to_char_ptr_st_msvc_a2: 32.8 ns
+:to_char_ptr_st_msvc_a3: 47.1 ns
+:to_char_ptr_st_msvc_a4: 83.7 ns
+:to_char_ptr_st_msvc_b1: 24.0 ns
+:to_char_ptr_st_msvc_b2: 46.0 ns
+:to_char_ptr_st_msvc_b3: 67.0 ns
+:to_char_ptr_st_msvc_b4:  105 ns
+:to_char_ptr_st_msvc_c1: 7.67 ns
+:to_char_ptr_st_msvc_c2: 13.1 ns
+:to_char_ptr_st_msvc_c3: 92.1 ns
+:to_char_ptr_st_msvc_c4: 92.1 ns
+:to_char_ptr_st_msvc_d1: 35.3 ns
+:to_char_ptr_st_msvc_d2: 54.7 ns
+:to_char_ptr_st_msvc_d3:  143 ns
+:to_char_ptr_st_msvc_d4:  165 ns
+:to_char_ptr_st_msvc_e1:  141 ns
+:to_char_ptr_st_msvc_e2:  300 ns
+:to_char_ptr_st_msvc_e3:  307 ns
+:to_char_ptr_st_msvc_e4:  455 ns
 
-:to_char_ptr_ho_gcc_a1: 11.4 ns
-:to_char_ptr_ho_gcc_a2: 14.0 ns
-:to_char_ptr_ho_gcc_a3: 18.0 ns
-:to_char_ptr_ho_gcc_a4: 32.9 ns
-:to_char_ptr_ho_gcc_b1: 22.2 ns
-:to_char_ptr_ho_gcc_b2: 35.1 ns
-:to_char_ptr_ho_gcc_b3: 36.3 ns
-:to_char_ptr_ho_gcc_b4: 49.4 ns
+:to_char_ptr_ho_gcc_a1: 11.1 ns
+:to_char_ptr_ho_gcc_a2: 14.1 ns
+:to_char_ptr_ho_gcc_a3: 18.1 ns
+:to_char_ptr_ho_gcc_a4: 32.5 ns
+:to_char_ptr_ho_gcc_b1: 20.7 ns
+:to_char_ptr_ho_gcc_b2: 36.2 ns
+:to_char_ptr_ho_gcc_b3: 38.0 ns
+:to_char_ptr_ho_gcc_b4: 54.1 ns
 :to_char_ptr_ho_gcc_c1: 11.6 ns
-:to_char_ptr_ho_gcc_c2: 12.2 ns
-:to_char_ptr_ho_gcc_c3: 52.2 ns
-:to_char_ptr_ho_gcc_c4: 57.8 ns
-:to_char_ptr_ho_gcc_d1: 27.9 ns
+:to_char_ptr_ho_gcc_c2: 12.1 ns
+:to_char_ptr_ho_gcc_c3: 52.4 ns
+:to_char_ptr_ho_gcc_c4: 57.9 ns
+:to_char_ptr_ho_gcc_d1: 27.3 ns
 :to_char_ptr_ho_gcc_d2: 46.6 ns
-:to_char_ptr_ho_gcc_d3:  104 ns
-:to_char_ptr_ho_gcc_d4:  135 ns
-:to_char_ptr_ho_gcc_e1: 58.1 ns
-:to_char_ptr_ho_gcc_e2:  105 ns
-:to_char_ptr_ho_gcc_e3:  103 ns
-:to_char_ptr_ho_gcc_e4:  144 ns
+:to_char_ptr_ho_gcc_d3:  106 ns
+:to_char_ptr_ho_gcc_d4:  128 ns
+:to_char_ptr_ho_gcc_e1: 56.6 ns
+:to_char_ptr_ho_gcc_e2:  107 ns
+:to_char_ptr_ho_gcc_e3:  106 ns
+:to_char_ptr_ho_gcc_e4:  146 ns
 
-:to_char_ptr_st_gcc_a1:  18.2 ns
-:to_char_ptr_st_gcc_a2:  29.2 ns
-:to_char_ptr_st_gcc_a3:  30.4 ns
-:to_char_ptr_st_gcc_a4:  45.2 ns
-:to_char_ptr_st_gcc_b1:  21.1 ns
-:to_char_ptr_st_gcc_b2:  35.3 ns
-:to_char_ptr_st_gcc_b3:  37.2 ns
-:to_char_ptr_st_gcc_b4:  59.2 ns
-:to_char_ptr_st_gcc_c1:  11.3 ns
-:to_char_ptr_st_gcc_c2:  12.1 ns
-:to_char_ptr_st_gcc_c3:  53.6 ns
-:to_char_ptr_st_gcc_c4:  61.9 ns
-:to_char_ptr_st_gcc_d1:  24.1 ns
-:to_char_ptr_st_gcc_d2:  42.0 ns
-:to_char_ptr_st_gcc_d3:   101 ns
-:to_char_ptr_st_gcc_d4:   120 ns
-:to_char_ptr_st_gcc_e1:  56.0 ns
-:to_char_ptr_st_gcc_e2:   105 ns
-:to_char_ptr_st_gcc_e3:   104 ns
-:to_char_ptr_st_gcc_e4:   136 ns
+:to_char_ptr_st_gcc_a1: 19.8 ns
+:to_char_ptr_st_gcc_a2: 29.4 ns
+:to_char_ptr_st_gcc_a3: 30.1 ns
+:to_char_ptr_st_gcc_a4: 44.3 ns
+:to_char_ptr_st_gcc_b1: 21.7 ns
+:to_char_ptr_st_gcc_b2: 34.8 ns
+:to_char_ptr_st_gcc_b3: 36.9 ns
+:to_char_ptr_st_gcc_b4: 58.1 ns
+:to_char_ptr_st_gcc_c1: 11.6 ns
+:to_char_ptr_st_gcc_c2: 12.2 ns
+:to_char_ptr_st_gcc_c3: 51.1 ns
+:to_char_ptr_st_gcc_c4: 61.0 ns
+:to_char_ptr_st_gcc_d1: 25.4 ns
+:to_char_ptr_st_gcc_d2: 42.0 ns
+:to_char_ptr_st_gcc_d3:  105 ns
+:to_char_ptr_st_gcc_d4:  121 ns
+:to_char_ptr_st_gcc_e1: 57.3 ns
+:to_char_ptr_st_gcc_e2:  109 ns
+:to_char_ptr_st_gcc_e3:  106 ns
+:to_char_ptr_st_gcc_e4:  138 ns
 
-:to_char_ptr_ho_clang_a1:  15.3 ns
-:to_char_ptr_ho_clang_a2:  25.2 ns
-:to_char_ptr_ho_clang_a3:  36.0 ns
-:to_char_ptr_ho_clang_a4:  50.1 ns
-:to_char_ptr_ho_clang_b1:  21.1 ns
-:to_char_ptr_ho_clang_b2:  37.7 ns
-:to_char_ptr_ho_clang_b3:  45.6 ns
-:to_char_ptr_ho_clang_b4:  64.4 ns
-:to_char_ptr_ho_clang_c1:  4.22 ns
-:to_char_ptr_ho_clang_c2:  15.1 ns
-:to_char_ptr_ho_clang_c3:  49.2 ns
-:to_char_ptr_ho_clang_c4:  55.6 ns
-:to_char_ptr_ho_clang_d1:  21.7 ns
-:to_char_ptr_ho_clang_d2:  38.3 ns
-:to_char_ptr_ho_clang_d3:   105 ns
-:to_char_ptr_ho_clang_d4:   122 ns
-:to_char_ptr_ho_clang_e1:  54.0 ns
-:to_char_ptr_ho_clang_e2:   105 ns
-:to_char_ptr_ho_clang_e3:   106 ns
-:to_char_ptr_ho_clang_e4:   132 ns
+:to_char_ptr_ho_clang_a1: 15.6 ns
+:to_char_ptr_ho_clang_a2: 25.2 ns
+:to_char_ptr_ho_clang_a3: 35.1 ns
+:to_char_ptr_ho_clang_a4: 51.3 ns
+:to_char_ptr_ho_clang_b1: 19.5 ns
+:to_char_ptr_ho_clang_b2: 36.3 ns
+:to_char_ptr_ho_clang_b3: 43.9 ns
+:to_char_ptr_ho_clang_b4: 65.2 ns
+:to_char_ptr_ho_clang_c1: 4.22 ns
+:to_char_ptr_ho_clang_c2: 15.2 ns
+:to_char_ptr_ho_clang_c3: 51.1 ns
+:to_char_ptr_ho_clang_c4: 58.3 ns
+:to_char_ptr_ho_clang_d1: 21.3 ns
+:to_char_ptr_ho_clang_d2: 37.3 ns
+:to_char_ptr_ho_clang_d3:  113 ns
+:to_char_ptr_ho_clang_d4:  137 ns
+:to_char_ptr_ho_clang_e1: 58.1 ns
+:to_char_ptr_ho_clang_e2:  107 ns
+:to_char_ptr_ho_clang_e3:  107 ns
+:to_char_ptr_ho_clang_e4:  135 ns
 
-:to_char_ptr_st_clang_a1:  19.6 ns
-:to_char_ptr_st_clang_a2:  32.1 ns
-:to_char_ptr_st_clang_a3:  40.6 ns
-:to_char_ptr_st_clang_a4:  59.4 ns
-:to_char_ptr_st_clang_b1:  19.1 ns
-:to_char_ptr_st_clang_b2:  38.0 ns
-:to_char_ptr_st_clang_b3:  44.6 ns
-:to_char_ptr_st_clang_b4:  67.8 ns
-:to_char_ptr_st_clang_c1:  4.22 ns
-:to_char_ptr_st_clang_c2:  15.4 ns
-:to_char_ptr_st_clang_c3:  53.5 ns
-:to_char_ptr_st_clang_c4:  59.5 ns
-:to_char_ptr_st_clang_d1:  21.1 ns
-:to_char_ptr_st_clang_d2:  36.1 ns
-:to_char_ptr_st_clang_d3:   117 ns
-:to_char_ptr_st_clang_d4:   160 ns
-:to_char_ptr_st_clang_e1:  55.2 ns
-:to_char_ptr_st_clang_e2:   106 ns
-:to_char_ptr_st_clang_e3:   104 ns
-:to_char_ptr_st_clang_e4:   137 ns
+:to_char_ptr_st_clang_a1: 19.8 ns
+:to_char_ptr_st_clang_a2: 32.4 ns
+:to_char_ptr_st_clang_a3: 40.2 ns
+:to_char_ptr_st_clang_a4: 59.1 ns
+:to_char_ptr_st_clang_b1: 19.8 ns
+:to_char_ptr_st_clang_b2: 38.4 ns
+:to_char_ptr_st_clang_b3: 45.7 ns
+:to_char_ptr_st_clang_b4: 69.5 ns
+:to_char_ptr_st_clang_c1: 3.43 ns
+:to_char_ptr_st_clang_c2: 15.1 ns
+:to_char_ptr_st_clang_c3: 54.4 ns
+:to_char_ptr_st_clang_c4: 59.7 ns
+:to_char_ptr_st_clang_d1: 19.3 ns
+:to_char_ptr_st_clang_d2: 49.9 ns
+:to_char_ptr_st_clang_d3:  115 ns
+:to_char_ptr_st_clang_d4:  131 ns
+:to_char_ptr_st_clang_e1: 53.2 ns
+:to_char_ptr_st_clang_e2:  102 ns
+:to_char_ptr_st_clang_e3:  102 ns
+:to_char_ptr_st_clang_e4:  134 ns
 
 ==== Sample 1
 
@@ -436,239 +436,239 @@ Print some formatted integers with alignment
 ----
 === Writing to `std::string`
 
-:to_string_ho_msvc_a1: 14.6 ns
-:to_string_ho_msvc_a2:  449 ns
-:to_string_ho_msvc_b1: 33.8 ns
-:to_string_ho_msvc_b2:  103 ns
-:to_string_ho_msvc_b3: 90.7 ns
-:to_string_ho_msvc_b4:  103 ns
-:to_string_ho_msvc_b5:  129 ns
-:to_string_ho_msvc_b6:  176 ns
-:to_string_ho_msvc_c1: 20.1 ns
-:to_string_ho_msvc_c2: 68.4 ns
-:to_string_ho_msvc_c3: 94.2 ns
-:to_string_ho_msvc_c4:  110 ns
-:to_string_ho_msvc_c5:  137 ns
-:to_string_ho_msvc_c6:  165 ns
-:to_string_ho_msvc_d1: 43.5 ns
-:to_string_ho_msvc_d2:  114 ns
-:to_string_ho_msvc_d3:  128 ns
-:to_string_ho_msvc_d4:  150 ns
-:to_string_ho_msvc_d5:  165 ns
-:to_string_ho_msvc_d6:  210 ns
-:to_string_ho_msvc_e1: 32.8 ns
-:to_string_ho_msvc_e2: 73.2 ns
-:to_string_ho_msvc_e3:  103 ns
-:to_string_ho_msvc_e4:  131 ns
-:to_string_ho_msvc_e5:  141 ns
-:to_string_ho_msvc_e6:  176 ns
-:to_string_ho_msvc_f1: 13.5 ns
-:to_string_ho_msvc_f2: 94.2 ns
-:to_string_ho_msvc_f3: 92.1 ns
-:to_string_ho_msvc_f4: 98.4 ns
-:to_string_ho_msvc_f5:  184 ns
-:to_string_ho_msvc_f6:  193 ns
-:to_string_ho_msvc_g1: 35.3 ns
-:to_string_ho_msvc_g2:  110 ns
-:to_string_ho_msvc_g3:  117 ns
-:to_string_ho_msvc_g4:  144 ns
-:to_string_ho_msvc_g5:  235 ns
-:to_string_ho_msvc_g6:  273 ns
+:to_string_ho_msvc_a1:  14.8 ns
+:to_string_ho_msvc_a2:   449 ns
+:to_string_ho_msvc_b1:  33.8 ns
+:to_string_ho_msvc_b2:   103 ns
+:to_string_ho_msvc_b3:  90.0 ns
+:to_string_ho_msvc_b4:   105 ns
+:to_string_ho_msvc_b5:   128 ns
+:to_string_ho_msvc_b6:   176 ns
+:to_string_ho_msvc_c1:  19.9 ns
+:to_string_ho_msvc_c2:  68.4 ns
+:to_string_ho_msvc_c3:  92.1 ns
+:to_string_ho_msvc_c4:   112 ns
+:to_string_ho_msvc_c5:   132 ns
+:to_string_ho_msvc_c6:   169 ns
+:to_string_ho_msvc_d1:  43.9 ns
+:to_string_ho_msvc_d2:   114 ns
+:to_string_ho_msvc_d3:   123 ns
+:to_string_ho_msvc_d4:   150 ns
+:to_string_ho_msvc_d5:   167 ns
+:to_string_ho_msvc_d6:   215 ns
+:to_string_ho_msvc_e1:  33.7 ns
+:to_string_ho_msvc_e2:  73.2 ns
+:to_string_ho_msvc_e3:   105 ns
+:to_string_ho_msvc_e4:   128 ns
+:to_string_ho_msvc_e5:   138 ns
+:to_string_ho_msvc_e6:   180 ns
+:to_string_ho_msvc_f1:  14.0 ns
+:to_string_ho_msvc_f2:  94.2 ns
+:to_string_ho_msvc_f3:  90.0 ns
+:to_string_ho_msvc_f4:  96.3 ns
+:to_string_ho_msvc_f5:   184 ns
+:to_string_ho_msvc_f6:   193 ns
+:to_string_ho_msvc_g1:  35.3 ns
+:to_string_ho_msvc_g2:   109 ns
+:to_string_ho_msvc_g3:   117 ns
+:to_string_ho_msvc_g4:   141 ns
+:to_string_ho_msvc_g5:   235 ns
+:to_string_ho_msvc_g6:   279 ns
 
-:to_string_st_msvc_a1:  14.6 ns
+:to_string_st_msvc_a1:  14.8 ns
 :to_string_st_msvc_a2:   445 ns
 :to_string_st_msvc_b1:  34.5 ns
-:to_string_st_msvc_b2:  82.0 ns
-:to_string_st_msvc_b3:  85.8 ns
-:to_string_st_msvc_b4:   114 ns
-:to_string_st_msvc_b5:   135 ns
-:to_string_st_msvc_b6:   180 ns
+:to_string_st_msvc_b2:  80.2 ns
+:to_string_st_msvc_b3:  87.9 ns
+:to_string_st_msvc_b4:   115 ns
+:to_string_st_msvc_b5:   132 ns
+:to_string_st_msvc_b6:   188 ns
 :to_string_st_msvc_c1:  19.9 ns
-:to_string_st_msvc_c2:  67.0 ns
+:to_string_st_msvc_c2:  65.6 ns
 :to_string_st_msvc_c3:  94.2 ns
 :to_string_st_msvc_c4:   120 ns
-:to_string_st_msvc_c5:   115 ns
-:to_string_st_msvc_c6:   160 ns
-:to_string_st_msvc_d1:  41.4 ns
+:to_string_st_msvc_c5:   120 ns
+:to_string_st_msvc_c6:   165 ns
+:to_string_st_msvc_d1:  43.0 ns
 :to_string_st_msvc_d2:  98.4 ns
-:to_string_st_msvc_d3:   120 ns
-:to_string_st_msvc_d4:   153 ns
+:to_string_st_msvc_d3:   123 ns
+:to_string_st_msvc_d4:   154 ns
 :to_string_st_msvc_d5:   157 ns
-:to_string_st_msvc_d6:   205 ns
-:to_string_st_msvc_e1:  30.5 ns
+:to_string_st_msvc_d6:   210 ns
+:to_string_st_msvc_e1:  30.7 ns
 :to_string_st_msvc_e2:  73.2 ns
-:to_string_st_msvc_e3:   105 ns
-:to_string_st_msvc_e4:   129 ns
-:to_string_st_msvc_e5:   144 ns
-:to_string_st_msvc_e6:   193 ns
+:to_string_st_msvc_e3:   107 ns
+:to_string_st_msvc_e4:   128 ns
+:to_string_st_msvc_e5:   151 ns
+:to_string_st_msvc_e6:   195 ns
 :to_string_st_msvc_f1:  13.5 ns
 :to_string_st_msvc_f2:  87.9 ns
 :to_string_st_msvc_f3:  87.9 ns
 :to_string_st_msvc_f4:   103 ns
-:to_string_st_msvc_f5:   184 ns
+:to_string_st_msvc_f5:   188 ns
 :to_string_st_msvc_f6:   188 ns
-:to_string_st_msvc_g1:  35.3 ns
+:to_string_st_msvc_g1:  36.1 ns
 :to_string_st_msvc_g2:   105 ns
 :to_string_st_msvc_g3:   112 ns
-:to_string_st_msvc_g4:   141 ns
-:to_string_st_msvc_g5:   241 ns
-:to_string_st_msvc_g6:   255 ns
+:to_string_st_msvc_g4:   138 ns
+:to_string_st_msvc_g5:   240 ns
+:to_string_st_msvc_g6:   270 ns
 
-:to_string_ho_gcc_a1: 5.02 ns
-:to_string_ho_gcc_a2:  196 ns
+:to_string_ho_gcc_a1: 5.28 ns
+:to_string_ho_gcc_a2:  194 ns
 :to_string_ho_gcc_b1: 12.1 ns
-:to_string_ho_gcc_b2: 45.5 ns
-:to_string_ho_gcc_b3: 25.4 ns
-:to_string_ho_gcc_b4: 27.0 ns
-:to_string_ho_gcc_b5: 37.1 ns
-:to_string_ho_gcc_b6: 53.5 ns
+:to_string_ho_gcc_b2: 45.2 ns
+:to_string_ho_gcc_b3: 25.7 ns
+:to_string_ho_gcc_b4: 27.6 ns
+:to_string_ho_gcc_b5: 39.3 ns
+:to_string_ho_gcc_b6: 54.4 ns
 :to_string_ho_gcc_c1: 16.4 ns
-:to_string_ho_gcc_c2: 47.3 ns
-:to_string_ho_gcc_c3: 32.7 ns
-:to_string_ho_gcc_c4: 30.7 ns
-:to_string_ho_gcc_c5: 42.7 ns
-:to_string_ho_gcc_c6: 63.1 ns
-:to_string_ho_gcc_d1: 27.3 ns
-:to_string_ho_gcc_d2: 62.8 ns
-:to_string_ho_gcc_d3: 52.8 ns
-:to_string_ho_gcc_d4: 65.5 ns
-:to_string_ho_gcc_d5: 67.5 ns
-:to_string_ho_gcc_d6: 83.3 ns
-:to_string_ho_gcc_e1: 23.3 ns
-:to_string_ho_gcc_e2: 56.8 ns
-:to_string_ho_gcc_e3: 52.3 ns
-:to_string_ho_gcc_e4: 63.8 ns
-:to_string_ho_gcc_e5: 65.4 ns
-:to_string_ho_gcc_e6: 79.8 ns
-:to_string_ho_gcc_f1: 8.71 ns
-:to_string_ho_gcc_f2: 56.8 ns
-:to_string_ho_gcc_f3: 36.3 ns
-:to_string_ho_gcc_f4: 45.4 ns
-:to_string_ho_gcc_f5: 90.7 ns
-:to_string_ho_gcc_f6: 99.6 ns
-:to_string_ho_gcc_g1: 21.8 ns
-:to_string_ho_gcc_g2: 65.8 ns
-:to_string_ho_gcc_g3: 57.6 ns
-:to_string_ho_gcc_g4: 74.2 ns
-:to_string_ho_gcc_g5:  134 ns
-:to_string_ho_gcc_g6:  153 ns
+:to_string_ho_gcc_c2: 58.1 ns
+:to_string_ho_gcc_c3: 32.0 ns
+:to_string_ho_gcc_c4: 28.5 ns
+:to_string_ho_gcc_c5: 41.7 ns
+:to_string_ho_gcc_c6: 64.9 ns
+:to_string_ho_gcc_d1: 25.9 ns
+:to_string_ho_gcc_d2: 63.1 ns
+:to_string_ho_gcc_d3: 52.4 ns
+:to_string_ho_gcc_d4: 75.5 ns
+:to_string_ho_gcc_d5: 76.1 ns
+:to_string_ho_gcc_d6: 95.9 ns
+:to_string_ho_gcc_e1: 23.2 ns
+:to_string_ho_gcc_e2: 57.4 ns
+:to_string_ho_gcc_e3: 55.1 ns
+:to_string_ho_gcc_e4: 67.7 ns
+:to_string_ho_gcc_e5: 68.2 ns
+:to_string_ho_gcc_e6: 91.3 ns
+:to_string_ho_gcc_f1: 8.70 ns
+:to_string_ho_gcc_f2: 54.1 ns
+:to_string_ho_gcc_f3: 36.5 ns
+:to_string_ho_gcc_f4: 46.4 ns
+:to_string_ho_gcc_f5: 88.5 ns
+:to_string_ho_gcc_f6: 96.4 ns
+:to_string_ho_gcc_g1: 21.7 ns
+:to_string_ho_gcc_g2: 62.2 ns
+:to_string_ho_gcc_g3: 57.5 ns
+:to_string_ho_gcc_g4: 77.2 ns
+:to_string_ho_gcc_g5:  133 ns
+:to_string_ho_gcc_g6:  157 ns
 
-:to_string_st_gcc_a1: 5.28 ns
-:to_string_st_gcc_a2:  198 ns
+:to_string_st_gcc_a1: 5.02 ns
+:to_string_st_gcc_a2:  200 ns
 :to_string_st_gcc_b1: 15.0 ns
-:to_string_st_gcc_b2: 51.4 ns
-:to_string_st_gcc_b3: 34.3 ns
-:to_string_st_gcc_b4: 44.0 ns
-:to_string_st_gcc_b5: 52.0 ns
-:to_string_st_gcc_b6: 79.4 ns
+:to_string_st_gcc_b2: 53.3 ns
+:to_string_st_gcc_b3: 32.4 ns
+:to_string_st_gcc_b4: 42.8 ns
+:to_string_st_gcc_b5: 51.7 ns
+:to_string_st_gcc_b6: 80.9 ns
 :to_string_st_gcc_c1: 19.3 ns
-:to_string_st_gcc_c2: 51.6 ns
-:to_string_st_gcc_c3: 44.1 ns
-:to_string_st_gcc_c4: 60.5 ns
-:to_string_st_gcc_c5: 58.4 ns
-:to_string_st_gcc_c6: 88.6 ns
-:to_string_st_gcc_d1: 29.8 ns
-:to_string_st_gcc_d2: 76.7 ns
-:to_string_st_gcc_d3: 56.0 ns
-:to_string_st_gcc_d4: 74.1 ns
-:to_string_st_gcc_d5: 80.5 ns
-:to_string_st_gcc_d6:  106 ns
-:to_string_st_gcc_e1: 24.3 ns
-:to_string_st_gcc_e2: 67.0 ns
-:to_string_st_gcc_e3: 58.6 ns
-:to_string_st_gcc_e4: 67.7 ns
-:to_string_st_gcc_e5: 69.6 ns
-:to_string_st_gcc_e6: 95.4 ns
-:to_string_st_gcc_f1: 8.74 ns
-:to_string_st_gcc_f2: 49.8 ns
-:to_string_st_gcc_f3: 21.3 ns
-:to_string_st_gcc_f4: 30.3 ns
-:to_string_st_gcc_f5: 88.3 ns
-:to_string_st_gcc_f6: 97.1 ns
-:to_string_st_gcc_g1: 21.8 ns
-:to_string_st_gcc_g2: 60.3 ns
-:to_string_st_gcc_g3: 53.5 ns
-:to_string_st_gcc_g4: 72.8 ns
-:to_string_st_gcc_g5:  134 ns
-:to_string_st_gcc_g6:  149 ns
+:to_string_st_gcc_c2: 51.5 ns
+:to_string_st_gcc_c3: 45.0 ns
+:to_string_st_gcc_c4: 51.9 ns
+:to_string_st_gcc_c5: 57.2 ns
+:to_string_st_gcc_c6: 79.6 ns
+:to_string_st_gcc_d1: 29.4 ns
+:to_string_st_gcc_d2: 66.6 ns
+:to_string_st_gcc_d3: 52.2 ns
+:to_string_st_gcc_d4: 67.0 ns
+:to_string_st_gcc_d5: 75.8 ns
+:to_string_st_gcc_d6:  104 ns
+:to_string_st_gcc_e1: 24.4 ns
+:to_string_st_gcc_e2: 63.0 ns
+:to_string_st_gcc_e3: 54.3 ns
+:to_string_st_gcc_e4: 62.6 ns
+:to_string_st_gcc_e5: 73.1 ns
+:to_string_st_gcc_e6: 94.4 ns
+:to_string_st_gcc_f1: 8.72 ns
+:to_string_st_gcc_f2: 49.2 ns
+:to_string_st_gcc_f3: 23.6 ns
+:to_string_st_gcc_f4: 28.4 ns
+:to_string_st_gcc_f5: 90.9 ns
+:to_string_st_gcc_f6: 98.7 ns
+:to_string_st_gcc_g1: 21.7 ns
+:to_string_st_gcc_g2: 56.5 ns
+:to_string_st_gcc_g3: 58.7 ns
+:to_string_st_gcc_g4: 77.6 ns
+:to_string_st_gcc_g5:  133 ns
+:to_string_st_gcc_g6:  157 ns
 
-:to_string_ho_clang_a1:  7.50 ns
-:to_string_ho_clang_a2:   203 ns
+:to_string_ho_clang_a1:  7.96 ns
+:to_string_ho_clang_a2:   202 ns
 :to_string_ho_clang_b1:  19.3 ns
 :to_string_ho_clang_b2:  55.3 ns
-:to_string_ho_clang_b3:  35.7 ns
+:to_string_ho_clang_b3:  35.8 ns
 :to_string_ho_clang_b4:  63.9 ns
-:to_string_ho_clang_b5:  76.2 ns
-:to_string_ho_clang_b6:  91.6 ns
-:to_string_ho_clang_c1:  16.5 ns
-:to_string_ho_clang_c2:  49.9 ns
-:to_string_ho_clang_c3:  48.2 ns
-:to_string_ho_clang_c4:  67.1 ns
-:to_string_ho_clang_c5:  81.6 ns
-:to_string_ho_clang_c6:   108 ns
-:to_string_ho_clang_d1:  34.2 ns
-:to_string_ho_clang_d2:  75.1 ns
-:to_string_ho_clang_d3:  57.8 ns
-:to_string_ho_clang_d4:  80.5 ns
-:to_string_ho_clang_d5:  89.2 ns
-:to_string_ho_clang_d6:   115 ns
-:to_string_ho_clang_e1:  28.2 ns
-:to_string_ho_clang_e2:  59.8 ns
-:to_string_ho_clang_e3:  59.4 ns
-:to_string_ho_clang_e4:  85.4 ns
-:to_string_ho_clang_e5:  94.0 ns
-:to_string_ho_clang_e6:   112 ns
+:to_string_ho_clang_b5:  76.3 ns
+:to_string_ho_clang_b6:  96.3 ns
+:to_string_ho_clang_c1:  16.6 ns
+:to_string_ho_clang_c2:  50.8 ns
+:to_string_ho_clang_c3:  49.9 ns
+:to_string_ho_clang_c4:  73.3 ns
+:to_string_ho_clang_c5:  85.1 ns
+:to_string_ho_clang_c6:   109 ns
+:to_string_ho_clang_d1:  33.6 ns
+:to_string_ho_clang_d2:  75.4 ns
+:to_string_ho_clang_d3:  55.9 ns
+:to_string_ho_clang_d4:  82.3 ns
+:to_string_ho_clang_d5:  81.4 ns
+:to_string_ho_clang_d6:   112 ns
+:to_string_ho_clang_e1:  27.9 ns
+:to_string_ho_clang_e2:  60.4 ns
+:to_string_ho_clang_e3:  59.7 ns
+:to_string_ho_clang_e4:  88.3 ns
+:to_string_ho_clang_e5:  98.1 ns
+:to_string_ho_clang_e6:   119 ns
 :to_string_ho_clang_f1:  1.58 ns
-:to_string_ho_clang_f2:  51.8 ns
-:to_string_ho_clang_f3:  16.4 ns
-:to_string_ho_clang_f4:  33.0 ns
-:to_string_ho_clang_f5:  86.9 ns
-:to_string_ho_clang_f6:  90.6 ns
-:to_string_ho_clang_g1:  11.1 ns
-:to_string_ho_clang_g2:  61.6 ns
-:to_string_ho_clang_g3:  47.7 ns
-:to_string_ho_clang_g4:  60.4 ns
-:to_string_ho_clang_g5:   144 ns
-:to_string_ho_clang_g6:   173 ns
+:to_string_ho_clang_f2:  50.9 ns
+:to_string_ho_clang_f3:  15.6 ns
+:to_string_ho_clang_f4:  33.5 ns
+:to_string_ho_clang_f5:  83.1 ns
+:to_string_ho_clang_f6:  86.3 ns
+:to_string_ho_clang_g1:  11.2 ns
+:to_string_ho_clang_g2:  55.6 ns
+:to_string_ho_clang_g3:  48.8 ns
+:to_string_ho_clang_g4:  60.5 ns
+:to_string_ho_clang_g5:   142 ns
+:to_string_ho_clang_g6:   170 ns
 
 :to_string_st_clang_a1:  7.94 ns
-:to_string_st_clang_a2:   202 ns
-:to_string_st_clang_b1:  19.3 ns
-:to_string_st_clang_b2:  71.4 ns
-:to_string_st_clang_b3:  40.8 ns
-:to_string_st_clang_b4:  61.2 ns
-:to_string_st_clang_b5:  73.9 ns
-:to_string_st_clang_b6:   109 ns
-:to_string_st_clang_c1:  19.7 ns
-:to_string_st_clang_c2:  53.5 ns
-:to_string_st_clang_c3:  54.8 ns
-:to_string_st_clang_c4:  74.2 ns
-:to_string_st_clang_c5:  77.5 ns
-:to_string_st_clang_c6:   111 ns
-:to_string_st_clang_d1:  36.9 ns
-:to_string_st_clang_d2:  89.5 ns
-:to_string_st_clang_d3:  62.7 ns
-:to_string_st_clang_d4:  89.3 ns
-:to_string_st_clang_d5:  99.7 ns
-:to_string_st_clang_d6:   130 ns
-:to_string_st_clang_e1:  29.2 ns
-:to_string_st_clang_e2:  64.9 ns
-:to_string_st_clang_e3:  63.9 ns
-:to_string_st_clang_e4:  87.8 ns
-:to_string_st_clang_e5:  93.5 ns
-:to_string_st_clang_e6:   115 ns
-:to_string_st_clang_f1:  7.39 ns
-:to_string_st_clang_f2:  51.5 ns
-:to_string_st_clang_f3:  16.4 ns
-:to_string_st_clang_f4:  34.6 ns
-:to_string_st_clang_f5:  79.7 ns
-:to_string_st_clang_f6:  85.5 ns
-:to_string_st_clang_g1:  11.8 ns
-:to_string_st_clang_g2:  55.8 ns
-:to_string_st_clang_g3:  51.2 ns
-:to_string_st_clang_g4:  68.8 ns
-:to_string_st_clang_g5:   138 ns
-:to_string_st_clang_g6:   170 ns
+:to_string_st_clang_a2:   197 ns
+:to_string_st_clang_b1:  19.4 ns
+:to_string_st_clang_b2:  73.5 ns
+:to_string_st_clang_b3:  41.0 ns
+:to_string_st_clang_b4:  60.2 ns
+:to_string_st_clang_b5:  72.4 ns
+:to_string_st_clang_b6:   102 ns
+:to_string_st_clang_c1:  18.5 ns
+:to_string_st_clang_c2:  60.4 ns
+:to_string_st_clang_c3:  52.7 ns
+:to_string_st_clang_c4:  72.9 ns
+:to_string_st_clang_c5:  79.2 ns
+:to_string_st_clang_c6:   110 ns
+:to_string_st_clang_d1:  34.1 ns
+:to_string_st_clang_d2:  94.7 ns
+:to_string_st_clang_d3:  58.1 ns
+:to_string_st_clang_d4:  85.9 ns
+:to_string_st_clang_d5:  96.0 ns
+:to_string_st_clang_d6:   137 ns
+:to_string_st_clang_e1:  25.9 ns
+:to_string_st_clang_e2:  64.6 ns
+:to_string_st_clang_e3:  62.5 ns
+:to_string_st_clang_e4:  86.2 ns
+:to_string_st_clang_e5:  89.5 ns
+:to_string_st_clang_e6:   119 ns
+:to_string_st_clang_f1:  7.38 ns
+:to_string_st_clang_f2:  57.4 ns
+:to_string_st_clang_f3:  15.5 ns
+:to_string_st_clang_f4:  32.5 ns
+:to_string_st_clang_f5:  79.9 ns
+:to_string_st_clang_f6:  84.4 ns
+:to_string_st_clang_g1:  11.6 ns
+:to_string_st_clang_g2:  62.3 ns
+:to_string_st_clang_g3:  57.5 ns
+:to_string_st_clang_g4:  66.8 ns
+:to_string_st_clang_g5:   140 ns
+:to_string_st_clang_g6:   169 ns
 
 `std::to_string` versus `strf::to_string` versus `fmt::format`
 
@@ -1141,31 +1141,31 @@ object file.
 >h|41 files
 >h|Difference
 
-|{to_charptr_strf}    |0.69 | 0.67 | 0.01 |    523.2 |    678.9 |    699.0 |    715.1 |     16.0
-|{to_charptr_strf_tr} |0.71 | 0.69 | 0.02 |    518.6 |    680.8 |    695.6 |    710.5 |     14.8
-|{to_charptr_fmtlib_c}|1.01 | 0.98 | 0.02 |    320.4 |    466.7 |    488.8 |    510.8 |     22.1
-|{to_charptr_fmtlib}  |1.16 | 1.14 | 0.01 |    342.1 |    371.0 |    383.5 |    400.0 |     16.5
+|{to_charptr_strf}    |0.71 | 0.69 | 0.01 |    523.3 |    687.2 |    703.2 |    719.3 |     16.0
+|{to_charptr_strf_tr} |0.72 | 0.71 | 0.01 |    522.8 |    685.0 |    699.8 |    714.7 |     14.8
+|{to_charptr_fmtlib_c}|1.00 | 0.98 | 0.01 |    320.4 |    466.7 |    488.8 |    510.8 |     22.1
+|{to_charptr_fmtlib}  |1.15 | 1.12 | 0.02 |    342.1 |    371.0 |    383.5 |    400.0 |     16.5
 |{to_charptr_sprintf} |0.02 | 0.01 | 0.00 |      8.3 |     17.8 |     22.5 |     27.3 |      4.7
 |===
 [cols="<20m,^6m,^6m,^6m,>8m,>8m,>8m,>8m,>10m"]
 |===
-|{to_string_strf}     |0.80 | 0.77 | 0.02 |    526.2 |    709.9 |    731.4 |    757.0 |     25.6
-|{to_string_strf_tr}  |0.83 | 0.81 | 0.02 |    525.7 |    719.6 |    739.9 |    764.3 |     24.4
-|{to_string_fmtlib_c} |1.12 | 1.09 | 0.02 |    317.3 |    584.8 |    624.2 |    667.7 |     43.5
-|{to_string_fmtlib}   |0.39 | 0.37 | 0.01 |    306.7 |    326.0 |    335.7 |    349.5 |     13.8
+|{to_string_strf}     |0.80 | 0.78 | 0.02 |    531.8 |    697.0 |    719.5 |    746.0 |     26.5
+|{to_string_strf_tr}  |0.84 | 0.81 | 0.02 |    531.3 |    706.7 |    727.9 |    753.3 |     25.3
+|{to_string_fmtlib_c} |1.11 | 1.09 | 0.02 |    317.3 |    584.8 |    624.2 |    667.7 |     43.5
+|{to_string_fmtlib}   |0.38 | 0.37 | 0.01 |    306.7 |    326.0 |    335.7 |    349.5 |     13.8
 |===
 [cols="<20m,^6m,^6m,^6m,>8m,>8m,>8m,>8m,>10m"]
 |===
-|{to_FILE_strf}       |0.69 | 0.67 | 0.01 |    519.2 |    679.4 |    695.5 |    711.6 |     16.1
-|{to_FILE_strf_tr}    |0.72 | 0.69 | 0.02 |    518.7 |    681.2 |    692.1 |    707.0 |     14.9
-|{to_FILE_fmtlib}     |0.37 | 0.36 | 0.01 |    306.3 |    315.9 |    320.8 |    325.6 |      4.8
+|{to_FILE_strf}       |0.71 | 0.68 | 0.02 |    523.3 |    683.6 |    699.7 |    715.8 |     16.1
+|{to_FILE_strf_tr}    |0.73 | 0.71 | 0.02 |    522.9 |    685.4 |    696.3 |    711.2 |     14.9
+|{to_FILE_fmtlib}     |0.37 | 0.35 | 0.01 |    306.3 |    315.9 |    320.8 |    325.6 |      4.8
 |{to_FILE_fprintf}    |0.02 | 0.01 | 0.00 |      8.3 |     18.0 |     18.7 |     23.5 |      4.8
 |===
 [cols="<20m,^6m,^6m,^6m,>8m,>8m,>8m,>8m,>10m"]
 |===
-|{to_ostream_strf}    |0.92 | 0.89 | 0.02 |    519.5 |    683.5 |    700.0 |    716.6 |     16.5
-|{to_ostream_strf_tr} |0.94 | 0.91 | 0.02 |    518.9 |    685.0 |    696.2 |    711.5 |     15.3
-|{to_ostream_fmtlib}  |0.60 | 0.57 | 0.02 |    306.8 |    317.6 |    323.0 |    328.5 |      5.4
+|{to_ostream_strf}    |0.93 | 0.90 | 0.02 |    523.7 |    687.7 |    704.2 |    720.8 |     16.5
+|{to_ostream_strf_tr} |0.95 | 0.93 | 0.02 |    519.0 |    689.2 |    700.4 |    715.7 |     15.3
+|{to_ostream_fmtlib}  |0.59 | 0.57 | 0.02 |    306.8 |    317.6 |    323.0 |    328.5 |      5.4
 |===
 
 ==== Header-only libs, with `-Os`
@@ -1183,29 +1183,29 @@ object file.
 >h|41 files
 >h|Difference
 
-|{to_charptr_strf}    |0.91 | 0.90 | 0.01 |     70.3 |    227.1 |    243.4 |    259.7 |     16.3
-|{to_charptr_strf_tr} |0.93 | 0.91 | 0.02 |     69.8 |    229.0 |    244.1 |    259.2 |     15.1
-|{to_charptr_fmtlib_c}|1.55 | 1.52 | 0.03 |     54.3 |    207.5 |    234.9 |    258.2 |     23.3
-|{to_charptr_fmtlib}  |1.71 | 1.68 | 0.03 |     80.9 |    116.3 |    134.0 |    151.8 |     17.7
+|{to_charptr_strf}    |0.93 | 0.91 | 0.01 |     70.3 |    231.2 |    247.4 |    263.7 |     16.3
+|{to_charptr_strf_tr} |0.94 | 0.92 | 0.02 |     69.8 |    233.1 |    248.1 |    263.2 |     15.1
+|{to_charptr_fmtlib_c}|1.54 | 1.51 | 0.02 |     54.3 |    207.5 |    234.9 |    258.2 |     23.3
+|{to_charptr_fmtlib}  |1.70 | 1.67 | 0.02 |     80.9 |    116.3 |    134.0 |    151.8 |     17.7
 |===
 [cols="<20m,^6m,^6m,^6m,>8m,>8m,>8m,>8m,>10m"]
 |===
-|{to_string_strf}     |1.02 | 1.00 | 0.02 |     72.6 |    261.0 |    286.6 |    308.1 |     21.5
-|{to_string_strf_tr}  |1.06 | 1.03 | 0.02 |     76.1 |    270.7 |    295.1 |    315.4 |     20.3
-|{to_string_fmtlib_c} |1.59 | 1.56 | 0.02 |     67.2 |    341.7 |    382.2 |    426.9 |     44.7
-|{to_string_fmtlib}   |1.85 | 1.82 | 0.02 |    100.6 |    152.9 |    181.1 |    205.3 |     24.1
+|{to_string_strf}     |1.03 | 1.01 | 0.02 |     78.7 |    244.7 |    267.1 |    293.6 |     26.5
+|{to_string_strf_tr}  |1.07 | 1.04 | 0.02 |     78.1 |    254.3 |    279.7 |    300.9 |     21.2
+|{to_string_fmtlib_c} |1.58 | 1.55 | 0.03 |     67.2 |    341.7 |    382.2 |    426.9 |     44.7
+|{to_string_fmtlib}   |1.84 | 1.81 | 0.03 |    100.6 |    152.9 |    181.1 |    205.3 |     24.1
 |===
 [cols="<20m,^6m,^6m,^6m,>8m,>8m,>8m,>8m,>10m"]
 |===
-|{to_FILE_strf}       |0.91 | 0.89 | 0.02 |     70.4 |    223.5 |    239.9 |    256.3 |     16.4
-|{to_FILE_strf_tr}    |0.93 | 0.91 | 0.02 |     69.9 |    225.4 |    240.6 |    255.7 |     15.2
-|{to_FILE_fmtlib}     |1.87 | 1.84 | 0.02 |    106.8 |    152.3 |    177.1 |    197.8 |     20.7
+|{to_FILE_strf}       |0.93 | 0.91 | 0.02 |     70.4 |    227.6 |    243.9 |    260.3 |     16.4
+|{to_FILE_strf_tr}    |0.95 | 0.93 | 0.02 |     69.9 |    229.4 |    244.6 |    259.8 |     15.2
+|{to_FILE_fmtlib}     |1.86 | 1.83 | 0.02 |    106.8 |    152.3 |    177.1 |    197.8 |     20.7
 |===
 [cols="<20m,^6m,^6m,^6m,>8m,>8m,>8m,>8m,>10m"]
 |===
-|{to_ostream_strf}    |1.14 | 1.11 | 0.02 |     70.7 |    227.7 |    244.4 |    261.2 |     16.7
-|{to_ostream_strf_tr} |1.16 | 1.14 | 0.02 |     66.0 |    229.0 |    244.6 |    260.1 |     15.6
-|{to_ostream_fmtlib}  |1.72 | 1.69 | 0.03 |     90.2 |    127.0 |    145.4 |    163.8 |     18.4
+|{to_ostream_strf}    |1.15 | 1.13 | 0.02 |     70.7 |    231.7 |    248.5 |    265.2 |     16.8
+|{to_ostream_strf_tr} |1.18 | 1.15 | 0.02 |     70.1 |    233.2 |    248.7 |    264.2 |     15.6
+|{to_ostream_fmtlib}  |1.71 | 1.68 | 0.02 |     90.2 |    127.0 |    145.4 |    163.8 |     18.4
 |===
 
 ==== Static libs, with `-O3`
@@ -1223,31 +1223,31 @@ object file.
 >h|41 files
 >h|Difference
 
-|{to_charptr_strf}    |0.74 | 0.72 | 0.02 |    519.3 |    718.2 |    737.9 |    753.5 |     15.6
-|{to_charptr_strf_tr} |0.78 | 0.76 | 0.02 |    518.6 |    732.5 |    747.1 |    765.8 |     18.7
-|{to_charptr_fmtlib_c}|1.13 | 1.11 | 0.01 |    321.9 |    407.3 |    437.6 |    463.8 |     26.2
-|{to_charptr_fmtlib}  |1.37 | 1.34 | 0.02 |    351.5 |    381.0 |    397.7 |    414.5 |     16.8
+|{to_charptr_strf}    |0.75 | 0.74 | 0.01 |    519.4 |    726.5 |    742.1 |    761.8 |     19.7
+|{to_charptr_strf_tr} |0.79 | 0.77 | 0.02 |    518.7 |    736.7 |    755.4 |    770.0 |     14.6
+|{to_charptr_fmtlib_c}|1.13 | 1.10 | 0.02 |    321.9 |    407.3 |    437.6 |    463.8 |     26.2
+|{to_charptr_fmtlib}  |1.36 | 1.34 | 0.02 |    351.5 |    381.0 |    397.7 |    414.5 |     16.8
 |{to_charptr_sprintf} |0.02 | 0.02 | 0.00 |      8.3 |     17.8 |     22.5 |     27.3 |      4.7
 |===
 [cols="<20m,^6m,^6m,^6m,>8m,>8m,>8m,>8m,>10m"]
 |===
-|{to_string_strf}     |0.85 | 0.83 | 0.02 |    526.6 |    724.2 |    750.4 |    776.5 |     26.1
-|{to_string_strf_tr}  |0.89 | 0.87 | 0.02 |    525.9 |    743.4 |    764.3 |    789.3 |     25.0
-|{to_string_fmtlib_c} |1.25 | 1.22 | 0.02 |    317.2 |    488.1 |    535.6 |    579.0 |     43.4
+|{to_string_strf}     |0.87 | 0.85 | 0.02 |    526.7 |    728.4 |    754.6 |    780.7 |     26.1
+|{to_string_strf_tr}  |0.91 | 0.89 | 0.01 |    526.0 |    743.6 |    768.6 |    793.6 |     25.0
+|{to_string_fmtlib_c} |1.24 | 1.22 | 0.02 |    317.2 |    488.1 |    535.6 |    579.0 |     43.4
 |{to_string_fmtlib}   |0.39 | 0.37 | 0.01 |    306.7 |    326.0 |    335.7 |    349.5 |     13.8
 |===
 [cols="<20m,^6m,^6m,^6m,>8m,>8m,>8m,>8m,>10m"]
 |===
-|{to_FILE_strf}       |0.74 | 0.72 | 0.02 |    519.3 |    714.8 |    730.7 |    746.6 |     15.9
-|{to_FILE_strf_tr}    |0.78 | 0.76 | 0.01 |    518.6 |    728.9 |    743.6 |    762.4 |     18.8
-|{to_FILE_fmtlib}     |0.37 | 0.36 | 0.01 |    306.3 |    315.9 |    320.8 |    325.6 |      4.8
+|{to_FILE_strf}       |0.76 | 0.74 | 0.01 |    519.4 |    719.0 |    739.0 |    754.9 |     15.9
+|{to_FILE_strf_tr}    |0.80 | 0.78 | 0.02 |    518.7 |    737.2 |    751.9 |    766.6 |     14.7
+|{to_FILE_fmtlib}     |0.37 | 0.35 | 0.01 |    306.3 |    315.9 |    320.8 |    325.6 |      4.8
 |{to_FILE_fprintf}    |0.02 | 0.01 | 0.00 |      8.3 |     18.0 |     18.7 |     23.5 |      4.8
 |===
 [cols="<20m,^6m,^6m,^6m,>8m,>8m,>8m,>8m,>10m"]
 |===
-|{to_ostream_strf}    |0.97 | 0.95 | 0.02 |    518.6 |    728.7 |    744.0 |    759.3 |     15.3
-|{to_ostream_strf_tr} |1.01 | 0.98 | 0.02 |    518.7 |    736.4 |    747.4 |    762.5 |     15.1
-|{to_ostream_fmtlib}  |0.62 | 0.60 | 0.01 |    307.4 |    368.2 |    378.9 |    385.5 |      6.6
+|{to_ostream_strf}    |0.99 | 0.96 | 0.02 |    518.7 |    737.0 |    752.3 |    767.6 |     15.3
+|{to_ostream_strf_tr} |1.02 | 1.00 | 0.02 |    518.8 |    740.6 |    755.7 |    770.8 |     15.1
+|{to_ostream_fmtlib}  |0.61 | 0.59 | 0.02 |    307.4 |    368.2 |    378.9 |    385.5 |      6.6
 |===
 
 ==== Header-only libs, with `-O3`
@@ -1265,29 +1265,29 @@ object file.
 >h|41 files
 >h|Difference
 
-|{to_charptr_strf}    |1.04 | 1.02 | 0.01 |     71.2 |    289.8 |    305.6 |    325.5 |     19.9
-|{to_charptr_strf_tr} |1.06 | 1.04 | 0.02 |     70.4 |    291.3 |    306.1 |    325.1 |     18.9
-|{to_charptr_fmtlib_c}|1.80 | 1.77 | 0.02 |     58.4 |    145.9 |    177.1 |    208.4 |     31.2
-|{to_charptr_fmtlib}  |2.05 | 2.02 | 0.03 |     88.6 |    128.1 |    145.9 |    163.6 |     17.7
+|{to_charptr_strf}    |1.06 | 1.03 | 0.02 |     71.2 |    281.7 |    301.6 |    317.4 |     15.8
+|{to_charptr_strf_tr} |1.07 | 1.05 | 0.01 |     70.4 |    283.1 |    302.0 |    316.9 |     14.8
+|{to_charptr_fmtlib_c}|1.79 | 1.76 | 0.03 |     58.4 |    145.9 |    177.1 |    208.4 |     31.2
+|{to_charptr_fmtlib}  |2.05 | 2.01 | 0.03 |     88.6 |    128.1 |    145.9 |    163.6 |     17.7
 |===
 [cols="<20m,^6m,^6m,^6m,>8m,>8m,>8m,>8m,>10m"]
 |===
-|{to_string_strf}     |1.15 | 1.13 | 0.02 |     77.0 |    294.1 |    319.4 |    344.8 |     25.4
-|{to_string_strf_tr}  |1.19 | 1.17 | 0.02 |     76.3 |    312.2 |    332.3 |    356.5 |     24.2
-|{to_string_fmtlib_c} |1.86 | 1.83 | 0.03 |     64.5 |    237.6 |    286.0 |    334.5 |     48.5
-|{to_string_fmtlib}   |2.23 | 2.20 | 0.03 |    106.2 |    158.5 |    186.7 |    215.0 |     28.2
+|{to_string_strf}     |1.17 | 1.14 | 0.02 |     77.0 |    294.1 |    315.3 |    340.7 |     25.4
+|{to_string_strf_tr}  |1.20 | 1.18 | 0.02 |     76.3 |    308.1 |    332.4 |    356.6 |     24.2
+|{to_string_fmtlib_c} |1.84 | 1.81 | 0.03 |     64.5 |    237.6 |    286.0 |    334.5 |     48.5
+|{to_string_fmtlib}   |2.21 | 2.18 | 0.03 |    106.2 |    158.5 |    186.7 |    215.0 |     28.2
 |===
 [cols="<20m,^6m,^6m,^6m,>8m,>8m,>8m,>8m,>10m"]
 |===
-|{to_FILE_strf}       |1.04 | 1.02 | 0.02 |     71.2 |    277.5 |    293.6 |    313.8 |     20.2
-|{to_FILE_strf_tr}    |1.07 | 1.05 | 0.02 |     70.4 |    287.7 |    306.7 |    321.7 |     14.9
-|{to_FILE_fmtlib}     |2.26 | 2.23 | 0.03 |    111.9 |    156.4 |    180.7 |    205.0 |     24.3
+|{to_FILE_strf}       |1.05 | 1.03 | 0.02 |     71.2 |    269.3 |    289.6 |    305.7 |     16.1
+|{to_FILE_strf_tr}    |1.08 | 1.05 | 0.01 |     70.4 |    283.2 |    298.2 |    313.1 |     14.9
+|{to_FILE_fmtlib}     |2.24 | 2.21 | 0.03 |    111.9 |    156.4 |    180.7 |    205.0 |     24.3
 |===
 [cols="<20m,^6m,^6m,^6m,>8m,>8m,>8m,>8m,>10m"]
 |===
-|{to_ostream_strf}    |1.33 | 1.31 | 0.02 |     69.5 |    332.9 |    348.5 |    368.1 |     19.6
-|{to_ostream_strf_tr} |1.30 | 1.27 | 0.02 |     70.6 |    292.5 |    307.8 |    323.2 |     15.3
-|{to_ostream_fmtlib}  |2.06 | 2.03 | 0.03 |     96.9 |    183.7 |    207.4 |    227.1 |     19.6
+|{to_ostream_strf}    |1.35 | 1.32 | 0.02 |     69.5 |    328.8 |    344.4 |    364.0 |     19.6
+|{to_ostream_strf_tr} |1.31 | 1.28 | 0.02 |     70.6 |    285.7 |    301.0 |    316.3 |     15.3
+|{to_ostream_fmtlib}  |2.04 | 2.01 | 0.03 |     96.9 |    183.7 |    207.4 |    227.1 |     19.6
 |===
 
 ==== Static libs, with `-g`
@@ -1305,31 +1305,31 @@ object file.
 >h|41 files
 >h|Difference
 
-|{to_charptr_strf}    |0.61 | 0.58 | 0.02 |   1023.1 |   3910.0 |   5212.6 |   6515.2 |   1302.6
-|{to_charptr_strf_tr} |0.61 | 0.59 | 0.02 |   1050.4 |   4473.3 |   5862.3 |   7255.3 |   1393.0
-|{to_charptr_fmtlib_c}|0.72 | 0.69 | 0.02 |    675.8 |   4766.7 |   6386.1 |   8004.4 |   1618.2
-|{to_charptr_fmtlib}  |0.69 | 0.66 | 0.02 |    679.6 |   3934.0 |   5480.9 |   7027.9 |   1547.0
-|{to_charptr_sprintf} |0.02 | 0.01 | 0.00 |     25.4 |    175.4 |    248.3 |    321.3 |     73.0
+|{to_charptr_strf}    |0.60 | 0.58 | 0.02 |   1033.2 |   3995.0 |   5332.9 |   6670.8 |   1337.9
+|{to_charptr_strf_tr} |0.61 | 0.58 | 0.02 |   1064.6 |   4558.6 |   5983.0 |   7407.5 |   1424.4
+|{to_charptr_fmtlib_c}|0.71 | 0.68 | 0.02 |    675.8 |   4766.7 |   6386.1 |   8004.4 |   1618.2
+|{to_charptr_fmtlib}  |0.68 | 0.65 | 0.02 |    679.6 |   3934.0 |   5480.9 |   7027.9 |   1547.0
+|{to_charptr_sprintf} |0.01 | 0.01 | 0.00 |     25.4 |    175.4 |    248.3 |    321.3 |     73.0
 |===
 [cols="<20m,^6m,^6m,^6m,>8m,>8m,>8m,>8m,>10m"]
 |===
-|{to_string_strf}     |0.67 | 0.65 | 0.02 |   1064.3 |   4165.0 |   5567.6 |   6974.3 |   1406.7
-|{to_string_strf_tr}  |0.68 | 0.65 | 0.02 |   1097.1 |   4773.0 |   6274.7 |   7772.3 |   1497.6
-|{to_string_fmtlib_c} |0.76 | 0.73 | 0.02 |    658.6 |   5054.8 |   6767.6 |   8486.9 |   1719.3
+|{to_string_strf}     |0.67 | 0.64 | 0.02 |   1074.4 |   4250.1 |   5688.2 |   7130.4 |   1442.2
+|{to_string_strf_tr}  |0.68 | 0.66 | 0.02 |   1107.2 |   4858.4 |   6391.7 |   7929.0 |   1537.3
+|{to_string_fmtlib_c} |0.75 | 0.72 | 0.02 |    658.6 |   5054.8 |   6767.6 |   8486.9 |   1719.3
 |{to_string_fmtlib}   |0.37 | 0.35 | 0.01 |    403.4 |   1325.9 |   1689.3 |   2048.7 |    359.4
 |===
 [cols="<20m,^6m,^6m,^6m,>8m,>8m,>8m,>8m,>10m"]
 |===
-|{to_FILE_strf}       |0.60 | 0.58 | 0.02 |   1021.9 |   3960.8 |   5285.6 |   6613.4 |   1327.8
-|{to_FILE_strf_tr}    |0.61 | 0.59 | 0.02 |   1053.4 |   4525.6 |   5937.0 |   7351.4 |   1414.4
-|{to_FILE_fmtlib}     |0.37 | 0.35 | 0.01 |    381.5 |   1203.9 |   1500.2 |   1800.5 |    300.4
+|{to_FILE_strf}       |0.60 | 0.58 | 0.02 |   1036.0 |   4041.2 |   5405.3 |   6764.0 |   1358.8
+|{to_FILE_strf_tr}    |0.61 | 0.59 | 0.02 |   1067.5 |   4606.2 |   6057.0 |   7502.6 |   1445.6
+|{to_FILE_fmtlib}     |0.36 | 0.34 | 0.01 |    381.5 |   1203.9 |   1500.2 |   1800.5 |    300.4
 |{to_FILE_fprintf}    |0.01 | 0.01 | 0.00 |     25.2 |    164.7 |    236.5 |    308.3 |     71.8
 |===
 [cols="<20m,^6m,^6m,^6m,>8m,>8m,>8m,>8m,>10m"]
 |===
-|{to_ostream_strf}    |0.83 | 0.81 | 0.02 |   1034.2 |   4007.4 |   5346.4 |   6688.4 |   1342.0
-|{to_ostream_strf_tr} |0.84 | 0.81 | 0.03 |   1065.8 |   4580.2 |   6006.1 |   7435.1 |   1428.9
-|{to_ostream_fmtlib}  |0.59 | 0.56 | 0.02 |    408.2 |   1448.5 |   1870.9 |   2293.3 |    422.4
+|{to_ostream_strf}    |0.83 | 0.80 | 0.02 |   1048.3 |   4088.2 |   5466.6 |   6839.6 |   1373.0
+|{to_ostream_strf_tr} |0.84 | 0.81 | 0.02 |   1079.9 |   4661.1 |   6126.6 |   7590.9 |   1464.3
+|{to_ostream_fmtlib}  |0.58 | 0.56 | 0.02 |    408.2 |   1448.5 |   1870.9 |   2293.3 |    422.4
 |===
 
 ==== Header-only libs, with `-g`
@@ -1347,29 +1347,29 @@ object file.
 >h|41 files
 >h|Difference
 
-|{to_charptr_strf}    |0.64 | 0.61 | 0.02 |    630.6 |   4134.5 |   5743.0 |   7351.6 |   1608.5
-|{to_charptr_strf_tr} |0.65 | 0.63 | 0.02 |    661.2 |   4686.7 |   6376.5 |   8070.3 |   1693.8
-|{to_charptr_fmtlib_c}|1.08 | 1.04 | 0.03 |    545.8 |   5452.4 |   7473.1 |   9500.8 |   2027.7
-|{to_charptr_fmtlib}  |1.04 | 1.00 | 0.03 |    551.1 |   4606.2 |   6555.6 |   8500.9 |   1945.3
+|{to_charptr_strf}    |0.64 | 0.61 | 0.02 |    644.8 |   4219.6 |   5863.6 |   7507.6 |   1644.0
+|{to_charptr_strf_tr} |0.65 | 0.62 | 0.02 |    675.4 |   4772.4 |   6497.8 |   8223.2 |   1725.3
+|{to_charptr_fmtlib_c}|1.07 | 1.03 | 0.03 |    545.8 |   5452.4 |   7473.1 |   9500.8 |   2027.7
+|{to_charptr_fmtlib}  |1.03 | 1.00 | 0.03 |    551.1 |   4606.2 |   6555.6 |   8500.9 |   1945.3
 |===
 [cols="<20m,^6m,^6m,^6m,>8m,>8m,>8m,>8m,>10m"]
 |===
-|{to_string_strf}     |0.71 | 0.68 | 0.02 |    677.1 |   4410.6 |   6133.2 |   7851.8 |   1718.5
-|{to_string_strf_tr}  |0.72 | 0.69 | 0.02 |    708.9 |   5005.2 |   6816.6 |   8627.9 |   1811.3
-|{to_string_fmtlib_c} |1.05 | 1.02 | 0.03 |    603.8 |   5764.9 |   7855.1 |   9952.6 |   2097.4
-|{to_string_fmtlib}   |1.02 | 0.99 | 0.02 |    669.2 |   5207.1 |   7376.2 |   9545.3 |   2169.1
+|{to_string_strf}     |0.71 | 0.68 | 0.02 |    687.2 |   4496.2 |   6250.3 |   8008.6 |   1758.3
+|{to_string_strf_tr}  |0.72 | 0.69 | 0.02 |    723.1 |   5090.9 |   6938.0 |   8780.8 |   1842.9
+|{to_string_fmtlib_c} |1.05 | 1.01 | 0.03 |    603.8 |   5764.9 |   7855.1 |   9952.6 |   2097.4
+|{to_string_fmtlib}   |1.01 | 0.98 | 0.03 |    669.2 |   5207.1 |   7376.2 |   9545.3 |   2169.1
 |===
 [cols="<20m,^6m,^6m,^6m,>8m,>8m,>8m,>8m,>10m"]
 |===
-|{to_FILE_strf}       |0.64 | 0.62 | 0.02 |    633.8 |   4191.8 |   5825.3 |   7462.6 |   1637.3
-|{to_FILE_strf_tr}    |0.65 | 0.62 | 0.02 |    664.4 |   4745.9 |   6461.1 |   8180.0 |   1719.0
-|{to_FILE_fmtlib}     |1.04 | 1.00 | 0.03 |    687.9 |   5375.1 |   7605.7 |   9840.5 |   2234.7
+|{to_FILE_strf}       |0.64 | 0.62 | 0.02 |    647.9 |   4272.7 |   5945.6 |   7614.2 |   1668.6
+|{to_FILE_strf_tr}    |0.65 | 0.63 | 0.02 |    678.6 |   4827.4 |   6582.2 |   8332.6 |   1750.4
+|{to_FILE_fmtlib}     |1.03 | 1.00 | 0.03 |    687.9 |   5375.1 |   7605.7 |   9840.5 |   2234.7
 |===
 [cols="<20m,^6m,^6m,^6m,>8m,>8m,>8m,>8m,>10m"]
 |===
-|{to_ostream_strf}    |0.87 | 0.84 | 0.03 |    646.2 |   4241.2 |   5890.1 |   7542.8 |   1652.7
-|{to_ostream_strf_tr} |0.88 | 0.85 | 0.02 |    676.9 |   4802.9 |   6533.7 |   8268.4 |   1734.6
-|{to_ostream_fmtlib}  |1.01 | 0.97 | 0.03 |    605.9 |   4729.9 |   6696.2 |   8658.3 |   1962.2
+|{to_ostream_strf}    |0.87 | 0.84 | 0.03 |    660.3 |   4322.0 |   6010.4 |   7694.4 |   1684.0
+|{to_ostream_strf_tr} |0.88 | 0.85 | 0.03 |    691.1 |   4884.3 |   6654.8 |   8424.9 |   1770.1
+|{to_ostream_fmtlib}  |1.00 | 0.97 | 0.03 |    605.9 |   4729.9 |   6696.2 |   8658.3 |   1962.2
 |===
 
 ===  GCC 9.3.0
@@ -1389,31 +1389,31 @@ object file.
 >h|41 files
 >h|Difference
 
-|{to_charptr_strf}    |0.75 | 0.71 | 0.04 |    540.6 |    735.3 |    757.0 |    774.6 |     17.7
-|{to_charptr_strf_tr} |0.77 | 0.72 | 0.04 |    541.1 |    726.9 |    744.5 |    766.2 |     21.8
-|{to_charptr_fmtlib_c}|0.96 | 0.91 | 0.04 |    309.9 |    380.3 |    413.2 |    438.0 |     24.7
-|{to_charptr_fmtlib}  |1.21 | 1.16 | 0.05 |    325.2 |    367.2 |    386.1 |    405.0 |     18.9
+|{to_charptr_strf}    |0.76 | 0.72 | 0.04 |    540.7 |    736.4 |    754.0 |    771.8 |     17.8
+|{to_charptr_strf_tr} |0.77 | 0.73 | 0.04 |    541.2 |    725.0 |    746.6 |    768.5 |     21.9
+|{to_charptr_fmtlib_c}|0.95 | 0.90 | 0.05 |    309.9 |    380.3 |    413.2 |    438.0 |     24.7
+|{to_charptr_fmtlib}  |1.19 | 1.14 | 0.05 |    325.2 |    367.2 |    386.1 |    405.0 |     18.9
 |{to_charptr_sprintf} |0.02 | 0.02 | 0.00 |      8.4 |     17.8 |     22.6 |     27.3 |      4.7
 |===
 [cols="<20m,^6m,^6m,^6m,>8m,>8m,>8m,>8m,>10m"]
 |===
-|{to_string_strf}     |0.81 | 0.76 | 0.04 |    546.5 |    758.4 |    781.1 |    799.7 |     18.7
-|{to_string_strf_tr}  |0.83 | 0.79 | 0.04 |    547.1 |    751.0 |    777.7 |    804.6 |     26.9
-|{to_string_fmtlib_c} |1.03 | 0.98 | 0.04 |    300.7 |    410.3 |    448.1 |    481.8 |     33.7
-|{to_string_fmtlib}   |0.44 | 0.41 | 0.03 |    297.2 |    311.8 |    321.1 |    326.4 |      5.3
+|{to_string_strf}     |0.81 | 0.77 | 0.04 |    546.6 |    759.4 |    778.0 |    800.9 |     22.9
+|{to_string_strf_tr}  |0.84 | 0.79 | 0.04 |    547.2 |    753.1 |    779.9 |    806.9 |     27.0
+|{to_string_fmtlib_c} |1.02 | 0.97 | 0.04 |    300.7 |    410.3 |    448.1 |    481.8 |     33.7
+|{to_string_fmtlib}   |0.44 | 0.40 | 0.03 |    297.2 |    311.8 |    321.1 |    326.4 |      5.3
 |===
 [cols="<20m,^6m,^6m,^6m,>8m,>8m,>8m,>8m,>10m"]
 |===
-|{to_FILE_strf}       |0.75 | 0.71 | 0.04 |    540.4 |    731.3 |    744.9 |    762.6 |     17.8
-|{to_FILE_strf_tr}    |0.77 | 0.73 | 0.04 |    540.8 |    722.9 |    740.5 |    758.3 |     17.8
+|{to_FILE_strf}       |0.76 | 0.71 | 0.04 |    540.5 |    732.4 |    745.9 |    759.8 |     13.8
+|{to_FILE_strf_tr}    |0.77 | 0.73 | 0.04 |    540.9 |    720.9 |    738.6 |    760.6 |     22.0
 |{to_FILE_fmtlib}     |0.42 | 0.39 | 0.03 |    297.0 |    306.7 |    311.5 |    316.3 |      4.8
 |{to_FILE_fprintf}    |0.02 | 0.01 | 0.00 |      8.4 |     18.0 |     18.7 |     23.6 |      4.8
 |===
 [cols="<20m,^6m,^6m,^6m,>8m,>8m,>8m,>8m,>10m"]
 |===
-|{to_ostream_strf}    |0.80 | 0.75 | 0.04 |    540.7 |    741.8 |    755.3 |    773.0 |     17.7
-|{to_ostream_strf_tr} |0.82 | 0.77 | 0.04 |    541.2 |    724.9 |    742.5 |    760.1 |     17.7
-|{to_ostream_fmtlib}  |0.53 | 0.50 | 0.03 |    297.7 |    307.2 |    311.9 |    316.7 |      4.8
+|{to_ostream_strf}    |0.80 | 0.76 | 0.04 |    540.8 |    739.9 |    757.5 |    775.3 |     17.8
+|{to_ostream_strf_tr} |0.82 | 0.77 | 0.04 |    541.3 |    722.9 |    740.5 |    762.5 |     21.9
+|{to_ostream_fmtlib}  |0.53 | 0.49 | 0.03 |    297.7 |    307.2 |    311.9 |    316.7 |      4.8
 |===
 
 ==== Header-only libs, with `-Os`
@@ -1431,29 +1431,29 @@ object file.
 >h|41 files
 >h|Difference
 
-|{to_charptr_strf}    |0.99 | 0.94 | 0.04 |     63.9 |    259.5 |    281.4 |    299.3 |     17.9
-|{to_charptr_strf_tr} |1.00 | 0.95 | 0.04 |     64.4 |    253.4 |    275.2 |    293.2 |     17.9
-|{to_charptr_fmtlib_c}|1.32 | 1.27 | 0.05 |     52.4 |    132.0 |    165.4 |    198.8 |     33.4
-|{to_charptr_fmtlib}  |1.63 | 1.57 | 0.06 |     82.5 |    124.9 |    144.1 |    167.3 |     23.3
+|{to_charptr_strf}    |0.99 | 0.95 | 0.04 |     64.0 |    259.1 |    276.9 |    295.0 |     18.1
+|{to_charptr_strf_tr} |1.01 | 0.96 | 0.04 |     64.4 |    255.4 |    273.3 |    295.4 |     22.2
+|{to_charptr_fmtlib_c}|1.31 | 1.25 | 0.05 |     52.4 |    132.0 |    165.4 |    198.8 |     33.4
+|{to_charptr_fmtlib}  |1.60 | 1.55 | 0.05 |     82.5 |    124.9 |    144.1 |    167.3 |     23.3
 |===
 [cols="<20m,^6m,^6m,^6m,>8m,>8m,>8m,>8m,>10m"]
 |===
-|{to_string_strf}     |1.06 | 1.01 | 0.04 |     70.1 |    291.0 |    309.8 |    332.8 |     23.0
-|{to_string_strf_tr}  |1.08 | 1.03 | 0.04 |     71.0 |    285.1 |    312.1 |    339.2 |     27.1
-|{to_string_fmtlib_c} |1.36 | 1.31 | 0.05 |     59.1 |    174.3 |    216.6 |    254.9 |     38.2
-|{to_string_fmtlib}   |1.71 | 1.65 | 0.05 |     91.7 |    147.9 |    172.0 |    200.1 |     28.1
+|{to_string_strf}     |1.06 | 1.01 | 0.04 |     70.2 |    286.4 |    309.3 |    332.4 |     23.2
+|{to_string_strf_tr}  |1.08 | 1.03 | 0.04 |     71.1 |    287.2 |    310.1 |    337.4 |     27.2
+|{to_string_fmtlib_c} |1.33 | 1.28 | 0.05 |     59.1 |    174.3 |    216.6 |    254.9 |     38.2
+|{to_string_fmtlib}   |1.69 | 1.63 | 0.05 |     91.7 |    147.9 |    172.0 |    200.1 |     28.1
 |===
 [cols="<20m,^6m,^6m,^6m,>8m,>8m,>8m,>8m,>10m"]
 |===
-|{to_FILE_strf}       |0.98 | 0.93 | 0.04 |     63.6 |    255.5 |    269.3 |    287.3 |     18.0
-|{to_FILE_strf_tr}    |0.99 | 0.94 | 0.04 |     64.1 |    249.3 |    267.2 |    285.2 |     18.0
-|{to_FILE_fmtlib}     |1.72 | 1.66 | 0.05 |     97.8 |    145.0 |    168.6 |    196.3 |     27.7
+|{to_FILE_strf}       |0.99 | 0.94 | 0.04 |     63.7 |    251.0 |    268.9 |    287.1 |     18.1
+|{to_FILE_strf_tr}    |1.00 | 0.96 | 0.04 |     64.1 |    247.3 |    269.3 |    287.5 |     18.1
+|{to_FILE_fmtlib}     |1.71 | 1.66 | 0.05 |     97.8 |    145.0 |    168.6 |    196.3 |     27.7
 |===
 [cols="<20m,^6m,^6m,^6m,>8m,>8m,>8m,>8m,>10m"]
 |===
-|{to_ostream_strf}    |1.03 | 0.98 | 0.04 |     64.0 |    266.0 |    279.7 |    297.7 |     17.9
-|{to_ostream_strf_tr} |1.05 | 1.00 | 0.04 |     64.5 |    251.4 |    269.2 |    287.2 |     17.9
-|{to_ostream_fmtlib}  |1.60 | 1.54 | 0.05 |     86.2 |    128.7 |    147.9 |    171.2 |     23.3
+|{to_ostream_strf}    |1.04 | 0.99 | 0.04 |     64.0 |    264.0 |    281.9 |    299.9 |     18.1
+|{to_ostream_strf_tr} |1.05 | 1.01 | 0.04 |     64.6 |    249.4 |    271.4 |    289.4 |     18.1
+|{to_ostream_fmtlib}  |1.59 | 1.54 | 0.05 |     86.2 |    128.7 |    147.9 |    171.2 |     23.3
 |===
 
 ==== Static libs, with `-O3`
@@ -1471,30 +1471,30 @@ object file.
 >h|41 files
 >h|Difference
 
-|{to_charptr_strf}    |0.81 | 0.77 | 0.04 |    542.9 |    696.1 |    734.5 |    772.8 |     38.3
-|{to_charptr_strf_tr} |0.83 | 0.78 | 0.04 |    543.5 |    665.4 |    712.0 |    750.4 |     38.3
-|{to_charptr_fmtlib_c}|1.16 | 1.11 | 0.05 |    320.7 |    600.0 |    735.5 |    875.2 |    139.6
-|{to_charptr_fmtlib}  |1.65 | 1.60 | 0.05 |    357.2 |    388.1 |    405.6 |    423.1 |     17.5
+|{to_charptr_strf}    |0.82 | 0.78 | 0.03 |    543.0 |    697.1 |    735.5 |    773.8 |     38.3
+|{to_charptr_strf_tr} |0.85 | 0.81 | 0.03 |    543.6 |    678.8 |    721.3 |    759.6 |     38.3
+|{to_charptr_fmtlib_c}|1.15 | 1.10 | 0.04 |    320.7 |    600.0 |    735.5 |    875.2 |    139.6
+|{to_charptr_fmtlib}  |1.64 | 1.59 | 0.05 |    357.2 |    388.1 |    405.6 |    423.1 |     17.5
 |{to_charptr_sprintf} |0.02 | 0.02 | 0.00 |      8.4 |     17.8 |     22.6 |     27.3 |      4.7
 |===
 [cols="<20m,^6m,^6m,^6m,>8m,>8m,>8m,>8m,>10m"]
 |===
-|{to_string_strf}     |0.92 | 0.88 | 0.04 |    552.5 |    814.2 |    866.2 |    926.4 |     60.2
-|{to_string_strf_tr}  |1.00 | 0.95 | 0.04 |    556.8 |    804.0 |    888.8 |    965.4 |     76.6
-|{to_string_fmtlib_c} |1.36 | 1.30 | 0.05 |    328.0 |    658.4 |    819.6 |    984.8 |    165.2
-|{to_string_fmtlib}   |0.45 | 0.42 | 0.03 |    297.3 |    338.4 |    356.9 |    375.5 |     18.5
+|{to_string_strf}     |0.94 | 0.90 | 0.04 |    552.6 |    819.2 |    871.2 |    931.4 |     60.2
+|{to_string_strf_tr}  |1.01 | 0.97 | 0.04 |    556.8 |    816.0 |    892.6 |    969.2 |     76.6
+|{to_string_fmtlib_c} |1.35 | 1.29 | 0.05 |    328.0 |    658.4 |    819.6 |    984.8 |    165.2
+|{to_string_fmtlib}   |0.45 | 0.42 | 0.02 |    297.3 |    338.4 |    356.9 |    375.5 |     18.5
 |===
 [cols="<20m,^6m,^6m,^6m,>8m,>8m,>8m,>8m,>10m"]
 |===
-|{to_FILE_strf}       |0.81 | 0.77 | 0.04 |    542.9 |    701.0 |    743.6 |    782.1 |     38.5
-|{to_FILE_strf_tr}    |0.84 | 0.79 | 0.04 |    543.5 |    669.8 |    720.7 |    763.4 |     42.6
+|{to_FILE_strf}       |0.83 | 0.79 | 0.03 |    543.0 |    706.1 |    744.7 |    783.2 |     38.5
+|{to_FILE_strf_tr}    |0.86 | 0.82 | 0.04 |    547.7 |    686.7 |    729.4 |    767.9 |     38.5
 |{to_FILE_fmtlib}     |0.42 | 0.39 | 0.02 |    297.0 |    306.7 |    311.5 |    316.3 |      4.8
 |{to_FILE_fprintf}    |0.02 | 0.01 | 0.00 |      8.4 |     18.0 |     22.8 |     23.6 |      0.7
 |===
 [cols="<20m,^6m,^6m,^6m,>8m,>8m,>8m,>8m,>10m"]
 |===
-|{to_ostream_strf}    |0.86 | 0.81 | 0.04 |    543.2 |    697.1 |    735.5 |    778.0 |     42.5
-|{to_ostream_strf_tr} |0.89 | 0.85 | 0.04 |    543.8 |    670.1 |    716.8 |    755.2 |     38.4
+|{to_ostream_strf}    |0.87 | 0.83 | 0.04 |    543.3 |    702.3 |    740.7 |    779.1 |     38.4
+|{to_ostream_strf_tr} |0.90 | 0.86 | 0.04 |    548.0 |    683.1 |    725.6 |    764.0 |     38.4
 |{to_ostream_fmtlib}  |0.53 | 0.50 | 0.03 |    297.7 |    307.2 |    311.9 |    316.7 |      4.8
 |===
 
@@ -1513,29 +1513,29 @@ object file.
 >h|41 files
 >h|Difference
 
-|{to_charptr_strf}    |1.39 | 1.34 | 0.04 |     79.6 |    363.7 |    406.5 |    453.4 |     46.9
-|{to_charptr_strf_tr} |1.28 | 1.23 | 0.04 |     76.3 |    213.9 |    264.9 |    311.8 |     46.9
-|{to_charptr_fmtlib_c}|1.71 | 1.65 | 0.05 |     68.0 |    351.8 |    491.7 |    631.6 |    139.9
-|{to_charptr_fmtlib}  |2.35 | 2.28 | 0.06 |    109.2 |    144.1 |    161.6 |    179.1 |     17.5
+|{to_charptr_strf}    |1.42 | 1.37 | 0.04 |     79.6 |    378.0 |    424.9 |    467.7 |     42.8
+|{to_charptr_strf_tr} |1.31 | 1.26 | 0.04 |     77.0 |    233.9 |    280.8 |    323.6 |     42.8
+|{to_charptr_fmtlib_c}|1.70 | 1.65 | 0.05 |     68.0 |    351.8 |    491.7 |    631.6 |    139.9
+|{to_charptr_fmtlib}  |2.34 | 2.27 | 0.06 |    109.2 |    144.1 |    161.6 |    179.1 |     17.5
 |===
 [cols="<20m,^6m,^6m,^6m,>8m,>8m,>8m,>8m,>10m"]
 |===
-|{to_string_strf}     |1.63 | 1.58 | 0.04 |     97.8 |    577.0 |    637.9 |    707.0 |     69.1
-|{to_string_strf_tr}  |1.57 | 1.52 | 0.04 |     94.4 |    407.9 |    485.2 |    562.5 |     77.3
+|{to_string_strf}     |1.65 | 1.60 | 0.05 |     97.8 |    586.5 |    643.3 |    712.4 |     69.1
+|{to_string_strf_tr}  |1.59 | 1.55 | 0.04 |     94.4 |    419.3 |    492.5 |    569.8 |     77.3
 |{to_string_fmtlib_c} |1.80 | 1.74 | 0.05 |     73.5 |    392.4 |    553.8 |    711.0 |    157.3
-|{to_string_fmtlib}   |2.37 | 2.31 | 0.06 |    118.2 |    221.6 |    273.4 |    325.1 |     51.7
+|{to_string_fmtlib}   |2.36 | 2.30 | 0.06 |    118.2 |    221.6 |    273.4 |    325.1 |     51.7
 |===
 [cols="<20m,^6m,^6m,^6m,>8m,>8m,>8m,>8m,>10m"]
 |===
-|{to_FILE_strf}       |1.43 | 1.38 | 0.04 |     83.8 |    384.4 |    423.2 |    462.0 |     38.8
-|{to_FILE_strf_tr}    |1.31 | 1.26 | 0.04 |     76.3 |    221.7 |    272.8 |    323.9 |     51.1
-|{to_FILE_fmtlib}     |2.40 | 2.34 | 0.06 |    119.3 |    200.6 |    243.3 |    281.9 |     38.6
+|{to_FILE_strf}       |1.46 | 1.40 | 0.05 |     83.8 |    398.6 |    437.4 |    476.2 |     38.8
+|{to_FILE_strf_tr}    |1.34 | 1.29 | 0.04 |     81.1 |    242.3 |    289.3 |    336.3 |     47.0
+|{to_FILE_fmtlib}     |2.39 | 2.33 | 0.06 |    119.3 |    200.6 |    243.3 |    281.9 |     38.6
 |===
 [cols="<20m,^6m,^6m,^6m,>8m,>8m,>8m,>8m,>10m"]
 |===
-|{to_ostream_strf}    |1.47 | 1.42 | 0.05 |     79.9 |    359.1 |    402.0 |    444.8 |     42.9
-|{to_ostream_strf_tr} |1.36 | 1.31 | 0.04 |     76.6 |    218.0 |    269.0 |    320.0 |     51.0
-|{to_ostream_fmtlib}  |2.28 | 2.21 | 0.06 |    111.8 |    146.8 |    164.3 |    181.8 |     17.5
+|{to_ostream_strf}    |1.50 | 1.45 | 0.05 |     79.9 |    382.1 |    420.9 |    459.6 |     38.8
+|{to_ostream_strf_tr} |1.39 | 1.34 | 0.04 |     81.4 |    238.7 |    285.6 |    332.5 |     46.9
+|{to_ostream_fmtlib}  |2.26 | 2.20 | 0.05 |    111.8 |    146.8 |    164.3 |    181.8 |     17.5
 |===
 
 ==== Static libs, with `-g`
@@ -1553,30 +1553,30 @@ object file.
 >h|41 files
 >h|Difference
 
-|{to_charptr_strf}    |0.81 | 0.76 | 0.04 |   1234.0 |   6032.6 |   8306.7 |  10576.7 |   2269.9
-|{to_charptr_strf_tr} |0.82 | 0.77 | 0.04 |   1259.9 |   6504.2 |   8850.9 |  11193.4 |   2342.5
-|{to_charptr_fmtlib_c}|1.00 | 0.94 | 0.05 |    863.3 |   6502.7 |   8914.2 |  11330.3 |   2416.2
-|{to_charptr_fmtlib}  |0.98 | 0.93 | 0.05 |    879.7 |   5879.9 |   8274.4 |  10668.9 |   2394.5
+|{to_charptr_strf}    |0.83 | 0.78 | 0.05 |   1277.7 |   6221.6 |   8568.4 |  10911.0 |   2342.6
+|{to_charptr_strf_tr} |0.84 | 0.79 | 0.04 |   1303.7 |   6693.9 |   9113.5 |  11528.9 |   2415.4
+|{to_charptr_fmtlib_c}|0.99 | 0.94 | 0.05 |    863.3 |   6502.7 |   8914.2 |  11330.3 |   2416.2
+|{to_charptr_fmtlib}  |0.98 | 0.94 | 0.04 |    879.7 |   5879.9 |   8274.4 |  10668.9 |   2394.5
 |{to_charptr_sprintf} |0.02 | 0.02 | 0.00 |     28.6 |    204.0 |    293.7 |    383.5 |     89.7
 |===
 [cols="<20m,^6m,^6m,^6m,>8m,>8m,>8m,>8m,>10m"]
 |===
-|{to_string_strf}     |0.84 | 0.80 | 0.04 |   1368.2 |   6641.6 |   9148.5 |  11655.3 |   2506.8
-|{to_string_strf_tr}  |0.86 | 0.81 | 0.04 |   1395.3 |   7144.1 |   9730.7 |  12313.1 |   2582.4
+|{to_string_strf}     |0.87 | 0.82 | 0.04 |   1412.0 |   6830.7 |   9410.2 |  11989.7 |   2579.5
+|{to_string_strf_tr}  |0.88 | 0.83 | 0.04 |   1439.1 |   7333.9 |   9993.5 |  12648.9 |   2655.4
 |{to_string_fmtlib_c} |1.06 | 1.01 | 0.05 |    922.7 |   7119.4 |   9764.2 |  12418.7 |   2654.5
 |{to_string_fmtlib}   |0.49 | 0.46 | 0.03 |    642.8 |   3151.3 |   4266.5 |   5385.8 |   1119.3
 |===
 [cols="<20m,^6m,^6m,^6m,>8m,>8m,>8m,>8m,>10m"]
 |===
-|{to_FILE_strf}       |0.81 | 0.76 | 0.04 |   1235.8 |   6045.7 |   8323.2 |  10600.6 |   2277.4
-|{to_FILE_strf_tr}    |0.82 | 0.77 | 0.04 |   1261.8 |   6518.2 |   8868.1 |  11214.0 |   2345.9
+|{to_FILE_strf}       |0.83 | 0.78 | 0.05 |   1279.6 |   6234.7 |   8584.9 |  10935.0 |   2350.1
+|{to_FILE_strf_tr}    |0.84 | 0.80 | 0.04 |   1305.6 |   6707.9 |   9130.8 |  11549.6 |   2418.8
 |{to_FILE_fmtlib}     |0.48 | 0.44 | 0.03 |    551.4 |   2749.1 |   3701.4 |   4649.7 |    948.2
 |{to_FILE_fprintf}    |0.02 | 0.02 | 0.00 |     28.5 |    201.4 |    285.9 |    374.5 |     88.5
 |===
 [cols="<20m,^6m,^6m,^6m,>8m,>8m,>8m,>8m,>10m"]
 |===
-|{to_ostream_strf}    |0.85 | 0.81 | 0.04 |   1278.6 |   6060.2 |   8323.2 |  10586.1 |   2262.9
-|{to_ostream_strf_tr} |0.86 | 0.82 | 0.04 |   1304.7 |   6538.9 |   8874.2 |  11205.5 |   2331.3
+|{to_ostream_strf}    |0.88 | 0.83 | 0.04 |   1322.3 |   6249.2 |   8584.9 |  10920.4 |   2335.6
+|{to_ostream_strf_tr} |0.89 | 0.84 | 0.04 |   1348.5 |   6728.5 |   9136.8 |  11541.0 |   2404.2
 |{to_ostream_fmtlib}  |0.59 | 0.55 | 0.03 |    631.5 |   3126.9 |   4247.7 |   5364.4 |   1116.7
 |===
 
@@ -1595,29 +1595,29 @@ object file.
 >h|41 files
 >h|Difference
 
-|{to_charptr_strf}    |0.89 | 0.84 | 0.05 |    833.5 |   6316.6 |   8933.0 |  11549.2 |   2616.3
-|{to_charptr_strf_tr} |0.90 | 0.85 | 0.05 |    854.4 |   6773.6 |   9455.6 |  12133.5 |   2677.9
-|{to_charptr_fmtlib_c}|1.25 | 1.18 | 0.05 |    775.6 |   7455.7 |  10389.9 |  13324.1 |   2934.2
-|{to_charptr_fmtlib}  |1.24 | 1.18 | 0.05 |    793.1 |   6816.1 |   9724.0 |  12631.9 |   2907.9
+|{to_charptr_strf}    |0.91 | 0.86 | 0.05 |    877.3 |   6505.6 |   9194.6 |  11883.5 |   2688.9
+|{to_charptr_strf_tr} |0.92 | 0.87 | 0.05 |    898.2 |   6963.1 |   9718.0 |  12468.8 |   2750.7
+|{to_charptr_fmtlib_c}|1.24 | 1.18 | 0.05 |    775.6 |   7455.7 |  10389.9 |  13324.1 |   2934.2
+|{to_charptr_fmtlib}  |1.24 | 1.17 | 0.06 |    793.1 |   6816.1 |   9724.0 |  12631.9 |   2907.9
 |===
 [cols="<20m,^6m,^6m,^6m,>8m,>8m,>8m,>8m,>10m"]
 |===
-|{to_string_strf}     |0.94 | 0.88 | 0.05 |    969.0 |   6944.5 |   9802.4 |  12660.3 |   2857.9
-|{to_string_strf_tr}  |0.95 | 0.90 | 0.05 |    995.1 |   7432.2 |  10362.9 |  13293.6 |   2930.7
+|{to_string_strf}     |0.96 | 0.91 | 0.05 |   1012.7 |   7133.5 |  10064.1 |  12994.6 |   2930.5
+|{to_string_strf_tr}  |0.97 | 0.92 | 0.05 |   1038.9 |   7621.8 |  10625.5 |  13629.0 |   3003.6
 |{to_string_fmtlib_c} |1.27 | 1.21 | 0.06 |    900.2 |   7979.8 |  11068.1 |  14160.8 |   3092.7
-|{to_string_fmtlib}   |1.27 | 1.20 | 0.06 |    951.3 |   7495.0 |  10628.1 |  13765.3 |   3137.2
+|{to_string_fmtlib}   |1.27 | 1.21 | 0.06 |    951.3 |   7495.0 |  10628.1 |  13765.3 |   3137.2
 |===
 [cols="<20m,^6m,^6m,^6m,>8m,>8m,>8m,>8m,>10m"]
 |===
-|{to_FILE_strf}       |0.90 | 0.85 | 0.04 |    835.6 |   6333.2 |   8954.5 |  11575.8 |   2621.3
-|{to_FILE_strf_tr}    |0.91 | 0.86 | 0.04 |    856.5 |   6791.0 |   9477.9 |  12164.9 |   2686.9
-|{to_FILE_fmtlib}     |1.29 | 1.23 | 0.06 |    930.9 |   7677.9 |  10907.2 |  14132.5 |   3225.3
+|{to_FILE_strf}       |0.92 | 0.87 | 0.05 |    879.4 |   6522.2 |   9216.2 |  11910.0 |   2693.9
+|{to_FILE_strf_tr}    |0.93 | 0.88 | 0.05 |    900.3 |   6980.5 |   9740.4 |  12496.1 |   2755.7
+|{to_FILE_fmtlib}     |1.29 | 1.22 | 0.07 |    930.9 |   7677.9 |  10907.2 |  14132.5 |   3225.3
 |===
 [cols="<20m,^6m,^6m,^6m,>8m,>8m,>8m,>8m,>10m"]
 |===
-|{to_ostream_strf}    |0.94 | 0.89 | 0.05 |    878.4 |   6348.1 |   8955.2 |  11562.2 |   2607.0
-|{to_ostream_strf_tr} |0.95 | 0.90 | 0.05 |    899.5 |   6812.2 |   9484.7 |  12153.3 |   2668.5
-|{to_ostream_fmtlib}  |1.20 | 1.14 | 0.05 |    862.7 |   6822.3 |   9675.6 |  12524.7 |   2849.2
+|{to_ostream_strf}    |0.97 | 0.91 | 0.05 |    922.1 |   6537.1 |   9216.8 |  11896.4 |   2679.6
+|{to_ostream_strf_tr} |0.98 | 0.92 | 0.05 |    943.2 |   7001.7 |   9747.2 |  12488.6 |   2741.4
+|{to_ostream_fmtlib}  |1.20 | 1.14 | 0.06 |    862.7 |   6822.3 |   9675.6 |  12524.7 |   2849.2
 |===
 
 ===  GCC 10.2.0
@@ -1637,31 +1637,31 @@ object file.
 >h|41 files
 >h|Difference
 
-|{to_charptr_strf}    |1.02 | 0.96 | 0.05 |    541.0 |    749.2 |    792.4 |    831.6 |     39.2
-|{to_charptr_strf_tr} |1.01 | 0.96 | 0.05 |    540.2 |    680.1 |    748.0 |    811.8 |     63.9
-|{to_charptr_fmtlib_c}|1.21 | 1.16 | 0.05 |    310.5 |    374.5 |    404.0 |    429.5 |     25.5
-|{to_charptr_fmtlib}  |1.47 | 1.41 | 0.05 |    335.6 |    383.4 |    409.3 |    431.1 |     21.8
-|{to_charptr_sprintf} |0.02 | 0.01 | 0.00 |      8.4 |     17.8 |     22.6 |     27.3 |      4.7
+|{to_charptr_strf}    |1.03 | 0.98 | 0.05 |    541.2 |    750.0 |    793.5 |    837.1 |     43.6
+|{to_charptr_strf_tr} |1.04 | 0.98 | 0.05 |    540.4 |    685.1 |    749.1 |    817.4 |     68.3
+|{to_charptr_fmtlib_c}|1.21 | 1.15 | 0.06 |    310.5 |    374.5 |    404.0 |    429.5 |     25.5
+|{to_charptr_fmtlib}  |1.48 | 1.42 | 0.05 |    335.6 |    383.4 |    409.3 |    431.1 |     21.8
+|{to_charptr_sprintf} |0.02 | 0.02 | 0.00 |      8.4 |     17.8 |     22.6 |     27.3 |      4.7
 |===
 [cols="<20m,^6m,^6m,^6m,>8m,>8m,>8m,>8m,>10m"]
 |===
-|{to_string_strf}     |1.05 | 1.00 | 0.05 |    545.7 |    712.3 |    789.4 |    866.5 |     77.1
-|{to_string_strf_tr}  |1.09 | 1.03 | 0.05 |    546.1 |    712.7 |    789.8 |    866.9 |     77.1
-|{to_string_fmtlib_c} |1.29 | 1.23 | 0.05 |    306.0 |    411.9 |    446.3 |    476.6 |     30.3
-|{to_string_fmtlib}   |0.68 | 0.64 | 0.04 |    303.6 |    322.8 |    332.4 |    342.0 |      9.6
+|{to_string_strf}     |1.08 | 1.03 | 0.05 |    545.9 |    713.1 |    794.6 |    872.0 |     77.5
+|{to_string_strf_tr}  |1.11 | 1.05 | 0.05 |    546.3 |    717.7 |    795.0 |    876.6 |     81.6
+|{to_string_fmtlib_c} |1.29 | 1.22 | 0.05 |    306.0 |    411.9 |    446.3 |    476.6 |     30.3
+|{to_string_fmtlib}   |0.68 | 0.63 | 0.04 |    303.6 |    322.8 |    332.4 |    342.0 |      9.6
 |===
 [cols="<20m,^6m,^6m,^6m,>8m,>8m,>8m,>8m,>10m"]
 |===
-|{to_FILE_strf}       |1.02 | 0.96 | 0.05 |    540.8 |    744.1 |    787.4 |    826.8 |     39.3
-|{to_FILE_strf_tr}    |1.01 | 0.96 | 0.05 |    540.1 |    680.1 |    744.0 |    807.9 |     63.9
-|{to_FILE_fmtlib}     |0.65 | 0.61 | 0.04 |    303.4 |    313.1 |    317.9 |    322.7 |      4.8
+|{to_FILE_strf}       |1.03 | 0.99 | 0.04 |    541.0 |    745.0 |    788.6 |    828.2 |     39.6
+|{to_FILE_strf_tr}    |1.04 | 0.98 | 0.05 |    540.2 |    681.0 |    749.2 |    813.5 |     64.3
+|{to_FILE_fmtlib}     |0.65 | 0.62 | 0.03 |    303.4 |    313.1 |    317.9 |    322.7 |      4.8
 |{to_FILE_fprintf}    |0.02 | 0.01 | 0.00 |      8.4 |     18.0 |     18.7 |     23.6 |      4.8
 |===
 [cols="<20m,^6m,^6m,^6m,>8m,>8m,>8m,>8m,>10m"]
 |===
-|{to_ostream_strf}    |1.04 | 0.98 | 0.05 |    541.2 |    755.1 |    798.3 |    837.6 |     39.2
-|{to_ostream_strf_tr} |1.04 | 0.99 | 0.05 |    540.4 |    680.3 |    744.1 |    808.0 |     63.9
-|{to_ostream_fmtlib}  |0.79 | 0.75 | 0.04 |    304.1 |    313.6 |    318.3 |    323.1 |      4.8
+|{to_ostream_strf}    |1.06 | 1.01 | 0.05 |    541.3 |    756.0 |    799.5 |    843.1 |     43.7
+|{to_ostream_strf_tr} |1.06 | 1.01 | 0.05 |    540.6 |    685.3 |    749.4 |    813.6 |     64.2
+|{to_ostream_fmtlib}  |0.80 | 0.75 | 0.04 |    304.1 |    313.6 |    318.3 |    323.1 |      4.8
 |===
 
 ==== Header-only libs, with `-Os`
@@ -1679,29 +1679,29 @@ object file.
 >h|41 files
 >h|Difference
 
-|{to_charptr_strf}    |1.26 | 1.20 | 0.05 |     58.5 |    297.3 |    353.8 |    410.3 |     56.6
-|{to_charptr_strf_tr} |1.25 | 1.20 | 0.05 |     57.8 |    228.2 |    305.3 |    386.5 |     81.2
-|{to_charptr_fmtlib_c}|1.59 | 1.53 | 0.06 |     50.5 |    124.0 |    158.3 |    192.7 |     34.4
-|{to_charptr_fmtlib}  |1.90 | 1.84 | 0.06 |     81.8 |    152.9 |    192.5 |    228.1 |     35.6
+|{to_charptr_strf}    |1.28 | 1.22 | 0.06 |     58.6 |    298.1 |    354.8 |    411.7 |     56.9
+|{to_charptr_strf_tr} |1.27 | 1.22 | 0.05 |     57.8 |    229.0 |    310.4 |    391.9 |     81.5
+|{to_charptr_fmtlib_c}|1.59 | 1.52 | 0.06 |     50.5 |    124.0 |    158.3 |    192.7 |     34.4
+|{to_charptr_fmtlib}  |1.90 | 1.83 | 0.07 |     81.8 |    152.9 |    192.5 |    228.1 |     35.6
 |===
 [cols="<20m,^6m,^6m,^6m,>8m,>8m,>8m,>8m,>10m"]
 |===
-|{to_string_strf}     |1.31 | 1.25 | 0.05 |     63.6 |    261.1 |    355.5 |    450.0 |     94.5
-|{to_string_strf_tr}  |1.33 | 1.28 | 0.05 |     64.0 |    265.7 |    360.1 |    454.6 |     94.5
+|{to_string_strf}     |1.32 | 1.27 | 0.05 |     63.7 |    266.0 |    360.7 |    455.5 |     94.8
+|{to_string_strf_tr}  |1.35 | 1.29 | 0.05 |     64.1 |    266.4 |    365.2 |    460.0 |     94.8
 |{to_string_fmtlib_c} |1.62 | 1.55 | 0.06 |     58.0 |    178.0 |    213.1 |    252.4 |     39.2
-|{to_string_fmtlib}   |1.98 | 1.92 | 0.06 |     90.8 |    156.0 |    190.6 |    221.1 |     30.5
+|{to_string_fmtlib}   |1.98 | 1.91 | 0.06 |     90.8 |    156.0 |    190.6 |    221.1 |     30.5
 |===
 [cols="<20m,^6m,^6m,^6m,>8m,>8m,>8m,>8m,>10m"]
 |===
-|{to_FILE_strf}       |1.26 | 1.20 | 0.05 |     58.4 |    290.5 |    347.1 |    403.7 |     56.7
-|{to_FILE_strf_tr}    |1.25 | 1.20 | 0.05 |     57.6 |    224.2 |    305.4 |    382.6 |     77.2
-|{to_FILE_fmtlib}     |2.01 | 1.94 | 0.06 |     96.9 |    152.6 |    182.4 |    212.3 |     29.9
+|{to_FILE_strf}       |1.27 | 1.22 | 0.05 |     58.4 |    291.3 |    348.1 |    405.1 |     57.0
+|{to_FILE_strf_tr}    |1.27 | 1.22 | 0.05 |     57.7 |    229.0 |    310.5 |    388.0 |     77.5
+|{to_FILE_fmtlib}     |2.00 | 1.94 | 0.06 |     96.9 |    152.6 |    182.4 |    212.3 |     29.9
 |===
 [cols="<20m,^6m,^6m,^6m,>8m,>8m,>8m,>8m,>10m"]
 |===
-|{to_ostream_strf}    |1.28 | 1.22 | 0.05 |     58.7 |    303.2 |    359.7 |    416.3 |     56.6
-|{to_ostream_strf_tr} |1.27 | 1.22 | 0.05 |     58.0 |    224.4 |    305.5 |    382.6 |     77.1
-|{to_ostream_fmtlib}  |1.88 | 1.82 | 0.06 |     85.3 |    136.7 |    166.5 |    192.2 |     25.7
+|{to_ostream_strf}    |1.30 | 1.24 | 0.05 |     58.8 |    304.0 |    360.7 |    417.7 |     56.9
+|{to_ostream_strf_tr} |1.29 | 1.24 | 0.05 |     58.0 |    229.2 |    310.6 |    388.1 |     77.4
+|{to_ostream_fmtlib}  |1.89 | 1.82 | 0.06 |     85.3 |    136.7 |    166.5 |    192.2 |     25.7
 |===
 
 ==== Static libs, with `-O3`
@@ -1719,30 +1719,30 @@ object file.
 >h|41 files
 >h|Difference
 
-|{to_charptr_strf}    |1.07 | 1.02 | 0.04 |    543.8 |    753.2 |    820.6 |    892.3 |     71.7
-|{to_charptr_strf_tr} |1.09 | 1.04 | 0.05 |    543.7 |    732.7 |    825.1 |    917.5 |     92.4
+|{to_charptr_strf}    |1.10 | 1.05 | 0.05 |    543.9 |    757.4 |    828.9 |    896.5 |     67.6
+|{to_charptr_strf_tr} |1.11 | 1.06 | 0.05 |    543.8 |    732.8 |    825.2 |    917.6 |     92.4
 |{to_charptr_fmtlib_c}|1.42 | 1.36 | 0.05 |    325.6 |    598.2 |    734.5 |    866.6 |    132.2
-|{to_charptr_fmtlib}  |1.93 | 1.87 | 0.05 |    357.7 |    367.1 |    371.8 |    376.6 |      4.7
+|{to_charptr_fmtlib}  |1.92 | 1.86 | 0.05 |    357.7 |    367.1 |    371.8 |    376.6 |      4.7
 |{to_charptr_sprintf} |0.02 | 0.02 | 0.00 |      8.4 |     17.8 |     22.6 |     27.3 |      4.7
 |===
 [cols="<20m,^6m,^6m,^6m,>8m,>8m,>8m,>8m,>10m"]
 |===
-|{to_string_strf}     |1.18 | 1.13 | 0.04 |    552.2 |    804.2 |    930.2 |   1056.1 |    126.0
-|{to_string_strf_tr}  |1.24 | 1.19 | 0.04 |    552.9 |    834.5 |    977.4 |   1116.1 |    138.7
+|{to_string_strf}     |1.20 | 1.15 | 0.05 |    552.3 |    804.3 |    930.3 |   1056.2 |    126.0
+|{to_string_strf_tr}  |1.26 | 1.21 | 0.04 |    553.0 |    834.6 |    977.5 |   1116.2 |    138.7
 |{to_string_fmtlib_c} |1.57 | 1.52 | 0.05 |    328.9 |    575.6 |    704.9 |    822.0 |    117.1
 |{to_string_fmtlib}   |0.69 | 0.65 | 0.03 |    303.7 |    344.8 |    367.4 |    385.9 |     18.5
 |===
 [cols="<20m,^6m,^6m,^6m,>8m,>8m,>8m,>8m,>10m"]
 |===
-|{to_FILE_strf}       |1.08 | 1.03 | 0.05 |    543.8 |    757.7 |    829.4 |    901.2 |     71.8
-|{to_FILE_strf_tr}    |1.10 | 1.05 | 0.04 |    547.9 |    749.5 |    850.3 |    951.0 |    100.8
+|{to_FILE_strf}       |1.11 | 1.05 | 0.05 |    548.0 |    761.8 |    833.6 |    905.4 |     71.8
+|{to_FILE_strf_tr}    |1.12 | 1.07 | 0.04 |    548.0 |    749.6 |    850.4 |    951.1 |    100.8
 |{to_FILE_fmtlib}     |0.65 | 0.62 | 0.03 |    303.4 |    313.1 |    317.9 |    322.7 |      4.8
-|{to_FILE_fprintf}    |0.02 | 0.02 | 0.00 |      8.4 |     18.0 |     22.8 |     23.6 |      0.7
+|{to_FILE_fprintf}    |0.02 | 0.01 | 0.00 |      8.4 |     18.0 |     22.8 |     23.6 |      0.7
 |===
 [cols="<20m,^6m,^6m,^6m,>8m,>8m,>8m,>8m,>10m"]
 |===
-|{to_ostream_strf}    |1.12 | 1.06 | 0.05 |    544.0 |    753.5 |    825.1 |    896.8 |     71.7
-|{to_ostream_strf_tr} |1.14 | 1.08 | 0.05 |    548.1 |    745.3 |    845.9 |    946.6 |    100.6
+|{to_ostream_strf}    |1.13 | 1.08 | 0.04 |    548.2 |    758.2 |    829.8 |    901.5 |     71.7
+|{to_ostream_strf_tr} |1.15 | 1.09 | 0.05 |    548.2 |    745.4 |    846.0 |    946.7 |    100.6
 |{to_ostream_fmtlib}  |0.80 | 0.75 | 0.04 |    304.1 |    313.6 |    318.3 |    323.1 |      4.8
 |===
 
@@ -1761,29 +1761,29 @@ object file.
 >h|41 files
 >h|Difference
 
-|{to_charptr_strf}    |1.70 | 1.64 | 0.05 |     79.0 |    432.6 |    528.4 |    612.0 |     83.6
-|{to_charptr_strf_tr} |1.55 | 1.49 | 0.05 |     71.0 |    250.8 |    342.8 |    434.7 |     92.0
-|{to_charptr_fmtlib_c}|1.98 | 1.91 | 0.06 |     62.3 |    352.3 |    497.2 |    638.1 |    140.8
-|{to_charptr_fmtlib}  |2.57 | 2.50 | 0.06 |    103.2 |    134.1 |    151.6 |    169.1 |     17.5
+|{to_charptr_strf}    |1.71 | 1.66 | 0.05 |     79.0 |    446.3 |    542.2 |    625.8 |     83.6
+|{to_charptr_strf_tr} |1.57 | 1.51 | 0.05 |     71.0 |    250.8 |    342.8 |    430.6 |     87.9
+|{to_charptr_fmtlib_c}|1.97 | 1.91 | 0.06 |     62.3 |    352.3 |    497.2 |    638.1 |    140.8
+|{to_charptr_fmtlib}  |2.57 | 2.49 | 0.07 |    103.2 |    134.1 |    151.6 |    169.1 |     17.5
 |===
 [cols="<20m,^6m,^6m,^6m,>8m,>8m,>8m,>8m,>10m"]
 |===
-|{to_string_strf}     |1.92 | 1.85 | 0.06 |     99.0 |    649.0 |    895.3 |   1145.6 |    250.3
-|{to_string_strf_tr}  |1.83 | 1.77 | 0.05 |     89.2 |    424.0 |    583.5 |    747.0 |    163.6
-|{to_string_fmtlib_c} |2.08 | 2.01 | 0.06 |     72.1 |    402.1 |    560.6 |    723.2 |    162.6
-|{to_string_fmtlib}   |2.71 | 2.64 | 0.07 |    116.5 |    203.6 |    243.1 |    286.7 |     43.6
+|{to_string_strf}     |1.94 | 1.88 | 0.06 |     99.0 |    659.9 |    910.3 |   1164.8 |    254.5
+|{to_string_strf_tr}  |1.85 | 1.79 | 0.05 |     89.2 |    424.0 |    587.6 |    751.1 |    163.6
+|{to_string_fmtlib_c} |2.08 | 2.02 | 0.06 |     72.1 |    402.1 |    560.6 |    723.2 |    162.6
+|{to_string_fmtlib}   |2.70 | 2.63 | 0.06 |    116.5 |    203.6 |    243.1 |    286.7 |     43.6
 |===
 [cols="<20m,^6m,^6m,^6m,>8m,>8m,>8m,>8m,>10m"]
 |===
-|{to_FILE_strf}       |1.73 | 1.67 | 0.05 |     79.0 |    449.2 |    549.3 |    632.9 |     83.7
-|{to_FILE_strf_tr}    |1.58 | 1.53 | 0.05 |     75.2 |    271.5 |    371.7 |    467.9 |     96.1
-|{to_FILE_fmtlib}     |2.73 | 2.67 | 0.06 |    117.7 |    203.6 |    246.5 |    289.5 |     43.0
+|{to_FILE_strf}       |1.75 | 1.70 | 0.05 |     79.0 |    463.0 |    563.0 |    646.7 |     83.7
+|{to_FILE_strf_tr}    |1.61 | 1.55 | 0.05 |     75.2 |    271.5 |    371.7 |    467.9 |     96.1
+|{to_FILE_fmtlib}     |2.72 | 2.65 | 0.06 |    117.7 |    203.6 |    246.5 |    289.5 |     43.0
 |===
 [cols="<20m,^6m,^6m,^6m,>8m,>8m,>8m,>8m,>10m"]
 |===
-|{to_ostream_strf}    |1.74 | 1.68 | 0.05 |     79.3 |    419.2 |    511.0 |    590.5 |     79.5
-|{to_ostream_strf_tr} |1.63 | 1.57 | 0.05 |     75.4 |    267.5 |    367.6 |    463.7 |     96.1
-|{to_ostream_fmtlib}  |2.58 | 2.50 | 0.07 |    106.1 |    141.1 |    158.6 |    172.1 |     13.4
+|{to_ostream_strf}    |1.78 | 1.71 | 0.06 |     79.3 |    442.2 |    534.0 |    617.6 |     83.6
+|{to_ostream_strf_tr} |1.63 | 1.58 | 0.05 |     71.3 |    267.5 |    363.6 |    459.6 |     96.1
+|{to_ostream_fmtlib}  |2.54 | 2.47 | 0.06 |    106.1 |    141.1 |    158.6 |    172.1 |     13.4
 |===
 
 ==== Static libs, with `-g`
@@ -1801,31 +1801,31 @@ object file.
 >h|41 files
 >h|Difference
 
-|{to_charptr_strf}    |1.14 | 1.08 | 0.06 |   1141.8 |   5228.6 |   7146.6 |   9065.0 |   1918.4
-|{to_charptr_strf_tr} |1.16 | 1.09 | 0.06 |   1170.7 |   5764.2 |   7783.3 |   9798.4 |   2015.2
-|{to_charptr_fmtlib_c}|1.31 | 1.25 | 0.06 |    786.0 |   5840.6 |   7959.7 |  10083.7 |   2124.0
-|{to_charptr_fmtlib}  |1.30 | 1.24 | 0.06 |    802.1 |   5213.2 |   7316.5 |   9419.8 |   2103.3
-|{to_charptr_sprintf} |0.03 | 0.02 | 0.00 |     28.1 |    199.7 |    287.5 |    371.3 |     83.7
+|{to_charptr_strf}    |1.14 | 1.08 | 0.06 |   1185.6 |   5418.9 |   7410.2 |   9401.9 |   1991.7
+|{to_charptr_strf_tr} |1.15 | 1.09 | 0.05 |   1214.5 |   5954.5 |   8046.9 |  10135.3 |   2088.4
+|{to_charptr_fmtlib_c}|1.29 | 1.23 | 0.06 |    786.0 |   5840.6 |   7959.7 |  10083.7 |   2124.0
+|{to_charptr_fmtlib}  |1.29 | 1.22 | 0.06 |    802.1 |   5213.2 |   7316.5 |   9419.8 |   2103.3
+|{to_charptr_sprintf} |0.02 | 0.02 | 0.00 |     28.1 |    199.7 |    287.5 |    371.3 |     83.7
 |===
 [cols="<20m,^6m,^6m,^6m,>8m,>8m,>8m,>8m,>10m"]
 |===
-|{to_string_strf}     |1.18 | 1.11 | 0.06 |   1272.1 |   6019.7 |   8265.5 |  10507.6 |   2242.1
-|{to_string_strf_tr}  |1.20 | 1.14 | 0.06 |   1295.3 |   6525.3 |   8848.3 |  11175.5 |   2327.3
-|{to_string_fmtlib_c} |1.40 | 1.33 | 0.06 |    821.7 |   6477.0 |   8851.6 |  11235.2 |   2383.5
-|{to_string_fmtlib}   |0.76 | 0.72 | 0.04 |    538.6 |   2416.9 |   3224.4 |   4036.0 |    811.6
+|{to_string_strf}     |1.18 | 1.13 | 0.05 |   1315.9 |   6210.1 |   8529.1 |  10844.5 |   2315.4
+|{to_string_strf_tr}  |1.21 | 1.14 | 0.06 |   1339.1 |   6715.8 |   9112.0 |  11512.6 |   2400.6
+|{to_string_fmtlib_c} |1.38 | 1.31 | 0.06 |    821.7 |   6477.0 |   8851.6 |  11235.2 |   2383.5
+|{to_string_fmtlib}   |0.74 | 0.70 | 0.04 |    538.6 |   2416.9 |   3224.4 |   4036.0 |    811.6
 |===
 [cols="<20m,^6m,^6m,^6m,>8m,>8m,>8m,>8m,>10m"]
 |===
-|{to_FILE_strf}       |1.14 | 1.08 | 0.06 |   1140.9 |   5210.3 |   7117.4 |   9024.8 |   1907.5
-|{to_FILE_strf_tr}    |1.14 | 1.08 | 0.05 |   1169.8 |   5746.7 |   7754.8 |   9763.0 |   2008.2
-|{to_FILE_fmtlib}     |0.73 | 0.68 | 0.04 |    463.0 |   1923.3 |   2512.4 |   3097.4 |    585.0
+|{to_FILE_strf}       |1.14 | 1.08 | 0.05 |   1184.7 |   5400.6 |   7381.0 |   9361.7 |   1980.7
+|{to_FILE_strf_tr}    |1.15 | 1.09 | 0.05 |   1213.6 |   5937.1 |   8018.4 |  10099.9 |   2081.5
+|{to_FILE_fmtlib}     |0.72 | 0.68 | 0.04 |    463.0 |   1923.3 |   2512.4 |   3097.4 |    585.0
 |{to_FILE_fprintf}    |0.02 | 0.02 | 0.00 |     28.0 |    196.8 |    279.2 |    365.7 |     86.5
 |===
 [cols="<20m,^6m,^6m,^6m,>8m,>8m,>8m,>8m,>10m"]
 |===
-|{to_ostream_strf}    |1.15 | 1.09 | 0.06 |   1151.7 |   5218.6 |   7124.1 |   9029.9 |   1905.8
-|{to_ostream_strf_tr} |1.16 | 1.10 | 0.06 |   1180.8 |   5761.4 |   7767.8 |   9770.3 |   2002.5
-|{to_ostream_fmtlib}  |0.87 | 0.82 | 0.05 |    517.4 |   2347.7 |   3141.5 |   3931.1 |    789.6
+|{to_ostream_strf}    |1.16 | 1.11 | 0.05 |   1195.5 |   5409.0 |   7387.7 |   9366.8 |   1979.1
+|{to_ostream_strf_tr} |1.18 | 1.12 | 0.06 |   1224.6 |   5951.7 |   8031.4 |  10107.2 |   2075.8
+|{to_ostream_fmtlib}  |0.87 | 0.82 | 0.04 |    517.4 |   2347.7 |   3141.5 |   3931.1 |    789.6
 |===
 
 ==== Header-only libs, with `-g`
@@ -1843,27 +1843,27 @@ object file.
 >h|41 files
 >h|Difference
 
-|{to_charptr_strf}    |1.22 | 1.15 | 0.06 |    741.0 |   5523.2 |   7789.0 |  10059.2 |   2270.2
-|{to_charptr_strf_tr} |1.23 | 1.16 | 0.07 |    768.9 |   6043.9 |   8403.7 |  10763.7 |   2360.0
-|{to_charptr_fmtlib_c}|1.58 | 1.50 | 0.07 |    694.3 |   6799.8 |   9442.8 |  12093.7 |   2651.0
-|{to_charptr_fmtlib}  |1.56 | 1.49 | 0.07 |    711.6 |   6157.5 |   8776.2 |  11398.9 |   2622.8
+|{to_charptr_strf}    |1.23 | 1.16 | 0.06 |    784.8 |   5713.5 |   8052.5 |  10395.9 |   2343.5
+|{to_charptr_strf_tr} |1.24 | 1.18 | 0.06 |    812.7 |   6234.2 |   8667.2 |  11100.4 |   2433.2
+|{to_charptr_fmtlib_c}|1.57 | 1.49 | 0.07 |    694.3 |   6799.8 |   9442.8 |  12093.7 |   2651.0
+|{to_charptr_fmtlib}  |1.55 | 1.48 | 0.06 |    711.6 |   6157.5 |   8776.2 |  11398.9 |   2622.8
 |===
 [cols="<20m,^6m,^6m,^6m,>8m,>8m,>8m,>8m,>10m"]
 |===
-|{to_string_strf}     |1.28 | 1.21 | 0.06 |    868.2 |   6329.2 |   8925.5 |  11526.3 |   2600.8
-|{to_string_strf_tr}  |1.28 | 1.22 | 0.06 |    894.5 |   6819.7 |   9490.2 |  12165.1 |   2674.9
-|{to_string_fmtlib_c} |1.61 | 1.53 | 0.07 |    791.9 |   7345.1 |  10168.1 |  12999.6 |   2831.6
-|{to_string_fmtlib}   |1.60 | 1.53 | 0.07 |    847.9 |   6863.0 |   9743.0 |  12618.9 |   2875.9
+|{to_string_strf}     |1.28 | 1.22 | 0.06 |    912.0 |   6519.4 |   9189.0 |  11863.1 |   2674.1
+|{to_string_strf_tr}  |1.30 | 1.24 | 0.06 |    938.3 |   7010.0 |   9753.8 |  12501.9 |   2748.1
+|{to_string_fmtlib_c} |1.60 | 1.52 | 0.07 |    791.9 |   7345.1 |  10168.1 |  12999.6 |   2831.6
+|{to_string_fmtlib}   |1.59 | 1.51 | 0.07 |    847.9 |   6863.0 |   9743.0 |  12618.9 |   2875.9
 |===
 [cols="<20m,^6m,^6m,^6m,>8m,>8m,>8m,>8m,>10m"]
 |===
-|{to_FILE_strf}       |1.22 | 1.16 | 0.06 |    740.3 |   5508.4 |   7764.8 |  10025.6 |   2260.9
-|{to_FILE_strf_tr}    |1.22 | 1.16 | 0.06 |    768.3 |   6029.8 |   8380.2 |  10730.7 |   2350.6
-|{to_FILE_fmtlib}     |1.63 | 1.55 | 0.07 |    851.9 |   7091.1 |  10069.7 |  13044.1 |   2974.5
+|{to_FILE_strf}       |1.24 | 1.17 | 0.06 |    784.1 |   5698.7 |   8028.3 |  10362.4 |   2334.1
+|{to_FILE_strf_tr}    |1.24 | 1.18 | 0.06 |    812.1 |   6220.1 |   8643.7 |  11067.4 |   2423.8
+|{to_FILE_fmtlib}     |1.61 | 1.53 | 0.07 |    851.9 |   7091.1 |  10069.7 |  13044.1 |   2974.5
 |===
 [cols="<20m,^6m,^6m,^6m,>8m,>8m,>8m,>8m,>10m"]
 |===
-|{to_ostream_strf}    |1.24 | 1.17 | 0.06 |    751.2 |   5517.3 |   7772.3 |  10031.8 |   2259.5
-|{to_ostream_strf_tr} |1.26 | 1.19 | 0.06 |    779.3 |   6049.1 |   8393.9 |  10743.1 |   2349.2
-|{to_ostream_fmtlib}  |1.53 | 1.46 | 0.06 |    744.4 |   6135.3 |   8703.2 |  11275.2 |   2572.0
+|{to_ostream_strf}    |1.26 | 1.19 | 0.06 |    795.0 |   5707.5 |   8035.8 |  10368.5 |   2332.7
+|{to_ostream_strf_tr} |1.27 | 1.20 | 0.06 |    823.1 |   6239.3 |   8657.4 |  11079.9 |   2422.4
+|{to_ostream_fmtlib}  |1.52 | 1.45 | 0.07 |    744.4 |   6135.3 |   8703.2 |  11275.2 |   2572.0
 |===
