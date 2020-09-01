@@ -2,76 +2,70 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <strf/to_string.hpp>
 #include "test_utils.hpp"
-#include <vector>
+#include <strf/to_string.hpp>
 
 template <typename CharT>
-std::basic_string<CharT> repeat(std::size_t count, std::basic_string<CharT> str)
+static STRF_TEST_FUNC std::size_t repeat
+    ( CharT* dest
+    , std::size_t dest_size
+    , std::size_t count
+    , strf::detail::simple_string_view<CharT> str )
 {
-    std::basic_string<CharT> x;
-    x.reserve(count * str.size());
-    while (count--)
-    {
-        x.append(str);
+    strf::basic_cstr_writer<CharT> ob{dest, dest_size};
+    while (count--) {
+        strf::to(ob) (str);
     }
-    return x;
+    auto result = ob.finish();
+    TEST_FALSE(result.truncated);
+    return result.ptr - dest;
 }
 
-template <typename CharT>
-inline std::basic_string<CharT> repeat(std::size_t count, const CharT* str)
+template <typename CharT, std::size_t DestSize>
+inline STRF_TEST_FUNC std::size_t repeat
+    ( CharT (&dest)[DestSize]
+    , std::size_t count
+    , strf::detail::simple_string_view<CharT> str )
 {
-    return repeat<CharT>(count, std::basic_string<CharT>{str});
+    return repeat(dest, DestSize, count, str);
 }
 
 template <typename CharT, typename Encoding>
-void test_fill
-    ( Encoding enc, char32_t fill_char, std::basic_string<CharT> encoded_char )
+void STRF_TEST_FUNC test_fill
+    ( Encoding enc
+    , char32_t fill_char
+    , strf::detail::simple_string_view<CharT> encoded_char )
 {
     TEST_SCOPE_DESCRIPTION( enc.name(), ", test_fill_char: U+"
                           , strf::hex((unsigned)fill_char) );
 
     {
-        std::int16_t count = 10;
-        auto result = strf::to_basic_string<CharT>.with(enc)
-            (strf::right(CharT('x'), 11, fill_char));
+        constexpr std::int16_t count = 80;
+        constexpr std::int16_t buffers_size = count * 6 + 2;
+        CharT buff_result[buffers_size];
+        auto res = strf::to(buff_result).with(enc) (strf::right(CharT('x'), count + 1, fill_char));
+        auto result_len = res.ptr - buff_result;
 
-        auto expected = repeat(count, encoded_char);
-        expected.push_back(CharT('x'));
-
-        TEST_TRUE(result == expected);
-    }
-    {
-        std::int16_t count = 200;
-        auto result = strf::to_basic_string<CharT>.with(enc)
-            (strf::right(CharT('x'), count + 1, fill_char));
-
-        auto expected = repeat(count, encoded_char);
-        expected.push_back(CharT('x'));
-
-        TEST_TRUE(result == expected);
+        CharT buff_expected_fill[buffers_size];
+        auto expected_fill_len = repeat(buff_expected_fill, count, encoded_char);
+        TEST_EQ(expected_fill_len + 1, result_len);
+        TEST_TRUE(buff_result[result_len - 1] == CharT('x'));
+        TEST_TRUE(strf::detail::str_equal(buff_result, buff_expected_fill, expected_fill_len));
     }
 }
 
-template <typename CharT, typename Encoding>
-inline void test_fill(Encoding enc, char32_t fill_char, const CharT* encoded_char)
-{
-    return test_fill(enc, fill_char, std::basic_string<CharT>{encoded_char});
-}
-
-int main()
+void STRF_TEST_FUNC test_encode_fill()
 {
     {
         // UTF-8
 
-        test_fill(strf::utf8<char>(), 0x7F, "\x7F");
-        test_fill(strf::utf8<char>(), 0x80, "\xC2\x80");
-        test_fill(strf::utf8<char>(), 0x800, "\xE0\xA0\x80");
-        test_fill(strf::utf8<char>(), 0xFFFF, "\xEF\xBF\xBF");
-        test_fill(strf::utf8<char>(), 0x10000, "\xF0\x90\x80\x80");
-        test_fill(strf::utf8<char>(), 0x10FFFF, "\xF4\x8F\xBF\xBF");
-
-        test_fill(strf::utf8<char>(), 0x110000, "\xEF\xBF\xBD");
+        test_fill<char>(strf::utf8<char>(), 0x7F, "\x7F");
+        test_fill<char>(strf::utf8<char>(), 0x80, "\xC2\x80");
+        test_fill<char>(strf::utf8<char>(), 0x800, "\xE0\xA0\x80");
+        test_fill<char>(strf::utf8<char>(), 0xFFFF, "\xEF\xBF\xBF");
+        test_fill<char>(strf::utf8<char>(), 0x10000, "\xF0\x90\x80\x80");
+        test_fill<char>(strf::utf8<char>(), 0x10FFFF, "\xF4\x8F\xBF\xBF");
+        test_fill<char>(strf::utf8<char>(), 0x110000, "\xEF\xBF\xBD");
     }
 
     {
@@ -93,23 +87,22 @@ int main()
 
     {
         // single byte encodings
-        test_fill(strf::windows_1252<char>(), 0x201A, "\x82");
-        test_fill(strf::iso_8859_1<char>(), 0x82, "\x82");
-        test_fill(strf::iso_8859_3<char>(), 0x02D8, "\xA2");
-        test_fill(strf::iso_8859_15<char>(), 0x20AC, "\xA4");
+        test_fill<char>(strf::windows_1252<char>(), 0x201A, "\x82");
+        test_fill<char>(strf::iso_8859_1<char>(), 0x82, "\x82");
+        test_fill<char>(strf::iso_8859_3<char>(), 0x02D8, "\xA2");
+        test_fill<char>(strf::iso_8859_15<char>(), 0x20AC, "\xA4");
 
-        test_fill(strf::ascii<char>(), 'a' , "a");
-        test_fill(strf::windows_1252<char>(), 'a' , "a");
-        test_fill(strf::iso_8859_1<char>()  , 'a' , "a");
-        test_fill(strf::iso_8859_3<char>()  , 'a' , "a");
-        test_fill(strf::iso_8859_15<char>() , 'a' , "a");
+        test_fill<char>(strf::ascii<char>(), 'a' , "a");
+        test_fill<char>(strf::windows_1252<char>(), 'a' , "a");
+        test_fill<char>(strf::iso_8859_1<char>()  , 'a' , "a");
+        test_fill<char>(strf::iso_8859_3<char>()  , 'a' , "a");
+        test_fill<char>(strf::iso_8859_15<char>() , 'a' , "a");
 
-        test_fill(strf::ascii<char>(), 0x800, "?");
-        test_fill(strf::windows_1252<char>(), 0x800, "?");
-        test_fill(strf::iso_8859_1<char>()  , 0x800, "?");
-        test_fill(strf::iso_8859_3<char>()  , 0x800, "?");
-        test_fill(strf::iso_8859_15<char>() , 0x800, "?");
+        test_fill<char>(strf::ascii<char>(), 0x800, "?");
+        test_fill<char>(strf::windows_1252<char>(), 0x800, "?");
+        test_fill<char>(strf::iso_8859_1<char>()  , 0x800, "?");
+        test_fill<char>(strf::iso_8859_3<char>()  , 0x800, "?");
+        test_fill<char>(strf::iso_8859_15<char>() , 0x800, "?");
     }
 
-    return test_finish();
 }

@@ -5,7 +5,6 @@
 #define  _CRT_SECURE_NO_WARNINGS
 
 #include "test_utils.hpp"
-#include <strf.hpp>
 
 class reservation_tester : public strf::basic_outbuff<char>
 {
@@ -14,36 +13,28 @@ class reservation_tester : public strf::basic_outbuff<char>
 
 public:
 
-    reservation_tester()
+    STRF_HD reservation_tester(strf::tag<void>)
         : strf::basic_outbuff<char>{ buff_, buff_ + buff_size_ }
         , buff_{0}
     {
     }
 
-    reservation_tester(std::size_t size)
+    STRF_HD reservation_tester(std::size_t size)
         : strf::basic_outbuff<char>{ buff_, buff_ + buff_size_ }
         , buff_{0}
         , reserved_size_{size}
     {
     }
 
-#if defined(STRF_NO_CXX17_COPY_ELISION)
-
-    reservation_tester(reservation_tester&& other);
-
-#else // defined(STRF_NO_CXX17_COPY_ELISION)
-
     reservation_tester(const reservation_tester&) = delete;
     reservation_tester(reservation_tester&&) = delete;
 
-#endif // defined(STRF_NO_CXX17_COPY_ELISION)
-
-    void recycle() override
+    void STRF_HD recycle() override
     {
         this->set_pointer(buff_);
     }
 
-    std::size_t finish()
+    std::size_t STRF_HD finish()
     {
         return reserved_size_;
     }
@@ -59,39 +50,26 @@ class reservation_tester_creator
 public:
 
     using char_type = char;
+    using outbuff_type = reservation_tester;
+    using sized_outbuff_type = reservation_tester;
 
-    template <typename ... Printers>
-    std::size_t write(const Printers& ... printers) const
+    strf::tag<void> STRF_HD create() const
     {
-        reservation_tester ob;
-        strf::detail::write_args(ob, printers...);;
-        return ob.finish();
+        return strf::tag<void>{};
     }
-
-    template <typename ... Printers>
-    std::size_t sized_write(std::size_t size, const Printers& ... printers) const
+    std::size_t STRF_HD create(std::size_t size) const
     {
-        reservation_tester ob{size};
-        strf::detail::write_args(ob, printers...);;
-        return ob.finish();
-    }
-    reservation_tester create() const
-    {
-        return reservation_tester{};
-    }
-    reservation_tester create(std::size_t size) const
-    {
-        return reservation_tester{size};
+        return size;
     }
 };
 
-constexpr auto reservation_test()
+constexpr auto STRF_HD reservation_test()
 {
     return strf::destination_no_reserve<reservation_tester_creator>();
 }
 
 
-int main()
+void STRF_TEST_FUNC test_reserve()
 {
     // on non-const rval ref
     constexpr std::size_t not_reserved = 0;
@@ -162,6 +140,4 @@ int main()
         auto size = std::move(tester).reserve_calc() ("abcd");
         TEST_EQ(size, 4);
     }
-
-    return test_finish();
 }

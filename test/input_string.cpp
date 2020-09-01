@@ -3,13 +3,12 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include "test_utils.hpp"
-#include <strf.hpp>
 
 #if ! defined(__cpp_char8_t)
 using char8_t = char;
 #endif
 
-int main()
+void STRF_TEST_FUNC test_input_string()
 {
     {
         TEST("   abc")   ( strf::right("abc", 6) );
@@ -26,9 +25,9 @@ int main()
         TEST("abcdefghi")    ( strf::right("", 0), strf::right("abc", 0), strf::left("def", 0), strf::center("ghi", 0) );
     }
     {
-        wchar_t abc[] = L"abc";
-        wchar_t def[] = L"def";
-        wchar_t ghi[] = L"ghi";
+        const wchar_t abc[] = L"abc";
+        const wchar_t def[] = L"def";
+        const wchar_t ghi[] = L"ghi";
         TEST(L"abc")      ( abc );
         TEST(L"   abc")   ( strf::right(abc, 6) );
         TEST(L"abc...")   ( strf::left    (abc, 6, '.') );
@@ -44,6 +43,7 @@ int main()
         TEST(L"abcdefghi")    ( strf::right(L"", 0), strf::right(abc, 0), strf::left(def, 0), strf::center(ghi, 0) );
     }
 
+#if ! defined(STRF_FREESTANDING)
 
     {
         std::string abc{ "abc" };
@@ -59,6 +59,8 @@ int main()
         TEST(L"   abc")  ( strf::right(abc, 6) );
     }
 
+#endif // ! defined(STRF_FREESTANDING)
+
 #if defined(STRF_HAS_STD_STRING_VIEW)
 
     {
@@ -68,7 +70,7 @@ int main()
         TEST("   abc") ( strf::right(abc, 6) );
     }
 
-#endif
+#endif // defined(STRF_HAS_STD_STRING_VIEW)
 
     {   // by-pass encoding sanitization
 
@@ -131,9 +133,9 @@ int main()
         TEST(u"--\u0080--\u07ff--\u0800--\uffff--\U00010000--\U0010ffff")
             ( strf::conv(U"--\u0080--\u07ff--\u0800--\uffff--\U00010000--\U0010ffff") );
 
-        char32_t abc[] = U"abc";
-        char32_t def[] = U"def";
-        char32_t ghi[] = U"ghi";
+        const char32_t abc[] = U"abc";
+        const char32_t def[] = U"def";
+        const char32_t ghi[] = U"ghi";
         TEST("abc")      ( strf::conv(abc) );
         TEST("   abc")   ( strf::conv(abc) > 6 );
         TEST("abc...")   ( strf::conv(abc).fill('.') < 6 );
@@ -152,11 +154,5 @@ int main()
                              , strf::conv(def) < 0, strf::conv(ghi) ^ 0 );
 
     }
-
-    return test_finish();
 }
-
-
-
-
 

@@ -32,7 +32,7 @@ struct default_tr_error_notifier
 };
 
 struct tr_error_notifier_c {
-    static constexpr strf::default_tr_error_notifier get_default() noexcept
+    static constexpr STRF_HD strf::default_tr_error_notifier get_default() noexcept
     {
         return strf::default_tr_error_notifier{};
     }
@@ -48,7 +48,7 @@ struct read_uint_result
 };
 
 template <typename CharT>
-read_uint_result<CharT> read_uint(const CharT* it, const CharT* end, std::size_t limit) noexcept
+STRF_HD read_uint_result<CharT> read_uint(const CharT* it, const CharT* end, std::size_t limit) noexcept
 {
     std::size_t value = *it -  static_cast<CharT>('0');
     ++it;
@@ -69,7 +69,7 @@ read_uint_result<CharT> read_uint(const CharT* it, const CharT* end, std::size_t
 }
 
 template <typename CharT>
-inline std::size_t tr_string_size
+STRF_HD inline std::size_t tr_string_size
     ( const strf::print_preview<strf::preview_size::no, strf::preview_width::no>*
     , std::size_t
     , const CharT*
@@ -80,7 +80,7 @@ inline std::size_t tr_string_size
 }
 
 template <typename CharT>
-std::size_t tr_string_size
+STRF_HD std::size_t tr_string_size
     ( const strf::print_preview<strf::preview_size::yes, strf::preview_width::no>* args_preview
     , std::size_t num_args
     , const CharT* it
@@ -162,7 +162,7 @@ std::size_t tr_string_size
 }
 
 template <typename Encoding, typename ErrHandler>
-void tr_string_write
+STRF_HD void tr_string_write
     ( const typename Encoding::char_type* str
     , const typename Encoding::char_type* str_end
     , const strf::printer<typename Encoding::char_type>* const * args
@@ -255,7 +255,7 @@ class tr_string_printer
 public:
 
     template <strf::preview_size SizeRequested>
-    tr_string_printer
+    STRF_HD tr_string_printer
         ( strf::print_preview<SizeRequested, strf::preview_width::no>& preview
         , const strf::print_preview<SizeRequested, strf::preview_width::no>* args_preview
         , std::initializer_list<const strf::printer<char_type>*> printers
@@ -281,7 +281,7 @@ public:
         }
     }
 
-    void print_to(strf::basic_outbuff<char_type>& ob) const
+    STRF_HD void print_to(strf::basic_outbuff<char_type>& ob) const
     {
         strf::detail::tr_string_write
             ( tr_string_, tr_string_end_, printers_array_, num_printers_

@@ -341,8 +341,7 @@ void for_all_combinations(const Tuple& encodings, Func func)
     for_all_combinations(func, encodings, std::make_index_sequence<tsize>());
 }
 
-
-int main()
+void test_utf_to_utf()
 {
     const auto encodings = std::make_tuple
         ( strf::utf<char>(), strf::utf<char16_t>()
@@ -415,5 +414,4 @@ int main()
                                                    , strf::utf<char32_t>())) >
                   :: value));
 
-    return test_finish();
 }

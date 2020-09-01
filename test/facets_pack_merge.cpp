@@ -3,8 +3,21 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include "test_utils.hpp"
-#include <strf.hpp>
-#include <vector>
+
+template <typename T, std::size_t N>
+struct simple_array
+{
+    T array[N];
+};
+
+template <typename T, std::size_t N>
+static STRF_HD bool operator==(const simple_array<T, N>& a, const simple_array<T, N>& b)
+{
+    for (std::size_t i = 0; i < N; ++i)
+        if(a.array[i] != b.array[i])
+            return false;
+    return true;
+}
 
 struct fcategory;
 
@@ -33,6 +46,19 @@ template<typename T, int N> struct filter_le
     static constexpr bool value = (T::type_n_id <= N);
 };
 
+template <typename FPack>
+simple_array<int, 7> STRF_TEST_FUNC digest(const FPack& fp)
+{
+    return {{
+        strf::get_facet< fcategory, input_type<1> >(fp).value,
+        strf::get_facet< fcategory, input_type<2> >(fp).value,
+        strf::get_facet< fcategory, input_type<3> >(fp).value,
+        strf::get_facet< fcategory, input_type<4> >(fp).value,
+        strf::get_facet< fcategory, input_type<5> >(fp).value,
+        strf::get_facet< fcategory, input_type<6> >(fp).value,
+        strf::get_facet< fcategory, input_type<7> >(fp).value
+    }};
+}
 
 template<typename T> using filter_le1 = filter_le<T, 1>;
 template<typename T> using filter_le2 = filter_le<T, 2>;
@@ -42,44 +68,25 @@ template<typename T> using filter_le5 = filter_le<T, 5>;
 template<typename T> using filter_le6 = filter_le<T, 6>;
 template<typename T> using filter_le7 = filter_le<T, 7>;
 
-
-facet_type f1 = {1};
-facet_type f2 = {2};
-facet_type f3 = {3};
-facet_type f4 = {4};
-facet_type f5 = {5};
-facet_type f6 = {6};
-facet_type f7 = {7};
-
-
-auto x1 = strf::constrain<filter_le1>(f1);
-auto x2 = strf::constrain<filter_le2>(f2);
-auto x3 = strf::constrain<filter_le3>(f3);
-auto x4 = strf::constrain<filter_le4>(f4);
-auto x5 = strf::constrain<filter_le5>(f5);
-auto x6 = strf::constrain<filter_le6>(f6);
-auto x7 = strf::constrain<filter_le7>(f7);
-
-template <typename FPack>
-std::vector<int> digest(const FPack& fp)
+void STRF_TEST_FUNC test_facets_pack_merge()
 {
-    return std::vector<int>
-    {
-        strf::get_facet< fcategory, input_type<1> >(fp).value,
-        strf::get_facet< fcategory, input_type<2> >(fp).value,
-        strf::get_facet< fcategory, input_type<3> >(fp).value,
-        strf::get_facet< fcategory, input_type<4> >(fp).value,
-        strf::get_facet< fcategory, input_type<5> >(fp).value,
-        strf::get_facet< fcategory, input_type<6> >(fp).value,
-        strf::get_facet< fcategory, input_type<7> >(fp).value
-    };
-}
+    facet_type f1 = {1};
+    facet_type f2 = {2};
+    facet_type f3 = {3};
+    facet_type f4 = {4};
+    facet_type f5 = {5};
+    facet_type f6 = {6};
+    facet_type f7 = {7};
 
-std::vector<int> expected = {1, 2, 3, 4, 5, 6, 7};
+    auto x1 = strf::constrain<filter_le1>(f1);
+    auto x2 = strf::constrain<filter_le2>(f2);
+    auto x3 = strf::constrain<filter_le3>(f3);
+    auto x4 = strf::constrain<filter_le4>(f4);
+    auto x5 = strf::constrain<filter_le5>(f5);
+    auto x6 = strf::constrain<filter_le6>(f6);
+    auto x7 = strf::constrain<filter_le7>(f7);
 
-
-int main()
-{
+    simple_array<int, 7> expected = {{1, 2, 3, 4, 5, 6, 7}};
 
     {
         auto fp = strf::pack(x7, x6, x5, x4, x3, x2, x1);
@@ -165,9 +172,6 @@ int main()
 
         TEST_TRUE(digest(fp) == expected);
     }
-
-
-    return test_finish();
 }
 
 

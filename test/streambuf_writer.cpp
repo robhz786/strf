@@ -2,12 +2,12 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
+#include <strf/to_streambuf.hpp>
 #include "test_utils.hpp"
 #include <sstream>
-#include <strf/to_streambuf.hpp>
 
 template <typename CharT>
-void test_successfull_writing()
+static void test_successfull_writing()
 {
     auto tiny_str = test_utils::make_tiny_string<CharT>();
     auto double_str = test_utils::make_double_string<CharT>();
@@ -34,7 +34,7 @@ void test_successfull_writing()
 }
 
 template <typename CharT>
-void test_failing_to_recycle()
+static void test_failing_to_recycle()
 {
     auto half_str = test_utils::make_half_string<CharT>();
     auto double_str = test_utils::make_double_string<CharT>();
@@ -60,7 +60,7 @@ void test_failing_to_recycle()
 }
 
 template <typename CharT>
-void test_failing_to_finish()
+static void test_failing_to_finish()
 {
     auto double_str = test_utils::make_double_string<CharT>();
     auto half_str = test_utils::make_half_string<CharT>();
@@ -87,7 +87,7 @@ void test_failing_to_finish()
 }
 
 template <typename CharT>
-void test_destination()
+static void test_destination()
 {
     auto half_str = test_utils::make_half_string<CharT>();
     auto full_str = test_utils::make_full_string<CharT>();
@@ -120,7 +120,7 @@ void test_destination()
     }
 }
 
-int main()
+void test_streambuf_writer()
 {
     test_destination<char>();
     test_destination<char16_t>();
@@ -141,6 +141,4 @@ int main()
     test_failing_to_finish<char16_t>();
     test_failing_to_finish<char32_t>();
     test_failing_to_finish<wchar_t>();
-
-    return test_finish();
 }

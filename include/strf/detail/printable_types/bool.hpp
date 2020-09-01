@@ -7,7 +7,6 @@
 
 #include <strf/facets_pack.hpp>
 #include <strf/printer.hpp>
-#include <strf/detail/format_functions.hpp>
 #include <strf/detail/facets/char_encoding.hpp>
 #include <strf/detail/facets/lettercase.hpp>
 
@@ -20,26 +19,35 @@ template <typename CharT> class fmt_bool_printer;
 } // namespace detail
 
 template <>
-struct fmt_traits<bool>
+struct print_traits<bool>
 {
-    using fmt_type = strf::value_with_format<bool, strf::alignment_format>;
+    using facet_tag = bool;
+    using forwarded_type = bool;
+    using fmt_type = strf::value_with_formatters
+        < strf::print_traits<bool>
+        , strf::alignment_formatter >;
+
+    template <typename CharT, typename Preview, typename FPack>
+    constexpr STRF_HD static auto make_printer_input
+        ( Preview& preview, const FPack& fp, bool x ) noexcept
+        -> strf::usual_printer_input
+            < CharT, Preview, FPack, bool, strf::detail::bool_printer<CharT> >
+    {
+        return {preview, fp, x};
+    }
+
+    template <typename CharT, typename Preview, typename FPack>
+    constexpr STRF_HD static auto make_printer_input
+        ( Preview& preview, const FPack& fp, fmt_type x ) noexcept
+        -> strf::usual_printer_input
+            < CharT, Preview, FPack, fmt_type, strf::detail::fmt_bool_printer<CharT> >
+    {
+        return {preview, fp, x};
+    }
 };
 
-template <typename CharT, typename FPack, typename Preview>
-struct printable_traits<CharT, FPack, Preview, bool>
-    : strf::usual_printable_traits
-        < CharT, FPack, strf::detail::bool_printer<CharT> >
-{
-};
-
-template <typename CharT, typename FPack, typename Preview>
-struct printable_traits
-    < CharT, FPack, Preview
-    , strf::value_with_format<bool, strf::alignment_format> >
-    : strf::usual_printable_traits
-        < CharT, FPack, strf::detail::fmt_bool_printer<CharT> >
-{
-};
+constexpr STRF_HD strf::print_traits<bool>
+tag_invoke(strf::print_traits_tag, bool) noexcept { return {}; }
 
 namespace detail {
 
@@ -92,7 +100,6 @@ void STRF_HD bool_printer<CharT>::print_to(strf::basic_outbuff<CharT>& ob) const
 template <typename CharT>
 class fmt_bool_printer: public printer<CharT>
 {
-    using arg_type_ = strf::value_with_format<bool, strf::alignment_format>;
     using this_type_ = fmt_bool_printer<CharT>;
 
 public:
@@ -101,15 +108,16 @@ public:
     STRF_HD fmt_bool_printer
         ( const strf::usual_printer_input<CharT, T...>& input )
         : value_(input.arg.value())
-        , afmt_(input.arg.get_alignment_format_data())
+        , afmt_(input.arg.get_alignment_format())
         , lettercase_(strf::get_facet<strf::lettercase_c, bool>(input.fp))
     {
         auto enc = strf::get_facet<char_encoding_c<CharT>, bool>(input.fp);
-        std::uint16_t w = 5 - (int)input.arg.value();
-        if (afmt_.width > w) {
+        std::int16_t w = 5 - (int)input.arg.value();
+        auto fmt_width = afmt_.width.round();
+        if (fmt_width > w) {
             encode_fill_ = enc.encode_fill_func();
-            fillcount_ = static_cast<std::uint16_t>(afmt_.width - w);
-            input.preview.subtract_width(afmt_.width);
+            fillcount_ = static_cast<std::uint16_t>(fmt_width - w);
+            input.preview.subtract_width(fmt_width);
             input.preview.add_size(w + fillcount_ * enc.encoded_char_size(afmt_.fill));
         } else {
             fillcount_ = 0;
@@ -125,7 +133,7 @@ private:
     strf::encode_fill_f<CharT> encode_fill_;
     std::uint16_t fillcount_;
     bool value_;
-    strf::alignment_format_data afmt_;
+    strf::alignment_format afmt_;
     strf::lettercase lettercase_;
 };
 

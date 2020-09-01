@@ -3,7 +3,6 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include "test_utils.hpp"
-#include <vector>
 
 template <typename CharT>
 struct fixture
@@ -16,9 +15,10 @@ struct fixture
 };
 
 template <typename CharT, typename Encoding>
-void test_char( Encoding enc
-              , char32_t ch
-              , std::basic_string<CharT> encoded_char )
+void STRF_TEST_FUNC test_char
+    ( Encoding enc
+    , char32_t ch
+    , strf::detail::simple_string_view<CharT> encoded_char )
 {
     TEST_SCOPE_DESCRIPTION( "encoding: ", enc.name()
                           , "; char: \\u'", strf::hex((unsigned)ch), '\'');
@@ -27,10 +27,10 @@ void test_char( Encoding enc
     auto it = enc.encode_char(buff, ch);
 
     TEST_EQ(std::size_t(it - buff), encoded_char.size());
-    TEST_TRUE(std::equal(encoded_char.begin(), encoded_char.end(), &buff[0]));
+    TEST_TRUE(strf::detail::str_equal(encoded_char.data(), buff, encoded_char.size()));
 }
 
-int main()
+void STRF_TEST_FUNC test_encode_char()
 {
     {   // UTF-8
 
@@ -76,7 +76,4 @@ int main()
         test_char<char>(strf::iso_8859_3<char>()  , 0x800 , "?");
         test_char<char>(strf::iso_8859_15<char>() , 0x800 , "?");
     }
-
-
-    return test_finish();
 }

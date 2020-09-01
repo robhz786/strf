@@ -79,17 +79,17 @@ using mp_replace_front
 template < typename Iterator
          , typename V  = strf::detail::iterator_value_type<Iterator>
          , typename VF = strf::fmt_type<V> >
-using range_with_format
+using range_with_formatters
     = strf::detail::mp_replace_front
-        < VF, strf::range_p<Iterator> >;
+        < VF, strf::print_traits<strf::range_p<Iterator>> >;
 
 template < typename Iterator
          , typename CharT
          , typename V  = strf::detail::iterator_value_type<Iterator>
          , typename VF = strf::fmt_type<V> >
-using sep_range_with_format
+using sep_range_with_formatters
     = strf::detail::mp_replace_front
-        < VF, strf::separated_range_p<Iterator, CharT> >;
+        < VF, strf::print_traits<strf::separated_range_p<Iterator, CharT>> >;
 
 namespace detail {
 
@@ -113,54 +113,111 @@ class sep_transformed_range_printer;
 
 } // namespace detail
 
-template <typename CharT, typename FPack, typename Preview, typename It>
-struct printable_traits<CharT, FPack, Preview, strf::range_p<It>>
-    : strf::usual_printable_traits
-        < CharT, FPack, strf::detail::range_printer<CharT, FPack, It> >
-{ };
+template <typename It>
+struct print_traits<strf::range_p<It>>
+{
+    using facet_tag = void;
+    using forwarded_type = strf::range_p<It>;
+    using fmt_type = strf::range_with_formatters<It>;
 
-template <typename CharT, typename FPack, typename Preview, typename It>
-struct printable_traits<CharT, FPack, Preview, strf::separated_range_p<It, CharT>>
-    : strf::usual_printable_traits
-        < CharT, FPack, strf::detail::separated_range_printer<CharT, FPack, It> >
-{ };
+    template <typename CharT, typename Preview, typename FPack>
+    STRF_HD constexpr static auto make_printer_input
+        (Preview& preview, const FPack& fp,  forwarded_type x)
+        -> strf::usual_printer_input
+            < CharT, Preview, FPack, forwarded_type
+            , strf::detail::range_printer<CharT, FPack, It> >
+    {
+        return {preview, fp, x};
+    }
 
-template < typename CharT, typename FPack, typename Preview
-         , typename It, typename... Fmts >
-struct printable_traits
-    < CharT, FPack, Preview
-    , strf::value_with_format<strf::range_p<It>, Fmts ...> >
-    : strf::usual_printable_traits
-        < CharT, FPack, strf::detail::fmt_range_printer<CharT, FPack, It, Fmts...> >
-{ };
+    template <typename CharT, typename Preview, typename FPack, typename... Fmts>
+    STRF_HD constexpr static auto make_printer_input
+        ( Preview& preview
+        , const FPack& fp
+        , strf::value_with_formatters<strf::print_traits<strf::range_p<It>>, Fmts...> x )
+        ->  strf::usual_printer_input
+            < CharT
+            , Preview, FPack
+            , strf::value_with_formatters<strf::print_traits<strf::range_p<It>>, Fmts ...>
+            , strf::detail::fmt_range_printer<CharT, FPack, It, Fmts...> >
+    {
+        return {preview, fp, x};
+    }
+};
 
-template < typename CharT, typename FPack, typename Preview
-         , typename It, typename... Fmts >
-struct printable_traits
-    < CharT, FPack, Preview
-    , strf::value_with_format<strf::separated_range_p<It, CharT>, Fmts ...>>
-    : strf::usual_printable_traits
-        < CharT, FPack
-        , strf::detail::fmt_separated_range_printer<CharT, FPack, It, Fmts...> >
-{ };
+template <typename It, typename SepCharT>
+struct print_traits<strf::separated_range_p<It, SepCharT>>
+{
+    using facet_tag = void;
+    using forwarded_type = strf::separated_range_p<It, SepCharT>;
+    using fmt_type = strf::sep_range_with_formatters<It, SepCharT>;
 
-template < typename CharT, typename FPack, typename Preview
-         , typename It, typename UnaryOp >
-struct printable_traits
-    < CharT, FPack, Preview, strf::transformed_range_p<It, UnaryOp> >
-    : strf::usual_printable_traits
-        < CharT, FPack, strf::detail::transformed_range_printer<CharT, FPack, It, UnaryOp> >
-{ };
+    template <typename DestCharT, typename Preview, typename FPack>
+    STRF_HD constexpr static auto make_printer_input
+        (Preview& preview, const FPack& fp,  forwarded_type x)
+        -> strf::usual_printer_input
+            < DestCharT, Preview, FPack, forwarded_type
+            , strf::detail::separated_range_printer<DestCharT, FPack, It> >
+    {
+        static_assert( std::is_same<SepCharT, DestCharT>::value
+                     , "Character type of range separator string is different." );
+        return {preview, fp, x};
+    }
 
-template < typename CharT, typename FPack, typename Preview
-         , typename It, typename UnaryOp >
-struct printable_traits
-    < CharT, FPack, Preview
-    , strf::separated_transformed_range_p<It, CharT, UnaryOp>>
-    : strf::usual_printable_traits
-        < CharT, FPack
-        , strf::detail::sep_transformed_range_printer<CharT, FPack, It, UnaryOp> >
-{ };
+    template <typename DestCharT, typename Preview, typename FPack, typename... Fmts>
+    STRF_HD constexpr static auto make_printer_input
+        ( Preview& preview
+        , const FPack& fp
+        , strf::value_with_formatters
+            < strf::print_traits<strf::separated_range_p<It, SepCharT>>, Fmts... > x )
+        ->  strf::usual_printer_input
+            < DestCharT
+            , Preview, FPack
+            , strf::value_with_formatters
+                < strf::print_traits<strf::separated_range_p<It, SepCharT>>, Fmts... >
+            , strf::detail::fmt_separated_range_printer<DestCharT, FPack, It, Fmts...> >
+    {
+        static_assert( std::is_same<SepCharT, DestCharT>::value
+                     , "Character type of range separator string is different." );
+        return {preview, fp, x};
+    }
+};
+
+template <typename It, typename UnaryOp>
+struct print_traits<strf::transformed_range_p<It, UnaryOp>>
+{
+    using facet_tag = void;
+    using forwarded_type = strf::transformed_range_p<It, UnaryOp>;
+
+    template <typename CharT, typename Preview, typename FPack>
+    STRF_HD constexpr static auto make_printer_input
+        (Preview& preview, const FPack& fp,  forwarded_type x)
+        -> strf::usual_printer_input
+            < CharT, Preview, FPack, forwarded_type
+            , strf::detail::transformed_range_printer<CharT, FPack, It, UnaryOp> >
+    {
+        return {preview, fp, x};
+    }
+};
+
+template <typename It, typename SepCharT, typename UnaryOp>
+struct print_traits<strf::separated_transformed_range_p<It, SepCharT, UnaryOp>>
+{
+    using facet_tag = void;
+    using forwarded_type = strf::separated_transformed_range_p<It, SepCharT, UnaryOp>;
+
+    template <typename DestCharT, typename Preview, typename FPack>
+    STRF_HD constexpr static auto make_printer_input
+        (Preview& preview, const FPack& fp,  forwarded_type x)
+        -> strf::usual_printer_input
+            < DestCharT, Preview, FPack, forwarded_type
+            , strf::detail::sep_transformed_range_printer<DestCharT, FPack, It, UnaryOp> >
+    {
+        static_assert( std::is_same<SepCharT, DestCharT>::value
+                     , "Character type of range separator string is different." );
+        return {preview, fp, x};
+    }
+};
 
 namespace detail {
 
@@ -187,8 +244,8 @@ public:
 private:
 
     template <typename Preview>
-    using printer_type_ = strf::printer_impl
-        < CharT, FPack, Preview, std::remove_cv_t<value_type> >;
+    using printer_type_ = strf::printer_type
+        < CharT, Preview, FPack, std::remove_cv_t<value_type> >;
 
     STRF_HD void preview_
         (strf::print_preview<strf::preview_size::no, strf::preview_width::no>&) const
@@ -211,7 +268,7 @@ STRF_HD void range_printer<CharT, FPack, It>::preview_(Preview& preview) const
 {
     for(auto it = begin_; it != end_; ++it) {
         printer_type_<Preview>
-            ( strf::make_printer_input<CharT>(fp_, preview, *it) );
+            ( strf::make_printer_input<CharT>(preview, fp_, *it) );
     }
 }
 
@@ -224,7 +281,7 @@ STRF_HD void range_printer<CharT, FPack, It>::print_to
     preview_type no_preview;
     for(auto it = begin_; it != end_; ++it) {
         printer_type_<preview_type>
-            ( strf::make_printer_input<CharT>(fp_, no_preview, *it) ).print_to(ob);
+            ( strf::make_printer_input<CharT>(no_preview, fp_, *it) ).print_to(ob);
     }
 }
 
@@ -253,8 +310,8 @@ public:
 private:
 
     template <typename Preview>
-    using printer_type_ = strf::printer_impl
-        < CharT, FPack, Preview, std::remove_cv_t<value_type> >;
+    using printer_type_ = strf::printer_type
+        < CharT, Preview, FPack, std::remove_cv_t<value_type> >;
 
     constexpr STRF_HD void preview_
         ( strf::print_preview<strf::preview_size::no, strf::preview_width::no>& ) const
@@ -286,7 +343,7 @@ STRF_HD void separated_range_printer<CharT, FPack, It>::preview_(Preview& previe
 {
     std::size_t count = 0;
     for(auto it = begin_; it != end_; ++it) {
-        printer_type_<Preview>(strf::make_printer_input<CharT>(fp_, preview, *it));
+        printer_type_<Preview>(strf::make_printer_input<CharT>(preview, fp_, *it));
         ++ count;
         STRF_IF_CONSTEXPR (!Preview::size_required) {
             if (preview.remaining_width() <= 0) {
@@ -328,12 +385,12 @@ STRF_HD void separated_range_printer<CharT, FPack, It>::print_to
     auto it = begin_;
     if (it != end_) {
         printer_type_<preview_type>
-            ( strf::make_printer_input<CharT>(fp_, no_preview, *it) )
+            ( strf::make_printer_input<CharT>(no_preview, fp_, *it) )
             .print_to(ob);
         while (++it != end_) {
             strf::write(ob, sep_begin_, sep_len_);
             printer_type_<preview_type>
-                ( strf::make_printer_input<CharT>(fp_, no_preview, *it) )
+                ( strf::make_printer_input<CharT>(no_preview, fp_, *it) )
                 .print_to(ob);
         }
     }
@@ -352,7 +409,7 @@ class fmt_range_printer: public strf::printer<CharT>
 
     using fmt_type_adapted_ = detail::mp_replace_front
         < value_fmt_type_adapted_
-        , strf::range_p<It> >;
+        , strf::print_traits<strf::range_p<It>> >;
 
 public:
 
@@ -370,8 +427,8 @@ public:
 private:
 
     template <typename Preview>
-    using printer_type_ = strf::printer_impl
-        < CharT, FPack, Preview, value_fmt_type_adapted_ >;
+    using printer_type_ = strf::printer_type
+        < CharT, Preview, FPack, value_fmt_type_adapted_ >;
 
     STRF_HD void preview_
         ( strf::print_preview<strf::preview_size::no, strf::preview_width::no>& ) const
@@ -400,7 +457,7 @@ STRF_HD void fmt_range_printer<CharT, FPack, It, Fmts ...>::preview_
     for(auto it = r.begin; it != r.end; ++it) {
         printer_type_<Preview>
             ( strf::make_printer_input<CharT>
-                ( fp_, preview, value_fmt_type_adapted_{{*it}, fmt_} ) );
+                ( preview, fp_, value_fmt_type_adapted_{{*it}, fmt_} ) );
     }
 }
 
@@ -418,7 +475,7 @@ STRF_HD void fmt_range_printer<CharT, FPack, It, Fmts ...>::print_to
     for(auto it = r.begin; it != r.end; ++it) {
         printer_type_<preview_type>
             ( strf::make_printer_input<CharT>
-                ( fp_, no_preview, value_fmt_type_adapted_{{*it}, fmt_} ) )
+                ( no_preview, fp_, value_fmt_type_adapted_{{*it}, fmt_} ) )
             .print_to(ob);
     }
 }
@@ -436,7 +493,7 @@ class fmt_separated_range_printer: public strf::printer<CharT>
 
     using fmt_type_adapted_ = detail::mp_replace_front
         < value_fmt_type_adapted_
-        , strf::separated_range_p<It, CharT> >;
+        , strf::print_traits<strf::separated_range_p<It, CharT>> >;
 
 public:
 
@@ -454,8 +511,8 @@ public:
 private:
 
     template <typename Preview>
-    using printer_type_ = strf::printer_impl
-        < CharT, FPack, Preview, value_fmt_type_adapted_ >;
+    using printer_type_ = strf::printer_type
+        < CharT, Preview, FPack, value_fmt_type_adapted_ >;
 
     STRF_HD void preview_
         ( strf::print_preview<strf::preview_size::no, strf::preview_width::no>& ) const
@@ -491,7 +548,7 @@ STRF_HD void fmt_separated_range_printer<CharT, FPack, It, Fmts ...>::preview_
     for(auto it = r.begin; it != r.end; ++it) {
         printer_type_<Preview>
             ( strf::make_printer_input<CharT>
-                ( fp_, preview, value_fmt_type_adapted_{{*it}, fmt_} ) );
+                ( preview, fp_, value_fmt_type_adapted_{{*it}, fmt_} ) );
         ++ count;
         STRF_IF_CONSTEXPR (!Preview::size_required) {
             if (preview.remaining_width() <= 0) {
@@ -537,13 +594,13 @@ STRF_HD void fmt_separated_range_printer<CharT, FPack, It, Fmts ...>
     if (it != r.end) {
         printer_type_<preview_type>
             ( strf::make_printer_input<CharT>
-                ( fp_, no_preview, value_fmt_type_adapted_{{*it}, fmt_} ) )
+                ( no_preview, fp_, value_fmt_type_adapted_{{*it}, fmt_} ) )
             .print_to(ob);
         while(++it != r.end) {
             strf::write(ob, r.sep_begin, r.sep_len);
             printer_type_<preview_type>
                 ( strf::make_printer_input<CharT>
-                    ( fp_, no_preview, value_fmt_type_adapted_{{*it}, fmt_} ) )
+                    ( no_preview, fp_, value_fmt_type_adapted_{{*it}, fmt_} ) )
                 .print_to(ob);
         }
     }
@@ -558,7 +615,7 @@ public:
     using value_type = strf::detail::iterator_value_type<It>;
 
     template <typename... T>
-    transformed_range_printer
+    STRF_HD transformed_range_printer
         ( const strf::usual_printer_input<T...>& input )
         : fp_(input.fp)
         , begin_(input.arg.begin)
@@ -572,11 +629,12 @@ public:
 
 private:
 
-    template <typename Preview>
-    using printer_type_ = strf::printer_impl
-        < CharT, FPack, Preview
+    template <typename Preview, typename Op = UnaryOp>
+    using printer_type_ = strf::printer_type
+        < CharT
+        , Preview, FPack
         , std::remove_reference_t
-            < decltype(std::declval<UnaryOp>()(*std::declval<iterator>())) > >;
+            < decltype(std::declval<Op>()(*std::declval<iterator>())) > >;
 
     STRF_HD void preview_
         ( strf::print_preview<strf::preview_size::no, strf::preview_width::no>& ) const
@@ -601,7 +659,7 @@ STRF_HD void transformed_range_printer<CharT, FPack, It, UnaryOp>
 {
     for(auto it = begin_; it != end_; ++it) {
         printer_type_<Preview>
-            ( strf::make_printer_input<CharT>(fp_, preview, op_(*it)) );
+            ( strf::make_printer_input<CharT>(preview, fp_, op_(*it)) );
     }
 }
 
@@ -614,7 +672,7 @@ STRF_HD void transformed_range_printer<CharT, FPack, It, UnaryOp>::print_to
     preview_type no_preview;
     for(auto it = begin_; it != end_; ++it) {
         printer_type_<preview_type>
-            ( strf::make_printer_input<CharT>(fp_, no_preview, op_(*it)) )
+            ( strf::make_printer_input<CharT>(no_preview, fp_, op_(*it)) )
             .print_to(ob);
     }
 }
@@ -643,11 +701,12 @@ public:
 
 private:
 
-    template <typename Preview>
-    using printer_type_ = strf::printer_impl
-        < CharT, FPack, Preview
+    template <typename Preview, typename Op = UnaryOp>
+    using printer_type_ = strf::printer_type
+        < CharT
+        , Preview, FPack
         , std::remove_reference_t
-            < decltype(std::declval<UnaryOp>()(*std::declval<iterator>())) > >;
+            < decltype(std::declval<Op>()(*std::declval<iterator>())) > >;
 
     STRF_HD void preview_
         ( strf::print_preview<strf::preview_size::no, strf::preview_width::no>& ) const
@@ -682,7 +741,7 @@ STRF_HD void sep_transformed_range_printer<CharT, FPack, It, UnaryOp>
     std::size_t count = 0;
     for(auto it = begin_; it != end_; ++it) {
         printer_type_<Preview>
-            ( strf::make_printer_input<CharT>(fp_, preview, op_(*it)) );
+            ( strf::make_printer_input<CharT>(preview, fp_, op_(*it)) );
         ++ count;
         STRF_IF_CONSTEXPR (!Preview::size_required) {
             if (preview.remaining_width() <= 0) {
@@ -724,43 +783,18 @@ STRF_HD void sep_transformed_range_printer<CharT, FPack, It, UnaryOp>::print_to
     auto it = begin_;
     if (it != end_) {
         printer_type_<preview_type>
-            ( strf::make_printer_input<CharT>(fp_, no_preview, op_(*it)) )
+            ( strf::make_printer_input<CharT>(no_preview, fp_, op_(*it)) )
             .print_to(ob);
         while (++it != end_) {
             strf::write(ob, sep_begin_, sep_len_);
             printer_type_<preview_type>
-                ( strf::make_printer_input<CharT>(fp_, no_preview, op_(*it)) )
+                ( strf::make_printer_input<CharT>(no_preview, fp_, op_(*it)) )
                 .print_to(ob);
         }
     }
 }
 
 } // namespace detail
-
-template <typename It>
-struct fmt_traits<strf::range_p<It>>
-    : public make_fmt_traits<strf::range_with_format<It>>
-{
-};
-
-template <typename It, typename CharT>
-struct fmt_traits<strf::separated_range_p<It, CharT>>
-    : public make_fmt_traits<strf::sep_range_with_format<It, CharT>>
-{
-};
-template <typename It, typename UnaryOp>
-struct fmt_traits<strf::transformed_range_p<It, UnaryOp>>
-{
-    static_assert( sizeof(strf::transformed_range_p<It, UnaryOp>)
-                 , "fmt function not supported when applying a function to the range" );
-};
-
-template <typename It, typename CharT, typename UnaryOp>
-struct fmt_traits<strf::separated_transformed_range_p<It, CharT, UnaryOp>>
-{
-    static_assert( sizeof(strf::transformed_range_p<It, UnaryOp>)
-                 , "fmt function not supported when applying a function to the range" );
-};
 
 template <typename It>
 inline STRF_HD auto range(It begin, It end)
@@ -776,11 +810,19 @@ inline STRF_HD auto separated_range(It begin, It end, const CharT* sep)
         {begin, end, sep, sep_len};
 }
 
-template <typename Range, typename It = typename Range::const_iterator>
-inline STRF_HD auto range(const Range& range)
+template < typename Range
+         , typename It = typename Range::const_iterator
+         , typename = decltype(std::declval<const Range&>().begin())
+         , typename = decltype(std::declval<const Range&>().end()) >
+inline STRF_HD auto range(const Range& r)
 {
-    using namespace std;
-    return strf::range_p<It>{begin(range), end(range)};
+    return strf::range_p<It>{r.begin(), r.end()};
+}
+
+template <typename T>
+inline STRF_HD auto range(std::initializer_list<T> r)
+{
+    return strf::range_p<const T*>{r.begin(), r.end()};
 }
 
 template <typename T, std::size_t N>
@@ -789,14 +831,23 @@ inline STRF_HD auto range(T (&array)[N])
     return strf::range_p<const T*>{&array[0], &array[0] + N};
 }
 
-template <typename Range, typename CharT>
-inline STRF_HD auto separated_range(const Range& range, const CharT* sep)
+template < typename Range
+         , typename CharT
+         , typename = decltype(std::declval<const Range&>().begin())
+         , typename = decltype(std::declval<const Range&>().end()) >
+inline STRF_HD auto separated_range(const Range& r, const CharT* sep)
 {
     std::size_t sep_len = strf::detail::str_length<CharT>(sep);
-    using namespace std;
     return strf::separated_range_p
         <typename Range::const_iterator, CharT>
-        {begin(range), end(range), sep, sep_len};
+        {r.begin(), r.end(), sep, sep_len};
+}
+
+template < typename T, typename CharT >
+inline STRF_HD auto separated_range(std::initializer_list<T> r, const CharT* sep)
+{
+    std::size_t sep_len = strf::detail::str_length<CharT>(sep);
+    return strf::separated_range_p<const T*, CharT>{r.begin(), r.end(), sep, sep_len};
 }
 
 template <typename T, std::size_t N, typename CharT>
@@ -810,52 +861,71 @@ inline STRF_HD auto separated_range(T (&array)[N], const CharT* sep)
 template <typename It>
 inline STRF_HD auto fmt_range(It begin, It end)
 {
-    return strf::range_with_format<It>{{begin, end}};
+    return strf::range_with_formatters<It>{{begin, end}};
 }
 
 template <typename It, typename CharT>
 inline STRF_HD auto fmt_separated_range(It begin, It end, const CharT* sep)
 {
     std::size_t sep_len = strf::detail::str_length<CharT>(sep);
-    return strf::sep_range_with_format<It, CharT>
+    return strf::sep_range_with_formatters<It, CharT>
         {{begin, end, sep, sep_len}};
 }
 
-template <typename Range, typename It = typename Range::const_iterator>
+template < typename Range
+         , typename It = typename Range::const_iterator
+         , typename = decltype(std::declval<const Range&>().begin())
+         , typename = decltype(std::declval<const Range&>().end()) >
 inline STRF_HD
-strf::range_with_format<It> fmt_range(const Range& range)
+strf::range_with_formatters<It> fmt_range(const Range& r)
 {
-    using namespace std;
-    strf::range_p<It> r{begin(range), end(range)};
-    return strf::range_with_format<It>{r};
+    strf::range_p<It> rr{r.begin(), r.end()};
+    return strf::range_with_formatters<It>{rr};
+}
+
+template <typename T>
+constexpr STRF_HD strf::range_with_formatters<const T*>
+fmt_range(std::initializer_list<T> r) noexcept
+{
+    strf::range_p<const T*> rr{r.begin(), r.end()};
+    return strf::range_with_formatters<const T*>{rr};
 }
 
 template <typename T, std::size_t N>
 inline STRF_HD auto fmt_range(T (&array)[N])
 {
-    using namespace std;
-    using fmt_type = strf::range_with_format<const T*>;
+    using fmt_type = strf::range_with_formatters<const T*>;
     return fmt_type{{&array[0], &array[0] + N}};
 }
 
 template < typename Range
          , typename CharT
-         , typename It = typename Range::const_iterator >
-inline STRF_HD auto fmt_separated_range(const Range& range, const CharT* sep)
+         , typename It = typename Range::const_iterator
+         , typename = decltype(std::declval<const Range&>().begin())
+         , typename = decltype(std::declval<const Range&>().end()) >
+inline STRF_HD auto fmt_separated_range(const Range& r, const CharT* sep)
 {
     std::size_t sep_len = strf::detail::str_length<CharT>(sep);
-    using namespace std;
-    strf::separated_range_p<It, CharT> r
-    { begin(range), end(range), sep, sep_len };
-    return strf::sep_range_with_format<It, CharT>{r};
+    strf::separated_range_p<It, CharT> rr
+    { r.begin(), r.end(), sep, sep_len };
+    return strf::sep_range_with_formatters<It, CharT>{rr};
+}
+
+
+template <typename T, typename CharT>
+inline STRF_HD auto fmt_separated_range(std::initializer_list<T> r, const CharT* sep) noexcept
+{
+    std::size_t sep_len = strf::detail::str_length<CharT>(sep);
+    strf::separated_range_p<const T*, CharT> rr
+    { r.begin(), r.end(), sep, sep_len };
+    return strf::sep_range_with_formatters<const T*, CharT>{rr};
 }
 
 template <typename T, std::size_t N, typename CharT>
 inline STRF_HD auto fmt_separated_range(T (&array)[N], const CharT* sep)
 {
     std::size_t sep_len = strf::detail::str_length<CharT>(sep);
-    using namespace std;
-    return strf::sep_range_with_format<const T*, CharT>
+    return strf::sep_range_with_formatters<const T*, CharT>
         { {&array[0], &array[0] + N, sep, sep_len} };
 }
 
@@ -872,12 +942,24 @@ template < typename Range
          , typename UnaryOp
          , typename It = typename Range::const_iterator
          , typename
-           = decltype(std::declval<const UnaryOp&>()(*std::declval<const It&>())) >
-inline STRF_HD auto range(const Range& range, UnaryOp op)
+           = decltype(std::declval<const UnaryOp&>()(*std::declval<const It&>()))
+         , typename = decltype(std::declval<const Range&>().begin())
+         , typename = decltype(std::declval<const Range&>().end()) >
+inline STRF_HD auto range(const Range& r, UnaryOp op)
 {
-    using namespace std;
-    return strf::transformed_range_p<It, UnaryOp>{begin(range), end(range), op};
+    return strf::transformed_range_p<It, UnaryOp>{r.begin(), r.end(), op};
 }
+
+template < typename T
+         , typename UnaryOp
+         , typename
+           = decltype(std::declval<const UnaryOp&>()(std::declval<const T&>())) >
+inline STRF_HD auto range(std::initializer_list<T> r, UnaryOp op)
+{
+    return strf::transformed_range_p<const T*, UnaryOp>{r.begin(), r.end(), op};
+}
+
+
 
 template < typename T
          , std::size_t N
@@ -904,14 +986,25 @@ template < typename Range
          , typename CharT
          , typename UnaryOp
          , typename It = typename Range::const_iterator
-         , typename
-           = decltype(std::declval<const UnaryOp&>()(*std::declval<const It&>())) >
-inline STRF_HD auto separated_range(const Range& range, const CharT* sep, UnaryOp op)
+         , typename = decltype(std::declval<const UnaryOp&>()(*std::declval<const It&>()))
+         , typename = decltype(std::declval<const Range&>().begin())
+         , typename = decltype(std::declval<const Range&>().end()) >
+inline STRF_HD auto separated_range(const Range& r, const CharT* sep, UnaryOp op)
 {
     std::size_t sep_len = strf::detail::str_length(sep);
-    using namespace std;
     return strf::separated_transformed_range_p<It, CharT, UnaryOp>
-        { begin(range), end(range), sep, sep_len, op };
+        { r.begin(), r.end(), sep, sep_len, op };
+}
+
+template < typename T
+         , typename CharT
+         , typename UnaryOp
+         , typename = decltype(std::declval<const UnaryOp&>()(std::declval<const T&>())) >
+inline STRF_HD auto separated_range(std::initializer_list<T> r, const CharT* sep, UnaryOp op)
+{
+    std::size_t sep_len = strf::detail::str_length(sep);
+    return strf::separated_transformed_range_p<const T*, CharT, UnaryOp>
+        { r.begin(), r.end(), sep, sep_len, op };
 }
 
 template < typename T

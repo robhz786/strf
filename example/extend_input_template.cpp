@@ -11,20 +11,27 @@ struct base {
     base(const T& t) : value(t) {}
     T value;
 };
+} // namespace xxx
 
-template <typename CharT, typename FPack, typename Preview, typename T>
-struct base_printable_traits {
-    constexpr static auto make_input
-        ( const FPack&, Preview& preview, const xxx::base<T>& x ) {
-        return strf::make_printer_input<CharT>(strf::pack(), preview, x.value);
+namespace strf {
+
+template <typename T>
+struct base_printing {
+    using facet_tag = const xxx::base<T>&;
+    using forwarded_type = const xxx::base<T>&;
+
+    template <typename CharT, typename Preview, typename FPack>
+    static auto make_printer_input(Preview& preview, const FPack& fp, forwarded_type x) noexcept
+    {
+        return strf::make_default_printer_input<CharT>(preview, fp, x.value);
     }
 };
 
-template <typename CharT, typename FPack, typename Preview, typename T>
-base_printable_traits<CharT, FPack, Preview, T> get_printable_traits
-( Preview&, const xxx::base<T>&);
+template <typename T>
+inline base_printing<T> tag_invoke(strf::print_traits_tag, const xxx::base<T>&)
+    { return {}; }
 
-} // namespace xxx
+} // namespace strf
 
 namespace yyy {
 

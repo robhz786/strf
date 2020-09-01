@@ -3,7 +3,6 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include "test_utils.hpp"
-#include <strf.hpp>
 
 template <int N> struct fcategory;
 
@@ -15,58 +14,23 @@ struct ctor_log
 
 enum facet_conf
 {
-    enable_copy_and_move  = 0,
-    enable_copy           = 1 << 1,
-    enable_only_move      = 2 << 1,
-    disable_copy_and_move = 3 << 1,
-    ctors_bits            = 3 << 1
-};
-
-template <facet_conf>
-struct cond_cp_mv;
-
-template <>
-struct cond_cp_mv<disable_copy_and_move>
-{
-    constexpr cond_cp_mv()  = default;
-    constexpr cond_cp_mv(const cond_cp_mv&) = delete;
-    constexpr cond_cp_mv(cond_cp_mv&&) = delete;
-};
-
-template <>
-struct cond_cp_mv<enable_copy_and_move>
-{
-    constexpr cond_cp_mv()  = default;
-    constexpr cond_cp_mv(const cond_cp_mv&) = default;
-    constexpr cond_cp_mv(cond_cp_mv&&) = default;
-};
-
-template <>
-struct cond_cp_mv<enable_copy>
-{
-    constexpr cond_cp_mv()  = default;
-    constexpr cond_cp_mv(const cond_cp_mv&) = default;
-    constexpr cond_cp_mv(cond_cp_mv&&) = delete;
-};
-template <>
-struct cond_cp_mv<enable_only_move>
-{
-    constexpr cond_cp_mv()  = default;
-    constexpr cond_cp_mv(const cond_cp_mv&) = delete;
-    constexpr cond_cp_mv(cond_cp_mv&&) = default;
+    enable_copy_and_move  ,
+    enable_copy           ,
+    enable_only_move      ,
+    disable_copy_and_move ,
 };
 
 class facet_base
 {
 public:
 
-    constexpr facet_base(int v, ctor_log* log = nullptr)
+    constexpr STRF_HD facet_base(int v, ctor_log* log = nullptr)
         : value(v)
         , log_(log)
     {
     }
 
-    constexpr facet_base(const facet_base& f)
+    constexpr STRF_HD facet_base(const facet_base& f)
         : value(f.value)
         , log_(f.log_)
     {
@@ -76,7 +40,7 @@ public:
         }
     }
 
-    constexpr facet_base(facet_base&& f)
+    constexpr STRF_HD facet_base(facet_base&& f)
         : value(f.value)
         , log_(f.log_)
     {
@@ -93,26 +57,58 @@ private:
     ctor_log* log_;
 };
 
-template < int N, facet_conf Conf = facet_conf::enable_copy_and_move >
-class facet: public facet_base
-{
-public:
+template <int N, facet_conf Conf = facet_conf::enable_copy_and_move>
+struct facet;
 
-    constexpr facet(int v, ctor_log* log = nullptr)
+template <int N>
+struct facet<N, facet_conf::enable_copy_and_move> : public facet_base
+{
+    constexpr STRF_HD facet(int v, ctor_log* log = nullptr)
         : facet_base(v, log)
     {
     }
-
     constexpr facet(const facet& f) = default;
     constexpr facet(facet&& f) = default;
 
     using category = fcategory<N>;
+};
 
-private:
+template <int N>
+struct facet<N, facet_conf::enable_copy> : public facet_base
+{
+    constexpr STRF_HD facet(int v, ctor_log* log = nullptr)
+        : facet_base(v, log)
+    {
+    }
+    constexpr facet(const facet& f) = default;
 
-    // suppress default copy and move constructor according to
-    // template parameter
-    cond_cp_mv<static_cast<facet_conf>(Conf & ctors_bits)> cond_cp_mv_;
+    using category = fcategory<N>;
+};
+
+template <int N>
+struct facet<N, facet_conf::enable_only_move> : public facet_base
+{
+    constexpr STRF_HD facet(int v, ctor_log* log = nullptr)
+        : facet_base(v, log)
+    {
+    }
+    constexpr facet(const facet& f) = delete;
+    constexpr facet(facet&& f) = default;
+
+    using category = fcategory<N>;
+};
+
+template <int N>
+struct facet<N, facet_conf::disable_copy_and_move> : public facet_base
+{
+    constexpr STRF_HD facet(int v, ctor_log* log = nullptr)
+        : facet_base(v, log)
+    {
+    }
+    constexpr facet(const facet& f) = delete;
+    constexpr facet(facet&& f) = delete;
+
+    using category = fcategory<N>;
 };
 
 template <int N> struct fcategory
@@ -138,7 +134,7 @@ using derives_from_x = std::is_base_of<class_x, T>;
 template <typename T>
 using is_64 = std::integral_constant<bool, sizeof(T) == 8>;
 
-void test_facets_pack()
+static void STRF_TEST_FUNC basic_tests()
 {
     auto f1_10 = facet<1>{10};
     auto f2_20 = facet<2>{20};
@@ -198,7 +194,7 @@ void test_facets_pack()
 }
 
 
-void test_constrained_fpe()
+static void STRF_TEST_FUNC test_constrained_fpe()
 {
     { // check constexpr
 
@@ -308,7 +304,7 @@ void test_constrained_fpe()
     }
 }
 
-void compilation_tests()
+inline void STRF_TEST_FUNC compilation_tests()
 {
     bool test1 = ! std::is_copy_constructible
         <strf::constrained_fpe<is_64, facet<0, enable_only_move>>>
@@ -355,11 +351,9 @@ void compilation_tests()
     TEST_TRUE(test8);
 }
 
-int main()
+void STRF_TEST_FUNC test_facets_pack()
 {
-    test_facets_pack();
+    basic_tests();
     test_constrained_fpe();
     compilation_tests();
-
-    return test_finish();
 }

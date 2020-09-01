@@ -16,12 +16,8 @@ public:
 
     explicit QStringAppender(QString& str, std::size_t size);
 
-#if defined(STRF_NO_CXX17_COPY_ELISION)
-    QStringAppender(QStringAppender&& str);
-#else
     QStringAppender(QStringAppender&& str) = delete;
     QStringAppender(const QStringAppender& str) = delete;
-#endif
 
     void recycle() override;
 
@@ -111,6 +107,8 @@ public:
 
     using char_type = char16_t;
     using finish_type = std::size_t;
+    using outbuff_type = QStringAppender;
+    using sized_outbuff_type = QStringAppender;
 
     QStringAppenderFactory(QString& str)
         : str_(str)
@@ -118,32 +116,14 @@ public:
 
     QStringAppenderFactory(const QStringAppenderFactory& str) = default;
 
-    template <typename ... Printers>
-    finish_type write(const Printers& ... printers) const
+    QString& create() const
     {
-        QStringAppender ob(str_);
-        strf::detail::write_args(ob, printers...);;
-        return ob.finish();
+        return str_;
     }
-
-    template <typename ... Printers>
-    finish_type sized_write( std::size_t size
-                           , const Printers& ... printers ) const
+    QString& create(std::size_t size ) const
     {
         str_.reserve(str_.size() + size);
-        QStringAppender ob(str_);
-        strf::detail::write_args(ob, printers...);;
-        return ob.finish();
-    }
-
-    QStringAppender create() const
-    {
-        return QStringAppender{str_};
-    }
-    QStringAppender create(std::size_t size ) const
-    {
-        str_.reserve(str_.size() + size);
-        return QStringAppender{str_};
+        return str_;
     }
 
 private:

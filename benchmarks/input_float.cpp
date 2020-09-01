@@ -110,7 +110,7 @@ int main(int argc, char** argv)
 
     benchmark::Initialize(&argc, argv);
     benchmark::RunSpecifiedBenchmarks();
-    
+
     strf::to(stdout)("----------------------------------------------------------------------- \n"
                      "    constexpr double pi = M_PI;\n"
                      "    " STR(STRF_PUNCT_FIXTURE) "\n"

@@ -8,101 +8,77 @@
 #include <strf/printer.hpp>
 #include <strf/facets_pack.hpp>
 #include <strf/detail/facets/width_calculator.hpp>
-#include <strf/detail/format_functions.hpp>
 
 namespace strf {
 
-template <typename CharT>
-struct char_tag
-{
-    CharT ch;
-};
-
-template <typename CharT>
-using char_with_format = strf::value_with_format
-    < char_tag<CharT>
-    , strf::quantity_format
-    , strf::alignment_format >;
-
-#if defined(__cpp_char8_t)
-
-template <> struct fmt_traits<char8_t>
-{
-    using fmt_type = strf::char_with_format<char8_t>;
-};
-
-#endif // defined(__cpp_char8_t)
-
-template <> struct fmt_traits<char>
-{
-    using fmt_type = strf::char_with_format<char>;
-};
-template <> struct fmt_traits<char16_t>
-{
-    using fmt_type = strf::char_with_format<char16_t>;
-};
-template <> struct fmt_traits<char32_t>
-{
-    using fmt_type = strf::char_with_format<char32_t>;
-};
-template <> struct fmt_traits<wchar_t>
-{
-    using fmt_type = strf::char_with_format<wchar_t>;
-};
-
 namespace detail {
-
 template <typename> class char_printer;
 template <typename> class fmt_char_printer;
-
-template <typename DestCharT, typename FPack, typename SrcCharT>
-struct char_printable_traits
-    : strf::usual_printable_traits
-        < DestCharT, FPack, strf::detail::char_printer<DestCharT> >
-{
-     static_assert( std::is_same<SrcCharT, DestCharT>::value
-                  , "Character type mismatch.");
-};
-
 } // namespace detail
 
-template <typename CharT, typename FPack, typename Preview>
-struct printable_traits<CharT, FPack, Preview, char>
-    : strf::detail::char_printable_traits<CharT, FPack, char>
-{ };
+template <typename SrcCharT>
+struct char_printing
+{
+    using facet_tag = SrcCharT;
+    using forwarded_type = SrcCharT;
+    using fmt_type = strf::value_with_formatters
+        < char_printing
+        , strf::quantity_formatter
+        , strf::alignment_formatter >;
+
+    template <typename DestCharT, typename Preview, typename FPack>
+    constexpr STRF_HD static auto make_printer_input
+        ( Preview& preview, const FPack& fp, SrcCharT x ) noexcept
+        -> strf::usual_printer_input
+            < DestCharT, Preview, FPack, SrcCharT, strf::detail::char_printer<DestCharT> >
+    {
+        static_assert( std::is_same<SrcCharT, DestCharT>::value, "Character type mismatch.");
+        return {preview, fp, x};
+    }
+
+    template <typename DestCharT, typename Preview, typename FPack>
+    constexpr STRF_HD static auto make_printer_input
+        ( Preview& preview, const FPack& fp, fmt_type x ) noexcept
+        -> strf::usual_printer_input
+            < DestCharT, Preview, FPack, fmt_type, strf::detail::fmt_char_printer<DestCharT> >
+    {
+        static_assert( std::is_same<SrcCharT, DestCharT>::value, "Character type mismatch.");
+        return {preview, fp, x};
+    }
+};
+
+#if defined(__cpp_char8_t)
+template <> struct print_traits<char8_t> : public char_printing <char8_t> {};
+#endif // defined(__cpp_char8_t)
+
+template <> struct print_traits<char>     : public char_printing <char> {};
+template <> struct print_traits<char16_t> : public char_printing <char16_t> {};
+template <> struct print_traits<char32_t> : public char_printing <char32_t> {};
+template <> struct print_traits<wchar_t>  : public char_printing <wchar_t> {};
 
 #if defined(__cpp_char8_t)
 
-template <typename CharT, typename FPack, typename Preview>
-struct printable_traits<CharT, FPack, Preview, char8_t>
-    : strf::detail::char_printable_traits<CharT, FPack, char8_t>
-{ };
+constexpr STRF_HD auto tag_invoke(strf::print_traits_tag, char8_t) noexcept
+    -> strf::char_printing<char8_t>
+    { return {}; }
 
 #endif // defined(__cpp_char8_t)
 
-template <typename CharT, typename FPack, typename Preview>
-struct printable_traits<CharT, FPack, Preview, char16_t>
-    : strf::detail::char_printable_traits<CharT, FPack, char16_t>
-{ };
+constexpr STRF_HD auto tag_invoke(strf::print_traits_tag, char) noexcept
+    -> strf::char_printing<char>
+    { return {}; }
 
-template <typename CharT, typename FPack, typename Preview>
-struct printable_traits<CharT, FPack, Preview, char32_t>
-    : strf::detail::char_printable_traits<CharT, FPack, char32_t>
-{ };
+constexpr STRF_HD auto tag_invoke(strf::print_traits_tag, char16_t) noexcept
+    -> strf::char_printing<char16_t>
+    { return {}; }
 
-template <typename CharT, typename FPack, typename Preview>
-struct printable_traits<CharT, FPack, Preview, wchar_t>
-    : strf::detail::char_printable_traits<CharT, FPack, wchar_t>
-{ };
+constexpr STRF_HD auto tag_invoke(strf::print_traits_tag, char32_t) noexcept
+    -> strf::char_printing<char32_t>
+    { return {}; }
 
-template <typename DestCharT, typename FPack, typename Preview, typename SrcCharT>
-struct printable_traits<DestCharT, FPack, Preview, strf::char_with_format<SrcCharT>>
-    : strf::usual_printable_traits
-        < DestCharT, FPack, strf::detail::fmt_char_printer<DestCharT> >
-{
-    static_assert( std::is_same<SrcCharT, DestCharT>::value
-                 , "Character type mismatch.");
-};
+constexpr STRF_HD auto tag_invoke(strf::print_traits_tag, wchar_t) noexcept
+    -> strf::char_printing<wchar_t>
+    { return {}; }
 
 namespace detail {
 
@@ -110,13 +86,14 @@ template <typename CharT>
 class char_printer: public strf::printer<CharT>
 {
 public:
-    template <typename FPack, typename Preview, typename... T>
+    template <typename... T>
     STRF_HD char_printer
-        ( const strf::usual_printer_input<CharT, FPack, Preview, T...>& input )
+        ( const strf::usual_printer_input<CharT, T...>& input )
         : ch_(static_cast<CharT>(input.arg))
     {
         input.preview.add_size(1);
-        STRF_IF_CONSTEXPR(Preview::width_required) {
+        using preview_type = typename strf::usual_printer_input<CharT, T...>::preview_type;
+        STRF_IF_CONSTEXPR(preview_type::width_required) {
             decltype(auto) wcalc = get_facet<strf::width_calculator_c, CharT>(input.fp);
             auto enc = get_facet<strf::char_encoding_c<CharT>, CharT>(input.fp);
             auto w = wcalc.char_width(enc, static_cast<CharT>(ch_));
@@ -149,8 +126,8 @@ public:
     STRF_HD fmt_char_printer
         ( const usual_printer_input<CharT, T...>& input )
         : count_(input.arg.count())
-        , afmt_(input.arg.get_alignment_format_data())
-        , ch_(static_cast<CharT>(input.arg.value().ch))
+        , afmt_(input.arg.get_alignment_format())
+        , ch_(static_cast<CharT>(input.arg.value()))
     {
         auto enc = get_facet_<strf::char_encoding_c<CharT>>(input.fp);
         decltype(auto) wcalc = get_facet_<strf::width_calculator_c>(input.fp);
@@ -164,7 +141,7 @@ private:
 
     strf::encode_fill_f<CharT> encode_fill_fn_;
     std::size_t count_;
-    const strf::alignment_format_data afmt_;
+    const strf::alignment_format afmt_;
     std::uint16_t left_fillcount_;
     std::uint16_t right_fillcount_;
     CharT ch_;

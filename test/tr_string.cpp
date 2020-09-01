@@ -2,7 +2,6 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <strf/to_string.hpp>
 #include "test_utils.hpp"
 
 class err_handler {
@@ -12,7 +11,7 @@ public:
 
     err_handler(const err_handler&) = default;
 
-    err_handler(strf::outbuff& log)
+    STRF_HD err_handler(strf::outbuff& log)
         : log_(log)
     {
     }
@@ -32,7 +31,7 @@ private:
     strf::outbuff& log_;
 };
 
-int main()
+void STRF_TEST_FUNC test_tr_string()
 {
     // basic test
     TEST("aaa__..bbb__ 0xa")
@@ -178,7 +177,5 @@ int main()
         log.finish();
         TEST_CSTR_EQ(buff, "\n[22] { }__{2}--{}=={}..{}::{");
     }
-
-    return test_finish();
-
 }
+

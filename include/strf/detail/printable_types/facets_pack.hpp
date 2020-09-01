@@ -29,13 +29,14 @@ struct inner_pack
 
     FPack fp;
 
-    template <typename ... Args>
-    constexpr strf::inner_pack_with_args
-        < FPack
-        , strf::detail::opt_val_or_cref<Args>... >
-    STRF_HD operator()(const Args& ... args) const
+    template <typename... Args>
+    constexpr strf::inner_pack_with_args<FPack, strf::forwarded_printable_type<Args>...>
+    STRF_HD operator()(const Args&... args) const
     {
-        return { fp, strf::detail::make_simple_tuple(args ...) };
+        return { fp
+               , strf::detail::simple_tuple<strf::forwarded_printable_type<Args>...>
+                   { strf::detail::simple_tuple_from_args{}
+                   , static_cast<strf::forwarded_printable_type<Args>>(args)... } };
     }
 };
 
@@ -44,40 +45,31 @@ namespace detail {
 template < typename, typename, typename, typename, typename ... >
 class facets_pack_printer;
 
-template < typename CharT
-         , typename ParentFPack
-         , typename Preview
-         , typename ChildFPack
-         , typename ... Args >
-struct facets_pack_printer_input
-{
-    using printer_type = strf::detail::facets_pack_printer
-        < CharT, ParentFPack, Preview, ChildFPack, Args... >;
-
-    ParentFPack fp;
-    Preview& preview;
-    strf::inner_pack_with_args<ChildFPack, Args...> arg;
-};
-
 } // namespace detail
 
-template < typename CharT, typename FPack, typename Preview
-         , typename ChildFPack, typename... Args >
-struct printable_traits
-    < CharT, FPack, Preview
-    , strf::inner_pack_with_args<ChildFPack, Args...> >
-    : strf::usual_printable_traits
-        < CharT, FPack
-        , strf::detail::facets_pack_printer
-            < CharT, FPack, Preview, ChildFPack, Args... > >
+template <typename ChildFPack, typename... Args>
+struct print_traits<strf::inner_pack_with_args<ChildFPack, Args...>>
 {
+    using facet_tag = void; // not_overridable
+    using forwarded_type = strf::inner_pack_with_args<ChildFPack, Args...>;
+
+    template < typename CharT, typename Preview, typename FPack>
+    STRF_HD constexpr static auto make_printer_input
+        (Preview& preview, const FPack& fp,  const forwarded_type& x)
+        -> strf::usual_printer_input
+            < CharT, Preview, FPack, forwarded_type
+            , strf::detail::facets_pack_printer
+                < CharT, Preview, FPack, ChildFPack, Args... > >
+    {
+        return {preview, fp, x};
+    }
 };
 
 namespace detail {
 
 template < typename CharT
-         , typename ParentFPack
          , typename Preview
+         , typename ParentFPack
          , typename ChildFPack
          , typename ... Args >
 class facets_pack_printer: public strf::printer<CharT>
@@ -88,7 +80,7 @@ public:
     STRF_HD facets_pack_printer
         ( const strf::usual_printer_input<T...>& input )
         : fp_{input.fp, input.arg.fp}
-        , printers_{fp_, input.preview, input.arg.args}
+        , printers_{input.arg.args, input.preview, fp_}
     {
     }
 
@@ -110,8 +102,8 @@ private:
 
     strf::detail::printers_tuple_from_args
         < CharT
-        , strf::facets_pack<ParentFPack, ChildFPack>
         , Preview
+        , strf::facets_pack<ParentFPack, ChildFPack>
         , Args... >
     printers_;
 };

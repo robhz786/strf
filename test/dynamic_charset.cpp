@@ -4,7 +4,7 @@
 
 #include "test_utils.hpp"
 
-int main()
+void test_dynamic_charset()
 {
     strf::dynamic_char_encoding<char> dyn_utf8{strf::utf<char>()};
     strf::dynamic_char_encoding<char> dyn_ascii{strf::ascii<char>()};
@@ -55,6 +55,4 @@ int main()
         TEST(u"   x").with(custom_wcalc, dyn_utf16)(strf::fmt(u'x') > 4);
         TEST(U"   x").with(custom_wcalc, dyn_utf32)(strf::fmt(U'x') > 4);
     }
-
-    return test_finish();
 }

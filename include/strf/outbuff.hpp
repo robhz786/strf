@@ -13,10 +13,12 @@ namespace detail {
 class outbuff_test_tool;
 } // namespace detail
 
+#define STRF_MIN_SIZE_AFTER_RECYCLE 64
+
 template <typename CharT>
 constexpr STRF_HD std::size_t min_size_after_recycle()
 {
-    return 64;
+    return STRF_MIN_SIZE_AFTER_RECYCLE;
 }
 
 template <typename CharT>
@@ -208,7 +210,7 @@ public:
 template <typename CharT>
 inline STRF_HD CharT* outbuff_garbage_buf() noexcept
 {
-    static CharT arr[strf::min_size_after_recycle<CharT>()];
+    static CharT arr[ STRF_MIN_SIZE_AFTER_RECYCLE ];
     return arr;
 }
 
@@ -222,6 +224,14 @@ template <typename CharT>
 class basic_cstr_writer final: public strf::basic_outbuff_noexcept<CharT>
 {
 public:
+
+    struct range{ CharT* dest; CharT* dest_end; };
+
+    STRF_HD basic_cstr_writer(range r) noexcept
+        : basic_outbuff_noexcept<CharT>(r.dest, r.dest_end - 1)
+    {
+        STRF_ASSERT(r.dest < r.dest_end);
+    }
 
     STRF_HD basic_cstr_writer(CharT* dest, CharT* dest_end) noexcept
         : basic_outbuff_noexcept<CharT>(dest, dest_end - 1)

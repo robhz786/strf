@@ -15,6 +15,7 @@
 #include <limits>
 #include <new>
 #include <utility>    // not freestanding, but almost
+                      // std::declval, std::move, std::forward
 
 #if ! defined(STRF_FREESTANDING)
 #    define STRF_WITH_CSTRING
@@ -51,7 +52,7 @@ namespace detail {
 #ifdef __cpp_lib_bitops
 
 template< class To, class From >
-constexpr To bit_cast(const From& from) noexcept
+constexpr To STRF_HD bit_cast(const From& from) noexcept
 {
     static_assert(sizeof(To) == sizeof(From), "");
     return std::bit_cast<To, From>(from);
@@ -60,7 +61,7 @@ constexpr To bit_cast(const From& from) noexcept
 #else // __cpp_lib_bitops
 
 template< class To, class From >
-To bit_cast(const From& from) noexcept
+To STRF_HD bit_cast(const From& from) noexcept
 {
     static_assert(sizeof(To) == sizeof(From), "");
 
@@ -243,6 +244,46 @@ inline STRF_HD void copy_n
         < sizeof(SrcCharT) == sizeof(DestCharT), SrcCharT, DestCharT >;
     impl::copy(src, count, dest);
 }
+
+// template< class T >
+// constexpr T&& forward( std::remove_reference_t<T>&& t ) noexcept
+// {
+//     return static_cast<T&&>(t);
+// }
+
+
+namespace detail_tag_invoke_ns {
+
+STRF_HD inline void tag_invoke(){};
+
+struct tag_invoke_fn
+{
+    template <typename Cpo, typename ... Args>
+    constexpr STRF_HD auto operator()(Cpo cpo, Args&&... args) const
+        noexcept(noexcept(tag_invoke(cpo, (Args&&)(args)...)))
+        -> decltype(tag_invoke(cpo, (Args&&)(args)...))
+    {
+        return tag_invoke(cpo, (Args&&)(args)...);
+    }
+};
+
+} // namespace detail_tag_invoke_ns
+
+#if defined (STRF_NO_GLOBAL_CONSTEXPR_VARIABLE)
+
+template <typename Cpo, typename ... Args>
+constexpr STRF_HD auto tag_invoke(Cpo cpo, Args&&... args)
+    noexcept(noexcept(tag_invoke(cpo, (Args&&)(args)...)))
+    -> decltype(tag_invoke(cpo, (Args&&)(args)...))
+{
+    return tag_invoke(cpo, (Args&&)(args)...);
+}
+
+#else
+
+constexpr strf::detail::detail_tag_invoke_ns::tag_invoke_fn tag_invoke {};
+
+#endif // defined (STRF_NO_GLOBAL_CONSTEXPR_VARIABLE)
 
 } // namespace detail
 } // namespace strf

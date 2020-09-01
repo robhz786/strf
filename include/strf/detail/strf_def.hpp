@@ -55,31 +55,6 @@
 #define STRF_IF_CONSTEXPR if
 #endif
 
-// cxx17 guaranteed copy elision
-#if defined(_MSC_VER)
-#  if ((_MSC_VER < 1913) || (_MSVC_LANG < 201703))
-#    define STRF_NO_CXX17_COPY_ELISION
-#  endif
-
-#elif defined(__clang__)
-#  if (__clang_major__ < 4) || (__cplusplus < 201703L)
-#    define STRF_NO_CXX17_COPY_ELISION
-#  endif
-
-#elif defined(__GNUC__)
-#  if (__GNUC__ < 7) || (__cplusplus < 201703)
-#    define STRF_NO_CXX17_COPY_ELISION
-#  endif
-
-#elif (__cplusplus < 201703)
-#  define STRF_NO_CXX17_COPY_ELISION
-
-#elif ! defined(__cpp_deduction_guides) || (__cpp_deduction_guides < 201703)
-   // compilers that dont support Class template argument deductions
-   // usually also dont support guaranteed copy elision
-#  define STRF_NO_CXX17_COPY_ELISION
-#endif
-
 #if defined(__GNUC__) && (__cplusplus > 201703L) && !defined(__cpp_lib_bitopts)
 // some versions of GCC forgot to define __cpp_lib_bitopts
 #  define __cpp_lib_bitopts  	201907
@@ -106,6 +81,10 @@
 #define STRF_DEVICE
 
 #endif // __CUDACC__
+
+#ifdef __CUDA_ARCH__
+#define STRF_NO_GLOBAL_CONSTEXPR_VARIABLE
+#endif
 
 namespace strf {
 

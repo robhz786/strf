@@ -2,67 +2,167 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <limits>
-#include <vector>
 #include "test_utils.hpp"
-#include <cstdlib>
+
+namespace {
+
+template <typename FloatT>
+struct floating_point_traits; // because we can't use std::numeric_limits on CUDA device.
+
+template <>
+struct floating_point_traits<float>
+{
+    using uint_equiv = unsigned;
+    static constexpr int exponent_bits_size = 8;
+    static constexpr int mantissa_bits_size = 23;
+    static constexpr unsigned max_normal_exp = (1 << exponent_bits_size) - 2;
+    static constexpr uint_equiv mantissa_bits_mask = 0x7FFFFF;
+};
+
+template <>
+struct floating_point_traits<double>
+{
+    using uint_equiv = std::uint64_t;
+    static constexpr int exponent_bits_size = 11;
+    static constexpr int mantissa_bits_size = 52;
+    static constexpr unsigned max_normal_exp = (1 << exponent_bits_size) - 2;
+    static constexpr uint_equiv mantissa_bits_mask = 0xFFFFFFFFFFFFFull;
+};
+
+template <typename FloatT, typename helper = floating_point_traits<FloatT>>
+inline STRF_HD FloatT make_float
+    ( typename helper::uint_equiv ieee_exponent
+    , typename helper::uint_equiv ieee_mantissa
+    , bool negative = false )
+{
+    typename helper::uint_equiv sign = negative;
+    auto v = (sign << (helper::mantissa_bits_size + helper::exponent_bits_size))
+           | (ieee_exponent << helper::mantissa_bits_size)
+           | (ieee_mantissa & helper::mantissa_bits_mask);
+
+    return strf::detail::bit_cast<FloatT>(v);
+}
+
+template <typename FloatT, typename helper = floating_point_traits<FloatT>>
+STRF_HD FloatT float_max() noexcept
+{
+    return make_float<FloatT>(helper::max_normal_exp, helper::mantissa_bits_mask);
+}
+
+template <typename FloatT, typename helper = floating_point_traits<FloatT>>
+STRF_HD FloatT make_negative_nan() noexcept
+{
+    return make_float<FloatT>(helper::max_normal_exp + 1, 1, true);
+}
+
+template <typename FloatT, typename helper = floating_point_traits<FloatT>>
+STRF_HD FloatT make_nan() noexcept
+{
+    return make_float<FloatT>(helper::max_normal_exp + 1, 1);
+}
+
+template <typename FloatT, typename helper = floating_point_traits<FloatT>>
+STRF_HD FloatT make_infinity() noexcept
+{
+    return make_float<FloatT>(helper::max_normal_exp + 1, 0);
+}
+
+#if defined (STRF_FREESTANDING)
+
+template <typename FloatT>
+STRF_TEST_FUNC inline void test_several_values()
+{
+}
+
+#else
+
+#include <cstdlib> // `strtof` and `strtod`
+
+void test_value(double value)
+{
+    char buff[64];
+    (void) strf::to(buff) (value);
+    auto parsed = std::strtod(buff, nullptr);
+    TEST_EQ(parsed, value);
+}
+
+void test_value(float value)
+{
+    char buff[64];
+    (void) strf::to(buff) (value);
+    auto parsed = std::strtof(buff, nullptr);
+    TEST_EQ(parsed, value);
+}
+
+template <typename FloatT>
+void test_several_values()
+{
+    using helper = floating_point_traits<FloatT>;
+    constexpr auto u1 = static_cast<typename helper::uint_equiv>(1);
+    for(unsigned e = 0; e <= helper::max_normal_exp; ++e) {
+        for(unsigned i = 2; i <= helper::mantissa_bits_size; ++i) {
+            unsigned s = helper::mantissa_bits_size - i;
+            test_value(make_float<FloatT>(e, helper::mantissa_bits_mask << s));
+            test_value(make_float<FloatT>(e, u1 << s));
+        }
+        test_value(make_float<FloatT>(e, u1 << (helper::mantissa_bits_size - 1)));
+        test_value(make_float<FloatT>(e, 0));
+    }
+}
+
+#endif // defined(STRF_FREESTANDING)
 
 template <typename FloatT, typename FPack>
-void test_subnormal_values(const FPack& fp)
+STRF_TEST_FUNC void test_subnormal_values(const FPack& fp)
 {
     constexpr auto j = strf::join_right(20, '_');
-    constexpr auto quiet_nan = std::numeric_limits<FloatT>::quiet_NaN();
-    constexpr auto signaling_nan = std::numeric_limits<FloatT>::signaling_NaN();
-    constexpr auto infinity = std::numeric_limits<FloatT>::infinity();
+    const auto nan = make_nan<FloatT>();
+    const auto negative_nan = make_negative_nan<FloatT>();
+    const auto infinity = make_infinity<FloatT>();
 
-    TEST("_________________nan").with(fp)  (j(quiet_nan));
-    TEST("_________________nan").with(fp)  (j(signaling_nan));
+    TEST("_________________nan").with(fp)  (j(nan));
     TEST("_________________inf").with(fp)  (j(infinity));
     TEST("________________-inf").with(fp)  (j(-infinity));
 
-    TEST("________________-nan").with(fp)  (j(strf::fmt(-quiet_nan)));
-    TEST("_________________nan").with(fp)  (j(strf::fmt(signaling_nan)));
-    TEST("________________+nan").with(fp)  (j(+strf::fmt(signaling_nan)));
+    TEST("________________-nan").with(fp)  (j(strf::fmt(negative_nan)));
+    TEST("________________+nan").with(fp)  (j(+strf::fmt(nan)));
     TEST("________________+inf").with(fp)  (j(+strf::fmt(infinity)));
     TEST("________________+inf").with(fp) (j(+strf::fmt(infinity)));
     TEST("________________-inf").with(fp)  (j(strf::fmt(-infinity)));
     TEST("________________-inf").with(fp) (j(+strf::fmt(-infinity)));
 
-    TEST("________________-nan").with(fp)  (j(strf::fixed(-quiet_nan)));
-    TEST("_________________nan").with(fp)  (j(strf::fixed(signaling_nan)));
-    TEST("________________+nan").with(fp)  (j(+strf::fixed(quiet_nan)));
-    TEST("________________+nan").with(fp)  (j(+strf::fixed(signaling_nan)));
+    TEST("________________-nan").with(fp)  (j(strf::fixed(negative_nan)));
+    TEST("_________________nan").with(fp)  (j(strf::fixed(nan)));
+    TEST("________________+nan").with(fp)  (j(+strf::fixed(nan)));
     TEST("_________________inf").with(fp)  (j(strf::fixed(infinity)));
     TEST("________________+inf").with(fp) (j(+strf::fixed(infinity)));
     TEST("________________-inf").with(fp)  (j(strf::fixed(-infinity)));
     TEST("________________-inf").with(fp) (j(+strf::fixed(-infinity)));
 
-    TEST("________________-nan").with(fp)  (j(strf::sci(-quiet_nan)));
-    TEST("_________________nan").with(fp)  (j(strf::sci(signaling_nan)));
-    TEST("________________+nan").with(fp)  (j(+strf::sci(quiet_nan)));
-    TEST("________________+nan").with(fp)  (j(+strf::sci(signaling_nan)));
+    TEST("________________-nan").with(fp)  (j(strf::sci(negative_nan)));
+    TEST("_________________nan").with(fp)  (j(strf::sci(nan)));
+    TEST("________________+nan").with(fp)  (j(+strf::sci(nan)));
     TEST("_________________inf").with(fp)  (j(strf::sci(infinity)));
     TEST("________________+inf").with(fp) (j(+strf::sci(infinity)));
     TEST("________________-inf").with(fp)  (j(strf::sci(-infinity)));
     TEST("________________-inf").with(fp) (j(+strf::sci(-infinity)));
 
-    TEST("_________________nan").with(fp)  (j(strf::hex(quiet_nan)));
-    TEST("________________-nan").with(fp)  (j(strf::hex(-signaling_nan)));
-    TEST("________________+nan").with(fp)  (j(+strf::hex(quiet_nan)));
-    TEST("________________+nan").with(fp)  (j(+strf::hex(signaling_nan)));
+    TEST("_________________nan").with(fp)  (j(strf::hex(nan)));
+    TEST("________________-nan").with(fp)  (j(strf::hex(negative_nan)));
+    TEST("________________+nan").with(fp)  (j(+strf::hex(nan)));
     TEST("_________________inf").with(fp)  (j(strf::hex(infinity)));
     TEST("________________+inf").with(fp) (j(+strf::hex(infinity)));
     TEST("________________-inf").with(fp)  (j(strf::hex(-infinity)));
     TEST("________________-inf").with(fp) (j(+strf::hex(-infinity)));
 
-    TEST("___________~~~~~-nan").with(fp) (j(strf::right (-quiet_nan, 9, '~')));
-    TEST("___________+nan~~~~~").with(fp) (j(+strf::left  (quiet_nan, 9, '~')));
-    TEST("___________~~+nan~~~").with(fp) (j(+strf::center(quiet_nan, 9, '~')));
-    TEST("___________+~~~~~nan").with(fp) (j(+strf::split (quiet_nan, 9, '~')));
-    TEST("___________~~~~~+nan").with(fp) (j(+strf::right (quiet_nan, 9, '~')));
-    TEST("___________+nan~~~~~").with(fp) (j(+strf::left  (quiet_nan, 9, '~')));
-    TEST("___________~~+nan~~~").with(fp) (j(+strf::center(quiet_nan, 9, '~')));
-    TEST("___________+~~~~~nan").with(fp) (j(+strf::split (quiet_nan, 9, '~')));
+    TEST("___________~~~~~-nan").with(fp) (j(strf::right (negative_nan, 9, '~')));
+    TEST("___________+nan~~~~~").with(fp) (j(+strf::left  (nan, 9, '~')));
+    TEST("___________~~+nan~~~").with(fp) (j(+strf::center(nan, 9, '~')));
+    TEST("___________+~~~~~nan").with(fp) (j(+strf::split (nan, 9, '~')));
+    TEST("___________~~~~~+nan").with(fp) (j(+strf::right (nan, 9, '~')));
+    TEST("___________+nan~~~~~").with(fp) (j(+strf::left  (nan, 9, '~')));
+    TEST("___________~~+nan~~~").with(fp) (j(+strf::center(nan, 9, '~')));
+    TEST("___________+~~~~~nan").with(fp) (j(+strf::split (nan, 9, '~')));
 
     TEST("___________~~~~~+inf").with(fp) (j(+strf::right (infinity, 9, '~')));
     TEST("___________+inf~~~~~").with(fp) (j(+strf::left  (infinity, 9, '~')));
@@ -73,66 +173,68 @@ void test_subnormal_values(const FPack& fp)
     TEST("___________~~+inf~~~").with(fp) (j(+strf::center(infinity, 9, '~').hex()));
     TEST("___________+~~~~~inf").with(fp) (j(+strf::split (infinity, 9, '~').hex()));
 
-    TEST("_________________nan").with(fp, strf::lowercase)  (j(quiet_nan));
-    TEST("_________________inf").with(fp, strf::lowercase)  (j(infinity));
-    TEST("________________-inf").with(fp, strf::lowercase)  (j(-infinity));
-    TEST("_________________inf").with(fp, strf::lowercase)  (j(strf::sci(infinity)));
-    TEST("________________-inf").with(fp, strf::lowercase)  (j(strf::sci(-infinity)));
-    TEST("_________________inf").with(fp, strf::lowercase)  (j(strf::hex(infinity)));
-    TEST("________________-inf").with(fp, strf::lowercase)  (j(strf::hex(-infinity)));
-    TEST("_________________nan").with(fp, strf::lowercase)  (j(strf::hex(quiet_nan)));
+    TEST("_________________nan").with(fp, strf::lettercase::lower)  (j(nan));
+    TEST("_________________inf").with(fp, strf::lettercase::lower)  (j(infinity));
+    TEST("________________-inf").with(fp, strf::lettercase::lower)  (j(-infinity));
+    TEST("_________________inf").with(fp, strf::lettercase::lower)  (j(strf::sci(infinity)));
+    TEST("________________-inf").with(fp, strf::lettercase::lower)  (j(strf::sci(-infinity)));
+    TEST("_________________inf").with(fp, strf::lettercase::lower)  (j(strf::hex(infinity)));
+    TEST("________________-inf").with(fp, strf::lettercase::lower)  (j(strf::hex(-infinity)));
+    TEST("_________________nan").with(fp, strf::lettercase::lower)  (j(strf::hex(nan)));
 
-    TEST("_________________NaN").with(fp, strf::mixedcase)  (j(quiet_nan));
-    TEST("________________-NaN").with(fp, strf::mixedcase)  (j(-quiet_nan));
-    TEST("_________________Inf").with(fp, strf::mixedcase)  (j(infinity));
-    TEST("________________-Inf").with(fp, strf::mixedcase)  (j(-infinity));
-    TEST("_________________Inf").with(fp, strf::mixedcase)  (j(strf::sci(infinity)));
-    TEST("________________-Inf").with(fp, strf::mixedcase)  (j(strf::sci(-infinity)));
-    TEST("_________________Inf").with(fp, strf::mixedcase)  (j(strf::hex(infinity)));
-    TEST("________________-Inf").with(fp, strf::mixedcase)  (j(strf::hex(-infinity)));
-    TEST("_________________NaN").with(fp, strf::mixedcase)  (j(strf::hex(quiet_nan)));
+    TEST("_________________NaN").with(fp, strf::lettercase::mixed)  (j(nan));
+    TEST("________________-NaN").with(fp, strf::lettercase::mixed)  (j(negative_nan));
+    TEST("_________________Inf").with(fp, strf::lettercase::mixed)  (j(infinity));
+    TEST("________________-Inf").with(fp, strf::lettercase::mixed)  (j(-infinity));
+    TEST("_________________Inf").with(fp, strf::lettercase::mixed)  (j(strf::sci(infinity)));
+    TEST("________________-Inf").with(fp, strf::lettercase::mixed)  (j(strf::sci(-infinity)));
+    TEST("_________________Inf").with(fp, strf::lettercase::mixed)  (j(strf::hex(infinity)));
+    TEST("________________-Inf").with(fp, strf::lettercase::mixed)  (j(strf::hex(-infinity)));
+    TEST("_________________NaN").with(fp, strf::lettercase::mixed)  (j(strf::hex(nan)));
 
-    TEST("_________________NAN").with(fp, strf::uppercase)  (j(quiet_nan));
-    TEST("________________-NAN").with(fp, strf::uppercase)  (j(-quiet_nan));
-    TEST("_________________INF").with(fp, strf::uppercase)  (j(infinity));
-    TEST("________________-INF").with(fp, strf::uppercase)  (j(-infinity));
-    TEST("_________________INF").with(fp, strf::uppercase)  (j(strf::sci(infinity)));
-    TEST("________________-INF").with(fp, strf::uppercase)  (j(strf::sci(-infinity)));
-    TEST("_________________INF").with(fp, strf::uppercase)  (j(strf::hex(infinity)));
-    TEST("________________-INF").with(fp, strf::uppercase)  (j(strf::hex(-infinity)));
-    TEST("_________________NAN").with(fp, strf::uppercase)  (j(strf::hex(quiet_nan)));
+    TEST("_________________NAN").with(fp, strf::lettercase::upper)  (j(nan));
+    TEST("________________-NAN").with(fp, strf::lettercase::upper)  (j(negative_nan));
+    TEST("_________________INF").with(fp, strf::lettercase::upper)  (j(infinity));
+    TEST("________________-INF").with(fp, strf::lettercase::upper)  (j(-infinity));
+    TEST("_________________INF").with(fp, strf::lettercase::upper)  (j(strf::sci(infinity)));
+    TEST("________________-INF").with(fp, strf::lettercase::upper)  (j(strf::sci(-infinity)));
+    TEST("_________________INF").with(fp, strf::lettercase::upper)  (j(strf::hex(infinity)));
+    TEST("________________-INF").with(fp, strf::lettercase::upper)  (j(strf::hex(-infinity)));
+    TEST("_________________NAN").with(fp, strf::lettercase::upper)  (j(strf::hex(nan)));
 }
 
-const char* replace_decimal_point
-    ( const char* str
+
+STRF_TEST_FUNC char* replace_char
+    ( const char* src
+    , char to_be_replaced
     , char32_t replacement )
 {
     static char buff[200];
-    auto it = std::strchr(str, '.');
-    if (it == nullptr)
-    {
-        return str;
+    char* dest = buff;
+    char* dest_end = buff + sizeof(buff);
+    const char32_t replacement_str[2] = {replacement, U'\0'};
+    for (const char* it = src; *it != '\0'; ++it) {
+        auto ch = *it;
+        if (ch != to_be_replaced) {
+            *dest++ = ch;
+        } else {
+            dest = strf::to(dest, dest_end) (strf::conv(replacement_str)) .ptr;
+        }
     }
-    std::size_t pos = it - str;
-    strf::detail::simple_string_view<char> str1{str, pos};
-    strf::detail::simple_string_view<char> str2{str + pos + 1};
-    char32_t replacement_str[2] = {replacement, U'\0'};
-    strf::to(buff)(str1, strf::conv(replacement_str), str2);
+    *dest = '\0';
     return buff;
 }
 
-
 template <typename FPack>
-void basic_tests(const FPack& fp)
+STRF_TEST_FUNC void basic_tests(const FPack& fp)
 {
     constexpr auto j = strf::join_right(20, '_');
 
     auto punct = strf::get_facet<strf::numpunct_c<10>, double>(fp);
     auto decimal_point = punct.decimal_point();
-
     auto rd = [decimal_point](const char* str)
     {
-        return replace_decimal_point(str, decimal_point);
+        return replace_char(str, '.', decimal_point);
     };
 
     TEST(rd("___________________0")).with(fp)  (j(0.0));
@@ -166,13 +268,13 @@ void basic_tests(const FPack& fp)
     TEST(rd("_______+0.0001000000")).with(fp) (j(+strf::fixed(0.0001).p(10)));
 
 
-    TEST(rd("_______________1e+50")).with(fp, strf::lowercase)  (j(1e+50));
-    TEST(rd("_______________1e+50")).with(fp, strf::mixedcase)  (j(1e+50));
-    TEST(rd("_______________1E+50")).with(fp, strf::uppercase)  (j(1e+50));
+    TEST(rd("_______________1e+50")).with(fp, strf::lettercase::lower)  (j(1e+50));
+    TEST(rd("_______________1e+50")).with(fp, strf::lettercase::mixed)  (j(1e+50));
+    TEST(rd("_______________1E+50")).with(fp, strf::lettercase::upper)  (j(1e+50));
 
-    TEST(rd("______________ 1e+50")).with(fp, strf::lowercase)  (j(strf::sci(1e+50)>6));
-    TEST(rd("______________ 1e+50")).with(fp, strf::mixedcase)  (j(strf::sci(1e+50)>6));
-    TEST(rd("______________ 1E+50")).with(fp, strf::uppercase)  (j(strf::sci(1e+50)>6));
+    TEST(rd("______________ 1e+50")).with(fp, strf::lettercase::lower)  (j(strf::sci(1e+50)>6));
+    TEST(rd("______________ 1e+50")).with(fp, strf::lettercase::mixed)  (j(strf::sci(1e+50)>6));
+    TEST(rd("______________ 1E+50")).with(fp, strf::lettercase::upper)  (j(strf::sci(1e+50)>6));
 
     //----------------------------------------------------------------
     // when precision is not specified, the general format selects the
@@ -315,17 +417,18 @@ void basic_tests(const FPack& fp)
 }
 
 
-void test_hexadecimal()
+STRF_TEST_FUNC void test_hexadecimal()
 {
     constexpr auto j = strf::join_right(20, '_');
 
+    TEST("0x0p+0") (strf::hex(0.0));
     TEST("______________0x0p+0") (j(strf::hex(0.0)));
     TEST("_____________0x0.p+0") (j(*strf::hex(0.0)));
     TEST("__________0x0.000p+0") (j(strf::hex(0.0).p(3)));
     TEST("_____________-0x1p-3") (j(strf::hex(-0.125)));
     TEST("_____________0x1p+11") (j(strf::hex(2048.0)));
     TEST("__0x1.fffffffffffffp+1023")
-        ( strf::join_right(25, '_') (strf::hex((std::numeric_limits<double>::max)())));
+        ( strf::join_right(25, '_') (strf::hex(float_max<double>())) );
     TEST("___________0x1p-1022") (j(strf::hex(0x1p-1022)));
     TEST("__________0x1.p-1022") (j(*strf::hex(0x1p-1022)));
     TEST("_______0x1.000p-1022") (j(*strf::hex(0x1p-1022).p(3)));
@@ -339,17 +442,17 @@ void test_hexadecimal()
     TEST("_______0x0.002p-1022") (j(strf::hex(0x0.0018p-1022).p(3)));
     TEST("_______0x0.001p-1022") (j(strf::hex(0x0.0008000000001p-1022).p(3)));
 
-    TEST("______________0X0P+0").with(strf::uppercase) (j(strf::hex(0.0)));
-    TEST("____0X0.ABCDEFP-1022").with(strf::uppercase) (j(strf::hex(0x0.abcdefp-1022)));
-    TEST("______0X1.ABCDEFP+10").with(strf::uppercase) (j(strf::hex(0x1.abcdefp+10)));
+    TEST("______________0X0P+0").with(strf::lettercase::upper) (j(strf::hex(0.0)));
+    TEST("____0X0.ABCDEFP-1022").with(strf::lettercase::upper) (j(strf::hex(0x0.abcdefp-1022)));
+    TEST("______0X1.ABCDEFP+10").with(strf::lettercase::upper) (j(strf::hex(0x1.abcdefp+10)));
 
-    TEST("______________0x0p+0").with(strf::mixedcase) (j(strf::hex(0.0)));
-    TEST("____0x0.ABCDEFp-1022").with(strf::mixedcase) (j(strf::hex(0x0.abcdefp-1022)));
-    TEST("______0x1.ABCDEFp+10").with(strf::mixedcase) (j(strf::hex(0x1.abcdefp+10)));
+    TEST("______________0x0p+0").with(strf::lettercase::mixed) (j(strf::hex(0.0)));
+    TEST("____0x0.ABCDEFp-1022").with(strf::lettercase::mixed) (j(strf::hex(0x0.abcdefp-1022)));
+    TEST("______0x1.ABCDEFp+10").with(strf::lettercase::mixed) (j(strf::hex(0x1.abcdefp+10)));
 
-    TEST("______________0x0p+0").with(strf::lowercase) (j(strf::hex(0.0)));
-    TEST("____0x0.abcdefp-1022").with(strf::lowercase) (j(strf::hex(0x0.abcdefp-1022)));
-    TEST("______0x1.abcdefp+10").with(strf::lowercase) (j(strf::hex(0x1.abcdefp+10)));
+    TEST("______________0x0p+0").with(strf::lettercase::lower) (j(strf::hex(0.0)));
+    TEST("____0x0.abcdefp-1022").with(strf::lettercase::lower) (j(strf::hex(0x0.abcdefp-1022)));
+    TEST("______0x1.abcdefp+10").with(strf::lettercase::lower) (j(strf::hex(0x1.abcdefp+10)));
 
     TEST("_________-0x1p+0****") (j(strf::left(-1.0, 11, '*').hex()));
     TEST("_________****-0x1p+0") (j(strf::right(-1.0, 11, '*').hex()));
@@ -358,122 +461,8 @@ void test_hexadecimal()
     TEST("_____________-0x1p+0") (j(strf::center(-1.0, 7, '*').hex()));
 }
 
-double make_double(std::uint64_t ieee_exponent, std::uint64_t ieee_mantissa)
+STRF_TEST_FUNC void test_punctuation()
 {
-    std::uint64_t v = (ieee_exponent << 52) | (ieee_mantissa & 0xFFFFFFFFFFFFFull);
-    double d;
-    std::memcpy(&d, &v, 8);
-    return d;
-}
-float make_float(std::uint32_t ieee_exponent, std::uint32_t ieee_mantissa)
-{
-    std::uint32_t v = (ieee_exponent << 23) | (ieee_mantissa & 0x7FFFFF);
-    float f;
-    std::memcpy(&f, &v, 4);
-    return f;
-}
-
-std::vector<double> generate_double_samples()
-{
-    std::vector<double> samples;
-    constexpr int ieee_exp_size = 11;
-    constexpr int ieee_m_size = 52;
-    constexpr unsigned max_normal_exp = (1 << ieee_exp_size) - 2;
-
-    for(unsigned e = 0; e <= max_normal_exp; ++e) {
-        for(unsigned i = 2; i <= ieee_m_size; ++i) {
-            unsigned s = ieee_m_size - i;
-            samples.push_back(make_double(e, 0xFFFFFFFFFFFFFull << s));
-            samples.push_back(make_double(e, 1ull << s));
-        }
-        samples.push_back(make_double(e, 1ull << (ieee_m_size - 1)));
-        samples.push_back(make_double(e, 0));
-    }
-    return samples;
-}
-
-std::vector<float> generate_float_samples()
-{
-    std::vector<float> samples;
-    constexpr int ieee_exp_size = 8;
-    constexpr int ieee_m_size = 23;
-    constexpr unsigned max_normal_exp = (1 << ieee_exp_size) - 2;
-
-    for(unsigned e = 0; e < max_normal_exp; ++e) {
-        for(unsigned i = 2; i <= ieee_m_size; ++i) {
-            unsigned s = ieee_m_size - i;
-            samples.push_back(make_float(e, 0x7FFFFFul << s));
-            samples.push_back(make_float(e, 1 << s));
-        }
-        samples.push_back(make_float(e, 1 << (ieee_m_size - 1)));
-        samples.push_back(make_float(e, 0));
-    }
-    return samples;
-}
-
-int main()
-{
-    {
-        TEST_SCOPE_DESCRIPTION("subnormal float 32");
-        {
-            TEST_SCOPE_DESCRIPTION("without punctuation");
-            test_subnormal_values<float>(strf::pack());
-        }
-        {
-            TEST_SCOPE_DESCRIPTION("with punctuation");
-            test_subnormal_values<float>(strf::no_grouping<10>{});
-        }
-    }
-    {
-        TEST_SCOPE_DESCRIPTION("subnormal double");
-        {
-            TEST_SCOPE_DESCRIPTION("without punctuation");
-            test_subnormal_values<double>(strf::pack());
-        }
-        {
-            TEST_SCOPE_DESCRIPTION("with punctuation");
-            test_subnormal_values<double>(strf::no_grouping<10>{});
-        }
-    }
-
-    {
-        TEST_SCOPE_DESCRIPTION("default facets");
-        basic_tests(strf::pack());
-    }
-    {
-        TEST_SCOPE_DESCRIPTION("with small decimal point");
-        basic_tests(strf::pack( strf::numpunct<10>(-1).decimal_point('*')
-                              , strf::numpunct<16>(-1).decimal_point('*') ));
-    }
-
-    test_hexadecimal();
-
-    {
-        auto vec = generate_double_samples();
-        char buff[64];
-        for (const auto d: vec)
-        {
-            (void) strf::to(buff) (d);
-            auto parsed = std::strtod(buff, nullptr);
-            TEST_EQ(parsed, d);
-        }
-    }
-
-    {
-        auto vec = generate_float_samples();
-        char buff[64];
-        for (const float f: vec)
-        {
-            (void) strf::to(buff) (f);
-            auto parsed = std::strtof(buff, nullptr);
-            TEST_EQ(parsed, f);
-        }
-    }
-
-    // ================================================================================
-    // With punctuation
-    // ================================================================================
-
     constexpr auto j = strf::join_right(20, '_');
 
     {   //alternative punct characters
@@ -643,6 +632,45 @@ int main()
         TEST("________1.000005e+05").with(p1) (j(100000.5));
         TEST("_________1,0,0,0,0.5").with(p1) (j(10000.5));
     }
-    return test_finish();
 }
 
+} // unnamed namespace
+
+STRF_TEST_FUNC void test_input_float()
+{
+    {
+        TEST_SCOPE_DESCRIPTION("subnormal float 32");
+        {
+            TEST_SCOPE_DESCRIPTION("without punctuation");
+            test_subnormal_values<float>(strf::pack());
+        }
+        {
+            TEST_SCOPE_DESCRIPTION("with punctuation");
+            test_subnormal_values<float>(strf::no_grouping<10>{});
+        }
+    }
+    {
+        TEST_SCOPE_DESCRIPTION("subnormal double");
+        {
+            TEST_SCOPE_DESCRIPTION("without punctuation");
+            test_subnormal_values<double>(strf::pack());
+        }
+        {
+            TEST_SCOPE_DESCRIPTION("with punctuation");
+            test_subnormal_values<double>(strf::no_grouping<10>{});
+        }
+    }
+    {
+        TEST_SCOPE_DESCRIPTION("default facets");
+        basic_tests(strf::pack());
+    }
+    {
+        TEST_SCOPE_DESCRIPTION("with small decimal point");
+        basic_tests(strf::pack( strf::numpunct<10>(-1).decimal_point('*')
+                              , strf::numpunct<16>(-1).decimal_point('*') ));
+    }
+    test_hexadecimal();
+    test_several_values<float>();
+    test_several_values<double>();
+    test_punctuation();
+}

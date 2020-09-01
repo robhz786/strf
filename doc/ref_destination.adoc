@@ -5,9 +5,11 @@ See accompanying file LICENSE_1_0.txt or copy at
 http://www.boost.org/LICENSE_1_0.txt
 ////
 
-:printer_impl: <<printer_impl,printer_impl>>
+:printer_type: <<printer_type,printer_type>>
+:printer: <<printer,printer>>
 :tag: <<tag,tag>>
 :print_preview: <<print_preview,print_preview>>
+:make_printer_input: <<make_printer_input,make_printer_input>>
 
 [[destination]]
 == Destination types
@@ -88,20 +90,20 @@ public:
     template <typename\... Args>
     /{asterisk}\...{asterisk}/ operator()(const Args&\...) const;
 
-    template <typename ... Args>
+    template <typename\... Args>
     /{asterisk}\...{asterisk}/ tr(const char_type*, const Args&\...) const;
 
-    template <typename ... Args>
+    template <typename\... Args>
     /{asterisk}\...{asterisk}/ tr( const std::basic_string_view<char_type>&
               , const Args&\...) const;
 
-    template <typename ... Args>
+    template <typename\... Args>
     /{asterisk}\...{asterisk}/ tr( std::basic_string_view<char_type>
               , const Args&\...) const;
 
 private:
-    OutbuffCreator _outbuff_creator; // exposition only
-    FPack _fpack;                  // exposition only
+    OutbuffCreator &#95;outbuff_creator; // exposition only
+    FPack &#95;fpack;                    // exposition only
 };
 
 } // namespace strf
@@ -267,23 +269,23 @@ Compile-time requirements::
 // Return type::
 // - `decltype(std::declval<decltype(_outbuff_creator.create())&>().finish())` if such type is valid, otherwise `void`
 Effect::
-. Creates/get the <<basic_outbuff,outbuff>> object doing
+. Creates the <<basic_outbuff,outbuff>> object doing
 +
 [source,cpp,subs=normal]
 ----
-decltype(auto) ob = _outbuff_creator.create()
+typename OutbuffCreator::outbuff_type ob{_outbuff_creator.create()};
 ----
-. For each `arg` in `args\...`, creates a printer object by doing:
+. For each `arg` in `args\...`, does
 +
 [source,cpp,subs=normal]
 ----
-auto p = static_cast< const {printer}<sizeof(CharT)>& >
-    ( {printer_impl}<CharT, FPack, T>{fpack, preview, x, chtag} )
+using preview_type = {print_preview}<preview_size::no, preview_width::no>;
+preview_type preview;
+using printer_type = {printer_type}<char_type, preview_type, FPack, Arg>;
+printer_type p{ {make_printer_input}<char_type>(preview, &#95;fpack, arg) };
+static_cast<const {printer}<char_type>&>(p).print_to(ob);
 ----
-, where `preview` is an instance of
-  `{print_preview}<preview_size::no, preview_width::no>`
-, and `chtag` is an expression of type `{tag}<CharT>`.
-. For each `p` object does `p.print_to(ob)`
+where `Arg` is the type in `Args\...` corresponding to `arg`
 . Returns `ob.finish()` if such expression is valid, which is optional.
   Otherwise the return type is `void`.
 ====
@@ -312,18 +314,14 @@ Effect:: __to-do__
 +
 [source,cpp,subs=normal]
 ----
-decltype(auto) ob = _outbuff_creator.create()
+typename OutbuffCreator::outbuff_type ob{_outbuff_creator.create()};
 ----
 . For each `arg` in `args\...`, creates a printer object by doing:
 +
 [source,cpp,subs=normal]
 ----
-auto p = static_cast< const {printer}<sizeof(CharT)>& >
-    ( {printer_impl}<CharT, FPack, T>{_fpack, preview, arg, chtag} )
 ----
-, where `preview` is lvalure reference of
-  `{print_preview}<preview_size::no, preview_width::no>`,
-  and `chtag` is an expression of type `{tag}<CharT>`.
+, where `Arg` is the type in `Args\...` corresponding to `arg`
 . Prints into `ob` the content according the <<tr_string,tr-string syntax>>
   and using the `p` objects.
 . Returns `ob.finish()` if such expression is valid, which is optional.
@@ -390,18 +388,18 @@ public:
     template <typename\... Args>
     /{asterisk}\...{asterisk}/ operator()(const Args&\...) const;
 
-    template <typename ... Args>
+    template <typename\... Args>
     /{asterisk}\...{asterisk}/ tr(const char_type*, const Args&\...) const;
 
-    template <typename ... Args>
+    template <typename\... Args>
     /{asterisk}\...{asterisk}/ tr(const std::basic_string<char_type>&, const Args&\...) const;
 
-    template <typename ... Args>
+    template <typename\... Args>
     /{asterisk}\...{asterisk}/ tr(std::basic_string_view<char_type>, const Args&\...) const;
 
 private:
     OutbuffCreator _outbuff_creator; // exposition only
-    FPack _fpack;                  // exposition only
+    FPack _fpack;                    // exposition only
 };
 
 } // namespace strf
@@ -558,30 +556,36 @@ template <typename\... Args>
 /{asterisk}\...{asterisk}/ operator()(const Args&\... args) const;
 ----
 Compile-time requirements::
-- All types in `Args\...` are <<PrintableWithSizePreview,_PrintableWithSizePreview_>>.
+- All types in `Args\...` are <<Printable,_Printable_>>.
 Effect::
 . Creates an object `preview` of type
   `{print_preview}<preview_size::yes, preview_width::no>`.
 +
 [source,cpp,subs=normal]
 ----
-print_preview<preview_size::yes, preview_width::no> preview;
+using preview_type = {print_preview}<preview_size::yes, preview_width::no>;
+preview_type preview;
 ----
 . For each `arg` in `args\...`, creates a printer object by doing:
 +
 [source,cpp,subs=normal]
 ----
-auto p = static_cast< const {printer}<sizeof(CharT)>& >
-    ( {printer_impl}<CharT, FPack, T>{ _fpack, preview, arg, {tag}<CharT>{} } )
+using printer_type = {printer_type}<char_type, preview_type, FPack, Arg>;
+printer_type p{ {make_printer_input}<char_type>(preview, &#95;fpack, arg) };
 ----
-
 . Creates/get the <<basic_outbuff,outbuff>> object doing
 +
 [source,cpp,subs=normal]
 ----
-decltype(auto) ob = _outbuff_creator.create(preview.get_size())
+using ob_type = typename OutbuffCreator::size_outbuf_type;
+ob_type ob{_outbuff_creator.create(preview.get_size())};
 ----
-. For each `p` object does `p.print_to(ob)`
+. For each `p` object does:
++
+[source,cpp,subs=normal]
+----
+static_cast<const {printer}<char_type>&>(p).print_to(ob);
+----
 . Returns `ob.finish()` if such expression is valid, which is optional. Otherwise the return type is `void`.
 ====
 ====
@@ -600,7 +604,7 @@ template <typename ... Args>
           , const Args&\... args) const;
 ----
 Compile-time requirements::
-- All types in `Args\...` are <<PrintableWithSizePreview,_PrintableWithSizePreview_>>.
+- All types in `Args\...` are <<Printable,_Printable_>>.
 Effect:: __to-do__
 
 ////
@@ -610,7 +614,7 @@ Effect:: __to-do__
 ----
 print_preview<preview_size::yes, preview_width::no> preview;
 auto p = static_cast< const {printer}<sizeof(CharT)>& >
-    ( {printer_impl}<CharT, FPack, T>{ fpack, preview, x, {tag}<CharT>{} } )
+    ( {printer_type}<CharT, FPack, T>{ fpack, preview, x, {tag}<CharT>{} } )
 ----
 . Calculates the size of the content to be printed according to the
   <<tr_string,tr-string syntax>> and using the `preview` objects
@@ -687,13 +691,13 @@ public:
     template <typename\... Args>
     /{asterisk}\...{asterisk}/ operator()(const Args&\...) const;
 
-    template <typename ... Args>
+    template <typename\... Args>
     /{asterisk}\...{asterisk}/ tr(const char_type*, const Args&\...) const;
 
-    template <typename ... Args>
+    template <typename\... Args>
     /{asterisk}\...{asterisk}/ tr(const std::basic_string<char_type>&, const Args&\...) const;
 
-    template <typename ... Args>
+    template <typename\... Args>
     /{asterisk}\...{asterisk}/ tr(std::basic_string_view<char_type>, const Args&\...) const;
 
 private:
@@ -876,17 +880,19 @@ Effect::
 ----
 decltype(auto) ob = _outbuff_creator.create(_size)
 ----
-. For each `arg` in `args\...`, creates a printer object by doing:
+. For each `arg` in `args\...` does:
 +
 [source,cpp,subs=normal]
 ----
-auto p = static_cast< const {printer}<sizeof(CharT)>& >
-    ( {printer_impl}<CharT, FPack, T>{fpack, preview, x, chtag} )
+using preview_type = {print_preview}<preview_size::no, preview_width::no>;
+preview_type preview;
+using printer_type = {printer_type}<char_type, preview_type, FPack, Arg>;
+printer_type p{ {make_printer_input}<char_type>(preview, &#95;fpack, arg) };
+static_cast<const {printer}<char_type>&>(p).print_to(ob);
 ----
-, where `preview` is an instance of `preview<false, false>`,
-and `chtag` is an expression of type `{tag}<CharT>`.
-. For each `p` object does `p.print_to(ob)`
-. Returns `ob.finish()` if such expression is valid, which is optional. Otherwise the return type is `void`.
+, where `Arg` is the type in `Args\...` corresponding to `arg`
+. Returns `ob.finish()` if such expression is valid, which is optional.
+  Otherwise the return type is `void`.
 ====
 ====
 [source,cpp,subs=normal]
@@ -919,7 +925,7 @@ decltype(auto) ob = _outbuff_creator.create(_size)
 [source,cpp,subs=normal]
 ----
 auto p = static_cast< const {printer}<sizeof(CharT)>& >
-    ( {printer_impl}<CharT, FPack, T>{fpack, preview, x, chtag} )
+    ( {printer_type}<CharT, FPack, T>{fpack, preview, x, chtag} )
 ----
 , where `preview` is an instance of `preview<false, false>`,
 abs `chtag` is an expression of type `{tag}<CharT>`.
@@ -940,7 +946,9 @@ Given
 The following must hold:
 
 - `X` is https://en.cppreference.com/w/cpp/named_req/CopyConstructible[CopyConstructible]
-- `X` has a member type alias `T::char_type` defined as `char_type`
+- `X` has a member type alias `X::char_type` defined as `char_type`
+- `X` has the `X::outbuff_type` that is a type alias to a concrete type that is derives
+   from `basic_outbuff<X::char_type>`
 
 And the following expression must be satisfied:
 
@@ -948,11 +956,8 @@ And the following expression must be satisfied:
 ====
 [source,cpp]
 ----
-x.create()
+typename X::outbuff_type{x.create()}
 ----
-::
-[horizontal]
-Return value:: A type that derives from `{basic_outbuff}<char_type>`
 ====
 
 [[SizedOutbuffCreator]]
@@ -968,6 +973,8 @@ The following must hold:
 
 - `X` is https://en.cppreference.com/w/cpp/named_req/CopyConstructible[CopyConstructible]
 - `X` has a member type alias `T::char_type` defined as `char_type`
+- `X` has the `X::size_outbuff_type` that is a type alias to a concrete type that is derives
+   from `basic_outbuff<X::char_type>`
 
 And the following expression must be satisfied:
 
@@ -975,7 +982,7 @@ And the following expression must be satisfied:
 ====
 [source,cpp]
 ----
-x.create(size)
+typename X::sized_outbuff_type{x.create(size)}
 ----
 ::
 [horizontal]

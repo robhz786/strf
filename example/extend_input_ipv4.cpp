@@ -13,54 +13,49 @@ struct ipv4address
     unsigned char bytes[4];
 };
 
-//  The `alignment_format` class template provides the format functions
-//  related to alignment.
-using ipv4address_with_format = strf::value_with_format<ipv4address, strf::alignment_format>;
+} // namespace xxx
 
-template <typename CharT, typename FPack, typename Preview>
-struct ipv4_printable_traits
-{
-    constexpr static auto make_input
-        ( const FPack&, Preview& preview, xxx::ipv4address addr )
+namespace strf {
+
+template <>
+struct print_traits<xxx::ipv4address> {
+
+    using facet_tag = xxx::ipv4address;
+    using forwarded_type = xxx::ipv4address;
+    using fmt_type =  strf::value_with_formatters
+        < strf::print_traits<xxx::ipv4address>
+        , strf::alignment_formatter>;
+
+    template <typename CharT>
+    static auto transform_arg(forwarded_type arg)
     {
-        return strf::make_printer_input<CharT>
-            ( strf::pack()
-            , preview
-            , strf::join( addr.bytes[0], CharT{'.'}
-                        , addr.bytes[1], CharT{'.'}
-                        , addr.bytes[2], CharT{'.'}
-                        , addr.bytes[3] ) );
+        constexpr CharT dot = '.';
+        const auto* bytes = arg.bytes;
+        return strf::join(bytes[0], dot, bytes[1], dot, bytes[2], dot, bytes[3]);
     }
 
-    constexpr static auto make_input
-        ( const FPack& fp, Preview& preview, xxx::ipv4address_with_format x)
+    template <typename CharT, typename Preview, typename FPack>
+    static auto make_printer_input(Preview& preview, const FPack& fp, forwarded_type arg)
     {
-        return strf::make_printer_input<CharT>
-            ( strf::pack(strf::get_facet<strf::char_encoding_c<CharT>, xxx::ipv4address>(fp))
-            , preview
-            , strf::join
-                ( x.value().bytes[0], CharT{'.'}
-                , x.value().bytes[1], CharT{'.'}
-                , x.value().bytes[2], CharT{'.'}
-                , x.value().bytes[3] )
-                .set(x.get_alignment_format_data() ) );
+        auto arg2 = transform_arg<CharT>(arg);
+        return strf::make_default_printer_input<CharT>(preview, fp, arg2);
+    }
+
+    template <typename CharT, typename Preview, typename FPack>
+    static auto make_printer_input(Preview& preview, const FPack& fp, fmt_type arg)
+    {
+        auto join = transform_arg<CharT>(arg.value());
+        auto aligned_join = join.set(arg.get_alignment_format());
+        return strf::make_default_printer_input<CharT>(preview, fp, aligned_join);
     }
 };
 
-template <typename CharT, typename FPack, typename Preview>
-ipv4_printable_traits<CharT, FPack, Preview> get_printable_traits(Preview&, xxx::ipv4address);
+// constexpr ipv4address_printing tag_invoke(strf::print_traits_tag, xxx::ipv4address) noexcept
+// {
+//     return {};
+// }
 
-template <typename CharT, typename FPack, typename Preview>
-ipv4_printable_traits<CharT, FPack, Preview> get_printable_traits
-(Preview&, xxx::ipv4address_with_format);
-
-constexpr strf::make_fmt_traits<ipv4address_with_format>
-get_fmt_traits(strf::tag<>, ipv4address)
-{
-    return {};
-}
-
-} // namespace xxx
+} // namespace strf
 
 int main()
 {

@@ -5,24 +5,129 @@ See accompanying file LICENSE_1_0.txt or copy at
 http://www.boost.org/LICENSE_1_0.txt
 ////
 
+:fmt_type: <<fmt_type,fmt_type>>
+:fmt: <<fmt,fmt>>
+:width_t: <<width_t,width_t>>
+
 == Format functions
 
-[[value_with_format]]
-=== Class template `value_with_format`
+=== Global format functions
+[[format_function_aliases]]
+[source,cpp,subs=normal]
+----
+namespace strf {
+inline namespace format_functions {
+
+constexpr /{asterisk}...{asterisk}/ hex {};
+constexpr /{asterisk}...{asterisk}/ dec {};
+constexpr /{asterisk}...{asterisk}/ oct {};
+constexpr /{asterisk}...{asterisk}/ bin {};
+constexpr /{asterisk}...{asterisk}/ fixed {};
+constexpr /{asterisk}...{asterisk}/ sci {};
+constexpr /{asterisk}...{asterisk}/ gen {};
+constexpr /{asterisk}...{asterisk}/ multi {};
+constexpr /{asterisk}...{asterisk}/ conv {};
+constexpr /{asterisk}...{asterisk}/ sani {};
+constexpr /{asterisk}...{asterisk}/ right {};
+constexpr /{asterisk}...{asterisk}/ left {};
+constexpr /{asterisk}...{asterisk}/ center {};
+constexpr /{asterisk}...{asterisk}/ split {};
+
+} // inline namespace format_functions
+} // namespace strf
+----
+
+The `format_functions` inline namespace contains callable objects
+that work as alias to format functions
+
+[%header,cols="22,25"]
+|===
+| Expression | Equivalent Expression
+|`left(_arg_, _width_)`        |`{fmt}(_arg_) < _width_`
+|`right(_arg_, _width_)`       |`{fmt}(_arg_) > _width_`
+|`center(_arg_, _width_)`      |`{fmt}(_arg_) ^ _width_`
+|`split(_arg_, _width_)`       |`{fmt}(_arg_) % _width_`
+|`left(_arg_, _width_, _ch_)`  |`{fmt}(_arg_).fill(_ch_) < _width_`
+|`right(_arg_, _width_, _ch_)` |`{fmt}(_arg_).fill(_ch_) > _width_`
+|`center(_arg_, _width_, _ch_)`|`{fmt}(_arg_).fill(_ch_) ^ _width_`
+|`split(_arg_, _width_, _ch_)` |`{fmt}(_arg_).fill(_ch_) % _width_`
+|`bin(_arg_)`                  |`{fmt}(_arg_).bin()`
+|`dec(_arg_)`                  |`{fmt}(_arg_).oct()`
+|`oct(_arg_)`                  |`{fmt}(_arg_).dec()`
+|`hex(_arg_)`                  |`{fmt}(_arg_).hex()`
+|`sci(_arg_)`                  |`{fmt}(_arg_).sic()`
+|`fixed(_arg_)`                |`{fmt}(_arg_).fixed()`
+|`gen(_arg_)`                  |`{fmt}(_arg_).gen()`
+|`sci(_arg_, _precision_)`     |`{fmt}(_arg_).sic().p(_precision_)`
+|`fixed(_arg_, _precision_)`   |`{fmt}(_arg_).fixed().p(_precision_)`
+|`gen(_arg_, _precision_)`     |`{fmt}(_arg_).gen().p(_precision_)`
+|`multi(_arg_, _count_)`       |`{fmt}(_arg_).multi(_count_)`
+|`sani(_arg_, _enc_)`          |`{fmt}(_arg_).sani(_enc_)`
+|`conv(_arg_, _enc_)`          |`{fmt}(_arg_).conv(_enc_)`
+|`sani(_arg_)`                 |`{fmt}(_arg_).sani()`
+|`conv(_arg_)`                 |`{fmt}(_arg_).cont()`
+|===
+
+=== Callable object `fmt` [[fmt]]
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template <typename T>
+using fmt_value_type = typename {fmt_type}<T>::value_type;
+
+constexpr struct /{asterisk}...{asterisk}/ {
+    template <typename T>
+    constexpr {fmt_type}<T> operator()(T&& value) const
+        noexcept(noexcept({fmt_type}<T>fmt_value_type<T>{(T&&)value}}))
+    {
+        return {fmt_type}<T>{fmt_value_type<T>{(T&&)value}};
+    }
+} fmt;
+
+} // namespace strf
+----
+
+=== Type alias template `fmt_type` [[fmt_type]]
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template <typename T>
+using fmt_type = /{asterisk}...{asterisk}/;
+
+} // namespace strf
+----
+
+`fmt_type<T>` is:
+
+* `T`, when `T` is `{value_with_formatters}</{asterisk} ... {asterisk}/>`
+* `{print_traits_of}<T>::<<PrintTraits,fmt_type>>`, otherwise
+
+`fmt_type<T>` is always expected to be an instance of `{value_with_formatters}` class template.
+
+[[value_with_formatters]]
+=== Class template `value_with_formatters`
 [source,cpp]
 ----
-template <typename ValueType, class ... Fmts>
-class value_with_format;
+namespace strf {
+
+template <typename ValueType, class... Fmts>
+class value_with_formatters;
+
+} // namespace strf
 ----
 ::
 Compile-time requirements:::
 - All types in `Fmt\...` satisfy <<Formatter,Formatter>>.
 - All types in `Fmt\...` are different.
 
-The purpose of the `value_with_format` class template is to aid
+The purpose of the `value_with_formatters` class template is to aid
 the creation classes that contain format functions.
 The types of expressions like `fmt("Hello")`,
-`fmt(55)`, `*hex(55) > 20`, etc, are all `value_with_format`
+`fmt(55)`, `*hex(55) > 20`, etc, are all `value_with_formatters`
 instances. The `ValueType` template parameter holds the input
 type, and the types in `Fmts\...` defines the format functions.
 
@@ -31,34 +136,32 @@ type, and the types in `Fmts\...` defines the format functions.
 ----
 namespace strf {
 
-template <typename ValueType, class ... Fmts>
-class value_with_format
-    : public Fmts::template fn<value_with_format<ValueType, Fmts ...>> ...
+template <typename ValueType, class... Fmts>
+class value_with_formatters
+    : public Fmts::template fn<value_with_formatters<ValueType, Fmts...>>...
 {
 public:
 
-    constexpr value_with_format(const value_with_format&) = default;
-    constexpr value_with_format(value_with_format&&) = default;
-    constexpr value_with_format(const ValueType&);
+    constexpr value_with_formatters(const value_with_formatters&) = default;
+    constexpr value_with_formatters(value_with_formatters&&) = default;
+    constexpr value_with_formatters(const ValueType&);
 
     template <typename OtherValueType>
-    constexpr value_with_format
+    constexpr value_with_formatters
         ( const ValueType&
-        , const value_with_format<OtherValueType, Fmts...>& );
+        , const value_with_formatters<OtherValueType, Fmts...>& );
 
     template <typename OtherValueType>
-    constexpr value_with_format
+    constexpr value_with_formatters
         ( const ValueType&
-        , value_with_format<OtherValueType, Fmts...>&& );
+        , value_with_formatters<OtherValueType, Fmts...>&& );
 
 
-    template <typename ... OtherFmts>
-    constexpr value_with_format
-        ( const value_with_format<ValueType, OtherFmts...>& );
+    template <typename... OtherFmts>
+    constexpr value_with_formatters(const value_with_formatters<ValueType, OtherFmts...>&);
 
-    template <typename ... OtherFmts>
-    constexpr value_with_format
-        ( value_with_format<ValueType, OtherFmts...>&& );
+    template <typename... OtherFmts>
+    constexpr value_with_formatters(value_with_formatters<ValueType, OtherFmts...>&&);
 
 
     constexpr const ValueType& value() const;
@@ -71,19 +174,19 @@ To-do
 [[Formatter]]
 === Type requirement _Formatter_
 
-// This is the requirement for a type to be a paramenter of the `value_with_format`
+// This is the requirement for a type to be a paramenter of the `value_with_formatters`
 // template.
 A type `Fmt` is a _Formatter_ if it has a member `fn` that is a type template
 with one template type parameter such that, given any types `T` and `U`:
 
-- `Fmt::template fn<T>` is well formed if `T` is `value_with_format<ValueType, Fmts \...>`.
+- `Fmt::template fn<T>` is well formed if `T` is `value_with_formatters<ValueType, Fmts\...>`.
   In this case, note that `Fmt` is in `Fmts\...` and `T` derives from `Fmt::template fn<T>`.
 - `Fmt::template fn<T>` is default constructible, assuming it is well formed.
 - `Fmt::template fn<T>` can be constructed from `const Fmt::template fn<U>&`,
   if both are well formed.
 
 // Although it is not a compile-time requirement, it only makes sense to use a type `Fmt`
-// in `value_with_format` if `Fmt::template fn<T>` contains any __format function__.
+// in `value_with_formatters` if `Fmt::template fn<T>` contains any __format function__.
 // These are member functions and they are of two kinds. In the first one, the return type
 // is `T`, `T&` or `T&&` depending of
 //
@@ -119,126 +222,126 @@ with one template type parameter such that, given any types `T` and `U`:
 // };
 // ----
 
-[[alignment_format]]
-=== _Formatter_ `alignment_format`
+[[alignment_formatter]]
+=== _Formatter_ `alignment_formatter`
 
 [source,cpp,subs=normal]
 ----
 namespace strf {
 
 template <bool HasAlignment>
-struct alignment_format_q
+struct alignment_formatter_q
 {
     template <class T>
-    using fn = <<alignment_format_fn,alignment_format_fn>><T, HasAlignment>;
+    using fn = <<alignment_formatter_fn,alignment_formatter_fn>><T, HasAlignment>;
 };
 
-using alignment_format       = alignment_format_q<true>;
-using empty_alignment_format = alignment_format_q<false>;
+using alignment_formatter       = alignment_formatter_q<true>;
+using empty_alignment_formatter = alignment_formatter_q<false>;
 
 } // namespace strf
 ----
 
-[[alignment_format_fn]]
-==== `alignment_format_fn`
+[[alignment_formatter_fn]]
+==== `alignment_formatter_fn`
 
 [source,cpp,subs=normal]
 ----
 namespace strf {
 
 template <class T, bool HasAlignment>
-class alignment_format_fn;
+class alignment_formatter_fn;
 {
 public:
-    // <<alignment_format_fn_constructors,constructors>>
-    constexpr alignment_format_fn() noexcept;
+    // <<alignment_formatter_fn_constructors,constructors>>
+    constexpr alignment_formatter_fn() noexcept;
 
     template <typename U, bool B>
-    constexpr explitic alignment_format_fn(const alignment_format_fn<U, B>& u) noexcept;
+    constexpr explitic alignment_formatter_fn(const alignment_formatter_fn<U, B>& u) noexcept;
 
-    // <<alignment_format_fn_format_functions,format functions>>
-    constexpr T&& operator<(int width) && noexcept; // left
-    constexpr T&& operator>(int width) && noexcept; // right
-    constexpr T&& operator^(int width) && noexcept; // center
-    constexpr T&& operator%(int width) && noexcept; // split, a.k.a internal
+    // <<alignment_formatter_fn_format_functions,format functions>>
+    constexpr T&& operator<({width_t} width) && noexcept; // left
+    constexpr T&& operator>({width_t} width) && noexcept; // right
+    constexpr T&& operator^({width_t} width) && noexcept; // center
+    constexpr T&& operator%({width_t} width) && noexcept; // split, aka internal
     constexpr T&& fill(char32_t ch) && noexcept;
 
-    // <<alignment_format_fn_observers,observers>>
-    constexpr int width() const noexcept;
+    // <<alignment_formatter_fn_observers,observers>>
+    constexpr {width_t} width() const noexcept;
     constexpr text_alignment alignment() const noexcept;
     constexpr char32_t fill() const noexcept;
-    constexpr {alignment_format_data} get_alignmet_format_data() const noexcept;
+    constexpr {alignment_format} get_alignmet_format() const noexcept;
 };
 
-// alignment_format_fn<T, false> is an empty class
+// alignment_formatter_fn<T, false> is an empty class
 template <class T>
-class alignment_format_fn<T, false>
+class alignment_formatter_fn<T, false>
 {
-    using converted_fmt = {boost_mp_replace}< T , alignment_format_q<false>
-                                               , alignment_format_q<true> >;
+    using converted_fmt = {boost_mp_replace}< T , alignment_formatter_q<false>
+                                               , alignment_formatter_q<true> >;
 public:
-    // <<alignment_format_fn_constructors,constructors>>
-    constexpr alignment_format_fn() noexcept;
+    // <<alignment_formatter_fn_constructors,constructors>>
+    constexpr alignment_formatter_fn() noexcept;
 
     template <typename U>
-    constexpr explicit alignment_format_fn(const alignment_format_fn<U, false>&) noexcept;
+    constexpr explicit alignment_formatter_fn(const alignment_formatter_fn<U, false>&) noexcept;
 
-    // <<alignment_format_fn_observers,observers>>
-    constexpr int width() const noexcept;
+    // <<alignment_formatter_fn_observers,observers>>
+    constexpr {width_t} width() const noexcept;
     constexpr text_alignment alignment() const noexcept;
     constexpr char32_t fill() const noexcept;
-    constexpr {alignment_format_data} get_alignmet_format_data() const noexcept;
+    constexpr {alignment_format} get_alignmet_format() const noexcept;
 
-    // <<alignment_format_fn_format_functions,format functions>>
-    constexpr converted_fmt operator<(int width) const noexcept;
-    constexpr converted_fmt operator>(int width) const noexcept;
-    constexpr converted_fmt operator^(int width) const noexcept;
-    constexpr converted_fmt operator%(int width) const noexcept;
+    // <<alignment_formatter_fn_format_functions,format functions>>
+    constexpr converted_fmt operator<({width_t} width) const noexcept;
+    constexpr converted_fmt operator>({width_t} width) const noexcept;
+    constexpr converted_fmt operator^({width_t} width) const noexcept;
+    constexpr converted_fmt operator%({width_t} width) const noexcept;
     constexpr converted_fmt fill(char32_t ch) const noexcept;
 };
 
 } // namespace strf
 ----
-[[alignment_format_fn_constructors]]
+[[alignment_formatter_fn_constructors]]
 ===== Constructors
 ====
 [source,cpp,subs=normal]
 ----
-constexpr alignment_format_fn() noexcept;
+constexpr alignment_formatter_fn() noexcept;
 ----
 ::
-Postconditions::: `get_alignmet_format_data() == {alignment_format_data}{}`
+Postconditions::: `get_alignmet_format() == {alignment_format}{}`
 ====
 ====
 [source,cpp,subs=normal]
 ----
 template <typename U, bool B>
-constexpr explitic alignment_format_fn(const alignment_format_fn<U, B>& u) noexcept;
+constexpr explitic alignment_formatter_fn(const alignment_formatter_fn<U, B>& u) noexcept;
 ----
 ::
-Postconditions::: `get_alignmet_format_data() == u.get_alignmet_format_data()`
+Postconditions::: `get_alignmet_format() == u.get_alignmet_format()`
 Note::: This function only participates in overload resolution if 'HasAlignment' is `true`
         or `B` is `false`
 ====
-[[alignment_format_fn_observers]]
+[[alignment_formatter_fn_observers]]
 ===== Observers
 ====
 [source,cpp,subs=normal]
 ----
-constexpr {alignment_format_data} get_alignmet_format_data() const noexcept;
+constexpr {alignment_format} get_alignmet_format() const noexcept;
 ----
 ::
 Return value:::
-- `alignment_format_data{}`, when `HasAlignment` is `false`.
+- `alignment_format{}`, when `HasAlignment` is `false`.
 - The value corresponding to the state of this object, when `HasAlignment` is `true`.
 ====
 ====
 [source,cpp]
 ----
-constexpr int width() const noexcept;
+constexpr {width_t} width() const noexcept;
 ----
 ::
-Return value::: `get_alignmet_format_data().width`
+Return value::: `get_alignmet_format().width`
 ====
 ====
 [source,cpp]
@@ -246,7 +349,7 @@ Return value::: `get_alignmet_format_data().width`
 constexpr text_alignment alignment() const noexcept;
 ----
 ::
-Return value::: `get_alignmet_format_data().alignment`
+Return value::: `get_alignmet_format().alignment`
 ====
 ====
 [source,cpp]
@@ -254,21 +357,21 @@ Return value::: `get_alignmet_format_data().alignment`
 constexpr char32_t fill() const noexcept;
 ----
 ::
-Return value::: `get_alignmet_format_data().fill`
+Return value::: `get_alignmet_format().fill`
 ====
 
-[[alignment_format_fn_format_functions]]
+[[alignment_formatter_fn_format_functions]]
 ===== Format functions
 
-// `alignment_format_fn<T, false>` is an empty class. Its format functions
+// `alignment_formatter_fn<T, false>` is an empty class. Its format functions
 // return `converted_fmt{*this}.`
 //
-// In `alignment_format_fn<T, true>` the format functions modify
+// In `alignment_formatter_fn<T, true>` the format functions modify
 // the object and return `static_cast<T&&>(this)`.
 ====
 [source,cpp]
 ----
-constexpr /*return type */ operator<(int width) /* qualifier */ noexcept;
+constexpr /*return type */ operator<({width_t} width) /* qualifier */ noexcept;
 ----
 ::
 Posconditions::: The return value `r` satisfies:
@@ -282,7 +385,7 @@ Return value:::
 ====
 [source,cpp]
 ----
-constexpr /*return type */ operator>(int width) /* qualifier */ noexcept;
+constexpr /*return type */ operator>({width_t} width) /* qualifier */ noexcept;
 ----
 ::
 Posconditions::: The return value `r` satisfies:
@@ -295,7 +398,7 @@ Return value:::
 ====
 [source,cpp]
 ----
-constexpr /*return type */ operator^(int width) /* qualifier */ noexcept;
+constexpr /*return type */ operator^({width_t} width) /* qualifier */ noexcept;
 ----
 ::
 Posconditions::: The return value `r` satisfies:
@@ -308,7 +411,7 @@ Return value:::
 ====
 [source,cpp]
 ----
-constexpr /*return type */ operator%(int width) /* qualifier */ noexcept;
+constexpr /*return type */ operator%({width_t} width) /* qualifier */ noexcept;
 ----
 ::
 Posconditions::: The return value `r` satisfies:
@@ -331,8 +434,8 @@ Return value:::
 - when `HasAlignment` is `true`: `std::move(static_cast<T&>(*this))`.
 ====
 
-[[alignment_format_data]]
-==== `alignment_format_data`
+[[alignment_format]]
+==== `alignment_format`
 
 [source,cpp,subs=normal]
 ----
@@ -340,71 +443,71 @@ namespace strf {
 
 enum class text_alignment {left, right, split, center};
 
-struct alignment_format_data
+struct alignment_format
 {
     char32_t fill = U' ';
-    int width = 0;
+    {width_t} width = 0;
     text_alignment alignment = text_alignment::right;
 };
 
-constexpr bool operator==(alignment_format_data lhs, alignment_format_data rhs) noexcept;
-constexpr bool operator!=(alignment_format_data lhs, alignment_format_data rhs) noexcept;
+constexpr bool operator==(alignment_format lhs, alignment_format rhs) noexcept;
+constexpr bool operator!=(alignment_format lhs, alignment_format rhs) noexcept;
 } // namespace strf
 ----
 
-[[int_format]]
-=== _Formatter_ `int_format`
+[[int_formatter]]
+=== _Formatter_ `int_formatter`
 
 [source,cpp,subs=normal]
 ----
 namespace strf {
 
 template <class T, int Base>
-class int_format_fn;
+class int_formatter_fn;
 
 template <int Base>
-struct int_format
+struct int_formatter
 {
     template <typename T>
-    using fn = strf::int_format_fn<T, Base>;
+    using fn = strf::int_formatter_fn<T, Base>;
 };
 
 } // namespace strf
 ----
 
-==== `int_format_fn`
+==== `int_formatter_fn`
 
 [source,cpp,subs=normal]
 ----
 namespace strf {
 
-struct int_format_data
+struct int_format
 {
     unsigned precision = 0;
     bool showbase = false;
     bool showpos = false;
 };
 
-constexpr bool operator==(int_format_data lhs, int_format_data rhs) noexcept;
-constexpr bool operator!=(int_format_data lhs, int_format_data rhs) noexcept;
+constexpr bool operator==(int_format lhs, int_format rhs) noexcept;
+constexpr bool operator!=(int_format lhs, int_format rhs) noexcept;
 
 template <class T, int Base>
-class int_format_fn
+class int_formatter_fn
 {
 public:
-    constexpr int_format_fn() noexcept;
+    constexpr int_formatter_fn() noexcept;
 
     template <typename U, int OtherBase>
-    constexpr int_format_fn(const int_format_fn<U, OtherBase> & u) noexcept;
+    constexpr int_formatter_fn(const int_formatter_fn<U, OtherBase> & u) noexcept;
 
-    // <<int_format_fn_observers,observers>>
-    constexpr int_format_data get_int_format_data() const noexcept;
+    // <<int_formatter_fn_observers,observers>>
+    constexpr int_format get_int_format() const noexcept;
     constexpr unsigned precision() const noexcept;
     constexpr bool showbase() const noexcept;
     constexpr bool showpos() const noexcept;
     constexpr static int base() noexcept;
 
-    // <<int_format_fn_format_functions, format functions>>
+    // <<int_formatter_fn_format_functions, format functions>>
     constexpr T&& p(unsigned precision) && noexcept; // set precision
     constexpr T&& operator+() && noexcept;           // show positive sign
     constexpr T&& operator*() && noexcept;           // show base
@@ -417,12 +520,12 @@ public:
 };
 } // namespace strf
 ----
-[[int_format_fn_observers]]
+[[int_formatter_fn_observers]]
 ===== Observers
 ====
 [source,cpp]
 ----
-constexpr int_format_data get_int_format_data() const noexcept;
+constexpr int_format get_int_format() const noexcept;
 ----
 ::
 Return value::: The value corresponding to the state of this object.
@@ -433,7 +536,7 @@ Return value::: The value corresponding to the state of this object.
 constexpr unsigned precision() const noexcept;
 ----
 ::
-Return value::: `get_int_format_data().precision`
+Return value::: `get_int_format().precision`
 ====
 ====
 [source,cpp]
@@ -441,7 +544,7 @@ Return value::: `get_int_format_data().precision`
 constexpr showpos() const noexcept;
 ----
 ::
-Return value::: `get_int_format_data().showpos`
+Return value::: `get_int_format().showpos`
 ====
 ====
 [source,cpp]
@@ -449,7 +552,7 @@ Return value::: `get_int_format_data().showpos`
 constexpr showbase() const noexcept;
 ----
 ::
-Return value::: `get_int_format_data().showbase`
+Return value::: `get_int_format().showbase`
 ====
 ====
 [source,cpp]
@@ -460,7 +563,7 @@ constexpr static base() noexcept;
 Return value::: `Base`
 ====
 
-[[int_format_fn_format_functions]]
+[[int_formatter_fn_format_functions]]
 ===== Format functions
 
 ====
@@ -505,7 +608,7 @@ Return type:::
 ----
 {std_conditional_t}< Base == NewBase
                   , T&&
-                  , {boost_mp_replace}<T, int_format<Base>, int_format<NewBase> >
+                  , {boost_mp_replace}<T, int_formatter<Base>, int_formatter<NewBase> >
 ----
 , where `NewBase` is equal to `10` in `dec()`, `16` in `hex()`, `8` in `oct()`
 and `2` in `bin()`.
@@ -513,44 +616,44 @@ Return value:::
 - `static_cast<ReturnType>(static_cast<T&>(*this))`, where `ReturnType` is the return type;
 ====
 
-[[float_format]]
-=== _Formatter_ `float_format`
+[[float_formatter]]
+=== _Formatter_ `float_formatter`
 
 [source,cpp,subs=normal]
 ----
 namespace strf {
 
 template <class T, float Base>
-class float_format_fn;
+class float_formatter_fn;
 
 template <float Base>
-struct float_format
+struct float_formatter
 {
     template <typename T>
-    using fn = float_format_fn<T, Base>;
+    using fn = float_formatter_fn<T, Base>;
 };
 
 } // namespace strf
 ----
 
-==== `float_format_fn`
+==== `float_formatter_fn`
 [source,cpp,subs=normal]
 ----
 namespace strf {
 
 template <typename T>
-class float_format_fn
+class float_formatter_fn
 {
 public:
-    constexpr float_format_fn() noexcept;
+    constexpr float_formatter_fn() noexcept;
 
     template <typename U>
-    constexpr explicit float_format_fn(const float_format_fn<U>& other) noexcept;
+    constexpr explicit float_formatter_fn(const float_format_fn<U>& other) noexcept;
 
     // observers
-    constexpr {float_format_data} get_float_format_data() const noexcept;
+    constexpr {float_format} get_float_format() const noexcept;
 
-    // <<float_format_fn_format_functions, format functions>>
+    // <<float_formatter_fn_format_functions, format functions>>
     constexpr T&& operator+() && noexcept;
     constexpr T&& operator*() && noexcept;
     constexpr T&& p(unsigned precision) && noexcept;
@@ -561,26 +664,26 @@ public:
 } // namespace strf
 ----
 
-[[float_format_fn_constructors]]
+[[float_formatter_fn_constructors]]
 ===== Constructors
 ====
 [source,cpp,subs=normal]
 ----
-constexpr float_format_fn() noexcept;
+constexpr float_formatter_fn() noexcept;
 ----
 ::
-Postconditions::: `get_float_format_data() == {float_format_data}{}`
+Postconditions::: `get_float_format() == {float_format}{}`
 ====
 ====
 [source,cpp,subs=normal]
 ----
 template <typename U>
-constexpr explicit float_format_fn(const float_format_fn<U>& other) noexcept;
+constexpr explicit float_formatter_fn(const float_formatter_fn<U>& other) noexcept;
 ----
 ::
-Postconditions::: `get_float_format_data() == other.get_float_format_data()`
+Postconditions::: `get_float_format() == other.get_float_format()`
 ====
-[[float_format_fn_format_functions]]
+[[float_formatter_fn_format_functions]]
 ===== Format functions
 ====
 [source,cpp,subs=normal]
@@ -588,7 +691,7 @@ Postconditions::: `get_float_format_data() == other.get_float_format_data()`
 constexpr T&& operator+() && noexcept;
 ----
 ::
-Postconditions::: `get_float_format_data().<<float_showpos,showpos>> == true`
+Postconditions::: `get_float_format().<<float_showpos,showpos>> == true`
 Return value::: `static_cast<T&&>(static_cast<T&>(*this))`
 ====
 ====
@@ -597,7 +700,7 @@ Return value::: `static_cast<T&&>(static_cast<T&>(*this))`
 constexpr T&& operator*() && noexcept;
 ----
 ::
-Postconditions::: `get_float_format_data().<<float_showpoint,showpoint>> == true`
+Postconditions::: `get_float_format().<<float_showpoint,showpoint>> == true`
 Return value::: `static_cast<T&&>(static_cast<T&>(*this))`
 ====
 ====
@@ -606,7 +709,7 @@ Return value::: `static_cast<T&&>(static_cast<T&>(*this))`
 constexpr T&& p(unsigned precision) && noexcept;
 ----
 ::
-Postconditions::: `get_float_format_data().<<float_precision,precision>> == precision`
+Postconditions::: `get_float_format().<<float_precision,precision>> == precision`
 Return value::: `static_cast<T&&>(static_cast<T&>(*this))`
 ====
 ====
@@ -615,7 +718,7 @@ Return value::: `static_cast<T&&>(static_cast<T&>(*this))`
 constexpr T&& gen() && noexcept;
 ----
 ::
-Postconditions::: `get_float_format_data().<<float_notation,notation>> = float_notation::general`
+Postconditions::: `get_float_format().<<float_notation,notation>> = float_notation::general`
 Return value::: `static_cast<T&&>(static_cast<T&>(*this))`
 ====
 ====
@@ -624,7 +727,7 @@ Return value::: `static_cast<T&&>(static_cast<T&>(*this))`
 constexpr T&& sci() && noexcept;
 ----
 ::
-Postconditions::: `get_float_format_data().<<float_notation,notation>> = float_notation::scientific`
+Postconditions::: `get_float_format().<<float_notation,notation>> = float_notation::scientific`
 Return value::: `static_cast<T&&>(static_cast<T&>(*this))`
 ====
 ====
@@ -633,19 +736,19 @@ Return value::: `static_cast<T&&>(static_cast<T&>(*this))`
 constexpr T&& fixed() && noexcept;
 ----
 ::
-Postconditions::: `get_float_format_data().<<float_notation,notation>> = float_notation::fixed`
+Postconditions::: `get_float_format().<<float_notation,notation>> = float_notation::fixed`
 Return value::: `static_cast<T&&>(static_cast<T&>(*this))`
 ====
 
-[[float_format_data]]
-==== `float_format_data`
+[[float_format]]
+==== `float_format`
 [source,cpp]
 ----
 namespace strf {
 
 enum class float_notation{fixed, scientific, general};
 
-struct float_format_data
+struct float_format
 {
     unsigned precision = (unsigned)-1;
     float_notation notation = float_notation::general;
@@ -653,8 +756,8 @@ struct float_format_data
     bool showpos = false;
 };
 
-constexpr bool operator==(float_format_data lhs, float_format_data rhs) noexcept;
-constexpr bool operator!=(float_format_data lhs, float_format_data rhs) noexcept;
+constexpr bool operator==(float_format lhs, float_format rhs) noexcept;
+constexpr bool operator!=(float_format lhs, float_format rhs) noexcept;
 } // namespace strf
 ----
 
@@ -680,34 +783,34 @@ showpoint:: Prints the decimal point even when there are no fractional digits.
 [[float_showpos]]
 showpos:: Prints the positive sign `'+'` when the value is positive.
 
-[[quantity_format]]
-=== _Formatter_ `quantity_format`
+[[quantity_formatter]]
+=== _Formatter_ `quantity_formatter`
 [source,cpp]
 ----
 namespace strf {
 
-struct quantity_format
+struct quantity_formatter
 {
     template <class T>
-    using fn = quantity_format_fn<T>;
+    using fn = quantity_formatter_fn<T>;
 };
 
 } // namespace strf
 ----
-==== `quantity_format_fn`
+==== `quantity_formatter_fn`
 [source,cpp]
 ----
 namespace strf {
 
 template <class T>
-class quantity_format_fn
+class quantity_formatter_fn
 {
 public:
-    constexpr quantity_format_fn(std::size_t count) noexcept;
-    constexpr quantity_format_fn() noexcept;
+    constexpr quantity_formatter_fn(std::size_t count) noexcept;
+    constexpr quantity_formatter_fn() noexcept;
 
     template <typename U>
-    constexpr explicit quantity_format_fn(const quantity_format_fn<U>& u) noexcept
+    constexpr explicit quantity_formatter_fn(const quantity_formatter_fn<U>& u) noexcept
         : _count(u.count())
     {
     }
@@ -722,7 +825,7 @@ public:
 ====
 [source,cpp,subs=normal]
 ----
-constexpr quantity_format_fn() noexcept;
+constexpr quantity_formatter_fn() noexcept;
 ----
 ::
 Postconditions::: `count() == 1`
@@ -731,7 +834,7 @@ Postconditions::: `count() == 1`
 [source,cpp,subs=normal]
 ----
 template <typename U>
-constexpr explicit quantity_format_fn(const quantity_format_fn<U>& u) noexcept;
+constexpr explicit quantity_formatter_fn(const quantity_formatter_fn<U>& u) noexcept;
 ----
 ::
 Postconditions::: `count() == u.count()`
@@ -748,6 +851,3 @@ Postconditions::: `count() == count`
 Return value::: `static_cast<T&&>(*this)`
 ====
 
-=== Global format functions
-
-include::ref_global_format_functions.adoc[]

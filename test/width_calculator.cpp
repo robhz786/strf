@@ -2,14 +2,13 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <strf.hpp>
 #include "test_utils.hpp"
 
 #define TEST_FAST_WIDTH(STR) TEST(STR) .with( strf::fast_width{} )
 #define TEST_W_AS_FAST_U32LEN(STR) TEST(STR) .with( strf::width_as_fast_u32len{} )
 #define TEST_W_AS_U32LEN(STR) TEST(STR) .with( strf::width_as_u32len{} )
 
-int main()
+void STRF_TEST_FUNC test_width_calculator()
 {
     using namespace strf::width_literal;
     {
@@ -76,7 +75,7 @@ int main()
         (strf::fmt(u8"\u2E3A\u2E3A\u2014") > 12);
 
     TEST_FAST_WIDTH( u"         \u2E3A\u2E3A\u2014")
-        (strf::fmt( u"\u2E3A\u2E3A\u2014") > 12);
+        (strf::fmt( u"\u2E3A\u2E3A\u2014") > 12.1_w);
 
     TEST_FAST_WIDTH( U"         \u2E3A\u2E3A\u2014")
         (strf::fmt( U"\u2E3A\u2E3A\u2014") > 12);
@@ -258,6 +257,4 @@ int main()
         TEST_W_AS_U32LEN(str_0xDFFF_0xD800) (strf::right(str_0xDFFF_0xD800 + 1, 6));
 
     }
-
-    return test_finish();
 }

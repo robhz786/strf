@@ -4,23 +4,16 @@
 
 #include "test_utils.hpp"
 
-#include <strf.hpp>
-#include <string>
-#include <algorithm>
-
-strf::detail::simple_string_view<char> make_str_0_to_xff()
+static strf::detail::simple_string_view<char> STRF_TEST_FUNC make_str_0_to_xff(char* str)
 {
-    static char str[0x101];
     for(unsigned i = 0; i < 0x100; ++i)
         str[i] = static_cast<char>(i);
     str[0x100] = '\0';
     return {str, 0x100};
 }
 
-auto str_0_to_xff = make_str_0_to_xff();
-
 template <typename Encoding>
-strf::detail::simple_string_view<char> char_0_to_0xff_sanitized(Encoding enc)
+strf::detail::simple_string_view<char> STRF_TEST_FUNC char_0_to_0xff_sanitized(Encoding enc)
 {
     static char str[0x100];
     for(unsigned i = 0; i < 0x100; ++i)
@@ -34,61 +27,71 @@ strf::detail::simple_string_view<char> char_0_to_0xff_sanitized(Encoding enc)
     return {str, 0x100};
 }
 
-strf::detail::simple_string_view<char32_t> remove_fffd
-    ( strf::detail::simple_string_view<char32_t> input )
+static void STRF_TEST_FUNC remove_fffd
+    ( strf::detail::simple_string_view<char32_t> input
+    , char32_t* dest ) noexcept
 {
-    assert(input.size() <= 0x100);
-    static char32_t arr[0x100];
-    char32_t* end = std::copy_if( input.begin()
-                                , input.end()
-                                , arr
-                                , [](auto ch){return ch != 0xFFFD;} );
-    return {arr, end};
+    const char32_t* src = input.data();
+    const char32_t* src_end = input.end();
+    while(src != src_end) {
+        if (*src != 0xFFFD) {
+            *dest = *src;
+            ++dest;
+        }
+        ++src;
+    }
+    *dest = 0;
 }
 
 template <typename CharT>
-strf::detail::simple_string_view<CharT> make_view
+inline strf::detail::simple_string_view<CharT> STRF_TEST_FUNC make_view
     ( const CharT* begin, const CharT* end)
 {
     return {begin, end};
 }
 
 template <typename CharT>
-strf::detail::simple_string_view<CharT> make_view
+inline strf::detail::simple_string_view<CharT> STRF_TEST_FUNC make_view
     ( const CharT* begin, std::size_t size)
 {
     return {begin, size};
 }
 
 template <typename CharT>
-bool operator==( strf::detail::simple_string_view<CharT> str1
-               , strf::detail::simple_string_view<CharT> str2 )
+bool STRF_TEST_FUNC operator==
+    ( strf::detail::simple_string_view<CharT> str1
+    , strf::detail::simple_string_view<CharT> str2 )
 {
     if (str1.size() != str2.size())
         return false;
 
-    return std::equal(str1.begin(), str1.end(), str2.begin());
+    return strf::detail::str_equal(str1.data(), str2.data(), str1.size());
 }
 
-static bool encoding_error_handler_called = false;
+static STRF_TEST_FUNC bool encoding_error_handler_called;
 
-void encoding_error_handler()
+static STRF_TEST_FUNC void encoding_error_handler()
 {
     encoding_error_handler_called = true;
 }
 
 template <typename Encoding>
-void test( Encoding enc
-         , strf::detail::simple_string_view<char32_t> decoded_0_to_0xff )
+void STRF_TEST_FUNC test
+    ( Encoding enc
+    , strf::detail::simple_string_view<char32_t> decoded_0_to_0xff )
 {
     TEST_SCOPE_DESCRIPTION(enc.name());
+
+    static char buff_str_0_to_xff[0x101];
+    auto str_0_to_xff = make_str_0_to_xff(buff_str_0_to_xff);
 
     {
         // to UTF-32
         TEST(decoded_0_to_0xff) (strf::sani(str_0_to_xff, enc));
     }
 
-    auto valid_u32input = remove_fffd(decoded_0_to_0xff);
+    char32_t valid_u32input[0x101];
+    remove_fffd(decoded_0_to_0xff, valid_u32input);
     char char_buf[0x400];
     {
         // from and back to UTF-32
@@ -130,13 +133,13 @@ void test( Encoding enc
         strf::to(buff)
             .with(enc, strf::invalid_seq_notifier{encoding_error_handler})
             (strf::sani(u"---\U0010FFFF++"));
-        TEST_EQ(0, strcmp(buff, "---?++"));
+        TEST_TRUE(strf::detail::str_equal(buff, "---?++", 6));
         TEST_TRUE(::encoding_error_handler_called);
     }
 
 }
 
-strf::detail::simple_string_view<char32_t> decoded_0_to_xff_iso_8859_1()
+static strf::detail::simple_string_view<char32_t> STRF_TEST_FUNC decoded_0_to_xff_iso_8859_1()
 {
     static const char32_t table[0x100] =
         { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07
@@ -175,7 +178,7 @@ strf::detail::simple_string_view<char32_t> decoded_0_to_xff_iso_8859_1()
     return {table, 0x100};
 }
 
-strf::detail::simple_string_view<char32_t> decoded_0_to_xff_iso_8859_3()
+static strf::detail::simple_string_view<char32_t> STRF_TEST_FUNC decoded_0_to_xff_iso_8859_3()
 {
     static const char32_t table[0x100] =
         { 0x0000, 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x0006, 0x0007
@@ -214,7 +217,7 @@ strf::detail::simple_string_view<char32_t> decoded_0_to_xff_iso_8859_3()
     return {table, 0x100};
 }
 
-strf::detail::simple_string_view<char32_t> decoded_0_to_xff_iso_8859_15()
+static strf::detail::simple_string_view<char32_t> STRF_TEST_FUNC decoded_0_to_xff_iso_8859_15()
 {
     static const char32_t table[0x100] =
         { 0x0000, 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x0006, 0x0007
@@ -253,7 +256,7 @@ strf::detail::simple_string_view<char32_t> decoded_0_to_xff_iso_8859_15()
     return {table, 0x100};
 }
 
-strf::detail::simple_string_view<char32_t> decoded_0_to_xff_windows_1252()
+static strf::detail::simple_string_view<char32_t> STRF_TEST_FUNC decoded_0_to_xff_windows_1252()
 {
     static const char32_t table[0x100] =
         { 0x0000, 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x0006, 0x0007
@@ -292,11 +295,10 @@ strf::detail::simple_string_view<char32_t> decoded_0_to_xff_windows_1252()
     return {table, 0x100};
 }
 
-int main()
+void STRF_TEST_FUNC test_single_byte_encodings()
 {
     test(strf::iso_8859_1<char>(), decoded_0_to_xff_iso_8859_1());
     test(strf::iso_8859_3<char>(), decoded_0_to_xff_iso_8859_3());
     test(strf::iso_8859_15<char>(), decoded_0_to_xff_iso_8859_15());
     test(strf::windows_1252<char>(), decoded_0_to_xff_windows_1252() );
-    return test_finish();
 }

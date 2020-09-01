@@ -16,12 +16,13 @@ public:
     {
     }
 
-#if defined(STRF_NO_CXX17_COPY_ELISION)
-    QStringCreator(QStringCreator&& str);
-#else
+    QStringCreator(strf::tag<>)
+        : QStringCreator()
+    {
+    }
+
     QStringCreator(QStringCreator&&) = delete;
     QStringCreator(const QStringCreator&) = delete;
-#endif
 
     explicit QStringCreator(std::size_t size)
         : strf::basic_outbuff<char16_t>(buffer_, buffer_size_)
@@ -83,14 +84,16 @@ class QStringCreatorFactory
 public:
     using char_type = char16_t;
     using finish_type = QString;
+    using outbuff_type = QStringCreator;
+    using sized_outbuff_type = QStringCreator;
 
-    QStringCreator create() const
+    strf::tag<> create() const
     {
-        return QStringCreator();
+        return strf::tag<>{};
     }
-    QStringCreator create(std::size_t size) const
+    std::size_t create(std::size_t size) const
     {
-        return QStringCreator(size);
+        return size;
     }
 };
 

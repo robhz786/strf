@@ -5,7 +5,7 @@ See accompanying file LICENSE_1_0.txt or copy at
 http://www.boost.org/LICENSE_1_0.txt
 ////
 
-== printable types
+== List of printable types
 
 
 === Strings
@@ -245,7 +245,7 @@ assert(str == "112233");
 str = strf::to_string(strf::separated_range(arr, ", "));
 assert(str == "11, 22, 33");
 
-auto op = [](auto x){ return strf::<<joins,join>>('(', +strf::fmt(x * 10), ')'); };
+auto op = [](auto x){ return strf::<<join,join>>('(', +strf::fmt(x * 10), ')'); };
 
 str = strf::to_string(strf::separated_range(arr, ", ", op));
 assert(str == "(+110), (+220), (+330)");
@@ -306,7 +306,7 @@ auto str2 = strf::to_string
 assert(str2 == "[..0xfa / ..0xfb / ..0xfc]");
 ----
 
-[[joins]]
+[[join]]
 === Joins
 
 ==== Without alignment
