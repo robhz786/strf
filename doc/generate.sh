@@ -5,6 +5,8 @@ asciidoctor -v quick_reference.adoc -o  out/quick_reference.html
 asciidoctor -v benchmarks.adoc -o  out/benchmarks.html
 asciidoctor -v locale_hpp.adoc -o out/locale_hpp.html
 
+asciidoctor -v cuda.adoc -o out/cuda.html
+
 asciidoctor -v strf_hpp.adoc -o - \
     | sed 's/20em/34em/g' \
     | sed 's/td.hdlist1{/td.hdlist1{min-width:9em;/g' \

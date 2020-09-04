@@ -57,32 +57,33 @@ int main() {
     strf::narrow_cfile_writer<char> test_outbuff(stdout);
     test_utils::set_test_outbuff(test_outbuff);
 
-    test_tr_string();
-    test_dynamic_charset();
-    test_encode_char();
-    test_encode_fill();
-    test_input_bool();
-    test_input_char();
-    test_input_float();
-    test_input_int();
-    test_input_ptr();
-    test_input_string();
-    test_input_facets_pack();
-    test_input_range();
-    test_numpunct();
-    test_join();
-    test_facets_pack_merge();
-    test_facets_pack();
-    test_reserve();
-    test_width_t();
-    test_width_calculator();
-    test_utf_to_utf();
-    test_single_byte_encodings();
     test_cstr_writer();
     test_locale();
     test_cfile_writer();
     test_streambuf_writer();
     test_string_writer();
+
+    test_dynamic_charset();
+    test_encode_char();
+    test_encode_fill();
+    test_facets_pack();
+    test_facets_pack_merge();
+    test_input_bool();
+    test_input_char();
+    test_input_facets_pack();
+    test_input_float();
+    test_input_int();
+    test_input_ptr();
+    test_input_range();
+    test_input_string();
+    test_join();
+    test_numpunct();
+    test_reserve();
+    test_single_byte_encodings();
+    test_tr_string();
+    test_utf_to_utf();
+    test_width_calculator();
+    test_width_t();
 
     int err_count = test_utils::test_err_count();
     if (err_count == 0) {

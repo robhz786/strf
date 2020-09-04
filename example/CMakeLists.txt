@@ -31,6 +31,12 @@ foreach(x
   set_target_properties(example-${x} PROPERTIES OUTPUT_NAME ${x})
 endforeach(x)
 
+if (${STRF_CUDA_SUPPORT})
+  add_executable(example-cuda cuda.cu)
+  target_link_libraries(example-cuda strf-header-only)
+  add_test(NAME run_example-cuda COMMAND cuda)
+  set_target_properties(example-cuda PROPERTIES OUTPUT_NAME cuda)
+endif (${STRF_CUDA_SUPPORT})
 
 find_package(Qt5Core QUIET)
 

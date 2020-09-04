@@ -50,7 +50,7 @@ extern void __device__ test_single_byte_encodings();
 extern void __device__ test_tr_string();
 extern void __device__ test_width_calculator();
 extern void __device__ test_width_t();
-//extern void __device__ test_utf_to_utf();
+extern void __device__ test_utf_to_utf();
 
 namespace kernels {
 
@@ -63,7 +63,12 @@ __global__ void kernel_main
     test_utils::set_test_outbuff(out);
 
     test_cstr_writer();
-    // test_dynamic_charset(); //to-do
+    // test_locale();            // not supported on CUDA
+    // test_cfile_writer();      // not supported on CUDA
+    // test_streambuf_writer();  // not supported on CUDA
+    // test_string_writer();     // not supported on CUDA
+
+    // test_dynamic_charset();   // not supported on CUDA
     test_encode_char();
     test_encode_fill();
     test_facets_pack();
@@ -74,18 +79,18 @@ __global__ void kernel_main
     test_input_float();
     test_input_int();
     test_input_ptr();
-    test_input_range();           // to-do
+    test_input_range();
     test_input_string();
     test_printable_overriding();
     test_join();
     test_miscellaneous();
     test_numpunct();
     test_reserve();
-    test_single_byte_encodings(); // run never ends
+    test_single_byte_encodings();
     test_tr_string();
-    // test_utf_to_utf();            // to-do
-    test_width_t();
+    test_utf_to_utf();
     test_width_calculator();
+    test_width_t();
 
     auto result = out.finish();
     (void)result;
@@ -166,6 +171,7 @@ int main() {
         cudaDeviceReset();
         return status;
     }
+    cudaFree(device_side_args);
     cudaDeviceReset();
 
     print (host_side_args.buffer);
