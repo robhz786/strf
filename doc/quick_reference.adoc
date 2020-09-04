@@ -718,7 +718,8 @@ void sample() {
 [[lettercase]]
 == Letter case
 
-The `lettercase` facet affects the letter cases when printing numeric values.
+The `<<strf_hpp#lettercase,lettercase>>` facet affects the letter cases
+when printing numeric values.
 The default value is `strf::lowercase`.
 
 [source,cpp]

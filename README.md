@@ -17,12 +17,14 @@ Strf is a C++ formatting library that
 
 ## Documentation
 
-The [**introduction**](http://robhz786.github.io/strf/v0.12.2/introduction.html) is what you should read first.
+Overview:
+* [**introduction**](http://robhz786.github.io/strf/v0.12.2/introduction.html)
+* [**quick reference**](http://robhz786.github.io/strf/v0.12.2/quick_reference.html)
 
-After that, the [**quick reference**](http://robhz786.github.io/strf/v0.12.2/quick_reference.html) provides a nice overview of the library's capabilities.
-It is the document that people are supposed to visit more often.
+HowTos:
+* [How to use Strf on CUDA devices](http://robhz786.github.io/strf/v0.12.2/cuda.html)
 
-At last, there are the header references, which aim to be a more accurate and complete.
+Header references:
 * [`<strf.hpp>`](http://robhz786.github.io/strf/v0.12.2/strf_hpp.html) is the main header.
 * [`<strf/outbuff.hpp>`](http://robhz786.github.io/strf/v0.12.2/outbuff_hpp.html) is a lightweight and freestanding header that defines the `basic_outbuff` class template.
                        All other headers includes this one.
