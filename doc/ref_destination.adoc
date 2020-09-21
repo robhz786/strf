@@ -289,6 +289,7 @@ where `Arg` is the type in `Args\...` corresponding to `arg`
 . Returns `ob.finish()` if such expression is valid, which is optional.
   Otherwise the return type is `void`.
 ====
+[[destination_no_reserve_tr]]
 ====
 [source,cpp,subs=normal]
 ----
@@ -966,14 +967,14 @@ Given
 
 - `char_type`, a character type
 - `size`, a value of the `std::size_t`
-- `X`, an  _OutbuffCreator_ type for `char_type`
+- `X`, an  _SizedOutbuffCreator_ type for `char_type`
 - `x`, an expression of type `X` or `const X`
 
 The following must hold:
 
 - `X` is https://en.cppreference.com/w/cpp/named_req/CopyConstructible[CopyConstructible]
 - `X` has a member type alias `T::char_type` defined as `char_type`
-- `X` has the `X::size_outbuff_type` that is a type alias to a concrete type that is derives
+- `X` has the `X::sized_outbuff_type` that is a type alias to a concrete type that is derives
    from `basic_outbuff<X::char_type>`
 
 And the following expression must be satisfied:

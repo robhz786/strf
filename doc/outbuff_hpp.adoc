@@ -119,7 +119,7 @@ public:
     void advance(std::size_t n);
     void require(std::size_t s);
 
-    virtual bool recycle() = 0;
+    virtual void recycle() = 0;
 
 protected:
 

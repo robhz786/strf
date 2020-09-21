@@ -6,6 +6,8 @@ asciidoctor -v benchmarks.adoc -o  out/benchmarks.html
 asciidoctor -v locale_hpp.adoc -o out/locale_hpp.html
 
 asciidoctor -v cuda.adoc -o out/cuda.html
+asciidoctor -v howto_add_destination.adoc -o out/howto_add_destination.html
+
 
 asciidoctor -v strf_hpp.adoc -o - \
     | sed 's/20em/34em/g' \

@@ -2,8 +2,6 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-//[QStringAppender_def
-
 #include <QString>
 #include <strf.hpp>
 #include <climits>
@@ -27,15 +25,10 @@ private:
 
     QString& str_;
     std::size_t count_ = 0;
-    std::exception_ptr eptr_ = nullptr;
-
     constexpr static std::size_t buffer_size_ = strf::min_size_after_recycle<char16_t>();
     char16_t buffer_[buffer_size_];
 };
 
-//]
-
-//[QStringAppender_ctor
 QStringAppender::QStringAppender(QString& str)
     : strf::basic_outbuff<char16_t>(buffer_, buffer_size_)
     , str_(str)
@@ -50,56 +43,25 @@ QStringAppender::QStringAppender(QString& str, std::size_t size)
     str_.reserve(str_.size() + static_cast<int>(size));
 }
 
-
-//]
-
-//[QStringAppender_recycle
 void QStringAppender::recycle()
 {
+    std::size_t count = this->pointer() - buffer_;
+    this->set_pointer(buffer_);
     if (this->good()) {
-        // Flush the content:
+        this->set_good(false);
         QChar qchar_buffer[buffer_size_];
-        std::size_t count = this->pointer() - buffer_;
         std::copy_n(buffer_, count, qchar_buffer);
-
-#if defined(__cpp_exceptions)
-
-        try {
-            str_.append(qchar_buffer, count);
-            count_ += count;
-        } catch(...) {
-            eptr_ = std::current_exception();
-            this->set_good(false);
-        }
-
-#else
-
         str_.append(qchar_buffer, count);
         count_ += count;
-
-#endif // defined(__cpp_exceptions)
-
+        this->set_good(true);
     }
-    // Reset the buffer position:
-    this->set_pointer(buffer_);
-
-    // Not necessary to set the buffer's end since it's the same as before:
-    // this->set_end(buffer_ + buffer_size_);
 }
-//]
 
-//[QStringAppender_finish
 std::size_t QStringAppender::finish()
 {
     recycle();
-    if (eptr_ != nullptr) {
-        std::rethrow_exception(eptr_);
-    }
     return count_;
 }
-//]
-
-//[QStringAppenderFactory
 
 class QStringAppenderFactory
 {
@@ -131,18 +93,11 @@ private:
     QString& str_;
 };
 
-
-//]
-
-//[QStringAppender_append
 inline auto append(QString& str)
 {
     return strf::destination_no_reserve<QStringAppenderFactory> {str};
 }
-//]
 
-
-//[QStringAppender_use
 int main()
 {
     QString str = "....";
@@ -160,4 +115,3 @@ int main()
 
     return 0;
 }
-//]
