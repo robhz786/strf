@@ -951,7 +951,7 @@ The following must hold:
 - `X` has the `X::outbuff_type` that is a type alias to a concrete type that is derives
    from `basic_outbuff<X::char_type>`
 
-And the following expression must be satisfied:
+And the following expression must be well formed:
 
 [[OutbuffCreator_create]]
 ====
@@ -974,10 +974,10 @@ The following must hold:
 
 - `X` is https://en.cppreference.com/w/cpp/named_req/CopyConstructible[CopyConstructible]
 - `X` has a member type alias `T::char_type` defined as `char_type`
-- `X` has the `X::sized_outbuff_type` that is a type alias to a concrete type that is derives
+- `X` has the `X::sized_outbuff_type` that is a type alias to a concrete type that derives
    from `basic_outbuff<X::char_type>`
 
-And the following expression must be satisfied:
+And the following expression must be well formed:
 
 [[SizedOutbuffCreator_create]]
 ====
@@ -985,9 +985,5 @@ And the following expression must be satisfied:
 ----
 typename X::sized_outbuff_type{x.create(size)}
 ----
-::
-[horizontal]
-Return type:: A type that derives from `{basic_outbuff}<char_type>`
-Postcondition:: `ob.space() >= size`, where `ob` is the returned value.
 ====
 
