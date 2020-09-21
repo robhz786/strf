@@ -16,7 +16,7 @@ inline STRF_HD void outbuff_interchar_copy
     ( strf::basic_outbuff<DestCharT>& ob, const SrcCharT* str, std::size_t len )
 {
     do {
-        std::size_t space = ob.size();
+        std::size_t space = ob.space();
         if (space >= len) {
             detail::copy_n(str, len, ob.pointer());
             ob.advance(len);
@@ -90,14 +90,14 @@ template <typename CharT>
 void STRF_HD write_fill_continuation
     ( strf::basic_outbuff<CharT>& ob, std::size_t count, CharT ch )
 {
-    std::size_t space = ob.size();
+    std::size_t space = ob.space();
     STRF_ASSERT(space < count);
     strf::detail::str_fill_n<CharT>(ob.pointer(), space, ch);
     count -= space;
     ob.advance_to(ob.end());
     ob.recycle();
     while (ob.good()) {
-        space = ob.size();
+        space = ob.space();
         if (count <= space) {
             strf::detail::str_fill_n<CharT>(ob.pointer(), count, ch);
             ob.advance(count);
@@ -114,7 +114,7 @@ template <typename CharT>
 inline STRF_HD void write_fill
     ( strf::basic_outbuff<CharT>& ob, std::size_t count, CharT ch )
 {
-    if (count <= ob.size()) { // the common case
+    if (count <= ob.space()) { // the common case
         strf::detail::str_fill_n<CharT>(ob.pointer(), count, ch);
         ob.advance(count);
     } else {

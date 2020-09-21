@@ -695,7 +695,7 @@ STRF_HD void print_amplified_integer_small_separator_2
 {
     STRF_ASSERT(dist.highest_group < num_digits);
 
-    constexpr std::size_t size_after_recycle = strf::min_size_after_recycle<CharT>();
+    constexpr std::size_t size_after_recycle = strf::min_space_after_recycle<CharT>();
     (void) size_after_recycle;
 
     constexpr auto max_digits = detail::max_num_digits<unsigned long long, 10>();
@@ -865,7 +865,7 @@ STRF_HD void print_amplified_integer_big_separator_2
 {
     STRF_ASSERT(dist.highest_group < num_digits);
 
-    constexpr std::size_t size_after_recycle = strf::min_size_after_recycle<CharT>();
+    constexpr std::size_t size_after_recycle = strf::min_space_after_recycle<CharT>();
     (void) size_after_recycle;
 
     constexpr auto max_digits = detail::max_num_digits<unsigned long long, 10>();

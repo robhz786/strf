@@ -71,7 +71,7 @@ private:
     std::basic_streambuf<CharT, Traits>& dest_;
     std::streamsize count_ = 0;
     static constexpr std::size_t buf_size_
-        = strf::min_size_after_recycle<CharT>();
+        = strf::min_space_after_recycle<CharT>();
     CharT buf_[buf_size_];
 };
 

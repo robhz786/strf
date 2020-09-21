@@ -614,7 +614,7 @@ Effect:: __to-do__
 [source,cpp,subs=normal]
 ----
 print_preview<preview_size::yes, preview_width::no> preview;
-auto p = static_cast< const {printer}<sizeof(CharT)>& >
+auto p = static_cast< const {printer}<CharT>& >
     ( {printer_type}<CharT, FPack, T>{ fpack, preview, x, {tag}<CharT>{} } )
 ----
 . Calculates the size of the content to be printed according to the
@@ -925,7 +925,7 @@ decltype(auto) ob = _outbuff_creator.create(_size)
 +
 [source,cpp,subs=normal]
 ----
-auto p = static_cast< const {printer}<sizeof(CharT)>& >
+auto p = static_cast< const {printer}<CharT>& >
     ( {printer_type}<CharT, FPack, T>{fpack, preview, x, chtag} )
 ----
 , where `preview` is an instance of `preview<false, false>`,
@@ -988,6 +988,6 @@ typename X::sized_outbuff_type{x.create(size)}
 ::
 [horizontal]
 Return type:: A type that derives from `{basic_outbuff}<char_type>`
-Postcondition:: `ob.size() >= size`, where `ob` is the returned value.
+Postcondition:: `ob.space() >= size`, where `ob` is the returned value.
 ====
 

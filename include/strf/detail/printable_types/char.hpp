@@ -210,7 +210,7 @@ STRF_HD void fmt_char_printer<CharT>::print_to
     } else {
         std::size_t count = count_;
         while(true) {
-            std::size_t space = ob.size();
+            std::size_t space = ob.space();
             if (count <= space) {
                 strf::detail::str_fill_n(ob.pointer(), count, ch_);
                 ob.advance(count);

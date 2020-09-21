@@ -60,7 +60,7 @@ private:
 
     string_type_& str_;
     static constexpr std::size_t buf_size_
-        = strf::min_size_after_recycle<CharT>();
+        = strf::min_space_after_recycle<CharT>();
     CharT buf_[buf_size_];
 };
 
@@ -113,7 +113,7 @@ private:
 
     string_type_ str_;
     static constexpr std::size_t buf_size_
-        = strf::min_size_after_recycle<CharT>();
+        = strf::min_space_after_recycle<CharT>();
     CharT buf_[buf_size_];
 };
 
@@ -139,7 +139,7 @@ public:
     void recycle() override
     {
         std::size_t original_size = this->pointer() - str_.data();
-        constexpr std::size_t min_buff_size = strf::min_size_after_recycle<CharT>();
+        constexpr std::size_t min_buff_size = strf::min_space_after_recycle<CharT>();
         auto append_size = strf::detail::max<std::size_t>(original_size, min_buff_size);
         str_.append(append_size, (CharT)0);
         this->set_pointer(&*str_.begin() + original_size);

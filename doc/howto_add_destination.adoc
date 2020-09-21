@@ -12,7 +12,7 @@ http://www.boost.org/LICENSE_1_0.txt
 :source-highlighter: prettify
 :icons: font
 
-:min_size_after_recycle: <<outbuff_hpp#min_size_after_recycle,min_size_after_recycle>>
+:min_space_after_recycle: <<outbuff_hpp#min_space_after_recycle,min_space_after_recycle>>
 :basic_outbuff: <<outbuff_hpp#basic_outbuff,basic_outbuff>>
 :recycle: <<outbuff_hpp#basic_outbuff_recycle,recycle>>
 :good: <<outbuff_hpp#basic_outbuff_good,good>>
@@ -60,7 +60,7 @@ the pointer. For instance:
 
 [source,cpp,subs=normal]
 ----
-if (dest.size() < 5) {
+if (dest.space() < 5) {
     dest.recycle();
 }
 strncpy(dest.pointer(), "hello", 5);
@@ -73,7 +73,7 @@ If not, one has to call the `{recycle}` function, as done above.
 This is the only pure virtual function in `{basic_outbuff}`.
 Its job is to flush the content written so far and reset the position of
 `pointer()` and `end()` so that the space ( `end() - pointer()` )
-becames greater than or equal to `{min_size_after_recycle}()`.
+becames greater than or equal to `{min_space_after_recycle}()`.
 This is a postcondition
 even when the state is "bad". The "bad" state implies that writting
 anything in the range [`pointer(), end()`) doesn't have any relevent
@@ -107,7 +107,7 @@ private:
     bool print(const char* str_begin, const char* str_end)
     { /{asterisk}\...{asterisk}/ }
 
-    char buff[strf::{min_size_after_recycle}()];
+    char buff[strf::{min_space_after_recycle}()];
 };
 ----
 

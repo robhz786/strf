@@ -955,7 +955,7 @@ STRF_HD void single_byte_char_encoding<CharT, Impl>::encode_fill
     }
     auto ch3 = static_cast<CharT>(ch2);
     while(true) {
-        std::size_t available = ob.size();
+        std::size_t available = ob.space();
         if (count <= available) {
             strf::detail::str_fill_n<CharT>(ob.pointer(), count, ch3);
             ob.advance(count);

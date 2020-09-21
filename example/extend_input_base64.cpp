@@ -198,7 +198,7 @@ void base64_printer<CharT>::write_identation_(strf::basic_outbuff<CharT>& ob) co
     using traits = std::char_traits<CharT>;
     std::size_t count = fmt_.indentation();
     while(true) {
-        std::size_t buff_size = ob.size();
+        std::size_t buff_size = ob.space();
         if (buff_size >= count) {
             traits::assign(ob.pointer(), count, CharT(' '));
             ob.advance(count);

@@ -178,7 +178,7 @@ such that the sequence:
 std::size_t s  = x.preview.<<size_preview__get_size,get_size>>();
 typename T::printer_type p{x};
 std::size_t predicted_size = x.preview.<<size_preview__get_size,get_size>>() - s;
-std::size_t dest_size      = dest.<<outbuff_hpp#basic_outbuff_size,size>>();
+std::size_t dest_size      = dest.<<outbuff_hpp#basic_outbuff_space,space>>();
 static_cast<const printer<CharT>&>(p).<<printer,print_to>>(dest);
 ----
 statisfies the following postconditions when `Preview::<<print_preview,size_required>>` is `true`:
