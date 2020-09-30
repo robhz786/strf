@@ -269,7 +269,7 @@ Compile-time requirements::
 // Return type::
 // - `decltype(std::declval<decltype(_outbuff_creator.create())&>().finish())` if such type is valid, otherwise `void`
 Effect::
-. Creates the <<basic_outbuff,outbuff>> object doing
+. Creates the <<ourbuff_hpp#basic_outbuff,outbuff>> object doing
 +
 [source,cpp,subs=normal]
 ----
@@ -311,7 +311,7 @@ Effect:: __to-do__
 
 
 ////
-. Creates/get the <<basic_outbuff,outbuff>> object doing
+. Creates/get the <<ourbuff_hpp#basic_outbuff,outbuff>> object doing
 +
 [source,cpp,subs=normal]
 ----
@@ -574,7 +574,7 @@ preview_type preview;
 using printer_type = {printer_type}<char_type, preview_type, FPack, Arg>;
 printer_type p{ {make_printer_input}<char_type>(preview, &#95;fpack, arg) };
 ----
-. Creates/get the <<basic_outbuff,outbuff>> object doing
+. Creates/get the <<ourbuff_hpp#basic_outbuff,outbuff>> object doing
 +
 [source,cpp,subs=normal]
 ----
@@ -620,7 +620,7 @@ auto p = static_cast< const {printer}<CharT>& >
 . Calculates the size of the content to be printed according to the
   <<tr_string,tr-string syntax>> and using the `preview` objects
   of the previous step.
-. Creates/get the <<basic_outbuff,outbuff>> object by doing
+. Creates/get the <<ourbuff_hpp#basic_outbuff,outbuff>> object by doing
 +
 [source,cpp,subs=normal]
 ----
@@ -875,7 +875,7 @@ template <typename\... Args>
 Compile-time requirements::
 - All types in `Args\...` are <<Printable,_Printable_>>.
 Effect::
-. Creates/get the <<basic_outbuff,outbuff>> object doing
+. Creates/get the <<ourbuff_hpp#basic_outbuff,outbuff>> object doing
 +
 [source,cpp,subs=normal]
 ----
@@ -915,7 +915,7 @@ Compile-time requirements::
 Effect::
 __to-do__
 ////
-. Creates/get the <<basic_outbuff,outbuff>> object doing
+. Creates/get the <<ourbuff_hpp#basic_outbuff,outbuff>> object doing
 +
 [source,cpp,subs=normal]
 ----

@@ -30,6 +30,7 @@ auto str = strf::to_string( +*strf::fmt(1.0).sci().fill(U'~') ^ 15 );
 assert(str == "~~~~+1.e+01~~~~")
 ----
 
+[[alignment_format_functions]]
 .Alignment format functions -- for all printable types
 [%header,cols="40,60"]
 |===
@@ -968,9 +969,9 @@ assert(utf16_lax == original);                         // surrogate preserved
 [[invalid_seq_notifier]]
 === Encoding error notifier function
 
-The facet `invalid_seq_notifier` contains a function pointer that is called
-every time an ivalid sequence is sanitized, unless it is null, which is the
-default.
+The facet `<<strf_hpp#invalid_seq_notifier,invalid_seq_notifier>>` contains
+a function pointer that is called every time an ivalid sequence is sanitized,
+unless it is null, which is the default.
 
 The code below throws an exception if `u16str` contains any invalid sequence:
 [source,cpp]
@@ -1042,7 +1043,7 @@ assert(result == "***15.00 \xE2\x82\xAC \x80"); // width calculated as 9
   template takes a function object `f` as paramenter and
   returns a facet object that calculates the width of the strings
   by converting them to UTF-32 ( following the policy associated to
-  `<<invalid_seq_policy,invalid_seq_policy>>::replace` ) and then calling
+  `<<invalid_seq_notifier,invalid_seq_notifier>>::replace` ) and then calling
   `f` to evaluate the width of each UTF-32 character. `f` shall take a
   `char32_t` parameter and return a `<<strf_hpp#width_t,width_t>>`,
   which is a type that implements
@@ -1222,7 +1223,7 @@ assert(str == "The day was is 99/01/01.");
 ----
 
 === Aligned joins
-You can apply any of the <<format_function,alignment format function>> on the
+You can apply any of the <<alignment_format_functions,alignment format functions>> on the
 expression `join(__args__\...)`
 [source,cpp]
 ----

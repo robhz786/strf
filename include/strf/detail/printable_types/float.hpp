@@ -273,7 +273,7 @@ constexpr STRF_HD bool operator!=( strf::float_format lhs
 template <strf::float_notation Notation>
 struct float_formatter;
 
-template <typename T, strf::float_notation Notation = strf::float_notation::general>
+template <typename T, strf::float_notation Notation>
 class float_formatter_fn
 {
     template <strf::float_notation OtherNotation>
@@ -380,9 +380,15 @@ public:
         return adapted_derived_type_<N>{ static_cast<const T&>(*this) };
     }
 
-    constexpr strf::float_format get_float_format() const noexcept
+    constexpr STRF_HD strf::float_format get_float_format() const noexcept
     {
         return data_;
+    }
+
+    constexpr STRF_HD T&& set_float_format(strf::float_format data) && noexcept
+    {
+        data_ = data;
+        return static_cast<T&&>(*this);
     }
 
 private:

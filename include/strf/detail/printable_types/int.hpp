@@ -157,6 +157,11 @@ public:
     {
         return data_;
     }
+    constexpr STRF_HD T&& set_int_format(strf::int_format data) && noexcept
+    {
+        data_ = data;
+        return static_cast<T&&>(*this);
+    }
 
 private:
 
@@ -390,7 +395,7 @@ struct voidptr_printing
         auto f3 = strf::get_facet<strf::char_encoding_c<CharT>, const void*>(fp);
         auto fp2 = strf::pack(f1, f2, f3);
         auto x2 = *strf::hex(strf::detail::bit_cast<std::size_t>(x.value()))
-                  .set(x.get_alignment_format());
+                             .set_alignment_format(x.get_alignment_format());
         return strf::make_default_printer_input<CharT>(preview, fp2, x2);
     }
 };

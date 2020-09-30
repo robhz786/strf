@@ -15,7 +15,7 @@ and `std::basic_string<CharT, Traits, Alloc>`
 ::
 where:
 ::
-- `CharT` is the character type. If it is not the same as the output character type ( defined by the <<destinations,destination>> ), then it is necessary to use the `conv` or `sani` format function.
+- `CharT` is the character type. If it is not the same as the output character type, then it is necessary to use the `conv` or `sani` format function.
 - `Traits` can be any type that satisfies https://en.cppreference.com/w/cpp/named_req/CharTraits[CharTraits]
 - `Alloc` can be any type that satisfies https://en.cppreference.com/w/cpp/named_req/Allocator[Allocator]
 
@@ -59,18 +59,16 @@ Format functions::
 auto str = strf::to_string(strf::center(u" Hello! ", 16, '*').conv());
 assert(str == "**** Hello! ****");
 ----
-+
-See also the section about <<encoding_conversion,encoding conversion>>.
 
 //-
 Facet categories::
-- `<<width_calculator,width_calculator_c>>`
-- `<<character_encoding,char_encoding_c>><__CharType__>`
+- `<<width_calculator_c,width_calculator_c>>`
+- `<<char_encoding_c,char_encoding_c>><__CharType__>`
 - `<<surrogate_policy,surrogate_policy_c>>`
-- `<<invalid_seq_policy,invalid_seq_policy_c>>`
+- `<<invalid_seq_notifier_c,invalid_seq_notifier_c>>`
 
 === Single characters
-Type:: `CharT`, that is the output character type defined by the <<destinations,destination>>.
+Type:: `CharT`, the same as the output character type.
 
 Format functions::
 ( in addition to <<alignment_format_functions, alignment functions>> )
@@ -79,8 +77,8 @@ Format functions::
 
 //-
 Facet categories::
-- `<<width_calculator,width_calculator_c>>`
-- `<<character_encoding,char_encoding_c>><__CharType__>`: Used to encode the <<alignment_format_functions,fill character>>.
+- `<<width_calculator_c,width_calculator_c>>`
+- `<<char_encoding_c,char_encoding_c>><__CharType__>`: Used to encode the <<alignment_format_functions,fill character>>.
 
 === `bool`
 Type:: `bool`
@@ -88,7 +86,7 @@ Format functions::
 <<alignment_format_functions, Alignment functions>> only.
 Facet categories::
 - `<<lettercase,lettercase_c>>`
-- `<<character_encoding,char_encoding_c>><__CharType__>`: Used to encode the <<alignment_format_functions,fill character>>.
+- `<<char_encoding_c,char_encoding_c>><__CharType__>`: Used to encode the <<alignment_format_functions,fill character>>.
 
 === `const void*`
 Types:: `const void*`
@@ -97,8 +95,8 @@ The <<alignment_format_functions, alignment functions>> only.
 
 Facet categories::
 - `<<lettercase,lettercase_c>>`
-- `<<numpunct, numpunct_c>><16>`
-- `<<character_encoding,char_encoding_c>><__CharType__>`: Used to encode the <<alignment_format_functions,fill character>> and the <<numpunct,punctuation characters>>.
+- `<<numpunct_c, numpunct_c>><16>`
+- `<<char_encoding_c,char_encoding_c>><__CharType__>`: Used to encode the <<alignment_format_functions,fill character>> and the <<numpunct,punctuation characters>>.
 
 === Integers
 
@@ -127,13 +125,12 @@ are printed by adding extra zero leading digits if necessary.
 `operator*()`::: Prints the base indication
 ( `"0x"` for hexadecimal, `"0"` for octal and `"0b"` for binary ).
 No effect in decimal base.
-`operator~()`::: Equivalent to `operator*()`. Deprecated.
 
 //-
 Facet categories::
 - `<<lettercase,lettercase_c>>`
 - `<<numpunct, numpunct_c>><__Base__>`
-- `<<character_encoding,char_encoding_c>><__CharType__>`: Used to encode the <<alignment_format_functions,fill character>> and the <<numpunct,punctuation characters>>.
+- `<<char_encoding_c,char_encoding_c>><__CharType__>`: Used to encode the <<alignment_format_functions,fill character>> and the <<numpunct,punctuation characters>>.
 
 
 === Floating Points
@@ -147,7 +144,6 @@ Format functions::
 `"+"` if the value is non negative. No effect for other bases.
 `operator*()`:::  Prints the decimal point even when there
 are no fractional digits.
-`operator~()`::: Equivalent to `operator*()`. Deprecated.
 `sci()`::: Prints in scientific notation, like this: `"1.2345e+02"`.
 `fixed()`::: Prints in decimal notation, like this: `"123.45"`.
 `gen()`::: This is the default notation.
@@ -168,8 +164,8 @@ the number of fractional digits. `precision == 0` has the same effect as
 //-
 Facet categories::
 - `<<lettercase,lettercase_c>>`
-- `<<numpunct, numpunct_c>><10>`
-- `<<character_encoding,char_encoding_c>><__CharType__>`: Used to encode the <<alignment_format_functions,fill character>> and the <<numpunct,punctuation characters>>.
+- `<<numpunct,numpunct_c>><10>`
+- `<<char_encoding_c,char_encoding_c>><__CharType__>`: Used to encode the <<alignment_format_functions,fill character>> and the <<numpunct,punctuation characters>>.
 
 === Ranges
 
@@ -394,11 +390,8 @@ assert(str == "---abc  ....def123---");
 ----
 
 
-
-
 === Facets [[global_function_with]]
-It is possible to <<facet_overriding,override facets>>
-to only a subset of the input arguments.
+It is possible to override facets to only a subset of the input arguments.
 
 [source,cpp]
 ----

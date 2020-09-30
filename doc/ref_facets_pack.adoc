@@ -22,8 +22,7 @@ http://www.boost.org/LICENSE_1_0.txt
 template <typename ... FPE>
 class facets_pack;
 ----
-::
-Compile-time requirements::: All types in `FPE\...` satisfy
+Compile-time requirements:: All types in `FPE\...` satisfy
  <<FacetsPackElement, _FacetsPackElement_>>.
 ====
 
@@ -34,9 +33,8 @@ Compile-time requirements::: All types in `FPE\...` satisfy
 ----
 constexpr facets_pack(const facets_pack& other);
 ----
-::
-Effects::: Initializes each element in this object with the corresponding element in `other`
-Compile-time requirements::: `std::is_copy_constructible_v<FPE> && \...`,
+Effects:: Initializes each element in this object with the corresponding element in `other`
+Compile-time requirements:: `std::is_copy_constructible_v<FPE> && \...`,
       otherwise this constructor does not participate in overload resolution.
 ====
 ====
@@ -44,10 +42,9 @@ Compile-time requirements::: `std::is_copy_constructible_v<FPE> && \...`,
 ----
 constexpr facets_pack(facets_pack&& other);
 ----
-::
-Effects::: Initializes each element from the
+Effects:: Initializes each element from the
           rvalue reference of the corresponding element in `other`
-Compile-time requirements::: `std::is_move_constructible_v<FPE> && \...`, otherwise this
+Compile-time requirements:: `std::is_move_constructible_v<FPE> && \...`, otherwise this
           constructor does not participate in overload resolution.
 ====
 ====
@@ -55,9 +52,8 @@ Compile-time requirements::: `std::is_move_constructible_v<FPE> && \...`, otherw
 ----
 constexpr explicit facets_pack(const FPE& ... fpe)
 ----
-::
-Effects::: Initializes each element with the correspondig value in `fpe\...`
-Compile-time requirements::: `std::is_copy_constructible_v<FPE> && \...`, otherwise this
+Effects:: Initializes each element with the correspondig value in `fpe\...`
+Compile-time requirements:: `std::is_copy_constructible_v<FPE> && \...`, otherwise this
       constructor does not participate in overload resolution.
 ====
 ====
@@ -66,9 +62,8 @@ Compile-time requirements::: `std::is_copy_constructible_v<FPE> && \...`, otherw
 template <typename... U>[br]
 constexpr explicit facets_pack(U&&... u)
 ----
-::
-Effects::: Initializes each element with the correspondig value in `std::forward<U>(u)\...`.
-Compile-time requirements::: This constructor does not participate in overload resolution, unless
+Effects:: Initializes each element with the correspondig value in `std::forward<U>(u)\...`.
+Compile-time requirements:: This constructor does not participate in overload resolution, unless
 - `sizeof\...(U) == sizeof\...(FPE)`, and
 - `sizeof\...(U) != 0`, and
 - `std::is_constructible_v<FPE, U&&> && \...`
@@ -80,7 +75,6 @@ Compile-time requirements::: This constructor does not participate in overload r
    facets_pack& operator=(const facets_pack&) = delete
    facets_pack& operator=(facets_pack&&) = delete;
 ----
-::
 Assignments are deleted because they seem unecessary and it's unclear
 what would be the best
 implementation in the case there is any reference type in `FPE\...`.
@@ -94,9 +88,8 @@ implementation in the case there is any reference type in `FPE\...`.
 template <typename ... T>
 constexpr /* see below */ pack(const T& ... args)
 ----
-::
-Return type::: `{facets_pack}<std::remove_cv_t<std::remove_reference_t<T>>\...>`
-Return value::: A `{facets_pack}` object initialized with `std::forward<T>(args)\...`
+Return type:: `{facets_pack}<std::remove_cv_t<std::remove_reference_t<T>>\...>`
+Return value:: A `{facets_pack}` object initialized with `std::forward<T>(args)\...`
 ====
 
 === Function template `get_facet` [[get_facet]]
@@ -106,11 +99,10 @@ Return value::: A `{facets_pack}` object initialized with `std::forward<T>(args)
 template <typename FCat, typename Tag, typename ... T>
 constexpr decltype(auto) get_facet(const facets_pack<T...>& fp);
 ----
-::
-Effects::: If <<has_facet, `has_facet<FCat, Tag>(fp)`>> returns `true` then
+Effects:: If <<has_facet, `has_facet<FCat, Tag>(fp)`>> returns `true` then
           returns <<do_get_facet,`do_get_facet<FCat, Tag>(fp)`, otherwise
           return `FCat::get_default()`.
-Compile-time requirements:::  `FCat` is a _{FacetCategory}_ type.
+Compile-time requirements::  `FCat` is a _{FacetCategory}_ type.
 ====
 
 [[has_facet]]
@@ -124,16 +116,15 @@ NOTE: This function template does not exists in this library.
 template <typename FCat, typename Tag, typename FPE>
 constexpr bool has_facet(const FPE& fpe)
 ----
-::
-Effects:::
+Effects::
 - If `FPE` is an instance of <<facets_pack, `facets_pack`>>, then returns wheter there
   is any elemente `elm` in `fpe` such that `has_facet<FCat, Tag>(elm)`
   is `true`.
 - If `FPE` is an instance of <<constrained_fpe, `constrained_fpe<FPE, Filter>`>>,
   then returns `Filter<Tag>::value && has_facet<FCat, Tag>(fpe.get())`.
-- If `FPE` is a  <<facet, _Facet_>> type, returns `std::is_same_v<FCat, {facet_category}<FPE>>`
+- If `FPE` is a  <<Facet,_Facet_>> type, returns `std::is_same_v<FCat, {facet_category}<FPE>>`
 
-Compile-time requirements:::
+Compile-time requirements::
 - `FCat` is a _{FacetCategory}_ type.
 - `FPE` satisfies <<FacetsPackElement, _FacetsPackElement_>>.
 ====
@@ -150,8 +141,7 @@ NOTE: This function template is not part of the library.
 template <typename FCat, typename Tag, typename FPE>
 constexpr decltype(auto) do_get_facet(const FPE& fpe);
 ----
-::
-Compile-time requirements:::
+Compile-time requirements::
 - `FCat` satisfies _{FacetCategory}_.
 - `FPE` satisfies <<FacetsPackElement,_FacetsPackElement_>>.
 - `has_facet<FCat, Tag>(fpe)` is `true`.
@@ -166,14 +156,13 @@ Compile-time requirements:::
 template <template <class> class Filter, typename FPE>
 class constrained_fpe;
 ----
-::
 The class template `constrained_fpe` is designed to be used in
 <<facets_pack,`facets_pack`>>. `constrained_fpe<Filter, FPE>`
 holds a value of `FPE` that will only be returned by
 <<get_facet, ``get_facet<Category, Tag>``>> if
 `Filter<Tag>::value` is `true`.
 
-Compile-time requirements:::
+Compile-time requirements::
 - For any type `T`, `Filter<T>` has a member variable `value` that is a
   static constexpr value whose type is implicitly convertible to `bool`
 - `FPE` satisfies <<ConstrainableFacetsPackElement,_ConstrainableFacetsPackElement_>>.
@@ -188,12 +177,12 @@ template <template <class> class Filter, typename FPE>
 class constrained_fpe
 {
 public:
-    // <<constrained_fpe_constructor, constructors>>
+    // <<constrained_fpe_constructor,constructors>>
     constexpr constrained_fpe(const constrained_fpe&) = default;
     constexpr constrained_fpe(constrained_fpe&& other) = default;
     constexpr constrained_fpe(const FPE& f);
 
-    // <<constrained_fpe_element_access, element access>>
+    // <<constrained_fpe_element_access,element access>>
     constexpr const FPE& get() const;
 
 private:
@@ -211,31 +200,28 @@ private:
 ----
 constexpr explicit constrained_fpe(const FPE& fpe);
 ----
-::
-Effect::: Initializes the element of the `constrained_fpe` with `fpe`.
+Effect:: Initializes the element of the `constrained_fpe` with `fpe`.
 ====
 ====
 [source,cpp]
 ----
 constexpr constrained_fpe(const constrained_fpe& other);
 ----
-::
-Effect::: Initializes the element of the `constrained_fpe` from
+Effect:: Initializes the element of the `constrained_fpe` from
      the const reference of the element of `other`.
-Compile-time requirements::: `std::is_copy_constructible<FPE>::value` is `true`.
+Compile-time requirements:: `std::is_copy_constructible<FPE>::value` is `true`.
 ====
 ====
 [source,cpp]
 ----
 constexpr constrained_fpe(constrained_fpe&& other);
 ----
-::
-Effect::: Initializes the element of the `constrained_fpe` from
+Effect:: Initializes the element of the `constrained_fpe` from
      the rvalue reference of element of `other`.
-Compile-time requirements::: `std::is_move_constructible<FPE>::value` is `true`.
+Compile-time requirements:: `std::is_move_constructible<FPE>::value` is `true`.
 
-[[constrained_fpe_element_access]]
 ====
+[[constrained_fpe_element_access]]
 ===== Element access
 
 ====
@@ -243,23 +229,21 @@ Compile-time requirements::: `std::is_move_constructible<FPE>::value` is `true`.
 ----
 constexpr const FPE& get() const;
 ----
-::
-Effect::: Return the stored element;
+Effect:: Return the stored element;
 ====
-=== Function template `constrain`
+=== Function template `constrain` [[constrain]]
 ====
 [source]
 ----
 template <template <class> class Filter, typename T>
 constexpr constrained_fpe<Filter, U> constrain(const T& arg);
 ----
-::
 `constrain` is just a syntatic sugar to create a <<constrained_fpe, `constrained_fpe`>> object.
 
-Return type::: `constrained_fpe<Filter, U>`, where `U` is
+Return type:: `constrained_fpe<Filter, U>`, where `U` is
                 `std::remove_cv_t<std::remove_reference_t<T>>`.
-Return value::: `constrained_fpe<Filter, U>{ std::forward<T>(arg) }`
-Compile-time requirements:::
+Return value:: `constrained_fpe<Filter, U>{ std::forward<T>(arg) }`
+Compile-time requirements::
 `T` is such that `U` satisfies <<FacetsPackElement, _FacetsPackElement_>>.
 ====
 

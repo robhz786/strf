@@ -231,7 +231,7 @@ static void STRF_TEST_FUNC test_constrained_fpe()
     {   // construct the constrained facet from rvalue reference;
 
         ctor_log log;
-        facet<0> f{10, &log};
+        facet<0, facet_conf::enable_only_move> f{10, &log};
 
         auto c = strf::constrain<is_64>(std::move(f));
         TEST_EQ(log.cp_count, 0);

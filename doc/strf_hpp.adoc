@@ -19,7 +19,7 @@ http://www.boost.org/LICENSE_1_0.txt
 :alignment_formatter_q: <<alignment_formatter,alignment_formatter_q>>
 :alignment_format: <<alignment_format,alignment_format>>
 :int_formatter: <<int_formatter,int_formatter>>
-:int_format: <<int_format,int_format>>
+:int_format: <<int_format_fn,int_format>>
 :float_formatter: <<float_formatter,float_formatter>>
 :float_format: <<float_format,float_format>>
 

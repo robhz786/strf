@@ -774,7 +774,7 @@ public:
         data_.fill = ch;
         return as_derived_rval_ref();
     }
-    constexpr STRF_HD T&& set(alignment_format data) && noexcept
+    constexpr STRF_HD T&& set_alignment_format(strf::alignment_format data) && noexcept
     {
         data_ = data;
         return as_derived_rval_ref();
@@ -855,14 +855,14 @@ public:
             , strf::tag<alignment_formatter_q<true>>{}
             , strf::alignment_format{U' ', width, strf::text_alignment::split} };
     }
-    constexpr STRF_HD auto fill(char32_t ch) const noexcept
+    constexpr STRF_HD adapted_derived_type fill(char32_t ch) const noexcept
     {
         return adapted_derived_type
             { static_cast<const T&>(*this)
             , strf::tag<alignment_formatter_q<true>>{}
             , strf::alignment_format{ch} };
     }
-    constexpr STRF_HD auto set(strf::alignment_format data) const noexcept
+    constexpr STRF_HD auto set_alignment_format(strf::alignment_format data) const noexcept
     {
         return adapted_derived_type
             { static_cast<const T&>(*this)

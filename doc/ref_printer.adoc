@@ -89,6 +89,7 @@ Given
 * `P`, a _{Printable}_ type such that `{print_traits_of}<P>` is `T`.
 
 ==== Member types
+[[PrintTraits_forwarded_type]]
 ====
 [source,cpp]
 ----
@@ -101,6 +102,7 @@ and must be copy-constructible. And its copy-constructor should be fast.
 `forwarded_type` is used intead of `P` as the storage type in some
 situations ( for example, the objects created by `fmt` and `{join}` ).
 ====
+[[PrintTraits_facet_tag]]
 ====
 [source,cpp]
 ----
@@ -110,6 +112,7 @@ The type that is used as the tag type in `<<get_facet,get_facet>>`.
 It shall not be a reference type, and shall not contain cv-qualifiers.
 Usually is it `std::remove_cv_t<std::remove_reference<forwarded_type>>`
 ====
+[[PrintTraits_fmt_type]]
 ====
 [source,cpp]
 ----
@@ -175,9 +178,9 @@ such that the sequence:
 
 [source,cpp,subs=normal]
 ----
-std::size_t s  = x.preview.<<size_preview__get_size,get_size>>();
+std::size_t s  = x.preview.<<size_preview_get_size,get_size>>();
 typename T::printer_type p{x};
-std::size_t predicted_size = x.preview.<<size_preview__get_size,get_size>>() - s;
+std::size_t predicted_size = x.preview.<<size_preview_get_size,get_size>>() - s;
 std::size_t dest_size      = dest.<<outbuff_hpp#basic_outbuff_space,space>>();
 static_cast<const printer<CharT>&>(p).<<printer,print_to>>(dest);
 ----
@@ -345,7 +348,6 @@ public:
 ----
 constexpr print_preview() noexcept;
 ----
-::
 [horizontal]
 Effect:: Default-construct each of the base classes.
 ====
@@ -354,7 +356,6 @@ Effect:: Default-construct each of the base classes.
 ----
 constexpr explicit print_preview(<<width_t,width_t>> initial_width) noexcept;
 ----
-::
 Compile-time requirement:: `WidthRequired` is `preview_width::yes`, otherwise this constructor
 does not participate in overload resolution.
 Effect:: Initializes `<<width_preview, width_preview>>` base
@@ -384,7 +385,6 @@ public:
 ----
 explicit constexpr size_preview() noexcept;
 ----
-::
 Postcondition:: `get_size() == 0`
 ====
 ====
@@ -392,7 +392,6 @@ Postcondition:: `get_size() == 0`
 ----
 explicit constexpr size_preview(std::size_t initial_size) noexcept;
 ----
-::
 Compile-time requirement:: `Active` is `true`, otherwise this constructor
 does not participate in overload resolution.
 Postcondition:: `get_size() == initial_size`
@@ -402,18 +401,16 @@ Postcondition:: `get_size() == initial_size`
 ----
 constexpr void add_size(std::size_t s) noexcept;
 ----
-::
 Postcondition::
 When `Active` is `false`::: None
 When `Active` is `true` ::: `(get_size() - previous_size == s)`, where `previous_size` is the return value of `get_size()` before this call.
 ====
-[[size_preview__get_size]]
+[[size_preview_get_size]]
 ====
 [source,cpp]
 ----
 constexpr void get_size() const noexcept;
 ----
-::
 Return value::
 When `Active` is `false`::: `0` (always)
 When `Active` is `true` ::: The internally stored size value.
@@ -444,7 +441,6 @@ public:
 ----
 constexpr width_preview() noexcept;
 ----
-::
 Postcondition:: `remaining_width() == 0`
 ====
 ====
@@ -452,7 +448,6 @@ Postcondition:: `remaining_width() == 0`
 ----
 constexpr width_preview(<<width_t,width_t>> initial_width) noexcept;
 ----
-::
 Compile-time requirement:: `Active` is `true`, otherwise this constructor
 does not participate in overload resolution.
 Postcondition:: `remaining_width() == initial_width`
@@ -462,7 +457,6 @@ Postcondition:: `remaining_width() == initial_width`
 ----
 void subtract_width(<<width_t,width_t>> w) noexcept;
 ----
-::
 Postcondition::
 When `Active` is `false`::: None
 When `Active` is `true` :::
@@ -478,7 +472,6 @@ where `previous_w` is the return value of `remaining_width()` before this call.
 ----
 void checked_subtract_width(<<width_t,width_t>> w) noexcept;
 ----
-::
 Postcondition::
 When `Active` is `false`::: None
 When `Active` is `true` :::
@@ -494,7 +487,6 @@ where `previous_w` is the return value of `remaining_width()` before this call.
 ----
 void checked_subtract_width(std::ptrdiff_t w)
 ----
-::
 Postcondition::
 When `Active` is `false`::: None
 When `Active` is `true` :::

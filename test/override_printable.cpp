@@ -56,7 +56,8 @@ struct my_bool_printing_override
         ( Preview& preview, const FPack& fp, strf::value_with_formatters<T...> x ) noexcept
     {
         return strf::make_printer_input<CharT>
-            ( preview, fp, strf::join(x.value()).set(x.get_alignment_format())  );
+            ( preview, fp, strf::join(x.value())
+              .set_alignment_format(x.get_alignment_format())  );
     }
 };
 

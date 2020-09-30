@@ -5,7 +5,6 @@
 #include <vector>
 #include <strf/to_string.hpp>
 
-//[ ipv4address_type
 namespace xxx {
 
 struct ipv4address
@@ -45,7 +44,7 @@ struct print_traits<xxx::ipv4address> {
     static auto make_printer_input(Preview& preview, const FPack& fp, fmt_type arg)
     {
         auto join = transform_arg<CharT>(arg.value());
-        auto aligned_join = join.set(arg.get_alignment_format());
+        auto aligned_join = join.set_alignment_format(arg.get_alignment_format());
         return strf::make_default_printer_input<CharT>(preview, fp, aligned_join);
     }
 };
