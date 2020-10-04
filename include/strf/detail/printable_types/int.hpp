@@ -20,23 +20,33 @@ namespace strf {
 template <int Base>
 struct int_formatter;
 
+template <int Base>
 struct int_format
 {
     unsigned precision = 0;
     bool showbase = false;
     bool showpos = false;
+    constexpr static int base = Base;
 };
 
-constexpr STRF_HD bool operator==( strf::int_format lhs
-                                 , strf::int_format rhs) noexcept
+template <int ToBase, int FromBase>
+constexpr STRF_HD int_format<ToBase> change_base(int_format<FromBase> f) noexcept
+{
+    return {f.precision, f.showbase, f.showpos};
+}
+
+template <int Base>
+constexpr STRF_HD bool operator==( strf::int_format<Base> lhs
+                                 , strf::int_format<Base> rhs ) noexcept
 {
     return lhs.precision == rhs.precision
         && lhs.showbase == rhs.showbase
         && lhs.showpos == rhs.showpos;
 }
 
-constexpr STRF_HD bool operator!=( strf::int_format lhs
-                                 , strf::int_format rhs) noexcept
+template <int Base>
+constexpr STRF_HD bool operator!=( strf::int_format<Base> lhs
+                                 , strf::int_format<Base> rhs ) noexcept
 {
     return ! (lhs == rhs);
 }
@@ -54,9 +64,14 @@ public:
 
     constexpr STRF_HD int_formatter_fn()  noexcept { }
 
-    template <typename U, int OtherBase>
-    constexpr STRF_HD int_formatter_fn(const int_formatter_fn<U, OtherBase> & u) noexcept
+    template <typename U>
+    constexpr STRF_HD int_formatter_fn(const int_formatter_fn<U, Base> & u) noexcept
         : data_(u.get_int_format())
+    {
+    }
+
+    constexpr STRF_HD explicit int_formatter_fn(int_format<Base> data) noexcept
+        : data_(data)
     {
     }
 
@@ -69,9 +84,12 @@ public:
 
     template < int B = 16 >
     constexpr STRF_HD std::enable_if_t<Base != B && B == 16, adapted_derived_type_<B>>
-    hex() &&
+    hex() const &
     {
-        return adapted_derived_type_<B>{ static_cast<const T&>(*this) };
+        return adapted_derived_type_<B>
+            { static_cast<const T&>(*this)
+            , strf::tag<strf::int_formatter<B>>{}
+            , strf::change_base<B>(data_) };
     }
 
     template < int B = 10 >
@@ -83,9 +101,12 @@ public:
 
     template < int B = 10 >
     constexpr STRF_HD std::enable_if_t<Base != B && B == 10, adapted_derived_type_<B>>
-    dec() &&
+    dec() const &
     {
-        return adapted_derived_type_<B>{ static_cast<const T&>(*this) };
+        return adapted_derived_type_<B>
+            { static_cast<const T&>(*this)
+            , strf::tag<strf::int_formatter<B>>{}
+            , strf::change_base<B>(data_) };
     }
 
     template < int B = 8 >
@@ -97,9 +118,12 @@ public:
 
     template < int B = 8 >
     constexpr STRF_HD std::enable_if_t<Base != B && B == 8, adapted_derived_type_<B>>
-    oct() &&
+    oct() const &
     {
-        return adapted_derived_type_<B>{ static_cast<const T&>(*this) };
+        return adapted_derived_type_<B>
+            { static_cast<const T&>(*this)
+            , strf::tag<strf::int_formatter<B>>{}
+            , strf::change_base<B>(data_) };
     }
 
     template < int B = 2 >
@@ -111,9 +135,12 @@ public:
 
     template < int B = 2 >
     constexpr STRF_HD std::enable_if_t<Base != B && B == 2, adapted_derived_type_<B>>
-    bin() &&
+    bin() const &
     {
-        return adapted_derived_type_<B>{ static_cast<const T&>(*this) };
+        return adapted_derived_type_<B>
+            { static_cast<const T&>(*this)
+            , strf::tag<strf::int_formatter<B>>{}
+            , strf::change_base<B>(data_) };
     }
 
     constexpr STRF_HD T&& p(unsigned _) && noexcept
@@ -153,19 +180,28 @@ public:
     {
         return data_.showpos;
     }
-    constexpr STRF_HD strf::int_format get_int_format() const noexcept
+    constexpr STRF_HD strf::int_format<Base> get_int_format() const noexcept
     {
         return data_;
     }
-    constexpr STRF_HD T&& set_int_format(strf::int_format data) && noexcept
+    constexpr STRF_HD T&& set_int_format(strf::int_format<Base> data) && noexcept
     {
         data_ = data;
         return static_cast<T&&>(*this);
     }
+    template <int OtherBase>
+    constexpr STRF_HD std::enable_if_t<Base != OtherBase, adapted_derived_type_<OtherBase>>
+    set_int_format(strf::int_format<OtherBase> data) const & noexcept
+    {
+        return adapted_derived_type_<OtherBase>
+            { static_cast<const T&>(*this)
+            , strf::tag<strf::int_formatter<OtherBase>>{}
+            , strf::change_base<OtherBase>(data) };
+    }
 
 private:
 
-    strf::int_format data_;
+    strf::int_format<Base> data_;
 };
 
 template <int Base>
@@ -572,7 +608,7 @@ public:
              , typename IntT
              , typename IntTag = IntT >
     STRF_HD partial_fmt_int_printer
-        ( IntT value, int_format fdata, Preview& preview, const FPack& fp )
+        ( IntT value, strf::int_format<Base> fdata, Preview& preview, const FPack& fp )
         : lettercase_(get_facet<strf::lettercase_c, IntTag>(fp))
     {
         init_<IntT>( value, fdata );
@@ -620,7 +656,7 @@ private:
     std::uint8_t prefixsize_ = 0;
 
     template <typename IntT>
-    STRF_HD void init_(IntT value, strf::int_format fmt);
+    STRF_HD void init_(IntT value, strf::int_format<Base> fmt);
 
     template <typename Encoding>
     STRF_HD void init_punct_(Encoding enc);
@@ -630,7 +666,7 @@ template <typename CharT, int Base>
 template <typename IntT>
 STRF_HD void partial_fmt_int_printer<CharT, Base>::init_
     ( IntT value
-    , strf::int_format fmt )
+    , strf::int_format<Base> fmt )
 {
     using unsigned_type = std::make_unsigned_t<IntT>;
     STRF_IF_CONSTEXPR (Base == 10) {

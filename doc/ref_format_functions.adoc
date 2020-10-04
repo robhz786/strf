@@ -11,7 +11,8 @@ http://www.boost.org/LICENSE_1_0.txt
 :float_notation: <<float_format,float_notation>>
 :float_format: <<float_format,float_format>>
 :change_notation: <<float_format,change_notation>>
-:int_format: <<int_formatter_fn,int_format>>
+:int_format: <<int_format,int_format>>
+:change_base: <<int_format,change_base>>
 
 == Format functions
 
@@ -621,59 +622,79 @@ struct int_formatter
 ----
 namespace strf {
 
-struct int_format
-{
-    unsigned precision = 0;
-    bool showbase = false;
-    bool showpos = false;
-};
-
-constexpr bool operator==(int_format lhs, int_format rhs) noexcept;
-constexpr bool operator!=(int_format lhs, int_format rhs) noexcept;
-
 template <class T, int Base>
-class int_formatter_fn
-{
+class int_formatter_fn {
 public:
-    constexpr int_formatter_fn() noexcept;
+    constexpr <<int_formatter_fn_default_ctor,int_formatter_fn>>() noexcept;
 
-    template <typename U, int OtherBase>
-    constexpr int_formatter_fn(const int_formatter_fn<U, OtherBase> & u) noexcept;
+    template <typename U>
+    constexpr <<int_formatter_fn_ctor_other,int_formatter_fn>>(const int_formatter_fn<U> & u) noexcept;
+
+    constexpr explicit <<int_formatter_fn_ctor_data,int_formatter_fn>>({int_format}<Base> data) noxcept;
 
     // <<int_formatter_fn_observers,observers>>
-    constexpr int_format get_int_format() const noexcept;
     constexpr unsigned precision() const noexcept;
     constexpr bool showbase() const noexcept;
     constexpr bool showpos() const noexcept;
     constexpr static int base() noexcept;
+    constexpr {int_format}<Base> get_int_format() const noexcept;
 
     // <<int_formatter_fn_format_functions, format functions>>
-    constexpr T&& set_int_format(int_format data) && noexcept;
-    constexpr T&& p(unsigned precision) && noexcept; // set precision
-    constexpr T&& operator+() && noexcept;           // show positive sign
-    constexpr T&& operator{asterisk}() && noexcept;           // show base
+    constexpr T&& <<int_formatter_fn_p,p>>(unsigned precision) && noexcept; // set precision
+    constexpr T&& <<int_formatter_fn_showpos,operator+>>() && noexcept;           // show positive sign
+    constexpr T&& <<int_formatter_fn_showbase,operator{asterisk}>>() && noexcept;           // show base
 
-    constexpr T&& hex() && noexcept; // when Base == 16
-    constexpr T&& dec() && noexcept; // when Base == 10
-    constexpr T&& oct() && noexcept; // when Base == 8
-    constexpr T&& bin() && noexcept; // when Base == 2
+    constexpr T&& <<int_formatter_fn_set_int_keep_base,hex>>() && noexcept; // when Base == 16
+    constexpr T&& <<int_formatter_fn_set_int_keep_base,dec>>() && noexcept; // when Base == 10
+    constexpr T&& <<int_formatter_fn_set_int_keep_base,oct>>() && noexcept; // when Base == 8
+    constexpr T&& <<int_formatter_fn_set_int_keep_base,bin>>() && noexcept; // when Base == 2
 
-    constexpr /{asterisk} see below {asterisk}/ hex() && noexcept; // when Base != 16
-    constexpr /{asterisk} see below {asterisk}/ dec() && noexcept; // when Base != 10
-    constexpr /{asterisk} see below {asterisk}/ oct() && noexcept; // when Base != 8
-    constexpr /{asterisk} see below {asterisk}/ bin() && noexcept; // when Base != 2
+    constexpr /{asterisk} see below {asterisk}/ <<int_formatter_fn_set_int_change_base,hex>>() const & noexcept; // when Base != 16
+    constexpr /{asterisk} see below {asterisk}/ <<int_formatter_fn_set_int_change_base,dec>>() const & noexcept; // when Base != 10
+    constexpr /{asterisk} see below {asterisk}/ <<int_formatter_fn_set_int_change_base,oct>>() const & noexcept; // when Base != 8
+    constexpr /{asterisk} see below {asterisk}/ <<int_formatter_fn_set_int_change_base,bin>>() const & noexcept; // when Base != 2
+
+    constexpr T&& <<int_formatter_fn_set_int_format,set_int_format>>(int_format<Base> data) && noexcept;
+
+    template <int OtherBase> // OtherBase != Base
+    constexpr /{asterisk} see below {asterisk}/ <<int_formatter_fn_set_int_format_otherbase,set_int_format>>({int_format}<OtherBase> data) const & noexcept;
 };
 } // namespace strf
 ----
-[[int_formatter_fn_observers]]
-===== Observers
+
+==== Constructors
+
+[[int_formatter_fn_default_ctor]]
 ====
 [source,cpp]
 ----
-constexpr int_format get_int_format() const noexcept;
+constexpr int_formatter_fn() noexcept;
 ----
-Return value:: The value corresponding to the state of this object.
+postcondition:: `get_int_format() == {int_format}<Base>{}`
 ====
+
+[[int_formatter_fn_ctor_other]]
+====
+[source,cpp]
+----
+template <typename U>
+constexpr int_formatter_fn(const int_formatter_fn<U> & u) noexcept;
+----
+postcondition:: `get_int_format() == u.get_int_format()`
+====
+
+[[int_formatter_fn_ctor_data]]
+====
+[source,cpp]
+----
+constexpr explicit int_formatter_fn({int_format}<Base> data) noxcept;
+----
+postcondition:: `get_int_format() == data`
+====
+
+[[int_formatter_fn_observers]]
+===== Observers
+
 ====
 [source,cpp]
 ----
@@ -705,14 +726,8 @@ Return value:: `Base`
 
 [[int_formatter_fn_format_functions]]
 ===== Format functions
-====
-[source,cpp]
-----
-constexpr T&& set_int_format({int_format} data) && noexcept;
-----
-Postconditions::  `get_int_format() == data`
-Return value:: `std::move(static_cast<T&>({asterisk}this))`
-====
+
+[[int_formatter_fn_p]]
 ====
 [source,cpp]
 ----
@@ -721,6 +736,8 @@ constexpr T&& p(unsigned precision) && noexcept;
 Postconditions::  `precision() == precision`
 Return value:: `std::move(static_cast<T&>({asterisk}this))`
 ====
+
+[[int_formatter_fn_showpos]]
 ====
 [source,cpp]
 ----
@@ -729,6 +746,8 @@ constexpr T&& operator+() && noexcept;
 Postconditions::  `showpos() == true`
 Return value:: `std::move(static_cast<T&>({asterisk}this))`
 ====
+
+[[int_formatter_fn_showbase]]
 ====
 [source,cpp]
 ----
@@ -738,6 +757,7 @@ Postconditions::  `showbase() == true`
 Return value:: `std::move(static_cast<T&>({asterisk}this))`
 ====
 
+[[int_formatter_fn_set_int_keep_base]]
 ====
 [source,cpp]
 ----
@@ -750,9 +770,10 @@ Compile-time requirements::
 `Base == DesiredBase`, where `DesiredBase` is equal to `10` in `dec()`, `16` in `hex()`, `8` in `oct()`
 and `2` in `bin()`.
 Return value::
-- `static_cast<T&&>({asterisk}this))`
+`static_cast<T&&>({asterisk}this))`
 ====
 
+[[int_formatter_fn_set_int_change_base]]
 ====
 [source,cpp]
 ----
@@ -771,10 +792,79 @@ Return type::
 {boost_mp_replace}<T, int_formatter<Base>, int_formatter<DesiredBase> >
 ----
 , where `DesiredBase` is equal to `10` in `dec()`, `16` in `hex()`, `8` in `oct()`
-and `2` in `bin()`.
+and `2` in `bin()`, otherwise the function does not participate in overload resolution.
+
 Return value::
-- `static_cast<ReturnType>(static_cast<const T&>({asterisk}this))`, where `ReturnType` is the return type;
++
+----
+__ReturnType__ { static_cast<const T&>(*this)
+           , {tag}<int_formatter<DesiredBase>>{}
+           , {change_base}<DesiredBase>(get_int_format()) }
+----
+where `__ReturnType__` is the return type, which must be an instance of `{value_with_formatters}`
+( since `T` is ). Hence, the above expression invokes
+<<value_with_formatters_vwf2_t_i,this constructor>>.
 ====
+
+[[int_formatter_fn_set_int_format]]
+====
+[source,cpp,subs=normal]
+----
+constexpr T&& set_int_format({int_format}<Base> data) && noexcept;
+----
+Postconditions::  `get_int_format() == data`
+Return value:: `std::move(static_cast<T&>({asterisk}this))`
+====
+
+[[int_formatter_fn_set_int_format_otherbase]]
+====
+[source,cpp,subs=normal]
+----
+template <int OtherBase>
+constexpr /{asterisk} see below {asterisk}/ set_int_format({int_format}<OtherBase> data) const &
+----
+Compile-time requirements:: `Base != OtherBase`, otherwise this function does not participate in overload resolution.
+
+Return value::
++
+----
+__ReturnType__ { static_cast<const T&>(*this)
+           , {tag}<int_formatter<OtherBase>>{}
+           , data }
+----
+where `__ReturnType__` is the return type, which must be an instance of `{value_with_formatters}`
+( since `T` is ). Hence, the above expression invokes
+<<value_with_formatters_vwf2_t_i,this constructor>>.
+====
+
+[[int_format]]
+==== Struct template `int_format`
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template <int Base>
+struct int_format {
+    unsigned precision = 0;
+    bool showbase = false;
+    bool showpos = false;
+    static constexpr int base = Base;
+};
+
+template <int ToBase, int FromBase>
+constexpr int_format<ToBase> change_base(int_format<FromBase> f) noexcept {
+    return {f.precision, f.showbase, f.showpos};
+}
+
+template <int Base>
+constexpr bool operator==(int_format<Base> lhs, int_format<Base> rhs) noexcept;
+
+template <int Base>
+constexpr bool operator!=(int_format<Base> lhs, int_format<Base> rhs) noexcept;
+
+} // namespace strf
+----
 
 [[float_formatter]]
 === _Formatter_ `float_formatter`
@@ -1058,7 +1148,7 @@ where `__ReturnType__` is the return type, which must be an instance of `{value_
 <<value_with_formatters_vwf2_t_i,this constructor>>.
 ====
 
-==== struct `float_format` [[float_format]]
+==== Struct template `float_format` [[float_format]]
 
 [source,cpp,subs=normal]
 ----
@@ -1066,12 +1156,13 @@ namespace strf {
 
 enum class <<float_notation,float_notation>> {fixed, scientific, general};
 
-template <float_notation>
+template <float_notation N>
 struct float_format
 {
     unsigned precision = (unsigned)-1;
     bool showpoint = false;
     bool showpos = false;
+    static constexpr float_notation notation = N;
 };
 
 template <float_notation To, float_notation From>
