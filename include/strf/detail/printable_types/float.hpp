@@ -249,29 +249,46 @@ detail::double_dec decode(float f);
 
 enum class float_notation{fixed, scientific, general, hex};
 
+template <strf::float_notation Notation>
 struct float_format
 {
     unsigned precision = (unsigned)-1;
     bool showpoint = false;
     bool showpos = false;
+    constexpr static strf::float_notation notation = Notation;
 };
 
-constexpr STRF_HD bool operator==( strf::float_format lhs
-                                 , strf::float_format rhs ) noexcept
+template <strf::float_notation To, strf::float_notation From>
+constexpr STRF_HD strf::float_format<To> change_notation(strf::float_format<From> x) noexcept
+{
+    return float_format<To>{ x.precision, x.showpoint, x.showpos };
+}
+
+template <strf::float_notation Notation>
+constexpr STRF_HD bool operator==( strf::float_format<Notation> lhs
+                                 , strf::float_format<Notation> rhs ) noexcept
 {
     return lhs.precision == rhs.precision
         && lhs.showpoint == rhs.showpoint
         && lhs.showpos == rhs.showpos ;
 }
 
-constexpr STRF_HD bool operator!=( strf::float_format lhs
-                                 , strf::float_format rhs ) noexcept
+template <strf::float_notation Notation>
+constexpr STRF_HD bool operator!=( strf::float_format<Notation> lhs
+                                 , strf::float_format<Notation> rhs ) noexcept
 {
     return ! (lhs == rhs);
 }
 
+template <typename T, strf::float_notation Notation>
+class float_formatter_fn;
+
 template <strf::float_notation Notation>
-struct float_formatter;
+struct float_formatter
+{
+    template <typename T>
+    using fn = float_formatter_fn<T, Notation>;
+};
 
 template <typename T, strf::float_notation Notation>
 class float_formatter_fn
@@ -284,15 +301,20 @@ public:
 
     constexpr float_formatter_fn() noexcept = default;
 
-    constexpr STRF_HD explicit float_formatter_fn(const strf::float_format& data) noexcept
+    constexpr STRF_HD explicit float_formatter_fn
+        ( const strf::float_format<Notation>& data ) noexcept
         : data_(data)
     {
     }
 
-    template <typename U, strf::float_notation N>
-    constexpr STRF_HD explicit float_formatter_fn(const float_formatter_fn<U, N>& other) noexcept
-        : data_(other.get_float_format())
+    template <typename U>
+    constexpr STRF_HD explicit float_formatter_fn
+        ( const float_formatter_fn<U, Notation>& other ) noexcept
     {
+        auto data = other.get_float_format();
+        data_.showpoint = data.showpoint;
+        data_.showpos = data.showpos;
+        data_.precision = data.precision;
     }
     constexpr STRF_HD T&& operator+() && noexcept
     {
@@ -323,13 +345,17 @@ public:
     {
         return static_cast<T&&>(*this);
     }
+
     template <strf::float_notation N = strf::float_notation::scientific>
     constexpr STRF_HD
     std::enable_if_t< N != Notation && N == strf::float_notation::scientific
                     , adapted_derived_type_<N> >
     sci() const & noexcept
     {
-        return adapted_derived_type_<N>{ static_cast<const T&>(*this) };
+        return adapted_derived_type_<N>
+            { static_cast<const T&>(*this)
+            , strf::tag<strf::float_formatter<N>>{}
+            , change_notation<N>(data_) };
     }
 
     template <strf::float_notation N = strf::float_notation::fixed>
@@ -339,13 +365,17 @@ public:
     {
         return static_cast<T&&>(*this);
     }
+
     template <strf::float_notation N = strf::float_notation::fixed>
     constexpr STRF_HD
     std::enable_if_t< N != Notation && N == strf::float_notation::fixed
                     , adapted_derived_type_<N> >
     fixed() const & noexcept
     {
-        return adapted_derived_type_<N>{ static_cast<const T&>(*this) };
+        return adapted_derived_type_<N>
+            { static_cast<const T&>(*this)
+            , strf::tag<strf::float_formatter<N>>{}
+            , change_notation<N>(data_) };
     }
 
     template <strf::float_notation N = strf::float_notation::general>
@@ -355,13 +385,17 @@ public:
     {
         return static_cast<T&&>(*this);
     }
+
     template <strf::float_notation N = strf::float_notation::general>
     constexpr STRF_HD
     std::enable_if_t< N != Notation && N == strf::float_notation::general
                     , adapted_derived_type_<N> >
     gen() const & noexcept
     {
-        return adapted_derived_type_<N>{ static_cast<const T&>(*this) };
+        return adapted_derived_type_<N>
+            { static_cast<const T&>(*this)
+            , strf::tag<strf::float_formatter<N>>{}
+            , change_notation<N>(data_) };
     }
 
     template <strf::float_notation N = strf::float_notation::hex>
@@ -377,30 +411,38 @@ public:
                     , adapted_derived_type_<N> >
     hex() const & noexcept
     {
-        return adapted_derived_type_<N>{ static_cast<const T&>(*this) };
+        return adapted_derived_type_<N>
+            { static_cast<const T&>(*this)
+            , strf::tag<strf::float_formatter<N>>{}
+            , change_notation<N>(data_) };
     }
 
-    constexpr STRF_HD strf::float_format get_float_format() const noexcept
+    constexpr STRF_HD strf::float_format<Notation> get_float_format() const noexcept
     {
         return data_;
     }
 
-    constexpr STRF_HD T&& set_float_format(strf::float_format data) && noexcept
+    template <strf::float_notation N>
+    constexpr STRF_HD std::enable_if_t<N == Notation, T&&>
+    set_float_format(strf::float_format<N> data) && noexcept
     {
         data_ = data;
         return static_cast<T&&>(*this);
     }
 
+    template <strf::float_notation N>
+    constexpr STRF_HD std::enable_if_t<N != Notation, adapted_derived_type_<N>>
+    set_float_format(strf::float_format<N> data) && noexcept
+    {
+        return adapted_derived_type_<N>
+            { static_cast<const T&>(*this)
+            , strf::tag<strf::float_formatter<N>>{}
+            , data };
+    }
+
 private:
 
-    strf::float_format data_;
-};
-
-template <strf::float_notation Notation>
-struct float_formatter
-{
-    template <typename T>
-    using fn = float_formatter_fn<T, Notation>;
+    strf::float_format<Notation> data_;
 };
 
 namespace detail {
@@ -525,28 +567,27 @@ struct double_printer_data
     bool sci_notation;
 };
 
-
 template <strf::float_notation Notation>
 STRF_HD double_printer_data init_double_printer_data
-    ( detail::double_dec d, float_format fdata );
+    ( detail::double_dec d, float_format<Notation> fdata );
 
 template <strf::float_notation Notation>
 inline STRF_HD double_printer_data init_double_printer_data
-    ( float f, float_format fdata )
+    ( float f, float_format<Notation> fdata )
 {
     return init_double_printer_data<Notation>(detail::decode(f), fdata);
 }
 
 template <strf::float_notation Notation>
 inline STRF_HD double_printer_data init_double_printer_data
-    ( double d, float_format fdata )
+    ( double d, float_format<Notation> fdata )
 {
     return init_double_printer_data<Notation>(detail::decode(d), fdata);
 }
 
 template <strf::float_notation Notation>
 STRF_HD double_printer_data init_double_printer_data
-    ( detail::double_dec dd, float_format fdata )
+    ( detail::double_dec dd, float_format<Notation> fdata )
 {
     static_assert(Notation != strf::float_notation::hex, "");
     double_printer_data data;
@@ -1189,7 +1230,7 @@ public:
         static_assert(Notation != strf::float_notation::hex, "");
 
         const auto fdata = input.arg.get_float_format();
-        data_ = strf::detail::init_double_printer_data<Notation>(input.arg.value(), fdata);
+        data_ = strf::detail::init_double_printer_data(input.arg.value(), fdata);
         auto enc = get_facet<strf::char_encoding_c<CharT>, FloatT>(input.fp);
         auto punct = strf::get_facet<strf::numpunct_c<10>, FloatT>(input.fp);
         grouping_ = punct.grouping();
@@ -1215,7 +1256,7 @@ public:
         static_assert(Notation != strf::float_notation::hex, "");
 
         const auto fdata = input.arg.get_float_format();
-        data_ = strf::detail::init_double_printer_data<Notation>(input.arg.value(), fdata);
+        data_ = strf::detail::init_double_printer_data(input.arg.value(), fdata);
         auto enc = get_facet<strf::char_encoding_c<CharT>, FloatT>(input.fp);
         auto punct = strf::get_facet<strf::numpunct_c<10>, FloatT>(input.fp);
         grouping_ = punct.grouping();
@@ -2250,7 +2291,7 @@ struct hex_double_printer_data
 #if ! defined(STRF_OMIT_IMPL)
 
 STRF_FUNC_IMPL STRF_HD strf::detail::hex_double_printer_data init_hex_double_printer_data
-    ( float_format fdata, double x ) noexcept
+    ( float_format<strf::float_notation::hex> fdata, double x ) noexcept
 {
     strf::detail::hex_double_printer_data data;
 
@@ -2304,7 +2345,7 @@ STRF_FUNC_IMPL STRF_HD strf::detail::hex_double_printer_data init_hex_double_pri
 #else // ! defined(STRF_OMIT_IMPL)
 
 STRF_HD strf::detail::hex_double_printer_data init_hex_double_printer_data
-    ( float_format fdata, double d ) noexcept;
+    ( float_format<strf::float_notation::hex> fdata, double d ) noexcept;
 
 #endif // ! defined(STRF_OMIT_IMPL)
 

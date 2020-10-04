@@ -10,6 +10,7 @@ http://www.boost.org/LICENSE_1_0.txt
 :width_t: <<width_t,width_t>>
 :float_notation: <<float_format,float_notation>>
 :float_format: <<float_format,float_format>>
+:change_notation: <<float_format,change_notation>>
 :int_format: <<int_formatter_fn,int_format>>
 
 == Format functions
@@ -126,52 +127,188 @@ Compile-time requirements::
 - All types in `Fmt\...` satisfy <<Formatter,Formatter>>.
 - All types in `Fmt\...` are different.
 
-The purpose of the `value_with_formatters` class template is to aid
-the creation classes that contain format functions.
-The types of expressions like `fmt("Hello")`,
-`fmt(55)`, `{asterisk}hex(55) > 20`, etc, are all `value_with_formatters`
-instances. The `ValueType` template parameter holds the input
-type, and the types in `Fmts\...` defines the format functions.
-
 ==== Synopsis
-[source,cpp]
+[source,cpp,subs=normal]
 ----
 namespace strf {
 
-template <typename ValueType, class... Fmts>
+template <typename PrintTraits, class\... Fmts>
 class value_with_formatters
-    : public Fmts::template fn<value_with_formatters<ValueType, Fmts...>>...
+    : public Fmts::template fn<value_with_formatters<ValueType, Fmts\...>>\...
 {
 public:
+    using traits = PrintTraits;
+    using value_type = typename PrintTraits::forwarded_type;
 
-    constexpr value_with_formatters(const value_with_formatters&) = default;
-    constexpr value_with_formatters(value_with_formatters&&) = default;
-    constexpr value_with_formatters(const ValueType&);
+    constexpr explicit <<value_with_formatters_v,value_with_formatters>>(const value_type& v);
 
-    template <typename OtherValueType>
-    constexpr value_with_formatters
-        ( const ValueType&
-        , const value_with_formatters<OtherValueType, Fmts...>& );
+    template <typename\... OtherFmts>
+    constexpr explicit <<value_with_formatters_vwf2,value_with_formatters>>
+        ( const value_with_formatters<PrintTraits, OtherFmts\...>& f );
 
-    template <typename OtherValueType>
-    constexpr value_with_formatters
-        ( const ValueType&
-        , value_with_formatters<OtherValueType, Fmts...>&& );
+    template <typename\... OtherFmts>
+    constexpr explicit <<value_with_formatters_vwf2_rr,value_with_formatters>>
+        ( value_with_formatters<PrintTraits, OtherFmts\...>&& f );
 
+    template <typename OtherPrintTraits>
+    constexpr <<value_with_formatters_v_v2wf,value_with_formatters>>
+        ( const value_type& v
+        , const value_with_formatters<OtherPrintTraits, Fmts\...>& f );
 
-    template <typename... OtherFmts>
-    constexpr value_with_formatters(const value_with_formatters<ValueType, OtherFmts...>&);
+    template <typename OtherPrintTraits>
+    constexpr <<value_with_formatters_v_v2wf_rr,value_with_formatters>>
+        ( const value_type& v
+        , value_with_formatters<OtherPrintTraits, Fmts\...>&& f );
 
-    template <typename... OtherFmts>
-    constexpr value_with_formatters(value_with_formatters<ValueType, OtherFmts...>&&);
+    template <typename\... F, typename\... FInit>
+    constexpr <<value_with_formatters_v_t_i,value_with_formatters>>
+        ( const value_type& v
+        , {tag}<F\...>
+        , FInit&&\... finit );
 
+    template <typename Fmt, typename FmtInit, typename\... OtherFmts>
+    constexpr <<value_with_formatters_vwf2_t_i,value_with_formatters>>
+        ( const value_with_formatters<PrintTraits, OtherFmts\...>& f
+        , {tag}<Fmt>
+        , FmtInit&& fmt_init );
 
-    constexpr const ValueType& value() const;
+    constexpr const value_type& value() const;
+
+    constexpr value_type& value();
+
+private:
+
+    value_type value_; // exposition only
 };
 
 } // namespace strf
 ----
-To-do
+
+[[value_with_formatters_v]]
+====
+[source,cpp,subs=normal]
+----
+constexpr value_with_formatters(const value_type& v);
+----
+Effects::
+* Initializes `value_` with `v`
+* Default initializes all public base class subobjects
+====
+
+[[value_with_formatters_vwf2]]
+====
+[source,cpp,subs=normal]
+----
+template <typename\... OtherFmts>
+constexpr explicit value_with_formatters
+    ( const value_with_formatters<PrintTraits, OtherFmts\...>& f );
+----
+Effects::
+* Initializes `value_` with `f.value()`
+* Initializes each public base class subobjects with the corresponding base class subobject of `f`
+====
+
+[[value_with_formatters_vwf2_rr]]
+====
+[source,cpp,subs=normal]
+----
+template <typename\... OtherFmts>
+constexpr explicit value_with_formatters
+    ( value_with_formatters<PrintTraits, OtherFmts\...>&& f );
+----
+Effects::
+* Initializes `value_` with `static_cast<value_type&&>(f.value())`
+* Initializes each public base class subobjects `b` with `std::move(bf)`, where `bf`
+  is the base class subobjects in `f` that corresponds to `b`
+====
+
+[[value_with_formatters_v_v2wf]]
+====
+[source,cpp,subs=normal]
+----
+template <typename OtherPrintTraits>
+constexpr value_with_formatters
+    ( const value_type& v
+    , const value_with_formatters<OtherPrintTraits, Fmts\...>& f );
+----
+Effects::
+* Initializes `value_` with `v`
+* Initializes each public base class subobjects with the corresponding base class subobject of `f`
+====
+
+[[value_with_formatters_v_v2wf_rr]]
+====
+[source,cpp,subs=normal]
+----
+template <typename OtherPrintTraits>
+constexpr value_with_formatters
+    ( const value_type& v
+    , value_with_formatters<OtherPrintTraits, Fmts\...>&& f );
+----
+Effects::
+* Initializes `value_` with `v`
+* Initializes each public base class subobjects `b` with `std::move(bf)`, where `bf`
+  is the base class subobjects in `f` that corresponds to `b`
+====
+
+[[value_with_formatters_v_t_i]]
+====
+[source,cpp,subs=normal]
+----
+template <typename\... F, typename\... FInit>
+constexpr value_with_formatters
+    ( const value_type& v
+    , {tag}<F\...>
+    , FInit&&\... finit );
+----
+Compile-time requirements::
+* `sizeof\...(F) == sizeof\...(FInit)`
+* There is no repeated type in `F\...`
+* All types in `F\...` are also in `Fmts\...`
+
+Effects::
+* Initializes `value_` with `v`
+* For each type in `F\...`, initializes the corresponding public base class subobjects
+  with the corresponging value in `std::forward<FInit>(finit)\...`
+* Default initializes the remaining public base class subobjects
+
+====
+
+[[value_with_formatters_vwf2_t_i]]
+====
+[source,cpp,subs=normal]
+----
+template <typename Fmt, typename FmtInit, typename\... OtherFmts>
+constexpr value_with_formatters
+    ( const value_with_formatters<PrintTraits, OtherFmts\...>& f
+    , {tag}<Fmt>
+    , FmtInit&& fmt_init );
+----
+Compile-time requirements::
+* `Fmt` is one the types in `Fmts\...`
+
+Effects::
+* Initializes `value_` with `f.value()`
+* Initializes the public base class subobject that corresponds to `Fmt`
+  with `std::forward<FmtInit>(fmt_init)`
+* Initializes the other public base class subobjects with the corresponding
+  base class subobject of `f`
+====
+
+
+[[value_with_formatters_value]]
+====
+[source,cpp,subs=normal]
+----
+constexpr const value_type& value() const;
+constexpr value_type& value();
+----
+Return `value_`
+====
+
+
+
+
 
 [[Formatter]]
 === Type requirement _Formatter_
@@ -472,7 +609,7 @@ template <int Base>
 struct int_formatter
 {
     template <typename T>
-    using fn = strf::int_formatter_fn<T, Base>;
+    using fn = int_formatter_fn<T, Base>;
 };
 
 } // namespace strf
@@ -671,27 +808,34 @@ public:
     constexpr float_formatter_fn() noexcept;
 
     template <typename U>
-    constexpr explicit float_formatter_fn(const float_format_fn<U>& other) noexcept;
+    constexpr explicit float_formatter_fn(const float_format_fn<U, N>& other) noexcept;
 
     // observers
-    constexpr {float_format} get_float_format() const noexcept;
+    constexpr {float_format}<N> get_float_format() const noexcept;
 
-    // <<float_formatter_fn_format_functions, format functions>>
-    constexpr T&& set_float_format({float_format} data) && noexcept;
-    constexpr T&& operator+() && noexcept;
-    constexpr T&& operator{asterisk}() && noexcept;
-    constexpr T&& p(unsigned precision) && noexcept;
+    // format functions
+    constexpr T&& <<float_formatter_fn_showpos,operator+>>() && noexcept;
+    constexpr T&& <<float_formatter_fn_showpoint,operator{asterisk}>>() && noexcept;
+    constexpr T&& <<float_formatter_fn_p,p>>(unsigned precision) && noexcept;
 
     constexpr T&& <<float_formatter_fn_gen_noop,gen>>() && noexcept;      // when N == {float_notation}::general
     constexpr T&& <<float_formatter_fn_sci_noop,sci>>() && noexcept;      // when N == {float_notation}::scientific
     constexpr T&& <<float_formatter_fn_fixed_noop,fixed>>() && noexcept;    // when N == {float_notation}::fixed
-    
+
     constexpr /{asterisk} see below {asterisk}/ <<float_formatter_fn_gen_const,gen>>() const & noexcept; // when N != {float_notation}::general
     constexpr /{asterisk} see below {asterisk}/ <<float_formatter_fn_sci_const,sci>>() const & noexcept; // when N != {float_notation}::sci
     constexpr /{asterisk} see below {asterisk}/ <<float_formatter_fn_fixed_const,fixed>>() const & noexcept; // when N != {float_notation}::fixed
+
+    constexpr T&& <<float_formatter_fn_set_float_format_nonconst,set_float_format>>({float_format}<N> data) && noexcept;
+
+    template <{float_notation} N2> // where N2 != N
+    constexpr /{asterisk} see below {asterisk}/ <<float_formatter_fn_set_float_format_const,set_float_format>>({float_format}<N2> data) const & noexcept;
 };
 } // namespace strf
 ----
+
+Compile-time requirements::
+`T` is `{value_with_formatters}<__SomeValueType__, F\...>`, where `F\...` contains `float_formatter<N>`.
 
 [[float_formatter_fn_constructors]]
 ===== Constructors
@@ -700,27 +844,21 @@ public:
 ----
 constexpr float_formatter_fn() noexcept;
 ----
-Postconditions:: `get_float_format() == {float_format}{}`
+Postconditions:: `get_float_format() == {float_format}<N>{}`
 ====
 ====
 [source,cpp,subs=normal]
 ----
 template <typename U>
-constexpr explicit float_formatter_fn(const float_formatter_fn<U>& other) noexcept;
+constexpr explicit float_formatter_fn(const float_formatter_fn<U, N>& other) noexcept;
 ----
 Postconditions:: `get_float_format() == other.get_float_format()`
 ====
-[[float_formatter_fn_format_functions]]
+
+
 ===== Format functions
 
-====
-[source,cpp]
-----
-constexpr T&& apply({float_format} data) && noexcept;
-----
-Postconditions::  `get_float_format() == data`
-Return value:: `std::move(static_cast<T&>({asterisk}this))`
-====
+[[float_formatter_fn_showpos]]
 ====
 [source,cpp,subs=normal]
 ----
@@ -729,6 +867,8 @@ constexpr T&& operator+() && noexcept;
 Postconditions:: `get_float_format().<<float_showpos,showpos>> == true`
 Return value:: `static_cast<T&&>({asterisk}this)`
 ====
+
+[[float_formatter_fn_showpoint]]
 ====
 [source,cpp,subs=normal]
 ----
@@ -737,6 +877,8 @@ constexpr T&& operator{asterisk}() && noexcept;
 Postconditions:: `get_float_format().<<float_showpoint,showpoint>> == true`
 Return value:: `static_cast<T&&>({asterisk}this)`
 ====
+
+[[float_formatter_fn_p]]
 ====
 [source,cpp,subs=normal]
 ----
@@ -745,34 +887,6 @@ constexpr T&& p(unsigned precision) && noexcept;
 Postconditions:: `get_float_format().<<float_precision,precision>> == precision`
 Return value:: `static_cast<T&&>({asterisk}this)`
 ====
-////
-====
-[source,cpp,subs=normal]
-----
-constexpr T&& gen() && noexcept;
-----
-Postconditions:: `get_float_format().<<float_format,notation>> = float_notation::general`
-Return value:: `static_cast<T&&>({asterisk}this)`
-====
-====
-[source,cpp,subs=normal]
-----
-constexpr T&& sci() && noexcept;
-----
-Postconditions:: `get_float_format().<<float_format,notation>> = float_notation::scientific`
-Return value:: `static_cast<T&&>({asterisk}this)`
-====
-====
-[source,cpp,subs=normal]
-----
-constexpr T&& fixed() && noexcept;
-----
-Postconditions:: `get_float_format().<<float_format,notation>> = float_notation::fixed`
-Return value:: `static_cast<T&&>({asterisk}this)`
-====
-
-////
-
 
 [[float_formatter_fn_gen_noop]]
 ====
@@ -780,6 +894,8 @@ Return value:: `static_cast<T&&>({asterisk}this)`
 ----
 constexpr T&& gen() && noexcept;
 ----
+No effect.
+
 Compile-time requirements::
 `N == {float_notation}::general`, otherwise this function does not participate in overload resolution.
 Return value:: `static_cast<T&&>({asterisk}this)`;
@@ -799,7 +915,19 @@ Return type::
 ----
 {boost_mp_replace}<T, float_formatter<N>, float_formatter<{float_notation}::general>>
 ----
-Return value:: `ReturnType{static_cast<const T&>({asterisk}this)}`, where `RetrunType` is the return type above.
+Return value::
++
+[source,cpp,subs=normal]
+----
+__ReturnType__ { static_cast<const T&>(*this)
+           , {tag}<float_formatter<N>>{}
+           , {change_notation}<{float_notation}::general>(get_float_format()) }
+----
++
+where `__ReturnType__` is the return type, which must be an instance of `{value_with_formatters}`
+( since `T` is ). The above expression invokes
+<<value_with_formatters_vwf2_t_i,this constructor>>.
+
 ====
 [[float_formatter_fn_sci_noop]]
 ====
@@ -807,6 +935,8 @@ Return value:: `ReturnType{static_cast<const T&>({asterisk}this)}`, where `Retru
 ----
 constexpr T&& sci() && noexcept;
 ----
+No effect.
+
 Compile-time requirements::
 `N == {float_notation}::scientific`, otherwise this function does not participate in overload resolution.
 Return value:: `static_cast<T&&>({asterisk}this)`;
@@ -818,15 +948,29 @@ Return value:: `static_cast<T&&>({asterisk}this)`;
 ----
 constexpr /{asterisk} see below {asterisk}/ sci() const & noexcept;
 ----
+Creates a new `{value_with_formatters}` object where `N` is `{float_notation}::scientific`.
+
 Compile-time requirements::
 `N != {float_notation}::scientific`, otherwise this function does not participate in overload resolution.
+
 Return type::
 +
 [source,cpp,subs=normal]
 ----
 {boost_mp_replace}<T, float_formatter<N>, float_formatter<{float_notation}::scientific>>
 ----
-Return value:: `ReturnType{static_cast<const T&>({asterisk}this)}`, where `RetrunType` is the return type above.
+Return value::
++
+[source,cpp,subs=normal]
+----
+__ReturnType__ { static_cast<const T&>(*this)
+           , {tag}<float_formatter<N>>{}
+           , {change_notation}<{float_notation}::scientific>(get_float_format()) }
+----
++
+where `__ReturnType__` is the return type, which must be an instance of `{value_with_formatters}`
+( since `T` is ). The above expression invokes
+<<value_with_formatters_vwf2_t_i,this constructor>>.
 ====
 
 [[float_formatter_fn_fixed_noop]]
@@ -846,6 +990,8 @@ Return value:: `static_cast<T&&>({asterisk}this)`
 ----
 constexpr /{asterisk} see below {asterisk}/ fixed() const & noexcept;
 ----
+Creates a new `{value_with_formatters}` object where `N` is `{float_notation}::fixed`.
+
 Compile-time requirements::
 `N != {float_notation}::fixed`, otherwise this function does not participate in overload resolution.
 Return type::
@@ -854,9 +1000,63 @@ Return type::
 ----
 {boost_mp_replace}<T, float_formatter<N>, float_formatter<{float_notation}::fixed>>
 ----
-Return value:: `ReturnType{static_cast<const T&>({asterisk}this)}`, where `RetrunType` is the return type above.
+Return value::
++
+[source,cpp,subs=normal]
+----
+__ReturnType__ { static_cast<const T&>(*this)
+           , {tag}<float_formatter<N>>{}
+           , {change_notation}<{float_notation}::fixed>(get_float_format()) }
+----
++
+where `__ReturnType__` is the return type, which must be an instance of `{value_with_formatters}`
+( since `T` is ). The above expression invokes
+<<value_with_formatters_vwf2_t_i,this constructor>>.
 ====
 
+[[float_formatter_fn_set_float_format_nonconst]]
+====
+[source,cpp,subs=normal]
+----
+constexpr T&& set_float_format({float_format}<N> data) && noexcept;
+----
+Change format data.
+
+Postconditions::  `get_float_format() == data`
+Return value:: `std::move(static_cast<T&>({asterisk}this))`
+====
+
+[[float_formatter_fn_set_float_format_const]]
+====
+[source,cpp,subs=normal]
+----
+template <{float_notation} N2}>
+constexpr /{asterisk}...{asterisk}/ set_float_format({float_format}<N2> data) const & noexcept;
+----
+Creates a new `{value_with_formatters}` object where `N` is equal to `N2`, and the return value of `get_float_format()` is equal to `data`.
+
+Compile-time requirements::
+`N2 != N`, otherwise this function does not participate in overload resolution.
+Return type::
++
+[source,cpp,subs=normal]
+----
+`{boost_mp_replace}<T, float_formatter<N>, float_formatter<N2>>`
+----
+
+Return value::
++
+[source,cpp,subs=normal]
+----
+__ReturnType__ { static_cast<const T&>(*this)
+           , {tag}<float_formatter<N>>{}
+           , {change_notation}<N2>(get_float_format()) }
+----
++
+where `__ReturnType__` is the return type, which must be an instance of `{value_with_formatters}`
+( since `T` is ). The above expression invokes
+<<value_with_formatters_vwf2_t_i,this constructor>>.
+====
 
 ==== struct `float_format` [[float_format]]
 
@@ -866,16 +1066,25 @@ namespace strf {
 
 enum class <<float_notation,float_notation>> {fixed, scientific, general};
 
+template <float_notation>
 struct float_format
 {
     unsigned precision = (unsigned)-1;
-    float_notation notation = float_notation::general;
     bool showpoint = false;
     bool showpos = false;
 };
 
-constexpr bool operator==(float_format lhs, float_format rhs) noexcept;
-constexpr bool operator!=(float_format lhs, float_format rhs) noexcept;
+template <float_notation To, float_notation From>
+constexpr float_format<To> change_notation(float_format<From> x) noexcept
+{
+    return { x.precision, x.showpoint, x.showpos };
+}
+
+template <float_notation N>
+constexpr bool operator==(float_format<N> lhs, float_format<N> rhs) noexcept;
+
+template <float_notation N>
+constexpr bool operator!=(float_format<N> lhs, float_format<N> rhs) noexcept;
 
 } // namespace strf
 ----

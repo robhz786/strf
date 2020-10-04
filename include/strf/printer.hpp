@@ -382,11 +382,11 @@ public:
     {
     }
 
-    template <typename ... F, typename ... FInit>
+    template <typename... F, typename... FInit>
     constexpr STRF_HD value_with_formatters
         ( const value_type& v
         , strf::tag<F...>
-        , FInit&& ... finit )
+        , FInit&&... finit )
         : F::template fn<value_with_formatters<PrintTraits, Fmts...>>
             (std::forward<FInit>(finit))
         ...
@@ -394,8 +394,8 @@ public:
     {
     }
 
-    template <typename ... OtherFmts>
-    constexpr STRF_HD value_with_formatters
+    template <typename... OtherFmts>
+    constexpr STRF_HD explicit value_with_formatters
         ( const strf::value_with_formatters<PrintTraits, OtherFmts...>& f )
         : Fmts::template fn<value_with_formatters<PrintTraits, Fmts...>>
             ( static_cast
@@ -407,7 +407,7 @@ public:
     }
 
     template <typename ... OtherFmts>
-    constexpr STRF_HD value_with_formatters
+    constexpr STRF_HD explicit value_with_formatters
         ( strf::value_with_formatters<PrintTraits, OtherFmts...>&& f )
         : Fmts::template fn<value_with_formatters<PrintTraits, Fmts...>>
             ( static_cast
