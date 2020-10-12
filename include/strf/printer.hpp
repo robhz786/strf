@@ -690,11 +690,44 @@ struct alignment_formatter_q;
 
 enum class text_alignment {left, right, split, center};
 
+struct default_alignment_format
+{
+    static constexpr char32_t fill = U' ';
+    static constexpr strf::width_t width = {};
+    static constexpr strf::text_alignment alignment = strf::text_alignment::right;
+};
+
 struct alignment_format
 {
-    char32_t fill = U' ';
-    strf::width_t width = 0;
-    strf::text_alignment alignment = strf::text_alignment::right;
+    constexpr alignment_format() = default;
+    constexpr alignment_format(const alignment_format&) = default;
+
+    constexpr STRF_HD alignment_format(strf::default_alignment_format) noexcept
+        : alignment_format()
+    {
+    }
+
+    constexpr STRF_HD explicit alignment_format
+        ( char32_t fill_
+        , strf::width_t width_ = strf::width_t{}
+        , strf::text_alignment alignment_ = strf::default_alignment_format::alignment ) noexcept
+        : fill(fill_)
+        , width(width_)
+        , alignment(alignment_)
+    {
+    }
+
+    constexpr STRF_HD alignment_format& operator=(alignment_format other) noexcept
+    {
+        fill = other.fill;
+        width = other.width;
+        alignment = other.alignment;
+        return *this;
+    }
+
+    char32_t fill = strf::default_alignment_format::fill;
+    strf::width_t width = strf::width_t{};
+    strf::text_alignment alignment = strf::default_alignment_format::alignment;
 };
 
 constexpr STRF_HD bool operator==( strf::alignment_format lhs
@@ -712,14 +745,11 @@ constexpr STRF_HD bool operator!=( strf::alignment_format lhs
 }
 
 template <class T, bool HasAlignment>
-class alignment_formatter_fn
-{
-    STRF_HD T& as_derived_ref()
-    {
-        T* d =  static_cast<T*>(this);
-        return *d;
-    }
+class alignment_formatter_fn;
 
+template <class T>
+class alignment_formatter_fn<T, true>
+{
     STRF_HD T&& as_derived_rval_ref()
     {
         T* d =  static_cast<T*>(this);
@@ -862,28 +892,40 @@ public:
             , strf::tag<alignment_formatter_q<true>>{}
             , strf::alignment_format{ch} };
     }
-    constexpr STRF_HD auto set_alignment_format(strf::alignment_format data) const noexcept
+    constexpr STRF_HD T&& set_alignment_format(strf::default_alignment_format) && noexcept
+    {
+        return static_cast<T&&>(*this);
+    }
+    constexpr STRF_HD T&  set_alignment_format(strf::default_alignment_format) & noexcept
+    {
+        return static_cast<T&>(*this);
+    }
+    constexpr STRF_HD const T& set_alignment_format(strf::default_alignment_format) const & noexcept
+    {
+        return static_cast<const T&>(*this);
+    }
+    constexpr STRF_HD auto set_alignment_format(strf::alignment_format data) const & noexcept
     {
         return adapted_derived_type
             { static_cast<const T&>(*this)
             , strf::tag<strf::alignment_formatter_q<true>>{}
             , data };
     }
+    constexpr static STRF_HD strf::default_alignment_format get_alignment_format() noexcept
+    {
+        return {};
+    }
     constexpr STRF_HD strf::width_t width() const noexcept
     {
-        return 0;
+        return get_alignment_format().width;
     }
     constexpr STRF_HD strf::text_alignment alignment() const noexcept
     {
-        return strf::text_alignment::right;
+        return get_alignment_format().alignment;
     }
     constexpr STRF_HD char32_t fill() const noexcept
     {
-        return U' ';
-    }
-    constexpr STRF_HD alignment_format get_alignment_format() const noexcept
-    {
-        return {};
+        return get_alignment_format().fill;
     }
 };
 

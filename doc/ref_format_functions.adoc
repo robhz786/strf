@@ -13,6 +13,8 @@ http://www.boost.org/LICENSE_1_0.txt
 :change_notation: <<float_format,change_notation>>
 :int_format: <<int_format,int_format>>
 :change_base: <<int_format,change_base>>
+:default_alignment_format: <<alignment_format,default_alignment_format>>
+:text_alignment: <<alignment_format,text_alignment>>
 
 == Format functions
 
@@ -369,11 +371,14 @@ with one template type parameter such that, given any types `T` and `U`:
 ----
 namespace strf {
 
+template <class T, bool HasAlignment>
+class alignment_formatter_fn;
+
 template <bool HasAlignment>
 struct alignment_formatter_q
 {
     template <class T>
-    using fn = <<alignment_formatter_fn,alignment_formatter_fn>><T, HasAlignment>;
+    using fn = alignment_formatter_fn<T, HasAlignment>;
 };
 
 using alignment_formatter       = alignment_formatter_q<true>;
@@ -382,109 +387,66 @@ using empty_alignment_formatter = alignment_formatter_q<false>;
 } // namespace strf
 ----
 
-[[alignment_formatter_fn]]
-==== `alignment_formatter_fn`
+[[alignment_formatter_fn_false]]
+==== `alignment_formatter_fn<T, false>`
 
 [source,cpp,subs=normal]
 ----
 namespace strf {
-
-template <class T, bool HasAlignment>
-class alignment_formatter_fn;
-{
-public:
-    // <<alignment_formatter_fn_constructors,constructors>>
-    constexpr alignment_formatter_fn() noexcept;
-
-    template <typename U, bool B>
-    constexpr explitic alignment_formatter_fn(const alignment_formatter_fn<U, B>& u) noexcept;
-
-    // <<alignment_formatter_fn_observers,observers>>
-    constexpr {width_t} width() const noexcept;
-    constexpr text_alignment alignment() const noexcept;
-    constexpr char32_t fill() const noexcept;
-    constexpr {alignment_format} get_alignmet_format() const noexcept;
-
-    // <<alignment_formatter_fn_format_functions,format functions>>
-    constexpr T&& operator<({width_t} width) && noexcept; // left
-    constexpr T&& operator>({width_t} width) && noexcept; // right
-    constexpr T&& operator^({width_t} width) && noexcept; // center
-    constexpr T&& operator%({width_t} width) && noexcept; // split, aka internal
-    constexpr T&& fill(char32_t ch) && noexcept;
-};
-
-// alignment_formatter_fn<T, false> is an empty class
 template <class T>
 class alignment_formatter_fn<T, false>
 {
-    using converted_fmt = {boost_mp_replace}< T , alignment_formatter_q<false>
-                                               , alignment_formatter_q<true> >;
-public:
-    // <<alignment_formatter_fn_constructors,constructors>>
     constexpr alignment_formatter_fn() noexcept;
 
     template <typename U>
     constexpr explicit alignment_formatter_fn(const alignment_formatter_fn<U, false>&) noexcept;
 
-    // <<alignment_formatter_fn_observers,observers>>
+    // <<alignment_formatter_fn_false_observers,observers>>
     constexpr {width_t} width() const noexcept;
     constexpr text_alignment alignment() const noexcept;
     constexpr char32_t fill() const noexcept;
     constexpr {alignment_format} get_alignmet_format() const noexcept;
 
-    // <<alignment_formatter_fn_format_functions,format functions>>
-    constexpr converted_fmt set_alignment_format({alignment_format} data) const noexcept;
-    constexpr converted_fmt operator<({width_t} width) const noexcept;
-    constexpr converted_fmt operator>({width_t} width) const noexcept;
-    constexpr converted_fmt operator^({width_t} width) const noexcept;
-    constexpr converted_fmt operator%({width_t} width) const noexcept;
-    constexpr converted_fmt fill(char32_t ch) const noexcept;
+    // <<alignment_formatter_fn_false_format_functions,format functions>>
+    constexpr /{asterisk}...{asterisk}/ operator<({width_t} width) const noexcept;
+    constexpr /{asterisk}...{asterisk}/ operator>({width_t} width) const noexcept;
+    constexpr /{asterisk}...{asterisk}/ operator^({width_t} width) const noexcept;
+    constexpr /{asterisk}...{asterisk}/ operator%({width_t} width) const noexcept;
+    constexpr /{asterisk}...{asterisk}/ fill(char32_t ch) const noexcept;
+    constexpr /{asterisk}...{asterisk}/ set_alignment_format({alignment_format} data) const & noexcept;
+
+    constexpr T&&       set_alignment_format({default_alignment_format} data) && noexcept;
+    constexpr T&        set_alignment_format({default_alignment_format} data) &  noexcept;
+    constexpr const T&& set_alignment_format({default_alignment_format} data) const && noexcept;
+    constexpr const T&  set_alignment_format({default_alignment_format} data) const &  noexcept;
 };
 
 } // namespace strf
 ----
-[[alignment_formatter_fn_constructors]]
-===== Constructors
-====
-[source,cpp,subs=normal]
-----
-constexpr alignment_formatter_fn() noexcept;
-----
-Postconditions:: `get_alignmet_format() == {alignment_format}{}`
-====
-====
-[source,cpp,subs=normal]
-----
-template <typename U, bool B>
-constexpr explitic alignment_formatter_fn(const alignment_formatter_fn<U, B>& u) noexcept;
-----
-Postconditions:: `get_alignmet_format() == u.get_alignmet_format()`
-Note:: This function only participates in overload resolution if 'HasAlignment' is `true`
-        or `B` is `false`
-====
-[[alignment_formatter_fn_observers]]
+[[alignment_formatter_fn_false_observers]]
 ===== Observers
 ====
 [source,cpp,subs=normal]
 ----
-constexpr {alignment_format} get_alignmet_format() const noexcept;
+constexpr {default_alignment_format} get_alignmet_format() const noexcept;
 ----
-Return value::
-- `alignment_format{}`, when `HasAlignment` is `false`.
-- The value corresponding to the state of this object, when `HasAlignment` is `true`.
+[horizontal]
+Return value:: `{default_alignment_format}{}`
 ====
 ====
-[source,cpp]
+[source,cpp,subs=normal]
 ----
 constexpr {width_t} width() const noexcept;
 ----
+[horizontal]
 Return value:: `get_alignmet_format().width`
 ====
 ====
-[source,cpp]
+[source,cpp,subs=normal]
 ----
-constexpr text_alignment alignment() const noexcept;
+constexpr {text_alignment} alignment() const noexcept;
 ----
+[horizontal]
 Return value:: `get_alignmet_format().alignment`
 ====
 ====
@@ -492,10 +454,11 @@ Return value:: `get_alignmet_format().alignment`
 ----
 constexpr char32_t fill() const noexcept;
 ----
+[horizontal]
 Return value:: `get_alignmet_format().fill`
 ====
 
-[[alignment_formatter_fn_format_functions]]
+[[alignment_formatter_fn_false_format_functions]]
 ===== Format functions
 
 // `alignment_formatter_fn<T, false>` is an empty class. Its format functions
@@ -505,75 +468,297 @@ Return value:: `get_alignmet_format().fill`
 // the object and return `static_cast<T&&>(this)`.
 
 ====
+[source,cpp,subs=normal]
+----
+constexpr /{asterisk}...{asterisk}/ operator<({width_t} width) const noexcept;
+constexpr /{asterisk}...{asterisk}/ operator>({width_t} width) const noexcept;
+constexpr /{asterisk}...{asterisk}/ operator^({width_t} width) const noexcept;
+constexpr /{asterisk}...{asterisk}/ operator%({width_t} width) const noexcept;
+----
+Return type::
++
+[source,cpp,subs=normal]
+----
+{boost_mp_replace}<T, alignment_formatter<true>, alignment_formatter<false> >
+----
+Return value::
++
+[source,cpp,subs=normal]
+----
+__ReturnType__ { static_cast<const T&>(*this)
+           , {tag}<alignment_formatter<true>>{}
+           , {alignment_format}{U' ', width, __alignment__ }
+----
++
+where:
+
+* `__alignment__` is:
+** `{text_alignment}::left` for `operator<`
+** `{text_alignment}::right`  for `operator>`
+** `{text_alignment}::center` for `operator^`
+** `{text_alignment}::split` for `operator%`
+
+* `__ReturnType__` is the return type, which must be an instance of `{value_with_formatters}`
+( since `T` is ). Hence, the above expression invokes
+<<value_with_formatters_vwf2_t_i,this constructor>>
+====
+
+
+====
+[source,cpp,subs=normal]
+----
+constexpr /{asterisk}...{asterisk}/ fill(char32_t ch) const noexcept;
+----
+
+Return type::
++
+[source,cpp,subs=normal]
+----
+{boost_mp_replace}<T, alignment_formatter<true>, alignment_formatter<false> >
+----
+Return value::
++
+[source,cpp,subs=normal]
+----
+__ReturnType__ { static_cast<const T&>(*this)
+           , {tag}<alignment_formatter<true>>{}
+           , {alignment_format}{ch} }
+----
++
+where: `__ReturnType__` is the return type, which must be an instance of `{value_with_formatters}`
+( since `T` is ). Hence, the above expression invokes
+<<value_with_formatters_vwf2_t_i,this constructor>>
+====
+
+
+====
+[source,cpp,subs=normal]
+----
+constexpr /{asterisk}...{asterisk}/ set_alignment_format({alignment_format} data) const noexcept;
+----
+Return type::
++
+[source,cpp,subs=normal]
+----
+{boost_mp_replace}<T, alignment_formatter<true>, alignment_formatter<false> >
+----
+Return value::
++
+[source,cpp,subs=normal]
+----
+__ReturnType__ { static_cast<const T&>(*this)
+           , {tag}<alignment_formatter<true>>{}
+           , data }
+----
++
+where  `__ReturnType__` is the return type, which must be an instance of `{value_with_formatters}`
+( since `T` is ). Hence, the above expression invokes
+<<value_with_formatters_vwf2_t_i,this constructor>>
+====
+
+
+
+====
+[source,cpp,subs=normal]
+----
+constexpr T&&       set_alignment_format({default_alignment_format} data) && noexcept;
+constexpr T&        set_alignment_format({default_alignment_format} data) & noexcept;
+constexpr const T&& set_alignment_format({default_alignment_format} data) const && noexcept;
+constexpr const T&  set_alignment_format({default_alignment_format} data) const & noexcept;
+----
+[horizontal]
+Effect:: none
+Return value::
++
+[source,cpp,subs=normal]
+----
+static_cast</{asterisk}return type{asterisk}/>({asterisk}this)
+----
+====
+
+
+[[alignment_formatter_fn_true]]
+==== `alignment_formatter_fn<T, true>`
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template <class T>
+class alignment_formatter_fn<T, true>
+{
+public:
+    // <<alignment_formatter_fn_true_constructors,constructors>>
+    constexpr alignment_formatter_fn() noexcept;
+
+    template <typename U, bool B>
+    constexpr explitic alignment_formatter_fn(const alignment_formatter_fn<U, B>& u) noexcept;
+
+    // <<alignment_formatter_fn_true_observers,observers>>
+    constexpr {width_t} width() const noexcept;
+    constexpr text_alignment alignment() const noexcept;
+    constexpr char32_t fill() const noexcept;
+    constexpr {alignment_format} get_alignmet_format() const noexcept;
+
+    // <<alignment_formatter_fn_true_format_functions,format functions>>
+    constexpr T&& operator<({width_t} width) && noexcept; // left
+    constexpr T&& operator>({width_t} width) && noexcept; // right
+    constexpr T&& operator^({width_t} width) && noexcept; // center
+    constexpr T&& operator%({width_t} width) && noexcept; // split, aka internal
+    constexpr T&& fill(char32_t ch) && noexcept;
+    constexpr T&& set_alignment_format({alignment_format} data) && noexcept;
+};
+
+} // namespace strf
+----
+
+[[alignment_formatter_fn_true_constructors]]
+===== Constructors
+====
+[source,cpp,subs=normal]
+----
+constexpr alignment_formatter_fn() noexcept;
+----
+[horizontal]
+Postconditions:: `get_alignmet_format() == {alignment_format}{}`
+====
+====
+[source,cpp,subs=normal]
+----
+template <typename U, bool B>
+constexpr explitic alignment_formatter_fn(const alignment_formatter_fn<U, B>& u) noexcept;
+----
+[horizontal]
+Postconditions:: `get_alignmet_format() == u.get_alignmet_format()`
+====
+[[alignment_formatter_fn_true_observers]]
+===== Observers
+====
+[source,cpp,subs=normal]
+----
+constexpr {alignment_format} get_alignmet_format() const noexcept;
+----
+====
+====
+[source,cpp,subs=normal]
+----
+constexpr {width_t} width() const noexcept;
+----
+[horizontal]
+Return value:: `get_alignmet_format().width`
+====
+====
+[source,cpp,subs=normal]
+----
+constexpr {text_alignment} alignment() const noexcept;
+----
+[horizontal]
+Return value:: `get_alignmet_format().alignment`
+====
+====
 [source,cpp]
 ----
-constexpr /*return type */ set_alignment_format({alignment_format} data) /* qualifier */ noexcept;
+constexpr char32_t fill() const noexcept;
 ----
-Posconditions:: The return value `r` satisfies:
-- `r.get_alignmet_format() == data`
-Return value::
-When `HasAlignment` is `false`::: `converted_fmt{static_cast<const T&>({asterisk}this)}.set_alignment_format(data)`.
-When `HasAlignment` is `true`::: `std::move(static_cast<T&>({asterisk}this))`.
+Return value:: `get_alignmet_format().fill`
 ====
+[[alignment_formatter_fn_true_format_functions]]
+===== Format functions
 ====
-[source,cpp]
+[source,cpp,subs=normal]
 ----
-constexpr /*return type */ operator<({width_t} width) /* qualifier */ noexcept;
+constexpr T&& operator<({width_t} width) && noexcept;
 ----
-Posconditions:: The return value `r` satisfies:
-- `r.width() == width`
-- `r.alignment == text_alignment::left`
 Return value::
-When `HasAlignment` is `false`::: `converted_fmt{static_cast<const T&>({asterisk}this)} < width`.
-When `HasAlignment` is `true`::: `std::move(static_cast<T&>({asterisk}this))`.
++
+[source,cpp,subs=normal]
+----
+static_cast<T&&>(*this)
+----
+Postconditions::
+* `get_alignmet_format().alignment == {text_alignment}::left`
+* `get_alignmet_format().width == width`
+* `get_alignmet_format().fill` is not changed
 ====
 ====
 [source,cpp,subs=normal]
 ----
-constexpr /{asterisk}return type {asterisk}/ operator>({width_t} width) /{asterisk} qualifier {asterisk}/ noexcept;
+constexpr T&& operator>({width_t} width) && noexcept;
 ----
-Posconditions:: The return value `r` satisfies:
-- `r.width() == width`
-- `r.alignment() == text_alignment::right`
 Return value::
-When `HasAlignment` is `false`::: `converted_fmt{static_cast<const T&>({asterisk}this)} > width`.
-When `HasAlignment` is `true`::: `std::move(static_cast<T&>({asterisk}this))`.
++
+[source,cpp,subs=normal]
+----
+static_cast<T&&>(*this)
+----
+Postconditions::
+* `get_alignmet_format().alignment == {text_alignment}::right`
+* `get_alignmet_format().width == width`
+* `get_alignmet_format().fill` is not changed
 ====
 ====
 [source,cpp,subs=normal]
 ----
-constexpr /{asterisk}return type {asterisk}/ operator^({width_t} width) /{asterisk} qualifier {asterisk}/ noexcept;
+constexpr T&& operator^({width_t} width) && noexcept;
 ----
-Posconditions:: The return value `r` satisfies:
-- `r.width() == width`
-- `r.alignment() == text_alignment::center`
 Return value::
-When `HasAlignment` is `false`::: `converted_fmt{static_cast<const T&>({asterisk}this)} ^ width`.
-When `HasAlignment` is `true`::: `std::move(static_cast<T&>({asterisk}this))`.
++
+[source,cpp,subs=normal]
+----
+static_cast<T&&>(*this)
+----
+Postconditions::
+* `get_alignmet_format().alignment == {text_alignment}::center`
+* `get_alignmet_format().width == width`
+* `get_alignmet_format().fill` is not changed
 ====
 ====
 [source,cpp,subs=normal]
 ----
-constexpr /{asterisk}return type {asterisk}/ operator%({width_t} width) /{asterisk} qualifier {asterisk}/ noexcept;
+constexpr T&& operator%({width_t} width) && noexcept;
 ----
-Posconditions:: The return value `r` satisfies:
-- `r.width() == width`
-- `r.alignment() == text_alignment::split`
 Return value::
-When `HasAlignment` is `false`::: `converted_fmt{static_cast<const T&>({asterisk}this)} % width`.
-When `HasAlignment` is `true`::: `std::move(static_cast<T&>({asterisk}this))`.
++
+[source,cpp,subs=normal]
+----
+static_cast<T&&>(*this)
+----
+Postconditions::
+* `get_alignmet_format().alignment == {text_alignment}::split`
+* `get_alignmet_format().width == width`
+* `get_alignmet_format().fill` is not changed
 ====
 ====
 [source,cpp,subs=normal]
 ----
-constexpr /{asterisk}return type {asterisk}/ fill(char32_t ch) /{asterisk} qualifier {asterisk}/ noexcept;
+constexpr T&& fill(char32_t ch) && noexcept;
 ----
-Posconditions:: The return value `r` satisfies:
-- `r.fill() == ch`
 Return value::
-When `HasAlignment` is `false`::: `converted_fmt{static_cast<const T&>({asterisk}this)}.fill(ch)`.
-When `HasAlignment` is `true`::: `std::move(static_cast<T&>({asterisk}this))`.
++
+[source,cpp,subs=normal]
+----
+static_cast<T&&>(*this)
+----
+Postconditions::
+* `get_alignmet_format().fill == ch`
+* `get_alignmet_format().alignment` is not changed
+* `get_alignmet_format().width` is not changed
 ====
+====
+[source,cpp,subs=normal]
+----
+constexpr T&& set_alignemnt_format({alignment_format} data) && noexcept;
+----
+Return value::
++
+[source,cpp,subs=normal]
+----
+static_cast<T&&>(*this)
+----
+Postconditions::
+* `get_alignmet_format() == data`
+====
+
 
 [[alignment_format]]
 ==== `alignment_format`
@@ -584,11 +769,30 @@ namespace strf {
 
 enum class text_alignment {left, right, split, center};
 
+struct default_alignment_format
+{
+    static constexpr char32_t fill = U' ';
+    static constexpr {width_t} width = 0;
+    static constexpr text_alignment alignment = strf::text_alignment::right;
+};
+
 struct alignment_format
 {
-    char32_t fill = U' ';
-    {width_t} width = 0;
-    text_alignment alignment = text_alignment::right;
+    constexpr alignment_format() = default;
+    constexpr alignment_format(const alignment_format&) = default;
+
+    constexpr STRF_HD alignment_format(default_alignment_format) noexcept;
+
+    constexpr STRF_HD explicit alignment_format
+        ( char32_t fill_
+        , {width_t} width_ = default_alignment_format::width
+        , text_alignment alignment_ = default_alignment_format::alignment ) noexcept;
+
+    constexpr STRF_HD alignment_format& operator=(alignment_format other) noexcept;
+
+    char32_t fill = default_alignment_format::fill;
+    {width_t} width = default_alignment_format::width;
+    text_alignment alignment = default_alignment_format::alignment;
 };
 
 constexpr bool operator==(alignment_format lhs, alignment_format rhs) noexcept;
@@ -670,6 +874,7 @@ public:
 ----
 constexpr int_formatter_fn() noexcept;
 ----
+[horizontal]
 postcondition:: `get_int_format() == {int_format}<Base>{}`
 ====
 
@@ -680,6 +885,7 @@ postcondition:: `get_int_format() == {int_format}<Base>{}`
 template <typename U>
 constexpr int_formatter_fn(const int_formatter_fn<U> & u) noexcept;
 ----
+[horizontal]
 postcondition:: `get_int_format() == u.get_int_format()`
 ====
 
@@ -689,6 +895,7 @@ postcondition:: `get_int_format() == u.get_int_format()`
 ----
 constexpr explicit int_formatter_fn({int_format}<Base> data) noxcept;
 ----
+[horizontal]
 postcondition:: `get_int_format() == data`
 ====
 
@@ -700,6 +907,7 @@ postcondition:: `get_int_format() == data`
 ----
 constexpr unsigned precision() const noexcept;
 ----
+[horizontal]
 Return value:: `get_int_format().precision`
 ====
 ====
@@ -707,6 +915,7 @@ Return value:: `get_int_format().precision`
 ----
 constexpr showpos() const noexcept;
 ----
+[horizontal]
 Return value:: `get_int_format().showpos`
 ====
 ====
@@ -714,6 +923,7 @@ Return value:: `get_int_format().showpos`
 ----
 constexpr showbase() const noexcept;
 ----
+[horizontal]
 Return value:: `get_int_format().showbase`
 ====
 ====
@@ -721,6 +931,7 @@ Return value:: `get_int_format().showbase`
 ----
 constexpr static base() noexcept;
 ----
+[horizontal]
 Return value:: `Base`
 ====
 
@@ -733,6 +944,7 @@ Return value:: `Base`
 ----
 constexpr T&& p(unsigned precision) && noexcept;
 ----
+[horizontal]
 Postconditions::  `precision() == precision`
 Return value:: `std::move(static_cast<T&>({asterisk}this))`
 ====
@@ -743,6 +955,7 @@ Return value:: `std::move(static_cast<T&>({asterisk}this))`
 ----
 constexpr T&& operator+() && noexcept;
 ----
+[horizontal]
 Postconditions::  `showpos() == true`
 Return value:: `std::move(static_cast<T&>({asterisk}this))`
 ====
@@ -753,6 +966,7 @@ Return value:: `std::move(static_cast<T&>({asterisk}this))`
 ----
 constexpr T&& operator*() && noexcept;
 ----
+[horizontal]
 Postconditions::  `showbase() == true`
 Return value:: `std::move(static_cast<T&>({asterisk}this))`
 ====
@@ -796,6 +1010,7 @@ and `2` in `bin()`, otherwise the function does not participate in overload reso
 
 Return value::
 +
+[source,cpp,subs=normal]
 ----
 __ReturnType__ { static_cast<const T&>(*this)
            , {tag}<int_formatter<DesiredBase>>{}
@@ -812,6 +1027,7 @@ where `__ReturnType__` is the return type, which must be an instance of `{value_
 ----
 constexpr T&& set_int_format({int_format}<Base> data) && noexcept;
 ----
+[horizontal]
 Postconditions::  `get_int_format() == data`
 Return value:: `std::move(static_cast<T&>({asterisk}this))`
 ====
@@ -827,6 +1043,7 @@ Compile-time requirements:: `Base != OtherBase`, otherwise this function does no
 
 Return value::
 +
+[source,cpp,subs=normal]
 ----
 __ReturnType__ { static_cast<const T&>(*this)
            , {tag}<int_formatter<OtherBase>>{}
@@ -934,6 +1151,7 @@ Compile-time requirements::
 ----
 constexpr float_formatter_fn() noexcept;
 ----
+[horizontal]
 Postconditions:: `get_float_format() == {float_format}<N>{}`
 ====
 ====
@@ -942,6 +1160,7 @@ Postconditions:: `get_float_format() == {float_format}<N>{}`
 template <typename U>
 constexpr explicit float_formatter_fn(const float_formatter_fn<U, N>& other) noexcept;
 ----
+[horizontal]
 Postconditions:: `get_float_format() == other.get_float_format()`
 ====
 
@@ -954,6 +1173,7 @@ Postconditions:: `get_float_format() == other.get_float_format()`
 ----
 constexpr T&& operator+() && noexcept;
 ----
+[horizontal]
 Postconditions:: `get_float_format().<<float_showpos,showpos>> == true`
 Return value:: `static_cast<T&&>({asterisk}this)`
 ====
@@ -964,6 +1184,7 @@ Return value:: `static_cast<T&&>({asterisk}this)`
 ----
 constexpr T&& operator{asterisk}() && noexcept;
 ----
+[horizontal]
 Postconditions:: `get_float_format().<<float_showpoint,showpoint>> == true`
 Return value:: `static_cast<T&&>({asterisk}this)`
 ====
@@ -974,6 +1195,7 @@ Return value:: `static_cast<T&&>({asterisk}this)`
 ----
 constexpr T&& p(unsigned precision) && noexcept;
 ----
+[horizontal]
 Postconditions:: `get_float_format().<<float_precision,precision>> == precision`
 Return value:: `static_cast<T&&>({asterisk}this)`
 ====
@@ -1111,7 +1333,7 @@ where `__ReturnType__` is the return type, which must be an instance of `{value_
 constexpr T&& set_float_format({float_format}<N> data) && noexcept;
 ----
 Change format data.
-
+[horizontal]
 Postconditions::  `get_float_format() == data`
 Return value:: `std::move(static_cast<T&>({asterisk}this))`
 ====
@@ -1246,6 +1468,7 @@ public:
 ----
 constexpr quantity_formatter_fn() noexcept;
 ----
+[horizontal]
 Postconditions:: `count() == 1`
 ====
 ====
@@ -1254,6 +1477,7 @@ Postconditions:: `count() == 1`
 template <typename U>
 constexpr explicit quantity_formatter_fn(const quantity_formatter_fn<U>& u) noexcept;
 ----
+[horizontal]
 Postconditions:: `count() == u.count()`
 ====
 
@@ -1263,6 +1487,7 @@ Postconditions:: `count() == u.count()`
 ----
 constexpr T&& multi(std::size_t count) && noexcept
 ----
+[horizontal]
 Postconditions:: `count() == count`
 Return value:: `static_cast<T&&>({asterisk}this)`
 ====
