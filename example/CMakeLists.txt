@@ -21,7 +21,9 @@ foreach(x
     joins
     range_input
     extend_input_ipv4
+    extend_input_ipv6
     extend_input_base64
+    extend_input_std_complex
     extend_input_template
     )
 

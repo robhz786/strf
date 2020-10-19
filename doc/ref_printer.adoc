@@ -133,6 +133,7 @@ Given
 * `preview`, an lvalue of type `{print_preview}</{asterisk}\... {asterisk}/>`
 * `v`, a value of type `T::forwarded_type` or `T::fmt_type`
 
+The following syntax is satisfied:
 ====
 [source,cpp,subs=normal]
 ----
@@ -316,8 +317,8 @@ public:
 } // namespace strf
 ----
 
-[[print_preview]]
-=== Class template `print_preview`
+=== Class template `print_preview` [[print_preview]]
+
 [source,cpp,subs=normal]
 ----
 namespace strf {

@@ -215,6 +215,7 @@ public:
     static constexpr bool size_required = static_cast<bool>(SizeRequired);
     static constexpr bool width_required = static_cast<bool>(WidthRequired);
     static constexpr bool nothing_required = ! size_required && ! width_required;
+    static constexpr bool something_required = size_required || width_required;
 
     template <strf::preview_width W = WidthRequired>
     STRF_HD constexpr explicit print_preview

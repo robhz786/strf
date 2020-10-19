@@ -87,6 +87,7 @@ assert(str == "~~~~+1.e+01~~~~")
 | Uses "general" notation. For floating points only.
 |===
 
+[[multi]]
 .When `_arg_` is a character
 [%header,cols="40,60"]
 |===
@@ -95,6 +96,7 @@ assert(str == "~~~~+1.e+01~~~~")
 | Prints the argument `count` times.
 |===
 
+[[string_formatting]]
 .When `_arg_` is a string
 [%header,cols="40,60"]
 |===
@@ -592,8 +594,8 @@ the insertion of comments.
 |===
 |A `'{'` followed by  |until                           |means
 |`'-'`                |the next `'}'` or end of string |a comment
-|a digit              |the next `'}'` or end of string |a positional argument reference
 |another `'{'`        |the second `'{'`                |an escaped `'{'`
+|a digit              |the next `'}'` or end of string |a positional argument reference
 |any other character  |the next `'}'` or end of string |a non positional argument reference
 |===
 
@@ -607,12 +609,21 @@ auto str = strf::to_string.tr
 assert(str == "You can learn more about python at www.python.org");
 ----
 
+Escapes::
+Note there is no way and no need to escape the `'}'` character, since it has special meaning only when corresponding to a previous `'{'
++
+[source,cpp]
+----
+auto str = strf::to_string.tr("} {{x} {{{} {{{}}", "aaa", "bbb");
+assert(str == "} {x} {aaa {bbb}");
+----
+
 Positional arguments::
 Position zero refers to the first input argument. The characters the after the digits are ignored. So they can also be used as comments.
 +
 [source,cpp]
 ----
-auto str = strf::to_string.tr("{1 a person} likes {0 a food type}.", "sandwich", "Paul");
+auto str = strf::to_string.tr("{1 a person name} likes {0 a food name}.", "sandwich", "Paul");
 assert(str == "Paul likes sandwich.");
 ----
 
@@ -623,15 +634,6 @@ The characters the after the `'{'` are ignored as well
 ----
 auto str = strf::to_string.tr("{a person} likes {a food type}.", "Paul", "sandwich");
 assert(str == "Paul likes sandwich.");
-----
-
-Escapes::
-Note there is no way and no need to escape the `'}'` character, since it has special meaning only when corresponding to a previous `'{'
-+
-[source,cpp]
-----
-auto str = strf::to_string.tr("} {{x} {{{} {{{}}", "aaa", "bbb");
-assert(str == "} {x} {aaa {bbb}");
 ----
 
 [[tr_string_error]]
@@ -649,7 +651,6 @@ When the argument associated with a `"{"` does not exists, the library does two 
 |===
 |Category |Constrainable | Description
 
-|`<<width_calculator,width_calculator_c>>` |Yes |Defines how the width is calculated
 |`<<numpunct, numpunct_c>><10>`      |Yes |Numeric punctuation for decimal base
 |`<<numpunct, numpunct_c>><16>`      |Yes |Numeric punctuation for hexadecimal base
 |`<<numpunct, numpunct_c>><8>`       |Yes |Numeric punctuation for octal base
@@ -661,6 +662,8 @@ When the argument associated with a `"{"` does not exists, the library does two 
 |`<<invalid_seq_notifier,invalid_seq_notifier_c>>`  |Yes | Callback to notify character encoding nonconformities.
 |`<<surrogate_policy,surrogate_policy_c>>` |Yes |Wheter surrogates are treated as errors
 |`<<tr_string_error,tr_error_notifier_c>>`   |No  |  Callback to notify errors on the tr-string
+|`<<width_calculator,width_calculator_c>>` |Yes |Defines how the width is calculated
+|`<<print_override,print_override_c>>`     |Yes   | To override a printable type
 |===
 
 [[numpunct]]
@@ -1117,6 +1120,10 @@ assert(res2 == u"    15.00 \u20AC \uFFFD"); // width calculated as 8
 assert(res3 == u"   15.00 \u20AC \uFFFD"); // width calculated as 9
 ----
 ====
+
+== Overriding a printable type [[print_override]]
+
+__to-do__
 
 == Ranges
 
