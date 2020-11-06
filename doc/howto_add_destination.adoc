@@ -29,7 +29,7 @@ http://www.boost.org/LICENSE_1_0.txt
 
 == The `basic_outbuff` class template
 
-Creating a new output type envolves defining a concrete class
+Creating a new output type involves defining a concrete class
 that derives from {basic_outbuff}.
 Once this is done, one can write things to objects
 of such type with the `{to}` function template,
@@ -73,7 +73,7 @@ If not, one has to call the `{recycle}` function, as done above.
 This is the only pure virtual function in `{basic_outbuff}`.
 Its job is to flush the content written so far and reset the position of
 `pointer()` and `end()` so that the space ( `end() - pointer()` )
-becames greater than or equal to `{min_space_after_recycle}()`.
+becames greater than or equal to `{min_space_after_recycle}</{asterisk}char type{asterisk}/>()`.
 This is a postcondition
 even when the state is "bad". The "bad" state implies that writting
 anything in the range [`pointer(), end()`) doesn't have any relevent
@@ -216,15 +216,17 @@ the prefix in the `<<introduction#,basic usage syntax>>`.
 Each of them causes the content to be printed into a different destination.
 Perhaps you want to create your own. For example, if you use Qt,
 you may want to create a `toQString` "destination",
-intended to create a `QString` object instead of a `std::string`.
+intended to create a `QString` object ( in the same way as
+`<<quick_reference#destinations,to_string>> is used to create
+`std::string` objects ).
 This section explain how you can do that.
 
 The first step, which involves most of the work, is
 to create a class that derives from `{basic_outbuff}`.
 The previous section provides some assistance on that.
-Sometimes it makes sense to actually create two of them,
-( one having a constructor that receives the size and
-the other not, as explained soon ).
+Sometimes it makes sense to actually create two of them;
+one having a constructor that receives the size and
+the other not, as explained soon.
 
 The second step is to create a class that satisfies the requirements of
 __{OutbuffCreator}__ or __{SizedOutbuffCreator}__ or both.
@@ -232,7 +234,7 @@ It acts as a factory ( or something analogous to that ) of the class(es)
 you defined in step 1.
 _SizedOutbuffCreator_ is for the case when the constructor
 of your outbuff class requires the number of characters to be printed
-( because it needs to allocate memory or whatever reason ).
+( because it needs to allocate memory or something ).
 _OutbuffCreator_ is for when it does not need that information.
 
 
@@ -245,7 +247,7 @@ whose type is an instance of one the following class templates:
 * `{destination_with_given_size}`: also _{SizedOutbuffCreator}_
 
 
-Where the class created in step 2 is the template paramenter.
+Where the class created in step 2 is the template parameter.
 The major difference between them lies in the implementation of
 `operator()` and `tr` member functions. In `{destination_no_reserve}`
 it is something like this:
@@ -266,7 +268,9 @@ typename my_outbuff_creator::sized_outbuff_type dest{creator.create(**size**)};
 // \... write content in dest \...
 return dest.finish();
 ----
-where `creator` is a private member object of the type defined in step 2.
+
+, where `my_outbuff_creator` is the type defined in step2, and `creator`
+is a private member object of that type.
 
 The implementation of
 `{destination_with_given_size}` is similar to of `destination_calc_size`.
@@ -275,7 +279,7 @@ the size is passed to the
 <<strf_hpp#destination_with_given_size_ctor,the constructor>>
 and stored in a member variable.
 However, in most cases, if any, it does't make sense to opt for `destination_with_given_size`.
-The reason why it was created was to define the return type of
+The reason why it was created was to be used as the return type
 the `<<introduction#,reserve>>` function.
 ////
 `destination_no_reserve::<<strf_hpp#destination_no_reserve_reserve,reserve>>` and
@@ -294,18 +298,25 @@ class foo { /{asterisk} \... {asterisk}/ };
 // step 1: define your outbuff class
 class foo_writer: strf::{basic_outbuff}<char> {
 public:
-    foo_writer(foo&);
+    explicit foo_writer(foo&);
     void recycle() override;
     auto finish() \-> /{asterisk} \... {asterisk}/;
     //\...
 };
 
 // step 2: define the outbuff creator
-struct foo_writer_creator {
+class foo_writer_creator {
+public:
     using outbuff_type = foo_writer;
     using char_type = char;
-    foo& create() const { return f; }
-    foo& f;
+
+    foo_writer_creator(foo& f): f_(f) {}
+    foo_writer_creator(const foo_writer_creator&) = default;
+
+    foo& create() const { return f_; }
+
+private:
+    foo& f_;
 }
 
 // step3: define the destination expression

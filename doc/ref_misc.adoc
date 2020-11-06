@@ -10,6 +10,7 @@ http://www.boost.org/LICENSE_1_0.txt
 :destination_no_reserve: <<destination,destination_no_reserve>>
 :OutbuffCreator: <<OutbuffCreator,OutbuffCreator>
 
+:basic_outbuff: <<outbuff_hpp#basic_outbuff,basic_outbuff>>
 :basic_cstr_writer: <<outbuff_hpp#basic_cstr_writer,basic_cstr_writer>>
 :destination_no_reserve: <<destination,destination_no_reserve>>
 :OutbuffCreator: <<OutbuffCreator,OutbuffCreator>>
@@ -117,16 +118,6 @@ struct rank<0>
 ----
 namespace strf {
 
-template <std::size_t CharSize>
-void write( {underlying_outbuff}<CharSize>& ob
-          , const {underlying_char_type}<CharSize>{asterisk} data
-          , std::size_t data_size );
-
-template <std::size_t CharSize>
-void write( {underlying_outbuff}<CharSize>& ob
-          , const {underlying_char_type}<CharSize>{asterisk} data
-          , const {underlying_char_type}<CharSize>{asterisk} data_end );
-
 template <typename CharT>
 void write( {basic_outbuff}<CharT>& ob
           , const CharT{asterisk} data
@@ -144,55 +135,27 @@ void write({basic_outbuff}<wchar_t>& ob, const wchar_t{asterisk} cstr);
 } // namespace strf
 ----
 
-[[underlying_outbuff_write]]
-[[underlying_outbuff_write_range]]
-====
-[source,cpp,subs=normal]
-----
-template <std::size_t CharSize>
-void write( {underlying_outbuff}<CharSize>& ob
-          , const {underlying_char_type}<CharSize>{asterisk} data
-          , const {underlying_char_type}<CharSize>{asterisk} data_end );
-----
-[horizontal]
-Effect:: Writes the the range [ `data`, `data_end` ) into `ob`, calling `ob.recycle()`
-         how many times are necessary.
-====
 
-[[underlying_outbuff_write_count]]
-====
-[source,cpp,subs=normal]
-----
-template <std::size_t CharSize>
-void write( {underlying_outbuff}<CharSize>& ob
-          , const {underlying_char_type}<CharSize>{asterisk} data
-          , std::size_t data_size );
-----
-[horizontal]
-Effect:: Same as `write(ob, data, data + data_size)`
-====
-
-[[basic_outbuff_write]]
 [[basic_outbuff_write_range]]
 ====
-[source,cpp]
+[source,cpp,subs=normal]
 ----
 template <typename CharT>
 void write( {basic_outbuff}<CharT>& ob
-          , const CharT* data
-          , const CharT* data_end );
+          , const CharT{asterisk} data
+          , const CharT{asterisk} data_end );
 ----
 [horizontal]
 Effect:: Writes the the range [ `data`, `data_end` ) into `ob`, calling `ob.recycle()`
-         how many times are necessary.
+         as many times as necessary.
 ====
-[[basic_outbuff_write_count]]
+[[basic_outbuff_write_size]]
 ====
-[source,cpp]
+[source,cpp,subs=normal]
 ----
 template <typename CharT>
 void write( {basic_outbuff}<CharT>& ob
-          , const CharT* data
+          , const CharT{asterisk} data
           , std::size_t data_size );
 ----
 [horizontal]

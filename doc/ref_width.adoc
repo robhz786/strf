@@ -41,7 +41,7 @@ satisfy the __{WidthCalculator}__ requirements.
 Given
 
 * `CharT`, one of the types: `char`, `char8_t`, `char16_t`, `char32_t` or `wchar_t`
-* `Encoding`, an __{CharEncoding}__ type for value `CharSize`
+* `Encoding`, an __{CharEncoding}__ type for type `CharT`
 * `encoding`, an lvalue reference of type `Encoding`
 * `ch` a value of type `CharT`
 * `limit`, a value of type `{width_t}`
