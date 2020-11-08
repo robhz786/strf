@@ -35,6 +35,7 @@ extern void __device__ test_facets_pack();
 extern void __device__ test_facets_pack_merge();
 extern void __device__ test_input_bool();
 extern void __device__ test_input_char();
+extern void __device__ test_input_char32();
 extern void __device__ test_input_facets_pack();
 extern void __device__ test_input_float();
 extern void __device__ test_input_int();
@@ -75,6 +76,7 @@ __global__ void kernel_main
     test_facets_pack_merge();
     test_input_bool();
     test_input_char();
+    test_input_char32();
     test_input_facets_pack();
     test_input_float();
     test_input_int();

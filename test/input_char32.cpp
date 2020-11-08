@@ -2,15 +2,9 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <strf.hpp>
 #include "test_utils.hpp"
 
-template <typename T>
-struct is_char32: public std::is_same<T, char32_t>
-{
-};
-
-int main()
+void STRF_TEST_FUNC test_input_char32()
 {
     // conversion
 
@@ -74,8 +68,6 @@ int main()
     TEST("aaaa")   ( strf::join_left(2, '.')(strf::multi(U'a', 4) > 4) );
     TEST("aaaa")   ( strf::join_left(4, '.')(strf::multi(U'a', 4) > 4) );
     TEST("aaaa..") ( strf::join_left(6, '.')(strf::multi(U'a', 4) > 4) );
-
-    return test_finish();
 }
 
 

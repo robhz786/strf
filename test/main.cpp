@@ -32,6 +32,7 @@ void test_encode_char();
 void test_encode_fill();
 void test_input_bool();
 void test_input_char();
+void test_input_char32();
 void test_input_float();
 void test_input_int();
 void test_input_ptr();
@@ -71,6 +72,7 @@ int main() {
     test_facets_pack_merge();
     test_input_bool();
     test_input_char();
+    test_input_char32();
     test_input_facets_pack();
     test_input_float();
     test_input_int();

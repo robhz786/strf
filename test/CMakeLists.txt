@@ -15,6 +15,7 @@ set(sources_freestanding
   facets_pack_merge.cpp
   input_bool.cpp
   input_char.cpp
+  input_char32.cpp
   input_facets_pack.cpp
   input_float.cpp
   input_int.cpp
@@ -67,6 +68,7 @@ set(tests_on_cuda_device
    facets_pack_merge
    input_bool
    input_char
+   input_char32
    input_facets_pack
    input_float
    input_int

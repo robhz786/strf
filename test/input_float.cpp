@@ -212,13 +212,12 @@ STRF_TEST_FUNC char* replace_char
     static char buff[200];
     char* dest = buff;
     char* dest_end = buff + sizeof(buff);
-    const char32_t replacement_str[2] = {replacement, U'\0'};
     for (const char* it = src; *it != '\0'; ++it) {
         auto ch = *it;
         if (ch != to_be_replaced) {
             *dest++ = ch;
         } else {
-            dest = strf::to(dest, dest_end) (strf::conv(replacement_str)) .ptr;
+            dest = strf::to(dest, dest_end) (replacement) .ptr;
         }
     }
     *dest = '\0';
