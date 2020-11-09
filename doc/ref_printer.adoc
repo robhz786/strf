@@ -112,14 +112,15 @@ The type that is used as the tag type in `<<get_facet,get_facet>>`.
 It shall not be a reference type, and shall not contain cv-qualifiers.
 Usually is it `std::remove_cv_t<std::remove_reference<forwarded_type>>`
 ====
-[[PrintTraits_fmt_type]]
+[[PrintTraits_formatters]]
 ====
+.( Optional )
 [source,cpp]
 ----
-T::fmt_type;
+T::formatters
 ----
-A type alias to a `{value_with_formatters}<T, /{asterisk}\...{asterisk}/>` type.
-It is the return type of `fmt(std::declval<P>())`
+A type alias to `{tag}<F\...>`, where all types in `F\...` satisfy __<<Formatter,Formatter>>__.
+It affects the return type of `<<fmt,fmt>>`.
 ====
 
 [[PrintTraits_functions]]
@@ -131,7 +132,8 @@ Given
 * `CharT`, a character type
 * `fpack`, a value of type `{facets_pack}</{asterisk}\... {asterisk}/>`
 * `preview`, an lvalue of type `{print_preview}</{asterisk}\... {asterisk}/>`
-* `v`, a value of type `T::forwarded_type` or `T::fmt_type`
+* `v`, a value of type `T::forwarded_type` or `{value_with_formatters}<T, F\...>`,
+   where `F\...` is such that `T::formatters` is an alias to `{tag}<F\...>`.
 
 The following syntax is satisfied:
 ====

@@ -466,8 +466,10 @@ struct string_printing
     using facet_tag = strf::string_input_tag<SrcCharT>;
 #endif
     using forwarded_type = strf::detail::simple_string_view<SrcCharT>;
-    using fmt_type = strf::detail::string_with_formatters
-        < SrcCharT, false, false, strf::no_conv_formatter<SrcCharT> >;
+    using formatters = strf::tag
+        < strf::string_precision_formatter<false>
+        , strf::alignment_formatter
+        , strf::no_conv_formatter<SrcCharT> >;
 
     template <typename DestCharT, typename Preview, typename FPack>
     constexpr STRF_HD static auto make_printer_input
@@ -1098,7 +1100,7 @@ void STRF_HD aligned_conv_string_printer<SrcCharT, DestCharT>::init_
             s = transcode_size(str_, len_, surr_poli_);
         } else {
             s = strf::decode_encode_size<SrcCharT>
-                ( src_enc.to_u32().transcode
+                ( src_enc.to_u32().transcode_func()
                 , dest_enc.from_u32().transcode_size_func()
                 , str_, len_, inv_seq_notifier_, surr_poli_ );
         }

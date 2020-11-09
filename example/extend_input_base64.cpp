@@ -84,7 +84,7 @@ struct base64_printing
 {
     using facet_tag = base64_input;
     using forwarded_type = base64_input;
-    using fmt_type = base64_input_with_formatters;
+    using formatters = strf::tag<base64_formatter>;
 
     template <typename CharT, typename Preview, typename FPack>
     static auto make_printer_input(Preview& preview, const FPack& fp, base64_input_with_formatters x)

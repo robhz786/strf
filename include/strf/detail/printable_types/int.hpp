@@ -211,14 +211,9 @@ struct int_formatter
     using fn = strf::int_formatter_fn<T, Base>;
 };
 
-namespace detail {
-template <typename IntT> struct int_printing;
-
-} // namespace detail
-
 template <typename IntT, int Base, bool HasAlignment>
 using int_with_formatters = strf::value_with_formatters
-    < strf::detail::int_printing<IntT>
+    < strf::print_traits<IntT>
     , strf::int_formatter<Base>
     , strf::alignment_formatter_q<HasAlignment> >;
 
@@ -309,7 +304,7 @@ struct int_printing
 {
     using facet_tag = IntT;
     using forwarded_type = IntT;
-    using fmt_type = strf::int_with_formatters<IntT, 10, false>;
+    using formatters = strf::tag<strf::int_formatter<10>, strf::alignment_formatter>;
 
     template <typename CharT, typename Preview, typename FPack>
     constexpr STRF_HD static auto make_printer_input
@@ -361,43 +356,43 @@ template <> struct print_traits<unsigned long long>:
     public strf::detail::int_printing<unsigned long long> {};
 
 constexpr STRF_HD auto tag_invoke(strf::print_traits_tag, signed char) noexcept
-    -> strf::detail::int_printing<signed char>
+    -> strf::print_traits<signed char>
     { return {}; }
 
 constexpr STRF_HD auto tag_invoke(strf::print_traits_tag, short) noexcept
-    -> strf::detail::int_printing<short>
+    -> strf::print_traits<short>
     { return {}; }
 
 constexpr STRF_HD auto tag_invoke(strf::print_traits_tag, int) noexcept
-    -> strf::detail::int_printing<int>
+    -> strf::print_traits<int>
     { return {}; }
 
 constexpr STRF_HD auto tag_invoke(strf::print_traits_tag, long) noexcept
-    -> strf::detail::int_printing<long>
+    -> strf::print_traits<long>
     { return {}; }
 
 constexpr STRF_HD auto tag_invoke(strf::print_traits_tag, long long) noexcept
-    -> strf::detail::int_printing<long long>
+    -> strf::print_traits<long long>
     { return {}; }
 
 constexpr STRF_HD auto tag_invoke(strf::print_traits_tag, unsigned char) noexcept
-    -> strf::detail::int_printing<unsigned char>
+    -> strf::print_traits<unsigned char>
     { return {}; }
 
 constexpr STRF_HD auto tag_invoke(strf::print_traits_tag, unsigned short) noexcept
-    -> strf::detail::int_printing<unsigned short>
+    -> strf::print_traits<unsigned short>
     { return {}; }
 
 constexpr STRF_HD auto tag_invoke(strf::print_traits_tag, unsigned int) noexcept
-    -> strf::detail::int_printing<unsigned int>
+    -> strf::print_traits<unsigned int>
     { return {}; }
 
 constexpr STRF_HD auto tag_invoke(strf::print_traits_tag, unsigned long) noexcept
-    -> strf::detail::int_printing<unsigned long>
+    -> strf::print_traits<unsigned long>
     { return {}; }
 
 constexpr STRF_HD auto tag_invoke(strf::print_traits_tag, unsigned long long) noexcept
-    -> strf::detail::int_printing<unsigned long long>
+    -> strf::print_traits<unsigned long long>
     { return {}; }
 
 namespace detail {
@@ -406,9 +401,7 @@ struct voidptr_printing
 {
     using facet_tag = const void*;
     using forwarded_type = const void*;
-
-    using fmt_type = strf::value_with_formatters
-        < voidptr_printing, strf::alignment_formatter_q<true> >;
+    using formatters = strf::tag<strf::alignment_formatter>;
 
     template <typename CharT, typename Preview, typename FPack>
     constexpr STRF_HD static auto make_printer_input
@@ -422,9 +415,11 @@ struct voidptr_printing
         return strf::make_default_printer_input<CharT>(preview, fp2, x2);
     }
 
-    template <typename CharT, typename Preview, typename FPack>
+    template <typename CharT, typename Preview, typename FPack, typename... T>
     constexpr STRF_HD static auto make_printer_input
-        ( Preview& preview, const FPack& fp,  fmt_type x ) noexcept
+        ( Preview& preview
+        , const FPack& fp
+        , strf::value_with_formatters<T...> x ) noexcept
     {
         auto f1 = strf::get_facet<strf::numpunct_c<16>, const void*>(fp);
         auto f2 = strf::get_facet<strf::lettercase_c, const void*>(fp);

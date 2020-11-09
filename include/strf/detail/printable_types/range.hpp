@@ -118,7 +118,7 @@ struct print_traits<strf::range_p<It>>
 {
     using facet_tag = void;
     using forwarded_type = strf::range_p<It>;
-    using fmt_type = strf::range_with_formatters<It>;
+    using formatters = strf::formatters_of<decltype(*std::declval<It>())>;
 
     template <typename CharT, typename Preview, typename FPack>
     STRF_HD constexpr static auto make_printer_input
@@ -150,7 +150,7 @@ struct print_traits<strf::separated_range_p<It, SepCharT>>
 {
     using facet_tag = void;
     using forwarded_type = strf::separated_range_p<It, SepCharT>;
-    using fmt_type = strf::sep_range_with_formatters<It, SepCharT>;
+    using formatters = strf::formatters_of<decltype(*std::declval<It>())>;
 
     template <typename DestCharT, typename Preview, typename FPack>
     STRF_HD constexpr static auto make_printer_input

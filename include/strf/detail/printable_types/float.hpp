@@ -460,7 +460,7 @@ template
     , strf::float_notation Notation = strf::float_notation::general
     , bool Align = false >
 using float_with_formatters = strf::value_with_formatters
-    < strf::detail::float_printing<FloatT>
+    < strf::print_traits<FloatT>
     , strf::float_formatter<Notation>
     , strf::alignment_formatter_q<Align> >;
 
@@ -510,7 +510,9 @@ struct float_printing
 {
     using facet_tag = FloatT;
     using forwarded_type = FloatT;
-    using fmt_type = strf::detail::float_with_formatters<FloatT>;
+    using formatters = strf::tag
+        < strf::float_formatter<strf::float_notation::general>
+        , strf::alignment_formatter >;
 
     template <typename CharT, typename Preview, typename FPack>
     STRF_HD constexpr static auto make_printer_input
@@ -542,11 +544,11 @@ template <> struct print_traits<float>:  public strf::detail::float_printing<flo
 template <> struct print_traits<double>: public strf::detail::float_printing<double> {};
 
 STRF_HD constexpr auto tag_invoke(strf::print_traits_tag, float)
-    -> strf::detail::float_printing<float>
+    -> strf::print_traits<float>
     { return {}; }
 
 STRF_HD constexpr auto tag_invoke(strf::print_traits_tag, double)
-    -> strf::detail::float_printing<double>
+    -> strf::print_traits<double>
     { return {}; }
 
 void tag_invoke(strf::print_traits_tag, long double) = delete;

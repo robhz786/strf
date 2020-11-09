@@ -48,6 +48,9 @@ struct std_complex_formatter {
             : form_(u.form())
         {
         }
+
+        // format functions
+
         constexpr T&& vector() && noexcept
         {
             form_ = complex_form_fmt::vector;
@@ -64,6 +67,7 @@ struct std_complex_formatter {
                     , strf::tag<std_complex_formatter> {}
                     , complex_form_fmt::vector };
         }
+
         constexpr T&& algebric() && noexcept
         {
             form_ = complex_form_fmt::algebric;
@@ -80,6 +84,7 @@ struct std_complex_formatter {
                     , strf::tag<std_complex_formatter> {}
                     , complex_form_fmt::algebric };
         }
+
         constexpr T&& polar() && noexcept
         {
             form_ = complex_form_fmt::polar;
@@ -96,6 +101,9 @@ struct std_complex_formatter {
                     , strf::tag<std_complex_formatter> {}
                     , complex_form_fmt::polar };
         }
+
+        // observers
+
         constexpr complex_form form(complex_form f) const
         {
             return form_ == complex_form_fmt::use_facet ? f : static_cast<complex_form>(form_);
@@ -118,6 +126,10 @@ struct print_traits<std::complex<FloatT>>
 {
     using facet_tag = std::complex<FloatT>;
     using forwarded_type = std::complex<FloatT>;
+    using formatters = strf::tag
+        < std_complex_formatter
+        , strf::alignment_formatter
+        , strf::float_formatter<strf::float_notation::general> >;
 
     template <typename CharT, typename Preview, typename FPack>
     static auto make_printer_input
@@ -138,16 +150,7 @@ struct print_traits<std::complex<FloatT>>
         return strf::make_default_printer_input<CharT>(preview, fp, arg2);
     }
 
-    template <bool HasAligment, strf::float_notation FloatNotation>
-    using fmt_type_tmpl = strf::value_with_formatters
-        < strf::print_traits<std::complex<FloatT>>
-        , std_complex_formatter
-        , strf::alignment_formatter_q<HasAligment>
-        , strf::float_formatter<FloatNotation> >;
-
-    using fmt_type = fmt_type_tmpl<false, strf::float_notation::general>;
-
-    template < typename CharT, typename Preview, typename FPack, typename... T>
+    template <typename CharT, typename Preview, typename FPack, typename... T>
     static auto make_printer_input
         ( Preview& preview
         , const FPack& fp
@@ -199,32 +202,30 @@ private:
 };
 } // namespace strf
 
-void sample()
-{
-    std::complex<double> x{3, 4};
-    auto str = strf::to_u16string.with(complex_form::algebric)
-        ( x, u" == ", strf::sci(x).p(5).polar() );
-
-    assert(str == u"(3 + i*4) == 5.00000e+00∠ 9.27295e-01");
-}
-
 int main()
 {
-    sample();
+    std::complex<double> x{3, 4};
 
-    auto str = strf::to_string(std::complex<double>(3, 4));
+    auto str = strf::to_string(x);
     assert(str == "(3, 4)");
 
-    str = strf::to_string.with(complex_form::algebric) (std::complex<double>(3, 4));
+    // using facets
+    str = strf::to_string.with(complex_form::algebric) (x);
     assert(str == "(3 + i*4)");
 
-    strf::to(stdout).with(complex_form::algebric)
-        ( std::complex<double>(3.0, 4.0), '\n'
-        , strf::fmt(std::complex<double>{3, 4}).vector().sci(), '\n');
+    // using format function
+    auto u16str = strf::to_u16string.with(complex_form::algebric)
+        ( x, u" == ", strf::sci(x).p(5).polar() );
+    assert(u16str == u"(3 + i*4) == 5.00000e+00∠ 9.27295e-01");
 
-    const auto f1 = strf::fmt(std::complex<double>(3.0, 4.0));
+    // format functions on const
+    const auto f1 = strf::fmt(std::complex<double>(x));
     auto f2 = f1.algebric();
-
     assert(f2.form() == std_complex_formatter::complex_form_fmt::algebric);
+    str = strf::to_string(f2);
+    assert(str == "(3 + i*4)");
+
+    (void)str;
+    (void)u16str;
     return 0;
 }

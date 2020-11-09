@@ -559,6 +559,11 @@ struct print_traits_finder<strf::value_with_formatters<Traits, F...>>
 };
 
 template <typename T>
+struct print_traits_finder<T&> : print_traits_finder<T>
+{
+};
+
+template <typename T>
 struct print_traits_finder<T&&> : print_traits_finder<T>
 {
 };
@@ -573,17 +578,44 @@ struct print_traits_finder<volatile T> : print_traits_finder<T>
 {
 };
 
-template <typename T>
-struct fmt_type_finder
+template <typename PrintTraits, typename Formatters>
+struct mp_define_value_with_formatters;
+
+template < typename PrintTraits
+         , template <class...> class List
+         , typename... Fmts >
+struct mp_define_value_with_formatters<PrintTraits, List<Fmts...>>
 {
-    using traits = typename print_traits_finder<T>::traits;
-    using fmt_type = typename traits::fmt_type;
+    using type = strf::value_with_formatters<PrintTraits, Fmts...>;
 };
 
-template <typename... T>
-struct fmt_type_finder<strf::value_with_formatters<T...>>
+template <typename T>
+struct formatters_finder
 {
-    using fmt_type = strf::value_with_formatters<T...>;
+private:
+    template <typename U, typename Fmts = typename U::formatters>
+    static Fmts get_formatters_(U*);
+
+    template <typename U>
+    static strf::tag<> get_formatters_(...);
+
+    template <typename U>
+    using formatters_of_ = decltype(get_formatters_<U>((U*)0));
+
+public:
+
+    using traits = typename print_traits_finder<T>::traits;
+    using formatters = formatters_of_<traits>;
+    using fmt_type = typename
+        strf::detail::mp_define_value_with_formatters<traits, formatters>::type;
+};
+
+template <typename PrintTraits, typename... Fmts>
+struct formatters_finder<strf::value_with_formatters<PrintTraits, Fmts...>>
+{
+    using traits = PrintTraits;
+    using formatters = strf::tag<Fmts...>;
+    using fmt_type = strf::value_with_formatters<PrintTraits, Fmts...>;
 };
 
 } // namespace detail
@@ -595,11 +627,14 @@ using forwarded_printable_type = typename
 
 template <typename T>
 using fmt_type = typename
-    detail::fmt_type_finder<std::remove_cv_t<std::remove_reference_t<T>>>
+    detail::formatters_finder<std::remove_cv_t<std::remove_reference_t<T>>>
     ::fmt_type;
 
 template <typename T>
 using fmt_value_type = typename fmt_type<T>::value_type;
+
+template <typename T>
+using formatters_of = typename strf::detail::formatters_finder<T>::formatters;
 
 template <typename CharT, typename Preview, typename FPack, typename Arg>
 constexpr STRF_HD auto make_default_printer_input

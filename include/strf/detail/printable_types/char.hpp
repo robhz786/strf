@@ -23,10 +23,7 @@ struct char_printing
 {
     using facet_tag = SrcCharT;
     using forwarded_type = SrcCharT;
-    using fmt_type = strf::value_with_formatters
-        < char_printing
-        , strf::quantity_formatter
-        , strf::alignment_formatter >;
+    using formatters = strf::tag<strf::quantity_formatter, strf::alignment_formatter>;
 
     template <typename DestCharT, typename Preview, typename FPack>
     constexpr STRF_HD static auto make_printer_input
@@ -38,11 +35,13 @@ struct char_printing
         return {preview, fp, x};
     }
 
-    template <typename DestCharT, typename Preview, typename FPack>
+    template <typename DestCharT, typename Preview, typename FPack, typename... T>
     constexpr STRF_HD static auto make_printer_input
-        ( Preview& preview, const FPack& fp, fmt_type x ) noexcept
+    ( Preview& preview, const FPack& fp, strf::value_with_formatters<T...> x ) noexcept
         -> strf::usual_printer_input
-            < DestCharT, Preview, FPack, fmt_type, strf::detail::fmt_char_printer<DestCharT> >
+            < DestCharT, Preview, FPack
+            , strf::value_with_formatters<T...>
+            , strf::detail::fmt_char_printer<DestCharT> >
     {
         static_assert( std::is_same<SrcCharT, DestCharT>::value, "Character type mismatch.");
         return {preview, fp, x};
@@ -61,10 +60,7 @@ struct print_traits<char32_t>
 {
     using facet_tag = char32_t;
     using forwarded_type = char32_t;
-    using fmt_type = strf::value_with_formatters
-        < strf::print_traits<char32_t>
-        , strf::quantity_formatter
-        , strf::alignment_formatter >;
+    using formatters = strf::tag<strf::quantity_formatter, strf::alignment_formatter>;
 
     template <typename DestCharT, typename Preview, typename FPack>
     constexpr STRF_HD static auto make_printer_input

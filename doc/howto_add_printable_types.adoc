@@ -11,7 +11,7 @@ http://www.boost.org/LICENSE_1_0.txt
 :PrintTraits:     <<strf_hpp#PrintTraits,PrintTraits>>
 :facet_tag:       <<strf_hpp#PrintTraits_facet_tag,facet_tag>>
 :forwarded_type:  <<strf_hpp#PrintTraits_forwarded_type,forwarded_type>>
-:fmt_type:        <<strf_hpp#PrintTraits_fmt_type,fmt_type>>
+:formatters:      <<strf_hpp#PrintTraits_formatters,formatters>>
 
 :printer:                    <<strf_hpp#printer,printer>>
 :print_preview:              <<strf_hpp#print_preview,print_preview>>
@@ -335,33 +335,19 @@ void sample()
 
 == Adding format functions
 
-////
-To create format functions you need to define a class complying with
-the __{Formatter}__ requirements. But you may also or
-instead consider using some of those already available
-by the library.
-There are two of them that seem to make sense for `std::complex`:
-`{alignment_formatter}` and `{float_formatter}`.
-
-Once having all formatters, you need to define the
-`fmt_type` member type alias in your _PrintTraits_ class
-and overload `make_printer_input`
-////
-
-Format functions are defined by classes that
+Format functions are defined in classes that
 comply with the __{Formatter}__ requirements.
 If you want to add format functions
-you need to create your a formatter class and/or
-use formatters provided by the library.
-There are two of them that make sense for `std::complex`:
-`{alignment_formatter}` and `{float_formatter}`.
+you need to create a formatter class and/or
+select one or some of those provided by the library.
+Then, in your __PrinterTraits__ class, define a
+type alias named `{formatters}` to `{tag}<Fmts\...>`,
+where `Fmts\...` are the __{Formatter}__ types you want
+to enable.
 
-Now, to specify which __formatters__ ( and thus which format functions )
-are aplicable to your printable type, we need to define the `{fmt_type}`
-member type alias in its __PrinterTraits__ class.
-It must be an instance of `value_with_format` with
-the first template paramenter being its __PrinterTraits__ class,
-while the others are the __{Formatter}__ types:
+There are formatters that make sense for `std::complex`:
+the `{alignment_formatter}` and the `{float_formatter}`. So let's
+select them:
 
 [source,cpp,subs=normal]
 ----
@@ -370,9 +356,8 @@ namespace strf {
 template <typename FloatT>
 struct print_traits<std::complex<FloatT>> {
     // ...
-    using {fmt_type} = strf::{value_with_formatters}
-        < print_traits<std::complex<FloatT>>
-        , {alignment_formatter}
+    using {formatters} = strf::{tag}
+        < {alignment_formatter}
         , {float_formatter}<strf::float_notation::general> >;
     // ...
 };
@@ -380,12 +365,14 @@ struct print_traits<std::complex<FloatT>> {
 } // namespace strf
 ----
 
-After that,
+After that, whenever a value `x` is a `std::complex`,
 expressions like `+strf::fmt(x)` and `*strf::sci(x) > 20` and `right(x, 20, '_').sci()`
-are all well-formed, whenever `x` is a `std::complex` value.
+are all well-formed, and the type of `strf::fmt(x)` is
+`{value_with_formatters}<print_traits<std::complex<...>>, Fmts\...>`, where `Fmts\...`
+are the types you used in to define the `formatters` type alias.
 
 Though well-formed, they are still not printable.
-To make them printable we need to overload `make_printer_input`:
+To make them printable we need to overload `make_printer_input`
 
 [source,cpp,subs=normal]
 ----
@@ -433,9 +420,8 @@ struct print_traits<std::complex<FloatT>> {
 
 Instead of taking a raw `std::complex<Float>`, the new overload takes a
 `{value_with_formatters}<T\...>` which matches the return type of format functions.
-Note that we can not just use instead `fmt_type` here. We need to add that
-template parameter pack because the __Formatters__ types in `{value_with_formatters}`
-may change as some format functions are used. For example:
+Note that we need to add that template parameter pack because the __Formatters__ types
+in `{value_with_formatters}` may change as some format functions are used. For example:
 [source,cpp,subs=normal]
 ----
 std::complex<double> x;
@@ -489,8 +475,8 @@ Now, let's suppose we want create format functions for the same purpose.
 This means we need to create a __{Formatter}__ class, which we can
 name as `std_complex_formatter`.
 It is required to have a member template type named `fn` where
-the format functions are defined. The template parameter needs to
-be used to in the return type of the format functions:
+the format functions are defined. The template parameter is
+used in the return type of the format functions:
 
 ////
 So that when the user doesn't specify the form with format function,
@@ -573,7 +559,7 @@ Not only that, `T` is expected to be an instance of `{value_with_formatters}`
 that has `std_complex_formatter` as one of its template arguments.
 
 In our __PrintTraits__ class, there are only two small
-modifications: `fmt_type` and the first line
+modifications: `formatters` and the first line
 of `make_printer_input`:
 
 [source,cpp,subs=normal]
@@ -585,9 +571,8 @@ struct print_traits<std::complex<FloatT>> {
 
     // \...
 
-    using fmt_type = strf::value_with_formatters
-        < strf::print_traits<std::complex<FloatT>>
-        , **std_complex_formatter**
+    using formatters = strf::tag
+        < **std_complex_formatter**
         , strf::alignment_formatter
         , strf::float_formatter<strf::float_notation::general> >;
 

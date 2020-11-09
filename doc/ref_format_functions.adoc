@@ -16,6 +16,8 @@ http://www.boost.org/LICENSE_1_0.txt
 :default_alignment_format: <<alignment_format,default_alignment_format>>
 :text_alignment: <<alignment_format,text_alignment>>
 
+:tag: <<tag,tag>>
+
 == Format functions
 
 === Global format functions
@@ -111,9 +113,13 @@ using fmt_type = /{asterisk}...{asterisk}/;
 `fmt_type<T>` is:
 
 * `T`, when `T` is `{value_with_formatters}</{asterisk} ... {asterisk}/>`
-* `{print_traits_of}<T>::<<PrintTraits,fmt_type>>`, otherwise
-
-`fmt_type<T>` is always expected to be an instance of `{value_with_formatters}` class template.
+* `{value_with_formatters}<PTraits, Fmts\...>`, where:
+** `PTraits` is the type `{print_traits_of}<T>`
+** `Fmts\...` is template paramenter pack used to define
+   `PTraits::<<PrintTraits_formatters,formatters>>` (
+    as a type alias to `{tag}<Fmt\...>` ).
+    When `PTraits::formatters` is not defined, `Fmt\...` is
+    empty.
 
 [[value_with_formatters]]
 === Class template `value_with_formatters`
@@ -1353,7 +1359,7 @@ Return type::
 +
 [source,cpp,subs=normal]
 ----
-`{boost_mp_replace}<T, float_formatter<N>, float_formatter<N2>>`
+{boost_mp_replace}<T, float_formatter<N>, float_formatter<N2>>
 ----
 
 Return value::

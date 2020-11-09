@@ -23,9 +23,7 @@ struct print_traits<bool>
 {
     using facet_tag = bool;
     using forwarded_type = bool;
-    using fmt_type = strf::value_with_formatters
-        < strf::print_traits<bool>
-        , strf::alignment_formatter >;
+    using formatters = strf::tag<strf::alignment_formatter>;
 
     template <typename CharT, typename Preview, typename FPack>
     constexpr STRF_HD static auto make_printer_input
@@ -36,11 +34,15 @@ struct print_traits<bool>
         return {preview, fp, x};
     }
 
-    template <typename CharT, typename Preview, typename FPack>
+    template <typename CharT, typename Preview, typename FPack, typename... T>
     constexpr STRF_HD static auto make_printer_input
-        ( Preview& preview, const FPack& fp, fmt_type x ) noexcept
+        ( Preview& preview
+        , const FPack& fp
+        , strf::value_with_formatters<T...> x ) noexcept
         -> strf::usual_printer_input
-            < CharT, Preview, FPack, fmt_type, strf::detail::fmt_bool_printer<CharT> >
+            < CharT, Preview, FPack
+            , strf::value_with_formatters<T...>
+            , strf::detail::fmt_bool_printer<CharT> >
     {
         return {preview, fp, x};
     }

@@ -391,10 +391,7 @@ template <>
 struct print_traits<xxx::ipv6address> {
     using facet_tag = xxx::ipv6address;
     using forwarded_type = xxx::ipv6address;
-    using fmt_type = strf::value_with_formatters
-        < print_traits<xxx::ipv6address>
-        , ipv6_formatter
-        , alignment_formatter >;
+    using formatters = strf::tag<ipv6_formatter, strf::alignment_formatter>;
 
     template <typename CharT, typename Preview, typename FPack>
     static auto make_printer_input

@@ -141,7 +141,7 @@ struct join_printing
         , strf::split_pos_formatter<HasSplitPos>
         , strf::alignment_formatter_q<HasAlignment> >;
 
-    using fmt_type = fmt_tmpl<false, false>;
+    using formatters = strf::tag<strf::split_pos_formatter<false>, strf::alignment_formatter>;
 
     template< typename CharT, typename Preview, typename FPack
             , bool HasSplitPos, bool HasAlignment >
@@ -232,7 +232,7 @@ STRF_HD void print_split
 {
     strf::detail::print_split
         ( ob, encode_fill, fillcount, fillchar, split_pos
-        , printers.template get<I>()... );
+        , static_cast<const strf::printer<CharT>&>(printers.template get<I>())... );
 }
 
 template<typename CharT, typename... Printers>
