@@ -109,7 +109,7 @@ ipv6address_abbreviation::ipv6address_abbreviation(ipv6address addr)
                 goto hide_middle_zeros;
             }
             hide_leading_zeros:
-            visible_hextets_count_ = 8 - leading_zeros_count;
+            visible_hextets_count_ = static_cast<std::uint8_t>(8 - leading_zeros_count);
             visible_colons_count_ = visible_hextets_count_ + 1;
             hextets_visibility_bits_ = 0xFF << leading_zeros_count;
             colons_visibility_bits_ = 0x7F & (0x7F << (leading_zeros_count - 2));
@@ -159,16 +159,16 @@ ipv6address_abbreviation::ipv6address_abbreviation(ipv6address addr)
     return;
 
     hide_middle_zeros:
-    visible_hextets_count_ = 8 - middle_zeros_count;
+    visible_hextets_count_ = static_cast<std::uint8_t>(8 - middle_zeros_count);
     visible_colons_count_ = visible_hextets_count_;
     hextets_visibility_bits_ = ~(~(0xFF << middle_zeros_count) << middle_zeros_start);
     colons_visibility_bits_  = 0x7F & ~(~(0xFF << (middle_zeros_count - 1)) << middle_zeros_start);
     return;
 
     hide_trailing_zeros:
-    auto trailing_zeros_count = 8 - trailing_zeros_start;
-    visible_hextets_count_ = trailing_zeros_start;
-    visible_colons_count_  = trailing_zeros_start + 1;
+    auto trailing_zeros_count = static_cast<std::uint8_t>(8 - trailing_zeros_start);
+    visible_hextets_count_ = static_cast<std::uint8_t>(trailing_zeros_start);
+    visible_colons_count_  = static_cast<std::uint8_t>(trailing_zeros_start + 1);
     hextets_visibility_bits_ = 0xFF >>  trailing_zeros_count;
     colons_visibility_bits_  = 0xFF >> (trailing_zeros_count - 1);
 
@@ -179,7 +179,7 @@ ipv6address_abbreviation::ipv6address_abbreviation(ipv6address addr)
 
 namespace strf {
 
-constexpr unsigned hex_digits_count(std::uint16_t x)
+constexpr std::uint16_t hex_digits_count(std::uint16_t x)
 {
     return x > 0xFFF ? 4 : ( x > 0xFF ? 3 : ( x > 0xF ? 2 : 1 ) );
 }
@@ -196,7 +196,7 @@ public:
         , lettercase_(strf::get_facet<strf::lettercase_c, xxx::ipv6address>(input.fp))
     {
         if (Preview::something_required) {
-            auto count = count_characters();
+            std::int16_t count = count_characters();
             input.preview.subtract_width(count);
             input.preview.add_size(count);
         }
@@ -206,7 +206,7 @@ public:
 
 private:
 
-    int count_characters() const;
+    std::uint16_t count_characters() const;
 
     xxx::ipv6address addr_;
     xxx::ipv6address_abbreviation abbrev_;
@@ -214,9 +214,9 @@ private:
 };
 
 template <typename CharT>
-int ipv6_printer<CharT>::count_characters() const
+std::uint16_t ipv6_printer<CharT>::count_characters() const
 {
-    int count = abbrev_.visible_colons_count();
+    std::uint16_t count = abbrev_.visible_colons_count();
     for (int i = 0; i < 8; ++i) {
         if (abbrev_.hextet_visible(i)) {
             count += hex_digits_count(addr_.hextets[i]);
@@ -239,7 +239,7 @@ void ipv6_printer<CharT>::print_to(strf::basic_outbuff<CharT>& dest) const
     }
 }
 
-enum class ipv6style{small, medium, big};
+enum class ipv6style{little, medium, big};
 
 template <typename CharT>
 class fmt_ipv6_printer: public strf::printer<CharT>
@@ -282,7 +282,7 @@ template <typename CharT>
 template <typename Preview, typename Encoding>
 void fmt_ipv6_printer<CharT>::init_(Preview& preview, Encoding enc)
 {
-    if (style_ == ipv6style::small) {
+    if (style_ == ipv6style::little) {
         abbrev_ = xxx::ipv6address_abbreviation{addr_};
     }
     auto count = count_ipv6_characters();
@@ -304,7 +304,7 @@ std::uint16_t fmt_ipv6_printer<CharT>::count_ipv6_characters() const
     if (style_ == ipv6style::big) {
         return 39;
     }
-    int count = abbrev_.visible_colons_count();
+    std::uint16_t count = abbrev_.visible_colons_count();
     for (int i = 0; i < 8; ++i) {
         if (abbrev_.hextet_visible(i)) {
             count += hex_digits_count(addr_.hextets[i]);
@@ -382,7 +382,7 @@ struct ipv6_formatter
 
     private:
 
-        ipv6style style_ = ipv6style::small;
+        ipv6style style_ = ipv6style::little;
     }; // ipv6_formatter::template fn
 }; // ipv6_formatter
 

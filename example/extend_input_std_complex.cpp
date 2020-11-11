@@ -2,6 +2,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
+#define _USE_MATH_DEFINES
 #include <strf/to_cfile.hpp>
 #include <strf/to_string.hpp>
 #include <utility>
@@ -216,7 +217,7 @@ int main()
     // using format function
     auto u16str = strf::to_u16string.with(complex_form::algebric)
         ( x, u" == ", strf::sci(x).p(5).polar() );
-    assert(u16str == u"(3 + i*4) == 5.00000e+00∠ 9.27295e-01");
+    assert(u16str == u"(3 + i*4) == 5.00000e+00\u2220 9.27295e-01");
 
     // format functions on const
     const auto f1 = strf::fmt(std::complex<double>(x));
