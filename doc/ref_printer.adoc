@@ -501,3 +501,46 @@ remaining_width() == (w < previous_w.ceil() ? previous_w - (std::int16_t)w : 0)
 where `previous_w` is the return value of `remaining_width()` before this call.
 ====
 
+=== Function template `preview`
+
+[source,cpp,subs=normal]
+----
+template < typename CharT
+         , <<print_preview,preview_size>> SizeRequired
+         , <<print_preview,preview_width>> WidthRequired
+         , typename\... FPE
+         , typename\... Args >
+void preview
+    ( {print_preview}<SizeRequired, WidthRequired>& pp
+    , const {facets_pack}<FPE\...>& facets
+    , const Args&\... args );
+----
+
+Calculates the size and/or width of the result of printing the arguments `args\...`
+
+Compile-time requirements::
+* All types in `Args\...` are __{Printable}__
+* All types in `FPE\...` are __<<FacetsPackElement,FacetsPackElement>>__
+  ( since this is a requirement of `{facets_pack}` ).
+
+Effects::
+* When `SizeRequired` is `preview_size::yes`, for each argument `arg` in `args\...`
+  instantiates the correponding printer type with `pp`, `facets`, and `arg`.
+  This translates into the following expression:
++  
+[source,cpp,subs=normal]
+----
+(\..., {printer_type}< CharT
+                  , {print_preview}<SizeRequired, WidthRequired>
+                  , facets_pack<FPE\...>
+                  , Args >{{make_printer_input}<CharT>(pp, facets, args)} );
+----
+* When `SizeRequired` is `preview_size::no` and `WidthRequired` is `preview_width::yes`,
+  for each argument `arg` in `args\...` instantiates the correponding printer
+  type with `pp`, `facets`, and `arg` ( again, using `{printer_type}`  and
+  `{make_printer_input}` ), while `pp.<<width_preview,remaining_width>>() > 0`
+  is `true`.
+  This implies that not necessarily all argument in `arg\...` are used.
+* When `SizeRequired` is `preview_size::no` and `WidthRequired` is `preview_width::no`,
+  does nothing
+

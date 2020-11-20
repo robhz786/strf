@@ -230,6 +230,9 @@ public:
 };
 
 using no_print_preview = strf::print_preview<strf::preview_size::no, strf::preview_width::no>;
+using print_size_preview  = strf::print_preview<strf::preview_size::yes, strf::preview_width::no>;
+using print_width_preview = strf::print_preview<strf::preview_size::no, strf::preview_width::yes>;
+using print_size_and_width_preview = strf::print_preview<strf::preview_size::yes, strf::preview_width::yes>;
 
 namespace detail {
 
@@ -687,6 +690,95 @@ using printer_input_type = decltype
 
 template <typename CharT, typename Preview, typename FPack, typename Arg>
 using printer_type = typename printer_input_type<CharT, Preview, FPack, Arg>::printer_type;
+
+
+template < typename CharT
+         , strf::preview_size SizeRequired
+         , strf::preview_width WidthRequired
+         , typename... FPE >
+STRF_HD void preview( strf::print_preview<SizeRequired, WidthRequired>&
+                    , const strf::facets_pack<FPE...> &)
+{
+}
+
+template < typename CharT
+         , typename... FPE
+         , typename Arg
+         , typename... Args >
+STRF_HD constexpr void preview
+    ( strf::print_preview<strf::preview_size::no, strf::preview_width::no>
+    , const strf::facets_pack<FPE...>&
+    , const Arg&
+    , const Args&... ) noexcept
+{
+}
+
+namespace detail {
+
+template < typename CharT, typename... FPE >
+STRF_HD constexpr void preview_only_width
+    ( strf::print_preview<strf::preview_size::no, strf::preview_width::yes>&
+    , const strf::facets_pack<FPE...>& ) noexcept
+{
+}
+
+template < typename CharT
+         , typename... FPE
+         , typename Arg
+         , typename... OtherArgs >
+STRF_HD void preview_only_width
+    ( strf::print_preview<strf::preview_size::no, strf::preview_width::yes>& pp
+    , const strf::facets_pack<FPE...>& facets
+    , const Arg& arg
+    , const OtherArgs&... other_args )
+{
+    using preview_type = strf::print_preview<strf::preview_size::no, strf::preview_width::yes>;
+
+    (void) strf::printer_type<CharT, preview_type, strf::facets_pack<FPE...>, Arg>
+        ( strf::make_printer_input<CharT>(pp, facets, arg) );
+
+    if (pp.remaining_width() > 0) {
+        strf::detail::preview_only_width<CharT>(pp, facets, other_args...);
+    }
+}
+
+} // namespace detail
+
+template <typename CharT, typename... FPE, typename... Args>
+STRF_HD void preview
+    ( strf::print_preview<strf::preview_size::no, strf::preview_width::yes>& pp
+    , const strf::facets_pack<FPE...>& facets
+    , const Args&... args )
+{
+    if (pp.remaining_width() > 0) {
+        strf::detail::preview_only_width<CharT>(pp, facets, args...);
+    }
+}
+
+namespace detail {
+
+template <typename... Args>
+STRF_HD constexpr void do_nothing_with(const Args...) noexcept
+{
+    // workaround for the lack of support for fold expressions
+}
+
+} // namespace detail
+
+template < typename CharT
+         , strf::preview_width WidthRequired
+         , typename... FPE
+         , typename... Args >
+STRF_HD void preview
+    ( strf::print_preview<strf::preview_size::yes, WidthRequired>& pp
+    , const strf::facets_pack<FPE...>& facets
+    , const Args&... args )
+{
+    using preview_type = strf::print_preview<strf::preview_size::yes, WidthRequired>;
+    strf::detail::do_nothing_with
+        ( strf::printer_type<CharT, preview_type, strf::facets_pack<FPE...>, Args>
+          ( strf::make_printer_input<CharT>(pp, facets, args) ) ... );
+}
 
 inline namespace format_functions {
 
