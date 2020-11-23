@@ -417,6 +417,11 @@ public:
             , change_notation<N>(data_) };
     }
 
+    static constexpr STRF_HD strf::float_notation float_notation() noexcept
+    {
+        return Notation;
+    }
+
     constexpr STRF_HD strf::float_format<Notation> get_float_format() const noexcept
     {
         return data_;

@@ -1143,6 +1143,8 @@ public:
 
     template <{float_notation} N2> // where N2 != N
     constexpr /{asterisk} see below {asterisk}/ <<float_formatter_fn_set_float_format_const,set_float_format>>({float_format}<N2> data) const & noexcept;
+
+    static constexpr {float_notation} float_notation() noexcept { return N; } 
 };
 } // namespace strf
 ----
