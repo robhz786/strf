@@ -87,38 +87,54 @@ public:
 
     constexpr STRF_HD void subtract_width(strf::width_t w) noexcept
     {
-        width_ -= w;
-    }
-
-    constexpr STRF_HD void checked_subtract_width(strf::width_t w) noexcept
-    {
-        if (w < width_) {
-            width_ -= w;
-        } else {
-            width_ = 0;
+        if (w > 0) {
+            if (w < width_) {
+                width_ -= w;
+            } else {
+                width_ = 0;
+            }
         }
     }
 
-    constexpr STRF_HD void checked_subtract_width(std::ptrdiff_t w) noexcept
+    template <typename IntT>
+    constexpr std::enable_if_t<std::is_integral<IntT>::value>
+    STRF_HD subtract_width(IntT w) noexcept
     {
-        if (w < width_.ceil()) {
-            width_ -= static_cast<std::int16_t>(w);
-        } else {
-            width_ = 0;
-        }
+        subtract_int_(std::is_signed<IntT>{}, w);
     }
 
     constexpr STRF_HD void clear_remaining_width() noexcept
     {
         width_ = 0;
     }
-
     constexpr STRF_HD strf::width_t remaining_width() const noexcept
     {
-        return width_;
+        return width_ > 0 ? width_ : 0;
     }
 
 private:
+
+    template <typename W>
+    void STRF_HD subtract_int_(std::true_type, W w) noexcept
+    {
+        if (w > 0) {
+            if (w <= width_.floor()) {
+                width_ -= static_cast<std::int16_t>(w);
+            } else {
+                width_ = 0;
+            }
+        }
+    }
+
+    template <typename W>
+    void STRF_HD subtract_int_(std::false_type, W w) noexcept
+    {
+        if (w <= static_cast<std::uint16_t>(width_.floor())) {
+            width_ -= static_cast<std::int16_t>(w);
+        } else {
+            width_ = 0;
+        }
+    }
 
     strf::width_t width_;
 };
@@ -132,15 +148,8 @@ public:
     {
     }
 
-    constexpr STRF_HD void subtract_width(strf::width_t) noexcept
-    {
-    }
-
-    constexpr STRF_HD void checked_subtract_width(strf::width_t) noexcept
-    {
-    }
-
-    constexpr STRF_HD void checked_subtract_width(std::ptrdiff_t) noexcept
+    template <typename T>
+    constexpr STRF_HD void subtract_width(T) noexcept
     {
     }
 

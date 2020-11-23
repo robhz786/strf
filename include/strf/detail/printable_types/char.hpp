@@ -197,10 +197,10 @@ STRF_HD void fmt_char_printer<CharT>::init_
     std::uint16_t fillcount = 0;
     if (content_width < afmt_.width) {
         fillcount = static_cast<std::uint16_t>((afmt_.width - content_width).round());
-        preview.checked_subtract_width(content_width + fillcount);
+        preview.subtract_width(content_width + fillcount);
     } else {
         fillcount = 0;
-        preview.checked_subtract_width(content_width);
+        preview.subtract_width(content_width);
     }
     switch(afmt_.alignment) {
         case strf::text_alignment::left:
@@ -342,10 +342,10 @@ void STRF_HD fmt_conv_char32_printer<DestCharT>::init_
         fillcount_ = static_cast<std::uint16_t>((afmt.width - content_width).round());
         fillchar_ = afmt.fill;
         alignment_ = afmt.alignment;
-        preview.checked_subtract_width(content_width + fillcount_);
+        preview.subtract_width(content_width + fillcount_);
     } else {
         fillcount_ = 0;
-        preview.checked_subtract_width(content_width);
+        preview.subtract_width(content_width);
     }
     STRF_IF_CONSTEXPR (Preview::size_required) {            
         preview.add_size(count_ * enc.encoded_char_size(ch_));

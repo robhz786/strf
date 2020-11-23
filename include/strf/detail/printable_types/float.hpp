@@ -1648,7 +1648,7 @@ STRF_HD void double_printer<CharT>::init_
     encode_fill_ = enc.encode_fill_func();
     auto content_width = content_width_();
     if (content_width >= w) {
-        preview.checked_subtract_width(content_width);
+        preview.subtract_width(content_width);
         preview.add_size(content_width);
     } else {
         auto fillcount = (w - static_cast<std::int16_t>(content_width));
@@ -1828,7 +1828,7 @@ public:
         STRF_IF_CONSTEXPR (Preview::width_required || Preview::size_required) {
             s = size();
         }
-        input.preview.checked_subtract_width(s);
+        input.preview.subtract_width(s);
         input.preview.add_size(s);
     }
 
@@ -2409,7 +2409,7 @@ public:
         }
         int content_width = content_width_without_point + data_.showpoint;
         auto fillcount = init_fills_(content_width, input.arg.get_alignment_format());
-        input.preview.checked_subtract_width(content_width + fillcount);
+        input.preview.subtract_width(content_width + fillcount);
         STRF_IF_CONSTEXPR (Preview::size_required) {
             input.preview.add_size(content_width_without_point);
             input.preview.add_size(pointsize_);

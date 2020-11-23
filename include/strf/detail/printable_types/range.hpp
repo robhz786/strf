@@ -365,7 +365,7 @@ STRF_HD void separated_range_printer<CharT, FPack, It>::preview_(Preview& previe
             if (count > UINT32_MAX) {
                 preview.clear_remaining_width();
             } else {
-                preview.checked_subtract_width
+                preview.subtract_width
                     ( checked_mul(dw, static_cast<std::uint32_t>(count - 1)) );
             }
         }
@@ -570,7 +570,7 @@ STRF_HD void fmt_separated_range_printer<CharT, FPack, It, Fmts ...>::preview_
             if (count > UINT32_MAX) {
                 preview.clear_remaining_width();
             } else {
-                preview.checked_subtract_width
+                preview.subtract_width
                     ( checked_mul(dw, static_cast<std::uint32_t>(count - 1)) );
             }
         }
@@ -763,7 +763,7 @@ STRF_HD void sep_transformed_range_printer<CharT, FPack, It, UnaryOp>
             if (count > UINT32_MAX) {
                 preview.clear_remaining_width();
             } else {
-                preview.checked_subtract_width
+                preview.subtract_width
                     ( checked_mul(dw, static_cast<std::uint32_t>(count - 1)) );
             }
         }
