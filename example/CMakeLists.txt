@@ -24,6 +24,7 @@ foreach(x
     extend_input_ipv6
     extend_input_base64
     extend_input_std_complex
+    std_complex_printer
     extend_input_template
     )
 
