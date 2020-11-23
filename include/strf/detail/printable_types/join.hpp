@@ -262,7 +262,7 @@ public:
             fillcount_ = preview.remaining_width().round();
         }
         STRF_IF_CONSTEXPR (static_cast<bool>(ReqSize)) {
-            input.preview.add_size(preview.get_size());
+            input.preview.add_size(preview.accumulated_size());
             if (fillcount_ > 0) {
                 auto fcharsize = enc.encoded_char_size(afmt_.fill);
                 input.preview.add_size(fillcount_ * fcharsize);
@@ -302,7 +302,7 @@ public:
         width_t width = fillcount_ + wmax - preview.remaining_width();
         input.preview.subtract_width(width);
         STRF_IF_CONSTEXPR (static_cast<bool>(ReqSize)) {
-            input.preview.add_size(preview.get_size());
+            input.preview.add_size(preview.accumulated_size());
             if (fillcount_ > 0) {
                 auto fcharsize = enc.encoded_char_size(afmt_.fill);
                 input.preview.add_size( fillcount_ * fcharsize);

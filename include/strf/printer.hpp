@@ -182,7 +182,7 @@ public:
         size_ += s;
     }
 
-    constexpr STRF_HD std::size_t get_size() const noexcept
+    constexpr STRF_HD std::size_t accumulated_size() const noexcept
     {
         return size_;
     }
@@ -205,7 +205,7 @@ public:
     {
     }
 
-    constexpr STRF_HD std::size_t get_size() const noexcept
+    constexpr STRF_HD std::size_t accumulated_size() const noexcept
     {
         return 0;
     }

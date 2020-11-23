@@ -579,7 +579,7 @@ printer_type p{ {make_printer_input}<char_type>(preview, &#95;fpack, arg) };
 [source,cpp,subs=normal]
 ----
 using ob_type = typename OutbuffCreator::size_outbuf_type;
-ob_type ob{_outbuff_creator.create(preview.get_size())};
+ob_type ob{_outbuff_creator.create(preview.<<size_preview_accumulated_size,accumulated_size>>())};
 ----
 . For each `p` object does:
 +

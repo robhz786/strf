@@ -181,9 +181,9 @@ such that the sequence:
 
 [source,cpp,subs=normal]
 ----
-std::size_t s  = x.preview.<<size_preview_get_size,get_size>>();
+std::size_t s  = x.preview.<<size_preview_accumulated_size,accumulated_size>>();
 typename T::printer_type p{x};
-std::size_t predicted_size = x.preview.<<size_preview_get_size,get_size>>() - s;
+std::size_t predicted_size = x.preview.<<size_preview_accumulated_size,accumulated_size>>() - s;
 std::size_t dest_size      = dest.<<outbuff_hpp#basic_outbuff_space,space>>();
 static_cast<const printer<CharT>&>(p).<<printer,print_to>>(dest);
 ----
@@ -377,7 +377,7 @@ public:
     explicit constexpr size_preview(std::size_t initial_size) noexcept;
 
     constexpr void add_size(std::size_t) noexcept;
-    constexpr std::size_t get_size() const noexcept;
+    constexpr std::size_t accumulated_size() const noexcept;
 };
 } // namespace strf
 ----
@@ -388,7 +388,7 @@ public:
 ----
 explicit constexpr size_preview() noexcept;
 ----
-Postcondition:: `get_size() == 0`
+Postcondition:: `accumulated_size() == 0`
 ====
 ====
 [source,cpp]
@@ -397,25 +397,25 @@ explicit constexpr size_preview(std::size_t initial_size) noexcept;
 ----
 Compile-time requirement:: `Active` is `true`, otherwise this constructor
 does not participate in overload resolution.
-Postcondition:: `get_size() == initial_size`
+Postcondition:: `accumulated_size() == initial_size`
 ====
 ====
 [source,cpp]
 ----
 constexpr void add_size(std::size_t s) noexcept;
 ----
-Postcondition::
+Effects::
 When `Active` is `false`::: None
-When `Active` is `true` ::: `(get_size() - previous_size == s)`, where `previous_size` is the return value of `get_size()` before this call.
+When `Active` is `true` ::: The internally stored size value ( that is returned by `accumulated_size()` ) is incremented by `s`.
 ====
-[[size_preview_get_size]]
+[[size_preview_accumulated_size]]
 ====
 [source,cpp]
 ----
-constexpr void get_size() const noexcept;
+constexpr void accumulated_size() const noexcept;
 ----
 Return value::
-When `Active` is `false`::: `0` (always)
+When `Active` is `false`::: `0`
 When `Active` is `true` ::: The internally stored size value.
 ====
 [[width_preview]]
