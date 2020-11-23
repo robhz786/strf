@@ -193,7 +193,7 @@ public:
     ipv6_printer(strf::usual_printer_input<CharT, Preview, T...> input)
         : addr_(input.arg)
         , abbrev_(input.arg)
-        , lettercase_(strf::get_facet<strf::lettercase_c, xxx::ipv6address>(input.fp))
+        , lettercase_(strf::get_facet<strf::lettercase_c, xxx::ipv6address>(input.facets))
     {
         if (Preview::something_required) {
             std::int16_t count = count_characters();
@@ -250,10 +250,10 @@ public:
     fmt_ipv6_printer(strf::usual_printer_input<CharT, T...> input)
         : addr_(input.arg.value())
         , alignment_fmt_(input.arg.get_alignment_format())
-        , lettercase_(strf::get_facet<strf::lettercase_c, xxx::ipv6address>(input.fp))
+        , lettercase_(strf::get_facet<strf::lettercase_c, xxx::ipv6address>(input.facets))
         , style_(input.arg.get_ipv6style())
     {
-        auto encoding = get_facet<strf::char_encoding_c<CharT>, xxx::ipv6address>(input.fp);
+        auto encoding = get_facet<strf::char_encoding_c<CharT>, xxx::ipv6address>(input.facets);
 
         encode_fill_fn_ = encoding.encode_fill_func();
         init_(input.preview, encoding);

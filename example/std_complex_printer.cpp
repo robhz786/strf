@@ -165,13 +165,13 @@ public:
 
     template <typename... T>
     std_complex_printer(strf::usual_printer_input<T...> input)
-        : encoding_(get_facet_<strf::char_encoding_c<CharT>>(input.fp))
-        , numpunct_(strf::get_facet<strf::numpunct_c<10>, FloatT>(input.fp))
-        , lettercase_(strf::get_facet<strf::lettercase_c, FloatT>(input.fp))
-        , form_(get_facet_<complex_form_c>(input.fp))
+        : encoding_(get_facet_<strf::char_encoding_c<CharT>>(input.facets))
+        , numpunct_(strf::get_facet<strf::numpunct_c<10>, FloatT>(input.facets))
+        , lettercase_(strf::get_facet<strf::lettercase_c, FloatT>(input.facets))
+        , form_(get_facet_<complex_form_c>(input.facets))
         , coordinates_(::complex_coordinates(form_, input.arg))
     {
-        preview_(input.preview, get_facet_<strf::width_calculator_c>(input.fp));
+        preview_(input.preview, get_facet_<strf::width_calculator_c>(input.facets));
     }
 
     void print_to(strf::basic_outbuff<CharT>& dest) const override;
@@ -261,18 +261,18 @@ public:
 
     template <typename... T>
     fmt_std_complex_printer(strf::usual_printer_input<T...> input)
-        : encoding_(strf::get_facet<strf::char_encoding_c<CharT>, complex_type_>(input.fp))
-        , numpunct_(strf::get_facet<strf::numpunct_c<numbase_>, FloatT>(input.fp))
-        , lettercase_(strf::get_facet<strf::lettercase_c, FloatT>(input.fp))
+        : encoding_(strf::get_facet<strf::char_encoding_c<CharT>, complex_type_>(input.facets))
+        , numpunct_(strf::get_facet<strf::numpunct_c<numbase_>, FloatT>(input.facets))
+        , lettercase_(strf::get_facet<strf::lettercase_c, FloatT>(input.facets))
         , float_fmt_(input.arg.get_float_format())
         , form_(input.arg.form(
-                    (strf::get_facet<complex_form_c, std::complex<FloatT>>(input.fp))))
+                    (strf::get_facet<complex_form_c, std::complex<FloatT>>(input.facets))))
         , coordinates_{::complex_coordinates(form_, input.arg.value())}
     {
         init_and_preview_
             ( input.preview
             , input.arg.get_alignment_format()
-            , strf::get_facet<strf::width_calculator_c, complex_type_>(input.fp) );
+            , strf::get_facet<strf::width_calculator_c, complex_type_>(input.facets) );
     }
 
     void print_to(strf::basic_outbuff<CharT>& dest) const override;

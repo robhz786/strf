@@ -289,7 +289,7 @@ struct punct_int_printer_input
     using arg_type = IntT;
 
     Preview& preview;
-    FPack fp;
+    FPack facets;
     IntT value;
 };
 
@@ -308,17 +308,17 @@ struct int_printing
 
     template <typename CharT, typename Preview, typename FPack>
     constexpr STRF_HD static auto make_printer_input
-        (Preview& preview, const FPack& fp,  IntT x ) noexcept
+        (Preview& preview, const FPack& facets,  IntT x ) noexcept
         -> strf::detail::int_printer_input<CharT, Preview, FPack, IntT>
     {
-        return {preview, fp, x};
+        return {preview, facets, x};
     }
 
     template < typename CharT, typename Preview, typename FPack
              , int Base, bool HasAlignment >
     constexpr STRF_HD static auto make_printer_input
         ( Preview& preview
-        , const FPack& fp
+        , const FPack& facets
         , strf::int_with_formatters<IntT, Base, HasAlignment> x ) noexcept
         -> strf::usual_printer_input
             < CharT, Preview, FPack, strf::int_with_formatters<IntT, Base, HasAlignment>
@@ -327,7 +327,7 @@ struct int_printing
                 , strf::detail::full_fmt_int_printer<CharT, Base>
                 , strf::detail::partial_fmt_int_printer<CharT, Base> > >
     {
-        return {preview, fp, x};
+        return {preview, facets, x};
     }
 };
 
@@ -405,11 +405,11 @@ struct voidptr_printing
 
     template <typename CharT, typename Preview, typename FPack>
     constexpr STRF_HD static auto make_printer_input
-        ( Preview& preview, const FPack& fp, const void* x ) noexcept
+        ( Preview& preview, const FPack& facets, const void* x ) noexcept
     {
-        auto f1 = strf::get_facet<strf::numpunct_c<16>, const void*>(fp);
-        auto f2 = strf::get_facet<strf::lettercase_c, const void*>(fp);
-        auto f3 = strf::get_facet<strf::char_encoding_c<CharT>, const void*>(fp);
+        auto f1 = strf::get_facet<strf::numpunct_c<16>, const void*>(facets);
+        auto f2 = strf::get_facet<strf::lettercase_c, const void*>(facets);
+        auto f3 = strf::get_facet<strf::char_encoding_c<CharT>, const void*>(facets);
         auto fp2 = strf::pack(f1, f2, f3);
         auto x2 = *strf::hex(strf::detail::bit_cast<std::size_t>(x));
         return strf::make_default_printer_input<CharT>(preview, fp2, x2);
@@ -418,12 +418,12 @@ struct voidptr_printing
     template <typename CharT, typename Preview, typename FPack, typename... T>
     constexpr STRF_HD static auto make_printer_input
         ( Preview& preview
-        , const FPack& fp
+        , const FPack& facets
         , strf::value_with_formatters<T...> x ) noexcept
     {
-        auto f1 = strf::get_facet<strf::numpunct_c<16>, const void*>(fp);
-        auto f2 = strf::get_facet<strf::lettercase_c, const void*>(fp);
-        auto f3 = strf::get_facet<strf::char_encoding_c<CharT>, const void*>(fp);
+        auto f1 = strf::get_facet<strf::numpunct_c<16>, const void*>(facets);
+        auto f2 = strf::get_facet<strf::lettercase_c, const void*>(facets);
+        auto f3 = strf::get_facet<strf::char_encoding_c<CharT>, const void*>(facets);
         auto fp2 = strf::pack(f1, f2, f3);
         auto x2 = *strf::hex(strf::detail::bit_cast<std::size_t>(x.value()))
                              .set_alignment_format(x.get_alignment_format());
@@ -514,11 +514,11 @@ public:
         ( const strf::detail::punct_int_printer_input<T...>& i )
     {
         using int_type = typename strf::detail::punct_int_printer_input<T...>::arg_type;
-        auto enc = get_facet<strf::char_encoding_c<CharT>, int_type>(i.fp);
+        auto enc = get_facet<strf::char_encoding_c<CharT>, int_type>(i.facets);
 
         uvalue_ = strf::detail::unsigned_abs(i.value);
         digcount_ = strf::detail::count_digits<10>(uvalue_);
-        auto punct = get_facet<strf::numpunct_c<10>, int_type>(i.fp);
+        auto punct = get_facet<strf::numpunct_c<10>, int_type>(i.facets);
         if (punct.any_group_separation(digcount_)) {
             grouping_ = punct.grouping();
             thousands_sep_ = punct.thousands_sep();
@@ -594,7 +594,7 @@ public:
         ( const strf::usual_printer_input<T...> & i)
         : partial_fmt_int_printer
           ( i.arg.value(), i.arg.get_int_format()
-          , i.preview, i.fp )
+          , i.preview, i.facets )
     {
     }
 
@@ -603,16 +603,16 @@ public:
              , typename IntT
              , typename IntTag = IntT >
     STRF_HD partial_fmt_int_printer
-        ( IntT value, strf::int_format<Base> fdata, Preview& preview, const FPack& fp )
-        : lettercase_(get_facet<strf::lettercase_c, IntTag>(fp))
+        ( IntT value, strf::int_format<Base> fdata, Preview& preview, const FPack& facets )
+        : lettercase_(get_facet<strf::lettercase_c, IntTag>(facets))
     {
         init_<IntT>( value, fdata );
         STRF_IF_CONSTEXPR (detail::has_intpunct<FPack, IntTag, Base>()) {
-            auto punct = get_facet<strf::numpunct_c<Base>, IntTag>(fp);
+            auto punct = get_facet<strf::numpunct_c<Base>, IntTag>(facets);
             if (punct.any_group_separation(digcount_)) {
                 grouping_ = punct.grouping();
                 thousands_sep_ = punct.thousands_sep();
-                auto encoding = get_facet<strf::char_encoding_c<CharT>, IntTag>(fp);
+                auto encoding = get_facet<strf::char_encoding_c<CharT>, IntTag>(facets);
                 init_punct_(encoding);
             }
         }
@@ -855,7 +855,7 @@ template < typename IntT, typename T1, typename T2, typename T3 >
 inline STRF_HD full_fmt_int_printer<CharT, Base>::full_fmt_int_printer
     ( const strf::usual_printer_input
         < CharT, T1, T2, strf::int_with_formatters<IntT, Base, true>, T3 >& i ) noexcept
-    : ichars_(i.arg.value(), i.arg.get_int_format(), i.preview, i.fp)
+    : ichars_(i.arg.value(), i.arg.get_int_format(), i.preview, i.facets)
     , afmt_(i.arg.get_alignment_format())
 {
     auto content_width = ichars_.width();
@@ -864,7 +864,7 @@ inline STRF_HD full_fmt_int_printer<CharT, Base>::full_fmt_int_printer
         fillcount_ = fmt_width - content_width;
         i.preview.subtract_width(static_cast<std::int16_t>(fillcount_));
     }
-    auto enc = get_facet<strf::char_encoding_c<CharT>, IntT>(i.fp);
+    auto enc = get_facet<strf::char_encoding_c<CharT>, IntT>(i.facets);
     encode_fill_ = enc.encode_fill_func();
     calc_fill_size_(i.preview, enc);
 }

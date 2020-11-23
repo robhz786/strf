@@ -232,7 +232,7 @@ public:
     template <typename... T>
     STRF_HD range_printer
         ( const strf::usual_printer_input<T...>& input )
-        : fp_(input.fp)
+        : fp_(input.facets)
         , begin_(input.arg.begin)
         , end_(input.arg.end)
     {
@@ -296,7 +296,7 @@ public:
     template <typename... T>
     STRF_HD separated_range_printer
         ( const strf::usual_printer_input<T...>& input )
-        : fp_(input.fp)
+        : fp_(input.facets)
         , begin_(input.arg.begin)
         , end_(input.arg.end)
         , sep_begin_(input.arg.sep_begin)
@@ -416,7 +416,7 @@ public:
     template <typename... T>
     STRF_HD fmt_range_printer
         ( const strf::usual_printer_input<T...>& input )
-        : fp_(input.fp)
+        : fp_(input.facets)
         , fmt_(input.arg)
     {
         preview_(input.preview);
@@ -500,7 +500,7 @@ public:
     template <typename... T>
     STRF_HD fmt_separated_range_printer
         ( const strf::usual_printer_input<T...>& input )
-        : fp_(input.fp)
+        : fp_(input.facets)
         , fmt_(input.arg)
     {
         preview_(input.preview);
@@ -617,7 +617,7 @@ public:
     template <typename... T>
     STRF_HD transformed_range_printer
         ( const strf::usual_printer_input<T...>& input )
-        : fp_(input.fp)
+        : fp_(input.facets)
         , begin_(input.arg.begin)
         , end_(input.arg.end)
         , op_(input.arg.op)
@@ -687,7 +687,7 @@ public:
     template <typename... T>
     STRF_HD sep_transformed_range_printer
         ( const strf::usual_printer_input<T...>& input )
-        : fp_(input.fp)
+        : fp_(input.facets)
         , begin_(input.arg.begin)
         , end_(input.arg.end)
         , sep_begin_(input.arg.sep_begin)

@@ -104,7 +104,7 @@ public:
     base64_printer
         ( const strf::usual_printer_input<T...>& input)
         : base64_printer
-            ( strf::get_facet<base64_facet_c, base64_facet_c>(input.fp)
+            ( strf::get_facet<base64_facet_c, base64_facet_c>(input.facets)
             , input.preview
             , input.arg )
     {

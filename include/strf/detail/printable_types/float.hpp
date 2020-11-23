@@ -1232,14 +1232,14 @@ public:
     STRF_HD punct_double_printer
         ( const strf::detail::fmt_double_printer_input
             < CharT, Preview, FPack, FloatT, Notation, false >& input )
-        : lettercase_(strf::get_facet<strf::lettercase_c, FloatT>(input.fp))
+        : lettercase_(strf::get_facet<strf::lettercase_c, FloatT>(input.facets))
     {
         static_assert(Notation != strf::float_notation::hex, "");
 
         const auto fdata = input.arg.get_float_format();
         data_ = strf::detail::init_double_printer_data(input.arg.value(), fdata);
-        auto enc = get_facet<strf::char_encoding_c<CharT>, FloatT>(input.fp);
-        auto punct = strf::get_facet<strf::numpunct_c<10>, FloatT>(input.fp);
+        auto enc = get_facet<strf::char_encoding_c<CharT>, FloatT>(input.facets);
+        auto punct = strf::get_facet<strf::numpunct_c<10>, FloatT>(input.facets);
         grouping_ = punct.grouping();
         decimal_point_ = punct.decimal_point();
         thousands_sep_ = punct.thousands_sep();
@@ -1258,14 +1258,14 @@ public:
         ( const strf::detail::fmt_double_printer_input
             < CharT, Preview, FPack, FloatT, Notation, true >& input )
         : fillchar_(input.arg.fill())
-        , lettercase_(strf::get_facet<strf::lettercase_c, FloatT>(input.fp))
+        , lettercase_(strf::get_facet<strf::lettercase_c, FloatT>(input.facets))
     {
         static_assert(Notation != strf::float_notation::hex, "");
 
         const auto fdata = input.arg.get_float_format();
         data_ = strf::detail::init_double_printer_data(input.arg.value(), fdata);
-        auto enc = get_facet<strf::char_encoding_c<CharT>, FloatT>(input.fp);
-        auto punct = strf::get_facet<strf::numpunct_c<10>, FloatT>(input.fp);
+        auto enc = get_facet<strf::char_encoding_c<CharT>, FloatT>(input.facets);
+        auto punct = strf::get_facet<strf::numpunct_c<10>, FloatT>(input.facets);
         grouping_ = punct.grouping();
         decimal_point_ = punct.decimal_point();
         thousands_sep_ = punct.thousands_sep();
@@ -1583,7 +1583,7 @@ public:
             < CharT, Preview, FPack, FloatT, Notation, false >& input )
         : data_( strf::detail::init_double_printer_data<Notation>
                     ( input.arg.value(), input.arg.get_float_format() ) )
-        , lettercase_(strf::get_facet<strf::lettercase_c, FloatT>(input.fp))
+        , lettercase_(strf::get_facet<strf::lettercase_c, FloatT>(input.facets))
     {
         static_assert(Notation != strf::float_notation::hex, "");
 
@@ -1600,11 +1600,11 @@ public:
         : data_( strf::detail::init_double_printer_data<Notation>
                     ( input.arg.value(), input.arg.get_float_format() ) )
         , fillchar_(input.arg.fill())
-        , lettercase_(strf::get_facet<strf::lettercase_c, FloatT>(input.fp))
+        , lettercase_(strf::get_facet<strf::lettercase_c, FloatT>(input.facets))
     {
         static_assert(Notation != strf::float_notation::hex, "");
 
-        auto enc = strf::get_facet<strf::char_encoding_c<CharT>, FloatT>(input.fp);
+        auto enc = strf::get_facet<strf::char_encoding_c<CharT>, FloatT>(input.facets);
         init_(input.preview, input.arg.width().round(), input.arg.alignment(), enc);
     }
 
@@ -2016,13 +2016,13 @@ public:
         : value_(decode(input.arg))
         , m10_digcount_(strf::detail::count_digits<10>(value_.m10))
         , sep_count_(0)
-        , lettercase_(strf::get_facet<strf::lettercase_c, FloatT>(input.fp))
+        , lettercase_(strf::get_facet<strf::lettercase_c, FloatT>(input.facets))
     {
-        auto punct = strf::get_facet<strf::numpunct_c<10>, FloatT>(input.fp);
+        auto punct = strf::get_facet<strf::numpunct_c<10>, FloatT>(input.facets);
         grouping_ = punct.grouping();
         decimal_point_ = punct.decimal_point();
         thousands_sep_ = punct.thousands_sep();
-        init_(strf::get_facet<strf::char_encoding_c<CharT>, FloatT>(input.fp));
+        init_(strf::get_facet<strf::char_encoding_c<CharT>, FloatT>(input.facets));
         STRF_IF_CONSTEXPR (Preview::width_required) {
             input.preview.subtract_width(width_());
         }
@@ -2368,11 +2368,11 @@ public:
             input )
         : data_( strf::detail::init_hex_double_printer_data
                    ( input.arg.get_float_format(), input.arg.value() ) )
-        , lettercase_(strf::get_facet<strf::lettercase_c, FloatT>(input.fp))
+        , lettercase_(strf::get_facet<strf::lettercase_c, FloatT>(input.facets))
     {
         if (data_.exponent != 1024) {
-            init_( strf::get_facet<strf::numpunct_c<16>, FloatT>(input.fp)
-                 , strf::get_facet<strf::char_encoding_c<CharT>, FloatT>(input.fp) );
+            init_( strf::get_facet<strf::numpunct_c<16>, FloatT>(input.facets)
+                 , strf::get_facet<strf::char_encoding_c<CharT>, FloatT>(input.facets) );
 
             STRF_IF_CONSTEXPR ( ! Preview::nothing_required) {
                 unsigned s = data_.showsign + 5 + data_.mantissa_digcount
@@ -2399,13 +2399,13 @@ public:
             input )
         : data_( strf::detail::init_hex_double_printer_data
                    ( input.arg.get_float_format(), input.arg.value() ) )
-        , lettercase_(strf::get_facet<strf::lettercase_c, FloatT>(input.fp))
+        , lettercase_(strf::get_facet<strf::lettercase_c, FloatT>(input.facets))
     {
         int content_width_without_point = 0;
-        auto enc = strf::get_facet<strf::char_encoding_c<CharT>, FloatT>(input.fp);
+        auto enc = strf::get_facet<strf::char_encoding_c<CharT>, FloatT>(input.facets);
         encode_fill_ = enc.encode_fill_func();
         if (data_.exponent != 1024) {
-            init_(strf::get_facet<strf::numpunct_c<16>, FloatT>(input.fp), enc);
+            init_(strf::get_facet<strf::numpunct_c<16>, FloatT>(input.facets), enc);
             content_width_without_point = data_.showsign + 5
                 + data_.mantissa_digcount
                 + data_.extra_zeros + data_.exponent_digcount;

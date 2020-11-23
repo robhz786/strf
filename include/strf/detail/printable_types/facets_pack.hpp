@@ -79,7 +79,7 @@ public:
     template <typename... T>
     STRF_HD facets_pack_printer
         ( const strf::usual_printer_input<T...>& input )
-        : fp_{input.fp, input.arg.fp}
+        : fp_{input.facets, input.arg.fp}
         , printers_{input.arg.args, input.preview, fp_}
     {
     }

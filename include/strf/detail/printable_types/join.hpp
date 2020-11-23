@@ -122,7 +122,7 @@ public:
         , strf::detail::join_printer<CharT, Preview, FPack, FwdArgs...> >;
 
     Preview& preview;
-    FPack fp;
+    FPack facets;
     strf::value_with_formatters
         < strf::detail::join_printing<FwdArgs...>
         , strf::split_pos_formatter<HasSplitPos>
@@ -146,11 +146,11 @@ struct join_printing
     template< typename CharT, typename Preview, typename FPack
             , bool HasSplitPos, bool HasAlignment >
     STRF_HD constexpr static auto make_printer_input
-        ( Preview& preview, const FPack& fp, fmt_tmpl<HasSplitPos, HasAlignment> x)
+        ( Preview& preview, const FPack& facets, fmt_tmpl<HasSplitPos, HasAlignment> x)
         -> join_printer_input
             < CharT, Preview, FPack, HasSplitPos, HasAlignment, FwdArgs... >
     {
-        return {preview, fp, x};
+        return {preview, facets, x};
     }
 };
 
@@ -254,10 +254,10 @@ public:
         : split_pos_(input.arg.split_pos())
         , afmt_(input.arg.get_alignment_format())
     {
-        auto enc = get_facet_<strf::char_encoding_c<CharT>>(input.fp);
+        auto enc = get_facet_<strf::char_encoding_c<CharT>>(input.facets);
         encode_fill_func_ = enc.encode_fill_func();
         strf::print_preview<ReqSize, strf::preview_width::yes> preview { afmt_.width };
-        new (printers_ptr_()) printers_tuple_{input.arg.value().args, preview, input.fp};
+        new (printers_ptr_()) printers_tuple_{input.arg.value().args, preview, input.facets};
         if (preview.remaining_width() > 0) {
             fillcount_ = preview.remaining_width().round();
         }
@@ -282,7 +282,7 @@ public:
         : split_pos_(input.arg.split_pos())
         , afmt_(input.arg.get_alignment_format())
     {
-        auto enc = get_facet_<strf::char_encoding_c<CharT>>(input.fp);
+        auto enc = get_facet_<strf::char_encoding_c<CharT>>(input.facets);
         encode_fill_func_ = enc.encode_fill_func();
         if (afmt_.width < 0) {
             afmt_.width = 0;
@@ -295,7 +295,7 @@ public:
         }
         strf::print_preview<ReqSize, strf::preview_width::yes> preview{wmax};
         // to-do: what if the line below throws ?
-        new (printers_ptr_()) printers_tuple_{input.arg.value().args, preview, input.fp};
+        new (printers_ptr_()) printers_tuple_{input.arg.value().args, preview, input.facets};
         if (preview.remaining_width() > diff) {
             fillcount_ = (preview.remaining_width() - diff).round();
         }
@@ -377,9 +377,9 @@ private:
 #endif
 
     template <typename Category, typename FPack>
-    static decltype(auto) STRF_HD get_facet_(const FPack& fp)
+    static decltype(auto) STRF_HD get_facet_(const FPack& facets)
     {
-        return fp.template get_facet<Category, strf::aligned_join_maker>();
+        return facets.template get_facet<Category, strf::aligned_join_maker>();
     }
 
     STRF_HD void write_fill_(strf::basic_outbuff<CharT>& ob, int count) const
@@ -443,8 +443,8 @@ public:
     STRF_HD join_printer_impl
         ( const strf::detail::simple_tuple<FwdArgs...>& args
         , Preview& preview
-        , const FPack& fp )
-        : printers_{args, preview, fp}
+        , const FPack& facets )
+        : printers_{args, preview, facets}
     {
     }
 
@@ -475,7 +475,7 @@ public:
               < CharT, Preview, FPack2, HasSplitPos, false, FwdArgs... >& input )
         : strf::detail::join_printer_impl
             < CharT, strf::printer_type<CharT, Preview, FPack, FwdArgs>... >
-            ( input.arg.value().args, input.preview, input.fp )
+            ( input.arg.value().args, input.preview, input.facets )
     {
     }
 

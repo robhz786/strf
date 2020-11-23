@@ -481,7 +481,7 @@ struct usual_printer_input
     using printer_type = Printer;
 
     preview_type& preview;
-    FPack fp;
+    FPack facets;
     Arg arg;
 };
 
@@ -650,14 +650,14 @@ using formatters_of = typename strf::detail::formatters_finder<T>::formatters;
 
 template <typename CharT, typename Preview, typename FPack, typename Arg>
 constexpr STRF_HD auto make_default_printer_input
-    ( Preview& preview, const FPack& fp, const Arg& arg)
+    ( Preview& preview, const FPack& facets, const Arg& arg)
     noexcept(noexcept
              (strf::print_traits_of<Arg>::template make_printer_input<CharT>
-              (preview, fp, static_cast<strf::forwarded_printable_type<Arg>>(arg))))
+              (preview, facets, static_cast<strf::forwarded_printable_type<Arg>>(arg))))
 {
     using traits = strf::print_traits_of<Arg>;
     using fwd_type = strf::forwarded_printable_type<Arg>;
-    return traits::template make_printer_input<CharT>(preview, fp, static_cast<fwd_type>(arg));
+    return traits::template make_printer_input<CharT>(preview, facets, static_cast<fwd_type>(arg));
 }
 
 struct print_override_c;
@@ -666,10 +666,10 @@ struct no_print_override
 {
     using category = print_override_c;
     template <typename CharT, typename Preview, typename FPack, typename Arg>
-    constexpr static STRF_HD auto make_printer_input(Preview& preview, const FPack& fp, Arg&& arg)
-        noexcept(noexcept(strf::make_default_printer_input<CharT>(preview, fp, arg)))
+    constexpr static STRF_HD auto make_printer_input(Preview& preview, const FPack& facets, Arg&& arg)
+        noexcept(noexcept(strf::make_default_printer_input<CharT>(preview, facets, arg)))
     {
-        return strf::make_default_printer_input<CharT>(preview, fp, arg);
+        return strf::make_default_printer_input<CharT>(preview, facets, arg);
     }
 };
 
@@ -684,11 +684,11 @@ struct print_override_c
 };
 
 template <typename CharT, typename Preview, typename FPack, typename Arg>
-constexpr STRF_HD auto make_printer_input(Preview& preview, const FPack& fp, const Arg& arg)
+constexpr STRF_HD auto make_printer_input(Preview& preview, const FPack& facets, const Arg& arg)
 {
     using tag = typename print_traits_of<Arg>::facet_tag;
-    return strf::get_facet<print_override_c, tag>(fp)
-        .template make_printer_input<CharT>(preview, fp, arg);
+    return strf::get_facet<print_override_c, tag>(facets)
+        .template make_printer_input<CharT>(preview, facets, arg);
 }
 
 template <typename CharT, typename Preview, typename FPack, typename Arg>
