@@ -532,8 +532,10 @@ struct print_traits<std::complex<FloatT>>
         , const FPack& fp
         , strf::value_with_formatters<T...> arg )
         -> strf::usual_printer_input
-            < CharT, Preview, FPack, decltype(arg)
-            , fmt_std_complex_printer<CharT, FloatT, decltype(arg)::float_notation()> >
+            < CharT, Preview, FPack, strf::value_with_formatters<T...>
+            , fmt_std_complex_printer
+                < CharT, FloatT
+                , strf::value_with_formatters<T...>::float_notation() > >
     {
         return {preview, fp, arg};
     }
@@ -662,7 +664,7 @@ int main()
     str = strf::to_string
         .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
         (* strf::right(x, 40, '_').sci().polar());
-    assert(str == "___________5\251E+03? 9\251272952180016122E-01");
+    assert(str == "___________5\251E+03? 9\251""272952180016122E-01");
 
     str = strf::to_string
         .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
@@ -677,7 +679,7 @@ int main()
     str = strf::to_string
         .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
         (* strf::left(x, 40, '_').sci().polar());
-    assert(str == "5\251E+03? 9\251272952180016122E-01___________");
+    assert(str == "5\251E+03? 9\251""272952180016122E-01___________");
 
     str = strf::to_string
         .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
@@ -692,7 +694,7 @@ int main()
     str = strf::to_string
         .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
         (* strf::center(x, 40, '_').sci().polar());
-    assert(str == "_____5\251E+03? 9\251272952180016122E-01______");
+    assert(str == "_____5\251E+03? 9\251""272952180016122E-01______");
 
     str = strf::to_string
         .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
@@ -707,7 +709,7 @@ int main()
     str = strf::to_string
         .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
         (* strf::split(x, 40, '_').sci().polar());
-    assert(str == "5\251E+03      ?      9\251272952180016122E-01");
+    assert(str == "5\251E+03      ?      9\251""272952180016122E-01");
 
     str =strf::to_string
         .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
@@ -722,7 +724,7 @@ int main()
     str =strf::to_string
         .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
         (* strf::right(x, 40, '_').sci().polar());
-    assert(str == "___________5\251E+03? 9\251272952180016122E-01");
+    assert(str == "___________5\251E+03? 9\251""272952180016122E-01");
 
     str =strf::to_string
         .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
@@ -737,7 +739,7 @@ int main()
     str =strf::to_string
         .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
         (* strf::left(x, 40, '_').sci().polar());
-    assert(str == "5\251E+03? 9\251272952180016122E-01___________");
+    assert(str == "5\251E+03? 9\251""272952180016122E-01___________");
 
     str =strf::to_string
         .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
@@ -752,7 +754,7 @@ int main()
     str =strf::to_string
         .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
         (* strf::center(x, 40, '_').sci().polar());
-    assert(str == "_____5\251E+03? 9\251272952180016122E-01______");
+    assert(str == "_____5\251E+03? 9\251""272952180016122E-01______");
 
     str =strf::to_string
         .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
@@ -768,7 +770,7 @@ int main()
         .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
         (* strf::split(x, 40, '_').sci().polar());
 
-    assert(str == "5\251E+03      ?      9\251272952180016122E-01");
+    assert(str == "5\251E+03      ?      9\251""272952180016122E-01");
 
     // preview
     {
