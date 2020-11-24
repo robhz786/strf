@@ -116,7 +116,6 @@ class sep_transformed_range_printer;
 template <typename It>
 struct print_traits<strf::range_p<It>>
 {
-    using facet_tag = void;
     using forwarded_type = strf::range_p<It>;
     using formatters = strf::formatters_of<decltype(*std::declval<It>())>;
 
@@ -148,7 +147,6 @@ struct print_traits<strf::range_p<It>>
 template <typename It, typename SepCharT>
 struct print_traits<strf::separated_range_p<It, SepCharT>>
 {
-    using facet_tag = void;
     using forwarded_type = strf::separated_range_p<It, SepCharT>;
     using formatters = strf::formatters_of<decltype(*std::declval<It>())>;
 
@@ -186,7 +184,6 @@ struct print_traits<strf::separated_range_p<It, SepCharT>>
 template <typename It, typename UnaryOp>
 struct print_traits<strf::transformed_range_p<It, UnaryOp>>
 {
-    using facet_tag = void;
     using forwarded_type = strf::transformed_range_p<It, UnaryOp>;
 
     template <typename CharT, typename Preview, typename FPack>
@@ -203,7 +200,6 @@ struct print_traits<strf::transformed_range_p<It, UnaryOp>>
 template <typename It, typename SepCharT, typename UnaryOp>
 struct print_traits<strf::separated_transformed_range_p<It, SepCharT, UnaryOp>>
 {
-    using facet_tag = void;
     using forwarded_type = strf::separated_transformed_range_p<It, SepCharT, UnaryOp>;
 
     template <typename DestCharT, typename Preview, typename FPack>

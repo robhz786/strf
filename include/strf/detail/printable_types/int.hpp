@@ -302,7 +302,7 @@ using int_printer_input = std::conditional_t
 template <typename IntT>
 struct int_printing
 {
-    using facet_tag = IntT;
+    using override_tag = IntT;
     using forwarded_type = IntT;
     using formatters = strf::tag<strf::int_formatter<10>, strf::alignment_formatter>;
 
@@ -399,7 +399,7 @@ namespace detail {
 
 struct voidptr_printing
 {
-    using facet_tag = const void*;
+    using override_tag = const void*;
     using forwarded_type = const void*;
     using formatters = strf::tag<strf::alignment_formatter>;
 

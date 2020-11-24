@@ -17,7 +17,7 @@ namespace strf {
 
 template <typename T>
 struct base_printing {
-    using facet_tag = const xxx::base<T>&;
+    using override_tag = const xxx::base<T>&;
     using forwarded_type = const xxx::base<T>&;
 
     template <typename CharT, typename Preview, typename FPack>

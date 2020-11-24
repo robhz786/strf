@@ -19,7 +19,7 @@ namespace strf {
 template <>
 struct print_traits<xxx::ipv4address> {
 
-    using facet_tag = xxx::ipv4address;
+    using override_tag = xxx::ipv4address;
     using forwarded_type = xxx::ipv4address;
     using formatters = strf::tag<strf::alignment_formatter>;
 

@@ -389,7 +389,7 @@ struct ipv6_formatter
 
 template <>
 struct print_traits<xxx::ipv6address> {
-    using facet_tag = xxx::ipv6address;
+    using override_tag = xxx::ipv6address;
     using forwarded_type = xxx::ipv6address;
     using formatters = strf::tag<ipv6_formatter, strf::alignment_formatter>;
 

@@ -21,7 +21,7 @@ template <typename> class fmt_conv_char32_printer;
 template <typename SrcCharT>
 struct char_printing
 {
-    using facet_tag = SrcCharT;
+    // using override_tag = SrcCharT;
     using forwarded_type = SrcCharT;
     using formatters = strf::tag<strf::quantity_formatter, strf::alignment_formatter>;
 
@@ -58,7 +58,7 @@ template <> struct print_traits<wchar_t>  : public char_printing <wchar_t> {};
 template <>
 struct print_traits<char32_t>
 {
-    using facet_tag = char32_t;
+    // using override_tag = char32_t;
     using forwarded_type = char32_t;
     using formatters = strf::tag<strf::quantity_formatter, strf::alignment_formatter>;
 

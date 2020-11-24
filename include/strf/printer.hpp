@@ -683,12 +683,62 @@ struct print_override_c
     }
 };
 
+namespace detail {
+
+template <typename T>
+struct has_override_tag_helper
+{
+    template <typename U, typename F = typename U::override_tag>
+    static STRF_HD std::true_type test_(const U*);
+
+    template <typename U>
+    static STRF_HD std::false_type test_(...);
+
+    using result = decltype(test_<T>((T*)0));
+};
+
+template <typename T>
+struct has_override_tag: has_override_tag_helper<T>::result
+{};
+
+template < typename PrinterTraits
+         , typename CharT
+         , typename Preview
+         , typename FPack
+         , typename Arg >
+constexpr STRF_HD auto make_printer_input
+    ( std::true_type
+    , Preview& preview
+    , const FPack& facets
+    , const Arg& arg )
+{
+    using tag = typename PrinterTraits::override_tag;
+    return strf::get_facet<print_override_c, tag>(facets)
+        .template make_printer_input<CharT>(preview, facets, arg);
+}
+
+template < typename PrinterTraits
+         , typename CharT
+         , typename Preview
+         , typename FPack
+         , typename Arg >
+constexpr STRF_HD auto make_printer_input
+    ( std::false_type
+    , Preview& preview
+    , const FPack& facets
+    , const Arg& arg )
+{
+    return PrinterTraits::template make_printer_input<CharT>(preview, facets, arg);
+}
+
+} // namespace detail
+
 template <typename CharT, typename Preview, typename FPack, typename Arg>
 constexpr STRF_HD auto make_printer_input(Preview& preview, const FPack& facets, const Arg& arg)
 {
-    using tag = typename print_traits_of<Arg>::facet_tag;
-    return strf::get_facet<print_override_c, tag>(facets)
-        .template make_printer_input<CharT>(preview, facets, arg);
+    using traits = print_traits_of<Arg>;
+    return strf::detail::make_printer_input<traits, CharT, Preview, FPack, Arg>
+        ( strf::detail::has_override_tag<traits>{}, preview, facets, arg );
 }
 
 template <typename CharT, typename Preview, typename FPack, typename Arg>

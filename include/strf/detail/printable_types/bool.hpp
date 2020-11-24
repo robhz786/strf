@@ -21,7 +21,7 @@ template <typename CharT> class fmt_bool_printer;
 template <>
 struct print_traits<bool>
 {
-    using facet_tag = bool;
+    using override_tag = bool;
     using forwarded_type = bool;
     using formatters = strf::tag<strf::alignment_formatter>;
 

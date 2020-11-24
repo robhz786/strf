@@ -132,7 +132,6 @@ public:
 template <typename... FwdArgs>
 struct join_printing
 {
-    using facet_tag = void;
     using forwarded_type = strf::detail::join_t<FwdArgs...>;
 
     template <bool HasSplitPos, bool HasAlignment>

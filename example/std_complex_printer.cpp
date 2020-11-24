@@ -507,7 +507,7 @@ namespace strf {
 template <typename FloatT>
 struct print_traits<std::complex<FloatT>>
 {
-    using facet_tag = std::complex<FloatT>;
+    using override_tag = std::complex<FloatT>;
     using forwarded_type = std::complex<FloatT>;
     using formatters = strf::tag
         < std_complex_formatter

@@ -513,7 +513,7 @@ using fmt_double_printer_input =
 template <typename FloatT>
 struct float_printing
 {
-    using facet_tag = FloatT;
+    using override_tag = FloatT;
     using forwarded_type = FloatT;
     using formatters = strf::tag
         < strf::float_formatter<strf::float_notation::general>

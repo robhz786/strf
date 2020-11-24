@@ -125,7 +125,7 @@ namespace strf {
 template <typename FloatT>
 struct print_traits<std::complex<FloatT>>
 {
-    using facet_tag = std::complex<FloatT>;
+    using override_tag = std::complex<FloatT>;
     using forwarded_type = std::complex<FloatT>;
     using formatters = strf::tag
         < std_complex_formatter
@@ -138,7 +138,7 @@ struct print_traits<std::complex<FloatT>>
         , const FPack& fp
         , std::complex<FloatT> arg)
     {
-        auto form = strf::get_facet<complex_form_c, facet_tag>(fp);
+        auto form = strf::get_facet<complex_form_c, std::complex<FloatT>>(fp);
         auto v = values(arg, form);
         unsigned has_brackets = form != complex_form::polar;
         auto arg2 = strf::join
@@ -157,7 +157,7 @@ struct print_traits<std::complex<FloatT>>
         , const FPack& fp
         , strf::value_with_formatters<T...> arg )
     {
-        auto form = arg.form(strf::get_facet<complex_form_c, facet_tag>(fp));
+        auto form = arg.form(strf::get_facet<complex_form_c, std::complex<FloatT>>(fp));
         auto v = values(arg.value(), form);
         unsigned has_brackets = form != complex_form::polar;
         auto arg2 = strf::join

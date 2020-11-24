@@ -460,11 +460,6 @@ struct fmt_string_printer_input
 template <typename SrcCharT>
 struct string_printing
 {
-#if defined(__CUDA_ARCH__)
-    using facet_tag = void; // to-do try to fix that
-#else
-    using facet_tag = strf::string_input_tag<SrcCharT>;
-#endif
     using forwarded_type = strf::detail::simple_string_view<SrcCharT>;
     using formatters = strf::tag
         < strf::string_precision_formatter<false>

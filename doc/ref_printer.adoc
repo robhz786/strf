@@ -102,16 +102,24 @@ and must be copy-constructible. And its copy-constructor should be fast.
 `forwarded_type` is used intead of `P` as the storage type in some
 situations ( for example, the objects created by `fmt` and `{join}` ).
 ====
-[[PrintTraits_facet_tag]]
+
+[[PrintTraits_override_tag]]
 ====
+.( Optional )
 [source,cpp]
 ----
-T::facet_tag
+T::override_tag
 ----
-The type that is used as the tag type in `<<get_facet,get_facet>>`.
-It shall not be a reference type, and shall not contain cv-qualifiers.
-Usually is it `std::remove_cv_t<std::remove_reference<forwarded_type>>`
+When defined, `{make_printer_input}` uses the following expression
+to obtain the _PrinterInput_ object:
+[source,cpp,subs=normal]
+----
+<<get_facet,get_facet>><{print_override_c}, override_tag}(_facets_).template make_printer_input(...)
+----
+, which would mean that the corresponding _Printable_ type could be overriden by an
+facet object. While when `override_tag` is not defined, this _Printable_ type is not overridable.
 ====
+
 [[PrintTraits_formatters]]
 ====
 .( Optional )
@@ -298,15 +306,27 @@ struct no_print_override {
 namespace strf {
 
 template <typename CharT, typename Preview, typename FPack, typename Arg>
-constexpr auto make_printer_input(Preview& preview, const FPack& facets, const Arg& arg)
-{
-    auto tag = typename {print_traits_of}<Arg>::<<PrintTraits,facet_tag>>;
-    auto f = {get_facet}<{print_override_c}, tag>(facets);
-    return f.template make_printer_input<CharT>(preview, facets, arg);
-}
+constexpr /{asterisk}\...{asterisk}/ make_printer_input(Preview& preview, const FPack& facets, const Arg& arg);
 
 } // namespace strf
 ----
+
+If `{print_traits_of}<Arg>::override_tag` is defined,
+`make_printer_input` returns
+[source,cpp,subs=normal]
+----
+{get_facet}< {print_override_c}
+         , typename {print_traits_of}<Arg>::override_tag >(facets)
+    .template make_printer_input<CharT>(preview, facets, arg);
+----
+
+Otherwise, it returns
+
+[source,cpp,subs=normal]
+----
+{print_traits_of}<Arg>::template make_printer_input<CharT>(preview, facets, arg)
+----
+
 
 === Type alias template `printer_type` [[printer_type]]
 
