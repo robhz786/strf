@@ -1,4 +1,4 @@
-//  Distributed under the Boost Software License, Version 1.0.
+﻿//  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
@@ -8,6 +8,8 @@
 #include <utility>
 #include <complex>
 #include <cmath>
+
+#include "../test/test_utils.cpp"
 
 //--------------------------------------------------------------------------------
 // 1 //  Define complex_form facet
@@ -37,7 +39,7 @@ struct std_complex_formatter {
         vector   = (int)complex_form::vector,
         algebric = (int)complex_form::algebric,
         polar    = (int)complex_form::polar,
-        use_facet = 1 + std::max({vector, algebric, polar})
+        use_facet = 1 + (std::max)({vector, algebric, polar})
     };
 
     template <class T>
@@ -206,8 +208,8 @@ void std_complex_printer<CharT, FloatT>::preview_(Preview& preview, const WCalc&
 
     switch (form_) {
         case complex_form::algebric:
-            preview.subtract_width(6);
-            preview.add_size(6);
+            preview.subtract_width(7);
+            preview.add_size(7);
             break;
 
         case complex_form::vector:
@@ -551,248 +553,230 @@ struct print_traits<std::complex<FloatT>>
 template <typename T> struct is_float32: std::false_type {};
 template <> struct is_float32<float>: std::true_type {};
 
-int main()
+namespace test_utils {
+
+static strf::outbuff*& test_outbuff_ptr()
+{
+    static strf::outbuff* ptr = nullptr;
+    return ptr;
+}
+
+void set_test_outbuff(strf::outbuff& ob)
+{
+    test_outbuff_ptr() = &ob;
+}
+
+strf::outbuff& test_outbuff()
+{
+    auto * ptr = test_outbuff_ptr();
+    return *ptr;
+}
+
+} // namespace test_utils
+
+
+void tests()
 {
     std::complex<double> x{3000, 4000};
 
     auto punct = strf::numpunct<10>(3).thousands_sep(0x2D9).decimal_point(0x130);
 
-    auto u16str = strf::to_u16string(x);
-    assert(u16str == u"(3000, 4000)");
+    TEST(u"(3000, 4000)") (x);
 
     // using facets
 
-    u16str = strf::to_u16string.with(complex_form::algebric) (x);
-    assert(u16str == u"(3000 + i*4000)");
+    TEST(u"(3000 + i*4000)") .with(complex_form::algebric) (x);
 
-    u16str = strf::to_u16string.with(complex_form::polar) (x);
-    assert(u16str == u"5000\u2220 0.9272952180016122");
+    TEST(u"5000\u2220 0.9272952180016122") .with(complex_form::polar) (x);
 
-    u16str = strf::to_u16string.with(complex_form::algebric, punct) (x);
-    assert(u16str == u"(3\u02D9" u"000 + i*4\u02D9" u"000)");
+    TEST(u"(3\u02D9" u"000 + i*4\u02D9" u"000)") .with(complex_form::algebric, punct) (x);
 
-    auto str = strf::to_string
+    TEST("(1\xA9""5E+10, 2\xA9""5E+10)")
         .with( punct, strf::uppercase, strf::iso_8859_3<char>() )
         (std::complex<double>{1.5e+10, 2.5e+10});
-    assert(str == "(1\xA9""5E+10, 2\xA9""5E+10)");
 
-    str = strf::to_string
+    TEST("(1\xA9""5E+10 + i*2\xA9""5E+10)")
         .with( complex_form::algebric, punct, strf::uppercase, strf::iso_8859_3<char>() )
         (std::complex<double>{1.5e+10, 2.5e+10});
-    assert(str == "(1\xA9""5E+10 + i*2\xA9""5E+10)");
 
-    str = strf::to_string
-        .with( complex_form::algebric, punct, strf::uppercase, strf::iso_8859_3<char>() )
-        (std::complex<double>{1.5e+4, 2.5});
-
-    str = strf::to_string
+    TEST("1\xA9""5E+10? 1\xA9""6666666666666666E-10")
         .with(complex_form::polar, punct, strf::uppercase, strf::iso_8859_3<char>() )
         (std::complex<double>{1.5e+10, 2.5});
-        assert(str == "1\xA9""5E+10? 1\xA9""6666666666666666E-10");
 
-    str = strf::to_string.with( complex_form::algebric
+    TEST("(1.5e+10 + i*2.5e+10)") .with( complex_form::algebric
                               , strf::constrain<is_float32>(punct)
                               , strf::constrain<is_float32>(strf::uppercase)
                               , strf::iso_8859_3<char>() )
         (std::complex<double>{1.5e+10, 2.5e+10});
-    assert(str == "(1.5e+10 + i*2.5e+10)");
 
     // using format functions
 
-    str = strf::to_string(*strf::right(x, 30, '_'));
-    assert(str == "________________(3000., 4000.)");
+    TEST("________________(3000., 4000.)") (*strf::right(x, 30, '_'));
 
-    str = strf::to_string(*strf::right(x, 30, '_').algebric());
-    assert(str == "_____________(3000. + i*4000.)");
+    TEST("_____________(3000. + i*4000.)") (*strf::right(x, 30, '_').algebric());
 
-    u16str = strf::to_u16string(*strf::right(x, 30, '_').polar());
-    assert(u16str == u"_____5000.\u2220 0.9272952180016122");
+    TEST(u"_____5000.\u2220 0.9272952180016122") (*strf::right(x, 30, '_').polar());
 
 
-    str = strf::to_string(*strf::left(x, 30, '_'));
-    assert(str == "(3000., 4000.)________________");
+    TEST("(3000., 4000.)________________") (*strf::left(x, 30, '_'));
 
-    str = strf::to_string(*strf::left(x, 30, '_').algebric());
-    assert(str == "(3000. + i*4000.)_____________");
+    TEST("(3000. + i*4000.)_____________") (*strf::left(x, 30, '_').algebric());
 
-    u16str = strf::to_u16string(*strf::left(x, 30, '_').polar());
-    assert(u16str == u"5000.\u2220 0.9272952180016122_____");
+    TEST(u"5000.\u2220 0.9272952180016122_____") (*strf::left(x, 30, '_').polar());
 
 
-    str = strf::to_string(*strf::center(x, 30, '_'));
+    TEST("________(3000., 4000.)________") (*strf::center(x, 30, '_'));
 
-    assert(str == "________(3000., 4000.)________");
-    str = strf::to_string(*strf::center(x, 30, '_').algebric());
+    TEST("______(3000. + i*4000.)_______") (*strf::center(x, 30, '_').algebric());
 
-    assert(str == "______(3000. + i*4000.)_______");
-
-    u16str = strf::to_u16string(*strf::center(x, 30, '_').polar());
-    assert(u16str == u"__5000.\u2220 0.9272952180016122___");
+    TEST(u"__5000.\u2220 0.9272952180016122___") (*strf::center(x, 30, '_').polar());
 
 
-    str = strf::to_string(+*strf::split(x, 30, '_'));
-    assert(str == "(+3000.       ,        +4000.)");
+    TEST("(+3000.       ,        +4000.)") (+*strf::split(x, 30, '_'));
 
-    str = strf::to_string(+*strf::split(x, 30, '_').algebric());
-    assert(str == "(+3000.       +      i*+4000.)");
+    TEST("(+3000.       +      i*+4000.)") (+*strf::split(x, 30, '_').algebric());
 
-    u16str = strf::to_u16string(+*strf::split(x, 30, '_').polar());
-    assert(u16str == u"+5000.  \u2220  +0.9272952180016122");
+    TEST(u"+5000.  \u2220  +0.9272952180016122") (+*strf::split(x, 30, '_').polar());
 
 
-    str = strf::to_string(*strf::split(x, 0, '_'));
-    assert(str == "(3000., 4000.)");
+    TEST("(3000., 4000.)") (*strf::split(x, 0, '_'));
 
-    str = strf::to_string(*strf::split(x, 0, '_').algebric());
-    assert(str == "(3000. + i*4000.)");
+    TEST("(3000. + i*4000.)") (*strf::split(x, 0, '_').algebric());
 
-    u16str = strf::to_u16string(*strf::split(x, 0, '_').polar());
-    assert(u16str == u"5000.\u2220 0.9272952180016122");
+    TEST(u"5000.\u2220 0.9272952180016122") (*strf::split(x, 0, '_').polar());
 
     // using format functions and facets
 
-    str = strf::to_string
+    TEST("________________________(3\251E+03, 4\251E+03)")
         .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
         (* strf::right(x, 40, '_').sci());
-    assert(str == "________________________(3\251E+03, 4\251E+03)");
 
-    str = strf::to_string
+    TEST("_____________________(3\251E+03 + i*4\251E+03)")
         .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
         (* strf::right(x, 40, '_').sci().algebric());
-    assert(str == "_____________________(3\251E+03 + i*4\251E+03)");
 
-    str = strf::to_string
+    TEST("___________5\251E+03? 9\251""272952180016122E-01")
         .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
         (* strf::right(x, 40, '_').sci().polar());
-    assert(str == "___________5\251E+03? 9\251""272952180016122E-01");
 
-    str = strf::to_string
+    TEST("(3\251E+03, 4\251E+03)________________________")
         .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
         (* strf::left(x, 40, '_').sci());
-    assert(str == "(3\251E+03, 4\251E+03)________________________");
 
-    str = strf::to_string
+    TEST("(3\251E+03 + i*4\251E+03)_____________________")
         .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
         (* strf::left(x, 40, '_').sci().algebric());
-    assert(str == "(3\251E+03 + i*4\251E+03)_____________________");
 
-    str = strf::to_string
+    TEST("5\251E+03? 9\251""272952180016122E-01___________")
         .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
         (* strf::left(x, 40, '_').sci().polar());
-    assert(str == "5\251E+03? 9\251""272952180016122E-01___________");
 
-    str = strf::to_string
+    TEST("____________(3\251E+03, 4\251E+03)____________")
         .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
         (* strf::center(x, 40, '_').sci());
-    assert(str == "____________(3\251E+03, 4\251E+03)____________");
 
-    str = strf::to_string
+    TEST("__________(3\251E+03 + i*4\251E+03)___________")
         .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
         (* strf::center(x, 40, '_').sci().algebric());
-    assert(str == "__________(3\251E+03 + i*4\251E+03)___________");
 
-    str = strf::to_string
+    TEST("_____5\251E+03? 9\251""272952180016122E-01______")
         .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
         (* strf::center(x, 40, '_').sci().polar());
-    assert(str == "_____5\251E+03? 9\251""272952180016122E-01______");
 
-    str = strf::to_string
+    TEST("(3\251E+03            ,             4\251E+03)")
         .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
         (* strf::split(x, 40, '_').sci());
-    assert(str == "(3\251E+03            ,             4\251E+03)");
 
-    str = strf::to_string
-        .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
-        (* strf::split(x, 40, '_').sci().algebric());
-    assert(str == "(3\251E+03            +           i*4\251E+03)");
-
-    str = strf::to_string
-        .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
-        (* strf::split(x, 40, '_').sci().polar());
-    assert(str == "5\251E+03      ?      9\251""272952180016122E-01");
-
-    str =strf::to_string
-        .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
-        (* strf::right(x, 40, '_').sci());
-    assert(str == "________________________(3\251E+03, 4\251E+03)");
-
-    str =strf::to_string
-        .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
-        (* strf::right(x, 40, '_').sci().algebric());
-    assert(str == "_____________________(3\251E+03 + i*4\251E+03)");
-
-    str =strf::to_string
-        .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
-        (* strf::right(x, 40, '_').sci().polar());
-    assert(str == "___________5\251E+03? 9\251""272952180016122E-01");
-
-    str =strf::to_string
-        .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
-        (* strf::left(x, 40, '_').sci());
-    assert(str == "(3\251E+03, 4\251E+03)________________________");
-
-    str =strf::to_string
-        .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
-        (* strf::left(x, 40, '_').sci().algebric());
-    assert(str == "(3\251E+03 + i*4\251E+03)_____________________");
-
-    str =strf::to_string
-        .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
-        (* strf::left(x, 40, '_').sci().polar());
-    assert(str == "5\251E+03? 9\251""272952180016122E-01___________");
-
-    str =strf::to_string
-        .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
-        (* strf::center(x, 40, '_').sci());
-    assert(str == "____________(3\251E+03, 4\251E+03)____________");
-
-    str =strf::to_string
-        .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
-        (* strf::center(x, 40, '_').sci().algebric());
-    assert(str == "__________(3\251E+03 + i*4\251E+03)___________");
-
-    str =strf::to_string
-        .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
-        (* strf::center(x, 40, '_').sci().polar());
-    assert(str == "_____5\251E+03? 9\251""272952180016122E-01______");
-
-    str =strf::to_string
-        .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
-        (* strf::split(x, 40, '_').sci());
-    assert(str == "(3\251E+03            ,             4\251E+03)");
-
-    str =strf::to_string
+    TEST("(3\251E+03            +           i*4\251E+03)")
         .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
         (* strf::split(x, 40, '_').sci().algebric());
 
-    assert(str == "(3\251E+03            +           i*4\251E+03)");
-    str =strf::to_string
+    TEST("5\251E+03      ?      9\251""272952180016122E-01")
         .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
         (* strf::split(x, 40, '_').sci().polar());
 
-    assert(str == "5\251E+03      ?      9\251""272952180016122E-01");
+    TEST("________________________(3\251E+03, 4\251E+03)")
+        .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
+        (* strf::right(x, 40, '_').sci());
+
+    TEST("_____________________(3\251E+03 + i*4\251E+03)")
+        .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
+        (* strf::right(x, 40, '_').sci().algebric());
+
+    TEST("___________5\251E+03? 9\251""272952180016122E-01")
+        .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
+        (* strf::right(x, 40, '_').sci().polar());
+
+    TEST("(3\251E+03, 4\251E+03)________________________")
+        .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
+        (* strf::left(x, 40, '_').sci());
+
+    TEST("(3\251E+03 + i*4\251E+03)_____________________")
+        .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
+        (* strf::left(x, 40, '_').sci().algebric());
+
+    TEST("5\251E+03? 9\251""272952180016122E-01___________")
+        .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
+        (* strf::left(x, 40, '_').sci().polar());
+
+    TEST("____________(3\251E+03, 4\251E+03)____________")
+        .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
+        (* strf::center(x, 40, '_').sci());
+
+    TEST("__________(3\251E+03 + i*4\251E+03)___________")
+        .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
+        (* strf::center(x, 40, '_').sci().algebric());
+
+    TEST("_____5\251E+03? 9\251""272952180016122E-01______")
+        .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
+        (* strf::center(x, 40, '_').sci().polar());
+
+    TEST("(3\251E+03            ,             4\251E+03)")
+        .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
+        (* strf::split(x, 40, '_').sci());
+
+    TEST("(3\251E+03            +           i*4\251E+03)")
+        .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
+        (* strf::split(x, 40, '_').sci().algebric());
+
+    TEST("5\251E+03      ?      9\251""272952180016122E-01")
+        .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
+        (* strf::split(x, 40, '_').sci().polar());
 
     // preview
     {
         strf::print_size_and_width_preview pp{strf::width_max};
         strf::preview<char>(pp, strf::pack(), *strf::fmt(x));
-        assert(pp.accumulated_size() == 14);
-        assert(strf::width_max - pp.remaining_width() == 14);
+        TEST_EQ(pp.accumulated_size(), 14);
+        TEST_TRUE(strf::width_max - pp.remaining_width() == 14);
     }
     {
         strf::print_size_and_width_preview pp{strf::width_max};
         strf::preview<char>(pp, strf::pack(), *strf::fmt(x).algebric());
-        assert(pp.accumulated_size() == 17);
-        assert(strf::width_max - pp.remaining_width() == 17);
+        TEST_EQ(pp.accumulated_size(), 17);
+        TEST_TRUE(strf::width_max - pp.remaining_width() == 17);
     }
     {
         strf::print_size_and_width_preview pp{strf::width_max};
         strf::preview<char>(pp, strf::pack(), *strf::fmt(x).polar());
-        assert(pp.accumulated_size() == 27);
-        assert(strf::width_max - pp.remaining_width() == 25);
+        TEST_EQ(pp.accumulated_size(), 27);
+        TEST_TRUE(strf::width_max - pp.remaining_width() == 25);
     }
+}
 
-    (void)str;
-    (void)u16str;
-    return 0;
+int main()
+{
+    strf::narrow_cfile_writer<char> test_outbuff(stdout);
+    test_utils::set_test_outbuff(test_outbuff);
+
+    tests();
+
+    int err_count = test_utils::test_err_count();
+    if (err_count == 0) {
+        strf::write(test_outbuff, "All test passed!\n");
+    } else {
+        strf::to(test_outbuff) (err_count, " tests failed!\n");
+    }
+    test_outbuff.finish();
+    return err_count;
 }
