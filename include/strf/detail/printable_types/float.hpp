@@ -319,23 +319,27 @@ public:
     constexpr STRF_HD T&& operator+() && noexcept
     {
         data_.showpos = true;
-        return static_cast<T&&>(*this);
+        T* base_ptr = static_cast<T*>(this); // work around UBSan bug
+        return static_cast<T&&>(*base_ptr);
     }
     constexpr STRF_HD T&& operator*() && noexcept
     {
         data_.showpoint = true;
-        return static_cast<T&&>(*this);
+        T* base_ptr = static_cast<T*>(this);
+        return static_cast<T&&>(*base_ptr);
     }
     [[deprecated]] // use instead operator*
     constexpr STRF_HD T&& operator~() && noexcept
     {
         data_.showpoint = true;
-        return static_cast<T&&>(*this);
+        T* base_ptr = static_cast<T*>(this);
+        return static_cast<T&&>(*base_ptr);
     }
     constexpr STRF_HD T&& p(unsigned _) && noexcept
     {
         data_.precision = _;
-        return static_cast<T&&>(*this);
+        T* base_ptr = static_cast<T*>(this);
+        return static_cast<T&&>(*base_ptr);
     }
 
     template <strf::float_notation N = strf::float_notation::scientific>
@@ -343,7 +347,8 @@ public:
     std::enable_if_t<N == Notation && N == strf::float_notation::scientific, T&&>
     sci() && noexcept
     {
-        return static_cast<T&&>(*this);
+        T* base_ptr = static_cast<T*>(this);
+        return static_cast<T&&>(*base_ptr);
     }
 
     template <strf::float_notation N = strf::float_notation::scientific>
@@ -352,8 +357,9 @@ public:
                     , adapted_derived_type_<N> >
     sci() const & noexcept
     {
+        const T* base_ptr = static_cast<const T*>(this);
         return adapted_derived_type_<N>
-            { static_cast<const T&>(*this)
+            { *base_ptr
             , strf::tag<strf::float_formatter<N>>{}
             , change_notation<N>(data_) };
     }
@@ -363,7 +369,8 @@ public:
     std::enable_if_t<N == Notation && N == strf::float_notation::fixed, T&&>
     fixed() && noexcept
     {
-        return static_cast<T&&>(*this);
+        T* base_ptr = static_cast<T*>(this);
+        return static_cast<T&&>(*base_ptr);
     }
 
     template <strf::float_notation N = strf::float_notation::fixed>
@@ -372,8 +379,9 @@ public:
                     , adapted_derived_type_<N> >
     fixed() const & noexcept
     {
+        const T* base_ptr = static_cast<const T*>(this);
         return adapted_derived_type_<N>
-            { static_cast<const T&>(*this)
+            { *base_ptr
             , strf::tag<strf::float_formatter<N>>{}
             , change_notation<N>(data_) };
     }
@@ -383,7 +391,8 @@ public:
     std::enable_if_t<N == Notation && N == strf::float_notation::general, T&&>
     gen() && noexcept
     {
-        return static_cast<T&&>(*this);
+        T* base_ptr = static_cast<T*>(this);
+        return static_cast<T&&>(*base_ptr);
     }
 
     template <strf::float_notation N = strf::float_notation::general>
@@ -392,8 +401,9 @@ public:
                     , adapted_derived_type_<N> >
     gen() const & noexcept
     {
+        const T* base_ptr = static_cast<const T*>(this);
         return adapted_derived_type_<N>
-            { static_cast<const T&>(*this)
+            { *base_ptr
             , strf::tag<strf::float_formatter<N>>{}
             , change_notation<N>(data_) };
     }
@@ -403,7 +413,8 @@ public:
     std::enable_if_t<N == Notation && N == strf::float_notation::hex, T&&>
     hex() && noexcept
     {
-        return static_cast<T&&>(*this);
+        T* base_ptr = static_cast<T*>(this);
+        return static_cast<T&&>(*base_ptr);
     }
     template <strf::float_notation N = strf::float_notation::hex>
     constexpr STRF_HD
@@ -411,8 +422,9 @@ public:
                     , adapted_derived_type_<N> >
     hex() const & noexcept
     {
+        const T* base_ptr = static_cast<const T*>(this);
         return adapted_derived_type_<N>
-            { static_cast<const T&>(*this)
+            { *base_ptr
             , strf::tag<strf::float_formatter<N>>{}
             , change_notation<N>(data_) };
     }
@@ -432,15 +444,17 @@ public:
     set_float_format(strf::float_format<N> data) && noexcept
     {
         data_ = data;
-        return static_cast<T&&>(*this);
+        T* base_ptr = static_cast<T*>(this);
+        return static_cast<T&&>(*base_ptr);
     }
 
     template <strf::float_notation N>
     constexpr STRF_HD std::enable_if_t<N != Notation, adapted_derived_type_<N>>
     set_float_format(strf::float_format<N> data) && noexcept
     {
+        const T* base_ptr = static_cast<const T*>(this);
         return adapted_derived_type_<N>
-            { static_cast<const T&>(*this)
+            { *base_ptr
             , strf::tag<strf::float_formatter<N>>{}
             , data };
     }
