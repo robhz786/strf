@@ -111,8 +111,8 @@ ipv6address_abbreviation::ipv6address_abbreviation(ipv6address addr)
             hide_leading_zeros:
             visible_hextets_count_ = static_cast<std::uint8_t>(8 - leading_zeros_count);
             visible_colons_count_ = visible_hextets_count_ + 1;
-            hextets_visibility_bits_ = 0xFF << leading_zeros_count;
-            colons_visibility_bits_ = 0x7F & (0x7F << (leading_zeros_count - 2));
+            hextets_visibility_bits_ = 0xFFu << leading_zeros_count;
+            colons_visibility_bits_ = 0x7Fu & (0x7Fu << (leading_zeros_count - 2));
         }
     } else {
         unsigned zi = 2;
@@ -161,16 +161,16 @@ ipv6address_abbreviation::ipv6address_abbreviation(ipv6address addr)
     hide_middle_zeros:
     visible_hextets_count_ = static_cast<std::uint8_t>(8 - middle_zeros_count);
     visible_colons_count_ = visible_hextets_count_;
-    hextets_visibility_bits_ = ~(~(0xFF << middle_zeros_count) << middle_zeros_start);
-    colons_visibility_bits_  = 0x7F & ~(~(0xFF << (middle_zeros_count - 1)) << middle_zeros_start);
+    hextets_visibility_bits_ = ~(~(0xFFu << middle_zeros_count) << middle_zeros_start);
+    colons_visibility_bits_  = 0x7Fu & ~(~(0xFFu << (middle_zeros_count - 1)) << middle_zeros_start);
     return;
 
     hide_trailing_zeros:
     auto trailing_zeros_count = static_cast<std::uint8_t>(8 - trailing_zeros_start);
     visible_hextets_count_ = static_cast<std::uint8_t>(trailing_zeros_start);
     visible_colons_count_  = static_cast<std::uint8_t>(trailing_zeros_start + 1);
-    hextets_visibility_bits_ = 0xFF >>  trailing_zeros_count;
-    colons_visibility_bits_  = 0xFF >> (trailing_zeros_count - 1);
+    hextets_visibility_bits_ = 0xFFu >>  trailing_zeros_count;
+    colons_visibility_bits_  = 0xFFu >> (trailing_zeros_count - 1);
 
     return;
 }
@@ -181,7 +181,7 @@ namespace strf {
 
 constexpr std::uint16_t hex_digits_count(std::uint16_t x)
 {
-    return x > 0xFFF ? 4 : ( x > 0xFF ? 3 : ( x > 0xF ? 2 : 1 ) );
+    return x > 0xFFF ? 4 : ( x > 0xFFu ? 3 : ( x > 0xF ? 2 : 1 ) );
 }
 
 template <typename CharT>
