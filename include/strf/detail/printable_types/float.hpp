@@ -2260,7 +2260,7 @@ inline STRF_HD unsigned mantissa_hex_digcount(std::uint64_t mantissa)
     STRF_ASSERT(mantissa != 0);
     STRF_ASSERT(mantissa == (mantissa & 0xFFFFFFFFFFFFFull));
 
-#if defined(__cpp_lib_bitops)
+#if defined(STRF_USE_STD_BITOPS)
     unsigned lz = std::countl_zero(mantissa) >> 3;
 #else
     unsigned lz = 0;

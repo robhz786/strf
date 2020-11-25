@@ -6,7 +6,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <strf/detail/facets/lettercase.hpp>
-#ifdef __cpp_lib_bitops
+#ifdef STRF_USE_STD_BITOPS
 #include <bit>
 #endif
 
@@ -93,7 +93,7 @@ unsigned_abs(IntT value) noexcept
 template <int Base, int IntSize>
 struct digits_counter;
 
-#if defined(__cpp_lib_bitops)
+#if defined(STRF_USE_STD_BITOPS)
 
 template<>
 struct digits_counter<2, 4>
@@ -148,7 +148,7 @@ struct digits_counter<16, 8>
     }
 };
 
-#else // defined(__cpp_lib_bitops)
+#else // defined(STRF_USE_STD_BITOPS)
 
 template<>
 struct digits_counter<2, 4>
@@ -313,7 +313,7 @@ struct digits_counter<16, 8>
     }
 };
 
-#endif // defined(__cpp_lib_bitops)
+#endif // defined(STRF_USE_STD_BITOPS)
 
 template<>
 struct digits_counter<10, 2>
