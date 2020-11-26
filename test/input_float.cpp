@@ -637,6 +637,12 @@ STRF_TEST_FUNC void test_punctuation()
 
 STRF_TEST_FUNC void test_input_float()
 {
+
+#if defined(__GNUC__) && (__GNUC__ == 7 || __GNUC__ == 8)
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Warray-bounds"
+#endif
+
     {
         TEST_SCOPE_DESCRIPTION("subnormal float 32");
         {
@@ -668,8 +674,14 @@ STRF_TEST_FUNC void test_input_float()
         basic_tests(strf::pack( strf::numpunct<10>(-1).decimal_point('*')
                               , strf::numpunct<16>(-1).decimal_point('*') ));
     }
+
+#if defined(__GNUC__) && (__GNUC__ == 7 || __GNUC__ == 8)
+#  pragma GCC diagnostic pop
+#endif
+
     test_hexadecimal();
     test_several_values<float>();
     test_several_values<double>();
     test_punctuation();
 }
+
