@@ -534,9 +534,7 @@ Postcondition:: `remaining_width() == 0`
 ====
 
 
-
-
-=== Function template `preview`
+=== Function template `preview` [[preview]]
 
 [source,cpp,subs=normal]
 ----

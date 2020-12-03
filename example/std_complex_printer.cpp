@@ -166,28 +166,14 @@ class std_complex_printer: public strf::printer<CharT>
 public:
 
     template <typename... T>
-    std_complex_printer(strf::usual_printer_input<T...> input)
-        : encoding_(get_facet_<strf::char_encoding_c<CharT>>(input.facets))
-        , numpunct_(strf::get_facet<strf::numpunct_c<10>, FloatT>(input.facets))
-        , lettercase_(strf::get_facet<strf::lettercase_c, FloatT>(input.facets))
-        , form_(get_facet_<complex_form_c>(input.facets))
-        , coordinates_(::complex_coordinates(form_, input.arg))
-    {
-        preview_(input.preview, get_facet_<strf::width_calculator_c>(input.facets));
-    }
+    explicit std_complex_printer(strf::usual_printer_input<T...> x);
 
     void print_to(strf::basic_outbuff<CharT>& dest) const override;
 
 private:
 
-    template <typename Category, typename FPack>
-    static decltype(auto) get_facet_(const FPack& fp)
-    {
-        return strf::get_facet<Category, std::complex<FloatT>>(fp);
-    }
-
-    template <typename Preview, typename WCalc>
-    void preview_(Preview& preview, const WCalc& wcalc) const;
+    template <typename Preview, typename WidthCalc>
+    void preview_(Preview& preview, const WidthCalc& wcalc) const;
 
     strf::dynamic_char_encoding<CharT> encoding_;
     strf::numpunct<10> numpunct_;
@@ -200,50 +186,59 @@ private:
 };
 
 template <typename CharT, typename FloatT>
-template <typename Preview, typename WCalc>
-void std_complex_printer<CharT, FloatT>::preview_(Preview& preview, const WCalc& wcalc) const
+template <typename... T>
+inline std_complex_printer<CharT, FloatT>::std_complex_printer
+    ( strf::usual_printer_input<T...> x )
+    : encoding_(strf::get_facet<strf::char_encoding_c<CharT>, FloatT>(x.facets))
+    , numpunct_(strf::get_facet<strf::numpunct_c<10>, FloatT>(x.facets))
+    , lettercase_(strf::get_facet<strf::lettercase_c, FloatT>(x.facets))
+    , form_(strf::get_facet<complex_form_c, std::complex<FloatT>>(x.facets))
+    , coordinates_(::complex_coordinates(form_, x.arg))
 {
-    auto facets = strf::pack(lettercase_, numpunct_, encoding_);
-    strf::preview<CharT>(preview, facets, coordinates_.first, coordinates_.second);
+    preview_( x.preview
+            , strf::get_facet<strf::width_calculator_c, std::complex<FloatT>>(x.facets) );
+}
 
+template <typename CharT, typename FloatT>
+template <typename Preview, typename WidthCalc>
+void std_complex_printer<CharT, FloatT>::preview_(Preview& pp, const WidthCalc& wcalc) const
+{
     switch (form_) {
         case complex_form::algebric:
-            preview.subtract_width(7);
-            preview.add_size(7);
+            pp.subtract_width(7);
+            pp.add_size(7);
             break;
 
         case complex_form::vector:
-            preview.subtract_width(4);
-            preview.add_size(4);
+            pp.subtract_width(4);
+            pp.add_size(4);
             break;
 
         default:
             assert(form_ == complex_form::polar);
-
-            preview.subtract_width(wcalc.char_width(strf::utf32<char32_t>{}, anglechar_));
-            preview.subtract_width(1);
-
-            preview.add_size(encoding_.encoded_char_size(anglechar_));
-            preview.add_size(1);
+            if (pp.remaining_width() > 0) {
+                pp.subtract_width(wcalc.char_width(strf::utf32<char32_t>{}, anglechar_));
+                pp.subtract_width(1);
+            }
+            pp.add_size(encoding_.encoded_char_size(anglechar_));
+            pp.add_size(1);
     }
+
+    auto facets = strf::pack(lettercase_, numpunct_, encoding_);
+    strf::preview<CharT>(pp, facets, coordinates_.first, coordinates_.second);
 }
 
 template <typename CharT, typename FloatT>
 void std_complex_printer<CharT, FloatT>::print_to(strf::basic_outbuff<CharT>& dest) const
 {
-    auto facets = strf::pack(lettercase_, numpunct_, encoding_);
+    auto print = strf::to(dest).with(lettercase_, numpunct_, encoding_);    
     if (form_ == complex_form::polar) {
-        strf::to(dest).with(facets) ( coordinates_.first
-                                , U'\u2220', static_cast<CharT>(' ')
-                                , coordinates_.second);
+        print(coordinates_.first, U'\u2220', static_cast<CharT>(' ') );
+        print(coordinates_.second );
     } else {
-        const char* middle_str = ( form_ == complex_form::algebric
-                                 ? " + i*"
-                                 : ", " );
-        strf::to(dest).with(facets)
-            ( (CharT)'(', coordinates_.first
-            , strf::conv(middle_str)
-            , coordinates_.second, (CharT)')');
+        print((CharT)'(', coordinates_.first);
+        print(strf::conv(form_ == complex_form::algebric ? " + i*" : ", ") );
+        print(coordinates_.second, (CharT)')');
     }
 }
 
@@ -262,44 +257,40 @@ class fmt_std_complex_printer: public strf::printer<CharT>
 public:
 
     template <typename... T>
-    fmt_std_complex_printer(strf::usual_printer_input<T...> input)
-        : encoding_(strf::get_facet<strf::char_encoding_c<CharT>, complex_type_>(input.facets))
-        , numpunct_(strf::get_facet<strf::numpunct_c<numbase_>, FloatT>(input.facets))
-        , lettercase_(strf::get_facet<strf::lettercase_c, FloatT>(input.facets))
-        , float_fmt_(input.arg.get_float_format())
-        , form_(input.arg.form(
-                    (strf::get_facet<complex_form_c, std::complex<FloatT>>(input.facets))))
-        , coordinates_{::complex_coordinates(form_, input.arg.value())}
+    fmt_std_complex_printer(strf::usual_printer_input<T...> x)
+        : encoding_(strf::get_facet<strf::char_encoding_c<CharT>, complex_type_>(x.facets))
+        , numpunct_(strf::get_facet<strf::numpunct_c<numbase_>, FloatT>(x.facets))
+        , lettercase_(strf::get_facet<strf::lettercase_c, FloatT>(x.facets))
+        , float_fmt_(x.arg.get_float_format())
+        , form_(x.arg.form(
+                    (strf::get_facet<complex_form_c, std::complex<FloatT>>(x.facets))))
+        , coordinates_{::complex_coordinates(form_, x.arg.value())}
+        , fillchar_(x.arg.get_alignment_format().fill)
+        , alignment_(x.arg.get_alignment_format().alignment)
     {
-        init_and_preview_
-            ( input.preview
-            , input.arg.get_alignment_format()
-            , strf::get_facet<strf::width_calculator_c, complex_type_>(input.facets) );
+        init_fillcount_and_preview_
+            ( x.preview
+            , strf::get_facet<strf::width_calculator_c, complex_type_>(x.facets)
+            , x.arg.get_alignment_format().width );
     }
 
     void print_to(strf::basic_outbuff<CharT>& dest) const override;
 
 private:
 
-    template < strf::preview_size PreviewSize, strf::preview_width PreviewWidth
-             , typename WidthCalc, typename AlignmentFormat >
-    void init_and_preview_
-        ( strf::print_preview<PreviewSize, PreviewWidth>& preview
-        , AlignmentFormat afmt
-        , const WidthCalc& wcalc );
-
-    template <strf::preview_size PreviewSize, strf::preview_width PreviewWidth>
+    template < strf::preview_size PreviewSize
+             , strf::preview_width PreviewWidth
+             , typename WidthCalc >
     void init_fillcount_and_preview_
         ( strf::print_preview<PreviewSize, PreviewWidth>& preview
-        , strf::width_t anglechar_width
-        , strf::width_t fillchar_width
+        , WidthCalc wcalc
         , strf::width_t fmt_width );
 
     void print_complex_value_( strf::basic_outbuff<CharT>& dest ) const;
     void print_complex_value_split_( strf::basic_outbuff<CharT>& dest ) const;
 
-    template <typename Preview>
-    void preview_without_fill_(Preview& preview, strf::width_t anglechar_width) const;
+    template <typename Preview, typename WidthCalc>
+    void preview_without_fill_(Preview& preview, WidthCalc wcalc) const;
 
     strf::dynamic_char_encoding<CharT> encoding_;
     strf::numpunct<numbase_> numpunct_;
@@ -313,49 +304,24 @@ private:
 
 };
 
-
 template <typename CharT, typename FloatT, strf::float_notation Notation>
-template < strf::preview_size PreviewSize
-         , strf::preview_width PreviewWidth
-         , typename WidthCalc
-         , typename AlignmentFormat >
-void fmt_std_complex_printer<CharT, FloatT, Notation>::init_and_preview_
-    ( strf::print_preview<PreviewSize, PreviewWidth>& preview
-    , AlignmentFormat afmt
-    , const WidthCalc& wcalc )
-{
-    fillchar_ = afmt.fill;
-    alignment_ = afmt.alignment;
-    strf::width_t anglechar_width =
-        ( (afmt.width > 0 || (bool)PreviewWidth) && form_ == complex_form::polar
-        ? wcalc.char_width(strf::utf32<char32_t>{}, anglechar_)
-        : 0 );
-    strf::width_t fillchar_width =
-        ( afmt.width > 0 && afmt.alignment != strf::text_alignment::split
-        ? wcalc.char_width(strf::utf32<char32_t>{}, afmt.fill)
-        : 1 );
-    init_fillcount_and_preview_(preview, anglechar_width, fillchar_width, afmt.width);
-}
-
-
-template <typename CharT, typename FloatT, strf::float_notation Notation>
-template <strf::preview_size PreviewSize, strf::preview_width PreviewWidth>
+template <strf::preview_size PreviewSize, strf::preview_width PreviewWidth, typename WidthCalc>
 void fmt_std_complex_printer<CharT, FloatT, Notation>::init_fillcount_and_preview_
     ( strf::print_preview<PreviewSize, PreviewWidth>& preview
-    , strf::width_t anglechar_width
-    , strf::width_t fillchar_width
+    , WidthCalc wcalc
     , strf::width_t fmt_width )
 {
+    strf::width_t fillchar_width = wcalc.char_width(strf::utf32<char32_t>{}, fillchar_);
     if (fmt_width >= preview.remaining_width() || ! (bool)PreviewWidth ) {
         preview.clear_remaining_width();
         strf::print_preview<PreviewSize, strf::preview_width::yes> sub_preview{fmt_width};
-        preview_without_fill_(sub_preview, anglechar_width);
+        preview_without_fill_(sub_preview, wcalc);
         fillcount_ = static_cast<std::uint16_t>
             ((sub_preview.remaining_width() / fillchar_width).round());
         preview.add_size(sub_preview.accumulated_size());
     } else {
         auto previous_remaining_width = preview.remaining_width();
-        preview_without_fill_(preview, anglechar_width);
+        preview_without_fill_(preview, wcalc);
         if (preview.remaining_width() > 0) {
             auto content_width = previous_remaining_width - preview.remaining_width();
             if (fmt_width > content_width) {
@@ -371,35 +337,38 @@ void fmt_std_complex_printer<CharT, FloatT, Notation>::init_fillcount_and_previe
 }
 
 template <typename CharT, typename FloatT, strf::float_notation Notation>
-template <typename Preview>
+template <typename Preview, typename WidthCalc>
 void fmt_std_complex_printer<CharT, FloatT, Notation>::preview_without_fill_
-    ( Preview& preview, strf::width_t anglechar_width) const
+    ( Preview& pp, WidthCalc wcalc) const
 {
-    auto facets = strf::pack(lettercase_, numpunct_, encoding_);
+    auto facets = strf::pack(wcalc, lettercase_, numpunct_, encoding_);
     strf::preview<CharT>
-        ( preview, facets
+        ( pp, facets
         , strf::fmt(coordinates_.first).set_float_format(float_fmt_)
         , strf::fmt(coordinates_.second).set_float_format(float_fmt_) ) ;
 
     switch (form_) {
         case complex_form::algebric:
-            preview.subtract_width(7);
-            preview.add_size(7);
+            pp.subtract_width(7);
+            pp.add_size(7);
             break;
 
         case complex_form::vector:
-            preview.subtract_width(4);
-            preview.add_size(4);
+            pp.subtract_width(4);
+            pp.add_size(4);
             break;
 
         default:
             assert(form_ == complex_form::polar);
+            
+            
+            if (pp.remaining_width() > 0) {
+                pp.subtract_width(wcalc.char_width(strf::utf32<char32_t>{}, anglechar_));
+                pp.subtract_width(1);
+            }
 
-            preview.subtract_width(anglechar_width);
-            preview.subtract_width(1);
-
-            preview.add_size(encoding_.encoded_char_size(anglechar_));
-            preview.add_size(1);
+            pp.add_size(encoding_.encoded_char_size(anglechar_));
+            pp.add_size(1);
     }
 }
 

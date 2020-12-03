@@ -120,6 +120,27 @@ struct std_complex_formatter {
     };
 };
 
+template <typename FloatT>
+std::pair<FloatT, FloatT> complex_coordinates
+    ( std::complex<FloatT> x, complex_form form ) noexcept
+{
+    FloatT first = 0.0;
+    FloatT second = 0.0;
+    if (form == complex_form::polar) {
+        if (x.real() != 0.0) {
+            first = std::sqrt(x.real() * x.real() + x.imag() * x.imag());
+            second = std::atan(x.imag() / x.real());
+        } else if (x.imag() != 0.0) {
+            first = std::fabs(x.imag());
+            second = x.imag() > 0 ? M_PI_2 : -M_PI_2;
+        }
+    } else {
+        first = x.real();
+        second = x.imag();
+    }
+    return {first, second};
+}
+
 namespace strf {
 
 template <typename FloatT>
@@ -139,7 +160,7 @@ struct print_traits<std::complex<FloatT>>
         , std::complex<FloatT> arg)
     {
         auto form = strf::get_facet<complex_form_c, std::complex<FloatT>>(fp);
-        auto v = values(arg, form);
+        auto v = ::complex_coordinates(arg, form);
         unsigned has_brackets = form != complex_form::polar;
         auto arg2 = strf::join
             ( strf::multi((CharT)'(', has_brackets)
@@ -158,7 +179,7 @@ struct print_traits<std::complex<FloatT>>
         , strf::value_with_formatters<T...> arg )
     {
         auto form = arg.form(strf::get_facet<complex_form_c, std::complex<FloatT>>(fp));
-        auto v = values(arg.value(), form);
+        auto v = ::complex_coordinates(arg.value(), form);
         unsigned has_brackets = form != complex_form::polar;
         auto arg2 = strf::join
             ( strf::multi((CharT)'(', has_brackets)
@@ -171,25 +192,6 @@ struct print_traits<std::complex<FloatT>>
     }
 
 private:
-
-    static std::pair<FloatT, FloatT> values(std::complex<FloatT> x, complex_form form)
-    {
-        FloatT first = 0.0;
-        FloatT second = 0.0;
-        if (form == complex_form::polar) {
-            if (x.real() != 0.0) {
-                first = std::sqrt(x.real() * x.real() + x.imag() * x.imag());
-                second = std::atan(x.imag() / x.real());
-            } else if (x.imag() != 0.0) {
-                first = std::fabs(x.imag());
-                second = x.imag() > 0 ? M_PI_2 : -M_PI_2;
-            }
-        } else {
-            first = x.real();
-            second = x.imag();
-        }
-        return {first, second};
-    }
 
     static const char16_t* middle_string(complex_form form)
     {

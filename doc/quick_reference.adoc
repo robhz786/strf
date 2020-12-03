@@ -1229,7 +1229,7 @@ auto str = strf::to_string("The day was ", as_yymmdd(d), '.');
 assert(str == "The day was is 99/01/01.");
 ----
 
-=== Aligned joins
+=== Aligned joins [[aligned_join]]
 You can apply any of the <<alignment_format_functions,alignment format functions>> on the
 expression `join(__args__\...)`
 [source,cpp]
