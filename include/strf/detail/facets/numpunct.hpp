@@ -37,12 +37,17 @@ public:
 
     digits_grouping_iterator() = delete;
     constexpr digits_grouping_iterator(const digits_grouping_iterator&) noexcept = default;
-    constexpr STRF_HD digits_grouping_iterator(digits_grouping) noexcept;
+    constexpr STRF_HD explicit digits_grouping_iterator(digits_grouping) noexcept;
 
     constexpr STRF_HD bool operator==(const digits_grouping_iterator& other) const noexcept
     {
         return grps_ == other.grps_;
     }
+    constexpr STRF_HD bool operator!=(const digits_grouping_iterator& other) const noexcept
+    {
+        return grps_ != other.grps_;
+    }
+
     constexpr STRF_HD digits_grouping_iterator& operator=
         ( const digits_grouping_iterator& other ) noexcept
     {
@@ -98,6 +103,10 @@ public:
     constexpr STRF_HD bool operator==(const reverse_digits_groups& other) const noexcept
     {
         return grps_ == other.grps_;
+    }
+    constexpr STRF_HD bool operator!=(const reverse_digits_groups& other) const noexcept
+    {
+        return grps_ != other.grps_;
     }
     constexpr STRF_HD reverse_digits_groups& operator=
         ( const reverse_digits_groups& other ) noexcept
@@ -161,7 +170,7 @@ public:
         STRF_ASSERT(grp == -1 || (0 < grp && grp <= grp_max));
     }
 
-    template <typename ... IntArgs>
+    template <typename... IntArgs>
     constexpr STRF_HD digits_grouping
         ( int grp0, int grp1, IntArgs... grps ) noexcept
         : grps_(ctor_(grp0, grp1, grps...))
@@ -170,7 +179,7 @@ public:
         STRF_ASSERT(grps_ != 0);
     }
 
-    STRF_HD digits_grouping(const char* str) noexcept;
+    STRF_HD explicit digits_grouping(const char* str) noexcept;
 
     constexpr digits_grouping(const digits_grouping&) noexcept = default;
 
@@ -379,7 +388,7 @@ STRF_FUNC_IMPL STRF_HD digits_grouping::digits_grouping(const char* str) noexcep
 template <int Base> struct numpunct_c;
 
 template <int Base>
-class numpunct: private strf::digits_grouping
+class numpunct
 {
 public:
     using category = strf::numpunct_c<Base>;
@@ -387,48 +396,59 @@ public:
     constexpr numpunct() = default;
     constexpr numpunct(const numpunct& ) = default;
 
-    using strf::digits_grouping::digits_grouping;
+    template <typename... IntArgs>
+    constexpr STRF_HD explicit numpunct(int grp0, IntArgs... grps) noexcept
+        : grouping_(grp0, grps...)
+    {
+    }
 
     constexpr STRF_HD explicit numpunct(const digits_grouping& grp) noexcept
-        : strf::digits_grouping(grp)
+        : grouping_(grp)
     {
     }
 
     constexpr STRF_HD numpunct& operator=(const numpunct& other) noexcept
     {
-        strf::digits_grouping::operator=(other);
+        grouping_ = other.grouping_;
         decimal_point_ = other.decimal_point_;
         thousands_sep_ = other.thousands_sep_;
     }
     constexpr STRF_HD bool operator==(const numpunct& other) const noexcept
     {
-        return strf::digits_grouping::operator==(other)
+        return grouping_ == other.grouping_
             && decimal_point_ == other.decimal_point_
             && thousands_sep_ == other.thousands_sep_;
     }
-    constexpr STRF_HD strf::digits_grouping grouping() const
+    constexpr STRF_HD bool operator!=(const numpunct& other) const noexcept
     {
-        return *this;
+        return ! (*this == other);
+    }
+    
+    constexpr STRF_HD strf::digits_grouping grouping() const noexcept
+    {
+        return grouping_;
     }
     constexpr STRF_HD numpunct& grouping(strf::digits_grouping grp) & noexcept
     {
-        strf::digits_grouping::operator=(grp);
+        grouping_ = grp;
         return *this;
     }
     constexpr STRF_HD numpunct&& grouping(strf::digits_grouping grp) && noexcept
     {
-        strf::digits_grouping::operator=(grp);
+        grouping_ = grp;
         return static_cast<numpunct&&>(*this);
     }
-    using strf::digits_grouping::distribute;
-
+    constexpr STRF_HD strf::digits_distribution distribute(unsigned digcount) const noexcept
+    {
+        return grouping_.distribute(digcount);
+    }
     constexpr STRF_HD bool any_group_separation(unsigned digcount) const noexcept
     {
-        return digits_grouping::any_separator(digcount);
+        return grouping_.any_separator(digcount);
     }
     constexpr STRF_HD unsigned thousands_sep_count(unsigned digcount) const noexcept
     {
-        return digits_grouping::separators_count(digcount);
+        return grouping_.separators_count(digcount);
     }
     constexpr STRF_HD char32_t thousands_sep() const noexcept
     {
@@ -460,13 +480,13 @@ public:
     }
 
 private:
-
+    strf::digits_grouping grouping_;
     char32_t decimal_point_ = U'.';
     char32_t thousands_sep_ = U',';
 };
 
 template <int Base>
-class default_numpunct final
+class default_numpunct
 {
 public:
     using category = strf::numpunct_c<Base>;
@@ -480,6 +500,10 @@ public:
     constexpr STRF_HD bool operator==(const default_numpunct&) const noexcept
     {
         return true;
+    }
+    constexpr STRF_HD bool operator!=(const default_numpunct&) const noexcept
+    {
+        return false;
     }
     constexpr STRF_HD strf::digits_grouping grouping() const
     {
@@ -505,7 +529,7 @@ public:
     {
         return U'.';
     }
-    constexpr operator strf::numpunct<Base> () const noexcept
+    constexpr explicit operator strf::numpunct<Base> () const noexcept
     {
         return {};
     }
@@ -530,6 +554,10 @@ public:
     {
         return decimal_point_ == other.decimal_point_;
     }
+    constexpr STRF_HD bool operator!=(const no_grouping& other) const noexcept
+    {
+        return decimal_point_ != other.decimal_point_;
+    }
     constexpr STRF_HD strf::digits_grouping grouping() const
     {
         return {};
@@ -554,7 +582,7 @@ public:
     {
         return U'.';
     }
-    constexpr STRF_HD operator strf::numpunct<Base> () const noexcept
+    constexpr STRF_HD explicit operator strf::numpunct<Base> () const noexcept
     {
         return {};
     }
@@ -601,8 +629,8 @@ class has_punct_impl
 {
 public:
 
-    static STRF_HD std::true_type  test_numpunct(const strf::numpunct<Base>&);
-    static STRF_HD std::false_type test_numpunct(const strf::default_numpunct<Base>&);
+    static STRF_HD std::true_type  test_numpunct(...);
+    static STRF_HD std::false_type test_numpunct(strf::default_numpunct<Base>);
 
     static STRF_HD const FPack& fp();
 

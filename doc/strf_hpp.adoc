@@ -61,16 +61,10 @@ include::ref_facets_pack.adoc[]
 include::ref_printer.adoc[]
 include::ref_format_functions.adoc[]
 include::ref_printable_types.adoc[]
+// include::ref_input_types.adoc[]
 include::ref_destination.adoc[]
 include::ref_tr-string.adoc[]
+include::ref_numpunct.adoc[]
 include::ref_char_encoding.adoc[]
 include::ref_width.adoc[]
-
-// include::ref_input_types.adoc[]
-
-== Numeric punctuation
-
-__ To-do __
-
-// include::ref_numpunct.adoc[]
 include::ref_misc.adoc[]

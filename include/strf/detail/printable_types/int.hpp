@@ -245,9 +245,9 @@ class has_intpunct_impl
 {
 public:
 
-    static STRF_HD std::true_type  test_numpunct(const strf::numpunct<Base>&);
-    static STRF_HD std::false_type test_numpunct(const strf::default_numpunct<Base>&);
-    static STRF_HD std::false_type test_numpunct(const strf::no_grouping<Base>&);
+    static STRF_HD std::true_type  test_numpunct(strf::numpunct<Base>);
+    static STRF_HD std::false_type test_numpunct(strf::default_numpunct<Base>);
+    static STRF_HD std::false_type test_numpunct(strf::no_grouping<Base>);
 
     static STRF_HD const FPack& fp();
 

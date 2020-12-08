@@ -39,7 +39,7 @@ out/howto_add_printable_types.html : howto_add_printable_types.adoc out/
 out/howto_add_destination.html : howto_add_destination.adoc out/
 	asciidoctor -v --attribute=strf-version=$(StrfVersion) $< -o $@
 
-out/strf_hpp.html : strf_hpp.adoc ref_facets_pack.adoc ref_printer.adoc ref_format_functions.adoc ref_printable_types.adoc ref_destination.adoc ref_tr-string.adoc ref_char_encoding.adoc ref_width.adoc ref_misc.adoc out/
+out/strf_hpp.html : strf_hpp.adoc ref_facets_pack.adoc ref_printer.adoc ref_format_functions.adoc ref_printable_types.adoc ref_destination.adoc ref_tr-string.adoc ref_char_encoding.adoc ref_width.adoc ref_numpunct.adoc ref_misc.adoc out/
 	asciidoctor -v $< -o - | sed 's/20em/34em/g' | sed 's/td.hdlist1{/td.hdlist1{min-width:9em;/g' > $@
 
 out/outbuff_hpp.html : outbuff_hpp.adoc out/
