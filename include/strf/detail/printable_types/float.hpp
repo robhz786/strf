@@ -732,16 +732,17 @@ STRF_HD void print_amplified_integer_small_separator_1
     if (dist.highest_group != 0) {
         strf::detail::write_fill(ob, dist.highest_group, (CharT)'0');
     }
-
-    auto middle_groups = dist.low_groups.highest_group();
-    for (auto mgc = dist.middle_groups_count; mgc != 0; --mgc) {
-        ob.ensure(middle_groups + 1);
-        auto oit = ob.pointer();
-        *oit = separator;
-        strf::detail::str_fill_n<CharT>(++oit, middle_groups, '0');
-        ob.advance_to(oit + middle_groups);
+    if (dist.middle_groups_count) {
+        auto middle_groups = dist.low_groups.highest_group();
+        dist.low_groups.pop_high();
+        do {
+            ob.ensure(middle_groups + 1);
+            auto oit = ob.pointer();
+            *oit = separator;
+            strf::detail::str_fill_n<CharT>(++oit, middle_groups, '0');
+            ob.advance_to(oit + middle_groups);
+        } while (--dist.middle_groups_count);
     }
-    dist.low_groups.pop_high();
     while ( ! dist.low_groups.empty()) {
         auto grp = dist.low_groups.highest_group();
         ob.ensure(grp + 1);
@@ -781,6 +782,7 @@ STRF_HD void print_amplified_integer_small_separator_2
 
     if (dist.middle_groups_count) {
         auto middle_groups = dist.low_groups.highest_group();
+        dist.low_groups.pop_high();
         while (num_digits >= middle_groups) {
             ob.ensure(1 + middle_groups);
             auto oit = ob.pointer();
@@ -818,8 +820,8 @@ STRF_HD void print_amplified_integer_small_separator_2
     lower_groups:
     if (num_digits != 0) {
         STRF_ASSERT(dist.middle_groups_count == 0);
-        dist.low_groups.pop_high();
         grp_size = dist.low_groups.highest_group();
+        dist.low_groups.pop_high();
         while (num_digits > grp_size) {
             STRF_ASSERT(! dist.low_groups.empty());
             STRF_ASSERT(grp_size + 1 <= size_after_recycle);
@@ -830,8 +832,8 @@ STRF_HD void print_amplified_integer_small_separator_2
             digits += grp_size;
             ob.advance(grp_size + 1);
             num_digits -= grp_size;
-            dist.low_groups.pop_high();
             grp_size = dist.low_groups.highest_group();
+            dist.low_groups.pop_high();
         }
         STRF_ASSERT(num_digits != 0);
         STRF_ASSERT(num_digits + 1 <= size_after_recycle);
@@ -850,16 +852,15 @@ STRF_HD void print_amplified_integer_small_separator_2
         }
     }
     lower_groups_in_trailing_zeros:
-    dist.low_groups.pop_high();
     while (! dist.low_groups.empty()) {
         grp_size = dist.low_groups.highest_group();
+        dist.low_groups.pop_high();
         STRF_ASSERT(grp_size + 1 <= size_after_recycle);
         ob.ensure(grp_size + 1);
         auto it = ob.pointer();
         *it = separator;
         strf::detail::str_fill_n<CharT>(it + 1, grp_size, '0');
         ob.advance(grp_size + 1);
-        dist.low_groups.pop_high();
     }
 }
 
@@ -903,21 +904,23 @@ STRF_HD void print_amplified_integer_big_separator_1
     if (dist.highest_group != 0) {
         strf::detail::write_fill(ob, dist.highest_group, (CharT)'0');
     }
-    auto middle_groups = dist.low_groups.highest_group();
-    for (auto mgc = dist.middle_groups_count; mgc != 0; --mgc) {
-        ob.ensure(separator_size + middle_groups);
-        auto oit = encode_char(ob.pointer(), separator);
-        strf::detail::str_fill_n<CharT>(oit, middle_groups, '0');
-        ob.advance_to(oit + middle_groups);
+    if (dist.middle_groups_count) {
+        auto middle_groups = dist.low_groups.highest_group();
+        dist.low_groups.pop_high();
+        do {
+            ob.ensure(separator_size + middle_groups);
+            auto oit = encode_char(ob.pointer(), separator);
+            strf::detail::str_fill_n<CharT>(oit, middle_groups, '0');
+            ob.advance_to(oit + middle_groups);
+        } while (--dist.middle_groups_count);
     }
-    dist.low_groups.pop_high();
     while ( ! dist.low_groups.empty()) {
         auto grp = dist.low_groups.highest_group();
+        dist.low_groups.pop_high();
         ob.ensure(separator_size + grp);
         auto oit = encode_char(ob.pointer(), separator);
         strf::detail::str_fill_n<CharT>(oit, grp, '0');
         ob.advance(separator_size + grp);
-        dist.low_groups.pop_high();
     }
 }
 
@@ -951,6 +954,7 @@ STRF_HD void print_amplified_integer_big_separator_2
 
     if (dist.middle_groups_count) {
         auto middle_groups = dist.low_groups.highest_group();
+        dist.low_groups.pop_high();
         while (num_digits >= middle_groups) {
             ob.ensure(separator_size + middle_groups);
             auto *oit = encode_char(ob.pointer(), separator);
@@ -989,8 +993,8 @@ STRF_HD void print_amplified_integer_big_separator_2
     lower_groups:
     if (num_digits) {
         STRF_ASSERT(dist.middle_groups_count == 0);
-        dist.low_groups.pop_high();
         grp_size = dist.low_groups.highest_group();
+        dist.low_groups.pop_high();
         while (num_digits > grp_size) {
             STRF_ASSERT(! dist.low_groups.empty());
             // `-> otherwise (num_digits > grp_size) should be false
@@ -1001,8 +1005,8 @@ STRF_HD void print_amplified_integer_big_separator_2
             ob.advance_to(oit + grp_size);
             digits += grp_size;
             num_digits -= grp_size;
-            dist.low_groups.pop_high();
             grp_size = dist.low_groups.highest_group();
+            dist.low_groups.pop_high();
         }
         STRF_ASSERT(num_digits + separator_size <= size_after_recycle);
         ob.ensure(separator_size + num_digits);
@@ -1019,15 +1023,14 @@ STRF_HD void print_amplified_integer_big_separator_2
         }
     }
     lower_groups_in_trailing_zeros:
-    dist.low_groups.pop_high();
     while (! dist.low_groups.empty()) {
         grp_size = dist.low_groups.highest_group();
+        dist.low_groups.pop_high();
         STRF_ASSERT(separator_size + grp_size <= size_after_recycle);
         ob.ensure(separator_size + grp_size);
         auto oit = encode_char(ob.pointer(), separator);
         strf::detail::str_fill_n<CharT>(oit, grp_size, '0');
         ob.advance_to(oit + grp_size);
-        dist.low_groups.pop_high();
     }
 }
 

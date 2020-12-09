@@ -347,7 +347,7 @@ void STRF_HD fmt_conv_char32_printer<DestCharT>::init_
         fillcount_ = 0;
         preview.subtract_width(content_width);
     }
-    STRF_IF_CONSTEXPR (Preview::size_required) {            
+    STRF_IF_CONSTEXPR (Preview::size_required) {
         preview.add_size(count_ * enc.encoded_char_size(ch_));
         if (fillcount_ > 0) {
             preview.add_size(fillcount_ * enc.encoded_char_size(afmt.fill));

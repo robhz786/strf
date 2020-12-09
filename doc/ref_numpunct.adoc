@@ -14,6 +14,8 @@ http://www.boost.org/LICENSE_1_0.txt
 :reverse_digits_groups: <<reverse_digits_groups,reverse_digits_groups>>
 :digits_distribution: <<digits_distribution,digits_distribution>>
 :NumericPunctuation: <<NumericPunctuation,NumericPunctuation>>
+:grp_max: <<digits_grouping,grp_max>>
+:grps_count_max: <<digits_grouping,grps_count_max>>
 
 == Numeric punctuation
 
@@ -102,7 +104,7 @@ Return type:: `char32_t`
 x.decimal_point()
 ----
 [horizontal]
-Return type:: `char32_t` 
+Return type:: `char32_t`
 ====
 
 
@@ -148,7 +150,7 @@ public:
     template <typename\... IntArgs>
     constexpr explicit numpunct(int grp0, IntArgs\... grps) noexcept;
 
-    // assignment    
+    // assignment
     constexpr numpunct& operator=(const numpunct&) noexcept;
 
     // comparison
@@ -191,7 +193,7 @@ constexpr numpunct() noexcept;
 Postconditions::
 * `decimal_point() == U'.'`
 * `thousands_separator() == U','`
-* `grouping().empty()` 
+* `grouping().empty()`
 ====
 
 [[numpunct_ctor_grouping]]
@@ -204,7 +206,7 @@ constexpr numpunct({digits_grouping} grpng) noexcept;
 Postconditions::
 * `decimal_point() == U'.'`
 * `thousands_separator() == U','`
-* `grouping() == grpng` 
+* `grouping() == grpng`
 ====
 
 [[numpunct_ctor_intgroups]]
@@ -362,7 +364,7 @@ Return value:: `{digits_grouping}{}`
 constexpr {digits_distribution} distribute(unsiged digcount) const
 ----
 [horizontal]
-Return value::  `{digits_distribution}{digcount, 0, {}}`
+Return value::  `{digits_distribution}{{}, 0, digcount}`
 ====
 
 ====
@@ -477,7 +479,7 @@ Return value:: `{digits_grouping}{}`
 constexpr {digits_distribution} distribute(unsiged digcount) const
 ----
 [horizontal]
-Return value::  `{digits_distribution}{digcount, 0, {}}`
+Return value::  `{digits_distribution}{{}, 0, digcount}`
 ====
 
 ====
@@ -542,21 +544,19 @@ Return value::  `*this` or `std::move(*this)`
 namespace strf {
 class digits_grouping {
 public:
-    constexpr static int grp_max = 30;
+    constexpr static int grp_max = 31;
     constexpr static unsigned grps_count_max = 6;
 
     // constructors
     constexpr <<digits_grouping_default_ctor,digits_grouping>>() noexcept;
     constexpr digits_grouping(const digits_grouping&) noexcept;
 
-    digits_grouping(const char* str) noexcept;
-
-    constexpr explicit <<digits_grouping_ctor_groups,digits_grouping>>(int grp) noexcept;
-
     template <typename\... IntArgs>
-    constexpr <<digits_grouping_ctor_groups,digits_grouping>>(int grp0, int grp1, IntArgs\... grps) noexcept;
+    constexpr explicit <<digits_grouping_ctor_groups,digits_grouping>>(int grp0, IntArgs\... grps) noexcept;
 
-    // assignment 
+    explicit <<digits_grouping_ctor_str,digits_grouping>>(const char* str) noexcept;
+
+    // assignment
     constexpr digits_grouping& operator=(const digits_grouping&) noexcept;
 
     // comparison
@@ -581,17 +581,15 @@ constexpr explicit digits_grouping() noexcept;
 ----
 Equivalent to `digits_grouping(-1)`
 [horizontal]
-Poscondition:: `<<digits_grouping_empty,empty()>>` returns `true`
+Postcondition:: `<<digits_grouping_empty,empty()>>` returns `true`
 ====
 
 [[digits_grouping_ctor_groups]]
 ====
 [source,cpp,subs=normal]
 ----
-constexpr explicit digits_grouping(int grp) noexcept;
-
 template <typename\... IntArgs>
-constexpr digits_grouping(int grp0, int grp1, IntArgs\... grps) noexcept;
+constexpr explicit digits_grouping(int grp0, IntArgs\... grps) noexcept;
 ----
 Specifies the groups from the least significant ( first argument ) to the most significant.
 If the last argument is `-1`, then the last group ( second-to-last argument ) is not to be repeated.
@@ -599,19 +597,20 @@ If the last argument is `-1`, then the last group ( second-to-last argument ) is
 Compile-time requirements::
 
 * All arguments are convertible to `int`
-* Total number of arguments is not greater than `grps_count_max`
 
-Preconditions:: 
+Preconditions::
 
-* The value `g` of last argument is such that `g == -1 || (0 < g && g \<= grp_max)` is `true`.
-* The value `g` of any argument but the last is such that `(0 < g && g \<= grp_max)` is `true`.
+* The value `g` of last argument is such that `g == -1 || (0 < g && g \<= {grp_max})` is `true`.
+* The value `g` of any argument but the last is such that `(0 < g && g \<= {grp_max})` is `true`.
+* The number of groups ( not counting the last argument if it's `-1` ) is not greater than `{grps_count_max}`
+
 ====
 
 [[digits_grouping_ctor_str]]
 ====
 [source,cpp,subs=normal]
 ----
-digits_grouping(const char* str) noexcept;
+dexplicit igits_grouping(const char* str) noexcept;
 ----
 The characters in `str` specify the groups, starting from the least significant one.
 If the last character is `'\xFF'`, then the last group is not repeated.
@@ -620,9 +619,11 @@ Passing the empty string (`""`) has the same effect as passing as `"\xFF"`, whic
 Preconditions::
 * `str != nullptr`
 * `str` is a null terminated string
-* `strlen(str) \<= grps_count_max`
-* For each character `ch` in `str` that is not the last character, `0 < ch && ch \<= grp_max` is `true`
-* If `ch` is the last character `str`, then `ch == '\xFF' || (0 < ch && ch \<= grp_max)` is `true`
+* For each character `ch` in `str` that is not the last character, `0 < ch && ch \<= {grp_max}` is `true`
+* If `ch` is the last character `str`, then `ch == '\xFF' || (0 < ch && ch \<= {grp_max})` is `true`
+* The number of groups ( not counting the last character if it is `'\xFF'` )
+  must not be greater than `{grps_count_max}`.
+
 ====
 
 [[digits_grouping_empty]]
@@ -685,8 +686,7 @@ least significant.
 Precondition:: `digcount > 0`
 Postconditions:: The return value `dist` is such that
 * `dist.highest_group > 0`
-* if `x.grouping().empty()` is `true`, then `dist == {digits_distribution}{digcount, 0, {}}`
-* if `x.grouping().empty()` is `false` and `dist.<<digits_distribution,middle_groups_count>>` is not `0`, then `dist.low_groups.empty()` is `false`.
+* if `dist.<<digits_distribution,middle_groups_count>>` is not `0`, then `dist.low_groups.empty()` is `false`.
 ====
 
 === Class `digits_grouping_creator` [[digits_grouping_creator]]
@@ -706,24 +706,33 @@ public:
 } // namespace strf
 ----
 
-Sometimes it is not easy instantiate `{digits_grouping}` through
-one of its constructors, since they require you to pass all groups at once.
-So `digits_grouping_creator` provides an alternative way to create a `digits_grouping`
-object by iteratively informing each of the groups one by one
-( passing it to `push_high` function ),
-starting from the least significant group.
-A tipical use is when one needs to parse a string that describe
-grouping, like those provided by localization functions and
-whose format varies according to the operating system.
+Sometimes it is not easy instantiate to `{digits_grouping}` through
+one of its constructors, since it requires you to pass all groups at once.
+So `digits_grouping_creator` provides an alternative and iterative way:
+each groups is passed one-by-one to `push_high` function,
+from the least to the most significant.
 After all groups are passed, `finish()` or `finish_no_more_sep()`
 shall be called to create the resulting `digits_grouping` object.
-`finish()` is used when the last group is supposed to be repeated
-for the more significant digits, while
-`finish_no_more_sep()` is for the opposite case.
+`finish()` is used when the last group is supposed to be repeated,
+while `finish_no_more_sep()` is for the opposite case.
+Calling `push_high()` after that has undefined behaviour.
 
-There is a limit of how may times `push_high` can be called,
-which is `digits_grouping::grp_count_max` when `finish()` is used,
-and `digits_grouping::grp_count_max - 1` when `finish_no_more_sep()` is used.
+.Example
+[source,cpp,subs=normal]
+----
+strf::digits_grouping_creator creator;
+creator.push_high(1);
+creator.push_high(2);
+creator.push_high(3);
+assert(creator.finish() == strf::digits_grouping(1, 2, 3));
+----
+
+If something wrong happens ( `push_high` called more than
+`digits_grouping::grps_count_max`, or with an invalid argument
+( 0 or greater than `{digits_grouping}::grp_max` ) )
+, the return value of `failed()` becames `true`, and the return
+value of `finish()` and `finish_no_more_sep()` becames `{digits_grouping}{}`.
+
 
 
 === Class `digits_grouping_iterator` [[digits_grouping_iterator]]
@@ -749,10 +758,12 @@ public:
     constexpr bool operator!=(const digits_grouping_iterator&) const noexcept;
 
     // iteration
-    constexpr unsigned lowest_group() const noexcept; // current
-    constexpr void pop_low() noexcept;                // move to next
+    constexpr unsigned current() const noexcept;
+    constexpr void advance() noexcept;
+    constexpr bool is_last() const noexcept;
+    constexpr bool shall_repeat_current() const noexcept;
     constexpr bool is_final() const noexcept;
-    constexpr bool no_more_sep() const noexcept;
+    constexpr bool ended() const noexcept;
 };
 } // namespace strf
 ----
@@ -760,48 +771,71 @@ public:
 ====
 [source,cpp,subs=normal]
 ----
-constexpr unsigned lowest_group() noexcept;
+constexpr unsigned current() noexcept;
 ----
+Returns the current group.
 [horizontal]
-Return:: The current group.
+Precondition:: `ended()` returns `false`.
 ====
 ====
 [source,cpp,subs=normal]
 ----
-constexpr void pop_low() noexcept;
+constexpr void advance() noexcept;
 ----
 [horizontal]
 Effect:: Moves to the next (more significant) group.
-Precondition:: `is_final()` returns `false`.
-====
-
-////
-====
-[source,cpp,subs=normal]
-----
-constexpr bool no_more_sep() const noexcept;
-----
+Precondition:: `ended()` returns `false`.
+Postconditions:: If the return value of `is_last()` is `true`, then it becames `false`
+and return value of `ended()` becames `true`.
 ====
 ====
 [source,cpp,subs=normal]
 ----
-constexpr bool final() const noexcept;
+constexpr bool is_last() const noexcept;
 ----
+[horizontal]
+Return value:: `true` is this is the last group.
+It is equall to `is_final() || shall_repaete_current()`.
 ====
-////
-
+====
+[source,cpp,subs=normal]
+----
+constexpr bool shall_repated_current() const noexcept;
+----
+[horizontal]
+Return value:: `true` is this is the last group and it shall be repeated.
+It is equall to `(is_last() && ! is_final())`.
+====
+====
+[source,cpp,subs=normal]
+----
+constexpr bool is_final() const noexcept;
+----
+[horizontal]
+Return value:: `true` is this is the last group and it shall not be repeated.
+It is equall to `(is_last() && ! shall_repeat_current())`.
+====
+====
+[source,cpp,subs=normal]
+----
+constexpr bool ended() const noexcept;
+----
+Returns `true` when there is no group left.
+====
 
 .Example
 [source,cpp,subs=normal]
 ----
-strf::digits_grouping grouping{1, 2, 3};  
+strf::digits_grouping grouping{1, 2, 3};
 strf::digits_grouping_iterator it = grouping.get_iterator();
 
-assert(it.lowest_group() == 1 && ! it.is_final());
-it.pop_low();
-assert(it.lowest_group() == 2 && ! it.is_final());
-it.pop_low();
-assert(it.lowest_group() == 3 && it.is_final() && ! it.no_more_sep());
+assert(it.current() == 1 && ! it.is_last());
+it.advance();
+assert(it.current() == 2 && ! it.is_last());
+it.advance();
+assert(it.current() == 3 && it.shall_repeat_current());
+it.advance();
+assert(it.ended());
 ----
 
 .Example
@@ -810,39 +844,22 @@ assert(it.lowest_group() == 3 && it.is_final() && ! it.no_more_sep());
 strf::digits_grouping grouping{1, 2, 3, -1};
 strf::digits_grouping_iterator it = grouping.get_iterator();
 
-assert(it.lowest_group() == 1 && ! it.is_final());
-it.pop_low();
-assert(it.lowest_group() == 2 && ! it.is_final());
-it.pop_low();
-assert(it.lowest_group() == 3 && ! it.is_final());
-it.pop_low();            
-assert(it.is_final() && it.no_more_sep());
+assert(it.current() == 1 && ! it.is_last());
+it.advance();
+assert(it.current() == 2 && ! it.is_last());
+it.advance();
+assert(it.current() == 3 && it.is_final());
+it.advance();
+assert(it.ended());
 ----
 
-////
-digits_grouping_iterator it = ...;
-unsigned digcount = ...; // number of digits to print
-...
-while(1) {
-   if (it.no_more_sep() || digcount < it.lowest_group()) {
-      // write digcount digits and quit
-      ...
-      break;
-   }
-   if (it.is_final()) {
-      while (digcount > it.lowest_group()) {
-          ... // write it.lowest_group() digits and a separator
-          digcount -= it.lowest_group();
-      }
-      ... // print digcount digits and quit
-      break;
-   }
-   assert (digcount >= it.lowest_group());
-   ... // write it.lowest_group() digits and a separator
-   digcount -= it.lowest_group();
-   it.pop_low();
-}
-////
+.Example
+[source,cpp,subs=normal]
+----
+strf::digits_grouping grouping{};
+strf::digits_grouping_iterator it = grouping.get_iterator();
+assert(it.ended());
+----
 
 === Class `digits_distribution` [[digits_distribution]]
 
@@ -881,10 +898,12 @@ assert(dist.highest_groups != 0);
 ... // print the most significant dist.highest_group digits
 
 // step 2 - print middle groups
-auto mg = dist.low_groups.highest_group();
-dist.low_groups.pop_high();
-for (unsigned i=0; i < dist.middle_groups_count; ++i) {
-    ... // print the separator, then mg digits
+if (dist.middle_groups_count) {
+    auto mg = dist.low_groups.highest_group();
+    dist.low_groups.pop_high();
+    do {
+        ... // print the separator, then mg digits
+    } while (--dist.middle_groups_count);
 }
 
 // step 3 - least significant groups
@@ -907,8 +926,8 @@ the most to the least significant.
 namespace strf {
 class reverse_digits_groups {
 public:
-    constexpr static unsigned grp_max = {digits_grouping}::grp_max;
-    constexpr static unsigned grps_count_max = {digits_grouping}::grps_count_max;
+    constexpr static unsigned grp_max = {digits_grouping}::{grp_max};
+    constexpr static unsigned grps_count_max = {digits_grouping}::{grps_count_max};
 
     constexpr reverse_digits_groups() noexcept;
     constexpr reverse_digits_groups(const reverse_digits_groups&) noexcept;
@@ -952,7 +971,7 @@ constexpr unsigned highest_group() const noexcept;
 Return the actual number of digits in the current group.
 
 Postconditions:: The return value is zero when `empty()` returns `true`. Otherwise, it is non-zero
-and not greater than `grp_max`;
+and not greater than `{grp_max}`;
 ====
 
 ====

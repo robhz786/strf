@@ -9,49 +9,17 @@ inline namespace {
 unsigned count_digits(strf::digits_distribution dist)
 {
     unsigned count = dist.highest_group;
-    count += dist.middle_groups_count * dist.low_groups.highest_group();
-    while(!dist.low_groups.empty()) {
+    if ( dist.middle_groups_count ) {
+        count += dist.middle_groups_count * dist.low_groups.highest_group();
         dist.low_groups.pop_high();
+    }
+    while( ! dist.low_groups.empty()) {
         count += dist.low_groups.highest_group();
+        dist.low_groups.pop_high();
     }
     return count;
 }
 
-const char* result(strf::digits_grouping_iterator git, unsigned digcount)
-{
-    constexpr std::size_t buff_size = 500;
-    static char buff[buff_size];
-    char* it = buff + buff_size;
-    *--it = '\0';
-    while(1) {
-        if (git.no_more_sep() || digcount < git.lowest_group()) {
-            it -= digcount;
-            strf::detail::str_fill_n(it, digcount, 'x');
-            return it;
-        }
-        if (git.is_final()) {
-            while (digcount > git.lowest_group()) {
-                it -= git.lowest_group();
-                strf::detail::str_fill_n(it, git.lowest_group(), 'x');
-                *--it = '.';
-                digcount -= git.lowest_group();
-            }            
-            it -= digcount;
-            strf::detail::str_fill_n(it, digcount, 'x');
-            return it;
-        }
-        assert (digcount >= git.lowest_group());
-        it -= git.lowest_group();
-        strf::detail::str_fill_n(it, git.lowest_group(), 'x');
-        *--it = '.';
-
-        digcount -= git.lowest_group();
-        git.pop_low();
-    }
-    return it;
-}
-
-       
 const char* result(strf::digits_distribution dist)
 {
     constexpr std::size_t buff_size = 500;
@@ -63,13 +31,15 @@ const char* result(strf::digits_distribution dist)
     it += dist.highest_group;
 
     // middle groups
-    auto mg = dist.low_groups.highest_group();
-    dist.low_groups.pop_high();
-    for (unsigned i=0; i < dist.middle_groups_count; ++i) {
-        *it++ = '.';
-        strf::detail::str_fill_n(it, mg, 'x');
-        it += mg;
-    }            
+    if (dist.middle_groups_count) {
+        auto mg = dist.low_groups.highest_group();
+        dist.low_groups.pop_high();
+        do {
+            *it++ = '.';
+            strf::detail::str_fill_n(it, mg, 'x');
+            it += mg;
+        } while (--dist.middle_groups_count);
+    }
 
     // less significant groups
     while( ! dist.low_groups.empty()) {
@@ -79,11 +49,11 @@ const char* result(strf::digits_distribution dist)
         strf::detail::str_fill_n(it, g, 'x');
         it += g;
     }
-    
-    *it = '\0';    
+
+    *it = '\0';
     return buff;
 }
-       
+
 }
 
 void STRF_TEST_FUNC test_numpunct()
@@ -119,25 +89,21 @@ void STRF_TEST_FUNC test_numpunct()
         TEST("10000000000000,000,00,0") .with(punct) (big_value);
         TEST("0") .with(punct) (0);
 
-        {            
+        {
             strf::digits_grouping_iterator it = grpng.get_iterator();
-            TEST_TRUE(! it.is_final());
-            TEST_TRUE(! it.no_more_sep());
-            TEST_EQ(it.lowest_group(), 1);
+            TEST_EQ(it.current(), 1);
+            TEST_TRUE(! it.is_last());
 
-            it.pop_low();
-            TEST_TRUE(! it.is_final());
-            TEST_TRUE(! it.no_more_sep());
-            TEST_EQ(it.lowest_group(), 2);
+            it.advance();
+            TEST_EQ(it.current(), 2);
+            TEST_TRUE(! it.is_last());
 
-            it.pop_low();
-            TEST_TRUE(! it.is_final());
-            TEST_TRUE(! it.no_more_sep());
-            TEST_EQ(it.lowest_group(), 3);
-
-            it.pop_low();            
+            it.advance();
+            TEST_EQ(it.current(), 3);
             TEST_TRUE(it.is_final());
-            TEST_TRUE(it.no_more_sep());
+
+            it.advance();
+            TEST_TRUE(it.ended());
         }
 
         TEST_TRUE(grpng.separators_count(1) == 0);
@@ -160,31 +126,29 @@ void STRF_TEST_FUNC test_numpunct()
         TEST_EQ(count_digits(grpng.distribute(1)), 1);
 
         TEST_CSTR_EQ(result(grpng.distribute(7)), "x.xxx.xx.x");
-        TEST_CSTR_EQ(result(grpng.get_iterator(), 7), "x.xxx.xx.x");
     }
     {
         strf::digits_grouping grouping{1, 2, 3};
         strf::numpunct<10> punct{grouping};
         TEST("10,000,000,000,000,000,00,0") .with(punct) (big_value);
         TEST("0") .with(punct) (0);
-        {   
+        {
            strf::digits_grouping_iterator it = grouping.get_iterator();
-           TEST_EQ(it.lowest_group(), 1);
+           TEST_EQ(it.current(), 1);
+           TEST_TRUE(! it.is_last());
 
-           TEST_TRUE(! it.is_final());
-           TEST_TRUE(! it.no_more_sep());
-           it.pop_low();
-           TEST_EQ(it.lowest_group(), 2);
+           it.advance();
+           TEST_EQ(it.current(), 2);
+           TEST_TRUE(! it.is_last());
 
-           TEST_TRUE(! it.is_final());
-           TEST_TRUE(! it.no_more_sep());
-           it.pop_low();
-           TEST_EQ(it.lowest_group(), 3);
+           it.advance();
+           TEST_EQ(it.current(), 3);
+           TEST_TRUE(it.shall_repeat_current());
 
-           TEST_TRUE(it.is_final());
-           TEST_TRUE(! it.no_more_sep());
+           it.advance();
+           TEST_TRUE(it.ended());
         }
-       
+
         TEST_TRUE(grouping.separators_count(1) == 0);
         TEST_TRUE(grouping.separators_count(2) == 1);
         TEST_TRUE(grouping.separators_count(3) == 1);
