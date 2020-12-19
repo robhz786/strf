@@ -22,12 +22,15 @@ Overview:
 * [**quick reference**](http://robhz786.github.io/strf/v0.12.2/quick_reference.html)
 
 HowTos:
-* [How to use Strf on CUDA devices](http://robhz786.github.io/strf/v0.12.2/cuda.html)
+- [How to use strf on CUDA devices](http://robhz786.github.io/strf/v0.12.2/cuda.html)
+- How to extend strf:
+    - [Adding destination](http://robhz786.github.io/strf/v0.12.2/howto_add_destination.html)
+    - [Adding printable types](http://robhz786.github.io/strf/v0.12.2/howto_add_printable_types.html)
+    - [Overriding printable types](http://robhz786.github.io/strf/v0.12.2/howto_override_printable_types.html)
 
 Header references:
-* [`<strf.hpp>`](http://robhz786.github.io/strf/v0.12.2/strf_hpp.html) is the main header.
-* [`<strf/outbuff.hpp>`](http://robhz786.github.io/strf/v0.12.2/outbuff_hpp.html) is a lightweight and freestanding header that defines the `basic_outbuff` class template.
-                       All other headers includes this one.
+* [`<strf.hpp>`](http://robhz786.github.io/strf/v0.12.2/strf_hpp.html) is the main header. This document is big and covers many details that you will probably never need to know. So it's not the best starting point.
+* [`<strf/outbuff.hpp>`](http://robhz786.github.io/strf/v0.12.2/outbuff_hpp.html) is a lightweight and freestanding header that defines the `basic_outbuff` class template. All other headers depend on this one.
 * [`<strf/to_string.hpp>`](http://robhz786.github.io/strf/v0.12.2/to_string_hpp.html) adds support for writting to `std::basic_string`. It includes `<strf.hpp>`.
 * [`<strf/to_cfile.hpp>`](http://robhz786.github.io/strf/v0.12.2/to_cfile_hpp.html)  adds support for writting to `FILE*`. It includes `<strf.hpp>`.
 * [`<strf/to_streambuf.hpp>`](http://robhz786.github.io/strf/v0.12.2/to_streambuf_hpp.html) adds support for writting to `std::basic_streambuf`. It includes `<strf.hpp>`.

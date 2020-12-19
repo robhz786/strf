@@ -13,7 +13,6 @@ http://www.boost.org/LICENSE_1_0.txt
 :facets_pack: <<facets_pack, facets_pack>>
 :value_with_formatters: <<value_with_formatters, value_with_formatters>>
 
-
 :PrintTraits: <<PrintTraits,PrintTraits>>
 :Printable: <<Printable,Printable>>
 :PrinterInput: <<PrinterInput,PrinterInput>>
@@ -40,7 +39,7 @@ or override an existing one.
 A type `T` is _Printable_ if:
 
 * `print_traits_of<T>` is defined and is a  _{PrintTraits}_ type
-* `print_traits_of<T>::forwarded_type` is implicitly convertible from `T`
+* `print_traits_of<T>::<<PrintTraits_forwarded_type,forwarded_type>>` is implicitly convertible from `T`
 
 [[print_traits_of]]
 === Type alias template `print_traits_of`
@@ -64,21 +63,6 @@ template <typename T> using print_traits_of = /{asterisk} see below\... {asteris
 *  otherwise, it is `Traits`, when `T` is `{value_with_formatters}<Traits, /{asterisk}\... {asterisk}/>`
 *  otherwise, it is `print_traits<T>` if such template specialization is defined
 *  otherwise, it is `decltype(tag_invoke(print_traits_tag{}, std::declval<T>()))`
-
-=== Type alias template `forwarded_printable_type` [[forwarded_printable_type]]
-
-[source,cpp,subs=normal]
-----
-namespace strf {
-
-template <typename T>
-using forwarded_printable_type = /{asterisk} see below\... {asterisk}/;
-
-} // namespace strf
-----
-
-* `forwarded_printable_type<T>` is `T`, when `T` a `{value_with_formatters}</{asterisk}\... {asterisk}/>`
-* otherwise, it is `typename {print_traits_of}<T>::forwarded_type`
 
 [[PrintTraits]]
 === Type requirement _PrintTraits_
@@ -114,7 +98,7 @@ When defined, `{make_printer_input}` uses the following expression
 to obtain the _PrinterInput_ object:
 [source,cpp,subs=normal]
 ----
-<<get_facet,get_facet>><{print_override_c}, override_tag}(_facets_).template make_printer_input(...)
+<<get_facet,get_facet>><{print_override_c}, override_tag>(_facets_).template make_printer_input(...)
 ----
 , which would mean that the corresponding _Printable_ type could be overriden by an
 facet object. While when `override_tag` is not defined, this _Printable_ type is not overridable.
@@ -153,6 +137,47 @@ T::template make_printer_input<CharT>(preview, fpack, v)
 Return type:: A _{PrinterInput}_ type.
 Return value:: A value `r` such that `&r.preview == &preview`
 ====
+
+
+=== Type alias template `override_tag` [[override_tag]]
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template <typename T>
+using override_tag = typename {print_traits_of}<T>::<<PrintTraits_override_tag,override_tag>>;
+
+} // namespace strf
+----
+
+=== Variable template `is_overridable` [[is_overridable]]
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template <typename T>
+constexpr bool is_overridable = ... /{asterisk}see below{asterisk}/;
+
+} // namespace strf
+----
+
+`is_overridable<T>` is `true` if `{print_traits_of}<T>` has the public member type alias
+`<<PrintTraits_override_tag,override_tag>>`. Otherwise it is `false`.
+
+=== Type alias template `forwarded_printable_type` [[forwarded_printable_type]]
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template <typename T>
+using forwarded_printable_type = typename {print_traits_of}<T>::<<PrintTraits_forwarded_type,forwarded_type>>;
+
+} // namespace strf
+----
+
 
 === Type requirements _PrinterInput_ [[PrinterInput]]
 
@@ -257,8 +282,8 @@ The expression `make_default_printer_input<CharT>(preview, facets, arg)` is equi
 === Facet category `print_override_c` [[print_override_c]]
 
 This facet category affects the return type and value of `{make_printer_input}`.
-This way, it enables the user change how a printable type is printed,
-by making the library an the alternative __{PrinterInput}__ object.
+It enables the user change how a printable type is printed,
+by making the library use an the alternative __{PrinterInput}__ object.
 A facet of this category should **aways** be <<constrain,constrained>> to the
 printable type intended to be overriden.
 

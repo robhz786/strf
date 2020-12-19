@@ -9,6 +9,7 @@ all: \
     out/benchmarks.html \
     out/howto_add_destination.html \
     out/howto_add_printable_types.html \
+    out/howto_override_printable_types.html \
     out/strf_hpp.html \
     out/outbuff_hpp.html \
     out/to_cfile_hpp.html \
@@ -33,10 +34,13 @@ out/locale_hpp.html : locale_hpp.adoc out/
 out/benchmarks.html : benchmarks.adoc out/
 	asciidoctor -v --attribute=strf-version=$(StrfVersion) $< -o $@
 
+out/howto_add_destination.html : howto_add_destination.adoc out/
+	asciidoctor -v --attribute=strf-version=$(StrfVersion) $< -o $@
+
 out/howto_add_printable_types.html : howto_add_printable_types.adoc out/
 	asciidoctor -v --attribute=strf-version=$(StrfVersion) $< -o $@
 
-out/howto_add_destination.html : howto_add_destination.adoc out/
+out/howto_override_printable_types.html : howto_override_printable_types.adoc out/
 	asciidoctor -v --attribute=strf-version=$(StrfVersion) $< -o $@
 
 out/strf_hpp.html : strf_hpp.adoc ref_facets_pack.adoc ref_printer.adoc ref_format_functions.adoc ref_printable_types.adoc ref_destination.adoc ref_tr-string.adoc ref_char_encoding.adoc ref_width.adoc ref_numpunct.adoc ref_misc.adoc out/

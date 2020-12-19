@@ -373,6 +373,16 @@ with one template type parameter such that, given any types `T` and `U`:
 [[alignment_formatter]]
 === _Formatter_ `alignment_formatter`
 
+This _Formatter_ defines the following format functions:
+
+[horizontal]
+`operator>({width_t} width)`::: Align to the right ( Or to the left right-to-left (RTL) script )
+`operator<({width_t} width)`::: Align to the left ( Or to the right right-to-left (RTL) script )
+`operator^({width_t} width)`::: Center alignment
+`operator%({width_t} width)`::: Split the content, as in `std::internal`.
+`fill(char32_t ch)`::: Set the fill character.
+`set_alignment_format(.../{asterisk}see below{asterisk}/)`::: Specify alignment, width and fill character.
+
 [source,cpp,subs=normal]
 ----
 namespace strf {

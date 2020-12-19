@@ -5,8 +5,7 @@ See accompanying file LICENSE_1_0.txt or copy at
 http://www.boost.org/LICENSE_1_0.txt
 ////
 
-== List of printable types
-
+== List of printable types [[printable_types_list]]
 
 === Strings
 Types::
@@ -22,7 +21,7 @@ where:
 Overridable:: No
 
 Format functions::
-( in addition to <<alignment_format_functions, alignment functions>> )
+( in addition to <<alignment_formatter, alignment functions>> )
 
 `p(<<strf_hpp#width_t,width_t>> limit)`:::
    Does not print the whole string if its width is greater than `limit`,
@@ -76,7 +75,7 @@ Type:: The same as the output character type or `char32_t`. In the later case,
 Overridable:: No
 
 Format functions::
-( in addition to <<alignment_format_functions, alignment functions>> )
+( in addition to <<alignment_formatter, alignment functions>> )
 [horizontal]
 `multi(std::size_t count)`::: Prints the character `count` times. Default value is `1`.
 
@@ -84,20 +83,20 @@ Format functions::
 Influential facet categories::
 * `<<width_calculator_c,width_calculator_c>>`
 * `<<char_encoding_c,char_encoding_c>><__CharType__>`: in two situations:
-**  when using <<alignment_format_functions,alignment formatting>>
+**  when using <<alignment_formatter,alignment formatting>>
 **  when the character type is `char32_t` and the destination character type
     is not `char32_t`.
 
-=== `bool`
+=== `bool` [[printable_bool]]
 Type:: `bool`
 Format functions::
-<<alignment_format_functions, Alignment functions>> only.
+<<alignment_formatter, Alignment functions>> only.
 
 Overridable:: Yes, `<<PrintTraits_override_tag,override_tag>>` is `bool`.
 
 Influential facet categories::
 - `<<lettercase,lettercase_c>>`
-- `<<char_encoding_c,char_encoding_c>><__CharType__>`: Used to encode the <<alignment_format_functions,fill character>>.
+- `<<char_encoding_c,char_encoding_c>><__CharType__>`: Used to encode the <<alignment_formatter,fill character>>.
 
 === `const void*`
 Types:: `const void*`
@@ -105,12 +104,12 @@ Types:: `const void*`
 Overridable:: Yes, `<<PrintTraits_override_tag,override_tag>>` is `const void*`
 
 Format functions::
-The <<alignment_format_functions, alignment functions>> only.
+The <<alignment_formatter, alignment functions>> only.
 
 Influential facet categories::
 - `<<lettercase,lettercase_c>>`
 - `<<numpunct_c, numpunct_c>><16>`
-- `<<char_encoding_c,char_encoding_c>><__CharType__>`: Used to encode the <<alignment_format_functions,fill character>> and the <<numpunct,punctuation characters>>.
+- `<<char_encoding_c,char_encoding_c>><__CharType__>`: Used to encode the <<alignment_formatter,fill character>> and the <<numpunct,punctuation characters>>.
 
 === Integers
 
@@ -135,7 +134,7 @@ Overridable:: Yes, `<<PrintTraits_override_tag,override_tag>>` is the same as th
 
 [[int_fmt]]
 Format functions::
-( in addition to <<alignment_format_functions, alignment functions>> )
+( in addition to <<alignment_formatter, alignment functions>> )
 [horizontal]
 `dec()`::: Use decimal base ( This is already the default, though )
 `hex()`::: Use hexadecimal base.
@@ -153,7 +152,7 @@ No effect in decimal base.
 Influential facet categories::
 - `<<lettercase,lettercase_c>>`
 - `<<numpunct, numpunct_c>><__Base__>`
-- `<<char_encoding_c,char_encoding_c>><__CharType__>`: Used to encode the <<alignment_format_functions,fill character>> and the <<numpunct,punctuation characters>>.
+- `<<char_encoding_c,char_encoding_c>><__CharType__>`: Used to encode the <<alignment_formatter,fill character>> and the <<numpunct,punctuation characters>>.
 
 
 === Floating Points
@@ -162,7 +161,7 @@ Types:: `float`, `double`
 Overridable:: Yes, `<<PrintTraits_override_tag,override_tag>>` is the same as the input type ( `float` or `double` )
 
 Format functions::
-( In addition to the <<alignment_format_functions, alignment functions>> )
+( In addition to the <<alignment_formatter, alignment functions>> )
 [horizontal]
 `operator+()`::: When in decimal base, prints the positive sign
 `"+"` if the value is non negative. No effect for other bases.
@@ -189,7 +188,7 @@ the number of fractional digits. `precision == 0` has the same effect as
 Influential facet categories::
 - `<<lettercase,lettercase_c>>`
 - `<<numpunct,numpunct_c>><10>`
-- `<<char_encoding_c,char_encoding_c>><__CharType__>`: Used to encode the <<alignment_format_functions,fill character>> and the <<numpunct,punctuation characters>>.
+- `<<char_encoding_c,char_encoding_c>><__CharType__>`: Used to encode the <<alignment_formatter,fill character>> and the <<numpunct,punctuation characters>>.
 
 === Ranges
 
@@ -343,7 +342,7 @@ template <typename ... Args>
 
 ==== With alignment
 
-You can apply the <<alignment_format_functions,alignment format functions>>
+You can apply the <<alignment_formatter,alignment format functions>>
 one the return type of `join(args\...)`
 
 [source,cpp]

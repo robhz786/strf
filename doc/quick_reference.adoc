@@ -663,7 +663,7 @@ When the argument associated with a `"{"` does not exists, the library does two 
 |`<<surrogate_policy,surrogate_policy_c>>` |Yes |Wheter surrogates are treated as errors
 |`<<tr_string_error,tr_error_notifier_c>>`   |No  |  Callback to notify errors on the tr-string
 |`<<width_calculator,width_calculator_c>>` |Yes |Defines how the width is calculated
-|`<<print_override,print_override_c>>`     |Yes   | To override a printable type
+|`<<howto_override_printable_types#,print_override_c>>`     |Yes   | Overrides printable types
 |===
 
 [[numpunct]]
@@ -1121,10 +1121,6 @@ assert(res3 == u"   15.00 \u20AC \uFFFD"); // width calculated as 9
 ----
 ====
 
-== Overriding a printable type [[print_override]]
-
-__to-do__
-
 == Ranges
 
 === Without formatting
@@ -1294,18 +1290,3 @@ For exemple, if `str` is a `std::string`, then
 ====
 ////
 
-
-== Extending the library __(to-do)__
-
-=== Adding output types
-
-This is explained in <<howto_add_destination#,another section>>.
-
-=== Adding printable types
-to-do
-
-=== Adding Facets
-to-do
-
-=== Adding character encodings
-to-do

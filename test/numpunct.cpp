@@ -6,7 +6,7 @@
 
 inline namespace {
 
-unsigned count_digits(strf::digits_distribution dist)
+unsigned STRF_HD count_digits(strf::digits_distribution dist)
 {
     unsigned count = dist.highest_group;
     if ( dist.middle_groups_count ) {
@@ -20,7 +20,7 @@ unsigned count_digits(strf::digits_distribution dist)
     return count;
 }
 
-const char* result(strf::digits_distribution dist)
+const char* STRF_HD result(strf::digits_distribution dist)
 {
     constexpr std::size_t buff_size = 500;
     static char buff[buff_size];

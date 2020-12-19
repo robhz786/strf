@@ -5,10 +5,10 @@ See accompanying file LICENSE_1_0.txt or copy at
 http://www.boost.org/LICENSE_1_0.txt
 ////
 
-:strf-version: v0.12.2
+:strf-version: develop
 :strf-src-root: https://github.com/robhz786/strf/blob/{strf-version}
 
-= Extending Strf &#x2014; How to add a new destination
+= How to add a new destination
 :source-highlighter: prettify
 :icons: font
 

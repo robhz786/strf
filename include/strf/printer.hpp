@@ -733,6 +733,13 @@ constexpr STRF_HD auto make_printer_input
 
 } // namespace detail
 
+template <typename T>
+constexpr bool is_overridable
+    = strf::detail::has_override_tag<strf::print_traits_of<T>>::value;
+
+template <typename T>
+using override_tag = typename strf::print_traits_of<T>::override_tag;
+
 template <typename CharT, typename Preview, typename FPack, typename Arg>
 constexpr STRF_HD auto make_printer_input(Preview& preview, const FPack& facets, const Arg& arg)
 {
