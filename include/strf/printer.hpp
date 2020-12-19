@@ -879,6 +879,16 @@ constexpr detail_format_functions::fmt_fn fmt {};
 
 } // inline namespace format_functions
 
+template <typename> struct is_char: public std::false_type {};
+
+#if defined(__cpp_char8_t)
+template <> struct is_char<char8_t>: public std::true_type {};
+#endif
+template <> struct is_char<char>: public std::true_type {};
+template <> struct is_char<char16_t>: public std::true_type {};
+template <> struct is_char<char32_t>: public std::true_type {};
+template <> struct is_char<wchar_t>: public std::true_type {};
+
 template <bool HasAlignment>
 struct alignment_formatter_q;
 
@@ -993,8 +1003,13 @@ public:
         data_.width = width;
         return as_derived_rval_ref();
     }
-    constexpr STRF_HD T&& fill(char32_t ch) && noexcept
+    template <typename CharT>
+    constexpr STRF_HD T&& fill(CharT ch) && noexcept
     {
+        static_assert( strf::is_char<CharT>::value
+                     , "fill function only accepts arguments of character types. "
+                       "This is to prevent the value 0 to be accidentally "
+                       "passed instead of the digit '0'" );
         data_.fill = ch;
         return as_derived_rval_ref();
     }
@@ -1079,12 +1094,18 @@ public:
             , strf::tag<alignment_formatter_q<true>>{}
             , strf::alignment_format{U' ', width, strf::text_alignment::split} };
     }
-    constexpr STRF_HD adapted_derived_type fill(char32_t ch) const noexcept
+    template <typename CharT>
+    constexpr STRF_HD adapted_derived_type fill(CharT ch) const noexcept
     {
+        static_assert( strf::is_char<CharT>::value
+                     , "fill function only accepts arguments of character types. "
+                       "This is to prevent the value 0 to be accidentally "
+                       "passed instead of the digit '0'" );
+        char32_t ch_ = ch;
         return adapted_derived_type
             { static_cast<const T&>(*this)
             , strf::tag<alignment_formatter_q<true>>{}
-            , strf::alignment_format{ch} };
+            , strf::alignment_format{ch_} };
     }
     constexpr STRF_HD T&& set_alignment_format(strf::default_alignment_format) && noexcept
     {

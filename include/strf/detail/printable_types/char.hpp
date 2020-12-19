@@ -411,16 +411,6 @@ STRF_EXPLICIT_TEMPLATE class fmt_conv_char32_printer<wchar_t>;
 
 } // namespace detail
 
-template <typename> struct is_char: public std::false_type {};
-
-#if defined(__cpp_char8_t)
-template <> struct is_char<char8_t>: public std::true_type {};
-#endif
-template <> struct is_char<char>: public std::true_type {};
-template <> struct is_char<char16_t>: public std::true_type {};
-template <> struct is_char<char32_t>: public std::true_type {};
-template <> struct is_char<wchar_t>: public std::true_type {};
-
 } // namespace strf
 
 #endif // STRF_DETAIL_INPUT_TYPES_CHAR_HPP_INCLUDED

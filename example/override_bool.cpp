@@ -41,7 +41,7 @@ static_assert(strf::is_overridable<bool>, "bool not overridable");
 template <typename T>
 struct is_bool: std::is_same<T, strf::override_tag<bool>> {};
 
-constexpr auto italian_bool = strf::constrain<is_bool>(my_bool_override{"falso", "vero"});
+constexpr auto italian_bool = strf::constrain<is_bool>(my_bool_override{{"falso", "vero"}});
 
 int main()
 {
@@ -56,7 +56,7 @@ int main()
     assert(str == "...vero.../..falso...");
 
     // what happens when you don't constrain an overrider facet:
-    str = strf::to_string.with(my_bool_override{"falso", "vero"})
+    str = strf::to_string.with(my_bool_override{{"falso", "vero"}})
         (true, '/', false, '/', 1, '/', 0, '/', 1.0, '/', 0.0, '/', (void*)0);
     assert(str == "vero/falso/vero/falso/vero/falso/falso");
 
