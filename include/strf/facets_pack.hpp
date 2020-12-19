@@ -16,15 +16,18 @@ class constrained_fpe;
 
 namespace detail {
 
-template <typename ... T>
-struct tmp_list
-{
-    template <typename E>
-    using push_front = strf::detail::tmp_list<E, T...>;
+template <typename A, typename... B>
+struct cvref_is_same: std::false_type {};
 
-    template <typename E>
-    using push_back = strf::detail::tmp_list<T..., E>;
+template <typename A, typename B>
+struct cvref_is_same<A, B>
+    : std::is_same< strf::detail::remove_cvref_t<A>
+                  , strf::detail::remove_cvref_t<B> >
+{
 };
+
+template <typename A, typename... B>
+constexpr bool cvref_is_same_v = cvref_is_same<A, B...>::value;
 
 template <typename F, typename = typename F::category>
 constexpr STRF_HD bool has_category_member_type(F*)
@@ -207,10 +210,11 @@ public:
 
     constexpr fpe_wrapper(const fpe_wrapper&) = default;
     constexpr fpe_wrapper(fpe_wrapper&&) = default;
+    constexpr fpe_wrapper() = default;
 
     template
         < typename F = Facet
-        , typename = std::enable_if_t<std::is_copy_constructible<F>::value> >
+        , std::enable_if_t<std::is_copy_constructible<F>::value, int> = 0 >
     constexpr STRF_HD fpe_wrapper(const Facet& facet)
         : facet_(facet)
     {
@@ -218,8 +222,7 @@ public:
 
     template
         < typename F = Facet
-        , typename = std::enable_if_t
-            < std::is_constructible<Facet, F&&>::value > >
+        , std::enable_if_t<std::is_constructible<Facet, F&&>::value, int> = 0 >
     constexpr STRF_HD fpe_wrapper(F&& facet)
         : facet_(std::forward<F>(facet))
     {
@@ -235,7 +238,7 @@ public:
     }
 
 private:
-    const Facet facet_;
+    Facet facet_;
 };
 
 template < typename Rank
@@ -253,10 +256,11 @@ public:
 
     constexpr fpe_wrapper(const fpe_wrapper&) = default;
     constexpr fpe_wrapper(fpe_wrapper&&) = default;
+    constexpr fpe_wrapper() = default;
 
     template
         < typename F = FPE
-        , typename = std::enable_if_t<std::is_copy_constructible<F>::value > >
+        , std::enable_if_t<std::is_copy_constructible<F>::value, int> = 0 >
     constexpr STRF_HD fpe_wrapper
         ( const strf::constrained_fpe<Filter, FPE>& cfpe )
         : fpe_(cfpe.get())
@@ -265,7 +269,7 @@ public:
 
     template
         < typename F = FPE
-        , typename = std::enable_if_t<std::is_move_constructible<F>::value > >
+        , std::enable_if_t<std::is_move_constructible<F>::value, int> = 0 >
     constexpr STRF_HD fpe_wrapper
         ( strf::constrained_fpe<Filter, FPE>&& cfpe )
         : fpe_(std::move(cfpe.get()))
@@ -331,10 +335,11 @@ public:
 
     constexpr fpe_wrapper(const fpe_wrapper&) = default;
     constexpr fpe_wrapper(fpe_wrapper&&) = default;
+    constexpr fpe_wrapper() = default;
 
     template
         < typename FP = fp_type_
-        , std::enable_if_t<std::is_copy_constructible<FP>::value, int> = 0>
+        , std::enable_if_t<std::is_copy_constructible<FP>::value, int> = 0 >
     constexpr STRF_HD fpe_wrapper(const fp_type_& fp)
         : fp_(fp)
     {
@@ -342,7 +347,7 @@ public:
 
     template
         < typename FP = fp_type_
-        , std::enable_if_t<std::is_move_constructible<FP>::value, int> = 0>
+        , std::enable_if_t<std::is_move_constructible<FP>::value, int> = 0 >
     constexpr STRF_HD fpe_wrapper(fp_type_&& fp)
         : fp_(std::move(fp))
     {
@@ -364,43 +369,28 @@ private:
 
 #if defined (__cpp_variadic_using)
 
-template <typename FPEWrappersList, typename ... FPE>
+template <typename FPEWrappersList, typename... FPE>
 class facets_pack_base;
 
-template <typename ... FPEWrappers, typename ... FPE>
-class facets_pack_base< strf::detail::tmp_list<FPEWrappers ...>
-                      , FPE ... >
+template <typename... FPEWrappers, typename... FPE>
+class facets_pack_base<strf::tag<FPEWrappers...>, FPE...>
     : private FPEWrappers ...
 {
-    template <typename... T, typename... From>
-    constexpr STRF_HD static bool all_constructible_f
-        (detail::tmp_list<T...>, detail::tmp_list<From...>)
-    {
-        return detail::fold_and
-            < std::is_constructible<T, From>::value... >;
-    }
+    static_assert(sizeof...(FPE) != 0, "");
 
 public:
 
     constexpr facets_pack_base(const facets_pack_base&) = default;
     constexpr facets_pack_base(facets_pack_base&&) = default;
+    constexpr facets_pack_base() = default;
 
     template
-        < typename WL = detail::tmp_list<FPE...>
-        , typename FL = detail::tmp_list<const FPE&...>
-        , typename = std::enable_if_t<all_constructible_f(WL{}, FL{})> >
-    constexpr STRF_HD facets_pack_base(const FPE& ... fpe)
-        : FPEWrappers(fpe) ...
-    {
-    }
-
-    template< typename... U
-            , typename WL = detail::tmp_list<FPE...>
-            , typename UL = detail::tmp_list<U&&...>
-            , typename = std::enable_if_t
-                 < sizeof...(U) == sizeof...(FPE)
-                && sizeof...(U) >= 1 >
-            , typename = std::enable_if_t<all_constructible_f(WL{}, UL{})> >
+        < typename... U
+        , std::enable_if_t
+            < sizeof...(U) == sizeof...(FPE)
+           && strf::detail::fold_and<std::is_constructible<FPE, U>::value...>
+           && ! strf::detail::cvref_is_same_v<facets_pack_base, U...>
+            , int > = 0 >
     constexpr STRF_HD facets_pack_base(U&& ... fpe)
         : FPEWrappers(std::forward<U>(fpe))...
     {
@@ -416,7 +406,7 @@ template <std::size_t ... RankNum, typename ... FPE>
 struct facets_pack_base_trait<std::index_sequence<RankNum...>, FPE...>
 {
     using type = facets_pack_base
-        < strf::detail::tmp_list
+        < strf::tag
             < strf::detail::fpe_wrapper
                  < strf::rank<RankNum>
                  , FPE >
@@ -463,12 +453,14 @@ public:
 
     constexpr facets_pack_base(const facets_pack_base&) = default;
     constexpr facets_pack_base(facets_pack_base&&) = default;
+    constexpr facets_pack_base() = default;
 
     template< typename T = TipFPE
             , typename B = base_others_fpe_
-            , typename = std::enable_if_t
+            , std::enable_if_t
                 < std::is_copy_constructible<T>::value
-               && std::is_constructible<B, const OthersFPE&...>::value >>
+               && std::is_constructible<B, const OthersFPE&...>::value
+                , int > = 0 >
     constexpr STRF_HD facets_pack_base(const TipFPE& tip, const OthersFPE& ... others)
         : base_tip_fpe_(tip)
         , base_others_fpe_(others...)
@@ -477,10 +469,11 @@ public:
 
     template< typename Tip
             , typename ... Others
-            , typename = std::enable_if_t
+            , std::enable_if_t
                 < sizeof...(Others) == sizeof...(OthersFPE)
                && std::is_constructible<TipFPE, Tip&&>::value
-               && std::is_constructible<base_others_fpe_, Others&&...>::value >>
+               && std::is_constructible<base_others_fpe_, Others&&...>::value
+                , int > = 0 >
     constexpr STRF_HD facets_pack_base(Tip&& tip, Others&& ... others)
         : base_tip_fpe_(std::forward<Tip>(tip))
         , base_others_fpe_(std::forward<Others>(others)...)
@@ -528,27 +521,16 @@ public:
 
     constexpr constrained_fpe(const constrained_fpe&) = default;
     constexpr constrained_fpe(constrained_fpe&&) = default;
+    constexpr constrained_fpe() = default;
 
     static_assert(strf::is_constrainable_v<FPE>, "FPE not constrainable");
 
     template
-        < typename F = FPE
-        , typename = std::enable_if_t<std::is_default_constructible<F>::value> >
-    constexpr STRF_HD explicit constrained_fpe()
-    {
-    }
-
-    template
-        < typename F = FPE
-        , typename = std::enable_if_t<std::is_copy_constructible<F>::value> >
-    constexpr STRF_HD explicit constrained_fpe(const FPE& f)
-        : fpe_(f)
-    {
-    }
-
-    template
         < typename U
-        , typename = std::enable_if_t<std::is_constructible<FPE, U&&>::value> >
+        , std::enable_if_t
+            < ! std::is_same<constrained_fpe, strf::detail::remove_cvref_t<U>>::value
+           && std::is_constructible<FPE, U>::value
+            , int > = 0 >
     constexpr STRF_HD explicit constrained_fpe(U&& arg)
         : fpe_(std::forward<U>(arg))
     {
@@ -601,23 +583,16 @@ public:
 
     constexpr facets_pack(const facets_pack&) = default;
     constexpr facets_pack(facets_pack&&) = default;
+    constexpr facets_pack() = default;
 
     template
-        < bool Dummy = true
-        , typename = std::enable_if_t
-            < detail::fold_and<Dummy, std::is_copy_constructible<FPE>::value...> > >
-    constexpr STRF_HD explicit facets_pack(const FPE& ... fpe)
-        : base_type_(fpe...)
-    {
-    }
-
-    template
-        < typename ... U
-        , typename = std::enable_if_t
+        < typename... U
+        , std::enable_if_t
             < sizeof...(U) == sizeof...(FPE)
-           && sizeof...(U) == 1
-           && detail::fold_and<std::is_constructible<FPE, U&&>::value...> > >
-    constexpr STRF_HD explicit facets_pack(U&& ... fpe)
+           && strf::detail::fold_and<std::is_constructible<FPE, U>::value...>
+           && ! strf::detail::cvref_is_same_v<facets_pack, U...>
+            , int > = 0 >
+    constexpr STRF_HD explicit facets_pack(U&&... fpe)
         : base_type_(std::forward<U>(fpe)...)
     {
     }
@@ -633,21 +608,18 @@ public:
 };
 
 template <typename ... T>
-constexpr STRF_HD strf::facets_pack<std::remove_cv_t<std::remove_reference_t<T>>...>
+constexpr STRF_HD strf::facets_pack<strf::detail::remove_cvref_t<T>...>
     pack(T&& ... args)
 {
-    return strf::facets_pack
-        < std::remove_cv_t<std::remove_reference_t<T>>... >
+    return strf::facets_pack<strf::detail::remove_cvref_t<T>...>
         { std::forward<T>(args)... };
 }
 
 template <template <class> class Filter, typename T>
-constexpr STRF_HD
-strf::constrained_fpe<Filter, std::remove_cv_t<std::remove_reference_t<T>>>
+constexpr STRF_HD strf::constrained_fpe<Filter, strf::detail::remove_cvref_t<T>>
     constrain(T&& x)
 {
-    return strf::constrained_fpe
-        < Filter, std::remove_cv_t<std::remove_reference_t<T>> >
+    return strf::constrained_fpe<Filter, strf::detail::remove_cvref_t<T>>
         { std::forward<T>(x) };
 }
 

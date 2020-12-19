@@ -128,6 +128,9 @@ template <bool ... C> constexpr bool fold_or = fold_or_impl<C...>::value;
 
 #endif // defined(__cpp_fold_expressions)
 
+template <typename T>
+using remove_cvref_t = std::remove_cv_t<std::remove_reference_t<T>>;
+
 template <std::size_t CharSize>
 struct wchar_equiv_impl;
 
