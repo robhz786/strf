@@ -30,8 +30,7 @@ public:
     }
 
     // template < typename IntT
-    //          , typename = std::enable_if_t< std::is_integral<IntT>::value
-    //                                      && (sizeof(IntT) >= 4) >>
+    //          , std::enable_if_t< std::is_integral<IntT>::value  && (sizeof(IntT) >= 4), int > = 0>
     // constexpr explicit width_t(IntT x) noexcept
     // {
     //     STRF_IF_CONSTEXPR ( std::is_unsigned<IntT>::value )

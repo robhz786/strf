@@ -322,8 +322,7 @@ private:
     template < typename OtherFPack
              , typename ... FPE
              , typename T = OutbuffCreator
-             , typename = std::enable_if_t
-                 < std::is_copy_constructible<T>::value > >
+             , std::enable_if_t<std::is_copy_constructible<T>::value, int> = 0 >
     constexpr STRF_HD destination_no_reserve
         ( const destination_no_reserve<OutbuffCreator, OtherFPack>& other
         , detail::destination_tag
@@ -437,8 +436,7 @@ private:
     template < typename OtherFPack
              , typename ... FPE
              , typename T = OutbuffCreator
-             , typename = std::enable_if_t
-                 < std::is_copy_constructible<T>::value > >
+             , std::enable_if_t<std::is_copy_constructible<T>::value, int> = 0>
     constexpr STRF_HD destination_with_given_size
         ( const destination_with_given_size<OutbuffCreator, OtherFPack>& other
         , detail::destination_tag
@@ -558,8 +556,7 @@ private:
     template < typename OtherFPack
              , typename ... FPE
              , typename T = OutbuffCreator
-             , typename = std::enable_if_t
-                 < std::is_copy_constructible<T>::value > >
+             , std::enable_if_t<std::is_copy_constructible<T>::value, int> = 0 >
     STRF_HD destination_calc_size
         ( const destination_calc_size<OutbuffCreator, OtherFPack>& other
         , detail::destination_tag

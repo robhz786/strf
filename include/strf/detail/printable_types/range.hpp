@@ -243,14 +243,12 @@ private:
     using printer_type_ = strf::printer_type
         < CharT, Preview, FPack, std::remove_cv_t<value_type> >;
 
-    STRF_HD void preview_
-        (strf::print_preview<strf::preview_size::no, strf::preview_width::no>&) const
+    STRF_HD void preview_(strf::no_print_preview&) const
     {
     }
 
     template < typename Preview
-             , typename = std::enable_if_t< Preview::size_required
-                                         || Preview::width_required > >
+             , std::enable_if_t<Preview::something_required, int> = 0 >
     STRF_HD void preview_(Preview& preview) const;
 
     const FPack& fp_;
@@ -259,7 +257,8 @@ private:
 };
 
 template <typename CharT, typename FPack, typename It>
-template <typename Preview, typename >
+template < typename Preview
+         , std::enable_if_t<Preview::something_required, int> >
 STRF_HD void range_printer<CharT, FPack, It>::preview_(Preview& preview) const
 {
     for(auto it = begin_; it != end_; ++it) {
@@ -272,11 +271,9 @@ template <typename CharT, typename FPack, typename It>
 STRF_HD void range_printer<CharT, FPack, It>::print_to
     ( strf::basic_outbuff<CharT>& ob ) const
 {
-    using preview_type
-        = strf::print_preview<strf::preview_size::no, strf::preview_width::no>;
-    preview_type no_preview;
+    strf::no_print_preview no_preview;
     for(auto it = begin_; it != end_; ++it) {
-        printer_type_<preview_type>
+        printer_type_<strf::no_print_preview>
             ( strf::make_printer_input<CharT>(no_preview, fp_, *it) ).print_to(ob);
     }
 }
@@ -309,14 +306,12 @@ private:
     using printer_type_ = strf::printer_type
         < CharT, Preview, FPack, std::remove_cv_t<value_type> >;
 
-    constexpr STRF_HD void preview_
-        ( strf::print_preview<strf::preview_size::no, strf::preview_width::no>& ) const
+    constexpr STRF_HD void preview_(strf::no_print_preview&) const
     {
     }
 
     template < typename Preview
-             , typename = std::enable_if_t< Preview::size_required
-                                         || Preview::width_required > >
+             , std::enable_if_t<Preview::something_required, int> = 0 >
     STRF_HD void preview_(Preview& preview) const;
 
     const FPack& fp_;
@@ -334,7 +329,8 @@ private:
 };
 
 template <typename CharT, typename FPack, typename It>
-template <typename Preview, typename>
+template < typename Preview
+         , std::enable_if_t<Preview::something_required, int> >
 STRF_HD void separated_range_printer<CharT, FPack, It>::preview_(Preview& preview) const
 {
     std::size_t count = 0;
@@ -375,17 +371,15 @@ template <typename CharT, typename FPack, typename It>
 STRF_HD void separated_range_printer<CharT, FPack, It>::print_to
     ( strf::basic_outbuff<CharT>& ob ) const
 {
-    using preview_type
-        = strf::print_preview<strf::preview_size::no, strf::preview_width::no>;
-    preview_type no_preview;
+    strf::no_print_preview no_preview;
     auto it = begin_;
     if (it != end_) {
-        printer_type_<preview_type>
+        printer_type_<strf::no_print_preview>
             ( strf::make_printer_input<CharT>(no_preview, fp_, *it) )
             .print_to(ob);
         while (++it != end_) {
             strf::write(ob, sep_begin_, sep_len_);
-            printer_type_<preview_type>
+            printer_type_<strf::no_print_preview>
                 ( strf::make_printer_input<CharT>(no_preview, fp_, *it) )
                 .print_to(ob);
         }
@@ -426,14 +420,12 @@ private:
     using printer_type_ = strf::printer_type
         < CharT, Preview, FPack, value_fmt_type_adapted_ >;
 
-    STRF_HD void preview_
-        ( strf::print_preview<strf::preview_size::no, strf::preview_width::no>& ) const
+    STRF_HD void preview_(strf::no_print_preview&) const
     {
     }
 
     template < typename Preview
-             , typename = std::enable_if_t< Preview::size_required
-                                         || Preview::width_required > >
+             , std::enable_if_t<Preview::something_required, int> = 0 >
     STRF_HD void preview_(Preview& preview) const;
 
     const FPack& fp_;
@@ -445,7 +437,8 @@ template < typename CharT
          , typename FPack
          , typename It
          , typename ... Fmts >
-template <typename Preview, typename >
+template < typename Preview
+         , std::enable_if_t<Preview::something_required, int> >
 STRF_HD void fmt_range_printer<CharT, FPack, It, Fmts ...>::preview_
     ( Preview& preview ) const
 {
@@ -464,12 +457,10 @@ template< typename CharT
 STRF_HD void fmt_range_printer<CharT, FPack, It, Fmts ...>::print_to
     ( strf::basic_outbuff<CharT>& ob ) const
 {
-    using preview_type
-        = strf::print_preview<strf::preview_size::no, strf::preview_width::no>;
-    preview_type no_preview;
+    strf::no_print_preview no_preview;
     auto r = fmt_.value();
     for(auto it = r.begin; it != r.end; ++it) {
-        printer_type_<preview_type>
+        printer_type_<strf::no_print_preview>
             ( strf::make_printer_input<CharT>
                 ( no_preview, fp_, value_fmt_type_adapted_{{*it}, fmt_} ) )
             .print_to(ob);
@@ -510,14 +501,12 @@ private:
     using printer_type_ = strf::printer_type
         < CharT, Preview, FPack, value_fmt_type_adapted_ >;
 
-    STRF_HD void preview_
-        ( strf::print_preview<strf::preview_size::no, strf::preview_width::no>& ) const
+    STRF_HD void preview_(strf::no_print_preview&) const
     {
     }
 
     template < typename Preview
-             , typename = std::enable_if_t< Preview::size_required
-                                         || Preview::width_required > >
+             , std::enable_if_t<Preview::something_required, int> = 0 >
     STRF_HD void preview_(Preview& preview) const;
 
     const FPack& fp_;
@@ -535,7 +524,8 @@ template< typename CharT
         , typename FPack
         , typename It
         , typename ... Fmts >
-template <typename Preview, typename>
+template < typename Preview
+         , std::enable_if_t<Preview::something_required, int> >
 STRF_HD void fmt_separated_range_printer<CharT, FPack, It, Fmts ...>::preview_
     ( Preview& preview ) const
 {
@@ -583,18 +573,17 @@ template< typename CharT
 STRF_HD void fmt_separated_range_printer<CharT, FPack, It, Fmts ...>
 ::print_to( strf::basic_outbuff<CharT>& ob ) const
 {
-    using preview_type = strf::print_preview<strf::preview_size::no, strf::preview_width::no>;
-    preview_type no_preview;
+    strf::no_print_preview no_preview;
     auto r = fmt_.value();
     auto it = r.begin;
     if (it != r.end) {
-        printer_type_<preview_type>
+        printer_type_<strf::no_print_preview>
             ( strf::make_printer_input<CharT>
                 ( no_preview, fp_, value_fmt_type_adapted_{{*it}, fmt_} ) )
             .print_to(ob);
         while(++it != r.end) {
             strf::write(ob, r.sep_begin, r.sep_len);
-            printer_type_<preview_type>
+            printer_type_<strf::no_print_preview>
                 ( strf::make_printer_input<CharT>
                     ( no_preview, fp_, value_fmt_type_adapted_{{*it}, fmt_} ) )
                 .print_to(ob);
@@ -632,14 +621,12 @@ private:
         , std::remove_reference_t
             < decltype(std::declval<Op>()(*std::declval<iterator>())) > >;
 
-    STRF_HD void preview_
-        ( strf::print_preview<strf::preview_size::no, strf::preview_width::no>& ) const
+    STRF_HD void preview_(strf::no_print_preview&) const
     {
     }
 
     template < typename Preview
-             , typename = std::enable_if_t< Preview::size_required
-                                         || Preview::width_required > >
+             , std::enable_if_t<Preview::something_required, int> = 0 >
     STRF_HD void preview_(Preview& preview) const;
 
     const FPack& fp_;
@@ -649,7 +636,8 @@ private:
 };
 
 template <typename CharT, typename FPack, typename It, typename UnaryOp>
-template <typename Preview, typename >
+template < typename Preview
+         , std::enable_if_t<Preview::something_required, int> >
 STRF_HD void transformed_range_printer<CharT, FPack, It, UnaryOp>
     ::preview_(Preview& preview) const
 {
@@ -663,11 +651,9 @@ template <typename CharT, typename FPack, typename It, typename UnaryOp>
 STRF_HD void transformed_range_printer<CharT, FPack, It, UnaryOp>::print_to
     ( strf::basic_outbuff<CharT>& ob ) const
 {
-    using preview_type
-        = strf::print_preview<strf::preview_size::no, strf::preview_width::no>;
-    preview_type no_preview;
+    strf::no_print_preview no_preview;
     for(auto it = begin_; it != end_; ++it) {
-        printer_type_<preview_type>
+        printer_type_<strf::no_print_preview>
             ( strf::make_printer_input<CharT>(no_preview, fp_, op_(*it)) )
             .print_to(ob);
     }
@@ -704,14 +690,11 @@ private:
         , std::remove_reference_t
             < decltype(std::declval<Op>()(*std::declval<iterator>())) > >;
 
-    STRF_HD void preview_
-        ( strf::print_preview<strf::preview_size::no, strf::preview_width::no>& ) const
+    STRF_HD void preview_(strf::no_print_preview&) const
     {
     }
 
-    template < typename Preview
-             , typename = std::enable_if_t< Preview::size_required
-                                         || Preview::width_required > >
+    template <typename Preview, std::enable_if_t<Preview::something_required, int> = 0>
     STRF_HD void preview_(Preview& preview) const;
 
     const FPack& fp_;
@@ -730,7 +713,8 @@ private:
 };
 
 template <typename CharT, typename FPack, typename It, typename UnaryOp>
-template <typename Preview, typename>
+template < typename Preview
+         , std::enable_if_t<Preview::something_required, int> >
 STRF_HD void sep_transformed_range_printer<CharT, FPack, It, UnaryOp>
     ::preview_(Preview& preview) const
 {
