@@ -276,7 +276,7 @@ __/{asterisk} see below {asterisk}/__ assign(std::basic_string<CharT, Traits, Al
 } // namespace strf
 ----
 [horizontal]
-Return type:: Same as `assign(str)`
+Return type:: Same as of `assign(str)`
 Effects:: Calls `str.clear()` and returns `assign(str)`.
 
 [[to_basic_string]]

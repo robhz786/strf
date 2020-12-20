@@ -42,7 +42,7 @@ If you don't,
 to get some explanation.
 
 
-The facet shall contain the 
+The facet shall contain the
 `make_printer_input` member function templates that will
 replace those defined in the _{PrintTraits}_ class of the
 overloaded type.
@@ -105,13 +105,13 @@ you can see that we have two `make_printer_input` fuctions.
 The second one handles `bool` values with formatting.
 Even if we don't define it, an expression like
 `strf::right(true, 10, '.')`
-is still well formed, because the format functions
+is still well-formed, because the format functions
 that are applicable to a printable type keep being the same
 when we override it. We can't change them.
 So it makes sense to overload `make_printer_input`
 with `{value_with_formatters}` argument even
 if you don't want to support formatting, just to
-add a `static_assert` to emit a clear error message. 
+add a `static_assert` to emit a clear error message.
 
 
 But if do you want support formatting then
@@ -120,7 +120,7 @@ are the format functions ( or the __Formatters__ )
 applicable to the printable type you are overriding.
 If you take a look at the part the covers
 `<<strf_hpp#printable_bool,bool>>`,
-you can see that we only need to handle 
+you can see that we only need to handle
 <<strf_hpp#alignment_formatter, alignment formatting>>.
 And that's what we did in the implementation above.
 
@@ -134,7 +134,7 @@ nor `<<strf_hpp#PrintTraits_override_tag,override_tag>>` ).
 Even if you don't want to support formatting,
 it still makes sense to overload `make_printer_input`
 taking the `{value_with_formatters}` argument and add
-a `static_assert` with an explanatory message. 
+a `static_assert` with an explanatory message.
 
 When you override a printable type, the format
 functions are still the same.
@@ -217,7 +217,7 @@ then it will override all types that are overridables,
 
 
 If you use the value `italian_bool_facet{}` directly, __i.e.__
-without `strf::constrain`, 
+without `strf::constrain`,
 then all arguments to be printed would be passed to
 `italian_bool_facet::make_printed_input` &#x2014; raw strings,
 integers, float points values, everything

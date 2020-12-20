@@ -231,7 +231,7 @@ Postcondition:: `pointer() == p`
 void advance(std::size_t n)
 ----
 [horizontal]
-Effect:: Same as `advance_to(pointer() + n)`
+Effect:: Equivalent to `advance_to(pointer() + n)`
 Precondition:: `n \<= space()`
 ====
 [[basic_outbuff_advance]]
@@ -241,7 +241,7 @@ Precondition:: `n \<= space()`
 void advance()
 ----
 [horizontal]
-Effect:: Same as `advance_to(1)`
+Effect:: Equivalent to `advance_to(1)`
 Precondition:: `pointer() != end()`
 ====
 [[basic_outbuff_good]]
@@ -328,7 +328,7 @@ template <typename CharT>
 void put(basic_outbuff<CharT>& ob, CharT ch);
 ----
 [horizontal]
-Effect:: Same as:
+Effect:: Equivalent to:
 +
 [source,cpp]
 ----

@@ -327,11 +327,11 @@ Return `value_`
 A type `Fmt` is a _Formatter_ if it has a member `fn` that is a type template
 with one template type parameter such that, given any types `T` and `U`:
 
-- `Fmt::template fn<T>` is well formed if `T` is `value_with_formatters<ValueType, Fmts\...>`.
+- `Fmt::template fn<T>` is well-formed if `T` is `value_with_formatters<ValueType, Fmts\...>`.
   In this case, note that `Fmt` is in `Fmts\...` and `T` derives from `Fmt::template fn<T>`.
-- `Fmt::template fn<T>` is default constructible, assuming it is well formed.
+- `Fmt::template fn<T>` is default constructible, assuming it is well-formed.
 - `Fmt::template fn<T>` can be constructed from `const Fmt::template fn<U>&`,
-  if both are well formed.
+  if both are well-formed.
 
 // Although it is not a compile-time requirement, it only makes sense to use a type `Fmt`
 // in `value_with_formatters` if `Fmt::template fn<T>` contains any __format function__.
@@ -1154,7 +1154,7 @@ public:
     template <{float_notation} N2> // where N2 != N
     constexpr /{asterisk} see below {asterisk}/ <<float_formatter_fn_set_float_format_const,set_float_format>>({float_format}<N2> data) const & noexcept;
 
-    static constexpr {float_notation} float_notation() noexcept { return N; } 
+    static constexpr {float_notation} float_notation() noexcept { return N; }
 };
 } // namespace strf
 ----

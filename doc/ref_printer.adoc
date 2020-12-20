@@ -186,7 +186,7 @@ Given
 * `CharT`, a character type
 * `Preview`, an instance of the `{print_preview}` class template
 * `X`, a _PrinterInput_ type for types `CharT` and `Preview`
-* `x`, a value of type `X` 
+* `x`, a value of type `X`
 
 ====
 [source,cpp,subs=normal]
@@ -408,10 +408,18 @@ public:
     static constexpr bool size_required = static_cast<bool>(SizeRequired);
     static constexpr bool width_required = static_cast<bool>(WidthRequired);
     static constexpr bool nothing_required = ! size_required && ! width_required;
+    static constexpr bool something_required = size_required || width_required;
 
     constexpr print_preview() noexcept = default;
     constexpr explicit print_preview(<<width_t,width_t>> initial_width) noexcept;
 };
+
+
+using no_print_preview = print_preview<preview_size::no, preview_width::no>;
+using print_size_preview  = print_preview<preview_size::yes, preview_width::no>;
+using print_width_preview = print_preview<preview_size::no, preview_width::yes>;
+using print_size_and_width_preview = print_preview< preview_size::yes
+                                                  , preview_width::yes >;
 
 } // namespace strf
 ----
@@ -503,8 +511,8 @@ public:
     explicit constexpr width_preview(<<width_t,width_t>> initial_width) noexcept;
 
     constexpr void subtract_width(<<width_t,width_t>>) noexcept;
-    template <typename IntT>
 
+    template <typename IntT>
     constexpr void subtract_width(IntT w) noexcept;
 
     constexpr void clear_remaining_width() noexcept;
@@ -542,12 +550,12 @@ constexpr void subtract_width(<<width_t,width_t>> w) noexcept;
 template <typename IntT>
 constexpr void subtract_width(IntT w) noexcept;
 ----
-Compile-time requirement:: In the template form, `std::is_integral<IntT>::value` must be `true`
+Compile-time requirement:: In the template form, `std::is_integral<IntT>::value` must be `true`, otherwise it does not participate in overload resolution.
 Effects::
 
 If `(!Active ||  w \<= 0)` is `true` ::: None
 Othersize, if `w < remaining_width()` is `true`::: The return value of `remaining_width` is decremented by `w`.
-Otherwise ::: Same as `clear_remaining_width()`
+Otherwise ::: Equivalent to `clear_remaining_width()`
 ====
 
 ====

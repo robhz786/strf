@@ -70,7 +70,7 @@ Compile-time requirements:: This constructor does not participate in overload re
 - `sizeof\...(U) != 0` is `true`
 - `sizeof\...(U) == sizeof\...(FPE)` is `true`
 - `( std::is_constructible_v<FPE, U> && \... )` is `true`
-- if `sizeof\...(U) == 1` is `true`, then `std::{remove_cvref_t}<U...>` is not the same as `facets_pack<FPE....>`.
+- if `sizeof\...(U) == 1` is `true`, then `std::{remove_cvref_t}<U...>` is not `facets_pack<FPE....>`.
 ====
 ===== Assignment operators (deleted)
 ====

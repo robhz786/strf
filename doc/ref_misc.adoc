@@ -159,7 +159,7 @@ void write( {basic_outbuff}<CharT>& ob
           , std::size_t data_size );
 ----
 [horizontal]
-Effect:: Same as `write(ob, data, data + data_size)`
+Effect:: Equivalent to `write(ob, data, data + data_size)`
 ====
 [[basic_outbuff_write_cstr]]
 ====
@@ -169,7 +169,7 @@ void write( {basic_outbuff}<char>& ob
           , const char* cstr );
 ----
 [horizontal]
-Effect:: Same as `write(ob, cstr, std::strlen(cstr))`
+Effect:: Equivalent to `write(ob, cstr, std::strlen(cstr))`
 ====
 
 [[basic_outbuff_write_wcstr]]
@@ -180,7 +180,7 @@ void write( {basic_outbuff}<wchar_t>& ob
           , const wchar_t{asterisk} wcstr );
 ----
 [horizontal]
-Effect:: Same as `write(ob, wcstr, std::wstrlen(wcstr))`
+Effect:: Equivalent to `write(ob, wcstr, std::wstrlen(wcstr))`
 ====
 
 === Destination markers
@@ -222,7 +222,7 @@ template<std::size_t N> __/{asterisk} see below {asterisk}/__ to(wchar_t  (&dest
 } // namespace strf
 ----
 [horizontal]
-Return type and value:: Same as `to(dest, N)`;
+Return type and value:: Same as of `to(dest, N)`;
 ====
 ====
 [[to_char_range]]
@@ -239,5 +239,5 @@ __/{asterisk} see below {asterisk}/__ to(wchar_t{asterisk}  dest,  wchar_t{aster
 } // namespace strf
 ----
 [horizontal]
-Return type and value:: Same as `to(dest, (std::size_t)(end - dest))`;
+Return type and value:: Same as of `to(dest, (std::size_t)(end - dest))`;
 ====

@@ -217,7 +217,7 @@ template <typename\... IntArgs>
 constexpr numpunct(int grp0, IntArgs\... grps) noexcept;
 ----
 [horizontal]
-Preconditions:: Same as in the constructor of `digits_grouping` ( see <<digits_grouping_ctor_groups,here>> ).
+Preconditions:: Same as of the constructor of `digits_grouping` ( see <<digits_grouping_ctor_groups,here>> ).
 Postconditions::
 * `decimal_point() == U'.'`
 * `thousands_sep() == U','`

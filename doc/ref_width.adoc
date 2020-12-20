@@ -425,7 +425,7 @@ Given
 * `ch`, a value of type `char32_t`
 * `func`, a object of type `CharWidthFunc` or `const CharWidthFunc`
 
-The expression `func(ch)` must be well formed and the return type
+The expression `func(ch)` must be well-formed and the return type
 must be {width_t}.
 ====
 

@@ -951,7 +951,7 @@ The following must hold:
 - `X` has the `X::outbuff_type` that is a type alias to a concrete type that is derives
    from `basic_outbuff<X::char_type>`
 
-And the following expression must be well formed:
+And the following expression must be well-formed:
 
 [[OutbuffCreator_create]]
 ====
@@ -977,7 +977,7 @@ The following must hold:
 - `X` has the `X::sized_outbuff_type` that is a type alias to a concrete type that derives
    from `basic_outbuff<X::char_type>`
 
-And the following expression must be well formed:
+And the following expression must be well-formed:
 
 [[SizedOutbuffCreator_create]]
 ====

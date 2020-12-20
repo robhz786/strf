@@ -74,7 +74,7 @@ The following flags shall be passed to NVCC:
 == Dealing with limited stack memory
 
 Strf tends to use a fairly amount of stack memory, which is particularly
-limited on device code. So 
+limited on device code. So
 
 
 

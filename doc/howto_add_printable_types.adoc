@@ -794,7 +794,7 @@ And its done! I think is a pretty complete example of how to make
 
 == The low-level way [[creating_printer]]
 
-Sometimes, when creating a __PrinterTraits__ class, 
+Sometimes, when creating a __PrinterTraits__ class,
 it is not possible possible to make its `make_printer_input`
 member function just return `strf::make_printer_input(...)`
 as we did in the previous sections.
@@ -877,7 +877,7 @@ The `print_to` member function is responsible for writing the content:
 template <typename CharT, typename FloatT>
 void std_complex_printer<CharT, FloatT>::print_to(strf::{basic_outbuff}<CharT>& dest) const
 {
-    auto print = strf::to(dest).with(lettercase_, numpunct_, encoding_);    
+    auto print = strf::to(dest).with(lettercase_, numpunct_, encoding_);
     if (form_ == complex_form::polar) {
         print(coordinates_.first, U'\u2220', static_cast<CharT>(' ') );
         print(coordinates_.second );

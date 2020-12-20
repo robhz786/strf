@@ -1139,7 +1139,7 @@ where
 * `_begin_` and `_end_` are iterators
 * `_separator_` is a raw string of `_CharT_`, where `_CharT_` is the destination character type.
 * `_func_` is  unary a function object such that the type of expression `_func_(_x_)` is printable where `_x_` is an element of the range.
-  
+
 
 .Examples
 [source,cpp,subs=normal]
