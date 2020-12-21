@@ -1,5 +1,5 @@
 # Strf
-Version: 0.12.2
+Version: 0.13.0
 
 Branch   | Travis | Appveyor | codecov.io
 ---------|--------|----------|-----------
@@ -10,7 +10,7 @@ master   | [![Build Status](https://travis-ci.org/robhz786/strf.svg?branch=maste
 
 Strf is a C++ formatting library that
 
-* is fast ( see the [`benchmarks`](http://robhz786.github.io/strf/v0.12.2/benchmarks.html) )
+* is fast ( see the [`benchmarks`](http://robhz786.github.io/strf/v0.13.0/benchmarks.html) )
 * supports all character types (`char`, `char8_t`, `char16_t`, `char32_t` and `wchar_t`)
 * supports encoding conversion.
 * can be used as header-only as well as static library.
@@ -18,22 +18,22 @@ Strf is a C++ formatting library that
 ## Documentation
 
 Overview:
-* [**tutorial**](http://robhz786.github.io/strf/v0.12.2/tutorial.html)
-* [**quick reference**](http://robhz786.github.io/strf/v0.12.2/quick_reference.html)
+* [**tutorial**](http://robhz786.github.io/strf/v0.13.0/tutorial.html)
+* [**quick reference**](http://robhz786.github.io/strf/v0.13.0/quick_reference.html)
 
 HowTos:
-- [How to use strf on CUDA devices](http://robhz786.github.io/strf/v0.12.2/cuda.html)
+- [How to use strf on CUDA devices](http://robhz786.github.io/strf/v0.13.0/cuda.html)
 - How to extend strf:
-    - [Adding destination](http://robhz786.github.io/strf/v0.12.2/howto_add_destination.html)
-    - [Adding printable types](http://robhz786.github.io/strf/v0.12.2/howto_add_printable_types.html)
-    - [Overriding printable types](http://robhz786.github.io/strf/v0.12.2/howto_override_printable_types.html)
+    - [Adding destination](http://robhz786.github.io/strf/v0.13.0/howto_add_destination.html)
+    - [Adding printable types](http://robhz786.github.io/strf/v0.13.0/howto_add_printable_types.html)
+    - [Overriding printable types](http://robhz786.github.io/strf/v0.13.0/howto_override_printable_types.html)
 
 Header references:
-* [`<strf.hpp>`](http://robhz786.github.io/strf/v0.12.2/strf_hpp.html) is the main header. This document is big and covers many details that you will probably never need to know. So it's not the best starting point.
-* [`<strf/outbuff.hpp>`](http://robhz786.github.io/strf/v0.12.2/outbuff_hpp.html) is a lightweight and freestanding header that defines the `basic_outbuff` class template. All other headers depend on this one.
-* [`<strf/to_string.hpp>`](http://robhz786.github.io/strf/v0.12.2/to_string_hpp.html) adds support for writting to `std::basic_string`. It includes `<strf.hpp>`.
-* [`<strf/to_cfile.hpp>`](http://robhz786.github.io/strf/v0.12.2/to_cfile_hpp.html)  adds support for writting to `FILE*`. It includes `<strf.hpp>`.
-* [`<strf/to_streambuf.hpp>`](http://robhz786.github.io/strf/v0.12.2/to_streambuf_hpp.html) adds support for writting to `std::basic_streambuf`. It includes `<strf.hpp>`.
+* [`<strf.hpp>`](http://robhz786.github.io/strf/v0.13.0/strf_hpp.html) is the main header. This document is big and covers many details that you will probably never need to know. So it's not the best starting point.
+* [`<strf/outbuff.hpp>`](http://robhz786.github.io/strf/v0.13.0/outbuff_hpp.html) is a lightweight and freestanding header that defines the `basic_outbuff` class template. All other headers depend on this one.
+* [`<strf/to_string.hpp>`](http://robhz786.github.io/strf/v0.13.0/to_string_hpp.html) adds support for writting to `std::basic_string`. It includes `<strf.hpp>`.
+* [`<strf/to_cfile.hpp>`](http://robhz786.github.io/strf/v0.13.0/to_cfile_hpp.html)  adds support for writting to `FILE*`. It includes `<strf.hpp>`.
+* [`<strf/to_streambuf.hpp>`](http://robhz786.github.io/strf/v0.13.0/to_streambuf_hpp.html) adds support for writting to `std::basic_streambuf`. It includes `<strf.hpp>`.
 
 ## Acknowledgments
 
