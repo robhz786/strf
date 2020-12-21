@@ -3,7 +3,7 @@ StrfVersion = v0.12.2
 
 all: \
     out/syntax.svg \
-    out/introduction.html \
+    out/tutorial.html \
     out/quick_reference.html \
     out/locale_hpp.html \
     out/benchmarks.html \
@@ -22,7 +22,7 @@ out/ :
 out/syntax.svg : syntax.svg out/
 	cp $< $@
 
-out/introduction.html : introduction.adoc out/
+out/tutorial.html : tutorial.adoc out/
 	asciidoctor -v $< -o $@
 
 out/quick_reference.html : quick_reference.adoc out/

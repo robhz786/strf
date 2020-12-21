@@ -5,7 +5,10 @@ See accompanying file LICENSE_1_0.txt or copy at
 http://www.boost.org/LICENSE_1_0.txt
 ////
 
-= Introduction to the strf library
+:numpunct:               <<quick_reference#numpunct,numpunct>>
+:basic_outbuff:          <<outbuff_hpp#basic_outbuff,basic_outbuff>>
+
+= Tutorial of the strf library
 :source-highlighter: prettify
 :sectnums:
 :sectnumlevels: 2
@@ -87,16 +90,16 @@ namespace strf {
   constexpr lettercase mixedcase = /* ... */;
   constexpr lettercase uppercase = /* ... */;
 }
+----
 
 It affects numeric and boolean values:
-----
 [source,cpp]
 ----
 auto str_uppercase = strf::to_string.with(strf::uppercase)
-    ( true, ' '*strf::hex(0xab), ' ', 1.0e+50 );
+    ( true, ' ', *strf::hex(0xab), ' ', 1.0e+50 );
 
 auto str_mixedcase = strf::to_string.with(strf::mixedcase)
-    ( true, ' '*strf::hex(0xab), ' ', 1.0e+50 );
+    ( true, ' ', *strf::hex(0xab), ' ', 1.0e+50 );
 
 assert(str_uppercase == "TRUE 0XAB 1E+50");
 assert(str_mixedcase == "True 0xAB 1e+50");
@@ -119,7 +122,7 @@ assert(str == "true 0xab 1E+50");
 ----
 auto str = strf::to_string
     ( true, ' ', 1.0e+50, " / "
-    , strf::with(strf::uppercase) (true, ' ' 1.0e+50, " / ")
+    , strf::with(strf::uppercase) (true, ' ', 1.0e+50, " / ")
     , true, ' ', 1.0e+50 );
 
 assert(str == "true 1e+50 / TRUE 1E+50 / true 1e+50 );
@@ -200,8 +203,8 @@ which you create with the <<strf_hpp#pack,`pack`>> function template:
 constexpr auto my_facets = strf::pack
     ( strf::mixedcase
     , std::constrain<strf::is_bool>(strf::uppercase)
-    , strf::numpunct<10>{3}.thousands_sep(U'.').decimal_point(U',')
-    , strf::numpunct<16>{4}.thousands_sep(U'\'')
+    , strf::{numpunct}<10>{3}.thousands_sep(U'.').decimal_point(U',')
+    , strf::{numpunct}<16>{4}.thousands_sep(U'\'')
     , strf::windows_1252<char>() );
 
 
@@ -234,14 +237,14 @@ __destination__ .with(_f1_).with(_f2_).with(_f3_).with(_f4_).with(_f5_) (/{aster
 === Locales
 
 Strf is a locale-independent library. When you don't specify any facet
-object, everything is printed as in "C" locale.
-However, the header `<strf/locale.hpp>` provides the function `locale_numpuct`
-that returns a `numpunct<10>` object that reflects the numeric punctuation of
+object, everything is printed as in the "C" locale.
+However, the header `<strf/locale.hpp>` provides the function `locale_numpunct`
+that returns a `{numpunct}<10>` object that reflects the numeric punctuation of
 the current locale ( decimal point, thousands separator and digits grouping ).
 `locale_numpunct()` is not thread safe. Actually using locales
 in general is not thread safe. However, once you store its returned
-value into a facet object, that object is not affected anymore when
-the locale changes.
+value into a `{numpunct}<10>` object, that object is not affected anymore when
+the locale changes. Also, `{numpunct}<10>` is a facet.
 
 [source,cpp,subs=normal]
 ----
@@ -295,7 +298,7 @@ void sample() {
 ----
 
 However, there is another overload of `to` that deserves a special mention:
-the one that writes to `basic_outbuff`:
+the one that writes to `{basic_outbuff}` references:
 
 [source,cpp,subs=normal]
 ----
@@ -438,8 +441,8 @@ can use pass `string_maker` or a `cstr_writer`
 Strf does not throw exceptions. When there is something wrong,
 the usual approach is the library to print the
 https://en.wikipedia.org/wiki/Specials_(Unicode_block)#Replacement_character[replacement character]
-( or the https://en.wikipedia.org/wiki/Question_mark[question mark]
-when the encoding can't represent it ).
+, or the https://en.wikipedia.org/wiki/Question_mark[question mark]
+when the encoding can't represent it.
 There are two situations when this can happen:
 when using the tr-string and when converting a string from one encoding to another
 ( see <<quick_reference#encoding_conversion, encoding conversion>> ).

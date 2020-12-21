@@ -18,7 +18,7 @@ Strf is a C++ formatting library that
 ## Documentation
 
 Overview:
-* [**introduction**](http://robhz786.github.io/strf/v0.12.2/introduction.html)
+* [**tutorial**](http://robhz786.github.io/strf/v0.12.2/tutorial.html)
 * [**quick reference**](http://robhz786.github.io/strf/v0.12.2/quick_reference.html)
 
 HowTos:

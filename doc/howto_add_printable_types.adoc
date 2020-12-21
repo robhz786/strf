@@ -46,8 +46,8 @@ http://www.boost.org/LICENSE_1_0.txt
 :dynamic_char_encoding:  <<strf_hpp#dynamic_char_encoding,dynamic_char_encoding>>
 :lettercase_c:           <<strf_hpp#lettercase,lettercase_c>>
 :lettercase:             <<strf_hpp#lettercase,lettercase>>
-:numpunct_c:             <<strf_hpp#numpuct_c,numpuct_c>>
-:numpunct:               <<strf_hpp#numpuct,numpuct>>
+:numpunct_c:             <<strf_hpp#numpunct_c,numpunct_c>>
+:numpunct:               <<strf_hpp#numpunct,numpunct>>
 
 :multi:           <<quick_reference#multi,multi>>
 :conv:            <<quick_reference#string_formatting,conv>>

@@ -14,6 +14,8 @@ http://www.boost.org/LICENSE_1_0.txt
 :icons: font
 
 
+:numpunct_c:             <<strf_hpp#numpunct_c,numpunct_c>>
+:numpunct:               <<strf_hpp#numpunct,numpunct>>
 :width_t: <<strf_hpp#width_t,width_t>>
 
 [[format_functions]]
@@ -668,7 +670,7 @@ When the argument associated with a `"{"` does not exists, the library does two 
 
 [[numpunct]]
 == Numeric punctuation
-The `numpunct` class template defines punctuation for
+The `{numpunct}` class template defines punctuation for
 integers, `void*` and floating points. It comprises
 the "thousands" separator, the decimal point and the
 grouping pattern.
