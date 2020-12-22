@@ -5,7 +5,6 @@
 #include <vector>
 #include <strf/to_string.hpp>
 
-//[ ipv4address_type
 namespace xxx {
 
 struct ipv4address
@@ -20,11 +19,9 @@ namespace strf {
 template <>
 struct print_traits<xxx::ipv4address> {
 
-    using facet_tag = xxx::ipv4address;
+    using override_tag = xxx::ipv4address;
     using forwarded_type = xxx::ipv4address;
-    using fmt_type =  strf::value_with_formatters
-        < strf::print_traits<xxx::ipv4address>
-        , strf::alignment_formatter>;
+    using formatters = strf::tag<strf::alignment_formatter>;
 
     template <typename CharT>
     static auto transform_arg(forwarded_type arg)
@@ -35,25 +32,24 @@ struct print_traits<xxx::ipv4address> {
     }
 
     template <typename CharT, typename Preview, typename FPack>
-    static auto make_printer_input(Preview& preview, const FPack& fp, forwarded_type arg)
+    static auto make_printer_input(Preview& preview, const FPack&, forwarded_type arg)
     {
         auto arg2 = transform_arg<CharT>(arg);
-        return strf::make_default_printer_input<CharT>(preview, fp, arg2);
+        return strf::make_default_printer_input<CharT>(preview, strf::pack(), arg2);
     }
 
-    template <typename CharT, typename Preview, typename FPack>
-    static auto make_printer_input(Preview& preview, const FPack& fp, fmt_type arg)
+    template <typename CharT, typename Preview, typename FPack, typename... T>
+    static auto make_printer_input
+        ( Preview& preview
+        , const FPack& fp
+        , strf::value_with_formatters<T...> arg )
     {
-        auto join = transform_arg<CharT>(arg.value());
-        auto aligned_join = join.set(arg.get_alignment_format());
-        return strf::make_default_printer_input<CharT>(preview, fp, aligned_join);
+        auto arg2 = transform_arg<CharT>(arg.value());
+        auto arg3 = arg2.set_alignment_format(arg.get_alignment_format());
+        auto enc = strf::get_facet<strf::char_encoding_c<CharT>, forwarded_type>(fp);
+        return strf::make_default_printer_input<CharT>(preview, strf::pack(enc), arg3);
     }
 };
-
-// constexpr ipv4address_printing tag_invoke(strf::print_traits_tag, xxx::ipv4address) noexcept
-// {
-//     return {};
-// }
 
 } // namespace strf
 
@@ -62,19 +58,23 @@ int main()
     xxx::ipv4address addr {{198, 199, 109, 141}};
 
     // basic sample
-    auto s = strf::to_string("The IP address of isocpp.org is ", addr);
-    assert(s == "The IP address of isocpp.org is 198.199.109.141");
+    auto str = strf::to_string("The IP address of isocpp.org is ", addr);
+    assert(str == "The IP address of isocpp.org is 198.199.109.141");
+
+    // formatted ipv4address
+    str = strf::to_string("isocpp.org: ", strf::right(addr, 20, U'.'));
+    assert(str == "isocpp.org: .....198.199.109.141");
 
     // ipv4address in ranges
-    s = strf::to_string("isocpp.org: ", strf::right(addr, 20, U'.'));
-    assert(s == "isocpp.org: .....198.199.109.141");
-
-    // formatted ipv4address in ranges
     std::vector<xxx::ipv4address> vec = { {{127, 0, 0, 1}}
                                         , {{146, 20, 110, 251}}
                                         , {{110, 110, 110, 110}} };
-    auto s2 = strf::to_string("[", strf::fmt_separated_range(vec, " ;") > 16, "]");
-    assert(s2 == "[       127.0.0.1 ;  146.20.110.251 ; 110.110.110.110]");
+    str = strf::to_string("[", strf::separated_range(vec, " ; "), "]");
+    assert(str == "[127.0.0.1 ; 146.20.110.251 ; 110.110.110.110]");
+
+    // formatted ipv4address in ranges
+    str = strf::to_string("[", strf::fmt_separated_range(vec, " ; ") > 15, "]");
+    assert(str == "[      127.0.0.1 ;  146.20.110.251 ; 110.110.110.110]");
 
     return 0;
 }

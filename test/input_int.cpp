@@ -268,11 +268,11 @@ void STRF_TEST_FUNC test_input_int()
     TEST("   0077   ")   (  strf::oct(077).p(4)^10 );
     TEST("  00077   ")   ( *strf::oct(077).p(4)^10 );
 
-    // showpos in octa, binary and hexadecimal must not have any effect
-
-    TEST("aa") ( +strf::hex(0xAA) );
-    TEST("11") ( +strf::bin(3) );
-    TEST("77") ( +strf::oct(077) );
+    // *oct(0) should be printed as "0"
+    TEST("0")      (*strf::oct(0));
+    TEST("0")      (*strf::oct(0).p(1));
+    TEST("    0")  (*strf::oct(0) > 5);
+    TEST("    0")  (*strf::oct(0).p(1) > 5);
 
     // inside joins
 

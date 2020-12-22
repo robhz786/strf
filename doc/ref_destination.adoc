@@ -269,7 +269,7 @@ Compile-time requirements::
 // Return type::
 // - `decltype(std::declval<decltype(_outbuff_creator.create())&>().finish())` if such type is valid, otherwise `void`
 Effect::
-. Creates the <<basic_outbuff,outbuff>> object doing
+. Creates the <<ourbuff_hpp#basic_outbuff,outbuff>> object doing
 +
 [source,cpp,subs=normal]
 ----
@@ -289,6 +289,7 @@ where `Arg` is the type in `Args\...` corresponding to `arg`
 . Returns `ob.finish()` if such expression is valid, which is optional.
   Otherwise the return type is `void`.
 ====
+[[destination_no_reserve_tr]]
 ====
 [source,cpp,subs=normal]
 ----
@@ -310,7 +311,7 @@ Effect:: __to-do__
 
 
 ////
-. Creates/get the <<basic_outbuff,outbuff>> object doing
+. Creates/get the <<ourbuff_hpp#basic_outbuff,outbuff>> object doing
 +
 [source,cpp,subs=normal]
 ----
@@ -573,12 +574,12 @@ preview_type preview;
 using printer_type = {printer_type}<char_type, preview_type, FPack, Arg>;
 printer_type p{ {make_printer_input}<char_type>(preview, &#95;fpack, arg) };
 ----
-. Creates/get the <<basic_outbuff,outbuff>> object doing
+. Creates/get the <<ourbuff_hpp#basic_outbuff,outbuff>> object doing
 +
 [source,cpp,subs=normal]
 ----
 using ob_type = typename OutbuffCreator::size_outbuf_type;
-ob_type ob{_outbuff_creator.create(preview.get_size())};
+ob_type ob{_outbuff_creator.create(preview.<<size_preview_accumulated_size,accumulated_size>>())};
 ----
 . For each `p` object does:
 +
@@ -613,13 +614,13 @@ Effect:: __to-do__
 [source,cpp,subs=normal]
 ----
 print_preview<preview_size::yes, preview_width::no> preview;
-auto p = static_cast< const {printer}<sizeof(CharT)>& >
+auto p = static_cast< const {printer}<CharT>& >
     ( {printer_type}<CharT, FPack, T>{ fpack, preview, x, {tag}<CharT>{} } )
 ----
 . Calculates the size of the content to be printed according to the
   <<tr_string,tr-string syntax>> and using the `preview` objects
   of the previous step.
-. Creates/get the <<basic_outbuff,outbuff>> object by doing
+. Creates/get the <<ourbuff_hpp#basic_outbuff,outbuff>> object by doing
 +
 [source,cpp,subs=normal]
 ----
@@ -874,7 +875,7 @@ template <typename\... Args>
 Compile-time requirements::
 - All types in `Args\...` are <<Printable,_Printable_>>.
 Effect::
-. Creates/get the <<basic_outbuff,outbuff>> object doing
+. Creates/get the <<ourbuff_hpp#basic_outbuff,outbuff>> object doing
 +
 [source,cpp,subs=normal]
 ----
@@ -914,7 +915,7 @@ Compile-time requirements::
 Effect::
 __to-do__
 ////
-. Creates/get the <<basic_outbuff,outbuff>> object doing
+. Creates/get the <<ourbuff_hpp#basic_outbuff,outbuff>> object doing
 +
 [source,cpp,subs=normal]
 ----
@@ -924,7 +925,7 @@ decltype(auto) ob = _outbuff_creator.create(_size)
 +
 [source,cpp,subs=normal]
 ----
-auto p = static_cast< const {printer}<sizeof(CharT)>& >
+auto p = static_cast< const {printer}<CharT>& >
     ( {printer_type}<CharT, FPack, T>{fpack, preview, x, chtag} )
 ----
 , where `preview` is an instance of `preview<false, false>`,
@@ -950,7 +951,7 @@ The following must hold:
 - `X` has the `X::outbuff_type` that is a type alias to a concrete type that is derives
    from `basic_outbuff<X::char_type>`
 
-And the following expression must be satisfied:
+And the following expression must be well-formed:
 
 [[OutbuffCreator_create]]
 ====
@@ -966,17 +967,17 @@ Given
 
 - `char_type`, a character type
 - `size`, a value of the `std::size_t`
-- `X`, an  _OutbuffCreator_ type for `char_type`
+- `X`, an  _SizedOutbuffCreator_ type for `char_type`
 - `x`, an expression of type `X` or `const X`
 
 The following must hold:
 
 - `X` is https://en.cppreference.com/w/cpp/named_req/CopyConstructible[CopyConstructible]
 - `X` has a member type alias `T::char_type` defined as `char_type`
-- `X` has the `X::size_outbuff_type` that is a type alias to a concrete type that is derives
+- `X` has the `X::sized_outbuff_type` that is a type alias to a concrete type that derives
    from `basic_outbuff<X::char_type>`
 
-And the following expression must be satisfied:
+And the following expression must be well-formed:
 
 [[SizedOutbuffCreator_create]]
 ====
@@ -984,9 +985,5 @@ And the following expression must be satisfied:
 ----
 typename X::sized_outbuff_type{x.create(size)}
 ----
-::
-[horizontal]
-Return type:: A type that derives from `{basic_outbuff}<char_type>`
-Postcondition:: `ob.size() >= size`, where `ob` is the returned value.
 ====
 

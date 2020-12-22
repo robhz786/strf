@@ -81,7 +81,7 @@ std::basic_string<CharT> read_file(const char* filename)
 
 template <typename CharT>
 constexpr std::size_t full_string_size
-= strf::min_size_after_recycle<CharT>();
+= strf::min_space_after_recycle<CharT>();
 
 template <typename CharT>
 constexpr std::size_t half_string_size = full_string_size<CharT> / 2;
@@ -346,7 +346,7 @@ void STRF_HD input_tester<CharOut>::recycle()
     test_failure_(" basic_outbuff::recycle() called "
                   "( calculated size too small ).\n");
 
-    if ( this->pointer() + strf::min_size_after_recycle<CharOut>()
+    if ( this->pointer() + strf::min_space_after_recycle<CharOut>()
        > buffer_ + buffer_size_ )
     {
         pointer_before_overflow_ = this->pointer();

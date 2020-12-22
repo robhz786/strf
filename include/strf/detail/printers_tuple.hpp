@@ -138,7 +138,8 @@ STRF_HD void write
     , const strf::detail::printers_tuple_impl
         < CharT, std::index_sequence<I...>, Printers... >& printers )
 {
-    strf::detail::write_args<CharT>(ob, printers.template get<I>()...);
+    strf::detail::write_args<CharT>
+        (ob, static_cast<const strf::printer<CharT>&>(printers.template get<I>())...);
 }
 
 template <typename CharT, typename ... Printers>

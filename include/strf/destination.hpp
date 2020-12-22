@@ -322,8 +322,7 @@ private:
     template < typename OtherFPack
              , typename ... FPE
              , typename T = OutbuffCreator
-             , typename = std::enable_if_t
-                 < std::is_copy_constructible<T>::value > >
+             , std::enable_if_t<std::is_copy_constructible<T>::value, int> = 0 >
     constexpr STRF_HD destination_no_reserve
         ( const destination_no_reserve<OutbuffCreator, OtherFPack>& other
         , detail::destination_tag
@@ -437,8 +436,7 @@ private:
     template < typename OtherFPack
              , typename ... FPE
              , typename T = OutbuffCreator
-             , typename = std::enable_if_t
-                 < std::is_copy_constructible<T>::value > >
+             , std::enable_if_t<std::is_copy_constructible<T>::value, int> = 0>
     constexpr STRF_HD destination_with_given_size
         ( const destination_with_given_size<OutbuffCreator, OtherFPack>& other
         , detail::destination_tag
@@ -558,8 +556,7 @@ private:
     template < typename OtherFPack
              , typename ... FPE
              , typename T = OutbuffCreator
-             , typename = std::enable_if_t
-                 < std::is_copy_constructible<T>::value > >
+             , std::enable_if_t<std::is_copy_constructible<T>::value, int> = 0 >
     STRF_HD destination_calc_size
         ( const destination_calc_size<OutbuffCreator, OtherFPack>& other
         , detail::destination_tag
@@ -584,7 +581,7 @@ private:
         ( const preview_type_& preview
         , const Printers& ... printers ) const
     {
-        std::size_t size = preview.get_size();
+        std::size_t size = preview.accumulated_size();
         typename OutbuffCreator::sized_outbuff_type ob{outbuff_creator_.create(size)};
         strf::detail::write_args(ob, printers...);
         return strf::detail::finish(strf::rank<2>(), ob);

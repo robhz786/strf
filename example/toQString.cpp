@@ -16,7 +16,7 @@ public:
     {
     }
 
-    QStringCreator(strf::tag<>)
+    explicit QStringCreator(strf::tag<>)
         : QStringCreator()
     {
     }
@@ -38,44 +38,27 @@ public:
 private:
 
     QString str_;
-    std::exception_ptr eptr_ = nullptr;
-    constexpr static std::size_t buffer_size_ = strf::min_size_after_recycle<char16_t>();
+    constexpr static std::size_t buffer_size_ = strf::min_space_after_recycle<char16_t>();
     char16_t buffer_[buffer_size_];
 };
 
 void QStringCreator::recycle()
 {
-    if (this->good()) {
-        QChar qchar_buffer[buffer_size_];
-        std::size_t count = this->pointer() - buffer_;
-        std::copy_n(buffer_, count, qchar_buffer);
-
-#if defined(__cpp_exceptions)
-
-        try {
-            str_.append(qchar_buffer, count);
-        }
-        catch(...) {
-            eptr_ = std::current_exception();
-            this->set_good(false);
-        }
-#else
-
-        str_.append(qchar_buffer, count);
-
-#endif // defined(__cpp_exceptions)
-
-    }
+    std::size_t count = this->pointer() - buffer_;
     this->set_pointer(buffer_);
+    if (this->good()) {
+        this->set_good(false);
+        QChar qchar_buffer[buffer_size_];
+        std::copy_n(buffer_, count, qchar_buffer);
+        str_.append(qchar_buffer, count);
+        this->set_good(true);
+    }
 }
 
 QString QStringCreator::finish()
 {
     recycle();
     this->set_good(false);
-    if (eptr_ != nullptr) {
-        std::rethrow_exception(eptr_);
-    }
     return std::move(str_);
 }
 

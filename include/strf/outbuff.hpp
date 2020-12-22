@@ -13,13 +13,21 @@ namespace detail {
 class outbuff_test_tool;
 } // namespace detail
 
-#define STRF_MIN_SIZE_AFTER_RECYCLE 64
+#define STRF_MIN_SPACE_AFTER_RECYCLE 64
 
 template <typename CharT>
+[[deprecated]]
 constexpr STRF_HD std::size_t min_size_after_recycle()
 {
-    return STRF_MIN_SIZE_AFTER_RECYCLE;
+    return STRF_MIN_SPACE_AFTER_RECYCLE;
 }
+
+template <typename CharT>
+constexpr STRF_HD std::size_t min_space_after_recycle()
+{
+    return STRF_MIN_SPACE_AFTER_RECYCLE;
+}
+
 
 template <typename CharT>
 class basic_outbuff
@@ -43,7 +51,13 @@ public:
     {
         return end_;
     }
+    [[deprecated]]
     STRF_HD std::size_t size() const noexcept
+    {
+        STRF_ASSERT(pointer_ <= end_);
+        return end_ - pointer_;
+    }
+    STRF_HD std::size_t space() const noexcept
     {
         STRF_ASSERT(pointer_ <= end_);
         return end_ - pointer_;
@@ -70,7 +84,7 @@ public:
     }
     STRF_HD void require(std::size_t s)
     {
-        STRF_ASSERT(s <= strf::min_size_after_recycle<CharT>());
+        STRF_ASSERT(s <= strf::min_space_after_recycle<CharT>());
         if (pointer() + s > end()) {
             recycle();
         }
@@ -210,14 +224,14 @@ public:
 template <typename CharT>
 inline STRF_HD CharT* outbuff_garbage_buf() noexcept
 {
-    static CharT arr[ STRF_MIN_SIZE_AFTER_RECYCLE ];
+    static CharT arr[ STRF_MIN_SPACE_AFTER_RECYCLE ];
     return arr;
 }
 
 template <typename CharT>
 inline STRF_HD CharT* outbuff_garbage_buf_end() noexcept
 {
-    return strf::outbuff_garbage_buf<CharT>() + strf::min_size_after_recycle<CharT>();
+    return strf::outbuff_garbage_buf<CharT>() + strf::min_space_after_recycle<CharT>();
 }
 
 template <typename CharT>

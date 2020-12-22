@@ -126,24 +126,27 @@ void test_locale()
     {
         using strf::detail::parse_win_grouping;
         using strf::digits_grouping;
-        static_assert(30 == digits_grouping::grp_max, "Need to update these test cases");
+        static_assert(31 == digits_grouping::grp_max, "Need to update these test cases");
         static_assert(6 == digits_grouping::grps_count_max, "Need to update these test cases");
         TEST_TRUE(parse_win_grouping(L"")    == digits_grouping());
         TEST_TRUE(parse_win_grouping(L"0")   == digits_grouping());
         TEST_TRUE(parse_win_grouping(L"1;0") == digits_grouping(1));
         TEST_TRUE(parse_win_grouping(L"1")   == digits_grouping(1, -1));
         TEST_TRUE(parse_win_grouping(L"1;22;3;0") == digits_grouping(1, 22, 3));
-        TEST_TRUE(parse_win_grouping(L"9;30")      == digits_grouping(9, 30, -1));
-        TEST_TRUE(parse_win_grouping(L"1;2;3;4;5") == digits_grouping(1, 2, 3, 4, 5, -1));
+        TEST_TRUE(parse_win_grouping(L"9;31")      == digits_grouping(9, 31, -1));
+        TEST_TRUE(parse_win_grouping(L"1;2;3;3;3;3;0") == digits_grouping(1,2,3));
+        TEST_TRUE(parse_win_grouping(L"1;2;3;3;3;3")   == digits_grouping(1,2,3,3,3,3,-1));
         TEST_TRUE(parse_win_grouping(L"1;2;3;4;5;6;0") == digits_grouping(1,2,3,4,5,6));
-        TEST_TRUE(parse_win_grouping(L"1;2;3;4;5;6") == digits_grouping());
+        TEST_TRUE(parse_win_grouping(L"1;2;3;4;5;6")   == digits_grouping(1,2,3,4,5,6,-1));
+        TEST_TRUE(parse_win_grouping(L"1;2;3;4;5;6;7;0") == digits_grouping());
+        TEST_TRUE(parse_win_grouping(L"1;2;3;4;5;6;7")   == digits_grouping());
 
         TEST_TRUE(parse_win_grouping(L"1;0;2") == digits_grouping());
         TEST_TRUE(parse_win_grouping(L"1;2a;2") == digits_grouping());
         TEST_TRUE(parse_win_grouping(L"1;11a;2") == digits_grouping());
         TEST_TRUE(parse_win_grouping(L";1;2;3") == digits_grouping());
         TEST_TRUE(parse_win_grouping(L"1;;2;3") == digits_grouping());
-        TEST_TRUE(parse_win_grouping(L"9;31")      == digits_grouping());
-        TEST_TRUE(parse_win_grouping(L"9;31;2;0")  == digits_grouping());
+        TEST_TRUE(parse_win_grouping(L"9;32")      == digits_grouping());
+        TEST_TRUE(parse_win_grouping(L"9;32;2;0")  == digits_grouping());
     }
 }

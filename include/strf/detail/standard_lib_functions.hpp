@@ -42,14 +42,14 @@
 #    include <cstring>
 #endif
 
-#ifdef __cpp_lib_bitops
+#ifdef STRF_USE_STD_BITOPS // __cpp_lib_bitops
 #include <bit>
 #endif
 
 namespace strf {
 namespace detail {
 
-#ifdef __cpp_lib_bitops
+#ifdef STRF_USE_STD_BITOPS
 
 template< class To, class From >
 constexpr To STRF_HD bit_cast(const From& from) noexcept
@@ -58,7 +58,7 @@ constexpr To STRF_HD bit_cast(const From& from) noexcept
     return std::bit_cast<To, From>(from);
 }
 
-#else // __cpp_lib_bitops
+#else // STRF_USE_STD_BITOPS
 
 template< class To, class From >
 To STRF_HD bit_cast(const From& from) noexcept
@@ -74,7 +74,7 @@ To STRF_HD bit_cast(const From& from) noexcept
 #endif
 }
 
-#endif //__cpp_lib_bitops
+#endif //STRF_USE_STD_BITOPS
 
 #if ! defined(STRF_FREESTANDING)
 template <typename It>

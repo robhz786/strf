@@ -82,9 +82,9 @@ using base64_input_with_formatters =
 
 struct base64_printing
 {
-    using facet_tag = base64_input;
+    using override_tag = base64_input;
     using forwarded_type = base64_input;
-    using fmt_type = base64_input_with_formatters;
+    using formatters = strf::tag<base64_formatter>;
 
     template <typename CharT, typename Preview, typename FPack>
     static auto make_printer_input(Preview& preview, const FPack& fp, base64_input_with_formatters x)
@@ -104,7 +104,7 @@ public:
     base64_printer
         ( const strf::usual_printer_input<T...>& input)
         : base64_printer
-            ( strf::get_facet<base64_facet_c, base64_facet_c>(input.fp)
+            ( strf::get_facet<base64_facet_c, base64_facet_c>(input.facets)
             , input.preview
             , input.arg )
     {
@@ -198,7 +198,7 @@ void base64_printer<CharT>::write_identation_(strf::basic_outbuff<CharT>& ob) co
     using traits = std::char_traits<CharT>;
     std::size_t count = fmt_.indentation();
     while(true) {
-        std::size_t buff_size = ob.size();
+        std::size_t buff_size = ob.space();
         if (buff_size >= count) {
             traits::assign(ob.pointer(), count, CharT(' '));
             ob.advance(count);

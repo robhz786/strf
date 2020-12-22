@@ -103,4 +103,4 @@ build_script:
   - ci\appveyor\build.bat
 
 test_script:
-  - ctest -C %CONFIG%
+  - ctest -V -C %CONFIG%

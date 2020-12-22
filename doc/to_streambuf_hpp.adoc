@@ -13,7 +13,7 @@ http://www.boost.org/LICENSE_1_0.txt
 :toclevels: 1
 :icons: font
 
-:min_size_after_recycle: <<outbuff_hpp#min_size_after_recycle,min_size_after_recycle>>
+:min_space_after_recycle: <<outbuff_hpp#min_space_after_recycle,min_space_after_recycle>>
 :underlying_outbuff: <<outbuff_hpp#underlying_outbuff,underlying_outbuff>>
 :underlying_char_type: <<outbuff_hpp#underlying_char_type,underlying_char_type>>
 :basic_outbuff: <<outbuff_hpp#basic_outbuff,basic_outbuff>>
@@ -95,7 +95,7 @@ Effects::
 - If `good()` is `true` then calls `dest.sputn(p0, pointer() - p0)`, where `dest` is the reference this object was initialized with, and `p0` is the return value of `pointer()` before any call to `advance` and `advance_to` since the last call to `recycle()`, or since this object's contruction, whatever happened last.
 - If the returned value of `dest.sputn` is less then `pointer() - p0`, calls `set_good(false)`.
 - Calls `set_pointer` and/or `set_end`.
-Postconditions:: `size() >= min_size_after_recycle<sizeof(CharT)>()`
+Postconditions:: `space() >= min_space_after_recycle<CharT>()`
 ====
 ====
 [source,cpp]

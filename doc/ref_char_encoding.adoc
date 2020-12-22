@@ -8,7 +8,7 @@ http://www.boost.org/LICENSE_1_0.txt
 == Character encodings
 
 :invalid_seq_notifier: <<invalid_seq_notifier,invalid_seq_notifier>>
-:invalid_seq_notifier_c: <<invalid_seq_notifier,invalid_seq_notifier_c>>
+:invalid_seq_notifier_c: <<invalid_seq_notifier_c,invalid_seq_notifier_c>>
 :surrogate_policy: <<surrogate_policy,surrogate_policy>>
 :surrogate_policy_c: <<surrogate_policy,surrogate_policy_c>>
 :char_encoding_id: <<char_encoding_id,char_encoding_id>>
@@ -359,7 +359,7 @@ Effect:: Converts the content of `src` from one encoding to another writing
     of `surr_poli` is `surrogate_policy::lax`.
 Precondition:: `x.transcode_func() != nullptr` is `true`
 Postconditions:: `dest.recycle()` is not called() if
-        `dest.size() >= x.transcode_size(src, src_size, surr_poli)` is `true`.
+        `dest.space() >= x.transcode_size(src, src_size, surr_poli)` is `true`.
 ====
 [[Transcoder_transcode_size_func]]
 ====
@@ -436,7 +436,6 @@ Type alias to `CharT`
 ----
 x.id()
 ----
-::
 [horizontal]
 Return type:: `{char_encoding_id}`
 Return value:: The `{char_encoding_id}` that corresponds to this encoding.
@@ -447,7 +446,6 @@ Return value:: The `{char_encoding_id}` that corresponds to this encoding.
 ----
 x.name()
 ----
-::
 [horizontal]
 Return type:: `const char*`
 Return value:: The name of this encoding. Examples: `"UTF-8"`, `"ASCII"`, `"ISO-8859-1"`, `"windows-1252"`.
@@ -459,7 +457,6 @@ Return value:: The name of this encoding. Examples: `"UTF-8"`, `"ASCII"`, `"ISO-
 ----
 x.replacement_char()
 ----
-::
 [horizontal]
 Return type:: `char32_t`
 Return value:: The character used to signalize an error. Usually it is the https://en.wikipedia.org/wiki/Specials_(Unicode_block)#Replacement_character[replacement character &#xFFFD;] if it is supported by this encoding, or the question mark `'?'` otherwise.
@@ -469,7 +466,6 @@ Return value:: The character used to signalize an error. Usually it is the https
 ----
 x.write_replacement_char(ob)
 ----
-::
 [horizontal]
 Return type:: Writes into `ob` the codepoint returned by `x.replacement_char()` encoded in this encoding.
 ====
@@ -478,7 +474,6 @@ Return type:: Writes into `ob` the codepoint returned by `x.replacement_char()` 
 ----
 x.replacement_char_size()
 ----
-::
 [horizontal]
 Return type:: `std::size_t`
 Return value:: The number of characters that `x.write_replacement_char(ob)` writes into `ob`.
@@ -488,12 +483,11 @@ Return value:: The number of characters that `x.write_replacement_char(ob)` writ
 ----
 x.encoded_char_size(ch32)
 ----
-::
 [horizontal]
 Return type:: `std::size_t`
 Return value:: The size of the string containing the UTF-32 character `ch32`,
-               if `ch32` is supported in this encoding. Otherwise, same as
-               `x.replacement_char_size()` otherwise.
+               if `ch32` is supported in this encoding. Otherwise,
+               `x.replacement_char_size()`.
 Note:: This function does not check whether `ch32` is a legal code point, only if
        it is possible to write it in this encoding. For example, if this is encoding
        is UTF-32, this function considers as valid any value for `ch32` ( even if
@@ -504,7 +498,6 @@ Note:: This function does not check whether `ch32` is a legal code point, only i
 ----
 x.validate(ch32)
 ----
-::
 [horizontal]
 Return type:: `std::size_t`
 Return value:: The size of the string containing the UTF-32 character `ch32`,
@@ -515,7 +508,6 @@ Return value:: The size of the string containing the UTF-32 character `ch32`,
 ----
 x.encode_char(ptr, ch32)
 ----
-::
 [horizontal]
 Effect:: Writes into `ptr` the UTF-32 character `ch32` encoded into this encoding,
          adopting the policy of `{surrogate_policy}::lax`,
@@ -534,7 +526,6 @@ Note:: This function does not check whether `ch32` is a legal code point, only i
 ----
 x.encode_fill(ob, count, ch32)
 ----
-::
 [horizontal]
 Effect:: Writes `count` times into `ob` the UTF-32 character `ch32` encoded into
          this encoding, if it is supported. Otherwise writes `x.replacement_char()`
@@ -551,7 +542,6 @@ Note:: `encode_fill` does not check whether `ch32` is a legal code point, only i
 ----
 x.codepoints_fast_count(src, src_size, max_count)
 ----
-::
 [horizontal]
 Return type:: `{codepoints_count_result}`
 Return value:: `{c, pos}`, where:
@@ -578,7 +568,6 @@ this function may simply count the bytes that are not continuation bytes.
 ----
 x.codepoints_robust_count(src, src_size, max_count, surr_poli)
 ----
-::
 [horizontal]
 Effect:: Counts the codepoints until is equal to `max_count`.
 
@@ -602,7 +591,6 @@ Posconditions::
 ----
 x.decode_char(ch)
 ----
-::
 [horizontal]
 Effect:: Decodes `ch` from this encoding to UTF-32
          assuming the policy of `<<surrogate_policy, surrogate_policy::lax>>`.
@@ -615,7 +603,6 @@ Return type:: `char32_t`
 ----
 x.encode_char_func()
 ----
-::
 [horizontal]
 Return type:: `{encode_char_f}<CharT>`
 Return value:: A function pointer such that `x.encode_char_func() (ch32)` has
@@ -626,7 +613,6 @@ Return value:: A function pointer such that `x.encode_char_func() (ch32)` has
 ----
 x.encode_fill_func()
 ----
-::
 [horizontal]
 Return type:: `{encode_fill_f}<CharT>`
 Return value:: A function pointer such that `x.encode_fill_func() (ob, count, ch32)`
@@ -637,7 +623,6 @@ Return value:: A function pointer such that `x.encode_fill_func() (ob, count, ch
 ----
 x.write_replacement_char_func()
 ----
-::
 [horizontal]
 Return type:: `{write_replacement_char_f}<CharT>`
 Return value:: A function pointer such that `x.write_replacement_char_func() (ob)`
@@ -649,7 +634,6 @@ Return value:: A function pointer such that `x.write_replacement_char_func() (ob
 ----
 x.from_u32()
 ----
-::
 [horizontal]
 Return type:: A __{Transcoder}__ from `char32_t` to `CharT`
 Return value:: A transcoder that converts UTF-32 to this encoding.
@@ -660,7 +644,6 @@ Return value:: A transcoder that converts UTF-32 to this encoding.
 ----
 x.to_u32()
 ----
-::
 [horizontal]
 Return type:: A __{Transcoder}__ from `CharT` to `char32_t`
 Return value:: A transcoder that converts this encoding to UTF-32.
@@ -671,7 +654,6 @@ Return value:: A transcoder that converts this encoding to UTF-32.
 ----
 x.sanitizer()
 ----
-::
 [horizontal]
 Return type:: A __{Transcoder}__ from `CharT` to `CharT`
 Return value:: A transcoder that "converts" this encoding to this encoding,
@@ -684,7 +666,6 @@ Return value:: A transcoder that "converts" this encoding to this encoding,
 ----
 x.find_transcoder_to({tag}<OtherCharT>, enc_id)
 ----
-::
 [horizontal]
 Return type:: `{dynamic_transcoder}<CharT, OtherCharT>`
 Return value:: A transcoder that converts this encoding to the encoding
@@ -699,7 +680,6 @@ Return value:: A transcoder that converts this encoding to the encoding
 ----
 x.find_transcoder_from({tag}<OtherCharT>, enc_id)
 ----
-::
 [horizontal]
 Return type:: `{dynamic_transcoder}<OtherCharT, CharT>`
 Return value:: A transcoder that converts the encoding corresponding to
@@ -859,7 +839,8 @@ void transcode
     , {invalid_seq_notifier} inv_seq_notifier
     , {surrogate_policy} surr_poli ) const;
 ----
-Effect: Calls `transcode_func()(ob, src, src_size, inv_seq_notifier, surr_poli)`
+[horizontal]
+Effect:: Calls `transcode_func()(ob, src, src_size, inv_seq_notifier, surr_poli)`
 ====
 ====
 [source,cpp,subs=normal]
@@ -869,7 +850,8 @@ std::size_t transcode_size
     , std::size_t src_size
     , {surrogate_policy} surr_poli ) const;
 ----
-Effect: Calls `transcode_size_func()(src, src_size, surr_poli)`
+[horizontal]
+Effect:: Calls `transcode_size_func()(src, src_size, surr_poli)`
 ====
 
 === Struct template `dynamic_char_encoding_data` [[dynamic_char_encoding_data]]
@@ -1058,7 +1040,7 @@ Return value:: `this\->data != other.data`
 void swap(dynamic_char_encoding& other) noexcept;
 ----
 [horizontal]
-Effect:: Same as `std::swap(this\->data, other.data)`
+Effect:: Equivalent to `std::swap(this\->data, other.data)`
 ====
 ====
 [source,cpp,subs=normal]
@@ -1322,11 +1304,11 @@ Return value::
 * otherwise, returns
   `src.<<CharEncoding_find_transcoder_to,find_transcoder_to>>(dest_ch, dest.id())`
   if such expression
-  is well formed and returns a <<Transcoder_null,non null transcoder>>
+  is well-formed and returns a <<Transcoder_null,non null transcoder>>
   , where `dest_ch` is `{tag}<DestEncoding::char_type>{}`
 * otherwise, returns
   `dest.<<CharEncoding_find_transcoder_from,find_transcoder_from>>(src_ch, src.id())`
-   if such expression is well formed, where `src_sh` is `{tag}<SrcEncoding::char_type>{}`
+   if such expression is well-formed, where `src_sh` is `{tag}<SrcEncoding::char_type>{}`
 * otherwise returns `{dynamic_transcoder}<SrcEncoding::char_type, DestEncoding::char_type>{}`.
 
 NOTE: When `find_transcoder` returns an <<Transcoder_null,null transcoder>>
@@ -1355,8 +1337,8 @@ Converts the content in `src` to UTF-32 using `to_u32`,
 then writes the result to `ob` using `from_u32`.
 
 [horizontal]
-Postcondition:: `ob.<<basic_outbuff_recycle,recycle>>()` is not called if
-`ob.<<basic_outbuff_size,size>>()` is not less then the value returned by
+Postcondition:: `ob.<<outbuff_hpp#basic_outbuff_recycle,recycle>>()` is not called if
+`ob.<<outbuf_hpp#basic_outbuff_space,space>>()` is not less then the value returned by
 `{decode_encode_size}(to_u32, size_calc_func, src, src_size, inv_seq_notifier, surr_poli)`,
 where `size_calc_func` is the return value of
 `dest_enc.<<CharEncoding_from_u32,from_u32>>().<<Transcoder_transcode_size_func, transcode_size_func>>()`,

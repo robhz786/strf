@@ -103,7 +103,7 @@ STRF_HD std::size_t tr_string_size
         after_the_brace:
         if (it == end) {
             if (arg_idx < num_args) {
-                count += args_preview[arg_idx].get_size();
+                count += args_preview[arg_idx].accumulated_size();
             } else {
                 count += inv_arg_size;
             }
@@ -113,7 +113,7 @@ STRF_HD std::size_t tr_string_size
         auto ch = *it;
         if (ch == '}') {
             if (arg_idx < num_args) {
-                count += args_preview[arg_idx].get_size();
+                count += args_preview[arg_idx].accumulated_size();
                 ++arg_idx;
             } else {
                 count += inv_arg_size;
@@ -123,7 +123,7 @@ STRF_HD std::size_t tr_string_size
             auto result = strf::detail::read_uint(it, end, num_args);
 
             if (result.value < num_args) {
-                count += args_preview[result.value].get_size();
+                count += args_preview[result.value].accumulated_size();
             } else {
                 count += inv_arg_size;
             }
@@ -144,7 +144,7 @@ STRF_HD std::size_t tr_string_size
         } else {
             if (ch != '-') {
                 if (arg_idx < num_args) {
-                    count += args_preview[arg_idx].get_size();
+                    count += args_preview[arg_idx].accumulated_size();
                     ++arg_idx;
                 } else {
                     count += inv_arg_size;

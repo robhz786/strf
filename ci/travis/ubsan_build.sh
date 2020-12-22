@@ -13,6 +13,6 @@ cmake -DSTRF_BUILD_TESTS=ON \
       -DCMAKE_BUILD_TYPE=Debug \
       -G "Unix Makefiles" .. \
 && cmake --build . \
-&& ctest
+&& ctest -V
 
 #      -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=undefined" \

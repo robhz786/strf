@@ -13,12 +13,18 @@ namespace detail {
 
 struct digits_group_common
 {
+    // The groups are stored in an underlying_int_t_ value.
+    // Each group occupies  grp_bits_count_ bits
+
+
     using underlying_int_t_ = std::uint32_t;
     constexpr static unsigned grp_bits_count_ = 5;
-    constexpr static unsigned grp_bits_mask_ = (1 << grp_bits_count_) - 1;
-    constexpr static unsigned no_more_sep_ = (1 << grp_bits_count_) - 1;
     constexpr static unsigned grps_count_max = sizeof(underlying_int_t_) * 8 / grp_bits_count_;
-    constexpr static unsigned grp_max = no_more_sep_ - 1;
+    constexpr static unsigned grp_max = (1 << grp_bits_count_) - 1;
+    constexpr static underlying_int_t_ grp_bits_mask_ = (1 << grp_bits_count_) - 1;
+    constexpr static unsigned repeat_last = 2;
+    constexpr static unsigned dont_repeat_last = 3;
+
 };
 
 } // namespace detail
@@ -29,42 +35,62 @@ class digits_grouping_iterator
 {
     using common = strf::detail::digits_group_common;
     using underlying_int_t_ = common::underlying_int_t_;
-    constexpr static unsigned grp_bits_count_ = common::grp_bits_count_;
-    constexpr static unsigned grp_bits_mask_ = common::grp_bits_mask_;
-    constexpr static unsigned no_more_sep_ = common::no_more_sep_;
+    constexpr static auto grp_bits_count_ = common::grp_bits_count_;
+    constexpr static auto grp_bits_mask_  = common::grp_bits_mask_;
+    constexpr static auto repeat_last_      = common::repeat_last;
+    constexpr static auto dont_repeat_last_ = common::dont_repeat_last;
 
 public:
 
     digits_grouping_iterator() = delete;
     constexpr digits_grouping_iterator(const digits_grouping_iterator&) noexcept = default;
-    constexpr STRF_HD digits_grouping_iterator(digits_grouping) noexcept;
+    constexpr STRF_HD explicit digits_grouping_iterator(digits_grouping) noexcept;
 
     constexpr STRF_HD bool operator==(const digits_grouping_iterator& other) const noexcept
     {
         return grps_ == other.grps_;
     }
+    constexpr STRF_HD bool operator!=(const digits_grouping_iterator& other) const noexcept
+    {
+        return grps_ != other.grps_;
+    }
+
     constexpr STRF_HD digits_grouping_iterator& operator=
         ( const digits_grouping_iterator& other ) noexcept
     {
         grps_ = other.grps_;
         return *this;
     }
-    constexpr STRF_HD unsigned lowest_group() const noexcept
+    constexpr STRF_HD unsigned current() const noexcept
     {
+        STRF_ASSERT(! ended());
         return grps_ & grp_bits_mask_;
     }
-    constexpr STRF_HD void pop_low() noexcept
+    constexpr STRF_HD void advance() noexcept
     {
+        STRF_ASSERT(! ended());
         grps_ = grps_ >> grp_bits_count_;
+    }
+    constexpr STRF_HD bool is_last() const noexcept
+    {
+        STRF_ASSERT(! ended());
+        return 0 == (grps_ >> (grp_bits_count_ + 2));
+    }
+    constexpr STRF_HD bool shall_repeat_current() const noexcept
+    {
+        // Return true if this is the last group is it shall be repeated
+        STRF_ASSERT(! ended());
+        return (grps_ >> grp_bits_count_) == repeat_last_;
     }
     constexpr STRF_HD bool is_final() const noexcept
     {
-        return 0 == (grps_ >> grp_bits_count_);
+        // Return true if this is the last group is it shall *not* be repeated
+        STRF_ASSERT(! ended());
+        return (grps_ >> grp_bits_count_) == dont_repeat_last_;
     }
-    constexpr STRF_HD bool no_more_sep() const noexcept
+    constexpr STRF_HD bool ended() const noexcept
     {
-        STRF_ASSERT( ! ((0x1F & grps_) == no_more_sep_ && (grps_ != no_more_sep_)));
-        return grps_ == no_more_sep_;
+        return 0 == (grps_ >> 2);
     }
 
 private:
@@ -82,22 +108,23 @@ class reverse_digits_groups
 {
     using common = strf::detail::digits_group_common;
     using underlying_int_t_ = common::underlying_int_t_;
-    constexpr static unsigned grp_bits_count_ = common::grp_bits_count_;
-    constexpr static unsigned grp_bits_mask_ = common::grp_bits_mask_;
+    constexpr static auto grp_bits_count_ = common::grp_bits_count_;
+    constexpr static auto grp_bits_mask_ = common::grp_bits_mask_;
 
 public:
 
-    constexpr static unsigned grp_max = common::grp_max;
-    constexpr static unsigned grps_count_max = common::grps_count_max;
-
-    static_assert(grp_max == (1 << grp_bits_count_) - 2, "");
-    static_assert(grps_count_max <= sizeof(underlying_int_t_) * 8 / grp_bits_count_, "");
+    constexpr static auto grp_max = common::grp_max;
+    constexpr static auto grps_count_max = common::grps_count_max;
 
     constexpr reverse_digits_groups() noexcept = default;
     constexpr reverse_digits_groups(const reverse_digits_groups&) noexcept = default;
     constexpr STRF_HD bool operator==(const reverse_digits_groups& other) const noexcept
     {
         return grps_ == other.grps_;
+    }
+    constexpr STRF_HD bool operator!=(const reverse_digits_groups& other) const noexcept
+    {
+        return grps_ != other.grps_;
     }
     constexpr STRF_HD reverse_digits_groups& operator=
         ( const reverse_digits_groups& other ) noexcept
@@ -141,9 +168,10 @@ class digits_grouping
 {
     using common = strf::detail::digits_group_common;
     using underlying_int_t_ = common::underlying_int_t_;
-    constexpr static unsigned grp_bits_count_ = common::grp_bits_count_;
-    constexpr static unsigned grp_bits_mask_ = common::grp_bits_mask_;
-    constexpr static unsigned no_more_sep_ = common::no_more_sep_;
+    constexpr static auto grp_bits_count_ = common::grp_bits_count_;
+    constexpr static auto grp_bits_mask_  = common::grp_bits_mask_;
+    constexpr static auto repeat_last_      = common::repeat_last;
+    constexpr static auto dont_repeat_last_ = common::dont_repeat_last;
 
 public:
 
@@ -151,26 +179,19 @@ public:
     constexpr static unsigned grps_count_max = common::grps_count_max;
 
     constexpr STRF_HD digits_grouping() noexcept
-        : grps_(no_more_sep_)
+        : grps_(dont_repeat_last_)
     {
     }
 
-    constexpr STRF_HD explicit digits_grouping(int grp) noexcept
-        : grps_(grp & grp_bits_mask_)
+    template <typename... IntArgs>
+    constexpr STRF_HD explicit digits_grouping
+        ( int grp0, IntArgs... grps ) noexcept
+        : grps_(ctor_(grp0, grps...))
     {
-        STRF_ASSERT(grp == -1 || (0 < grp && grp <= grp_max));
-    }
-
-    template <typename ... IntArgs>
-    constexpr STRF_HD digits_grouping
-        ( int grp0, int grp1, IntArgs... grps ) noexcept
-        : grps_(ctor_(grp0, grp1, grps...))
-    {
-        static_assert(2 + sizeof...(grps) <= grps_count_max, "too many groups");
         STRF_ASSERT(grps_ != 0);
     }
 
-    STRF_HD digits_grouping(const char* str) noexcept;
+    STRF_HD explicit digits_grouping(const char* str) noexcept;
 
     constexpr digits_grouping(const digits_grouping&) noexcept = default;
 
@@ -188,30 +209,35 @@ public:
         grps_ = other.grps_;
         return *this;
     }
-    constexpr STRF_HD bool any_separator(int digcount) const noexcept
+    constexpr STRF_HD bool any_separator(unsigned digcount) const noexcept
     {
         STRF_ASSERT(grps_ != 0);
-        return grps_ != no_more_sep_ && digcount > int(grps_ & grp_bits_mask_);
+        return grps_ != dont_repeat_last_ && digcount > (grps_ & grp_bits_mask_);
     }
-    constexpr STRF_HD unsigned separators_count(int digcount) const noexcept
+    constexpr STRF_HD unsigned separators_count(unsigned digcount) const noexcept
     {
         STRF_ASSERT(grps_ != 0);
-        if (digcount < 1) {
+        if (digcount <= 1) {
+            return 0;
+        }
+        auto it = get_iterator();
+        if (it.ended()) {
             return 0;
         }
         unsigned count = 0;
-        auto it = get_iterator();
         while(1) {
-            auto grp = it.lowest_group();
-            if (digcount <= (int)grp || it.no_more_sep()) {
+            auto grp = it.current();
+            if (digcount <= grp) {
                 return count;
             }
-            if (it.is_final()) {
-                return count + (digcount - 1) / grp;
+            if (it.is_last()) {
+                return it.shall_repeat_current()
+                    ? (count + (digcount - 1) / grp)
+                    : count + (digcount > grp);
             }
-            it.pop_low();
             ++count;
             digcount -= grp;
+            it.advance();
         }
     }
     constexpr STRF_HD strf::digits_grouping_iterator get_iterator() const noexcept
@@ -221,31 +247,33 @@ public:
     constexpr STRF_HD strf::digits_distribution distribute(unsigned digcount) const noexcept
     {
         STRF_ASSERT(grps_ != 0);
-        strf::digits_distribution dist{{}, 1, 0};
-        auto  grouping_it = get_iterator();
+        auto  git = get_iterator();
+        if (git.ended()) {
+            return {{}, 0, digcount};
+        }
+        strf::reverse_digits_groups low_groups;
+        auto grp = git.current();
         while(1) {
-            auto grp = grouping_it.lowest_group();
-            STRF_ASSERT(grp);
-            if (grp >= digcount || grouping_it.no_more_sep()) {
-                dist.highest_group = digcount;
-                break;
+            if (grp >= digcount) {
+                return {low_groups, 0, digcount};
             }
-            dist.low_groups.push_low(grp);
-            if (grouping_it.is_final()) {
+            low_groups.push_low(grp);
+            if (git.shall_repeat_current()) {
                 --digcount;
-                dist.middle_groups_count = digcount / grp;
-                dist.highest_group = 1 + digcount % grp;
-                break;
+                return { low_groups, digcount / grp, 1 + digcount % grp };
+            }
+            if (git.is_final()) {
+                return {low_groups, 0, digcount - grp};
             }
             digcount -= grp;
-            grouping_it.pop_low();
+            git.advance();
+            grp = git.current();
         }
-        return dist;
     }
 
     constexpr STRF_HD bool empty() const noexcept
     {
-        return grps_ == no_more_sep_;
+        return grps_ == dont_repeat_last_;
     }
 
 private:
@@ -257,22 +285,48 @@ private:
     {
     }
 
-    constexpr static STRF_HD underlying_int_t_ ctor_()
+    template <typename Arg>
+    constexpr static const Arg& last_arg_(const Arg& x) noexcept
     {
-        return 0;
+        return x;
     }
-    constexpr static STRF_HD underlying_int_t_ ctor_(int last_grp)
+
+    template <typename Arg0, typename Arg1, typename... Args>
+    constexpr static const auto& last_arg_
+        (const Arg0&, const Arg1& arg1, const Args&... args) noexcept
     {
-        STRF_ASSERT(last_grp == -1 || (0 < last_grp && last_grp < 32));
-        return last_grp & 0x1F;
+        return last_arg_(arg1, args...);
+    }
+
+    constexpr static STRF_HD underlying_int_t_ ctor2_() noexcept
+    {
+        return dont_repeat_last_;
+    }
+    constexpr static STRF_HD underlying_int_t_ ctor2_(int last_grp) noexcept
+    {
+        STRF_ASSERT(last_grp == -1 || (0 < last_grp && last_grp <= grp_max));
+        return last_grp == -1
+            ? dont_repeat_last_
+            : (( repeat_last_ << grp_bits_count_ ) | last_grp) ;
     }
     template <typename ... IntT>
-    constexpr static STRF_HD underlying_int_t_ ctor_(int g0, int g1, IntT... grps)
+    constexpr static STRF_HD underlying_int_t_ ctor2_(int g0, int g1, IntT... grps) noexcept
     {
-        STRF_ASSERT(0 < g0 && g0 < 32);
-        STRF_ASSERT((0 < g1 && g1 < 32) || (g1 == -1 || sizeof...(grps) == 0));
-
-        return g0 | (ctor_(g1, grps...) << 5);
+        STRF_ASSERT(0 < g0 && g0 <= grp_max);
+        return g0 | (ctor2_(g1, grps...) << grp_bits_count_);
+    }
+    template <typename... IntT>
+    constexpr static STRF_HD std::size_t groups_count_(IntT... grps) noexcept
+    {
+        return ( last_arg_(grps...) == -1
+               ? sizeof...(grps) - 1
+               : sizeof...(grps) );
+    }
+    template <typename... IntT>
+    constexpr static STRF_HD underlying_int_t_ ctor_(IntT... grps)  noexcept
+    {
+        STRF_ASSERT(groups_count_(grps...) <= grps_count_max);
+        return ctor2_(grps...);
     }
 
     underlying_int_t_ grps_;
@@ -281,18 +335,17 @@ private:
 constexpr STRF_HD digits_grouping_iterator::digits_grouping_iterator(digits_grouping g) noexcept
     : digits_grouping_iterator(g.get_iterator())
 {
-    STRF_ASSERT(lowest_group() != 0);
+    STRF_ASSERT(current() != 0);
 }
 
 class digits_grouping_creator
 {
     using common = strf::detail::digits_group_common;
     using underlying_int_t_ = common::underlying_int_t_;
-    constexpr static unsigned grp_bits_count_ = common::grp_bits_count_;
-    constexpr static unsigned grp_bits_mask_ = common::grp_bits_mask_;
-    constexpr static unsigned no_more_sep_ = common::no_more_sep_;
-    constexpr static int grp_max_ = common::grp_max;
-    constexpr static unsigned grps_count_max_ = common::grps_count_max;
+    constexpr static auto grp_bits_count_ = common::grp_bits_count_;
+    constexpr static auto grp_bits_mask_ = common::grp_bits_mask_;
+    constexpr static auto grp_max_ = common::grp_max;
+    constexpr static auto grps_count_max_ = common::grps_count_max;
 
 public:
 
@@ -301,7 +354,7 @@ public:
 
     constexpr STRF_HD void push_high(int grp) noexcept
     {
-        if (failed_ || grp < 1 || grp > grp_max_ || ! enough_space_to_push()) {
+        if (failed_ || grp < 1 || grp > (int)grp_max_ || ! enough_space_to_push()) {
             failed_ = true;
         } else {
             reverse_grps_ = ( reverse_grps_ << grp_bits_count_ ) | grp;
@@ -315,11 +368,10 @@ public:
 
     constexpr STRF_HD strf::digits_grouping finish_no_more_sep() noexcept
     {
-        if (failed_ || ! enough_space_to_push()) {
-            failed_ = true;
+        if (failed_ || reverse_grps_ == 0) {
             return {};
         }
-        underlying_int_t_ grps = no_more_sep_;
+        underlying_int_t_ grps = common::dont_repeat_last;
         while (reverse_grps_) {
             grps = (grps << grp_bits_count_) | (reverse_grps_ & grp_bits_mask_);
             reverse_grps_ >>= grp_bits_count_;
@@ -332,14 +384,22 @@ public:
         if (failed_ || reverse_grps_ == 0) {
             return {};
         }
-        underlying_int_t_ grps = 0;
-        do {
+        underlying_int_t_ grps = common::repeat_last;
+        auto highest_grp = reverse_grps_ & grp_bits_mask_;
+        grps = (grps << grp_bits_count_) | highest_grp;
+        reverse_grps_ >>= grp_bits_count_;
+        while (reverse_grps_) {
             auto grp = reverse_grps_ & grp_bits_mask_;
-            reverse_grps_ >>= grp_bits_count_;
-            if (grp != grps) {
-                grps = (grps << grp_bits_count_) | grp;
+            if (grp != highest_grp) {
+                break;
             }
-        } while (reverse_grps_);
+            reverse_grps_ >>= grp_bits_count_;
+        }
+        while (reverse_grps_) {
+            auto grp = reverse_grps_ & grp_bits_mask_;
+            grps = (grps << grp_bits_count_) | grp;
+            reverse_grps_ >>= grp_bits_count_;
+        }
         return {strf::digits_grouping::underlying_tag{}, grps};
     }
 
@@ -347,7 +407,7 @@ private:
 
     constexpr STRF_HD bool enough_space_to_push() const noexcept
     {
-        return 0 == (reverse_grps_ & (grp_bits_mask_ << ((grps_count_max_ - 1) * grp_bits_count_)));
+        return reverse_grps_ < ( underlying_int_t_{1} << ((grps_count_max_ - 1) * grp_bits_count_));
     }
 
     underlying_int_t_ reverse_grps_ = 0;
@@ -379,7 +439,7 @@ STRF_FUNC_IMPL STRF_HD digits_grouping::digits_grouping(const char* str) noexcep
 template <int Base> struct numpunct_c;
 
 template <int Base>
-class numpunct: private strf::digits_grouping
+class numpunct
 {
 public:
     using category = strf::numpunct_c<Base>;
@@ -387,48 +447,58 @@ public:
     constexpr numpunct() = default;
     constexpr numpunct(const numpunct& ) = default;
 
-    using strf::digits_grouping::digits_grouping;
+    template <typename... IntArgs>
+    constexpr STRF_HD explicit numpunct(int grp0, IntArgs... grps) noexcept
+        : grouping_(grp0, grps...)
+    {
+    }
 
     constexpr STRF_HD explicit numpunct(const digits_grouping& grp) noexcept
-        : strf::digits_grouping(grp)
+        : grouping_(grp)
     {
     }
 
     constexpr STRF_HD numpunct& operator=(const numpunct& other) noexcept
     {
-        strf::digits_grouping::operator=(other);
+        grouping_ = other.grouping_;
         decimal_point_ = other.decimal_point_;
         thousands_sep_ = other.thousands_sep_;
     }
     constexpr STRF_HD bool operator==(const numpunct& other) const noexcept
     {
-        return strf::digits_grouping::operator==(other)
+        return grouping_ == other.grouping_
             && decimal_point_ == other.decimal_point_
             && thousands_sep_ == other.thousands_sep_;
     }
-    constexpr STRF_HD strf::digits_grouping grouping() const
+    constexpr STRF_HD bool operator!=(const numpunct& other) const noexcept
     {
-        return *this;
+        return ! (*this == other);
+    }
+    constexpr STRF_HD strf::digits_grouping grouping() const noexcept
+    {
+        return grouping_;
     }
     constexpr STRF_HD numpunct& grouping(strf::digits_grouping grp) & noexcept
     {
-        strf::digits_grouping::operator=(grp);
+        grouping_ = grp;
         return *this;
     }
     constexpr STRF_HD numpunct&& grouping(strf::digits_grouping grp) && noexcept
     {
-        strf::digits_grouping::operator=(grp);
+        grouping_ = grp;
         return static_cast<numpunct&&>(*this);
     }
-    using strf::digits_grouping::distribute;
-
+    constexpr STRF_HD strf::digits_distribution distribute(unsigned digcount) const noexcept
+    {
+        return grouping_.distribute(digcount);
+    }
     constexpr STRF_HD bool any_group_separation(unsigned digcount) const noexcept
     {
-        return digits_grouping::any_separator(digcount);
+        return grouping_.any_separator(digcount);
     }
     constexpr STRF_HD unsigned thousands_sep_count(unsigned digcount) const noexcept
     {
-        return digits_grouping::separators_count(digcount);
+        return grouping_.separators_count(digcount);
     }
     constexpr STRF_HD char32_t thousands_sep() const noexcept
     {
@@ -460,13 +530,13 @@ public:
     }
 
 private:
-
+    strf::digits_grouping grouping_;
     char32_t decimal_point_ = U'.';
     char32_t thousands_sep_ = U',';
 };
 
 template <int Base>
-class default_numpunct final
+class default_numpunct
 {
 public:
     using category = strf::numpunct_c<Base>;
@@ -480,6 +550,10 @@ public:
     constexpr STRF_HD bool operator==(const default_numpunct&) const noexcept
     {
         return true;
+    }
+    constexpr STRF_HD bool operator!=(const default_numpunct&) const noexcept
+    {
+        return false;
     }
     constexpr STRF_HD strf::digits_grouping grouping() const
     {
@@ -505,7 +579,7 @@ public:
     {
         return U'.';
     }
-    constexpr operator strf::numpunct<Base> () const noexcept
+    constexpr explicit operator strf::numpunct<Base> () const noexcept
     {
         return {};
     }
@@ -530,6 +604,10 @@ public:
     {
         return decimal_point_ == other.decimal_point_;
     }
+    constexpr STRF_HD bool operator!=(const no_grouping& other) const noexcept
+    {
+        return decimal_point_ != other.decimal_point_;
+    }
     constexpr STRF_HD strf::digits_grouping grouping() const
     {
         return {};
@@ -554,7 +632,7 @@ public:
     {
         return U'.';
     }
-    constexpr STRF_HD operator strf::numpunct<Base> () const noexcept
+    constexpr STRF_HD explicit operator strf::numpunct<Base> () const noexcept
     {
         return {};
     }
@@ -601,8 +679,8 @@ class has_punct_impl
 {
 public:
 
-    static STRF_HD std::true_type  test_numpunct(const strf::numpunct<Base>&);
-    static STRF_HD std::false_type test_numpunct(const strf::default_numpunct<Base>&);
+    static STRF_HD std::true_type  test_numpunct(...);
+    static STRF_HD std::false_type test_numpunct(strf::default_numpunct<Base>);
 
     static STRF_HD const FPack& fp();
 

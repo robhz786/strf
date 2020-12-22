@@ -7,6 +7,7 @@ http://www.boost.org/LICENSE_1_0.txt
 [[main]]
 = `<strf.hpp>` Header file reference
 :source-highlighter: prettify
+:source-language: cpp
 :toc: left
 :toc-title: <strf.hpp>
 :toclevels: 2
@@ -19,7 +20,7 @@ http://www.boost.org/LICENSE_1_0.txt
 :alignment_formatter_q: <<alignment_formatter,alignment_formatter_q>>
 :alignment_format: <<alignment_format,alignment_format>>
 :int_formatter: <<int_formatter,int_formatter>>
-:int_format: <<int_format,int_format>>
+:int_format: <<int_format_fn,int_format>>
 :float_formatter: <<float_formatter,float_formatter>>
 :float_format: <<float_format,float_format>>
 
@@ -32,7 +33,7 @@ http://www.boost.org/LICENSE_1_0.txt
 
 :std_conditional_t: https://en.cppreference.com/w/cpp/types/conditional[std::conditional_t]
 
-:min_size_after_recycle: <<outbuff_hpp#min_size_after_recycle,min_size_after_recycle>>
+:min_space_after_recycle: <<outbuff_hpp#min_space_after_recycle,min_space_after_recycle>>
 :underlying_outbuff: <<outbuff_hpp#underlying_outbuff,underlying_outbuff>>
 :underlying_char_type: <<outbuff_hpp#underlying_char_type,underlying_char_type>>
 :basic_outbuff: <<outbuff_hpp#basic_outbuff,basic_outbuff>>
@@ -60,16 +61,10 @@ include::ref_facets_pack.adoc[]
 include::ref_printer.adoc[]
 include::ref_format_functions.adoc[]
 include::ref_printable_types.adoc[]
+// include::ref_input_types.adoc[]
 include::ref_destination.adoc[]
 include::ref_tr-string.adoc[]
+include::ref_numpunct.adoc[]
 include::ref_char_encoding.adoc[]
 include::ref_width.adoc[]
-
-// include::ref_input_types.adoc[]
-
-== Numeric punctuation
-
-__ To-do __
-
-// include::ref_numpunct.adoc[]
 include::ref_misc.adoc[]

@@ -122,7 +122,7 @@ public:
         , strf::detail::join_printer<CharT, Preview, FPack, FwdArgs...> >;
 
     Preview& preview;
-    FPack fp;
+    FPack facets;
     strf::value_with_formatters
         < strf::detail::join_printing<FwdArgs...>
         , strf::split_pos_formatter<HasSplitPos>
@@ -132,7 +132,6 @@ public:
 template <typename... FwdArgs>
 struct join_printing
 {
-    using facet_tag = void;
     using forwarded_type = strf::detail::join_t<FwdArgs...>;
 
     template <bool HasSplitPos, bool HasAlignment>
@@ -141,16 +140,16 @@ struct join_printing
         , strf::split_pos_formatter<HasSplitPos>
         , strf::alignment_formatter_q<HasAlignment> >;
 
-    using fmt_type = fmt_tmpl<false, false>;
+    using formatters = strf::tag<strf::split_pos_formatter<false>, strf::alignment_formatter>;
 
     template< typename CharT, typename Preview, typename FPack
             , bool HasSplitPos, bool HasAlignment >
     STRF_HD constexpr static auto make_printer_input
-        ( Preview& preview, const FPack& fp, fmt_tmpl<HasSplitPos, HasAlignment> x)
+        ( Preview& preview, const FPack& facets, fmt_tmpl<HasSplitPos, HasAlignment> x)
         -> join_printer_input
             < CharT, Preview, FPack, HasSplitPos, HasAlignment, FwdArgs... >
     {
-        return {preview, fp, x};
+        return {preview, facets, x};
     }
 };
 
@@ -164,6 +163,33 @@ struct print_traits<strf::detail::join_t<FwdArgs...>>
 
 struct aligned_join_maker
 {
+    constexpr aligned_join_maker() = default;
+    constexpr aligned_join_maker(const aligned_join_maker&) = default;
+
+    constexpr aligned_join_maker
+        ( strf::width_t width_
+        , strf::text_alignment align_ = strf::text_alignment::right ) noexcept
+        : width(width_)
+        , align(align_)
+    {
+    }
+
+    template <typename CharT>
+    constexpr aligned_join_maker
+        ( strf::width_t width_
+        , strf::text_alignment align_
+        , CharT fillchar_
+        , std::ptrdiff_t split_pos_ = 1 ) noexcept
+        : width(width_)
+        , align(align_)
+        , fillchar(fillchar_)
+        , split_pos(split_pos_)
+    {
+        static_assert( strf::is_char<CharT>::value // issue 19
+                     , "Refusing non-char argument to set the fill character, "
+                       "since one may pass 0 instead of '0' by accident." );
+    }
+
     strf::width_t width = 0;
     strf::text_alignment align = strf::text_alignment::right;
     char32_t fillchar = U' ';
@@ -232,7 +258,7 @@ STRF_HD void print_split
 {
     strf::detail::print_split
         ( ob, encode_fill, fillcount, fillchar, split_pos
-        , printers.template get<I>()... );
+        , static_cast<const strf::printer<CharT>&>(printers.template get<I>())... );
 }
 
 template<typename CharT, typename... Printers>
@@ -254,15 +280,15 @@ public:
         : split_pos_(input.arg.split_pos())
         , afmt_(input.arg.get_alignment_format())
     {
-        auto enc = get_facet_<strf::char_encoding_c<CharT>>(input.fp);
+        auto enc = get_facet_<strf::char_encoding_c<CharT>>(input.facets);
         encode_fill_func_ = enc.encode_fill_func();
         strf::print_preview<ReqSize, strf::preview_width::yes> preview { afmt_.width };
-        new (printers_ptr_()) printers_tuple_{input.arg.value().args, preview, input.fp};
+        new (printers_ptr_()) printers_tuple_{input.arg.value().args, preview, input.facets};
         if (preview.remaining_width() > 0) {
             fillcount_ = preview.remaining_width().round();
         }
         STRF_IF_CONSTEXPR (static_cast<bool>(ReqSize)) {
-            input.preview.add_size(preview.get_size());
+            input.preview.add_size(preview.accumulated_size());
             if (fillcount_ > 0) {
                 auto fcharsize = enc.encoded_char_size(afmt_.fill);
                 input.preview.add_size(fillcount_ * fcharsize);
@@ -282,7 +308,7 @@ public:
         : split_pos_(input.arg.split_pos())
         , afmt_(input.arg.get_alignment_format())
     {
-        auto enc = get_facet_<strf::char_encoding_c<CharT>>(input.fp);
+        auto enc = get_facet_<strf::char_encoding_c<CharT>>(input.facets);
         encode_fill_func_ = enc.encode_fill_func();
         if (afmt_.width < 0) {
             afmt_.width = 0;
@@ -295,14 +321,14 @@ public:
         }
         strf::print_preview<ReqSize, strf::preview_width::yes> preview{wmax};
         // to-do: what if the line below throws ?
-        new (printers_ptr_()) printers_tuple_{input.arg.value().args, preview, input.fp};
+        new (printers_ptr_()) printers_tuple_{input.arg.value().args, preview, input.facets};
         if (preview.remaining_width() > diff) {
             fillcount_ = (preview.remaining_width() - diff).round();
         }
         width_t width = fillcount_ + wmax - preview.remaining_width();
         input.preview.subtract_width(width);
         STRF_IF_CONSTEXPR (static_cast<bool>(ReqSize)) {
-            input.preview.add_size(preview.get_size());
+            input.preview.add_size(preview.accumulated_size());
             if (fillcount_ > 0) {
                 auto fcharsize = enc.encoded_char_size(afmt_.fill);
                 input.preview.add_size( fillcount_ * fcharsize);
@@ -377,9 +403,9 @@ private:
 #endif
 
     template <typename Category, typename FPack>
-    static decltype(auto) STRF_HD get_facet_(const FPack& fp)
+    static decltype(auto) STRF_HD get_facet_(const FPack& facets)
     {
-        return fp.template get_facet<Category, strf::aligned_join_maker>();
+        return facets.template get_facet<Category, strf::aligned_join_maker>();
     }
 
     STRF_HD void write_fill_(strf::basic_outbuff<CharT>& ob, int count) const
@@ -443,8 +469,8 @@ public:
     STRF_HD join_printer_impl
         ( const strf::detail::simple_tuple<FwdArgs...>& args
         , Preview& preview
-        , const FPack& fp )
-        : printers_{args, preview, fp}
+        , const FPack& facets )
+        : printers_{args, preview, facets}
     {
     }
 
@@ -475,7 +501,7 @@ public:
               < CharT, Preview, FPack2, HasSplitPos, false, FwdArgs... >& input )
         : strf::detail::join_printer_impl
             < CharT, strf::printer_type<CharT, Preview, FPack, FwdArgs>... >
-            ( input.arg.value().args, input.preview, input.fp )
+            ( input.arg.value().args, input.preview, input.facets )
     {
     }
 
@@ -505,30 +531,54 @@ join(const Args&... args)
 
 constexpr STRF_HD strf::aligned_join_maker join_align
     ( strf::width_t width
+    , strf::text_alignment align ) noexcept
+{
+    return {width, align, U' ', 0};
+}
+
+template <typename CharT>
+constexpr STRF_HD strf::aligned_join_maker join_align
+    ( strf::width_t width
     , strf::text_alignment align
-    , char32_t fillchar = U' '
-    , int split_pos = 0 )
+    , CharT fillchar
+    , int split_pos = 0 ) noexcept
 {
     return {width, align, fillchar, split_pos};
 }
 
-constexpr STRF_HD strf::aligned_join_maker join_center(strf::width_t width, char32_t fillchar = U' ') noexcept
+constexpr STRF_HD strf::aligned_join_maker join_center(strf::width_t width) noexcept
+{
+    return {width, strf::text_alignment::center, U' ', 0};
+}
+template <typename CharT>
+constexpr STRF_HD strf::aligned_join_maker join_center(strf::width_t width, CharT fillchar) noexcept
 {
     return {width, strf::text_alignment::center, fillchar, 0};
 }
-
-constexpr STRF_HD strf::aligned_join_maker join_left(strf::width_t width, char32_t fillchar = U' ') noexcept
+constexpr STRF_HD strf::aligned_join_maker join_left(strf::width_t width) noexcept
+{
+    return {width, strf::text_alignment::left, U' ', 0};
+}
+template <typename CharT>
+constexpr STRF_HD strf::aligned_join_maker join_left(strf::width_t width, CharT fillchar) noexcept
 {
     return {width, strf::text_alignment::left, fillchar, 0};
 }
-
-constexpr STRF_HD strf::aligned_join_maker join_right(strf::width_t width, char32_t fillchar = U' ') noexcept
+constexpr STRF_HD strf::aligned_join_maker join_right(strf::width_t width) noexcept
+{
+    return {width, strf::text_alignment::right, U' ', 0};
+}
+template <typename CharT>
+constexpr STRF_HD strf::aligned_join_maker join_right(strf::width_t width, CharT fillchar) noexcept
 {
     return {width, strf::text_alignment::right, fillchar, 0};
 }
 
-constexpr STRF_HD strf::aligned_join_maker join_split(strf::width_t width, char32_t fillchar,
-    std::ptrdiff_t split_pos) noexcept
+template <typename CharT>
+constexpr STRF_HD strf::aligned_join_maker join_split
+    ( strf::width_t width
+    , CharT fillchar
+    , std::ptrdiff_t split_pos ) noexcept
 {
     return {width, strf::text_alignment::split, fillchar, split_pos};
 }

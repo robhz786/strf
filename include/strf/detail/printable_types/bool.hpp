@@ -21,11 +21,9 @@ template <typename CharT> class fmt_bool_printer;
 template <>
 struct print_traits<bool>
 {
-    using facet_tag = bool;
+    using override_tag = bool;
     using forwarded_type = bool;
-    using fmt_type = strf::value_with_formatters
-        < strf::print_traits<bool>
-        , strf::alignment_formatter >;
+    using formatters = strf::tag<strf::alignment_formatter>;
 
     template <typename CharT, typename Preview, typename FPack>
     constexpr STRF_HD static auto make_printer_input
@@ -36,11 +34,15 @@ struct print_traits<bool>
         return {preview, fp, x};
     }
 
-    template <typename CharT, typename Preview, typename FPack>
+    template <typename CharT, typename Preview, typename FPack, typename... T>
     constexpr STRF_HD static auto make_printer_input
-        ( Preview& preview, const FPack& fp, fmt_type x ) noexcept
+        ( Preview& preview
+        , const FPack& fp
+        , strf::value_with_formatters<T...> x ) noexcept
         -> strf::usual_printer_input
-            < CharT, Preview, FPack, fmt_type, strf::detail::fmt_bool_printer<CharT> >
+            < CharT, Preview, FPack
+            , strf::value_with_formatters<T...>
+            , strf::detail::fmt_bool_printer<CharT> >
     {
         return {preview, fp, x};
     }
@@ -60,7 +62,7 @@ public:
     constexpr STRF_HD bool_printer
         ( const strf::usual_printer_input<T...>& input )
         : value_(input.arg)
-        , lettercase_(strf::get_facet<strf::lettercase_c, bool>(input.fp))
+        , lettercase_(strf::get_facet<strf::lettercase_c, bool>(input.facets))
     {
         input.preview.subtract_width(5 - (int)input.arg);
         input.preview.add_size(5 - (int)input.arg);
@@ -109,9 +111,9 @@ public:
         ( const strf::usual_printer_input<CharT, T...>& input )
         : value_(input.arg.value())
         , afmt_(input.arg.get_alignment_format())
-        , lettercase_(strf::get_facet<strf::lettercase_c, bool>(input.fp))
+        , lettercase_(strf::get_facet<strf::lettercase_c, bool>(input.facets))
     {
-        auto enc = strf::get_facet<char_encoding_c<CharT>, bool>(input.fp);
+        auto enc = strf::get_facet<char_encoding_c<CharT>, bool>(input.facets);
         std::int16_t w = 5 - (int)input.arg.value();
         auto fmt_width = afmt_.width.round();
         if (fmt_width > w) {

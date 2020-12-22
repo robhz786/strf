@@ -212,13 +212,12 @@ STRF_TEST_FUNC char* replace_char
     static char buff[200];
     char* dest = buff;
     char* dest_end = buff + sizeof(buff);
-    const char32_t replacement_str[2] = {replacement, U'\0'};
     for (const char* it = src; *it != '\0'; ++it) {
         auto ch = *it;
         if (ch != to_be_replaced) {
             *dest++ = ch;
         } else {
-            dest = strf::to(dest, dest_end) (strf::conv(replacement_str)) .ptr;
+            dest = strf::to(dest, dest_end) (replacement) .ptr;
         }
     }
     *dest = '\0';
@@ -405,15 +404,15 @@ STRF_TEST_FUNC void basic_tests(const FPack& fp)
     TEST(rd("_______________+1.25")).with(fp) (j(+strf::split(1.25, 5, '*')));
 
     TEST(rd("_____________\xEF\xBF\xBD\xEF\xBF\xBD-1.25")).with(fp)
-        (j(strf::right(-1.25, 7, 0xFFFFFFF)));
+        (j(strf::right(-1.25, 7, (char32_t)0xFFFFFFF)));
     TEST(rd("_____________-1.25\xEF\xBF\xBD\xEF\xBF\xBD")).with(fp)
-        (j(strf::left(-1.25, 7, 0xFFFFFFF)));
+        (j(strf::left(-1.25, 7, (char32_t)0xFFFFFFF)));
     TEST(rd("_____________\xEF\xBF\xBD-1.25\xEF\xBF\xBD")).with(fp)
-        (j(strf::center(-1.25, 7, 0xFFFFFFF)));
+        (j(strf::center(-1.25, 7, (char32_t)0xFFFFFFF)));
     TEST(rd("_____________-\xEF\xBF\xBD\xEF\xBF\xBD""1.25")).with(fp)
-        (j(strf::split(-1.25, 7, 0xFFFFFFF)));
+        (j(strf::split(-1.25, 7, (char32_t)0xFFFFFFF)));
     TEST(rd("_____________+\xEF\xBF\xBD\xEF\xBF\xBD""1.25")).with(fp)
-        (j(+strf::split(1.25, 7, 0xFFFFFFF)));
+        (j(+strf::split(1.25, 7, (char32_t)0xFFFFFFF)));
 }
 
 
@@ -423,7 +422,9 @@ STRF_TEST_FUNC void test_hexadecimal()
 
     TEST("0x0p+0") (strf::hex(0.0));
     TEST("______________0x0p+0") (j(strf::hex(0.0)));
+    TEST("_____________+0x0p+0") (j(+strf::hex(0.0)));
     TEST("_____________0x0.p+0") (j(*strf::hex(0.0)));
+    TEST("____________+0x0.p+0") (j(+*strf::hex(0.0)));
     TEST("__________0x0.000p+0") (j(strf::hex(0.0).p(3)));
     TEST("_____________-0x1p-3") (j(strf::hex(-0.125)));
     TEST("_____________0x1p+11") (j(strf::hex(2048.0)));
@@ -438,6 +439,7 @@ STRF_TEST_FUNC void test_hexadecimal()
     TEST("________0x1.12345p+0") (j(strf::hex(0x1.12345p+0).p(5)));
     TEST("_______0x1.123450p+0") (j(strf::hex(0x1.12345p+0).p(6)));
     TEST("_____________0x1.p+0") (j(*strf::hex(0x1.12345p+0).p(0)));
+    TEST("____________+0x1.p+0") (j(+*strf::hex(0x1.12345p+0).p(0)));
     TEST("_______0x0.000p-1022") (j(strf::hex(0x0.0008p-1022).p(3)));
     TEST("_______0x0.002p-1022") (j(strf::hex(0x0.0018p-1022).p(3)));
     TEST("_______0x0.001p-1022") (j(strf::hex(0x0.0008000000001p-1022).p(3)));
@@ -638,6 +640,12 @@ STRF_TEST_FUNC void test_punctuation()
 
 STRF_TEST_FUNC void test_input_float()
 {
+
+#if defined(__GNUC__) && (__GNUC__ == 7 || __GNUC__ == 8)
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Warray-bounds"
+#endif
+
     {
         TEST_SCOPE_DESCRIPTION("subnormal float 32");
         {
@@ -669,8 +677,14 @@ STRF_TEST_FUNC void test_input_float()
         basic_tests(strf::pack( strf::numpunct<10>(-1).decimal_point('*')
                               , strf::numpunct<16>(-1).decimal_point('*') ));
     }
+
+#if defined(__GNUC__) && (__GNUC__ == 7 || __GNUC__ == 8)
+#  pragma GCC diagnostic pop
+#endif
+
     test_hexadecimal();
     test_several_values<float>();
     test_several_values<double>();
     test_punctuation();
 }
+

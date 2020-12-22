@@ -6,7 +6,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <strf/detail/facets/lettercase.hpp>
-#ifdef __cpp_lib_bitops
+#ifdef STRF_USE_STD_BITOPS
 #include <bit>
 #endif
 
@@ -75,7 +75,7 @@ constexpr STRF_HD unsigned max_num_digits()
 template
     < typename IntT
     , typename unsigned_IntT = typename std::make_unsigned<IntT>::type >
-inline STRF_HD typename std::enable_if<std::is_signed<IntT>::value, unsigned_IntT>::type
+inline STRF_HD std::enable_if_t<std::is_signed<IntT>::value, unsigned_IntT>
 unsigned_abs(IntT value) noexcept
 {
     return ( value > 0
@@ -84,7 +84,7 @@ unsigned_abs(IntT value) noexcept
 }
 
 template<typename IntT>
-inline STRF_HD typename std::enable_if<std::is_unsigned<IntT>::value, IntT>::type
+inline STRF_HD std::enable_if_t<std::is_unsigned<IntT>::value, IntT>
 unsigned_abs(IntT value) noexcept
 {
     return value;
@@ -93,7 +93,7 @@ unsigned_abs(IntT value) noexcept
 template <int Base, int IntSize>
 struct digits_counter;
 
-#if defined(__cpp_lib_bitops)
+#if defined(STRF_USE_STD_BITOPS)
 
 template<>
 struct digits_counter<2, 4>
@@ -148,7 +148,7 @@ struct digits_counter<16, 8>
     }
 };
 
-#else // defined(__cpp_lib_bitops)
+#else // defined(STRF_USE_STD_BITOPS)
 
 template<>
 struct digits_counter<2, 4>
@@ -313,7 +313,7 @@ struct digits_counter<16, 8>
     }
 };
 
-#endif // defined(__cpp_lib_bitops)
+#endif // defined(STRF_USE_STD_BITOPS)
 
 template<>
 struct digits_counter<10, 2>
@@ -498,150 +498,111 @@ public:
     static STRF_HD void write_txtdigits_backwards_little_sep
         ( CharT* it
         , UIntT uvalue
-        , strf::digits_grouping_iterator grouping_it
+        , strf::digits_grouping_iterator git
         , CharT sep
         , strf::lettercase ) noexcept
     {
         STRF_ASSERT(uvalue != 0);
 
         const char* arr = strf::detail::chars_00_to_99();
-        std::uint8_t dig_index = 0;
-        auto group = grouping_it.lowest_group();
-        auto group_it = group;
-        STRF_ASSERT(group != 0);
-        if (grouping_it.no_more_sep()) {
-            goto no_more_sep;
-        }
-        if ( ! grouping_it.is_final()) {
-            while (1) {
-                STRF_ASSERT( ! grouping_it.is_final());
-                if (uvalue < 10) {
-                    goto last_digit;
-                }
-                dig_index = static_cast<std::uint8_t>((uvalue % 100) << 1);
-                uvalue /= 100;
-                if (group_it >= 2) {
-                    it[-1] = arr[dig_index + 1];
-                    it[-2] = arr[dig_index];
-                    it -= 2;
-                    if (group_it != 2) {
-                        group_it -= 2;
-                    } else {
-                        if (uvalue == 0) {
-                            return;
-                        }
-                        *--it = sep;
-                        grouping_it.pop_low();
-                        group = grouping_it.lowest_group();
-                        if (grouping_it.is_final()) {
-                            if (grouping_it.no_more_sep()) {
-                                goto no_more_sep;
-                            }
-                            goto repeated_groups;
-                        }
-                        STRF_ASSERT(!grouping_it.no_more_sep());
-                        group_it = group;
-                    }
-                } else {
-                    STRF_ASSERT(group_it == 1);
-                    * --it = arr[dig_index + 1];
-                    * --it = sep;
-                    * --it = arr[dig_index];
-                    if (uvalue == 0) {
-                        return;
-                    }
-                    grouping_it.pop_low();
-                    group = grouping_it.lowest_group();
-                    if (grouping_it.is_final()) {
-                        if (grouping_it.no_more_sep()) {
-                            goto no_more_sep;
-                        }
-                        if (group == 1) {
-                            * --it = sep;
-                            goto repeated_unary_groups;
-                        }
-                        goto repeated_groups_deslocated;
-                    }
-                    STRF_ASSERT(!grouping_it.no_more_sep());
-                    if (group != 1) {
-                        group_it = group - 1;
-                    } else {
-                        * --it = sep;
-                        grouping_it.pop_low();
-                        group = grouping_it.lowest_group();
-                        if (grouping_it.is_final()) {
-                            if (grouping_it.no_more_sep()) {
-                                goto no_more_sep;
-                            }
-                            goto repeated_groups;
-                        }
-                        group_it = group;
-                    }
-                }
-            }
-        }
-        repeated_groups:
-        group_it = group;
-        if (group != 1) {
-            while (1) {
-                STRF_ASSERT(group_it != 0);
+        auto digits_before_sep = git.current();
 
-                if (uvalue < 10) {
-                    goto last_digit;
-                }
-                dig_index = static_cast<std::uint8_t>((uvalue % 100) << 1);
-                uvalue /= 100;
-                *--it = arr[dig_index + 1];
-                if (--group_it != 0) {
-                    * --it = arr[dig_index];
-                    if (--group_it == 0) {
-                        if (uvalue == 0) {
-                            return;
-                        }
-                        *--it = sep;
-                        group_it = group;
-                    }
-                } else {
-                    it[-1] = sep;
-                    it[-2] = arr[dig_index];
-                    it -= 2;
-                    if (uvalue == 0) {
-                        return;
-                    }
-                    repeated_groups_deslocated:
-                    group_it = group - 1;
-                }
-            }
-        } else {
-            repeated_unary_groups:
+        // if (git.shall_repeat_current() && digits_before_sep > 1) { // common case ( optimization )
+        //     auto group_size = digits_before_sep;
+        //     while (1) {
+        //         if (uvalue < 10) {
+        //             if (uvalue) {
+        //                 *--it = static_cast<CharT>('0' + uvalue);
+        //             }
+        //             return;
+        //         }
+        //         auto dig_index = static_cast<std::uint8_t>((uvalue % 100) << 1);
+        //         uvalue /= 100;
+        //         if (digits_before_sep >= 2) {
+        //             it[-1] = arr[dig_index + 1];
+        //             it[-2] = arr[dig_index];
+        //             if (uvalue == 0) {
+        //                 return;
+        //             }
+        //             it -= 2;
+        //             if (digits_before_sep == 2) {
+        //                 *--it = sep;
+        //                 digits_before_sep = group_size;
+        //             } else {
+        //                 digits_before_sep -= 2;
+        //             }
+        //         } else {
+        //             it[-1] = arr[dig_index + 1];
+        //             it[-2] = sep;
+        //             it[-3] = arr[dig_index];
+        //             it -=3;
+        //             digits_before_sep = group_size - 1;
+        //         }
+        //     }
+        // }
+        while (1) {
             if (uvalue < 10) {
-                goto last_digit;
+                STRF_ASSERT(uvalue != 0);
+                *--it = static_cast<CharT>('0' + uvalue);
+                return;
             }
-            while (1) {
-                dig_index = static_cast<std::uint8_t>((uvalue % 100) << 1);
-                uvalue /= 100;
-                * --it = arr[dig_index + 1];
-                * --it = sep;
-                * --it = arr[dig_index];
-                if ( ! uvalue) {
+            auto dig_index = static_cast<std::uint8_t>((uvalue % 100) << 1);
+            uvalue /= 100;
+            if (digits_before_sep >= 2) {
+                it[-1] = arr[dig_index + 1];
+                it[-2] = arr[dig_index];
+                if (uvalue == 0) {
                     return;
                 }
-                * --it = sep;
-                if (uvalue < 10) {
-                    * --it = static_cast<CharT>('0' + uvalue);
+                it -= 2;
+                if (digits_before_sep != 2) {
+                    digits_before_sep -= 2;
+                } else {
+                    * --it = sep;
+                    if (git.is_final()) {
+                        break;
+                    }
+                    if ( ! git.is_last()) {
+                        git.advance();
+                    }
+                    digits_before_sep = git.current();
+                }
+            } else {
+                it[-1] = arr[dig_index + 1];
+                it[-2] = sep;
+                it[-3] = arr[dig_index];
+                if (uvalue == 0) {
                     return;
+                }
+                it -= 3;
+                if (git.is_final()) {
+                    break;
+                }
+                if ( ! git.is_last()) {
+                    git.advance();
+                }
+                digits_before_sep = git.current() - 1;
+                if (digits_before_sep == 0) {
+                    * --it = sep;
+                    if (git.is_final()) {
+                        break;
+                    }
+                    if ( ! git.is_last()) {
+                        git.advance();
+                    }
+                    digits_before_sep = git.current();
                 }
             }
         }
-        no_more_sep:
+
+        STRF_ASSERT(uvalue != 0);
         while (uvalue > 9) {
-            dig_index = static_cast<std::uint8_t>((uvalue % 100) << 1);
+            auto dig_index = static_cast<std::uint8_t>((uvalue % 100) << 1);
             uvalue /= 100;
             it[-2] = arr[dig_index];
             it[-1] = arr[dig_index + 1];
             it -= 2;
         }
-        last_digit:
         if (uvalue) {
             *--it = static_cast<CharT>('0' + uvalue);
         }
@@ -680,73 +641,46 @@ public:
     static STRF_HD void write_txtdigits_backwards_little_sep
         ( CharT* it
         , UIntT uvalue
-        , strf::digits_grouping_iterator grouping_it
+        , strf::digits_grouping_iterator git
         , CharT sep
         , strf::lettercase lc ) noexcept
     {
         static_assert(std::is_unsigned<UIntT>::value, "");
         STRF_ASSERT(uvalue != 0);
+        STRF_ASSERT(! git.ended());
+
         const char offset_digit_a = ('A' | ((lc == strf::lowercase) << 5)) - 10;
-        auto group = grouping_it.lowest_group();
-        auto group_it = group;
-        while (1) {
-            unsigned d = uvalue & 0xF;
-            --it;
-            if (d < 10) {
-                *it = static_cast<CharT>('0' + d);
-            } else {
-                *it = static_cast<CharT>(offset_digit_a + d);
-            }
-            uvalue = uvalue >> 4;
+        auto digits_before_sep = git.current();
+        while(uvalue > 0xF) {
+            auto digit = uvalue & 0xF;
+            *--it = ( digit < 10
+                    ? static_cast<CharT>('0' + digit)
+                    : static_cast<CharT>(offset_digit_a + digit) );
+            uvalue >>= 4;
             if (uvalue == 0) {
                 return;
             }
-            if (group_it == 1) {
+            if (digits_before_sep != 1) {
+                -- digits_before_sep;
+            } else {
                 *--it = sep;
-                grouping_it.pop_low();
-                group_it = grouping_it.lowest_group();
-                if (group_it == 0) {
+                if (git.is_final()) {
                     break;
                 }
-                if (grouping_it.no_more_sep()) {
-                    goto no_more_sep;
+                if ( ! git.is_last()) {
+                    git.advance();
                 }
-                group = group_it;
-            } else {
-                --group_it;
+                digits_before_sep = git.current();
             }
         }
-        group_it = group;
-        while (1) {
-            unsigned d = uvalue & 0xF;
-            --it;
-            if (d < 10) {
-                *it = static_cast<CharT>('0' + d);
-            } else {
-                *it = static_cast<CharT>(offset_digit_a + d);
-            }
-            uvalue = uvalue >> 4;
-            if (uvalue == 0) {
-                return;
-            }
-            if (group_it == 1) {
-                *--it = sep;
-                group_it = group;
-            } else {
-                --group_it;
-            }
-        }
-        no_more_sep:
+        STRF_ASSERT(uvalue);
         do {
-            unsigned d = uvalue & 0xF;
+            auto digit = uvalue & 0xF;
+            *--it = ( digit < 10
+                    ? static_cast<CharT>('0' + digit)
+                    : static_cast<CharT>(offset_digit_a + digit) );
             uvalue = uvalue >> 4;
-            --it;
-            if (d < 10) {
-                *it = static_cast<CharT>('0' + d);
-            } else {
-                *it = static_cast<CharT>(offset_digit_a + d);
-            }
-        } while (uvalue);
+        } while(uvalue);
     }
 };
 
@@ -774,54 +708,40 @@ public:
     static STRF_HD void write_txtdigits_backwards_little_sep
         ( CharT* it
         , UIntT uvalue
-        , strf::digits_grouping_iterator grouping_it
+        , strf::digits_grouping_iterator git
         , CharT sep
         , strf::lettercase ) noexcept
     {
         static_assert(std::is_unsigned<UIntT>::value, "");
         STRF_ASSERT(uvalue != 0);
-        auto group = grouping_it.lowest_group();
-        auto group_it = group;
+        STRF_ASSERT(! git.ended());
+
+        auto digits_before_sep = git.current();
         while (1) {
-            *--it = '0' + (uvalue & 0x7);
-            uvalue = uvalue >> 3;
-            if(uvalue == 0) {
-                return;
-            }
-            if (group_it == 1) {
-                *--it = sep;
-                grouping_it.pop_low();
-                group_it = grouping_it.lowest_group();
-                if (group_it == 0) {
-                    break;
-                }
-                if (grouping_it.no_more_sep()) {
-                    goto no_more_sep;
-                }
-                group = group_it;
-            } else {
-                --group_it;
-            }
-        }
-        group_it = group;
-        while (1) {
+            STRF_ASSERT(digits_before_sep > 0);
             *--it = '0' + (uvalue & 0x7);
             uvalue = uvalue >> 3;
             if (uvalue == 0) {
                 return;
             }
-            if (group_it == 1) {
-                *--it = sep;
-                group_it = group;
+            if (digits_before_sep != 1) {
+                -- digits_before_sep;
             } else {
-                --group_it;
+                *--it = sep;
+                if (git.is_final()) {
+                    break;
+                }
+                if ( ! git.is_last()) {
+                    git.advance();
+                }
+                digits_before_sep = git.current();
             }
         }
-        no_more_sep:
+        STRF_ASSERT(uvalue);
         do {
             *--it = '0' + (uvalue & 0x7);
             uvalue = uvalue >> 3;
-        } while (uvalue != 0);
+        } while(uvalue);
     }
 };
 
@@ -971,20 +891,22 @@ public:
         oit += dist.highest_group;
         digits += dist.highest_group;
 
-        auto middle_groups = dist.low_groups.highest_group();
-        while (dist.middle_groups_count --) {
-            if (oit + sep_size + middle_groups > end) {
-                ob.advance_to(oit);
-                ob.recycle();
-                oit = ob.pointer();
-                end = ob.end();
-            }
-            oit = encode_char(oit, sep);
-            strf::detail::copy_n(digits, middle_groups, oit);
-            oit += middle_groups;
-            digits += middle_groups;
+        if (dist.middle_groups_count) {
+            auto middle_groups = dist.low_groups.highest_group();
+            do {
+                if (oit + sep_size + middle_groups > end) {
+                    ob.advance_to(oit);
+                    ob.recycle();
+                    oit = ob.pointer();
+                    end = ob.end();
+                }
+                oit = encode_char(oit, sep);
+                strf::detail::copy_n(digits, middle_groups, oit);
+                oit += middle_groups;
+                digits += middle_groups;
+            } while (--dist.middle_groups_count);
+            dist.low_groups.pop_high();
         }
-        dist.low_groups.pop_high();
         while ( ! dist.low_groups.empty()) {
             auto grp = dist.low_groups.highest_group();
             if (oit + sep_size + grp > end) {
@@ -1063,27 +985,29 @@ public:
             *oit++ = (CharT)'0' + (0 != (value & mask));
             mask = mask >> 1;
         }
-        auto middle_groups = dist.low_groups.highest_group();
-        while (dist.middle_groups_count--) {
-            if (oit == end) {
-                ob.advance_to(oit);
-                ob.recycle();
-                oit = ob.pointer();
-                end = ob.end();
-            }
-            *oit++ = sep;
-            for (auto i = middle_groups; i ; --i) {
+        if (dist.middle_groups_count) {
+            auto middle_groups = dist.low_groups.highest_group();
+            do {
                 if (oit == end) {
                     ob.advance_to(oit);
                     ob.recycle();
                     oit = ob.pointer();
                     end = ob.end();
                 }
-                *oit++ = (CharT)'0' + (0 != (value & mask));
-                mask = mask >> 1;
-            }
+                *oit++ = sep;
+                for (auto i = middle_groups; i ; --i) {
+                    if (oit == end) {
+                        ob.advance_to(oit);
+                        ob.recycle();
+                        oit = ob.pointer();
+                        end = ob.end();
+                    }
+                    *oit++ = (CharT)'0' + (0 != (value & mask));
+                    mask = mask >> 1;
+                }
+            } while (--dist.middle_groups_count);
+            dist.low_groups.pop_high();
         }
-        dist.low_groups.pop_high();
         while ( ! dist.low_groups.empty() ) {
             if (oit == end) {
                 ob.advance_to(oit);
@@ -1131,28 +1055,29 @@ public:
             *oit++ = (CharT)'0' + (0 != (value & mask));
             mask = mask >> 1;
         }
-        auto middle_groups = dist.low_groups.highest_group();
-        while (dist.middle_groups_count) {
-            if (oit + sep_size > end) {
-                ob.advance_to(oit);
-                ob.recycle();
-                oit = ob.pointer();
-                end = ob.end();
-            }
-            oit = encode_char(oit, sep);
-            for (auto i = middle_groups; i ; --i) {
-                if (oit == end) {
+        if (dist.middle_groups_count) {
+            auto middle_groups = dist.low_groups.highest_group();
+            dist.low_groups.pop_high();
+            do {
+                if (oit + sep_size > end) {
                     ob.advance_to(oit);
                     ob.recycle();
                     oit = ob.pointer();
                     end = ob.end();
                 }
-                *oit++ = (CharT)'0' + (0 != (value & mask));
-                mask = mask >> 1;
-            }
-            -- dist.middle_groups_count;
+                oit = encode_char(oit, sep);
+                for (auto i = middle_groups; i ; --i) {
+                    if (oit == end) {
+                        ob.advance_to(oit);
+                        ob.recycle();
+                        oit = ob.pointer();
+                        end = ob.end();
+                    }
+                    *oit++ = (CharT)'0' + (0 != (value & mask));
+                    mask = mask >> 1;
+                }
+            } while (--dist.middle_groups_count);
         }
-        dist.low_groups.pop_high();
         while ( ! dist.low_groups.empty() ) {
             if (oit + sep_size > end) {
                 ob.advance_to(oit);

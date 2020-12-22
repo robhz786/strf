@@ -50,7 +50,6 @@ class facets_pack_printer;
 template <typename ChildFPack, typename... Args>
 struct print_traits<strf::inner_pack_with_args<ChildFPack, Args...>>
 {
-    using facet_tag = void; // not_overridable
     using forwarded_type = strf::inner_pack_with_args<ChildFPack, Args...>;
 
     template < typename CharT, typename Preview, typename FPack>
@@ -79,7 +78,7 @@ public:
     template <typename... T>
     STRF_HD facets_pack_printer
         ( const strf::usual_printer_input<T...>& input )
-        : fp_{input.fp, input.arg.fp}
+        : fp_{input.facets, input.arg.fp}
         , printers_{input.arg.args, input.preview, fp_}
     {
     }

@@ -13,6 +13,11 @@ http://www.boost.org/LICENSE_1_0.txt
 :toclevels: 1
 :icons: font
 
+
+:numpunct_c:             <<strf_hpp#numpunct_c,numpunct_c>>
+:numpunct:               <<strf_hpp#numpunct,numpunct>>
+:width_t: <<strf_hpp#width_t,width_t>>
+
 [[format_functions]]
 == Format Functions
 
@@ -27,21 +32,22 @@ auto str = strf::to_string( +*strf::fmt(1.0).sci().fill(U'~') ^ 15 );
 assert(str == "~~~~+1.e+01~~~~")
 ----
 
+[[alignment_format_functions]]
 .Alignment format functions -- for all printable types
 [%header,cols="40,60"]
 |===
 | Member function | Effect
 
-|`operator<(std::int16_t width)`
+|`operator<({width_t} width)`
 | Aligns to the left ( Or to the right right-to-left (RTL) script )
 
-|`operator>(std::int16_t width)`
+|`operator>({width_t} width)`
 | Aligns to the right ( Or to the left right-to-left (RTL) script )
 
-|`operator^(std::int16_t width)`
+|`operator^({width_t} width)`
 | Center alignment
 
-|`operator%(std::int16_t width)`
+|`operator%({width_t} width)`
 | Splits the content, as in `std::internal`.
 
 |`fill(char32_t ch)`
@@ -83,6 +89,7 @@ assert(str == "~~~~+1.e+01~~~~")
 | Uses "general" notation. For floating points only.
 |===
 
+[[multi]]
 .When `_arg_` is a character
 [%header,cols="40,60"]
 |===
@@ -91,12 +98,25 @@ assert(str == "~~~~+1.e+01~~~~")
 | Prints the argument `count` times.
 |===
 
+[[string_formatting]]
 .When `_arg_` is a string
 [%header,cols="40,60"]
 |===
 | Member function | Effect
 |`p(<<strf_hpp#width_t,width_t>> precision)`
 | Sets string precision
+
+| `template <typename Enc>` `sani(Enc enc)`
+| Equivalent to `sanitize_from_encoding(enc)`
+
+| `template <typename Enc>` `conv(Enc enc)`
+| Equivalent to `convert_from_encoding(enc)`
+
+| `sani()`
+| Equivalent to `sanitize_from_encoding()`
+
+| `conv()`
+| Equivalent to `convert_from_encoding()`
 
 | `template <typename Enc>` `sanitize_from_encoding(Enc enc)`
 | Transcodes the input string from the character encoding represented by `enc`,
@@ -106,18 +126,12 @@ assert(str == "~~~~+1.e+01~~~~")
 | Transocdes the input string from the character encoding represented by `enc`,
   if it is not already destination encoding.
 
-| `template <typename Enc>` `sani(Enc enc)`
-| Equivalent to `sanitize_from_encoding(enc)`
-
-| `template <typename Enc>` `conv(Enc enc)`
-| Equivalent to `convert_from_encoding(enc)`
-
-| `template <typename Enc>` `sanitize_encoding()`
+| `sanitize_encoding()`
 | Transcodes the input string from the character encoding that corresponds
   to its character type, or just sanitizes it if it same
   as the destination encoding.
 
-| `template <typename Enc>` `convert_encoding()`
+| `convert_encoding()`
 | Transsodes the input string from the character encoding that correspods
   to its character type, if it is not already the same
   as the destination encoding.
@@ -160,52 +174,52 @@ that work as alias to format functions:
 auto str = strf::to_string( +*strf::center(1.0, 9, U'~') );
 assert(str == "~~~+1.~~~")
 ----
-== Destinations
+== Destinations [[destinations]]
 
 [%header,cols="10,4"]
 |===
 | Expression |Header
 
-|`<<dest_outbuff,to>> (__outbuff_ref__) (__args\...__)`
+|`<<dest_outbuff,to>> (__outbuff_ref__)`
 | `<<strf_hpp#,<strf.hpp> >>`
 
-|`<<dest_raw_string,to>> (__char_ptr__, __count__) (__args\...__)`
+|`<<dest_raw_string,to>> (__char_ptr__, __count__)`
 | `<<strf_hpp#,<strf.hpp> >>`
 
-|`<<dest_raw_string,to>> (__char_ptr__, __end__) (__args\...__)`
+|`<<dest_raw_string,to>> (__char_ptr__, __end__)`
 | `<<strf_hpp#,<strf.hpp> >>`
 
-|`<<dest_raw_string,to>> (__char_array__) (__args\...__)`
+|`<<dest_raw_string,to>> (__char_array__)`
 | `<<strf_hpp#,<strf.hpp> >>`
 
-|`<<dest_to_basic_string,to_basic_string>> <__CharT__, _Traits_~_opt_~, _A_~_opt_~> (__args\...__)`
+|`<<dest_to_basic_string,to_basic_string>> <__CharT__, _Traits_~_opt_~, _A_~_opt_~>`
 | `<<to_string_hpp#,<strf/to_string.hpp> >>`
 
-|`<<dest_to_string,to_string>>               (__args\...__)`
+|`<<dest_to_string,to_string>>`
 | `<<to_string_hpp#,<strf/to_string.hpp> >>`
 
-|`<<dest_to_u8string,to_u8string>>             (__args\...__)`
+|`<<dest_to_u8string,to_u8string>>`
 | `<<to_string_hpp#,<strf/to_string.hpp> >>`
 
-|`<<dest_to_u16string,to_u16string>>            (__args\...__)`
+|`<<dest_to_u16string,to_u16string>>`
 | `<<to_string_hpp#,<strf/to_string.hpp> >>`
 
-|`<<dest_to_u32string,to_u16string>>            (__args\...__)`
+|`<<dest_to_u32string,to_u16string>>`
 | `<<to_string_hpp#,<strf/to_string.hpp> >>`
 
-|`<<dest_to_wstring,to_wstring>>               (__args\...__)`
+|`<<dest_to_wstring,to_wstring>>`
 | `<<to_string_hpp#,<strf/to_string.hpp> >>`
 
-|`<<dest_streambuf,to>> (__streambuf_ptr__)  (__args\...__)`
+|`<<dest_streambuf,to>> (__streambuf_ptr__)`
 | `<<to_streambuf_hpp#,<strf/to_streambuf.hpp> >>`
 
-|`<<dest_streambuf,to>> (__streambuf_ref__)  (__args\...__)`
+|`<<dest_streambuf,to>> (__streambuf_ref__)`
 | `<<to_streambuf_hpp#,<strf/to_streambuf.hpp> >>`
 
-|`<<dest_cfile,to>> <__CharT__~_opt_~> (__cfile__)     (__args\...__)`
+|`<<dest_cfile,to>> <__CharT__~_opt_~> (__cfile__)`
 | `<<to_cfile_hpp#,<strf/to_cfile.hpp> >>`
 
-|`<<dest_wcfile,wto>> (__cfile__)              (__args\...__)`
+|`<<dest_wcfile,wto>> (__cfile__)`
 | `<<to_cfile_hpp#,<strf/to_cfile.hpp> >>`
 |===
 where:
@@ -232,6 +246,7 @@ strf::to(__outbuff_ref__) (__args\...__)
 Return type:: `basic_outbuff<__CharT__>&`
 Return value:: `__outbuff_ref__`
 Supports reserve:: No
+
 See the <<outbuff_types,list of types>> that derive from `basic_outbuff<__CharT__>&`.
 ====
 
@@ -422,7 +437,7 @@ The table below lists the concrete types that derivate from the `basic_outbuff<_
 | `<<to_cfile_hpp#narrow_cfile_writer,narrow_cfile_writer>><__CharT__~_opt_~>`
 | Writes to `FILE*` using narrow-oriented functions.
 
-| `<<to_cfile_hpp#wide_cfile_writer,narrow_wide_writer>>`
+| `<<to_cfile_hpp#wide_cfile_writer,wide_cfile_writer>>`
 | Writes to `FILE*` using wide-oriented functions.
 |===
 
@@ -581,8 +596,8 @@ the insertion of comments.
 |===
 |A `'{'` followed by  |until                           |means
 |`'-'`                |the next `'}'` or end of string |a comment
-|a digit              |the next `'}'` or end of string |a positional argument reference
 |another `'{'`        |the second `'{'`                |an escaped `'{'`
+|a digit              |the next `'}'` or end of string |a positional argument reference
 |any other character  |the next `'}'` or end of string |a non positional argument reference
 |===
 
@@ -596,12 +611,21 @@ auto str = strf::to_string.tr
 assert(str == "You can learn more about python at www.python.org");
 ----
 
+Escapes::
+Note there is no way and no need to escape the `'}'` character, since it has special meaning only when corresponding to a previous `'{'
++
+[source,cpp]
+----
+auto str = strf::to_string.tr("} {{x} {{{} {{{}}", "aaa", "bbb");
+assert(str == "} {x} {aaa {bbb}");
+----
+
 Positional arguments::
 Position zero refers to the first input argument. The characters the after the digits are ignored. So they can also be used as comments.
 +
 [source,cpp]
 ----
-auto str = strf::to_string.tr("{1 a person} likes {0 a food type}.", "sandwich", "Paul");
+auto str = strf::to_string.tr("{1 a person name} likes {0 a food name}.", "sandwich", "Paul");
 assert(str == "Paul likes sandwich.");
 ----
 
@@ -612,15 +636,6 @@ The characters the after the `'{'` are ignored as well
 ----
 auto str = strf::to_string.tr("{a person} likes {a food type}.", "Paul", "sandwich");
 assert(str == "Paul likes sandwich.");
-----
-
-Escapes::
-Note there is no way and no need to escape the `'}'` character, since it has special meaning only when corresponding to a previous `'{'
-+
-[source,cpp]
-----
-auto str = strf::to_string.tr("} {{x} {{{} {{{}}", "aaa", "bbb");
-assert(str == "} {x} {aaa {bbb}");
 ----
 
 [[tr_string_error]]
@@ -638,7 +653,6 @@ When the argument associated with a `"{"` does not exists, the library does two 
 |===
 |Category |Constrainable | Description
 
-|`<<width_calculator,width_calculator_c>>` |Yes |Defines how the width is calculated
 |`<<numpunct, numpunct_c>><10>`      |Yes |Numeric punctuation for decimal base
 |`<<numpunct, numpunct_c>><16>`      |Yes |Numeric punctuation for hexadecimal base
 |`<<numpunct, numpunct_c>><8>`       |Yes |Numeric punctuation for octal base
@@ -650,11 +664,13 @@ When the argument associated with a `"{"` does not exists, the library does two 
 |`<<invalid_seq_notifier,invalid_seq_notifier_c>>`  |Yes | Callback to notify character encoding nonconformities.
 |`<<surrogate_policy,surrogate_policy_c>>` |Yes |Wheter surrogates are treated as errors
 |`<<tr_string_error,tr_error_notifier_c>>`   |No  |  Callback to notify errors on the tr-string
+|`<<width_calculator,width_calculator_c>>` |Yes |Defines how the width is calculated
+|`<<howto_override_printable_types#,print_override_c>>`     |Yes   | Overrides printable types
 |===
 
 [[numpunct]]
 == Numeric punctuation
-The `numpunct` class template defines punctuation for
+The `{numpunct}` class template defines punctuation for
 integers, `void*` and floating points. It comprises
 the "thousands" separator, the decimal point and the
 grouping pattern.
@@ -718,7 +734,8 @@ void sample() {
 [[lettercase]]
 == Letter case
 
-The `lettercase` facet affects the letter cases when printing numeric values.
+The `<<strf_hpp#lettercase,lettercase>>` facet affects the letter cases
+when printing numeric values.
 The default value is `strf::lowercase`.
 
 [source,cpp]
@@ -957,9 +974,9 @@ assert(utf16_lax == original);                         // surrogate preserved
 [[invalid_seq_notifier]]
 === Encoding error notifier function
 
-The facet `invalid_seq_notifier` contains a function pointer that is called
-every time an ivalid sequence is sanitized, unless it is null, which is the
-default.
+The facet `<<strf_hpp#invalid_seq_notifier,invalid_seq_notifier>>` contains
+a function pointer that is called every time an ivalid sequence is sanitized,
+unless it is null, which is the default.
 
 The code below throws an exception if `u16str` contains any invalid sequence:
 [source,cpp]
@@ -1031,7 +1048,7 @@ assert(result == "***15.00 \xE2\x82\xAC \x80"); // width calculated as 9
   template takes a function object `f` as paramenter and
   returns a facet object that calculates the width of the strings
   by converting them to UTF-32 ( following the policy associated to
-  `<<invalid_seq_policy,invalid_seq_policy>>::replace` ) and then calling
+  `<<invalid_seq_notifier,invalid_seq_notifier>>::replace` ) and then calling
   `f` to evaluate the width of each UTF-32 character. `f` shall take a
   `char32_t` parameter and return a `<<strf_hpp#width_t,width_t>>`,
   which is a type that implements
@@ -1124,7 +1141,7 @@ where
 * `_begin_` and `_end_` are iterators
 * `_separator_` is a raw string of `_CharT_`, where `_CharT_` is the destination character type.
 * `_func_` is  unary a function object such that the type of expression `_func_(_x_)` is printable where `_x_` is an element of the range.
-  
+
 
 .Examples
 [source,cpp,subs=normal]
@@ -1210,8 +1227,8 @@ auto str = strf::to_string("The day was ", as_yymmdd(d), '.');
 assert(str == "The day was is 99/01/01.");
 ----
 
-=== Aligned joins
-You can apply any of the <<format_function,alignment format function>> on the
+=== Aligned joins [[aligned_join]]
+You can apply any of the <<alignment_format_functions,alignment format functions>> on the
 expression `join(__args__\...)`
 [source,cpp]
 ----
@@ -1231,7 +1248,7 @@ Or use any of the expressions below:
 where:
 
 * `__args__\...` are the values to be printed
-* `_width_` is a value of type `std::int16_t`
+* `_width_` is a value of type `{width_t}`
 * `_alignment_` is a value of type `<<strf_hpp#text_alignment, text_alignment>>`
 * `_ch_` is a value of type `char32_t`
 * `__split_pos__` is a value of type `std::size_t`
@@ -1275,19 +1292,3 @@ For exemple, if `str` is a `std::string`, then
 ====
 ////
 
-
-
-
-== Extending the library __(to-do)__
-
-=== Adding output types
-to-do
-
-=== Adding printable types
-to-do
-
-=== Adding Facets
-to-do
-
-=== Adding character encodings
-to-do

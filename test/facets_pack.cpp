@@ -4,6 +4,8 @@
 
 #include "test_utils.hpp"
 
+namespace {
+
 template <int N> struct fcategory;
 
 struct ctor_log
@@ -134,7 +136,7 @@ using derives_from_x = std::is_base_of<class_x, T>;
 template <typename T>
 using is_64 = std::integral_constant<bool, sizeof(T) == 8>;
 
-static void STRF_TEST_FUNC basic_tests()
+void STRF_TEST_FUNC basic_tests()
 {
     auto f1_10 = facet<1>{10};
     auto f2_20 = facet<2>{20};
@@ -194,7 +196,7 @@ static void STRF_TEST_FUNC basic_tests()
 }
 
 
-static void STRF_TEST_FUNC test_constrained_fpe()
+void STRF_TEST_FUNC test_constrained_fpe()
 {
     { // check constexpr
 
@@ -231,7 +233,7 @@ static void STRF_TEST_FUNC test_constrained_fpe()
     {   // construct the constrained facet from rvalue reference;
 
         ctor_log log;
-        facet<0> f{10, &log};
+        facet<0, facet_conf::enable_only_move> f{10, &log};
 
         auto c = strf::constrain<is_64>(std::move(f));
         TEST_EQ(log.cp_count, 0);
@@ -306,50 +308,119 @@ static void STRF_TEST_FUNC test_constrained_fpe()
 
 inline void STRF_TEST_FUNC compilation_tests()
 {
-    bool test1 = ! std::is_copy_constructible
-        <strf::constrained_fpe<is_64, facet<0, enable_only_move>>>
-        ::value;
+    {
+        bool x = ! std::is_copy_constructible
+            <strf::constrained_fpe<is_64, facet<0, enable_only_move>>>
+            ::value;
+        TEST_TRUE(x);
+    }
+    {
+        bool x = std::is_copy_constructible
+            <strf::constrained_fpe<is_64, const facet<0, enable_only_move>& >>
+            ::value;
+        TEST_TRUE(x);
+    }
+    {
+        bool x = ! std::is_copy_constructible
+            <strf::facets_pack<facet<0, enable_only_move>>>
+            ::value;
+        TEST_TRUE(x);
+    }
+    {
+        bool x = std::is_copy_constructible
+            <strf::facets_pack<const facet<0, enable_only_move>& >>
+            ::value;
+        TEST_TRUE(x);
+    }
 
-    bool test2 = std::is_copy_constructible
-        <strf::constrained_fpe<is_64, const facet<0, enable_only_move>& >>
-        ::value;
-
-    bool test3 = ! std::is_copy_constructible
-        <strf::facets_pack<facet<0, enable_only_move>>>
-        ::value;
-
-    bool test4 = std::is_copy_constructible
-        <strf::facets_pack<const facet<0, enable_only_move>& >>
-        ::value;
-
-    bool test5 =  ! std::is_copy_constructible
+    {
+        bool x =  ! std::is_copy_constructible
         < strf::facets_pack
              < strf::constrained_fpe
                  < is_64, facet<0, enable_only_move> >>>
         :: value;
-
-    bool test6 = std::is_constructible
+        TEST_TRUE(x);
+    }
+    {
+        bool x = std::is_constructible
         < strf::facets_pack<facet<0, disable_copy_and_move>>, int >
-        ::value;
-
-    bool test7 = ! std::is_move_constructible
+            ::value;
+        TEST_TRUE(x);
+    }
+    {
+        bool x = ! std::is_move_constructible
         < strf::facets_pack<facet<0, disable_copy_and_move>> >
-        ::value;
+            ::value;
+        TEST_TRUE(x);
+    }
+    {
+        bool x = std::is_same
+            < strf::facets_pack<facet<0>>
+            , decltype(strf::pack(facet<0>{0})) >
+            ::value;
+        TEST_TRUE(x);
+    }
+    {
+        bool x = std::is_default_constructible
+            <strf::facets_pack<strf::default_numpunct<10>>>
+            ::value;
+        TEST_TRUE(x);
 
-    bool test8 = std::is_same
-        < strf::facets_pack<facet<0>>
-        , decltype(strf::pack(facet<0>{0})) >
-        ::value;
+        bool x2 = std::is_trivially_default_constructible
+            <strf::facets_pack<strf::default_numpunct<10>>>
+            ::value;
+        TEST_TRUE(x2);
 
-    TEST_TRUE(test1);
-    TEST_TRUE(test2);
-    TEST_TRUE(test3);
-    TEST_TRUE(test4);
-    TEST_TRUE(test5);
-    TEST_TRUE(test6);
-    TEST_TRUE(test7);
-    TEST_TRUE(test8);
+        strf::facets_pack<strf::default_numpunct<10>> fp;
+        (void) fp;
+    }
+    {
+        using fpe_type = strf::constrained_fpe<std::is_integral, strf::default_numpunct<10>>;
+        bool x = std::is_default_constructible
+            <strf::facets_pack<fpe_type>>
+            ::value;
+        TEST_TRUE(x);
+
+        bool x2 = std::is_trivially_default_constructible
+            <strf::facets_pack<fpe_type>>
+            ::value;
+        TEST_TRUE(x2);
+
+        strf::facets_pack<fpe_type> fp;
+        (void) fp;
+    }
+    {
+        using fpe_type = strf::constrained_fpe<std::is_integral, strf::default_numpunct<10>>;
+        bool x = std::is_default_constructible
+            <strf::facets_pack<fpe_type, strf::facets_pack<fpe_type>>>
+            ::value;
+        TEST_TRUE(x);
+
+        bool x2 = std::is_trivially_default_constructible
+            <strf::facets_pack<fpe_type, strf::facets_pack<fpe_type>>>
+            ::value;
+        TEST_TRUE(x2);
+
+        strf::facets_pack<fpe_type, strf::facets_pack<fpe_type>> fp;
+        (void) fp;
+    }
+    {
+        bool x = std::is_default_constructible
+            <strf::facets_pack<const strf::default_numpunct<10>&>>
+            ::value;
+        TEST_FALSE(x);
+    }
+    {
+        using fpe_type = strf::constrained_fpe< std::is_integral
+                                              , const strf::default_numpunct<10>& >;
+        bool x = std::is_default_constructible
+            <strf::facets_pack<fpe_type, strf::facets_pack<fpe_type>>>
+            ::value;
+        TEST_FALSE(x);
+    }
 }
+
+} // unnamed namespace
 
 void STRF_TEST_FUNC test_facets_pack()
 {
