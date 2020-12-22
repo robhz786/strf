@@ -163,6 +163,33 @@ struct print_traits<strf::detail::join_t<FwdArgs...>>
 
 struct aligned_join_maker
 {
+    constexpr aligned_join_maker() = default;
+    constexpr aligned_join_maker(const aligned_join_maker&) = default;
+
+    constexpr aligned_join_maker
+        ( strf::width_t width_
+        , strf::text_alignment align_ = strf::text_alignment::right ) noexcept
+        : width(width_)
+        , align(align_)
+    {
+    }
+
+    template <typename CharT>
+    constexpr aligned_join_maker
+        ( strf::width_t width_
+        , strf::text_alignment align_
+        , CharT fillchar_
+        , std::ptrdiff_t split_pos_ = 1 ) noexcept
+        : width(width_)
+        , align(align_)
+        , fillchar(fillchar_)
+        , split_pos(split_pos_)
+    {
+        static_assert( strf::is_char<CharT>::value // issue 19
+                     , "Refusing non-char argument to set the fill character, "
+                       "since one may pass 0 instead of '0' by accident." );
+    }
+
     strf::width_t width = 0;
     strf::text_alignment align = strf::text_alignment::right;
     char32_t fillchar = U' ';
@@ -504,30 +531,54 @@ join(const Args&... args)
 
 constexpr STRF_HD strf::aligned_join_maker join_align
     ( strf::width_t width
+    , strf::text_alignment align ) noexcept
+{
+    return {width, align, U' ', 0};
+}
+
+template <typename CharT>
+constexpr STRF_HD strf::aligned_join_maker join_align
+    ( strf::width_t width
     , strf::text_alignment align
-    , char32_t fillchar = U' '
-    , int split_pos = 0 )
+    , CharT fillchar
+    , int split_pos = 0 ) noexcept
 {
     return {width, align, fillchar, split_pos};
 }
 
-constexpr STRF_HD strf::aligned_join_maker join_center(strf::width_t width, char32_t fillchar = U' ') noexcept
+constexpr STRF_HD strf::aligned_join_maker join_center(strf::width_t width) noexcept
+{
+    return {width, strf::text_alignment::center, U' ', 0};
+}
+template <typename CharT>
+constexpr STRF_HD strf::aligned_join_maker join_center(strf::width_t width, CharT fillchar) noexcept
 {
     return {width, strf::text_alignment::center, fillchar, 0};
 }
-
-constexpr STRF_HD strf::aligned_join_maker join_left(strf::width_t width, char32_t fillchar = U' ') noexcept
+constexpr STRF_HD strf::aligned_join_maker join_left(strf::width_t width) noexcept
+{
+    return {width, strf::text_alignment::left, U' ', 0};
+}
+template <typename CharT>
+constexpr STRF_HD strf::aligned_join_maker join_left(strf::width_t width, CharT fillchar) noexcept
 {
     return {width, strf::text_alignment::left, fillchar, 0};
 }
-
-constexpr STRF_HD strf::aligned_join_maker join_right(strf::width_t width, char32_t fillchar = U' ') noexcept
+constexpr STRF_HD strf::aligned_join_maker join_right(strf::width_t width) noexcept
+{
+    return {width, strf::text_alignment::right, U' ', 0};
+}
+template <typename CharT>
+constexpr STRF_HD strf::aligned_join_maker join_right(strf::width_t width, CharT fillchar) noexcept
 {
     return {width, strf::text_alignment::right, fillchar, 0};
 }
 
-constexpr STRF_HD strf::aligned_join_maker join_split(strf::width_t width, char32_t fillchar,
-    std::ptrdiff_t split_pos) noexcept
+template <typename CharT>
+constexpr STRF_HD strf::aligned_join_maker join_split
+    ( strf::width_t width
+    , CharT fillchar
+    , std::ptrdiff_t split_pos ) noexcept
 {
     return {width, strf::text_alignment::split, fillchar, split_pos};
 }

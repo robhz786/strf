@@ -404,15 +404,15 @@ STRF_TEST_FUNC void basic_tests(const FPack& fp)
     TEST(rd("_______________+1.25")).with(fp) (j(+strf::split(1.25, 5, '*')));
 
     TEST(rd("_____________\xEF\xBF\xBD\xEF\xBF\xBD-1.25")).with(fp)
-        (j(strf::right(-1.25, 7, 0xFFFFFFF)));
+        (j(strf::right(-1.25, 7, (char32_t)0xFFFFFFF)));
     TEST(rd("_____________-1.25\xEF\xBF\xBD\xEF\xBF\xBD")).with(fp)
-        (j(strf::left(-1.25, 7, 0xFFFFFFF)));
+        (j(strf::left(-1.25, 7, (char32_t)0xFFFFFFF)));
     TEST(rd("_____________\xEF\xBF\xBD-1.25\xEF\xBF\xBD")).with(fp)
-        (j(strf::center(-1.25, 7, 0xFFFFFFF)));
+        (j(strf::center(-1.25, 7, (char32_t)0xFFFFFFF)));
     TEST(rd("_____________-\xEF\xBF\xBD\xEF\xBF\xBD""1.25")).with(fp)
-        (j(strf::split(-1.25, 7, 0xFFFFFFF)));
+        (j(strf::split(-1.25, 7, (char32_t)0xFFFFFFF)));
     TEST(rd("_____________+\xEF\xBF\xBD\xEF\xBF\xBD""1.25")).with(fp)
-        (j(+strf::split(1.25, 7, 0xFFFFFFF)));
+        (j(+strf::split(1.25, 7, (char32_t)0xFFFFFFF)));
 }
 
 

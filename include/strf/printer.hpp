@@ -1003,13 +1003,12 @@ public:
         data_.width = width;
         return as_derived_rval_ref();
     }
-    template <typename CharT>
+    template < typename CharT >
     constexpr STRF_HD T&& fill(CharT ch) && noexcept
     {
-        static_assert( strf::is_char<CharT>::value
-                     , "fill function only accepts arguments of character types. "
-                       "This is to prevent the value 0 to be accidentally "
-                       "passed instead of the digit '0'" );
+        static_assert( strf::is_char<CharT>::value // issue #19
+                     , "Refusing non-char argument to set the fill character, "
+                       "since one may pass 0 instead of '0' by accident." );
         data_.fill = ch;
         return as_derived_rval_ref();
     }
@@ -1097,10 +1096,9 @@ public:
     template <typename CharT>
     constexpr STRF_HD adapted_derived_type fill(CharT ch) const noexcept
     {
-        static_assert( strf::is_char<CharT>::value
-                     , "fill function only accepts arguments of character types. "
-                       "This is to prevent the value 0 to be accidentally "
-                       "passed instead of the digit '0'" );
+        static_assert( strf::is_char<CharT>::value // issue #19
+                     , "Refusing non-char argument to set the fill character, "
+                       "since one may pass 0 instead of '0' by accident." );
         char32_t ch_ = ch;
         return adapted_derived_type
             { static_cast<const T&>(*this)
@@ -1329,8 +1327,8 @@ constexpr STRF_HD auto right(T&& value, strf::width_t width)
     return strf::fmt(value) > width;
 }
 
-template <typename T>
-constexpr STRF_HD auto right(T&& value, strf::width_t width, char32_t fill)
+template <typename T, typename CharT>
+constexpr STRF_HD auto right(T&& value, strf::width_t width, CharT fill)
     noexcept(noexcept(strf::fmt(value).fill(fill) > width))
     -> std::remove_reference_t<decltype(strf::fmt(value).fill(fill) > width)>
 {
@@ -1345,8 +1343,8 @@ constexpr STRF_HD auto left(T&& value, strf::width_t width)
     return strf::fmt(value) < width;
 }
 
-template <typename T>
-constexpr STRF_HD auto left(T&& value, strf::width_t width, char32_t fill)
+template <typename T, typename CharT>
+constexpr STRF_HD auto left(T&& value, strf::width_t width, CharT fill)
     noexcept(noexcept(strf::fmt(value).fill(fill) < width))
     -> std::remove_reference_t<decltype(strf::fmt(value).fill(fill) < width)>
 {
@@ -1361,8 +1359,8 @@ constexpr STRF_HD auto center(T&& value, strf::width_t width)
     return strf::fmt(value) ^ width;
 }
 
-template <typename T>
-constexpr STRF_HD auto center(T&& value, strf::width_t width, char32_t fill)
+template <typename T, typename CharT>
+constexpr STRF_HD auto center(T&& value, strf::width_t width, CharT fill)
     noexcept(noexcept(strf::fmt(value).fill(fill) ^ width))
     -> std::remove_reference_t<decltype(strf::fmt(value).fill(fill) ^ width)>
 {
@@ -1377,8 +1375,8 @@ constexpr STRF_HD auto split(T&& value, strf::width_t width)
     return strf::fmt(value) % width;
 }
 
-template <typename T>
-constexpr STRF_HD auto split(T&& value, strf::width_t width, char32_t fill)
+template <typename T, typename CharT>
+constexpr STRF_HD auto split(T&& value, strf::width_t width, CharT fill)
     noexcept(noexcept(strf::fmt(value).fill(fill) % width))
     -> std::remove_reference_t<decltype(strf::fmt(value).fill(fill) % width)>
 {
@@ -1532,8 +1530,8 @@ struct right_fn {
     {
         return strf::fmt(value) > width;
     }
-    template <typename T>
-    constexpr STRF_HD auto operator()(T&& value, strf::width_t width, char32_t fill) const
+    template <typename T, typename CharT>
+    constexpr STRF_HD auto operator()(T&& value, strf::width_t width, CharT fill) const
         noexcept(noexcept(strf::fmt(value).fill(fill) > width))
         -> std::remove_reference_t<decltype(strf::fmt(value).fill(fill) > width)>
     {
@@ -1549,8 +1547,8 @@ struct left_fn {
     {
         return strf::fmt(value) < width;
     }
-    template <typename T>
-    constexpr STRF_HD auto operator()(T&& value, strf::width_t width, char32_t fill) const
+    template <typename T, typename CharT>
+    constexpr STRF_HD auto operator()(T&& value, strf::width_t width, CharT fill) const
         noexcept(noexcept(strf::fmt(value).fill(fill) < width))
         -> std::remove_reference_t<decltype(strf::fmt(value).fill(fill) < width)>
     {
@@ -1566,8 +1564,8 @@ struct center_fn {
     {
         return strf::fmt(value) ^ width;
     }
-    template <typename T>
-    constexpr STRF_HD auto operator()(T&& value, strf::width_t width, char32_t fill) const
+    template <typename T, typename CharT>
+    constexpr STRF_HD auto operator()(T&& value, strf::width_t width, CharT fill) const
         noexcept(noexcept(strf::fmt(value).fill(fill) ^ width))
         -> std::remove_reference_t<decltype(strf::fmt(value).fill(fill) ^ width)>
     {
@@ -1583,8 +1581,8 @@ struct split_fn {
     {
         return strf::fmt(value) % width;
     }
-    template <typename T>
-    constexpr STRF_HD auto operator()(T&& value, strf::width_t width, char32_t fill) const
+    template <typename T, typename CharT>
+    constexpr STRF_HD auto operator()(T&& value, strf::width_t width, CharT fill) const
         noexcept(noexcept(strf::fmt(value).fill(fill) % width))
         -> std::remove_reference_t<decltype(strf::fmt(value).fill(fill) % width)>
     {
