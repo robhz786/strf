@@ -148,13 +148,17 @@ public:
         data_.precision = _;
         return static_cast<T&&>(*this);
     }
+    template <bool DecimalBase = (Base == 10)>
     STRF_HD T&& operator+() && noexcept
     {
+        static_assert(DecimalBase, "operator+ only allowed in decimal base");
         data_.showpos = true;
         return static_cast<T&&>(*this);
     }
+    template <bool DecimalBase = (Base == 10)>
     constexpr STRF_HD T&& operator*() && noexcept
     {
+        static_assert(!DecimalBase, "operator* not allowed in decimal base");
         data_.showbase = true;
         return static_cast<T&&>(*this);
     }

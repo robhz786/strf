@@ -972,6 +972,7 @@ Return value:: `std::move(static_cast<T&>({asterisk}this))`
 constexpr T&& operator+() && noexcept;
 ----
 [horizontal]
+Compile-time requirements:: `Base` is equal to `10`
 Postconditions::  `showpos() == true`
 Return value:: `std::move(static_cast<T&>({asterisk}this))`
 ====
@@ -983,6 +984,7 @@ Return value:: `std::move(static_cast<T&>({asterisk}this))`
 constexpr T&& operator*() && noexcept;
 ----
 [horizontal]
+Compile-time requirements:: `Base` is not equal to `10`
 Postconditions::  `showbase() == true`
 Return value:: `std::move(static_cast<T&>({asterisk}this))`
 ====

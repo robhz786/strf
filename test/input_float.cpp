@@ -422,7 +422,9 @@ STRF_TEST_FUNC void test_hexadecimal()
 
     TEST("0x0p+0") (strf::hex(0.0));
     TEST("______________0x0p+0") (j(strf::hex(0.0)));
+    TEST("_____________+0x0p+0") (j(+strf::hex(0.0)));
     TEST("_____________0x0.p+0") (j(*strf::hex(0.0)));
+    TEST("____________+0x0.p+0") (j(+*strf::hex(0.0)));
     TEST("__________0x0.000p+0") (j(strf::hex(0.0).p(3)));
     TEST("_____________-0x1p-3") (j(strf::hex(-0.125)));
     TEST("_____________0x1p+11") (j(strf::hex(2048.0)));
@@ -437,6 +439,7 @@ STRF_TEST_FUNC void test_hexadecimal()
     TEST("________0x1.12345p+0") (j(strf::hex(0x1.12345p+0).p(5)));
     TEST("_______0x1.123450p+0") (j(strf::hex(0x1.12345p+0).p(6)));
     TEST("_____________0x1.p+0") (j(*strf::hex(0x1.12345p+0).p(0)));
+    TEST("____________+0x1.p+0") (j(+*strf::hex(0x1.12345p+0).p(0)));
     TEST("_______0x0.000p-1022") (j(strf::hex(0x0.0008p-1022).p(3)));
     TEST("_______0x0.002p-1022") (j(strf::hex(0x0.0018p-1022).p(3)));
     TEST("_______0x0.001p-1022") (j(strf::hex(0x0.0008000000001p-1022).p(3)));

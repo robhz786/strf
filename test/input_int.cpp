@@ -274,12 +274,6 @@ void STRF_TEST_FUNC test_input_int()
     TEST("    0")  (*strf::oct(0) > 5);
     TEST("    0")  (*strf::oct(0).p(1) > 5);
 
-    // showpos in octa, binary and hexadecimal must not have any effect
-
-    TEST("aa") ( +strf::hex(0xAA) );
-    TEST("11") ( +strf::bin(3) );
-    TEST("77") ( +strf::oct(077) );
-
     // inside joins
 
     TEST("     123")   ( strf::join_right(8)(123) );
