@@ -665,8 +665,11 @@ STRF_HD void partial_fmt_int_printer<CharT, Base>::init_
     } else {
         uvalue_ = unsigned_type(value);
         negative_ = false;
-        prefixsize_ = static_cast<unsigned>(fmt.showbase)
-            << static_cast<unsigned>(Base == 16 || Base == 2);
+        STRF_IF_CONSTEXPR (Base == 8){
+            prefixsize_ = fmt.showbase && value;
+        } else {
+            prefixsize_ = fmt.showbase << 1;
+        }
     }
     digcount_ = strf::detail::count_digits<Base>(uvalue_);
     precision_ = fmt.precision;
