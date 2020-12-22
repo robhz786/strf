@@ -328,13 +328,6 @@ public:
         T* base_ptr = static_cast<T*>(this);
         return static_cast<T&&>(*base_ptr);
     }
-    [[deprecated]] // use instead operator*
-    constexpr STRF_HD T&& operator~() && noexcept
-    {
-        data_.showpoint = true;
-        T* base_ptr = static_cast<T*>(this);
-        return static_cast<T&&>(*base_ptr);
-    }
     constexpr STRF_HD T&& p(unsigned _) && noexcept
     {
         data_.precision = _;

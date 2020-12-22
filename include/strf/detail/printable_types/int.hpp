@@ -158,12 +158,6 @@ public:
         data_.showbase = true;
         return static_cast<T&&>(*this);
     }
-    [[deprecated]] // use instead operator*
-    constexpr STRF_HD T&& operator~() && noexcept
-    {
-        data_.showbase = true;
-        return static_cast<T&&>(*this);
-    }
     constexpr static STRF_HD int base() noexcept
     {
         return Base;
