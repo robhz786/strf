@@ -584,7 +584,7 @@ but you don&#8217;t have to think about this now.</p>
 <code>make_printer_input</code> function does not actually print the value,
 it just returns an object that the library knows how to print.
 Make sure that the returned object does not contain any dangling reference.
-For example, if the join we created in the above contained a
+For example, if the <code>join</code> in the above example contained a
 reference to any local object, we would get undefined behaviour.
 </td>
 </tr>
@@ -801,7 +801,7 @@ private:
 <p><code>get_facet</code> is used to extract a facet object from a <code><a href="strf_hpp.html#facets_pack">facets_pack</a></code> object.
 The first template paramenter is the facet category.
 The second is the usually printable type and it only has effect when there is
-any <a href="introduction.html#constrained_facets">constrained facets</a> of the given category
+any <a href="tutorial.html#constrained_facets">constrained facets</a> of the given category
 in the the <code><a href="strf_hpp.html#facets_pack">facets_pack</a></code> object. The effect is that
 <code><a href="strf_hpp.html#get_facet">get_facet</a></code> only returns the value inside a constrained facet when
 <code>Filter&lt;Tag&gt;::value</code> is <code>true</code> ,
@@ -1433,7 +1433,7 @@ static_assert(! preview_type::<a href="strf_hpp.html#print_preview">size_require
 </div>
 <div class="paragraph">
 <p>That would prevent your printable type to work when the feature
-<code><a href="introduction.html#syntax">reserve_calc</a></code> is used,
+<code><a href="tutorial.html#syntax">reserve_calc</a></code> is used,
 which may not be a problem to you.</p>
 </div>
 <div class="paragraph">
@@ -1517,7 +1517,7 @@ bit more complex. However, it&#8217;s basically the same idea:
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2020-12-22 18:30:51 -0300
+Last updated 2020-12-30 23:07:25 -0300
 </div>
 </div>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.min.css">

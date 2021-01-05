@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 2.0.10">
-<title>&lt;strf/to_cfile.hpp&gt; Header file reference</title>
+<title>Comparasion between strf and {fmt}</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
 /* Asciidoctor default stylesheet | MIT License | https://asciidoctor.org */
@@ -173,12 +173,12 @@ body.toc2{padding-left:15em;padding-right:0}
 #toc.toc2 ul.sectlevel0 ul.sectlevel1{padding-left:0;margin-top:.5em;margin-bottom:.5em}
 body.toc2.toc-right{padding-left:0;padding-right:15em}
 body.toc2.toc-right #toc.toc2{border-right-width:0;border-left:1px solid #e7e7e9;left:auto;right:0}}
-@media screen and (min-width:1280px){body.toc2{padding-left:34em;padding-right:0}
-#toc.toc2{width:34em}
+@media screen and (min-width:1280px){body.toc2{padding-left:20em;padding-right:0}
+#toc.toc2{width:20em}
 #toc.toc2 #toctitle{font-size:1.375em}
 #toc.toc2>ul{font-size:.95em}
 #toc.toc2 ul ul{padding-left:1.25em}
-body.toc2.toc-right{padding-left:0;padding-right:34em}}
+body.toc2.toc-right{padding-left:0;padding-right:20em}}
 #content #toc{border-style:solid;border-width:1px;border-color:#e0e0dc;margin-bottom:1.25em;padding:1.25em;background:#f8f8f7;-webkit-border-radius:4px;border-radius:4px}
 #content #toc>:first-child{margin-top:0}
 #content #toc>:last-child{margin-bottom:0}
@@ -312,7 +312,7 @@ ol.lowergreek{list-style-type:lower-greek}
 .hdlist>table,.colist>table{border:0;background:none}
 .hdlist>table>tbody>tr,.colist>table>tbody>tr{background:none}
 td.hdlist1,td.hdlist2{vertical-align:top;padding:0 .625em}
-td.hdlist1{min-width:9em;font-weight:bold;padding-bottom:1.25em}
+td.hdlist1{font-weight:bold;padding-bottom:1.25em}
 .literalblock+.colist,.listingblock+.colist{margin-top:-.5em}
 .colist td:not([class]):first-child{padding:.4em .75em 0;line-height:1;vertical-align:top}
 .colist td:not([class]):first-child img{max-width:none}
@@ -437,381 +437,352 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </style>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 </head>
-<body id="main" class="article toc2 toc-left">
+<body class="article toc2 toc-left">
 <div id="header">
-<h1><code>&lt;strf/to_cfile.hpp&gt;</code> Header file reference</h1>
+<h1>Comparasion between strf and {fmt}</h1>
 <div id="toc" class="toc2">
-<div id="toctitle">&lt;strf/to_cfile.hpp&gt;</div>
+<div id="toctitle">Table of Contents</div>
 <ul class="sectlevel1">
-<li><a href="#narrow_cfile_writer">1. Class template <code>narrow_cfile_writer</code></a></li>
-<li><a href="#wide_cfile_writer">2. Class template <code>wide_cfile_writer</code></a></li>
-<li><a href="#to">3. Function template <code>to</code></a></li>
-<li><a href="#wto">4. Function <code>wto</code></a></li>
+<li><a href="#_capabilities_in_general">1. Capabilities in general</a>
+<ul class="sectlevel2">
+<li><a href="#_fmt">1.1. {fmt}</a></li>
+<li><a href="#_strf">1.2. Strf</a></li>
+</ul>
+</li>
+<li><a href="#_internationalization">2. internationalization</a>
+<ul class="sectlevel2">
+<li><a href="#_locales">2.1. Locales</a></li>
+<li><a href="#_multilingual_programs">2.2. Multilingual programs</a></li>
+</ul>
+</li>
+<li><a href="#_extensibility">3. Extensibility</a>
+<ul class="sectlevel2">
+<li><a href="#_adding_printable_types">3.1. Adding printable types</a></li>
+<li><a href="#_adding_destinations">3.2. Adding destinations</a></li>
+</ul>
+</li>
+<li><a href="#_error_handling_policy">4. Error handling policy</a></li>
 </ul>
 </div>
 </div>
 <div id="content">
-<div id="preamble">
-<div class="sectionbody">
-<div class="admonitionblock note">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-note" title="Note"></i>
-</td>
-<td class="content">
-This document is still a work in progress.
-</td>
-</tr>
-</table>
-</div>
-<div class="admonitionblock note">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-note" title="Note"></i>
-</td>
-<td class="content">
-This header files includes <code>&lt;strf.hpp&gt;</code>
-</td>
-</tr>
-</table>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="prettyprint highlight"><code data-lang="cpp">namespace strf {
-
-template &lt;typename CharT&gt;
-class narrow_cfile_writer final: public basic_outbuff_noexcept&lt;CharT&gt;
-{ /*...*/ };
-
-class wide_cfile_writer final: public basic_outbuff_noexcept&lt;wchar_t&gt;
-{ /*...*/ };
-
-// Destination makers:
-
-template &lt;typename CharT = char&gt;
-/* ... */  to(std::FILE*);
-
-/* ... */ wto(std::FILE*);
-
-} // namespace strf</code></pre>
-</div>
-</div>
-</div>
-</div>
 <div class="sect1">
-<h2 id="narrow_cfile_writer">1. Class template <code>narrow_cfile_writer</code></h2>
+<h2 id="_capabilities_in_general">1. Capabilities in general</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_synopsis">1.1. Synopsis</h3>
+<h3 id="_fmt">1.1. {fmt}</h3>
+<div class="paragraph">
+<p>Some things that are directly supported by {fmt}, but not by strf:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Printing date and time ( <a href="https://fmt.dev/latest/api.html#chrono-api">link</a> )</p>
+</li>
+<li>
+<p>Printing any type that can be printed by <code>std::ostream</code> ( <a href="https://fmt.dev/latest/api.html#std-ostream-support">link</a> )</p>
+</li>
+<li>
+<p>Printing <code>long double</code></p>
+</li>
+<li>
+<p>Printing <code>std::tuples</code> ( <a href="https://fmt.dev/latest/api.html#ranges-api">link</a> )</p>
+</li>
+<li>
+<p>Specifying colors ( <a href="https://fmt.dev/latest/api.html#color-api">link</a> )</p>
+</li>
+<li>
+<p>Writing to output iterators ( <a href="https://fmt.dev/latest/api.html#output-iterator-support">link</a> )</p>
+</li>
+<li>
+<p>Named arguments in the format string. ( <a href="https://fmt.dev/latest/api.html#named-arguments">link</a> )</p>
+</li>
+<li>
+<p>Alternative functions that follow the <code>std::printf</code> format string syntax. ( <a href="https://fmt.dev/latest/api.html#printf-formatting">link</a> )</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_strf">1.2. Strf</h3>
+<div class="paragraph">
+<p>Some things that are directly supported by strf, but not by {fmt}:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Character encoding conversion</p>
+</li>
+</ul>
+</div>
 <div class="listingblock">
 <div class="content">
-<pre class="prettyprint highlight"><code data-lang="cpp">namespace strf {
+<pre class="prettyprint highlight"><code data-lang="cpp">auto str = strf::to_string( "aaa-"
+                          , strf::conv(u"bbb-")
+                          , strf::conv(U"ccc-")
+                          , strf::conv(L"ddd") );
 
-template &lt;typename CharT&gt;
-class narrow_cfile_writer final: public <a href="outbuff_hpp.html#basic_outbuff_noexcept">basic_outbuff_noexcept</a>&lt;CharT&gt; {
-public:
-    explicit narrow_cfile_writer(std::FILE* dest);
-
-    narrow_cfile_writer(const narrow_cfile_writer&amp;) = delete;
-    narrow_cfile_writer(narrow_cfile_writer&amp;&amp;) = delete;
-
-    void recycle() noexcept;
-    struct result  {
-        std::size_t count;
-        bool success;
-    };
-    result finish();
+assert(str   ==  "aaa-bbb-ccc-ddd");</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="cpp">auto str_utf8 = strf::to_u8string
+        ( strf::conv("--\xA4--", strf::iso_8859_1&lt;char&gt;())
+        , strf::conv("--\xA4--", strf::iso_8859_15&lt;char&gt;()));
+assert(str_utf8 == u8"--\u00A4----\u20AC--");</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Printing <code>char32_t</code></p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="cpp">char32_t ch = 0x20AC;
+assert(strf::to_string.with(strf::utf8&lt;char&gt;())        (ch) == "\xE2\x82\xAC");
+assert(strf::to_string.with(strf::iso_8859_15&lt;char&gt;()) (ch) == "\xA4");
+assert(strf::to_string.with(strf::iso_8859_1&lt;char&gt;())  (ch) == "?");</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Aligning a group of arguments as if they were one</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="cpp">auto str = strf::to_string
+    ("---", strf::join_center(15) ("abc", "def", 123), "---");
+assert(str == "---   abcdef123   ---");</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>When printing range, it is possible to apply formatting:</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="cpp">int array[] = { 250, 251, 252 };
+auto str = strf::to_string
+    ( "["
+    , *strf::fmt_separated_range(array, " / ").fill('.').hex() &gt; 6
+    , "]");
+assert(str == "[..0xfa / ..0xfb / ..0xfc]");</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>When printing range, it is possible to transform the elements:</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="cpp">std::map&lt;int, const char*&gt; table = { {1, "one"}, {2, "two"}, {1000, "a thousand"} };
+auto op = [](auto p) {
+    // transforming a std::pair into somthing printable
+    return strf::join(p.first, " -&gt; '", p.second, '\'');
 };
-
-} // namespace strf</code></pre>
-</div>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_public_member_functions">1.2. Public member functions</h3>
-<div class="exampleblock">
-<div class="content">
-<div class="listingblock">
-<div class="content">
-<pre class="prettyprint highlight"><code data-lang="cpp">void recycle() override;</code></pre>
-</div>
-</div>
-<div class="hdlist">
-<table>
-<tr>
-<td class="hdlist1">
-Effects
-</td>
-<td class="hdlist2">
-<div class="ulist">
-<ul>
-<li>
-<p>If <code>good() == true</code>, calls <code>std::fwrite(p0, pointer() - p0, sizeof(CharT), dest)</code>,
-where <code>dest</code> is the <code>FILE*</code> used to initialize this object, and
-<code>p0</code> is value <code>pointer()</code> would return before any call to <code>advance</code> and <code>advance_to</code>
-since the last call to <code>recycle()</code>, or since this object&#8217;s contruction,
-whatever happened last.</p>
-</li>
-<li>
-<p>If the returned value of <code>std::fwrite</code> is less than <code>(pointer() - p0)</code>, calls <code>set_good(false)</code>.</p>
-</li>
-<li>
-<p>Calls <code>set_pointer</code> and/or <code>set_end</code>.</p>
-</li>
-</ul>
-</div>
-</td>
-</tr>
-<tr>
-<td class="hdlist1">
-Postconditions
-</td>
-<td class="hdlist2">
-<p><code>size() &gt;= min_space_after_recycle&lt;CharT&gt;()</code></p>
-</td>
-</tr>
-</table>
-</div>
-</div>
-</div>
-<div class="exampleblock">
-<div class="content">
-<div class="listingblock">
-<div class="content">
-<pre class="prettyprint highlight"><code data-lang="cpp">result finish();</code></pre>
-</div>
-</div>
-<div class="hdlist">
-<table>
-<tr>
-<td class="hdlist1">
-Effects
-</td>
-<td class="hdlist2">
-<div class="ulist">
-<ul>
-<li>
-<p>Calls <code>recycle()</code> and <code>set_good(false)</code>.</p>
-</li>
-</ul>
-</div>
-</td>
-</tr>
-<tr>
-<td class="hdlist1">
-Return value
-</td>
-<td class="hdlist2">
-<div class="ulist">
-<ul>
-<li>
-<p><code>result::count</code> is the sum of values returned by all calls <code>std::fwrite</code> done by this object.</p>
-</li>
-<li>
-<p><code>result::success</code> is the value <code>good()</code> would return before this call to <code>finish()</code></p>
-</li>
-</ul>
-</div>
-</td>
-</tr>
-</table>
-</div>
+auto str = strf::to_string('[', strf::separated_range(table, "; ", op), ']');
+assert(str == "[1 -&gt; 'one'; 2 -&gt; 'two'; 1000 -&gt; 'a thousand']");</code></pre>
 </div>
 </div>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="wide_cfile_writer">2. Class template <code>wide_cfile_writer</code></h2>
+<h2 id="_internationalization">2. internationalization</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_synopsis_2">2.1. Synopsis</h3>
-<div class="listingblock">
-<div class="content">
-<pre class="prettyprint highlight"><code data-lang="cpp">namespace strf {
-
-class wide_cfile_writer final: public <a href="outbuff_hpp.html#basic_outbuff_noexcept">basic_outbuff_noexcept</a>&lt;wchar_t&gt; {
-public:
-    explicit wide_cfile_writer(std::FILE* dest);
-
-    wide_cfile_writer(const narrow_cfile_writer&amp;) = delete;
-    wide_cfile_writer(narrow_cfile_writer&amp;&amp;) = delete;
-
-    void recycle() noexcept;
-    struct result {
-        std::size_t count;
-        bool success;
-    };
-    result finish();
-};
-
-} // namespace strf</code></pre>
+<h3 id="_locales">2.1. Locales</h3>
+<div class="paragraph">
+<p>In {fmt}, the <code>'L'</code> format flag causes the argument to be
+printed with the numeric punctuation specified by the current global locale state.
+This design can be problematic in multi-threaded programs.
+A more robust approach is present in <code>std::format</code>: the locale is extracted from
+a <code>std::locale</code> object that you pass as an argument.</p>
 </div>
+<div class="paragraph">
+<p>Strf has something similar to that robust design,
+but it does not work with <code>std::locale</code>, since it has its
+own facets. To apply numeric punctuation, you pass
+a <code><a href="quick_reference.html#numpunct">strf::numpunct</a></code> object to the
+<code><a href="tutorial.html#syntax">with</a></code> function.</p>
+</div>
+<div class="paragraph">
+<p>}}</p>
+</div>
+<div class="paragraph">
+<p>However, <code>strf::numpunct</code> does not affect <code>bool</code> values, contrary to <code>std::numpunct</code> which
+has the <code>truename()</code> and <code>falsename()</code> functions. If you want to change how boolean
+are printed, you need to create a facet that overrides <code>bool</code> printing ( as
+explained <a href="howto_override_printable_types.html">here</a> ).</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_public_member_functions_2">2.2. Public member functions</h3>
-<div class="exampleblock">
-<div class="content">
-<div class="listingblock">
-<div class="content">
-<pre class="prettyprint highlight"><code data-lang="cpp">void recycle() override;</code></pre>
+<h3 id="_multilingual_programs">2.2. Multilingual programs</h3>
+<div class="paragraph">
+<p>If you are working on a multilingual program, that uses a tool like <code>gettext</code>,
+strf offers some advantages:</p>
 </div>
-</div>
-<div class="hdlist">
-<table>
-<tr>
-<td class="hdlist1">
-Effects
-</td>
-<td class="hdlist2">
-<div class="ulist">
-<ul>
-<li>
-<p>If <code>good() == true</code>, for each character <code>ch</code> in the range [ <code>p0</code>, <code>pointer()</code> ) calls <code>std::fputwc(ch, dest)</code>, until WEOF is returned or the whole range is read, where <code>dest</code> is the <code>FILE*</code> used to initialize this object, and <code>p0</code> is the value <code>pointer()</code> would return before any call to <code>advance</code> and <code>advance_to</code> since the last call to <code>recycle()</code>, or since this object&#8217;s contruction, whatever happened last.</p>
-</li>
-<li>
-<p>If <code>std::fputwc</code> returns <code>WEOF</code>, calls <code>set_good(false)</code>.</p>
-</li>
-<li>
-<p>Calls <code>set_pointer</code> and/or <code>set_end</code>.</p>
-</li>
-</ul>
-</div>
-</td>
-</tr>
-</table>
-</div>
-</div>
-</div>
-<div class="exampleblock">
-<div class="content">
-<div class="listingblock">
-<div class="content">
-<pre class="prettyprint highlight"><code data-lang="cpp">result finish();</code></pre>
-</div>
-</div>
-<div class="hdlist">
-<table>
-<tr>
-<td class="hdlist1">
-Effects
-</td>
-<td class="hdlist2">
-<div class="ulist">
-<ul>
-<li>
-<p>Calls <code>recycle()</code> and <code>set_good(false)</code>.</p>
-</li>
-</ul>
-</div>
-</td>
-</tr>
-<tr>
-<td class="hdlist1">
-Return value
-</td>
-<td class="hdlist2">
-<div class="ulist">
-<ul>
-<li>
-<p><code>result::count</code> is the number of calls to <code>std::fputwc</code> by this object that did not return WEOF .</p>
-</li>
-<li>
-<p><code>result::success</code> is the value <code>good()</code> would return before this call to <code>finish()</code></p>
-</li>
-</ul>
-</div>
-</td>
-</tr>
-</table>
-</div>
-</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Less translations errors</dt>
+<dd>
+<p>The programmer is usually not same be the person who translates the messages.
+Messages can be ambiguous. Ambiguities can cause translation mistakes,
+but, in strf, they can be avoided by adding comments in the <a href="quick_reference.html#tr_string">tr-string</a>.</p>
+</dd>
+<dt class="hdlist1">Less syntax errors</dt>
+<dd>
+<p>The syntax of <a href="quick_reference.html#tr_string">tr-string</a> is less error-prone than then of the format string
+of {fmt}. Although {fmt} is able to detect syntax error at compile-time
+( when using <code>FMT_STRING</code> or <code>FMT_COMPILE</code> ), these strings are likely
+to only be evaluated at run-time in multilingual code.
+And even when the programmer types format string correctly,
+mistakes can still be made by the person who translates it.</p>
+</dd>
+<dt class="hdlist1">Maintenance</dt>
+<dd>
+<p>In strf, translation is decoupled from formatting. If you want
+to change some format option in an argument, like the width,
+there is no need to update the translated strings.</p>
+</dd>
+</dl>
 </div>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="to">3. Function template <code>to</code></h2>
+<h2 id="_extensibility">3. Extensibility</h2>
 <div class="sectionbody">
-<div class="listingblock">
-<div class="content">
-<pre class="prettyprint highlight"><code data-lang="cpp">namespace strf {
-
-template &lt;typename CharT = char&gt;
-<em>/* see below */</em> to(std::FILE* dest);
-
-} // namespace strf</code></pre>
+<div class="sect2">
+<h3 id="_adding_printable_types">3.1. Adding printable types</h3>
+<div class="paragraph">
+<p>To make a type printable in {fmt} you specialize the <code>fmt::formatter</code> struct template.
+The documentation provides a simple a example (<a href="https://fmt.dev/latest/api.html#formatting-user-defined-types">here</a>)
+of how to do this with a struct named <code>point</code> that contains two <code>double</code> variables.</p>
+</div>
+<div class="paragraph">
+<p>If you compare it with
+<a href="https://github.com/robhz786/strf/blob/v0.13.0/example/extend_input_point2D.cpp">this example</a>,
+which does the similar thing in strf, you may find at first that the strf&#8217;s way
+is more complicated, since the code is larger and it requires more
+specific knowledge about the library.
+But you have to take into account that this sample supports all
+formatting options that would be expected in a real case scenario:
+all the <a href="strf_hpp.html#float_formatter">floating-point formatting options</a>,
+as well the <a href="strf_hpp.html#alignment_formatter">alignment formatting options</a>
+( that {fmt} examples supports only the <code>'f'</code> or <code>'g'</code> format flags ).</p>
+</div>
+<div class="paragraph">
+<p>So although there are more things to learn, they later make things easier for you.
+For example, you can see that the code contains the
+expression <code>arg.get_float_format()</code>, and that later its
+value passed to <code>set_float_format</code>.
+This is how easily the floating-points formatting options are forwarded.
+If such options change in a future version of library, no need to update this code.
+Applying the alignment is also simplified by the use of <a href="strf_hpp.html.html#join">joins</a>.</p>
+</div>
+<div class="paragraph">
+<p>So the example is facilitated by the fact that we can convert the
+<code>Point2D</code> object into another value ( a <code>join</code> object ) that the
+library already knows how to print. Sometimes it is impossible
+or impractical to use such tactic. Such cases tend to be complex,
+because we need to implement a <em>printer</em> class that do
+things in a more low-level way.</p>
+</div>
+<div class="paragraph">
+<p><a href="https://github.com/robhz786/strf/blob/v0.13.0/example/extend_input_ipv6.cpp">Here</a> is
+an example of this approach. It prints IPv6 adresses
+in the abbreviated or non-abbreviated
+<a href="https://en.wikipedia.org/wiki/IPv6#Address_representation">representation</a>,
+depending on the format options.</p>
+</div>
+<div class="paragraph">
+<p>Anyway, <a href="howto_add_printable_types.html">here</a> is a guide
+of how to make types printable in strf. It starts with a simple case,
+and gradually makes it more challenging.</p>
 </div>
 </div>
-<div class="hdlist">
-<table>
-<tr>
-<td class="hdlist1">
-Return type
-</td>
-<td class="hdlist2">
-<p><code><a href="strf_hpp.html#destination">destination_no_reserve</a>&lt;OBC&gt;</code>, where <code>OBC</code> is an implementation-defined
-type that satifies <em><a href="strf_hpp.html#OutbuffCreator">OutbuffCreator</a></em>.</p>
-</td>
-</tr>
-<tr>
-<td class="hdlist1">
-Return value
-</td>
-<td class="hdlist2">
-<p>A destination object whose internal <em><a href="strf_hpp.html#OutbuffCreator">OutbuffCreator</a></em> object <code>obc</code>
-is such that <code>obc.create()</code> returns a <code><a href="#narrow_cfile_writer">narrow_cfile_writer</a>&lt;CharT&gt;</code> object initialized
-with <code>dest</code>.</p>
-</td>
-</tr>
-</table>
+<div class="sect2">
+<h3 id="_adding_destinations">3.2. Adding destinations</h3>
+<div class="paragraph">
+<p>If you want strf to print to an alternative destination,
+you need to create a class that derives from <code>strf::<a href="outbuff_hpp.html#basic_outbuff">basic_outbuff</a></code>.
+Having an object of such type, you can print things to it with the
+<code>strf::<a href="quick_reference.html#dest_outbuff">to</a>(strf::basic_outbuff&lt;<em>CharT</em>&gt;&amp;)</code>
+function template.</p>
+</div>
+<div class="paragraph">
+<p>In the case of {fmt}, you need to have (or create) a type that satisfies the
+<em>OutputIterator</em> requirements. With that, you can use the <code><a href="https://fmt.dev/latest/api.html#_CPPv2N3fmt9format_toE8OutputItRK1SDpRR4Args">fmt::print_to</a></code>
+and <code><a href="https://fmt.dev/latest/api.html#_CPPv2N3fmt11format_to_nE8OutputIt6size_tRK1SDpRK4Args">fmt::print_to_n</a></code> function templates.</p>
+</div>
+<div class="paragraph">
+<p>However, in strf you can go a bit further and create your own
+<em>destination expression</em> to be used in the <a href="tutorial.html#syntax">basic usage syntax</a>
+of the library. For example, suppose a codebase uses a string class of its own
+instead of <code>std::string</code> &#x2014; let&#8217;s name it <code>xstring</code>.
+Just like there is <code><a href="quick_reference.html#destinations">strf::to_string</a></code>, it is possible to define
+a <em>destination expression</em> named <code>to_xstring</code> intended to
+create <code>xstring</code> objects. If desirable, it is possible to implement it
+in such a way that the size of the content is always pre-calculated
+before the the <code>xstring</code> object is constructed, so that the adequate
+amount of memory can be allocated.</p>
+</div>
+<div class="paragraph">
+<p>This is all explained in <a href="howto_add_destination.html">this guide</a>.</p>
+</div>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="wto">4. Function <code>wto</code></h2>
+<h2 id="_error_handling_policy">4. Error handling policy</h2>
 <div class="sectionbody">
-<div class="listingblock">
-<div class="content">
-<pre class="prettyprint highlight"><code data-lang="cpp">namespace strf {
-
-<em>/* see below */</em> wto(std::FILE* dest);
-
-} // namespace strf</code></pre>
+<div class="paragraph">
+<p>Neither {fmt} not strf ever change the value of <code>errno</code>.</p>
 </div>
+<div class="paragraph">
+<p>{fmt} throws an exception when it founds someting wrong at run-time.</p>
 </div>
-<div class="hdlist">
-<table>
-<tr>
-<td class="hdlist1">
-Return type
-</td>
-<td class="hdlist2">
-<p><code><a href="strf_hpp.html#destination">destination_no_reserve</a>&lt;OBC&gt;</code>, where <code>OBC</code> is an implementation-defined
-type that satifies <em><a href="strf_hpp.html#OutbuffCreator">OutbuffCreator</a></em>.</p>
-</td>
-</tr>
-<tr>
-<td class="hdlist1">
-Return value
-</td>
-<td class="hdlist2">
-<p>A destination object whose internal <em><a href="strf_hpp.html#OutbuffCreator">OutbuffCreator</a></em> object <code>obc</code>
-is such that <code>obc.create()</code> returns a <code><a href="#wide_cfile_writer">wide_cfile_writer</a></code> object initialized
-with <code>dest</code>.</p>
-</td>
-</tr>
-</table>
+<div class="paragraph">
+<p>Strf does not throw, but it also doesn&#8217;t prevent exceptions
+to propagate from whatever it depends on, like the language runtime and
+user extensions. So an exception may arise when writing to a <code>std::streambuf</code>
+or <code>std::string</code>, for example.</p>
+</div>
+<div class="paragraph">
+<p>Instead of throwing, strf prints a replacement character <code>U'\uFFFD'</code>
+( or <code>'?'</code>, depending on the encoding ).
+This can happen when parsing the <a href="quick_reference.html#tr_string">tr-string</a> or in
+<a href="quick_reference.html#encoding_conversion">encoding conversion</a> or sanitization.
+Optionally, you can set a callback to be invoked in such errors
+( see <code><a href="strf_hpp.html#tr_error_notifier_c">tr_error_notifier_c</a></code>
+and <code><a href="strf_hpp.html#invalid_seq_notifier_c">invalid_seq_notifier_c</a></code> )
+which can in turn throw an exception, if you want.</p>
+</div>
+<div class="paragraph">
+<p>In addition to that, depending on the <a href="quick_reference.html#destinations  ">destination</a>,
+the return type of the <a href="tutorial.html#syntax">basic usage syntax</a> may containg an error
+flag.</p>
 </div>
 </div>
 </div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-01-02 18:39:42 -0300
+Last updated 2021-01-05 17:41:37 -0300
 </div>
 </div>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.min.css">
