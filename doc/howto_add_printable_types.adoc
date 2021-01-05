@@ -161,7 +161,7 @@ but you don't have to think about this now.
 WARNING: `make_printer_input` function does not actually print the value,
 it just returns an object that the library knows how to print.
 Make sure that the returned object does not contain any dangling reference.
-For example, if the join we created in the above contained a
+For example, if the `join` in the above example contained a
 reference to any local object, we would get undefined behaviour.
 
 
@@ -350,7 +350,7 @@ complex_form form = strf::{get_facet}<complex_form_c, std::complex<FloatT>>(fp);
 `get_facet` is used to extract a facet object from a `{facets_pack}` object.
 The first template paramenter is the facet category.
 The second is the usually printable type and it only has effect when there is
-any <<introduction#constrained_facets,constrained facets>> of the given category
+any <<tutorial#constrained_facets,constrained facets>> of the given category
 in the the `{facets_pack}` object. The effect is that
 `{get_facet}` only returns the value inside a constrained facet when
 `Filter<Tag>::value` is `true` ,
@@ -951,7 +951,7 @@ using preview_type = typename strf::usual_printer_input<T\...>::preview_type;
 static_assert(! preview_type::<<strf_hpp#print_preview,size_required>>);
 ----
 That would prevent your printable type to work when the feature
-`<<introduction#syntax,reserve_calc>>` is used,
+`<<tutorial#syntax,reserve_calc>>` is used,
 which may not be a problem to you.
 
 When the second template argument of this

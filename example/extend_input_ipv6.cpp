@@ -7,16 +7,19 @@
 #include <cstdint>
 #include <vector>
 
-#include "../test/test_utils.cpp"
+#include "../test/test_utils.cpp" // my own test framework
 
 namespace xxx {
 
+// This is the type we making printable
 struct ipv6address
 {
     std::uint16_t hextets[8];
 };
 
-
+// This class evaluates the visibility of each hextet and colon.
+// So it is not exactly part of making ipv6address printable,
+// but we need it anyway.
 class ipv6address_abbreviation
 {
 public:
@@ -59,7 +62,7 @@ public:
         return visible_colons_count_;
     }
 
-//private:
+private:
 
     std::uint8_t hextets_visibility_bits_;
     std::uint8_t colons_visibility_bits_;
@@ -70,6 +73,8 @@ public:
 
 ipv6address_abbreviation::ipv6address_abbreviation(ipv6address addr)
 {
+    // Don't mind the mess
+
     unsigned middle_zeros_start = 0;
     unsigned middle_zeros_count = 0;
     unsigned trailing_zeros_start = 0;
@@ -171,19 +176,64 @@ ipv6address_abbreviation::ipv6address_abbreviation(ipv6address addr)
     visible_colons_count_  = static_cast<std::uint8_t>(trailing_zeros_start + 1);
     hextets_visibility_bits_ = 0xFFu >>  trailing_zeros_count;
     colons_visibility_bits_  = 0xFFu >> (trailing_zeros_count - 1);
-
-    return;
 }
 
 } // namespace xxx
 
 namespace strf {
 
-constexpr std::uint16_t hex_digits_count(std::uint16_t x)
-{
-    return x > 0xFFF ? 4 : ( x > 0xFFu ? 3 : ( x > 0xF ? 2 : 1 ) );
-}
+// -----------------------------------------------------------------------------
+// Here starts the actual part of the code that makes ipv6address printable.
+// -----------------------------------------------------------------------------
 
+enum class ipv6style{ little, medium, big };
+// ipv6style::little : print in the abbrevited form
+//                     ( hidding the largest sequence of null hextets, if any )
+// ipv6style::medium : print all hextets ( don't hide any )
+// ipv6style::big    : print all hextets and print them with 4 digits each
+
+// Now we create some new formatting functions.
+//   strf::fmt(address) -> ipv6style::little ( the default )
+//  +strf::fmt(address) -> ipv6style::medium
+// ++strf::fmt(address) -> ipv6style::big
+// ( yes, I like to abuse on operator overloading ).
+struct ipv6_formatter
+{
+    template <class T>
+    class fn
+    {
+    public:
+        constexpr fn() = default;
+
+        template <typename U>
+        constexpr fn(const fn<U>& u) : style_(u.style_)
+        {
+        }
+
+        constexpr T&& operator++() &&
+        {
+            style_ = ipv6style::big;
+            return static_cast<T&&>(*this);
+        }
+        constexpr T&& operator+() &&
+        {
+            style_ = ipv6style::medium;
+            return static_cast<T&&>(*this);
+        }
+        ipv6style get_ipv6style() const
+        {
+            return style_;
+        }
+
+    private:
+
+        ipv6style style_ = ipv6style::little;
+    };
+};
+
+
+// This class is optimized to print an ipv6address without formatting
+// ( assuming ipv6style::little )
 template <typename CharT>
 class ipv6_printer: public strf::printer<CharT>
 {
@@ -213,6 +263,11 @@ private:
     strf::lettercase lettercase_;
 };
 
+constexpr std::uint16_t hex_digits_count(std::uint16_t x)
+{
+    return x > 0xFFF ? 4 : ( x > 0xFFu ? 3 : ( x > 0xF ? 2 : 1 ) );
+}
+
 template <typename CharT>
 std::uint16_t ipv6_printer<CharT>::count_characters() const
 {
@@ -224,7 +279,6 @@ std::uint16_t ipv6_printer<CharT>::count_characters() const
     }
     return count;
 }
-
 
 template <typename CharT>
 void ipv6_printer<CharT>::print_to(strf::basic_outbuff<CharT>& dest) const
@@ -239,8 +293,9 @@ void ipv6_printer<CharT>::print_to(strf::basic_outbuff<CharT>& dest) const
     }
 }
 
-enum class ipv6style{little, medium, big};
 
+// This class is print an ipv6address with formatting
+// ( ipv6_formatter and strf::alignment_formatter )
 template <typename CharT>
 class fmt_ipv6_printer: public strf::printer<CharT>
 {
@@ -352,41 +407,7 @@ void fmt_ipv6_printer<CharT>::print_ipv6(strf::basic_outbuff<CharT>& dest) const
     }
 }
 
-struct ipv6_formatter
-{
-    template <class T>
-    class fn
-    {
-    public:
-        constexpr fn() = default;
-
-        template <typename U>
-        constexpr fn(const fn<U>& u) : style_(u.style_)
-        {
-        }
-
-        constexpr T&& operator++() &&
-        {
-            style_ = ipv6style::big;
-            return static_cast<T&&>(*this);
-        }
-        constexpr T&& operator+() &&
-        {
-            style_ = ipv6style::medium;
-            return static_cast<T&&>(*this);
-        }
-        ipv6style get_ipv6style() const
-        {
-            return style_;
-        }
-
-    private:
-
-        ipv6style style_ = ipv6style::little;
-    }; // ipv6_formatter::template fn
-}; // ipv6_formatter
-
-
+// At last, we need to define our PrintTraits class:
 template <>
 struct print_traits<xxx::ipv6address> {
     using override_tag = xxx::ipv6address;
@@ -419,7 +440,6 @@ struct print_traits<xxx::ipv6address> {
         return {preview, fp, arg};
     }
 };
-
 
 } // namespace strf
 
@@ -468,7 +488,7 @@ void tests()
     TEST("0:aa::")            (xxx::ipv6address{{   0, 0xaa,    0,    0,    0,    0,    0,    0}});
     TEST("0:0:0:aa::")        (xxx::ipv6address{{   0,    0,    0, 0xaa,    0,    0,    0,    0}});
     TEST("0:0:0:aa:bb::")     (xxx::ipv6address{{   0,    0,    0, 0xaa, 0xbb,    0,    0,    0}});
-    
+
     // test lettercase
     xxx::ipv6address addr_aabb12{{0xaa, 0xbb, 1, 2, 0, 0, 0, 0}};
 

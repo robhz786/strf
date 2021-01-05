@@ -88,8 +88,8 @@ Effects::
     `p0` is value `pointer()` would return before any call to `advance` and `advance_to`
     since the last call to `recycle()`, or since this object's contruction,
     whatever happened last.
--  If the returned value of std::fwrite is less then pointer() - p0, calls set_good(false).
--  Calls set_pointer and/or set_end.
+-  If the returned value of `std::fwrite` is less than `(pointer() - p0)`, calls `set_good(false)`.
+-  Calls `set_pointer` and/or `set_end`.
 Postconditions:: `size() >= min_space_after_recycle<CharT>()`
 ====
 ====
@@ -139,7 +139,7 @@ void recycle() override;
 [horizontal]
 Effects::
 - If `good() == true`, for each character `ch` in the range [ `p0`, `pointer()` ) calls `std::fputwc(ch, dest)`, until WEOF is returned or the whole range is read, where `dest` is the `FILE{asterisk}` used to initialize this object, and `p0` is the value `pointer()` would return before any call to `advance` and `advance_to` since the last call to `recycle()`, or since this object's contruction, whatever happened last.
-- If `std::fputwc` returns WEOF, calls `set_good(false)`.
+- If `std::fputwc` returns `WEOF`, calls `set_good(false)`.
 - Calls `set_pointer` and/or `set_end`.
 ====
 ====

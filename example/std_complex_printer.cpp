@@ -231,7 +231,7 @@ void std_complex_printer<CharT, FloatT>::preview_(Preview& pp, const WidthCalc& 
 template <typename CharT, typename FloatT>
 void std_complex_printer<CharT, FloatT>::print_to(strf::basic_outbuff<CharT>& dest) const
 {
-    auto print = strf::to(dest).with(lettercase_, numpunct_, encoding_);    
+    auto print = strf::to(dest).with(lettercase_, numpunct_, encoding_);
     if (form_ == complex_form::polar) {
         print(coordinates_.first, U'\u2220', static_cast<CharT>(' ') );
         print(coordinates_.second );
@@ -360,13 +360,10 @@ void fmt_std_complex_printer<CharT, FloatT, Notation>::preview_without_fill_
 
         default:
             assert(form_ == complex_form::polar);
-            
-            
             if (pp.remaining_width() > 0) {
                 pp.subtract_width(wcalc.char_width(strf::utf32<char32_t>{}, anglechar_));
                 pp.subtract_width(1);
             }
-
             pp.add_size(encoding_.encoded_char_size(anglechar_));
             pp.add_size(1);
     }

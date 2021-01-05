@@ -678,11 +678,11 @@ The integer sequence passed to the constructor defines the grouping.
 The last group is repeated, unless you add the `-1` argument:
 [source,cpp]
 ----
-auto str1 = strf::to_string.with(numpunct<10>(1, 2, 3))(1000000000000ll);
-assert(str1 == "1,000,000,000,00,0");
+auto s1 = strf::to_string.with(strf::numpunct<10>(1, 2, 3))(1000000000000ll);
+assert(s1 == "1,000,000,000,00,0");
 
-auto str2 = strf::to_string.with(numpunct<10>(1, 2, 3, -1))(1000000000000ll);
-assert(str2 == "1000000,000,00,0");
+auto s2 = strf::to_string.with(strf::numpunct<10>(1, 2, 3, -1))(1000000000000ll);
+assert(s2 == "1000000,000,00,0");
 ----
 This `numpunct` constructor has some preconditions:
 

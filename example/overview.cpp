@@ -13,16 +13,17 @@ constexpr auto to_u8string = to_string;
 
 #endif
 
-//[ first_example
-#include <strf.hpp> // This is the only header you need to include.
-
 void sample()
 {
     int value = 255;
     auto s = strf::to_string(value, " in hexadecimal is ", strf::hex(value));
     assert(s == "255 in hexadecimal is ff");
+
+    using namespace strf::format_functions;
+
+    auto s2 = strf::to_string(value, " in hexadecimal is ", hex(value));
+    assert(s2 == "255 in hexadecimal is ff");
 }
-//]
 
 void second_example()
 {
