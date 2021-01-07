@@ -478,8 +478,7 @@ are all well-formed, and the type of `strf::fmt(x)` is
 are the types you used in to define the `formatters` type alias.
 
 Though well-formed, they are still not printable.
-To make them printable we need to overload `make_printer_input`.
-As I did before, I will show a solution and then explain it further:
+To make them printable we to create a new `make_printer_input` member function:
 
 [source,cpp,subs=normal]
 ----
@@ -542,7 +541,21 @@ static_assert(! std::is_same_v(decltype(arg1), decltype(arg2)));
 static_assert(! std::is_same_v(decltype(arg2), decltype(arg3)));
 ----
 
-Now let's look at the implementation. You can see there are few changes from
+We can keep the old `make_printer_input` ( that takes `std::complex`
+without formatting ), but we could also remove it. Because when the expression
+below is not well-formed:
+[source,cpp,subs=normal]
+----
+__PrintTraits__::template make_printer_input<CharT>(preview, fp, x)
+----
+, and the type of `x` is not an instance `{value_with_formatters}`, then
+the library invokes the following instead:
+[source,cpp,subs=normal]
+----
+__PrintTraits__::template make_printer_input<CharT>(preview, fp, strf::fmt(x))
+----
+
+Anyway, let's examine the new function. You can see there are few changes from
 the original. The first one is that we need to use `value()` function
 to extract the `std::complex` value:
 
@@ -551,7 +564,7 @@ to extract the `std::complex` value:
         auto v = ::complex_coordinates(arg**.value()**, form);
 ----
 
-Second, we re-apply the floating-point formatting the each floating-point value:
+Second, we re-apply the floating-point format the each floating-point value:
 
 [source,cpp,subs=normal]
 ----
@@ -563,7 +576,7 @@ Second, we re-apply the floating-point formatting the each floating-point value:
             , /{asterisk} ... {asterisk}/ );
 ----
 
-Third, we apply the alignment formatting to the join:
+Third, we apply the alignment format to the join:
 
 [source,cpp,subs=normal]
 ----

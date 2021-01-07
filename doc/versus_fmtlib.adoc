@@ -276,70 +276,75 @@ formatting of the floating-point values that are later printer in
 the `format` function.
 
 Naturally, in a real case scenario one would probably want to support more
-formatting flags, but it makes sense to make examples simple.
+format flags, but it makes sense to make examples simple.
 ////
 
-If you compare it with
-{strf-src-root}/example/extend_input_point2D.cpp[this example],
+If you compare it with the example below,
+//{strf-src-root}/example/extend_input_point2D.cpp[this example],
 which does the similar thing in strf, you may find at first that the strf's way
 is more complicated, since the code is larger and it requires more
 specific knowledge about the library.
 But you have to take into account that this sample supports all
-formatting options that would be expected in a real case scenario:
-all the <<strf_hpp#float_formatter,floating-point formatting options>>,
-as well the <<strf_hpp#alignment_formatter,alignment formatting options>>
+format options that would be expected in a real case scenario:
+all the <<strf_hpp#float_formatter,floating-point format options>>,
+as well the <<strf_hpp#alignment_formatter,alignment format options>>
 ( that {fmt} examples supports only the `'f'` or `'g'` format flags ).
 
+[source,cpp,subs=normal]
+----
+template <typename FloatT>
+struct point{ FloatT x, y; };
 
+template <typename FloatT>
+struct strf::print_traits<point<FloatT>> {
 
-So although there are more things to learn, they later make things easier for you.
+    using forwarded_type = point<FloatT>;
+
+    using formatters = strf::tag
+        < strf::alignment_formatter
+        , strf::float_formatter<strf::float_notation::general> >;
+
+    template <typename CharT, typename Preview, typename FPack, typename\... T>
+    constexpr static auto make_printer_input
+        ( Preview& preview
+        , const FPack& fp
+        , strf::value_with_formatters<T\...> arg ) noexcept
+    {
+        point<FloatT> p = arg.value();
+        auto arg2 = strf::join
+            ( (CharT)'('
+            , strf::fmt(p.x).set_float_format(arg.get_float_format())
+            , strf::conv(u", ")
+            , strf::fmt(p.y).set_float_format(arg.get_float_format())
+            , (CharT)')' )
+            .set_alignment_format(arg.get_alignment_format());
+        return strf::make_printer_input<CharT>(preview, fp, arg2);
+    }
+};
+----
+
+So, although there are more things to learn, they later make things easier for you.
 For example, you can see that the code contains the
-expression `arg.get_float_format()`, and that later its
-value passed to `set_float_format`.
-This is how easily the floating-points formatting options are forwarded.
+expression `arg.get_float_format()`, whose value is passed to `set_float_format`.
+This is how easily the floating-points format options are forwarded.
 If such options change in a future version of library, no need to update this code.
-Applying the alignment is also simplified by the use of <<strf_hpp.html#join,joins>>.
+You can see that applying the alignment is equally easy ( through `get_alignemt_format`
+and `set_alignmet_format` ).
 // This is the main reason they have been created.
 
-So the example is facilitated by the fact that we can convert the
-`Point2D` object into another value ( a `join` object ) that the
-library already knows how to print. Sometimes it is impossible
-or impractical to use such tactic. Such cases tend to be complex,
-because we need to implement a _printer_ class that do
-things in a more low-level way.
-
-link:{strf-src-root}/example/extend_input_ipv6.cpp[Here] is
-an example of this approach. It prints IPv6 adresses
-in the abbreviated or non-abbreviated
+Ok, I have to admit that the example is facilitated by the fact that we can convert a
+`point` object into another value ( a `join` object ) that the
+library already knows how to print. When this is
+impossible or impractical, you need to implement
+a _printer_ class that do things in a more low-level way,
+like in link:{strf-src-root}/example/extend_input_ipv6.cpp[this example]
+that prints IPv6 adresses in the abbreviated or non-abbreviated
 link:https://en.wikipedia.org/wiki/IPv6#Address_representation[representation],
 depending on the format options.
 
-// For example, an IPv6 address may
-// be expected to be printed in its abbreviated form, where
-// consecutive sections of zeros are replaced with two colons (::).
-// Since such sections can only be identified at run-time, joins can't
-// help us here. Such cases tend to be complex, because we need
-// to implement a _printer_ class that do
-// things in a more low-level way ( you can see an example
-// link:{strf-src-root}/example/extend_input_ipv6.cpp[here]
-// &#x2014; still not that complex ).
-
-Anyway, <<howto_add_printable_types#,here>> is a guide
+Anyway, the documentation provides a <<howto_add_printable_types#,guide>>
 of how to make types printable in strf. It starts with a simple case,
 and gradually makes it more challenging.
-
-////
-This is how simple it is to forward the all floating-points formatting options.
-
-
-Before reading this section you may want to take a look at documentations about
-how to add printable types <<howto_add_printable_types#,in strf>>, and
-link:https://fmt.dev/latest/api.html#formatting-user-defined-types[in {fmt}], and
-link:http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0645r10.html#Extensibility[in std::format].
-////
-
-
-
 
 === Adding destinations
 

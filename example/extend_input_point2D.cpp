@@ -25,42 +25,20 @@ struct print_traits<xxx::point2D<FloatT>> {
         < strf::alignment_formatter
         , strf::float_formatter<strf::float_notation::general> >;
 
-    template <typename CharT, typename Preview, typename FPack>
-    constexpr static auto make_printer_input
-        ( Preview& preview
-        , const FPack& fp
-        , xxx::point2D<FloatT> arg ) noexcept
-    {
-        return strf::make_printer_input<CharT>
-            ( preview
-            , fp
-            , strf::join
-                ( (CharT)'('
-                , arg.x
-                , strf::conv(u", ")
-                , arg.y
-                , (CharT)')' ) );
-    }
-
     template <typename CharT, typename Preview, typename FPack, typename... T>
     constexpr static auto make_printer_input
         ( Preview& preview
         , const FPack& fp
         , strf::value_with_formatters<T...> arg ) noexcept
     {
-        auto pt = arg.value(); // the Point2D<FloatT> value
-
-        auto float_fmt = arg.get_float_format();
-        auto alignment_fmt = arg.get_alignment_format();
-
+        auto p = arg.value(); // the Point2D<FloatT> value
         auto arg2 = strf::join
             ( (CharT)'('
-            , strf::fmt(pt.x).set_float_format(float_fmt)
+            , strf::fmt(p.x).set_float_format(arg.get_float_format())
             , strf::conv(u", ")
-            , strf::fmt(pt.y).set_float_format(float_fmt)
+            , strf::fmt(p.y).set_float_format(arg.get_float_format())
             , (CharT)')' )
-            .set_alignment_format(alignment_fmt);
-
+            .set_alignment_format(arg.get_alignment_format());
         return strf::make_printer_input<CharT>(preview, fp, arg2);
     }
 };

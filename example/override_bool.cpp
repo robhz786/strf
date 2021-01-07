@@ -8,28 +8,17 @@ struct my_bool_override
 {
     using category = strf::print_override_c;
 
-    template <typename CharT, typename Preview, typename FPack>
-    constexpr auto make_printer_input
-        ( Preview& preview
-        , const FPack& fp
-        , bool x ) const noexcept
-    {
-        return strf::make_printer_input<CharT>
-            ( preview
-            , fp
-            , strf::conv(false_true_strings[x], strf::utf8<char>()) );
-    }
-
     template <typename CharT, typename Preview, typename FPack, typename... T>
     constexpr auto make_printer_input
         ( Preview& preview
         , const FPack& fp
         , strf::value_with_formatters<T...> x ) const noexcept
     {
+        bool value = x.value();
         return strf::make_printer_input<CharT>
             ( preview
             , fp
-            , strf::conv(false_true_strings[x.value()], strf::utf8<char>())
+            , strf::conv(false_true_strings[value], strf::utf8<char>())
                 .set_alignment_format(x.get_alignment_format()) );
     }
 

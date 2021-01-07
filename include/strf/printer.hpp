@@ -648,16 +648,121 @@ using fmt_value_type = typename fmt_type<T>::value_type;
 template <typename T>
 using formatters_of = typename strf::detail::formatters_finder<T>::formatters;
 
+inline namespace format_functions {
+
+#if defined (STRF_NO_GLOBAL_CONSTEXPR_VARIABLE)
+
+template <typename T>
+constexpr STRF_HD fmt_type<T> fmt(T&& value)
+    noexcept(noexcept(fmt_type<T>{fmt_value_type<T>{value}}))
+{
+    return fmt_type<T>{fmt_value_type<T>{value}};
+}
+
+#else //defined (STRF_NO_GLOBAL_CONSTEXPR_VARIABLE)
+
+namespace detail_format_functions {
+
+struct fmt_fn
+{
+    template <typename T>
+    constexpr STRF_HD fmt_type<T> operator()(T&& value) const
+        noexcept(noexcept(fmt_type<T>{fmt_value_type<T>{(T&&)value}}))
+    {
+        return fmt_type<T>{fmt_value_type<T>{(T&&)value}};
+    }
+};
+
+} // namespace detail_format_functions
+
+constexpr detail_format_functions::fmt_fn fmt {};
+
+#endif
+
+} // inline namespace format_functions
+
+namespace detail {
+
+template <typename T>
+struct is_value_with_formatters: std::false_type {};
+
+template <typename PrintTraits, typename... Fmts>
+struct is_value_with_formatters<strf::value_with_formatters<PrintTraits, Fmts...>>
+    : std::true_type
+{};
+
+template <typename PrintTraitsOrFacet, bool IsValueWithFormatters>
+struct intermediate_printer_input_maker_2;
+
+template <typename PrintTraitsOrFacet, typename Arg>
+using intermediate_printer_input_maker =
+    intermediate_printer_input_maker_2< PrintTraitsOrFacet
+                                      , is_value_with_formatters<Arg>::value >;
+
+template <typename PrintTraitsOrFacet>
+struct intermediate_printer_input_maker_2<PrintTraitsOrFacet, true>
+{
+    template <typename CharT, typename Preview, typename FPack, typename Arg>
+    constexpr static STRF_HD auto make
+        ( const PrintTraitsOrFacet& pimaker
+        , Preview& preview, const FPack& facets, const Arg& arg )
+    {
+        return pimaker.template make_printer_input<CharT>(preview, facets, arg);
+    }
+};
+
+template <typename PrintTraitsOrFacet>
+struct intermediate_printer_input_maker_2<PrintTraitsOrFacet, false>
+{
+    template <typename P, typename CharT, typename Preview, typename FPack, typename Arg>
+    static STRF_HD auto test_(Preview& preview, const FPack& facets, const Arg& arg)
+        -> decltype( std::declval<const P&>()
+                       .template make_printer_input<CharT>(preview, facets, arg)
+                   , std::true_type{} );
+
+    template <typename P, typename CharT>
+    static STRF_HD std::false_type test_(...);
+
+    template <typename CharT, typename Preview, typename FPack, typename Arg>
+    constexpr static STRF_HD auto make_
+        ( std::true_type, const PrintTraitsOrFacet& pimaker
+        , Preview& preview, const FPack& facets, const Arg& arg )
+    {
+        return pimaker.template make_printer_input<CharT>(preview, facets, arg);
+    }
+
+    template <typename CharT, typename Preview, typename FPack, typename Arg>
+    constexpr static STRF_HD auto make_
+        ( std::false_type, const PrintTraitsOrFacet& pimaker
+        , Preview& preview, const FPack& facets, const Arg& arg )
+    {
+        return pimaker.template make_printer_input<CharT>(preview, facets, strf::fmt(arg));
+    }
+
+    template <typename CharT, typename Preview, typename FPack, typename Arg>
+    constexpr static STRF_HD auto make
+        ( const PrintTraitsOrFacet& pimaker
+        , Preview& preview, const FPack& facets, const Arg& arg )
+    {
+        using can_make_printer_input_without_fmt =
+            decltype(test_<PrintTraitsOrFacet, CharT>( std::declval<Preview&>()
+                                                     , std::declval<FPack>()
+                                                     , std::declval<Arg>() ));
+        return make_<CharT>
+            ( can_make_printer_input_without_fmt{}, pimaker, preview, facets, arg);
+    }
+};
+
+} // namespace detail
+
 template <typename CharT, typename Preview, typename FPack, typename Arg>
 constexpr STRF_HD auto make_default_printer_input
     ( Preview& preview, const FPack& facets, const Arg& arg)
-    noexcept(noexcept
-             (strf::print_traits_of<Arg>::template make_printer_input<CharT>
-              (preview, facets, static_cast<strf::forwarded_printable_type<Arg>>(arg))))
 {
     using traits = strf::print_traits_of<Arg>;
     using fwd_type = strf::forwarded_printable_type<Arg>;
-    return traits::template make_printer_input<CharT>(preview, facets, static_cast<fwd_type>(arg));
+    using maker = strf::detail::intermediate_printer_input_maker<traits, Arg>;
+    return maker::template make<CharT>(traits{}, preview, facets, static_cast<fwd_type>(arg));
 }
 
 struct print_override_c;
@@ -713,8 +818,9 @@ constexpr STRF_HD auto make_printer_input
     , const Arg& arg )
 {
     using tag = typename PrinterTraits::override_tag;
-    return strf::get_facet<print_override_c, tag>(facets)
-        .template make_printer_input<CharT>(preview, facets, arg);
+    auto overrider = strf::get_facet<print_override_c, tag>(facets);
+    using maker = strf::detail::intermediate_printer_input_maker<decltype(overrider), Arg>;
+    return maker::template make<CharT>(overrider, preview, facets, arg);
 }
 
 template < typename PrinterTraits
@@ -728,7 +834,8 @@ constexpr STRF_HD auto make_printer_input
     , const FPack& facets
     , const Arg& arg )
 {
-    return PrinterTraits::template make_printer_input<CharT>(preview, facets, arg);
+    using maker = strf::detail::intermediate_printer_input_maker<PrinterTraits, Arg>;
+    return maker::template make<CharT>(PrinterTraits{}, preview, facets, arg);
 }
 
 } // namespace detail
@@ -756,7 +863,6 @@ using printer_input_type = decltype
 
 template <typename CharT, typename Preview, typename FPack, typename Arg>
 using printer_type = typename printer_input_type<CharT, Preview, FPack, Arg>::printer_type;
-
 
 template < typename CharT
          , strf::preview_size SizeRequired
@@ -845,39 +951,6 @@ STRF_HD void preview
         ( strf::printer_type<CharT, preview_type, strf::facets_pack<FPE...>, Args>
           ( strf::make_printer_input<CharT>(pp, facets, args) ) ... );
 }
-
-inline namespace format_functions {
-
-#if defined (STRF_NO_GLOBAL_CONSTEXPR_VARIABLE)
-
-template <typename T>
-constexpr STRF_HD fmt_type<T> fmt(T&& value)
-    noexcept(noexcept(fmt_type<T>{fmt_value_type<T>{value}}))
-{
-    return fmt_type<T>{fmt_value_type<T>{value}};
-}
-
-#else //defined (STRF_NO_GLOBAL_CONSTEXPR_VARIABLE)
-
-namespace detail_format_functions {
-
-struct fmt_fn
-{
-    template <typename T>
-    constexpr STRF_HD fmt_type<T> operator()(T&& value) const
-        noexcept(noexcept(fmt_type<T>{fmt_value_type<T>{(T&&)value}}))
-    {
-        return fmt_type<T>{fmt_value_type<T>{(T&&)value}};
-    }
-};
-
-} // namespace detail_format_functions
-
-constexpr detail_format_functions::fmt_fn fmt {};
-
-#endif
-
-} // inline namespace format_functions
 
 template <typename> struct is_char: public std::false_type {};
 
