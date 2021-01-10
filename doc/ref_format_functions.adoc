@@ -1142,6 +1142,7 @@ public:
     constexpr T&& <<float_formatter_fn_showpos,operator+>>() && noexcept;
     constexpr T&& <<float_formatter_fn_showpoint,operator{asterisk}>>() && noexcept;
     constexpr T&& <<float_formatter_fn_p,p>>(unsigned precision) && noexcept;
+    constexpr T&& <<float_formatter_fn_pad0,pad0>>(unsigned w) && noexcept;
 
     constexpr T&& <<float_formatter_fn_gen_noop,gen>>() && noexcept;      // when N == {float_notation}::general
     constexpr T&& <<float_formatter_fn_sci_noop,sci>>() && noexcept;      // when N == {float_notation}::scientific
@@ -1219,6 +1220,18 @@ constexpr T&& p(unsigned precision) && noexcept;
 Postconditions:: `get_float_format().<<float_precision,precision>> == precision`
 Return value:: `static_cast<T&&>({asterisk}this)`
 ====
+
+[[float_formatter_fn_pad0]]
+====
+[source,cpp,subs=normal]
+----
+constexpr T&& pad0(unsigned w) && noexcept;
+----
+[horizontal]
+Postconditions:: `get_float_format().<<float_pad0width,pad0width>> == w`
+Return value:: `static_cast<T&&>({asterisk}this)`
+====
+
 
 [[float_formatter_fn_gen_noop]]
 ====
@@ -1402,6 +1415,7 @@ template <float_notation N>
 struct float_format
 {
     unsigned precision = (unsigned)-1;
+    unsigned pad0width = 0;
     bool showpoint = false;
     bool showpos = false;
     static constexpr float_notation notation = N;
@@ -1410,7 +1424,7 @@ struct float_format
 template <float_notation To, float_notation From>
 constexpr float_format<To> change_notation(float_format<From> x) noexcept
 {
-    return { x.precision, x.showpoint, x.showpos };
+    return { x.precision, x.pad0width, x.showpoint, x.showpos };
 }
 
 template <float_notation N>
@@ -1430,13 +1444,22 @@ notation::
    prints in the scientfic notation if it is shorter than the fixed notation.
    When precision is different than `(unsigned)-1`, does like in `std::printf`:
    uses the scientfic notation if the exponent is less than -4 or greater
-   than or equal to the precision. Trailing fractional zeros are not printed.
+   than or equal to the precision. Trailing zeros are removed from the fractional
+   part if `showpoint` is `false`.
 
 [[float_precision]]
 precision:: When `notation == float_notation::general`, the precision is the
             number of significant digits. Otherwise it is the number of
             fractional digits. `precision == 0` has the same effect as
             `precision == 1`.
+
+[[float_pad0width]]
+pad0width::  For NaN and infinity, the alignment width is increased to `pad0width`
+             if it is less than `pad0width`.
+             For valid numbers, zeros are padded, if necessary, after the sign
+             and base indication to ensure the that the total number of characters
+             ( not couting the fill related to alignment formatting ) is at
+             least `pad0width`.
 
 [[float_showpoint]]
 showpoint:: Prints the decimal point even when there are no fractional digits.

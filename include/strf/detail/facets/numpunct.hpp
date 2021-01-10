@@ -209,10 +209,10 @@ public:
         grps_ = other.grps_;
         return *this;
     }
-    constexpr STRF_HD bool any_separator(unsigned digcount) const noexcept
+    constexpr STRF_HD bool any_separator(int digcount) const noexcept
     {
         STRF_ASSERT(grps_ != 0);
-        return grps_ != dont_repeat_last_ && digcount > (grps_ & grp_bits_mask_);
+        return grps_ != dont_repeat_last_ && digcount > (int)(grps_ & grp_bits_mask_);
     }
     constexpr STRF_HD unsigned separators_count(unsigned digcount) const noexcept
     {
@@ -492,7 +492,7 @@ public:
     {
         return grouping_.distribute(digcount);
     }
-    constexpr STRF_HD bool any_group_separation(unsigned digcount) const noexcept
+    constexpr STRF_HD bool any_group_separation(int digcount) const noexcept
     {
         return grouping_.any_separator(digcount);
     }

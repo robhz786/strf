@@ -1663,6 +1663,28 @@ struct split_fn {
     }
 };
 
+struct pad0_fn {
+    template <typename T>
+    constexpr STRF_HD auto operator()
+        ( T&& value
+        , decltype(strf::fmt(value).pad0width()) width ) const
+        noexcept(noexcept(strf::fmt(value).pad0(width)))
+        -> std::remove_reference_t<decltype(strf::fmt(value).pad0(width))>
+    {
+        return strf::fmt(value).pad0(width);
+    }
+    template <typename T, typename CharT>
+    constexpr STRF_HD auto operator()
+        ( T&& value
+        , decltype(strf::fmt(value).pad0width()) width
+        , CharT fill ) const
+        noexcept(noexcept(strf::fmt(value).pad0(width)))
+        -> std::remove_reference_t<decltype(strf::fmt(value).fill(fill).pad0(width))>
+    {
+        return strf::fmt(value).fill(fill).pad0(width);
+    }
+};
+
 } // namespace detail_format_functions
 
 constexpr strf::detail_format_functions::hex_fn    hex {};
@@ -1679,6 +1701,7 @@ constexpr strf::detail_format_functions::right_fn  right {};
 constexpr strf::detail_format_functions::left_fn   left {};
 constexpr strf::detail_format_functions::center_fn center {};
 constexpr strf::detail_format_functions::split_fn  split {};
+constexpr strf::detail_format_functions::pad0_fn   pad0 {};
 
 #endif // defined (STRF_NO_GLOBAL_CONSTEXPR_VARIABLE)
 

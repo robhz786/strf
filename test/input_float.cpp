@@ -158,20 +158,39 @@ STRF_TEST_FUNC void test_subnormal_values(const FPack& fp)
     TEST("___________~~~~~-nan").with(fp) (j(strf::right (negative_nan, 9, '~')));
     TEST("___________+nan~~~~~").with(fp) (j(+strf::left  (nan, 9, '~')));
     TEST("___________~~+nan~~~").with(fp) (j(+strf::center(nan, 9, '~')));
-    TEST("___________+~~~~~nan").with(fp) (j(+strf::split (nan, 9, '~')));
     TEST("___________~~~~~+nan").with(fp) (j(+strf::right (nan, 9, '~')));
     TEST("___________+nan~~~~~").with(fp) (j(+strf::left  (nan, 9, '~')));
     TEST("___________~~+nan~~~").with(fp) (j(+strf::center(nan, 9, '~')));
-    TEST("___________+~~~~~nan").with(fp) (j(+strf::split (nan, 9, '~')));
+
 
     TEST("___________~~~~~+inf").with(fp) (j(+strf::right (infinity, 9, '~')));
     TEST("___________+inf~~~~~").with(fp) (j(+strf::left  (infinity, 9, '~')));
     TEST("___________~~+inf~~~").with(fp) (j(+strf::center(infinity, 9, '~')));
-    TEST("___________+~~~~~inf").with(fp) (j(+strf::split (infinity, 9, '~')));
     TEST("___________~~~~~+inf").with(fp) (j(+strf::right (infinity, 9, '~').hex()));
     TEST("___________+inf~~~~~").with(fp) (j(+strf::left  (infinity, 9, '~').hex()));
     TEST("___________~~+inf~~~").with(fp) (j(+strf::center(infinity, 9, '~').hex()));
-    TEST("___________+~~~~~inf").with(fp) (j(+strf::split (infinity, 9, '~').hex()));
+
+    TEST("___________     -inf").with(fp) (j(strf::pad0(-infinity, 9).hex()));
+    TEST("___________     +inf").with(fp) (j(+strf::pad0(infinity, 9).hex()));
+    TEST("___________      inf").with(fp) (j(strf::pad0(infinity, 9).hex()));
+
+    TEST("___________     -inf").with(fp) (j(strf::pad0(-infinity, 9)));
+    TEST("___________     +inf").with(fp) (j(+strf::pad0(infinity, 9)));
+    TEST("___________      inf").with(fp) (j(strf::pad0(infinity, 9)));
+
+    TEST("___________~~~~~+inf").with(fp) (j(+strf::right (infinity, 9, '~').pad0(0).hex()));
+    TEST("___________+inf~~~~~").with(fp) (j(+strf::left  (infinity, 9, '~').pad0(8).hex()));
+    TEST("___________~~+inf~~~").with(fp) (j(+strf::center(infinity, 9, '~').pad0(8).hex()));
+    TEST("__________~~~~~~+inf").with(fp) (j(+strf::right (infinity, 9, '~').pad0(10).hex()));
+    TEST("__________+inf~~~~~~").with(fp) (j(+strf::left  (infinity, 9, '~').pad0(10).hex()));
+    TEST("__________~~~+inf~~~").with(fp) (j(+strf::center(infinity, 9, '~').pad0(10).hex()));
+
+    TEST("___________~~~~~+inf").with(fp) (j(+strf::right (infinity, 9, '~').pad0(9)));
+    TEST("___________+inf~~~~~").with(fp) (j(+strf::left  (infinity, 9, '~').pad0(9)));
+    TEST("___________~~+inf~~~").with(fp) (j(+strf::center(infinity, 9, '~').pad0(9)));
+    TEST("__________~~~~~~+inf").with(fp) (j(+strf::right (infinity, 9, '~').pad0(10)));
+    TEST("__________+inf~~~~~~").with(fp) (j(+strf::left  (infinity, 9, '~').pad0(10)));
+    TEST("__________~~~+inf~~~").with(fp) (j(+strf::center(infinity, 9, '~').pad0(10)));
 
     TEST("_________________nan").with(fp, strf::lettercase::lower)  (j(nan));
     TEST("_________________inf").with(fp, strf::lettercase::lower)  (j(infinity));
@@ -316,13 +335,15 @@ STRF_TEST_FUNC void basic_tests(const FPack& fp)
     // - The precision specifies the number of significant digits.
     // - scientific notation is used if the resulting exponent is
     //   less than -4 or greater than or equal to the precision.
-    //TEST(rd("______________0.0001")).with(fp)  (j(strf::fmt(1e-4).p());
-    //TEST(rd("_______________1e-05")).with(fp)  (j(strf::fmt(1e-5)));
+
+    TEST(rd("_____________0.00012")).with(fp)  (j(strf::fmt(0.000123).p(2)));
+    TEST(rd("_____________1.2e-05")).with(fp)  (j(strf::fmt(0.0000123).p(2)));
     TEST(rd("_______________1e+01")).with(fp) (j(strf::fmt(12.0).p(1)));
     TEST(rd("_____________1.2e+02")).with(fp) (j(strf::fmt(123.0).p(2)));
     TEST(rd("_________________123")).with(fp) (j(strf::fmt(123.0).p(4)));
     TEST(rd("_______________1e+04")).with(fp) (j(strf::fmt(10000.0).p(4)));
     TEST(rd("_______________10000")).with(fp) (j(strf::fmt(10000.0).p(5)));
+    TEST(rd("_______________10000")).with(fp) (j(strf::fmt(10000.0).p(6)));
     TEST(rd("__________6.1035e-05")).with(fp) (j(strf::fmt(6.103515625e-05).p(5)));
 
     // and if precision is zero, it treated as 1.
@@ -348,9 +369,9 @@ STRF_TEST_FUNC void basic_tests(const FPack& fp)
     TEST(rd("_____________1.5e+04")).with(fp)  (j(*strf::fmt(15001.0).p(3)));
     TEST(rd("_________________123")).with(fp)   (j(strf::fmt(123.0).p(5)));
     TEST(rd("______________123.00")).with(fp)  (j(*strf::fmt(123.0).p(5)));
-    //----------------------------------------------------------------
 
-    // force fixed notation
+    //----------------------------------------------------------------
+    // strf::fixed
 
     TEST(rd("__________________1.")).with(fp)  (j(*strf::fixed(1.0)));
     TEST(rd("___________________1")).with(fp)   (j(strf::fixed(1.0)));
@@ -365,6 +386,9 @@ STRF_TEST_FUNC void basic_tests(const FPack& fp)
     TEST(rd("______________1.0000")).with(fp)  (j(strf::fixed(1.0).p(4)));
     TEST(rd("______________1.2500")).with(fp)  (j(strf::fixed(1.25).p(4)));
     TEST(rd("_______________0.125")).with(fp)  (j(strf::fixed(0.125)));
+
+    //----------------------------------------------------------------
+    // strf::sci
 
     TEST(rd("______________0.e+00")).with(fp)  (j(*strf::sci(0.0)));
     TEST(rd("______________1.e+04")).with(fp)  (j(*strf::sci(1e+4)));
@@ -394,14 +418,16 @@ STRF_TEST_FUNC void basic_tests(const FPack& fp)
     TEST(rd("_________******-1.25")).with(fp) (j(strf::right(-1.25, 11, '*')));
     TEST(rd("_________-1.25******")).with(fp) (j(strf::left(-1.25, 11, '*')));
     TEST(rd("_________***-1.25***")).with(fp) (j(strf::center(-1.25, 11, '*')));
-    TEST(rd("_________-******1.25")).with(fp) (j(strf::split(-1.25, 11, '*')));
-    TEST(rd("_________+******1.25")).with(fp) (j(+strf::split(1.25, 11, '*')));
+
+    TEST(rd("_________-0000001.25")).with(fp) (j(strf::pad0(-1.25, 11)));
+    TEST(rd("_________+0000001.25")).with(fp) (j(+strf::pad0(1.25, 11)));
 
     TEST(rd("_______________-1.25")).with(fp) (j(strf::right(-1.25, 5, '*')));
     TEST(rd("_______________-1.25")).with(fp) (j(strf::left(-1.25, 5, '*')));
     TEST(rd("_______________-1.25")).with(fp) (j(strf::center(-1.25, 5, '*')));
-    TEST(rd("_______________-1.25")).with(fp) (j(strf::split(-1.25, 5, '*')));
-    TEST(rd("_______________+1.25")).with(fp) (j(+strf::split(1.25, 5, '*')));
+
+    // TEST(rd("_______________-1.25")).with(fp) (j(strf::split(-1.25, 5, '*')));
+    // TEST(rd("_______________+1.25")).with(fp) (j(+strf::split(1.25, 5, '*')));
 
     TEST(rd("_____________\xEF\xBF\xBD\xEF\xBF\xBD-1.25")).with(fp)
         (j(strf::right(-1.25, 7, (char32_t)0xFFFFFFF)));
@@ -409,10 +435,16 @@ STRF_TEST_FUNC void basic_tests(const FPack& fp)
         (j(strf::left(-1.25, 7, (char32_t)0xFFFFFFF)));
     TEST(rd("_____________\xEF\xBF\xBD-1.25\xEF\xBF\xBD")).with(fp)
         (j(strf::center(-1.25, 7, (char32_t)0xFFFFFFF)));
-    TEST(rd("_____________-\xEF\xBF\xBD\xEF\xBF\xBD""1.25")).with(fp)
-        (j(strf::split(-1.25, 7, (char32_t)0xFFFFFFF)));
-    TEST(rd("_____________+\xEF\xBF\xBD\xEF\xBF\xBD""1.25")).with(fp)
-        (j(+strf::split(1.25, 7, (char32_t)0xFFFFFFF)));
+
+    //----------------------------------------------------------------
+    // pad0
+    TEST(rd("________000000000001")).with(fp) (j(strf::pad0(1.0, 12)));
+    TEST(rd("________+0000000001.")).with(fp) (j(+*strf::pad0(1.0, 12)));
+    TEST(rd("________+00001234.25")).with(fp) (j(+strf::pad0(1234.25, 12)));
+    TEST(rd("________+001234.2500")).with(fp) (j(+*strf::pad0(1234.25, 12).fixed().p(4)));
+    TEST(rd("________00000001e+20")).with(fp) (j(strf::pad0(1e+20, 12)));
+    TEST(rd("________+000001.e+20")).with(fp) (j(+*strf::pad0(1.e+20, 12)));
+    TEST(rd("________00001.25e+20")).with(fp) (j(strf::pad0(1.25e+20, 12)));
 }
 
 
@@ -458,9 +490,15 @@ STRF_TEST_FUNC void test_hexadecimal()
 
     TEST("_________-0x1p+0****") (j(strf::left(-1.0, 11, '*').hex()));
     TEST("_________****-0x1p+0") (j(strf::right(-1.0, 11, '*').hex()));
-    TEST("_________-****0x1p+0") (j(strf::split(-1.0, 11, '*').hex()));
     TEST("_________**-0x1p+0**") (j(strf::center(-1.0, 11, '*').hex()));
     TEST("_____________-0x1p+0") (j(strf::center(-1.0, 7, '*').hex()));
+
+    // pad0
+    TEST("_________-0x00001p+0") (j(strf::pad0(-1.0, 11).hex()));
+    TEST("_________+0x0001.p+0") (j(+*strf::pad0(1.0, 11).hex()));
+    TEST("_____0x001.123450p+0") (j(strf::hex(0x1.12345p+0).p(6).pad0(15)));
+    TEST("_//0x001.123450p+0//") (j(strf::hex(0x1.12345p+0).p(6).pad0(15).fill('/') ^ 19));
+    TEST("_____0x001.123450p+0") (j(strf::hex(0x1.12345p+0).p(6).pad0(15).fill('/') ^ 15));
 }
 
 STRF_TEST_FUNC void test_punctuation()
@@ -476,6 +514,7 @@ STRF_TEST_FUNC void test_punctuation()
         TEST("__________________1,").with(p) (j(*strf::fmt(1.0)));
         TEST("_________+1:000:000,").with(p) (j(*+strf::fixed(1000000.0)));
         TEST("_____+1:000:000,0000").with(p) (j(*+strf::fixed(1000000.0).p(4)));
+        TEST("__+00000001:000:000,").with(p) (j(*+strf::fixed(1000000.0).pad0(18)));
 
         auto px = strf::numpunct<16>{3}.decimal_point(',');
         TEST("________0x1,12345p+0").with(px) (j(strf::hex(0x1.12345p+0)));

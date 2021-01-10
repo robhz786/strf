@@ -169,6 +169,24 @@ template <typename CharT>
 using encode_fill_f = void (*)
     ( strf::basic_outbuff<CharT>&, std::size_t count, char32_t ch );
 
+namespace detail {
+
+template <typename CharT>
+void trivial_fill_f
+    ( strf::basic_outbuff<CharT>& ob, std::size_t count, char32_t ch )
+{
+    // same as strf::detail::write_fill<CharT>
+    CharT narrow_ch = static_cast<CharT>(ch);
+    if (count <= ob.space()) { // the common case
+        strf::detail::str_fill_n<CharT>(ob.pointer(), count, narrow_ch);
+        ob.advance(count);
+    } else {
+        write_fill_continuation<CharT>(ob, count, narrow_ch);
+    }
+}
+
+} // namespace detail
+
 struct codepoints_count_result {
     std::size_t count;
     std::size_t pos;
