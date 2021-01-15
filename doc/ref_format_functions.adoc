@@ -373,15 +373,9 @@ with one template type parameter such that, given any types `T` and `U`:
 [[alignment_formatter]]
 === _Formatter_ `alignment_formatter`
 
-This _Formatter_ defines the following format functions:
+The _Formatter_ defines the following format functions:
 
-[horizontal]
-`operator>({width_t} width)`::: Align to the right ( Or to the left right-to-left (RTL) script )
-`operator<({width_t} width)`::: Align to the left ( Or to the right right-to-left (RTL) script )
-`operator^({width_t} width)`::: Center alignment
-`operator%({width_t} width)`::: Split the content, as in `std::internal`.
-`fill(char32_t ch)`::: Set the fill character.
-`set_alignment_format(.../{asterisk}see below{asterisk}/)`::: Specify alignment, width and fill character.
+include::alignment_formatter_abstract.adoc[]
 
 [source,cpp,subs=normal]
 ----
@@ -819,6 +813,10 @@ constexpr bool operator!=(alignment_format lhs, alignment_format rhs) noexcept;
 [[int_formatter]]
 === _Formatter_ `int_formatter`
 
+This _Formatter_ defines the following format functions:
+
+include::int_formatter_abstract.adoc[]
+
 [source,cpp,subs=normal]
 ----
 namespace strf {
@@ -853,16 +851,18 @@ public:
     constexpr explicit <<int_formatter_fn_ctor_data,int_formatter_fn>>({int_format}<Base> data) noxcept;
 
     // <<int_formatter_fn_observers,observers>>
-    constexpr unsigned precision() const noexcept;
     constexpr bool showbase() const noexcept;
     constexpr bool showpos() const noexcept;
+    constexpr unsigned precision() const noexcept;
+    constexpr unsigned pad0width() const noexcept;
     constexpr static int base() noexcept;
     constexpr {int_format}<Base> get_int_format() const noexcept;
 
     // <<int_formatter_fn_format_functions, format functions>>
-    constexpr T&& <<int_formatter_fn_p,p>>(unsigned precision) && noexcept; // set precision
     constexpr T&& <<int_formatter_fn_showpos,operator+>>() && noexcept;           // show positive sign
     constexpr T&& <<int_formatter_fn_showbase,operator{asterisk}>>() && noexcept;           // show base
+    constexpr T&& <<int_formatter_fn_pad0,pad0>>(unsigned w) && noexcept;      // pad zeros before digits
+    constexpr T&& <<int_formatter_fn_p,p>>(unsigned precision) && noexcept; // set precision
 
     constexpr T&& <<int_formatter_fn_set_int_keep_base,hex>>() && noexcept; // when Base == 16
     constexpr T&& <<int_formatter_fn_set_int_keep_base,dec>>() && noexcept; // when Base == 10
@@ -921,14 +921,6 @@ postcondition:: `get_int_format() == data`
 ====
 [source,cpp]
 ----
-constexpr unsigned precision() const noexcept;
-----
-[horizontal]
-Return value:: `get_int_format().precision`
-====
-====
-[source,cpp]
-----
 constexpr showpos() const noexcept;
 ----
 [horizontal]
@@ -945,6 +937,22 @@ Return value:: `get_int_format().showbase`
 ====
 [source,cpp]
 ----
+constexpr unsigned precision() const noexcept;
+----
+[horizontal]
+Return value:: `get_int_format().precision`
+====
+====
+[source,cpp]
+----
+constexpr unsigned pad0width() const noexcept;
+----
+[horizontal]
+Return value:: `get_int_format().pad0width`
+====
+====
+[source,cpp]
+----
 constexpr static base() noexcept;
 ----
 [horizontal]
@@ -953,17 +961,6 @@ Return value:: `Base`
 
 [[int_formatter_fn_format_functions]]
 ===== Format functions
-
-[[int_formatter_fn_p]]
-====
-[source,cpp]
-----
-constexpr T&& p(unsigned precision) && noexcept;
-----
-[horizontal]
-Postconditions::  `precision() == precision`
-Return value:: `std::move(static_cast<T&>({asterisk}this))`
-====
 
 [[int_formatter_fn_showpos]]
 ====
@@ -989,6 +986,27 @@ Postconditions::  `showbase() == true`
 Return value:: `std::move(static_cast<T&>({asterisk}this))`
 ====
 
+[[int_formatter_fn_p]]
+====
+[source,cpp]
+----
+constexpr T&& p(unsigned precision) && noexcept;
+----
+[horizontal]
+Postconditions::  `precision() == precision`
+Return value:: `std::move(static_cast<T&>({asterisk}this))`
+====
+
+[[int_formatter_fn_pad0]]
+====
+[source,cpp]
+----
+constexpr T&& pad0(unsigned w) && noexcept;
+----
+[horizontal]
+Postconditions::  `pad0() == w`
+Return value:: `std::move(static_cast<T&>({asterisk}this))`
+====
 [[int_formatter_fn_set_int_keep_base]]
 ====
 [source,cpp]
@@ -1082,6 +1100,7 @@ namespace strf {
 template <int Base>
 struct int_format {
     unsigned precision = 0;
+    unsigned pad0width = 0;
     bool showbase = false;
     bool showpos = false;
     static constexpr int base = Base;
@@ -1103,6 +1122,10 @@ constexpr bool operator!=(int_format<Base> lhs, int_format<Base> rhs) noexcept;
 
 [[float_formatter]]
 === _Formatter_ `float_formatter`
+
+The `alignment_formatter` _Formatter_ defines the following format functions:
+
+include::float_formatter_abstract.adoc[]
 
 [source,cpp,subs=normal]
 ----

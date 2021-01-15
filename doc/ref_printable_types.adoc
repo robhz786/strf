@@ -74,10 +74,9 @@ Type:: The same as the output character type or `char32_t`. In the later case,
 
 Overridable:: No
 
-Format functions::
-( in addition to <<alignment_formatter, alignment functions>> )
-[horizontal]
-`multi(std::size_t count)`::: Prints the character `count` times. Default value is `1`.
+Formatters::
+* `<<alignment_formatter,alignment_formatter>>`
+* `<<quantity_formatter,quantity_formatter>>`
 
 //-
 Influential facet categories::
@@ -89,10 +88,11 @@ Influential facet categories::
 
 === `bool` [[printable_bool]]
 Type:: `bool`
-Format functions::
-<<alignment_formatter, Alignment functions>> only.
 
 Overridable:: Yes, `<<PrintTraits_override_tag,override_tag>>` is `bool`.
+
+Formatters::
+* `<<alignment_formatter,alignment_formatter>>`
 
 Influential facet categories::
 - `<<lettercase,lettercase_c>>`
@@ -103,8 +103,8 @@ Types:: `const void*`
 
 Overridable:: Yes, `<<PrintTraits_override_tag,override_tag>>` is `const void*`
 
-Format functions::
-The <<alignment_formatter, alignment functions>> only.
+Formatters::
+* `<<alignment_formatter,alignment_formatter>>`
 
 Influential facet categories::
 - `<<lettercase,lettercase_c>>`
@@ -132,21 +132,9 @@ Overridable:: Yes, `<<PrintTraits_override_tag,override_tag>>` is the same as th
 `unsigned long int` or
 `unsigned long long int` )
 
-[[int_fmt]]
-Format functions::
-( in addition to <<alignment_formatter, alignment functions>> )
-[horizontal]
-`dec()`::: Use decimal base ( This is already the default, though )
-`hex()`::: Use hexadecimal base.
-`oct()`::: Use octal base.
-`bin()`::: Use binary base.
-`p(unsigned precision)`::: Ensures that at least `precision` digits
-are printed by adding extra zero leading digits if necessary.
-`operator+()`::: When in decimal base, prints the positive sign
-`"+"` when value is non negative. No effect for other bases.
-`operator*()`::: Prints the base indication
-( `"0x"` for hexadecimal, `"0"` for octal and `"0b"` for binary ).
-No effect in decimal base.
+Formatters::
+* `<<alignment_formatter,alignment_formatter>>`
+* `<<int_formatter,int_formatter>>`
 
 //-
 Influential facet categories::
@@ -160,29 +148,9 @@ Types:: `float`, `double`
 
 Overridable:: Yes, `<<PrintTraits_override_tag,override_tag>>` is the same as the input type ( `float` or `double` )
 
-Format functions::
-( In addition to the <<alignment_formatter, alignment functions>> )
-[horizontal]
-`operator+()`::: When in decimal base, prints the positive sign
-`"+"` if the value is non negative. No effect for other bases.
-`operator*()`:::  Prints the decimal point even when there
-are no fractional digits.
-`sci()`::: Prints in scientific notation, like this: `"1.2345e+02"`.
-`fixed()`::: Prints in decimal notation, like this: `"123.45"`.
-`gen()`::: This is the default notation.
-When precision is unspecified ( or equal to `(unsigned)-1` )
-prints in the scientfic notation if, and only if, it is shorter
-than the fixed notation. Otherwise ( when precision is specified ),
-does like in `std::printf`:
-uses the scientfic notation if the exponent is less than -4 or greater
-than or equal to the precision. Trailing fractional zeros are not printed.
-`hex()`::: Prints in hexadecimal notation, like this `"-0x1.abcd123e+5"`
-`p(unsigned precision)`::: If `precision == (unsigned)-1`, which is
-the default, then prints the minimal amount of digits so that value
-can be fully recovered by a parser. Otherwise, if notation is __general__,
-`precision` is the number of significant digits. Otherwise, it is
-the number of fractional digits. `precision == 0` has the same effect as
-`precision == 1`.
+Formatters::
+* `<<alignment_formatter,alignment_formatter>>`
+* `<<float_formatter,float_formatter>>`
 
 //-
 Influential facet categories::

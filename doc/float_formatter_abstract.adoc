@@ -1,0 +1,60 @@
+////
+Distributed under the Boost Software License, Version 1.0.
+
+See accompanying file LICENSE_1_0.txt or copy at
+http://www.boost.org/LICENSE_1_0.txt
+////
+
+
+[%header,cols="382,618"]
+|===
+| Member function | Effect
+|`operator*()`
+| Equivalent to the `'#'` format flag in `printf`
+
+|`operator+()`
+| Equivalent to the `'+'` format flag in `printf`
+
+|`pad0(unsigned w)`
+| Similar to the `'0'` format flag in `printf`:
+
+  For NaN and infinity, causes the the width ( in alignment
+  formatting ) to be at least equal to `w`.
+
+  For valid number, prints zeros after the sign and the base
+  indication and before the digits such the total number
+  of characters ( not couting the fill related to alignment formatting )
+  is at least equal to `w`.
+
+|`p(unsigned precision)`
+| Sets the precision.
+
+|`hex()`
+| Hexadecimal notation.
+
+|`fixed()`
+| Fixed notation. If precision is set, it is the number of fractional
+  digits.
+
+  If precision is not set,
+  prints the smallest number of digits such that the floating-point value
+  can be exactly recovered.
+
+|`sci()`
+| Scientific notation. If precision is set, it is the number of fractional
+  digits.
+
+  If precision is not set,
+  prints the smallest number of digits such that the floating-point value
+  can be exactly recovered.
+
+|`gen()`
+| If precision is not set, chooses the notation ( scientific or fixed ) that leads
+  to the smallest number or characters such that the floating-point value
+  can be exactly recovered.
+
+  If precision is set, same effect the `'g'` format flags in `printf`
+  ( except that the lettercase is specified by the
+   <<lettercase,lettercase>> facet. )
+|===
+

@@ -18,6 +18,11 @@ all: \
     out/to_streambuf_hpp.html \
     out/to_string_hpp.html
 
+formatters_abastracts := \
+  alignment_formatter_abstract.adoc \
+  int_formatter_abstract.adoc \
+  float_formatter_abstract.adoc
+
 out/ :
 	mkdir -p out
 
@@ -27,7 +32,7 @@ out/syntax.svg : syntax.svg out/
 out/tutorial.html : tutorial.adoc out/
 	asciidoctor -v $< -o $@
 
-out/quick_reference.html : quick_reference.adoc out/
+out/quick_reference.html : quick_reference.adoc $(formatters_abastracts) out/
 	asciidoctor -v $< -o $@
 
 out/locale_hpp.html : locale_hpp.adoc out/
@@ -51,7 +56,19 @@ out/cuda.html : cuda.adoc out/
 out/versus_fmtlib.html : versus_fmtlib.adoc out/
 	asciidoctor -v --attribute=strf-version=$(StrfVersion) $< -o $@
 
-out/strf_hpp.html : strf_hpp.adoc ref_facets_pack.adoc ref_printer.adoc ref_format_functions.adoc ref_printable_types.adoc ref_destination.adoc ref_tr-string.adoc ref_char_encoding.adoc ref_width.adoc ref_numpunct.adoc ref_misc.adoc out/
+out/strf_hpp.html : strf_hpp.adoc \
+                    ref_facets_pack.adoc \
+                    ref_printer.adoc \
+                    ref_format_functions.adoc \
+                    ref_printable_types.adoc \
+                    ref_destination.adoc \
+                    ref_tr-string.adoc \
+                    ref_char_encoding.adoc \
+                    ref_width.adoc \
+                    ref_numpunct.adoc \
+                    ref_misc.adoc \
+                    $(formatters_abastracts) \
+                    out /
 	asciidoctor -v $< -o - | sed 's/20em/34em/g' | sed 's/td.hdlist1{/td.hdlist1{min-width:9em;/g' > $@
 
 out/outbuff_hpp.html : outbuff_hpp.adoc out/

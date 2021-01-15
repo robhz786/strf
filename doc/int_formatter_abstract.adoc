@@ -1,0 +1,40 @@
+////
+Distributed under the Boost Software License, Version 1.0.
+
+See accompanying file LICENSE_1_0.txt or copy at
+http://www.boost.org/LICENSE_1_0.txt
+////
+
+
+[%header,cols="382,618"]
+|===
+| Member function | Effect
+|`bin()`
+|  Uses the binary base.
+
+|`oct()`
+|  Uses the octal base.
+
+|`dec()`
+| Uses the decimal base.
+
+|`hex()`
+| Uses the hexadecimal base.
+
+|`operator*()`
+| Equivalent to the `'#'` format flag in `printf`
+
+|`operator+()`
+| Equivalent to the `'+'` format flag in `printf`
+
+|`p(unsigned precision)`
+| Sets the precision: ensures that at least `precision` digits
+  are printed by padding zeros, if necessary, after the sign or
+  base indication and before the digits.
+
+| `pad0(unsigned w)`
+| Ensures that the total number of characters
+  ( not counting the fill from alignment formatting ) is at least
+  equal to `w` by padding zeros, if necessary, after the sign or
+  base indication and before the digits
+|===
