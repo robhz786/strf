@@ -19,9 +19,6 @@ http://www.boost.org/LICENSE_1_0.txt
 |`operator^({width_t} width)`
 | Center alignment
 
-|`operator%({width_t} width)`
-| Splits the content, as in `std::internal`.
-
 |`fill(char32_t ch)`
 | Sets the fill character.
 |===

@@ -43,11 +43,9 @@ that work as alias to format functions:
 |`left(_arg_, _width_)`        |`fmt(_arg_) < _width_`
 |`right(_arg_, _width_)`       |`fmt(_arg_) > _width_`
 |`center(_arg_, _width_)`      |`fmt(_arg_) ^ _width_`
-|`split(_arg_, _width_)`       |`fmt(_arg_) % _width_`
 |`left(_arg_, _width_, _ch_)`  |`fmt(_arg_).fill(_ch_) < _width_`
 |`right(_arg_, _width_, _ch_)` |`fmt(_arg_).fill(_ch_) > _width_`
 |`center(_arg_, _width_, _ch_)`|`fmt(_arg_).fill(_ch_) ^ _width_`
-|`split(_arg_, _width_, _ch_)` |`fmt(_arg_).fill(_ch_) % _width_`
 |`bin(_arg_)`                  |`fmt(_arg_).bin()`
 |`dec(_arg_)`                  |`fmt(_arg_).oct()`
 |`oct(_arg_)`                  |`fmt(_arg_).dec()`
@@ -1216,13 +1214,9 @@ assert(str == "      abcdef123);
 ----
 Or use any of the expressions below:
 |===
-|`join_align(_width_, _alignment_, _ch_~_opt_~, __split_pos__~_opt_~) (__args__\...)`
 |`join_left(_width_, _ch_~_opt_~) (__args__\...)`
 |`join_right(_width_, _ch_~_opt_~) (__args__\...)`
 |`join_center(_width_, _ch_~_opt_~) (__args__\...)`
-|`join_split(_width_, __split_pos__) (__args__\...)`
-|`join_split(_width_, _ch_, __split_pos__)  (__args__\...)`
-|`join(__args__\...).split_pos(__split_pos__) % _width_`
 |===
 where:
 
@@ -1230,12 +1224,11 @@ where:
 * `_width_` is a value of type `{width_t}`
 * `_alignment_` is a value of type `<<strf_hpp#text_alignment, text_alignment>>`
 * `_ch_` is a value of type `char32_t`
-* `__split_pos__` is a value of type `std::size_t`
 
 [source,cpp]
 ----
-auto str = strf::to_string(strf::join_split(15, U'.', 2)("abc", "def", 123));
-assert(abcdef......123);
+auto str = strf::to_string(strf::join_center(15, U'.')("abc", "def", 123));
+assert(...abcdef123...);
 ----
 
 ////

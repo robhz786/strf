@@ -1691,7 +1691,6 @@ STRF_HD void punct_double_printer<CharT>::init_fill_
             preview.add_size(fillsize * fillcount);
         }
         switch (afmt.alignment) {
-            case strf::text_alignment::split:
             case strf::text_alignment::right:
                 left_fillcount_ = fillcount;
                 break;
@@ -1989,7 +1988,6 @@ STRF_HD void punct_double_printer<CharT>::print_inf_or_nan_
 //             preview.add_size(content_width + fillchar_size * fillcount);
 //         }
 //         switch (a) {
-//             case strf::text_alignment::split:
 //             case strf::text_alignment::right:
 //                 left_fillcount_ = fillcount;
 //                 break;
@@ -2786,7 +2784,6 @@ STRF_HD void hex_double_printer<CharT>::init_
                 right_fillcount_ = fillcount;
                 break;
             case strf::text_alignment::right:
-            case strf::text_alignment::split:
                 left_fillcount_ = fillcount;
                 break;
             default:

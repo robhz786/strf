@@ -681,7 +681,6 @@ inline STRF_HD void init_2
                 data.left_fillcount = 0;
                 data.right_fillcount = fillcount;
                 break;
-            case strf::text_alignment::split:
             case strf::text_alignment::right:
                 data.left_fillcount = fillcount;
                 data.right_fillcount = 0;
