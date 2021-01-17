@@ -596,12 +596,15 @@ struct fmt_int_printer_data {
     unsigned leading_zeros;
     unsigned left_fillcount;
     unsigned right_fillcount;
-    unsigned prefix_size;
+    char32_t fillchar;
+    bool has_prefix;
     char sign;
 };
 
 struct punct_fmt_int_printer_data: public fmt_int_printer_data {
     unsigned sepcount;
+    unsigned sepsize;
+    char32_t sepchar;
     strf::digits_grouping grouping;
 };
 
@@ -613,19 +616,21 @@ inline STRF_HD void init_1
     , strf::int_format<10> ifmt
     , IntT value ) noexcept
 {
-    using unsigned_IntT = typename std::make_unsigned<IntT>::type;
-    unsigned_IntT uvalue;
-    if (value < 0) {
-        uvalue = 1 + static_cast<unsigned_IntT>(-(value + 1));
-        data.prefix_size = 1;
-        data.sign = '-';
+    if (value >= 0) {
+        data.uvalue = value;
+        data.sign = '+';
+        data.has_prefix = ifmt.showpos;
     } else {
-        uvalue = value;
-        data.prefix_size = ifmt.showpos;
-        data.sign = ifmt.showpos ? '+' : '\0';
+        using uvalue_type = decltype(data.uvalue);
+        STRF_IF_CONSTEXPR (sizeof(IntT) < sizeof(data.uvalue)) {
+            std::make_signed_t<uvalue_type> wide_value = value;
+            data.uvalue = static_cast<uvalue_type>(-wide_value);
+        } else {
+            data.uvalue = 1 + static_cast<uvalue_type>(-(value + 1));
+        }
+        data.sign = '-';
+        data.has_prefix = true;
     }
-    data.digcount = strf::detail::count_digits<10>(uvalue);
-    data.uvalue = uvalue;
 }
 
 template
@@ -636,77 +641,93 @@ inline STRF_HD void init_1
     , strf::int_format<10>
     , UIntT uvalue ) noexcept
 {
-    data.sign = '\0';
-    data.prefix_size = 0;
-    data.digcount = strf::detail::count_digits<10>(uvalue);
+    data.has_prefix = false;
     data.uvalue = uvalue;
 }
 
 template <typename IntT, int Base>
 inline STRF_HD void init_1
     ( fmt_int_printer_data& data
-    , strf::int_format<Base> ifmt
+    , strf::int_format<Base>
     , IntT value ) noexcept
 {
-    STRF_IF_CONSTEXPR (Base == 8) {
-        data.prefix_size = ifmt.showbase && (value != 0);
-    } else {
-        data.prefix_size = (unsigned)ifmt.showbase << 1;
-    }
-    auto uvalue = static_cast<std::make_unsigned_t<IntT>>(value);
-    data.digcount = strf::detail::count_digits<Base>(uvalue);
-    data.uvalue = uvalue;
+    data.uvalue = static_cast<decltype(data.uvalue)>(value);
 }
 
-inline STRF_HD void init_2
+struct punct_fmt_int_printer_data_init_result {
+    unsigned sub_width;
+    unsigned fillcount;
+};
+
+template <int Base>
+STRF_HD punct_fmt_int_printer_data_init_result init_punct_fmt_int_printer_data
     ( punct_fmt_int_printer_data& data
-    , unsigned precision
-    , unsigned pad0width
+    , strf::validate_f validate
+    , strf::int_format<Base> ifmt
     , strf::alignment_format afmt ) noexcept
+#if defined(STRF_OMIT_IMPL)
+    ;
+#else
 {
+    data.digcount = strf::detail::count_digits<Base>(data.uvalue);
+    data.sepsize = 1;
+    if (data.sepchar >= 0x80 && data.grouping.any_separator(data.digcount)) {
+        auto sepsize = validate(data.sepchar);
+        data.sepsize = static_cast<unsigned>(sepsize);
+        if (sepsize == strf::invalid_char_len) {
+            data.grouping = strf::digits_grouping{};
+            data.sepsize = 0;
+        }
+    }
     data.sepcount = data.grouping.separators_count(data.digcount);
-    unsigned content_width = data.digcount + data.sepcount + data.prefix_size;
-    unsigned zeros_a = precision > data.digcount ? precision - data.digcount : 0;
-    unsigned zeros_b = pad0width > content_width ? pad0width - content_width : 0;
+    unsigned prefix_size;
+    STRF_IF_CONSTEXPR (Base == 10 ) {
+        prefix_size = data.has_prefix;
+    } else STRF_IF_CONSTEXPR (Base == 8 ) {
+        if (ifmt.showbase && data.uvalue != 0) {
+            data.has_prefix = true;
+            prefix_size = 1;
+            if (ifmt.precision > 0) {
+                -- ifmt.precision;
+            }
+        } else {
+            data.has_prefix = false;
+            prefix_size = 0;
+        }
+    } else {
+        data.has_prefix = ifmt.showbase;
+        prefix_size = (unsigned)ifmt.showbase << 1;
+    }
+    unsigned content_width = data.digcount + data.sepcount + prefix_size;
+    unsigned zeros_a = ifmt.precision > data.digcount ? ifmt.precision - data.digcount : 0;
+    unsigned zeros_b = ifmt.pad0width > content_width ? ifmt.pad0width - content_width : 0;
     data.leading_zeros = (detail::max)(zeros_a, zeros_b);
     content_width += data.leading_zeros;
     auto fmt_width = afmt.width.round();
     if (fmt_width <= (int)content_width) {
         data.left_fillcount = 0;
         data.right_fillcount = 0;
-    } else {
-        auto fillcount = static_cast<unsigned>(fmt_width - content_width);
-        switch (afmt.alignment) {
-            case strf::text_alignment::left:
-                data.left_fillcount = 0;
-                data.right_fillcount = fillcount;
-                break;
-            case strf::text_alignment::right:
-                data.left_fillcount = fillcount;
-                data.right_fillcount = 0;
-                break;
-            default:
-                auto halfcount = fillcount >> 1;
-                data.left_fillcount = halfcount;
-                data.right_fillcount = halfcount + (fillcount & 1);
-        }
+        return {content_width - data.sepcount, 0};
     }
+    data.fillchar = afmt.fill;
+    auto fillcount = static_cast<unsigned>(fmt_width - content_width);
+    switch (afmt.alignment) {
+        case strf::text_alignment::left:
+            data.left_fillcount = 0;
+            data.right_fillcount = fillcount;
+            break;
+        case strf::text_alignment::right:
+            data.left_fillcount = fillcount;
+            data.right_fillcount = 0;
+            break;
+        default:
+            auto halfcount = fillcount >> 1;
+            data.left_fillcount = halfcount;
+            data.right_fillcount = halfcount + (fillcount & 1);
+    }
+    return {content_width - data.sepcount, fillcount};
 }
-
-inline STRF_HD void init_2
-    ( punct_fmt_int_printer_data& data
-    , unsigned precision
-    , unsigned pad0width
-    , strf::default_alignment_format ) noexcept
-{
-    data.sepcount = data.grouping.separators_count(data.digcount);
-    unsigned content_width = data.digcount + data.sepcount + data.prefix_size;
-    unsigned zeros_a = precision > data.digcount ? precision - data.digcount : 0;
-    unsigned zeros_b = pad0width > content_width ? pad0width - content_width : 0;
-    data.leading_zeros = (detail::max)(zeros_a, zeros_b);
-    data.left_fillcount = 0;
-    data.right_fillcount = 0;
-}
+#endif // defined(STRF_OMIT_IMPL)
 
 template <typename CharT, int Base>
 class punct_fmt_int_printer: public printer<CharT>
@@ -717,17 +738,30 @@ public:
     STRF_HD punct_fmt_int_printer
         ( const strf::usual_printer_input<T...>& i) noexcept
     {
-        auto ivalue = i.arg.value();
+        const auto ivalue = i.arg.value();
         using int_type = decltype(ivalue);
         lettercase_ = strf::get_facet<lettercase_c, int_type>(i.facets);
-        auto punct = strf::get_facet<numpunct_c<Base>, int_type>(i.facets);
+        const auto enc = strf::get_facet<char_encoding_c<CharT>, int_type>(i.facets);
+        encode_fill_ = enc.encode_fill_func();
+        encode_char_ = enc.encode_char_func();
+        const auto punct = strf::get_facet<numpunct_c<Base>, int_type>(i.facets);
         data_.grouping = punct.grouping();
-        sepchar_ = punct.thousands_sep();
-        init_( i.preview
-             , strf::get_facet<char_encoding_c<CharT>, int_type>(i.facets)
-             , i.arg.get_alignment_format()
-             , i.arg.get_int_format()
-             , ivalue );
+        data_.sepchar = punct.thousands_sep();
+        const auto ifmt = i.arg.get_int_format();
+        const auto afmt = i.arg.get_alignment_format();
+        detail::init_1(data_, ifmt, ivalue);
+        const auto w = detail::init_punct_fmt_int_printer_data<Base>
+            (data_, enc.validate_func(), ifmt, afmt);
+        i.preview.subtract_width(w.sub_width + w.fillcount + data_.sepcount);
+        using preview_type = typename strf::usual_printer_input<T...>::preview_type;
+        STRF_IF_CONSTEXPR (preview_type::size_required) {
+            i.preview.add_size(w.sub_width);
+            if (w.fillcount) {
+                i.preview.add_size(w.fillcount * enc.encoded_char_size(afmt.fill));
+            }
+            i.preview.add_size(data_.sepcount * data_.sepsize);
+        }
+
     }
 
     STRF_HD ~punct_fmt_int_printer();
@@ -736,110 +770,11 @@ public:
 
 private:
 
-    template <typename Preview, typename Encoding, typename IntT>
-    STRF_HD void init_
-        ( Preview& preview
-        , Encoding enc
-        , strf::alignment_format afmt
-        , int_format<Base> ifmt
-        , IntT value ) noexcept;
-
-    template <typename Preview, typename Encoding, typename IntT>
-    STRF_HD void init_
-        ( Preview& preview
-        , Encoding enc
-        , strf::default_alignment_format afmt
-        , int_format<Base> ifmt
-        , IntT value ) noexcept;
-
-    strf::encode_fill_f<CharT> encode_fill_ = nullptr;
-    strf::encode_char_f<CharT> encode_char_ = nullptr;
+    strf::encode_fill_f<CharT> encode_fill_;
+    strf::encode_char_f<CharT> encode_char_;
     strf::detail::punct_fmt_int_printer_data data_;
     strf::lettercase lettercase_;
-    char32_t fillchar_;
-    char32_t sepchar_;
-    unsigned sepsize_;
 };
-
-template <typename CharT, int Base>
-template <typename Preview, typename Encoding, typename IntT>
-STRF_HD void punct_fmt_int_printer<CharT, Base>::init_
-    ( Preview& preview
-    , Encoding enc
-    , alignment_format afmt
-    , int_format<Base> ifmt
-    , IntT value ) noexcept
-{
-    encode_char_ = enc.encode_char_func();
-    encode_fill_ = enc.encode_fill_func();
-    fillchar_ = afmt.fill;
-    detail::init_1(data_, ifmt, value);
-    auto sepsize = enc.validate(sepchar_);
-    sepsize_ = static_cast<unsigned>(sepsize);
-    if (sepsize == 1) {
-        CharT buff[4];
-        enc.encode_char(buff, sepchar_);
-        sepchar_ = buff[0];
-    } else if (sepsize == strf::invalid_char_len) {
-        data_.grouping = strf::digits_grouping{};
-        sepsize_ = 0;
-    }
-    STRF_IF_CONSTEXPR(Base == 8) {
-        if (ifmt.precision > 0 && ifmt.showbase) {
-            -- ifmt.precision;
-        }
-    }
-    detail::init_2(data_, ifmt.precision, ifmt.pad0width, afmt);
-    STRF_IF_CONSTEXPR(Preview::size_required) {
-        preview.add_size(data_.leading_zeros + data_.digcount + data_.prefix_size);
-        preview.add_size((data_.left_fillcount + data_.right_fillcount)
-                         * enc.encoded_char_size(afmt.fill));
-        preview.add_size(data_.sepcount * sepsize_);
-    }
-    STRF_IF_CONSTEXPR(Preview::width_required) {
-        preview.subtract_width( data_.leading_zeros + data_.prefix_size
-                              + data_.left_fillcount + data_.right_fillcount
-                              + data_.sepcount + data_.digcount );
-    }
-}
-
-template <typename CharT, int Base>
-template <typename Preview, typename Encoding, typename IntT>
-STRF_HD void punct_fmt_int_printer<CharT, Base>::init_
-    ( Preview& preview
-    , Encoding enc
-    , default_alignment_format afmt
-    , int_format<Base> ifmt
-    , IntT value ) noexcept
-{
-    encode_char_ = enc.encode_char_func();
-    detail::init_1(data_, ifmt, value);
-    auto sepsize = enc.validate(sepchar_);
-    sepsize_ = static_cast<unsigned>(sepsize);
-    if (sepsize == 1) {
-        CharT buff[4];
-        enc.encode_char(buff, sepchar_);
-        sepchar_ = buff[0];
-    } else if (sepsize == strf::invalid_char_len) {
-        data_.grouping = strf::digits_grouping{};
-        sepsize_ = 0;
-    }
-    STRF_IF_CONSTEXPR(Base == 8) {
-        if (ifmt.precision > 0 && ifmt.showbase) {
-            -- ifmt.precision;
-        }
-    }
-    detail::init_2(data_, ifmt.precision, ifmt.pad0width, afmt);
-    STRF_IF_CONSTEXPR(Preview::size_required) {
-        preview.add_size(data_.leading_zeros + data_.digcount + data_.prefix_size);
-        preview.add_size(data_.sepcount * sepsize_);
-    }
-    STRF_IF_CONSTEXPR(Preview::width_required) {
-        preview.subtract_width( data_.leading_zeros + data_.prefix_size
-                              + data_.sepcount + data_.digcount );
-    }
-}
-
 
 template <typename CharT, int Base>
 STRF_HD punct_fmt_int_printer<CharT, Base>::~punct_fmt_int_printer()
@@ -851,25 +786,25 @@ STRF_HD void punct_fmt_int_printer<CharT, Base>::print_to
         ( strf::basic_outbuff<CharT>& ob ) const
 {
     if (data_.left_fillcount > 0) {
-        encode_fill_(ob, data_.left_fillcount, fillchar_);
+        encode_fill_(ob, data_.left_fillcount, data_.fillchar);
     }
-    if (data_.prefix_size != 0) {
-        ob.ensure(data_.prefix_size);
-        auto it = ob.pointer();
+    if (data_.has_prefix) {
         STRF_IF_CONSTEXPR (Base == 10) {
-            * it = data_.sign;
+            ob.ensure(1);
+            * ob.pointer() = data_.sign;
+            ob.advance();
         } else STRF_IF_CONSTEXPR (Base == 8) {
-            * it = static_cast<CharT>('0');
-        } else STRF_IF_CONSTEXPR (Base == 16) {
-            it[0] = static_cast<CharT>('0');
-            it[1] = static_cast<CharT>
-                ('X' | ((lettercase_ != strf::uppercase) << 5));
+            ob.ensure(1);
+            * ob.pointer() = static_cast<CharT>('0');
+            ob.advance();
         } else {
+            constexpr CharT xb = Base == 16 ? 'X' : 'B';
+            ob.ensure(2);
+            auto it = ob.pointer();
             it[0] = static_cast<CharT>('0');
-            it[1] = static_cast<CharT>
-                ('B' | ((lettercase_ != strf::uppercase) << 5));
+            it[1] = static_cast<CharT>(xb | ((lettercase_ != strf::uppercase) << 5));
+            ob.advance_to(it + 2);
         }
-        ob.advance(data_.prefix_size);
     }
     if (data_.leading_zeros > 0) {
         strf::detail::write_fill(ob, data_.leading_zeros, CharT('0'));
@@ -877,21 +812,53 @@ STRF_HD void punct_fmt_int_printer<CharT, Base>::print_to
     using dig_writer = detail::intdigits_writer<Base>;
     if (data_.sepcount == 0) {
         dig_writer::write(ob, data_.uvalue, data_.digcount, lettercase_);
-    } else if (sepsize_ == 1) {
+    } else if (data_.sepsize == 1) {
+        CharT sepchar = static_cast<CharT>(data_.sepchar);
+        if (data_.sepchar >= 0x80) {
+            encode_char_(&sepchar, data_.sepchar);
+        }
         dig_writer::write_little_sep
             ( ob, data_.uvalue, data_.grouping, data_.digcount, data_.sepcount
-            , static_cast<CharT>(sepchar_), lettercase_ );
+            , sepchar, lettercase_ );
     } else {
         dig_writer::write_big_sep
             ( ob, encode_char_, data_.uvalue, data_.grouping
-            , sepchar_, sepsize_, data_.digcount, lettercase_ );
+            , data_.sepchar, data_.sepsize, data_.digcount, lettercase_ );
     }
     if (data_.right_fillcount > 0) {
-        encode_fill_(ob, data_.right_fillcount, fillchar_);
+        encode_fill_(ob, data_.right_fillcount, data_.fillchar);
     }
 }
 
 #if defined(STRF_SEPARATE_COMPILATION)
+
+STRF_EXPLICIT_TEMPLATE
+STRF_HD punct_fmt_int_printer_data_init_result init_punct_fmt_int_printer_data<2>
+    ( punct_fmt_int_printer_data& data
+    , strf::validate_f validate
+    , strf::int_format<2> ifmt
+    , strf::alignment_format afmt ) noexcept;
+
+STRF_EXPLICIT_TEMPLATE
+STRF_HD punct_fmt_int_printer_data_init_result init_punct_fmt_int_printer_data<8>
+    ( punct_fmt_int_printer_data& data
+    , strf::validate_f validate
+    , strf::int_format<8> ifmt
+    , strf::alignment_format afmt ) noexcept;
+
+STRF_EXPLICIT_TEMPLATE
+STRF_HD punct_fmt_int_printer_data_init_result init_punct_fmt_int_printer_data<10>
+    ( punct_fmt_int_printer_data& data
+    , strf::validate_f validate
+    , strf::int_format<10> ifmt
+    , strf::alignment_format afmt ) noexcept;
+
+STRF_EXPLICIT_TEMPLATE
+STRF_HD punct_fmt_int_printer_data_init_result init_punct_fmt_int_printer_data<16>
+    ( punct_fmt_int_printer_data& data
+    , strf::validate_f validate
+    , strf::int_format<16> ifmt
+    , strf::alignment_format afmt ) noexcept;
 
 #if defined(__cpp_char8_t)
 STRF_EXPLICIT_TEMPLATE class int_printer<char8_t>;

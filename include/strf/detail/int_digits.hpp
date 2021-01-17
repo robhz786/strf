@@ -90,6 +90,37 @@ unsigned_abs(IntT value) noexcept
     return value;
 }
 
+template < typename ToIntT
+         , typename FromIntT
+         , std::enable_if_t<std::is_unsigned<FromIntT>::value, int> = 0>
+constexpr STRF_HD ToIntT cast_abs(FromIntT value) noexcept
+{
+    return value;
+}
+template < typename ToIntT
+         , typename FromIntT
+         , std::enable_if_t
+             < (sizeof(ToIntT) > sizeof(FromIntT)) && std::is_signed<FromIntT>::value
+             , int > = 0 >
+constexpr STRF_HD ToIntT cast_abs(FromIntT value)
+{
+    std::make_signed_t<ToIntT> value2 = value;
+    return value >= 0 ? value2 : -value2;
+}
+template < typename ToIntT
+         , typename FromIntT
+         , std::enable_if_t
+             < sizeof(ToIntT) == sizeof(FromIntT) && std::is_signed<FromIntT>::value
+             , int > = 0 >
+constexpr STRF_HD ToIntT cast_abs(FromIntT value)
+{
+    static_assert( std::is_unsigned<ToIntT>::value
+                 , "Expected destination to be unsigned" );
+    return value >= 0
+        ? static_cast<ToIntT>(value)
+        : (1 + static_cast<ToIntT>(-(value + 1)));
+}
+
 template <int Base, int IntSize>
 struct digits_counter;
 

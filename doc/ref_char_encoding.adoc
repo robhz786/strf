@@ -628,6 +628,16 @@ Return type:: `{write_replacement_char_f}<CharT>`
 Return value:: A function pointer such that `x.write_replacement_char_func() (ob)`
                has the same effect as `x.write_replacement_char(ob)`
 ====
+====
+[source,cpp]
+----
+x.validate_func()
+----
+[horizontal]
+Return type:: `{validate_f}`
+Return value:: A function pointer such that `x.validate_func() (ch32)`
+               returns the same value as `x.validate(ch32)`
+====
 [[CharEncoding_from_u32]]
 ====
 [source,cpp]

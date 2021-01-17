@@ -814,6 +814,10 @@ public:
     {
         return encode_fill;
     }
+    static STRF_HD strf::validate_f validate_func() noexcept
+    {
+        return validate;
+    }
     static STRF_HD
     strf::write_replacement_char_f<CharT> write_replacement_char_func() noexcept
     {

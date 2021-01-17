@@ -410,6 +410,10 @@ public:
     {
         return data_->encode_fill_func;
     }
+    STRF_HD strf::validate_f validate_func() const noexcept
+    {
+        return data_->validate_func;
+    }
     STRF_HD strf::write_replacement_char_f<CharT>
     write_replacement_char_func() const noexcept
     {
@@ -533,7 +537,6 @@ struct facet_traits<strf::dynamic_char_encoding<CharT>>
 {
     using category = strf::char_encoding_c<CharT>;
 };
-
 
 namespace detail {
 
