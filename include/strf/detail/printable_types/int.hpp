@@ -25,15 +25,15 @@ struct int_format
 {
     unsigned precision = 0;
     unsigned pad0width = 0;
+    strf::showsign sign = strf::showsign::negative_only;
     bool showbase = false;
-    bool showpos = false;
     constexpr static int base = Base;
 };
 
 template <int ToBase, int FromBase>
 constexpr STRF_HD int_format<ToBase> change_base(int_format<FromBase> f) noexcept
 {
-    return {f.precision, f.pad0width, f.showbase, f.showpos};
+    return {f.precision, f.pad0width, f.sign, f.showbase};
 }
 
 template <int Base>
@@ -42,8 +42,8 @@ constexpr STRF_HD bool operator==( strf::int_format<Base> lhs
 {
     return lhs.precision == rhs.precision
         && lhs.pad0width == rhs.pad0width
-        && lhs.showbase == rhs.showbase
-        && lhs.showpos == rhs.showpos;
+        && lhs.sign == rhs.sign
+        && lhs.showbase == rhs.showbase;
 }
 
 template <int Base>
@@ -159,9 +159,24 @@ public:
     STRF_HD T&& operator+() && noexcept
     {
         static_assert(DecimalBase, "operator+ only allowed in decimal base");
-        data_.showpos = true;
+        data_.sign = strf::showsign::positive_also;
         return static_cast<T&&>(*this);
     }
+    template <bool DecimalBase = (Base == 10)>
+    STRF_HD T&& fill_sign() && noexcept
+    {
+        static_assert(DecimalBase, "fill_sign() only allowed in decimal base");
+        data_.sign = strf::showsign::fill_instead_of_positive;
+        return static_cast<T&&>(*this);
+    }
+    template <bool DecimalBase = (Base == 10)>
+    STRF_HD T&& operator~() && noexcept
+    {
+        static_assert(DecimalBase, "operator~ only allowed in decimal base");
+        data_.sign = strf::showsign::fill_instead_of_positive;
+        return static_cast<T&&>(*this);
+    }
+
     template <bool DecimalBase = (Base == 10)>
     constexpr STRF_HD T&& operator*() && noexcept
     {
@@ -172,22 +187,6 @@ public:
     constexpr static STRF_HD int base() noexcept
     {
         return Base;
-    }
-    constexpr STRF_HD unsigned precision() const noexcept
-    {
-        return data_.precision;
-    }
-    constexpr STRF_HD unsigned pad0width() const noexcept
-    {
-        return data_.pad0width;
-    }
-    constexpr STRF_HD bool showbase() const noexcept
-    {
-        return data_.showbase;
-    }
-    constexpr STRF_HD bool showpos() const noexcept
-    {
-        return data_.showpos;
     }
     constexpr STRF_HD strf::int_format<Base> get_int_format() const noexcept
     {
@@ -618,8 +617,8 @@ inline STRF_HD void init_1
 {
     if (value >= 0) {
         data.uvalue = value;
-        data.sign = '+';
-        data.has_prefix = ifmt.showpos;
+        data.sign = static_cast<char>(ifmt.sign);
+        data.has_prefix = ifmt.sign != strf::showsign::negative_only;
     } else {
         using uvalue_type = decltype(data.uvalue);
         STRF_IF_CONSTEXPR (sizeof(IntT) < sizeof(data.uvalue)) {
@@ -641,6 +640,7 @@ inline STRF_HD void init_1
     , strf::int_format<10>
     , UIntT uvalue ) noexcept
 {
+    data.sign = '\0';
     data.has_prefix = false;
     data.uvalue = uvalue;
 }
@@ -704,28 +704,32 @@ STRF_HD punct_fmt_int_printer_data_init_result init_punct_fmt_int_printer_data
     data.leading_zeros = (detail::max)(zeros_a, zeros_b);
     content_width += data.leading_zeros;
     auto fmt_width = afmt.width.round();
-    if (fmt_width <= (int)content_width) {
-        data.left_fillcount = 0;
-        data.right_fillcount = 0;
-        return {content_width - data.sepcount, 0};
-    }
     data.fillchar = afmt.fill;
+    bool fill_sign_space = Base == 10 && data.sign == ' ';
+    if (fmt_width <= (int)content_width) {
+        bool x = fill_sign_space && afmt.fill != ' ';
+        data.left_fillcount = x;
+        data.right_fillcount = 0;
+        data.has_prefix &= !x;
+        return {content_width - data.sepcount - x, x};
+    }
     auto fillcount = static_cast<unsigned>(fmt_width - content_width);
+    data.has_prefix &= !fill_sign_space;
     switch (afmt.alignment) {
         case strf::text_alignment::left:
-            data.left_fillcount = 0;
+            data.left_fillcount = fill_sign_space;
             data.right_fillcount = fillcount;
             break;
         case strf::text_alignment::right:
-            data.left_fillcount = fillcount;
+            data.left_fillcount = fillcount + fill_sign_space;
             data.right_fillcount = 0;
             break;
         default:
             auto halfcount = fillcount >> 1;
-            data.left_fillcount = halfcount;
+            data.left_fillcount = halfcount + fill_sign_space;
             data.right_fillcount = halfcount + (fillcount & 1);
     }
-    return {content_width - data.sepcount, fillcount};
+    return {content_width - data.sepcount - fill_sign_space, fillcount + fill_sign_space};
 }
 #endif // defined(STRF_OMIT_IMPL)
 
@@ -791,7 +795,7 @@ STRF_HD void punct_fmt_int_printer<CharT, Base>::print_to
     if (data_.has_prefix) {
         STRF_IF_CONSTEXPR (Base == 10) {
             ob.ensure(1);
-            * ob.pointer() = data_.sign;
+            * ob.pointer() = static_cast<CharT>(data_.sign);
             ob.advance();
         } else STRF_IF_CONSTEXPR (Base == 8) {
             ob.ensure(1);

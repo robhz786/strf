@@ -256,15 +256,15 @@ struct float_format
 {
     detail::chars_count_t precision = (detail::chars_count_t)-1;
     detail::chars_count_t pad0width = 0;
+    strf::showsign sign = strf::showsign::negative_only;
     bool showpoint = false;
-    bool showpos = false;
     constexpr static strf::float_notation notation = Notation;
 };
 
 template <strf::float_notation To, strf::float_notation From>
 constexpr STRF_HD strf::float_format<To> change_notation(strf::float_format<From> x) noexcept
 {
-    return float_format<To>{ x.precision, x.pad0width, x.showpoint, x.showpos };
+    return float_format<To>{ x.precision, x.pad0width, x.sign, x.showpoint };
 }
 
 template <strf::float_notation Notation>
@@ -273,8 +273,8 @@ constexpr STRF_HD bool operator==( strf::float_format<Notation> lhs
 {
     return lhs.precision == rhs.precision
         && lhs.pad0width == lhs.pad0width
-        && lhs.showpoint == rhs.showpoint
-        && lhs.showpos == rhs.showpos ;
+        && lhs.sign == rhs.sign
+        && lhs.showpoint == rhs.showpoint ;
 }
 
 template <strf::float_notation Notation>
@@ -318,13 +318,25 @@ public:
         auto data = other.get_float_format();
         data_.precision = data.precision;
         data_.pad0width = data.pad0width;
+        data_.sign = data.sign;
         data_.showpoint = data.showpoint;
-        data_.showpos = data.showpos;
     }
     constexpr STRF_HD T&& operator+() && noexcept
     {
-        data_.showpos = true;
+        data_.sign = strf::showsign::positive_also;
         T* base_ptr = static_cast<T*>(this); // work around UBSan bug
+        return static_cast<T&&>(*base_ptr);
+    }
+    constexpr STRF_HD T&& fill_sign() && noexcept
+    {
+        data_.sign = strf::showsign::fill_instead_of_positive;
+        T* base_ptr = static_cast<T*>(this);
+        return static_cast<T&&>(*base_ptr);
+    }
+    constexpr STRF_HD T&& operator~() && noexcept
+    {
+        data_.sign = strf::showsign::fill_instead_of_positive;
+        T* base_ptr = static_cast<T*>(this);
         return static_cast<T&&>(*base_ptr);
     }
     constexpr STRF_HD T&& operator*() && noexcept
@@ -589,7 +601,7 @@ constexpr bool inf_or_nan(float_form f)
 struct double_printer_data
 {
     strf::detail::float_form form;
-    bool negative;
+    char sign;
     bool showsign;
     bool showpoint;
 
@@ -637,11 +649,11 @@ STRF_HD double_printer_data init_double_printer_data
     double_printer_data data;
     data.m10      = dd.m10;
     data.e10      = dd.e10;
-    data.negative = dd.negative;
     data.sep_count = 0;
     data.extra_zeros = 0;
     data.pad0width = fdata.pad0width;
-    data.showsign = fdata.showpos || data.negative;
+    data.sign = dd.negative ? '-' : static_cast<char>(fdata.sign);
+    data.showsign = dd.negative || fdata.sign != strf::showsign::negative_only;
     data.chars_count = data.showsign;
     if (dd.nan || dd.infinity) {
         data.form = dd.nan ? detail::float_form::nan : detail::float_form::inf;
@@ -1489,7 +1501,10 @@ STRF_HD void punct_double_printer<CharT>::init_fill_
 {
     if (detail::inf_or_nan(data_.form) && data_.pad0width > data_.chars_count) {
         encode_fill_ = strf::detail::trivial_fill_f;
-        left_fillcount_ = data_.pad0width - (int)data_.chars_count;
+        // bool fill_sign_space = data_.sign == ' ';
+        // data_.showsign &= ! fill_sign_space;
+        // data_.chars_count -= fill_sign_space;
+        left_fillcount_ = data_.pad0width - (int)data_.chars_count;// + fill_sign_space;
         preview.subtract_width(left_fillcount_);
         preview.add_size(left_fillcount_);
     }
@@ -1503,37 +1518,51 @@ STRF_HD void punct_double_printer<CharT>::init_fill_
     encode_fill_ = enc.encode_fill_func();
     fillchar_ = afmt.fill;
     int fmt_width = afmt.width.round();
-    int content_width = data_.chars_count;
+    auto content_width = data_.chars_count;
     if (detail::inf_or_nan(data_.form)) {
         if (fmt_width < (int)data_.pad0width) {
             fmt_width = data_.pad0width;
         }
-    } else if (data_.pad0width > data_.chars_count) {
+    } else if (data_.pad0width > content_width) {
         content_width = data_.pad0width;
     }
-    if (content_width < fmt_width) {
-        auto fillcount = fmt_width - content_width;
-        preview.subtract_width(fillcount);
-        STRF_IF_CONSTEXPR (Preview::size_required) {
-            std::size_t fillsize = enc.validate(fillchar_);
-            if (fillsize == (size_t)-1) {
-                fillsize = enc.replacement_char_size();
-            }
-            encode_fill_ = enc.encode_fill_func();
-            preview.add_size(fillsize * fillcount);
+    const bool sign_space = data_.sign == ' ';
+    unsigned whole_fillcount = 0;
+    if ((int)content_width < fmt_width) {
+        auto partial_fillcount = fmt_width - content_width;
+        whole_fillcount = partial_fillcount + sign_space;
+        data_.showsign &= ! sign_space;
+        data_.chars_count -= sign_space;
+        if (data_.pad0width) {
+            data_.pad0width -= sign_space;
         }
+        preview.subtract_width(partial_fillcount);
         switch (afmt.alignment) {
             case strf::text_alignment::right:
-                left_fillcount_ = fillcount;
+                left_fillcount_ = whole_fillcount;
                 break;
             case strf::text_alignment::left:
-                right_fillcount_ = fillcount;
+                left_fillcount_ = sign_space;
+                right_fillcount_ = partial_fillcount;
                 break;
             default:
                 STRF_ASSERT(afmt.alignment == strf::text_alignment::center);
-                left_fillcount_ = fillcount / 2;
-                right_fillcount_ = fillcount - left_fillcount_;
+                auto half_fillcount = partial_fillcount >> 1;
+                left_fillcount_ = half_fillcount + sign_space;
+                right_fillcount_ = half_fillcount + (partial_fillcount & 1);
         }
+    } else if (sign_space && afmt.fill != ' ') {
+        left_fillcount_ = sign_space;
+        whole_fillcount = sign_space;
+        data_.showsign &= ! sign_space;
+        data_.chars_count -= sign_space;
+        if (data_.pad0width) {
+            data_.pad0width -= sign_space;
+        }
+    }
+    if (Preview::size_required && whole_fillcount) {
+        std::size_t fillchar_size = enc.encoded_char_size(fillchar_);
+        preview.add_size(fillchar_size * whole_fillcount - sign_space);
     }
 }
 
@@ -1564,7 +1593,7 @@ STRF_HD void punct_double_printer<CharT>::print_fixed_
     ( strf::basic_outbuff<CharT>& ob ) const noexcept
 {
     if (data_.showsign) {
-        put(ob, static_cast<CharT>('+' + (data_.negative << 1)));
+        put(ob, static_cast<CharT>(data_.sign));
     }
     if (data_.pad0width > data_.chars_count) {
         int count = data_.pad0width - data_.chars_count;
@@ -1662,7 +1691,7 @@ STRF_HD void punct_double_printer<CharT>::print_scientific_
     ( strf::basic_outbuff<CharT>& ob ) const noexcept
 {
     if (data_.showsign) {
-        put(ob, static_cast<CharT>('+' + (data_.negative << 1)));
+        put(ob, static_cast<CharT>(data_.sign));
     }
     if (data_.pad0width > data_.chars_count) {
         int count = data_.pad0width - data_.chars_count;
@@ -1680,7 +1709,7 @@ STRF_HD void punct_double_printer<CharT>::print_inf_or_nan_
     ( strf::basic_outbuff<CharT>& ob ) const noexcept
 {
     if (data_.showsign) {
-        put(ob, static_cast<CharT>('+' + (data_.negative << 1)));
+        put(ob, static_cast<CharT>(data_.sign));
     }
     if (data_.form == detail::float_form::nan) {
         strf::detail::print_nan(ob, lettercase_);
@@ -2163,8 +2192,8 @@ struct hex_double_printer_data
     detail::chars_count_t mantissa_digcount;
     detail::chars_count_t extra_zeros;
     bool showpoint;
-    bool negative;
     bool showsign;
+    char sign;
 };
 
 #if ! defined(STRF_OMIT_IMPL)
@@ -2178,9 +2207,10 @@ STRF_FUNC_IMPL STRF_HD strf::detail::hex_double_printer_data init_hex_double_pri
 
     data.mantissa = bits & 0xFFFFFFFFFFFFFull;
     data.exponent = static_cast<std::int32_t>((bits << 1) >> 53) - 1023;
-    data.negative = bits & (1ull << 63);
     data.extra_zeros = 0;
-    data.showsign = data.negative || fdata.showpos;
+    bool negative = bits & (1ull << 63);
+    data.sign = negative ? '-' : static_cast<char>(fdata.sign);
+    data.showsign = negative || fdata.sign != strf::showsign::negative_only;
     data.sub_chars_count = data.showsign;
     data.pad0width = fdata.pad0width;
     if (data.exponent == 1024) {
@@ -2298,6 +2328,8 @@ STRF_HD void hex_double_printer<CharT>::init_
     , Encoding enc
     , strf::alignment_format afmt ) noexcept
 {
+    encode_fill_ = enc.encode_fill_func();
+    fillchar_ = afmt.fill;
     int rounded_fmt_width = afmt.width.round();
     detail::chars_count_t content_width;
     if (data_.exponent != 1024) {
@@ -2316,20 +2348,18 @@ STRF_HD void hex_double_printer<CharT>::init_
             enc.encode_char(&ch, decimal_point_);
             decimal_point_ = ch;
         }
-        preview.add_size(content_width - 1 + pointsize_);
-    } else {
-        preview.add_size(content_width);
+        preview.add_size(pointsize_ - 1);
     }
+    const bool fill_sign_space = data_.sign == ' ';
+    detail::chars_count_t fillcount = 0;
     if (rounded_fmt_width <= (int)content_width) {
         preview.subtract_width(content_width);
+        if (fill_sign_space && afmt.fill != ' ') {
+            goto adapt_fill_sign_space;
+        }
     } else {
         preview.subtract_width((unsigned)rounded_fmt_width);
-        auto fillcount = static_cast<detail::chars_count_t>(rounded_fmt_width - content_width);
-        encode_fill_ = enc.encode_fill_func();
-        fillchar_ = afmt.fill;
-        STRF_IF_CONSTEXPR (Preview::size_required) {
-            preview.add_size(fillcount * enc.encoded_char_size(fillchar_));
-        }
+        fillcount = static_cast<detail::chars_count_t>(rounded_fmt_width - content_width);
         switch(afmt.alignment) {
             case strf::text_alignment::left:
                 right_fillcount_ = fillcount;
@@ -2339,9 +2369,26 @@ STRF_HD void hex_double_printer<CharT>::init_
                 break;
             default:
                 STRF_ASSERT(afmt.alignment == strf::text_alignment::center);
-                left_fillcount_ = fillcount >> 1;
-                right_fillcount_ = fillcount - left_fillcount_;
+                auto half_fillcount = fillcount >> 1;
+                left_fillcount_ = half_fillcount;
+                right_fillcount_ = half_fillcount + (fillcount & 1);
         }
+        if (fill_sign_space) {
+            adapt_fill_sign_space:
+            data_.showsign = false;
+            ++left_fillcount_;
+            ++fillcount;
+            --data_.sub_chars_count;
+            --content_width;
+            if (data_.pad0width) {
+                --data_.pad0width;
+            }
+        }
+    }
+    preview.add_size(content_width);
+    if (Preview::size_required && fillcount) {
+        std::size_t fillchar_size = enc.encoded_char_size(fillchar_);
+        preview.add_size(fillchar_size * fillcount);
     }
 }
 
@@ -2387,7 +2434,7 @@ STRF_HD void hex_double_printer<CharT>::print_to
         ob.ensure(data_.sub_chars_count);
         auto it = ob.pointer();
         if (data_.showsign)  {
-            *it++ = static_cast<CharT>('+' + (data_.negative << 1));
+            *it++ = static_cast<CharT>(data_.sign);
         }
         *it++ = '0';
         *it++ = 'X' | ((lettercase_ != strf::uppercase) << 5);
@@ -2459,7 +2506,7 @@ STRF_HD void hex_double_printer<CharT>::print_to
         }
     } else {
         if (data_.showsign) {
-           put(ob, static_cast<CharT>('+' + (data_.negative << 1)));
+            put(ob, static_cast<CharT>(data_.sign));
         }
         if (data_.mantissa == 0) {
             strf::detail::print_inf(ob, lettercase_);

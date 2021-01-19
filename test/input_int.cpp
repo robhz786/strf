@@ -212,6 +212,18 @@ void STRF_TEST_FUNC test_input_int()
         TEST("     +01:23:45").with(punct)  ( j(+strf::dec( 12345).pad0(8).p(6)) );
         TEST("     +01:23:45").with(punct)  ( j(+strf::dec( 12345).pad0(9).p(5)) );
         TEST("     -01:23:45").with(punct)  ( j( strf::dec(-12345).pad0(9).p(5)) );
+
+        // fill_sign
+        TEST("  ***-12345***") (j(strf::center(-12345, 12, '*').fill_sign()));
+        TEST("  ****12345***") (j(strf::center(12345, 12, '*').fill_sign()));
+        TEST("  ***1:23:45**").with(punct) (j(strf::center(12345, 12, '*').fill_sign()));
+        TEST("  ***1:23:45**").with(punct) (j(strf::center(12345, 12, '*').fill_sign().pad0(8)));
+        TEST("  **01:23:45**").with(punct) (j(strf::center(12345, 12, '*').fill_sign().pad0(9)));
+        TEST("  *001:23:45**").with(punct) (j(strf::center(12345, 12, '*').pad0(9)));
+
+        TEST("  *01:23:45***").with(punct) (j(strf::left(12345, 12, '*').fill_sign().pad0(9)));
+        TEST("  ****01:23:45").with(punct) (j(strf::right(12345, 12, '*').fill_sign().pad0(9)));
+        TEST("  *00001:23:45").with(punct) (j(strf::left(12345, 0, '*').fill_sign().pad0(12)));
     }
 
     // hexadecimal letter case

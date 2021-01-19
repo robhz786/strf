@@ -22,10 +22,18 @@ http://www.boost.org/LICENSE_1_0.txt
 | Uses the hexadecimal base.
 
 |`operator*()`
-| Equivalent to the `'#'` format flag in `printf`
+| Equivalent to the `'#'` format flag in `printf`. Only applicable in non-decimal bases.
 
 |`operator+()`
-| Equivalent to the `'+'` format flag in `printf`
+| Equivalent to the `'+'` format flag in `printf`. Only applicable in decimal base.
+
+| `operator~()`
+| Equivalent to `fill_sign()`
+
+| `fill_sign()`
+| Similar to the `' '` format flag in `printf`:
+  prints an extra fill character ( specified by some of the alignment format function )
+  before non-negative numbers. Only applicable in decimal base.
 
 |`p(unsigned precision)`
 | Sets the precision: ensures that at least `precision` digits
@@ -33,8 +41,8 @@ http://www.boost.org/LICENSE_1_0.txt
   base indication and before the digits.
 
 | `pad0(unsigned w)`
-| Ensures that the total number of characters
-  ( not counting the fill from alignment formatting ) is at least
-  equal to `w` by padding zeros, if necessary, after the sign or
-  base indication and before the digits
+| prints zeros after the sign or base indication and before the digits
+  such that at least `w` characters are printed
+  ( not counting the fill characters caused by alignment formatting,
+   but still counting the extra fill character caused by `fill_sign()` ).
 |===

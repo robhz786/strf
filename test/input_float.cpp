@@ -192,6 +192,26 @@ STRF_TEST_FUNC void test_subnormal_values(const FPack& fp)
     TEST("__________+inf~~~~~~").with(fp) (j(+strf::left  (infinity, 9, '~').pad0(10)));
     TEST("__________~~~+inf~~~").with(fp) (j(+strf::center(infinity, 9, '~').pad0(10)));
 
+    TEST("___________~~~~~~inf").with(fp) (j(strf::right (infinity, 9, '~').fill_sign().pad0(8)));
+    TEST("___________~inf~~~~~").with(fp) (j(strf::left  (infinity, 9, '~').fill_sign().pad0(8)));
+    TEST("___________~~~inf~~~").with(fp) (j(strf::center(infinity, 9, '~').fill_sign().pad0(8)));
+    TEST("__________~~~~~~~inf").with(fp) (j(strf::right (infinity, 9, '~').fill_sign().pad0(10)));
+    TEST("__________~inf~~~~~~").with(fp) (j(strf::left  (infinity, 9, '~').fill_sign().pad0(10)));
+    TEST("__________~~~~inf~~~").with(fp) (j(strf::center(infinity, 9, '~').fill_sign().pad0(10)));
+
+    TEST("___________      inf").with(fp) (j(strf::pad0(infinity, 9).fill_sign()));
+    TEST("________________ inf").with(fp) (j(strf::fmt(infinity).fill_sign()));
+
+    TEST("___________~~~~~~inf").with(fp) (j(strf::right (infinity, 9, '~').hex().fill_sign().pad0(8)));
+    TEST("___________~inf~~~~~").with(fp) (j(strf::left  (infinity, 9, '~').hex().fill_sign().pad0(8)));
+    TEST("___________~~~inf~~~").with(fp) (j(strf::center(infinity, 9, '~').hex().fill_sign().pad0(8)));
+    TEST("__________~~~~~~~inf").with(fp) (j(strf::right (infinity, 9, '~').hex().fill_sign().pad0(10)));
+    TEST("__________~inf~~~~~~").with(fp) (j(strf::left  (infinity, 9, '~').hex().fill_sign().pad0(10)));
+    TEST("__________~~~~inf~~~").with(fp) (j(strf::center(infinity, 9, '~').hex().fill_sign().pad0(10)));
+
+    TEST("___________      inf").with(fp) (j(strf::pad0(infinity, 9).hex().fill_sign()));
+    TEST("________________ inf").with(fp) (j(strf::fmt(infinity).hex().fill_sign()));
+
     TEST("_________________nan").with(fp, strf::lettercase::lower)  (j(nan));
     TEST("_________________inf").with(fp, strf::lettercase::lower)  (j(infinity));
     TEST("________________-inf").with(fp, strf::lettercase::lower)  (j(-infinity));
@@ -437,11 +457,29 @@ STRF_TEST_FUNC void basic_tests(const FPack& fp)
     // pad0
     TEST(rd("________000000000001")).with(fp) (j(strf::pad0(1.0, 12)));
     TEST(rd("________+0000000001.")).with(fp) (j(+*strf::pad0(1.0, 12)));
+    TEST(rd("______  +0000000001.")).with(fp) (j(+*strf::pad0(1.0, 12) > 14));
+    TEST(rd("______~~+0000000001.")).with(fp) (j(+*strf::pad0(1.0, 12).fill('~') > 14));
+    TEST(rd("________ 0000000001.")).with(fp) (j(*strf::pad0(1.0, 12).fill_sign()));
+    TEST(rd("______   0000000001.")).with(fp) (j(*strf::pad0(1.0, 12).fill_sign() > 14));
     TEST(rd("________+00001234.25")).with(fp) (j(+strf::pad0(1234.25, 12)));
     TEST(rd("________+001234.2500")).with(fp) (j(+*strf::pad0(1234.25, 12).fixed().p(4)));
     TEST(rd("________00000001e+20")).with(fp) (j(strf::pad0(1e+20, 12)));
     TEST(rd("________+000001.e+20")).with(fp) (j(+*strf::pad0(1.e+20, 12)));
+    TEST(rd("________ 000001.e+20")).with(fp) (j(*strf::pad0(1.e+20, 12).fill_sign()));
     TEST(rd("________00001.25e+20")).with(fp) (j(strf::pad0(1.25e+20, 12)));
+
+
+    //----------------------------------------------------------------
+    // fill_sign
+    TEST(rd("__________000001.125")).with(fp) (j(strf::pad0(1.125, 10)));
+    TEST(rd("__________ 00001.125")).with(fp) (j(strf::pad0(1.125, 10).fill_sign()));
+    TEST(rd("______~~000001.125~~")).with(fp) (j(strf::center(1.125, 14, '~').pad0(10)));
+    TEST(rd("______~~~00001.125~~")).with(fp) (j(strf::center(1.125, 14, '~').pad0(10).fill_sign()));
+    TEST(rd("______~~~~~00001.125")).with(fp) (j(strf::right(1.125, 14, '~').pad0(10).fill_sign()));
+    TEST(rd("______~00001.125~~~~")).with(fp) (j(strf::left(1.125, 14, '~').pad0(10).fill_sign()));
+
+    TEST(rd("____________1.125000")).with(fp) (j(strf::fixed(1.125, 6)));
+    TEST(rd("___________ 1.125000")).with(fp) (j(strf::fixed(1.125, 6).fill_sign()));
 }
 
 
@@ -494,8 +532,16 @@ STRF_TEST_FUNC void test_hexadecimal()
     TEST("_________-0x00001p+0") (j(strf::pad0(-1.0, 11).hex()));
     TEST("_________+0x0001.p+0") (j(+*strf::pad0(1.0, 11).hex()));
     TEST("_____0x001.123450p+0") (j(strf::hex(0x1.12345p+0).p(6).pad0(15)));
-    TEST("_//0x001.123450p+0//") (j(strf::hex(0x1.12345p+0).p(6).pad0(15).fill('/') ^ 19));
-    TEST("_____0x001.123450p+0") (j(strf::hex(0x1.12345p+0).p(6).pad0(15).fill('/') ^ 15));
+    TEST("_**0x001.123450p+0**") (j(strf::hex(0x1.12345p+0).p(6).pad0(15).fill('*') ^ 19));
+    TEST("_____0x001.123450p+0") (j(strf::hex(0x1.12345p+0).p(6).pad0(15).fill('*') ^ 15));
+
+    // fill_sign
+    TEST("________0x001.125p+1") (j(strf::hex(0x1.125p+1).pad0(12)));
+    TEST("________ 0x01.125p+1") (j(strf::hex(0x1.125p+1).pad0(12).fill_sign()));
+    TEST("________*0x01.125p+1") (j(strf::hex(0x1.125p+1).pad0(12).fill_sign().fill('*')));
+    TEST("____*****0x01.125p+1") (j(strf::right(0x1.125p+1, 16, '*').hex().pad0(12).fill_sign()));
+    TEST("____***0x01.125p+1**") (j(strf::center(0x1.125p+1, 16, '*').hex().pad0(12).fill_sign()));
+    TEST("____*0x01.125p+1****") (j(strf::left(0x1.125p+1, 16, '*').hex().pad0(12).fill_sign()));
 }
 
 STRF_TEST_FUNC void test_punctuation()

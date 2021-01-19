@@ -962,6 +962,8 @@ template <> struct is_char<char16_t>: public std::true_type {};
 template <> struct is_char<char32_t>: public std::true_type {};
 template <> struct is_char<wchar_t>: public std::true_type {};
 
+enum class showsign {negative_only = 0, positive_also = '+', fill_instead_of_positive = ' '};
+
 template <bool HasAlignment>
 struct alignment_formatter_q;
 
