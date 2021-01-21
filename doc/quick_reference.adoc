@@ -8,9 +8,9 @@ http://www.boost.org/LICENSE_1_0.txt
 = The Strf formatting library - Quit Reference
 :source-highlighter: prettify
 :sectnums:
-:sectnumlevels: 1
+:sectnumlevels: 0
 :toc: left
-:toclevels: 1
+:toclevels: 2
 :icons: font
 
 
@@ -23,7 +23,7 @@ http://www.boost.org/LICENSE_1_0.txt
 
 The expression `fmt(_arg_)` returns a printable object that contains a copy or reference of
 `arg` as well as format information that can be edited with the
-member functions listed in the tables below.
+member functions like `sci` and `fill`:
 
 .Example
 [source,cpp]
@@ -32,75 +32,88 @@ auto str = strf::to_string( +*strf::fmt(1.0).sci().fill(U'~') ^ 15 );
 assert(str == "~~~~+1.e+01~~~~")
 ----
 
+These member functions are called in this library as __format functions__.
+
+There are also some global function templates
+that work as alias to format functions:
+
+[%header,cols="22,25"]
+|===
+| Expression | Equivalent Expression
+|`left(_arg_, _width_)`        |`fmt(_arg_) < _width_`
+|`right(_arg_, _width_)`       |`fmt(_arg_) > _width_`
+|`center(_arg_, _width_)`      |`fmt(_arg_) ^ _width_`
+|`left(_arg_, _width_, _ch_)`  |`fmt(_arg_).fill(_ch_) < _width_`
+|`right(_arg_, _width_, _ch_)` |`fmt(_arg_).fill(_ch_) > _width_`
+|`center(_arg_, _width_, _ch_)`|`fmt(_arg_).fill(_ch_) ^ _width_`
+|`bin(_arg_)`                  |`fmt(_arg_).bin()`
+|`dec(_arg_)`                  |`fmt(_arg_).oct()`
+|`oct(_arg_)`                  |`fmt(_arg_).dec()`
+|`hex(_arg_)`                  |`fmt(_arg_).hex()`
+|`sci(_arg_)`                  |`fmt(_arg_).sic()`
+|`fixed(_arg_)`                |`fmt(_arg_).fixed()`
+|`gen(_arg_)`                  |`fmt(_arg_).gen()`
+|`sci(_arg_, _precision_)`     |`fmt(_arg_).sic().p(_precision_)`
+|`fixed(_arg_, _precision_)`   |`fmt(_arg_).fixed().p(_precision_)`
+|`gen(_arg_, _precision_)`     |`fmt(_arg_).gen().p(_precision_)`
+|`pad0(_arg_, _width_)`        |`fmt(_arg_).pad0(_width_)`
+|`multi(_arg_, _count_)`       |`fmt(_arg_).multi(_count_)`
+|`sani(_arg_, _enc_)`          |`fmt(_arg_).sani(_enc_)`
+|`conv(_arg_, _enc_)`          |`fmt(_arg_).conv(_enc_)`
+|`sani(_arg_)`                 |`fmt(_arg_).sani()`
+|`conv(_arg_)`                 |`fmt(_arg_).cont()`
+|===
+
+.Example
+[source,cpp]
+----
+auto str = strf::to_string( +*strf::center(1.0, 9, U'~') );
+assert(str == "~~~+1.~~~")
+----
+
 [[alignment_format_functions]]
-.Alignment format functions -- for all printable types
-[%header,cols="40,60"]
-|===
-| Member function | Effect
+=== Alignment formatting
 
-|`operator<({width_t} width)`
-| Aligns to the left ( Or to the right right-to-left (RTL) script )
+include::alignment_formatter_abstract.adoc[]
 
-|`operator>({width_t} width)`
-| Aligns to the right ( Or to the left right-to-left (RTL) script )
+=== Floating-point formatting
 
-|`operator^({width_t} width)`
-| Center alignment
+include::float_formatter_abstract.adoc[]
 
-|`operator%({width_t} width)`
-| Splits the content, as in `std::internal`.
+====
+NOTE: `pad0` can be combined with alignment formatting:
+[source,cpp]
+----
+auto s = strf::to_string(strf::center(-1.25, 12, '_').pad0(8));
+assert(s == "__-0001.25__");
 
-|`fill(char32_t ch)`
-| Sets the fill character.
-|===
+auto nan = std::numeric_limits<double>::quiet_NaN();
 
-.When `_arg_` is a numeric value
-[%header,cols="40,60"]
-|===
-| Member function | Effect
-|`p(unsigned precision)`
-| Sets the precision. For integers and floating points.
+s = strf::to_string(strf::center(-nan, 12, '_').pad0(8));
+assert(s == "____-nan____");
 
-|`bin()`
-|  Uses the binary base. For integers only
+s = strf::to_string(strf::center(-nan, 8, '_').pad0(12));
+assert(s == "____-nan____");
+----
+====
 
-|`oct()`
-|  Uses the octal base. For integers only
+=== Integer formatting
 
-|`dec()`
-| Uses the decimal base. For integers only
+include::int_formatter_abstract.adoc[]
 
-|`hex()`
-| Uses the hexadecimal base. For integers and floating points.
-
-|`operator*()`
-| Prints base indication on integers. Print decimal point on floating points.
-
-|`operator+()`
-| Prints `'+'` for non negative values. For integers and floating points.
-
-|`fixed()`
-| Uses fixed notation. For floating points only.
-
-|`sci()`
-| Uses scientific notation. For floating points only.
-
-|`gen()`
-| Uses "general" notation. For floating points only.
-|===
-
+=== Char formatting
 [[multi]]
-.When `_arg_` is a character
-[%header,cols="40,60"]
+[%header,cols="382,618"]
 |===
 | Member function | Effect
 |`multi(std::size_t count)`
 | Prints the argument `count` times.
 |===
 
+
 [[string_formatting]]
-.When `_arg_` is a string
-[%header,cols="40,60"]
+=== String formatting
+[%header,cols="382,618"]
 |===
 | Member function | Effect
 |`p(<<strf_hpp#width_t,width_t>> precision)`
@@ -137,43 +150,7 @@ assert(str == "~~~~+1.e+01~~~~")
   as the destination encoding.
 |===
 
-The library also provides some global function templates
-that work as alias to format functions:
 
-[%header,cols="22,25"]
-|===
-| Expression | Equivalent Expression
-|`left(_arg_, _width_)`        |`fmt(_arg_) < _width_`
-|`right(_arg_, _width_)`       |`fmt(_arg_) > _width_`
-|`center(_arg_, _width_)`      |`fmt(_arg_) ^ _width_`
-|`split(_arg_, _width_)`       |`fmt(_arg_) % _width_`
-|`left(_arg_, _width_, _ch_)`  |`fmt(_arg_).fill(_ch_) < _width_`
-|`right(_arg_, _width_, _ch_)` |`fmt(_arg_).fill(_ch_) > _width_`
-|`center(_arg_, _width_, _ch_)`|`fmt(_arg_).fill(_ch_) ^ _width_`
-|`split(_arg_, _width_, _ch_)` |`fmt(_arg_).fill(_ch_) % _width_`
-|`bin(_arg_)`                  |`fmt(_arg_).bin()`
-|`dec(_arg_)`                  |`fmt(_arg_).oct()`
-|`oct(_arg_)`                  |`fmt(_arg_).dec()`
-|`hex(_arg_)`                  |`fmt(_arg_).hex()`
-|`sci(_arg_)`                  |`fmt(_arg_).sic()`
-|`fixed(_arg_)`                |`fmt(_arg_).fixed()`
-|`gen(_arg_)`                  |`fmt(_arg_).gen()`
-|`sci(_arg_, _precision_)`     |`fmt(_arg_).sic().p(_precision_)`
-|`fixed(_arg_, _precision_)`   |`fmt(_arg_).fixed().p(_precision_)`
-|`gen(_arg_, _precision_)`     |`fmt(_arg_).gen().p(_precision_)`
-|`multi(_arg_, _count_)`       |`fmt(_arg_).multi(_count_)`
-|`sani(_arg_, _enc_)`          |`fmt(_arg_).sani(_enc_)`
-|`conv(_arg_, _enc_)`          |`fmt(_arg_).conv(_enc_)`
-|`sani(_arg_)`                 |`fmt(_arg_).sani()`
-|`conv(_arg_)`                 |`fmt(_arg_).cont()`
-|===
-
-.Example
-[source,cpp]
-----
-auto str = strf::to_string( +*strf::center(1.0, 9, U'~') );
-assert(str == "~~~+1.~~~")
-----
 == Destinations [[destinations]]
 
 [%header,cols="10,4"]
@@ -408,7 +385,7 @@ Return type:: `<<to_cfile_hpp#wide_cfile_writer,wide_cfile_writer<__CharT__>::re
 ====
 
 [[outbuff_types]]
-== Derivates of `basic_outbuff`
+=== Derivates of `basic_outbuff`
 
 The table below lists the concrete types that derivate from the `basic_outbuff<__CharT__>` abstract class.
 
@@ -1237,13 +1214,9 @@ assert(str == "      abcdef123);
 ----
 Or use any of the expressions below:
 |===
-|`join_align(_width_, _alignment_, _ch_~_opt_~, __split_pos__~_opt_~) (__args__\...)`
 |`join_left(_width_, _ch_~_opt_~) (__args__\...)`
 |`join_right(_width_, _ch_~_opt_~) (__args__\...)`
 |`join_center(_width_, _ch_~_opt_~) (__args__\...)`
-|`join_split(_width_, __split_pos__) (__args__\...)`
-|`join_split(_width_, _ch_, __split_pos__)  (__args__\...)`
-|`join(__args__\...).split_pos(__split_pos__) % _width_`
 |===
 where:
 
@@ -1251,12 +1224,11 @@ where:
 * `_width_` is a value of type `{width_t}`
 * `_alignment_` is a value of type `<<strf_hpp#text_alignment, text_alignment>>`
 * `_ch_` is a value of type `char32_t`
-* `__split_pos__` is a value of type `std::size_t`
 
 [source,cpp]
 ----
-auto str = strf::to_string(strf::join_split(15, U'.', 2)("abc", "def", 123));
-assert(abcdef......123);
+auto str = strf::to_string(strf::join_center(15, U'.')("abc", "def", 123));
+assert(...abcdef123...);
 ----
 
 ////

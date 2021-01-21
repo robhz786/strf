@@ -83,9 +83,6 @@ void second_example()
 //]
 }
 
-
-
-
 void format_functions()
 {
     //[ format_functions_example
@@ -95,20 +92,6 @@ void format_functions()
         , "---" );
 
     assert(s == "---....0x00ff---");
-    //]
-}
-
-void format_functions_2()
-{
-    //[ formatting_samples
-    auto str = strf::to_string
-        ( strf::hex(255) > 5
-        , '/', strf::center(255, 7, '.').hex()
-        , '/', *strf::hex(255) % 7
-        , '/', strf::multi('a', 3) ^ 7
-        , '/', +strf::fmt(255) );
-
-    assert(str == "   ff/..ff.../0x   ff/  aaa  /+255");
     //]
 }
 
@@ -373,7 +356,6 @@ int main()
 {
     sample();
     format_functions();
-    format_functions_2();
     reserve();
     basic_facet_sample();
     constrained_facet();

@@ -25,12 +25,6 @@ void samples()
         , "---" );
 
     assert(str == "---abc  def123....---");
-
-    str = strf::to_string
-        ( "---"
-        , strf::join_split(15, '.', 1) (strf::left("abc", 5), "def", 123)
-        , "---" );
-    assert(str == "---abc  ....def123---");
     //]
 }
 

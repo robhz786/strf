@@ -186,7 +186,6 @@ void ipv6_printer<CharT>::print_to(strf::basic_outbuff<CharT>& dest) const
             encode_fill_fn_(dest, fillcount_, alignment_fmt_.fill);
             break;
         case strf::text_alignment::right:
-        case strf::text_alignment::split:
             encode_fill_fn_(dest, fillcount_, alignment_fmt_.fill);
             print_ipv6(dest);
             break;
@@ -254,10 +253,6 @@ void tests()
     TEST("                                       ::") (strf::fmt(addr0) > 41)  ;
     TEST("                          0:0:0:0:0:0:0:0") (+strf::fmt(addr0) > 41) ;
     TEST("  0000:0000:0000:0000:0000:0000:0000:0000") (++strf::fmt(addr0) > 41);
-
-    TEST("                                       ::") (strf::fmt(addr0) % 41)  ;
-    TEST("                          0:0:0:0:0:0:0:0") (+strf::fmt(addr0) % 41) ;
-    TEST("  0000:0000:0000:0000:0000:0000:0000:0000") (++strf::fmt(addr0) % 41);
 
     TEST("::                                       ") (strf::fmt(addr0) < 41)  ;
     TEST("0:0:0:0:0:0:0:0                          ") (+strf::fmt(addr0) < 41) ;

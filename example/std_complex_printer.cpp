@@ -287,7 +287,6 @@ private:
         , strf::width_t fmt_width );
 
     void print_complex_value_( strf::basic_outbuff<CharT>& dest ) const;
-    void print_complex_value_split_( strf::basic_outbuff<CharT>& dest ) const;
 
     template <typename Preview, typename WidthCalc>
     void preview_without_fill_(Preview& preview, WidthCalc wcalc) const;
@@ -369,7 +368,6 @@ void fmt_std_complex_printer<CharT, FloatT, Notation>::preview_without_fill_
     }
 }
 
-
 template <typename CharT, typename FloatT, strf::float_notation Notation>
 void fmt_std_complex_printer<CharT, FloatT, Notation>::print_to
     ( strf::basic_outbuff<CharT>& dest ) const
@@ -385,9 +383,6 @@ void fmt_std_complex_printer<CharT, FloatT, Notation>::print_to
             case strf::text_alignment::right:
                 encoding_.encode_fill(dest, fillcount_, fillchar_);
                 print_complex_value_(dest);
-                break;
-            case strf::text_alignment::split:
-                print_complex_value_split_(dest);
                 break;
             default: {
                 assert(alignment_ == strf::text_alignment::center);
@@ -417,52 +412,6 @@ void fmt_std_complex_printer<CharT, FloatT, Notation>::print_complex_value_
         strf::to(dest).with(facets)
             ( (CharT)'(', first_val, strf::conv(middle_str)
             , second_val, (CharT)')');
-    }
-}
-
-template <typename CharT, typename FloatT, strf::float_notation Notation>
-void fmt_std_complex_printer<CharT, FloatT, Notation>::print_complex_value_split_
-    ( strf::basic_outbuff<CharT>& dest ) const
-{
-    // I decided to ignore fillchar_ here and use space instead
-
-    auto facets = strf::pack(lettercase_, numpunct_, encoding_);
-    auto first_val  = strf::fmt(coordinates_.first).set_float_format(float_fmt_);
-    auto second_val = strf::fmt(coordinates_.second).set_float_format(float_fmt_);
-    auto halfcount = (fillcount_)/ 2;
-    switch(form_) {
-        case complex_form::vector:
-            strf::to(dest).with(facets)
-                ( (CharT)'('
-                , first_val
-                , strf::multi((CharT)' ', fillcount_ - halfcount)
-                , (CharT)','
-                , strf::multi((CharT)' ', 1 + halfcount)
-                , second_val
-                , (CharT)')' );
-            break;
-
-        case complex_form::polar:
-            strf::to(dest).with(facets)
-                ( first_val
-                , strf::multi((CharT)' ', fillcount_ - halfcount)
-                , U'\u2220'
-                , strf::multi((CharT)' ', 1 + halfcount)
-                , second_val );
-            break;
-
-        case complex_form::algebric:
-            strf::to(dest).with(facets)
-                ( (CharT)'('
-                , first_val
-                , strf::multi((CharT)' ', 1 + fillcount_ - halfcount)
-                , (CharT)'+'
-                , strf::multi((CharT)' ', 1 + halfcount)
-                , (CharT)'i'
-                , (CharT)'*'
-                , second_val
-                , (CharT)')' );
-            break;
     }
 }
 
@@ -597,20 +546,6 @@ void tests()
 
     TEST(u"__5000.\u2220 0.9272952180016122___") (*strf::center(x, 30, '_').polar());
 
-
-    TEST("(+3000.       ,        +4000.)") (+*strf::split(x, 30, '_'));
-
-    TEST("(+3000.       +      i*+4000.)") (+*strf::split(x, 30, '_').algebric());
-
-    TEST(u"+5000.  \u2220  +0.9272952180016122") (+*strf::split(x, 30, '_').polar());
-
-
-    TEST("(3000., 4000.)") (*strf::split(x, 0, '_'));
-
-    TEST("(3000. + i*4000.)") (*strf::split(x, 0, '_').algebric());
-
-    TEST(u"5000.\u2220 0.9272952180016122") (*strf::split(x, 0, '_').polar());
-
     // using format functions and facets
 
     TEST("________________________(3\251E+03, 4\251E+03)")
@@ -649,18 +584,6 @@ void tests()
         .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
         (* strf::center(x, 40, '_').sci().polar());
 
-    TEST("(3\251E+03            ,             4\251E+03)")
-        .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
-        (* strf::split(x, 40, '_').sci());
-
-    TEST("(3\251E+03            +           i*4\251E+03)")
-        .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
-        (* strf::split(x, 40, '_').sci().algebric());
-
-    TEST("5\251E+03      ?      9\251""272952180016122E-01")
-        .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
-        (* strf::split(x, 40, '_').sci().polar());
-
     TEST("________________________(3\251E+03, 4\251E+03)")
         .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
         (* strf::right(x, 40, '_').sci());
@@ -696,18 +619,6 @@ void tests()
     TEST("_____5\251E+03? 9\251""272952180016122E-01______")
         .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
         (* strf::center(x, 40, '_').sci().polar());
-
-    TEST("(3\251E+03            ,             4\251E+03)")
-        .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
-        (* strf::split(x, 40, '_').sci());
-
-    TEST("(3\251E+03            +           i*4\251E+03)")
-        .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
-        (* strf::split(x, 40, '_').sci().algebric());
-
-    TEST("5\251E+03      ?      9\251""272952180016122E-01")
-        .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
-        (* strf::split(x, 40, '_').sci().polar());
 
     // preview
     {

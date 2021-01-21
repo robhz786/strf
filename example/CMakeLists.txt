@@ -16,7 +16,6 @@ foreach(x
     readme_md
     tr_string
     encoding_conversion
-    format_functions
     facets_pack_as_input
     joins
     range_input

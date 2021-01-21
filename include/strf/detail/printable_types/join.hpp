@@ -14,86 +14,6 @@
 
 namespace strf {
 
-template<bool HasSplitPos>
-struct split_pos_formatter;
-
-template<typename T, bool HasSplitPos>
-class split_pos_formatter_fn;
-
-template<typename T>
-class split_pos_formatter_fn<T, true> {
-public:
-
-    constexpr STRF_HD split_pos_formatter_fn() noexcept
-    {
-    }
-
-    constexpr STRF_HD explicit split_pos_formatter_fn(std::ptrdiff_t pos) noexcept
-        : pos_(pos)
-    {
-    }
-
-    template <typename U, bool B>
-    constexpr STRF_HD explicit split_pos_formatter_fn
-        ( const split_pos_formatter_fn<U, B>& r ) noexcept
-        : pos_(r.split_pos())
-    {
-    }
-
-    constexpr STRF_HD T&& split_pos(std::ptrdiff_t pos) && noexcept
-    {
-        pos_ = pos;
-        return static_cast<T&&>(*this);
-    }
-
-    constexpr STRF_HD std::ptrdiff_t split_pos() const noexcept
-    {
-        return pos_;
-    }
-
-private:
-
-    std::ptrdiff_t pos_ = 0;
-};
-
-template<typename T>
-class split_pos_formatter_fn<T, false>
-{
-    using adapted_derived_type_ = strf::fmt_replace
-        < T
-        , strf::split_pos_formatter<false>
-        , strf::split_pos_formatter<true> >;
-public:
-
-    constexpr STRF_HD split_pos_formatter_fn() noexcept
-    {
-    }
-
-    template<typename U>
-    constexpr STRF_HD explicit split_pos_formatter_fn(const strf::split_pos_formatter_fn<U, false>&) noexcept
-    {
-    }
-
-    constexpr STRF_HD adapted_derived_type_ split_pos(std::ptrdiff_t pos) const noexcept
-    {
-        return { static_cast<const T&>(*this)
-               , strf::tag<strf::split_pos_formatter<true>> {}
-               , pos};
-    }
-
-    constexpr STRF_HD std::ptrdiff_t split_pos() const noexcept
-    {
-        return 0;
-    }
-};
-
-template<bool HasSplitPos>
-struct split_pos_formatter
-{
-    template<typename T>
-    using fn = strf::split_pos_formatter_fn<T, HasSplitPos>;
-};
-
 namespace detail {
 
 template <typename CharT, typename Preview, typename FPack, typename... FwdArgs>
@@ -112,7 +32,7 @@ struct join_t
 };
 
 template< typename CharT, typename Preview, typename FPack
-        , bool HasSplitPos, bool HasAlignment, typename... FwdArgs>
+        , bool HasAlignment, typename... FwdArgs>
 class join_printer_input
 {
 public:
@@ -125,7 +45,6 @@ public:
     FPack facets;
     strf::value_with_formatters
         < strf::detail::join_printing<FwdArgs...>
-        , strf::split_pos_formatter<HasSplitPos>
         , strf::alignment_formatter_q<HasAlignment> > arg;
 };
 
@@ -134,20 +53,18 @@ struct join_printing
 {
     using forwarded_type = strf::detail::join_t<FwdArgs...>;
 
-    template <bool HasSplitPos, bool HasAlignment>
+    template <bool HasAlignment>
     using fmt_tmpl = strf::value_with_formatters
         < join_printing<FwdArgs...>
-        , strf::split_pos_formatter<HasSplitPos>
         , strf::alignment_formatter_q<HasAlignment> >;
 
-    using formatters = strf::tag<strf::split_pos_formatter<false>, strf::alignment_formatter>;
+    using formatters = strf::tag<strf::alignment_formatter>;
 
-    template< typename CharT, typename Preview, typename FPack
-            , bool HasSplitPos, bool HasAlignment >
+    template< typename CharT, typename Preview, typename FPack, bool HasAlignment >
     STRF_HD constexpr static auto make_printer_input
-        ( Preview& preview, const FPack& facets, fmt_tmpl<HasSplitPos, HasAlignment> x)
+        ( Preview& preview, const FPack& facets, fmt_tmpl<HasAlignment> x)
         -> join_printer_input
-            < CharT, Preview, FPack, HasSplitPos, HasAlignment, FwdArgs... >
+            < CharT, Preview, FPack, HasAlignment, FwdArgs... >
     {
         return {preview, facets, x};
     }
@@ -178,12 +95,10 @@ struct aligned_join_maker
     constexpr aligned_join_maker
         ( strf::width_t width_
         , strf::text_alignment align_
-        , CharT fillchar_
-        , std::ptrdiff_t split_pos_ = 1 ) noexcept
+        , CharT fillchar_ ) noexcept
         : width(width_)
         , align(align_)
         , fillchar(fillchar_)
-        , split_pos(split_pos_)
     {
         static_assert( strf::is_char<CharT>::value // issue 19
                      , "Refusing non-char argument to set the fill character, "
@@ -193,73 +108,22 @@ struct aligned_join_maker
     strf::width_t width = 0;
     strf::text_alignment align = strf::text_alignment::right;
     char32_t fillchar = U' ';
-    std::ptrdiff_t split_pos = 1;
 
     template<typename... Args>
     constexpr STRF_HD strf::value_with_formatters
         < strf::detail::join_printing<strf::forwarded_printable_type<Args>...>
-        , strf::split_pos_formatter<true>
         , strf::alignment_formatter_q<true> >
     operator()(const Args&... args) const
     {
         return { { strf::detail::simple_tuple<strf::forwarded_printable_type<Args>...>
                      { strf::detail::simple_tuple_from_args{}
                      , static_cast<strf::forwarded_printable_type<Args>>(args)... } }
-               , strf::tag< strf::split_pos_formatter<true>
-                          , strf::alignment_formatter_q<true> > {}
-               , split_pos
+               , strf::tag< strf::alignment_formatter_q<true> > {}
                , strf::alignment_format {fillchar, width, align}};
     }
 };
 
 namespace detail {
-
-template<typename CharT>
-STRF_HD void print_split
-    ( strf::basic_outbuff<CharT>& ob
-    , strf::encode_fill_f<CharT> encode_fill
-    , unsigned fillcount
-    , char32_t fillchar
-    , std::ptrdiff_t split_pos )
-{
-    (void) split_pos;
-    encode_fill(ob, fillcount, fillchar);
-}
-
-template<typename CharT, typename Printer, typename... Printers>
-STRF_HD void print_split
-    ( strf::basic_outbuff<CharT>& ob
-    , strf::encode_fill_f<CharT> encode_fill
-    , unsigned fillcount
-    , char32_t fillchar
-    , std::ptrdiff_t split_pos
-    , const Printer& first_printer
-    , const Printers&... printers )
-{
-    if (split_pos > 0) {
-        first_printer.print_to(ob);
-        print_split
-            ( ob, encode_fill, fillcount, fillchar, split_pos - 1, printers... );
-    } else {
-        encode_fill(ob, fillcount, fillchar);
-        strf::detail::write_args(ob, first_printer, printers...);
-    }
-}
-
-template<typename CharT, std::size_t... I, typename... Printers>
-STRF_HD void print_split
-    ( const strf::detail::printers_tuple_impl
-        < CharT, std::index_sequence<I...>, Printers... >& printers
-    , strf::basic_outbuff<CharT>& ob
-    , strf::encode_fill_f<CharT> encode_fill
-    , unsigned fillcount
-    , char32_t fillchar
-    , std::ptrdiff_t split_pos )
-{
-    strf::detail::print_split
-        ( ob, encode_fill, fillcount, fillchar, split_pos
-        , static_cast<const strf::printer<CharT>&>(printers.template get<I>())... );
-}
 
 template<typename CharT, typename... Printers>
 class aligned_join_printer_impl: public printer<CharT>
@@ -268,17 +132,14 @@ class aligned_join_printer_impl: public printer<CharT>
 
 public:
 
-    template < strf::preview_size ReqSize, bool HasSplitPos, typename FPack
-             , typename... FwdArgs >
+    template < strf::preview_size ReqSize, typename FPack, typename... FwdArgs >
     STRF_HD aligned_join_printer_impl
         ( const strf::detail::join_printer_input
               < CharT
               , strf::print_preview<ReqSize, strf::preview_width::no>
               , FPack
-              , HasSplitPos
               , true, FwdArgs...>& input )
-        : split_pos_(input.arg.split_pos())
-        , afmt_(input.arg.get_alignment_format())
+        : afmt_(input.arg.get_alignment_format())
     {
         auto enc = get_facet_<strf::char_encoding_c<CharT>>(input.facets);
         encode_fill_func_ = enc.encode_fill_func();
@@ -296,17 +157,15 @@ public:
         }
     }
 
-    template < strf::preview_size ReqSize, bool HasSplitPos, typename FPack
+    template < strf::preview_size ReqSize, typename FPack
              , typename... FwdArgs >
     STRF_HD aligned_join_printer_impl
         ( const strf::detail::join_printer_input
               < CharT
               , strf::print_preview<ReqSize, strf::preview_width::yes>
               , FPack
-              , HasSplitPos
               , true, FwdArgs...>& input )
-        : split_pos_(input.arg.split_pos())
-        , afmt_(input.arg.get_alignment_format())
+        : afmt_(input.arg.get_alignment_format())
     {
         auto enc = get_facet_<strf::char_encoding_c<CharT>>(input.facets);
         encode_fill_func_ = enc.encode_fill_func();
@@ -354,10 +213,6 @@ public:
                 strf::detail::write(ob, printers_());
                 break;
             }
-            case strf::text_alignment::split: {
-                print_split_(ob);
-                break;
-            }
             default: {
                 STRF_ASSERT(afmt_.alignment == strf::text_alignment::center);
                 auto half_fillcount = fillcount_ >> 1;
@@ -378,7 +233,6 @@ private:
     <sizeof(printers_tuple_), alignof(printers_tuple_)>;
 #endif
     printers_tuple_storage_ pool_;
-    std::ptrdiff_t split_pos_;
     strf::alignment_format afmt_;
     strf::encode_fill_f<CharT> encode_fill_func_;
     strf::width_t width_;
@@ -412,17 +266,7 @@ private:
     {
         encode_fill_func_(ob, count, afmt_.fill);
     }
-
-    STRF_HD void print_split_(strf::basic_outbuff<CharT>& ob) const;
 };
-
-template<typename CharT, typename... Printers>
-STRF_HD void aligned_join_printer_impl<CharT, Printers...>::print_split_
-    ( strf::basic_outbuff<CharT>& ob ) const
-{
-    strf::detail::print_split
-        ( printers_(), ob, encode_fill_func_, fillcount_, afmt_.fill, split_pos_ );
-}
 
 template <typename CharT, typename Preview, typename FPack, typename Arg>
 struct print_impl_with_width_preview_;
@@ -447,10 +291,10 @@ class aligned_join_printer
 {
 public:
 
-    template <typename FPack2, bool HasSplitPos>
+    template <typename FPack2>
     constexpr STRF_HD aligned_join_printer
         ( const strf::detail::join_printer_input
-            < CharT, Preview, FPack2, HasSplitPos, true, FwdArgs... >& input )
+            < CharT, Preview, FPack2, true, FwdArgs... >& input )
         : strf::detail::aligned_join_printer_impl_of
             < CharT, Preview, FPack, FwdArgs... > (input)
     {
@@ -495,10 +339,10 @@ class join_printer
 {
 public:
 
-    template <typename FPack2, bool HasSplitPos>
+    template <typename FPack2>
     STRF_HD join_printer
         ( const strf::detail::join_printer_input
-              < CharT, Preview, FPack2, HasSplitPos, false, FwdArgs... >& input )
+              < CharT, Preview, FPack2, false, FwdArgs... >& input )
         : strf::detail::join_printer_impl
             < CharT, strf::printer_type<CharT, Preview, FPack, FwdArgs>... >
             ( input.arg.value().args, input.preview, input.facets )
@@ -515,13 +359,11 @@ public:
 template<typename... Args>
 constexpr STRF_HD strf::value_with_formatters
     < strf::detail::join_printing<strf::forwarded_printable_type<Args>...>
-    , strf::split_pos_formatter<false>
     , strf::alignment_formatter_q<false> >
 join(const Args&... args)
 {
     return strf::value_with_formatters
         < strf::detail::join_printing<strf::forwarded_printable_type<Args>...>
-        , strf::split_pos_formatter<false>
         , strf::alignment_formatter_q<false> >
         { strf::detail::join_t<strf::forwarded_printable_type<Args>...>
             { strf::detail::simple_tuple<strf::forwarded_printable_type<Args>...>
@@ -533,59 +375,44 @@ constexpr STRF_HD strf::aligned_join_maker join_align
     ( strf::width_t width
     , strf::text_alignment align ) noexcept
 {
-    return {width, align, U' ', 0};
+    return {width, align, U' '};
 }
 
 template <typename CharT>
 constexpr STRF_HD strf::aligned_join_maker join_align
     ( strf::width_t width
     , strf::text_alignment align
-    , CharT fillchar
-    , int split_pos = 0 ) noexcept
+    , CharT fillchar ) noexcept
 {
-    return {width, align, fillchar, split_pos};
+    return {width, align, fillchar};
 }
 
 constexpr STRF_HD strf::aligned_join_maker join_center(strf::width_t width) noexcept
 {
-    return {width, strf::text_alignment::center, U' ', 0};
+    return {width, strf::text_alignment::center, U' '};
 }
 template <typename CharT>
 constexpr STRF_HD strf::aligned_join_maker join_center(strf::width_t width, CharT fillchar) noexcept
 {
-    return {width, strf::text_alignment::center, fillchar, 0};
+    return {width, strf::text_alignment::center, fillchar};
 }
 constexpr STRF_HD strf::aligned_join_maker join_left(strf::width_t width) noexcept
 {
-    return {width, strf::text_alignment::left, U' ', 0};
+    return {width, strf::text_alignment::left, U' '};
 }
 template <typename CharT>
 constexpr STRF_HD strf::aligned_join_maker join_left(strf::width_t width, CharT fillchar) noexcept
 {
-    return {width, strf::text_alignment::left, fillchar, 0};
+    return {width, strf::text_alignment::left, fillchar};
 }
 constexpr STRF_HD strf::aligned_join_maker join_right(strf::width_t width) noexcept
 {
-    return {width, strf::text_alignment::right, U' ', 0};
+    return {width, strf::text_alignment::right, U' '};
 }
 template <typename CharT>
 constexpr STRF_HD strf::aligned_join_maker join_right(strf::width_t width, CharT fillchar) noexcept
 {
-    return {width, strf::text_alignment::right, fillchar, 0};
-}
-
-template <typename CharT>
-constexpr STRF_HD strf::aligned_join_maker join_split
-    ( strf::width_t width
-    , CharT fillchar
-    , std::ptrdiff_t split_pos ) noexcept
-{
-    return {width, strf::text_alignment::split, fillchar, split_pos};
-}
-
-constexpr STRF_HD strf::aligned_join_maker join_split(strf::width_t width, std::ptrdiff_t split_pos) noexcept
-{
-    return {width, strf::text_alignment::split, U' ', split_pos};
+    return {width, strf::text_alignment::right, fillchar};
 }
 
 } // namespace strf

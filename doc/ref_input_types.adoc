@@ -459,18 +459,6 @@ constexpr aligned_join_t join_right(int width, char32_t fillchar = U' ') noexcep
     join_align(width, text_alignment::right, fillchar);
 }
 
-constexpr aligned_join_t join_split( int width
-                                   , char32_t fillchar
-                                   , int num_leading_args) noexcept
-{
-    join_align(width, text_alignment::split, fillchar, num_leading_args);
-}
-
-constexpr aligned_join_t join_split(int width, int num_leading_args) noexcept
-{
-    join_align(width, text_alignment::split,  U' ', num_leading_args);
-}
-
 template <typename CharT, typename FPack, typename \... Args>
 /{asterisk} __implementation-defined__ {asterisk}/ <<make_printer,make_printer>>
     ( strf::rank<1>

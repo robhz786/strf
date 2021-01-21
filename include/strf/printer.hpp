@@ -962,10 +962,12 @@ template <> struct is_char<char16_t>: public std::true_type {};
 template <> struct is_char<char32_t>: public std::true_type {};
 template <> struct is_char<wchar_t>: public std::true_type {};
 
+enum class showsign {negative_only = 0, positive_also = '+', fill_instead_of_positive = ' '};
+
 template <bool HasAlignment>
 struct alignment_formatter_q;
 
-enum class text_alignment {left, right, split, center};
+enum class text_alignment {left, right, center};
 
 struct default_alignment_format
 {
@@ -1070,12 +1072,6 @@ public:
         data_.width = width;
         return as_derived_rval_ref();
     }
-    constexpr STRF_HD T&& operator%(strf::width_t width) && noexcept
-    {
-        data_.alignment = strf::text_alignment::split;
-        data_.width = width;
-        return as_derived_rval_ref();
-    }
     template < typename CharT >
     constexpr STRF_HD T&& fill(CharT ch) && noexcept
     {
@@ -1158,13 +1154,6 @@ public:
             { static_cast<const T&>(*this)
             , strf::tag<alignment_formatter_q<true>>{}
             , strf::alignment_format{U' ', width, strf::text_alignment::center} };
-    }
-    constexpr STRF_HD adapted_derived_type operator%(strf::width_t width) const noexcept
-    {
-        return adapted_derived_type
-            { static_cast<const T&>(*this)
-            , strf::tag<alignment_formatter_q<true>>{}
-            , strf::alignment_format{U' ', width, strf::text_alignment::split} };
     }
     template <typename CharT>
     constexpr STRF_HD adapted_derived_type fill(CharT ch) const noexcept
@@ -1440,22 +1429,6 @@ constexpr STRF_HD auto center(T&& value, strf::width_t width, CharT fill)
     return strf::fmt(value).fill(fill) ^ width;
 }
 
-template <typename T>
-constexpr STRF_HD auto split(T&& value, strf::width_t width)
-    noexcept(noexcept(strf::fmt(value) % width))
-    -> std::remove_reference_t<decltype(strf::fmt(value) % width)>
-{
-    return strf::fmt(value) % width;
-}
-
-template <typename T, typename CharT>
-constexpr STRF_HD auto split(T&& value, strf::width_t width, CharT fill)
-    noexcept(noexcept(strf::fmt(value).fill(fill) % width))
-    -> std::remove_reference_t<decltype(strf::fmt(value).fill(fill) % width)>
-{
-    return strf::fmt(value).fill(fill) % width;
-}
-
 #else  // defined (STRF_NO_GLOBAL_CONSTEXPR_VARIABLE)
 
 namespace detail_format_functions {
@@ -1646,20 +1619,25 @@ struct center_fn {
     }
 };
 
-struct split_fn {
+struct pad0_fn {
     template <typename T>
-    constexpr STRF_HD auto operator()(T&& value, strf::width_t width) const
-        noexcept(noexcept(strf::fmt(value) % width))
-        -> std::remove_reference_t<decltype(strf::fmt(value) % width)>
+    constexpr STRF_HD auto operator()
+        ( T&& value
+        , decltype(strf::fmt(value).pad0width()) width ) const
+        noexcept(noexcept(strf::fmt(value).pad0(width)))
+        -> std::remove_reference_t<decltype(strf::fmt(value).pad0(width))>
     {
-        return strf::fmt(value) % width;
+        return strf::fmt(value).pad0(width);
     }
     template <typename T, typename CharT>
-    constexpr STRF_HD auto operator()(T&& value, strf::width_t width, CharT fill) const
-        noexcept(noexcept(strf::fmt(value).fill(fill) % width))
-        -> std::remove_reference_t<decltype(strf::fmt(value).fill(fill) % width)>
+    constexpr STRF_HD auto operator()
+        ( T&& value
+        , decltype(strf::fmt(value).pad0width()) width
+        , CharT fill ) const
+        noexcept(noexcept(strf::fmt(value).pad0(width)))
+        -> std::remove_reference_t<decltype(strf::fmt(value).fill(fill).pad0(width))>
     {
-        return strf::fmt(value).fill(fill) % width;
+        return strf::fmt(value).fill(fill).pad0(width);
     }
 };
 
@@ -1678,7 +1656,7 @@ constexpr strf::detail_format_functions::sani_fn   sani {};
 constexpr strf::detail_format_functions::right_fn  right {};
 constexpr strf::detail_format_functions::left_fn   left {};
 constexpr strf::detail_format_functions::center_fn center {};
-constexpr strf::detail_format_functions::split_fn  split {};
+constexpr strf::detail_format_functions::pad0_fn   pad0 {};
 
 #endif // defined (STRF_NO_GLOBAL_CONSTEXPR_VARIABLE)
 

@@ -21,20 +21,20 @@
 #define STRF_SEPARATE_COMPILATION
 #endif
 
-#if defined(STRF_SEPARATE_COMPILATION) && !defined(STRF_SOURCE)
-#define STRF_OMIT_IMPL
-#endif
-
 #if defined(STRF_SOURCE)
-#define STRF_EXPLICIT_TEMPLATE template
+// When building static library
+#  define STRF_FUNC
+#  define STRF_FUNC_IMPL
+#  define STRF_EXPLICIT_TEMPLATE template
 #elif defined(STRF_SEPARATE_COMPILATION)
-#define STRF_EXPLICIT_TEMPLATE extern template
-#endif
-
-#if defined(STRF_SOURCE)
-#define STRF_FUNC_IMPL
-#elif !defined(STRF_SEPARATE_COMPILATION)
-#define STRF_FUNC_IMPL inline
+// When using static library
+#  define STRF_OMIT_IMPL
+#  define STRF_FUNC
+#  define STRF_EXPLICIT_TEMPLATE extern template
+#else
+// When using header-only library
+#  define STRF_FUNC inline
+#  define STRF_FUNC_IMPL inline
 #endif
 
 #if defined(__has_cpp_attribute)

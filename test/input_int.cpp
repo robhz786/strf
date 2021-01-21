@@ -117,7 +117,7 @@ void STRF_TEST_FUNC test_input_int()
     TEST("-100000000")           ( -100000000l );
     TEST("-1000000000000000000") ( -1000000000000000000LL );
 
-    // formatting characters:
+    // decimal formatting
 
     TEST ("_____1234567890") ( strf::right(1234567890l, 15, U'_') );
 
@@ -126,28 +126,11 @@ void STRF_TEST_FUNC test_input_int()
     TEST ("......-123")  (  strf::right(-123, 10, '.') );
     TEST (".........0")  (  strf::right(0   , 10, '.') );
     TEST (".......123")  (  strf::right(123u, 10, '.') );
-    TEST (".......123")  (  strf::right(123u, 10, '.').p(3) );
-    TEST (".....00123")  (  strf::right(123 , 10, '.').p(5) );
-    TEST ("....-00123")  (  strf::right(-123 , 10, '.').p(5) );
-    TEST ("-000000123")  (  strf::right(-123 , 10, '.').p(9) );
-    TEST ("0000000123")  (  strf::right(123 , 10, '.').p(10) );
-    TEST ("000000000123")(  strf::right(123 , 10, '.').p(12) );
 
     TEST ("......+123")  ( +strf::right(123 , 10, '.') );
     TEST ("......-123")  ( +strf::right(-123, 10, '.') );
     TEST ("........+0")  ( +strf::right(0   , 10, '.') );
     TEST (".......123")  (  strf::right(123u, 10, '.') );
-
-    TEST (".......123")  (  strf::split(123,  10, '.') );
-    TEST ("+......123")  ( +strf::split(123,  10, '.') );
-    TEST ("-......123")  ( +strf::split(-123, 10, '.') );
-    TEST ("+........0")  ( +strf::split(0,    10, '.') );
-    TEST (".........0")  (  strf::split(0,    10, '.') );
-    TEST (".......123")  (  strf::split(123u, 10, '.') );
-    TEST ("+.....0123")  ( +strf::split(123,  10, '.').p(4) );
-    TEST ("+000000123")  ( +strf::split(123,  10, '.').p(9) );
-    TEST ("+0000000123") ( +strf::split(123,  10, '.').p(10) );
-
 
     TEST ("123.......")  (  strf::left(123,  10, '.') );
     TEST ("+123......")  ( +strf::left(123,  10, '.') );
@@ -163,7 +146,87 @@ void STRF_TEST_FUNC test_input_int()
     TEST ("....0.....")  (  strf::center(0,    10, '.') );
     TEST ("...123....")  (  strf::center(123u, 10, '.') );
 
-    // // hexadecimal letter case
+    // decimal with pad0
+    TEST (".........1")  (  strf::right(   1, 10, '.').pad0(1) );
+    TEST ("....000123")  (  strf::right( 123, 10, '.').pad0(6) );
+    TEST (".......123")  (  strf::right( 123, 10, '.').pad0(3) );
+    TEST ("....+00123")  ( +strf::right( 123, 10, '.').pad0(6) );
+    TEST ("....-00123")  (  strf::right(-123, 10, '.').pad0(6) );
+    TEST ("......+123")  ( +strf::right( 123, 10, '.').pad0(4) );
+    TEST ("......-123")  (  strf::right(-123, 10, '.').pad0(4) );
+    TEST ("....+00000")  ( +strf::right(0   , 10, '.').pad0(6) );
+    TEST ("........+0")  ( +strf::right(0   , 10, '.').pad0(2) );
+    TEST (".......123")  (  strf::right(123u, 10, '.').pad0(3) );
+    TEST ("....000123")  (  strf::right(123u, 10, '.').pad0(6) );
+
+    TEST (".000000123")   (  strf::right(123u, 10, '.').pad0(9) );
+    TEST (".000000123")   (  strf::right(123 , 10, '.').pad0(9) );
+    TEST ("0000000123")   (  strf::right(123u, 10, '.').pad0(10) );
+    TEST ("0000000123")   (  strf::right(123 , 10, '.').pad0(10) );
+    TEST ("00000000123")  (  strf::right(123u, 10, '.').pad0(11) );
+    TEST ("00000000123")  (  strf::right(123 , 10, '.').pad0(11) );
+
+   {   // decimal with pad0 and precision and punctuation
+        auto punct = strf::numpunct<10>{2}.thousands_sep(':');
+        TEST("       1:23:45").with(punct)  (  strf::dec( 12345).pad0(7) > 14 );
+        TEST("      +1:23:45").with(punct)  ( +strf::dec( 12345).pad0(8) > 14 );
+        TEST("      -1:23:45").with(punct)  (  strf::dec(-12345).pad0(8) > 14 );
+        TEST("      01:23:45").with(punct)  (  strf::dec( 12345).pad0(8) > 14 );
+        TEST("     +01:23:45").with(punct)  ( +strf::dec( 12345).pad0(9) > 14 );
+
+        TEST("       1:23:45").with(punct)  (  strf::dec( 12345).p(5) > 14 );
+        TEST("      -1:23:45").with(punct)  ( +strf::dec(-12345).p(5) > 14 );
+        TEST("      +1:23:45").with(punct)  ( +strf::dec( 12345).p(5) > 14 );
+        TEST("      01:23:45").with(punct)  (  strf::dec( 12345).p(6) > 14 );
+        TEST("     +01:23:45").with(punct)  ( +strf::dec( 12345).p(6) > 14 );
+
+        TEST("       1:23:45").with(punct)  (  strf::dec(12345).pad0(7).p(5) > 14 );
+        TEST("      01:23:45").with(punct)  (  strf::dec(12345).pad0(7).p(6) > 14 );
+        TEST("      01:23:45").with(punct)  (  strf::dec(12345).pad0(8).p(5) > 14 );
+
+        TEST("      +1:23:45").with(punct)  ( +strf::dec( 12345).pad0(8).p(5) > 14 );
+        TEST("      -1:23:45").with(punct)  ( +strf::dec(-12345).pad0(8).p(5) > 14 );
+        TEST("     +01:23:45").with(punct)  ( +strf::dec( 12345).pad0(8).p(6) > 14 );
+        TEST("     +01:23:45").with(punct)  ( +strf::dec( 12345).pad0(9).p(5) > 14 );
+        TEST("     -01:23:45").with(punct)  (  strf::dec(-12345).pad0(9).p(5) > 14 );
+
+        auto j = strf::join_right(14);
+        TEST("       1:23:45").with(punct)  ( j( strf::dec( 12345).pad0(7)) );
+        TEST("      +1:23:45").with(punct)  ( j(+strf::dec( 12345).pad0(8)) );
+        TEST("      -1:23:45").with(punct)  ( j( strf::dec(-12345).pad0(8)) );
+        TEST("      01:23:45").with(punct)  ( j( strf::dec( 12345).pad0(8)) );
+        TEST("     +01:23:45").with(punct)  ( j(+strf::dec( 12345).pad0(9)) );
+
+        TEST("       1:23:45").with(punct)  ( j( strf::dec( 12345).p(5)) );
+        TEST("      -1:23:45").with(punct)  ( j(+strf::dec(-12345).p(5)) );
+        TEST("      +1:23:45").with(punct)  ( j(+strf::dec( 12345).p(5)) );
+        TEST("      01:23:45").with(punct)  ( j( strf::dec( 12345).p(6)) );
+        TEST("     +01:23:45").with(punct)  ( j(+strf::dec( 12345).p(6)) );
+
+        TEST("       1:23:45").with(punct)  ( j( strf::dec(12345).pad0(7).p(5)) );
+        TEST("      01:23:45").with(punct)  ( j( strf::dec(12345).pad0(7).p(6)) );
+        TEST("      01:23:45").with(punct)  ( j( strf::dec(12345).pad0(8).p(5)) );
+
+        TEST("      +1:23:45").with(punct)  ( j(+strf::dec( 12345).pad0(8).p(5)) );
+        TEST("      -1:23:45").with(punct)  ( j(+strf::dec(-12345).pad0(8).p(5)) );
+        TEST("     +01:23:45").with(punct)  ( j(+strf::dec( 12345).pad0(8).p(6)) );
+        TEST("     +01:23:45").with(punct)  ( j(+strf::dec( 12345).pad0(9).p(5)) );
+        TEST("     -01:23:45").with(punct)  ( j( strf::dec(-12345).pad0(9).p(5)) );
+
+        // fill_sign
+        TEST("  ***-12345***") (j(strf::center(-12345, 12, '*').fill_sign()));
+        TEST("  ****12345***") (j(strf::center(12345, 12, '*').fill_sign()));
+        TEST("  ***1:23:45**").with(punct) (j(strf::center(12345, 12, '*').fill_sign()));
+        TEST("  ***1:23:45**").with(punct) (j(strf::center(12345, 12, '*').fill_sign().pad0(8)));
+        TEST("  **01:23:45**").with(punct) (j(strf::center(12345, 12, '*').fill_sign().pad0(9)));
+        TEST("  *001:23:45**").with(punct) (j(strf::center(12345, 12, '*').pad0(9)));
+
+        TEST("  *01:23:45***").with(punct) (j(strf::left(12345, 12, '*').fill_sign().pad0(9)));
+        TEST("  ****01:23:45").with(punct) (j(strf::right(12345, 12, '*').fill_sign().pad0(9)));
+        TEST("  *00001:23:45").with(punct) (j(strf::left(12345, 0, '*').fill_sign().pad0(12)));
+    }
+
+    // hexadecimal letter case
     TEST("0X1234567890ABCDEF").with(strf::lettercase::upper) ( *strf::hex(0x1234567890abcdefLL) );
     TEST("0x1234567890ABCDEF").with(strf::lettercase::mixed) ( *strf::hex(0x1234567890abcdefLL) );
     TEST("0x1234567890abcdef").with(strf::lettercase::lower) ( *strf::hex(0x1234567890abcdefLL) );
@@ -178,8 +241,6 @@ void STRF_TEST_FUNC test_input_int()
     TEST("      0xaa")   ( *strf::hex(0xAA)>10 );
     TEST("aa        ")   (  strf::hex(0xAA)<10 );
     TEST("0xaa      ")   ( *strf::hex(0xAA)<10 );
-    TEST("        aa")   (  strf::hex(0xAA)%10 );
-    TEST("0x      aa")   ( *strf::hex(0xAA)%10 );
     TEST("    aa    ")   (  strf::hex(0xAA)^10 );
     TEST("   0xaa   ")   ( *strf::hex(0xAA)^10 );
 
@@ -187,37 +248,81 @@ void STRF_TEST_FUNC test_input_int()
     TEST("   0x000aa")   ( *strf::hex(0xAA).p(5)>10 );
     TEST("000aa     ")   (  strf::hex(0xAA).p(5)<10 );
     TEST("0x000aa   ")   ( *strf::hex(0xAA).p(5)<10 );
-    TEST("     000aa")   (  strf::hex(0xAA).p(5)%10 );
-    TEST("0x   000aa")   ( *strf::hex(0xAA).p(5)%10 );
     TEST("  000aa   ")   (  strf::hex(0xAA).p(5)^10 );
     TEST(" 0x000aa  ")   ( *strf::hex(0xAA).p(5)^10 );
 
-    TEST("00000000aa")   (  strf::hex(0xAA).p(10)>10 );
-    TEST("0x000000aa")   ( *strf::hex(0xAA).p(8)>10 );
-    TEST("00000000aa")   (  strf::hex(0xAA).p(10)<10 );
-    TEST("0x000000aa")   ( *strf::hex(0xAA).p(8)<10 );
-    TEST("00000000aa")   (  strf::hex(0xAA).p(10)%10 );
-    TEST("0x000000aa")   ( *strf::hex(0xAA).p(8)%10 );
-    TEST("00000000aa")   (  strf::hex(0xAA).p(10)^10 );
-    TEST("0x000000aa")   ( *strf::hex(0xAA).p(8)^10 );
+    // // hexadecimal with pad0
+    // TEST("        aa")   (  strf::hex(0xAA).pad0(2) >10 );
+    // TEST("      0xaa")   ( *strf::hex(0xAA).pad0(4) >10 );
+    // TEST("       0aa")   (  strf::hex(0xAA).pad0(3) >10 );
+    // TEST("     0x0aa")   ( *strf::hex(0xAA).pad0(5) >10 );
+    // TEST("00000000aa")   (  strf::hex(0xAA).pad0(10) >10 );
+    // TEST("0x000000aa")   ( *strf::hex(0xAA).pad0(10) >10 );
+    // TEST("000000000aa")  (  strf::hex(0xAA).pad0(11) >10 );
+    // TEST("0x0000000aa")  ( *strf::hex(0xAA).pad0(11) >10 );
 
-    TEST("000000000aa")   (  strf::hex(0xAA).p(11)>10 );
-    TEST("0x0000000aa")   ( *strf::hex(0xAA).p(9)>10 );
-    TEST("000000000aa")   (  strf::hex(0xAA).p(11)<10 );
-    TEST("0x0000000aa")   ( *strf::hex(0xAA).p(9)<10 );
-    TEST("000000000aa")   (  strf::hex(0xAA).p(11)%10 );
-    TEST("0x0000000aa")   ( *strf::hex(0xAA).p(9)%10 );
-    TEST("000000000aa")   (  strf::hex(0xAA).p(11)^10 );
-    TEST("0x0000000aa")   ( *strf::hex(0xAA).p(9)^10 );
+    // // hexadecimal with precision
+    // TEST("        aa")   (  strf::hex(0xAA).p(2) >10 );
+    // TEST("      0xaa")   ( *strf::hex(0xAA).p(1) >10 );
+    // TEST("       0aa")   (  strf::hex(0xAA).p(3) >10 );
+    // TEST("     0x0aa")   ( *strf::hex(0xAA).p(3) >10 );
+    // TEST("00000000aa")   (  strf::hex(0xAA).p(10) >10 );
+    // TEST("0x000000aa")   ( *strf::hex(0xAA).p(8)  >10 );
+    // TEST("000000000aa")  (  strf::hex(0xAA).p(11) >10 );
+    // TEST("0x0000000aa")  ( *strf::hex(0xAA).p(9)  >10 );
+
+    // // hexadecimal with pad0 and precision
+    // TEST("        aa")   (  strf::hex(0xAA).pad0(2).p(2) >10 );
+    // TEST("       0aa")   (  strf::hex(0xAA).pad0(2).p(3) >10 );
+    // TEST("       0aa")   (  strf::hex(0xAA).pad0(3).p(2) >10 );
+    // TEST("      00aa")   (  strf::hex(0xAA).pad0(3).p(4) >10 );
+    // TEST("      00aa")   (  strf::hex(0xAA).pad0(4).p(3) >10 );
+
+    {   // hexadecimal with pad0 and precision and punctuation
+        auto punct = strf::numpunct<16>{2}.thousands_sep(':');
+        TEST("       1:23:45").with(punct)  (  strf::hex(0x12345).pad0(7) > 14 );
+        TEST("     0x1:23:45").with(punct)  ( *strf::hex(0x12345).pad0(9) > 14 );
+        TEST("      01:23:45").with(punct)  (  strf::hex(0x12345).pad0(8) > 14 );
+        TEST("    0x01:23:45").with(punct)  ( *strf::hex(0x12345).pad0(10) > 14 );
+
+        TEST("       1:23:45").with(punct)  (  strf::hex(0x12345).p(5) > 14 );
+        TEST("     0x1:23:45").with(punct)  ( *strf::hex(0x12345).p(5) > 14 );
+        TEST("      01:23:45").with(punct)  (  strf::hex(0x12345).p(6) > 14 );
+        TEST("    0x01:23:45").with(punct)  ( *strf::hex(0x12345).p(6) > 14 );
+
+        TEST("       1:23:45").with(punct)  (  strf::hex(0x12345).pad0(7).p(5) > 14 );
+        TEST("      01:23:45").with(punct)  (  strf::hex(0x12345).pad0(7).p(6) > 14 );
+        TEST("      01:23:45").with(punct)  (  strf::hex(0x12345).pad0(8).p(5) > 14 );
+
+        TEST("     0x1:23:45").with(punct)  ( *strf::hex(0x12345).pad0(9).p(5) > 14 );
+        TEST("    0x01:23:45").with(punct)  ( *strf::hex(0x12345).pad0(7).p(6) > 14 );
+        TEST("    0x01:23:45").with(punct)  ( *strf::hex(0x12345).pad0(10).p(5) > 14 );
+
+        auto j = strf::join_right(14);
+        TEST("       1:23:45").with(punct)  ( j( strf::hex(0x12345).pad0(7)) );
+        TEST("     0x1:23:45").with(punct)  ( j(*strf::hex(0x12345).pad0(9)) );
+        TEST("      01:23:45").with(punct)  ( j( strf::hex(0x12345).pad0(8)) );
+        TEST("    0x01:23:45").with(punct)  ( j(*strf::hex(0x12345).pad0(10)) );
+
+        TEST("       1:23:45").with(punct)  ( j( strf::hex(0x12345).p(5)) );
+        TEST("     0x1:23:45").with(punct)  ( j(*strf::hex(0x12345).p(5)) );
+        TEST("      01:23:45").with(punct)  ( j( strf::hex(0x12345).p(6)) );
+        TEST("    0x01:23:45").with(punct)  ( j(*strf::hex(0x12345).p(6)) );
+
+        TEST("       1:23:45").with(punct)  ( j( strf::hex(0x12345).pad0(7).p(5)) );
+        TEST("      01:23:45").with(punct)  ( j( strf::hex(0x12345).pad0(7).p(6)) );
+        TEST("      01:23:45").with(punct)  ( j( strf::hex(0x12345).pad0(8).p(5)) );
+
+        TEST("     0x1:23:45").with(punct)  ( j(*strf::hex(0x12345).pad0( 9).p(5)) );
+        TEST("    0x01:23:45").with(punct)  ( j(*strf::hex(0x12345).pad0( 7).p(6)) );
+        TEST("    0x01:23:45").with(punct)  ( j(*strf::hex(0x12345).pad0(10).p(5)) );
+    }
 
     // binary aligment
-
     TEST("        11")   (  strf::bin(3)>10 );
     TEST("      0b11")   ( *strf::bin(3)>10 );
     TEST("11        ")   (  strf::bin(3)<10 );
     TEST("0b11      ")   ( *strf::bin(3)<10 );
-    TEST("        11")   (  strf::bin(3)%10 );
-    TEST("0b      11")   ( *strf::bin(3)%10 );
     TEST("    11    ")   (  strf::bin(3)^10 );
     TEST("   0b11   ")   ( *strf::bin(3)^10 );
 
@@ -225,28 +330,35 @@ void STRF_TEST_FUNC test_input_int()
     TEST("   0b00011")   ( *strf::bin(3).p(5)>10 );
     TEST("00011     ")   (  strf::bin(3).p(5)<10 );
     TEST("0b00011   ")   ( *strf::bin(3).p(5)<10 );
-    TEST("     00011")   (  strf::bin(3).p(5)%10 );
-    TEST("0b   00011")   ( *strf::bin(3).p(5)%10 );
     TEST("  00011   ")   (  strf::bin(3).p(5)^10 );
     TEST(" 0b00011  ")   ( *strf::bin(3).p(5)^10 );
 
-    TEST("0000000011")   (  strf::bin(3).p(10)>10 );
-    TEST("0b00000011")   ( *strf::bin(3).p(8)>10 );
-    TEST("0000000011")   (  strf::bin(3).p(10)<10 );
-    TEST("0b00000011")   ( *strf::bin(3).p(8)<10 );
-    TEST("0000000011")   (  strf::bin(3).p(10)%10 );
-    TEST("0b00000011")   ( *strf::bin(3).p(8)%10 );
-    TEST("0000000011")   (  strf::bin(3).p(10)^10 );
-    TEST("0b00000011")   ( *strf::bin(3).p(8)^10 );
+    // binary with pad0
+    TEST("        11")   (  strf::bin(3).pad0(2) >10 );
+    TEST("      0b11")   ( *strf::bin(3).pad0(4) >10 );
+    TEST("       011")   (  strf::bin(3).pad0(3) >10 );
+    TEST("     0b011")   ( *strf::bin(3).pad0(5) >10 );
+    TEST("0000000011")   (  strf::bin(3).pad0(10) >10 );
+    TEST("0b00000011")   ( *strf::bin(3).pad0(10) >10 );
+    TEST("00000000011")  (  strf::bin(3).pad0(11) >10 );
+    TEST("0b000000011")  ( *strf::bin(3).pad0(11) >10 );
 
-    TEST("00000000011")   (  strf::bin(3).p(11)>10 );
-    TEST("0b000000011")   ( *strf::bin(3).p(9)>10 );
-    TEST("00000000011")   (  strf::bin(3).p(11)<10 );
-    TEST("0b000000011")   ( *strf::bin(3).p(9)<10 );
-    TEST("00000000011")   (  strf::bin(3).p(11)%10 );
-    TEST("0b000000011")   ( *strf::bin(3).p(9)%10 );
-    TEST("00000000011")   (  strf::bin(3).p(11)^10 );
-    TEST("0b000000011")   ( *strf::bin(3).p(9)^10 );
+    // binary with precision
+    TEST("        11")   (  strf::bin(3).p(2) >10 );
+    TEST("      0b11")   ( *strf::bin(3).p(1) >10 );
+    TEST("       011")   (  strf::bin(3).p(3) >10 );
+    TEST("     0b011")   ( *strf::bin(3).p(3) >10 );
+    TEST("0000000011")   (  strf::bin(3).p(10) >10 );
+    TEST("0b00000011")   ( *strf::bin(3).p(8)  >10 );
+    TEST("00000000011")  (  strf::bin(3).p(11) >10 );
+    TEST("0b000000011")  ( *strf::bin(3).p(9)  >10 );
+
+    // binary with pad0 and precision
+    TEST("        11")   (  strf::bin(3).pad0(2).p(2) >10 );
+    TEST("       011")   (  strf::bin(3).pad0(2).p(3) >10 );
+    TEST("       011")   (  strf::bin(3).pad0(3).p(2) >10 );
+    TEST("      0011")   (  strf::bin(3).pad0(3).p(4) >10 );
+    TEST("      0011")   (  strf::bin(3).pad0(4).p(3) >10 );
 
     // octadecimal aligment
 
@@ -254,19 +366,55 @@ void STRF_TEST_FUNC test_input_int()
     TEST("       077")   ( *strf::oct(077)>10 );
     TEST("77        ")   (  strf::oct(077)<10 );
     TEST("077       ")   ( *strf::oct(077)<10 );
-    TEST("        77")   (  strf::oct(077)%10 );
-    TEST("0       77")   ( *strf::oct(077)%10 );
     TEST("    77    ")   (  strf::oct(077)^10 );
     TEST("   077    ")   ( *strf::oct(077)^10 );
 
     TEST("      0077")   (  strf::oct(077).p(4)>10 );
-    TEST("     00077")   ( *strf::oct(077).p(4)>10 );
-    TEST("0077      ")   (  strf::oct(077).p(4)<10 );
-    TEST("00077     ")   ( *strf::oct(077).p(4)<10 );
-    TEST("      0077")   (  strf::oct(077).p(4)%10 );
-    TEST("0     0077")   ( *strf::oct(077).p(4)%10 );
-    TEST("   0077   ")   (  strf::oct(077).p(4)^10 );
-    TEST("  00077   ")   ( *strf::oct(077).p(4)^10 );
+    TEST("      0077")   ( *strf::oct(077).p(4)>10 );
+    TEST("      1234")   (  strf::oct(01234).p(4)>10 );
+    TEST("     01234")   ( *strf::oct(01234).p(4)>10 );
+
+    // octal with pad0
+    TEST("        12")   (  strf::oct(012).pad0(2) >10 );
+    TEST("       012")   (  strf::oct(012).pad0(3) >10 );
+    TEST("       012")   ( *strf::oct(012).pad0(3) >10 );
+    TEST("     00012")   ( *strf::oct(012).pad0(5) >10 );
+    TEST("0000000012")   (  strf::oct(012).pad0(10) >10 );
+    TEST("0000000012")   ( *strf::oct(012).pad0(10) >10 );
+    TEST("00000000012")  (  strf::oct(012).pad0(11) >10 );
+    TEST("00000000012")  ( *strf::oct(012).pad0(11) >10 );
+
+    // octal with precision
+    TEST("        12")   (  strf::oct(012).p(2) >10 );
+    TEST("       012")   (  strf::oct(012).p(3) >10 );
+    TEST("       012")   ( *strf::oct(012).p(3) >10 );
+    TEST("     00012")   ( *strf::oct(012).p(5) >10 );
+    TEST("0000000012")   (  strf::oct(012).p(10) >10 );
+    TEST("0000000012")   ( *strf::oct(012).p(10) >10 );
+    TEST("00000000012")  (  strf::oct(012).p(11) >10 );
+    TEST("00000000012")  ( *strf::oct(012).p(11) >10 );
+
+    // octal with pad0 and precision
+    TEST("        12")   (  strf::oct(012).pad0(2).p(2) >10 );
+    TEST("       012")   (  strf::oct(012).pad0(2).p(3) >10 );
+    TEST("       012")   (  strf::oct(012).pad0(3).p(2) >10 );
+    TEST("       012")   ( *strf::oct(012).pad0(2).p(3) >10 );
+    TEST("       012")   ( *strf::oct(012).pad0(3).p(2) >10 );
+    TEST("      0012")   ( *strf::oct(012).pad0(3).p(4) >10 );
+    TEST("      0012")   ( *strf::oct(012).pad0(4).p(3) >10 );
+
+    {   // octal with pad0 and precision and punctuation
+        auto punct = strf::numpunct<8>{2}.thousands_sep(':');
+        TEST("    1:23:45:67").with(punct)  (  strf::oct(01234567).pad0(10) > 14 );
+        TEST("   01:23:45:67").with(punct)  (  strf::oct(01234567).pad0(11) > 14 );
+        TEST("   01:23:45:67").with(punct)  ( *strf::oct(01234567).pad0(11) > 14 );
+        TEST("   01:23:45:67").with(punct)  (  strf::oct(01234567).p(8) > 14 );
+        TEST("   01:23:45:67").with(punct)  ( *strf::oct(01234567).p(8) > 14 );
+        TEST("  001:23:45:67").with(punct)  (  strf::oct(01234567).pad0(11).p(9) > 14 );
+        TEST("  001:23:45:67").with(punct)  (  strf::oct(01234567).pad0(12).p(8) > 14 );
+        TEST("  001:23:45:67").with(punct)  ( *strf::oct(01234567).pad0(11).p(9) > 14 );
+        TEST("  001:23:45:67").with(punct)  ( *strf::oct(01234567).pad0(12).p(8) > 14 );
+    }
 
     // *oct(0) should be printed as "0"
     TEST("0")      (*strf::oct(0));
@@ -644,8 +792,8 @@ void STRF_TEST_FUNC test_input_ptr()
         .with(strf::numpunct<16>{2}.thousands_sep('\''))
         (ptr);
 
-    TEST("0x....ab'cd'ef'12'34")
+    TEST("....0xab'cd'ef'12'34")
         .with(strf::numpunct<16>{2}.thousands_sep('\''))
-        (strf::split(ptr, 20, '.'));
+        (strf::right(ptr, 20, '.'));
 }
 
