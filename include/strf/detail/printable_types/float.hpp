@@ -1186,7 +1186,6 @@ STRF_HD void print_amplified_integer_big_separator
     }
 }
 
-// to-do move this function to punct_double_printer class template
 template <typename CharT>
 STRF_HD void print_scientific_notation
     ( strf::basic_outbuff<CharT>& ob
@@ -1450,6 +1449,7 @@ STRF_HD void punct_double_printer<CharT>::init_
         }
     }
     data_ = strf::detail::init_double_printer_data(dd, ffmt, grouping_);
+
     int content_width =
         ( detail::inf_or_nan(data_.form) || data_.pad0width < data_.chars_count
         ? (int)data_.chars_count
@@ -2191,9 +2191,16 @@ struct hex_double_printer_data
     detail::chars_count_t exponent_digcount;
     detail::chars_count_t mantissa_digcount;
     detail::chars_count_t extra_zeros;
+    strf::detail::chars_count_t left_fillcount;
+    strf::detail::chars_count_t right_fillcount;
     bool showpoint;
     bool showsign;
     char sign;
+};
+
+struct float_init_result {
+    detail::chars_count_t content_width;
+    detail::chars_count_t fillcount;
 };
 
 #if ! defined(STRF_OMIT_IMPL)
@@ -2266,10 +2273,83 @@ STRF_FUNC_IMPL STRF_HD strf::detail::hex_double_printer_data init_hex_double_pri
     return data;
 }
 
+STRF_FUNC_IMPL STRF_HD detail::float_init_result init_hex_double_printer_data_2
+    ( strf::detail::hex_double_printer_data& data
+    , strf::alignment_format afmt ) noexcept
+{
+    int rounded_fmt_width = afmt.width.round();
+    detail::chars_count_t content_width;
+    if (data.exponent != 1024) {
+        content_width = (detail::max)(data.pad0width, data.sub_chars_count + data.extra_zeros);
+    } else {
+        content_width = data.sub_chars_count;
+        if ((int)data.pad0width > rounded_fmt_width) {
+            rounded_fmt_width = data.pad0width;
+        }
+    }
+    const bool fill_sign_space = data.sign == ' ';
+    detail::chars_count_t fillcount = 0;
+    data.left_fillcount = 0;
+    data.right_fillcount = 0;
+    if (rounded_fmt_width <= (int)content_width) {
+        if (fill_sign_space && afmt.fill != ' ') {
+            goto adapt_fill_sign_space;
+        }
+    } else {
+        fillcount = static_cast<detail::chars_count_t>(rounded_fmt_width - content_width);
+        switch(afmt.alignment) {
+            case strf::text_alignment::left:
+                data.right_fillcount = fillcount;
+                break;
+            case strf::text_alignment::right:
+                data.left_fillcount = fillcount;
+                break;
+            default:
+                STRF_ASSERT(afmt.alignment == strf::text_alignment::center);
+                auto half_fillcount = fillcount >> 1;
+                data.left_fillcount = half_fillcount;
+                data.right_fillcount = half_fillcount + (fillcount & 1);
+        }
+        if (fill_sign_space) {
+            adapt_fill_sign_space:
+            data.showsign = false;
+            ++data.left_fillcount;
+            ++fillcount;
+            --data.sub_chars_count;
+            --content_width;
+            if (data.pad0width) {
+                --data.pad0width;
+            }
+        }
+    }
+    return {content_width, fillcount};
+}
+
 #else // ! defined(STRF_OMIT_IMPL)
 
 STRF_HD strf::detail::hex_double_printer_data init_hex_double_printer_data
     ( float_format<strf::float_notation::hex> fdata, double d ) noexcept;
+
+STRF_HD detail::float_init_result init_hex_double_printer_data_2
+    ( strf::detail::hex_double_printer_data& data
+    , strf::alignment_format afmt ) noexcept;
+
+inline STRF_HD detail::float_init_result init_hex_double_printer_data_2
+    ( strf::detail::hex_double_printer_data& data
+    , strf::default_alignment_format ) noexcept
+{
+    data.left_fillcount = 0;
+    data.right_fillcount = 0;
+    detail::chars_count_t content_width = data.sub_chars_count + data.extra_zeros;
+    if (data.pad0width > content_width) {
+        if (data.exponent == 1024) {
+            data.left_fillcount = data.pad0width - content_width;
+            return {content_width, data.left_fillcount};
+        }
+        return {data.pad0width, 0};
+    }
+    return {content_width, 0};
+}
 
 #endif // ! defined(STRF_OMIT_IMPL)
 
@@ -2289,32 +2369,35 @@ public:
         , decimal_point_(strf::get_facet<strf::numpunct_c<16>, FloatT>(input.facets)
                          .decimal_point())
     {
-        auto enc = strf::get_facet<strf::char_encoding_c<CharT>, FloatT>(input.facets);
         auto afmt = input.arg.get_alignment_format();
-        init_(input.preview, enc, afmt);
+        auto r = strf::detail::init_hex_double_printer_data_2(data_, afmt);
+        fillchar_ = afmt.fill;
+        auto enc = strf::get_facet<strf::char_encoding_c<CharT>, FloatT>(input.facets);
+        encode_fill_ = enc.encode_fill_func();
+        encode_char_ = enc.encode_char_func();
+        input.preview.subtract_width(r.content_width);
+        input.preview.subtract_width(r.fillcount);
+        if (data_.showpoint) {
+            pointsize_ = static_cast<unsigned>(enc.encoded_char_size(decimal_point_));
+            STRF_ASSERT(pointsize_);
+            input.preview.add_size(pointsize_ - 1);
+        }
+        STRF_IF_CONSTEXPR (Preview::size_required) {
+            input.preview.add_size(r.content_width);
+            if (r.fillcount) {
+                std::size_t fillchar_size = enc.encoded_char_size(fillchar_);
+                input.preview.add_size(fillchar_size * r.fillcount);
+            }
+        }
     }
 
     STRF_HD void print_to(strf::basic_outbuff<CharT>&) const override;
 
 private:
 
-    template <typename Preview, typename Encoding>
-    STRF_HD void init_
-        ( Preview& preview
-        , Encoding enc
-        , strf::alignment_format afmt ) noexcept;
-
-    template <typename Preview, typename Encoding>
-    STRF_HD void init_
-        ( Preview& preview
-        , Encoding enc
-        , strf::default_alignment_format afmt ) noexcept;
-
     strf::encode_char_f<CharT> encode_char_ = nullptr;
     strf::encode_fill_f<CharT> encode_fill_ = nullptr;
     strf::detail::hex_double_printer_data data_;
-    strf::detail::chars_count_t left_fillcount_ = 0;
-    strf::detail::chars_count_t right_fillcount_ = 0;
     strf::lettercase lettercase_;
     char32_t fillchar_ = ' ';
     char32_t decimal_point_ = '.';
@@ -2322,112 +2405,11 @@ private:
 };
 
 template <typename CharT>
-template <typename Preview, typename Encoding>
-STRF_HD void hex_double_printer<CharT>::init_
-    ( Preview& preview
-    , Encoding enc
-    , strf::alignment_format afmt ) noexcept
-{
-    encode_fill_ = enc.encode_fill_func();
-    fillchar_ = afmt.fill;
-    int rounded_fmt_width = afmt.width.round();
-    detail::chars_count_t content_width;
-    if (data_.exponent != 1024) {
-        content_width = (detail::max)(data_.pad0width, data_.sub_chars_count + data_.extra_zeros);
-    } else {
-        content_width = data_.sub_chars_count;
-        if ((int)data_.pad0width > rounded_fmt_width) {
-            rounded_fmt_width = data_.pad0width;
-        }
-    }
-    if (data_.showpoint) {
-        encode_char_ = enc.encode_char_func();
-        pointsize_ = static_cast<unsigned>(enc.encoded_char_size(decimal_point_));
-        if (pointsize_ == 1) {
-            CharT ch;
-            enc.encode_char(&ch, decimal_point_);
-            decimal_point_ = ch;
-        }
-        preview.add_size(pointsize_ - 1);
-    }
-    const bool fill_sign_space = data_.sign == ' ';
-    detail::chars_count_t fillcount = 0;
-    if (rounded_fmt_width <= (int)content_width) {
-        preview.subtract_width(content_width);
-        if (fill_sign_space && afmt.fill != ' ') {
-            goto adapt_fill_sign_space;
-        }
-    } else {
-        preview.subtract_width((unsigned)rounded_fmt_width);
-        fillcount = static_cast<detail::chars_count_t>(rounded_fmt_width - content_width);
-        switch(afmt.alignment) {
-            case strf::text_alignment::left:
-                right_fillcount_ = fillcount;
-                break;
-            case strf::text_alignment::right:
-                left_fillcount_ = fillcount;
-                break;
-            default:
-                STRF_ASSERT(afmt.alignment == strf::text_alignment::center);
-                auto half_fillcount = fillcount >> 1;
-                left_fillcount_ = half_fillcount;
-                right_fillcount_ = half_fillcount + (fillcount & 1);
-        }
-        if (fill_sign_space) {
-            adapt_fill_sign_space:
-            data_.showsign = false;
-            ++left_fillcount_;
-            ++fillcount;
-            --data_.sub_chars_count;
-            --content_width;
-            if (data_.pad0width) {
-                --data_.pad0width;
-            }
-        }
-    }
-    preview.add_size(content_width);
-    if (Preview::size_required && fillcount) {
-        std::size_t fillchar_size = enc.encoded_char_size(fillchar_);
-        preview.add_size(fillchar_size * fillcount);
-    }
-}
-
-template <typename CharT>
-template <typename Preview, typename Encoding>
-STRF_HD void hex_double_printer<CharT>::init_
-    ( Preview& preview
-    , Encoding enc
-    , strf::default_alignment_format ) noexcept
-{
-    detail::chars_count_t content_width = data_.sub_chars_count + data_.extra_zeros;
-    if (data_.pad0width > content_width) {
-        if (data_.exponent == 1024) {
-            encode_fill_ = strf::detail::trivial_fill_f;
-            left_fillcount_ = data_.pad0width - content_width;
-        }
-        content_width = data_.pad0width;
-    }
-    preview.subtract_width(content_width);
-    if (data_.showpoint) {
-        encode_char_ = enc.encode_char_func();
-        pointsize_ = static_cast<unsigned>(enc.encoded_char_size(decimal_point_));
-        if (pointsize_ == 1) {
-            CharT ch;
-            enc.encode_char(&ch, decimal_point_);
-            decimal_point_ = ch;
-        }
-        preview.add_size(content_width - 1 + pointsize_);
-    } else {
-        preview.add_size(content_width);
-    }
-}
-
-template <typename CharT>
 STRF_HD void hex_double_printer<CharT>::print_to
     ( strf::basic_outbuff<CharT>& ob ) const
 {
-    if (left_fillcount_ > 0) {
-        encode_fill_(ob, left_fillcount_, fillchar_);
+    if (data_.left_fillcount > 0) {
+        encode_fill_(ob, data_.left_fillcount, fillchar_);
     }
     if (data_.exponent != 1024) {
         std::size_t sub_size = data_.sub_chars_count + pointsize_ - data_.showpoint;
@@ -2446,10 +2428,12 @@ STRF_HD void hex_double_printer<CharT>::print_to
             it = ob.pointer();
         }
         *it ++ = 0x30 | int(data_.exponent != -1023); // '0' or  '1'
-        if (pointsize_ == 1) {
-            *it ++ = static_cast<CharT>(decimal_point_);
-        } else if (pointsize_ != 0) {
-            it = encode_char_(it, decimal_point_);
+        if (data_.showpoint) {
+            if (decimal_point_ < 0x80) {
+                *it ++ = static_cast<CharT>(decimal_point_);
+            } else {
+                it = encode_char_(it, decimal_point_);
+            }
         }
         if (data_.mantissa != 0) {
             std::uint8_t digits[13] =
@@ -2514,8 +2498,8 @@ STRF_HD void hex_double_printer<CharT>::print_to
             strf::detail::print_nan(ob, lettercase_);
         }
     }
-    if (right_fillcount_ > 0) {
-        encode_fill_(ob, right_fillcount_, fillchar_);
+    if (data_.right_fillcount > 0) {
+        encode_fill_(ob, data_.right_fillcount, fillchar_);
     }
 }
 
