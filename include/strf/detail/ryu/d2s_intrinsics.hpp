@@ -24,11 +24,11 @@
 // This sets STRF_RYU_32_BIT_PLATFORM as a side effect if applicable.
 #include <strf/detail/ryu/common.hpp>
 
-STRF_DETAIL_RYU_NAMESPACE_BEGIN;
-
 #if defined(STRF_RYU_HAS_64_BIT_INTRINSICS)
 
 #include <intrin.h>
+
+STRF_DETAIL_RYU_NAMESPACE_BEGIN;
 
 inline STRF_HD uint64_t umul128(const uint64_t a, const uint64_t b, uint64_t* const productHi) {
   return _umul128(a, b, productHi);
@@ -48,6 +48,8 @@ inline STRF_HD uint64_t shiftright128(const uint64_t lo, const uint64_t hi, cons
 }
 
 #else // defined(STRF_RYU_HAS_64_BIT_INTRINSICS)
+
+STRF_DETAIL_RYU_NAMESPACE_BEGIN;
 
 inline STRF_HD uint64_t umul128(const uint64_t a, const uint64_t b, uint64_t* const productHi) {
   // The casts here help MSVC to avoid calls to the __allmul library function.
