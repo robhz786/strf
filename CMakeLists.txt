@@ -32,7 +32,7 @@ option(
 
 project (
   strf 
-  VERSION 0.13.0
+  VERSION 0.13.1
   LANGUAGES CXX)
 
 if (STRF_CUDA_SUPPORT)
