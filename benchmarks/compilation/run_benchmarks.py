@@ -50,12 +50,12 @@ files_per_program = [1, 21, 31, 41]
 #    return(1)
 
 def empty_row() :
-    part1 = '|{:^21}|{:^24} |{:^9} '.format(' ', ' ', ' ', ' ')
+    part1 = '|{:^24}|{:^24} |{:^9} '.format(' ', ' ', ' ', ' ')
     part2 = '|{:9} '.format('') * (1 + len(files_per_program))
     return part1 + part2
 
 def table_header() :
-    hdr = '|{:^21}|{:^18} '.format(
+    hdr = '|{:^24}|{:^18} '.format(
         'source file',
         'comp. times(w|u|s)' )
 
@@ -73,7 +73,7 @@ def benchmark(build_type, flags, basename, main_src, libs):
     compile_stats = create_obj_files(build_type, flags, basename, num_sourcefiles)
     programs_size = build_programs(build_type, main_src, basename,
                                    libs, files_per_program)
-    result = '|{:<21}|{:>4.2f} | {:>4.2f} | {:>4.2f} '.format(
+    result = '|{:<24}|{:>4.2f} | {:>4.2f} | {:>4.2f} '.format(
         '{' + basename + '}',
         compile_stats['wall time'],
         compile_stats['user time'],
@@ -271,6 +271,8 @@ fmt_ho          = [fmt_incl, "-DFMT_HEADER_ONLY=1"]
 samples_O3 = \
 [ ('to_charptr',        [ ([lib_strf_O3], strf_static_lib, '_strf'    )
                         , ([lib_strf_O3], strf_static_lib, '_strf_tr' )
+                        , ([libfmt_O3],   fmt_static_lib,  '_fmtlib_n_c')
+                        , ([libfmt_O3],   fmt_static_lib,  '_fmtlib_n'  )                          
                         , ([libfmt_O3],   fmt_static_lib,  '_fmtlib_c')
                         , ([libfmt_O3],   fmt_static_lib,  '_fmtlib'  )
                         , ([],            [],              '_sprintf' )
@@ -296,6 +298,8 @@ samples_O3 = \
 samples_Os = \
 [ ('to_charptr',        [ ([lib_strf_Os], strf_static_lib, '_strf'    )
                         , ([lib_strf_Os], strf_static_lib, '_strf_tr' )
+                        , ([libfmt_Os],   fmt_static_lib,  '_fmtlib_n_c')
+                        , ([libfmt_Os],   fmt_static_lib,  '_fmtlib_n'  )
                         , ([libfmt_Os],   fmt_static_lib,  '_fmtlib_c')
                         , ([libfmt_Os],   fmt_static_lib,  '_fmtlib'  )
                         , ([],            [],              '_sprintf' )
@@ -321,6 +325,8 @@ samples_Os = \
 samples_debug = \
 [ ('to_charptr',        [ ([lib_strf_db], strf_static_lib, '_strf'    )
                         , ([lib_strf_db], strf_static_lib, '_strf_tr' )
+                        , ([libfmt_db],   fmt_static_lib,  '_fmtlib_n_c')
+                        , ([libfmt_db],   fmt_static_lib,  '_fmtlib_n'  )
                         , ([libfmt_db],   fmt_static_lib,  '_fmtlib_c')
                         , ([libfmt_db],   fmt_static_lib,  '_fmtlib'  )
                         , ([],            [],              '_sprintf' )
@@ -345,6 +351,8 @@ samples_debug = \
 samples_O3_header_only = \
 [ ('to_charptr',        [ ([], strf_ho, '_strf'    )
                         , ([], strf_ho, '_strf_tr' )
+                        , ([], fmt_ho,  '_fmtlib_n_c')
+                        , ([], fmt_ho,  '_fmtlib_n'  )
                         , ([], fmt_ho,  '_fmtlib_c')
                         , ([], fmt_ho,  '_fmtlib'  )
 ] )
@@ -367,6 +375,8 @@ samples_O3_header_only = \
 samples_Os_header_only = \
 [ ('to_charptr',        [ ([], strf_ho, '_strf'    )
                         , ([], strf_ho, '_strf_tr' )
+                        , ([], fmt_ho,  '_fmtlib_n_c')
+                        , ([], fmt_ho,  '_fmtlib_n'  )
                         , ([], fmt_ho,  '_fmtlib_c')
                         , ([], fmt_ho,  '_fmtlib'  )
 ] )
@@ -389,6 +399,8 @@ samples_Os_header_only = \
 samples_debug_header_only = \
 [ ('to_charptr',        [ ([], strf_ho, '_strf'    )
                         , ([], strf_ho, '_strf_tr' )
+                        , ([], fmt_ho,  '_fmtlib_n_c')
+                        , ([], fmt_ho,  '_fmtlib_n'  )
                         , ([], fmt_ho,  '_fmtlib_c')
                         , ([], fmt_ho,  '_fmtlib'  )
 ] )
