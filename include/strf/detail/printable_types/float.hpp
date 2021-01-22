@@ -605,14 +605,20 @@ struct double_printer_data
     bool showsign;
     bool showpoint;
 
+    detail::chars_count_t left_fillcount;
+    detail::chars_count_t right_fillcount;
     detail::chars_count_t chars_count;
     detail::chars_count_t pad0width;
     detail::chars_count_t extra_zeros;
-
     detail::chars_count_t sep_count;
     detail::chars_count_t m10_digcount;
     std::uint64_t m10;
     std::int32_t e10;
+};
+
+struct float_init_result {
+    detail::chars_count_t content_width;
+    detail::chars_count_t fillcount;
 };
 
 template <strf::float_notation Notation>
@@ -826,6 +832,68 @@ STRF_HD double_printer_data init_double_printer_data
     }
     return data;
 }
+
+#if ! defined(STRF_OMIT_IMPL)
+
+STRF_FUNC_IMPL STRF_HD detail::float_init_result init_double_printer_data_2
+    ( strf::detail::double_printer_data& data
+    , strf::alignment_format afmt ) noexcept
+{
+    int rounded_fmt_width = afmt.width.round();
+    detail::chars_count_t content_width;
+    if ( ! detail::inf_or_nan(data.form)) {
+        content_width = (detail::max)(data.pad0width, data.chars_count);
+    } else {
+        content_width = data.chars_count;
+        if ((int)data.pad0width > rounded_fmt_width) {
+            rounded_fmt_width = data.pad0width;
+        }
+    }
+    const bool fill_sign_space = data.sign == ' ';
+    detail::chars_count_t fillcount = 0;
+    data.left_fillcount = 0;
+    data.right_fillcount = 0;
+    if (rounded_fmt_width <= (int)content_width) {
+        if (fill_sign_space && afmt.fill != ' ') {
+            goto adapt_fill_sign_space;
+        }
+    } else {
+        fillcount = static_cast<detail::chars_count_t>(rounded_fmt_width - content_width);
+        switch(afmt.alignment) {
+            case strf::text_alignment::left:
+                data.right_fillcount = fillcount;
+                break;
+            case strf::text_alignment::right:
+                data.left_fillcount = fillcount;
+                break;
+            default:
+                STRF_ASSERT(afmt.alignment == strf::text_alignment::center);
+                auto half_fillcount = fillcount >> 1;
+                data.left_fillcount = half_fillcount;
+                data.right_fillcount = half_fillcount + (fillcount & 1);
+        }
+        if (fill_sign_space) {
+            adapt_fill_sign_space:
+            data.showsign = false;
+            ++data.left_fillcount;
+            ++fillcount;
+            --data.chars_count;
+            --content_width;
+            if (data.pad0width) {
+                --data.pad0width;
+            }
+        }
+    }
+    return {content_width, fillcount};
+}
+
+#else // ! defined(STRF_OMIT_IMPL)
+
+STRF_HD detail::float_init_result init_double_printer_data_2
+    ( strf::detail::double_printer_data& data
+    , strf::alignment_format afmt ) noexcept;
+
+#endif // ! defined(STRF_OMIT_IMPL)
 
 template <int Base, typename CharT, typename IntT>
 inline STRF_HD void write_int_with_leading_zeros
@@ -1385,13 +1453,15 @@ public:
         static_assert(Notation != strf::float_notation::hex, "");
 
         auto enc = get_facet<strf::char_encoding_c<CharT>, FloatT>(input.facets);
+        encode_fill_ = enc.encode_fill_func();
+        encode_char_ = enc.encode_char_func();
         auto punct = strf::get_facet<strf::numpunct_c<10>, FloatT>(input.facets);
         grouping_ = punct.grouping();
         decimal_point_ = punct.decimal_point();
         thousands_sep_ = punct.thousands_sep();
         auto dd = detail::decode(input.arg.value());
-        init_(input.preview, dd, input.arg.get_float_format(), enc);
-        init_fill_(input.arg.get_alignment_format(), input.preview, enc);
+        init_( input.preview, dd, input.arg.get_float_format()
+             , input.arg.get_alignment_format(), enc );
     }
 
     STRF_HD void print_to(strf::basic_outbuff<CharT>&) const override;
@@ -1401,15 +1471,8 @@ private:
     template < typename Preview, strf::float_notation Notation, typename Encoding >
     STRF_HD void init_
         ( Preview& preview, detail::double_dec dd
-        , strf::float_format<Notation> ffmt, Encoding enc )noexcept;
-
-    template <typename Preview, typename Encoding>
-    STRF_HD void init_fill_
-        ( strf::default_alignment_format, Preview&, Encoding ) noexcept;
-
-    template <typename Preview, typename Encoding>
-    STRF_HD void init_fill_
-        ( strf::alignment_format afmt, Preview& preview, Encoding enc ) noexcept;
+        , strf::float_format<Notation> ffmt
+        , strf::alignment_format afmt, Encoding enc )noexcept;
 
     STRF_HD void print_fixed_
         ( strf::basic_outbuff<CharT>& ob ) const noexcept;
@@ -1424,8 +1487,6 @@ private:
     strf::encode_fill_f<CharT> encode_fill_;
     strf::digits_grouping grouping_;
     char32_t fillchar_ = U' ';
-    unsigned left_fillcount_ = 0;
-    unsigned right_fillcount_ = 0;
     unsigned sep_size_ = 0;
     unsigned decimal_point_size_ = 0;
     char32_t decimal_point_;
@@ -1437,10 +1498,13 @@ private:
 template <typename CharT>
 template < typename Preview, strf::float_notation Notation, typename Encoding >
 STRF_HD void punct_double_printer<CharT>::init_
-    ( Preview& preview, detail::double_dec dd
-    , strf::float_format<Notation> ffmt, Encoding enc ) noexcept
+    ( Preview& preview
+    , detail::double_dec dd
+    , strf::float_format<Notation> ffmt
+    , strf::alignment_format afmt
+    , Encoding enc ) noexcept
 {
-    encode_char_ = enc.encode_char_func();
+    fillchar_ = afmt.fill;
     auto sep_validation = strf::invalid_char_len;
     if ( ! grouping_.empty()) {
         sep_validation = enc.validate(thousands_sep_);
@@ -1449,129 +1513,60 @@ STRF_HD void punct_double_printer<CharT>::init_
         }
     }
     data_ = strf::detail::init_double_printer_data(dd, ffmt, grouping_);
-
-    int content_width =
-        ( detail::inf_or_nan(data_.form) || data_.pad0width < data_.chars_count
-        ? (int)data_.chars_count
-        : data_.pad0width );
-    std::size_t content_size = content_width;
-    (void) content_width;
-    (void) content_size;
+    auto r = init_double_printer_data_2(data_, afmt);
+    preview.subtract_width(r.fillcount);
+    preview.subtract_width(r.content_width);
+    STRF_IF_CONSTEXPR (Preview::size_required) {
+        preview.add_size(r.content_width);
+        std::size_t fillchar_size = enc.encoded_char_size(fillchar_);
+        preview.add_size(fillchar_size * r.fillcount);
+    }
     if (data_.sep_count > 0) {
         sep_size_ = static_cast<unsigned>(sep_validation);
         if (sep_size_ == 1) {
-            CharT little_sep[4];
-            enc.encode_char(little_sep, thousands_sep_);
-            thousands_sep_ = little_sep[0];
+            CharT sep;
+            encode_char_(&sep, thousands_sep_);
+            thousands_sep_ = sep;
         } else {
-            STRF_IF_CONSTEXPR (Preview::size_required) {
-                content_size -= data_.sep_count;
-                content_size += data_.sep_count * sep_size_;
-            }
+            preview.add_size(data_.sep_count * (sep_size_ - 1));
         }
     }
     if (data_.showpoint) {
-        auto validation = enc.validate(decimal_point_);
-        if (validation == 1) {
-            decimal_point_size_ = 1;
+        decimal_point_size_ = enc.encoded_char_size(decimal_point_);
+        if (decimal_point_size_ == 1) {
             CharT ch;
             enc.encode_char(&ch, decimal_point_);
             decimal_point_ = ch;
-        } else{
-            if (validation != strf::invalid_char_len) {
-                decimal_point_size_ = static_cast<unsigned>(validation);
-            } else {
-                decimal_point_size_ = static_cast<unsigned>(enc.replacement_char_size());
-                decimal_point_ = enc.replacement_char();
-            }
-            STRF_IF_CONSTEXPR (Preview::size_required) {
-                --content_size;
-                content_size += decimal_point_size_;
-            }
+        } else {
+            preview.add_size(decimal_point_size_ - 1);
         }
-    }
-    preview.subtract_width(content_width);
-    preview.add_size(content_size);
-}
-
-template <typename CharT>
-template <typename Preview, typename Encoding>
-STRF_HD void punct_double_printer<CharT>::init_fill_
-    ( strf::default_alignment_format, Preview& preview, Encoding ) noexcept
-{
-    if (detail::inf_or_nan(data_.form) && data_.pad0width > data_.chars_count) {
-        encode_fill_ = strf::detail::trivial_fill_f;
-        // bool fill_sign_space = data_.sign == ' ';
-        // data_.showsign &= ! fill_sign_space;
-        // data_.chars_count -= fill_sign_space;
-        left_fillcount_ = data_.pad0width - (int)data_.chars_count;// + fill_sign_space;
-        preview.subtract_width(left_fillcount_);
-        preview.add_size(left_fillcount_);
     }
 }
 
-template <typename CharT>
-template <typename Preview, typename Encoding>
-STRF_HD void punct_double_printer<CharT>::init_fill_
-    ( strf::alignment_format afmt, Preview& preview, Encoding enc ) noexcept
-{
-    encode_fill_ = enc.encode_fill_func();
-    fillchar_ = afmt.fill;
-    int fmt_width = afmt.width.round();
-    auto content_width = data_.chars_count;
-    if (detail::inf_or_nan(data_.form)) {
-        if (fmt_width < (int)data_.pad0width) {
-            fmt_width = data_.pad0width;
-        }
-    } else if (data_.pad0width > content_width) {
-        content_width = data_.pad0width;
-    }
-    const bool sign_space = data_.sign == ' ';
-    unsigned whole_fillcount = 0;
-    if ((int)content_width < fmt_width) {
-        auto partial_fillcount = fmt_width - content_width;
-        whole_fillcount = partial_fillcount + sign_space;
-        data_.showsign &= ! sign_space;
-        data_.chars_count -= sign_space;
-        if (data_.pad0width) {
-            data_.pad0width -= sign_space;
-        }
-        preview.subtract_width(partial_fillcount);
-        switch (afmt.alignment) {
-            case strf::text_alignment::right:
-                left_fillcount_ = whole_fillcount;
-                break;
-            case strf::text_alignment::left:
-                left_fillcount_ = sign_space;
-                right_fillcount_ = partial_fillcount;
-                break;
-            default:
-                STRF_ASSERT(afmt.alignment == strf::text_alignment::center);
-                auto half_fillcount = partial_fillcount >> 1;
-                left_fillcount_ = half_fillcount + sign_space;
-                right_fillcount_ = half_fillcount + (partial_fillcount & 1);
-        }
-    } else if (sign_space && afmt.fill != ' ') {
-        left_fillcount_ = sign_space;
-        whole_fillcount = sign_space;
-        data_.showsign &= ! sign_space;
-        data_.chars_count -= sign_space;
-        if (data_.pad0width) {
-            data_.pad0width -= sign_space;
-        }
-    }
-    if (Preview::size_required && whole_fillcount) {
-        std::size_t fillchar_size = enc.encoded_char_size(fillchar_);
-        preview.add_size(fillchar_size * whole_fillcount - sign_space);
-    }
-}
+// template <typename CharT>
+// template <typename Preview, typename Encoding>
+// STRF_HD void punct_double_printer<CharT>::init_fill_
+//     ( strf::default_alignment_format, Preview& preview, Encoding ) noexcept
+// {
+//     if (detail::inf_or_nan(data_.form) && data_.pad0width > data_.chars_count) {
+//         encode_fill_ = strf::detail::trivial_fill_f;
+//         // bool fill_sign_space = data_.sign == ' ';
+//         // data_.showsign &= ! fill_sign_space;
+//         // data_.chars_count -= fill_sign_space;
+//         data_.left_fillcount = data_.pad0width - (int)data_.chars_count;// + fill_sign_space;
+//         preview.subtract_width(data_.left_fillcount);
+//         preview.add_size(data_.left_fillcount);
+//     }
+// }
+
+
 
 template <typename CharT>
 STRF_HD void punct_double_printer<CharT>::print_to
     (strf::basic_outbuff<CharT>& ob) const
 {
-    if (left_fillcount_ != 0) {
-        encode_fill_(ob, left_fillcount_, fillchar_);
+    if (data_.left_fillcount != 0) {
+        encode_fill_(ob, data_.left_fillcount, fillchar_);
     }
     switch (data_.form) {
         case detail::float_form::fixed:
@@ -1583,8 +1578,8 @@ STRF_HD void punct_double_printer<CharT>::print_to
         default:
             print_inf_or_nan_(ob);
     }
-    if (right_fillcount_ != 0) {
-        encode_fill_(ob, right_fillcount_, fillchar_);
+    if (data_.right_fillcount != 0) {
+        encode_fill_(ob, data_.right_fillcount, fillchar_);
     }
 }
 
@@ -2196,11 +2191,6 @@ struct hex_double_printer_data
     bool showpoint;
     bool showsign;
     char sign;
-};
-
-struct float_init_result {
-    detail::chars_count_t content_width;
-    detail::chars_count_t fillcount;
 };
 
 #if ! defined(STRF_OMIT_IMPL)
