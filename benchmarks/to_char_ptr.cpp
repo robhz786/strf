@@ -64,7 +64,7 @@ int main(int argc, char** argv)
         , "fmt::format_to_n(dest, dest_size, FMT_COMPILE(\"blah {:+} blah {:#x} blah\"), 123456, 0x123456)");
     BM2(,  fmt::format_to_n(dest, dest_size, FMT_COMPILE( "blah {:_>+20} blah {:<#20x} blah" ), 123456, 0x123456)
         , "fmt::format_to_n(dest, dest_size, FMT_COMPILE(\"blah {:_>+20} blah {:<#20x} blah\"), 123456, 0x123456)");
-    
+
     BM(FIXTURE_STR, fmt::format_to(dest, "Blah {}!\n", str));
     BM(, fmt::format_to(dest, "blah {} blah {} blah", 123456, 0x123456));
     BM(, fmt::format_to(dest, "blah {:+} blah {:#x} blah", 123456, 0x123456));
@@ -74,7 +74,7 @@ int main(int argc, char** argv)
     BM(, fmt::format_to_n(dest, dest_size, "blah {} blah {} blah", 123456, 0x123456));
     BM(, fmt::format_to_n(dest, dest_size, "blah {:+} blah {:#x} blah", 123456, 0x123456));
     BM(, fmt::format_to_n(dest, dest_size, "blah {:_>+20} blah {:<#20x} blah", 123456, 0x123456));
-    
+
     BM(FIXTURE_STR, std::sprintf(dest, "Blah %s!\n", str.c_str()));
     BM(, std::sprintf(dest, "blah %d blah %d blah", 123456, 0x123456));
     BM(, std::sprintf(dest, "blah %+d blah %#x blah", 123456, 0x123456));

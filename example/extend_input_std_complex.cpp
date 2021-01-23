@@ -151,7 +151,7 @@ struct print_traits<std::complex<FloatT>>
     using formatters = strf::tag
         < std_complex_formatter
         , strf::alignment_formatter
-        , strf::float_formatter<strf::float_notation::general> >;
+        , strf::float_formatter >;
 
     // template <typename CharT, typename Preview, typename FPack>
     // static auto make_printer_input

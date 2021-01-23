@@ -246,20 +246,19 @@ void std_complex_printer<CharT, FloatT>::print_to(strf::basic_outbuff<CharT>& de
 // 3.2 // fmt_std_complex_printer to handle formatted values
 //--------------------------------------------------------------------------------
 
-template <typename CharT, typename FloatT, strf::float_notation Notation>
+template <typename CharT, typename FloatT>
 class fmt_std_complex_printer: public strf::printer<CharT>
 {
     using complex_type_ = std::complex<FloatT>;
     static constexpr char32_t anglechar_ = 0x2220;
-    static constexpr int numbase_ =
-        Notation == strf::float_notation::hex ? 16 : 10;
 
 public:
 
     template <typename... T>
     fmt_std_complex_printer(strf::usual_printer_input<T...> x)
         : encoding_(strf::get_facet<strf::char_encoding_c<CharT>, complex_type_>(x.facets))
-        , numpunct_(strf::get_facet<strf::numpunct_c<numbase_>, FloatT>(x.facets))
+        , numpunct10_(strf::get_facet<strf::numpunct_c<10>, FloatT>(x.facets))
+        , numpunct16_(strf::get_facet<strf::numpunct_c<16>, FloatT>(x.facets))
         , lettercase_(strf::get_facet<strf::lettercase_c, FloatT>(x.facets))
         , float_fmt_(x.arg.get_float_format())
         , form_(x.arg.form(
@@ -292,9 +291,10 @@ private:
     void preview_without_fill_(Preview& preview, WidthCalc wcalc) const;
 
     strf::dynamic_char_encoding<CharT> encoding_;
-    strf::numpunct<numbase_> numpunct_;
+    strf::numpunct<10> numpunct10_;
+    strf::numpunct<16> numpunct16_;
     strf::lettercase lettercase_;
-    strf::float_format<Notation> float_fmt_;
+    strf::float_format float_fmt_;
     complex_form form_;
     std::pair<FloatT, FloatT> coordinates_;
     std::uint16_t fillcount_ = 0;
@@ -303,9 +303,9 @@ private:
 
 };
 
-template <typename CharT, typename FloatT, strf::float_notation Notation>
+template <typename CharT, typename FloatT>
 template <strf::preview_size PreviewSize, strf::preview_width PreviewWidth, typename WidthCalc>
-void fmt_std_complex_printer<CharT, FloatT, Notation>::init_fillcount_and_preview_
+void fmt_std_complex_printer<CharT, FloatT>::init_fillcount_and_preview_
     ( strf::print_preview<PreviewSize, PreviewWidth>& preview
     , WidthCalc wcalc
     , strf::width_t fmt_width )
@@ -335,12 +335,12 @@ void fmt_std_complex_printer<CharT, FloatT, Notation>::init_fillcount_and_previe
     }
 }
 
-template <typename CharT, typename FloatT, strf::float_notation Notation>
+template <typename CharT, typename FloatT>
 template <typename Preview, typename WidthCalc>
-void fmt_std_complex_printer<CharT, FloatT, Notation>::preview_without_fill_
+void fmt_std_complex_printer<CharT, FloatT>::preview_without_fill_
     ( Preview& pp, WidthCalc wcalc) const
 {
-    auto facets = strf::pack(wcalc, lettercase_, numpunct_, encoding_);
+    auto facets = strf::pack(wcalc, lettercase_, numpunct10_, numpunct16_, encoding_);
     strf::preview<CharT>
         ( pp, facets
         , strf::fmt(coordinates_.first).set_float_format(float_fmt_)
@@ -368,8 +368,8 @@ void fmt_std_complex_printer<CharT, FloatT, Notation>::preview_without_fill_
     }
 }
 
-template <typename CharT, typename FloatT, strf::float_notation Notation>
-void fmt_std_complex_printer<CharT, FloatT, Notation>::print_to
+template <typename CharT, typename FloatT>
+void fmt_std_complex_printer<CharT, FloatT>::print_to
     ( strf::basic_outbuff<CharT>& dest ) const
 {
     if (fillcount_ == 0) {
@@ -395,16 +395,16 @@ void fmt_std_complex_printer<CharT, FloatT, Notation>::print_to
     }
 }
 
-template <typename CharT, typename FloatT, strf::float_notation Notation>
-void fmt_std_complex_printer<CharT, FloatT, Notation>::print_complex_value_
+template <typename CharT, typename FloatT>
+void fmt_std_complex_printer<CharT, FloatT>::print_complex_value_
     ( strf::basic_outbuff<CharT>& dest ) const
 {
-    auto facets = strf::pack(lettercase_, numpunct_, encoding_);
+    auto facets = strf::pack(lettercase_, numpunct10_, numpunct16_, encoding_);
     auto first_val = strf::fmt(coordinates_.first).set_float_format(float_fmt_);
     auto second_val = strf::fmt(coordinates_.second).set_float_format(float_fmt_);
     if (form_ == complex_form::polar) {
-        strf::to(dest).with(facets) ( first_val, U'\u2220'
-                                    , static_cast<CharT>(' '), second_val);
+        strf::to(dest).with(facets)
+            ( first_val, U'\u2220', static_cast<CharT>(' '), second_val);
     } else {
         const char* middle_str = ( form_ == complex_form::algebric
                                  ? " + i*"
@@ -428,7 +428,7 @@ struct print_traits<std::complex<FloatT>>
     using forwarded_type = std::complex<FloatT>;
     using formatters = strf::tag
         < std_complex_formatter
-        , strf::float_formatter<strf::float_notation::general>
+        , strf::float_formatter
         , strf::alignment_formatter >;
 
     template <typename CharT, typename Preview, typename FPack>
@@ -450,16 +450,13 @@ struct print_traits<std::complex<FloatT>>
         , strf::value_with_formatters<T...> arg )
         -> strf::usual_printer_input
             < CharT, Preview, FPack, strf::value_with_formatters<T...>
-            , fmt_std_complex_printer
-                < CharT, FloatT
-                , strf::value_with_formatters<T...>::float_notation() > >
+            , fmt_std_complex_printer<CharT, FloatT> >
     {
         return {preview, fp, arg};
     }
 };
 
 } // namespace strf
-
 
 //--------------------------------------------------------------------------------
 // 5 // Test

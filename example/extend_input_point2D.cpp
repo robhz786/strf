@@ -21,9 +21,7 @@ struct print_traits<xxx::point2D<FloatT>> {
 
     using forwarded_type = xxx::point2D<FloatT>;
 
-    using formatters = strf::tag
-        < strf::alignment_formatter
-        , strf::float_formatter<strf::float_notation::general> >;
+    using formatters = strf::tag<strf::alignment_formatter, strf::float_formatter>;
 
     template <typename CharT, typename Preview, typename FPack, typename... T>
     constexpr static auto make_printer_input
