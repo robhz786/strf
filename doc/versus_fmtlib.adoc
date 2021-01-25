@@ -297,12 +297,8 @@ struct point{ FloatT x, y; };
 
 template <typename FloatT>
 struct strf::print_traits<point<FloatT>> {
-
     using forwarded_type = point<FloatT>;
-
-    using formatters = strf::tag
-        < strf::alignment_formatter
-        , strf::float_formatter<strf::float_notation::general> >;
+    using formatters = strf::tag<strf::alignment_formatter, strf::float_formatter>;
 
     template <typename CharT, typename Preview, typename FPack, typename\... T>
     constexpr static auto make_printer_input

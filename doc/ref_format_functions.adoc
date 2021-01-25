@@ -1151,14 +1151,13 @@ include::float_formatter_abstract.adoc[]
 ----
 namespace strf {
 
-template <class T, {float_notation} N>
+template <class T>
 class float_formatter_fn;
 
-template <{float_notation} N>
 struct float_formatter
 {
     template <typename T>
-    using fn = float_formatter_fn<T, N>;
+    using fn = float_formatter_fn<T>;
 };
 
 } // namespace strf
@@ -1169,7 +1168,7 @@ struct float_formatter
 ----
 namespace strf {
 
-template <typename T, {float_notation} N>
+template <typename T>
 class float_formatter_fn
 {
 public:
@@ -1188,21 +1187,16 @@ public:
     constexpr T&& <<float_formatter_fn_fill_sign,fill_sign>>() && noexcept;  // same as operator~
     constexpr T&& <<float_formatter_fn_p,p>>(unsigned precision) && noexcept;  // precision
     constexpr T&& <<float_formatter_fn_pad0,pad0>>(unsigned w) && noexcept;  // pad zeros
+    constexpr T&& <<float_formatter_fn_float_notation,float_notation>>({float_notation} n) && noexcept;  // pad zeros
+    
+    constexpr T&& <<float_formatter_fn_gen,gen>>() && noexcept;
+    constexpr T&& <<float_formatter_fn_sci,sci>>() && noexcept;
+    constexpr T&& <<float_formatter_fn_fixed,fixed>>() && noexcept;
+    constexpr T&& <<float_formatter_fn_fixed,hex>>() && noexcept;
 
-    constexpr T&& <<float_formatter_fn_gen_noop,gen>>() && noexcept;      // when N == {float_notation}::general
-    constexpr T&& <<float_formatter_fn_sci_noop,sci>>() && noexcept;      // when N == {float_notation}::scientific
-    constexpr T&& <<float_formatter_fn_fixed_noop,fixed>>() && noexcept;    // when N == {float_notation}::fixed
+    constexpr T&& <<float_formatter_fn_set_float_format,set_float_format>>({float_format} f) && noexcept;
 
-    constexpr /{asterisk} see below {asterisk}/ <<float_formatter_fn_gen_const,gen>>() const & noexcept; // when N != {float_notation}::general
-    constexpr /{asterisk} see below {asterisk}/ <<float_formatter_fn_sci_const,sci>>() const & noexcept; // when N != {float_notation}::sci
-    constexpr /{asterisk} see below {asterisk}/ <<float_formatter_fn_fixed_const,fixed>>() const & noexcept; // when N != {float_notation}::fixed
-
-    constexpr T&& <<float_formatter_fn_set_float_format_nonconst,set_float_format>>({float_format}<N> data) && noexcept;
-
-    template <{float_notation} N2> // where N2 != N
-    constexpr /{asterisk} see below {asterisk}/ <<float_formatter_fn_set_float_format_const,set_float_format>>({float_format}<N2> data) const & noexcept;
-
-    static constexpr {float_notation} float_notation() noexcept { return N; }
+    constexpr {float_notation} float_notation() noexcept;
 };
 } // namespace strf
 ----
@@ -1289,176 +1283,72 @@ constexpr T&& pad0(unsigned w) && noexcept;
 Postconditions:: `get_float_format().<<float_pad0width,pad0width>> == w`
 Return value:: `static_cast<T&&>({asterisk}this)`
 ====
+[[float_formatter_fn_float_notation]]
+====
+[source,cpp,subs=normal]
+----
+constexpr T&& float_notation({float_notation} n) && noexcept;
+----
+[horizontal]
+Postconditions:: `get_float_format().<<float_format_notation,notation>> == n`
+Return value:: `static_cast<T&&>({asterisk}this)`
+====
 
-
-[[float_formatter_fn_gen_noop]]
+[[float_formatter_fn_gen]]
 ====
 [source,cpp,subs=normal]
 ----
 constexpr T&& gen() && noexcept;
 ----
-No effect.
-
-Compile-time requirements::
-`N == {float_notation}::general`, otherwise this function does not participate in overload resolution.
+[horizontal]
+Postconditions:: `get_float_format().<<float_format_notation,notation>> == {float_notation}::general`
 Return value:: `static_cast<T&&>({asterisk}this)`;
 ====
 
-[[float_formatter_fn_gen_const]]
-====
-[source,cpp,subs=normal]
-----
-constexpr /{asterisk} see below {asterisk}/ gen() const & noexcept;
-----
-Compile-time requirements::
-`N != {float_notation}::general`, otherwise this function does not participate in overload resolution.
-Return type::
-+
-[source,cpp,subs=normal]
-----
-{boost_mp_replace}<T, float_formatter<N>, float_formatter<{float_notation}::general>>
-----
-Return value::
-+
-[source,cpp,subs=normal]
-----
-__ReturnType__ { static_cast<const T&>(*this)
-           , {tag}<float_formatter<N>>{}
-           , {change_notation}<{float_notation}::general>(get_float_format()) }
-----
-+
-where `__ReturnType__` is the return type, which must be an instance of `{value_with_formatters}`
-( since `T` is ). The above expression invokes
-<<value_with_formatters_vwf2_t_i,this constructor>>.
-
-====
-[[float_formatter_fn_sci_noop]]
+[[float_formatter_fn_sci]]
 ====
 [source,cpp,subs=normal]
 ----
 constexpr T&& sci() && noexcept;
 ----
-No effect.
-
-Compile-time requirements::
-`N == {float_notation}::scientific`, otherwise this function does not participate in overload resolution.
+[horizontal]
+Postconditions:: `get_float_format().<<float_format_notation,notation>> == {float_notation}::scientific`
 Return value:: `static_cast<T&&>({asterisk}this)`;
 ====
 
-[[float_formatter_fn_sci_const]]
-====
-[source,cpp,subs=normal]
-----
-constexpr /{asterisk} see below {asterisk}/ sci() const & noexcept;
-----
-Creates a new `{value_with_formatters}` object where `N` is `{float_notation}::scientific`.
-
-Compile-time requirements::
-`N != {float_notation}::scientific`, otherwise this function does not participate in overload resolution.
-
-Return type::
-+
-[source,cpp,subs=normal]
-----
-{boost_mp_replace}<T, float_formatter<N>, float_formatter<{float_notation}::scientific>>
-----
-Return value::
-+
-[source,cpp,subs=normal]
-----
-__ReturnType__ { static_cast<const T&>(*this)
-           , {tag}<float_formatter<N>>{}
-           , {change_notation}<{float_notation}::scientific>(get_float_format()) }
-----
-+
-where `__ReturnType__` is the return type, which must be an instance of `{value_with_formatters}`
-( since `T` is ). The above expression invokes
-<<value_with_formatters_vwf2_t_i,this constructor>>.
-====
-
-[[float_formatter_fn_fixed_noop]]
+[[float_formatter_fn_fixed]]
 ====
 [source,cpp,subs=normal]
 ----
 constexpr T&& fixed() && noexcept;
 ----
-Compile-time requirements::
-`N == {float_notation}::fixed`, otherwise this function does not participate in overload resolution.
-Return value:: `static_cast<T&&>({asterisk}this)`
+[horizontal]
+Postconditions:: `get_float_format().<<float_format_notation,notation>> == {float_notation}::fixed`
+Return value:: `static_cast<T&&>({asterisk}this)`;
 ====
 
-[[float_formatter_fn_fixed_const]]
+[[float_formatter_fn_hex]]
 ====
 [source,cpp,subs=normal]
 ----
-constexpr /{asterisk} see below {asterisk}/ fixed() const & noexcept;
+constexpr T&& hex() && noexcept;
 ----
-Creates a new `{value_with_formatters}` object where `N` is `{float_notation}::fixed`.
-
-Compile-time requirements::
-`N != {float_notation}::fixed`, otherwise this function does not participate in overload resolution.
-Return type::
-+
-[source,cpp,subs=normal]
-----
-{boost_mp_replace}<T, float_formatter<N>, float_formatter<{float_notation}::fixed>>
-----
-Return value::
-+
-[source,cpp,subs=normal]
-----
-__ReturnType__ { static_cast<const T&>(*this)
-           , {tag}<float_formatter<N>>{}
-           , {change_notation}<{float_notation}::fixed>(get_float_format()) }
-----
-+
-where `__ReturnType__` is the return type, which must be an instance of `{value_with_formatters}`
-( since `T` is ). The above expression invokes
-<<value_with_formatters_vwf2_t_i,this constructor>>.
+[horizontal]
+Postconditions:: `get_float_format().<<float_format_notation,notation>> == {float_notation}::hex`
+Return value:: `static_cast<T&&>({asterisk}this)`;
 ====
 
-[[float_formatter_fn_set_float_format_nonconst]]
+
+[[float_formatter_fn_set_float_format]]
 ====
 [source,cpp,subs=normal]
 ----
-constexpr T&& set_float_format({float_format}<N> data) && noexcept;
+constexpr T&& set_float_format({float_format} data) && noexcept;
 ----
 Change format data.
 [horizontal]
 Postconditions::  `get_float_format() == data`
 Return value:: `std::move(static_cast<T&>({asterisk}this))`
-====
-
-[[float_formatter_fn_set_float_format_const]]
-====
-[source,cpp,subs=normal]
-----
-template <{float_notation} N2}>
-constexpr /{asterisk}...{asterisk}/ set_float_format({float_format}<N2> data) const & noexcept;
-----
-Creates a new `{value_with_formatters}` object where `N` is equal to `N2`, and the return value of `get_float_format()` is equal to `data`.
-
-Compile-time requirements::
-`N2 != N`, otherwise this function does not participate in overload resolution.
-Return type::
-+
-[source,cpp,subs=normal]
-----
-{boost_mp_replace}<T, float_formatter<N>, float_formatter<N2>>
-----
-
-Return value::
-+
-[source,cpp,subs=normal]
-----
-__ReturnType__ { static_cast<const T&>(*this)
-           , {tag}<float_formatter<N>>{}
-           , {change_notation}<N2>(get_float_format()) }
-----
-+
-where `__ReturnType__` is the return type, which must be an instance of `{value_with_formatters}`
-( since `T` is ). The above expression invokes
-<<value_with_formatters_vwf2_t_i,this constructor>>.
 ====
 
 ==== Struct template `float_format` [[float_format]]
@@ -1471,35 +1361,23 @@ enum class showsign {
     negative_only = ..., positive_also = ..., fill_instead_of_positive = ...
 };
 
-enum class <<float_notation,float_notation>> {fixed, scientific, general};
+enum class <<float_format_notation,float_notation>> {fixed, scientific, general, hex};
 
-template <float_notation N>
 struct float_format
 {
     unsigned precision = (unsigned)-1;
     unsigned pad0width = 0;
+    float_notation notation = float_notation::general
     showsign sign = showsign::negative_only;
     bool showpoint = false;
     bool showpos = false;
     static constexpr float_notation notation = N;
 };
 
-template <float_notation To, float_notation From>
-constexpr float_format<To> change_notation(float_format<From> x) noexcept
-{
-    return { x.precision, x.pad0width, x.showpoint, x.showpos };
-}
-
-template <float_notation N>
-constexpr bool operator==(float_format<N> lhs, float_format<N> rhs) noexcept;
-
-template <float_notation N>
-constexpr bool operator!=(float_format<N> lhs, float_format<N> rhs) noexcept;
-
 } // namespace strf
 ----
 
-[[float_notation]]
+[[float_format_notation]]
 notation::
 - `float_notation::fixed`: Prints like `123.45`
 - `float_notation::scientific`: Prints like `1.2345e+02`
@@ -1509,6 +1387,7 @@ notation::
    uses the scientfic notation if the exponent is less than -4 or greater
    than or equal to the precision. Trailing zeros are removed from the fractional
    part if `showpoint` is `false`.
+- `float_notation::hex`: hexadecimal
 
 [[float_showpoint]]
 showpoint:: Prints the decimal point even when there are no fractional digits.
