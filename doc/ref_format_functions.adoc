@@ -414,7 +414,7 @@ class alignment_formatter_fn<T, false>
     constexpr {width_t} width() const noexcept;
     constexpr text_alignment alignment() const noexcept;
     constexpr char32_t fill() const noexcept;
-    constexpr {alignment_format} get_alignmet_format() const noexcept;
+    constexpr {alignment_format} get_alignment_format() const noexcept;
 
     // <<alignment_formatter_fn_false_format_functions,format functions>>
     constexpr /{asterisk}...{asterisk}/ operator<({width_t} width) const noexcept;
@@ -436,7 +436,7 @@ class alignment_formatter_fn<T, false>
 ====
 [source,cpp,subs=normal]
 ----
-constexpr {default_alignment_format} get_alignmet_format() const noexcept;
+constexpr {default_alignment_format} get_alignment_format() const noexcept;
 ----
 [horizontal]
 Return value:: `{default_alignment_format}{}`
@@ -447,7 +447,7 @@ Return value:: `{default_alignment_format}{}`
 constexpr {width_t} width() const noexcept;
 ----
 [horizontal]
-Return value:: `get_alignmet_format().width`
+Return value:: `get_alignment_format().width`
 ====
 ====
 [source,cpp,subs=normal]
@@ -455,7 +455,7 @@ Return value:: `get_alignmet_format().width`
 constexpr {text_alignment} alignment() const noexcept;
 ----
 [horizontal]
-Return value:: `get_alignmet_format().alignment`
+Return value:: `get_alignment_format().alignment`
 ====
 ====
 [source,cpp]
@@ -463,7 +463,7 @@ Return value:: `get_alignmet_format().alignment`
 constexpr char32_t fill() const noexcept;
 ----
 [horizontal]
-Return value:: `get_alignmet_format().fill`
+Return value:: `get_alignment_format().fill`
 ====
 
 [[alignment_formatter_fn_false_format_functions]]
@@ -604,7 +604,7 @@ public:
     constexpr {width_t} width() const noexcept;
     constexpr text_alignment alignment() const noexcept;
     constexpr char32_t fill() const noexcept;
-    constexpr {alignment_format} get_alignmet_format() const noexcept;
+    constexpr {alignment_format} get_alignment_format() const noexcept;
 
     // <<alignment_formatter_fn_true_format_functions,format functions>>
     constexpr T&& operator<({width_t} width) && noexcept; // left
@@ -625,7 +625,7 @@ public:
 constexpr alignment_formatter_fn() noexcept;
 ----
 [horizontal]
-Postconditions:: `get_alignmet_format() == {alignment_format}{}`
+Postconditions:: `get_alignment_format() == {alignment_format}{}`
 ====
 ====
 [source,cpp,subs=normal]
@@ -634,14 +634,14 @@ template <typename U, bool B>
 constexpr explitic alignment_formatter_fn(const alignment_formatter_fn<U, B>& u) noexcept;
 ----
 [horizontal]
-Postconditions:: `get_alignmet_format() == u.get_alignmet_format()`
+Postconditions:: `get_alignment_format() == u.get_alignment_format()`
 ====
 [[alignment_formatter_fn_true_observers]]
 ===== Observers
 ====
 [source,cpp,subs=normal]
 ----
-constexpr {alignment_format} get_alignmet_format() const noexcept;
+constexpr {alignment_format} get_alignment_format() const noexcept;
 ----
 ====
 ====
@@ -650,7 +650,7 @@ constexpr {alignment_format} get_alignmet_format() const noexcept;
 constexpr {width_t} width() const noexcept;
 ----
 [horizontal]
-Return value:: `get_alignmet_format().width`
+Return value:: `get_alignment_format().width`
 ====
 ====
 [source,cpp,subs=normal]
@@ -658,14 +658,14 @@ Return value:: `get_alignmet_format().width`
 constexpr {text_alignment} alignment() const noexcept;
 ----
 [horizontal]
-Return value:: `get_alignmet_format().alignment`
+Return value:: `get_alignment_format().alignment`
 ====
 ====
 [source,cpp]
 ----
 constexpr char32_t fill() const noexcept;
 ----
-Return value:: `get_alignmet_format().fill`
+Return value:: `get_alignment_format().fill`
 ====
 [[alignment_formatter_fn_true_format_functions]]
 ===== Format functions
@@ -681,9 +681,9 @@ Return value::
 static_cast<T&&>(*this)
 ----
 Postconditions::
-* `get_alignmet_format().alignment == {text_alignment}::left`
-* `get_alignmet_format().width == width`
-* `get_alignmet_format().fill` is not changed
+* `get_alignment_format().alignment == {text_alignment}::left`
+* `get_alignment_format().width == width`
+* `get_alignment_format().fill` is not changed
 ====
 ====
 [source,cpp,subs=normal]
@@ -697,9 +697,9 @@ Return value::
 static_cast<T&&>(*this)
 ----
 Postconditions::
-* `get_alignmet_format().alignment == {text_alignment}::right`
-* `get_alignmet_format().width == width`
-* `get_alignmet_format().fill` is not changed
+* `get_alignment_format().alignment == {text_alignment}::right`
+* `get_alignment_format().width == width`
+* `get_alignment_format().fill` is not changed
 ====
 ====
 [source,cpp,subs=normal]
@@ -713,9 +713,9 @@ Return value::
 static_cast<T&&>(*this)
 ----
 Postconditions::
-* `get_alignmet_format().alignment == {text_alignment}::center`
-* `get_alignmet_format().width == width`
-* `get_alignmet_format().fill` is not changed
+* `get_alignment_format().alignment == {text_alignment}::center`
+* `get_alignment_format().width == width`
+* `get_alignment_format().fill` is not changed
 ====
 ====
 [source,cpp,subs=normal]
@@ -729,14 +729,14 @@ Return value::
 static_cast<T&&>(*this)
 ----
 Postconditions::
-* `get_alignmet_format().fill == ch`
-* `get_alignmet_format().alignment` is not changed
-* `get_alignmet_format().width` is not changed
+* `get_alignment_format().fill == ch`
+* `get_alignment_format().alignment` is not changed
+* `get_alignment_format().width` is not changed
 ====
 ====
 [source,cpp,subs=normal]
 ----
-constexpr T&& set_alignemnt_format({alignment_format} data) && noexcept;
+constexpr T&& set_alignment_format({alignment_format} data) && noexcept;
 ----
 Return value::
 +
@@ -745,7 +745,7 @@ Return value::
 static_cast<T&&>(*this)
 ----
 Postconditions::
-* `get_alignmet_format() == data`
+* `get_alignment_format() == data`
 ====
 
 

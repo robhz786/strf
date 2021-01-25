@@ -325,7 +325,7 @@ expression `arg.get_float_format()`, whose value is passed to `set_float_format`
 This is how easily the floating-points format options are forwarded.
 If such options change in a future version of library, no need to update this code.
 You can see that applying the alignment is equally easy ( through `get_alignemt_format`
-and `set_alignmet_format` ).
+and `set_alignment_format` ).
 // This is the main reason they have been created.
 
 Ok, I have to admit that the example is facilitated by the fact that we can convert a
