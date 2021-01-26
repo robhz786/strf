@@ -312,7 +312,7 @@ struct int_printing
     using override_tag = IntT;
     using forwarded_type = IntT;
     using formatters = strf::tag< strf::int_formatter<10>
-                                , strf::empty_alignment_formatter >;
+                                , strf::alignment_formatter >;
 
     template <typename CharT, typename Preview, typename FPack>
     constexpr STRF_HD static auto make_printer_input

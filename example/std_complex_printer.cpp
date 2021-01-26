@@ -270,7 +270,7 @@ public:
         init_fillcount_and_preview_
             ( x.preview
             , strf::get_facet<strf::width_calculator_c, complex_type_>(x.facets)
-            , x.arg.get_alignment_format().width );
+            , x.arg.width() );
     }
 
     void print_to(strf::basic_outbuff<CharT>& dest) const override;

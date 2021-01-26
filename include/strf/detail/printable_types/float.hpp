@@ -431,7 +431,7 @@ struct float_printing
 {
     using override_tag = FloatT;
     using forwarded_type = FloatT;
-    using formatters = strf::tag<strf::float_formatter, strf::empty_alignment_formatter>;
+    using formatters = strf::tag<strf::float_formatter, strf::alignment_formatter>;
 
     template <typename CharT, typename Preview, typename FPack>
     STRF_HD constexpr static auto make_printer_input
@@ -2031,7 +2031,7 @@ public:
                 std::size_t fillchar_size = enc.encoded_char_size(data_.fillchar);
                 input.preview.add_size(fillchar_size * r.fillcount);
             }
-            if (data_.sep_count && notation != strf::float_notation::hex){
+            if (notation != strf::float_notation::hex && data_.sep_count){
                 input.preview.add_size(data_.sep_count * (sep_size_ - 1));
             }
             if (data_.showpoint) {

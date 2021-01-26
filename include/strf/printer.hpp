@@ -972,7 +972,7 @@ enum class text_alignment {left, right, center};
 struct default_alignment_format
 {
     static constexpr char32_t fill = U' ';
-    static constexpr strf::width_t width = {};
+    static constexpr strf::width_t width = 0;
     static constexpr strf::text_alignment alignment = strf::text_alignment::right;
 };
 
@@ -1192,7 +1192,7 @@ public:
     }
     constexpr STRF_HD strf::width_t width() const noexcept
     {
-        return get_alignment_format().width;
+        return 0;//get_alignment_format().width;
     }
     constexpr STRF_HD strf::text_alignment alignment() const noexcept
     {
@@ -1211,8 +1211,8 @@ struct alignment_formatter_q
     using fn = strf::alignment_formatter_fn<T, HasAlignment>;
 };
 
-using alignment_formatter = strf::alignment_formatter_q<true>;
-using empty_alignment_formatter = strf::alignment_formatter_q<false>;
+using dynamic_alignment_formatter = strf::alignment_formatter_q<true>;
+using alignment_formatter = strf::alignment_formatter_q<false>;
 
 
 template <class T>

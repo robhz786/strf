@@ -390,8 +390,8 @@ struct alignment_formatter_q
     using fn = alignment_formatter_fn<T, HasAlignment>;
 };
 
-using alignment_formatter       = alignment_formatter_q<true>;
-using empty_alignment_formatter = alignment_formatter_q<false>;
+using alignment_formatter = alignment_formatter_q<false>;
+using dynamic_alignment_formatter = alignment_formatter_q<true>;
 
 } // namespace strf
 ----

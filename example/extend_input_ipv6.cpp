@@ -72,7 +72,7 @@ struct ipv6_formatter
 
         template <typename U>
         constexpr explicit fn(const fn<U>& u)
-            : style_(u.style_)
+            : style_(u.get_ipv6style())
         {
         }
         constexpr T&& operator++() &&
