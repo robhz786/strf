@@ -169,61 +169,51 @@ assert(str == "[1 -> 'one'; 2 -> 'two'; 1000 -> 'a thousand']");
 // === Compilation performance
 // __to-do__
 //
-== internationalization
 
-=== Locales
-
-In {fmt}, the `'L'` format flag causes the argument to be
-printed with the numeric punctuation specified by the current global locale state.
-This design can be problematic in multi-threaded programs.
-A more robust approach is present in `std::format`: the locale is extracted from
-a `std::locale` object that you pass as an argument.
-
-Strf has something similar to that robust design,
-but it does not work with `std::locale`, since it has its
-own facets. To apply numeric punctuation, you pass
-a `<<quick_reference#numpunct,strf::numpunct>>` object to the
-`<<tutorial#syntax,with>>` function.
-
-}}
-// but it uses a similar approach:
-// you pass facets objects to the `<<tutorial#syntax,with>>` function.
-// These are not the same facets as those in `std::locale` ( some of them
-// are not even related to localization ). So, for
-// numeric punctuation, instead of `std::numpunct<__char_type__>`,
-// you pass a `strf::numpunct<10>` object.
-//
-// To to get a `strf::numpunct<10>` that reflects
-// the current global locale,  you can use the `locale_numpuct()`
-// function ( declared in `<strf/locale.hpp>` ):
-// [source,cpp,subs=normal]
-// ----
-// strf::numpunct<10> punct = strf::locale_numpunct();
-// ----
-// The state of the returned `strf::numpunct<10>` object is not affected
-// if the global locales changes later. So you will need to call
-// `locale_numpuct()` again if you want the updated value.
-//
-// In case you want a numeric punctuation from a specific country,
-// it's easy to manually create a `strf::numpunct<10>` value:
+// == Locales
+// 
+// === Numeric punctuation
+// In {fmt}, you use the `'L'` format flag to apply the
+// numeric punctuation defined by global locale.
+// This design can be problematic in multi-threaded programs.
+// A more robust approach is present in `std::format` where the punctuation
+// is extracted from a `std::locale` object that you pass as an argument.
+// 
+// Strf has something similar to that robust design,
+// except that it does not work with `std::locale`, since it has its
+// own facets: you pass a `<<quick_reference#numpunct,strf::numpunct>>`
+// object to the `<<tutorial#syntax,with>>` function.
+// You can create a `strf::numpunct<10>` that reflects
+// the global locale ( with `<<locale_hpp#,locale_numpuct()>>` function ),
+// or manually like this:
 // [source,cpp,subs=normal]
 // ----
 // // german punctuation:
 // constexpr auto numpunct_de_DE =
 //     strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(U'.');
 // ----
-//
-// Notice that `numpunct` does not have the character type as a template parameter.
-// The same `numpunct` type affects all character types. The only template parameter
-// is the numeric base. Yes, you can apply punctuation when printing in non-decimal
-// numeric bases ( but this is not related to locales ).
+// 
+// Be aware that `numpunct<10>` only affects numbers printed in the decimal base
+// ( the template parameter is the base ), which means does not affect
+// floating-points printed in hexadecimal.
+// In other formatting libraries (`printf`, `std::ostream`, and {fmt}),
+// when using locales,
+// the same decimal point character used for decimal floating-points is also
+// used for hexadecimal floating points.
+// While in strf, if you want to change it for hexadecimal floating-points,
+// then you need to create and pass a `numpunct<16>` object.
+// 
+// `strf::numpunct` does not affect `bool` values, contrary to `std::numpunct` which
+// has the `truename()` and `falsename()` functions. If you want to change how boolean
+// are printed, you need to create a facet that overrides `bool` printing ( as
+// explained <<howto_override_printable_types#,here>> ).
+// 
+// === Character encoding
+// 
+// {fmt} assumes the character encoding 
+// 
 
-However, `strf::numpunct` does not affect `bool` values, contrary to `std::numpunct` which
-has the `truename()` and `falsename()` functions. If you want to change how boolean
-are printed, you need to create a facet that overrides `bool` printing ( as
-explained <<howto_override_printable_types#,here>> ).
-
-=== Multilingual programs
+== Multilingual programs
 
 If you are working on a multilingual program, that uses a tool like `gettext`,
 strf offers some advantages:
