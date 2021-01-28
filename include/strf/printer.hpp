@@ -1429,6 +1429,14 @@ constexpr STRF_HD auto center(T&& value, strf::width_t width, CharT fill)
     return strf::fmt(value).fill(fill) ^ width;
 }
 
+template <typename T>
+constexpr STRF_HD auto pad0(T&& value, decltype(strf::fmt(value).pad0width()) width)
+    noexcept(noexcept(strf::fmt(value).pad0(width)))
+    -> std::remove_reference_t<decltype(strf::fmt(value).pad0(width))>
+{
+    return strf::fmt(value).pad0(width);
+}
+
 #else  // defined (STRF_NO_GLOBAL_CONSTEXPR_VARIABLE)
 
 namespace detail_format_functions {
@@ -1628,16 +1636,6 @@ struct pad0_fn {
         -> std::remove_reference_t<decltype(strf::fmt(value).pad0(width))>
     {
         return strf::fmt(value).pad0(width);
-    }
-    template <typename T, typename CharT>
-    constexpr STRF_HD auto operator()
-        ( T&& value
-        , decltype(strf::fmt(value).pad0width()) width
-        , CharT fill ) const
-        noexcept(noexcept(strf::fmt(value).pad0(width)))
-        -> std::remove_reference_t<decltype(strf::fmt(value).fill(fill).pad0(width))>
-    {
-        return strf::fmt(value).fill(fill).pad0(width);
     }
 };
 
