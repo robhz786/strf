@@ -27,11 +27,15 @@ branches:
   only:
     - master
     - develop
-    - /bugfix\/.*/
-    - /feature\/.*/
+    - /pr-.*/
+    - /rc-.*/
+    - /bugfix-.*/
     - /hotfix-.*/
-    - /pr\/.*/
-    - /release-.*/
+    - /feature-.*/
+    - /optimization-.*/
+    - /refactoring-.*/
+    - /redesign-.*/
+    - /task-.*/
 
 matrix:
   # Adding MAYFAIL to any matrix job allows it to fail but the build stays green:

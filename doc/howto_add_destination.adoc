@@ -33,7 +33,7 @@ Creating a new output type involves defining a concrete class
 that derives from {basic_outbuff}.
 Once this is done, one can write things to objects
 of such type with the `{to}` function template,
-using the basic usage `<<introduction#,syntax>>` of the library:
+using the basic usage `<<tutorial#,syntax>>` of the library:
 
 [source,cpp,subs=normal]
 ----
@@ -212,7 +212,7 @@ which is something that destructors can't do.
 == How to create destination expression
 
 There are <<quick_reference#destinations,several expressions>> that can be used as
-the prefix in the `<<introduction#,basic usage syntax>>`.
+the prefix in the `<<tutorial#,basic usage syntax>>`.
 Each of them causes the content to be printed into a different destination.
 Perhaps you want to create your own. For example, if you use Qt,
 you may want to create a `toQString` "destination",
@@ -280,11 +280,11 @@ the size is passed to the
 and stored in a member variable.
 However, in most cases, if any, it does't make sense to opt for `destination_with_given_size`.
 The reason why it was created was to be used as the return type
-the `<<introduction#,reserve>>` function.
+the `<<tutorial#,reserve>>` function.
 ////
 `destination_no_reserve::<<strf_hpp#destination_no_reserve_reserve,reserve>>` and
 `destination_with_given_size::<<strf_hpp#destination_reserve_calc_reserve,reserve>>`
-that are designed to be uses as part of the `<<introduction#,basic usage syntax>>`.
+that are designed to be uses as part of the `<<tutorial#,basic usage syntax>>`.
 ////
 
 

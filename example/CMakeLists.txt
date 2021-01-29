@@ -16,11 +16,11 @@ foreach(x
     readme_md
     tr_string
     encoding_conversion
-    format_functions
     facets_pack_as_input
     joins
     range_input
     extend_input_ipv4
+    extend_input_point2D
     extend_input_ipv6
     extend_input_base64
     extend_input_std_complex

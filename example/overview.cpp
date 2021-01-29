@@ -13,16 +13,17 @@ constexpr auto to_u8string = to_string;
 
 #endif
 
-//[ first_example
-#include <strf.hpp> // This is the only header you need to include.
-
 void sample()
 {
     int value = 255;
     auto s = strf::to_string(value, " in hexadecimal is ", strf::hex(value));
     assert(s == "255 in hexadecimal is ff");
+
+    using namespace strf::format_functions;
+
+    auto s2 = strf::to_string(value, " in hexadecimal is ", hex(value));
+    assert(s2 == "255 in hexadecimal is ff");
 }
-//]
 
 void second_example()
 {
@@ -82,9 +83,6 @@ void second_example()
 //]
 }
 
-
-
-
 void format_functions()
 {
     //[ format_functions_example
@@ -94,20 +92,6 @@ void format_functions()
         , "---" );
 
     assert(s == "---....0x00ff---");
-    //]
-}
-
-void format_functions_2()
-{
-    //[ formatting_samples
-    auto str = strf::to_string
-        ( strf::hex(255) > 5
-        , '/', strf::center(255, 7, '.').hex()
-        , '/', *strf::hex(255) % 7
-        , '/', strf::multi('a', 3) ^ 7
-        , '/', +strf::fmt(255) );
-
-    assert(str == "   ff/..ff.../0x   ff/  aaa  /+255");
     //]
 }
 
@@ -372,7 +356,6 @@ int main()
 {
     sample();
     format_functions();
-    format_functions_2();
     reserve();
     basic_facet_sample();
     constrained_facet();

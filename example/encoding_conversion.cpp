@@ -85,12 +85,21 @@ void allow_surrogates ()
 
 }
 
+void char32()
+{
+    char32_t ch = 0x20AC; // euro sign
+    assert(strf::to_string.with(strf::utf8<char>())        (ch) == "\xE2\x82\xAC");
+    assert(strf::to_string.with(strf::iso_8859_15<char>()) (ch) == "\xA4");
+    assert(strf::to_string.with(strf::iso_8859_1<char>())  (ch) == "?");
+    (void) ch;
+}
 
 int main()
 {
     input_ouput_different_char_types();
     arg();
     allow_surrogates();
+    char32();
 
     return 0;
 }

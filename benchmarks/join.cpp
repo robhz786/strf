@@ -25,7 +25,6 @@
 #define BM_JOIN_8_OP   strf::to(dest) (strf::join('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'))
 #define BM_8_OP        strf::to(dest) ('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h')
 #define BM_JR_8_OP     strf::to(dest) (strf::join_right(15)('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'))
-#define BM_JS_8_OP     strf::to(dest) (strf::join_split(15, 2)('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'))
 #define BM_JR_STR_OP   strf::to(dest) (strf::join_right(15)("Hello World"))
 #define BM_JR2_STR_OP  strf::to(dest) (strf::join("Hello World") > 15)
 #define BM_STR_OP      strf::to(dest) (strf::fmt("Hello World") > 15)
@@ -37,7 +36,6 @@ CREATE_BENCHMARK(BM_4);
 CREATE_BENCHMARK(BM_JOIN_8);
 CREATE_BENCHMARK(BM_8);
 CREATE_BENCHMARK(BM_JR_8);
-CREATE_BENCHMARK(BM_JS_8);
 CREATE_BENCHMARK(BM_JR_STR);
 CREATE_BENCHMARK(BM_JR2_STR);
 CREATE_BENCHMARK(BM_STR);
@@ -51,7 +49,6 @@ int main(int argc, char** argv)
     REGISTER_BENCHMARK(BM_JOIN_8);
     REGISTER_BENCHMARK(BM_8);
     REGISTER_BENCHMARK(BM_JR_8);
-    REGISTER_BENCHMARK(BM_JS_8);
     REGISTER_BENCHMARK(BM_JR_STR);
     REGISTER_BENCHMARK(BM_JR2_STR);
     REGISTER_BENCHMARK(BM_STR);

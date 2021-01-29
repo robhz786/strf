@@ -1,0 +1,432 @@
+////
+Distributed under the Boost Software License, Version 1.0.
+
+See accompanying file LICENSE_1_0.txt or copy at
+http://www.boost.org/LICENSE_1_0.txt
+////
+
+:strf-version: develop
+:strf-src-root: https://github.com/robhz786/strf/blob/{strf-version}
+:fmt_print_to: link:https://fmt.dev/latest/api.html#_CPPv2N3fmt9format_toE8OutputItRK1SDpRR4Args[fmt::print_to]
+:fmt_print_to_n: link:https://fmt.dev/latest/api.html#_CPPv2N3fmt11format_to_nE8OutputIt6size_tRK1SDpRK4Args[fmt::print_to_n]
+
+
+:tr-string: <<quick_reference#tr_string,tr-string>>
+
+= Comparasion between strf and {fmt}
+:source-highlighter: prettify
+:sectnums:
+:sectnumlevels: 2
+:icons: font
+:toc: left
+
+
+// This document highlights the differences between Strf and version 7.1.3 of {fmt}.
+
+// == Usability
+//
+// === Format string versus format functions
+//
+// {fmt} uses format string, while strf uses format functions:
+//
+// [source,cpp]
+// ----
+// // in {fmt}
+// auto s1 = fmt::format("{} in hexadecimal is {:x}", value);
+// auto s1 = fmt::format(FMT_STRING("{} in hexadecimal is {:x}"), value);
+//
+// // in strf
+// auto s3 = strf::to_string(value, "in hexadecimal is", strf::hex(value));
+// auto s4 = strf::to_string.tr("{} in hexadecimal is {}", value, strf::hex(value));
+//
+// using namespace strf::format_functions;
+// auto s5 = strf::to_string(value, "in hexadecimal is", hex(value));
+// ----
+//
+// Format strings are more compact, but they are also more error-prone.
+// With the `FMT_STRING` macros, the mistakes are caught at compile time,
+// but the error messages are not as clear as when using strf's format functions.
+//
+// On the other hand, strf is not able to catch at compile-time an invalid
+// positional argument in the {tr-string}.
+//
+// ////
+// As a consequence, strf tends to be more verbose. Operator overloading
+// is commonly employed to aliviate the verbosity, like in the expression `*hex(value) > 20`,
+// but it's still not compact as a format string.
+//
+// In both cases, memorizing all the format options is a burden.
+// But when using a format string you additionally need to remember the correct
+// order in which the format flags must be written.
+// ////
+//
+// ////
+
+// === Printing to `char*`
+//
+//
+// __to-do__
+//
+//
+//
+// == Run-time Performance
+//
+// == Compilation Performance
+//
+
+== Capabilities in general
+
+=== {fmt}
+Some things that are directly supported by {fmt}, but not by strf:
+
+- Printing date and time ( link:https://fmt.dev/latest/api.html#chrono-api[link] )
+- Printing any type that can be printed by `std::ostream` ( link:https://fmt.dev/latest/api.html#std-ostream-support[link] )
+- Printing `long double`
+- Printing `std::tuples` ( https://fmt.dev/latest/api.html#ranges-api[link] )
+- Specifying colors ( https://fmt.dev/latest/api.html#color-api[link] )
+- Writing to output iterators ( https://fmt.dev/latest/api.html#output-iterator-support[link] )
+- Named arguments in the format string. ( https://fmt.dev/latest/api.html#named-arguments[link] )
+- Alternative functions that follow the `std::printf` format string syntax. ( link:https://fmt.dev/latest/api.html#printf-formatting[link] )
+
+
+=== Strf
+Some things that are directly supported by strf, but not by {fmt}:
+
+* Character encoding conversion
+
+[source,cpp]
+----
+auto str = strf::to_string( "aaa-"
+                          , strf::conv(u"bbb-")
+                          , strf::conv(U"ccc-")
+                          , strf::conv(L"ddd") );
+
+assert(str   ==  "aaa-bbb-ccc-ddd");
+----
+[source,cpp]
+----
+auto str_utf8 = strf::to_u8string
+        ( strf::conv("--\xA4--", strf::iso_8859_1<char>())
+        , strf::conv("--\xA4--", strf::iso_8859_15<char>()));
+assert(str_utf8 == u8"--\u00A4----\u20AC--");
+----
+
+* Printing `char32_t`
+
+[source,cpp]
+----
+char32_t ch = 0x20AC;
+assert(strf::to_string.with(strf::utf8<char>())        (ch) == "\xE2\x82\xAC");
+assert(strf::to_string.with(strf::iso_8859_15<char>()) (ch) == "\xA4");
+assert(strf::to_string.with(strf::iso_8859_1<char>())  (ch) == "?");
+----
+
+* Aligning a group of arguments as if they were one
+
+[source,cpp]
+----
+auto str = strf::to_string
+    ("---", strf::join_center(15) ("abc", "def", 123), "---");
+assert(str == "---   abcdef123   ---");
+----
+
+* When printing range, it is possible to apply formatting:
+
+[source,cpp]
+----
+int array[] = { 250, 251, 252 };
+auto str = strf::to_string
+    ( "["
+    , *strf::fmt_separated_range(array, " / ").fill('.').hex() > 6
+    , "]");
+assert(str == "[..0xfa / ..0xfb / ..0xfc]");
+----
+
+* When printing range, it is possible to transform the elements:
+
+[source,cpp]
+----
+std::map<int, const char*> table = { {1, "one"}, {2, "two"}, {1000, "a thousand"} };
+auto op = [](auto p) {
+    // transforming a std::pair into somthing printable
+    return strf::join(p.first, " -> '", p.second, '\'');
+};
+auto str = strf::to_string('[', strf::separated_range(table, "; ", op), ']');
+assert(str == "[1 -> 'one'; 2 -> 'two'; 1000 -> 'a thousand']");
+----
+
+// == Width calculation
+// __to-do__
+//
+// == Performance
+//
+// == Performance
+//
+// === Run-time performance
+// __to-do__
+//
+//
+// === Compilation performance
+// __to-do__
+//
+
+// == Locales
+// 
+// === Numeric punctuation
+// In {fmt}, you use the `'L'` format flag to apply the
+// numeric punctuation defined by global locale.
+// This design can be problematic in multi-threaded programs.
+// A more robust approach is present in `std::format` where the punctuation
+// is extracted from a `std::locale` object that you pass as an argument.
+// 
+// Strf has something similar to that robust design,
+// except that it does not work with `std::locale`, since it has its
+// own facets: you pass a `<<quick_reference#numpunct,strf::numpunct>>`
+// object to the `<<tutorial#syntax,with>>` function.
+// You can create a `strf::numpunct<10>` that reflects
+// the global locale ( with `<<locale_hpp#,locale_numpuct()>>` function ),
+// or manually like this:
+// [source,cpp,subs=normal]
+// ----
+// // german punctuation:
+// constexpr auto numpunct_de_DE =
+//     strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(U'.');
+// ----
+// 
+// Be aware that `numpunct<10>` only affects numbers printed in the decimal base
+// ( the template parameter is the base ), which means does not affect
+// floating-points printed in hexadecimal.
+// In other formatting libraries (`printf`, `std::ostream`, and {fmt}),
+// when using locales,
+// the same decimal point character used for decimal floating-points is also
+// used for hexadecimal floating points.
+// While in strf, if you want to change it for hexadecimal floating-points,
+// then you need to create and pass a `numpunct<16>` object.
+// 
+// `strf::numpunct` does not affect `bool` values, contrary to `std::numpunct` which
+// has the `truename()` and `falsename()` functions. If you want to change how boolean
+// are printed, you need to create a facet that overrides `bool` printing ( as
+// explained <<howto_override_printable_types#,here>> ).
+// 
+// === Character encoding
+// 
+// {fmt} assumes the character encoding 
+// 
+
+== Multilingual programs
+
+If you are working on a multilingual program, that uses a tool like `gettext`,
+strf offers some advantages:
+
+Less translations errors::
+The programmer is usually not same be the person who translates the messages.
+Messages can be ambiguous. Ambiguities can cause translation mistakes,
+but, in strf, they can be avoided by adding comments in the {tr-string}.
+
+Less syntax errors::
+The syntax of {tr-string} is less error-prone than then of the format string
+of {fmt}. Although {fmt} is able to detect syntax error at compile-time
+( when using `FMT_STRING` or `FMT_COMPILE` ), these strings are likely
+to only be evaluated at run-time in multilingual code.
+And even when the programmer types format string correctly,
+mistakes can still be made by the person who translates it.
+
+Maintenance::
+In strf, translation is decoupled from formatting. If you want
+to change some format option in an argument, like the width,
+there is no need to update the translated strings.
+// And the same tr-string can be reused in more ways.
+
+// Reusability::
+// Again because translation is decoupled from formatting,
+// and also because of joins,
+// the same translated text can be used in different situations:
+//
+// [source,cpp]
+// ----
+// strf::to(dest).tr(gettext("
+//
+// ----
+//
+
+
+== Extensibility
+
+=== Adding printable types
+
+To make a type printable in {fmt} you specialize the `fmt::formatter` struct template.
+The documentation provides a simple a example (link:https://fmt.dev/latest/api.html#formatting-user-defined-types[here])
+of how to do this with a struct named `point` that contains two `double` variables.
+
+
+////
+There is a `parse` function that handles the format string, which, in this
+case, may only contain the `'f'` or `'g'` flags, and that define
+formatting of the floating-point values that are later printer in
+the `format` function.
+
+Naturally, in a real case scenario one would probably want to support more
+format flags, but it makes sense to make examples simple.
+////
+
+If you compare it with the example below,
+//{strf-src-root}/example/extend_input_point2D.cpp[this example],
+which does the similar thing in strf, you may find at first that the strf's way
+is more complicated, since the code is larger and it requires more
+specific knowledge about the library.
+But you have to take into account that this sample supports all
+format options that would be expected in a real case scenario:
+all the <<strf_hpp#float_formatter,floating-point format options>>,
+as well the <<strf_hpp#alignment_formatter,alignment format options>>
+( that {fmt} examples supports only the `'f'` or `'g'` format flags ).
+
+[source,cpp,subs=normal]
+----
+template <typename FloatT>
+struct point{ FloatT x, y; };
+
+template <typename FloatT>
+struct strf::print_traits<point<FloatT>> {
+    using forwarded_type = point<FloatT>;
+    using formatters = strf::tag<strf::alignment_formatter, strf::float_formatter>;
+
+    template <typename CharT, typename Preview, typename FPack, typename\... T>
+    constexpr static auto make_printer_input
+        ( Preview& preview
+        , const FPack& fp
+        , strf::value_with_formatters<T\...> arg ) noexcept
+    {
+        point<FloatT> p = arg.value();
+        auto arg2 = strf::join
+            ( (CharT)'('
+            , strf::fmt(p.x).set_float_format(arg.get_float_format())
+            , strf::conv(u", ")
+            , strf::fmt(p.y).set_float_format(arg.get_float_format())
+            , (CharT)')' )
+            .set_alignment_format(arg.get_alignment_format());
+        return strf::make_printer_input<CharT>(preview, fp, arg2);
+    }
+};
+----
+
+So, although there are more things to learn, they later make things easier for you.
+For example, you can see that the code contains the
+expression `arg.get_float_format()`, whose value is passed to `set_float_format`.
+This is how easily the floating-points format options are forwarded.
+If such options change in a future version of library, no need to update this code.
+You can see that applying the alignment is equally easy ( through `get_alignemt_format`
+and `set_alignment_format` ).
+// This is the main reason they have been created.
+
+Ok, I have to admit that the example is facilitated by the fact that we can convert a
+`point` object into another value ( a `join` object ) that the
+library already knows how to print. When this is
+impossible or impractical, you need to implement
+a _printer_ class that do things in a more low-level way,
+like in link:{strf-src-root}/example/extend_input_ipv6.cpp[this example]
+that prints IPv6 adresses in the abbreviated or non-abbreviated
+link:https://en.wikipedia.org/wiki/IPv6#Address_representation[representation],
+depending on the format options.
+
+Anyway, the documentation provides a <<howto_add_printable_types#,guide>>
+of how to make types printable in strf. It starts with a simple case,
+and gradually makes it more challenging.
+
+=== Adding destinations
+
+// // The discussion about extensibility involves not only
+//
+// // there is another extensibility aspect consider
+//
+// Extensibility is not just about what can be printed,
+// but also where the content is printed to ( as well as other things ).
+//
+// For example, it is common for codebases to define a string class of its own,
+// instead of using `std::string`. In this case, it would naturally be desirable
+//
+// to be able to use the formatting library to write into such string type.
+//
+// the formatting library to be able to write into d
+//
+// You can extend strf not only by adding new printable types
+// but in other aspects as well.
+//
+// Strf can be extended not only in regard of what can be printed,
+// but also where the content is printed to.
+//
+// When one talks about extending a formatting library, it usually
+// means
+//
+// Extend what can be printed by a formatting library,
+// but also
+//
+// It is good think when a formatting library allows you to extend
+// what it can printed, but it is also desirable to be to change
+// where the content can be printed to.
+//
+// But there is another aspect that is also important: to be able to
+// customize where the content is printed to.
+//
+// We want a formatting library to be extensible, but not only in regard
+// of what can it print, but also where can it print to.
+//
+//
+// Both Strf and {fmt} are extensible, but not only in regard
+// of what they can print, but also where can the content is printed to.
+//
+// <<howto_add_destination#,This document>> explains
+//
+// If you want {fmt} to print to an alternative destination,
+// you need to have or define a type that satisfies the
+// __OutputIterator__ requirements.
+//
+
+If you want strf to print to an alternative destination,
+you need to create a class that derives from `strf::<<outbuff_hpp#basic_outbuff,basic_outbuff>>`.
+Having an object of such type, you can print things to it with the
+`strf::<<quick_reference#dest_outbuff,to>>(strf::basic_outbuff<__CharT__>&)`
+function template.
+
+In the case of {fmt}, you need to have (or create) a type that satisfies the
+__OutputIterator__ requirements. With that, you can use the `{fmt_print_to}`
+and `{fmt_print_to_n}` function templates.
+
+However, in strf you can go a bit further and create your own
+__destination expression__ to be used in the <<tutorial#syntax,basic usage syntax>>
+of the library. For example, suppose a codebase uses a string class of its own
+instead of `std::string` &#x2014; let's name it `xstring`.
+Just like there is `<<quick_reference#destinations,strf::to_string>>`, it is possible to define
+a __destination expression__ named `to_xstring` intended to
+create `xstring` objects. If desirable, it is possible to implement it
+in such a way that the size of the content is always pre-calculated
+before the the `xstring` object is constructed, so that the adequate
+amount of memory can be allocated.
+
+This is all explained in <<howto_add_destination#,this guide>>.
+
+== Error handling policy
+
+Neither {fmt} not strf ever change the value of `errno`.
+
+{fmt} throws an exception when it founds someting wrong at run-time.
+// A run-time error can be something wrong in the format string
+// ( which can be avoided at compile-time if you use `FMT_STRING` or `FMT_COMPILE` )
+// or some system error.
+
+Strf does not throw, but it also doesn't prevent exceptions
+to propagate from whatever it depends on, like the language runtime and
+user extensions. So an exception may arise when writing to a `std::streambuf`
+or `std::string`, for example.
+
+Instead of throwing, strf prints a replacement character `U'\uFFFD'`
+( or `'?'`, depending on the encoding ).
+This can happen when parsing the {tr-string} or in
+<<quick_reference#encoding_conversion,encoding conversion>> or sanitization.
+Optionally, you can set a callback to be invoked in such errors
+( see `<<strf_hpp#tr_error_notifier_c,tr_error_notifier_c>>`
+and `<<strf_hpp#invalid_seq_notifier_c,invalid_seq_notifier_c>>` )
+which can in turn throw an exception, if you want.
+
+In addition to that, depending on the <<quick_reference#destinations  ,destination>>,
+the return type of the <<tutorial#syntax,basic usage syntax>> may containg an error
+flag.

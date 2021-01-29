@@ -231,7 +231,7 @@ void std_complex_printer<CharT, FloatT>::preview_(Preview& pp, const WidthCalc& 
 template <typename CharT, typename FloatT>
 void std_complex_printer<CharT, FloatT>::print_to(strf::basic_outbuff<CharT>& dest) const
 {
-    auto print = strf::to(dest).with(lettercase_, numpunct_, encoding_);    
+    auto print = strf::to(dest).with(lettercase_, numpunct_, encoding_);
     if (form_ == complex_form::polar) {
         print(coordinates_.first, U'\u2220', static_cast<CharT>(' ') );
         print(coordinates_.second );
@@ -246,20 +246,19 @@ void std_complex_printer<CharT, FloatT>::print_to(strf::basic_outbuff<CharT>& de
 // 3.2 // fmt_std_complex_printer to handle formatted values
 //--------------------------------------------------------------------------------
 
-template <typename CharT, typename FloatT, strf::float_notation Notation>
+template <typename CharT, typename FloatT>
 class fmt_std_complex_printer: public strf::printer<CharT>
 {
     using complex_type_ = std::complex<FloatT>;
     static constexpr char32_t anglechar_ = 0x2220;
-    static constexpr int numbase_ =
-        Notation == strf::float_notation::hex ? 16 : 10;
 
 public:
 
     template <typename... T>
     fmt_std_complex_printer(strf::usual_printer_input<T...> x)
         : encoding_(strf::get_facet<strf::char_encoding_c<CharT>, complex_type_>(x.facets))
-        , numpunct_(strf::get_facet<strf::numpunct_c<numbase_>, FloatT>(x.facets))
+        , numpunct10_(strf::get_facet<strf::numpunct_c<10>, FloatT>(x.facets))
+        , numpunct16_(strf::get_facet<strf::numpunct_c<16>, FloatT>(x.facets))
         , lettercase_(strf::get_facet<strf::lettercase_c, FloatT>(x.facets))
         , float_fmt_(x.arg.get_float_format())
         , form_(x.arg.form(
@@ -271,7 +270,7 @@ public:
         init_fillcount_and_preview_
             ( x.preview
             , strf::get_facet<strf::width_calculator_c, complex_type_>(x.facets)
-            , x.arg.get_alignment_format().width );
+            , x.arg.width() );
     }
 
     void print_to(strf::basic_outbuff<CharT>& dest) const override;
@@ -287,15 +286,15 @@ private:
         , strf::width_t fmt_width );
 
     void print_complex_value_( strf::basic_outbuff<CharT>& dest ) const;
-    void print_complex_value_split_( strf::basic_outbuff<CharT>& dest ) const;
 
     template <typename Preview, typename WidthCalc>
     void preview_without_fill_(Preview& preview, WidthCalc wcalc) const;
 
     strf::dynamic_char_encoding<CharT> encoding_;
-    strf::numpunct<numbase_> numpunct_;
+    strf::numpunct<10> numpunct10_;
+    strf::numpunct<16> numpunct16_;
     strf::lettercase lettercase_;
-    strf::float_format<Notation> float_fmt_;
+    strf::float_format float_fmt_;
     complex_form form_;
     std::pair<FloatT, FloatT> coordinates_;
     std::uint16_t fillcount_ = 0;
@@ -304,9 +303,9 @@ private:
 
 };
 
-template <typename CharT, typename FloatT, strf::float_notation Notation>
+template <typename CharT, typename FloatT>
 template <strf::preview_size PreviewSize, strf::preview_width PreviewWidth, typename WidthCalc>
-void fmt_std_complex_printer<CharT, FloatT, Notation>::init_fillcount_and_preview_
+void fmt_std_complex_printer<CharT, FloatT>::init_fillcount_and_preview_
     ( strf::print_preview<PreviewSize, PreviewWidth>& preview
     , WidthCalc wcalc
     , strf::width_t fmt_width )
@@ -336,12 +335,12 @@ void fmt_std_complex_printer<CharT, FloatT, Notation>::init_fillcount_and_previe
     }
 }
 
-template <typename CharT, typename FloatT, strf::float_notation Notation>
+template <typename CharT, typename FloatT>
 template <typename Preview, typename WidthCalc>
-void fmt_std_complex_printer<CharT, FloatT, Notation>::preview_without_fill_
+void fmt_std_complex_printer<CharT, FloatT>::preview_without_fill_
     ( Preview& pp, WidthCalc wcalc) const
 {
-    auto facets = strf::pack(wcalc, lettercase_, numpunct_, encoding_);
+    auto facets = strf::pack(wcalc, lettercase_, numpunct10_, numpunct16_, encoding_);
     strf::preview<CharT>
         ( pp, facets
         , strf::fmt(coordinates_.first).set_float_format(float_fmt_)
@@ -360,21 +359,17 @@ void fmt_std_complex_printer<CharT, FloatT, Notation>::preview_without_fill_
 
         default:
             assert(form_ == complex_form::polar);
-            
-            
             if (pp.remaining_width() > 0) {
                 pp.subtract_width(wcalc.char_width(strf::utf32<char32_t>{}, anglechar_));
                 pp.subtract_width(1);
             }
-
             pp.add_size(encoding_.encoded_char_size(anglechar_));
             pp.add_size(1);
     }
 }
 
-
-template <typename CharT, typename FloatT, strf::float_notation Notation>
-void fmt_std_complex_printer<CharT, FloatT, Notation>::print_to
+template <typename CharT, typename FloatT>
+void fmt_std_complex_printer<CharT, FloatT>::print_to
     ( strf::basic_outbuff<CharT>& dest ) const
 {
     if (fillcount_ == 0) {
@@ -389,9 +384,6 @@ void fmt_std_complex_printer<CharT, FloatT, Notation>::print_to
                 encoding_.encode_fill(dest, fillcount_, fillchar_);
                 print_complex_value_(dest);
                 break;
-            case strf::text_alignment::split:
-                print_complex_value_split_(dest);
-                break;
             default: {
                 assert(alignment_ == strf::text_alignment::center);
                 auto halfcount = fillcount_ / 2;
@@ -403,16 +395,16 @@ void fmt_std_complex_printer<CharT, FloatT, Notation>::print_to
     }
 }
 
-template <typename CharT, typename FloatT, strf::float_notation Notation>
-void fmt_std_complex_printer<CharT, FloatT, Notation>::print_complex_value_
+template <typename CharT, typename FloatT>
+void fmt_std_complex_printer<CharT, FloatT>::print_complex_value_
     ( strf::basic_outbuff<CharT>& dest ) const
 {
-    auto facets = strf::pack(lettercase_, numpunct_, encoding_);
+    auto facets = strf::pack(lettercase_, numpunct10_, numpunct16_, encoding_);
     auto first_val = strf::fmt(coordinates_.first).set_float_format(float_fmt_);
     auto second_val = strf::fmt(coordinates_.second).set_float_format(float_fmt_);
     if (form_ == complex_form::polar) {
-        strf::to(dest).with(facets) ( first_val, U'\u2220'
-                                    , static_cast<CharT>(' '), second_val);
+        strf::to(dest).with(facets)
+            ( first_val, U'\u2220', static_cast<CharT>(' '), second_val);
     } else {
         const char* middle_str = ( form_ == complex_form::algebric
                                  ? " + i*"
@@ -420,52 +412,6 @@ void fmt_std_complex_printer<CharT, FloatT, Notation>::print_complex_value_
         strf::to(dest).with(facets)
             ( (CharT)'(', first_val, strf::conv(middle_str)
             , second_val, (CharT)')');
-    }
-}
-
-template <typename CharT, typename FloatT, strf::float_notation Notation>
-void fmt_std_complex_printer<CharT, FloatT, Notation>::print_complex_value_split_
-    ( strf::basic_outbuff<CharT>& dest ) const
-{
-    // I decided to ignore fillchar_ here and use space instead
-
-    auto facets = strf::pack(lettercase_, numpunct_, encoding_);
-    auto first_val  = strf::fmt(coordinates_.first).set_float_format(float_fmt_);
-    auto second_val = strf::fmt(coordinates_.second).set_float_format(float_fmt_);
-    auto halfcount = (fillcount_)/ 2;
-    switch(form_) {
-        case complex_form::vector:
-            strf::to(dest).with(facets)
-                ( (CharT)'('
-                , first_val
-                , strf::multi((CharT)' ', fillcount_ - halfcount)
-                , (CharT)','
-                , strf::multi((CharT)' ', 1 + halfcount)
-                , second_val
-                , (CharT)')' );
-            break;
-
-        case complex_form::polar:
-            strf::to(dest).with(facets)
-                ( first_val
-                , strf::multi((CharT)' ', fillcount_ - halfcount)
-                , U'\u2220'
-                , strf::multi((CharT)' ', 1 + halfcount)
-                , second_val );
-            break;
-
-        case complex_form::algebric:
-            strf::to(dest).with(facets)
-                ( (CharT)'('
-                , first_val
-                , strf::multi((CharT)' ', 1 + fillcount_ - halfcount)
-                , (CharT)'+'
-                , strf::multi((CharT)' ', 1 + halfcount)
-                , (CharT)'i'
-                , (CharT)'*'
-                , second_val
-                , (CharT)')' );
-            break;
     }
 }
 
@@ -482,7 +428,7 @@ struct print_traits<std::complex<FloatT>>
     using forwarded_type = std::complex<FloatT>;
     using formatters = strf::tag
         < std_complex_formatter
-        , strf::float_formatter<strf::float_notation::general>
+        , strf::float_formatter
         , strf::alignment_formatter >;
 
     template <typename CharT, typename Preview, typename FPack>
@@ -504,16 +450,13 @@ struct print_traits<std::complex<FloatT>>
         , strf::value_with_formatters<T...> arg )
         -> strf::usual_printer_input
             < CharT, Preview, FPack, strf::value_with_formatters<T...>
-            , fmt_std_complex_printer
-                < CharT, FloatT
-                , strf::value_with_formatters<T...>::float_notation() > >
+            , fmt_std_complex_printer<CharT, FloatT> >
     {
         return {preview, fp, arg};
     }
 };
 
 } // namespace strf
-
 
 //--------------------------------------------------------------------------------
 // 5 // Test
@@ -600,20 +543,6 @@ void tests()
 
     TEST(u"__5000.\u2220 0.9272952180016122___") (*strf::center(x, 30, '_').polar());
 
-
-    TEST("(+3000.       ,        +4000.)") (+*strf::split(x, 30, '_'));
-
-    TEST("(+3000.       +      i*+4000.)") (+*strf::split(x, 30, '_').algebric());
-
-    TEST(u"+5000.  \u2220  +0.9272952180016122") (+*strf::split(x, 30, '_').polar());
-
-
-    TEST("(3000., 4000.)") (*strf::split(x, 0, '_'));
-
-    TEST("(3000. + i*4000.)") (*strf::split(x, 0, '_').algebric());
-
-    TEST(u"5000.\u2220 0.9272952180016122") (*strf::split(x, 0, '_').polar());
-
     // using format functions and facets
 
     TEST("________________________(3\251E+03, 4\251E+03)")
@@ -652,18 +581,6 @@ void tests()
         .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
         (* strf::center(x, 40, '_').sci().polar());
 
-    TEST("(3\251E+03            ,             4\251E+03)")
-        .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
-        (* strf::split(x, 40, '_').sci());
-
-    TEST("(3\251E+03            +           i*4\251E+03)")
-        .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
-        (* strf::split(x, 40, '_').sci().algebric());
-
-    TEST("5\251E+03      ?      9\251""272952180016122E-01")
-        .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
-        (* strf::split(x, 40, '_').sci().polar());
-
     TEST("________________________(3\251E+03, 4\251E+03)")
         .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
         (* strf::right(x, 40, '_').sci());
@@ -699,18 +616,6 @@ void tests()
     TEST("_____5\251E+03? 9\251""272952180016122E-01______")
         .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
         (* strf::center(x, 40, '_').sci().polar());
-
-    TEST("(3\251E+03            ,             4\251E+03)")
-        .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
-        (* strf::split(x, 40, '_').sci());
-
-    TEST("(3\251E+03            +           i*4\251E+03)")
-        .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
-        (* strf::split(x, 40, '_').sci().algebric());
-
-    TEST("5\251E+03      ?      9\251""272952180016122E-01")
-        .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
-        (* strf::split(x, 40, '_').sci().polar());
 
     // preview
     {

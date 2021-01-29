@@ -18,11 +18,15 @@ branches:
   only:
     - master
     - develop
-    - /release-.*/
-    - /bugfix\/.*/
-    - /feature\/.*/
+    - /pr-.*/
+    - /rc-.*/
+    - /bugfix-.*/
     - /hotfix-.*/
-    - /pr\/.*/
+    - /feature-.*/
+    - /optimization-.*/
+    - /refactoring-.*/
+    - /redesign-.*/
+    - /task-.*/
 
 #
 # Default toolsets in Ubuntu

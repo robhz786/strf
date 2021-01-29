@@ -45,7 +45,7 @@ to get some explanation.
 The facet shall contain the
 `make_printer_input` member function templates that will
 replace those defined in the _{PrintTraits}_ class of the
-overloaded type.
+overrided type.
 For example, one could define a facet to override the `bool` like this:
 
 
@@ -95,13 +95,14 @@ struct italian_bool_facet
 ----
 Everything in `make_printer_input`
 ( semantics, return type, arguments, etc )
-is just like as in the __PrintTrait__ requirements, except that here it can
-to be non-static, though it must then be const (
+is just like as in the __PrintTrait__ requirements, except that here it is
+allowed to be non-static, though it must be then const (
 so instead of hardcoded strings like `"vero"`, and `"falso"`
 , we could use member variables, which would probably make more sense ).
 
 Just as it is usual in __PrintTraits__ classes,
-you can see that we have two `make_printer_input` fuctions.
+you can see that we have two `make_printer_input` fuctions
+( though the first one is unnecessary ).
 The second one handles `bool` values with formatting.
 Even if we don't define it, an expression like
 `strf::right(true, 10, '.')`
@@ -112,7 +113,6 @@ So it makes sense to overload `make_printer_input`
 with `{value_with_formatters}` argument even
 if you don't want to support formatting, just to
 add a `static_assert` to emit a clear error message.
-
 
 But if do you want support formatting then
 check in the <<strf_hpp#printable_types_list,documentation>> what

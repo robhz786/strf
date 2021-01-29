@@ -24,15 +24,16 @@ template <int Base>
 struct int_format
 {
     unsigned precision = 0;
+    unsigned pad0width = 0;
+    strf::showsign sign = strf::showsign::negative_only;
     bool showbase = false;
-    bool showpos = false;
     constexpr static int base = Base;
 };
 
 template <int ToBase, int FromBase>
 constexpr STRF_HD int_format<ToBase> change_base(int_format<FromBase> f) noexcept
 {
-    return {f.precision, f.showbase, f.showpos};
+    return {f.precision, f.pad0width, f.sign, f.showbase};
 }
 
 template <int Base>
@@ -40,8 +41,9 @@ constexpr STRF_HD bool operator==( strf::int_format<Base> lhs
                                  , strf::int_format<Base> rhs ) noexcept
 {
     return lhs.precision == rhs.precision
-        && lhs.showbase == rhs.showbase
-        && lhs.showpos == rhs.showpos;
+        && lhs.pad0width == rhs.pad0width
+        && lhs.sign == rhs.sign
+        && lhs.showbase == rhs.showbase;
 }
 
 template <int Base>
@@ -148,13 +150,33 @@ public:
         data_.precision = _;
         return static_cast<T&&>(*this);
     }
+    constexpr STRF_HD T&& pad0(unsigned w) && noexcept
+    {
+        data_.pad0width = w;
+        return static_cast<T&&>(*this);
+    }
     template <bool DecimalBase = (Base == 10)>
     STRF_HD T&& operator+() && noexcept
     {
         static_assert(DecimalBase, "operator+ only allowed in decimal base");
-        data_.showpos = true;
+        data_.sign = strf::showsign::positive_also;
         return static_cast<T&&>(*this);
     }
+    template <bool DecimalBase = (Base == 10)>
+    STRF_HD T&& fill_sign() && noexcept
+    {
+        static_assert(DecimalBase, "fill_sign() only allowed in decimal base");
+        data_.sign = strf::showsign::fill_instead_of_positive;
+        return static_cast<T&&>(*this);
+    }
+    template <bool DecimalBase = (Base == 10)>
+    STRF_HD T&& operator~() && noexcept
+    {
+        static_assert(DecimalBase, "operator~ only allowed in decimal base");
+        data_.sign = strf::showsign::fill_instead_of_positive;
+        return static_cast<T&&>(*this);
+    }
+
     template <bool DecimalBase = (Base == 10)>
     constexpr STRF_HD T&& operator*() && noexcept
     {
@@ -165,18 +187,6 @@ public:
     constexpr static STRF_HD int base() noexcept
     {
         return Base;
-    }
-    constexpr STRF_HD unsigned precision() const noexcept
-    {
-        return data_.precision;
-    }
-    constexpr STRF_HD bool showbase() const noexcept
-    {
-        return data_.showbase;
-    }
-    constexpr STRF_HD bool showpos() const noexcept
-    {
-        return data_.showpos;
     }
     constexpr STRF_HD strf::int_format<Base> get_int_format() const noexcept
     {
@@ -219,8 +229,7 @@ namespace detail {
 
 template <typename> class int_printer;
 template <typename> class punct_int_printer;
-template <typename, int> class partial_fmt_int_printer;
-template <typename, int> class full_fmt_int_printer;
+template <typename, int> class punct_fmt_int_printer;
 
 template <typename T>
 constexpr STRF_HD bool negative_impl_(const T& x, std::integral_constant<bool, true>) noexcept
@@ -302,7 +311,8 @@ struct int_printing
 {
     using override_tag = IntT;
     using forwarded_type = IntT;
-    using formatters = strf::tag<strf::int_formatter<10>, strf::alignment_formatter>;
+    using formatters = strf::tag< strf::int_formatter<10>
+                                , strf::alignment_formatter >;
 
     template <typename CharT, typename Preview, typename FPack>
     constexpr STRF_HD static auto make_printer_input
@@ -320,10 +330,7 @@ struct int_printing
         , strf::int_with_formatters<IntT, Base, HasAlignment> x ) noexcept
         -> strf::usual_printer_input
             < CharT, Preview, FPack, strf::int_with_formatters<IntT, Base, HasAlignment>
-            , std::conditional_t
-                < HasAlignment
-                , strf::detail::full_fmt_int_printer<CharT, Base>
-                , strf::detail::partial_fmt_int_printer<CharT, Base> > >
+            , strf::detail::punct_fmt_int_printer<CharT, Base> >
     {
         return {preview, facets, x};
     }
@@ -582,344 +589,287 @@ STRF_HD void punct_int_printer<CharT>::print_to(strf::basic_outbuff<CharT>& ob) 
     }
 }
 
+struct fmt_int_printer_data {
+    unsigned long long uvalue;
+    unsigned digcount;
+    unsigned leading_zeros;
+    unsigned left_fillcount;
+    unsigned right_fillcount;
+    char32_t fillchar;
+    bool has_prefix;
+    char sign;
+};
+
+struct punct_fmt_int_printer_data: public fmt_int_printer_data {
+    unsigned sepcount;
+    unsigned sepsize;
+    char32_t sepchar;
+    strf::digits_grouping grouping;
+};
+
+template
+    < typename IntT
+    , std::enable_if_t<std::is_signed<IntT>::value, int> = 0 >
+inline STRF_HD void init_1
+    ( fmt_int_printer_data& data
+    , strf::int_format<10> ifmt
+    , IntT value ) noexcept
+{
+    if (value >= 0) {
+        data.uvalue = value;
+        data.sign = static_cast<char>(ifmt.sign);
+        data.has_prefix = ifmt.sign != strf::showsign::negative_only;
+    } else {
+        using uvalue_type = decltype(data.uvalue);
+        STRF_IF_CONSTEXPR (sizeof(IntT) < sizeof(data.uvalue)) {
+            std::make_signed_t<uvalue_type> wide_value = value;
+            data.uvalue = static_cast<uvalue_type>(-wide_value);
+        } else {
+            data.uvalue = 1 + static_cast<uvalue_type>(-(value + 1));
+        }
+        data.sign = '-';
+        data.has_prefix = true;
+    }
+}
+
+template
+    < typename UIntT
+    , std::enable_if_t<std::is_unsigned<UIntT>::value, int> = 0 >
+inline STRF_HD void init_1
+    ( fmt_int_printer_data& data
+    , strf::int_format<10>
+    , UIntT uvalue ) noexcept
+{
+    data.sign = '\0';
+    data.has_prefix = false;
+    data.uvalue = uvalue;
+}
+
+template <typename IntT, int Base>
+inline STRF_HD void init_1
+    ( fmt_int_printer_data& data
+    , strf::int_format<Base>
+    , IntT value ) noexcept
+{
+    data.uvalue = static_cast<decltype(data.uvalue)>(value);
+}
+
+struct punct_fmt_int_printer_data_init_result {
+    unsigned sub_width;
+    unsigned fillcount;
+};
+
+template <int Base>
+STRF_HD punct_fmt_int_printer_data_init_result init_punct_fmt_int_printer_data
+    ( punct_fmt_int_printer_data& data
+    , strf::validate_f validate
+    , strf::int_format<Base> ifmt
+    , strf::alignment_format afmt ) noexcept
+#if defined(STRF_OMIT_IMPL)
+    ;
+#else
+{
+    data.digcount = strf::detail::count_digits<Base>(data.uvalue);
+    data.sepsize = 1;
+    if (data.sepchar >= 0x80 && data.grouping.any_separator(data.digcount)) {
+        auto sepsize = validate(data.sepchar);
+        data.sepsize = static_cast<unsigned>(sepsize);
+        if (sepsize == strf::invalid_char_len) {
+            data.grouping = strf::digits_grouping{};
+            data.sepsize = 0;
+        }
+    }
+    data.sepcount = data.grouping.separators_count(data.digcount);
+    unsigned prefix_size;
+    STRF_IF_CONSTEXPR (Base == 10 ) {
+        prefix_size = data.has_prefix;
+    } else STRF_IF_CONSTEXPR (Base == 8 ) {
+        if (ifmt.showbase && data.uvalue != 0) {
+            data.has_prefix = true;
+            prefix_size = 1;
+            if (ifmt.precision > 0) {
+                -- ifmt.precision;
+            }
+        } else {
+            data.has_prefix = false;
+            prefix_size = 0;
+        }
+    } else {
+        data.has_prefix = ifmt.showbase;
+        prefix_size = (unsigned)ifmt.showbase << 1;
+    }
+    unsigned content_width = data.digcount + data.sepcount + prefix_size;
+    unsigned zeros_a = ifmt.precision > data.digcount ? ifmt.precision - data.digcount : 0;
+    unsigned zeros_b = ifmt.pad0width > content_width ? ifmt.pad0width - content_width : 0;
+    data.leading_zeros = (detail::max)(zeros_a, zeros_b);
+    content_width += data.leading_zeros;
+    auto fmt_width = afmt.width.round();
+    data.fillchar = afmt.fill;
+    bool fill_sign_space = Base == 10 && data.sign == ' ';
+    if (fmt_width <= (int)content_width) {
+        bool x = fill_sign_space && afmt.fill != ' ';
+        data.left_fillcount = x;
+        data.right_fillcount = 0;
+        data.has_prefix &= !x;
+        return {content_width - data.sepcount - x, x};
+    }
+    auto fillcount = static_cast<unsigned>(fmt_width - content_width);
+    data.has_prefix &= !fill_sign_space;
+    switch (afmt.alignment) {
+        case strf::text_alignment::left:
+            data.left_fillcount = fill_sign_space;
+            data.right_fillcount = fillcount;
+            break;
+        case strf::text_alignment::right:
+            data.left_fillcount = fillcount + fill_sign_space;
+            data.right_fillcount = 0;
+            break;
+        default:
+            auto halfcount = fillcount >> 1;
+            data.left_fillcount = halfcount + fill_sign_space;
+            data.right_fillcount = halfcount + (fillcount & 1);
+    }
+    return {content_width - data.sepcount - fill_sign_space, fillcount + fill_sign_space};
+}
+#endif // defined(STRF_OMIT_IMPL)
+
 template <typename CharT, int Base>
-class partial_fmt_int_printer: public strf::printer<CharT>
+class punct_fmt_int_printer: public printer<CharT>
 {
 public:
 
     template <typename... T>
-    STRF_HD partial_fmt_int_printer
-        ( const strf::usual_printer_input<T...> & i)
-        : partial_fmt_int_printer
-          ( i.arg.value(), i.arg.get_int_format()
-          , i.preview, i.facets )
+    STRF_HD punct_fmt_int_printer
+        ( const strf::usual_printer_input<T...>& i) noexcept
     {
-    }
-
-    template < typename FPack
-             , typename Preview
-             , typename IntT
-             , typename IntTag = IntT >
-    STRF_HD partial_fmt_int_printer
-        ( IntT value, strf::int_format<Base> fdata, Preview& preview, const FPack& facets )
-        : lettercase_(get_facet<strf::lettercase_c, IntTag>(facets))
-    {
-        init_<IntT>( value, fdata );
-        STRF_IF_CONSTEXPR (detail::has_intpunct<FPack, IntTag, Base>()) {
-            auto punct = get_facet<strf::numpunct_c<Base>, IntTag>(facets);
-            if (punct.any_group_separation(digcount_)) {
-                grouping_ = punct.grouping();
-                thousands_sep_ = punct.thousands_sep();
-                auto encoding = get_facet<strf::char_encoding_c<CharT>, IntTag>(facets);
-                init_punct_(encoding);
+        const auto ivalue = i.arg.value();
+        using int_type = decltype(ivalue);
+        lettercase_ = strf::get_facet<lettercase_c, int_type>(i.facets);
+        const auto enc = strf::get_facet<char_encoding_c<CharT>, int_type>(i.facets);
+        encode_fill_ = enc.encode_fill_func();
+        encode_char_ = enc.encode_char_func();
+        const auto punct = strf::get_facet<numpunct_c<Base>, int_type>(i.facets);
+        data_.grouping = punct.grouping();
+        data_.sepchar = punct.thousands_sep();
+        const auto ifmt = i.arg.get_int_format();
+        const auto afmt = i.arg.get_alignment_format();
+        detail::init_1(data_, ifmt, ivalue);
+        const auto w = detail::init_punct_fmt_int_printer_data<Base>
+            (data_, enc.validate_func(), ifmt, afmt);
+        i.preview.subtract_width(w.sub_width + w.fillcount + data_.sepcount);
+        using preview_type = typename strf::usual_printer_input<T...>::preview_type;
+        STRF_IF_CONSTEXPR (preview_type::size_required) {
+            i.preview.add_size(w.sub_width);
+            if (w.fillcount) {
+                i.preview.add_size(w.fillcount * enc.encoded_char_size(afmt.fill));
             }
+            i.preview.add_size(data_.sepcount * data_.sepsize);
         }
-        preview.subtract_width(width());
-        calc_size(preview);
+
     }
 
-    STRF_HD std::int16_t width() const
-    {
-        return static_cast<std::int16_t>( (precision_ > digcount_ ? precision_ : digcount_)
-                                        + prefixsize_
-                                        + static_cast<int>(sepcount_) );
-    }
-
-    STRF_HD void print_to(strf::basic_outbuff<CharT>& ob) const override;
-    STRF_HD void calc_size(strf::size_preview<false>& ) const
-    {
-    }
-    STRF_HD void calc_size(strf::size_preview<true>& ) const;
-
-    STRF_HD void write_complement(strf::basic_outbuff<CharT>& ob) const;
-    STRF_HD void write_digits(strf::basic_outbuff<CharT>& ob) const;
-
-private:
-
-    strf::encode_char_f<CharT> encode_char_;
-    unsigned long long uvalue_ = 0;
-    strf::digits_grouping grouping_;
-    char32_t thousands_sep_;
-    unsigned precision_ = 0;
-    unsigned digcount_ = 0;
-    unsigned sepcount_ = 0;
-    unsigned sepsize_ = 0;
-    strf::lettercase lettercase_;
-    bool negative_ = false;
-    std::uint8_t prefixsize_ = 0;
-
-    template <typename IntT>
-    STRF_HD void init_(IntT value, strf::int_format<Base> fmt);
-
-    template <typename Encoding>
-    STRF_HD void init_punct_(Encoding enc);
-};
-
-template <typename CharT, int Base>
-template <typename IntT>
-STRF_HD void partial_fmt_int_printer<CharT, Base>::init_
-    ( IntT value
-    , strf::int_format<Base> fmt )
-{
-    using unsigned_type = std::make_unsigned_t<IntT>;
-    STRF_IF_CONSTEXPR (Base == 10) {
-        negative_ = strf::detail::negative(value);
-        prefixsize_ = negative_ || fmt.showpos;
-        uvalue_ = strf::detail::unsigned_abs(value);
-    } else {
-        uvalue_ = unsigned_type(value);
-        negative_ = false;
-        STRF_IF_CONSTEXPR (Base == 8){
-            prefixsize_ = fmt.showbase && value;
-        } else {
-            prefixsize_ = fmt.showbase << 1;
-        }
-    }
-    digcount_ = strf::detail::count_digits<Base>(uvalue_);
-    precision_ = fmt.precision;
-}
-
-template <typename CharT, int Base>
-template <typename Encoding>
-STRF_HD void partial_fmt_int_printer<CharT, Base>::init_punct_(Encoding enc)
-{
-    std::size_t sepsize = enc.validate(thousands_sep_);
-    if (sepsize != (std::size_t)-1) {
-        sepsize_ = static_cast<unsigned>(sepsize);
-        sepcount_ = grouping_.separators_count(digcount_);
-        if (sepsize_ == 1) {
-            CharT little_sep[4];
-            enc.encode_char(little_sep, thousands_sep_);
-            thousands_sep_ = little_sep[0];
-        } else {
-            encode_char_ = enc.encode_char_func();
-        }
-    }
-}
-
-template <typename CharT, int Base>
-STRF_HD void partial_fmt_int_printer<CharT, Base>::calc_size
-    ( strf::size_preview<true>& preview ) const
-{
-    std::size_t s = prefixsize_ + (precision_ > digcount_ ? precision_ : digcount_);
-    if (sepcount_ > 0) {
-        s += sepcount_ * sepsize_;
-    }
-    preview.add_size(s);
-}
-
-template <typename CharT, int Base>
-STRF_HD inline void partial_fmt_int_printer<CharT, Base>::print_to
-    ( strf::basic_outbuff<CharT>& ob ) const
-{
-    if (sepcount_ == 0) {
-        ob.ensure(prefixsize_ + digcount_);
-        auto it = ob.pointer();
-        if (prefixsize_ != 0) {
-            STRF_IF_CONSTEXPR (Base == 10) {
-                * it = static_cast<CharT>('+') + (negative_ << 1);
-                ++ it;
-            } else STRF_IF_CONSTEXPR (Base == 8) {
-                * it = static_cast<CharT>('0');
-                ++ it;
-            } else STRF_IF_CONSTEXPR (Base == 16) {
-                it[0] = static_cast<CharT>('0');
-                it[1] = static_cast<CharT>
-                    ('X' | ((lettercase_ != strf::uppercase) << 5));
-                it += 2;
-            } else {
-                it[0] = static_cast<CharT>('0');
-                it[1] = static_cast<CharT>
-                    ('B' | ((lettercase_ != strf::uppercase) << 5));
-                it += 2;
-            }
-        }
-        ob.advance_to(it);
-        if (precision_ > digcount_) {
-            unsigned zeros = precision_ - digcount_;
-            strf::detail::write_fill(ob, zeros, CharT('0'));
-        }
-        strf::detail::write_int<Base>(ob, uvalue_, digcount_, lettercase_);
-    } else {
-        write_complement(ob);
-        if (precision_ > digcount_) {
-            unsigned zeros = precision_ - digcount_;
-            strf::detail::write_fill(ob, zeros, CharT('0'));
-        }
-        if (sepsize_ == 1) {
-            strf::detail::write_int_little_sep<Base>
-                ( ob, uvalue_, grouping_, digcount_, sepcount_
-                , static_cast<CharT>(thousands_sep_), strf::lowercase );
-        } else {
-            strf::detail::write_int_big_sep<Base>
-                ( ob, encode_char_, uvalue_, grouping_, thousands_sep_
-                , sepsize_, digcount_, strf::lowercase );
-        }
-    }
-}
-
-template <typename CharT, int Base>
-inline STRF_HD void partial_fmt_int_printer<CharT, Base>::write_complement
-    ( strf::basic_outbuff<CharT>& ob ) const
-{
-    if (prefixsize_ != 0) {
-        ob.ensure(prefixsize_);
-        STRF_IF_CONSTEXPR (Base == 10) {
-            * ob.pointer() = static_cast<CharT>('+') + (negative_ << 1);
-            ob.advance(1);
-        } else STRF_IF_CONSTEXPR (Base == 8) {
-            * ob.pointer() = static_cast<CharT>('0');
-            ob.advance(1);
-        } else STRF_IF_CONSTEXPR (Base == 16) {
-            ob.pointer()[0] = static_cast<CharT>('0');
-            ob.pointer()[1] = static_cast<CharT>
-                ('X' | ((lettercase_ != strf::uppercase) << 5));
-            ob.advance(2);
-        } else {
-            ob.pointer()[0] = static_cast<CharT>('0');
-            ob.pointer()[1] = static_cast<CharT>
-                ('B' | ((lettercase_ != strf::uppercase) << 5));
-            ob.advance(2);
-        }
-    }
-}
-
-template <typename CharT, int Base>
-inline STRF_HD void partial_fmt_int_printer<CharT, Base>::write_digits
-    ( strf::basic_outbuff<CharT>& ob ) const
-{
-    if (precision_ > digcount_) {
-        unsigned zeros = precision_ - digcount_;
-        strf::detail::write_fill(ob, zeros, CharT('0'));
-    }
-    if (sepcount_ == 0) {
-        strf::detail::write_int<Base>(ob, uvalue_, digcount_, lettercase_);
-    } else if (sepsize_ == 1) {
-        strf::detail::write_int_little_sep<Base>
-            ( ob, uvalue_, grouping_, digcount_, sepcount_
-            , static_cast<CharT>(thousands_sep_), strf::lowercase );
-    } else {
-        strf::detail::write_int_big_sep<Base>
-            ( ob, encode_char_, uvalue_, grouping_, thousands_sep_, sepsize_
-            , digcount_, strf::lowercase );
-    }
-}
-
-template <typename CharT, int Base>
-class full_fmt_int_printer: public printer<CharT>
-{
-public:
-
-    template <typename IntT, typename Preview, typename FPack, typename P>
-    STRF_HD full_fmt_int_printer
-        ( const strf::usual_printer_input
-            < CharT, Preview, FPack, strf::int_with_formatters<IntT, Base, true>, P >& i ) noexcept;
-
-    STRF_HD ~full_fmt_int_printer();
+    STRF_HD ~punct_fmt_int_printer();
 
     STRF_HD void print_to( strf::basic_outbuff<CharT>& ob ) const override;
 
 private:
 
-    strf::detail::partial_fmt_int_printer<CharT, Base> ichars_;
     strf::encode_fill_f<CharT> encode_fill_;
-    unsigned fillcount_ = 0;
-    strf::alignment_format afmt_;
-
-    template <typename Encoding>
-    STRF_HD  void calc_fill_size_
-        ( strf::size_preview<false>&
-        , Encoding ) const
-    {
-    }
-
-    template <typename Encoding>
-    STRF_HD void calc_fill_size_
-        ( strf::size_preview<true>& preview
-        , Encoding enc ) const
-    {
-        if (fillcount_ > 0) {
-            preview.add_size(fillcount_* enc.encoded_char_size(afmt_.fill));
-        }
-    }
-
-    STRF_HD  void write_fill_
-        ( strf::basic_outbuff<CharT>& ob
-        , std::size_t count ) const
-    {
-        return encode_fill_(ob, count, afmt_.fill);
-    }
+    strf::encode_char_f<CharT> encode_char_;
+    strf::detail::punct_fmt_int_printer_data data_;
+    strf::lettercase lettercase_;
 };
 
 template <typename CharT, int Base>
-template < typename IntT, typename T1, typename T2, typename T3 >
-inline STRF_HD full_fmt_int_printer<CharT, Base>::full_fmt_int_printer
-    ( const strf::usual_printer_input
-        < CharT, T1, T2, strf::int_with_formatters<IntT, Base, true>, T3 >& i ) noexcept
-    : ichars_(i.arg.value(), i.arg.get_int_format(), i.preview, i.facets)
-    , afmt_(i.arg.get_alignment_format())
-{
-    auto content_width = ichars_.width();
-    auto fmt_width = afmt_.width.round();
-    if (fmt_width > content_width) {
-        fillcount_ = fmt_width - content_width;
-        i.preview.subtract_width(static_cast<std::int16_t>(fillcount_));
-    }
-    auto enc = get_facet<strf::char_encoding_c<CharT>, IntT>(i.facets);
-    encode_fill_ = enc.encode_fill_func();
-    calc_fill_size_(i.preview, enc);
-}
-
-template <typename CharT, int Base>
-STRF_HD full_fmt_int_printer<CharT, Base>::~full_fmt_int_printer()
+STRF_HD punct_fmt_int_printer<CharT, Base>::~punct_fmt_int_printer()
 {
 }
 
 template <typename CharT, int Base>
-STRF_HD void full_fmt_int_printer<CharT, Base>::print_to
+STRF_HD void punct_fmt_int_printer<CharT, Base>::print_to
         ( strf::basic_outbuff<CharT>& ob ) const
 {
-    if (fillcount_ == 0) {
-        ichars_.print_to(ob);
-    } else {
-        switch(afmt_.alignment) {
-            case strf::text_alignment::left: {
-                ichars_.print_to(ob);
-                write_fill_(ob, fillcount_);
-                break;
-            }
-            case strf::text_alignment::split: {
-                ichars_.write_complement(ob);
-                write_fill_(ob, fillcount_);
-                ichars_.write_digits(ob);
-                break;
-            }
-            case strf::text_alignment::center: {
-                auto halfcount = fillcount_ / 2;
-                write_fill_(ob, halfcount);
-                ichars_.print_to(ob);
-                write_fill_(ob, fillcount_ - halfcount);
-                break;
-            }
-            default: {
-                write_fill_(ob, fillcount_);
-                ichars_.print_to(ob);
-            }
+    if (data_.left_fillcount > 0) {
+        encode_fill_(ob, data_.left_fillcount, data_.fillchar);
+    }
+    if (data_.has_prefix) {
+        STRF_IF_CONSTEXPR (Base == 10) {
+            ob.ensure(1);
+            * ob.pointer() = static_cast<CharT>(data_.sign);
+            ob.advance();
+        } else STRF_IF_CONSTEXPR (Base == 8) {
+            ob.ensure(1);
+            * ob.pointer() = static_cast<CharT>('0');
+            ob.advance();
+        } else {
+            constexpr CharT xb = Base == 16 ? 'X' : 'B';
+            ob.ensure(2);
+            auto it = ob.pointer();
+            it[0] = static_cast<CharT>('0');
+            it[1] = static_cast<CharT>(xb | ((lettercase_ != strf::uppercase) << 5));
+            ob.advance_to(it + 2);
         }
+    }
+    if (data_.leading_zeros > 0) {
+        strf::detail::write_fill(ob, data_.leading_zeros, CharT('0'));
+    }
+    using dig_writer = detail::intdigits_writer<Base>;
+    if (data_.sepcount == 0) {
+        dig_writer::write(ob, data_.uvalue, data_.digcount, lettercase_);
+    } else if (data_.sepsize == 1) {
+        CharT sepchar = static_cast<CharT>(data_.sepchar);
+        if (data_.sepchar >= 0x80) {
+            encode_char_(&sepchar, data_.sepchar);
+        }
+        dig_writer::write_little_sep
+            ( ob, data_.uvalue, data_.grouping, data_.digcount, data_.sepcount
+            , sepchar, lettercase_ );
+    } else {
+        dig_writer::write_big_sep
+            ( ob, encode_char_, data_.uvalue, data_.grouping
+            , data_.sepchar, data_.sepsize, data_.digcount, lettercase_ );
+    }
+    if (data_.right_fillcount > 0) {
+        encode_fill_(ob, data_.right_fillcount, data_.fillchar);
     }
 }
 
 #if defined(STRF_SEPARATE_COMPILATION)
 
+STRF_EXPLICIT_TEMPLATE
+STRF_HD punct_fmt_int_printer_data_init_result init_punct_fmt_int_printer_data<2>
+    ( punct_fmt_int_printer_data& data
+    , strf::validate_f validate
+    , strf::int_format<2> ifmt
+    , strf::alignment_format afmt ) noexcept;
+
+STRF_EXPLICIT_TEMPLATE
+STRF_HD punct_fmt_int_printer_data_init_result init_punct_fmt_int_printer_data<8>
+    ( punct_fmt_int_printer_data& data
+    , strf::validate_f validate
+    , strf::int_format<8> ifmt
+    , strf::alignment_format afmt ) noexcept;
+
+STRF_EXPLICIT_TEMPLATE
+STRF_HD punct_fmt_int_printer_data_init_result init_punct_fmt_int_printer_data<10>
+    ( punct_fmt_int_printer_data& data
+    , strf::validate_f validate
+    , strf::int_format<10> ifmt
+    , strf::alignment_format afmt ) noexcept;
+
+STRF_EXPLICIT_TEMPLATE
+STRF_HD punct_fmt_int_printer_data_init_result init_punct_fmt_int_printer_data<16>
+    ( punct_fmt_int_printer_data& data
+    , strf::validate_f validate
+    , strf::int_format<16> ifmt
+    , strf::alignment_format afmt ) noexcept;
+
 #if defined(__cpp_char8_t)
 STRF_EXPLICIT_TEMPLATE class int_printer<char8_t>;
 STRF_EXPLICIT_TEMPLATE class punct_int_printer<char8_t>;
-STRF_EXPLICIT_TEMPLATE class partial_fmt_int_printer<char8_t,  8>;
-STRF_EXPLICIT_TEMPLATE class partial_fmt_int_printer<char8_t, 10>;
-STRF_EXPLICIT_TEMPLATE class partial_fmt_int_printer<char8_t, 16>;
-STRF_EXPLICIT_TEMPLATE class full_fmt_int_printer<char8_t,  8>;
-STRF_EXPLICIT_TEMPLATE class full_fmt_int_printer<char8_t, 10>;
-STRF_EXPLICIT_TEMPLATE class full_fmt_int_printer<char8_t, 16>;
+STRF_EXPLICIT_TEMPLATE class punct_fmt_int_printer<char8_t,  8>;
+STRF_EXPLICIT_TEMPLATE class punct_fmt_int_printer<char8_t, 10>;
+STRF_EXPLICIT_TEMPLATE class punct_fmt_int_printer<char8_t, 16>;
 #endif
 
 STRF_EXPLICIT_TEMPLATE class int_printer<char>;
@@ -932,31 +882,19 @@ STRF_EXPLICIT_TEMPLATE class punct_int_printer<char16_t>;
 STRF_EXPLICIT_TEMPLATE class punct_int_printer<char32_t>;
 STRF_EXPLICIT_TEMPLATE class punct_int_printer<wchar_t>;
 
-STRF_EXPLICIT_TEMPLATE class partial_fmt_int_printer<char,  8>;
-STRF_EXPLICIT_TEMPLATE class partial_fmt_int_printer<char, 10>;
-STRF_EXPLICIT_TEMPLATE class partial_fmt_int_printer<char, 16>;
-STRF_EXPLICIT_TEMPLATE class partial_fmt_int_printer<char16_t,  8>;
-STRF_EXPLICIT_TEMPLATE class partial_fmt_int_printer<char16_t, 10>;
-STRF_EXPLICIT_TEMPLATE class partial_fmt_int_printer<char16_t, 16>;
-STRF_EXPLICIT_TEMPLATE class partial_fmt_int_printer<char32_t,  8>;
-STRF_EXPLICIT_TEMPLATE class partial_fmt_int_printer<char32_t, 10>;
-STRF_EXPLICIT_TEMPLATE class partial_fmt_int_printer<char32_t, 16>;
-STRF_EXPLICIT_TEMPLATE class partial_fmt_int_printer<wchar_t,  8>;
-STRF_EXPLICIT_TEMPLATE class partial_fmt_int_printer<wchar_t, 10>;
-STRF_EXPLICIT_TEMPLATE class partial_fmt_int_printer<wchar_t, 16>;
 
-STRF_EXPLICIT_TEMPLATE class full_fmt_int_printer<char,  8>;
-STRF_EXPLICIT_TEMPLATE class full_fmt_int_printer<char, 10>;
-STRF_EXPLICIT_TEMPLATE class full_fmt_int_printer<char, 16>;
-STRF_EXPLICIT_TEMPLATE class full_fmt_int_printer<char16_t,  8>;
-STRF_EXPLICIT_TEMPLATE class full_fmt_int_printer<char16_t, 10>;
-STRF_EXPLICIT_TEMPLATE class full_fmt_int_printer<char16_t, 16>;
-STRF_EXPLICIT_TEMPLATE class full_fmt_int_printer<char32_t,  8>;
-STRF_EXPLICIT_TEMPLATE class full_fmt_int_printer<char32_t, 10>;
-STRF_EXPLICIT_TEMPLATE class full_fmt_int_printer<char32_t, 16>;
-STRF_EXPLICIT_TEMPLATE class full_fmt_int_printer<wchar_t,  8>;
-STRF_EXPLICIT_TEMPLATE class full_fmt_int_printer<wchar_t, 10>;
-STRF_EXPLICIT_TEMPLATE class full_fmt_int_printer<wchar_t, 16>;
+STRF_EXPLICIT_TEMPLATE class punct_fmt_int_printer<char,  8>;
+STRF_EXPLICIT_TEMPLATE class punct_fmt_int_printer<char, 10>;
+STRF_EXPLICIT_TEMPLATE class punct_fmt_int_printer<char, 16>;
+STRF_EXPLICIT_TEMPLATE class punct_fmt_int_printer<char16_t,  8>;
+STRF_EXPLICIT_TEMPLATE class punct_fmt_int_printer<char16_t, 10>;
+STRF_EXPLICIT_TEMPLATE class punct_fmt_int_printer<char16_t, 16>;
+STRF_EXPLICIT_TEMPLATE class punct_fmt_int_printer<char32_t,  8>;
+STRF_EXPLICIT_TEMPLATE class punct_fmt_int_printer<char32_t, 10>;
+STRF_EXPLICIT_TEMPLATE class punct_fmt_int_printer<char32_t, 16>;
+STRF_EXPLICIT_TEMPLATE class punct_fmt_int_printer<wchar_t,  8>;
+STRF_EXPLICIT_TEMPLATE class punct_fmt_int_printer<wchar_t, 10>;
+STRF_EXPLICIT_TEMPLATE class punct_fmt_int_printer<wchar_t, 16>;
 
 #endif // defined(STRF_SEPARATE_COMPILATION)
 

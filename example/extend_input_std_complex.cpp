@@ -151,26 +151,26 @@ struct print_traits<std::complex<FloatT>>
     using formatters = strf::tag
         < std_complex_formatter
         , strf::alignment_formatter
-        , strf::float_formatter<strf::float_notation::general> >;
+        , strf::float_formatter >;
 
-    template <typename CharT, typename Preview, typename FPack>
-    static auto make_printer_input
-        ( Preview& preview
-        , const FPack& fp
-        , std::complex<FloatT> arg)
-    {
-        auto form = strf::get_facet<complex_form_c, std::complex<FloatT>>(fp);
-        auto v = ::complex_coordinates(arg, form);
-        unsigned has_brackets = form != complex_form::polar;
-        auto arg2 = strf::join
-            ( strf::multi((CharT)'(', has_brackets)
-            , v.first
-            , strf::conv(middle_string(form), strf::utf16<char16_t>())
-            , v.second
-            , strf::multi((CharT)')', has_brackets) );
+    // template <typename CharT, typename Preview, typename FPack>
+    // static auto make_printer_input
+    //     ( Preview& preview
+    //     , const FPack& fp
+    //     , std::complex<FloatT> arg)
+    // {
+    //     auto form = strf::get_facet<complex_form_c, std::complex<FloatT>>(fp);
+    //     auto v = ::complex_coordinates(arg, form);
+    //     unsigned has_brackets = form != complex_form::polar;
+    //     auto arg2 = strf::join
+    //         ( strf::multi((CharT)'(', has_brackets)
+    //         , v.first
+    //         , strf::conv(middle_string(form), strf::utf16<char16_t>())
+    //         , v.second
+    //         , strf::multi((CharT)')', has_brackets) );
 
-        return strf::make_default_printer_input<CharT>(preview, fp, arg2);
-    }
+    //     return strf::make_default_printer_input<CharT>(preview, fp, arg2);
+    // }
 
     template <typename CharT, typename Preview, typename FPack, typename... T>
     static auto make_printer_input

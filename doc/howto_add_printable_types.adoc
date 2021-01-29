@@ -161,7 +161,7 @@ but you don't have to think about this now.
 WARNING: `make_printer_input` function does not actually print the value,
 it just returns an object that the library knows how to print.
 Make sure that the returned object does not contain any dangling reference.
-For example, if the join we created in the above contained a
+For example, if the `join` in the above example contained a
 reference to any local object, we would get undefined behaviour.
 
 
@@ -350,7 +350,7 @@ complex_form form = strf::{get_facet}<complex_form_c, std::complex<FloatT>>(fp);
 `get_facet` is used to extract a facet object from a `{facets_pack}` object.
 The first template paramenter is the facet category.
 The second is the usually printable type and it only has effect when there is
-any <<introduction#constrained_facets,constrained facets>> of the given category
+any <<tutorial#constrained_facets,constrained facets>> of the given category
 in the the `{facets_pack}` object. The effect is that
 `{get_facet}` only returns the value inside a constrained facet when
 `Filter<Tag>::value` is `true` ,
@@ -462,9 +462,7 @@ namespace strf {
 template <typename FloatT>
 struct print_traits<std::complex<FloatT>> {
     // ...
-    using {formatters} = strf::{tag}
-        < {alignment_formatter}
-        , {float_formatter}<strf::float_notation::general> >;
+    using {formatters} = strf::{tag}<{alignment_formatter}, {float_formatter}>;
     // ...
 };
 
@@ -478,8 +476,7 @@ are all well-formed, and the type of `strf::fmt(x)` is
 are the types you used in to define the `formatters` type alias.
 
 Though well-formed, they are still not printable.
-To make them printable we need to overload `make_printer_input`.
-As I did before, I will show a solution and then explain it further:
+To make them printable we to create a new `make_printer_input` member function:
 
 [source,cpp,subs=normal]
 ----
@@ -542,7 +539,21 @@ static_assert(! std::is_same_v(decltype(arg1), decltype(arg2)));
 static_assert(! std::is_same_v(decltype(arg2), decltype(arg3)));
 ----
 
-Now let's look at the implementation. You can see there are few changes from
+We can keep the old `make_printer_input` ( that takes `std::complex`
+without formatting ), but we could also remove it. Because when the expression
+below is not well-formed:
+[source,cpp,subs=normal]
+----
+__PrintTraits__::template make_printer_input<CharT>(preview, fp, x)
+----
+, and the type of `x` is not an instance `{value_with_formatters}`, then
+the library invokes the following instead:
+[source,cpp,subs=normal]
+----
+__PrintTraits__::template make_printer_input<CharT>(preview, fp, strf::fmt(x))
+----
+
+Anyway, let's examine the new function. You can see there are few changes from
 the original. The first one is that we need to use `value()` function
 to extract the `std::complex` value:
 
@@ -551,7 +562,7 @@ to extract the `std::complex` value:
         auto v = ::complex_coordinates(arg**.value()**, form);
 ----
 
-Second, we re-apply the floating-point formatting the each floating-point value:
+Second, we re-apply the floating-point format the each floating-point value:
 
 [source,cpp,subs=normal]
 ----
@@ -563,7 +574,7 @@ Second, we re-apply the floating-point formatting the each floating-point value:
             , /{asterisk} ... {asterisk}/ );
 ----
 
-Third, we apply the alignment formatting to the join:
+Third, we apply the alignment format to the join:
 
 [source,cpp,subs=normal]
 ----
@@ -681,7 +692,7 @@ struct print_traits<std::complex<FloatT>> {
     using formatters = strf::tag
         < **std_complex_formatter**
         , strf::alignment_formatter
-        , strf::float_formatter<strf::float_notation::general> >;
+        , strf::float_formatter >;
 
     template <typename CharT, typename Preview, typename FPack>
     static auto make_printer_input
@@ -951,7 +962,7 @@ using preview_type = typename strf::usual_printer_input<T\...>::preview_type;
 static_assert(! preview_type::<<strf_hpp#print_preview,size_required>>);
 ----
 That would prevent your printable type to work when the feature
-`<<introduction#syntax,reserve_calc>>` is used,
+`<<tutorial#syntax,reserve_calc>>` is used,
 which may not be a problem to you.
 
 When the second template argument of this

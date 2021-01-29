@@ -67,16 +67,6 @@ struct my_int_printing_override
 {
     using category = strf::print_override_c;
 
-    template <typename CharT, typename Preview, typename FPack, typename IntT>
-    constexpr static STRF_HD auto make_printer_input
-        ( Preview& preview, const FPack&, IntT x ) noexcept
-    {
-        return strf::make_printer_input<CharT>
-            ( preview
-            , strf::pack()
-            , strf::join(static_cast<CharT>('('), x, static_cast<CharT>(')')) );
-    }
-
     template <typename CharT, typename Preview, typename FPack, typename... T>
     constexpr static STRF_HD auto make_printer_input
         ( Preview& preview, const FPack&, strf::value_with_formatters<T...> x ) noexcept

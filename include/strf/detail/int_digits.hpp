@@ -90,15 +90,62 @@ unsigned_abs(IntT value) noexcept
     return value;
 }
 
+template < typename ToIntT
+         , typename FromIntT
+         , std::enable_if_t<std::is_unsigned<FromIntT>::value, int> = 0>
+constexpr STRF_HD ToIntT cast_abs(FromIntT value) noexcept
+{
+    return value;
+}
+template < typename ToIntT
+         , typename FromIntT
+         , std::enable_if_t
+             < (sizeof(ToIntT) > sizeof(FromIntT)) && std::is_signed<FromIntT>::value
+             , int > = 0 >
+constexpr STRF_HD ToIntT cast_abs(FromIntT value)
+{
+    std::make_signed_t<ToIntT> value2 = value;
+    return value >= 0 ? value2 : -value2;
+}
+template < typename ToIntT
+         , typename FromIntT
+         , std::enable_if_t
+             < sizeof(ToIntT) == sizeof(FromIntT) && std::is_signed<FromIntT>::value
+             , int > = 0 >
+constexpr STRF_HD ToIntT cast_abs(FromIntT value)
+{
+    static_assert( std::is_unsigned<ToIntT>::value
+                 , "Expected destination to be unsigned" );
+    return value >= 0
+        ? static_cast<ToIntT>(value)
+        : (1 + static_cast<ToIntT>(-(value + 1)));
+}
+
 template <int Base, int IntSize>
 struct digits_counter;
 
 #if defined(STRF_USE_STD_BITOPS)
 
 template<>
+struct digits_counter<2, 1>
+{
+    static inline STRF_HD unsigned count_digits(unsigned char value) noexcept
+    {
+        return sizeof(value) * 8 - std::countl_zero(value);
+    }
+};
+template<>
+struct digits_counter<2, 2>
+{
+    static inline STRF_HD unsigned count_digits(unsigned short value) noexcept
+    {
+        return sizeof(value) * 8 - std::countl_zero(value);
+    }
+};
+template<>
 struct digits_counter<2, 4>
 {
-    static inline STRF_HD unsigned count_digits(uint_fast32_t value) noexcept
+    static inline STRF_HD unsigned count_digits(unsigned long value) noexcept
     {
         return sizeof(value) * 8 - std::countl_zero(value);
     }
@@ -106,33 +153,68 @@ struct digits_counter<2, 4>
 template<>
 struct digits_counter<2, 8>
 {
-    static inline STRF_HD unsigned count_digits(uint_fast64_t value) noexcept
+    static inline STRF_HD unsigned count_digits(unsigned long long value) noexcept
     {
         return sizeof(value) * 8 - std::countl_zero(value);
     }
 };
+// template<>
+// struct digits_counter<8, 1>
+// {
+//     static STRF_HD unsigned count_digits(unsigned char value) noexcept
+//     {
+//         int bin_digits = sizeof(value) * 8 - std::countl_zero(value);
+//         return (bin_digits + 2) / 3;
+//     }
+// };
+// template<>
+// struct digits_counter<8, 2>
+// {
+//     static STRF_HD unsigned count_digits(unsigned short value) noexcept
+//     {
+//         int bin_digits = sizeof(value) * 8 - std::countl_zero(value);
+//         return (bin_digits + 2) / 3;
+//     }
+// };
+// template<>
+// struct digits_counter<8, 4>
+// {
+//     static STRF_HD unsigned count_digits(unsigned long value) noexcept
+//     {
+//         int bin_digits = sizeof(value) * 8 - std::countl_zero(value);
+//         return (bin_digits + 2) / 3;
+//     }
+// };
+// template<>
+// struct digits_counter<8, 8>
+// {
+//     static STRF_HD unsigned count_digits(unsigned long long value) noexcept
+//     {
+//         int bin_digits = sizeof(value) * 8 - std::countl_zero(value);
+//         return (bin_digits + 2) / 3;
+//     }
+// };
 template<>
-struct digits_counter<8, 4>
+struct digits_counter<16, 1>
 {
-    static STRF_HD unsigned count_digits(uint_fast32_t value) noexcept
+    static STRF_HD unsigned count_digits(unsigned char value) noexcept
     {
-        int bin_digits = sizeof(value) * 8 - std::countl_zero(value);
-        return (bin_digits + 2) / 3;
+        return 1 + (value > 0xF);
     }
 };
 template<>
-struct digits_counter<8, 8>
+struct digits_counter<16, 2>
 {
-    static STRF_HD unsigned count_digits(uint_fast64_t value) noexcept
+    static STRF_HD unsigned count_digits(unsigned short value) noexcept
     {
         int bin_digits = sizeof(value) * 8 - std::countl_zero(value);
-        return (bin_digits + 2) / 3;
+        return (bin_digits + 3) >> 2;
     }
 };
 template<>
 struct digits_counter<16, 4>
 {
-    static STRF_HD unsigned count_digits(uint_fast32_t value) noexcept
+    static STRF_HD unsigned count_digits(std::uint32_t value) noexcept
     {
         int bin_digits = sizeof(value) * 8 - std::countl_zero(value);
         return (bin_digits + 3) >> 2;
@@ -141,7 +223,7 @@ struct digits_counter<16, 4>
 template<>
 struct digits_counter<16, 8>
 {
-    static STRF_HD unsigned count_digits(uint_fast64_t value) noexcept
+    static STRF_HD unsigned count_digits(std::uint64_t value) noexcept
     {
         int bin_digits = sizeof(value) * 8 - std::countl_zero(value);
         return (bin_digits + 3) >> 2;
@@ -149,6 +231,53 @@ struct digits_counter<16, 8>
 };
 
 #else // defined(STRF_USE_STD_BITOPS)
+
+
+template<>
+struct digits_counter<2, 1>
+{
+    static STRF_HD unsigned count_digits(uint_fast8_t value) noexcept
+    {
+        unsigned num_digits = 1;
+        if (value > 0xful) {
+            value >>= 4;
+            num_digits += 4 ;
+        }
+        if (value > 3) {
+            value >>= 2;
+            num_digits += 2 ;
+        }
+        if (value > 1) {
+            return num_digits + 1;
+        }
+        return num_digits;
+    }
+};
+
+template<>
+struct digits_counter<2, 2>
+{
+    static STRF_HD unsigned count_digits(uint_fast16_t value) noexcept
+    {
+        unsigned num_digits = 1;
+        if( value > 0xfful ) {
+            value >>= 8;
+            num_digits += 8 ;
+        }
+        if (value > 0xful) {
+            value >>= 4;
+            num_digits += 4 ;
+        }
+        if (value > 3) {
+            value >>= 2;
+            num_digits += 2 ;
+        }
+        if (value > 1) {
+            return num_digits + 1;
+        }
+        return num_digits;
+    }
+};
 
 template<>
 struct digits_counter<2, 4>
@@ -212,6 +341,41 @@ struct digits_counter<2, 8>
         return num_digits;
     }
 };
+template<>
+struct digits_counter<8, 1>
+{
+    static STRF_HD unsigned count_digits(uint_fast8_t value) noexcept
+    {
+        if(value > 077ul) {
+            return 3;
+        }
+        if(value > 07ul) {
+            return 2;
+        }
+        return 1;
+    }
+};
+
+template<>
+struct digits_counter<8, 2>
+{
+    static STRF_HD unsigned count_digits(uint_fast16_t value) noexcept
+    {
+        unsigned num_digits = 1;
+        if(value > 07777u) {
+            value >>= 12;
+            num_digits += 4;
+        }
+        if(value > 077u) {
+            value >>= 6;
+            num_digits += 2;
+        }
+        if(value > 07u) {
+            ++num_digits;
+        }
+        return num_digits;
+    }
+};
 
 template<>
 struct digits_counter<8, 4>
@@ -268,6 +432,33 @@ struct digits_counter<8, 8>
 };
 
 template<>
+struct digits_counter<16, 1>
+{
+    static STRF_HD unsigned count_digits(uint_fast8_t value) noexcept
+    {
+        return 1 + (value > 0xF);
+    }
+};
+
+
+template<>
+struct digits_counter<16, 2>
+{
+    static STRF_HD unsigned count_digits(uint_fast16_t value) noexcept
+    {
+        unsigned num_digits = 1;
+        if( value > 0xffu ) {
+            value >>= 8;
+            num_digits += 2 ;
+        }
+        if (value > 0xfu) {
+            ++num_digits;
+        }
+        return num_digits;
+    }
+};
+
+template<>
 struct digits_counter<16, 4>
 {
     static STRF_HD unsigned count_digits(uint_fast32_t value) noexcept
@@ -314,6 +505,28 @@ struct digits_counter<16, 8>
 };
 
 #endif // defined(STRF_USE_STD_BITOPS)
+
+template<>
+struct digits_counter<10, 1>
+{
+    static STRF_HD unsigned count_digits_unsigned(uint_fast8_t value) noexcept
+    {
+        if( value > 99 ) {
+            return 3;
+        }
+        if (value > 9) {
+            return 2;
+        }
+        return 1;
+    }
+
+    template <typename IntT>
+    static STRF_HD unsigned count_digits(IntT value) noexcept
+    {
+        auto uvalue = strf::detail::unsigned_abs(value);
+        return count_digits_unsigned(uvalue);
+    }
+};
 
 template<>
 struct digits_counter<10, 2>

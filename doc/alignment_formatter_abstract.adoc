@@ -1,0 +1,24 @@
+////
+Distributed under the Boost Software License, Version 1.0.
+
+See accompanying file LICENSE_1_0.txt or copy at
+http://www.boost.org/LICENSE_1_0.txt
+////
+
+
+[%header,cols="382,618"]
+|===
+| Member function | Effect
+
+|`operator<({width_t} width)`
+| Aligns to the left ( Or to the right right-to-left (RTL) script )
+
+|`operator>({width_t} width)`
+| Aligns to the right ( Or to the left right-to-left (RTL) script )
+
+|`operator^({width_t} width)`
+| Center alignment
+
+|`fill(char32_t ch)`
+| Sets the fill character.
+|===

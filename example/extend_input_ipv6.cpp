@@ -7,59 +7,37 @@
 #include <cstdint>
 #include <vector>
 
-#include "../test/test_utils.cpp"
+#include "../test/test_utils.cpp" // my own test framework
 
 namespace xxx {
 
+// -----------------------------------------------------------------------------
+// This is the type we making printable
 struct ipv6address
 {
     std::uint16_t hextets[8];
 };
+// -----------------------------------------------------------------------------
 
 
+
+// This class evaluates the visibility of each hextet and colon. Implementation
+// is left at the end of this file, since it's the focus of this example.
 class ipv6address_abbreviation
 {
 public:
-    constexpr ipv6address_abbreviation() noexcept
-        : hextets_visibility_bits_(0xFF)
-        , colons_visibility_bits_(0x7F)
-        , visible_hextets_count_(8)
-        , visible_colons_count_(7)
-    {
-    }
-
-    constexpr ipv6address_abbreviation(const ipv6address_abbreviation&) noexcept = default;
-
-    ipv6address_abbreviation& operator=(const ipv6address_abbreviation&) noexcept = default;
-
-    bool operator==(ipv6address_abbreviation other) const noexcept
-    {
-        return ( hextets_visibility_bits_ == other.hextets_visibility_bits_
-              && colons_visibility_bits_ == other.colons_visibility_bits_
-              && visible_hextets_count_ == other.visible_hextets_count_
-              && visible_colons_count_ == other.visible_colons_count_ );
-    }
-
     explicit ipv6address_abbreviation(ipv6address addr);
+    constexpr ipv6address_abbreviation() noexcept;
+    constexpr ipv6address_abbreviation(const ipv6address_abbreviation&) noexcept = default;
+    constexpr ipv6address_abbreviation& operator=(const ipv6address_abbreviation&) noexcept = default;
+    bool operator==(ipv6address_abbreviation other) const noexcept;
 
-    bool hextet_visible(unsigned index) const
-    {
-        return index < 8 && (hextets_visibility_bits_ & (1 << index));
-    }
-    bool colon_visible(unsigned index) const
-    {
-        return index < 7 && (colons_visibility_bits_ & (1 << index));
-    }
-    std::uint8_t visible_hextets_count() const
-    {
-        return visible_hextets_count_;
-    }
-    std::uint8_t visible_colons_count() const
-    {
-        return visible_colons_count_;
-    }
+    constexpr  bool hextet_visible(unsigned index) const noexcept;
+    constexpr  bool colon_visible(unsigned index) const noexcept;
+    constexpr  std::uint8_t visible_hextets_count() const noexcept;
+    constexpr  std::uint8_t visible_colons_count() const noexcept;
 
-//private:
+private:
 
     std::uint8_t hextets_visibility_bits_;
     std::uint8_t colons_visibility_bits_;
@@ -67,9 +45,305 @@ public:
     std::uint8_t visible_colons_count_;
 };
 
+} // namespace xxx
 
+namespace strf {
+
+// -----------------------------------------------------------------------------
+// 1. Create some format functions
+// -----------------------------------------------------------------------------
+
+//   strf::fmt(addr) : print in the abbrevited form
+//                     ( hidding the largest sequence of null hextets, if any )
+//  +strf::fmt(addr) : print all hextets ( don't hide any )
+// ++strf::fmt(addr) : print all hextets and print them with 4 digits each
+// ( yes, I like to abuse on operator overloading sometimes ).
+
+enum class ipv6style{ little, medium, big };
+
+struct ipv6_formatter
+{
+    template <class T>
+    class fn
+    {
+    public:
+        constexpr fn() = default;
+        constexpr fn(const fn&) = default;
+
+        template <typename U>
+        constexpr explicit fn(const fn<U>& u)
+            : style_(u.get_ipv6style())
+        {
+        }
+        constexpr T&& operator++() &&
+        {
+            style_ = ipv6style::big;
+            return static_cast<T&&>(*this);
+        }
+        constexpr T&& operator+() &&
+        {
+            style_ = ipv6style::medium;
+            return static_cast<T&&>(*this);
+        }
+        ipv6style get_ipv6style() const
+        {
+            return style_;
+        }
+
+    private:
+        ipv6style style_ = ipv6style::little;
+    };
+};
+
+// -----------------------------------------------------------------------------
+// 2. Create the printer class
+// -----------------------------------------------------------------------------
+template <typename CharT>
+class ipv6_printer: public strf::printer<CharT>
+{
+public:
+
+    template <typename... T>
+    ipv6_printer(strf::usual_printer_input<CharT, T...> input)
+        : addr_(input.arg.value())
+        , alignment_fmt_(input.arg.get_alignment_format())
+        , lettercase_(strf::get_facet<strf::lettercase_c, xxx::ipv6address>(input.facets))
+        , style_(input.arg.get_ipv6style())
+    {
+        auto encoding = get_facet<strf::char_encoding_c<CharT>, xxx::ipv6address>(input.facets);
+
+        encode_fill_fn_ = encoding.encode_fill_func();
+        init_(input.preview, encoding);
+    }
+
+    void print_to(strf::basic_outbuff<CharT>& dest) const override;
+
+private:
+
+    strf::encode_fill_f<CharT> encode_fill_fn_;
+    xxx::ipv6address addr_;
+    xxx::ipv6address_abbreviation abbrev_;
+    const strf::alignment_format alignment_fmt_;
+    const strf::lettercase lettercase_;
+    std::int16_t fillcount_ = 0;
+    ipv6style style_;
+
+    std::uint16_t count_ipv6_characters() const;
+    void print_ipv6(strf::basic_outbuff<CharT>& dest) const;
+
+    template <typename Preview, typename Encoding>
+    void init_(Preview& preview, Encoding enc);
+};
+
+template <typename CharT>
+template <typename Preview, typename Encoding>
+void ipv6_printer<CharT>::init_(Preview& preview, Encoding enc)
+{
+    if (style_ == ipv6style::little) {
+        abbrev_ = xxx::ipv6address_abbreviation{addr_};
+    }
+    auto count = count_ipv6_characters();
+    if (count > alignment_fmt_.width) {
+        preview.subtract_width(count);
+    } else {
+        fillcount_ = (alignment_fmt_.width - count).round();
+        if (Preview::size_required && fillcount_ > 0) {
+            preview.add_size(fillcount_ * enc.encoded_char_size(alignment_fmt_.fill));
+        }
+        preview.subtract_width(alignment_fmt_.width);
+    }
+    preview.add_size(count);
+}
+
+inline std::uint16_t hex_digits_count(std::uint16_t x)
+{
+    return x > 0xFFF ? 4 : ( x > 0xFFu ? 3 : ( x > 0xF ? 2 : 1 ) );
+}
+
+template <typename CharT>
+std::uint16_t ipv6_printer<CharT>::count_ipv6_characters() const
+{
+    if (style_ == ipv6style::big) {
+        return 39;
+    }
+    std::uint16_t count = abbrev_.visible_colons_count();
+    for (int i = 0; i < 8; ++i) {
+        if (abbrev_.hextet_visible(i)) {
+            count += hex_digits_count(addr_.hextets[i]);
+        }
+    }
+    return count;
+}
+
+template <typename CharT>
+void ipv6_printer<CharT>::print_to(strf::basic_outbuff<CharT>& dest) const
+{
+    if (fillcount_ == 0) {
+        print_ipv6(dest);
+    } else switch(alignment_fmt_.alignment) {
+        case strf::text_alignment::left:
+            print_ipv6(dest);
+            encode_fill_fn_(dest, fillcount_, alignment_fmt_.fill);
+            break;
+        case strf::text_alignment::right:
+            encode_fill_fn_(dest, fillcount_, alignment_fmt_.fill);
+            print_ipv6(dest);
+            break;
+        default:{
+            assert(alignment_fmt_.alignment == strf::text_alignment::center);
+            std::uint16_t halfcount = fillcount_ / 2;
+            encode_fill_fn_(dest, halfcount, alignment_fmt_.fill);
+            print_ipv6(dest);
+            encode_fill_fn_(dest, fillcount_ - halfcount, alignment_fmt_.fill);
+        }
+    }
+}
+
+template <typename CharT>
+void ipv6_printer<CharT>::print_ipv6(strf::basic_outbuff<CharT>& dest) const
+{
+    const unsigned precision = (style_ == ipv6style::big ? 4 : 0);
+    for (int i = 0; i < 8; ++i) {
+        if (abbrev_.hextet_visible(i)) {
+            strf::to(dest).with(lettercase_) (strf::hex(addr_.hextets[i]).p(precision));
+        }
+        if (abbrev_.colon_visible(i)) {
+            strf::put(dest, (CharT)':');
+        }
+    }
+}
+
+// -----------------------------------------------------------------------------
+// 3. Specialize print_traits template
+// -----------------------------------------------------------------------------
+
+template <>
+struct print_traits<xxx::ipv6address> {
+    using override_tag = xxx::ipv6address;
+    using forwarded_type = xxx::ipv6address;
+    using formatters = strf::tag<ipv6_formatter, strf::alignment_formatter>;
+
+    template <typename CharT, typename Preview, typename FPack, typename... T>
+    static auto make_printer_input
+        ( Preview& preview
+        , const FPack& fp
+        , strf::value_with_formatters<T...> arg )
+        -> strf::usual_printer_input
+            < CharT
+            , Preview
+            , FPack
+            , strf::value_with_formatters<T...>
+            , ipv6_printer<CharT> >
+    {
+        return {preview, fp, arg};
+    }
+};
+
+} // namespace strf
+
+void tests()
+{
+    xxx::ipv6address addr0{{0, 0, 0, 0, 0, 0, 0, 0}};
+
+    // test formatting
+    TEST("::") (addr0);
+    TEST("0:0:0:0:0:0:0:0") (+strf::fmt(addr0));
+    TEST("0000:0000:0000:0000:0000:0000:0000:0000") (++strf::fmt(addr0))     ;
+
+    TEST("                                       ::") (strf::fmt(addr0) > 41)  ;
+    TEST("                          0:0:0:0:0:0:0:0") (+strf::fmt(addr0) > 41) ;
+    TEST("  0000:0000:0000:0000:0000:0000:0000:0000") (++strf::fmt(addr0) > 41);
+
+    TEST("::                                       ") (strf::fmt(addr0) < 41)  ;
+    TEST("0:0:0:0:0:0:0:0                          ") (+strf::fmt(addr0) < 41) ;
+    TEST("0000:0000:0000:0000:0000:0000:0000:0000  ") (++strf::fmt(addr0) < 41);
+
+    TEST("                   ::                    ") (strf::fmt(addr0) ^ 41)  ;
+    TEST("             0:0:0:0:0:0:0:0             ") (+strf::fmt(addr0) ^ 41) ;
+    TEST(" 0000:0000:0000:0000:0000:0000:0000:0000 ") (++strf::fmt(addr0) ^ 41);
+
+    // test abbreviation
+    TEST("::aa:bb:cc:dd:0:0") (xxx::ipv6address{{   0,    0, 0xaa, 0xbb, 0xcc, 0xdd,    0,    0}});
+    TEST("0:0:0:aa::bb")      (xxx::ipv6address{{   0,    0,    0, 0xaa,    0,    0,    0, 0xbb}});
+    TEST("0:0:aa::bb:0:0")    (xxx::ipv6address{{   0,    0, 0xaa,    0,    0, 0xbb,    0,    0}});
+    TEST("0:0:aa:0:bb::cc")   (xxx::ipv6address{{   0,    0, 0xaa,    0, 0xbb,    0,    0, 0xcc}});
+    TEST("0:0:0:aa:bb::")     (xxx::ipv6address{{   0,    0,    0, 0xaa, 0xbb,    0,    0,    0}});
+    TEST("::aa:bb:0:0:cc")    (xxx::ipv6address{{   0,    0,    0, 0xaa, 0xbb,    0,    0, 0xcc}});
+    TEST("0:0:aa:bb::")       (xxx::ipv6address{{   0,    0, 0xaa, 0xbb,    0,    0,    0,    0}});
+    TEST("::aa:bb:cc:0:0")    (xxx::ipv6address{{   0,    0,    0, 0xaa, 0xbb, 0xcc,    0,    0}});
+    TEST("0:0:aa:bb:cc::dd")  (xxx::ipv6address{{   0,    0, 0xaa, 0xbb, 0xcc,    0,    0, 0xdd}});
+    TEST("0:aa::bb:0:0:cc")   (xxx::ipv6address{{   0, 0xaa,    0,    0, 0xbb,    0,    0, 0xcc}});
+    TEST("aa::bb:0:0:cc:0")   (xxx::ipv6address{{0xaa,    0,    0, 0xbb,    0,    0, 0xcc,    0}});
+    TEST("aa:0:0:bb::cc")     (xxx::ipv6address{{0xaa,    0,    0, 0xbb,    0,    0,    0, 0xcc}});
+    TEST("0:aa::bb:0:0:cc")   (xxx::ipv6address{{   0, 0xaa,    0,    0, 0xbb,    0,    0, 0xcc}});
+    TEST("0:aa:0:0:bb::")     (xxx::ipv6address{{   0, 0xaa,    0,    0, 0xbb,    0,    0,    0}});
+    TEST("0:aa:0:bb:0:cc::")  (xxx::ipv6address{{   0, 0xaa,    0, 0xbb,    0, 0xcc,    0,    0}});
+    TEST("aa::")              (xxx::ipv6address{{0xaa,    0,    0,    0,    0,    0,    0,    0}});
+    TEST("0:aa::")            (xxx::ipv6address{{   0, 0xaa,    0,    0,    0,    0,    0,    0}});
+    TEST("0:0:0:aa::")        (xxx::ipv6address{{   0,    0,    0, 0xaa,    0,    0,    0,    0}});
+    TEST("0:0:0:aa:bb::")     (xxx::ipv6address{{   0,    0,    0, 0xaa, 0xbb,    0,    0,    0}});
+
+    // test lettercase
+    xxx::ipv6address addr_aabb12{{0xaa, 0xbb, 1, 2, 0, 0, 0, 0}};
+
+    TEST("aa:bb:1:2::").with(strf::lowercase)   (addr_aabb12);
+    TEST("AA:BB:1:2::").with(strf::uppercase)   (addr_aabb12);
+    TEST("AA:BB:1:2::").with(strf::mixedcase)   (addr_aabb12);
+
+    TEST("....aa:bb:1:2::").with(strf::lowercase)   (strf::right(addr_aabb12, 15, '.'));
+    TEST("....AA:BB:1:2::").with(strf::uppercase)   (strf::right(addr_aabb12, 15, '.'));
+    TEST("....AA:BB:1:2::").with(strf::mixedcase)   (strf::right(addr_aabb12, 15, '.'));
+}
+
+
+namespace test_utils {
+
+static strf::outbuff*& test_outbuff_ptr()
+{
+    static strf::outbuff* ptr = nullptr;
+    return ptr;
+}
+
+void set_test_outbuff(strf::outbuff& ob)
+{
+    test_outbuff_ptr() = &ob;
+}
+
+strf::outbuff& test_outbuff()
+{
+    auto * ptr = test_outbuff_ptr();
+    return *ptr;
+}
+
+} // namespace test_utils
+
+
+int main()
+{
+    strf::narrow_cfile_writer<char> test_outbuff(stdout);
+    test_utils::set_test_outbuff(test_outbuff);
+
+    tests();
+
+    int err_count = test_utils::test_err_count();
+    if (err_count == 0) {
+        strf::write(test_outbuff, "All test passed!\n");
+    } else {
+        strf::to(test_outbuff) (err_count, " tests failed!\n");
+    }
+    test_outbuff.finish();
+    return err_count;
+}
+
+namespace xxx {
+
+// -----------------------------------------------------------------------------
+// implementation of ipv6address_abbreviation member functions:
+// -----------------------------------------------------------------------------
 ipv6address_abbreviation::ipv6address_abbreviation(ipv6address addr)
 {
+    // Don't mind the mess
+
     unsigned middle_zeros_start = 0;
     unsigned middle_zeros_count = 0;
     unsigned trailing_zeros_start = 0;
@@ -171,353 +445,36 @@ ipv6address_abbreviation::ipv6address_abbreviation(ipv6address addr)
     visible_colons_count_  = static_cast<std::uint8_t>(trailing_zeros_start + 1);
     hextets_visibility_bits_ = 0xFFu >>  trailing_zeros_count;
     colons_visibility_bits_  = 0xFFu >> (trailing_zeros_count - 1);
-
-    return;
+}
+constexpr ipv6address_abbreviation::ipv6address_abbreviation() noexcept
+    : hextets_visibility_bits_(0xFF)
+    , colons_visibility_bits_(0x7F)
+    , visible_hextets_count_(8)
+    , visible_colons_count_(7)
+{
+}
+bool ipv6address_abbreviation::operator==(ipv6address_abbreviation other) const noexcept
+{
+    return ( hextets_visibility_bits_ == other.hextets_visibility_bits_
+          && colons_visibility_bits_ == other.colons_visibility_bits_
+          && visible_hextets_count_ == other.visible_hextets_count_
+          && visible_colons_count_ == other.visible_colons_count_ );
+}
+constexpr  bool ipv6address_abbreviation::hextet_visible(unsigned index) const noexcept
+{
+    return index < 8 && (hextets_visibility_bits_ & (1 << index));
+}
+constexpr  bool ipv6address_abbreviation::colon_visible(unsigned index) const noexcept
+{
+    return index < 7 && (colons_visibility_bits_ & (1 << index));
+}
+constexpr  std::uint8_t ipv6address_abbreviation::visible_hextets_count() const noexcept
+{
+    return visible_hextets_count_;
+}
+constexpr  std::uint8_t ipv6address_abbreviation::visible_colons_count() const noexcept
+{
+    return visible_colons_count_;
 }
 
 } // namespace xxx
-
-namespace strf {
-
-constexpr std::uint16_t hex_digits_count(std::uint16_t x)
-{
-    return x > 0xFFF ? 4 : ( x > 0xFFu ? 3 : ( x > 0xF ? 2 : 1 ) );
-}
-
-template <typename CharT>
-class ipv6_printer: public strf::printer<CharT>
-{
-public:
-
-    template <typename Preview, typename... T>
-    ipv6_printer(strf::usual_printer_input<CharT, Preview, T...> input)
-        : addr_(input.arg)
-        , abbrev_(input.arg)
-        , lettercase_(strf::get_facet<strf::lettercase_c, xxx::ipv6address>(input.facets))
-    {
-        if (Preview::something_required) {
-            std::int16_t count = count_characters();
-            input.preview.subtract_width(count);
-            input.preview.add_size(count);
-        }
-    }
-
-    void print_to(strf::basic_outbuff<CharT>& dest) const override;
-
-private:
-
-    std::uint16_t count_characters() const;
-
-    xxx::ipv6address addr_;
-    xxx::ipv6address_abbreviation abbrev_;
-    strf::lettercase lettercase_;
-};
-
-template <typename CharT>
-std::uint16_t ipv6_printer<CharT>::count_characters() const
-{
-    std::uint16_t count = abbrev_.visible_colons_count();
-    for (int i = 0; i < 8; ++i) {
-        if (abbrev_.hextet_visible(i)) {
-            count += hex_digits_count(addr_.hextets[i]);
-        }
-    }
-    return count;
-}
-
-
-template <typename CharT>
-void ipv6_printer<CharT>::print_to(strf::basic_outbuff<CharT>& dest) const
-{
-    for (int i = 0; i < 8; ++i) {
-        if (abbrev_.hextet_visible(i)) {
-            strf::to(dest).with(lettercase_) (strf::hex(addr_.hextets[i]));
-        }
-        if (abbrev_.colon_visible(i)) {
-            strf::put(dest, (CharT)':');
-        }
-    }
-}
-
-enum class ipv6style{little, medium, big};
-
-template <typename CharT>
-class fmt_ipv6_printer: public strf::printer<CharT>
-{
-public:
-
-    template <typename... T>
-    fmt_ipv6_printer(strf::usual_printer_input<CharT, T...> input)
-        : addr_(input.arg.value())
-        , alignment_fmt_(input.arg.get_alignment_format())
-        , lettercase_(strf::get_facet<strf::lettercase_c, xxx::ipv6address>(input.facets))
-        , style_(input.arg.get_ipv6style())
-    {
-        auto encoding = get_facet<strf::char_encoding_c<CharT>, xxx::ipv6address>(input.facets);
-
-        encode_fill_fn_ = encoding.encode_fill_func();
-        init_(input.preview, encoding);
-    }
-
-    void print_to(strf::basic_outbuff<CharT>& dest) const override;
-
-private:
-
-    strf::encode_fill_f<CharT> encode_fill_fn_;
-    xxx::ipv6address addr_;
-    xxx::ipv6address_abbreviation abbrev_;
-    const strf::alignment_format alignment_fmt_;
-    const strf::lettercase lettercase_;
-    std::int16_t fillcount_ = 0;
-    ipv6style style_;
-
-    std::uint16_t count_ipv6_characters() const;
-    void print_ipv6(strf::basic_outbuff<CharT>& dest) const;
-
-    template <typename Preview, typename Encoding>
-    void init_(Preview& preview, Encoding enc);
-};
-
-template <typename CharT>
-template <typename Preview, typename Encoding>
-void fmt_ipv6_printer<CharT>::init_(Preview& preview, Encoding enc)
-{
-    if (style_ == ipv6style::little) {
-        abbrev_ = xxx::ipv6address_abbreviation{addr_};
-    }
-    auto count = count_ipv6_characters();
-    if (count > alignment_fmt_.width) {
-        preview.subtract_width(count);
-    } else {
-        fillcount_ = (alignment_fmt_.width - count).round();
-        if (Preview::size_required && fillcount_ > 0) {
-            preview.add_size(fillcount_ * enc.encoded_char_size(alignment_fmt_.fill));
-        }
-        preview.subtract_width(alignment_fmt_.width);
-    }
-    preview.add_size(count);
-}
-
-template <typename CharT>
-std::uint16_t fmt_ipv6_printer<CharT>::count_ipv6_characters() const
-{
-    if (style_ == ipv6style::big) {
-        return 39;
-    }
-    std::uint16_t count = abbrev_.visible_colons_count();
-    for (int i = 0; i < 8; ++i) {
-        if (abbrev_.hextet_visible(i)) {
-            count += hex_digits_count(addr_.hextets[i]);
-        }
-    }
-    return count;
-}
-
-template <typename CharT>
-void fmt_ipv6_printer<CharT>::print_to(strf::basic_outbuff<CharT>& dest) const
-{
-    if (fillcount_ == 0) {
-        print_ipv6(dest);
-    } else switch(alignment_fmt_.alignment) {
-        case strf::text_alignment::left:
-            print_ipv6(dest);
-            encode_fill_fn_(dest, fillcount_, alignment_fmt_.fill);
-            break;
-        case strf::text_alignment::right:
-        case strf::text_alignment::split:
-            encode_fill_fn_(dest, fillcount_, alignment_fmt_.fill);
-            print_ipv6(dest);
-            break;
-        default:{
-            assert(alignment_fmt_.alignment == strf::text_alignment::center);
-            std::uint16_t halfcount = fillcount_ / 2;
-            encode_fill_fn_(dest, halfcount, alignment_fmt_.fill);
-            print_ipv6(dest);
-            encode_fill_fn_(dest, fillcount_ - halfcount, alignment_fmt_.fill);
-        }
-    }
-}
-
-template <typename CharT>
-void fmt_ipv6_printer<CharT>::print_ipv6(strf::basic_outbuff<CharT>& dest) const
-{
-    const unsigned precision = (style_ == ipv6style::big ? 4 : 0);
-    for (int i = 0; i < 8; ++i) {
-        if (abbrev_.hextet_visible(i)) {
-            strf::to(dest).with(lettercase_) (strf::hex(addr_.hextets[i]).p(precision));
-        }
-        if (abbrev_.colon_visible(i)) {
-            strf::put(dest, (CharT)':');
-        }
-    }
-}
-
-struct ipv6_formatter
-{
-    template <class T>
-    class fn
-    {
-    public:
-        constexpr fn() = default;
-
-        template <typename U>
-        constexpr fn(const fn<U>& u) : style_(u.style_)
-        {
-        }
-
-        constexpr T&& operator++() &&
-        {
-            style_ = ipv6style::big;
-            return static_cast<T&&>(*this);
-        }
-        constexpr T&& operator+() &&
-        {
-            style_ = ipv6style::medium;
-            return static_cast<T&&>(*this);
-        }
-        ipv6style get_ipv6style() const
-        {
-            return style_;
-        }
-
-    private:
-
-        ipv6style style_ = ipv6style::little;
-    }; // ipv6_formatter::template fn
-}; // ipv6_formatter
-
-
-template <>
-struct print_traits<xxx::ipv6address> {
-    using override_tag = xxx::ipv6address;
-    using forwarded_type = xxx::ipv6address;
-    using formatters = strf::tag<ipv6_formatter, strf::alignment_formatter>;
-
-    template <typename CharT, typename Preview, typename FPack>
-    static auto make_printer_input
-        ( Preview& preview
-        , const FPack& fp
-        , forwarded_type arg)
-        -> strf::usual_printer_input
-            < CharT, Preview, FPack, forwarded_type, ipv6_printer<CharT> >
-    {
-        return {preview, fp, arg};
-    }
-
-    template <typename CharT, typename Preview, typename FPack, typename... T>
-    static auto make_printer_input
-        ( Preview& preview
-        , const FPack& fp
-        , strf::value_with_formatters<T...> arg )
-        -> strf::usual_printer_input
-            < CharT
-            , Preview
-            , FPack
-            , strf::value_with_formatters<T...>
-            , fmt_ipv6_printer<CharT> >
-    {
-        return {preview, fp, arg};
-    }
-};
-
-
-} // namespace strf
-
-void tests()
-{
-    xxx::ipv6address addr0{{0, 0, 0, 0, 0, 0, 0, 0}};
-
-    // test formatting
-    TEST("::") (addr0);
-    TEST("0:0:0:0:0:0:0:0") (+strf::fmt(addr0));
-    TEST("0000:0000:0000:0000:0000:0000:0000:0000") (++strf::fmt(addr0))     ;
-
-    TEST("                                       ::") (strf::fmt(addr0) > 41)  ;
-    TEST("                          0:0:0:0:0:0:0:0") (+strf::fmt(addr0) > 41) ;
-    TEST("  0000:0000:0000:0000:0000:0000:0000:0000") (++strf::fmt(addr0) > 41);
-
-    TEST("                                       ::") (strf::fmt(addr0) % 41)  ;
-    TEST("                          0:0:0:0:0:0:0:0") (+strf::fmt(addr0) % 41) ;
-    TEST("  0000:0000:0000:0000:0000:0000:0000:0000") (++strf::fmt(addr0) % 41);
-
-    TEST("::                                       ") (strf::fmt(addr0) < 41)  ;
-    TEST("0:0:0:0:0:0:0:0                          ") (+strf::fmt(addr0) < 41) ;
-    TEST("0000:0000:0000:0000:0000:0000:0000:0000  ") (++strf::fmt(addr0) < 41);
-
-    TEST("                   ::                    ") (strf::fmt(addr0) ^ 41)  ;
-    TEST("             0:0:0:0:0:0:0:0             ") (+strf::fmt(addr0) ^ 41) ;
-    TEST(" 0000:0000:0000:0000:0000:0000:0000:0000 ") (++strf::fmt(addr0) ^ 41);
-
-    // test abbreviation
-    TEST("::aa:bb:cc:dd:0:0") (xxx::ipv6address{{   0,    0, 0xaa, 0xbb, 0xcc, 0xdd,    0,    0}});
-    TEST("0:0:0:aa::bb")      (xxx::ipv6address{{   0,    0,    0, 0xaa,    0,    0,    0, 0xbb}});
-    TEST("0:0:aa::bb:0:0")    (xxx::ipv6address{{   0,    0, 0xaa,    0,    0, 0xbb,    0,    0}});
-    TEST("0:0:aa:0:bb::cc")   (xxx::ipv6address{{   0,    0, 0xaa,    0, 0xbb,    0,    0, 0xcc}});
-    TEST("0:0:0:aa:bb::")     (xxx::ipv6address{{   0,    0,    0, 0xaa, 0xbb,    0,    0,    0}});
-    TEST("::aa:bb:0:0:cc")    (xxx::ipv6address{{   0,    0,    0, 0xaa, 0xbb,    0,    0, 0xcc}});
-    TEST("0:0:aa:bb::")       (xxx::ipv6address{{   0,    0, 0xaa, 0xbb,    0,    0,    0,    0}});
-    TEST("::aa:bb:cc:0:0")    (xxx::ipv6address{{   0,    0,    0, 0xaa, 0xbb, 0xcc,    0,    0}});
-    TEST("0:0:aa:bb:cc::dd")  (xxx::ipv6address{{   0,    0, 0xaa, 0xbb, 0xcc,    0,    0, 0xdd}});
-    TEST("0:aa::bb:0:0:cc")   (xxx::ipv6address{{   0, 0xaa,    0,    0, 0xbb,    0,    0, 0xcc}});
-    TEST("aa::bb:0:0:cc:0")   (xxx::ipv6address{{0xaa,    0,    0, 0xbb,    0,    0, 0xcc,    0}});
-    TEST("aa:0:0:bb::cc")     (xxx::ipv6address{{0xaa,    0,    0, 0xbb,    0,    0,    0, 0xcc}});
-    TEST("0:aa::bb:0:0:cc")   (xxx::ipv6address{{   0, 0xaa,    0,    0, 0xbb,    0,    0, 0xcc}});
-    TEST("0:aa:0:0:bb::")     (xxx::ipv6address{{   0, 0xaa,    0,    0, 0xbb,    0,    0,    0}});
-    TEST("0:aa:0:bb:0:cc::")  (xxx::ipv6address{{   0, 0xaa,    0, 0xbb,    0, 0xcc,    0,    0}});
-    TEST("aa::")              (xxx::ipv6address{{0xaa,    0,    0,    0,    0,    0,    0,    0}});
-    TEST("0:aa::")            (xxx::ipv6address{{   0, 0xaa,    0,    0,    0,    0,    0,    0}});
-    TEST("0:0:0:aa::")        (xxx::ipv6address{{   0,    0,    0, 0xaa,    0,    0,    0,    0}});
-    TEST("0:0:0:aa:bb::")     (xxx::ipv6address{{   0,    0,    0, 0xaa, 0xbb,    0,    0,    0}});
-    
-    // test lettercase
-    xxx::ipv6address addr_aabb12{{0xaa, 0xbb, 1, 2, 0, 0, 0, 0}};
-
-    TEST("aa:bb:1:2::").with(strf::lowercase)   (addr_aabb12);
-    TEST("AA:BB:1:2::").with(strf::uppercase)   (addr_aabb12);
-    TEST("AA:BB:1:2::").with(strf::mixedcase)   (addr_aabb12);
-
-    TEST("....aa:bb:1:2::").with(strf::lowercase)   (strf::right(addr_aabb12, 15, '.'));
-    TEST("....AA:BB:1:2::").with(strf::uppercase)   (strf::right(addr_aabb12, 15, '.'));
-    TEST("....AA:BB:1:2::").with(strf::mixedcase)   (strf::right(addr_aabb12, 15, '.'));
-}
-
-
-namespace test_utils {
-
-static strf::outbuff*& test_outbuff_ptr()
-{
-    static strf::outbuff* ptr = nullptr;
-    return ptr;
-}
-
-void set_test_outbuff(strf::outbuff& ob)
-{
-    test_outbuff_ptr() = &ob;
-}
-
-strf::outbuff& test_outbuff()
-{
-    auto * ptr = test_outbuff_ptr();
-    return *ptr;
-}
-
-} // namespace test_utils
-
-
-int main()
-{
-    strf::narrow_cfile_writer<char> test_outbuff(stdout);
-    test_utils::set_test_outbuff(test_outbuff);
-
-    tests();
-
-    int err_count = test_utils::test_err_count();
-    if (err_count == 0) {
-        strf::write(test_outbuff, "All test passed!\n");
-    } else {
-        strf::to(test_outbuff) (err_count, " tests failed!\n");
-    }
-    test_outbuff.finish();
-    return err_count;
-}
-
