@@ -37,7 +37,7 @@ These member functions are called in this library as __format functions__.
 There are also some global function templates
 that work as alias to format functions:
 
-[%header,cols="22,25"]
+[%header,cols="22,25",grid=rows]
 |===
 | Expression | Equivalent Expression
 |`left(_arg_, _width_)`        |`fmt(_arg_) < _width_`
@@ -46,6 +46,8 @@ that work as alias to format functions:
 |`left(_arg_, _width_, _ch_)`  |`fmt(_arg_).fill(_ch_) < _width_`
 |`right(_arg_, _width_, _ch_)` |`fmt(_arg_).fill(_ch_) > _width_`
 |`center(_arg_, _width_, _ch_)`|`fmt(_arg_).fill(_ch_) ^ _width_`
+|`pad0(_arg_, _width_)`        |`fmt(_arg_).pad0(_width_)`
+|`punct(_arg_)`                |`fmt(_arg_).punct()`
 |`bin(_arg_)`                  |`fmt(_arg_).bin()`
 |`dec(_arg_)`                  |`fmt(_arg_).oct()`
 |`oct(_arg_)`                  |`fmt(_arg_).dec()`
@@ -56,7 +58,6 @@ that work as alias to format functions:
 |`sci(_arg_, _precision_)`     |`fmt(_arg_).sic().p(_precision_)`
 |`fixed(_arg_, _precision_)`   |`fmt(_arg_).fixed().p(_precision_)`
 |`gen(_arg_, _precision_)`     |`fmt(_arg_).gen().p(_precision_)`
-|`pad0(_arg_, _width_)`        |`fmt(_arg_).pad0(_width_)`
 |`multi(_arg_, _count_)`       |`fmt(_arg_).multi(_count_)`
 |`sani(_arg_, _enc_)`          |`fmt(_arg_).sani(_enc_)`
 |`conv(_arg_, _enc_)`          |`fmt(_arg_).conv(_enc_)`
@@ -103,7 +104,7 @@ include::int_formatter_abstract.adoc[]
 
 === Char formatting
 [[multi]]
-[%header,cols="382,618"]
+[%header,cols="382,618",grid=rows]
 |===
 | Member function | Effect
 |`multi(std::size_t count)`
@@ -113,16 +114,16 @@ include::int_formatter_abstract.adoc[]
 
 [[string_formatting]]
 === String formatting
-[%header,cols="382,618"]
+[%header,cols="382,618",grid=rows]
 |===
 | Member function | Effect
 |`p(<<strf_hpp#width_t,width_t>> precision)`
 | Sets string precision
 
-| `template <typename Enc>` `sani(Enc enc)`
+| `template <typename Enc> sani(Enc enc)`
 | Equivalent to `sanitize_from_encoding(enc)`
 
-| `template <typename Enc>` `conv(Enc enc)`
+| `template <typename Enc> conv(Enc enc)`
 | Equivalent to `convert_from_encoding(enc)`
 
 | `sani()`
@@ -131,11 +132,11 @@ include::int_formatter_abstract.adoc[]
 | `conv()`
 | Equivalent to `convert_from_encoding()`
 
-| `template <typename Enc>` `sanitize_from_encoding(Enc enc)`
+| `template <typename Enc> sanitize_from_encoding(Enc enc)`
 | Transcodes the input string from the character encoding represented by `enc`,
   or just sanitizes it if `enc` is also the destination encoding.
 
-| `template <typename Enc>` `convert_from_encoding(Enc enc)`
+| `template <typename Enc> convert_from_encoding(Enc enc)`
 | Transocdes the input string from the character encoding represented by `enc`,
   if it is not already destination encoding.
 
@@ -647,21 +648,24 @@ When the argument associated with a `"{"` does not exists, the library does two 
 
 [[numpunct]]
 == Numeric punctuation
-The `{numpunct}` class template defines punctuation for
-integers, `void*` and floating points. It comprises
-the "thousands" separator, the decimal point and the
-grouping pattern.
-The integer sequence passed to the constructor defines the grouping.
-The last group is repeated, unless you add the `-1` argument:
+
+To apply numeric punctuation in integers and floating-point
+arguments you need to invoke the `punct` or `operator!`
+format function. You also need to pass a `numpunct` facet
+object to specify the "thousands" separator,
+the decimal point and the grouping pattern.
+The integer sequence passed to the constructor of `numpunct` defines the grouping.
+The last value is repeated, unless it is equal to `-1`.
+
 [source,cpp]
 ----
-auto s1 = strf::to_string.with(strf::numpunct<10>(1, 2, 3))(1000000000000ll);
+auto s1 = strf::to_string.with(strf::numpunct<10>(1, 2, 3))(strf::punct(1000000000000ll));
 assert(s1 == "1,000,000,000,00,0");
 
-auto s2 = strf::to_string.with(strf::numpunct<10>(1, 2, 3, -1))(1000000000000ll);
+auto s2 = strf::to_string.with(strf::numpunct<10>(1, 2, 3, -1))(!strf::dec(1000000000000ll));
 assert(s2 == "1000000,000,00,0");
 ----
-This `numpunct` constructor has some preconditions:
+The constructor of `numpunct` has some preconditions:
 
 * No more than six arguments can be passed.
 * No argument can be greater than 30.
@@ -675,8 +679,8 @@ repectively. To change them, use the `thousands_sep` and `decimal_point`
 member functions:
 [source,cpp]
 ----
-auto my_punct = numpunct<10>(3).thousands_sep(U'\'').decimal_point(U':');
-auto str = strf::to_string.with(my_punct)(1000000.5);
+auto my_punct = numpunct<10>{3} .thousands_sep(U'\'') .decimal_point(U':');
+auto str = strf::to_string.with(my_punct) (strf::punct(1000000.5));
 assert(str == "1'000'000:5");
 
 //or as lvalue:
@@ -684,7 +688,7 @@ auto my_punct2 = numpunct<10>(3);
 my_punct2.thousands_sep(U';');
 my_punct2.decimal_point(U'^');
 
-auto str = strf::to_string.with(my_punct2)(1000000.5);
+auto str = strf::to_string.with(my_punct2) (strf::punct(1000000.5));
 assert(str == "1;000;000^5");
 ----
 
@@ -701,7 +705,7 @@ which returns a `numpunct<10>` object that reflects the current locale:
 void sample() {
     if (setlocale(LC_NUMERIC, "de_DE")) {
         const auto punct_de = strf::locale_numpunct();
-        auto str = strf::to_string.with(punct_de) (*strf::fixed(10000.5))
+        auto str = strf::to_string.with(punct_de) (*!strf::fixed(10000.5))
         assert(str == "10.000,5");
     }
 }
@@ -711,7 +715,7 @@ void sample() {
 [[lettercase]]
 == Letter case
 
-The `<<strf_hpp#lettercase,lettercase>>` facet affects the letter cases
+The `<<strf_hpp#lettercase,lettercase>>` facet affects the letter case
 when printing numeric values.
 The default value is `strf::lowercase`.
 

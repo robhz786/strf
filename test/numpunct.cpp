@@ -71,22 +71,22 @@ void STRF_TEST_FUNC test_numpunct()
     auto big_value = 10000000000000000000ull;
     {
         auto punct = strf::numpunct<10>{4, 3, 2}.thousands_sep(U'.');
-        TEST("1.00.00.000.0000").with(punct)(100000000000ll);
+        TEST("1.00.00.000.0000").with(punct)(strf::punct(100000000000ll));
     }
     {
         auto punct = strf::numpunct<10>{3};
-        TEST("100,000,000,000").with(punct)(100000000000ll);
+        TEST("100,000,000,000").with(punct)(strf::punct(100000000000ll));
     }
     {
         strf::numpunct<10> grouper{};
-        TEST("10000000000000000000") .with(grouper) (big_value);
+        TEST("10000000000000000000") .with(grouper) (strf::punct(big_value));
         TEST_TRUE(grouper.thousands_sep_count(1) == 0);
         TEST_TRUE(grouper.thousands_sep_count(99) == 0);
     }
     {
         strf::digits_grouping grpng{1, 2, 3, -1};
         strf::numpunct<10> punct{grpng};
-        TEST("10000000000000,000,00,0") .with(punct) (big_value);
+        TEST("10000000000000,000,00,0") .with(punct) (strf::punct(big_value));
         TEST("0") .with(punct) (0);
 
         {
@@ -130,7 +130,7 @@ void STRF_TEST_FUNC test_numpunct()
     {
         strf::digits_grouping grouping{1, 2, 3};
         strf::numpunct<10> punct{grouping};
-        TEST("10,000,000,000,000,000,00,0") .with(punct) (big_value);
+        TEST("10,000,000,000,000,000,00,0") .with(punct) (strf::punct(big_value));
         TEST("0") .with(punct) (0);
         {
            strf::digits_grouping_iterator it = grouping.get_iterator();
@@ -181,7 +181,7 @@ void STRF_TEST_FUNC test_numpunct()
     }
     {
         auto grouper = strf::numpunct<10>{15, 2};
-        TEST("1,00,00,000000000000000") .with(grouper) (big_value);
+        TEST("1,00,00,000000000000000") .with(grouper) (strf::punct(big_value));
         TEST("100000000000000") .with(grouper) (100000000000000);
         TEST("0") .with(grouper) (0);
 

@@ -6,7 +6,7 @@ http://www.boost.org/LICENSE_1_0.txt
 ////
 
 
-[%header,cols="382,618"]
+[%header,cols="382,618",grid=rows]
 |===
 | Member function | Effect
 

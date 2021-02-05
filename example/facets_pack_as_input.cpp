@@ -9,15 +9,15 @@ void sample1()
 {
     //[ facets_pack_input
     auto str = strf::to_string .with(strf::numpunct<10>(1))
-        ( 10000
+        ( !strf::dec(10000)
         , "  "
-        , strf::hex(0x10000)
+        , !strf::hex(0x10000)
         , strf::with( strf::numpunct<10>(3)
                     , strf::numpunct<16>(4).thousands_sep('\'') )
             ( "  { "
-            , 10000
+            , !strf::dec(10000)
             , "  "
-            , strf::hex(0x10000)
+            , !strf::hex(0x10000)
             , " }" ) );
 
     assert(str == "1,0,0,0,0  10000  { 10,000  1'0000 }");
@@ -33,17 +33,17 @@ void sample2()
         , strf::numpunct<16>(4).thousands_sep('\'') );
 
     auto str = strf::to_string.with(strf::numpunct<10>(1))
-        ( 10000
+        ( !strf::dec(10000)
         , "  "
-        , strf::hex(0x10000)
+        , !strf::hex(0x10000)
         , strf::with(fp)
             ( "  { "
-            , 10000
+            , !strf::dec(10000)
             , "  "
-            , strf::hex(0x10000)
+            , !strf::hex(0x10000)
             , strf::with
                 (strf::numpunct<10>(2).thousands_sep('.'))
-                  ("  { ", 10000, " }")
+                  ("  { ", !strf::dec(10000), " }")
             , " }" ) );
 
     assert(str == "1,0,0,0,0  10000  { 10,000  1'0000  { 1.00.00 } }");

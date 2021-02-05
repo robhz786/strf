@@ -40,7 +40,7 @@ void test_dynamic_charset()
             .thousands_sep(0xFFFFFFFF)
             .decimal_point(0xFFFFFFFF);
 
-        auto input = strf::fixed(10.5).fill((char32_t)0xFFFFFF) ^ 6;
+        auto input = !strf::fixed(10.5).fill((char32_t)0xFFFFFF) ^ 6;
 
         TEST("?10?5?").with(punct, dyn_ascii) (input);
         TEST("\xEF\xBF\xBD" "10\xEF\xBF\xBD" "5\xEF\xBF\xBD").with(punct, dyn_utf8) (input);

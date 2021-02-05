@@ -170,48 +170,54 @@ assert(str == "[1 -> 'one'; 2 -> 'two'; 1000 -> 'a thousand']");
 // __to-do__
 //
 
-// == Locales
-// 
-// === Numeric punctuation
-// In {fmt}, you use the `'L'` format flag to apply the
-// numeric punctuation defined by global locale.
-// This design can be problematic in multi-threaded programs.
-// A more robust approach is present in `std::format` where the punctuation
-// is extracted from a `std::locale` object that you pass as an argument.
-// 
-// Strf has something similar to that robust design,
-// except that it does not work with `std::locale`, since it has its
-// own facets: you pass a `<<quick_reference#numpunct,strf::numpunct>>`
-// object to the `<<tutorial#syntax,with>>` function.
-// You can create a `strf::numpunct<10>` that reflects
-// the global locale ( with `<<locale_hpp#,locale_numpuct()>>` function ),
-// or manually like this:
-// [source,cpp,subs=normal]
-// ----
-// // german punctuation:
-// constexpr auto numpunct_de_DE =
-//     strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(U'.');
-// ----
-// 
-// Be aware that `numpunct<10>` only affects numbers printed in the decimal base
-// ( the template parameter is the base ), which means does not affect
-// floating-points printed in hexadecimal.
-// In other formatting libraries (`printf`, `std::ostream`, and {fmt}),
-// when using locales,
-// the same decimal point character used for decimal floating-points is also
-// used for hexadecimal floating points.
-// While in strf, if you want to change it for hexadecimal floating-points,
-// then you need to create and pass a `numpunct<16>` object.
-// 
-// `strf::numpunct` does not affect `bool` values, contrary to `std::numpunct` which
-// has the `truename()` and `falsename()` functions. If you want to change how boolean
-// are printed, you need to create a facet that overrides `bool` printing ( as
-// explained <<howto_override_printable_types#,here>> ).
-// 
-// === Character encoding
-// 
-// {fmt} assumes the character encoding 
-// 
+// == Format options
+// - In strf the right alignment is the default, in {fmt} it depends on the type
+// - In strf the string precision is the width, in {fmt} is the size
+// - float precision
+// - In strf, the `operator~` format function inserts a fill character before non-negative numbers, in {fmt} the `' '` format flag inserts instead a space
+// -
+
+== Numeric punctuation
+
+{fmt}'s and strf's ways of applying punctuation to integer and
+floating-point arguments are analogous.
+
+In {fmt}, you pass a `std::locale` object as an argument,
+before the format string, and also use the `'L'` format flag
+for those arguments that shall comply with the `std::numpunct`
+facet installed in that `std::locale` object.
+
+In strf, you instead pass a `strf::numpunct` object to
+the `with` function, and apply the `punct` or `operator!`
+format function in those arguments that shall comply with
+that `strf::numpunct` object.
+
+While the facets of the standard library ( including `std::numpunct` )
+are based on dynamic polymorphism and dynamic memory allocation,
+strf's facets are more based on static polymophism and are
+suitable to be passed by value and stack-allocated.
+
+One advantange of using `strf::numpunct` over `std::numpunct` is
+that the thousands separator and the decimal point are defined as
+`char32_t`, so that you can choose any Unicode value for
+them, provides as the character encoding you choosed support them.
+
+The `<<locale_hpp#,locale_numpuct()>>` function returns
+a `strf::numpunct<10>` value that reflects the global locale.
+But you can also create a one manually, like this:
+
+[source,cpp,subs=normal]
+----
+// german punctuation:
+constexpr auto numpunct_de_DE =
+    strf::numpunct<10>{3} .decimal_point(U',') .thousands_sep(U'.');
+----
+
+`strf::numpunct` does not affect `bool` values, contrary to `std::numpunct` which
+has the `truename()` and `falsename()` functions ( though {fmt} does
+not use them ). What you can do is to create an facet that
+overrides how `bool` is printed ( as explained
+<<howto_override_printable_types#,here>> ).
 
 == Multilingual programs
 

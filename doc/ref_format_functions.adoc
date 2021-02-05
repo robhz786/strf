@@ -29,6 +29,11 @@ http://www.boost.org/LICENSE_1_0.txt
 namespace strf {
 inline namespace format_functions {
 
+constexpr /{asterisk}...{asterisk}/ right {};
+constexpr /{asterisk}...{asterisk}/ left {};
+constexpr /{asterisk}...{asterisk}/ center {};
+constexpr /{asterisk}...{asterisk}/ pad0 {};
+constexpr /{asterisk}...{asterisk}/ punct {};
 constexpr /{asterisk}...{asterisk}/ hex {};
 constexpr /{asterisk}...{asterisk}/ dec {};
 constexpr /{asterisk}...{asterisk}/ oct {};
@@ -39,9 +44,6 @@ constexpr /{asterisk}...{asterisk}/ gen {};
 constexpr /{asterisk}...{asterisk}/ multi {};
 constexpr /{asterisk}...{asterisk}/ conv {};
 constexpr /{asterisk}...{asterisk}/ sani {};
-constexpr /{asterisk}...{asterisk}/ right {};
-constexpr /{asterisk}...{asterisk}/ left {};
-constexpr /{asterisk}...{asterisk}/ center {};
 
 } // inline namespace format_functions
 } // namespace strf
@@ -59,10 +61,12 @@ that work as alias to format functions
 |`left(_arg_, _width_, _ch_)`  |`{fmt}(_arg_).fill(_ch_) < _width_`
 |`right(_arg_, _width_, _ch_)` |`{fmt}(_arg_).fill(_ch_) > _width_`
 |`center(_arg_, _width_, _ch_)`|`{fmt}(_arg_).fill(_ch_) ^ _width_`
-|`bin(_arg_)`                  |`{fmt}(_arg_).bin()`
-|`dec(_arg_)`                  |`{fmt}(_arg_).oct()`
-|`oct(_arg_)`                  |`{fmt}(_arg_).dec()`
+|`pad0(_arg_, _count_)`        |`{fmt}(_arg_).pad0(_count_)`
+|`punct(_arg_)`                |`{fmt}(_arg_).punct()`
 |`hex(_arg_)`                  |`{fmt}(_arg_).hex()`
+|`oct(_arg_)`                  |`{fmt}(_arg_).dec()`
+|`dec(_arg_)`                  |`{fmt}(_arg_).oct()`
+|`bin(_arg_)`                  |`{fmt}(_arg_).bin()`
 |`sci(_arg_)`                  |`{fmt}(_arg_).sic()`
 |`fixed(_arg_)`                |`{fmt}(_arg_).fixed()`
 |`gen(_arg_)`                  |`{fmt}(_arg_).gen()`
@@ -73,7 +77,7 @@ that work as alias to format functions
 |`sani(_arg_, _enc_)`          |`{fmt}(_arg_).sani(_enc_)`
 |`conv(_arg_, _enc_)`          |`{fmt}(_arg_).conv(_enc_)`
 |`sani(_arg_)`                 |`{fmt}(_arg_).sani()`
-|`conv(_arg_)`                 |`{fmt}(_arg_).cont()`
+|`conv(_arg_)`                 |`{fmt}(_arg_).conv()`
 |===
 
 === Callable object `fmt` [[fmt]]

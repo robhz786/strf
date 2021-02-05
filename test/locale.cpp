@@ -17,15 +17,15 @@ void test_locale()
 {
     if (setlocale(LC_NUMERIC, LOCALE_NAME(en, US))) {
         auto punct = strf::locale_numpunct();
-        TEST("10,000,000,000,000,000.") .with(punct) (*strf::fixed(1e+16));
+        TEST("10,000,000,000,000,000.") .with(punct) (*!strf::fixed(1e+16));
     }
     if (setlocale(LC_NUMERIC, LOCALE_NAME(de, DE))) {
         auto punct = strf::locale_numpunct();
-        TEST("10.000.000.000.000.000,") .with(punct) (*strf::fixed(1e+16));
+        TEST("10.000.000.000.000.000,") .with(punct) (*!strf::fixed(1e+16));
     }
     if (setlocale(LC_NUMERIC, LOCALE_NAME(as, IN))) {
         auto punct = strf::locale_numpunct();
-        TEST("10,00,00,00,00,00,00,000.") .with(punct) (*strf::fixed(1e+16));
+        TEST("10,00,00,00,00,00,00,000.") .with(punct) (*!strf::fixed(1e+16));
     }
 #if ! defined(_WIN32)
     {

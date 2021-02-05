@@ -27,13 +27,14 @@ struct int_format
     unsigned pad0width = 0;
     strf::showsign sign = strf::showsign::negative_only;
     bool showbase = false;
+    bool punctuate = false;
     constexpr static int base = Base;
 };
 
 template <int ToBase, int FromBase>
 constexpr STRF_HD int_format<ToBase> change_base(int_format<FromBase> f) noexcept
 {
-    return {f.precision, f.pad0width, f.sign, f.showbase};
+    return {f.precision, f.pad0width, f.sign, f.punctuate, f.showbase};
 }
 
 template <int Base>
@@ -43,6 +44,7 @@ constexpr STRF_HD bool operator==( strf::int_format<Base> lhs
     return lhs.precision == rhs.precision
         && lhs.pad0width == rhs.pad0width
         && lhs.sign == rhs.sign
+        && lhs.punctuate == rhs.punctuate
         && lhs.showbase == rhs.showbase;
 }
 
@@ -176,12 +178,21 @@ public:
         data_.sign = strf::showsign::fill_instead_of_positive;
         return static_cast<T&&>(*this);
     }
-
     template <bool DecimalBase = (Base == 10)>
     constexpr STRF_HD T&& operator*() && noexcept
     {
         static_assert(!DecimalBase, "operator* not allowed in decimal base");
         data_.showbase = true;
+        return static_cast<T&&>(*this);
+    }
+    constexpr STRF_HD T&& punct() && noexcept
+    {
+        data_.punctuate = true;
+        return static_cast<T&&>(*this);
+    }
+    constexpr STRF_HD T&& operator!() && noexcept
+    {
+        data_.punctuate = true;
         return static_cast<T&&>(*this);
     }
     constexpr static STRF_HD int base() noexcept
@@ -228,7 +239,7 @@ using int_with_formatters = strf::value_with_formatters
 namespace detail {
 
 template <typename> class int_printer;
-template <typename> class punct_int_printer;
+//template <typename> class punct_int_printer;
 template <typename, int> class punct_fmt_int_printer;
 
 template <typename T>
@@ -273,12 +284,12 @@ constexpr STRF_HD bool has_intpunct()
 }
 
 template <typename CharT, typename Preview, typename IntT>
-struct nopunct_int_printer_input
+struct int_printer_input
 {
     using printer_type = strf::detail::int_printer<CharT>;
 
     template<typename FPack>
-    constexpr STRF_HD nopunct_int_printer_input
+    constexpr STRF_HD int_printer_input
         ( Preview& preview_, const FPack&, IntT arg_) noexcept
         : preview(preview_)
         , value(arg_)
@@ -288,23 +299,6 @@ struct nopunct_int_printer_input
     Preview& preview;
     IntT value;
 };
-
-template <typename CharT, typename Preview, typename FPack, typename IntT>
-struct punct_int_printer_input
-{
-    using printer_type = strf::detail::punct_int_printer<CharT>;
-    using arg_type = IntT;
-
-    Preview& preview;
-    FPack facets;
-    IntT value;
-};
-
-template <typename CharT, typename Preview, typename FPack, typename IntT>
-using int_printer_input = std::conditional_t
-    < strf::detail::has_intpunct<FPack, IntT, 10>()
-    , strf::detail::punct_int_printer_input<CharT, Preview, FPack, IntT>
-    , strf::detail::nopunct_int_printer_input<CharT, Preview, IntT> >;
 
 template <typename IntT>
 struct int_printing
@@ -317,7 +311,7 @@ struct int_printing
     template <typename CharT, typename Preview, typename FPack>
     constexpr STRF_HD static auto make_printer_input
         (Preview& preview, const FPack& facets,  IntT x ) noexcept
-        -> strf::detail::int_printer_input<CharT, Preview, FPack, IntT>
+        -> strf::detail::int_printer_input<CharT, Preview, IntT>
     {
         return {preview, facets, x};
     }
@@ -450,7 +444,7 @@ class int_printer: public strf::printer<CharT>
 public:
 
     template <typename... T>
-    STRF_HD int_printer(strf::detail::nopunct_int_printer_input<T...> i)
+    STRF_HD int_printer(strf::detail::int_printer_input<T...> i)
     {
         init_(i.preview, i.value);
     }
@@ -509,85 +503,85 @@ STRF_HD void int_printer<CharT>::print_to
     ob.advance(size);
 }
 
-template <typename CharT>
-class punct_int_printer: public strf::printer<CharT>
-{
-public:
+// template <typename CharT>
+// class punct_int_printer: public strf::printer<CharT>
+// {
+// public:
 
-    template <typename... T>
-    STRF_HD punct_int_printer
-        ( const strf::detail::punct_int_printer_input<T...>& i )
-    {
-        using int_type = typename strf::detail::punct_int_printer_input<T...>::arg_type;
-        auto enc = get_facet<strf::char_encoding_c<CharT>, int_type>(i.facets);
+//     template <typename... T>
+//     STRF_HD punct_int_printer
+//         ( const strf::detail::punct_int_printer_input<T...>& i )
+//     {
+//         using int_type = typename strf::detail::punct_int_printer_input<T...>::arg_type;
+//         auto enc = get_facet<strf::char_encoding_c<CharT>, int_type>(i.facets);
 
-        uvalue_ = strf::detail::unsigned_abs(i.value);
-        digcount_ = strf::detail::count_digits<10>(uvalue_);
-        auto punct = get_facet<strf::numpunct_c<10>, int_type>(i.facets);
-        if (punct.any_group_separation(digcount_)) {
-            grouping_ = punct.grouping();
-            thousands_sep_ = punct.thousands_sep();
-            std::size_t sepsize = enc.validate(thousands_sep_);
-            if (sepsize != (std::size_t)-1) {
-                sepsize_ = static_cast<unsigned>(sepsize);
-                sepcount_ = punct.thousands_sep_count(digcount_);
-                if (sepsize_ == 1) {
-                    CharT little_sep[4];
-                    enc.encode_char(little_sep, thousands_sep_);
-                    thousands_sep_ = little_sep[0];
-                } else {
-                    encode_char_ = enc.encode_char_func();
-                }
-            }
-        }
-        negative_ = strf::detail::negative(i.value);
-        i.preview.add_size(digcount_ + negative_ + sepsize_ * sepcount_);
-        i.preview.subtract_width
-            ( static_cast<std::int16_t>(sepcount_ + digcount_ + negative_) );
-    }
+//         uvalue_ = strf::detail::unsigned_abs(i.value);
+//         digcount_ = strf::detail::count_digits<10>(uvalue_);
+//         auto punct = get_facet<strf::numpunct_c<10>, int_type>(i.facets);
+//         if (punct.any_group_separation(digcount_)) {
+//             grouping_ = punct.grouping();
+//             thousands_sep_ = punct.thousands_sep();
+//             std::size_t sepsize = enc.validate(thousands_sep_);
+//             if (sepsize != (std::size_t)-1) {
+//                 sepsize_ = static_cast<unsigned>(sepsize);
+//                 sepcount_ = punct.thousands_sep_count(digcount_);
+//                 if (sepsize_ == 1) {
+//                     CharT little_sep[4];
+//                     enc.encode_char(little_sep, thousands_sep_);
+//                     thousands_sep_ = little_sep[0];
+//                 } else {
+//                     encode_char_ = enc.encode_char_func();
+//                 }
+//             }
+//         }
+//         negative_ = strf::detail::negative(i.value);
+//         i.preview.add_size(digcount_ + negative_ + sepsize_ * sepcount_);
+//         i.preview.subtract_width
+//             ( static_cast<std::int16_t>(sepcount_ + digcount_ + negative_) );
+//     }
 
-    STRF_HD void print_to(strf::basic_outbuff<CharT>& ob) const override;
+//     STRF_HD void print_to(strf::basic_outbuff<CharT>& ob) const override;
 
-private:
+// private:
 
-    strf::encode_char_f<CharT> encode_char_;
-    strf::digits_grouping grouping_;
-    char32_t thousands_sep_;
-    unsigned long long uvalue_;
-    unsigned digcount_;
-    unsigned sepcount_ = 0;
-    unsigned sepsize_ = 0;
-    bool negative_;
-};
+//     strf::encode_char_f<CharT> encode_char_;
+//     strf::digits_grouping grouping_;
+//     char32_t thousands_sep_;
+//     unsigned long long uvalue_;
+//     unsigned digcount_;
+//     unsigned sepcount_ = 0;
+//     unsigned sepsize_ = 0;
+//     bool negative_;
+// };
 
-template <typename CharT>
-STRF_HD void punct_int_printer<CharT>::print_to(strf::basic_outbuff<CharT>& ob) const
-{
-    if (sepcount_ == 0) {
-        ob.ensure(negative_ + digcount_);
-        auto it = ob.pointer();
-        if (negative_) {
-            *it = static_cast<CharT>('-');
-            ++it;
-        }
-        it += digcount_;
-        strf::detail::write_int_dec_txtdigits_backwards(uvalue_, it);
-        ob.advance_to(it);
-    } else {
-        if (negative_) {
-            put(ob, static_cast<CharT>('-'));
-        }
-        if (sepsize_ == 1) {
-            strf::detail::write_int_little_sep<10>
-                ( ob, uvalue_, grouping_, digcount_, sepcount_
-                , static_cast<CharT>(thousands_sep_), strf::lowercase );
-        } else {
-            strf::detail::write_int_big_sep<10>
-                ( ob, encode_char_, uvalue_, grouping_, thousands_sep_, sepsize_
-                , digcount_, strf::lowercase );
-        }
-    }
-}
+// template <typename CharT>
+// STRF_HD void punct_int_printer<CharT>::print_to(strf::basic_outbuff<CharT>& ob) const
+// {
+//     if (sepcount_ == 0) {
+//         ob.ensure(negative_ + digcount_);
+//         auto it = ob.pointer();
+//         if (negative_) {
+//             *it = static_cast<CharT>('-');
+//             ++it;
+//         }
+//         it += digcount_;
+//         strf::detail::write_int_dec_txtdigits_backwards(uvalue_, it);
+//         ob.advance_to(it);
+//     } else {
+//         if (negative_) {
+//             put(ob, static_cast<CharT>('-'));
+//         }
+//         if (sepsize_ == 1) {
+//             strf::detail::write_int_little_sep<10>
+//                 ( ob, uvalue_, grouping_, digcount_, sepcount_
+//                 , static_cast<CharT>(thousands_sep_), strf::lowercase );
+//         } else {
+//             strf::detail::write_int_big_sep<10>
+//                 ( ob, encode_char_, uvalue_, grouping_, thousands_sep_, sepsize_
+//                 , digcount_, strf::lowercase );
+//         }
+//     }
+// }
 
 struct fmt_int_printer_data {
     unsigned long long uvalue;
@@ -748,10 +742,13 @@ public:
         const auto enc = strf::get_facet<char_encoding_c<CharT>, int_type>(i.facets);
         encode_fill_ = enc.encode_fill_func();
         encode_char_ = enc.encode_char_func();
-        const auto punct = strf::get_facet<numpunct_c<Base>, int_type>(i.facets);
-        data_.grouping = punct.grouping();
-        data_.sepchar = punct.thousands_sep();
         const auto ifmt = i.arg.get_int_format();
+        data_.sepchar = ',';
+        if (ifmt.punctuate) {
+            const auto p = strf::get_facet<numpunct_c<Base>, int_type>(i.facets);
+            data_.grouping = p.grouping();
+            data_.sepchar = p.thousands_sep();
+        }
         const auto afmt = i.arg.get_alignment_format();
         detail::init_1(data_, ifmt, ivalue);
         const auto w = detail::init_punct_fmt_int_printer_data<Base>
@@ -866,7 +863,7 @@ STRF_HD punct_fmt_int_printer_data_init_result init_punct_fmt_int_printer_data<1
 
 #if defined(__cpp_char8_t)
 STRF_EXPLICIT_TEMPLATE class int_printer<char8_t>;
-STRF_EXPLICIT_TEMPLATE class punct_int_printer<char8_t>;
+//STRF_EXPLICIT_TEMPLATE class punct_int_printer<char8_t>;
 STRF_EXPLICIT_TEMPLATE class punct_fmt_int_printer<char8_t,  8>;
 STRF_EXPLICIT_TEMPLATE class punct_fmt_int_printer<char8_t, 10>;
 STRF_EXPLICIT_TEMPLATE class punct_fmt_int_printer<char8_t, 16>;
@@ -877,11 +874,10 @@ STRF_EXPLICIT_TEMPLATE class int_printer<char16_t>;
 STRF_EXPLICIT_TEMPLATE class int_printer<char32_t>;
 STRF_EXPLICIT_TEMPLATE class int_printer<wchar_t>;
 
-STRF_EXPLICIT_TEMPLATE class punct_int_printer<char>;
-STRF_EXPLICIT_TEMPLATE class punct_int_printer<char16_t>;
-STRF_EXPLICIT_TEMPLATE class punct_int_printer<char32_t>;
-STRF_EXPLICIT_TEMPLATE class punct_int_printer<wchar_t>;
-
+// STRF_EXPLICIT_TEMPLATE class punct_int_printer<char>;
+// STRF_EXPLICIT_TEMPLATE class punct_int_printer<char16_t>;
+// STRF_EXPLICIT_TEMPLATE class punct_int_printer<char32_t>;
+// STRF_EXPLICIT_TEMPLATE class punct_int_printer<wchar_t>;
 
 STRF_EXPLICIT_TEMPLATE class punct_fmt_int_printer<char,  8>;
 STRF_EXPLICIT_TEMPLATE class punct_fmt_int_printer<char, 10>;

@@ -113,7 +113,7 @@ void basic_facet_sample()
     auto punct = strf::numpunct<base>{4, 3, 2}.thousands_sep(U'.');
     auto s = strf::to_string
         .with(punct)
-        ("one hundred billions = ", 100000000000ll);
+        ("one hundred billions = ", strf::punct(100000000000ll));
 
     assert(s == "one hundred billions = 1.00.00.000.0000");
 //]
@@ -125,7 +125,7 @@ void constrained_facet()
     //[ constrained_facet_sample
     auto facet_obj = strf::constrain<std::is_signed>(strf::numpunct<10>{3});
 
-    auto s = strf::to_string.with(facet_obj)(100000u, "  ", 100000);
+    auto s = strf::to_string.with(facet_obj)(strf::punct(100000u), "  ", strf::punct(100000));
 
     assert(s == "100000  100,000");
     //]
@@ -145,9 +145,9 @@ void overriding_sample()
 
     auto s = strf::to_string
         .with( punct_dec_1
-               , punct_dec_2
-               , strf::constrain<std::is_signed>(punct_dec_3) )
-        ( 100000, "  ", 100000u ) ;
+             , punct_dec_2
+             , strf::constrain<std::is_signed>(punct_dec_3) )
+        ( strf::punct(100000), "  ", strf::punct(100000u) ) ;
 
     assert(s == "100^000  10.00.00");
     //]
@@ -161,7 +161,7 @@ void sample_numpunct_with_alternative_encoding()
     auto s = strf::to_string
         .with(strf::windows_1252<char>())
         .with(strf::numpunct<10>{4, 3, 2}.thousands_sep(0x2022))
-        ("one hundred billions = ", 100000000000ll);
+        ("one hundred billions = ", strf::punct(100000000000ll));
 
     // The character U+2022 is encoded as '\225' in Windows-1252
     assert(s == "one hundred billions = 1\225""0000\225""000\225""0000");
@@ -216,7 +216,7 @@ void numpunct()
 
     auto str = strf::to_string
         .with(strf::numpunct<base>{3}.thousands_sep(U'.'))
-        (100000000000ll);
+        (strf::punct(100000000000ll));
 
     assert(str == "100.000.000.000");
     //]
@@ -228,7 +228,7 @@ void variable_grouping()
     constexpr int base = 10;
 
     auto punct = strf::numpunct<base>{4, 3, 2};
-    auto str = strf::to_string.with(punct)(100000000000ll);
+    auto str = strf::to_string.with(punct)(strf::punct(100000000000ll));
     assert(str == "1,00,00,000,0000");
     //]
 }
@@ -238,7 +238,7 @@ void punct_non_decimal()
     //[punct_non_decimal
     auto str = strf::to_string
         .with(strf::numpunct<16>{4}.thousands_sep(U'\''))
-        (strf::hex(0xffffffffffLL));
+        (!strf::hex(0xffffffffffLL));
 
     assert(str == "ff'ffff'ffff");
     //]
@@ -334,20 +334,20 @@ inline decltype(auto) to(Args&& ... args)
 void using_my_customizations()
 {
     int x = 100000000;
-    auto str = my::to_string(x);
+    auto str = my::to_string(!strf::dec(x));
     assert(str == "100,000,000");
 
-    my::append(str) (" in hexadecimal is ", *strf::hex(x));
+    my::append(str) (" in hexadecimal is ", *!strf::hex(x));
     assert(str == "100,000,000 in hexadecimal is 0x5f5'e100");
 
     char buff[500];
-    my::to(buff)(x, " in hexadecimal is ", *strf::hex(x));
+    my::to(buff)(!strf::dec(x), " in hexadecimal is ", *!strf::hex(x));
     assert(str == buff);
 
     // Overriding numpunct_c<16> back to default:
     str = my::to_string
         .with(strf::default_numpunct<16>())
-        (x, " in hexadecimal is ", *strf::hex(x));
+        (!strf::dec(x), " in hexadecimal is ", *!strf::hex(x));
     assert(str == "100,000,000 in hexadecimal is 0x5f5e100");
 }
 //]

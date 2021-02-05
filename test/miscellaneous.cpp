@@ -16,7 +16,7 @@ void STRF_TEST_FUNC test_miscellaneous()
 
         strf::to(ob)
             .with(strf::numpunct<10>(3))
-            ("abc", ' ', 1000000000ll);
+            ("abc", ' ', strf::punct(1000000000ll));
 
         str_writer.finish();
 

@@ -39,6 +39,7 @@ void test_input_ptr();
 void test_input_string();
 void test_input_facets_pack();
 void test_input_range();
+void test_miscellaneous();
 void test_numpunct();
 void test_join();
 void test_facets_pack_merge();
@@ -80,6 +81,7 @@ int main() {
     test_input_range();
     test_input_string();
     test_join();
+    test_miscellaneous();
     test_numpunct();
     test_printable_overriding();
     test_reserve();

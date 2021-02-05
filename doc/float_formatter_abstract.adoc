@@ -5,8 +5,7 @@ See accompanying file LICENSE_1_0.txt or copy at
 http://www.boost.org/LICENSE_1_0.txt
 ////
 
-
-[%header,cols="382,618"]
+[%header,cols="382,618",grid=rows]
 |===
 | Member function | Effect
 |`operator*()`
@@ -15,58 +14,72 @@ http://www.boost.org/LICENSE_1_0.txt
 |`operator+()`
 | Equivalent to the `'+'` format flag in `printf`
 
-| `operator~()`
-| Equivalent to `fill_sign()`
-
 | `fill_sign()`
 | Similar to the `' '` format flag in `printf`:
   prints an extra fill character ( from the alignment formatting )
   before non-negative numbers.
 
+| `operator~()`
+| Equivalent to `fill_sign()`
+
+| `punct()`
+| Applies the numeric punctuation according to the `numpunct_c` facet
+
+| `operator!()`
+| Equivalent to `punct()`
+
 |`pad0(unsigned w)`
 | Similar to the `'0'` format flag in `printf`:
 
-  For NaN and infinity, causes the the width ( from alignment
-  formatting ) to be at least equal to `w`.
+For NaN and infinity, causes the the width ( from alignment
+formatting ) to be at least equal to `w`.
 
-  For valid numbers, prints zeros after the sign and the base
-  indication and before the digits such that at least `w` characters
-  are printed ( not counting the fill characters caused by alignment formatting,
-  but still counting the extra fill character caused by `fill_sign()` ).
+For valid numbers, prints zeros after the sign and the base
+indication and before the digits such that at least `w` characters
+are printed ( not counting the fill characters caused by alignment formatting,
+but still counting the extra fill character caused by `fill_sign()` ).
 
 |`p(unsigned precision)`
-| Sets the precision.
+| Sets the precision. Effect varies according to the notation ( see below ).
 
-|`hex()`
-| Hexadecimal notation.
-
-|`fixed()`
-| Fixed notation.
-
+|`set_float_notation(float_notation)`
+a|
+`float_notation::hex`::
+ Hexadecimal
+`float_notation::fixed`::
+If precision is not set, prints the smallest number of digits
+such that the floating-point value can be exactly recovered.
+If precision is set, it is the number of fractional digits.
+`float_notation::scientific`::
   If precision is not set, prints the smallest number of digits
   such that the floating-point value can be exactly recovered.
   If precision is set, it is the number of fractional digits.
-
-|`sci()`
-| Scientific notation.
-
-  If precision is not set, prints the smallest number of digits
-  such that the floating-point value can be exactly recovered.
-  If precision is set, it is the number of fractional digits.
-
-|`gen()`
-a| If precision is not set, chooses the notation ( scientific or fixed ) that leads
+`float_notation::general`::
+If precision is not set, chooses the notation ( scientific or fixed ) that leads
 to the smallest number or characters such that the floating-point value
 can be exactly recovered.
-
-If precision is set, same effect the `'g'` format flags in `printf`
++
+If precision is set, same effect as the `'g'` format flags in `printf`
 ( except that the lettercase is specified by the
 <<lettercase,lettercase>> facet ):
-
-- Selects the scientific notation iff the resulting exponent
-  is less than -4 or greater than or equal to the precision
++
 - The precision is the number of significant digts
 - If precision is 0, it is treated as 1
 - Trailing fractional zeros are removed unless `operator*` is used.
+- Selects the scientific notation iff the resulting exponent
+  is less than -4 or greater than or equal to the precision
+
+|`hex()`
+| Equivalent to `set_float_notation(float_notation::hex)`.
+
+|`fixed()`
+| Equivalent to `set_float_notation(float_notation::fixed)`.
+
+|`sci()`
+| Equivalent to `set_float_notation(float_notation::scientific)`.
+
+|`gen()`
+| Equivalent to `set_float_notation(float_notation::general)`.
+
 |===
 
