@@ -44,11 +44,6 @@ strf_cpp = os.path.normpath(pwd + "/../../src/strf.cpp")
 
 files_per_program = [1, 21, 31, 41]
 
-#def clean_abort(msg):
-#    print(msg)
-#    shutil.rmtree(tmp_dir, ignore_errors=True)
-#    return(1)
-
 def empty_row() :
     part1 = '|{:^24}|{:^24} |{:^9} '.format(' ', ' ', ' ', ' ')
     part2 = '|{:9} '.format('') * (1 + len(files_per_program))
@@ -229,220 +224,254 @@ def build_libfmt(buildtype):
     #libname = "libfmtd.a" if buildtype == build_type_debug() else "libfmt.a"
     return build_dir + "/" + "libfmt.a"
 
-def build_type_O3():
-    return "O3"
-def build_type_Os():
-    return "Os"
-def build_type_debug():
-    return "g"
-
 def build_type_get_cflag(build_type):
     return "-" + build_type
 
 def build_type_get_strid(build_type):
     return build_type
 
-def benchmark_list(build_type, samples):
-    for s in samples:
-        prefix = s[0]
-        main_src = prefix + "_main.cpp"
-        for sub_s in s[1]:
-            lib_list = sub_s[0]
-            flags = sub_s[1]
-            basename = prefix + sub_s[2];
-            benchmark(build_type, flags, basename, main_src, lib_list)
-
 shutil.rmtree(tmp_dir, ignore_errors=True)
 os.makedirs(tmp_dir)
 
-lib_strf_Os = build_libstrf(build_type_Os())
-lib_strf_O3 = build_libstrf(build_type_O3())
-lib_strf_db = build_libstrf(build_type_debug())
+lib_strf_Os = build_libstrf("O3")
+lib_strf_O3 = build_libstrf("Os")
+lib_strf_g  = build_libstrf("g")
 #
-libfmt_Os = build_libfmt(build_type_Os())
-libfmt_O3 = build_libfmt(build_type_O3())
-libfmt_db = build_libfmt(build_type_debug())
+libfmt_Os = build_libfmt("O3")
+libfmt_O3 = build_libfmt("Os")
+libfmt_g  = build_libfmt("g")
 
 strf_static_lib = [strf_incl, "-DSTRF_SEPARATE_COMPILATION"]
 strf_ho         = [strf_incl]
 fmt_static_lib  = [fmt_incl]
 fmt_ho          = [fmt_incl, "-DFMT_HEADER_ONLY=1"]
 
-samples_O3 = \
-[ ('to_charptr',        [ ([lib_strf_O3], strf_static_lib, '_strf'    )
-                        , ([lib_strf_O3], strf_static_lib, '_strf_tr' )
-                        , ([libfmt_O3],   fmt_static_lib,  '_fmtlib_n_c')
-                        , ([libfmt_O3],   fmt_static_lib,  '_fmtlib_n'  )                          
-                        , ([libfmt_O3],   fmt_static_lib,  '_fmtlib_c')
-                        , ([libfmt_O3],   fmt_static_lib,  '_fmtlib'  )
-                        , ([],            [],              '_sprintf' )
-] )
-, ('to_string',         [ ([lib_strf_O3], strf_static_lib, '_strf'    )
-                        , ([lib_strf_O3], strf_static_lib, '_strf_tr' )
-                        , ([libfmt_O3],   fmt_static_lib,  '_fmtlib_c')
-                        , ([libfmt_O3],   fmt_static_lib,  '_fmtlib'  )
-] )
-, ('to_FILE',           [ ([lib_strf_O3], strf_static_lib, '_strf'    )
-                        , ([lib_strf_O3], strf_static_lib, '_strf_tr' )
-#                        , ([libfmt_O3],   fmt_static_lib,  '_fmtlib_c')
-                        , ([libfmt_O3],   fmt_static_lib,  '_fmtlib'  )
-                        , ([],            [],              '_fprintf' )
-] )
-, ('to_ostream',        [ ([lib_strf_O3], strf_static_lib, '_strf'    )
-                        , ([lib_strf_O3], strf_static_lib, '_strf_tr' )
-#                        , ([libfmt_O3],   fmt_static_lib,  '_fmtlib_c')
-                        , ([libfmt_O3],   fmt_static_lib,  '_fmtlib'  )
-] )
-]
+def benchmark_Os_header_only_strf(prefix, suffix):
+    main_src = prefix + "_main.cpp"
+    basename = prefix + suffix
+    flags = [strf_incl]
+    benchmark("Os", [strf_incl], basename, main_src, [])
 
-samples_Os = \
-[ ('to_charptr',        [ ([lib_strf_Os], strf_static_lib, '_strf'    )
-                        , ([lib_strf_Os], strf_static_lib, '_strf_tr' )
-                        , ([libfmt_Os],   fmt_static_lib,  '_fmtlib_n_c')
-                        , ([libfmt_Os],   fmt_static_lib,  '_fmtlib_n'  )
-                        , ([libfmt_Os],   fmt_static_lib,  '_fmtlib_c')
-                        , ([libfmt_Os],   fmt_static_lib,  '_fmtlib'  )
-                        , ([],            [],              '_sprintf' )
-] )
-, ('to_string',         [ ([lib_strf_Os], strf_static_lib, '_strf'    )
-                        , ([lib_strf_Os], strf_static_lib, '_strf_tr' )
-                        , ([libfmt_Os],   fmt_static_lib,  '_fmtlib_c')
-                        , ([libfmt_Os],   fmt_static_lib,  '_fmtlib'  )
-] )
-, ('to_FILE',           [ ([lib_strf_Os], strf_static_lib, '_strf'    )
-                        , ([lib_strf_Os], strf_static_lib, '_strf_tr' )
-#                        , ([libfmt_Os],   fmt_static_lib,  '_fmtlib_c')
-                        , ([libfmt_Os],   fmt_static_lib,  '_fmtlib'  )
-                        , ([],            [],              '_fprintf' )
-] )
-, ('to_ostream',        [ ([lib_strf_Os], strf_static_lib, '_strf'    )
-                        , ([lib_strf_Os], strf_static_lib, '_strf_tr' )
-#                        , ([libfmt_Os],   fmt_static_lib,  '_fmtlib_c')
-                        , ([libfmt_Os],   fmt_static_lib,  '_fmtlib'  )
-] )
-]
+def benchmark_Os_static_link_strf(prefix, suffix):
+    main_src = prefix + "_main.cpp"
+    basename = prefix + suffix
+    flags = [strf_incl,  "-DSTRF_SEPARATE_COMPILATION"]
+    benchmark("Os", flags, basename, main_src, [lib_strf_Os])
 
-samples_debug = \
-[ ('to_charptr',        [ ([lib_strf_db], strf_static_lib, '_strf'    )
-                        , ([lib_strf_db], strf_static_lib, '_strf_tr' )
-                        , ([libfmt_db],   fmt_static_lib,  '_fmtlib_n_c')
-                        , ([libfmt_db],   fmt_static_lib,  '_fmtlib_n'  )
-                        , ([libfmt_db],   fmt_static_lib,  '_fmtlib_c')
-                        , ([libfmt_db],   fmt_static_lib,  '_fmtlib'  )
-                        , ([],            [],              '_sprintf' )
-] )
-, ('to_string',         [ ([lib_strf_db], strf_static_lib, '_strf'    )
-                        , ([lib_strf_db], strf_static_lib, '_strf_tr' )
-                        , ([libfmt_db],   fmt_static_lib,  '_fmtlib_c')
-                        , ([libfmt_db],   fmt_static_lib,  '_fmtlib'  )
-] )
-, ('to_FILE',           [ ([lib_strf_db], strf_static_lib, '_strf'    )
-                        , ([lib_strf_db], strf_static_lib, '_strf_tr' )
-#                        , ([libfmt_db],   fmt_static_lib,  '_fmtlib_c')
-                        , ([libfmt_db],   fmt_static_lib,  '_fmtlib'  )
-                        , ([],            [],              '_fprintf' )
-] )
-, ('to_ostream',        [ ([lib_strf_db], strf_static_lib, '_strf'    )
-                        , ([lib_strf_db], strf_static_lib, '_strf_tr' )
-#                        , ([libfmt_db],   fmt_static_lib,  '_fmtlib_c')
-                        , ([libfmt_db],   fmt_static_lib,  '_fmtlib'  )
-] ) ]
+def benchmark_Os_header_only_fmtlib(prefix, suffix):
+    main_src = prefix + "_main.cpp"
+    basename = prefix + suffix
+    flags = [fmt_incl, "-DFMT_HEADER_ONLY=1"]
+    benchmark("Os", flags, basename, main_src, [])
 
-samples_O3_header_only = \
-[ ('to_charptr',        [ ([], strf_ho, '_strf'    )
-                        , ([], strf_ho, '_strf_tr' )
-                        , ([], fmt_ho,  '_fmtlib_n_c')
-                        , ([], fmt_ho,  '_fmtlib_n'  )
-                        , ([], fmt_ho,  '_fmtlib_c')
-                        , ([], fmt_ho,  '_fmtlib'  )
-] )
-, ('to_string',         [ ([], strf_ho, '_strf'    )
-                        , ([], strf_ho, '_strf_tr' )
-                        , ([], fmt_ho,  '_fmtlib_c')
-                        , ([], fmt_ho,  '_fmtlib'  )
-] )
-, ('to_FILE',           [ ([], strf_ho, '_strf'    )
-                        , ([], strf_ho, '_strf_tr' )
-#                        , ([], fmt_ho,  '_fmtlib_c')
-                        , ([], fmt_ho,  '_fmtlib'  )
-] )
-, ('to_ostream',        [ ([], strf_ho, '_strf'    )
-                        , ([], strf_ho, '_strf_tr' )
-#                        , ([], fmt_ho,  '_fmtlib_c')
-                        , ([], fmt_ho,  '_fmtlib'  )
-] ) ]
+def benchmark_Os_static_link_fmtlib(prefix, suffix):
+    main_src = prefix + "_main.cpp"
+    basename = prefix + suffix
+    benchmark("Os", [fmt_incl], basename, main_src, [libfmt_Os])
 
-samples_Os_header_only = \
-[ ('to_charptr',        [ ([], strf_ho, '_strf'    )
-                        , ([], strf_ho, '_strf_tr' )
-                        , ([], fmt_ho,  '_fmtlib_n_c')
-                        , ([], fmt_ho,  '_fmtlib_n'  )
-                        , ([], fmt_ho,  '_fmtlib_c')
-                        , ([], fmt_ho,  '_fmtlib'  )
-] )
-, ('to_string',         [ ([], strf_ho, '_strf'    )
-                        , ([], strf_ho, '_strf_tr' )
-                        , ([], fmt_ho,  '_fmtlib_c')
-                        , ([], fmt_ho,  '_fmtlib'  )
-] )
-, ('to_FILE',           [ ([], strf_ho, '_strf'    )
-                        , ([], strf_ho, '_strf_tr' )
-#                         , ([], fmt_ho,  '_fmtlib_c')
-                        , ([], fmt_ho,  '_fmtlib'  )
-] )
-, ('to_ostream',        [ ([], strf_ho, '_strf'    )
-                        , ([], strf_ho, '_strf_tr' )
-#                        , ([], fmt_ho,  '_fmtlib_c')
-                        , ([], fmt_ho,  '_fmtlib'  )
-] )
-]
-samples_debug_header_only = \
-[ ('to_charptr',        [ ([], strf_ho, '_strf'    )
-                        , ([], strf_ho, '_strf_tr' )
-                        , ([], fmt_ho,  '_fmtlib_n_c')
-                        , ([], fmt_ho,  '_fmtlib_n'  )
-                        , ([], fmt_ho,  '_fmtlib_c')
-                        , ([], fmt_ho,  '_fmtlib'  )
-] )
-, ('to_string',         [ ([], strf_ho, '_strf'    )
-                        , ([], strf_ho, '_strf_tr' )
-                        , ([], fmt_ho,  '_fmtlib_c')
-                        , ([], fmt_ho,  '_fmtlib'  )
-] )
-, ('to_FILE',           [ ([], strf_ho, '_strf'    )
-                        , ([], strf_ho, '_strf_tr' )
-#                        , ([], fmt_ho,  '_fmtlib_c')
-                        , ([], fmt_ho,  '_fmtlib'  )
-] )
-, ('to_ostream',        [ ([], strf_ho, '_strf'    )
-                        , ([], strf_ho, '_strf_tr' )
-#                        , ([], fmt_ho,  '_fmtlib_c')
-                        , ([], fmt_ho,  '_fmtlib'  )
-] )
-]
+def benchmark_Os_stdlib(prefix, suffix):
+    main_src = prefix + "_main.cpp"
+    basename = prefix + suffix
+    benchmark("Os", [], basename, main_src, [])
+
+def benchmark_O3_header_only_strf(prefix, suffix):
+    main_src = prefix + "_main.cpp"
+    basename = prefix + suffix
+    flags = [strf_incl]
+    benchmark("O3", [strf_incl], basename, main_src, [])
+
+def benchmark_O3_static_link_strf(prefix, suffix):
+    main_src = prefix + "_main.cpp"
+    basename = prefix + suffix
+    flags = [strf_incl,  "-DSTRF_SEPARATE_COMPILATION"]
+    benchmark("O3", flags, basename, main_src, [lib_strf_O3])
+
+def benchmark_O3_header_only_fmtlib(prefix, suffix):
+    main_src = prefix + "_main.cpp"
+    basename = prefix + suffix
+    flags = [fmt_incl, "-DFMT_HEADER_ONLY=1"]
+    benchmark("O3", flags, basename, main_src, [])
+
+def benchmark_O3_static_link_fmtlib(prefix, suffix):
+    main_src = prefix + "_main.cpp"
+    basename = prefix + suffix
+    benchmark("O3", [fmt_incl], basename, main_src, [libfmt_O3])
+
+def benchmark_O3_stdlib(prefix, suffix):
+    main_src = prefix + "_main.cpp"
+    basename = prefix + suffix
+    benchmark("O3", [], basename, main_src, [])
+
+def benchmark_g_header_only_strf(prefix, suffix):
+    main_src = prefix + "_main.cpp"
+    basename = prefix + suffix
+    flags = [strf_incl]
+    benchmark("g", [strf_incl], basename, main_src, [])
+
+def benchmark_g_static_link_strf(prefix, suffix):
+    main_src = prefix + "_main.cpp"
+    basename = prefix + suffix
+    flags = [strf_incl,  "-DSTRF_SEPARATE_COMPILATION"]
+    benchmark("g", flags, basename, main_src, [lib_strf_g])
+
+def benchmark_g_header_only_fmtlib(prefix, suffix):
+    main_src = prefix + "_main.cpp"
+    basename = prefix + suffix
+    flags = [fmt_incl, "-DFMT_HEADER_ONLY=1"]
+    benchmark("g", flags, basename, main_src, [])
+
+def benchmark_g_static_link_fmtlib(prefix, suffix):
+    main_src = prefix + "_main.cpp"
+    basename = prefix + suffix
+    benchmark("g", [fmt_incl], basename, main_src, [libfmt_g])
+
+def benchmark_g_stdlib(prefix, suffix):
+    main_src = prefix + "_main.cpp"
+    basename = prefix + suffix
+    benchmark("g", [], basename, main_src, [])
 
 print_table_header('==== Static libs, with `-Os`')
-benchmark_list(build_type_Os(), samples_Os)
+benchmark_Os_static_link_strf   ('to_charptr', '_strf')
+benchmark_Os_static_link_strf   ('to_charptr', '_strf_tr')
+benchmark_Os_static_link_fmtlib ('to_charptr', '_fmtlib_n_c')
+benchmark_Os_static_link_fmtlib ('to_charptr', '_fmtlib_n')
+benchmark_Os_static_link_fmtlib ('to_charptr', '_fmtlib_c')
+benchmark_Os_static_link_fmtlib ('to_charptr', '_fmtlib')
+benchmark_Os_stdlib             ('to_charptr', '_sprintf')
+
+benchmark_Os_static_link_strf   ('to_string', '_strf')
+benchmark_Os_static_link_strf   ('to_string', '_strf_tr')
+benchmark_Os_static_link_fmtlib ('to_string', '_fmtlib_c')
+benchmark_Os_static_link_fmtlib ('to_string', '_fmtlib')
+
+benchmark_Os_static_link_strf   ('to_FILE', '_strf')
+benchmark_Os_static_link_strf   ('to_FILE', '_strf_tr')
+benchmark_Os_static_link_fmtlib ('to_FILE', '_fmtlib')
+benchmark_Os_stdlib             ('to_FILE', '_fprintf')
+
+benchmark_Os_static_link_strf   ('to_ostream', '_strf')
+benchmark_Os_static_link_strf   ('to_ostream', '_strf_tr')
+benchmark_Os_static_link_fmtlib ('to_ostream', '_fmtlib')
+
 print('|===\n')
 
 print_table_header('==== Header-only libs, with `-Os`')
-benchmark_list(build_type_Os(), samples_Os_header_only)
+benchmark_Os_header_only_strf  ('to_charptr', '_strf')
+benchmark_Os_header_only_strf  ('to_charptr', '_strf_tr')
+benchmark_Os_header_only_fmtlib('to_charptr', '_fmtlib_n_c')
+benchmark_Os_header_only_fmtlib('to_charptr', '_fmtlib_n')
+benchmark_Os_header_only_fmtlib('to_charptr', '_fmtlib_c')
+benchmark_Os_header_only_fmtlib('to_charptr', '_fmtlib')
+
+benchmark_Os_header_only_strf   ('to_string', '_strf')
+benchmark_Os_header_only_strf   ('to_string', '_strf_tr')
+benchmark_Os_header_only_fmtlib ('to_string', '_fmtlib_c')
+benchmark_Os_header_only_fmtlib ('to_string', '_fmtlib')
+
+benchmark_Os_header_only_strf   ('to_FILE', '_strf')
+benchmark_Os_header_only_strf   ('to_FILE', '_strf_tr')
+benchmark_Os_header_only_fmtlib ('to_FILE', '_fmtlib')
+
+benchmark_Os_header_only_strf   ('to_ostream', '_strf')
+benchmark_Os_header_only_strf   ('to_ostream', '_strf_tr')
+benchmark_Os_header_only_fmtlib ('to_ostream', '_fmtlib')
+
 print('|===\n')
 
 print_table_header('==== Static libs, with `-O3`')
-benchmark_list(build_type_O3(), samples_O3)
+benchmark_O3_static_link_strf   ('to_charptr', '_strf')
+benchmark_O3_static_link_strf   ('to_charptr', '_strf_tr')
+benchmark_O3_static_link_fmtlib ('to_charptr', '_fmtlib_n_c')
+benchmark_O3_static_link_fmtlib ('to_charptr', '_fmtlib_n')
+benchmark_O3_static_link_fmtlib ('to_charptr', '_fmtlib_c')
+benchmark_O3_static_link_fmtlib ('to_charptr', '_fmtlib')
+benchmark_O3_stdlib             ('to_charptr', '_sprintf')
+
+benchmark_O3_static_link_strf   ('to_string', '_strf')
+benchmark_O3_static_link_strf   ('to_string', '_strf_tr')
+benchmark_O3_static_link_fmtlib ('to_string', '_fmtlib_c')
+benchmark_O3_static_link_fmtlib ('to_string', '_fmtlib')
+
+benchmark_O3_static_link_strf   ('to_FILE', '_strf')
+benchmark_O3_static_link_strf   ('to_FILE', '_strf_tr')
+benchmark_O3_static_link_fmtlib ('to_FILE', '_fmtlib')
+benchmark_O3_stdlib             ('to_FILE', '_fprintf')
+
+benchmark_O3_static_link_strf   ('to_ostream', '_strf')
+benchmark_O3_static_link_strf   ('to_ostream', '_strf_tr')
+benchmark_O3_static_link_fmtlib ('to_ostream', '_fmtlib')
+
 print('|===\n')
 
 print_table_header('==== Header-only libs, with `-O3`')
-benchmark_list(build_type_O3(), samples_O3_header_only)
+benchmark_O3_header_only_strf  ('to_charptr', '_strf')
+benchmark_O3_header_only_strf  ('to_charptr', '_strf_tr')
+benchmark_O3_header_only_fmtlib('to_charptr', '_fmtlib_n_c')
+benchmark_O3_header_only_fmtlib('to_charptr', '_fmtlib_n')
+benchmark_O3_header_only_fmtlib('to_charptr', '_fmtlib_c')
+benchmark_O3_header_only_fmtlib('to_charptr', '_fmtlib')
+
+benchmark_O3_header_only_strf   ('to_string', '_strf')
+benchmark_O3_header_only_strf   ('to_string', '_strf_tr')
+benchmark_O3_header_only_fmtlib ('to_string', '_fmtlib_c')
+benchmark_O3_header_only_fmtlib ('to_string', '_fmtlib')
+
+benchmark_O3_header_only_strf   ('to_FILE', '_strf')
+benchmark_O3_header_only_strf   ('to_FILE', '_strf_tr')
+benchmark_O3_header_only_fmtlib ('to_FILE', '_fmtlib')
+
+benchmark_O3_header_only_strf   ('to_ostream', '_strf')
+benchmark_O3_header_only_strf   ('to_ostream', '_strf_tr')
+benchmark_O3_header_only_fmtlib ('to_ostream', '_fmtlib')
+
 print('|===\n')
 
 print_table_header('==== Static libs, with `-g`')
-benchmark_list(build_type_debug(), samples_debug)
+benchmark_g_static_link_strf   ('to_charptr', '_strf')
+benchmark_g_static_link_strf   ('to_charptr', '_strf_tr')
+benchmark_g_static_link_fmtlib ('to_charptr', '_fmtlib_n_c')
+benchmark_g_static_link_fmtlib ('to_charptr', '_fmtlib_n')
+benchmark_g_static_link_fmtlib ('to_charptr', '_fmtlib_c')
+benchmark_g_static_link_fmtlib ('to_charptr', '_fmtlib')
+benchmark_g_stdlib             ('to_charptr', '_sprintf')
+
+benchmark_g_static_link_strf   ('to_string', '_strf')
+benchmark_g_static_link_strf   ('to_string', '_strf_tr')
+benchmark_g_static_link_fmtlib ('to_string', '_fmtlib_c')
+benchmark_g_static_link_fmtlib ('to_string', '_fmtlib')
+
+benchmark_g_static_link_strf   ('to_FILE', '_strf')
+benchmark_g_static_link_strf   ('to_FILE', '_strf_tr')
+benchmark_g_static_link_fmtlib ('to_FILE', '_fmtlib')
+benchmark_g_stdlib             ('to_FILE', '_fprintf')
+
+benchmark_g_static_link_strf   ('to_ostream', '_strf')
+benchmark_g_static_link_strf   ('to_ostream', '_strf_tr')
+benchmark_g_static_link_fmtlib ('to_ostream', '_fmtlib')
+
 print('|===\n')
 
 print_table_header('==== Header-only libs, with `-g`')
-benchmark_list(build_type_debug(), samples_debug_header_only)
+benchmark_g_header_only_strf  ('to_charptr', '_strf')
+benchmark_g_header_only_strf  ('to_charptr', '_strf_tr')
+benchmark_g_header_only_fmtlib('to_charptr', '_fmtlib_n_c')
+benchmark_g_header_only_fmtlib('to_charptr', '_fmtlib_n')
+benchmark_g_header_only_fmtlib('to_charptr', '_fmtlib_c')
+benchmark_g_header_only_fmtlib('to_charptr', '_fmtlib')
+
+benchmark_g_header_only_strf   ('to_string', '_strf')
+benchmark_g_header_only_strf   ('to_string', '_strf_tr')
+benchmark_g_header_only_fmtlib ('to_string', '_fmtlib_c')
+benchmark_g_header_only_fmtlib ('to_string', '_fmtlib')
+
+benchmark_g_header_only_strf   ('to_FILE', '_strf')
+benchmark_g_header_only_strf   ('to_FILE', '_strf_tr')
+benchmark_g_header_only_fmtlib ('to_FILE', '_fmtlib')
+
+benchmark_g_header_only_strf   ('to_ostream', '_strf')
+benchmark_g_header_only_strf   ('to_ostream', '_strf_tr')
+benchmark_g_header_only_fmtlib ('to_ostream', '_fmtlib')
+
 print('|===\n')
 
 shutil.rmtree(tmp_dir, ignore_errors=True)
