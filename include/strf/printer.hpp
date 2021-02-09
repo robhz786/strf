@@ -969,59 +969,24 @@ struct alignment_formatter_q;
 
 enum class text_alignment {left, right, center};
 
+struct alignment_format
+{
+    char32_t fill = U' ';
+    strf::width_t width = 0;
+    strf::text_alignment alignment = strf::text_alignment::right;
+};
+
 struct default_alignment_format
 {
     static constexpr char32_t fill = U' ';
     static constexpr strf::width_t width = 0;
     static constexpr strf::text_alignment alignment = strf::text_alignment::right;
+
+    constexpr operator strf::alignment_format () const noexcept
+    {
+        return {};
+    }
 };
-
-struct alignment_format
-{
-    constexpr alignment_format() = default;
-    constexpr alignment_format(const alignment_format&) = default;
-
-    constexpr STRF_HD alignment_format(strf::default_alignment_format) noexcept
-        : alignment_format()
-    {
-    }
-
-    constexpr STRF_HD explicit alignment_format
-        ( char32_t fill_
-        , strf::width_t width_ = strf::width_t{}
-        , strf::text_alignment alignment_ = strf::default_alignment_format::alignment ) noexcept
-        : fill(fill_)
-        , width(width_)
-        , alignment(alignment_)
-    {
-    }
-
-    constexpr STRF_HD alignment_format& operator=(alignment_format other) noexcept
-    {
-        fill = other.fill;
-        width = other.width;
-        alignment = other.alignment;
-        return *this;
-    }
-
-    char32_t fill = strf::default_alignment_format::fill;
-    strf::width_t width = strf::width_t{};
-    strf::text_alignment alignment = strf::default_alignment_format::alignment;
-};
-
-constexpr STRF_HD bool operator==( strf::alignment_format lhs
-                                 , strf::alignment_format rhs ) noexcept
-{
-    return lhs.fill == rhs.fill
-        && lhs.width == rhs.width
-        && lhs.alignment == rhs.alignment ;
-}
-
-constexpr STRF_HD bool operator!=( strf::alignment_format lhs
-                                 , strf::alignment_format rhs ) noexcept
-{
-    return ! (lhs == rhs);
-}
 
 template <class T, bool HasAlignment>
 class alignment_formatter_fn;

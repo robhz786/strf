@@ -75,11 +75,11 @@ assert(str == "~~~+1.~~~")
 [[alignment_format_functions]]
 === Alignment formatting
 
-include::alignment_formatter_abstract.adoc[]
+include::ref_format_functions.adoc[tag=alignment_format_functions]
 
 === Floating-point formatting
 
-include::float_formatter_abstract.adoc[]
+include::ref_format_functions.adoc[tag=float_format_functions]
 
 ====
 NOTE: `pad0` can be combined with alignment formatting:
@@ -100,7 +100,7 @@ assert(s == "____-nan____");
 
 === Integer formatting
 
-include::int_formatter_abstract.adoc[]
+include::ref_format_functions.adoc[tag=int_format_functions]
 
 === Char formatting
 [[multi]]
@@ -110,7 +110,6 @@ include::int_formatter_abstract.adoc[]
 |`multi(std::size_t count)`
 | Prints the argument `count` times.
 |===
-
 
 [[string_formatting]]
 === String formatting

@@ -26,7 +26,7 @@ http://www.boost.org/LICENSE_1_0.txt
 namespace strf {
 template <int Base> struct numpunct_c {
     constexpr static bool constrainable = true;
-    static constexpr {default_numpunct}<base> get_default() noexcept;
+    static constexpr {default_numpunct}<Base> get_default() noexcept;
 };
 } // namespace strf
 ----

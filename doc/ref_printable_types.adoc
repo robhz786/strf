@@ -325,8 +325,6 @@ The functions below provide an alternartive syntax to create aligned
 join. Their return type has the `operator()(const Args& \... args)` member function
 that receives the elements of the join.
 
-
-[[text_alignment]]
 [source,cpp]
 ----
 namespace strf {
