@@ -71,25 +71,25 @@ private:
 } // namespace detail
 
 template <typename T, typename CharT>
-class no_conv_formatter_fn;
+class transcoding_formatter_fn;
 
 template <typename T, typename CharT>
-class conv_formatter_fn;
+class transcoding_formatter_conv_fn;
 
 template <typename T, typename Encoding>
-class conv_formatter_with_encoding_fn;
+class transcoding_formatter_conv_with_encoding_fn;
 
 template <typename T, typename CharT>
-class sani_formatter_fn;
+class transcoding_formatter_sani_fn;
 
 template <typename T, typename Encoding>
-class sani_formatter_with_encoding_fn;
+class transcoding_formatter_sani_with_encoding_fn;
 
 template <typename CharT>
-struct no_conv_formatter
+struct transcoding_formatter
 {
     template <typename T>
-    using fn = strf::no_conv_formatter_fn<T, CharT>;
+    using fn = strf::transcoding_formatter_fn<T, CharT>;
 
     constexpr static bool shall_not_transcode_nor_sanitize = true;
     constexpr static bool shall_sanitize = false;
@@ -97,10 +97,10 @@ struct no_conv_formatter
 };
 
 template <typename CharT>
-struct conv_formatter
+struct transcoding_formatter_conv
 {
     template <typename T>
-    using fn = strf::conv_formatter_fn<T, CharT>;
+    using fn = strf::transcoding_formatter_conv_fn<T, CharT>;
 
     constexpr static bool shall_not_transcode_nor_sanitize = false;
     constexpr static bool shall_sanitize = false;
@@ -108,10 +108,10 @@ struct conv_formatter
 };
 
 template <typename Encoding>
-struct conv_formatter_with_encoding
+struct transcoding_formatter_conv_with_encoding
 {
     template <typename T>
-    using fn = strf::conv_formatter_with_encoding_fn<T, Encoding>;
+    using fn = strf::transcoding_formatter_conv_with_encoding_fn<T, Encoding>;
 
     constexpr static bool shall_not_transcode_nor_sanitize = false;
     constexpr static bool shall_sanitize = false;
@@ -119,10 +119,10 @@ struct conv_formatter_with_encoding
 };
 
 template <typename CharT>
-struct sani_formatter
+struct transcoding_formatter_sani
 {
     template <typename T>
-    using fn = strf::sani_formatter_fn<T, CharT>;
+    using fn = strf::transcoding_formatter_sani_fn<T, CharT>;
 
     constexpr static bool shall_not_transcode_nor_sanitize = false;
     constexpr static bool shall_sanitize = true;
@@ -130,10 +130,10 @@ struct sani_formatter
 };
 
 template <typename Encoding>
-struct sani_formatter_with_encoding
+struct transcoding_formatter_sani_with_encoding
 {
     template <typename T>
-    using fn = strf::sani_formatter_with_encoding_fn<T, Encoding>;
+    using fn = strf::transcoding_formatter_sani_with_encoding_fn<T, Encoding>;
 
     constexpr static bool shall_not_transcode_nor_sanitize = false;
     constexpr static bool shall_sanitize = true;
@@ -141,25 +141,26 @@ struct sani_formatter_with_encoding
 };
 
 template <typename T, typename CharT>
-class no_conv_formatter_fn
+class transcoding_formatter_fn
 {
 public:
 
-    constexpr STRF_HD no_conv_formatter_fn() noexcept
+    constexpr STRF_HD transcoding_formatter_fn() noexcept
     {
     }
 
     template <typename U>
-    constexpr STRF_HD explicit no_conv_formatter_fn
-        ( const no_conv_formatter_fn<U, CharT>& ) noexcept
+    constexpr STRF_HD explicit transcoding_formatter_fn
+        ( const transcoding_formatter_fn<U, CharT>& ) noexcept
     {
     }
 
     constexpr STRF_HD auto convert_encoding() const
     {
-        using return_type = strf::fmt_replace< T
-                                             , strf::no_conv_formatter<CharT>
-                                             , strf::conv_formatter<CharT> >;
+        using return_type = strf::fmt_replace
+            < T
+            , strf::transcoding_formatter<CharT>
+            , strf::transcoding_formatter_conv<CharT> >;
         return return_type{ static_cast<const T&>(*this) };
     }
 
@@ -171,12 +172,12 @@ public:
 
         using return_type = strf::fmt_replace
             < T
-            , strf::no_conv_formatter<CharT>
-            , strf::conv_formatter_with_encoding<Encoding> >;
+            , strf::transcoding_formatter<CharT>
+            , strf::transcoding_formatter_conv_with_encoding<Encoding> >;
 
         return return_type
             { static_cast<const T&>(*this)
-            , strf::tag<strf::conv_formatter_with_encoding<Encoding>>{}
+            , strf::tag<strf::transcoding_formatter_conv_with_encoding<Encoding>>{}
             , enc };
     }
     constexpr STRF_HD auto conv() const
@@ -191,9 +192,10 @@ public:
 
     constexpr STRF_HD auto sanitize_encoding() const
     {
-        using return_type = strf::fmt_replace< T
-                                             , strf::no_conv_formatter<CharT>
-                                             , strf::sani_formatter<CharT> >;
+        using return_type = strf::fmt_replace
+            < T
+            , strf::transcoding_formatter<CharT>
+            , strf::transcoding_formatter_sani<CharT> >;
         return return_type{ static_cast<const T&>(*this) };
     }
     template <typename Encoding>
@@ -203,12 +205,12 @@ public:
                      , "This encoding does not match the string's character type." );
         using return_type = strf::fmt_replace
             < T
-            , strf::no_conv_formatter<CharT>
-            , strf::sani_formatter_with_encoding<Encoding> >;
+            , strf::transcoding_formatter<CharT>
+            , strf::transcoding_formatter_sani_with_encoding<Encoding> >;
 
         return return_type
             { static_cast<const T&>(*this)
-            , strf::tag<strf::sani_formatter_with_encoding<Encoding>>{}
+            , strf::tag<strf::transcoding_formatter_sani_with_encoding<Encoding>>{}
             , enc };
     }
     constexpr STRF_HD auto sani() const
@@ -228,22 +230,22 @@ public:
 };
 
 template <typename T, typename CharT>
-class conv_formatter_fn
+class transcoding_formatter_conv_fn
 {
 public:
-    constexpr STRF_HD conv_formatter_fn() noexcept
+    constexpr STRF_HD transcoding_formatter_conv_fn() noexcept
     {
     }
 
     template <typename U>
-    constexpr STRF_HD explicit conv_formatter_fn
-        ( const conv_formatter_fn<U, CharT>& ) noexcept
+    constexpr STRF_HD explicit transcoding_formatter_conv_fn
+        ( const transcoding_formatter_conv_fn<U, CharT>& ) noexcept
     {
     }
 
     template <typename U>
-    constexpr STRF_HD explicit conv_formatter_fn
-        ( const strf::no_conv_formatter_fn<U, CharT>& ) noexcept
+    constexpr STRF_HD explicit transcoding_formatter_conv_fn
+        ( const strf::transcoding_formatter_fn<U, CharT>& ) noexcept
     {
     }
 
@@ -254,22 +256,22 @@ public:
 };
 
 template <typename T, typename CharT>
-class sani_formatter_fn
+class transcoding_formatter_sani_fn
 {
 public:
-    constexpr STRF_HD sani_formatter_fn() noexcept
+    constexpr STRF_HD transcoding_formatter_sani_fn() noexcept
     {
     }
 
     template <typename U>
-    constexpr STRF_HD explicit sani_formatter_fn
-        ( const sani_formatter_fn<U, CharT>& ) noexcept
+    constexpr STRF_HD explicit transcoding_formatter_sani_fn
+        ( const transcoding_formatter_sani_fn<U, CharT>& ) noexcept
     {
     }
 
     template <typename U>
-    constexpr STRF_HD explicit sani_formatter_fn
-        ( const strf::no_conv_formatter_fn<U, CharT>& ) noexcept
+    constexpr STRF_HD explicit transcoding_formatter_sani_fn
+        ( const strf::transcoding_formatter_fn<U, CharT>& ) noexcept
     {
     }
 
@@ -280,27 +282,27 @@ public:
 };
 
 template <typename T, typename Encoding>
-class conv_formatter_with_encoding_fn
+class transcoding_formatter_conv_with_encoding_fn
 {
 public:
 
-    STRF_HD conv_formatter_with_encoding_fn(Encoding e)
+    STRF_HD transcoding_formatter_conv_with_encoding_fn(Encoding e)
         : encoding_(e)
     {
     }
 
-    conv_formatter_with_encoding_fn
-        ( const conv_formatter_with_encoding_fn& other ) noexcept = default;
+    transcoding_formatter_conv_with_encoding_fn
+        ( const transcoding_formatter_conv_with_encoding_fn& other ) noexcept = default;
 
     template <typename U>
-    STRF_HD explicit conv_formatter_with_encoding_fn
-        ( const strf::conv_formatter_with_encoding_fn<U, Encoding>& other ) noexcept
+    STRF_HD explicit transcoding_formatter_conv_with_encoding_fn
+        ( const strf::transcoding_formatter_conv_with_encoding_fn<U, Encoding>& other ) noexcept
         : encoding_(other.get_encoding())
     {
     }
     template <typename U>
-    STRF_HD explicit conv_formatter_with_encoding_fn
-        ( const strf::sani_formatter_with_encoding_fn<U, Encoding>& other ) noexcept
+    STRF_HD explicit transcoding_formatter_conv_with_encoding_fn
+        ( const strf::transcoding_formatter_sani_with_encoding_fn<U, Encoding>& other ) noexcept
         : encoding_(other.get_encoding())
     {
     }
@@ -322,28 +324,28 @@ private:
 
 
 template <typename T, typename Encoding>
-class sani_formatter_with_encoding_fn
+class transcoding_formatter_sani_with_encoding_fn
 {
 public:
 
-    STRF_HD sani_formatter_with_encoding_fn(Encoding e)
+    STRF_HD transcoding_formatter_sani_with_encoding_fn(Encoding e)
         : encoding_(e)
     {
     }
 
-    sani_formatter_with_encoding_fn
-        ( const sani_formatter_with_encoding_fn& other ) noexcept = default;
+    transcoding_formatter_sani_with_encoding_fn
+        ( const transcoding_formatter_sani_with_encoding_fn& other ) noexcept = default;
 
     template <typename U>
-    STRF_HD explicit sani_formatter_with_encoding_fn
-        ( const strf::conv_formatter_with_encoding_fn<U, Encoding>& other ) noexcept
+    STRF_HD explicit transcoding_formatter_sani_with_encoding_fn
+        ( const strf::transcoding_formatter_conv_with_encoding_fn<U, Encoding>& other ) noexcept
         : encoding_(other.get_encoding())
     {
     }
 
     template <typename U>
-    STRF_HD explicit sani_formatter_with_encoding_fn
-        ( const strf::sani_formatter_with_encoding_fn<U, Encoding>& other ) noexcept
+    STRF_HD explicit transcoding_formatter_sani_with_encoding_fn
+        ( const strf::transcoding_formatter_sani_with_encoding_fn<U, Encoding>& other ) noexcept
         : encoding_(other.get_encoding())
     {
     }
@@ -550,7 +552,7 @@ struct string_printing
     using formatters = strf::tag
         < strf::string_precision_formatter<false>
         , strf::alignment_formatter
-        , strf::no_conv_formatter<SrcCharT> >;
+        , strf::transcoding_formatter<SrcCharT> >;
 
     template <typename DestCharT, typename Preview, typename FPack>
     constexpr STRF_HD static auto make_printer_input
@@ -896,7 +898,7 @@ template < typename DestCharT, typename Preview, typename FPack
 constexpr STRF_HD decltype(auto) get_src_encoding
     ( const strf::detail::fmt_string_printer_input
         < DestCharT, SrcCharT, HasP, HasA
-        , strf::conv_formatter_with_encoding<SrcEncoding>, Preview, FPack>&
+        , strf::transcoding_formatter_conv_with_encoding<SrcEncoding>, Preview, FPack>&
       input )
 {
     static_assert( std::is_same<typename SrcEncoding::char_type, SrcCharT>::value
@@ -909,7 +911,7 @@ template < typename DestCharT, typename Preview, typename FPack
 constexpr STRF_HD decltype(auto) get_src_encoding
     ( const strf::detail::fmt_string_printer_input
         < DestCharT, SrcCharT, HasP, HasA
-        , strf::sani_formatter_with_encoding<SrcEncoding>, Preview, FPack >&
+        , strf::transcoding_formatter_sani_with_encoding<SrcEncoding>, Preview, FPack >&
       input )
 {
     static_assert( std::is_same<typename SrcEncoding::char_type, SrcCharT>::value
@@ -921,7 +923,8 @@ template < typename DestCharT, typename Preview, typename FPack
          , typename SrcCharT, bool HasP, bool HasA >
 constexpr STRF_HD decltype(auto) get_src_encoding
     ( const strf::detail::fmt_string_printer_input
-        < DestCharT, SrcCharT, HasP, HasA, strf::conv_formatter<SrcCharT>, Preview, FPack >&
+        < DestCharT, SrcCharT, HasP, HasA
+        , strf::transcoding_formatter_conv<SrcCharT>, Preview, FPack >&
       input )
 {
     return strf::get_facet
@@ -933,7 +936,8 @@ template < typename DestCharT, typename Preview, typename FPack
          , typename SrcCharT, bool HasP, bool HasA >
 constexpr STRF_HD decltype(auto) get_src_encoding
     ( const strf::detail::fmt_string_printer_input
-        < DestCharT, SrcCharT, HasP, HasA, strf::sani_formatter<SrcCharT>, Preview, FPack >&
+        < DestCharT, SrcCharT, HasP, HasA
+        , strf::transcoding_formatter_sani<SrcCharT>, Preview, FPack >&
       input )
 {
     return strf::get_facet
