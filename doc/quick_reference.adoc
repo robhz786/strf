@@ -17,6 +17,8 @@ http://www.boost.org/LICENSE_1_0.txt
 :numpunct_c:             <<strf_hpp#numpunct_c,numpunct_c>>
 :numpunct:               <<strf_hpp#numpunct,numpunct>>
 :width_t: <<strf_hpp#width_t,width_t>>
+:float_notation: <<float_notation,float_notation>>
+
 
 [[format_functions]]
 == Format Functions
@@ -81,8 +83,12 @@ include::ref_format_functions.adoc[tag=alignment_format_functions]
 
 include::ref_format_functions.adoc[tag=float_format_functions]
 
+[[float_notation]]
+include::ref_format_functions.adoc[tag=float_notation]
+
+
 ====
-NOTE: `pad0` can be combined with alignment formatting:
+NOTE: `pad0` is independent of alignment formatting:
 [source,cpp]
 ----
 auto s = strf::to_string(strf::center(-1.25, 12, '_').pad0(8));

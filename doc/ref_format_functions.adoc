@@ -15,8 +15,8 @@ http://www.boost.org/LICENSE_1_0.txt
 :change_base: <<int_format,change_base>>
 :default_alignment_format: <<alignment_format,default_alignment_format>>
 :text_alignment: <<alignment_format,text_alignment>>
-:showsign_int: <<int_format,showsign>>
-:showsign_float: <<float_format,showsign>>
+:showsign: <<showsign,showsign>>
+:float_notation: <<float_notation,float_notation>>
 
 :tag: <<tag,tag>>
 
@@ -589,12 +589,11 @@ enum class showsign {
 } // namespace strf
 ----
 
-`sign`:: Only affects signed values and when `Base == 10` is `true`.
-`sign == showsign::negative_only`::: A sign is printed only before negative numbers.
-`sign == showsign::positive_also`:::
+`showsign::negative_only`::: A sign is printed only before negative numbers.
+`showsign::positive_also`:::
            Negatives numbers are prefixed with `'-'` and
            non-negatives number are prefixed with `'+'`.
-`sign == showsign::fill_instead_of_positive`:::
+`showsign::fill_instead_of_positive`:::
            Negatives numbers are prefixed with `'-'` and
            non-negatives number are prefixed with the fill character
            ( from alignment formatting ).
@@ -630,7 +629,7 @@ The `float_formatter` _Formatter_ defines the following format functions:
 | `operator!()`
 | Equivalent to `punct()`
 
-|`pad0(unsigned w)`
+|[[pad0]] `pad0(unsigned w)`
 | Similar to the `'0'` format flag in `printf`:
 
 For NaN and infinity, causes the the width ( from alignment
@@ -644,32 +643,9 @@ but still counting the extra fill character caused by `fill_sign()` ).
 |`p(unsigned precision)`
 | Sets the precision. Effect varies according to the notation ( see below ).
 
-|`set_float_notation(float_notation)`
-a|
-`float_notation::hex`::
- Hexadecimal
-`float_notation::fixed`::
-If precision is not set, prints the smallest number of digits
-such that the floating-point value can be exactly recovered.
-If precision is set, it is the number of fractional digits.
-`float_notation::scientific`::
-  If precision is not set, prints the smallest number of digits
-  such that the floating-point value can be exactly recovered.
-  If precision is set, it is the number of fractional digits.
-`float_notation::general`::
-If precision is not set, chooses the notation ( scientific or fixed ) that leads
-to the smallest number or characters such that the floating-point value
-can be exactly recovered.
-+
-If precision is set, same effect as the `'g'` format flags in `printf`
-( except that the lettercase is specified by the
-<<lettercase,lettercase>> facet ):
-+
-- The precision is the number of significant digts
-- If precision is 0, it is treated as 1
-- Trailing fractional zeros are removed unless `operator*` is used.
-- Selects the scientific notation iff the resulting exponent
-  is less than -4 or greater than or equal to the precision
+
+|[[set_float_notation]]`set_float_notation({float_notation})`
+| Sets the float notation ( see <<float_notation,below>> ).
 
 |`hex()`
 | Equivalent to `set_float_notation(float_notation::hex)`.
@@ -687,6 +663,10 @@ If precision is set, same effect as the `'g'` format flags in `printf`
 | Set all floating-point formatting options simultaneously.
 //  It accepts only one argument, whose type can be any of those
 //  that can be returned by `get_float_format()`
+
+|`set_float_format(<<strf_hpp#default_float_format,default_float_format>>)`
+| Reset all floating-point formatting options to default.
+
 |===
 
 // end::float_format_functions[]
@@ -696,8 +676,64 @@ If precision is set, same effect as the `'g'` format flags in `printf`
 | Observer  | Return type
 
 | `get_float_format()`
-| `float_format`
-// Implementation-defined and may depend on what format function have been previously called.
+| `{float_format}`, `{default_float_format}` or an implementation-defined type that
+  sastisfies __<<strf_hpp#FloatFormat,FloatFormat>>__ requirements.
+|===
+
+==== Enumeration `float_notation` [[float_notation]]
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+enum class float_notation {fixed, scientific, general, hex};
+};
+----
+
+// tag::float_notation[]
+`float_notation::hex`::
+ Hexadecimal
+`float_notation::fixed`::
+If precision is not set, prints the smallest number of digits
+such that the floating-point value can be exactly recovered.
+If precision is set, it is the number of fractional digits.
+`float_notation::scientific`::
+  If precision is not set, prints the smallest number of digits
+  such that the floating-point value can be exactly recovered.
+  If precision is set, it is the number of fractional digits.
+`float_notation::general`::
+If precision is not set, chooses the notation ( scientific or fixed ) that leads
+to the smallest number or characters such that the floating-point value
+can be exactly recovered.
+    +
+If precision is set, same effect as the `'g'` format flags in `printf`
+( except that the lettercase is specified by the
+<<lettercase,lettercase>> facet ):
++
+- The precision is the number of significant digts
+- If precision is 0, it is treated as 1
+- Trailing fractional zeros are removed unless `operator*` is used.
+- Selects the scientific notation iff the resulting exponent
+  is less than -4 or greater than or equal to the precision
+
+// end::float_notation[]
+
+==== Type requirements __FloatFormat__ [[FloatFormat]]
+
+Given `F`, a __FloatFormat__ type, the following must hold:
+
+* `F` is copy-constructible
+* `F` is convertible to `{float_format}`
+* `F` has public member variables below:
+
+[%header,cols="191,191,618"]
+|===
+| Member      | Type             | Semantics / effect
+| `precision` | `unsigned`       | Floating-point precision. When it is equal to `(unsigned)-1`, then precision is considered as not specified, which means that the number or significant digits is such that the value can be fully recovered by a parser. Otherwise, the effect depends on `notation`.
+| `pad0wdith` | `unsigned`       | Same as of format function `<<pad0,pad0>>`
+| `notation`  | `{float_notation}` | See enumeration `{float_notation}`
+| `sign`      | `showsign`       | See enumeration `{showsign}`
+| `showpoint` | `bool`           | Equivalent to the `'#'` format flag in printf
+| `punctuate` | `bool`           | Activates numeric punctuation.
 |===
 
 ==== Struct template `float_format` [[float_format]]
@@ -706,65 +742,39 @@ If precision is set, same effect as the `'g'` format flags in `printf`
 ----
 namespace strf {
 
-enum class showsign {
-    negative_only = ..., positive_also = ..., fill_instead_of_positive = ...
-};
-
-enum class <<float_format_notation,float_notation>> {fixed, scientific, general, hex};
+enum class float_notation {fixed, scientific, general, hex};
 
 struct float_format
 {
     unsigned precision = (unsigned)-1;
     unsigned pad0width = 0;
     float_notation notation = float_notation::general
-    showsign sign = showsign::negative_only;
+    {showsign} sign = showsign::negative_only;
     bool showpoint = false;
     bool showpos = false;
 };
 
 } // namespace strf
 ----
+==== Struct template `default_float_format` [[default_float_format]]
+[source,cpp,subs=normal]
+----
+namespace strf {
 
-[[float_format_notation]]
-notation::
-- `float_notation::fixed`: Prints like `123.45`
-- `float_notation::scientific`: Prints like `1.2345e+02`
-- `float_notation::general`: When precision is `(unsigned)-1`,
-   prints in the scientfic notation if it is shorter than the fixed notation.
-   When precision is different than `(unsigned)-1`, does like in `std::printf`:
-   uses the scientfic notation if the exponent is less than -4 or greater
-   than or equal to the precision. Trailing zeros are removed from the fractional
-   part if `showpoint` is `false`.
-- `float_notation::hex`: hexadecimal
+struct default_float_format
+{
+    constexpr static unsigned precision = (unsigned)-1;
+    constexpr static unsigned pad0width = 0;
+    constexpr static {float_notation} notation = {float_notation}::general;
+    constexpr static {showsign} sign = {showsign}::negative_only;
+    constexpr static bool showpoint = false;
+    constexpr static bool punctuate = false;
 
-[[float_showpoint]]
-showpoint:: Prints the decimal point even when there are no fractional digits.
+    constexpr operator float_format () const noexcept;
+};
+} // namespace strf
 
-[[float_sign]]
-sign::
-`sign == showsign::negative_only`::: A sign is printed only before negative numbers.
-`sign == showsign::positive_also`:::
-           Negatives numbers are prefixed with `'-'` and
-           non-negatives number are prefixed with `'+'`.
-`sign == showsign::fill_instead_of_positive`:::
-           Negatives numbers are prefixed with `'-'` and
-           non-negatives number are prefixed with the fill character
-           ( from alignment formatting ).
-
-[[float_precision]]
-precision:: When `notation == float_notation::general`, the precision is the
-            number of significant digits. Otherwise it is the number of
-            fractional digits. `precision == 0` has the same effect as
-            `precision == 1`.
-
-[[float_pad0width]]
-pad0width::  For NaN and infinity, the alignment width is increased to `pad0width`
-             if it is less than `pad0width`.
-             For valid numbers, zeros are padded, if necessary, after the sign
-             and base indication to ensure the that the total number of characters
-             ( not couting the fill related to alignment formatting ) is at
-             least `pad0width`.
-
+----
 
 [[quantity_formatter]]
 === _Formatter_ `quantity_formatter`
