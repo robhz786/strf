@@ -11,6 +11,7 @@ using char8_t = char;
 void STRF_TEST_FUNC test_input_string()
 {
     {
+        TEST("abc")      ( strf::fmt("abc") );
         TEST("   abc")   ( strf::right("abc", 6) );
         TEST("abc...")   ( strf::left    ("abc", 6, '.') );
         TEST("...abc")   ( strf::right   ("abc", 6, '.') );
