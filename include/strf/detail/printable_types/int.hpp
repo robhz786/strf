@@ -18,10 +18,7 @@
 namespace strf {
 
 template <int Base>
-struct int_formatter;
-
-template <int Base>
-struct int_format
+struct int_format_static_base
 {
     unsigned precision = 0;
     unsigned pad0width = 0;
@@ -31,15 +28,37 @@ struct int_format
     constexpr static int base = Base;
 };
 
+struct default_int_format
+{
+    constexpr static unsigned precision = 0;
+    constexpr static unsigned pad0width = 0;
+    constexpr static strf::showsign sign = strf::showsign::negative_only;
+    constexpr static bool showbase = false;
+    constexpr static bool punctuate = false;
+    constexpr static int base = 10;
+
+    constexpr STRF_HD operator strf::int_format_static_base<10> () const
+    {
+        return {};
+    }
+};
+
+
 template <int ToBase, int FromBase>
-constexpr STRF_HD int_format<ToBase> change_base(int_format<FromBase> f) noexcept
+constexpr STRF_HD int_format_static_base<ToBase> change_base(int_format_static_base<FromBase> f) noexcept
 {
     return {f.precision, f.pad0width, f.sign, f.punctuate, f.showbase};
 }
 
+template <int ToBase>
+constexpr STRF_HD int_format_static_base<ToBase> change_base(default_int_format) noexcept
+{
+    return {};
+}
+
 template <int Base>
-constexpr STRF_HD bool operator==( strf::int_format<Base> lhs
-                                 , strf::int_format<Base> rhs ) noexcept
+constexpr STRF_HD bool operator==( strf::int_format_static_base<Base> lhs
+                                 , strf::int_format_static_base<Base> rhs ) noexcept
 {
     return lhs.precision == rhs.precision
         && lhs.pad0width == rhs.pad0width
@@ -49,39 +68,211 @@ constexpr STRF_HD bool operator==( strf::int_format<Base> lhs
 }
 
 template <int Base>
-constexpr STRF_HD bool operator!=( strf::int_format<Base> lhs
-                                 , strf::int_format<Base> rhs ) noexcept
+constexpr STRF_HD bool operator!=( strf::int_format_static_base<Base> lhs
+                                 , strf::int_format_static_base<Base> rhs ) noexcept
 {
     return ! (lhs == rhs);
 }
 
+template <class T>
+class default_int_formatter_fn;
+
 template <class T, int Base>
-class int_formatter_fn
+class int_formatter_static_base_fn;
+
+struct default_int_formatter
+{
+    template <typename T>
+    using fn = strf::default_int_formatter_fn<T>;
+};
+
+template <int Base>
+struct int_formatter_static_base
+{
+    template <typename T>
+    using fn = int_formatter_static_base_fn<T, Base>;
+};
+
+using int_formatter = default_int_formatter;
+
+template <class T>
+class default_int_formatter_fn
+{
+    template <int Base>
+    using adapted_derived_type_
+        = strf::fmt_replace<T, default_int_formatter, int_formatter_static_base<Base> >;
+
+public:
+
+    constexpr default_int_formatter_fn() noexcept = default;
+    constexpr default_int_formatter_fn(const default_int_formatter_fn&) noexcept = default;
+
+    template <typename U>
+    constexpr STRF_HD default_int_formatter_fn(const default_int_formatter_fn<U>&) noexcept
+    {
+    }
+    constexpr STRF_HD explicit default_int_formatter_fn(default_int_format) noexcept
+    {
+    }
+    constexpr STRF_HD T&& dec() && noexcept
+    {
+        return static_cast<T&&>(*this);
+    }
+    constexpr STRF_HD const T&& dec() const && noexcept
+    {
+        return static_cast<const T&&>(*this);
+    }
+    constexpr STRF_HD T& dec() & noexcept
+    {
+        return static_cast<T&>(*this);
+    }
+    constexpr STRF_HD const T& dec() const & noexcept
+    {
+        return *static_cast<const T*>(this);
+    }
+    constexpr STRF_HD adapted_derived_type_<16> hex() const noexcept
+    {
+        return { *static_cast<const T*>(this)
+               , strf::tag<int_formatter_static_base<16>>{}
+               , int_format_static_base<16>{} };
+    }
+    constexpr STRF_HD adapted_derived_type_<8> oct() const noexcept
+    {
+        return { *static_cast<const T*>(this)
+               , strf::tag<int_formatter_static_base<8>>{}
+               , int_format_static_base<8>{} };
+    }
+    constexpr STRF_HD adapted_derived_type_<2> bin() const noexcept
+    {
+        return { *static_cast<const T*>(this)
+               , strf::tag<int_formatter_static_base<2>>{}
+               , int_format_static_base<2>{} };
+    }
+    constexpr STRF_HD adapted_derived_type_<10> p(unsigned _) const noexcept
+    {
+        int_format_static_base<10> data;
+        data.precision = _;
+        return { *static_cast<const T*>(this)
+               , strf::tag<int_formatter_static_base<10>>{}
+               , data };
+    }
+    constexpr STRF_HD adapted_derived_type_<10> pad0(unsigned w) && noexcept
+    {
+        int_format_static_base<10> data;
+        data.pad0width = w;
+        return { *static_cast<const T*>(this)
+               , strf::tag<int_formatter_static_base<10>>{}
+               , data };
+    }
+    constexpr STRF_HD adapted_derived_type_<10> operator+() && noexcept
+    {
+        int_format_static_base<10> data;
+        data.sign = strf::showsign::positive_also;
+        return { *static_cast<const T*>(this)
+               , strf::tag<int_formatter_static_base<10>>{}
+               , data };
+    }
+    constexpr STRF_HD adapted_derived_type_<10> fill_sign() && noexcept
+    {
+        int_format_static_base<10> data;
+        data.sign = strf::showsign::fill_instead_of_positive;
+        return { *static_cast<const T*>(this)
+               , strf::tag<int_formatter_static_base<10>>{}
+               , data };
+    }
+    constexpr STRF_HD adapted_derived_type_<10> operator~() && noexcept
+    {
+        int_format_static_base<10> data;
+        data.sign = strf::showsign::fill_instead_of_positive;
+        return { *static_cast<const T*>(this)
+               , strf::tag<int_formatter_static_base<10>>{}
+               , data };
+    }
+    constexpr STRF_HD void operator*() && noexcept = delete;
+    constexpr STRF_HD adapted_derived_type_<10> punct() && noexcept
+    {
+        int_format_static_base<10> data;
+        data.punctuate = true;
+        return { *static_cast<const T*>(this)
+               , strf::tag<int_formatter_static_base<10>>{}
+               , data };
+    }
+    constexpr STRF_HD adapted_derived_type_<10> operator!() && noexcept
+    {
+        int_format_static_base<10> data;
+        data.punctuate = true;
+        return { *static_cast<const T*>(this)
+               , strf::tag<int_formatter_static_base<10>>{}
+               , data };
+    }
+    constexpr static STRF_HD int base() noexcept
+    {
+        return 10;
+    }
+    constexpr static STRF_HD strf::default_int_format get_int_format() noexcept
+    {
+        return {};
+    }
+    constexpr STRF_HD T&& set_int_format(strf::default_int_format) && noexcept
+    {
+        return static_cast<T&&>(*this);
+    }
+    constexpr STRF_HD T& set_int_format(strf::default_int_format) & noexcept
+    {
+        return static_cast<T&>(*this);
+    }
+    constexpr STRF_HD const T&&
+    set_int_format(strf::default_int_format) const && noexcept
+    {
+        return static_cast<T&&>(*this);
+    }
+    constexpr STRF_HD const T&
+    set_int_format(strf::default_int_format) const & noexcept
+    {
+        return static_cast<T&>(*this);
+    }
+    template <int Base>
+    constexpr STRF_HD adapted_derived_type_<Base>
+    set_int_format(const strf::int_format_static_base<Base>& data) const & noexcept
+    {
+        return adapted_derived_type_<Base>
+               { *static_cast<const T*>(this)
+               , strf::tag<int_formatter_static_base<Base>>{}
+               , data };
+    }
+};
+
+
+template <class T, int Base>
+class int_formatter_static_base_fn
 {
 private:
 
     template <int OtherBase>
-    using adapted_derived_type_
-        = strf::fmt_replace<T, int_formatter<Base>, int_formatter<OtherBase> >;
+    using adapted_derived_type_ = strf::fmt_replace
+        < T
+        , int_formatter_static_base<Base>
+        , int_formatter_static_base<OtherBase> >;
 
 public:
 
-    constexpr STRF_HD int_formatter_fn()  noexcept { }
+    constexpr STRF_HD int_formatter_static_base_fn()  noexcept { }
 
     template <typename U>
-    constexpr STRF_HD int_formatter_fn(const int_formatter_fn<U, Base> & u) noexcept
+    constexpr STRF_HD int_formatter_static_base_fn
+        ( const int_formatter_static_base_fn<U, Base> & u ) noexcept
         : data_(u.get_int_format())
     {
     }
 
-    constexpr STRF_HD explicit int_formatter_fn(int_format<Base> data) noexcept
+    constexpr STRF_HD explicit int_formatter_static_base_fn
+        ( int_format_static_base<Base> data ) noexcept
         : data_(data)
     {
     }
 
     template < int B = 16 >
-    constexpr STRF_HD std::enable_if_t<Base == B && B == 16, T&&>
-    hex() &&
+    constexpr STRF_HD std::enable_if_t<Base == B && B == 16, T&&> hex() &&
     {
         return static_cast<T&&>(*this);
     }
@@ -91,14 +282,12 @@ public:
     hex() const &
     {
         return adapted_derived_type_<B>
-            { static_cast<const T&>(*this)
-            , strf::tag<strf::int_formatter<B>>{}
+            { *static_cast<const T*>(this)
+            , strf::tag<strf::int_formatter_static_base<B>>{}
             , strf::change_base<B>(data_) };
     }
-
     template < int B = 10 >
-    constexpr STRF_HD std::enable_if_t<Base == B && B == 10, T&&>
-    dec() &&
+    constexpr STRF_HD std::enable_if_t<Base == B && B == 10, T&&> dec() &&
     {
         return static_cast<T&&>(*this);
     }
@@ -108,45 +297,40 @@ public:
     dec() const &
     {
         return adapted_derived_type_<B>
-            { static_cast<const T&>(*this)
-            , strf::tag<strf::int_formatter<B>>{}
+            { *static_cast<const T*>(this)
+            , strf::tag<strf::int_formatter_static_base<B>>{}
             , strf::change_base<B>(data_) };
     }
-
     template < int B = 8 >
     constexpr STRF_HD std::enable_if_t<Base == B && B == 8, T&&>
     oct() &&
     {
         return static_cast<T&&>(*this);
     }
-
     template < int B = 8 >
     constexpr STRF_HD std::enable_if_t<Base != B && B == 8, adapted_derived_type_<B>>
     oct() const &
     {
         return adapted_derived_type_<B>
-            { static_cast<const T&>(*this)
-            , strf::tag<strf::int_formatter<B>>{}
+            { *static_cast<const T*>(this)
+            , strf::tag<strf::int_formatter_static_base<B>>{}
             , strf::change_base<B>(data_) };
     }
-
     template < int B = 2 >
     constexpr STRF_HD std::enable_if_t<Base == B && B == 2, T&&>
     bin() &&
     {
         return static_cast<T&&>(*this);
     }
-
     template < int B = 2 >
     constexpr STRF_HD std::enable_if_t<Base != B && B == 2, adapted_derived_type_<B>>
     bin() const &
     {
         return adapted_derived_type_<B>
-            { static_cast<const T&>(*this)
-            , strf::tag<strf::int_formatter<B>>{}
+            { *static_cast<const T*>(this)
+            , strf::tag<strf::int_formatter_static_base<B>>{}
             , strf::change_base<B>(data_) };
     }
-
     constexpr STRF_HD T&& p(unsigned _) && noexcept
     {
         data_.precision = _;
@@ -199,46 +383,44 @@ public:
     {
         return Base;
     }
-    constexpr STRF_HD strf::int_format<Base> get_int_format() const noexcept
+    constexpr STRF_HD strf::int_format_static_base<Base> get_int_format() const noexcept
     {
         return data_;
     }
-    constexpr STRF_HD T&& set_int_format(strf::int_format<Base> data) && noexcept
+    constexpr STRF_HD T&& set_int_format(strf::int_format_static_base<Base> data) && noexcept
     {
         data_ = data;
         return static_cast<T&&>(*this);
     }
+    constexpr STRF_HD T& set_int_format(strf::int_format_static_base<Base> data) & noexcept
+    {
+        data_ = data;
+        return static_cast<T&>(*this);
+    }
     template <int OtherBase>
     constexpr STRF_HD std::enable_if_t<Base != OtherBase, adapted_derived_type_<OtherBase>>
-    set_int_format(strf::int_format<OtherBase> data) const & noexcept
+    set_int_format(strf::int_format_static_base<OtherBase> data) const & noexcept
     {
         return adapted_derived_type_<OtherBase>
-            { static_cast<const T&>(*this)
-            , strf::tag<strf::int_formatter<OtherBase>>{}
+            { *static_cast<const T*>(this)
+            , strf::tag<strf::int_formatter_static_base<OtherBase>>{}
             , strf::change_base<OtherBase>(data) };
+    }
+    constexpr STRF_HD
+    strf::fmt_replace<T, int_formatter_static_base<Base>, default_int_formatter >
+    set_int_format(strf::default_int_format) const & noexcept
+    {
+        return { * static_cast<const T*>(this) };
     }
 
 private:
 
-    strf::int_format<Base> data_;
+    strf::int_format_static_base<Base> data_;
 };
-
-template <int Base>
-struct int_formatter
-{
-    template <typename T>
-    using fn = strf::int_formatter_fn<T, Base>;
-};
-
-template <typename IntT, int Base, bool HasAlignment>
-using int_with_formatters = strf::value_with_formatters
-    < strf::print_traits<IntT>
-    , strf::int_formatter<Base>
-    , strf::alignment_formatter_q<HasAlignment> >;
 
 namespace detail {
 
-template <typename> class int_printer;
+template <typename> class default_int_printer;
 //template <typename> class punct_int_printer;
 template <typename, int> class punct_fmt_int_printer;
 
@@ -258,41 +440,57 @@ constexpr STRF_HD bool negative(const T& x) noexcept
     return strf::detail::negative_impl_(x, std::is_signed<T>());
 }
 
-template <typename FPack, typename IntT, unsigned Base>
-class has_intpunct_impl
-{
-public:
+// template <typename FPack, typename IntT, unsigned Base>
+// class has_intpunct_impl
+// {
+// public:
+//
+//     static STRF_HD std::true_type  test_numpunct(strf::numpunct<Base>);
+//     static STRF_HD std::false_type test_numpunct(strf::default_numpunct<Base>);
+//     static STRF_HD std::false_type test_numpunct(strf::no_grouping<Base>);
+//
+//     static STRF_HD const FPack& fp();
+//
+//     using has_numpunct_type = decltype
+//         ( test_numpunct
+//             ( get_facet< strf::numpunct_c<Base>, IntT >(fp())) );
+// public:
+//
+//     static constexpr bool value = has_numpunct_type::value;
+// };
+//
+// template <typename FPack, typename IntT, unsigned Base>
+// constexpr STRF_HD bool has_intpunct()
+// {
+//     return has_intpunct_impl<FPack, IntT, Base>::value;
+// }
 
-    static STRF_HD std::true_type  test_numpunct(strf::numpunct<Base>);
-    static STRF_HD std::false_type test_numpunct(strf::default_numpunct<Base>);
-    static STRF_HD std::false_type test_numpunct(strf::no_grouping<Base>);
-
-    static STRF_HD const FPack& fp();
-
-    using has_numpunct_type = decltype
-        ( test_numpunct
-            ( get_facet< strf::numpunct_c<Base>, IntT >(fp())) );
-public:
-
-    static constexpr bool value = has_numpunct_type::value;
-};
-
-template <typename FPack, typename IntT, unsigned Base>
-constexpr STRF_HD bool has_intpunct()
-{
-    return has_intpunct_impl<FPack, IntT, Base>::value;
-}
+template <typename IntT>
+struct int_printing;
 
 template <typename CharT, typename Preview, typename IntT>
-struct int_printer_input
+struct default_int_printer_input
 {
-    using printer_type = strf::detail::int_printer<CharT>;
+    using printer_type = strf::detail::default_int_printer<CharT>;
 
     template<typename FPack>
-    constexpr STRF_HD int_printer_input
+    constexpr STRF_HD default_int_printer_input
         ( Preview& preview_, const FPack&, IntT arg_) noexcept
         : preview(preview_)
         , value(arg_)
+    {
+    }
+
+    template<typename FPack, typename PTraits>
+    constexpr STRF_HD default_int_printer_input
+        ( Preview& preview_
+        , const FPack&
+        , strf::value_with_formatters
+            < PTraits
+            , strf::int_formatter
+            , strf::alignment_formatter > arg_ ) noexcept
+        : preview(preview_)
+        , value(arg_.value())
     {
     }
 
@@ -303,28 +501,60 @@ struct int_printer_input
 template <typename IntT>
 struct int_printing
 {
+private:
+
+    template <typename P, bool HasAlignment>
+    using vwf_ = value_with_formatters
+              < P
+              , int_formatter
+              , alignment_formatter_q<HasAlignment> >;
+
+    template <typename P, int Base, bool HasAlignment>
+    using vwf_b_ = value_with_formatters
+              < P
+              , int_formatter_static_base<Base>
+              , alignment_formatter_q<HasAlignment> >;
+
+public:
+
     using override_tag = IntT;
     using forwarded_type = IntT;
-    using formatters = strf::tag< strf::int_formatter<10>
+    using formatters = strf::tag< strf::int_formatter
                                 , strf::alignment_formatter >;
 
     template <typename CharT, typename Preview, typename FPack>
     constexpr STRF_HD static auto make_printer_input
-        (Preview& preview, const FPack& facets,  IntT x ) noexcept
-        -> strf::detail::int_printer_input<CharT, Preview, IntT>
+        ( Preview& preview, const FPack& facets,  IntT x ) noexcept
+        -> strf::detail::default_int_printer_input<CharT, Preview, IntT>
     {
         return {preview, facets, x};
     }
 
     template < typename CharT, typename Preview, typename FPack
-             , int Base, bool HasAlignment >
+             , typename PTraits, int Base, bool HasAlignment >
     constexpr STRF_HD static auto make_printer_input
         ( Preview& preview
         , const FPack& facets
-        , strf::int_with_formatters<IntT, Base, HasAlignment> x ) noexcept
+        , vwf_b_<PTraits, Base, HasAlignment> x )
         -> strf::usual_printer_input
-            < CharT, Preview, FPack, strf::int_with_formatters<IntT, Base, HasAlignment>
+            < CharT, Preview, FPack, vwf_b_<PTraits, Base, HasAlignment>
             , strf::detail::punct_fmt_int_printer<CharT, Base> >
+    {
+        return {preview, facets, x};
+    }
+
+    template < typename CharT, typename Preview, typename FPack
+             , typename PTraits, bool HasAlignment>
+    constexpr STRF_HD static auto make_printer_input
+        ( Preview& preview
+        , const FPack& facets
+        , vwf_<PTraits, HasAlignment> x )
+        -> std::conditional_t
+            < ! HasAlignment
+            , strf::detail::default_int_printer_input<CharT, Preview, IntT>
+            , strf::usual_printer_input
+                < CharT, Preview, FPack, vwf_<PTraits, HasAlignment>
+                , strf::detail::punct_fmt_int_printer<CharT, 10> > >
     {
         return {preview, facets, x};
     }
@@ -355,43 +585,43 @@ template <> struct print_traits<unsigned long long>:
     public strf::detail::int_printing<unsigned long long> {};
 
 constexpr STRF_HD auto tag_invoke(strf::print_traits_tag, signed char) noexcept
-    -> strf::print_traits<signed char>
+    -> strf::detail::int_printing<signed char>
     { return {}; }
 
 constexpr STRF_HD auto tag_invoke(strf::print_traits_tag, short) noexcept
-    -> strf::print_traits<short>
+    -> strf::detail::int_printing<short>
     { return {}; }
 
 constexpr STRF_HD auto tag_invoke(strf::print_traits_tag, int) noexcept
-    -> strf::print_traits<int>
+    -> strf::detail::int_printing<int>
     { return {}; }
 
 constexpr STRF_HD auto tag_invoke(strf::print_traits_tag, long) noexcept
-    -> strf::print_traits<long>
+    -> strf::detail::int_printing<long>
     { return {}; }
 
 constexpr STRF_HD auto tag_invoke(strf::print_traits_tag, long long) noexcept
-    -> strf::print_traits<long long>
+    -> strf::detail::int_printing<long long>
     { return {}; }
 
 constexpr STRF_HD auto tag_invoke(strf::print_traits_tag, unsigned char) noexcept
-    -> strf::print_traits<unsigned char>
+    -> strf::detail::int_printing<unsigned char>
     { return {}; }
 
 constexpr STRF_HD auto tag_invoke(strf::print_traits_tag, unsigned short) noexcept
-    -> strf::print_traits<unsigned short>
+    -> strf::detail::int_printing<unsigned short>
     { return {}; }
 
 constexpr STRF_HD auto tag_invoke(strf::print_traits_tag, unsigned int) noexcept
-    -> strf::print_traits<unsigned int>
+    -> strf::detail::int_printing<unsigned int>
     { return {}; }
 
 constexpr STRF_HD auto tag_invoke(strf::print_traits_tag, unsigned long) noexcept
-    -> strf::print_traits<unsigned long>
+    -> strf::detail::int_printing<unsigned long>
     { return {}; }
 
 constexpr STRF_HD auto tag_invoke(strf::print_traits_tag, unsigned long long) noexcept
-    -> strf::print_traits<unsigned long long>
+    -> strf::detail::int_printing<unsigned long long>
     { return {}; }
 
 namespace detail {
@@ -439,12 +669,12 @@ constexpr STRF_HD auto tag_invoke(strf::print_traits_tag, const void*) noexcept
 namespace detail {
 
 template <typename CharT>
-class int_printer: public strf::printer<CharT>
+class default_int_printer: public strf::printer<CharT>
 {
 public:
 
     template <typename... T>
-    STRF_HD int_printer(strf::detail::int_printer_input<T...> i)
+    STRF_HD default_int_printer(strf::detail::default_int_printer_input<T...> i)
     {
         init_(i.preview, i.value);
     }
@@ -491,7 +721,7 @@ private:
 };
 
 template <typename CharT>
-STRF_HD void int_printer<CharT>::print_to
+STRF_HD void default_int_printer<CharT>::print_to
     ( strf::basic_outbuff<CharT>& ob ) const
 {
     unsigned size = digcount_ + negative_;
@@ -606,7 +836,7 @@ template
     , std::enable_if_t<std::is_signed<IntT>::value, int> = 0 >
 inline STRF_HD void init_1
     ( fmt_int_printer_data& data
-    , strf::int_format<10> ifmt
+    , strf::int_format_static_base<10> ifmt
     , IntT value ) noexcept
 {
     if (value >= 0) {
@@ -631,7 +861,7 @@ template
     , std::enable_if_t<std::is_unsigned<UIntT>::value, int> = 0 >
 inline STRF_HD void init_1
     ( fmt_int_printer_data& data
-    , strf::int_format<10>
+    , strf::int_format_static_base<10>
     , UIntT uvalue ) noexcept
 {
     data.sign = '\0';
@@ -642,7 +872,7 @@ inline STRF_HD void init_1
 template <typename IntT, int Base>
 inline STRF_HD void init_1
     ( fmt_int_printer_data& data
-    , strf::int_format<Base>
+    , strf::int_format_static_base<Base>
     , IntT value ) noexcept
 {
     data.uvalue = static_cast<decltype(data.uvalue)>(value);
@@ -657,7 +887,7 @@ template <int Base>
 STRF_HD punct_fmt_int_printer_data_init_result init_punct_fmt_int_printer_data
     ( punct_fmt_int_printer_data& data
     , strf::validate_f validate
-    , strf::int_format<Base> ifmt
+    , strf::int_format_static_base<Base> ifmt
     , strf::alignment_format afmt ) noexcept
 #if defined(STRF_OMIT_IMPL)
     ;
@@ -837,42 +1067,42 @@ STRF_EXPLICIT_TEMPLATE
 STRF_HD punct_fmt_int_printer_data_init_result init_punct_fmt_int_printer_data<2>
     ( punct_fmt_int_printer_data& data
     , strf::validate_f validate
-    , strf::int_format<2> ifmt
+    , strf::int_format_static_base<2> ifmt
     , strf::alignment_format afmt ) noexcept;
 
 STRF_EXPLICIT_TEMPLATE
 STRF_HD punct_fmt_int_printer_data_init_result init_punct_fmt_int_printer_data<8>
     ( punct_fmt_int_printer_data& data
     , strf::validate_f validate
-    , strf::int_format<8> ifmt
+    , strf::int_format_static_base<8> ifmt
     , strf::alignment_format afmt ) noexcept;
 
 STRF_EXPLICIT_TEMPLATE
 STRF_HD punct_fmt_int_printer_data_init_result init_punct_fmt_int_printer_data<10>
     ( punct_fmt_int_printer_data& data
     , strf::validate_f validate
-    , strf::int_format<10> ifmt
+    , strf::int_format_static_base<10> ifmt
     , strf::alignment_format afmt ) noexcept;
 
 STRF_EXPLICIT_TEMPLATE
 STRF_HD punct_fmt_int_printer_data_init_result init_punct_fmt_int_printer_data<16>
     ( punct_fmt_int_printer_data& data
     , strf::validate_f validate
-    , strf::int_format<16> ifmt
+    , strf::int_format_static_base<16> ifmt
     , strf::alignment_format afmt ) noexcept;
 
 #if defined(__cpp_char8_t)
-STRF_EXPLICIT_TEMPLATE class int_printer<char8_t>;
+STRF_EXPLICIT_TEMPLATE class default_int_printer<char8_t>;
 //STRF_EXPLICIT_TEMPLATE class punct_int_printer<char8_t>;
 STRF_EXPLICIT_TEMPLATE class punct_fmt_int_printer<char8_t,  8>;
 STRF_EXPLICIT_TEMPLATE class punct_fmt_int_printer<char8_t, 10>;
 STRF_EXPLICIT_TEMPLATE class punct_fmt_int_printer<char8_t, 16>;
 #endif
 
-STRF_EXPLICIT_TEMPLATE class int_printer<char>;
-STRF_EXPLICIT_TEMPLATE class int_printer<char16_t>;
-STRF_EXPLICIT_TEMPLATE class int_printer<char32_t>;
-STRF_EXPLICIT_TEMPLATE class int_printer<wchar_t>;
+STRF_EXPLICIT_TEMPLATE class default_int_printer<char>;
+STRF_EXPLICIT_TEMPLATE class default_int_printer<char16_t>;
+STRF_EXPLICIT_TEMPLATE class default_int_printer<char32_t>;
+STRF_EXPLICIT_TEMPLATE class default_int_printer<wchar_t>;
 
 // STRF_EXPLICIT_TEMPLATE class punct_int_printer<char>;
 // STRF_EXPLICIT_TEMPLATE class punct_int_printer<char16_t>;
