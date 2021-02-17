@@ -772,6 +772,15 @@ void STRF_TEST_FUNC test_input_int()
         .with(strf::numpunct<2>{1}.thousands_sep(0xFFFFFF))
             ( !strf::bin(0xF) );
     }
+
+    {
+        // dynamic base
+        TEST("ffffffffffffffff")         ( strf::fmt(0xffffffffffffffffLL).base(16) );
+        TEST("777777777777777777777")    ( strf::fmt(0777777777777777777777LL).base(8) );
+        TEST("1111111111111111111111111111111111111111111111111111111111111111")
+            ( strf::fmt(0xffffffffffffffffLL).base(2) );
+        TEST("999999999999999999")       ( strf::hex(999999999999999999LL).base(10) );
+    }
 }
 
 void STRF_TEST_FUNC test_input_ptr()
