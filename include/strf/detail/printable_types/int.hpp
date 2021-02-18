@@ -19,42 +19,42 @@ namespace strf {
 
 struct int_format
 {
+    int base = 10;
     unsigned precision = 0;
     unsigned pad0width = 0;
     strf::showsign sign = strf::showsign::negative_only;
     bool showbase = false;
     bool punctuate = false;
-    int base = 10;
 };
 
 using int_format_full_dynamic = int_format;
 
-template <int Base>
-struct int_format_static_base
+template <int Base, bool Punctuate>
+struct int_format_static_base_and_punct
 {
+    constexpr static int base = Base;
     unsigned precision = 0;
     unsigned pad0width = 0;
     strf::showsign sign = strf::showsign::negative_only;
     bool showbase = false;
-    bool punctuate = false;
-    constexpr static int base = Base;
+    constexpr static bool punctuate = Punctuate;
 
     constexpr STRF_HD operator strf::int_format_full_dynamic () const
     {
-        return {precision, pad0width, sign, showbase, punctuate, base};
+        return {base, precision, pad0width, sign, showbase, punctuate};
     }
 };
 
 struct default_int_format
 {
+    constexpr static int base = 10;
     constexpr static unsigned precision = 0;
     constexpr static unsigned pad0width = 0;
     constexpr static strf::showsign sign = strf::showsign::negative_only;
     constexpr static bool showbase = false;
     constexpr static bool punctuate = false;
-    constexpr static int base = 10;
 
-    constexpr STRF_HD operator strf::int_format_static_base<10> () const
+    constexpr STRF_HD operator strf::int_format_static_base_and_punct<10, false> () const
     {
         return {};
     }
@@ -64,42 +64,18 @@ struct default_int_format
     }
 };
 
-
-template <int ToBase, int FromBase>
-constexpr STRF_HD int_format_static_base<ToBase> change_base(int_format_static_base<FromBase> f) noexcept
+template <int ToBase, int ToPunctuate, int FromBase, bool FromPunctuate>
+constexpr STRF_HD int_format_static_base_and_punct<ToBase, ToPunctuate>
+    change_static_params(int_format_static_base_and_punct<FromBase, FromPunctuate> f) noexcept
 {
-    return {f.precision, f.pad0width, f.sign, f.punctuate, f.showbase};
-}
-
-template <int ToBase>
-constexpr STRF_HD int_format_static_base<ToBase> change_base(default_int_format) noexcept
-{
-    return {};
-}
-
-template <int Base>
-constexpr STRF_HD bool operator==( strf::int_format_static_base<Base> lhs
-                                 , strf::int_format_static_base<Base> rhs ) noexcept
-{
-    return lhs.precision == rhs.precision
-        && lhs.pad0width == rhs.pad0width
-        && lhs.sign == rhs.sign
-        && lhs.punctuate == rhs.punctuate
-        && lhs.showbase == rhs.showbase;
-}
-
-template <int Base>
-constexpr STRF_HD bool operator!=( strf::int_format_static_base<Base> lhs
-                                 , strf::int_format_static_base<Base> rhs ) noexcept
-{
-    return ! (lhs == rhs);
+    return {f.precision, f.pad0width, f.sign, f.showbase};
 }
 
 template <class T>
 class default_int_formatter_fn;
 
-template <class T, int Base>
-class int_formatter_static_base_fn;
+template <class T, int Base, bool Punctuate>
+class int_formatter_static_base_and_punct_fn;
 
 template <class T>
 class int_formatter_full_dynamic_fn;
@@ -110,11 +86,11 @@ struct default_int_formatter
     using fn = strf::default_int_formatter_fn<T>;
 };
 
-template <int Base>
-struct int_formatter_static_base
+template <int Base, bool Punctuate>
+struct int_formatter_static_base_and_punct
 {
     template <typename T>
-    using fn = int_formatter_static_base_fn<T, Base>;
+    using fn = int_formatter_static_base_and_punct_fn<T, Base, Punctuate>;
 };
 
 struct int_formatter_full_dynamic
@@ -128,9 +104,9 @@ using int_formatter = default_int_formatter;
 template <class T>
 class default_int_formatter_fn
 {
-    template <int Base>
+    template <int Base, bool Punctuate>
     using adapted_derived_type_
-        = strf::fmt_replace<T, default_int_formatter, int_formatter_static_base<Base> >;
+        = strf::fmt_replace<T, default_int_formatter, int_formatter_static_base_and_punct<Base, Punctuate> >;
 
 public:
 
@@ -160,80 +136,76 @@ public:
     {
         return *static_cast<const T*>(this);
     }
-    constexpr STRF_HD adapted_derived_type_<16> hex() const noexcept
+    constexpr STRF_HD adapted_derived_type_<16, false> hex() const noexcept
     {
         return { *static_cast<const T*>(this)
-               , strf::tag<int_formatter_static_base<16>>{}
-               , int_format_static_base<16>{} };
+               , strf::tag<int_formatter_static_base_and_punct<16, false>>{}
+               , int_format_static_base_and_punct<16, false>{} };
     }
-    constexpr STRF_HD adapted_derived_type_<8> oct() const noexcept
+    constexpr STRF_HD adapted_derived_type_<8, false> oct() const noexcept
     {
         return { *static_cast<const T*>(this)
-               , strf::tag<int_formatter_static_base<8>>{}
-               , int_format_static_base<8>{} };
+               , strf::tag<int_formatter_static_base_and_punct<8, false>>{}
+               , int_format_static_base_and_punct<8, false>{} };
     }
-    constexpr STRF_HD adapted_derived_type_<2> bin() const noexcept
+    constexpr STRF_HD adapted_derived_type_<2, false> bin() const noexcept
     {
         return { *static_cast<const T*>(this)
-               , strf::tag<int_formatter_static_base<2>>{}
-               , int_format_static_base<2>{} };
+               , strf::tag<int_formatter_static_base_and_punct<2, false>>{}
+               , int_format_static_base_and_punct<2, false>{} };
     }
-    constexpr STRF_HD adapted_derived_type_<10> p(unsigned _) const noexcept
+    constexpr STRF_HD adapted_derived_type_<10, false> p(unsigned _) const noexcept
     {
-        int_format_static_base<10> data;
+        int_format_static_base_and_punct<10, false> data;
         data.precision = _;
         return { *static_cast<const T*>(this)
-               , strf::tag<int_formatter_static_base<10>>{}
+               , strf::tag<int_formatter_static_base_and_punct<10, false>>{}
                , data };
     }
-    constexpr STRF_HD adapted_derived_type_<10> pad0(unsigned w) && noexcept
+    constexpr STRF_HD adapted_derived_type_<10, false> pad0(unsigned w) && noexcept
     {
-        int_format_static_base<10> data;
+        int_format_static_base_and_punct<10, false> data;
         data.pad0width = w;
         return { *static_cast<const T*>(this)
-               , strf::tag<int_formatter_static_base<10>>{}
+               , strf::tag<int_formatter_static_base_and_punct<10, false>>{}
                , data };
     }
-    constexpr STRF_HD adapted_derived_type_<10> operator+() && noexcept
+    constexpr STRF_HD adapted_derived_type_<10, false> operator+() && noexcept
     {
-        int_format_static_base<10> data;
+        int_format_static_base_and_punct<10, false> data;
         data.sign = strf::showsign::positive_also;
         return { *static_cast<const T*>(this)
-               , strf::tag<int_formatter_static_base<10>>{}
+               , strf::tag<int_formatter_static_base_and_punct<10, false>>{}
                , data };
     }
-    constexpr STRF_HD adapted_derived_type_<10> fill_sign() && noexcept
+    constexpr STRF_HD adapted_derived_type_<10, false> fill_sign() && noexcept
     {
-        int_format_static_base<10> data;
+        int_format_static_base_and_punct<10, false> data;
         data.sign = strf::showsign::fill_instead_of_positive;
         return { *static_cast<const T*>(this)
-               , strf::tag<int_formatter_static_base<10>>{}
+               , strf::tag<int_formatter_static_base_and_punct<10, false>>{}
                , data };
     }
-    constexpr STRF_HD adapted_derived_type_<10> operator~() && noexcept
+    constexpr STRF_HD adapted_derived_type_<10, false> operator~() && noexcept
     {
-        int_format_static_base<10> data;
+        int_format_static_base_and_punct<10, false> data;
         data.sign = strf::showsign::fill_instead_of_positive;
         return { *static_cast<const T*>(this)
-               , strf::tag<int_formatter_static_base<10>>{}
+               , strf::tag<int_formatter_static_base_and_punct<10, false>>{}
                , data };
     }
     constexpr STRF_HD void operator*() && noexcept = delete;
-    constexpr STRF_HD adapted_derived_type_<10> punct() && noexcept
+    constexpr STRF_HD adapted_derived_type_<10, true> punct() && noexcept
     {
-        int_format_static_base<10> data;
-        data.punctuate = true;
         return { *static_cast<const T*>(this)
-               , strf::tag<int_formatter_static_base<10>>{}
-               , data };
+               , strf::tag<int_formatter_static_base_and_punct<10, true>>{}
+               , strf::tag<>{} };
     }
-    constexpr STRF_HD adapted_derived_type_<10> operator!() && noexcept
+    constexpr STRF_HD adapted_derived_type_<10, true> operator!() && noexcept
     {
-        int_format_static_base<10> data;
-        data.punctuate = true;
         return { *static_cast<const T*>(this)
-               , strf::tag<int_formatter_static_base<10>>{}
-               , data };
+                 , strf::tag<int_formatter_static_base_and_punct<10, true>>{}
+               , strf::tag<>{} };
     }
     constexpr STRF_HD
     strf::fmt_replace<T, default_int_formatter, int_formatter_full_dynamic >
@@ -271,13 +243,12 @@ public:
     {
         return static_cast<T&>(*this);
     }
-    template <int Base>
-    constexpr STRF_HD adapted_derived_type_<Base>
-    set_int_format(const strf::int_format_static_base<Base>& data) const & noexcept
+    template <int Base, bool Punctuate>
+    constexpr STRF_HD adapted_derived_type_<Base, Punctuate> set_int_format
+        (const strf::int_format_static_base_and_punct<Base, Punctuate>& data) const & noexcept
     {
-        return adapted_derived_type_<Base>
-               { *static_cast<const T*>(this)
-               , strf::tag<int_formatter_static_base<Base>>{}
+        return { *static_cast<const T*>(this)
+               , strf::tag<int_formatter_static_base_and_punct<Base, Punctuate>>{}
                , data };
     }
     constexpr STRF_HD
@@ -290,30 +261,34 @@ public:
     }
 };
 
-template <class T, int Base>
-class int_formatter_static_base_fn
+template <class T, int Base, bool Punctuate>
+class int_formatter_static_base_and_punct_fn
 {
 private:
 
-    template <int OtherBase>
+    template <int OtherBase, bool OtherPunctuate>
     using adapted_derived_type_ = strf::fmt_replace
         < T
-        , int_formatter_static_base<Base>
-        , int_formatter_static_base<OtherBase> >;
+        , int_formatter_static_base_and_punct<Base, Punctuate>
+        , int_formatter_static_base_and_punct<OtherBase, OtherPunctuate> >;
 
 public:
 
-    constexpr STRF_HD int_formatter_static_base_fn()  noexcept = default;
+    constexpr STRF_HD int_formatter_static_base_and_punct_fn()  noexcept = default;
+
+    constexpr STRF_HD int_formatter_static_base_and_punct_fn(strf::tag<>) noexcept
+    {
+    }
 
     template <typename U>
-    constexpr STRF_HD int_formatter_static_base_fn
-        ( const int_formatter_static_base_fn<U, Base> & u ) noexcept
+    constexpr STRF_HD int_formatter_static_base_and_punct_fn
+        ( const int_formatter_static_base_and_punct_fn<U, Base, Punctuate> & u ) noexcept
         : data_(u.get_int_format())
     {
     }
 
-    constexpr STRF_HD explicit int_formatter_static_base_fn
-        ( int_format_static_base<Base> data ) noexcept
+    constexpr STRF_HD explicit int_formatter_static_base_and_punct_fn
+        ( int_format_static_base_and_punct<Base, Punctuate> data ) noexcept
         : data_(data)
     {
     }
@@ -325,13 +300,14 @@ public:
     }
 
     template < int B = 16 >
-    constexpr STRF_HD std::enable_if_t<Base != B && B == 16, adapted_derived_type_<B>>
+    constexpr STRF_HD
+    std::enable_if_t<Base != B && B == 16, adapted_derived_type_<B, Punctuate>>
     hex() const &
     {
-        return adapted_derived_type_<B>
+        return adapted_derived_type_<B, Punctuate>
             { *static_cast<const T*>(this)
-            , strf::tag<strf::int_formatter_static_base<B>>{}
-            , strf::change_base<B>(data_) };
+            , strf::tag<strf::int_formatter_static_base_and_punct<B, Punctuate>>{}
+            , strf::change_static_params<B, Punctuate>(data_) };
     }
     template < int B = 10 >
     constexpr STRF_HD std::enable_if_t<Base == B && B == 10, T&&> dec() &&
@@ -340,13 +316,14 @@ public:
     }
 
     template < int B = 10 >
-    constexpr STRF_HD std::enable_if_t<Base != B && B == 10, adapted_derived_type_<B>>
+    constexpr STRF_HD
+    std::enable_if_t<Base != B && B == 10, adapted_derived_type_<B, Punctuate>>
     dec() const &
     {
-        return adapted_derived_type_<B>
+        return
             { *static_cast<const T*>(this)
-            , strf::tag<strf::int_formatter_static_base<B>>{}
-            , strf::change_base<B>(data_) };
+            , strf::tag<strf::int_formatter_static_base_and_punct<B, Punctuate>>{}
+            , strf::change_static_params<B, Punctuate>(data_) };
     }
     template < int B = 8 >
     constexpr STRF_HD std::enable_if_t<Base == B && B == 8, T&&>
@@ -355,13 +332,14 @@ public:
         return static_cast<T&&>(*this);
     }
     template < int B = 8 >
-    constexpr STRF_HD std::enable_if_t<Base != B && B == 8, adapted_derived_type_<B>>
+    constexpr STRF_HD
+    std::enable_if_t<Base != B && B == 8, adapted_derived_type_<B, Punctuate>>
     oct() const &
     {
-        return adapted_derived_type_<B>
+        return
             { *static_cast<const T*>(this)
-            , strf::tag<strf::int_formatter_static_base<B>>{}
-            , strf::change_base<B>(data_) };
+            , strf::tag<strf::int_formatter_static_base_and_punct<B, Punctuate>>{}
+            , strf::change_static_params<B, Punctuate>(data_) };
     }
     template < int B = 2 >
     constexpr STRF_HD std::enable_if_t<Base == B && B == 2, T&&>
@@ -370,13 +348,14 @@ public:
         return static_cast<T&&>(*this);
     }
     template < int B = 2 >
-    constexpr STRF_HD std::enable_if_t<Base != B && B == 2, adapted_derived_type_<B>>
+    constexpr STRF_HD
+    std::enable_if_t<Base != B && B == 2, adapted_derived_type_<B, Punctuate>>
     bin() const &
     {
-        return adapted_derived_type_<B>
+        return
             { *static_cast<const T*>(this)
-            , strf::tag<strf::int_formatter_static_base<B>>{}
-            , strf::change_base<B>(data_) };
+            , strf::tag<strf::int_formatter_static_base_and_punct<B, Punctuate>>{}
+            , strf::change_static_params<B, Punctuate>(data_) };
     }
     constexpr STRF_HD T&& p(unsigned _) && noexcept
     {
@@ -416,18 +395,38 @@ public:
         data_.showbase = true;
         return static_cast<T&&>(*this);
     }
-    constexpr STRF_HD T&& punct() && noexcept
+    template <bool P = true>
+    constexpr STRF_HD std::enable_if_t<P == Punctuate, T&&> punct() && noexcept
     {
-        data_.punctuate = true;
         return static_cast<T&&>(*this);
     }
-    constexpr STRF_HD T&& operator!() && noexcept
+    template <bool P = true>
+    constexpr STRF_HD std::enable_if_t<P == Punctuate, T&&> operator!() && noexcept
     {
-        data_.punctuate = true;
         return static_cast<T&&>(*this);
     }
-    constexpr STRF_HD
-    strf::fmt_replace<T, int_formatter_static_base<Base>, int_formatter_full_dynamic >
+    template <bool P = true>
+    constexpr STRF_HD std::enable_if_t<P != Punctuate, adapted_derived_type_<Base, true>>
+    punct() const & noexcept
+    {
+        return
+            { *static_cast<const T*>(this)
+            , strf::tag<strf::int_formatter_static_base_and_punct<Base, true>>{}
+            , strf::change_static_params<Base, true>(data_) };
+    }
+    template <bool P = true>
+    constexpr STRF_HD std::enable_if_t<P != Punctuate, adapted_derived_type_<Base, true>>
+    operator!() const & noexcept
+    {
+        return
+            { *static_cast<const T*>(this)
+            , strf::tag<strf::int_formatter_static_base_and_punct<Base, true>>{}
+            , strf::change_static_params<Base, true>(data_) };
+    }
+    constexpr STRF_HD strf::fmt_replace
+        < T
+        , int_formatter_static_base_and_punct<Base, Punctuate>
+        , int_formatter_full_dynamic >
     base(int b) const
     {
         int_format_full_dynamic data;
@@ -440,37 +439,49 @@ public:
     {
         return Base;
     }
-    constexpr STRF_HD strf::int_format_static_base<Base> get_int_format() const noexcept
+    constexpr STRF_HD
+    strf::int_format_static_base_and_punct<Base, Punctuate>
+    get_int_format() const noexcept
     {
         return data_;
     }
-    constexpr STRF_HD T&& set_int_format(strf::int_format_static_base<Base> data) && noexcept
+    constexpr STRF_HD T&& set_int_format
+        ( strf::int_format_static_base_and_punct<Base, Punctuate> data ) && noexcept
     {
         data_ = data;
         return static_cast<T&&>(*this);
     }
-    constexpr STRF_HD T& set_int_format(strf::int_format_static_base<Base> data) & noexcept
+    constexpr STRF_HD T& set_int_format
+        ( strf::int_format_static_base_and_punct<Base, Punctuate> data ) & noexcept
     {
         data_ = data;
         return static_cast<T&>(*this);
     }
-    template <int OtherBase>
-    constexpr STRF_HD std::enable_if_t<Base != OtherBase, adapted_derived_type_<OtherBase>>
-    set_int_format(strf::int_format_static_base<OtherBase> data) const & noexcept
+    template <int OtherBase, bool OtherPunctuate>
+    constexpr STRF_HD
+    std::enable_if_t< Base != OtherBase || Punctuate != OtherPunctuate
+                    , adapted_derived_type_<OtherBase, OtherPunctuate> >
+    set_int_format
+        ( strf::int_format_static_base_and_punct<OtherBase, OtherPunctuate> data ) const & noexcept
     {
-        return adapted_derived_type_<OtherBase>
+        return adapted_derived_type_<OtherBase, OtherPunctuate>
             { *static_cast<const T*>(this)
-            , strf::tag<strf::int_formatter_static_base<OtherBase>>{}
+            , strf::tag<strf::int_formatter_static_base_and_punct<OtherBase, OtherPunctuate>>{}
             , data };
     }
-    constexpr STRF_HD
-    strf::fmt_replace<T, int_formatter_static_base<Base>, default_int_formatter >
+    constexpr STRF_HD strf::fmt_replace
+        < T
+        , int_formatter_static_base_and_punct<Base, Punctuate>
+        , default_int_formatter >
     set_int_format(strf::default_int_format) const & noexcept
     {
         return { * static_cast<const T*>(this) };
     }
     constexpr STRF_HD
-    strf::fmt_replace<T, int_formatter_static_base<Base>, int_formatter_full_dynamic >
+    strf::fmt_replace
+        < T
+        , int_formatter_static_base_and_punct<Base, Punctuate>
+        , int_formatter_full_dynamic >
     set_int_format(strf::int_format_full_dynamic data) const & noexcept
     {
         return { *static_cast<const T*>(this)
@@ -480,7 +491,7 @@ public:
 
 private:
 
-    strf::int_format_static_base<Base> data_;
+    strf::int_format_static_base_and_punct<Base, Punctuate> data_;
 };
 
 template <typename T>
@@ -648,14 +659,16 @@ public:
         data_ = data;
         return static_cast<T&>(*this);
     }
-    template <int Base>
+    template <int Base, bool Punctuate>
     constexpr STRF_HD
-    strf::fmt_replace<T, int_formatter_full_dynamic, int_formatter_static_base<Base> >
-    set_int_format(strf::int_format_static_base<Base> data) const & noexcept
+    strf::fmt_replace< T
+                     , int_formatter_full_dynamic
+                     , int_formatter_static_base_and_punct<Base, Punctuate> >
+    set_int_format(strf::int_format_static_base_and_punct<Base, Punctuate> data) const & noexcept
     {
         return
             { *static_cast<const T*>(this)
-            , strf::tag<strf::int_formatter_static_base<Base>>{}
+            , strf::tag<strf::int_formatter_static_base_and_punct<Base, Punctuate>>{}
             , data };
 
     }
@@ -683,7 +696,7 @@ namespace detail {
 
 template <typename> class default_int_printer;
 //template <typename> class punct_int_printer;
-template <typename, int> class punct_fmt_int_printer;
+template <typename, int Base, bool Punctuate> class int_printer_static_base_and_punct;
 template <typename> class int_printer_full_dynamic;
 
 template <typename T>
@@ -771,10 +784,10 @@ private:
               , int_formatter
               , alignment_formatter_q<HasAlignment> >;
 
-    template <typename P, int Base, bool HasAlignment>
-    using vwf_b_ = value_with_formatters
+    template <typename P, int Base, bool Punctuate, bool HasAlignment>
+    using vwf_bp_ = value_with_formatters
               < P
-              , int_formatter_static_base<Base>
+              , int_formatter_static_base_and_punct<Base, Punctuate>
               , alignment_formatter_q<HasAlignment> >;
 
     template <typename P, bool HasAlignment>
@@ -782,8 +795,6 @@ private:
               < P
               , int_formatter_full_dynamic
               , alignment_formatter_q<HasAlignment> >;
-
-
 public:
 
     using override_tag = IntT;
@@ -800,14 +811,14 @@ public:
     }
 
     template < typename CharT, typename Preview, typename FPack
-             , typename PTraits, int Base, bool HasAlignment >
+             , typename PTraits, int Base, bool Punctuate, bool HasAlignment >
     constexpr STRF_HD static auto make_printer_input
         ( Preview& preview
         , const FPack& facets
-        , vwf_b_<PTraits, Base, HasAlignment> x )
+        , vwf_bp_<PTraits, Base, Punctuate, HasAlignment> x )
         -> strf::usual_printer_input
-            < CharT, Preview, FPack, vwf_b_<PTraits, Base, HasAlignment>
-            , strf::detail::punct_fmt_int_printer<CharT, Base> >
+            < CharT, Preview, FPack, vwf_bp_<PTraits, Base, Punctuate, HasAlignment>
+            , strf::detail::int_printer_static_base_and_punct<CharT, Base, Punctuate> >
     {
         return {preview, facets, x};
     }
@@ -823,7 +834,7 @@ public:
             , strf::detail::default_int_printer_input<CharT, Preview, IntT>
             , strf::usual_printer_input
                 < CharT, Preview, FPack, vwf_<PTraits, HasAlignment>
-                , strf::detail::punct_fmt_int_printer<CharT, 10> > >
+                , strf::detail::int_printer_static_base_and_punct<CharT, 10, false> > >
     {
         return {preview, facets, x};
     }
@@ -1118,7 +1129,45 @@ template
     , std::enable_if_t<std::is_signed<IntT>::value, int> = 0 >
 inline STRF_HD void init_1
     ( fmt_int_printer_data& data
-    , strf::int_format_static_base<10> ifmt
+    , strf::default_int_format
+    , IntT value ) noexcept
+{
+    data.sign = '-';
+    if (value >= 0) {
+       data.uvalue = value;
+       data.has_prefix = false;
+    } else {
+        using uvalue_type = decltype(data.uvalue);
+        STRF_IF_CONSTEXPR (sizeof(IntT) < sizeof(data.uvalue)) {
+            std::make_signed_t<uvalue_type> wide_value = value;
+            data.uvalue = static_cast<uvalue_type>(-wide_value);
+        } else {
+            data.uvalue = 1 + static_cast<uvalue_type>(-(value + 1));
+        }
+        data.has_prefix = true;
+    }
+}
+
+template
+    < typename UIntT
+    , std::enable_if_t<!std::is_signed<UIntT>::value, int> = 0 >
+inline STRF_HD void init_1
+    ( fmt_int_printer_data& data
+    , strf::default_int_format
+    , UIntT uvalue ) noexcept
+{
+    data.sign = '\0';
+    data.has_prefix = false;
+    data.uvalue = uvalue;
+}
+
+template
+    < typename IntT
+    , bool Punctuate
+    , std::enable_if_t<std::is_signed<IntT>::value, int> = 0 >
+inline STRF_HD void init_1
+    ( fmt_int_printer_data& data
+    , strf::int_format_static_base_and_punct<10, Punctuate> ifmt
     , IntT value ) noexcept
 {
     if (value >= 0) {
@@ -1140,10 +1189,11 @@ inline STRF_HD void init_1
 
 template
     < typename UIntT
+    , bool Punctuate
     , std::enable_if_t<std::is_unsigned<UIntT>::value, int> = 0 >
 inline STRF_HD void init_1
     ( fmt_int_printer_data& data
-    , strf::int_format_static_base<10>
+    , strf::int_format_static_base_and_punct<10, Punctuate>
     , UIntT uvalue ) noexcept
 {
     data.sign = '\0';
@@ -1151,25 +1201,163 @@ inline STRF_HD void init_1
     data.uvalue = uvalue;
 }
 
-template <typename IntT, int Base>
+template <typename IntT, bool Punctuate, int Base>
 inline STRF_HD void init_1
     ( fmt_int_printer_data& data
-    , strf::int_format_static_base<Base>
+    , strf::int_format_static_base_and_punct<Base, Punctuate>
     , IntT value ) noexcept
 {
     data.uvalue = static_cast<decltype(data.uvalue)>(value);
 }
 
-struct punct_fmt_int_printer_data_init_result {
+struct fmt_int_printer_data_init_result {
     unsigned sub_width;
     unsigned fillcount;
 };
 
 template <int Base>
-STRF_HD punct_fmt_int_printer_data_init_result init_punct_fmt_int_printer_data
+STRF_HD fmt_int_printer_data_init_result init_fmt_int_printer_data
+    ( fmt_int_printer_data& data
+    , strf::int_format_static_base_and_punct<Base, false> ifmt
+    , strf::alignment_format afmt ) noexcept
+#if defined(STRF_OMIT_IMPL)
+    ;
+#else
+{
+    data.digcount = strf::detail::count_digits<Base>(data.uvalue);
+    unsigned prefix_size;
+    STRF_IF_CONSTEXPR (Base == 10 ) {
+        prefix_size = data.has_prefix;
+    } else STRF_IF_CONSTEXPR (Base == 8 ) {
+        if (ifmt.showbase && data.uvalue != 0) {
+            data.has_prefix = true;
+            prefix_size = 1;
+            if (ifmt.precision > 0) {
+                -- ifmt.precision;
+            }
+        } else {
+            data.has_prefix = false;
+            prefix_size = 0;
+        }
+    } else {
+        data.has_prefix = ifmt.showbase;
+        prefix_size = (unsigned)ifmt.showbase << 1;
+    }
+    unsigned content_width = data.digcount + prefix_size;
+    unsigned zeros_a = ifmt.precision > data.digcount ? ifmt.precision - data.digcount : 0;
+    unsigned zeros_b = ifmt.pad0width > content_width ? ifmt.pad0width - content_width : 0;
+    data.leading_zeros = (detail::max)(zeros_a, zeros_b);
+    content_width += data.leading_zeros;
+    auto fmt_width = afmt.width.round();
+    data.fillchar = afmt.fill;
+    bool fill_sign_space = Base == 10 && data.sign == ' ';
+    if (fmt_width <= (int)content_width) {
+        bool x = fill_sign_space && afmt.fill != ' ';
+        data.left_fillcount = x;
+        data.right_fillcount = 0;
+        data.has_prefix &= !x;
+        return {content_width - x, x};
+    }
+    auto fillcount = static_cast<unsigned>(fmt_width - content_width);
+    data.has_prefix &= !fill_sign_space;
+    switch (afmt.alignment) {
+        case strf::text_alignment::left:
+            data.left_fillcount = fill_sign_space;
+            data.right_fillcount = fillcount;
+            break;
+        case strf::text_alignment::right:
+            data.left_fillcount = fillcount + fill_sign_space;
+            data.right_fillcount = 0;
+            break;
+        default:
+            auto halfcount = fillcount >> 1;
+            data.left_fillcount = halfcount + fill_sign_space;
+            data.right_fillcount = halfcount + (fillcount & 1);
+    }
+    return {content_width - fill_sign_space, fillcount + fill_sign_space};
+}
+
+#endif // defined(STRF_OMIT_IMPL)
+
+template <typename CharT, int Base>
+class int_printer_static_base_and_punct<CharT, Base, false>: public printer<CharT>
+{
+public:
+
+    template <typename... T>
+    STRF_HD explicit int_printer_static_base_and_punct
+        ( const strf::usual_printer_input<T...>& i )
+    {
+        auto ivalue = i.arg.value();
+        using int_type = decltype(ivalue);
+        lettercase_ = strf::get_facet<lettercase_c, int_type>(i.facets);
+        auto enc = strf::get_facet<char_encoding_c<CharT>, int_type>(i.facets);
+        encode_fill_ = enc.encode_fill_func();
+        auto ifmt = i.arg.get_int_format();
+        auto afmt = i.arg.get_alignment_format();
+        detail::init_1(data_, ifmt, ivalue);
+        auto w = detail::init_fmt_int_printer_data<Base>(data_, ifmt, afmt);
+        i.preview.subtract_width(w.sub_width + w.fillcount);
+        using preview_type = typename strf::usual_printer_input<T...>::preview_type;
+        STRF_IF_CONSTEXPR (preview_type::size_required) {
+            i.preview.add_size(w.sub_width);
+            if (w.fillcount) {
+                i.preview.add_size(w.fillcount * enc.encoded_char_size(afmt.fill));
+            }
+        }
+    }
+
+    STRF_HD ~int_printer_static_base_and_punct()
+    {
+    }
+
+    STRF_HD void print_to(strf::basic_outbuff<CharT>& ob) const override;
+
+private:
+
+    strf::encode_fill_f<CharT> encode_fill_;
+    strf::detail::fmt_int_printer_data data_;
+    strf::lettercase lettercase_;
+};
+
+template <typename CharT, int Base>
+void int_printer_static_base_and_punct<CharT, Base, false>::print_to(strf::basic_outbuff<CharT>& ob) const
+{
+    if (data_.left_fillcount > 0) {
+        encode_fill_(ob, data_.left_fillcount, data_.fillchar);
+    }
+    if (data_.has_prefix) {
+        STRF_IF_CONSTEXPR (Base == 10) {
+            ob.ensure(1);
+            * ob.pointer() = static_cast<CharT>(data_.sign);
+            ob.advance();
+        } else STRF_IF_CONSTEXPR (Base == 8) {
+            ob.ensure(1);
+            * ob.pointer() = static_cast<CharT>('0');
+            ob.advance();
+        } else {
+            constexpr CharT xb = Base == 16 ? 'X' : 'B';
+            ob.ensure(2);
+            auto it = ob.pointer();
+            it[0] = static_cast<CharT>('0');
+            it[1] = static_cast<CharT>(xb | ((lettercase_ != strf::uppercase) << 5));
+            ob.advance_to(it + 2);
+        }
+    }
+    if (data_.leading_zeros > 0) {
+        strf::detail::write_fill(ob, data_.leading_zeros, CharT('0'));
+    }
+    detail::intdigits_writer<Base>::write(ob, data_.uvalue, data_.digcount, lettercase_);
+    if (data_.right_fillcount > 0) {
+        encode_fill_(ob, data_.right_fillcount, data_.fillchar);
+    }
+}
+
+template <int Base>
+STRF_HD fmt_int_printer_data_init_result init_punct_fmt_int_printer_data
     ( punct_fmt_int_printer_data& data
     , strf::validate_f validate
-    , strf::int_format_static_base<Base> ifmt
+    , strf::int_format_static_base_and_punct<Base, true> ifmt
     , strf::alignment_format afmt ) noexcept
 #if defined(STRF_OMIT_IMPL)
     ;
@@ -1177,7 +1365,8 @@ STRF_HD punct_fmt_int_printer_data_init_result init_punct_fmt_int_printer_data
 {
     data.digcount = strf::detail::count_digits<Base>(data.uvalue);
     data.sepsize = 1;
-    if (data.sepchar >= 0x80 && data.grouping.any_separator(data.digcount)) {
+    data.sepcount = data.grouping.separators_count(data.digcount);
+    if (data.sepchar >= 0x80 && data.sepcount) {
         auto sepsize = validate(data.sepchar);
         data.sepsize = static_cast<unsigned>(sepsize);
         if (sepsize == strf::invalid_char_len) {
@@ -1185,7 +1374,6 @@ STRF_HD punct_fmt_int_printer_data_init_result init_punct_fmt_int_printer_data
             data.sepsize = 0;
         }
     }
-    data.sepcount = data.grouping.separators_count(data.digcount);
     unsigned prefix_size;
     STRF_IF_CONSTEXPR (Base == 10 ) {
         prefix_size = data.has_prefix;
@@ -1240,14 +1428,14 @@ STRF_HD punct_fmt_int_printer_data_init_result init_punct_fmt_int_printer_data
 #endif // defined(STRF_OMIT_IMPL)
 
 template <typename CharT, int Base>
-class punct_fmt_int_printer: public printer<CharT>
+class int_printer_static_base_and_punct<CharT, Base, true>: public printer<CharT>
 {
 public:
 
     template <typename... T>
-    STRF_HD explicit punct_fmt_int_printer
+    STRF_HD explicit int_printer_static_base_and_punct
         ( const strf::usual_printer_input<T...>& i)
-        : punct_fmt_int_printer
+        : int_printer_static_base_and_punct
             ( i.arg.value()
             , i.arg.get_int_format()
             , i.arg.get_alignment_format()
@@ -1257,13 +1445,13 @@ public:
     }
 
     template <typename IntT, typename Preview, typename FPack>
-    STRF_HD punct_fmt_int_printer
+    STRF_HD int_printer_static_base_and_punct
         ( IntT ivalue
-        , int_format_static_base<Base> ifmt
+        , int_format_static_base_and_punct<Base, true> ifmt
         , alignment_format afmt
         , Preview& preview
         , const FPack& facets )
-        : punct_fmt_int_printer
+        : int_printer_static_base_and_punct
             ( ivalue, ifmt, afmt, preview
             , strf::get_facet<lettercase_c, IntT>(facets)
             , strf::get_facet<numpunct_c<Base>, IntT>(facets).grouping()
@@ -1273,9 +1461,9 @@ public:
     }
 
     template <typename IntT, typename Preview, typename Encoding>
-    STRF_HD punct_fmt_int_printer
+    STRF_HD int_printer_static_base_and_punct
         ( IntT ivalue
-        , int_format_static_base<Base> ifmt
+        , int_format_static_base_and_punct<Base, true> ifmt
         , alignment_format afmt
         , Preview& preview
         , strf::lettercase lc
@@ -1301,7 +1489,9 @@ public:
         }
     }
 
-    STRF_HD ~punct_fmt_int_printer();
+    STRF_HD ~int_printer_static_base_and_punct()
+    {
+    }
 
     STRF_HD void print_to( strf::basic_outbuff<CharT>& ob ) const override;
 
@@ -1314,12 +1504,7 @@ private:
 };
 
 template <typename CharT, int Base>
-STRF_HD punct_fmt_int_printer<CharT, Base>::~punct_fmt_int_printer()
-{
-}
-
-template <typename CharT, int Base>
-STRF_HD void punct_fmt_int_printer<CharT, Base>::print_to
+STRF_HD void int_printer_static_base_and_punct<CharT, Base, true>::print_to
         ( strf::basic_outbuff<CharT>& ob ) const
 {
     if (data_.left_fillcount > 0) {
@@ -1379,33 +1564,59 @@ public:
     {
         auto ifmt = i.arg.get_int_format();
         auto afmt = i.arg.get_alignment_format();
+        auto ivalue = i.arg.value();
+        using int_type = decltype(ivalue);
+        auto lc = strf::get_facet<lettercase_c, int_type>(i.facets);
+        auto enc = strf::get_facet<char_encoding_c<CharT>, int_type>(i.facets);
+        strf::digits_grouping grp;
+        char32_t thousands_sep = ',';
         switch(ifmt.base) {
             case 16: {
-                int_format_static_base<16> ifmt16
-                    { ifmt.precision, ifmt.pad0width, ifmt.sign, ifmt.showbase, ifmt.punctuate };
-                new ((void*)&storage_) punct_fmt_int_printer<CharT, 16>
-                    ( i.arg.value(), ifmt16, afmt, i.preview, i.facets );
+                int_format_static_base_and_punct<16, true> ifmt16
+                    { ifmt.precision, ifmt.pad0width, ifmt.sign, ifmt.showbase };
+                if (ifmt.punctuate) {
+                    auto numpunct = strf::get_facet<numpunct_c<16>, int_type>(i.facets);
+                    grp = numpunct.grouping();
+                    thousands_sep = numpunct.thousands_sep();
+                }
+                new ((void*)&storage_) int_printer_static_base_and_punct<CharT, 16, true>
+                    ( ivalue, ifmt16, afmt, i.preview, lc, grp, thousands_sep, enc );
                 break;
             }
             case 8: {
-                int_format_static_base<8> ifmt8
-                    { ifmt.precision, ifmt.pad0width, ifmt.sign, ifmt.showbase, ifmt.punctuate };
-                new ((void*)&storage_) punct_fmt_int_printer<CharT, 8>
-                    ( i.arg.value(), ifmt8, afmt, i.preview, i.facets );
+                int_format_static_base_and_punct<8, true> ifmt8
+                    { ifmt.precision, ifmt.pad0width, ifmt.sign, ifmt.showbase };
+                if (ifmt.punctuate) {
+                    auto numpunct = strf::get_facet<numpunct_c<8>, int_type>(i.facets);
+                    grp = numpunct.grouping();
+                    thousands_sep = numpunct.thousands_sep();
+                }
+                new ((void*)&storage_) int_printer_static_base_and_punct<CharT, 8, true>
+                    ( ivalue, ifmt8, afmt, i.preview, lc, grp, thousands_sep, enc );
                 break;
             }
             case 2: {
-                int_format_static_base<2> ifmt2
-                    { ifmt.precision, ifmt.pad0width, ifmt.sign, ifmt.showbase, ifmt.punctuate };
-                new ((void*)&storage_) punct_fmt_int_printer<CharT, 2>
-                    ( i.arg.value(), ifmt2, afmt, i.preview, i.facets );
+                int_format_static_base_and_punct<2, true> ifmt2
+                    { ifmt.precision, ifmt.pad0width, ifmt.sign, ifmt.showbase };
+                if (ifmt.punctuate) {
+                    auto numpunct = strf::get_facet<numpunct_c<2>, int_type>(i.facets);
+                    grp = numpunct.grouping();
+                    thousands_sep = numpunct.thousands_sep();
+                }
+                new ((void*)&storage_) int_printer_static_base_and_punct<CharT, 2, true>
+                    ( ivalue, ifmt2, afmt, i.preview, lc, grp, thousands_sep, enc );
                 break;
             }
             default:  {
-                int_format_static_base<10> ifmt10
-                    { ifmt.precision, ifmt.pad0width, ifmt.sign, ifmt.showbase, ifmt.punctuate };
-                new ((void*)&storage_) punct_fmt_int_printer<CharT, 10>
-                    ( i.arg.value(), ifmt10, afmt, i.preview, i.facets );
+                int_format_static_base_and_punct<10, true> ifmt10
+                    { ifmt.precision, ifmt.pad0width, ifmt.sign, ifmt.showbase };
+                if (ifmt.punctuate) {
+                    auto numpunct = strf::get_facet<numpunct_c<10>, int_type>(i.facets);
+                    grp = numpunct.grouping();
+                    thousands_sep = numpunct.thousands_sep();
+                }
+                new ((void*)&storage_) int_printer_static_base_and_punct<CharT, 10, true>
+                    ( ivalue, ifmt10, afmt, i.preview, lc, grp, thousands_sep, enc );
                 break;
             }
         }
@@ -1434,7 +1645,7 @@ public:
 private:
 
     static constexpr std::size_t pool_size_ =
-        sizeof(strf::detail::punct_fmt_int_printer<CharT, 10>);
+        sizeof(strf::detail::int_printer_static_base_and_punct<CharT, 10, true>);
 
     using storage_type_ = typename std::aligned_storage_t
         < pool_size_, alignof(strf::printer<CharT>)>;
@@ -1445,39 +1656,67 @@ private:
 #if defined(STRF_SEPARATE_COMPILATION)
 
 STRF_EXPLICIT_TEMPLATE
-STRF_HD punct_fmt_int_printer_data_init_result init_punct_fmt_int_printer_data<2>
-    ( punct_fmt_int_printer_data& data
-    , strf::validate_f validate
-    , strf::int_format_static_base<2> ifmt
+STRF_HD fmt_int_printer_data_init_result init_fmt_int_printer_data<2>
+    ( fmt_int_printer_data& data
+    , strf::int_format_static_base_and_punct<2, false> ifmt
     , strf::alignment_format afmt ) noexcept;
 
 STRF_EXPLICIT_TEMPLATE
-STRF_HD punct_fmt_int_printer_data_init_result init_punct_fmt_int_printer_data<8>
-    ( punct_fmt_int_printer_data& data
-    , strf::validate_f validate
-    , strf::int_format_static_base<8> ifmt
+STRF_HD fmt_int_printer_data_init_result init_fmt_int_printer_data<8>
+    ( fmt_int_printer_data& data
+    , strf::int_format_static_base_and_punct<8, false> ifmt
     , strf::alignment_format afmt ) noexcept;
 
 STRF_EXPLICIT_TEMPLATE
-STRF_HD punct_fmt_int_printer_data_init_result init_punct_fmt_int_printer_data<10>
-    ( punct_fmt_int_printer_data& data
-    , strf::validate_f validate
-    , strf::int_format_static_base<10> ifmt
+STRF_HD fmt_int_printer_data_init_result init_fmt_int_printer_data<10>
+    ( fmt_int_printer_data& data
+    , strf::int_format_static_base_and_punct<10, false> ifmt
     , strf::alignment_format afmt ) noexcept;
 
 STRF_EXPLICIT_TEMPLATE
-STRF_HD punct_fmt_int_printer_data_init_result init_punct_fmt_int_printer_data<16>
+STRF_HD fmt_int_printer_data_init_result init_fmt_int_printer_data<16>
+    ( fmt_int_printer_data& data
+    , strf::int_format_static_base_and_punct<16, false> ifmt
+    , strf::alignment_format afmt ) noexcept;
+
+STRF_EXPLICIT_TEMPLATE
+STRF_HD fmt_int_printer_data_init_result init_punct_fmt_int_printer_data<2>
     ( punct_fmt_int_printer_data& data
     , strf::validate_f validate
-    , strf::int_format_static_base<16> ifmt
+    , strf::int_format_static_base_and_punct<2, true> ifmt
+    , strf::alignment_format afmt ) noexcept;
+
+STRF_EXPLICIT_TEMPLATE
+STRF_HD fmt_int_printer_data_init_result init_punct_fmt_int_printer_data<8>
+    ( punct_fmt_int_printer_data& data
+    , strf::validate_f validate
+    , strf::int_format_static_base_and_punct<8, true> ifmt
+    , strf::alignment_format afmt ) noexcept;
+
+STRF_EXPLICIT_TEMPLATE
+STRF_HD fmt_int_printer_data_init_result init_punct_fmt_int_printer_data<10>
+    ( punct_fmt_int_printer_data& data
+    , strf::validate_f validate
+    , strf::int_format_static_base_and_punct<10, true> ifmt
+    , strf::alignment_format afmt ) noexcept;
+
+STRF_EXPLICIT_TEMPLATE
+STRF_HD fmt_int_printer_data_init_result init_punct_fmt_int_printer_data<16>
+    ( punct_fmt_int_printer_data& data
+    , strf::validate_f validate
+    , strf::int_format_static_base_and_punct<16, true> ifmt
     , strf::alignment_format afmt ) noexcept;
 
 #if defined(__cpp_char8_t)
 STRF_EXPLICIT_TEMPLATE class default_int_printer<char8_t>;
 //STRF_EXPLICIT_TEMPLATE class punct_int_printer<char8_t>;
-STRF_EXPLICIT_TEMPLATE class punct_fmt_int_printer<char8_t,  8>;
-STRF_EXPLICIT_TEMPLATE class punct_fmt_int_printer<char8_t, 10>;
-STRF_EXPLICIT_TEMPLATE class punct_fmt_int_printer<char8_t, 16>;
+STRF_EXPLICIT_TEMPLATE class int_printer_static_base_and_punct<char8_t,  8, true>;
+STRF_EXPLICIT_TEMPLATE class int_printer_static_base_and_punct<char8_t, 10, true>;
+STRF_EXPLICIT_TEMPLATE class int_printer_static_base_and_punct<char8_t, 16, true>;
+STRF_EXPLICIT_TEMPLATE class int_printer_static_base_and_punct<char8_t,  8, false>;
+STRF_EXPLICIT_TEMPLATE class int_printer_static_base_and_punct<char8_t, 10, false>;
+STRF_EXPLICIT_TEMPLATE class int_printer_static_base_and_punct<char8_t, 16, false>;
+
 #endif
 
 STRF_EXPLICIT_TEMPLATE class default_int_printer<char>;
@@ -1490,18 +1729,31 @@ STRF_EXPLICIT_TEMPLATE class default_int_printer<wchar_t>;
 // STRF_EXPLICIT_TEMPLATE class punct_int_printer<char32_t>;
 // STRF_EXPLICIT_TEMPLATE class punct_int_printer<wchar_t>;
 
-STRF_EXPLICIT_TEMPLATE class punct_fmt_int_printer<char,  8>;
-STRF_EXPLICIT_TEMPLATE class punct_fmt_int_printer<char, 10>;
-STRF_EXPLICIT_TEMPLATE class punct_fmt_int_printer<char, 16>;
-STRF_EXPLICIT_TEMPLATE class punct_fmt_int_printer<char16_t,  8>;
-STRF_EXPLICIT_TEMPLATE class punct_fmt_int_printer<char16_t, 10>;
-STRF_EXPLICIT_TEMPLATE class punct_fmt_int_printer<char16_t, 16>;
-STRF_EXPLICIT_TEMPLATE class punct_fmt_int_printer<char32_t,  8>;
-STRF_EXPLICIT_TEMPLATE class punct_fmt_int_printer<char32_t, 10>;
-STRF_EXPLICIT_TEMPLATE class punct_fmt_int_printer<char32_t, 16>;
-STRF_EXPLICIT_TEMPLATE class punct_fmt_int_printer<wchar_t,  8>;
-STRF_EXPLICIT_TEMPLATE class punct_fmt_int_printer<wchar_t, 10>;
-STRF_EXPLICIT_TEMPLATE class punct_fmt_int_printer<wchar_t, 16>;
+STRF_EXPLICIT_TEMPLATE class int_printer_static_base_and_punct<char,  8, true>;
+STRF_EXPLICIT_TEMPLATE class int_printer_static_base_and_punct<char, 10, true>;
+STRF_EXPLICIT_TEMPLATE class int_printer_static_base_and_punct<char, 16, true>;
+STRF_EXPLICIT_TEMPLATE class int_printer_static_base_and_punct<char16_t,  8, true>;
+STRF_EXPLICIT_TEMPLATE class int_printer_static_base_and_punct<char16_t, 10, true>;
+STRF_EXPLICIT_TEMPLATE class int_printer_static_base_and_punct<char16_t, 16, true>;
+STRF_EXPLICIT_TEMPLATE class int_printer_static_base_and_punct<char32_t,  8, true>;
+STRF_EXPLICIT_TEMPLATE class int_printer_static_base_and_punct<char32_t, 10, true>;
+STRF_EXPLICIT_TEMPLATE class int_printer_static_base_and_punct<char32_t, 16, true>;
+STRF_EXPLICIT_TEMPLATE class int_printer_static_base_and_punct<wchar_t,  8, true>;
+STRF_EXPLICIT_TEMPLATE class int_printer_static_base_and_punct<wchar_t, 10, true>;
+STRF_EXPLICIT_TEMPLATE class int_printer_static_base_and_punct<wchar_t, 16, true>;
+
+STRF_EXPLICIT_TEMPLATE class int_printer_static_base_and_punct<char,  8, false>;
+STRF_EXPLICIT_TEMPLATE class int_printer_static_base_and_punct<char, 10, false>;
+STRF_EXPLICIT_TEMPLATE class int_printer_static_base_and_punct<char, 16, false>;
+STRF_EXPLICIT_TEMPLATE class int_printer_static_base_and_punct<char16_t,  8, false>;
+STRF_EXPLICIT_TEMPLATE class int_printer_static_base_and_punct<char16_t, 10, false>;
+STRF_EXPLICIT_TEMPLATE class int_printer_static_base_and_punct<char16_t, 16, false>;
+STRF_EXPLICIT_TEMPLATE class int_printer_static_base_and_punct<char32_t,  8, false>;
+STRF_EXPLICIT_TEMPLATE class int_printer_static_base_and_punct<char32_t, 10, false>;
+STRF_EXPLICIT_TEMPLATE class int_printer_static_base_and_punct<char32_t, 16, false>;
+STRF_EXPLICIT_TEMPLATE class int_printer_static_base_and_punct<wchar_t,  8, false>;
+STRF_EXPLICIT_TEMPLATE class int_printer_static_base_and_punct<wchar_t, 10, false>;
+STRF_EXPLICIT_TEMPLATE class int_printer_static_base_and_punct<wchar_t, 16, false>;
 
 #endif // defined(STRF_SEPARATE_COMPILATION)
 

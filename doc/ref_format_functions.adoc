@@ -12,6 +12,7 @@ http://www.boost.org/LICENSE_1_0.txt
 :float_format: <<float_format,float_format>>
 :change_notation: <<float_format,change_notation>>
 :int_format: <<int_format,int_format>>
+:default_int_format: <<default_int_format,default_int_format>>
 :change_base: <<int_format,change_base>>
 :default_alignment_format: <<alignment_format,default_alignment_format>>
 :text_alignment: <<alignment_format,text_alignment>>
@@ -510,18 +511,22 @@ This _Formatter_ defines the following format functions:
 | `operator!()`
 | Equivalent to `punct()`
 
-| `pad0(unsigned w)`
+| [[int_pad0]] `pad0(unsigned w)`
 | Inserts zeros after the sign or base indication and before the digits
   such that at least `w` characters are printed
   ( not counting the fill characters caused by alignment formatting,
    but still counting the extra fill character caused by `fill_sign()` ).
 
-|`p(unsigned precision)`
+| [[int_precision]] `p(unsigned precision)`
 | Inserts zeros after the sign or base indication and before the digits
   such that at least `precision` digits are printed
 
-| `template <int Base> set_int_format(<<strf_hpp#int_format,int_format>><Base>)`
+| `set_int_format(<<strf_hpp#int_format,int_format>>)`
 | Set all integers formatting options simultaneously.
+
+| `set_int_format(<<strf_hpp#default_int_format,default_int_format>>)`
+| Reset all integers formatting options to default.
+
 |===
 
 // end::int_format_functions[]
@@ -532,8 +537,31 @@ And the following observer:
 |===
 | Observer  | Return type
 | `get_int_format()`
-| `int_format<__Base__>`, where `__Base__` depends on what format function have been previously invoked.
-// or an mplementation-defined type that depends on what format function have been previously called.
+| `int_format`, `default_int_format` or an implementation-defined __IntFormat__ type.
+|===
+
+==== Type requirements __IntFormat__ [[IntFormat]]
+
+Given:
+
+* `F`, a __InttFormat__ type
+* `f`, a value of type `F`
+
+The following must hold:
+
+* `F` is copy-constructible
+* `F` is convertible to `{int_format}`
+* `F` has public member variables below:
+
+[%header,cols="191,191,618"]
+|===
+| Member        | Type             | Semantics / effect
+| `f.base`      | `int`            | Numeric base ( must be euqal to `2`, `8`, `10` or `16` )
+| `f.precision` | `unsigned`       | See `<<int_precision,p>>` format function.
+| `f.pad0wdith` | `unsigned`       | See `<<int_pad0,pad0>>` format function.
+| `f.sign`      | `showsign`       | See enumeration `{showsign}`
+| `f.showbase`  | `bool`           | Equivalent to the `'#'` format flag in printf
+| `f.punctuate` | `bool`           | Activates numeric punctuation.
 |===
 
 ==== Struct template `int_format` [[int_format]]
@@ -542,39 +570,40 @@ And the following observer:
 ----
 namespace strf {
 
-template <int Base>
 struct int_format {
+    int base = 10;
     unsigned precision = 0;
     unsigned pad0width = 0;
     showsign sign = <<showsign,showsign>>::negative_only;
     bool showbase = false;
-    static constexpr int base = Base;
 };
-
-template <int ToBase, int FromBase>
-constexpr int_format<ToBase> change_base(int_format<FromBase> f) noexcept {
-    return {f.precision, f.pad0width, f.sign, f.showbase};
-}
 
 } // namespace strf
 ----
 
-// [[int_showbase]]
-// `showbase`:: Only has effect when `Base != 10` is `true`. Prints base indication:
-//              `'0x'` or `'0X'` for `Base == 16`, `'0'` for `Base == 8` and
-//              `'0b'` or `'0B` for `Base == 2`.
-// 
-// [[int_precision]]
-// `precision`:: Zeros are padded between the sign or base indication and the digits so that
-//               the number of digits is not less than `precision`
-// 
-// [[int_pad0width]]
-// `pad0width`:: Zeros are padded between the sign or base indication and
-//               the digits so that total number of characters to be printed
-//               &#x2014; not couting the fill characters from alignment formatting,
-//                 but couting the extra fill character that is printed
-//                 when `sign` is `showsign::fill_instead_of_positive` &#x2014;
-//               is not less than `pad0width`.
+==== Struct template `default_int_format` [[default_int_format]]
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+
+struct default_int_format {
+    constexpr static int base = 10;
+    constexpr static unsigned precision = 0;
+    constexpr static unsigned pad0width = 0;
+    constexpr static strf::showsign sign = strf::showsign::negative_only;
+    constexpr static bool showbase = false;
+    constexpr static bool punctuate = false;
+
+    constexpr STRF_HD operator <<int_format,int_format>> () const
+    {
+        return {};
+    }
+};
+
+} // namespace strf
+----
 
 ==== Enumeration `showsign` [[showsign]]
 
@@ -629,7 +658,7 @@ The `float_formatter` _Formatter_ defines the following format functions:
 | `operator!()`
 | Equivalent to `punct()`
 
-|[[pad0]] `pad0(unsigned w)`
+|[[float_pad0]] `pad0(unsigned w)`
 | Similar to the `'0'` format flag in `printf`:
 
 For NaN and infinity, causes the the width ( from alignment
@@ -719,7 +748,12 @@ If precision is set, same effect as the `'g'` format flags in `printf`
 
 ==== Type requirements __FloatFormat__ [[FloatFormat]]
 
-Given `F`, a __FloatFormat__ type, the following must hold:
+Given:
+
+* `F`, a __FloatFormat__ type
+* `f`, a value of type `F`
+
+The following must hold:
 
 * `F` is copy-constructible
 * `F` is convertible to `{float_format}`
@@ -728,12 +762,12 @@ Given `F`, a __FloatFormat__ type, the following must hold:
 [%header,cols="191,191,618"]
 |===
 | Member      | Type             | Semantics / effect
-| `precision` | `unsigned`       | Floating-point precision. When it is equal to `(unsigned)-1`, then precision is considered as not specified, which means that the number or significant digits is such that the value can be fully recovered by a parser. Otherwise, the effect depends on `notation`.
-| `pad0wdith` | `unsigned`       | Same as of format function `<<pad0,pad0>>`
-| `notation`  | `{float_notation}` | See enumeration `{float_notation}`
-| `sign`      | `showsign`       | See enumeration `{showsign}`
-| `showpoint` | `bool`           | Equivalent to the `'#'` format flag in printf
-| `punctuate` | `bool`           | Activates numeric punctuation.
+| `f.precision` | `unsigned`       | Floating-point precision. When it is equal to `(unsigned)-1`, then precision is considered as not specified, which means that the number or significant digits is such that the value can be fully recovered by a parser. Otherwise, the effect depends on `notation`.
+| `f.pad0wdith` | `unsigned`       | Same as of format function `<<float_pad0,pad0>>`
+| `f.notation`  | `{float_notation}` | See enumeration `{float_notation}`
+| `f.sign`      | `showsign`       | See enumeration `{showsign}`
+| `f.showpoint` | `bool`           | Equivalent to the `'#'` format flag in printf
+| `f.punctuate` | `bool`           | Activates numeric punctuation.
 |===
 
 ==== Struct template `float_format` [[float_format]]
