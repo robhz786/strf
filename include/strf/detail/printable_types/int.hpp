@@ -259,6 +259,24 @@ public:
                , strf::tag<strf::int_formatter_full_dynamic>{}
                , data };
     }
+
+private:
+
+    STRF_HD constexpr const T& self_downcast_() const
+    {
+        const T* base_ptr = static_cast<const T*>(this);
+        return *base_ptr;
+    }
+    STRF_HD constexpr T& self_downcast_()
+    {
+        T* base_ptr = static_cast<T*>(this);
+        return *base_ptr;
+    }
+    STRF_HD constexpr T&& move_self_downcast_()
+    {
+        T* base_ptr = static_cast<T*>(this);
+        return static_cast<T&&>(*base_ptr);
+    }
 };
 
 template <class T, int Base, bool Punctuate>
@@ -491,6 +509,22 @@ public:
 
 private:
 
+    STRF_HD constexpr const T& self_downcast_() const
+    {
+        const T* base_ptr = static_cast<const T*>(this);
+        return *base_ptr;
+    }
+    STRF_HD constexpr T& self_downcast_()
+    {
+        T* base_ptr = static_cast<T*>(this);
+        return *base_ptr;
+    }
+    STRF_HD constexpr T&& move_self_downcast_()
+    {
+        T* base_ptr = static_cast<T*>(this);
+        return static_cast<T&&>(*base_ptr);
+    }
+
     strf::int_format_static_base_and_punct<Base, Punctuate> data_;
 };
 
@@ -688,6 +722,22 @@ public:
     }
 
 private:
+
+    STRF_HD constexpr const T& self_downcast_() const
+    {
+        const T* base_ptr = static_cast<const T*>(this);
+        return *base_ptr;
+    }
+    STRF_HD constexpr T& self_downcast_()
+    {
+        T* base_ptr = static_cast<T*>(this);
+        return *base_ptr;
+    }
+    STRF_HD constexpr T&& move_self_downcast_()
+    {
+        T* base_ptr = static_cast<T*>(this);
+        return static_cast<T&&>(*base_ptr);
+    }
 
     int_format_full_dynamic data_;
 };

@@ -994,7 +994,7 @@ class alignment_formatter_fn;
 template <class T>
 class alignment_formatter_fn<T, true>
 {
-    STRF_HD T&& as_derived_rval_ref()
+    STRF_HD T&& move_self_downcast_()
     {
         T* d =  static_cast<T*>(this);
         return static_cast<T&&>(*d);
@@ -1023,19 +1023,19 @@ public:
     {
         data_.alignment = strf::text_alignment::left;
         data_.width = width;
-        return as_derived_rval_ref();
+        return move_self_downcast_();
     }
     constexpr STRF_HD T&& operator>(strf::width_t width) && noexcept
     {
         data_.alignment = strf::text_alignment::right;
         data_.width = width;
-        return as_derived_rval_ref();
+        return move_self_downcast_();
     }
     constexpr STRF_HD T&& operator^(strf::width_t width) && noexcept
     {
         data_.alignment = strf::text_alignment::center;
         data_.width = width;
-        return as_derived_rval_ref();
+        return move_self_downcast_();
     }
     template < typename CharT >
     constexpr STRF_HD T&& fill(CharT ch) && noexcept
@@ -1044,12 +1044,12 @@ public:
                      , "Refusing non-char argument to set the fill character, "
                        "since one may pass 0 instead of '0' by accident." );
         data_.fill = ch;
-        return as_derived_rval_ref();
+        return move_self_downcast_();
     }
     constexpr STRF_HD T&& set_alignment_format(strf::alignment_format data) && noexcept
     {
         data_ = data;
-        return as_derived_rval_ref();
+        return move_self_downcast_();
     }
     constexpr STRF_HD strf::width_t width() const noexcept
     {
@@ -1083,11 +1083,6 @@ class alignment_formatter_fn<T, false>
             , strf::alignment_formatter_q<false>
             , strf::alignment_formatter_q<true> >;
 
-    constexpr STRF_HD adapted_derived_type make_adapted() const
-    {
-        return adapted_derived_type{static_cast<const T&>(*this)};
-    }
-
 public:
 
     constexpr STRF_HD alignment_formatter_fn() noexcept
@@ -1102,21 +1097,21 @@ public:
     constexpr STRF_HD adapted_derived_type operator<(strf::width_t width) const noexcept
     {
         return adapted_derived_type
-            { static_cast<const T&>(*this)
+            { self_downcast_()
             , strf::tag<alignment_formatter_q<true>>{}
             , strf::alignment_format{U' ', width, strf::text_alignment::left} };
     }
     constexpr STRF_HD adapted_derived_type operator>(strf::width_t width) const noexcept
     {
         return adapted_derived_type
-            { static_cast<const T&>(*this)
+            { self_downcast_()
             , strf::tag<alignment_formatter_q<true>>{}
             , strf::alignment_format{U' ', width, strf::text_alignment::right} };
     }
     constexpr STRF_HD adapted_derived_type operator^(strf::width_t width) const noexcept
     {
         return adapted_derived_type
-            { static_cast<const T&>(*this)
+            { self_downcast_()
             , strf::tag<alignment_formatter_q<true>>{}
             , strf::alignment_format{U' ', width, strf::text_alignment::center} };
     }
@@ -1128,26 +1123,26 @@ public:
                        "since one may pass 0 instead of '0' by accident." );
         char32_t ch_ = ch;
         return adapted_derived_type
-            { static_cast<const T&>(*this)
+            { self_downcast_()
             , strf::tag<alignment_formatter_q<true>>{}
             , strf::alignment_format{ch_} };
     }
     constexpr STRF_HD T&& set_alignment_format(strf::default_alignment_format) && noexcept
     {
-        return static_cast<T&&>(*this);
+        return move_self_downcast_();
     }
     constexpr STRF_HD T&  set_alignment_format(strf::default_alignment_format) & noexcept
     {
-        return static_cast<T&>(*this);
+        return self_downcast_();
     }
     constexpr STRF_HD const T& set_alignment_format(strf::default_alignment_format) const & noexcept
     {
-        return static_cast<const T&>(*this);
+        return self_downcast_();
     }
     constexpr STRF_HD auto set_alignment_format(strf::alignment_format data) const & noexcept
     {
         return adapted_derived_type
-            { static_cast<const T&>(*this)
+            { self_downcast_()
             , strf::tag<strf::alignment_formatter_q<true>>{}
             , data };
     }
@@ -1166,6 +1161,24 @@ public:
     constexpr STRF_HD char32_t fill() const noexcept
     {
         return get_alignment_format().fill;
+    }
+
+private:
+
+    STRF_HD constexpr const T& self_downcast_() const
+    {
+        const T* base_ptr = static_cast<const T*>(this);
+        return *base_ptr;
+    }
+    STRF_HD constexpr T& self_downcast_()
+    {
+        T* base_ptr = static_cast<T*>(this);
+        return *base_ptr;
+    }
+    STRF_HD constexpr T&& move_self_downcast_()
+    {
+        T* base_ptr = static_cast<T*>(this);
+        return static_cast<T&&>(*base_ptr);
     }
 };
 
@@ -1203,7 +1216,8 @@ public:
     constexpr STRF_HD T&& multi(std::size_t count) && noexcept
     {
         count_ = count;
-        return static_cast<T&&>(*this);
+        T* base_ptr = static_cast<T*>(this);
+        return static_cast<T&&>(*base_ptr);
     }
     constexpr STRF_HD std::size_t count() const noexcept
     {

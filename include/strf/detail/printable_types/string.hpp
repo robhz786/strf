@@ -143,6 +143,12 @@ struct transcoding_formatter_sani_with_encoding
 template <typename T, typename CharT>
 class transcoding_formatter_fn
 {
+    STRF_HD constexpr const T& self_downcast_() const
+    {
+        const T* base_ptr = static_cast<const T*>(this);
+        return *base_ptr;
+    }
+
 public:
 
     constexpr STRF_HD transcoding_formatter_fn() noexcept
@@ -161,7 +167,7 @@ public:
             < T
             , strf::transcoding_formatter<CharT>
             , strf::transcoding_formatter_conv<CharT> >;
-        return return_type{ static_cast<const T&>(*this) };
+        return return_type{ self_downcast_() };
     }
 
     template <typename Encoding>
@@ -176,7 +182,7 @@ public:
             , strf::transcoding_formatter_conv_with_encoding<Encoding> >;
 
         return return_type
-            { static_cast<const T&>(*this)
+            { self_downcast_()
             , strf::tag<strf::transcoding_formatter_conv_with_encoding<Encoding>>{}
             , enc };
     }
@@ -196,7 +202,7 @@ public:
             < T
             , strf::transcoding_formatter<CharT>
             , strf::transcoding_formatter_sani<CharT> >;
-        return return_type{ static_cast<const T&>(*this) };
+        return return_type{ self_downcast_() };
     }
     template <typename Encoding>
     constexpr STRF_HD auto sanitize_from_encoding(Encoding enc) const
@@ -209,7 +215,7 @@ public:
             , strf::transcoding_formatter_sani_with_encoding<Encoding> >;
 
         return return_type
-            { static_cast<const T&>(*this)
+            { self_downcast_()
             , strf::tag<strf::transcoding_formatter_sani_with_encoding<Encoding>>{}
             , enc };
     }
@@ -431,6 +437,13 @@ class string_precision_formatter_fn<T, false>
         = strf::fmt_replace< T
                            , strf::string_precision_formatter<false>
                            , strf::string_precision_formatter<true> >;
+
+    STRF_HD constexpr const T& self_downcast_() const
+    {
+        const T* base_ptr = static_cast<const T*>(this);
+        return *base_ptr;
+    }
+
 public:
 
     constexpr STRF_HD string_precision_formatter_fn() noexcept
@@ -443,7 +456,7 @@ public:
     }
     constexpr STRF_HD adapted_derived_type_ p(strf::width_t precision) const noexcept
     {
-        return { static_cast<const T&>(*this)
+        return { self_downcast_()
                , strf::tag<string_precision_formatter<true> >{}
                , precision };
     }

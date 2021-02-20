@@ -296,7 +296,7 @@ struct default_float_format
 };
 
 template <typename T>
-class float_formatter_fn;
+class default_float_formatter_fn;
 
 template <typename T>
 class float_formatter_no_punct_fn;
@@ -307,7 +307,7 @@ class float_formatter_full_dynamic_fn;
 struct float_formatter
 {
     template <typename T>
-    using fn = float_formatter_fn<T>;
+    using fn = default_float_formatter_fn<T>;
 
     constexpr static bool has_float_formatting = false;
     constexpr static bool has_punct = false;
@@ -332,7 +332,7 @@ struct float_formatter_full_dynamic
 };
 
 template <typename T>
-class float_formatter_fn
+class default_float_formatter_fn
 {
     using adapted_to_full_dynamic_ = strf::fmt_replace
         <T, float_formatter, float_formatter_full_dynamic>;
@@ -342,21 +342,22 @@ class float_formatter_fn
 
 public:
 
-    constexpr float_formatter_fn() noexcept = default;
+    constexpr default_float_formatter_fn() noexcept = default;
 
-    constexpr STRF_HD explicit float_formatter_fn
+    constexpr STRF_HD explicit default_float_formatter_fn
         ( const strf::default_float_format& ) noexcept
     {
     }
     template <typename U>
-    constexpr STRF_HD explicit float_formatter_fn(const float_formatter_fn<U>&) noexcept
+    constexpr STRF_HD explicit default_float_formatter_fn
+        ( const default_float_formatter_fn<U>& ) noexcept
     {
     }
     constexpr STRF_HD adapted_to_no_punct_ operator+() const & noexcept
     {
         float_format format;
         format.sign = strf::showsign::positive_also;
-        return { static_cast<const T&>(*this)
+        return { self_downcast_()
                , strf::tag<float_formatter_no_punct>{}
                , format };
     }
@@ -364,7 +365,7 @@ public:
     {
         float_format format;
         format.sign = strf::showsign::fill_instead_of_positive;
-        return { static_cast<const T&>(*this)
+        return { self_downcast_()
                , strf::tag<float_formatter_no_punct>{}
                , format };
     }
@@ -372,7 +373,7 @@ public:
     {
         float_format format;
         format.sign = strf::showsign::fill_instead_of_positive;
-        return { static_cast<const T&>(*this)
+        return { self_downcast_()
                , strf::tag<float_formatter_no_punct>{}
                , format };
     }
@@ -380,7 +381,7 @@ public:
     {
         float_format format;
         format.showpoint = true;
-        return { static_cast<const T&>(*this)
+        return { self_downcast_()
                , strf::tag<float_formatter_no_punct>{}
                , format };
     }
@@ -388,7 +389,7 @@ public:
     {
         float_format format;
         format.punctuate = true;
-        return { static_cast<const T&>(*this)
+        return { self_downcast_()
                , strf::tag<float_formatter_full_dynamic>{}
                , format };
     }
@@ -396,7 +397,7 @@ public:
     {
         float_format format;
         format.punctuate = true;
-        return { static_cast<const T&>(*this)
+        return { self_downcast_()
                , strf::tag<float_formatter_full_dynamic>{}
                , format };
     }
@@ -404,7 +405,7 @@ public:
     {
         float_format format;
         format.precision = _;
-        return { static_cast<const T&>(*this)
+        return { self_downcast_()
                , strf::tag<float_formatter_no_punct>{}
                , format };
     }
@@ -412,7 +413,7 @@ public:
     {
         float_format format;
         format.pad0width = width;
-        return { static_cast<const T&>(*this)
+        return { self_downcast_()
                , strf::tag<float_formatter_no_punct>{}
                , format };
     }
@@ -421,7 +422,7 @@ public:
     {
         float_format format;
         format.notation = n;
-        return { static_cast<const T&>(*this)
+        return { self_downcast_()
                , strf::tag<float_formatter_no_punct>{}
                , format };
     }
@@ -429,7 +430,7 @@ public:
     {
         float_format format;
         format.notation = strf::float_notation::scientific;
-        return { static_cast<const T&>(*this)
+        return { self_downcast_()
                , strf::tag<float_formatter_no_punct>{}
                , format };
     }
@@ -437,7 +438,7 @@ public:
     {
         float_format format;
         format.notation = strf::float_notation::fixed;
-        return { static_cast<const T&>(*this)
+        return { self_downcast_()
                , strf::tag<float_formatter_no_punct>{}
                , format };
     }
@@ -445,49 +446,47 @@ public:
     {
         float_format format;
         format.notation = strf::float_notation::hex;
-        return { static_cast<const T&>(*this)
+        return { self_downcast_()
                , strf::tag<float_formatter_no_punct>{}
                , format };
     }
     constexpr STRF_HD const T& gen() const & noexcept
     {
-        return static_cast<const T&>(*this);
+        return self_downcast_();
     }
     constexpr STRF_HD T& gen() & noexcept
     {
-        return static_cast<T&>(*this);
+        return self_downcast_();
     }
     constexpr STRF_HD T&& gen() && noexcept
     {
-        T* base_ptr = static_cast<T*>(this);
-        return static_cast<T&&>(*base_ptr);
+        return move_self_downcast_();
     }
     constexpr STRF_HD adapted_to_full_dynamic_
     set_float_format(strf::float_format format) && noexcept
     {
-        return { static_cast<const T&>(*this)
+        return { self_downcast_()
                , strf::tag<float_formatter_full_dynamic>{}
                , format };
     }
     constexpr STRF_HD adapted_to_no_punct_
     set_float_format(strf::float_format_no_punct format) && noexcept
     {
-        return { static_cast<const T&>(*this)
+        return { self_downcast_()
                , strf::tag<float_formatter_no_punct>{}
                , format };
     }
     constexpr STRF_HD const T& set_float_format(strf::default_float_format) const & noexcept
     {
-        return static_cast<const T&>(*this);
+        return self_downcast_();
     }
     constexpr STRF_HD T& set_float_format(strf::default_float_format) & noexcept
     {
-        return static_cast<T&>(*this);
+        return self_downcast_();
     }
     constexpr STRF_HD T&& set_float_format(strf::default_float_format) && noexcept
     {
-        T* base_ptr = static_cast<T*>(this);
-        return static_cast<T&&>(*base_ptr);
+        return move_self_downcast_();
     }
 
     // observers
@@ -503,6 +502,24 @@ public:
     constexpr STRF_HD auto pad0width() const
     {
         return 0;
+    }
+
+private:
+
+    STRF_HD constexpr const T& self_downcast_() const
+    {
+        const T* base_ptr = static_cast<const T*>(this);
+        return *base_ptr;
+    }
+    STRF_HD constexpr T& self_downcast_()
+    {
+        T* base_ptr = static_cast<T*>(this);
+        return *base_ptr;
+    }
+    STRF_HD constexpr T&& move_self_downcast_()
+    {
+        T* base_ptr = static_cast<T*>(this);
+        return static_cast<T&&>(*base_ptr);
     }
 };
 
@@ -527,26 +544,22 @@ public:
     constexpr STRF_HD T&& operator+() && noexcept
     {
         data_.sign = strf::showsign::positive_also;
-        T* base_ptr = static_cast<T*>(this); // work around UBSan bug
-        return static_cast<T&&>(*base_ptr);
+        return move_self_downcast_();
     }
     constexpr STRF_HD T&& fill_sign() && noexcept
     {
         data_.sign = strf::showsign::fill_instead_of_positive;
-        T* base_ptr = static_cast<T*>(this);
-        return static_cast<T&&>(*base_ptr);
+        return move_self_downcast_();
     }
     constexpr STRF_HD T&& operator~() && noexcept
     {
         data_.sign = strf::showsign::fill_instead_of_positive;
-        T* base_ptr = static_cast<T*>(this);
-        return static_cast<T&&>(*base_ptr);
+        return move_self_downcast_();
     }
     constexpr STRF_HD T&& operator*() && noexcept
     {
         data_.showpoint = true;
-        T* base_ptr = static_cast<T*>(this);
-        return static_cast<T&&>(*base_ptr);
+        return move_self_downcast_();
     }
     constexpr STRF_HD
     strf::fmt_replace<T, float_formatter_no_punct, float_formatter_full_dynamic>
@@ -554,7 +567,7 @@ public:
     {
         float_format format{data_};
         format.punctuate = true;
-        return { static_cast<const T&>(*this)
+        return { self_downcast_()
                , strf::tag<float_formatter_full_dynamic>{}
                , format };
     }
@@ -564,63 +577,55 @@ public:
     {
         float_format format{data_};
         format.punctuate = true;
-        return { static_cast<const T&>(*this)
+        return { self_downcast_()
                , strf::tag<float_formatter_full_dynamic>{}
                , format };
     }
     constexpr STRF_HD T&& p(detail::chars_count_t _) && noexcept
     {
         data_.precision = _;
-        T* base_ptr = static_cast<T*>(this);
-        return static_cast<T&&>(*base_ptr);
+        return move_self_downcast_();
     }
     constexpr STRF_HD T&& pad0(detail::chars_count_t width) && noexcept
     {
         data_.pad0width = width;
-        T* base_ptr = static_cast<T*>(this);
-        return static_cast<T&&>(*base_ptr);
+        return move_self_downcast_();
     }
     constexpr STRF_HD T&& sci() && noexcept
     {
         data_.notation = strf::float_notation::scientific;
-        T* base_ptr = static_cast<T*>(this);
-        return static_cast<T&&>(*base_ptr);
+        return move_self_downcast_();
     }
     constexpr STRF_HD T&& fixed() && noexcept
     {
         data_.notation = strf::float_notation::fixed;
-        T* base_ptr = static_cast<T*>(this);
-        return static_cast<T&&>(*base_ptr);
+        return move_self_downcast_();
     }
     constexpr STRF_HD T&& gen() && noexcept
     {
         data_.notation = strf::float_notation::general;
-        T* base_ptr = static_cast<T*>(this);
-        return static_cast<T&&>(*base_ptr);
+        return move_self_downcast_();
     }
     constexpr STRF_HD T&& hex() && noexcept
     {
         data_.notation = strf::float_notation::hex;
-        T* base_ptr = static_cast<T*>(this);
-        return static_cast<T&&>(*base_ptr);
+        return move_self_downcast_();
     }
     constexpr STRF_HD T&& float_notation(strf::float_notation n) && noexcept
     {
         data_.notation = n;
-        T* base_ptr = static_cast<T*>(this);
-        return static_cast<T&&>(*base_ptr);
+        return move_self_downcast_();
     }
     constexpr STRF_HD T&& set_float_format(strf::float_format_no_punct data) && noexcept
     {
         data_ = data;
-        T* base_ptr = static_cast<T*>(this);
-        return static_cast<T&&>(*base_ptr);
+        return move_self_downcast_();
     }
     constexpr STRF_HD
     strf::fmt_replace<T, float_formatter_no_punct, float_formatter>
     set_float_format(strf::default_float_format format) const & noexcept
     {
-        return { static_cast<const T&>(*this)
+        return { self_downcast_()
                , strf::tag<float_formatter>{}
                , format };
     }
@@ -628,7 +633,7 @@ public:
     strf::fmt_replace<T, float_formatter_no_punct, float_formatter_full_dynamic>
     set_float_format(strf::float_format format) const & noexcept
     {
-        return { static_cast<const T&>(*this)
+        return { self_downcast_()
                , strf::tag<float_formatter_full_dynamic>{}
                , format };
     }
@@ -647,6 +652,21 @@ public:
 
 private:
 
+    STRF_HD constexpr const T& self_downcast_() const
+    {
+        const T* base_ptr = static_cast<const T*>(this);
+        return *base_ptr;
+    }
+    STRF_HD constexpr T& self_downcast_()
+    {
+        T* base_ptr = static_cast<T*>(this);
+        return *base_ptr;
+    }
+    STRF_HD constexpr T&& move_self_downcast_()
+    {
+        T* base_ptr = static_cast<T*>(this);
+        return static_cast<T&&>(*base_ptr);
+    }
     strf::float_format data_;
 };
 
@@ -677,89 +697,73 @@ public:
     constexpr STRF_HD T&& fill_sign() && noexcept
     {
         data_.sign = strf::showsign::fill_instead_of_positive;
-        T* base_ptr = static_cast<T*>(this);
-        return static_cast<T&&>(*base_ptr);
+        return move_self_downcast_();
     }
     constexpr STRF_HD T&& operator~() && noexcept
     {
         data_.sign = strf::showsign::fill_instead_of_positive;
-        T* base_ptr = static_cast<T*>(this);
-        return static_cast<T&&>(*base_ptr);
+        return move_self_downcast_();
     }
     constexpr STRF_HD T&& operator*() && noexcept
     {
         data_.showpoint = true;
-        T* base_ptr = static_cast<T*>(this);
-        return static_cast<T&&>(*base_ptr);
+        return move_self_downcast_();
     }
     constexpr STRF_HD T&& operator!() && noexcept
     {
         data_.punctuate = true;
-        T* base_ptr = static_cast<T*>(this);
-        return static_cast<T&&>(*base_ptr);
+        return move_self_downcast_();
     }
     constexpr STRF_HD T&& punct() && noexcept
     {
         data_.punctuate = true;
-        T* base_ptr = static_cast<T*>(this);
-        return static_cast<T&&>(*base_ptr);
+        return move_self_downcast_();
     }
     constexpr STRF_HD T&& p(detail::chars_count_t _) && noexcept
     {
         data_.precision = _;
-        T* base_ptr = static_cast<T*>(this);
-        return static_cast<T&&>(*base_ptr);
+        return move_self_downcast_();
     }
     constexpr STRF_HD T&& pad0(detail::chars_count_t width) && noexcept
     {
         data_.pad0width = width;
-        T* base_ptr = static_cast<T*>(this);
-        return static_cast<T&&>(*base_ptr);
+        return move_self_downcast_();
     }
     constexpr STRF_HD T&& sci() && noexcept
     {
         data_.notation = strf::float_notation::scientific;
-        T* base_ptr = static_cast<T*>(this);
-        return static_cast<T&&>(*base_ptr);
+        return move_self_downcast_();
     }
     constexpr STRF_HD T&& fixed() && noexcept
     {
         data_.notation = strf::float_notation::fixed;
-        T* base_ptr = static_cast<T*>(this);
-        return static_cast<T&&>(*base_ptr);
+        return move_self_downcast_();
     }
     constexpr STRF_HD T&& gen() && noexcept
     {
         data_.notation = strf::float_notation::general;
-        T* base_ptr = static_cast<T*>(this);
-        return static_cast<T&&>(*base_ptr);
+        return move_self_downcast_();
     }
     constexpr STRF_HD T&& hex() && noexcept
     {
         data_.notation = strf::float_notation::hex;
-        T* base_ptr = static_cast<T*>(this);
-        return static_cast<T&&>(*base_ptr);
+        return move_self_downcast_();
     }
     constexpr STRF_HD T&& float_notation(strf::float_notation n) && noexcept
     {
         data_.notation = n;
-        T* base_ptr = static_cast<T*>(this);
-        return static_cast<T&&>(*base_ptr);
+        return move_self_downcast_();
     }
     constexpr STRF_HD T&& set_float_format(strf::float_format data) && noexcept
     {
         data_ = data;
-        T* base_ptr = static_cast<T*>(this);
-        return static_cast<T&&>(*base_ptr);
+        return move_self_downcast_();
     }
     constexpr STRF_HD
     strf::fmt_replace<T, float_formatter_full_dynamic, float_formatter_no_punct>
-    set_float_format(strf::float_format_no_punct f) && noexcept
+    set_float_format(strf::float_format_no_punct format) && noexcept
     {
-        float_format_no_punct format {
-            f.precision, f.pad0width, f.notation, f.sign, f.showpoint
-        };
-        return { static_cast<const T&>(*this)
+        return { self_downcast_()
                , strf::tag<float_formatter_no_punct>{}
                , format };
     }
@@ -767,7 +771,7 @@ public:
     strf::fmt_replace<T, float_formatter_full_dynamic, float_formatter>
     set_float_format(strf::default_float_format format) const & noexcept
     {
-        return { static_cast<const T&>(*this)
+        return { self_downcast_()
                , strf::tag<float_formatter>{}
                , format };
     }
@@ -786,6 +790,21 @@ public:
 
 private:
 
+    STRF_HD constexpr const T& self_downcast_() const
+    {
+        const T* base_ptr = static_cast<const T*>(this);
+        return *base_ptr;
+    }
+    STRF_HD constexpr T& self_downcast_()
+    {
+        T* base_ptr = static_cast<T*>(this);
+        return *base_ptr;
+    }
+    STRF_HD constexpr T&& move_self_downcast_()
+    {
+        T* base_ptr = static_cast<T*>(this);
+        return static_cast<T&&>(*base_ptr);
+    }
     strf::float_format data_;
 };
 
