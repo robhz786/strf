@@ -86,35 +86,60 @@ public:
     basic_string_maker(const basic_string_maker&) = delete;
     basic_string_maker(basic_string_maker&&) = delete;
 
-    ~basic_string_maker() = default;
+    ~basic_string_maker()
+    {
+        if (string_initialized_) {
+            string_ptr()->~string_type_();
+        }
+    }
 
     void recycle() override
     {
-        auto * p = this->pointer();
+        std::size_t count = this->pointer() - buf_;
         this->set_pointer(buf_);
         if (this->good()) {
             this->set_good(false);
-            str_.append(buf_, p);
+            if ( ! string_initialized_) {
+                new (string_ptr()) string_type_{buf_, count};
+                string_initialized_ = true;
+            } else {
+                string_ptr() -> append(buf_, count);
+            }
             this->set_good(true);
         }
     }
 
     string_type_ finish()
     {
-        auto * p = this->pointer();
         if (this->good()) {
             this->set_good(false);
-            str_.append(buf_, p);
+            std::size_t count = this->pointer() - buf_;
+            if ( ! string_initialized_) {
+                return {buf_, count};
+            }
+            string_ptr() -> append(buf_, count);
+            return std::move(*string_ptr());
         }
-        return std::move(str_);
+        return {};
     }
 
 private:
 
-    string_type_ str_;
-    static constexpr std::size_t buf_size_
-        = strf::min_space_after_recycle<CharT>();
+    bool string_initialized_ = false;
+
+    string_type_* string_ptr()
+    {
+        void* ptr = &string_obj_space_;
+        return reinterpret_cast<string_type_*>(ptr);
+    }
+
+    static constexpr std::size_t buf_size_ = strf::min_space_after_recycle<CharT>();
     CharT buf_[buf_size_];
+
+    using string_storage_type_ = typename std::aligned_storage_t
+        < sizeof(string_type_), alignof(string_type_) >;
+
+    string_storage_type_ string_obj_space_;
 };
 
 template < typename CharT
