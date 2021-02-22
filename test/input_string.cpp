@@ -121,7 +121,7 @@ void STRF_TEST_FUNC test_input_string()
             .with(strf::windows_1252<char>())
             (strf::conv("--\xC9\x90--\xE2\x82\xAC--", strf::utf8<char>()));
 
-        TEST("....--?--\x80--")
+        TEST(".......--?--\x80--")
             .with(strf::windows_1252<char>())
             (strf::right("--\xC9\x90--\xE2\x82\xAC--", 15, U'.').conv(strf::utf8<char>()));
     }

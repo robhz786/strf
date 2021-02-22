@@ -27,7 +27,7 @@ struct width_calculator_c
 {
     static constexpr bool constrainable = true;
 
-    static constexpr {fast_width} get_default() noexcept;
+    static constexpr {width_as_u32len} get_default() noexcept;
 };
 
 } // namespace strf
@@ -210,7 +210,11 @@ Return value::: The return value `ret` is such that
 Class `width_as_fast_u32len` is a facet of the category `{width_calculator_c}`.
 It evaluates the width of a string as the number of Unicode code points.
 However, to gain performance and differently from `{width_as_u32len}`,
-it assumes that the measured string is totally conformant to its encoding.
+it assumes that the string is totally conformant to its encoding.
+For example, if the encoding is UTF-8 then `str_width`
+may simply return the number of bytes whose bit pattern are
+not in the form of https://en.wikipedia.org/wiki/UTF-8#Encoding[continuation byte]
+( `10xxxxxx` ).
 
 [source,cpp,subs=normal]
 ----
@@ -294,8 +298,9 @@ Return value::: The return value `ret` is such that
 
 Class `width_as_fast_u32len` is a facet of the category `{width_calculator_c}`.
 It evaluates the width of a string as the number of Unicode code points,
-assuming that any non-conformity to the corresponding encoding is replaced
-by one codepoint ( following the semantics of `{invalid_seq_policy}::replace` ).
+assuming that any non-conformity to its corresponding encoding is replaced
+by one codepoint ( since it should be replaced by the
+https://en.wikipedia.org/wiki/Specials_(Unicode_block)#Replacement_character[replacement character `"\uFFFD"` (&#65533;) ] ).
 
 [source,cpp,subs=normal]
 ----
@@ -380,7 +385,6 @@ Return value::: The return value `ret` is such that
 The instances of the `width_by_func` class template are facets
 of the category `{width_calculator_c}`.
 It calculates the width of a string by converting it to UTF-32,
-following the policy associated to `{invalid_seq_policy}::replace`,
 and then calling the provided function to evaluate the width
 of each UTF-32 character.
 
@@ -462,7 +466,7 @@ Return value::: The sum of the values of `func_(ch32)`, where `ch32` is
 [source,cpp,subs=normal]
 ----
 encoding.<<CharEncoding_to_u32,to_u32>>().<<Transcoder_transcode,transcode>>
-    ( ob, str, str_len, {invalid_seq_policy}::replace, surr_poli )
+    ( ob, str, str_len, {invalid_seq_notifier}{}, surr_poli )
 ----
 , if such value is less than or equal to `limit`. Otherwise, the return value
   can be anyone that is greater than or equal to `limit`.

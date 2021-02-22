@@ -296,7 +296,7 @@ struct width_calculator_c
 {
     static constexpr bool constrainable = true;
 
-    static constexpr STRF_HD strf::fast_width get_default() noexcept
+    static constexpr STRF_HD strf::width_as_u32len get_default() noexcept
     {
         return {};
     }

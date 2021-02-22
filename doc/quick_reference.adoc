@@ -986,8 +986,7 @@ enables you to choose how the width of a string is calculated when using
 
 * The `<<strf_hpp#fast_width,fast_width>>` facet assumes that the width
   of a string is equal to its size. This is the least accurate method,
-  but it's the fastest and also is what others formatting
-  libraries usually do. Therefore it's the default facet.
+  but it's the fastest.
 +
 .Example
 [source,cpp]
@@ -1019,7 +1018,7 @@ assert(result == "****15.00 \xE2\x82\xAC \x80"); // width calculated as 8
   evaluates the width of a string as the number of Unicode code points.
   But each nonconformity to the encoding is counted as an extra
   code points ( as if it were replaced by
-  https://en.wikipedia.org/wiki/Specials_(Unicode_block)#Replacement_character[replacement character &#xFFFD;] ).
+  https://en.wikipedia.org/wiki/Specials_(Unicode_block)#Replacement_character[replacement character &#xFFFD;] ). This is the default.
 +
 .Example
 [source,cpp]

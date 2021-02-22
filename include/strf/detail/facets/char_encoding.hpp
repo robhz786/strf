@@ -389,10 +389,10 @@ public:
         return data_->codepoints_fast_count_func(src, src_size, max_count);
     }
     STRF_HD strf::codepoints_count_result codepoints_robust_count
-        ( const char_type* src, std::size_t* src_size
-        , std::size_t max_count ) const
+        ( const char_type* src, std::size_t src_size
+        , std::size_t max_count, strf::surrogate_policy surr_poli ) const
     {
-        return data_->codepoints_robust_count_func(src, src_size, max_count);
+        return data_->codepoints_robust_count_func(src, src_size, max_count, surr_poli);
     }
     STRF_HD void write_replacement_char(strf::basic_outbuff<CharT>& ob) const
     {
