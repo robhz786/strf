@@ -1,6 +1,0 @@
-[submodule "externals/fmt"]
-	path = externals/fmt
-	url = https://github.com/fmtlib/fmt
-[submodule "externals/google-benchmark"]
-	path = externals/google-benchmark
-	url = https://github.com/google/benchmark.git
