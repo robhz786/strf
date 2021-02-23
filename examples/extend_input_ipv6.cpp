@@ -7,7 +7,7 @@
 #include <cstdint>
 #include <vector>
 
-#include "../test/test_utils.cpp" // my own test framework
+#include "../tests/test_utils.cpp" // my own test framework
 
 namespace xxx {
 

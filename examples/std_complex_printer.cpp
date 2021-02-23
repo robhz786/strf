@@ -9,7 +9,7 @@
 #include <complex>
 #include <cmath>
 
-#include "../test/test_utils.cpp"
+#include "../tests/test_utils.cpp"
 
 //--------------------------------------------------------------------------------
 // 1 //  Define complex_form facet

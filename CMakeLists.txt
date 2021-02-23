@@ -139,11 +139,11 @@ install(
   DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}" )
 
 if (STRF_BUILD_TESTS)
-  add_subdirectory(test test)
+  add_subdirectory(tests tests)
 endif(STRF_BUILD_TESTS)
 
 if (STRF_BUILD_EXAMPLES)
-  add_subdirectory(example example)
+  add_subdirectory(examples examples)
 endif (STRF_BUILD_EXAMPLES)
 
 if (STRF_BUILD_BENCHMARKS)
