@@ -13,8 +13,7 @@ http://www.boost.org/LICENSE_1_0.txt
 :toclevels: 3
 :icons: font
 
-:strf-version: develop
-:strf-src-root: https://github.com/robhz786/strf/blob/{strf-version}
+:strf-benchmarks-src-root: https://github.com/robhz786/strf-benchmarks/blob/57fd2404b809c0ae705f42f07b1cad2455beb67e
 
 == Runtime performance
 
@@ -40,14 +39,10 @@ h| Clang / s   |  static
 :env5: <<environments,Clang/ho>>
 :env6: <<environments,Clang/s>>
 
-If you want to run the benchmarks in your own environment,
-the CMake option `STRF_BUILD_BENCHMARKS` enables the build of the
-the programs that generated the output presented in the tables that follow.
-It is also necessary run `git submodule update --init` to fetch the
-necessary externals repository
+The benchmarks programs are placed in a separate repository:
+https://github.com/robhz786/strf-benchmarks
 
-All the benchmarks below were run in the same computer
-and compiled in C++20.
+They were all run in the same computer and compiled in C++20.
 
 The {fmt} version is 7.1.3
 
@@ -89,11 +84,11 @@ cmake --build . --target bench-to_string-header-only
 :to_char_ptr_ho_msvc_e1: 41.4 ns
 :to_char_ptr_ho_msvc_e2: 78.5 ns
 :to_char_ptr_ho_msvc_e3:  184 ns
-:to_char_ptr_ho_msvc_e4:  225 ns 
+:to_char_ptr_ho_msvc_e4:  225 ns
 :to_char_ptr_ho_msvc_f1: 53.1 ns
 :to_char_ptr_ho_msvc_f2: 85.4 ns
 :to_char_ptr_ho_msvc_f3:  197 ns
-:to_char_ptr_ho_msvc_f4:  235 ns  
+:to_char_ptr_ho_msvc_f4:  235 ns
 :to_char_ptr_ho_msvc_g1: 94.2 ns
 :to_char_ptr_ho_msvc_g2:  160 ns
 :to_char_ptr_ho_msvc_g3:  169 ns
@@ -118,7 +113,7 @@ cmake --build . --target bench-to_string-header-only
 :to_char_ptr_st_msvc_e1: 43.9 ns
 :to_char_ptr_st_msvc_e2: 78.5 ns
 :to_char_ptr_st_msvc_e3:  204 ns
-:to_char_ptr_st_msvc_e4:  235 ns 
+:to_char_ptr_st_msvc_e4:  235 ns
 :to_char_ptr_st_msvc_f1: 56.3 ns
 :to_char_ptr_st_msvc_f2: 81.6 ns
 :to_char_ptr_st_msvc_f3:  199 ns
@@ -147,7 +142,7 @@ cmake --build . --target bench-to_string-header-only
 :to_char_ptr_ho_gcc_e1: 27.7 ns
 :to_char_ptr_ho_gcc_e2: 54.0 ns
 :to_char_ptr_ho_gcc_e3:  120 ns
-:to_char_ptr_ho_gcc_e4:  169 ns 
+:to_char_ptr_ho_gcc_e4:  169 ns
 :to_char_ptr_ho_gcc_f1: 34.2 ns
 :to_char_ptr_ho_gcc_f2: 60.6 ns
 :to_char_ptr_ho_gcc_f3:  128 ns
@@ -205,7 +200,7 @@ cmake --build . --target bench-to_string-header-only
 :to_char_ptr_ho_clang_e1: 23.2 ns
 :to_char_ptr_ho_clang_e2: 43.8 ns
 :to_char_ptr_ho_clang_e3:  130 ns
-:to_char_ptr_ho_clang_e4:  164 ns 
+:to_char_ptr_ho_clang_e4:  164 ns
 :to_char_ptr_ho_clang_f1: 26.4 ns
 :to_char_ptr_ho_clang_f2: 47.2 ns
 :to_char_ptr_ho_clang_f3:  137 ns
@@ -234,7 +229,7 @@ cmake --build . --target bench-to_string-header-only
 :to_char_ptr_st_clang_e1: 26.0 ns
 :to_char_ptr_st_clang_e2: 48.5 ns
 :to_char_ptr_st_clang_e3:  132 ns
-:to_char_ptr_st_clang_e4:  164 ns 
+:to_char_ptr_st_clang_e4:  164 ns
 :to_char_ptr_st_clang_f1: 29.4 ns
 :to_char_ptr_st_clang_f2: 53.7 ns
 :to_char_ptr_st_clang_f3:  143 ns
@@ -1214,7 +1209,7 @@ Print some formatted integers with alignment
 
 == Compilation performance
 
-:comp_benchmarks_src: {strf-src-root}/benchmarks/compilation
+:comp_benchmarks_src: {strf-benchmarks-src-root}/compilation-benchmarks
 :to_charptr_strf:       {comp_benchmarks_src}/to_charptr_strf.cpp[to_charptr_strf.cpp]
 :to_charptr_strf_tr:    {comp_benchmarks_src}/to_charptr_strf_tr.cpp[to_charptr_strf_tr.cpp]
 :to_charptr_fmtlib_n_c: {comp_benchmarks_src}/to_charptr_fmtlib_n_c.cpp[to_charptr_fmtlib_n_c.cpp]
@@ -1237,10 +1232,20 @@ Print some formatted integers with alignment
 :to_ostream_fmtlib:     {comp_benchmarks_src}/to_ostream_fmtlib.cpp[to_ostream_fmtlib.cpp]
 :to_ostream_itself:     {comp_benchmarks_src}/to_ostream_itself.cpp[to_ostream_itself.cpp]
 
-The tables below are the output of the script
-`benchmarks/compilation/run_benchmarks.py`. This script does not work on MS-Windows.
-It is affected by the `CXX` and `CXXFLAGS` environment variables. The flag `--std=c++2a`
-was used.
+You can run these benchmarks in your computer
+by executing the commands below
+( it does not work on Windows ).
+----
+git clone https://github.com/robhz786/strf-benchmarks
+cd strf-benchmarks
+git submodule update --init
+cd compilation-benchmarks
+export CXX=gcc              # or some other compiler
+export CXXFLAGS=--std=c++2a # or some other compile flag ( optional )
+./run_benchmarks.py        # this script takes a long time
+----
+
+
 
 For each row in the tables below, the source file in the leftmost column
 is compiled 41 times. In each compilation, a certain macro ( `SRC_ID` ) is
@@ -1254,6 +1259,8 @@ the columns "31 files" and "41 files".
 
 The comlumn "Compilation times" shows the average times to create one
 object file.
+
+The flag `--std=c++2a` was used.
 
 === Clang 10.0.0
 
