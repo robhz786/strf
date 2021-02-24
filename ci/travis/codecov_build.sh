@@ -26,7 +26,7 @@ make test-static-lib
 lcov --gcov-tool=$GCOV --initial --base-directory $script_dir \
      --directory=$root_dir --capture --output-file all.info
 
-./test/static-lib
+./tests/static-lib
 
 lcov --gcov-tool=$GCOV --rc lcov_branch_coverage=1 \
      --base-directory $script_dir --directory=$root_dir \
