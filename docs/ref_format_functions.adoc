@@ -320,9 +320,6 @@ Return `value_`
 ====
 
 
-
-
-
 [[Formatter]]
 === Type requirement _Formatter_
 
@@ -700,6 +697,8 @@ but still counting the extra fill character caused by `fill_sign()` ).
 
 // end::float_format_functions[]
 
+And the following observers:
+
 [%header,cols="382,618",grid=rows]
 |===
 | Observer  | Return type
@@ -812,69 +811,23 @@ struct default_float_format
 
 [[quantity_formatter]]
 === _Formatter_ `quantity_formatter`
-[source,cpp]
-----
-namespace strf {
 
-struct quantity_formatter
-{
-    template <class T>
-    using fn = quantity_formatter_fn<T>;
-};
+The `quantity_formatter` _Formatter_ defines the following format functions:
 
-} // namespace strf
-----
-==== `quantity_formatter_fn`
-[source,cpp]
-----
-namespace strf {
+[%header,cols="382,618",grid=rows]
+|===
+| Member function | Effect
+|`multi(std::size_t count)`
+| Causes the content to be printed `count` consecutives times
+|===
 
-template <class T>
-class quantity_formatter_fn
-{
-public:
-    constexpr quantity_formatter_fn(std::size_t count) noexcept;
-    constexpr quantity_formatter_fn() noexcept;
+And the following observer:
 
-    template <typename U>
-    constexpr explicit quantity_formatter_fn(const quantity_formatter_fn<U>& u) noexcept
-        : _count(u.count())
-    {
-    }
+[%header,cols="382,618",grid=rows]
+|===
+| Observer  | Return type
 
-    constexpr T&& multi(std::size_t count) && noexcept
-    constexpr std::size_t count() const noexcept
-};
-
-} // namespace strf
-----
-===== Constructors
-====
-[source,cpp,subs=normal]
-----
-constexpr quantity_formatter_fn() noexcept;
-----
-[horizontal]
-Postconditions:: `count() == 1`
-====
-====
-[source,cpp,subs=normal]
-----
-template <typename U>
-constexpr explicit quantity_formatter_fn(const quantity_formatter_fn<U>& u) noexcept;
-----
-[horizontal]
-Postconditions:: `count() == u.count()`
-====
-
-===== Format functions
-====
-[source,cpp,subs=normal]
-----
-constexpr T&& multi(std::size_t count) && noexcept
-----
-[horizontal]
-Postconditions:: `count() == count`
-Return value:: `static_cast<T&&>({asterisk}this)`
-====
+| `count()`
+| `std::size_t`
+|===
 
