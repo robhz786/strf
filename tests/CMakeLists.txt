@@ -39,9 +39,11 @@ set(sources_hosted
   streambuf_writer.cpp
   string_writer.cpp )
 
-set(sources
-  ${sources_freestanding}
-  ${sources_hosted} )
+if (STRF_FREESTANDING)
+  set(sources ${sources_freestanding})
+else ()
+  set(sources ${sources_freestanding} ${sources_hosted})
+endif ()
 
 add_executable(test-header-only main.cpp test_utils.cpp ${sources})
 add_executable(test-static-lib  main.cpp test_utils.cpp ${sources})

@@ -17,6 +17,8 @@ struct const_iterator
     const T* ptr;
 };
 
+#if ! defined(STRF_FREESTANDING)
+
 namespace std {
 
 template <typename T>
@@ -26,6 +28,8 @@ struct iterator_traits<const_iterator<T>>
 };
 
 } // namespace std;
+
+#endif // ! defined(STRF_FREESTANDING)
 
 template <typename T, std::size_t N>
 struct simple_array

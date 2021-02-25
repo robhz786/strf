@@ -60,11 +60,16 @@ int main() {
     strf::narrow_cfile_writer<char> test_outbuff(stdout);
     test_utils::set_test_outbuff(test_outbuff);
 
-    test_cstr_writer();
+#if ! defined(STRF_FREESTANDING)
+
     test_locale();
     test_cfile_writer();
     test_streambuf_writer();
     test_string_writer();
+
+#endif // ! defined(STRF_FREESTANDING)
+
+    test_cstr_writer();
 
     test_dynamic_charset();
     test_encode_char();
