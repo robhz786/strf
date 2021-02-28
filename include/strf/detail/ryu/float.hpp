@@ -21,7 +21,6 @@
 #ifndef STRF_DETAIL_RYU_FLOAT_HPP_INCLUDED
 #define STRF_DETAIL_RYU_FLOAT_HPP_INCLUDED
 
-#include <assert.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -79,7 +78,7 @@ return table[index];
 inline STRF_HD uint32_t pow5Factor(uint32_t value) {
   uint32_t count = 0;
   for (;;) {
-    assert(value != 0);
+    STRF_ASSERT(value != 0);
     const uint32_t q = value / 5;
     const uint32_t r = value % 5;
     if (r != 0) {
@@ -105,7 +104,7 @@ inline STRF_HD bool multipleOfPowerOf2(const uint32_t value, const uint32_t p) {
 // It seems to be slightly faster to avoid uint128_t here, although the
 // generated code for uint128_t looks slightly nicer.
 inline STRF_HD uint32_t mulShift(const uint32_t m, const uint64_t factor, const int32_t shift) {
-  assert(shift > 32);
+  STRF_ASSERT(shift > 32);
 
   // The casts here help MSVC to avoid calls to the __allmul library
   // function.
@@ -127,7 +126,7 @@ inline STRF_HD uint32_t mulShift(const uint32_t m, const uint64_t factor, const 
 #else // STRF_RYU_32_BIT_PLATFORM
   const uint64_t sum = (bits0 >> 32) + bits1;
   const uint64_t shiftedSum = sum >> (shift - 32);
-  assert(shiftedSum <= UINT32_MAX);
+  STRF_ASSERT(shiftedSum <= UINT32_MAX);
   return (uint32_t) shiftedSum;
 #endif // STRF_RYU_32_BIT_PLATFORM
 }

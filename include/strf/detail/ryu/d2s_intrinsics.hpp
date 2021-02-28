@@ -18,7 +18,6 @@
 #ifndef STRF_DETAIL_RYU_D2S_INTRINSICS_HPP_INCLUDED
 #define STRF_DETAIL_RYU_D2S_INTRINSICS_HPP_INCLUDED
 
-#include <assert.h>
 #include <stdint.h>
 
 // This sets STRF_RYU_32_BIT_PLATFORM as a side effect if applicable.
@@ -43,7 +42,7 @@ inline STRF_HD uint64_t shiftright128(const uint64_t lo, const uint64_t hi, cons
   // Otherwise in the range [2, 59].)
   // Check this here in case a future change requires larger shift
   // values. In this case this function needs to be adjusted.
-  assert(dist < 64);
+  STRF_ASSERT(dist < 64);
   return __shiftright128(lo, hi, (unsigned char) dist);
 }
 
@@ -83,13 +82,13 @@ inline STRF_HD uint64_t umul128(const uint64_t a, const uint64_t b, uint64_t* co
 
 inline STRF_HD uint64_t shiftright128(const uint64_t lo, const uint64_t hi, const uint32_t dist) {
   // We don't need to handle the case dist >= 64 here (see above).
-  assert(dist < 64);
+  STRF_ASSERT(dist < 64);
 #if defined(STRF_RYU_OPTIMIZE_SIZE) || !defined(STRF_RYU_32_BIT_PLATFORM)
-  assert(dist > 0);
+  STRF_ASSERT(dist > 0);
   return (hi << (64 - dist)) | (lo >> dist);
 #else
   // Avoid a 64-bit shift by taking advantage of the range of shift values.
-  assert(dist >= 32);
+  STRF_ASSERT(dist >= 32);
   return (hi << (64 - dist)) | ((uint32_t)(lo >> 32) >> (dist - 32));
 #endif
 }
@@ -187,7 +186,7 @@ inline STRF_HD uint32_t mod1e9(const uint64_t x) {
 inline STRF_HD uint32_t pow5Factor(uint64_t value) {
   uint32_t count = 0;
   for (;;) {
-    assert(value != 0);
+    STRF_ASSERT(value != 0);
     const uint64_t q = div5(value);
     const uint32_t r = ((uint32_t) value) - 5 * ((uint32_t) q);
     if (r != 0) {
@@ -207,7 +206,7 @@ inline STRF_HD bool multipleOfPowerOf5(const uint64_t value, const uint32_t p) {
 
 // Returns true if value is divisible by 2^p.
 inline STRF_HD bool multipleOfPowerOf2(const uint64_t value, const uint32_t p) {
-  assert(value != 0);
+  STRF_ASSERT(value != 0);
   // return __builtin_ctzll(value) >= p;
   return (value & ((1ull << p) - 1)) == 0;
 }

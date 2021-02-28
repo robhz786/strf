@@ -30,7 +30,6 @@
 #ifndef STRF_DETAIL_RYU_DOUBLE_HPP_INCLUDED
 #define STRF_DETAIL_RYU_DOUBLE_HPP_INCLUDED
 
-#include <assert.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -184,7 +183,7 @@ inline STRF_HD uint32_t decimalLength17(const uint64_t v) {
   // The average output length is 16.38 digits, so we check high-to-low.
   // Function precondition: v is not an 18, 19, or 20-digit number.
   // (17 digits are sufficient for round-tripping.)
-  assert(v < 100000000000000000L);
+  STRF_ASSERT(v < 100000000000000000L);
   if (v >= 10000000000000000L) { return 17; }
   if (v >= 1000000000000000L) { return 16; }
   if (v >= 100000000000000L) { return 15; }

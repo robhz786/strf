@@ -18,7 +18,6 @@
 #ifndef STRF_DETAIL_RYU_D2S_HPP_INCLUDED
 #define STRF_DETAIL_RYU_D2S_HPP_INCLUDED
 
-#include <assert.h>
 #include <stdint.h>
 
 #include <strf/detail/ryu/common.hpp>
