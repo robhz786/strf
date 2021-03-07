@@ -7,6 +7,9 @@
 
 #include <strf/detail/strf_def.hpp>
 #include <cstdint>
+#if ! defined(STRF_FREESTANDING) || defined(STRF_WITH_CSTRING)
+#    include <cstring>
+#endif
 
 namespace strf {
 namespace detail {
@@ -97,6 +100,22 @@ public:
 
     STRF_HD virtual void recycle() = 0;
 
+    STRF_HD void write(const char_type* str, std::size_t str_len)
+    {
+        if (str_len <= space()) {
+#if !defined(STRF_FREESTANDING) || defined(STRF_WITH_CSTRING)
+            memcpy(pointer_, str, str_len * sizeof(char_type));
+            pointer_ += str_len;
+#else
+            for(; str_len != 0; ++pointer_, ++str, --str_len) {
+                *pointer_ = *str;
+            }
+#endif
+        } else {
+            do_write(str, str_len);
+        }
+    }
+
 protected:
 
     STRF_HD basic_outbuff(char_type* p, char_type* e) noexcept
@@ -114,6 +133,8 @@ protected:
     STRF_HD void set_good(bool g) noexcept
     { good_ = g; };
 
+    STRF_HD virtual void do_write(const char_type* src, std::size_t src_size);
+
 private:
 
     char_type* pointer_;
@@ -123,16 +144,81 @@ private:
 };
 
 template <typename CharT>
+void basic_outbuff<CharT>::do_write(const CharT* str, std::size_t str_len)
+{
+    do {
+        std::size_t s = space();
+        std::size_t sub_count = (str_len <= s ? str_len : s);
+        str_len -= sub_count;
+
+#if !defined(STRF_FREESTANDING) || defined(STRF_WITH_CSTRING)
+        memcpy(pointer_, str, sub_count * sizeof(char_type));
+        str += sub_count;
+        pointer_ += sub_count;
+#else
+        for(; sub_count != 0; ++pointer_, ++str, --sub_count) {
+            *pointer_ = *str;
+        }
+#endif
+        recycle();
+    } while (str_len && good_);
+}
+
+
+template <typename CharT>
 class basic_outbuff_noexcept: public basic_outbuff<CharT>
 {
 public:
 
-    virtual STRF_HD void recycle() noexcept = 0;
+    virtual STRF_HD void recycle() noexcept override = 0;
+
+    STRF_HD void write(const CharT* str, std::size_t str_len) noexcept
+    {
+        if (str_len <= this->space()) {
+#if !defined(STRF_FREESTANDING) || defined(STRF_WITH_CSTRING)
+            memcpy(this->pointer(), str, str_len * sizeof(CharT));
+            this->advance(str_len);
+#else
+            auto p = this->pointer();
+            for(; str_len != 0; ++p, ++str, --str_len) {
+                *p = *str;
+            }
+            this->advance_to(p);
+#endif
+        } else {
+            do_write(str, str_len);
+        }
+    }
 
 protected:
 
+    STRF_HD void do_write(const CharT* str, std::size_t str_len) noexcept override;
+
     using basic_outbuff<CharT>::basic_outbuff;
 };
+
+template <typename CharT>
+void basic_outbuff_noexcept<CharT>::do_write(const CharT* str, std::size_t str_len) noexcept
+{
+    do {
+        std::size_t s = this->space();
+        std::size_t sub_count = (str_len <= s ? str_len : s);
+        str_len -= sub_count;
+        auto ptr = this->pointer();
+
+#if !defined(STRF_FREESTANDING) || defined(STRF_WITH_CSTRING)
+        memcpy(ptr, str, sub_count * sizeof(CharT));
+        str += sub_count;
+        this->advance_to(ptr + sub_count);
+#else
+        for(; sub_count != 0; ++ptr, ++str, --sub_count) {
+            *ptr = *str;
+        }
+        this->advance_to(ptr);
+#endif
+        recycle();
+    } while (str_len && this->good());
+}
 
 namespace detail {
 
@@ -301,6 +387,23 @@ public:
     }
 
 private:
+
+    void do_write(const CharT* str, std::size_t) noexcept override
+    {
+        auto sub_count = this->space();
+        auto ptr = this->pointer();
+#if !defined(STRF_FREESTANDING) || defined(STRF_WITH_CSTRING)
+        memcpy(ptr, str, sub_count * sizeof(CharT));
+#else
+        for(; sub_count != 0; ++ptr, ++str, --sub_count) {
+            *ptr = *str;
+        }
+#endif
+        it_ = this->end();
+        this->set_pointer(outbuff_garbage_buf<CharT>());
+        this->set_end(outbuff_garbage_buf_end<CharT>());
+        this->set_good(false);
+    }
 
     CharT* it_ = nullptr;
 };

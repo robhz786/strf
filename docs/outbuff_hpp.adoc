@@ -26,6 +26,22 @@ http://www.boost.org/LICENSE_1_0.txt
 :garbage_buf: <<garbage_buf, garbage_buf>>
 :garbage_buf_end: <<garbage_buf, garbage_buf_end>>
 
+:char_type: <<basic_outbuff_char_type,char_type>>
+:pointer: <<basic_outbuff_pointer,pointer>>
+:end: <<basic_outbuff_end,end>>
+:space: <<basic_outbuff_space,space>>
+:recycle: <<basic_outbuff_recycle,recycle>>
+:require: <<basic_outbuff_require,require>>
+:advance_to: <<basic_outbuff_advance_to,advance_to>>
+:advance_count: <<basic_outbuff_advance_count,advance_count>>
+:advance: <<basic_outbuff_advance,advance>>
+:good: <<basic_outbuff_good,good>>
+:write: <<basic_outbuff_write,write>>
+:set_pointer: <<basic_outbuff_set_pointer,set_pointer>>
+:set_end: <<basic_outbuff_set_end,set_end>>
+:set_good: <<basic_outbuff_set_good,set_good>>
+:do_write: <<basic_outbuff_do_write,do_write>>
+
 ////
 `<strf/outbuff.hpp>` is a lighweight header can be used in freestanding evironments. All other headers of the strf library include it. It's not affected by the `STRF_SEPARATE_COMPILATION` macro.
 ////
@@ -111,25 +127,29 @@ public:
 
     virtual ~basic_outbuff() = default;
 
-    CharT{asterisk} pointer() const noexcept;
-    CharT{asterisk} end() const noexcept;
-    std::size_t space() const noexcept;
-    bool good() const noexcept;
-    void advance_to(CharT{asterisk} p);
-    void advance(std::size_t n);
-    void require(std::size_t s);
+    CharT{asterisk} {pointer}() const noexcept;
+    CharT{asterisk} {end}() const noexcept;
+    std::size_t {space}() const noexcept;
+    bool {good}() const noexcept;
+    void {advance_to}(CharT{asterisk} p);
+    void {advance}(std::size_t n);
+    void {require}(std::size_t s);
 
-    virtual void recycle() = 0;
+    void {write}(const CharT* str, std::size_t str_len);
+
+    virtual void {recycle}() = 0;
 
 protected:
 
-    basic_outbuff(CharT{asterisk} pointer_, CharT{asterisk} end_);
+    <<basic_outbuff_ctor_range,basic_outbuff>>(CharT{asterisk} pointer_, CharT{asterisk} end_);
 
-    basic_outbuff(CharT{asterisk} pointer_, std::size_t n);
+    <<basic_outbuff_ctor_count,basic_outbuff>>(CharT{asterisk} pointer_, std::size_t n);
 
-    void set_pointer(CharT{asterisk} p) noexcept;
-    void set_end(CharT{asterisk} e) noexcept;
-    void set_good(bool g) noexcept;
+    void {set_pointer}(CharT{asterisk} p) noexcept;
+    void {set_end}(CharT{asterisk} e) noexcept;
+    void {set_good}(bool g) noexcept;
+
+    virtual void {do_write}(const CharT* str, std::size_t str_len);
 };
 
 // global functions
@@ -169,7 +189,7 @@ CharT* end() const noxcept;
 ----
 [horizontal]
 Return:: The end of memory position where the content shall be written.
-         Dereferencing `end()` has undefined behaviour.
+         Dereferencing `{end}()` has undefined behaviour.
 ====
 [[basic_outbuff_space]]
 ====
@@ -178,7 +198,7 @@ Return:: The end of memory position where the content shall be written.
 std::size_t space() const noexcept;
 ----
 [horizontal]
-Return:: `end() - pointer()`
+Return:: `{end}() - {pointer}()`
 ====
 [[basic_outbuff_recycle]]
 ====
@@ -188,19 +208,18 @@ virtual void recycle() = 0;
 ----
 [horizontal]
 Posconditions::
-- `space() >= {min_space_after_recycle}<CharT>()`
-- The range [ `pointer()`, `end()` ) is valid accessible memory area
-- If the return value of `good()` was `false` before this call to `recycle()`, then `good()` remains returning `false`.
+- `{space}() >= {min_space_after_recycle}<CharT>()`
+- The range [ `{pointer}()`, `{end}()` ) is valid accessible memory area
+- If the return value of `{good}()` was `false` before this call to `{recycle}()`, then `{good}()` remains returning `false`.
 ====
 
 // Effect::
-// Depends on the derivate class, but if `good()` returns `true`,
-// then supposedly consumes the content in the range [`p`, `pointer()`),
-// where `p` is the value `pointer()` would have returned if called before
-// any call to `advance` or `advance_to` in this object since the last
-// time `recycle` was called in this object, or, in case `recycle`
+// Depends on the derivate class, but if `{good}()` returns `true`,
+// then supposedly consumes the content in the range [`p`, `{pointer}()`),
+// where `p` is the value `{pointer}()` would have returned if called before
+// any call to `{advance}` or `{advance_to}` in this object since the last
+// time `{recycle}` was called in this object, or, in case `{recycle}`
 // was not called in this object yet, since this object was constructed.
-
 
 [[basic_outbuff_require]]
 ====
@@ -209,9 +228,9 @@ Posconditions::
 void require(std::size_t s)
 ----
 [horizontal]
-Effect:: Calls `recycle()` if `space() < s`.
+Effect:: Calls `{recycle}()` if `{space}() < s`.
 Precondition:: `s \<= {min_space_after_recycle}<CharT>()`
-Postcondition:: `space() >= s`
+Postcondition:: `{space}() >= s`
 ====
 [[basic_outbuff_advance_to]]
 ====
@@ -221,8 +240,8 @@ void advance_to(CharT* p)
 ----
 [horizontal]
 Effect:: Advance the buffer's pointer to `p`.
-Precondition:: `pointer() \<= p && p \<= end()`
-Postcondition:: `pointer() == p`
+Precondition:: `{pointer}() \<= p && p \<= end()`
+Postcondition:: `{pointer}() == p`
 ====
 [[basic_outbuff_advance_count]]
 ====
@@ -231,8 +250,8 @@ Postcondition:: `pointer() == p`
 void advance(std::size_t n)
 ----
 [horizontal]
-Effect:: Equivalent to `advance_to(pointer() + n)`
-Precondition:: `n \<= space()`
+Effect:: Equivalent to `{advance_to}({pointer}() + n)`
+Precondition:: `n \<= {space}()`
 ====
 [[basic_outbuff_advance]]
 ====
@@ -241,8 +260,8 @@ Precondition:: `n \<= space()`
 void advance()
 ----
 [horizontal]
-Effect:: Equivalent to `advance_to(1)`
-Precondition:: `pointer() != end()`
+Effect:: Equivalent to `{advance_to}(1)`
+Precondition:: `{pointer}() != {end}()`
 ====
 [[basic_outbuff_good]]
 ====
@@ -252,11 +271,23 @@ bool good() const;
 ----
 [horizontal]
 Return:: The state of this object.
-Semantincs:: `good() == false` means that writting anything on
-   `pointer()`, and calling `advance_to` and `recycle()` has no
+Semantincs:: `{good}() == false` means that writting anything on
+   `{pointer}()`, and calling `{advance_to}` and `{recycle}()` has no
    relevant side effect besides their postconditions.
-Note:: The range [ `pointer()`, `end()` ) shall aways be a valid
-accessible memory, even when `good()` returns `false`.
+Note:: The range [ `{pointer}()`, `{end}()` ) shall aways be a valid
+accessible memory, even when `{good}()` returns `false`.
+====
+
+[[basic_outbuff_write]]
+====
+[source,cpp]
+----
+void write(const CharT* str, std::size_t str_len);
+----
+[horizontal]
+Effect:: If `str_len \<= {space}()` is `true`, copy `str_len` characters of
+         string the `str` into `{pointer}()` and calls `{advance}(str_len)`.
+         Otherwise, calls `{do_write}(str, str_len)`.
 ====
 
 === Protected Member functions
@@ -272,9 +303,9 @@ Preconditions::
 - `pointer_ \<= end_`
 - The range [ `pointer_`, `end_` ) must be an accessible memory area.
 Posconditions::
-- `pointer() == pointer_`
-- `end() == end_`
-- `good() == true`
+- `{pointer}() == pointer_`
+- `{end}() == end_`
+- `{good}() == true`
 ====
 [[basic_outbuff_ctor_count]]
 ====
@@ -286,9 +317,9 @@ basic_outbuff(CharT* pointer_, std::size_t n)
 Preconditions::
 - The range [ `pointer_`, `pointer_ + n ` ) must be an accessible memory area.
 Posconditions::
-- `pointer() == pointer_`
-- `end() == pointer_ + n`
-- `good() == true`
+- `{pointer}() == pointer_`
+- `{end}() == pointer_ + n`
+- `{good}() == true`
 ====
 [[basic_outbuff_set_pointer]]
 ====
@@ -297,7 +328,7 @@ Posconditions::
 void set_pointer(CharT* p) noexcept
 ----
 [horizontal]
-Postconditions:: `pointer() == p`
+Postconditions:: `{pointer}() == p`
 ====
 [[basic_outbuff_set_end]]
 ====
@@ -306,7 +337,7 @@ Postconditions:: `pointer() == p`
 void set_end(CharT* e) noexcept
 ----
 [horizontal]
-Postconditions:: `end() == e`
+Postconditions:: `{end}() == e`
 ====
 [[basic_outbuff_set_good]]
 ====
@@ -315,7 +346,21 @@ Postconditions:: `end() == e`
 void set_good(bool g) noexcept
 ----
 [horizontal]
-Postconditions:: `good() == g`
+Postconditions:: `{good}() == g`
+====
+
+[[basic_outbuff_do_write]]
+====
+[source,cpp]
+----
+virtual void do_write(const CharT* str, std::size_t str_len);
+----
+[horizontal]
+Effect:: Writes the first `str_len` characters of string `str`
+        into this object, calling `{recycle}()` how many time
+        it is necessary.
+Note:: This function is made virtual so that any derived classes
+       can override it with an optimized version.
 ====
 
 === Global functions
@@ -353,8 +398,11 @@ class basic_outbuff_noexcept: public basic_outbuff<CharT>
 public:
 
     virtual void recycle() noexcept = 0;
+    virtual void write(const CharT* str, std::size_t str_len) noexcept;
 
 protected:
+
+    virtual void do_write(const CharT* str, std::size_t str_len) noexcept override;
 
     using basic_outbuff<CharT>::basic_outbuff;
 };
@@ -410,9 +458,9 @@ basic_cstr_writer(CharT* dest, CharT* dest_end) noexcept;
 [horizontal]
 Precondition:: `dest < dest_end`
 Postconditions::
-- `good() == true`
-- `pointer() == dest`
-- `end() == dest_end - 1`
+- `{good}() == true`
+- `{pointer}() == dest`
+- `{end}() == dest_end - 1`
 ====
 ====
 [source,cpp]
@@ -422,9 +470,9 @@ basic_cstr_writer(CharT* dest, std::size_t dest_size) noexcept;
 [horizontal]
 Precondition:: `dest_size != 0`
 Postconditions::
-- `good() == true`
-- `pointer() == dest`
-- `end() == dest + dest_size - 1`
+- `{good}() == true`
+- `{pointer}() == dest`
+- `{end}() == dest + dest_size - 1`
 ====
 ====
 [source,cpp]
@@ -434,9 +482,9 @@ basic_cstr_writer(CharT (&dest)[N]) noexcept;
 ----
 [horizontal]
 Postconditions::
-- `good() == true`
-- `pointer() == dest`
-- `end() == dest + N - 1`
+- `{good}() == true`
+- `{pointer}() == dest`
+- `{end}() == dest + N - 1`
 ====
 ====
 [source,cpp]
@@ -445,9 +493,9 @@ void recycle() noexcept;
 ----
 [horizontal]
 Postconditions::
-- `good() == false`
-- `pointer() == {garbage_buf}<CharT>()`
-- `end() == {garbage_buf_end}<CharT>()`
+- `{good}() == false`
+- `{pointer}() == {garbage_buf}<CharT>()`
+- `{end}() == {garbage_buf_end}<CharT>()`
 ====
 ====
 [source,cpp]
@@ -461,9 +509,9 @@ Return value::
 - `result::truncated` is `true` if `recycle` or `finish` has ever been called in this object.
 - `result::ptr` points to the termination character `'\0'`.
 Postconditions::
-- `good() == false`
-- `pointer() == {garbage_buf}<CharT>()`
-- `end() == {garbage_buf_end}<CharT>()`
+- `{good}() == false`
+- `{pointer}() == {garbage_buf}<CharT>()`
+- `{end}() == {garbage_buf_end}<CharT>()`
 ====
 
 [[discarded_outbuff]]
@@ -493,9 +541,9 @@ discarded_outbuff() noexcept;
 ----
 [horizontal]
 Postconditions::
-- `good() == false`
-- `pointer() == {garbage_buf}<CharT>()`
-- `end() == {garbage_buf_end}<CharT>()`
+- `{good}() == false`
+- `{pointer}() == {garbage_buf}<CharT>()`
+- `{end}() == {garbage_buf_end}<CharT>()`
 ====
 ====
 [source,cpp]
@@ -504,9 +552,9 @@ void recycle() noexcept;
 ----
 [horizontal]
 Postconditions::
-- `good() == false`
-- `pointer() == {garbage_buf}<CharT>()`
-- `end() == {garbage_buf_end}<CharT>()`
+- `{good}() == false`
+- `{pointer}() == {garbage_buf}<CharT>()`
+- `{end}() == {garbage_buf_end}<CharT>()`
 ====
 
 [[garbage_buf]]

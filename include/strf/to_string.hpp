@@ -58,6 +58,18 @@ public:
 
 private:
 
+    void do_write(const CharT* str, std::size_t str_len) override
+    {
+        auto * p = this->pointer();
+        this->set_pointer(buf_);
+        if (this->good()) {
+            this->set_good(false);
+            str_.append(buf_, p);
+            str_.append(str, str_len);
+            this->set_good(true);
+        }
+    }
+
     string_type_& str_;
     static constexpr std::size_t buf_size_
         = strf::min_space_after_recycle<CharT>();
@@ -93,21 +105,7 @@ public:
         }
     }
 
-    void recycle() override
-    {
-        std::size_t count = this->pointer() - buf_;
-        this->set_pointer(buf_);
-        if (this->good()) {
-            this->set_good(false);
-            if ( ! string_initialized_) {
-                new (string_ptr()) string_type_{buf_, count};
-                string_initialized_ = true;
-            } else {
-                string_ptr() -> append(buf_, count);
-            }
-            this->set_good(true);
-        }
-    }
+    void recycle() override;
 
     string_type_ finish()
     {
@@ -125,6 +123,8 @@ public:
 
 private:
 
+    void do_write(const CharT* str, std::size_t str_len) override;
+
     bool string_initialized_ = false;
 
     string_type_* string_ptr()
@@ -141,6 +141,44 @@ private:
 
     string_storage_type_ string_obj_space_;
 };
+
+template < typename CharT, typename Traits, typename Allocator >
+void basic_string_maker<CharT, Traits, Allocator>::recycle()
+{
+    std::size_t count = this->pointer() - buf_;
+    this->set_pointer(buf_);
+    if (this->good()) {
+        this->set_good(false); // in case the following code throws
+        if ( ! string_initialized_) {
+            new (string_ptr()) string_type_{buf_, count};
+            string_initialized_ = true;
+        } else {
+            string_ptr() -> append(buf_, count);
+        }
+        this->set_good(true);
+    }
+}
+
+template < typename CharT, typename Traits, typename Allocator >
+void basic_string_maker<CharT, Traits, Allocator>::do_write(const CharT* str, std::size_t str_len)
+{
+    if (this->good()) {
+        std::size_t buf_count = this->pointer() - buf_;
+        this->set_pointer(buf_);
+        this->set_good(false); // in case the following code throws
+        if ( ! string_initialized_) {
+            new (string_ptr()) string_type_();
+            string_ptr()->reserve((buf_count + str_len) << 1);
+            string_ptr()->append(buf_, buf_count);
+            string_ptr()->append(str, str_len);
+            string_initialized_ = true;
+        } else {
+            string_ptr()->append(buf_, buf_count);
+            string_ptr()->append(str, str_len);
+        }
+        this->set_good(true);
+    }
+}
 
 template < typename CharT
          , typename Traits = std::char_traits<CharT>

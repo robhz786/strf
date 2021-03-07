@@ -18,8 +18,8 @@ void test_narrow_successfull_writing()
     std::FILE* file = std::tmpfile();
     strf::narrow_cfile_writer<CharT> writer(file);
 
-    write(writer, tiny_str.begin(), tiny_str.size());
-    write(writer, double_str.begin(), double_str.size());
+    writer.write(tiny_str.begin(), tiny_str.size());
+    writer.write(double_str.begin(), double_str.size());
     auto status = writer.finish();
     std::fflush(file);
     std::rewind(file);
@@ -46,8 +46,8 @@ void test_wide_successfull_writing()
     std::FILE* file = std::tmpfile();
     strf::wide_cfile_writer writer(file);
 
-    write(writer, tiny_str.begin(), tiny_str.size());
-    write(writer, double_str.begin(), double_str.size());
+    writer.write(tiny_str.begin(), tiny_str.size());
+    writer.write(double_str.begin(), double_str.size());
     auto status = writer.finish();
     std::fflush(file);
     std::rewind(file);
@@ -76,10 +76,10 @@ void test_narrow_failing_to_recycle()
     std::FILE* file = std::fopen(path.c_str(), "w");
     strf::narrow_cfile_writer<CharT> writer(file);
 
-    write(writer, half_str.begin(), half_str.size());
+    writer.write(half_str.begin(), half_str.size());
     writer.recycle(); // first recycle shall work
     test_utils::turn_into_bad(writer);
-    write(writer, double_str.begin(), double_str.size());
+    writer.write(double_str.begin(), double_str.size());
 
     auto status = writer.finish();
     std::fclose(file);
@@ -103,10 +103,10 @@ void test_wide_failing_to_recycle()
     std::FILE* file = std::fopen(path.c_str(), "w");
     strf::wide_cfile_writer writer(file);
 
-    write(writer, half_str.begin(), half_str.size());
+    writer.write(half_str.begin(), half_str.size());
     writer.recycle();
     test_utils::turn_into_bad(writer);
-    write(writer, double_str.begin(), double_str.size());
+    writer.write(double_str.begin(), double_str.size());
 
     auto status = writer.finish();
     std::fclose(file);
@@ -132,9 +132,9 @@ void test_narrow_failing_to_finish()
     std::FILE* file = std::fopen(path.c_str(), "w");
     strf::narrow_cfile_writer<CharT> writer(file);
 
-    write(writer, double_str.begin(), double_str.size());
+    writer.write(double_str.begin(), double_str.size());
     writer.recycle();
-    write(writer, half_str.begin(), half_str.size());
+    writer.write(half_str.begin(), half_str.size());
     test_utils::turn_into_bad(writer);
 
     auto status = writer.finish();
@@ -159,9 +159,9 @@ void test_wide_failing_to_finish()
     std::FILE* file = std::fopen(path.c_str(), "w");
     strf::wide_cfile_writer writer(file);
 
-    write(writer, double_str.begin(), double_str.size());
+    writer.write(double_str.begin(), double_str.size());
     writer.recycle();
-    write(writer, half_str.begin(), half_str.size());
+    writer.write(half_str.begin(), half_str.size());
     test_utils::turn_into_bad(writer);
 
     auto status = writer.finish();

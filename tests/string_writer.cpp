@@ -13,8 +13,8 @@ static void test_successfull_append()
 
     std::basic_string<CharT> str;
     strf::basic_string_appender<CharT> ob(str);
-    write(ob, tiny_str.begin(), tiny_str.size());
-    write(ob, double_str.begin(), double_str.size());
+    ob.write(tiny_str.begin(), tiny_str.size());
+    ob.write(double_str.begin(), double_str.size());
     ob.finish();
 
     TEST_EQ(str.size(), tiny_str.size() + double_str.size());
@@ -34,8 +34,8 @@ static void test_successfull_make()
     auto double_str = test_utils::make_double_string<CharT>();
 
     strf::basic_string_maker<CharT> ob;
-    write(ob, tiny_str.begin(), tiny_str.size());
-    write(ob, double_str.begin(), double_str.size());
+    ob.write(tiny_str.begin(), tiny_str.size());
+    ob.write(double_str.begin(), double_str.size());
     auto result = ob.finish();
 
     TEST_EQ(result.size(), tiny_str.size() + double_str.size());

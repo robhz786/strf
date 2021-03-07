@@ -180,10 +180,10 @@ STRF_HD void tr_string_write
         const char_type* prev = it;
         it = strf::detail::str_find<char_type>(it, (str_end - it), '{');
         if (it == nullptr) {
-            strf::write(ob, prev, str_end - prev);
+            ob.write(prev, str_end - prev);
             return;
         }
-        strf::write(ob, prev, it - prev);
+        ob.write(prev, it - prev);
         ++it;
         after_the_brace:
         if (it == str_end) {
@@ -222,10 +222,10 @@ STRF_HD void tr_string_write
             auto it2 = it + 1;
             it2 = strf::detail::str_find<char_type>(it2, str_end - it2, '{');
             if (it2 == nullptr) {
-                strf::write(ob, it, str_end - it);
+                ob.write(it, str_end - it);
                 return;
             }
-            strf::write(ob, it, (it2 - it));
+            ob.write(it, (it2 - it));
             it = it2 + 1;
             goto after_the_brace;
         } else {

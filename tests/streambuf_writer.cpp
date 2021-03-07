@@ -15,8 +15,8 @@ static void test_successfull_writing()
     std::basic_ostringstream<CharT> dest;
     strf::basic_streambuf_writer<CharT> writer(*dest.rdbuf());
 
-    write(writer, tiny_str.begin(), tiny_str.size());
-    write(writer, double_str.begin(), double_str.size());
+    writer.write(tiny_str.begin(), tiny_str.size());
+    writer.write(double_str.begin(), double_str.size());
     auto status = writer.finish();
     dest.rdbuf()->pubsync();
 
@@ -42,10 +42,10 @@ static void test_failing_to_recycle()
     std::basic_ostringstream<CharT> dest;
     strf::basic_streambuf_writer<CharT> writer(*dest.rdbuf());
 
-    write(writer, half_str.begin(), half_str.size());
+    writer.write(half_str.begin(), half_str.size());
     writer.recycle(); // first recycle works
     test_utils::turn_into_bad(writer);
-    write(writer, double_str.begin(), double_str.size());
+    writer.write(double_str.begin(), double_str.size());
     auto status = writer.finish();
     dest.rdbuf()->pubsync();
 
@@ -68,9 +68,9 @@ static void test_failing_to_finish()
     std::basic_ostringstream<CharT> dest;
     strf::basic_streambuf_writer<CharT> writer(*dest.rdbuf());
 
-    write(writer, double_str.begin(), double_str.size());
+    writer.write(double_str.begin(), double_str.size());
     writer.recycle();
-    write(writer, half_str.begin(), half_str.size());
+    writer.write(half_str.begin(), half_str.size());
     test_utils::turn_into_bad(writer);
 
     auto status = writer.finish();

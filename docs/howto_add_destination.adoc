@@ -48,14 +48,14 @@ to the end of buffer, and the other to the position where the
 next character shall be written. They are returned by the
 `<<outbuff_hpp#basic_outbuff_end,end>>` and
 `<<outbuff_hpp#basic_outbuff_pointer,pointer>>` functions respectively.
-Contrary to what is common on output streams abstractions,
-there is no function to insert content ( like the
-https://en.cppreference.com/w/cpp/io/basic_streambuf/sputc[`sputc`] function in
-`std::basic_streambuf` ).
-`basic_outbuff` is more low-level:
-one writes things directly to `pointer()`
-and then calls the `<<outbuff_hpp#basic_outbuff_advance,advance>>` or the
-`<<outbuff_hpp#basic_outbuff_advance_to,advance_to>>` function to update
+Contrary to what is common in output streams abstractions,
+where you need to use high-lever functions to insert content ( like
+https://en.cppreference.com/w/cpp/io/basic_streambuf/sputc[`sputc`]
+in `std::basic_streambuf`, or
+https://en.cppreference.com/w/cpp/io/basic_ostream/write[`write`]
+in `std::basic_ostream` ), in `basic_outbuff` you can write things directly to
+`pointer()` and then calls the `<<outbuff_hpp#basic_outbuff_advance,advance>>`
+or the `<<outbuff_hpp#basic_outbuff_advance_to,advance_to>>` function to update
 the pointer. For instance:
 
 [source,cpp,subs=normal]
@@ -122,9 +122,7 @@ void my_outbuff::recycle()
 {
     if ({good}()) {
         bool success = print(buff, {pointer}());
-        if ( ! success ) {
-            {set_good}(false);
-        }
+        {set_good}(success);
     }
     {set_pointer}(buff);
 }
@@ -138,13 +136,10 @@ void my_outbuff::recycle()
 {
     auto ptr = {pointer}();
     {set_pointer}(buff);
-
     if ({good}()) {
         {set_good}(false);
         bool success = print(buff, ptr);
-        if ( success ) {
-            {set_good}(true);
-        }
+        {set_good}(success);
     }
 }
 ----

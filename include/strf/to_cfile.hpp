@@ -33,7 +33,7 @@ public:
     {
     }
 
-    STRF_HD void recycle() noexcept
+    STRF_HD void recycle() noexcept override
     {
         auto p = this->pointer();
         this->set_pointer(buf_);
@@ -65,6 +65,19 @@ public:
     }
 
 private:
+
+    void do_write(const CharT* str, std::size_t str_len) noexcept override
+    {
+        auto p = this->pointer();
+        this->set_pointer(buf_);
+        if (this->good()) {
+            std::size_t count = p - buf_;
+            auto count_inc = std::fwrite(buf_, sizeof(CharT), count, dest_);
+            count_inc += std::fwrite(str, sizeof(CharT), str_len, dest_);
+            count_ += count_inc;
+            this->set_good(count_inc == count + str_len);
+        }
+    }
 
     std::FILE* dest_;
     std::size_t count_ = 0;
@@ -120,7 +133,27 @@ public:
         return {count_, g};
     }
 
-  private:
+private:
+
+    void do_write(const wchar_t* str, std::size_t str_len) noexcept override
+    {
+        auto p = this->pointer();
+        this->set_pointer(buf_);
+        if (this->good()) {
+            for (auto it = buf_; it != p; ++it, ++count_) {
+                if(std::fputwc(*it, dest_) == WEOF) {
+                    this->set_good(false);
+                    return;
+                }
+            }
+            for (; str_len != 0; ++str, --str_len, ++count_) {
+                if(std::fputwc(*str, dest_) == WEOF) {
+                    this->set_good(false);
+                    return;
+                }
+            }
+        }
+    }
 
     std::FILE* dest_;
     std::size_t count_ = 0;

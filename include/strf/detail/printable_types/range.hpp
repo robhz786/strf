@@ -378,7 +378,7 @@ STRF_HD void separated_range_printer<CharT, FPack, It>::print_to
             ( strf::make_printer_input<CharT>(no_preview, fp_, *it) )
             .print_to(ob);
         while (++it != end_) {
-            strf::write(ob, sep_begin_, sep_len_);
+            ob.write(sep_begin_, sep_len_);
             printer_type_<strf::no_print_preview>
                 ( strf::make_printer_input<CharT>(no_preview, fp_, *it) )
                 .print_to(ob);
@@ -582,7 +582,7 @@ STRF_HD void fmt_separated_range_printer<CharT, FPack, It, Fmts ...>
                 ( no_preview, fp_, value_fmt_type_adapted_{{*it}, fmt_} ) )
             .print_to(ob);
         while(++it != r.end) {
-            strf::write(ob, r.sep_begin, r.sep_len);
+            ob.write(r.sep_begin, r.sep_len);
             printer_type_<strf::no_print_preview>
                 ( strf::make_printer_input<CharT>
                     ( no_preview, fp_, value_fmt_type_adapted_{{*it}, fmt_} ) )
@@ -766,7 +766,7 @@ STRF_HD void sep_transformed_range_printer<CharT, FPack, It, UnaryOp>::print_to
             ( strf::make_printer_input<CharT>(no_preview, fp_, op_(*it)) )
             .print_to(ob);
         while (++it != end_) {
-            strf::write(ob, sep_begin_, sep_len_);
+            ob.write(sep_begin_, sep_len_);
             printer_type_<preview_type>
                 ( strf::make_printer_input<CharT>(no_preview, fp_, op_(*it)) )
                 .print_to(ob);

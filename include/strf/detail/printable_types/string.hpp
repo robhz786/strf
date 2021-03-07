@@ -1233,13 +1233,13 @@ void STRF_HD aligned_conv_string_printer<SrcCharT, DestCharT>::print_to
 #if defined(STRF_SEPARATE_COMPILATION)
 
 #if defined(__cpp_char8_t)
-STRF_EXPLICIT_TEMPLATE class string_printer<char8_t, char8_t>;
+//STRF_EXPLICIT_TEMPLATE class string_printer<char8_t, char8_t>;
 STRF_EXPLICIT_TEMPLATE class string_printer<char8_t, char>;
 STRF_EXPLICIT_TEMPLATE class string_printer<char, char8_t>;
 #endif
 
 
-STRF_EXPLICIT_TEMPLATE class string_printer<char, char>;
+//STRF_EXPLICIT_TEMPLATE class string_printer<char, char>;
 STRF_EXPLICIT_TEMPLATE class string_printer<char16_t, char16_t>;
 STRF_EXPLICIT_TEMPLATE class string_printer<char32_t, char32_t>;
 STRF_EXPLICIT_TEMPLATE class string_printer<wchar_t, wchar_t>;
@@ -1247,15 +1247,15 @@ STRF_EXPLICIT_TEMPLATE class string_printer<wchar_t, strf::detail::wchar_equiv>;
 STRF_EXPLICIT_TEMPLATE class string_printer<strf::detail::wchar_equiv, wchar_t>;
 
 #if defined(__cpp_char8_t)
-STRF_EXPLICIT_TEMPLATE class aligned_string_printer<char8_t, char8_t>;
+//STRF_EXPLICIT_TEMPLATE class aligned_string_printer<char8_t, char8_t>;
 STRF_EXPLICIT_TEMPLATE class aligned_string_printer<char8_t, char>;
 STRF_EXPLICIT_TEMPLATE class aligned_string_printer<char, char8_t>;
 #endif
 
-STRF_EXPLICIT_TEMPLATE class aligned_string_printer<char, char>;
-STRF_EXPLICIT_TEMPLATE class aligned_string_printer<char16_t, char16_t>;
-STRF_EXPLICIT_TEMPLATE class aligned_string_printer<char32_t, char32_t>;
-STRF_EXPLICIT_TEMPLATE class aligned_string_printer<wchar_t, wchar_t>;
+//STRF_EXPLICIT_TEMPLATE class aligned_string_printer<char, char>;
+//STRF_EXPLICIT_TEMPLATE class aligned_string_printer<char16_t, char16_t>;
+//STRF_EXPLICIT_TEMPLATE class aligned_string_printer<char32_t, char32_t>;
+//STRF_EXPLICIT_TEMPLATE class aligned_string_printer<wchar_t, wchar_t>;
 STRF_EXPLICIT_TEMPLATE class aligned_string_printer<wchar_t, strf::detail::wchar_equiv>;
 STRF_EXPLICIT_TEMPLATE class aligned_string_printer<strf::detail::wchar_equiv, wchar_t>;
 
