@@ -39,7 +39,7 @@ public:
     {
         std::streamsize count = this->pointer() - buf_;
         this->set_pointer(buf_);
-        if (this->good()) {
+        STRF_IF_LIKELY (this->good()) {
             auto count_inc = dest_.sputn(buf_, count);
             count_ += count_inc;
             this->set_good(count_inc == count);
@@ -58,7 +58,7 @@ public:
         auto g = this->good();
         this->set_pointer(buf_);
         this->set_good(false);
-        if (g) {
+        STRF_IF_LIKELY (g) {
             this->set_good(false);
             auto count_inc = dest_.sputn(buf_, count);
             count_ += count_inc;
@@ -73,7 +73,7 @@ private:
     {
         std::streamsize count = this->pointer() - buf_;
         this->set_pointer(buf_);
-        if (this->good()) {
+        STRF_IF_LIKELY (this->good()) {
             this->set_good(false);
             auto count_inc = dest_.sputn(buf_, count);
             count_inc += dest_.sputn(str, str_len);

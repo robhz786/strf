@@ -12,26 +12,26 @@ namespace strf {
 
 #if ! defined(STRF_CHECK_DEST)
 
-#define STRF_CHECK_DEST     \
-    if (dest_it == dest_end) {         \
-        ob.advance_to(dest_it);        \
-        ob.recycle();                  \
-        if (!ob.good()) {              \
-            return;                    \
-        }                              \
-        dest_it = ob.pointer();        \
-        dest_end = ob.end();           \
+#define STRF_CHECK_DEST                         \
+    STRF_IF_UNLIKELY (dest_it == dest_end) {    \
+        ob.advance_to(dest_it);                 \
+        ob.recycle();                           \
+        STRF_IF_UNLIKELY (!ob.good()) {         \
+            return;                             \
+        }                                       \
+        dest_it = ob.pointer();                 \
+        dest_end = ob.end();                    \
     }
 
-#define STRF_CHECK_DEST_SIZE(SIZE)     \
-    if (dest_it + SIZE > dest_end) {              \
-        ob.advance_to(dest_it);                   \
-        ob.recycle();                             \
-        if (!ob.good()) {                         \
-            return;                               \
-        }                                         \
-        dest_it = ob.pointer();                   \
-        dest_end = ob.end();                      \
+#define STRF_CHECK_DEST_SIZE(SIZE)                  \
+    STRF_IF_UNLIKELY (dest_it + SIZE > dest_end) {  \
+        ob.advance_to(dest_it);                     \
+        ob.recycle();                               \
+        STRF_IF_UNLIKELY (!ob.good()) {             \
+            return;                                 \
+        }                                           \
+        dest_it = ob.pointer();                     \
+        dest_end = ob.end();                        \
     }
 
 #endif // ! defined(STRF_CHECK_DEST)
@@ -58,11 +58,11 @@ inline STRF_HD void repeat_sequence
             p += seq_size;
         }
         ob.advance_to(p);
-        if (count <= space) {
+        STRF_IF_LIKELY (count <= space) {
             return;
         }
         ob.recycle();
-        if (!ob.good()) {
+        STRF_IF_UNLIKELY (!ob.good()) {
             return;
         }
         p = ob.pointer();
@@ -92,11 +92,11 @@ inline STRF_HD void repeat_sequence
             p += seq_size;
         }
         ob.advance_to(p);
-        if (count <= space) {
+        STRF_IF_LIKELY (count <= space) {
             return;
         }
         ob.recycle();
-        if (!ob.good()) {
+        STRF_IF_UNLIKELY (!ob.good()) {
             return;
         }
         p = ob.pointer();
@@ -128,11 +128,11 @@ inline STRF_HD void repeat_sequence
             p += seq_size;
         }
         ob.advance_to(p);
-        if (count <= space) {
+        STRF_IF_LIKELY (count <= space) {
             return;
         }
         ob.recycle();
-        if (!ob.good()) {
+        STRF_IF_UNLIKELY (!ob.good()) {
             return;
         }
         p = ob.pointer();
@@ -592,7 +592,7 @@ public:
 
     static STRF_HD char32_t decode_char(CharT ch) noexcept
     {
-        if (ch < 0x80)
+        STRF_IF_LIKELY (ch < 0x80)
             return static_cast<char32_t>(ch);
         return 0xFFFD;
     }
@@ -1356,7 +1356,7 @@ STRF_HD void
 static_char_encoding<CharT, strf::eid_utf8>::encode_fill
     ( strf::basic_outbuff<CharT>& ob, std::size_t count, char32_t ch )
 {
-    if (ch < 0x80) {
+    STRF_IF_LIKELY (ch < 0x80) {
         strf::detail::write_fill(ob, count, static_cast<CharT>(ch));
     } else if (ch < 0x800) {
         CharT ch0 = static_cast<CharT>(0xC0 | ((ch & 0x7C0) >> 6));
@@ -1387,7 +1387,7 @@ static_char_encoding<CharT, strf::eid_utf8>::encode_char
     ( CharT* dest
     , char32_t ch ) noexcept
 {
-    if (ch < 0x80) {
+    STRF_IF_LIKELY (ch < 0x80) {
         *dest = static_cast<CharT>(ch);
         return dest + 1;
     }
@@ -1430,7 +1430,7 @@ STRF_HD void strf::static_transcoder
     auto dest_end = ob.end();
     for(;src_it != src_end; ++src_it) {
         auto ch = *src_it;
-        if(ch < 0x80) {
+        STRF_IF_LIKELY (ch < 0x80) {
             STRF_CHECK_DEST;
             *dest_it = static_cast<DestCharT>(ch);
             ++dest_it;
@@ -1440,8 +1440,8 @@ STRF_HD void strf::static_transcoder
             dest_it[1] = static_cast<DestCharT>(0x80 |  (ch &  0x3F));
             dest_it += 2;
         } else if (ch < 0x10000) {
-            if ( surr_poli == strf::surrogate_policy::lax
-              || strf::detail::not_surrogate(ch))
+            STRF_IF_LIKELY ( surr_poli == strf::surrogate_policy::lax
+                          || strf::detail::not_surrogate(ch))
             {
                 STRF_CHECK_DEST_SIZE(3);
                 dest_it[0] = static_cast<DestCharT>(0xE0 | ((ch & 0xF000) >> 12));
@@ -1463,7 +1463,7 @@ STRF_HD void strf::static_transcoder
             dest_it[1] = static_cast<DestCharT>('\xBF');
             dest_it[2] = static_cast<DestCharT>('\xBD');
             dest_it += 3;
-            if (inv_seq_notifier) {
+            STRF_IF_UNLIKELY (inv_seq_notifier) {
                 ob.advance_to(dest_it);
                 inv_seq_notifier.notify();
             }
@@ -1485,7 +1485,7 @@ STRF_HD std::size_t strf::static_transcoder
     std::size_t count = 0;
     for(;src_it != src_end; ++src_it) {
         auto ch = *src_it;
-        if (ch < 0x110000) {
+        STRF_IF_LIKELY (ch < 0x110000) {
             count += 1 + (ch >= 0x80) + (ch >= 0x800) + (ch >= 0x10000);
         } else {
             count += 3;
@@ -1529,7 +1529,7 @@ STRF_HD void strf::static_transcoder
         ch = *src_it;
         src_it_next = src_it + 1;
 
-        if (strf::detail::not_surrogate(ch)) {
+        STRF_IF_LIKELY (strf::detail::not_surrogate(ch)) {
             ch32 = ch;
         } else if ( strf::detail::is_high_surrogate(ch)
                && src_it_next != src_end
@@ -1601,7 +1601,7 @@ STRF_HD void strf::static_transcoder
         ch = *src_it;
         src_it_next = src_it + 1;
 
-        if (strf::detail::not_surrogate(ch)) {
+        STRF_IF_LIKELY (strf::detail::not_surrogate(ch)) {
             STRF_CHECK_DEST;
             *dest_it = static_cast<DestCharT>(ch);
             ++dest_it;
@@ -1710,7 +1710,7 @@ static_char_encoding<CharT, strf::eid_utf16>::encode_char
     ( CharT* dest
     , char32_t ch ) noexcept
 {
-    if (ch < 0x10000) {
+    STRF_IF_LIKELY (ch < 0x10000) {
         *dest = static_cast<CharT>(ch);
         return dest + 1;
     }
@@ -1729,7 +1729,7 @@ STRF_HD void
 static_char_encoding<CharT, strf::eid_utf16>::encode_fill
     ( strf::basic_outbuff<CharT>& ob, std::size_t count, char32_t ch )
 {
-    if (ch < 0x10000) {
+    STRF_IF_LIKELY (ch < 0x10000) {
         strf::detail::write_fill<CharT>(ob, count, static_cast<CharT>(ch));
     } else if (ch < 0x110000) {
         char32_t sub_codepoint = ch - 0x10000;
@@ -1756,9 +1756,9 @@ STRF_HD void strf::static_transcoder
     auto dest_end = ob.end();
     for ( ; src_it != src_end; ++src_it) {
         auto ch = *src_it;
-        if (ch < 0x10000) {
-            if ( surr_poli == strf::surrogate_policy::lax
-              || strf::detail::not_surrogate(ch) )
+        STRF_IF_LIKELY (ch < 0x10000) {
+            STRF_IF_LIKELY ( surr_poli == strf::surrogate_policy::lax
+                          || strf::detail::not_surrogate(ch) )
             {
                 STRF_CHECK_DEST;
                 *dest_it = static_cast<DestCharT>(ch);
@@ -1827,7 +1827,7 @@ STRF_HD void strf::static_transcoder
     if (surr_poli == strf::surrogate_policy::lax) {
         for (auto src_it = src; src_it < src_end; ++src_it) {
             auto ch = *src_it;
-            if (ch >= 0x110000) {
+            STRF_IF_UNLIKELY (ch >= 0x110000) {
                 ch = 0xFFFD;
                 if (inv_seq_notifier) {
                     ob.advance_to(dest_it);
@@ -1841,7 +1841,7 @@ STRF_HD void strf::static_transcoder
     } else {
         for(auto src_it = src; src_it < src_end; ++src_it) {
             char32_t ch = *src_it;
-            if (ch >= 0x110000 || strf::detail::is_surrogate(ch)) {
+            STRF_IF_UNLIKELY (ch >= 0x110000 || strf::detail::is_surrogate(ch)) {
                 ch = 0xFFFD;
                 if (inv_seq_notifier) {
                     ob.advance_to(dest_it);
@@ -1902,40 +1902,44 @@ STRF_HD void strf::static_transcoder
     for (;src_it != src_end; ++dest_it) {
         ch0 = (*src_it);
         ++src_it;
-        if (ch0 < 0x80) {
+        STRF_IF_LIKELY (ch0 < 0x80) {
             STRF_CHECK_DEST;
             *dest_it = ch0;
         } else if (0xC0 == (ch0 & 0xE0)) {
-            if ( ch0 > 0xC1
-              && src_it != src_end && is_utf8_continuation(ch1 = * src_it))
+            STRF_IF_LIKELY ( ch0 > 0xC1
+                          && src_it != src_end
+                          && is_utf8_continuation(ch1 = * src_it))
             {
                 STRF_CHECK_DEST;
                 *dest_it = utf8_decode(ch0, ch1);
                 ++src_it;
             } else goto invalid_sequence;
         } else if (0xE0 == ch0) {
-            if (   src_it != src_end && (((ch1 = * src_it) & 0xE0) == 0xA0)
-              && ++src_it != src_end && is_utf8_continuation(ch2 = * src_it) )
+            STRF_IF_LIKELY ( src_it != src_end
+                          && (((ch1 = * src_it) & 0xE0) == 0xA0)
+                          && ++src_it != src_end
+                          && is_utf8_continuation(ch2 = * src_it) )
             {
                 STRF_CHECK_DEST;
                 *dest_it = ((ch1 & 0x3F) << 6) | (ch2 & 0x3F);
                 ++src_it;
             } else goto invalid_sequence;
         } else if (0xE0 == (ch0 & 0xF0)) {
-            if (   src_it != src_end && is_utf8_continuation(ch1 = * src_it)
-              && first_2_of_3_are_valid( x = utf8_decode_first_2_of_3(ch0, ch1)
-                                       , surr_poli )
-              && ++src_it != src_end && is_utf8_continuation(ch2 = * src_it) )
+            STRF_IF_LIKELY (( src_it != src_end && is_utf8_continuation(ch1 = * src_it)
+                          && first_2_of_3_are_valid( x = utf8_decode_first_2_of_3(ch0, ch1)
+                                                  , surr_poli )
+                          && ++src_it != src_end
+                          && is_utf8_continuation(ch2 = * src_it) ))
             {
                 STRF_CHECK_DEST;
                 *dest_it = static_cast<DestCharT>((x << 6) | (ch2 & 0x3F));
                 ++src_it;
             } else goto invalid_sequence;
         } else if (0xEF < ch0) {
-            if ( src_it != src_end && is_utf8_continuation(ch1 = * src_it)
-                 && first_2_of_4_are_valid(x = utf8_decode_first_2_of_4(ch0, ch1))
-                 && ++src_it != src_end && is_utf8_continuation(ch2 = * src_it)
-                 && ++src_it != src_end && is_utf8_continuation(ch3 = * src_it) )
+            STRF_IF_LIKELY (( src_it != src_end && is_utf8_continuation(ch1 = * src_it)
+                           && first_2_of_4_are_valid(x = utf8_decode_first_2_of_4(ch0, ch1))
+                           && ++src_it != src_end && is_utf8_continuation(ch2 = * src_it)
+                           && ++src_it != src_end && is_utf8_continuation(ch3 = * src_it) ))
             {
                 STRF_CHECK_DEST_SIZE(2);
                 x = utf8_decode_last_2_of_4(x, ch2, ch3) - 0x10000;
@@ -2027,7 +2031,7 @@ STRF_HD void strf::static_transcoder
 
     for( ; src_it < src_end; ++src_it) {
         auto ch = *src_it;
-        if (ch < 0x80) {
+        STRF_IF_LIKELY (ch < 0x80) {
             STRF_CHECK_DEST;
             *dest_it = static_cast<DestCharT>(ch);
             ++dest_it;
@@ -2084,7 +2088,7 @@ STRF_HD std::size_t strf::static_transcoder
     std::size_t size = 0;
     for(auto it = src; it < src_end; ++it) {
         SrcCharT ch = *it;
-        if (ch < 0x80) {
+        STRF_IF_LIKELY (ch < 0x80) {
             ++size;
         } else if (ch < 0x800) {
             size += 2;

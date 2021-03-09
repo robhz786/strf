@@ -60,6 +60,19 @@
 #  define __cpp_lib_bitopts  	201907
 #endif
 
+#if defined(__GNUC__) || defined (__clang__)
+#  define STRF_IF_LIKELY(x)   if(__builtin_expect(!!(x), 1))
+#  define STRF_IF_UNLIKELY(x) if(__builtin_expect(!!(x), 0))
+
+#elif defined(_MSC_VER) && (_MSC_VER >= 1926) && (_MSVC_LANG > 201703L)
+#  define STRF_IF_LIKELY(x)   if(x)   [[likely]]
+#  define STRF_IF_UNLIKELY(x) if(x) [[unlikely]]
+
+#else
+#  define STRF_IF_LIKELY(x)   if(x)
+#  define STRF_IF_UNLIKELY(x) if(x)
+#endif
+
 // Define CUDA-related host/device execution scope specifiers/decorators
 
 #ifdef __CUDACC__

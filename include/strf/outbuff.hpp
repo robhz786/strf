@@ -88,7 +88,7 @@ public:
     STRF_HD void require(std::size_t s)
     {
         STRF_ASSERT(s <= strf::min_space_after_recycle<CharT>());
-        if (pointer() + s > end()) {
+        STRF_IF_UNLIKELY (pointer() + s > end()) {
             recycle();
         }
         STRF_ASSERT(pointer() + s <= end());
@@ -102,7 +102,7 @@ public:
 
     STRF_HD void write(const char_type* str, std::size_t str_len)
     {
-        if (str_len <= space()) {
+        STRF_IF_LIKELY (str_len <= space()) {
 #if !defined(STRF_FREESTANDING) || defined(STRF_WITH_CSTRING)
             memcpy(pointer_, str, str_len * sizeof(char_type));
             pointer_ += str_len;
@@ -174,7 +174,7 @@ public:
 
     STRF_HD void write(const CharT* str, std::size_t str_len) noexcept
     {
-        if (str_len <= this->space()) {
+        STRF_IF_LIKELY (str_len <= this->space()) {
 #if !defined(STRF_FREESTANDING) || defined(STRF_WITH_CSTRING)
             memcpy(this->pointer(), str, str_len * sizeof(CharT));
             this->advance(str_len);
@@ -248,9 +248,9 @@ template <typename CharT>
 inline STRF_HD void put(strf::basic_outbuff<CharT>& ob, CharT c)
 {
     auto p = ob.pointer();
-    if (p != ob.end()) {
+    STRF_IF_LIKELY (p != ob.end()) {
         *p = c;
-        ob.advance_to(p+1);
+        ob.advance_to(p + 1);
     } else {
         ob.recycle();
         *ob.pointer() = c;
@@ -262,9 +262,9 @@ template <typename CharT>
 inline STRF_HD void put( strf::basic_outbuff_noexcept<CharT>& ob, CharT c ) noexcept
 {
     auto p = ob.pointer();
-    if (p != ob.end()) {
+    STRF_IF_LIKELY (p != ob.end()) {
         *p = c;
-        ob.advance_to(p+1);
+        ob.advance_to(p + 1);
     } else {
         ob.recycle();
         *ob.pointer() = c;
@@ -374,7 +374,7 @@ public:
     STRF_HD result finish() noexcept
     {
         bool g = this->good();
-        if (g) {
+        STRF_IF_LIKELY (g) {
             it_ = this->pointer();
             this->set_good(false);
         }

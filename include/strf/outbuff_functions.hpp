@@ -86,7 +86,7 @@ template <typename CharT>
 inline STRF_HD void write_fill
     ( strf::basic_outbuff<CharT>& ob, std::size_t count, CharT ch )
 {
-    if (count <= ob.space()) { // the common case
+    STRF_IF_LIKELY (count <= ob.space()) {
         strf::detail::str_fill_n<CharT>(ob.pointer(), count, ch);
         ob.advance(count);
     } else {

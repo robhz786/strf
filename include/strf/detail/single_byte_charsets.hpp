@@ -9,26 +9,26 @@
 
 #if ! defined(STRF_CHECK_DEST)
 
-#define STRF_CHECK_DEST            \
-    if (dest_it == dest_end) {     \
-        ob.advance_to(dest_it);    \
-        ob.recycle();              \
-        if (!ob.good()) {          \
-            return;                \
-        }                          \
-        dest_it = ob.pointer();    \
-        dest_end = ob.end();       \
+#define STRF_CHECK_DEST                          \
+    STRF_IF_UNLIKELY (dest_it == dest_end) {     \
+        ob.advance_to(dest_it);                  \
+        ob.recycle();                            \
+        STRF_IF_UNLIKELY (!ob.good()) {          \
+            return;                              \
+        }                                        \
+        dest_it = ob.pointer();                  \
+        dest_end = ob.end();                     \
     }
 
-#define STRF_CHECK_DEST_SIZE(SIZE)     \
-    if (dest_it + SIZE > dest_end) {   \
-        ob.advance_to(dest_it);        \
-        ob.recycle();                  \
-        if (!ob.good()) {              \
-            return;                    \
-        }                              \
-        dest_it = ob.pointer();        \
-        dest_end = ob.end();           \
+#define STRF_CHECK_DEST_SIZE(SIZE)                  \
+    STRF_IF_UNLIKELY (dest_it + SIZE > dest_end) {  \
+        ob.advance_to(dest_it);                     \
+        ob.recycle();                               \
+        STRF_IF_UNLIKELY (!ob.good()) {             \
+            return;                                 \
+        }                                           \
+        dest_it = ob.pointer();                     \
+        dest_end = ob.end();                        \
     }
 
 #endif // ! defined(STRF_CHECK_DEST)
@@ -158,7 +158,7 @@ ForwardIt STRF_HD lower_bound
 
 STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_3::encode(char32_t ch)
 {
-    if (ch < 0xA1) {
+    STRF_IF_LIKELY (ch < 0xA1) {
         return ch;
     }
     static const ch32_to_char enc_map[] =
@@ -193,7 +193,7 @@ STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_3::encode(char32_t ch)
 
 STRF_FUNC_IMPL STRF_HD char32_t impl_iso_8859_3::decode(std::uint8_t ch)
 {
-    if (ch < 0xA1) {
+    STRF_IF_LIKELY (ch < 0xA1) {
         return ch;
     }
     else {
@@ -241,7 +241,7 @@ public:
             0x017E, 0x00B9, 0x00BA, 0x00BB, 0x0152, 0x0153, 0x0178
         };
 
-        if (ch <= 0xA3 || 0xBF <= ch)
+        STRF_IF_LIKELY (ch <= 0xA3 || 0xBF <= ch)
             return ch;
 
         return ext[ch - 0xA4];
@@ -305,7 +305,7 @@ public:
 
     static STRF_HD char32_t decode(std::uint8_t ch)
     {
-        if (ch < 0x80 || 0x9F < ch) {
+        STRF_IF_LIKELY (ch < 0x80 || 0x9F < ch) {
             return ch;
         }
         else {
@@ -418,7 +418,7 @@ STRF_HD void single_byte_char_encoding_to_utf32<SrcCharT, DestCharT, Impl>::tran
     for (auto src_it = src; src_it < src_end; ++src_it, ++dest_it) {
         STRF_CHECK_DEST;
         char32_t ch32 = Impl::decode(static_cast<std::uint8_t>(*src_it));
-        if(ch32 != (char32_t)-1) {
+        STRF_IF_LIKELY (ch32 != (char32_t)-1) {
             *dest_it = static_cast<DestCharT>(ch32);
         } else  {
             *dest_it = 0xFFFD;
@@ -475,7 +475,7 @@ STRF_HD void utf32_to_single_byte_char_encoding<SrcCharT, DestCharT, Impl>::tran
     for(auto src_it = src; src_it != src_end; ++src_it, ++dest_it) {
         STRF_CHECK_DEST;
         auto ch2 = Impl::encode(*src_it);
-        if(ch2 < 0x100) {
+        STRF_IF_LIKELY (ch2 < 0x100) {
             * dest_it = static_cast<DestCharT>(ch2);
         } else {
             * dest_it = '?';
@@ -533,12 +533,12 @@ STRF_HD void single_byte_char_encoding_sanitizer<SrcCharT, DestCharT, Impl>::tra
     for (auto src_it = src; src_it < src_end; ++src_it, ++dest_it) {
         STRF_CHECK_DEST;
         auto ch = static_cast<std::uint8_t>(*src_it);
-        if (Impl::is_valid(ch)) {
+        STRF_IF_LIKELY (Impl::is_valid(ch)) {
             *dest_it = static_cast<SrcCharT>(ch);
         }
         else {
             *dest_it = '?';
-            if (inv_seq_notifier) {
+            STRF_IF_UNLIKELY (inv_seq_notifier) {
                 ob.advance_to(dest_it);
                 inv_seq_notifier.notify();
             }
@@ -954,13 +954,13 @@ STRF_HD void single_byte_char_encoding<CharT, Impl>::encode_fill
     ( strf::basic_outbuff<CharT>& ob, std::size_t count, char32_t ch )
 {
     unsigned ch2 = Impl::encode(ch);
-    if (ch2 >= 0x100) {
+    STRF_IF_UNLIKELY (ch2 >= 0x100) {
         ch2 = '?';
     }
     auto ch3 = static_cast<CharT>(ch2);
     while(true) {
         std::size_t available = ob.space();
-        if (count <= available) {
+        STRF_IF_LIKELY (count <= available) {
             strf::detail::str_fill_n<CharT>(ob.pointer(), count, ch3);
             ob.advance(count);
             return;

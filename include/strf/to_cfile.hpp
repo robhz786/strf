@@ -37,7 +37,7 @@ public:
     {
         auto p = this->pointer();
         this->set_pointer(buf_);
-        if (this->good()) {
+        STRF_IF_LIKELY (this->good()) {
             std::size_t count = p - buf_;
             auto count_inc = std::fwrite(buf_, sizeof(CharT), count, dest_);
             count_ += count_inc;
@@ -55,7 +55,7 @@ public:
     {
         bool g = this->good();
         this->set_good(false);
-        if (g) {
+        STRF_IF_LIKELY (g) {
             std::size_t count = this->pointer() - buf_;
             auto count_inc = std::fwrite(buf_, sizeof(CharT), count, dest_);
             count_ += count_inc;
@@ -70,7 +70,7 @@ private:
     {
         auto p = this->pointer();
         this->set_pointer(buf_);
-        if (this->good()) {
+        STRF_IF_LIKELY (this->good()) {
             std::size_t count = p - buf_;
             auto count_inc = std::fwrite(buf_, sizeof(CharT), count, dest_);
             count_inc += std::fwrite(str, sizeof(CharT), str_len, dest_);
@@ -109,9 +109,9 @@ public:
     {
         auto p = this->pointer();
         this->set_pointer(buf_);
-        if (this->good()) {
+        STRF_IF_LIKELY (this->good()) {
             for (auto it = buf_; it != p; ++it, ++count_) {
-                if(std::fputwc(*it, dest_) == WEOF) {
+                STRF_IF_UNLIKELY (std::fputwc(*it, dest_) == WEOF) {
                     this->set_good(false);
                     break;
                 }
@@ -139,15 +139,15 @@ private:
     {
         auto p = this->pointer();
         this->set_pointer(buf_);
-        if (this->good()) {
+        STRF_IF_LIKELY (this->good()) {
             for (auto it = buf_; it != p; ++it, ++count_) {
-                if(std::fputwc(*it, dest_) == WEOF) {
+                STRF_IF_UNLIKELY (std::fputwc(*it, dest_) == WEOF) {
                     this->set_good(false);
                     return;
                 }
             }
             for (; str_len != 0; ++str, --str_len, ++count_) {
-                if(std::fputwc(*str, dest_) == WEOF) {
+                STRF_IF_UNLIKELY (std::fputwc(*str, dest_) == WEOF) {
                     this->set_good(false);
                     return;
                 }

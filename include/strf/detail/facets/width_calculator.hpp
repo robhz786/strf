@@ -51,7 +51,7 @@ public:
         , std::size_t str_len
         , strf::surrogate_policy ) const noexcept
     {
-        if (limit > 0) {
+        STRF_IF_LIKELY (limit > 0) {
             const auto limit_floor = static_cast<std::size_t>(limit.floor());
             if (str_len <= limit_floor) {
                 return { static_cast<std::int16_t>(str_len), str_len };
@@ -83,7 +83,7 @@ public:
         , std::size_t str_len
         , strf::surrogate_policy ) const
     {
-        if (limit > 0) {
+        STRF_IF_LIKELY (limit > 0) {
             auto lim = limit.floor();
             auto ret = enc.codepoints_fast_count(str, str_len, lim);
             STRF_ASSERT((std::ptrdiff_t)ret.count <= strf::width_max.floor());
@@ -100,7 +100,7 @@ public:
         , std::size_t str_len
         , strf::surrogate_policy ) const
     {
-        if (limit > 0) {
+        STRF_IF_LIKELY (limit > 0) {
             std::ptrdiff_t lim = limit.floor();
             auto res = enc.codepoints_fast_count(str, str_len, lim);
             STRF_ASSERT((std::ptrdiff_t)res.count <= lim);
@@ -132,7 +132,7 @@ public:
         , std::size_t str_len
         , strf::surrogate_policy surr_poli ) const
     {
-        if (limit > 0) {
+        STRF_IF_LIKELY (limit > 0) {
             auto lim = limit.floor();
             auto ret = enc.codepoints_robust_count(str, str_len, lim, surr_poli);
             STRF_ASSERT((std::ptrdiff_t)ret.count <= strf::width_max.floor());
@@ -149,7 +149,7 @@ public:
         , std::size_t str_len
         , strf::surrogate_policy surr_poli ) const
     {
-        if (limit > 0) {
+        STRF_IF_LIKELY (limit > 0) {
             std::ptrdiff_t lim = limit.floor();
             auto res = enc.codepoints_robust_count(str, str_len, lim, surr_poli);
             STRF_ASSERT((std::ptrdiff_t)res.count <= lim);

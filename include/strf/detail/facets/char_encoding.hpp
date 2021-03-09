@@ -69,7 +69,7 @@ public:
     }
     constexpr STRF_HD void notify() const noexcept
     {
-        if (notify_func_) {
+        STRF_IF_UNLIKELY (notify_func_) {
             notify_func_();
         }
     }
@@ -177,7 +177,7 @@ void trivial_fill_f
 {
     // same as strf::detail::write_fill<CharT>
     CharT narrow_ch = static_cast<CharT>(ch);
-    if (count <= ob.space()) { // the common case
+    STRF_IF_LIKELY (count <= ob.space()) {
         strf::detail::str_fill_n<CharT>(ob.pointer(), count, narrow_ch);
         ob.advance(count);
     } else {
@@ -791,7 +791,7 @@ public:
     STRF_HD void finish()
     {
         auto p = this->pointer();
-        if (p != buff_ && ob_.good()) {
+        STRF_IF_LIKELY (p != buff_ && ob_.good()) {
             transcode_( ob_, buff_, static_cast<std::size_t>(p - buff_)
                       , inv_seq_notifier_, surr_poli_);
         }
@@ -814,7 +814,7 @@ STRF_HD void buffered_encoder<DestCharT>::recycle()
 {
     auto p = this->pointer();
     this->set_pointer(buff_);
-    if (p != buff_ && ob_.good()) {
+    STRF_IF_LIKELY (p != buff_ && ob_.good()) {
         this->set_good(false);
         transcode_( ob_, buff_, static_cast<std::size_t>(p - buff_)
                   , inv_seq_notifier_, surr_poli_);
@@ -856,7 +856,7 @@ private:
 STRF_FUNC_IMPL STRF_HD void buffered_size_calculator::recycle()
 {
     auto p = this->pointer();
-    if (p != buff_) {
+    STRF_IF_LIKELY (p != buff_) {
         this->set_pointer(buff_);
         sum_ += size_func_(buff_, static_cast<std::size_t>(p - buff_), surr_poli_);
     }

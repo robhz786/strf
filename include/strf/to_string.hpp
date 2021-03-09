@@ -40,7 +40,7 @@ public:
     {
         auto * p = this->pointer();
         this->set_pointer(buf_);
-        if (this->good()) {
+        STRF_IF_LIKELY (this->good()) {
             this->set_good(false);
             str_.append(buf_, p);
             this->set_good(true);
@@ -50,7 +50,7 @@ public:
     void finish()
     {
         auto * p = this->pointer();
-        if (this->good()) {
+        STRF_IF_LIKELY (this->good()) {
             this->set_good(false);
             str_.append(buf_, p);
         }
@@ -62,7 +62,7 @@ private:
     {
         auto * p = this->pointer();
         this->set_pointer(buf_);
-        if (this->good()) {
+        STRF_IF_LIKELY (this->good()) {
             this->set_good(false);
             str_.append(buf_, p);
             str_.append(str, str_len);
@@ -109,10 +109,10 @@ public:
 
     string_type_ finish()
     {
-        if (this->good()) {
+        STRF_IF_LIKELY (this->good()) {
             this->set_good(false);
             std::size_t count = this->pointer() - buf_;
-            if ( ! string_initialized_) {
+            STRF_IF_LIKELY ( ! string_initialized_) {
                 return {buf_, count};
             }
             string_ptr() -> append(buf_, count);
@@ -147,7 +147,7 @@ void basic_string_maker<CharT, Traits, Allocator>::recycle()
 {
     std::size_t count = this->pointer() - buf_;
     this->set_pointer(buf_);
-    if (this->good()) {
+    STRF_IF_LIKELY (this->good()) {
         this->set_good(false); // in case the following code throws
         if ( ! string_initialized_) {
             new (string_ptr()) string_type_{buf_, count};
@@ -162,7 +162,7 @@ void basic_string_maker<CharT, Traits, Allocator>::recycle()
 template < typename CharT, typename Traits, typename Allocator >
 void basic_string_maker<CharT, Traits, Allocator>::do_write(const CharT* str, std::size_t str_len)
 {
-    if (this->good()) {
+    STRF_IF_LIKELY (this->good()) {
         std::size_t buf_count = this->pointer() - buf_;
         this->set_pointer(buf_);
         this->set_good(false); // in case the following code throws
