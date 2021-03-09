@@ -6,7 +6,6 @@ all: \
     out/tutorial.html \
     out/quick_reference.html \
     out/locale_hpp.html \
-    out/benchmarks.html \
     out/howto_add_destination.html \
     out/howto_add_printable_types.html \
     out/howto_override_printable_types.html \
@@ -32,9 +31,6 @@ out/quick_reference.html : quick_reference.adoc ref_format_functions.adoc out/
 
 out/locale_hpp.html : locale_hpp.adoc out/
 	asciidoctor -v $< -o $@
-
-out/benchmarks.html : benchmarks.adoc out/
-	asciidoctor -v --attribute=strf-version=$(StrfVersion) $< -o $@
 
 out/howto_add_destination.html : howto_add_destination.adoc out/
 	asciidoctor -v --attribute=strf-version=$(StrfVersion) $< -o $@

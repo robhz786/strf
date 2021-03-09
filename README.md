@@ -28,7 +28,7 @@ Version: 0.14.0
 * Miscellaneous
   * [Strf versus {fmt}](http://robhz786.github.io/strf/v0.14.0/versus_fmtlib.html)  ( an incomplete comparison )
   * [How to use strf on CUDA devices](http://robhz786.github.io/strf/v0.14.0/cuda.html)
-  * [Benchmarks](http://robhz786.github.io/strf/v0.14.0/benchmarks.html)
+  * [Benchmarks](http://robhz786.github.io/strf-benchmarks/v0.14.0/results.html)
 
 ## Acknowledgments
 
