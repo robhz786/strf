@@ -388,7 +388,7 @@ public:
 
 private:
 
-    void do_write(const CharT* str, std::size_t) noexcept override
+    STRF_HD void do_write(const CharT* str, std::size_t) noexcept override
     {
         auto sub_count = this->space();
         auto ptr = this->pointer();

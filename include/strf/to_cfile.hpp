@@ -66,7 +66,7 @@ public:
 
 private:
 
-    void do_write(const CharT* str, std::size_t str_len) noexcept override
+    STRF_HD void do_write(const CharT* str, std::size_t str_len) noexcept override
     {
         auto p = this->pointer();
         this->set_pointer(buf_);
@@ -135,7 +135,7 @@ public:
 
 private:
 
-    void do_write(const wchar_t* str, std::size_t str_len) noexcept override
+    STRF_HD void do_write(const wchar_t* str, std::size_t str_len) noexcept override
     {
         auto p = this->pointer();
         this->set_pointer(buf_);
