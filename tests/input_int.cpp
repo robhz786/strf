@@ -6,6 +6,48 @@
 
 void STRF_TEST_FUNC test_input_int()
 {
+    TEST_EQ(1,  strf::detail::count_digits<10>(1ull));
+    TEST_EQ(2,  strf::detail::count_digits<10>(10ull));
+    TEST_EQ(3,  strf::detail::count_digits<10>(100ull));
+    TEST_EQ(4,  strf::detail::count_digits<10>(1000ull));
+    TEST_EQ(5,  strf::detail::count_digits<10>(10000ull));
+    TEST_EQ(6,  strf::detail::count_digits<10>(100000ull));
+    TEST_EQ(7,  strf::detail::count_digits<10>(1000000ull));
+    TEST_EQ(8,  strf::detail::count_digits<10>(10000000ull));
+    TEST_EQ(9,  strf::detail::count_digits<10>(100000000ull));
+    TEST_EQ(10, strf::detail::count_digits<10>(1000000000ull));
+    TEST_EQ(11, strf::detail::count_digits<10>(10000000000ull));
+    TEST_EQ(12, strf::detail::count_digits<10>(100000000000ull));
+    TEST_EQ(13, strf::detail::count_digits<10>(1000000000000ull));
+    TEST_EQ(14, strf::detail::count_digits<10>(10000000000000ull));
+    TEST_EQ(15, strf::detail::count_digits<10>(100000000000000ull));
+    TEST_EQ(16, strf::detail::count_digits<10>(1000000000000000ull));
+    TEST_EQ(17, strf::detail::count_digits<10>(10000000000000000ull));
+    TEST_EQ(18, strf::detail::count_digits<10>(100000000000000000ull));
+    TEST_EQ(19, strf::detail::count_digits<10>(1000000000000000000ull));
+    TEST_EQ(20, strf::detail::count_digits<10>(10000000000000000000ull));
+
+    TEST_EQ(1,  strf::detail::count_digits<10>((std::uint32_t)1ul));
+    TEST_EQ(2,  strf::detail::count_digits<10>((std::uint32_t)10ul));
+    TEST_EQ(3,  strf::detail::count_digits<10>((std::uint32_t)100ul));
+    TEST_EQ(4,  strf::detail::count_digits<10>((std::uint32_t)1000ul));
+    TEST_EQ(5,  strf::detail::count_digits<10>((std::uint32_t)10000ul));
+    TEST_EQ(6,  strf::detail::count_digits<10>((std::uint32_t)100000ul));
+    TEST_EQ(7,  strf::detail::count_digits<10>((std::uint32_t)1000000ul));
+    TEST_EQ(8,  strf::detail::count_digits<10>((std::uint32_t)10000000ul));
+    TEST_EQ(9,  strf::detail::count_digits<10>((std::uint32_t)100000000ul));
+    TEST_EQ(10, strf::detail::count_digits<10>((std::uint32_t)1000000000ul));
+
+    TEST_EQ(1,  strf::detail::count_digits<10>((std::uint16_t)1));
+    TEST_EQ(2,  strf::detail::count_digits<10>((std::uint16_t)10));
+    TEST_EQ(3,  strf::detail::count_digits<10>((std::uint16_t)100));
+    TEST_EQ(4,  strf::detail::count_digits<10>((std::uint16_t)1000));
+    TEST_EQ(5,  strf::detail::count_digits<10>((std::uint16_t)10000));
+
+    TEST_EQ(1,  strf::detail::count_digits<10>((std::uint8_t)1));
+    TEST_EQ(2,  strf::detail::count_digits<10>((std::uint8_t)10));
+    TEST_EQ(3,  strf::detail::count_digits<10>((std::uint8_t)100));
+
     TEST ( "0") ( 0 );
     TEST (u"0") ( 0 );
     TEST (U"0") ( 0 );

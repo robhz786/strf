@@ -197,7 +197,7 @@ struct digits_counter<2, 8>
 template<>
 struct digits_counter<16, 1>
 {
-    static STRF_HD unsigned count_digits(unsigned char value) noexcept
+    constexpr static STRF_HD unsigned count_digits(unsigned char value) noexcept
     {
         return 1 + (value > 0xF);
     }
@@ -205,7 +205,7 @@ struct digits_counter<16, 1>
 template<>
 struct digits_counter<16, 2>
 {
-    static STRF_HD unsigned count_digits(unsigned short value) noexcept
+    constexpr static STRF_HD unsigned count_digits(unsigned short value) noexcept
     {
         int bin_digits = sizeof(value) * 8 - std::countl_zero(value);
         return (bin_digits + 3) >> 2;
@@ -214,7 +214,7 @@ struct digits_counter<16, 2>
 template<>
 struct digits_counter<16, 4>
 {
-    static STRF_HD unsigned count_digits(std::uint32_t value) noexcept
+    constexpr static STRF_HD unsigned count_digits(std::uint32_t value) noexcept
     {
         int bin_digits = sizeof(value) * 8 - std::countl_zero(value);
         return (bin_digits + 3) >> 2;
@@ -223,7 +223,7 @@ struct digits_counter<16, 4>
 template<>
 struct digits_counter<16, 8>
 {
-    static STRF_HD unsigned count_digits(std::uint64_t value) noexcept
+    constexpr static STRF_HD unsigned count_digits(std::uint64_t value) noexcept
     {
         int bin_digits = sizeof(value) * 8 - std::countl_zero(value);
         return (bin_digits + 3) >> 2;
@@ -236,7 +236,7 @@ struct digits_counter<16, 8>
 template<>
 struct digits_counter<2, 1>
 {
-    static STRF_HD unsigned count_digits(uint_fast8_t value) noexcept
+    constexpr static STRF_HD unsigned count_digits(uint_fast8_t value) noexcept
     {
         unsigned num_digits = 1;
         if (value > 0xful) {
@@ -257,7 +257,7 @@ struct digits_counter<2, 1>
 template<>
 struct digits_counter<2, 2>
 {
-    static STRF_HD unsigned count_digits(uint_fast16_t value) noexcept
+    constexpr static STRF_HD unsigned count_digits(uint_fast16_t value) noexcept
     {
         unsigned num_digits = 1;
         if( value > 0xfful ) {
@@ -282,7 +282,7 @@ struct digits_counter<2, 2>
 template<>
 struct digits_counter<2, 4>
 {
-    static STRF_HD unsigned count_digits(uint_fast32_t value) noexcept
+    constexpr static STRF_HD unsigned count_digits(uint_fast32_t value) noexcept
     {
         unsigned num_digits = 1;
         if( value > 0xfffful ) {
@@ -311,7 +311,7 @@ struct digits_counter<2, 4>
 template<>
 struct digits_counter<2, 8>
 {
-    static STRF_HD unsigned count_digits(uint_fast64_t value) noexcept
+    constexpr static STRF_HD unsigned count_digits(uint_fast64_t value) noexcept
     {
 
         unsigned num_digits = 1;
@@ -344,7 +344,7 @@ struct digits_counter<2, 8>
 template<>
 struct digits_counter<8, 1>
 {
-    static STRF_HD unsigned count_digits(uint_fast8_t value) noexcept
+    constexpr static STRF_HD unsigned count_digits(uint_fast8_t value) noexcept
     {
         if(value > 077ul) {
             return 3;
@@ -359,7 +359,7 @@ struct digits_counter<8, 1>
 template<>
 struct digits_counter<8, 2>
 {
-    static STRF_HD unsigned count_digits(uint_fast16_t value) noexcept
+    constexpr static STRF_HD unsigned count_digits(uint_fast16_t value) noexcept
     {
         unsigned num_digits = 1;
         if(value > 07777u) {
@@ -380,7 +380,7 @@ struct digits_counter<8, 2>
 template<>
 struct digits_counter<8, 4>
 {
-    static STRF_HD unsigned count_digits(uint_fast32_t value) noexcept
+    constexpr static STRF_HD unsigned count_digits(uint_fast32_t value) noexcept
     {
         unsigned num_digits = 1;
         if(value > 077777777ul) {
@@ -405,7 +405,7 @@ struct digits_counter<8, 4>
 template<>
 struct digits_counter<8, 8>
 {
-    static STRF_HD unsigned count_digits(uint_fast64_t value) noexcept
+    constexpr static STRF_HD unsigned count_digits(uint_fast64_t value) noexcept
     {
         unsigned num_digits = 1;
         if(value > 07777777777777777uLL) {
@@ -434,7 +434,7 @@ struct digits_counter<8, 8>
 template<>
 struct digits_counter<16, 1>
 {
-    static STRF_HD unsigned count_digits(uint_fast8_t value) noexcept
+    constexpr static STRF_HD unsigned count_digits(uint_fast8_t value) noexcept
     {
         return 1 + (value > 0xF);
     }
@@ -444,7 +444,7 @@ struct digits_counter<16, 1>
 template<>
 struct digits_counter<16, 2>
 {
-    static STRF_HD unsigned count_digits(uint_fast16_t value) noexcept
+    constexpr static STRF_HD unsigned count_digits(uint_fast16_t value) noexcept
     {
         unsigned num_digits = 1;
         if( value > 0xffu ) {
@@ -461,7 +461,7 @@ struct digits_counter<16, 2>
 template<>
 struct digits_counter<16, 4>
 {
-    static STRF_HD unsigned count_digits(uint_fast32_t value) noexcept
+    constexpr static STRF_HD unsigned count_digits(uint_fast32_t value) noexcept
     {
         unsigned num_digits = 1;
         if( value > 0xfffful ) {
@@ -482,7 +482,7 @@ struct digits_counter<16, 4>
 template<>
 struct digits_counter<16, 8>
 {
-    static STRF_HD unsigned count_digits(uint_fast64_t value) noexcept
+    constexpr static STRF_HD unsigned count_digits(uint_fast64_t value) noexcept
     {
         unsigned num_digits = 1;
         if( value > 0xffffffffuLL ) {
@@ -509,19 +509,15 @@ struct digits_counter<16, 8>
 template<>
 struct digits_counter<10, 1>
 {
-    static STRF_HD unsigned count_digits_unsigned(uint_fast8_t value) noexcept
+    constexpr static STRF_HD unsigned count_digits_unsigned(uint_fast8_t value) noexcept
     {
-        if( value > 99 ) {
-            return 3;
-        }
-        if (value > 9) {
-            return 2;
-        }
-        return 1;
+        if (value <= 99)
+            return value <= 9 ? 1 : 2;
+        return 3;
     }
 
     template <typename IntT>
-    static STRF_HD unsigned count_digits(IntT value) noexcept
+    constexpr static STRF_HD unsigned count_digits(IntT value) noexcept
     {
         auto uvalue = strf::detail::unsigned_abs(value);
         return count_digits_unsigned(uvalue);
@@ -531,24 +527,18 @@ struct digits_counter<10, 1>
 template<>
 struct digits_counter<10, 2>
 {
-    static STRF_HD unsigned count_digits_unsigned(uint_fast16_t value) noexcept
+    constexpr static STRF_HD unsigned count_digits_unsigned(uint_fast16_t value) noexcept
     {
-        unsigned num_digits = 1;
-        if (value > 9999) {
-            return 5;
+        if (value <= 99) {
+            return value <= 9 ? 1 : 2;
+        } else if (value <= 9999) {
+            return value <= 999 ? 3 : 4;
         }
-        if( value > 99 ) {
-            value /= 100;
-            num_digits += 2 ;
-        }
-        if (value > 9) {
-            ++num_digits;
-        }
-        return num_digits;
+        return 5;
     }
 
     template <typename IntT>
-    static STRF_HD unsigned count_digits(IntT value) noexcept
+    constexpr static STRF_HD unsigned count_digits(IntT value) noexcept
     {
         auto uvalue = strf::detail::unsigned_abs(value);
         return count_digits_unsigned(uvalue);
@@ -558,33 +548,26 @@ struct digits_counter<10, 2>
 template<>
 struct digits_counter<10, 4>
 {
-    static STRF_HD unsigned count_digits_unsigned(uint_fast32_t value) noexcept
+    constexpr static STRF_HD unsigned count_digits_unsigned(uint_fast32_t value) noexcept
     {
-        unsigned num_digits = 1;
-
-        if (value > 99999999ul) {
-            value /= 100000000ul;
-            num_digits += 8;
-            goto value_less_than_100;
+        if (value <= 9999ul) {
+            if (value <= 99ul) {
+                return value <= 9ul ? 1 : 2;
+            } else {
+                return value <= 999ul ? 3 : 4;
+            }
+        } else if (value <= 99999999ul) {
+            if (value <= 999999ul) {
+                return value <= 99999ul ? 5 : 6;
+            } else {
+                return value <= 9999999ul ? 7 : 8;
+            }
         }
-        if (value > 9999ul) {
-            value /= 10000ul;
-            num_digits += 4;
-        }
-        if( value > 99ul ) {
-            value /= 100ul;
-            num_digits += 2 ;
-        }
-        value_less_than_100:
-        if (value > 9ul) {
-             ++num_digits;
-        }
-
-        return num_digits;
+        return value <= 999999999ul ? 9 : 10;
     }
 
     template <typename IntT>
-    static STRF_HD unsigned count_digits(IntT value) noexcept
+    constexpr static STRF_HD unsigned count_digits(IntT value) noexcept
     {
         auto uvalue = strf::detail::unsigned_abs(value);
         return count_digits_unsigned(uvalue);
@@ -595,36 +578,44 @@ struct digits_counter<10, 4>
 template<>
 struct digits_counter<10, 8>
 {
-    static STRF_HD unsigned count_digits_unsigned(uint_fast64_t value) noexcept
+    constexpr static STRF_HD unsigned count_digits_unsigned(uint_fast64_t value) noexcept
     {
-        unsigned num_digits = 1LL;
-
-        if (value > 9999999999999999LL) {
-            value /= 10000000000000000LL;
-            num_digits += 16;
-            //  goto value_less_than_10000;
+        if (value <= 99999999ull) {
+            if (value <= 9999) {
+                if (value <= 99ull) {
+                    return value <= 9ull ? 1 : 2;
+                } else {
+                    return value <= 999ull ? 3 : 4;
+                }
+            } else {
+                if (value <= 999999ull) {
+                    return value <= 99999ull ? 5 : 6;
+                } else {
+                    return value <= 9999999ull ? 7 : 8;
+                }
+            }
+        } else if (value <= 9999999999999999ull) {
+            if (value <= 999999999999ull) {
+                if (value <= 9999999999ull) {
+                    return value <= 999999999ull ? 9 : 10;
+                } else {
+                    return value <= 99999999999ull ? 11 : 12;
+                }
+            } else {
+                if (value <= 99999999999999ull ) {
+                    return value <= 9999999999999ull ? 13 : 14;
+                } else {
+                    return value <= 999999999999999ull ? 15 : 16;
+                }
+            }
+        } else if (value <= 999999999999999999ull){
+            return value <=  99999999999999999ull ? 17 : 18;
         }
-        if (value > 99999999LL) {
-            value /= 100000000LL;
-            num_digits += 8;
-        }
-        //value_less_than_10000:
-        if (value > 9999LL) {
-            value /= 10000LL;
-            num_digits += 4;
-        }
-        if(value > 99LL) {
-            value /= 100LL;
-            num_digits += 2;
-        }
-        if(value > 9LL) {
-            ++num_digits;
-        }
-        return num_digits;
+        return value <= 9999999999999999999ull ? 19 : 20;
     }
 
     template <typename IntT>
-    static STRF_HD unsigned count_digits(IntT value) noexcept
+    constexpr static STRF_HD unsigned count_digits(IntT value) noexcept
     {
         auto uvalue = strf::detail::unsigned_abs(value);
         return count_digits_unsigned(uvalue);
@@ -632,14 +623,14 @@ struct digits_counter<10, 8>
 };
 
 template <unsigned Base, typename intT>
-STRF_HD unsigned count_digits(intT value) noexcept
+constexpr STRF_HD unsigned count_digits(intT value) noexcept
 {
     return strf::detail::digits_counter<Base, sizeof(intT)>
         ::count_digits(value);
 }
 
 template <typename intT>
-STRF_HD unsigned count_digits(intT value, int base) noexcept
+constexpr STRF_HD unsigned count_digits(intT value, int base) noexcept
 {
     if (base == 10) return count_digits<10>(value);
     if (base == 16) return count_digits<16>(value);
