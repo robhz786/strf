@@ -745,6 +745,7 @@ private:
 namespace detail {
 
 template <typename> class default_int_printer;
+template <typename> class aligned_default_int_printer;
 //template <typename> class punct_int_printer;
 template <typename, int Base, bool Punctuate> class int_printer_static_base_and_punct;
 template <typename> class int_printer_full_dynamic;
@@ -884,7 +885,7 @@ public:
             , strf::detail::default_int_printer_input<CharT, Preview, IntT>
             , strf::usual_printer_input
                 < CharT, Preview, FPack, vwf_<PTraits, HasAlignment>
-                , strf::detail::int_printer_static_base_and_punct<CharT, 10, false> > >
+                , strf::detail::aligned_default_int_printer<CharT> > >
     {
         return {preview, facets, x};
     }
@@ -1025,38 +1026,40 @@ public:
     STRF_HD void print_to(strf::basic_outbuff<CharT>& ob) const override;
 
 private:
-    template <typename Preview>
-    STRF_HD void init_(Preview& p, signed char value){ init2_(p, value); }
-    template <typename Preview>
-    STRF_HD void init_(Preview& p, short value){ init2_(p, value); }
-    template <typename Preview>
-    STRF_HD void init_(Preview& p, int value){ init2_(p, value); }
-    template <typename Preview>
-    STRF_HD void init_(Preview& p, long value){ init2_(p, value); }
-    template <typename Preview>
-    STRF_HD void init_(Preview& p, long long value){ init2_(p, value); }
-    template <typename Preview>
-    STRF_HD void init_(Preview& p, unsigned char value){ init2_(p, value); }
-    template <typename Preview>
-    STRF_HD void init_(Preview& p, unsigned short value){ init2_(p, value); }
-    template <typename Preview>
-    STRF_HD void init_(Preview& p, unsigned int value){ init2_(p, value); }
-    template <typename Preview>
-    STRF_HD void init_(Preview& p, unsigned long value){ init2_(p, value); }
-    template <typename Preview>
-    STRF_HD void init_(Preview& p, unsigned long long value){ init2_(p, value); }
 
-    template <typename Preview, typename IntT>
-    STRF_HD void init2_(Preview& preview, IntT value)
+    template < typename Preview
+             , typename IntT
+             , std::enable_if_t<std::is_signed<IntT>::value, int> = 0 >
+    STRF_HD void init_(Preview& preview, IntT value)
     {
-        negative_ = strf::detail::negative(value);
-        uvalue_ = strf::detail::unsigned_abs(value);
-        digcount_ = strf::detail::count_digits<10>(uvalue_);
-        auto size_ = digcount_ + negative_;
-        preview.subtract_width(static_cast<std::int16_t>(size_));
-        preview.add_size(size_);
+        using uint = std::make_unsigned_t<IntT>;
+        uint uvalue;
+        if (value >= 0) {
+            negative_ = 0;
+            uvalue = static_cast<uint>(value);
+        } else {
+            negative_ = 1;
+            uvalue = static_cast<uint>( value == std::numeric_limits<IntT>::min()
+                                      ? std::numeric_limits<IntT>::min()
+                                      : -value );
+        }
+        uvalue_ = uvalue;
+        digcount_ = strf::detail::count_digits<10>(uvalue);
+        preview.subtract_width(digcount_ + negative_);
+        preview.add_size(digcount_ + negative_);
     }
 
+   template < typename Preview
+            , typename UIntT
+            , std::enable_if_t< ! std::is_signed<UIntT>::value, int> = 0 >
+    STRF_HD void init_(Preview& preview, UIntT value)
+    {
+        uvalue_ = value;
+        negative_ = false;
+        digcount_ = strf::detail::count_digits<10>(value);
+        preview.subtract_width(digcount_);
+        preview.add_size(digcount_);
+    }
 
     unsigned long long uvalue_;
     unsigned digcount_;
@@ -1067,13 +1070,120 @@ template <typename CharT>
 STRF_HD void default_int_printer<CharT>::print_to
     ( strf::basic_outbuff<CharT>& ob ) const
 {
-    unsigned size = digcount_ + negative_;
-    ob.ensure(size);
-    auto* it = write_int_dec_txtdigits_backwards(uvalue_, ob.pointer() + size);
+    ob.ensure(digcount_ + negative_);
+    auto* it = ob.pointer();
     if (negative_) {
-        it[-1] = '-';
+        *it++ = '-';
     }
-    ob.advance(size);
+    it += digcount_;
+    write_int_dec_txtdigits_backwards(uvalue_, it);
+    ob.advance_to(it);
+}
+
+template <typename CharT>
+class aligned_default_int_printer: public strf::printer<CharT>
+{
+public:
+
+    template <typename... T>
+    STRF_HD aligned_default_int_printer(strf::usual_printer_input<T...> i)
+    {
+        init_(i.arg.value());
+        init_fill_(i.arg.get_alignment_format());
+
+        auto encoding = strf::get_facet<strf::char_encoding_c<CharT>, int>(i.facets);
+        encode_fill_ = encoding.encode_fill_func();
+        i.preview.subtract_width(fillcount_ + digcount_ + negative_);
+        STRF_IF_CONSTEXPR(strf::usual_printer_input<T...>::preview_type::size_required) {
+            auto fillsize = fillcount_ * encoding.encoded_char_size(fillchar_);
+            i.preview.add_size(fillsize + digcount_ + negative_);
+        }
+    }
+
+    STRF_HD void print_to(strf::basic_outbuff<CharT>& ob) const override;
+
+private:
+
+    template < typename IntT
+             , std::enable_if_t<std::is_signed<IntT>::value, int> = 0 >
+    STRF_HD unsigned init_(IntT value) noexcept
+    {
+        using uint = std::make_unsigned_t<IntT>;
+        uint uvalue;
+        if (value >= 0) {
+            negative_ = 0;
+            uvalue = static_cast<uint>(value);
+        } else {
+            negative_ = 1;
+            uvalue = static_cast<uint>( value == std::numeric_limits<IntT>::min()
+                                      ? std::numeric_limits<IntT>::min()
+                                      : -value );
+        }
+        uvalue_ = uvalue;
+        digcount_ = strf::detail::count_digits<10>(uvalue);
+        return digcount_ + negative_;
+    }
+
+    template < typename UIntT
+             , std::enable_if_t< ! std::is_signed<UIntT>::value, int> = 0 >
+    STRF_HD unsigned init_(UIntT value) noexcept
+    {
+        uvalue_ = value;
+        negative_ = false;
+        digcount_ = strf::detail::count_digits<10>(value);
+        return digcount_;
+    }
+
+    STRF_HD void init_fill_(strf::alignment_format afmt)
+    {
+        fillchar_ = afmt.fill;
+        alignment_ = afmt.alignment;
+        int sub_width = digcount_ + negative_;
+        int width = static_cast<int>(afmt.width.round());
+        fillcount_ = static_cast<unsigned>(width > sub_width ? width - sub_width : 0);
+    }
+
+    strf::encode_fill_f<CharT> encode_fill_;
+    unsigned long long uvalue_;
+    unsigned digcount_;
+    unsigned fillcount_;
+    strf::text_alignment alignment_;
+    char32_t fillchar_;
+    bool negative_;
+};
+
+template <typename CharT>
+STRF_HD void aligned_default_int_printer<CharT>::print_to
+    ( strf::basic_outbuff<CharT>& ob ) const
+{
+    unsigned right_fillcount = 0;
+    if (fillcount_) {
+        unsigned left_fillcount;
+        switch(alignment_) {
+            case strf::text_alignment::left:
+                right_fillcount = fillcount_;
+                goto print_number;
+            case strf::text_alignment::right:
+                left_fillcount = fillcount_;
+                break;
+            default:
+                left_fillcount = fillcount_ >> 1;
+                right_fillcount = fillcount_ - left_fillcount;
+        }
+        encode_fill_(ob, left_fillcount, fillchar_);
+    }
+    print_number:
+    ob.ensure(digcount_ + negative_);
+    auto* it = ob.pointer();
+    if (negative_) {
+        *it++ = '-';
+    }
+    it += digcount_;
+    write_int_dec_txtdigits_backwards(uvalue_, it);
+    ob.advance_to(it);
+    if (right_fillcount) {
+        encode_fill_(ob, right_fillcount, fillchar_);
+    }
 }
 
 // template <typename CharT>
@@ -1759,6 +1869,7 @@ STRF_HD fmt_int_printer_data_init_result init_punct_fmt_int_printer_data<16>
 
 #if defined(__cpp_char8_t)
 STRF_EXPLICIT_TEMPLATE class default_int_printer<char8_t>;
+STRF_EXPLICIT_TEMPLATE class aligned_default_int_printer<char8_t>;
 //STRF_EXPLICIT_TEMPLATE class punct_int_printer<char8_t>;
 STRF_EXPLICIT_TEMPLATE class int_printer_static_base_and_punct<char8_t,  8, true>;
 STRF_EXPLICIT_TEMPLATE class int_printer_static_base_and_punct<char8_t, 10, true>;
@@ -1773,6 +1884,11 @@ STRF_EXPLICIT_TEMPLATE class default_int_printer<char>;
 STRF_EXPLICIT_TEMPLATE class default_int_printer<char16_t>;
 STRF_EXPLICIT_TEMPLATE class default_int_printer<char32_t>;
 STRF_EXPLICIT_TEMPLATE class default_int_printer<wchar_t>;
+
+STRF_EXPLICIT_TEMPLATE class aligned_default_int_printer<char>;
+STRF_EXPLICIT_TEMPLATE class aligned_default_int_printer<char16_t>;
+STRF_EXPLICIT_TEMPLATE class aligned_default_int_printer<char32_t>;
+STRF_EXPLICIT_TEMPLATE class aligned_default_int_printer<wchar_t>;
 
 // STRF_EXPLICIT_TEMPLATE class punct_int_printer<char>;
 // STRF_EXPLICIT_TEMPLATE class punct_int_printer<char16_t>;
