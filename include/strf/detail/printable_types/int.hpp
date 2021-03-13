@@ -1379,6 +1379,42 @@ template <int Base>
 STRF_HD fmt_int_printer_data_init_result init_fmt_int_printer_data
     ( fmt_int_printer_data& data
     , strf::int_format_static_base_and_punct<Base, false> ifmt
+    , strf::default_alignment_format ) noexcept
+{
+    data.digcount = strf::detail::count_digits<Base>(data.uvalue);
+    unsigned prefix_size;
+    STRF_IF_CONSTEXPR (Base == 10 ) {
+        prefix_size = data.has_prefix;
+    } else STRF_IF_CONSTEXPR (Base == 8 ) {
+        if (ifmt.showbase && data.uvalue != 0) {
+            data.has_prefix = true;
+            prefix_size = 1;
+            if (ifmt.precision > 0) {
+                -- ifmt.precision;
+            }
+        } else {
+            data.has_prefix = false;
+            prefix_size = 0;
+        }
+    } else {
+        data.has_prefix = ifmt.showbase;
+        prefix_size = (unsigned)ifmt.showbase << 1;
+    }
+    unsigned content_width = data.digcount + prefix_size;
+    unsigned zeros_a = ifmt.precision > data.digcount ? ifmt.precision - data.digcount : 0;
+    unsigned zeros_b = ifmt.pad0width > content_width ? ifmt.pad0width - content_width : 0;
+    data.leading_zeros = (detail::max)(zeros_a, zeros_b);
+    content_width += data.leading_zeros;
+    data.fillchar = ' ';
+    data.left_fillcount = 0;
+    data.right_fillcount = 0;
+    return {content_width, 0};
+}
+
+template <int Base>
+STRF_HD fmt_int_printer_data_init_result init_fmt_int_printer_data
+    ( fmt_int_printer_data& data
+    , strf::int_format_static_base_and_punct<Base, false> ifmt
     , strf::alignment_format afmt ) noexcept
 #if defined(STRF_OMIT_IMPL)
     ;
