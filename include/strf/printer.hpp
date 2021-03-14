@@ -1615,10 +1615,8 @@ struct center_fn {
 };
 
 struct pad0_fn {
-    template <typename T>
-    constexpr STRF_HD auto operator()
-        ( T&& value
-        , decltype(strf::fmt(value).pad0width()) width ) const
+    template <typename T, typename W>
+    constexpr STRF_HD auto operator() (T&& value, W width) const
         noexcept(noexcept(strf::fmt(value).pad0(width)))
         -> std::remove_reference_t<decltype(strf::fmt(value).pad0(width))>
     {

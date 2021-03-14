@@ -956,9 +956,10 @@ inline STRF_HD CharT* write_int_dec_txtdigits_backwards(IntT value, CharT* it) n
 }
 
 template <typename IntT, typename CharT>
-inline STRF_HD CharT* write_int_hex_txtdigits_backwards(IntT value, CharT* it) noexcept
+inline STRF_HD CharT* write_int_hex_txtdigits_backwards
+    (IntT value, CharT* it, strf::lettercase lc) noexcept
 {
-    return intdigits_backwards_writer<16>::write_txtdigits_backwards(value, it);
+    return intdigits_backwards_writer<16>::write_txtdigits_backwards(value, it, lc);
 }
 
 template <typename IntT, typename CharT>
