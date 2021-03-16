@@ -23,8 +23,8 @@ http://www.boost.org/LICENSE_1_0.txt
 :basic_streambuf_writer: <<basic_streambuf_writer, basic_streambuf_writer>>
 :narrow_cfile_writer: <<narrow_cfile_writer, narrow_cfile_writer>>
 :wide_cfile_writer: <<wide_cfile_writer, wide_cfile_writer>>
-:garbage_buf: <<garbage_buf, garbage_buf>>
-:garbage_buf_end: <<garbage_buf, garbage_buf_end>>
+:garbage_buff: <<garbage_buff, garbage_buff>>
+:garbage_buff_end: <<garbage_buff, garbage_buff_end>>
 
 :char_type: <<basic_outbuff_char_type,char_type>>
 :pointer: <<basic_outbuff_pointer,pointer>>
@@ -73,10 +73,10 @@ class discarded_outbuff final: public basic_outbuff_noexcept<CharT>
 { /{asterisk} \... {asterisk}/};
 
 template <typename CharT>
-CharT* outbuff_garbage_buf();
+CharT* garbage_buff();
 
 template <typename CharT>
-CharT* outbuff_garbage_buf_end();
+CharT* garbage_buff_end();
 
 using bin_outbuff     = basic_outbuff<std::byte>;
 using u8outbuff       = basic_outbuff<char8_t>;
@@ -494,8 +494,8 @@ void recycle() noexcept;
 [horizontal]
 Postconditions::
 - `{good}() == false`
-- `{pointer}() == {garbage_buf}<CharT>()`
-- `{end}() == {garbage_buf_end}<CharT>()`
+- `{pointer}() == {garbage_buff}<CharT>()`
+- `{end}() == {garbage_buff_end}<CharT>()`
 ====
 ====
 [source,cpp]
@@ -510,8 +510,8 @@ Return value::
 - `result::ptr` points to the termination character `'\0'`.
 Postconditions::
 - `{good}() == false`
-- `{pointer}() == {garbage_buf}<CharT>()`
-- `{end}() == {garbage_buf_end}<CharT>()`
+- `{pointer}() == {garbage_buff}<CharT>()`
+- `{end}() == {garbage_buff_end}<CharT>()`
 ====
 
 [[discarded_outbuff]]
@@ -542,8 +542,8 @@ discarded_outbuff() noexcept;
 [horizontal]
 Postconditions::
 - `{good}() == false`
-- `{pointer}() == {garbage_buf}<CharT>()`
-- `{end}() == {garbage_buf_end}<CharT>()`
+- `{pointer}() == {garbage_buff}<CharT>()`
+- `{end}() == {garbage_buff_end}<CharT>()`
 ====
 ====
 [source,cpp]
@@ -553,24 +553,24 @@ void recycle() noexcept;
 [horizontal]
 Postconditions::
 - `{good}() == false`
-- `{pointer}() == {garbage_buf}<CharT>()`
-- `{end}() == {garbage_buf_end}<CharT>()`
+- `{pointer}() == {garbage_buff}<CharT>()`
+- `{end}() == {garbage_buff_end}<CharT>()`
 ====
 
-[[garbage_buf]]
+[[garbage_buff]]
 == Garbage buffer
 These function templates return the begin and the end of a memory area that is never supposed to be read. It can be used when implementing a class that derives from `basic_outbuff` to set the buffer when the state is "bad".
 
 [source,cpp]
 ----
 template <typename CharT>
-CharT* garbage_buf() noexcept;
+CharT* garbage_buff() noexcept;
 ----
 
 [source,cpp]
 ----
 template <typename CharT>
-CharT* garbage_buf_end() noexcept;
+CharT* garbage_buff_end() noexcept;
 ----
 
 

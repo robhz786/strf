@@ -79,7 +79,7 @@ even when the state is "bad". The "bad" state implies that writting
 anything in the range [`pointer(), end()`) doesn't have any relevent
 side effect, though the behaviour is still defined, __i.e.__
 the range [`pointer(), end()`) must be valid accessible memory area
-( sometimes `<<outbuff_hpp#garbage_buf,garbage_buf>>`
+( sometimes `<<outbuff_hpp#garbage_buff,garbage_buff>>`
 is used to handle the bad state ).
 The state can change from "good" to "bad" in `{recycle}`,
 but never from "bad" to "good".

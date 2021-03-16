@@ -350,8 +350,8 @@ void STRF_HD input_tester<CharOut>::recycle()
        > buffer_ + buffer_size_ )
     {
         pointer_before_overflow_ = this->pointer();
-        this->set_pointer(strf::outbuff_garbage_buf<CharOut>());
-        this->set_end(strf::outbuff_garbage_buf_end<CharOut>());
+        this->set_pointer(strf::garbage_buff<CharOut>());
+        this->set_end(strf::garbage_buff_end<CharOut>());
     } else {
         this->set_end(buffer_ + buffer_size_);
     }

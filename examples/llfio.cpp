@@ -63,8 +63,8 @@ private:
     void set_bad_() noexcept
     {
         this->set_good(false);
-        this->set_pointer(strf::outbuff_garbage_buf<CharT>());
-        this->set_end(strf::outbuff_garbage_buf_end<CharT>());
+        this->set_pointer(strf::garbage_buff<CharT>());
+        this->set_end(strf::garbage_buff_end<CharT>());
     }
 
     llfio::result<llfio::file_handle::const_buffers_type>
@@ -100,7 +100,7 @@ void llfio_file_writer<CharT, BufferSize>::recycle() noexcept
             }
         }
     } else {
-        this->set_pointer(strf::outbuff_garbage_buf<CharT>());
+        this->set_pointer(strf::garbage_buff<CharT>());
     }
 }
 

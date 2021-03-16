@@ -308,16 +308,16 @@ public:
 } // namespace detail
 
 template <typename CharT>
-inline STRF_HD CharT* outbuff_garbage_buf() noexcept
+inline STRF_HD CharT* garbage_buff() noexcept
 {
     static CharT arr[ STRF_MIN_SPACE_AFTER_RECYCLE ];
     return arr;
 }
 
 template <typename CharT>
-inline STRF_HD CharT* outbuff_garbage_buf_end() noexcept
+inline STRF_HD CharT* garbage_buff_end() noexcept
 {
-    return strf::outbuff_garbage_buf<CharT>() + strf::min_space_after_recycle<CharT>();
+    return strf::garbage_buff<CharT>() + strf::min_space_after_recycle<CharT>();
 }
 
 template <typename CharT>
@@ -360,9 +360,9 @@ public:
         if (this->good()) {
             it_ = this->pointer();
             this->set_good(false);
-            this->set_end(outbuff_garbage_buf_end<CharT>());
+            this->set_end(garbage_buff_end<CharT>());
         }
-        this->set_pointer(outbuff_garbage_buf<CharT>());
+        this->set_pointer(garbage_buff<CharT>());
     }
 
     struct result
@@ -378,8 +378,8 @@ public:
             it_ = this->pointer();
             this->set_good(false);
         }
-        this->set_pointer(outbuff_garbage_buf<CharT>());
-        this->set_end(outbuff_garbage_buf_end<CharT>());
+        this->set_pointer(garbage_buff<CharT>());
+        this->set_end(garbage_buff_end<CharT>());
 
         *it_ = CharT();
 
@@ -400,8 +400,8 @@ private:
         }
 #endif
         it_ = this->end();
-        this->set_pointer(outbuff_garbage_buf<CharT>());
-        this->set_end(outbuff_garbage_buf_end<CharT>());
+        this->set_pointer(garbage_buff<CharT>());
+        this->set_end(garbage_buff_end<CharT>());
         this->set_good(false);
     }
 
@@ -425,8 +425,8 @@ public:
 
     STRF_HD discarded_outbuff() noexcept
         : basic_outbuff_noexcept<CharT>
-            { strf::outbuff_garbage_buf<CharT>()
-            , strf::outbuff_garbage_buf_end<CharT>() }
+            { strf::garbage_buff<CharT>()
+            , strf::garbage_buff_end<CharT>() }
     {
         this->set_good(false);
     }
@@ -437,7 +437,7 @@ public:
 
     STRF_HD void recycle() noexcept override
     {
-        this->set_pointer(strf::outbuff_garbage_buf<CharT>());
+        this->set_pointer(strf::garbage_buff<CharT>());
     }
 };
 
