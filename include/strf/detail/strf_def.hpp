@@ -55,10 +55,6 @@
 #define STRF_IF_CONSTEXPR if
 #endif
 
-#if defined(__GNUC__) && (__cplusplus > 201703L) && !defined(__cpp_lib_bitopts)
-// some versions of GCC forgot to define __cpp_lib_bitopts
-#  define __cpp_lib_bitopts  	201907
-#endif
 
 #if defined(__GNUC__) || defined (__clang__)
 #  define STRF_IF_LIKELY(x)   if(__builtin_expect(!!(x), 1))

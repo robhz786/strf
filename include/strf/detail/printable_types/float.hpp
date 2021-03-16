@@ -1901,27 +1901,31 @@ inline STRF_HD detail::chars_count_t mantissa_hex_digcount(std::uint64_t mantiss
     STRF_ASSERT(mantissa != 0);
     STRF_ASSERT(mantissa == (mantissa & 0xFFFFFFFFFFFFFull));
 
-#if defined(STRF_USE_STD_BITOPS)
-    unsigned lz = std::countl_zero(mantissa) >> 3;
+#if defined(STRF_HAS_COUNTR_ZERO)
+    return 13 - (strf::detail::countr_zero_ll(mantissa) >> 2);
+
 #else
-    unsigned lz = 0;
     if ((mantissa & 0xFFFFFFFFull) == 0) {
-        lz += 8;
-        mantissa = mantissa >> 32;
+        if ((mantissa & 0xFFFFFFFFFFull) == 0) {
+            if ((mantissa & 0xFFFFFFFFFFFFull) == 0) {
+                return 1;
+            }
+            return ((mantissa & 0xFFFFFFFFFFFull) == 0) ? 2 : 3;
+        }
+        return ((mantissa & 0xFFFFFFFFFull) == 0) ? 4 : 5;
     }
     if ((mantissa & 0xFFFFull) == 0) {
-        lz += 4;
-        mantissa = mantissa >> 16;
+         if ((mantissa & 0xFFFFFFull) == 0) {
+             return ((mantissa & 0xFFFFFFFull) == 0) ? 6 : 7;
+         }
+         return ((mantissa & 0xFFFFFull) == 0) ? 8 : 9;
     }
     if ((mantissa & 0xFFull) == 0) {
-        lz += 2;
-        mantissa = mantissa >> 8;
+        return ((mantissa & 0xFFFull) == 0) ? 10 : 11;
     }
-    if ((mantissa & 0xFull) == 0) {
-        lz += 1;
-    }
+    return ((mantissa & 0xFull) == 0) ? 12 : 13;
+
 #endif
-    return static_cast<detail::chars_count_t>(13 - lz);
 }
 
 

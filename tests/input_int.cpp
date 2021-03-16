@@ -48,6 +48,103 @@ void STRF_TEST_FUNC test_input_int()
     TEST_EQ(2,  strf::detail::count_digits<10>((std::uint8_t)10));
     TEST_EQ(3,  strf::detail::count_digits<10>((std::uint8_t)100));
 
+    TEST_EQ(1,  strf::detail::count_digits<16>(0ull));
+    TEST_EQ(1,  strf::detail::count_digits<16>(0x1ull));
+    TEST_EQ(2,  strf::detail::count_digits<16>(0x10ull));
+    TEST_EQ(3,  strf::detail::count_digits<16>(0x100ull));
+    TEST_EQ(4,  strf::detail::count_digits<16>(0x1000ull));
+    TEST_EQ(5,  strf::detail::count_digits<16>(0x10000ull));
+    TEST_EQ(6,  strf::detail::count_digits<16>(0x100000ull));
+    TEST_EQ(7,  strf::detail::count_digits<16>(0x1000000ull));
+    TEST_EQ(8,  strf::detail::count_digits<16>(0x10000000ull));
+    TEST_EQ(9,  strf::detail::count_digits<16>(0x100000000ull));
+    TEST_EQ(10, strf::detail::count_digits<16>(0x1000000000ull));
+    TEST_EQ(11, strf::detail::count_digits<16>(0x10000000000ull));
+    TEST_EQ(12, strf::detail::count_digits<16>(0x100000000000ull));
+    TEST_EQ(13, strf::detail::count_digits<16>(0x1000000000000ull));
+    TEST_EQ(14, strf::detail::count_digits<16>(0x10000000000000ull));
+    TEST_EQ(15, strf::detail::count_digits<16>(0x100000000000000ull));
+    TEST_EQ(16, strf::detail::count_digits<16>(0x1000000000000000ull));
+    TEST_EQ(16, strf::detail::count_digits<16>(0xFFFFFFFFFFFFFFFFull));
+
+    TEST_EQ(1,  strf::detail::count_digits<16>(0x0ul));
+    TEST_EQ(1,  strf::detail::count_digits<16>(0x1ul));
+    TEST_EQ(2,  strf::detail::count_digits<16>(0x10ul));
+    TEST_EQ(3,  strf::detail::count_digits<16>(0x100ul));
+    TEST_EQ(4,  strf::detail::count_digits<16>(0x1000ul));
+    TEST_EQ(5,  strf::detail::count_digits<16>(0x10000ul));
+    TEST_EQ(6,  strf::detail::count_digits<16>(0x100000ul));
+    TEST_EQ(7,  strf::detail::count_digits<16>(0x1000000ul));
+    TEST_EQ(8,  strf::detail::count_digits<16>(0x10000000ul));
+    TEST_EQ(8,  strf::detail::count_digits<16>(0xFFFFFFFFul));
+
+    TEST_EQ(1,  strf::detail::count_digits<16>((std::uint16_t) 0x0));
+    TEST_EQ(1,  strf::detail::count_digits<16>((std::uint16_t) 0x1));
+    TEST_EQ(2,  strf::detail::count_digits<16>((std::uint16_t) 0x10));
+    TEST_EQ(3,  strf::detail::count_digits<16>((std::uint16_t) 0x100));
+    TEST_EQ(4,  strf::detail::count_digits<16>((std::uint16_t) 0x1000));
+    TEST_EQ(4,  strf::detail::count_digits<16>((std::uint16_t) 0xFFFF));
+
+    TEST_EQ(1,  strf::detail::count_digits<16>((std::uint8_t) 0x0));
+    TEST_EQ(1,  strf::detail::count_digits<16>((std::uint8_t) 0x1));
+    TEST_EQ(2,  strf::detail::count_digits<16>((std::uint8_t) 0xFF));
+
+    TEST_EQ(1,  strf::detail::count_digits<8>(01ull));
+    TEST_EQ(2,  strf::detail::count_digits<8>(010ull));
+    TEST_EQ(3,  strf::detail::count_digits<8>(0100ull));
+    TEST_EQ(4,  strf::detail::count_digits<8>(01000ull));
+    TEST_EQ(5,  strf::detail::count_digits<8>(010000ull));
+    TEST_EQ(6,  strf::detail::count_digits<8>(0100000ull));
+    TEST_EQ(7,  strf::detail::count_digits<8>(01000000ull));
+    TEST_EQ(8,  strf::detail::count_digits<8>(010000000ull));
+    TEST_EQ(9,  strf::detail::count_digits<8>(0100000000ull));
+    TEST_EQ(10, strf::detail::count_digits<8>(01000000000ull));
+    TEST_EQ(11, strf::detail::count_digits<8>(010000000000ull));
+    TEST_EQ(12, strf::detail::count_digits<8>(0100000000000ull));
+    TEST_EQ(13, strf::detail::count_digits<8>(01000000000000ull));
+    TEST_EQ(14, strf::detail::count_digits<8>(010000000000000ull));
+    TEST_EQ(15, strf::detail::count_digits<8>(0100000000000000ull));
+    TEST_EQ(16, strf::detail::count_digits<8>(01000000000000000ull));
+    TEST_EQ(17, strf::detail::count_digits<8>(010000000000000000ull));
+    TEST_EQ(18, strf::detail::count_digits<8>(0100000000000000000ull));
+    TEST_EQ(19, strf::detail::count_digits<8>(01000000000000000000ull));
+    TEST_EQ(20, strf::detail::count_digits<8>(010000000000000000000ull));
+    TEST_EQ(21, strf::detail::count_digits<8>(0100000000000000000000ull));
+    TEST_EQ(22, strf::detail::count_digits<8>(01000000000000000000000ull));
+    TEST_EQ(22, strf::detail::count_digits<8>(0xFFFFFFFFFFFFFFFFull));
+
+    TEST_EQ(1,  strf::detail::count_digits<8>(01ul));
+    TEST_EQ(2,  strf::detail::count_digits<8>(010ul));
+    TEST_EQ(3,  strf::detail::count_digits<8>(0100ul));
+    TEST_EQ(4,  strf::detail::count_digits<8>(01000ul));
+    TEST_EQ(5,  strf::detail::count_digits<8>(010000ul));
+    TEST_EQ(6,  strf::detail::count_digits<8>(0100000ul));
+    TEST_EQ(7,  strf::detail::count_digits<8>(01000000ul));
+    TEST_EQ(8,  strf::detail::count_digits<8>(010000000ul));
+    TEST_EQ(9,  strf::detail::count_digits<8>(0100000000ul));
+    TEST_EQ(10, strf::detail::count_digits<8>(01000000000ul));
+    TEST_EQ(11, strf::detail::count_digits<8>(0xFFFFFFFFul));
+
+    TEST_EQ(1,  strf::detail::count_digits<8>((std::uint16_t)01));
+    TEST_EQ(2,  strf::detail::count_digits<8>((std::uint16_t)010));
+    TEST_EQ(3,  strf::detail::count_digits<8>((std::uint16_t)0100));
+    TEST_EQ(4,  strf::detail::count_digits<8>((std::uint16_t)01000));
+    TEST_EQ(5,  strf::detail::count_digits<8>((std::uint16_t)010000));
+    TEST_EQ(6,  strf::detail::count_digits<8>((std::uint16_t)0100000));
+
+    TEST_EQ(1,  strf::detail::count_digits<8>((std::uint8_t)01));
+    TEST_EQ(2,  strf::detail::count_digits<8>((std::uint8_t)010));
+    TEST_EQ(3,  strf::detail::count_digits<8>((std::uint8_t)0100));
+
+    TEST_EQ(64, strf::detail::count_digits<2>(0xFFFFFFFFFFFFFFFFull));
+    TEST_EQ(32, strf::detail::count_digits<2>(0xFFFFFFFFull));
+    TEST_EQ(16, strf::detail::count_digits<2>(0xFFFFull));
+    TEST_EQ(8,  strf::detail::count_digits<2>(0xFFull));
+    TEST_EQ(4,  strf::detail::count_digits<2>(0xFull));
+    TEST_EQ(2,  strf::detail::count_digits<2>(0x3ull));
+    TEST_EQ(1,  strf::detail::count_digits<2>(0x1ull));
+    TEST_EQ(1,  strf::detail::count_digits<2>(0x0ull));
+
     TEST ( "0") ( 0 );
     TEST (u"0") ( 0 );
     TEST (U"0") ( 0 );

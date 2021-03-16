@@ -1552,7 +1552,8 @@ inline STRF_HD unsigned init
         data.prefix = ifmt.showbase << 1;
     }
     data.uvalue = static_cast<decltype(data.uvalue)>(value);
-    data.digcount = strf::detail::count_digits<Base>(value);
+    auto uvalue = static_cast<std::make_unsigned_t<IntT>>(value);
+    data.digcount = strf::detail::count_digits<Base>(uvalue);
     return data.digcount + data.prefix;
 }
 
@@ -1679,86 +1680,6 @@ private:
     int_printer_no_pad0_nor_punct_data data_;
     strf::lettercase lettercase_;
 };
-
-// template <typename CharT>
-// class punct_int_printer: public strf::printer<CharT>
-// {
-// public:
-
-//     template <typename... T>
-//     STRF_HD punct_int_printer
-//         ( const strf::detail::punct_int_printer_input<T...>& i )
-//     {
-//         using int_type = typename strf::detail::punct_int_printer_input<T...>::arg_type;
-//         auto enc = get_facet<strf::char_encoding_c<CharT>, int_type>(i.facets);
-
-//         uvalue_ = strf::detail::unsigned_abs(i.value);
-//         digcount_ = strf::detail::count_digits<10>(uvalue_);
-//         auto punct = get_facet<strf::numpunct_c<10>, int_type>(i.facets);
-//         if (punct.any_group_separation(digcount_)) {
-//             grouping_ = punct.grouping();
-//             thousands_sep_ = punct.thousands_sep();
-//             std::size_t sepsize = enc.validate(thousands_sep_);
-//             if (sepsize != (std::size_t)-1) {
-//                 sepsize_ = static_cast<unsigned>(sepsize);
-//                 sepcount_ = punct.thousands_sep_count(digcount_);
-//                 if (sepsize_ == 1) {
-//                     CharT little_sep[4];
-//                     enc.encode_char(little_sep, thousands_sep_);
-//                     thousands_sep_ = little_sep[0];
-//                 } else {
-//                     encode_char_ = enc.encode_char_func();
-//                 }
-//             }
-//         }
-//         negative_ = strf::detail::negative(i.value);
-//         i.preview.add_size(digcount_ + negative_ + sepsize_ * sepcount_);
-//         i.preview.subtract_width
-//             ( static_cast<std::int16_t>(sepcount_ + digcount_ + negative_) );
-//     }
-
-//     STRF_HD void print_to(strf::basic_outbuff<CharT>& ob) const override;
-
-// private:
-
-//     strf::encode_char_f<CharT> encode_char_;
-//     strf::digits_grouping grouping_;
-//     char32_t thousands_sep_;
-//     unsigned long long uvalue_;
-//     unsigned digcount_;
-//     unsigned sepcount_ = 0;
-//     unsigned sepsize_ = 0;
-//     bool negative_;
-// };
-
-// template <typename CharT>
-// STRF_HD void punct_int_printer<CharT>::print_to(strf::basic_outbuff<CharT>& ob) const
-// {
-//     if (sepcount_ == 0) {
-//         ob.ensure(negative_ + digcount_);
-//         auto it = ob.pointer();
-//         if (negative_) {
-//             *it = static_cast<CharT>('-');
-//             ++it;
-//         }
-//         it += digcount_;
-//         strf::detail::write_int_dec_txtdigits_backwards(uvalue_, it);
-//         ob.advance_to(it);
-//     } else {
-//         if (negative_) {
-//             put(ob, static_cast<CharT>('-'));
-//         }
-//         if (sepsize_ == 1) {
-//             strf::detail::write_int_little_sep<10>
-//                 ( ob, uvalue_, grouping_, digcount_, sepcount_
-//                 , static_cast<CharT>(thousands_sep_), strf::lowercase );
-//         } else {
-//             strf::detail::write_int_big_sep<10>
-//                 ( ob, encode_char_, uvalue_, grouping_, thousands_sep_, sepsize_
-//                 , digcount_, strf::lowercase );
-//         }
-//     }
-// }
 
 struct fmt_int_printer_data {
     unsigned long long uvalue;

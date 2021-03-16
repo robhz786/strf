@@ -37,19 +37,69 @@
 #if ! defined(STRF_CONSTEXPR_CHAR_TRAITS)
 #    define STRF_CONSTEXPR_CHAR_TRAITS inline
 #endif
-
 #if defined(STRF_WITH_CSTRING)
 #    include <cstring>
 #endif
 
-#ifdef STRF_USE_STD_BITOPS // __cpp_lib_bitops
+#if defined(__cpp_lib_bit_cast) || defined(__cpp_lib_bitops)
 #include <bit>
 #endif
 
 namespace strf {
 namespace detail {
 
-#ifdef STRF_USE_STD_BITOPS
+#if defined(__cpp_lib_bitops)
+#  define STRF_HAS_COUNTL_ZERO
+#  define STRF_HAS_COUNTR_ZERO
+
+inline STRF_HD int countl_zero_l(unsigned long x) noexcept
+{
+    return std::countl_zero(x);
+}
+inline STRF_HD int countl_zero_ll(unsigned long long x) noexcept
+{
+    return std::countl_zero(x);
+}
+inline STRF_HD int countr_zero_l(unsigned long x) noexcept
+{
+    return std::countr_zero(x);
+}
+inline STRF_HD int countr_zero_ll(unsigned long long x) noexcept
+{
+    return std::countr_zero(x);
+}
+
+#elif defined(__has_builtin)
+#  if __has_builtin(__builtin_clzll)
+#    define STRF_HAS_COUNTL_ZERO
+
+inline STRF_HD int countl_zero_l(unsigned long x) noexcept
+{
+    return __builtin_clzl(x);
+}
+inline STRF_HD int countl_zero_ll(unsigned long long x) noexcept
+{
+    return __builtin_clzll(x);
+}
+
+#  endif // __has_builtin(__builtin_clzll)
+
+#  if __has_builtin(__builtin_ctzll)
+#    define STRF_HAS_COUNTR_ZERO
+
+inline STRF_HD int countr_zero_l(unsigned long x) noexcept
+{
+    return __builtin_ctzl(x);
+}
+inline STRF_HD int countr_zero_ll(unsigned long long x) noexcept
+{
+    return __builtin_ctzll(x);
+}
+
+#  endif // __has_builtin(__builtin_ctzll)
+#endif
+
+#if defined(__cpp_lib_bit_cast)
 
 template< class To, class From >
 constexpr To STRF_HD bit_cast(const From& from) noexcept
@@ -58,7 +108,7 @@ constexpr To STRF_HD bit_cast(const From& from) noexcept
     return std::bit_cast<To, From>(from);
 }
 
-#else // STRF_USE_STD_BITOPS
+#else // defined(__cpp_lib_bit_cast)
 
 template< class To, class From >
 To STRF_HD bit_cast(const From& from) noexcept
@@ -74,7 +124,7 @@ To STRF_HD bit_cast(const From& from) noexcept
 #endif
 }
 
-#endif //STRF_USE_STD_BITOPS
+#endif // defined(__cpp_lib_bit_cast)
 
 #if ! defined(STRF_FREESTANDING)
 template <typename It>
