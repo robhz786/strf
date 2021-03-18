@@ -494,7 +494,240 @@ constexpr bool STRF_HD equal(const T&a, const U&b)
 #endif
 
 
+namespace detail {
+
+template <unsigned... X> struct reduce;
+
+template <> struct reduce<>{
+    static constexpr unsigned value = 0;
+};
+
+template <unsigned X, unsigned... Others>
+struct reduce<X, Others...>{
+    static constexpr unsigned value = X + reduce<Others...>::value;
+};
+
+} // namespace detail
+
+template <typename CharT>
+class input_tester_with_fixed_spaces_base: public strf::basic_outbuff<CharT>
+{
+public:
+
+    STRF_HD input_tester_with_fixed_spaces_base
+        ( strf::detail::simple_string_view<CharT> expected
+        , const char* src_filename
+        , int src_line
+        , const char* function
+        , CharT* buff
+        , std::size_t buff_total_size
+        , const unsigned* spaces_array
+        , std::size_t num_spaces
+        , unsigned first_space );
+
+    STRF_HD ~input_tester_with_fixed_spaces_base()
+    {
+         if (error_message_emitted_) {
+             print_test_message_end(function_);
+         }
+    }
+    STRF_HD void recycle() override;
+
+    STRF_HD void finish();
+
+private:
+
+    bool error_message_emitted_ = false;
+    strf::detail::simple_string_view<CharT> expected_;
+    const char* src_filename_;
+    int src_line_;
+    const char* function_;
+    CharT* const dest_;
+    CharT* dest_end_;
+    const unsigned* spaces_;
+    const std::size_t num_spaces_;
+    unsigned spaces_index_ = 0;
+
+    STRF_HD void before_emitting_error_message()
+    {
+        if (!error_message_emitted_) {
+            ++ test_err_count();
+            print_test_message_header(src_filename_, src_line_);
+            error_message_emitted_ = true;
+        }
+    }
+
+    template <typename... Args>
+    STRF_HD void emit_error_message_(const Args&... args)
+    {
+        before_emitting_error_message();
+        strf::to(test_utils::test_outbuff()) (args...);
+    }
+};
+
+
+template <typename CharT>
+STRF_HD input_tester_with_fixed_spaces_base<CharT>::input_tester_with_fixed_spaces_base
+    ( strf::detail::simple_string_view<CharT> expected
+    , const char* src_filename
+    , int src_line
+    , const char* function
+    , CharT* buff
+    , std::size_t buff_total_size
+    , const unsigned* spaces_array
+    , std::size_t num_spaces
+    , unsigned first_space )
+    : strf::basic_outbuff<CharT>{buff, first_space}
+    , expected_{expected}
+    , src_filename_{src_filename}
+    , src_line_{src_line}
+    , function_{function}
+    , dest_{buff}
+    , dest_end_{buff + buff_total_size}
+    , spaces_{spaces_array}
+    , num_spaces_{num_spaces}
+    , spaces_index_{0}
+{
+    if (expected.size() > buff_total_size) {
+        emit_error_message_("\nBuffer smaller than expected content size");
+        this->set_good(false);
+        this->set_pointer(strf::garbage_buff<CharT>());
+        this->set_end(strf::garbage_buff_end<CharT>());
+    }
+}
+
+template <typename CharT>
+STRF_HD void input_tester_with_fixed_spaces_base<CharT>::recycle()
+{
+    if (this->good()) {
+        if (this->pointer() > this->end()) {
+            emit_error_message_("\nContent inserted after end()");
+            if (this->pointer() < dest_end_) {
+                dest_end_ = this->pointer();
+            }
+            goto set_bad;
+        }
+        if (++spaces_index_ < num_spaces_) {
+            this->set_end(this->end() + spaces_[spaces_index_]);
+        } else {
+            dest_end_ = this->pointer();
+            goto set_bad;
+        }
+    } else {
+        set_bad:
+        this->set_good(false);
+        this->set_pointer(strf::garbage_buff<CharT>());
+        this->set_end(strf::garbage_buff_end<CharT>());
+    }
+}
+
+
+template <typename CharT>
+STRF_HD void input_tester_with_fixed_spaces_base<CharT>::finish()
+{
+    if (this->good()) {
+        dest_end_ = this->pointer();
+        this->set_good(false);
+        this->set_pointer(strf::garbage_buff<CharT>());
+        this->set_end(strf::garbage_buff_end<CharT>());
+    }
+    strf::detail::simple_string_view<CharT> result{dest_, dest_end_};
+    bool as_expected =
+        ( result.size() == expected_.size()
+       && strf::detail::str_equal<CharT>(expected_.begin(), dest_, expected_.size()) );
+
+    if ( ! as_expected ) {
+        emit_error_message_
+            ( "\n  expected: \"", strf::conv(expected_)
+            , "\"\n  obtained: \"", strf::conv(result), '\"');
+    }
+
+    if (error_message_emitted_) {
+        print_test_message_end(function_);
+        error_message_emitted_ = false;
+    }
+}
+
+template <typename CharT>
+struct input_tester_with_fixed_spaces_input
+{
+    strf::detail::simple_string_view<CharT> expected;
+    const char* src_filename;
+    int src_line;
+    const char* funcname;
+};
+
+template <typename CharT, unsigned FirstSpace, unsigned... OtherSpaces>
+class input_tester_with_fixed_spaces: public input_tester_with_fixed_spaces_base<CharT>
+{
+public:
+
+    STRF_HD input_tester_with_fixed_spaces
+        ( input_tester_with_fixed_spaces_input<CharT> i )
+        : input_tester_with_fixed_spaces_base<CharT>
+            { i.expected, i.src_filename, i.src_line, i.funcname
+            , buff_, buff_size_, spaces_, num_spaces_, FirstSpace }
+    {
+    }
+
+private:
+
+    static constexpr std::size_t buff_size_ = detail::reduce<FirstSpace, OtherSpaces...>::value;
+    static constexpr std::size_t num_spaces_ = 1 + sizeof...(OtherSpaces);
+    CharT buff_[buff_size_];
+    unsigned spaces_[num_spaces_] = {FirstSpace, OtherSpaces...};
+};
+
+
+template <typename CharT, unsigned... Spaces>
+class input_tester_with_fixed_spaces_creator
+{
+public:
+
+    using char_type = CharT;
+    using outbuff_type = test_utils::input_tester_with_fixed_spaces<CharT, Spaces...>;
+
+    STRF_HD input_tester_with_fixed_spaces_creator
+        ( strf::detail::simple_string_view<CharT> expected
+        , const char* src_filename
+        , int src_line
+        , const char* funcname )
+        : input {expected, src_filename, src_line, funcname}
+    {
+    }
+
+    STRF_HD input_tester_with_fixed_spaces_input<CharT> create() const noexcept
+    {
+        return input;
+    }
+
+private:
+
+    input_tester_with_fixed_spaces_input<CharT> input;
+};
+
+
+struct input_tester_with_fixed_spaces_creator_creator
+{
+    const char* filename;
+    int line;
+    const char* function;
+
+    template <unsigned... Spaces, typename CharT>
+    STRF_HD auto create(const CharT* expected) const noexcept
+    {
+        return strf::destination_no_reserve
+            < input_tester_with_fixed_spaces_creator<CharT, Spaces...> >
+            {expected, filename, line, function};
+    }
+};
+
 } // namespace test_utils
+
+#define TEST_CALLING_RECYCLE_AT                                         \
+    test_utils::input_tester_with_fixed_spaces_creator_creator          \
+        {__FILE__, __LINE__, BOOST_CURRENT_FUNCTION}                    \
+        . template create
 
 #define TEST(EXPECTED)                                                  \
     test_utils::make_tester( (EXPECTED), __FILE__, __LINE__             \

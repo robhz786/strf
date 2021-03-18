@@ -228,6 +228,8 @@ void STRF_TEST_FUNC test_input_int()
     TEST("11111111")                 ( strf::bin(0xff) );
     TEST("1010101010101010101010101010101010101010101010101010101010101010")
         ( strf::bin(0xaaaaaaaaaaaaaaaaLL) );
+    TEST_CALLING_RECYCLE_AT<4,3, 5> ("111100001111") (strf::bin(0xf0f));
+
     TEST("1111111111111111111111111111111111111111111111111111111111111111")
         ( strf::bin(0xffffffffffffffffLL) );
 
@@ -686,6 +688,11 @@ void STRF_TEST_FUNC test_input_int()
              u8"40\U0010FFFF" u8"73\U0010FFFF" u8"70\U0010FFFF" u8"95\U0010FFFF"
              u8"51\U0010FFFF" u8"615")
             .with(punct2(3, 2)) (strf::punct(18446744073709551615ull));
+
+        TEST_CALLING_RECYCLE_AT <2, 5, 5, 6, 4>
+            ("10\xCB\x9A" "000\xCB\x9A" "000\xCB\x9A" "0000\xCB\x9A" "00")
+            .with(strf::numpunct<10>{2,4,3}.thousands_sep(0x2DA))
+            (strf::punct(10'000'000'0000'00ull));
     }
     {
         using punct = strf::numpunct<16>;
