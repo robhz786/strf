@@ -741,6 +741,7 @@ public:
     {
         int_format_full_dynamic data;
         data.base = b;
+        data.punctuate = Punctuate;
         return { *static_cast<const T*>(this)
                , strf::tag<int_formatter_full_dynamic>{}
                , data };

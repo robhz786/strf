@@ -146,7 +146,7 @@ private:
 template <typename CharT>
 void basic_outbuff<CharT>::do_write(const CharT* str, std::size_t str_len)
 {
-    do {
+    for(;;) {
         std::size_t s = space();
         std::size_t sub_count = (str_len <= s ? str_len : s);
         str_len -= sub_count;
@@ -160,8 +160,14 @@ void basic_outbuff<CharT>::do_write(const CharT* str, std::size_t str_len)
             *pointer_ = *str;
         }
 #endif
+        if (str_len == 0) {
+            break;
+        }
         recycle();
-    } while (str_len && good_);
+        if (!good_) {
+            break;
+        }
+    }
 }
 
 
@@ -200,7 +206,7 @@ protected:
 template <typename CharT>
 void basic_outbuff_noexcept<CharT>::do_write(const CharT* str, std::size_t str_len) noexcept
 {
-    do {
+    for(;;) {
         std::size_t s = this->space();
         std::size_t sub_count = (str_len <= s ? str_len : s);
         str_len -= sub_count;
@@ -216,8 +222,14 @@ void basic_outbuff_noexcept<CharT>::do_write(const CharT* str, std::size_t str_l
         }
         this->advance_to(ptr);
 #endif
+        if (str_len == 0) {
+            break;
+        }
         recycle();
-    } while (str_len && this->good());
+        if ( ! this->good()) {
+            break;
+        }
+    };
 }
 
 namespace detail {

@@ -419,19 +419,19 @@ public:
     {
         return data_->write_replacement_char_func;
     }
-    strf::dynamic_transcoder<char32_t, CharT> from_u32() const
+    STRF_HD strf::dynamic_transcoder<char32_t, CharT> from_u32() const
     {
         return data_->from_u32;
     }
-    strf::dynamic_transcoder<CharT, char32_t> to_u32() const
+    STRF_HD strf::dynamic_transcoder<CharT, char32_t> to_u32() const
     {
         return data_->to_u32;
     }
-    strf::dynamic_transcoder<CharT, CharT> sanitizer() const
+    STRF_HD strf::dynamic_transcoder<CharT, CharT> sanitizer() const
     {
         return data_->sanitizer;
     }
-    strf::dynamic_transcoder<CharT, wchar_t> find_transcoder_to
+    STRF_HD strf::dynamic_transcoder<CharT, wchar_t> find_transcoder_to
         ( strf::tag<wchar_t>, strf::char_encoding_id id) const
     {
         if (data_->find_transcoder_to_wchar) {
@@ -439,7 +439,7 @@ public:
         }
         return {};
     }
-    strf::dynamic_transcoder<wchar_t, CharT> find_transcoder_from
+    STRF_HD strf::dynamic_transcoder<wchar_t, CharT> find_transcoder_from
         ( strf::tag<wchar_t>, strf::char_encoding_id id) const
     {
         if (data_->find_transcoder_from_wchar) {
@@ -447,7 +447,7 @@ public:
         }
         return {};
     }
-    strf::dynamic_transcoder<CharT, char16_t> find_transcoder_to
+    STRF_HD strf::dynamic_transcoder<CharT, char16_t> find_transcoder_to
         ( strf::tag<char16_t>, strf::char_encoding_id id) const
     {
         if (data_->find_transcoder_to_char16) {
@@ -455,7 +455,7 @@ public:
         }
         return {};
     }
-    strf::dynamic_transcoder<char16_t, CharT> find_transcoder_from
+    STRF_HD strf::dynamic_transcoder<char16_t, CharT> find_transcoder_from
         ( strf::tag<char16_t>, strf::char_encoding_id id) const
     {
         if (data_->find_transcoder_from_char16) {
@@ -463,7 +463,7 @@ public:
         }
         return {};
     }
-    strf::dynamic_transcoder<CharT, char> find_transcoder_to
+    STRF_HD strf::dynamic_transcoder<CharT, char> find_transcoder_to
         ( strf::tag<char>, strf::char_encoding_id id) const
     {
         if (data_->find_transcoder_to_char) {
@@ -471,7 +471,7 @@ public:
         }
         return {};
     }
-    strf::dynamic_transcoder<char, CharT> find_transcoder_from
+    STRF_HD strf::dynamic_transcoder<char, CharT> find_transcoder_from
         ( strf::tag<char>, strf::char_encoding_id id) const
     {
         if (data_->find_transcoder_from_char) {
@@ -481,7 +481,7 @@ public:
     }
 
 #if defined (__cpp_char8_t)
-    strf::dynamic_transcoder<CharT, char8_t> find_transcoder_to
+    STRF_HD strf::dynamic_transcoder<CharT, char8_t> find_transcoder_to
         ( strf::tag<char8_t>, strf::char_encoding_id id) const
     {
         if (data_->find_transcoder_to_char8) {
@@ -489,7 +489,7 @@ public:
         }
         return {};
     }
-    strf::dynamic_transcoder<char8_t, CharT> find_transcoder_from
+    STRF_HD strf::dynamic_transcoder<char8_t, CharT> find_transcoder_from
         ( strf::tag<char8_t>, strf::char_encoding_id id) const
     {
         if (data_->find_transcoder_from_char8) {

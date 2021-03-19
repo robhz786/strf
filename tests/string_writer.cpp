@@ -54,16 +54,16 @@ static void test_destinations()
     auto double_str = test_utils::make_double_string<CharT>();
     auto half_str = test_utils::make_half_string<CharT>();
     {
-        auto s = strf::to_basic_string<CharT>(half_str);
-        TEST_EQ(s.size(), half_str.size());
-        TEST_EQ(0, s.compare( 0, half_str.size()
-                            , half_str.begin(), half_str.size() ));
+        auto s = strf::to_basic_string<CharT>(double_str);
+        TEST_EQ(s.size(), double_str.size());
+        TEST_EQ(0, s.compare( 0, double_str.size()
+                            , double_str.begin(), double_str.size() ));
     }
     {
         auto s = strf::to_basic_string<CharT>.reserve(20) (half_str);
         TEST_EQ(s.size(), half_str.size());
         TEST_EQ(0, s.compare( 0, half_str.size()
-                              , half_str.begin(), half_str.size() ));
+                            , half_str.begin(), half_str.size() ));
     }
     {
         auto s = strf::to_basic_string<CharT>.reserve_calc() (half_str);

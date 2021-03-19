@@ -312,4 +312,13 @@ void STRF_TEST_FUNC test_numpunct()
         TEST_TRUE(creator.finish() == expected);
         TEST_TRUE(creator.failed())
     }
+
+    {
+        const strf::default_numpunct<10> punct{};
+        TEST_EQ(punct.decimal_point(), U'.');
+        TEST_EQ(punct.thousands_sep(), U',');
+        TEST_EQ(punct.thousands_sep_count(100), 0);
+        TEST_FALSE(punct.any_group_separation(100));
+        TEST_TRUE(punct.grouping().empty());
+    }
 }

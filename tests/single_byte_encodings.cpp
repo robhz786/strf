@@ -2,141 +2,364 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
+#if defined(__GNUC__) && (__GNUC__ == 7 || __GNUC__ == 8)
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Warray-bounds"
+#endif
+
 #include "test_utils.hpp"
 
-static strf::detail::simple_string_view<char> STRF_TEST_FUNC make_str_0_to_xff(char* str)
-{
-    for(unsigned i = 0; i < 0x100; ++i)
-        str[i] = static_cast<char>(i);
-    str[0x100] = '\0';
-    return {str, 0x100};
-}
+#if defined(__GNUC__) && (__GNUC__ == 7 || __GNUC__ == 8)
+#  pragma GCC diagnostic pop
+#endif
 
-template <typename Encoding>
-strf::detail::simple_string_view<char> STRF_TEST_FUNC char_0_to_0xff_sanitized(Encoding enc)
+constexpr strf::char_encoding_id invalid_eid = (strf::char_encoding_id)0xf3b2a6b2;
+
+static STRF_HD unsigned count_fffd( strf::detail::simple_string_view<char32_t> str)
 {
-    static char str[0x100];
-    for(unsigned i = 0; i < 0x100; ++i)
-    {
-        char32_t ch32 = enc.decode_char(static_cast<std::uint8_t>(i));
-        unsigned char ch = ( ch32 == (char32_t)-1
-                           ? static_cast<unsigned char>('?')
-                           : static_cast<unsigned char>(i) );
-        str[i] = ch;
+    unsigned count = 0;
+    for (auto it = str.begin(); it != str.end(); ++it) {
+        if (*it == 0xFFFD)
+            ++count;
     }
-    return {str, 0x100};
+    return count;
 }
 
-static void STRF_TEST_FUNC remove_fffd
-    ( strf::detail::simple_string_view<char32_t> input
-    , char32_t* dest ) noexcept
+static STRF_TEST_FUNC unsigned encoding_error_handler_calls = 0;
+
+static STRF_HD void encoding_error_handler()
 {
-    const char32_t* src = input.data();
-    const char32_t* src_end = input.end();
-    while(src != src_end) {
-        if (*src != 0xFFFD) {
-            *dest = *src;
-            ++dest;
-        }
-        ++src;
-    }
-    *dest = 0;
+    ++encoding_error_handler_calls;
 }
 
-template <typename CharT>
-inline strf::detail::simple_string_view<CharT> STRF_TEST_FUNC make_view
-    ( const CharT* begin, const CharT* end)
-{
-    return {begin, end};
-}
-
-template <typename CharT>
-inline strf::detail::simple_string_view<CharT> STRF_TEST_FUNC make_view
-    ( const CharT* begin, std::size_t size)
-{
-    return {begin, size};
-}
-
-template <typename CharT>
-bool STRF_TEST_FUNC operator==
-    ( strf::detail::simple_string_view<CharT> str1
-    , strf::detail::simple_string_view<CharT> str2 )
-{
-    if (str1.size() != str2.size())
-        return false;
-
-    return strf::detail::str_equal(str1.data(), str2.data(), str1.size());
-}
-
-static STRF_TEST_FUNC bool encoding_error_handler_called;
-
-static STRF_TEST_FUNC void encoding_error_handler()
-{
-    encoding_error_handler_called = true;
-}
-
-template <typename Encoding>
-void STRF_TEST_FUNC test
-    ( Encoding enc
+static STRF_HD void STRF_TEST_FUNC general_tests
+    ( strf::dynamic_char_encoding<char> enc
     , strf::detail::simple_string_view<char32_t> decoded_0_to_0xff )
 {
     TEST_SCOPE_DESCRIPTION(enc.name());
 
-    static char buff_str_0_to_xff[0x101];
-    auto str_0_to_xff = make_str_0_to_xff(buff_str_0_to_xff);
+    const unsigned fffd_count = count_fffd(decoded_0_to_0xff);
+
+    char buff_str_0_to_xff[0x100];
+    for(unsigned i = 0; i < 0x100; ++i) {
+        buff_str_0_to_xff[i] = static_cast<char>(i);
+    }
+    strf::detail::simple_string_view<char> str_0_to_xff{buff_str_0_to_xff, 0x100};
+
+    {   // The replacement character is '?'
+
+        TEST_EQ(enc.replacement_char_size(), 1);
+        TEST_EQ(enc.replacement_char(), U'?');
+
+        // test write_replacement_char
+        char buff [10];
+        strf::cstr_writer w{buff};
+        enc.write_replacement_char(w);
+        auto r = w.finish();
+        TEST_EQ(r.ptr, buff + 1);
+        TEST_FALSE(r.truncated);
+        TEST_EQ(buff[0], '?');
+    }
 
     {
-        // to UTF-32
+        auto x = enc.codepoints_robust_count( str_0_to_xff.data()
+                                            , str_0_to_xff.size()
+                                            , str_0_to_xff.size()
+                                            , strf::surrogate_policy::lax );
+        TEST_EQ(x.count, str_0_to_xff.size());
+        TEST_EQ(x.pos, str_0_to_xff.size());
+    }
+    {
+        auto x = enc.codepoints_robust_count( str_0_to_xff.data()
+                                            , str_0_to_xff.size()
+                                            , str_0_to_xff.size()
+                                            , strf::surrogate_policy::strict );
+        TEST_EQ(x.count, str_0_to_xff.size());
+        TEST_EQ(x.pos, str_0_to_xff.size());
+    }
+    {
+        auto x = enc.codepoints_robust_count( str_0_to_xff.data()
+                                            , str_0_to_xff.size()
+                                            , str_0_to_xff.size() - 1
+                                            , strf::surrogate_policy::lax );
+        TEST_EQ(x.count, str_0_to_xff.size() - 1);
+        TEST_EQ(x.pos, str_0_to_xff.size() - 1);
+    }
+    {
+        auto x = enc.codepoints_robust_count( str_0_to_xff.data()
+                                            , str_0_to_xff.size()
+                                            , str_0_to_xff.size() - 1
+                                            , strf::surrogate_policy::strict );
+        TEST_EQ(x.count, str_0_to_xff.size() - 1);
+        TEST_EQ(x.pos, str_0_to_xff.size() - 1);
+    }
+    {
+        auto x = enc.codepoints_fast_count( str_0_to_xff.data()
+                                          , str_0_to_xff.size()
+                                          , str_0_to_xff.size() );
+        TEST_EQ(x.count, str_0_to_xff.size());
+        TEST_EQ(x.pos, str_0_to_xff.size());
+    }
+    {
+        auto x = enc.codepoints_fast_count( str_0_to_xff.data()
+                                          , str_0_to_xff.size()
+                                          , str_0_to_xff.size() - 1 );
+        TEST_EQ(x.count, str_0_to_xff.size() - 1);
+        TEST_EQ(x.pos, str_0_to_xff.size() - 1);
+    }
+
+
+
+    {   // converting a string to UTF-32
+
         TEST(decoded_0_to_0xff) (strf::sani(str_0_to_xff, enc));
     }
 
-    char32_t valid_u32input[0x101];
-    remove_fffd(decoded_0_to_0xff, valid_u32input);
-    char char_buf[0x400];
-    {
-        // from and back to UTF-32
-        auto r = strf::to(char_buf).with(enc) (strf::sani(valid_u32input));
-        auto enc_str = make_view(char_buf, r.ptr);
+    {   // converting a string to UTF-32 with strf::invalid_seq_notifier
 
-        TEST(valid_u32input) (strf::sani(enc_str, enc));
-    }
-    {
-        // from UTF-8
-        char char8_buf[0x400];
-        auto r8 = strf::to(char8_buf) (strf::sani(valid_u32input));
-        auto u8str =  make_view(char8_buf, r8.ptr);
-
-        auto r = strf::to(char_buf).with(enc) (strf::sani(u8str, strf::utf8<char>()));
-        auto enc_str = make_view(char_buf, r.ptr);
-
-        TEST(valid_u32input) (strf::sani(enc_str, enc));
-
+        ::encoding_error_handler_calls = 0;
+        TEST(decoded_0_to_0xff)
+            .with(strf::invalid_seq_notifier{encoding_error_handler})
+            (strf::sani(str_0_to_xff, enc));
+        TEST_EQ(::encoding_error_handler_calls, fffd_count);
     }
 
-    auto sanitized_0_to_0xff = char_0_to_0xff_sanitized(enc);
-    {   // from UTF-8
-        char char8_buf[0x400];
-        auto r8 = strf::to(char8_buf) (strf::sani(decoded_0_to_0xff));
-        auto u8str = make_view(char8_buf, r8.ptr);
-        TEST(sanitized_0_to_0xff)
+    {   // converting individual characters to UTF-32 ( cover decode_char )
+
+        for(unsigned i = 0; i < 0x100; ++i) {
+            char ch = static_cast<char>(i);
+            char32_t ch32 = enc.decode_char(ch);
+            TEST_EQ((unsigned)ch32, (unsigned)decoded_0_to_0xff[i]);
+        }
+    }
+    {   // encode string from UTF-32
+
+        char result[0x101];
+        auto res = strf::to(result).with(enc)
+            (strf::conv(decoded_0_to_0xff, strf::utf32<char32_t>()));
+        TEST_FALSE(res.truncated);
+        TEST_EQ(res.ptr - result, 0x100);
+
+        // check each encoded character
+        for(unsigned i = 0; i < 0x100; ++i) {
+            TEST_SCOPE_DESCRIPTION("i = ", i);
+            auto ch32 = decoded_0_to_0xff[i];
+            char expected_ch = ch32 == 0xFFFD ? '?' : (char)i;
+
+            TEST_EQ(result[i], expected_ch);
+        }
+    }
+
+    {   // encode string from UTF-32 with strf::invalid_seq_notifier
+
+        ::encoding_error_handler_calls = 0;
+        char result[0x101];
+        auto res = strf::to(result)
             .with(enc)
-            (strf::sani(u8str, strf::utf8<char>()));
+            .with(strf::invalid_seq_notifier{encoding_error_handler})
+            (strf::conv(decoded_0_to_0xff, strf::utf32<char32_t>()));
+        TEST_FALSE(res.truncated);
+        TEST_EQ(res.ptr - result, 0x100);
+
+        // check each encoded character
+        for(unsigned i = 0; i < 0x100; ++i) {
+            TEST_SCOPE_DESCRIPTION("i = ", i);
+            auto ch32 = decoded_0_to_0xff[i];
+            char expected_ch = ch32 == 0xFFFD ? '?' : (char)i;
+
+            TEST_EQ(result[i], expected_ch);
+        }
+
+        // check notifier calls
+        TEST_EQ(encoding_error_handler_calls, fffd_count);
     }
 
-    TEST(sanitized_0_to_0xff) .with(enc) (strf::sani(str_0_to_xff));
-    TEST("---?+++").with(enc)(strf::sani(u"---\U0010FFFF+++"));
+    {   // encode UTF-32 characters individually
 
+        for(unsigned i = 0; i < 0x100; ++i) {
+            TEST_SCOPE_DESCRIPTION("i = ", i);
+            auto ch32 = decoded_0_to_0xff[i];
+            char expected_ch = ch32 == 0xFFFD ? '?' : (char)i;
+
+            char buff[20];
+            auto ptr = enc.encode_char(buff, ch32);
+            TEST_EQ(buff[0], expected_ch);
+            TEST_EQ(ptr - buff, 1);
+            TEST_EQ(enc.encoded_char_size(ch32), 1);
+            TEST_EQ(enc.validate(ch32), (ch32 == 0xFFFD ? (std::size_t)-1 : 1));
+        }
+
+    }
+
+    {    // sanitize string
+
+        char result[0x101];
+        auto res = strf::to(result) .with(enc) (strf::sani(str_0_to_xff));
+        TEST_FALSE(res.truncated);
+        TEST_EQ(res.ptr - result, 0x100);
+
+        // check each encoded character
+        for(unsigned i = 0; i < 0x100; ++i) {
+            TEST_SCOPE_DESCRIPTION("i = ", *strf::hex(i));
+            char expected_ch = decoded_0_to_0xff[i] == 0xFFFD ? '?' : (char)i;
+            TEST_EQ(result[i], expected_ch);
+        }
+    }
+    {    // sanitize string  with strf::invalid_seq_notifier
+
+        ::encoding_error_handler_calls = 0;
+        char result[0x101];
+        auto res = strf::to(result) .with(enc)
+            .with(enc)
+            .with(strf::invalid_seq_notifier{encoding_error_handler})
+            (strf::sani(str_0_to_xff));
+
+        TEST_FALSE(res.truncated);
+        TEST_EQ(res.ptr - result, 0x100);
+
+        // check each encoded character
+        for(unsigned i = 0; i < 0x100; ++i) {
+            TEST_SCOPE_DESCRIPTION("i = ", i);
+            char expected_ch = decoded_0_to_0xff[i] == 0xFFFD ? '?' : (char)i;
+            TEST_EQ(result[i], expected_ch);
+        }
+
+        // check notifier calls
+        TEST_EQ(encoding_error_handler_calls, fffd_count);
+    }
+    {   // encode_fill
+        TEST("aaaaa").with(enc) (strf::multi(U'a', 5));
+        TEST("?????").with(enc) (strf::multi(U'\U0010FFFF', 5));
+    }
+
+    {   // converting to/from wide string
+
+        // ( first create wchar_t string from the char32 string )
+        wchar_t decoded_wstr_buff[sizeof(wchar_t) == 2 ? 0x201 : 0x101];
+        auto r = strf::to(decoded_wstr_buff) (strf::conv(decoded_0_to_0xff));
+        strf::detail::simple_string_view<wchar_t> decoded_wstr{decoded_wstr_buff, r.ptr};
+
+        {   // to wide string
+            TEST(decoded_wstr) (strf::conv(str_0_to_xff, enc));
+        }
+
+        {   // from wide string
+            char result[0x101];
+            auto res = strf::to(result).with(enc) (strf::conv(decoded_wstr));;
+            TEST_FALSE(res.truncated);
+            TEST_EQ(res.ptr - result, 0x100);
+
+            // check each encoded character
+            for(unsigned i = 0; i < 0x100; ++i) {
+                TEST_SCOPE_DESCRIPTION("i = ", i);
+                auto wch = decoded_wstr[i];
+                char expected_ch = wch == 0xFFFD ? '?' : (char)i;
+                TEST_EQ(result[i], expected_ch);
+            }
+        }
+    }
+
+    {   // find sanitizer
+        auto transc = enc.find_transcoder_to(strf::tag<char>{}, enc.id());
+        TEST_TRUE(transc.transcode_func() != nullptr);
+        TEST_TRUE(transc.transcode_size_func() != nullptr);
+
+        // todo
+    }
+#if defined(__cpp_char8_t)
+    {   // find sanitizer
+        auto transc = enc.find_transcoder_to(strf::tag<char8_t>{}, enc.id());
+        TEST_TRUE(transc.transcode_func() != nullptr);
+        TEST_TRUE(transc.transcode_size_func() != nullptr);
+
+        // todo
+    }
+#endif // defined(__cpp_char8_t)
 
     {
-        char buff[10];
-        ::encoding_error_handler_called = false;
-        strf::to(buff)
-            .with(enc, strf::invalid_seq_notifier{encoding_error_handler})
-            (strf::sani(u"---\U0010FFFF++"));
-        TEST_TRUE(strf::detail::str_equal(buff, "---?++", 6));
-        TEST_TRUE(::encoding_error_handler_called);
+        auto transc = enc.find_transcoder_to(strf::tag<wchar_t>{}, invalid_eid);
+        TEST_TRUE(transc.transcode_func() == nullptr);
+        TEST_TRUE(transc.transcode_size_func() == nullptr);
     }
+    {
+        auto transc = enc.find_transcoder_from(strf::tag<wchar_t>{}, invalid_eid);
+        TEST_TRUE(transc.transcode_func() == nullptr);
+        TEST_TRUE(transc.transcode_size_func() == nullptr);
+    }
+    {
+        auto transc = enc.find_transcoder_to(strf::tag<char>{}, invalid_eid);
+        TEST_TRUE(transc.transcode_func() == nullptr);
+        TEST_TRUE(transc.transcode_size_func() == nullptr);
+    }
+    {
+        auto transc = enc.find_transcoder_from(strf::tag<char>{}, invalid_eid);
+        TEST_TRUE(transc.transcode_func() == nullptr);
+        TEST_TRUE(transc.transcode_size_func() == nullptr);
+    }
+#if defined(__cpp_char8_t)
+    {
+        auto transc = enc.find_transcoder_to(strf::tag<char8_t>{}, invalid_eid);
+        TEST_TRUE(transc.transcode_func() == nullptr);
+        TEST_TRUE(transc.transcode_size_func() == nullptr);
+    }
+    {
+        auto transc = enc.find_transcoder_from(strf::tag<char8_t>{}, invalid_eid);
+        TEST_TRUE(transc.transcode_func() == nullptr);
+        TEST_TRUE(transc.transcode_size_func() == nullptr);
+    }
+#endif // defined(__cpp_char8_t)
 
+}
+
+template <typename CharT, strf::char_encoding_id EncId>
+inline STRF_HD void STRF_TEST_FUNC general_tests
+    ( strf::static_char_encoding<CharT, EncId> enc
+    , strf::detail::simple_string_view<char32_t> decoded_0_to_0xff )
+{
+    strf::dynamic_char_encoding_data<CharT> data;
+    enc.fill_data(data);
+    strf::dynamic_char_encoding<CharT> dynamic_enc{data};
+    general_tests(dynamic_enc, decoded_0_to_0xff);
+}
+
+
+static strf::detail::simple_string_view<char32_t> STRF_TEST_FUNC decoded_0_to_xff_ascii()
+{
+    static const char32_t table[0x100] =
+        { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07
+        , 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f
+        , 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17
+        , 0x18, 0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f
+        , 0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27
+        , 0x28, 0x29, 0x2a, 0x2b, 0x2c, 0x2d, 0x2e, 0x2f
+        , 0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37
+        , 0x38, 0x39, 0x3a, 0x3b, 0x3c, 0x3d, 0x3e, 0x3f
+        , 0x40, 0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47
+        , 0x48, 0x49, 0x4a, 0x4b, 0x4c, 0x4d, 0x4e, 0x4f
+        , 0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57
+        , 0x58, 0x59, 0x5a, 0x5b, 0x5c, 0x5d, 0x5e, 0x5f
+        , 0x60, 0x61, 0x62, 0x63, 0x64, 0x65, 0x66, 0x67
+        , 0x68, 0x69, 0x6a, 0x6b, 0x6c, 0x6d, 0x6e, 0x6f
+        , 0x70, 0x71, 0x72, 0x73, 0x74, 0x75, 0x76, 0x77
+        , 0x78, 0x79, 0x7a, 0x7b, 0x7c, 0x7d, 0x7e, 0x7f
+        , 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD
+        , 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD
+        , 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD
+        , 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD
+        , 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD
+        , 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD
+        , 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD
+        , 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD
+        , 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD
+        , 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD
+        , 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD
+        , 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD
+        , 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD
+        , 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD
+        , 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD
+        , 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD };
+
+    return {table, 0x100};
 }
 
 static strf::detail::simple_string_view<char32_t> STRF_TEST_FUNC decoded_0_to_xff_iso_8859_1()
@@ -297,8 +520,16 @@ static strf::detail::simple_string_view<char32_t> STRF_TEST_FUNC decoded_0_to_xf
 
 void STRF_TEST_FUNC test_single_byte_encodings()
 {
-    test(strf::iso_8859_1<char>(), decoded_0_to_xff_iso_8859_1());
-    test(strf::iso_8859_3<char>(), decoded_0_to_xff_iso_8859_3());
-    test(strf::iso_8859_15<char>(), decoded_0_to_xff_iso_8859_15());
-    test(strf::windows_1252<char>(), decoded_0_to_xff_windows_1252() );
+    general_tests(strf::ascii<char>(), decoded_0_to_xff_ascii());
+    general_tests(strf::iso_8859_1<char>(), decoded_0_to_xff_iso_8859_1());
+    general_tests(strf::iso_8859_3<char>(), decoded_0_to_xff_iso_8859_3());
+    general_tests(strf::iso_8859_15<char>(), decoded_0_to_xff_iso_8859_15());
+    general_tests(strf::windows_1252<char>(), decoded_0_to_xff_windows_1252() );
+
+
+    {
+        const char32_t unsupported_chars[] =
+            { 0xA4, 0xA6, 0xA8, 0xB4, 0xB8, 0xBC, 0xBD, 0xBE, 0x0 };
+        TEST("????????").with(strf::iso_8859_15<char>()) (strf::conv(unsupported_chars));
+    }
 }

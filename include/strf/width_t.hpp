@@ -202,25 +202,25 @@ constexpr STRF_HD strf::width_t checked_add( strf::width_t lhs
     return strf::width_min;
 }
 
-constexpr STRF_HD strf::width_t checked_subtract( strf::width_t lhs
-                                                 , std::int64_t rhs ) noexcept
-{
-    std::int64_t ulhs = lhs.underlying_value();
-    std::int64_t tmp = ulhs - rhs;
-    if (INT32_MIN <= tmp && tmp <= INT32_MAX) {
-        return strf::width_t::from_underlying(static_cast<std::int32_t>(tmp));
-    }
-    if (tmp < INT32_MIN) {
-        return strf::width_min;
-    }
-    return strf::width_max;
-}
+// constexpr STRF_HD strf::width_t checked_subtract( strf::width_t lhs
+//                                                 , std::int64_t rhs ) noexcept
+// {
+//     std::int64_t ulhs = lhs.underlying_value();
+//     std::int64_t tmp = ulhs - rhs;
+//     if (INT32_MIN <= tmp && tmp <= INT32_MAX) {
+//         return strf::width_t::from_underlying(static_cast<std::int32_t>(tmp));
+//     }
+//     if (tmp < INT32_MIN) {
+//         return strf::width_min;
+//     }
+//     return strf::width_max;
+// }
 
-constexpr STRF_HD strf::width_t checked_subtract( strf::width_t lhs
-                                                 , strf::width_t rhs ) noexcept
-{
-    return checked_subtract(lhs, rhs.underlying_value());
-}
+// constexpr STRF_HD strf::width_t checked_subtract( strf::width_t lhs
+//                                                 , strf::width_t rhs ) noexcept
+// {
+//     return checked_subtract(lhs, rhs.underlying_value());
+// }
 
 constexpr STRF_HD strf::width_t checked_mul( strf::width_t w
                                            , std::size_t x ) noexcept

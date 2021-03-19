@@ -22,6 +22,7 @@ set(sources_freestanding
   input_range.cpp
   input_string.cpp
   override_printable.cpp
+  outbuff.cpp
   join.cpp
   miscellaneous.cpp
   numpunct.cpp
@@ -77,6 +78,7 @@ set(tests_on_cuda_device
    input_range
    input_string
    override_printable
+   outbuff
    join
    miscellaneous
    numpunct

@@ -50,5 +50,11 @@ void STRF_TEST_FUNC test_width_t()
         TEST_TRUE(x.round() == 2);
         TEST_TRUE(x.round() != 3);
     }
+    {
+        TEST_TRUE(checked_mul(strf::width_max, 2) == strf::width_max);
+        TEST_TRUE(checked_mul(strf::width_max / 2, 4) == strf::width_max);
+        TEST_TRUE(checked_mul(strf::width_min, 2) == strf::width_min);
+        TEST_TRUE(checked_mul(strf::width_min / 2, 4) == strf::width_min);
+    }
 }
 

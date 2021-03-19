@@ -36,12 +36,16 @@ STRF_TEST_FUNC void test_input_bool()
     TEST (U"FALSE").with(strf::lettercase::upper) ( false );
     TEST (L"FALSE").with(strf::lettercase::upper) ( false );
 
+    TEST ("true")        (  strf::left(true, 4) );
+    TEST ("true")        (  strf::left(true, 3) );
     TEST ("true      ")  (  strf::left(true, 10) );
     TEST ("   true   ")  (  strf::center(true, 10) );
     TEST ("      true")  (  strf::right(true, 10) );
     TEST ("      True").with(strf::lettercase::mixed)  (  strf::right(true, 10) );
     TEST ("      TRUE").with(strf::lettercase::upper)  (  strf::right(true, 10) );
 
+    TEST ("false")  (  strf::left(false, 5) );
+    TEST ("false")  (  strf::left(false, 4) );
     TEST ("false     ")  (  strf::left(false, 10) );
     TEST ("  false   ")  (  strf::center(false, 10) );
     TEST ("     false")  (  strf::right(false, 10) );

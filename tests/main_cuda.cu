@@ -45,6 +45,7 @@ extern void __device__ test_input_string();
 extern void __device__ test_join();
 extern void __device__ test_miscellaneous();
 extern void __device__ test_numpunct();
+extern void __device__ test_basic_outbuff();
 extern void __device__ test_printable_overriding();
 extern void __device__ test_reserve();
 extern void __device__ test_single_byte_encodings();
@@ -83,6 +84,7 @@ __global__ void kernel_main
     test_input_ptr();
     test_input_range();
     test_input_string();
+    test_basic_outbuff();
     test_printable_overriding();
     test_join();
     test_miscellaneous();

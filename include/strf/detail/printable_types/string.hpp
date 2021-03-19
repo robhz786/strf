@@ -61,12 +61,27 @@ public:
     {
         return len_;
     }
+    constexpr STRF_HD CharIn operator[](std::size_t pos) const
+    {
+        return begin_[pos];
+    }
 
 private:
 
     const CharIn* begin_;
     const std::size_t len_;
 };
+
+template <typename CharT>
+STRF_HD bool operator==
+    ( strf::detail::simple_string_view<CharT> str1
+    , strf::detail::simple_string_view<CharT> str2 )
+{
+    if (str1.size() != str2.size())
+        return false;
+
+    return strf::detail::str_equal(str1.data(), str2.data(), str1.size());
+}
 
 } // namespace detail
 

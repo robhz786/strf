@@ -11,17 +11,42 @@
 
 static void STRF_TEST_FUNC test_cstr_writer_destination_too_small()
 {
-    char buff[8];
-    strf::basic_cstr_writer<char> sw(buff);
-    write(sw, "Hello");
-    write(sw, " World");
-    write(sw, "blah blah blah");
-    auto r = sw.finish();
+    {
+        char buff[4];
+        strf::basic_cstr_writer<char> sw(buff);
+        strf::put(sw, 'a');
+        strf::put(sw, 'b');
+        strf::put(sw, 'c');
+        strf::put(sw, 'd');
+        strf::put(sw, 'e');
+        strf::put(sw, 'f');
+        for (auto s = sw.space(); s != 0; --s) {
+            strf::put(sw, 'x');
+        }
+        strf::put(sw, 'a');
+        strf::put(sw, 'b');
+        strf::put(sw, 'c');
 
-    TEST_TRUE(r.truncated);
-    TEST_EQ(*r.ptr, '\0');
-    TEST_EQ(r.ptr, &buff[7]);
-    TEST_CSTR_EQ(buff, "Hello W");
+        auto r = sw.finish();
+
+        TEST_TRUE(r.truncated);
+        TEST_EQ(*r.ptr, '\0');
+        TEST_EQ(r.ptr, &buff[3]);
+        TEST_CSTR_EQ(buff, "abc");
+    }
+    {
+        char buff[8];
+        strf::basic_cstr_writer<char> sw(buff);
+        write(sw, "Hello");
+        write(sw, " World");
+        write(sw, "blah blah blah");
+        auto r = sw.finish();
+
+        TEST_TRUE(r.truncated);
+        TEST_EQ(*r.ptr, '\0');
+        TEST_EQ(r.ptr, &buff[7]);
+        TEST_CSTR_EQ(buff, "Hello W");
+    }
 }
 
 #if defined(__GNUC__) && (__GNUC__ == 7 || __GNUC__ == 8)

@@ -143,12 +143,23 @@ template <typename CharT>
 void fmt_bool_printer<CharT>::print_to
     ( strf::basic_outbuff<CharT>& ob ) const
 {
-    if (afmt_.alignment != strf::text_alignment::left) {
-        std::uint16_t s = afmt_.alignment == strf::text_alignment::center;
-        std::uint16_t count = fillcount_ >> s;
-        encode_fill_(ob, count, afmt_.fill);
+    decltype(fillcount_) right_fillcount = 0;
+    if (fillcount_ > 0) {
+        decltype(fillcount_) left_fillcount;
+        switch (afmt_.alignment) {
+            case strf::text_alignment::left:
+                right_fillcount = fillcount_;
+                goto print_value;
+            case strf::text_alignment::right:
+                left_fillcount = fillcount_;
+                break;
+            default:
+                left_fillcount = fillcount_ >> 1;
+                right_fillcount = fillcount_ - left_fillcount;
+        }
+        encode_fill_(ob, left_fillcount, afmt_.fill);
     }
-
+    print_value:
     auto size = 5 - (int)value_;
     ob.ensure(size);
     auto p = ob.pointer();
@@ -168,13 +179,8 @@ void fmt_bool_printer<CharT>::print_to
     }
     ob.advance(size);
 
-    if ( afmt_.alignment == strf::text_alignment::left) {
-        encode_fill_(ob, fillcount_, afmt_.fill);
-    }
-    else if ( afmt_.alignment == strf::text_alignment::center) {
-        std::uint16_t half_count = fillcount_ >> 1;
-        std::uint16_t count = fillcount_ - half_count;
-        encode_fill_(ob, count, afmt_.fill);
+    if (right_fillcount != 0) {
+        encode_fill_(ob, right_fillcount, afmt_.fill);
     }
 }
 

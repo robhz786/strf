@@ -597,7 +597,7 @@ x.decode_char(ch)
 [horizontal]
 Effect:: Decodes `ch` from this encoding to UTF-32
          assuming the policy of `<<surrogate_policy, surrogate_policy::lax>>`.
-         If `ch` is an invalid character, return `x.replacement_char()`.
+         If `ch` is an invalid character, returns U'\uFFFD'.
 Return type:: `char32_t`
 ====
 

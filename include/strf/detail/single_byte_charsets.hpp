@@ -73,7 +73,7 @@ struct impl_strict_ascii
     {
         if ((ch & 0x80) == 0)
             return ch;
-        return (char32_t)-1;
+        return 0xFFFD;
     }
     static STRF_HD unsigned encode(char32_t ch)
     {
@@ -197,8 +197,8 @@ STRF_FUNC_IMPL STRF_HD char32_t impl_iso_8859_3::decode(std::uint8_t ch)
         return ch;
     }
     else {
-        constexpr short undef = -1;
-        static const short ext[] =
+        constexpr unsigned short undef = 0xFFFD;
+        static const unsigned short ext[] =
             { /* A0*/ 0x0126, 0x02D8, 0x00A3, 0x00A4,  undef, 0x0124, 0x00A7
             , 0x00A8, 0x0130, 0x015E, 0x011E, 0x0134, 0x00AD,  undef, 0x017B
             , 0x00B0, 0x0127, 0x00B2, 0x00B3, 0x00B4, 0x00B5, 0x0125, 0x00B7
@@ -212,7 +212,7 @@ STRF_FUNC_IMPL STRF_HD char32_t impl_iso_8859_3::decode(std::uint8_t ch)
             ,  undef, 0x00F1, 0x00F2, 0x00F3, 0x00F4, 0x0121, 0x00F6, 0x00F7
             , 0x011D, 0x00F9, 0x00FA, 0x00FB, 0x00FC, 0x016D, 0x015D, 0x02D9 };
 
-        return (std::int32_t) ext[ch - 0xA1];
+        return ext[ch - 0xA1];
     }
 }
 
@@ -418,7 +418,7 @@ STRF_HD void single_byte_char_encoding_to_utf32<SrcCharT, DestCharT, Impl>::tran
     for (auto src_it = src; src_it < src_end; ++src_it, ++dest_it) {
         STRF_CHECK_DEST;
         char32_t ch32 = Impl::decode(static_cast<std::uint8_t>(*src_it));
-        STRF_IF_LIKELY (ch32 != (char32_t)-1) {
+        STRF_IF_LIKELY (ch32 != 0xFFFD) {
             *dest_it = static_cast<DestCharT>(ch32);
         } else  {
             *dest_it = 0xFFFD;
@@ -768,9 +768,9 @@ public:
     {
         strf::put(ob, static_cast<CharT>('?'));
     }
-    static STRF_HD std::size_t validate(char32_t ch) noexcept
+    static STRF_HD std::size_t validate(char32_t ch32) noexcept
     {
-        return Impl::encode(ch) < 0x100 ? 1 : (std::size_t)-1;
+        return Impl::encode(ch32) < 0x100 ? 1 : (std::size_t)-1;
     }
     static constexpr STRF_HD std::size_t encoded_char_size(char32_t) noexcept
     {
@@ -845,16 +845,6 @@ public:
     using wchar_stuff_::find_transcoder_from;
     using wchar_stuff_::find_transcoder_to;
 
-    static STRF_HD strf::dynamic_transcoder<char16_t, CharT>
-    find_transcoder_from(strf::tag<char16_t>, strf::char_encoding_id) noexcept
-    {
-        return {};
-    }
-    static STRF_HD strf::dynamic_transcoder<CharT, char16_t>
-    find_transcoder_to(strf::tag<char16_t>, strf::char_encoding_id) noexcept
-    {
-        return {};
-    }
     static STRF_HD strf::dynamic_transcoder<char, CharT>
     find_transcoder_from(strf::tag<char>, strf::char_encoding_id id) noexcept
     {
@@ -880,6 +870,44 @@ public:
     }
 
 #endif
+
+    void STRF_HD fill_data(strf::dynamic_char_encoding_data<CharT>& data) const noexcept
+    {
+        data.name = name();
+        data.id = id();
+        data.replacement_char = replacement_char();
+        data.replacement_char_size = 1;
+        data.validate_func = validate;
+        data.encoded_char_size_func = encoded_char_size;
+        data.encode_char_func = encode_char;
+        data.encode_fill_func = encode_fill;
+        data.codepoints_fast_count_func = codepoints_fast_count;
+        data.codepoints_robust_count_func = codepoints_robust_count;
+        data.write_replacement_char_func = write_replacement_char;
+        data.decode_char_func = decode_char;
+
+        data.sanitizer = strf::dynamic_transcoder<CharT, CharT>{sanitizer()};
+        data.from_u32 = strf::dynamic_transcoder<char32_t, CharT>{from_u32()};
+        data.to_u32 = strf::dynamic_transcoder<CharT, char32_t>{to_u32()};
+
+        data.find_transcoder_from_wchar = wchar_stuff_::find_transcoder_from_wchar;
+        data.find_transcoder_to_wchar = wchar_stuff_::find_transcoder_to_wchar;
+
+        data.find_transcoder_from_char16 = nullptr;
+        data.find_transcoder_to_char16 = nullptr;
+
+        data.find_transcoder_from_char = find_transcoder_from_narrow<char>;
+        data.find_transcoder_to_char = find_transcoder_to_narrow<char>;
+
+#if defined (__cpp_char8_t)
+        data.find_transcoder_from_char8 = find_transcoder_from_narrow<char8_t>;
+        data.find_transcoder_to_char8 = find_transcoder_to_narrow<char8_t>;
+
+#else
+        data.find_transcoder_from_char8 = nullptr;
+        data.find_transcoder_to_char8 = nullptr;
+#endif
+    }
 
     static strf::dynamic_char_encoding<CharT> to_dynamic() noexcept
     {
