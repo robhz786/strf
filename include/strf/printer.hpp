@@ -87,12 +87,10 @@ public:
 
     constexpr STRF_HD void subtract_width(strf::width_t w) noexcept
     {
-        if (w > 0) {
-            if (w < width_) {
-                width_ -= w;
-            } else {
-                width_ = 0;
-            }
+        if (w < width_) {
+            width_ -= w;
+        } else {
+            width_ = 0;
         }
     }
 
@@ -109,7 +107,7 @@ public:
     }
     constexpr STRF_HD strf::width_t remaining_width() const noexcept
     {
-        return width_ > 0 ? width_ : 0;
+        return width_;
     }
 
 private:
@@ -118,8 +116,8 @@ private:
     void STRF_HD subtract_int_(std::true_type, W w) noexcept
     {
         if (w > 0) {
-            if (w <= width_.floor()) {
-                width_ -= static_cast<std::int16_t>(w);
+            if (w <= static_cast<int>(width_.floor())) {
+                width_ -= static_cast<std::uint16_t>(w);
             } else {
                 width_ = 0;
             }
@@ -129,8 +127,8 @@ private:
     template <typename W>
     void STRF_HD subtract_int_(std::false_type, W w) noexcept
     {
-        if (w <= static_cast<std::uint16_t>(width_.floor())) {
-            width_ -= static_cast<std::int16_t>(w);
+        if (w <= width_.floor()) {
+            width_ -= static_cast<std::uint16_t>(w);
         } else {
             width_ = 0;
         }

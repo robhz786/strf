@@ -64,7 +64,7 @@ public:
         : value_(input.arg)
         , lettercase_(strf::get_facet<strf::lettercase_c, bool>(input.facets))
     {
-        input.preview.subtract_width(5 - (int)input.arg);
+        input.preview.subtract_width(5u - (int)input.arg);
         input.preview.add_size(5 - (int)input.arg);
     }
 
@@ -114,7 +114,7 @@ public:
         , lettercase_(strf::get_facet<strf::lettercase_c, bool>(input.facets))
     {
         auto enc = strf::get_facet<char_encoding_c<CharT>, bool>(input.facets);
-        std::int16_t w = 5 - (int)input.arg.value();
+        std::uint16_t w = 5 - (int)input.arg.value();
         auto fmt_width = afmt_.width.round();
         if (fmt_width > w) {
             encode_fill_ = enc.encode_fill_func();

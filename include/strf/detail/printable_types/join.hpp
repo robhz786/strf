@@ -145,9 +145,7 @@ public:
         encode_fill_func_ = enc.encode_fill_func();
         strf::print_preview<ReqSize, strf::preview_width::yes> preview { afmt_.width };
         new (printers_ptr_()) printers_tuple_{input.arg.value().args, preview, input.facets};
-        if (preview.remaining_width() > 0) {
-            fillcount_ = preview.remaining_width().round();
-        }
+        fillcount_ = preview.remaining_width().round();
         STRF_IF_CONSTEXPR (static_cast<bool>(ReqSize)) {
             input.preview.add_size(preview.accumulated_size());
             if (fillcount_ > 0) {
@@ -169,9 +167,6 @@ public:
     {
         auto enc = get_facet_<strf::char_encoding_c<CharT>>(input.facets);
         encode_fill_func_ = enc.encode_fill_func();
-        if (afmt_.width < 0) {
-            afmt_.width = 0;
-        }
         strf::width_t wmax = afmt_.width;
         strf::width_t diff = 0;
         if (input.preview.remaining_width() > afmt_.width) {

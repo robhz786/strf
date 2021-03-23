@@ -1783,7 +1783,7 @@ STRF_HD void fast_double_printer<CharT>::print_to
 // STRF_HD strf::width_t fast_punct_double_printer<CharT>::width_() const
 // {
 //     if (value_.infinity || value_.nan) {
-//         return static_cast<std::int16_t>(3 + value_.negative);
+//         return static_cast<std::uint16_t>(3 + value_.negative);
 //     }
 //     constexpr unsigned decpoint_width = 1;
 //     if (sci_notation_) {
@@ -1796,14 +1796,14 @@ STRF_HD void fast_double_printer<CharT>::print_to
 //         return static_cast<std::int16_t>(w);
 //     }
 //     if (value_.e10 <= -(int)m10_digcount_) {
-//         return static_cast<std::int16_t>
+//         return static_cast<std::uint16_t>
 //             (value_.negative + 1 - value_.e10 +  decpoint_width);
 //     }
 //     auto sep_w = sep_count_;
 //     auto idigcount = (int)m10_digcount_ + value_.e10;
 //     if (value_.e10 < 0) {
 //         auto w = value_.negative + m10_digcount_ + decpoint_width + sep_w;
-//         return static_cast<std::int16_t>(w);
+//         return static_cast<std::uint16_t>(w);
 //     }
 //     return static_cast<std::int16_t>(value_.negative + idigcount + sep_w);
 // }
@@ -1976,13 +1976,13 @@ struct float_init_result {
 
 inline STRF_HD strf::detail::float_init_result init_double_printer_data_fill
     ( strf::detail::double_printer_data& data
-    , int rounded_fmt_width
+    , unsigned rounded_fmt_width
     , detail::chars_count_t content_width
     , strf::text_alignment alignment ) noexcept
 {
     const bool fill_sign_space = data.sign == ' ';
     detail::chars_count_t fillcount = 0;
-    if (rounded_fmt_width <= (int)content_width) {
+    if (rounded_fmt_width <= content_width) {
         data.left_fillcount = 0;
         data.right_fillcount = 0;
         if (fill_sign_space && data.fillchar != ' ') {
@@ -2023,7 +2023,7 @@ inline STRF_HD strf::detail::float_init_result init_double_printer_data_fill
 inline STRF_HD strf::detail::float_init_result init_hex_double_printer_data
     ( strf::detail::double_printer_data& data
     , strf::float_format fdata
-    , int rounded_fmt_width
+    , unsigned rounded_fmt_width
     , strf::text_alignment alignment ) noexcept
 {
     data.form = detail::float_form::hex;
@@ -2083,7 +2083,7 @@ inline STRF_HD strf::detail::float_init_result init_dec_double_printer_data_with
     ( strf::detail::double_printer_data& data
     , strf::digits_grouping grouping
     , detail::chars_count_t precision
-    , int rounded_fmt_width
+    , unsigned rounded_fmt_width
     , strf::text_alignment alignment
     , strf::float_notation notation
     , bool showpoint ) noexcept
@@ -2206,7 +2206,7 @@ inline STRF_HD strf::detail::float_init_result init_dec_double_printer_data_with
 inline STRF_HD strf::detail::float_init_result init_dec_double_printer_data_without_precision
     ( strf::detail::double_printer_data& data
     , strf::digits_grouping grouping
-    , int rounded_fmt_width
+    , unsigned rounded_fmt_width
     , strf::text_alignment alignment
     , strf::float_notation notation
     , bool showpoint ) noexcept
@@ -2297,7 +2297,7 @@ STRF_FUNC_IMPL STRF_HD strf::detail::float_init_result init_float_printer_data
     const std::uint64_t bits_mantissa = bits & 0xFFFFFFFFFFFFFull;
     const bool negative = (bits >> (m_size + e_size));
 
-    int rounded_fmt_width = afmt.width.round();
+    chars_count_t rounded_fmt_width = afmt.width.round();
 
     data.sign = negative ? '-' : static_cast<char>(ffmt.sign);
     data.showsign = negative || ffmt.sign != strf::showsign::negative_only;
@@ -2309,7 +2309,7 @@ STRF_FUNC_IMPL STRF_HD strf::detail::float_init_result init_float_printer_data
         data.form = static_cast<detail::float_form>(bits_mantissa == 0);
         data.sub_chars_count += 3;
         data.showpoint = false;
-        if ((int)data.pad0width > rounded_fmt_width) {
+        if (data.pad0width > rounded_fmt_width) {
             rounded_fmt_width = data.pad0width;
         }
         return init_double_printer_data_fill
@@ -2366,7 +2366,7 @@ STRF_FUNC_IMPL STRF_HD strf::detail::float_init_result init_float_printer_data
     const std::uint32_t bits_exponent = static_cast<std::uint32_t>((bits << 1) >> (m_size + 1));
     const bool negative = (bits >> (m_size + e_size));
 
-    int rounded_fmt_width = afmt.width.round();
+    chars_count_t rounded_fmt_width = afmt.width.round();
 
     data.sign = negative ? '-' : static_cast<char>(ffmt.sign);
     data.showsign = negative || ffmt.sign != strf::showsign::negative_only;
@@ -2378,7 +2378,7 @@ STRF_FUNC_IMPL STRF_HD strf::detail::float_init_result init_float_printer_data
         data.form = static_cast<detail::float_form>(bits_mantissa == 0);
         data.sub_chars_count += 3;
         data.showpoint = false;
-        if ((int)data.pad0width > rounded_fmt_width) {
+        if (data.pad0width > rounded_fmt_width) {
             rounded_fmt_width = data.pad0width;
         }
         return init_double_printer_data_fill
@@ -2582,7 +2582,7 @@ STRF_HD void punct_double_printer<CharT>::print_fixed_
         put(ob, static_cast<CharT>(data_.sign));
     }
     if (data_.pad0width > data_.sub_chars_count) {
-        int count = data_.pad0width - data_.sub_chars_count;
+        auto count = data_.pad0width - data_.sub_chars_count;
         strf::detail::write_fill(ob, count, (CharT)'0');
     }
     if (data_.e10 >= 0) {
@@ -2688,7 +2688,7 @@ STRF_HD void punct_double_printer<CharT>::print_scientific_
         put(ob, static_cast<CharT>(data_.sign));
     }
     if (data_.pad0width > data_.sub_chars_count) {
-        int count = data_.pad0width - data_.sub_chars_count;
+        auto count = data_.pad0width - data_.sub_chars_count;
         strf::detail::write_fill(ob, count, (CharT)'0');
     }
     strf::detail::print_scientific_notation

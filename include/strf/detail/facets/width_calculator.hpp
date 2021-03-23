@@ -37,8 +37,8 @@ public:
         , std::size_t str_len
         , strf::surrogate_policy ) const noexcept
     {
-        if (str_len <= (std::size_t) limit.floor()) {
-            return static_cast<std::int16_t>(str_len);
+        if (str_len <= limit.floor()) {
+            return static_cast<std::uint16_t>(str_len);
         }
         return limit;
     }
@@ -51,14 +51,11 @@ public:
         , std::size_t str_len
         , strf::surrogate_policy ) const noexcept
     {
-        STRF_IF_LIKELY (limit > 0) {
-            const auto limit_floor = static_cast<std::size_t>(limit.floor());
-            if (str_len <= limit_floor) {
-                return { static_cast<std::int16_t>(str_len), str_len };
-            }
-            return { static_cast<std::int16_t>(limit_floor), limit_floor };
+        const auto limit_floor = static_cast<std::size_t>(limit.floor());
+        if (str_len <= limit_floor) {
+            return { static_cast<std::uint16_t>(str_len), str_len };
         }
-        return {0, 0};
+        return { static_cast<std::uint16_t>(limit_floor), limit_floor };
     }
 };
 
@@ -83,13 +80,10 @@ public:
         , std::size_t str_len
         , strf::surrogate_policy ) const
     {
-        STRF_IF_LIKELY (limit > 0) {
-            auto lim = limit.floor();
-            auto ret = enc.codepoints_fast_count(str, str_len, lim);
-            STRF_ASSERT((std::ptrdiff_t)ret.count <= strf::width_max.floor());
-            return static_cast<std::int16_t>(ret.count);
-        }
-        return 0;
+        auto lim = limit.floor();
+        auto ret = enc.codepoints_fast_count(str, str_len, lim);
+        STRF_ASSERT(ret.count <= strf::width_max.floor());
+        return static_cast<std::uint16_t>(ret.count);
     }
 
     template <typename CharEncoding>
@@ -100,13 +94,10 @@ public:
         , std::size_t str_len
         , strf::surrogate_policy ) const
     {
-        STRF_IF_LIKELY (limit > 0) {
-            std::ptrdiff_t lim = limit.floor();
-            auto res = enc.codepoints_fast_count(str, str_len, lim);
-            STRF_ASSERT((std::ptrdiff_t)res.count <= lim);
-            return { static_cast<std::int16_t>(res.count), res.pos };
-        }
-        return {0, 0};
+        auto lim = limit.floor();
+        auto res = enc.codepoints_fast_count(str, str_len, lim);
+        STRF_ASSERT(res.count <= lim);
+        return { static_cast<std::uint16_t>(res.count), res.pos };
     }
 };
 
@@ -132,13 +123,10 @@ public:
         , std::size_t str_len
         , strf::surrogate_policy surr_poli ) const
     {
-        STRF_IF_LIKELY (limit > 0) {
-            auto lim = limit.floor();
-            auto ret = enc.codepoints_robust_count(str, str_len, lim, surr_poli);
-            STRF_ASSERT((std::ptrdiff_t)ret.count <= strf::width_max.floor());
-            return static_cast<std::int16_t>(ret.count);
-        }
-        return 0;
+        auto lim = limit.floor();
+        auto ret = enc.codepoints_robust_count(str, str_len, lim, surr_poli);
+        STRF_ASSERT(ret.count <= strf::width_max.floor());
+        return static_cast<std::uint16_t>(ret.count);
     }
 
     template <typename CharEncoding>
@@ -149,13 +137,10 @@ public:
         , std::size_t str_len
         , strf::surrogate_policy surr_poli ) const
     {
-        STRF_IF_LIKELY (limit > 0) {
-            std::ptrdiff_t lim = limit.floor();
-            auto res = enc.codepoints_robust_count(str, str_len, lim, surr_poli);
-            STRF_ASSERT((std::ptrdiff_t)res.count <= lim);
-            return { static_cast<std::int16_t>(res.count), res.pos };
-        }
-        return {0, 0};
+        auto lim = limit.floor();
+        auto res = enc.codepoints_robust_count(str, str_len, lim, surr_poli);
+        STRF_ASSERT(res.count <= lim);
+        return { static_cast<std::uint16_t>(res.count), res.pos };
     }
 
 };

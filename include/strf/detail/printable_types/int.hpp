@@ -1449,8 +1449,8 @@ private:
     {
         fillchar_ = afmt.fill;
         alignment_ = afmt.alignment;
-        int sub_width = digcount_ + negative_;
-        int width = static_cast<int>(afmt.width.round());
+        auto sub_width = digcount_ + negative_;
+        auto width = afmt.width.round();
         fillcount_ = static_cast<unsigned>(width > sub_width ? width - sub_width : 0);
     }
 
@@ -1863,7 +1863,7 @@ STRF_HD fmt_int_printer_data_init_result init_fmt_int_printer_data
     auto fmt_width = afmt.width.round();
     data.fillchar = afmt.fill;
     bool fill_sign_space = Base == 10 && data.sign == ' ';
-    if (fmt_width <= (int)content_width) {
+    if (fmt_width <= content_width) {
         bool x = fill_sign_space && afmt.fill != ' ';
         data.left_fillcount = x;
         data.right_fillcount = 0;
@@ -2012,7 +2012,7 @@ STRF_HD fmt_int_printer_data_init_result init_punct_fmt_int_printer_data
     auto fmt_width = afmt.width.round();
     data.fillchar = afmt.fill;
     bool fill_sign_space = Base == 10 && data.sign == ' ';
-    if (fmt_width <= (int)content_width) {
+    if (fmt_width <= content_width) {
         bool x = fill_sign_space && afmt.fill != ' ';
         data.left_fillcount = x;
         data.right_fillcount = 0;

@@ -125,7 +125,7 @@ private:
     xxx::ipv6address_abbreviation abbrev_;
     const strf::alignment_format alignment_fmt_;
     const strf::lettercase lettercase_;
-    std::int16_t fillcount_ = 0;
+    std::uint16_t fillcount_ = 0;
     ipv6style style_;
 
     std::uint16_t count_ipv6_characters() const;
