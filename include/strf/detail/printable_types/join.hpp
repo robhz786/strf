@@ -231,7 +231,7 @@ private:
     strf::alignment_format afmt_;
     strf::encode_fill_f<CharT> encode_fill_func_;
     strf::width_t width_;
-    std::int16_t fillcount_ = 0;
+    std::uint16_t fillcount_ = 0;
 
 #if defined(__GNUC__) && (__GNUC__ == 6)
 #  pragma GCC diagnostic push

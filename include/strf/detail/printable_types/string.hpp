@@ -842,8 +842,8 @@ private:
     std::size_t len_;
     strf::encode_fill_f<DestCharT> encode_fill_;
     strf::alignment_format afmt_;
-    std::int16_t left_fillcount_;
-    std::int16_t right_fillcount_;
+    std::uint16_t left_fillcount_;
+    std::uint16_t right_fillcount_;
 
     template <typename Category, typename FPack>
     static STRF_HD decltype(auto) get_facet_(const FPack& facets)

@@ -82,18 +82,18 @@ public:
     {
         return (value_ & 0xFFFF) == 0;
     }
-    constexpr STRF_HD std::uint16_t floor() const noexcept
+    constexpr STRF_HD auto floor() const noexcept
     {
-        return static_cast<std::uint16_t>(value_ >> 16);
+        return value_ >> 16;
     }
-    constexpr STRF_HD std::uint16_t ceil() const noexcept
+    constexpr STRF_HD auto ceil() const noexcept
     {
-        return static_cast<std::uint16_t>((value_ + 0xFFFF) >> 16);
+        return (value_ + 0xFFFF) >> 16;
     }
     constexpr STRF_HD std::uint16_t round() const noexcept
     {
-        const std::uint32_t delim = 0x8000 | ((~value_ >> 16) & 1);
-        return floor() + ((value_ & 0xFFFF) >= delim);
+        auto r = (value_ >> 16) + ((value_ & 0xFFFF) > 0x8000);
+        return static_cast<std::uint16_t>(r);
     }
     constexpr STRF_HD width_t operator+() const noexcept
     {

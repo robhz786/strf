@@ -38,19 +38,16 @@ void STRF_TEST_FUNC test_width_t()
         TEST_TRUE(x == 4.5_w);
     }
 
-    {
-        strf::width_t x = 1.5_w;
-        TEST_TRUE(x.round() == 2);
-    }
-    {
-        strf::width_t x = 2.5_w;
-        TEST_TRUE(x.round() == 2);
-    }
-    {
-        TEST_TRUE(checked_mul(strf::width_max, 2) == strf::width_max);
-        TEST_TRUE(checked_mul(strf::width_max / 2, 4) == strf::width_max);
-        TEST_TRUE(checked_mul(strf::width_min, 2) == strf::width_min);
-        TEST_TRUE(checked_mul(strf::width_min / 2, 4) == strf::width_min);
-    }
+    TEST_TRUE((1.5_w).round() == 1);
+    TEST_TRUE((1.5001_w).round() == 2);
+    TEST_TRUE((0.5_w).round() == 0);
+    TEST_TRUE((0.5001_w).round() == 1);
+    TEST_TRUE((0.001_w).round() == 0);
+    TEST_TRUE((0_w).round() == 0);
+
+    TEST_TRUE(checked_mul(strf::width_max, 2) == strf::width_max);
+    TEST_TRUE(checked_mul(strf::width_max / 2, 4) == strf::width_max);
+    TEST_TRUE(checked_mul(strf::width_min, 2) == strf::width_min);
+    TEST_TRUE(checked_mul(strf::width_min / 2, 4) == strf::width_min);
 }
 

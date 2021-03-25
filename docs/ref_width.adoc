@@ -539,8 +539,8 @@ public:
     constexpr bool operator>=(const width_t& other) const noexcept;
 
     constexpr bool is_integral() const noexcept;
-    constexpr std::uint16_t floor() const noexcept;
-    constexpr std::uint16_t ceil() const noexcept;
+    constexpr unsigned floor() const noexcept;
+    constexpr unsigned ceil() const noexcept;
     constexpr std::uint16_t round() const noexcept;
 
     constexpr width_t operator-() const noexcept;
