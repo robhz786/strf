@@ -14,12 +14,12 @@
 namespace llfio = LLFIO_V2_NAMESPACE;
 
 template <typename CharT, std::size_t BufferSize>
-class llfio_file_writer final: public strf::basic_outbuff_noexcept<CharT>
+class llfio_file_writer final: public strf::basic_outbuff<CharT>
 {
 public:
 
     llfio_file_writer(llfio::file_handle&& file, std::size_t offset = 0)
-        : strf::basic_outbuff_noexcept<CharT>{buffer_, BufferSize}
+        : strf::basic_outbuff<CharT>{buffer_, BufferSize}
         , file_{std::move(file)}
         , offset_{offset}
     {
@@ -28,7 +28,7 @@ public:
     llfio_file_writer(const llfio_file_writer&) = delete;
 
     llfio_file_writer(llfio_file_writer&& other)
-        : strf::basic_outbuff_noexcept<CharT>{buffer_, BufferSize}
+        : strf::basic_outbuff<CharT>{buffer_, BufferSize}
         , file_{std::move(other.file_)}
         , offset_{other.offset_}
         , error_{other.error_}

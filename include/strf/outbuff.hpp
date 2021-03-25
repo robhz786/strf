@@ -170,108 +170,8 @@ void basic_outbuff<CharT>::do_write(const CharT* str, std::size_t str_len)
     }
 }
 
-
-template <typename CharT>
-class basic_outbuff_noexcept: public basic_outbuff<CharT>
-{
-public:
-
-    virtual STRF_HD void recycle() noexcept override = 0;
-
-    STRF_HD void write(const CharT* str, std::size_t str_len) noexcept
-    {
-        STRF_IF_LIKELY (str_len <= this->space()) {
-#if !defined(STRF_FREESTANDING) || defined(STRF_WITH_CSTRING)
-            memcpy(this->pointer(), str, str_len * sizeof(CharT));
-            this->advance(str_len);
-#else
-            auto p = this->pointer();
-            for(; str_len != 0; ++p, ++str, --str_len) {
-                *p = *str;
-            }
-            this->advance_to(p);
-#endif
-        } else {
-            do_write(str, str_len);
-        }
-    }
-
-protected:
-
-    STRF_HD void do_write(const CharT* str, std::size_t str_len) noexcept override;
-
-    using basic_outbuff<CharT>::basic_outbuff;
-};
-
-template <typename CharT>
-void basic_outbuff_noexcept<CharT>::do_write(const CharT* str, std::size_t str_len) noexcept
-{
-    for(;;) {
-        std::size_t s = this->space();
-        std::size_t sub_count = (str_len <= s ? str_len : s);
-        str_len -= sub_count;
-        auto ptr = this->pointer();
-
-#if !defined(STRF_FREESTANDING) || defined(STRF_WITH_CSTRING)
-        memcpy(ptr, str, sub_count * sizeof(CharT));
-        str += sub_count;
-        this->advance_to(ptr + sub_count);
-#else
-        for(; sub_count != 0; ++ptr, ++str, --sub_count) {
-            *ptr = *str;
-        }
-        this->advance_to(ptr);
-#endif
-        if (str_len == 0) {
-            break;
-        }
-        recycle();
-        if ( ! this->good()) {
-            break;
-        }
-    };
-}
-
-namespace detail {
-
-template <bool NoExcept, typename CharT>
-struct basic_outbuff_noexcept_switch_impl;
-
-template <typename CharT>
-struct basic_outbuff_noexcept_switch_impl<false, CharT>
-{
-    using type = strf::basic_outbuff<CharT>;
-};
-
-template <typename CharT>
-struct basic_outbuff_noexcept_switch_impl<true, CharT>
-{
-    using type = strf::basic_outbuff_noexcept<CharT>;
-};
-
-template <bool NoExcept, typename CharT>
-using basic_outbuff_noexcept_switch
-    = typename basic_outbuff_noexcept_switch_impl<NoExcept, CharT>
-   :: type;
-
-} // namespace detail
-
 template <typename CharT>
 inline STRF_HD void put(strf::basic_outbuff<CharT>& ob, CharT c)
-{
-    auto p = ob.pointer();
-    STRF_IF_LIKELY (p != ob.end()) {
-        *p = c;
-        ob.advance_to(p + 1);
-    } else {
-        ob.recycle();
-        *ob.pointer() = c;
-        ob.advance();
-    }
-}
-
-template <typename CharT>
-inline STRF_HD void put( strf::basic_outbuff_noexcept<CharT>& ob, CharT c ) noexcept
 {
     auto p = ob.pointer();
     STRF_IF_LIKELY (p != ob.end()) {
@@ -288,22 +188,16 @@ inline STRF_HD void put( strf::basic_outbuff_noexcept<CharT>& ob, CharT c ) noex
 
 #if defined(__cpp_lib_byte)
 using bin_outbuff           = basic_outbuff<std::byte>;
-using bin_outbuff_noexcept  = basic_outbuff_noexcept<std::byte>;
 #endif
 
 #if defined(__cpp_char8_t)
 using u8outbuff           = basic_outbuff<char8_t>;
-using u8outbuff_noexcept  = basic_outbuff_noexcept<char8_t>;
 #endif
 
 using outbuff             = basic_outbuff<char>;
-using outbuff_noexcept    = basic_outbuff_noexcept<char>;
 using u16outbuff          = basic_outbuff<char16_t>;
-using u16outbuff_noexcept = basic_outbuff_noexcept<char16_t>;
 using u32outbuff          = basic_outbuff<char32_t>;
-using u32outbuff_noexcept = basic_outbuff_noexcept<char32_t>;
 using woutbuff            = basic_outbuff<wchar_t>;
-using woutbuff_noexcept   = basic_outbuff_noexcept<wchar_t>;
 
 namespace detail {
 
@@ -333,33 +227,33 @@ inline STRF_HD CharT* garbage_buff_end() noexcept
 }
 
 template <typename CharT>
-class basic_cstr_writer final: public strf::basic_outbuff_noexcept<CharT>
+class basic_cstr_writer final: public strf::basic_outbuff<CharT>
 {
 public:
 
     struct range{ CharT* dest; CharT* dest_end; };
 
     STRF_HD basic_cstr_writer(range r) noexcept
-        : basic_outbuff_noexcept<CharT>(r.dest, r.dest_end - 1)
+        : basic_outbuff<CharT>(r.dest, r.dest_end - 1)
     {
         STRF_ASSERT(r.dest < r.dest_end);
     }
 
     STRF_HD basic_cstr_writer(CharT* dest, CharT* dest_end) noexcept
-        : basic_outbuff_noexcept<CharT>(dest, dest_end - 1)
+        : basic_outbuff<CharT>(dest, dest_end - 1)
     {
         STRF_ASSERT(dest < dest_end);
     }
 
     STRF_HD basic_cstr_writer(CharT* dest, std::size_t len) noexcept
-        : basic_outbuff_noexcept<CharT>(dest, dest + len - 1)
+        : basic_outbuff<CharT>(dest, dest + len - 1)
     {
         STRF_ASSERT(len != 0);
     }
 
     template <std::size_t N>
     STRF_HD basic_cstr_writer(CharT (&dest)[N]) noexcept
-        : basic_outbuff_noexcept<CharT>(dest, dest + N - 1)
+        : basic_outbuff<CharT>(dest, dest + N - 1)
     {
     }
 
@@ -431,12 +325,12 @@ using wcstr_writer = basic_cstr_writer<wchar_t>;
 
 template <typename CharT>
 class discarded_outbuff final
-    : public strf::basic_outbuff_noexcept<CharT>
+    : public strf::basic_outbuff<CharT>
 {
 public:
 
     STRF_HD discarded_outbuff() noexcept
-        : basic_outbuff_noexcept<CharT>
+        : basic_outbuff<CharT>
             { strf::garbage_buff<CharT>()
             , strf::garbage_buff_end<CharT>() }
     {

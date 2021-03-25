@@ -49,13 +49,6 @@ inline STRF_HD void write
     ob.write(str, detail::str_length(str));
 }
 
-inline STRF_HD void write
-    ( strf::basic_outbuff_noexcept<char>& ob
-    , const char* str ) noexcept
-{
-    ob.write(str, detail::str_length(str));
-}
-
 namespace detail {
 
 template <typename CharT>

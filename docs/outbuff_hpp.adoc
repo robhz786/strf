@@ -58,18 +58,14 @@ class basic_outbuff
 { /{asterisk} \... {asterisk}/ };
 
 template <typename CharT>
-class basic_outbuff_noexcept: public basic_outbuff<CharT>
-{ /{asterisk} \... {asterisk}/ };
-
-template <typename CharT>
 void put(basic_outbuff<CharT>& ob, CharT c);
 
 template <typename CharT>
-class basic_cstr_writer final: public basic_outbuff_noexcept<CharT>
+class basic_cstr_writer final: public basic_outbuff<CharT>
 { /{asterisk} \... {asterisk}/};
 
 template <typename CharT>
-class discarded_outbuff final: public basic_outbuff_noexcept<CharT>
+class discarded_outbuff final: public basic_outbuff<CharT>
 { /{asterisk} \... {asterisk}/};
 
 template <typename CharT>
@@ -385,40 +381,6 @@ ob.advance();
 ----
 ====
 
-[[basic_outbuff_noexcept]]
-== Class template `basic_outbuff_noexcept`
-
-[source,cpp]
-----
-namespace strf {
-
-template <typename CharT>
-class basic_outbuff_noexcept: public basic_outbuff<CharT>
-{
-public:
-
-    virtual void recycle() noexcept = 0;
-    virtual void write(const CharT* str, std::size_t str_len) noexcept;
-
-protected:
-
-    virtual void do_write(const CharT* str, std::size_t str_len) noexcept override;
-
-    using basic_outbuff<CharT>::basic_outbuff;
-};
-
-// type aliases
-
-using outbuff_noexcept      = basic_outbuff_noexcept<char>;
-using u8outbuff_noexcept    = basic_outbuff_noexcept<char8_t>;
-using u16outbuff_noexcept   = basic_outbuff_noexcept<char16_t>;
-using u32outbuff_noexcept   = basic_outbuff_noexcept<char32_t>;
-using woutbuff_noexcept     = basic_outbuff_noexcept<wchar_t>;
-using bin_outbuff_noexcept  = basic_outbuff_noexcept<std::byte>;
-
-} // namespace strf
-----
-
 [[basic_cstr_writer]]
 == Class template `basic_cstr_writer`
 
@@ -427,7 +389,7 @@ using bin_outbuff_noexcept  = basic_outbuff_noexcept<std::byte>;
 namespace strf {
 
 template <typename CharT>
-class basic_cstr_writer final: public basic_outbuff_noexcept<CharT>
+class basic_cstr_writer final: public basic_outbuff<CharT>
 {
 public:
 
@@ -525,7 +487,7 @@ A `discarded_outbuff` object ignores anything written to it.
 namespace strf {
 
 template <typename CharT>
-class discarded_outbuff final: public basic_outbuff_noexcept<CharT>
+class discarded_outbuff final: public basic_outbuff<CharT>
 {
 public:
     discarded_outbuff() noexcept;

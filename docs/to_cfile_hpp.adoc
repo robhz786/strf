@@ -17,7 +17,6 @@ http://www.boost.org/LICENSE_1_0.txt
 :underlying_outbuff: <<outbuff_hpp#underlying_outbuff,underlying_outbuff>>
 :underlying_char_type: <<outbuff_hpp#underlying_char_type,underlying_char_type>>
 :basic_outbuff: <<outbuff_hpp#basic_outbuff,basic_outbuff>>
-:basic_outbuff_noexcept: <<outbuff_hpp#basic_outbuff_noexcept,basic_outbuff_noexcept>>
 :narrow_cfile_writer: <<narrow_cfile_writer,narrow_cfile_writer>>
 :wide_cfile_writer: <<wide_cfile_writer,wide_cfile_writer>>
 
@@ -34,10 +33,10 @@ NOTE: This header files includes `<strf.hpp>`
 namespace strf {
 
 template <typename CharT>
-class narrow_cfile_writer final: public basic_outbuff_noexcept<CharT>
+class narrow_cfile_writer final: public basic_outbuff<CharT>
 { /{asterisk}\...{asterisk}/ };
 
-class wide_cfile_writer final: public basic_outbuff_noexcept<wchar_t>
+class wide_cfile_writer final: public basic_outbuff<wchar_t>
 { /{asterisk}\...{asterisk}/ };
 
 // Destination makers:
@@ -58,7 +57,7 @@ template <typename CharT = char>
 namespace strf {
 
 template <typename CharT>
-class narrow_cfile_writer final: public {basic_outbuff_noexcept}<CharT> {
+class narrow_cfile_writer final: public {basic_outbuff}<CharT> {
 public:
     explicit narrow_cfile_writer(std::FILE{asterisk} dest);
 
@@ -113,7 +112,7 @@ Return value::
 ----
 namespace strf {
 
-class wide_cfile_writer final: public {basic_outbuff_noexcept}<wchar_t> {
+class wide_cfile_writer final: public {basic_outbuff}<wchar_t> {
 public:
     explicit wide_cfile_writer(std::FILE{asterisk} dest);
 

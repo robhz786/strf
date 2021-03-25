@@ -13,12 +13,12 @@
 namespace strf {
 
 template <typename CharT>
-class narrow_cfile_writer final: public strf::basic_outbuff_noexcept<CharT>
+class narrow_cfile_writer final: public strf::basic_outbuff<CharT>
 {
 public:
 
     explicit STRF_HD narrow_cfile_writer(std::FILE* d)
-        : strf::basic_outbuff_noexcept<CharT>(buf_, buf_size_)
+        : strf::basic_outbuff<CharT>(buf_, buf_size_)
         , dest_(d)
     {
         STRF_ASSERT(d != nullptr);
@@ -86,12 +86,12 @@ private:
     CharT buf_[buf_size_];
 };
 
-class wide_cfile_writer final: public strf::basic_outbuff_noexcept<wchar_t>
+class wide_cfile_writer final: public strf::basic_outbuff<wchar_t>
 {
 public:
 
     STRF_HD explicit wide_cfile_writer(std::FILE* d)
-        : strf::basic_outbuff_noexcept<wchar_t>(buf_, buf_size_)
+        : strf::basic_outbuff<wchar_t>(buf_, buf_size_)
         , dest_(d)
     {
         STRF_ASSERT(d != nullptr);
