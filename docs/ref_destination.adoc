@@ -11,8 +11,14 @@ http://www.boost.org/LICENSE_1_0.txt
 :print_preview: <<print_preview,print_preview>>
 :make_printer_input: <<make_printer_input,make_printer_input>>
 
+:basic_cstr_writer: <<outbuff_hpp#basic_cstr_writer,basic_cstr_writer>>
+:basic_char_array_writer: <<outbuff_hpp#basic_char_array_writer,basic_char_array_writer>>
+:destination_no_reserve: <<destination,destination_no_reserve>>
+:OutbuffCreator: <<OutbuffCreator,OutbuffCreator>>
+:SizedOutbuffCreator: <<SizedOutbuffCreator,SizedOutbuffCreator>>
+
 [[destination]]
-== Destination types
+== Destinations
 
 The `destination_no_reserve`, `destination_reserve_calc` and
 `destination_with_given_size` class templates provide the
@@ -29,8 +35,121 @@ in the above expression:
 * `no_reserve()` always returns a `destination_no_reserve` object
 * `reserve_calc()` always returns a `destination_reserve_calc` object.
 * `reserve(__size__)` always returns a `destination_with_given_size` object.
-* The __destination__ is an object whose type is an instance of one
+* The __destination__ is an expression whose type is an instance of one
 those three class templates.
+
+=== Destination makers
+
+====
+[[to_char_ptr_range]]
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+__/{asterisk} see below {asterisk}/__ to(char8_t{asterisk}  dest,  char8_t{asterisk}  end);
+__/{asterisk} see below {asterisk}/__ to(char{asterisk}     dest,  char{asterisk}     end);
+__/{asterisk} see below {asterisk}/__ to(char16_t{asterisk} dest,  char16_t{asterisk} end);
+__/{asterisk} see below {asterisk}/__ to(char32_t{asterisk} dest,  char32_t{asterisk} end);
+__/{asterisk} see below {asterisk}/__ to(wchar_t{asterisk}  dest,  wchar_t{asterisk}  end);
+
+} // namespace strf
+----
+[horizontal]
+[horizontal]
+Return type:: `{destination_no_reserve}<OBC>`, where `OBC` is an implementation-defined
+              type that satifies __{OutbuffCreator}__.
+Return value:: A destination object whose internal __{OutbuffCreator}__ object `obc`
+is such that `obc.create()` returns a `{basic_cstr_writer}<CharT>` object initialized
+with `dest` and `dest_end`, where, `CharT` is `std::remove_reference_t<decltype(*dest)>`.
+====
+
+[[to_char_ptr_count]]
+====
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+__/{asterisk} see below {asterisk}/__ to(char8_t{asterisk}  dest, std::size_t count);
+__/{asterisk} see below {asterisk}/__ to(char{asterisk}     dest, std::size_t count);
+__/{asterisk} see below {asterisk}/__ to(char16_t{asterisk} dest, std::size_t count);
+__/{asterisk} see below {asterisk}/__ to(char32_t{asterisk} dest, std::size_t count);
+__/{asterisk} see below {asterisk}/__ to(wchar_t{asterisk}  dest, std::size_t count);
+
+} // namespace strf
+----
+
+[horizontal]
+Return type and value:: Same as of `to(dest, dest + count)`;
+====
+====
+[[to_char_array]]
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template<std::size_t N> __/{asterisk} see below {asterisk}/__ to(char8_t  (&dest)[N]);
+template<std::size_t N> __/{asterisk} see below {asterisk}/__ to(char     (&dest)[N]);
+template<std::size_t N> __/{asterisk} see below {asterisk}/__ to(char16_t (&dest)[N]);
+template<std::size_t N> __/{asterisk} see below {asterisk}/__ to(char32_t (&dest)[N]);
+template<std::size_t N> __/{asterisk} see below {asterisk}/__ to(wchar_t  (&dest)[N]);
+
+} // namespace strf
+----
+[horizontal]
+Return type and value:: Same as of `to(dest, dest + N)`;
+====
+
+
+[[to_range]]
+====
+[source,cpp,subs=normal]
+----
+namespace strf {
+template <typename CharT>
+__/{asterisk} see below {asterisk}/__ to_range(CharT* dest, CharT* dest_end);
+
+} // namespace strf
+----
+[horizontal]
+[horizontal]
+Return type:: `{destination_no_reserve}<OBC>`, where `OBC` is an implementation-defined
+              type that satifies __{OutbuffCreator}__.
+Return value:: A destination object whose internal __{OutbuffCreator}__ object `obc`
+is such that `obc.create()` returns a `{basic_char_array_writer}<CharT>` object initialized
+with `dest` and `dest_end`.
+====
+[[to_range_array]]
+====
+[source,cpp,subs=normal]
+----
+namespace strf {
+template <typename CharT, std::size_t N>
+__/{asterisk} see below {asterisk}/__ to_range(CharT (&dest)[N]);
+
+} // namespace strf
+----
+[horizontal]
+Return type and value:: Same as of `to_range(dest, dest + N)`;
+====
+[[to_range_count]]
+====
+[source,cpp,subs=normal]
+----
+namespace strf {
+template <typename CharT>
+__/{asterisk} see below {asterisk}/__ to_range(CharT* dest, std::size_t count);
+
+} // namespace strf
+----
+[horizontal]
+Return type and value:: Same as of `to_range(dest, dest + count)`;
+====
+
+
+
+
+
+
 
 [[destination_no_reserve]]
 === Class template `destination_no_reserve`

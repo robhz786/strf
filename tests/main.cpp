@@ -56,6 +56,7 @@ void test_basic_outbuff();
 void test_printable_overriding();
 void test_streambuf_writer();
 void test_string_writer();
+void test_to_range();
 
 int main() {
     strf::narrow_cfile_writer<char> test_outbuff(stdout);
@@ -72,7 +73,7 @@ int main() {
 
     test_basic_outbuff();
     test_cstr_writer();
-
+    test_to_range();
     test_dynamic_charset();
     test_encode_char();
     test_encode_fill();

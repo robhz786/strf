@@ -26,6 +26,7 @@ set(sources_freestanding
   join.cpp
   miscellaneous.cpp
   numpunct.cpp
+  range_writer.cpp
   reserve.cpp
   single_byte_encodings.cpp
   tr_string.cpp
@@ -82,6 +83,7 @@ set(tests_on_cuda_device
    join
    miscellaneous
    numpunct
+   range_writer
    reserve
    single_byte_encodings
    tr_string

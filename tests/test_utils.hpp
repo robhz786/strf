@@ -777,6 +777,15 @@ struct input_tester_with_fixed_spaces_creator_creator
         break;                                                          \
     }                                                                   \
 
+#define TEST_STRVIEW_EQ(s1, s2, len)                                       \
+    if (! strf::detail::str_equal(s1, s2, len))                            \
+        test_utils::test_failure                                           \
+            ( __FILE__, __LINE__, BOOST_CURRENT_FUNCTION                   \
+            , "TEST_STRVIEW_EQ(s1, s2, len) failed. Where:\n    s1 is \""  \
+            , strf::detail::make_simple_string_view((s1), len)             \
+            , "\"\n    s2 is \""                                           \
+            , strf::detail::make_simple_string_view((s2), len), '\"' );
+
 #define TEST_THROWS( EXPR, EXCEP )                                      \
   { bool caught = false;                                                \
     try { EXPR; }                                                       \

@@ -257,9 +257,7 @@ public:
     {
     }
 
-    STRF_HD basic_cstr_writer(basic_cstr_writer&& r) noexcept
-        : basic_cstr_writer(r.pointer(), r.end())
-    {}
+    basic_cstr_writer(const basic_cstr_writer& r) = delete;
 
     STRF_HD void recycle() noexcept override
     {
@@ -322,6 +320,114 @@ using cstr_writer = basic_cstr_writer<char>;
 using u16cstr_writer = basic_cstr_writer<char16_t>;
 using u32cstr_writer = basic_cstr_writer<char32_t>;
 using wcstr_writer = basic_cstr_writer<wchar_t>;
+
+template <typename CharT>
+class basic_char_array_writer final: public strf::basic_outbuff<CharT>
+{
+public:
+
+    // struct range{ CharT* dest; CharT* dest_end; };
+
+    // STRF_HD basic_char_array_writer(range r) noexcept
+    //     : basic_outbuff<CharT>(r.dest, r.dest_end)
+    // {
+    //     STRF_ASSERT(r.dest <= r.dest_end);
+    // }
+
+    STRF_HD basic_char_array_writer(CharT* dest, CharT* dest_end) noexcept
+        : basic_outbuff<CharT>(dest, dest_end)
+    {
+        STRF_ASSERT(dest <= dest_end);
+    }
+
+    STRF_HD basic_char_array_writer(CharT* dest, std::size_t len) noexcept
+        : basic_outbuff<CharT>(dest, dest + len)
+    {
+    }
+
+    template <std::size_t N>
+    STRF_HD basic_char_array_writer(CharT (&dest)[N]) noexcept
+        : basic_outbuff<CharT>(dest, dest + N)
+    {
+    }
+
+    STRF_HD basic_char_array_writer(const basic_char_array_writer& r) noexcept
+        : basic_outbuff<CharT>(r.pointer(), r.end())
+        , it_(r.it_)
+    {
+        this->set_good(r.good());
+    }
+
+    STRF_HD basic_char_array_writer& operator=(const basic_char_array_writer& r) noexcept
+    {
+        this->set_good(r.good());
+        this->set_pointer(r.pointer());
+        this->set_end(r.end());
+        it_ = r.it_;
+        return *this;
+    }
+    STRF_HD bool operator==(const basic_char_array_writer& r) noexcept
+    {
+        if (this->good()) {
+            return ( r.good()
+                  && this->pointer() == r.pointer()
+                  && this->end() == r.end() );
+        }
+        return ! r.good() && it_ == r.it_;
+    }
+    STRF_HD void recycle() noexcept override
+    {
+        if (this->good()) {
+            it_ = this->pointer();
+            this->set_good(false);
+            this->set_end(garbage_buff_end<CharT>());
+        }
+        this->set_pointer(garbage_buff<CharT>());
+    }
+
+    struct result
+    {
+        CharT* ptr;
+        bool truncated;
+    };
+
+    STRF_HD result finish() noexcept
+    {
+        bool truncated = ! this->good();
+        CharT* ptr = truncated ? it_ : this->pointer();
+        return { ptr, truncated };
+    }
+
+private:
+
+    STRF_HD void do_write(const CharT* str, std::size_t) noexcept override
+    {
+        auto sub_count = this->space();
+        auto ptr = this->pointer();
+#if !defined(STRF_FREESTANDING) || defined(STRF_WITH_CHAR_ARRAYING)
+        memcpy(ptr, str, sub_count * sizeof(CharT));
+#else
+        for(; sub_count != 0; ++ptr, ++str, --sub_count) {
+            *ptr = *str;
+        }
+#endif
+        it_ = this->end();
+        this->set_pointer(garbage_buff<CharT>());
+        this->set_end(garbage_buff_end<CharT>());
+        this->set_good(false);
+    }
+
+    CharT* it_ = nullptr;
+};
+
+
+#if defined(__cpp_char8_t)
+using u8char_array_writer = basic_char_array_writer<char8_t>;
+#endif
+using char_array_writer = basic_char_array_writer<char>;
+using u16char_array_writer = basic_char_array_writer<char16_t>;
+using u32char_array_writer = basic_char_array_writer<char32_t>;
+using wchar_array_writer = basic_char_array_writer<wchar_t>;
 
 template <typename CharT>
 class discarded_outbuff final

@@ -83,6 +83,20 @@ STRF_HD bool operator==
     return strf::detail::str_equal(str1.data(), str2.data(), str1.size());
 }
 
+template <typename CharT>
+constexpr STRF_HD simple_string_view<CharT> make_simple_string_view
+    ( const CharT* str, std::size_t len) noexcept
+{
+    return {str, len};
+}
+
+template <typename CharT>
+constexpr STRF_HD simple_string_view<CharT> make_simple_string_view
+    ( const CharT* str, const CharT* str_end) noexcept
+{
+    return {str, str_end};
+}
+
 } // namespace detail
 
 template <typename T, typename CharT>

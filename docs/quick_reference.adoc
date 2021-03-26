@@ -166,13 +166,22 @@ include::ref_format_functions.adoc[tag=int_format_functions]
 |`<<dest_outbuff,to>> (__outbuff_ref__)`
 | `<<strf_hpp#,<strf.hpp> >>`
 
-|`<<dest_raw_string,to>> (__char_ptr__, __count__)`
-| `<<strf_hpp#,<strf.hpp> >>`
-
 |`<<dest_raw_string,to>> (__char_ptr__, __end__)`
 | `<<strf_hpp#,<strf.hpp> >>`
 
+|`<<dest_raw_string,to>> (__char_ptr__, __count__)`
+| `<<strf_hpp#,<strf.hpp> >>`
+
 |`<<dest_raw_string,to>> (__char_array__)`
+| `<<strf_hpp#,<strf.hpp> >>`
+
+|`<<dest_char_range,to_range>> (__char_ptr__, __end__)`
+| `<<strf_hpp#,<strf.hpp> >>`
+
+|`<<dest_char_range,to_range>> (__char_ptr__, __count__)`
+| `<<strf_hpp#,<strf.hpp> >>`
+
+|`<<dest_char_range,to_range>> (__char_array__)`
 | `<<strf_hpp#,<strf.hpp> >>`
 
 |`<<dest_to_basic_string,to_basic_string>> <__CharT__, _Traits_~_opt_~, _A_~_opt_~>`
@@ -237,9 +246,9 @@ See the <<outbuff_types,list of types>> that derive from `basic_outbuff<__CharT_
 ====
 [subs=normal]
 ----
-strf::<<strf_hpp#to_char_ptr_count,to>>(__char_ptr__, __count__) (__args\...__);
-strf::<<strf_hpp#to_char_range,to>>(__char_ptr__, __end__)   (__args\...__);
+strf::<<strf_hpp#to_char_ptr_range,to>>(__char_ptr__, __end__)   (__args\...__);
 strf::<<strf_hpp#to_char_array,to>>(__char_array__)      (__args\...__);
+strf::<<strf_hpp#to_char_ptr_count,to>>(__char_ptr__, __count__) (__args\...__);
 ----
 [horizontal]
 Header file:: `<<strf_hpp#,<strf.hpp> >>`
@@ -250,7 +259,8 @@ Preconditions::
 Return type:: `<<outbuff_hpp#basic_cstr_writer,basic_cstr_writer<__CharT__>::result`>>
 Return value:: a value `r`, such that:
 * `r.ptr` points to last written character which is always `'\0'`.
-* `r.truncated` is `true` when the destination string is too small.
+* `r.truncated` is `true` when the destination string is too small. In this case, the number of
+   characters written is unspecified, but it is always greater than zero ( because `'\0'` is always written )
 Note:: The termination character `'\0'` is always written.
 Supports reserve:: No
 
@@ -281,6 +291,28 @@ template<std::size_t N> /{asterisk}\...{asterisk}/ to(wchar_t  (&dest)[N]);
 ////
 
 ====
+
+[[dest_char_range]]
+====
+[subs=normal]
+----
+strf::<<strf_hpp#to_range,to_range>>(__char_ptr__, __end__)   (__args\...__);
+strf::<<strf_hpp#to_range_array,to_range>>(__char_array__)      (__args\...__);
+strf::<<strf_hpp#to_range_count,to_range>>(__char_ptr__, __count__) (__args\...__);
+----
+Header file:: `<<strf_hpp#,<strf.hpp> >>`
+Preconditions::
+* `__end__ >= __char_ptr__`
+//-
+Return type:: `<<outbuff_hpp#basic_char_array_writer,basic_char_array_writer<__CharT__>::result`>>
+Return value:: a value `r`, such that:
+* `r.ptr` is the one-past-the-end pointer of the characters written.
+* `r.truncated` is `true` when the destination is too small. In this case, the number of
+   characters written is unspecified.
+Note:: The termination character `'\0'` is **not** appended to the content.
+Supports reserve:: No
+====
+
 
 [[dest_to_basic_string]]
 ====
@@ -391,7 +423,7 @@ Return type:: `<<to_cfile_hpp#wide_cfile_writer,wide_cfile_writer<__CharT__>::re
 ====
 
 [[outbuff_types]]
-=== Derivates of `basic_outbuff`
+=== `basic_outbuff` classes
 
 The table below lists the concrete types that derivate from the `basic_outbuff<__CharT__>` abstract class.
 

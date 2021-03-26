@@ -53,6 +53,7 @@ extern void __device__ test_tr_string();
 extern void __device__ test_width_calculator();
 extern void __device__ test_width_t();
 extern void __device__ test_utf_to_utf();
+extern void __device__ test_to_range();
 
 namespace kernels {
 
@@ -65,12 +66,15 @@ __global__ void kernel_main
     test_utils::set_test_outbuff(out);
 
     test_cstr_writer();
+    test_to_range();
+
     // test_locale();            // not supported on CUDA
     // test_cfile_writer();      // not supported on CUDA
     // test_streambuf_writer();  // not supported on CUDA
     // test_string_writer();     // not supported on CUDA
 
     // test_dynamic_charset();   // not supported on CUDA
+
     test_encode_char();
     test_encode_fill();
     test_facets_pack();

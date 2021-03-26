@@ -654,6 +654,34 @@ private:
     CharT* dest_end_;
 };
 
+template <typename CharT>
+class basic_char_array_writer_creator
+{
+public:
+
+    using char_type = CharT;
+    using finish_type = typename basic_char_array_writer<CharT>::result;
+    using outbuff_type = basic_char_array_writer<CharT>;
+
+    constexpr STRF_HD
+    basic_char_array_writer_creator(CharT* dest, CharT* dest_end) noexcept
+        : dest_(dest)
+        , dest_end_(dest_end)
+    {
+        STRF_ASSERT(dest < dest_end);
+    }
+
+    STRF_HD typename basic_char_array_writer<CharT>::range create() const noexcept
+    {
+        return typename basic_char_array_writer<CharT>::range{dest_, dest_end_};
+    }
+
+private:
+
+    CharT* dest_;
+    CharT* dest_end_;
+};
+
 }
 
 #if defined(__cpp_char8_t)
@@ -767,6 +795,30 @@ inline STRF_HD auto to(wchar_t* dest, std::size_t count)
 {
     return strf::destination_no_reserve
         < strf::detail::basic_cstr_writer_creator<wchar_t> >
+        (dest, dest + count);
+}
+
+template<typename CharT, std::size_t N>
+inline STRF_HD auto to_range(CharT (&dest)[N])
+{
+    return strf::destination_no_reserve
+        < strf::detail::basic_char_array_writer_creator<CharT> >
+        (dest, dest + N);
+}
+
+template<typename CharT>
+inline STRF_HD auto to_range(CharT* dest, CharT* end)
+{
+    return strf::destination_no_reserve
+        < strf::detail::basic_char_array_writer_creator<CharT> >
+        (dest, end);
+}
+
+template<typename CharT>
+inline STRF_HD auto to_range(CharT* dest, std::size_t count)
+{
+    return strf::destination_no_reserve
+        < strf::detail::basic_char_array_writer_creator<CharT> >
         (dest, dest + count);
 }
 

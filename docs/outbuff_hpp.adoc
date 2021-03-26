@@ -389,28 +389,31 @@ ob.advance();
 namespace strf {
 
 template <typename CharT>
-class basic_cstr_writer final: public basic_outbuff<CharT>
-{
+class basic_cstr_writer final: public {basic_outbuff}<CharT> {
 public:
-
     basic_cstr_writer(CharT* dest, CharT* dest_end) noexcept;
+
     basic_cstr_writer(CharT* dest, std::size_t len) noexcept;
+
     template <std::size_t N>
     basic_cstr_writer(CharT (&dest)[N]) noexcept;
 
+    basic_cstr_writer(const basic_cstr_writer&) = delete;
+
     void recycle() noexcept override;
-    struct result
-    {
+
+    struct result {
         CharT* ptr;
         bool truncated;
     };
+
     result finish() noexcept;
 };
 
 } // namespace strf
 ----
 
-=== Public member function
+=== Public member functions
 
 ====
 [source,cpp]
@@ -475,6 +478,99 @@ Postconditions::
 - `{pointer}() == {garbage_buff}<CharT>()`
 - `{end}() == {garbage_buff_end}<CharT>()`
 ====
+
+[[basic_char_array_writer]]
+== Class template `basic_char_array_writer`
+
+[source,cpp]
+----
+namespace strf {
+template <typename CharT>
+class basic_char_array_writer final : public {basic_outbuff}<CharT> {
+public:
+    template <std::size_t N>
+    basic_char_array_writer(CharT (&dest)[N]) noexcept;
+    basic_char_array_writer(CharT* dest, CharT* dest_end) noexcept;
+    basic_char_array_writer(CharT* dest, std::size_t dest_size) noexcept;
+    basic_char_array_writer(const basic_char_array_writer&) noexcept;
+
+    basic_char_array_writer& operator=(const basic_char_array_writer&) noexcept;
+    bool operator==(const basic_char_array_writer&) noexcept;
+
+    void recycle() noexcept override;
+
+    struct result {
+        CharT* ptr;
+        bool truncated;
+    };
+
+    result finish() noexcept;
+};
+} // namespace strf
+----
+
+=== Public member functions
+
+====
+[source,cpp]
+----
+template <std::size_t N>
+basic_char_array_writer(CharT (&dest)[N]) noexcept;
+----
+Postconditions::
+- `{good}() == true`
+- `{pointer}() == dest`
+- `{end}() == dest + N`
+====
+====
+[source,cpp]
+----
+basic_char_array_writer(CharT* dest, CharT* dest_end) noexcept;
+----
+[horizontal]
+Precondition:: `dest < dest_end`
+Postconditions::
+- `{good}() == true`
+- `{pointer}() == dest`
+- `{end}() == dest_end`
+====
+====
+[source,cpp]
+----
+basic_char_array_writer(CharT* dest, std::size_t dest_size) noexcept;
+----
+[horizontal]
+Precondition:: `dest_size != 0`
+Postconditions::
+- `{good}() == true`
+- `{pointer}() == dest`
+- `{end}() == dest + dest_size`
+====
+====
+[source,cpp]
+----
+void recycle() noexcept;
+----
+[horizontal]
+Postconditions::
+- `{good}() == false`
+- `{pointer}() == {garbage_buff}<CharT>()`
+- `{end}() == {garbage_buff_end}<CharT>()`
+====
+====
+[source,cpp]
+----
+result finish() noexcept;
+----
+Return value::
+- `result.truncated` is `true` when `{recycle}()` or `{do_write}(...)`
+   has been previously called in this object, which means that the
+   the range which with it was initialized is too small.
+- `result::ptr` is the one-past-the-end pointer of the characters written.
+   However, when `result.truncated` is `true`, the number of characters written
+   is unspecified.
+====
+
 
 [[discarded_outbuff]]
 == Class template `discarded_outbuff`

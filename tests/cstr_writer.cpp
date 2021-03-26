@@ -14,18 +14,15 @@ static void STRF_TEST_FUNC test_cstr_writer_destination_too_small()
     {
         char buff[4];
         strf::basic_cstr_writer<char> sw(buff);
+        TEST_EQ(sw.space(), 3);
         strf::put(sw, 'a');
+        TEST_EQ(sw.space(), 2);
         strf::put(sw, 'b');
         strf::put(sw, 'c');
+        TEST_EQ(sw.space(), 0);
         strf::put(sw, 'd');
         strf::put(sw, 'e');
         strf::put(sw, 'f');
-        for (auto s = sw.space(); s != 0; --s) {
-            strf::put(sw, 'x');
-        }
-        strf::put(sw, 'a');
-        strf::put(sw, 'b');
-        strf::put(sw, 'c');
 
         auto r = sw.finish();
 
@@ -59,10 +56,7 @@ static void STRF_TEST_FUNC test_write_into_cstr_writer_after_finish()
     const char s1b[] = " World";
     const char s2[] = "Second string content";
 
-    const char expected[]
-        = "Hello World\0Second string content\0Third string cont";
-
-    char buff[sizeof(expected)];
+    char buff[80];
 
     strf::basic_cstr_writer<char> sw(buff);
     strf::write(sw, s1a);

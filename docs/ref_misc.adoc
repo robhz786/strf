@@ -11,10 +11,6 @@ http://www.boost.org/LICENSE_1_0.txt
 :OutbuffCreator: <<OutbuffCreator,OutbuffCreator>
 
 :basic_outbuff: <<outbuff_hpp#basic_outbuff,basic_outbuff>>
-:basic_cstr_writer: <<outbuff_hpp#basic_cstr_writer,basic_cstr_writer>>
-:destination_no_reserve: <<destination,destination_no_reserve>>
-:OutbuffCreator: <<OutbuffCreator,OutbuffCreator>>
-:SizedOutbuffCreator: <<SizedOutbuffCreator,SizedOutbuffCreator>>
 :facet_traits: <<facet_traits,facet_traits>>
 
 == Miscellaneous
@@ -183,61 +179,3 @@ void write( {basic_outbuff}<wchar_t>& ob
 Effect:: Equivalent to `write(ob, wcstr, std::wstrlen(wcstr))`
 ====
 
-=== Destination markers
-
-[[to_char_ptr_count]]
-====
-[source,cpp,subs=normal]
-----
-namespace strf {
-
-__/{asterisk} see below {asterisk}/__ to(char8_t{asterisk}  dest, std::size_t count);
-__/{asterisk} see below {asterisk}/__ to(char{asterisk}     dest, std::size_t count);
-__/{asterisk} see below {asterisk}/__ to(char16_t{asterisk} dest, std::size_t count);
-__/{asterisk} see below {asterisk}/__ to(char32_t{asterisk} dest, std::size_t count);
-__/{asterisk} see below {asterisk}/__ to(wchar_t{asterisk}  dest, std::size_t count);
-
-} // namespace strf
-----
-
-[horizontal]
-Return type:: `{destination_no_reserve}<OBC>`, where `OBC` is an implementation-defined
-              type that satifies __{OutbuffCreator}__.
-Return value:: A destination object whose internal __{OutbuffCreator}__ object `obc`
-is such that `obc.create()` returns a `{basic_cstr_writer}<CharT>` object initialized
-with `dest` and `count`, where, `CharT` is `std::remove_reference_t<decltype(*dest)>`.
-====
-====
-[[to_char_array]]
-[source,cpp,subs=normal]
-----
-namespace strf {
-
-template<std::size_t N> __/{asterisk} see below {asterisk}/__ to(char8_t  (&dest)[N]);
-template<std::size_t N> __/{asterisk} see below {asterisk}/__ to(char     (&dest)[N]);
-template<std::size_t N> __/{asterisk} see below {asterisk}/__ to(char16_t (&dest)[N]);
-template<std::size_t N> __/{asterisk} see below {asterisk}/__ to(char32_t (&dest)[N]);
-template<std::size_t N> __/{asterisk} see below {asterisk}/__ to(wchar_t  (&dest)[N]);
-
-} // namespace strf
-----
-[horizontal]
-Return type and value:: Same as of `to(dest, N)`;
-====
-====
-[[to_char_range]]
-[source,cpp,subs=normal]
-----
-namespace strf {
-
-__/{asterisk} see below {asterisk}/__ to(char8_t{asterisk}  dest,  char8_t{asterisk}  end);
-__/{asterisk} see below {asterisk}/__ to(char{asterisk}     dest,  char{asterisk}     end);
-__/{asterisk} see below {asterisk}/__ to(char16_t{asterisk} dest,  char16_t{asterisk} end);
-__/{asterisk} see below {asterisk}/__ to(char32_t{asterisk} dest,  char32_t{asterisk} end);
-__/{asterisk} see below {asterisk}/__ to(wchar_t{asterisk}  dest,  wchar_t{asterisk}  end);
-
-} // namespace strf
-----
-[horizontal]
-Return type and value:: Same as of `to(dest, (std::size_t)(end - dest))`;
-====
