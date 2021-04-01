@@ -22,7 +22,16 @@ void STRF_TEST_FUNC test_miscellaneous()
 
         TEST_CSTR_EQ(buff, "abc 1,000,000,000");
     }
-
+    {   // test discarded_outbuff
+        strf::discarded_outbuff<char> ob;
+        TEST_FALSE(ob.good());
+        ob.recycle();
+        TEST_TRUE(ob.space() >= strf::min_space_after_recycle<char>());
+        TEST_FALSE(ob.good());
+        char buff[200];
+        ob.write(buff, sizeof(buff)/sizeof(buff[0]));
+        TEST_FALSE(ob.good());
+    }
     {   // preview size
         strf::print_preview<strf::preview_size::yes, strf::preview_width::no> p;
 

@@ -190,10 +190,10 @@ public:
 
     explicit basic_sized_string_maker(std::size_t count)
         : strf::basic_outbuff<CharT>(nullptr, nullptr)
-        , str_(count, (CharT)0)
+        , str_(count ? count : 1, (CharT)0)
     {
         this->set_pointer(&*str_.begin());
-        this->set_end(&*str_.begin() + count);
+        this->set_end(&*str_.begin() + (count ? count : 1));
     }
 
     basic_sized_string_maker(const basic_sized_string_maker&) = delete;

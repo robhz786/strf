@@ -11,6 +11,7 @@
 
 #if ! defined(STRF_FREESTANDING)
 #  include <cstdio>
+#  include <cstdlib>
 #  include <string>
 #  define STRF_HAS_STD_STRING_DECLARATION
 #endif
@@ -75,6 +76,21 @@ std::basic_string<CharT> read_file(const char* filename)
     }
 
     return result;
+}
+
+template <typename CharT>
+std::basic_string<CharT> make_random_std_string(std::size_t size)
+{
+    std::basic_string<CharT> str(size, (CharT)0);
+    int r = std::rand() % 20;
+    CharT ch = static_cast<CharT>(0x20 + r);
+    for (std::size_t i = 0; i < size; ++i) {
+        str[i] = ch;
+        if (++ch == 0x7F) {
+            ch = 0x20;
+        }
+    }
+    return str;
 }
 
 #endif // ! defined(STRF_FREESTANDING)

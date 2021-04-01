@@ -451,6 +451,13 @@ public:
     {
         this->set_pointer(strf::garbage_buff<CharT>());
     }
+
+private:
+
+    STRF_HD void do_write(const CharT*, std::size_t) noexcept override
+    {
+        this->set_pointer(strf::garbage_buff<CharT>());
+    }
 };
 
 } // namespace strf
