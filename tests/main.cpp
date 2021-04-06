@@ -59,7 +59,7 @@ void test_string_writer();
 void test_to_range();
 
 int main() {
-    strf::narrow_cfile_writer<char> test_outbuff(stdout);
+    strf::narrow_cfile_writer<char, 1024> test_outbuff(stdout);
     test_utils::set_test_outbuff(test_outbuff);
 
 #if ! defined(STRF_FREESTANDING)

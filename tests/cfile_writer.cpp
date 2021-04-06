@@ -16,7 +16,7 @@ void test_narrow_successfull_writing()
     auto double_str = test_utils::make_double_string<CharT>();
 
     std::FILE* file = std::tmpfile();
-    strf::narrow_cfile_writer<CharT> writer(file);
+    strf::narrow_cfile_writer<CharT, strf::min_space_after_recycle<CharT>()> writer(file);
 
     writer.write(tiny_str.begin(), tiny_str.size());
     writer.write(double_str.begin(), double_str.size());
@@ -74,7 +74,7 @@ void test_narrow_failing_to_recycle()
 
     auto path = test_utils::unique_tmp_file_name();
     std::FILE* file = std::fopen(path.c_str(), "w");
-    strf::narrow_cfile_writer<CharT> writer(file);
+    strf::narrow_cfile_writer<CharT, strf::min_space_after_recycle<CharT>()> writer(file);
 
     writer.write(half_str.begin(), half_str.size());
     writer.recycle(); // first recycle shall work
@@ -130,7 +130,7 @@ void test_narrow_failing_to_finish()
 
     auto path = test_utils::unique_tmp_file_name();
     std::FILE* file = std::fopen(path.c_str(), "w");
-    strf::narrow_cfile_writer<CharT> writer(file);
+    strf::narrow_cfile_writer<CharT, strf::min_space_after_recycle<CharT>()> writer(file);
 
     writer.write(double_str.begin(), double_str.size());
     writer.recycle();

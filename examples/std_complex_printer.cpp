@@ -641,7 +641,7 @@ void tests()
 
 int main()
 {
-    strf::narrow_cfile_writer<char> test_outbuff(stdout);
+    strf::narrow_cfile_writer<char, 512> test_outbuff(stdout);
     test_utils::set_test_outbuff(test_outbuff);
 
     tests();
