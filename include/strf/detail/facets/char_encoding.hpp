@@ -91,14 +91,34 @@ struct invalid_seq_notifier_c
 enum class char_encoding_id : std::uint32_t{};
 
 // generated at https://www.random.org/bytes/
-constexpr strf::char_encoding_id eid_ascii        = (strf::char_encoding_id)0x9dea526b;
-constexpr strf::char_encoding_id eid_utf8         = (strf::char_encoding_id)0x04650346;
-constexpr strf::char_encoding_id eid_utf16        = (strf::char_encoding_id)0x0439cb08;
-constexpr strf::char_encoding_id eid_utf32        = (strf::char_encoding_id)0x67be80a2;
-constexpr strf::char_encoding_id eid_iso_8859_1   = (strf::char_encoding_id)0xcf00a4bb;
-constexpr strf::char_encoding_id eid_iso_8859_3   = (strf::char_encoding_id)0xf62df986;
-constexpr strf::char_encoding_id eid_iso_8859_15  = (strf::char_encoding_id)0x2b496c2d;
-constexpr strf::char_encoding_id eid_windows_1252 = (strf::char_encoding_id)0x5cff728c;
+constexpr strf::char_encoding_id eid_ascii        = (strf::char_encoding_id) 0x9dea526b;
+constexpr strf::char_encoding_id eid_utf8         = (strf::char_encoding_id) 0x04650346;
+constexpr strf::char_encoding_id eid_utf16        = (strf::char_encoding_id) 0x0439cb08;
+constexpr strf::char_encoding_id eid_utf32        = (strf::char_encoding_id) 0x67be80a2;
+constexpr strf::char_encoding_id eid_iso_8859_1   = (strf::char_encoding_id) 0xcf00a401;
+constexpr strf::char_encoding_id eid_iso_8859_2   = (strf::char_encoding_id) 0xcf00a402;
+constexpr strf::char_encoding_id eid_iso_8859_3   = (strf::char_encoding_id) 0xcf00a403;
+constexpr strf::char_encoding_id eid_iso_8859_4   = (strf::char_encoding_id) 0xcf00a404;
+constexpr strf::char_encoding_id eid_iso_8859_5   = (strf::char_encoding_id) 0xcf00a405;
+constexpr strf::char_encoding_id eid_iso_8859_6   = (strf::char_encoding_id) 0xcf00a406;
+constexpr strf::char_encoding_id eid_iso_8859_7   = (strf::char_encoding_id) 0xcf00a407;
+constexpr strf::char_encoding_id eid_iso_8859_8   = (strf::char_encoding_id) 0xcf00a408;
+constexpr strf::char_encoding_id eid_iso_8859_9   = (strf::char_encoding_id) 0xcf00a409;
+constexpr strf::char_encoding_id eid_iso_8859_10  = (strf::char_encoding_id) 0xcf00a410;
+constexpr strf::char_encoding_id eid_iso_8859_11  = (strf::char_encoding_id) 0xcf00a411;
+constexpr strf::char_encoding_id eid_iso_8859_13  = (strf::char_encoding_id) 0xcf00a413;
+constexpr strf::char_encoding_id eid_iso_8859_14  = (strf::char_encoding_id) 0xcf00a414;
+constexpr strf::char_encoding_id eid_iso_8859_15  = (strf::char_encoding_id) 0xcf00a415;
+constexpr strf::char_encoding_id eid_iso_8859_16  = (strf::char_encoding_id) 0xcf00a416;
+constexpr strf::char_encoding_id eid_windows_1250 = (strf::char_encoding_id) 0x5cff7250;
+constexpr strf::char_encoding_id eid_windows_1251 = (strf::char_encoding_id) 0x5cff7251;
+constexpr strf::char_encoding_id eid_windows_1252 = (strf::char_encoding_id) 0x5cff7252;
+constexpr strf::char_encoding_id eid_windows_1253 = (strf::char_encoding_id) 0x5cff7253;
+constexpr strf::char_encoding_id eid_windows_1254 = (strf::char_encoding_id) 0x5cff7254;
+constexpr strf::char_encoding_id eid_windows_1255 = (strf::char_encoding_id) 0x5cff7255;
+constexpr strf::char_encoding_id eid_windows_1256 = (strf::char_encoding_id) 0x5cff7256;
+constexpr strf::char_encoding_id eid_windows_1257 = (strf::char_encoding_id) 0x5cff7257;
+constexpr strf::char_encoding_id eid_windows_1258 = (strf::char_encoding_id) 0x5cff7258;
 
 namespace detail {
 

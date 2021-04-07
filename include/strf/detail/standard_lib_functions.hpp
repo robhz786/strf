@@ -335,6 +335,33 @@ constexpr strf::detail::detail_tag_invoke_ns::tag_invoke_fn tag_invoke {};
 
 #endif // defined (STRF_NO_GLOBAL_CONSTEXPR_VARIABLE)
 
+template< class ForwardIt, class T, class Compare >
+ForwardIt STRF_HD lower_bound
+    ( ForwardIt first
+    , ForwardIt last
+    , const T& value
+    , Compare comp )
+{
+    auto search_range_length { last - first };
+        // We don't have the equivalent of std::distance on the device-side
+
+    ForwardIt iter;
+    while (search_range_length > 0) {
+        auto half_range_length = search_range_length/2;
+        iter = first;
+        iter += half_range_length;
+        if (comp(*iter, value)) {
+            first = ++iter;
+            search_range_length -= (half_range_length + 1);
+                // the extra +1 is since we've just checked the midpoint
+        }
+        else {
+            search_range_length = half_range_length;
+        }
+    }
+    return first;
+}
+
 } // namespace detail
 } // namespace strf
 

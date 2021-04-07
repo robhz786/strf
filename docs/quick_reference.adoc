@@ -805,47 +805,25 @@ assert(str_mixed == "0xAB 1e+50 Inf");
 [[character_encoding]]
 == Character encodings
 
-////
-[source,cpp]
-----
-namespace strf {
-enum class char_encoding_id : unsigned { };
-
-constexpr char_encoding_id  eid_ascii        = /* ... */;
-constexpr char_encoding_id  eid_utf8         = /* ... */;
-constexpr char_encoding_id  eid_utf16        = /* ... */;
-constexpr char_encoding_id  eid_utf32        = /* ... */;
-constexpr char_encoding_id  eid_iso_8859_1   = /* ... */;
-constexpr char_encoding_id  eid_iso_8859_3   = /* ... */;
-constexpr char_encoding_id  eid_iso_8859_15  = /* ... */;
-constexpr char_encoding_id  eid_windows_1252 = /* ... */;
-
-template <char_encoding_id>
-class static_char_encoding;
-
-}; // namespace strf
-----
-////
-
 The class templates below are facets that specify the character encoding
 corresponding to the character type. Their instances are always
-empty classes. More encodings are expected to be included in
-future version of the library.
+empty classes.
 
 [[static_char_encodings]]
 [source,cpp]
 ----
 namespace strf {
 
-template <typename CharT> struct ascii;
-template <typename CharT> struct iso_8859_1;
-template <typename CharT> struct iso_8859_3;
-template <typename CharT> struct iso_8858_15;
-template <typename CharT> struct windows_1252;
-
-template <typename CharT> struct utf8;
-template <typename CharT> struct utf16;
-template <typename CharT> struct utf32;
+template <typename CharT> using ascii = /*...*/;
+template <typename CharT> using iso_8859_1 = /*...*/;
+template <typename CharT> using iso_8859_2 = /*...*/;
+template <typename CharT> using iso_8859_3 = /*...*/;
+template <typename CharT> using windows_1250 = /*...*/;
+template <typename CharT> using windows_1251 = /*...*/;
+template <typename CharT> using windows_1252 = /*...*/;
+template <typename CharT> using utf8 = /*...*/;
+template <typename CharT> using utf16 = /*...*/;
+template <typename CharT> using utf32 = /*...*/;
 
 template <typename CharT>
 using utf = /* utf8<CharT> , utf16<CharT> or utf32<CharT> */

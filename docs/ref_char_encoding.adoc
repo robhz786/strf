@@ -70,9 +70,30 @@ constexpr char_encoding_id  eid_utf8         = /* ... */;
 constexpr char_encoding_id  eid_utf16        = /* ... */;
 constexpr char_encoding_id  eid_utf32        = /* ... */;
 constexpr char_encoding_id  eid_iso_8859_1   = /* ... */;
+constexpr char_encoding_id  eid_iso_8859_2   = /* ... */;
 constexpr char_encoding_id  eid_iso_8859_3   = /* ... */;
+constexpr char_encoding_id  eid_iso_8859_4   = /* ... */;
+constexpr char_encoding_id  eid_iso_8859_5   = /* ... */;
+constexpr char_encoding_id  eid_iso_8859_6   = /* ... */;
+constexpr char_encoding_id  eid_iso_8859_7   = /* ... */;
+constexpr char_encoding_id  eid_iso_8859_8   = /* ... */;
+constexpr char_encoding_id  eid_iso_8859_9   = /* ... */;
+constexpr char_encoding_id  eid_iso_8859_10  = /* ... */;
+constexpr char_encoding_id  eid_iso_8859_11  = /* ... */;
+constexpr char_encoding_id  eid_iso_8859_13  = /* ... */;
+constexpr char_encoding_id  eid_iso_8859_14  = /* ... */;
 constexpr char_encoding_id  eid_iso_8859_15  = /* ... */;
+constexpr char_encoding_id  eid_iso_8859_16  = /* ... */;
+
+constexpr char_encoding_id  eid_windows_1250 = /* ... */;
+constexpr char_encoding_id  eid_windows_1251 = /* ... */;
 constexpr char_encoding_id  eid_windows_1252 = /* ... */;
+constexpr char_encoding_id  eid_windows_1253 = /* ... */;
+constexpr char_encoding_id  eid_windows_1254 = /* ... */;
+constexpr char_encoding_id  eid_windows_1255 = /* ... */;
+constexpr char_encoding_id  eid_windows_1256 = /* ... */;
+constexpr char_encoding_id  eid_windows_1257 = /* ... */;
+constexpr char_encoding_id  eid_windows_1258 = /* ... */;
 
 } // namespace strf
 ----
@@ -711,33 +732,184 @@ NOTE: There are two class templates that satisfy _CharEncoding_: `{static_transc
 
 [source,cpp,subs=normal]
 ----
-template <{char_encoding_id} Src, {char_encoding_id} Dest>
+template <class SrcCharT, class DestCharT, {char_encoding_id} Src, {char_encoding_id} Dest>
 class static_transcoder;
 
-template <> static_transcoder<{eid_ascii}, {eid_ascii}>;
-template <> static_transcoder<{eid_ascii}, {eid_utf32}>;
-template <> static_transcoder<{eid_utf32}, {eid_ascii}>;
-template <> static_transcoder<{eid_iso_8859_1}, {eid_iso_8859_1}>;
-template <> static_transcoder<{eid_iso_8859_1}, {eid_utf32}>;
-template <> static_transcoder<{eid_utf32}, {eid_iso_8859_1}>;
-template <> static_transcoder<{eid_iso_8859_3}, {eid_utf32}>;
-template <> static_transcoder<{eid_utf32}, {eid_iso_8859_3}>;
-template <> static_transcoder<{eid_iso_8859_3}, {eid_iso_8859_3}>;
-template <> static_transcoder<{eid_iso_8859_15}, {eid_iso_8859_15}>;
-template <> static_transcoder<{eid_iso_8859_15}, {eid_utf32}>;
-template <> static_transcoder<{eid_utf32}, {eid_iso_8859_15}>;
-template <> static_transcoder<{eid_windows_1252}, {eid_windows_1252}>;
-template <> static_transcoder<{eid_windows_1252}, {eid_utf32}>;
-template <> static_transcoder<{eid_utf32}, {eid_windows_1252}>;
-template <> static_transcoder<{eid_utf8}, {eid_utf8}>;
-template <> static_transcoder<{eid_utf8}, {eid_utf16}>;
-template <> static_transcoder<{eid_utf8}, {eid_utf32}>;
-template <> static_transcoder<{eid_utf16}, {eid_utf8}>;
-template <> static_transcoder<{eid_utf16}, {eid_utf16}>;
-template <> static_transcoder<{eid_utf16}, {eid_utf32}>;
-template <> static_transcoder<{eid_utf32}, {eid_utf8}>;
-template <> static_transcoder<{eid_utf32}, {eid_utf16}>;
-template <> static_transcoder<{eid_utf32}, {eid_utf32}>;
+// sanitizers
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_ascii, eid_ascii>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_iso_8859_1, eid_iso_8859_1>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_iso_8859_2, eid_iso_8859_2>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_iso_8859_3, eid_iso_8859_3>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_iso_8859_4, eid_iso_8859_4>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_iso_8859_5, eid_iso_8859_5>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_iso_8859_6, eid_iso_8859_6>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_iso_8859_7, eid_iso_8859_7>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_iso_8859_8, eid_iso_8859_8>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_iso_8859_9, eid_iso_8859_9>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_iso_8859_10, eid_iso_8859_10>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_iso_8859_11, eid_iso_8859_11>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_iso_8859_13, eid_iso_8859_13>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_iso_8859_14, eid_iso_8859_14>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_iso_8859_15, eid_iso_8859_15>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_iso_8859_16, eid_iso_8859_16>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_windows_1250, eid_windows_1250>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_windows_1251, eid_windows_1251>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_windows_1252, eid_windows_1252>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_windows_1253, eid_windows_1253>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_windows_1254, eid_windows_1254>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_windows_1255, eid_windows_1255>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_windows_1256, eid_windows_1256>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_windows_1257, eid_windows_1257>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_windows_1258, eid_windows_1258>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_utf8, eid_utf8>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_utf16, eid_utf16>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_utf32, eid_utf32>;
+
+// to UTF-32
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_ascii, eid_utf32>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_iso_8859_1, eid_utf32>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_iso_8859_2, eid_utf32>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_iso_8859_3, eid_utf32>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_iso_8859_4, eid_utf32>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_iso_8859_5, eid_utf32>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_iso_8859_6, eid_utf32>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_iso_8859_7, eid_utf32>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_iso_8859_8, eid_utf32>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_iso_8859_9, eid_utf32>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_iso_8859_10, eid_utf32>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_iso_8859_11, eid_utf32>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_iso_8859_13, eid_utf32>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_iso_8859_14, eid_utf32>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_iso_8859_15, eid_utf32>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_iso_8859_16, eid_utf32>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_windows_1250, eid_utf32>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_windows_1251, eid_utf32>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_windows_1252, eid_utf32>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_windows_1253, eid_utf32>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_windows_1254, eid_utf32>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_windows_1255, eid_utf32>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_windows_1256, eid_utf32>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_windows_1257, eid_utf32>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_windows_1258, eid_utf32>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_utf8, eid_utf32>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_utf16, eid_utf32>;
+
+// from UTF-32
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_utf32, eid_ascii>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_utf32, eid_iso_8859_1>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_utf32, eid_iso_8859_2>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_utf32, eid_iso_8859_3>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_utf32, eid_iso_8859_4>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_utf32, eid_iso_8859_5>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_utf32, eid_iso_8859_6>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_utf32, eid_iso_8859_7>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_utf32, eid_iso_8859_8>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_utf32, eid_iso_8859_9>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_utf32, eid_iso_8859_10>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_utf32, eid_iso_8859_11>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_utf32, eid_iso_8859_13>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_utf32, eid_iso_8859_14>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_utf32, eid_iso_8859_15>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_utf32, eid_iso_8859_16>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_utf32, eid_windows_1250>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_utf32, eid_windows_1251>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_utf32, eid_windows_1252>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_utf32, eid_windows_1253>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_utf32, eid_windows_1254>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_utf32, eid_windows_1255>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_utf32, eid_windows_1256>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_utf32, eid_windows_1257>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_utf32, eid_windows_1258>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_utf32, eid_utf8>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_utf32, eid_utf16>;
+
+// others
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_utf8, eid_utf16>;
+template <class SrcCharT, class DestCharT>
+class static_transcoder<SrcCharT, DestCharT, eid_utf16, eid_utf8>;
 ----
 `static_transcoder` class template has no generic implementation.
 Instead, the library provides the template specializations listed above.
@@ -750,17 +922,37 @@ never return `nullptr`.
 
 [source,cpp,subs=normal]
 ----
-template <{char_encoding_id}>
+template <class CharT, {char_encoding_id}>
 class static_char_encoding;
 
-template <> class static_char_encoding<{eid_utf8}>;
-template <> class static_char_encoding<{eid_utf16}>;
-template <> class static_char_encoding<{eid_utf32}>;
-template <> class static_char_encoding<{eid_ascii}>;
-template <> class static_char_encoding<{eid_iso_8859_1}>;
-template <> class static_char_encoding<{eid_iso_8859_3}>;
-template <> class static_char_encoding<{eid_iso_8859_15}>;
-template <> class static_char_encoding<{eid_windows_1252}>;
+template <class CharT> class static_char_encoding<CharT, eid_ascii>;
+template <class CharT> class static_char_encoding<CharT, eid_iso_8859_1>;
+template <class CharT> class static_char_encoding<CharT, eid_iso_8859_2>;
+template <class CharT> class static_char_encoding<CharT, eid_iso_8859_3>;
+template <class CharT> class static_char_encoding<CharT, eid_iso_8859_4>;
+template <class CharT> class static_char_encoding<CharT, eid_iso_8859_5>;
+template <class CharT> class static_char_encoding<CharT, eid_iso_8859_6>;
+template <class CharT> class static_char_encoding<CharT, eid_iso_8859_7>;
+template <class CharT> class static_char_encoding<CharT, eid_iso_8859_8>;
+template <class CharT> class static_char_encoding<CharT, eid_iso_8859_9>;
+template <class CharT> class static_char_encoding<CharT, eid_iso_8859_10>;
+template <class CharT> class static_char_encoding<CharT, eid_iso_8859_11>;
+template <class CharT> class static_char_encoding<CharT, eid_iso_8859_13>;
+template <class CharT> class static_char_encoding<CharT, eid_iso_8859_14>;
+template <class CharT> class static_char_encoding<CharT, eid_iso_8859_15>;
+template <class CharT> class static_char_encoding<CharT, eid_iso_8859_16>;
+template <class CharT> class static_char_encoding<CharT, eid_windows_1250>;
+template <class CharT> class static_char_encoding<CharT, eid_windows_1251>;
+template <class CharT> class static_char_encoding<CharT, eid_windows_1252>;
+template <class CharT> class static_char_encoding<CharT, eid_windows_1253>;
+template <class CharT> class static_char_encoding<CharT, eid_windows_1254>;
+template <class CharT> class static_char_encoding<CharT, eid_windows_1255>;
+template <class CharT> class static_char_encoding<CharT, eid_windows_1256>;
+template <class CharT> class static_char_encoding<CharT, eid_windows_1257>;
+template <class CharT> class static_char_encoding<CharT, eid_windows_1258>;
+template <class CharT> class static_char_encoding<CharT, eid_utf8>;
+template <class CharT> class static_char_encoding<CharT, eid_utf16>;
+template <class CharT> class static_char_encoding<CharT, eid_utf32>;
 ----
 
 `static_char_encoding` class template has no generic implementation.
@@ -773,7 +965,7 @@ All of them are empty classes, and are __{CharEncoding}__.
 ----
 namespace strf {
 
-template <typename SrcCharT, typename DestCharT>
+template <class SrcCharT, class DestCharT>
 class dynamic_transcoder {
 public:
     constexpr dynamic_transcoder() noexcept;
@@ -871,7 +1063,7 @@ Effect:: Calls `transcode_size_func()(src, src_size, surr_poli)`
 
 [source,cpp,subs=normal]
 ----
-template <typename CharT>
+template <class CharT>
 struct dynamic_char_encoding_data {
     const char* name;
     {char_encoding_id} id;
@@ -913,7 +1105,7 @@ struct dynamic_char_encoding_data {
 === Class template `dynamic_char_encoding` [[dynamic_char_encoding]]
 [source,cpp,subs=normal]
 ----
-template <typename CharT>
+template <class CharT>
 class dynamic_char_encoding {
 public:
 
@@ -1296,7 +1488,7 @@ is not null. Otherwise returns `{dynamic_transcoder}<wchar_t, CharT>{}`
 
 [source,cpp,subs=normal]
 ----
-template <typename SrcEncoding, typename DestEncoding>
+template <class SrcEncoding, class DestEncoding>
 auto find_transcoder(SrcEncoding src, DestEncoding dest);
 ----
 Requirements:: `SrcEncoding` and `DestEncoding` are __{CharEncoding}__ types.
@@ -1333,7 +1525,7 @@ NOTE: When `find_transcoder` returns an <<Transcoder_null,null transcoder>>
 ----
 namespace strf {
 
-template<typename SrcCharT, typename DestCharT>
+template<class SrcCharT, class DestCharT>
 void decode_encode
     ( {basic_outbuff}<DestCharT>& ob
     , {transcode_f}<SrcCharT, char32_t> to_u32
@@ -1365,7 +1557,7 @@ is equal to `to_u32`.
 ----
 namespace strf {
 
-template<typename SrcCharT>
+template<class SrcCharT>
 std::size_t decode_encode_size
     ( {transcode_f}<SrcCharT, char32_t> to_u32
     , {transcode_size_f}<char32_t> size_calc_func
@@ -1387,31 +1579,91 @@ by passing `src` to `to_u32`.
 ----
 namespace strf {
 
-template <typename CharT>
-using ascii = {static_char_encoding}<CharT, {eid_ascii}>;
+template <class CharT>
+using ascii = static_char_encoding<CharT, eid_ascii>;
 
-template <typename CharT>
-using iso_8859_1 = {static_char_encoding}<CharT, {eid_iso_8859_1}>;
+template <class CharT>
+using iso_8859_1 = static_char_encoding<CharT, eid_iso_8859_1>;
 
-template <typename CharT>
-using iso_8859_3 = {static_char_encoding}<CharT, {eid_iso_8859_3}>;
+template <class CharT>
+using iso_8859_2 = static_char_encoding<CharT, eid_iso_8859_2>;
 
-template <typename CharT>
-using iso_8859_15 = {static_char_encoding}<CharT, {eid_iso_8859_15}>;
+template <class CharT>
+using iso_8859_3 = static_char_encoding<CharT, eid_iso_8859_3>;
 
-template <typename CharT>
-using windows_1252 = {static_char_encoding}<CharT, {eid_windows_1252}>;
+template <class CharT>
+using iso_8859_4 = static_char_encoding<CharT, eid_iso_8859_4>;
 
-template <typename CharT>
-using utf8 = {static_char_encoding}<CharT, {eid_utf8}>;
+template <class CharT>
+using iso_8859_5 = static_char_encoding<CharT, eid_iso_8859_5>;
 
-template <typename CharT>
-using utf16 = {static_char_encoding}<CharT, {eid_utf16}>;
+template <class CharT>
+using iso_8859_6 = static_char_encoding<CharT, eid_iso_8859_6>;
 
-template <typename CharT>
-using utf32 = {static_char_encoding}<CharT, {eid_utf32}>;
+template <class CharT>
+using iso_8859_7 = static_char_encoding<CharT, eid_iso_8859_7>;
 
-template <typename CharT>
+template <class CharT>
+using iso_8859_8 = static_char_encoding<CharT, eid_iso_8859_8>;
+
+template <class CharT>
+using iso_8859_9 = static_char_encoding<CharT, eid_iso_8859_9>;
+
+template <class CharT>
+using iso_8859_10 = static_char_encoding<CharT, eid_iso_8859_10>;
+
+template <class CharT>
+using iso_8859_11 = static_char_encoding<CharT, eid_iso_8859_11>;
+
+template <class CharT>
+using iso_8859_13 = static_char_encoding<CharT, eid_iso_8859_13>;
+
+template <class CharT>
+using iso_8859_14 = static_char_encoding<CharT, eid_iso_8859_14>;
+
+template <class CharT>
+using iso_8859_15 = static_char_encoding<CharT, eid_iso_8859_15>;
+
+template <class CharT>
+using iso_8859_16 = static_char_encoding<CharT, eid_iso_8859_16>;
+
+template <class CharT>
+using windows_1250 = static_char_encoding<CharT, eid_windows_1250>;
+
+template <class CharT>
+using windows_1251 = static_char_encoding<CharT, eid_windows_1251>;
+
+template <class CharT>
+using windows_1252 = static_char_encoding<CharT, eid_windows_1252>;
+
+template <class CharT>
+using windows_1253 = static_char_encoding<CharT, eid_windows_1253>;
+
+template <class CharT>
+using windows_1254 = static_char_encoding<CharT, eid_windows_1254>;
+
+template <class CharT>
+using windows_1255 = static_char_encoding<CharT, eid_windows_1255>;
+
+template <class CharT>
+using windows_1256 = static_char_encoding<CharT, eid_windows_1256>;
+
+template <class CharT>
+using windows_1257 = static_char_encoding<CharT, eid_windows_1257>;
+
+template <class CharT>
+using windows_1258 = static_char_encoding<CharT, eid_windows_1258>;
+
+template <class CharT>
+using utf8 = static_char_encoding<CharT, eid_utf8>;
+
+template <class CharT>
+using utf16 = static_char_encoding<CharT, eid_utf16>;
+
+template <class CharT>
+using utf32 = static_char_encoding<CharT, eid_utf32>;
+
+template <class CharT>
 using utf = /* see below */;
 
 } // namespace strf
@@ -1421,7 +1673,7 @@ using utf = /* see below */;
 ====
 [source,cpp]
 ----
-template <typename CharT>
+template <class CharT>
 using utf = /* ... */;
 ----
 `utf<CharT>` is an alias to `utf8<CharT>`, `utf16<CharT>` or `utf32<CharT>`,

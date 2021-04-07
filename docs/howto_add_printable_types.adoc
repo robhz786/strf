@@ -117,7 +117,7 @@ struct print_traits<std::complex<FloatT>> {
         , const FPack& fp  // <2>
         , std::complex<FloatT> arg )// <3>
     {
-        auto arg2 =  strf::{join}
+        auto arg2 =  strf::join
             ( static_cast<CharT>('('), arg.real()
             , static_cast<CharT>(','), arg.imag()
             , static_cast<CharT>(')') );
