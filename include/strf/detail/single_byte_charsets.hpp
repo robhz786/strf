@@ -33,6 +33,37 @@
 
 #endif // ! defined(STRF_CHECK_DEST)
 
+#define STRF_DEF_SINGLE_BYTE_CHARSET(CHARSET)                                 \
+    template <typename CharT>                                                 \
+    class static_char_encoding<CharT, strf::eid_ ## CHARSET>                  \
+        : public strf::detail::single_byte_char_encoding                      \
+            < CharT, strf::detail::impl_ ## CHARSET >                         \
+    { };                                                                      \
+                                                                              \
+    template <typename SrcCharT, typename DestCharT>                          \
+    class static_transcoder                                                   \
+        < SrcCharT, DestCharT, strf::eid_ ## CHARSET, strf::eid_ ## CHARSET > \
+        : public strf::detail::single_byte_char_encoding_sanitizer            \
+            < SrcCharT, DestCharT, strf::detail::impl_ ## CHARSET >           \
+    {};                                                                       \
+                                                                              \
+    template <typename SrcCharT, typename DestCharT>                          \
+    class static_transcoder                                                   \
+        < SrcCharT, DestCharT, strf::eid_utf32, strf::eid_ ## CHARSET >       \
+        : public strf::detail::utf32_to_single_byte_char_encoding             \
+            < SrcCharT, DestCharT, strf::detail::impl_ ## CHARSET >           \
+    {};                                                                       \
+                                                                              \
+    template <typename SrcCharT, typename DestCharT>                          \
+    class static_transcoder                                                   \
+        < SrcCharT, DestCharT, strf::eid_ ## CHARSET, strf::eid_utf32 >       \
+        : public strf::detail::single_byte_char_encoding_to_utf32             \
+            < SrcCharT, DestCharT, strf::detail::impl_ ## CHARSET >           \
+    {};                                                                       \
+                                                                              \
+    template <typename CharT>                                                 \
+    using CHARSET = strf::static_char_encoding<CharT, strf::eid_ ## CHARSET>;
+
 namespace strf {
 
 namespace detail {
@@ -56,8 +87,7 @@ struct cmp_ch32_to_char
     }
 };
 
-
-struct impl_strict_ascii
+struct impl_ascii
 {
     static STRF_HD const char* name() noexcept
     {
@@ -547,131 +577,6 @@ STRF_HD void single_byte_char_encoding_sanitizer<SrcCharT, DestCharT, Impl>::tra
     ob.advance_to(dest_it);
 }
 
-} // namespace detail
-
-
-template <typename SrcCharT, typename DestCharT>
-class static_transcoder
-    < SrcCharT, DestCharT, strf::eid_ascii, strf::eid_ascii >
-    : public strf::detail::single_byte_char_encoding_sanitizer
-        < SrcCharT, DestCharT, strf::detail::impl_strict_ascii >
-{
-};
-
-template <typename SrcCharT, typename DestCharT>
-class static_transcoder
-    < SrcCharT, DestCharT, strf::eid_utf32, strf::eid_ascii >
-    : public strf::detail::utf32_to_single_byte_char_encoding
-        < SrcCharT, DestCharT, strf::detail::impl_strict_ascii >
-{
-};
-
-template <typename SrcCharT, typename DestCharT>
-class static_transcoder
-    < SrcCharT, DestCharT, strf::eid_ascii, strf::eid_utf32 >
-    : public strf::detail::single_byte_char_encoding_to_utf32
-        < SrcCharT, DestCharT, strf::detail::impl_strict_ascii >
-{
-};
-
-template <typename SrcCharT, typename DestCharT>
-class static_transcoder
-    < SrcCharT, DestCharT, strf::eid_iso_8859_1, strf::eid_iso_8859_1 >
-    : public strf::detail::single_byte_char_encoding_sanitizer
-        < SrcCharT, DestCharT, strf::detail::impl_iso_8859_1 >
-{
-};
-
-template <typename SrcCharT, typename DestCharT>
-class static_transcoder
-    < SrcCharT, DestCharT, strf::eid_utf32, strf::eid_iso_8859_1 >
-    : public strf::detail::utf32_to_single_byte_char_encoding
-        < SrcCharT, DestCharT, strf::detail::impl_iso_8859_1 >
-{
-};
-
-template <typename SrcCharT, typename DestCharT>
-class static_transcoder
-    < SrcCharT, DestCharT, strf::eid_iso_8859_1, strf::eid_utf32 >
-    : public strf::detail::single_byte_char_encoding_to_utf32
-        < SrcCharT, DestCharT, strf::detail::impl_iso_8859_1 >
-{
-};
-
-template <typename SrcCharT, typename DestCharT>
-class static_transcoder
-    < SrcCharT, DestCharT, strf::eid_iso_8859_3, strf::eid_iso_8859_3 >
-    : public strf::detail::single_byte_char_encoding_sanitizer
-        < SrcCharT, DestCharT, strf::detail::impl_iso_8859_3 >
-{
-};
-
-template <typename SrcCharT, typename DestCharT>
-class static_transcoder
-    < SrcCharT, DestCharT, strf::eid_utf32, strf::eid_iso_8859_3 >
-    : public strf::detail::utf32_to_single_byte_char_encoding
-        < SrcCharT, DestCharT, strf::detail::impl_iso_8859_3 >
-{
-};
-
-template <typename SrcCharT, typename DestCharT>
-class static_transcoder
-    < SrcCharT, DestCharT, strf::eid_iso_8859_3, strf::eid_utf32 >
-    : public strf::detail::single_byte_char_encoding_to_utf32
-        < SrcCharT, DestCharT, strf::detail::impl_iso_8859_3 >
-{
-};
-
-template <typename SrcCharT, typename DestCharT>
-class static_transcoder
-    < SrcCharT, DestCharT, strf::eid_iso_8859_15, strf::eid_iso_8859_15 >
-    : public strf::detail::single_byte_char_encoding_sanitizer
-        < SrcCharT, DestCharT, strf::detail::impl_iso_8859_15 >
-{
-};
-
-template <typename SrcCharT, typename DestCharT>
-class static_transcoder
-    < SrcCharT, DestCharT, strf::eid_utf32, strf::eid_iso_8859_15 >
-    : public strf::detail::utf32_to_single_byte_char_encoding
-        < SrcCharT, DestCharT, strf::detail::impl_iso_8859_15 >
-{
-};
-
-template <typename SrcCharT, typename DestCharT>
-class static_transcoder
-    < SrcCharT, DestCharT, strf::eid_iso_8859_15, strf::eid_utf32 >
-    : public strf::detail::single_byte_char_encoding_to_utf32
-        < SrcCharT, DestCharT, strf::detail::impl_iso_8859_15 >
-{
-};
-
-template <typename SrcCharT, typename DestCharT>
-class static_transcoder
-    < SrcCharT, DestCharT, strf::eid_windows_1252, strf::eid_windows_1252 >
-    : public strf::detail::single_byte_char_encoding_sanitizer
-        < SrcCharT, DestCharT, strf::detail::impl_windows_1252 >
-{
-};
-
-template <typename SrcCharT, typename DestCharT>
-class static_transcoder
-    < SrcCharT, DestCharT, strf::eid_utf32, strf::eid_windows_1252 >
-    : public strf::detail::utf32_to_single_byte_char_encoding
-        < SrcCharT, DestCharT, strf::detail::impl_windows_1252 >
-{
-};
-
-template <typename SrcCharT, typename DestCharT>
-class static_transcoder
-    < SrcCharT, DestCharT, strf::eid_windows_1252, strf::eid_utf32 >
-    : public strf::detail::single_byte_char_encoding_to_utf32
-        < SrcCharT, DestCharT, strf::detail::impl_windows_1252 >
-{
-};
-
-namespace detail {
-
 template <std::size_t wchar_size, typename CharT, strf::char_encoding_id>
 class single_byte_char_encoding_tofrom_wchar
 {
@@ -1002,51 +907,11 @@ STRF_HD void single_byte_char_encoding<CharT, Impl>::encode_fill
 
 } // namespace detail
 
-
-template <typename CharT>
-class static_char_encoding<CharT, strf::eid_ascii>
-    : public strf::detail::single_byte_char_encoding<CharT, strf::detail::impl_strict_ascii>
-{
-};
-
-template <typename CharT>
-class static_char_encoding<CharT, strf::eid_iso_8859_1>
-    : public strf::detail::single_byte_char_encoding<CharT, strf::detail::impl_iso_8859_1>
-{
-};
-
-template <typename CharT>
-class static_char_encoding<CharT, strf::eid_iso_8859_3>
-    : public strf::detail::single_byte_char_encoding<CharT, strf::detail::impl_iso_8859_3>
-{
-};
-
-template <typename CharT>
-class static_char_encoding<CharT, strf::eid_iso_8859_15>
-    : public strf::detail::single_byte_char_encoding<CharT, strf::detail::impl_iso_8859_15>
-{
-};
-
-template <typename CharT>
-class static_char_encoding<CharT, strf::eid_windows_1252>
-    : public strf::detail::single_byte_char_encoding<CharT, strf::detail::impl_windows_1252>
-{
-};
-
-template <typename CharT>
-using ascii = strf::static_char_encoding<CharT, strf::eid_ascii>;
-
-template <typename CharT>
-using iso_8859_1 = strf::static_char_encoding<CharT, strf::eid_iso_8859_1>;
-
-template <typename CharT>
-using iso_8859_3 = strf::static_char_encoding<CharT, strf::eid_iso_8859_3>;
-
-template <typename CharT>
-using iso_8859_15 = strf::static_char_encoding<CharT, strf::eid_iso_8859_15>;
-
-template <typename CharT>
-using windows_1252 = strf::static_char_encoding<CharT, strf::eid_windows_1252>;
+STRF_DEF_SINGLE_BYTE_CHARSET(ascii);
+STRF_DEF_SINGLE_BYTE_CHARSET(iso_8859_1);
+STRF_DEF_SINGLE_BYTE_CHARSET(iso_8859_3);
+STRF_DEF_SINGLE_BYTE_CHARSET(iso_8859_15);
+STRF_DEF_SINGLE_BYTE_CHARSET(windows_1252);
 
 } // namespace strf
 
