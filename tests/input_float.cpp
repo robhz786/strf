@@ -321,8 +321,7 @@ STRF_TEST_FUNC void basic_tests()
 
 
     //----------------------------------------------------------------
-    // when precision is specified in the general format,
-    // do as in printf:
+    // when precision is specified in the general format, do as in printf:
     // - The precision specifies the number of significant digits.
     // - scientific notation is used if the resulting exponent is
     //   less than -4 or greater than or equal to the precision.
@@ -360,6 +359,7 @@ STRF_TEST_FUNC void basic_tests()
     TEST("_____________1.5e+04")  (j(*strf::fmt(15001.0).p(3)));
     TEST("_________________123")   (j(strf::fmt(123.0).p(5)));
     TEST("______________123.00")  (j(*strf::fmt(123.0).p(5)));
+    TEST("______________1000.5") (j(!strf::fmt(1000.5).p(6)));
 
     //----------------------------------------------------------------
     // strf::fixed
@@ -376,6 +376,7 @@ STRF_TEST_FUNC void basic_tests()
     TEST("________________1.00")  (j(strf::fixed(1.0).p(2)));
     TEST("______________1.0000")  (j(strf::fixed(1.0).p(4)));
     TEST("______________1.2500")  (j(strf::fixed(1.25).p(4)));
+    TEST("____________1.001000")  (j(strf::fixed(1.001).p(6)));
     TEST("_______________0.125")  (j(strf::fixed(0.125)));
 
     //----------------------------------------------------------------
@@ -453,66 +454,136 @@ STRF_TEST_FUNC void basic_tests()
     TEST("___________ 1.125000") (j(strf::fixed(1.125, 6).fill_sign()));
 }
 
+STRF_TEST_FUNC void test_float32()
+{
+    constexpr auto j = strf::join_right(25, '_');
+    TEST("_______________________+0") (j(+strf::fixed(0.0f)));
+    TEST("____________________+1.25") (j(+strf::fixed(1.25f)));
+    TEST("________________+1.250000") (j(+strf::fixed(1.25f).p(6)));
+    TEST("_____________________+0.1") (j(+strf::fixed(0.1f)));
+    TEST("__________________+1.e+20") (j(+*strf::sci(1e+20f)));
+    TEST("____________+1.000000e+20") (j(+strf::sci(1e+20f).p(6)));
+    TEST("_______________0x1.ffcp+0") (j(strf::hex(0x1.ffcp+0f)));
+    TEST("__________0x1.8abcdep+127") (j(strf::hex(0x1.8abcdecp+127f)));
+    TEST("_________-0x1.8abcdep-126") (j(strf::hex(-0x1.8abcdecp-126f)));
+    float denorm_min = strf::detail::bit_cast<float>((std::uint32_t)1);
+    TEST("__________0x0.000002p-126") (j(strf::hex(denorm_min)));
+    TEST("__________0x1.fffffep+127") (j(strf::hex(float_max<float>())));
+}
 
 STRF_TEST_FUNC void test_hexadecimal()
 {
-    constexpr auto j = strf::join_right(20, '_');
+    constexpr auto j = strf::join_right(25, '_');
 
     TEST("0x0p+0") (strf::hex(0.0));
-    TEST("______________0x0p+0") (j(strf::hex(0.0)));
-    TEST("_____________+0x0p+0") (j(+strf::hex(0.0)));
-    TEST("_____________0x0.p+0") (j(*strf::hex(0.0)));
-    TEST("____________+0x0.p+0") (j(+*strf::hex(0.0)));
-    TEST("__________0x0.000p+0") (j(strf::hex(0.0).p(3)));
-    TEST("_____________-0x1p-3") (j(strf::hex(-0.125)));
-    TEST("_____________0x1p+11") (j(strf::hex(2048.0)));
-    TEST("__0x1.fffffffffffffp+1023")
-        ( strf::join_right(25, '_') (strf::hex(float_max<double>())) );
-    TEST("___________0x1p-1022") (j(strf::hex(0x1p-1022)));
-    TEST("__________0x1.p-1022") (j(*strf::hex(0x1p-1022)));
-    TEST("_______0x1.000p-1022") (j(*strf::hex(0x1p-1022).p(3)));
-    TEST("______0x0.0009p-1022") (j(strf::hex(0x0.0009p-1022)));
+    TEST("___________________0x0p+0") (j(strf::hex(0.0)));
+    TEST("__________________+0x0p+0") (j(+strf::hex(0.0)));
+    TEST("__________________0x0.p+0") (j(*strf::hex(0.0)));
+    TEST("_________________+0x0.p+0") (j(+*strf::hex(0.0)));
+    TEST("_______________0x0.000p+0") (j(strf::hex(0.0).p(3)));
+    TEST("__________________-0x1p-3") (j(strf::hex(-0.125)));
+    TEST("__________________0x1p+11") (j(strf::hex(2048.0)));
+    TEST("__0x1.fffffffffffffp+1023") (j(strf::hex(float_max<double>())));
+    auto denorm_min = strf::detail::bit_cast<double>((std::uint64_t)1);
+    TEST("__0x0.0000000000001p-1022") (j(strf::hex(denorm_min)));
+    TEST("________________0x1p-1022") (j(strf::hex(0x1p-1022)));
+    TEST("_______________0x1.p-1022") (j(*strf::hex(0x1p-1022)));
+    TEST("____________0x1.000p-1022") (j(*strf::hex(0x1p-1022).p(3)));
+    TEST("___________0x0.0009p-1022") (j(strf::hex(0x0.0009p-1022)));
 
-    TEST("______________0x1p+0") (j(strf::hex(0x1.12345p+0).p(0)));
-    TEST("________0x1.12345p+0") (j(strf::hex(0x1.12345p+0).p(5)));
-    TEST("_______0x1.123450p+0") (j(strf::hex(0x1.12345p+0).p(6)));
-    TEST("_____________0x1.p+0") (j(*strf::hex(0x1.12345p+0).p(0)));
-    TEST("____________+0x1.p+0") (j(+*strf::hex(0x1.12345p+0).p(0)));
-    TEST("_______0x0.000p-1022") (j(strf::hex(0x0.0008p-1022).p(3)));
-    TEST("_______0x0.002p-1022") (j(strf::hex(0x0.0018p-1022).p(3)));
-    TEST("_______0x0.001p-1022") (j(strf::hex(0x0.0008000000001p-1022).p(3)));
+    TEST("_________________0x1.8p+0") (j(strf::hex(0x1.8p+0)));
+    TEST("_________________0x1.cp+0") (j(strf::hex(0x1.cp+0)));
+    TEST("_________________0x1.ep+0") (j(strf::hex(0x1.ep+0)));
+    TEST("_________________0x1.fp+0") (j(strf::hex(0x1.fp+0)));
+    TEST("________________0x1.f8p+0") (j(strf::hex(0x1.f8p+0)));
+    TEST("________________0x1.fcp+0") (j(strf::hex(0x1.fcp+0)));
+    TEST("________________0x1.fep+0") (j(strf::hex(0x1.fep+0)));
+    TEST("________________0x1.ffp+0") (j(strf::hex(0x1.ffp+0)));
+    TEST("_______________0x1.ff8p+0") (j(strf::hex(0x1.ff8p+0)));
+    TEST("_______________0x1.ffcp+0") (j(strf::hex(0x1.ffcp+0)));
+    TEST("_______________0x1.ffep+0") (j(strf::hex(0x1.ffep+0)));
+    TEST("_______________0x1.fffp+0") (j(strf::hex(0x1.fffp+0)));
+    TEST("______________0x1.fff8p+0") (j(strf::hex(0x1.fff8p+0)));
+    TEST("______________0x1.fffcp+0") (j(strf::hex(0x1.fffcp+0)));
+    TEST("______________0x1.fffep+0") (j(strf::hex(0x1.fffep+0)));
+    TEST("______________0x1.ffffp+0") (j(strf::hex(0x1.ffffp+0)));
+    TEST("_____________0x1.ffff8p+0") (j(strf::hex(0x1.ffff8p+0)));
+    TEST("_____________0x1.ffffcp+0") (j(strf::hex(0x1.ffffcp+0)));
+    TEST("_____________0x1.ffffep+0") (j(strf::hex(0x1.ffffep+0)));
+    TEST("_____________0x1.fffffp+0") (j(strf::hex(0x1.fffffp+0)));
+    TEST("____________0x1.fffff8p+0") (j(strf::hex(0x1.fffff8p+0)));
+    TEST("____________0x1.fffffcp+0") (j(strf::hex(0x1.fffffcp+0)));
+    TEST("____________0x1.fffffep+0") (j(strf::hex(0x1.fffffep+0)));
+    TEST("____________0x1.ffffffp+0") (j(strf::hex(0x1.ffffffp+0)));
+    TEST("___________0x1.ffffff8p+0") (j(strf::hex(0x1.ffffff8p+0)));
+    TEST("___________0x1.ffffffcp+0") (j(strf::hex(0x1.ffffffcp+0)));
+    TEST("___________0x1.ffffffep+0") (j(strf::hex(0x1.ffffffep+0)));
+    TEST("___________0x1.fffffffp+0") (j(strf::hex(0x1.fffffffp+0)));
+    TEST("__________0x1.fffffff8p+0") (j(strf::hex(0x1.fffffff8p+0)));
+    TEST("__________0x1.fffffffcp+0") (j(strf::hex(0x1.fffffffcp+0)));
+    TEST("__________0x1.fffffffep+0") (j(strf::hex(0x1.fffffffep+0)));
+    TEST("__________0x1.ffffffffp+0") (j(strf::hex(0x1.ffffffffp+0)));
+    TEST("_________0x1.ffffffff8p+0") (j(strf::hex(0x1.ffffffff8p+0)));
+    TEST("_________0x1.ffffffffcp+0") (j(strf::hex(0x1.ffffffffcp+0)));
+    TEST("_________0x1.ffffffffep+0") (j(strf::hex(0x1.ffffffffep+0)));
+    TEST("_________0x1.fffffffffp+0") (j(strf::hex(0x1.fffffffffp+0)));
+    TEST("________0x1.fffffffff8p+0") (j(strf::hex(0x1.fffffffff8p+0)));
+    TEST("________0x1.fffffffffcp+0") (j(strf::hex(0x1.fffffffffcp+0)));
+    TEST("________0x1.fffffffffep+0") (j(strf::hex(0x1.fffffffffep+0)));
+    TEST("________0x1.ffffffffffp+0") (j(strf::hex(0x1.ffffffffffp+0)));
+    TEST("_______0x1.ffffffffff8p+0") (j(strf::hex(0x1.ffffffffff8p+0)));
+    TEST("_______0x1.ffffffffffcp+0") (j(strf::hex(0x1.ffffffffffcp+0)));
+    TEST("_______0x1.ffffffffffep+0") (j(strf::hex(0x1.ffffffffffep+0)));
+    TEST("_______0x1.fffffffffffp+0") (j(strf::hex(0x1.fffffffffffp+0)));
+    TEST("______0x1.fffffffffff8p+0") (j(strf::hex(0x1.fffffffffff8p+0)));
+    TEST("______0x1.fffffffffffcp+0") (j(strf::hex(0x1.fffffffffffcp+0)));
+    TEST("______0x1.fffffffffffep+0") (j(strf::hex(0x1.fffffffffffep+0)));
+    TEST("______0x1.ffffffffffffp+0") (j(strf::hex(0x1.ffffffffffffp+0)));
+    TEST("_____0x1.ffffffffffff8p+0") (j(strf::hex(0x1.ffffffffffff8p+0)));
+    TEST("_____0x1.ffffffffffffcp+0") (j(strf::hex(0x1.ffffffffffffcp+0)));
+    TEST("_____0x1.ffffffffffffep+0") (j(strf::hex(0x1.ffffffffffffep+0)));
+    TEST("_____0x1.fffffffffffffp+0") (j(strf::hex(0x1.fffffffffffffp+0)));
 
-    TEST("______________0X0P+0").with(strf::lettercase::upper) (j(strf::hex(0.0)));
-    TEST("____0X0.ABCDEFP-1022").with(strf::lettercase::upper) (j(strf::hex(0x0.abcdefp-1022)));
-    TEST("______0X1.ABCDEFP+10").with(strf::lettercase::upper) (j(strf::hex(0x1.abcdefp+10)));
+    TEST("___________________0x1p+0") (j(strf::hex(0x1.12345p+0).p(0)));
+    TEST("_____________0x1.12345p+0") (j(strf::hex(0x1.12345p+0).p(5)));
+    TEST("____________0x1.123450p+0") (j(strf::hex(0x1.12345p+0).p(6)));
+    TEST("__________________0x1.p+0") (j(*strf::hex(0x1.12345p+0).p(0)));
+    TEST("_________________+0x1.p+0") (j(+*strf::hex(0x1.12345p+0).p(0)));
+    TEST("____________0x0.000p-1022") (j(strf::hex(0x0.0008p-1022).p(3)));
+    TEST("____________0x0.002p-1022") (j(strf::hex(0x0.0018p-1022).p(3)));
+    TEST("____________0x0.001p-1022") (j(strf::hex(0x0.0008000000001p-1022).p(3)));
 
-    TEST("______________0x0p+0").with(strf::lettercase::mixed) (j(strf::hex(0.0)));
-    TEST("____0x0.ABCDEFp-1022").with(strf::lettercase::mixed) (j(strf::hex(0x0.abcdefp-1022)));
-    TEST("______0x1.ABCDEFp+10").with(strf::lettercase::mixed) (j(strf::hex(0x1.abcdefp+10)));
+    TEST("___________________0X0P+0").with(strf::lettercase::upper) (j(strf::hex(0.0)));
+    TEST("_________0X0.ABCDEFP-1022").with(strf::lettercase::upper) (j(strf::hex(0x0.abcdefp-1022)));
+    TEST("___________0X1.ABCDEFP+10").with(strf::lettercase::upper) (j(strf::hex(0x1.abcdefp+10)));
 
-    TEST("______________0x0p+0").with(strf::lettercase::lower) (j(strf::hex(0.0)));
-    TEST("____0x0.abcdefp-1022").with(strf::lettercase::lower) (j(strf::hex(0x0.abcdefp-1022)));
-    TEST("______0x1.abcdefp+10").with(strf::lettercase::lower) (j(strf::hex(0x1.abcdefp+10)));
+    TEST("___________________0x0p+0").with(strf::lettercase::mixed) (j(strf::hex(0.0)));
+    TEST("_________0x0.ABCDEFp-1022").with(strf::lettercase::mixed) (j(strf::hex(0x0.abcdefp-1022)));
+    TEST("___________0x1.ABCDEFp+10").with(strf::lettercase::mixed) (j(strf::hex(0x1.abcdefp+10)));
 
-    TEST("_________-0x1p+0****") (j(strf::left(-1.0, 11, '*').hex()));
-    TEST("_________****-0x1p+0") (j(strf::right(-1.0, 11, '*').hex()));
-    TEST("_________**-0x1p+0**") (j(strf::center(-1.0, 11, '*').hex()));
-    TEST("_____________-0x1p+0") (j(strf::center(-1.0, 7, '*').hex()));
+    TEST("___________________0x0p+0").with(strf::lettercase::lower) (j(strf::hex(0.0)));
+    TEST("_________0x0.abcdefp-1022").with(strf::lettercase::lower) (j(strf::hex(0x0.abcdefp-1022)));
+    TEST("___________0x1.abcdefp+10").with(strf::lettercase::lower) (j(strf::hex(0x1.abcdefp+10)));
+
+    TEST("______________-0x1p+0****") (j(strf::left(-1.0, 11, '*').hex()));
+    TEST("______________****-0x1p+0") (j(strf::right(-1.0, 11, '*').hex()));
+    TEST("______________**-0x1p+0**") (j(strf::center(-1.0, 11, '*').hex()));
+    TEST("__________________-0x1p+0") (j(strf::center(-1.0, 7, '*').hex()));
 
     // pad0
-    TEST("_________-0x00001p+0") (j(strf::pad0(-1.0, 11).hex()));
-    TEST("_________+0x0001.p+0") (j(+*strf::pad0(1.0, 11).hex()));
-    TEST("_____0x001.123450p+0") (j(strf::hex(0x1.12345p+0).p(6).pad0(15)));
-    TEST("_**0x001.123450p+0**") (j(strf::hex(0x1.12345p+0).p(6).pad0(15).fill('*') ^ 19));
-    TEST("_____0x001.123450p+0") (j(strf::hex(0x1.12345p+0).p(6).pad0(15).fill('*') ^ 15));
+    TEST("______________-0x00001p+0") (j(strf::pad0(-1.0, 11).hex()));
+    TEST("______________+0x0001.p+0") (j(+*strf::pad0(1.0, 11).hex()));
+    TEST("__________0x001.123450p+0") (j(strf::hex(0x1.12345p+0).p(6).pad0(15)));
+    TEST("______**0x001.123450p+0**") (j(strf::hex(0x1.12345p+0).p(6).pad0(15).fill('*') ^ 19));
+    TEST("__________0x001.123450p+0") (j(strf::hex(0x1.12345p+0).p(6).pad0(15).fill('*') ^ 15));
 
     // fill_sign
-    TEST("________0x001.125p+1") (j(strf::hex(0x1.125p+1).pad0(12)));
-    TEST("________ 0x01.125p+1") (j(strf::hex(0x1.125p+1).pad0(12).fill_sign()));
-    TEST("________*0x01.125p+1") (j(strf::hex(0x1.125p+1).pad0(12).fill_sign().fill('*')));
-    TEST("____*****0x01.125p+1") (j(strf::right(0x1.125p+1, 16, '*').hex().pad0(12).fill_sign()));
-    TEST("____***0x01.125p+1**") (j(strf::center(0x1.125p+1, 16, '*').hex().pad0(12).fill_sign()));
-    TEST("____*0x01.125p+1****") (j(strf::left(0x1.125p+1, 16, '*').hex().pad0(12).fill_sign()));
+    TEST("_____________0x001.125p+1") (j(strf::hex(0x1.125p+1).pad0(12)));
+    TEST("_____________ 0x01.125p+1") (j(strf::hex(0x1.125p+1).pad0(12).fill_sign()));
+    TEST("_____________*0x01.125p+1") (j(strf::hex(0x1.125p+1).pad0(12).fill_sign().fill('*')));
+    TEST("_________*****0x01.125p+1") (j(strf::right(0x1.125p+1, 16, '*').hex().pad0(12).fill_sign()));
+    TEST("_________***0x01.125p+1**") (j(strf::center(0x1.125p+1, 16, '*').hex().pad0(12).fill_sign()));
+    TEST("_________*0x01.125p+1****") (j(strf::left(0x1.125p+1, 16, '*').hex().pad0(12).fill_sign()));
 }
 
 STRF_TEST_FUNC void test_punctuation()
@@ -524,8 +595,11 @@ STRF_TEST_FUNC void test_punctuation()
         TEST("_____________1:000,5").with(p) (j(strf::punct(1000.5)));
         TEST("_____________1,5e+50").with(p) (j(strf::punct(1.5e+50)));
         TEST("____________1:000,50").with(p) (j(!strf::fixed(1000.5).p(2)));
+        TEST("____________1:000,50").with(p) (j(*!strf::fmt(1000.5).p(6)));
+        TEST("_____________1:000,5").with(p) (j(!strf::fmt(1000.5).p(6)));
         TEST("____________1,50e+50").with(p) (j(!strf::sci(1.5e+50).p(2)));
         TEST("__________________1,").with(p) (j(*!strf::fmt(1.0)));
+
         TEST("_________+1:000:000,").with(p) (j(*+!strf::fixed(1000000.0)));
         TEST("_____+1:000:000,0000").with(p) (j(*+!strf::fixed(1000000.0).p(4)));
         TEST("__+00000001:000:000,").with(p) (j(*+!strf::fixed(1000000.0).pad0(18)));
@@ -536,10 +610,13 @@ STRF_TEST_FUNC void test_punctuation()
     {   //encoding big punct characters
         auto p = strf::numpunct<10>{3}.thousands_sep(0x10AAAA).decimal_point(0x10FFFF);
 
-        TEST(u8"_____________1\U0010AAAA" u8"000\U0010FFFF" u8"5").with(p) (j(strf::punct(1000.5)));
-        TEST(u8"_____________1\U0010FFFF" u8"5e+50")              .with(p) (j(strf::punct(1.5e+50)));
+        TEST(u8"_____________1\U0010AAAA" u8"000\U0010FFFF" u8"5").with(p)
+            (j(strf::punct(1000.5)));
+        TEST(u8"_____________1\U0010FFFF" u8"5e+50")              .with(p)
+            (j(strf::punct(1.5e+50)));
         TEST(u8"____________1\U0010AAAA" u8"000\U0010FFFF" u8"50").with(p)
             (j(!strf::fixed(1000.5).p(2)));
+        TEST(u8"______________1\U0010FFFF" u8"e+50") .with(p) (j(*!strf::sci(1e+50)));
         TEST(u8"____________1\U0010FFFF" u8"50e+50") .with(p) (j(!strf::sci(1.5e+50).p(2)));
         TEST(u8"__________________1\U0010FFFF")      .with(p) (j(*!strf::fmt(1.0)));
         TEST(u8"_________________0\U0010FFFF" u8"1") .with(p) (j(!strf::fixed(0.1)));
@@ -723,6 +800,7 @@ STRF_TEST_FUNC void test_input_float()
     }
 
     basic_tests();
+    test_float32();
 
 #if defined(__GNUC__) && (__GNUC__ == 7 || __GNUC__ == 8)
 #  pragma GCC diagnostic pop

@@ -1891,9 +1891,12 @@ STRF_HD void fast_double_printer<CharT>::print_to
 //     }
 // }
 
-inline STRF_HD detail::chars_count_t exponent_hex_digcount(std::uint32_t abs_exponent)
+inline STRF_HD detail::chars_count_t exponent_hex_digcount(long exponent)
 {
-    return 1 + (abs_exponent >= 1000) + (abs_exponent >= 100) + (abs_exponent >= 10);
+    if (exponent < 0) {
+        exponent = -exponent;
+    }
+    return 1 + (exponent >= 1000) + (exponent >= 100) + (exponent >= 10);
 }
 
 inline STRF_HD detail::chars_count_t mantissa_hex_digcount(std::uint64_t mantissa)
@@ -1942,6 +1945,7 @@ struct double_printer_data
     char sign;
     bool showsign;
     bool showpoint;
+    bool subnormal;
 
     detail::chars_count_t sub_chars_count;
     detail::chars_count_t pad0width;
@@ -2027,18 +2031,16 @@ inline STRF_HD strf::detail::float_init_result init_hex_double_printer_data
     , strf::text_alignment alignment ) noexcept
 {
     data.form = detail::float_form::hex;
-    data.exponent_digcount = 1;
     data.sub_chars_count += 5; // "0x0p+"
-    if (data.exponent == -1023 && data.mantissa == 0) {
+    if (data.subnormal && data.mantissa == 0) {
         data.mantissa_digcount = 0;
+        data.exponent_digcount = 1;
+        data.exponent = 0;
         data.extra_zeros = (fdata.precision != (detail::chars_count_t)-1) * fdata.precision;
         data.showpoint = data.extra_zeros || fdata.showpoint;
         data.sub_chars_count += 1 + data.showpoint;
     } else {
-        if (data.exponent != -1023 || data.mantissa != 0) {
-            data.exponent_digcount =
-                strf::detail::exponent_hex_digcount(std::abs(data.exponent));
-        }
+        data.exponent_digcount = strf::detail::exponent_hex_digcount(data.exponent);
         data.sub_chars_count += data.exponent_digcount;
         if (data.mantissa == 0){
             data.mantissa_digcount = 0;
@@ -2315,13 +2317,13 @@ STRF_FUNC_IMPL STRF_HD strf::detail::float_init_result init_float_printer_data
         return init_double_printer_data_fill
             ( data, rounded_fmt_width, 3 + data.showsign, afmt.alignment );
     }
+    data.subnormal = bits_exponent == 0;
     if (ffmt.notation == strf::float_notation::hex) {
         data.mantissa = bits_mantissa;
-        data.exponent = bits_exponent - bias;
+        data.exponent = bits_exponent - bias + data.subnormal;
         return init_hex_double_printer_data
             ( data, ffmt, rounded_fmt_width, afmt.alignment);
     }
-
     if (bits_exponent == 0 && bits_mantissa == 0) {
         data.m10 = 0;
         data.e10 = 0;
@@ -2384,13 +2386,13 @@ STRF_FUNC_IMPL STRF_HD strf::detail::float_init_result init_float_printer_data
         return init_double_printer_data_fill
             ( data, rounded_fmt_width, 3 + data.showsign, afmt.alignment );
     }
+    data.subnormal = bits_exponent == 0;
     if (ffmt.notation == strf::float_notation::hex) {
-        data.mantissa = bits_mantissa;
-        data.exponent = bits_exponent;
+        data.mantissa = (std::uint64_t)bits_mantissa << 29;
+        data.exponent = bits_exponent - bias + data.subnormal;
         return init_hex_double_printer_data
             ( data, ffmt, rounded_fmt_width, afmt.alignment);
     }
-
     if (bits_exponent == 0 && bits_mantissa == 0) {
         data.m10 = 0;
         data.e10 = 0;
@@ -2717,7 +2719,7 @@ STRF_HD void punct_double_printer<CharT>::print_hexadecimal_
         ob.ensure(sub_size - 2 - data_.showsign);
         it = ob.pointer();
     }
-    *it ++ = 0x30 | int(data_.exponent != -1023); // '0' or  '1'
+    *it ++ = 0x30 | int(!data_.subnormal); // '0' or  '1'
     if (data_.showpoint) {
         if (decimal_point_ < 0x80) {
             *it ++ = static_cast<CharT>(decimal_point_);
@@ -2755,29 +2757,12 @@ STRF_HD void punct_double_printer<CharT>::print_hexadecimal_
         ob.ensure(2 + data_.exponent_digcount);
         it = ob.pointer();
     }
-    if (data_.exponent == -1023) {
-        if (data_.mantissa == 0) {
-            it[0] = 'P' | ((lettercase_ != strf::uppercase) << 5);
-            it[1] = '+';
-            it[2] = '0';
-            ob.advance_to(it + 3);
-        } else {
-            it[0] = 'P' | ((lettercase_ != strf::uppercase) << 5);
-            it[1] = '-';
-            it[2] = '1';
-            it[3] = '0';
-            it[4] = '2';
-            it[5] = '2';
-            ob.advance_to(it + 6);
-        }
-    } else {
-        it[0] = 'P' | ((lettercase_ != strf::uppercase) << 5);
-        it[1] = static_cast<CharT>('+') + ((data_.exponent < 0) << 1);
-        it += 2 + data_.exponent_digcount;
-        strf::detail::write_int_dec_txtdigits_backwards
-            ( strf::detail::unsigned_abs(data_.exponent), it );
-        ob.advance_to(it);
-    }
+    it[0] = 'P' | ((lettercase_ != strf::uppercase) << 5);
+    it[1] = static_cast<CharT>('+') + ((data_.exponent < 0) << 1);
+    it += 2 + data_.exponent_digcount;
+    strf::detail::write_int_dec_txtdigits_backwards
+        ( strf::detail::unsigned_abs(data_.exponent), it );
+    ob.advance_to(it);
 }
 
 template <typename CharT>
