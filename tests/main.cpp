@@ -47,7 +47,7 @@ void test_facets_pack();
 void test_reserve();
 void test_width_t();
 void test_width_calculator();
-void test_utf_to_utf();
+void test_utf();
 void test_single_byte_encodings();
 void test_cstr_writer();
 void test_locale();
@@ -95,7 +95,7 @@ int main() {
     test_reserve();
     test_single_byte_encodings();
     test_tr_string();
-    test_utf_to_utf();
+    test_utf();
     test_width_calculator();
     test_width_t();
 

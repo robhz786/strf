@@ -202,8 +202,7 @@ inline STRF_HD unsigned utf8_decode_first_2_of_3(std::uint8_t ch0, std::uint8_t 
     return ((ch0 & 0x0F) << 6) | (ch1 & 0x3F);
 }
 
-inline STRF_HD bool first_2_of_3_are_valid( unsigned x
-                                  , strf::surrogate_policy surr_poli )
+inline STRF_HD bool first_2_of_3_are_valid(unsigned x, strf::surrogate_policy surr_poli)
 {
     return ( surr_poli == strf::surrogate_policy::lax
           || (x >> 5) != 0x1B );
@@ -897,7 +896,11 @@ public:
         , std::size_t max_count, strf::surrogate_policy surr_poli ) noexcept
     {
         (void)surr_poli;
-        return codepoints_fast_count(src, src_size, max_count);
+        (void) src;
+        if (max_count <= src_size) {
+            return {max_count, max_count};
+        }
+        return {src_size, src_size};
     }
 
     static STRF_HD void write_replacement_char
@@ -1296,6 +1299,9 @@ static_char_encoding<CharT, strf::eid_utf8>::codepoints_fast_count
         }
         ++it;
     }
+    while(it != end && strf::detail::is_utf8_continuation(*it)) {
+        ++it;
+    }
     return {count, static_cast<std::size_t>(it - src)};
 }
 
@@ -1649,7 +1655,7 @@ STRF_HD std::size_t strf::static_transcoder
         ++ count;
         if ( strf::detail::is_high_surrogate(ch)
           && src_it != src_end
-          && strf::detail::is_low_surrogate(*src_it))
+          && strf::detail::is_low_surrogate(*src_it) )
         {
             ++ src_it;
             ++ count;
@@ -1665,15 +1671,21 @@ static_char_encoding<CharT, strf::eid_utf16>::codepoints_fast_count
     , std::size_t src_size
     , std::size_t max_count ) noexcept
 {
+    if (src_size == 0) {
+        return {0, 0};
+    }
     std::size_t count = 0;
     auto it = src;
     const auto end = src + src_size;
-    while(it != end && count < max_count) {
-        if(strf::detail::is_high_surrogate(*it)) {
+    while (count < max_count) {
+        if (strf::detail::is_high_surrogate(*it)) {
             ++it;
         }
         ++it;
         ++count;
+        if (it >= end) {
+            return {count, src_size};
+        }
     }
     return {count, static_cast<std::size_t>(it - src)};
 }
@@ -1698,7 +1710,6 @@ static_char_encoding<CharT, strf::eid_utf16>::codepoints_robust_count
         if ( strf::detail::is_high_surrogate(ch) && it != end
           && strf::detail::is_low_surrogate(*it)) {
             ++ it;
-            ++ count;
         }
     }
     return {count, static_cast<std::size_t>(it - src)};

@@ -27,6 +27,23 @@
 
 namespace test_utils {
 
+template <typename CharT>
+void STRF_HD write_random_ascii_chars(CharT* dest, std::size_t count)
+{
+#ifdef STRF_FREESTANDING
+    int r = 10;
+#else
+    int r = std::rand() % 20;
+#endif
+    CharT ch = static_cast<CharT>(0x20 + r);
+    for (std::size_t i = 0; i < count; ++i) {
+        dest[i] = ch;
+        if (++ch == 0x7F) {
+            ch = 0x20;
+        }
+    }
+}
+
 #if ! defined(STRF_FREESTANDING)
 
 std::string unique_tmp_file_name();
@@ -82,14 +99,7 @@ template <typename CharT>
 std::basic_string<CharT> make_random_std_string(std::size_t size)
 {
     std::basic_string<CharT> str(size, (CharT)0);
-    int r = std::rand() % 20;
-    CharT ch = static_cast<CharT>(0x20 + r);
-    for (std::size_t i = 0; i < size; ++i) {
-        str[i] = ch;
-        if (++ch == 0x7F) {
-            ch = 0x20;
-        }
-    }
+    write_random_ascii_chars(&str[0], size);
     return str;
 }
 

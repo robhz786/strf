@@ -36,6 +36,30 @@ void STRF_TEST_FUNC test_basic_outbuff()
 
             ob.finish();
         }
+        {
+            test_utils::input_tester_with_fixed_spaces<char16_t, 5, 5> ob
+                { {u"abcdefghij", __FILE__, __LINE__, BOOST_CURRENT_FUNCTION} };
+
+            strf::detail::outbuff_interchar_copy(ob, sample, sizeof(sample));
+
+            ob.finish();
+        }
+        {
+            test_utils::input_tester_with_fixed_spaces<char16_t, 5, 6> ob
+                { {u"abcdefghij", __FILE__, __LINE__, BOOST_CURRENT_FUNCTION} };
+
+            strf::detail::outbuff_interchar_copy(ob, sample, sizeof(sample));
+
+            ob.finish();
+        }
+        {
+            test_utils::input_tester_with_fixed_spaces<char16_t, 5, 4> ob
+                { {u"abcdefghi", __FILE__, __LINE__, BOOST_CURRENT_FUNCTION} };
+
+            strf::detail::outbuff_interchar_copy(ob, sample, sizeof(sample));
+
+            ob.finish();
+        }
     }
     {   // Cover strf::detail::write_fill
         {

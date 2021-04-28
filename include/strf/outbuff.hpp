@@ -366,7 +366,7 @@ public:
         it_ = r.it_;
         return *this;
     }
-    STRF_HD bool operator==(const basic_char_array_writer& r) noexcept
+    STRF_HD bool operator==(const basic_char_array_writer& r) const noexcept
     {
         if (this->good()) {
             return ( r.good()

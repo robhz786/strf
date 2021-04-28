@@ -52,7 +52,7 @@ extern void __device__ test_single_byte_encodings();
 extern void __device__ test_tr_string();
 extern void __device__ test_width_calculator();
 extern void __device__ test_width_t();
-extern void __device__ test_utf_to_utf();
+extern void __device__ test_utf();
 extern void __device__ test_to_range();
 
 namespace kernels {
@@ -96,7 +96,7 @@ __global__ void kernel_main
     test_reserve();
     test_single_byte_encodings();
     test_tr_string();
-    test_utf_to_utf();
+    test_utf();
     test_width_calculator();
     test_width_t();
 

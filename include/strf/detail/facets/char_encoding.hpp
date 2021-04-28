@@ -309,18 +309,18 @@ struct dynamic_char_encoding_data
     strf::dynamic_transcoder<char32_t, CharT> from_u32;
     strf::dynamic_transcoder<CharT, char32_t> to_u32;
 
-    strf::find_transcoder_f<wchar_t, CharT> find_transcoder_from_wchar;
-    strf::find_transcoder_f<CharT, wchar_t> find_transcoder_to_wchar;
+    strf::find_transcoder_f<wchar_t, CharT> find_transcoder_from_wchar = nullptr;
+    strf::find_transcoder_f<CharT, wchar_t> find_transcoder_to_wchar = nullptr;
 
-    strf::find_transcoder_f<char16_t, CharT> find_transcoder_from_char16;;
-    strf::find_transcoder_f<CharT, char16_t> find_transcoder_to_char16;
+    strf::find_transcoder_f<char16_t, CharT> find_transcoder_from_char16 = nullptr;
+    strf::find_transcoder_f<CharT, char16_t> find_transcoder_to_char16 = nullptr;
 
-    strf::find_transcoder_f<char, CharT> find_transcoder_from_char;
-    strf::find_transcoder_f<CharT, char> find_transcoder_to_char;
+    strf::find_transcoder_f<char, CharT> find_transcoder_from_char = nullptr;
+    strf::find_transcoder_f<CharT, char> find_transcoder_to_char = nullptr;
 
 #if defined (__cpp_char8_t)
-    strf::find_transcoder_f<char8_t, CharT> find_transcoder_from_char8;
-    strf::find_transcoder_f<CharT, char8_t> find_transcoder_to_char8;
+    strf::find_transcoder_f<char8_t, CharT> find_transcoder_from_char8 = nullptr;
+    strf::find_transcoder_f<CharT, char8_t> find_transcoder_to_char8 = nullptr;
 
 #else
     void* find_transcoder_from_char8 = nullptr;

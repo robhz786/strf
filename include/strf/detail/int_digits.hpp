@@ -776,20 +776,17 @@ public:
         , strf::lettercase lc ) noexcept
     {
         static_assert(std::is_unsigned<UIntT>::value, "");
-        STRF_ASSERT(uvalue != 0);
         STRF_ASSERT(! git.ended());
+        STRF_ASSERT(uvalue > 0xF);
 
         const char offset_digit_a = ('A' | ((lc == strf::lowercase) << 5)) - 10;
         auto digits_before_sep = git.current();
-        while(uvalue > 0xF) {
+        do {
             auto digit = uvalue & 0xF;
             *--it = ( digit < 10
                     ? static_cast<CharT>('0' + digit)
                     : static_cast<CharT>(offset_digit_a + digit) );
             uvalue >>= 4;
-            if (uvalue == 0) {
-                return;
-            }
             if (digits_before_sep != 1) {
                 -- digits_before_sep;
             } else {
@@ -802,7 +799,7 @@ public:
                 }
                 digits_before_sep = git.current();
             }
-        }
+        } while(uvalue > 0xF);
         STRF_ASSERT(uvalue);
         do {
             auto digit = uvalue & 0xF;

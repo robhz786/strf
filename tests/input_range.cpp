@@ -215,5 +215,7 @@ void STRF_TEST_FUNC test_input_range()
         TEST("<-11>, <-22>, <-33>") ( strf::separated_range(arr, ", ", func) );
         TEST("<-11>, <-22>, <-33>") ( strf::separated_range(stl_arr, ", ", func) );
         TEST("<-11>, <-22>, <-33>") ( strf::separated_range(arr, arr + 3, ", ", func) );
+        TEST("<-11>")               ( strf::separated_range(arr, arr + 1, ", ", func) );
+        TEST("")                    ( strf::separated_range(arr, arr, ", ", func) );
     }
 }

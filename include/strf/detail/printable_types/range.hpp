@@ -552,14 +552,7 @@ STRF_HD void fmt_separated_range_printer<CharT, FPack, It, Fmts ...>::preview_
                                  , r.sep_begin
                                  , r.sep_len
                                  , get_facet_<strf::surrogate_policy_c>(fp_) );
-        if (dw != 0) {
-            if (count > UINT32_MAX) {
-                preview.clear_remaining_width();
-            } else {
-                preview.subtract_width
-                    ( checked_mul(dw, static_cast<std::uint32_t>(count - 1)) );
-            }
-        }
+        preview.subtract_width(checked_mul(dw, static_cast<std::uint32_t>(count - 1)));
     }
     if (Preview::size_required) {
         preview.add_size((count - 1) * r.sep_len);
@@ -739,14 +732,7 @@ STRF_HD void sep_transformed_range_printer<CharT, FPack, It, UnaryOp>
                                  , sep_begin_
                                  , sep_len_
                                  , get_facet_<strf::surrogate_policy_c>(fp_) );
-        if (dw != 0) {
-            if (count > UINT32_MAX) {
-                preview.clear_remaining_width();
-            } else {
-                preview.subtract_width
-                    ( checked_mul(dw, static_cast<std::uint32_t>(count - 1)) );
-            }
-        }
+        preview.subtract_width(checked_mul(dw, static_cast<std::uint32_t>(count - 1)));
     }
     if (Preview::size_required) {
         preview.add_size((count - 1) * sep_len_);

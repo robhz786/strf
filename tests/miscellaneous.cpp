@@ -64,13 +64,35 @@ void STRF_TEST_FUNC test_miscellaneous()
         TEST_TRUE(p.remaining_width() == 2_w);
         strf::preview<char>(p, strf::pack(), 1, 23, 456);
         TEST_TRUE(p.remaining_width() == 0);
+        strf::preview<char>(p, strf::pack(), 1);
+        TEST_TRUE(p.remaining_width() == 0);
     }
-
+    {   // preview width
+        strf::print_preview<strf::preview_size::no, strf::preview_width::yes>p{8_w};
+        p.subtract_width(8);
+        TEST_TRUE(p.remaining_width() == 0);
+    }
+    {   // preview width
+        strf::print_preview<strf::preview_size::no, strf::preview_width::yes>p{8_w};
+        p.subtract_width(9);
+        TEST_TRUE(p.remaining_width() == 0);
+    }
+    {   // clear_remaining_width
+        strf::print_preview<strf::preview_size::no, strf::preview_width::yes> p{8_w};
+        p.clear_remaining_width();
+        TEST_TRUE(p.remaining_width() == 0);
+    }
     {   // no preview
         strf::no_print_preview p;
         strf::preview<char>(p, strf::pack());
         strf::preview<char>(p, strf::pack(), 1, 23, 456);
         TEST_EQ(p.accumulated_size(), 0);
         TEST_TRUE(p.remaining_width() == 0);
+    }
+    {   // make_simple_string_view
+        const char16_t* str = u"abcdefghijklmnop";
+        auto sv = strf::detail::make_simple_string_view(str, 5);
+        TEST_TRUE(sv.data() == str);
+        TEST_EQ(sv.size(), 5);
     }
 }

@@ -1436,4 +1436,32 @@ void STRF_TEST_FUNC test_single_byte_encodings()
                                , { 0x80, 0xA1, 0xA5, 0x2121, 0x2123 } );
     test_unsupported_codepoints( strf::windows_1258<char>()
                                , { 0x80, 0x2121, 0x2123 } );
+
+   {
+       // transcoding a large string to cover detail::buffered_encoder::recycle()
+       const char* win1256_str =
+           "abcdefghijklmnopqrstuvwxyz 0123456789 ----- !@#$%&*()"
+           "__\xD8\xD9\xDA\xDB\xDC\xDD\xDE\xDF \xE1\xE3 \xE4 \xEC\xED"
+           "\xF0\xF1\xF2\xF3 \xF5\xF6 \xF8 \xFA \xBA \xA1 0123456789 "
+           "__\xD8\xD9\xDA\xDB\xDC\xDD\xDE\xDF \xE1\xE3 \xE4 \xEC\xED"
+           "\xF0\xF1\xF2\xF3 \xF5\xF6 \xF8 \xFA \xBA \xA1 0123456789 "
+           "__\xD8\xD9\xDA\xDB\xDC\xDD\xDE\xDF \xE1\xE3 \xE4 \xEC\xED"
+           "\xF0\xF1\xF2\xF3 \xF5\xF6 \xF8 \xFA \xBA \xA1 0123456789 "
+           "__\xD8\xD9\xDA\xDB\xDC\xDD\xDE\xDF \xE1\xE3 \xE4 \xEC\xED"
+           "\xF0\xF1\xF2\xF3 \xF5\xF6 \xF8 \xFA \xBA \xA1 0123456789 ";
+
+       const char* iso8859_6_str =
+           "abcdefghijklmnopqrstuvwxyz 0123456789 ----- !@#$%&*()"
+           "__\xD7\xD8\xD9\xDA\xE0\xE1\xE2\xE3 \xE4\xE5 \xE6 \xE9\xEA"
+           "\xEB\xEC\xED\xEE \xEF\xF0 \xF1 \xF2 \xBB \xAC 0123456789 "
+           "__\xD7\xD8\xD9\xDA\xE0\xE1\xE2\xE3 \xE4\xE5 \xE6 \xE9\xEA"
+           "\xEB\xEC\xED\xEE \xEF\xF0 \xF1 \xF2 \xBB \xAC 0123456789 "
+           "__\xD7\xD8\xD9\xDA\xE0\xE1\xE2\xE3 \xE4\xE5 \xE6 \xE9\xEA"
+           "\xEB\xEC\xED\xEE \xEF\xF0 \xF1 \xF2 \xBB \xAC 0123456789 "
+           "__\xD7\xD8\xD9\xDA\xE0\xE1\xE2\xE3 \xE4\xE5 \xE6 \xE9\xEA"
+           "\xEB\xEC\xED\xEE \xEF\xF0 \xF1 \xF2 \xBB \xAC 0123456789 ";
+
+       TEST(iso8859_6_str) .with(strf::iso_8859_6<char>{})
+           (strf::conv(win1256_str, strf::windows_1256<char>{}));
+   }
 }
