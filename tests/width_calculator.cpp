@@ -4,9 +4,9 @@
 
 #include "test_utils.hpp"
 
-#define TEST_FAST_WIDTH(STR) TEST(STR) .with( strf::fast_width{} )
-#define TEST_W_AS_FAST_U32LEN(STR) TEST(STR) .with( strf::width_as_fast_u32len{} )
-#define TEST_W_AS_U32LEN(STR) TEST(STR) .with( strf::width_as_u32len{} )
+#define TEST_FAST_WIDTH(STR) TEST(STR) .with( strf::fast_width )
+#define TEST_W_AS_FAST_U32LEN(STR) TEST(STR) .with( strf::width_as_fast_u32len )
+#define TEST_W_AS_U32LEN(STR) TEST(STR) .with( strf::width_as_u32len )
 
 void STRF_TEST_FUNC test_width_calculator()
 {
@@ -175,7 +175,7 @@ void STRF_TEST_FUNC test_width_calculator()
 
         char16_t buff[10];
         strf::to(buff)
-            .with(strf::width_as_u32len{}, strf::surrogate_policy::lax )
+            .with(strf::width_as_u32len, strf::surrogate_policy::lax )
             (strf::sani("\xED\xA0\x80") > 2);
 
         TEST_W_AS_U32LEN(str_0xD800).with(strf::surrogate_policy::lax )

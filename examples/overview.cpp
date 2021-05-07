@@ -247,7 +247,7 @@ void punct_non_decimal()
 void fast_width()
 {
     auto str = "15.00 \xE2\x82\xAC \x80"; // "15.00 € \x80"
-    auto result = strf::to_string.with(strf::fast_width{})
+    auto result = strf::to_string.with(strf::fast_width)
         ( strf::right(str, 12, '*') );
 
     assert(result == "*15.00 \xE2\x82\xAC \x80"); // width calculated as 11
@@ -256,7 +256,7 @@ void fast_width()
 void width_as_fast_u32len()
 {
     auto str = "15.00 \xE2\x82\xAC \x80"; // "15.00 € \x80"
-    auto result = strf::to_string .with(strf::width_as_fast_u32len{})
+    auto result = strf::to_string .with(strf::width_as_fast_u32len)
         ( strf::right(str, 12, '*'));
     assert(result == "****15.00 \xE2\x82\xAC \x80"); // width calculated as 8
 }
@@ -264,7 +264,7 @@ void width_as_fast_u32len()
 void width_as_u32len()
 {
     auto str = "15.00 \xE2\x82\xAC \x80"; // "15.00 € \x80"
-    auto result = strf::to_string .with(strf::width_as_u32len{}) ( strf::right(str, 12, '*'));
+    auto result = strf::to_string .with(strf::width_as_u32len) ( strf::right(str, 12, '*'));
 
     assert(result == "***15.00 \xE2\x82\xAC \x80"); // width calculated as 9
 }
@@ -273,9 +273,9 @@ void width_in_conv()
 {
     auto str = "15.00 \xE2\x82\xAC \x80"; // "15.00 € \x80"
 
-    auto res1 = strf::to_u16string.with(strf::fast_width{})          (strf::conv(str) > 12);
-    auto res2 = strf::to_u16string.with(strf::width_as_fast_u32len{})(strf::conv(str) > 12);
-    auto res3 = strf::to_u16string.with(strf::width_as_u32len{})     (strf::conv(str) > 12);
+    auto res1 = strf::to_u16string.with(strf::fast_width)          (strf::conv(str) > 12);
+    auto res2 = strf::to_u16string.with(strf::width_as_fast_u32len)(strf::conv(str) > 12);
+    auto res3 = strf::to_u16string.with(strf::width_as_u32len)     (strf::conv(str) > 12);
 
     assert(res1 == u" 15.00 \u20AC \uFFFD");    // width calculated as 11 ( == strlen(str) )
     assert(res2 == u"    15.00 \u20AC \uFFFD"); // width calculated as 8

@@ -990,11 +990,11 @@ auto str = strf::to_string.width(notifier)(strf::conv(u16str));
 [[width_calculator]]
 == Width Calculation
 
-The `<<strf_hpp#width_calculator_c,width_calculator_c>>` facet category
+The `<<strf_hpp#width_calculator_c,width_calculator_c>>` facet value
 enables you to choose how the width of a string is calculated when using
 <<alignment_format_functions,alignment formatting>>. You have five options:
 
-* The `<<strf_hpp#fast_width,fast_width>>` facet assumes that the width
+* The `<<strf_hpp#fast_width,fast_width>>` facet object assumes that the width
   of a string is equal to its size. This is the least accurate method,
   but it's the fastest.
 +
@@ -1002,29 +1002,29 @@ enables you to choose how the width of a string is calculated when using
 [source,cpp]
 ----
 auto str = "15.00 \xE2\x82\xAC \x80"; // "15.00 € \x80"
-auto result = strf::to_string.with(strf::fast_width{})
+auto result = strf::to_string.with(strf::fast_width)
              ( strf::right(str, 12, '*') );
 assert(result == "*15.00 \xE2\x82\xAC \x80"); // width calculated as 11
 ----
-* The `<<strf_hpp#width_as_fast_u32len,width_as_fast_u32len>>` facet
+* The `<<strf_hpp#width_as_fast_u32len,width_as_fast_u32len>>` facet value
   evaluates the width of a string as the number of Unicode code points.
   However, differently from `width_as_u32len`, to gain performance,
-  it assumes that the measured string is totally conformant to its encoding.
+  it assumes that the measured string is conformant to its encoding.
   Nonconformities do not cause undefined behaviour, but lead to incorrect
   values. For example, the width of an UTF-8 string may simply be calculated as
   the number of bytes that are not in the range [`0x80`, `0xBF`], __i.e.__,
-  are not continuation bytes. So that an extra continuation byte -- that
+  btye that are not continuation bytes. This way, any extra continuation byte -- that
   would replaced by a `"\uFFFD"` during sanitization -- is not counted.
 +
 .Example
 [source,cpp]
 ----
 auto str = "15.00 \xE2\x82\xAC \x80"; // "15.00 € \x80"
-auto result = strf::to_string .with(strf::width_as_fast_u32len{})
+auto result = strf::to_string .with(strf::width_as_fast_u32len)
              ( strf::right(str, 12, '*'));
 assert(result == "****15.00 \xE2\x82\xAC \x80"); // width calculated as 8
 ----
-* The `<<strf_hpp#width_as_u32len,width_as_u32len>>` facet also
+* The `<<strf_hpp#width_as_u32len,width_as_u32len>>` facet value also
   evaluates the width of a string as the number of Unicode code points.
   But each nonconformity to the encoding is counted as an extra
   code points ( as if it were replaced by
@@ -1034,7 +1034,7 @@ assert(result == "****15.00 \xE2\x82\xAC \x80"); // width calculated as 8
 [source,cpp]
 ----
 auto str = "15.00 \xE2\x82\xAC \x80"; // "15.00 € \x80"
-auto result = strf::to_string .with(strf::width_as_u32len{})
+auto result = strf::to_string .with(strf::width_as_u32len)
              ( strf::right(str, 12, '*'));
 
 assert(result == "***15.00 \xE2\x82\xAC \x80"); // width calculated as 9
@@ -1105,11 +1105,11 @@ width of the string is its size in UTF-8, not in UTF-16.
 ----
 auto str = "15.00 \xE2\x82\xAC \x80"; // "15.00 € \x80"
 
-auto res1 = strf::to_u16string.with(strf::fast_width{})
+auto res1 = strf::to_u16string.with(strf::fast_width)
             (strf::conv(str) > 12);
-auto res2 = strf::to_u16string.with(strf::width_as_fast_u32len{})
+auto res2 = strf::to_u16string.with(strf::width_as_fast_u32len)
             (strf::conv(str) > 12);
-auto res3 = strf::to_u16string.with(strf::width_as_u32len{})
+auto res3 = strf::to_u16string.with(strf::width_as_u32len)
             (strf::conv(str) > 12);
 
 assert(res1 == u" 15.00 \u20AC \uFFFD");  // width calculated as strlen(str)

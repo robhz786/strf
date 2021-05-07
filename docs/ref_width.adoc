@@ -12,6 +12,9 @@ http://www.boost.org/LICENSE_1_0.txt
 :width_as_u32len: <<width_as_u32len,width_as_u32len>>
 :width_as_fast_u32len: <<width_as_fast_u32len,width_as_fast_u32len>>
 :width_by_func: <<width_by_func,width_by_func>>
+:fast_width_t: <<fast_width,fast_width>>
+:width_as_u32len_t: <<width_as_u32len,width_as_u32len>>
+:width_as_fast_u32len_t: <<width_as_fast_u32len,width_as_fast_u32len>>
 :make_width_calculator: <<make_width_calculator,make_width_calculator>>
 :width_t: <<width_t,width_t>>
 
@@ -98,8 +101,8 @@ Return value::: A value `ret` of type `{width_and_pos}`, such that
 ====
 
 NOTE: The library provides three classes and one class template that
-      satisfy _WidthCalculator: `{fast_width}`, `{width_as_fast_u32len}`,
-      `{width_as_u32len}` and `{width_by_func}.
+      satisfy _WidthCalculator_: `{fast_width_t}`, `{width_as_fast_u32len_t}`,
+      `{width_as_u32len_t}` and `{width_by_func}`.
 
 ////
 What "width" of a string means is up to each _WidthCalculator_ type.
@@ -120,14 +123,14 @@ struct width_and_pos {
 };
 ----
 
-=== Class `fast_width` [[fast_width]]
+=== Class `fast_width_t` [[fast_width]]
 
-Class `fast_width` is a facet of the category `{width_calculator_c}`
+Class `fast_width_t` is a facet of the category `{width_calculator_c}`
 that evaluates the width of a string as its size.
 
 [source,cpp,subs=normal]
 ----
-class fast_width final
+class fast_width_t final
 {
 public:
     using category = {width_calculator_c};
@@ -153,6 +156,8 @@ public:
         , std::size_t str_len
         , {surrogate_policy} ) const noexcept;
 };
+
+constexpr fast_width_t fast_width {};
 ----
 [[fast_width_char_width]]
 ====
@@ -205,9 +210,9 @@ Return value::: The return value `ret` is such that
 ====
 
 
-=== Class `width_as_fast_u32len` [[width_as_fast_u32len]]
+=== Class `width_as_fast_u32len_t` [[width_as_fast_u32len]]
 
-Class `width_as_fast_u32len` is a facet of the category `{width_calculator_c}`.
+Class `width_as_fast_u32len_t` is a facet of the category `{width_calculator_c}`.
 It evaluates the width of a string as the number of Unicode code points.
 However, to gain performance and differently from `{width_as_u32len}`,
 it assumes that the string is totally conformant to its encoding.
@@ -218,7 +223,7 @@ not in the form of https://en.wikipedia.org/wiki/UTF-8#Encoding[continuation byt
 
 [source,cpp,subs=normal]
 ----
-class width_as_fast_u32len final
+class width_as_fast_u32len_t final
 {
 public:
     using category = {width_calculator_c};
@@ -244,6 +249,8 @@ public:
         , std::size_t str_len
         , {surrogate_policy} ) const noexcept;
 };
+
+constexpr width_as_fast_u32len_t width_as_fast_u32len {};
 ----
 [[width_as_fast_u32len_char_width]]
 ====
@@ -294,9 +301,9 @@ Return value::: The return value `ret` is such that
   to `encoding.<<CharEncoding_codepoints_fast_count,codepoints_fast_count>>(str, str_len, lim).pos`
 ====
 
-=== Class `width_as_u32len` [[width_as_u32len]]
+=== Class `width_as_u32len_t` [[width_as_u32len]]
 
-Class `width_as_fast_u32len` is a facet of the category `{width_calculator_c}`.
+Class `width_as_fast_u32len_t` is a facet of the category `{width_calculator_c}`.
 It evaluates the width of a string as the number of Unicode code points,
 assuming that any non-conformity to its corresponding encoding is replaced
 by one codepoint ( since it should be replaced by the
@@ -304,7 +311,7 @@ https://en.wikipedia.org/wiki/Specials_(Unicode_block)#Replacement_character[rep
 
 [source,cpp,subs=normal]
 ----
-class width_as_u32len final
+class width_as_u32len_t final
 {
 public:
     using category = {width_calculator_c};
@@ -330,6 +337,8 @@ public:
         , std::size_t str_len
         , {surrogate_policy} ) const noexcept;
 };
+
+constexpr width_as_u32len_t width_as_u32len = {};
 ----
 [[width_as_u32len_char_width]]
 ====

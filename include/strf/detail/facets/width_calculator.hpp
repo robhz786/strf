@@ -16,7 +16,7 @@ struct width_and_pos {
     std::size_t pos;
 };
 
-class fast_width final
+class fast_width_t final
 {
 public:
     using category = width_calculator_c;
@@ -59,7 +59,7 @@ public:
     }
 };
 
-class width_as_fast_u32len final
+class width_as_fast_u32len_t final
 {
 public:
     using category = width_calculator_c;
@@ -102,7 +102,7 @@ public:
 };
 
 
-class width_as_u32len final
+class width_as_u32len_t final
 {
 public:
     using category = width_calculator_c;
@@ -276,12 +276,15 @@ width_by_func<CharWidthFunc> STRF_HD make_width_calculator(CharWidthFunc f)
     return width_by_func<CharWidthFunc>{f};
 }
 
+STRF_HD constexpr fast_width_t fast_width = fast_width_t{};
+STRF_HD constexpr width_as_fast_u32len_t width_as_fast_u32len = width_as_fast_u32len_t{};
+STRF_HD constexpr width_as_u32len_t width_as_u32len = width_as_u32len_t{};
 
 struct width_calculator_c
 {
     static constexpr bool constrainable = true;
 
-    static constexpr STRF_HD strf::width_as_u32len get_default() noexcept
+    static constexpr STRF_HD strf::width_as_u32len_t get_default() noexcept
     {
         return {};
     }
