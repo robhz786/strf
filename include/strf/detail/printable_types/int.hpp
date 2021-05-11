@@ -1933,7 +1933,8 @@ private:
 };
 
 template <typename CharT, int Base>
-void int_printer_static_base_and_punct<CharT, Base, false>::print_to(strf::basic_outbuff<CharT>& ob) const
+STRF_HD void int_printer_static_base_and_punct<CharT, Base, false>::print_to
+    ( strf::basic_outbuff<CharT>& ob ) const
 {
     if (data_.left_fillcount > 0) {
         encode_fill_(ob, data_.left_fillcount, data_.fillchar);
