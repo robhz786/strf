@@ -1465,3 +1465,6 @@ void STRF_TEST_FUNC test_single_byte_encodings()
            (strf::conv(win1256_str, strf::windows_1256<char>{}));
    }
 }
+
+REGISTER_STRF_TEST(test_single_byte_encodings);
+

@@ -219,3 +219,6 @@ void STRF_TEST_FUNC test_input_range()
         TEST("")                    ( strf::separated_range(arr, arr, ", ", func) );
     }
 }
+
+REGISTER_STRF_TEST(test_input_range);
+

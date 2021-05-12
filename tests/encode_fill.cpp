@@ -75,3 +75,5 @@ void STRF_TEST_FUNC test_encode_fill()
         TEST_FILL(strf::iso_8859_15<char>() , 0x800, "?");
     }
 }
+
+REGISTER_STRF_TEST(test_encode_fill);

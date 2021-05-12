@@ -46,3 +46,4 @@ void STRF_TEST_FUNC test_input_char()
     TEST("aaaa..") ( strf::join_left(6, '.')(strf::multi('a', 4) > 4) );
 }
 
+REGISTER_STRF_TEST(test_input_char);

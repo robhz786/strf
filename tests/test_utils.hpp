@@ -822,4 +822,10 @@ struct input_tester_with_fixed_spaces_creator_creator
               , "exception " #EXCEP " not thrown as expected" );        \
   }
 
+#if defined(__CUDACC__)
+#define REGISTER_STRF_TEST(FUNC) void STRF_TEST_FUNC run_all_tests() { FUNC(); }
+#else
+#define REGISTER_STRF_TEST(FUNC)
+#endif
+
 #endif // defined(STRF_TEST_TEST_UTILS_HPP_INCLUDED)

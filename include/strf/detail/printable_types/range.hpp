@@ -353,14 +353,8 @@ STRF_HD void separated_range_printer<CharT, FPack, It>::preview_(Preview& previe
                                  , sep_begin_
                                  , sep_len_
                                  , get_facet_<strf::surrogate_policy_c>(fp_) );
-        if (dw != 0) {
-            if (count > UINT32_MAX) {
-                preview.clear_remaining_width();
-            } else {
-                preview.subtract_width
-                    ( checked_mul(dw, static_cast<std::uint32_t>(count - 1)) );
-            }
-        }
+        auto acc_seps_width = checked_mul(dw, static_cast<std::uint32_t>(count - 1));
+        preview.subtract_width(acc_seps_width);
     }
     if (Preview::size_required) {
         preview.add_size((count - 1) * sep_len_);

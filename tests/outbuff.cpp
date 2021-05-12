@@ -163,3 +163,6 @@ void STRF_TEST_FUNC test_basic_outbuff()
         ob.finish();
     }
 }
+
+REGISTER_STRF_TEST(test_basic_outbuff);
+

@@ -96,3 +96,6 @@ void STRF_TEST_FUNC test_miscellaneous()
         TEST_EQ(sv.size(), 5);
     }
 }
+
+REGISTER_STRF_TEST(test_miscellaneous);
+

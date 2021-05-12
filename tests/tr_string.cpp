@@ -179,3 +179,5 @@ void STRF_TEST_FUNC test_tr_string()
     }
 }
 
+REGISTER_STRF_TEST(test_tr_string);
+

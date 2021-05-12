@@ -428,3 +428,5 @@ void STRF_TEST_FUNC test_facets_pack()
     test_constrained_fpe();
     compilation_tests();
 }
+
+REGISTER_STRF_TEST(test_facets_pack);

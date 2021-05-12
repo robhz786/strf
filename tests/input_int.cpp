@@ -4,7 +4,20 @@
 
 #include "test_utils.hpp"
 
-void STRF_TEST_FUNC test_input_int()
+void STRF_TEST_FUNC test_input_ptr()
+{
+    void* ptr = strf::detail::bit_cast<void*, std::size_t>(0xABC);
+
+    TEST("0xabc") (ptr);
+    TEST("...0xabc") (strf::right(ptr, 8, '.'));
+    TEST("...0xabc  ") (strf::join(strf::right(ptr, 8, '.')) < 10);
+    TEST("...0xABC").with(strf::lettercase::mixed) (strf::right(ptr, 8, '.'));
+    TEST("...0XABC")
+        .with(strf::constrain<std::is_pointer>(strf::lettercase::upper))
+        (strf::right(ptr, 8, '.'));
+}
+
+void STRF_TEST_FUNC test_input_int_no_punct()
 {
     TEST_EQ(1,  strf::detail::count_digits<10>(1ull));
     TEST_EQ(2,  strf::detail::count_digits<10>(10ull));
@@ -361,79 +374,6 @@ void STRF_TEST_FUNC test_input_int()
     TEST ("00000000123")  (  strf::right(123u, 10, '.').pad0(11) );
     TEST ("00000000123")  (  strf::right(123 , 10, '.').pad0(11) );
 
-    {   // decimal with pad0 and precision and punctuation
-        auto punct = strf::numpunct<10>{2}.thousands_sep(':');
-        TEST("       1:23:45").with(punct)  (  strf::punct( 12345).pad0(7) > 14 );
-        TEST("      +1:23:45").with(punct)  ( +strf::punct( 12345).pad0(8) > 14 );
-        TEST("      -1:23:45").with(punct)  (  strf::punct(-12345).pad0(8) > 14 );
-        TEST("      01:23:45").with(punct)  (  strf::punct( 12345).pad0(8) > 14 );
-        TEST("     +01:23:45").with(punct)  ( +strf::punct( 12345).pad0(9) > 14 );
-
-        TEST("       1:23:45").with(punct)  (  strf::punct( 12345).p(5) > 14 );
-        TEST("      -1:23:45").with(punct)  ( +strf::punct(-12345).p(5) > 14 );
-        TEST("      +1:23:45").with(punct)  ( +strf::punct( 12345).p(5) > 14 );
-        TEST("      01:23:45").with(punct)  (  strf::punct( 12345).p(6) > 14 );
-        TEST("     +01:23:45").with(punct)  ( +strf::punct( 12345).p(6) > 14 );
-
-        TEST("       1:23:45").with(punct)  (  strf::punct(12345).pad0(7).p(5) > 14 );
-        TEST("      01:23:45").with(punct)  (  strf::punct(12345).pad0(7).p(6) > 14 );
-        TEST("      01:23:45").with(punct)  (  strf::punct(12345).pad0(8).p(5) > 14 );
-
-        TEST("      +1:23:45").with(punct)  ( +strf::punct( 12345).pad0(8).p(5) > 14 );
-        TEST("      -1:23:45").with(punct)  ( +strf::punct(-12345).pad0(8).p(5) > 14 );
-        TEST("     +01:23:45").with(punct)  ( +strf::punct( 12345).pad0(8).p(6) > 14 );
-        TEST("     +01:23:45").with(punct)  ( +strf::punct( 12345).pad0(9).p(5) > 14 );
-        TEST("     -01:23:45").with(punct)  (  strf::punct(-12345).pad0(9).p(5) > 14 );
-
-        auto j = strf::join_right(14);
-        TEST("       1:23:45").with(punct)  ( j( strf::punct( 12345).pad0(7)) );
-        TEST("      +1:23:45").with(punct)  ( j(+strf::punct( 12345).pad0(8)) );
-        TEST("      -1:23:45").with(punct)  ( j( strf::punct(-12345).pad0(8)) );
-        TEST("      01:23:45").with(punct)  ( j( strf::punct( 12345).pad0(8)) );
-        TEST("     +01:23:45").with(punct)  ( j(+strf::punct( 12345).pad0(9)) );
-
-        TEST("       1:23:45").with(punct)  ( j( strf::punct( 12345).p(5)) );
-        TEST("      -1:23:45").with(punct)  ( j(+strf::punct(-12345).p(5)) );
-        TEST("      +1:23:45").with(punct)  ( j(+strf::punct( 12345).p(5)) );
-        TEST("      01:23:45").with(punct)  ( j( strf::punct( 12345).p(6)) );
-        TEST("     +01:23:45").with(punct)  ( j(+strf::punct( 12345).p(6)) );
-
-        TEST("       1:23:45").with(punct)  ( j( strf::punct(12345).pad0(7).p(5)) );
-        TEST("      01:23:45").with(punct)  ( j( strf::punct(12345).pad0(7).p(6)) );
-        TEST("      01:23:45").with(punct)  ( j( strf::punct(12345).pad0(8).p(5)) );
-
-        TEST("      +1:23:45").with(punct)  ( j(+strf::punct( 12345).pad0(8).p(5)) );
-        TEST("      -1:23:45").with(punct)  ( j(+strf::punct(-12345).pad0(8).p(5)) );
-        TEST("     +01:23:45").with(punct)  ( j(+strf::punct( 12345).pad0(8).p(6)) );
-        TEST("     +01:23:45").with(punct)  ( j(+strf::punct( 12345).pad0(9).p(5)) );
-        TEST("     -01:23:45").with(punct)  ( j( strf::punct(-12345).pad0(9).p(5)) );
-
-        // fill_sign
-        TEST("  ***-12345***") (j(strf::center(-12345, 12, '*').fill_sign()));
-        TEST("  ****12345***") (j(strf::center(12345, 12, '*').fill_sign()));
-        TEST("  ***1:23:45**").with(punct) (j(!strf::center(12345, 12, '*').fill_sign()));
-        TEST("  ***1:23:45**").with(punct) (j(!strf::center(12345, 12, '*').fill_sign().pad0(8)));
-        TEST("  **01:23:45**").with(punct) (j(!strf::center(12345, 12, '*').fill_sign().pad0(9)));
-        TEST("  *001:23:45**").with(punct) (j(!strf::center(12345, 12, '*').pad0(9)));
-
-        TEST("  *01:23:45***").with(punct) (j(!strf::left(12345, 12, '*').fill_sign().pad0(9)));
-        TEST("  ****01:23:45").with(punct) (j(!strf::right(12345, 12, '*').fill_sign().pad0(9)));
-        TEST("  *00001:23:45").with(punct) (j(!strf::left(12345, 0, '*').fill_sign().pad0(12)));
-    }
-    {
-        // non-ascii separator whose size is still one
-        auto enc = strf::windows_1252<char>();
-        auto punct10 = strf::numpunct<10>{3}.thousands_sep(0x20AC);
-        auto punct16 = strf::numpunct<16>{3}.thousands_sep(0x20AC);
-
-        TEST("1\x80" "234\x80" "567") .with(enc, punct10) (strf::punct(1234567));
-        TEST("******1\x80" "234\x80" "567") .with(enc, punct10) (!strf::right(1234567, 15, '*'));
-        TEST("***0001\x80" "234\x80" "567") .with(enc, punct10)
-            (!strf::right(1234567, 15, '*').pad0(12));
-
-        TEST("***0x01\x80" "234\x80" "567") .with(enc, punct16)
-            (!*strf::right(0x1234567, 15, '*').pad0(12).hex());
-    }
     // hexadecimal letter case
     TEST("0X1234567890ABCDEF").with(strf::lettercase::upper) ( *strf::hex(0x1234567890abcdefLL) );
     TEST("0x1234567890ABCDEF").with(strf::lettercase::mixed) ( *strf::hex(0x1234567890abcdefLL) );
@@ -486,45 +426,6 @@ void STRF_TEST_FUNC test_input_int()
     // TEST("      00aa")   (  strf::hex(0xAA).pad0(3).p(4) >10 );
     // TEST("      00aa")   (  strf::hex(0xAA).pad0(4).p(3) >10 );
 
-    {   // hexadecimal with pad0 and precision and punctuation
-        auto punct = strf::numpunct<16>{2}.thousands_sep(':');
-        TEST("       1:23:45").with(punct)  ( (!strf::hex(0x12345)).pad0(7) > 14 );
-        TEST("     0x1:23:45").with(punct)  ( *!strf::hex(0x12345).pad0(9) > 14 );
-        TEST("      01:23:45").with(punct)  ( (!strf::hex(0x12345)).pad0(8) > 14 );
-        TEST("    0x01:23:45").with(punct)  ( *!strf::hex(0x12345).pad0(10) > 14 );
-
-        TEST("       1:23:45").with(punct)  ( (!strf::hex(0x12345)).p(5) > 14 );
-        TEST("     0x1:23:45").with(punct)  ( *!strf::hex(0x12345).p(5) > 14 );
-        TEST("      01:23:45").with(punct)  ( (!strf::hex(0x12345)).p(6) > 14 );
-        TEST("    0x01:23:45").with(punct)  ( *!strf::hex(0x12345).p(6) > 14 );
-
-        TEST("       1:23:45").with(punct)  ( (!strf::hex(0x12345)).pad0(7).p(5) > 14 );
-        TEST("      01:23:45").with(punct)  ( (!strf::hex(0x12345)).pad0(7).p(6) > 14 );
-        TEST("      01:23:45").with(punct)  ( (!strf::hex(0x12345)).pad0(8).p(5) > 14 );
-
-        TEST("     0x1:23:45").with(punct)  ( *!strf::hex(0x12345).pad0(9).p(5) > 14 );
-        TEST("    0x01:23:45").with(punct)  ( *!strf::hex(0x12345).pad0(7).p(6) > 14 );
-        TEST("    0x01:23:45").with(punct)  ( *!strf::hex(0x12345).pad0(10).p(5) > 14 );
-
-        auto j = strf::join_right(14);
-        TEST("       1:23:45").with(punct)  ( j( !strf::hex(0x12345).pad0(7)) );
-        TEST("     0x1:23:45").with(punct)  ( j(*!strf::hex(0x12345).pad0(9)) );
-        TEST("      01:23:45").with(punct)  ( j( !strf::hex(0x12345).pad0(8)) );
-        TEST("    0x01:23:45").with(punct)  ( j(*!strf::hex(0x12345).pad0(10)) );
-
-        TEST("       1:23:45").with(punct)  ( j( !strf::hex(0x12345).p(5)) );
-        TEST("     0x1:23:45").with(punct)  ( j(*!strf::hex(0x12345).p(5)) );
-        TEST("      01:23:45").with(punct)  ( j( !strf::hex(0x12345).p(6)) );
-        TEST("    0x01:23:45").with(punct)  ( j(*!strf::hex(0x12345).p(6)) );
-
-        TEST("       1:23:45").with(punct)  ( j( !strf::hex(0x12345).pad0(7).p(5)) );
-        TEST("      01:23:45").with(punct)  ( j( !strf::hex(0x12345).pad0(7).p(6)) );
-        TEST("      01:23:45").with(punct)  ( j( !strf::hex(0x12345).pad0(8).p(5)) );
-
-        TEST("     0x1:23:45").with(punct)  ( j(*!strf::hex(0x12345).pad0( 9).p(5)) );
-        TEST("    0x01:23:45").with(punct)  ( j(*!strf::hex(0x12345).pad0( 7).p(6)) );
-        TEST("    0x01:23:45").with(punct)  ( j(*!strf::hex(0x12345).pad0(10).p(5)) );
-    }
 
     // binary aligment
     TEST("        11")   (  strf::bin(3)>10 );
@@ -610,18 +511,6 @@ void STRF_TEST_FUNC test_input_int()
     TEST("      0012")   ( *strf::oct(012).pad0(3).p(4) >10 );
     TEST("      0012")   ( *strf::oct(012).pad0(4).p(3) >10 );
 
-    {   // octal with pad0 and precision and punctuation
-        auto punct = strf::numpunct<8>{2}.thousands_sep(':');
-        TEST("    1:23:45:67").with(punct)  (  (!strf::oct(01234567)).pad0(10) > 14 );
-        TEST("   01:23:45:67").with(punct)  (  (!strf::oct(01234567)).pad0(11) > 14 );
-        TEST("   01:23:45:67").with(punct)  ( *(!strf::oct(01234567)).pad0(11) > 14 );
-        TEST("   01:23:45:67").with(punct)  (  (!strf::oct(01234567)).p(8) > 14 );
-        TEST("   01:23:45:67").with(punct)  ( *(!strf::oct(01234567)).p(8) > 14 );
-        TEST("  001:23:45:67").with(punct)  (  (!strf::oct(01234567)).pad0(11).p(9) > 14 );
-        TEST("  001:23:45:67").with(punct)  (  (!strf::oct(01234567)).pad0(12).p(8) > 14 );
-        TEST("  001:23:45:67").with(punct)  ( *(!strf::oct(01234567)).pad0(11).p(9) > 14 );
-        TEST("  001:23:45:67").with(punct)  ( *(!strf::oct(01234567)).pad0(12).p(8) > 14 );
-    }
 
     TEST("0")      ( strf::oct(0));
     TEST("0")      (*strf::oct(0));
@@ -661,6 +550,181 @@ void STRF_TEST_FUNC test_input_int()
     TEST("00123~~")  ( strf::join_right(7, '.')(strf::left(123, 7, U'~').p(5)) );
     TEST("00123")    ( strf::join_right(5, '.')(strf::left(123, 5, U'~').p(5)) );
     TEST("00123")    ( strf::join_right(5, '.')(strf::left(123, 3, U'~').p(5)) );
+
+    // fill sign
+    auto j = strf::join_right(14);
+    TEST("  ***-12345***") (j(strf::center(-12345, 12, '*').fill_sign()));
+    TEST("  ****12345***") (j(strf::center(12345, 12, '*').fill_sign()));
+}
+
+void STRF_TEST_FUNC test_input_int_punct()
+{
+    {
+        // non-ascii separator whose size is still one
+        auto enc = strf::windows_1252<char>();
+        auto punct10 = strf::numpunct<10>{3}.thousands_sep(0x20AC);
+        auto punct16 = strf::numpunct<16>{3}.thousands_sep(0x20AC);
+
+        TEST("1\x80" "234\x80" "567") .with(enc, punct10) (strf::punct(1234567));
+        TEST("******1\x80" "234\x80" "567") .with(enc, punct10) (!strf::right(1234567, 15, '*'));
+        TEST("***0001\x80" "234\x80" "567") .with(enc, punct10)
+            (!strf::right(1234567, 15, '*').pad0(12));
+
+        TEST("***0x01\x80" "234\x80" "567") .with(enc, punct16)
+            (!*strf::right(0x1234567, 15, '*').pad0(12).hex());
+    }
+    {   // decimal with pad0 and precision and punctuation
+        auto punct = strf::numpunct<10>{2}.thousands_sep(':');
+        TEST("       1:23:45").with(punct)  (  strf::punct( 12345).pad0(7) > 14 );
+        TEST("      +1:23:45").with(punct)  ( +strf::punct( 12345).pad0(8) > 14 );
+        TEST("      -1:23:45").with(punct)  (  strf::punct(-12345).pad0(8) > 14 );
+        TEST("      01:23:45").with(punct)  (  strf::punct( 12345).pad0(8) > 14 );
+        TEST("     +01:23:45").with(punct)  ( +strf::punct( 12345).pad0(9) > 14 );
+
+        TEST("       1:23:45").with(punct)  (  strf::punct( 12345).p(5) > 14 );
+        TEST("      -1:23:45").with(punct)  ( +strf::punct(-12345).p(5) > 14 );
+        TEST("      +1:23:45").with(punct)  ( +strf::punct( 12345).p(5) > 14 );
+        TEST("      01:23:45").with(punct)  (  strf::punct( 12345).p(6) > 14 );
+        TEST("     +01:23:45").with(punct)  ( +strf::punct( 12345).p(6) > 14 );
+
+        TEST("       1:23:45").with(punct)  (  strf::punct(12345).pad0(7).p(5) > 14 );
+        TEST("      01:23:45").with(punct)  (  strf::punct(12345).pad0(7).p(6) > 14 );
+        TEST("      01:23:45").with(punct)  (  strf::punct(12345).pad0(8).p(5) > 14 );
+
+        TEST("      +1:23:45").with(punct)  ( +strf::punct( 12345).pad0(8).p(5) > 14 );
+        TEST("      -1:23:45").with(punct)  ( +strf::punct(-12345).pad0(8).p(5) > 14 );
+        TEST("     +01:23:45").with(punct)  ( +strf::punct( 12345).pad0(8).p(6) > 14 );
+        TEST("     +01:23:45").with(punct)  ( +strf::punct( 12345).pad0(9).p(5) > 14 );
+        TEST("     -01:23:45").with(punct)  (  strf::punct(-12345).pad0(9).p(5) > 14 );
+
+        auto j = strf::join_right(14);
+        TEST("       1:23:45").with(punct)  ( j( strf::punct( 12345).pad0(7)) );
+        TEST("      +1:23:45").with(punct)  ( j(+strf::punct( 12345).pad0(8)) );
+        TEST("      -1:23:45").with(punct)  ( j( strf::punct(-12345).pad0(8)) );
+        TEST("      01:23:45").with(punct)  ( j( strf::punct( 12345).pad0(8)) );
+        TEST("     +01:23:45").with(punct)  ( j(+strf::punct( 12345).pad0(9)) );
+
+        TEST("       1:23:45").with(punct)  ( j( strf::punct( 12345).p(5)) );
+        TEST("      -1:23:45").with(punct)  ( j(+strf::punct(-12345).p(5)) );
+        TEST("      +1:23:45").with(punct)  ( j(+strf::punct( 12345).p(5)) );
+        TEST("      01:23:45").with(punct)  ( j( strf::punct( 12345).p(6)) );
+        TEST("     +01:23:45").with(punct)  ( j(+strf::punct( 12345).p(6)) );
+
+        TEST("       1:23:45").with(punct)  ( j( strf::punct(12345).pad0(7).p(5)) );
+        TEST("      01:23:45").with(punct)  ( j( strf::punct(12345).pad0(7).p(6)) );
+        TEST("      01:23:45").with(punct)  ( j( strf::punct(12345).pad0(8).p(5)) );
+
+        TEST("      +1:23:45").with(punct)  ( j(+strf::punct( 12345).pad0(8).p(5)) );
+        TEST("      -1:23:45").with(punct)  ( j(+strf::punct(-12345).pad0(8).p(5)) );
+        TEST("     +01:23:45").with(punct)  ( j(+strf::punct( 12345).pad0(8).p(6)) );
+        TEST("     +01:23:45").with(punct)  ( j(+strf::punct( 12345).pad0(9).p(5)) );
+        TEST("     -01:23:45").with(punct)  ( j( strf::punct(-12345).pad0(9).p(5)) );
+
+        // fill_sign
+        TEST("  ***1:23:45**").with(punct) (j(!strf::center(12345, 12, '*').fill_sign()));
+        TEST("  ***1:23:45**").with(punct) (j(!strf::center(12345, 12, '*').fill_sign().pad0(8)));
+        TEST("  **01:23:45**").with(punct) (j(!strf::center(12345, 12, '*').fill_sign().pad0(9)));
+        TEST("  *001:23:45**").with(punct) (j(!strf::center(12345, 12, '*').pad0(9)));
+
+        TEST("  *01:23:45***").with(punct) (j(!strf::left(12345, 12, '*').fill_sign().pad0(9)));
+        TEST("  ****01:23:45").with(punct) (j(!strf::right(12345, 12, '*').fill_sign().pad0(9)));
+        TEST("  *00001:23:45").with(punct) (j(!strf::left(12345, 0, '*').fill_sign().pad0(12)));
+    }
+    {   // hexadecimal with pad0 and precision and punctuation
+        auto punct = strf::numpunct<16>{2}.thousands_sep(':');
+        TEST("       1:23:45").with(punct)  ( (!strf::hex(0x12345)).pad0(7) > 14 );
+        TEST("     0x1:23:45").with(punct)  ( *!strf::hex(0x12345).pad0(9) > 14 );
+        TEST("      01:23:45").with(punct)  ( (!strf::hex(0x12345)).pad0(8) > 14 );
+        TEST("    0x01:23:45").with(punct)  ( *!strf::hex(0x12345).pad0(10) > 14 );
+
+        TEST("       1:23:45").with(punct)  ( (!strf::hex(0x12345)).p(5) > 14 );
+        TEST("     0x1:23:45").with(punct)  ( *!strf::hex(0x12345).p(5) > 14 );
+        TEST("      01:23:45").with(punct)  ( (!strf::hex(0x12345)).p(6) > 14 );
+        TEST("    0x01:23:45").with(punct)  ( *!strf::hex(0x12345).p(6) > 14 );
+
+        TEST("       1:23:45").with(punct)  ( (!strf::hex(0x12345)).pad0(7).p(5) > 14 );
+        TEST("      01:23:45").with(punct)  ( (!strf::hex(0x12345)).pad0(7).p(6) > 14 );
+        TEST("      01:23:45").with(punct)  ( (!strf::hex(0x12345)).pad0(8).p(5) > 14 );
+
+        TEST("     0x1:23:45").with(punct)  ( *!strf::hex(0x12345).pad0(9).p(5) > 14 );
+        TEST("    0x01:23:45").with(punct)  ( *!strf::hex(0x12345).pad0(7).p(6) > 14 );
+        TEST("    0x01:23:45").with(punct)  ( *!strf::hex(0x12345).pad0(10).p(5) > 14 );
+
+        auto j = strf::join_right(14);
+        TEST("       1:23:45").with(punct)  ( j( !strf::hex(0x12345).pad0(7)) );
+        TEST("     0x1:23:45").with(punct)  ( j(*!strf::hex(0x12345).pad0(9)) );
+        TEST("      01:23:45").with(punct)  ( j( !strf::hex(0x12345).pad0(8)) );
+        TEST("    0x01:23:45").with(punct)  ( j(*!strf::hex(0x12345).pad0(10)) );
+
+        TEST("       1:23:45").with(punct)  ( j( !strf::hex(0x12345).p(5)) );
+        TEST("     0x1:23:45").with(punct)  ( j(*!strf::hex(0x12345).p(5)) );
+        TEST("      01:23:45").with(punct)  ( j( !strf::hex(0x12345).p(6)) );
+        TEST("    0x01:23:45").with(punct)  ( j(*!strf::hex(0x12345).p(6)) );
+
+        TEST("       1:23:45").with(punct)  ( j( !strf::hex(0x12345).pad0(7).p(5)) );
+        TEST("      01:23:45").with(punct)  ( j( !strf::hex(0x12345).pad0(7).p(6)) );
+        TEST("      01:23:45").with(punct)  ( j( !strf::hex(0x12345).pad0(8).p(5)) );
+
+        TEST("     0x1:23:45").with(punct)  ( j(*!strf::hex(0x12345).pad0( 9).p(5)) );
+        TEST("    0x01:23:45").with(punct)  ( j(*!strf::hex(0x12345).pad0( 7).p(6)) );
+        TEST("    0x01:23:45").with(punct)  ( j(*!strf::hex(0x12345).pad0(10).p(5)) );
+    }
+
+    {   // octal with pad0 and precision and punctuation
+        auto punct = strf::numpunct<8>{2}.thousands_sep(':');
+        TEST("    1:23:45:67").with(punct)  (  (!strf::oct(01234567)).pad0(10) > 14 );
+        TEST("   01:23:45:67").with(punct)  (  (!strf::oct(01234567)).pad0(11) > 14 );
+        TEST("   01:23:45:67").with(punct)  ( *(!strf::oct(01234567)).pad0(11) > 14 );
+        TEST("   01:23:45:67").with(punct)  (  (!strf::oct(01234567)).p(8) > 14 );
+        TEST("   01:23:45:67").with(punct)  ( *(!strf::oct(01234567)).p(8) > 14 );
+        TEST("  001:23:45:67").with(punct)  (  (!strf::oct(01234567)).pad0(11).p(9) > 14 );
+        TEST("  001:23:45:67").with(punct)  (  (!strf::oct(01234567)).pad0(12).p(8) > 14 );
+        TEST("  001:23:45:67").with(punct)  ( *(!strf::oct(01234567)).pad0(11).p(9) > 14 );
+        TEST("  001:23:45:67").with(punct)  ( *(!strf::oct(01234567)).pad0(12).p(8) > 14 );
+    }
+
+    {
+        auto punct2 = [](auto... grps) -> strf::numpunct<10>
+            { return strf::numpunct<10>{grps...}.thousands_sep(0x10FFFF); };
+
+        TEST(u8"18\U0010FFFF" u8"446\U0010FFFF" u8"744\U0010FFFF" u8"073\U0010FFFF"
+             u8"709\U0010FFFF" u8"551\U0010FFFF" u8"61\U0010FFFF" u8"5")
+            .with(punct2(1, 2, 3)) (strf::punct(18446744073709551615ull));
+
+        TEST(u8"18446744073709551615")
+            .with(punct2(-1)) (strf::punct(18446744073709551615ull));
+
+        TEST(u8"18446744073709\U0010FFFF" u8"5\U0010FFFF" u8"51\U0010FFFF" u8"615")
+            .with(punct2(3, 2, 1, -1)) (strf::punct(18446744073709551615ull));
+
+        TEST(u8"1\U0010FFFF" u8"8\U0010FFFF" u8"4\U0010FFFF" u8"4\U0010FFFF"
+             u8"6\U0010FFFF" u8"7\U0010FFFF" u8"4\U0010FFFF" u8"4\U0010FFFF"
+             u8"0\U0010FFFF" u8"7\U0010FFFF" u8"3\U0010FFFF" u8"7\U0010FFFF"
+             u8"0\U0010FFFF" u8"9\U0010FFFF" u8"5\U0010FFFF" u8"51\U0010FFFF" u8"615")
+            .with(punct2(3, 2, 1)) (strf::punct(18446744073709551615ull));
+
+        TEST(u8"1\U0010FFFF" u8"8\U0010FFFF" u8"4\U0010FFFF" u8"4\U0010FFFF"
+             u8"6\U0010FFFF"
+             u8"7\U0010FFFF" u8"4\U0010FFFF" u8"4\U0010FFFF" u8"0\U0010FFFF"
+             u8"7\U0010FFFF"
+             u8"3\U0010FFFF" u8"7\U0010FFFF" u8"09\U0010FFFF" u8"551\U0010FFFF" u8"615")
+            .with(punct2(3, 3, 2, 1)) (strf::punct(18446744073709551615ull));
+
+        TEST(u8"18\U0010FFFF" u8"44\U0010FFFF" u8"67\U0010FFFF" u8"44\U0010FFFF"
+             u8"07\U0010FFFF"
+             u8"37\U0010FFFF" u8"09\U0010FFFF" u8"55\U0010FFFF" u8"1615")
+            .with(punct2(4, 2)) (strf::punct(18446744073709551615ull));
+
+        TEST(u8"1\U0010FFFF" u8"84\U0010FFFF" u8"46\U0010FFFF" u8"74\U0010FFFF"
+             u8"40\U0010FFFF" u8"73\U0010FFFF" u8"70\U0010FFFF" u8"95\U0010FFFF"
+             u8"51\U0010FFFF" u8"615")
+            .with(punct2(3, 2)) (strf::punct(18446744073709551615ull));
+
+        TEST_CALLING_RECYCLE_AT <2, 5, 5, 6, 4>
+            ("10\xCB\x9A" "000\xCB\x9A" "000\xCB\x9A" "0000\xCB\x9A" "00")
+            .with(strf::numpunct<10>{2,4,3}.thousands_sep(0x2DA))
+            (strf::punct(10'000'000'0000'00ull));
+    }
 
     {
         auto punct = strf::numpunct<10>{3};
@@ -727,46 +791,7 @@ void STRF_TEST_FUNC test_input_int()
         TEST("1,84,46,74,40,73,70,95,51,615")        .with(punct(3, 2))
             (strf::punct(18446744073709551615ull));
 
-        auto punct2 = [](auto... grps) -> punct
-            { return punct{grps...}.thousands_sep(0x10FFFF); };
 
-        TEST(u8"18\U0010FFFF" u8"446\U0010FFFF" u8"744\U0010FFFF" u8"073\U0010FFFF"
-             u8"709\U0010FFFF" u8"551\U0010FFFF" u8"61\U0010FFFF" u8"5")
-            .with(punct2(1, 2, 3)) (strf::punct(18446744073709551615ull));
-
-        TEST(u8"18446744073709551615")
-            .with(punct2(-1)) (strf::punct(18446744073709551615ull));
-
-        TEST(u8"18446744073709\U0010FFFF" u8"5\U0010FFFF" u8"51\U0010FFFF" u8"615")
-            .with(punct2(3, 2, 1, -1)) (strf::punct(18446744073709551615ull));
-
-        TEST(u8"1\U0010FFFF" u8"8\U0010FFFF" u8"4\U0010FFFF" u8"4\U0010FFFF"
-             u8"6\U0010FFFF" u8"7\U0010FFFF" u8"4\U0010FFFF" u8"4\U0010FFFF"
-             u8"0\U0010FFFF" u8"7\U0010FFFF" u8"3\U0010FFFF" u8"7\U0010FFFF"
-             u8"0\U0010FFFF" u8"9\U0010FFFF" u8"5\U0010FFFF" u8"51\U0010FFFF" u8"615")
-            .with(punct2(3, 2, 1)) (strf::punct(18446744073709551615ull));
-
-        TEST(u8"1\U0010FFFF" u8"8\U0010FFFF" u8"4\U0010FFFF" u8"4\U0010FFFF"
-             u8"6\U0010FFFF"
-             u8"7\U0010FFFF" u8"4\U0010FFFF" u8"4\U0010FFFF" u8"0\U0010FFFF"
-             u8"7\U0010FFFF"
-             u8"3\U0010FFFF" u8"7\U0010FFFF" u8"09\U0010FFFF" u8"551\U0010FFFF" u8"615")
-            .with(punct2(3, 3, 2, 1)) (strf::punct(18446744073709551615ull));
-
-        TEST(u8"18\U0010FFFF" u8"44\U0010FFFF" u8"67\U0010FFFF" u8"44\U0010FFFF"
-             u8"07\U0010FFFF"
-             u8"37\U0010FFFF" u8"09\U0010FFFF" u8"55\U0010FFFF" u8"1615")
-            .with(punct2(4, 2)) (strf::punct(18446744073709551615ull));
-
-        TEST(u8"1\U0010FFFF" u8"84\U0010FFFF" u8"46\U0010FFFF" u8"74\U0010FFFF"
-             u8"40\U0010FFFF" u8"73\U0010FFFF" u8"70\U0010FFFF" u8"95\U0010FFFF"
-             u8"51\U0010FFFF" u8"615")
-            .with(punct2(3, 2)) (strf::punct(18446744073709551615ull));
-
-        TEST_CALLING_RECYCLE_AT <2, 5, 5, 6, 4>
-            ("10\xCB\x9A" "000\xCB\x9A" "000\xCB\x9A" "0000\xCB\x9A" "00")
-            .with(strf::numpunct<10>{2,4,3}.thousands_sep(0x2DA))
-            (strf::punct(10'000'000'0000'00ull));
     }
     {
         using punct = strf::numpunct<16>;
@@ -999,7 +1024,6 @@ void STRF_TEST_FUNC test_input_int()
         .with(strf::numpunct<2>{1}.thousands_sep(0xFFFFFF))
             ( !strf::bin(0xF) );
     }
-
     {
         // dynamic base
         TEST("ffffffffffffffff")         ( strf::fmt(0xffffffffffffffffLL).base(16) );
@@ -1027,16 +1051,11 @@ void STRF_TEST_FUNC test_input_int()
     }
 }
 
-void STRF_TEST_FUNC test_input_ptr()
+void STRF_TEST_FUNC test_input_int()
 {
-    void* ptr = strf::detail::bit_cast<void*, std::size_t>(0xABC);
-
-    TEST("0xabc") (ptr);
-    TEST("...0xabc") (strf::right(ptr, 8, '.'));
-    TEST("...0xabc  ") (strf::join(strf::right(ptr, 8, '.')) < 10);
-    TEST("...0xABC").with(strf::lettercase::mixed) (strf::right(ptr, 8, '.'));
-    TEST("...0XABC")
-        .with(strf::constrain<std::is_pointer>(strf::lettercase::upper))
-        (strf::right(ptr, 8, '.'));
+    test_input_int_no_punct();
+    test_input_int_punct();
 }
+
+REGISTER_STRF_TEST(test_input_int);
 

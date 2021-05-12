@@ -322,3 +322,6 @@ void STRF_TEST_FUNC test_numpunct()
         TEST_TRUE(punct.grouping().empty());
     }
 }
+
+REGISTER_STRF_TEST(test_numpunct);
+

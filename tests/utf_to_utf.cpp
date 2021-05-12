@@ -844,3 +844,6 @@ void STRF_TEST_FUNC test_utf()
     TEST(u"\uFFFD").tr(u"{10}");
     TEST(U"\uFFFD").tr(U"{10}");
 }
+
+REGISTER_STRF_TEST(test_utf);
+

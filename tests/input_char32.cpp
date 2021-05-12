@@ -70,15 +70,5 @@ void STRF_TEST_FUNC test_input_char32()
     TEST("aaaa..") ( strf::join_left(6, '.')(strf::multi(U'a', 4) > 4) );
 }
 
-
-
-
-
-
-
-
-
-
-
-
+REGISTER_STRF_TEST(test_input_char32);
 

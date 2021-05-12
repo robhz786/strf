@@ -128,3 +128,5 @@ void STRF_TEST_FUNC test_printable_overriding()
 
 }
 
+REGISTER_STRF_TEST(test_printable_overriding);
+

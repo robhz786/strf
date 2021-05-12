@@ -153,3 +153,5 @@ void STRF_TEST_FUNC test_cstr_writer()
     test_destinations<char32_t>();
     test_destinations<wchar_t>();
 }
+
+REGISTER_STRF_TEST(test_cstr_writer);

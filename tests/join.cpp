@@ -84,3 +84,6 @@ void STRF_TEST_FUNC test_join()
                                  , strf::join('a', 'b', 'c')
                                  , "}--" ) > 8);
 }
+
+REGISTER_STRF_TEST(test_join);
+

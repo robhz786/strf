@@ -141,3 +141,6 @@ void STRF_TEST_FUNC test_reserve()
         TEST_EQ(size, 4);
     }
 }
+
+REGISTER_STRF_TEST(test_reserve);
+

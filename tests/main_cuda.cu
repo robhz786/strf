@@ -27,33 +27,7 @@ strf::outbuff& STRF_HD test_outbuff()
 
 } // namespace test_utils
 
-extern void __device__ test_cstr_writer();
-extern void __device__ test_dynamic_charset();
-extern void __device__ test_encode_char();
-extern void __device__ test_encode_fill();
-extern void __device__ test_facets_pack();
-extern void __device__ test_facets_pack_merge();
-extern void __device__ test_input_bool();
-extern void __device__ test_input_char();
-extern void __device__ test_input_char32();
-extern void __device__ test_input_facets_pack();
-extern void __device__ test_input_float();
-extern void __device__ test_input_int();
-extern void __device__ test_input_ptr();
-extern void __device__ test_input_range();
-extern void __device__ test_input_string();
-extern void __device__ test_join();
-extern void __device__ test_miscellaneous();
-extern void __device__ test_numpunct();
-extern void __device__ test_basic_outbuff();
-extern void __device__ test_printable_overriding();
-extern void __device__ test_reserve();
-extern void __device__ test_single_byte_encodings();
-extern void __device__ test_tr_string();
-extern void __device__ test_width_calculator();
-extern void __device__ test_width_t();
-extern void __device__ test_utf();
-extern void __device__ test_to_range();
+extern void __device__ run_all_tests();
 
 namespace kernels {
 
@@ -65,40 +39,7 @@ __global__ void kernel_main
     strf::cstr_writer out(err_msg, err_msg_size);
     test_utils::set_test_outbuff(out);
 
-    test_cstr_writer();
-    test_to_range();
-
-    // test_locale();            // not supported on CUDA
-    // test_cfile_writer();      // not supported on CUDA
-    // test_streambuf_writer();  // not supported on CUDA
-    // test_string_writer();     // not supported on CUDA
-
-    // test_dynamic_charset();   // not supported on CUDA
-
-    test_encode_char();
-    test_encode_fill();
-    test_facets_pack();
-    test_facets_pack_merge();
-    test_input_bool();
-    test_input_char();
-    test_input_char32();
-    test_input_facets_pack();
-    test_input_float();
-    test_input_int();
-    test_input_ptr();
-    test_input_range();
-    test_input_string();
-    test_basic_outbuff();
-    test_printable_overriding();
-    test_join();
-    test_miscellaneous();
-    test_numpunct();
-    test_reserve();
-    test_single_byte_encodings();
-    test_tr_string();
-    test_utf();
-    test_width_calculator();
-    test_width_t();
+    run_all_tests ();
 
     auto result = out.finish();
     (void)result;

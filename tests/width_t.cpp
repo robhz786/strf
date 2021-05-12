@@ -51,3 +51,5 @@ void STRF_TEST_FUNC test_width_t()
     TEST_TRUE(checked_mul(strf::width_min / 2, 4) == strf::width_min);
 }
 
+REGISTER_STRF_TEST(test_width_t);
+

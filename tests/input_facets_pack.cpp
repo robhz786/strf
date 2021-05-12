@@ -64,3 +64,5 @@ void STRF_TEST_FUNC test_input_facets_pack()
         , "char_encoding is not constrainable");
 }
 
+REGISTER_STRF_TEST(test_input_facets_pack);
+

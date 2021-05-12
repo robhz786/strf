@@ -63,69 +63,107 @@ target_link_libraries(test-static-lib   strf)
 add_test(NAME run-tests-header-only COMMAND  header-only)
 add_test(NAME run-tests-static-lib  COMMAND  static-lib)
 
-set(tests_on_cuda_device
-   cstr_writer
-#  dynamic_charset # to-do
-   encode_char
-   encode_fill
-   facets_pack
-   facets_pack_merge
-   input_bool
-   input_char
-   input_char32
-   input_facets_pack
-   input_float
-   input_int
-   input_range
-   input_string
-   override_printable
-   outbuff
-   join
-   miscellaneous
-   numpunct
-   range_writer
-   reserve
-   single_byte_encodings
-   tr_string
-   utf_to_utf
-   width_calculator
-   width_t
-  )
-
 if (${STRF_CUDA_SUPPORT})
 
-  foreach(src ${tests_on_cuda_device})
-    configure_file(${src}.cpp ${src}.cu COPYONLY)
-    list(APPEND cuda_sources ${src}.cu)
-  endforeach()
+  add_library(cuda-main-header-only STATIC main_cuda.cu)
+  add_library(cuda-main-static-lib STATIC main_cuda.cu)
 
-  add_executable(test-cuda-header-only main_cuda.cu ${cuda_sources})
-  add_executable(test-cuda-static-lib  main_cuda.cu ${cuda_sources})
+  target_include_directories(cuda-main-header-only PRIVATE ./)
+  target_include_directories(cuda-main-static-lib  PRIVATE ./)
 
-  target_include_directories(test-cuda-header-only PRIVATE ./)
-  target_include_directories(test-cuda-static-lib  PRIVATE ./)
+  target_link_libraries(cuda-main-header-only strf-header-only)
+  target_link_libraries(cuda-main-static-lib strf-cuda)
 
-  target_compile_definitions(test-cuda-header-only PUBLIC "STRF_TEST_FUNC=__device__")
-  target_compile_definitions(test-cuda-static-lib  PUBLIC "STRF_TEST_FUNC=__device__")
+  target_compile_options(cuda-main-header-only PRIVATE --expt-relaxed-constexpr)
+  target_compile_options(cuda-main-static-lib  PRIVATE --expt-relaxed-constexpr)
 
-  target_compile_options(test-cuda-header-only PRIVATE --expt-relaxed-constexpr)
-  target_compile_options(test-cuda-static-lib  PRIVATE --expt-relaxed-constexpr)
-
-  set_target_properties(test-cuda-header-only PROPERTIES OUTPUT_NAME kernel-header-only)
-  set_target_properties(test-cuda-static-lib  PROPERTIES OUTPUT_NAME kernel-static-lib )
-
-  target_link_libraries(test-cuda-header-only strf-header-only)
-  target_link_libraries(test-cuda-static-lib  strf-cuda )
-
-  set_target_properties(test-cuda-header-only PROPERTIES
-    CXX_STANDARD 14
-    CUDA_SEPARABLE_COMPILATION ON)
-  set_target_properties(test-cuda-static-lib  PROPERTIES
+  set_target_properties(cuda-main-header-only PROPERTIES
     CXX_STANDARD 14
     CUDA_SEPARABLE_COMPILATION ON)
 
-  add_test(NAME run-test-cuda-header-only COMMAND kernel-header-only)
-  add_test(NAME run-test-cuda-static-lib  COMMAND kernel-static-lib )
+  set_target_properties(cuda-main-static-lib  PROPERTIES
+    CXX_STANDARD 14
+    CUDA_SEPARABLE_COMPILATION ON)
 
 endif (${STRF_CUDA_SUPPORT})
 
+function(define_strf_cuda_test basename)
+
+  configure_file(${basename}.cpp ${basename}.cu COPYONLY)
+
+  add_executable(cuda-${basename}-header-only ${basename}.cu)
+  add_executable(cuda-${basename}-static-lib  ${basename}.cu)
+
+  target_include_directories(cuda-${basename}-header-only PRIVATE ./)
+  target_include_directories(cuda-${basename}-static-lib  PRIVATE ./)
+
+  target_compile_definitions(cuda-${basename}-header-only PUBLIC
+    "STRF_TEST_FUNC=__device__" )
+  target_compile_definitions(cuda-${basename}-static-lib  PUBLIC
+    "STRF_TEST_FUNC=__device__" )
+
+  target_compile_options(cuda-${basename}-header-only PRIVATE --expt-relaxed-constexpr)
+  target_compile_options(cuda-${basename}-static-lib  PRIVATE --expt-relaxed-constexpr)
+
+  set_target_properties(
+    cuda-${basename}-header-only
+    PROPERTIES OUTPUT_NAME cuda-${basename}-header-only)
+  set_target_properties(
+    cuda-${basename}-static-lib
+    PROPERTIES OUTPUT_NAME cuda-${basename}-static-lib )
+
+  target_link_libraries(
+    cuda-${basename}-header-only
+    cuda-main-header-only
+    strf-header-only )
+  target_link_libraries(
+    cuda-${basename}-static-lib
+    cuda-main-static-lib
+    strf-cuda )
+
+  set_target_properties(cuda-${basename}-header-only PROPERTIES
+    CXX_STANDARD 14
+    CUDA_SEPARABLE_COMPILATION ON)
+  set_target_properties(cuda-${basename}-static-lib  PROPERTIES
+    CXX_STANDARD 14
+    CUDA_SEPARABLE_COMPILATION ON)
+
+  add_test(
+    NAME run-cuda-${basename}-header-only
+    COMMAND cuda-${basename}-header-only)
+  add_test(
+    NAME run-cuda-${basename}-static-lib
+    COMMAND cuda-${basename}-static-lib )
+
+endfunction()
+
+if (${STRF_CUDA_SUPPORT})
+
+  # define_strf_cuda_test(dynamic_charset) # to-do
+  define_strf_cuda_test(cstr_writer)
+  define_strf_cuda_test(encode_char)
+  define_strf_cuda_test(encode_fill)
+  define_strf_cuda_test(facets_pack)
+  define_strf_cuda_test(facets_pack_merge)
+  define_strf_cuda_test(input_bool)
+  define_strf_cuda_test(input_char)
+  define_strf_cuda_test(input_char32)
+  define_strf_cuda_test(input_facets_pack)
+  define_strf_cuda_test(input_float)
+  define_strf_cuda_test(input_int)
+  define_strf_cuda_test(input_range)
+  define_strf_cuda_test(input_string)
+  define_strf_cuda_test(override_printable)
+  define_strf_cuda_test(outbuff)
+  define_strf_cuda_test(join)
+  define_strf_cuda_test(miscellaneous)
+  define_strf_cuda_test(numpunct)
+  define_strf_cuda_test(range_writer)
+  define_strf_cuda_test(reserve)
+  define_strf_cuda_test(single_byte_encodings)
+  define_strf_cuda_test(tr_string)
+  define_strf_cuda_test(utf_to_utf)
+  define_strf_cuda_test(width_calculator)
+  define_strf_cuda_test(width_t)
+
+endif (${STRF_CUDA_SUPPORT})
