@@ -321,7 +321,7 @@ private:
     std::size_t sep_len_;
 
     template <typename Category>
-    decltype(auto) get_facet_(const FPack& fp) const
+    static STRF_HD decltype(auto) get_facet_(const FPack& fp)
     {
         using sep_tag = strf::range_separator_input_tag<CharT>;
         return fp.template get_facet<Category, sep_tag>();
@@ -692,7 +692,7 @@ private:
     UnaryOp op_;
 
     template <typename Category>
-    STRF_HD decltype(auto) get_facet_(const FPack& fp) const
+    static STRF_HD decltype(auto) get_facet_(const FPack& fp)
     {
         using sep_tag = strf::range_separator_input_tag<CharT>;
         return fp.template get_facet<Category, sep_tag>();
