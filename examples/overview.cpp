@@ -159,7 +159,7 @@ void sample_numpunct_with_alternative_encoding()
 //[ numpuct__with_alternative_encoding
     // Writting in Windows-1252
     auto s = strf::to_string
-        .with(strf::windows_1252<char>())
+        .with(strf::windows_1252<char>)
         .with(strf::numpunct<10>{4, 3, 2}.thousands_sep(0x2022))
         ("one hundred billions = ", strf::punct(100000000000ll));
 
@@ -191,9 +191,9 @@ void input_string_encoding()
 {
     //[input_string_encoding
     // Three input string. Each one in its own character set
-    auto s = strf::to_u8string( strf::conv("\x80\xA4 -- ", strf::iso_8859_1<char>())
-                              , strf::conv("\x80\xA4 -- ", strf::iso_8859_15<char>())
-                              , strf::conv("\x80\xA4", strf::windows_1252<char>()) );
+    auto s = strf::to_u8string( strf::conv("\x80\xA4 -- ", strf::iso_8859_1<char>)
+                              , strf::conv("\x80\xA4 -- ", strf::iso_8859_15<char>)
+                              , strf::conv("\x80\xA4", strf::windows_1252<char>) );
 
     // The output by default is in UTF-8
     assert(s == u8"\u0080\u00A4 -- \u0080\u20AC -- \u20AC\u00A4");

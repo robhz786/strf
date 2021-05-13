@@ -14,25 +14,25 @@ constexpr STRF_TEST_FUNC auto as_signed(const T& value)
     return static_cast<typename std::make_signed<T>::type>(value);
 }
 STRF_TEST_FUNC strf::detail::simple_string_view<char>
-valid_input_sample(const strf::utf<char>&)
+valid_input_sample(const strf::utf_t<char>&)
 {
     return {(const char*)u8"a\0b\u0080\u0800\uD7FF\U00010000\U0010FFFF", 19};
 }
 
 STRF_TEST_FUNC strf::detail::simple_string_view<char16_t>
-valid_input_sample(const strf::utf<char16_t>&)
+valid_input_sample(const strf::utf_t<char16_t>&)
 {
     return {u"a\0b\u0080\u0800\uD7FF\U00010000\U0010FFFF", 10};
 }
 
 STRF_TEST_FUNC strf::detail::simple_string_view<char32_t>
-valid_input_sample(const strf::utf<char32_t>&)
+valid_input_sample(const strf::utf_t<char32_t>&)
 {
     return {U"a\0b\u0080\u0800\uD7FF\U00010000\U0010FFFF", 8};
 }
 
 STRF_TEST_FUNC strf::detail::simple_string_view<wchar_t>
-valid_input_sample(const strf::utf<wchar_t>&)
+valid_input_sample(const strf::utf_t<wchar_t>&)
 {
     return {L"a\0b\u0080\u0800\uD7FF\U00010000\U0010FFFF", (sizeof(wchar_t) == 2 ? 10 : 8)};
 }
@@ -48,7 +48,7 @@ STRF_TEST_FUNC void test_valid_input(SrcEncoding src_enc, DestEncoding dest_enc)
 }
 
 STRF_TEST_FUNC strf::detail::simple_string_view<char>
-sample_with_surrogates(const strf::utf<char>&)
+sample_with_surrogates(const strf::utf_t<char>&)
 {
     // static const char arr[] = 
         // { ' ', 0xED, 0xA0, 0x80, ' ', 0xED, 0xAF, 0xBF, ' '
@@ -56,19 +56,19 @@ sample_with_surrogates(const strf::utf<char>&)
     return " \xED\xA0\x80 \xED\xAF\xBF \xED\xB0\x80 \xED\xBF\xBF";
 }
 STRF_TEST_FUNC strf::detail::simple_string_view<char16_t>
-sample_with_surrogates(const strf::utf<char16_t>&)
+sample_with_surrogates(const strf::utf_t<char16_t>&)
 {
     static const char16_t arr[] = {' ', 0xD800, ' ', 0xDBFF, ' ', 0xDC00, ' ', 0xDFFF, 0};
     return {arr, 8};
 }
 STRF_TEST_FUNC strf::detail::simple_string_view<char32_t>
-sample_with_surrogates(const strf::utf<char32_t>&)
+sample_with_surrogates(const strf::utf_t<char32_t>&)
 {
     static const char32_t arr[] = {' ', 0xD800, ' ', 0xDBFF, ' ', 0xDC00, ' ', 0xDFFF, 0};
     return {arr, 8};
 }
 STRF_TEST_FUNC strf::detail::simple_string_view<wchar_t>
-sample_with_surrogates(const strf::utf<wchar_t>&)
+sample_with_surrogates(const strf::utf_t<wchar_t>&)
 {
     static const wchar_t arr[] = {' ', 0xD800, ' ', 0xDBFF, ' ', 0xDC00, ' ', 0xDFFF, 0};
     return {arr, 8};
@@ -111,7 +111,7 @@ struct array<T, 0>
 };
 
 
-STRF_TEST_FUNC auto invalid_sequences(strf::utf<char>)
+STRF_TEST_FUNC auto invalid_sequences(strf::utf_t<char>)
 {
     // based on https://www.unicode.org/versions/Unicode10.0.0/ch03.pdf
     // "Best Practices for Using U+FFFD"
@@ -138,7 +138,7 @@ STRF_TEST_FUNC auto invalid_sequences(strf::utf<char>)
         }};
 }
 
-STRF_TEST_FUNC auto surrogates_sequences(strf::utf<char>)
+STRF_TEST_FUNC auto surrogates_sequences(strf::utf_t<char>)
 {
     return array<invalid_seq<char>, 6>
        {{ {3, "\xED\xA0\x80"}             // surrogate
@@ -151,13 +151,13 @@ STRF_TEST_FUNC auto surrogates_sequences(strf::utf<char>)
 }
 
 template <typename CharT, std::enable_if_t<sizeof(CharT) == 2, int> = 0>
-STRF_TEST_FUNC auto invalid_sequences(const strf::utf<CharT>&)
+STRF_TEST_FUNC auto invalid_sequences(const strf::utf_t<CharT>&)
 {
     return array<invalid_seq<CharT>, 0>{};
 }
 
 template <typename CharT, std::enable_if_t<sizeof(CharT) == 4, int> = 0>
-STRF_TEST_FUNC auto invalid_sequences(const strf::utf<CharT>&)
+STRF_TEST_FUNC auto invalid_sequences(const strf::utf_t<CharT>&)
 {
     static const CharT ch = 0x110000;
     return array<invalid_seq<CharT>, 1> {{ {1, {&ch, 1}} }};
@@ -165,7 +165,7 @@ STRF_TEST_FUNC auto invalid_sequences(const strf::utf<CharT>&)
 
 template < typename CharT
          , std::enable_if_t<sizeof(CharT) == 2 || sizeof(CharT) == 4, int> = 0 >
-STRF_TEST_FUNC auto surrogates_sequences(const strf::utf<CharT>&)
+STRF_TEST_FUNC auto surrogates_sequences(const strf::utf_t<CharT>&)
 {
     static const CharT ch[] = {0xDFFF, 0xDC00, 0xD800, 0xDBFF};
     return array<invalid_seq<CharT>, 5>
@@ -177,16 +177,16 @@ STRF_TEST_FUNC auto surrogates_sequences(const strf::utf<CharT>&)
 }
 
 inline STRF_TEST_FUNC strf::detail::simple_string_view<char>
-replacement_char(const strf::utf<char>&){ return (const char*)u8"\uFFFD";}
+replacement_char(const strf::utf_t<char>&){ return (const char*)u8"\uFFFD";}
 
 inline STRF_TEST_FUNC strf::detail::simple_string_view<char16_t>
-replacement_char(const strf::utf<char16_t>&){ return u"\uFFFD";}
+replacement_char(const strf::utf_t<char16_t>&){ return u"\uFFFD";}
 
 inline STRF_TEST_FUNC strf::detail::simple_string_view<char32_t>
-replacement_char(const strf::utf<char32_t>&){ return U"\uFFFD";}
+replacement_char(const strf::utf_t<char32_t>&){ return U"\uFFFD";}
 
 inline STRF_TEST_FUNC strf::detail::simple_string_view<wchar_t>
-replacement_char(const strf::utf<wchar_t>&){ return L"\uFFFD";}
+replacement_char(const strf::utf_t<wchar_t>&){ return L"\uFFFD";}
 
 template <typename CharT>
 strf::detail::simple_string_view<CharT> STRF_TEST_FUNC concatenate
@@ -413,12 +413,12 @@ void STRF_TEST_FUNC for_all_combinations(const Tuple& encodings, Func func)
 void STRF_TEST_FUNC test_transcode_utf_to_utf()
 {
     const auto encodings = std::make_tuple
-        ( strf::utf<char>()
-        , strf::utf<char16_t>()
-        , strf::utf<char32_t>()
+        ( strf::utf<char>
+        , strf::utf_t<char16_t>()
+        , strf::utf_t<char32_t>()
 #if ! defined(__CUDACC__)
         // causes CUDACC to crash ( maybe because compilation unit is too big )
-        , strf::utf<wchar_t>()
+        , strf::utf_t<wchar_t>()
 #endif
         );
 
@@ -467,7 +467,7 @@ void STRF_TEST_FUNC test_codepoints_robust_count_invalid_sequences
     }
 }
 
-void STRF_TEST_FUNC test_codepoints_robust_count_valid_sequences(strf::utf<char> enc)
+void STRF_TEST_FUNC test_codepoints_robust_count_valid_sequences(strf::utf_t<char> enc)
 {
     constexpr auto strict = strf::surrogate_policy::strict;
     constexpr auto lax = strf::surrogate_policy::lax;
@@ -523,7 +523,7 @@ void STRF_TEST_FUNC test_codepoints_robust_count_valid_sequences(strf::utf<char>
     }
 }
 
-void STRF_TEST_FUNC test_codepoints_robust_count_valid_sequences(strf::utf<char16_t> enc)
+void STRF_TEST_FUNC test_codepoints_robust_count_valid_sequences(strf::utf_t<char16_t> enc)
 {
     constexpr auto lax = strf::surrogate_policy::lax;
     {
@@ -555,7 +555,7 @@ void STRF_TEST_FUNC test_codepoints_robust_count_valid_sequences(strf::utf<char1
     }
 }
 
-void STRF_TEST_FUNC test_codepoints_robust_count_valid_sequences(strf::utf<char32_t> enc)
+void STRF_TEST_FUNC test_codepoints_robust_count_valid_sequences(strf::utf_t<char32_t> enc)
 {
     constexpr auto lax = strf::surrogate_policy::lax;
     {
@@ -604,7 +604,7 @@ void STRF_TEST_FUNC test_codepoints_robust_count(Enc enc)
     }
 }
 
-void STRF_TEST_FUNC test_codepoints_fast_count(strf::utf<char> enc)
+void STRF_TEST_FUNC test_codepoints_fast_count(strf::utf_t<char> enc)
 {
     {
         auto r = enc.codepoints_fast_count((const char*)u8"\u0080", 2, 1);
@@ -653,7 +653,7 @@ void STRF_TEST_FUNC test_codepoints_fast_count(strf::utf<char> enc)
     }
 }
 
-void STRF_TEST_FUNC test_codepoints_fast_count(strf::utf<char16_t> enc)
+void STRF_TEST_FUNC test_codepoints_fast_count(strf::utf_t<char16_t> enc)
 {
     {
         auto r = enc.codepoints_fast_count(u"", 0, 0);
@@ -702,7 +702,7 @@ void STRF_TEST_FUNC test_codepoints_fast_count(strf::utf<char16_t> enc)
     }
 }
 
-void STRF_TEST_FUNC test_codepoints_fast_count(strf::utf<char32_t> enc)
+void STRF_TEST_FUNC test_codepoints_fast_count(strf::utf_t<char32_t> enc)
 {
     {
         auto r = enc.codepoints_fast_count(U"", 0, 0);
@@ -733,14 +733,14 @@ void STRF_TEST_FUNC test_codepoints_fast_count(strf::utf<char32_t> enc)
 
 void STRF_TEST_FUNC test_codepoints_count()
 {
-    test_codepoints_robust_count(strf::utf<char>{});
-    test_codepoints_fast_count(strf::utf<char>{});
+    test_codepoints_robust_count(strf::utf<char>);
+    test_codepoints_fast_count(strf::utf<char>);
 
-    test_codepoints_robust_count(strf::utf<char16_t>{});
-    test_codepoints_fast_count(strf::utf<char16_t>{});
+    test_codepoints_robust_count(strf::utf_t<char16_t>{});
+    test_codepoints_fast_count(strf::utf_t<char16_t>{});
 
-    test_codepoints_robust_count(strf::utf<char32_t>{});
-    test_codepoints_fast_count(strf::utf<char32_t>{});
+    test_codepoints_robust_count(strf::utf_t<char32_t>{});
+    test_codepoints_fast_count(strf::utf_t<char32_t>{});
 }
 
 } // unamed namespace
@@ -753,92 +753,92 @@ void STRF_TEST_FUNC test_utf()
     TEST_TRUE((std::is_same
                    < strf::static_transcoder
                        < char, char, strf::eid_utf8, strf::eid_utf8 >
-                   , decltype(strf::find_transcoder( strf::utf<char>()
-                                                   , strf::utf<char>())) >
+                   , decltype(strf::find_transcoder( strf::utf<char>
+                                                   , strf::utf<char>)) >
                   :: value));
     TEST_TRUE((std::is_same
                    < strf::static_transcoder
                        < char, char16_t, strf::eid_utf8, strf::eid_utf16 >
-                   , decltype(strf::find_transcoder( strf::utf<char>()
-                                                   , strf::utf<char16_t>())) >
+                   , decltype(strf::find_transcoder( strf::utf<char>
+                                                   , strf::utf_t<char16_t>())) >
                   :: value));
     TEST_TRUE((std::is_same
                    < strf::static_transcoder
                        < char, char32_t, strf::eid_utf8, strf::eid_utf32 >
-                   , decltype(strf::find_transcoder( strf::utf<char>()
-                                                   , strf::utf<char32_t>())) >
+                   , decltype(strf::find_transcoder( strf::utf<char>
+                                                   , strf::utf_t<char32_t>())) >
                   :: value));
     TEST_TRUE((std::is_same
                    < strf::static_transcoder
                        < char16_t, char, strf::eid_utf16, strf::eid_utf8 >
-                   , decltype(strf::find_transcoder( strf::utf<char16_t>()
-                                                   , strf::utf<char>())) >
+                   , decltype(strf::find_transcoder( strf::utf_t<char16_t>()
+                                                   , strf::utf<char>)) >
                   :: value));
     TEST_TRUE((std::is_same
                    < strf::static_transcoder
                        < char16_t, char16_t, strf::eid_utf16, strf::eid_utf16 >
-                   , decltype(strf::find_transcoder( strf::utf<char16_t>()
-                                                   , strf::utf<char16_t>())) >
+                   , decltype(strf::find_transcoder( strf::utf_t<char16_t>()
+                                                   , strf::utf_t<char16_t>())) >
                   :: value));
     TEST_TRUE((std::is_same
                    < strf::static_transcoder
                        < char16_t, char32_t, strf::eid_utf16, strf::eid_utf32 >
-                   , decltype(strf::find_transcoder( strf::utf<char16_t>()
-                                                   , strf::utf<char32_t>())) >
+                   , decltype(strf::find_transcoder( strf::utf_t<char16_t>()
+                                                   , strf::utf_t<char32_t>())) >
                   :: value));
     TEST_TRUE((std::is_same
                    < strf::static_transcoder
                        < char32_t, char, strf::eid_utf32, strf::eid_utf8 >
-                   , decltype(strf::find_transcoder( strf::utf<char32_t>()
-                                                   , strf::utf<char>())) >
+                   , decltype(strf::find_transcoder( strf::utf_t<char32_t>()
+                                                   , strf::utf<char>)) >
                   :: value));
     TEST_TRUE((std::is_same
                    < strf::static_transcoder
                        < char32_t, char16_t,  strf::eid_utf32, strf::eid_utf16 >
-                   , decltype(strf::find_transcoder( strf::utf<char32_t>()
-                                                   , strf::utf<char16_t>())) >
+                   , decltype(strf::find_transcoder( strf::utf_t<char32_t>()
+                                                   , strf::utf_t<char16_t>())) >
                   :: value));
     TEST_TRUE((std::is_same
                    < strf::static_transcoder
                        < char32_t, char32_t, strf::eid_utf32, strf::eid_utf32 >
-                   , decltype(strf::find_transcoder( strf::utf<char32_t>()
-                                                   , strf::utf<char32_t>())) >
+                   , decltype(strf::find_transcoder( strf::utf_t<char32_t>()
+                                                   , strf::utf_t<char32_t>())) >
                   :: value));
 
     {
-        auto tr = strf::utf<char>::find_transcoder_from(strf::tag<char16_t>{}, strf::eid_utf16);
+        auto tr = strf::utf_t<char>::find_transcoder_from(strf::tag<char16_t>{}, strf::eid_utf16);
         using expected_transcoder = strf::static_transcoder
             <char16_t, char, strf::eid_utf16, strf::eid_utf8>;
         TEST_TRUE(tr.transcode_func() == expected_transcoder::transcode_func());
     }
     {
-        auto tr = strf::utf<char>::find_transcoder_from(strf::tag<char16_t>{}, strf::eid_utf32);
+        auto tr = strf::utf_t<char>::find_transcoder_from(strf::tag<char16_t>{}, strf::eid_utf32);
         TEST_TRUE(tr.transcode_func() == nullptr);
     }
     {
-        auto tr = strf::utf<char16_t>::find_transcoder_from(strf::tag<char>{}, strf::eid_utf8);
+        auto tr = strf::utf_t<char16_t>::find_transcoder_from(strf::tag<char>{}, strf::eid_utf8);
         using expected_transcoder = strf::static_transcoder
             <char, char16_t, strf::eid_utf8, strf::eid_utf16>;
         TEST_TRUE(tr.transcode_func() == expected_transcoder::transcode_func());
     }
     {
-        auto tr = strf::utf<char32_t>::find_transcoder_from(strf::tag<char>{}, strf::eid_utf8);
+        auto tr = strf::utf_t<char32_t>::find_transcoder_from(strf::tag<char>{}, strf::eid_utf8);
         using expected_transcoder = strf::static_transcoder
             <char, char32_t, strf::eid_utf8, strf::eid_utf32>;
         TEST_TRUE(tr.transcode_func() == expected_transcoder::transcode_func());
     }
     {
-        auto tr = strf::utf<char32_t>::find_transcoder_from(strf::tag<char>{}, strf::eid_utf16);
+        auto tr = strf::utf_t<char32_t>::find_transcoder_from(strf::tag<char>{}, strf::eid_utf16);
         TEST_TRUE(tr.transcode_func() == nullptr);
     }
     {
-        auto tr = strf::utf<char32_t>::find_transcoder_to(strf::tag<char>{}, strf::eid_utf8);
+        auto tr = strf::utf_t<char32_t>::find_transcoder_to(strf::tag<char>{}, strf::eid_utf8);
         using expected_transcoder = strf::static_transcoder
             <char32_t, char, strf::eid_utf32, strf::eid_utf8>;
         TEST_TRUE(tr.transcode_func() == expected_transcoder::transcode_func());
     }
 
-    TEST_EQ(strf::utf<char32_t>::validate(0x123), 1);
+    TEST_EQ(strf::utf_t<char32_t>::validate(0x123), 1);
 
     TEST(u8"\uFFFD").tr(u8"{10}"); // cover write_replacement_char(x);
     TEST(u"\uFFFD").tr(u"{10}");

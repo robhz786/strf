@@ -2117,19 +2117,28 @@ STRF_HD std::size_t strf::static_transcoder
 }
 
 template <typename CharT>
-using utf8 = strf::static_char_encoding<CharT, strf::eid_utf8>;
+using utf8_t = strf::static_char_encoding<CharT, strf::eid_utf8>;
 
 template <typename CharT>
-using utf16 = strf::static_char_encoding<CharT, strf::eid_utf16>;
+using utf16_t = strf::static_char_encoding<CharT, strf::eid_utf16>;
 
 template <typename CharT>
-using utf32 = strf::static_char_encoding<CharT, strf::eid_utf32>;
+using utf32_t = strf::static_char_encoding<CharT, strf::eid_utf32>;
 
 template <typename CharT>
-using utf = strf::static_char_encoding<CharT, strf::eid_utf<CharT>>;
+using utf_t = strf::static_char_encoding<CharT, strf::eid_utf<CharT>>;
 
-// using utfw = strf::utf<wchar_t>;
-// using wchar_encoding = strf::utf<wchar_t>;
+template <typename CharT>
+STRF_HD constexpr utf8_t<CharT> utf8 {};
+
+template <typename CharT>
+STRF_HD constexpr utf16_t<CharT> utf16 {};
+
+template <typename CharT>
+STRF_HD constexpr utf32_t<CharT> utf32 {};
+
+template <typename CharT>
+STRF_HD constexpr utf_t<CharT> utf {};
 
 } // namespace strf
 

@@ -77,53 +77,53 @@ void STRF_TEST_FUNC test_input_string()
 
         TEST("---\x99---") (strf::conv("---\x99---"));
         TEST("---\xA5---")
-            .with(strf::iso_8859_3<char>())
-            (strf::conv("---\xA5---", strf::iso_8859_3<char>()));
+            .with(strf::iso_8859_3<char>)
+            (strf::conv("---\xA5---", strf::iso_8859_3<char>));
         {
             const char8_t expected[] = { '-', '-', '-', (char8_t)'\xA5', '-', '-', '-', '\0' };
             TEST(expected)
-                .with(strf::iso_8859_3<char8_t>())
-                (strf::conv("---\xA5---", strf::iso_8859_3<char>()));
+                .with(strf::iso_8859_3<char8_t>)
+                (strf::conv("---\xA5---", strf::iso_8859_3<char>));
         }
         TEST("...---\xA5---")
-            .with(strf::iso_8859_3<char>())
-            (strf::right("---\xA5---", 10, U'.').conv(strf::iso_8859_3<char>()));
+            .with(strf::iso_8859_3<char>)
+            (strf::right("---\xA5---", 10, U'.').conv(strf::iso_8859_3<char>));
         {
             const char8_t expected[] = { '.', '.', '.', '-', '-', '-', (char8_t)'\xA5', '-', '-', '-', '\0' };
             TEST(expected)
-                .with(strf::iso_8859_3<char8_t>())
-                (strf::right("---\xA5---", 10, U'.').conv(strf::iso_8859_3<char>()));
+                .with(strf::iso_8859_3<char8_t>)
+                (strf::right("---\xA5---", 10, U'.').conv(strf::iso_8859_3<char>));
         }
     }
     {   // encoding sanitization
 
         TEST("---\xEF\xBF\xBD---") (strf::sani("---\xFF---"));
         TEST("   ---\xEF\xBF\xBD---") (strf::sani("---\xFF---") > 10);
-        TEST("---\xEF\xBF\xBD---") (strf::sani("---\xFF---", strf::utf8<char>()));
-        TEST("   ---\xEF\xBF\xBD---") (strf::sani("---\xFF---", strf::utf8<char>()) > 10);
+        TEST("---\xEF\xBF\xBD---") (strf::sani("---\xFF---", strf::utf<char>));
+        TEST("   ---\xEF\xBF\xBD---") (strf::sani("---\xFF---", strf::utf<char>) > 10);
         TEST("---?---")
-            .with(strf::iso_8859_3<char>())
-            (strf::sani("---\xA5---", strf::iso_8859_3<char>()));
+            .with(strf::iso_8859_3<char>)
+            (strf::sani("---\xA5---", strf::iso_8859_3<char>));
         TEST("  ---?---")
-            .with(strf::iso_8859_3<char>())
-            (strf::sani("---\xA5---", strf::iso_8859_3<char>()) > 9);
+            .with(strf::iso_8859_3<char>)
+            (strf::sani("---\xA5---", strf::iso_8859_3<char>) > 9);
 
         TEST("...---\x99---") (strf::conv("---\x99---").fill(U'.') > 10);
-        TEST("...---\x99---") (strf::conv("---\x99---", strf::utf8<char>()).fill(U'.') > 10);
+        TEST("...---\x99---") (strf::conv("---\x99---", strf::utf<char>).fill(U'.') > 10);
     }
     {   // encoding conversion
 
         TEST("--?--\x80--")
-            .with(strf::windows_1252<char>())
-            (strf::sani("--\xC9\x90--\xE2\x82\xAC--", strf::utf8<char>()));
+            .with(strf::windows_1252<char>)
+            (strf::sani("--\xC9\x90--\xE2\x82\xAC--", strf::utf<char>));
 
         TEST("--?--\x80--")
-            .with(strf::windows_1252<char>())
-            (strf::conv("--\xC9\x90--\xE2\x82\xAC--", strf::utf8<char>()));
+            .with(strf::windows_1252<char>)
+            (strf::conv("--\xC9\x90--\xE2\x82\xAC--", strf::utf<char>));
 
         TEST(".......--?--\x80--")
-            .with(strf::windows_1252<char>())
-            (strf::right("--\xC9\x90--\xE2\x82\xAC--", 15, U'.').conv(strf::utf8<char>()));
+            .with(strf::windows_1252<char>)
+            (strf::right("--\xC9\x90--\xE2\x82\xAC--", 15, U'.').conv(strf::utf<char>));
     }
 
     {   // convertion from utf32

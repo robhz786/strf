@@ -165,7 +165,7 @@ struct print_traits<std::complex<FloatT>>
     //     auto arg2 = strf::join
     //         ( strf::multi((CharT)'(', has_brackets)
     //         , v.first
-    //         , strf::conv(middle_string(form), strf::utf16<char16_t>())
+    //         , strf::conv(middle_string(form), strf::utf_t<char16_t>())
     //         , v.second
     //         , strf::multi((CharT)')', has_brackets) );
 
@@ -184,7 +184,7 @@ struct print_traits<std::complex<FloatT>>
         auto arg2 = strf::join
             ( strf::multi((CharT)'(', has_brackets)
             , strf::fmt(v.first).set_float_format(arg.get_float_format())
-            , strf::conv(middle_string(form), strf::utf16<char16_t>())
+            , strf::conv(middle_string(form), strf::utf_t<char16_t>())
             , strf::fmt(v.second).set_float_format(arg.get_float_format())
             , strf::multi((CharT)')', has_brackets) );
         auto arg3 = arg2.set_alignment_format(arg.get_alignment_format());

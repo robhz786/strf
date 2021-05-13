@@ -68,7 +68,10 @@
     {};                                                                       \
                                                                               \
     template <typename CharT>                                                 \
-    using CHARSET = strf::static_char_encoding<CharT, strf::eid_ ## CHARSET>;
+    using CHARSET ## _t =                                                     \
+        strf::static_char_encoding<CharT, strf::eid_ ## CHARSET>;             \
+                                                                              \
+    template <typename CharT> STRF_HD CHARSET ## _t<CharT> CHARSET = {};
 
 namespace strf {
 

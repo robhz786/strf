@@ -805,29 +805,29 @@ assert(str_mixed == "0xAB 1e+50 Inf");
 [[character_encoding]]
 == Character encodings
 
-The class templates below are facets that specify the character encoding
-corresponding to the character type. Their instances are always
-empty classes.
+The varibales templates below are facets objects that specify the character encoding
+corresponding to the character type.
 
 [[static_char_encodings]]
 [source,cpp]
 ----
 namespace strf {
 
-template <typename CharT> using ascii = /*...*/;
-template <typename CharT> using iso_8859_1 = /*...*/;
-template <typename CharT> using iso_8859_2 = /*...*/;
-template <typename CharT> using iso_8859_3 = /*...*/;
-template <typename CharT> using windows_1250 = /*...*/;
-template <typename CharT> using windows_1251 = /*...*/;
-template <typename CharT> using windows_1252 = /*...*/;
-template <typename CharT> using utf8 = /*...*/;
-template <typename CharT> using utf16 = /*...*/;
-template <typename CharT> using utf32 = /*...*/;
+template <typename CharT> constexpr ascii_t<CharT>       ascii {};
 
-template <typename CharT>
-using utf = /* utf8<CharT> , utf16<CharT> or utf32<CharT> */
-            /* , depending on sizeof(CharT) */;
+template <typename CharT> constexpr iso_8859_1_t<CharT>  iso_8859_1 {};
+template <typename CharT> constexpr iso_8859_2_t<CharT>  iso_8859_2 {};
+// ... up to iso_8859_16
+
+template <typename CharT> constexpr windows_1250_t<CharT>  windows_1250 {};
+template <typename CharT> constexpr windows_1251_t<CharT>  windows_1251 {};
+// ... up to windows_1258
+
+template <typename CharT> constexpr utf8_t<CharT>   utf8 {};
+template <typename CharT> constexpr utf16_t<CharT>  utf16 {};
+template <typename CharT> constexpr utf32_t<CharT>  utf32 {};
+
+template <typename CharT> constexpr utf_t<CharT> utf {}
 
 } // namespace strf
 ----
@@ -836,7 +836,7 @@ using utf = /* utf8<CharT> , utf16<CharT> or utf32<CharT> */
 [source,cpp]
 ----
 auto s = strf::to_string
-    .with(strf::windows_1252<char>())
+    .with(strf::windows_1252<char>)
     .with(strf::numpunct<10>{4, 3, 2}.thousands_sep(0x2022))
     ("one hundred billions = ", 100000000000ll);
 
@@ -874,8 +874,8 @@ for a specific input string argument:
 [source,cpp]
 ----
 auto str_utf8 = strf::to_u8string
-    ( strf::conv("--\xA4--", strf::iso_8859_1<char>())
-    , strf::conv("--\xA4--", strf::iso_8859_15<char>()));
+    ( strf::conv("--\xA4--", strf::iso_8859_1<char>)
+    , strf::conv("--\xA4--", strf::iso_8859_15<char>));
 
 assert(str_utf8 == u8"--\u00A4----\u20AC--");
 ----
@@ -887,12 +887,12 @@ In this case `sani` causes the input to be sanitized, whereas `conv` does not:
 [source, cpp]
 ----
 auto str = strf::to_string
-    .with(strf::iso_8859_3<char>()) // the output encoding
-    ( strf::conv("--\xff--")                             // not sanitized
-    , strf::conv("--\xff--", strf::iso_8859_3<char>())   // not sanitized ( same encoding )
-    , strf::conv("--\xff--", strf::utf8<char>())         // sanitized ( different encoding )
-    , strf::sani("--\xff--")                             // sanitized
-    , strf::sani("--\xff--", strf::iso_8859_3<char>()) ) // sanitized
+    .with(strf::iso_8859_3<char>)    // the output encoding
+    ( strf::conv("--\xff--")                           // not sanitized
+    , strf::conv("--\xff--", strf::iso_8859_3<char>)   // not sanitized ( same encoding )
+    , strf::conv("--\xff--", strf::utf8<char>)         // sanitized ( different encoding )
+    , strf::sani("--\xff--")                           // sanitized
+    , strf::sani("--\xff--", strf::iso_8859_3<char>) ) // sanitized
 
 assert(str == "--\xff----\xff----?----?----?--");
 ----
@@ -926,7 +926,7 @@ There is one particular kind of nonconformity that you may sometimes want to
 permit, which is the invalid presence of
 https://en.wikipedia.org/wiki/Universal_Character_Set_characters#Surrogates[surrogate]
 characters.
-That is particular common on Windows, where you may have an old file name, created
+That is particular common on Windows, where you may have an old file names, created
 at the time of Windows 95 ( where wide strings were UCS-2 ) and that contains
 some unpaired surrogates. If you then treat it as UTF-16 and convert it to UTF-8
 and back to UTF-16, you get a different name.

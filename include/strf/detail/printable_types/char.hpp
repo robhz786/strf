@@ -273,7 +273,7 @@ public:
         using preview_type = typename strf::usual_printer_input<T...>::preview_type;
         STRF_IF_CONSTEXPR (preview_type::width_required) {
             decltype(auto) wcalc = get_facet<strf::width_calculator_c, char32_t>(input.facets);
-            input.preview.subtract_width(wcalc.char_width(strf::utf32<char32_t>{}, ch_));
+            input.preview.subtract_width(wcalc.char_width(strf::utf_t<char32_t>{}, ch_));
         }
     }
 
@@ -305,7 +305,7 @@ public:
     {
         auto enc = strf::get_facet<char_encoding_c<DestCharT>, char32_t>(input.facets);
         decltype(auto) wcalc = get_facet<strf::width_calculator_c, char32_t>(input.facets);
-        auto char_width = wcalc.char_width(strf::utf32<char32_t>{}, ch_);
+        auto char_width = wcalc.char_width(strf::utf_t<char32_t>{}, ch_);
         init_(input.preview, enc, input.arg.get_alignment_format(), char_width);
     }
 

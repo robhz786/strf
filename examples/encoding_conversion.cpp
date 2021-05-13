@@ -50,8 +50,8 @@ void arg()
 {
     //[ arg_encoding
     auto str_utf8 = strf::to_u8string
-        ( strf::conv("--\xA4--", strf::iso_8859_1<char>())
-        , strf::conv("--\xA4--", strf::iso_8859_15<char>()));
+        ( strf::conv("--\xA4--", strf::iso_8859_1<char>)
+        , strf::conv("--\xA4--", strf::iso_8859_15<char>));
 
     assert(str_utf8 == u8"--\u00A4----\u20AC--");
     //]
@@ -88,9 +88,9 @@ void allow_surrogates ()
 void char32()
 {
     char32_t ch = 0x20AC; // euro sign
-    assert(strf::to_string.with(strf::utf8<char>())        (ch) == "\xE2\x82\xAC");
-    assert(strf::to_string.with(strf::iso_8859_15<char>()) (ch) == "\xA4");
-    assert(strf::to_string.with(strf::iso_8859_1<char>())  (ch) == "?");
+    assert(strf::to_string.with(strf::utf<char>)         (ch) == "\xE2\x82\xAC");
+    assert(strf::to_string.with(strf::iso_8859_15<char>) (ch) == "\xA4");
+    assert(strf::to_string.with(strf::iso_8859_1<char>)  (ch) == "?");
     (void) ch;
 }
 

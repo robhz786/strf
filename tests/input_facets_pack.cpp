@@ -57,7 +57,7 @@ void STRF_TEST_FUNC test_input_facets_pack()
 
     static_assert
         ( ! strf::detail::all_are_constrainable
-          < strf::utf8<char>
+          < strf::utf_t<char>
           , strf::fast_width_t
           , strf::numpunct<10> >
           :: value

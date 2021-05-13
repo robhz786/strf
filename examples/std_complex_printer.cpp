@@ -217,7 +217,7 @@ void std_complex_printer<CharT, FloatT>::preview_(Preview& pp, const WidthCalc& 
         default:
             assert(form_ == complex_form::polar);
             if (pp.remaining_width() > 0) {
-                pp.subtract_width(wcalc.char_width(strf::utf32<char32_t>{}, anglechar_));
+                pp.subtract_width(wcalc.char_width(strf::utf_t<char32_t>{}, anglechar_));
                 pp.subtract_width(1);
             }
             pp.add_size(encoding_.encoded_char_size(anglechar_));
@@ -310,7 +310,7 @@ void fmt_std_complex_printer<CharT, FloatT>::init_fillcount_and_preview_
     , WidthCalc wcalc
     , strf::width_t fmt_width )
 {
-    strf::width_t fillchar_width = wcalc.char_width(strf::utf32<char32_t>{}, fillchar_);
+    strf::width_t fillchar_width = wcalc.char_width(strf::utf_t<char32_t>{}, fillchar_);
     if (fmt_width >= preview.remaining_width() || ! (bool)PreviewWidth ) {
         preview.clear_remaining_width();
         strf::print_preview<PreviewSize, strf::preview_width::yes> sub_preview{fmt_width};
@@ -360,7 +360,7 @@ void fmt_std_complex_printer<CharT, FloatT>::preview_without_fill_
         default:
             assert(form_ == complex_form::polar);
             if (pp.remaining_width() > 0) {
-                pp.subtract_width(wcalc.char_width(strf::utf32<char32_t>{}, anglechar_));
+                pp.subtract_width(wcalc.char_width(strf::utf_t<char32_t>{}, anglechar_));
                 pp.subtract_width(1);
             }
             pp.add_size(encoding_.encoded_char_size(anglechar_));
@@ -505,21 +505,21 @@ void tests()
         (strf::punct(x));
 
     TEST("(1\xA9""5E+10, 2\xA9""5E+10)")
-        .with( punct, strf::uppercase, strf::iso_8859_3<char>() )
+        .with( punct, strf::uppercase, strf::iso_8859_3<char> )
         (strf::punct(std::complex<double>{1.5e+10, 2.5e+10}));
 
     TEST("(1\xA9""5E+10 + i*2\xA9""5E+10)")
-        .with( complex_form::algebric, punct, strf::uppercase, strf::iso_8859_3<char>() )
+        .with( complex_form::algebric, punct, strf::uppercase, strf::iso_8859_3<char> )
         (strf::punct(std::complex<double>{1.5e+10, 2.5e+10}));
 
     TEST("1\xA9""5E+10? 1\xA9""6666666666666666E-10")
-        .with(complex_form::polar, punct, strf::uppercase, strf::iso_8859_3<char>() )
+        .with(complex_form::polar, punct, strf::uppercase, strf::iso_8859_3<char> )
         (strf::punct(std::complex<double>{1.5e+10, 2.5}));
 
     TEST("(1.5e+10 + i*2.5e+10)") .with( complex_form::algebric
                               , strf::constrain<is_float32>(punct)
                               , strf::constrain<is_float32>(strf::uppercase)
-                              , strf::iso_8859_3<char>() )
+                              , strf::iso_8859_3<char> )
         (std::complex<double>{1.5e+10, 2.5e+10});
 
     // using format functions
@@ -547,75 +547,75 @@ void tests()
     // using format functions and facets
 
     TEST("________________________(3\251E+03, 4\251E+03)")
-        .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
+        .with(strf::iso_8859_3<char>, punct, strf::uppercase)
         (* !strf::right(x, 40, '_').sci());
 
     TEST("_____________________(3\251E+03 + i*4\251E+03)")
-        .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
+        .with(strf::iso_8859_3<char>, punct, strf::uppercase)
         (* !strf::right(x, 40, '_').sci().algebric());
 
     TEST("___________5\251E+03? 9\251""272952180016122E-01")
-        .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
+        .with(strf::iso_8859_3<char>, punct, strf::uppercase)
         (* !strf::right(x, 40, '_').sci().polar());
 
     TEST("(3\251E+03, 4\251E+03)________________________")
-        .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
+        .with(strf::iso_8859_3<char>, punct, strf::uppercase)
         (* !strf::left(x, 40, '_').sci());
 
     TEST("(3\251E+03 + i*4\251E+03)_____________________")
-        .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
+        .with(strf::iso_8859_3<char>, punct, strf::uppercase)
         (* !strf::left(x, 40, '_').sci().algebric());
 
     TEST("5\251E+03? 9\251""272952180016122E-01___________")
-        .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
+        .with(strf::iso_8859_3<char>, punct, strf::uppercase)
         (* !strf::left(x, 40, '_').sci().polar());
 
     TEST("____________(3\251E+03, 4\251E+03)____________")
-        .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
+        .with(strf::iso_8859_3<char>, punct, strf::uppercase)
         (* !strf::center(x, 40, '_').sci());
 
     TEST("__________(3\251E+03 + i*4\251E+03)___________")
-        .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
+        .with(strf::iso_8859_3<char>, punct, strf::uppercase)
         (* !strf::center(x, 40, '_').sci().algebric());
 
     TEST("_____5\251E+03? 9\251""272952180016122E-01______")
-        .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
+        .with(strf::iso_8859_3<char>, punct, strf::uppercase)
         (* !strf::center(x, 40, '_').sci().polar());
 
     TEST("________________________(3\251E+03, 4\251E+03)")
-        .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
+        .with(strf::iso_8859_3<char>, punct, strf::uppercase)
         (* !strf::right(x, 40, '_').sci());
 
     TEST("_____________________(3\251E+03 + i*4\251E+03)")
-        .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
+        .with(strf::iso_8859_3<char>, punct, strf::uppercase)
         (* !strf::right(x, 40, '_').sci().algebric());
 
     TEST("___________5\251E+03? 9\251""272952180016122E-01")
-        .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
+        .with(strf::iso_8859_3<char>, punct, strf::uppercase)
         (* !strf::right(x, 40, '_').sci().polar());
 
     TEST("(3\251E+03, 4\251E+03)________________________")
-        .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
+        .with(strf::iso_8859_3<char>, punct, strf::uppercase)
         (* !strf::left(x, 40, '_').sci());
 
     TEST("(3\251E+03 + i*4\251E+03)_____________________")
-        .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
+        .with(strf::iso_8859_3<char>, punct, strf::uppercase)
         (* !strf::left(x, 40, '_').sci().algebric());
 
     TEST("5\251E+03? 9\251""272952180016122E-01___________")
-        .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
+        .with(strf::iso_8859_3<char>, punct, strf::uppercase)
         (* !strf::left(x, 40, '_').sci().polar());
 
     TEST("____________(3\251E+03, 4\251E+03)____________")
-        .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
+        .with(strf::iso_8859_3<char>, punct, strf::uppercase)
         (* !strf::center(x, 40, '_').sci());
 
     TEST("__________(3\251E+03 + i*4\251E+03)___________")
-        .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
+        .with(strf::iso_8859_3<char>, punct, strf::uppercase)
         (* !strf::center(x, 40, '_').sci().algebric());
 
     TEST("_____5\251E+03? 9\251""272952180016122E-01______")
-        .with(strf::iso_8859_3<char>(), punct, strf::uppercase)
+        .with(strf::iso_8859_3<char>, punct, strf::uppercase)
         (* !strf::center(x, 40, '_').sci().polar());
 
     // preview

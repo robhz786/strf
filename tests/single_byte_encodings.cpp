@@ -137,7 +137,7 @@ static STRF_TEST_FUNC void STRF_TEST_FUNC general_tests
 
         char result[0x101];
         auto res = strf::to(result).with(enc)
-            (strf::conv(decoded_0_to_0xff, strf::utf32<char32_t>()));
+            (strf::conv(decoded_0_to_0xff, strf::utf_t<char32_t>()));
         TEST_FALSE(res.truncated);
         TEST_EQ(res.ptr - result, 0x100);
 
@@ -159,7 +159,7 @@ static STRF_TEST_FUNC void STRF_TEST_FUNC general_tests
         auto res = strf::to(result)
             .with(enc)
             .with(strf::invalid_seq_notifier{encoding_error_handler})
-            (strf::conv(decoded_0_to_0xff, strf::utf32<char32_t>()));
+            (strf::conv(decoded_0_to_0xff, strf::utf_t<char32_t>()));
         TEST_FALSE(res.truncated);
         TEST_EQ(res.ptr - result, 0x100);
 
@@ -1348,93 +1348,93 @@ inline STRF_HD void test_undefined_bytes
 
 void STRF_TEST_FUNC test_single_byte_encodings()
 {
-    general_tests(strf::ascii<char>(), decoded_0_to_xff_ascii());
-    general_tests(strf::iso_8859_1<char>(), decoded_0_to_xff_iso_8859_1());
-    general_tests(strf::iso_8859_2<char>(), decoded_0_to_xff_iso_8859_2());
-    general_tests(strf::iso_8859_3<char>(), decoded_0_to_xff_iso_8859_3());
-    general_tests(strf::iso_8859_4<char>(), decoded_0_to_xff_iso_8859_4());
-    general_tests(strf::iso_8859_5<char>(), decoded_0_to_xff_iso_8859_5());
-    general_tests(strf::iso_8859_6<char>(), decoded_0_to_xff_iso_8859_6());
-    general_tests(strf::iso_8859_7<char>(), decoded_0_to_xff_iso_8859_7());
-    general_tests(strf::iso_8859_8<char>(), decoded_0_to_xff_iso_8859_8());
-    general_tests(strf::iso_8859_9<char>(), decoded_0_to_xff_iso_8859_9());
-    general_tests(strf::iso_8859_10<char>(), decoded_0_to_xff_iso_8859_10());
-    general_tests(strf::iso_8859_11<char>(), decoded_0_to_xff_iso_8859_11());
-    general_tests(strf::iso_8859_13<char>(), decoded_0_to_xff_iso_8859_13());
-    general_tests(strf::iso_8859_14<char>(), decoded_0_to_xff_iso_8859_14());
-    general_tests(strf::iso_8859_15<char>(), decoded_0_to_xff_iso_8859_15());
-    general_tests(strf::iso_8859_16<char>(), decoded_0_to_xff_iso_8859_16());
-    general_tests(strf::windows_1250<char>(), decoded_0_to_xff_windows_1250());
-    general_tests(strf::windows_1251<char>(), decoded_0_to_xff_windows_1251());
-    general_tests(strf::windows_1252<char>(), decoded_0_to_xff_windows_1252());
-    general_tests(strf::windows_1253<char>(), decoded_0_to_xff_windows_1253());
-    general_tests(strf::windows_1254<char>(), decoded_0_to_xff_windows_1254());
-    general_tests(strf::windows_1255<char>(), decoded_0_to_xff_windows_1255());
-    general_tests(strf::windows_1256<char>(), decoded_0_to_xff_windows_1256());
-    general_tests(strf::windows_1257<char>(), decoded_0_to_xff_windows_1257());
-    general_tests(strf::windows_1258<char>(), decoded_0_to_xff_windows_1258());
+    general_tests(strf::ascii<char>, decoded_0_to_xff_ascii());
+    general_tests(strf::iso_8859_1<char>, decoded_0_to_xff_iso_8859_1());
+    general_tests(strf::iso_8859_2<char>, decoded_0_to_xff_iso_8859_2());
+    general_tests(strf::iso_8859_3<char>, decoded_0_to_xff_iso_8859_3());
+    general_tests(strf::iso_8859_4<char>, decoded_0_to_xff_iso_8859_4());
+    general_tests(strf::iso_8859_5<char>, decoded_0_to_xff_iso_8859_5());
+    general_tests(strf::iso_8859_6<char>, decoded_0_to_xff_iso_8859_6());
+    general_tests(strf::iso_8859_7<char>, decoded_0_to_xff_iso_8859_7());
+    general_tests(strf::iso_8859_8<char>, decoded_0_to_xff_iso_8859_8());
+    general_tests(strf::iso_8859_9<char>, decoded_0_to_xff_iso_8859_9());
+    general_tests(strf::iso_8859_10<char>, decoded_0_to_xff_iso_8859_10());
+    general_tests(strf::iso_8859_11<char>, decoded_0_to_xff_iso_8859_11());
+    general_tests(strf::iso_8859_13<char>, decoded_0_to_xff_iso_8859_13());
+    general_tests(strf::iso_8859_14<char>, decoded_0_to_xff_iso_8859_14());
+    general_tests(strf::iso_8859_15<char>, decoded_0_to_xff_iso_8859_15());
+    general_tests(strf::iso_8859_16<char>, decoded_0_to_xff_iso_8859_16());
+    general_tests(strf::windows_1250<char>, decoded_0_to_xff_windows_1250());
+    general_tests(strf::windows_1251<char>, decoded_0_to_xff_windows_1251());
+    general_tests(strf::windows_1252<char>, decoded_0_to_xff_windows_1252());
+    general_tests(strf::windows_1253<char>, decoded_0_to_xff_windows_1253());
+    general_tests(strf::windows_1254<char>, decoded_0_to_xff_windows_1254());
+    general_tests(strf::windows_1255<char>, decoded_0_to_xff_windows_1255());
+    general_tests(strf::windows_1256<char>, decoded_0_to_xff_windows_1256());
+    general_tests(strf::windows_1257<char>, decoded_0_to_xff_windows_1257());
+    general_tests(strf::windows_1258<char>, decoded_0_to_xff_windows_1258());
 
-    test_undefined_bytes<char>(strf::iso_8859_3<char>(), "\xA5\xAE\xBE\xC3\xD0\xE3\xF0");
+    test_undefined_bytes<char>(strf::iso_8859_3<char>, "\xA5\xAE\xBE\xC3\xD0\xE3\xF0");
     test_undefined_bytes<char>
-        ( strf::iso_8859_6<char>()
+        ( strf::iso_8859_6<char>
         , "\xA1\xA2\xA3\xA5\xA6\xA7\xA8\xA9\xAA\xAB\xAE\xAF"
           "\xB0\xB1\xB2\xB3\xB4\xB5\xB6\xB7\xB8\xB9\xBA\xBC\xBD\xBE"
           "\xC0\xDB\xDC\xDD\xDE\xDF"
           "\xF3\xF4\xF5\xF6\xF7\xF8\xF9\xFA\xFB\xFC\xFD\xFE\xFF"
         );
-    test_undefined_bytes<char>(strf::iso_8859_7<char>(), "\xAE\xD2\xFF");
+    test_undefined_bytes<char>(strf::iso_8859_7<char>, "\xAE\xD2\xFF");
     test_undefined_bytes<char>
-        ( strf::iso_8859_8<char>()
+        ( strf::iso_8859_8<char>
         , "\xBF\xC0\xC1\xC2\xC3\xC4\xC5\xC6\xC7\xC8\xC9\xCA\xCB\xCC\xCD\xCE\xCF"
           "\xD0\xD1\xD2\xD3\xD4\xD5\xD6\xD7\xD8\xD9\xDA\xDB\xDC\xDD\xDE\xFB\xFC\xFF");
-    test_undefined_bytes<char>(strf::iso_8859_11<char>(), "\xDB\xDC\xDD\xDE\xFC\xFD\xFE\xFF");
+    test_undefined_bytes<char>(strf::iso_8859_11<char>, "\xDB\xDC\xDD\xDE\xFC\xFD\xFE\xFF");
 
-    test_undefined_bytes<char>(strf::windows_1253<char>(), "\xAA\xD2\xFF");
-    test_undefined_bytes<char>( strf::windows_1255<char>()
+    test_undefined_bytes<char>(strf::windows_1253<char>, "\xAA\xD2\xFF");
+    test_undefined_bytes<char>( strf::windows_1255<char>
                               , "\xD9\xDA\xDB\xDC\xDD\xDE\xDF\xFB\xFC\xFF");
-    test_undefined_bytes<char>( strf::windows_1257<char>(), "\xA1\xA5");
+    test_undefined_bytes<char>( strf::windows_1257<char>, "\xA1\xA5");
 
 
-    test_unsupported_codepoints(strf::iso_8859_1<char>(), {0x100, 0xFFFF});
-    test_unsupported_codepoints(strf::iso_8859_2<char>(), {0xA1, 0x02DC, 0x02DE});
+    test_unsupported_codepoints(strf::iso_8859_1<char>, {0x100, 0xFFFF});
+    test_unsupported_codepoints(strf::iso_8859_2<char>, {0xA1, 0x02DC, 0x02DE});
     test_unsupported_codepoints
-        ( strf::iso_8859_3<char>()
+        ( strf::iso_8859_3<char>
         , { 0xA5, 0xAE, 0xBE, 0xC3, 0xD0, 0xE3, 0xF0, 0x02D7, 0x02DA } );
-    test_unsupported_codepoints(strf::iso_8859_4<char>(), {0xA1, 0x02DA, 0x02DC});
-    test_unsupported_codepoints(strf::iso_8859_5<char>(), {0xA1, 0x2115, 0x2117});
-    test_unsupported_codepoints(strf::iso_8859_6<char>(), {0xA1, 0xF3, 0x0653});
-    test_unsupported_codepoints(strf::iso_8859_7<char>(), {0xA1, 0xAE, 0x20AE, 0x20B0});
-    test_unsupported_codepoints(strf::iso_8859_8<char>(), {0xA1, 0xBF, 0xDF, 0x2016, 0x2018});
-    test_unsupported_codepoints( strf::iso_8859_9<char>()
+    test_unsupported_codepoints(strf::iso_8859_4<char>, {0xA1, 0x02DA, 0x02DC});
+    test_unsupported_codepoints(strf::iso_8859_5<char>, {0xA1, 0x2115, 0x2117});
+    test_unsupported_codepoints(strf::iso_8859_6<char>, {0xA1, 0xF3, 0x0653});
+    test_unsupported_codepoints(strf::iso_8859_7<char>, {0xA1, 0xAE, 0x20AE, 0x20B0});
+    test_unsupported_codepoints(strf::iso_8859_8<char>, {0xA1, 0xBF, 0xDF, 0x2016, 0x2018});
+    test_unsupported_codepoints( strf::iso_8859_9<char>
                                , {0xD0, 0xDD, 0xDE, 0xF0, 0xFD, 0xFE, 0x100} );
-    test_unsupported_codepoints(strf::iso_8859_10<char>(), {0xA1, 0x2014, 0x2016});
-    test_unsupported_codepoints(strf::iso_8859_11<char>(), {0xA1, 0xDB, 0xE3B, 0xE3E, 0xE5C});
-    test_unsupported_codepoints(strf::iso_8859_13<char>(), {0xA1, 0x201B, 0x201F});
+    test_unsupported_codepoints(strf::iso_8859_10<char>, {0xA1, 0x2014, 0x2016});
+    test_unsupported_codepoints(strf::iso_8859_11<char>, {0xA1, 0xDB, 0xE3B, 0xE3E, 0xE5C});
+    test_unsupported_codepoints(strf::iso_8859_13<char>, {0xA1, 0x201B, 0x201F});
     test_unsupported_codepoints
-        ( strf::iso_8859_14<char>()
+        ( strf::iso_8859_14<char>
         , {0xA1, 0xBF, 0xD0, 0xD7, 0xDE, 0xF0, 0xF7, 0xFE, 0x1EF1, 0x1EF4} );
     test_unsupported_codepoints
-        ( strf::iso_8859_15<char>()
+        ( strf::iso_8859_15<char>
         , {0xA4, 0xA6, 0xA8, 0xB4, 0xB8, 0xBC, 0xBD, 0xBE,  0x20AD} );
-    test_unsupported_codepoints(strf::iso_8859_16<char>(), {0xA1, 0x20AB, 0x20AD});
+    test_unsupported_codepoints(strf::iso_8859_16<char>, {0xA1, 0x20AB, 0x20AD});
 
-    test_unsupported_codepoints( strf::windows_1250<char>()
+    test_unsupported_codepoints( strf::windows_1250<char>
                                , { 0x80, 0x82, 0xA1, 0x2121, 0x2123 } );
-    test_unsupported_codepoints( strf::windows_1251<char>()
+    test_unsupported_codepoints( strf::windows_1251<char>
                                , { 0x80, 0x2121, 0x2123 } );
-    test_unsupported_codepoints( strf::windows_1252<char>()
+    test_unsupported_codepoints( strf::windows_1252<char>
                                , { 0x80, 0x2121, 0x2123 } );
-    test_unsupported_codepoints( strf::windows_1253<char>()
+    test_unsupported_codepoints( strf::windows_1253<char>
                                , { 0x80, 0x82, 0xAA, 0xD2, 0xFF, 0x20AB, 0x20AD, 0x2123 } );
-    test_unsupported_codepoints( strf::windows_1254<char>()
+    test_unsupported_codepoints( strf::windows_1254<char>
                                , { 0x80, 0x2121, 0x2123 } );
-    test_unsupported_codepoints( strf::windows_1255<char>()
+    test_unsupported_codepoints( strf::windows_1255<char>
                                , { 0x80, 0xD9, 0xDF, 0x2121, 0x2123 } );
-    test_unsupported_codepoints( strf::windows_1256<char>()
+    test_unsupported_codepoints( strf::windows_1256<char>
                                , { 0x80, 0xD9, 0xDF, 0x2121, 0x2123 } );
-    test_unsupported_codepoints( strf::windows_1257<char>()
+    test_unsupported_codepoints( strf::windows_1257<char>
                                , { 0x80, 0xA1, 0xA5, 0x2121, 0x2123 } );
-    test_unsupported_codepoints( strf::windows_1258<char>()
+    test_unsupported_codepoints( strf::windows_1258<char>
                                , { 0x80, 0x2121, 0x2123 } );
 
    {
@@ -1461,8 +1461,8 @@ void STRF_TEST_FUNC test_single_byte_encodings()
            "__\xD7\xD8\xD9\xDA\xE0\xE1\xE2\xE3 \xE4\xE5 \xE6 \xE9\xEA"
            "\xEB\xEC\xED\xEE \xEF\xF0 \xF1 \xF2 \xBB \xAC 0123456789 ";
 
-       TEST(iso8859_6_str) .with(strf::iso_8859_6<char>{})
-           (strf::conv(win1256_str, strf::windows_1256<char>{}));
+       TEST(iso8859_6_str) .with(strf::iso_8859_6<char>)
+           (strf::conv(win1256_str, strf::windows_1256<char>));
    }
 }
 

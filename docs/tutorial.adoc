@@ -205,7 +205,7 @@ constexpr auto my_facets = strf::pack
     , std::constrain<strf::is_bool>(strf::uppercase)
     , strf::{numpunct}<10>{3}.thousands_sep(U'.').decimal_point(U',')
     , strf::{numpunct}<16>{4}.thousands_sep(U'\'')
-    , strf::windows_1252<char>() );
+    , strf::<<strf_hpp#static_char_encoding_constexpr,windows_1252>><char> );
 
 
 auto str1 = strf::to_string.with(my_facets) (/{asterisk} \... {asterisk}/);

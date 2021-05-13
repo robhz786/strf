@@ -56,7 +56,8 @@ http://www.boost.org/LICENSE_1_0.txt
 
 :char_encoding_c: <<char_encoding_c,char_encoding_c>>
 
-:utf: <<utf,utf>>
+:utf_t: <<utf_t,utf_t>>
+:utf: <<static_char_encoding_constexpr,utf>>
 
 === Enumeration `char_encoding_id` [[char_encoding_id]]
 
@@ -1581,103 +1582,144 @@ by passing `src` to `to_u32`.
 namespace strf {
 
 template <class CharT>
-using ascii = static_char_encoding<CharT, eid_ascii>;
+using ascii_t = static_char_encoding<CharT, eid_ascii>;
 
 template <class CharT>
-using iso_8859_1 = static_char_encoding<CharT, eid_iso_8859_1>;
+using iso_8859_1_t = static_char_encoding<CharT, eid_iso_8859_1>;
 
 template <class CharT>
-using iso_8859_2 = static_char_encoding<CharT, eid_iso_8859_2>;
+using iso_8859_2_t = static_char_encoding<CharT, eid_iso_8859_2>;
 
 template <class CharT>
-using iso_8859_3 = static_char_encoding<CharT, eid_iso_8859_3>;
+using iso_8859_3_t = static_char_encoding<CharT, eid_iso_8859_3>;
 
 template <class CharT>
-using iso_8859_4 = static_char_encoding<CharT, eid_iso_8859_4>;
+using iso_8859_4_t = static_char_encoding<CharT, eid_iso_8859_4>;
 
 template <class CharT>
-using iso_8859_5 = static_char_encoding<CharT, eid_iso_8859_5>;
+using iso_8859_5_t = static_char_encoding<CharT, eid_iso_8859_5>;
 
 template <class CharT>
-using iso_8859_6 = static_char_encoding<CharT, eid_iso_8859_6>;
+using iso_8859_6_t = static_char_encoding<CharT, eid_iso_8859_6>;
 
 template <class CharT>
-using iso_8859_7 = static_char_encoding<CharT, eid_iso_8859_7>;
+using iso_8859_7_t = static_char_encoding<CharT, eid_iso_8859_7>;
 
 template <class CharT>
-using iso_8859_8 = static_char_encoding<CharT, eid_iso_8859_8>;
+using iso_8859_8_t = static_char_encoding<CharT, eid_iso_8859_8>;
 
 template <class CharT>
-using iso_8859_9 = static_char_encoding<CharT, eid_iso_8859_9>;
+using iso_8859_9_t = static_char_encoding<CharT, eid_iso_8859_9>;
 
 template <class CharT>
-using iso_8859_10 = static_char_encoding<CharT, eid_iso_8859_10>;
+using iso_8859_10_t = static_char_encoding<CharT, eid_iso_8859_10>;
 
 template <class CharT>
-using iso_8859_11 = static_char_encoding<CharT, eid_iso_8859_11>;
+using iso_8859_11_t = static_char_encoding<CharT, eid_iso_8859_11>;
 
 template <class CharT>
-using iso_8859_13 = static_char_encoding<CharT, eid_iso_8859_13>;
+using iso_8859_13_t = static_char_encoding<CharT, eid_iso_8859_13>;
 
 template <class CharT>
-using iso_8859_14 = static_char_encoding<CharT, eid_iso_8859_14>;
+using iso_8859_14_t = static_char_encoding<CharT, eid_iso_8859_14>;
 
 template <class CharT>
-using iso_8859_15 = static_char_encoding<CharT, eid_iso_8859_15>;
+using iso_8859_15_t = static_char_encoding<CharT, eid_iso_8859_15>;
 
 template <class CharT>
-using iso_8859_16 = static_char_encoding<CharT, eid_iso_8859_16>;
+using iso_8859_16_t = static_char_encoding<CharT, eid_iso_8859_16>;
 
 template <class CharT>
-using windows_1250 = static_char_encoding<CharT, eid_windows_1250>;
+using windows_1250_t = static_char_encoding<CharT, eid_windows_1250>;
 
 template <class CharT>
-using windows_1251 = static_char_encoding<CharT, eid_windows_1251>;
+using windows_1251_t = static_char_encoding<CharT, eid_windows_1251>;
 
 template <class CharT>
-using windows_1252 = static_char_encoding<CharT, eid_windows_1252>;
+using windows_1252_t = static_char_encoding<CharT, eid_windows_1252>;
 
 template <class CharT>
-using windows_1253 = static_char_encoding<CharT, eid_windows_1253>;
+using windows_1253_t = static_char_encoding<CharT, eid_windows_1253>;
 
 template <class CharT>
-using windows_1254 = static_char_encoding<CharT, eid_windows_1254>;
+using windows_1254_t = static_char_encoding<CharT, eid_windows_1254>;
 
 template <class CharT>
-using windows_1255 = static_char_encoding<CharT, eid_windows_1255>;
+using windows_1255_t = static_char_encoding<CharT, eid_windows_1255>;
 
 template <class CharT>
-using windows_1256 = static_char_encoding<CharT, eid_windows_1256>;
+using windows_1256_t = static_char_encoding<CharT, eid_windows_1256>;
 
 template <class CharT>
-using windows_1257 = static_char_encoding<CharT, eid_windows_1257>;
+using windows_1257_t = static_char_encoding<CharT, eid_windows_1257>;
 
 template <class CharT>
-using windows_1258 = static_char_encoding<CharT, eid_windows_1258>;
+using windows_1258_t = static_char_encoding<CharT, eid_windows_1258>;
 
 template <class CharT>
-using utf8 = static_char_encoding<CharT, eid_utf8>;
+using utf8_t = static_char_encoding<CharT, eid_utf8>;
 
 template <class CharT>
-using utf16 = static_char_encoding<CharT, eid_utf16>;
+using utf16_t = static_char_encoding<CharT, eid_utf16>;
 
 template <class CharT>
-using utf32 = static_char_encoding<CharT, eid_utf32>;
+using utf32_t = static_char_encoding<CharT, eid_utf32>;
 
 template <class CharT>
-using utf = /* see below */;
+using utf_t = /* see below */;
 
 } // namespace strf
 ----
 
-[[utf]]
+[[utf_t]]
 ====
 [source,cpp]
 ----
 template <class CharT>
-using utf = /* ... */;
+using utf_t = /* ... */;
 ----
-`utf<CharT>` is an alias to `utf8<CharT>`, `utf16<CharT>` or `utf32<CharT>`,
+`utf_t<CharT>` is an alias to `utf8_t<CharT>`, `utf16_t<CharT>` or `utf32_t<CharT>`,
 depending on the value of `sizeof(CharT)`.
 ====
 
+=== Template variable for encodings [[static_char_encoding_constexpr]]
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template <class CharT> constexpr ascii_t<CharT>         ascii = {};
+
+template <class CharT> constexpr iso_8859_1_t<CharT>    iso_8859_1 = {};
+template <class CharT> constexpr iso_8859_2_t<CharT>    iso_8859_2 = {};
+template <class CharT> constexpr iso_8859_3_t<CharT>    iso_8859_3 = {};
+template <class CharT> constexpr iso_8859_4_t<CharT>    iso_8859_4 = {};
+template <class CharT> constexpr iso_8859_5_t<CharT>    iso_8859_5 = {};
+template <class CharT> constexpr iso_8859_6_t<CharT>    iso_8859_6 = {};
+template <class CharT> constexpr iso_8859_7_t<CharT>    iso_8859_7 = {};
+template <class CharT> constexpr iso_8859_8_t<CharT>    iso_8859_8 = {};
+template <class CharT> constexpr iso_8859_9_t<CharT>    iso_8859_9 = {};
+template <class CharT> constexpr iso_8859_10_t<CharT>   iso_8859_10 = {};
+template <class CharT> constexpr iso_8859_11_t<CharT>   iso_8859_11 = {};
+template <class CharT> constexpr iso_8859_13_t<CharT>   iso_8859_13 = {};
+template <class CharT> constexpr iso_8859_14_t<CharT>   iso_8859_14 = {};
+template <class CharT> constexpr iso_8859_15_t<CharT>   iso_8859_15 = {};
+template <class CharT> constexpr iso_8859_16_t<CharT>   iso_8859_16 = {};
+
+template <class CharT> constexpr windows_1250_t<CharT>  windows_1250 = {};
+template <class CharT> constexpr windows_1251_t<CharT>  windows_1251 = {};
+template <class CharT> constexpr windows_1252_t<CharT>  windows_1252 = {};
+template <class CharT> constexpr windows_1253_t<CharT>  windows_1253 = {};
+template <class CharT> constexpr windows_1254_t<CharT>  windows_1254 = {};
+template <class CharT> constexpr windows_1255_t<CharT>  windows_1255 = {};
+template <class CharT> constexpr windows_1256_t<CharT>  windows_1256 = {};
+template <class CharT> constexpr windows_1257_t<CharT>  windows_1257 = {};
+template <class CharT> constexpr windows_1258_t<CharT>  windows_1258 = {};
+
+template <class CharT> constexpr utf8_t<CharT>          utf8 = {};
+template <class CharT> constexpr utf16_t<CharT>         utf16 = {};
+template <class CharT> constexpr utf32_t<CharT>         utf32 = {};
+template <class CharT> constexpr {utf_t}<CharT>           utf = {};
+
+} // namespace strf
+----

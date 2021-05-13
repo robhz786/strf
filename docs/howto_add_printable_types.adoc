@@ -51,7 +51,7 @@ http://www.boost.org/LICENSE_1_0.txt
 
 :multi:           <<quick_reference#multi,multi>>
 :conv:            <<quick_reference#string_formatting,conv>>
-:utf16:           <<quick_reference#static_char_encodings,utf16>>
+:utf:           <<quick_reference#static_char_constexpr,utf>>
 
 :middle_dots:     &#183;&#183;&#183;
 :four_dots:       &#x2025; &#2025;
@@ -242,7 +242,7 @@ struct print_traits<std::complex<FloatT>> {
         auto arg2 = strf::join
             ( strf::{multi}(static_cast<CharT>('('), has_brackets)
             , v.first
-            , strf::{conv}(middle_string(form), strf::{utf16}<char16_t>())
+            , strf::{conv}(middle_string(form), strf::{utf}<char16_t>)
             , v.second
             , strf::{multi}(static_cast<CharT>(')'), has_brackets) );
 
@@ -315,14 +315,14 @@ if (form != complex_form::polar) {
     auto j1 = strf::join
             ( static_cast<CharT>('(')
             , v.first
-            , strf::{conv}(middle_string(form), strf::{utf16}<char16_t>())
+            , strf::{conv}(middle_string(form), strf::{utf}<char16_t>)
             , v.second
             , static_cast<CharT>(')') );
     return strf::make_printer_input<CharT>(preview, fp, j1);
 }
 auto j2 = strf::join
     ( v.first
-    , strf::{conv}(middle_string(form), strf::{utf16}<char16_t>())
+    , strf::{conv}(middle_string(form), strf::{utf}<char16_t>)
     , v.second );
 return strf::make_printer_input<CharT>(preview, fp, j2); // different return type !
 ----
@@ -343,7 +343,7 @@ string, instead of a `char16_t` string as we did above ).
 auto arg2 = strf::{join}
     ( /{asterisk} \... {asterisk}/
     , /{asterisk} \... {asterisk}/
-    , strf::{conv}(middle_string(form), strf::{utf16}<char16_t>())
+    , strf::{conv}(middle_string(form), strf::{utf}<char16_t>)
     , /{asterisk} \... {asterisk}/
     , /{asterisk} \... {asterisk}/ );
 ----
@@ -435,7 +435,7 @@ struct print_traits<std::complex<FloatT>> {
         auto arg2 = strf::join
             ( strf::{multi}(static_cast<CharT>('('), has_brackets)
             , strf::fmt(v.first).{set_float_format}(arg.{get_float_format}())
-            , strf::conv(middle_string(form), strf::utf16<char16_t>())
+            , strf::conv(middle_string(form), strf::{utf}<char16_t>)
             , strf::fmt(v.second).{set_float_format}(arg.{get_float_format}())
             , strf::{multi}(static_cast<CharT>(')'), has_brackets) );
         auto arg3 = arg2.{set_alignment_format}(arg.{get_alignment_format}());
@@ -937,7 +937,7 @@ void std_complex_printer<CharT, FloatT>::preview_(Preview& pp, const WidthCalc& 
         default:
             assert(form_ == complex_form::polar);
             if (pp.remaining_width() > 0) {
-                pp.subtract_width(wcalc.char_width(strf::utf32<char32_t>{}, anglechar_));
+                pp.subtract_width(wcalc.char_width(strf::utf32<char32_t>, anglechar_));
                 pp.subtract_width(1);
             }
 
