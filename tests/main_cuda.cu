@@ -63,7 +63,7 @@ int main() {
         return status;
     }
 
-    constexpr std::size_t stackSize = 50 * 1024;
+    constexpr std::size_t stackSize = 200 * 1024;
     status = cudaDeviceSetLimit(cudaLimitStackSize, stackSize);
     if (status != cudaSuccess) {
         print( "cudaDeviceSetLimit(cudaLimitStackSize, ", stackSize, ") failed: "
