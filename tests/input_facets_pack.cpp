@@ -61,7 +61,7 @@ void STRF_TEST_FUNC test_input_facets_pack()
           , strf::fast_width_t
           , strf::numpunct<10> >
           :: value
-        , "char_encoding is not constrainable");
+        , "charset is not constrainable");
 }
 
 REGISTER_STRF_TEST(test_input_facets_pack);

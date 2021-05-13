@@ -126,7 +126,7 @@ public:
         using preview_type = typename strf::usual_printer_input<CharT, T...>::preview_type;
         STRF_IF_CONSTEXPR(preview_type::width_required) {
             decltype(auto) wcalc = get_facet<strf::width_calculator_c, CharT>(input.facets);
-            auto enc = get_facet<strf::char_encoding_c<CharT>, CharT>(input.facets);
+            auto enc = get_facet<strf::charset_c<CharT>, CharT>(input.facets);
             auto w = wcalc.char_width(enc, static_cast<CharT>(ch_));
             input.preview.subtract_width(w);
         }
@@ -160,7 +160,7 @@ public:
         , afmt_(input.arg.get_alignment_format())
         , ch_(static_cast<CharT>(input.arg.value()))
     {
-        auto enc = get_facet_<strf::char_encoding_c<CharT>>(input.facets);
+        auto enc = get_facet_<strf::charset_c<CharT>>(input.facets);
         decltype(auto) wcalc = get_facet_<strf::width_calculator_c>(input.facets);
         encode_fill_fn_ = enc.encode_fill_func();
         init_(input.preview, wcalc, enc);
@@ -266,7 +266,7 @@ public:
     STRF_HD conv_char32_printer(strf::usual_printer_input<T...> input)
         : ch_(input.arg)
     {
-        auto encoding = strf::get_facet<char_encoding_c<DestCharT>, char32_t>(input.facets);
+        auto encoding = strf::get_facet<charset_c<DestCharT>, char32_t>(input.facets);
         encode_char_f_ = encoding.encode_char_func();
         encoded_char_size_ = encoding.encoded_char_size(input.arg);
         input.preview.add_size(encoded_char_size_);
@@ -303,7 +303,7 @@ public:
         : count_(input.arg.count())
         , ch_(input.arg.value())
     {
-        auto enc = strf::get_facet<char_encoding_c<DestCharT>, char32_t>(input.facets);
+        auto enc = strf::get_facet<charset_c<DestCharT>, char32_t>(input.facets);
         decltype(auto) wcalc = get_facet<strf::width_calculator_c, char32_t>(input.facets);
         auto char_width = wcalc.char_width(strf::utf_t<char32_t>{}, ch_);
         init_(input.preview, enc, input.arg.get_alignment_format(), char_width);

@@ -211,7 +211,7 @@ private:
     {
         const auto& self = static_cast<const destination_type_&>(*this);
 
-        using catenc = strf::char_encoding_c<char_type_>;
+        using catenc = strf::charset_c<char_type_>;
         auto enc = strf::get_facet<catenc, void>(self.fpack_);
 
         using caterr = strf::tr_error_notifier_c;

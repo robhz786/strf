@@ -226,8 +226,8 @@ struct get_first_template_parameter_impl;
 
 template
     < class T0
-    , strf::char_encoding_id T1
-    , template <class, strf::char_encoding_id> class Tmpl >
+    , strf::charset_id T1
+    , template <class, strf::charset_id> class Tmpl >
 struct get_first_template_parameter_impl<Tmpl<T0, T1>>
 {
     using type = T0;
@@ -752,89 +752,89 @@ void STRF_TEST_FUNC test_utf()
 
     TEST_TRUE((std::is_same
                    < strf::static_transcoder
-                       < char, char, strf::eid_utf8, strf::eid_utf8 >
+                       < char, char, strf::csid_utf8, strf::csid_utf8 >
                    , decltype(strf::find_transcoder( strf::utf<char>
                                                    , strf::utf<char>)) >
                   :: value));
     TEST_TRUE((std::is_same
                    < strf::static_transcoder
-                       < char, char16_t, strf::eid_utf8, strf::eid_utf16 >
+                       < char, char16_t, strf::csid_utf8, strf::csid_utf16 >
                    , decltype(strf::find_transcoder( strf::utf<char>
                                                    , strf::utf_t<char16_t>())) >
                   :: value));
     TEST_TRUE((std::is_same
                    < strf::static_transcoder
-                       < char, char32_t, strf::eid_utf8, strf::eid_utf32 >
+                       < char, char32_t, strf::csid_utf8, strf::csid_utf32 >
                    , decltype(strf::find_transcoder( strf::utf<char>
                                                    , strf::utf_t<char32_t>())) >
                   :: value));
     TEST_TRUE((std::is_same
                    < strf::static_transcoder
-                       < char16_t, char, strf::eid_utf16, strf::eid_utf8 >
+                       < char16_t, char, strf::csid_utf16, strf::csid_utf8 >
                    , decltype(strf::find_transcoder( strf::utf_t<char16_t>()
                                                    , strf::utf<char>)) >
                   :: value));
     TEST_TRUE((std::is_same
                    < strf::static_transcoder
-                       < char16_t, char16_t, strf::eid_utf16, strf::eid_utf16 >
+                       < char16_t, char16_t, strf::csid_utf16, strf::csid_utf16 >
                    , decltype(strf::find_transcoder( strf::utf_t<char16_t>()
                                                    , strf::utf_t<char16_t>())) >
                   :: value));
     TEST_TRUE((std::is_same
                    < strf::static_transcoder
-                       < char16_t, char32_t, strf::eid_utf16, strf::eid_utf32 >
+                       < char16_t, char32_t, strf::csid_utf16, strf::csid_utf32 >
                    , decltype(strf::find_transcoder( strf::utf_t<char16_t>()
                                                    , strf::utf_t<char32_t>())) >
                   :: value));
     TEST_TRUE((std::is_same
                    < strf::static_transcoder
-                       < char32_t, char, strf::eid_utf32, strf::eid_utf8 >
+                       < char32_t, char, strf::csid_utf32, strf::csid_utf8 >
                    , decltype(strf::find_transcoder( strf::utf_t<char32_t>()
                                                    , strf::utf<char>)) >
                   :: value));
     TEST_TRUE((std::is_same
                    < strf::static_transcoder
-                       < char32_t, char16_t,  strf::eid_utf32, strf::eid_utf16 >
+                       < char32_t, char16_t,  strf::csid_utf32, strf::csid_utf16 >
                    , decltype(strf::find_transcoder( strf::utf_t<char32_t>()
                                                    , strf::utf_t<char16_t>())) >
                   :: value));
     TEST_TRUE((std::is_same
                    < strf::static_transcoder
-                       < char32_t, char32_t, strf::eid_utf32, strf::eid_utf32 >
+                       < char32_t, char32_t, strf::csid_utf32, strf::csid_utf32 >
                    , decltype(strf::find_transcoder( strf::utf_t<char32_t>()
                                                    , strf::utf_t<char32_t>())) >
                   :: value));
 
     {
-        auto tr = strf::utf_t<char>::find_transcoder_from(strf::tag<char16_t>{}, strf::eid_utf16);
+        auto tr = strf::utf_t<char>::find_transcoder_from(strf::tag<char16_t>{}, strf::csid_utf16);
         using expected_transcoder = strf::static_transcoder
-            <char16_t, char, strf::eid_utf16, strf::eid_utf8>;
+            <char16_t, char, strf::csid_utf16, strf::csid_utf8>;
         TEST_TRUE(tr.transcode_func() == expected_transcoder::transcode_func());
     }
     {
-        auto tr = strf::utf_t<char>::find_transcoder_from(strf::tag<char16_t>{}, strf::eid_utf32);
+        auto tr = strf::utf_t<char>::find_transcoder_from(strf::tag<char16_t>{}, strf::csid_utf32);
         TEST_TRUE(tr.transcode_func() == nullptr);
     }
     {
-        auto tr = strf::utf_t<char16_t>::find_transcoder_from(strf::tag<char>{}, strf::eid_utf8);
+        auto tr = strf::utf_t<char16_t>::find_transcoder_from(strf::tag<char>{}, strf::csid_utf8);
         using expected_transcoder = strf::static_transcoder
-            <char, char16_t, strf::eid_utf8, strf::eid_utf16>;
+            <char, char16_t, strf::csid_utf8, strf::csid_utf16>;
         TEST_TRUE(tr.transcode_func() == expected_transcoder::transcode_func());
     }
     {
-        auto tr = strf::utf_t<char32_t>::find_transcoder_from(strf::tag<char>{}, strf::eid_utf8);
+        auto tr = strf::utf_t<char32_t>::find_transcoder_from(strf::tag<char>{}, strf::csid_utf8);
         using expected_transcoder = strf::static_transcoder
-            <char, char32_t, strf::eid_utf8, strf::eid_utf32>;
+            <char, char32_t, strf::csid_utf8, strf::csid_utf32>;
         TEST_TRUE(tr.transcode_func() == expected_transcoder::transcode_func());
     }
     {
-        auto tr = strf::utf_t<char32_t>::find_transcoder_from(strf::tag<char>{}, strf::eid_utf16);
+        auto tr = strf::utf_t<char32_t>::find_transcoder_from(strf::tag<char>{}, strf::csid_utf16);
         TEST_TRUE(tr.transcode_func() == nullptr);
     }
     {
-        auto tr = strf::utf_t<char32_t>::find_transcoder_to(strf::tag<char>{}, strf::eid_utf8);
+        auto tr = strf::utf_t<char32_t>::find_transcoder_to(strf::tag<char>{}, strf::csid_utf8);
         using expected_transcoder = strf::static_transcoder
-            <char32_t, char, strf::eid_utf32, strf::eid_utf8>;
+            <char32_t, char, strf::csid_utf32, strf::csid_utf8>;
         TEST_TRUE(tr.transcode_func() == expected_transcoder::transcode_func());
     }
 

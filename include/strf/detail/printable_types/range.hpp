@@ -348,7 +348,7 @@ STRF_HD void separated_range_printer<CharT, FPack, It>::preview_(Preview& previe
     }
     if (Preview::width_required) {
         decltype(auto) wcalc = get_facet_<strf::width_calculator_c>(fp_);
-        auto dw = wcalc.str_width( get_facet_<strf::char_encoding_c<CharT>>(fp_)
+        auto dw = wcalc.str_width( get_facet_<strf::charset_c<CharT>>(fp_)
                                  , preview.remaining_width()
                                  , sep_begin_
                                  , sep_len_
@@ -541,7 +541,7 @@ STRF_HD void fmt_separated_range_printer<CharT, FPack, It, Fmts ...>::preview_
     }
     if (Preview::width_required) {
         decltype(auto) wcalc = get_facet_<strf::width_calculator_c>(fp_);
-        auto dw = wcalc.str_width( get_facet_<strf::char_encoding_c<CharT>>(fp_)
+        auto dw = wcalc.str_width( get_facet_<strf::charset_c<CharT>>(fp_)
                                  , preview.remaining_width()
                                  , r.sep_begin
                                  , r.sep_len
@@ -721,7 +721,7 @@ STRF_HD void sep_transformed_range_printer<CharT, FPack, It, UnaryOp>
     }
     if (Preview::width_required) {
         decltype(auto) wcalc = get_facet_<strf::width_calculator_c>(fp_);
-        auto dw = wcalc.str_width( get_facet_<strf::char_encoding_c<CharT>>(fp_)
+        auto dw = wcalc.str_width( get_facet_<strf::charset_c<CharT>>(fp_)
                                  , preview.remaining_width()
                                  , sep_begin_
                                  , sep_len_

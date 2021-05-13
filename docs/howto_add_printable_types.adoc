@@ -42,8 +42,8 @@ http://www.boost.org/LICENSE_1_0.txt
 :tag:             <<strf_hpp#tag,tag>>
 
 :width_calculator_c:     <<strf_hpp#width_calculator_c,width_calculator_c>>
-:char_encoding_c:        <<strf_hpp#char_encoding_c,char_encoding_c>>
-:dynamic_char_encoding:  <<strf_hpp#dynamic_char_encoding,dynamic_char_encoding>>
+:charset_c:              <<strf_hpp#charset_c,charset_c>>
+:dynamic_charset:        <<strf_hpp#dynamic_charset,dynamic_charset>>
 :lettercase_c:           <<strf_hpp#lettercase,lettercase_c>>
 :lettercase:             <<strf_hpp#lettercase,lettercase>>
 :numpunct_c:             <<strf_hpp#numpunct_c,numpunct_c>>
@@ -334,7 +334,7 @@ No big deal here, we just created a fuction `middle_string` to handle that.
 But what may have caught your eye is that the string is passed to
 the `{conv}` function. The code wouldn't compile without it, unless
 when `CharT` is the same as the string's character type, and even
-in this case, there is the risk of the destination encoding differs
+in this case, there is the risk of the destination encoding differing
 from the one used in the string ( especially if we were using a `char`
 string, instead of a `char16_t` string as we did above ).
 
@@ -795,7 +795,7 @@ private:
     template <typename Preview, typename WCalc>
     void preview_(Preview& preview, const WCalc& wcalc) const;
 
-    strf::{dynamic_char_encoding}<CharT> encoding_;
+    strf::{dynamic_charset}<CharT> charset_;
     strf::{numpunct}<10> numpunct_;
     strf::{lettercase} lettercase_;
     complex_form form_;
@@ -812,7 +812,7 @@ The `print_to` member function is responsible for writing the content:
 template <typename CharT, typename FloatT>
 void std_complex_printer<CharT, FloatT>::print_to(strf::{basic_outbuff}<CharT>& dest) const
 {
-    auto print = strf::to(dest).with(lettercase_, numpunct_, encoding_);
+    auto print = strf::to(dest).with(lettercase_, numpunct_, charset_);
     if (form_ == complex_form::polar) {
         print(coordinates_.first, U'\u2220', static_cast<CharT>(' ') );
         print(coordinates_.second );
@@ -832,7 +832,7 @@ template <typename CharT, typename FloatT>
 template <typename\... T>
 inline std_complex_printer<CharT, FloatT>::std_complex_printer
     ( strf::{usual_printer_input}<T\...> x )
-    : encoding_(strf::{get_facet}<strf::{char_encoding_c}<CharT>, void>(x.facets))
+    : charset_(strf::{get_facet}<strf::{charset_c}<CharT>, void>(x.facets))
     , numpunct_(strf::{get_facet}<strf::{numpunct_c}<10>, FloatT>(x.facets))
     , lettercase_(strf::{get_facet}<strf::{lettercase_c}, FloatT>(x.facets))
     , form_(strf::{get_facet}<complex_form_c, std::complex<FloatT>>(x.facets))
@@ -844,7 +844,7 @@ inline std_complex_printer<CharT, FloatT>::std_complex_printer
 }
 ----
 
-The member variables `encoding_`, `numpunct_` and `lettercase_` are facet objects.
+The member variables `charset_`, `numpunct_` and `lettercase_` are facet objects.
 The reason why I did not instead just store a copy of `x.facets` as member
 variable is because its type would need to be another template paramenter,
 one that would change often &#x2014; every time the facets are different &#x2014;
@@ -854,8 +854,8 @@ Usually the second template argument in `{get_facet}` is the input type,
 which here is `std::comple<FloatT>`. However, I decided that
 it makes more sense to use `FloatT` for the numeric punctuation
 and letter case. There is no strict rule for that.
-The type you choose to extract the encoding facet object makes
-not difference since encoding facets are not constrainable.
+The type you choose to extract the charset facet object makes
+no difference since charset facets are not constrainable.
 
 Now, in addition to initialize the object, the constructor *must*
 do another thing. `{usual_printer_input}` contains a `{print_preview}`
@@ -941,17 +941,17 @@ void std_complex_printer<CharT, FloatT>::preview_(Preview& pp, const WidthCalc& 
                 pp.subtract_width(1);
             }
 
-            pp.add_size(encoding_.encoded_char_size(anglechar_));
+            pp.add_size(charset_.encoded_char_size(anglechar_));
             pp.add_size(1);
     }
 
-    auto facets = strf::pack(lettercase_, numpunct_, encoding_);
+    auto facets = strf::pack(lettercase_, numpunct_, charset_);
     strf::preview<CharT>(pp, facets, coordinates_.first, coordinates_.second);
 }
 ----
 
 To calculate the size of the angle character, that is used in the polar form,
-we need to use the encoding facet object. To calculate its width, we use
+we need to use the charset facet object. To calculate its width, we use
 the `{width_calculator_c}` facet category. And the width of ASCII characters is
 always assumed to be equal to 1 in strf.
 

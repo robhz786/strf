@@ -11,90 +11,90 @@ http://www.boost.org/LICENSE_1_0.txt
 :invalid_seq_notifier_c: <<invalid_seq_notifier_c,invalid_seq_notifier_c>>
 :surrogate_policy: <<surrogate_policy,surrogate_policy>>
 :surrogate_policy_c: <<surrogate_policy,surrogate_policy_c>>
-:char_encoding_id: <<char_encoding_id,char_encoding_id>>
-:eid_utf8:         <<char_encoding_id,eid_utf8>>
-:eid_utf16:        <<char_encoding_id,eid_utf16>>
-:eid_utf32:        <<char_encoding_id,eid_utf32>>
-:eid_ascii:        <<char_encoding_id,eid_ascii>>
-:eid_iso_8859_1:   <<char_encoding_id,eid_iso_8859_1>>
-:eid_iso_8859_3:   <<char_encoding_id,eid_iso_8859_3>>
-:eid_iso_8859_15:  <<char_encoding_id,eid_iso_8859_15>>
-:eid_windows_1252: <<char_encoding_id,eid_windows_1252>>
+:charset_id: <<charset_id,charset_id>>
+:scid_utf8:         <<charset_id,scid_utf8>>
+:scid_utf16:        <<charset_id,scid_utf16>>
+:scid_utf32:        <<charset_id,scid_utf32>>
+:scid_ascii:        <<charset_id,scid_ascii>>
+:scid_iso_8859_1:   <<charset_id,scid_iso_8859_1>>
+:scid_iso_8859_3:   <<charset_id,scid_iso_8859_3>>
+:scid_iso_8859_15:  <<charset_id,scid_iso_8859_15>>
+:scid_windows_1252: <<charset_id,scid_windows_1252>>
 
-:invalid_char_len: <<char_encoding_function_pointers,invalid_char_len>>
-:transcode_f: <<char_encoding_function_pointers,transcode_f>>
-:transcode_size_f: <<char_encoding_function_pointers,transcode_size_f>>
-:write_replacement_char_f: <<char_encoding_function_pointers,write_replacement_char_f>>
-:validate_f: <<char_encoding_function_pointers,validate_f>>
-:encoded_char_size_f: <<char_encoding_function_pointers,encoded_char_size_f>>
-:encode_fill_f: <<char_encoding_function_pointers,encode_fill_f>>
-:decode_char_f: <<char_encoding_function_pointers,decode_char_f>>
-:encode_char_f: <<char_encoding_function_pointers,encode_char_f>>
-:encode_fill_f: <<char_encoding_function_pointers,encode_fill_f>>
-:codepoints_count_result: <<char_encoding_function_pointers,codepoints_count_result>>
-:codepoints_fast_count_f: <<char_encoding_function_pointers,codepoints_fast_count_f>>
-:codepoints_robust_count_f: <<char_encoding_function_pointers,codepoints_robust_count_f>>
-:decode_char_f: <<char_encoding_function_pointers,decode_char_f>>
-:find_transcoder_f: <<char_encoding_function_pointers,find_transcoder_f>>
+:invalid_char_len: <<charset_function_pointers,invalid_char_len>>
+:transcode_f: <<charset_function_pointers,transcode_f>>
+:transcode_size_f: <<charset_function_pointers,transcode_size_f>>
+:write_replacement_char_f: <<charset_function_pointers,write_replacement_char_f>>
+:validate_f: <<charset_function_pointers,validate_f>>
+:encoded_char_size_f: <<charset_function_pointers,encoded_char_size_f>>
+:encode_fill_f: <<charset_function_pointers,encode_fill_f>>
+:decode_char_f: <<charset_function_pointers,decode_char_f>>
+:encode_char_f: <<charset_function_pointers,encode_char_f>>
+:encode_fill_f: <<charset_function_pointers,encode_fill_f>>
+:codepoints_count_result: <<charset_function_pointers,codepoints_count_result>>
+:codepoints_fast_count_f: <<charset_function_pointers,codepoints_fast_count_f>>
+:codepoints_robust_count_f: <<charset_function_pointers,codepoints_robust_count_f>>
+:decode_char_f: <<charset_function_pointers,decode_char_f>>
+:find_transcoder_f: <<charset_function_pointers,find_transcoder_f>>
 
 
 :static_transcoder: <<static_transcoder,static_transcoder>>
-:static_char_encoding: <<static_char_encoding,static_char_encoding>>
-:static_char_encoding: <<static_char_encoding,static_char_encoding>>
+:static_charset: <<static_charset,static_charset>>
+:static_charset: <<static_charset,static_charset>>
 
 :dynamic_transcoder: <<dynamic_transcoder,dynamic_transcoder>>
-:dynamic_char_encoding_data: <<dynamic_char_encoding_data,dynamic_char_encoding_data>>
-:dynamic_char_encoding: <<dynamic_char_encoding,dynamic_char_encoding>>
-:dynamic_char_encoding: <<dynamic_char_encoding,dynamic_char_encoding>>
+:dynamic_charset_data: <<dynamic_charset_data,dynamic_charset_data>>
+:dynamic_charset: <<dynamic_charset,dynamic_charset>>
+:dynamic_charset: <<dynamic_charset,dynamic_charset>>
 
 :find_transcoder: <<find_transcoder,find_transcoder>>
 :decode_encode: <<decode_encode,decode_encode>>
 :decode_encode_size: <<decode_encode_size,decode_encode_size>>
 
 :Transcoder: <<Transcoder,Transcoder>>
-:CharEncoding: <<CharEncoding,CharEncoding>>
+:Charset: <<Charset,Charset>>
 
-:char_encoding_c: <<char_encoding_c,char_encoding_c>>
+:charset_c: <<charset_c,charset_c>>
 
 :utf_t: <<utf_t,utf_t>>
-:utf: <<static_char_encoding_constexpr,utf>>
+:utf: <<static_charset_constexpr,utf>>
 
-=== Enumeration `char_encoding_id` [[char_encoding_id]]
+=== Enumeration `charset_id` [[charset_id]]
 
 [source,cpp]
 ----
 namespace strf {
-enum class char_encoding_id : unsigned { };
+enum class charset_id : unsigned { };
 
-constexpr char_encoding_id  eid_ascii        = /* ... */;
-constexpr char_encoding_id  eid_utf8         = /* ... */;
-constexpr char_encoding_id  eid_utf16        = /* ... */;
-constexpr char_encoding_id  eid_utf32        = /* ... */;
-constexpr char_encoding_id  eid_iso_8859_1   = /* ... */;
-constexpr char_encoding_id  eid_iso_8859_2   = /* ... */;
-constexpr char_encoding_id  eid_iso_8859_3   = /* ... */;
-constexpr char_encoding_id  eid_iso_8859_4   = /* ... */;
-constexpr char_encoding_id  eid_iso_8859_5   = /* ... */;
-constexpr char_encoding_id  eid_iso_8859_6   = /* ... */;
-constexpr char_encoding_id  eid_iso_8859_7   = /* ... */;
-constexpr char_encoding_id  eid_iso_8859_8   = /* ... */;
-constexpr char_encoding_id  eid_iso_8859_9   = /* ... */;
-constexpr char_encoding_id  eid_iso_8859_10  = /* ... */;
-constexpr char_encoding_id  eid_iso_8859_11  = /* ... */;
-constexpr char_encoding_id  eid_iso_8859_13  = /* ... */;
-constexpr char_encoding_id  eid_iso_8859_14  = /* ... */;
-constexpr char_encoding_id  eid_iso_8859_15  = /* ... */;
-constexpr char_encoding_id  eid_iso_8859_16  = /* ... */;
+constexpr charset_id  scid_ascii        = /* ... */;
+constexpr charset_id  scid_utf8         = /* ... */;
+constexpr charset_id  scid_utf16        = /* ... */;
+constexpr charset_id  scid_utf32        = /* ... */;
+constexpr charset_id  scid_iso_8859_1   = /* ... */;
+constexpr charset_id  scid_iso_8859_2   = /* ... */;
+constexpr charset_id  scid_iso_8859_3   = /* ... */;
+constexpr charset_id  scid_iso_8859_4   = /* ... */;
+constexpr charset_id  scid_iso_8859_5   = /* ... */;
+constexpr charset_id  scid_iso_8859_6   = /* ... */;
+constexpr charset_id  scid_iso_8859_7   = /* ... */;
+constexpr charset_id  scid_iso_8859_8   = /* ... */;
+constexpr charset_id  scid_iso_8859_9   = /* ... */;
+constexpr charset_id  scid_iso_8859_10  = /* ... */;
+constexpr charset_id  scid_iso_8859_11  = /* ... */;
+constexpr charset_id  scid_iso_8859_13  = /* ... */;
+constexpr charset_id  scid_iso_8859_14  = /* ... */;
+constexpr charset_id  scid_iso_8859_15  = /* ... */;
+constexpr charset_id  scid_iso_8859_16  = /* ... */;
 
-constexpr char_encoding_id  eid_windows_1250 = /* ... */;
-constexpr char_encoding_id  eid_windows_1251 = /* ... */;
-constexpr char_encoding_id  eid_windows_1252 = /* ... */;
-constexpr char_encoding_id  eid_windows_1253 = /* ... */;
-constexpr char_encoding_id  eid_windows_1254 = /* ... */;
-constexpr char_encoding_id  eid_windows_1255 = /* ... */;
-constexpr char_encoding_id  eid_windows_1256 = /* ... */;
-constexpr char_encoding_id  eid_windows_1257 = /* ... */;
-constexpr char_encoding_id  eid_windows_1258 = /* ... */;
+constexpr charset_id  scid_windows_1250 = /* ... */;
+constexpr charset_id  scid_windows_1251 = /* ... */;
+constexpr charset_id  scid_windows_1252 = /* ... */;
+constexpr charset_id  scid_windows_1253 = /* ... */;
+constexpr charset_id  scid_windows_1254 = /* ... */;
+constexpr charset_id  scid_windows_1255 = /* ... */;
+constexpr charset_id  scid_windows_1256 = /* ... */;
+constexpr charset_id  scid_windows_1257 = /* ... */;
+constexpr charset_id  scid_windows_1258 = /* ... */;
 
 } // namespace strf
 ----
@@ -234,38 +234,38 @@ This facet enables you to choose whether a nonconformant presence of a
 surrogate character shall be treated as invalid.
 
 
-=== Facet category template `char_encoding_c` [[char_encoding_c]]
+=== Facet category template `charset_c` [[charset_c]]
 
 [source,cpp,subs=normal]
 ----
 namespace strf {
 
 template <typename CharT>
-struct char_encoding_c {
+struct charset_c {
     static constexpr bool constrainable = false;
     static constexpr {utf}<CharT> get_default() noexcept;
 };
 
-template <typename CharT, {char_encoding_id} CEId>
-struct {facet_traits}<{static_char_encoding}<CharT, CEId>>
+template <typename CharT, {charset_id} CSId>
+struct {facet_traits}<{static_charset}<CharT, CSId>>
 {
-    using category = char_encoding_c<CharT>;
+    using category = charset_c<CharT>;
 };
 
 template <typename CharT>
-struct {facet_traits}<{dynamic_char_encoding}<CharT>>
+struct {facet_traits}<{dynamic_charset}<CharT>>
 {
-    using category = char_encoding_c<CharT>;
+    using category = charset_c<CharT>;
 };
 } // namespace strf
 ----
 
-For a type to be a facet of `char_encoding_c<CharT>` it has
-to be a _{CharEncoding}_ type for `CharT`. The library provides
-two class templates that satisfy that: `{static_char_encoding}`
-and `{dynamic_char_encoding}`
+For a type to be a facet of `charset_c<CharT>` it has
+to be a _{Charset}_ type for `CharT`. The library provides
+two class templates that satisfy that: `{static_charset}`
+and `{dynamic_charset}`
 
-=== Aliases for pointers to functions [[char_encoding_function_pointers]]
+=== Aliases for pointers to functions [[charset_function_pointers]]
 
 [source,cpp,subs=normal]
 ----
@@ -324,7 +324,7 @@ using decode_char_f = char32_t ({asterisk}) ( CharT );
 
 template <typename SrcCharT, typename DestCharT>
 using find_transcoder_f = {dynamic_transcoder}<SrcCharT, DestCharT> ({asterisk})
-    ( {char_encoding_id} );
+    ( {charset_id} );
 
 ----
 
@@ -371,10 +371,10 @@ x.transcode(dest, src, src_size, inv_seq_notifier, surr_poli)
 Effect:: Converts the content of `src` from one encoding to another writing
     the result to `dest`. Each sequence in `src` that is invalid is
     translated instead by the replacement character ( that is returned by
-    `<<CharEncoding_replacement_char, x.replacement_char()>>`.
+    `<<Charset_replacement_char, x.replacement_char()>>` ).
     And each time that happens, `inv_seq_notifier.notify()` shall be called
     if the value of `(bool)inv_seq_notifier` is `true`.
-    A sequence in `src` is considered invalid if is non-conformant
+    A sequence in `src` is considered invalid if it is non-conformant
     to its corresponding encoding or would cause content written in `dest`
     to be non-conformant to the destination encoding, unless such
     non-conformity is due to a surrogate character and the value
@@ -419,12 +419,16 @@ type where the `transcode_func` function returns `nullptr`.
 NOTE: There are two class templates that satisfy _Transcoder_:
       `{static_transcoder}` and `{dynamic_transcoder}`.
 
-=== Type requirement _CharEncoding_ [[CharEncoding]]
+=== Type requirement _Charset_ [[Charset]]
+
+An object whose type is a _Charset_ represents a character encoding.
+In this documentation the term _charset_ is used interchangeably with
+_encoding_ and _character encoding_.
 
 Given
 
 * `CharT`, one of the follwoing types: `char`, `char8_t`, `char16_t`, `char32_t` or `wchar_t`
-* `X`, a _CharEncoding_ type for type `CharT`
+* `X`, a _Charset_ type for type `CharT`
 * `x`, an expression of type `X` or `const X`
 * `OtherCharT`, one of the folowing types : `char`, `char8_t`, `char16_t` or `wchar_t`
 * `ptr`, a value of type `CharT{asterisk}`
@@ -436,15 +440,16 @@ Given
 * `ch32`, a value of type `char32_t`
 * `ch`, a value of type `CharT`
 * `ob`, an lvalue reference of type `{basic_outbuff}<CharT>`
-* `enc_id`, value of type `{char_encoding_id}`
+* `cs_id`, value of type `{charset_id}`
 
 The following must hold:
 
-* `X` must be https://en.cppreference.com/w/cpp/named_req/CopyConstructible[CopyConstructible]
-* `{facet_category}<X>` must be `{char_encoding_c}<CharT>`
-* `X` must satisfy the following syntax and semantics:
+* `X` is either an instance of the `{static_transcoder}` or `{dynamic_charset}` class template
+* `X` is https://en.cppreference.com/w/cpp/named_req/CopyConstructible[CopyConstructible]
+* `{facet_category}<X>` must be `{charset_c}<CharT>`
+* `X` satisfies the following syntax and semantics:
 
-[[CharEncoding_char_type]]
+[[Charset_char_type]]
 ====
 [source,cpp]
 ----
@@ -452,15 +457,15 @@ X::char_type
 ----
 Type alias to `CharT`
 ====
-[[CharEncoding_id]]
+[[Charset_id]]
 ====
 [source,cpp]
 ----
 x.id()
 ----
 [horizontal]
-Return type:: `{char_encoding_id}`
-Return value:: The `{char_encoding_id}` that corresponds to this encoding.
+Return type:: `{charset_id}`
+Return value:: The `{charset_id}` that corresponds to this encoding.
 ====
 
 ====
@@ -473,7 +478,7 @@ Return type:: `const char*`
 Return value:: The name of this encoding. Examples: `"UTF-8"`, `"ASCII"`, `"ISO-8859-1"`, `"windows-1252"`.
 ====
 
-[[CharEncoding_replacement_char]]
+[[Charset_replacement_char]]
 ====
 [source,cpp]
 ----
@@ -489,7 +494,7 @@ Return value:: The character used to signalize an error. Usually it is the https
 x.write_replacement_char(ob)
 ----
 [horizontal]
-Return type:: Writes into `ob` the codepoint returned by `x.replacement_char()` encoded in this encoding.
+Return type:: Writes into `ob` the codepoint returned by `x.replacement_char()` encoded in this charset.
 ====
 ====
 [source,cpp]
@@ -561,7 +566,7 @@ Note:: `encode_fill` does not check whether `ch32` is a legal code point, only i
        is UTF-32, `encode_fill` considers as valid any value for `ch32` ( even if
        is is greater than `0x10FFFF` ). Surrogates characters are also not sanitized.
 ====
-[[CharEncoding_codepoints_fast_count]]
+[[Charset_codepoints_fast_count]]
 ====
 [source,cpp]
 ----
@@ -588,7 +593,7 @@ If the input is non-conformant to the corresponding character encoding,
 this function may return an incorrect value. For instance, for UTF-8
 this function may simply count the bytes that are not continuation bytes.
 ====
-[[CharEncoding_codepoints_robust_count]]
+[[Charset_codepoints_robust_count]]
 ====
 [source,cpp]
 ----
@@ -611,7 +616,7 @@ Posconditions::
 * `pos \<= src_size` is `true`
 
 ====
-[[CharEncoding_decode_char]]
+[[Charset_decode_char]]
 ====
 [source,cpp]
 ----
@@ -664,7 +669,7 @@ Return type:: `{validate_f}`
 Return value:: A function pointer such that `x.validate_func() (ch32)`
                returns the same value as `x.validate(ch32)`
 ====
-[[CharEncoding_from_u32]]
+[[Charset_from_u32]]
 ====
 [source,cpp]
 ----
@@ -674,7 +679,7 @@ x.from_u32()
 Return type:: A __{Transcoder}__ from `char32_t` to `CharT`
 Return value:: A transcoder that converts UTF-32 to this encoding.
 ====
-[[CharEncoding_to_u32]]
+[[Charset_to_u32]]
 ====
 [source,cpp]
 ----
@@ -684,7 +689,7 @@ x.to_u32()
 Return type:: A __{Transcoder}__ from `CharT` to `char32_t`
 Return value:: A transcoder that converts this encoding to UTF-32.
 ====
-[[CharEncoding_sanitizer]]
+[[Charset_sanitizer]]
 ====
 [source,cpp]
 ----
@@ -695,223 +700,221 @@ Return type:: A __{Transcoder}__ from `CharT` to `CharT`
 Return value:: A transcoder that "converts" this encoding to this encoding,
                __i.e.__ a sanitizer of this encoding.
 ====
-[[CharEncoding_find_transcoder_to]]
+[[Charset_find_transcoder_to]]
 ====
 .( Optional )
 [source,cpp,subs=normal]
 ----
-x.find_transcoder_to({tag}<OtherCharT>, enc_id)
+x.find_transcoder_to({tag}<OtherCharT>, cs_id)
 ----
 [horizontal]
 Return type:: `{dynamic_transcoder}<CharT, OtherCharT>`
 Return value:: A transcoder that converts this encoding to the encoding
-               corresponding to `enc_id`, or an
+               corresponding to `cs_id`, or an
                <<Transcoder_null,null transcoder>>.
 ====
 
-[[CharEncoding_find_transcoder_from]]
+[[Charset_find_transcoder_from]]
 ====
 .( Optional )
 [source,cpp,subs=normal]
 ----
-x.find_transcoder_from({tag}<OtherCharT>, enc_id)
+x.find_transcoder_from({tag}<OtherCharT>, cs_id)
 ----
 [horizontal]
 Return type:: `{dynamic_transcoder}<OtherCharT, CharT>`
 Return value:: A transcoder that converts the encoding corresponding to
-               `enc_id` to this encoding, or an
+               `cs_id` to this encoding, or an
                <<Transcoder_null,null transcoder>>.
 ====
 
-IMPORTANT: You shall not create an _CharEncoding_ for `char32_t`, since `char32_t`
+IMPORTANT: You shall not create an _Charset_ for `char32_t`, since `char32_t`
            is reserved for UTF-32.
            The library internaly assumes in many occasions that the encoding
            is UTF-32 when `CharT` is `char32_t`.
-
-NOTE: There are two class templates that satisfy _CharEncoding_: `{static_transcoder}` and `{dynamic_char_encoding}`.
 
 === Class template `static_transcoder` [[static_transcoder]]
 
 [source,cpp,subs=normal]
 ----
-template <class SrcCharT, class DestCharT, {char_encoding_id} Src, {char_encoding_id} Dest>
+template <class SrcCharT, class DestCharT, {charset_id} Src, {charset_id} Dest>
 class static_transcoder;
 
 // sanitizers
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_ascii, eid_ascii>;
+class static_transcoder<SrcCharT, DestCharT, scid_ascii, scid_ascii>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_iso_8859_1, eid_iso_8859_1>;
+class static_transcoder<SrcCharT, DestCharT, scid_iso_8859_1, scid_iso_8859_1>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_iso_8859_2, eid_iso_8859_2>;
+class static_transcoder<SrcCharT, DestCharT, scid_iso_8859_2, scid_iso_8859_2>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_iso_8859_3, eid_iso_8859_3>;
+class static_transcoder<SrcCharT, DestCharT, scid_iso_8859_3, scid_iso_8859_3>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_iso_8859_4, eid_iso_8859_4>;
+class static_transcoder<SrcCharT, DestCharT, scid_iso_8859_4, scid_iso_8859_4>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_iso_8859_5, eid_iso_8859_5>;
+class static_transcoder<SrcCharT, DestCharT, scid_iso_8859_5, scid_iso_8859_5>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_iso_8859_6, eid_iso_8859_6>;
+class static_transcoder<SrcCharT, DestCharT, scid_iso_8859_6, scid_iso_8859_6>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_iso_8859_7, eid_iso_8859_7>;
+class static_transcoder<SrcCharT, DestCharT, scid_iso_8859_7, scid_iso_8859_7>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_iso_8859_8, eid_iso_8859_8>;
+class static_transcoder<SrcCharT, DestCharT, scid_iso_8859_8, scid_iso_8859_8>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_iso_8859_9, eid_iso_8859_9>;
+class static_transcoder<SrcCharT, DestCharT, scid_iso_8859_9, scid_iso_8859_9>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_iso_8859_10, eid_iso_8859_10>;
+class static_transcoder<SrcCharT, DestCharT, scid_iso_8859_10, scid_iso_8859_10>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_iso_8859_11, eid_iso_8859_11>;
+class static_transcoder<SrcCharT, DestCharT, scid_iso_8859_11, scid_iso_8859_11>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_iso_8859_13, eid_iso_8859_13>;
+class static_transcoder<SrcCharT, DestCharT, scid_iso_8859_13, scid_iso_8859_13>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_iso_8859_14, eid_iso_8859_14>;
+class static_transcoder<SrcCharT, DestCharT, scid_iso_8859_14, scid_iso_8859_14>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_iso_8859_15, eid_iso_8859_15>;
+class static_transcoder<SrcCharT, DestCharT, scid_iso_8859_15, scid_iso_8859_15>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_iso_8859_16, eid_iso_8859_16>;
+class static_transcoder<SrcCharT, DestCharT, scid_iso_8859_16, scid_iso_8859_16>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_windows_1250, eid_windows_1250>;
+class static_transcoder<SrcCharT, DestCharT, scid_windows_1250, scid_windows_1250>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_windows_1251, eid_windows_1251>;
+class static_transcoder<SrcCharT, DestCharT, scid_windows_1251, scid_windows_1251>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_windows_1252, eid_windows_1252>;
+class static_transcoder<SrcCharT, DestCharT, scid_windows_1252, scid_windows_1252>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_windows_1253, eid_windows_1253>;
+class static_transcoder<SrcCharT, DestCharT, scid_windows_1253, scid_windows_1253>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_windows_1254, eid_windows_1254>;
+class static_transcoder<SrcCharT, DestCharT, scid_windows_1254, scid_windows_1254>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_windows_1255, eid_windows_1255>;
+class static_transcoder<SrcCharT, DestCharT, scid_windows_1255, scid_windows_1255>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_windows_1256, eid_windows_1256>;
+class static_transcoder<SrcCharT, DestCharT, scid_windows_1256, scid_windows_1256>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_windows_1257, eid_windows_1257>;
+class static_transcoder<SrcCharT, DestCharT, scid_windows_1257, scid_windows_1257>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_windows_1258, eid_windows_1258>;
+class static_transcoder<SrcCharT, DestCharT, scid_windows_1258, scid_windows_1258>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_utf8, eid_utf8>;
+class static_transcoder<SrcCharT, DestCharT, scid_utf8, scid_utf8>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_utf16, eid_utf16>;
+class static_transcoder<SrcCharT, DestCharT, scid_utf16, scid_utf16>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_utf32, eid_utf32>;
+class static_transcoder<SrcCharT, DestCharT, scid_utf32, scid_utf32>;
 
 // to UTF-32
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_ascii, eid_utf32>;
+class static_transcoder<SrcCharT, DestCharT, scid_ascii, scid_utf32>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_iso_8859_1, eid_utf32>;
+class static_transcoder<SrcCharT, DestCharT, scid_iso_8859_1, scid_utf32>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_iso_8859_2, eid_utf32>;
+class static_transcoder<SrcCharT, DestCharT, scid_iso_8859_2, scid_utf32>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_iso_8859_3, eid_utf32>;
+class static_transcoder<SrcCharT, DestCharT, scid_iso_8859_3, scid_utf32>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_iso_8859_4, eid_utf32>;
+class static_transcoder<SrcCharT, DestCharT, scid_iso_8859_4, scid_utf32>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_iso_8859_5, eid_utf32>;
+class static_transcoder<SrcCharT, DestCharT, scid_iso_8859_5, scid_utf32>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_iso_8859_6, eid_utf32>;
+class static_transcoder<SrcCharT, DestCharT, scid_iso_8859_6, scid_utf32>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_iso_8859_7, eid_utf32>;
+class static_transcoder<SrcCharT, DestCharT, scid_iso_8859_7, scid_utf32>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_iso_8859_8, eid_utf32>;
+class static_transcoder<SrcCharT, DestCharT, scid_iso_8859_8, scid_utf32>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_iso_8859_9, eid_utf32>;
+class static_transcoder<SrcCharT, DestCharT, scid_iso_8859_9, scid_utf32>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_iso_8859_10, eid_utf32>;
+class static_transcoder<SrcCharT, DestCharT, scid_iso_8859_10, scid_utf32>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_iso_8859_11, eid_utf32>;
+class static_transcoder<SrcCharT, DestCharT, scid_iso_8859_11, scid_utf32>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_iso_8859_13, eid_utf32>;
+class static_transcoder<SrcCharT, DestCharT, scid_iso_8859_13, scid_utf32>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_iso_8859_14, eid_utf32>;
+class static_transcoder<SrcCharT, DestCharT, scid_iso_8859_14, scid_utf32>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_iso_8859_15, eid_utf32>;
+class static_transcoder<SrcCharT, DestCharT, scid_iso_8859_15, scid_utf32>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_iso_8859_16, eid_utf32>;
+class static_transcoder<SrcCharT, DestCharT, scid_iso_8859_16, scid_utf32>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_windows_1250, eid_utf32>;
+class static_transcoder<SrcCharT, DestCharT, scid_windows_1250, scid_utf32>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_windows_1251, eid_utf32>;
+class static_transcoder<SrcCharT, DestCharT, scid_windows_1251, scid_utf32>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_windows_1252, eid_utf32>;
+class static_transcoder<SrcCharT, DestCharT, scid_windows_1252, scid_utf32>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_windows_1253, eid_utf32>;
+class static_transcoder<SrcCharT, DestCharT, scid_windows_1253, scid_utf32>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_windows_1254, eid_utf32>;
+class static_transcoder<SrcCharT, DestCharT, scid_windows_1254, scid_utf32>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_windows_1255, eid_utf32>;
+class static_transcoder<SrcCharT, DestCharT, scid_windows_1255, scid_utf32>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_windows_1256, eid_utf32>;
+class static_transcoder<SrcCharT, DestCharT, scid_windows_1256, scid_utf32>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_windows_1257, eid_utf32>;
+class static_transcoder<SrcCharT, DestCharT, scid_windows_1257, scid_utf32>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_windows_1258, eid_utf32>;
+class static_transcoder<SrcCharT, DestCharT, scid_windows_1258, scid_utf32>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_utf8, eid_utf32>;
+class static_transcoder<SrcCharT, DestCharT, scid_utf8, scid_utf32>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_utf16, eid_utf32>;
+class static_transcoder<SrcCharT, DestCharT, scid_utf16, scid_utf32>;
 
 // from UTF-32
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_utf32, eid_ascii>;
+class static_transcoder<SrcCharT, DestCharT, scid_utf32, scid_ascii>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_utf32, eid_iso_8859_1>;
+class static_transcoder<SrcCharT, DestCharT, scid_utf32, scid_iso_8859_1>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_utf32, eid_iso_8859_2>;
+class static_transcoder<SrcCharT, DestCharT, scid_utf32, scid_iso_8859_2>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_utf32, eid_iso_8859_3>;
+class static_transcoder<SrcCharT, DestCharT, scid_utf32, scid_iso_8859_3>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_utf32, eid_iso_8859_4>;
+class static_transcoder<SrcCharT, DestCharT, scid_utf32, scid_iso_8859_4>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_utf32, eid_iso_8859_5>;
+class static_transcoder<SrcCharT, DestCharT, scid_utf32, scid_iso_8859_5>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_utf32, eid_iso_8859_6>;
+class static_transcoder<SrcCharT, DestCharT, scid_utf32, scid_iso_8859_6>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_utf32, eid_iso_8859_7>;
+class static_transcoder<SrcCharT, DestCharT, scid_utf32, scid_iso_8859_7>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_utf32, eid_iso_8859_8>;
+class static_transcoder<SrcCharT, DestCharT, scid_utf32, scid_iso_8859_8>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_utf32, eid_iso_8859_9>;
+class static_transcoder<SrcCharT, DestCharT, scid_utf32, scid_iso_8859_9>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_utf32, eid_iso_8859_10>;
+class static_transcoder<SrcCharT, DestCharT, scid_utf32, scid_iso_8859_10>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_utf32, eid_iso_8859_11>;
+class static_transcoder<SrcCharT, DestCharT, scid_utf32, scid_iso_8859_11>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_utf32, eid_iso_8859_13>;
+class static_transcoder<SrcCharT, DestCharT, scid_utf32, scid_iso_8859_13>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_utf32, eid_iso_8859_14>;
+class static_transcoder<SrcCharT, DestCharT, scid_utf32, scid_iso_8859_14>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_utf32, eid_iso_8859_15>;
+class static_transcoder<SrcCharT, DestCharT, scid_utf32, scid_iso_8859_15>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_utf32, eid_iso_8859_16>;
+class static_transcoder<SrcCharT, DestCharT, scid_utf32, scid_iso_8859_16>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_utf32, eid_windows_1250>;
+class static_transcoder<SrcCharT, DestCharT, scid_utf32, scid_windows_1250>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_utf32, eid_windows_1251>;
+class static_transcoder<SrcCharT, DestCharT, scid_utf32, scid_windows_1251>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_utf32, eid_windows_1252>;
+class static_transcoder<SrcCharT, DestCharT, scid_utf32, scid_windows_1252>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_utf32, eid_windows_1253>;
+class static_transcoder<SrcCharT, DestCharT, scid_utf32, scid_windows_1253>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_utf32, eid_windows_1254>;
+class static_transcoder<SrcCharT, DestCharT, scid_utf32, scid_windows_1254>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_utf32, eid_windows_1255>;
+class static_transcoder<SrcCharT, DestCharT, scid_utf32, scid_windows_1255>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_utf32, eid_windows_1256>;
+class static_transcoder<SrcCharT, DestCharT, scid_utf32, scid_windows_1256>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_utf32, eid_windows_1257>;
+class static_transcoder<SrcCharT, DestCharT, scid_utf32, scid_windows_1257>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_utf32, eid_windows_1258>;
+class static_transcoder<SrcCharT, DestCharT, scid_utf32, scid_windows_1258>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_utf32, eid_utf8>;
+class static_transcoder<SrcCharT, DestCharT, scid_utf32, scid_utf8>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_utf32, eid_utf16>;
+class static_transcoder<SrcCharT, DestCharT, scid_utf32, scid_utf16>;
 
 // others
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_utf8, eid_utf16>;
+class static_transcoder<SrcCharT, DestCharT, scid_utf8, scid_utf16>;
 template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, eid_utf16, eid_utf8>;
+class static_transcoder<SrcCharT, DestCharT, scid_utf16, scid_utf8>;
 ----
 `static_transcoder` class template has no generic implementation.
 Instead, the library provides the template specializations listed above.
@@ -920,46 +923,46 @@ member functions `<<Transcoder_transcode_func, transcode_func>>`
 and `<<Transcoder_transcode_size_func,transcode_size_func>>`
 never return `nullptr`.
 
-=== Class template `static_char_encoding` [[static_char_encoding]]
+=== Class template `static_charset` [[static_charset]]
 
 [source,cpp,subs=normal]
 ----
-template <class CharT, {char_encoding_id}>
-class static_char_encoding;
+template <class CharT, {charset_id}>
+class static_charset;
 
-template <class CharT> class static_char_encoding<CharT, eid_ascii>;
-template <class CharT> class static_char_encoding<CharT, eid_iso_8859_1>;
-template <class CharT> class static_char_encoding<CharT, eid_iso_8859_2>;
-template <class CharT> class static_char_encoding<CharT, eid_iso_8859_3>;
-template <class CharT> class static_char_encoding<CharT, eid_iso_8859_4>;
-template <class CharT> class static_char_encoding<CharT, eid_iso_8859_5>;
-template <class CharT> class static_char_encoding<CharT, eid_iso_8859_6>;
-template <class CharT> class static_char_encoding<CharT, eid_iso_8859_7>;
-template <class CharT> class static_char_encoding<CharT, eid_iso_8859_8>;
-template <class CharT> class static_char_encoding<CharT, eid_iso_8859_9>;
-template <class CharT> class static_char_encoding<CharT, eid_iso_8859_10>;
-template <class CharT> class static_char_encoding<CharT, eid_iso_8859_11>;
-template <class CharT> class static_char_encoding<CharT, eid_iso_8859_13>;
-template <class CharT> class static_char_encoding<CharT, eid_iso_8859_14>;
-template <class CharT> class static_char_encoding<CharT, eid_iso_8859_15>;
-template <class CharT> class static_char_encoding<CharT, eid_iso_8859_16>;
-template <class CharT> class static_char_encoding<CharT, eid_windows_1250>;
-template <class CharT> class static_char_encoding<CharT, eid_windows_1251>;
-template <class CharT> class static_char_encoding<CharT, eid_windows_1252>;
-template <class CharT> class static_char_encoding<CharT, eid_windows_1253>;
-template <class CharT> class static_char_encoding<CharT, eid_windows_1254>;
-template <class CharT> class static_char_encoding<CharT, eid_windows_1255>;
-template <class CharT> class static_char_encoding<CharT, eid_windows_1256>;
-template <class CharT> class static_char_encoding<CharT, eid_windows_1257>;
-template <class CharT> class static_char_encoding<CharT, eid_windows_1258>;
-template <class CharT> class static_char_encoding<CharT, eid_utf8>;
-template <class CharT> class static_char_encoding<CharT, eid_utf16>;
-template <class CharT> class static_char_encoding<CharT, eid_utf32>;
+template <class CharT> class static_charset<CharT, scid_ascii>;
+template <class CharT> class static_charset<CharT, scid_iso_8859_1>;
+template <class CharT> class static_charset<CharT, scid_iso_8859_2>;
+template <class CharT> class static_charset<CharT, scid_iso_8859_3>;
+template <class CharT> class static_charset<CharT, scid_iso_8859_4>;
+template <class CharT> class static_charset<CharT, scid_iso_8859_5>;
+template <class CharT> class static_charset<CharT, scid_iso_8859_6>;
+template <class CharT> class static_charset<CharT, scid_iso_8859_7>;
+template <class CharT> class static_charset<CharT, scid_iso_8859_8>;
+template <class CharT> class static_charset<CharT, scid_iso_8859_9>;
+template <class CharT> class static_charset<CharT, scid_iso_8859_10>;
+template <class CharT> class static_charset<CharT, scid_iso_8859_11>;
+template <class CharT> class static_charset<CharT, scid_iso_8859_13>;
+template <class CharT> class static_charset<CharT, scid_iso_8859_14>;
+template <class CharT> class static_charset<CharT, scid_iso_8859_15>;
+template <class CharT> class static_charset<CharT, scid_iso_8859_16>;
+template <class CharT> class static_charset<CharT, scid_windows_1250>;
+template <class CharT> class static_charset<CharT, scid_windows_1251>;
+template <class CharT> class static_charset<CharT, scid_windows_1252>;
+template <class CharT> class static_charset<CharT, scid_windows_1253>;
+template <class CharT> class static_charset<CharT, scid_windows_1254>;
+template <class CharT> class static_charset<CharT, scid_windows_1255>;
+template <class CharT> class static_charset<CharT, scid_windows_1256>;
+template <class CharT> class static_charset<CharT, scid_windows_1257>;
+template <class CharT> class static_charset<CharT, scid_windows_1258>;
+template <class CharT> class static_charset<CharT, scid_utf8>;
+template <class CharT> class static_charset<CharT, scid_utf16>;
+template <class CharT> class static_charset<CharT, scid_utf32>;
 ----
 
-`static_char_encoding` class template has no generic implementation.
+`static_charset` class template has no generic implementation.
 Instead, the library provides the template specializations listed above.
-All of them are empty classes, and are __{CharEncoding}__.
+All of them are empty classes, and are __{Charset}__.
 
 === Class template `dynamic_transcoder` [[dynamic_transcoder]]
 
@@ -975,7 +978,7 @@ public:
     constexpr dynamic_transcoder
         ( const dynamic_transcoder& other) noexcept = default;
 
-    template <{char_encoding_id} Src, {char_encoding_id} Dest>
+    template <{charset_id} Src, {charset_id} Dest>
     constexpr explicit dynamic_transcoder
         ( {static_transcoder}<Src, Dest> st );
 
@@ -1026,7 +1029,7 @@ Postconditions::
 ====
 [source,cpp,subs=normal]
 ----
-template <{char_encoding_id} Src, {char_encoding_id} Dest>
+template <{charset_id} Src, {charset_id} Dest>
 constexpr explicit dynamic_transcoder
     ( {static_transcoder}<Src, Dest> other );
 ----
@@ -1061,14 +1064,14 @@ std::size_t transcode_size
 Effect:: Calls `transcode_size_func()(src, src_size, surr_poli)`
 ====
 
-=== Struct template `dynamic_char_encoding_data` [[dynamic_char_encoding_data]]
+=== Struct template `dynamic_charset_data` [[dynamic_charset_data]]
 
 [source,cpp,subs=normal]
 ----
 template <class CharT>
-struct dynamic_char_encoding_data {
+struct dynamic_charset_data {
     const char* name;
-    {char_encoding_id} id;
+    {charset_id} id;
     char32_t replacement_char;
     std::size_t replacement_char_size;
     {validate_f} validate_func;
@@ -1104,31 +1107,31 @@ struct dynamic_char_encoding_data {
 
 };
 ----
-=== Class template `dynamic_char_encoding` [[dynamic_char_encoding]]
+=== Class template `dynamic_charset` [[dynamic_charset]]
 [source,cpp,subs=normal]
 ----
 template <class CharT>
-class dynamic_char_encoding {
+class dynamic_charset {
 public:
 
     using char_type = CharT;
 
-    dynamic_char_encoding(const dynamic_char_encoding& other) = default;
+    dynamic_charset(const dynamic_charset& other) = default;
 
-    dynamic_char_encoding
-        ( const {dynamic_char_encoding_data}<CharT>& d );
+    dynamic_charset
+        ( const {dynamic_charset_data}<CharT>& d );
 
-    dynamic_char_encoding& operator=(const dynamic_char_encoding& other) noexcept;
+    dynamic_charset& operator=(const dynamic_charset& other) noexcept;
 
-    bool operator==(const dynamic_char_encoding& other) const noexcept;
+    bool operator==(const dynamic_charset& other) const noexcept;
 
-    bool operator!=(const dynamic_char_encoding& other) const noexcept;
+    bool operator!=(const dynamic_charset& other) const noexcept;
 
-    void swap(dynamic_char_encoding& other) noexcept;
+    void swap(dynamic_charset& other) noexcept;
 
     const char* name() const noexcept;
 
-    constexpr {char_encoding_id} id() const noexcept;
+    constexpr {charset_id} id() const noexcept;
 
     constexpr char32_t replacement_char() const noexcept;
 
@@ -1168,41 +1171,41 @@ public:
     {dynamic_transcoder}<CharT, CharT> sanitizer() const;
 
     {dynamic_transcoder}<CharT, wchar_t> find_transcoder_to
-        ( {tag}<wchar_t>, {char_encoding_id} id) const;
+        ( {tag}<wchar_t>, {charset_id} id) const;
 
     {dynamic_transcoder}<wchar_t, CharT> find_transcoder_from
-        ( {tag}<wchar_t>, {char_encoding_id} id) const;
+        ( {tag}<wchar_t>, {charset_id} id) const;
 
     {dynamic_transcoder}<CharT, char16_t> find_transcoder_to
-        ( {tag}<char16_t>, {char_encoding_id} id) const;
+        ( {tag}<char16_t>, {charset_id} id) const;
 
     {dynamic_transcoder}<char16_t, CharT> find_transcoder_from
-        ( {tag}<char16_t>, {char_encoding_id} id) const;
+        ( {tag}<char16_t>, {charset_id} id) const;
 
     {dynamic_transcoder}<CharT, char> find_transcoder_to
-        ( {tag}<char>, {char_encoding_id} id) const;
+        ( {tag}<char>, {charset_id} id) const;
 
     {dynamic_transcoder}<char, CharT> find_transcoder_from
-        ( {tag}<char>, {char_encoding_id} id) const;
+        ( {tag}<char>, {charset_id} id) const;
 
 #if defined (__cpp_char8_t)
     {dynamic_transcoder}<CharT, char8_t> find_transcoder_to
-        ( {tag}<char8_t>, {char_encoding_id} id) const;
+        ( {tag}<char8_t>, {charset_id} id) const;
 
     {dynamic_transcoder}<char8_t, CharT> find_transcoder_from
-        ( {tag}<char8_t>, {char_encoding_id} id) const;
+        ( {tag}<char8_t>, {charset_id} id) const;
 #endif
 
 private:
 
-    const {dynamic_char_encoding_data}* data; // exposition only
+    const {dynamic_charset_data}* data; // exposition only
 };
 ----
 
 ====
 [source,cpp,subs=normal]
 ----
-dynamic_char_encoding(const dynamic_char_encoding& other);
+dynamic_charset(const dynamic_charset& other);
 ----
 Trivial copy constructor.
 [horizontal]
@@ -1211,8 +1214,7 @@ Effect:: `this\->data = other.data`
 ====
 [source,cpp,subs=normal]
 ----
-dynamic_char_encoding
-        ( const {dynamic_char_encoding_data}<CharT>& d );
+dynamic_charset(const {dynamic_charset_data}<CharT>& d);
 ----
 [horizontal]
 Effect:: `this\->data = d`
@@ -1220,7 +1222,7 @@ Effect:: `this\->data = d`
 ====
 [source,cpp,subs=normal]
 ----
-dynamic_char_encoding& operator=(const dynamic_char_encoding& other) noexcept
+dynamic_charset& operator=(const dynamic_charset& other) noexcept
 ----
 [horizontal]
 Effect:: `this\->data = other.data`
@@ -1228,7 +1230,7 @@ Effect:: `this\->data = other.data`
 ====
 [source,cpp,subs=normal]
 ----
-bool operator==(const dynamic_char_encoding& other) const noexcept;
+bool operator==(const dynamic_charset& other) const noexcept;
 ----
 [horizontal]
 Return value:: `this\->data == other.data`
@@ -1236,7 +1238,7 @@ Return value:: `this\->data == other.data`
 ====
 [source,cpp,subs=normal]
 ----
-bool operator!=(const dynamic_char_encoding& other) const noexcept;
+bool operator!=(const dynamic_charset& other) const noexcept;
 ----
 [horizontal]
 Return value:: `this\->data != other.data`
@@ -1244,7 +1246,7 @@ Return value:: `this\->data != other.data`
 ====
 [source,cpp,subs=normal]
 ----
-void swap(dynamic_char_encoding& other) noexcept;
+void swap(dynamic_charset& other) noexcept;
 ----
 [horizontal]
 Effect:: Equivalent to `std::swap(this\->data, other.data)`
@@ -1260,7 +1262,7 @@ Return value:: `this\->data\->name`
 ====
 [source,cpp,subs=normal]
 ----
-constexpr {char_encoding_id} id() const noexcept;
+constexpr {charset_id} id() const noexcept;
 ----
 [horizontal]
 Return value:: `this\->data\->id`
@@ -1403,7 +1405,7 @@ Return value:: `this\->data\->sanitizer`.
 [source,cpp,subs=normal]
 ----
 {dynamic_transcoder}<CharT, char> find_transcoder_to
-    ( {tag}<char>, {char_encoding_id} id) const;
+    ( {tag}<char>, {charset_id} id ) const;
 ----
 [horizontal]
 Return value:: `this\->data\->transcoder_finder_to_char(id)` if such function pointer
@@ -1413,7 +1415,7 @@ is not null. Otherwise returns `{dynamic_transcoder}<CharT, char>{}`
 [source,cpp,subs=normal]
 ----
 {dynamic_transcoder}<char, CharT> find_transcoder_from
-    ( {tag}<char>, {char_encoding_id} id) const;
+    ( {tag}<char>, {charset_id} id ) const;
 ----
 [horizontal]
 Return value:: `this\->data\->transcoder_finder_from_char(id)` if such function pointer
@@ -1423,7 +1425,7 @@ is not null. Otherwise returns `{dynamic_transcoder}<char, CharT>{}`
 [source,cpp,subs=normal]
 ----
 {dynamic_transcoder}<CharT, char8_t> find_transcoder_to
-    ( {tag}<char8_t>, {char_encoding_id} id) const;
+    ( {tag}<char8_t>, {charset_id} id ) const;
 ----
 [horizontal]
 Return value:: `this\->data\->transcoder_finder_to_char8(id)` if such function pointer
@@ -1433,7 +1435,7 @@ is not null. Otherwise returns `{dynamic_transcoder}<CharT, char8_t>{}`
 [source,cpp,subs=normal]
 ----
 {dynamic_transcoder}<char8_t, CharT> find_transcoder_from
-    ( {tag}<char8_t>, {char_encoding_id} id) const;
+    ( {tag}<char8_t>, {charset_id} id ) const;
 ----
 [horizontal]
 Return value:: `this\->data\->transcoder_finder_from_char8(id)` if such function pointer
@@ -1443,7 +1445,7 @@ is not null. Otherwise returns `{dynamic_transcoder}<char8_t, CharT>{}`
 [source,cpp,subs=normal]
 ----
 {dynamic_transcoder}<CharT, char16_t> find_transcoder_to
-    ( {tag}<char16_t>, {char_encoding_id} id) const;
+    ( {tag}<char16_t>, {charset_id} id ) const;
 ----
 [horizontal]
 Return value:: `this\->data\->transcoder_finder_to_char16(id)` if such function pointer
@@ -1453,7 +1455,7 @@ is not null. Otherwise returns `{dynamic_transcoder}<CharT, char16_t>{}`
 [source,cpp,subs=normal]
 ----
 {dynamic_transcoder}<char16_t, CharT> find_transcoder_from
-    ( {tag}<char16_t>, {char_encoding_id} id) const;
+    ( {tag}<char16_t>, {charset_id} id ) const;
 ----
 [horizontal]
 Return value:: `this\->data\->transcoder_finder_from_char16(id)` if such function pointer
@@ -1463,7 +1465,7 @@ is not null. Otherwise returns `{dynamic_transcoder}<char16_t, CharT>{}`
 [source,cpp,subs=normal]
 ----
 {dynamic_transcoder}<CharT, wchar_t> find_transcoder_to
-    ( {tag}<wchar_t>, {char_encoding_id} id) const;
+    ( {tag}<wchar_t>, {charset_id} id ) const;
 ----
 [horizontal]
 Return value:: `this\->data\->transcoder_finder_to_wchar(id)` if such function pointer
@@ -1473,7 +1475,7 @@ is not null. Otherwise returns `{dynamic_transcoder}<CharT, wchar_t>{}`
 [source,cpp,subs=normal]
 ----
 {dynamic_transcoder}<wchar_t, CharT> find_transcoder_from
-    ( {tag}<wchar_t>, {char_encoding_id} id) const;
+    ( {tag}<wchar_t>, {charset_id} id ) const;
 ----
 [horizontal]
 Return value:: `this\->data\->transcoder_finder_from_wchar(id)` if such function pointer
@@ -1481,42 +1483,37 @@ is not null. Otherwise returns `{dynamic_transcoder}<wchar_t, CharT>{}`
 ====
 
 
-
-
-
-
-
 === Function template `find_transcoder` [[find_transcoder]]
 
 [source,cpp,subs=normal]
 ----
-template <class SrcEncoding, class DestEncoding>
-auto find_transcoder(SrcEncoding src, DestEncoding dest);
+template <class SrcCharset, class DestCharset>
+auto find_transcoder(SrcCharset src, DestCharset dest);
 ----
-Requirements:: `SrcEncoding` and `DestEncoding` are __{CharEncoding}__ types.
+Requirements:: `SrcCharset` and `DestCharset` are __{Charset}__ types.
 Return type:: A type that is __{Transcoder}__
 //-
 Return value::
 * Returns the default value of `{static_transcoder}<SrcID, DestID>`
   if such template instantiation is defined and
-  `SrcEncoding` is ( or derives from ) `{static_char_encoding}<SrcID>` and
-  `DestEncoding` is ( or derives from ) `{static_char_encoding}<DestID>`;
-* otherwise, returns `src.<<CharEncoding_sanitizer,sanitizer>>()` if
-  `src.<<CharEncoding_id,id>>()` is equal to `dest.<<CharEncoding_id,id>>()`
-  and `SrcEncoding::char_type` is the same type as `DestEncoding::char_type`;
-* otherwise, returns `src.<<CharEncoding_to_u32,to_u32>>()`
-  if `DestEncoding::char_type` is `char32_t`;
-* otherwise, returns `dest.<<CharEncoding_from_u32,from_u32>>()`
-  if `SrcEncoding::char_type` is `char32_t`;
+  `SrcCharset` is ( or derives from ) `{static_charset}<SrcID>` and
+  `DestCharset` is ( or derives from ) `{static_charset}<DestID>`;
+* otherwise, returns `src.<<Charset_sanitizer,sanitizer>>()` if
+  `src.<<Charset_id,id>>()` is equal to `dest.<<Charset_id,id>>()`
+  and `SrcCharset::char_type` is the same type as `DestCharset::char_type`;
+* otherwise, returns `src.<<Charset_to_u32,to_u32>>()`
+  if `DestCharset::char_type` is `char32_t`;
+* otherwise, returns `dest.<<Charset_from_u32,from_u32>>()`
+  if `SrcCharset::char_type` is `char32_t`;
 * otherwise, returns
-  `src.<<CharEncoding_find_transcoder_to,find_transcoder_to>>(dest_ch, dest.id())`
+  `src.<<Charset_find_transcoder_to,find_transcoder_to>>(dest_ch, dest.id())`
   if such expression
   is well-formed and returns a <<Transcoder_null,non null transcoder>>
-  , where `dest_ch` is `{tag}<DestEncoding::char_type>{}`
+  , where `dest_ch` is `{tag}<DestCharset::char_type>{}`
 * otherwise, returns
-  `dest.<<CharEncoding_find_transcoder_from,find_transcoder_from>>(src_ch, src.id())`
-   if such expression is well-formed, where `src_sh` is `{tag}<SrcEncoding::char_type>{}`
-* otherwise returns `{dynamic_transcoder}<SrcEncoding::char_type, DestEncoding::char_type>{}`.
+  `dest.<<Charset_find_transcoder_from,find_transcoder_from>>(src_ch, src.id())`
+   if such expression is well-formed, where `src_sh` is `{tag}<SrcCharset::char_type>{}`
+* otherwise returns `{dynamic_transcoder}<SrcCharset::char_type, DestCharset::char_type>{}`.
 
 NOTE: When `find_transcoder` returns an <<Transcoder_null,null transcoder>>
 , you still can use `{decode_encode}` and `decode_encode_size`.
@@ -1548,9 +1545,9 @@ Postcondition:: `ob.<<outbuff_hpp#basic_outbuff_recycle,recycle>>()` is not call
 `ob.<<outbuf_hpp#basic_outbuff_space,space>>()` is not less then the value returned by
 `{decode_encode_size}(to_u32, size_calc_func, src, src_size, inv_seq_notifier, surr_poli)`,
 where `size_calc_func` is the return value of
-`dest_enc.<<CharEncoding_from_u32,from_u32>>().<<Transcoder_transcode_size_func, transcode_size_func>>()`,
-where `dest_enc` is the __CharEncoding__ object such that the return value of
-`dest_enc.<<CharEncoding_to_u32,to_u32>>().<<Transcoder_transcode_func,transcode_func>>()`
+`dest_enc.<<Charset_from_u32,from_u32>>().<<Transcoder_transcode_size_func, transcode_size_func>>()`,
+where `dest_enc` is the __Charset__ object such that the return value of
+`dest_enc.<<Charset_to_u32,to_u32>>().<<Transcoder_transcode_func,transcode_func>>()`
 is equal to `to_u32`.
 
 === Function template `decode_encode_size` [[decode_encode_size]]
@@ -1575,95 +1572,95 @@ Return value::
 The return of `size_calc_func` called over the UTF-32 content obtained
 by passing `src` to `to_u32`.
 
-=== Type aliases for encodings [[static_char_encoding_aliases]]
+=== Type aliases for charsets [[static_charset_aliases]]
 
 [source,cpp,subs=normal]
 ----
 namespace strf {
 
 template <class CharT>
-using ascii_t = static_char_encoding<CharT, eid_ascii>;
+using ascii_t = static_charset<CharT, scid_ascii>;
 
 template <class CharT>
-using iso_8859_1_t = static_char_encoding<CharT, eid_iso_8859_1>;
+using iso_8859_1_t = static_charset<CharT, scid_iso_8859_1>;
 
 template <class CharT>
-using iso_8859_2_t = static_char_encoding<CharT, eid_iso_8859_2>;
+using iso_8859_2_t = static_charset<CharT, scid_iso_8859_2>;
 
 template <class CharT>
-using iso_8859_3_t = static_char_encoding<CharT, eid_iso_8859_3>;
+using iso_8859_3_t = static_charset<CharT, scid_iso_8859_3>;
 
 template <class CharT>
-using iso_8859_4_t = static_char_encoding<CharT, eid_iso_8859_4>;
+using iso_8859_4_t = static_charset<CharT, scid_iso_8859_4>;
 
 template <class CharT>
-using iso_8859_5_t = static_char_encoding<CharT, eid_iso_8859_5>;
+using iso_8859_5_t = static_charset<CharT, scid_iso_8859_5>;
 
 template <class CharT>
-using iso_8859_6_t = static_char_encoding<CharT, eid_iso_8859_6>;
+using iso_8859_6_t = static_charset<CharT, scid_iso_8859_6>;
 
 template <class CharT>
-using iso_8859_7_t = static_char_encoding<CharT, eid_iso_8859_7>;
+using iso_8859_7_t = static_charset<CharT, scid_iso_8859_7>;
 
 template <class CharT>
-using iso_8859_8_t = static_char_encoding<CharT, eid_iso_8859_8>;
+using iso_8859_8_t = static_charset<CharT, scid_iso_8859_8>;
 
 template <class CharT>
-using iso_8859_9_t = static_char_encoding<CharT, eid_iso_8859_9>;
+using iso_8859_9_t = static_charset<CharT, scid_iso_8859_9>;
 
 template <class CharT>
-using iso_8859_10_t = static_char_encoding<CharT, eid_iso_8859_10>;
+using iso_8859_10_t = static_charset<CharT, scid_iso_8859_10>;
 
 template <class CharT>
-using iso_8859_11_t = static_char_encoding<CharT, eid_iso_8859_11>;
+using iso_8859_11_t = static_charset<CharT, scid_iso_8859_11>;
 
 template <class CharT>
-using iso_8859_13_t = static_char_encoding<CharT, eid_iso_8859_13>;
+using iso_8859_13_t = static_charset<CharT, scid_iso_8859_13>;
 
 template <class CharT>
-using iso_8859_14_t = static_char_encoding<CharT, eid_iso_8859_14>;
+using iso_8859_14_t = static_charset<CharT, scid_iso_8859_14>;
 
 template <class CharT>
-using iso_8859_15_t = static_char_encoding<CharT, eid_iso_8859_15>;
+using iso_8859_15_t = static_charset<CharT, scid_iso_8859_15>;
 
 template <class CharT>
-using iso_8859_16_t = static_char_encoding<CharT, eid_iso_8859_16>;
+using iso_8859_16_t = static_charset<CharT, scid_iso_8859_16>;
 
 template <class CharT>
-using windows_1250_t = static_char_encoding<CharT, eid_windows_1250>;
+using windows_1250_t = static_charset<CharT, scid_windows_1250>;
 
 template <class CharT>
-using windows_1251_t = static_char_encoding<CharT, eid_windows_1251>;
+using windows_1251_t = static_charset<CharT, scid_windows_1251>;
 
 template <class CharT>
-using windows_1252_t = static_char_encoding<CharT, eid_windows_1252>;
+using windows_1252_t = static_charset<CharT, scid_windows_1252>;
 
 template <class CharT>
-using windows_1253_t = static_char_encoding<CharT, eid_windows_1253>;
+using windows_1253_t = static_charset<CharT, scid_windows_1253>;
 
 template <class CharT>
-using windows_1254_t = static_char_encoding<CharT, eid_windows_1254>;
+using windows_1254_t = static_charset<CharT, scid_windows_1254>;
 
 template <class CharT>
-using windows_1255_t = static_char_encoding<CharT, eid_windows_1255>;
+using windows_1255_t = static_charset<CharT, scid_windows_1255>;
 
 template <class CharT>
-using windows_1256_t = static_char_encoding<CharT, eid_windows_1256>;
+using windows_1256_t = static_charset<CharT, scid_windows_1256>;
 
 template <class CharT>
-using windows_1257_t = static_char_encoding<CharT, eid_windows_1257>;
+using windows_1257_t = static_charset<CharT, scid_windows_1257>;
 
 template <class CharT>
-using windows_1258_t = static_char_encoding<CharT, eid_windows_1258>;
+using windows_1258_t = static_charset<CharT, scid_windows_1258>;
 
 template <class CharT>
-using utf8_t = static_char_encoding<CharT, eid_utf8>;
+using utf8_t = static_charset<CharT, scid_utf8>;
 
 template <class CharT>
-using utf16_t = static_char_encoding<CharT, eid_utf16>;
+using utf16_t = static_charset<CharT, scid_utf16>;
 
 template <class CharT>
-using utf32_t = static_char_encoding<CharT, eid_utf32>;
+using utf32_t = static_charset<CharT, scid_utf32>;
 
 template <class CharT>
 using utf_t = /* see below */;
@@ -1682,7 +1679,7 @@ using utf_t = /* ... */;
 depending on the value of `sizeof(CharT)`.
 ====
 
-=== Template variable for encodings [[static_char_encoding_constexpr]]
+=== Template variable for charsets [[static_charset_constexpr]]
 
 [source,cpp,subs=normal]
 ----

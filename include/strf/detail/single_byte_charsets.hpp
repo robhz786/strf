@@ -41,35 +41,35 @@
 
 #define STRF_DEF_SINGLE_BYTE_CHARSET(CHARSET)                                 \
     template <typename CharT>                                                 \
-    class static_char_encoding<CharT, strf::eid_ ## CHARSET>                  \
-        : public strf::detail::single_byte_char_encoding                      \
+    class static_charset<CharT, strf::csid_ ## CHARSET>                        \
+        : public strf::detail::single_byte_charset                            \
             < CharT, strf::detail::impl_ ## CHARSET >                         \
     { };                                                                      \
                                                                               \
     template <typename SrcCharT, typename DestCharT>                          \
     class static_transcoder                                                   \
-        < SrcCharT, DestCharT, strf::eid_ ## CHARSET, strf::eid_ ## CHARSET > \
-        : public strf::detail::single_byte_char_encoding_sanitizer            \
+        < SrcCharT, DestCharT, strf::csid_ ## CHARSET, strf::csid_ ## CHARSET > \
+        : public strf::detail::single_byte_charset_sanitizer                  \
             < SrcCharT, DestCharT, strf::detail::impl_ ## CHARSET >           \
     {};                                                                       \
                                                                               \
     template <typename SrcCharT, typename DestCharT>                          \
     class static_transcoder                                                   \
-        < SrcCharT, DestCharT, strf::eid_utf32, strf::eid_ ## CHARSET >       \
-        : public strf::detail::utf32_to_single_byte_char_encoding             \
+        < SrcCharT, DestCharT, strf::csid_utf32, strf::csid_ ## CHARSET >       \
+        : public strf::detail::utf32_to_single_byte_charset                   \
             < SrcCharT, DestCharT, strf::detail::impl_ ## CHARSET >           \
     {};                                                                       \
                                                                               \
     template <typename SrcCharT, typename DestCharT>                          \
     class static_transcoder                                                   \
-        < SrcCharT, DestCharT, strf::eid_ ## CHARSET, strf::eid_utf32 >       \
-        : public strf::detail::single_byte_char_encoding_to_utf32             \
+        < SrcCharT, DestCharT, strf::csid_ ## CHARSET, strf::csid_utf32 >       \
+        : public strf::detail::single_byte_charset_to_utf32                   \
             < SrcCharT, DestCharT, strf::detail::impl_ ## CHARSET >           \
     {};                                                                       \
                                                                               \
     template <typename CharT>                                                 \
     using CHARSET ## _t =                                                     \
-        strf::static_char_encoding<CharT, strf::eid_ ## CHARSET>;             \
+        strf::static_charset<CharT, strf::csid_ ## CHARSET>;                   \
                                                                               \
     template <typename CharT> STRF_HD CHARSET ## _t<CharT> CHARSET = {};
 
@@ -102,7 +102,7 @@ struct impl_ascii
     {
         return "ASCII";
     };
-    static constexpr strf::char_encoding_id id = strf::eid_ascii;
+    static constexpr strf::charset_id id = strf::csid_ascii;
 
     static STRF_HD bool is_valid(std::uint8_t ch)
     {
@@ -126,7 +126,7 @@ struct impl_iso_8859_1
     {
         return "ISO-8859-1";
     };
-    static constexpr strf::char_encoding_id id = strf::eid_iso_8859_1;
+    static constexpr strf::charset_id id = strf::csid_iso_8859_1;
 
     static STRF_HD bool is_valid(std::uint8_t)
     {
@@ -148,7 +148,7 @@ struct impl_iso_8859_2
     {
         return "ISO-8859-2";
     };
-    static constexpr strf::char_encoding_id id = strf::eid_iso_8859_2;
+    static constexpr strf::charset_id id = strf::csid_iso_8859_2;
 
     static STRF_HD bool is_valid(std::uint8_t)
     {
@@ -233,7 +233,7 @@ struct impl_iso_8859_3
     {
         return "ISO-8859-3";
     };
-    static constexpr strf::char_encoding_id id = strf::eid_iso_8859_3;
+    static constexpr strf::charset_id id = strf::csid_iso_8859_3;
 
     static STRF_HD bool is_valid(std::uint8_t ch)
     {
@@ -324,7 +324,7 @@ struct impl_iso_8859_4
     {
         return "ISO-8859-4";
     };
-    static constexpr strf::char_encoding_id id = strf::eid_iso_8859_4;
+    static constexpr strf::charset_id id = strf::csid_iso_8859_4;
 
     static STRF_HD bool is_valid(std::uint8_t)
     {
@@ -409,7 +409,7 @@ struct impl_iso_8859_5
     {
         return "ISO-8859-5";
     };
-    static constexpr strf::char_encoding_id id = strf::eid_iso_8859_5;
+    static constexpr strf::charset_id id = strf::csid_iso_8859_5;
 
     static STRF_HD bool is_valid(std::uint8_t)
     {
@@ -494,7 +494,7 @@ struct impl_iso_8859_6
     {
         return "ISO-8859-6";
     };
-    static constexpr strf::char_encoding_id id = strf::eid_iso_8859_6;
+    static constexpr strf::charset_id id = strf::csid_iso_8859_6;
 
     static STRF_HD bool is_valid(std::uint8_t ch)
     {
@@ -570,7 +570,7 @@ struct impl_iso_8859_7
     {
         return "ISO-8859-7";
     };
-    static constexpr strf::char_encoding_id id = strf::eid_iso_8859_7;
+    static constexpr strf::charset_id id = strf::csid_iso_8859_7;
 
     static STRF_HD bool is_valid(std::uint8_t ch)
     {
@@ -654,7 +654,7 @@ struct impl_iso_8859_8
     {
         return "ISO-8859-8";
     };
-    static constexpr strf::char_encoding_id id = strf::eid_iso_8859_8;
+    static constexpr strf::charset_id id = strf::csid_iso_8859_8;
 
     static STRF_HD bool is_valid(std::uint8_t ch)
     {
@@ -731,7 +731,7 @@ struct impl_iso_8859_9
     {
         return "ISO-8859-9";
     };
-    static constexpr strf::char_encoding_id id = strf::eid_iso_8859_9;
+    static constexpr strf::charset_id id = strf::csid_iso_8859_9;
 
     static STRF_HD bool is_valid(std::uint8_t)
     {
@@ -784,7 +784,7 @@ struct impl_iso_8859_10
     {
         return "ISO-8859-10";
     };
-    static constexpr strf::char_encoding_id id = strf::eid_iso_8859_10;
+    static constexpr strf::charset_id id = strf::csid_iso_8859_10;
 
     static STRF_HD bool is_valid(std::uint8_t)
     {
@@ -869,7 +869,7 @@ struct impl_iso_8859_11
     {
         return "ISO-8859-11";
     };
-    static constexpr strf::char_encoding_id id = strf::eid_iso_8859_11;
+    static constexpr strf::charset_id id = strf::csid_iso_8859_11;
 
     static STRF_HD bool is_valid(std::uint8_t ch)
     {
@@ -952,7 +952,7 @@ struct impl_iso_8859_13
     {
         return "ISO-8859-13";
     };
-    static constexpr strf::char_encoding_id id = strf::eid_iso_8859_13;
+    static constexpr strf::charset_id id = strf::csid_iso_8859_13;
 
     static STRF_HD bool is_valid(std::uint8_t)
     {
@@ -1037,7 +1037,7 @@ struct impl_iso_8859_14
     {
         return "ISO-8859-14";
     };
-    static constexpr strf::char_encoding_id id = strf::eid_iso_8859_14;
+    static constexpr strf::charset_id id = strf::csid_iso_8859_14;
 
     static STRF_HD bool is_valid(std::uint8_t)
     {
@@ -1125,7 +1125,7 @@ public:
     {
         return "ISO-8859-15";
     };
-    static constexpr strf::char_encoding_id id = strf::eid_iso_8859_15;
+    static constexpr strf::charset_id id = strf::csid_iso_8859_15;
 
     static STRF_HD bool is_valid(std::uint8_t)
     {
@@ -1190,7 +1190,7 @@ struct impl_iso_8859_16
     {
         return "ISO-8859-16";
     };
-    static constexpr strf::char_encoding_id id = strf::eid_iso_8859_16;
+    static constexpr strf::charset_id id = strf::csid_iso_8859_16;
 
     static STRF_HD bool is_valid(std::uint8_t)
     {
@@ -1277,7 +1277,7 @@ public:
     {
         return "windows-1250";
     };
-    static constexpr strf::char_encoding_id id = strf::eid_windows_1250;
+    static constexpr strf::charset_id id = strf::csid_windows_1250;
 
     static STRF_HD bool is_valid(std::uint8_t)
     {
@@ -1372,7 +1372,7 @@ public:
     {
         return "windows-1251";
     };
-    static constexpr strf::char_encoding_id id = strf::eid_windows_1251;
+    static constexpr strf::charset_id id = strf::csid_windows_1251;
 
     static STRF_HD bool is_valid(std::uint8_t)
     {
@@ -1470,7 +1470,7 @@ public:
     {
         return "windows-1252";
     };
-    static constexpr strf::char_encoding_id id = strf::eid_windows_1252;
+    static constexpr strf::charset_id id = strf::csid_windows_1252;
 
     static STRF_HD bool is_valid(std::uint8_t)
     {
@@ -1554,7 +1554,7 @@ public:
     {
         return "windows-1253";
     };
-    static constexpr strf::char_encoding_id id = strf::eid_windows_1253;
+    static constexpr strf::charset_id id = strf::csid_windows_1253;
 
     static STRF_HD bool is_valid(std::uint8_t ch)
     {
@@ -1652,7 +1652,7 @@ public:
     {
         return "windows-1254";
     };
-    static constexpr strf::char_encoding_id id = strf::eid_windows_1254;
+    static constexpr strf::charset_id id = strf::csid_windows_1254;
 
     static STRF_HD bool is_valid(std::uint8_t)
     {
@@ -1750,7 +1750,7 @@ public:
     {
         return "windows-1255";
     };
-    static constexpr strf::char_encoding_id id = strf::eid_windows_1255;
+    static constexpr strf::charset_id id = strf::csid_windows_1255;
 
     static STRF_HD bool is_valid(std::uint8_t ch)
     {
@@ -1849,7 +1849,7 @@ public:
     {
         return "windows-1256";
     };
-    static constexpr strf::char_encoding_id id = strf::eid_windows_1256;
+    static constexpr strf::charset_id id = strf::csid_windows_1256;
 
     static STRF_HD bool is_valid(std::uint8_t)
     {
@@ -1947,7 +1947,7 @@ public:
     {
         return "windows-1257";
     };
-    static constexpr strf::char_encoding_id id = strf::eid_windows_1257;
+    static constexpr strf::charset_id id = strf::csid_windows_1257;
 
     static STRF_HD bool is_valid(std::uint8_t ch)
     {
@@ -2045,7 +2045,7 @@ public:
     {
         return "windows-1258";
     };
-    static constexpr strf::char_encoding_id id = strf::eid_windows_1258;
+    static constexpr strf::charset_id id = strf::csid_windows_1258;
 
     static STRF_HD bool is_valid(std::uint8_t)
     {
@@ -2137,7 +2137,7 @@ STRF_FUNC_IMPL STRF_HD unsigned impl_windows_1258::encode_ext(char32_t ch)
 #endif //! defined(STRF_OMIT_IMPL)
 
 template <typename SrcCharT, typename DestCharT, class Impl>
-struct single_byte_char_encoding_to_utf32
+struct single_byte_charset_to_utf32
 {
     static STRF_HD void transcode
         ( strf::basic_outbuff<DestCharT>& ob
@@ -2167,7 +2167,7 @@ struct single_byte_char_encoding_to_utf32
 };
 
 template <typename SrcCharT, typename DestCharT, class Impl>
-STRF_HD void single_byte_char_encoding_to_utf32<SrcCharT, DestCharT, Impl>::transcode
+STRF_HD void single_byte_charset_to_utf32<SrcCharT, DestCharT, Impl>::transcode
     ( strf::basic_outbuff<DestCharT>& ob
     , const SrcCharT* src
     , std::size_t src_size
@@ -2195,7 +2195,7 @@ STRF_HD void single_byte_char_encoding_to_utf32<SrcCharT, DestCharT, Impl>::tran
 }
 
 template <typename SrcCharT, typename DestCharT, class Impl>
-struct utf32_to_single_byte_char_encoding
+struct utf32_to_single_byte_charset
 {
     static STRF_HD void transcode
         ( strf::basic_outbuff<DestCharT>& ob
@@ -2224,7 +2224,7 @@ struct utf32_to_single_byte_char_encoding
 };
 
 template <typename SrcCharT, typename DestCharT, class Impl>
-STRF_HD void utf32_to_single_byte_char_encoding<SrcCharT, DestCharT, Impl>::transcode
+STRF_HD void utf32_to_single_byte_charset<SrcCharT, DestCharT, Impl>::transcode
     ( strf::basic_outbuff<DestCharT>& ob
     , const SrcCharT* src
     , std::size_t src_size
@@ -2252,7 +2252,7 @@ STRF_HD void utf32_to_single_byte_char_encoding<SrcCharT, DestCharT, Impl>::tran
 }
 
 template <typename SrcCharT, typename DestCharT, class Impl>
-struct single_byte_char_encoding_sanitizer
+struct single_byte_charset_sanitizer
 {
     static STRF_HD void transcode
         ( strf::basic_outbuff<DestCharT>& ob
@@ -2282,7 +2282,7 @@ struct single_byte_char_encoding_sanitizer
 };
 
 template <typename SrcCharT, typename DestCharT, class Impl>
-STRF_HD void single_byte_char_encoding_sanitizer<SrcCharT, DestCharT, Impl>::transcode
+STRF_HD void single_byte_charset_sanitizer<SrcCharT, DestCharT, Impl>::transcode
     ( strf::basic_outbuff<DestCharT>& ob
     , const SrcCharT* src
     , std::size_t src_size
@@ -2310,18 +2310,18 @@ STRF_HD void single_byte_char_encoding_sanitizer<SrcCharT, DestCharT, Impl>::tra
     ob.advance_to(dest_it);
 }
 
-template <std::size_t wchar_size, typename CharT, strf::char_encoding_id>
-class single_byte_char_encoding_tofrom_wchar
+template <std::size_t wchar_size, typename CharT, strf::charset_id>
+class single_byte_charset_tofrom_wchar
 {
 public:
 
     static STRF_HD strf::dynamic_transcoder<wchar_t, CharT>
-    find_transcoder_from(strf::tag<wchar_t>, strf::char_encoding_id) noexcept
+    find_transcoder_from(strf::tag<wchar_t>, strf::charset_id) noexcept
     {
         return {};
     }
     static STRF_HD strf::dynamic_transcoder<CharT, wchar_t>
-    find_transcoder_to(strf::tag<wchar_t>, strf::char_encoding_id) noexcept
+    find_transcoder_to(strf::tag<wchar_t>, strf::charset_id) noexcept
     {
         return {};
     }
@@ -2332,18 +2332,18 @@ protected:
     constexpr static std::nullptr_t  find_transcoder_from_wchar = nullptr;
 };
 
-template <typename CharT, strf::char_encoding_id Id>
-class single_byte_char_encoding_tofrom_wchar<4, CharT, Id>
+template <typename CharT, strf::charset_id Id>
+class single_byte_charset_tofrom_wchar<4, CharT, Id>
 {
 public:
 
     static STRF_HD strf::dynamic_transcoder<wchar_t, CharT>
-    find_transcoder_from(strf::tag<wchar_t>, strf::char_encoding_id id) noexcept
+    find_transcoder_from(strf::tag<wchar_t>, strf::charset_id id) noexcept
     {
         return find_transcoder_from_wchar(id);
     }
     static STRF_HD strf::dynamic_transcoder<CharT, wchar_t>
-    find_transcoder_to(strf::tag<wchar_t>, strf::char_encoding_id id) noexcept
+    find_transcoder_to(strf::tag<wchar_t>, strf::charset_id id) noexcept
     {
         return find_transcoder_to_wchar(id);
     }
@@ -2351,21 +2351,21 @@ public:
 protected:
 
     static STRF_HD strf::dynamic_transcoder<wchar_t, CharT>
-    find_transcoder_from_wchar(strf::char_encoding_id id) noexcept
+    find_transcoder_from_wchar(strf::charset_id id) noexcept
     {
         using return_type = strf::dynamic_transcoder<wchar_t, CharT>;
-        if (id == strf::eid_utf32) {
-            strf::static_transcoder<wchar_t, CharT, strf::eid_utf32, Id> t;
+        if (id == strf::csid_utf32) {
+            strf::static_transcoder<wchar_t, CharT, strf::csid_utf32, Id> t;
             return return_type{t};
         }
         return {};
     }
     static STRF_HD strf::dynamic_transcoder<CharT, wchar_t>
-    find_transcoder_to_wchar(strf::char_encoding_id id) noexcept
+    find_transcoder_to_wchar(strf::charset_id id) noexcept
     {
         using return_type = strf::dynamic_transcoder<CharT, wchar_t>;
-        if (id == strf::eid_utf32) {
-            strf::static_transcoder<CharT, wchar_t, Id, strf::eid_utf32> t;
+        if (id == strf::csid_utf32) {
+            strf::static_transcoder<CharT, wchar_t, Id, strf::csid_utf32> t;
             return return_type{t};
         }
         return {};
@@ -2374,14 +2374,14 @@ protected:
 
 
 template <typename CharT, class Impl>
-class single_byte_char_encoding
-    : public strf::detail::single_byte_char_encoding_tofrom_wchar
+class single_byte_charset
+    : public strf::detail::single_byte_charset_tofrom_wchar
         < sizeof(wchar_t), CharT, Impl::id >
 {
     static_assert(sizeof(CharT) == 1, "Character type with this encoding");
 
     using wchar_stuff_ =
-        strf::detail::single_byte_char_encoding_tofrom_wchar<sizeof(wchar_t), CharT, Impl::id>;
+        strf::detail::single_byte_charset_tofrom_wchar<sizeof(wchar_t), CharT, Impl::id>;
 public:
 
     using char_type = CharT;
@@ -2390,7 +2390,7 @@ public:
     {
         return Impl::name();
     };
-    static constexpr STRF_HD strf::char_encoding_id id() noexcept
+    static constexpr STRF_HD strf::charset_id id() noexcept
     {
         return Impl::id;
     }
@@ -2468,13 +2468,13 @@ public:
         return {};
     }
     static constexpr STRF_HD
-    strf::static_transcoder<char32_t, CharT, strf::eid_utf32, Impl::id>
+    strf::static_transcoder<char32_t, CharT, strf::csid_utf32, Impl::id>
     from_u32() noexcept
     {
         return {};
     }
     static constexpr STRF_HD
-    strf::static_transcoder<CharT, char32_t, Impl::id, strf::eid_utf32>
+    strf::static_transcoder<CharT, char32_t, Impl::id, strf::csid_utf32>
     to_u32() noexcept
     {
         return {};
@@ -2484,12 +2484,12 @@ public:
     using wchar_stuff_::find_transcoder_to;
 
     static STRF_HD strf::dynamic_transcoder<char, CharT>
-    find_transcoder_from(strf::tag<char>, strf::char_encoding_id id) noexcept
+    find_transcoder_from(strf::tag<char>, strf::charset_id id) noexcept
     {
         return find_transcoder_from_narrow<char>(id);;
     }
     static STRF_HD strf::dynamic_transcoder<CharT, char>
-    find_transcoder_to(strf::tag<char>, strf::char_encoding_id id) noexcept
+    find_transcoder_to(strf::tag<char>, strf::charset_id id) noexcept
     {
         return find_transcoder_to_narrow<char>(id);
     }
@@ -2497,19 +2497,19 @@ public:
 #if defined (__cpp_char8_t)
 
     static STRF_HD strf::dynamic_transcoder<char8_t, CharT>
-    find_transcoder_from(strf::tag<char8_t>, strf::char_encoding_id id) noexcept
+    find_transcoder_from(strf::tag<char8_t>, strf::charset_id id) noexcept
     {
         return find_transcoder_from_narrow<char8_t>(id);
     }
     static STRF_HD strf::dynamic_transcoder<CharT, char8_t>
-    find_transcoder_to(strf::tag<char8_t>, strf::char_encoding_id id) noexcept
+    find_transcoder_to(strf::tag<char8_t>, strf::charset_id id) noexcept
     {
         return find_transcoder_to_narrow<char8_t>(id);
     }
 
 #endif
 
-    void STRF_HD fill_data(strf::dynamic_char_encoding_data<CharT>& data) const noexcept
+    void STRF_HD fill_data(strf::dynamic_charset_data<CharT>& data) const noexcept
     {
         data.name = name();
         data.id = id();
@@ -2547,9 +2547,9 @@ public:
 #endif
     }
 
-    static strf::dynamic_char_encoding<CharT> to_dynamic() noexcept
+    static strf::dynamic_charset<CharT> to_dynamic() noexcept
     {
-        static const strf::dynamic_char_encoding_data<CharT> data = {
+        static const strf::dynamic_charset_data<CharT> data = {
             name(), id(), replacement_char(), 1, validate, encoded_char_size,
             encode_char, encode_fill, codepoints_fast_count,
             codepoints_robust_count, write_replacement_char, decode_char,
@@ -2570,9 +2570,9 @@ public:
             nullptr,
 #endif // defined (__cpp_char8_t)
         };
-        return strf::dynamic_char_encoding<CharT>{data};
+        return strf::dynamic_charset<CharT>{data};
     }
-    explicit operator strf::dynamic_char_encoding<CharT> () const
+    explicit operator strf::dynamic_charset<CharT> () const
     {
         return to_dynamic();
     }
@@ -2581,7 +2581,7 @@ private:
 
     template <typename SrcCharT>
     static STRF_HD strf::dynamic_transcoder<SrcCharT, CharT>
-    find_transcoder_from_narrow(strf::char_encoding_id id) noexcept
+    find_transcoder_from_narrow(strf::charset_id id) noexcept
     {
         using transcoder_type = strf::dynamic_transcoder<SrcCharT, CharT>;
         if (id == Impl::id) {
@@ -2592,7 +2592,7 @@ private:
     }
     template <typename DestCharT>
     static STRF_HD strf::dynamic_transcoder<CharT, DestCharT>
-    find_transcoder_to_narrow(strf::char_encoding_id id) noexcept
+    find_transcoder_to_narrow(strf::charset_id id) noexcept
     {
         using transcoder_type = strf::dynamic_transcoder<CharT, DestCharT>;
         if (id == Impl::id) {
@@ -2605,7 +2605,7 @@ private:
 };
 
 template <typename CharT, class Impl>
-STRF_HD CharT* single_byte_char_encoding<CharT, Impl>::encode_char
+STRF_HD CharT* single_byte_charset<CharT, Impl>::encode_char
     ( CharT* dest
     , char32_t ch )
 {
@@ -2616,7 +2616,7 @@ STRF_HD CharT* single_byte_char_encoding<CharT, Impl>::encode_char
 }
 
 template <typename CharT, class Impl>
-STRF_HD void single_byte_char_encoding<CharT, Impl>::encode_fill
+STRF_HD void single_byte_charset<CharT, Impl>::encode_fill
     ( strf::basic_outbuff<CharT>& ob, std::size_t count, char32_t ch )
 {
     unsigned ch2 = Impl::encode(ch);
@@ -2668,4 +2668,4 @@ STRF_DEF_SINGLE_BYTE_CHARSET(windows_1258);
 
 } // namespace strf
 
-#endif  // STRF_DETAIL_SINGLE_BYTE_CHAR_ENCODINGS_HPP
+#endif  // STRF_DETAIL_SINGLE_BYTE_CHARSETS_HPP

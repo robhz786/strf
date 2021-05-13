@@ -113,7 +113,7 @@ public:
         , afmt_(input.arg.get_alignment_format())
         , lettercase_(strf::get_facet<strf::lettercase_c, bool>(input.facets))
     {
-        auto enc = strf::get_facet<char_encoding_c<CharT>, bool>(input.facets);
+        auto enc = strf::get_facet<charset_c<CharT>, bool>(input.facets);
         std::uint16_t w = 5 - (int)input.arg.value();
         auto fmt_width = afmt_.width.round();
         if (fmt_width > w) {

@@ -175,7 +175,7 @@ private:
     template <typename Preview, typename WidthCalc>
     void preview_(Preview& preview, const WidthCalc& wcalc) const;
 
-    strf::dynamic_char_encoding<CharT> encoding_;
+    strf::dynamic_charset<CharT> encoding_;
     strf::numpunct<10> numpunct_;
     strf::lettercase lettercase_;
     complex_form form_;
@@ -189,7 +189,7 @@ template <typename CharT, typename FloatT>
 template <typename... T>
 inline std_complex_printer<CharT, FloatT>::std_complex_printer
     ( strf::usual_printer_input<T...> x )
-    : encoding_(strf::get_facet<strf::char_encoding_c<CharT>, FloatT>(x.facets))
+    : encoding_(strf::get_facet<strf::charset_c<CharT>, FloatT>(x.facets))
     , numpunct_(strf::get_facet<strf::numpunct_c<10>, FloatT>(x.facets))
     , lettercase_(strf::get_facet<strf::lettercase_c, FloatT>(x.facets))
     , form_(strf::get_facet<complex_form_c, std::complex<FloatT>>(x.facets))
@@ -256,7 +256,7 @@ public:
 
     template <typename... T>
     fmt_std_complex_printer(strf::usual_printer_input<T...> x)
-        : encoding_(strf::get_facet<strf::char_encoding_c<CharT>, complex_type_>(x.facets))
+        : encoding_(strf::get_facet<strf::charset_c<CharT>, complex_type_>(x.facets))
         , numpunct10_(strf::get_facet<strf::numpunct_c<10>, FloatT>(x.facets))
         , numpunct16_(strf::get_facet<strf::numpunct_c<16>, FloatT>(x.facets))
         , lettercase_(strf::get_facet<strf::lettercase_c, FloatT>(x.facets))
@@ -290,7 +290,7 @@ private:
     template <typename Preview, typename WidthCalc>
     void preview_without_fill_(Preview& preview, WidthCalc wcalc) const;
 
-    strf::dynamic_char_encoding<CharT> encoding_;
+    strf::dynamic_charset<CharT> encoding_;
     strf::numpunct<10> numpunct10_;
     strf::numpunct<16> numpunct16_;
     strf::lettercase lettercase_;

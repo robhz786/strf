@@ -1668,7 +1668,7 @@ STRF_HD void fast_double_printer<CharT>::print_to
 //         grouping_ = punct.grouping();
 //         decimal_point_ = punct.decimal_point();
 //         thousands_sep_ = punct.thousands_sep();
-//         init_(strf::get_facet<strf::char_encoding_c<CharT>, FloatT>(input.facets));
+//         init_(strf::get_facet<strf::charset_c<CharT>, FloatT>(input.facets));
 //         STRF_IF_CONSTEXPR (Preview::width_required) {
 //             input.preview.subtract_width(width_());
 //         }
@@ -2453,7 +2453,7 @@ public:
             , strf::float_formatter_full_dynamic, HasAlignment >& input )
         : lettercase_(strf::get_facet<strf::lettercase_c, FloatT>(input.facets))
     {
-        auto enc = get_facet<strf::char_encoding_c<CharT>, FloatT>(input.facets);
+        auto enc = get_facet<strf::charset_c<CharT>, FloatT>(input.facets);
         encode_fill_ = enc.encode_fill_func();
         encode_char_ = enc.encode_char_func();
 
@@ -2507,7 +2507,7 @@ public:
             < CharT, Preview, FPack, FloatT, FloatFormatter, HasAlignment >& input )
         : lettercase_(strf::get_facet<strf::lettercase_c, FloatT>(input.facets))
     {
-        auto enc = get_facet<strf::char_encoding_c<CharT>, FloatT>(input.facets);
+        auto enc = get_facet<strf::charset_c<CharT>, FloatT>(input.facets);
         encode_fill_ = enc.encode_fill_func();
         auto r = strf::detail::init_float_printer_data
             ( data_, input.arg.value(), grouping_, input.arg.get_float_format()

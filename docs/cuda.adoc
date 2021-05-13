@@ -55,7 +55,7 @@ The folowing features are not supported on device code:
 ** `to(std::basic_streambuf</{asterisk}...{asterisk}/>`
 ** `to(FILE{asterisk})`
 ** `wto(FILE{asterisk})`
-* `<<strf_hpp#dynamic_char_encoding,dynamic_char_encoding>>`
+* `<<strf_hpp#dynamic_charset,dynamic_charset>>`
 * `<<quick_reference#lettercase,uppercase>>`, `<<quick_reference#lettercase,lowercase>>`,
   `<<quick_reference#lettercase,mixedcase>>` ( instead, you need to type
    `<<quick_reference#lettercase,lettercase>>::upper`,

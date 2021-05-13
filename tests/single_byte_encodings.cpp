@@ -13,7 +13,7 @@
 #  pragma GCC diagnostic pop
 #endif
 
-constexpr strf::char_encoding_id invalid_eid = (strf::char_encoding_id)0xf3b2a6b2;
+constexpr strf::charset_id invalid_csid = (strf::charset_id)0xf3b2a6b2;
 
 static STRF_HD unsigned count_fffd( strf::detail::simple_string_view<char32_t> str)
 {
@@ -33,7 +33,7 @@ static STRF_TEST_FUNC void encoding_error_handler()
 }
 
 static STRF_TEST_FUNC void STRF_TEST_FUNC general_tests
-    ( strf::dynamic_char_encoding<char> enc
+    ( strf::dynamic_charset<char> enc
     , strf::detail::simple_string_view<char32_t> decoded_0_to_0xff )
 {
     TEST_SCOPE_DESCRIPTION(enc.name());
@@ -279,33 +279,33 @@ static STRF_TEST_FUNC void STRF_TEST_FUNC general_tests
 #endif // defined(__cpp_char8_t)
 
     {
-        auto transc = enc.find_transcoder_to(strf::tag<wchar_t>{}, invalid_eid);
+        auto transc = enc.find_transcoder_to(strf::tag<wchar_t>{}, invalid_csid);
         TEST_TRUE(transc.transcode_func() == nullptr);
         TEST_TRUE(transc.transcode_size_func() == nullptr);
     }
     {
-        auto transc = enc.find_transcoder_from(strf::tag<wchar_t>{}, invalid_eid);
+        auto transc = enc.find_transcoder_from(strf::tag<wchar_t>{}, invalid_csid);
         TEST_TRUE(transc.transcode_func() == nullptr);
         TEST_TRUE(transc.transcode_size_func() == nullptr);
     }
     {
-        auto transc = enc.find_transcoder_to(strf::tag<char>{}, invalid_eid);
+        auto transc = enc.find_transcoder_to(strf::tag<char>{}, invalid_csid);
         TEST_TRUE(transc.transcode_func() == nullptr);
         TEST_TRUE(transc.transcode_size_func() == nullptr);
     }
     {
-        auto transc = enc.find_transcoder_from(strf::tag<char>{}, invalid_eid);
+        auto transc = enc.find_transcoder_from(strf::tag<char>{}, invalid_csid);
         TEST_TRUE(transc.transcode_func() == nullptr);
         TEST_TRUE(transc.transcode_size_func() == nullptr);
     }
 #if defined(__cpp_char8_t)
     {
-        auto transc = enc.find_transcoder_to(strf::tag<char8_t>{}, invalid_eid);
+        auto transc = enc.find_transcoder_to(strf::tag<char8_t>{}, invalid_csid);
         TEST_TRUE(transc.transcode_func() == nullptr);
         TEST_TRUE(transc.transcode_size_func() == nullptr);
     }
     {
-        auto transc = enc.find_transcoder_from(strf::tag<char8_t>{}, invalid_eid);
+        auto transc = enc.find_transcoder_from(strf::tag<char8_t>{}, invalid_csid);
         TEST_TRUE(transc.transcode_func() == nullptr);
         TEST_TRUE(transc.transcode_size_func() == nullptr);
     }
@@ -313,14 +313,14 @@ static STRF_TEST_FUNC void STRF_TEST_FUNC general_tests
 
 }
 
-template <typename CharT, strf::char_encoding_id EncId>
+template <typename CharT, strf::charset_id EncId>
 inline STRF_HD void STRF_TEST_FUNC general_tests
-    ( strf::static_char_encoding<CharT, EncId> enc
+    ( strf::static_charset<CharT, EncId> enc
     , strf::detail::simple_string_view<char32_t> decoded_0_to_0xff )
 {
-    strf::dynamic_char_encoding_data<CharT> data;
+    strf::dynamic_charset_data<CharT> data;
     enc.fill_data(data);
-    strf::dynamic_char_encoding<CharT> dynamic_enc{data};
+    strf::dynamic_charset<CharT> dynamic_enc{data};
     general_tests(dynamic_enc, decoded_0_to_0xff);
 }
 
@@ -1314,7 +1314,7 @@ static STRF_TEST_FUNC strf::detail::simple_string_view<CharT> questions_marks(st
 
 template <typename CharT>
 static STRF_TEST_FUNC void test_unsupported_codepoints
-    ( strf::dynamic_char_encoding<CharT> enc
+    ( strf::dynamic_charset<CharT> enc
     , std::initializer_list<char32_t> unsupported_codepoints )
 {
     TEST_SCOPE_DESCRIPTION(enc.name());
@@ -1325,20 +1325,20 @@ static STRF_TEST_FUNC void test_unsupported_codepoints
     TEST(questions_marks<CharT>(input.size())) .with(enc) (strf::sani(input));
 }
 
-template <typename CharT, strf::char_encoding_id EncId>
+template <typename CharT, strf::charset_id EncId>
 void STRF_TEST_FUNC test_unsupported_codepoints
-    ( strf::static_char_encoding<CharT, EncId> enc
+    ( strf::static_charset<CharT, EncId> enc
     , std::initializer_list<char32_t> unsupported_codepoints )
 {
-    strf::dynamic_char_encoding_data<CharT> data;
+    strf::dynamic_charset_data<CharT> data;
     enc.fill_data(data);
-    strf::dynamic_char_encoding<CharT> dynamic_enc{data};
+    strf::dynamic_charset<CharT> dynamic_enc{data};
     test_unsupported_codepoints(dynamic_enc, unsupported_codepoints);
 }
 
-template <typename CharT, strf::char_encoding_id EncId>
+template <typename CharT, strf::charset_id EncId>
 inline STRF_HD void test_undefined_bytes
-    ( strf::static_char_encoding<CharT, EncId> enc
+    ( strf::static_charset<CharT, EncId> enc
     , strf::detail::simple_string_view<CharT> undefined_bytes )
 {
     TEST_SCOPE_DESCRIPTION(enc.name());

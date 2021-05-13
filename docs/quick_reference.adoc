@@ -14,9 +14,9 @@ http://www.boost.org/LICENSE_1_0.txt
 :icons: font
 
 
-:numpunct_c:             <<strf_hpp#numpunct_c,numpunct_c>>
-:numpunct:               <<strf_hpp#numpunct,numpunct>>
-:width_t: <<strf_hpp#width_t,width_t>>
+:numpunct_c:     <<strf_hpp#numpunct_c,numpunct_c>>
+:numpunct:       <<strf_hpp#numpunct,numpunct>>
+:width_t:        <<strf_hpp#width_t,width_t>>
 :float_notation: <<float_notation,float_notation>>
 
 
@@ -61,8 +61,8 @@ that work as alias to format functions:
 |`fixed(_arg_, _precision_)`   |`fmt(_arg_).fixed().p(_precision_)`
 |`gen(_arg_, _precision_)`     |`fmt(_arg_).gen().p(_precision_)`
 |`multi(_arg_, _count_)`       |`fmt(_arg_).multi(_count_)`
-|`sani(_arg_, _enc_)`          |`fmt(_arg_).sani(_enc_)`
-|`conv(_arg_, _enc_)`          |`fmt(_arg_).conv(_enc_)`
+|`sani(_arg_, _charset_)`      |`fmt(_arg_).sani(_charset_)`
+|`conv(_arg_, _charset_)`      |`fmt(_arg_).conv(_charset_)`
 |`sani(_arg_)`                 |`fmt(_arg_).sani()`
 |`conv(_arg_)`                 |`fmt(_arg_).cont()`
 |===
@@ -125,35 +125,36 @@ include::ref_format_functions.adoc[tag=int_format_functions]
 |`p(<<strf_hpp#width_t,width_t>> precision)`
 | Sets string precision
 
-| `template <typename Enc> sani(Enc enc)`
-| Equivalent to `sanitize_from_encoding(enc)`
+| `template <typename Charset> sani(Charset cs)`
+| Equivalent to `sanitize_from_charset(cs)`
 
-| `template <typename Enc> conv(Enc enc)`
-| Equivalent to `convert_from_encoding(enc)`
-
-| `sani()`
-| Equivalent to `sanitize_from_encoding()`
+| `template <typename Charset> conv(Charset cs)`
+| Equivalent to `convert_from_charset(cs)`
 
 | `conv()`
-| Equivalent to `convert_from_encoding()`
+| Equivalent to `convert_from_charset()`
 
-| `template <typename Enc> sanitize_from_encoding(Enc enc)`
-| Transcodes the input string from the character encoding represented by `enc`,
-  or just sanitizes it if `enc` is also the destination encoding.
+| `sani()`
+| Equivalent to `sanitize_from_charset()`
 
-| `template <typename Enc> convert_from_encoding(Enc enc)`
-| Transocdes the input string from the character encoding represented by `enc`,
-  if it is not already destination encoding.
+| `template <typename Charset> convert_from_charset(Charset cs)`
+| Transcodes the input string from the charset represented by `cs`,
+  if it is not already destination charset.
 
-| `sanitize_encoding()`
-| Transcodes the input string from the character encoding that corresponds
-  to its character type, or just sanitizes it if it same
-  as the destination encoding.
+| `template <typename Charset> sanitize_from_charset(Charset cs)`
+| Transcodes the input string from the charset represented by `cs`,
+  or just sanitizes it, if `cs` is also the destination charset.
 
-| `convert_encoding()`
-| Transsodes the input string from the character encoding that correspods
+| `convert_charset()`
+| Transcodes the input string from the charset that correspods
   to its character type, if it is not already the same
-  as the destination encoding.
+  as the destination charset.
+
+| `sanitize_charset()`
+| Transcodes the input string from the charset that corresponds
+  to its character type, or just sanitizes it, if it same
+  as the destination charset.
+
 |===
 
 
@@ -658,7 +659,7 @@ assert(str == "Paul likes sandwich.");
 
 When the argument associated with a `"{"` does not exists, the library does two things:
 
-- It prints a https://en.wikipedia.org/wiki/Specials_(Unicode_block)#Replacement_character[replacement character `"\uFFFD"` (&#65533;) ] ( or `"?"` when the encoding can't represent it ) where the missing argument would be printed.
+- It prints a https://en.wikipedia.org/wiki/Specials_(Unicode_block)#Replacement_character[replacement character `"\uFFFD"` (&#65533;) ] ( or `"?"` when the charset can't represent it ) where the missing argument would be printed.
 - It calls the `handle` function on the facet object correspoding to the `<<strf_hpp#tr_error_notifier_c,tr_error_notifier_c>>` category, which, by default, does nothing.
 
 [[facets]]
@@ -675,8 +676,8 @@ When the argument associated with a `"{"` does not exists, the library does two 
 
 |`<<lettercase,lettercase_c>>`        |Yes |Letter case for printing numeric and booleans values
 
-|`<<character_encoding,char_encoding_c>><CharT>`   |No  |The character encoding correponding to character type `CharT`
-|`<<invalid_seq_notifier,invalid_seq_notifier_c>>`  |Yes | Callback to notify character encoding nonconformities.
+|`<<charset,charset_c>><CharT>`   |No  |The character encoding correponding to character type `CharT`
+|`<<invalid_seq_notifier,invalid_seq_notifier_c>>`  |Yes | Callback to notify nonconformities to the character encoding.
 |`<<surrogate_policy,surrogate_policy_c>>` |Yes |Wheter surrogates are treated as errors
 |`<<tr_string_error,tr_error_notifier_c>>`   |No  |  Callback to notify errors on the tr-string
 |`<<width_calculator,width_calculator_c>>` |Yes |Defines how the width is calculated
@@ -802,13 +803,14 @@ auto str_mixed = strf::to_string.with(strf::mixedcase)
 assert(str_mixed == "0xAB 1e+50 Inf");
 ----
 
-[[character_encoding]]
+[[charset]]
 == Character encodings
 
-The varibales templates below are facets objects that specify the character encoding
-corresponding to the character type.
+The following variables templates can be used as facet objects
+that specify what is the character encoding associated to
+the character type passed as the template parameter.
 
-[[static_char_encodings]]
+[[static_charsets]]
 [source,cpp]
 ----
 namespace strf {
@@ -844,8 +846,8 @@ auto s = strf::to_string
 assert(s == "one hundred billions = 1\2250000\225000\2250000");
 ----
 
-[[encoding_conversion]]
-=== Encoding conversion
+[[charset_conversion]]
+=== Charset conversion
 
 Since the library knows the encoding correspondig to each
 character type, and knows how to convert from one to another,
@@ -887,10 +889,10 @@ In this case `sani` causes the input to be sanitized, whereas `conv` does not:
 [source, cpp]
 ----
 auto str = strf::to_string
-    .with(strf::iso_8859_3<char>)    // the output encoding
+    .with(strf::iso_8859_3<char>)    // the output charset
     ( strf::conv("--\xff--")                           // not sanitized
-    , strf::conv("--\xff--", strf::iso_8859_3<char>)   // not sanitized ( same encoding )
-    , strf::conv("--\xff--", strf::utf8<char>)         // sanitized ( different encoding )
+    , strf::conv("--\xff--", strf::iso_8859_3<char>)   // not sanitized ( same charset )
+    , strf::conv("--\xff--", strf::utf8<char>)         // sanitized ( different charset )
     , strf::sani("--\xff--")                           // sanitized
     , strf::sani("--\xff--", strf::iso_8859_3<char>) ) // sanitized
 
@@ -899,10 +901,10 @@ assert(str == "--\xff----\xff----?----?----?--");
 
 The library replaces the invalid sequences by the
 https://en.wikipedia.org/wiki/Specials_(Unicode_block)#Replacement_character[replacement character &#xFFFD;],
-if the destination encoding supports it. Otherwise, `'?'` is printed, as in the above code snippet.
+if the destination charset supports it ( and by `'?'` otherwise ).
 
-An "invalid sequence" is any input that is non-conformant to the source encoding,
-or that is impossible to write, in a conformant way, in the destination encoding.
+An "invalid sequence" is any input that is non-conformant to the source charset,
+or that is impossible to write, in a conformant way, in the destination charset.
 But there is an optional exception for surrogates characters.
 
 NOTE: When the input is UTF-8, the library follows the practice recommended by the
@@ -912,7 +914,7 @@ https://www.unicode.org/versions/Unicode10.0.0/ch03.pdf[Chapter 3] ).
 
 NOTE: The library does not sanitizes non-conformities when converting a single character,
 like punctuation characters or the the fill character ( they are in UTF-32 ). In this case
-the replacement character is only used when the destination encoding is not able
+the replacement character is only used when the destination charset is not able
 to print the codepoint.
 For example, if the you use `(char32_t)0xFFFFFFF` as the <<numpunct,decimal point>>,
 then it will printed as "\uFFFD" if the destination is UTF-8 or UTF-16, but
@@ -1009,7 +1011,7 @@ assert(result == "*15.00 \xE2\x82\xAC \x80"); // width calculated as 11
 * The `<<strf_hpp#width_as_fast_u32len,width_as_fast_u32len>>` facet value
   evaluates the width of a string as the number of Unicode code points.
   However, differently from `width_as_u32len`, to gain performance,
-  it assumes that the measured string is conformant to its encoding.
+  it assumes that the measured string is conformant to its charset.
   Nonconformities do not cause undefined behaviour, but lead to incorrect
   values. For example, the width of an UTF-8 string may simply be calculated as
   the number of bytes that are not in the range [`0x80`, `0xBF`], __i.e.__,
@@ -1026,7 +1028,7 @@ assert(result == "****15.00 \xE2\x82\xAC \x80"); // width calculated as 8
 ----
 * The `<<strf_hpp#width_as_u32len,width_as_u32len>>` facet value also
   evaluates the width of a string as the number of Unicode code points.
-  But each nonconformity to the encoding is counted as an extra
+  But each nonconformity to the charset is counted as an extra
   code points ( as if it were replaced by
   https://en.wikipedia.org/wiki/Specials_(Unicode_block)#Replacement_character[replacement character &#xFFFD;] ). This is the default.
 +
@@ -1086,7 +1088,7 @@ assert(result == u8"\.....\u2163 + \u2167 = \u216B");
   function object for each UTF-32 character.
   When you implement your own calculator, you can optimize
   it to directly measure strings that are encoded
-  in a specific encoding.
+  in a specific charset.
 ////
   To-do example
 ////
@@ -1096,8 +1098,8 @@ assert(result == u8"\.....\u2163 + \u2167 = \u216B");
 ====
 The width calculation algorithm is applied
 on the input, not the output string. Keep that in mind when
-converting from one encoding to another using
-`<<encoding_conversion,conv>>` or `<<encoding_conversion,sani`>>.
+converting from one charset to another using
+`<<charset_conversion,conv>>` or `<<charset_conversion,sani`>>.
 For example, when converting from UTF-8 to UTF-16 and using
 the `fast_width` facet, the
 width of the string is its size in UTF-8, not in UTF-16.

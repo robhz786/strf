@@ -1328,34 +1328,34 @@ constexpr STRF_HD auto multi(T&& value, C&& count)
 
 template <typename T>
 constexpr STRF_HD auto conv(T&& value)
-    noexcept(noexcept(strf::fmt(value).convert_encoding()))
-    -> std::remove_reference_t<decltype(strf::fmt(value).convert_encoding())>
+    noexcept(noexcept(strf::fmt(value).convert_charset()))
+    -> std::remove_reference_t<decltype(strf::fmt(value).convert_charset())>
 {
-    return strf::fmt(value).convert_encoding();
+    return strf::fmt(value).convert_charset();
 }
 
 template <typename T, typename E>
     constexpr STRF_HD auto conv(T&& value, E&& enc)
-    noexcept(noexcept(strf::fmt(value).convert_from_encoding(enc)))
-    -> std::remove_reference_t<decltype(strf::fmt(value).convert_from_encoding(enc))>
+    noexcept(noexcept(strf::fmt(value).convert_from_charset(enc)))
+    -> std::remove_reference_t<decltype(strf::fmt(value).convert_from_charset(enc))>
 {
-    return strf::fmt(value).convert_from_encoding(enc);
+    return strf::fmt(value).convert_from_charset(enc);
 }
 
 template <typename T>
 constexpr STRF_HD auto sani(T&& value)
-    noexcept(noexcept(strf::fmt(value).sanitize_encoding()))
-    -> std::remove_reference_t<decltype(strf::fmt(value).sanitize_encoding())>
+    noexcept(noexcept(strf::fmt(value).sanitize_charset()))
+    -> std::remove_reference_t<decltype(strf::fmt(value).sanitize_charset())>
 {
-    return strf::fmt(value).sanitize_encoding();
+    return strf::fmt(value).sanitize_charset();
 }
 
 template <typename T, typename E>
     constexpr STRF_HD auto sani(T&& value, E&& enc)
-    noexcept(noexcept(strf::fmt(value).sanitize_from_encoding(enc)))
-    -> std::remove_reference_t<decltype(strf::fmt(value).sanitize_from_encoding(enc))>
+    noexcept(noexcept(strf::fmt(value).sanitize_from_charset(enc)))
+    -> std::remove_reference_t<decltype(strf::fmt(value).sanitize_from_charset(enc))>
 {
-    return strf::fmt(value).sanitize_from_encoding(enc);
+    return strf::fmt(value).sanitize_from_charset(enc);
 }
 
 template <typename T>
@@ -1530,34 +1530,34 @@ struct multi_fn {
 struct conv_fn {
     template <typename T>
     constexpr STRF_HD auto operator()(T&& value) const
-        noexcept(noexcept(strf::fmt(value).convert_encoding()))
-        -> std::remove_reference_t<decltype(strf::fmt(value).convert_encoding())>
+        noexcept(noexcept(strf::fmt(value).convert_charset()))
+        -> std::remove_reference_t<decltype(strf::fmt(value).convert_charset())>
     {
-        return strf::fmt(value).convert_encoding();
+        return strf::fmt(value).convert_charset();
     }
     template <typename T, typename E>
         constexpr STRF_HD auto operator()(T&& value, E&& enc) const
-        noexcept(noexcept(strf::fmt(value).convert_from_encoding(enc)))
-        -> std::remove_reference_t<decltype(strf::fmt(value).convert_from_encoding(enc))>
+        noexcept(noexcept(strf::fmt(value).convert_from_charset(enc)))
+        -> std::remove_reference_t<decltype(strf::fmt(value).convert_from_charset(enc))>
     {
-        return strf::fmt(value).convert_from_encoding(enc);
+        return strf::fmt(value).convert_from_charset(enc);
     }
 };
 
 struct sani_fn {
     template <typename T>
     constexpr STRF_HD auto operator()(T&& value) const
-        noexcept(noexcept(strf::fmt(value).sanitize_encoding()))
-        -> std::remove_reference_t<decltype(strf::fmt(value).sanitize_encoding())>
+        noexcept(noexcept(strf::fmt(value).sanitize_charset()))
+        -> std::remove_reference_t<decltype(strf::fmt(value).sanitize_charset())>
     {
-        return strf::fmt(value).sanitize_encoding();
+        return strf::fmt(value).sanitize_charset();
     }
     template <typename T, typename E>
     constexpr STRF_HD auto operator()(T&& value, E&& enc) const
-        noexcept(noexcept(strf::fmt(value).sanitize_from_encoding(enc)))
-        -> std::remove_reference_t<decltype(strf::fmt(value).sanitize_from_encoding(enc))>
+        noexcept(noexcept(strf::fmt(value).sanitize_from_charset(enc)))
+        -> std::remove_reference_t<decltype(strf::fmt(value).sanitize_from_charset(enc))>
     {
-        return strf::fmt(value).sanitize_from_encoding(enc);
+        return strf::fmt(value).sanitize_from_charset(enc);
     }
 };
 

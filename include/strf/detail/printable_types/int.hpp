@@ -1293,7 +1293,7 @@ struct voidptr_printing
     {
         auto f1 = strf::get_facet<strf::numpunct_c<16>, const void*>(facets);
         auto f2 = strf::get_facet<strf::lettercase_c, const void*>(facets);
-        auto f3 = strf::get_facet<strf::char_encoding_c<CharT>, const void*>(facets);
+        auto f3 = strf::get_facet<strf::charset_c<CharT>, const void*>(facets);
         auto fp2 = strf::pack(f1, f2, f3);
         auto x2 = *strf::hex(strf::detail::bit_cast<std::size_t>(x));
         return strf::make_default_printer_input<CharT>(preview, fp2, x2);
@@ -1307,7 +1307,7 @@ struct voidptr_printing
     {
         auto f1 = strf::get_facet<strf::numpunct_c<16>, const void*>(facets);
         auto f2 = strf::get_facet<strf::lettercase_c, const void*>(facets);
-        auto f3 = strf::get_facet<strf::char_encoding_c<CharT>, const void*>(facets);
+        auto f3 = strf::get_facet<strf::charset_c<CharT>, const void*>(facets);
         auto fp2 = strf::pack(f1, f2, f3);
         auto x2 = *strf::hex(strf::detail::bit_cast<std::size_t>(x.value()))
                              .set_alignment_format(x.get_alignment_format());
@@ -1402,7 +1402,7 @@ public:
         init_(i.arg.value());
         init_fill_(i.arg.get_alignment_format());
 
-        auto encoding = strf::get_facet<strf::char_encoding_c<CharT>, int>(i.facets);
+        auto encoding = strf::get_facet<strf::charset_c<CharT>, int>(i.facets);
         encode_fill_ = encoding.encode_fill_func();
         i.preview.subtract_width(fillcount_ + digcount_ + negative_);
         STRF_IF_CONSTEXPR(strf::usual_printer_input<T...>::preview_type::size_required) {
@@ -1903,7 +1903,7 @@ public:
         auto ivalue = i.arg.value();
         using int_type = decltype(ivalue);
         lettercase_ = strf::get_facet<lettercase_c, int_type>(i.facets);
-        auto enc = strf::get_facet<char_encoding_c<CharT>, int_type>(i.facets);
+        auto enc = strf::get_facet<charset_c<CharT>, int_type>(i.facets);
         encode_fill_ = enc.encode_fill_func();
         int_format_static_base_and_punct<Base, false> ifmt = i.arg.get_int_format();
         auto afmt = i.arg.get_alignment_format();
@@ -2069,7 +2069,7 @@ public:
             , strf::get_facet<lettercase_c, IntT>(facets)
             , strf::get_facet<numpunct_c<Base>, IntT>(facets).grouping()
             , strf::get_facet<numpunct_c<Base>, IntT>(facets).thousands_sep()
-            , strf::get_facet<char_encoding_c<CharT>, IntT>(facets) )
+            , strf::get_facet<charset_c<CharT>, IntT>(facets) )
     {
     }
 
@@ -2180,7 +2180,7 @@ public:
         auto ivalue = i.arg.value();
         using int_type = decltype(ivalue);
         auto lc = strf::get_facet<lettercase_c, int_type>(i.facets);
-        auto enc = strf::get_facet<char_encoding_c<CharT>, int_type>(i.facets);
+        auto enc = strf::get_facet<charset_c<CharT>, int_type>(i.facets);
         strf::digits_grouping grp;
         char32_t thousands_sep = ',';
         switch(ifmt.base) {

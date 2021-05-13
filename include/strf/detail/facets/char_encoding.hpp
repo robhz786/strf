@@ -1,5 +1,5 @@
-#ifndef STRF_DETAIL_FACETS_CHAR_ENCODING_HPP
-#define STRF_DETAIL_FACETS_CHAR_ENCODING_HPP
+#ifndef STRF_DETAIL_FACETS_CHARSET_HPP
+#define STRF_DETAIL_FACETS_CHARSET_HPP
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
@@ -88,67 +88,67 @@ struct invalid_seq_notifier_c
     }
 };
 
-enum class char_encoding_id : std::uint32_t{};
+enum class charset_id : std::uint32_t{};
 
 // generated at https://www.random.org/bytes/
-constexpr strf::char_encoding_id eid_ascii        = (strf::char_encoding_id) 0x9dea526b;
-constexpr strf::char_encoding_id eid_utf8         = (strf::char_encoding_id) 0x04650346;
-constexpr strf::char_encoding_id eid_utf16        = (strf::char_encoding_id) 0x0439cb08;
-constexpr strf::char_encoding_id eid_utf32        = (strf::char_encoding_id) 0x67be80a2;
-constexpr strf::char_encoding_id eid_iso_8859_1   = (strf::char_encoding_id) 0xcf00a401;
-constexpr strf::char_encoding_id eid_iso_8859_2   = (strf::char_encoding_id) 0xcf00a402;
-constexpr strf::char_encoding_id eid_iso_8859_3   = (strf::char_encoding_id) 0xcf00a403;
-constexpr strf::char_encoding_id eid_iso_8859_4   = (strf::char_encoding_id) 0xcf00a404;
-constexpr strf::char_encoding_id eid_iso_8859_5   = (strf::char_encoding_id) 0xcf00a405;
-constexpr strf::char_encoding_id eid_iso_8859_6   = (strf::char_encoding_id) 0xcf00a406;
-constexpr strf::char_encoding_id eid_iso_8859_7   = (strf::char_encoding_id) 0xcf00a407;
-constexpr strf::char_encoding_id eid_iso_8859_8   = (strf::char_encoding_id) 0xcf00a408;
-constexpr strf::char_encoding_id eid_iso_8859_9   = (strf::char_encoding_id) 0xcf00a409;
-constexpr strf::char_encoding_id eid_iso_8859_10  = (strf::char_encoding_id) 0xcf00a410;
-constexpr strf::char_encoding_id eid_iso_8859_11  = (strf::char_encoding_id) 0xcf00a411;
-constexpr strf::char_encoding_id eid_iso_8859_13  = (strf::char_encoding_id) 0xcf00a413;
-constexpr strf::char_encoding_id eid_iso_8859_14  = (strf::char_encoding_id) 0xcf00a414;
-constexpr strf::char_encoding_id eid_iso_8859_15  = (strf::char_encoding_id) 0xcf00a415;
-constexpr strf::char_encoding_id eid_iso_8859_16  = (strf::char_encoding_id) 0xcf00a416;
-constexpr strf::char_encoding_id eid_windows_1250 = (strf::char_encoding_id) 0x5cff7250;
-constexpr strf::char_encoding_id eid_windows_1251 = (strf::char_encoding_id) 0x5cff7251;
-constexpr strf::char_encoding_id eid_windows_1252 = (strf::char_encoding_id) 0x5cff7252;
-constexpr strf::char_encoding_id eid_windows_1253 = (strf::char_encoding_id) 0x5cff7253;
-constexpr strf::char_encoding_id eid_windows_1254 = (strf::char_encoding_id) 0x5cff7254;
-constexpr strf::char_encoding_id eid_windows_1255 = (strf::char_encoding_id) 0x5cff7255;
-constexpr strf::char_encoding_id eid_windows_1256 = (strf::char_encoding_id) 0x5cff7256;
-constexpr strf::char_encoding_id eid_windows_1257 = (strf::char_encoding_id) 0x5cff7257;
-constexpr strf::char_encoding_id eid_windows_1258 = (strf::char_encoding_id) 0x5cff7258;
+constexpr strf::charset_id csid_ascii        = (strf::charset_id) 0x9dea526b;
+constexpr strf::charset_id csid_utf8         = (strf::charset_id) 0x04650346;
+constexpr strf::charset_id csid_utf16        = (strf::charset_id) 0x0439cb08;
+constexpr strf::charset_id csid_utf32        = (strf::charset_id) 0x67be80a2;
+constexpr strf::charset_id csid_iso_8859_1   = (strf::charset_id) 0xcf00a401;
+constexpr strf::charset_id csid_iso_8859_2   = (strf::charset_id) 0xcf00a402;
+constexpr strf::charset_id csid_iso_8859_3   = (strf::charset_id) 0xcf00a403;
+constexpr strf::charset_id csid_iso_8859_4   = (strf::charset_id) 0xcf00a404;
+constexpr strf::charset_id csid_iso_8859_5   = (strf::charset_id) 0xcf00a405;
+constexpr strf::charset_id csid_iso_8859_6   = (strf::charset_id) 0xcf00a406;
+constexpr strf::charset_id csid_iso_8859_7   = (strf::charset_id) 0xcf00a407;
+constexpr strf::charset_id csid_iso_8859_8   = (strf::charset_id) 0xcf00a408;
+constexpr strf::charset_id csid_iso_8859_9   = (strf::charset_id) 0xcf00a409;
+constexpr strf::charset_id csid_iso_8859_10  = (strf::charset_id) 0xcf00a410;
+constexpr strf::charset_id csid_iso_8859_11  = (strf::charset_id) 0xcf00a411;
+constexpr strf::charset_id csid_iso_8859_13  = (strf::charset_id) 0xcf00a413;
+constexpr strf::charset_id csid_iso_8859_14  = (strf::charset_id) 0xcf00a414;
+constexpr strf::charset_id csid_iso_8859_15  = (strf::charset_id) 0xcf00a415;
+constexpr strf::charset_id csid_iso_8859_16  = (strf::charset_id) 0xcf00a416;
+constexpr strf::charset_id csid_windows_1250 = (strf::charset_id) 0x5cff7250;
+constexpr strf::charset_id csid_windows_1251 = (strf::charset_id) 0x5cff7251;
+constexpr strf::charset_id csid_windows_1252 = (strf::charset_id) 0x5cff7252;
+constexpr strf::charset_id csid_windows_1253 = (strf::charset_id) 0x5cff7253;
+constexpr strf::charset_id csid_windows_1254 = (strf::charset_id) 0x5cff7254;
+constexpr strf::charset_id csid_windows_1255 = (strf::charset_id) 0x5cff7255;
+constexpr strf::charset_id csid_windows_1256 = (strf::charset_id) 0x5cff7256;
+constexpr strf::charset_id csid_windows_1257 = (strf::charset_id) 0x5cff7257;
+constexpr strf::charset_id csid_windows_1258 = (strf::charset_id) 0x5cff7258;
 
 namespace detail {
 
-template <std::size_t> struct eid_utf_impl;
-template <> struct eid_utf_impl<1>
+template <std::size_t> struct csid_utf_impl;
+template <> struct csid_utf_impl<1>
 {
-    constexpr static strf::char_encoding_id eid = eid_utf8;
+    constexpr static strf::charset_id csid = csid_utf8;
 };
-template <> struct eid_utf_impl<2>
+template <> struct csid_utf_impl<2>
 {
-    constexpr static strf::char_encoding_id eid = eid_utf16;
+    constexpr static strf::charset_id csid = csid_utf16;
 };
-template <> struct eid_utf_impl<4>
+template <> struct csid_utf_impl<4>
 {
-    constexpr static strf::char_encoding_id eid = eid_utf32;
+    constexpr static strf::charset_id csid = csid_utf32;
 };
 
 } // namespace detail
 
 template <typename CharT>
-constexpr strf::char_encoding_id eid_utf = strf::detail::eid_utf_impl<sizeof(CharT)>::eid;
+constexpr strf::charset_id csid_utf = strf::detail::csid_utf_impl<sizeof(CharT)>::csid;
 
 template <typename CharT>
-struct char_encoding_c;
+struct charset_c;
 
-template <typename CharT, strf::char_encoding_id>
-class static_char_encoding;
+template <typename CharT, strf::charset_id>
+class static_charset;
 
 template < typename SrcCharT, typename DestCharT
-         , strf::char_encoding_id Src, strf::char_encoding_id Dest>
+         , strf::charset_id Src, strf::charset_id Dest>
 class static_transcoder;
 
 template <typename SrcCharT, typename DestCharT>
@@ -232,14 +232,14 @@ using decode_char_f = char32_t (*)
 template <typename SrcCharT, typename DestCharT>
 using find_transcoder_f =
     strf::dynamic_transcoder<SrcCharT, DestCharT> (*)
-    ( strf::char_encoding_id );
+    ( strf::charset_id );
 
 template <typename SrcCharT, typename DestCharT>
 class dynamic_transcoder
 {
 public:
 
-    template <strf::char_encoding_id SrcId, strf::char_encoding_id DestId>
+    template <strf::charset_id SrcId, strf::charset_id DestId>
     constexpr explicit STRF_HD dynamic_transcoder
         ( strf::static_transcoder<SrcCharT, DestCharT, SrcId, DestId> t ) noexcept
         : transcode_func_(t.transcode_func())
@@ -290,10 +290,10 @@ private:
 };
 
 template <typename CharT>
-struct dynamic_char_encoding_data
+struct dynamic_charset_data
 {
     const char* name;
-    strf::char_encoding_id id;
+    strf::charset_id id;
     char32_t replacement_char;
     std::size_t replacement_char_size;
     strf::validate_f validate_func;
@@ -330,41 +330,41 @@ struct dynamic_char_encoding_data
 };
 
 template <typename CharT>
-class dynamic_char_encoding
+class dynamic_charset
 {
 public:
 
     using char_type = CharT;
 
-    dynamic_char_encoding(const dynamic_char_encoding& ) = default;
+    dynamic_charset(const dynamic_charset& ) = default;
 
-    STRF_HD dynamic_char_encoding
-        ( const strf::dynamic_char_encoding_data<CharT>& data )
+    STRF_HD dynamic_charset
+        ( const strf::dynamic_charset_data<CharT>& data )
         : data_(&data)
     {
     }
 
-    template <strf::char_encoding_id EncodingID>
-    explicit dynamic_char_encoding(strf::static_char_encoding<CharT, EncodingID> scs)
-        : dynamic_char_encoding(scs.to_dynamic())
+    template <strf::charset_id EncodingID>
+    explicit dynamic_charset(strf::static_charset<CharT, EncodingID> scs)
+        : dynamic_charset(scs.to_dynamic())
     {
     }
 
-    STRF_HD dynamic_char_encoding& operator=(const dynamic_char_encoding& other) noexcept
+    STRF_HD dynamic_charset& operator=(const dynamic_charset& other) noexcept
     {
         data_ = other.data_;
         return *this;
     }
-    STRF_HD bool operator==(const dynamic_char_encoding& other) const noexcept
+    STRF_HD bool operator==(const dynamic_charset& other) const noexcept
     {
         return data_->id == other.data_->id;
     }
-    STRF_HD bool operator!=(const dynamic_char_encoding& other) const noexcept
+    STRF_HD bool operator!=(const dynamic_charset& other) const noexcept
     {
         return data_->id != other.data_->id;
     }
 
-    STRF_HD void swap(dynamic_char_encoding& other) noexcept
+    STRF_HD void swap(dynamic_charset& other) noexcept
     {
         auto tmp = data_;
         data_ = other.data_;
@@ -374,7 +374,7 @@ public:
     {
         return data_->name;
     };
-    constexpr STRF_HD strf::char_encoding_id id() const noexcept
+    constexpr STRF_HD strf::charset_id id() const noexcept
     {
         return data_->id;
     }
@@ -452,7 +452,7 @@ public:
         return data_->sanitizer;
     }
     STRF_HD strf::dynamic_transcoder<CharT, wchar_t> find_transcoder_to
-        ( strf::tag<wchar_t>, strf::char_encoding_id id) const
+        ( strf::tag<wchar_t>, strf::charset_id id) const
     {
         if (data_->find_transcoder_to_wchar) {
             return data_->find_transcoder_to_wchar(id);
@@ -460,7 +460,7 @@ public:
         return {};
     }
     STRF_HD strf::dynamic_transcoder<wchar_t, CharT> find_transcoder_from
-        ( strf::tag<wchar_t>, strf::char_encoding_id id) const
+        ( strf::tag<wchar_t>, strf::charset_id id) const
     {
         if (data_->find_transcoder_from_wchar) {
             return data_->find_transcoder_from_wchar(id);
@@ -468,7 +468,7 @@ public:
         return {};
     }
     STRF_HD strf::dynamic_transcoder<CharT, char16_t> find_transcoder_to
-        ( strf::tag<char16_t>, strf::char_encoding_id id) const
+        ( strf::tag<char16_t>, strf::charset_id id) const
     {
         if (data_->find_transcoder_to_char16) {
             return data_->find_transcoder_to_char16(id);
@@ -476,7 +476,7 @@ public:
         return {};
     }
     STRF_HD strf::dynamic_transcoder<char16_t, CharT> find_transcoder_from
-        ( strf::tag<char16_t>, strf::char_encoding_id id) const
+        ( strf::tag<char16_t>, strf::charset_id id) const
     {
         if (data_->find_transcoder_from_char16) {
             return data_->find_transcoder_from_char16(id);
@@ -484,7 +484,7 @@ public:
         return {};
     }
     STRF_HD strf::dynamic_transcoder<CharT, char> find_transcoder_to
-        ( strf::tag<char>, strf::char_encoding_id id) const
+        ( strf::tag<char>, strf::charset_id id) const
     {
         if (data_->find_transcoder_to_char) {
             return data_->find_transcoder_to_char(id);
@@ -492,7 +492,7 @@ public:
         return {};
     }
     STRF_HD strf::dynamic_transcoder<char, CharT> find_transcoder_from
-        ( strf::tag<char>, strf::char_encoding_id id) const
+        ( strf::tag<char>, strf::charset_id id) const
     {
         if (data_->find_transcoder_from_char) {
             return data_->find_transcoder_from_char(id);
@@ -502,7 +502,7 @@ public:
 
 #if defined (__cpp_char8_t)
     STRF_HD strf::dynamic_transcoder<CharT, char8_t> find_transcoder_to
-        ( strf::tag<char8_t>, strf::char_encoding_id id) const
+        ( strf::tag<char8_t>, strf::charset_id id) const
     {
         if (data_->find_transcoder_to_char8) {
             return data_->find_transcoder_to_char8(id);
@@ -510,7 +510,7 @@ public:
         return {};
     }
     STRF_HD strf::dynamic_transcoder<char8_t, CharT> find_transcoder_from
-        ( strf::tag<char8_t>, strf::char_encoding_id id) const
+        ( strf::tag<char8_t>, strf::charset_id id) const
     {
         if (data_->find_transcoder_from_char8) {
             return data_->find_transcoder_from_char8(id);
@@ -521,11 +521,11 @@ public:
 #endif // defined (__cpp_char8_t)
 
 private:
-    const strf::dynamic_char_encoding_data<CharT>* data_;
+    const strf::dynamic_charset_data<CharT>* data_;
 };
 
 template <typename CharT>
-struct char_encoding_c;
+struct charset_c;
 
 } // namespace strf
 
@@ -534,7 +534,7 @@ struct char_encoding_c;
 namespace strf {
 
 template <typename CharT>
-struct char_encoding_c
+struct charset_c
 {
     static constexpr bool constrainable = false;
     static constexpr STRF_HD strf::utf_t<CharT> get_default() noexcept
@@ -546,16 +546,16 @@ struct char_encoding_c
 template <typename Facet>
 struct facet_traits;
 
-template <typename CharT, strf::char_encoding_id CEId>
-struct facet_traits<strf::static_char_encoding<CharT, CEId>>
+template <typename CharT, strf::charset_id CSId>
+struct facet_traits<strf::static_charset<CharT, CSId>>
 {
-    using category = strf::char_encoding_c<CharT>;
+    using category = strf::charset_c<CharT>;
 };
 
 template <typename CharT>
-struct facet_traits<strf::dynamic_char_encoding<CharT>>
+struct facet_traits<strf::dynamic_charset<CharT>>
 {
-    using category = strf::char_encoding_c<CharT>;
+    using category = strf::charset_c<CharT>;
 };
 
 namespace detail {
@@ -566,13 +566,13 @@ class has_static_transcoder_impl
     using src_char_type = typename SrcEncoding::char_type;
     using dest_char_type = typename DestEncoding::char_type;
 
-    template <strf::char_encoding_id SrcId, strf::char_encoding_id DestId>
+    template <strf::charset_id SrcId, strf::charset_id DestId>
     static
     decltype( strf::static_transcoder
                 < src_char_type, dest_char_type, SrcId, DestId >()
             , std::true_type() )
-    test_( strf::static_char_encoding<src_char_type, SrcId>*
-         , strf::static_char_encoding<dest_char_type, DestId>* )
+    test_( strf::static_charset<src_char_type, SrcId>*
+         , strf::static_charset<dest_char_type, DestId>* )
     {
         return {};
     }
@@ -598,7 +598,7 @@ class has_find_transcoder_from_impl
 {
     template <typename S, typename D>
     static auto test(strf::tag<S> stag, const D* d)
-        -> decltype( d->find_transcoder_from(stag, strf::eid_utf8)
+        -> decltype( d->find_transcoder_from(stag, strf::csid_utf8)
                , std::true_type() );
 
     template <typename S, typename D>
@@ -615,7 +615,7 @@ class has_find_transcoder_to_impl
 {
     template <typename D, typename S>
     static auto test(strf::tag<D> dtag, const S* s)
-    -> decltype( s->find_transcoder_from(dtag, strf::eid_utf8)
+    -> decltype( s->find_transcoder_from(dtag, strf::csid_utf8)
                , std::true_type() );
 
     template <typename D, typename S>
@@ -694,11 +694,11 @@ struct transcoder_finder;
 template <typename SrcCharT, typename DestCharT >
 struct transcoder_finder<true, SrcCharT, DestCharT>
 {
-    template < strf::char_encoding_id SrcId, strf::char_encoding_id DestId>
+    template < strf::charset_id SrcId, strf::charset_id DestId>
     constexpr static STRF_HD
     strf::static_transcoder<SrcCharT, DestCharT, SrcId, DestId> find
-        ( strf::static_char_encoding<SrcCharT, SrcId>
-        , strf::static_char_encoding<DestCharT, DestId> ) noexcept
+        ( strf::static_charset<SrcCharT, SrcId>
+        , strf::static_charset<DestCharT, DestId> ) noexcept
     {
         return {};
     }
@@ -915,7 +915,36 @@ STRF_HD std::size_t decode_encode_size
     return acc.get_sum();
 }
 
+
+// backwards compatibility:
+
+#if defined(STRF_DONT_DEPRECATE_CHAR_ENCODING)
+#  define STRF_CHAR_ENCODING_DEPRECATED
+#else
+#  define STRF_CHAR_ENCODING_DEPRECATED [[deprecated]]
+#endif
+
+using char_encoding_id STRF_CHAR_ENCODING_DEPRECATED =
+    strf::charset_id;
+
+template <typename CharT, strf::charset_id Id>
+using static_char_encoding STRF_CHAR_ENCODING_DEPRECATED =
+    strf::static_charset<CharT, Id>;
+
+template <typename CharT>
+using dynamic_char_encoding_data STRF_CHAR_ENCODING_DEPRECATED =
+    strf::dynamic_charset_data<CharT>;
+
+template <typename CharT>
+using dynamic_char_encoding STRF_CHAR_ENCODING_DEPRECATED =
+    strf::dynamic_charset<CharT>;
+
+template <typename CharT>
+using char_encoding_c STRF_CHAR_ENCODING_DEPRECATED =
+    strf::charset_c<CharT>;
+
+
 } // namespace strf
 
-#endif  // STRF_DETAIL_FACETS_CHAR_ENCODING_HPP
+#endif  // STRF_DETAIL_FACETS_CHARSET_HPP
 

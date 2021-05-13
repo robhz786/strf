@@ -200,7 +200,7 @@ suitable to be passed by value and stack-allocated.
 One advantange of using `strf::numpunct` over `std::numpunct` is
 that the thousands separator and the decimal point are defined as
 `char32_t`, so that you can choose any Unicode value for
-them, provides as the character encoding you choosed support them.
+them, as long as the selected charset supports them.
 
 The `<<locale_hpp#,locale_numpuct()>>` function returns
 a `strf::numpunct<10>` value that reflects the global locale.
@@ -425,14 +425,14 @@ user extensions. So an exception may arise when writing to a `std::streambuf`
 or `std::string`, for example.
 
 Instead of throwing, strf prints a replacement character `U'\uFFFD'`
-( or `'?'`, depending on the encoding ).
+( or `'?'`, depending on the charset ).
 This can happen when parsing the {tr-string} or in
-<<quick_reference#encoding_conversion,encoding conversion>> or sanitization.
+<<quick_reference#charset_conversion,charset conversion>> or sanitization.
 Optionally, you can set a callback to be invoked in such errors
 ( see `<<strf_hpp#tr_error_notifier_c,tr_error_notifier_c>>`
 and `<<strf_hpp#invalid_seq_notifier_c,invalid_seq_notifier_c>>` )
 which can in turn throw an exception, if you want.
 
-In addition to that, depending on the <<quick_reference#destinations  ,destination>>,
-the return type of the <<tutorial#syntax,basic usage syntax>> may containg an error
+In addition to that, depending on the <<quick_reference#destinations,destination>>,
+the return type of the <<tutorial#syntax,basic usage syntax>> may contain an error
 flag.

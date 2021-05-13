@@ -110,7 +110,7 @@ public:
         , lettercase_(strf::get_facet<strf::lettercase_c, xxx::ipv6address>(input.facets))
         , style_(input.arg.get_ipv6style())
     {
-        auto encoding = get_facet<strf::char_encoding_c<CharT>, xxx::ipv6address>(input.facets);
+        auto encoding = get_facet<strf::charset_c<CharT>, xxx::ipv6address>(input.facets);
 
         encode_fill_fn_ = encoding.encode_fill_func();
         init_(input.preview, encoding);

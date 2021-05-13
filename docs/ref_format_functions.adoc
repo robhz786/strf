@@ -75,8 +75,8 @@ that work as alias to format functions
 |`fixed(_arg_, _precision_)`   |`{fmt}(_arg_).fixed().p(_precision_)`
 |`gen(_arg_, _precision_)`     |`{fmt}(_arg_).gen().p(_precision_)`
 |`multi(_arg_, _count_)`       |`{fmt}(_arg_).multi(_count_)`
-|`sani(_arg_, _enc_)`          |`{fmt}(_arg_).sani(_enc_)`
-|`conv(_arg_, _enc_)`          |`{fmt}(_arg_).conv(_enc_)`
+|`sani(_arg_, _charset_)`      |`{fmt}(_arg_).sani(_charset_)`
+|`conv(_arg_, _charset_)`      |`{fmt}(_arg_).conv(_charset_)`
 |`sani(_arg_)`                 |`{fmt}(_arg_).sani()`
 |`conv(_arg_)`                 |`{fmt}(_arg_).conv()`
 |===

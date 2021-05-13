@@ -114,15 +114,15 @@ STRF_FUNC_IMPL strf::transcode_f<char, char32_t> get_decoder(const char* enc_nam
     }
     else if (0 == strcmp(enc_name, "ISO-8859-1")) {
         return strf::static_transcoder
-            < char, char32_t, strf::eid_iso_8859_1, strf::eid_utf32 >
+            < char, char32_t, strf::csid_iso_8859_1, strf::csid_utf32 >
             ::transcode_func();
     } else if (0 == strcmp(enc_name, "ISO-8859-3")) {
         return strf::static_transcoder
-            < char, char32_t, strf::eid_iso_8859_3, strf::eid_utf32 >
+            < char, char32_t, strf::csid_iso_8859_3, strf::csid_utf32 >
             ::transcode_func();
     } else if (0 == strcmp(enc_name, "ISO-8859-15")) {
         return strf::static_transcoder
-            < char, char32_t, strf::eid_iso_8859_15, strf::eid_utf32 >
+            < char, char32_t, strf::csid_iso_8859_15, strf::csid_utf32 >
             ::transcode_func();
     }
     return nullptr;

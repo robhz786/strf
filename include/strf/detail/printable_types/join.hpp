@@ -141,7 +141,7 @@ public:
               , true, FwdArgs...>& input )
         : afmt_(input.arg.get_alignment_format())
     {
-        auto enc = get_facet_<strf::char_encoding_c<CharT>>(input.facets);
+        auto enc = get_facet_<strf::charset_c<CharT>>(input.facets);
         encode_fill_func_ = enc.encode_fill_func();
         strf::print_preview<ReqSize, strf::preview_width::yes> preview { afmt_.width };
         new (printers_ptr_()) printers_tuple_{input.arg.value().args, preview, input.facets};
@@ -165,7 +165,7 @@ public:
               , true, FwdArgs...>& input )
         : afmt_(input.arg.get_alignment_format())
     {
-        auto enc = get_facet_<strf::char_encoding_c<CharT>>(input.facets);
+        auto enc = get_facet_<strf::charset_c<CharT>>(input.facets);
         encode_fill_func_ = enc.encode_fill_func();
         strf::width_t wmax = afmt_.width;
         strf::width_t diff = 0;

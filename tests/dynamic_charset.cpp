@@ -10,14 +10,14 @@ using char8_t = char;
 
 void test_dynamic_charset()
 {
-    strf::dynamic_char_encoding<char> dyn_utf8{strf::utf<char>};
-    strf::dynamic_char_encoding<char> dyn_ascii{strf::ascii<char>};
-    strf::dynamic_char_encoding<char16_t> dyn_utf16{strf::utf_t<char16_t>()};
-    strf::dynamic_char_encoding<char32_t> dyn_utf32{strf::utf_t<char32_t>()};
+    strf::dynamic_charset<char> dyn_utf8{strf::utf<char>};
+    strf::dynamic_charset<char> dyn_ascii{strf::ascii<char>};
+    strf::dynamic_charset<char16_t> dyn_utf16{strf::utf_t<char16_t>()};
+    strf::dynamic_charset<char32_t> dyn_utf32{strf::utf_t<char32_t>()};
 
     {
         auto a = dyn_utf8;
-        auto b = strf::dynamic_char_encoding<char>{strf::utf<char>};
+        auto b = strf::dynamic_charset<char>{strf::utf<char>};
         TEST_TRUE(a == b);
         a = dyn_ascii;
         TEST_TRUE(a != b);
@@ -60,32 +60,32 @@ void test_dynamic_charset()
         TEST(U"   x").with(custom_wcalc, dyn_utf32)(strf::fmt(U'x') > 4);
     }
     {
-        const auto invalid_eid = (strf::char_encoding_id) 0x0;
-        auto transc1 = dyn_utf8.find_transcoder_to(strf::tag<wchar_t>{}, invalid_eid);
+        const auto invalid_csid = (strf::charset_id) 0x0;
+        auto transc1 = dyn_utf8.find_transcoder_to(strf::tag<wchar_t>{}, invalid_csid);
         TEST_TRUE(transc1.transcode_func() == nullptr);
 
-        auto transc2 = dyn_utf8.find_transcoder_from(strf::tag<wchar_t>{}, invalid_eid);
+        auto transc2 = dyn_utf8.find_transcoder_from(strf::tag<wchar_t>{}, invalid_csid);
         TEST_TRUE(transc2.transcode_func() == nullptr);
 
-        auto transc3 = dyn_utf8.find_transcoder_to(strf::tag<wchar_t>{}, invalid_eid);
+        auto transc3 = dyn_utf8.find_transcoder_to(strf::tag<wchar_t>{}, invalid_csid);
         TEST_TRUE(transc3.transcode_func() == nullptr);
 
-        auto transc4 = dyn_utf8.find_transcoder_from(strf::tag<wchar_t>{}, invalid_eid);
+        auto transc4 = dyn_utf8.find_transcoder_from(strf::tag<wchar_t>{}, invalid_csid);
         TEST_TRUE(transc4.transcode_func() == nullptr);
 
-        strf::dynamic_char_encoding_data<char> invalid_data = {
-            "invalid", invalid_eid, '?', 1, nullptr, nullptr, nullptr, nullptr,
+        strf::dynamic_charset_data<char> invalid_data = {
+            "invalid", invalid_csid, '?', 1, nullptr, nullptr, nullptr, nullptr,
             nullptr, nullptr, nullptr, nullptr, {}, {}, {} };
 
-        strf::dynamic_char_encoding<char> invalid_encoding{invalid_data};
+        strf::dynamic_charset<char> invalid_encoding{invalid_data};
 
-        auto transc5 = invalid_encoding.find_transcoder_from(strf::tag<char>{}, invalid_eid);
-        auto transc6 = invalid_encoding.find_transcoder_from(strf::tag<char16_t>{}, invalid_eid);
-        auto transc7 = invalid_encoding.find_transcoder_from(strf::tag<wchar_t>{}, invalid_eid);
+        auto transc5 = invalid_encoding.find_transcoder_from(strf::tag<char>{}, invalid_csid);
+        auto transc6 = invalid_encoding.find_transcoder_from(strf::tag<char16_t>{}, invalid_csid);
+        auto transc7 = invalid_encoding.find_transcoder_from(strf::tag<wchar_t>{}, invalid_csid);
 
-        auto transc8  = invalid_encoding.find_transcoder_to(strf::tag<char>{}, invalid_eid);
-        auto transc9  = invalid_encoding.find_transcoder_to(strf::tag<char16_t>{}, invalid_eid);
-        auto transc10 = invalid_encoding.find_transcoder_to(strf::tag<wchar_t>{}, invalid_eid);
+        auto transc8  = invalid_encoding.find_transcoder_to(strf::tag<char>{}, invalid_csid);
+        auto transc9  = invalid_encoding.find_transcoder_to(strf::tag<char16_t>{}, invalid_csid);
+        auto transc10 = invalid_encoding.find_transcoder_to(strf::tag<wchar_t>{}, invalid_csid);
         TEST_TRUE(transc5.transcode_func() == nullptr);
         TEST_TRUE(transc6.transcode_func() == nullptr);
         TEST_TRUE(transc7.transcode_func() == nullptr);
