@@ -70,6 +70,10 @@ private:
 
     STRF_HD void do_write(const CharT* str, std::size_t str_len) noexcept override
     {
+#if defined(__GNUC__) && (__GNUC__ >= 11)
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
         auto p = this->pointer();
         this->set_pointer(buf_);
         STRF_IF_LIKELY (this->good()) {
@@ -79,6 +83,10 @@ private:
             count_ += count_inc;
             this->set_good(count_inc == count + str_len);
         }
+
+#if defined(__GNUC__) && (__GNUC__ >= 11)
+#  pragma GCC diagnostic pop
+#endif
     }
 
     std::FILE* dest_;
