@@ -193,7 +193,7 @@ private:
 
 STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_2::encode_ext(char32_t ch)
 {
-    static const ch32_to_char enc_map[] =
+    static const ch32_to_char char_map[] =
         { {0x00A4, 0xA4}, {0x00A7, 0xA7}, {0x00A8, 0xA8}, {0x00AD, 0xAD}
         , {0x00B0, 0xB0}, {0x00B4, 0xB4}, {0x00B8, 0xB8}, {0x00C1, 0xC1}
         , {0x00C2, 0xC2}, {0x00C4, 0xC4}, {0x00C7, 0xC7}, {0x00C9, 0xC9}
@@ -219,10 +219,10 @@ STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_2::encode_ext(char32_t ch)
         , {0x017D, 0xAE}, {0x017E, 0xBE}, {0x02C7, 0xB7}, {0x02D8, 0xA2}
         , {0x02D9, 0xFF}, {0x02DB, 0xB2}, {0x02DD, 0xBD} };
 
-    const ch32_to_char* enc_map_end = enc_map + detail::array_size(enc_map);
+    const ch32_to_char* char_map_end = char_map + detail::array_size(char_map);
     auto it = strf::detail::lower_bound
-        ( enc_map, enc_map_end, ch32_to_char{ch, 0}, cmp_ch32_to_char{} );
-    return it != enc_map_end && it->key == ch ? it->value : 0x100;
+        ( char_map, char_map_end, ch32_to_char{ch, 0}, cmp_ch32_to_char{} );
+    return it != char_map_end && it->key == ch ? it->value : 0x100;
 }
 
 #endif // ! defined(STRF_OMIT_IMPL)
@@ -286,7 +286,7 @@ private:
 
 STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_3::encode_ext(char32_t ch)
 {
-    static const ch32_to_char enc_map[] =
+    static const ch32_to_char char_map[] =
         { {0x00A3, 0xA3}, {0x00A4, 0xA4}, {0x00A7, 0xA7}, {0x00A8, 0xA8}
         , {0x00AD, 0xAD}, {0x00B0, 0xB0}, {0x00B2, 0xB2}, {0x00B3, 0xB3}
         , {0x00B4, 0xB4}, {0x00B5, 0xB5}, {0x00B7, 0xB7}, {0x00B8, 0xB8}
@@ -310,10 +310,10 @@ STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_3::encode_ext(char32_t ch)
         , {0x015E, 0xAA}, {0x015F, 0xBA}, {0x016C, 0xDD}, {0x016D, 0xFD}
         , {0x017B, 0xAF}, {0x017C, 0xBF}, {0x02D8, 0xA2}, {0x02D9, 0xFF} };
 
-    const ch32_to_char* enc_map_end = enc_map + detail::array_size(enc_map);
+    const ch32_to_char* char_map_end = char_map + detail::array_size(char_map);
     auto it = strf::detail::lower_bound
-        ( enc_map, enc_map_end, ch32_to_char{ch, 0}, cmp_ch32_to_char{} );
-    return it != enc_map_end && it->key == ch ? it->value : 0x100;
+        ( char_map, char_map_end, ch32_to_char{ch, 0}, cmp_ch32_to_char{} );
+    return it != char_map_end && it->key == ch ? it->value : 0x100;
 }
 
 #endif // ! defined(STRF_OMIT_IMPL)
@@ -369,7 +369,7 @@ private:
 
 STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_4::encode_ext(char32_t ch)
 {
-    static const ch32_to_char enc_map[] =
+    static const ch32_to_char char_map[] =
         { {0x00A4, 0xA4}, {0x00A7, 0xA7}, {0x00A8, 0xA8}, {0x00AD, 0xAD}
         , {0x00AF, 0xAF}, {0x00B0, 0xB0}, {0x00B4, 0xB4}, {0x00B8, 0xB8}
         , {0x00C1, 0xC1}, {0x00C2, 0xC2}, {0x00C3, 0xC3}, {0x00C4, 0xC4}
@@ -395,10 +395,10 @@ STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_4::encode_ext(char32_t ch)
         , {0x0172, 0xD9}, {0x0173, 0xF9}, {0x017D, 0xAE}, {0x017E, 0xBE}
         , {0x02C7, 0xB7}, {0x02D9, 0xFF}, {0x02DB, 0xB2} };
 
-    const ch32_to_char* enc_map_end = enc_map + detail::array_size(enc_map);
+    const ch32_to_char* char_map_end = char_map + detail::array_size(char_map);
     auto it = strf::detail::lower_bound
-        ( enc_map, enc_map_end, ch32_to_char{ch, 0}, cmp_ch32_to_char{} );
-    return it != enc_map_end && it->key == ch ? it->value : 0x100;
+        ( char_map, char_map_end, ch32_to_char{ch, 0}, cmp_ch32_to_char{} );
+    return it != char_map_end && it->key == ch ? it->value : 0x100;
 }
 
 #endif // ! defined(STRF_OMIT_IMPL)
@@ -454,7 +454,7 @@ private:
 
 STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_5::encode_ext(char32_t ch)
 {
-    static const ch32_to_char enc_map[] =
+    static const ch32_to_char char_map[] =
         { {0x00A7, 0xFD}, {0x00AD, 0xAD}, {0x0401, 0xA1}, {0x0402, 0xA2}
         , {0x0403, 0xA3}, {0x0404, 0xA4}, {0x0405, 0xA5}, {0x0406, 0xA6}
         , {0x0407, 0xA7}, {0x0408, 0xA8}, {0x0409, 0xA9}, {0x040A, 0xAA}
@@ -480,10 +480,10 @@ STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_5::encode_ext(char32_t ch)
         , {0x0459, 0xF9}, {0x045A, 0xFA}, {0x045B, 0xFB}, {0x045C, 0xFC}
         , {0x045E, 0xFE}, {0x045F, 0xFF}, {0x2116, 0xF0} };
 
-    const ch32_to_char* enc_map_end = enc_map + detail::array_size(enc_map);
+    const ch32_to_char* char_map_end = char_map + detail::array_size(char_map);
     auto it = strf::detail::lower_bound
-        ( enc_map, enc_map_end, ch32_to_char{ch, 0}, cmp_ch32_to_char{} );
-    return it != enc_map_end && it->key == ch ? it->value : 0x100;
+        ( char_map, char_map_end, ch32_to_char{ch, 0}, cmp_ch32_to_char{} );
+    return it != char_map_end && it->key == ch ? it->value : 0x100;
 }
 
 #endif // ! defined(STRF_OMIT_IMPL)
@@ -541,7 +541,7 @@ private:
 
 STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_6::encode_ext(char32_t ch)
 {
-    static const ch32_to_char enc_map[] =
+    static const ch32_to_char char_map[] =
         { {0x00A4, 0xA4}, {0x00AD, 0xAD}, {0x060C, 0xAC}, {0x061B, 0xBB}
         , {0x061F, 0xBF}, {0x0621, 0xC1}, {0x0622, 0xC2}, {0x0623, 0xC3}
         , {0x0624, 0xC4}, {0x0625, 0xC5}, {0x0626, 0xC6}, {0x0627, 0xC7}
@@ -556,10 +556,10 @@ STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_6::encode_ext(char32_t ch)
         , {0x064D, 0xED}, {0x064E, 0xEE}, {0x064F, 0xEF}, {0x0650, 0xF0}
         , {0x0651, 0xF1}, {0x0652, 0xF2} };
 
-    const ch32_to_char* enc_map_end = enc_map + detail::array_size(enc_map);
+    const ch32_to_char* char_map_end = char_map + detail::array_size(char_map);
     auto it = strf::detail::lower_bound
-        ( enc_map, enc_map_end, ch32_to_char{ch, 0}, cmp_ch32_to_char{} );
-    return it != enc_map_end && it->key == ch ? it->value : 0x100;
+        ( char_map, char_map_end, ch32_to_char{ch, 0}, cmp_ch32_to_char{} );
+    return it != char_map_end && it->key == ch ? it->value : 0x100;
 }
 
 #endif // ! defined(STRF_OMIT_IMPL)
@@ -615,7 +615,7 @@ private:
 
 STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_7::encode_ext(char32_t ch)
 {
-    static const ch32_to_char enc_map[] =
+    static const ch32_to_char char_map[] =
         { {0x00A3, 0xA3}, {0x00A6, 0xA6}, {0x00A7, 0xA7}, {0x00A8, 0xA8}
         , {0x00A9, 0xA9}, {0x00AB, 0xAB}, {0x00AC, 0xAC}, {0x00AD, 0xAD}
         , {0x00B0, 0xB0}, {0x00B1, 0xB1}, {0x00B2, 0xB2}, {0x00B3, 0xB3}
@@ -640,10 +640,10 @@ STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_7::encode_ext(char32_t ch)
         , {0x03CC, 0xFC}, {0x03CD, 0xFD}, {0x03CE, 0xFE}, {0x2015, 0xAF}
         , {0x2018, 0xA1}, {0x2019, 0xA2}, {0x20AC, 0xA4}, {0x20AF, 0xA5} };
 
-    const ch32_to_char* enc_map_end = enc_map + detail::array_size(enc_map);
+    const ch32_to_char* char_map_end = char_map + detail::array_size(char_map);
     auto it = strf::detail::lower_bound
-        ( enc_map, enc_map_end, ch32_to_char{ch, 0}, cmp_ch32_to_char{} );
-    return it != enc_map_end && it->key == ch ? it->value : 0x100;
+        ( char_map, char_map_end, ch32_to_char{ch, 0}, cmp_ch32_to_char{} );
+    return it != char_map_end && it->key == ch ? it->value : 0x100;
 }
 
 #endif // ! defined(STRF_OMIT_IMPL)
@@ -700,7 +700,7 @@ private:
 
 STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_8::encode_ext(char32_t ch)
 {
-    static const ch32_to_char enc_map[] =
+    static const ch32_to_char char_map[] =
         { {0x00A2, 0xA2}, {0x00A3, 0xA3}, {0x00A4, 0xA4}, {0x00A5, 0xA5}
         , {0x00A6, 0xA6}, {0x00A7, 0xA7}, {0x00A8, 0xA8}, {0x00A9, 0xA9}
         , {0x00AB, 0xAB}, {0x00AC, 0xAC}, {0x00AD, 0xAD}, {0x00AE, 0xAE}
@@ -717,10 +717,10 @@ STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_8::encode_ext(char32_t ch)
         , {0x05E7, 0xF7}, {0x05E8, 0xF8}, {0x05E9, 0xF9}, {0x05EA, 0xFA}
         , {0x200E, 0xFD}, {0x200F, 0xFE}, {0x2017, 0xDF} };
 
-    const ch32_to_char* enc_map_end = enc_map + detail::array_size(enc_map);
+    const ch32_to_char* char_map_end = char_map + detail::array_size(char_map);
     auto it = strf::detail::lower_bound
-        ( enc_map, enc_map_end, ch32_to_char{ch, 0}, cmp_ch32_to_char{} );
-    return it != enc_map_end && it->key == ch ? it->value : 0x100;
+        ( char_map, char_map_end, ch32_to_char{ch, 0}, cmp_ch32_to_char{} );
+    return it != char_map_end && it->key == ch ? it->value : 0x100;
 }
 
 #endif // ! defined(STRF_OMIT_IMPL)
@@ -829,7 +829,7 @@ private:
 
 STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_10::encode_ext(char32_t ch)
 {
-    static const ch32_to_char enc_map[] =
+    static const ch32_to_char char_map[] =
         { {0x00A7, 0xA7}, {0x00AD, 0xAD}, {0x00B0, 0xB0}, {0x00B7, 0xB7}
         , {0x00C1, 0xC1}, {0x00C2, 0xC2}, {0x00C3, 0xC3}, {0x00C4, 0xC4}
         , {0x00C5, 0xC5}, {0x00C6, 0xC6}, {0x00C9, 0xC9}, {0x00CB, 0xCB}
@@ -855,10 +855,10 @@ STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_10::encode_ext(char32_t ch)
         , {0x016A, 0xAE}, {0x016B, 0xBE}, {0x0172, 0xD9}, {0x0173, 0xF9}
         , {0x017D, 0xAC}, {0x017E, 0xBC}, {0x2015, 0xBD} };
 
-    const ch32_to_char* enc_map_end = enc_map + detail::array_size(enc_map);
+    const ch32_to_char* char_map_end = char_map + detail::array_size(char_map);
     auto it = strf::detail::lower_bound
-        ( enc_map, enc_map_end, ch32_to_char{ch, 0}, cmp_ch32_to_char{} );
-    return it != enc_map_end && it->key == ch ? it->value : 0x100;
+        ( char_map, char_map_end, ch32_to_char{ch, 0}, cmp_ch32_to_char{} );
+    return it != char_map_end && it->key == ch ? it->value : 0x100;
 }
 
 #endif // ! defined(STRF_OMIT_IMPL)
@@ -914,7 +914,7 @@ private:
 
 STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_11::encode_ext(char32_t ch)
 {
-    static const ch32_to_char enc_map[] =
+    static const ch32_to_char char_map[] =
         { {0x0E01, 0xA1}, {0x0E02, 0xA2}, {0x0E03, 0xA3}, {0x0E04, 0xA4}
         , {0x0E05, 0xA5}, {0x0E06, 0xA6}, {0x0E07, 0xA7}, {0x0E08, 0xA8}
         , {0x0E09, 0xA9}, {0x0E0A, 0xAA}, {0x0E0B, 0xAB}, {0x0E0C, 0xAC}
@@ -938,10 +938,10 @@ STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_11::encode_ext(char32_t ch)
         , {0x0E55, 0xF5}, {0x0E56, 0xF6}, {0x0E57, 0xF7}, {0x0E58, 0xF8}
         , {0x0E59, 0xF9}, {0x0E5A, 0xFA}, {0x0E5B, 0xFB} };
 
-    const ch32_to_char* enc_map_end = enc_map + detail::array_size(enc_map);
+    const ch32_to_char* char_map_end = char_map + detail::array_size(char_map);
     auto it = strf::detail::lower_bound
-        ( enc_map, enc_map_end, ch32_to_char{ch, 0}, cmp_ch32_to_char{} );
-    return it != enc_map_end && it->key == ch ? it->value : 0x100;
+        ( char_map, char_map_end, ch32_to_char{ch, 0}, cmp_ch32_to_char{} );
+    return it != char_map_end && it->key == ch ? it->value : 0x100;
 }
 
 #endif // ! defined(STRF_OMIT_IMPL)
@@ -997,7 +997,7 @@ private:
 
 STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_13::encode_ext(char32_t ch)
 {
-    static const ch32_to_char enc_map[] =
+    static const ch32_to_char char_map[] =
         { {0x00A2, 0xA2}, {0x00A3, 0xA3}, {0x00A4, 0xA4}, {0x00A6, 0xA6}
         , {0x00A7, 0xA7}, {0x00A9, 0xA9}, {0x00AB, 0xAB}, {0x00AC, 0xAC}
         , {0x00AD, 0xAD}, {0x00AE, 0xAE}, {0x00B0, 0xB0}, {0x00B1, 0xB1}
@@ -1023,10 +1023,10 @@ STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_13::encode_ext(char32_t ch)
         , {0x017C, 0xFD}, {0x017D, 0xDE}, {0x017E, 0xFE}, {0x2019, 0xFF}
         , {0x201C, 0xB4}, {0x201D, 0xA1}, {0x201E, 0xA5} };
 
-    const ch32_to_char* enc_map_end = enc_map + detail::array_size(enc_map);
+    const ch32_to_char* char_map_end = char_map + detail::array_size(char_map);
     auto it = strf::detail::lower_bound
-        ( enc_map, enc_map_end, ch32_to_char{ch, 0}, cmp_ch32_to_char{} );
-    return it != enc_map_end && it->key == ch ? it->value : 0x100;
+        ( char_map, char_map_end, ch32_to_char{ch, 0}, cmp_ch32_to_char{} );
+    return it != char_map_end && it->key == ch ? it->value : 0x100;
 }
 
 #endif // ! defined(STRF_OMIT_IMPL)
@@ -1082,7 +1082,7 @@ private:
 
 STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_14::encode_ext(char32_t ch)
 {
-    static const ch32_to_char enc_map[] =
+    static const ch32_to_char char_map[] =
         { {0x00A3, 0xA3}, {0x00A7, 0xA7}, {0x00A9, 0xA9}, {0x00AD, 0xAD}
         , {0x00AE, 0xAE}, {0x00B6, 0xB6}, {0x00C0, 0xC0}, {0x00C1, 0xC1}
         , {0x00C2, 0xC2}, {0x00C3, 0xC3}, {0x00C4, 0xC4}, {0x00C5, 0xC5}
@@ -1108,10 +1108,10 @@ STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_14::encode_ext(char32_t ch)
         , {0x1E81, 0xB8}, {0x1E82, 0xAA}, {0x1E83, 0xBA}, {0x1E84, 0xBD}
         , {0x1E85, 0xBE}, {0x1EF2, 0xAC}, {0x1EF3, 0xBC} };
 
-    const ch32_to_char* enc_map_end = enc_map + detail::array_size(enc_map);
+    const ch32_to_char* char_map_end = char_map + detail::array_size(char_map);
     auto it = strf::detail::lower_bound
-        ( enc_map, enc_map_end, ch32_to_char{ch, 0}, cmp_ch32_to_char{} );
-    return it != enc_map_end && it->key == ch ? it->value : 0x100;
+        ( char_map, char_map_end, ch32_to_char{ch, 0}, cmp_ch32_to_char{} );
+    return it != char_map_end && it->key == ch ? it->value : 0x100;
 }
 
 #endif // ! defined(STRF_OMIT_IMPL)
@@ -1235,7 +1235,7 @@ private:
 
 STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_16::encode_ext(char32_t ch)
 {
-    static const ch32_to_char enc_map[] =
+    static const ch32_to_char char_map[] =
         { {0x00A7, 0xA7}, {0x00A9, 0xA9}, {0x00AB, 0xAB}, {0x00AD, 0xAD}
         , {0x00B0, 0xB0}, {0x00B1, 0xB1}, {0x00B6, 0xB6}, {0x00B7, 0xB7}
         , {0x00BB, 0xBB}, {0x00C0, 0xC0}, {0x00C1, 0xC1}, {0x00C2, 0xC2}
@@ -1261,10 +1261,10 @@ STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_16::encode_ext(char32_t ch)
         , {0x0218, 0xAA}, {0x0219, 0xBA}, {0x021A, 0xDE}, {0x021B, 0xFE}
         , {0x201D, 0xB5}, {0x201E, 0xA5}, {0x20AC, 0xA4} };
 
-    const ch32_to_char* enc_map_end = enc_map + detail::array_size(enc_map);
+    const ch32_to_char* char_map_end = char_map + detail::array_size(char_map);
     auto it = strf::detail::lower_bound
-        ( enc_map, enc_map_end, ch32_to_char{ch, 0}, cmp_ch32_to_char{} );
-    return it != enc_map_end && it->key == ch ? it->value : 0x100;
+        ( char_map, char_map_end, ch32_to_char{ch, 0}, cmp_ch32_to_char{} );
+    return it != char_map_end && it->key == ch ? it->value : 0x100;
 }
 
 #endif // ! defined(STRF_OMIT_IMPL)
@@ -1322,7 +1322,7 @@ private:
 
 STRF_FUNC_IMPL STRF_HD unsigned impl_windows_1250::encode_ext(char32_t ch)
 {
-    static const ch32_to_char enc_map[] =
+    static const ch32_to_char char_map[] =
         { {0x0081, 0x81}, {0x0083, 0x83}, {0x0088, 0x88}, {0x0090, 0x90}
         , {0x0098, 0x98}, {0x00A0, 0xA0}, {0x00A4, 0xA4}, {0x00A6, 0xA6}
         , {0x00A7, 0xA7}, {0x00A8, 0xA8}, {0x00A9, 0xA9}, {0x00AB, 0xAB}
@@ -1356,10 +1356,10 @@ STRF_FUNC_IMPL STRF_HD unsigned impl_windows_1250::encode_ext(char32_t ch)
         , {0x2021, 0x87}, {0x2022, 0x95}, {0x2026, 0x85}, {0x2030, 0x89}
         , {0x2039, 0x8B}, {0x203A, 0x9B}, {0x20AC, 0x80}, {0x2122, 0x99} };
 
-    const ch32_to_char* enc_map_end = enc_map + detail::array_size(enc_map);
+    const ch32_to_char* char_map_end = char_map + detail::array_size(char_map);
     auto it = strf::detail::lower_bound
-        ( enc_map, enc_map_end, ch32_to_char{ch, 0}, cmp_ch32_to_char{} );
-    return it != enc_map_end && it->key == ch ? it->value : 0x100;
+        ( char_map, char_map_end, ch32_to_char{ch, 0}, cmp_ch32_to_char{} );
+    return it != char_map_end && it->key == ch ? it->value : 0x100;
 };
 
 #endif // ! defined(STRF_OMIT_IMPL)
@@ -1420,7 +1420,7 @@ private:
 
 STRF_FUNC_IMPL STRF_HD unsigned impl_windows_1251::encode_ext(char32_t ch)
 {
-    static const ch32_to_char enc_map[] =
+    static const ch32_to_char char_map[] =
         { {0x0098, 0x98}, {0x00A0, 0xA0}, {0x00A4, 0xA4}, {0x00A6, 0xA6}
         , {0x00A7, 0xA7}, {0x00A9, 0xA9}, {0x00AB, 0xAB}, {0x00AC, 0xAC}
         , {0x00AD, 0xAD}, {0x00AE, 0xAE}, {0x00B0, 0xB0}, {0x00B1, 0xB1}
@@ -1454,10 +1454,10 @@ STRF_FUNC_IMPL STRF_HD unsigned impl_windows_1251::encode_ext(char32_t ch)
         , {0x2022, 0x95}, {0x2026, 0x85}, {0x2030, 0x89}, {0x2039, 0x8B}
         , {0x203A, 0x9B}, {0x20AC, 0x88}, {0x2116, 0xB9}, {0x2122, 0x99} };
 
-    const ch32_to_char* enc_map_end = enc_map + detail::array_size(enc_map);
+    const ch32_to_char* char_map_end = char_map + detail::array_size(char_map);
     auto it = strf::detail::lower_bound
-        ( enc_map, enc_map_end, ch32_to_char{ch, 0}, cmp_ch32_to_char{} );
-    return it != enc_map_end && it->key == ch ? it->value : 0x100;
+        ( char_map, char_map_end, ch32_to_char{ch, 0}, cmp_ch32_to_char{} );
+    return it != char_map_end && it->key == ch ? it->value : 0x100;
 }
 
 #endif //! defined(STRF_OMIT_IMPL)
@@ -1602,7 +1602,7 @@ private:
 
 STRF_FUNC_IMPL STRF_HD unsigned impl_windows_1253::encode_ext(char32_t ch)
 {
-    static const ch32_to_char enc_map[] =
+    static const ch32_to_char char_map[] =
         { {0x0081, 0x81}, {0x0088, 0x88}, {0x008A, 0x8A}, {0x008C, 0x8C}
         , {0x008D, 0x8D}, {0x008E, 0x8E}, {0x008F, 0x8F}, {0x0090, 0x90}
         , {0x0098, 0x98}, {0x009A, 0x9A}, {0x009C, 0x9C}, {0x009D, 0x9D}
@@ -1636,10 +1636,10 @@ STRF_FUNC_IMPL STRF_HD unsigned impl_windows_1253::encode_ext(char32_t ch)
         , {0x2030, 0x89}, {0x2039, 0x8B}, {0x203A, 0x9B}, {0x20AC, 0x80}
         , {0x2122, 0x99} };
 
-    const ch32_to_char* enc_map_end = enc_map + detail::array_size(enc_map);
+    const ch32_to_char* char_map_end = char_map + detail::array_size(char_map);
     auto it = strf::detail::lower_bound
-        ( enc_map, enc_map_end, ch32_to_char{ch, 0}, cmp_ch32_to_char{} );
-    return it != enc_map_end && it->key == ch ? it->value : 0x100;
+        ( char_map, char_map_end, ch32_to_char{ch, 0}, cmp_ch32_to_char{} );
+    return it != char_map_end && it->key == ch ? it->value : 0x100;
 }
 
 #endif //! defined(STRF_OMIT_IMPL)
@@ -1801,7 +1801,7 @@ private:
 
 STRF_FUNC_IMPL STRF_HD unsigned impl_windows_1255::encode_ext(char32_t ch)
 {
-    static const ch32_to_char enc_map[] =
+    static const ch32_to_char char_map[] =
         { {0x0081, 0x81}, {0x008A, 0x8A}, {0x008C, 0x8C}, {0x008D, 0x8D}
         , {0x008E, 0x8E}, {0x008F, 0x8F}, {0x0090, 0x90}, {0x009A, 0x9A}
         , {0x009C, 0x9C}, {0x009D, 0x9D}, {0x009E, 0x9E}, {0x009F, 0x9F}
@@ -1833,10 +1833,10 @@ STRF_FUNC_IMPL STRF_HD unsigned impl_windows_1255::encode_ext(char32_t ch)
         , {0x2030, 0x89}, {0x2039, 0x8B}, {0x203A, 0x9B}, {0x20AA, 0xA4}
         , {0x20AC, 0x80}, {0x2122, 0x99}};
 
-    const ch32_to_char* enc_map_end = enc_map + detail::array_size(enc_map);
+    const ch32_to_char* char_map_end = char_map + detail::array_size(char_map);
     auto it = strf::detail::lower_bound
-        ( enc_map, enc_map_end, ch32_to_char{ch, 0}, cmp_ch32_to_char{} );
-    return it != enc_map_end && it->key == ch ? it->value : 0x100;
+        ( char_map, char_map_end, ch32_to_char{ch, 0}, cmp_ch32_to_char{} );
+    return it != char_map_end && it->key == ch ? it->value : 0x100;
 }
 
 #endif //! defined(STRF_OMIT_IMPL)
@@ -1897,7 +1897,7 @@ private:
 
 STRF_FUNC_IMPL STRF_HD unsigned impl_windows_1256::encode_ext(char32_t ch)
 {
-    static const ch32_to_char enc_map[] =
+    static const ch32_to_char char_map[] =
         { {0x00A0, 0xA0}, {0x00A2, 0xA2}, {0x00A3, 0xA3}, {0x00A4, 0xA4}
         , {0x00A5, 0xA5}, {0x00A6, 0xA6}, {0x00A7, 0xA7}, {0x00A8, 0xA8}
         , {0x00A9, 0xA9}, {0x00AB, 0xAB}, {0x00AC, 0xAC}, {0x00AD, 0xAD}
@@ -1931,10 +1931,10 @@ STRF_FUNC_IMPL STRF_HD unsigned impl_windows_1256::encode_ext(char32_t ch)
         , {0x2021, 0x87}, {0x2022, 0x95}, {0x2026, 0x85}, {0x2030, 0x89}
         , {0x2039, 0x8B}, {0x203A, 0x9B}, {0x20AC, 0x80}, {0x2122, 0x99} };
 
-    const ch32_to_char* enc_map_end = enc_map + detail::array_size(enc_map);
+    const ch32_to_char* char_map_end = char_map + detail::array_size(char_map);
     auto it = strf::detail::lower_bound
-        ( enc_map, enc_map_end, ch32_to_char{ch, 0}, cmp_ch32_to_char{} );
-    return it != enc_map_end && it->key == ch ? it->value : 0x100;
+        ( char_map, char_map_end, ch32_to_char{ch, 0}, cmp_ch32_to_char{} );
+    return it != char_map_end && it->key == ch ? it->value : 0x100;
 }
 
 #endif //! defined(STRF_OMIT_IMPL)
@@ -1995,7 +1995,7 @@ private:
 
 STRF_FUNC_IMPL STRF_HD unsigned impl_windows_1257::encode_ext(char32_t ch)
 {
-    static const ch32_to_char enc_map[] =
+    static const ch32_to_char char_map[] =
         { {0x0081, 0x81}, {0x0083, 0x83}, {0x0088, 0x88}, {0x008A, 0x8A}
         , {0x008C, 0x8C}, {0x0090, 0x90}, {0x0098, 0x98}, {0x009A, 0x9A}
         , {0x009C, 0x9C}, {0x009F, 0x9F}, {0x00A0, 0xA0}, {0x00A2, 0xA2}
@@ -2029,10 +2029,10 @@ STRF_FUNC_IMPL STRF_HD unsigned impl_windows_1257::encode_ext(char32_t ch)
         , {0x2026, 0x85}, {0x2030, 0x89}, {0x2039, 0x8B}, {0x203A, 0x9B}
         , {0x20AC, 0x80}, {0x2122, 0x99} };
 
-    const ch32_to_char* enc_map_end = enc_map + detail::array_size(enc_map);
+    const ch32_to_char* char_map_end = char_map + detail::array_size(char_map);
     auto it = strf::detail::lower_bound
-        ( enc_map, enc_map_end, ch32_to_char{ch, 0}, cmp_ch32_to_char{} );
-    return it != enc_map_end && it->key == ch ? it->value : 0x100;
+        ( char_map, char_map_end, ch32_to_char{ch, 0}, cmp_ch32_to_char{} );
+    return it != char_map_end && it->key == ch ? it->value : 0x100;
 }
 
 #endif //! defined(STRF_OMIT_IMPL)
@@ -2093,7 +2093,7 @@ private:
 
 STRF_FUNC_IMPL STRF_HD unsigned impl_windows_1258::encode_ext(char32_t ch)
 {
-    static const ch32_to_char enc_map[] =
+    static const ch32_to_char char_map[] =
         { {0x0081, 0x81}, {0x008A, 0x8A}, {0x008D, 0x8D}, {0x008E, 0x8E}
         , {0x008F, 0x8F}, {0x0090, 0x90}, {0x009A, 0x9A}, {0x009D, 0x9D}
         , {0x009E, 0x9E}, {0x009F, 0x9F}, {0x00A0, 0xA0}, {0x00A1, 0xA1}
@@ -2128,10 +2128,10 @@ STRF_FUNC_IMPL STRF_HD unsigned impl_windows_1258::encode_ext(char32_t ch)
         , {0x2039, 0x8B}, {0x203A, 0x9B}, {0x20AB, 0xFE}, {0x20AC, 0x80}
         , {0x2122, 0x99} };
 
-    const ch32_to_char* enc_map_end = enc_map + detail::array_size(enc_map);
+    const ch32_to_char* char_map_end = char_map + detail::array_size(char_map);
     auto it = strf::detail::lower_bound
-        ( enc_map, enc_map_end, ch32_to_char{ch, 0}, cmp_ch32_to_char{} );
-    return it != enc_map_end && it->key == ch ? it->value : 0x100;
+        ( char_map, char_map_end, ch32_to_char{ch, 0}, cmp_ch32_to_char{} );
+    return it != char_map_end && it->key == ch ? it->value : 0x100;
 }
 
 #endif //! defined(STRF_OMIT_IMPL)

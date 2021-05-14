@@ -17,17 +17,17 @@ struct default_tr_error_notifier
 {
     using category = strf::tr_error_notifier_c;
 
-    template <typename CharEncoding>
+    template <typename Charset>
     inline STRF_HD void handle
-        ( const typename CharEncoding::char_type* str
+        ( const typename Charset::char_type* str
         , std::size_t str_len
         , std::size_t err_pos
-        , CharEncoding enc ) noexcept
+        , Charset charset ) noexcept
     {
         (void) str;
         (void) str_len;
         (void) err_pos;
-        (void) enc;
+        (void) charset;
     }
 };
 
@@ -161,18 +161,18 @@ STRF_HD std::size_t tr_string_size
     return count;
 }
 
-template <typename Encoding, typename ErrHandler>
+template <typename Charset, typename ErrHandler>
 STRF_HD void tr_string_write
-    ( const typename Encoding::char_type* str
-    , const typename Encoding::char_type* str_end
-    , const strf::printer<typename Encoding::char_type>* const * args
+    ( const typename Charset::char_type* str
+    , const typename Charset::char_type* str_end
+    , const strf::printer<typename Charset::char_type>* const * args
     , std::size_t num_args
-    , strf::basic_outbuff<typename Encoding::char_type>& ob
-    , Encoding enc
+    , strf::basic_outbuff<typename Charset::char_type>& ob
+    , Charset charset
     , ErrHandler err_handler )
 {
     std::size_t arg_idx = 0;
-    using char_type = typename Encoding::char_type;
+    using char_type = typename Charset::char_type;
 
     auto it = str;
     std::size_t str_len = str_end - str;
@@ -190,8 +190,8 @@ STRF_HD void tr_string_write
             if (arg_idx < num_args) {
                 args[arg_idx]->print_to(ob);
             } else {
-                enc.write_replacement_char(ob);
-                err_handler.handle(str, str_len, (it - str) - 1, enc);
+                charset.write_replacement_char(ob);
+                err_handler.handle(str, str_len, (it - str) - 1, charset);
             }
             break;
         }
@@ -201,8 +201,8 @@ STRF_HD void tr_string_write
                 args[arg_idx]->print_to(ob);
                 ++arg_idx;
             } else {
-                enc.write_replacement_char(ob);
-                err_handler.handle(str, str_len, (it - str) - 1, enc);
+                charset.write_replacement_char(ob);
+                err_handler.handle(str, str_len, (it - str) - 1, charset);
             }
             ++it;
         } else if (char_type('0') <= ch && ch <= char_type('9')) {
@@ -210,8 +210,8 @@ STRF_HD void tr_string_write
             if (result.value < num_args) {
                 args[result.value]->print_to(ob);
             } else {
-                enc.write_replacement_char(ob);
-                err_handler.handle(str, str_len, (it - str) - 1, enc);
+                charset.write_replacement_char(ob);
+                err_handler.handle(str, str_len, (it - str) - 1, charset);
             }
             it = strf::detail::str_find<char_type>(result.it, str_end - result.it, '}');
             if (it == nullptr) {
@@ -234,8 +234,8 @@ STRF_HD void tr_string_write
                     args[arg_idx]->print_to(ob);
                     ++arg_idx;
                 } else {
-                    enc.write_replacement_char(ob);
-                    err_handler.handle(str, str_len, (it - str) - 1, enc);
+                    charset.write_replacement_char(ob);
+                    err_handler.handle(str, str_len, (it - str) - 1, charset);
                 }
             }
             auto it2 = it + 1;
@@ -248,10 +248,10 @@ STRF_HD void tr_string_write
     }
 }
 
-template <typename CharEncoding, typename ErrHandler>
+template <typename Charset, typename ErrHandler>
 class tr_string_printer
 {
-    using char_type = typename CharEncoding::char_type;
+    using char_type = typename Charset::char_type;
 public:
 
     template <strf::preview_size SizeRequested>
@@ -261,17 +261,17 @@ public:
         , std::initializer_list<const strf::printer<char_type>*> printers
         , const char_type* tr_string
         , const char_type* tr_string_end
-        , CharEncoding enc
+        , Charset charset
         , ErrHandler err_handler ) noexcept
         : tr_string_(tr_string)
         , tr_string_end_(tr_string_end)
         , printers_array_(printers.begin())
         , num_printers_(printers.size())
-        , enc_(enc)
+        , charset_(charset)
         , err_handler_(err_handler)
     {
         STRF_IF_CONSTEXPR (static_cast<bool>(SizeRequested)) {
-            auto invalid_arg_size = enc.replacement_char_size();
+            auto invalid_arg_size = charset.replacement_char_size();
             std::size_t s = strf::detail::tr_string_size
                 ( args_preview, printers.size(), tr_string, tr_string_end
                 , invalid_arg_size );
@@ -285,7 +285,7 @@ public:
     {
         strf::detail::tr_string_write
             ( tr_string_, tr_string_end_, printers_array_, num_printers_
-            , ob, enc_, err_handler_ );
+            , ob, charset_, err_handler_ );
     }
 
 private:
@@ -294,7 +294,7 @@ private:
     const char_type* tr_string_end_;
     const strf::printer<char_type>* const * printers_array_;
     std::size_t num_printers_;
-    CharEncoding enc_;
+    Charset charset_;
     ErrHandler err_handler_;
 };
 

@@ -131,13 +131,13 @@ private:
     std::uint16_t count_ipv6_characters() const;
     void print_ipv6(strf::basic_outbuff<CharT>& dest) const;
 
-    template <typename Preview, typename Encoding>
-    void init_(Preview& preview, Encoding enc);
+    template <typename Preview, typename Charset>
+    void init_(Preview& preview, Charset charset);
 };
 
 template <typename CharT>
-template <typename Preview, typename Encoding>
-void ipv6_printer<CharT>::init_(Preview& preview, Encoding enc)
+template <typename Preview, typename Charset>
+void ipv6_printer<CharT>::init_(Preview& preview, Charset charset)
 {
     if (style_ == ipv6style::little) {
         abbrev_ = xxx::ipv6address_abbreviation{addr_};
@@ -148,7 +148,7 @@ void ipv6_printer<CharT>::init_(Preview& preview, Encoding enc)
     } else {
         fillcount_ = (alignment_fmt_.width - count).round();
         if (Preview::size_required && fillcount_ > 0) {
-            preview.add_size(fillcount_ * enc.encoded_char_size(alignment_fmt_.fill));
+            preview.add_size(fillcount_ * charset.encoded_char_size(alignment_fmt_.fill));
         }
         preview.subtract_width(alignment_fmt_.width);
     }

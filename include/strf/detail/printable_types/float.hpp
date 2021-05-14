@@ -1682,8 +1682,8 @@ STRF_HD void fast_double_printer<CharT>::print_to
 //
 // private:
 //
-//     template <typename Encoding>
-//     STRF_HD void init_(Encoding enc);
+//     template <typename Charset>
+//     STRF_HD void init_(Charset charset);
 //
 //     STRF_HD strf::width_t width_() const;
 //     STRF_HD std::size_t size_() const;
@@ -1703,10 +1703,10 @@ STRF_HD void fast_double_printer<CharT>::print_to
 // };
 //
 // template <typename CharT>
-// template <typename Encoding>
-// STRF_HD void fast_punct_double_printer<CharT>::init_(Encoding enc)
+// template <typename Charset>
+// STRF_HD void fast_punct_double_printer<CharT>::init_(Charset charset)
 // {
-//     encode_char_ = enc.encode_char_func();
+//     encode_char_ = charset.encode_char_func();
 //     bool showpoint;
 //     if (value_.e10 > -(int)m10_digcount_) {
 //         bool e10neg = value_.e10 < 0;
@@ -1718,7 +1718,7 @@ STRF_HD void fast_double_printer<CharT>::print_to
 //         } else {
 //             auto int_dig_count = (int)m10_digcount_ + value_.e10;
 //             if (grouping_.any_separator(int_dig_count)){
-//                 auto sep_validation = enc.validate(thousands_sep_);
+//                 auto sep_validation = charset.validate(thousands_sep_);
 //                 if (sep_validation != strf::invalid_char_len) {
 //                     sep_count_ = grouping_.separators_count(int_dig_count);
 //                     if (scientific_width < fixed_width + (int)sep_count_) {
@@ -1747,12 +1747,12 @@ STRF_HD void fast_double_printer<CharT>::print_to
 //     }
 //     init_decimal_point:
 //     if (showpoint) {
-//         auto validation = enc.validate(decimal_point_);
+//         auto validation = charset.validate(decimal_point_);
 //         if (validation != strf::invalid_char_len) {
 //             decimal_point_size_ = static_cast<unsigned>(validation);
 //         } else {
-//             decimal_point_size_ = static_cast<unsigned>(enc.replacement_char_size());
-//             decimal_point_ = enc.replacement_char();
+//             decimal_point_size_ = static_cast<unsigned>(charset.replacement_char_size());
+//             decimal_point_ = charset.replacement_char();
 //         }
 //     }
 // }
@@ -2453,9 +2453,9 @@ public:
             , strf::float_formatter_full_dynamic, HasAlignment >& input )
         : lettercase_(strf::get_facet<strf::lettercase_c, FloatT>(input.facets))
     {
-        auto enc = get_facet<strf::charset_c<CharT>, FloatT>(input.facets);
-        encode_fill_ = enc.encode_fill_func();
-        encode_char_ = enc.encode_char_func();
+        auto charset = get_facet<strf::charset_c<CharT>, FloatT>(input.facets);
+        encode_fill_ = charset.encode_fill_func();
+        encode_char_ = charset.encode_char_func();
 
         auto notation = input.arg.float_notation();
         if (input.arg.get_float_format().punctuate) {
@@ -2466,7 +2466,7 @@ public:
             decimal_point_ = ( notation != strf::float_notation::hex
                              ? punct_dec.decimal_point()
                              : punct_hex.decimal_point() );
-            auto ps = enc.validate(thousands_sep_);
+            auto ps = charset.validate(thousands_sep_);
             if (ps == strf::invalid_char_len) {
                 grouping_ = strf::digits_grouping{};
             } else {
@@ -2477,7 +2477,7 @@ public:
             ( data_, input.arg.value(), grouping_, input.arg.get_float_format()
             , input.arg.get_alignment_format() );
         if (data_.showpoint) {
-            auto size = enc.encoded_char_size(decimal_point_);
+            auto size = charset.encoded_char_size(decimal_point_);
             decimal_point_size_ = static_cast<detail::chars_count_t>(size);
         } else {
             decimal_point_size_ = 0;
@@ -2487,7 +2487,7 @@ public:
         STRF_IF_CONSTEXPR (Preview::size_required) {
             input.preview.add_size(r.content_width);
             if (r.fillcount) {
-                std::size_t fillchar_size = enc.encoded_char_size(data_.fillchar);
+                std::size_t fillchar_size = charset.encoded_char_size(data_.fillchar);
                 input.preview.add_size(fillchar_size * r.fillcount);
             }
             if (notation != strf::float_notation::hex && data_.sep_count){
@@ -2507,8 +2507,8 @@ public:
             < CharT, Preview, FPack, FloatT, FloatFormatter, HasAlignment >& input )
         : lettercase_(strf::get_facet<strf::lettercase_c, FloatT>(input.facets))
     {
-        auto enc = get_facet<strf::charset_c<CharT>, FloatT>(input.facets);
-        encode_fill_ = enc.encode_fill_func();
+        auto charset = get_facet<strf::charset_c<CharT>, FloatT>(input.facets);
+        encode_fill_ = charset.encode_fill_func();
         auto r = strf::detail::init_float_printer_data
             ( data_, input.arg.value(), grouping_, input.arg.get_float_format()
             , input.arg.get_alignment_format() );
@@ -2518,7 +2518,7 @@ public:
         STRF_IF_CONSTEXPR (Preview::size_required) {
             input.preview.add_size(r.content_width);
             if (r.fillcount) {
-                std::size_t fillchar_size = enc.encoded_char_size(data_.fillchar);
+                std::size_t fillchar_size = charset.encoded_char_size(data_.fillchar);
                 input.preview.add_size(fillchar_size * r.fillcount);
             }
         }

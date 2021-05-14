@@ -212,15 +212,15 @@ private:
         const auto& self = static_cast<const destination_type_&>(*this);
 
         using catenc = strf::charset_c<char_type_>;
-        auto enc = strf::get_facet<catenc, void>(self.fpack_);
+        auto charset = strf::get_facet<catenc, void>(self.fpack_);
 
         using caterr = strf::tr_error_notifier_c;
         decltype(auto) err_hdl = strf::get_facet<caterr, void>(self.fpack_);
         using err_hdl_type = std::remove_cv_t<std::remove_reference_t<decltype(err_hdl)>>;
 
         Preview preview;
-        strf::detail::tr_string_printer<decltype(enc), err_hdl_type>
-            tr_printer(preview, preview_arr, args, str, str_end, enc, err_hdl);
+        strf::detail::tr_string_printer<decltype(charset), err_hdl_type>
+            tr_printer(preview, preview_arr, args, str, str_end, charset, err_hdl);
 
         return self.write_(preview, tr_printer);
     }

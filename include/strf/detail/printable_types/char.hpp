@@ -126,8 +126,8 @@ public:
         using preview_type = typename strf::usual_printer_input<CharT, T...>::preview_type;
         STRF_IF_CONSTEXPR(preview_type::width_required) {
             decltype(auto) wcalc = get_facet<strf::width_calculator_c, CharT>(input.facets);
-            auto enc = get_facet<strf::charset_c<CharT>, CharT>(input.facets);
-            auto w = wcalc.char_width(enc, static_cast<CharT>(ch_));
+            auto charset = get_facet<strf::charset_c<CharT>, CharT>(input.facets);
+            auto w = wcalc.char_width(charset, static_cast<CharT>(ch_));
             input.preview.subtract_width(w);
         }
     }
@@ -160,10 +160,10 @@ public:
         , afmt_(input.arg.get_alignment_format())
         , ch_(static_cast<CharT>(input.arg.value()))
     {
-        auto enc = get_facet_<strf::charset_c<CharT>>(input.facets);
+        auto charset = get_facet_<strf::charset_c<CharT>>(input.facets);
         decltype(auto) wcalc = get_facet_<strf::width_calculator_c>(input.facets);
-        encode_fill_fn_ = enc.encode_fill_func();
-        init_(input.preview, wcalc, enc);
+        encode_fill_fn_ = charset.encode_fill_func();
+        init_(input.preview, wcalc, charset);
     }
 
     STRF_HD void print_to(strf::basic_outbuff<CharT>& ob) const override;
@@ -183,16 +183,16 @@ private:
         return fp.template get_facet<Category, CharT>();
     }
 
-    template <typename Preview, typename WCalc, typename Encoding>
-    STRF_HD void init_(Preview& preview, const WCalc& wc, Encoding enc);
+    template <typename Preview, typename WCalc, typename Charset>
+    STRF_HD void init_(Preview& preview, const WCalc& wc, Charset charset);
 };
 
 template <typename CharT>
-template <typename Preview, typename WCalc, typename Encoding>
+template <typename Preview, typename WCalc, typename Charset>
 STRF_HD void fmt_char_printer<CharT>::init_
-    ( Preview& preview, const WCalc& wc, Encoding enc )
+    ( Preview& preview, const WCalc& wc, Charset charset )
 {
-    auto ch_width = wc.char_width(enc, ch_);
+    auto ch_width = wc.char_width(charset, ch_);
     auto content_width = checked_mul(ch_width, count_);
     std::uint16_t fillcount = 0;
     if (content_width < afmt_.width) {
@@ -219,7 +219,7 @@ STRF_HD void fmt_char_printer<CharT>::init_
     }
     STRF_IF_CONSTEXPR (Preview::size_required) {
         if (fillcount > 0) {
-            preview.add_size(count_ + fillcount * enc.encoded_char_size(afmt_.fill));
+            preview.add_size(count_ + fillcount * charset.encoded_char_size(afmt_.fill));
         } else {
             preview.add_size(count_);
         }
@@ -303,20 +303,20 @@ public:
         : count_(input.arg.count())
         , ch_(input.arg.value())
     {
-        auto enc = strf::get_facet<charset_c<DestCharT>, char32_t>(input.facets);
+        auto charset = strf::get_facet<charset_c<DestCharT>, char32_t>(input.facets);
         decltype(auto) wcalc = get_facet<strf::width_calculator_c, char32_t>(input.facets);
         auto char_width = wcalc.char_width(strf::utf_t<char32_t>{}, ch_);
-        init_(input.preview, enc, input.arg.get_alignment_format(), char_width);
+        init_(input.preview, charset, input.arg.get_alignment_format(), char_width);
     }
 
     void STRF_HD print_to(strf::basic_outbuff<DestCharT>& dest) const override;
 
 private:
 
-    template <typename Preview, typename Encoding>
+    template <typename Preview, typename Charset>
     void STRF_HD init_
         ( Preview& preview
-        , Encoding enc
+        , Charset charset
         , strf::alignment_format afmt
         , strf::width_t ch_width );
 
@@ -329,14 +329,14 @@ private:
 };
 
 template <typename DestCharT>
-template <typename Preview, typename Encoding>
+template <typename Preview, typename Charset>
 void STRF_HD fmt_conv_char32_printer<DestCharT>::init_
     ( Preview& preview
-    , Encoding enc
+    , Charset charset
     , strf::alignment_format afmt
     , strf::width_t ch_width )
 {
-    encode_fill_f_ = enc.encode_fill_func();
+    encode_fill_f_ = charset.encode_fill_func();
     auto content_width = checked_mul(ch_width, count_);
     if (content_width < afmt.width) {
         fillcount_ = static_cast<std::uint16_t>((afmt.width - content_width).round());
@@ -348,9 +348,9 @@ void STRF_HD fmt_conv_char32_printer<DestCharT>::init_
         preview.subtract_width(content_width);
     }
     STRF_IF_CONSTEXPR (Preview::size_required) {
-        preview.add_size(count_ * enc.encoded_char_size(ch_));
+        preview.add_size(count_ * charset.encoded_char_size(ch_));
         if (fillcount_ > 0) {
-            preview.add_size(fillcount_ * enc.encoded_char_size(afmt.fill));
+            preview.add_size(fillcount_ * charset.encoded_char_size(afmt.fill));
         }
     }
 }

@@ -561,16 +561,16 @@ void STRF_TEST_FUNC test_input_int_punct()
 {
     {
         // non-ascii separator whose size is still one
-        auto enc = strf::windows_1252<char>;
+        auto charset = strf::windows_1252<char>;
         auto punct10 = strf::numpunct<10>{3}.thousands_sep(0x20AC);
         auto punct16 = strf::numpunct<16>{3}.thousands_sep(0x20AC);
 
-        TEST("1\x80" "234\x80" "567") .with(enc, punct10) (strf::punct(1234567));
-        TEST("******1\x80" "234\x80" "567") .with(enc, punct10) (!strf::right(1234567, 15, '*'));
-        TEST("***0001\x80" "234\x80" "567") .with(enc, punct10)
+        TEST("1\x80" "234\x80" "567") .with(charset, punct10) (strf::punct(1234567));
+        TEST("******1\x80" "234\x80" "567") .with(charset, punct10) (!strf::right(1234567, 15, '*'));
+        TEST("***0001\x80" "234\x80" "567") .with(charset, punct10)
             (!strf::right(1234567, 15, '*').pad0(12));
 
-        TEST("***0x01\x80" "234\x80" "567") .with(enc, punct16)
+        TEST("***0x01\x80" "234\x80" "567") .with(charset, punct16)
             (!*strf::right(0x1234567, 15, '*').pad0(12).hex());
     }
     {   // decimal with pad0 and precision and punctuation

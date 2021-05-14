@@ -1334,12 +1334,12 @@ constexpr STRF_HD auto conv(T&& value)
     return strf::fmt(value).convert_charset();
 }
 
-template <typename T, typename E>
-    constexpr STRF_HD auto conv(T&& value, E&& enc)
-    noexcept(noexcept(strf::fmt(value).convert_from_charset(enc)))
-    -> std::remove_reference_t<decltype(strf::fmt(value).convert_from_charset(enc))>
+template <typename T, typename Charset>
+    constexpr STRF_HD auto conv(T&& value, Charset&& charset)
+    noexcept(noexcept(strf::fmt(value).convert_from_charset(charset)))
+    -> std::remove_reference_t<decltype(strf::fmt(value).convert_from_charset(charset))>
 {
-    return strf::fmt(value).convert_from_charset(enc);
+    return strf::fmt(value).convert_from_charset(charset);
 }
 
 template <typename T>
@@ -1350,12 +1350,12 @@ constexpr STRF_HD auto sani(T&& value)
     return strf::fmt(value).sanitize_charset();
 }
 
-template <typename T, typename E>
-    constexpr STRF_HD auto sani(T&& value, E&& enc)
-    noexcept(noexcept(strf::fmt(value).sanitize_from_charset(enc)))
-    -> std::remove_reference_t<decltype(strf::fmt(value).sanitize_from_charset(enc))>
+template <typename T, typename Charset>
+    constexpr STRF_HD auto sani(T&& value, Charset&& charset)
+    noexcept(noexcept(strf::fmt(value).sanitize_from_charset(charset)))
+    -> std::remove_reference_t<decltype(strf::fmt(value).sanitize_from_charset(charset))>
 {
-    return strf::fmt(value).sanitize_from_charset(enc);
+    return strf::fmt(value).sanitize_from_charset(charset);
 }
 
 template <typename T>
@@ -1535,12 +1535,12 @@ struct conv_fn {
     {
         return strf::fmt(value).convert_charset();
     }
-    template <typename T, typename E>
-        constexpr STRF_HD auto operator()(T&& value, E&& enc) const
-        noexcept(noexcept(strf::fmt(value).convert_from_charset(enc)))
-        -> std::remove_reference_t<decltype(strf::fmt(value).convert_from_charset(enc))>
+    template <typename T, typename Charset>
+        constexpr STRF_HD auto operator()(T&& value, Charset&& charset) const
+        noexcept(noexcept(strf::fmt(value).convert_from_charset(charset)))
+        -> std::remove_reference_t<decltype(strf::fmt(value).convert_from_charset(charset))>
     {
-        return strf::fmt(value).convert_from_charset(enc);
+        return strf::fmt(value).convert_from_charset(charset);
     }
 };
 
@@ -1552,12 +1552,12 @@ struct sani_fn {
     {
         return strf::fmt(value).sanitize_charset();
     }
-    template <typename T, typename E>
-    constexpr STRF_HD auto operator()(T&& value, E&& enc) const
-        noexcept(noexcept(strf::fmt(value).sanitize_from_charset(enc)))
-        -> std::remove_reference_t<decltype(strf::fmt(value).sanitize_from_charset(enc))>
+    template <typename T, typename Charset>
+    constexpr STRF_HD auto operator()(T&& value, Charset&& charset) const
+        noexcept(noexcept(strf::fmt(value).sanitize_from_charset(charset)))
+        -> std::remove_reference_t<decltype(strf::fmt(value).sanitize_from_charset(charset))>
     {
-        return strf::fmt(value).sanitize_from_charset(enc);
+        return strf::fmt(value).sanitize_from_charset(charset);
     }
 };
 

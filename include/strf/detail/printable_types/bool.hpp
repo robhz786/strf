@@ -113,14 +113,14 @@ public:
         , afmt_(input.arg.get_alignment_format())
         , lettercase_(strf::get_facet<strf::lettercase_c, bool>(input.facets))
     {
-        auto enc = strf::get_facet<charset_c<CharT>, bool>(input.facets);
+        auto charset = strf::get_facet<charset_c<CharT>, bool>(input.facets);
         std::uint16_t w = 5 - (int)input.arg.value();
         auto fmt_width = afmt_.width.round();
         if (fmt_width > w) {
-            encode_fill_ = enc.encode_fill_func();
+            encode_fill_ = charset.encode_fill_func();
             fillcount_ = static_cast<std::uint16_t>(fmt_width - w);
             input.preview.subtract_width(fmt_width);
-            input.preview.add_size(w + fillcount_ * enc.encoded_char_size(afmt_.fill));
+            input.preview.add_size(w + fillcount_ * charset.encoded_char_size(afmt_.fill));
         } else {
             fillcount_ = 0;
             input.preview.subtract_width(w);

@@ -37,14 +37,14 @@ valid_input_sample(const strf::utf_t<wchar_t>&)
     return {L"a\0b\u0080\u0800\uD7FF\U00010000\U0010FFFF", (sizeof(wchar_t) == 2 ? 10 : 8)};
 }
 
-template <typename SrcEncoding, typename DestEncoding>
-STRF_TEST_FUNC void test_valid_input(SrcEncoding src_enc, DestEncoding dest_enc)
+template <typename SrcCharset, typename DestCharset>
+STRF_TEST_FUNC void test_valid_input(SrcCharset src_charset, DestCharset dest_charset)
 {
-    TEST_SCOPE_DESCRIPTION("from ", src_enc.name(), " to ", dest_enc.name());
+    TEST_SCOPE_DESCRIPTION("from ", src_charset.name(), " to ", dest_charset.name());
 
-    auto input = valid_input_sample(src_enc);
-    auto expected = valid_input_sample(dest_enc);
-    TEST(expected).with(dest_enc) (strf::sani(input, src_enc));
+    auto input = valid_input_sample(src_charset);
+    auto expected = valid_input_sample(dest_charset);
+    TEST(expected).with(dest_charset) (strf::sani(input, src_charset));
 }
 
 STRF_TEST_FUNC strf::detail::simple_string_view<char>
@@ -74,17 +74,17 @@ sample_with_surrogates(const strf::utf_t<wchar_t>&)
     return {arr, 8};
 }
 
-template <typename SrcEncoding, typename DestEncoding>
-STRF_TEST_FUNC void test_allowed_surrogates(SrcEncoding src_enc, DestEncoding dest_enc)
+template <typename SrcCharset, typename DestCharset>
+STRF_TEST_FUNC void test_allowed_surrogates(SrcCharset src_charset, DestCharset dest_charset)
 {
-    TEST_SCOPE_DESCRIPTION("from ", src_enc.name()," to ", dest_enc.name());
+    TEST_SCOPE_DESCRIPTION("from ", src_charset.name()," to ", dest_charset.name());
 
-    const auto input    = sample_with_surrogates(src_enc);
-    const auto expected = sample_with_surrogates(dest_enc);
+    const auto input    = sample_with_surrogates(src_charset);
+    const auto expected = sample_with_surrogates(dest_charset);
 
     TEST(expected)
-        .with( dest_enc, strf::surrogate_policy::lax )
-        (strf::sani(input, src_enc));
+        .with( dest_charset, strf::surrogate_policy::lax )
+        (strf::sani(input, src_charset));
 }
 
 template <typename CharT>
@@ -244,15 +244,15 @@ void STRF_TEST_FUNC  encoding_error_handler()
     encoding_error_handler_called = true;
 }
 
-template <typename SrcEncoding, typename DestEncoding>
+template <typename SrcCharset, typename DestCharset>
 void STRF_TEST_FUNC test_invalid_input
-    ( SrcEncoding src_enc
-    , DestEncoding dest_enc
-    , invalid_seq<get_first_template_parameter<SrcEncoding>> s
+    ( SrcCharset src_charset
+    , DestCharset dest_charset
+    , invalid_seq<get_first_template_parameter<SrcCharset>> s
     , strf::surrogate_policy policy )
 {
-    using src_char_type  = get_first_template_parameter<SrcEncoding>;
-    using dest_char_type = get_first_template_parameter<DestEncoding>;
+    using src_char_type  = get_first_template_parameter<SrcCharset>;
+    using dest_char_type = get_first_template_parameter<DestCharset>;
 
     const int err_count = s.errors_count;
     const auto& seq = s.sequence;
@@ -284,16 +284,16 @@ void STRF_TEST_FUNC test_invalid_input
         {   // test if invalid sequences are replaced by U+FFFD
             auto expected = concatenate( buff_out
                                        , prefix_out
-                                       , replacement_char(dest_enc)
+                                       , replacement_char(dest_charset)
                                        , err_count );
 
-            TEST(expected) .with(policy, dest_enc) (strf::sani(input, src_enc));
+            TEST(expected) .with(policy, dest_charset) (strf::sani(input, src_charset));
         }
         {   // test invalid_seq_notifier
             ::encoding_error_handler_called = false;
             strf::to(buff_out)
-                .with(policy, dest_enc, strf::invalid_seq_notifier{encoding_error_handler})
-                (strf::sani(input, src_enc));
+                .with(policy, dest_charset, strf::invalid_seq_notifier{encoding_error_handler})
+                (strf::sani(input, src_charset));
             TEST_TRUE(::encoding_error_handler_called);
         }
     }
@@ -306,95 +306,95 @@ void STRF_TEST_FUNC test_invalid_input
         {   // test if invalid sequences are replaced by U+FFFD
             auto expected = concatenate( buff_out
                                          , prefix_out
-                                         , replacement_char(dest_enc)
+                                         , replacement_char(dest_charset)
                                          , err_count
                                          , suffix_out );
 
-            TEST(expected) .with(policy, dest_enc) (strf::sani(input, src_enc));
+            TEST(expected) .with(policy, dest_charset) (strf::sani(input, src_charset));
         }
 
         {   // test invalid_seq_notifier
             ::encoding_error_handler_called = false;
             strf::to(buff_out)
-                .with(policy, dest_enc, strf::invalid_seq_notifier{encoding_error_handler})
-                (strf::sani(input, src_enc));
+                .with(policy, dest_charset, strf::invalid_seq_notifier{encoding_error_handler})
+                (strf::sani(input, src_charset));
             TEST_TRUE(::encoding_error_handler_called);
         }
     }
 }
 
-template <typename SrcEncoding, typename DestEncoding>
-void STRF_TEST_FUNC test_invalid_input(SrcEncoding src_enc, DestEncoding dest_enc)
+template <typename SrcCharset, typename DestCharset>
+void STRF_TEST_FUNC test_invalid_input(SrcCharset src_charset, DestCharset dest_charset)
 {
-    TEST_SCOPE_DESCRIPTION("From invalid ", src_enc.name(), " to ", dest_enc.name());
-    for(const auto& s : invalid_sequences(src_enc))
+    TEST_SCOPE_DESCRIPTION("From invalid ", src_charset.name(), " to ", dest_charset.name());
+    for(const auto& s : invalid_sequences(src_charset))
     {
-        test_invalid_input(src_enc, dest_enc, s, strf::surrogate_policy::strict);
-        test_invalid_input(src_enc, dest_enc, s, strf::surrogate_policy::lax);
+        test_invalid_input(src_charset, dest_charset, s, strf::surrogate_policy::strict);
+        test_invalid_input(src_charset, dest_charset, s, strf::surrogate_policy::lax);
     }
-    for(const auto& s : surrogates_sequences(src_enc))
+    for(const auto& s : surrogates_sequences(src_charset))
     {
-        test_invalid_input(src_enc, dest_enc, s, strf::surrogate_policy::strict);
+        test_invalid_input(src_charset, dest_charset, s, strf::surrogate_policy::strict);
     }
 }
 
 template < typename Func
-         , typename SrcEncoding >
-void STRF_TEST_FUNC combine_3(Func, SrcEncoding)
+         , typename SrcCharset >
+void STRF_TEST_FUNC combine_3(Func, SrcCharset)
 {
 }
 
 template < typename Func
-         , typename SrcEncoding
-         , typename DestEncoding0
-         , typename ... DestEncoding >
+         , typename SrcCharset
+         , typename DestCharset0
+         , typename... DestCharset >
 void STRF_TEST_FUNC combine_3
     ( Func func
-    , SrcEncoding src_enc
-    , DestEncoding0 dest_enc0
-    , DestEncoding ... dest_enc )
+    , SrcCharset src_charset
+    , DestCharset0 dest_enc0
+    , DestCharset... dest_charsets )
 {
-    func(src_enc, dest_enc0);
-    combine_3(func, src_enc, dest_enc...);
+    func(src_charset, dest_enc0);
+    combine_3(func, src_charset, dest_charsets...);
 }
 
 template < typename Func
-         , typename Encoding0 >
-void STRF_TEST_FUNC combine_2(Func func, Encoding0 cs0)
+         , typename Charset0 >
+void STRF_TEST_FUNC combine_2(Func func, Charset0 cs0)
 {
     combine_3(func, cs0, cs0);
 }
 
 template < typename Func
-         , typename Encoding0
-         , typename ... Enc >
-void STRF_TEST_FUNC combine_2(Func func, Encoding0 cs0, Enc... enc)
+         , typename Charset0
+         , typename... Charsets >
+void STRF_TEST_FUNC combine_2(Func func, Charset0 cs0, Charsets... charsets)
 {
-    combine_3(func, cs0, cs0, enc...);
+    combine_3(func, cs0, cs0, charsets...);
 }
 
 template < typename Func
-         , typename Dest_EncTuple
+         , typename Dest_CharsetTuple
          , std::size_t ... I >
-void STRF_TEST_FUNC combine(Func, const Dest_EncTuple&, std::index_sequence<I...> )
+void STRF_TEST_FUNC combine(Func, const Dest_CharsetTuple&, std::index_sequence<I...> )
 {
 }
 
 template < typename Func
-         , typename DestEncTuple
-         , std::size_t ... I
-         , typename Encoding0
-         , typename ... Enc >
+         , typename DestCharsetTuple
+         , std::size_t... I
+         , typename Charset0
+         , typename... Charsets >
 void STRF_TEST_FUNC combine
     ( Func func
-    , const DestEncTuple& dest_encodings
+    , const DestCharsetTuple& dest_encodings
     , std::index_sequence<I...> iseq
-    , Encoding0 cs0
-    , Enc ... enc )
+    , Charset0 cs0
+    , Charsets... charsets )
 
 {
     combine_2(func, cs0, std::get<I>(dest_encodings)...);
-    combine(func, dest_encodings, iseq, enc...);
+    combine(func, dest_encodings, iseq, charsets...);
 }
 
 template < typename Func, typename Tuple, std::size_t ... I >
@@ -424,31 +424,31 @@ void STRF_TEST_FUNC test_transcode_utf_to_utf()
 
     for_all_combinations
         ( encodings
-        , [](auto src_enc, auto dest_enc){ test_valid_input(src_enc, dest_enc); } );
+        , [](auto src_charset, auto dest_charset){ test_valid_input(src_charset, dest_charset); } );
 
     for_all_combinations
         ( encodings
-        , [](auto src_enc, auto dest_enc){ test_allowed_surrogates(src_enc, dest_enc); } );
+        , [](auto src_charset, auto dest_charset){ test_allowed_surrogates(src_charset, dest_charset); } );
 
     for_all_combinations
         ( encodings
-        , [](auto src_enc, auto dest_enc){ test_invalid_input(src_enc, dest_enc); } );
+        , [](auto src_charset, auto dest_charset){ test_invalid_input(src_charset, dest_charset); } );
 }
 
-template <typename Enc>
+template <typename Charset>
 void STRF_TEST_FUNC test_codepoints_robust_count_invalid_sequences
-    ( Enc enc
-    , invalid_seq<get_first_template_parameter<Enc>> s
+    ( Charset charset
+    , invalid_seq<get_first_template_parameter<Charset>> s
     , strf::surrogate_policy policy )
 {
-    using char_type = get_first_template_parameter<Enc>;
+    using char_type = get_first_template_parameter<Charset>;
     const char_type prefix[] = { 'a', 'b', 'c' };
     char_type buff[20];
     {
         auto input = concatenate(buff, prefix, s.sequence, 1);
 
         const std::size_t expected_count = 3 + s.errors_count;
-        auto result = enc.codepoints_robust_count
+        auto result = charset.codepoints_robust_count
             (input.data(), input.size(), expected_count, policy);
 
         TEST_EQ(result.count, expected_count);
@@ -459,7 +459,7 @@ void STRF_TEST_FUNC test_codepoints_robust_count_invalid_sequences
         auto input = concatenate(buff, prefix, s.sequence, 1, suffix);
 
         const std::size_t expected_count = 6 + s.errors_count;
-        auto result = enc.codepoints_robust_count
+        auto result = charset.codepoints_robust_count
             (input.data(), input.size(), expected_count, policy);
 
         TEST_EQ(result.count, expected_count);
@@ -467,265 +467,265 @@ void STRF_TEST_FUNC test_codepoints_robust_count_invalid_sequences
     }
 }
 
-void STRF_TEST_FUNC test_codepoints_robust_count_valid_sequences(strf::utf_t<char> enc)
+void STRF_TEST_FUNC test_codepoints_robust_count_valid_sequences(strf::utf_t<char> charset)
 {
     constexpr auto strict = strf::surrogate_policy::strict;
     constexpr auto lax = strf::surrogate_policy::lax;
     {
-        auto r = enc.codepoints_robust_count("", 0, 0, strict);
+        auto r = charset.codepoints_robust_count("", 0, 0, strict);
         TEST_EQ(r.pos, 0);
         TEST_EQ(r.count, 0);
     }
     {
-        auto r = enc.codepoints_robust_count("", 0, 1, strict);
+        auto r = charset.codepoints_robust_count("", 0, 1, strict);
         TEST_EQ(r.pos, 0);
         TEST_EQ(r.count, 0);
     }
     {
-        auto r = enc.codepoints_robust_count("x", 1, 0, strict);
+        auto r = charset.codepoints_robust_count("x", 1, 0, strict);
         TEST_EQ(r.pos, 0);
         TEST_EQ(r.count, 0);
     }
     {
-        auto r = enc.codepoints_robust_count((const char*)u8"\u0080", 2, 1, strict);
+        auto r = charset.codepoints_robust_count((const char*)u8"\u0080", 2, 1, strict);
         TEST_EQ(r.pos, 2);
         TEST_EQ(r.count, 1);
     }
     {
-        auto r = enc.codepoints_robust_count((const char*)u8"\u07FF", 2, 1, strict);
+        auto r = charset.codepoints_robust_count((const char*)u8"\u07FF", 2, 1, strict);
         TEST_EQ(r.pos, 2);
         TEST_EQ(r.count, 1);
     }
     {
-        auto r = enc.codepoints_robust_count((const char*)u8"\u0800", 3, 1, strict);
+        auto r = charset.codepoints_robust_count((const char*)u8"\u0800", 3, 1, strict);
         TEST_EQ(r.pos, 3);
         TEST_EQ(r.count, 1);
     }
     {
-        auto r = enc.codepoints_robust_count((const char*)u8"\u8000", 3, 1, strict);
+        auto r = charset.codepoints_robust_count((const char*)u8"\u8000", 3, 1, strict);
         TEST_EQ(r.pos, 3);
         TEST_EQ(r.count, 1);
     }
     {
-        auto r = enc.codepoints_robust_count((const char*)u8"\uFFFF", 3, 1, strict);
+        auto r = charset.codepoints_robust_count((const char*)u8"\uFFFF", 3, 1, strict);
         TEST_EQ(r.pos, 3);
         TEST_EQ(r.count, 1);
     }
     {
-        auto r = enc.codepoints_robust_count((const char*)u8"\U00010000", 4, 1, strict);
+        auto r = charset.codepoints_robust_count((const char*)u8"\U00010000", 4, 1, strict);
         TEST_EQ(r.pos, 4);
         TEST_EQ(r.count, 1);
     }
     {
-        auto r = enc.codepoints_robust_count("\xED\xA0\x80", 3, 1, lax);
+        auto r = charset.codepoints_robust_count("\xED\xA0\x80", 3, 1, lax);
         TEST_EQ(r.pos, 3);
         TEST_EQ(r.count, 1);
     }
 }
 
-void STRF_TEST_FUNC test_codepoints_robust_count_valid_sequences(strf::utf_t<char16_t> enc)
+void STRF_TEST_FUNC test_codepoints_robust_count_valid_sequences(strf::utf_t<char16_t> charset)
 {
     constexpr auto lax = strf::surrogate_policy::lax;
     {
-        auto r = enc.codepoints_robust_count(u"abc", 3, 0, lax);
+        auto r = charset.codepoints_robust_count(u"abc", 3, 0, lax);
         TEST_EQ(r.pos, 0);
         TEST_EQ(r.count, 0);
     }
     {
-        auto r = enc.codepoints_robust_count(u"", 0, 3, lax);
+        auto r = charset.codepoints_robust_count(u"", 0, 3, lax);
         TEST_EQ(r.pos, 0);
         TEST_EQ(r.count, 0);
     }
     {
-        auto r = enc.codepoints_robust_count(u"\U0010AAAA", 2, 1, lax);
+        auto r = charset.codepoints_robust_count(u"\U0010AAAA", 2, 1, lax);
         TEST_EQ(r.pos, 2);
         TEST_EQ(r.count, 1);
     }
     {
         char16_t a_high_surrogate = 0xD800;
-        auto r = enc.codepoints_robust_count(&a_high_surrogate, 1, 1, lax);
+        auto r = charset.codepoints_robust_count(&a_high_surrogate, 1, 1, lax);
         TEST_EQ(r.pos, 1);
         TEST_EQ(r.count, 1);
     }
     {
         char16_t a_low_surrogate = 0xDC00;
-        auto r = enc.codepoints_robust_count(&a_low_surrogate, 1, 1, lax);
+        auto r = charset.codepoints_robust_count(&a_low_surrogate, 1, 1, lax);
         TEST_EQ(r.pos, 1);
         TEST_EQ(r.count, 1);
     }
 }
 
-void STRF_TEST_FUNC test_codepoints_robust_count_valid_sequences(strf::utf_t<char32_t> enc)
+void STRF_TEST_FUNC test_codepoints_robust_count_valid_sequences(strf::utf_t<char32_t> charset)
 {
     constexpr auto lax = strf::surrogate_policy::lax;
     {
-        auto r = enc.codepoints_robust_count(U"", 0, 0, lax);
+        auto r = charset.codepoints_robust_count(U"", 0, 0, lax);
         TEST_EQ(r.pos, 0);
         TEST_EQ(r.count, 0);
     }
     {
-        auto r = enc.codepoints_robust_count(U"", 0, 1, lax);
+        auto r = charset.codepoints_robust_count(U"", 0, 1, lax);
         TEST_EQ(r.pos, 0);
         TEST_EQ(r.count, 0);
     }
     {
-        auto r = enc.codepoints_robust_count(U"a", 1, 0, lax);
+        auto r = charset.codepoints_robust_count(U"a", 1, 0, lax);
         TEST_EQ(r.pos, 0);
         TEST_EQ(r.count, 0);
     }
     {
-        auto r = enc.codepoints_robust_count(U"abc", 3, 3, lax);
+        auto r = charset.codepoints_robust_count(U"abc", 3, 3, lax);
         TEST_EQ(r.pos, 3);
         TEST_EQ(r.count, 3);
     }
     {
-        auto r = enc.codepoints_robust_count(U"abc", 3, 2, lax);
+        auto r = charset.codepoints_robust_count(U"abc", 3, 2, lax);
         TEST_EQ(r.pos, 2);
         TEST_EQ(r.count, 2);
     }
 }
 
-template <typename Enc>
-void STRF_TEST_FUNC test_codepoints_robust_count(Enc enc)
+template <typename Charset>
+void STRF_TEST_FUNC test_codepoints_robust_count(Charset charset)
 {
-    test_codepoints_robust_count_valid_sequences(enc);
+    test_codepoints_robust_count_valid_sequences(charset);
 
     constexpr auto strict = strf::surrogate_policy::strict;
     constexpr auto lax = strf::surrogate_policy::lax;
 
-    for(const auto& s : invalid_sequences(enc))
+    for(const auto& s : invalid_sequences(charset))
     {
-        test_codepoints_robust_count_invalid_sequences(enc, s, strict);
-        test_codepoints_robust_count_invalid_sequences(enc, s, lax);
+        test_codepoints_robust_count_invalid_sequences(charset, s, strict);
+        test_codepoints_robust_count_invalid_sequences(charset, s, lax);
     }
-    for(const auto& s : surrogates_sequences(enc))
+    for(const auto& s : surrogates_sequences(charset))
     {
-        test_codepoints_robust_count_invalid_sequences(enc, s, strict);
+        test_codepoints_robust_count_invalid_sequences(charset, s, strict);
     }
 }
 
-void STRF_TEST_FUNC test_codepoints_fast_count(strf::utf_t<char> enc)
+void STRF_TEST_FUNC test_codepoints_fast_count(strf::utf_t<char> charset)
 {
     {
-        auto r = enc.codepoints_fast_count((const char*)u8"\u0080", 2, 1);
+        auto r = charset.codepoints_fast_count((const char*)u8"\u0080", 2, 1);
         TEST_EQ(r.pos, 2);
         TEST_EQ(r.count, 1);
     }
     {
-        auto r = enc.codepoints_fast_count((const char*)u8"\u07FF", 2, 1);
+        auto r = charset.codepoints_fast_count((const char*)u8"\u07FF", 2, 1);
         TEST_EQ(r.pos, 2);
         TEST_EQ(r.count, 1);
     }
     {
-        auto r = enc.codepoints_fast_count((const char*)u8"\u0800", 3, 1);
+        auto r = charset.codepoints_fast_count((const char*)u8"\u0800", 3, 1);
         TEST_EQ(r.pos, 3);
         TEST_EQ(r.count, 1);
     }
     {
-        auto r = enc.codepoints_fast_count((const char*)u8"\u8000", 3, 1);
+        auto r = charset.codepoints_fast_count((const char*)u8"\u8000", 3, 1);
         TEST_EQ(r.pos, 3);
         TEST_EQ(r.count, 1);
     }
     {
-        auto r = enc.codepoints_fast_count((const char*)u8"\uFFFF", 3, 1);
+        auto r = charset.codepoints_fast_count((const char*)u8"\uFFFF", 3, 1);
         TEST_EQ(r.pos, 3);
         TEST_EQ(r.count, 1);
     }
     {
-        auto r = enc.codepoints_fast_count((const char*)u8"\U00010000", 4, 1);
+        auto r = charset.codepoints_fast_count((const char*)u8"\U00010000", 4, 1);
         TEST_EQ(r.pos, 4);
         TEST_EQ(r.count, 1);
     }
     {
-        auto r = enc.codepoints_fast_count((const char*)u8"\U0010FFFF", 4, 1);
+        auto r = charset.codepoints_fast_count((const char*)u8"\U0010FFFF", 4, 1);
         TEST_EQ(r.pos, 4);
         TEST_EQ(r.count, 1);
     }
     {
-        auto r = enc.codepoints_fast_count((const char*)u8"\U0010FFFF", 3, 1);
+        auto r = charset.codepoints_fast_count((const char*)u8"\U0010FFFF", 3, 1);
         TEST_EQ(r.pos, 3);
         TEST_EQ(r.count, 1);
     }
     {
-        auto r = enc.codepoints_fast_count((const char*)u8"_\U0010FFFF_", 6, 2);
+        auto r = charset.codepoints_fast_count((const char*)u8"_\U0010FFFF_", 6, 2);
         TEST_EQ(r.pos, 5);
         TEST_EQ(r.count, 2);
     }
 }
 
-void STRF_TEST_FUNC test_codepoints_fast_count(strf::utf_t<char16_t> enc)
+void STRF_TEST_FUNC test_codepoints_fast_count(strf::utf_t<char16_t> charset)
 {
     {
-        auto r = enc.codepoints_fast_count(u"", 0, 0);
+        auto r = charset.codepoints_fast_count(u"", 0, 0);
         TEST_EQ(r.pos, 0);
         TEST_EQ(r.count, 0);
     }
     {
-        auto r = enc.codepoints_fast_count(u"", 0, 1);
+        auto r = charset.codepoints_fast_count(u"", 0, 1);
         TEST_EQ(r.pos, 0);
         TEST_EQ(r.count, 0);
     }
     {
-        auto r = enc.codepoints_fast_count(u" \U00010000 ", 4, 2);
+        auto r = charset.codepoints_fast_count(u" \U00010000 ", 4, 2);
         TEST_EQ(r.pos, 3);
         TEST_EQ(r.count, 2);
     }
     {
-        auto r = enc.codepoints_fast_count(u"\u0800", 1, 1);
+        auto r = charset.codepoints_fast_count(u"\u0800", 1, 1);
         TEST_EQ(r.pos, 1);
         TEST_EQ(r.count, 1);
     }
     {
-        auto r = enc.codepoints_fast_count(u"\U00010000", 2, 1);
+        auto r = charset.codepoints_fast_count(u"\U00010000", 2, 1);
         TEST_EQ(r.pos, 2);
         TEST_EQ(r.count, 1);
     }
     {
-        auto r = enc.codepoints_fast_count(u"\U0010FFFF", 2, 1);
+        auto r = charset.codepoints_fast_count(u"\U0010FFFF", 2, 1);
         TEST_EQ(r.pos, 2);
         TEST_EQ(r.count, 1);
     }
     {
-        auto r = enc.codepoints_fast_count(u"_\u0800_", 3, 3);
+        auto r = charset.codepoints_fast_count(u"_\u0800_", 3, 3);
         TEST_EQ(r.pos, 3);
         TEST_EQ(r.count, 3);
     }
     {
-        auto r = enc.codepoints_fast_count(u"_\U00010000", 3, 2);
+        auto r = charset.codepoints_fast_count(u"_\U00010000", 3, 2);
         TEST_EQ(r.pos, 3);
         TEST_EQ(r.count, 2);
     }
     {
-        auto r = enc.codepoints_fast_count(u"_\U00010000", 2, 2);
+        auto r = charset.codepoints_fast_count(u"_\U00010000", 2, 2);
         TEST_EQ(r.pos, 2);
         TEST_EQ(r.count, 2);
     }
 }
 
-void STRF_TEST_FUNC test_codepoints_fast_count(strf::utf_t<char32_t> enc)
+void STRF_TEST_FUNC test_codepoints_fast_count(strf::utf_t<char32_t> charset)
 {
     {
-        auto r = enc.codepoints_fast_count(U"", 0, 0);
+        auto r = charset.codepoints_fast_count(U"", 0, 0);
         TEST_EQ(r.pos, 0);
         TEST_EQ(r.count, 0);
     }
     {
-        auto r = enc.codepoints_fast_count(U"", 0, 1);
+        auto r = charset.codepoints_fast_count(U"", 0, 1);
         TEST_EQ(r.pos, 0);
         TEST_EQ(r.count, 0);
     }
     {
-        auto r = enc.codepoints_fast_count(U"a", 1, 0);
+        auto r = charset.codepoints_fast_count(U"a", 1, 0);
         TEST_EQ(r.pos, 0);
         TEST_EQ(r.count, 0);
     }
     {
-        auto r = enc.codepoints_fast_count(U"abc", 3, 3);
+        auto r = charset.codepoints_fast_count(U"abc", 3, 3);
         TEST_EQ(r.pos, 3);
         TEST_EQ(r.count, 3);
     }
     {
-        auto r = enc.codepoints_fast_count(U"abc", 3, 2);
+        auto r = charset.codepoints_fast_count(U"abc", 3, 2);
         TEST_EQ(r.pos, 2);
         TEST_EQ(r.count, 2);
     }

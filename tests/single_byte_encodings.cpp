@@ -33,10 +33,10 @@ static STRF_TEST_FUNC void encoding_error_handler()
 }
 
 static STRF_TEST_FUNC void STRF_TEST_FUNC general_tests
-    ( strf::dynamic_charset<char> enc
+    ( strf::dynamic_charset<char> charset
     , strf::detail::simple_string_view<char32_t> decoded_0_to_0xff )
 {
-    TEST_SCOPE_DESCRIPTION(enc.name());
+    TEST_SCOPE_DESCRIPTION(charset.name());
 
     const unsigned fffd_count = count_fffd(decoded_0_to_0xff);
 
@@ -48,13 +48,13 @@ static STRF_TEST_FUNC void STRF_TEST_FUNC general_tests
 
     {   // The replacement character is '?'
 
-        TEST_EQ(enc.replacement_char_size(), 1);
-        TEST_EQ(enc.replacement_char(), U'?');
+        TEST_EQ(charset.replacement_char_size(), 1);
+        TEST_EQ(charset.replacement_char(), U'?');
 
         // test write_replacement_char
         char buff [10];
         strf::cstr_writer w{buff};
-        enc.write_replacement_char(w);
+        charset.write_replacement_char(w);
         auto r = w.finish();
         TEST_EQ(r.ptr, buff + 1);
         TEST_FALSE(r.truncated);
@@ -62,7 +62,7 @@ static STRF_TEST_FUNC void STRF_TEST_FUNC general_tests
     }
 
     {
-        auto x = enc.codepoints_robust_count( str_0_to_xff.data()
+        auto x = charset.codepoints_robust_count( str_0_to_xff.data()
                                             , str_0_to_xff.size()
                                             , str_0_to_xff.size()
                                             , strf::surrogate_policy::lax );
@@ -70,7 +70,7 @@ static STRF_TEST_FUNC void STRF_TEST_FUNC general_tests
         TEST_EQ(x.pos, str_0_to_xff.size());
     }
     {
-        auto x = enc.codepoints_robust_count( str_0_to_xff.data()
+        auto x = charset.codepoints_robust_count( str_0_to_xff.data()
                                             , str_0_to_xff.size()
                                             , str_0_to_xff.size()
                                             , strf::surrogate_policy::strict );
@@ -78,7 +78,7 @@ static STRF_TEST_FUNC void STRF_TEST_FUNC general_tests
         TEST_EQ(x.pos, str_0_to_xff.size());
     }
     {
-        auto x = enc.codepoints_robust_count( str_0_to_xff.data()
+        auto x = charset.codepoints_robust_count( str_0_to_xff.data()
                                             , str_0_to_xff.size()
                                             , str_0_to_xff.size() - 1
                                             , strf::surrogate_policy::lax );
@@ -86,7 +86,7 @@ static STRF_TEST_FUNC void STRF_TEST_FUNC general_tests
         TEST_EQ(x.pos, str_0_to_xff.size() - 1);
     }
     {
-        auto x = enc.codepoints_robust_count( str_0_to_xff.data()
+        auto x = charset.codepoints_robust_count( str_0_to_xff.data()
                                             , str_0_to_xff.size()
                                             , str_0_to_xff.size() - 1
                                             , strf::surrogate_policy::strict );
@@ -94,14 +94,14 @@ static STRF_TEST_FUNC void STRF_TEST_FUNC general_tests
         TEST_EQ(x.pos, str_0_to_xff.size() - 1);
     }
     {
-        auto x = enc.codepoints_fast_count( str_0_to_xff.data()
+        auto x = charset.codepoints_fast_count( str_0_to_xff.data()
                                           , str_0_to_xff.size()
                                           , str_0_to_xff.size() );
         TEST_EQ(x.count, str_0_to_xff.size());
         TEST_EQ(x.pos, str_0_to_xff.size());
     }
     {
-        auto x = enc.codepoints_fast_count( str_0_to_xff.data()
+        auto x = charset.codepoints_fast_count( str_0_to_xff.data()
                                           , str_0_to_xff.size()
                                           , str_0_to_xff.size() - 1 );
         TEST_EQ(x.count, str_0_to_xff.size() - 1);
@@ -112,7 +112,7 @@ static STRF_TEST_FUNC void STRF_TEST_FUNC general_tests
 
     {   // converting a string to UTF-32
 
-        TEST(decoded_0_to_0xff) (strf::sani(str_0_to_xff, enc));
+        TEST(decoded_0_to_0xff) (strf::sani(str_0_to_xff, charset));
     }
 
     {   // converting a string to UTF-32 with strf::invalid_seq_notifier
@@ -120,7 +120,7 @@ static STRF_TEST_FUNC void STRF_TEST_FUNC general_tests
         ::encoding_error_handler_calls = 0;
         TEST(decoded_0_to_0xff)
             .with(strf::invalid_seq_notifier{encoding_error_handler})
-            (strf::sani(str_0_to_xff, enc));
+            (strf::sani(str_0_to_xff, charset));
         TEST_EQ(::encoding_error_handler_calls, fffd_count);
     }
 
@@ -128,7 +128,7 @@ static STRF_TEST_FUNC void STRF_TEST_FUNC general_tests
 
         for(unsigned i = 0; i < 0x100; ++i) {
             char ch = static_cast<char>(i);
-            char32_t ch32 = enc.decode_char(ch);
+            char32_t ch32 = charset.decode_char(ch);
             TEST_SCOPE_DESCRIPTION("i=", *strf::hex(i));
             TEST_EQ((unsigned)ch32, (unsigned)decoded_0_to_0xff[i]);
         }
@@ -136,7 +136,7 @@ static STRF_TEST_FUNC void STRF_TEST_FUNC general_tests
     {   // encode string from UTF-32
 
         char result[0x101];
-        auto res = strf::to(result).with(enc)
+        auto res = strf::to(result).with(charset)
             (strf::conv(decoded_0_to_0xff, strf::utf_t<char32_t>()));
         TEST_FALSE(res.truncated);
         TEST_EQ(res.ptr - result, 0x100);
@@ -157,7 +157,7 @@ static STRF_TEST_FUNC void STRF_TEST_FUNC general_tests
         ::encoding_error_handler_calls = 0;
         char result[0x101];
         auto res = strf::to(result)
-            .with(enc)
+            .with(charset)
             .with(strf::invalid_seq_notifier{encoding_error_handler})
             (strf::conv(decoded_0_to_0xff, strf::utf_t<char32_t>()));
         TEST_FALSE(res.truncated);
@@ -184,11 +184,11 @@ static STRF_TEST_FUNC void STRF_TEST_FUNC general_tests
             char expected_ch = ch32 == 0xFFFD ? '?' : (char)i;
 
             char buff[20];
-            auto ptr = enc.encode_char(buff, ch32);
+            auto ptr = charset.encode_char(buff, ch32);
             TEST_EQ(buff[0], expected_ch);
             TEST_EQ(ptr - buff, 1);
-            TEST_EQ(enc.encoded_char_size(ch32), 1);
-            TEST_EQ(enc.validate(ch32), (ch32 == 0xFFFD ? (std::size_t)-1 : 1));
+            TEST_EQ(charset.encoded_char_size(ch32), 1);
+            TEST_EQ(charset.validate(ch32), (ch32 == 0xFFFD ? (std::size_t)-1 : 1));
         }
 
     }
@@ -196,7 +196,7 @@ static STRF_TEST_FUNC void STRF_TEST_FUNC general_tests
     {    // sanitize string
 
         char result[0x101];
-        auto res = strf::to(result) .with(enc) (strf::sani(str_0_to_xff));
+        auto res = strf::to(result) .with(charset) (strf::sani(str_0_to_xff));
         TEST_FALSE(res.truncated);
         TEST_EQ(res.ptr - result, 0x100);
 
@@ -211,8 +211,8 @@ static STRF_TEST_FUNC void STRF_TEST_FUNC general_tests
 
         ::encoding_error_handler_calls = 0;
         char result[0x101];
-        auto res = strf::to(result) .with(enc)
-            .with(enc)
+        auto res = strf::to(result) .with(charset)
+            .with(charset)
             .with(strf::invalid_seq_notifier{encoding_error_handler})
             (strf::sani(str_0_to_xff));
 
@@ -230,8 +230,8 @@ static STRF_TEST_FUNC void STRF_TEST_FUNC general_tests
         TEST_EQ(encoding_error_handler_calls, fffd_count);
     }
     {   // encode_fill
-        TEST("aaaaa").with(enc) (strf::multi(U'a', 5));
-        TEST("?????").with(enc) (strf::multi(U'\U0010FFFF', 5));
+        TEST("aaaaa").with(charset) (strf::multi(U'a', 5));
+        TEST("?????").with(charset) (strf::multi(U'\U0010FFFF', 5));
     }
 
     {   // converting to/from wide string
@@ -242,12 +242,12 @@ static STRF_TEST_FUNC void STRF_TEST_FUNC general_tests
         strf::detail::simple_string_view<wchar_t> decoded_wstr{decoded_wstr_buff, r.ptr};
 
         {   // to wide string
-            TEST(decoded_wstr) (strf::conv(str_0_to_xff, enc));
+            TEST(decoded_wstr) (strf::conv(str_0_to_xff, charset));
         }
 
         {   // from wide string
             char result[0x101];
-            auto res = strf::to(result).with(enc) (strf::conv(decoded_wstr));;
+            auto res = strf::to(result).with(charset) (strf::conv(decoded_wstr));;
             TEST_FALSE(res.truncated);
             TEST_EQ(res.ptr - result, 0x100);
 
@@ -262,7 +262,7 @@ static STRF_TEST_FUNC void STRF_TEST_FUNC general_tests
     }
 
     {   // find sanitizer
-        auto transc = enc.find_transcoder_to(strf::tag<char>{}, enc.id());
+        auto transc = charset.find_transcoder_to(strf::tag<char>{}, charset.id());
         TEST_TRUE(transc.transcode_func() != nullptr);
         TEST_TRUE(transc.transcode_size_func() != nullptr);
 
@@ -270,7 +270,7 @@ static STRF_TEST_FUNC void STRF_TEST_FUNC general_tests
     }
 #if defined(__cpp_char8_t)
     {   // find sanitizer
-        auto transc = enc.find_transcoder_to(strf::tag<char8_t>{}, enc.id());
+        auto transc = charset.find_transcoder_to(strf::tag<char8_t>{}, charset.id());
         TEST_TRUE(transc.transcode_func() != nullptr);
         TEST_TRUE(transc.transcode_size_func() != nullptr);
 
@@ -279,33 +279,33 @@ static STRF_TEST_FUNC void STRF_TEST_FUNC general_tests
 #endif // defined(__cpp_char8_t)
 
     {
-        auto transc = enc.find_transcoder_to(strf::tag<wchar_t>{}, invalid_csid);
+        auto transc = charset.find_transcoder_to(strf::tag<wchar_t>{}, invalid_csid);
         TEST_TRUE(transc.transcode_func() == nullptr);
         TEST_TRUE(transc.transcode_size_func() == nullptr);
     }
     {
-        auto transc = enc.find_transcoder_from(strf::tag<wchar_t>{}, invalid_csid);
+        auto transc = charset.find_transcoder_from(strf::tag<wchar_t>{}, invalid_csid);
         TEST_TRUE(transc.transcode_func() == nullptr);
         TEST_TRUE(transc.transcode_size_func() == nullptr);
     }
     {
-        auto transc = enc.find_transcoder_to(strf::tag<char>{}, invalid_csid);
+        auto transc = charset.find_transcoder_to(strf::tag<char>{}, invalid_csid);
         TEST_TRUE(transc.transcode_func() == nullptr);
         TEST_TRUE(transc.transcode_size_func() == nullptr);
     }
     {
-        auto transc = enc.find_transcoder_from(strf::tag<char>{}, invalid_csid);
+        auto transc = charset.find_transcoder_from(strf::tag<char>{}, invalid_csid);
         TEST_TRUE(transc.transcode_func() == nullptr);
         TEST_TRUE(transc.transcode_size_func() == nullptr);
     }
 #if defined(__cpp_char8_t)
     {
-        auto transc = enc.find_transcoder_to(strf::tag<char8_t>{}, invalid_csid);
+        auto transc = charset.find_transcoder_to(strf::tag<char8_t>{}, invalid_csid);
         TEST_TRUE(transc.transcode_func() == nullptr);
         TEST_TRUE(transc.transcode_size_func() == nullptr);
     }
     {
-        auto transc = enc.find_transcoder_from(strf::tag<char8_t>{}, invalid_csid);
+        auto transc = charset.find_transcoder_from(strf::tag<char8_t>{}, invalid_csid);
         TEST_TRUE(transc.transcode_func() == nullptr);
         TEST_TRUE(transc.transcode_size_func() == nullptr);
     }
@@ -313,15 +313,15 @@ static STRF_TEST_FUNC void STRF_TEST_FUNC general_tests
 
 }
 
-template <typename CharT, strf::charset_id EncId>
+template <typename CharT, strf::charset_id CharsetId>
 inline STRF_HD void STRF_TEST_FUNC general_tests
-    ( strf::static_charset<CharT, EncId> enc
+    ( strf::static_charset<CharT, CharsetId> charset
     , strf::detail::simple_string_view<char32_t> decoded_0_to_0xff )
 {
     strf::dynamic_charset_data<CharT> data;
-    enc.fill_data(data);
-    strf::dynamic_charset<CharT> dynamic_enc{data};
-    general_tests(dynamic_enc, decoded_0_to_0xff);
+    charset.fill_data(data);
+    strf::dynamic_charset<CharT> dynamic_cs{data};
+    general_tests(dynamic_cs, decoded_0_to_0xff);
 }
 
 
@@ -1314,36 +1314,36 @@ static STRF_TEST_FUNC strf::detail::simple_string_view<CharT> questions_marks(st
 
 template <typename CharT>
 static STRF_TEST_FUNC void test_unsupported_codepoints
-    ( strf::dynamic_charset<CharT> enc
+    ( strf::dynamic_charset<CharT> charset
     , std::initializer_list<char32_t> unsupported_codepoints )
 {
-    TEST_SCOPE_DESCRIPTION(enc.name());
+    TEST_SCOPE_DESCRIPTION(charset.name());
 
     strf::detail::simple_string_view<char32_t> input
         { unsupported_codepoints.begin(), unsupported_codepoints.size() };
 
-    TEST(questions_marks<CharT>(input.size())) .with(enc) (strf::sani(input));
+    TEST(questions_marks<CharT>(input.size())) .with(charset) (strf::sani(input));
 }
 
-template <typename CharT, strf::charset_id EncId>
+template <typename CharT, strf::charset_id CharsetId>
 void STRF_TEST_FUNC test_unsupported_codepoints
-    ( strf::static_charset<CharT, EncId> enc
+    ( strf::static_charset<CharT, CharsetId> charset
     , std::initializer_list<char32_t> unsupported_codepoints )
 {
     strf::dynamic_charset_data<CharT> data;
-    enc.fill_data(data);
-    strf::dynamic_charset<CharT> dynamic_enc{data};
-    test_unsupported_codepoints(dynamic_enc, unsupported_codepoints);
+    charset.fill_data(data);
+    strf::dynamic_charset<CharT> dynamic_cs{data};
+    test_unsupported_codepoints(dynamic_cs, unsupported_codepoints);
 }
 
-template <typename CharT, strf::charset_id EncId>
+template <typename CharT, strf::charset_id CharsetId>
 inline STRF_HD void test_undefined_bytes
-    ( strf::static_charset<CharT, EncId> enc
+    ( strf::static_charset<CharT, CharsetId> charset
     , strf::detail::simple_string_view<CharT> undefined_bytes )
 {
-    TEST_SCOPE_DESCRIPTION(enc.name());
-    TEST(questions_marks<CharT>(undefined_bytes.size())) .with(enc)
-        (strf::sani(undefined_bytes, enc));
+    TEST_SCOPE_DESCRIPTION(charset.name());
+    TEST(questions_marks<CharT>(undefined_bytes.size())) .with(charset)
+        (strf::sani(undefined_bytes, charset));
 }
 
 void STRF_TEST_FUNC test_single_byte_encodings()

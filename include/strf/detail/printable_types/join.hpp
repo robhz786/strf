@@ -141,15 +141,15 @@ public:
               , true, FwdArgs...>& input )
         : afmt_(input.arg.get_alignment_format())
     {
-        auto enc = get_facet_<strf::charset_c<CharT>>(input.facets);
-        encode_fill_func_ = enc.encode_fill_func();
+        auto charset = get_facet_<strf::charset_c<CharT>>(input.facets);
+        encode_fill_func_ = charset.encode_fill_func();
         strf::print_preview<ReqSize, strf::preview_width::yes> preview { afmt_.width };
         new (printers_ptr_()) printers_tuple_{input.arg.value().args, preview, input.facets};
         fillcount_ = preview.remaining_width().round();
         STRF_IF_CONSTEXPR (static_cast<bool>(ReqSize)) {
             input.preview.add_size(preview.accumulated_size());
             if (fillcount_ > 0) {
-                auto fcharsize = enc.encoded_char_size(afmt_.fill);
+                auto fcharsize = charset.encoded_char_size(afmt_.fill);
                 input.preview.add_size(fillcount_ * fcharsize);
             }
         }
@@ -165,8 +165,8 @@ public:
               , true, FwdArgs...>& input )
         : afmt_(input.arg.get_alignment_format())
     {
-        auto enc = get_facet_<strf::charset_c<CharT>>(input.facets);
-        encode_fill_func_ = enc.encode_fill_func();
+        auto charset = get_facet_<strf::charset_c<CharT>>(input.facets);
+        encode_fill_func_ = charset.encode_fill_func();
         strf::width_t wmax = afmt_.width;
         strf::width_t diff = 0;
         if (input.preview.remaining_width() > afmt_.width) {
@@ -184,7 +184,7 @@ public:
         STRF_IF_CONSTEXPR (static_cast<bool>(ReqSize)) {
             input.preview.add_size(preview.accumulated_size());
             if (fillcount_ > 0) {
-                auto fcharsize = enc.encoded_char_size(afmt_.fill);
+                auto fcharsize = charset.encoded_char_size(afmt_.fill);
                 input.preview.add_size( fillcount_ * fcharsize);
             }
         }

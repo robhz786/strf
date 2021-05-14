@@ -32,7 +32,7 @@ namespace detail {
 
 char32_t decode_first_char_from_utf16(const wchar_t* src);
 char32_t decode_first_char(strf::transcode_f<char, char32_t> decode, const char* str);
-strf::transcode_f<char, char32_t> get_decoder(const char* enc_name);
+strf::transcode_f<char, char32_t> get_decoder(const char* charset_name);
 strf::digits_grouping parse_win_grouping(const wchar_t* str);
 strf::numpunct<10> make_numpunct
     ( const char* encoding_name
@@ -107,20 +107,20 @@ STRF_FUNC_IMPL char32_t decode_first_char(strf::transcode_f<char, char32_t>& dec
     return buff32[0];
 }
 
-STRF_FUNC_IMPL strf::transcode_f<char, char32_t> get_decoder(const char* enc_name)
+STRF_FUNC_IMPL strf::transcode_f<char, char32_t> get_decoder(const char* charset_name)
 {
-    if (0 == strcmp(enc_name, "UTF-8")) {
+    if (0 == strcmp(charset_name, "UTF-8")) {
         return strf::utf8_to_utf32<char, char32_t>::transcode;
     }
-    else if (0 == strcmp(enc_name, "ISO-8859-1")) {
+    else if (0 == strcmp(charset_name, "ISO-8859-1")) {
         return strf::static_transcoder
             < char, char32_t, strf::csid_iso_8859_1, strf::csid_utf32 >
             ::transcode_func();
-    } else if (0 == strcmp(enc_name, "ISO-8859-3")) {
+    } else if (0 == strcmp(charset_name, "ISO-8859-3")) {
         return strf::static_transcoder
             < char, char32_t, strf::csid_iso_8859_3, strf::csid_utf32 >
             ::transcode_func();
-    } else if (0 == strcmp(enc_name, "ISO-8859-15")) {
+    } else if (0 == strcmp(charset_name, "ISO-8859-15")) {
         return strf::static_transcoder
             < char, char32_t, strf::csid_iso_8859_15, strf::csid_utf32 >
             ::transcode_func();

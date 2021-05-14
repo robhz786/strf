@@ -1903,8 +1903,8 @@ public:
         auto ivalue = i.arg.value();
         using int_type = decltype(ivalue);
         lettercase_ = strf::get_facet<lettercase_c, int_type>(i.facets);
-        auto enc = strf::get_facet<charset_c<CharT>, int_type>(i.facets);
-        encode_fill_ = enc.encode_fill_func();
+        auto charset = strf::get_facet<charset_c<CharT>, int_type>(i.facets);
+        encode_fill_ = charset.encode_fill_func();
         int_format_static_base_and_punct<Base, false> ifmt = i.arg.get_int_format();
         auto afmt = i.arg.get_alignment_format();
         detail::init_1(data_, ifmt, ivalue);
@@ -1914,7 +1914,7 @@ public:
         STRF_IF_CONSTEXPR (preview_type::size_required) {
             i.preview.add_size(w.sub_width);
             if (w.fillcount) {
-                i.preview.add_size(w.fillcount * enc.encoded_char_size(afmt.fill));
+                i.preview.add_size(w.fillcount * charset.encoded_char_size(afmt.fill));
             }
         }
     }
@@ -2073,7 +2073,7 @@ public:
     {
     }
 
-    template <typename IntT, typename Preview, typename Encoding>
+    template <typename IntT, typename Preview, typename Charset>
     STRF_HD int_printer_static_base_and_punct
         ( IntT ivalue
         , int_format_static_base_and_punct<Base, true> ifmt
@@ -2082,21 +2082,21 @@ public:
         , strf::lettercase lc
         , strf::digits_grouping grp
         , char32_t thousands_sep
-        , Encoding enc )
-        : encode_fill_{enc.encode_fill_func()}
-        , encode_char_{enc.encode_char_func()}
+        , Charset charset )
+        : encode_fill_{charset.encode_fill_func()}
+        , encode_char_{charset.encode_char_func()}
         , lettercase_{lc}
     {
         data_.sepchar = thousands_sep;
         data_.grouping = grp;
         detail::init_1(data_, ifmt, ivalue);
         const auto w = detail::init_punct_fmt_int_printer_data<Base>
-            (data_, enc.validate_func(), ifmt, afmt);
+            (data_, charset.validate_func(), ifmt, afmt);
         preview.subtract_width(w.sub_width + w.fillcount + data_.sepcount);
         STRF_IF_CONSTEXPR (Preview::size_required) {
             preview.add_size(w.sub_width);
             if (w.fillcount) {
-                preview.add_size(w.fillcount * enc.encoded_char_size(afmt.fill));
+                preview.add_size(w.fillcount * charset.encoded_char_size(afmt.fill));
             }
             preview.add_size(data_.sepcount * data_.sepsize);
         }
@@ -2180,7 +2180,7 @@ public:
         auto ivalue = i.arg.value();
         using int_type = decltype(ivalue);
         auto lc = strf::get_facet<lettercase_c, int_type>(i.facets);
-        auto enc = strf::get_facet<charset_c<CharT>, int_type>(i.facets);
+        auto charset = strf::get_facet<charset_c<CharT>, int_type>(i.facets);
         strf::digits_grouping grp;
         char32_t thousands_sep = ',';
         switch(ifmt.base) {
@@ -2193,7 +2193,7 @@ public:
                     thousands_sep = numpunct.thousands_sep();
                 }
                 new ((void*)&storage_) int_printer_static_base_and_punct<CharT, 16, true>
-                    ( ivalue, ifmt16, afmt, i.preview, lc, grp, thousands_sep, enc );
+                    ( ivalue, ifmt16, afmt, i.preview, lc, grp, thousands_sep, charset );
                 break;
             }
             case 8: {
@@ -2205,7 +2205,7 @@ public:
                     thousands_sep = numpunct.thousands_sep();
                 }
                 new ((void*)&storage_) int_printer_static_base_and_punct<CharT, 8, true>
-                    ( ivalue, ifmt8, afmt, i.preview, lc, grp, thousands_sep, enc );
+                    ( ivalue, ifmt8, afmt, i.preview, lc, grp, thousands_sep, charset );
                 break;
             }
             case 2: {
@@ -2217,7 +2217,7 @@ public:
                     thousands_sep = numpunct.thousands_sep();
                 }
                 new ((void*)&storage_) int_printer_static_base_and_punct<CharT, 2, true>
-                    ( ivalue, ifmt2, afmt, i.preview, lc, grp, thousands_sep, enc );
+                    ( ivalue, ifmt2, afmt, i.preview, lc, grp, thousands_sep, charset );
                 break;
             }
             default:  {
@@ -2229,7 +2229,7 @@ public:
                     thousands_sep = numpunct.thousands_sep();
                 }
                 new ((void*)&storage_) int_printer_static_base_and_punct<CharT, 10, true>
-                    ( ivalue, ifmt10, afmt, i.preview, lc, grp, thousands_sep, enc );
+                    ( ivalue, ifmt10, afmt, i.preview, lc, grp, thousands_sep, charset );
                 break;
             }
         }

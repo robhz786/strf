@@ -200,7 +200,7 @@ public:
     }
 
     template <typename Charset>
-    constexpr STRF_HD auto convert_from_charset(Charset enc) const
+    constexpr STRF_HD auto convert_from_charset(Charset charset) const
     {
         static_assert( std::is_same<typename Charset::char_type, CharT>::value
                      , "This charset does not match the string's character type." );
@@ -213,16 +213,16 @@ public:
         return return_type
             { self_downcast_()
             , strf::tag<strf::transcoding_formatter_conv_with_charset<Charset>>{}
-            , enc };
+            , charset };
     }
     constexpr STRF_HD auto conv() const
     {
         return convert_charset();
     }
     template <typename Charset>
-    constexpr STRF_HD auto conv(Charset enc) const
+    constexpr STRF_HD auto conv(Charset charset) const
     {
-        return convert_from_charset(enc);
+        return convert_from_charset(charset);
     }
 
     constexpr STRF_HD auto sanitize_charset() const
@@ -234,7 +234,7 @@ public:
         return return_type{ self_downcast_() };
     }
     template <typename Charset>
-    constexpr STRF_HD auto sanitize_from_charset(Charset enc) const
+    constexpr STRF_HD auto sanitize_from_charset(Charset charset) const
     {
         static_assert( std::is_same<typename Charset::char_type, CharT>::value
                      , "This charset does not match the string's character type." );
@@ -246,16 +246,16 @@ public:
         return return_type
             { self_downcast_()
             , strf::tag<strf::transcoding_formatter_sani_with_charset<Charset>>{}
-            , enc };
+            , charset };
     }
     constexpr STRF_HD auto sani() const
     {
         return sanitize_charset();
     }
     template <typename Charset>
-    constexpr STRF_HD auto sani(Charset enc) const
+    constexpr STRF_HD auto sani(Charset charset) const
     {
-        return sanitize_from_charset(enc);
+        return sanitize_from_charset(charset);
     }
 
     // observers
@@ -265,24 +265,24 @@ public:
 
     // backwards compatibility
     template <typename Charset>
-    [[deprecated]] constexpr STRF_HD auto convert_encoding(Charset enc) const
+    [[deprecated]] constexpr STRF_HD auto convert_encoding(Charset charset) const
     {
-        return convert_charset(enc);
+        return convert_charset(charset);
     }
     template <typename Charset>
-    [[deprecated]] constexpr STRF_HD auto convert_from_encoding(Charset enc) const
+    [[deprecated]] constexpr STRF_HD auto convert_from_encoding(Charset charset) const
     {
-        return convert_from_charset(enc);
+        return convert_from_charset(charset);
     }
     template <typename Charset>
-    [[deprecated]] constexpr STRF_HD auto sanitize_encoding(Charset enc) const
+    [[deprecated]] constexpr STRF_HD auto sanitize_encoding(Charset charset) const
     {
-        return sanitize_charset(enc);
+        return sanitize_charset(charset);
     }
     template <typename Charset>
-    [[deprecated]] constexpr STRF_HD auto sanitize_from_encoding(Charset enc) const
+    [[deprecated]] constexpr STRF_HD auto sanitize_from_encoding(Charset charset) const
     {
-        return sanitize_from_charset(enc);
+        return sanitize_from_charset(charset);
     }
 };
 
@@ -835,17 +835,17 @@ public:
     {
 
         decltype(auto) wcalc = get_facet_<strf::width_calculator_c>(input.facets);
-        auto src_enc = get_facet_<strf::charset_c<SrcCharT>>(input.facets);
-        auto dest_enc = get_facet_<strf::charset_c<DestCharT>>(input.facets);
+        auto src_charset = get_facet_<strf::charset_c<SrcCharT>>(input.facets);
+        auto dest_charset = get_facet_<strf::charset_c<DestCharT>>(input.facets);
         strf::width_t limit =
             ( Preview::width_required && input.preview.remaining_width() > afmt_.width
             ? input.preview.remaining_width()
             : afmt_.width );
         auto surr_poli = get_facet_<strf::surrogate_policy_c>(input.facets);
-        auto strw = wcalc.str_width(src_enc, limit, str_, len_, surr_poli);
-        encode_fill_ = dest_enc.encode_fill_func();
+        auto strw = wcalc.str_width(src_charset, limit, str_, len_, surr_poli);
+        encode_fill_ = dest_charset.encode_fill_func();
         auto fillcount = init_(input.preview, strw);
-        preview_size_(input.preview, dest_enc, fillcount);
+        preview_size_(input.preview, dest_charset, fillcount);
     }
 
     template < typename Preview, typename FPack, typename CvFormat >
@@ -857,15 +857,15 @@ public:
         , afmt_(input.arg.get_alignment_format())
     {
         decltype(auto) wcalc = get_facet_<strf::width_calculator_c>(input.facets);
-        auto src_enc = get_facet_<strf::charset_c<SrcCharT>>(input.facets);
-        auto dest_enc = get_facet_<strf::charset_c<DestCharT>>(input.facets);
+        auto src_charset = get_facet_<strf::charset_c<SrcCharT>>(input.facets);
+        auto dest_charset = get_facet_<strf::charset_c<DestCharT>>(input.facets);
         auto surr_poli = get_facet_<strf::surrogate_policy_c>(input.facets);
         auto res = wcalc.str_width_and_pos
-            ( src_enc, input.arg.precision(), str_, input.arg.value().size(), surr_poli );
+            ( src_charset, input.arg.precision(), str_, input.arg.value().size(), surr_poli );
         len_ = res.pos;
-        encode_fill_ = dest_enc.encode_fill_func();
+        encode_fill_ = dest_charset.encode_fill_func();
         auto fillcount = init_(input.preview, res.width);
-        preview_size_(input.preview, dest_enc, fillcount);
+        preview_size_(input.preview, dest_charset, fillcount);
     }
 
     STRF_HD ~aligned_string_printer();
@@ -893,11 +893,11 @@ private:
 
     template <typename Charset>
     STRF_HD void preview_size_( strf::size_preview<true>& preview
-                              , Charset enc, std::uint16_t fillcount )
+                              , Charset charset, std::uint16_t fillcount )
     {
         preview.add_size(len_);
         if (fillcount > 0) {
-            preview.add_size(fillcount * enc.encoded_char_size(afmt_.fill));
+            preview.add_size(fillcount * charset.encoded_char_size(afmt_.fill));
         }
     }
 
@@ -1024,15 +1024,15 @@ public:
         , inv_seq_notifier_(get_facet_<strf::invalid_seq_notifier_c, SrcCharT>(input.facets))
         , surr_poli_(get_facet_<strf::surrogate_policy_c, SrcCharT>(input.facets))
     {
-        auto src_enc  = strf::detail::get_src_charset(input);
-        auto dest_enc = get_facet_<strf::charset_c<DestCharT>, SrcCharT>(input.facets);
+        auto src_charset  = strf::detail::get_src_charset(input);
+        auto dest_charset = get_facet_<strf::charset_c<DestCharT>, SrcCharT>(input.facets);
         STRF_IF_CONSTEXPR (Preview::width_required) {
             decltype(auto) wcalc = get_facet_<strf::width_calculator_c, SrcCharT>(input.facets);
-            auto w = wcalc.str_width( src_enc, input.preview.remaining_width()
+            auto w = wcalc.str_width( src_charset, input.preview.remaining_width()
                                     , str_, len_, surr_poli_);
             input.preview.subtract_width(w);
         }
-        init_(input.preview, src_enc, dest_enc);
+        init_(input.preview, src_charset, dest_charset);
     }
 
     template <typename Preview, typename FPack, typename CvFormat>
@@ -1044,15 +1044,15 @@ public:
         , inv_seq_notifier_(get_facet_<strf::invalid_seq_notifier_c, SrcCharT>(input.facets))
         , surr_poli_(get_facet_<strf::surrogate_policy_c, SrcCharT>(input.facets))
     {
-        auto src_enc  = strf::detail::get_src_charset(input);
-        auto dest_enc = get_facet_<strf::charset_c<DestCharT>, SrcCharT>(input.facets);
+        auto src_charset  = strf::detail::get_src_charset(input);
+        auto dest_charset = get_facet_<strf::charset_c<DestCharT>, SrcCharT>(input.facets);
         decltype(auto) wcalc = get_facet_<strf::width_calculator_c, SrcCharT>(input.facets);
         auto res = wcalc.str_width_and_pos
-            ( src_enc, input.arg.precision(), str_
+            ( src_charset, input.arg.precision(), str_
             , input.arg.value().size(), surr_poli_ );
         len_ = res.pos;
         input.preview.subtract_width(res.width);
-        init_( input.preview, src_enc
+        init_( input.preview, src_charset
              , get_facet_<strf::charset_c<DestCharT>, SrcCharT>(input.facets));
     }
 
@@ -1063,13 +1063,13 @@ public:
 private:
 
     template < typename Preview, typename SrcCharset, typename DestCharset >
-    STRF_HD void init_(Preview& preview, SrcCharset src_enc, DestCharset dest_enc)
+    STRF_HD void init_(Preview& preview, SrcCharset src_charset, DestCharset dest_charset)
     {
-        decltype(auto) transcoder = find_transcoder(src_enc, dest_enc);
+        decltype(auto) transcoder = find_transcoder(src_charset, dest_charset);
         transcode_ = transcoder.transcode_func();
         if (transcode_ == nullptr) {
-            src_to_u32_ = src_enc.to_u32().transcode_func();
-            u32_to_dest_ = dest_enc.from_u32().transcode_func();
+            src_to_u32_ = src_charset.to_u32().transcode_func();
+            u32_to_dest_ = dest_charset.from_u32().transcode_func();
         }
         STRF_IF_CONSTEXPR (Preview::size_required) {
             strf::transcode_size_f<SrcCharT>  transcode_size
@@ -1079,8 +1079,8 @@ private:
                 s = transcode_size(str_, len_, surr_poli_);
             } else {
                 s = strf::decode_encode_size<SrcCharT>
-                    ( src_enc.to_u32().transcode_func()
-                    , dest_enc.from_u32().transcode_size_func()
+                    ( src_charset.to_u32().transcode_func()
+                    , dest_charset.from_u32().transcode_size_func()
                     , str_, len_, inv_seq_notifier_, surr_poli_ );
             }
             preview.add_size(s);
@@ -1138,14 +1138,14 @@ public:
         , inv_seq_notifier_(get_facet_<strf::invalid_seq_notifier_c, SrcCharT>(input.facets))
         , surr_poli_(get_facet_<strf::surrogate_policy_c, SrcCharT>(input.facets))
     {
-        auto src_enc = strf::detail::get_src_charset(input);
+        auto src_charset = strf::detail::get_src_charset(input);
         decltype(auto) wcalc = get_facet_<strf::width_calculator_c, SrcCharT>(input.facets);
         strf::width_t limit =
             ( Preview::width_required && input.preview.remaining_width() > afmt_.width
             ? input.preview.remaining_width()
             : afmt_.width );
-        auto str_width = wcalc.str_width(src_enc, limit, str_, len_, surr_poli_);
-        init_( input.preview, str_width, src_enc
+        auto str_width = wcalc.str_width(src_charset, limit, str_, len_, surr_poli_);
+        init_( input.preview, str_width, src_charset
              , get_facet_<strf::charset_c<DestCharT>, SrcCharT>(input.facets) );
     }
 
@@ -1160,13 +1160,13 @@ public:
         , inv_seq_notifier_(get_facet_<strf::invalid_seq_notifier_c, SrcCharT>(input.facets))
         , surr_poli_(get_facet_<strf::surrogate_policy_c, SrcCharT>(input.facets))
     {
-        auto src_enc = strf::detail::get_src_charset(input);
+        auto src_charset = strf::detail::get_src_charset(input);
         decltype(auto) wcalc = get_facet_<strf::width_calculator_c, SrcCharT>(input.facets);
         auto res = wcalc.str_width_and_pos
-            ( src_enc, input.arg.precision(), str_
+            ( src_charset, input.arg.precision(), str_
             , input.arg.value().size(), surr_poli_ );
         len_ = res.pos;
-        init_( input.preview, res.width, src_enc
+        init_( input.preview, res.width, src_charset
              , get_facet_<strf::charset_c<DestCharT>, SrcCharT>(input.facets) );
     }
 
@@ -1203,21 +1203,21 @@ private:
     template < typename Preview, typename SrcCharset, typename DestCharset>
     STRF_HD void init_
         ( Preview& preview, strf::width_t str_width
-        , SrcCharset src_enc, DestCharset dest_enc );
+        , SrcCharset src_charset, DestCharset dest_charset );
 };
 
 template <typename SrcCharT, typename DestCharT>
 template <typename Preview, typename SrcCharset, typename DestCharset>
 void STRF_HD aligned_conv_string_printer<SrcCharT, DestCharT>::init_
     ( Preview& preview, strf::width_t str_width
-    , SrcCharset src_enc, DestCharset dest_enc )
+    , SrcCharset src_charset, DestCharset dest_charset )
 {
-    encode_fill_ = dest_enc.encode_fill_func();
-    decltype(auto) transcoder = find_transcoder(src_enc, dest_enc);
+    encode_fill_ = dest_charset.encode_fill_func();
+    decltype(auto) transcoder = find_transcoder(src_charset, dest_charset);
     transcode_ = transcoder.transcode_func();
     if (transcode_ == nullptr) {
-        src_to_u32_ = src_enc.to_u32().transcode_func();
-        u32_to_dest_ = dest_enc.from_u32().transcode_func();
+        src_to_u32_ = src_charset.to_u32().transcode_func();
+        u32_to_dest_ = dest_charset.from_u32().transcode_func();
     }
     std::uint16_t fillcount = 0;
     if (afmt_.width > str_width) {
@@ -1251,12 +1251,12 @@ void STRF_HD aligned_conv_string_printer<SrcCharT, DestCharT>::init_
             s = transcode_size(str_, len_, surr_poli_);
         } else {
             s = strf::decode_encode_size<SrcCharT>
-                ( src_enc.to_u32().transcode_func()
-                , dest_enc.from_u32().transcode_size_func()
+                ( src_charset.to_u32().transcode_func()
+                , dest_charset.from_u32().transcode_size_func()
                 , str_, len_, inv_seq_notifier_, surr_poli_ );
         }
         if (fillcount > 0) {
-            s += dest_enc.encoded_char_size(afmt_.fill) * fillcount;
+            s += dest_charset.encoded_char_size(afmt_.fill) * fillcount;
         }
         preview.add_size(s);
     }
@@ -1384,8 +1384,8 @@ public:
     {
         auto src_charset  = strf::detail::get_src_charset(input);
         using facet_tag = strf::string_input_tag<SrcCharT>;
-        using dest_enc_cat = strf::charset_c<DestCharT>;
-        auto dest_charset = strf::get_facet<dest_enc_cat, facet_tag>(input.facets);
+        using dest_charset_cat = strf::charset_c<DestCharT>;
+        auto dest_charset = strf::get_facet<dest_charset_cat, facet_tag>(input.facets);
         if (src_charset.id() == dest_charset.id()) {
             new ((void*)&pool_) strf::detail::string_printer<SrcCharT, DestCharT>(input);
         } else {
@@ -1437,8 +1437,8 @@ public:
     {
         auto src_charset  = strf::detail::get_src_charset(input);
         using facet_tag = strf::string_input_tag<SrcCharT>;
-        using dest_enc_cat = strf::charset_c<DestCharT>;
-        auto dest_charset = strf::get_facet<dest_enc_cat, facet_tag>(input.facets);
+        using dest_charset_cat = strf::charset_c<DestCharT>;
+        auto dest_charset = strf::get_facet<dest_charset_cat, facet_tag>(input.facets);
 
         if (src_charset.id() == dest_charset.id()) {
             new ((void*)&pool_) strf::detail::aligned_string_printer<SrcCharT, DestCharT> (input);

@@ -16,15 +16,15 @@ public:
     {
     }
 
-    template <typename Enc>
+    template <typename Charset>
     void STRF_HD handle
-        ( const typename Enc::char_type* str
+        ( const typename Charset::char_type* str
         , std::size_t str_len
         , std::size_t err_pos
-        , Enc enc ) noexcept
+        , Charset charset ) noexcept
     {
-        strf::detail::simple_string_view<typename Enc::char_type> s(str, str_len);
-        strf::to(log_) ("\n[", strf::dec(err_pos) > 2, "] ", strf::conv(s, enc));
+        strf::detail::simple_string_view<typename Charset::char_type> s(str, str_len);
+        strf::to(log_) ("\n[", strf::dec(err_pos) > 2, "] ", strf::conv(s, charset));
     }
 
 private:
