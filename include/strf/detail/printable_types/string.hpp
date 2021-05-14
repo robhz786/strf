@@ -202,7 +202,7 @@ public:
     template <typename Charset>
     constexpr STRF_HD auto convert_from_charset(Charset charset) const
     {
-        static_assert( std::is_same<typename Charset::char_type, CharT>::value
+        static_assert( std::is_same<typename Charset::code_unit, CharT>::value
                      , "This charset does not match the string's character type." );
 
         using return_type = strf::fmt_replace
@@ -236,7 +236,7 @@ public:
     template <typename Charset>
     constexpr STRF_HD auto sanitize_from_charset(Charset charset) const
     {
-        static_assert( std::is_same<typename Charset::char_type, CharT>::value
+        static_assert( std::is_same<typename Charset::code_unit, CharT>::value
                      , "This charset does not match the string's character type." );
         using return_type = strf::fmt_replace
             < T
@@ -965,7 +965,7 @@ constexpr STRF_HD decltype(auto) get_src_charset
         , strf::transcoding_formatter_conv_with_charset<SrcCharset>, Preview, FPack>&
       input )
 {
-    static_assert( std::is_same<typename SrcCharset::char_type, SrcCharT>::value
+    static_assert( std::is_same<typename SrcCharset::code_unit, SrcCharT>::value
                  , "This charset is associated with another character type." );
     return input.arg.get_charset();
 }
@@ -978,7 +978,7 @@ constexpr STRF_HD decltype(auto) get_src_charset
         , strf::transcoding_formatter_sani_with_charset<SrcCharset>, Preview, FPack >&
       input )
 {
-    static_assert( std::is_same<typename SrcCharset::char_type, SrcCharT>::value
+    static_assert( std::is_same<typename SrcCharset::code_unit, SrcCharT>::value
                  , "This charset is associated with another character type." );
     return input.arg.get_charset();
 }

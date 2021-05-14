@@ -17,6 +17,7 @@ http://www.boost.org/LICENSE_1_0.txt
 :width_as_fast_u32len_t: <<width_as_fast_u32len,width_as_fast_u32len>>
 :make_width_calculator: <<make_width_calculator,make_width_calculator>>
 :width_t: <<width_t,width_t>>
+:code_unit: <<Charset_code_unit,code_unit>>
 
 == Width Calculation
 
@@ -138,13 +139,13 @@ public:
     template <typename Charset>
     {width_t} <<fast_width_char_width,char_width>>
         ( Charset
-        , typename Charset::char_type ) const noexcept;
+        , typename Charset::{code_unit} ) const noexcept;
 
     template <typename Charset>
     {width_t} <<fast_width_str_width,str_width>>
         ( Charset
         , {width_t} limit
-        , const typename Charset::char_type*
+        , const typename Charset::{code_unit}*
         , std::size_t str_len
         , {surrogate_policy} ) const noexcept;
 
@@ -152,7 +153,7 @@ public:
     constexpr {width_and_pos} <<fast_width_str_width_and_pos,str_width_and_pos>>
         ( Charset
         , {width_t} limit
-        , const typename Charset::char_type*
+        , const typename Charset::{code_unit}*
         , std::size_t str_len
         , {surrogate_policy} ) const noexcept;
 };
@@ -166,7 +167,7 @@ constexpr fast_width_t fast_width {};
 template <typename Charset>
 {width_t} char_width
     ( Charset
-    , typename Charset::char_type ) const noexcept;
+    , typename Charset::{code_unit} ) const noexcept;
 ----
 [horizontal]
 Return value:: `1`
@@ -179,7 +180,7 @@ template <typename Charset>
 constexpr {width_t} str_width
     ( Charset
     , {width_t} limit
-    , const typename Charset::char_type*
+    , const typename Charset::{code_unit}*
     , std::size_t str_len
     , {surrogate_policy} ) const noexcept;
 ----
@@ -196,7 +197,7 @@ template <typename Charset>
 constexpr {width_and_pos} str_width_and_pos
     ( Charset
     , {width_t} limit
-    , const typename Charset::char_type*
+    , const typename Charset::{code_unit}*
     , std::size_t str_len
     , {surrogate_policy} ) const noexcept;
 ----
@@ -231,13 +232,13 @@ public:
     template <typename Charset>
     {width_t} <<width_as_fast_u32len_char_width,char_width>>
         ( Charset cs
-        , typename Charset::char_type ) const noexcept;
+        , typename Charset::{code_unit} ) const noexcept;
 
     template <typename Charset>
     {width_t} <<width_as_fast_u32len_str_width,str_width>>
         ( Charset cs
         , {width_t} limit
-        , const typename Charset::char_type* str
+        , const typename Charset::{code_unit}* str
         , std::size_t str_len
         , {surrogate_policy} ) const noexcept;
 
@@ -245,7 +246,7 @@ public:
     constexpr {width_and_pos} <<width_as_fast_u32len_str_width_and_pos,str_width_and_pos>>
         ( Charset cs
         , {width_t} limit
-        , const typename Charset::char_type* str
+        , const typename Charset::{code_unit}* str
         , std::size_t str_len
         , {surrogate_policy} ) const noexcept;
 };
@@ -259,7 +260,7 @@ constexpr width_as_fast_u32len_t width_as_fast_u32len {};
 template <typename Charset>
 {width_t} char_width
     ( Charset
-    , typename Charset::char_type ) const noexcept;
+    , typename Charset::{code_unit} ) const noexcept;
 ----
 [horizontal]
 Return value::: `1`
@@ -272,7 +273,7 @@ template <typename Charset>
 constexpr {width_t} str_width
     ( Charset cs
     , {width_t} limit
-    , const typename Charset::char_type* str
+    , const typename Charset::{code_unit}* str
     , std::size_t str_len
     , {surrogate_policy} ) const noexcept;
 ----
@@ -289,7 +290,7 @@ template <typename Charset>
 constexpr {width_and_pos} str_width_and_pos
     ( Charset cs
     , {width_t} limit
-    , const typename Charset::char_type* str
+    , const typename Charset::{code_unit}* str
     , std::size_t str_len
     , {surrogate_policy} ) const noexcept;
 ----
@@ -319,13 +320,13 @@ public:
     template <typename Charset>
     {width_t} <<width_as_u32len_char_width,char_width>>
         ( Charset cs
-        , typename Charset::char_type ) const noexcept;
+        , typename Charset::{code_unit} ) const noexcept;
 
     template <typename Charset>
     {width_t} <<width_as_u32len_str_width,str_width>>
         ( Charset cs
         , {width_t} limit
-        , const typename Charset::char_type* str
+        , const typename Charset::{code_unit}* str
         , std::size_t str_len
         , {surrogate_policy} ) const noexcept;
 
@@ -333,7 +334,7 @@ public:
     constexpr {width_and_pos} <<width_as_u32len_str_width_and_pos,str_width_and_pos>>
         ( Charset cs
         , {width_t} limit
-        , const typename Charset::char_type* str
+        , const typename Charset::{code_unit}* str
         , std::size_t str_len
         , {surrogate_policy} ) const noexcept;
 };
@@ -347,7 +348,7 @@ constexpr width_as_u32len_t width_as_u32len = {};
 template <typename Charset>
 {width_t} char_width
     ( Charset
-    , typename Charset::char_type ) const noexcept;
+    , typename Charset::{code_unit} ) const noexcept;
 ----
 [horizontal]
 Return value:: `1`
@@ -360,7 +361,7 @@ template <typename Charset>
 constexpr {width_t} str_width
     ( Charset cs
     , {width_t} limit
-    , const typename Charset::char_type* str
+    , const typename Charset::{code_unit}* str
     , std::size_t str_len
     , {surrogate_policy} ) const noexcept;
 ----
@@ -377,7 +378,7 @@ template <typename Charset>
 constexpr {width_and_pos} str_width_and_pos
     ( Charset cs
     , {width_t} limit
-    , const typename Charset::char_type* str
+    , const typename Charset::{code_unit}* str
     , std::size_t str_len
     , {surrogate_policy} ) const noexcept;
 ----
@@ -407,13 +408,13 @@ public:
     template <typename Charset>
     {width_t} <<width_by_func_char_width,char_width>>
         ( Charset cs
-        , typename Charset::char_type ) const;
+        , typename Charset::{code_unit} ) const;
 
     template <typename Charset>
     {width_t} <<width_by_func_str_width,str_width>>
         ( Charset cs
         , {width_t} limit
-        , const typename Charset::char_type* str
+        , const typename Charset::{code_unit}* str
         , std::size_t str_len
         , {surrogate_policy} ) const;
 
@@ -421,7 +422,7 @@ public:
     constexpr {width_and_pos} <<width_by_func_str_width_and_pos,str_width_and_pos>>
         ( Charset cs
         , {width_t} limit
-        , const typename Charset::char_type* str
+        , const typename Charset::{code_unit}* str
         , std::size_t str_len
         , {surrogate_policy} ) const;
 
@@ -450,7 +451,7 @@ must be {width_t}.
 template <typename Charset>
 {width_t} char_width
     ( Charset cs
-    , typename Charset::char_type ch) const;
+    , typename Charset::{code_unit} ch) const;
 ----
 [horizontal]
 Return value:: `func_(cs.<<Charset_decode_char,decode_char>>(ch))`
@@ -463,7 +464,7 @@ template <typename Charset>
 constexpr {width_t} str_width
     ( Charset cs
     , {width_t} limit
-    , const typename Charset::char_type* str
+    , const typename Charset::{code_unit}* str
     , std::size_t str_len
     , {surrogate_policy}  surr_poli) const;
 ----
@@ -488,7 +489,7 @@ template <typename Charset>
 constexpr {width_and_pos} str_width_and_pos
     ( Charset cs
     , {width_t} limit
-    , const typename Charset::char_type* str
+    , const typename Charset::{code_unit}* str
     , std::size_t str_len
     , {surrogate_policy} surr_poli) const;
 ----

@@ -24,7 +24,7 @@ public:
     template <typename Charset>
     STRF_HD strf::width_t char_width
         ( Charset
-        , typename Charset::char_type ) const noexcept
+        , typename Charset::code_unit ) const noexcept
     {
         return 1;
     }
@@ -33,7 +33,7 @@ public:
     constexpr STRF_HD strf::width_t str_width
         ( Charset
         , strf::width_t limit
-        , const typename Charset::char_type*
+        , const typename Charset::code_unit*
         , std::size_t str_len
         , strf::surrogate_policy ) const noexcept
     {
@@ -47,7 +47,7 @@ public:
     constexpr STRF_HD strf::width_and_pos str_width_and_pos
         ( Charset
         , strf::width_t limit
-        , const typename Charset::char_type*
+        , const typename Charset::code_unit*
         , std::size_t str_len
         , strf::surrogate_policy ) const noexcept
     {
@@ -67,7 +67,7 @@ public:
     template <typename Charset>
     constexpr STRF_HD strf::width_t char_width
         ( Charset
-        , typename Charset::char_type ) const noexcept
+        , typename Charset::code_unit ) const noexcept
     {
         return 1;
     }
@@ -76,7 +76,7 @@ public:
     constexpr STRF_HD strf::width_t str_width
         ( Charset charset
         , strf::width_t limit
-        , const typename Charset::char_type* str
+        , const typename Charset::code_unit* str
         , std::size_t str_len
         , strf::surrogate_policy ) const
     {
@@ -90,7 +90,7 @@ public:
     constexpr STRF_HD strf::width_and_pos str_width_and_pos
         ( Charset charset
         , strf::width_t limit
-        , const typename Charset::char_type* str
+        , const typename Charset::code_unit* str
         , std::size_t str_len
         , strf::surrogate_policy ) const
     {
@@ -110,7 +110,7 @@ public:
     template <typename Charset>
     constexpr STRF_HD strf::width_t char_width
         ( Charset
-        , typename Charset::char_type ) const noexcept
+        , typename Charset::code_unit ) const noexcept
     {
         return 1;
     }
@@ -119,7 +119,7 @@ public:
     constexpr STRF_HD strf::width_t str_width
         ( Charset charset
         , strf::width_t limit
-        , const typename Charset::char_type* str
+        , const typename Charset::code_unit* str
         , std::size_t str_len
         , strf::surrogate_policy surr_poli ) const
     {
@@ -133,7 +133,7 @@ public:
     constexpr STRF_HD strf::width_and_pos str_width_and_pos
         ( Charset charset
         , strf::width_t limit
-        , const typename Charset::char_type* str
+        , const typename Charset::code_unit* str
         , std::size_t str_len
         , strf::surrogate_policy surr_poli ) const
     {
@@ -225,7 +225,7 @@ public:
     template <typename Charset>
     strf::width_t STRF_HD char_width
         ( Charset charset
-        , typename Charset::char_type ch ) const
+        , typename Charset::code_unit ch ) const
     {
         return func_(charset.decode_char(ch));
     }
@@ -234,7 +234,7 @@ public:
     constexpr STRF_HD strf::width_t str_width
         ( Charset charset
         , strf::width_t limit
-        , const typename Charset::char_type* str
+        , const typename Charset::code_unit* str
         , std::size_t str_len
         , strf::surrogate_policy surr_poli ) const
     {
@@ -248,7 +248,7 @@ public:
     constexpr STRF_HD strf::width_and_pos str_width_and_pos
         ( Charset charset
         , strf::width_t limit
-        , const typename Charset::char_type* str
+        , const typename Charset::code_unit* str
         , std::size_t str_len
         , strf::surrogate_policy surr_poli ) const
     {

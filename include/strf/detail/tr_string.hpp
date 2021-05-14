@@ -19,7 +19,7 @@ struct default_tr_error_notifier
 
     template <typename Charset>
     inline STRF_HD void handle
-        ( const typename Charset::char_type* str
+        ( const typename Charset::code_unit* str
         , std::size_t str_len
         , std::size_t err_pos
         , Charset charset ) noexcept
@@ -163,16 +163,16 @@ STRF_HD std::size_t tr_string_size
 
 template <typename Charset, typename ErrHandler>
 STRF_HD void tr_string_write
-    ( const typename Charset::char_type* str
-    , const typename Charset::char_type* str_end
-    , const strf::printer<typename Charset::char_type>* const * args
+    ( const typename Charset::code_unit* str
+    , const typename Charset::code_unit* str_end
+    , const strf::printer<typename Charset::code_unit>* const * args
     , std::size_t num_args
-    , strf::basic_outbuff<typename Charset::char_type>& ob
+    , strf::basic_outbuff<typename Charset::code_unit>& ob
     , Charset charset
     , ErrHandler err_handler )
 {
     std::size_t arg_idx = 0;
-    using char_type = typename Charset::char_type;
+    using char_type = typename Charset::code_unit;
 
     auto it = str;
     std::size_t str_len = str_end - str;
@@ -251,7 +251,7 @@ STRF_HD void tr_string_write
 template <typename Charset, typename ErrHandler>
 class tr_string_printer
 {
-    using char_type = typename Charset::char_type;
+    using char_type = typename Charset::code_unit;
 public:
 
     template <strf::preview_size SizeRequested>

@@ -2384,7 +2384,8 @@ class single_byte_charset
         strf::detail::single_byte_charset_tofrom_wchar<sizeof(wchar_t), CharT, Impl::id>;
 public:
 
-    using char_type = CharT;
+    using code_unit = CharT;
+    using char_type [[deprecated]] = CharT;
 
     static STRF_HD const char* name() noexcept
     {

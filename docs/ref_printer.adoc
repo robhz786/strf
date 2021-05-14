@@ -381,7 +381,7 @@ namespace strf {
 template <typename CharT>
 class printer {
 public:
-    using char_type = CharOut;
+    using char_type = CharT;
     virtual ~printer() {}
     virtual void print_to({basic_outbuff}<CharT>&) const = 0;
 };

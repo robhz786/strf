@@ -540,7 +540,8 @@ class static_charset<CharT, strf::csid_utf8>
 {
 public:
     static_assert(sizeof(CharT) == 1, "Incompatible character type for UTF-8");
-    using char_type = CharT;
+    using code_unit = CharT;
+    using char_type [[deprecated]] = CharT;
 
     static STRF_HD const char* name() noexcept
     {
@@ -692,7 +693,8 @@ class static_charset<CharT, strf::csid_utf16>
 {
 public:
     static_assert(sizeof(CharT) == 2, "Incompatible character type for UTF-16");
-    using char_type = CharT;
+    using code_unit = CharT;
+    using char_type [[deprecated]] = CharT;
 
     static STRF_HD const char* name() noexcept
     {
@@ -837,7 +839,8 @@ class static_charset<CharT, strf::csid_utf32>
 {
 public:
     static_assert(sizeof(CharT) == 4, "Incompatible character type for UTF-32");
-    using char_type = CharT;
+    using code_unit = CharT;
+    using char_type [[deprecated]] = CharT;
 
     static STRF_HD const char* name() noexcept
     {

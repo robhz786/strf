@@ -334,7 +334,8 @@ class dynamic_charset
 {
 public:
 
-    using char_type = CharT;
+    using code_unit = CharT;
+    using char_type [[deprecated]] = CharT;
 
     dynamic_charset(const dynamic_charset& ) = default;
 
@@ -394,7 +395,7 @@ public:
     {
         return data_->encoded_char_size_func(ch);
     }
-    STRF_HD char_type* encode_char(char_type* dest, char32_t ch) const // noexcept
+    STRF_HD code_unit* encode_char(code_unit* dest, char32_t ch) const // noexcept
     {
         return data_->encode_char_func(dest, ch);
     }
@@ -404,12 +405,12 @@ public:
         data_->encode_fill_func(ob, count, ch);
     }
     STRF_HD strf::codepoints_count_result codepoints_fast_count
-        ( const char_type* src, std::size_t src_size, std::size_t max_count ) const
+        ( const code_unit* src, std::size_t src_size, std::size_t max_count ) const
     {
         return data_->codepoints_fast_count_func(src, src_size, max_count);
     }
     STRF_HD strf::codepoints_count_result codepoints_robust_count
-        ( const char_type* src, std::size_t src_size
+        ( const code_unit* src, std::size_t src_size
         , std::size_t max_count, strf::surrogate_policy surr_poli ) const
     {
         return data_->codepoints_robust_count_func(src, src_size, max_count, surr_poli);
@@ -418,7 +419,7 @@ public:
     {
         data_->write_replacement_char_func(ob);
     }
-    STRF_HD char32_t decode_char(char_type ch) const
+    STRF_HD char32_t decode_char(code_unit ch) const
     {
         return data_->decode_char_func(ch);
     }
@@ -563,8 +564,8 @@ namespace detail {
 template <typename SrcCharset, typename DestCharset>
 class has_static_transcoder_impl
 {
-    using src_char_type = typename SrcCharset::char_type;
-    using dest_char_type = typename DestCharset::char_type;
+    using src_char_type = typename SrcCharset::code_unit;
+    using dest_char_type = typename DestCharset::code_unit;
 
     template <strf::charset_id SrcId, strf::charset_id DestId>
     static
@@ -644,8 +645,8 @@ struct transcoder_finder_2<true, true, Transcoder>
     template <typename SrcCharset, typename DestCharset>
     constexpr static STRF_HD Transcoder find(SrcCharset src_cs, DestCharset dest_cs)
     {
-        constexpr strf::tag<typename SrcCharset::char_type> src_tag;
-        constexpr strf::tag<typename DestCharset::char_type> dest_tag;
+        constexpr strf::tag<typename SrcCharset::code_unit> src_tag;
+        constexpr strf::tag<typename DestCharset::code_unit> dest_tag;
         auto t = src_cs.find_transcoder_to(dest_tag, dest_cs.id());
         if (t.transcode_func() != nullptr) {
             return t;
@@ -660,7 +661,7 @@ struct transcoder_finder_2<true, false, Transcoder>
     template <typename SrcCharset, typename DestCharset>
     constexpr static STRF_HD Transcoder find(SrcCharset src_cs, DestCharset dest_cs)
     {
-        constexpr strf::tag<typename DestCharset::char_type> dest_tag;
+        constexpr strf::tag<typename DestCharset::code_unit> dest_tag;
         return src_cs.find_transcoder_to(dest_tag, dest_cs.id());
     }
 };
@@ -671,7 +672,7 @@ struct transcoder_finder_2<false, true, Transcoder>
     template <typename SrcCharset, typename DestCharset>
     constexpr static STRF_HD Transcoder find(SrcCharset src_cs, DestCharset dest_cs)
     {
-        constexpr strf::tag<typename SrcCharset::char_type> src_tag;
+        constexpr strf::tag<typename SrcCharset::code_unit> src_tag;
         return dest_cs.find_transcoder_from(src_tag, src_cs.id());
     }
 };
@@ -781,8 +782,8 @@ constexpr STRF_HD decltype(auto) find_transcoder
 {
     return detail::transcoder_finder
         < strf::detail::has_static_transcoder<SrcCharset, DestCharset>
-        , typename SrcCharset::char_type
-        , typename DestCharset::char_type >
+        , typename SrcCharset::code_unit
+        , typename DestCharset::code_unit >
         ::find(src_cs, dest_cs);
 }
 

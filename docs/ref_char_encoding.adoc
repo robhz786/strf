@@ -37,7 +37,6 @@ http://www.boost.org/LICENSE_1_0.txt
 :decode_char_f: <<charset_function_pointers,decode_char_f>>
 :find_transcoder_f: <<charset_function_pointers,find_transcoder_f>>
 
-
 :static_transcoder: <<static_transcoder,static_transcoder>>
 :static_charset: <<static_charset,static_charset>>
 :static_charset: <<static_charset,static_charset>>
@@ -53,7 +52,7 @@ http://www.boost.org/LICENSE_1_0.txt
 
 :Transcoder: <<Transcoder,Transcoder>>
 :Charset: <<Charset,Charset>>
-
+:code_unit: <<Charset_code_unit,code_unit>>
 :charset_c: <<charset_c,charset_c>>
 
 :utf_t: <<utf_t,utf_t>>
@@ -449,11 +448,11 @@ The following must hold:
 * `{facet_category}<X>` must be `{charset_c}<CharT>`
 * `X` satisfies the following syntax and semantics:
 
-[[Charset_char_type]]
+[[Charset_code_unit]]
 ====
 [source,cpp]
 ----
-X::char_type
+X::code_unit
 ----
 Type alias to `CharT`
 ====
@@ -1114,7 +1113,7 @@ template <class CharT>
 class dynamic_charset {
 public:
 
-    using char_type = CharT;
+    using code_unit = CharT;
 
     dynamic_charset(const dynamic_charset& other) = default;
 
@@ -1141,22 +1140,22 @@ public:
 
     constexpr std::size_t encoded_char_size(char32_t ch) const; // noexcept
 
-    char_type_* encode_char(char_type_* dest, char32_t ch) const; // noexcept
+    code_unit* encode_char(code_unit* dest, char32_t ch) const; // noexcept
 
     void encode_fill
         ( {basic_outbuff}<CharT>& ob, std::size_t count, char32_t ch ) const;
 
     std::size_t codepoints_fast_count
-        ( const char_type_* src, std::size_t src_size
+        ( const code_unit* src, std::size_t src_size
         , std::size_t max_count ) const;
 
     std::size_t codepoints_robust_count
-        ( const char_type_* src, std::size_t src_size
+        ( const code_unit* src, std::size_t src_size
         , std::size_t max_count, {surrogate_policy} surr_poli ) const;
 
     void write_replacement_char({basic_outbuff}<CharT>& ob) const;
 
-    char32_t decode_char(char_type_ ch) const;
+    char32_t decode_char(code_unit ch) const;
 
     {encode_char_f}<CharT> encode_char_func() const noexcept;
 
@@ -1302,7 +1301,7 @@ Effect:: Calls and returns `this\->data\->encoded_char_size_func(ch)`.
 ====
 [source,cpp,subs=normal]
 ----
-char_type_* encode_char(char_type_* dest, char32_t ch) const; // noexcept
+code_unit* encode_char(code_unit* dest, char32_t ch) const; // noexcept
 ----
 [horizontal]
 Effect:: Calls and returns `this\->data\->encoded_char_func(ch)`.
@@ -1321,7 +1320,7 @@ Effect:: Calls and returns
 [source,cpp,subs=normal]
 ----
 std::size_t codepoints_fast_count
-    ( const char_type_* src, std::size_t src_size
+    ( const code_unit* src, std::size_t src_size
     , std::size_t max_count ) const;
 ----
 [horizontal]
@@ -1331,7 +1330,7 @@ Effect:: Calls and returns `this\->data\->codepoints_fast_count_func(src, src_si
 [source,cpp,subs=normal]
 ----
 std::size_t codepoints_robust_count
-    ( const char_type_* src, std::size_t src_size
+    ( const code_unit* src, std::size_t src_size
     , std::size_t max_count, {surrogate_policy} surr_poli ) const;
 ----
 [horizontal]
@@ -1349,7 +1348,7 @@ Effect:: Calls `this\->data\->write_replacement_char_func(ob)`.
 ====
 [source,cpp,subs=normal]
 ----
-char32_t decode_char(char_type_ ch) const;
+char32_t decode_char(code_unit ch) const;
 ----
 [horizontal]
 Effect:: Calls and returns `this\->data\->decode_char_func(ch)`.
@@ -1500,20 +1499,20 @@ Return value::
   `DestCharset` is ( or derives from ) `{static_charset}<DestID>`;
 * otherwise, returns `src.<<Charset_sanitizer,sanitizer>>()` if
   `src.<<Charset_id,id>>()` is equal to `dest.<<Charset_id,id>>()`
-  and `SrcCharset::char_type` is the same type as `DestCharset::char_type`;
+  and `SrcCharset::{code_unit}` is the same type as `DestCharset::{code_unit}`;
 * otherwise, returns `src.<<Charset_to_u32,to_u32>>()`
-  if `DestCharset::char_type` is `char32_t`;
+  if `DestCharset::{code_unit}` is `char32_t`;
 * otherwise, returns `dest.<<Charset_from_u32,from_u32>>()`
-  if `SrcCharset::char_type` is `char32_t`;
+  if `SrcCharset::{code_unit}` is `char32_t`;
 * otherwise, returns
   `src.<<Charset_find_transcoder_to,find_transcoder_to>>(dest_ch, dest.id())`
   if such expression
   is well-formed and returns a <<Transcoder_null,non null transcoder>>
-  , where `dest_ch` is `{tag}<DestCharset::char_type>{}`
+  , where `dest_ch` is `{tag}<DestCharset::{code_unit}>{}`
 * otherwise, returns
   `dest.<<Charset_find_transcoder_from,find_transcoder_from>>(src_ch, src.id())`
-   if such expression is well-formed, where `src_sh` is `{tag}<SrcCharset::char_type>{}`
-* otherwise returns `{dynamic_transcoder}<SrcCharset::char_type, DestCharset::char_type>{}`.
+   if such expression is well-formed, where `src_sh` is `{tag}<SrcCharset::{code_unit}>{}`
+* otherwise returns `{dynamic_transcoder}<SrcCharset::{code_unit}, DestCharset::{code_unit}>{}`.
 
 NOTE: When `find_transcoder` returns an <<Transcoder_null,null transcoder>>
 , you still can use `{decode_encode}` and `decode_encode_size`.
