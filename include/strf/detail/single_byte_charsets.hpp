@@ -5,7 +5,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <strf/detail/facets/char_encoding.hpp>
+#include <strf/detail/facets/charset.hpp>
 
 // References
 // https://www.compart.com/en/unicode/charsets/

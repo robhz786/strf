@@ -28,7 +28,7 @@ set(sources_freestanding
   numpunct.cpp
   range_writer.cpp
   reserve.cpp
-  single_byte_encodings.cpp
+  single_byte_charsets.cpp
   tr_string.cpp
   utf_to_utf.cpp
   width_calculator.cpp
@@ -160,7 +160,7 @@ if (${STRF_CUDA_SUPPORT})
   define_strf_cuda_test(numpunct)
   define_strf_cuda_test(range_writer)
   define_strf_cuda_test(reserve)
-  define_strf_cuda_test(single_byte_encodings)
+  define_strf_cuda_test(single_byte_charsets)
   define_strf_cuda_test(tr_string)
   define_strf_cuda_test(utf_to_utf)
   define_strf_cuda_test(width_calculator)

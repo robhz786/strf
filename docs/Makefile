@@ -54,7 +54,7 @@ out/strf_hpp.html : strf_hpp.adoc \
                     ref_printable_types.adoc \
                     ref_destination.adoc \
                     ref_tr-string.adoc \
-                    ref_char_encoding.adoc \
+                    ref_charset.adoc \
                     ref_width.adoc \
                     ref_numpunct.adoc \
                     ref_misc.adoc \

@@ -48,7 +48,7 @@ void test_reserve();
 void test_width_t();
 void test_width_calculator();
 void test_utf();
-void test_single_byte_encodings();
+void test_single_byte_charsets();
 void test_cstr_writer();
 void test_locale();
 void test_cfile_writer();
@@ -93,7 +93,7 @@ int main() {
     test_numpunct();
     test_printable_overriding();
     test_reserve();
-    test_single_byte_encodings();
+    test_single_byte_charsets();
     test_tr_string();
     test_utf();
     test_width_calculator();

@@ -1346,7 +1346,7 @@ inline STRF_HD void test_undefined_bytes
         (strf::sani(undefined_bytes, charset));
 }
 
-void STRF_TEST_FUNC test_single_byte_encodings()
+void STRF_TEST_FUNC test_single_byte_charsets()
 {
     general_tests(strf::ascii<char>, decoded_0_to_xff_ascii());
     general_tests(strf::iso_8859_1<char>, decoded_0_to_xff_iso_8859_1());
@@ -1466,5 +1466,5 @@ void STRF_TEST_FUNC test_single_byte_encodings()
    }
 }
 
-REGISTER_STRF_TEST(test_single_byte_encodings);
+REGISTER_STRF_TEST(test_single_byte_charsets);
 

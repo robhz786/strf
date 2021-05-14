@@ -7,7 +7,7 @@
 
 #include <strf/outbuff_functions.hpp>
 #include <strf/printer.hpp>
-#include <strf/detail/facets/char_encoding.hpp>
+#include <strf/detail/facets/charset.hpp>
 
 namespace strf {
 

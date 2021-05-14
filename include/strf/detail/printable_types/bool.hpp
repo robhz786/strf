@@ -7,7 +7,7 @@
 
 #include <strf/facets_pack.hpp>
 #include <strf/printer.hpp>
-#include <strf/detail/facets/char_encoding.hpp>
+#include <strf/detail/facets/charset.hpp>
 #include <strf/detail/facets/lettercase.hpp>
 
 namespace strf {
