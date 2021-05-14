@@ -124,11 +124,11 @@ static STRF_TEST_FUNC void STRF_TEST_FUNC general_tests
         TEST_EQ(::encoding_error_handler_calls, fffd_count);
     }
 
-    {   // converting individual characters to UTF-32 ( cover decode_char )
+    {   // converting individual characters to UTF-32 ( cover decode_unit )
 
         for(unsigned i = 0; i < 0x100; ++i) {
             char ch = static_cast<char>(i);
-            char32_t ch32 = charset.decode_char(ch);
+            char32_t ch32 = charset.decode_unit(ch);
             TEST_SCOPE_DESCRIPTION("i=", *strf::hex(i));
             TEST_EQ((unsigned)ch32, (unsigned)decoded_0_to_0xff[i]);
         }

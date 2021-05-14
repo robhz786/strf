@@ -227,7 +227,7 @@ public:
         ( Charset charset
         , typename Charset::code_unit ch ) const
     {
-        return func_(charset.decode_char(ch));
+        return func_(charset.decode_unit(ch));
     }
 
     template <typename Charset>

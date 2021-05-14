@@ -14,8 +14,6 @@ http://www.boost.org/LICENSE_1_0.txt
 :icons: font
 
 :min_space_after_recycle: <<outbuff_hpp#min_space_after_recycle,min_space_after_recycle>>
-:underlying_outbuff: <<outbuff_hpp#underlying_outbuff,underlying_outbuff>>
-:underlying_char_type: <<outbuff_hpp#underlying_char_type,underlying_char_type>>
 :basic_outbuff: <<outbuff_hpp#basic_outbuff,basic_outbuff>>
 :basic_streambuf_writer: <<basic_streambuf_writer,basic_streambuf_writer>>
 

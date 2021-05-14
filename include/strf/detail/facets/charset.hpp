@@ -226,7 +226,7 @@ using codepoints_robust_count_f = strf::codepoints_count_result (*)
     , strf::surrogate_policy surr_poli );
 
 template <typename CharT>
-using decode_char_f = char32_t (*)
+using decode_unit_f = char32_t (*)
     ( CharT );
 
 template <typename SrcCharT, typename DestCharT>
@@ -303,7 +303,7 @@ struct dynamic_charset_data
     strf::codepoints_fast_count_f<CharT> codepoints_fast_count_func;
     strf::codepoints_robust_count_f<CharT> codepoints_robust_count_func;
     strf::write_replacement_char_f<CharT> write_replacement_char_func;
-    strf::decode_char_f<CharT> decode_char_func;
+    strf::decode_unit_f<CharT> decode_unit_func;
 
     strf::dynamic_transcoder<CharT, CharT> sanitizer;
     strf::dynamic_transcoder<char32_t, CharT> from_u32;
@@ -419,9 +419,9 @@ public:
     {
         data_->write_replacement_char_func(ob);
     }
-    STRF_HD char32_t decode_char(code_unit ch) const
+    STRF_HD char32_t decode_unit(code_unit ch) const
     {
-        return data_->decode_char_func(ch);
+        return data_->decode_unit_func(ch);
     }
     STRF_HD strf::encode_char_f<CharT> encode_char_func() const noexcept
     {

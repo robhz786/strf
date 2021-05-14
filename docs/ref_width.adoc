@@ -454,7 +454,7 @@ template <typename Charset>
     , typename Charset::{code_unit} ch) const;
 ----
 [horizontal]
-Return value:: `func_(cs.<<Charset_decode_char,decode_char>>(ch))`
+Return value:: `func_(cs.<<Charset_decode_unit,decode_unit>>(ch))`
 ====
 [[width_by_func_str_width]]
 ====

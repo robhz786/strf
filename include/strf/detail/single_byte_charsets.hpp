@@ -2441,7 +2441,7 @@ public:
         }
         return {src_size, src_size};
     }
-    static STRF_HD char32_t decode_char(CharT ch)
+    static STRF_HD char32_t decode_unit(CharT ch)
     {
         return Impl::decode(static_cast<std::uint8_t>(ch));
     }
@@ -2523,7 +2523,7 @@ public:
         data.codepoints_fast_count_func = codepoints_fast_count;
         data.codepoints_robust_count_func = codepoints_robust_count;
         data.write_replacement_char_func = write_replacement_char;
-        data.decode_char_func = decode_char;
+        data.decode_unit_func = decode_unit;
 
         data.sanitizer = strf::dynamic_transcoder<CharT, CharT>{sanitizer()};
         data.from_u32 = strf::dynamic_transcoder<char32_t, CharT>{from_u32()};
@@ -2553,7 +2553,7 @@ public:
         static const strf::dynamic_charset_data<CharT> data = {
             name(), id(), replacement_char(), 1, validate, encoded_char_size,
             encode_char, encode_fill, codepoints_fast_count,
-            codepoints_robust_count, write_replacement_char, decode_char,
+            codepoints_robust_count, write_replacement_char, decode_unit,
             strf::dynamic_transcoder<CharT, CharT>{sanitizer()},
             strf::dynamic_transcoder<char32_t, CharT>{from_u32()},
             strf::dynamic_transcoder<CharT, char32_t>{to_u32()},

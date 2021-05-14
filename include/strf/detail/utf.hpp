@@ -590,7 +590,7 @@ public:
     static STRF_HD void write_replacement_char
         ( strf::basic_outbuff<CharT>& );
 
-    static STRF_HD char32_t decode_char(CharT ch) noexcept
+    static STRF_HD char32_t decode_unit(CharT ch) noexcept
     {
         STRF_IF_LIKELY (ch < 0x80)
             return static_cast<char32_t>(ch);
@@ -662,7 +662,7 @@ public:
         static const strf::dynamic_charset_data<CharT> data = {
             name(), id(), replacement_char(), 3, validate, encoded_char_size,
             encode_char, encode_fill, codepoints_fast_count,
-            codepoints_robust_count, write_replacement_char, decode_char,
+            codepoints_robust_count, write_replacement_char, decode_unit,
             strf::dynamic_transcoder<CharT,    CharT>{sanitizer()},
             strf::dynamic_transcoder<char32_t, CharT>{from_u32()},
             strf::dynamic_transcoder<CharT, char32_t>{to_u32()},
@@ -738,7 +738,7 @@ public:
     static STRF_HD void write_replacement_char
         ( strf::basic_outbuff<CharT>& );
 
-    static STRF_HD char32_t decode_char(CharT ch) noexcept
+    static STRF_HD char32_t decode_unit(CharT ch) noexcept
     {
         return ch;
     }
@@ -808,7 +808,7 @@ public:
         static const strf::dynamic_charset_data<CharT> data = {
             name(), id(), replacement_char(), 1, validate, encoded_char_size,
             encode_char, encode_fill, codepoints_fast_count,
-            codepoints_robust_count, write_replacement_char, decode_char,
+            codepoints_robust_count, write_replacement_char, decode_unit,
             strf::dynamic_transcoder<CharT,    CharT>{sanitizer()},
             strf::dynamic_transcoder<char32_t, CharT>{from_u32()},
             strf::dynamic_transcoder<CharT, char32_t>{to_u32()},
@@ -909,7 +909,7 @@ public:
     static STRF_HD void write_replacement_char
         ( strf::basic_outbuff<CharT>& );
 
-    static STRF_HD char32_t decode_char(CharT ch) noexcept
+    static STRF_HD char32_t decode_unit(CharT ch) noexcept
     {
         return ch;
     }
@@ -979,7 +979,7 @@ public:
         static const strf::dynamic_charset_data<CharT> data = {
             name(), id(), replacement_char(), 1, validate, encoded_char_size,
             encode_char, encode_fill, codepoints_fast_count,
-            codepoints_robust_count, write_replacement_char, decode_char,
+            codepoints_robust_count, write_replacement_char, decode_unit,
             strf::dynamic_transcoder<CharT,    CharT>{sanitizer()},
             strf::dynamic_transcoder<char32_t, CharT>{from_u32()},
             strf::dynamic_transcoder<CharT, char32_t>{to_u32()},
