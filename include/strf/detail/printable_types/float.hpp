@@ -883,7 +883,7 @@ struct float_printing
 
     template <typename CharT, typename Preview, typename FPack>
     STRF_HD constexpr static auto make_printer_input
-        ( Preview& preview, const FPack& fp, FloatT x ) noexcept
+        ( strf::tag<CharT>, Preview& preview, const FPack& fp, FloatT x ) noexcept
         -> strf::detail::fast_double_printer_input<CharT, Preview, FloatT>
     {
         return {preview, fp, x};
@@ -892,7 +892,8 @@ struct float_printing
     template < typename CharT, typename Preview, typename FPack
              , typename FloatFormatter, bool HasAlignment >
     STRF_HD constexpr static auto make_printer_input
-        ( Preview& preview
+        ( strf::tag<CharT>
+        , Preview& preview
         , const FPack& fp
         , strf::detail::float_with_formatters
             < FloatT, FloatFormatter, HasAlignment > x ) noexcept

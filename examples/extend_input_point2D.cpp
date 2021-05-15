@@ -25,7 +25,8 @@ struct print_traits<xxx::point2D<FloatT>> {
 
     template <typename CharT, typename Preview, typename FPack, typename... T>
     constexpr static auto make_printer_input
-        ( Preview& preview
+        ( strf::tag<CharT>
+        , Preview& preview
         , const FPack& fp
         , strf::value_with_formatters<T...> arg ) noexcept
     {

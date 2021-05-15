@@ -113,9 +113,10 @@ struct print_traits<std::complex<FloatT>> {
 
     template <typename CharT, typename Preview, typename FPack>
     static auto make_printer_input
-        ( Preview& preview // <1>
-        , const FPack& fp  // <2>
-        , std::complex<FloatT> arg )// <3>
+        ( strf::tag<CharT> // <1>
+        , Preview& preview // <2>
+        , const FPack& fp  // <3>
+        , std::complex<FloatT> arg )// <4>
     {
         auto arg2 =  strf::join
             ( static_cast<CharT>('('), arg.real()
@@ -128,12 +129,16 @@ struct print_traits<std::complex<FloatT>> {
 
 } // namespace strf
 ----
-<1> `Preview` is expected to be an instance of the `{print_preview}`
+<1> This parameter aims to enable this function template to deduce `CharT`.
+    In case you don't to implement a generic `make_printer_input` supporting all
+    character types, you can just use `tag<char>` ( or whatever character type
+    you want to support ).
+<2> `Preview` is expected to be an instance of the `{print_preview}`
 class template ( but you only really need care to about it 
 when <<creating_printer,creating a printer class>> )
-<2> `FPack` is expected to be an instance of the `{facets_pack}` class template.
+<3> `FPack` is expected to be an instance of the `{facets_pack}` class template.
 This arguments contains the facet objects.
-<3> The third argument passed to `make_printer_input` is the value to be printed.
+<4> The last argument passed to `make_printer_input` is the value to be printed.
 
 What above code basically does is to tell the library to handle
 `std::complex` values in the same way that it would handle the `{join}` object created above ( `arg2` ).
@@ -146,16 +151,16 @@ That's because the expression:
 is equivalent to:
 [source,cpp,subs=normal]
 ----
-__foo_print_traits__::template make_printer_input<CharT>(__preview__, __fp__, __foo__)
-----
-, where `__foo_print_traits__` is the return type of `tag_invoke(strf::print_traits_tag{}, __foo__)`
-
-Well, actually, sometimes it is instead equivalent to:
-[source,cpp,subs=normal]
-----
-__overrider__.template make_printer_input<CharT>(__preview__, __fp__, __foo__)
+__overrider__.make_printer_input({tag}<CharT>{}, __preview__, __fp__, __foo__)
 ----
 , where `__overrider__` is a facet object of the `{print_override_c}` category.
+If it is the default facet, then such expression is equivalent to:
+[source,cpp,subs=normal]
+----
+__foo_print_traits__::make_printer_input({tag}<CharT>{}, __preview__, __fp__, __foo__)
+----
+where `__foo_print_traits__` is the return type of
+`tag_invoke(strf::print_traits_tag{}, __foo__)`
 
 WARNING: `make_printer_input` function does not actually print the value,
 it just returns an object that the library knows how to print.
@@ -163,19 +168,18 @@ Make sure that this returned object does not contain any dangling reference.
 For example, if the `join` in the above example contained a
 reference to any local object, we would get undefined behaviour.
 
-
-Anyway, sometimes it is not possible to use this tactic,
-__i.e.__ to print a value by converting it to another that is already printable.
+Anyway, in sometimes it is not possible to use this tactic,
+__i.e.__ to simply convert the value to another type that is already printable.
 A <<creating_printer,further section>> explains how to deal with such cases.
 
 ////
-The `Preview` template paramenter is always an instance of the `preview`
+The `Preview` template parameter is always an instance of the `preview`
 value that is an already printable.
 ////
 
 == Creating and using facets [[creating_facet]]
 
-Sometimes you may want to create a new facet category
+In some cases you may want to create a new facet category
 for the new printable type. For example, suppose
 we want to turn the following enumeration into a facet
 that enables the user to select which form the complex numbers
@@ -232,7 +236,8 @@ struct print_traits<std::complex<FloatT>> {
 
     template <typename CharT, typename Preview, typename FPack>
     static auto make_printer_input
-        ( Preview& preview
+        ( strf::tag<CharT>
+        , Preview& preview
         , const FPack& fp
         , std::complex<FloatT> arg)
     {
@@ -272,7 +277,7 @@ complex_form form = strf::{get_facet}<complex_form_c, std::complex<FloatT>>(fp);
 ----
 
 `get_facet` is used to extract a facet object from a `{facets_pack}` object.
-The first template paramenter is the facet category.
+The first template parameter is the facet category.
 The second is the usually printable type and it only has effect when there is
 any <<tutorial#constrained_facets,constrained facets>> of the given category
 in the the `{facets_pack}` object. The effect is that
@@ -400,7 +405,8 @@ are all well-formed, and the type of `strf::fmt(x)` is
 are the types you used in to define the `formatters` type alias.
 
 Though well-formed, they are still not printable.
-To make them printable we to create a new `make_printer_input` member function:
+To make them printable,  we need to overload `make_printer_input`
+member function template:
 
 [source,cpp,subs=normal]
 ----
@@ -413,7 +419,8 @@ struct print_traits<std::complex<FloatT>> {
 
     template <typename CharT, typename Preview, typename FPack>
     static auto make_printer_input
-        ( Preview& preview
+        ( strf::tag<CharT>
+        , Preview& preview
         , const FPack& fp
         , std::complex<FloatT> arg)
     {
@@ -423,7 +430,8 @@ struct print_traits<std::complex<FloatT>> {
 
     template < typename CharT, typename Preview, typename FPack, typename\... T>
     static auto make_printer_input
-        ( Preview& preview
+        ( strf::tag<CharT>
+        , Preview& preview
         , const FPack& fp
         , strf::{value_with_formatters}<T\...> arg )
     {
@@ -468,13 +476,13 @@ without formatting ), but we could also remove it. Because when the expression
 below is not well-formed:
 [source,cpp,subs=normal]
 ----
-__PrintTraits__::template make_printer_input<CharT>(preview, fp, x)
+__PrintTraits__::make_printer_input({tag}<CharT>{}, preview, fp, x)
 ----
 , and the type of `x` is not an instance `{value_with_formatters}`, then
 the library invokes the following instead:
 [source,cpp,subs=normal]
 ----
-__PrintTraits__::template make_printer_input<CharT>(preview, fp, strf::fmt(x))
+__PrintTraits__::make_printer_input({tag}<CharT>{}, preview, fp, strf::fmt(x))
 ----
 
 Anyway, let's examine the new function. You can see there are few changes from
@@ -514,9 +522,9 @@ In a <<creating_facet,previous section>> we created a facet
 that specifies the complex number form (vector, algebric or polar).
 Now, let's suppose we want create format functions for the same purpose.
 
-This means we need to create a __{Formatter}__ class, which we can
-name as `std_complex_formatter`.
-It is required to have a member template type named `fn` where
+This means we need to create a __{Formatter}__ class, which we will name
+here as `std_complex_formatter`.
+It is required to have a member type template named `fn` where
 the format functions are defined. The template parameter is
 used in the return type of the format functions:
 
@@ -620,7 +628,8 @@ struct print_traits<std::complex<FloatT>> {
 
     template <typename CharT, typename Preview, typename FPack>
     static auto make_printer_input
-        ( Preview& preview
+        ( strf::tag<CharT>
+        , Preview& preview
         , const FPack& fp
         , std::complex<FloatT> arg)
     {
@@ -630,7 +639,8 @@ struct print_traits<std::complex<FloatT>> {
 
     template < typename CharT, typename Preview, typename FPack, typename\... T>
     static auto make_printer_input
-        ( Preview& preview
+        ( strf::tag<CharT>
+        , Preview& preview
         , const FPack& fp
         , strf::{value_with_formatters}<T\...> arg )
     {
@@ -719,7 +729,7 @@ with (copied from) the correponding base class subobject of this object,
 except the `std_complex_formatter::fn<T>` one,
 which is initialized instead with `complex_form_fmt::polar`.
 This is why we also need to add that constructor that has
-a `complex_form_fmt` paramenter. The `value_with_formtters` ' constructor
+a `complex_form_fmt` parameter. The `value_with_formtters` constructor
 used above is documented <<strf_hpp#value_with_formatters_vwf2_t_i,here>>.
 
 And its done! I think is a pretty complete example of how to make
@@ -752,7 +762,8 @@ struct print_traits<std::complex<FloatT>>
     // make_print_input that handles unformatted values
     template <typename CharT, typename Preview, typename FPack>
     static auto make_printer_input
-        ( Preview& preview
+        ( strf::tag<CharT>
+        , Preview& preview
         , const FPack& fp
         , std::complex<FloatT> arg )
         \-> strf::{usual_printer_input}
@@ -846,7 +857,7 @@ inline std_complex_printer<CharT, FloatT>::std_complex_printer
 
 The member variables `charset_`, `numpunct_` and `lettercase_` are facet objects.
 The reason why I did not instead just store a copy of `x.facets` as member
-variable is because its type would need to be another template paramenter,
+variable is because its type would need to be another template parameter,
 one that would change often &#x2014; every time the facets are different &#x2014;
 thus causing some code bloat.
 
@@ -854,6 +865,7 @@ Usually the second template argument in `{get_facet}` is the input type,
 which here is `std::comple<FloatT>`. However, I decided that
 it makes more sense to use `FloatT` for the numeric punctuation
 and letter case. There is no strict rule for that.
+
 The type you choose to extract the charset facet object makes
 no difference since charset facets are not constrainable.
 
@@ -887,7 +899,7 @@ static_assert(! preview_type::<<strf_hpp#print_preview,size_required>>);
 ----
 That would prevent your printable type to work when the feature
 `<<tutorial#syntax,reserve_calc>>` is used,
-which may not be a problem to you.
+which may not be a problem in many cases.
 
 When the second template argument of this
 `print_preview` is `preview_width::yes`, then we must inform
@@ -923,6 +935,11 @@ template <typename CharT, typename FloatT>
 template <typename Preview, typename WidthCalc>
 void std_complex_printer<CharT, FloatT>::preview_(Preview& pp, const WidthCalc& wcalc) const
 {
+    // preview the size and/or width of the floating-point values:
+    auto facets = strf::pack(lettercase_, numpunct_, charset_);
+    strf::preview<CharT>(pp, facets, coordinates_.first, coordinates_.second);
+
+    // preview the other characters:
     switch (form_) {
         case complex_form::algebric:
             pp.subtract_width(7);
@@ -940,13 +957,9 @@ void std_complex_printer<CharT, FloatT>::preview_(Preview& pp, const WidthCalc& 
                 pp.subtract_width(wcalc.char_width(strf::utf32<char32_t>, anglechar_));
                 pp.subtract_width(1);
             }
-
             pp.add_size(charset_.encoded_char_size(anglechar_));
             pp.add_size(1);
     }
-
-    auto facets = strf::pack(lettercase_, numpunct_, charset_);
-    strf::preview<CharT>(pp, facets, coordinates_.first, coordinates_.second);
 }
 ----
 

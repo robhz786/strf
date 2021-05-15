@@ -225,7 +225,8 @@ struct print_traits<xxx::ipv6address> {
 
     template <typename CharT, typename Preview, typename FPack, typename... T>
     static auto make_printer_input
-        ( Preview& preview
+        ( strf::tag<CharT>
+        , Preview& preview
         , const FPack& fp
         , strf::value_with_formatters<T...> arg )
         -> strf::usual_printer_input

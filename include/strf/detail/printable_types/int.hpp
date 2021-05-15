@@ -1150,7 +1150,10 @@ public:
 
     template <typename CharT, typename Preview, typename FPack>
     constexpr STRF_HD static auto make_printer_input
-        ( Preview& preview, const FPack& facets,  IntT x ) noexcept
+        ( strf::tag<CharT>
+        , Preview& preview
+        , const FPack& facets
+        , IntT x ) noexcept
         -> strf::detail::default_int_printer_input<CharT, Preview, IntT>
     {
         return {preview, facets, x};
@@ -1159,7 +1162,8 @@ public:
     template < typename CharT, typename Preview, typename FPack
              , typename PTraits, int Base, bool HasAlignment >
     constexpr STRF_HD static auto make_printer_input
-        ( Preview& preview
+        ( strf::tag<CharT>
+        , Preview& preview
         , const FPack& facets
         , vwf_nopp_<PTraits, Base, HasAlignment> x ) noexcept
         -> strf::usual_printer_input
@@ -1175,7 +1179,8 @@ public:
     template < typename CharT, typename Preview, typename FPack
              , typename PTraits, int Base, bool Punctuate, bool HasAlignment >
     constexpr STRF_HD static auto make_printer_input
-        ( Preview& preview
+        ( strf::tag<CharT>
+        , Preview& preview
         , const FPack& facets
         , vwf_bp_<PTraits, Base, Punctuate, HasAlignment> x )
         -> strf::usual_printer_input
@@ -1188,7 +1193,8 @@ public:
     template < typename CharT, typename Preview, typename FPack
              , typename PTraits, bool HasAlignment>
     constexpr STRF_HD static auto make_printer_input
-        ( Preview& preview
+        ( strf::tag<CharT>
+        , Preview& preview
         , const FPack& facets
         , vwf_<PTraits, HasAlignment> x )
         -> std::conditional_t
@@ -1204,7 +1210,8 @@ public:
     template < typename CharT, typename Preview, typename FPack
              , typename PTraits, bool HasAlignment>
     constexpr STRF_HD static auto make_printer_input
-        ( Preview& preview
+        ( strf::tag<CharT>
+        , Preview& preview
         , const FPack& facets
         , vwf_full_dynamic_<PTraits, HasAlignment> x )
         -> strf::usual_printer_input
@@ -1289,7 +1296,10 @@ struct voidptr_printing
 
     template <typename CharT, typename Preview, typename FPack>
     constexpr STRF_HD static auto make_printer_input
-        ( Preview& preview, const FPack& facets, const void* x ) noexcept
+        ( strf::tag<CharT>
+        , Preview& preview
+        , const FPack& facets
+        , const void* x ) noexcept
     {
         auto f1 = strf::get_facet<strf::numpunct_c<16>, const void*>(facets);
         auto f2 = strf::get_facet<strf::lettercase_c, const void*>(facets);
@@ -1301,7 +1311,8 @@ struct voidptr_printing
 
     template <typename CharT, typename Preview, typename FPack, typename... T>
     constexpr STRF_HD static auto make_printer_input
-        ( Preview& preview
+        ( strf::tag<CharT>
+        , Preview& preview
         , const FPack& facets
         , strf::value_with_formatters<T...> x ) noexcept
     {

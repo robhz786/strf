@@ -433,7 +433,8 @@ struct print_traits<std::complex<FloatT>>
 
     template <typename CharT, typename Preview, typename FPack>
     static auto make_printer_input
-        ( Preview& preview
+        ( strf::tag<CharT>
+        , Preview& preview
         , const FPack& fp
         , std::complex<FloatT> arg)
         -> strf::usual_printer_input
@@ -445,7 +446,8 @@ struct print_traits<std::complex<FloatT>>
 
     template < typename CharT, typename Preview, typename FPack, typename... T >
     static auto make_printer_input
-        ( Preview& preview
+        ( strf::tag<CharT>
+        , Preview& preview
         , const FPack& fp
         , strf::value_with_formatters<T...> arg )
         -> strf::usual_printer_input
@@ -489,6 +491,8 @@ strf::outbuff& test_outbuff()
 
 void tests()
 {
+    // Using strf internal test framework ( defined in tests/test_utils.hpp )
+
     std::complex<double> x{3000, 4000};
 
     auto punct = strf::numpunct<10>(3).thousands_sep(0x2D9).decimal_point(0x130);

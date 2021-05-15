@@ -27,7 +27,10 @@ struct char_printing
 
     template <typename DestCharT, typename Preview, typename FPack>
     constexpr STRF_HD static auto make_printer_input
-        ( Preview& preview, const FPack& fp, SrcCharT x ) noexcept
+        ( strf::tag<DestCharT>
+        , Preview& preview
+        , const FPack& fp
+        , SrcCharT x ) noexcept
         -> strf::usual_printer_input
             < DestCharT, Preview, FPack, SrcCharT, strf::detail::char_printer<DestCharT> >
     {
@@ -37,7 +40,10 @@ struct char_printing
 
     template <typename DestCharT, typename Preview, typename FPack, typename... T>
     constexpr STRF_HD static auto make_printer_input
-    ( Preview& preview, const FPack& fp, strf::value_with_formatters<T...> x ) noexcept
+        ( strf::tag<DestCharT>
+        , Preview& preview
+        , const FPack& fp
+        , strf::value_with_formatters<T...> x ) noexcept
         -> strf::usual_printer_input
             < DestCharT, Preview, FPack
             , strf::value_with_formatters<T...>
@@ -64,7 +70,10 @@ struct print_traits<char32_t>
 
     template <typename DestCharT, typename Preview, typename FPack>
     constexpr STRF_HD static auto make_printer_input
-        ( Preview& preview, const FPack& fp, char32_t x ) noexcept
+        ( strf::tag<DestCharT>
+        , Preview& preview
+        , const FPack& fp
+        , char32_t x ) noexcept
         -> strf::usual_printer_input
             < DestCharT, Preview, FPack, char32_t
             , std::conditional_t< std::is_same<DestCharT, char32_t>::value
@@ -76,7 +85,10 @@ struct print_traits<char32_t>
 
     template <typename DestCharT, typename Preview, typename FPack, typename... F>
     constexpr STRF_HD static auto make_printer_input
-        ( Preview& preview, const FPack& fp, strf::value_with_formatters<F...> x ) noexcept
+        ( strf::tag<DestCharT>
+        , Preview& preview
+        , const FPack& fp
+        , strf::value_with_formatters<F...> x ) noexcept
         -> strf::usual_printer_input
             < DestCharT, Preview, FPack, strf::value_with_formatters<F...>
             , std::conditional_t< std::is_same<DestCharT, char32_t>::value

@@ -32,7 +32,11 @@ struct print_traits<xxx::ipv4address> {
     }
 
     template <typename CharT, typename Preview, typename FPack>
-    static auto make_printer_input(Preview& preview, const FPack& fp, forwarded_type arg)
+    static auto make_printer_input
+        ( strf::tag<CharT>
+        , Preview& preview
+        , const FPack& fp
+        , forwarded_type arg )
     {
         auto arg2 = transform_arg<CharT>(arg);
         return strf::make_default_printer_input<CharT>(preview, fp, arg2);
@@ -40,7 +44,8 @@ struct print_traits<xxx::ipv4address> {
 
     template <typename CharT, typename Preview, typename FPack, typename... T>
     static auto make_printer_input
-        ( Preview& preview
+        ( strf::tag<CharT>
+        , Preview& preview
         , const FPack& fp
         , strf::value_with_formatters<T...> arg )
     {

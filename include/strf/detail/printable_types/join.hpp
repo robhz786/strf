@@ -62,7 +62,10 @@ struct join_printing
 
     template< typename CharT, typename Preview, typename FPack, bool HasAlignment >
     STRF_HD constexpr static auto make_printer_input
-        ( Preview& preview, const FPack& facets, fmt_tmpl<HasAlignment> x)
+        ( strf::tag<CharT>
+        , Preview& preview
+        , const FPack& facets
+        , fmt_tmpl<HasAlignment> x )
         -> join_printer_input
             < CharT, Preview, FPack, HasAlignment, FwdArgs... >
     {

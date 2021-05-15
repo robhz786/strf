@@ -27,7 +27,10 @@ struct print_traits<bool>
 
     template <typename CharT, typename Preview, typename FPack>
     constexpr STRF_HD static auto make_printer_input
-        ( Preview& preview, const FPack& fp, bool x ) noexcept
+        ( strf::tag<CharT>
+        , Preview& preview
+        , const FPack& fp
+        , bool x ) noexcept
         -> strf::usual_printer_input
             < CharT, Preview, FPack, bool, strf::detail::bool_printer<CharT> >
     {
@@ -36,7 +39,8 @@ struct print_traits<bool>
 
     template <typename CharT, typename Preview, typename FPack, typename... T>
     constexpr STRF_HD static auto make_printer_input
-        ( Preview& preview
+        ( strf::tag<CharT>
+        , Preview& preview
         , const FPack& fp
         , strf::value_with_formatters<T...> x ) noexcept
         -> strf::usual_printer_input

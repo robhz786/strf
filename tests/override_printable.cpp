@@ -45,7 +45,10 @@ struct my_bool_printing_override
 
     template <typename CharT, typename Preview, typename FPack>
     constexpr static STRF_HD auto make_printer_input
-        ( Preview& preview, const FPack& fp, bool x ) noexcept
+        ( strf::tag<CharT>
+        , Preview& preview
+        , const FPack& fp
+        , bool x ) noexcept
         -> strf::usual_printer_input<CharT, Preview, FPack, bool, my_bool_printer<CharT>>
     {
         return {preview, fp, x};
@@ -53,7 +56,10 @@ struct my_bool_printing_override
 
     template <typename CharT, typename Preview, typename FPack, typename... T>
     constexpr static STRF_HD auto make_printer_input
-        ( Preview& preview, const FPack& fp, strf::value_with_formatters<T...> x ) noexcept
+        ( strf::tag<CharT>
+        , Preview& preview
+        , const FPack& fp
+        , strf::value_with_formatters<T...> x ) noexcept
     {
         return strf::make_printer_input<CharT>
             ( preview
@@ -69,7 +75,10 @@ struct my_int_printing_override
 
     template <typename CharT, typename Preview, typename FPack, typename... T>
     constexpr static STRF_HD auto make_printer_input
-        ( Preview& preview, const FPack&, strf::value_with_formatters<T...> x ) noexcept
+        ( strf::tag<CharT>
+        , Preview& preview
+        , const FPack&
+        , strf::value_with_formatters<T...> x ) noexcept
     {
         return strf::make_printer_input<CharT>
             ( preview
@@ -100,7 +109,11 @@ struct print_traits<bool_wrapper> {
     using override_tag = bool_wrapper;
 
     template <typename CharT, typename Preview, typename FPack>
-    STRF_HD static auto make_printer_input(Preview& preview, const FPack& fp, bool_wrapper f)
+    STRF_HD static auto make_printer_input
+        ( strf::tag<CharT>
+        , Preview& preview
+        , const FPack& fp
+        , bool_wrapper f )
     {
         auto arg2 = strf::join(static_cast<CharT>('['), f.x, static_cast<CharT>(']'));
         auto fp2 = strf::pack(fp, strf::constrain<strf::is_char>(strf::no_print_override{}));

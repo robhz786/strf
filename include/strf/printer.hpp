@@ -705,7 +705,7 @@ struct intermediate_printer_input_maker_2<PrintTraitsOrFacet, true>
         ( const PrintTraitsOrFacet& pimaker
         , Preview& preview, const FPack& facets, const Arg& arg )
     {
-        return pimaker.template make_printer_input<CharT>(preview, facets, arg);
+        return pimaker.make_printer_input(strf::tag<CharT>{}, preview, facets, arg);
     }
 };
 
@@ -714,8 +714,8 @@ struct intermediate_printer_input_maker_2<PrintTraitsOrFacet, false>
 {
     template <typename P, typename CharT, typename Preview, typename FPack, typename Arg>
     static STRF_HD auto test_(Preview& preview, const FPack& facets, const Arg& arg)
-        -> decltype( std::declval<const P&>()
-                       .template make_printer_input<CharT>(preview, facets, arg)
+        -> decltype( std::declval<const P&>().make_printer_input
+                         ( strf::tag<CharT>{}, preview, facets, arg )
                    , std::true_type{} );
 
     template <typename P, typename CharT>
@@ -726,7 +726,8 @@ struct intermediate_printer_input_maker_2<PrintTraitsOrFacet, false>
         ( std::true_type, const PrintTraitsOrFacet& pimaker
         , Preview& preview, const FPack& facets, const Arg& arg )
     {
-        return pimaker.template make_printer_input<CharT>(preview, facets, arg);
+        return pimaker.make_printer_input
+            ( strf::tag<CharT>{}, preview, facets, arg );
     }
 
     template <typename CharT, typename Preview, typename FPack, typename Arg>
@@ -734,7 +735,8 @@ struct intermediate_printer_input_maker_2<PrintTraitsOrFacet, false>
         ( std::false_type, const PrintTraitsOrFacet& pimaker
         , Preview& preview, const FPack& facets, const Arg& arg )
     {
-        return pimaker.template make_printer_input<CharT>(preview, facets, strf::fmt(arg));
+        return pimaker.make_printer_input
+            (strf::tag<CharT>{}, preview, facets, strf::fmt(arg));
     }
 
     template <typename CharT, typename Preview, typename FPack, typename Arg>
@@ -769,7 +771,11 @@ struct no_print_override
 {
     using category = print_override_c;
     template <typename CharT, typename Preview, typename FPack, typename Arg>
-    constexpr static STRF_HD auto make_printer_input(Preview& preview, const FPack& facets, Arg&& arg)
+    constexpr static STRF_HD auto make_printer_input
+        ( strf::tag<CharT>
+        , Preview& preview
+        , const FPack& facets
+        , Arg&& arg )
         noexcept(noexcept(strf::make_default_printer_input<CharT>(preview, facets, arg)))
     {
         return strf::make_default_printer_input<CharT>(preview, facets, arg);
@@ -809,7 +815,7 @@ template < typename PrinterTraits
          , typename Preview
          , typename FPack
          , typename Arg >
-constexpr STRF_HD auto make_printer_input
+constexpr STRF_HD auto make_printer_input_
     ( std::true_type
     , Preview& preview
     , const FPack& facets
@@ -826,7 +832,7 @@ template < typename PrinterTraits
          , typename Preview
          , typename FPack
          , typename Arg >
-constexpr STRF_HD auto make_printer_input
+constexpr STRF_HD auto make_printer_input_
     ( std::false_type
     , Preview& preview
     , const FPack& facets
@@ -849,7 +855,7 @@ template <typename CharT, typename Preview, typename FPack, typename Arg>
 constexpr STRF_HD auto make_printer_input(Preview& preview, const FPack& facets, const Arg& arg)
 {
     using traits = print_traits_of<Arg>;
-    return strf::detail::make_printer_input<traits, CharT, Preview, FPack, Arg>
+    return strf::detail::make_printer_input_<traits, CharT, Preview, FPack, Arg>
         ( strf::detail::has_override_tag<traits>{}, preview, facets, arg );
 }
 

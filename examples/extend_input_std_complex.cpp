@@ -155,7 +155,8 @@ struct print_traits<std::complex<FloatT>>
 
     // template <typename CharT, typename Preview, typename FPack>
     // static auto make_printer_input
-    //     ( Preview& preview
+    //     ( strf::tag<CharT>
+    //     , Preview& preview
     //     , const FPack& fp
     //     , std::complex<FloatT> arg)
     // {
@@ -174,7 +175,8 @@ struct print_traits<std::complex<FloatT>>
 
     template <typename CharT, typename Preview, typename FPack, typename... T>
     static auto make_printer_input
-        ( Preview& preview
+        ( strf::tag<CharT>
+        , Preview& preview
         , const FPack& fp
         , strf::value_with_formatters<T...> arg )
     {
