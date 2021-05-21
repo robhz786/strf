@@ -14,6 +14,22 @@ void STRF_TEST_FUNC char_range_basic_operations()
 {
     constexpr std::size_t buff_size = 8;
     CharT buff[buff_size];
+    {   // cover strf::to_range
+        constexpr std::size_t expected_size = 8;
+        const CharT expected[expected_size] = { '1', '2', '3', '4', '5', 'a', 'b', 'c' };
+        {
+            auto res = strf::to_range(buff)(12345, (CharT)'a', (CharT)'b', (CharT)'c');
+            TEST_EQ(res.ptr - buff, 8);
+            TEST_FALSE(res.truncated);
+            TEST_TRUE(strf::detail::str_equal(buff, expected, expected_size));
+        }
+        {
+            auto res = strf::to_range(buff)(12345, (CharT)'a', (CharT)'b', (CharT)'c', (CharT)'d');
+            TEST_EQ(res.ptr - buff, 8);
+            TEST_TRUE(res.truncated);
+            TEST_TRUE(strf::detail::str_equal(buff, expected, expected_size));
+        }
+    }
     {   // construct from array
         strf::basic_char_array_writer<CharT> sw(buff);
         TEST_TRUE(sw.pointer() == &buff[0]);

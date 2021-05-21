@@ -326,13 +326,13 @@ class basic_char_array_writer final: public strf::basic_outbuff<CharT>
 {
 public:
 
-    // struct range{ CharT* dest; CharT* dest_end; };
+    struct range{ CharT* dest; CharT* dest_end; };
 
-    // STRF_HD basic_char_array_writer(range r) noexcept
-    //     : basic_outbuff<CharT>(r.dest, r.dest_end)
-    // {
-    //     STRF_ASSERT(r.dest <= r.dest_end);
-    // }
+    STRF_HD basic_char_array_writer(range r) noexcept
+        : basic_outbuff<CharT>(r.dest, r.dest_end)
+    {
+        STRF_ASSERT(r.dest <= r.dest_end);
+    }
 
     STRF_HD basic_char_array_writer(CharT* dest, CharT* dest_end) noexcept
         : basic_outbuff<CharT>(dest, dest_end)
