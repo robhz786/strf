@@ -32,148 +32,10 @@ struct double_dec
     bool nan;
 };
 
-struct double_dec_base
-{
-    std::uint64_t m10;
-    std::int32_t e10;
-};
-
 #if ! defined(STRF_OMIT_IMPL)
-
-STRF_FUNC_IMPL STRF_HD double_dec_base trivial_float_dec(
-    std::uint32_t ieee_mantissa,
-    std::int32_t biased_exponent,
-    std::uint32_t k )
-{
-    constexpr int m_size = 23;
-
-    STRF_ASSERT(-10 <= biased_exponent && biased_exponent <= m_size);
-    STRF_ASSERT((std::int32_t)k == (biased_exponent * 179 + 1850) >> 8);
-    STRF_ASSERT(0 == (ieee_mantissa & (0x7FFFFF >> k)));
-
-    STRF_ASSERT(k <= m_size);
-    STRF_ASSERT(biased_exponent <= (int)k);
-
-    std::int32_t e10 = biased_exponent - k;
-    std::uint32_t m = (1ul << k) | (ieee_mantissa >> (m_size - k));
-    int p5 = k - biased_exponent;
-    STRF_ASSERT(p5 <= 10);
-    // when p5 >= 8 , k <= 5; then (m & 0xFF) != 0
-    // if (p5 >= 8 && (0 == (m & 0xFF))) {
-    //     p5 -= 8;
-    //     e10 += 8;
-    //     m = m >> 8;
-    // }
-    if (p5 >= 4 && (0 == (m & 0xF))) {
-        p5 -= 4;
-        e10 += 4;
-        m = m >> 4;
-    }
-    if (p5 >= 2 && (0 == (m & 0x3))) {
-        p5 -= 2;
-        e10 += 2;
-        m = m >> 2;
-    }
-    if (p5 != 0 && (0 == (m & 1))) {
-        -- p5;
-        ++ e10;
-        m = m >> 1;
-    }
-    while ((m % 10) == 0){
-        m /= 10;
-        ++e10;
-    }
-    if (p5 >= 8) {
-        m *= 390625ul; // (m << 18) + (m << 16) + (m << 15) + (m << 14) + ...
-        p5 -= 8;
-    }
-    if (p5 >= 4) {
-        m *= 625;  // = (m << 9) + (m << 6) + (m << 5) + (m << 4) + m
-        p5 -= 4;
-    }
-    if (p5 >= 2) {
-        m *= 25; // = (m << 4) + (m << 3) + m
-        p5 -= 2;
-    }
-    if (p5 >= 1) {
-        m = (m << 2) + m; // m *= 5
-    }
-    STRF_ASSERT((m % 10) != 0);
-    return {m, e10};
-}
-
-STRF_FUNC_IMPL STRF_HD double_dec_base trivial_double_dec(
-    std::uint64_t ieee_mantissa,
-    std::int32_t biased_exponent,
-    std::uint32_t k )
-{
-    STRF_ASSERT(-22 <= biased_exponent && biased_exponent <= 52);
-    STRF_ASSERT((std::int32_t)k == (biased_exponent * 179 + 4084) >> 8);
-    STRF_ASSERT(0 == (ieee_mantissa & (0xFFFFFFFFFFFFFull >> k)));
-
-    STRF_ASSERT(biased_exponent <= (int)k);
-    STRF_ASSERT(k <= 52);
-
-    std::int32_t e10 = biased_exponent - k;
-    std::uint64_t m = (1ull << k) | (ieee_mantissa >> (52 - k));
-    int p5 = k - biased_exponent;
-    STRF_ASSERT(p5 <= 22);
-    // when p5 >= 16 , k <= 15; then (m & 0xFFFF) != 0
-    // if (p5 >= 16 && (0 == (m & 0xFFFF))) {
-    //     p5 -= 16;
-    //     e10 += 16;
-    //     m = m >> 16;
-    // }
-    if (p5 >= 8 && (0 == (m & 0xFF))) {
-        p5 -= 8;
-        e10 += 8;
-        m = m >> 8;
-    }
-    if (p5 >= 4 && (0 == (m & 0xF))) {
-        p5 -= 4;
-        e10 += 4;
-        m = m >> 4;
-    }
-    if (p5 >= 2 && (0 == (m & 0x3))) {
-        p5 -= 2;
-        e10 += 2;
-        m = m >> 2;
-    }
-    if (p5 != 0 && (0 == (m & 1))) {
-        -- p5;
-        ++ e10;
-        m = m >> 1;
-    }
-    while ((m % 10) == 0){
-        m /= 10;
-        ++e10;
-    }
-    if (p5 >= 16) {
-        m *= 152587890625ull;
-        p5 -= 16;
-    }
-    if (p5 >= 8) {
-        m *= 390625ull; // (m << 18) + (m << 16) + (m << 15) + (m << 14) + ...
-        p5 -= 8;
-    }
-    if (p5 >= 4) {
-        m *= 625;  // = (m << 9) + (m << 6) + (m << 5) + (m << 4) + m
-        p5 -= 4;
-    }
-    if (p5 >= 2) {
-        m *= 25; // = (m << 4) + (m << 3) + m
-        p5 -= 2;
-    }
-    if (p5 >= 1) {
-        m = (m << 2) + m; // m *= 5
-    }
-    STRF_ASSERT((m % 10) != 0);
-    return {m, e10};
-}
 
 STRF_FUNC_IMPL STRF_HD detail::double_dec decode(float f)
 {
-    constexpr int bias = 127;
     constexpr int e_size = 8;
     constexpr int m_size = 23;
 
@@ -185,13 +47,6 @@ STRF_FUNC_IMPL STRF_HD detail::double_dec decode(float f)
 
     if (exponent == 0 && mantissa == 0) {
         return {0, 0, sign, false, false};
-    } else if (bias - 10 <= exponent && exponent <= bias + m_size) {
-        const int e = exponent - bias;
-        const unsigned k = (179 * e + 1850) >> 8;
-        if (0 == (mantissa & (0x7FFFFF >> k))) {
-            auto res = trivial_float_dec(mantissa, e, k);
-            return {res.m10, res.e10, sign, false, false};
-        }
     } else if (exponent == 0xFF) {
         if (mantissa == 0) {
             return {0, 0, sign, true, false};
@@ -199,7 +54,6 @@ STRF_FUNC_IMPL STRF_HD detail::double_dec decode(float f)
             return {0, 0, sign, false, true};
         }
     }
-
     namespace dragonbox = strf::detail::jkj::dragonbox;
     auto fdec = dragonbox::to_decimal(f, dragonbox::policy::sign::ignore);
     return {fdec.significand, fdec.exponent, sign, false, false};
@@ -207,7 +61,6 @@ STRF_FUNC_IMPL STRF_HD detail::double_dec decode(float f)
 
 STRF_FUNC_IMPL STRF_HD detail::double_dec decode(double d)
 {
-    constexpr int bias = 1023;
     constexpr int e_size = 11; // bits in exponent
     constexpr int m_size = 52; // bits in matissa
 
@@ -219,21 +72,13 @@ STRF_FUNC_IMPL STRF_HD detail::double_dec decode(double d)
 
     if (exponent == 0 && mantissa == 0) {
         return {0, 0, sign, false, false};
-    } else if (bias - 22 <= exponent && exponent <= bias + 52) {
-        const int e = exponent - bias;
-        const unsigned k = (e * 179 + 4084) >> 8;
-        if (0 == (mantissa & (0xFFFFFFFFFFFFFull >> k))) {
-            auto res = trivial_double_dec(mantissa, e, k);
-            return {res.m10, res.e10, sign, false, false};
-        }
-     } else if (exponent == 0x7FF) {
+    } else if (exponent == 0x7FF) {
         if (mantissa == 0) {
             return {0, 0, sign, true, false};
         } else {
             return {0, 0, sign, false, true};
         }
     }
-
     namespace dragonbox = strf::detail::jkj::dragonbox;
     auto ddec = dragonbox::to_decimal(d, dragonbox::policy::sign::ignore);
     return {ddec.significand, ddec.exponent, sign, false, false};
@@ -2284,7 +2129,6 @@ inline STRF_HD strf::detail::float_init_result init_dec_double_printer_data_with
         , alignment );
 }
 
-
 STRF_FUNC_IMPL STRF_HD strf::detail::float_init_result init_float_printer_data
     ( strf::detail::double_printer_data& data
     , double d
@@ -2329,18 +2173,8 @@ STRF_FUNC_IMPL STRF_HD strf::detail::float_init_result init_float_printer_data
     if (bits_exponent == 0 && bits_mantissa == 0) {
         data.m10 = 0;
         data.e10 = 0;
-    } else if (bias - 22 <= bits_exponent && bits_exponent <= bias + 52) {
-        const int e = bits_exponent - bias;
-        const unsigned k = (e * 179 + 4084) >> 8;
-        if (0 == (bits_mantissa & (0xFFFFFFFFFFFFFull >> k))) {
-            auto res = trivial_double_dec(bits_mantissa, e, k);
-            data.m10 = res.m10;
-            data.e10 = res.e10;
-        }
-        goto invoke_dragonbox;
     } else {
-        invoke_dragonbox:
-        namespace dragonbox = jkj::dragonbox;
+        namespace dragonbox = strf::detail::jkj::dragonbox;
         auto res = dragonbox::to_decimal(d, dragonbox::policy::sign::ignore);
         data.m10 = res.significand;
         data.e10 = res.exponent;
@@ -2399,17 +2233,7 @@ STRF_FUNC_IMPL STRF_HD strf::detail::float_init_result init_float_printer_data
     if (bits_exponent == 0 && bits_mantissa == 0) {
         data.m10 = 0;
         data.e10 = 0;
-    } else if (bias - 10 <= bits_exponent && bits_exponent <= bias + m_size) {
-        const int e = bits_exponent - bias;
-        const unsigned k = (e * 179 + 1850) >> 8;
-        if (0 == (bits_mantissa & (0x7FFFFF >> k))) {
-            auto res = trivial_float_dec(bits_mantissa, e, k);
-            data.m10 = res.m10;
-            data.e10 = res.e10;
-        }
-        goto invoke_dragonbox;
     } else {
-        invoke_dragonbox:
         namespace dragonbox = strf::detail::jkj::dragonbox;
         auto res = dragonbox::to_decimal(f, dragonbox::policy::sign::ignore);
         data.m10 = res.significand;
