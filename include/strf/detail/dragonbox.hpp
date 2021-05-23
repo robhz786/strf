@@ -19,11 +19,7 @@
 #ifndef JKJ_DRAGONBOX
 #define JKJ_DRAGONBOX
 
-#include <cassert>
-#include <cstdint>
-#include <cstring>
-#include <limits>
-#include <type_traits>
+#include <strf/detail/standard_lib_functions.hpp>
 
 // Suppress additional buffer overrun check
 // I have no idea why MSVC thinks some functions here are vulnerable to the buffer overrun attacks
@@ -53,7 +49,8 @@
 #if defined(_MSC_VER)
 #include <intrin.h>
 #endif
-
+namespace strf {
+namespace detail {
 namespace jkj {
 namespace dragonbox {
 	namespace detail {
@@ -131,24 +128,6 @@ namespace dragonbox {
 
 		// Number of bits in the above unsigned integer type.
 		static constexpr int carrier_bits = int(detail::physical_bits<carrier_uint>);
-
-		// Convert from carrier_uint into the original type.
-		// Depending on the floating-point encoding format,
-		// this operation might not be possible for some specific bit patterns.
-		// However, the contract is that u always denotes a valid bit pattern,
-		// so this function must be assumed to be noexcept.
-		static T carrier_to_float(carrier_uint u) noexcept {
-			T x;
-			std::memcpy(&x, &u, sizeof(carrier_uint));
-			return x;
-		}
-
-		// Same as above.
-		static carrier_uint float_to_carrier(T x) noexcept {
-			carrier_uint u;
-			std::memcpy(&u, &x, sizeof(carrier_uint));
-			return u;
-		}
 
 		// Extract exponent bits from a bit pattern.
 		// The result must be aligned to the LSB so that there is
@@ -263,13 +242,13 @@ namespace dragonbox {
 		carrier_uint u;
 
 		float_bits() = default;
-		constexpr explicit float_bits(carrier_uint bit_pattern) noexcept :
+		explicit float_bits(carrier_uint bit_pattern) noexcept :
 			u{ bit_pattern } {}
-		constexpr explicit float_bits(T float_value) noexcept :
-			u{ traits_type::float_to_carrier(float_value) } {}
+		explicit float_bits(T float_value) noexcept :
+			u{ strf::detail::bit_cast<carrier_uint>(float_value) } {}
 
 		constexpr T to_float() const noexcept {
-			return traits_type::carrier_to_float(u);
+			return strf::detail::bit_cast<T>(u);
 		}
 
 		// Extract exponent bits from a bit pattern.
@@ -650,9 +629,9 @@ namespace dragonbox {
 				std::uint64_t fractional_digits,
 				std::size_t shift_amount) noexcept
 			{
-				assert(shift_amount < 32);
+				STRF_ASSERT(shift_amount < 32);
 				// Ensure no overflow
-				assert(shift_amount == 0 || integer_part < (std::uint32_t(1) << (32 - shift_amount)));
+				STRF_ASSERT(shift_amount == 0 || integer_part < (std::uint32_t(1) << (32 - shift_amount)));
 
 				return shift_amount == 0 ? std::int32_t(integer_part) :
 					std::int32_t(
@@ -670,7 +649,7 @@ namespace dragonbox {
 				std::uint64_t s_fractional_digits = 0
 			>
 				constexpr int compute(int e) noexcept {
-				assert(e <= max_exponent && e >= -max_exponent);
+				STRF_ASSERT(e <= max_exponent && e >= -max_exponent);
 				constexpr auto c = floor_shift(c_integer_part, c_fractional_digits, shift_amount);
 				constexpr auto s = floor_shift(s_integer_part, s_fractional_digits, shift_amount);
 				return int((std::int32_t(e) * c - s) >> shift_amount);
@@ -759,7 +738,7 @@ namespace dragonbox {
 				static constexpr std::size_t table_size = 11;
 
 				static inline std::uint32_t mod_inv(std::size_t x) noexcept {
-					assert(x < table_size);
+					STRF_ASSERT(x < table_size);
 					static constexpr std::uint32_t table[table_size] = {
 						0x1ul, 0xcccccccdul, 0xc28f5c29ul, 0x26e978d5ul, 0x3afb7e91ul,
 						0xbcbe61dul, 0x68c26139ul, 0xae8d46a5ul,
@@ -769,7 +748,7 @@ namespace dragonbox {
 				}
 
 				static inline std::uint32_t max_quotients(std::size_t x) noexcept {
-					assert(x < table_size);
+					STRF_ASSERT(x < table_size);
 					static constexpr std::uint32_t  table[table_size] = {
 						0xfffffffful, 0x33333333ul, 0xa3d70a3ul, 0x20c49baul, 0x68db8bul,
 						0x14f8b5ul, 0x431bdul, 0xd6bful, 0x2af3ul, 0x897ul, 0x1b7ul
@@ -783,7 +762,7 @@ namespace dragonbox {
 				static constexpr std::size_t table_size = 24;
 
 				static inline std::uint64_t mod_inv(std::size_t x) noexcept {
-					assert(x < table_size);
+					STRF_ASSERT(x < table_size);
 					static constexpr std::uint64_t table[table_size] = {
 						0x1ull, 0xcccccccccccccccdull, 0x8f5c28f5c28f5c29ull,
 						0x1cac083126e978d5ull, 0xd288ce703afb7e91ull, 0x5d4e8fb00bcbe61dull,
@@ -798,7 +777,7 @@ namespace dragonbox {
 				}
 
 				static inline std::uint64_t max_quotients(std::size_t x) noexcept {
-					assert(x < table_size);
+					STRF_ASSERT(x < table_size);
 					static constexpr std::uint64_t table[table_size] = {
 						0xffffffffffffffffull, 0x3333333333333333ull, 0xa3d70a3d70a3d70ull,
 						0x20c49ba5e353f7cull, 0x68db8bac710cb2ull, 0x14f8b588e368f0ull,
@@ -816,14 +795,14 @@ namespace dragonbox {
 				using div5 = division_by_5<UInt>;
 				static_assert(asserted_table_size <= div5::table_size,
 					"division_by_5 tables are too small");
-				assert(exp < div5::table_size);
+				STRF_ASSERT(exp < div5::table_size);
 				return (x * div5::mod_inv(exp)) <= div5::max_quotients(exp);
 			}
 
 			template <class UInt>
 			constexpr bool divisible_by_power_of_2(UInt x, unsigned int exp) noexcept {
-				assert(exp >= 1);
-				assert(x != 0);
+				STRF_ASSERT(exp >= 1);
+				STRF_ASSERT(x != 0);
 #if JKJ_HAS_COUNTR_ZERO_INTRINSIC
 				return bits::countr_zero(x) >= int(exp);
 #else
@@ -863,7 +842,7 @@ namespace dragonbox {
 			{
 				// Make sure the computation for max_n does not overflow.
 				static_assert(N + 1 <= log::floor_log10_pow2(31), "");
-				assert(n <= compute_power<N + 1>(std::uint32_t(10)));
+				STRF_ASSERT(n <= compute_power<N + 1>(std::uint32_t(10)));
 
 				using info = check_divisibility_and_divide_by_pow10_info<N>;
 				n *= info::magic_number;
@@ -900,7 +879,7 @@ namespace dragonbox {
 			template <int N>
 			constexpr std::uint32_t small_division_by_pow10(std::uint32_t n) noexcept
 			{
-				assert(n <= compute_power<N + 1>(std::uint32_t(10)));
+				STRF_ASSERT(n <= compute_power<N + 1>(std::uint32_t(10)));
 				return (n * small_division_by_pow10_info<N>::magic_number)
 					>> small_division_by_pow10_info<N>::shift_amount;
 			}
@@ -2291,7 +2270,7 @@ namespace dragonbox {
 					static constexpr typename cache_holder<FloatFormat>::cache_entry_type
 						get_cache(int k) noexcept
 					{
-						assert(k >= cache_holder<FloatFormat>::min_k &&
+						STRF_ASSERT(k >= cache_holder<FloatFormat>::min_k &&
 							k <= cache_holder<FloatFormat>::max_k);
 						return cache_holder<FloatFormat>::cache(
 							std::size_t(k - cache_holder<FloatFormat>::min_k));
@@ -2304,7 +2283,7 @@ namespace dragonbox {
 					static constexpr typename cache_holder<FloatFormat>::cache_entry_type
 						get_cache(int k) noexcept
 					{
-						assert(k >= cache_holder<FloatFormat>::min_k &&
+						STRF_ASSERT(k >= cache_holder<FloatFormat>::min_k &&
 							k <= cache_holder<FloatFormat>::max_k);
 
 						JKJ_IF_CONSTEXPR (std::is_same<FloatFormat, ieee754_binary64>::value)
@@ -2326,7 +2305,7 @@ namespace dragonbox {
 								// Compute the required amount of bit-shift.
 								auto alpha = log::floor_log2_pow10(kb + offset)
 									- log::floor_log2_pow10(kb) - offset;
-								assert(alpha > 0 && alpha < 64);
+								STRF_ASSERT(alpha > 0 && alpha < 64);
 
 								// Try to recover the real cache.
 								auto pow5 = compressed_cache_detail::pow5(offset);
@@ -2353,7 +2332,7 @@ namespace dragonbox {
 									((k - cache_holder<FloatFormat>::min_k) % 16) * 2) & 0x3;
 
 								// Add the error back.
-								assert(recovered_cache.low() + error >= recovered_cache.low());
+								STRF_ASSERT(recovered_cache.low() + error >= recovered_cache.low());
 								recovered_cache = {
 									recovered_cache.high(),
 									recovered_cache.low() + error
@@ -2474,8 +2453,8 @@ namespace dragonbox {
 			static bool compute_mul_parity(carrier_uint two_f,
 				cache_entry_type const& cache, int beta_minus_1) noexcept
 			{
-				assert(beta_minus_1 >= 1);
-				assert(beta_minus_1 < 64);
+				STRF_ASSERT(beta_minus_1 >= 1);
+				STRF_ASSERT(beta_minus_1 < 64);
 				return ((wuint::umul96_lower64(two_f, cache) >>
 						(64 - beta_minus_1)) & 1) != 0;
 			}
@@ -2571,8 +2550,8 @@ namespace dragonbox {
 			static bool compute_mul_parity(carrier_uint two_f,
 				cache_entry_type const& cache, int beta_minus_1) noexcept
 			{
-				assert(beta_minus_1 >= 1);
-				assert(beta_minus_1 < 64);
+				STRF_ASSERT(beta_minus_1 >= 1);
+				STRF_ASSERT(beta_minus_1 < 64);
 					return ((wuint::umul192_middle64(two_f, cache) >>
 						(64 - beta_minus_1)) & 1) != 0;
 			}
@@ -3488,6 +3467,8 @@ namespace dragonbox {
 		policy_holder::handle_sign(s, ret);
 		return ret;
 	}
+}
+}
 }
 }
 

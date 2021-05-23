@@ -8,8 +8,17 @@
 #include <strf/printer.hpp>
 #include <strf/facets_pack.hpp>
 #include <strf/detail/facets/numpunct.hpp>
-#include <strf/detail/ryu/double.hpp>
-#include <strf/detail/ryu/float.hpp>
+
+#if !defined(__CUDACC__)
+#  define STRF_USE_DRAGONBOX
+#endif
+
+#if defined(STRF_USE_DRAGONBOX)
+#  include <strf/detail/dragonbox.hpp>
+#else
+#  include <strf/detail/ryu/double.hpp>
+#  include <strf/detail/ryu/float.hpp>
+#endif
 
 namespace strf {
 namespace detail {
@@ -201,10 +210,15 @@ STRF_FUNC_IMPL STRF_HD detail::double_dec decode(float f)
         }
     }
 
+#if defined(STRF_USE_DRAGONBOX)
+    namespace dragonbox = strf::detail::jkj::dragonbox;
+    auto fdec = dragonbox::to_decimal(f, dragonbox::policy::sign::ignore);
+    return {fdec.significand, fdec.exponent, sign, false, false};
+#else
     auto fdec = detail::ryu::f2d(mantissa, exponent);
     return {fdec.mantissa, fdec.exponent, sign, false, false};
+#endif // defined(STRF_USE_DRAGONBOX)
 }
-
 
 STRF_FUNC_IMPL STRF_HD detail::double_dec decode(double d)
 {
@@ -234,8 +248,15 @@ STRF_FUNC_IMPL STRF_HD detail::double_dec decode(double d)
             return {0, 0, sign, false, true};
         }
     }
+
+#if defined(STRF_USE_DRAGONBOX)
+    namespace dragonbox = strf::detail::jkj::dragonbox;
+    auto ddec = dragonbox::to_decimal(d, dragonbox::policy::sign::ignore);
+    return {ddec.significand, ddec.exponent, sign, false, false};
+#else
     auto ddec = detail::ryu::d2d(mantissa, exponent);
     return {ddec.mantissa, ddec.exponent, sign, false, false};
+#endif // defined(STRF_USE_DRAGONBOX)
 }
 
 #else  // ! defined(STRF_OMIT_IMPL)
@@ -2336,12 +2357,19 @@ STRF_FUNC_IMPL STRF_HD strf::detail::float_init_result init_float_printer_data
             data.m10 = res.m10;
             data.e10 = res.e10;
         }
-        goto invoke_ryu;
+        goto invoke_dragonbox;
     } else {
-        invoke_ryu:
+        invoke_dragonbox:
+#if defined(STRF_USE_DRAGONBOX)
+        namespace dragonbox = jkj::dragonbox;
+        auto res = dragonbox::to_decimal(d, dragonbox::policy::sign::ignore);
+        data.m10 = res.significand;
+        data.e10 = res.exponent;
+#else
         auto res = detail::ryu::d2d(bits_mantissa, bits_exponent);
         data.m10 = res.mantissa;
         data.e10 = res.exponent;
+#endif
     }
     if (ffmt.precision == (detail::chars_count_t)-1) {
         return init_dec_double_printer_data_without_precision
@@ -2405,12 +2433,19 @@ STRF_FUNC_IMPL STRF_HD strf::detail::float_init_result init_float_printer_data
             data.m10 = res.m10;
             data.e10 = res.e10;
         }
-        goto invoke_ryu;
+        goto invoke_dragonbox;
     } else {
-        invoke_ryu:
+        invoke_dragonbox:
+#if defined(STRF_USE_DRAGONBOX)
+        namespace dragonbox = strf::detail::jkj::dragonbox;
+        auto res = dragonbox::to_decimal(f, dragonbox::policy::sign::ignore);
+        data.m10 = res.significand;
+        data.e10 = res.exponent;
+#else
         auto res = detail::ryu::f2d(bits_mantissa, bits_exponent);
         data.m10 = res.mantissa;
         data.e10 = res.exponent;
+#endif
     }
     if (ffmt.precision == (detail::chars_count_t)-1) {
         return init_dec_double_printer_data_without_precision
