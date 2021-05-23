@@ -30,11 +30,6 @@ Version: 0.14.0
   * [How to use strf on CUDA devices](http://robhz786.github.io/strf/v0.14.0/cuda.html)
   * [Benchmarks](http://robhz786.github.io/strf-benchmarks/v0.14.0/results.html)
 
-## Acknowledgments
-
-- This library uses [Ryu](https://github.com/ulfjack/ryu) to print floating-points. Thanks to Ulf Adams for creating such a great algorithm and providing a C implementation. It saved me a ton of work.
-- Thanks to Eyal Rozenberg -- the author of [cuda-kat](https://github.com/eyalroz/cuda-kat) library -- for enabling strf to work on CUDA.
-
 ## Requirements
 
 Strf demands C++14 features. In the current state, it is known to work with the following compilers:
