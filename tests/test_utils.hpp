@@ -168,10 +168,6 @@ inline void STRF_HD turn_into_bad(strf::basic_outbuff<CharT>& ob)
 
 int& STRF_HD test_err_count();
 
-class test_scope;
-
-test_scope*& STRF_HD current_test_scope();
-test_scope*& STRF_HD first_test_scope();
 strf::outbuff& STRF_HD test_outbuff();
 
 class test_scope
@@ -181,49 +177,63 @@ public:
     STRF_HD test_scope(const test_scope&) = delete;
 
     STRF_HD  test_scope()
-        : parent_(test_utils::current_test_scope())
+        : parent_(current_test_scope_())
+        , id_(generate_new_id_())
     {
         if (parent_) {
             parent_->child_ = this;
         } else {
-            test_utils::first_test_scope() = this;
+            first_test_scope_() = this;
         }
-        test_utils::current_test_scope() = this;
+        current_test_scope_() = this;
         description_[0] = '\0';
     }
 
     STRF_HD ~test_scope()
     {
-        if (current_test_scope() == this) {
-            current_test_scope() = parent_;
+        if (current_test_scope_() == this) {
+            current_test_scope_() = parent_;
         }
         if (parent_) {
             parent_->child_ = child_;
         } else {
-            first_test_scope() = child_;
+            first_test_scope_() = child_;
         }
         if (child_) {
             child_ -> parent_ = parent_;
         }
     }
 
-    auto STRF_HD description_writer()
+    using id_type = unsigned long;
+
+    STRF_HD id_type id() const
     {
-        return strf::to(description_);
+        return id_;
     }
 
-    static void STRF_HD print_stack(strf::outbuff& out)
+    STRF_HD static void print_stack(strf::outbuff& out)
     {
-        test_scope* first = test_utils::first_test_scope();
-        if (first != nullptr) {
-            strf::write(out, "\n    ( ");
-            strf::write(out, first->description_);
-            for(auto it = first->child_; it != nullptr; it = it->child_) {
-                strf::write(out, " / ");
-                strf::write(out, it->description_);
+        auto current_id = (current_test_scope_() == nullptr ? 0 : current_test_scope_()->id());
+        if (current_id != last_printed_scope_id_()) {
+            last_printed_scope_id_() = current_id;
+            test_scope* first = first_test_scope_();
+            if (first == nullptr) {
+                strf::write(out, "\n( AT ROOT TEST SCOPE )\n");
+            } else {
+                strf::write(out, "\n( AT TEST SCOPE: ");
+                strf::write(out, first->description_);
+                for(auto it = first->child_; it != nullptr; it = it->child_) {
+                    strf::write(out, " / ");
+                    strf::write(out, it->description_);
+                }
+                strf::write(out, " )\n");
             }
-            strf::write(out, " )");
         }
+    }
+
+    STRF_HD auto description_writer()
+    {
+        return strf::to(description_);
     }
 
 private:
@@ -235,8 +245,30 @@ private:
         description_[0] = '\0';
     }
 
+    STRF_HD static id_type generate_new_id_()
+    {
+        static id_type x = 0;
+        return ++x;
+    }
+    STRF_HD static id_type& last_printed_scope_id_()
+    {
+        static id_type x = (std::numeric_limits<id_type>::max)();
+        return x;
+    }
+    STRF_HD static test_scope*& current_test_scope_()
+    {
+        static test_scope* ptr = nullptr;
+        return ptr;
+    }
+    STRF_HD static test_scope*& first_test_scope_()
+    {
+        static test_scope* ptr = nullptr;
+        return ptr;
+    }
+
     test_scope* parent_ = nullptr;
     test_scope* child_ = nullptr;
+    id_type id_ = 0;
     char description_[200];
 };
 

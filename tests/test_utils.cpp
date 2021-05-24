@@ -71,26 +71,14 @@ int& STRF_HD test_err_count()
     return count;
 }
 
-test_scope*& STRF_HD current_test_scope()
-{
-    static test_scope* ptr = nullptr;
-    return ptr;
-}
-
-test_scope*& STRF_HD first_test_scope()
-{
-    static test_scope* ptr = nullptr;
-    return ptr;
-}
-
 void STRF_HD print_test_message_header(const char* filename, int line)
 {
+    test_scope::print_stack(test_outbuff());
     to(test_utils::test_outbuff()) (filename, ':', line, ": ");
 }
 
 void STRF_HD print_test_message_end(const char* funcname)
 {
-    test_scope::print_stack(test_outbuff());
     to(test_utils::test_outbuff()) ("\n    In function '", funcname, "'\n");
 }
 
