@@ -309,11 +309,20 @@ public:
 
 private:
 
+    STRF_HD void before_emitting_error_message_()
+    {
+        if (!error_message_emitted_) {
+            ++ test_err_count();
+            print_test_message_header(src_filename_, src_line_);
+            error_message_emitted_ = true;
+        }
+    }
+
     template <typename ... MsgArgs>
     void STRF_HD test_failure_(const MsgArgs&... msg_args)
     {
-        test_utils::test_failure( src_filename_, src_line_
-                                , function_, msg_args... );
+        before_emitting_error_message_();
+        strf::to(test_utils::test_outbuff()) (msg_args...);
     }
 
     bool STRF_HD wrong_size_(std::size_t result_size) const;
@@ -325,10 +334,7 @@ private:
     const char* function_;
     int src_line_;
     double reserve_factor_;
-
-    bool expect_error_ = false;
-    bool recycle_called_ = false;
-    bool source_location_printed_ = false;
+    bool error_message_emitted_ = false;
 
     CharOut* pointer_before_overflow_ = nullptr;
     enum {buffer_size_ = 280};
@@ -574,7 +580,7 @@ private:
     const std::size_t num_spaces_;
     unsigned spaces_index_ = 0;
 
-    STRF_HD void before_emitting_error_message()
+    STRF_HD void before_emitting_error_message_()
     {
         if (!error_message_emitted_) {
             ++ test_err_count();
@@ -586,7 +592,7 @@ private:
     template <typename... Args>
     STRF_HD void emit_error_message_(const Args&... args)
     {
-        before_emitting_error_message();
+        before_emitting_error_message_();
         strf::to(test_utils::test_outbuff()) (args...);
     }
 };
