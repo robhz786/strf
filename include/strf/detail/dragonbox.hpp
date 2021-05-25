@@ -3408,6 +3408,52 @@ namespace dragonbox {
 				return convert_to_policy_holder(policy_pair_list{});
 			}
 		}
+
+		template <class Float, class FloatTraits, class policy_holder>
+		struct to_decimal_internal_functor {
+			using tag_t = policy_impl::decimal_to_binary_rounding::tag_t;
+			using return_type = decimal_fp<
+				typename FloatTraits::carrier_uint,
+				policy_holder::return_has_sign,
+				policy_holder::report_trailing_zeros>;
+
+			Float x;
+			float_bits<Float, FloatTraits> br{ x };
+			unsigned exponent_bits = br.extract_exponent_bits();
+
+			template <typename I>
+			STRF_HD return_type operator()(I) const {
+				return execute<I>(std::integral_constant<tag_t, I::tag>{});
+			}
+
+			template <typename I>
+			STRF_HD return_type execute(std::integral_constant<tag_t, tag_t::to_nearest>) const {
+				auto s = br.remove_exponent_bits(exponent_bits);
+				return detail::impl<Float>::template compute_nearest<
+					return_type,
+					I,
+					typename policy_holder::trailing_zero_policy,
+					typename policy_holder::binary_to_decimal_rounding_policy,
+					typename policy_holder::cache_policy
+					>(s, exponent_bits);
+			}
+			template <typename I>
+			STRF_HD return_type execute(std::integral_constant<tag_t, tag_t::left_closed_directed>) const {
+				return detail::impl<Float>::template compute_left_closed_directed<
+					return_type,
+					typename policy_holder::trailing_zero_policy,
+					typename policy_holder::cache_policy
+					>(br, exponent_bits);
+			}
+			template <typename I>
+			STRF_HD return_type execute(std::integral_constant < tag_t, tag_t::right_closed_directed>) const {
+				return detail::impl<Float>::template compute_right_closed_directed<
+					return_type,
+					typename policy_holder::trailing_zero_policy,
+					typename policy_holder::cache_policy
+					>(br, exponent_bits);
+			}
+		};
 	}
 
 
@@ -3429,46 +3475,9 @@ namespace dragonbox {
 					base_default_pair<cache::base, cache::full>
 				>{}, policies...));
 
-		using return_type = decimal_fp<typename FloatTraits::carrier_uint,
-			policy_holder::return_has_sign,
-			policy_holder::report_trailing_zeros>;
-
-		auto br = float_bits<Float, FloatTraits>(x);
-		auto exponent_bits = br.extract_exponent_bits();
-		auto s = br.remove_exponent_bits(exponent_bits);
-
-		auto ret = policy_holder::delegate(s,
-			[br, exponent_bits, s](auto interval_type_provider) {
-				constexpr auto tag = decltype(interval_type_provider)::tag;
-				static_assert(
-					tag == decimal_to_binary_rounding::tag_t::to_nearest ||
-					tag == decimal_to_binary_rounding::tag_t::left_closed_directed ||
-					tag == decimal_to_binary_rounding::tag_t::right_closed_directed, "");
-
-				JKJ_IF_CONSTEXPR (tag == decimal_to_binary_rounding::tag_t::to_nearest) {
-					return detail::impl<Float>::template
-						compute_nearest<return_type, decltype(interval_type_provider),
-							typename policy_holder::trailing_zero_policy,
-							typename policy_holder::binary_to_decimal_rounding_policy,
-							typename policy_holder::cache_policy
-						>(s, exponent_bits);
-				}
-				else JKJ_IF_CONSTEXPR (tag == decimal_to_binary_rounding::tag_t::left_closed_directed) {
-					return detail::impl<Float>::template
-						compute_left_closed_directed<return_type,
-							typename policy_holder::trailing_zero_policy,
-							typename policy_holder::cache_policy
-						>(br, exponent_bits);
-				}
-				else {
-					return detail::impl<Float>::template
-						compute_right_closed_directed<return_type,
-							typename policy_holder::trailing_zero_policy,
-							typename policy_holder::cache_policy
-						>(br, exponent_bits);
-				}
-			});
-
+		detail::to_decimal_internal_functor<Float, FloatTraits, policy_holder> f{ x };
+		auto s = f.br.remove_exponent_bits(f.exponent_bits);
+		auto ret = policy_holder::delegate(s, f);
 		policy_holder::handle_sign(s, ret);
 		return ret;
 	}
