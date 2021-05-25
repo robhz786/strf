@@ -67,50 +67,73 @@ STRF_HD FloatT make_infinity() noexcept
     return make_float<FloatT>(helper::max_normal_exp + 1, 0);
 }
 
-#if defined (STRF_FREESTANDING)
+#if ! defined (STRF_FREESTANDING)
+
+float read_floating_point(strf::tag<float>, const char* str, char** str_end)
+{
+    return std::strtof(str, str_end);
+}
+double read_floating_point(strf::tag<double>, const char* str, char** str_end)
+{
+    return std::strtod(str, str_end);
+}
+
+#endif
 
 template <typename FloatT>
-STRF_TEST_FUNC inline void test_several_values()
+STRF_TEST_FUNC void test_floating_point(FloatT value)
 {
+    char buff[200];
+    auto res = strf::to(buff) (value);
+#if ! defined (STRF_FREESTANDING)
+    {
+        char* end;
+        auto parsed = read_floating_point(strf::tag<FloatT>{}, buff, &end);
+        TEST_EQ(parsed, value);
+        TEST_EQ((void*)end, (void*)res.ptr);
+    }
+#endif
+    {
+        strf::print_preview<strf::preview_size::yes, strf::preview_width::yes> p{strf::width_max};
+        strf::preview<char>(p, strf::pack(), value);
+        std::size_t content_size = res.ptr - buff;
+        TEST_EQ(p.accumulated_size(), content_size);
+        auto width = strf::width_max - p.remaining_width();
+        TEST_TRUE(width == strf::width_t(static_cast<std::uint16_t>(content_size)));
+    }
 }
 
-#else
 
-#include <cstdlib> // `strtof` and `strtod`
-
-void test_value(double value)
+template <typename FloatT, typename helper = floating_point_traits<FloatT>>
+STRF_TEST_FUNC void test_floating_point
+    ( typename helper::uint_equiv ieee_exponent
+    , typename helper::uint_equiv ieee_mantissa
+    , bool negative = false )
 {
-    char buff[64];
-    (void) strf::to(buff) (value);
-    auto parsed = std::strtod(buff, nullptr);
-    TEST_EQ(parsed, value);
-}
-
-void test_value(float value)
-{
-    char buff[64];
-    (void) strf::to(buff) (value);
-    auto parsed = std::strtof(buff, nullptr);
-    TEST_EQ(parsed, value);
+    ieee_mantissa = ieee_mantissa & helper::mantissa_bits_mask;
+    FloatT value = make_float<FloatT>(ieee_exponent, ieee_mantissa, negative);
+    TEST_SCOPE_DESCRIPTION
+        ( "ieee_exp=", ieee_exponent, ' '
+        , " ieee_mantissa=", strf::hex(ieee_mantissa).p((helper::mantissa_bits_size + 7) / 8)
+        , " value=", value );
+    test_floating_point(value);
 }
 
 template <typename FloatT>
-void test_several_values()
+STRF_TEST_FUNC void test_several_values()
 {
     using helper = floating_point_traits<FloatT>;
     constexpr auto u1 = static_cast<typename helper::uint_equiv>(1);
     for(unsigned e = 0; e <= helper::max_normal_exp; ++e) {
         for(unsigned i = 2; i <= helper::mantissa_bits_size; ++i) {
             unsigned s = helper::mantissa_bits_size - i;
-            test_value(make_float<FloatT>(e, helper::mantissa_bits_mask << s));
-            test_value(make_float<FloatT>(e, u1 << s));
+            test_floating_point<FloatT>(e, helper::mantissa_bits_mask << s);
+            test_floating_point<FloatT>(e, u1 << s);
         }
-        test_value(make_float<FloatT>(e, u1 << (helper::mantissa_bits_size - 1)));
-        test_value(make_float<FloatT>(e, 0));
+        test_floating_point<FloatT>(e, u1 << (helper::mantissa_bits_size - 1));
+        test_floating_point<FloatT>(e, 0);
     }
 }
-
-#endif // defined(STRF_FREESTANDING)
 
 template <typename FloatT, typename FPack>
 STRF_TEST_FUNC void test_subnormal_values(const FPack& fp)

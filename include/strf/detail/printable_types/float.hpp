@@ -1367,6 +1367,7 @@ private:
 template <typename CharT>
 STRF_HD std::size_t fast_double_printer<CharT>::size() const
 {
+    int sci_e10 = value_.e10 - 1 + (int)m10_digcount_;
     return ( value_.nan * 3
            + (value_.infinity * 3)
            + value_.negative
@@ -1375,7 +1376,7 @@ STRF_HD std::size_t fast_double_printer<CharT>::size() const
                * ( 4 // e+xx
                  + (m10_digcount_ != 1) // decimal point
                  + m10_digcount_
-                 + ((value_.e10 > 99) || (value_.e10 < -99))) )
+                 + ((sci_e10 > 99) || (sci_e10 < -99))) )
              + ( !sci_notation_
                * ( (int)m10_digcount_
                  + (value_.e10 > 0) * value_.e10 // trailing zeros
@@ -1392,8 +1393,9 @@ STRF_HD void fast_double_printer<CharT>::print_to
     } else if (value_.infinity) {
         strf::detail::print_inf(ob, lettercase_, value_.negative);
     } else if (sci_notation_) {
+        auto e10 = value_.e10 - 1 + (int)m10_digcount_;
         ob.ensure( value_.negative + m10_digcount_ + (m10_digcount_ != 1) + 4
-                 + (value_.e10 > 99 || value_.e10 < -99) );
+                 + (e10 > 99 || e10 < -99) );
         CharT* it = ob.pointer();
         if (value_.negative) {
             * it = '-';
@@ -1409,7 +1411,6 @@ STRF_HD void fast_double_printer<CharT>::print_to
             it[1] = '.';
             it = next;
         }
-        auto e10 = value_.e10 - 1 + (int)m10_digcount_;
         it[0] = 'E' | ((lettercase_ != strf::uppercase) << 5);
         it[1] = static_cast<CharT>('+' + ((e10 < 0) << 1));
         unsigned e10u = std::abs(e10);
