@@ -103,6 +103,11 @@ STRF_TEST_FUNC void test_floating_point(FloatT value)
     }
 }
 
+#if defined(__GNUC__) && (__GNUC__ == 7 || __GNUC__ == 8)
+#  define IGNORING_GCC_WARNING_ARRAY_BOUNDS
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Warray-bounds"
+#endif
 
 template <typename FloatT, typename helper = floating_point_traits<FloatT>>
 STRF_TEST_FUNC void test_floating_point
@@ -118,6 +123,11 @@ STRF_TEST_FUNC void test_floating_point
         , " value=", value );
     test_floating_point(value);
 }
+
+#if defined(IGNORING_GCC_WARNING_ARRAY_BOUNDS)
+#  undef IGNORING_GCC_WARNING_ARRAY_BOUNDS
+#  pragma GCC diagnostic pop
+#endif
 
 template <typename FloatT>
 STRF_TEST_FUNC void test_several_values()
@@ -384,6 +394,15 @@ STRF_TEST_FUNC void basic_tests()
     TEST("______________123.00")  (j(*strf::fmt(123.0).p(5)));
     TEST("______________1000.5") (j(!strf::fmt(1000.5).p(6)));
 
+    // test rounding
+    TEST("_________________2.2")  (j(strf::fmt(2.25).p(2)));
+    TEST("_________________2.3")  (j(strf::fmt(2.25000001).p(2)));
+    TEST("________________2.25")  (j(strf::fmt(2.25000001).p(3)));
+    TEST("_____________2.2e+15")  (j(strf::fmt(2.25e+15).p(2)));
+    TEST("_____________2.3e+15")  (j(strf::fmt(2.250001e+15).p(2)));
+    TEST("____________2.25e+15")  (j(strf::fmt(2.250001e+15).p(3)));
+
+
     //----------------------------------------------------------------
     // strf::fixed
 
@@ -401,6 +420,11 @@ STRF_TEST_FUNC void basic_tests()
     TEST("______________1.2500")  (j(strf::fixed(1.25).p(4)));
     TEST("____________1.001000")  (j(strf::fixed(1.001).p(6)));
     TEST("_______________0.125")  (j(strf::fixed(0.125)));
+
+    // test rounding
+    TEST("_________________2.2")  (j(strf::fixed(2.25).p(1)));
+    TEST("_________________2.3")  (j(strf::fixed(2.25000001).p(1)));
+    TEST("________________2.25")  (j(strf::fixed(2.25000001).p(2)));
 
     //----------------------------------------------------------------
     // strf::sci
@@ -430,6 +454,13 @@ STRF_TEST_FUNC void basic_tests()
     TEST("_________6.25000e-02") (j(strf::sci(0.0625).p(5)));
     TEST("________8.192750e+03") (j(strf::sci(8192.75).p(6)));
 
+    TEST("_____________2.2e+15") (j(strf::sci(2.25e+15).p(1)));
+    TEST("_____________2.3e+15") (j(strf::sci(2.250001e+15).p(1)));
+    TEST("____________2.25e+15") (j(strf::sci(2.250001e+15).p(2)));
+
+
+    // ---------------------------------------------------------------
+    // alignment
     TEST("_________******-1.25") (j(strf::right(-1.25, 11, '*')));
     TEST("_________-1.25******") (j(strf::left(-1.25, 11, '*')));
     TEST("_________***-1.25***") (j(strf::center(-1.25, 11, '*')));
