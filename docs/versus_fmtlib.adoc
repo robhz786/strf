@@ -13,7 +13,7 @@ http://www.boost.org/LICENSE_1_0.txt
 
 :tr-string: <<quick_reference#tr_string,tr-string>>
 
-= Comparasion between strf and {fmt}
+= Comparision between strf and {fmt}
 :source-highlighter: prettify
 :sectnums:
 :sectnumlevels: 2
