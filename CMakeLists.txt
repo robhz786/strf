@@ -42,6 +42,9 @@ endif (STRF_BUILD_TESTS OR STRF_BUILD_EXAMPLES)
 add_library(strf-header-only INTERFACE)
 add_library(strf-static-lib  STATIC src/strf.cpp)
 
+target_compile_features(strf-header-only INTERFACE cxx_std_14)
+target_compile_features(strf-static-lib  PUBLIC    cxx_std_14)
+
 add_library(strf::strf-static-lib  ALIAS strf-static-lib)
 add_library(strf::strf-header-only ALIAS strf-header-only)
 
