@@ -51,14 +51,14 @@ add_executable(test-header-only main.cpp test_utils.cpp ${sources})
 add_executable(test-static-lib  main.cpp test_utils.cpp ${sources})
 
 target_link_libraries(test-header-only   strf-header-only)
-target_link_libraries(test-static-lib    strf)
+target_link_libraries(test-static-lib    strf-static-lib)
 
 set_target_properties(test-header-only  PROPERTIES OUTPUT_NAME header-only)
 
 set_target_properties(test-static-lib   PROPERTIES OUTPUT_NAME static-lib)
 
 target_link_libraries(test-header-only  strf-header-only)
-target_link_libraries(test-static-lib   strf)
+target_link_libraries(test-static-lib   strf-static-lib)
 
 add_test(NAME run-tests-header-only COMMAND  header-only)
 add_test(NAME run-tests-static-lib  COMMAND  static-lib)
