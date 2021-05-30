@@ -3,6 +3,7 @@ StrfVersion = v0.14.0
 
 all: \
     out/syntax.svg \
+    out/install.html \
     out/tutorial.html \
     out/quick_reference.html \
     out/locale_hpp.html \
@@ -22,6 +23,9 @@ out/ :
 
 out/syntax.svg : syntax.svg out/
 	cp $< $@
+
+out/install.html : install.adoc out/
+	asciidoctor -v $< -o $@
 
 out/tutorial.html : tutorial.adoc out/
 	asciidoctor -v $< -o $@

@@ -1,0 +1,75 @@
+////
+Distributed under the Boost Software License, Version 1.0.
+
+See accompanying file LICENSE_1_0.txt or copy at
+http://www.boost.org/LICENSE_1_0.txt
+////
+
+= Building, installing and using Strf library
+:source-highlighter: prettify
+
+If you use CMake, you are probably already know with the proccess. Anyway:
+
+[source,subs=normal]
+----
+git clone https://github.com/robhz786/strf
+mkdir build_strf
+cd build_strf
+cmake ../strf
+cmake --build .
+cmake --install . --prefix __your/installation/directory__
+----
+
+In your CMake project, you link your program or library against either
+`strf::strf-static-lib` and `strf::strf-header-only` target.
+
+[source,cmake]
+----
+find_package(strf)
+target_link_libraries(your_target strf::strf-header-only)
+# or
+# target_link_libraries(your_target strf::strf-static-lib)
+----
+
+If you are not using CMake and want to use strf as a header-only library,
+then you only need to add the `include` sub-directory as an include path.
+If you plan to use it as a static library, then you also need to define
+the macro `STRF_SEPARATE_COMPILATION` in your code: 
+
+[source,cpp]
+----
+// Make sure this define comes before including any of the library's header
+#define STRF_SEPARATE_COMPILATION
+#include <strf.hpp>
+----
+
+Building the library manually is supposed to be easy, since you only
+need to compile the file `src/strf.cpp`.
+
+== Running the unit tests
+
+To build the unit test, just add the flag `-DSTRF_BUILD_TEST=ON` on
+the first `cmake` command invocation in the above snippet,
+then run command `ctest` after the command `cmake --build .`
+
+== Freestanding Strf
+
+There is an experimental variant of the Strf library: if you use the CMake option
+`STRF_FREESTANDING` ( through the cmake command option `-DSTRF_FREESTANDING=ON` ), then
+Strf will only depend on https://en.cppreference.com/w/cpp/freestanding[freestanding]
+parts of the C++ Standard Library. Not even the functions declared in `<cstring>`
+header ( like `memcpy` and `strcpy` ) are used, unless you use the CMake option
+`STRF_WITH_CSTRING` ( by passing the command option `-DSTRF_WITH_CSTING=ON` ).
+This options causes Strf to use `<cstring>` functions even when `STRF_FREESTANDING`
+is on, which is highly recommended when such functions are available ( because
+Strf will otherwise use slow loop-based alternatives )
+
+If you are not using CMake, you instead define the macros:
+
+[source,cpp]
+----
+// Make sure these defines come before including any of the library's header
+#define STRF_FREESTANDING
+#define STRF_WITH_CSTRING
+#include <strf.hpp>
+----
