@@ -353,7 +353,14 @@ namespace dragonbox {
 			template <class UInt>
 			STRF_HD inline int countr_zero(UInt n) noexcept {
 				static_assert(std::is_unsigned<UInt>::value && value_bits<UInt> <= 64, "");
-#if defined(__GNUC__) || defined(__clang__)
+				STRF_ASSERT(n != 0);
+#if defined(__CUDACC__)
+				JKJ_IF_CONSTEXPR (sizeof(UInt) == 4) {
+					return __ffs(n) - 1;
+				} else {
+					return __ffsll(n) - 1;
+				}
+#elif defined(__GNUC__) || defined(__clang__)
 #define JKJ_HAS_COUNTR_ZERO_INTRINSIC 1
 				static_assert( std::is_same<UInt, unsigned long>::value
 					|| std::is_same<UInt, unsigned long long>::value
