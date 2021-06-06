@@ -1,0 +1,137 @@
+////
+Distributed under the Boost Software License, Version 1.0.
+
+See accompanying file LICENSE_1_0.txt or copy at
+http://www.boost.org/LICENSE_1_0.txt
+////
+
+:strf-version: develop
+:strf-src-root: https://github.com/robhz786/strf/blob/{strf-version}
+
+= Why does `strf` not use `std::locale` ?
+:source-highlighter: prettify
+
+The C++ Standard Library provides the `std::locale` class
+( used to manage _facet_ object ), as well as the `std::numpunct` class
+template. So, why did strf define its own
+facets design ( and its own `strf::numpunct` ) instead of just using
+what is already well-know and available by the standard ?
+
+To start with, `std::locale` has the some disadvantages:
+// flaws:
+
+* It forces the use dynamic memory allocation.
+* It requires RTTI and exceptions enabled
+* It's not available in https://en.cppreference.com/w/cpp/freestanding[freestanding]
+  implementations.
+
+These things may be irrelevant in many scenarios,
+but they are problematic in others.
+They were probably unavoidable back
+in the time `std::locale` was created,
+but we can do better now with C++14.
+
+// taking more advantange of static polymorfism.
+
+// In C++14, however, we can explore new kinds of designs.
+// It seemed natural to try something different,
+// something more based on static polymorfism,
+// which is more trendy these days.
+//
+// However, one of goals in strf
+// was to find a design that would take
+// best advantage of what C++14 has to offer.
+// So it would be only natural to try alternatives.
+
+The design of `strf::facets_pack` class template is similar
+to as of `std::tuple`, holding its elements by value,
+in contrast to `std::locale` were they
+are managed by reference counting.
+
+`strf::get_facet` is as fast as a typical getter: it
+just returns the reference of the requested object, or,
+if it is not present, a default value,
+while `std::use_facet` probably needs
+to perform some run-time processing.
+
+There is no base class that facets in strf need to derive from.
+They only need to satisfy the __<<strf_hpp#Facet,Facet>>__
+type requirements, which is not really demanding.
+This provides a great flexibility on how a facet can be designed.
+It can be as simple as an enumeration
+or as sofisticated as the the charset facets, or the
+width calculation facets. But one thing all facet of this
+library have in common is that they all are small and
+fast to copy, and none of them cause dynamic memory allocation.
+// In contrast to the OO approach of `std::locale`, strf uses
+// static polymorfism and is facets are value types.
+
+// It was necessary to create `strf::numpunct` because `std::numpunct`
+// could not be used in `strf::facets_pack`. But this, in turn, also
+// ended up bringing advantages:
+
+`strf::numpunct` also has some advantages in relation to `std::numpunct`:
+
+* The decimal point and the thousands separator are
+  `char32_t` values.
+* Punctuation can also be applied on integers printed
+  in hexadecimal, octal or binary bases.
+* A single `strf::numpunct` object
+  can be used for all character types.
+* More lightweight: the groups are defined in a simple integer,
+  instead of a string.
+* Less boiler plate to manually define the punctuation:
+  no need to create a new class that overrides member
+  functions. You do it in a single expression:
++
+[source,cpp]
+----
+auto punct = strf::numpunct<10> (3, 2, 1)
+    .decimal_point(',')
+    .thousands_separator('.');
+----
+
+
+// But perhaps the main reason is that the goals
+// re different:
+
+`std::locale` and `strf::facets_pack` have been created with
+different goals in mind. `std::locale` is about localization,
+and it was designed to be used in `std::iostream`.
+Strf facets were created to make strf highly customizable,
+kind of to complement format functions.
+Dealing with numeric punctuation just happens to be one thing
+they have in common.
+
+// Creating a `std::locale` object causes
+// a whole bunch of information from the system to be loaded,
+// most of which are not used by Strf.
+//
+// only a part of which &#x2014; numeric punctuation &#x2014;
+// may be used by strf.
+
+// `std::locale` it is only available in
+// https://en.cppreference.com/w/cpp/freestanding[hosted]
+// implementation.
+//
+// Strf aims to be usable in
+// https://en.cppreference.com/w/cpp/freestanding[freestanding]
+// environments.
+//
+// That's why if you want to load punctuation from the
+// system's locales, you call the `strf::locale_numpunct()`
+// function, which is defined in separate non-freestanding
+// header `<strf/locale.hpp>`. But `strf::numpunct` itself
+// can be used in a freestanding environment.
+// `std::locale` can not.
+//
+// However, all these arguments are secundary.
+// The main point is actually that `std::locale`
+// and `strf::facets_pack` have been designed with
+// different goals in mind.
+// `std::locale` is about localization.
+// The facets of strf not necessary.
+// Numeric punctuation is just an intersection.
+//
+
+

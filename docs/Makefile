@@ -12,6 +12,7 @@ all: \
     out/howto_override_printable_types.html \
     out/cuda.html \
     out/versus_fmtlib.html \
+    out/why_not_std_locale.html \
     out/strf_hpp.html \
     out/outbuff_hpp.html \
     out/to_cfile_hpp.html \
@@ -50,6 +51,9 @@ out/cuda.html : cuda.adoc out/
 
 out/versus_fmtlib.html : versus_fmtlib.adoc out/
 	asciidoctor -v --attribute=strf-version=$(StrfVersion) $< -o $@
+
+out/why_not_std_locale.html : why_not_std_locale.adoc out/
+	asciidoctor -v $< -o $@
 
 out/strf_hpp.html : strf_hpp.adoc \
                     ref_facets_pack.adoc \
