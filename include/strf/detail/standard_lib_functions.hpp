@@ -1,9 +1,10 @@
+#ifndef STRF_DETAIL_STANDARD_LIB_FUNCTIONS_HPP
+#define STRF_DETAIL_STANDARD_LIB_FUNCTIONS_HPP
+
+//  Copyright (C) (See commit logs on github.com/robhz786/strf)
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
-
-#ifndef STRF_DETAIL_STANDARD_LIB_FUNCTIONS_HPP
-#define STRF_DETAIL_STANDARD_LIB_FUNCTIONS_HPP
 
 #include <strf/detail/strf_def.hpp>
 
