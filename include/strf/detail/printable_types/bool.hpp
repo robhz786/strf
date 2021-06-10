@@ -67,7 +67,7 @@ public:
     constexpr STRF_HD bool_printer
         ( const strf::usual_printer_input<T...>& input )
         : value_(input.arg)
-        , lettercase_(strf::get_facet<strf::lettercase_c, bool>(input.facets))
+        , lettercase_(strf::use_facet<strf::lettercase_c, bool>(input.facets))
     {
         input.preview.subtract_width(5u - (int)input.arg);
         input.preview.add_size(5 - (int)input.arg);
@@ -116,9 +116,9 @@ public:
         ( const strf::usual_printer_input<CharT, T...>& input )
         : value_(input.arg.value())
         , afmt_(input.arg.get_alignment_format())
-        , lettercase_(strf::get_facet<strf::lettercase_c, bool>(input.facets))
+        , lettercase_(strf::use_facet<strf::lettercase_c, bool>(input.facets))
     {
-        auto charset = strf::get_facet<charset_c<CharT>, bool>(input.facets);
+        auto charset = strf::use_facet<charset_c<CharT>, bool>(input.facets);
         std::uint16_t w = 5 - (int)input.arg.value();
         auto fmt_width = afmt_.width.round();
         if (fmt_width > w) {

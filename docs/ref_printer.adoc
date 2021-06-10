@@ -23,7 +23,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 :make_printer_input: <<make_printer_input,make_printer_input>>
 
 :basic_outbuff: <<outbuff_hpp#basic_outbuff,basic_outbuff>>
-:get_facet: <<get_facet,get_facet>>
+:use_facet: <<use_facet,use_facet>>
 :tag: <<tag,tag>>
 :rank: <<rank,rank>>
 :join: <<join,join>>
@@ -99,7 +99,7 @@ When defined, global `{make_printer_input}` uses the following expression
 to obtain the _PrinterInput_ object:
 [source,cpp,subs=normal]
 ----
-<<get_facet,get_facet>><{print_override_c}, override_tag>(_facets_).make_printer_input(...)
+<<use_facet,use_facet>><{print_override_c}, override_tag>(_facets_).make_printer_input(...)
 ----
 , which would mean that the corresponding _Printable_ type could be overriden by an
 facet object. While when `override_tag` is not defined, this _Printable_ type is not overridable.
@@ -342,7 +342,7 @@ If `{print_traits_of}<Arg>::override_tag` is defined,
 `make_printer_input` returns
 [source,cpp,subs=normal]
 ----
-{get_facet}< {print_override_c}
+{use_facet}< {print_override_c}
          , typename {print_traits_of}<Arg>::override_tag >(facets)
     .make_printer_input({tag}<CharT>{}, preview, facets, arg);
 ----

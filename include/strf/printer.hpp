@@ -823,7 +823,7 @@ constexpr STRF_HD auto make_printer_input_
     , const Arg& arg )
 {
     using tag = typename PrinterTraits::override_tag;
-    auto overrider = strf::get_facet<print_override_c, tag>(facets);
+    auto overrider = strf::use_facet<print_override_c, tag>(facets);
     using maker = strf::detail::intermediate_printer_input_maker<decltype(overrider), Arg>;
     return maker::template make<CharT>(overrider, preview, facets, arg);
 }

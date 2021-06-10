@@ -37,7 +37,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 
 :join:            <<quick_referance#joins,join>>
 :Facet:           <<strf_hpp#Facet,Facet>>
-:get_facet:       <<strf_hpp#get_facet,get_facet>>
+:use_facet:       <<strf_hpp#use_facet,use_facet>>
 :facets_pack:     <<strf_hpp#facets_pack,facets_pack>>
 :tag:             <<strf_hpp#tag,tag>>
 
@@ -241,7 +241,7 @@ struct print_traits<std::complex<FloatT>> {
         , const FPack& fp
         , std::complex<FloatT> arg)
     {
-        complex_form form = strf::{get_facet}<complex_form_c, std::complex<FloatT>>(fp);
+        complex_form form = strf::{use_facet}<complex_form_c, std::complex<FloatT>>(fp);
         auto v = ::complex_coordinates(arg, form);
         unsigned has_brackets = form != complex_form::polar;
         auto arg2 = strf::join
@@ -273,18 +273,18 @@ Its first line gives us the `complex_form` value:
 
 [source,cpp,subs=normal]
 ----
-complex_form form = strf::{get_facet}<complex_form_c, std::complex<FloatT>>(fp);
+complex_form form = strf::{use_facet}<complex_form_c, std::complex<FloatT>>(fp);
 ----
 
-`get_facet` is used to extract a facet object from a `{facets_pack}` object.
+`use_facet` is used to extract a facet object from a `{facets_pack}` object.
 The first template parameter is the facet category.
 The second is the usually printable type and it only has effect when there is
 any <<tutorial#constrained_facets,constrained facets>> of the given category
 in the the `{facets_pack}` object. The effect is that
-`{get_facet}` only returns the value inside a constrained facet when
+`{use_facet}` only returns the value inside a constrained facet when
 `Filter<Tag>::value` is `true` ,
 where `Filter` is the template parameter of the constrained facet, and `Tag`
-is the second template parameter used in `{get_facet}`
+is the second template parameter used in `{use_facet}`
 ( which is `std::complex<FloatT>` in this case ).
 
 Next, we evaluate the floating-point values to be printed.
@@ -437,7 +437,7 @@ struct print_traits<std::complex<FloatT>> {
     {
         // handles value with formatting
 
-        auto form = strf::get_facet<complex_form_c, std::complex<FloatT>>(fp);
+        auto form = strf::use_facet<complex_form_c, std::complex<FloatT>>(fp);
         auto v = ::complex_coordinates(arg.value(), form);
         unsigned has_brackets = form != complex_form::polar;
         auto arg2 = strf::join
@@ -549,7 +549,7 @@ struct std_complex_formatter {
         vector   = (int)complex_form::vector,
         algebric = (int)complex_form::algebric,
         polar    = (int)complex_form::polar,
-        use_facet = 1 + std::max({vector, algebric, polar})
+        from_facet = 1 + std::max({vector, algebric, polar})
     };
 
     template <class T>
@@ -581,7 +581,7 @@ struct std_complex_formatter {
         }
         constexpr complex_form form(complex_form f) const
         {
-            return form_ == complex_form_fmt::use_facet ? f : static_cast<complex_form>(form_);
+            return form_ == complex_form_fmt::from_facet ? f : static_cast<complex_form>(form_);
         }
         constexpr complex_form_fmt form() const
         {
@@ -590,7 +590,7 @@ struct std_complex_formatter {
 
     private:
 
-        complex_form_fmt form_ = complex_form_fmt::use_facet;
+        complex_form_fmt form_ = complex_form_fmt::from_facet;
     };
 };
 ----
@@ -644,7 +644,7 @@ struct print_traits<std::complex<FloatT>> {
         , const FPack& fp
         , strf::{value_with_formatters}<T\...> arg )
     {
-        auto form = arg.form(strf::get_facet<complex_form_c, std::complex<FloatT>>(fp));
+        auto form = arg.form(strf::use_facet<complex_form_c, std::complex<FloatT>>(fp));
 
         // same as before
         //\...
@@ -843,13 +843,13 @@ template <typename CharT, typename FloatT>
 template <typename\... T>
 inline std_complex_printer<CharT, FloatT>::std_complex_printer
     ( strf::{usual_printer_input}<T\...> x )
-    : charset_(strf::{get_facet}<strf::{charset_c}<CharT>, void>(x.facets))
-    , numpunct_(strf::{get_facet}<strf::{numpunct_c}<10>, FloatT>(x.facets))
-    , lettercase_(strf::{get_facet}<strf::{lettercase_c}, FloatT>(x.facets))
-    , form_(strf::{get_facet}<complex_form_c, std::complex<FloatT>>(x.facets))
+    : charset_(strf::{use_facet}<strf::{charset_c}<CharT>, void>(x.facets))
+    , numpunct_(strf::{use_facet}<strf::{numpunct_c}<10>, FloatT>(x.facets))
+    , lettercase_(strf::{use_facet}<strf::{lettercase_c}, FloatT>(x.facets))
+    , form_(strf::{use_facet}<complex_form_c, std::complex<FloatT>>(x.facets))
     , coordinates_(::complex_coordinates(form_, x.arg))
 {
-    auto wcalc = strf::{get_facet}< strf::{width_calculator_c}
+    auto wcalc = strf::{use_facet}< strf::{width_calculator_c}
                                 , std::complex<FloatT> >(x.facets);
     preview_(x.preview, wcalc);
 }
@@ -861,7 +861,7 @@ variable is because its type would need to be another template parameter,
 one that would change often &#x2014; every time the facets are different &#x2014;
 thus causing some code bloat.
 
-Usually the second template argument in `{get_facet}` is the input type,
+Usually the second template argument in `{use_facet}` is the input type,
 which here is `std::comple<FloatT>`. However, I decided that
 it makes more sense to use `FloatT` for the numeric punctuation
 and letter case. There is no strict rule for that.

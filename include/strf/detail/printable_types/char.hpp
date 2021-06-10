@@ -138,8 +138,8 @@ public:
         input.preview.add_size(1);
         using preview_type = typename strf::usual_printer_input<CharT, T...>::preview_type;
         STRF_IF_CONSTEXPR(preview_type::width_required) {
-            decltype(auto) wcalc = get_facet<strf::width_calculator_c, CharT>(input.facets);
-            auto charset = get_facet<strf::charset_c<CharT>, CharT>(input.facets);
+            decltype(auto) wcalc = use_facet<strf::width_calculator_c, CharT>(input.facets);
+            auto charset = use_facet<strf::charset_c<CharT>, CharT>(input.facets);
             auto w = wcalc.char_width(charset, static_cast<CharT>(ch_));
             input.preview.subtract_width(w);
         }
@@ -173,8 +173,8 @@ public:
         , afmt_(input.arg.get_alignment_format())
         , ch_(static_cast<CharT>(input.arg.value()))
     {
-        auto charset = get_facet_<strf::charset_c<CharT>>(input.facets);
-        decltype(auto) wcalc = get_facet_<strf::width_calculator_c>(input.facets);
+        auto charset = use_facet_<strf::charset_c<CharT>>(input.facets);
+        decltype(auto) wcalc = use_facet_<strf::width_calculator_c>(input.facets);
         encode_fill_fn_ = charset.encode_fill_func();
         init_(input.preview, wcalc, charset);
     }
@@ -191,9 +191,9 @@ private:
     CharT ch_;
 
     template <typename Category, typename FPack>
-    static STRF_HD decltype(auto) get_facet_(const FPack& fp)
+    static STRF_HD decltype(auto) use_facet_(const FPack& fp)
     {
-        return fp.template get_facet<Category, CharT>();
+        return fp.template use_facet<Category, CharT>();
     }
 
     template <typename Preview, typename WCalc, typename Charset>
@@ -279,13 +279,13 @@ public:
     STRF_HD conv_char32_printer(strf::usual_printer_input<T...> input)
         : ch_(input.arg)
     {
-        auto encoding = strf::get_facet<charset_c<DestCharT>, char32_t>(input.facets);
+        auto encoding = strf::use_facet<charset_c<DestCharT>, char32_t>(input.facets);
         encode_char_f_ = encoding.encode_char_func();
         encoded_char_size_ = encoding.encoded_char_size(input.arg);
         input.preview.add_size(encoded_char_size_);
         using preview_type = typename strf::usual_printer_input<T...>::preview_type;
         STRF_IF_CONSTEXPR (preview_type::width_required) {
-            decltype(auto) wcalc = get_facet<strf::width_calculator_c, char32_t>(input.facets);
+            decltype(auto) wcalc = use_facet<strf::width_calculator_c, char32_t>(input.facets);
             input.preview.subtract_width(wcalc.char_width(strf::utf_t<char32_t>{}, ch_));
         }
     }
@@ -316,8 +316,8 @@ public:
         : count_(input.arg.count())
         , ch_(input.arg.value())
     {
-        auto charset = strf::get_facet<charset_c<DestCharT>, char32_t>(input.facets);
-        decltype(auto) wcalc = get_facet<strf::width_calculator_c, char32_t>(input.facets);
+        auto charset = strf::use_facet<charset_c<DestCharT>, char32_t>(input.facets);
+        decltype(auto) wcalc = use_facet<strf::width_calculator_c, char32_t>(input.facets);
         auto char_width = wcalc.char_width(strf::utf_t<char32_t>{}, ch_);
         init_(input.preview, charset, input.arg.get_alignment_format(), char_width);
     }

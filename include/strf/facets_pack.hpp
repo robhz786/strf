@@ -117,7 +117,6 @@ constexpr STRF_HD decltype(auto) do_get_facet(const FPE& elm)
     return traits::template get_facet<Cat, Tag>(elm);
 }
 
-
 template <typename ... FPE>
 class fpe_traits<strf::facets_pack<FPE...>>
 {
@@ -563,6 +562,11 @@ public:
     {
         return Category::get_default();
     }
+    template <typename Category, typename Tag>
+    constexpr STRF_HD decltype(auto) use_facet() const
+    {
+        return Category::get_default();
+    }
 };
 
 template <typename ... FPE>
@@ -606,6 +610,14 @@ public:
             , strf::tag<Category>()
             , std::true_type() );
     }
+    template <typename Category, typename Tag>
+    constexpr STRF_HD decltype(auto) use_facet() const
+    {
+        return this->template do_get_facet<Tag>
+            ( strf::rank<sizeof...(FPE)>()
+            , strf::tag<Category>()
+            , std::true_type() );
+    }
 };
 
 template <typename ... T>
@@ -628,9 +640,19 @@ template
     < typename FacetCategory
     , typename Tag
     , typename ... FPE >
+constexpr STRF_HD decltype(auto) use_facet(const strf::facets_pack<FPE...>& fp)
+{
+    return fp.template use_facet<FacetCategory, Tag>();
+}
+
+template
+    < typename FacetCategory
+    , typename Tag
+    , typename ... FPE >
+[[deprecated("Use strf::use_facet instead")]]
 constexpr STRF_HD decltype(auto) get_facet(const strf::facets_pack<FPE...>& fp)
 {
-    return fp.template get_facet<FacetCategory, Tag>();
+    return fp.template use_facet<FacetCategory, Tag>();
 }
 
 } // namespace strf

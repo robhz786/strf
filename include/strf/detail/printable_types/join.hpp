@@ -145,7 +145,7 @@ public:
               , true, FwdArgs...>& input )
         : afmt_(input.arg.get_alignment_format())
     {
-        auto charset = get_facet_<strf::charset_c<CharT>>(input.facets);
+        auto charset = use_facet_<strf::charset_c<CharT>>(input.facets);
         encode_fill_func_ = charset.encode_fill_func();
         strf::print_preview<ReqSize, strf::preview_width::yes> preview { afmt_.width };
         new (printers_ptr_()) printers_tuple_{input.arg.value().args, preview, input.facets};
@@ -169,7 +169,7 @@ public:
               , true, FwdArgs...>& input )
         : afmt_(input.arg.get_alignment_format())
     {
-        auto charset = get_facet_<strf::charset_c<CharT>>(input.facets);
+        auto charset = use_facet_<strf::charset_c<CharT>>(input.facets);
         encode_fill_func_ = charset.encode_fill_func();
         strf::width_t wmax = afmt_.width;
         strf::width_t diff = 0;
@@ -256,9 +256,9 @@ private:
 #endif
 
     template <typename Category, typename FPack>
-    static decltype(auto) STRF_HD get_facet_(const FPack& facets)
+    static decltype(auto) STRF_HD use_facet_(const FPack& facets)
     {
-        return facets.template get_facet<Category, strf::aligned_join_maker>();
+        return facets.template use_facet<Category, strf::aligned_join_maker>();
     }
 
     STRF_HD void write_fill_(strf::basic_outbuff<CharT>& ob, int count) const

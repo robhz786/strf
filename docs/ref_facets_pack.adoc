@@ -6,7 +6,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 ////
 
 :facets_pack: <<facets_pack,facets_pack>>
-:get_facet: <<get_facet,get_facet>>
+:use_facet: <<use_facet,use_facet>>
 :facet_category: <<facet_category,facet_category>>
 :facet_traits: <<facet_traits,facet_traits>>
 :FacetCategory: <<FacetCategory, FacetCategory>>
@@ -95,12 +95,12 @@ Return type:: `{facets_pack}<std::remove_cvref_t<T>>\...>`
 Return value:: A `{facets_pack}` object initialized with `std::forward<T>(args)\...`
 ====
 
-=== Function template `get_facet` [[get_facet]]
+=== Function template `use_facet` [[use_facet]]
 ====
 [source,cpp]
 ----
 template <typename FCat, typename Tag, typename ... T>
-constexpr decltype(auto) get_facet(const facets_pack<T...>& fp);
+constexpr decltype(auto) use_facet(const facets_pack<T...>& fp);
 ----
 Effects:: If <<has_facet, `has_facet<FCat, Tag>(fp)`>> returns `true` then
           returns <<do_get_facet,`do_get_facet<FCat, Tag>(fp)`, otherwise
@@ -112,7 +112,7 @@ Compile-time requirements::  `FCat` is a _{FacetCategory}_ type.
 === Hypothetical function template `fas_facet`
 NOTE: This function template does not exists in this library.
        It is only documented to help to explain the
-       <<get_facet, `get_facet`>> function template.
+       <<use_facet, `use_facet`>> function template.
 ====
 [source,cpp]
 ----
@@ -137,7 +137,7 @@ Compile-time requirements::
 === Hypothetical function template `do_get_facet`
 NOTE: This function template is not part of the library.
       It is only documented to help to explain the
-      <<get_facet,`get_facet`>> function template
+      <<use_facet,`use_facet`>> function template
 ====
 [source,cpp]
 ----
@@ -162,7 +162,7 @@ class constrained_fpe;
 The class template `constrained_fpe` is designed to be used in
 <<facets_pack,`facets_pack`>>. `constrained_fpe<Filter, FPE>`
 holds a value of `FPE` that will only be returned by
-<<get_facet, ``get_facet<Category, Tag>``>> if
+<<use_facet, ``use_facet<Category, Tag>``>> if
 `Filter<Tag>::value` is `true`.
 
 Compile-time requirements::

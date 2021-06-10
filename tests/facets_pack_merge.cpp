@@ -51,13 +51,13 @@ template <typename FPack>
 simple_array<int, 7> STRF_TEST_FUNC digest(const FPack& fp)
 {
     return {{
-        strf::get_facet< fcategory, input_type<1> >(fp).value,
-        strf::get_facet< fcategory, input_type<2> >(fp).value,
-        strf::get_facet< fcategory, input_type<3> >(fp).value,
-        strf::get_facet< fcategory, input_type<4> >(fp).value,
-        strf::get_facet< fcategory, input_type<5> >(fp).value,
-        strf::get_facet< fcategory, input_type<6> >(fp).value,
-        strf::get_facet< fcategory, input_type<7> >(fp).value
+        strf::use_facet< fcategory, input_type<1> >(fp).value,
+        strf::use_facet< fcategory, input_type<2> >(fp).value,
+        strf::use_facet< fcategory, input_type<3> >(fp).value,
+        strf::use_facet< fcategory, input_type<4> >(fp).value,
+        strf::use_facet< fcategory, input_type<5> >(fp).value,
+        strf::use_facet< fcategory, input_type<6> >(fp).value,
+        strf::use_facet< fcategory, input_type<7> >(fp).value
     }};
 }
 

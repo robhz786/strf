@@ -684,7 +684,7 @@ struct fast_double_printer_input
     STRF_HD fast_double_printer_input(Preview& preview_, const FPack& fp_, FloatT arg_)
         : preview(preview_)
         , value(arg_)
-        , lcase(strf::get_facet<strf::lettercase_c, float>(fp_))
+        , lcase(strf::use_facet<strf::lettercase_c, float>(fp_))
     {
     }
 
@@ -695,7 +695,7 @@ struct fast_double_printer_input
         , strf::detail::float_with_default_formatters<FloatT> input )
         : preview(preview_)
         , value(input.value())
-        , lcase(strf::get_facet<strf::lettercase_c, float>(fp_))
+        , lcase(strf::use_facet<strf::lettercase_c, float>(fp_))
     {
     }
 
@@ -1511,13 +1511,13 @@ STRF_HD void fast_double_printer<CharT>::print_to
 //         : value_(decode(input.arg))
 //         , m10_digcount_(strf::detail::count_digits<10>(value_.m10))
 //         , sep_count_(0)
-//         , lettercase_(strf::get_facet<strf::lettercase_c, FloatT>(input.facets))
+//         , lettercase_(strf::use_facet<strf::lettercase_c, FloatT>(input.facets))
 //     {
-//         auto punct = strf::get_facet<strf::numpunct_c<10>, FloatT>(input.facets);
+//         auto punct = strf::use_facet<strf::numpunct_c<10>, FloatT>(input.facets);
 //         grouping_ = punct.grouping();
 //         decimal_point_ = punct.decimal_point();
 //         thousands_sep_ = punct.thousands_sep();
-//         init_(strf::get_facet<strf::charset_c<CharT>, FloatT>(input.facets));
+//         init_(strf::use_facet<strf::charset_c<CharT>, FloatT>(input.facets));
 //         STRF_IF_CONSTEXPR (Preview::width_required) {
 //             input.preview.subtract_width(width_());
 //         }
@@ -2281,16 +2281,16 @@ public:
         ( const strf::detail::fmt_double_printer_input
             < CharT, Preview, FPack, FloatT
             , strf::float_formatter_full_dynamic, HasAlignment >& input )
-        : lettercase_(strf::get_facet<strf::lettercase_c, FloatT>(input.facets))
+        : lettercase_(strf::use_facet<strf::lettercase_c, FloatT>(input.facets))
     {
-        auto charset = get_facet<strf::charset_c<CharT>, FloatT>(input.facets);
+        auto charset = use_facet<strf::charset_c<CharT>, FloatT>(input.facets);
         encode_fill_ = charset.encode_fill_func();
         encode_char_ = charset.encode_char_func();
 
         auto notation = input.arg.float_notation();
         if (input.arg.get_float_format().punctuate) {
-            auto punct_dec = strf::get_facet<strf::numpunct_c<10>, FloatT>(input.facets);
-            auto punct_hex = strf::get_facet<strf::numpunct_c<16>, FloatT>(input.facets);
+            auto punct_dec = strf::use_facet<strf::numpunct_c<10>, FloatT>(input.facets);
+            auto punct_hex = strf::use_facet<strf::numpunct_c<16>, FloatT>(input.facets);
             grouping_ = punct_dec.grouping();
             thousands_sep_ = punct_dec.thousands_sep();
             decimal_point_ = ( notation != strf::float_notation::hex
@@ -2335,9 +2335,9 @@ public:
     STRF_HD punct_double_printer
         ( const strf::detail::fmt_double_printer_input
             < CharT, Preview, FPack, FloatT, FloatFormatter, HasAlignment >& input )
-        : lettercase_(strf::get_facet<strf::lettercase_c, FloatT>(input.facets))
+        : lettercase_(strf::use_facet<strf::lettercase_c, FloatT>(input.facets))
     {
-        auto charset = get_facet<strf::charset_c<CharT>, FloatT>(input.facets);
+        auto charset = use_facet<strf::charset_c<CharT>, FloatT>(input.facets);
         encode_fill_ = charset.encode_fill_func();
         auto r = strf::detail::init_float_printer_data
             ( data_, input.arg.value(), grouping_, input.arg.get_float_format()

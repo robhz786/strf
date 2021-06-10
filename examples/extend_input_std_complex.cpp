@@ -161,7 +161,7 @@ struct print_traits<std::complex<FloatT>>
     //     , const FPack& fp
     //     , std::complex<FloatT> arg)
     // {
-    //     auto form = strf::get_facet<complex_form_c, std::complex<FloatT>>(fp);
+    //     auto form = strf::use_facet<complex_form_c, std::complex<FloatT>>(fp);
     //     auto v = ::complex_coordinates(arg, form);
     //     unsigned has_brackets = form != complex_form::polar;
     //     auto arg2 = strf::join
@@ -181,7 +181,7 @@ struct print_traits<std::complex<FloatT>>
         , const FPack& fp
         , strf::value_with_formatters<T...> arg )
     {
-        auto form = arg.form(strf::get_facet<complex_form_c, std::complex<FloatT>>(fp));
+        auto form = arg.form(strf::use_facet<complex_form_c, std::complex<FloatT>>(fp));
         auto v = ::complex_coordinates(arg.value(), form);
         unsigned has_brackets = form != complex_form::polar;
         auto arg2 = strf::join

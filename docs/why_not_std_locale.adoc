@@ -48,7 +48,7 @@ to as of `std::tuple`, holding its elements by value,
 in contrast to `std::locale` were they
 are managed by reference counting.
 
-`strf::get_facet` is as fast as a typical getter: it
+`strf::use_facet` is as fast as a typical getter: it
 just returns the reference of the requested object, or,
 if it is not present, a default value,
 while `std::use_facet` probably needs

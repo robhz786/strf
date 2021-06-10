@@ -9,7 +9,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 
 :print_override_c: <<strf_hpp#print_override_c,print_override_c>>
 :make_printer_input: <<strf_hpp#make_printer_input,make_printer_input>>
-:get_facet: <<strf_hpp#get_facet,get_facet>>
+:use_facet: <<strf_hpp#use_facet,use_facet>>
 :pack: <<strf_hpp#pack,pack>>
 :set_alignment_format: <<strf_hpp#alignment_formatter,set_alignment_format>>
 :get_alignment_format: <<strf_hpp#alignment_formatter,get_alignment_format>>

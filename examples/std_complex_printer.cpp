@@ -190,14 +190,14 @@ template <typename CharT, typename FloatT>
 template <typename... T>
 inline std_complex_printer<CharT, FloatT>::std_complex_printer
     ( strf::usual_printer_input<T...> x )
-    : encoding_(strf::get_facet<strf::charset_c<CharT>, FloatT>(x.facets))
-    , numpunct_(strf::get_facet<strf::numpunct_c<10>, FloatT>(x.facets))
-    , lettercase_(strf::get_facet<strf::lettercase_c, FloatT>(x.facets))
-    , form_(strf::get_facet<complex_form_c, std::complex<FloatT>>(x.facets))
+    : encoding_(strf::use_facet<strf::charset_c<CharT>, FloatT>(x.facets))
+    , numpunct_(strf::use_facet<strf::numpunct_c<10>, FloatT>(x.facets))
+    , lettercase_(strf::use_facet<strf::lettercase_c, FloatT>(x.facets))
+    , form_(strf::use_facet<complex_form_c, std::complex<FloatT>>(x.facets))
     , coordinates_(::complex_coordinates(form_, x.arg))
 {
     preview_( x.preview
-            , strf::get_facet<strf::width_calculator_c, std::complex<FloatT>>(x.facets) );
+            , strf::use_facet<strf::width_calculator_c, std::complex<FloatT>>(x.facets) );
 }
 
 template <typename CharT, typename FloatT>
@@ -257,20 +257,20 @@ public:
 
     template <typename... T>
     fmt_std_complex_printer(strf::usual_printer_input<T...> x)
-        : encoding_(strf::get_facet<strf::charset_c<CharT>, complex_type_>(x.facets))
-        , numpunct10_(strf::get_facet<strf::numpunct_c<10>, FloatT>(x.facets))
-        , numpunct16_(strf::get_facet<strf::numpunct_c<16>, FloatT>(x.facets))
-        , lettercase_(strf::get_facet<strf::lettercase_c, FloatT>(x.facets))
+        : encoding_(strf::use_facet<strf::charset_c<CharT>, complex_type_>(x.facets))
+        , numpunct10_(strf::use_facet<strf::numpunct_c<10>, FloatT>(x.facets))
+        , numpunct16_(strf::use_facet<strf::numpunct_c<16>, FloatT>(x.facets))
+        , lettercase_(strf::use_facet<strf::lettercase_c, FloatT>(x.facets))
         , float_fmt_(x.arg.get_float_format())
         , form_(x.arg.form(
-                    (strf::get_facet<complex_form_c, std::complex<FloatT>>(x.facets))))
+                    (strf::use_facet<complex_form_c, std::complex<FloatT>>(x.facets))))
         , coordinates_{::complex_coordinates(form_, x.arg.value())}
         , fillchar_(x.arg.get_alignment_format().fill)
         , alignment_(x.arg.get_alignment_format().alignment)
     {
         init_fillcount_and_preview_
             ( x.preview
-            , strf::get_facet<strf::width_calculator_c, complex_type_>(x.facets)
+            , strf::use_facet<strf::width_calculator_c, complex_type_>(x.facets)
             , x.arg.width() );
     }
 

@@ -108,10 +108,10 @@ public:
     ipv6_printer(strf::usual_printer_input<CharT, T...> input)
         : addr_(input.arg.value())
         , alignment_fmt_(input.arg.get_alignment_format())
-        , lettercase_(strf::get_facet<strf::lettercase_c, xxx::ipv6address>(input.facets))
+        , lettercase_(strf::use_facet<strf::lettercase_c, xxx::ipv6address>(input.facets))
         , style_(input.arg.get_ipv6style())
     {
-        auto encoding = get_facet<strf::charset_c<CharT>, xxx::ipv6address>(input.facets);
+        auto encoding = use_facet<strf::charset_c<CharT>, xxx::ipv6address>(input.facets);
 
         encode_fill_fn_ = encoding.encode_fill_func();
         init_(input.preview, encoding);

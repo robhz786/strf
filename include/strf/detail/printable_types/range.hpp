@@ -336,10 +336,10 @@ private:
     std::size_t sep_len_;
 
     template <typename Category>
-    static STRF_HD decltype(auto) get_facet_(const FPack& fp)
+    static STRF_HD decltype(auto) use_facet_(const FPack& fp)
     {
         using sep_tag = strf::range_separator_input_tag<CharT>;
-        return fp.template get_facet<Category, sep_tag>();
+        return fp.template use_facet<Category, sep_tag>();
     }
 };
 
@@ -362,12 +362,12 @@ STRF_HD void separated_range_printer<CharT, FPack, It>::preview_(Preview& previe
         return;
     }
     if (Preview::width_required) {
-        decltype(auto) wcalc = get_facet_<strf::width_calculator_c>(fp_);
-        auto dw = wcalc.str_width( get_facet_<strf::charset_c<CharT>>(fp_)
+        decltype(auto) wcalc = use_facet_<strf::width_calculator_c>(fp_);
+        auto dw = wcalc.str_width( use_facet_<strf::charset_c<CharT>>(fp_)
                                  , preview.remaining_width()
                                  , sep_begin_
                                  , sep_len_
-                                 , get_facet_<strf::surrogate_policy_c>(fp_) );
+                                 , use_facet_<strf::surrogate_policy_c>(fp_) );
         auto acc_seps_width = checked_mul(dw, static_cast<std::uint32_t>(count - 1));
         preview.subtract_width(acc_seps_width);
     }
@@ -522,10 +522,10 @@ private:
     fmt_type_adapted_ fmt_;
 
     template <typename Category>
-    static inline STRF_HD decltype(auto) get_facet_(const FPack& fp)
+    static inline STRF_HD decltype(auto) use_facet_(const FPack& fp)
     {
         using sep_tag = strf::range_separator_input_tag<CharT>;
-        return fp.template get_facet<Category, sep_tag>();
+        return fp.template use_facet<Category, sep_tag>();
     }
 };
 
@@ -555,12 +555,12 @@ STRF_HD void fmt_separated_range_printer<CharT, FPack, It, Fmts ...>::preview_
         return;
     }
     if (Preview::width_required) {
-        decltype(auto) wcalc = get_facet_<strf::width_calculator_c>(fp_);
-        auto dw = wcalc.str_width( get_facet_<strf::charset_c<CharT>>(fp_)
+        decltype(auto) wcalc = use_facet_<strf::width_calculator_c>(fp_);
+        auto dw = wcalc.str_width( use_facet_<strf::charset_c<CharT>>(fp_)
                                  , preview.remaining_width()
                                  , r.sep_begin
                                  , r.sep_len
-                                 , get_facet_<strf::surrogate_policy_c>(fp_) );
+                                 , use_facet_<strf::surrogate_policy_c>(fp_) );
         preview.subtract_width(checked_mul(dw, static_cast<std::uint32_t>(count - 1)));
     }
     if (Preview::size_required) {
@@ -707,10 +707,10 @@ private:
     UnaryOp op_;
 
     template <typename Category>
-    static STRF_HD decltype(auto) get_facet_(const FPack& fp)
+    static STRF_HD decltype(auto) use_facet_(const FPack& fp)
     {
         using sep_tag = strf::range_separator_input_tag<CharT>;
-        return fp.template get_facet<Category, sep_tag>();
+        return fp.template use_facet<Category, sep_tag>();
     }
 };
 
@@ -735,12 +735,12 @@ STRF_HD void sep_transformed_range_printer<CharT, FPack, It, UnaryOp>
         return;
     }
     if (Preview::width_required) {
-        decltype(auto) wcalc = get_facet_<strf::width_calculator_c>(fp_);
-        auto dw = wcalc.str_width( get_facet_<strf::charset_c<CharT>>(fp_)
+        decltype(auto) wcalc = use_facet_<strf::width_calculator_c>(fp_);
+        auto dw = wcalc.str_width( use_facet_<strf::charset_c<CharT>>(fp_)
                                  , preview.remaining_width()
                                  , sep_begin_
                                  , sep_len_
-                                 , get_facet_<strf::surrogate_policy_c>(fp_) );
+                                 , use_facet_<strf::surrogate_policy_c>(fp_) );
         preview.subtract_width(checked_mul(dw, static_cast<std::uint32_t>(count - 1)));
     }
     if (Preview::size_required) {

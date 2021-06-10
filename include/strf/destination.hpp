@@ -213,10 +213,10 @@ private:
         const auto& self = static_cast<const destination_type_&>(*this);
 
         using catenc = strf::charset_c<char_type_>;
-        auto charset = strf::get_facet<catenc, void>(self.fpack_);
+        auto charset = strf::use_facet<catenc, void>(self.fpack_);
 
         using caterr = strf::tr_error_notifier_c;
-        decltype(auto) err_hdl = strf::get_facet<caterr, void>(self.fpack_);
+        decltype(auto) err_hdl = strf::use_facet<caterr, void>(self.fpack_);
         using err_hdl_type = std::remove_cv_t<std::remove_reference_t<decltype(err_hdl)>>;
 
         Preview preview;
