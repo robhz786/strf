@@ -232,19 +232,13 @@ You can see that applying the alignment is equally easy ( through `get_alignemt_
 and `set_alignment_format` ).
 // This is the main reason they have been created.
 
-Ok, I have to admit that the example is facilitated by the fact that we can convert a
-`point` object into another value ( a `join` object ) that the
-library already knows how to print. When this is
-impossible or impractical, you need to implement
-a _printer_ class that do things in a more low-level way,
-like in link:{strf-src-root}/example/extend_input_ipv6.cpp[this example]
-that prints IPv6 adresses in the abbreviated or non-abbreviated
-link:https://en.wikipedia.org/wiki/IPv6#Address_representation[representation],
-depending on the format options.
-
-Anyway, the documentation provides a <<howto_add_printable_types#,guide>>
-of how to make types printable in strf. It starts with a simple case,
-and gradually makes it more challenging.
+However, it must be acknowledged that this example is facilitated by the fact that
+it is possible to convert a `point` into another value ( a `join` object )
+that the library already knows how to print. If this was not case,
+we needed to implement a _printer_ class that do things in a more low-level way.
+This is explained in the <<howto_add_printable_types#,documentation>>.
+It starts with a simple case, and gradually moves towards more challenging
+examples.
 
 === Adding destinations
 
@@ -308,8 +302,8 @@ and `{fmt_print_to_n}` function templates.
 However, in strf you can go a bit further and create your own
 __destination expression__ to be used in the <<tutorial#syntax,basic usage syntax>>
 of the library. For example, suppose a codebase uses a string class of its own
-instead of `std::string` &#x2014; let's name it `xstring`.
-Just like there is `<<quick_reference#destinations,strf::to_string>>`, it is possible to define
+instead of `std::string` &#x2014; let's name it `xstring`:
+just like there is `<<quick_reference#destinations,strf::to_string>>`, it is possible to define
 a __destination expression__ named `to_xstring` intended to
 create `xstring` objects. If desirable, it is possible to implement it
 in such a way that the size of the content is always pre-calculated
@@ -339,11 +333,13 @@ This can happen when parsing the {tr-string} or in
 Optionally, you can set a callback to be invoked in such errors
 ( see `<<strf_hpp#tr_error_notifier_c,tr_error_notifier_c>>`
 and `<<strf_hpp#invalid_seq_notifier_c,invalid_seq_notifier_c>>` )
-which can in turn throw an exception, if you want.
+which can throw an exception, if that's what you want.
 
 In addition to that, depending on the <<quick_reference#destinations,destination>>,
 the return type of the <<tutorial#syntax,basic usage syntax>> may contain an error
-indication.
+indication. For example, when writing to a `char*`, the returned object contains
+a `bool` member `truncated` that tells whether the destination memory
+is too small.
 
 == Numeric punctuation
 
@@ -352,13 +348,13 @@ floating-point arguments are analogous.
 
 In {fmt}, you pass a `std::locale` object as an argument,
 before the format string, and also use the `'L'` format flag
-for those arguments that shall comply with the `std::numpunct`
+for those arguments that you want to follow the `std::numpunct`
 facet installed in that `std::locale` object.
 
 In strf, you pass a `strf::numpunct` object to
 the `with` function, and apply the `punct` or `operator!`
-format function in those arguments that shall comply with
-that `strf::numpunct` object.
+format function in those arguments you want to be
+punctuated.
 
 So the basic difference is that while {fmt} uses `std::locale`
 and `std::numpunct`, strf has its own facets arquitecture.
@@ -371,18 +367,17 @@ Strf has some extra advantages over {fmt} when developing an application
 that provides multilingual support:
 
 Less translations errors::
-The syntax of {tr-string} allows you add comments.
-This is because the programmer is usually not same be the person
-who translates the messages, and messages can be ambiguous,
-which can cause translation mistakes.
-So comments help to prevent them.
+Since the programmer is commonly not same person who translates
+the messages and messages can be ambiguous, translation mistakes can happen.
+So, strf allows you to add comments in the {tr-string} to prevent
+misinterpretations.
 
 Less syntax errors::
 The syntax of {tr-string} is less error-prone than the {fmt}'s format string.
 It is true that {fmt} can detect syntax error at compile-time with
 `FMT_STRING` or `FMT_COMPILE`, but it is very difficult ( if not impossible )
-to use such macros in multilingual programs, where the format
-strings are evaluated at run-time.
+to use such macros in multilingual programs, since the format
+strings are then likely evaluated at run-time.
 
 Reusability::
 In strf, translation is decoupled from formatting.
@@ -473,7 +468,7 @@ we conclude:
    ( with and without `FMT_COMPILE` )
 * `strf::to_string` with tr-string is faster than `fmt::format`
    without `FMT_COMPILE`, except in some few cases ( like
-   file:///home/roberto/trp/strf-benchmarks/docs/out/results.html#_sample_1_2[this] )/
+   file:///home/roberto/trp/strf-benchmarks/docs/out/results.html#_sample_1_2[this] )
 *  When formatting options are applied,
   `strf::to_string` is faster than `fmt::format.
 
