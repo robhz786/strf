@@ -30,7 +30,15 @@ set(sources_freestanding
   reserve.cpp
   single_byte_charsets.cpp
   tr_string.cpp
-  utf_to_utf.cpp
+  utf8_to_utf16.cpp
+  utf8_to_utf32.cpp
+  utf8.cpp
+  utf16_to_utf32.cpp
+  utf16_to_utf8.cpp
+  utf16.cpp
+  utf32_to_utf8.cpp
+  utf32_to_utf16.cpp
+  utf32.cpp
   width_calculator.cpp
   width_t.cpp
 )
@@ -162,7 +170,15 @@ if (${STRF_CUDA_SUPPORT})
   define_strf_cuda_test(reserve)
   define_strf_cuda_test(single_byte_charsets)
   define_strf_cuda_test(tr_string)
-  define_strf_cuda_test(utf_to_utf)
+  define_strf_cuda_test(utf8_to_utf16)
+  define_strf_cuda_test(utf8_to_utf32)
+  define_strf_cuda_test(utf8)
+  define_strf_cuda_test(utf16_to_utf32)
+  define_strf_cuda_test(utf16_to_utf8)
+  define_strf_cuda_test(utf16)
+  define_strf_cuda_test(utf32_to_utf8)
+  define_strf_cuda_test(utf32_to_utf16)
+  define_strf_cuda_test(utf32)
   define_strf_cuda_test(width_calculator)
   define_strf_cuda_test(width_t)
 

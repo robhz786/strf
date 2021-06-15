@@ -48,7 +48,15 @@ void test_facets_pack();
 void test_reserve();
 void test_width_t();
 void test_width_calculator();
-void test_utf();
+void test_utf8_to_utf16();
+void test_utf8_to_utf32();
+void test_utf8();
+void test_utf16_to_utf32();
+void test_utf16_to_utf8();
+void test_utf16();
+void test_utf32_to_utf8();
+void test_utf32_to_utf16();
+void test_utf32();
 void test_single_byte_charsets();
 void test_cstr_writer();
 void test_locale();
@@ -96,7 +104,16 @@ int main() {
     test_reserve();
     test_single_byte_charsets();
     test_tr_string();
-    test_utf();
+    test_utf8_to_utf16();
+    test_utf8_to_utf32();
+    test_utf8();
+    test_utf16_to_utf32();
+    test_utf16_to_utf8();
+    test_utf16();
+    test_utf32_to_utf8();
+    test_utf32_to_utf16();
+    test_utf32();
+
     test_width_calculator();
     test_width_t();
 

@@ -131,7 +131,7 @@ public:
     constexpr invalid_seq_notifier& operator=(const invalid_seq_notifier& other) noexcept;
     constexpr bool operator==(const invalid_seq_notifier& other) noexcept;
     constexpr operator bool() const noexcept;
-    constexpr void notify() const noexcept;
+    constexpr void notify() const;
 
 private:
     notify_fptr notify_func_ = nullptr; // exposition only

@@ -68,7 +68,7 @@ public:
     {
         return notify_func_ != nullptr;
     }
-    constexpr STRF_HD void notify() const noexcept
+    constexpr STRF_HD void notify() const
     {
         STRF_IF_UNLIKELY (notify_func_) {
             notify_func_();
