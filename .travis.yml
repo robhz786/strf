@@ -91,8 +91,8 @@ jobs:
       before_install:
         - sudo apt-get update
         - sudo apt-get -y install libperlio-gzip-perl libjson-perl locales-all
-      env: [ "COMMENT=codecov.io", "CC=gcc-7", "CXX=g++-7", "CXX_STANDARD=14", "GCOV=gcov-7" ]
-      addons: *gcc-7
+      env: [ "COMMENT=codecov.io", "CC=gcc-9", "CXX=g++-9", "CXX_STANDARD=20", "GCOV=gcov-9" ]
+      addons: *gcc-9
       script:
         - pushd /tmp && git clone https://github.com/linux-test-project/lcov.git && export PATH=/tmp/lcov/bin:$PATH && which lcov && lcov --version && popd
         - ci/travis/codecov_build.sh
