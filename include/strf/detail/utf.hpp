@@ -2063,7 +2063,7 @@ STRF_HD void strf::static_transcoder
             dest_it[2] = static_cast<DestCharT>(0x80 |  (ch &   0x3F));
             dest_it += 3;
         } else if ( strf::detail::is_high_surrogate(ch)
-               && src_it != src_end
+               && (src_it + 1) != src_end
                && strf::detail::is_low_surrogate(*(src_it + 1)))
         {
             STRF_CHECK_DEST_SIZE(4);
