@@ -9,6 +9,8 @@ namespace {
 
 STRF_TEST_FUNC void utf8_to_utf32_valid_sequences()
 {
+    TEST(U"\U00010000") (strf::sani(u8"\U00010000"));
+    
     TEST(U" ") (strf::sani("") > 1);
     TEST(U"\U0010FFFF") (strf::sani("\xF4\x8F\xBF\xBF"));
 
@@ -92,14 +94,20 @@ STRF_TEST_FUNC void utf8_to_utf32_invalid_sequences()
     TEST(U" \uFFFD\uFFFD\uFFFD\uFFFD\uFFFD")  (strf::sani("\xF0\x8F\xBF\xBF\x80" ) > 6);
     TEST(U" \uFFFD\uFFFD\uFFFD\uFFFD\uFFFD_") (strf::sani("\xF0\x8F\xBF\xBF\x80_" ) > 7);
 
-    // codepoint too big
-    TEST(U" \uFFFD\uFFFD\uFFFD\uFFFD")  (strf::sani("\xF4\xBF\xBF\xBF") > 5);
-    TEST(U" \uFFFD\uFFFD\uFFFD\uFFFD_") (strf::sani("\xF4\xBF\xBF\xBF_") > 6);
-
-    // codepoint too big with extra continuation bytes
-    TEST(U" \uFFFD\uFFFD\uFFFD\uFFFD\uFFFD\uFFFD")  (strf::sani("\xF5\x90\x80\x80\x80\x80") > 7);
-    TEST(U" \uFFFD\uFFFD\uFFFD\uFFFD\uFFFD\uFFFD_") (strf::sani("\xF5\x90\x80\x80\x80\x80_") > 8);
-
+    // codepoint too big.
+    TEST(U" \uFFFD\uFFFD\uFFFD\uFFFD_")  (strf::sani("\xF4\x90\x80\x80_") > 6);
+    TEST(U" \uFFFD\uFFFD\uFFFD\uFFFD_")  (strf::sani("\xF5\x80\x80\x80_") > 6);
+    TEST(U" \uFFFD\uFFFD\uFFFD\uFFFD_")  (strf::sani("\xF6\x80\x80\x80_") > 6);
+    TEST(U" \uFFFD\uFFFD\uFFFD\uFFFD_")  (strf::sani("\xF7\x80\x80\x80_") > 6);
+    TEST(U" \uFFFD\uFFFD\uFFFD\uFFFD_")  (strf::sani("\xF8\x80\x80\x80_") > 6);
+    TEST(U" \uFFFD\uFFFD\uFFFD\uFFFD_")  (strf::sani("\xF9\x80\x80\x80_") > 6);
+    TEST(U" \uFFFD\uFFFD\uFFFD\uFFFD_")  (strf::sani("\xFA\x80\x80\x80_") > 6);
+    TEST(U" \uFFFD\uFFFD\uFFFD\uFFFD_")  (strf::sani("\xFB\x80\x80\x80_") > 6);
+    TEST(U" \uFFFD\uFFFD\uFFFD\uFFFD_")  (strf::sani("\xFC\x80\x80\x80_") > 6);
+    TEST(U" \uFFFD\uFFFD\uFFFD\uFFFD_")  (strf::sani("\xFD\x80\x80\x80_") > 6);
+    TEST(U" \uFFFD\uFFFD\uFFFD\uFFFD_")  (strf::sani("\xFE\x80\x80\x80_") > 6);
+    TEST(U" \uFFFD\uFFFD\uFFFD\uFFFD_")  (strf::sani("\xFF\x80\x80\x80_") > 6);
+    
     // missing continuation
     TEST(U" \uFFFD")  (strf::sani("\xF0\x90\xBF" ) > 2);
     TEST(U" \uFFFD_") (strf::sani("\xF0\x90\xBF_" ) > 3);

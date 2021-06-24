@@ -218,7 +218,7 @@ inline STRF_HD bool first_2_of_3_are_valid
 
 inline STRF_HD unsigned utf8_decode_first_2_of_4(std::uint8_t ch0, std::uint8_t ch1)
 {
-    return ((ch0 & 0x07) << 6) | (ch1 & 0x3F);
+    return ((ch0 ^ 0xF0) << 6) | (ch1 & 0x3F);
 }
 
 inline STRF_HD unsigned utf8_decode_last_2_of_4(unsigned long x, unsigned ch2, unsigned ch3)
@@ -1066,15 +1066,14 @@ STRF_HD void strf::static_transcoder
                 ch32 = (x << 6) | (ch2 & 0x3F);
                 ++src_it;
             } else goto invalid_sequence;
-        } else if (0xEF < ch0) {
-            if ( src_it != src_end && is_utf8_continuation(ch1 = * src_it)
-              && first_2_of_4_are_valid(x = utf8_decode_first_2_of_4(ch0, ch1))
-              && ++src_it != src_end && is_utf8_continuation(ch2 = * src_it)
-              && ++src_it != src_end && is_utf8_continuation(ch3 = * src_it) )
-            {
-                ch32 = utf8_decode_last_2_of_4(x, ch2, ch3);
-                ++src_it;
-            } else goto invalid_sequence;
+        } else if ( src_it != src_end
+                 && is_utf8_continuation(ch1 = * src_it)
+                 && first_2_of_4_are_valid(x = utf8_decode_first_2_of_4(ch0, ch1))
+                 && ++src_it != src_end && is_utf8_continuation(ch2 = * src_it)
+                 && ++src_it != src_end && is_utf8_continuation(ch3 = * src_it) )
+        {
+            ch32 = utf8_decode_last_2_of_4(x, ch2, ch3);
+            ++src_it;
         } else {
             invalid_sequence:
             ch32 = 0xFFFD;
@@ -1127,14 +1126,12 @@ STRF_HD std::size_t strf::static_transcoder
             {
                 ++src_it;
             }
-        } else if(0xEF < ch0) {
-            if (   src_it != src_end && is_utf8_continuation(ch1 = * src_it)
-              && first_2_of_4_are_valid(ch0, ch1)
-              && ++src_it != src_end && is_utf8_continuation(*src_it)
-              && ++src_it != src_end && is_utf8_continuation(*src_it) )
-            {
+        } else if (   src_it != src_end && is_utf8_continuation(ch1 = * src_it)
+                 && first_2_of_4_are_valid(ch0, ch1)
+                 && ++src_it != src_end && is_utf8_continuation(*src_it)
+                 && ++src_it != src_end && is_utf8_continuation(*src_it) )
+        {
                 ++src_it;
-            }
         }
     }
     return size;
@@ -1197,20 +1194,19 @@ STRF_HD void strf::static_transcoder
                 dest_it[2] = ch2;
                 dest_it += 3;
             } else goto invalid_sequence;
-        } else if (0xF0 == (ch0 & 0xF8)) {
-            if ( src_it != src_end && is_utf8_continuation(ch1 = * src_it)
-              && first_2_of_4_are_valid(ch0, ch1)
-              && ++src_it != src_end && is_utf8_continuation(ch2 = * src_it)
-              && ++src_it != src_end && is_utf8_continuation(ch3 = * src_it) )
-            {
-                STRF_CHECK_DEST_SIZE(4);
-                ++src_it;
-                dest_it[0] = ch0;
-                dest_it[1] = ch1;
-                dest_it[2] = ch2;
-                dest_it[3] = ch3;
-                dest_it += 4;
-            } else goto invalid_sequence;
+        } else if ( src_it != src_end
+                 && is_utf8_continuation(ch1 = * src_it)
+                 && first_2_of_4_are_valid(ch0, ch1)
+                 && ++src_it != src_end && is_utf8_continuation(ch2 = * src_it)
+                 && ++src_it != src_end && is_utf8_continuation(ch3 = * src_it) )
+        {
+            STRF_CHECK_DEST_SIZE(4);
+            ++src_it;
+            dest_it[0] = ch0;
+            dest_it[1] = ch1;
+            dest_it[2] = ch2;
+            dest_it[3] = ch3;
+            dest_it += 4;
         } else {
             invalid_sequence:
             STRF_CHECK_DEST_SIZE(3);
@@ -1272,8 +1268,8 @@ STRF_HD std::size_t strf::static_transcoder
             {
                 ++src_it;
             }
-        } else if( 0xEF < ch0
-              &&   src_it != src_end && is_utf8_continuation(ch1 = * src_it)
+        } else if( src_it != src_end
+              && is_utf8_continuation(ch1 = * src_it)
               && first_2_of_4_are_valid(ch0, ch1)
               && ++src_it != src_end && is_utf8_continuation(*src_it)
               && ++src_it != src_end && is_utf8_continuation(*src_it) )
@@ -1347,14 +1343,12 @@ static_charset<CharT, strf::csid_utf8>::codepoints_robust_count
             {
                 ++it;
             }
-        } else if(0xEF < ch0) {
-            if (   it != end && is_utf8_continuation(ch1 = * it)
-              && first_2_of_4_are_valid(ch0, ch1)
-              && ++it != end && is_utf8_continuation(*it)
-              && ++it != end && is_utf8_continuation(*it) )
-            {
-                ++it;
-            }
+        } else if (   it != end && is_utf8_continuation(ch1 = * it)
+                 && first_2_of_4_are_valid(ch0, ch1)
+                 && ++it != end && is_utf8_continuation(*it)
+                 && ++it != end && is_utf8_continuation(*it) )
+        {
+            ++it;
         }
     }
     return {count, static_cast<std::size_t>(it - src)};
@@ -1950,19 +1944,18 @@ STRF_HD void strf::static_transcoder
                 *dest_it = static_cast<DestCharT>((x << 6) | (ch2 & 0x3F));
                 ++src_it;
             } else goto invalid_sequence;
-        } else if (0xEF < ch0) {
-            STRF_IF_LIKELY (( src_it != src_end && is_utf8_continuation(ch1 = * src_it)
-                           && first_2_of_4_are_valid(x = utf8_decode_first_2_of_4(ch0, ch1))
-                           && ++src_it != src_end && is_utf8_continuation(ch2 = * src_it)
-                           && ++src_it != src_end && is_utf8_continuation(ch3 = * src_it) ))
-            {
-                STRF_CHECK_DEST_SIZE(2);
-                x = utf8_decode_last_2_of_4(x, ch2, ch3) - 0x10000;
-                dest_it[0] = static_cast<DestCharT>(0xD800 +  (x >> 10));
-                dest_it[1] = static_cast<DestCharT>(0xDC00 +  (x & 0x3FF));
-                ++dest_it;
-                ++src_it;
-            } else goto invalid_sequence;
+        } else if ( src_it != src_end
+                 && is_utf8_continuation(ch1 = * src_it)
+                 && first_2_of_4_are_valid(x = utf8_decode_first_2_of_4(ch0, ch1))
+                 && ++src_it != src_end && is_utf8_continuation(ch2 = * src_it)
+                 && ++src_it != src_end && is_utf8_continuation(ch3 = * src_it) )
+        {
+            STRF_CHECK_DEST_SIZE(2);
+            x = utf8_decode_last_2_of_4(x, ch2, ch3) - 0x10000;
+            dest_it[0] = static_cast<DestCharT>(0xD800 +  (x >> 10));
+            dest_it[1] = static_cast<DestCharT>(0xDC00 +  (x & 0x3FF));
+            ++dest_it;
+            ++src_it;
         } else {
             invalid_sequence:
             STRF_CHECK_DEST;
@@ -2014,17 +2007,14 @@ STRF_HD std::size_t strf::static_transcoder
             {
                 ++src_it;
             }
-        } else if(0xEF < ch0) {
-            if (   src_it != src_end && is_utf8_continuation(ch1 = * src_it)
-              && first_2_of_4_are_valid(ch0, ch1)
-              && ++src_it != src_end && is_utf8_continuation(*src_it)
-              && ++src_it != src_end && is_utf8_continuation(*src_it) )
-            {
-                ++src_it;
-                ++size;
-            }
+        } else if (   src_it != src_end && is_utf8_continuation(ch1 = * src_it)
+                 && first_2_of_4_are_valid(ch0, ch1)
+                 && ++src_it != src_end && is_utf8_continuation(*src_it)
+                 && ++src_it != src_end && is_utf8_continuation(*src_it) )
+        {
+            ++src_it;
+            ++size;
         }
-
     }
     return size;
 }
