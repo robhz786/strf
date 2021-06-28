@@ -265,22 +265,22 @@ public:
 
     // backwards compatibility
     template <typename Charset>
-    [[deprecated]] constexpr STRF_HD auto convert_encoding(Charset charset) const
+    STRF_DEPRECATED constexpr STRF_HD auto convert_encoding(Charset charset) const
     {
         return convert_charset(charset);
     }
     template <typename Charset>
-    [[deprecated]] constexpr STRF_HD auto convert_from_encoding(Charset charset) const
+    STRF_DEPRECATED constexpr STRF_HD auto convert_from_encoding(Charset charset) const
     {
         return convert_from_charset(charset);
     }
     template <typename Charset>
-    [[deprecated]] constexpr STRF_HD auto sanitize_encoding(Charset charset) const
+    STRF_DEPRECATED constexpr STRF_HD auto sanitize_encoding(Charset charset) const
     {
         return sanitize_charset(charset);
     }
     template <typename Charset>
-    [[deprecated]] constexpr STRF_HD auto sanitize_from_encoding(Charset charset) const
+    STRF_DEPRECATED constexpr STRF_HD auto sanitize_from_encoding(Charset charset) const
     {
         return sanitize_from_charset(charset);
     }

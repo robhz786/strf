@@ -336,7 +336,7 @@ class dynamic_charset
 public:
 
     using code_unit = CharT;
-    using char_type [[deprecated]] = CharT;
+    using char_type STRF_DEPRECATED = CharT;
 
     dynamic_charset(const dynamic_charset& ) = default;
 
@@ -923,7 +923,7 @@ STRF_HD std::size_t decode_encode_size
 #if defined(STRF_DONT_DEPRECATE_CHAR_ENCODING)
 #  define STRF_CHAR_ENCODING_DEPRECATED
 #else
-#  define STRF_CHAR_ENCODING_DEPRECATED [[deprecated]]
+#  define STRF_CHAR_ENCODING_DEPRECATED STRF_DEPRECATED
 #endif
 
 using char_encoding_id STRF_CHAR_ENCODING_DEPRECATED =

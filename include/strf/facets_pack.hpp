@@ -649,7 +649,7 @@ template
     < typename FacetCategory
     , typename Tag
     , typename ... FPE >
-[[deprecated("Use strf::use_facet instead")]]
+STRF_DEPRECATED_MSG("Use strf::use_facet instead")
 constexpr STRF_HD decltype(auto) get_facet(const strf::facets_pack<FPE...>& fp)
 {
     return fp.template use_facet<FacetCategory, Tag>();

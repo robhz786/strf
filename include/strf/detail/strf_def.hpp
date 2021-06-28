@@ -64,6 +64,24 @@
 #  define STRF_HAS_VARIABLE_TEMPLATES
 #endif
 
+#if defined(__CUDACC__)
+#  if (__CUDACC_VER_MAJOR__ >= 11)
+#    define STRF_HAS_ATTR_DEPRECATED
+#  endif
+#elif defined(__has_cpp_attribute)
+#  if __has_cpp_attribute(deprecated)
+#    define STRF_HAS_ATTR_DEPRECATED
+#  endif
+#endif
+
+#if defined(STRF_HAS_ATTR_DEPRECATED)
+#  define STRF_DEPRECATED [[deprecated]]
+#  define STRF_DEPRECATED_MSG(msg) [[deprecated(msg)]]
+#else
+#  define STRF_DEPRECATED
+#  define STRF_DEPRECATED_MSG(msg)
+#endif
+
 #if defined(__GNUC__) || defined (__clang__)
 #  define STRF_IF_LIKELY(x)   if(__builtin_expect(!!(x), 1))
 #  define STRF_IF_UNLIKELY(x) if(__builtin_expect(!!(x), 0))

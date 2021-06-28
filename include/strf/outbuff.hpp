@@ -20,7 +20,7 @@ class outbuff_test_tool;
 #define STRF_MIN_SPACE_AFTER_RECYCLE 64
 
 template <typename CharT>
-[[deprecated]]
+STRF_DEPRECATED
 constexpr STRF_HD std::size_t min_size_after_recycle()
 {
     return STRF_MIN_SPACE_AFTER_RECYCLE;
@@ -55,7 +55,7 @@ public:
     {
         return end_;
     }
-    [[deprecated]]
+    STRF_DEPRECATED
     STRF_HD std::size_t size() const noexcept
     {
         STRF_ASSERT(pointer_ <= end_);
