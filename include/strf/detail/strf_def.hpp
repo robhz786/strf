@@ -56,6 +56,13 @@
 #define STRF_IF_CONSTEXPR if
 #endif
 
+#if defined(__CUDACC__)
+#  if (__CUDACC_VER_MAJOR__ >= 11) && (__CUDACC_VER_MINOR__ >= 3)
+#    define STRF_HAS_VARIABLE_TEMPLATES
+#  endif
+#elif defined(__cpp_variable_templates)
+#  define STRF_HAS_VARIABLE_TEMPLATES
+#endif
 
 #if defined(__GNUC__) || defined (__clang__)
 #  define STRF_IF_LIKELY(x)   if(__builtin_expect(!!(x), 1))

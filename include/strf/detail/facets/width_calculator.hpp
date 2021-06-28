@@ -277,9 +277,13 @@ width_by_func<CharWidthFunc> STRF_HD make_width_calculator(CharWidthFunc f)
     return width_by_func<CharWidthFunc>{f};
 }
 
+#if !defined(__CUDACC__) || (__CUDA_VER_MAJOR__ >= 11 && __CUDA_VER_MINOR__ >= 3)
+
 STRF_HD constexpr fast_width_t fast_width = fast_width_t{};
 STRF_HD constexpr width_as_fast_u32len_t width_as_fast_u32len = width_as_fast_u32len_t{};
 STRF_HD constexpr width_as_u32len_t width_as_u32len = width_as_u32len_t{};
+
+#endif
 
 struct width_calculator_c
 {

@@ -684,7 +684,7 @@ STRF_TEST_FUNC void test_punctuation()
     }
     {   // encoding punct chars in a single-byte encoding
         auto fp = strf::pack
-            ( strf::iso_8859_3<char>
+            ( strf::iso_8859_3_t<char>{}
             , strf::numpunct<10>(3).thousands_sep(0x2D9).decimal_point(0x130) );
 
         TEST("_____________1\xFF""000\xA9""5").with(fp) (j(strf::punct(1000.5)));
@@ -696,7 +696,7 @@ STRF_TEST_FUNC void test_punctuation()
         TEST("_________________0\xA9" "1")    .with(fp) (j(strf::punct(0.1)));
 
         auto fpx = strf::pack
-            ( strf::iso_8859_3<char>, strf::numpunct<16>(4).decimal_point(0x130) );
+            ( strf::iso_8859_3_t<char>{}, strf::numpunct<16>(4).decimal_point(0x130) );
 
         TEST("________0x1\xA9""12345p+0").with(fpx) (j(!strf::hex(0x1.12345p+0)));
     }
@@ -718,7 +718,7 @@ STRF_TEST_FUNC void test_punctuation()
     {   // invalid punct characters  in a single-byte encoding
         // ( thousand separators are omitted  )
         auto fp = strf::pack
-            ( strf::iso_8859_3<char>
+            ( strf::iso_8859_3_t<char>{}
             , strf::numpunct<10>(3).thousands_sep(0xFFF).decimal_point(0xEEE) );
 
         TEST("______________1000?5").with(fp) (j(strf::punct(1000.5)));
@@ -730,7 +730,7 @@ STRF_TEST_FUNC void test_punctuation()
         TEST("_________________0?1").with(fp) (j(strf::punct(0.1)));
 
         auto fpx = strf::pack
-            ( strf::iso_8859_3<char>, strf::numpunct<16>(4).decimal_point(0xEEE) );
+            ( strf::iso_8859_3_t<char>{}, strf::numpunct<16>(4).decimal_point(0xEEE) );
 
         TEST("________0x1?12345p+0").with(fpx) (j(!strf::hex(0x1.12345p+0)));
     }

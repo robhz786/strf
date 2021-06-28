@@ -213,8 +213,8 @@ STRF_TEST_FUNC void utf8_to_utf32_find_transcoder()
     TEST_TRUE((std::is_same
                    < strf::static_transcoder
                        < char, char32_t, strf::csid_utf8, strf::csid_utf32 >
-                   , decltype(strf::find_transcoder( strf::utf<char>
-                                                   , strf::utf_t<char32_t>())) >
+                       , decltype(strf::find_transcoder( strf::utf_t<char>{}
+                                                       , strf::utf_t<char32_t>{})) >
                   :: value));
 }
 

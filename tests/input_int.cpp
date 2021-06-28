@@ -562,7 +562,7 @@ void STRF_TEST_FUNC test_input_int_punct()
 {
     {
         // non-ascii separator whose size is still one
-        auto charset = strf::windows_1252<char>;
+        auto charset = strf::windows_1252_t<char>{};
         auto punct10 = strf::numpunct<10>{3}.thousands_sep(0x20AC);
         auto punct16 = strf::numpunct<16>{3}.thousands_sep(0x20AC);
 

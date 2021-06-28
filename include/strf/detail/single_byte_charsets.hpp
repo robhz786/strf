@@ -40,7 +40,7 @@
 
 #endif // ! defined(STRF_CHECK_DEST)
 
-#define STRF_DEF_SINGLE_BYTE_CHARSET(CHARSET)                                 \
+#define STRF_DEF_SINGLE_BYTE_CHARSET_(CHARSET)                                 \
     template <typename CharT>                                                 \
     class static_charset<CharT, strf::csid_ ## CHARSET>                        \
         : public strf::detail::single_byte_charset                            \
@@ -70,9 +70,20 @@
                                                                               \
     template <typename CharT>                                                 \
     using CHARSET ## _t =                                                     \
-        strf::static_charset<CharT, strf::csid_ ## CHARSET>;                   \
-                                                                              \
+        strf::static_charset<CharT, strf::csid_ ## CHARSET>;
+
+
+#if defined(STRF_HAS_VARIABLE_TEMPLATES)
+
+#define STRF_DEF_SINGLE_BYTE_CHARSET(CHARSET)    \
+    STRF_DEF_SINGLE_BYTE_CHARSET_(CHARSET)       \
     template <typename CharT> STRF_HD CHARSET ## _t<CharT> CHARSET = {};
+
+#else
+
+#define STRF_DEF_SINGLE_BYTE_CHARSET(CHARSET) STRF_DEF_SINGLE_BYTE_CHARSET_(CHARSET)
+
+#endif // defined(STRF_HAS_VARIABLE_TEMPLATE)
 
 namespace strf {
 
