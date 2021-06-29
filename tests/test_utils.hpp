@@ -47,11 +47,59 @@ void STRF_HD write_random_ascii_chars(CharT* dest, std::size_t count)
 
 #if ! defined(STRF_FREESTANDING)
 
-std::string unique_tmp_file_name();
+inline std::string unique_tmp_file_name()
+{
 
-std::wstring read_wfile(std::FILE* file);
+#if defined(_WIN32)
 
-std::wstring read_wfile(const char* filename);
+    char dirname[MAX_PATH];
+    GetTempPathA(MAX_PATH, dirname);
+    char fullname[MAX_PATH];
+    sprintf_s(fullname, MAX_PATH, "%s\\test_boost_outbuff_%x.txt", dirname, std::rand());
+    return fullname;
+
+#else // defined(_WIN32)
+
+   char fullname[200];
+   sprintf(fullname, "/tmp/test_boost_outbuff_%x.txt", std::rand());
+   return fullname;
+
+#endif  // defined(_WIN32)
+}
+
+inline std::wstring read_wfile(std::FILE* file)
+{
+    std::wstring result;
+    wint_t ch = fgetwc(file);
+    while(ch != WEOF) {
+        result += static_cast<wchar_t>(ch);
+        ch = fgetwc(file);
+    };
+
+    return result;
+}
+
+inline std::wstring read_wfile(const char* filename)
+{
+    std::wstring result;
+
+#if defined(_WIN32)
+
+    std::FILE* file = NULL;
+    (void) fopen_s(&file, filename, "r");
+
+#else // defined(_WIN32)
+
+    std::FILE* file = std::fopen(filename, "r");
+
+#endif  // defined(_WIN32)
+
+    if(file != nullptr) {
+        result = read_wfile(file);
+        fclose(file);
+    }
+    return result;
+}
 
 template <typename CharT>
 std::basic_string<CharT> read_file(std::FILE* file)
@@ -167,9 +215,15 @@ inline void STRF_HD turn_into_bad(strf::basic_outbuff<CharT>& ob)
     strf::detail::outbuff_test_tool::turn_into_bad(ob);
 }
 
-int& STRF_HD test_err_count();
+inline STRF_HD int& test_err_count()
+{
+    static int count = 0;
+    return count;
+}
 
-strf::outbuff& STRF_HD test_outbuff();
+// function test_outbuff() is a customization point
+// it needs to be defined by the test program
+STRF_HD strf::outbuff& test_outbuff();
 
 class test_scope
 {
@@ -273,8 +327,16 @@ private:
     char description_[200];
 };
 
-void STRF_HD print_test_message_header(const char* filename, int line);
-void STRF_HD print_test_message_end(const char* funcname);
+inline STRF_HD void print_test_message_header(const char* filename, int line)
+{
+    test_scope::print_stack(test_outbuff());
+    to(test_utils::test_outbuff()) (filename, ':', line, ": ");
+}
+
+inline STRF_HD void print_test_message_end(const char* funcname)
+{
+    to(test_utils::test_outbuff()) ("\n    In function '", funcname, "'\n");
+}
 
 template <typename ... Args>
 void STRF_HD test_message

@@ -55,8 +55,8 @@ else ()
   set(sources ${sources_freestanding} ${sources_hosted})
 endif ()
 
-add_executable(test-header-only main.cpp test_utils.cpp ${sources})
-add_executable(test-static-lib  main.cpp test_utils.cpp ${sources})
+add_executable(test-header-only main.cpp ${sources})
+add_executable(test-static-lib  main.cpp ${sources})
 
 target_link_libraries(test-header-only   strf-header-only)
 target_link_libraries(test-static-lib    strf-static-lib)
