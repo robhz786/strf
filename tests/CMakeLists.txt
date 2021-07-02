@@ -86,11 +86,9 @@ if (${STRF_CUDA_SUPPORT})
   target_compile_options(cuda-main-static-lib  PRIVATE --expt-relaxed-constexpr)
 
   set_target_properties(cuda-main-header-only PROPERTIES
-    CXX_STANDARD 14
     CUDA_SEPARABLE_COMPILATION ON)
 
   set_target_properties(cuda-main-static-lib  PROPERTIES
-    CXX_STANDARD 14
     CUDA_SEPARABLE_COMPILATION ON)
 
 endif (${STRF_CUDA_SUPPORT})

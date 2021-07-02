@@ -76,9 +76,6 @@ target_include_directories(
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
   )
 
-set(features cxx_return_type_deduction cxx_decltype_auto)
-target_compile_features(strf-static-lib PUBLIC ${features})
-target_compile_features(strf-header-only INTERFACE ${features})
 
 set_property(
   TARGET strf-header-only
@@ -100,7 +97,7 @@ if (${STRF_CUDA_SUPPORT})
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
   )
-  target_compile_features(strf-cuda PUBLIC ${features})
+  target_compile_features(strf-cuda PUBLIC cxx_std_14)
   set_property(
     TARGET strf-cuda
     PROPERTY EXPORT_NAME strf-cuda)
