@@ -47,8 +47,8 @@ public:
     {
     }
 
-    constexpr STRF_HD explicit simple_tuple_impl(const simple_tuple_impl&) = default;
-    constexpr STRF_HD explicit simple_tuple_impl(simple_tuple_impl&&) = default;
+    constexpr explicit simple_tuple_impl(const simple_tuple_impl&) = default;
+    constexpr explicit simple_tuple_impl(simple_tuple_impl&&) = default;
 
     template <std::size_t J>
     constexpr STRF_HD const auto& get() const

@@ -356,7 +356,7 @@ private:
 
 public:
 
-    constexpr STRF_HD int_formatter_no_pad0_nor_punct_fn()  noexcept = default;
+    constexpr int_formatter_no_pad0_nor_punct_fn()  noexcept = default;
 
     constexpr STRF_HD int_formatter_no_pad0_nor_punct_fn(strf::tag<>) noexcept
     {
@@ -585,7 +585,7 @@ private:
 
 public:
 
-    constexpr STRF_HD int_formatter_static_base_and_punct_fn()  noexcept = default;
+    constexpr int_formatter_static_base_and_punct_fn()  noexcept = default;
 
     constexpr STRF_HD int_formatter_static_base_and_punct_fn(strf::tag<>) noexcept
     {
@@ -827,7 +827,7 @@ class int_formatter_full_dynamic_fn
 {
 public:
 
-    constexpr STRF_HD int_formatter_full_dynamic_fn()  noexcept = default;
+    constexpr int_formatter_full_dynamic_fn() noexcept = default;
 
     constexpr STRF_HD int_formatter_full_dynamic_fn
         ( int_format_full_dynamic data )  noexcept
@@ -835,7 +835,7 @@ public:
     {
     }
 
-    constexpr STRF_HD int_formatter_full_dynamic_fn
+    constexpr int_formatter_full_dynamic_fn
         ( const int_formatter_full_dynamic_fn& ) noexcept = default;
 
     template <typename U>

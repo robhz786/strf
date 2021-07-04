@@ -152,7 +152,7 @@ using iterator_value_type = typename iterator_value_type_impl<It>::type;
 #endif
 
 template <typename IntT>
-constexpr IntT max(IntT a, IntT b)
+constexpr STRF_HD IntT max(IntT a, IntT b)
 {
     return a > b ? a : b;
 }

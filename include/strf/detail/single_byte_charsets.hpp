@@ -77,7 +77,7 @@
 
 #define STRF_DEF_SINGLE_BYTE_CHARSET(CHARSET)    \
     STRF_DEF_SINGLE_BYTE_CHARSET_(CHARSET)       \
-    template <typename CharT> STRF_HD CHARSET ## _t<CharT> CHARSET = {};
+    template <typename CharT> STRF_DEVICE CHARSET ## _t<CharT> CHARSET = {};
 
 #else
 

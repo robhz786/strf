@@ -2125,16 +2125,16 @@ using utf_t = strf::static_charset<CharT, strf::csid_utf<CharT>>;
 #if defined(STRF_HAS_VARIABLE_TEMPLATES)
 
 template <typename CharT>
-STRF_HD constexpr utf8_t<CharT> utf8 {};
+STRF_DEVICE constexpr utf8_t<CharT> utf8 {};
 
 template <typename CharT>
-STRF_HD constexpr utf16_t<CharT> utf16 {};
+STRF_DEVICE constexpr utf16_t<CharT> utf16 {};
 
 template <typename CharT>
-STRF_HD constexpr utf32_t<CharT> utf32 {};
+STRF_DEVICE constexpr utf32_t<CharT> utf32 {};
 
 template <typename CharT>
-STRF_HD constexpr utf_t<CharT> utf {};
+STRF_DEVICE constexpr utf_t<CharT> utf {};
 
 #endif // defined(STRF_HAS_VARIABLE_TEMPLATES)
 

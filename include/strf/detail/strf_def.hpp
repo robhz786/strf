@@ -99,8 +99,8 @@
 
 #ifdef __CUDACC__
 
-#define STRF_HOST    __forceinline__ __host__
-#define STRF_DEVICE  __forceinline__          __device__
+#define STRF_HOST    __host__
+#define STRF_DEVICE  __device__
 #define STRF_FD      __forceinline__          __device__
 #define STRF_FH      __forceinline__ __host__
 #define STRF_FHD     __forceinline__ __host__ __device__

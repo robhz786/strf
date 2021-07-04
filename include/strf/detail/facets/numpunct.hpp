@@ -287,13 +287,13 @@ private:
     }
 
     template <typename Arg>
-    constexpr static const Arg& last_arg_(const Arg& x) noexcept
+    constexpr static STRF_HD const Arg& last_arg_(const Arg& x) noexcept
     {
         return x;
     }
 
     template <typename Arg0, typename Arg1, typename... Args>
-    constexpr static const auto& last_arg_
+    constexpr static STRF_HD const auto& last_arg_
         (const Arg0&, const Arg1& arg1, const Args&... args) noexcept
     {
         return last_arg_(arg1, args...);
