@@ -155,19 +155,26 @@ std::basic_string<CharT> make_random_std_string(std::size_t size)
 #endif // ! defined(STRF_FREESTANDING)
 
 template <typename CharT>
-constexpr std::size_t full_string_size
-= strf::min_space_after_recycle<CharT>();
+constexpr STRF_HD  std::size_t full_string_size()
+{
+    return strf::min_space_after_recycle<CharT>();
+}
+template <typename CharT>
+constexpr STRF_HD  std::size_t half_string_size()
+{
+    return full_string_size<CharT>() / 2;
+}
 
 template <typename CharT>
-constexpr std::size_t half_string_size = full_string_size<CharT> / 2;
-
-template <typename CharT>
-constexpr std::size_t double_string_size = full_string_size<CharT> * 2;
+constexpr STRF_HD  std::size_t double_string_size()
+{
+    return full_string_size<CharT>() * 2;
+}
 
 template <typename CharT>
 inline strf::detail::simple_string_view<CharT> STRF_HD make_double_string()
 {
-    enum {arr_size = double_string_size<CharT>};
+    enum {arr_size = double_string_size<CharT>()};
     static const CharT arr[arr_size]
       = { 0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27
         , 0x28, 0x29, 0x2a, 0x2b, 0x2c, 0x2d, 0x2e, 0x2f
@@ -193,13 +200,13 @@ inline strf::detail::simple_string_view<CharT> STRF_HD make_double_string()
 template <typename CharT>
 inline strf::detail::simple_string_view<CharT> STRF_HD make_full_string()
 {
-    return { make_double_string<CharT>().begin(), full_string_size<CharT> };
+    return { make_double_string<CharT>().begin(), full_string_size<CharT>() };
 }
 
 template <typename CharT>
 inline strf::detail::simple_string_view<CharT> STRF_HD make_half_string()
 {
-    return { make_double_string<CharT>().begin(), half_string_size<CharT> };
+    return { make_double_string<CharT>().begin(), half_string_size<CharT>() };
 }
 
 template <typename CharT>

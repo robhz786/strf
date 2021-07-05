@@ -91,8 +91,8 @@ void STRF_TEST_FUNC test_destinations()
 
     {
         constexpr std::size_t buff_size
-            = test_utils::full_string_size<CharT>
-            + test_utils::half_string_size<CharT> + 1;
+            = test_utils::full_string_size<CharT>()
+            + test_utils::half_string_size<CharT>() + 1;
 
         CharT buff[buff_size];
         auto res = strf::to(buff) (full_str,  half_str);
@@ -102,15 +102,15 @@ void STRF_TEST_FUNC test_destinations()
         TEST_TRUE(*res.ptr == CharT())
         TEST_TRUE(strf::detail::str_equal( full_str.begin()
                                          , buff
-                                         , test_utils::full_string_size<CharT>) );
+                                         , test_utils::full_string_size<CharT>()) );
         TEST_TRUE(strf::detail::str_equal( half_str.begin()
-                                         , buff + test_utils::full_string_size<CharT>
-                                         , test_utils::half_string_size<CharT>) );
+                                         , buff + test_utils::full_string_size<CharT>()
+                                         , test_utils::half_string_size<CharT>()) );
     }
     {
         constexpr std::size_t buff_size
-            = test_utils::full_string_size<CharT>
-            + test_utils::half_string_size<CharT> + 1;
+            = test_utils::full_string_size<CharT>()
+            + test_utils::half_string_size<CharT>() + 1;
 
         CharT buff[buff_size];
         auto res = strf::to(buff, buff_size) (full_str,  half_str);
@@ -119,15 +119,15 @@ void STRF_TEST_FUNC test_destinations()
         TEST_TRUE(res.ptr == buff + buff_size - 1);
         TEST_TRUE(strf::detail::str_equal( full_str.begin()
                                          , buff
-                                         , test_utils::full_string_size<CharT>) );
+                                         , test_utils::full_string_size<CharT>()) );
         TEST_TRUE(strf::detail::str_equal( half_str.begin()
-                                         , buff + test_utils::full_string_size<CharT>
-                                         , test_utils::half_string_size<CharT>) );
+                                         , buff + test_utils::full_string_size<CharT>()
+                                         , test_utils::half_string_size<CharT>()) );
     }
     {
         constexpr std::size_t buff_size
-            = test_utils::full_string_size<CharT>
-            + test_utils::half_string_size<CharT> +1;
+            = test_utils::full_string_size<CharT>()
+            + test_utils::half_string_size<CharT>() +1;
 
         CharT buff[buff_size];
         auto res = strf::to(buff, buff + buff_size) (full_str,  half_str);
@@ -136,10 +136,10 @@ void STRF_TEST_FUNC test_destinations()
         TEST_TRUE(res.ptr == buff + buff_size - 1);
         TEST_TRUE(strf::detail::str_equal( full_str.begin()
                                          , buff
-                                         , test_utils::full_string_size<CharT>) );
+                                         , test_utils::full_string_size<CharT>()) );
         TEST_TRUE(strf::detail::str_equal( half_str.begin()
-                                         , buff + test_utils::full_string_size<CharT>
-                                         , test_utils::half_string_size<CharT>) );
+                                         , buff + test_utils::full_string_size<CharT>()
+                                         , test_utils::half_string_size<CharT>()) );
     }
 }
 

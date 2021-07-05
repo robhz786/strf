@@ -1070,6 +1070,7 @@ private:
     STRF_HD void init_(Preview& preview, SrcCharset src_charset, DestCharset dest_charset)
     {
         decltype(auto) transcoder = find_transcoder(src_charset, dest_charset);
+        STRF_MAYBE_UNUSED(transcoder);
         transcode_ = transcoder.transcode_func();
         if (transcode_ == nullptr) {
             src_to_u32_ = src_charset.to_u32().transcode_func();
@@ -1218,6 +1219,7 @@ void STRF_HD aligned_conv_string_printer<SrcCharT, DestCharT>::init_
 {
     encode_fill_ = dest_charset.encode_fill_func();
     decltype(auto) transcoder = find_transcoder(src_charset, dest_charset);
+    STRF_MAYBE_UNUSED(transcoder);
     transcode_ = transcoder.transcode_func();
     if (transcode_ == nullptr) {
         src_to_u32_ = src_charset.to_u32().transcode_func();

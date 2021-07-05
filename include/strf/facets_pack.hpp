@@ -103,6 +103,12 @@ template <typename FPE>
 constexpr bool is_constrainable_v
 = strf::detail::fpe_traits<FPE>::is_constrainable;
 
+template <typename FPE>
+constexpr STRF_HD bool is_constrainable() noexcept
+{
+    return strf::detail::fpe_traits<FPE>::is_constrainable;
+}
+
 namespace detail{
 
 template <typename Cat, typename Tag, typename FPE>
@@ -137,7 +143,7 @@ public:
 
     constexpr static bool is_constrainable
       = strf::detail::fold_and
-            <strf::is_constrainable_v<FPE>...>;
+          <strf::is_constrainable<FPE>()...>;
 };
 
 template <typename FPE>
@@ -157,7 +163,7 @@ public:
     }
 
     constexpr static bool is_constrainable
-    = strf::is_constrainable_v<FPE>;
+    = strf::is_constrainable<FPE>();
 };
 
 
@@ -523,7 +529,7 @@ public:
     constexpr constrained_fpe(constrained_fpe&&) = default;
     constexpr constrained_fpe() = default;
 
-    static_assert(strf::is_constrainable_v<FPE>, "FPE not constrainable");
+    static_assert(strf::is_constrainable<FPE>(), "FPE not constrainable");
 
     template
         < typename U

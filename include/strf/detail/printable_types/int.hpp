@@ -1415,6 +1415,7 @@ public:
         init_fill_(i.arg.get_alignment_format());
 
         auto encoding = strf::use_facet<strf::charset_c<CharT>, int>(i.facets);
+        STRF_MAYBE_UNUSED(encoding);
         encode_fill_ = encoding.encode_fill_func();
         i.preview.subtract_width(fillcount_ + digcount_ + negative_);
         STRF_IF_CONSTEXPR(strf::usual_printer_input<T...>::preview_type::size_required) {

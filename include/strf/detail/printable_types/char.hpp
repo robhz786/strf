@@ -280,6 +280,7 @@ public:
         : ch_(input.arg)
     {
         auto encoding = strf::use_facet<charset_c<DestCharT>, char32_t>(input.facets);
+        STRF_MAYBE_UNUSED(encoding);
         encode_char_f_ = encoding.encode_char_func();
         encoded_char_size_ = encoding.encoded_char_size(input.arg);
         input.preview.add_size(encoded_char_size_);

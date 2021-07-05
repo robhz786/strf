@@ -121,6 +121,15 @@
 #define STRF_NO_GLOBAL_CONSTEXPR_VARIABLE
 #endif
 
+namespace strf { namespace detail {
+
+template <typename T>
+constexpr STRF_HD void pretend_to_use(const T& arg) noexcept { (void)arg; }
+
+}}
+
+#define STRF_MAYBE_UNUSED(X) strf::detail::pretend_to_use((X));
+
 namespace strf {
 
 namespace detail

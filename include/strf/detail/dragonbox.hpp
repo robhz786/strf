@@ -62,8 +62,9 @@ namespace dragonbox {
 		constexpr std::size_t physical_bits = sizeof(T) * std::numeric_limits<unsigned char>::digits;
 
 		template <class T>
-		constexpr std::size_t value_bits =
-			std::numeric_limits<std::enable_if_t<std::is_unsigned<T>::value, T>>::digits;
+		constexpr STRF_HD std::size_t value_bits() noexcept {
+			return std::numeric_limits<std::enable_if_t<std::is_unsigned<T>::value, T>>::digits;
+		}
 	}
 
 	// These classes expose encoding specs of IEEE-754-like floating-point formats.
@@ -140,7 +141,7 @@ namespace dragonbox {
 		STRF_HD static constexpr unsigned int extract_exponent_bits(carrier_uint u) noexcept {
 			constexpr int significand_bits = format::significand_bits;
 			constexpr int exponent_bits = format::exponent_bits;
-			static_assert(detail::value_bits<unsigned int> > exponent_bits, "");
+			static_assert(detail::value_bits<unsigned int>() > exponent_bits, "");
 			constexpr auto exponent_bits_mask = (unsigned int)(((unsigned int)(1) << exponent_bits) - 1);
 			return (unsigned int)(u >> significand_bits) & exponent_bits_mask;
 		}
@@ -364,7 +365,7 @@ namespace dragonbox {
 		namespace bits {
 			template <class UInt>
 			STRF_HD inline int countr_zero(UInt n) noexcept {
-				static_assert(std::is_unsigned<UInt>::value && value_bits<UInt> <= 64, "");
+				static_assert(std::is_unsigned<UInt>::value && value_bits<UInt>() <= 64, "");
 				STRF_ASSERT(n != 0);
 #if defined(__CUDACC__)
 				JKJ_IF_CONSTEXPR (sizeof(UInt) == 4) {
@@ -407,13 +408,13 @@ namespace dragonbox {
 				int count;
 				auto n32 = std::uint32_t(n);
 
-				JKJ_IF_CONSTEXPR (value_bits<UInt> > 32) {
+				JKJ_IF_CONSTEXPR (value_bits<UInt>() > 32) {
 					if (n32 != 0) {
 						count = 31;
 					}
 					else {
 						n32 = std::uint32_t(n >> 32);
-						JKJ_IF_CONSTEXPR (value_bits<UInt> == 64) {
+						JKJ_IF_CONSTEXPR (value_bits<UInt>() == 64) {
 							if (n32 != 0) {
 								count = 63;
 							}
@@ -422,12 +423,12 @@ namespace dragonbox {
 							}
 						}
 						else {
-							count = value_bits<UInt>;
+							count = value_bits<UInt>();
 						}
 					}
 				}
 				else {
-					JKJ_IF_CONSTEXPR (value_bits<UInt> == 32) {
+					JKJ_IF_CONSTEXPR (value_bits<UInt>() == 32) {
 						if (n32 != 0) {
 							count = 31;
 						}
@@ -436,15 +437,15 @@ namespace dragonbox {
 						}
 					}
 					else {
-						count = value_bits<UInt>;
+						count = value_bits<UInt>();
 					}
 				}
 
 				n32 &= (0 - n32);
-				JKJ_IF_CONSTEXPR (value_bits<UInt> > 16) {
+				JKJ_IF_CONSTEXPR (value_bits<UInt>() > 16) {
 					if ((n32 & 0x0000ffff) != 0) count -= 16;
 				}
-				JKJ_IF_CONSTEXPR (value_bits<UInt> > 8) {
+				JKJ_IF_CONSTEXPR (value_bits<UInt>() > 8) {
 					if ((n32 & 0x00ff00ff) != 0) count -= 8;
 				}
 				if ((n32 & 0x0f0f0f0f) != 0) count -= 4;
@@ -829,7 +830,7 @@ namespace dragonbox {
 #if JKJ_HAS_COUNTR_ZERO_INTRINSIC
 				return bits::countr_zero(x) >= int(exp);
 #else
-				if (exp >= value_bits<UInt>) {
+				if (exp >= value_bits<UInt>()) {
 					return false;
 				}
 				auto mask = UInt((UInt(1) << exp) - 1);
@@ -871,8 +872,9 @@ namespace dragonbox {
 				n *= info::magic_number;
 
 				constexpr std::uint32_t comparison_mask =
-					info::bits_for_comparison >= 32 ? std::numeric_limits<std::uint32_t>::max() :
-					std::uint32_t((std::uint32_t(1) << info::bits_for_comparison) - 1);
+					( info::bits_for_comparison >= 32
+					? ((std::uint32_t)-1)
+					: std::uint32_t((std::uint32_t(1) << info::bits_for_comparison) - 1) );
 
 				// The lowest N bits of (n & comparison_mask) must be zero, and
 				// (n >> N) & comparison_mask must be at most threshold.
@@ -924,7 +926,7 @@ namespace dragonbox {
 				static_assert(N >= 0, "");
 
 				// Ensure no overflow.
-				static_assert(max_pow2 + (log::floor_log2_pow10(max_pow5) - max_pow5) < value_bits<UInt>, "");
+				static_assert(max_pow2 + (log::floor_log2_pow10(max_pow5) - max_pow5) < value_bits<UInt>(), "");
 
 				// Specialize for 64-bit division by 1000.
 				// Ensure that the correctness condition is met.
@@ -1781,8 +1783,7 @@ namespace dragonbox {
 		template <typename UInt, int kappa>
 		STRF_HD constexpr static int calculate_max_power_of_10() noexcept {
 			constexpr auto max_possible_significand =
-				std::numeric_limits<UInt>::max() /
-				compute_power<kappa + 1>(std::uint32_t(10));
+				((UInt)-1) / compute_power<kappa + 1>(std::uint32_t(10));
 
 			int k = 0;
 			UInt p = 1;
@@ -2950,6 +2951,7 @@ namespace dragonbox {
 			{
 				ReturnType ret_value;
 				IntervalType interval_type{ additional_args... };
+        STRF_MAYBE_UNUSED(interval_type);
 
 				// Compute k and beta.
 				int const minus_k = log::floor_log10_pow2_minus_log10_4_over_3(exponent);

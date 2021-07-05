@@ -115,7 +115,7 @@ template <typename ... F>
 constexpr STRF_HD bool are_constrainable_impl()
 {
     constexpr std::size_t N = sizeof...(F);
-    constexpr bool values[N] = {strf::is_constrainable_v<F> ...};
+    constexpr bool values[N] = {strf::is_constrainable<F>() ...};
 
     for (std::size_t i = 0; i < N; ++i) {
         if( ! values[i]) {
@@ -145,8 +145,7 @@ STRF_HD auto with(T&& ... args)
     -> strf::inner_pack<decltype(strf::pack(std::forward<T>(args)...))>
 {
     static_assert
-        ( strf::is_constrainable_v
-            < decltype(strf::pack(std::forward<T>(args)...)) >
+        ( strf::is_constrainable<decltype(strf::pack(std::forward<T>(args)...))>()
         , "All facet categories must be constrainable" );
     return {std::forward<T>(args)...};
 }
