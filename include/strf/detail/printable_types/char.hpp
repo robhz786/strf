@@ -77,9 +77,10 @@ struct print_traits<char32_t>
         , char32_t x ) noexcept
         -> strf::usual_printer_input
             < DestCharT, Preview, FPack, char32_t
-            , std::conditional_t< std::is_same<DestCharT, char32_t>::value
-                                , strf::detail::char_printer<DestCharT>
-                                , strf::detail::conv_char32_printer<DestCharT> > >
+            , strf::detail::conditional_t
+                < std::is_same<DestCharT, char32_t>::value
+                , strf::detail::char_printer<DestCharT>
+                , strf::detail::conv_char32_printer<DestCharT> > >
     {
         return {preview, fp, x};
     }
@@ -92,9 +93,10 @@ struct print_traits<char32_t>
         , strf::value_with_formatters<F...> x ) noexcept
         -> strf::usual_printer_input
             < DestCharT, Preview, FPack, strf::value_with_formatters<F...>
-            , std::conditional_t< std::is_same<DestCharT, char32_t>::value
-                                , strf::detail::fmt_char_printer<DestCharT>
-                                , strf::detail::fmt_conv_char32_printer<DestCharT> > >
+            , strf::detail::conditional_t
+                < std::is_same<DestCharT, char32_t>::value
+                , strf::detail::fmt_char_printer<DestCharT>
+                , strf::detail::fmt_conv_char32_printer<DestCharT> > >
     {
         return {preview, fp, x};
     }

@@ -744,7 +744,7 @@ struct float_printing
         , const FPack& fp
         , strf::detail::float_with_formatters
             < FloatT, FloatFormatter, HasAlignment > x ) noexcept
-        -> std::conditional_t
+        -> strf::detail::conditional_t
             < HasAlignment || FloatFormatter::has_float_formatting
             , strf::detail::fmt_double_printer_input
                 < CharT, Preview, FPack, FloatT, FloatFormatter, HasAlignment >
@@ -1998,7 +1998,7 @@ inline STRF_HD strf::detail::float_init_result init_dec_double_printer_data_with
                 }
             }
         }
-        data.sub_chars_count += static_cast<std::make_signed_t<detail::chars_count_t>>(xz);
+        data.sub_chars_count += static_cast<strf::detail::make_signed_t<detail::chars_count_t>>(xz);
     } else if (notation == float_notation::scientific) {
         const int sci_notation_exp = (int)data.m10_digcount + data.e10 - 1;
         const unsigned frac_digits = data.m10_digcount - 1;
@@ -2331,7 +2331,7 @@ public:
 
     template < typename Preview, typename FPack, typename FloatT
              , typename FloatFormatter, bool HasAlignment
-             , std::enable_if_t<!FloatFormatter::has_punct, int> = 0 >
+             , strf::detail::enable_if_t<!FloatFormatter::has_punct, int> = 0 >
     STRF_HD punct_double_printer
         ( const strf::detail::fmt_double_printer_input
             < CharT, Preview, FPack, FloatT, FloatFormatter, HasAlignment >& input )

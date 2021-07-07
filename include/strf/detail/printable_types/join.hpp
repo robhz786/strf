@@ -37,7 +37,7 @@ template< typename CharT, typename Preview, typename FPack
 class join_printer_input
 {
 public:
-    using printer_type = std::conditional_t
+    using printer_type = strf::detail::conditional_t
         < HasAlignment
         , strf::detail::aligned_join_printer<CharT, Preview, FPack, FwdArgs...>
         , strf::detail::join_printer<CharT, Preview, FPack, FwdArgs...> >;

@@ -552,19 +552,19 @@ struct string_printer_type
 {
     static_assert( ! NeverConvert, "");
 
-    using type = std::conditional_t
+    using type = strf::detail::conditional_t
         < ShallSanitize || sizeof(SrcCharT) != sizeof(DestCharT)
-        , std::conditional_t
+        , strf::detail::conditional_t
             < HasAlignment
             , strf::detail::aligned_conv_string_printer<SrcCharT, DestCharT>
             , strf::detail::conv_string_printer<SrcCharT, DestCharT> >
-        , std::conditional_t
+        , strf::detail::conditional_t
             < std::is_same<SrcCharT,DestCharT>::value && ! HasCharset
-            , std::conditional_t
+            , strf::detail::conditional_t
                 < HasAlignment
                 , strf::detail::aligned_string_printer<SrcCharT, DestCharT>
                 , strf::detail::string_printer<SrcCharT, DestCharT> >
-            , std::conditional_t
+            , strf::detail::conditional_t
                 < HasAlignment
                 , strf::detail::aligned_conv_string_printer_variant<DestCharT>
                 , strf::detail::conv_string_printer_variant<DestCharT> > > >;
@@ -579,7 +579,7 @@ struct string_printer_type<DestCharT, SrcCharT, HasAlignment, true, ShallSanitiz
     static_assert( std::is_same<SrcCharT, DestCharT>::value
                  , "Character type mismatch. Use `conv` or `sani` format function." );
 
-    using type = std::conditional_t
+    using type = strf::detail::conditional_t
         < HasAlignment
         , strf::detail::aligned_string_printer<SrcCharT, DestCharT>
         , strf::detail::string_printer<SrcCharT, DestCharT> >;

@@ -97,6 +97,20 @@
 
 // Define CUDA-related host/device execution scope specifiers/decorators
 
+#if __cpp_constexpr >= 201304
+#  define STRF_CONSTEXPR_IN_CXX14 constexpr
+#else
+#  define STRF_CONSTEXPR_IN_CXX14
+#endif
+
+#if __cpp_decltype_auto >= 201304
+#  define STRF_DECLTYPE_AUTO(X) decltype(auto)
+#else
+#  define STRF_DECLTYPE_AUTO(X) decltype((X))
+#endif
+
+//#define STRF_NOEXCEPT_NOEXCEPT(X) noexcept(noexcept(X))
+
 #ifdef __CUDACC__
 
 #define STRF_HOST    __host__
@@ -137,8 +151,17 @@ namespace detail
 
 #if defined(__cpp_fold_expressions)
 
-template <bool ... C> constexpr bool fold_and = (C && ...);
-template <bool ... C> constexpr bool fold_or  = (C || ...);
+template <bool... C>
+constexpr STRF_HD bool fold_and() noexcept
+{
+    return (C && ...);
+}
+
+template <bool... C>
+constexpr STRF_HD bool fold_or() noexcept
+{
+    return (C || ...);
+}
 
 #else //defined(__cpp_fold_expressions)
 
@@ -167,13 +190,37 @@ struct fold_or_impl<C0, C...>
      constexpr static bool value = fold_or_impl<C...>::value || C0;
 };
 
-template <bool ... C> constexpr bool fold_and = fold_and_impl<C...>::value;
-template <bool ... C> constexpr bool fold_or = fold_or_impl<C...>::value;
+template <bool ... C>
+constexpr STRF_HD bool fold_and()
+{
+    return fold_and_impl<C...>::value;
+}
+
+template <bool ... C>
+constexpr STRF_HD bool fold_or()
+{
+    return fold_or_impl<C...>::value;
+}
 
 #endif // defined(__cpp_fold_expressions)
 
 template <typename T>
-using remove_cvref_t = std::remove_cv_t<std::remove_reference_t<T>>;
+using remove_cvref_t = typename std::remove_cv<typename std::remove_reference<T>::type>::type;
+
+template <typename T>
+using remove_reference_t = typename std::remove_reference<T>::type;
+
+template <typename T>
+using remove_cv_t = typename std::remove_cv<T>::type;
+
+template <bool B, class T = void>
+using enable_if_t = typename std::enable_if<B,T>::type;
+
+template <bool B, typename TrueT, typename FalseT>
+using conditional_t = typename std::conditional<B, TrueT, FalseT>::type;
+
+template <typename T>
+using make_signed_t = typename std::make_signed<T>::type;
 
 template <std::size_t CharSize>
 struct wchar_equiv_impl;

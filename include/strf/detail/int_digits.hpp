@@ -76,7 +76,7 @@ constexpr STRF_HD unsigned max_num_digits()
 template
     < typename IntT
     , typename unsigned_IntT = typename std::make_unsigned<IntT>::type >
-inline STRF_HD std::enable_if_t<std::is_signed<IntT>::value, unsigned_IntT>
+inline STRF_HD strf::detail::enable_if_t<std::is_signed<IntT>::value, unsigned_IntT>
 unsigned_abs(IntT value) noexcept
 {
     return ( value > 0
@@ -85,7 +85,7 @@ unsigned_abs(IntT value) noexcept
 }
 
 template<typename IntT>
-inline STRF_HD std::enable_if_t<std::is_unsigned<IntT>::value, IntT>
+inline STRF_HD strf::detail::enable_if_t<std::is_unsigned<IntT>::value, IntT>
 unsigned_abs(IntT value) noexcept
 {
     return value;
@@ -93,24 +93,24 @@ unsigned_abs(IntT value) noexcept
 
 template < typename ToIntT
          , typename FromIntT
-         , std::enable_if_t<std::is_unsigned<FromIntT>::value, int> = 0>
+         , strf::detail::enable_if_t<std::is_unsigned<FromIntT>::value, int> = 0>
 constexpr STRF_HD ToIntT cast_abs(FromIntT value) noexcept
 {
     return value;
 }
 template < typename ToIntT
          , typename FromIntT
-         , std::enable_if_t
+         , strf::detail::enable_if_t
              < (sizeof(ToIntT) > sizeof(FromIntT)) && std::is_signed<FromIntT>::value
              , int > = 0 >
 constexpr STRF_HD ToIntT cast_abs(FromIntT value)
 {
-    std::make_signed_t<ToIntT> value2 = value;
+    strf::detail::make_signed_t<ToIntT> value2 = value;
     return value >= 0 ? value2 : -value2;
 }
 template < typename ToIntT
          , typename FromIntT
-         , std::enable_if_t
+         , strf::detail::enable_if_t
              < sizeof(ToIntT) == sizeof(FromIntT) && std::is_signed<FromIntT>::value
              , int > = 0 >
 constexpr STRF_HD ToIntT cast_abs(FromIntT value)

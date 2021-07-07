@@ -50,17 +50,18 @@ public:
         : notify_func_(f)
     {
     }
-    constexpr STRF_HD invalid_seq_notifier& operator=(notify_fptr f) noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD invalid_seq_notifier& operator=(notify_fptr f) noexcept
     {
         notify_func_ = f;
         return *this;
     }
-    constexpr STRF_HD invalid_seq_notifier& operator=(const invalid_seq_notifier& other) noexcept
+    STRF_CONSTEXPR_IN_CXX14
+    STRF_HD invalid_seq_notifier& operator=(const invalid_seq_notifier& other) noexcept
     {
         notify_func_ = other.notify_func_;
         return *this;
     }
-    constexpr STRF_HD bool operator==(const invalid_seq_notifier& other) noexcept
+    constexpr STRF_HD bool operator==(const invalid_seq_notifier& other) const noexcept
     {
         return notify_func_ == other.notify_func_;
     }
@@ -68,7 +69,7 @@ public:
     {
         return notify_func_ != nullptr;
     }
-    constexpr STRF_HD void notify() const
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD void notify() const
     {
         STRF_IF_UNLIKELY (notify_func_) {
             notify_func_();
@@ -140,7 +141,17 @@ template <> struct csid_utf_impl<4>
 } // namespace detail
 
 template <typename CharT>
-constexpr strf::charset_id csid_utf = strf::detail::csid_utf_impl<sizeof(CharT)>::csid;
+constexpr STRF_HD strf::charset_id get_csid_utf() noexcept
+{
+    return strf::detail::csid_utf_impl<sizeof(CharT)>::csid;
+}
+
+#if defined(STRF_HAS_VARIABLE_TEMPLATES)
+
+template <typename CharT>
+constexpr strf::charset_id csid_utf = strf::get_csid_utf<CharT>();
+
+#endif // defined(STRF_HAS_VARIABLE_TEMPLATES)
 
 template <typename CharT>
 struct charset_c;
@@ -592,8 +603,10 @@ public:
 };
 
 template <typename SrcCharset, typename DestCharset>
-constexpr bool has_static_transcoder =
-    has_static_transcoder_impl<SrcCharset, DestCharset>::value;
+constexpr STRF_HD bool has_static_transcoder()
+{
+    return has_static_transcoder_impl<SrcCharset, DestCharset>::value;
+}
 
 template <typename SrcCharT, typename DestCharset>
 class has_find_transcoder_from_impl
@@ -629,13 +642,16 @@ public:
 };
 
 template <typename DestCharT, typename SrcCharset>
-constexpr bool has_find_transcoder_to =
-    has_find_transcoder_to_impl<DestCharT, SrcCharset>::value;
+STRF_HD constexpr bool has_find_transcoder_to()
+{
+    return has_find_transcoder_to_impl<DestCharT, SrcCharset>::value;
+}
 
 template <typename SrcCharT, typename DestCharset>
-constexpr bool has_find_transcoder_from =
-    has_find_transcoder_from_impl<SrcCharT, DestCharset>::value;
-
+STRF_HD constexpr bool has_find_transcoder_from()
+{
+    return has_find_transcoder_from_impl<SrcCharT, DestCharset>::value;
+}
 
 template <bool HasFindTo, bool HasFindFrom, typename Transcoder>
 struct transcoder_finder_2;
@@ -721,8 +737,8 @@ template <typename SrcCharT>
 struct transcoder_finder<false, SrcCharT, char32_t>
 {
     template <typename SrcCharset, typename DestCharset>
-    constexpr static STRF_HD auto find
-        (SrcCharset src_cs, DestCharset )
+    constexpr static STRF_HD auto find(SrcCharset src_cs, DestCharset)
+        -> decltype(src_cs.to_u32())
     {
         return src_cs.to_u32();
     }
@@ -732,8 +748,8 @@ template <typename DestCharT>
 struct transcoder_finder<false, char32_t, DestCharT>
 {
     template <typename SrcCharset, typename DestCharset>
-    constexpr static STRF_HD auto find
-        (SrcCharset, DestCharset dest_cs) noexcept
+    constexpr static STRF_HD auto find(SrcCharset, DestCharset dest_cs) noexcept
+        -> decltype(dest_cs.from_u32())
     {
         return dest_cs.from_u32();
     }
@@ -752,8 +768,8 @@ struct transcoder_finder<false, CharT, CharT>
                 { src_cs.sanitizer() };
         }
         return strf::detail::transcoder_finder_2
-            < strf::detail::has_find_transcoder_to<CharT, SrcCharset>
-            , strf::detail::has_find_transcoder_from<CharT, DestCharset>
+            < strf::detail::has_find_transcoder_to<CharT, SrcCharset>()
+            , strf::detail::has_find_transcoder_from<CharT, DestCharset>()
             , strf::dynamic_transcoder<CharT, CharT> >
             ::find(src_cs, dest_cs);
     }
@@ -768,8 +784,8 @@ struct transcoder_finder<false, SrcCharT, DestCharT>
     find(SrcCharset src_cs, DestCharset dest_cs )
     {
         return strf::detail::transcoder_finder_2
-            < strf::detail::has_find_transcoder_to<DestCharT, SrcCharset>
-            , strf::detail::has_find_transcoder_from<SrcCharT, DestCharset>
+            < strf::detail::has_find_transcoder_to<DestCharT, SrcCharset>()
+            , strf::detail::has_find_transcoder_from<SrcCharT, DestCharset>()
             , strf::dynamic_transcoder<SrcCharT, DestCharT> >
             ::find(src_cs, dest_cs);
     }
@@ -777,15 +793,17 @@ struct transcoder_finder<false, SrcCharT, DestCharT>
 
 } // namespace detail
 
-template <typename SrcCharset, typename DestCharset>
-constexpr STRF_HD decltype(auto) find_transcoder
-    ( SrcCharset src_cs, DestCharset dest_cs )
+template < typename SrcCharset
+         , typename DestCharset
+         , typename Finder =
+             detail::transcoder_finder
+                 < strf::detail::has_static_transcoder<SrcCharset, DestCharset>()
+                 , typename SrcCharset::code_unit
+                 , typename DestCharset::code_unit > >
+constexpr STRF_HD auto find_transcoder(SrcCharset src_cs, DestCharset dest_cs)
+    -> decltype(Finder::find(src_cs, dest_cs))
 {
-    return detail::transcoder_finder
-        < strf::detail::has_static_transcoder<SrcCharset, DestCharset>
-        , typename SrcCharset::code_unit
-        , typename DestCharset::code_unit >
-        ::find(src_cs, dest_cs);
+    return Finder::find(src_cs, dest_cs);
 }
 
 namespace detail {

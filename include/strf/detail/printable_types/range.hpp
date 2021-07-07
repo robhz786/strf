@@ -256,14 +256,14 @@ private:
 
     template <typename Preview>
     using printer_type_ = strf::printer_type
-        < CharT, Preview, FPack, std::remove_cv_t<value_type> >;
+        < CharT, Preview, FPack, strf::detail::remove_cv_t<value_type> >;
 
     STRF_HD void preview_(strf::no_print_preview&) const
     {
     }
 
     template < typename Preview
-             , std::enable_if_t<Preview::something_required, int> = 0 >
+             , strf::detail::enable_if_t<Preview::something_required, int> = 0 >
     STRF_HD void preview_(Preview& preview) const;
 
     const FPack& fp_;
@@ -273,7 +273,7 @@ private:
 
 template <typename CharT, typename FPack, typename It>
 template < typename Preview
-         , std::enable_if_t<Preview::something_required, int> >
+         , strf::detail::enable_if_t<Preview::something_required, int> >
 STRF_HD void range_printer<CharT, FPack, It>::preview_(Preview& preview) const
 {
     for(auto it = begin_; it != end_; ++it) {
@@ -319,14 +319,14 @@ private:
 
     template <typename Preview>
     using printer_type_ = strf::printer_type
-        < CharT, Preview, FPack, std::remove_cv_t<value_type> >;
+        < CharT, Preview, FPack, strf::detail::remove_cv_t<value_type> >;
 
     constexpr STRF_HD void preview_(strf::no_print_preview&) const
     {
     }
 
     template < typename Preview
-             , std::enable_if_t<Preview::something_required, int> = 0 >
+             , strf::detail::enable_if_t<Preview::something_required, int> = 0 >
     STRF_HD void preview_(Preview& preview) const;
 
     const FPack& fp_;
@@ -345,7 +345,7 @@ private:
 
 template <typename CharT, typename FPack, typename It>
 template < typename Preview
-         , std::enable_if_t<Preview::something_required, int> >
+         , strf::detail::enable_if_t<Preview::something_required, int> >
 STRF_HD void separated_range_printer<CharT, FPack, It>::preview_(Preview& preview) const
 {
     std::size_t count = 0;
@@ -434,7 +434,7 @@ private:
     }
 
     template < typename Preview
-             , std::enable_if_t<Preview::something_required, int> = 0 >
+             , strf::detail::enable_if_t<Preview::something_required, int> = 0 >
     STRF_HD void preview_(Preview& preview) const;
 
     const FPack& fp_;
@@ -447,7 +447,7 @@ template < typename CharT
          , typename It
          , typename ... Fmts >
 template < typename Preview
-         , std::enable_if_t<Preview::something_required, int> >
+         , strf::detail::enable_if_t<Preview::something_required, int> >
 STRF_HD void fmt_range_printer<CharT, FPack, It, Fmts ...>::preview_
     ( Preview& preview ) const
 {
@@ -515,7 +515,7 @@ private:
     }
 
     template < typename Preview
-             , std::enable_if_t<Preview::something_required, int> = 0 >
+             , strf::detail::enable_if_t<Preview::something_required, int> = 0 >
     STRF_HD void preview_(Preview& preview) const;
 
     const FPack& fp_;
@@ -534,7 +534,7 @@ template< typename CharT
         , typename It
         , typename ... Fmts >
 template < typename Preview
-         , std::enable_if_t<Preview::something_required, int> >
+         , strf::detail::enable_if_t<Preview::something_required, int> >
 STRF_HD void fmt_separated_range_printer<CharT, FPack, It, Fmts ...>::preview_
     ( Preview& preview ) const
 {
@@ -620,7 +620,7 @@ private:
     using printer_type_ = strf::printer_type
         < CharT
         , Preview, FPack
-        , std::remove_reference_t
+        , strf::detail::remove_reference_t
             < decltype(std::declval<Op>()(*std::declval<iterator>())) > >;
 
     STRF_HD void preview_(strf::no_print_preview&) const
@@ -628,7 +628,7 @@ private:
     }
 
     template < typename Preview
-             , std::enable_if_t<Preview::something_required, int> = 0 >
+             , strf::detail::enable_if_t<Preview::something_required, int> = 0 >
     STRF_HD void preview_(Preview& preview) const;
 
     const FPack& fp_;
@@ -639,7 +639,7 @@ private:
 
 template <typename CharT, typename FPack, typename It, typename UnaryOp>
 template < typename Preview
-         , std::enable_if_t<Preview::something_required, int> >
+         , strf::detail::enable_if_t<Preview::something_required, int> >
 STRF_HD void transformed_range_printer<CharT, FPack, It, UnaryOp>
     ::preview_(Preview& preview) const
 {
@@ -689,14 +689,14 @@ private:
     using printer_type_ = strf::printer_type
         < CharT
         , Preview, FPack
-        , std::remove_reference_t
+        , strf::detail::remove_reference_t
             < decltype(std::declval<Op>()(*std::declval<iterator>())) > >;
 
     STRF_HD void preview_(strf::no_print_preview&) const
     {
     }
 
-    template <typename Preview, std::enable_if_t<Preview::something_required, int> = 0>
+    template <typename Preview, strf::detail::enable_if_t<Preview::something_required, int> = 0>
     STRF_HD void preview_(Preview& preview) const;
 
     const FPack& fp_;
@@ -716,7 +716,7 @@ private:
 
 template <typename CharT, typename FPack, typename It, typename UnaryOp>
 template < typename Preview
-         , std::enable_if_t<Preview::something_required, int> >
+         , strf::detail::enable_if_t<Preview::something_required, int> >
 STRF_HD void sep_transformed_range_printer<CharT, FPack, It, UnaryOp>
     ::preview_(Preview& preview) const
 {

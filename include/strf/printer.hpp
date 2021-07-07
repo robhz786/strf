@@ -86,7 +86,7 @@ public:
 
     STRF_HD width_preview(const width_preview&) = delete;
 
-    constexpr STRF_HD void subtract_width(strf::width_t w) noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD void subtract_width(strf::width_t w) noexcept
     {
         if (w < width_) {
             width_ -= w;
@@ -96,13 +96,14 @@ public:
     }
 
     template <typename IntT>
-    constexpr std::enable_if_t<std::is_integral<IntT>::value>
+    STRF_CONSTEXPR_IN_CXX14
+    strf::detail::enable_if_t<std::is_integral<IntT>::value>
     STRF_HD subtract_width(IntT w) noexcept
     {
         subtract_int_(std::is_signed<IntT>{}, w);
     }
 
-    constexpr STRF_HD void clear_remaining_width() noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD void clear_remaining_width() noexcept
     {
         width_ = 0;
     }
@@ -148,11 +149,11 @@ public:
     }
 
     template <typename T>
-    constexpr STRF_HD void subtract_width(T) noexcept
+    constexpr STRF_HD void subtract_width(T) const noexcept
     {
     }
 
-    constexpr STRF_HD void clear_remaining_width() noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD void clear_remaining_width() noexcept
     {
     }
 
@@ -176,7 +177,7 @@ public:
 
     STRF_HD size_preview(const size_preview&) = delete;
 
-    constexpr STRF_HD void add_size(std::size_t s) noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD void add_size(std::size_t s) noexcept
     {
         size_ += s;
     }
@@ -200,7 +201,7 @@ public:
     {
     }
 
-    constexpr STRF_HD void add_size(std::size_t) noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD void add_size(std::size_t) noexcept
     {
     }
 
@@ -227,7 +228,7 @@ public:
 
     template <strf::preview_width W = WidthRequired>
     STRF_HD constexpr explicit print_preview
-        ( std::enable_if_t<static_cast<bool>(W), strf::width_t> initial_width ) noexcept
+        ( strf::detail::enable_if_t<static_cast<bool>(W), strf::width_t> initial_width ) noexcept
         : strf::width_preview<true>{initial_width}
     {
     }
@@ -286,7 +287,7 @@ template
 struct fmt_replace_impl2
 {
     template <class U>
-    using f = std::conditional_t<std::is_same<From, U>::value, To, U>;
+    using f = strf::detail::conditional_t<std::is_same<From, U>::value, To, U>;
 
     using type = List<f<T> ...>;
 };
@@ -329,14 +330,14 @@ struct fmt_forward_switcher<FmtA, FmtA, ValueWithFormat>
 {
     template <typename FmtAInit>
     static constexpr STRF_HD FmtAInit&&
-    f(std::remove_reference_t<FmtAInit>& fa,  const ValueWithFormat&)
+    f(strf::detail::remove_reference_t<FmtAInit>& fa,  const ValueWithFormat&)
     {
         return static_cast<FmtAInit&&>(fa);
     }
 
     template <typename FmtAInit>
     static constexpr STRF_HD FmtAInit&&
-    f(std::remove_reference_t<FmtAInit>&& fa, const ValueWithFormat&)
+    f(strf::detail::remove_reference_t<FmtAInit>&& fa, const ValueWithFormat&)
     {
         return static_cast<FmtAInit&&>(fa);
     }
@@ -451,7 +452,7 @@ public:
         return value_;
     }
 
-    constexpr STRF_HD value_type& value()
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD value_type& value()
     {
         return value_;
     }
@@ -501,7 +502,7 @@ struct print_traits_finder;
 
 template <typename T>
 using print_traits_of = typename
-    detail::print_traits_finder<std::remove_cv_t<std::remove_reference_t<T>>>
+    detail::print_traits_finder<strf::detail::remove_cvref_t<T>>
     ::traits;
 
 struct print_traits_tag
@@ -529,7 +530,7 @@ struct has_print_traits_specialization
     template <typename U>
     static std::false_type test(...);
 
-    using T_ = std::remove_cv_t<std::remove_reference_t<T>>;
+    using T_ = strf::detail::remove_cvref_t<T>;
     using result = decltype(test<T_>((const T_*)0));
 
     constexpr static bool value = result::value;
@@ -553,7 +554,7 @@ struct select_print_traits_from_tag_invoke
 template <typename T>
 struct print_traits_finder
 {
-    using selector_ = std::conditional_t
+    using selector_ = strf::detail::conditional_t
         < strf::detail::has_print_traits_specialization<T>::value
         , strf::detail::select_print_traits_specialization
         , strf::detail::select_print_traits_from_tag_invoke >;
@@ -633,12 +634,12 @@ struct formatters_finder<strf::value_with_formatters<PrintTraits, Fmts...>>
 
 template <typename T>
 using forwarded_printable_type = typename
-    detail::print_traits_finder<std::remove_cv_t<std::remove_reference_t<T>>>
+    detail::print_traits_finder<strf::detail::remove_cvref_t<T>>
     ::forwarded_type;
 
 template <typename T>
 using fmt_type = typename
-    detail::formatters_finder<std::remove_cv_t<std::remove_reference_t<T>>>
+    detail::formatters_finder<strf::detail::remove_cvref_t<T>>
     ::fmt_type;
 
 template <typename T>
@@ -705,6 +706,7 @@ struct intermediate_printer_input_maker_2<PrintTraitsOrFacet, true>
     constexpr static STRF_HD auto make
         ( const PrintTraitsOrFacet& pimaker
         , Preview& preview, const FPack& facets, const Arg& arg )
+        -> decltype(pimaker.make_printer_input(strf::tag<CharT>{}, preview, facets, arg))
     {
         return pimaker.make_printer_input(strf::tag<CharT>{}, preview, facets, arg);
     }
@@ -726,6 +728,7 @@ struct intermediate_printer_input_maker_2<PrintTraitsOrFacet, false>
     constexpr static STRF_HD auto make_
         ( std::true_type, const PrintTraitsOrFacet& pimaker
         , Preview& preview, const FPack& facets, const Arg& arg )
+        -> decltype(pimaker.make_printer_input(strf::tag<CharT>{}, preview, facets, arg))
     {
         return pimaker.make_printer_input
             ( strf::tag<CharT>{}, preview, facets, arg );
@@ -735,35 +738,45 @@ struct intermediate_printer_input_maker_2<PrintTraitsOrFacet, false>
     constexpr static STRF_HD auto make_
         ( std::false_type, const PrintTraitsOrFacet& pimaker
         , Preview& preview, const FPack& facets, const Arg& arg )
+        -> decltype(pimaker.make_printer_input
+                    (strf::tag<CharT>{}, preview, facets, strf::fmt(arg)))
     {
         return pimaker.make_printer_input
             (strf::tag<CharT>{}, preview, facets, strf::fmt(arg));
     }
 
-    template <typename CharT, typename Preview, typename FPack, typename Arg>
+    template < typename CharT
+             , typename Preview
+             , typename FPack
+             , typename Arg
+             , typename Condition =
+                 decltype(test_<PrintTraitsOrFacet, CharT>
+                            ( std::declval<Preview&>()
+                            , std::declval<FPack>()
+                            , std::declval<Arg>() )) >
     constexpr static STRF_HD auto make
         ( const PrintTraitsOrFacet& pimaker
         , Preview& preview, const FPack& facets, const Arg& arg )
+        -> decltype(make_<CharT>(Condition{}, pimaker, preview, facets, arg))
     {
-        using can_make_printer_input_without_fmt =
-            decltype(test_<PrintTraitsOrFacet, CharT>( std::declval<Preview&>()
-                                                     , std::declval<FPack>()
-                                                     , std::declval<Arg>() ));
-        return make_<CharT>
-            ( can_make_printer_input_without_fmt{}, pimaker, preview, facets, arg);
+        return make_<CharT>(Condition{}, pimaker, preview, facets, arg);
     }
 };
 
 } // namespace detail
 
-template <typename CharT, typename Preview, typename FPack, typename Arg>
+template < typename CharT
+         , typename Preview
+         , typename FPack
+         , typename Arg
+         , typename Traits = strf::print_traits_of<Arg>
+         , typename Fwd = strf::forwarded_printable_type<Arg>
+         , typename Maker = strf::detail::intermediate_printer_input_maker<Traits, Arg> >
 constexpr STRF_HD auto make_default_printer_input
-    ( Preview& preview, const FPack& facets, const Arg& arg)
+    ( Preview& preview, const FPack& facets, const Arg& arg )
+    -> decltype(Maker::template make<CharT>(Traits{}, preview, facets, static_cast<Fwd>(arg)))
 {
-    using traits = strf::print_traits_of<Arg>;
-    using fwd_type = strf::forwarded_printable_type<Arg>;
-    using maker = strf::detail::intermediate_printer_input_maker<traits, Arg>;
-    return maker::template make<CharT>(traits{}, preview, facets, static_cast<fwd_type>(arg));
+    return Maker::template make<CharT>(Traits{}, preview, facets, static_cast<Fwd>(arg));
 }
 
 struct print_override_c;
@@ -778,6 +791,7 @@ struct no_print_override
         , const FPack& facets
         , Arg&& arg )
         noexcept(noexcept(strf::make_default_printer_input<CharT>(preview, facets, arg)))
+        -> decltype(strf::make_default_printer_input<CharT>(preview, facets, arg))
     {
         return strf::make_default_printer_input<CharT>(preview, facets, arg);
     }
@@ -815,49 +829,62 @@ template < typename PrinterTraits
          , typename CharT
          , typename Preview
          , typename FPack
-         , typename Arg >
+         , typename Arg
+         , typename Tag = typename PrinterTraits::override_tag
+         , typename OverriderT = decltype(strf::use_facet<print_override_c, tag>((const FPack*)0))
+         , typename Maker = strf::detail::intermediate_printer_input_maker<OverriderT, Arg> >
 constexpr STRF_HD auto make_printer_input_
     ( std::true_type
     , Preview& preview
     , const FPack& facets
     , const Arg& arg )
+    -> decltype(Maker::template make<CharT>
+                  (strf::use_facet<print_override_c, Tag>(facets), preview, facets, arg))
 {
-    using tag = typename PrinterTraits::override_tag;
-    auto overrider = strf::use_facet<print_override_c, tag>(facets);
-    using maker = strf::detail::intermediate_printer_input_maker<decltype(overrider), Arg>;
-    return maker::template make<CharT>(overrider, preview, facets, arg);
+    auto overrider = strf::use_facet<print_override_c, Tag>(facets);
+    return Maker::template make<CharT>(overrider, preview, facets, arg);
 }
 
 template < typename PrinterTraits
          , typename CharT
          , typename Preview
          , typename FPack
-         , typename Arg >
+         , typename Arg
+         , typename Maker = strf::detail::intermediate_printer_input_maker<PrinterTraits, Arg> >
 constexpr STRF_HD auto make_printer_input_
     ( std::false_type
     , Preview& preview
     , const FPack& facets
     , const Arg& arg )
+    -> decltype(Maker::template make<CharT>(PrinterTraits{}, preview, facets, arg))
 {
-    using maker = strf::detail::intermediate_printer_input_maker<PrinterTraits, Arg>;
-    return maker::template make<CharT>(PrinterTraits{}, preview, facets, arg);
+    return Maker::template make<CharT>(PrinterTraits{}, preview, facets, arg);
 }
 
 } // namespace detail
+
+#if defined(STRF_HAS_VARIABLE_TEMPLATES)
 
 template <typename T>
 constexpr bool is_overridable
     = strf::detail::has_override_tag<strf::print_traits_of<T>>::value;
 
+#endif // defined(STRF_HAS_VARIABLE_TEMPLATES)
+
 template <typename T>
 using override_tag = typename strf::print_traits_of<T>::override_tag;
 
-template <typename CharT, typename Preview, typename FPack, typename Arg>
+template < typename CharT
+         , typename Preview
+         , typename FPack
+         , typename Arg
+         , typename Traits = print_traits_of<Arg> >
 constexpr STRF_HD auto make_printer_input(Preview& preview, const FPack& facets, const Arg& arg)
+    -> decltype(strf::detail::make_printer_input_<Traits, CharT, Preview, FPack, Arg>
+                   (strf::detail::has_override_tag<Traits>{}, preview, facets, arg) )
 {
-    using traits = print_traits_of<Arg>;
-    return strf::detail::make_printer_input_<traits, CharT, Preview, FPack, Arg>
-        ( strf::detail::has_override_tag<traits>{}, preview, facets, arg );
+    return strf::detail::make_printer_input_<Traits, CharT, Preview, FPack, Arg>
+        ( strf::detail::has_override_tag<Traits>{}, preview, facets, arg );
 }
 
 template <typename CharT, typename Preview, typename FPack, typename Arg>
@@ -1024,26 +1051,26 @@ public:
     {
     }
 
-    constexpr STRF_HD T&& operator<(strf::width_t width) && noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& operator<(strf::width_t width) && noexcept
     {
         data_.alignment = strf::text_alignment::left;
         data_.width = width;
         return move_self_downcast_();
     }
-    constexpr STRF_HD T&& operator>(strf::width_t width) && noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& operator>(strf::width_t width) && noexcept
     {
         data_.alignment = strf::text_alignment::right;
         data_.width = width;
         return move_self_downcast_();
     }
-    constexpr STRF_HD T&& operator^(strf::width_t width) && noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& operator^(strf::width_t width) && noexcept
     {
         data_.alignment = strf::text_alignment::center;
         data_.width = width;
         return move_self_downcast_();
     }
     template < typename CharT >
-    constexpr STRF_HD T&& fill(CharT ch) && noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& fill(CharT ch) && noexcept
     {
         static_assert( strf::is_char<CharT>::value // issue #19
                      , "Refusing non-char argument to set the fill character, "
@@ -1051,7 +1078,7 @@ public:
         data_.fill = ch;
         return move_self_downcast_();
     }
-    constexpr STRF_HD T&& set_alignment_format(strf::alignment_format data) && noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& set_alignment_format(strf::alignment_format data) && noexcept
     {
         data_ = data;
         return move_self_downcast_();
@@ -1132,19 +1159,20 @@ public:
             , strf::tag<alignment_formatter_q<true>>{}
             , strf::alignment_format{ch_} };
     }
-    constexpr STRF_HD T&& set_alignment_format(strf::default_alignment_format) && noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD
+    T&& set_alignment_format(strf::default_alignment_format) && noexcept
     {
         return move_self_downcast_();
     }
-    constexpr STRF_HD T&  set_alignment_format(strf::default_alignment_format) & noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&  set_alignment_format(strf::default_alignment_format) & noexcept
     {
         return self_downcast_();
     }
-    constexpr STRF_HD const T& set_alignment_format(strf::default_alignment_format) const & noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD const T& set_alignment_format(strf::default_alignment_format) const & noexcept
     {
         return self_downcast_();
     }
-    constexpr STRF_HD auto set_alignment_format(strf::alignment_format data) const & noexcept
+    constexpr STRF_HD adapted_derived_type set_alignment_format(strf::alignment_format data) const & noexcept
     {
         return adapted_derived_type
             { self_downcast_()
@@ -1175,12 +1203,12 @@ private:
         const T* base_ptr = static_cast<const T*>(this);
         return *base_ptr;
     }
-    STRF_HD constexpr T& self_downcast_()
+    STRF_HD STRF_CONSTEXPR_IN_CXX14 T& self_downcast_()
     {
         T* base_ptr = static_cast<T*>(this);
         return *base_ptr;
     }
-    STRF_HD constexpr T&& move_self_downcast_()
+    STRF_HD STRF_CONSTEXPR_IN_CXX14 T&& move_self_downcast_()
     {
         T* base_ptr = static_cast<T*>(this);
         return static_cast<T&&>(*base_ptr);
@@ -1218,7 +1246,7 @@ public:
     {
     }
 
-    constexpr STRF_HD T&& multi(std::size_t count) && noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& multi(std::size_t count) && noexcept
     {
         count_ = count;
         T* base_ptr = static_cast<T*>(this);
@@ -1248,7 +1276,7 @@ inline namespace format_functions {
 template <typename T>
 constexpr STRF_HD auto hex(T&& value)
     noexcept(noexcept(strf::fmt(value).hex()))
-    -> std::remove_reference_t<decltype(strf::fmt(value).hex())>
+    -> strf::detail::remove_reference_t<decltype(strf::fmt(value).hex())>
 {
     return strf::fmt(value).hex();
 }
@@ -1256,7 +1284,7 @@ constexpr STRF_HD auto hex(T&& value)
 template <typename T>
 constexpr STRF_HD auto dec(T&& value)
     noexcept(noexcept(strf::fmt(value).dec()))
-    -> std::remove_reference_t<decltype(strf::fmt(value).dec())>
+    -> strf::detail::remove_reference_t<decltype(strf::fmt(value).dec())>
 {
     return strf::fmt(value).dec();
 }
@@ -1264,7 +1292,7 @@ constexpr STRF_HD auto dec(T&& value)
 template <typename T>
 constexpr STRF_HD auto oct(T&& value)
     noexcept(noexcept(strf::fmt(value).oct()))
-    -> std::remove_reference_t<decltype(strf::fmt(value).oct())>
+    -> strf::detail::remove_reference_t<decltype(strf::fmt(value).oct())>
 {
     return strf::fmt(value).oct();
 }
@@ -1272,7 +1300,7 @@ constexpr STRF_HD auto oct(T&& value)
 template <typename T>
 constexpr STRF_HD auto bin(T&& value)
     noexcept(noexcept(strf::fmt(value).bin()))
-    -> std::remove_reference_t<decltype(strf::fmt(value).bin())>
+    -> strf::detail::remove_reference_t<decltype(strf::fmt(value).bin())>
 {
     return strf::fmt(value).bin();
 }
@@ -1280,7 +1308,7 @@ constexpr STRF_HD auto bin(T&& value)
 template <typename T>
 constexpr STRF_HD auto fixed(T&& value)
     noexcept(noexcept(strf::fmt(value).fixed()))
-    -> std::remove_reference_t<decltype(strf::fmt(value).fixed())>
+    -> strf::detail::remove_reference_t<decltype(strf::fmt(value).fixed())>
 {
     return strf::fmt(value).fixed();
 }
@@ -1288,7 +1316,7 @@ constexpr STRF_HD auto fixed(T&& value)
 template <typename T>
     constexpr STRF_HD auto fixed(T&& value, unsigned precision)
     noexcept(noexcept(strf::fmt(value).fixed().p(precision)))
-    -> std::remove_reference_t<decltype(strf::fmt(value).fixed().p(precision))>
+    -> strf::detail::remove_reference_t<decltype(strf::fmt(value).fixed().p(precision))>
 {
     return strf::fmt(value).fixed().p(precision);
 }
@@ -1296,7 +1324,7 @@ template <typename T>
 template <typename T>
 constexpr STRF_HD auto sci(T&& value)
     noexcept(noexcept(strf::fmt(value).sci()))
-    -> std::remove_reference_t<decltype(strf::fmt(value).sci())>
+    -> strf::detail::remove_reference_t<decltype(strf::fmt(value).sci())>
 {
     return strf::fmt(value).sci();
 }
@@ -1304,7 +1332,7 @@ constexpr STRF_HD auto sci(T&& value)
 template <typename T>
 constexpr STRF_HD auto sci(T&& value, unsigned precision)
     noexcept(noexcept(strf::fmt(value).sci().p(precision)))
-    -> std::remove_reference_t<decltype(strf::fmt(value).sci().p(precision))>
+    -> strf::detail::remove_reference_t<decltype(strf::fmt(value).sci().p(precision))>
 {
     return strf::fmt(value).sci().p(precision);
 }
@@ -1312,7 +1340,7 @@ constexpr STRF_HD auto sci(T&& value, unsigned precision)
 template <typename T>
 constexpr STRF_HD auto gen(T&& value)
     noexcept(noexcept(strf::fmt(value).gen()))
-    -> std::remove_reference_t<decltype(strf::fmt(value).gen())>
+    -> strf::detail::remove_reference_t<decltype(strf::fmt(value).gen())>
 {
     return strf::fmt(value).gen();
 }
@@ -1320,7 +1348,7 @@ constexpr STRF_HD auto gen(T&& value)
 template <typename T>
 constexpr STRF_HD auto gen(T&& value, unsigned precision)
     noexcept(noexcept(strf::fmt(value).gen().p(precision)))
-    -> std::remove_reference_t<decltype(strf::fmt(value).gen().p(precision))>
+    -> strf::detail::remove_reference_t<decltype(strf::fmt(value).gen().p(precision))>
 {
     return strf::fmt(value).gen().p(precision);
 }
@@ -1328,7 +1356,7 @@ constexpr STRF_HD auto gen(T&& value, unsigned precision)
 template <typename T, typename C>
 constexpr STRF_HD auto multi(T&& value, C&& count)
     noexcept(noexcept(strf::fmt(value).multi(count)))
-    -> std::remove_reference_t<decltype(strf::fmt(value).multi(count))>
+    -> strf::detail::remove_reference_t<decltype(strf::fmt(value).multi(count))>
 {
     return strf::fmt(value).multi(count);
 }
@@ -1336,7 +1364,7 @@ constexpr STRF_HD auto multi(T&& value, C&& count)
 template <typename T>
 constexpr STRF_HD auto conv(T&& value)
     noexcept(noexcept(strf::fmt(value).convert_charset()))
-    -> std::remove_reference_t<decltype(strf::fmt(value).convert_charset())>
+    -> strf::detail::remove_reference_t<decltype(strf::fmt(value).convert_charset())>
 {
     return strf::fmt(value).convert_charset();
 }
@@ -1344,7 +1372,7 @@ constexpr STRF_HD auto conv(T&& value)
 template <typename T, typename Charset>
     constexpr STRF_HD auto conv(T&& value, Charset&& charset)
     noexcept(noexcept(strf::fmt(value).convert_from_charset(charset)))
-    -> std::remove_reference_t<decltype(strf::fmt(value).convert_from_charset(charset))>
+    -> strf::detail::remove_reference_t<decltype(strf::fmt(value).convert_from_charset(charset))>
 {
     return strf::fmt(value).convert_from_charset(charset);
 }
@@ -1352,7 +1380,7 @@ template <typename T, typename Charset>
 template <typename T>
 constexpr STRF_HD auto sani(T&& value)
     noexcept(noexcept(strf::fmt(value).sanitize_charset()))
-    -> std::remove_reference_t<decltype(strf::fmt(value).sanitize_charset())>
+    -> strf::detail::remove_reference_t<decltype(strf::fmt(value).sanitize_charset())>
 {
     return strf::fmt(value).sanitize_charset();
 }
@@ -1360,7 +1388,7 @@ constexpr STRF_HD auto sani(T&& value)
 template <typename T, typename Charset>
     constexpr STRF_HD auto sani(T&& value, Charset&& charset)
     noexcept(noexcept(strf::fmt(value).sanitize_from_charset(charset)))
-    -> std::remove_reference_t<decltype(strf::fmt(value).sanitize_from_charset(charset))>
+    -> strf::detail::remove_reference_t<decltype(strf::fmt(value).sanitize_from_charset(charset))>
 {
     return strf::fmt(value).sanitize_from_charset(charset);
 }
@@ -1368,7 +1396,7 @@ template <typename T, typename Charset>
 template <typename T>
 constexpr STRF_HD auto right(T&& value, strf::width_t width)
     noexcept(noexcept(strf::fmt(value) > width))
-    -> std::remove_reference_t<decltype(strf::fmt(value) > width)>
+    -> strf::detail::remove_reference_t<decltype(strf::fmt(value) > width)>
 {
     return strf::fmt(value) > width;
 }
@@ -1376,7 +1404,7 @@ constexpr STRF_HD auto right(T&& value, strf::width_t width)
 template <typename T, typename CharT>
 constexpr STRF_HD auto right(T&& value, strf::width_t width, CharT fill)
     noexcept(noexcept(strf::fmt(value).fill(fill) > width))
-    -> std::remove_reference_t<decltype(strf::fmt(value).fill(fill) > width)>
+    -> strf::detail::remove_reference_t<decltype(strf::fmt(value).fill(fill) > width)>
 {
     return strf::fmt(value).fill(fill) > width;
 }
@@ -1384,7 +1412,7 @@ constexpr STRF_HD auto right(T&& value, strf::width_t width, CharT fill)
 template <typename T>
 constexpr STRF_HD auto left(T&& value, strf::width_t width)
     noexcept(noexcept(strf::fmt(value) < width))
-    -> std::remove_reference_t<decltype(strf::fmt(value) < width)>
+    -> strf::detail::remove_reference_t<decltype(strf::fmt(value) < width)>
 {
     return strf::fmt(value) < width;
 }
@@ -1392,7 +1420,7 @@ constexpr STRF_HD auto left(T&& value, strf::width_t width)
 template <typename T, typename CharT>
 constexpr STRF_HD auto left(T&& value, strf::width_t width, CharT fill)
     noexcept(noexcept(strf::fmt(value).fill(fill) < width))
-    -> std::remove_reference_t<decltype(strf::fmt(value).fill(fill) < width)>
+    -> strf::detail::remove_reference_t<decltype(strf::fmt(value).fill(fill) < width)>
 {
     return strf::fmt(value).fill(fill) < width;
 }
@@ -1400,7 +1428,7 @@ constexpr STRF_HD auto left(T&& value, strf::width_t width, CharT fill)
 template <typename T>
 constexpr STRF_HD auto center(T&& value, strf::width_t width)
     noexcept(noexcept(strf::fmt(value) ^ width))
-    -> std::remove_reference_t<decltype(strf::fmt(value) ^ width)>
+    -> strf::detail::remove_reference_t<decltype(strf::fmt(value) ^ width)>
 {
     return strf::fmt(value) ^ width;
 }
@@ -1408,7 +1436,7 @@ constexpr STRF_HD auto center(T&& value, strf::width_t width)
 template <typename T, typename CharT>
 constexpr STRF_HD auto center(T&& value, strf::width_t width, CharT fill)
     noexcept(noexcept(strf::fmt(value).fill(fill) ^ width))
-    -> std::remove_reference_t<decltype(strf::fmt(value).fill(fill) ^ width)>
+    -> strf::detail::remove_reference_t<decltype(strf::fmt(value).fill(fill) ^ width)>
 {
     return strf::fmt(value).fill(fill) ^ width;
 }
@@ -1416,7 +1444,7 @@ constexpr STRF_HD auto center(T&& value, strf::width_t width, CharT fill)
 template <typename T>
 constexpr STRF_HD auto pad0(T&& value, decltype(strf::fmt(value).pad0width()) width)
     noexcept(noexcept(strf::fmt(value).pad0(width)))
-    -> std::remove_reference_t<decltype(strf::fmt(value).pad0(width))>
+    -> strf::detail::remove_reference_t<decltype(strf::fmt(value).pad0(width))>
 {
     return strf::fmt(value).pad0(width);
 }
@@ -1424,7 +1452,7 @@ constexpr STRF_HD auto pad0(T&& value, decltype(strf::fmt(value).pad0width()) wi
 template <typename T>
 constexpr STRF_HD auto punct(T&& value)
     noexcept(noexcept(strf::fmt(value).punct()))
-    -> std::remove_reference_t<decltype(strf::fmt(value).punct())>
+    -> strf::detail::remove_reference_t<decltype(strf::fmt(value).punct())>
 {
     return strf::fmt(value).punct();
 }
@@ -1437,7 +1465,7 @@ struct hex_fn {
     template <typename T>
     constexpr STRF_HD auto operator()(T&& value) const
         noexcept(noexcept(strf::fmt(value).hex()))
-        -> std::remove_reference_t<decltype(strf::fmt(value).hex())>
+        -> strf::detail::remove_reference_t<decltype(strf::fmt(value).hex())>
     {
         return strf::fmt(value).hex();
     }
@@ -1447,7 +1475,7 @@ struct dec_fn {
     template <typename T>
     constexpr STRF_HD auto operator()(T&& value) const
         noexcept(noexcept(strf::fmt(value).dec()))
-        -> std::remove_reference_t<decltype(strf::fmt(value).dec())>
+        -> strf::detail::remove_reference_t<decltype(strf::fmt(value).dec())>
     {
         return strf::fmt(value).dec();
     }
@@ -1457,7 +1485,7 @@ struct oct_fn {
     template <typename T>
     constexpr STRF_HD auto operator()(T&& value) const
         noexcept(noexcept(strf::fmt(value).oct()))
-        -> std::remove_reference_t<decltype(strf::fmt(value).oct())>
+        -> strf::detail::remove_reference_t<decltype(strf::fmt(value).oct())>
     {
         return strf::fmt(value).oct();
     }
@@ -1467,7 +1495,7 @@ struct bin_fn {
     template <typename T>
     constexpr STRF_HD auto operator()(T&& value) const
         noexcept(noexcept(strf::fmt(value).bin()))
-        -> std::remove_reference_t<decltype(strf::fmt(value).bin())>
+        -> strf::detail::remove_reference_t<decltype(strf::fmt(value).bin())>
     {
         return strf::fmt(value).bin();
     }
@@ -1477,14 +1505,14 @@ struct fixed_fn {
     template <typename T>
     constexpr STRF_HD auto operator()(T&& value) const
         noexcept(noexcept(strf::fmt(value).fixed()))
-        -> std::remove_reference_t<decltype(strf::fmt(value).fixed())>
+        -> strf::detail::remove_reference_t<decltype(strf::fmt(value).fixed())>
     {
         return strf::fmt(value).fixed();
     }
     template <typename T>
         constexpr STRF_HD auto operator()(T&& value, unsigned precision) const
         noexcept(noexcept(strf::fmt(value).fixed().p(precision)))
-        -> std::remove_reference_t<decltype(strf::fmt(value).fixed().p(precision))>
+        -> strf::detail::remove_reference_t<decltype(strf::fmt(value).fixed().p(precision))>
     {
         return strf::fmt(value).fixed().p(precision);
     }
@@ -1494,14 +1522,14 @@ struct sci_fn {
     template <typename T>
     constexpr STRF_HD auto operator()(T&& value) const
         noexcept(noexcept(strf::fmt(value).sci()))
-        -> std::remove_reference_t<decltype(strf::fmt(value).sci())>
+        -> strf::detail::remove_reference_t<decltype(strf::fmt(value).sci())>
     {
         return strf::fmt(value).sci();
     }
     template <typename T>
     constexpr STRF_HD auto operator()(T&& value, unsigned precision) const
         noexcept(noexcept(strf::fmt(value).sci().p(precision)))
-        -> std::remove_reference_t<decltype(strf::fmt(value).sci().p(precision))>
+        -> strf::detail::remove_reference_t<decltype(strf::fmt(value).sci().p(precision))>
     {
         return strf::fmt(value).sci().p(precision);
     }
@@ -1511,14 +1539,14 @@ struct gen_fn {
     template <typename T>
     constexpr STRF_HD auto operator()(T&& value) const
         noexcept(noexcept(strf::fmt(value).gen()))
-        -> std::remove_reference_t<decltype(strf::fmt(value).gen())>
+        -> strf::detail::remove_reference_t<decltype(strf::fmt(value).gen())>
     {
         return strf::fmt(value).gen();
     }
     template <typename T>
         constexpr STRF_HD auto operator()(T&& value, unsigned precision) const
         noexcept(noexcept(strf::fmt(value).gen().p(precision)))
-        -> std::remove_reference_t<decltype(strf::fmt(value).gen().p(precision))>
+        -> strf::detail::remove_reference_t<decltype(strf::fmt(value).gen().p(precision))>
     {
         return strf::fmt(value).gen().p(precision);
     }
@@ -1528,7 +1556,7 @@ struct multi_fn {
     template <typename T, typename C>
     constexpr STRF_HD auto operator()(T&& value, C&& count) const
         noexcept(noexcept(strf::fmt(value).multi(count)))
-        -> std::remove_reference_t<decltype(strf::fmt(value).multi(count))>
+        -> strf::detail::remove_reference_t<decltype(strf::fmt(value).multi(count))>
     {
         return strf::fmt(value).multi(count);
     }
@@ -1538,14 +1566,14 @@ struct conv_fn {
     template <typename T>
     constexpr STRF_HD auto operator()(T&& value) const
         noexcept(noexcept(strf::fmt(value).convert_charset()))
-        -> std::remove_reference_t<decltype(strf::fmt(value).convert_charset())>
+        -> strf::detail::remove_reference_t<decltype(strf::fmt(value).convert_charset())>
     {
         return strf::fmt(value).convert_charset();
     }
     template <typename T, typename Charset>
         constexpr STRF_HD auto operator()(T&& value, Charset&& charset) const
         noexcept(noexcept(strf::fmt(value).convert_from_charset(charset)))
-        -> std::remove_reference_t<decltype(strf::fmt(value).convert_from_charset(charset))>
+        -> strf::detail::remove_reference_t<decltype(strf::fmt(value).convert_from_charset(charset))>
     {
         return strf::fmt(value).convert_from_charset(charset);
     }
@@ -1555,14 +1583,14 @@ struct sani_fn {
     template <typename T>
     constexpr STRF_HD auto operator()(T&& value) const
         noexcept(noexcept(strf::fmt(value).sanitize_charset()))
-        -> std::remove_reference_t<decltype(strf::fmt(value).sanitize_charset())>
+        -> strf::detail::remove_reference_t<decltype(strf::fmt(value).sanitize_charset())>
     {
         return strf::fmt(value).sanitize_charset();
     }
     template <typename T, typename Charset>
     constexpr STRF_HD auto operator()(T&& value, Charset&& charset) const
         noexcept(noexcept(strf::fmt(value).sanitize_from_charset(charset)))
-        -> std::remove_reference_t<decltype(strf::fmt(value).sanitize_from_charset(charset))>
+        -> strf::detail::remove_reference_t<decltype(strf::fmt(value).sanitize_from_charset(charset))>
     {
         return strf::fmt(value).sanitize_from_charset(charset);
     }
@@ -1572,14 +1600,14 @@ struct right_fn {
     template <typename T>
     constexpr STRF_HD auto operator()(T&& value, strf::width_t width) const
         noexcept(noexcept(strf::fmt(value) > width))
-        -> std::remove_reference_t<decltype(strf::fmt(value) > width)>
+        -> strf::detail::remove_reference_t<decltype(strf::fmt(value) > width)>
     {
         return strf::fmt(value) > width;
     }
     template <typename T, typename CharT>
     constexpr STRF_HD auto operator()(T&& value, strf::width_t width, CharT fill) const
         noexcept(noexcept(strf::fmt(value).fill(fill) > width))
-        -> std::remove_reference_t<decltype(strf::fmt(value).fill(fill) > width)>
+        -> strf::detail::remove_reference_t<decltype(strf::fmt(value).fill(fill) > width)>
     {
         return strf::fmt(value).fill(fill) > width;
     }
@@ -1589,14 +1617,14 @@ struct left_fn {
     template <typename T>
     constexpr STRF_HD auto operator()(T&& value, strf::width_t width) const
         noexcept(noexcept(strf::fmt(value) < width))
-        -> std::remove_reference_t<decltype(strf::fmt(value) < width)>
+        -> strf::detail::remove_reference_t<decltype(strf::fmt(value) < width)>
     {
         return strf::fmt(value) < width;
     }
     template <typename T, typename CharT>
     constexpr STRF_HD auto operator()(T&& value, strf::width_t width, CharT fill) const
         noexcept(noexcept(strf::fmt(value).fill(fill) < width))
-        -> std::remove_reference_t<decltype(strf::fmt(value).fill(fill) < width)>
+        -> strf::detail::remove_reference_t<decltype(strf::fmt(value).fill(fill) < width)>
     {
         return strf::fmt(value).fill(fill) < width;
     }
@@ -1606,14 +1634,14 @@ struct center_fn {
     template <typename T>
     constexpr STRF_HD auto operator()(T&& value, strf::width_t width) const
         noexcept(noexcept(strf::fmt(value) ^ width))
-        -> std::remove_reference_t<decltype(strf::fmt(value) ^ width)>
+        -> strf::detail::remove_reference_t<decltype(strf::fmt(value) ^ width)>
     {
         return strf::fmt(value) ^ width;
     }
     template <typename T, typename CharT>
     constexpr STRF_HD auto operator()(T&& value, strf::width_t width, CharT fill) const
         noexcept(noexcept(strf::fmt(value).fill(fill) ^ width))
-        -> std::remove_reference_t<decltype(strf::fmt(value).fill(fill) ^ width)>
+        -> strf::detail::remove_reference_t<decltype(strf::fmt(value).fill(fill) ^ width)>
     {
         return strf::fmt(value).fill(fill) ^ width;
     }
@@ -1623,7 +1651,7 @@ struct pad0_fn {
     template <typename T, typename W>
     constexpr STRF_HD auto operator() (T&& value, W width) const
         noexcept(noexcept(strf::fmt(value).pad0(width)))
-        -> std::remove_reference_t<decltype(strf::fmt(value).pad0(width))>
+        -> strf::detail::remove_reference_t<decltype(strf::fmt(value).pad0(width))>
     {
         return strf::fmt(value).pad0(width);
     }
@@ -1634,7 +1662,7 @@ struct punct_fn {
     constexpr STRF_HD auto operator()
         ( T&& value ) const
         noexcept(noexcept(strf::fmt(value).punct()))
-        -> std::remove_reference_t<decltype(strf::fmt(value).punct())>
+        -> strf::detail::remove_reference_t<decltype(strf::fmt(value).punct())>
     {
         return strf::fmt(value).punct();
     }

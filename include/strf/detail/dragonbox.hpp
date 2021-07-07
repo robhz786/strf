@@ -63,7 +63,7 @@ namespace dragonbox {
 
 		template <class T>
 		constexpr STRF_HD std::size_t value_bits() noexcept {
-			return std::numeric_limits<std::enable_if_t<std::is_unsigned<T>::value, T>>::digits;
+			return std::numeric_limits<strf::detail::enable_if_t<std::is_unsigned<T>::value, T>>::digits;
 		}
 	}
 
@@ -107,29 +107,29 @@ namespace dragonbox {
 		using type = T;
 
 		// Refers to the format specification class.
-		using format = std::conditional_t<
+		using format = typename std::conditional<
 			detail::physical_bits<T> == 32,
 			ieee754_binary32,
 			ieee754_binary64
-		>;
+		>::type;
 
 		// Defines an unsigned integer type that is large enough
 		// to carry a variable of type T.
 		// Most of the operations will be done on this integer type.
-		using carrier_uint = std::conditional_t<
+		using carrier_uint = typename std::conditional<
 			detail::physical_bits<T> == 32,
 			std::uint32_t,
 			std::uint64_t
-		>;
+		>::type;
 		static_assert(sizeof(carrier_uint) == sizeof(T), "");
 
 		// Defines a signed integer type for holding
 		// significand bits together with the sign bit.
-		using signed_significand = std::conditional_t<
+		using signed_significand = typename std::conditional<
 			detail::physical_bits<T> == 32,
 			std::int32_t,
 			std::int64_t
-		>;
+		>::type;
 
 		// Number of bits in the above unsigned integer type.
 		static constexpr int carrier_bits = int(detail::physical_bits<carrier_uint>);
@@ -679,18 +679,18 @@ namespace dragonbox {
 				return int((std::int32_t(e) * c - s) >> shift_amount);
 			}
 
-			constexpr std::uint64_t log10_2_fractional_digits{ 0x4d10'4d42'7de7'fbcc };
-			constexpr std::uint64_t log10_4_over_3_fractional_digits{ 0x1ffb'fc2b'bc78'0375 };
+			constexpr std::uint64_t log10_2_fractional_digits{ 0x4d104d427de7fbcc };
+			constexpr std::uint64_t log10_4_over_3_fractional_digits{ 0x1ffbfc2bbc780375 };
 			constexpr std::size_t floor_log10_pow2_shift_amount = 22;
 			constexpr int floor_log10_pow2_input_limit = 1700;
 			constexpr int floor_log10_pow2_minus_log10_4_over_3_input_limit = 1700;
 
-			constexpr std::uint64_t log2_10_fractional_digits{ 0x5269'e12f'346e'2bf9 };
+			constexpr std::uint64_t log2_10_fractional_digits{ 0x5269e12f346e2bf9 };
 			constexpr std::size_t floor_log2_pow10_shift_amount = 19;
 			constexpr int floor_log2_pow10_input_limit = 1233;
 
-			constexpr std::uint64_t log5_2_fractional_digits{ 0x6e40'd1a4'143d'cb94 };
-			constexpr std::uint64_t log5_3_fractional_digits{ 0xaebf'4791'5d44'3b24 };
+			constexpr std::uint64_t log5_2_fractional_digits{ 0x6e40d1a4143dcb94 };
+			constexpr std::uint64_t log5_3_fractional_digits{ 0xaebf47915d443b24 };
 			constexpr std::size_t floor_log5_pow2_shift_amount = 20;
 			constexpr int floor_log5_pow2_input_limit = 1492;
 			constexpr int floor_log5_pow2_minus_log5_3_input_limit = 2427;
@@ -911,7 +911,7 @@ namespace dragonbox {
 
 			template <int, typename UInt>
 			STRF_HD constexpr UInt divide_by_pow10_(std::true_type, UInt n) noexcept {
-				return wuint::umul128_upper64(n, 0x8312'6e97'8d4f'df3c) >> 9;
+				return wuint::umul128_upper64(n, 0x83126e978d4fdf3c) >> 9;
 			}
 			template <int N, typename UInt>
 			STRF_HD constexpr UInt divide_by_pow10_(std::false_type, UInt n) noexcept {
@@ -2616,7 +2616,7 @@ namespace dragonbox {
 
 				// If the number is divisible by 1'0000'0000, work with the quotient.
 				auto quotient_by_pow10_8 = std::uint32_t(div::divide_by_pow10<8, 54, 0>(n));
-				auto remainder = std::uint32_t(n - 1'0000'0000 * quotient_by_pow10_8);
+				auto remainder = std::uint32_t(n - 100000000 * quotient_by_pow10_8);
 
 				if (remainder == 0) {
 					auto n32 = quotient_by_pow10_8;
@@ -2671,7 +2671,7 @@ namespace dragonbox {
 
 				// Perform a binary search.
 				std::uint32_t quotient32;
-				std::uint32_t multiplier = 1'0000'0000;
+				std::uint32_t multiplier = 100000000;
 				int s = 0;
 
 				// Is n divisible by 10^4?
@@ -2679,7 +2679,7 @@ namespace dragonbox {
 					quotient32 = (remainder >> 4) * divtable32::mod_inv(4);
 					if (quotient32 <= divtable32::max_quotients(4)) {
 						remainder = quotient32;
-						multiplier = 1'0000;
+						multiplier = 10000;
 						s |= 0x4;
 					}
 				}
@@ -2689,7 +2689,7 @@ namespace dragonbox {
 					quotient32 = (remainder >> 2) * divtable32::mod_inv(2);
 					if (quotient32 <= divtable32::max_quotients(2)) {
 						remainder = quotient32;
-						multiplier = (s == 4 ? 100 : 100'0000);
+						multiplier = (s == 4 ? 100 : 1000000);
 						s |= 0x2;
 					}
 				}
@@ -2951,7 +2951,7 @@ namespace dragonbox {
 			{
 				ReturnType ret_value;
 				IntervalType interval_type{ additional_args... };
-        STRF_MAYBE_UNUSED(interval_type);
+				STRF_MAYBE_UNUSED(interval_type);
 
 				// Compute k and beta.
 				int const minus_k = log::floor_log10_pow2_minus_log10_4_over_3(exponent);
@@ -3263,7 +3263,7 @@ namespace dragonbox {
 			struct base_default_pair_get_policy<Base, FoundPolicyInfo, FirstPolicy, RemainingPolicies...> {
 				using type = base_default_pair_get_policy_t
 					< Base
-					, std::conditional_t
+					, typename std::conditional
 						< std::is_base_of<Base, FirstPolicy>::value
 						, found_policy_pair
 							< FirstPolicy
@@ -3271,6 +3271,7 @@ namespace dragonbox {
 								? policy_found_info::unique
 								: policy_found_info::repeated ) >
 						, FoundPolicyInfo >
+						::type
 					, RemainingPolicies... >;
 			};
 

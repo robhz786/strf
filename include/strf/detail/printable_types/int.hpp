@@ -376,14 +376,14 @@ public:
     }
 
     template < int B = 16 >
-    constexpr STRF_HD std::enable_if_t<Base == B && B == 16, T&&> hex() &&
+    constexpr STRF_HD strf::detail::enable_if_t<Base == B && B == 16, T&&> hex() &&
     {
         return static_cast<T&&>(*this);
     }
 
     template < int B = 16 >
     constexpr STRF_HD
-    std::enable_if_t<Base != B && B == 16, other_base_t_<B>>
+    strf::detail::enable_if_t<Base != B && B == 16, other_base_t_<B>>
     hex() const &
     {
         return { *static_cast<const T*>(this)
@@ -391,14 +391,14 @@ public:
                , strf::change_base<B>(data_) };
     }
     template < int B = 10 >
-    constexpr STRF_HD std::enable_if_t<Base == B && B == 10, T&&> dec() &&
+    constexpr STRF_HD strf::detail::enable_if_t<Base == B && B == 10, T&&> dec() &&
     {
         return static_cast<T&&>(*this);
     }
 
     template < int B = 10 >
     constexpr STRF_HD
-    std::enable_if_t<Base != B && B == 10, other_base_t_<B>>
+    strf::detail::enable_if_t<Base != B && B == 10, other_base_t_<B>>
     dec() const &
     {
         return { *static_cast<const T*>(this)
@@ -406,14 +406,14 @@ public:
                , strf::change_base<B>(data_) };
     }
     template < int B = 8 >
-    constexpr STRF_HD std::enable_if_t<Base == B && B == 8, T&&>
+    constexpr STRF_HD strf::detail::enable_if_t<Base == B && B == 8, T&&>
     oct() &&
     {
         return static_cast<T&&>(*this);
     }
     template < int B = 8 >
     constexpr STRF_HD
-    std::enable_if_t<Base != B && B == 8, other_base_t_<B>>
+    strf::detail::enable_if_t<Base != B && B == 8, other_base_t_<B>>
     oct() const &
     {
         return { *static_cast<const T*>(this)
@@ -421,14 +421,14 @@ public:
                , strf::change_base<B>(data_) };
     }
     template < int B = 2 >
-    constexpr STRF_HD std::enable_if_t<Base == B && B == 2, T&&>
+    constexpr STRF_HD strf::detail::enable_if_t<Base == B && B == 2, T&&>
     bin() &&
     {
         return static_cast<T&&>(*this);
     }
     template < int B = 2 >
     constexpr STRF_HD
-    std::enable_if_t<Base != B && B == 2, other_base_t_<B>>
+    strf::detail::enable_if_t<Base != B && B == 2, other_base_t_<B>>
     bin() const &
     {
         return { *static_cast<const T*>(this)
@@ -521,7 +521,7 @@ public:
         return static_cast<T&>(*this);
     }
     template <int OtherBase>
-    constexpr STRF_HD std::enable_if_t< Base != OtherBase, other_base_t_<OtherBase> >
+    constexpr STRF_HD strf::detail::enable_if_t< Base != OtherBase, other_base_t_<OtherBase> >
     set_int_format(strf::int_format_no_pad0_nor_punct<OtherBase> new_data) const & noexcept
     {
         return { *static_cast<const T*>(this)
@@ -605,14 +605,14 @@ public:
     }
 
     template < int B = 16 >
-    constexpr STRF_HD std::enable_if_t<Base == B && B == 16, T&&> hex() &&
+    constexpr STRF_HD strf::detail::enable_if_t<Base == B && B == 16, T&&> hex() &&
     {
         return static_cast<T&&>(*this);
     }
 
     template < int B = 16 >
     constexpr STRF_HD
-    std::enable_if_t<Base != B && B == 16, adapted_derived_type_<B, Punctuate>>
+    strf::detail::enable_if_t<Base != B && B == 16, adapted_derived_type_<B, Punctuate>>
     hex() const &
     {
         return adapted_derived_type_<B, Punctuate>
@@ -621,14 +621,14 @@ public:
             , strf::change_static_params<B, Punctuate>(data_) };
     }
     template < int B = 10 >
-    constexpr STRF_HD std::enable_if_t<Base == B && B == 10, T&&> dec() &&
+    constexpr STRF_HD strf::detail::enable_if_t<Base == B && B == 10, T&&> dec() &&
     {
         return static_cast<T&&>(*this);
     }
 
     template < int B = 10 >
     constexpr STRF_HD
-    std::enable_if_t<Base != B && B == 10, adapted_derived_type_<B, Punctuate>>
+    strf::detail::enable_if_t<Base != B && B == 10, adapted_derived_type_<B, Punctuate>>
     dec() const &
     {
         return
@@ -637,14 +637,14 @@ public:
             , strf::change_static_params<B, Punctuate>(data_) };
     }
     template < int B = 8 >
-    constexpr STRF_HD std::enable_if_t<Base == B && B == 8, T&&>
+    constexpr STRF_HD strf::detail::enable_if_t<Base == B && B == 8, T&&>
     oct() &&
     {
         return static_cast<T&&>(*this);
     }
     template < int B = 8 >
     constexpr STRF_HD
-    std::enable_if_t<Base != B && B == 8, adapted_derived_type_<B, Punctuate>>
+    strf::detail::enable_if_t<Base != B && B == 8, adapted_derived_type_<B, Punctuate>>
     oct() const &
     {
         return
@@ -653,14 +653,14 @@ public:
             , strf::change_static_params<B, Punctuate>(data_) };
     }
     template < int B = 2 >
-    constexpr STRF_HD std::enable_if_t<Base == B && B == 2, T&&>
+    constexpr STRF_HD strf::detail::enable_if_t<Base == B && B == 2, T&&>
     bin() &&
     {
         return static_cast<T&&>(*this);
     }
     template < int B = 2 >
     constexpr STRF_HD
-    std::enable_if_t<Base != B && B == 2, adapted_derived_type_<B, Punctuate>>
+    strf::detail::enable_if_t<Base != B && B == 2, adapted_derived_type_<B, Punctuate>>
     bin() const &
     {
         return
@@ -707,17 +707,17 @@ public:
         return static_cast<T&&>(*this);
     }
     template <bool P = true>
-    constexpr STRF_HD std::enable_if_t<P == Punctuate, T&&> punct() && noexcept
+    constexpr STRF_HD strf::detail::enable_if_t<P == Punctuate, T&&> punct() && noexcept
     {
         return static_cast<T&&>(*this);
     }
     template <bool P = true>
-    constexpr STRF_HD std::enable_if_t<P == Punctuate, T&&> operator!() && noexcept
+    constexpr STRF_HD strf::detail::enable_if_t<P == Punctuate, T&&> operator!() && noexcept
     {
         return static_cast<T&&>(*this);
     }
     template <bool P = true>
-    constexpr STRF_HD std::enable_if_t<P != Punctuate, adapted_derived_type_<Base, true>>
+    constexpr STRF_HD strf::detail::enable_if_t<P != Punctuate, adapted_derived_type_<Base, true>>
     punct() const & noexcept
     {
         return
@@ -726,7 +726,7 @@ public:
             , strf::change_static_params<Base, true>(data_) };
     }
     template <bool P = true>
-    constexpr STRF_HD std::enable_if_t<P != Punctuate, adapted_derived_type_<Base, true>>
+    constexpr STRF_HD strf::detail::enable_if_t<P != Punctuate, adapted_derived_type_<Base, true>>
     operator!() const & noexcept
     {
         return
@@ -771,8 +771,9 @@ public:
     }
     template <int OtherBase, bool OtherPunctuate>
     constexpr STRF_HD
-    std::enable_if_t< Base != OtherBase || Punctuate != OtherPunctuate
-                    , adapted_derived_type_<OtherBase, OtherPunctuate> >
+    strf::detail::enable_if_t
+        < Base != OtherBase || Punctuate != OtherPunctuate
+        , adapted_derived_type_<OtherBase, OtherPunctuate> >
     set_int_format
         ( strf::int_format_static_base_and_punct<OtherBase, OtherPunctuate> data ) const & noexcept
     {
@@ -1169,7 +1170,7 @@ public:
         , vwf_nopp_<PTraits, Base, HasAlignment> x ) noexcept
         -> strf::usual_printer_input
             < CharT, Preview, FPack, vwf_nopp_<PTraits, Base, HasAlignment>
-            , std::conditional_t
+            , strf::detail::conditional_t
                 < HasAlignment
                 , strf::detail::int_printer_static_base_and_punct<CharT, Base, false>
                 , strf::detail::int_printer_no_pad0_nor_punct<CharT, Base> > >
@@ -1198,7 +1199,7 @@ public:
         , Preview& preview
         , const FPack& facets
         , vwf_<PTraits, HasAlignment> x )
-        -> std::conditional_t
+        -> strf::detail::conditional_t
             < ! HasAlignment
             , strf::detail::default_int_printer_input<CharT, Preview, IntT>
             , strf::usual_printer_input
@@ -1352,7 +1353,7 @@ private:
 
     template < typename Preview
              , typename IntT
-             , std::enable_if_t<std::is_signed<IntT>::value, int> = 0 >
+             , strf::detail::enable_if_t<std::is_signed<IntT>::value, int> = 0 >
     STRF_HD void init_(Preview& preview, IntT value)
     {
         using uint = std::make_unsigned_t<IntT>;
@@ -1374,7 +1375,7 @@ private:
 
    template < typename Preview
             , typename UIntT
-            , std::enable_if_t< ! std::is_signed<UIntT>::value, int> = 0 >
+            , strf::detail::enable_if_t< ! std::is_signed<UIntT>::value, int> = 0 >
     STRF_HD void init_(Preview& preview, UIntT value)
     {
         uvalue_ = value;
@@ -1429,7 +1430,7 @@ public:
 private:
 
     template < typename IntT
-             , std::enable_if_t<std::is_signed<IntT>::value, int> = 0 >
+             , strf::detail::enable_if_t<std::is_signed<IntT>::value, int> = 0 >
     STRF_HD unsigned init_(IntT value) noexcept
     {
         using uint = std::make_unsigned_t<IntT>;
@@ -1449,7 +1450,7 @@ private:
     }
 
     template < typename UIntT
-             , std::enable_if_t< ! std::is_signed<UIntT>::value, int> = 0 >
+             , strf::detail::enable_if_t< ! std::is_signed<UIntT>::value, int> = 0 >
     STRF_HD unsigned init_(UIntT value) noexcept
     {
         uvalue_ = value;
@@ -1519,7 +1520,7 @@ struct int_printer_no_pad0_nor_punct_data
 
 template
     < typename UIntT
-    , std::enable_if_t<std::is_unsigned<UIntT>::value, int> = 0 >
+    , strf::detail::enable_if_t<std::is_unsigned<UIntT>::value, int> = 0 >
 inline STRF_HD unsigned init
     ( int_printer_no_pad0_nor_punct_data& data
     , int_format_no_pad0_nor_punct<10>
@@ -1532,7 +1533,7 @@ inline STRF_HD unsigned init
 }
 
 template < typename IntT
-         , std::enable_if_t<std::is_signed<IntT>::value, int> = 0 >
+         , strf::detail::enable_if_t<std::is_signed<IntT>::value, int> = 0 >
 inline STRF_HD unsigned init
     ( int_printer_no_pad0_nor_punct_data& data
     , int_format_no_pad0_nor_punct<10> ifmt
@@ -1554,7 +1555,7 @@ inline STRF_HD unsigned init
 
 template < int Base
          , typename IntT
-         , std::enable_if_t<Base != 10, int> = 0 >
+         , strf::detail::enable_if_t<Base != 10, int> = 0 >
 inline STRF_HD unsigned init
     ( int_printer_no_pad0_nor_punct_data& data
     , int_format_no_pad0_nor_punct<Base> ifmt
@@ -1715,7 +1716,7 @@ struct punct_fmt_int_printer_data: public fmt_int_printer_data {
 
 template
     < typename IntT
-    , std::enable_if_t<std::is_signed<IntT>::value, int> = 0 >
+    , strf::detail::enable_if_t<std::is_signed<IntT>::value, int> = 0 >
 inline STRF_HD void init_1
     ( fmt_int_printer_data& data
     , strf::default_int_format
@@ -1728,7 +1729,7 @@ inline STRF_HD void init_1
     } else {
         using uvalue_type = decltype(data.uvalue);
         STRF_IF_CONSTEXPR (sizeof(IntT) < sizeof(data.uvalue)) {
-            std::make_signed_t<uvalue_type> wide_value = value;
+            strf::detail::make_signed_t<uvalue_type> wide_value = value;
             data.uvalue = static_cast<uvalue_type>(-wide_value);
         } else {
             data.uvalue = 1 + static_cast<uvalue_type>(-(value + 1));
@@ -1739,7 +1740,7 @@ inline STRF_HD void init_1
 
 template
     < typename UIntT
-    , std::enable_if_t<!std::is_signed<UIntT>::value, int> = 0 >
+    , strf::detail::enable_if_t<!std::is_signed<UIntT>::value, int> = 0 >
 inline STRF_HD void init_1
     ( fmt_int_printer_data& data
     , strf::default_int_format
@@ -1753,7 +1754,7 @@ inline STRF_HD void init_1
 template
     < typename IntT
     , bool Punctuate
-    , std::enable_if_t<std::is_signed<IntT>::value, int> = 0 >
+    , strf::detail::enable_if_t<std::is_signed<IntT>::value, int> = 0 >
 inline STRF_HD void init_1
     ( fmt_int_printer_data& data
     , strf::int_format_static_base_and_punct<10, Punctuate> ifmt
@@ -1766,7 +1767,7 @@ inline STRF_HD void init_1
     } else {
         using uvalue_type = decltype(data.uvalue);
         STRF_IF_CONSTEXPR (sizeof(IntT) < sizeof(data.uvalue)) {
-            std::make_signed_t<uvalue_type> wide_value = value;
+            strf::detail::make_signed_t<uvalue_type> wide_value = value;
             data.uvalue = static_cast<uvalue_type>(-wide_value);
         } else {
             data.uvalue = 1 + static_cast<uvalue_type>(-(value + 1));
@@ -1779,7 +1780,7 @@ inline STRF_HD void init_1
 template
     < typename UIntT
     , bool Punctuate
-    , std::enable_if_t<std::is_unsigned<UIntT>::value, int> = 0 >
+    , strf::detail::enable_if_t<std::is_unsigned<UIntT>::value, int> = 0 >
 inline STRF_HD void init_1
     ( fmt_int_printer_data& data
     , strf::int_format_static_base_and_punct<10, Punctuate>

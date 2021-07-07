@@ -137,13 +137,13 @@ template <typename It>
 struct iterator_value_type_impl
 {
     using type = typename It::value_type;
-    //std::remove_cv_t<std::remove_reference_t<decltype(*std::declval<It>())>>;
+    //strf::remove_cvref_t<decltype(*std::declval<It>())>;
 };
 
 template <typename T>
 struct iterator_value_type_impl<T*>
 {
-    using type = std::remove_cv_t<T>;
+    using type = strf::detail::remove_cv_t<T>;
 };
 
 template <typename It>
@@ -297,7 +297,7 @@ inline STRF_HD void copy_n
 }
 
 // template< class T >
-// constexpr T&& forward( std::remove_reference_t<T>&& t ) noexcept
+// constexpr T&& forward( strf::detail::remove_reference_t<T>&& t ) noexcept
 // {
 //     return static_cast<T&&>(t);
 // }
