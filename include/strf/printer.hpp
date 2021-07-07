@@ -601,8 +601,8 @@ struct mp_define_value_with_formatters<PrintTraits, List<Fmts...>>
     using type = strf::value_with_formatters<PrintTraits, Fmts...>;
 };
 
-template <typename T>
-struct formatters_finder
+template <typename PrintTraits>
+struct extract_formatters_from_print_traits_impl
 {
 private:
     template <typename U, typename Fmts = typename U::formatters>
@@ -612,12 +612,29 @@ private:
     static strf::tag<> get_formatters_(...);
 
     template <typename U>
-    using formatters_of_ = decltype(get_formatters_<U>((U*)0));
+    using result_ = decltype(get_formatters_<U>((U*)0));
 
 public:
 
+    using type = result_<PrintTraits>;
+};
+
+template <typename PrintTraits>
+using extract_formatters_from_print_traits =
+    typename extract_formatters_from_print_traits_impl<PrintTraits>::type;
+
+template <typename PrintTraits>
+using default_value_with_formatter_of_print_traits = typename
+    strf::detail::mp_define_value_with_formatters
+        < PrintTraits
+        , extract_formatters_from_print_traits<PrintTraits> >
+    :: type;
+
+template <typename T>
+struct formatters_finder
+{
     using traits = typename print_traits_finder<T>::traits;
-    using formatters = formatters_of_<traits>;
+    using formatters = extract_formatters_from_print_traits<traits>;
     using fmt_type = typename
         strf::detail::mp_define_value_with_formatters<traits, formatters>::type;
 };
@@ -681,105 +698,307 @@ constexpr detail_format_functions::fmt_fn fmt {};
 
 } // inline namespace format_functions
 
+struct print_override_c;
+struct no_print_override;
+
 namespace detail {
 
 template <typename T>
-struct is_value_with_formatters: std::false_type {};
-
-template <typename PrintTraits, typename... Fmts>
-struct is_value_with_formatters<strf::value_with_formatters<PrintTraits, Fmts...>>
-    : std::true_type
-{};
-
-template <typename PrintTraitsOrFacet, bool IsValueWithFormatters>
-struct intermediate_printer_input_maker_2;
-
-template <typename PrintTraitsOrFacet, typename Arg>
-using intermediate_printer_input_maker =
-    intermediate_printer_input_maker_2< PrintTraitsOrFacet
-                                      , is_value_with_formatters<Arg>::value >;
-
-template <typename PrintTraitsOrFacet>
-struct intermediate_printer_input_maker_2<PrintTraitsOrFacet, true>
+struct has_override_tag_helper
 {
-    template <typename CharT, typename Preview, typename FPack, typename Arg>
-    constexpr static STRF_HD auto make
-        ( const PrintTraitsOrFacet& pimaker
-        , Preview& preview, const FPack& facets, const Arg& arg )
-        -> decltype(pimaker.make_printer_input(strf::tag<CharT>{}, preview, facets, arg))
-    {
-        return pimaker.make_printer_input(strf::tag<CharT>{}, preview, facets, arg);
-    }
-};
+    template <typename U, typename F = typename U::override_tag>
+    static STRF_HD std::true_type test_(const U*);
 
-template <typename PrintTraitsOrFacet>
-struct intermediate_printer_input_maker_2<PrintTraitsOrFacet, false>
-{
-    template <typename P, typename CharT, typename Preview, typename FPack, typename Arg>
-    static STRF_HD auto test_(Preview& preview, const FPack& facets, const Arg& arg)
-        -> decltype( std::declval<const P&>().make_printer_input
-                         ( strf::tag<CharT>{}, preview, facets, arg )
-                   , std::true_type{} );
-
-    template <typename P, typename CharT>
+    template <typename U>
     static STRF_HD std::false_type test_(...);
 
-    template <typename CharT, typename Preview, typename FPack, typename Arg>
-    constexpr static STRF_HD auto make_
-        ( std::true_type, const PrintTraitsOrFacet& pimaker
-        , Preview& preview, const FPack& facets, const Arg& arg )
-        -> decltype(pimaker.make_printer_input(strf::tag<CharT>{}, preview, facets, arg))
-    {
-        return pimaker.make_printer_input
-            ( strf::tag<CharT>{}, preview, facets, arg );
-    }
+    using result = decltype(test_<T>((T*)0));
+};
 
-    template <typename CharT, typename Preview, typename FPack, typename Arg>
-    constexpr static STRF_HD auto make_
-        ( std::false_type, const PrintTraitsOrFacet& pimaker
-        , Preview& preview, const FPack& facets, const Arg& arg )
-        -> decltype(pimaker.make_printer_input
-                    (strf::tag<CharT>{}, preview, facets, strf::fmt(arg)))
-    {
-        return pimaker.make_printer_input
-            (strf::tag<CharT>{}, preview, facets, strf::fmt(arg));
-    }
+template <typename T>
+struct has_override_tag: has_override_tag_helper<T>::result{};
 
-    template < typename CharT
-             , typename Preview
-             , typename FPack
-             , typename Arg
-             , typename Condition =
-                 decltype(test_<PrintTraitsOrFacet, CharT>
-                            ( std::declval<Preview&>()
-                            , std::declval<FPack>()
-                            , std::declval<Arg>() )) >
-    constexpr static STRF_HD auto make
-        ( const PrintTraitsOrFacet& pimaker
-        , Preview& preview, const FPack& facets, const Arg& arg )
-        -> decltype(make_<CharT>(Condition{}, pimaker, preview, facets, arg))
+namespace mk_pr_in {
+
+template < typename UnadaptedMaker
+         , typename CharT
+         , typename Preview
+         , typename FPack
+         , typename Arg >
+struct can_make_printer_input_impl
+{
+    template <typename P>
+    static STRF_HD auto test_(Preview& preview, const FPack& facets, const Arg& arg)
+        -> decltype( std::declval<const P&>()
+                         .make_printer_input
+                             ( strf::tag<CharT>{}, preview, facets, arg )
+                   , std::true_type{} );
+
+    template <typename P>
+    static STRF_HD std::false_type test_(...);
+
+    using result = decltype
+        ( test_<UnadaptedMaker>
+            ( std::declval<Preview&>()
+            , std::declval<FPack>()
+            , std::declval<Arg>() ));
+};
+
+template < typename UnadaptedMaker
+         , typename CharT
+         , typename Preview
+         , typename FPack
+         , typename Arg >
+using can_make_printer_input = typename
+    can_make_printer_input_impl<UnadaptedMaker, CharT, Preview, FPack, Arg>
+    ::result;
+
+struct arg_adapter_rm_fmt
+{
+    template <typename PrintTraits, typename... Fmts>
+    static constexpr STRF_HD const typename PrintTraits::forwarded_type&
+    adapt_arg(const strf::value_with_formatters<PrintTraits, Fmts...>& x)
     {
-        return make_<CharT>(Condition{}, pimaker, preview, facets, arg);
+        return x.value();
     }
 };
 
+template <typename To>
+struct arg_adapter_cast
+{
+    template <typename From>
+    static constexpr STRF_HD To adapt_arg(const From& x)
+    {
+        return static_cast<To>(x);
+    }
+};
+
+template < typename PrintTraits
+         , typename Maker
+         , typename CharT
+         , typename Preview
+         , typename FPack
+         , typename Vwf
+         , typename DefaultVwf >
+struct adapter_selector_3
+{
+    static_assert( ! std::is_same<Vwf, DefaultVwf>::value, "");
+    using adapter_type = arg_adapter_cast<const Vwf&>;
+};
+
+template < typename PrintTraits
+         , typename Maker
+         , typename CharT
+         , typename Preview
+         , typename FPack
+         , typename DefaultVwf >
+struct adapter_selector_3<PrintTraits, Maker, CharT, Preview, FPack, DefaultVwf, DefaultVwf>
+{
+    static constexpr bool can_pass_directly =
+        can_make_printer_input<Maker, CharT, Preview, FPack, DefaultVwf>
+        ::value;
+
+    using adapter_type = typename std::conditional
+        < can_pass_directly
+        , arg_adapter_cast<const DefaultVwf&>
+        , arg_adapter_rm_fmt >
+        ::type;
+};
+
+template < typename PrintTraits
+         , typename Maker
+         , typename CharT
+         , typename Preview
+         , typename FPack
+         , typename Arg
+         , typename DefaultVwf >
+struct adapter_selector_2
+{
+    static constexpr bool can_pass_directly =
+        can_make_printer_input<Maker, CharT, Preview, FPack, Arg>
+        ::value;
+    static constexpr bool can_pass_as_fmt =
+        can_make_printer_input<Maker, CharT, Preview, FPack, DefaultVwf>
+        ::value;
+    static constexpr bool shall_adapt = !can_pass_directly && can_pass_as_fmt;
+
+    using destination_type = typename std::conditional
+        < shall_adapt, DefaultVwf, typename PrintTraits::forwarded_type>
+        :: type;
+    using adapter_type = arg_adapter_cast<destination_type>;
+};
+
+template < typename PrintTraits
+         , typename Maker
+         , typename CharT
+         , typename Preview
+         , typename FPack
+         , typename DefaultVwf
+         , typename... Fmts >
+struct adapter_selector_2
+    < PrintTraits, Maker, CharT, Preview, FPack
+    , strf::value_with_formatters<PrintTraits, Fmts...>, DefaultVwf>
+{
+    using vwf = strf::value_with_formatters<PrintTraits, Fmts...>;
+    using other = adapter_selector_3
+        < PrintTraits, Maker, CharT, Preview, FPack, vwf, DefaultVwf>;
+    using adapter_type = typename other::adapter_type;
+};
+
+template < typename PrintTraits
+         , typename Maker
+         , typename CharT
+         , typename Preview
+         , typename FPack
+         , typename Arg >
+struct adapter_selector
+{
+    using vwf = default_value_with_formatter_of_print_traits<PrintTraits>;
+    using other = adapter_selector_2<PrintTraits, Maker, CharT, Preview, FPack, Arg, vwf>;
+    using adapter_type = typename other::adapter_type;
+};
+
+template < typename PrintTraits, typename Maker, typename CharT
+         , typename Preview, typename FPack, typename Arg >
+using select_adapter = typename
+    adapter_selector<PrintTraits, Maker, CharT, Preview, FPack, Arg>
+    ::adapter_type;
+
+template <typename Overrider, typename OverrideTag>
+struct maker_getter_overrider
+{
+    using return_maker_type = const Overrider&;
+    using maker_type = Overrider;
+
+    template <typename FPack>
+    static constexpr STRF_HD return_maker_type get_maker(const FPack& fp)
+    {
+        return strf::use_facet<strf::print_override_c, OverrideTag>(fp);
+    }
+};
+
+template <typename PrintTraits>
+struct maker_getter_print_traits
+{
+    using return_maker_type = PrintTraits;
+    using maker_type = PrintTraits;
+
+    template <typename FPack>
+    static constexpr STRF_HD maker_type get_maker(const FPack&)
+    {
+        return maker_type{};
+    }
+};
+
+template < typename PrintTraits
+         , typename CharT
+         , typename Preview
+         , typename FPack
+         , typename Arg
+         , bool HasOverrideTag >
+struct maker_getter_selector_2
+{
+    static_assert(HasOverrideTag, "");
+    using override_tag = typename PrintTraits::override_tag;
+    using overrider_ = decltype
+        ( strf::use_facet<strf::print_override_c, override_tag>(*(const FPack*)0) );
+    using overrider = strf::detail::remove_cvref_t<overrider_>;
+    using maker_getter_type = typename std::conditional
+        < std::is_same<overrider, strf::no_print_override>::value
+        , maker_getter_print_traits<PrintTraits>
+        , maker_getter_overrider<overrider, override_tag> >
+        ::type;
+};
+
+template < typename PrintTraits
+         , typename CharT
+         , typename Preview
+         , typename FPack
+         , typename Arg >
+struct maker_getter_selector_2<PrintTraits, CharT, Preview, FPack, Arg, false>
+{
+    using maker_getter_type = maker_getter_print_traits<PrintTraits>;
+};
+
+template < typename PrintTraits
+         , typename CharT
+         , typename Preview
+         , typename FPack
+         , typename Arg >
+struct maker_getter_selector
+{
+    using other = maker_getter_selector_2
+        < PrintTraits, CharT, Preview, FPack, Arg
+        , has_override_tag<PrintTraits>::value >;
+    using maker_getter_type = typename other::maker_getter_type;
+};
+
+template < typename PrintTraits, typename CharT, typename Preview
+         , typename FPack, typename Arg >
+using select_maker_getter = typename maker_getter_selector
+    <PrintTraits, CharT, Preview, FPack, Arg>
+    :: maker_getter_type;
+
+template <typename CharT, typename Preview, typename FPack, typename Arg>
+struct selector
+{
+    using traits = strf::print_traits_of<Arg>;
+    using maker_getter_type = select_maker_getter<traits, CharT, Preview, FPack, Arg>;
+    using maker_type = typename maker_getter_type::maker_type;
+    using adapter_type = select_adapter<traits, maker_type, CharT, Preview, FPack, Arg>;
+};
+
+template <typename CharT, typename Preview, typename FPack, typename Arg>
+struct selector_no_override
+{
+    using traits = strf::print_traits_of<Arg>;
+    using maker_getter_type = maker_getter_print_traits<traits>;
+    using adapter_type = select_adapter<traits, traits, CharT, Preview, FPack, Arg>;
+};
+
+template < typename CharT, typename Preview, typename FPack, typename Arg
+         , typename Selector = selector<CharT, Preview, FPack, Arg> >
+struct helper: Selector::maker_getter_type, Selector::adapter_type
+{
+};
+
+template < typename CharT, typename Preview, typename FPack, typename Arg
+         , typename Selector = selector_no_override<CharT, Preview, FPack, Arg> >
+struct helper_no_override: Selector::maker_getter_type, Selector::adapter_type
+{
+};
+
+} // namespace mk_pr_in
 } // namespace detail
 
 template < typename CharT
          , typename Preview
          , typename FPack
          , typename Arg
-         , typename Traits = strf::print_traits_of<Arg>
-         , typename Fwd = strf::forwarded_printable_type<Arg>
-         , typename Maker = strf::detail::intermediate_printer_input_maker<Traits, Arg> >
-constexpr STRF_HD auto make_default_printer_input
-    ( Preview& preview, const FPack& facets, const Arg& arg )
-    -> decltype(Maker::template make<CharT>(Traits{}, preview, facets, static_cast<Fwd>(arg)))
+         , typename Helper
+             = strf::detail::mk_pr_in::helper_no_override<CharT, Preview, FPack, Arg>
+         , typename Maker = typename Helper::maker_type
+         , typename ChTag = strf::tag<CharT> >
+constexpr STRF_HD auto make_default_printer_input(Preview& p, const FPack& fp, const Arg& arg)
+    noexcept(noexcept(Maker::make_printer_input(ChTag{}, p, fp, Helper::adapt_arg(arg))))
+    -> decltype(Maker::make_printer_input(ChTag{}, p, fp, Helper::adapt_arg(arg)))
 {
-    return Maker::template make<CharT>(Traits{}, preview, facets, static_cast<Fwd>(arg));
+    return Maker::make_printer_input(ChTag{}, p, fp, Helper::adapt_arg(arg));
 }
 
-struct print_override_c;
+template < typename CharT
+         , typename Preview
+         , typename FPack
+         , typename Arg
+         , typename Helper = strf::detail::mk_pr_in::helper<CharT, Preview, FPack, Arg>
+         , typename Maker = typename Helper::maker_type
+         , typename ChTag = strf::tag<CharT> >
+constexpr STRF_HD auto make_printer_input(Preview& p, const FPack& fp, const Arg& arg)
+    -> decltype(((const Maker*)0)->make_printer_input(ChTag{}, p, fp, Helper::adapt_arg(arg)))
+{
+    typename Helper::return_maker_type maker = Helper::get_maker(fp);
+    return maker.make_printer_input(strf::tag<CharT>{}, p, fp, Helper::adapt_arg(arg));
+}
 
 struct no_print_override
 {
@@ -807,62 +1026,6 @@ struct print_override_c
     }
 };
 
-namespace detail {
-
-template <typename T>
-struct has_override_tag_helper
-{
-    template <typename U, typename F = typename U::override_tag>
-    static STRF_HD std::true_type test_(const U*);
-
-    template <typename U>
-    static STRF_HD std::false_type test_(...);
-
-    using result = decltype(test_<T>((T*)0));
-};
-
-template <typename T>
-struct has_override_tag: has_override_tag_helper<T>::result
-{};
-
-template < typename PrinterTraits
-         , typename CharT
-         , typename Preview
-         , typename FPack
-         , typename Arg
-         , typename Tag = typename PrinterTraits::override_tag
-         , typename OverriderT = decltype(strf::use_facet<print_override_c, tag>((const FPack*)0))
-         , typename Maker = strf::detail::intermediate_printer_input_maker<OverriderT, Arg> >
-constexpr STRF_HD auto make_printer_input_
-    ( std::true_type
-    , Preview& preview
-    , const FPack& facets
-    , const Arg& arg )
-    -> decltype(Maker::template make<CharT>
-                  (strf::use_facet<print_override_c, Tag>(facets), preview, facets, arg))
-{
-    auto overrider = strf::use_facet<print_override_c, Tag>(facets);
-    return Maker::template make<CharT>(overrider, preview, facets, arg);
-}
-
-template < typename PrinterTraits
-         , typename CharT
-         , typename Preview
-         , typename FPack
-         , typename Arg
-         , typename Maker = strf::detail::intermediate_printer_input_maker<PrinterTraits, Arg> >
-constexpr STRF_HD auto make_printer_input_
-    ( std::false_type
-    , Preview& preview
-    , const FPack& facets
-    , const Arg& arg )
-    -> decltype(Maker::template make<CharT>(PrinterTraits{}, preview, facets, arg))
-{
-    return Maker::template make<CharT>(PrinterTraits{}, preview, facets, arg);
-}
-
-} // namespace detail
-
 #if defined(STRF_HAS_VARIABLE_TEMPLATES)
 
 template <typename T>
@@ -873,19 +1036,6 @@ constexpr bool is_overridable
 
 template <typename T>
 using override_tag = typename strf::print_traits_of<T>::override_tag;
-
-template < typename CharT
-         , typename Preview
-         , typename FPack
-         , typename Arg
-         , typename Traits = print_traits_of<Arg> >
-constexpr STRF_HD auto make_printer_input(Preview& preview, const FPack& facets, const Arg& arg)
-    -> decltype(strf::detail::make_printer_input_<Traits, CharT, Preview, FPack, Arg>
-                   (strf::detail::has_override_tag<Traits>{}, preview, facets, arg) )
-{
-    return strf::detail::make_printer_input_<Traits, CharT, Preview, FPack, Arg>
-        ( strf::detail::has_override_tag<Traits>{}, preview, facets, arg );
-}
 
 template <typename CharT, typename Preview, typename FPack, typename Arg>
 using printer_input_type = decltype
