@@ -168,7 +168,7 @@ public:
     constexpr STRF_HD explicit default_int_formatter_fn(default_int_format) noexcept
     {
     }
-    constexpr STRF_HD T&& dec() && noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& dec() && noexcept
     {
         return static_cast<T&&>(*this);
     }
@@ -176,7 +176,7 @@ public:
     {
         return static_cast<const T&&>(*this);
     }
-    constexpr STRF_HD T& dec() & noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T& dec() & noexcept
     {
         return static_cast<T&>(*this);
     }
@@ -210,7 +210,7 @@ public:
                , strf::tag<int_formatter_static_base_and_punct<10, false>>{}
                , data };
     }
-    constexpr STRF_HD static_base_and_punct_t_<10, false> pad0(unsigned w) && noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD static_base_and_punct_t_<10, false> pad0(unsigned w) && noexcept
     {
         int_format_static_base_and_punct<10, false> data;
         data.pad0width = w;
@@ -218,7 +218,7 @@ public:
                , strf::tag<int_formatter_static_base_and_punct<10, false>>{}
                , data };
     }
-    constexpr STRF_HD no_pad0_nor_punct_t_<10> operator+() && noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD no_pad0_nor_punct_t_<10> operator+() && noexcept
     {
         int_format_no_pad0_nor_punct<10> data;
         data.sign = strf::showsign::positive_also;
@@ -226,7 +226,7 @@ public:
                , strf::tag<int_formatter_no_pad0_nor_punct<10>>{}
                , data };
     }
-    constexpr STRF_HD no_pad0_nor_punct_t_<10> fill_sign() && noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD no_pad0_nor_punct_t_<10> fill_sign() && noexcept
     {
         int_format_no_pad0_nor_punct<10> data;
         data.sign = strf::showsign::fill_instead_of_positive;
@@ -234,7 +234,7 @@ public:
                , strf::tag<int_formatter_no_pad0_nor_punct<10>>{}
                , data };
     }
-    constexpr STRF_HD no_pad0_nor_punct_t_<10> operator~() && noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD no_pad0_nor_punct_t_<10> operator~() && noexcept
     {
         int_format_no_pad0_nor_punct<10> data;
         data.sign = strf::showsign::fill_instead_of_positive;
@@ -242,14 +242,14 @@ public:
                , strf::tag<int_formatter_no_pad0_nor_punct<10>>{}
                , data };
     }
-    constexpr STRF_HD void operator*() && noexcept = delete;
-    constexpr STRF_HD static_base_and_punct_t_<10, true> punct() && noexcept
+    STRF_HD void operator*() && noexcept = delete;
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD static_base_and_punct_t_<10, true> punct() && noexcept
     {
         return { *static_cast<const T*>(this)
                , strf::tag<int_formatter_static_base_and_punct<10, true>>{}
                , strf::tag<>{} };
     }
-    constexpr STRF_HD static_base_and_punct_t_<10, true> operator!() && noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD static_base_and_punct_t_<10, true> operator!() && noexcept
     {
         return { *static_cast<const T*>(this)
                , strf::tag<int_formatter_static_base_and_punct<10, true>>{}
@@ -273,11 +273,11 @@ public:
     {
         return {};
     }
-    constexpr STRF_HD T&& set_int_format(strf::default_int_format) && noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& set_int_format(strf::default_int_format) && noexcept
     {
         return static_cast<T&&>(*this);
     }
-    constexpr STRF_HD T& set_int_format(strf::default_int_format) & noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T& set_int_format(strf::default_int_format) & noexcept
     {
         return static_cast<T&>(*this);
     }
@@ -323,12 +323,12 @@ private:
         const T* base_ptr = static_cast<const T*>(this);
         return *base_ptr;
     }
-    STRF_HD constexpr T& self_downcast_()
+    STRF_HD STRF_CONSTEXPR_IN_CXX14 T& self_downcast_()
     {
         T* base_ptr = static_cast<T*>(this);
         return *base_ptr;
     }
-    STRF_HD constexpr T&& move_self_downcast_()
+    STRF_HD STRF_CONSTEXPR_IN_CXX14 T&& move_self_downcast_()
     {
         T* base_ptr = static_cast<T*>(this);
         return static_cast<T&&>(*base_ptr);
@@ -376,7 +376,7 @@ public:
     }
 
     template < int B = 16 >
-    constexpr STRF_HD strf::detail::enable_if_t<Base == B && B == 16, T&&> hex() &&
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD strf::detail::enable_if_t<Base == B && B == 16, T&&> hex() &&
     {
         return static_cast<T&&>(*this);
     }
@@ -391,7 +391,7 @@ public:
                , strf::change_base<B>(data_) };
     }
     template < int B = 10 >
-    constexpr STRF_HD strf::detail::enable_if_t<Base == B && B == 10, T&&> dec() &&
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD strf::detail::enable_if_t<Base == B && B == 10, T&&> dec() &&
     {
         return static_cast<T&&>(*this);
     }
@@ -406,7 +406,7 @@ public:
                , strf::change_base<B>(data_) };
     }
     template < int B = 8 >
-    constexpr STRF_HD strf::detail::enable_if_t<Base == B && B == 8, T&&>
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD strf::detail::enable_if_t<Base == B && B == 8, T&&>
     oct() &&
     {
         return static_cast<T&&>(*this);
@@ -421,7 +421,7 @@ public:
                , strf::change_base<B>(data_) };
     }
     template < int B = 2 >
-    constexpr STRF_HD strf::detail::enable_if_t<Base == B && B == 2, T&&>
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD strf::detail::enable_if_t<Base == B && B == 2, T&&>
     bin() &&
     {
         return static_cast<T&&>(*this);
@@ -435,7 +435,7 @@ public:
                , strf::tag<strf::int_formatter_no_pad0_nor_punct<B>>{}
                , strf::change_base<B>(data_) };
     }
-    constexpr STRF_HD static_base_and_punct_t_<Base, false>
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD static_base_and_punct_t_<Base, false>
     p(unsigned _) && noexcept
     {
         int_format_static_base_and_punct<Base, false> new_data = data_;
@@ -454,28 +454,28 @@ public:
                , new_data };
     }
     template <bool DecimalBase = (Base == 10)>
-    constexpr STRF_HD T&& operator+() && noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& operator+() && noexcept
     {
         static_assert(DecimalBase, "operator+ only allowed in decimal base");
         data_.sign = strf::showsign::positive_also;
         return static_cast<T&&>(*this);
     }
     template <bool DecimalBase = (Base == 10)>
-    constexpr STRF_HD T&& fill_sign() && noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& fill_sign() && noexcept
     {
         static_assert(DecimalBase, "fill_sign() only allowed in decimal base");
         data_.sign = strf::showsign::fill_instead_of_positive;
         return static_cast<T&&>(*this);
     }
     template <bool DecimalBase = (Base == 10)>
-    constexpr STRF_HD T&& operator~() && noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& operator~() && noexcept
     {
         static_assert(DecimalBase, "operator~ only allowed in decimal base");
         data_.sign = strf::showsign::fill_instead_of_positive;
         return static_cast<T&&>(*this);
     }
     template <bool DecimalBase = (Base == 10)>
-    constexpr STRF_HD T&& operator*() && noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& operator*() && noexcept
     {
         static_assert(!DecimalBase, "operator* not allowed in decimal base");
         data_.showbase = true;
@@ -508,13 +508,13 @@ public:
     {
         return data_;
     }
-    constexpr STRF_HD T&& set_int_format
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& set_int_format
         ( strf::int_format_no_pad0_nor_punct<Base> data ) && noexcept
     {
         data_ = data;
         return static_cast<T&&>(*this);
     }
-    constexpr STRF_HD T& set_int_format
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T& set_int_format
         ( strf::int_format_no_pad0_nor_punct<Base> data ) & noexcept
     {
         data_ = data;
@@ -558,12 +558,12 @@ private:
         const T* base_ptr = static_cast<const T*>(this);
         return *base_ptr;
     }
-    STRF_HD constexpr T& self_downcast_()
+    STRF_HD STRF_CONSTEXPR_IN_CXX14 T& self_downcast_()
     {
         T* base_ptr = static_cast<T*>(this);
         return *base_ptr;
     }
-    STRF_HD constexpr T&& move_self_downcast_()
+    STRF_HD STRF_CONSTEXPR_IN_CXX14 T&& move_self_downcast_()
     {
         T* base_ptr = static_cast<T*>(this);
         return static_cast<T&&>(*base_ptr);
@@ -605,7 +605,7 @@ public:
     }
 
     template < int B = 16 >
-    constexpr STRF_HD strf::detail::enable_if_t<Base == B && B == 16, T&&> hex() &&
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD strf::detail::enable_if_t<Base == B && B == 16, T&&> hex() &&
     {
         return static_cast<T&&>(*this);
     }
@@ -621,7 +621,7 @@ public:
             , strf::change_static_params<B, Punctuate>(data_) };
     }
     template < int B = 10 >
-    constexpr STRF_HD strf::detail::enable_if_t<Base == B && B == 10, T&&> dec() &&
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD strf::detail::enable_if_t<Base == B && B == 10, T&&> dec() &&
     {
         return static_cast<T&&>(*this);
     }
@@ -637,7 +637,7 @@ public:
             , strf::change_static_params<B, Punctuate>(data_) };
     }
     template < int B = 8 >
-    constexpr STRF_HD strf::detail::enable_if_t<Base == B && B == 8, T&&>
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD strf::detail::enable_if_t<Base == B && B == 8, T&&>
     oct() &&
     {
         return static_cast<T&&>(*this);
@@ -653,7 +653,7 @@ public:
             , strf::change_static_params<B, Punctuate>(data_) };
     }
     template < int B = 2 >
-    constexpr STRF_HD strf::detail::enable_if_t<Base == B && B == 2, T&&>
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD strf::detail::enable_if_t<Base == B && B == 2, T&&>
     bin() &&
     {
         return static_cast<T&&>(*this);
@@ -668,51 +668,51 @@ public:
             , strf::tag<strf::int_formatter_static_base_and_punct<B, Punctuate>>{}
             , strf::change_static_params<B, Punctuate>(data_) };
     }
-    constexpr STRF_HD T&& p(unsigned _) && noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& p(unsigned _) && noexcept
     {
         data_.precision = _;
         return static_cast<T&&>(*this);
     }
-    constexpr STRF_HD T&& pad0(unsigned w) && noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& pad0(unsigned w) && noexcept
     {
         data_.pad0width = w;
         return static_cast<T&&>(*this);
     }
     template <bool DecimalBase = (Base == 10)>
-    constexpr STRF_HD T&& operator+() && noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& operator+() && noexcept
     {
         static_assert(DecimalBase, "operator+ only allowed in decimal base");
         data_.sign = strf::showsign::positive_also;
         return static_cast<T&&>(*this);
     }
     template <bool DecimalBase = (Base == 10)>
-    constexpr STRF_HD T&& fill_sign() && noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& fill_sign() && noexcept
     {
         static_assert(DecimalBase, "fill_sign() only allowed in decimal base");
         data_.sign = strf::showsign::fill_instead_of_positive;
         return static_cast<T&&>(*this);
     }
     template <bool DecimalBase = (Base == 10)>
-    constexpr STRF_HD T&& operator~() && noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& operator~() && noexcept
     {
         static_assert(DecimalBase, "operator~ only allowed in decimal base");
         data_.sign = strf::showsign::fill_instead_of_positive;
         return static_cast<T&&>(*this);
     }
     template <bool DecimalBase = (Base == 10)>
-    constexpr STRF_HD T&& operator*() && noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& operator*() && noexcept
     {
         static_assert(!DecimalBase, "operator* not allowed in decimal base");
         data_.showbase = true;
         return static_cast<T&&>(*this);
     }
     template <bool P = true>
-    constexpr STRF_HD strf::detail::enable_if_t<P == Punctuate, T&&> punct() && noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD strf::detail::enable_if_t<P == Punctuate, T&&> punct() && noexcept
     {
         return static_cast<T&&>(*this);
     }
     template <bool P = true>
-    constexpr STRF_HD strf::detail::enable_if_t<P == Punctuate, T&&> operator!() && noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD strf::detail::enable_if_t<P == Punctuate, T&&> operator!() && noexcept
     {
         return static_cast<T&&>(*this);
     }
@@ -757,13 +757,13 @@ public:
     {
         return data_;
     }
-    constexpr STRF_HD T&& set_int_format
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& set_int_format
         ( strf::int_format_static_base_and_punct<Base, Punctuate> data ) && noexcept
     {
         data_ = data;
         return static_cast<T&&>(*this);
     }
-    constexpr STRF_HD T& set_int_format
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T& set_int_format
         ( strf::int_format_static_base_and_punct<Base, Punctuate> data ) & noexcept
     {
         data_ = data;
@@ -809,12 +809,12 @@ private:
         const T* base_ptr = static_cast<const T*>(this);
         return *base_ptr;
     }
-    STRF_HD constexpr T& self_downcast_()
+    STRF_HD STRF_CONSTEXPR_IN_CXX14 T& self_downcast_()
     {
         T* base_ptr = static_cast<T*>(this);
         return *base_ptr;
     }
-    STRF_HD constexpr T&& move_self_downcast_()
+    STRF_HD STRF_CONSTEXPR_IN_CXX14 T&& move_self_downcast_()
     {
         T* base_ptr = static_cast<T*>(this);
         return static_cast<T&&>(*base_ptr);
@@ -846,143 +846,143 @@ public:
     {
     }
 
-    constexpr STRF_HD T&& hex() &&
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& hex() &&
     {
         data_.base = 16;
         return static_cast<T&&>(*this);
     }
-    constexpr STRF_HD T&& hex() &
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& hex() &
     {
         data_.base = 16;
         return static_cast<T&>(*this);
     }
-    constexpr STRF_HD T&& dec() &&
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& dec() &&
     {
         data_.base = 10;
         return static_cast<T&&>(*this);
     }
-    constexpr STRF_HD T&& dec() &
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& dec() &
     {
         data_.base = 10;
         return static_cast<T&>(*this);
     }
-    constexpr STRF_HD T&& oct() &&
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& oct() &&
     {
         data_.base = 8;
         return static_cast<T&&>(*this);
     }
-    constexpr STRF_HD T&& oct() &
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& oct() &
     {
         data_.base = 8;
         return static_cast<T&>(*this);
     }
-    constexpr STRF_HD T&& bin() &&
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& bin() &&
     {
         data_.base = 2;
         return static_cast<T&&>(*this);
     }
-    constexpr STRF_HD T&& bin() &
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& bin() &
     {
         data_.base = 2;
         return static_cast<T&>(*this);
     }
-    constexpr STRF_HD T&& p(unsigned _) && noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& p(unsigned _) && noexcept
     {
         data_.precision = _;
         return static_cast<T&&>(*this);
     }
-    constexpr STRF_HD T& p(unsigned _) & noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T& p(unsigned _) & noexcept
     {
         data_.precision = _;
         return static_cast<T&>(*this);
     }
-    constexpr STRF_HD T&& pad0(unsigned w) && noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& pad0(unsigned w) && noexcept
     {
         data_.pad0width = w;
         return static_cast<T&&>(*this);
     }
-    constexpr STRF_HD T& pad0(unsigned w) & noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T& pad0(unsigned w) & noexcept
     {
         data_.pad0width = w;
         return static_cast<T&>(*this);
     }
-    constexpr STRF_HD T&& operator+() && noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& operator+() && noexcept
     {
         data_.sign = strf::showsign::positive_also;
         return static_cast<T&&>(*this);
     }
-    constexpr STRF_HD T& operator+() & noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T& operator+() & noexcept
     {
         data_.sign = strf::showsign::positive_also;
         return static_cast<T&>(*this);
     }
-    constexpr STRF_HD T&& fill_sign() && noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& fill_sign() && noexcept
     {
         data_.sign = strf::showsign::fill_instead_of_positive;
         return static_cast<T&&>(*this);
     }
-    constexpr STRF_HD T& fill_sign() & noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T& fill_sign() & noexcept
     {
         data_.sign = strf::showsign::fill_instead_of_positive;
         return static_cast<T&>(*this);
     }
-    constexpr STRF_HD T&& operator~() && noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& operator~() && noexcept
     {
         data_.sign = strf::showsign::fill_instead_of_positive;
         return static_cast<T&&>(*this);
     }
-    constexpr STRF_HD T& operator~() & noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T& operator~() & noexcept
     {
         data_.sign = strf::showsign::fill_instead_of_positive;
         return static_cast<T&>(*this);
     }
-    constexpr STRF_HD T&& operator*() && noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& operator*() && noexcept
     {
         data_.showbase = true;
         return static_cast<T&&>(*this);
     }
-    constexpr STRF_HD T& operator*() & noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T& operator*() & noexcept
     {
         data_.showbase = true;
         return static_cast<T&>(*this);
     }
-    constexpr STRF_HD T&& punct() && noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& punct() && noexcept
     {
         data_.punctuate = true;
         return static_cast<T&&>(*this);
     }
-    constexpr STRF_HD T& punct() & noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T& punct() & noexcept
     {
         data_.punctuate = true;
         return static_cast<T&>(*this);
     }
-    constexpr STRF_HD T&& operator!() && noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& operator!() && noexcept
     {
         data_.punctuate = true;
         return static_cast<T&&>(*this);
     }
-    constexpr STRF_HD T& operator!() & noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T& operator!() & noexcept
     {
         data_.punctuate = true;
         return static_cast<T&>(*this);
     }
-    constexpr STRF_HD T&& base(int b) && noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& base(int b) && noexcept
     {
         data_.base = b;
         return static_cast<T&&>(*this);
     }
-    constexpr STRF_HD T& base(int b) & noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T& base(int b) & noexcept
     {
         data_.base = b;
         return static_cast<T&>(*this);
     }
-    constexpr STRF_HD T&&
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&&
     set_int_format(strf::int_format_full_dynamic data) && noexcept
     {
         data_ = data;
         return static_cast<T&&>(*this);
     }
-    constexpr STRF_HD T&
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&
     set_int_format(strf::int_format_full_dynamic data) & noexcept
     {
         data_ = data;
@@ -1023,12 +1023,12 @@ private:
         const T* base_ptr = static_cast<const T*>(this);
         return *base_ptr;
     }
-    STRF_HD constexpr T& self_downcast_()
+    STRF_HD STRF_CONSTEXPR_IN_CXX14 T& self_downcast_()
     {
         T* base_ptr = static_cast<T*>(this);
         return *base_ptr;
     }
-    STRF_HD constexpr T&& move_self_downcast_()
+    STRF_HD STRF_CONSTEXPR_IN_CXX14 T&& move_self_downcast_()
     {
         T* base_ptr = static_cast<T*>(this);
         return static_cast<T&&>(*base_ptr);
@@ -1302,6 +1302,12 @@ struct voidptr_printing
         , Preview& preview
         , const FPack& facets
         , const void* x ) noexcept
+    -> decltype( strf::make_default_printer_input<CharT>
+                   ( preview
+                   , strf::pack( strf::use_facet<strf::numpunct_c<16>, const void*>(facets)
+                               , strf::lettercase::lower
+                               , strf::use_facet<strf::charset_c<CharT>, const void*>(facets) )
+                   , *strf::hex(strf::detail::bit_cast<std::size_t>(x)) ) )
     {
         auto f1 = strf::use_facet<strf::numpunct_c<16>, const void*>(facets);
         auto f2 = strf::use_facet<strf::lettercase_c, const void*>(facets);
@@ -1317,6 +1323,13 @@ struct voidptr_printing
         , Preview& preview
         , const FPack& facets
         , strf::value_with_formatters<T...> x ) noexcept
+    -> decltype( strf::make_default_printer_input<CharT>
+                   ( preview
+                   , strf::pack( strf::use_facet<strf::numpunct_c<16>, const void*>(facets)
+                               , strf::lettercase::lower
+                               , strf::use_facet<strf::charset_c<CharT>, const void*>(facets) )
+                   , *strf::hex(strf::detail::bit_cast<std::size_t>(x.value()))
+                                   .set_alignment_format(x.get_alignment_format()) ) )
     {
         auto f1 = strf::use_facet<strf::numpunct_c<16>, const void*>(facets);
         auto f2 = strf::use_facet<strf::lettercase_c, const void*>(facets);
@@ -2274,8 +2287,9 @@ private:
     static constexpr std::size_t pool_size_ =
         sizeof(strf::detail::int_printer_static_base_and_punct<CharT, 10, true>);
 
-    using storage_type_ = typename std::aligned_storage_t
-        < pool_size_, alignof(strf::printer<CharT>)>;
+    using storage_type_ = typename std::aligned_storage
+        < pool_size_, alignof(strf::printer<CharT>)>
+        :: type;
 
     storage_type_ storage_;
 };

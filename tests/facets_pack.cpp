@@ -155,10 +155,10 @@ void STRF_TEST_FUNC basic_tests()
             f3_30
         );
 
-        decltype(auto) f1i = strf::use_facet<fcategory<1>, int>(fp);
-        decltype(auto) f2d = strf::use_facet<fcategory<2>, double>(fp);
-        decltype(auto) f2i = strf::use_facet<fcategory<2>, int>(fp);
-        decltype(auto) f3i = strf::use_facet<fcategory<3>, int>(fp);
+        auto&& f1i = strf::use_facet<fcategory<1>, int>(fp);
+        auto&& f2d = strf::use_facet<fcategory<2>, double>(fp);
+        auto&& f2i = strf::use_facet<fcategory<2>, int>(fp);
+        auto&& f3i = strf::use_facet<fcategory<3>, int>(fp);
 
         static_assert(std::is_same<decltype(f1i), const facet<1>&>::value, "wrong type");
         static_assert(std::is_same<decltype(f2d), const facet<2>&>::value, "wrong type");
@@ -184,9 +184,9 @@ void STRF_TEST_FUNC basic_tests()
                 f2_20_empty_and_derives_from_x
             );
 
-        decltype(auto) xf2_20 = strf::use_facet<fcategory<2>, class_xa>(fp);
-        decltype(auto) xf2_22 = strf::use_facet<fcategory<2>, class_xb>(fp);
-        decltype(auto) xf2_21 = strf::use_facet<fcategory<2>, class_c>(fp);
+        auto&& xf2_20 = strf::use_facet<fcategory<2>, class_xa>(fp);
+        auto&& xf2_22 = strf::use_facet<fcategory<2>, class_xb>(fp);
+        auto&& xf2_21 = strf::use_facet<fcategory<2>, class_c>(fp);
         static_assert(std::is_same<decltype(xf2_20), const facet<2>&>::value, "wrong type");
         static_assert(std::is_same<decltype(xf2_21), const facet<2>&>::value, "wrong type");
         static_assert(std::is_same<decltype(xf2_22), const facet<2>&>::value, "wrong type");

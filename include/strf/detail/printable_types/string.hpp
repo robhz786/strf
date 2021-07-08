@@ -750,7 +750,7 @@ public:
         , len_(input.arg.length())
     {
         STRF_IF_CONSTEXPR(Preview::width_required) {
-            decltype(auto) wcalc = use_facet_<strf::width_calculator_c>(input.facets);
+            auto&& wcalc = use_facet_<strf::width_calculator_c>(input.facets);
             auto w = wcalc.str_width
                 ( use_facet_<strf::charset_c<SrcCharT>>(input.facets)
                 , input.preview.remaining_width(), str_, len_
@@ -769,7 +769,7 @@ public:
         , len_(input.arg.value().size())
     {
         STRF_IF_CONSTEXPR(Preview::width_required) {
-            decltype(auto) wcalc = use_facet_<strf::width_calculator_c>(input.facets);
+            auto&& wcalc = use_facet_<strf::width_calculator_c>(input.facets);
             auto w = wcalc.str_width
                 ( use_facet_<strf::charset_c<SrcCharT>>(input.facets)
                 , input.preview.remaining_width()
@@ -788,7 +788,7 @@ public:
             input )
         : str_(input.arg.value().data())
     {
-        decltype(auto) wcalc = use_facet_<strf::width_calculator_c>(input.facets);
+        auto&& wcalc = use_facet_<strf::width_calculator_c>(input.facets);
         auto res = wcalc.str_width_and_pos
             ( use_facet_<strf::charset_c<SrcCharT>>(input.facets)
             , input.arg.precision()
@@ -807,10 +807,13 @@ private:
     const SrcCharT* str_;
     std::size_t len_;
 
-    template <typename Category, typename FPack>
-    static STRF_HD decltype(auto) use_facet_(const FPack& facets)
+    template < typename Category
+             , typename FPack
+             , typename input_tag = strf::string_input_tag<SrcCharT> >
+    static STRF_HD
+    STRF_DECLTYPE_AUTO((strd::use_facet<Category, input_tag>(std::declval<FPack>())))
+    use_facet_(const FPack& facets)
     {
-        using input_tag = strf::string_input_tag<SrcCharT>;
         return facets.template use_facet<Category, input_tag>();
     }
 };
@@ -838,7 +841,7 @@ public:
         , afmt_(input.arg.get_alignment_format())
     {
 
-        decltype(auto) wcalc = use_facet_<strf::width_calculator_c>(input.facets);
+        auto&& wcalc = use_facet_<strf::width_calculator_c>(input.facets);
         auto src_charset = use_facet_<strf::charset_c<SrcCharT>>(input.facets);
         auto dest_charset = use_facet_<strf::charset_c<DestCharT>>(input.facets);
         strf::width_t limit =
@@ -860,7 +863,7 @@ public:
         : str_(input.arg.value().begin())
         , afmt_(input.arg.get_alignment_format())
     {
-        decltype(auto) wcalc = use_facet_<strf::width_calculator_c>(input.facets);
+        auto&& wcalc = use_facet_<strf::width_calculator_c>(input.facets);
         auto src_charset = use_facet_<strf::charset_c<SrcCharT>>(input.facets);
         auto dest_charset = use_facet_<strf::charset_c<DestCharT>>(input.facets);
         auto surr_poli = use_facet_<strf::surrogate_policy_c>(input.facets);
@@ -885,11 +888,14 @@ private:
     std::uint16_t left_fillcount_;
     std::uint16_t right_fillcount_;
 
-    template <typename Category, typename FPack>
-    static STRF_HD decltype(auto) use_facet_(const FPack& facets)
+    template < typename Category
+             , typename FPack
+             , typename Tag = strf::string_input_tag<SrcCharT> >
+    static STRF_HD
+    STRF_DECLTYPE_AUTO((strd::use_facet<Category, Tag>(std::declval<FPack>())))
+    use_facet_(const FPack& facets)
     {
-        using input_tag = strf::string_input_tag<SrcCharT>;
-        return facets.template use_facet<Category, input_tag>();
+        return facets.template use_facet<Category, Tag>();
     }
 
     template <typename Preview>
@@ -963,11 +969,12 @@ void STRF_HD aligned_string_printer<SrcCharT, DestCharT>::print_to
 
 template < typename DestCharT, typename Preview, typename FPack
          , typename SrcCharT, bool HasP, bool HasA, typename SrcCharset >
-constexpr STRF_HD decltype(auto) get_src_charset
+constexpr STRF_HD auto get_src_charset
     ( const strf::detail::fmt_string_printer_input
         < DestCharT, SrcCharT, HasP, HasA
         , strf::transcoding_formatter_conv_with_charset<SrcCharset>, Preview, FPack>&
       input )
+    -> decltype(input.arg.get_charset())
 {
     static_assert( std::is_same<typename SrcCharset::code_unit, SrcCharT>::value
                  , "This charset is associated with another character type." );
@@ -976,11 +983,12 @@ constexpr STRF_HD decltype(auto) get_src_charset
 
 template < typename DestCharT, typename Preview, typename FPack
          , typename SrcCharT, bool HasP, bool HasA, typename SrcCharset >
-constexpr STRF_HD decltype(auto) get_src_charset
+constexpr STRF_HD auto get_src_charset
     ( const strf::detail::fmt_string_printer_input
         < DestCharT, SrcCharT, HasP, HasA
         , strf::transcoding_formatter_sani_with_charset<SrcCharset>, Preview, FPack >&
       input )
+    -> decltype(input.arg.get_charset())
 {
     static_assert( std::is_same<typename SrcCharset::code_unit, SrcCharT>::value
                  , "This charset is associated with another character type." );
@@ -989,11 +997,14 @@ constexpr STRF_HD decltype(auto) get_src_charset
 
 template < typename DestCharT, typename Preview, typename FPack
          , typename SrcCharT, bool HasP, bool HasA >
-constexpr STRF_HD decltype(auto) get_src_charset
+constexpr STRF_HD auto get_src_charset
     ( const strf::detail::fmt_string_printer_input
         < DestCharT, SrcCharT, HasP, HasA
         , strf::transcoding_formatter_conv<SrcCharT>, Preview, FPack >&
       input )
+    -> decltype(strf::use_facet
+                   <strf::charset_c<SrcCharT>, strf::string_input_tag<SrcCharT>>
+                   (input.facets))
 {
     return strf::use_facet
         <strf::charset_c<SrcCharT>, strf::string_input_tag<SrcCharT>>
@@ -1002,11 +1013,14 @@ constexpr STRF_HD decltype(auto) get_src_charset
 
 template < typename DestCharT, typename Preview, typename FPack
          , typename SrcCharT, bool HasP, bool HasA >
-constexpr STRF_HD decltype(auto) get_src_charset
+constexpr STRF_HD auto get_src_charset
     ( const strf::detail::fmt_string_printer_input
         < DestCharT, SrcCharT, HasP, HasA
         , strf::transcoding_formatter_sani<SrcCharT>, Preview, FPack >&
       input )
+    -> decltype(strf::use_facet
+                   <strf::charset_c<SrcCharT>, strf::string_input_tag<SrcCharT>>
+                   (input.facets))
 {
     return strf::use_facet
         <strf::charset_c<SrcCharT>, strf::string_input_tag<SrcCharT>>
@@ -1031,7 +1045,7 @@ public:
         auto src_charset  = strf::detail::get_src_charset(input);
         auto dest_charset = use_facet_<strf::charset_c<DestCharT>, SrcCharT>(input.facets);
         STRF_IF_CONSTEXPR (Preview::width_required) {
-            decltype(auto) wcalc = use_facet_<strf::width_calculator_c, SrcCharT>(input.facets);
+            auto&& wcalc = use_facet_<strf::width_calculator_c, SrcCharT>(input.facets);
             auto w = wcalc.str_width( src_charset, input.preview.remaining_width()
                                     , str_, len_, surr_poli_);
             input.preview.subtract_width(w);
@@ -1050,7 +1064,7 @@ public:
     {
         auto src_charset  = strf::detail::get_src_charset(input);
         auto dest_charset = use_facet_<strf::charset_c<DestCharT>, SrcCharT>(input.facets);
-        decltype(auto) wcalc = use_facet_<strf::width_calculator_c, SrcCharT>(input.facets);
+        auto&& wcalc = use_facet_<strf::width_calculator_c, SrcCharT>(input.facets);
         auto res = wcalc.str_width_and_pos
             ( src_charset, input.arg.precision(), str_
             , input.arg.value().size(), surr_poli_ );
@@ -1069,7 +1083,7 @@ private:
     template < typename Preview, typename SrcCharset, typename DestCharset >
     STRF_HD void init_(Preview& preview, SrcCharset src_charset, DestCharset dest_charset)
     {
-        decltype(auto) transcoder = find_transcoder(src_charset, dest_charset);
+        auto transcoder = find_transcoder(src_charset, dest_charset);
         STRF_MAYBE_UNUSED(transcoder);
         transcode_ = transcoder.transcode_func();
         if (transcode_ == nullptr) {
@@ -1106,11 +1120,14 @@ private:
     strf::transcode_f<char32_t, DestCharT>  u32_to_dest_ = nullptr;
     const strf::invalid_seq_notifier inv_seq_notifier_;
     const strf::surrogate_policy surr_poli_;
-    template <typename Category, typename SrcChar, typename FPack>
-    static STRF_HD decltype(auto) use_facet_(const FPack& facets)
+
+    template < typename Category, typename SrcChar, typename FPack
+             , typename Tag = strf::string_input_tag<SrcChar> >
+    static STRF_HD
+    STRF_DECLTYPE_AUTO((strd::use_facet<Category, Tag>(std::declval<FPack>())))
+    use_facet_(const FPack& facets)
     {
-        using input_tag = strf::string_input_tag<SrcChar>;
-        return facets.template use_facet<Category, input_tag>();
+        return facets.template use_facet<Category, Tag>();
     }
 };
 
@@ -1144,7 +1161,7 @@ public:
         , surr_poli_(use_facet_<strf::surrogate_policy_c, SrcCharT>(input.facets))
     {
         auto src_charset = strf::detail::get_src_charset(input);
-        decltype(auto) wcalc = use_facet_<strf::width_calculator_c, SrcCharT>(input.facets);
+        auto&& wcalc = use_facet_<strf::width_calculator_c, SrcCharT>(input.facets);
         strf::width_t limit =
             ( Preview::width_required && input.preview.remaining_width() > afmt_.width
             ? input.preview.remaining_width()
@@ -1166,7 +1183,7 @@ public:
         , surr_poli_(use_facet_<strf::surrogate_policy_c, SrcCharT>(input.facets))
     {
         auto src_charset = strf::detail::get_src_charset(input);
-        decltype(auto) wcalc = use_facet_<strf::width_calculator_c, SrcCharT>(input.facets);
+        auto&& wcalc = use_facet_<strf::width_calculator_c, SrcCharT>(input.facets);
         auto res = wcalc.str_width_and_pos
             ( src_charset, input.arg.precision(), str_
             , input.arg.value().size(), surr_poli_ );
@@ -1198,11 +1215,13 @@ private:
     std::uint16_t left_fillcount_ = 0;
     std::uint16_t right_fillcount_ = 0;
 
-    template <typename Category, typename SrcChar, typename FPack>
-    static STRF_HD decltype(auto) use_facet_(const FPack& facets)
+    template < typename Category, typename SrcChar, typename FPack
+             , typename Tag = strf::string_input_tag<SrcChar> >
+    static STRF_HD
+    STRF_DECLTYPE_AUTO((strd::use_facet<Category, Tag>(std::declval<FPack>())))
+    use_facet_(const FPack& facets)
     {
-        using input_tag = strf::string_input_tag<SrcChar>;
-        return facets.template use_facet<Category, input_tag>();
+        return facets.template use_facet<Category, Tag>();
     }
 
     template < typename Preview, typename SrcCharset, typename DestCharset>
@@ -1218,7 +1237,7 @@ void STRF_HD aligned_conv_string_printer<SrcCharT, DestCharT>::init_
     , SrcCharset src_charset, DestCharset dest_charset )
 {
     encode_fill_ = dest_charset.encode_fill_func();
-    decltype(auto) transcoder = find_transcoder(src_charset, dest_charset);
+    auto transcoder = find_transcoder(src_charset, dest_charset);
     STRF_MAYBE_UNUSED(transcoder);
     transcode_ = transcoder.transcode_func();
     if (transcode_ == nullptr) {

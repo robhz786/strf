@@ -255,10 +255,13 @@ private:
 #  pragma GCC diagnostic pop
 #endif
 
-    template <typename Category, typename FPack>
-    static decltype(auto) STRF_HD use_facet_(const FPack& facets)
+    template < typename Category, typename FPack
+             , typename Tag = strf::aligned_join_maker>
+    static STRF_HD
+    STRF_DECLTYPE_AUTO((strd::use_facet<Category, Tag>(std::declval<FPack>())))
+    use_facet_(const FPack& facets)
     {
-        return facets.template use_facet<Category, strf::aligned_join_maker>();
+        return facets.template use_facet<Category, Tag>();
     }
 
     STRF_HD void write_fill_(strf::basic_outbuff<CharT>& ob, int count) const

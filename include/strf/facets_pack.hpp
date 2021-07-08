@@ -460,7 +460,7 @@ class facets_pack_base<RankN>
 {
 public:
 
-    constexpr STRF_HD void do_get_facet() const
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD void do_get_facet() const
     {
     }
 };

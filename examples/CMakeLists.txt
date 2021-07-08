@@ -33,6 +33,7 @@ foreach(x
   target_link_libraries(example-${x} strf-static-lib)
   add_test(NAME run_example-${x} COMMAND ${x})
   set_target_properties(example-${x} PROPERTIES OUTPUT_NAME ${x})
+  target_compile_features(example-${x} PUBLIC    cxx_std_14)
 endforeach(x)
 
 if (${STRF_CUDA_SUPPORT})
@@ -48,10 +49,12 @@ if (Qt5Core_FOUND)
 
   add_executable(example-toQString toQString.cpp)
   target_link_libraries(example-toQString Qt5::Core strf-static-lib)
+  target_compile_features(example-toQString PUBLIC    cxx_std_14)
   add_test(NAME run_example-toQString COMMAND toQString)
 
   add_executable(example-appendQString appendQString.cpp)
   target_link_libraries(example-appendQString Qt5::Core strf-static-lib)
+  target_compile_features(example-appendQString PUBLIC    cxx_std_14)
   add_test(NAME run_example-appendQString COMMAND appendQString)
 
   set_target_properties(example-toQString     PROPERTIES OUTPUT_NAME toQString)

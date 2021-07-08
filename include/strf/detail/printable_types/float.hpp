@@ -301,22 +301,22 @@ public:
     {
         return self_downcast_();
     }
-    constexpr STRF_HD T& gen() & noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T& gen() & noexcept
     {
         return self_downcast_();
     }
-    constexpr STRF_HD T&& gen() && noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& gen() && noexcept
     {
         return move_self_downcast_();
     }
-    constexpr STRF_HD adapted_to_full_dynamic_
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD adapted_to_full_dynamic_
     set_float_format(strf::float_format format) && noexcept
     {
         return { self_downcast_()
                , strf::tag<float_formatter_full_dynamic>{}
                , format };
     }
-    constexpr STRF_HD adapted_to_no_punct_
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD adapted_to_no_punct_
     set_float_format(strf::float_format_no_punct format) && noexcept
     {
         return { self_downcast_()
@@ -327,11 +327,11 @@ public:
     {
         return self_downcast_();
     }
-    constexpr STRF_HD T& set_float_format(strf::default_float_format) & noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T& set_float_format(strf::default_float_format) & noexcept
     {
         return self_downcast_();
     }
-    constexpr STRF_HD T&& set_float_format(strf::default_float_format) && noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& set_float_format(strf::default_float_format) && noexcept
     {
         return move_self_downcast_();
     }
@@ -346,7 +346,7 @@ public:
     {
         return {};
     }
-    constexpr STRF_HD auto pad0width() const
+    constexpr STRF_HD detail::chars_count_t pad0width() const
     {
         return 0;
     }
@@ -358,12 +358,12 @@ private:
         const T* base_ptr = static_cast<const T*>(this);
         return *base_ptr;
     }
-    STRF_HD constexpr T& self_downcast_()
+    STRF_HD STRF_CONSTEXPR_IN_CXX14 T& self_downcast_()
     {
         T* base_ptr = static_cast<T*>(this);
         return *base_ptr;
     }
-    STRF_HD constexpr T&& move_self_downcast_()
+    STRF_HD STRF_CONSTEXPR_IN_CXX14 T&& move_self_downcast_()
     {
         T* base_ptr = static_cast<T*>(this);
         return static_cast<T&&>(*base_ptr);
@@ -388,22 +388,22 @@ public:
         : data_(other.get_float_format())
     {
     }
-    constexpr STRF_HD T&& operator+() && noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& operator+() && noexcept
     {
         data_.sign = strf::showsign::positive_also;
         return move_self_downcast_();
     }
-    constexpr STRF_HD T&& fill_sign() && noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& fill_sign() && noexcept
     {
         data_.sign = strf::showsign::fill_instead_of_positive;
         return move_self_downcast_();
     }
-    constexpr STRF_HD T&& operator~() && noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& operator~() && noexcept
     {
         data_.sign = strf::showsign::fill_instead_of_positive;
         return move_self_downcast_();
     }
-    constexpr STRF_HD T&& operator*() && noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& operator*() && noexcept
     {
         data_.showpoint = true;
         return move_self_downcast_();
@@ -428,42 +428,42 @@ public:
                , strf::tag<float_formatter_full_dynamic>{}
                , format };
     }
-    constexpr STRF_HD T&& p(detail::chars_count_t _) && noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& p(detail::chars_count_t _) && noexcept
     {
         data_.precision = _;
         return move_self_downcast_();
     }
-    constexpr STRF_HD T&& pad0(detail::chars_count_t width) && noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& pad0(detail::chars_count_t width) && noexcept
     {
         data_.pad0width = width;
         return move_self_downcast_();
     }
-    constexpr STRF_HD T&& sci() && noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& sci() && noexcept
     {
         data_.notation = strf::float_notation::scientific;
         return move_self_downcast_();
     }
-    constexpr STRF_HD T&& fixed() && noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& fixed() && noexcept
     {
         data_.notation = strf::float_notation::fixed;
         return move_self_downcast_();
     }
-    constexpr STRF_HD T&& gen() && noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& gen() && noexcept
     {
         data_.notation = strf::float_notation::general;
         return move_self_downcast_();
     }
-    constexpr STRF_HD T&& hex() && noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& hex() && noexcept
     {
         data_.notation = strf::float_notation::hex;
         return move_self_downcast_();
     }
-    constexpr STRF_HD T&& float_notation(strf::float_notation n) && noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& float_notation(strf::float_notation n) && noexcept
     {
         data_.notation = n;
         return move_self_downcast_();
     }
-    constexpr STRF_HD T&& set_float_format(strf::float_format_no_punct data) && noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& set_float_format(strf::float_format_no_punct data) && noexcept
     {
         data_ = data;
         return move_self_downcast_();
@@ -492,7 +492,7 @@ public:
     {
         return data_;
     }
-    constexpr STRF_HD auto pad0width() const
+    constexpr STRF_HD detail::chars_count_t pad0width() const
     {
         return data_.pad0width;
     }
@@ -504,12 +504,12 @@ private:
         const T* base_ptr = static_cast<const T*>(this);
         return *base_ptr;
     }
-    STRF_HD constexpr T& self_downcast_()
+    STRF_HD STRF_CONSTEXPR_IN_CXX14 T& self_downcast_()
     {
         T* base_ptr = static_cast<T*>(this);
         return *base_ptr;
     }
-    STRF_HD constexpr T&& move_self_downcast_()
+    STRF_HD STRF_CONSTEXPR_IN_CXX14 T&& move_self_downcast_()
     {
         T* base_ptr = static_cast<T*>(this);
         return static_cast<T&&>(*base_ptr);
@@ -535,78 +535,78 @@ public:
         : data_(other.get_float_format())
     {
     }
-    constexpr STRF_HD T&& operator+() && noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& operator+() && noexcept
     {
         data_.sign = strf::showsign::positive_also;
         T* base_ptr = static_cast<T*>(this); // work around UBSan bug
         return static_cast<T&&>(*base_ptr);
     }
-    constexpr STRF_HD T&& fill_sign() && noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& fill_sign() && noexcept
     {
         data_.sign = strf::showsign::fill_instead_of_positive;
         return move_self_downcast_();
     }
-    constexpr STRF_HD T&& operator~() && noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& operator~() && noexcept
     {
         data_.sign = strf::showsign::fill_instead_of_positive;
         return move_self_downcast_();
     }
-    constexpr STRF_HD T&& operator*() && noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& operator*() && noexcept
     {
         data_.showpoint = true;
         return move_self_downcast_();
     }
-    constexpr STRF_HD T&& operator!() && noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& operator!() && noexcept
     {
         data_.punctuate = true;
         return move_self_downcast_();
     }
-    constexpr STRF_HD T&& punct() && noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& punct() && noexcept
     {
         data_.punctuate = true;
         return move_self_downcast_();
     }
-    constexpr STRF_HD T&& p(detail::chars_count_t _) && noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& p(detail::chars_count_t _) && noexcept
     {
         data_.precision = _;
         return move_self_downcast_();
     }
-    constexpr STRF_HD T&& pad0(detail::chars_count_t width) && noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& pad0(detail::chars_count_t width) && noexcept
     {
         data_.pad0width = width;
         return move_self_downcast_();
     }
-    constexpr STRF_HD T&& sci() && noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& sci() && noexcept
     {
         data_.notation = strf::float_notation::scientific;
         return move_self_downcast_();
     }
-    constexpr STRF_HD T&& fixed() && noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& fixed() && noexcept
     {
         data_.notation = strf::float_notation::fixed;
         return move_self_downcast_();
     }
-    constexpr STRF_HD T&& gen() && noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& gen() && noexcept
     {
         data_.notation = strf::float_notation::general;
         return move_self_downcast_();
     }
-    constexpr STRF_HD T&& hex() && noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& hex() && noexcept
     {
         data_.notation = strf::float_notation::hex;
         return move_self_downcast_();
     }
-    constexpr STRF_HD T&& float_notation(strf::float_notation n) && noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& float_notation(strf::float_notation n) && noexcept
     {
         data_.notation = n;
         return move_self_downcast_();
     }
-    constexpr STRF_HD T&& set_float_format(strf::float_format data) && noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& set_float_format(strf::float_format data) && noexcept
     {
         data_ = data;
         return move_self_downcast_();
     }
-    constexpr STRF_HD
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD
     strf::fmt_replace<T, float_formatter_full_dynamic, float_formatter_no_punct>
     set_float_format(strf::float_format_no_punct format) && noexcept
     {
@@ -630,7 +630,7 @@ public:
     {
         return data_;
     }
-    constexpr STRF_HD auto pad0width() const
+    constexpr STRF_HD detail::chars_count_t pad0width() const
     {
         return data_.pad0width;
     }
@@ -642,12 +642,12 @@ private:
         const T* base_ptr = static_cast<const T*>(this);
         return *base_ptr;
     }
-    STRF_HD constexpr T& self_downcast_()
+    STRF_HD STRF_CONSTEXPR_IN_CXX14 T& self_downcast_()
     {
         T* base_ptr = static_cast<T*>(this);
         return *base_ptr;
     }
-    STRF_HD constexpr T&& move_self_downcast_()
+    STRF_HD STRF_CONSTEXPR_IN_CXX14 T&& move_self_downcast_()
     {
         T* base_ptr = static_cast<T*>(this);
         return static_cast<T&&>(*base_ptr);

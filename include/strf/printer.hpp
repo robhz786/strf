@@ -149,7 +149,7 @@ public:
     }
 
     template <typename T>
-    constexpr STRF_HD void subtract_width(T) const noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD void subtract_width(T) const noexcept
     {
     }
 
@@ -1059,7 +1059,7 @@ template < typename CharT
          , typename... FPE
          , typename Arg
          , typename... Args >
-STRF_HD constexpr void preview
+STRF_HD STRF_CONSTEXPR_IN_CXX14 void preview
     ( strf::print_preview<strf::preview_size::no, strf::preview_width::no>
     , const strf::facets_pack<FPE...>&
     , const Arg&
@@ -1070,7 +1070,7 @@ STRF_HD constexpr void preview
 namespace detail {
 
 template < typename CharT, typename... FPE >
-STRF_HD constexpr void preview_only_width
+STRF_HD STRF_CONSTEXPR_IN_CXX14 void preview_only_width
     ( strf::print_preview<strf::preview_size::no, strf::preview_width::yes>&
     , const strf::facets_pack<FPE...>& ) noexcept
 {
@@ -1112,7 +1112,7 @@ STRF_HD void preview
 namespace detail {
 
 template <typename... Args>
-STRF_HD constexpr void do_nothing_with(const Args...) noexcept
+STRF_HD STRF_CONSTEXPR_IN_CXX14 void do_nothing_with(const Args...) noexcept
 {
     // workaround for the lack of support for fold expressions
 }

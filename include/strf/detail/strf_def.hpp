@@ -58,7 +58,9 @@
 
 #if defined(__CUDACC__)
 #  if (__CUDACC_VER_MAJOR__ >= 11) && (__CUDACC_VER_MINOR__ >= 3)
-#    define STRF_HAS_VARIABLE_TEMPLATES
+#    if defined(__cpp_variable_templates)
+#      define STRF_HAS_VARIABLE_TEMPLATES
+#    endif
 #  endif
 #elif defined(__cpp_variable_templates)
 #  define STRF_HAS_VARIABLE_TEMPLATES
@@ -99,8 +101,10 @@
 
 #if __cpp_constexpr >= 201304
 #  define STRF_CONSTEXPR_IN_CXX14 constexpr
+#  define STRF_ASSERT_IN_CONSTEXPR(X) STRF_ASSERT(X)
 #else
-#  define STRF_CONSTEXPR_IN_CXX14
+#  define STRF_CONSTEXPR_IN_CXX14 inline
+#  define STRF_ASSERT_IN_CONSTEXPR(X)
 #endif
 
 #if __cpp_decltype_auto >= 201304
@@ -138,7 +142,7 @@
 namespace strf { namespace detail {
 
 template <typename T>
-constexpr STRF_HD void pretend_to_use(const T& arg) noexcept { (void)arg; }
+inline STRF_HD void pretend_to_use(const T& arg) noexcept { (void)arg; }
 
 }}
 
@@ -203,6 +207,38 @@ constexpr STRF_HD bool fold_or()
 }
 
 #endif // defined(__cpp_fold_expressions)
+
+template <std::size_t...> struct index_sequence
+{
+    using value_type = std::size_t;
+};
+
+namespace idxseq {
+
+template <typename S>
+struct increment_seq;
+
+template <std::size_t... I>
+struct increment_seq<index_sequence<I...> >
+{
+    using type = index_sequence<I..., sizeof...(I)>;
+};
+template <std::size_t N>
+struct index_seq_maker
+{
+    using previous_seq = typename index_seq_maker<N - 1>::type;
+    using type = typename increment_seq<previous_seq>::type;
+};
+template <>
+struct index_seq_maker<0>
+{
+    using type = index_sequence<>;
+};
+
+} // namespace idxseq
+
+template <std::size_t N>
+using make_index_sequence = typename idxseq::index_seq_maker<N>::type;
 
 template <typename T>
 using remove_cvref_t = typename std::remove_cv<typename std::remove_reference<T>::type>::type;
