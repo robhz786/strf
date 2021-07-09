@@ -56,7 +56,7 @@ STRF_FUNC_IMPL STRF_HD detail::double_dec decode(float f)
         }
     }
     namespace dragonbox = strf::detail::jkj::dragonbox;
-    auto fdec = dragonbox::to_decimal(f, dragonbox::policy::sign::ignore);
+    auto fdec = dragonbox::to_decimal(f);
     return {fdec.significand, fdec.exponent, sign, false, false};
 }
 
@@ -81,7 +81,7 @@ STRF_FUNC_IMPL STRF_HD detail::double_dec decode(double d)
         }
     }
     namespace dragonbox = strf::detail::jkj::dragonbox;
-    auto ddec = dragonbox::to_decimal(d, dragonbox::policy::sign::ignore);
+    auto ddec = dragonbox::to_decimal(d);
     return {ddec.significand, ddec.exponent, sign, false, false};
 }
 
@@ -2177,7 +2177,7 @@ STRF_FUNC_IMPL STRF_HD strf::detail::float_init_result init_float_printer_data
         data.e10 = 0;
     } else {
         namespace dragonbox = strf::detail::jkj::dragonbox;
-        auto res = dragonbox::to_decimal(d, dragonbox::policy::sign::ignore);
+        auto res = dragonbox::to_decimal(d);
         data.m10 = res.significand;
         data.e10 = res.exponent;
     }
@@ -2237,7 +2237,7 @@ STRF_FUNC_IMPL STRF_HD strf::detail::float_init_result init_float_printer_data
         data.e10 = 0;
     } else {
         namespace dragonbox = strf::detail::jkj::dragonbox;
-        auto res = dragonbox::to_decimal(f, dragonbox::policy::sign::ignore);
+        auto res = dragonbox::to_decimal(f);
         data.m10 = res.significand;
         data.e10 = res.exponent;
     }
