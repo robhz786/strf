@@ -111,33 +111,6 @@ private:
     printers_;
 };
 
-template <typename ... F>
-constexpr STRF_HD bool are_constrainable_impl()
-{
-    constexpr std::size_t N = sizeof...(F);
-    constexpr bool values[N] = {strf::is_constrainable<F>() ...};
-
-    for (std::size_t i = 0; i < N; ++i) {
-        if( ! values[i]) {
-            return false;
-        }
-    }
-    return true;
-}
-
-template <>
-constexpr STRF_HD bool are_constrainable_impl<>()
-{
-    return true;
-}
-
-template <typename ... F>
-struct all_are_constrainable
-{
-    constexpr static bool value
-        = strf::detail::are_constrainable_impl<F...>();
-};
-
 } // namespace detail
 
 template <typename ... T>

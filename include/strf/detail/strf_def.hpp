@@ -153,6 +153,18 @@ namespace strf {
 namespace detail
 {
 
+template <typename IntT>
+constexpr STRF_HD IntT max(IntT a, IntT b)
+{
+    return a > b ? a : b;
+}
+
+template <typename IntT>
+constexpr STRF_HD IntT min(IntT a, IntT b)
+{
+    return a < b ? a : b;
+}
+
 #if defined(__cpp_fold_expressions)
 
 template <bool... C>

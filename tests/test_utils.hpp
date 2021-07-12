@@ -293,9 +293,9 @@ public:
         }
     }
 
-    STRF_HD auto description_writer()
+    STRF_HD auto description_writer() -> decltype(strf::to((char*)0, (std::size_t)0))
     {
-        return strf::to(description_);
+        return strf::to(description_, sizeof(description_));
     }
 
 private:
@@ -376,6 +376,24 @@ class input_tester
 public:
 
     struct input{
+        STRF_HD input
+            ( strf::detail::simple_string_view<CharOut> expected_
+            , const char* src_filename_
+            , int src_line_
+            , const char* function_
+            , double reserve_factor_
+            , std::size_t size_ = 0 )
+            : expected(expected_)
+            , src_filename(src_filename_)
+            , src_line(src_line_)
+            , function(function_)
+            , reserve_factor(reserve_factor_)
+            , size(size_)
+        {
+        }
+
+        input(const input&) = default;
+
         strf::detail::simple_string_view<CharOut> expected;
         const char* src_filename;
         int src_line;
@@ -572,15 +590,14 @@ private:
 
 template<typename CharT>
 auto STRF_HD make_tester
-   ( const CharT* expected
-   , const char* filename
-   , int line
-   , const char* function
-   , double reserve_factor = 1.0 )
+    ( const CharT* expected
+    , const char* filename
+    , int line
+    , const char* function
+    , double reserve_factor = 1.0 )
+    -> strf::destination_calc_size<test_utils::input_tester_creator<CharT>>
 {
-    return strf::destination_calc_size
-        < test_utils::input_tester_creator<CharT> >
-        ( expected, filename, line, function, reserve_factor);
+    return {expected, filename, line, function, reserve_factor};
 }
 
 template<typename CharT>
@@ -590,10 +607,9 @@ auto STRF_HD make_tester
    , int line
    , const char* function
    , double reserve_factor = 1.0 )
+    -> strf::destination_calc_size<test_utils::input_tester_creator<CharT>>
 {
-    return strf::destination_calc_size
-        < test_utils::input_tester_creator<CharT> >
-        ( expected, filename, line, function, reserve_factor);
+    return {expected, filename, line, function, reserve_factor};
 }
 
 #if defined(_MSC_VER)
@@ -849,10 +865,10 @@ struct input_tester_with_fixed_spaces_creator_creator
 
     template <unsigned... Spaces, typename CharT>
     STRF_HD auto create(const CharT* expected) const noexcept
-    {
-        return strf::destination_no_reserve
+        -> strf::destination_no_reserve
             < input_tester_with_fixed_spaces_creator<CharT, Spaces...> >
-            {expected, filename, line, function};
+    {
+        return {expected, filename, line, function};
     }
 };
 

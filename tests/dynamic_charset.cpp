@@ -11,22 +11,22 @@ using char8_t = char;
 
 void test_dynamic_charset()
 {
-    strf::dynamic_charset<char> dyn_utf8{strf::utf<char>};
-    strf::dynamic_charset<char> dyn_ascii{strf::ascii<char>};
+    strf::dynamic_charset<char> dyn_utf8{strf::utf_t<char>{}};
+    strf::dynamic_charset<char> dyn_ascii{strf::ascii_t<char>{}};
     strf::dynamic_charset<char16_t> dyn_utf16{strf::utf_t<char16_t>()};
     strf::dynamic_charset<char32_t> dyn_utf32{strf::utf_t<char32_t>()};
 
     {
         auto a = dyn_utf8;
-        auto b = strf::dynamic_charset<char>{strf::utf<char>};
+        auto b = strf::dynamic_charset<char>{strf::utf_t<char>{}};
         TEST_TRUE(a == b);
         a = dyn_ascii;
         TEST_TRUE(a != b);
     }
 
     TEST("abc ? def").with(dyn_ascii) (strf::conv("abc \xC4\x80 def", dyn_utf8));
-    TEST("abc ? def").with(dyn_ascii) (strf::conv("abc \xC4\x80 def", strf::utf<char>));
-    TEST("abc ? def").with(strf::ascii<char>) (strf::conv("abc \xC4\x80 def", dyn_utf8));
+    TEST("abc ? def").with(dyn_ascii) (strf::conv("abc \xC4\x80 def", strf::utf_t<char>{}));
+    TEST("abc ? def").with(strf::ascii_t<char>{}) (strf::conv("abc \xC4\x80 def", dyn_utf8));
     TEST("abc \xC4\x80 def").with(dyn_utf8) (strf::conv(u"abc \u0100 def"  , dyn_utf16));
     TEST("abc \xC4\x80 def").with(dyn_utf8) (strf::conv(U"abc \u0100 def"  , dyn_utf32));
     TEST(u"abcdef").with(dyn_utf16)         (strf::conv( "abcdef", dyn_ascii));

@@ -137,8 +137,9 @@ private:
     static constexpr std::size_t buf_size_ = strf::min_space_after_recycle<CharT>();
     CharT buf_[buf_size_];
 
-    using string_storage_type_ = typename std::aligned_storage_t
-        < sizeof(string_type_), alignof(string_type_) >;
+    using string_storage_type_ = typename std::aligned_storage
+        < sizeof(string_type_), alignof(string_type_) >
+        :: type;
 
     string_storage_type_ string_obj_space_;
 };
@@ -305,6 +306,8 @@ public:
 
 template <typename CharT, typename Traits, typename Allocator>
 inline auto append(std::basic_string<CharT, Traits, Allocator>& str)
+    -> strf::destination_no_reserve
+        < strf::detail::basic_string_appender_creator<CharT, Traits, Allocator> >
 {
     return strf::destination_no_reserve
         < strf::detail::basic_string_appender_creator<CharT, Traits, Allocator> >
@@ -313,10 +316,14 @@ inline auto append(std::basic_string<CharT, Traits, Allocator>& str)
 
 template <typename CharT, typename Traits, typename Allocator>
 inline auto assign(std::basic_string<CharT, Traits, Allocator>& str)
+    -> strf::destination_no_reserve
+        < strf::detail::basic_string_appender_creator<CharT, Traits, Allocator> >
 {
     str.clear();
     return append(str);
 }
+
+#if defined(STRF_HAS_VARIABLE_TEMPLATES)
 
 template< typename CharT
         , typename Traits = std::char_traits<CharT>
@@ -324,6 +331,8 @@ template< typename CharT
 constexpr strf::destination_no_reserve
     < strf::detail::basic_string_maker_creator<CharT, Traits, Allocator> >
     to_basic_string{};
+
+#endif // defined(STRF_HAS_VARIABLE_TEMPLATES)
 
 #if defined(__cpp_char8_t)
 

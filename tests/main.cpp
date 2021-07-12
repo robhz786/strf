@@ -36,7 +36,6 @@ void test_input_char();
 void test_input_char32();
 void test_input_float();
 void test_input_int();
-void test_input_ptr();
 void test_input_string();
 void test_input_facets_pack();
 void test_input_range();
@@ -94,7 +93,6 @@ int main() {
     test_input_facets_pack();
     test_input_float();
     test_input_int();
-    test_input_ptr();
     test_input_range();
     test_input_string();
     test_join();

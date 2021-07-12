@@ -100,12 +100,30 @@ enum class float_notation{fixed, scientific, general, hex};
 
 struct float_format
 {
-    detail::chars_count_t precision = (detail::chars_count_t)-1;
-    detail::chars_count_t pad0width = 0;
-    strf::float_notation notation = strf::float_notation::general;
-    strf::showsign sign = strf::showsign::negative_only;
-    bool showpoint = false;
-    bool punctuate = false;
+    constexpr STRF_HD float_format
+      ( detail::chars_count_t precision_ = (detail::chars_count_t)-1
+      , detail::chars_count_t pad0width_ = 0
+      , strf::float_notation notation_ = strf::float_notation::general
+      , strf::showsign sign_ = strf::showsign::negative_only
+      , bool showpoint_ = false
+      , bool punctuate_ = false ) noexcept
+      : precision(precision_)
+      , pad0width(pad0width_)
+      , notation(notation_)
+      , sign(sign_)
+      , showpoint(showpoint_)
+      , punctuate(punctuate_)
+    {
+    }
+
+    constexpr float_format(const float_format&) = default;
+
+    detail::chars_count_t precision;
+    detail::chars_count_t pad0width;
+    strf::float_notation notation;
+    strf::showsign sign;
+    bool showpoint;
+    bool punctuate;
 };
 
 struct float_format_no_punct
@@ -200,7 +218,7 @@ public:
         ( const default_float_formatter_fn<U>& ) noexcept
     {
     }
-    constexpr STRF_HD adapted_to_no_punct_ operator+() const & noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD adapted_to_no_punct_ operator+() const & noexcept
     {
         float_format format;
         format.sign = strf::showsign::positive_also;
@@ -208,7 +226,7 @@ public:
                , strf::tag<float_formatter_no_punct>{}
                , format };
     }
-    constexpr STRF_HD adapted_to_no_punct_ fill_sign() const & noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD adapted_to_no_punct_ fill_sign() const & noexcept
     {
         float_format format;
         format.sign = strf::showsign::fill_instead_of_positive;
@@ -216,7 +234,7 @@ public:
                , strf::tag<float_formatter_no_punct>{}
                , format };
     }
-    constexpr STRF_HD adapted_to_no_punct_ operator~() const & noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD adapted_to_no_punct_ operator~() const & noexcept
     {
         float_format format;
         format.sign = strf::showsign::fill_instead_of_positive;
@@ -224,7 +242,7 @@ public:
                , strf::tag<float_formatter_no_punct>{}
                , format };
     }
-    constexpr STRF_HD adapted_to_no_punct_ operator*() const & noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD adapted_to_no_punct_ operator*() const & noexcept
     {
         float_format format;
         format.showpoint = true;
@@ -232,7 +250,7 @@ public:
                , strf::tag<float_formatter_no_punct>{}
                , format };
     }
-    constexpr STRF_HD adapted_to_full_dynamic_ operator!() const & noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD adapted_to_full_dynamic_ operator!() const & noexcept
     {
         float_format format;
         format.punctuate = true;
@@ -240,7 +258,7 @@ public:
                , strf::tag<float_formatter_full_dynamic>{}
                , format };
     }
-    constexpr STRF_HD adapted_to_full_dynamic_ punct() const & noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD adapted_to_full_dynamic_ punct() const & noexcept
     {
         float_format format;
         format.punctuate = true;
@@ -248,7 +266,7 @@ public:
                , strf::tag<float_formatter_full_dynamic>{}
                , format };
     }
-    constexpr STRF_HD adapted_to_no_punct_ p(detail::chars_count_t _) const & noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD adapted_to_no_punct_ p(detail::chars_count_t _) const & noexcept
     {
         float_format format;
         format.precision = _;
@@ -256,7 +274,7 @@ public:
                , strf::tag<float_formatter_no_punct>{}
                , format };
     }
-    constexpr STRF_HD adapted_to_no_punct_ pad0(detail::chars_count_t width) const & noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD adapted_to_no_punct_ pad0(detail::chars_count_t width) const & noexcept
     {
         float_format format;
         format.pad0width = width;
@@ -264,7 +282,7 @@ public:
                , strf::tag<float_formatter_no_punct>{}
                , format };
     }
-    constexpr STRF_HD adapted_to_no_punct_
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD adapted_to_no_punct_
     float_notation(strf::float_notation n) const & noexcept
     {
         float_format format;
@@ -273,7 +291,7 @@ public:
                , strf::tag<float_formatter_no_punct>{}
                , format };
     }
-    constexpr STRF_HD adapted_to_no_punct_ sci() const & noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD adapted_to_no_punct_ sci() const & noexcept
     {
         float_format format;
         format.notation = strf::float_notation::scientific;
@@ -281,7 +299,7 @@ public:
                , strf::tag<float_formatter_no_punct>{}
                , format };
     }
-    constexpr STRF_HD adapted_to_no_punct_ fixed() const & noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD adapted_to_no_punct_ fixed() const & noexcept
     {
         float_format format;
         format.notation = strf::float_notation::fixed;
@@ -289,7 +307,7 @@ public:
                , strf::tag<float_formatter_no_punct>{}
                , format };
     }
-    constexpr STRF_HD adapted_to_no_punct_ hex() const & noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD adapted_to_no_punct_ hex() const & noexcept
     {
         float_format format;
         format.notation = strf::float_notation::hex;
@@ -297,7 +315,7 @@ public:
                , strf::tag<float_formatter_no_punct>{}
                , format };
     }
-    constexpr STRF_HD const T& gen() const & noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD const T& gen() const & noexcept
     {
         return self_downcast_();
     }
@@ -323,7 +341,7 @@ public:
                , strf::tag<float_formatter_no_punct>{}
                , format };
     }
-    constexpr STRF_HD const T& set_float_format(strf::default_float_format) const & noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD const T& set_float_format(strf::default_float_format) const & noexcept
     {
         return self_downcast_();
     }
@@ -353,7 +371,7 @@ public:
 
 private:
 
-    STRF_HD constexpr const T& self_downcast_() const
+    STRF_HD STRF_CONSTEXPR_IN_CXX14 const T& self_downcast_() const
     {
         const T* base_ptr = static_cast<const T*>(this);
         return *base_ptr;
@@ -408,7 +426,7 @@ public:
         data_.showpoint = true;
         return move_self_downcast_();
     }
-    constexpr STRF_HD
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD
     strf::fmt_replace<T, float_formatter_no_punct, float_formatter_full_dynamic>
     punct() const & noexcept
     {
@@ -418,7 +436,7 @@ public:
                , strf::tag<float_formatter_full_dynamic>{}
                , format };
     }
-    constexpr STRF_HD
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD
     strf::fmt_replace<T, float_formatter_no_punct, float_formatter_full_dynamic>
     operator!() const & noexcept
     {
@@ -468,7 +486,7 @@ public:
         data_ = data;
         return move_self_downcast_();
     }
-    constexpr STRF_HD
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD
     strf::fmt_replace<T, float_formatter_no_punct, float_formatter>
     set_float_format(strf::default_float_format format) const & noexcept
     {
@@ -476,7 +494,7 @@ public:
                , strf::tag<float_formatter>{}
                , format };
     }
-    constexpr STRF_HD
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD
     strf::fmt_replace<T, float_formatter_no_punct, float_formatter_full_dynamic>
     set_float_format(strf::float_format format) const & noexcept
     {
@@ -499,7 +517,7 @@ public:
 
 private:
 
-    STRF_HD constexpr const T& self_downcast_() const
+    STRF_HD STRF_CONSTEXPR_IN_CXX14 const T& self_downcast_() const
     {
         const T* base_ptr = static_cast<const T*>(this);
         return *base_ptr;
@@ -614,7 +632,7 @@ public:
                , strf::tag<float_formatter_no_punct>{}
                , format };
     }
-    constexpr STRF_HD
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD
     strf::fmt_replace<T, float_formatter_full_dynamic, float_formatter>
     set_float_format(strf::default_float_format format) const & noexcept
     {
@@ -637,7 +655,7 @@ public:
 
 private:
 
-    STRF_HD constexpr const T& self_downcast_() const
+    STRF_HD STRF_CONSTEXPR_IN_CXX14 const T& self_downcast_() const
     {
         const T* base_ptr = static_cast<const T*>(this);
         return *base_ptr;

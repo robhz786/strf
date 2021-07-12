@@ -226,6 +226,7 @@ private:
 
 template <typename CharT = char>
 STRF_HD inline auto to(std::FILE* destination)
+    -> strf::destination_no_reserve<strf::detail::narrow_cfile_writer_creator<CharT>>
 {
     return strf::destination_no_reserve
         < strf::detail::narrow_cfile_writer_creator<CharT> >
@@ -233,6 +234,7 @@ STRF_HD inline auto to(std::FILE* destination)
 }
 
 STRF_HD inline auto wto(std::FILE* destination)
+    -> strf::destination_no_reserve<strf::detail::wide_cfile_writer_creator>
 {
     return strf::destination_no_reserve
         < strf::detail::wide_cfile_writer_creator >

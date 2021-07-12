@@ -23,7 +23,7 @@ public:
     using category = width_calculator_c;
 
     template <typename Charset>
-    STRF_HD strf::width_t char_width
+    constexpr STRF_HD strf::width_t char_width
         ( Charset
         , typename Charset::code_unit ) const noexcept
     {
@@ -38,14 +38,13 @@ public:
         , std::size_t str_len
         , strf::surrogate_policy ) const noexcept
     {
-        if (str_len <= limit.floor()) {
-            return static_cast<std::uint16_t>(str_len);
-        }
-        return limit;
+        return ( str_len <= limit.floor()
+               ? static_cast<std::uint16_t>(str_len)
+               : limit );
     }
 
     template <typename Charset>
-    constexpr STRF_HD strf::width_and_pos str_width_and_pos
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD strf::width_and_pos str_width_and_pos
         ( Charset
         , strf::width_t limit
         , const typename Charset::code_unit*
@@ -74,7 +73,7 @@ public:
     }
 
     template <typename Charset>
-    constexpr STRF_HD strf::width_t str_width
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD strf::width_t str_width
         ( Charset charset
         , strf::width_t limit
         , const typename Charset::code_unit* str
@@ -88,7 +87,7 @@ public:
     }
 
     template <typename Charset>
-    constexpr STRF_HD strf::width_and_pos str_width_and_pos
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD strf::width_and_pos str_width_and_pos
         ( Charset charset
         , strf::width_t limit
         , const typename Charset::code_unit* str
@@ -117,7 +116,7 @@ public:
     }
 
     template <typename Charset>
-    constexpr STRF_HD strf::width_t str_width
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD strf::width_t str_width
         ( Charset charset
         , strf::width_t limit
         , const typename Charset::code_unit* str
@@ -131,7 +130,7 @@ public:
     }
 
     template <typename Charset>
-    constexpr STRF_HD strf::width_and_pos str_width_and_pos
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD strf::width_and_pos str_width_and_pos
         ( Charset charset
         , strf::width_t limit
         , const typename Charset::code_unit* str
@@ -232,7 +231,7 @@ public:
     }
 
     template <typename Charset>
-    constexpr STRF_HD strf::width_t str_width
+    STRF_HD strf::width_t str_width
         ( Charset charset
         , strf::width_t limit
         , const typename Charset::code_unit* str
@@ -246,7 +245,7 @@ public:
     }
 
     template <typename Charset>
-    constexpr STRF_HD strf::width_and_pos str_width_and_pos
+    STRF_HD strf::width_and_pos str_width_and_pos
         ( Charset charset
         , strf::width_t limit
         , const typename Charset::code_unit* str

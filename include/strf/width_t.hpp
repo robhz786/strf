@@ -144,13 +144,22 @@ public:
         return value_;
     }
 
+    static constexpr STRF_HD width_t max() noexcept
+    {
+        return strf::width_t::from_underlying(0xFFFFFFFF);
+    }
+    static constexpr STRF_HD width_t min() noexcept
+    {
+        return 0;
+    }
+
 private:
 
     std::uint32_t value_;
 };
 
-constexpr strf::width_t width_max = strf::width_t::from_underlying(0xFFFFFFFF);
-constexpr strf::width_t width_min = 0;
+constexpr strf::width_t width_max = strf::width_t::max();
+constexpr strf::width_t width_min = strf::width_t::min();
 
 STRF_CONSTEXPR_IN_CXX14
 STRF_HD strf::width_t checked_mul(strf::width_t w, std::size_t x) noexcept

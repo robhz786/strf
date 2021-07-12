@@ -300,7 +300,7 @@ public:
 
     template <typename Tag, typename Category>
     constexpr STRF_HD
-    STRF_DECLTYPE_AUTO((strf::detail::do_get_facet<Category, Tag>(*(const FPE*)0)))
+    STRF_DECLTYPE_AUTO((strf::detail::do_get_facet<Category, Tag>(std::declval<const FPE&>())))
     do_get_facet
         ( const Rank&
         , strf::tag<Category>
@@ -432,7 +432,7 @@ template <typename RankNumSeq, typename ... FPE>
 struct facets_pack_base_trait;
 
 template <std::size_t ... RankNum, typename ... FPE>
-struct facets_pack_base_trait<std::index_sequence<RankNum...>, FPE...>
+struct facets_pack_base_trait<strf::detail::index_sequence<RankNum...>, FPE...>
 {
     using type = facets_pack_base
         < strf::tag
@@ -446,7 +446,7 @@ struct facets_pack_base_trait<std::index_sequence<RankNum...>, FPE...>
 template <typename ... FPE>
 using facets_pack_base_t
  = typename strf::detail::facets_pack_base_trait
-    < std::make_index_sequence<sizeof...(FPE)>
+    < strf::detail::make_index_sequence<sizeof...(FPE)>
     , FPE ... >
    :: type;
 

@@ -20,12 +20,30 @@ namespace strf {
 
 struct int_format
 {
-    int base = 10;
-    unsigned precision = 0;
-    unsigned pad0width = 0;
-    strf::showsign sign = strf::showsign::negative_only;
-    bool showbase = false;
-    bool punctuate = false;
+    constexpr STRF_HD int_format
+        ( int base_ = 10
+        , unsigned precision_ = 0
+        , unsigned pad0width_ = 0
+        , strf::showsign sign_ = strf::showsign::negative_only
+        , bool showbase_ = false
+        , bool punctuate_ = false ) noexcept
+        : base(base_)
+        , precision(precision_)
+        , pad0width(pad0width_)
+        , sign(sign_)
+        , showbase(showbase_)
+        , punctuate(punctuate_)
+    {
+    }
+
+    constexpr int_format(const int_format&) = default;
+
+    int base;
+    unsigned precision;
+    unsigned pad0width;
+    strf::showsign sign;
+    bool showbase;
+    bool punctuate;
 };
 
 using int_format_full_dynamic = int_format;
@@ -33,6 +51,21 @@ using int_format_full_dynamic = int_format;
 template <int Base, bool Punctuate>
 struct int_format_static_base_and_punct
 {
+    constexpr STRF_HD int_format_static_base_and_punct
+        ( unsigned precision_ = 0
+        , unsigned pad0width_ = 0
+        , strf::showsign sign_ = strf::showsign::negative_only
+        , bool showbase_ = false ) noexcept
+        : precision(precision_)
+        , pad0width(pad0width_)
+        , sign(sign_)
+        , showbase(showbase_)
+    {
+    }
+
+    constexpr int_format_static_base_and_punct
+        ( const int_format_static_base_and_punct& ) = default;
+
     constexpr static int base = Base;
     unsigned precision = 0;
     unsigned pad0width = 0;
@@ -202,7 +235,8 @@ public:
                , strf::tag<int_formatter_no_pad0_nor_punct<2>>{}
                , int_format_no_pad0_nor_punct<2>{} };
     }
-    constexpr STRF_HD static_base_and_punct_t_<10, false> p(unsigned _) const noexcept
+    STRF_CONSTEXPR_IN_CXX14
+    STRF_HD static_base_and_punct_t_<10, false> p(unsigned _) const noexcept
     {
         int_format_static_base_and_punct<10, false> data;
         data.precision = _;
@@ -255,7 +289,7 @@ public:
                , strf::tag<int_formatter_static_base_and_punct<10, true>>{}
                , strf::tag<>{} };
     }
-    constexpr STRF_HD
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD
     strf::fmt_replace<T, default_int_formatter, int_formatter_full_dynamic >
     base(int b) const
     {
@@ -318,7 +352,7 @@ public:
 
 private:
 
-    STRF_HD constexpr const T& self_downcast_() const
+    STRF_HD STRF_CONSTEXPR_IN_CXX14 const T& self_downcast_() const
     {
         const T* base_ptr = static_cast<const T*>(this);
         return *base_ptr;
@@ -444,7 +478,7 @@ public:
                , strf::tag<strf::int_formatter_static_base_and_punct<Base, false>>{}
                , new_data };
     }
-    constexpr STRF_HD static_base_and_punct_t_<Base, false>
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD static_base_and_punct_t_<Base, false>
     pad0(unsigned w) const noexcept
     {
         int_format_static_base_and_punct<Base, false> new_data = data_;
@@ -483,16 +517,16 @@ public:
     }
     constexpr STRF_HD static_base_and_punct_t_<Base, true> punct() const noexcept
     {
-        int_format_static_base_and_punct<Base, false> tmp = data_;
         return { *static_cast<const T*>(this)
                , strf::tag<strf::int_formatter_static_base_and_punct<Base, true>>{}
-               , change_static_params<Base, true>(tmp) };
+               , change_static_params<Base, true>
+                   (static_cast<int_format_static_base_and_punct<Base, false>>(data_)) };
     }
     constexpr STRF_HD static_base_and_punct_t_<Base, true> operator!() const noexcept
     {
         return punct();
     }
-    constexpr STRF_HD full_dynamic_t_ base(int b) const
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD full_dynamic_t_ base(int b) const
     {
         int_format_full_dynamic new_data = data_;
         new_data.base = b;
@@ -553,7 +587,7 @@ public:
 
 private:
 
-    STRF_HD constexpr const T& self_downcast_() const
+    STRF_HD STRF_CONSTEXPR_IN_CXX14 const T& self_downcast_() const
     {
         const T* base_ptr = static_cast<const T*>(this);
         return *base_ptr;
@@ -734,7 +768,7 @@ public:
             , strf::tag<strf::int_formatter_static_base_and_punct<Base, true>>{}
             , strf::change_static_params<Base, true>(data_) };
     }
-    constexpr STRF_HD strf::fmt_replace
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD strf::fmt_replace
         < T
         , int_formatter_static_base_and_punct<Base, Punctuate>
         , int_formatter_full_dynamic >
@@ -804,7 +838,7 @@ public:
 
 private:
 
-    STRF_HD constexpr const T& self_downcast_() const
+    STRF_HD STRF_CONSTEXPR_IN_CXX14 const T& self_downcast_() const
     {
         const T* base_ptr = static_cast<const T*>(this);
         return *base_ptr;
@@ -1018,7 +1052,7 @@ public:
 
 private:
 
-    STRF_HD constexpr const T& self_downcast_() const
+    STRF_HD STRF_CONSTEXPR_IN_CXX14 const T& self_downcast_() const
     {
         const T* base_ptr = static_cast<const T*>(this);
         return *base_ptr;
@@ -1304,17 +1338,19 @@ struct voidptr_printing
         , const void* x ) noexcept
     -> decltype( strf::make_default_printer_input<CharT>
                    ( preview
-                   , strf::pack( strf::use_facet<strf::numpunct_c<16>, const void*>(facets)
-                               , strf::lettercase::lower
-                               , strf::use_facet<strf::charset_c<CharT>, const void*>(facets) )
+                   , strf::pack
+                       ( strf::use_facet<strf::numpunct_c<16>, const void*>(facets)
+                       , strf::lettercase::lower
+                       , strf::use_facet<strf::charset_c<CharT>, const void*>(facets) )
                    , *strf::hex(strf::detail::bit_cast<std::size_t>(x)) ) )
     {
-        auto f1 = strf::use_facet<strf::numpunct_c<16>, const void*>(facets);
-        auto f2 = strf::use_facet<strf::lettercase_c, const void*>(facets);
-        auto f3 = strf::use_facet<strf::charset_c<CharT>, const void*>(facets);
-        auto fp2 = strf::pack(f1, f2, f3);
-        auto x2 = *strf::hex(strf::detail::bit_cast<std::size_t>(x));
-        return strf::make_default_printer_input<CharT>(preview, fp2, x2);
+        return strf::make_default_printer_input<CharT>
+            ( preview
+            , strf::pack
+                ( strf::use_facet<strf::numpunct_c<16>, const void*>(facets)
+                , strf::use_facet<strf::lettercase_c, const void*>(facets)
+                , strf::use_facet<strf::charset_c<CharT>, const void*>(facets) )
+            , *strf::hex(strf::detail::bit_cast<std::size_t>(x)) );
     }
 
     template <typename CharT, typename Preview, typename FPack, typename... T>
@@ -1325,19 +1361,21 @@ struct voidptr_printing
         , strf::value_with_formatters<T...> x ) noexcept
     -> decltype( strf::make_default_printer_input<CharT>
                    ( preview
-                   , strf::pack( strf::use_facet<strf::numpunct_c<16>, const void*>(facets)
-                               , strf::lettercase::lower
-                               , strf::use_facet<strf::charset_c<CharT>, const void*>(facets) )
+                   , strf::pack
+                       ( strf::use_facet<strf::numpunct_c<16>, const void*>(facets)
+                       , strf::use_facet<strf::lettercase_c, const void*>(facets)
+                       , strf::use_facet<strf::charset_c<CharT>, const void*>(facets) )
                    , *strf::hex(strf::detail::bit_cast<std::size_t>(x.value()))
                                    .set_alignment_format(x.get_alignment_format()) ) )
     {
-        auto f1 = strf::use_facet<strf::numpunct_c<16>, const void*>(facets);
-        auto f2 = strf::use_facet<strf::lettercase_c, const void*>(facets);
-        auto f3 = strf::use_facet<strf::charset_c<CharT>, const void*>(facets);
-        auto fp2 = strf::pack(f1, f2, f3);
-        auto x2 = *strf::hex(strf::detail::bit_cast<std::size_t>(x.value()))
-                             .set_alignment_format(x.get_alignment_format());
-        return strf::make_default_printer_input<CharT>(preview, fp2, x2);
+        return strf::make_default_printer_input<CharT>
+            ( preview
+            , strf::pack
+                ( strf::use_facet<strf::numpunct_c<16>, const void*>(facets)
+                , strf::use_facet<strf::lettercase_c, const void*>(facets)
+                , strf::use_facet<strf::charset_c<CharT>, const void*>(facets) )
+            , *strf::hex(strf::detail::bit_cast<std::size_t>(x.value()))
+                            .set_alignment_format(x.get_alignment_format()) );
     }
 };
 
@@ -1369,7 +1407,7 @@ private:
              , strf::detail::enable_if_t<std::is_signed<IntT>::value, int> = 0 >
     STRF_HD void init_(Preview& preview, IntT value)
     {
-        using uint = std::make_unsigned_t<IntT>;
+        using uint = typename std::make_unsigned<IntT>::type;
         uint uvalue;
         if (value >= 0) {
             negative_ = 0;
@@ -1446,7 +1484,7 @@ private:
              , strf::detail::enable_if_t<std::is_signed<IntT>::value, int> = 0 >
     STRF_HD unsigned init_(IntT value) noexcept
     {
-        using uint = std::make_unsigned_t<IntT>;
+        using uint = typename std::make_unsigned<IntT>::type;
         uint uvalue;
         if (value >= 0) {
             negative_ = 0;
@@ -1552,7 +1590,7 @@ inline STRF_HD unsigned init
     , int_format_no_pad0_nor_punct<10> ifmt
     , IntT value ) noexcept
 {
-    using unsigned_IntT = std::make_unsigned_t<IntT>;
+    using unsigned_IntT = typename std::make_unsigned<IntT>::type;
     unsigned_IntT uvalue;
     if (value >= 0) {
         uvalue = value;
@@ -1580,7 +1618,7 @@ inline STRF_HD unsigned init
         data.prefix = ifmt.showbase << 1;
     }
     data.uvalue = static_cast<decltype(data.uvalue)>(value);
-    auto uvalue = static_cast<std::make_unsigned_t<IntT>>(value);
+    auto uvalue = static_cast<typename std::make_unsigned<IntT>::type>(value);
     data.digcount = strf::detail::count_digits<Base>(uvalue);
     return data.digcount + data.prefix;
 }

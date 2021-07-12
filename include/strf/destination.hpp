@@ -87,8 +87,8 @@ public:
         static_assert( std::is_copy_constructible<OutbuffCreator>::value
                      , "OutbuffCreator must be copy constructible" );
 
-        const auto& self = static_cast<const destination_type_&>(*this);
-        return {self, detail::destination_tag{}, std::forward<FPE>(fpe) ...};
+        return { static_cast<const destination_type_&>(*this)
+               , detail::destination_tag{}, std::forward<FPE>(fpe) ...};
     }
 
     template <typename... FPE>
@@ -101,54 +101,51 @@ public:
         static_assert( std::is_move_constructible<OutbuffCreator>::value
                      , "OutbuffCreator must be move constructible" );
 
-        auto& self = static_cast<const destination_type_&>(*this);
-        return {std::move(self), detail::destination_tag{}, std::forward<FPE>(fpe)...};
+        return { std::move(static_cast<const destination_type_&>(*this))
+               , detail::destination_tag{}
+               , std::forward<FPE>(fpe)...};
     }
 
     constexpr STRF_HD strf::destination_no_reserve<OutbuffCreator, FPack>
     no_reserve() const &
     {
-        const auto& self = static_cast<const destination_type_&>(*this);
         return { strf::detail::destination_tag{}
-               , self.outbuff_creator_
-               , self.fpack_ };
+               , static_cast<const destination_type_*>(this)->outbuff_creator_
+               , static_cast<const destination_type_*>(this)->fpack_ };
     }
 
     STRF_CONSTEXPR_IN_CXX14 STRF_HD strf::destination_no_reserve<OutbuffCreator, FPack>
     no_reserve() &&
     {
-        auto& self = static_cast<destination_type_&>(*this);
         return { strf::detail::destination_tag{}
-               , std::move(self.outbuff_creator_)
-               , std::move(self.fpack_) };
+               , std::move(static_cast<destination_type_*>(this)->outbuff_creator_)
+               , std::move(static_cast<destination_type_*>(this)->fpack_) };
     }
 
     constexpr STRF_HD strf::destination_calc_size<OutbuffCreator, FPack>
     reserve_calc() const &
     {
-        const auto& self = static_cast<const destination_type_&>(*this);
         return { strf::detail::destination_tag{}
-               , self.outbuff_creator_
-               , self.fpack_ };
+               , static_cast<const destination_type_*>(this)->outbuff_creator_
+               , static_cast<const destination_type_*>(this)->fpack_ };
     }
 
-    strf::destination_calc_size<OutbuffCreator, FPack>
+    STRF_CONSTEXPR_IN_CXX14 strf::destination_calc_size<OutbuffCreator, FPack>
     STRF_HD reserve_calc() &&
     {
         auto& self = static_cast<destination_type_&>(*this);
         return { strf::detail::destination_tag{}
-               , std::move(self.outbuff_creator_)
-               , std::move(self.fpack_) };
+               , self.outbuff_creator_
+               , self.fpack_ };
     }
 
     constexpr STRF_HD strf::destination_with_given_size<OutbuffCreator, FPack>
     reserve(std::size_t size) const &
     {
-        const auto& self = static_cast<const destination_type_&>(*this);
         return { strf::detail::destination_tag{}
                , size
-               , self.outbuff_creator_
-               , self.fpack_ };
+               , static_cast<const destination_type_*>(this)->outbuff_creator_
+               , static_cast<const destination_type_*>(this)->fpack_ };
     }
 
     STRF_CONSTEXPR_IN_CXX14 STRF_HD strf::destination_with_given_size<OutbuffCreator, FPack>
@@ -157,8 +154,8 @@ public:
         auto& self = static_cast<destination_type_&>(*this);
         return { strf::detail::destination_tag{}
                , size
-               , std::move(self.outbuff_creator_)
-               , std::move(self.fpack_) };
+               , self.outbuff_creator_
+               , self.fpack_ };
     }
 
     template <typename ... Args>
@@ -704,7 +701,7 @@ public:
         : dest_(dest)
         , dest_end_(dest_end)
     {
-        STRF_ASSERT(dest < dest_end);
+        STRF_ASSERT_IN_CONSTEXPR(dest < dest_end);
     }
 
     STRF_HD typename basic_char_array_writer<CharT>::range create() const noexcept

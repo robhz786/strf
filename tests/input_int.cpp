@@ -5,6 +5,8 @@
 
 #include "test_utils.hpp"
 
+namespace {
+
 void STRF_TEST_FUNC test_input_ptr()
 {
     void* ptr = strf::detail::bit_cast<void*, std::size_t>(0xABC);
@@ -558,6 +560,23 @@ void STRF_TEST_FUNC test_input_int_no_punct()
     TEST("  ****12345***") (j(strf::center(12345, 12, '*').fill_sign()));
 }
 
+template <int Base>
+struct numpunct_maker {
+
+    STRF_HD numpunct_maker(char32_t sep)
+        : separator(sep)
+    {
+    }
+    numpunct_maker(const numpunct_maker&) = default;
+
+    template <typename... G>
+    STRF_HD strf::numpunct<Base> operator() (G... grp) const
+    {
+        return strf::numpunct<Base>(grp...).thousands_sep(separator);
+    }
+    char32_t separator;
+};
+
 void STRF_TEST_FUNC test_input_int_punct()
 {
     {
@@ -685,8 +704,7 @@ void STRF_TEST_FUNC test_input_int_punct()
     }
 
     {
-        auto punct2 = [](auto... grps) -> strf::numpunct<10>
-            { return strf::numpunct<10>{grps...}.thousands_sep(0x10FFFF); };
+        numpunct_maker<10> punct2(0x10FFFF);
 
         TEST(u8"18\U0010FFFF" u8"446\U0010FFFF" u8"744\U0010FFFF" u8"073\U0010FFFF"
              u8"709\U0010FFFF" u8"551\U0010FFFF" u8"61\U0010FFFF" u8"5")
@@ -724,7 +742,7 @@ void STRF_TEST_FUNC test_input_int_punct()
         TEST_CALLING_RECYCLE_AT <2, 5, 5, 6, 4>
             ("10\xCB\x9A" "000\xCB\x9A" "000\xCB\x9A" "0000\xCB\x9A" "00")
             .with(strf::numpunct<10>{2,4,3}.thousands_sep(0x2DA))
-            (strf::punct(10'000'000'0000'00ull));
+            (strf::punct(10000000000000ull));
     }
 
     {
@@ -827,8 +845,7 @@ void STRF_TEST_FUNC test_input_int_punct()
         TEST("1,23,45,67,89,ab,cd,ef0")     .with(punct(3, 2))
             (!strf::hex(0x123456789abcdef0ull));
 
-        auto punct2 = [](auto... grps) -> punct
-            { return punct(grps...).thousands_sep(0x10FFFF); };
+        const numpunct_maker<16> punct2(0x10FFFF);
 
         TEST(u8"1\U0010FFFF" u8"234\U0010FFFF" u8"567\U0010FFFF" u8"89a\U0010FFFF"
              u8"bcd\U0010FFFF" u8"ef0")
@@ -880,8 +897,7 @@ void STRF_TEST_FUNC test_input_int_punct()
         TEST("12,34,567") .with(punct(3, 2)) (!strf::oct(01234567));
     }
     {
-        auto punct = [](auto... grps) -> strf::numpunct<2>
-            { return strf::numpunct<2>{grps...}.thousands_sep('\''); };
+        numpunct_maker<2> punct('\'');
 
         TEST("0") .with(punct(1)) (!strf::bin(0));
         TEST("1'0") .with(punct(1)) (!strf::bin(2));
@@ -892,8 +908,7 @@ void STRF_TEST_FUNC test_input_int_punct()
         TEST_CALLING_RECYCLE_AT<7,3,2,5,7,3>  ("10'1010'1010'101010'10")
             .with(punct(2,6,4)) (!strf::bin(0x2AAAAull));
 
-        auto grp_big = [](auto... grps) -> strf::numpunct<2>
-            { return strf::numpunct<2>{grps...}.thousands_sep(0x10FFFF); };
+        numpunct_maker<2> grp_big(0x10FFFF);
 
         TEST(u8"0") .with(grp_big(1)) (!strf::bin(0));
         TEST(u8"1\U0010FFFF" u8"0") .with(grp_big(1)) (!strf::bin(2));
@@ -1052,8 +1067,11 @@ void STRF_TEST_FUNC test_input_int_punct()
     }
 }
 
+} // unnamed namespace
+
 void STRF_TEST_FUNC test_input_int()
 {
+    test_input_ptr();
     test_input_int_no_punct();
     test_input_int_punct();
 }

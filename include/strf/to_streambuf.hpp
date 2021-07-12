@@ -129,6 +129,8 @@ private:
 
 template <typename CharT, typename Traits>
 inline auto to( std::basic_streambuf<CharT, Traits>& dest )
+    -> strf::destination_no_reserve
+        < strf::detail::basic_streambuf_writer_creator<CharT, Traits> >
 {
     return strf::destination_no_reserve
         < strf::detail::basic_streambuf_writer_creator<CharT, Traits> >
@@ -138,6 +140,8 @@ inline auto to( std::basic_streambuf<CharT, Traits>& dest )
 
 template<typename CharT, typename Traits>
 inline auto to( std::basic_streambuf<CharT, Traits>* dest )
+    -> strf::destination_no_reserve
+        < strf::detail::basic_streambuf_writer_creator<CharT, Traits> >
 {
     return strf::to(*dest);
 }

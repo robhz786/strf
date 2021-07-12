@@ -105,8 +105,8 @@ template < typename ToIntT
              , int > = 0 >
 constexpr STRF_HD ToIntT cast_abs(FromIntT value)
 {
-    strf::detail::make_signed_t<ToIntT> value2 = value;
-    return value >= 0 ? value2 : -value2;
+    using SingedToInt = strf::detail::make_signed_t<ToIntT>;
+    return value >= 0 ? (SingedToInt)value : -(SingedToInt)value;
 }
 template < typename ToIntT
          , typename FromIntT

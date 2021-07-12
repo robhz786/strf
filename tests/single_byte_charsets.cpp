@@ -319,8 +319,7 @@ inline STRF_HD void STRF_TEST_FUNC general_tests
     ( strf::static_charset<CharT, CharsetId> charset
     , strf::detail::simple_string_view<char32_t> decoded_0_to_0xff )
 {
-    strf::dynamic_charset_data<CharT> data;
-    charset.fill_data(data);
+    strf::dynamic_charset_data<CharT> data = charset.make_data();
     strf::dynamic_charset<CharT> dynamic_cs{data};
     general_tests(dynamic_cs, decoded_0_to_0xff);
 }
@@ -1331,8 +1330,7 @@ void STRF_TEST_FUNC test_unsupported_codepoints
     ( strf::static_charset<CharT, CharsetId> charset
     , std::initializer_list<char32_t> unsupported_codepoints )
 {
-    strf::dynamic_charset_data<CharT> data;
-    charset.fill_data(data);
+    strf::dynamic_charset_data<CharT> data = charset.make_data();
     strf::dynamic_charset<CharT> dynamic_cs{data};
     test_unsupported_codepoints(dynamic_cs, unsupported_codepoints);
 }

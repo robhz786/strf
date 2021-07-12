@@ -5,6 +5,14 @@
 
 #include "test_utils.hpp"
 
+template <typename... F>
+constexpr STRF_HD bool all_are_constrainable()
+{
+    return strf::detail::fold_and<strf::is_constrainable<F>()...>();
+}
+
+
+
 void STRF_TEST_FUNC test_input_facets_pack()
 {
     TEST("1,0,0,0,0 10000 1000000 10,000 1'0000 1'000000 10.000 1^00^00 1'000000")
@@ -46,22 +54,20 @@ void STRF_TEST_FUNC test_input_facets_pack()
     }
 
     static_assert
-        ( strf::detail::all_are_constrainable<>::value
+        ( all_are_constrainable<>()
         , "all_are_constrainable ill implemented");
 
     static_assert
-        ( strf::detail::all_are_constrainable
+        ( all_are_constrainable
           < strf::fast_width_t
-          , strf::numpunct<10> >
-          :: value
+          , strf::numpunct<10> >()
         , "these facets should be constrainable");
 
     static_assert
-        ( ! strf::detail::all_are_constrainable
+        ( ! all_are_constrainable
           < strf::utf_t<char>
           , strf::fast_width_t
-          , strf::numpunct<10> >
-          :: value
+          , strf::numpunct<10> >()
         , "charset is not constrainable");
 }
 

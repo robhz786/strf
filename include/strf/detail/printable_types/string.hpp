@@ -174,9 +174,30 @@ class transcoding_formatter_fn
 {
     STRF_HD constexpr const T& self_downcast_() const
     {
-        const T* base_ptr = static_cast<const T*>(this);
-        return *base_ptr;
+        return *static_cast<const T*>(this);
     }
+
+    using return_type_conv_ = strf::fmt_replace
+        < T
+        , strf::transcoding_formatter<CharT>
+        , strf::transcoding_formatter_conv<CharT> >;
+
+    template <typename Charset>
+    using return_type_conv_from_ = strf::fmt_replace
+        < T
+        , strf::transcoding_formatter<CharT>
+        , strf::transcoding_formatter_conv_with_charset<Charset> >;
+
+    using return_type_sani_ = strf::fmt_replace
+        < T
+        , strf::transcoding_formatter<CharT>
+        , strf::transcoding_formatter_sani<CharT> >;
+
+    template <typename Charset>
+    using return_type_sani_from_ = strf::fmt_replace
+        < T
+        , strf::transcoding_formatter<CharT>
+        , strf::transcoding_formatter_sani_with_charset<Charset> >;
 
 public:
 
@@ -190,70 +211,55 @@ public:
     {
     }
 
-    constexpr STRF_HD auto convert_charset() const
+    constexpr STRF_HD return_type_conv_ convert_charset() const
     {
-        using return_type = strf::fmt_replace
-            < T
-            , strf::transcoding_formatter<CharT>
-            , strf::transcoding_formatter_conv<CharT> >;
-        return return_type{ self_downcast_() };
+        return return_type_conv_{ self_downcast_() };
     }
 
     template <typename Charset>
-    constexpr STRF_HD auto convert_from_charset(Charset charset) const
+    constexpr STRF_HD return_type_conv_from_<Charset> convert_from_charset(Charset charset) const
     {
         static_assert( std::is_same<typename Charset::code_unit, CharT>::value
                      , "This charset does not match the string's character type." );
 
-        using return_type = strf::fmt_replace
-            < T
-            , strf::transcoding_formatter<CharT>
-            , strf::transcoding_formatter_conv_with_charset<Charset> >;
-
-        return return_type
+        return return_type_conv_from_<Charset>
             { self_downcast_()
             , strf::tag<strf::transcoding_formatter_conv_with_charset<Charset>>{}
             , charset };
     }
-    constexpr STRF_HD auto conv() const
+    constexpr STRF_HD return_type_conv_ conv() const
     {
-        return convert_charset();
+        return return_type_conv_{ self_downcast_() };
     }
     template <typename Charset>
-    constexpr STRF_HD auto conv(Charset charset) const
+    constexpr STRF_HD return_type_conv_from_<Charset> conv(Charset charset) const
     {
-        return convert_from_charset(charset);
+        return return_type_conv_from_<Charset>
+            { self_downcast_()
+            , strf::tag<strf::transcoding_formatter_conv_with_charset<Charset>>{}
+            , charset };
     }
 
-    constexpr STRF_HD auto sanitize_charset() const
+    constexpr STRF_HD return_type_sani_ sanitize_charset() const
     {
-        using return_type = strf::fmt_replace
-            < T
-            , strf::transcoding_formatter<CharT>
-            , strf::transcoding_formatter_sani<CharT> >;
-        return return_type{ self_downcast_() };
+        return return_type_sani_{ self_downcast_() };
     }
     template <typename Charset>
-    constexpr STRF_HD auto sanitize_from_charset(Charset charset) const
+    constexpr STRF_HD return_type_sani_from_<Charset> sanitize_from_charset(Charset charset) const
     {
         static_assert( std::is_same<typename Charset::code_unit, CharT>::value
                      , "This charset does not match the string's character type." );
-        using return_type = strf::fmt_replace
-            < T
-            , strf::transcoding_formatter<CharT>
-            , strf::transcoding_formatter_sani_with_charset<Charset> >;
-
-        return return_type
+        return
             { self_downcast_()
             , strf::tag<strf::transcoding_formatter_sani_with_charset<Charset>>{}
             , charset };
     }
-    constexpr STRF_HD auto sani() const
+    constexpr STRF_HD return_type_sani_ sani() const
     {
         return sanitize_charset();
     }
     template <typename Charset>
-    constexpr STRF_HD auto sani(Charset charset) const
+    constexpr STRF_HD return_type_sani_from_<Charset> sani(Charset charset) const
     {
         return sanitize_from_charset(charset);
     }
@@ -264,23 +270,25 @@ public:
     constexpr static STRF_HD bool has_charset()   noexcept { return false; }
 
     // backwards compatibility
-    template <typename Charset>
-    STRF_DEPRECATED constexpr STRF_HD auto convert_encoding(Charset charset) const
+    STRF_DEPRECATED constexpr STRF_HD auto convert_encoding() const
+        -> return_type_conv_
     {
-        return convert_charset(charset);
+        return convert_charset();
     }
     template <typename Charset>
     STRF_DEPRECATED constexpr STRF_HD auto convert_from_encoding(Charset charset) const
+        -> return_type_conv_from_<Charset>
     {
         return convert_from_charset(charset);
     }
-    template <typename Charset>
-    STRF_DEPRECATED constexpr STRF_HD auto sanitize_encoding(Charset charset) const
+    STRF_DEPRECATED constexpr STRF_HD auto sanitize_encoding() const
+        -> return_type_sani_
     {
-        return sanitize_charset(charset);
+        return sanitize_charset();
     }
     template <typename Charset>
     STRF_DEPRECATED constexpr STRF_HD auto sanitize_from_encoding(Charset charset) const
+        -> return_type_sani_from_<Charset>
     {
         return sanitize_from_charset(charset);
     }
@@ -457,7 +465,7 @@ public:
         : precision_(other.precision())
     {
     }
-    constexpr STRF_HD T&& p(strf::width_t _) && noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& p(strf::width_t _) && noexcept
     {
         precision_ = _;
         return static_cast<T&&>(*this);
@@ -466,7 +474,7 @@ public:
     {
         return precision_;
     }
-    constexpr STRF_HD auto get_string_precision() const noexcept
+    constexpr STRF_HD strf::string_precision<true> get_string_precision() const noexcept
     {
         return strf::string_precision<true>{precision_};
     }
@@ -491,8 +499,7 @@ class string_precision_formatter_fn<T, false>
 
     STRF_HD constexpr const T& self_downcast_() const
     {
-        const T* base_ptr = static_cast<const T*>(this);
-        return *base_ptr;
+        return *static_cast<const T*>(this);
     }
 
 public:
@@ -511,7 +518,7 @@ public:
                , strf::tag<string_precision_formatter<true> >{}
                , precision };
     }
-    constexpr STRF_HD auto get_string_precision() const noexcept
+    constexpr STRF_HD strf::string_precision<false> get_string_precision() const noexcept
     {
         return strf::string_precision<false>{};
     }
@@ -744,7 +751,7 @@ public:
     static_assert(sizeof(SrcCharT) == sizeof(DestCharT), "");
 
     template <typename Preview, typename FPack>
-    constexpr STRF_HD string_printer
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD string_printer
         ( const strf::detail::string_printer_input<SrcCharT, Preview, FPack>& input )
         : str_(input.arg.data())
         , len_(input.arg.length())
@@ -761,7 +768,7 @@ public:
     }
 
     template < typename Preview, typename FPack, typename CvFormat >
-    constexpr STRF_HD string_printer
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD string_printer
         ( const strf::detail::fmt_string_printer_input
             < DestCharT, SrcCharT, false, false, CvFormat, Preview, FPack >&
             input )
@@ -782,7 +789,7 @@ public:
     }
 
     template < typename Preview, typename FPack, typename CvFormat >
-    constexpr STRF_HD string_printer
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD string_printer
         ( const strf::detail::fmt_string_printer_input
             < DestCharT, SrcCharT, true, false, CvFormat, Preview, FPack >&
             input )
@@ -811,7 +818,7 @@ private:
              , typename FPack
              , typename input_tag = strf::string_input_tag<SrcCharT> >
     static STRF_HD
-    STRF_DECLTYPE_AUTO((strd::use_facet<Category, input_tag>(std::declval<FPack>())))
+    STRF_DECLTYPE_AUTO((strf::use_facet<Category, input_tag>(std::declval<FPack>())))
     use_facet_(const FPack& facets)
     {
         return facets.template use_facet<Category, input_tag>();
@@ -892,7 +899,7 @@ private:
              , typename FPack
              , typename Tag = strf::string_input_tag<SrcCharT> >
     static STRF_HD
-    STRF_DECLTYPE_AUTO((strd::use_facet<Category, Tag>(std::declval<FPack>())))
+    STRF_DECLTYPE_AUTO((strf::use_facet<Category, Tag>(std::declval<FPack>())))
     use_facet_(const FPack& facets)
     {
         return facets.template use_facet<Category, Tag>();
@@ -1124,7 +1131,7 @@ private:
     template < typename Category, typename SrcChar, typename FPack
              , typename Tag = strf::string_input_tag<SrcChar> >
     static STRF_HD
-    STRF_DECLTYPE_AUTO((strd::use_facet<Category, Tag>(std::declval<FPack>())))
+    STRF_DECLTYPE_AUTO((strf::use_facet<Category, Tag>(std::declval<FPack>())))
     use_facet_(const FPack& facets)
     {
         return facets.template use_facet<Category, Tag>();
@@ -1218,7 +1225,7 @@ private:
     template < typename Category, typename SrcChar, typename FPack
              , typename Tag = strf::string_input_tag<SrcChar> >
     static STRF_HD
-    STRF_DECLTYPE_AUTO((strd::use_facet<Category, Tag>(std::declval<FPack>())))
+    STRF_DECLTYPE_AUTO((strf::use_facet<Category, Tag>(std::declval<FPack>())))
     use_facet_(const FPack& facets)
     {
         return facets.template use_facet<Category, Tag>();
@@ -1442,8 +1449,9 @@ private:
 
     static constexpr std::size_t pool_size_ =
         sizeof(strf::detail::conv_string_printer<DestCharT, DestCharT>);
-    using storage_type_ = typename std::aligned_storage_t
-        < pool_size_, alignof(strf::printer<DestCharT>)>;
+    using storage_type_ = typename std::aligned_storage
+        < pool_size_, alignof(strf::printer<DestCharT>)>
+        :: type;
 
     storage_type_ pool_;
 };
@@ -1497,8 +1505,9 @@ private:
 
     static constexpr std::size_t pool_size_ =
         sizeof(strf::detail::aligned_conv_string_printer<DestCharT, DestCharT>);
-    using storage_type_ = typename std::aligned_storage_t
-        < pool_size_, alignof(strf::printer<DestCharT>)>;
+    using storage_type_ = typename std::aligned_storage
+        < pool_size_, alignof(strf::printer<DestCharT>)>
+        :: type;
 
     storage_type_ pool_;
 };

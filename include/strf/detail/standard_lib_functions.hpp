@@ -151,12 +151,6 @@ using iterator_value_type = typename iterator_value_type_impl<It>::type;
 
 #endif
 
-template <typename IntT>
-constexpr STRF_HD IntT max(IntT a, IntT b)
-{
-    return a > b ? a : b;
-}
-
 template<class CharT>
 STRF_CONSTEXPR_CHAR_TRAITS
 STRF_HD void str_fill_n(CharT* str, std::size_t count, CharT value)

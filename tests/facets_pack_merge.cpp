@@ -24,6 +24,12 @@ struct fcategory;
 
 struct facet_type
 {
+    STRF_HD facet_type(int v = 0)
+        : value(v)
+    {
+    }
+    facet_type(const facet_type&) = default;
+
     using category = fcategory;
     int value = 0;
 };
@@ -31,7 +37,7 @@ struct facet_type
 struct fcategory
 {
     constexpr static bool constrainable = true;
-    static auto STRF_HD get_default() noexcept
+    static facet_type STRF_HD get_default() noexcept
     {
         return facet_type {};
     }

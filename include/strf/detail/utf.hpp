@@ -676,9 +676,6 @@ public:
 #if defined (__cpp_char8_t)
             find_transcoder_from<char8_t>,
             find_transcoder_to<char8_t>
-#else
-            nullptr,
-            nullptr
 #endif // defined (__cpp_char8_t)
         };
         return strf::dynamic_charset<CharT>{data};

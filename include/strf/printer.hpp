@@ -996,8 +996,8 @@ template < typename CharT
 constexpr STRF_HD auto make_printer_input(Preview& p, const FPack& fp, const Arg& arg)
     -> decltype(((const Maker*)0)->make_printer_input(ChTag{}, p, fp, Helper::adapt_arg(arg)))
 {
-    typename Helper::return_maker_type maker = Helper::get_maker(fp);
-    return maker.make_printer_input(strf::tag<CharT>{}, p, fp, Helper::adapt_arg(arg));
+    return Helper::get_maker(fp)
+        .make_printer_input(strf::tag<CharT>{}, p, fp, Helper::adapt_arg(arg));
 }
 
 struct no_print_override
@@ -1153,9 +1153,21 @@ enum class text_alignment {left, right, center};
 
 struct alignment_format
 {
+    constexpr STRF_HD alignment_format
+        ( char32_t fill_ = U' '
+        , strf::width_t width_ = 0
+        , strf::text_alignment alignment_ = strf::text_alignment::right ) noexcept
+        : fill(fill_)
+        , width(width_)
+        , alignment(alignment_)
+    {
+    }
+    constexpr alignment_format(const alignment_format&) = default;
+
     char32_t fill = U' ';
     strf::width_t width = 0;
     strf::text_alignment alignment = strf::text_alignment::right;
+
 };
 
 struct default_alignment_format
@@ -1303,11 +1315,10 @@ public:
         static_assert( strf::is_char<CharT>::value // issue #19
                      , "Refusing non-char argument to set the fill character, "
                        "since one may pass 0 instead of '0' by accident." );
-        char32_t ch_ = ch;
         return adapted_derived_type
             { self_downcast_()
             , strf::tag<alignment_formatter_q<true>>{}
-            , strf::alignment_format{ch_} };
+            , strf::alignment_format{static_cast<char32_t>(ch)} };
     }
     STRF_CONSTEXPR_IN_CXX14 STRF_HD
     T&& set_alignment_format(strf::default_alignment_format) && noexcept
@@ -1350,8 +1361,8 @@ private:
 
     STRF_HD constexpr const T& self_downcast_() const
     {
-        const T* base_ptr = static_cast<const T*>(this);
-        return *base_ptr;
+        //const T* base_ptr = static_cast<const T*>(this);
+        return *static_cast<const T*>(this);
     }
     STRF_HD STRF_CONSTEXPR_IN_CXX14 T& self_downcast_()
     {
