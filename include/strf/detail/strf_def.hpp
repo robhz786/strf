@@ -165,58 +165,46 @@ constexpr STRF_HD IntT min(IntT a, IntT b)
     return a < b ? a : b;
 }
 
-#if defined(__cpp_fold_expressions)
+#if defined(__cpp_fold_expressions) && (!defined(_MSC_VER) || _MSC_VER >= 1921)
 
 template <bool... C>
-constexpr STRF_HD bool fold_and() noexcept
+struct fold_and
 {
-    return (C && ...);
-}
+    static constexpr bool value = (C && ...);
+};
 
 template <bool... C>
-constexpr STRF_HD bool fold_or() noexcept
+struct fold_or
 {
-    return (C || ...);
-}
+    static constexpr bool value = (C || ...);
+};
 
 #else //defined(__cpp_fold_expressions)
 
-template <bool ... > struct fold_and_impl;
-template <bool ... > struct fold_or_impl;
+template <bool ... > struct fold_and;
+template <bool ... > struct fold_or;
 
-template <> struct fold_and_impl<>
+template <> struct fold_and<>
 {
     constexpr static bool value = true;
 };
 
-template <> struct fold_or_impl<>
+template <> struct fold_or<>
 {
     constexpr static bool value = false;
 };
 
 template <bool C0, bool ... C>
-struct fold_and_impl<C0, C...>
+struct fold_and<C0, C...>
 {
-     constexpr static bool value = fold_and_impl<C...>::value && C0;
+     constexpr static bool value = fold_and<C...>::value && C0;
 };
 
 template <bool C0, bool ... C>
-struct fold_or_impl<C0, C...>
+struct fold_or<C0, C...>
 {
-     constexpr static bool value = fold_or_impl<C...>::value || C0;
+     constexpr static bool value = fold_or<C...>::value || C0;
 };
-
-template <bool ... C>
-constexpr STRF_HD bool fold_and()
-{
-    return fold_and_impl<C...>::value;
-}
-
-template <bool ... C>
-constexpr STRF_HD bool fold_or()
-{
-    return fold_or_impl<C...>::value;
-}
 
 #endif // defined(__cpp_fold_expressions)
 

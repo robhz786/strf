@@ -2117,7 +2117,7 @@ template <typename CharT>
 using utf32_t = strf::static_charset<CharT, strf::csid_utf32>;
 
 template <typename CharT>
-using utf_t = strf::static_charset<CharT, strf::get_csid_utf<CharT>()>;
+using utf_t = strf::static_charset<CharT, strf::detail::csid_utf_impl<sizeof(CharT)>::csid>;
 
 #if defined(STRF_HAS_VARIABLE_TEMPLATES)
 

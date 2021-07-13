@@ -8,7 +8,7 @@
 template <typename... F>
 constexpr STRF_HD bool all_are_constrainable()
 {
-    return strf::detail::fold_and<strf::is_constrainable<F>()...>();
+    return strf::detail::fold_and<strf::is_constrainable<F>()...>::value;
 }
 
 

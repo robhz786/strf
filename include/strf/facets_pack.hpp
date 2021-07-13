@@ -140,7 +140,7 @@ public:
     template <typename Category, typename Tag>
     static constexpr STRF_HD bool has_facet() noexcept
     {
-        return strf::detail::fold_or<strf::detail::has_facet<Category, Tag, FPE>()...>();
+        return strf::detail::fold_or<strf::detail::has_facet<Category, Tag, FPE>()...>::value;
     }
 
     template <typename Cat, typename Tag>
@@ -151,7 +151,7 @@ public:
     }
 
     constexpr static bool is_constrainable
-      = strf::detail::fold_and<strf::is_constrainable<FPE>()...>();
+      = strf::detail::fold_and<strf::is_constrainable<FPE>()...>::value;
 };
 
 template <typename FPE>
@@ -167,9 +167,8 @@ public:
     }
 
     template <typename Cat, typename Tag>
-    constexpr STRF_HD static
-    STRF_DECLTYPE_AUTO((fpe_traits_::template get_facet<Cat, Tag>(*(const FPE*)(0))))
-    get_facet(const FPE& r)
+    constexpr STRF_HD static auto get_facet(const FPE& r)
+        -> decltype(fpe_traits_::template get_facet<Cat, Tag>(std::declval<const FPE&>()))
     {
         return fpe_traits_::template get_facet<Cat, Tag>(r);
     }
@@ -355,7 +354,7 @@ class fpe_wrapper<Rank, strf::facets_pack<FPE...>>
     template <typename Category, typename Tag>
     static constexpr STRF_HD bool has_facet_() noexcept
     {
-        return strf::detail::fold_or<strf::detail::has_facet<Category, Tag, FPE>()...>();
+        return strf::detail::fold_or<strf::detail::has_facet<Category, Tag, FPE>()...>::value;
     }
 
 public:
@@ -417,7 +416,7 @@ public:
         < typename... U
         , strf::detail::enable_if_t
             < sizeof...(U) == sizeof...(FPE)
-           && strf::detail::fold_and<std::is_constructible<FPE, U>::value...>()
+           && strf::detail::fold_and<std::is_constructible<FPE, U>::value...>::value
            && ! strf::detail::cvref_is_same<facets_pack_base, U...>::value
             , int > = 0 >
     constexpr STRF_HD facets_pack_base(U&& ... fpe)
@@ -623,7 +622,7 @@ public:
         < typename... U
         , strf::detail::enable_if_t
             < sizeof...(U) == sizeof...(FPE)
-           && strf::detail::fold_and<std::is_constructible<FPE, U>::value...>()
+           && strf::detail::fold_and<std::is_constructible<FPE, U>::value...>::value
            && ! strf::detail::cvref_is_same<facets_pack, U...>::value
             , int > = 0 >
     constexpr STRF_HD explicit facets_pack(U&&... fpe)
