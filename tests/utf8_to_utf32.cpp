@@ -10,7 +10,7 @@ namespace {
 STRF_TEST_FUNC void utf8_to_utf32_valid_sequences()
 {
     TEST(U"\U00010000") (strf::sani(u8"\U00010000"));
-    
+
     TEST(U" ") (strf::sani("") > 1);
     TEST(U"\U0010FFFF") (strf::sani("\xF4\x8F\xBF\xBF"));
 
@@ -107,7 +107,7 @@ STRF_TEST_FUNC void utf8_to_utf32_invalid_sequences()
     TEST(U" \uFFFD\uFFFD\uFFFD\uFFFD_")  (strf::sani("\xFD\x80\x80\x80_") > 6);
     TEST(U" \uFFFD\uFFFD\uFFFD\uFFFD_")  (strf::sani("\xFE\x80\x80\x80_") > 6);
     TEST(U" \uFFFD\uFFFD\uFFFD\uFFFD_")  (strf::sani("\xFF\x80\x80\x80_") > 6);
-    
+
     // missing continuation
     TEST(U" \uFFFD")  (strf::sani("\xF0\x90\xBF" ) > 2);
     TEST(U" \uFFFD_") (strf::sani("\xF0\x90\xBF_" ) > 3);
@@ -201,8 +201,8 @@ STRF_TEST_FUNC void utf8_to_utf32_find_transcoder()
     using static_transcoder_type = strf::static_transcoder
         <char, char32_t, strf::csid_utf8, strf::csid_utf32>;
 
-    strf::dynamic_charset<char>     dyn_utf8  = strf::utf8<char>.to_dynamic();
-    strf::dynamic_charset<char32_t> dyn_utf32 = strf::utf32<char32_t>.to_dynamic();
+    strf::dynamic_charset<char>     dyn_utf8  = strf::utf8_t<char>{}.to_dynamic();
+    strf::dynamic_charset<char32_t> dyn_utf32 = strf::utf32_t<char32_t>{}.to_dynamic();
     strf::dynamic_transcoder<char, char32_t> tr = strf::find_transcoder(dyn_utf8, dyn_utf32);
 
     TEST_TRUE(tr.transcode_func()      == static_transcoder_type::transcode);

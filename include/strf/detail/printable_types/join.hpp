@@ -37,7 +37,7 @@ template< typename CharT, typename Preview, typename FPack
 class join_printer_input
 {
 public:
-    using printer_type = std::conditional_t
+    using printer_type = strf::detail::conditional_t
         < HasAlignment
         , strf::detail::aligned_join_printer<CharT, Preview, FPack, FwdArgs...>
         , strf::detail::join_printer<CharT, Preview, FPack, FwdArgs...> >;
@@ -225,12 +225,13 @@ public:
 
 private:
 
-    using printers_tuple_storage_ = typename std::aligned_storage_t
+    using printers_tuple_storage_ = typename std::aligned_storage
 #if defined(_MSC_VER)
-    <sizeof(std::tuple<Printers...>), alignof(strf::printer<CharT>)>;
+        <sizeof(std::tuple<Printers...>), alignof(strf::printer<CharT>)>
 #else
-    <sizeof(printers_tuple_), alignof(printers_tuple_)>;
+        <sizeof(printers_tuple_), alignof(printers_tuple_)>
 #endif
+        :: type;
     printers_tuple_storage_ pool_;
     strf::alignment_format afmt_;
     strf::encode_fill_f<CharT> encode_fill_func_;
@@ -255,10 +256,13 @@ private:
 #  pragma GCC diagnostic pop
 #endif
 
-    template <typename Category, typename FPack>
-    static decltype(auto) STRF_HD use_facet_(const FPack& facets)
+    template < typename Category, typename FPack
+             , typename Tag = strf::aligned_join_maker>
+    static STRF_HD
+    STRF_DECLTYPE_AUTO((strf::use_facet<Category, Tag>(std::declval<FPack>())))
+    use_facet_(const FPack& facets)
     {
-        return facets.template use_facet<Category, strf::aligned_join_maker>();
+        return facets.template use_facet<Category, Tag>();
     }
 
     STRF_HD void write_fill_(strf::basic_outbuff<CharT>& ob, int count) const

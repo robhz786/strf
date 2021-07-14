@@ -11,7 +11,7 @@ class my_bool_printer: public strf::printer<CharT>
 public:
 
     template <typename... T>
-    constexpr STRF_HD my_bool_printer
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD my_bool_printer
         ( const strf::usual_printer_input<T...>& input )
         : value_(input.arg)
     {
@@ -61,12 +61,17 @@ struct my_bool_printing_override
         , Preview& preview
         , const FPack& fp
         , strf::value_with_formatters<T...> x ) noexcept
+        -> decltype( strf::make_printer_input<CharT>
+                       ( preview
+                       , fp
+                       , strf::join(x.value())
+                           .set_alignment_format(x.get_alignment_format()) ) )
     {
         return strf::make_printer_input<CharT>
             ( preview
             , fp
             , strf::join(x.value())
-                .set_alignment_format(x.get_alignment_format())  );
+                .set_alignment_format(x.get_alignment_format()) );
     }
 };
 
@@ -80,6 +85,14 @@ struct my_int_printing_override
         , Preview& preview
         , const FPack&
         , strf::value_with_formatters<T...> x ) noexcept
+        -> decltype( strf::make_printer_input<CharT>
+                       ( preview
+                       , strf::pack()
+                       , strf::join
+                           ( static_cast<CharT>('(')
+                           , strf::fmt(x.value()).set_int_format(x.get_int_format())
+                           , static_cast<CharT>(')') )
+                           .set_alignment_format(x.get_alignment_format()) ) )
     {
         return strf::make_printer_input<CharT>
             ( preview
@@ -115,10 +128,15 @@ struct print_traits<bool_wrapper> {
         , Preview& preview
         , const FPack& fp
         , bool_wrapper f )
+        -> decltype( strf::make_printer_input<CharT>
+                     ( preview
+                     , strf::pack(fp, strf::constrain<strf::is_char>(strf::no_print_override{}))
+                     , strf::join(static_cast<CharT>('['), f.x, static_cast<CharT>(']')) ) )
     {
-        auto arg2 = strf::join(static_cast<CharT>('['), f.x, static_cast<CharT>(']'));
-        auto fp2 = strf::pack(fp, strf::constrain<strf::is_char>(strf::no_print_override{}));
-        return strf::make_printer_input<CharT>(preview, fp2, arg2);
+        return strf::make_printer_input<CharT>
+            ( preview
+            , strf::pack(fp, strf::constrain<strf::is_char>(strf::no_print_override{}))
+            , strf::join(static_cast<CharT>('['), f.x, static_cast<CharT>(']')) );
     }
 };
 

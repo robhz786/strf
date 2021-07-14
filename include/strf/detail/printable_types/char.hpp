@@ -77,9 +77,10 @@ struct print_traits<char32_t>
         , char32_t x ) noexcept
         -> strf::usual_printer_input
             < DestCharT, Preview, FPack, char32_t
-            , std::conditional_t< std::is_same<DestCharT, char32_t>::value
-                                , strf::detail::char_printer<DestCharT>
-                                , strf::detail::conv_char32_printer<DestCharT> > >
+            , strf::detail::conditional_t
+                < std::is_same<DestCharT, char32_t>::value
+                , strf::detail::char_printer<DestCharT>
+                , strf::detail::conv_char32_printer<DestCharT> > >
     {
         return {preview, fp, x};
     }
@@ -92,9 +93,10 @@ struct print_traits<char32_t>
         , strf::value_with_formatters<F...> x ) noexcept
         -> strf::usual_printer_input
             < DestCharT, Preview, FPack, strf::value_with_formatters<F...>
-            , std::conditional_t< std::is_same<DestCharT, char32_t>::value
-                                , strf::detail::fmt_char_printer<DestCharT>
-                                , strf::detail::fmt_conv_char32_printer<DestCharT> > >
+            , strf::detail::conditional_t
+                < std::is_same<DestCharT, char32_t>::value
+                , strf::detail::fmt_char_printer<DestCharT>
+                , strf::detail::fmt_conv_char32_printer<DestCharT> > >
     {
         return {preview, fp, x};
     }
@@ -138,7 +140,7 @@ public:
         input.preview.add_size(1);
         using preview_type = typename strf::usual_printer_input<CharT, T...>::preview_type;
         STRF_IF_CONSTEXPR(preview_type::width_required) {
-            decltype(auto) wcalc = use_facet<strf::width_calculator_c, CharT>(input.facets);
+            auto&& wcalc = use_facet<strf::width_calculator_c, CharT>(input.facets);
             auto charset = use_facet<strf::charset_c<CharT>, CharT>(input.facets);
             auto w = wcalc.char_width(charset, static_cast<CharT>(ch_));
             input.preview.subtract_width(w);
@@ -174,7 +176,7 @@ public:
         , ch_(static_cast<CharT>(input.arg.value()))
     {
         auto charset = use_facet_<strf::charset_c<CharT>>(input.facets);
-        decltype(auto) wcalc = use_facet_<strf::width_calculator_c>(input.facets);
+        auto&& wcalc = use_facet_<strf::width_calculator_c>(input.facets);
         encode_fill_fn_ = charset.encode_fill_func();
         init_(input.preview, wcalc, charset);
     }
@@ -191,7 +193,9 @@ private:
     CharT ch_;
 
     template <typename Category, typename FPack>
-    static STRF_HD decltype(auto) use_facet_(const FPack& fp)
+    static STRF_HD
+    STRF_DECLTYPE_AUTO((strf::use_facet<Category, CharT>(std::declval<FPack>())))
+    use_facet_(const FPack& fp)
     {
         return fp.template use_facet<Category, CharT>();
     }
@@ -286,7 +290,7 @@ public:
         input.preview.add_size(encoded_char_size_);
         using preview_type = typename strf::usual_printer_input<T...>::preview_type;
         STRF_IF_CONSTEXPR (preview_type::width_required) {
-            decltype(auto) wcalc = use_facet<strf::width_calculator_c, char32_t>(input.facets);
+            auto&& wcalc = use_facet<strf::width_calculator_c, char32_t>(input.facets);
             input.preview.subtract_width(wcalc.char_width(strf::utf_t<char32_t>{}, ch_));
         }
     }
@@ -318,7 +322,7 @@ public:
         , ch_(input.arg.value())
     {
         auto charset = strf::use_facet<charset_c<DestCharT>, char32_t>(input.facets);
-        decltype(auto) wcalc = use_facet<strf::width_calculator_c, char32_t>(input.facets);
+        auto&& wcalc = use_facet<strf::width_calculator_c, char32_t>(input.facets);
         auto char_width = wcalc.char_width(strf::utf_t<char32_t>{}, ch_);
         init_(input.preview, charset, input.arg.get_alignment_format(), char_width);
     }

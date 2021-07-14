@@ -641,6 +641,23 @@ STRF_TEST_FUNC void test_hexadecimal()
     TEST("_________*0x01.125p+1****") (j(strf::left(0x1.125p+1, 16, '*').hex().pad0(12).fill_sign()));
 }
 
+template <int Base>
+struct numpunct_maker {
+
+    STRF_HD numpunct_maker(char32_t sep)
+        : separator(sep)
+    {
+    }
+    numpunct_maker(const numpunct_maker&) = default;
+
+    template <typename... G>
+    STRF_HD strf::numpunct<Base> operator() (G... grp) const
+    {
+        return strf::numpunct<Base>(grp...) .thousands_sep(separator);
+    }
+    char32_t separator;
+};
+
 STRF_TEST_FUNC void test_punctuation()
 {
     constexpr auto j = strf::join_right(20, '_');
@@ -752,7 +769,8 @@ STRF_TEST_FUNC void test_punctuation()
             (!strf::fixed(1048576.0));
     }
     {   // variable groups
-        auto grp = [](auto... grps) { return strf::numpunct<10>{grps...}; };
+
+        using grp = strf::numpunct<10>;
 
         TEST("1,00,00,0,00,0")  .with(grp(1,2,1,2)) (!strf::fixed(100000000.0));
         TEST("10,00,00,0,00,0") .with(grp(1,2,1,2)) (!strf::fixed(1000000000.0));
@@ -769,8 +787,7 @@ STRF_TEST_FUNC void test_punctuation()
         TEST("1234,50,0") .with(grp(1,2,-1)) (!strf::fixed(1234500.0));
     }
     {   // variable groups and big separator
-        auto grp = [](auto... grps)
-            { return strf::numpunct<10>{grps...}.thousands_sep(0xABCD); };
+        numpunct_maker<10> grp{0xABCD};
 
         TEST(u8"1\uABCD" u8"00\uABCD" u8"00\uABCD" u8"0\uABCD" u8"00\uABCD" u8"0")
               .with(grp(1,2,1,2)) (!strf::fixed(100000000.0));

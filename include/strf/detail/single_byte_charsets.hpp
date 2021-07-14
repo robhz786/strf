@@ -2159,12 +2159,10 @@ struct single_byte_charset_to_utf32
         , strf::surrogate_policy surr_poli );
 
     static constexpr STRF_HD std::size_t transcode_size
-        ( const SrcCharT* src
+        ( const SrcCharT*
         , std::size_t src_size
-        , strf::surrogate_policy surr_poli ) noexcept
+        , strf::surrogate_policy ) noexcept
     {
-        (void) src;
-        (void) surr_poli;
         return src_size;
     }
 
@@ -2217,12 +2215,10 @@ struct utf32_to_single_byte_charset
         , strf::surrogate_policy surr_poli );
 
     static constexpr STRF_HD std::size_t transcode_size
-        ( const SrcCharT* src
+        ( const SrcCharT*
         , std::size_t src_size
-        , strf::surrogate_policy surr_poli ) noexcept
+        , strf::surrogate_policy ) noexcept
     {
-        (void) src;
-        (void) surr_poli;
         return src_size;
     }
     static STRF_HD strf::transcode_f<SrcCharT, DestCharT> transcode_func() noexcept
@@ -2274,12 +2270,10 @@ struct single_byte_charset_sanitizer
         , strf::surrogate_policy surr_poli );
 
     static constexpr STRF_HD std::size_t transcode_size
-        ( const SrcCharT* src
+        ( const SrcCharT*
         , std::size_t src_size
-        , strf::surrogate_policy surr_poli ) noexcept
+        , strf::surrogate_policy ) noexcept
     {
-        (void) src;
-        (void) surr_poli;
         return src_size;
     }
 
@@ -2522,44 +2516,6 @@ public:
 
 #endif
 
-    void STRF_HD fill_data(strf::dynamic_charset_data<CharT>& data) const noexcept
-    {
-        data.name = name();
-        data.id = id();
-        data.replacement_char = replacement_char();
-        data.replacement_char_size = 1;
-        data.validate_func = validate;
-        data.encoded_char_size_func = encoded_char_size;
-        data.encode_char_func = encode_char;
-        data.encode_fill_func = encode_fill;
-        data.codepoints_fast_count_func = codepoints_fast_count;
-        data.codepoints_robust_count_func = codepoints_robust_count;
-        data.write_replacement_char_func = write_replacement_char;
-        data.decode_unit_func = decode_unit;
-
-        data.sanitizer = strf::dynamic_transcoder<CharT, CharT>{sanitizer()};
-        data.from_u32 = strf::dynamic_transcoder<char32_t, CharT>{from_u32()};
-        data.to_u32 = strf::dynamic_transcoder<CharT, char32_t>{to_u32()};
-
-        data.find_transcoder_from_wchar = wchar_stuff_::find_transcoder_from_wchar;
-        data.find_transcoder_to_wchar = wchar_stuff_::find_transcoder_to_wchar;
-
-        data.find_transcoder_from_char16 = nullptr;
-        data.find_transcoder_to_char16 = nullptr;
-
-        data.find_transcoder_from_char = find_transcoder_from_narrow<char>;
-        data.find_transcoder_to_char = find_transcoder_to_narrow<char>;
-
-#if defined (__cpp_char8_t)
-        data.find_transcoder_from_char8 = find_transcoder_from_narrow<char8_t>;
-        data.find_transcoder_to_char8 = find_transcoder_to_narrow<char8_t>;
-
-#else
-        data.find_transcoder_from_char8 = nullptr;
-        data.find_transcoder_to_char8 = nullptr;
-#endif
-    }
-
     static strf::dynamic_charset<CharT> to_dynamic() noexcept
     {
         static const strf::dynamic_charset_data<CharT> data = {
@@ -2584,6 +2540,31 @@ public:
 #endif // defined (__cpp_char8_t)
         };
         return strf::dynamic_charset<CharT>{data};
+    }
+
+    static strf::dynamic_charset_data<CharT> make_data() noexcept
+    {
+        return {
+            name(), id(), replacement_char(), 1, validate, encoded_char_size,
+            encode_char, encode_fill, codepoints_fast_count,
+            codepoints_robust_count, write_replacement_char, decode_unit,
+            strf::dynamic_transcoder<CharT, CharT>{sanitizer()},
+            strf::dynamic_transcoder<char32_t, CharT>{from_u32()},
+            strf::dynamic_transcoder<CharT, char32_t>{to_u32()},
+            wchar_stuff_::find_transcoder_from_wchar,
+            wchar_stuff_::find_transcoder_to_wchar,
+            nullptr,
+            nullptr,
+            find_transcoder_from_narrow<char>,
+            find_transcoder_to_narrow<char>,
+#if defined (__cpp_char8_t)
+            find_transcoder_from_narrow<char8_t>,
+            find_transcoder_to_narrow<char8_t>,
+#else
+            nullptr,
+            nullptr,
+#endif // defined (__cpp_char8_t)
+        };
     }
     explicit operator strf::dynamic_charset<CharT> () const
     {

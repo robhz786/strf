@@ -64,7 +64,7 @@ class bool_printer: public printer<CharT>
 public:
 
     template <typename... T>
-    constexpr STRF_HD bool_printer
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD bool_printer
         ( const strf::usual_printer_input<T...>& input )
         : value_(input.arg)
         , lettercase_(strf::use_facet<strf::lettercase_c, bool>(input.facets))

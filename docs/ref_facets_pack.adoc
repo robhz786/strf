@@ -109,7 +109,7 @@ Compile-time requirements::  `FCat` is a _{FacetCategory}_ type.
 ====
 
 [[has_facet]]
-=== Hypothetical function template `fas_facet`
+=== Hypothetical function template `has_facet`
 NOTE: This function template does not exists in this library.
        It is only documented to help to explain the
        <<use_facet, `use_facet`>> function template.

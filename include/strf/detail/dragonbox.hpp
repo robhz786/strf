@@ -59,11 +59,13 @@ namespace jkj {
 namespace dragonbox {
 	namespace detail {
 		template <class T>
-		constexpr std::size_t physical_bits = sizeof(T) * std::numeric_limits<unsigned char>::digits;
+		constexpr STRF_HD std::size_t physical_bits() noexcept {
+			return sizeof(T) * std::numeric_limits<unsigned char>::digits;
+		}
 
 		template <class T>
 		constexpr STRF_HD std::size_t value_bits() noexcept {
-			return std::numeric_limits<std::enable_if_t<std::is_unsigned<T>::value, T>>::digits;
+			return std::numeric_limits<strf::detail::enable_if_t<std::is_unsigned<T>::value, T>>::digits;
 		}
 	}
 
@@ -99,7 +101,7 @@ namespace dragonbox {
 		// IEEE-754 binary32/binary64 formats; I just did my best here.
 		static_assert(std::numeric_limits<T>::is_iec559&&
 			std::numeric_limits<T>::radix == 2 &&
-			(detail::physical_bits<T> == 32 || detail::physical_bits<T> == 64),
+			(detail::physical_bits<T>() == 32 || detail::physical_bits<T>() == 64),
 			"default_ieee754_traits only works for 32-bits or 64-bits types "
 			"supporting binary32 or binary64 formats!");
 
@@ -107,43 +109,42 @@ namespace dragonbox {
 		using type = T;
 
 		// Refers to the format specification class.
-		using format = std::conditional_t<
-			detail::physical_bits<T> == 32,
+		using format = typename std::conditional<
+			detail::physical_bits<T>() == 32,
 			ieee754_binary32,
 			ieee754_binary64
-		>;
+		>::type;
 
 		// Defines an unsigned integer type that is large enough
 		// to carry a variable of type T.
 		// Most of the operations will be done on this integer type.
-		using carrier_uint = std::conditional_t<
-			detail::physical_bits<T> == 32,
+		using carrier_uint = typename std::conditional<
+			detail::physical_bits<T>() == 32,
 			std::uint32_t,
 			std::uint64_t
-		>;
+		>::type;
 		static_assert(sizeof(carrier_uint) == sizeof(T), "");
 
 		// Defines a signed integer type for holding
 		// significand bits together with the sign bit.
-		using signed_significand = std::conditional_t<
-			detail::physical_bits<T> == 32,
+		using signed_significand = typename std::conditional<
+			detail::physical_bits<T>() == 32,
 			std::int32_t,
 			std::int64_t
-		>;
+		>::type;
 
 		// Number of bits in the above unsigned integer type.
-		static constexpr int carrier_bits = int(detail::physical_bits<carrier_uint>);
+		static constexpr int carrier_bits = int(detail::physical_bits<carrier_uint>());
 
 		// Extract exponent bits from a bit pattern.
 		// The result must be aligned to the LSB so that there is
 		// no additional zero paddings on the right.
 		// This function does not do bias adjustment.
 		STRF_HD static constexpr unsigned int extract_exponent_bits(carrier_uint u) noexcept {
-			constexpr int significand_bits = format::significand_bits;
-			constexpr int exponent_bits = format::exponent_bits;
-			static_assert(detail::value_bits<unsigned int>() > exponent_bits, "");
-			constexpr auto exponent_bits_mask = (unsigned int)(((unsigned int)(1) << exponent_bits) - 1);
-			return (unsigned int)(u >> significand_bits) & exponent_bits_mask;
+			static_assert(detail::value_bits<unsigned int>() > format::exponent_bits, "");
+			//constexpr auto exponent_bits_mask = (unsigned int)(((unsigned int)(1) << format::exponent_bits) - 1);
+			return (unsigned int)(u >> format::significand_bits)
+				& (unsigned int)(((unsigned int)(1) << format::exponent_bits) - 1);
 		}
 
 		// Extract significand bits from a bit pattern.
@@ -151,8 +152,7 @@ namespace dragonbox {
 		// no additional zero paddings on the right.
 		// The result does not contain the implicit bit.
 		STRF_HD static constexpr carrier_uint extract_significand_bits(carrier_uint u) noexcept {
-			constexpr auto mask = carrier_uint((carrier_uint(1) << format::significand_bits) - 1);
-			return carrier_uint(u & mask);
+			return carrier_uint(u & carrier_uint((carrier_uint(1) << format::significand_bits) - 1));
 		}
 
 		// Remove the exponent bits and extract
@@ -174,53 +174,53 @@ namespace dragonbox {
 
 		// Obtain the actual value of the binary exponent from the
 		// extracted exponent bits.
-		STRF_HD static constexpr int binary_exponent(unsigned int exponent_bits) noexcept {
-			if (exponent_bits == 0) {
-				return format::min_exponent;
-			}
-			else {
-				return int(exponent_bits) + format::exponent_bias;
-			}
-		}
+		// STRF_HD static constexpr int binary_exponent(unsigned int exponent_bits) noexcept {
+		// 	if (exponent_bits == 0) {
+		// 		return format::min_exponent;
+		// 	}
+		// 	else {
+		// 		return int(exponent_bits) + format::exponent_bias;
+		// 	}
+		// }
 
-		// Obtain the actual value of the binary exponent from the
-		// extracted significand bits and exponent bits.
-		STRF_HD static constexpr carrier_uint binary_significand(
-			carrier_uint significand_bits, unsigned int exponent_bits) noexcept
-		{
-			if (exponent_bits == 0) {
-				return significand_bits;
-			}
-			else {
-				return significand_bits | (carrier_uint(1) << format::significand_bits);
-			}
-		}
+		// // Obtain the actual value of the binary exponent from the
+		// // extracted significand bits and exponent bits.
+		// STRF_HD static constexpr carrier_uint binary_significand(
+		// 	carrier_uint significand_bits, unsigned int exponent_bits) noexcept
+		// {
+		// 	if (exponent_bits == 0) {
+		// 		return significand_bits;
+		// 	}
+		// 	else {
+		// 		return significand_bits | (carrier_uint(1) << format::significand_bits);
+		// 	}
+		// }
 
 
-		/* Various boolean observer functions */
+		// /* Various boolean observer functions */
 
-		STRF_HD static constexpr bool is_nonzero(carrier_uint u) noexcept {
-			return (u << 1) != 0;
-		}
-		STRF_HD static constexpr bool is_positive(carrier_uint u) noexcept {
-			return signed_significand(u) >= 0;
-		}
-		STRF_HD static constexpr bool is_negative(carrier_uint u) noexcept {
-			return signed_significand(u) < 0;
-		}
-		STRF_HD static constexpr bool is_positive(signed_significand s) noexcept {
-			return s >= 0;
-		}
-		STRF_HD static constexpr bool is_negative(signed_significand s) noexcept {
-			return s < 0;
-		}
+		// STRF_HD static constexpr bool is_nonzero(carrier_uint u) noexcept {
+		// 	return (u << 1) != 0;
+		// }
+		// STRF_HD static constexpr bool is_positive(carrier_uint u) noexcept {
+		// 	return signed_significand(u) >= 0;
+		// }
+		// STRF_HD static constexpr bool is_negative(carrier_uint u) noexcept {
+		// 	return signed_significand(u) < 0;
+		// }
+		// STRF_HD static constexpr bool is_positive(signed_significand s) noexcept {
+		// 	return s >= 0;
+		// }
+		// STRF_HD static constexpr bool is_negative(signed_significand s) noexcept {
+		// 	return s < 0;
+		// }
 		STRF_HD static constexpr bool is_finite(unsigned int exponent_bits) noexcept {
-			constexpr unsigned int exponent_bits_all_set = (1u << format::exponent_bits) - 1;
-			return exponent_bits != exponent_bits_all_set;
+			//constexpr unsigned int exponent_bits_all_set = (1u << format::exponent_bits) - 1;
+			return exponent_bits != ((1u << format::exponent_bits) - 1);
 		}
-		STRF_HD static constexpr bool has_all_zero_significand_bits(signed_significand s) noexcept {
-			return (s << 1) == 0;
-		}
+		// STRF_HD static constexpr bool has_all_zero_significand_bits(signed_significand s) noexcept {
+		// 	return (s << 1) == 0;
+		// }
 		STRF_HD static constexpr bool has_even_significand_bits(carrier_uint u) noexcept {
 			return u % 2 == 0;
 		}
@@ -267,62 +267,62 @@ namespace dragonbox {
 			return traits_type::extract_exponent_bits(u);
 		}
 
-		// Extract significand bits from a bit pattern.
-		// The result must be aligned to the LSB so that there is
-		// no additional zero paddings on the right.
-		// The result does not contain the implicit bit.
-		STRF_HD constexpr carrier_uint extract_significand_bits() const noexcept {
-			return traits_type::extract_significand_bits(u);
-		}
+		// // Extract significand bits from a bit pattern.
+		// // The result must be aligned to the LSB so that there is
+		// // no additional zero paddings on the right.
+		// // The result does not contain the implicit bit.
+		// STRF_HD constexpr carrier_uint extract_significand_bits() const noexcept {
+		// 	return traits_type::extract_significand_bits(u);
+		// }
 
 		// Remove the exponent bits and extract
 		// significand bits together with the sign bit.
-		STRF_HD constexpr auto remove_exponent_bits(
+		STRF_HD constexpr signed_significand_bits<type, traits_type> remove_exponent_bits(
 			unsigned int exponent_bits) const noexcept
 		{
 			return signed_significand_bits<type, traits_type>(
 				traits_type::remove_exponent_bits(u, exponent_bits));
 		}
 
-		// Obtain the actual value of the binary exponent from the
-		// extracted exponent bits.
-		STRF_HD static constexpr int binary_exponent(unsigned int exponent_bits) noexcept {
-			return traits_type::binary_exponent(exponent_bits);
-		}
-		STRF_HD constexpr int binary_exponent() const noexcept {
-			return binary_exponent(extract_exponent_bits());
-		}
+		// // Obtain the actual value of the binary exponent from the
+		// // extracted exponent bits.
+		// STRF_HD static constexpr int binary_exponent(unsigned int exponent_bits) noexcept {
+		// 	return traits_type::binary_exponent(exponent_bits);
+		// }
+		// STRF_HD constexpr int binary_exponent() const noexcept {
+		// 	return binary_exponent(extract_exponent_bits());
+		// }
 
-		// Obtain the actual value of the binary exponent from the
-		// extracted significand bits and exponent bits.
-		STRF_HD static constexpr carrier_uint binary_significand(
-			carrier_uint significand_bits, unsigned int exponent_bits) noexcept
-		{
-			return traits_type::binary_significand(significand_bits, exponent_bits);
-		}
-		STRF_HD constexpr carrier_uint binary_significand() const noexcept
-		{
-			return binary_significand(extract_significand_bits(), extract_exponent_bits());
-		}
+		// // Obtain the actual value of the binary exponent from the
+		// // extracted significand bits and exponent bits.
+		// STRF_HD static constexpr carrier_uint binary_significand(
+		// 	carrier_uint significand_bits, unsigned int exponent_bits) noexcept
+		// {
+		// 	return traits_type::binary_significand(significand_bits, exponent_bits);
+		// }
+		// STRF_HD constexpr carrier_uint binary_significand() const noexcept
+		// {
+		// 	return binary_significand(extract_significand_bits(), extract_exponent_bits());
+		// }
 
-		STRF_HD constexpr bool is_nonzero() const noexcept {
-			return traits_type::is_nonzero(u);
-		}
-		STRF_HD constexpr bool is_positive() const noexcept {
-			return traits_type::is_positive(u);
-		}
-		STRF_HD constexpr bool is_negative() const noexcept {
-			return traits_type::is_negative(u);
-		}
+		// STRF_HD constexpr bool is_nonzero() const noexcept {
+		// 	return traits_type::is_nonzero(u);
+		// }
+		// STRF_HD constexpr bool is_positive() const noexcept {
+		// 	return traits_type::is_positive(u);
+		// }
+		// STRF_HD constexpr bool is_negative() const noexcept {
+		// 	return traits_type::is_negative(u);
+		// }
 		STRF_HD constexpr bool is_finite(unsigned int exponent_bits) const noexcept {
 			return traits_type::is_finite(exponent_bits);
 		}
 		STRF_HD constexpr bool is_finite() const noexcept {
 			return traits_type::is_finite(extract_exponent_bits());
 		}
-		STRF_HD constexpr bool has_even_significand_bits() const noexcept {
-			return traits_type::has_even_significand_bits(u);
-		}
+		// STRF_HD constexpr bool has_even_significand_bits() const noexcept {
+		// 	return traits_type::has_even_significand_bits(u);
+		// }
 	};
 
 	template <class T, class Traits>
@@ -622,25 +622,26 @@ namespace dragonbox {
 		// Some simple utilities for constexpr computation.
 		////////////////////////////////////////////////////////////////////////////////////////
 
+		template <class Int>
+		STRF_HD constexpr Int do_compute_power(Int a, int k) noexcept {
+			return k >= 1 ? a * do_compute_power(a, k - 1) : 1;
+		}
+
 		template <int k, class Int>
 		STRF_HD constexpr Int compute_power(Int a) noexcept {
 			static_assert(k >= 0, "");
-			Int p = 1;
-			for (int i = 0; i < k; ++i) {
-				p *= a;
-			}
-			return p;
+			return do_compute_power(a, k);
+		}
+
+		template <int a, class UInt>
+		STRF_HD constexpr int do_count_factors(UInt n, int c) noexcept {
+			static_assert(a > 1, "");
+			return (n % a == 0) ? do_count_factors<a>(n / a, c + 1) : c;
 		}
 
 		template <int a, class UInt>
 		STRF_HD constexpr int count_factors(UInt n) noexcept {
-			static_assert(a > 1, "");
-			int c = 0;
-			while (n % a == 0) {
-				n /= a;
-				++c;
-			}
-			return c;
+			return do_count_factors<a>(n, 0);
 		}
 
 		////////////////////////////////////////////////////////////////////////////////////////
@@ -648,20 +649,21 @@ namespace dragonbox {
 		////////////////////////////////////////////////////////////////////////////////////////
 
 		namespace log {
-			STRF_HD constexpr std::int32_t floor_shift(
-				std::uint32_t integer_part,
-				std::uint64_t fractional_digits,
-				std::size_t shift_amount) noexcept
-			{
-				STRF_ASSERT(shift_amount < 32);
-				// Ensure no overflow
-				STRF_ASSERT(shift_amount == 0 || integer_part < (std::uint32_t(1) << (32 - shift_amount)));
 
-				return shift_amount == 0 ? std::int32_t(integer_part) :
-					std::int32_t(
-						(integer_part << shift_amount) |
-						(fractional_digits >> (64 - shift_amount)));
-			}
+			template
+				< std::uint32_t integer_part
+				, std::uint64_t fractional_digits
+				, std::size_t shift_amount >
+			struct floor_shift {
+				static_assert(shift_amount < 32, "");
+				// Ensure no overflow
+				static_assert(shift_amount == 0 || integer_part < (std::uint32_t(1) << (32 - shift_amount)), "");
+				static constexpr std::int32_t value =
+					( shift_amount == 0
+					? std::int32_t(integer_part)
+					: ( (integer_part << shift_amount) |
+							(fractional_digits >> (64 - shift_amount)) ));
+			};
 
 			// Compute floor(e * c - s).
 			template <
@@ -672,39 +674,40 @@ namespace dragonbox {
 				std::uint32_t s_integer_part = 0,
 				std::uint64_t s_fractional_digits = 0
 			>
-				STRF_HD constexpr int compute(int e) noexcept {
-				STRF_ASSERT(e <= max_exponent && e >= -max_exponent);
-				constexpr auto c = floor_shift(c_integer_part, c_fractional_digits, shift_amount);
-				constexpr auto s = floor_shift(s_integer_part, s_fractional_digits, shift_amount);
-				return int((std::int32_t(e) * c - s) >> shift_amount);
+			STRF_HD constexpr int compute(int e) noexcept {
+				STRF_ASSERT_IN_CONSTEXPR(e <= max_exponent && e >= -max_exponent);
+				using c = floor_shift<c_integer_part, c_fractional_digits, shift_amount>;
+				using s = floor_shift<s_integer_part, s_fractional_digits, shift_amount>;
+				return int((std::int32_t(e) * c::value - s::value) >> shift_amount);
 			}
 
-			constexpr std::uint64_t log10_2_fractional_digits{ 0x4d10'4d42'7de7'fbcc };
-			constexpr std::uint64_t log10_4_over_3_fractional_digits{ 0x1ffb'fc2b'bc78'0375 };
+			constexpr std::uint64_t log10_2_fractional_digits{ 0x4d104d427de7fbcc };
+			constexpr std::uint64_t log10_4_over_3_fractional_digits{ 0x1ffbfc2bbc780375 };
 			constexpr std::size_t floor_log10_pow2_shift_amount = 22;
 			constexpr int floor_log10_pow2_input_limit = 1700;
 			constexpr int floor_log10_pow2_minus_log10_4_over_3_input_limit = 1700;
 
-			constexpr std::uint64_t log2_10_fractional_digits{ 0x5269'e12f'346e'2bf9 };
+			constexpr std::uint64_t log2_10_fractional_digits{ 0x5269e12f346e2bf9 };
 			constexpr std::size_t floor_log2_pow10_shift_amount = 19;
 			constexpr int floor_log2_pow10_input_limit = 1233;
 
-			constexpr std::uint64_t log5_2_fractional_digits{ 0x6e40'd1a4'143d'cb94 };
-			constexpr std::uint64_t log5_3_fractional_digits{ 0xaebf'4791'5d44'3b24 };
+			constexpr std::uint64_t log5_2_fractional_digits{ 0x6e40d1a4143dcb94 };
+			constexpr std::uint64_t log5_3_fractional_digits{ 0xaebf47915d443b24 };
 			constexpr std::size_t floor_log5_pow2_shift_amount = 20;
 			constexpr int floor_log5_pow2_input_limit = 1492;
 			constexpr int floor_log5_pow2_minus_log5_3_input_limit = 2427;
 
 			// For constexpr computation.
 			// Returns -1 when n = 0.
+
+			template <class UInt>
+			STRF_HD constexpr int do_floor_log2(UInt n, int count) noexcept {
+				return n != 0 ? do_floor_log2(n >> 1, count + 1) : count;
+			}
+
 			template <class UInt>
 			STRF_HD constexpr int floor_log2(UInt n) noexcept {
-				int count = -1;
-				while (n != 0) {
-					++count;
-					n >>= 1;
-				}
-				return count;
+				return do_floor_log2(n, -1);
 			}
 
 			STRF_HD constexpr int floor_log10_pow2(int e) noexcept {
@@ -819,12 +822,12 @@ namespace dragonbox {
 				using div5 = division_by_5<UInt>;
 				static_assert(asserted_table_size <= div5::table_size,
 					"division_by_5 tables are too small");
-				STRF_ASSERT(exp < div5::table_size);
+				STRF_ASSERT_IN_CONSTEXPR(exp < div5::table_size);
 				return (x * div5::mod_inv(exp)) <= div5::max_quotients(exp);
 			}
 
 			template <class UInt>
-			STRF_HD constexpr bool divisible_by_power_of_2(UInt x, unsigned int exp) noexcept {
+			STRF_HD STRF_CONSTEXPR_IN_CXX14 bool divisible_by_power_of_2(UInt x, unsigned int exp) noexcept {
 				STRF_ASSERT(exp >= 1);
 				STRF_ASSERT(x != 0);
 #if JKJ_HAS_COUNTR_ZERO_INTRINSIC
@@ -862,7 +865,7 @@ namespace dragonbox {
 			};
 
 			template <int N>
-			STRF_HD constexpr bool check_divisibility_and_divide_by_pow10(std::uint32_t& n) noexcept
+			STRF_HD STRF_CONSTEXPR_IN_CXX14 bool check_divisibility_and_divide_by_pow10(std::uint32_t& n) noexcept
 			{
 				// Make sure the computation for max_n does not overflow.
 				static_assert(N + 1 <= log::floor_log10_pow2(31), "");
@@ -902,7 +905,7 @@ namespace dragonbox {
 			};
 
 			template <int N>
-			STRF_HD constexpr std::uint32_t small_division_by_pow10(std::uint32_t n) noexcept
+			STRF_HD STRF_CONSTEXPR_IN_CXX14 std::uint32_t small_division_by_pow10(std::uint32_t n) noexcept
 			{
 				STRF_ASSERT(n <= compute_power<N + 1>(std::uint32_t(10)));
 				return (n * small_division_by_pow10_info<N>::magic_number)
@@ -911,12 +914,11 @@ namespace dragonbox {
 
 			template <int, typename UInt>
 			STRF_HD constexpr UInt divide_by_pow10_(std::true_type, UInt n) noexcept {
-				return wuint::umul128_upper64(n, 0x8312'6e97'8d4f'df3c) >> 9;
+				return wuint::umul128_upper64(n, 0x83126e978d4fdf3c) >> 9;
 			}
 			template <int N, typename UInt>
 			STRF_HD constexpr UInt divide_by_pow10_(std::false_type, UInt n) noexcept {
-				constexpr auto divisor = compute_power<N>(UInt(10));
-				return n / divisor;
+				return n / compute_power<N>(UInt(10));
 			}
 			// Compute floor(n / 10^N) for small N.
 			// Precondition: n <= 2^a * 5^b (a = max_pow2, b = max_pow5)
@@ -930,9 +932,10 @@ namespace dragonbox {
 
 				// Specialize for 64-bit division by 1000.
 				// Ensure that the correctness condition is met.
-				constexpr bool c = (std::is_same<UInt, std::uint64_t>::value && N == 3 &&
-					max_pow2 + (log::floor_log2_pow10(N + max_pow5) - (N + max_pow5)) < 70);
-				return divide_by_pow10_<N>(std::integral_constant<bool, c>{}, n);
+				using c = std::integral_constant< bool
+					, ( std::is_same<UInt, std::uint64_t>::value && N == 3 &&
+					max_pow2 + (log::floor_log2_pow10(N + max_pow5) - (N + max_pow5)) < 70) >;
+				return divide_by_pow10_<N>(c{}, n);
 			}
 		}
 	}
@@ -1781,17 +1784,16 @@ namespace dragonbox {
 		};
 
 		template <typename UInt, int kappa>
-		STRF_HD constexpr static int calculate_max_power_of_10() noexcept {
-			constexpr auto max_possible_significand =
-				((UInt)-1) / compute_power<kappa + 1>(std::uint32_t(10));
+		STRF_HD constexpr static int do_calculate_max_power_of_10
+			(int k, UInt p, UInt limit) noexcept
+		{
+			return p < limit ? do_calculate_max_power_of_10<UInt, kappa>(k + 1, p * 10, limit) : k;
+		}
 
-			int k = 0;
-			UInt p = 1;
-			while (p < max_possible_significand / 10) {
-				p *= 10;
-				++k;
-			}
-			return k;
+		template <typename UInt, int kappa,
+			UInt max_possible_significand = ((UInt)-1) / compute_power<kappa + 1>(std::uint32_t(10))>
+		STRF_HD constexpr static int calculate_max_power_of_10() noexcept {
+			return do_calculate_max_power_of_10<UInt, kappa>(0, 1, max_possible_significand / 10);
 		}
 	}
 
@@ -1815,7 +1817,7 @@ namespace dragonbox {
 					static constexpr bool return_has_sign = false;
 
 					template <class SignedSignificandBits, class ReturnType>
-					STRF_HD static constexpr void handle_sign(SignedSignificandBits, ReturnType&) noexcept {}
+					STRF_HD static STRF_CONSTEXPR_IN_CXX14 void handle_sign(SignedSignificandBits, ReturnType&) noexcept {}
 				};
 
 				struct return_sign : base {
@@ -1823,7 +1825,7 @@ namespace dragonbox {
 					static constexpr bool return_has_sign = true;
 
 					template <class SignedSignificandBits, class ReturnType>
-					STRF_HD static constexpr void handle_sign(SignedSignificandBits s, ReturnType& r) noexcept {
+					STRF_HD static STRF_CONSTEXPR_IN_CXX14 void handle_sign(SignedSignificandBits s, ReturnType& r) noexcept {
 						r.is_negative = s.is_negative();
 					}
 				};
@@ -1838,10 +1840,10 @@ namespace dragonbox {
 					static constexpr bool report_trailing_zeros = false;
 
 					template <class Impl, class ReturnType>
-					STRF_HD static constexpr void on_trailing_zeros(ReturnType&) noexcept {}
+					STRF_HD static STRF_CONSTEXPR_IN_CXX14 void on_trailing_zeros(ReturnType&) noexcept {}
 
 					template <class Impl, class ReturnType>
-					STRF_HD static constexpr void no_trailing_zeros(ReturnType&) noexcept {}
+					STRF_HD static STRF_CONSTEXPR_IN_CXX14 void no_trailing_zeros(ReturnType&) noexcept {}
 				};
 
 				struct remove : base {
@@ -1849,12 +1851,12 @@ namespace dragonbox {
 					static constexpr bool report_trailing_zeros = false;
 
 					template <class Impl, class ReturnType>
-					STRF_HD JKJ_FORCEINLINE static constexpr void on_trailing_zeros(ReturnType& r) noexcept {
+					STRF_HD static STRF_CONSTEXPR_IN_CXX14 void on_trailing_zeros(ReturnType& r) noexcept {
 						r.exponent += Impl::remove_trailing_zeros(r.significand);
 					}
 
 					template <class Impl, class ReturnType>
-					STRF_HD static constexpr void no_trailing_zeros(ReturnType&) noexcept {}
+					STRF_HD static STRF_CONSTEXPR_IN_CXX14 void no_trailing_zeros(ReturnType&) noexcept {}
 				};
 
 				struct report : base {
@@ -1862,12 +1864,12 @@ namespace dragonbox {
 					static constexpr bool report_trailing_zeros = true;
 
 					template <class Impl, class ReturnType>
-					STRF_HD static constexpr void on_trailing_zeros(ReturnType& r) noexcept {
+					STRF_HD static STRF_CONSTEXPR_IN_CXX14 void on_trailing_zeros(ReturnType& r) noexcept {
 						r.may_have_trailing_zeros = true;
 					}
 
 					template <class Impl, class ReturnType>
-					STRF_HD static constexpr void no_trailing_zeros(ReturnType& r) noexcept {
+					STRF_HD static STRF_CONSTEXPR_IN_CXX14 void no_trailing_zeros(ReturnType& r) noexcept {
 						r.may_have_trailing_zeros = false;
 					}
 				};
@@ -1884,6 +1886,11 @@ namespace dragonbox {
 				};
 				namespace interval_type {
 					struct symmetric_boundary {
+						STRF_HD symmetric_boundary(bool closed) : is_closed(closed) {
+						}
+						symmetric_boundary() = default;
+						symmetric_boundary(const symmetric_boundary&) = default;
+
 						static constexpr bool is_symmetric = true;
 						bool is_closed;
 						STRF_HD constexpr bool include_left_endpoint() const noexcept {
@@ -1893,16 +1900,16 @@ namespace dragonbox {
 							return is_closed;
 						}
 					};
-					struct asymmetric_boundary {
-						static constexpr bool is_symmetric = false;
-						bool is_left_closed;
-						STRF_HD constexpr bool include_left_endpoint() const noexcept {
-							return is_left_closed;
-						}
-						STRF_HD constexpr bool include_right_endpoint() const noexcept {
-							return !is_left_closed;
-						}
-					};
+					// struct asymmetric_boundary {
+					// 	static constexpr bool is_symmetric = false;
+					// 	bool is_left_closed;
+					// 	STRF_HD constexpr bool include_left_endpoint() const noexcept {
+					// 		return is_left_closed;
+					// 	}
+					// 	STRF_HD constexpr bool include_right_endpoint() const noexcept {
+					// 		return !is_left_closed;
+					// 	}
+					// };
 					struct closed {
 						static constexpr bool is_symmetric = true;
 						STRF_HD static constexpr bool include_left_endpoint() noexcept {
@@ -1947,144 +1954,165 @@ namespace dragonbox {
 					using normal_interval_type = interval_type::symmetric_boundary;
 					using shorter_interval_type = interval_type::closed;
 
-					template <class SignedSignificandBits, class Func>
-					STRF_HD static auto delegate(SignedSignificandBits, Func&& f) noexcept {
-						return f(nearest_to_even{});
+					// template <class SignedSignificandBits, class Func>
+					// STRF_HD static auto delegate(SignedSignificandBits, Func&& f) noexcept
+					// {
+					// 	return f(nearest_to_even{});
+					// }
+
+					template <class SignedSignificandBits>
+					STRF_HD static constexpr normal_interval_type
+						get_normal_interval_type(SignedSignificandBits s) noexcept
+					{
+						return normal_interval_type{s.has_even_significand_bits()};
+					}
+					template <class SignedSignificandBits>
+					STRF_HD static constexpr shorter_interval_type
+						get_shorter_interval_type(SignedSignificandBits) noexcept
+					{
+						return {};
 					}
 
-					template <class SignedSignificandBits, class Func>
-					STRF_HD static constexpr auto
-						invoke_normal_interval_case(SignedSignificandBits s, Func&& f) noexcept
-					{
-						return f(s.has_even_significand_bits());
-					}
-					template <class SignedSignificandBits, class Func>
-					STRF_HD static constexpr auto
-						invoke_shorter_interval_case(SignedSignificandBits, Func&& f) noexcept
-					{
-						return f();
-					}
+					// template <class SignedSignificandBits, class Func>
+					// STRF_HD static constexpr auto
+					// 	invoke_normal_interval_case(SignedSignificandBits s, Func&& f) noexcept
+					// //-> decltype(f(s.has_even_significand_bits())
+					// {
+					// 	return f(s.has_even_significand_bits());
+					// }
+					// template <class SignedSignificandBits, class Func>
+					// STRF_HD static constexpr auto
+					// 	invoke_shorter_interval_case(SignedSignificandBits, Func&& f) noexcept
+					// //-> decltype(f())
+					// {
+					// 	return f();
+					// }
 				};
-				struct nearest_to_odd : base {
-					using decimal_to_binary_rounding_policy = nearest_to_odd;
-					static constexpr auto tag = tag_t::to_nearest;
-					using normal_interval_type = interval_type::symmetric_boundary;
-					using shorter_interval_type = interval_type::open;
+				// struct nearest_to_odd : base {
+				// 	using decimal_to_binary_rounding_policy = nearest_to_odd;
+				// 	static constexpr auto tag = tag_t::to_nearest;
+				// 	using normal_interval_type = interval_type::symmetric_boundary;
+				// 	using shorter_interval_type = interval_type::open;
 
-					template <class SignedSignificandBits, class Func>
-					STRF_HD static auto delegate(SignedSignificandBits, Func&& f) noexcept {
-						return f(nearest_to_odd{});
-					}
+				// 	template <class SignedSignificandBits, class Func>
+				// 	STRF_HD static auto delegate(SignedSignificandBits, Func&& f) noexcept
+				// 	{
+				// 		return f(nearest_to_odd{});
+				// 	}
 
-					template <class SignedSignificandBits, class Func>
-					STRF_HD static constexpr auto
-						invoke_normal_interval_case(SignedSignificandBits s, Func&& f) noexcept
-					{
-						return f(!s.has_even_significand_bits());
-					}
-					template <class SignedSignificandBits, class Func>
-					STRF_HD static constexpr auto
-						invoke_shorter_interval_case(SignedSignificandBits, Func&& f) noexcept
-					{
-						return f();
-					}
-				};
-				struct nearest_toward_plus_infinity : base {
-					using decimal_to_binary_rounding_policy = nearest_toward_plus_infinity;
-					static constexpr auto tag = tag_t::to_nearest;
-					using normal_interval_type = interval_type::asymmetric_boundary;
-					using shorter_interval_type = interval_type::asymmetric_boundary;
+				// 	template <class SignedSignificandBits, class Func>
+				// 	STRF_HD static constexpr auto
+				// 		invoke_normal_interval_case(SignedSignificandBits s, Func&& f) noexcept
+				// 	{
+				// 		return f(!s.has_even_significand_bits());
+				// 	}
+				// 	template <class SignedSignificandBits, class Func>
+				// 	STRF_HD static constexpr auto
+				// 		invoke_shorter_interval_case(SignedSignificandBits, Func&& f) noexcept
+				// 	{
+				// 		return f();
+				// 	}
+				// };
+				// struct nearest_toward_plus_infinity : base {
+				// 	using decimal_to_binary_rounding_policy = nearest_toward_plus_infinity;
+				// 	static constexpr auto tag = tag_t::to_nearest;
+				// 	using normal_interval_type = interval_type::asymmetric_boundary;
+				// 	using shorter_interval_type = interval_type::asymmetric_boundary;
 
-					template <class SignedSignificandBits, class Func>
-					STRF_HD static auto delegate(SignedSignificandBits, Func&& f) noexcept {
-						return f(nearest_toward_plus_infinity{});
-					}
+				// 	template <class SignedSignificandBits, class Func>
+				// 	STRF_HD static auto delegate(SignedSignificandBits, Func&& f) noexcept
+				// 	{
+				// 		return f(nearest_toward_plus_infinity{});
+				// 	}
 
-					template <class SignedSignificandBits, class Func>
-					STRF_HD static constexpr auto
-						invoke_normal_interval_case(SignedSignificandBits s, Func&& f) noexcept
-					{
-						return f(!s.is_negative());
-					}
-					template <class SignedSignificandBits, class Func>
-					STRF_HD static constexpr auto
-						invoke_shorter_interval_case(SignedSignificandBits s, Func&& f) noexcept
-					{
-						return f(!s.is_negative());
-					}
-				};
-				struct nearest_toward_minus_infinity : base {
-					using decimal_to_binary_rounding_policy = nearest_toward_minus_infinity;
-					static constexpr auto tag = tag_t::to_nearest;
-					using normal_interval_type = interval_type::asymmetric_boundary;
-					using shorter_interval_type = interval_type::asymmetric_boundary;
+				// 	template <class SignedSignificandBits, class Func>
+				// 	STRF_HD static constexpr auto
+				// 		invoke_normal_interval_case(SignedSignificandBits s, Func&& f) noexcept
+				// 	{
+				// 		return f(!s.is_negative());
+				// 	}
+				// 	template <class SignedSignificandBits, class Func>
+				// 	STRF_HD static constexpr auto
+				// 		invoke_shorter_interval_case(SignedSignificandBits s, Func&& f) noexcept
+				// 	{
+				// 		return f(!s.is_negative());
+				// 	}
+				// };
+				// struct nearest_toward_minus_infinity : base {
+				// 	using decimal_to_binary_rounding_policy = nearest_toward_minus_infinity;
+				// 	static constexpr auto tag = tag_t::to_nearest;
+				// 	using normal_interval_type = interval_type::asymmetric_boundary;
+				// 	using shorter_interval_type = interval_type::asymmetric_boundary;
 
-					template <class SignedSignificandBits, class Func>
-					STRF_HD static auto delegate(SignedSignificandBits, Func&& f) noexcept {
-						return f(nearest_toward_minus_infinity{});
-					}
+				// 	template <class SignedSignificandBits, class Func>
+				// 	STRF_HD static auto delegate(SignedSignificandBits, Func&& f) noexcept
+				// 	{
+				// 		return f(nearest_toward_minus_infinity{});
+				// 	}
 
-					template <class SignedSignificandBits, class Func>
-					STRF_HD static constexpr auto
-						invoke_normal_interval_case(SignedSignificandBits s, Func&& f) noexcept
-					{
-						return f(s.is_negative());
-					}
-					template <class SignedSignificandBits, class Func>
-					STRF_HD static constexpr auto
-						invoke_shorter_interval_case(SignedSignificandBits s, Func&& f) noexcept
-					{
-						return f(s.is_negative());
-					}
-				};
-				struct nearest_toward_zero : base {
-					using decimal_to_binary_rounding_policy = nearest_toward_zero;
-					static constexpr auto tag = tag_t::to_nearest;
-					using normal_interval_type = interval_type::right_closed_left_open;
-					using shorter_interval_type = interval_type::right_closed_left_open;
+				// 	template <class SignedSignificandBits, class Func>
+				// 	STRF_HD static constexpr auto
+				// 		invoke_normal_interval_case(SignedSignificandBits s, Func&& f) noexcept
+				// 	{
+				// 		return f(s.is_negative());
+				// 	}
+				// 	template <class SignedSignificandBits, class Func>
+				// 	STRF_HD static constexpr auto
+				// 		invoke_shorter_interval_case(SignedSignificandBits s, Func&& f) noexcept
+				// 	{
+				// 		return f(s.is_negative());
+				// 	}
+				// };
+				// struct nearest_toward_zero : base {
+				// 	using decimal_to_binary_rounding_policy = nearest_toward_zero;
+				// 	static constexpr auto tag = tag_t::to_nearest;
+				// 	using normal_interval_type = interval_type::right_closed_left_open;
+				// 	using shorter_interval_type = interval_type::right_closed_left_open;
 
-					template <class SignedSignificandBits, class Func>
-					STRF_HD static auto delegate(SignedSignificandBits, Func&& f) noexcept {
-						return f(nearest_toward_zero{});
-					}
+				// 	template <class SignedSignificandBits, class Func>
+				// 	STRF_HD static auto delegate(SignedSignificandBits, Func&& f) noexcept
+				// 	{
+				// 		return f(nearest_toward_zero{});
+				// 	}
 
-					template <class SignedSignificandBits, class Func>
-					STRF_HD static constexpr auto
-						invoke_normal_interval_case(SignedSignificandBits, Func&& f) noexcept
-					{
-						return f();
-					}
-					template <class SignedSignificandBits, class Func>
-					STRF_HD static constexpr auto
-						invoke_shorter_interval_case(SignedSignificandBits, Func&& f) noexcept
-					{
-						return f();
-					}
-				};
-				struct nearest_away_from_zero : base {
-					using decimal_to_binary_rounding_policy = nearest_away_from_zero;
-					static constexpr auto tag = tag_t::to_nearest;
-					using normal_interval_type = interval_type::left_closed_right_open;
-					using shorter_interval_type = interval_type::left_closed_right_open;
+				// 	template <class SignedSignificandBits, class Func>
+				// 	STRF_HD static constexpr auto
+				// 		invoke_normal_interval_case(SignedSignificandBits, Func&& f) noexcept
+				// 	{
+				// 		return f();
+				// 	}
+				// 	template <class SignedSignificandBits, class Func>
+				// 	STRF_HD static constexpr auto
+				// 		invoke_shorter_interval_case(SignedSignificandBits, Func&& f) noexcept
+				// 	{
+				// 		return f();
+				// 	}
+				// };
+				// struct nearest_away_from_zero : base {
+				// 	using decimal_to_binary_rounding_policy = nearest_away_from_zero;
+				// 	static constexpr auto tag = tag_t::to_nearest;
+				// 	using normal_interval_type = interval_type::left_closed_right_open;
+				// 	using shorter_interval_type = interval_type::left_closed_right_open;
 
-					template <class SignedSignificandBits, class Func>
-					STRF_HD static auto delegate(SignedSignificandBits, Func&& f) noexcept {
-						return f(nearest_away_from_zero{});
-					}
+				// 	template <class SignedSignificandBits, class Func>
+				// 	STRF_HD static auto delegate(SignedSignificandBits, Func&& f) noexcept
+				// 	{
+				// 		return f(nearest_away_from_zero{});
+				// 	}
 
-					template <class SignedSignificandBits, class Func>
-					STRF_HD static constexpr auto
-						invoke_normal_interval_case(SignedSignificandBits, Func&& f) noexcept
-					{
-						return f();
-					}
-					template <class SignedSignificandBits, class Func>
-					STRF_HD static constexpr auto
-						invoke_shorter_interval_case(SignedSignificandBits, Func&& f) noexcept
-					{
-						return f();
-					}
-				};
+				// 	template <class SignedSignificandBits, class Func>
+				// 	STRF_HD static constexpr auto
+				// 		invoke_normal_interval_case(SignedSignificandBits, Func&& f) noexcept
+				// 	{
+				// 		return f();
+				// 	}
+				// 	template <class SignedSignificandBits, class Func>
+				// 	STRF_HD static constexpr auto
+				// 		invoke_shorter_interval_case(SignedSignificandBits, Func&& f) noexcept
+				// 	{
+				// 		return f();
+				// 	}
+				// };
 
 				namespace detail {
 					struct nearest_always_closed {
@@ -2092,135 +2120,135 @@ namespace dragonbox {
 						using normal_interval_type = interval_type::closed;
 						using shorter_interval_type = interval_type::closed;
 
-						template <class SignedSignificandBits, class Func>
-						STRF_HD static constexpr auto
-							invoke_normal_interval_case(SignedSignificandBits, Func&& f) noexcept
-						{
-							return f();
-						}
-						template <class SignedSignificandBits, class Func>
-						STRF_HD static constexpr auto
-							invoke_shorter_interval_case(SignedSignificandBits, Func&& f) noexcept
-						{
-							return f();
-						}
+						// template <class SignedSignificandBits, class Func>
+						// STRF_HD static constexpr auto
+						// 	invoke_normal_interval_case(SignedSignificandBits, Func&& f) noexcept
+						// {
+						// 	return f();
+						// }
+						// template <class SignedSignificandBits, class Func>
+						// STRF_HD static constexpr auto
+						// 	invoke_shorter_interval_case(SignedSignificandBits, Func&& f) noexcept
+						// {
+						// 	return f();
+						// }
 					};
 					struct nearest_always_open {
 						static constexpr auto tag = tag_t::to_nearest;
 						using normal_interval_type = interval_type::open;
 						using shorter_interval_type = interval_type::open;
 
-						template <class SignedSignificandBits, class Func>
-						STRF_HD static constexpr auto
-							invoke_normal_interval_case(SignedSignificandBits, Func&& f) noexcept
-						{
-							return f();
-						}
-						template <class SignedSignificandBits, class Func>
-						STRF_HD static constexpr auto
-							invoke_shorter_interval_case(SignedSignificandBits, Func&& f) noexcept
-						{
-							return f();
-						}
+						// template <class SignedSignificandBits, class Func>
+						// STRF_HD static constexpr auto
+						// 	invoke_normal_interval_case(SignedSignificandBits, Func&& f) noexcept
+						// {
+						// 	return f();
+						// }
+						// template <class SignedSignificandBits, class Func>
+						// STRF_HD static constexpr auto
+						// 	invoke_shorter_interval_case(SignedSignificandBits, Func&& f) noexcept
+						// {
+						// 	return f();
+						// }
 					};
 				}
 
-				struct nearest_to_even_static_boundary : base {
-					using decimal_to_binary_rounding_policy = nearest_to_even_static_boundary;
-					template <class SignedSignificandBits, class Func>
-					STRF_HD static auto delegate(SignedSignificandBits s, Func&& f) noexcept {
-						if (s.has_even_significand_bits()) {
-							return f(detail::nearest_always_closed{});
-						}
-						else {
-							return f(detail::nearest_always_open{});
-						}
-					}
-				};
-				struct nearest_to_odd_static_boundary : base {
-					using decimal_to_binary_rounding_policy = nearest_to_odd_static_boundary;
-					template <class SignedSignificandBits, class Func>
-					STRF_HD static auto delegate(SignedSignificandBits s, Func&& f) noexcept {
-						if (s.has_even_significand_bits()) {
-							return f(detail::nearest_always_open{});
-						}
-						else {
-							return f(detail::nearest_always_closed{});
-						}
-					}
-				};
-				struct nearest_toward_plus_infinity_static_boundary : base {
-					using decimal_to_binary_rounding_policy = nearest_toward_plus_infinity_static_boundary;
-					template <class SignedSignificandBits, class Func>
-					STRF_HD static auto delegate(SignedSignificandBits s, Func&& f) noexcept {
-						if (s.is_negative()) {
-							return f(nearest_toward_zero{});
-						}
-						else {
-							return f(nearest_away_from_zero{});
-						}
-					}
-				};
-				struct nearest_toward_minus_infinity_static_boundary : base {
-					using decimal_to_binary_rounding_policy = nearest_toward_minus_infinity_static_boundary;
-					template <class SignedSignificandBits, class Func>
-					STRF_HD static auto delegate(SignedSignificandBits s, Func&& f) noexcept {
-						if (s.is_negative()) {
-							return f(nearest_away_from_zero{});
-						}
-						else {
-							return f(nearest_toward_zero{});
-						}
-					}
-				};
+				// struct nearest_to_even_static_boundary : base {
+				// 	using decimal_to_binary_rounding_policy = nearest_to_even_static_boundary;
+				// 	template <class SignedSignificandBits, class Func>
+				// 	STRF_HD static auto delegate(SignedSignificandBits s, Func&& f) noexcept {
+				// 		if (s.has_even_significand_bits()) {
+				// 			return f(detail::nearest_always_closed{});
+				// 		}
+				// 		else {
+				// 			return f(detail::nearest_always_open{});
+				// 		}
+				// 	}
+				// };
+				// struct nearest_to_odd_static_boundary : base {
+				// 	using decimal_to_binary_rounding_policy = nearest_to_odd_static_boundary;
+				// 	template <class SignedSignificandBits, class Func>
+				// 	STRF_HD static auto delegate(SignedSignificandBits s, Func&& f) noexcept {
+				// 		if (s.has_even_significand_bits()) {
+				// 			return f(detail::nearest_always_open{});
+				// 		}
+				// 		else {
+				// 			return f(detail::nearest_always_closed{});
+				// 		}
+				// 	}
+				// };
+				// struct nearest_toward_plus_infinity_static_boundary : base {
+				// 	using decimal_to_binary_rounding_policy = nearest_toward_plus_infinity_static_boundary;
+				// 	template <class SignedSignificandBits, class Func>
+				// 	STRF_HD static auto delegate(SignedSignificandBits s, Func&& f) noexcept {
+				// 		if (s.is_negative()) {
+				// 			return f(nearest_toward_zero{});
+				// 		}
+				// 		else {
+				// 			return f(nearest_away_from_zero{});
+				// 		}
+				// 	}
+				// };
+				// struct nearest_toward_minus_infinity_static_boundary : base {
+				// 	using decimal_to_binary_rounding_policy = nearest_toward_minus_infinity_static_boundary;
+				// 	template <class SignedSignificandBits, class Func>
+				// 	STRF_HD static auto delegate(SignedSignificandBits s, Func&& f) noexcept {
+				// 		if (s.is_negative()) {
+				// 			return f(nearest_away_from_zero{});
+				// 		}
+				// 		else {
+				// 			return f(nearest_toward_zero{});
+				// 		}
+				// 	}
+				// };
 
-				namespace detail {
-					struct left_closed_directed {
-						static constexpr auto tag = tag_t::left_closed_directed;
-					};
-					struct right_closed_directed {
-						static constexpr auto tag = tag_t::right_closed_directed;
-					};
-				}
+				// namespace detail {
+				// 	struct left_closed_directed {
+				// 		static constexpr auto tag = tag_t::left_closed_directed;
+				// 	};
+				// 	struct right_closed_directed {
+				// 		static constexpr auto tag = tag_t::right_closed_directed;
+				// 	};
+				// }
 
-				struct toward_plus_infinity : base {
-					using decimal_to_binary_rounding_policy = toward_plus_infinity;
-					template <class SignedSignificandBits, class Func>
-					STRF_HD static auto delegate(SignedSignificandBits s, Func&& f) noexcept {
-						if (s.is_negative()) {
-							return f(detail::left_closed_directed{});
-						}
-						else {
-							return f(detail::right_closed_directed{});
-						}
-					}
-				};
-				struct toward_minus_infinity : base {
-					using decimal_to_binary_rounding_policy = toward_minus_infinity;
-					template <class SignedSignificandBits, class Func>
-					STRF_HD static auto delegate(SignedSignificandBits s, Func&& f) noexcept {
-						if (s.is_negative()) {
-							return f(detail::right_closed_directed{});
-						}
-						else {
-							return f(detail::left_closed_directed{});
-						}
-					}
-				};
-				struct toward_zero : base {
-					using decimal_to_binary_rounding_policy = toward_zero;
-					template <class SignedSignificandBits, class Func>
-					STRF_HD static auto delegate(SignedSignificandBits, Func&& f) noexcept {
-						return f(detail::left_closed_directed{});
-					}
-				};
-				struct away_from_zero : base {
-					using decimal_to_binary_rounding_policy = away_from_zero;
-					template <class SignedSignificandBits, class Func>
-					STRF_HD static auto delegate(SignedSignificandBits, Func&& f) noexcept {
-						return f(detail::right_closed_directed{});
-					}
-				};
+				// struct toward_plus_infinity : base {
+				// 	using decimal_to_binary_rounding_policy = toward_plus_infinity;
+				// 	template <class SignedSignificandBits, class Func>
+				// 	STRF_HD static auto delegate(SignedSignificandBits s, Func&& f) noexcept {
+				// 		if (s.is_negative()) {
+				// 			return f(detail::left_closed_directed{});
+				// 		}
+				// 		else {
+				// 			return f(detail::right_closed_directed{});
+				// 		}
+				// 	}
+				// };
+				// struct toward_minus_infinity : base {
+				// 	using decimal_to_binary_rounding_policy = toward_minus_infinity;
+				// 	template <class SignedSignificandBits, class Func>
+				// 	STRF_HD static auto delegate(SignedSignificandBits s, Func&& f) noexcept {
+				// 		if (s.is_negative()) {
+				// 			return f(detail::right_closed_directed{});
+				// 		}
+				// 		else {
+				// 			return f(detail::left_closed_directed{});
+				// 		}
+				// 	}
+				// };
+				// struct toward_zero : base {
+				// 	using decimal_to_binary_rounding_policy = toward_zero;
+				// 	template <class SignedSignificandBits, class Func>
+				// 	STRF_HD static auto delegate(SignedSignificandBits, Func&& f) noexcept {
+				// 		return f(detail::left_closed_directed{});
+				// 	}
+				// };
+				// struct away_from_zero : base {
+				// 	using decimal_to_binary_rounding_policy = away_from_zero;
+				// 	template <class SignedSignificandBits, class Func>
+				// 	STRF_HD static auto delegate(SignedSignificandBits, Func&& f) noexcept {
+				// 		return f(detail::right_closed_directed{});
+				// 	}
+				// };
 			}
 
 			// Binary-to-decimal rounding policies.
@@ -2236,56 +2264,56 @@ namespace dragonbox {
 					toward_zero
 				};
 
-				struct do_not_care : base {
-					using binary_to_decimal_rounding_policy = do_not_care;
-					static constexpr auto tag = tag_t::do_not_care;
+				// struct do_not_care : base {
+				// 	using binary_to_decimal_rounding_policy = do_not_care;
+				// 	static constexpr auto tag = tag_t::do_not_care;
 
-					template <class ReturnType>
-					STRF_HD static constexpr void break_rounding_tie(ReturnType&) noexcept {}
-				};
+				// 	template <class ReturnType>
+				// 	STRF_HD static constexpr void break_rounding_tie(ReturnType&) noexcept {}
+				// };
 
 				struct to_even : base {
 					using binary_to_decimal_rounding_policy = to_even;
 					static constexpr auto tag = tag_t::to_even;
 
 					template <class ReturnType>
-					STRF_HD static constexpr void break_rounding_tie(ReturnType& r) noexcept
+					STRF_HD static STRF_CONSTEXPR_IN_CXX14 void break_rounding_tie(ReturnType& r) noexcept
 					{
 						r.significand = r.significand % 2 == 0 ?
 							r.significand : r.significand - 1;
 					}
 				};
 
-				struct to_odd : base {
-					using binary_to_decimal_rounding_policy = to_odd;
-					static constexpr auto tag = tag_t::to_odd;
+				// struct to_odd : base {
+				// 	using binary_to_decimal_rounding_policy = to_odd;
+				// 	static constexpr auto tag = tag_t::to_odd;
 
-					template <class ReturnType>
-					STRF_HD static constexpr void break_rounding_tie(ReturnType& r) noexcept
-					{
-						r.significand = r.significand % 2 != 0 ?
-							r.significand : r.significand - 1;
-					}
-				};
+				// 	template <class ReturnType>
+				// 	STRF_HD static constexpr void break_rounding_tie(ReturnType& r) noexcept
+				// 	{
+				// 		r.significand = r.significand % 2 != 0 ?
+				// 			r.significand : r.significand - 1;
+				// 	}
+				// };
 
-				struct away_from_zero : base {
-					using binary_to_decimal_rounding_policy = away_from_zero;
-					static constexpr auto tag = tag_t::away_from_zero;
+				// struct away_from_zero : base {
+				// 	using binary_to_decimal_rounding_policy = away_from_zero;
+				// 	static constexpr auto tag = tag_t::away_from_zero;
 
-					template <class ReturnType>
-					STRF_HD static constexpr void break_rounding_tie(ReturnType&) noexcept {}
-				};
+				// 	template <class ReturnType>
+				// 	STRF_HD static constexpr void break_rounding_tie(ReturnType&) noexcept {}
+				// };
 
-				struct toward_zero : base {
-					using binary_to_decimal_rounding_policy = toward_zero;
-					static constexpr auto tag = tag_t::toward_zero;
+				// struct toward_zero : base {
+				// 	using binary_to_decimal_rounding_policy = toward_zero;
+				// 	static constexpr auto tag = tag_t::toward_zero;
 
-					template <class ReturnType>
-					STRF_HD static constexpr void break_rounding_tie(ReturnType& r) noexcept
-					{
-						--r.significand;
-					}
-				};
+				// 	template <class ReturnType>
+				// 	STRF_HD static constexpr void break_rounding_tie(ReturnType& r) noexcept
+				// 	{
+				// 		--r.significand;
+				// 	}
+				// };
 			}
 
 			// Cache policies.
@@ -2298,85 +2326,85 @@ namespace dragonbox {
 					STRF_HD static constexpr typename cache_holder<FloatFormat>::cache_entry_type
 						get_cache(int k) noexcept
 					{
-						STRF_ASSERT(k >= cache_holder<FloatFormat>::min_k &&
+						STRF_ASSERT_IN_CONSTEXPR(k >= cache_holder<FloatFormat>::min_k &&
 							k <= cache_holder<FloatFormat>::max_k);
 						return cache_holder<FloatFormat>::cache(
 							std::size_t(k - cache_holder<FloatFormat>::min_k));
 					}
 				};
 
-				struct compact : base {
-					using cache_policy = compact;
-					template <class FloatFormat>
-					STRF_HD static constexpr typename cache_holder<FloatFormat>::cache_entry_type
-						get_cache(int k) noexcept
-					{
-						STRF_ASSERT(k >= cache_holder<FloatFormat>::min_k &&
-							k <= cache_holder<FloatFormat>::max_k);
+				// struct compact : base {
+				// 	using cache_policy = compact;
+				// 	template <class FloatFormat>
+				// 	STRF_HD static constexpr typename cache_holder<FloatFormat>::cache_entry_type
+				// 		get_cache(int k) noexcept
+				// 	{
+				// 		STRF_ASSERT(k >= cache_holder<FloatFormat>::min_k &&
+				// 			k <= cache_holder<FloatFormat>::max_k);
 
-						JKJ_IF_CONSTEXPR (std::is_same<FloatFormat, ieee754_binary64>::value)
-						{
-							// Compute base index.
-							auto cache_index = (k - cache_holder<FloatFormat>::min_k) /
-								compressed_cache_detail::compression_ratio;
-							auto kb = cache_index * compressed_cache_detail::compression_ratio
-								+ cache_holder<FloatFormat>::min_k;
-							auto offset = k - kb;
+				// 		JKJ_IF_CONSTEXPR (std::is_same<FloatFormat, ieee754_binary64>::value)
+				// 		{
+				// 			// Compute base index.
+				// 			auto cache_index = (k - cache_holder<FloatFormat>::min_k) /
+				// 				compressed_cache_detail::compression_ratio;
+				// 			auto kb = cache_index * compressed_cache_detail::compression_ratio
+				// 				+ cache_holder<FloatFormat>::min_k;
+				// 			auto offset = k - kb;
 
-							// Get base cache.
-							auto base_cache = compressed_cache_detail::cache(cache_index);
+				// 			// Get base cache.
+				// 			auto base_cache = compressed_cache_detail::cache(cache_index);
 
-							if (offset == 0) {
-								return base_cache;
-							}
-							else {
-								// Compute the required amount of bit-shift.
-								auto alpha = log::floor_log2_pow10(kb + offset)
-									- log::floor_log2_pow10(kb) - offset;
-								STRF_ASSERT(alpha > 0 && alpha < 64);
+				// 			if (offset == 0) {
+				// 				return base_cache;
+				// 			}
+				// 			else {
+				// 				// Compute the required amount of bit-shift.
+				// 				auto alpha = log::floor_log2_pow10(kb + offset)
+				// 					- log::floor_log2_pow10(kb) - offset;
+				// 				STRF_ASSERT(alpha > 0 && alpha < 64);
 
-								// Try to recover the real cache.
-								auto pow5 = compressed_cache_detail::pow5(offset);
-								auto recovered_cache = wuint::umul128(base_cache.high(), pow5);
-								auto middle_low = wuint::umul128(base_cache.low() - (kb < 0 ? 1 : 0), pow5);
+				// 				// Try to recover the real cache.
+				// 				auto pow5 = compressed_cache_detail::pow5(offset);
+				// 				auto recovered_cache = wuint::umul128(base_cache.high(), pow5);
+				// 				auto middle_low = wuint::umul128(base_cache.low() - (kb < 0 ? 1 : 0), pow5);
 
-								recovered_cache += middle_low.high();
+				// 				recovered_cache += middle_low.high();
 
-								auto high_to_middle = recovered_cache.high() << (64 - alpha);
-								auto middle_to_low = recovered_cache.low() << (64 - alpha);
+				// 				auto high_to_middle = recovered_cache.high() << (64 - alpha);
+				// 				auto middle_to_low = recovered_cache.low() << (64 - alpha);
 
-								recovered_cache = wuint::uint128{
-									(recovered_cache.low() >> alpha) | high_to_middle,
-									((middle_low.low() >> alpha) | middle_to_low)
-								};
+				// 				recovered_cache = wuint::uint128{
+				// 					(recovered_cache.low() >> alpha) | high_to_middle,
+				// 					((middle_low.low() >> alpha) | middle_to_low)
+				// 				};
 
-								if (kb < 0) {
-									recovered_cache += 1;
-								}
+				// 				if (kb < 0) {
+				// 					recovered_cache += 1;
+				// 				}
 
-								// Get error.
-								auto error_idx = (k - cache_holder<FloatFormat>::min_k) / 16;
-								auto error = (compressed_cache_detail::errors(error_idx) >>
-									((k - cache_holder<FloatFormat>::min_k) % 16) * 2) & 0x3;
+				// 				// Get error.
+				// 				auto error_idx = (k - cache_holder<FloatFormat>::min_k) / 16;
+				// 				auto error = (compressed_cache_detail::errors(error_idx) >>
+				// 					((k - cache_holder<FloatFormat>::min_k) % 16) * 2) & 0x3;
 
-								// Add the error back.
-								STRF_ASSERT(recovered_cache.low() + error >= recovered_cache.low());
-								recovered_cache = {
-									recovered_cache.high(),
-									recovered_cache.low() + error
-								};
+				// 				// Add the error back.
+				// 				STRF_ASSERT(recovered_cache.low() + error >= recovered_cache.low());
+				// 				recovered_cache = {
+				// 					recovered_cache.high(),
+				// 					recovered_cache.low() + error
+				// 				};
 
-								return recovered_cache;
-							}
-						}
-						else
-						{
-							// Just use the full cache for anything other than binary64
-							return cache_holder<FloatFormat>::cache(
-								std::size_t(k - cache_holder<FloatFormat>::min_k));
-						}
-					}
-				};
+				// 				return recovered_cache;
+				// 			}
+				// 		}
+				// 		else
+				// 		{
+				// 			// Just use the full cache for anything other than binary64
+				// 			return cache_holder<FloatFormat>::cache(
+				// 				std::size_t(k - cache_holder<FloatFormat>::min_k));
+				// 		}
+				// 	}
+				// };
 			}
 		}
 	}
@@ -2384,7 +2412,7 @@ namespace dragonbox {
 	namespace policy {
 		namespace sign {
 			constexpr auto ignore = detail::policy_impl::sign::ignore{};
-			constexpr auto return_sign = detail::policy_impl::sign::return_sign{};
+		// constexpr auto return_sign = detail::policy_impl::sign::return_sign{};
 		}
 
 		namespace trailing_zero {
@@ -2396,52 +2424,52 @@ namespace dragonbox {
 		namespace decimal_to_binary_rounding {
 			constexpr auto nearest_to_even =
 				detail::policy_impl::decimal_to_binary_rounding::nearest_to_even{};
-			constexpr auto nearest_to_odd =
-				detail::policy_impl::decimal_to_binary_rounding::nearest_to_odd{};
-			constexpr auto nearest_toward_plus_infinity =
-				detail::policy_impl::decimal_to_binary_rounding::nearest_toward_plus_infinity{};
-			constexpr auto nearest_toward_minus_infinity =
-				detail::policy_impl::decimal_to_binary_rounding::nearest_toward_minus_infinity{};
-			constexpr auto nearest_toward_zero =
-				detail::policy_impl::decimal_to_binary_rounding::nearest_toward_zero{};
-			constexpr auto nearest_away_from_zero =
-				detail::policy_impl::decimal_to_binary_rounding::nearest_away_from_zero{};
+			// constexpr auto nearest_to_odd =
+			// 	detail::policy_impl::decimal_to_binary_rounding::nearest_to_odd{};
+			// constexpr auto nearest_toward_plus_infinity =
+			// 	detail::policy_impl::decimal_to_binary_rounding::nearest_toward_plus_infinity{};
+			// constexpr auto nearest_toward_minus_infinity =
+			// 	detail::policy_impl::decimal_to_binary_rounding::nearest_toward_minus_infinity{};
+			// constexpr auto nearest_toward_zero =
+			// 	detail::policy_impl::decimal_to_binary_rounding::nearest_toward_zero{};
+			// constexpr auto nearest_away_from_zero =
+			// 	detail::policy_impl::decimal_to_binary_rounding::nearest_away_from_zero{};
 
-			constexpr auto nearest_to_even_static_boundary =
-				detail::policy_impl::decimal_to_binary_rounding::nearest_to_even_static_boundary{};
-			constexpr auto nearest_to_odd_static_boundary =
-				detail::policy_impl::decimal_to_binary_rounding::nearest_to_odd_static_boundary{};
-			constexpr auto nearest_toward_plus_infinity_static_boundary =
-				detail::policy_impl::decimal_to_binary_rounding::nearest_toward_plus_infinity_static_boundary{};
-			constexpr auto nearest_toward_minus_infinity_static_boundary =
-				detail::policy_impl::decimal_to_binary_rounding::nearest_toward_minus_infinity_static_boundary{};
+			// constexpr auto nearest_to_even_static_boundary =
+			// 	detail::policy_impl::decimal_to_binary_rounding::nearest_to_even_static_boundary{};
+			// constexpr auto nearest_to_odd_static_boundary =
+			// 	detail::policy_impl::decimal_to_binary_rounding::nearest_to_odd_static_boundary{};
+			// constexpr auto nearest_toward_plus_infinity_static_boundary =
+			// 	detail::policy_impl::decimal_to_binary_rounding::nearest_toward_plus_infinity_static_boundary{};
+			// constexpr auto nearest_toward_minus_infinity_static_boundary =
+			// 	detail::policy_impl::decimal_to_binary_rounding::nearest_toward_minus_infinity_static_boundary{};
 
-			constexpr auto toward_plus_infinity =
-				detail::policy_impl::decimal_to_binary_rounding::toward_plus_infinity{};
-			constexpr auto toward_minus_infinity =
-				detail::policy_impl::decimal_to_binary_rounding::toward_minus_infinity{};
-			constexpr auto toward_zero =
-				detail::policy_impl::decimal_to_binary_rounding::toward_zero{};
-			constexpr auto away_from_zero =
-				detail::policy_impl::decimal_to_binary_rounding::away_from_zero{};
+			// constexpr auto toward_plus_infinity =
+			// 	detail::policy_impl::decimal_to_binary_rounding::toward_plus_infinity{};
+			// constexpr auto toward_minus_infinity =
+			// 	detail::policy_impl::decimal_to_binary_rounding::toward_minus_infinity{};
+			// constexpr auto toward_zero =
+			// 	detail::policy_impl::decimal_to_binary_rounding::toward_zero{};
+			// constexpr auto away_from_zero =
+			// 	detail::policy_impl::decimal_to_binary_rounding::away_from_zero{};
 		}
 
 		namespace binary_to_decimal_rounding {
-			constexpr auto do_not_care =
-				detail::policy_impl::binary_to_decimal_rounding::do_not_care{};
+			// constexpr auto do_not_care =
+			// 	detail::policy_impl::binary_to_decimal_rounding::do_not_care{};
 			constexpr auto to_even =
 				detail::policy_impl::binary_to_decimal_rounding::to_even{};
-			constexpr auto to_odd =
-				detail::policy_impl::binary_to_decimal_rounding::to_odd{};
-			constexpr auto away_from_zero =
-				detail::policy_impl::binary_to_decimal_rounding::away_from_zero{};
-			constexpr auto toward_zero =
-				detail::policy_impl::binary_to_decimal_rounding::toward_zero{};
+			// constexpr auto to_odd =
+			// 	detail::policy_impl::binary_to_decimal_rounding::to_odd{};
+			// constexpr auto away_from_zero =
+			// 	detail::policy_impl::binary_to_decimal_rounding::away_from_zero{};
+			// constexpr auto toward_zero =
+			// 	detail::policy_impl::binary_to_decimal_rounding::toward_zero{};
 		}
 
 		namespace cache {
 			constexpr auto full = detail::policy_impl::cache::full{};
-			constexpr auto compact = detail::policy_impl::cache::compact{};
+			// constexpr auto compact = detail::policy_impl::cache::compact{};
 		}
 	}
 
@@ -2616,7 +2644,7 @@ namespace dragonbox {
 
 				// If the number is divisible by 1'0000'0000, work with the quotient.
 				auto quotient_by_pow10_8 = std::uint32_t(div::divide_by_pow10<8, 54, 0>(n));
-				auto remainder = std::uint32_t(n - 1'0000'0000 * quotient_by_pow10_8);
+				auto remainder = std::uint32_t(n - 100000000 * quotient_by_pow10_8);
 
 				if (remainder == 0) {
 					auto n32 = quotient_by_pow10_8;
@@ -2671,7 +2699,7 @@ namespace dragonbox {
 
 				// Perform a binary search.
 				std::uint32_t quotient32;
-				std::uint32_t multiplier = 1'0000'0000;
+				std::uint32_t multiplier = 100000000;
 				int s = 0;
 
 				// Is n divisible by 10^4?
@@ -2679,7 +2707,7 @@ namespace dragonbox {
 					quotient32 = (remainder >> 4) * divtable32::mod_inv(4);
 					if (quotient32 <= divtable32::max_quotients(4)) {
 						remainder = quotient32;
-						multiplier = 1'0000;
+						multiplier = 10000;
 						s |= 0x4;
 					}
 				}
@@ -2689,7 +2717,7 @@ namespace dragonbox {
 					quotient32 = (remainder >> 2) * divtable32::mod_inv(2);
 					if (quotient32 <= divtable32::max_quotients(2)) {
 						remainder = quotient32;
-						multiplier = (s == 4 ? 100 : 100'0000);
+						multiplier = (s == 4 ? 100 : 1000000);
 						s |= 0x2;
 					}
 				}
@@ -2736,24 +2764,14 @@ namespace dragonbox {
 			static_assert(kappa >= 1, "");
 			static_assert(carrier_bits >= significand_bits + 2 + log::floor_log2_pow10(kappa + 1), "");
 
-			STRF_HD static constexpr int calculate_min_k() noexcept {
-				constexpr auto a = -log::floor_log10_pow2_minus_log10_4_over_3(
-					int(max_exponent - significand_bits));
-				constexpr auto b = -log::floor_log10_pow2(
-					int(max_exponent - significand_bits)) + kappa;
-				return a < b ? a : b;
-			}
-			static constexpr int min_k = calculate_min_k();
+			static constexpr int min_k = strf::detail::min
+				( -log::floor_log10_pow2_minus_log10_4_over_3(int(max_exponent - significand_bits))
+				, -log::floor_log10_pow2(int(max_exponent - significand_bits)) + kappa );
 			static_assert(min_k >= cache_holder<format>::min_k, "");
 
-			STRF_HD static constexpr int calculate_max_k() noexcept {
-				constexpr auto a = -log::floor_log10_pow2_minus_log10_4_over_3(
-					int(min_exponent - significand_bits + 1));
-				constexpr auto b = -log::floor_log10_pow2(
-					int(min_exponent - significand_bits)) + kappa;
-				return a > b ? a : b;
-			}
-			static constexpr int max_k = calculate_max_k();
+			static constexpr int max_k = strf::detail::max
+				( -log::floor_log10_pow2_minus_log10_4_over_3(int(min_exponent - significand_bits + 1))
+				, -log::floor_log10_pow2(int(min_exponent - significand_bits)) + kappa );
 			static_assert(max_k <= cache_holder<format>::max_k, "");
 
 			using cache_entry_type =
@@ -2793,14 +2811,13 @@ namespace dragonbox {
 			template <class ReturnType, class IntervalType, class TrailingZeroPolicy,
 				class BinaryToDecimalRoundingPolicy, class CachePolicy, class... AdditionalArgs>
 			STRF_HD JKJ_SAFEBUFFERS static ReturnType compute_nearest_normal(carrier_uint const two_fc,
-				int const exponent, AdditionalArgs... additional_args) noexcept
+				int const exponent, IntervalType interval_type) noexcept
 			{
 				//////////////////////////////////////////////////////////////////////
 				// Step 1: Schubfach multiplier calculation
 				//////////////////////////////////////////////////////////////////////
 
 				ReturnType ret_value;
-				IntervalType interval_type{ additional_args... };
 
 				// Compute k and beta.
 				int const minus_k = log::floor_log10_pow2(exponent) - kappa;
@@ -2947,11 +2964,10 @@ namespace dragonbox {
 			template <class ReturnType, class IntervalType, class TrailingZeroPolicy,
 				class BinaryToDecimalRoundingPolicy, class CachePolicy, class... AdditionalArgs>
 			STRF_HD JKJ_SAFEBUFFERS static ReturnType compute_nearest_shorter(
-				int const exponent, AdditionalArgs... additional_args) noexcept
+				int const exponent, IntervalType interval_type) noexcept
 			{
 				ReturnType ret_value;
-				IntervalType interval_type{ additional_args... };
-        STRF_MAYBE_UNUSED(interval_type);
+				STRF_MAYBE_UNUSED(interval_type);
 
 				// Compute k and beta.
 				int const minus_k = log::floor_log10_pow2_minus_log10_4_over_3(exponent);
@@ -3017,148 +3033,148 @@ namespace dragonbox {
 				return ret_value;
 			}
 
-			template <class ReturnType, class TrailingZeroPolicy, class CachePolicy>
-			STRF_HD JKJ_SAFEBUFFERS static ReturnType compute_left_closed_directed(
-					carrier_uint const two_fc, int exponent) noexcept
-			{
-				//////////////////////////////////////////////////////////////////////
-				// Step 1: Schubfach multiplier calculation
-				//////////////////////////////////////////////////////////////////////
+			// template <class ReturnType, class TrailingZeroPolicy, class CachePolicy>
+			// STRF_HD JKJ_SAFEBUFFERS static ReturnType compute_left_closed_directed(
+			// 		carrier_uint const two_fc, int exponent) noexcept
+			// {
+			// 	//////////////////////////////////////////////////////////////////////
+			// 	// Step 1: Schubfach multiplier calculation
+			// 	//////////////////////////////////////////////////////////////////////
 
-				ReturnType ret_value;
+			// 	ReturnType ret_value;
 
-				// Compute k and beta.
-				int const minus_k = log::floor_log10_pow2(exponent) - kappa;
-				auto const cache = CachePolicy::template get_cache<format>(-minus_k);
-				int const beta_minus_1 = exponent + log::floor_log2_pow10(-minus_k);
+			// 	// Compute k and beta.
+			// 	int const minus_k = log::floor_log10_pow2(exponent) - kappa;
+			// 	auto const cache = CachePolicy::template get_cache<format>(-minus_k);
+			// 	int const beta_minus_1 = exponent + log::floor_log2_pow10(-minus_k);
 
-				// Compute xi and deltai.
-				// 10^kappa <= deltai < 10^(kappa + 1)
-				auto const deltai = compute_delta(cache, beta_minus_1);
-				carrier_uint xi = compute_mul(two_fc << beta_minus_1, cache);
+			// 	// Compute xi and deltai.
+			// 	// 10^kappa <= deltai < 10^(kappa + 1)
+			// 	auto const deltai = compute_delta(cache, beta_minus_1);
+			// 	carrier_uint xi = compute_mul(two_fc << beta_minus_1, cache);
 
-				if (!is_product_integer<integer_check_case_id::fc>(two_fc, exponent, minus_k)) {
-					++xi;
-				}
+			// 	if (!is_product_integer<integer_check_case_id::fc>(two_fc, exponent, minus_k)) {
+			// 		++xi;
+			// 	}
 
-				//////////////////////////////////////////////////////////////////////
-				// Step 2: Try larger divisor; remove trailing zeros if necessary
-				//////////////////////////////////////////////////////////////////////
+			// 	//////////////////////////////////////////////////////////////////////
+			// 	// Step 2: Try larger divisor; remove trailing zeros if necessary
+			// 	//////////////////////////////////////////////////////////////////////
 
-				constexpr auto big_divisor = compute_power<kappa + 1>(std::uint32_t(10));
+			// 	constexpr auto big_divisor = compute_power<kappa + 1>(std::uint32_t(10));
 
-				// Using an upper bound on xi, we might be able to optimize the division
-				// better than the compiler; we are computing xi / big_divisor here.
-				ret_value.significand = div::divide_by_pow10<kappa + 1,
-					significand_bits + kappa + 2, kappa + 1>(xi);
-				auto r = std::uint32_t(xi - big_divisor * ret_value.significand);
+			// 	// Using an upper bound on xi, we might be able to optimize the division
+			// 	// better than the compiler; we are computing xi / big_divisor here.
+			// 	ret_value.significand = div::divide_by_pow10<kappa + 1,
+			// 		significand_bits + kappa + 2, kappa + 1>(xi);
+			// 	auto r = std::uint32_t(xi - big_divisor * ret_value.significand);
 
-				if (r != 0) {
-					++ret_value.significand;
-					r = big_divisor - r;
-				}
+			// 	if (r != 0) {
+			// 		++ret_value.significand;
+			// 		r = big_divisor - r;
+			// 	}
 
-				if (r > deltai) {
-					goto small_divisor_case_label;
-				}
-				else if (r == deltai) {
-					// Compare the fractional parts.
-					if (compute_mul_parity(two_fc + 2, cache, beta_minus_1) ||
-						is_product_integer<integer_check_case_id::fc>(two_fc + 2, exponent, minus_k))
-					{
-						goto small_divisor_case_label;
-					}
-				}
+			// 	if (r > deltai) {
+			// 		goto small_divisor_case_label;
+			// 	}
+			// 	else if (r == deltai) {
+			// 		// Compare the fractional parts.
+			// 		if (compute_mul_parity(two_fc + 2, cache, beta_minus_1) ||
+			// 			is_product_integer<integer_check_case_id::fc>(two_fc + 2, exponent, minus_k))
+			// 		{
+			// 			goto small_divisor_case_label;
+			// 		}
+			// 	}
 
-				// The ceiling is inside, so we are done.
-				ret_value.exponent = minus_k + kappa + 1;
-				TrailingZeroPolicy::template on_trailing_zeros<impl>(ret_value);
-				return ret_value;
-
-
-				//////////////////////////////////////////////////////////////////////
-				// Step 3: Find the significand with the smaller divisor
-				//////////////////////////////////////////////////////////////////////
-
-			small_divisor_case_label:
-				ret_value.significand *= 10;
-				ret_value.significand -= div::small_division_by_pow10<kappa>(r);
-				ret_value.exponent = minus_k + kappa;
-				TrailingZeroPolicy::template no_trailing_zeros<impl>(ret_value);
-				return ret_value;
-			}
-
-			template <class ReturnType, class TrailingZeroPolicy, class CachePolicy>
-			STRF_HD JKJ_SAFEBUFFERS static ReturnType compute_right_closed_directed(
-					carrier_uint const two_fc, int const exponent, bool shorter_interval) noexcept
-			{
-				//////////////////////////////////////////////////////////////////////
-				// Step 1: Schubfach multiplier calculation
-				//////////////////////////////////////////////////////////////////////
-
-				ReturnType ret_value;
-
-				// Compute k and beta.
-				int const minus_k = log::floor_log10_pow2(exponent - (shorter_interval ? 1 : 0)) - kappa;
-				auto const cache = CachePolicy::template get_cache<format>(-minus_k);
-				int const beta_minus_1 = exponent + log::floor_log2_pow10(-minus_k);
-
-				// Compute zi and deltai.
-				// 10^kappa <= deltai < 10^(kappa + 1)
-				auto const deltai = shorter_interval ?
-					compute_delta(cache, beta_minus_1 - 1) :
-					compute_delta(cache, beta_minus_1);
-				carrier_uint const zi = compute_mul(two_fc << beta_minus_1, cache);
+			// 	// The ceiling is inside, so we are done.
+			// 	ret_value.exponent = minus_k + kappa + 1;
+			// 	TrailingZeroPolicy::template on_trailing_zeros<impl>(ret_value);
+			// 	return ret_value;
 
 
-				//////////////////////////////////////////////////////////////////////
-				// Step 2: Try larger divisor; remove trailing zeros if necessary
-				//////////////////////////////////////////////////////////////////////
+			// 	//////////////////////////////////////////////////////////////////////
+			// 	// Step 3: Find the significand with the smaller divisor
+			// 	//////////////////////////////////////////////////////////////////////
 
-				constexpr auto big_divisor = compute_power<kappa + 1>(std::uint32_t(10));
+			// small_divisor_case_label:
+			// 	ret_value.significand *= 10;
+			// 	ret_value.significand -= div::small_division_by_pow10<kappa>(r);
+			// 	ret_value.exponent = minus_k + kappa;
+			// 	TrailingZeroPolicy::template no_trailing_zeros<impl>(ret_value);
+			// 	return ret_value;
+			// }
 
-				// Using an upper bound on zi, we might be able to optimize the division
-				// better than the compiler; we are computing zi / big_divisor here.
-				ret_value.significand = div::divide_by_pow10<kappa + 1,
-					significand_bits + kappa + 2, kappa + 1>(zi);
-				auto const r = std::uint32_t(zi - big_divisor * ret_value.significand);
+			// template <class ReturnType, class TrailingZeroPolicy, class CachePolicy>
+			// STRF_HD JKJ_SAFEBUFFERS static ReturnType compute_right_closed_directed(
+			// 		carrier_uint const two_fc, int const exponent, bool shorter_interval) noexcept
+			// {
+			// 	//////////////////////////////////////////////////////////////////////
+			// 	// Step 1: Schubfach multiplier calculation
+			// 	//////////////////////////////////////////////////////////////////////
 
-				if (r > deltai) {
-					goto small_divisor_case_label;
-				}
-				else if (r == deltai) {
-					// Compare the fractional parts.
-					if (shorter_interval) {
-						if (!compute_mul_parity((two_fc * 2) - 1, cache, beta_minus_1 - 1))
-						{
-							goto small_divisor_case_label;
-						}
-					}
-					else {
-						if (!compute_mul_parity(two_fc - 1, cache, beta_minus_1))
-						{
-							goto small_divisor_case_label;
-						}
-					}
-				}
+			// 	ReturnType ret_value;
 
-				// The floor is inside, so we are done.
-				ret_value.exponent = minus_k + kappa + 1;
-				TrailingZeroPolicy::template on_trailing_zeros<impl>(ret_value);
-				return ret_value;
+			// 	// Compute k and beta.
+			// 	int const minus_k = log::floor_log10_pow2(exponent - (shorter_interval ? 1 : 0)) - kappa;
+			// 	auto const cache = CachePolicy::template get_cache<format>(-minus_k);
+			// 	int const beta_minus_1 = exponent + log::floor_log2_pow10(-minus_k);
+
+			// 	// Compute zi and deltai.
+			// 	// 10^kappa <= deltai < 10^(kappa + 1)
+			// 	auto const deltai = shorter_interval ?
+			// 		compute_delta(cache, beta_minus_1 - 1) :
+			// 		compute_delta(cache, beta_minus_1);
+			// 	carrier_uint const zi = compute_mul(two_fc << beta_minus_1, cache);
 
 
-				//////////////////////////////////////////////////////////////////////
-				// Step 3: Find the significand with the small divisor
-				//////////////////////////////////////////////////////////////////////
+			// 	//////////////////////////////////////////////////////////////////////
+			// 	// Step 2: Try larger divisor; remove trailing zeros if necessary
+			// 	//////////////////////////////////////////////////////////////////////
 
-			small_divisor_case_label:
-				ret_value.significand *= 10;
-				ret_value.significand += div::small_division_by_pow10<kappa>(r);
-				ret_value.exponent = minus_k + kappa;
-				TrailingZeroPolicy::template no_trailing_zeros<impl>(ret_value);
-				return ret_value;
-			}
+			// 	constexpr auto big_divisor = compute_power<kappa + 1>(std::uint32_t(10));
+
+			// 	// Using an upper bound on zi, we might be able to optimize the division
+			// 	// better than the compiler; we are computing zi / big_divisor here.
+			// 	ret_value.significand = div::divide_by_pow10<kappa + 1,
+			// 		significand_bits + kappa + 2, kappa + 1>(zi);
+			// 	auto const r = std::uint32_t(zi - big_divisor * ret_value.significand);
+
+			// 	if (r > deltai) {
+			// 		goto small_divisor_case_label;
+			// 	}
+			// 	else if (r == deltai) {
+			// 		// Compare the fractional parts.
+			// 		if (shorter_interval) {
+			// 			if (!compute_mul_parity((two_fc * 2) - 1, cache, beta_minus_1 - 1))
+			// 			{
+			// 				goto small_divisor_case_label;
+			// 			}
+			// 		}
+			// 		else {
+			// 			if (!compute_mul_parity(two_fc - 1, cache, beta_minus_1))
+			// 			{
+			// 				goto small_divisor_case_label;
+			// 			}
+			// 		}
+			// 	}
+
+			// 	// The floor is inside, so we are done.
+			// 	ret_value.exponent = minus_k + kappa + 1;
+			// 	TrailingZeroPolicy::template on_trailing_zeros<impl>(ret_value);
+			// 	return ret_value;
+
+
+			// 	//////////////////////////////////////////////////////////////////////
+			// 	// Step 3: Find the significand with the small divisor
+			// 	//////////////////////////////////////////////////////////////////////
+
+			// small_divisor_case_label:
+			// 	ret_value.significand *= 10;
+			// 	ret_value.significand += div::small_division_by_pow10<kappa>(r);
+			// 	ret_value.exponent = minus_k + kappa;
+			// 	TrailingZeroPolicy::template no_trailing_zeros<impl>(ret_value);
+			// 	return ret_value;
+			// }
 
 			STRF_HD static constexpr bool is_right_endpoint_integer_shorter_interval(int exponent) noexcept {
 				return exponent >= case_shorter_interval_right_endpoint_lower_threshold &&
@@ -3217,341 +3233,98 @@ namespace dragonbox {
 				}
 			}
 		};
-
-
-		////////////////////////////////////////////////////////////////////////////////////////
-		// Policy holder.
-		////////////////////////////////////////////////////////////////////////////////////////
-
-		namespace policy_impl {
-			// The library will specify a list of accepted kinds of policies and their defaults,
-			// and the user will pass a list of policies. The aim of helper classes/functions here
-			// is to do the following:
-			//   1. Check if the policy parameters given by the user are all valid; that means,
-			//      each of them should be of the kinds specified by the library.
-			//      If that's not the case, then the compilation fails.
-			//   2. Check if multiple policy parameters for the same kind is specified by the user.
-			//      If that's the case, then the compilation fails.
-			//   3. Build a class deriving from all policies the user have given, and also from
-			//      the default policies if the user did not specify one for some kinds.
-			// A policy belongs to a certain kind if it is deriving from a base class.
-
-			// For a given kind, find a policy belonging to that kind.
-			// Check if there are more than one such policies.
-			enum class policy_found_info {
-				not_found, unique, repeated
-			};
-			template <class Policy, policy_found_info info>
-			struct found_policy_pair {
-				using policy = Policy;
-				static constexpr auto found_info = info;
-			};
-
-			template <class Base, class... Policies>
-			struct base_default_pair_get_policy;
-
-			template <class Base, class... Policies>
-			using base_default_pair_get_policy_t
-				= typename base_default_pair_get_policy<Base, Policies...>::type;
-
-			template <class Base, class FoundPolicyInfo>
-			struct base_default_pair_get_policy<Base, FoundPolicyInfo> {
-				using type = FoundPolicyInfo;
-			};
-
-			template <class Base, class FoundPolicyInfo, class FirstPolicy, class... RemainingPolicies>
-			struct base_default_pair_get_policy<Base, FoundPolicyInfo, FirstPolicy, RemainingPolicies...> {
-				using type = base_default_pair_get_policy_t
-					< Base
-					, std::conditional_t
-						< std::is_base_of<Base, FirstPolicy>::value
-						, found_policy_pair
-							< FirstPolicy
-							, ( FoundPolicyInfo::found_info == policy_found_info::not_found
-								? policy_found_info::unique
-								: policy_found_info::repeated ) >
-						, FoundPolicyInfo >
-					, RemainingPolicies... >;
-			};
-
-			template <class Base, class DefaultPolicy>
-			struct base_default_pair {
-				using base = Base;
-
-				template <class... Policies>
-				using get_policy = base_default_pair_get_policy_t
-						< Base
-						, found_policy_pair<DefaultPolicy, policy_found_info::not_found>
-						, Policies... >;
-			};
-			template <class... BaseDefaultPairs>
-			struct base_default_pair_list {};
-
-			// Check if a given policy belongs to one of the kinds specified by the library.
-			template <class Policy>
-			STRF_HD constexpr bool check_policy_validity(Policy, base_default_pair_list<>)
-			{
-				return false;
-			}
-			template <class Policy, class FirstBaseDefaultPair, class... RemainingBaseDefaultPairs>
-			STRF_HD constexpr bool check_policy_validity(Policy,
-				base_default_pair_list<FirstBaseDefaultPair, RemainingBaseDefaultPairs...>)
-			{
-				return std::is_base_of<typename FirstBaseDefaultPair::base, Policy>::value ||
-					check_policy_validity(Policy{}, base_default_pair_list< RemainingBaseDefaultPairs...>{});
-			}
-
-			template <class BaseDefaultPairList>
-			STRF_HD constexpr bool check_policy_list_validity(BaseDefaultPairList) {
-				return true;
-			}
-
-			template <class BaseDefaultPairList, class FirstPolicy, class... RemainingPolicies>
-			STRF_HD constexpr bool check_policy_list_validity(BaseDefaultPairList,
-				FirstPolicy, RemainingPolicies... remaining_policies)
-			{
-				return check_policy_validity(FirstPolicy{}, BaseDefaultPairList{}) &&
-					check_policy_list_validity(BaseDefaultPairList{}, remaining_policies...);
-			}
-
-			// Build policy_holder.
-			template <bool repeated_, class... FoundPolicyPairs>
-			struct found_policy_pair_list {
-				static constexpr bool repeated = repeated_;
-			};
-
-			template <class... Policies>
-			struct policy_holder : Policies... {};
-
-			template <bool repeated, class... FoundPolicyPairs, class... Policies>
-			STRF_HD constexpr auto make_policy_holder_impl(
-				base_default_pair_list<>,
-				found_policy_pair_list<repeated, FoundPolicyPairs...>,
-				Policies...)
-			{
-				return found_policy_pair_list<repeated, FoundPolicyPairs...>{};
-			}
-
-			template <class FirstBaseDefaultPair, class... RemainingBaseDefaultPairs,
-				bool repeated, class... FoundPolicyPairs, class... Policies>
-			STRF_HD constexpr auto make_policy_holder_impl(
-				base_default_pair_list<FirstBaseDefaultPair, RemainingBaseDefaultPairs...>,
-				found_policy_pair_list<repeated, FoundPolicyPairs...>,
-				Policies... policies)
-			{
-				using new_found_policy_pair =
-					typename FirstBaseDefaultPair::template get_policy<Policies...>;
-
-				return make_policy_holder_impl(
-					base_default_pair_list<RemainingBaseDefaultPairs...>{},
-					found_policy_pair_list<
-						repeated || new_found_policy_pair::found_info == policy_found_info::repeated,
-						new_found_policy_pair, FoundPolicyPairs...
-					>{}, policies...);
-			}
-
-			template <bool repeated, class... RawPolicies>
-			STRF_HD constexpr auto convert_to_policy_holder(found_policy_pair_list<repeated>, RawPolicies...) {
-				return policy_holder<RawPolicies...>{};
-			}
-
-			template <bool repeated, class FirstFoundPolicyPair, class... RemainingFoundPolicyPairs, class... RawPolicies>
-			STRF_HD constexpr auto convert_to_policy_holder(
-				found_policy_pair_list<repeated, FirstFoundPolicyPair, RemainingFoundPolicyPairs...>, RawPolicies... policies)
-			{
-				return convert_to_policy_holder(found_policy_pair_list<repeated, RemainingFoundPolicyPairs...>{},
-					typename FirstFoundPolicyPair::policy{}, policies...);
-			}
-
-			template <class BaseDefaultPairList, class... Policies>
-			STRF_HD constexpr auto make_policy_holder(BaseDefaultPairList, Policies... policies) {
-				static_assert(check_policy_list_validity(BaseDefaultPairList{}, Policies{}...),
-					"jkj::dragonbox: an invalid policy is specified");
-
-				using policy_pair_list = decltype(make_policy_holder_impl(BaseDefaultPairList{},
-					found_policy_pair_list<false>{}, policies...));
-
-				static_assert(!policy_pair_list::repeated,
-					"jkj::dragonbox: each policy should be specified at most once");
-
-				return convert_to_policy_holder(policy_pair_list{});
-			}
-		}
-
-		template <class Float, class FloatTraits, class policy_holder>
-		struct to_decimal_internal_functor {
-			using tag_t = policy_impl::decimal_to_binary_rounding::tag_t;
-			using return_type = decimal_fp<
-				typename FloatTraits::carrier_uint,
-				policy_holder::return_has_sign,
-				policy_holder::report_trailing_zeros>;
-			using format = typename FloatTraits::format;
-
-			signed_significand_bits<Float, FloatTraits> s_significand_bits;
-			unsigned exponent_bits;
-
-			template <typename I>
-			STRF_HD return_type operator()(I) const {
-				return execute<I>(std::integral_constant<tag_t, I::tag>{});
-			}
-
-			template <typename I>
-			STRF_HD return_type execute(std::integral_constant<tag_t, tag_t::to_nearest>) const {
-				auto two_fc = s_significand_bits.remove_sign_bit_and_shift();
-				auto exponent = int(exponent_bits);
-					// Is the input a normal number?
-				if (exponent != 0) {
-					exponent += format::exponent_bias - format::significand_bits;
-
-					// Shorter interval case; proceed like Schubfach.
-					// One might think this condition is wrong,
-					// since when exponent_bits == 1 and two_fc == 0,
-					// the interval is actullay regular.
-					// However, it turns out that this seemingly wrong condition
-					// is actually fine, because the end result is anyway the same.
-					//
-					// [binary32]
-					// floor( (fc-1/2) * 2^e ) = 1.175'494'28... * 10^-38
-					// floor( (fc-1/4) * 2^e ) = 1.175'494'31... * 10^-38
-					// floor(    fc    * 2^e ) = 1.175'494'35... * 10^-38
-					// floor( (fc+1/2) * 2^e ) = 1.175'494'42... * 10^-38
-					//
-					// Hence, shorter_interval_case will return 1.175'494'4 * 10^-38.
-					// 1.175'494'3 * 10^-38 is also a correct shortest representation
-					// that will be rejected if we assume shorter interval,
-					// but 1.175'494'4 * 10^-38 is closer to the true value so it doesn't matter.
-					//
-					// [binary64]
-					// floor( (fc-1/2) * 2^e ) = 2.225'073'858'507'201'13... * 10^-308
-					// floor( (fc-1/4) * 2^e ) = 2.225'073'858'507'201'25... * 10^-308
-					// floor(    fc    * 2^e ) = 2.225'073'858'507'201'38... * 10^-308
-					// floor( (fc+1/2) * 2^e ) = 2.225'073'858'507'201'63... * 10^-308
-					//
-					// Hence, shorter_interval_case will return 2.225'073'858'507'201'4 * 10^-308.
-					// This is indeed of the shortest length, and it is the unique one
-					// closest to the true value among valid representations of the same length.
-					static_assert(std::is_same<format, ieee754_binary32>::value ||
-						std::is_same<format, ieee754_binary64>::value, "");
-
-					if (two_fc == 0) {
-						return I::invoke_shorter_interval_case(
-							s_significand_bits, [exponent](auto... additional_args) {
-								return detail::impl<Float, FloatTraits>::template compute_nearest_shorter<
-									return_type,
-									typename I::shorter_interval_type,
-									typename policy_holder::trailing_zero_policy,
-									typename policy_holder::binary_to_decimal_rounding_policy,
-									typename policy_holder::cache_policy
-								>(exponent, additional_args...);
-							});
-					}
-
-					two_fc |= (decltype(two_fc)(1) << (format::significand_bits + 1));
-				}
-				// Is the input a subnormal number?
-				else {
-					exponent = format::min_exponent - format::significand_bits;
-				}
-
-				return I::invoke_normal_interval_case(
-					s_significand_bits, [two_fc, exponent](auto... additional_args) {
-						return detail::impl<Float, FloatTraits>::template compute_nearest_normal<
-							return_type,
-							typename I::normal_interval_type,
-							typename policy_holder::trailing_zero_policy,
-							typename policy_holder::binary_to_decimal_rounding_policy,
-							typename policy_holder::cache_policy
-						>(two_fc, exponent, additional_args...);
-					});
-			}
-			template <typename I>
-			STRF_HD return_type execute(std::integral_constant<tag_t, tag_t::left_closed_directed>) const {
-				auto two_fc = s_significand_bits.remove_sign_bit_and_shift();
-				auto exponent = int(exponent_bits);
-				// Is the input a normal number?
-				if (exponent != 0) {
-					exponent += format::exponent_bias - format::significand_bits;
-					two_fc |= (decltype(two_fc)(1) << (format::significand_bits + 1));
-				}
-				// Is the input a subnormal number?
-				else {
-					exponent = format::min_exponent - format::significand_bits;
-				}
-				return detail::impl<Float>::template compute_left_closed_directed<
-					return_type,
-					typename policy_holder::trailing_zero_policy,
-					typename policy_holder::cache_policy
-					>(two_fc, exponent);
-			}
-			template <typename I>
-			STRF_HD return_type execute(std::integral_constant < tag_t, tag_t::right_closed_directed>) const {
-				auto two_fc = s_significand_bits.remove_sign_bit_and_shift();
-				auto exponent = int(exponent_bits);
-				bool shorter_interval = false;
-
-				// Is the input a normal number?
-				if (exponent != 0) {
-					if (two_fc == 0 && exponent != 1) {
-						shorter_interval = true;
-					}
-					exponent += format::exponent_bias - format::significand_bits;
-					two_fc |= (decltype(two_fc)(1) << (format::significand_bits + 1));
-				}
-				// Is the input a subnormal number?
-				else {
-					exponent = format::min_exponent - format::significand_bits;
-				}
-
-				return detail::impl<Float>::template compute_right_closed_directed<
-					return_type,
-					typename policy_holder::trailing_zero_policy,
-					typename policy_holder::cache_policy
-					>(two_fc, exponent, shorter_interval);
-			}
-		};
 	}
 
+	template <typename Float>
+	using return_type = decimal_fp<
+		typename default_float_traits<Float>::carrier_uint,
+		false,   // return_has_sign,
+		false >; // report_trailing_zeros;
 
-	////////////////////////////////////////////////////////////////////////////////////////
-	// The interface function.
-	////////////////////////////////////////////////////////////////////////////////////////
-
-	template <class Float, class FloatTraits = default_float_traits<Float>, class... Policies>
-	STRF_HD JKJ_SAFEBUFFERS auto to_decimal(signed_significand_bits<Float, FloatTraits> s_significand_bits,
-		unsigned int exponent_bits, Policies... policies) noexcept
+	template <class Float>
+	STRF_HD auto to_decimal(Float x) -> return_type<Float>
 	{
-		// Build policy holder type.
-		using namespace detail::policy_impl;
-		using policy_holder = decltype(make_policy_holder(
-			base_default_pair_list<
-			base_default_pair<sign::base, sign::return_sign>,
-			base_default_pair<trailing_zero::base, trailing_zero::remove>,
-			base_default_pair<decimal_to_binary_rounding::base, decimal_to_binary_rounding::nearest_to_even>,
-			base_default_pair<binary_to_decimal_rounding::base, binary_to_decimal_rounding::to_even>,
-			base_default_pair<cache::base, cache::full>
-			>{}, policies...));
-
-		detail::to_decimal_internal_functor<Float, FloatTraits, policy_holder> f
-			{ s_significand_bits, exponent_bits};
-		auto ret = policy_holder::delegate(s_significand_bits, f);
-		policy_holder::handle_sign(s_significand_bits, ret);
-		return ret;
-	}
-
-	template <class Float, class FloatTraits = default_float_traits<Float>, class... Policies>
-	STRF_HD auto to_decimal(Float x, Policies... policies) noexcept
-	{
+		using FloatTraits = default_float_traits<Float>;
+		using format = typename FloatTraits::format;
 		auto const br = float_bits<Float, FloatTraits>(x);
 		auto const exponent_bits = br.extract_exponent_bits();
-		auto const s = br.remove_exponent_bits(exponent_bits);
+		auto const significand_bits = br.remove_exponent_bits(exponent_bits);
 		assert(br.is_finite());
 
-		return to_decimal<Float, FloatTraits>(s, exponent_bits, policies...);
+		using dec_to_bin_rounding_poli
+			= detail::policy_impl::decimal_to_binary_rounding::nearest_to_even;
+		using bin_to_dec_rounding_poli
+			= detail::policy_impl::binary_to_decimal_rounding::to_even;
+		using trailing_zero_poli = detail::policy_impl::trailing_zero::remove;
+		using cache_poli = detail::policy_impl::cache::full;
+
+		auto two_fc = significand_bits.remove_sign_bit_and_shift();
+		auto exponent = int(exponent_bits);
+			// Is the input a normal number?
+		if (exponent != 0) {
+			exponent += format::exponent_bias - format::significand_bits;
+
+			// Shorter interval case; proceed like Schubfach.
+			// One might think this condition is wrong,
+			// since when exponent_bits == 1 and two_fc == 0,
+			// the interval is actullay regular.
+			// However, it turns out that this seemingly wrong condition
+			// is actually fine, because the end result is anyway the same.
+			//
+			// [binary32]
+			// floor( (fc-1/2) * 2^e ) = 1.175'494'28... * 10^-38
+			// floor( (fc-1/4) * 2^e ) = 1.175'494'31... * 10^-38
+			// floor(    fc    * 2^e ) = 1.175'494'35... * 10^-38
+			// floor( (fc+1/2) * 2^e ) = 1.175'494'42... * 10^-38
+			//
+			// Hence, shorter_interval_case will return 1.175'494'4 * 10^-38.
+			// 1.175'494'3 * 10^-38 is also a correct shortest representation
+			// that will be rejected if we assume shorter interval,
+			// but 1.175'494'4 * 10^-38 is closer to the true value so it doesn't matter.
+			//
+			// [binary64]
+			// floor( (fc-1/2) * 2^e ) = 2.225'073'858'507'201'13... * 10^-308
+			// floor( (fc-1/4) * 2^e ) = 2.225'073'858'507'201'25... * 10^-308
+			// floor(    fc    * 2^e ) = 2.225'073'858'507'201'38... * 10^-308
+			// floor( (fc+1/2) * 2^e ) = 2.225'073'858'507'201'63... * 10^-308
+			//
+			// Hence, shorter_interval_case will return 2.225'073'858'507'201'4 * 10^-308.
+			// This is indeed of the shortest length, and it is the unique one
+			// closest to the true value among valid representations of the same length.
+			static_assert(std::is_same<format, ieee754_binary32>::value ||
+				std::is_same<format, ieee754_binary64>::value, "");
+
+			if (two_fc == 0) {
+				return detail::impl<Float, FloatTraits>::template compute_nearest_shorter
+						< return_type<Float>
+						, typename dec_to_bin_rounding_poli::shorter_interval_type
+						, trailing_zero_poli
+						, bin_to_dec_rounding_poli
+						, cache_poli >
+					( exponent
+					, dec_to_bin_rounding_poli::get_shorter_interval_type(significand_bits) );
+			}
+			two_fc |= (decltype(two_fc)(1) << (format::significand_bits + 1));
+		}
+		// Is the input a subnormal number?
+		else {
+			exponent = format::min_exponent - format::significand_bits;
+		}
+
+		return detail::impl<Float, FloatTraits>::template compute_nearest_normal
+				< return_type<Float>
+				, typename dec_to_bin_rounding_poli::normal_interval_type
+				, trailing_zero_poli
+				, bin_to_dec_rounding_poli
+				, cache_poli >
+			( two_fc, exponent
+			, dec_to_bin_rounding_poli::get_normal_interval_type(significand_bits) );
 	}
-}
-}
-}
-}
+
+} // namespace dragonbox
+} // namespace jkj
+} // namespace detail
+} // namespace strf
 
 #undef JKJ_HAS_COUNTR_ZERO_INTRINSIC
 #undef JKJ_FORCEINLINE

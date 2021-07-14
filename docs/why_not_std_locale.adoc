@@ -29,18 +29,18 @@ These things may be irrelevant in many scenarios,
 but they are problematic in others.
 They were probably unavoidable back
 in the time `std::locale` was created,
-but we can do better now with C++14.
+but we can do better now with C++11.
 
 // taking more advantange of static polymorfism.
 
-// In C++14, however, we can explore new kinds of designs.
+// In C++11, however, we can explore new kinds of designs.
 // It seemed natural to try something different,
 // something more based on static polymorfism,
 // which is more trendy these days.
 //
 // However, one of goals in strf
 // was to find a design that would take
-// best advantage of what C++14 has to offer.
+// best advantage of what C++11 has to offer.
 // So it would be only natural to try alternatives.
 
 The design of `strf::facets_pack` class template is similar

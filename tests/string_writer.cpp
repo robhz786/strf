@@ -133,9 +133,15 @@ static void test_string_maker()
         auto str = ob.finish();
         TEST_TRUE(str == str0 + str1);
     }
+
+
     {   // test strf::to_basic_string
+#if defined(STRF_HAS_VARIABLE_TEMPLATES)
+
         auto str = strf::to_basic_string<CharT>(tiny_str, tiny_str2, half_str, half_str2);
         TEST_TRUE(str == tiny_str + tiny_str2 + half_str + half_str2);
+
+#endif // defined(STRF_HAS_VARIABLE_TEMPLATES)
     }
 }
 
@@ -194,9 +200,13 @@ static void test_sized_string_maker()
         TEST_TRUE(str == str0 + half_str);
     }
     {   // test strf::to_basic_string.reseve(...)
+#if defined(STRF_HAS_VARIABLE_TEMPLATES)
+
         auto str = strf::to_basic_string<CharT>.reserve(1000)(tiny_str, tiny_str2);
         TEST_TRUE(str == tiny_str + tiny_str2);
         TEST_TRUE(str.capacity() >= 1000);
+
+#endif // defined(STRF_HAS_VARIABLE_TEMPLATES)
     }
 }
 

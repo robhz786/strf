@@ -256,14 +256,14 @@ private:
 
     template <typename Preview>
     using printer_type_ = strf::printer_type
-        < CharT, Preview, FPack, std::remove_cv_t<value_type> >;
+        < CharT, Preview, FPack, strf::detail::remove_cv_t<value_type> >;
 
     STRF_HD void preview_(strf::no_print_preview&) const
     {
     }
 
     template < typename Preview
-             , std::enable_if_t<Preview::something_required, int> = 0 >
+             , strf::detail::enable_if_t<Preview::something_required, int> = 0 >
     STRF_HD void preview_(Preview& preview) const;
 
     const FPack& fp_;
@@ -273,7 +273,7 @@ private:
 
 template <typename CharT, typename FPack, typename It>
 template < typename Preview
-         , std::enable_if_t<Preview::something_required, int> >
+         , strf::detail::enable_if_t<Preview::something_required, int> >
 STRF_HD void range_printer<CharT, FPack, It>::preview_(Preview& preview) const
 {
     for(auto it = begin_; it != end_; ++it) {
@@ -319,14 +319,14 @@ private:
 
     template <typename Preview>
     using printer_type_ = strf::printer_type
-        < CharT, Preview, FPack, std::remove_cv_t<value_type> >;
+        < CharT, Preview, FPack, strf::detail::remove_cv_t<value_type> >;
 
-    constexpr STRF_HD void preview_(strf::no_print_preview&) const
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD void preview_(strf::no_print_preview&) const
     {
     }
 
     template < typename Preview
-             , std::enable_if_t<Preview::something_required, int> = 0 >
+             , strf::detail::enable_if_t<Preview::something_required, int> = 0 >
     STRF_HD void preview_(Preview& preview) const;
 
     const FPack& fp_;
@@ -335,17 +335,19 @@ private:
     const CharT* sep_begin_;
     std::size_t sep_len_;
 
-    template <typename Category>
-    static STRF_HD decltype(auto) use_facet_(const FPack& fp)
+    template < typename Category
+             , typename Tag = strf::range_separator_input_tag<CharT> >
+    static STRF_HD
+    STRF_DECLTYPE_AUTO((strf::use_facet<Category, Tag>(std::declval<FPack>())))
+    use_facet_(const FPack& fp)
     {
-        using sep_tag = strf::range_separator_input_tag<CharT>;
-        return fp.template use_facet<Category, sep_tag>();
+        return fp.template use_facet<Category, Tag>();
     }
 };
 
 template <typename CharT, typename FPack, typename It>
 template < typename Preview
-         , std::enable_if_t<Preview::something_required, int> >
+         , strf::detail::enable_if_t<Preview::something_required, int> >
 STRF_HD void separated_range_printer<CharT, FPack, It>::preview_(Preview& preview) const
 {
     std::size_t count = 0;
@@ -362,7 +364,7 @@ STRF_HD void separated_range_printer<CharT, FPack, It>::preview_(Preview& previe
         return;
     }
     if (Preview::width_required) {
-        decltype(auto) wcalc = use_facet_<strf::width_calculator_c>(fp_);
+        auto&& wcalc = use_facet_<strf::width_calculator_c>(fp_);
         auto dw = wcalc.str_width( use_facet_<strf::charset_c<CharT>>(fp_)
                                  , preview.remaining_width()
                                  , sep_begin_
@@ -434,7 +436,7 @@ private:
     }
 
     template < typename Preview
-             , std::enable_if_t<Preview::something_required, int> = 0 >
+             , strf::detail::enable_if_t<Preview::something_required, int> = 0 >
     STRF_HD void preview_(Preview& preview) const;
 
     const FPack& fp_;
@@ -447,7 +449,7 @@ template < typename CharT
          , typename It
          , typename ... Fmts >
 template < typename Preview
-         , std::enable_if_t<Preview::something_required, int> >
+         , strf::detail::enable_if_t<Preview::something_required, int> >
 STRF_HD void fmt_range_printer<CharT, FPack, It, Fmts ...>::preview_
     ( Preview& preview ) const
 {
@@ -515,17 +517,19 @@ private:
     }
 
     template < typename Preview
-             , std::enable_if_t<Preview::something_required, int> = 0 >
+             , strf::detail::enable_if_t<Preview::something_required, int> = 0 >
     STRF_HD void preview_(Preview& preview) const;
 
     const FPack& fp_;
     fmt_type_adapted_ fmt_;
 
-    template <typename Category>
-    static inline STRF_HD decltype(auto) use_facet_(const FPack& fp)
+    template < typename Category
+             , typename Tag = strf::range_separator_input_tag<CharT>>
+    static inline STRF_HD
+    STRF_DECLTYPE_AUTO((strf::use_facet<Category, Tag>(*(const FPack*)0)))
+    use_facet_(const FPack& fp)
     {
-        using sep_tag = strf::range_separator_input_tag<CharT>;
-        return fp.template use_facet<Category, sep_tag>();
+        return fp.template use_facet<Category, Tag>();
     }
 };
 
@@ -534,7 +538,7 @@ template< typename CharT
         , typename It
         , typename ... Fmts >
 template < typename Preview
-         , std::enable_if_t<Preview::something_required, int> >
+         , strf::detail::enable_if_t<Preview::something_required, int> >
 STRF_HD void fmt_separated_range_printer<CharT, FPack, It, Fmts ...>::preview_
     ( Preview& preview ) const
 {
@@ -555,7 +559,7 @@ STRF_HD void fmt_separated_range_printer<CharT, FPack, It, Fmts ...>::preview_
         return;
     }
     if (Preview::width_required) {
-        decltype(auto) wcalc = use_facet_<strf::width_calculator_c>(fp_);
+        auto&& wcalc = use_facet_<strf::width_calculator_c>(fp_);
         auto dw = wcalc.str_width( use_facet_<strf::charset_c<CharT>>(fp_)
                                  , preview.remaining_width()
                                  , r.sep_begin
@@ -620,7 +624,7 @@ private:
     using printer_type_ = strf::printer_type
         < CharT
         , Preview, FPack
-        , std::remove_reference_t
+        , strf::detail::remove_reference_t
             < decltype(std::declval<Op>()(*std::declval<iterator>())) > >;
 
     STRF_HD void preview_(strf::no_print_preview&) const
@@ -628,7 +632,7 @@ private:
     }
 
     template < typename Preview
-             , std::enable_if_t<Preview::something_required, int> = 0 >
+             , strf::detail::enable_if_t<Preview::something_required, int> = 0 >
     STRF_HD void preview_(Preview& preview) const;
 
     const FPack& fp_;
@@ -639,7 +643,7 @@ private:
 
 template <typename CharT, typename FPack, typename It, typename UnaryOp>
 template < typename Preview
-         , std::enable_if_t<Preview::something_required, int> >
+         , strf::detail::enable_if_t<Preview::something_required, int> >
 STRF_HD void transformed_range_printer<CharT, FPack, It, UnaryOp>
     ::preview_(Preview& preview) const
 {
@@ -689,14 +693,14 @@ private:
     using printer_type_ = strf::printer_type
         < CharT
         , Preview, FPack
-        , std::remove_reference_t
+        , strf::detail::remove_reference_t
             < decltype(std::declval<Op>()(*std::declval<iterator>())) > >;
 
     STRF_HD void preview_(strf::no_print_preview&) const
     {
     }
 
-    template <typename Preview, std::enable_if_t<Preview::something_required, int> = 0>
+    template <typename Preview, strf::detail::enable_if_t<Preview::something_required, int> = 0>
     STRF_HD void preview_(Preview& preview) const;
 
     const FPack& fp_;
@@ -706,17 +710,19 @@ private:
     std::size_t sep_len_;
     UnaryOp op_;
 
-    template <typename Category>
-    static STRF_HD decltype(auto) use_facet_(const FPack& fp)
+    template < typename Category
+             , typename Tag = strf::range_separator_input_tag<CharT> >
+    static STRF_HD
+    STRF_DECLTYPE_AUTO((strf::use_facet<Category, Tag>(std::declval<FPack>())))
+    use_facet_(const FPack& fp)
     {
-        using sep_tag = strf::range_separator_input_tag<CharT>;
-        return fp.template use_facet<Category, sep_tag>();
+        return fp.template use_facet<Category, Tag>();
     }
 };
 
 template <typename CharT, typename FPack, typename It, typename UnaryOp>
 template < typename Preview
-         , std::enable_if_t<Preview::something_required, int> >
+         , strf::detail::enable_if_t<Preview::something_required, int> >
 STRF_HD void sep_transformed_range_printer<CharT, FPack, It, UnaryOp>
     ::preview_(Preview& preview) const
 {
@@ -735,7 +741,7 @@ STRF_HD void sep_transformed_range_printer<CharT, FPack, It, UnaryOp>
         return;
     }
     if (Preview::width_required) {
-        decltype(auto) wcalc = use_facet_<strf::width_calculator_c>(fp_);
+        auto&& wcalc = use_facet_<strf::width_calculator_c>(fp_);
         auto dw = wcalc.str_width( use_facet_<strf::charset_c<CharT>>(fp_)
                                  , preview.remaining_width()
                                  , sep_begin_
@@ -772,38 +778,39 @@ STRF_HD void sep_transformed_range_printer<CharT, FPack, It, UnaryOp>::print_to
 } // namespace detail
 
 template <typename It>
-inline STRF_HD auto range(It begin, It end)
+inline STRF_HD strf::range_p<It> range(It begin, It end)
 {
-    return strf::range_p<It>{begin, end};
+    return {begin, end};
 }
 
 template <typename It, typename CharT>
 inline STRF_HD auto separated_range(It begin, It end, const CharT* sep)
+    -> strf::separated_range_p<It, CharT>
 {
     std::size_t sep_len = strf::detail::str_length<CharT>(sep);
-    return strf::separated_range_p<It, CharT>
-        {begin, end, sep, sep_len};
+    return {begin, end, sep, sep_len};
 }
 
 template < typename Range
          , typename It = typename Range::const_iterator
          , typename = decltype(std::declval<const Range&>().begin())
          , typename = decltype(std::declval<const Range&>().end()) >
-inline STRF_HD auto range(const Range& r)
+inline STRF_HD auto range(const Range& r) -> strf::range_p<It>
 {
-    return strf::range_p<It>{r.begin(), r.end()};
+    return {r.begin(), r.end()};
 }
 
 template <typename T>
 inline STRF_HD auto range(std::initializer_list<T> r)
+    -> strf::range_p<const T*>
 {
-    return strf::range_p<const T*>{r.begin(), r.end()};
+    return {r.begin(), r.end()};
 }
 
 template <typename T, std::size_t N>
-inline STRF_HD auto range(T (&array)[N])
+inline STRF_HD auto range(T (&array)[N]) -> strf::range_p<const T*>
 {
-    return strf::range_p<const T*>{&array[0], &array[0] + N};
+    return {&array[0], &array[0] + N};
 }
 
 template < typename Range
@@ -811,36 +818,39 @@ template < typename Range
          , typename = decltype(std::declval<const Range&>().begin())
          , typename = decltype(std::declval<const Range&>().end()) >
 inline STRF_HD auto separated_range(const Range& r, const CharT* sep)
+    -> strf::separated_range_p
+        <typename Range::const_iterator, CharT>
 {
     std::size_t sep_len = strf::detail::str_length<CharT>(sep);
-    return strf::separated_range_p
-        <typename Range::const_iterator, CharT>
-        {r.begin(), r.end(), sep, sep_len};
+    return {r.begin(), r.end(), sep, sep_len};
 }
 
 template < typename T, typename CharT >
 inline STRF_HD auto separated_range(std::initializer_list<T> r, const CharT* sep)
+    -> strf::separated_range_p<const T*, CharT>
 {
     std::size_t sep_len = strf::detail::str_length<CharT>(sep);
-    return strf::separated_range_p<const T*, CharT>{r.begin(), r.end(), sep, sep_len};
+    return {r.begin(), r.end(), sep, sep_len};
 }
 
 template <typename T, std::size_t N, typename CharT>
 inline STRF_HD auto separated_range(T (&array)[N], const CharT* sep)
+    -> strf::separated_range_p<const T*, CharT>
 {
     std::size_t sep_len = strf::detail::str_length<CharT>(sep);
-    return strf::separated_range_p<const T*, CharT>
-        {&array[0], &array[0] + N, sep, sep_len};
+    return {&array[0], &array[0] + N, sep, sep_len};
 }
 
 template <typename It>
 inline STRF_HD auto fmt_range(It begin, It end)
+    -> strf::range_with_formatters<It>
 {
     return strf::range_with_formatters<It>{{begin, end}};
 }
 
 template <typename It, typename CharT>
 inline STRF_HD auto fmt_separated_range(It begin, It end, const CharT* sep)
+    -> strf::sep_range_with_formatters<It, CharT>
 {
     std::size_t sep_len = strf::detail::str_length<CharT>(sep);
     return strf::sep_range_with_formatters<It, CharT>
@@ -862,15 +872,15 @@ template <typename T>
 constexpr STRF_HD strf::range_with_formatters<const T*>
 fmt_range(std::initializer_list<T> r) noexcept
 {
-    strf::range_p<const T*> rr{r.begin(), r.end()};
-    return strf::range_with_formatters<const T*>{rr};
+    return strf::range_with_formatters<const T*>
+        { strf::range_p<const T*>{r.begin(), r.end()} };
 }
 
 template <typename T, std::size_t N>
 inline STRF_HD auto fmt_range(T (&array)[N])
+    -> strf::range_with_formatters<const T*>
 {
-    using fmt_type = strf::range_with_formatters<const T*>;
-    return fmt_type{{&array[0], &array[0] + N}};
+    return strf::range_with_formatters<const T*>{{&array[0], &array[0] + N}};
 }
 
 template < typename Range
@@ -879,6 +889,7 @@ template < typename Range
          , typename = decltype(std::declval<const Range&>().begin())
          , typename = decltype(std::declval<const Range&>().end()) >
 inline STRF_HD auto fmt_separated_range(const Range& r, const CharT* sep)
+    -> strf::sep_range_with_formatters<It, CharT>
 {
     std::size_t sep_len = strf::detail::str_length<CharT>(sep);
     strf::separated_range_p<It, CharT> rr
@@ -889,6 +900,7 @@ inline STRF_HD auto fmt_separated_range(const Range& r, const CharT* sep)
 
 template <typename T, typename CharT>
 inline STRF_HD auto fmt_separated_range(std::initializer_list<T> r, const CharT* sep) noexcept
+    -> strf::sep_range_with_formatters<const T*, CharT>
 {
     std::size_t sep_len = strf::detail::str_length<CharT>(sep);
     strf::separated_range_p<const T*, CharT> rr
@@ -898,6 +910,7 @@ inline STRF_HD auto fmt_separated_range(std::initializer_list<T> r, const CharT*
 
 template <typename T, std::size_t N, typename CharT>
 inline STRF_HD auto fmt_separated_range(T (&array)[N], const CharT* sep)
+    -> strf::sep_range_with_formatters<const T*, CharT>
 {
     std::size_t sep_len = strf::detail::str_length<CharT>(sep);
     return strf::sep_range_with_formatters<const T*, CharT>
@@ -909,8 +922,9 @@ template < typename It
          , typename
            = decltype(std::declval<const UnaryOp&>()(*std::declval<const It&>())) >
 inline STRF_HD auto range(It begin, It end, UnaryOp op)
+    -> strf::transformed_range_p<It, UnaryOp>
 {
-    return strf::transformed_range_p<It, UnaryOp>{begin, end, op};
+    return {begin, end, op};
 }
 
 template < typename Range
@@ -921,8 +935,9 @@ template < typename Range
          , typename = decltype(std::declval<const Range&>().begin())
          , typename = decltype(std::declval<const Range&>().end()) >
 inline STRF_HD auto range(const Range& r, UnaryOp op)
+    -> strf::transformed_range_p<It, UnaryOp>
 {
-    return strf::transformed_range_p<It, UnaryOp>{r.begin(), r.end(), op};
+    return {r.begin(), r.end(), op};
 }
 
 template < typename T
@@ -930,8 +945,9 @@ template < typename T
          , typename
            = decltype(std::declval<const UnaryOp&>()(std::declval<const T&>())) >
 inline STRF_HD auto range(std::initializer_list<T> r, UnaryOp op)
+    -> strf::transformed_range_p<const T*, UnaryOp>
 {
-    return strf::transformed_range_p<const T*, UnaryOp>{r.begin(), r.end(), op};
+    return {r.begin(), r.end(), op};
 }
 
 
@@ -941,9 +957,9 @@ template < typename T
          , typename UnaryOp
          , typename = decltype(std::declval<const UnaryOp&>()(*(T*)0)) >
 inline STRF_HD auto range(T (&array)[N], UnaryOp op)
+    -> strf::transformed_range_p<const T*, UnaryOp>
 {
-    return strf::transformed_range_p<const T*, UnaryOp>
-        {&array[0], &array[0] + N, op};
+    return {&array[0], &array[0] + N, op};
 }
 
 template < typename It
@@ -951,10 +967,10 @@ template < typename It
          , typename UnaryOp
          , typename = decltype(std::declval<const UnaryOp&>()(*std::declval<const It&>())) >
 inline STRF_HD auto separated_range(It begin, It end, const CharT* sep, UnaryOp op)
+    -> strf::separated_transformed_range_p<It, CharT, UnaryOp>
 {
     std::size_t sep_len = strf::detail::str_length(sep);
-    return strf::separated_transformed_range_p<It, CharT, UnaryOp>
-        { begin, end, sep, sep_len, op };
+    return { begin, end, sep, sep_len, op };
 }
 
 template < typename Range
@@ -965,10 +981,10 @@ template < typename Range
          , typename = decltype(std::declval<const Range&>().begin())
          , typename = decltype(std::declval<const Range&>().end()) >
 inline STRF_HD auto separated_range(const Range& r, const CharT* sep, UnaryOp op)
+    -> strf::separated_transformed_range_p<It, CharT, UnaryOp>
 {
     std::size_t sep_len = strf::detail::str_length(sep);
-    return strf::separated_transformed_range_p<It, CharT, UnaryOp>
-        { r.begin(), r.end(), sep, sep_len, op };
+    return { r.begin(), r.end(), sep, sep_len, op };
 }
 
 template < typename T
@@ -976,10 +992,10 @@ template < typename T
          , typename UnaryOp
          , typename = decltype(std::declval<const UnaryOp&>()(std::declval<const T&>())) >
 inline STRF_HD auto separated_range(std::initializer_list<T> r, const CharT* sep, UnaryOp op)
+    -> strf::separated_transformed_range_p<const T*, CharT, UnaryOp>
 {
     std::size_t sep_len = strf::detail::str_length(sep);
-    return strf::separated_transformed_range_p<const T*, CharT, UnaryOp>
-        { r.begin(), r.end(), sep, sep_len, op };
+    return { r.begin(), r.end(), sep, sep_len, op };
 }
 
 template < typename T
@@ -988,10 +1004,10 @@ template < typename T
          , typename UnaryOp
          , typename = decltype(std::declval<const UnaryOp&>()(*(T*)0)) >
 inline STRF_HD auto separated_range(T (&array)[N], const CharT* sep, UnaryOp op)
+    -> strf::separated_transformed_range_p<const T*, CharT, UnaryOp>
 {
     std::size_t sep_len = strf::detail::str_length(sep);
-    return strf::separated_transformed_range_p<const T*, CharT, UnaryOp>
-        { &array[0], &array[0] + N, sep, sep_len, op };
+    return { &array[0], &array[0] + N, sep, sep_len, op };
 }
 
 } // namespace strf

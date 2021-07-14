@@ -93,15 +93,30 @@ environment:
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
       GENERATOR: Visual Studio 15 2017
       ARCH: x64
-      CONFIG: Debug
+      CONFIG: Release
       CXX_STANDARD: 17
 
     - FLAVOR: Visual Studio 2017 C++14 (Default)
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
       GENERATOR: Visual Studio 15 2017
       ARCH: x64
-      CONFIG: Debug
+      CONFIG: Release
       CXX_STANDARD: 14
+
+    - FLAVOR: Visual Studio 2017 C++11 (Default)
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      GENERATOR: Visual Studio 15 2017
+      ARCH: x64
+      CONFIG: Debug
+      CXX_STANDARD: 11
+
+    - FLAVOR: Visual Studio 2017 C++11 (Default)
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      GENERATOR: Visual Studio 15 2017
+      ARCH: x64
+      CONFIG: Release
+      CXX_STANDARD: 11
+
 
 build_script:
   - ci\appveyor\build.bat

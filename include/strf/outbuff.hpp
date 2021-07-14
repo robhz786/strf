@@ -42,8 +42,8 @@ public:
 
     STRF_HD basic_outbuff(const basic_outbuff&) = delete;
     STRF_HD basic_outbuff(basic_outbuff&&) = delete;
-    basic_outbuff& STRF_HD operator=(const basic_outbuff&) = delete;
-    basic_outbuff& STRF_HD operator=(basic_outbuff&&) = delete;
+    basic_outbuff& operator=(const basic_outbuff&) = delete;
+    basic_outbuff& operator=(basic_outbuff&&) = delete;
 
     virtual STRF_HD ~basic_outbuff() { };
 

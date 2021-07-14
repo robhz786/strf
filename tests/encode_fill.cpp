@@ -4,7 +4,6 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include "test_utils.hpp"
-#include <strf/to_string.hpp>
 
 #if ! defined(__cpp_char8_t)
 using char8_t = char;

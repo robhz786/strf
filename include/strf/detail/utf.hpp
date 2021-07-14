@@ -534,7 +534,7 @@ using utf32_to_utf32 = strf::static_transcoder
 
 template <typename SrcCharT, typename DestCharT>
 using utf_to_utf = strf::static_transcoder
-    < SrcCharT, DestCharT, strf::csid_utf<SrcCharT>, strf::csid_utf<DestCharT> >;
+    < SrcCharT, DestCharT, strf::get_csid_utf<SrcCharT>(), strf::get_csid_utf<DestCharT>() >;
 
 template <typename CharT>
 class static_charset<CharT, strf::csid_utf8>
@@ -643,7 +643,7 @@ public:
     find_transcoder_to(strf::charset_id id) noexcept
     {
         using transcoder_type = strf::dynamic_transcoder<CharT, DestCharT>;
-        if (id == strf::csid_utf<DestCharT>) {
+        if (id == strf::get_csid_utf<DestCharT>()) {
             return transcoder_type{strf::utf_to_utf<CharT, DestCharT>{}};
         }
         return {};
@@ -653,7 +653,7 @@ public:
     find_transcoder_from(strf::charset_id id) noexcept
     {
         using transcoder_type = strf::dynamic_transcoder<SrcCharT, CharT>;
-        if (id == strf::csid_utf<SrcCharT>) {
+        if (id == strf::get_csid_utf<SrcCharT>()) {
             return transcoder_type{strf::utf_to_utf<SrcCharT, CharT>{}};
         }
         return {};
@@ -676,9 +676,6 @@ public:
 #if defined (__cpp_char8_t)
             find_transcoder_from<char8_t>,
             find_transcoder_to<char8_t>
-#else
-            nullptr,
-            nullptr
 #endif // defined (__cpp_char8_t)
         };
         return strf::dynamic_charset<CharT>{data};
@@ -789,7 +786,7 @@ public:
     find_transcoder_to(strf::charset_id id) noexcept
     {
         using transcoder_type = strf::dynamic_transcoder<CharT, DestCharT>;
-        if (id == strf::csid_utf<DestCharT>) {
+        if (id == strf::get_csid_utf<DestCharT>()) {
             return transcoder_type{strf::utf_to_utf<CharT, DestCharT>{}};
         }
         return {};
@@ -799,7 +796,7 @@ public:
     find_transcoder_from(strf::charset_id id) noexcept
     {
         using transcoder_type = strf::dynamic_transcoder<SrcCharT, CharT>;
-        if (id == strf::csid_utf<SrcCharT>) {
+        if (id == strf::get_csid_utf<SrcCharT>()) {
             return transcoder_type{strf::utf_to_utf<SrcCharT, CharT>{}};
         }
         return {};
@@ -960,7 +957,7 @@ public:
     find_transcoder_to(strf::charset_id id) noexcept
     {
         using transcoder_type = strf::dynamic_transcoder<CharT, DestCharT>;
-        if (id == strf::csid_utf<DestCharT>) {
+        if (id == strf::get_csid_utf<DestCharT>()) {
             return transcoder_type{strf::utf_to_utf<CharT, DestCharT>{}};
         }
         return {};
@@ -970,7 +967,7 @@ public:
     find_transcoder_from(strf::charset_id id) noexcept
     {
         using transcoder_type = strf::dynamic_transcoder<SrcCharT, CharT>;
-        if (id == strf::csid_utf<SrcCharT>) {
+        if (id == strf::get_csid_utf<SrcCharT>()) {
             return transcoder_type{strf::utf_to_utf<SrcCharT, CharT>{}};
         }
         return {};
@@ -2120,7 +2117,7 @@ template <typename CharT>
 using utf32_t = strf::static_charset<CharT, strf::csid_utf32>;
 
 template <typename CharT>
-using utf_t = strf::static_charset<CharT, strf::csid_utf<CharT>>;
+using utf_t = strf::static_charset<CharT, strf::detail::csid_utf_impl<sizeof(CharT)>::csid>;
 
 #if defined(STRF_HAS_VARIABLE_TEMPLATES)
 

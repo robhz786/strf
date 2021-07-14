@@ -151,7 +151,7 @@ STRF_TEST_FUNC void utf16_sani_find_transcoder()
     using static_transcoder_type = strf::static_transcoder
         <char16_t, char16_t, strf::csid_utf16, strf::csid_utf16>;
 
-    strf::dynamic_charset<char16_t> dyn_cs = strf::utf16<char16_t>.to_dynamic();
+    strf::dynamic_charset<char16_t> dyn_cs = strf::utf16_t<char16_t>{}.to_dynamic();
     strf::dynamic_transcoder<char16_t, char16_t> tr = strf::find_transcoder(dyn_cs, dyn_cs);
 
     TEST_TRUE(tr.transcode_func()      == static_transcoder_type::transcode);
@@ -180,7 +180,7 @@ STRF_TEST_FUNC void utf16_sani_find_transcoder()
 }
 
 template <std::size_t N>
-STRF_HD auto utf16_codepoints_robust_count_strict(const char16_t (&str)[N])
+STRF_HD std::size_t utf16_codepoints_robust_count_strict(const char16_t (&str)[N])
 {
     return strf::utf16_t<char16_t>::codepoints_robust_count
         (str, N - 1, 100000, strf::surrogate_policy::strict)
@@ -188,7 +188,7 @@ STRF_HD auto utf16_codepoints_robust_count_strict(const char16_t (&str)[N])
 }
 
 template <std::size_t N>
-STRF_HD auto utf16_codepoints_robust_count_lax(const char16_t (&str)[N])
+STRF_HD std::size_t utf16_codepoints_robust_count_lax(const char16_t (&str)[N])
 {
     return strf::utf16_t<char16_t>::codepoints_robust_count
         (str, N - 1, 100000, strf::surrogate_policy::lax)
@@ -196,7 +196,7 @@ STRF_HD auto utf16_codepoints_robust_count_lax(const char16_t (&str)[N])
 }
 
 template <std::size_t N>
-STRF_HD auto utf16_codepoints_fast_count(const char16_t (&str)[N])
+STRF_HD std::size_t utf16_codepoints_fast_count(const char16_t (&str)[N])
 {
     return strf::utf16_t<char16_t>::codepoints_fast_count(str, N - 1, 100000).count;
 }

@@ -14,7 +14,7 @@ namespace detail {
 
 template < typename DestCharT
          , typename SrcCharT
-         , std::enable_if_t<!std::is_same<SrcCharT, DestCharT>::value, int> = 0 >
+         , strf::detail::enable_if_t<!std::is_same<SrcCharT, DestCharT>::value, int> = 0 >
 STRF_HD void outbuff_interchar_copy
     ( strf::basic_outbuff<DestCharT>& ob, const SrcCharT* str, std::size_t len )
 {

@@ -27,13 +27,13 @@ class facet_base
 {
 public:
 
-    constexpr STRF_HD facet_base(int v, ctor_log* log = nullptr)
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD facet_base(int v, ctor_log* log = nullptr)
         : value(v)
         , log_(log)
     {
     }
 
-    constexpr STRF_HD facet_base(const facet_base& f)
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD facet_base(const facet_base& f)
         : value(f.value)
         , log_(f.log_)
     {
@@ -43,7 +43,7 @@ public:
         }
     }
 
-    constexpr STRF_HD facet_base(facet_base&& f)
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD facet_base(facet_base&& f)
         : value(f.value)
         , log_(f.log_)
     {
@@ -66,12 +66,12 @@ struct facet;
 template <int N>
 struct facet<N, facet_conf::enable_copy_and_move> : public facet_base
 {
-    constexpr STRF_HD facet(int v, ctor_log* log = nullptr)
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD facet(int v, ctor_log* log = nullptr)
         : facet_base(v, log)
     {
     }
-    constexpr facet(const facet& f) = default;
-    constexpr facet(facet&& f) = default;
+    STRF_CONSTEXPR_IN_CXX14 facet(const facet& f) = default;
+    STRF_CONSTEXPR_IN_CXX14 facet(facet&& f) = default;
 
     using category = fcategory<N>;
 };
@@ -79,11 +79,11 @@ struct facet<N, facet_conf::enable_copy_and_move> : public facet_base
 template <int N>
 struct facet<N, facet_conf::enable_copy> : public facet_base
 {
-    constexpr STRF_HD facet(int v, ctor_log* log = nullptr)
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD facet(int v, ctor_log* log = nullptr)
         : facet_base(v, log)
     {
     }
-    constexpr facet(const facet& f) = default;
+    STRF_CONSTEXPR_IN_CXX14 facet(const facet& f) = default;
 
     using category = fcategory<N>;
 };
@@ -91,12 +91,12 @@ struct facet<N, facet_conf::enable_copy> : public facet_base
 template <int N>
 struct facet<N, facet_conf::enable_only_move> : public facet_base
 {
-    constexpr STRF_HD facet(int v, ctor_log* log = nullptr)
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD facet(int v, ctor_log* log = nullptr)
         : facet_base(v, log)
     {
     }
-    constexpr facet(const facet& f) = delete;
-    constexpr facet(facet&& f) = default;
+    STRF_CONSTEXPR_IN_CXX14 facet(const facet& f) = delete;
+    STRF_CONSTEXPR_IN_CXX14 facet(facet&& f) = default;
 
     using category = fcategory<N>;
 };
@@ -104,12 +104,12 @@ struct facet<N, facet_conf::enable_only_move> : public facet_base
 template <int N>
 struct facet<N, facet_conf::disable_copy_and_move> : public facet_base
 {
-    constexpr STRF_HD facet(int v, ctor_log* log = nullptr)
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD facet(int v, ctor_log* log = nullptr)
         : facet_base(v, log)
     {
     }
-    constexpr facet(const facet& f) = delete;
-    constexpr facet(facet&& f) = delete;
+    STRF_CONSTEXPR_IN_CXX14 facet(const facet& f) = delete;
+    STRF_CONSTEXPR_IN_CXX14 facet(facet&& f) = delete;
 
     using category = fcategory<N>;
 };
@@ -118,7 +118,7 @@ template <int N> struct fcategory
 {
     constexpr static bool constrainable = true;
 
-    constexpr static STRF_HD facet<N> get_default() noexcept
+    STRF_CONSTEXPR_IN_CXX14 static STRF_HD facet<N> get_default() noexcept
     {
         return facet<N>{-1};
     }
@@ -155,10 +155,10 @@ void STRF_TEST_FUNC basic_tests()
             f3_30
         );
 
-        decltype(auto) f1i = strf::use_facet<fcategory<1>, int>(fp);
-        decltype(auto) f2d = strf::use_facet<fcategory<2>, double>(fp);
-        decltype(auto) f2i = strf::use_facet<fcategory<2>, int>(fp);
-        decltype(auto) f3i = strf::use_facet<fcategory<3>, int>(fp);
+        auto&& f1i = strf::use_facet<fcategory<1>, int>(fp);
+        auto&& f2d = strf::use_facet<fcategory<2>, double>(fp);
+        auto&& f2i = strf::use_facet<fcategory<2>, int>(fp);
+        auto&& f3i = strf::use_facet<fcategory<3>, int>(fp);
 
         static_assert(std::is_same<decltype(f1i), const facet<1>&>::value, "wrong type");
         static_assert(std::is_same<decltype(f2d), const facet<2>&>::value, "wrong type");
@@ -184,9 +184,9 @@ void STRF_TEST_FUNC basic_tests()
                 f2_20_empty_and_derives_from_x
             );
 
-        decltype(auto) xf2_20 = strf::use_facet<fcategory<2>, class_xa>(fp);
-        decltype(auto) xf2_22 = strf::use_facet<fcategory<2>, class_xb>(fp);
-        decltype(auto) xf2_21 = strf::use_facet<fcategory<2>, class_c>(fp);
+        auto&& xf2_20 = strf::use_facet<fcategory<2>, class_xa>(fp);
+        auto&& xf2_22 = strf::use_facet<fcategory<2>, class_xb>(fp);
+        auto&& xf2_21 = strf::use_facet<fcategory<2>, class_c>(fp);
         static_assert(std::is_same<decltype(xf2_20), const facet<2>&>::value, "wrong type");
         static_assert(std::is_same<decltype(xf2_21), const facet<2>&>::value, "wrong type");
         static_assert(std::is_same<decltype(xf2_22), const facet<2>&>::value, "wrong type");
@@ -199,7 +199,9 @@ void STRF_TEST_FUNC basic_tests()
 
 void STRF_TEST_FUNC test_constrained_fpe()
 {
+
     { // check constexpr
+#if __cpp_constexpr >= 201304
 
         constexpr facet<0> f {10};
         constexpr auto c = strf::constrain<is_64>(f);
@@ -212,7 +214,7 @@ void STRF_TEST_FUNC test_constrained_fpe()
 
         static_assert(strf::use_facet<fcategory<0>, double>(fp3).value == 10, " ");
         static_assert(strf::use_facet<fcategory<0>, float>(fp3).value == -1, " ");
-
+#endif // __cpp_constexpr >= 201304
     }
     {   // constrain a facet copy
         ctor_log log;
