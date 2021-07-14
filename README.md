@@ -1,6 +1,6 @@
 # Strf
 
-*Strf* is a fast C++ formatting library that supports encoding conversion
+*Strf* is C++11 formatting library that supports encoding conversion
 
 Branch   | Travis | Appveyor | codecov.io
 ---------|--------|----------|-----------
@@ -32,9 +32,10 @@ Version: 0.14.0
 
 ## Requirements
 
-Strf demands C++14 features. In the current state, it is known to work with the following compilers:
+Strf is known to work with the in following compilers:
 
-* Clang 3.8 (with `--std=c++14` option )
-* GCC 6 (with `--std=c++14` option )
+* Clang 3.8
+* GCC 6.5
 * Visual Studio 2017 15.8
+
 
