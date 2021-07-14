@@ -135,7 +135,7 @@ struct float_format_no_punct
     bool showpoint = false;
     constexpr static bool punctuate = false;
 
-    constexpr operator float_format () const noexcept
+    constexpr STRF_HD operator float_format () const noexcept
     {
         return {precision, pad0width, notation, sign, showpoint, false};
     }
@@ -150,11 +150,11 @@ struct default_float_format
     constexpr static bool showpoint = false;
     constexpr static bool punctuate = false;
 
-    constexpr operator float_format () const noexcept
+    constexpr STRF_HD operator float_format () const noexcept
     {
         return {};
     }
-    constexpr operator float_format_no_punct () const noexcept
+    constexpr STRF_HD operator float_format_no_punct () const noexcept
     {
         return {};
     }

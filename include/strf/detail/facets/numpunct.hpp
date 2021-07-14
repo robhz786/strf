@@ -582,7 +582,7 @@ public:
     {
         return U'.';
     }
-    constexpr explicit operator strf::numpunct<Base> () const noexcept
+    constexpr STRF_HD explicit operator strf::numpunct<Base> () const noexcept
     {
         return {};
     }

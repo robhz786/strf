@@ -82,9 +82,6 @@ if (${STRF_CUDA_SUPPORT})
   target_link_libraries(cuda-main-header-only strf-header-only)
   target_link_libraries(cuda-main-static-lib strf-cuda)
 
-  target_compile_options(cuda-main-header-only PRIVATE --expt-relaxed-constexpr)
-  target_compile_options(cuda-main-static-lib  PRIVATE --expt-relaxed-constexpr)
-
   set_target_properties(cuda-main-header-only PROPERTIES
     CUDA_SEPARABLE_COMPILATION ON)
 
@@ -107,9 +104,6 @@ function(define_strf_cuda_test basename)
     "STRF_TEST_FUNC=__device__" )
   target_compile_definitions(cuda-${basename}-static-lib  PUBLIC
     "STRF_TEST_FUNC=__device__" )
-
-  target_compile_options(cuda-${basename}-header-only PRIVATE --expt-relaxed-constexpr)
-  target_compile_options(cuda-${basename}-static-lib  PRIVATE --expt-relaxed-constexpr)
 
   set_target_properties(
     cuda-${basename}-header-only

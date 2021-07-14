@@ -1414,9 +1414,7 @@ private:
             uvalue = static_cast<uint>(value);
         } else {
             negative_ = 1;
-            uvalue = static_cast<uint>( value == std::numeric_limits<IntT>::min()
-                                      ? std::numeric_limits<IntT>::min()
-                                      : -value );
+            uvalue = unsigned_abs(value);
         }
         uvalue_ = uvalue;
         digcount_ = strf::detail::count_digits<10>(uvalue);
@@ -1491,9 +1489,7 @@ private:
             uvalue = static_cast<uint>(value);
         } else {
             negative_ = 1;
-            uvalue = static_cast<uint>( value == std::numeric_limits<IntT>::min()
-                                      ? std::numeric_limits<IntT>::min()
-                                      : -value );
+            uvalue = strf::detail::unsigned_abs(value);
         }
         uvalue_ = uvalue;
         digcount_ = strf::detail::count_digits<10>(uvalue);

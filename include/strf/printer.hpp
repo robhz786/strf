@@ -1176,7 +1176,7 @@ struct default_alignment_format
     static constexpr strf::width_t width = 0;
     static constexpr strf::text_alignment alignment = strf::text_alignment::right;
 
-    constexpr operator strf::alignment_format () const noexcept
+    constexpr STRF_HD operator strf::alignment_format () const noexcept
     {
         return {};
     }

@@ -58,12 +58,12 @@ using category_member_type_or_void
     < F, strf::detail::has_category_member_type((F*)0) >;
 
 template <typename T, bool v = T::constrainable>
-static constexpr bool get_constrainable(T*)
+constexpr STRF_HD bool get_constrainable(T*)
 {
     return v;
 }
 
-static constexpr bool get_constrainable(...)
+constexpr STRF_HD bool get_constrainable(...)
 {
     return true;
 }

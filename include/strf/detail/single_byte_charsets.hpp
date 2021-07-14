@@ -2542,7 +2542,7 @@ public:
         return strf::dynamic_charset<CharT>{data};
     }
 
-    static strf::dynamic_charset_data<CharT> make_data() noexcept
+    static STRF_HD strf::dynamic_charset_data<CharT> make_data() noexcept
     {
         return {
             name(), id(), replacement_char(), 1, validate, encoded_char_size,

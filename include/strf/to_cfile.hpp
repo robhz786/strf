@@ -181,7 +181,7 @@ public:
     using outbuff_type = strf::narrow_cfile_writer<CharT, strf::min_space_after_recycle<CharT>()>;
     using finish_type = typename outbuff_type::result;
 
-    constexpr narrow_cfile_writer_creator(FILE* file) noexcept
+    constexpr STRF_HD narrow_cfile_writer_creator(FILE* file) noexcept
         : file_(file)
     {}
 
@@ -205,7 +205,7 @@ public:
     using outbuff_type = strf::wide_cfile_writer;
     using finish_type = typename outbuff_type::result;
 
-    constexpr wide_cfile_writer_creator(FILE* file) noexcept
+    constexpr STRF_HD wide_cfile_writer_creator(FILE* file) noexcept
         : file_(file)
     {}
 

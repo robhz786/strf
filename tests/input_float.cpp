@@ -8,7 +8,7 @@
 namespace {
 
 template <typename FloatT>
-struct floating_point_traits; // because we can't use std::numeric_limits on CUDA device.
+struct floating_point_traits;
 
 template <>
 struct floating_point_traits<float>
