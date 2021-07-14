@@ -71,7 +71,7 @@
 #    define STRF_HAS_ATTR_DEPRECATED
 #  endif
 #elif defined(__has_cpp_attribute)
-#  if __has_cpp_attribute(deprecated)
+#  if __has_cpp_attribute(deprecated) && __cplusplus >= 201402L
 #    define STRF_HAS_ATTR_DEPRECATED
 #  endif
 #endif
