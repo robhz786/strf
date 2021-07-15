@@ -673,8 +673,7 @@ public:
         , CharT* buff
         , std::size_t buff_total_size
         , const unsigned* spaces_array
-        , std::size_t num_spaces
-        , unsigned first_space );
+        , std::size_t num_spaces );
 
     STRF_HD ~input_tester_with_fixed_spaces_base()
     {
@@ -726,9 +725,8 @@ STRF_HD input_tester_with_fixed_spaces_base<CharT>::input_tester_with_fixed_spac
     , CharT* buff
     , std::size_t buff_total_size
     , const unsigned* spaces_array
-    , std::size_t num_spaces
-    , unsigned first_space )
-    : strf::basic_outbuff<CharT>{buff, first_space}
+    , std::size_t num_spaces )
+    : strf::basic_outbuff<CharT>{buff, spaces_array[0]}
     , expected_{expected}
     , src_filename_{src_filename}
     , src_line_{src_line}
@@ -808,25 +806,67 @@ struct input_tester_with_fixed_spaces_input
     const char* funcname;
 };
 
-template <typename CharT, unsigned FirstSpace, unsigned... OtherSpaces>
-class input_tester_with_fixed_spaces: public input_tester_with_fixed_spaces_base<CharT>
-{
-public:
 
+template <unsigned...>
+struct array_of_uint_filler;
+
+template <>
+struct array_of_uint_filler<>
+{
+    static STRF_HD void fill(unsigned*)
+    {
+    }
+};
+
+template <unsigned FirstValue, unsigned... OtherValues>
+struct array_of_uint_filler<FirstValue, OtherValues...>
+{
+    static STRF_HD void fill(unsigned* array)
+    {
+        array[0] = FirstValue;
+        array_of_uint_filler<OtherValues...>::fill(array + 1);
+    }
+};
+
+template <std::size_t Size>
+struct array_of_uint
+{
+    template <unsigned... Values>
+    STRF_HD array_of_uint(array_of_uint_filler<Values...>)
+    {
+        array_of_uint_filler<Values...>::fill(array);
+    }
+    unsigned array[Size];
+};
+
+
+template <typename CharT, unsigned... Spaces>
+class input_tester_with_fixed_spaces
+    : public array_of_uint<sizeof...(Spaces)>
+    , public input_tester_with_fixed_spaces_base<CharT>
+{
+    static constexpr std::size_t num_spaces_ = sizeof...(Spaces);
+
+public:
+    template <unsigned... Values>
     STRF_HD input_tester_with_fixed_spaces
         ( input_tester_with_fixed_spaces_input<CharT> i )
-        : input_tester_with_fixed_spaces_base<CharT>
+        : array_of_uint<num_spaces_>{array_of_uint_filler<Spaces...>{}}
+        , input_tester_with_fixed_spaces_base<CharT>
             { i.expected, i.src_filename, i.src_line, i.funcname
-            , buff_, buff_size_, spaces_, num_spaces_, FirstSpace }
+            , buff_, buff_size_, spaces_(), num_spaces_ }
     {
     }
 
 private:
 
-    static constexpr std::size_t buff_size_ = detail::reduce<FirstSpace, OtherSpaces...>::value;
-    static constexpr std::size_t num_spaces_ = 1 + sizeof...(OtherSpaces);
+    static constexpr std::size_t buff_size_ = detail::reduce<Spaces...>::value;
     CharT buff_[buff_size_];
-    unsigned spaces_[num_spaces_] = {FirstSpace, OtherSpaces...};
+
+    STRF_HD const unsigned* spaces_() const
+    {
+        return array_of_uint<num_spaces_>::array;
+    }
 };
 
 
@@ -948,7 +988,7 @@ struct input_tester_with_fixed_spaces_creator_creator
   }
 
 #if defined(__CUDACC__)
-#define REGISTER_STRF_TEST(FUNC) void STRF_TEST_FUNC run_all_tests() { FUNC(); }
+#define REGISTER_STRF_TEST(FUNC) STRF_TEST_FUNC void run_all_tests() { FUNC(); }
 #else
 #define REGISTER_STRF_TEST(FUNC)
 #endif
