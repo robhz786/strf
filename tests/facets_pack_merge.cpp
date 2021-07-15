@@ -5,6 +5,8 @@
 
 #include "test_utils.hpp"
 
+namespace {
+
 template <typename T, std::size_t N>
 struct simple_array
 {
@@ -54,7 +56,7 @@ template<typename T, int N> struct filter_le
 };
 
 template <typename FPack>
-simple_array<int, 7> STRF_TEST_FUNC digest(const FPack& fp)
+STRF_TEST_FUNC simple_array<int, 7> digest(const FPack& fp)
 {
     return {{
         strf::use_facet< fcategory, input_type<1> >(fp).value,
@@ -75,7 +77,9 @@ template<typename T> using filter_le5 = filter_le<T, 5>;
 template<typename T> using filter_le6 = filter_le<T, 6>;
 template<typename T> using filter_le7 = filter_le<T, 7>;
 
-void STRF_TEST_FUNC test_facets_pack_merge()
+} // unnamed namespace
+
+STRF_TEST_FUNC void test_facets_pack_merge()
 {
     facet_type f1 = {1};
     facet_type f2 = {2};

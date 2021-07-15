@@ -5,7 +5,7 @@
 
 #include "test_utils.hpp"
 
-void STRF_TEST_FUNC test_input_char32()
+STRF_TEST_FUNC void test_input_char32()
 {
     // conversion
 

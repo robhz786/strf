@@ -142,7 +142,7 @@ struct print_traits<bool_wrapper> {
 
 }// namepsace strf
 
-void STRF_TEST_FUNC test_printable_overriding()
+STRF_TEST_FUNC void test_printable_overriding()
 {
     auto alt_bool = strf::constrain<is_bool>(my_bool_printing_override{});
     auto alt_int = strf::constrain<strf::is_int_number>(my_int_printing_override{});

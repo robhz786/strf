@@ -170,7 +170,7 @@ STRF_TEST_FUNC void utf16_to_utf8_find_transcoder()
 
 } // unnamed namespace
 
-void STRF_TEST_FUNC test_utf16_to_utf8()
+STRF_TEST_FUNC void test_utf16_to_utf8()
 {
     utf16_to_utf8_valid_sequences();
     utf16_to_utf8_invalid_sequences();

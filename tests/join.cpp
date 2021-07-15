@@ -5,7 +5,7 @@
 
 #include "test_utils.hpp"
 
-void STRF_TEST_FUNC test_join()
+STRF_TEST_FUNC void test_join()
 {
     TEST("   abcdef123   ") (strf::join("abc", "de", "f", 123) ^ 15);
     TEST("abcdef123   ") (strf::join("abc", "def", 123) < 12);

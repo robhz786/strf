@@ -53,7 +53,7 @@ STRF_TEST_FUNC void utf8_to_utf16_valid_sequences()
     }
 }
 
-void STRF_TEST_FUNC utf8_to_utf16_invalid_sequences()
+STRF_TEST_FUNC void utf8_to_utf16_invalid_sequences()
 {
     // sample from Tabble 3-8 of Unicode standard
     TEST(u" \uFFFD\uFFFD\uFFFD")  (strf::sani("\xF1\x80\x80\xE1\x80\xC0") > 4);
@@ -227,7 +227,7 @@ STRF_TEST_FUNC void utf8_to_utf16_find_transcoder()
 } // unnamed namespace
 
 
-void STRF_TEST_FUNC test_utf8_to_utf16()
+STRF_TEST_FUNC void test_utf8_to_utf16()
 {
     utf8_to_utf16_valid_sequences();
     utf8_to_utf16_invalid_sequences();

@@ -137,7 +137,7 @@ using derives_from_x = std::is_base_of<class_x, T>;
 template <typename T>
 using is_64 = std::integral_constant<bool, sizeof(T) == 8>;
 
-void STRF_TEST_FUNC basic_tests()
+STRF_TEST_FUNC void basic_tests()
 {
     auto f1_10 = facet<1>{10};
     auto f2_20 = facet<2>{20};
@@ -197,7 +197,7 @@ void STRF_TEST_FUNC basic_tests()
 }
 
 
-void STRF_TEST_FUNC test_constrained_fpe()
+STRF_TEST_FUNC void test_constrained_fpe()
 {
 
     { // check constexpr
@@ -309,7 +309,7 @@ void STRF_TEST_FUNC test_constrained_fpe()
     }
 }
 
-inline void STRF_TEST_FUNC compilation_tests()
+inline STRF_TEST_FUNC void compilation_tests()
 {
     {
         bool x = ! std::is_copy_constructible
@@ -425,7 +425,7 @@ inline void STRF_TEST_FUNC compilation_tests()
 
 } // unnamed namespace
 
-void STRF_TEST_FUNC test_facets_pack()
+STRF_TEST_FUNC void test_facets_pack()
 {
     basic_tests();
     test_constrained_fpe();

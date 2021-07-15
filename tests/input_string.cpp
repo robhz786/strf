@@ -9,7 +9,7 @@
 using char8_t = char;
 #endif
 
-void STRF_TEST_FUNC test_input_string()
+STRF_TEST_FUNC void test_input_string()
 {
     {
         TEST("abc")      ( strf::fmt("abc") );

@@ -193,13 +193,13 @@ public:
 
 private:
 
-    static inline const strf::printer<char_type_>&
-    STRF_HD as_printer_cref_(const strf::printer<char_type_>& p)
+    static inline STRF_HD const strf::printer<char_type_>&
+    as_printer_cref_(const strf::printer<char_type_>& p)
     {
         return p;
     }
-    static inline const strf::printer<char_type_>*
-    STRF_HD as_printer_cptr_(const strf::printer<char_type_>& p)
+    static inline STRF_HD const strf::printer<char_type_>*
+    as_printer_cptr_(const strf::printer<char_type_>& p)
     {
          return &p;
     }

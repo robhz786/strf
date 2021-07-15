@@ -10,7 +10,7 @@
 #  pragma GCC diagnostic ignored "-Warray-bounds"
 #endif
 
-static void STRF_TEST_FUNC test_cstr_writer_destination_too_small()
+static STRF_TEST_FUNC void test_cstr_writer_destination_too_small()
 {
     {
         char buff[4];
@@ -51,7 +51,7 @@ static void STRF_TEST_FUNC test_cstr_writer_destination_too_small()
 #  pragma GCC diagnostic pop
 #endif
 
-static void STRF_TEST_FUNC test_write_into_cstr_writer_after_finish()
+static STRF_TEST_FUNC void test_write_into_cstr_writer_after_finish()
 {
     const char s1a[] = "Hello";
     const char s1b[] = " World";
@@ -83,7 +83,7 @@ static void STRF_TEST_FUNC test_write_into_cstr_writer_after_finish()
 }
 
 template <typename CharT>
-void STRF_TEST_FUNC test_destinations()
+STRF_TEST_FUNC void test_destinations()
 {
 
     const auto half_str = test_utils::make_half_string<CharT>();
@@ -144,7 +144,7 @@ void STRF_TEST_FUNC test_destinations()
 }
 
 
-void STRF_TEST_FUNC test_cstr_writer()
+STRF_TEST_FUNC void test_cstr_writer()
 {
     test_cstr_writer_destination_too_small();
     test_write_into_cstr_writer_after_finish();

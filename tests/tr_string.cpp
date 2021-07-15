@@ -32,7 +32,7 @@ private:
     strf::outbuff& log_;
 };
 
-void STRF_TEST_FUNC test_tr_string()
+STRF_TEST_FUNC void test_tr_string()
 {
     // basic test
     TEST("aaa__..bbb__ 0xa")

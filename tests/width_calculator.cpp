@@ -9,7 +9,7 @@
 #define TEST_W_AS_FAST_U32LEN(STR) TEST(STR) .with( strf::width_as_fast_u32len_t{} )
 #define TEST_W_AS_U32LEN(STR) TEST(STR) .with( strf::width_as_u32len_t{} )
 
-void STRF_TEST_FUNC test_width_calculator()
+STRF_TEST_FUNC void test_width_calculator()
 {
     using namespace strf::width_literal;
     {

@@ -161,7 +161,7 @@ STRF_TEST_FUNC void utf16_to_utf32_find_transcoder()
 
 } // unnamed namespace
 
-void STRF_TEST_FUNC test_utf16_to_utf32()
+STRF_TEST_FUNC void test_utf16_to_utf32()
 {
     utf16_to_utf32_valid_sequences();
     utf16_to_utf32_invalid_sequences();

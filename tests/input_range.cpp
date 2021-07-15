@@ -9,11 +9,11 @@ template <typename T>
 struct const_iterator
 {
     using value_type = T;
-    const T& STRF_HD operator*() const { return *ptr; }
-    const_iterator STRF_HD operator++() { ++ptr; return *this; }
-    const_iterator STRF_HD operator++(int) { ++ptr; return const_iterator{ptr - 1}; }
-    bool STRF_HD operator==(const const_iterator& other) const { return ptr == other.ptr; }
-    bool STRF_HD operator!=(const const_iterator& other) const { return ptr != other.ptr; }
+    STRF_HD const T& operator*() const { return *ptr; }
+    STRF_HD const_iterator operator++() { ++ptr; return *this; }
+    STRF_HD const_iterator operator++(int) { ++ptr; return const_iterator{ptr - 1}; }
+    STRF_HD bool operator==(const const_iterator& other) const { return ptr == other.ptr; }
+    STRF_HD bool operator!=(const const_iterator& other) const { return ptr != other.ptr; }
 
     const T* ptr;
 };
@@ -38,18 +38,18 @@ struct simple_array
     T array[N != 0 ? N : 1];
     using const_iterator = ::const_iterator<T>;
 
-    const const_iterator STRF_HD begin() const
+    STRF_HD const const_iterator begin() const
     {
         return {(const T*)array};
     }
-    const const_iterator STRF_HD end() const
+    STRF_HD const const_iterator end() const
     {
         return {array + N};
     }
 };
 
 
-void STRF_TEST_FUNC test_input_range()
+STRF_TEST_FUNC void test_input_range()
 {
     {
         int arr[] = {11, 22, 33, 44};

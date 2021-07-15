@@ -27,7 +27,7 @@
 #if defined(__GNUC__) || defined(__clang__)
 #define JKJ_SAFEBUFFERS
 #define JKJ_FORCEINLINE inline __attribute__((always_inline))
-#elif defined(_MSC_VER)
+#elif defined(_MSC_VER) && !defined(__CUDACC__)
 #define JKJ_SAFEBUFFERS __declspec(safebuffers)
 #define JKJ_FORCEINLINE __forceinline
 #else
@@ -43,7 +43,7 @@
 #	define JKJ_IF_CONSTEXPR if constexpr
 #else
 #	define JKJ_IF_CONSTEXPR if
-#	if defined(_MSC_VER)
+#	if defined(_MSC_VER) && !defined(__CUDACC__)
 #		pragma warning( push )
 #		pragma warning( disable : 4127 )
 #		define JKJ_MSC_WARNING_4127_DISABLED
@@ -387,7 +387,7 @@ namespace dragonbox {
 				else {
 					return __builtin_ctz((unsigned int)n);
 				}
-#elif defined(_MSC_VER)
+#elif defined(_MSC_VER) && !defined(__CUDACC__)
 #define JKJ_HAS_COUNTR_ZERO_INTRINSIC 1
 				static_assert( std::is_same<UInt, unsigned __int64>::value
 					|| sizeof(UInt) <= sizeof(unsigned int), "" );
@@ -505,7 +505,7 @@ namespace dragonbox {
 				}
 
 				STRF_HD uint128& operator+=(std::uint64_t n) & noexcept {
-#if defined(_MSC_VER) && defined(_M_X64)
+#if defined(_MSC_VER) && defined(_M_X64) && !defined(__CUDACC__)
 					auto carry = _addcarry_u64(0, low_, n, &low_);
 					_addcarry_u64(carry, high_, 0, &high_);
 					return *this;
@@ -521,7 +521,7 @@ namespace dragonbox {
 
 #if !defined(JKJ_WITH_INTERNAL_INT128)
 			STRF_HD static inline std::uint64_t umul64(std::uint32_t x, std::uint32_t y) noexcept {
-#if defined(_MSC_VER) && defined(_M_IX86)
+#if defined(_MSC_VER) && defined(_M_IX86) && !defined(__CUDACC__)
 				return __emulu(x, y);
 #else
 				return x * std::uint64_t(y);
@@ -533,7 +533,7 @@ namespace dragonbox {
 			STRF_HD JKJ_SAFEBUFFERS inline uint128 umul128(std::uint64_t x, std::uint64_t y) noexcept {
 #if defined(JKJ_WITH_INTERNAL_INT128)
 				return (uint128::uint128_internal)(x) * (uint128::uint128_internal)(y);
-#elif defined(_MSC_VER) && defined(_M_X64)
+#elif defined(_MSC_VER) && defined(_M_X64) && !defined(__CUDACC__)
 				uint128 result;
 				result.low_ = _umul128(x, y, &result.high_);
 				return result;
@@ -559,7 +559,7 @@ namespace dragonbox {
 #if defined(JKJ_WITH_INTERNAL_INT128)
 				auto p = (uint128::uint128_internal)(x) * (uint128::uint128_internal)(y);
 				return std::uint64_t(p >> 64);
-#elif defined(_MSC_VER) && defined(_M_X64)
+#elif defined(_MSC_VER) && defined(_M_X64) && !defined(__CUDACC__)
 				return __umulh(x, y);
 #else
 				auto a = std::uint32_t(x >> 32);
@@ -587,7 +587,7 @@ namespace dragonbox {
 
 			// Get upper 32-bits of multiplication of a 32-bit unsigned integer and a 64-bit unsigned integer.
 			STRF_HD inline std::uint32_t umul96_upper32(std::uint32_t x, std::uint64_t y) noexcept {
-#if defined(JKJ_WITH_INTERNAL_INT128) || (defined(_MSC_VER) && defined(_M_X64))
+#if defined(JKJ_WITH_INTERNAL_INT128) || (defined(_MSC_VER) && defined(_M_X64) && !defined(__CUDACC__))
 				return std::uint32_t(umul128_upper64(x, y));
 #else
 				//std::uint32_t a = 0;

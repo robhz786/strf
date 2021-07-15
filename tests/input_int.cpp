@@ -7,7 +7,7 @@
 
 namespace {
 
-void STRF_TEST_FUNC test_input_ptr()
+STRF_TEST_FUNC void test_input_ptr()
 {
     void* ptr = strf::detail::bit_cast<void*, std::size_t>(0xABC);
 
@@ -20,7 +20,7 @@ void STRF_TEST_FUNC test_input_ptr()
         (strf::right(ptr, 8, '.'));
 }
 
-void STRF_TEST_FUNC test_input_int_no_punct()
+STRF_TEST_FUNC void test_input_int_no_punct()
 {
     TEST_EQ(1,  strf::detail::count_digits<10>(1ull));
     TEST_EQ(2,  strf::detail::count_digits<10>(10ull));
@@ -334,8 +334,8 @@ void STRF_TEST_FUNC test_input_int_no_punct()
     TEST ("........+0")  ( +strf::right(0   , 10, '.') );
     TEST (".......123")  (  strf::right(123u, 10, '.') );
 
-    TEST ("...................-32768") ( +strf::right((short)-32768, 25, '.') );
-    TEST ("..............-2147483648") ( +strf::right((std::int32_t)-2147483648l, 25, '.') );
+    TEST ("...................-32768") ( +strf::right((SHRT_MIN), 25, '.') );
+    TEST ("..............-2147483648") ( +strf::right((LONG_MIN), 25, '.') );
     TEST (".....-9223372036854775808") ( +strf::right((LLONG_MIN), 25, '.') );
 
     TEST ("123.......")  (  strf::left(123,  10, '.') );
@@ -572,7 +572,7 @@ struct numpunct_maker {
     char32_t separator;
 };
 
-void STRF_TEST_FUNC test_input_int_punct()
+STRF_TEST_FUNC void test_input_int_punct()
 {
     {
         // non-ascii separator whose size is still one
@@ -1064,7 +1064,7 @@ void STRF_TEST_FUNC test_input_int_punct()
 
 } // unnamed namespace
 
-void STRF_TEST_FUNC test_input_int()
+STRF_TEST_FUNC void test_input_int()
 {
     test_input_ptr();
     test_input_int_no_punct();

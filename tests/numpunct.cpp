@@ -7,7 +7,7 @@
 
 inline namespace {
 
-unsigned STRF_HD count_digits(strf::digits_distribution dist)
+STRF_HD unsigned count_digits(strf::digits_distribution dist)
 {
     unsigned count = dist.highest_group;
     if ( dist.middle_groups_count ) {
@@ -21,7 +21,7 @@ unsigned STRF_HD count_digits(strf::digits_distribution dist)
     return count;
 }
 
-const char* STRF_HD result(strf::digits_distribution dist)
+STRF_HD const char* result(strf::digits_distribution dist)
 {
     constexpr std::size_t buff_size = 500;
     static char buff[buff_size];
@@ -57,7 +57,7 @@ const char* STRF_HD result(strf::digits_distribution dist)
 
 }
 
-void STRF_TEST_FUNC test_numpunct()
+STRF_TEST_FUNC void test_numpunct()
 {
     {
         strf::numpunct<10> grouper(4);

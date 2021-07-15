@@ -321,7 +321,7 @@ STRF_TEST_FUNC void utf16_miscellaneous()
 
 } // unnamed namespace
 
-void STRF_TEST_FUNC test_utf16()
+STRF_TEST_FUNC void test_utf16()
 {
     utf16_sani_valid_sequences();
     utf16_sani_invalid_sequences();

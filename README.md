@@ -32,10 +32,10 @@ Version: 0.14.0
 
 ## Requirements
 
-Strf is known to work with the in following compilers:
+Strf has been tested in the following compilers:
 
 * Clang 3.8
 * GCC 6.5
 * Visual Studio 2017 15.8
-
+* NVCC 11.0
 

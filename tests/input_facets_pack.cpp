@@ -13,7 +13,7 @@ constexpr STRF_HD bool all_are_constrainable()
 
 
 
-void STRF_TEST_FUNC test_input_facets_pack()
+STRF_TEST_FUNC void test_input_facets_pack()
 {
     TEST("1,0,0,0,0 10000 1000000 10,000 1'0000 1'000000 10.000 1^00^00 1'000000")
         .with(strf::numpunct<10>(1))

@@ -1929,7 +1929,7 @@ STRF_HD fmt_int_printer_data_init_result init_fmt_int_printer_data
         data.left_fillcount = x;
         data.right_fillcount = 0;
         data.has_prefix &= !x;
-        return {content_width - x, x};
+        return {content_width - x, static_cast<unsigned>(x)};
     }
     auto fillcount = static_cast<unsigned>(fmt_width - content_width);
     data.has_prefix &= !fill_sign_space;
@@ -2079,7 +2079,7 @@ STRF_HD fmt_int_printer_data_init_result init_punct_fmt_int_printer_data
         data.left_fillcount = x;
         data.right_fillcount = 0;
         data.has_prefix &= !x;
-        return {content_width - data.sepcount - x, x};
+        return {content_width - data.sepcount - x, static_cast<unsigned>(x)};
     }
     auto fillcount = static_cast<unsigned>(fmt_width - content_width);
     data.has_prefix &= !fill_sign_space;

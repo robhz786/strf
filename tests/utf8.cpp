@@ -64,7 +64,7 @@ STRF_TEST_FUNC void utf8_sani_valid_sequences()
     }
 }
 
-void STRF_TEST_FUNC utf8_sani_invalid_sequences()
+STRF_TEST_FUNC void utf8_sani_invalid_sequences()
 {
     // sample from Tabble 3-8 of Unicode standard
     TEST(u8" \uFFFD\uFFFD\uFFFD")  (strf::sani("\xF1\x80\x80\xE1\x80\xC0") > 4);

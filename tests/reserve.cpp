@@ -71,7 +71,7 @@ constexpr auto STRF_HD reservation_test()
 }
 
 
-void STRF_TEST_FUNC test_reserve()
+STRF_TEST_FUNC void test_reserve()
 {
     // on non-const rval ref
     constexpr std::size_t not_reserved = 0;

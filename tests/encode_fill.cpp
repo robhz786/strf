@@ -24,7 +24,7 @@ using char8_t = char;
     (strf::multi(static_cast<char32_t>(CODEPOINT), 8));         \
                                                                 \
 
-void STRF_TEST_FUNC test_encode_fill()
+STRF_TEST_FUNC void test_encode_fill()
 {
     {
         // UTF-8

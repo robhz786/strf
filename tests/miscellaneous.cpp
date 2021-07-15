@@ -7,7 +7,7 @@
 
 using namespace strf::width_literal;
 
-void STRF_TEST_FUNC test_miscellaneous()
+STRF_TEST_FUNC void test_miscellaneous()
 {
     {
         // write into an outbuff reference

@@ -16,7 +16,7 @@ struct fixture
 };
 
 template <typename CharT, typename Charset>
-void STRF_TEST_FUNC test_char
+STRF_TEST_FUNC void test_char
     ( Charset charset
     , char32_t ch
     , strf::detail::simple_string_view<CharT> encoded_char )
@@ -31,7 +31,7 @@ void STRF_TEST_FUNC test_char
     TEST_TRUE(strf::detail::str_equal(encoded_char.data(), buff, encoded_char.size()));
 }
 
-void STRF_TEST_FUNC test_encode_char()
+STRF_TEST_FUNC void test_encode_char()
 {
     {   // UTF-8
 

@@ -11,7 +11,7 @@
 #endif
 
 template <typename CharT>
-void STRF_TEST_FUNC char_range_basic_operations()
+STRF_TEST_FUNC void char_range_basic_operations()
 {
     constexpr std::size_t buff_size = 8;
     CharT buff[buff_size];
@@ -161,7 +161,7 @@ void STRF_TEST_FUNC char_range_basic_operations()
     }
 }
 
-static void STRF_TEST_FUNC char_range_destination_too_small()
+static STRF_TEST_FUNC void char_range_destination_too_small()
 {
     {
         char buff[4];
@@ -198,7 +198,7 @@ static void STRF_TEST_FUNC char_range_destination_too_small()
     }
 }
 
-void STRF_TEST_FUNC test_to_range()
+STRF_TEST_FUNC void test_to_range()
 {
     char_range_basic_operations<char>();
     char_range_basic_operations<char16_t>();

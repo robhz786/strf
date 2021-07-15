@@ -5,7 +5,7 @@
 
 #include "test_utils.hpp"
 
-void STRF_TEST_FUNC test_basic_outbuff()
+STRF_TEST_FUNC void test_basic_outbuff()
 {
 
     {   // Cover strf::detail::outbuff_interchar_copy

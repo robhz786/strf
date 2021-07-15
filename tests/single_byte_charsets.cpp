@@ -14,9 +14,11 @@
 #  pragma GCC diagnostic pop
 #endif
 
+namespace {
+
 constexpr strf::charset_id invalid_csid = (strf::charset_id)0xf3b2a6b2;
 
-static STRF_HD unsigned count_fffd( strf::detail::simple_string_view<char32_t> str)
+STRF_HD unsigned count_fffd( strf::detail::simple_string_view<char32_t> str)
 {
     unsigned count = 0;
     for (auto it = str.begin(); it != str.end(); ++it) {
@@ -26,14 +28,18 @@ static STRF_HD unsigned count_fffd( strf::detail::simple_string_view<char32_t> s
     return count;
 }
 
-static STRF_TEST_FUNC unsigned encoding_error_handler_calls = 0;
-
-static STRF_TEST_FUNC void encoding_error_handler()
+STRF_HD unsigned& encoding_error_handler_calls()
 {
-    ++encoding_error_handler_calls;
+  static unsigned x;
+  return x;
 }
 
-static STRF_TEST_FUNC void STRF_TEST_FUNC general_tests
+STRF_HD void encoding_error_handler()
+{
+    ++encoding_error_handler_calls();
+}
+
+STRF_HD void general_tests
     ( strf::dynamic_charset<char> charset
     , strf::detail::simple_string_view<char32_t> decoded_0_to_0xff )
 {
@@ -118,11 +124,11 @@ static STRF_TEST_FUNC void STRF_TEST_FUNC general_tests
 
     {   // converting a string to UTF-32 with strf::invalid_seq_notifier
 
-        ::encoding_error_handler_calls = 0;
+        ::encoding_error_handler_calls() = 0;
         TEST(decoded_0_to_0xff)
             .with(strf::invalid_seq_notifier{encoding_error_handler})
             (strf::sani(str_0_to_xff, charset));
-        TEST_EQ(::encoding_error_handler_calls, fffd_count);
+        TEST_EQ(::encoding_error_handler_calls(), fffd_count);
     }
 
     {   // converting individual characters to UTF-32 ( cover decode_unit )
@@ -155,7 +161,7 @@ static STRF_TEST_FUNC void STRF_TEST_FUNC general_tests
 
     {   // encode string from UTF-32 with strf::invalid_seq_notifier
 
-        ::encoding_error_handler_calls = 0;
+        ::encoding_error_handler_calls() = 0;
         char result[0x101];
         auto res = strf::to(result)
             .with(charset)
@@ -174,7 +180,7 @@ static STRF_TEST_FUNC void STRF_TEST_FUNC general_tests
         }
 
         // check notifier calls
-        TEST_EQ(encoding_error_handler_calls, fffd_count);
+        TEST_EQ(encoding_error_handler_calls(), fffd_count);
     }
 
     {   // encode UTF-32 characters individually
@@ -210,7 +216,7 @@ static STRF_TEST_FUNC void STRF_TEST_FUNC general_tests
     }
     {    // sanitize string  with strf::invalid_seq_notifier
 
-        ::encoding_error_handler_calls = 0;
+        ::encoding_error_handler_calls() = 0;
         char result[0x101];
         auto res = strf::to(result) .with(charset)
             .with(charset)
@@ -228,7 +234,7 @@ static STRF_TEST_FUNC void STRF_TEST_FUNC general_tests
         }
 
         // check notifier calls
-        TEST_EQ(encoding_error_handler_calls, fffd_count);
+        TEST_EQ(encoding_error_handler_calls(), fffd_count);
     }
     {   // encode_fill
         TEST("aaaaa").with(charset) (strf::multi(U'a', 5));
@@ -315,7 +321,7 @@ static STRF_TEST_FUNC void STRF_TEST_FUNC general_tests
 }
 
 template <typename CharT, strf::charset_id CharsetId>
-inline STRF_HD void STRF_TEST_FUNC general_tests
+inline STRF_HD void general_tests
     ( strf::static_charset<CharT, CharsetId> charset
     , strf::detail::simple_string_view<char32_t> decoded_0_to_0xff )
 {
@@ -325,7 +331,7 @@ inline STRF_HD void STRF_TEST_FUNC general_tests
 }
 
 
-static strf::detail::simple_string_view<char32_t> STRF_TEST_FUNC decoded_0_to_xff_ascii()
+STRF_HD strf::detail::simple_string_view<char32_t> decoded_0_to_xff_ascii()
 {
     static const char32_t table[0x100] =
         { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07
@@ -364,7 +370,7 @@ static strf::detail::simple_string_view<char32_t> STRF_TEST_FUNC decoded_0_to_xf
     return {table, 0x100};
 }
 
-static strf::detail::simple_string_view<char32_t> STRF_TEST_FUNC decoded_0_to_xff_iso_8859_1()
+STRF_HD strf::detail::simple_string_view<char32_t> decoded_0_to_xff_iso_8859_1()
 {
     static const char32_t table[0x100] =
         { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07
@@ -403,7 +409,7 @@ static strf::detail::simple_string_view<char32_t> STRF_TEST_FUNC decoded_0_to_xf
     return {table, 0x100};
 }
 
-static strf::detail::simple_string_view<char32_t> STRF_TEST_FUNC decoded_0_to_xff_iso_8859_2()
+STRF_HD strf::detail::simple_string_view<char32_t> decoded_0_to_xff_iso_8859_2()
 {
     static const char32_t table[0x100] =
         { 0x0000, 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x0006, 0x0007
@@ -442,7 +448,7 @@ static strf::detail::simple_string_view<char32_t> STRF_TEST_FUNC decoded_0_to_xf
     return {table, 0x100};
 }
 
-static strf::detail::simple_string_view<char32_t> STRF_TEST_FUNC decoded_0_to_xff_iso_8859_3()
+STRF_HD strf::detail::simple_string_view<char32_t> decoded_0_to_xff_iso_8859_3()
 {
     static const char32_t table[0x100] =
         { 0x0000, 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x0006, 0x0007
@@ -481,7 +487,7 @@ static strf::detail::simple_string_view<char32_t> STRF_TEST_FUNC decoded_0_to_xf
     return {table, 0x100};
 }
 
-static strf::detail::simple_string_view<char32_t> STRF_TEST_FUNC decoded_0_to_xff_iso_8859_4()
+STRF_HD strf::detail::simple_string_view<char32_t> decoded_0_to_xff_iso_8859_4()
 {
     static const char32_t table[0x100] =
         { 0x0000, 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x0006, 0x0007
@@ -520,7 +526,7 @@ static strf::detail::simple_string_view<char32_t> STRF_TEST_FUNC decoded_0_to_xf
     return {table, 0x100};
 }
 
-static strf::detail::simple_string_view<char32_t> STRF_TEST_FUNC decoded_0_to_xff_iso_8859_5()
+STRF_HD strf::detail::simple_string_view<char32_t> decoded_0_to_xff_iso_8859_5()
 {
     static const char32_t table[0x100] =
         { 0x0000, 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x0006, 0x0007
@@ -559,7 +565,7 @@ static strf::detail::simple_string_view<char32_t> STRF_TEST_FUNC decoded_0_to_xf
     return {table, 0x100};
 }
 
-static strf::detail::simple_string_view<char32_t> STRF_TEST_FUNC decoded_0_to_xff_iso_8859_6()
+STRF_HD strf::detail::simple_string_view<char32_t> decoded_0_to_xff_iso_8859_6()
 {
     static const char32_t table[0x100] =
         { 0x0000, 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x0006, 0x0007
@@ -598,7 +604,7 @@ static strf::detail::simple_string_view<char32_t> STRF_TEST_FUNC decoded_0_to_xf
     return {table, 0x100};
 }
 
-static strf::detail::simple_string_view<char32_t> STRF_TEST_FUNC decoded_0_to_xff_iso_8859_7()
+STRF_HD strf::detail::simple_string_view<char32_t> decoded_0_to_xff_iso_8859_7()
 {
     static const char32_t table[0x100] =
         { 0x0000, 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x0006, 0x0007
@@ -637,7 +643,7 @@ static strf::detail::simple_string_view<char32_t> STRF_TEST_FUNC decoded_0_to_xf
     return {table, 0x100};
 }
 
-static strf::detail::simple_string_view<char32_t> STRF_TEST_FUNC decoded_0_to_xff_iso_8859_8()
+STRF_HD strf::detail::simple_string_view<char32_t> decoded_0_to_xff_iso_8859_8()
 {
     static const char32_t table[0x100] =
         { 0x0000, 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x0006, 0x0007
@@ -676,7 +682,7 @@ static strf::detail::simple_string_view<char32_t> STRF_TEST_FUNC decoded_0_to_xf
     return {table, 0x100};
 }
 
-static strf::detail::simple_string_view<char32_t> STRF_TEST_FUNC decoded_0_to_xff_iso_8859_9()
+STRF_HD strf::detail::simple_string_view<char32_t> decoded_0_to_xff_iso_8859_9()
 {
     static const char32_t table[0x100] =
         { 0x0000, 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x0006, 0x0007
@@ -715,7 +721,7 @@ static strf::detail::simple_string_view<char32_t> STRF_TEST_FUNC decoded_0_to_xf
     return {table, 0x100};
 }
 
-static strf::detail::simple_string_view<char32_t> STRF_TEST_FUNC decoded_0_to_xff_iso_8859_10()
+STRF_HD strf::detail::simple_string_view<char32_t> decoded_0_to_xff_iso_8859_10()
 {
     static const char32_t table[0x100] =
         { 0x0000, 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x0006, 0x0007
@@ -754,7 +760,7 @@ static strf::detail::simple_string_view<char32_t> STRF_TEST_FUNC decoded_0_to_xf
     return {table, 0x100};
 }
 
-static strf::detail::simple_string_view<char32_t> STRF_TEST_FUNC decoded_0_to_xff_iso_8859_11()
+STRF_HD strf::detail::simple_string_view<char32_t> decoded_0_to_xff_iso_8859_11()
 {
     static const char32_t table[0x100] =
         { 0x0000, 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x0006, 0x0007
@@ -793,7 +799,7 @@ static strf::detail::simple_string_view<char32_t> STRF_TEST_FUNC decoded_0_to_xf
     return {table, 0x100};
 }
 
-static strf::detail::simple_string_view<char32_t> STRF_TEST_FUNC decoded_0_to_xff_iso_8859_13()
+STRF_HD strf::detail::simple_string_view<char32_t> decoded_0_to_xff_iso_8859_13()
 {
     static const char32_t table[0x100] =
         { 0x0000, 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x0006, 0x0007
@@ -832,7 +838,7 @@ static strf::detail::simple_string_view<char32_t> STRF_TEST_FUNC decoded_0_to_xf
     return {table, 0x100};
 }
 
-static strf::detail::simple_string_view<char32_t> STRF_TEST_FUNC decoded_0_to_xff_iso_8859_14()
+STRF_HD strf::detail::simple_string_view<char32_t> decoded_0_to_xff_iso_8859_14()
 {
     static const char32_t table[0x100] =
         { 0x0000, 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x0006, 0x0007
@@ -871,7 +877,7 @@ static strf::detail::simple_string_view<char32_t> STRF_TEST_FUNC decoded_0_to_xf
     return {table, 0x100};
 }
 
-static strf::detail::simple_string_view<char32_t> STRF_TEST_FUNC decoded_0_to_xff_iso_8859_15()
+STRF_HD strf::detail::simple_string_view<char32_t> decoded_0_to_xff_iso_8859_15()
 {
     static const char32_t table[0x100] =
         { 0x0000, 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x0006, 0x0007
@@ -910,7 +916,7 @@ static strf::detail::simple_string_view<char32_t> STRF_TEST_FUNC decoded_0_to_xf
     return {table, 0x100};
 }
 
-static strf::detail::simple_string_view<char32_t> STRF_TEST_FUNC decoded_0_to_xff_iso_8859_16()
+STRF_HD strf::detail::simple_string_view<char32_t> decoded_0_to_xff_iso_8859_16()
 {
     static const char32_t table[0x100] =
         { 0x0000, 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x0006, 0x0007
@@ -949,7 +955,7 @@ static strf::detail::simple_string_view<char32_t> STRF_TEST_FUNC decoded_0_to_xf
     return {table, 0x100};
 }
 
-static strf::detail::simple_string_view<char32_t> STRF_TEST_FUNC decoded_0_to_xff_windows_1250()
+STRF_HD strf::detail::simple_string_view<char32_t> decoded_0_to_xff_windows_1250()
 {
     static const char32_t table[0x100] =
         { 0x0000, 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x0006, 0x0007
@@ -988,7 +994,7 @@ static strf::detail::simple_string_view<char32_t> STRF_TEST_FUNC decoded_0_to_xf
     return {table, 0x100};
 }
 
-static strf::detail::simple_string_view<char32_t> STRF_TEST_FUNC decoded_0_to_xff_windows_1251()
+STRF_HD strf::detail::simple_string_view<char32_t> decoded_0_to_xff_windows_1251()
 {
     static const char32_t table[0x100] =
         { 0x0000, 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x0006, 0x0007
@@ -1027,7 +1033,7 @@ static strf::detail::simple_string_view<char32_t> STRF_TEST_FUNC decoded_0_to_xf
     return {table, 0x100};
 }
 
-static strf::detail::simple_string_view<char32_t> STRF_TEST_FUNC decoded_0_to_xff_windows_1252()
+STRF_HD strf::detail::simple_string_view<char32_t> decoded_0_to_xff_windows_1252()
 {
     static const char32_t table[0x100] =
         { 0x0000, 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x0006, 0x0007
@@ -1066,7 +1072,7 @@ static strf::detail::simple_string_view<char32_t> STRF_TEST_FUNC decoded_0_to_xf
     return {table, 0x100};
 }
 
-static strf::detail::simple_string_view<char32_t> STRF_TEST_FUNC decoded_0_to_xff_windows_1253()
+STRF_HD strf::detail::simple_string_view<char32_t> decoded_0_to_xff_windows_1253()
 {
     static const char32_t table[0x100] =
         { 0x0000, 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x0006, 0x0007
@@ -1105,7 +1111,7 @@ static strf::detail::simple_string_view<char32_t> STRF_TEST_FUNC decoded_0_to_xf
     return {table, 0x100};
 }
 
-static strf::detail::simple_string_view<char32_t> STRF_TEST_FUNC decoded_0_to_xff_windows_1254()
+STRF_HD strf::detail::simple_string_view<char32_t> decoded_0_to_xff_windows_1254()
 {
     static const char32_t table[0x100] =
         { 0x0000, 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x0006, 0x0007
@@ -1144,7 +1150,7 @@ static strf::detail::simple_string_view<char32_t> STRF_TEST_FUNC decoded_0_to_xf
     return {table, 0x100};
 }
 
-static strf::detail::simple_string_view<char32_t> STRF_TEST_FUNC decoded_0_to_xff_windows_1255()
+STRF_HD strf::detail::simple_string_view<char32_t> decoded_0_to_xff_windows_1255()
 {
     static const char32_t table[0x100] =
         { 0x0000, 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x0006, 0x0007
@@ -1183,7 +1189,7 @@ static strf::detail::simple_string_view<char32_t> STRF_TEST_FUNC decoded_0_to_xf
     return {table, 0x100};
 }
 
-static strf::detail::simple_string_view<char32_t> STRF_TEST_FUNC decoded_0_to_xff_windows_1256()
+STRF_HD strf::detail::simple_string_view<char32_t> decoded_0_to_xff_windows_1256()
 {
     static const char32_t table[0x100] =
         { 0x0000, 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x0006, 0x0007
@@ -1222,7 +1228,7 @@ static strf::detail::simple_string_view<char32_t> STRF_TEST_FUNC decoded_0_to_xf
     return {table, 0x100};
 }
 
-static strf::detail::simple_string_view<char32_t> STRF_TEST_FUNC decoded_0_to_xff_windows_1257()
+STRF_HD strf::detail::simple_string_view<char32_t> decoded_0_to_xff_windows_1257()
 {
     static const char32_t table[0x100] =
         { 0x0000, 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x0006, 0x0007
@@ -1261,7 +1267,7 @@ static strf::detail::simple_string_view<char32_t> STRF_TEST_FUNC decoded_0_to_xf
     return {table, 0x100};
 }
 
-static strf::detail::simple_string_view<char32_t> STRF_TEST_FUNC decoded_0_to_xff_windows_1258()
+STRF_HD strf::detail::simple_string_view<char32_t> decoded_0_to_xff_windows_1258()
 {
     static const char32_t table[0x100] =
         { 0x0000, 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x0006, 0x0007
@@ -1301,7 +1307,7 @@ static strf::detail::simple_string_view<char32_t> STRF_TEST_FUNC decoded_0_to_xf
 }
 
 template <typename CharT>
-static STRF_TEST_FUNC strf::detail::simple_string_view<CharT> questions_marks(std::size_t count)
+STRF_HD strf::detail::simple_string_view<CharT> questions_marks(std::size_t count)
 {
     static const CharT array[] =
         { '?', '?', '?', '?', '?', '?', '?', '?', '?', '?', '?', '?', '?', '?', '?'
@@ -1313,7 +1319,7 @@ static STRF_TEST_FUNC strf::detail::simple_string_view<CharT> questions_marks(st
 }
 
 template <typename CharT>
-static STRF_TEST_FUNC void test_unsupported_codepoints
+STRF_HD void test_unsupported_codepoints
     ( strf::dynamic_charset<CharT> charset
     , std::initializer_list<char32_t> unsupported_codepoints )
 {
@@ -1326,7 +1332,7 @@ static STRF_TEST_FUNC void test_unsupported_codepoints
 }
 
 template <typename CharT, strf::charset_id CharsetId>
-void STRF_TEST_FUNC test_unsupported_codepoints
+STRF_HD void test_unsupported_codepoints
     ( strf::static_charset<CharT, CharsetId> charset
     , std::initializer_list<char32_t> unsupported_codepoints )
 {
@@ -1345,7 +1351,9 @@ inline STRF_HD void test_undefined_bytes
         (strf::sani(undefined_bytes, charset));
 }
 
-void STRF_TEST_FUNC test_single_byte_charsets()
+} // unnamed namespace
+
+STRF_TEST_FUNC void test_single_byte_charsets()
 {
     general_tests(strf::ascii_t<char>{}, decoded_0_to_xff_ascii());
     general_tests(strf::iso_8859_1_t<char>{}, decoded_0_to_xff_iso_8859_1());

@@ -5,7 +5,7 @@
 
 #include "test_utils.hpp"
 
-void STRF_TEST_FUNC test_input_char()
+STRF_TEST_FUNC void test_input_char()
 {
     TEST("a")    ( 'a' );
     TEST("a")    ( strf::fmt('a') );

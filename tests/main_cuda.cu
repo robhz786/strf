@@ -8,18 +8,18 @@
 
 namespace test_utils {
 
-strf::outbuff*& STRF_HD test_outbuff_ptr()
+STRF_HD strf::outbuff*& test_outbuff_ptr()
 {
     static strf::outbuff* ptr = nullptr;
     return ptr;
 }
 
-void STRF_HD set_test_outbuff(strf::outbuff& ob)
+STRF_HD void set_test_outbuff(strf::outbuff& ob)
 {
     test_outbuff_ptr() = &ob;
 }
 
-strf::outbuff& STRF_HD test_outbuff()
+STRF_HD strf::outbuff& test_outbuff()
 {
     auto * ptr = test_outbuff_ptr();
     return *ptr;

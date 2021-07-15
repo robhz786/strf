@@ -316,7 +316,7 @@ STRF_TEST_FUNC void utf32_miscellaneous()
 
 } // unnamed namespace
 
-void STRF_TEST_FUNC test_utf32()
+STRF_TEST_FUNC void test_utf32()
 {
     utf32_valid_sequences();
     utf32_invalid_sequences();
