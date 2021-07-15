@@ -267,7 +267,6 @@ public:
     }
 
     using id_type = unsigned long;
-    static constexpr id_type max_id = (id_type)-1;
 
     STRF_HD id_type id() const
     {
@@ -315,7 +314,7 @@ private:
     }
     STRF_HD static id_type& last_printed_scope_id_()
     {
-        static id_type x = max_id;
+        static id_type x = strf::detail::int_max<id_type>();
         return x;
     }
     STRF_HD static test_scope*& current_test_scope_()

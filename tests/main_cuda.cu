@@ -51,7 +51,7 @@ __global__ void kernel_main
 
 int main() {
     auto print = strf::to(stdout);
-    auto num_devices { 0 };
+    int num_devices { 0 };
     cudaError_t status = cudaGetDeviceCount(&num_devices);
 
     if (status != cudaSuccess) {

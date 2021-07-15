@@ -334,9 +334,9 @@ STRF_TEST_FUNC void test_input_int_no_punct()
     TEST ("........+0")  ( +strf::right(0   , 10, '.') );
     TEST (".......123")  (  strf::right(123u, 10, '.') );
 
-    TEST ("...................-32768") ( +strf::right((SHRT_MIN), 25, '.') );
-    TEST ("..............-2147483648") ( +strf::right((LONG_MIN), 25, '.') );
-    TEST (".....-9223372036854775808") ( +strf::right((LLONG_MIN), 25, '.') );
+    TEST ("................-32768") (+strf::right(strf::detail::int_min<std::int16_t>(), 22, '.'));
+    TEST ("...........-2147483648") (+strf::right(strf::detail::int_min<std::int32_t>(), 22, '.'));
+    TEST ("..-9223372036854775808") (+strf::right(strf::detail::int_min<std::int64_t>(), 22, '.'));
 
     TEST ("123.......")  (  strf::left(123,  10, '.') );
     TEST ("+123......")  ( +strf::left(123,  10, '.') );

@@ -330,17 +330,18 @@ constexpr strf::detail::detail_tag_invoke_ns::tag_invoke_fn tag_invoke {};
 
 #endif // defined (STRF_NO_GLOBAL_CONSTEXPR_VARIABLE)
 
-template< class ForwardIt, class T, class Compare >
-ForwardIt STRF_HD lower_bound
-    ( ForwardIt first
-    , ForwardIt last
+// Not using generic iterators because std::distance
+// is not freestanding and can't be used in CUDA devices
+template <class T, class Compare>
+STRF_HD const T* lower_bound
+    ( const T* first
+    , const T* last
     , const T& value
     , Compare comp )
 {
-    auto search_range_length { last - first };
-        // We don't have the equivalent of std::distance on the device-side
+    std::ptrdiff_t search_range_length { last - first };
 
-    ForwardIt iter;
+    const T* iter;
     while (search_range_length > 0) {
         auto half_range_length = search_range_length/2;
         iter = first;
@@ -355,6 +356,54 @@ ForwardIt STRF_HD lower_bound
         }
     }
     return first;
+}
+
+
+namespace int_limits_ {
+
+// because numeric_limits::max() can't be used in CUDA devices
+// without emitting a warning
+
+template <typename IntT, bool Signed>
+struct int_limits_impl;
+
+template <typename IntT>
+struct int_limits_impl<IntT, true>
+{
+    static_assert(std::is_integral<IntT>::value, "");
+
+    // assuming two's complement
+    using uint_t = typename std::make_unsigned<IntT>::type;
+    constexpr static unsigned bits_count = sizeof(IntT) * 8;
+    constexpr static uint_t helper_ = uint_t(1) << (bits_count - 1);
+
+    constexpr static IntT min_value = static_cast<IntT>(helper_);
+    constexpr static IntT max_value = static_cast<IntT>(~helper_);
+};
+
+template <typename UIntT>
+struct int_limits_impl<UIntT, false>
+{
+    static_assert(std::is_integral<UIntT>::value, "");
+    constexpr static UIntT min_value = 0;
+    constexpr static UIntT max_value = (UIntT)-1;
+};
+
+} // namespace int_limits_
+
+template <typename IntT>
+using int_limits = int_limits_::int_limits_impl<IntT, std::is_signed<IntT>::value>;
+
+template <typename IntT>
+constexpr STRF_HD IntT int_max()
+{
+    return int_limits<IntT>::max_value;
+}
+
+template <typename IntT>
+constexpr STRF_HD IntT int_min()
+{
+    return int_limits<IntT>::min_value;
 }
 
 } // namespace detail

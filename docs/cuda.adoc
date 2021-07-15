@@ -62,21 +62,11 @@ The folowing features are not supported on device code:
    `<<quick_reference#lettercase,lettercase>>::lower` and
    `<<quick_reference#lettercase,lettercase>>::mixed` ).
 
-== Compilation flags
-
-The following flags shall be passed to NVCC:
-
-* `--expt-relaxed-constexpr`
-
 ////
 == Dealing with limited stack memory
 
 Strf tends to use a fairly amount of stack memory, which is particularly
 limited on device code. So
-
-
-
-
 
 Avoid passing too many arguments in `strf::to(dest)(/{asterisk}arguments...{asterisk}/)`
 because that may require too much stack memory, which tends to be particularly
