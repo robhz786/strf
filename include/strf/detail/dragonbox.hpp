@@ -622,15 +622,25 @@ namespace dragonbox {
 		// Some simple utilities for constexpr computation.
 		////////////////////////////////////////////////////////////////////////////////////////
 
-		template <class Int>
-		STRF_HD constexpr Int do_compute_power(Int a, int k) noexcept {
-			return k >= 1 ? a * do_compute_power(a, k - 1) : 1;
-		}
+		template <typename IntT, IntT X, unsigned K>
+		struct mp_compute_power
+		{
+			static constexpr IntT value = X * mp_compute_power<IntT, X, K - 1>::value;
+		};
+		template <typename IntT, IntT X>
+		struct mp_compute_power<IntT, X, 0>
+		{
+			static constexpr IntT value = 1;
+		};
 
 		template <int k, class Int>
-		STRF_HD constexpr Int compute_power(Int a) noexcept {
+		STRF_HD STRF_CONSTEXPR_IN_CXX14 Int compute_power(Int a) noexcept {
 			static_assert(k >= 0, "");
-			return do_compute_power(a, k);
+			Int p = 1;
+			for (int i = 0; i < k; ++i) {
+				p *= a;
+			}
+			return p;
 		}
 
 		template <int a, class UInt>
@@ -869,7 +879,7 @@ namespace dragonbox {
 			{
 				// Make sure the computation for max_n does not overflow.
 				static_assert(N + 1 <= log::floor_log10_pow2(31), "");
-				STRF_ASSERT(n <= compute_power<N + 1>(std::uint32_t(10)));
+				STRF_ASSERT(n <= (mp_compute_power<std::uint32_t, 10, N + 1>::value));
 
 				using info = check_divisibility_and_divide_by_pow10_info<N>;
 				n *= info::magic_number;
@@ -918,7 +928,7 @@ namespace dragonbox {
 			}
 			template <int N, typename UInt>
 			STRF_HD constexpr UInt divide_by_pow10_(std::false_type, UInt n) noexcept {
-				return n / compute_power<N>(UInt(10));
+				return n / mp_compute_power<UInt, 10, N>::value;
 			}
 			// Compute floor(n / 10^N) for small N.
 			// Precondition: n <= 2^a * 5^b (a = max_pow2, b = max_pow5)
@@ -1791,7 +1801,7 @@ namespace dragonbox {
 		}
 
 		template <typename UInt, int kappa,
-			UInt max_possible_significand = ((UInt)-1) / compute_power<kappa + 1>(std::uint32_t(10))>
+			UInt max_possible_significand = ((UInt)-1) / mp_compute_power<std::uint32_t, 10, kappa + 1>::value >
 		STRF_HD constexpr static int calculate_max_power_of_10() noexcept {
 			return do_calculate_max_power_of_10<UInt, kappa>(0, 1, max_possible_significand / 10);
 		}
@@ -2791,15 +2801,19 @@ namespace dragonbox {
 
 			static constexpr int case_shorter_interval_left_endpoint_lower_threshold = 2;
 			static constexpr int case_shorter_interval_left_endpoint_upper_threshold = 2 +
-				log::floor_log2(compute_power<
-					count_factors<5>((carrier_uint(1) << (significand_bits + 2)) - 1) + 1
-				>(10) / 3);
+				log::floor_log2(mp_compute_power
+					< unsigned
+					, (unsigned)10
+					, count_factors<5>((carrier_uint(1) << (significand_bits + 2)) - 1) + 1
+					> ::value / 3);
 
 			static constexpr int case_shorter_interval_right_endpoint_lower_threshold = 0;
 			static constexpr int case_shorter_interval_right_endpoint_upper_threshold = 2 +
-				log::floor_log2(compute_power<
-					count_factors<5>((carrier_uint(1) << (significand_bits + 1)) + 1) + 1
-				>(10) / 3);
+				log::floor_log2(mp_compute_power
+					< unsigned
+					, 10
+					, count_factors<5>((carrier_uint(1) << (significand_bits + 1)) + 1) + 1
+					> ::value / 3);
 
 			static constexpr int shorter_interval_tie_lower_threshold =
 				-log::floor_log5_pow2_minus_log5_3(significand_bits + 4) - 2 - significand_bits;
@@ -2835,8 +2849,8 @@ namespace dragonbox {
 				// Step 2: Try larger divisor; remove trailing zeros if necessary
 				//////////////////////////////////////////////////////////////////////
 
-				constexpr auto big_divisor = compute_power<kappa + 1>(std::uint32_t(10));
-				constexpr auto small_divisor = compute_power<kappa>(std::uint32_t(10));
+				constexpr auto big_divisor = mp_compute_power<std::uint32_t, 10, kappa + 1>::value;
+				constexpr auto small_divisor = mp_compute_power<std::uint32_t, 10, kappa>::value;
 
 				// Using an upper bound on zi, we might be able to optimize the division
 				// better than the compiler; we are computing zi / big_divisor here.
@@ -3061,7 +3075,7 @@ namespace dragonbox {
 			// 	// Step 2: Try larger divisor; remove trailing zeros if necessary
 			// 	//////////////////////////////////////////////////////////////////////
 
-			// 	constexpr auto big_divisor = compute_power<kappa + 1>(std::uint32_t(10));
+			// 	constexpr auto big_divisor = mp_compute_power<std::uint32_t, 10, kappa + 1>::value;
 
 			// 	// Using an upper bound on xi, we might be able to optimize the division
 			// 	// better than the compiler; we are computing xi / big_divisor here.
@@ -3131,7 +3145,7 @@ namespace dragonbox {
 			// 	// Step 2: Try larger divisor; remove trailing zeros if necessary
 			// 	//////////////////////////////////////////////////////////////////////
 
-			// 	constexpr auto big_divisor = compute_power<kappa + 1>(std::uint32_t(10));
+			// 	constexpr auto big_divisor = mp_compute_power<std::uint32_t, 10, kappa + 1>::value;
 
 			// 	// Using an upper bound on zi, we might be able to optimize the division
 			// 	// better than the compiler; we are computing zi / big_divisor here.
