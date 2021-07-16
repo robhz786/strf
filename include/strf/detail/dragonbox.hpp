@@ -1817,7 +1817,7 @@ namespace dragonbox {
 					static constexpr bool return_has_sign = false;
 
 					template <class SignedSignificandBits, class ReturnType>
-					STRF_HD static STRF_CONSTEXPR_IN_CXX14 void handle_sign(SignedSignificandBits, ReturnType&) noexcept {}
+					STRF_HD static JKJ_FORCEINLINE void handle_sign(SignedSignificandBits, ReturnType&) noexcept {}
 				};
 
 				struct return_sign : base {
@@ -1825,7 +1825,7 @@ namespace dragonbox {
 					static constexpr bool return_has_sign = true;
 
 					template <class SignedSignificandBits, class ReturnType>
-					STRF_HD static STRF_CONSTEXPR_IN_CXX14 void handle_sign(SignedSignificandBits s, ReturnType& r) noexcept {
+					STRF_HD static JKJ_FORCEINLINE void handle_sign(SignedSignificandBits s, ReturnType& r) noexcept {
 						r.is_negative = s.is_negative();
 					}
 				};
@@ -1840,10 +1840,10 @@ namespace dragonbox {
 					static constexpr bool report_trailing_zeros = false;
 
 					template <class Impl, class ReturnType>
-					STRF_HD static STRF_CONSTEXPR_IN_CXX14 void on_trailing_zeros(ReturnType&) noexcept {}
+					STRF_HD static JKJ_FORCEINLINE void on_trailing_zeros(ReturnType&) noexcept {}
 
 					template <class Impl, class ReturnType>
-					STRF_HD static STRF_CONSTEXPR_IN_CXX14 void no_trailing_zeros(ReturnType&) noexcept {}
+					STRF_HD static JKJ_FORCEINLINE void no_trailing_zeros(ReturnType&) noexcept {}
 				};
 
 				struct remove : base {
@@ -1851,12 +1851,12 @@ namespace dragonbox {
 					static constexpr bool report_trailing_zeros = false;
 
 					template <class Impl, class ReturnType>
-					STRF_HD static STRF_CONSTEXPR_IN_CXX14 void on_trailing_zeros(ReturnType& r) noexcept {
+					STRF_HD static JKJ_FORCEINLINE void on_trailing_zeros(ReturnType& r) noexcept {
 						r.exponent += Impl::remove_trailing_zeros(r.significand);
 					}
 
 					template <class Impl, class ReturnType>
-					STRF_HD static STRF_CONSTEXPR_IN_CXX14 void no_trailing_zeros(ReturnType&) noexcept {}
+					STRF_HD static JKJ_FORCEINLINE void no_trailing_zeros(ReturnType&) noexcept {}
 				};
 
 				struct report : base {
@@ -1864,12 +1864,12 @@ namespace dragonbox {
 					static constexpr bool report_trailing_zeros = true;
 
 					template <class Impl, class ReturnType>
-					STRF_HD static STRF_CONSTEXPR_IN_CXX14 void on_trailing_zeros(ReturnType& r) noexcept {
+					STRF_HD static JKJ_FORCEINLINE void on_trailing_zeros(ReturnType& r) noexcept {
 						r.may_have_trailing_zeros = true;
 					}
 
 					template <class Impl, class ReturnType>
-					STRF_HD static STRF_CONSTEXPR_IN_CXX14 void no_trailing_zeros(ReturnType& r) noexcept {
+					STRF_HD static JKJ_FORCEINLINE void no_trailing_zeros(ReturnType& r) noexcept {
 						r.may_have_trailing_zeros = false;
 					}
 				};
