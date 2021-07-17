@@ -3256,7 +3256,7 @@ namespace dragonbox {
 		false >; // report_trailing_zeros;
 
 	template <class Float>
-	STRF_HD auto to_decimal(Float x) -> return_type<Float>
+	STRF_HD JKJ_FORCEINLINE auto to_decimal(Float x) -> return_type<Float>
 	{
 		using FloatTraits = default_float_traits<Float>;
 		using format = typename FloatTraits::format;
