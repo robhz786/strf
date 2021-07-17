@@ -3256,14 +3256,16 @@ namespace dragonbox {
 		false >; // report_trailing_zeros;
 
 	template <class Float>
-	STRF_HD JKJ_FORCEINLINE auto to_decimal(Float x) -> return_type<Float>
+	STRF_HD JKJ_FORCEINLINE return_type<Float> to_decimal
+		( unsigned exponent_bits
+		, typename std::conditional
+			< sizeof(Float) == 4, std::uint32_t, std::uint64_t>
+			::type mantissa_bits )
 	{
 		using FloatTraits = default_float_traits<Float>;
 		using format = typename FloatTraits::format;
-		auto const br = float_bits<Float, FloatTraits>(x);
-		auto const exponent_bits = br.extract_exponent_bits();
-		auto const significand_bits = br.remove_exponent_bits(exponent_bits);
-		assert(br.is_finite());
+		const signed_significand_bits<Float, FloatTraits>
+			significand_bits(mantissa_bits);
 
 		using dec_to_bin_rounding_poli
 			= detail::policy_impl::decimal_to_binary_rounding::nearest_to_even;
