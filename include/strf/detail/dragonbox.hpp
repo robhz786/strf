@@ -59,13 +59,14 @@ namespace jkj {
 namespace dragonbox {
 	namespace detail {
 		template <class T>
-		constexpr STRF_HD std::size_t physical_bits() noexcept {
+		constexpr STRF_HD int physical_bits() noexcept {
 			return sizeof(T) * std::numeric_limits<unsigned char>::digits;
 		}
 
 		template <class T>
-		constexpr STRF_HD std::size_t value_bits() noexcept {
-			return std::numeric_limits<strf::detail::enable_if_t<std::is_unsigned<T>::value, T>>::digits;
+		constexpr STRF_HD int value_bits() noexcept {
+			static_assert(std::is_unsigned<T>::value, "");
+			return std::numeric_limits<T>::digits;
 		}
 	}
 
@@ -134,7 +135,7 @@ namespace dragonbox {
 		>::type;
 
 		// Number of bits in the above unsigned integer type.
-		static constexpr int carrier_bits = int(detail::physical_bits<carrier_uint>());
+		static constexpr int carrier_bits = detail::physical_bits<carrier_uint>();
 
 		// Extract exponent bits from a bit pattern.
 		// The result must be aligned to the LSB so that there is
@@ -843,7 +844,7 @@ namespace dragonbox {
 #if JKJ_HAS_COUNTR_ZERO_INTRINSIC
 				return bits::countr_zero(x) >= int(exp);
 #else
-				if (exp >= value_bits<UInt>()) {
+				if ((int)exp >= value_bits<UInt>()) {
 					return false;
 				}
 				auto mask = UInt((UInt(1) << exp) - 1);
