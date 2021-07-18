@@ -375,10 +375,11 @@ struct int_limits_impl<IntT, true>
     // assuming two's complement
     using uint_t = typename std::make_unsigned<IntT>::type;
     constexpr static unsigned bits_count = sizeof(IntT) * 8;
-    constexpr static uint_t helper_ = uint_t(1) << (bits_count - 1);
+    constexpr static uint_t min_value_bits_ = (uint_t(1) << (bits_count - 1));
+    constexpr static uint_t max_value_bits_ = (uint_t(-1) >> 1);
 
-    constexpr static IntT min_value = static_cast<IntT>(helper_);
-    constexpr static IntT max_value = static_cast<IntT>(~helper_);
+    constexpr static IntT min_value = static_cast<IntT>(min_value_bits_);
+    constexpr static IntT max_value = static_cast<IntT>(max_value_bits_);
 };
 
 template <typename UIntT>
