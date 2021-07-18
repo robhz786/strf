@@ -672,7 +672,8 @@ public:
         , CharT* buff
         , std::size_t buff_total_size
         , const unsigned* spaces_array
-        , std::size_t num_spaces );
+        , std::size_t num_spaces
+        , unsigned first_space );
 
     STRF_HD ~input_tester_with_fixed_spaces_base()
     {
@@ -724,8 +725,9 @@ STRF_HD input_tester_with_fixed_spaces_base<CharT>::input_tester_with_fixed_spac
     , CharT* buff
     , std::size_t buff_total_size
     , const unsigned* spaces_array
-    , std::size_t num_spaces )
-    : strf::basic_outbuff<CharT>{buff, spaces_array[0]}
+    , std::size_t num_spaces
+    , unsigned first_space )
+    : strf::basic_outbuff<CharT>{buff, first_space}
     , expected_{expected}
     , src_filename_{src_filename}
     , src_line_{src_line}
@@ -839,33 +841,28 @@ struct array_of_uint
 };
 
 
-template <typename CharT, unsigned... Spaces>
+template <typename CharT, unsigned FirstSpace, unsigned... Spaces>
 class input_tester_with_fixed_spaces
-    : public array_of_uint<sizeof...(Spaces)>
-    , public input_tester_with_fixed_spaces_base<CharT>
+    : public input_tester_with_fixed_spaces_base<CharT>
 {
-    static constexpr std::size_t num_spaces_ = sizeof...(Spaces);
+    static constexpr std::size_t num_spaces_ = 1 + sizeof...(Spaces);
 
 public:
     template <unsigned... Values>
     STRF_HD input_tester_with_fixed_spaces
         ( input_tester_with_fixed_spaces_input<CharT> i )
-        : array_of_uint<num_spaces_>{array_of_uint_filler<Spaces...>{}}
-        , input_tester_with_fixed_spaces_base<CharT>
+        : input_tester_with_fixed_spaces_base<CharT>
             { i.expected, i.src_filename, i.src_line, i.funcname
-            , buff_, buff_size_, spaces_(), num_spaces_ }
+            , buff_, buff_size_, spaces_.array, num_spaces_, FirstSpace}
+        , spaces_{array_of_uint_filler<FirstSpace, Spaces...>{}}
     {
     }
 
 private:
 
-    static constexpr std::size_t buff_size_ = detail::reduce<Spaces...>::value;
-    CharT buff_[buff_size_];
-
-    STRF_HD const unsigned* spaces_() const
-    {
-        return array_of_uint<num_spaces_>::array;
-    }
+    array_of_uint<num_spaces_> spaces_;
+    static constexpr std::size_t buff_size_ = detail::reduce<FirstSpace, Spaces...>::value;
+    CharT buff_[buff_size_ + 80];
 };
 
 
