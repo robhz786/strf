@@ -75,7 +75,7 @@ STRF_TEST_FUNC void char_range_basic_operations()
     }
     {   // Copy constructor
         strf::basic_char_array_writer<CharT> sw1(buff);
-        auto sw2{sw1};
+        strf::basic_char_array_writer<CharT> sw2{sw1};
         TEST_TRUE(sw1 == sw2);
         TEST_TRUE(sw1.pointer() == sw2.pointer());
         TEST_TRUE(sw1.end() == sw2.end());
@@ -95,7 +95,7 @@ STRF_TEST_FUNC void char_range_basic_operations()
 
         sw1.recycle();
 
-        auto sw2{sw1};
+        strf::basic_char_array_writer<CharT> sw2{sw1};
         TEST_TRUE(sw1 == sw2);
         TEST_TRUE(sw1.pointer() == sw2.pointer());
         TEST_TRUE(sw1.end() == sw2.end());
