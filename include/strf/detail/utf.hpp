@@ -1437,25 +1437,25 @@ STRF_HD void strf::static_transcoder
             ++dest_it;
         } else if (ch < 0x800) {
             STRF_CHECK_DEST_SIZE(2);
-            dest_it[0] = static_cast<DestCharT>(0xC0 | ((ch & 0x7C0) >> 6));
-            dest_it[1] = static_cast<DestCharT>(0x80 |  (ch &  0x3F));
+            dest_it[0] = static_cast<DestCharT>(0xC0 | (0x1F & (ch >> 6)));
+            dest_it[1] = static_cast<DestCharT>(0x80 | (0xBF &  ch));
             dest_it += 2;
         } else if (ch < 0x10000) {
             STRF_IF_LIKELY ( surr_poli == strf::surrogate_policy::lax
                           || strf::detail::not_surrogate(ch))
             {
                 STRF_CHECK_DEST_SIZE(3);
-                dest_it[0] = static_cast<DestCharT>(0xE0 | ((ch & 0xF000) >> 12));
-                dest_it[1] = static_cast<DestCharT>(0x80 | ((ch &  0xFC0) >> 6));
-                dest_it[2] = static_cast<DestCharT>(0x80 |  (ch &   0x3F));
+                dest_it[0] = static_cast<DestCharT>(0xE0 | (0x0F & (ch >> 12)));
+                dest_it[1] = static_cast<DestCharT>(0x80 | (0xBF & (ch >> 6)));
+                dest_it[2] = static_cast<DestCharT>(0x80 | (0xBF &  ch ));
                 dest_it += 3;
             } else goto invalid_sequence;
         } else if (ch < 0x110000) {
             STRF_CHECK_DEST_SIZE(4);
-            dest_it[0] = static_cast<DestCharT>(0xF0 | ((ch & 0x1C0000) >> 18));
-            dest_it[1] = static_cast<DestCharT>(0x80 | ((ch &  0x3F000) >> 12));
-            dest_it[2] = static_cast<DestCharT>(0x80 | ((ch &    0xFC0) >> 6));
-            dest_it[3] = static_cast<DestCharT>(0x80 |  (ch &     0x3F));
+            dest_it[0] = static_cast<DestCharT>(0xF0 | (0x07 & (ch >> 18)));
+            dest_it[1] = static_cast<DestCharT>(0x80 | (0xBF & (ch >> 12)));
+            dest_it[2] = static_cast<DestCharT>(0x80 | (0xBF & (ch >> 6)));
+            dest_it[3] = static_cast<DestCharT>(0x80 | (0xBF &  ch));
             dest_it += 4;
         } else {
             invalid_sequence:
@@ -2039,15 +2039,15 @@ STRF_HD void strf::static_transcoder
             ++dest_it;
         } else if (ch < 0x800) {
             STRF_CHECK_DEST_SIZE(2);
-            dest_it[0] = static_cast<DestCharT>(0xC0 | ((ch & 0x7C0) >> 6));
-            dest_it[1] = static_cast<DestCharT>(0x80 |  (ch &  0x3F));
+            dest_it[0] = static_cast<DestCharT>(0xC0 | (0x1F & (ch >> 6)));
+            dest_it[1] = static_cast<DestCharT>(0x80 | (0xBF &  ch));
             dest_it += 2;
         } else if (strf::detail::not_surrogate(ch)) {
             three_bytes:
             STRF_CHECK_DEST_SIZE(3);
-            dest_it[0] = static_cast<DestCharT>(0xE0 | ((ch & 0xF000) >> 12));
-            dest_it[1] = static_cast<DestCharT>(0x80 | ((ch &  0xFC0) >> 6));
-            dest_it[2] = static_cast<DestCharT>(0x80 |  (ch &   0x3F));
+            dest_it[0] = static_cast<DestCharT>(0xE0 | (0x0F & (ch >> 12)));
+            dest_it[1] = static_cast<DestCharT>(0x80 | (0xBF & (ch >> 6)));
+            dest_it[2] = static_cast<DestCharT>(0x80 | (0xBF &  ch ));
             dest_it += 3;
         } else if ( strf::detail::is_high_surrogate(ch)
                && (src_it + 1) != src_end
@@ -2056,10 +2056,10 @@ STRF_HD void strf::static_transcoder
             STRF_CHECK_DEST_SIZE(4);
             unsigned long ch2 = *++src_it;
             unsigned long codepoint = 0x10000 + (((ch & 0x3FF) << 10) | (ch2 & 0x3FF));
-            dest_it[0] = static_cast<DestCharT>(0xF0 | ((codepoint & 0x1C0000) >> 18));
-            dest_it[1] = static_cast<DestCharT>(0x80 | ((codepoint &  0x3F000) >> 12));
-            dest_it[2] = static_cast<DestCharT>(0x80 | ((codepoint &    0xFC0) >> 6));
-            dest_it[3] = static_cast<DestCharT>(0x80 |  (codepoint &     0x3F));
+            dest_it[0] = static_cast<DestCharT>(0xF0 | (0x07 & (codepoint >> 18)));
+            dest_it[1] = static_cast<DestCharT>(0x80 | (0xBF & (codepoint >> 12)));
+            dest_it[2] = static_cast<DestCharT>(0x80 | (0xBF & (codepoint >> 6)));
+            dest_it[3] = static_cast<DestCharT>(0x80 | (0xBF &  codepoint));
             dest_it += 4;
         } else if (surr_poli == strf::surrogate_policy::lax) {
             goto three_bytes;
