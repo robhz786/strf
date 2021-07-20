@@ -3205,47 +3205,46 @@ namespace dragonbox {
 				fc_pm_half,
 				fc
 			};
+			STRF_HD static bool is_product_integer(std::integral_constant<integer_check_case_id, integer_check_case_id::fc_pm_half>,
+				carrier_uint two_f, int exponent, int minus_k) noexcept
+			{
+				if (exponent < case_fc_pm_half_lower_threshold) {
+					return false;
+				}
+				// For k >= 0
+				else if (exponent <= case_fc_pm_half_upper_threshold) {
+					return true;
+				}
+				// For k < 0
+				else if (exponent > divisibility_check_by_5_threshold) {
+					return false;
+				}
+				return div::divisible_by_power_of_5<max_power_of_factor_of_5 + 1>(two_f, minus_k);
+			}
+			STRF_HD static bool is_product_integer(std::integral_constant<integer_check_case_id, integer_check_case_id::fc>,
+				carrier_uint two_f, int exponent, int minus_k) noexcept
+			{
+				// Case II: f = fc + 1
+				// Case III: f = fc
+				// Exponent for 5 is negative
+				if (exponent > divisibility_check_by_5_threshold) {
+					return false;
+				}
+				else if (exponent > case_fc_upper_threshold) {
+					return div::divisible_by_power_of_5<max_power_of_factor_of_5 + 1>(two_f, minus_k);
+				}
+				// Both exponents are nonnegative
+				else if (exponent >= case_fc_lower_threshold) {
+					return true;
+				}
+				// Exponent for 2 is negative
+				return div::divisible_by_power_of_2(two_f, minus_k - exponent + 1);
+			}
+
 			template <integer_check_case_id case_id>
 			STRF_HD static bool is_product_integer(carrier_uint two_f, int exponent, int minus_k) noexcept
 			{
-				// Case I: f = fc +- 1/2
-				JKJ_IF_CONSTEXPR (case_id == integer_check_case_id::fc_pm_half)
-				{
-					if (exponent < case_fc_pm_half_lower_threshold) {
-						return false;
-					}
-					// For k >= 0
-					else if (exponent <= case_fc_pm_half_upper_threshold) {
-						return true;
-					}
-					// For k < 0
-					else if (exponent > divisibility_check_by_5_threshold) {
-						return false;
-					}
-					else {
-						return div::divisible_by_power_of_5<max_power_of_factor_of_5 + 1>(two_f, minus_k);
-					}
-				}
-				// Case II: f = fc + 1
-				// Case III: f = fc
-				else
-				{
-					// Exponent for 5 is negative
-					if (exponent > divisibility_check_by_5_threshold) {
-						return false;
-					}
-					else if (exponent > case_fc_upper_threshold) {
-						return div::divisible_by_power_of_5<max_power_of_factor_of_5 + 1>(two_f, minus_k);
-					}
-					// Both exponents are nonnegative
-					else if (exponent >= case_fc_lower_threshold) {
-						return true;
-					}
-					// Exponent for 2 is negative
-					else {
-						return div::divisible_by_power_of_2(two_f, minus_k - exponent + 1);
-					}
-				}
+				return is_product_integer(std::integral_constant<integer_check_case_id, case_id>(), two_f, exponent, minus_k);
 			}
 		};
 	}
