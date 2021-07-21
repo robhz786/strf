@@ -122,10 +122,8 @@ function(define_strf_cuda_test basename)
     strf-cuda )
 
   set_target_properties(cuda-${basename}-header-only PROPERTIES
-    CXX_STANDARD 14
     CUDA_SEPARABLE_COMPILATION ON)
   set_target_properties(cuda-${basename}-static-lib  PROPERTIES
-    CXX_STANDARD 14
     CUDA_SEPARABLE_COMPILATION ON)
 
   add_test(
