@@ -1,5 +1,5 @@
 
-StrfVersion = v0.14.0
+StrfVersion = v0.15.0
 
 all: \
     out/syntax.svg \
