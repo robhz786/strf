@@ -8,12 +8,12 @@ http://www.boost.org/LICENSE_1_0.txt)
 :strf-version: develop
 :strf-src-root: https://github.com/robhz786/strf/blob/{strf-version}
 
-= Why does `strf` not use `std::locale` ?
+= Why does Strf not use `std::locale` ?
 :source-highlighter: prettify
 
 The C++ Standard Library provides the `std::locale` class
 ( used to manage _facet_ object ), as well as the `std::numpunct` class
-template. So, why did strf define its own
+template. So, why did Strf define its own
 facets design ( and its own `strf::numpunct` ) instead of just using
 what is already well-know and available by the standard ?
 
@@ -29,7 +29,7 @@ These things may be irrelevant in many scenarios,
 but they are problematic in others.
 They were probably unavoidable back
 in the time `std::locale` was created,
-but we can do better now with C++11.
+but we can do better now with modern C++.
 
 // taking more advantange of static polymorfism.
 
@@ -38,7 +38,7 @@ but we can do better now with C++11.
 // something more based on static polymorfism,
 // which is more trendy these days.
 //
-// However, one of goals in strf
+// However, one of goals in Strf
 // was to find a design that would take
 // best advantage of what C++11 has to offer.
 // So it would be only natural to try alternatives.
@@ -46,7 +46,7 @@ but we can do better now with C++11.
 The design of `strf::facets_pack` class template is similar
 to as of `std::tuple`, holding its elements by value,
 in contrast to `std::locale` were they
-are managed by reference counting.
+are managed through reference counting.
 
 `strf::use_facet` is as fast as a typical getter: it
 just returns the reference of the requested object, or,
@@ -54,7 +54,7 @@ if it is not present, a default value,
 while `std::use_facet` probably needs
 to perform some run-time processing.
 
-There is no base class that facets in strf need to derive from.
+There is no base class that facets in Strf need to derive from.
 They only need to satisfy the __<<strf_hpp#Facet,Facet>>__
 type requirements, which is not really demanding.
 This provides a great flexibility on how a facet can be designed.
@@ -63,7 +63,7 @@ or as sofisticated as the the charset facets, or the
 width calculation facets. But one thing all facet of this
 library have in common is that they all are small and
 fast to copy, and none of them cause dynamic memory allocation.
-// In contrast to the OO approach of `std::locale`, strf uses
+// In contrast to the OO approach of `std::locale`, Strf uses
 // static polymorfism and is facets are value types.
 
 // It was necessary to create `strf::numpunct` because `std::numpunct`
@@ -76,10 +76,10 @@ fast to copy, and none of them cause dynamic memory allocation.
   `char32_t` values.
 * Punctuation can also be applied on integers printed
   in hexadecimal, octal or binary bases.
-* A single `strf::numpunct` object
-  can be used for all character types.
-* More lightweight: the groups are defined in a simple integer,
-  instead of a string.
+* A single `strf::numpunct` object works
+  for all character types.
+* The grouping is defined in a simple integer,
+  which is way more lightweight than using a `std::string`.
 * Less boiler plate to manually define the punctuation:
   no need to create a new class that overrides member
   functions. You do it in a single expression:
@@ -91,21 +91,20 @@ auto punct = strf::numpunct<10> (3, 2, 1)
     .thousands_separator('.');
 ----
 
-`strf::numpunct` does not affect `bool` values,
+( Be aware that `strf::numpunct` does not affect `bool` values,
 contrary to `std::numpunct` which
 has the `truename()` and `falsename()` functions.
-Instead, strf provides `<<howto_override_printable_types#,print_override_c>>`
+Instead, in Strf there is the `<<howto_override_printable_types#,print_override_c>>`
 facet category, which enables you to override how
-values of `bool` ( or other printable types )
-are printed.
+values of `bool` are printed. )
 
 // But perhaps the main reason is that the goals
 // re different:
 
-`std::locale` and `strf::facets_pack` have been created with
+Furthermore, `std::locale` and `strf::facets_pack` have been created with
 different goals in mind. `std::locale` is about localization,
 and it was designed to be used in `std::iostream`.
-Strf facets were created to make strf highly customizable,
+Strf facets were created to make Strf highly customizable,
 kind of a complement to format functions.
 Dealing with numeric punctuation just happens to be one thing
 they have in common.
@@ -137,7 +136,7 @@ they have in common.
 // and `strf::facets_pack` have been designed with
 // different goals in mind.
 // `std::locale` is about localization.
-// The facets of strf not necessary.
+// The facets of Strf not necessary.
 // Numeric punctuation is just an intersection.
 //
 

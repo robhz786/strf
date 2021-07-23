@@ -31,7 +31,7 @@ target_link_libraries(your_target strf::strf-header-only)
 # target_link_libraries(your_target strf::strf-static-lib)
 ----
 
-If you are not using CMake and want to use strf as a header-only library,
+If you are not using CMake and want to use Strf as a header-only library,
 then you only need to add the `include` sub-directory as an include path.
 If you plan to use it as a static library, then you also need to define
 the macro `STRF_SEPARATE_COMPILATION` in your code: 

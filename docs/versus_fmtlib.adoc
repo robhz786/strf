@@ -13,21 +13,20 @@ http://www.boost.org/LICENSE_1_0.txt)
 
 :tr-string: <<quick_reference#tr_string,tr-string>>
 
-= Comparision between strf and {fmt}
+= Comparison between Strf and {fmt}
 :source-highlighter: prettify
 :sectnums:
 :sectnumlevels: 2
 :icons: font
 :toc: left
 
-
-// This document highlights the differences between Strf and version 7.1.3 of {fmt}.
+This is a brief comparison between Strf version 0.15 and {fmt} version 8.0.1.
 
 // == Usability
 //
 // === Format string versus format functions
 //
-// {fmt} uses format string, while strf uses format functions:
+// {fmt} uses format string, while Strf uses format functions:
 //
 // [source,cpp]
 // ----
@@ -35,7 +34,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 // auto s1 = fmt::format("{} in hexadecimal is {:x}", value);
 // auto s1 = fmt::format(FMT_STRING("{} in hexadecimal is {:x}"), value);
 //
-// // in strf
+// // in Strf
 // auto s3 = strf::to_string(value, "in hexadecimal is", strf::hex(value));
 // auto s4 = strf::to_string.tr("{} in hexadecimal is {}", value, strf::hex(value));
 //
@@ -45,13 +44,13 @@ http://www.boost.org/LICENSE_1_0.txt)
 //
 // Format strings are more compact, but they are also more error-prone.
 // With the `FMT_STRING` macros, the mistakes are caught at compile time,
-// but the error messages are not as clear as when using strf's format functions.
+// but the error messages are not as clear as when using Strf's format functions.
 //
-// On the other hand, strf is not able to catch at compile-time an invalid
+// On the other hand, Strf is not able to catch at compile-time an invalid
 // positional argument in the {tr-string}.
 //
 // ////
-// As a consequence, strf tends to be more verbose. Operator overloading
+// As a consequence, Strf tends to be more verbose. Operator overloading
 // is commonly employed to aliviate the verbosity, like in the expression `*hex(value) > 20`,
 // but it's still not compact as a format string.
 //
@@ -77,11 +76,10 @@ http://www.boost.org/LICENSE_1_0.txt)
 == Capabilities in general
 
 === {fmt}
-Some things that are directly supported by {fmt}, but not by strf:
+Some things that are directly supported by {fmt}, but not by Strf:
 
 - Printing date and time ( link:https://fmt.dev/latest/api.html#chrono-api[link] )
 - Printing any type that can be printed by `std::ostream` ( link:https://fmt.dev/latest/api.html#std-ostream-support[link] )
-- Printing `long double`
 - Printing `std::tuples` ( https://fmt.dev/latest/api.html#ranges-api[link] )
 - Specifying colors ( https://fmt.dev/latest/api.html#color-api[link] )
 - Writing to output iterators ( https://fmt.dev/latest/api.html#output-iterator-support[link] )
@@ -90,7 +88,7 @@ Some things that are directly supported by {fmt}, but not by strf:
 
 
 === Strf
-Some things that are directly supported by strf, but not by {fmt}:
+Some things that are directly supported by Strf, but not by {fmt}:
 
 * Character encoding conversion
 
@@ -156,44 +154,95 @@ assert(str == "[1 -> 'one'; 2 -> 'two'; 1000 -> 'a thousand']");
 ----
 
 // == Format options
-// - In strf the right alignment is the default, in {fmt} it depends on the type
-// - In strf the string precision is the width, in {fmt} is the size
+// - In Strf the right alignment is the default, in {fmt} it depends on the type
+// - In Strf the string precision is the width, in {fmt} is the size
 // - float precision
-// - In strf, the `operator~` format function inserts a fill character before non-negative numbers, in {fmt} the `' '` format flag inserts instead a space
+// - In Strf, the `operator~` format function inserts a fill character before non-negative numbers, in {fmt} the `' '` format flag inserts instead a space
 // -
 
+== Floating-points
+
+Both libraries are capable of "dynamic precision", __i.e.__ printing a floating-point value with the
+minimum amount of digits that ensures that it can be exactly
+recovered by a parser.
+The difference is that {fmt} only does this when none of formatting flags
+`'e'`, `'E'`, `'f'`, `'F'`, `'g'` or `'G'` is used.
+Strf does it whenever precision is not specified.
+
+There is also a small difference on how they do the "sing-aware zero-padding",
+__i.e.__ inserting zeros after the sign and before the digits, but only
+when the value is not NaN nor Infinit.
+This behaviour is activated with the zero flag (`'0'`) in {fmt},
+and with the `<<strf_hpp#float_pad0,pad0>>` function in Strf. The difference is that in Strf
+this zero-padding is decoupled from alignment formatting, so that
+you can specify both independently:
+
+[source,cpp]
+----
+auto result = strf::to_string(strf::pad0(-1.5, 8).fill('_') > 12);
+assert(result == "____-00001.5");
+----
+
+The last difference has to do with the `long double` type,
+which in some systems has more than 64 bits ( on linux,
+it has 80 bits on x86 and x86-64 arquitecture ).
+Currently, Strf only supports 32 and 64 bits floating-points,
+so trying to  print a `long double` value causes a compilation error.
+
+I'm not sure how {fmt} handles larger floating-point types,
+but I noticed that the "dynamic precision" doesn't work:
+[source,cpp]
+----
+fmt::print(stdout, "{}\n", sqrt(2.0));  // prints 1.4142135623730951 (ok)
+fmt::print(stdout, "{}\n", sqrtl(2.0)); // prints 1.41421
+----
+
+== Width calculation
+
+:std_width: pass:n[http://eel.is/c++draft/format.string.std#11]
+
+The C{plus}{plus} Standard specifies that to calculate the width of a string,
+`std::format` shall identify each grapheme cluster in it and
+assume its width is equal to the width of its leading codepoint,
+which in turn is equal to `1` or `2`, according to a certain
+table.footnote:[{std_width}]
+
+Strf is expected to implement that behaviour in version 0.16, and
+I think {fmt} will problably do it even earlier.
+Currently, the best that Strf does is to count the total
+number of codepoints, while {fmt} is a step ahead and
+take into account the width of each individual codepoint.
+
+However, one advatange of Strf is that the width calculation is
+<<quick_reference#width_calculator,customizable>>: you can choose
+a less accurate but faster algorithm if you want.
 
 == Extensibility
 
 === Adding printable types
 
-To make a type printable in {fmt} you specialize the `fmt::formatter` struct template.
-The documentation provides a simple a example (link:https://fmt.dev/latest/api.html#formatting-user-defined-types[here])
-of how to do this with a struct named `point` that contains two `double` variables.
+It may be a little bit more difficult to learn how to add a printable type in Strf
+than how it is in {fmt}. There are more things to learn, more concepts to grasp.
+However, once have this knowledge, you will find it easier to deal with the
+real cases scenarious.
 
-
-////
-There is a `parse` function that handles the format string, which, in this
-case, may only contain the `'f'` or `'g'` flags, and that define
-formatting of the floating-point values that are later printer in
-the `format` function.
-
-Naturally, in a real case scenario one would probably want to support more
-format flags, but it makes sense to make examples simple.
-////
-
-If you compare it with the example below,
+For instance, the {fmt} documentation provides
+link:https://fmt.dev/latest/api.html#formatting-user-defined-types[an example]
+of how to do it with a struct named `point` that contains two `double` variables.
+If you compare it with the snippet below,
 //{strf-src-root}/example/extend_input_point2D.cpp[this example],
-which does the similar thing in strf, you may find at first that the strf's way
+which does the similar thing in Strf, you may find that the Strf's way
 is more complicated, since the code is larger and it requires more
 specific knowledge about the library.
-But you have to take into account that this sample supports all
-format options that would be expected in a real case scenario:
-all the <<strf_hpp#float_formatter,floating-point format options>>,
-as well the <<strf_hpp#alignment_formatter,alignment format options>>
-( that {fmt} examples supports only the `'f'` or `'g'` format flags ).
+But you must take into account that this sample supports all
+formatting options that would be expected in a real case scenario:
+all the <<strf_hpp#float_formatter,floating-point formatting options>>,
+as well the <<strf_hpp#alignment_formatter,alignment formatting options>>,
+while the {fmt} sample handles only the `'f'` or `'g'` format flags.
+Also, the code below is generic, in the sense that it works with all characters
+types as well as all character encodings:
 
-[source,cpp,subs=normal]
+[source,cpp]
 ----
 template <typename FloatT>
 struct point{ FloatT x, y; };
@@ -201,36 +250,34 @@ struct point{ FloatT x, y; };
 template <typename FloatT>
 struct strf::print_traits<point<FloatT>> {
     using forwarded_type = point<FloatT>;
-    using formatters = strf::tag<strf::alignment_formatter, strf::float_formatter>;
+    using formatters = strf::tag<strf::alignment_formatter, strf::float_formatter>; // <1>
 
-    template <typename CharT, typename Preview, typename FPack, typename\... T>
+    template <typename CharT, typename Preview, typename FPack, typename... T>
     constexpr static auto make_printer_input
         ( strf::tag<CharT>
         , Preview& preview
         , const FPack& fp
-        , strf::value_with_formatters<T\...> arg ) noexcept
+        , strf::value_with_formatters<T...> arg ) noexcept
     {
         point<FloatT> p = arg.value();
         auto arg2 = strf::join
             ( (CharT)'('
-            , strf::fmt(p.x).set_float_format(arg.get_float_format())
-            , strf::conv(u", ")
-            , strf::fmt(p.y).set_float_format(arg.get_float_format())
+            , strf::fmt(p.x).set_float_format(arg.get_float_format()) // <2>
+            , strf::conv(", ")                                        // <3>
+            , strf::fmt(p.y).set_float_format(arg.get_float_format()) // <4>
             , (CharT)')' )
-            .set_alignment_format(arg.get_alignment_format());
+            .set_alignment_format(arg.get_alignment_format());        // <5>
         return strf::make_printer_input<CharT>(preview, fp, arg2);
     }
 };
 ----
-
-So, although there are more things to learn, they later make things easier for you.
-For example, you can see that the code contains the
-expression `arg.get_float_format()`, whose value is passed to `set_float_format`.
-This is how easily the floating-points format options are forwarded.
-If such options change in a future version of library, no need to update this code.
-You can see that applying the alignment is equally easy ( through `get_alignemt_format`
-and `set_alignment_format` ).
-// This is the main reason they have been created.
+<1> This line defines what are the formatting options applicable to `point<FloatT>` :
+    alignment as well as floating-point formatting. You can, of course,
+    also create your own _formatters_.
+<2> Here we forward the floating-point formatting to `p.x`.
+<3> Converting the string `", "` to whatever the destination encoding is.
+<4> Forwarding floating-point formatting to `p.y`.
+<5> Applying the alignment formatting.
 
 However, it must be acknowledged that this example is facilitated by the fact that
 it is possible to convert a `point` into another value ( a `join` object )
@@ -256,7 +303,7 @@ examples.
 //
 // the formatting library to be able to write into d
 //
-// You can extend strf not only by adding new printable types
+// You can extend Strf not only by adding new printable types
 // but in other aspects as well.
 //
 // Strf can be extended not only in regard of what can be printed,
@@ -289,7 +336,7 @@ examples.
 // __OutputIterator__ requirements.
 //
 
-If you want strf to print to an alternative destination,
+If you want Strf to print to an alternative destination,
 you need to create a class that derives from `strf::<<outbuff_hpp#basic_outbuff,basic_outbuff>>`.
 Having an object of such type, you can print things to it with the
 `strf::<<quick_reference#dest_outbuff,to>>(strf::basic_outbuff<__CharT__>&)`
@@ -299,10 +346,10 @@ In the case of {fmt}, you need to have (or create) a type that satisfies the
 __OutputIterator__ requirements. With that, you can use the `{fmt_print_to}`
 and `{fmt_print_to_n}` function templates.
 
-However, in strf you can go a bit further and create your own
+However, in Strf you can go a bit further and create your own
 __destination expression__ to be used in the <<tutorial#syntax,basic usage syntax>>
 of the library. For example, suppose a codebase uses a string class of its own
-instead of `std::string` &#x2014; let's name it `xstring`:
+instead of `std::string`. Suppose it's name is `xstring`:
 just like there is `<<quick_reference#destinations,strf::to_string>>`, it is possible to define
 a __destination expression__ named `to_xstring` intended to
 create `xstring` objects. If desirable, it is possible to implement it
@@ -314,7 +361,7 @@ This is all explained in <<howto_add_destination#,this guide>>.
 
 == Error handling policy
 
-Neither {fmt} not strf ever change the value of `errno`.
+Neither {fmt} nor Strf ever change the value of `errno`.
 
 {fmt} throws an exception when it founds someting wrong at run-time.
 // A run-time error can be something wrong in the format string
@@ -326,14 +373,14 @@ to propagate from whatever it depends on, like the language runtime or
 user extensions. So an exception may arise when writing to a `std::streambuf`
 or `std::string`, for example.
 
-Instead of throwing, strf prints a replacement character `U'\uFFFD'`
+Instead of throwing, Strf's policy is to print the replacement character `U'\uFFFD'`
 ( or `'?'`, depending on the charset ) indicating where the error occured.
 This can happen when parsing the {tr-string} or in
 <<quick_reference#charset_conversion,charset conversion>> or sanitization.
 Optionally, you can set a callback to be invoked in such errors
 ( see `<<strf_hpp#tr_error_notifier_c,tr_error_notifier_c>>`
 and `<<strf_hpp#invalid_seq_notifier_c,invalid_seq_notifier_c>>` )
-which can throw an exception, if that's what you want.
+which can then throw an exception, if that's what you want.
 
 In addition to that, depending on the <<quick_reference#destinations,destination>>,
 the return type of the <<tutorial#syntax,basic usage syntax>> may contain an error
@@ -347,8 +394,8 @@ is too small.
 floating-point arguments are analogous.
 
 In {fmt}, you pass a `std::locale` object as an argument,
-before the format string, and also use the `'L'` format flag
-for those arguments that you want to follow the `std::numpunct`
+before the format string, then use the `'L'` format flag
+for those arguments that shall conform to the `std::numpunct`
 facet installed in that `std::locale` object.
 
 In strf, you pass a `strf::numpunct` object to
@@ -357,19 +404,19 @@ format function in those arguments you want to be
 punctuated.
 
 So the basic difference is that while {fmt} uses `std::locale`
-and `std::numpunct`, strf has its own facets arquitecture.
+and `std::numpunct`, Strf has its own facets arquitecture.
 The rationale and advantages for this are explained in
 <<why_not_std_locale#,another article>>.
 
 == Multilingual support
 
 Strf has some extra advantages over {fmt} when developing an application
-that provides multilingual support:
+that needs to provides multilingual support:
 
 Less translations errors::
 Since the programmer is commonly not same person who translates
 the messages and messages can be ambiguous, translation mistakes can happen.
-So, strf allows you to add comments in the {tr-string} to prevent
+So, Strf allows you to add comments in the {tr-string} to prevent
 misinterpretations.
 
 Less syntax errors::
@@ -377,10 +424,10 @@ The syntax of {tr-string} is less error-prone than the {fmt}'s format string.
 It is true that {fmt} can detect syntax error at compile-time with
 `FMT_STRING` or `FMT_COMPILE`, but it is very difficult ( if not impossible )
 to use such macros in multilingual programs, since the format
-strings are then likely evaluated at run-time.
+strings are then likely to be evaluated at run-time.
 
 Reusability::
-In strf, translation is decoupled from formatting.
+In Strf, translation is decoupled from formatting.
 You can use the same tr-string multiple times with
 different format options.
 You can also joins or other "special" input types to
@@ -404,13 +451,13 @@ strf::to(dest).tr( tr_failed_to_connect_to_server_X()
 ----
 
 // == Width calculation
-// 
+//
 // In old formatting libraries like `printf` and `std::ostream`, the
 // width of a string is assumed to be equal to its size.
 // Now that Unicode is so widely adopted,
 // calculating the width of a string accurately is not a trivial task
 // anymore.
-// 
+//
 // Firstly we need to take into account the existence
 // https://unicode.org/reports/tr29/#Grapheme_Cluster_Boundaries[grapheme cluster]:
 // a sequence of codepoints may be printed a one single character.
@@ -421,23 +468,23 @@ strf::to(dest).tr( tr_failed_to_connect_to_server_X()
 // the four-per-em-space U+2005 and
 // https://en.wikipedia.org/wiki/Whitespace_character#Unicode[others],
 // whose widths are not integers.
-// 
+//
 // On top of that, there is the fact that monospace fonts usually don't
 // cover many codepoints. When a codepoint is not covered, another
 // font is usually used just for that character, causing the width
 // to be different. This means that 100% of accurately may actually
 // be impossible.
-// 
-// According to the C++ Standard, `std::format` shall calculate 
+//
+// According to the C++ Standard, `std::format` shall calculate
 
 == Performance
 
 If you look at the
 http://robhz786.github.io/strf-benchmarks/{strf-version}/results.html[benchmarks],
-you can see that the performances of strf and {fmt} depend on several things,
+you can see that the performances of Strf and {fmt} depend on several things,
 like what you are printing, how you do it, what are the formatting options,
 the compiler, the destination type, etc. There are situations where {fmt} is faster,
-and others when others where it is strf.
+and others when others where it is Strf.
 
 However it is possible to take some general conclusions:
 
@@ -445,16 +492,17 @@ However it is possible to take some general conclusions:
 * {fmt} is faster when using `FMT_COMPILE` macro ( than when it isn't ), except
   in `fmt::format_to_n`.
 
-When it comes down to writting to `char*`, {fmt} provides two options: `fmt::format_to`
+When it comes to writting to `char*`, {fmt} provides `fmt::format_to`
 and `fmt::format_to_n`. The former is faster, but it does not take into
-account the size of the destination. In strf, you can use `strf::to` or `strf::to_range`.
-They both always take into account the destinatination's size, and their only difference
+account the size of the destination, which may be necessary in some situations.
+Strf has `strf::to` and `strf::to_range`.
+They both take into account the destinatination's size, and their only difference
 is that `strf::to_range` does not append the additional termination character (`'\0'`).
 
-From the benchmarks results, we can conclude:
+The benchmarks results leads to conclude:
 
-* `strf::to` is faster than `fmt::format_to_n`,
 * `strf::to` is faster than `fmt::format_to` when macro `FMT_COMPILE` is not used.
+* `strf::to` is faster than `fmt::format_to_n`,
 * When using `FMT_COMPILE`, `fmt::format_to` is faster than
   `strf::to` when no formatting option is applied.
 * When formatting options are applied, `strf::to` is faster
@@ -466,16 +514,15 @@ we conclude:
 
 * `strf::to_string` without tr-string is faster than `fmt::format`
    ( with and without `FMT_COMPILE` )
-* `strf::to_string` with tr-string is faster than `fmt::format`
-   without `FMT_COMPILE`, except in some few cases ( like
-   file:///home/roberto/trp/strf-benchmarks/docs/out/results.html#_sample_1_2[this] )
+* `strf::to_string` with tr-string is usually faster than `fmt::format`
+   without `FMT_COMPILE`.
 *  When formatting options are applied,
   `strf::to_string` is faster than `fmt::format.
 
-Of course, you must take into account that these
+Of course, it's very possible to be
+exceptions for the above conclusions, since these
 http://robhz786.github.io/strf-benchmarks/{strf-version}/results.html[benchmarks]
-are far to cover all posible situations, so it is very possible
-there are exception for the above conclusions.
-Also, the performances of both libraries are likely to change
-in future version.
+are far of covering all possible situations.
+
+
 

@@ -8,7 +8,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 :numpunct:               <<quick_reference#numpunct,numpunct>>
 :basic_outbuff:          <<outbuff_hpp#basic_outbuff,basic_outbuff>>
 
-= Tutorial of the strf library
+= Tutorial of the Strf library
 :source-highlighter: prettify
 :sectnums:
 :sectnumlevels: 2

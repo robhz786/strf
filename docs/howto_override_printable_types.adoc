@@ -206,7 +206,7 @@ remember before using a facet object
 of the `print_override_c` category &#x2014; you must constrain
 it to the types it aims to override.
 If you don't that, __i.e.__ if you use the facet directly,
-then strf will apply it to all overridables types:
+then Strf will apply it to all overridables types:
 
 
 ////

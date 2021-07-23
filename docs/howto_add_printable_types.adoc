@@ -966,7 +966,7 @@ void std_complex_printer<CharT, FloatT>::preview_(Preview& pp, const WidthCalc& 
 To calculate the size of the angle character, that is used in the polar form,
 we need to use the charset facet object. To calculate its width, we use
 the `{width_calculator_c}` facet category. And the width of ASCII characters is
-always assumed to be equal to 1 in strf.
+always assumed to be equal to 1 in Strf.
 
 You can see the use of `add_size` and `subtract_width` functions.
 When calculating the width is potentially expensive, it may worth to

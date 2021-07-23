@@ -4,6 +4,9 @@ Yet another C++ formatting library.
 
 Version: 0.15.0
 
+__Attention__ : Branch `master` was renamed to `main`, following the (not so) new Github conversion.
+
+
 ## Documentation
 
 * Overview
@@ -28,8 +31,8 @@ Version: 0.15.0
 
 Strf has been tested in the following compilers:
 
-* Clang 3.8
-* GCC 6.5
+* Clang 3.8.1
+* GCC 6.3.0
 * Visual Studio 2017 15.8
-* NVCC 11.0
+* NVCC 10.2
 
