@@ -1,37 +1,38 @@
 #ifndef STRF_DETAIL_UTF_HPP
 #define STRF_DETAIL_UTF_HPP
 
+//  Copyright (C) (See commit logs on github.com/robhz786/strf)
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <strf/detail/facets/char_encoding.hpp>
+#include <strf/detail/facets/charset.hpp>
 #include <strf/detail/standard_lib_functions.hpp>
 
 namespace strf {
 
 #if ! defined(STRF_CHECK_DEST)
 
-#define STRF_CHECK_DEST     \
-    if (dest_it == dest_end) {         \
-        ob.advance_to(dest_it);        \
-        ob.recycle();                  \
-        if (!ob.good()) {              \
-            return;                    \
-        }                              \
-        dest_it = ob.pointer();        \
-        dest_end = ob.end();           \
+#define STRF_CHECK_DEST                         \
+    STRF_IF_UNLIKELY (dest_it == dest_end) {    \
+        ob.advance_to(dest_it);                 \
+        ob.recycle();                           \
+        STRF_IF_UNLIKELY (!ob.good()) {         \
+            return;                             \
+        }                                       \
+        dest_it = ob.pointer();                 \
+        dest_end = ob.end();                    \
     }
 
-#define STRF_CHECK_DEST_SIZE(SIZE)     \
-    if (dest_it + SIZE > dest_end) {              \
-        ob.advance_to(dest_it);                   \
-        ob.recycle();                             \
-        if (!ob.good()) {                         \
-            return;                               \
-        }                                         \
-        dest_it = ob.pointer();                   \
-        dest_end = ob.end();                      \
+#define STRF_CHECK_DEST_SIZE(SIZE)                  \
+    STRF_IF_UNLIKELY (dest_it + SIZE > dest_end) {  \
+        ob.advance_to(dest_it);                     \
+        ob.recycle();                               \
+        STRF_IF_UNLIKELY (!ob.good()) {             \
+            return;                                 \
+        }                                           \
+        dest_it = ob.pointer();                     \
+        dest_end = ob.end();                        \
     }
 
 #endif // ! defined(STRF_CHECK_DEST)
@@ -58,11 +59,11 @@ inline STRF_HD void repeat_sequence
             p += seq_size;
         }
         ob.advance_to(p);
-        if (count <= space) {
+        STRF_IF_LIKELY (count <= space) {
             return;
         }
         ob.recycle();
-        if (!ob.good()) {
+        STRF_IF_UNLIKELY (!ob.good()) {
             return;
         }
         p = ob.pointer();
@@ -92,11 +93,11 @@ inline STRF_HD void repeat_sequence
             p += seq_size;
         }
         ob.advance_to(p);
-        if (count <= space) {
+        STRF_IF_LIKELY (count <= space) {
             return;
         }
         ob.recycle();
-        if (!ob.good()) {
+        STRF_IF_UNLIKELY (!ob.good()) {
             return;
         }
         p = ob.pointer();
@@ -128,11 +129,11 @@ inline STRF_HD void repeat_sequence
             p += seq_size;
         }
         ob.advance_to(p);
-        if (count <= space) {
+        STRF_IF_LIKELY (count <= space) {
             return;
         }
         ob.recycle();
-        if (!ob.good()) {
+        STRF_IF_UNLIKELY (!ob.good()) {
             return;
         }
         p = ob.pointer();
@@ -202,8 +203,7 @@ inline STRF_HD unsigned utf8_decode_first_2_of_3(std::uint8_t ch0, std::uint8_t 
     return ((ch0 & 0x0F) << 6) | (ch1 & 0x3F);
 }
 
-inline STRF_HD bool first_2_of_3_are_valid( unsigned x
-                                  , strf::surrogate_policy surr_poli )
+inline STRF_HD bool first_2_of_3_are_valid(unsigned x, strf::surrogate_policy surr_poli)
 {
     return ( surr_poli == strf::surrogate_policy::lax
           || (x >> 5) != 0x1B );
@@ -218,7 +218,7 @@ inline STRF_HD bool first_2_of_3_are_valid
 
 inline STRF_HD unsigned utf8_decode_first_2_of_4(std::uint8_t ch0, std::uint8_t ch1)
 {
-    return ((ch0 & 0x07) << 6) | (ch1 & 0x3F);
+    return ((ch0 ^ 0xF0) << 6) | (ch1 & 0x3F);
 }
 
 inline STRF_HD unsigned utf8_decode_last_2_of_4(unsigned long x, unsigned ch2, unsigned ch3)
@@ -239,7 +239,7 @@ inline STRF_HD bool first_2_of_4_are_valid(std::uint8_t ch0, std::uint8_t ch1)
 } // namespace detail
 
 template <typename SrcCharT, typename DestCharT>
-class static_transcoder<SrcCharT, DestCharT, strf::eid_utf8, strf::eid_utf8>
+class static_transcoder<SrcCharT, DestCharT, strf::csid_utf8, strf::csid_utf8>
 {
 public:
     static_assert(sizeof(SrcCharT) == 1, "Incompatible character type for UTF-8");
@@ -268,7 +268,7 @@ public:
 };
 
 template <typename SrcCharT, typename DestCharT>
-class static_transcoder<SrcCharT, DestCharT, strf::eid_utf8, strf::eid_utf16>
+class static_transcoder<SrcCharT, DestCharT, strf::csid_utf8, strf::csid_utf16>
 {
 public:
     static_assert(sizeof(SrcCharT) == 1, "Incompatible character type for UTF-8");
@@ -297,7 +297,7 @@ public:
 };
 
 template <typename SrcCharT, typename DestCharT>
-class static_transcoder<SrcCharT, DestCharT, strf::eid_utf8, strf::eid_utf32>
+class static_transcoder<SrcCharT, DestCharT, strf::csid_utf8, strf::csid_utf32>
 {
 public:
     static_assert(sizeof(SrcCharT) == 1, "Incompatible character type for UTF-8");
@@ -326,7 +326,7 @@ public:
 };
 
 template <typename SrcCharT, typename DestCharT>
-class static_transcoder<SrcCharT, DestCharT, strf::eid_utf16, strf::eid_utf8>
+class static_transcoder<SrcCharT, DestCharT, strf::csid_utf16, strf::csid_utf8>
 {
 public:
     static_assert(sizeof(SrcCharT) == 2, "Incompatible character type for UTF-16");
@@ -355,7 +355,7 @@ public:
 };
 
 template <typename SrcCharT, typename DestCharT>
-class static_transcoder<SrcCharT, DestCharT, strf::eid_utf16, strf::eid_utf16>
+class static_transcoder<SrcCharT, DestCharT, strf::csid_utf16, strf::csid_utf16>
 {
 public:
     static_assert(sizeof(SrcCharT) == 2, "Incompatible character type for UTF-16");
@@ -384,7 +384,7 @@ public:
 };
 
 template <typename SrcCharT, typename DestCharT>
-class static_transcoder<SrcCharT, DestCharT, strf::eid_utf16, strf::eid_utf32>
+class static_transcoder<SrcCharT, DestCharT, strf::csid_utf16, strf::csid_utf32>
 {
 public:
     static_assert(sizeof(SrcCharT) == 2, "Incompatible character type for UTF-16");
@@ -413,7 +413,7 @@ public:
 };
 
 template <typename SrcCharT, typename DestCharT>
-class static_transcoder<SrcCharT, DestCharT, strf::eid_utf32, strf::eid_utf8>
+class static_transcoder<SrcCharT, DestCharT, strf::csid_utf32, strf::csid_utf8>
 {
 public:
     static_assert(sizeof(SrcCharT) == 4, "Incompatible character type for UTF-32");
@@ -442,7 +442,7 @@ public:
 };
 
 template <typename SrcCharT, typename DestCharT>
-class static_transcoder<SrcCharT, DestCharT, strf::eid_utf32, strf::eid_utf16>
+class static_transcoder<SrcCharT, DestCharT, strf::csid_utf32, strf::csid_utf16>
 {
 public:
     static_assert(sizeof(SrcCharT) == 4, "Incompatible character type for UTF-32");
@@ -471,7 +471,7 @@ public:
 };
 
 template <typename SrcCharT, typename DestCharT>
-class static_transcoder<SrcCharT, DestCharT, strf::eid_utf32, strf::eid_utf32>
+class static_transcoder<SrcCharT, DestCharT, strf::csid_utf32, strf::csid_utf32>
 {
 public:
     static_assert(sizeof(SrcCharT) == 4, "Incompatible character type for UTF-32");
@@ -504,52 +504,53 @@ public:
 
 template <typename SrcCharT, typename DestCharT>
 using utf8_to_utf8 = strf::static_transcoder
-    < SrcCharT, DestCharT, strf::eid_utf8, strf::eid_utf8 >;
+    < SrcCharT, DestCharT, strf::csid_utf8, strf::csid_utf8 >;
 template <typename SrcCharT, typename DestCharT>
 using utf8_to_utf16 = strf::static_transcoder
-    < SrcCharT, DestCharT, strf::eid_utf8, strf::eid_utf16 >;
+    < SrcCharT, DestCharT, strf::csid_utf8, strf::csid_utf16 >;
 template <typename SrcCharT, typename DestCharT>
 using utf8_to_utf32 = strf::static_transcoder
-    < SrcCharT, DestCharT, strf::eid_utf8, strf::eid_utf32 >;
+    < SrcCharT, DestCharT, strf::csid_utf8, strf::csid_utf32 >;
 
 template <typename SrcCharT, typename DestCharT>
 using utf16_to_utf8 = strf::static_transcoder
-    < SrcCharT, DestCharT, strf::eid_utf16, strf::eid_utf8 >;
+    < SrcCharT, DestCharT, strf::csid_utf16, strf::csid_utf8 >;
 template <typename SrcCharT, typename DestCharT>
 using utf16_to_utf16 = strf::static_transcoder
-    < SrcCharT, DestCharT, strf::eid_utf16, strf::eid_utf16 >;
+    < SrcCharT, DestCharT, strf::csid_utf16, strf::csid_utf16 >;
 template <typename SrcCharT, typename DestCharT>
 using utf16_to_utf32 = strf::static_transcoder
-    < SrcCharT, DestCharT, strf::eid_utf16, strf::eid_utf32 >;
+    < SrcCharT, DestCharT, strf::csid_utf16, strf::csid_utf32 >;
 
 template <typename SrcCharT, typename DestCharT>
 using utf32_to_utf8 = strf::static_transcoder
-    < SrcCharT, DestCharT, strf::eid_utf32, strf::eid_utf8 >;
+    < SrcCharT, DestCharT, strf::csid_utf32, strf::csid_utf8 >;
 template <typename SrcCharT, typename DestCharT>
 using utf32_to_utf16 = strf::static_transcoder
-    < SrcCharT, DestCharT, strf::eid_utf32, strf::eid_utf16 >;
+    < SrcCharT, DestCharT, strf::csid_utf32, strf::csid_utf16 >;
 template <typename SrcCharT, typename DestCharT>
 using utf32_to_utf32 = strf::static_transcoder
-    < SrcCharT, DestCharT, strf::eid_utf32, strf::eid_utf32 >;
+    < SrcCharT, DestCharT, strf::csid_utf32, strf::csid_utf32 >;
 
 template <typename SrcCharT, typename DestCharT>
 using utf_to_utf = strf::static_transcoder
-    < SrcCharT, DestCharT, strf::eid_utf<SrcCharT>, strf::eid_utf<DestCharT> >;
+    < SrcCharT, DestCharT, strf::get_csid_utf<SrcCharT>(), strf::get_csid_utf<DestCharT>() >;
 
 template <typename CharT>
-class static_char_encoding<CharT, strf::eid_utf8>
+class static_charset<CharT, strf::csid_utf8>
 {
 public:
     static_assert(sizeof(CharT) == 1, "Incompatible character type for UTF-8");
-    using char_type = CharT;
+    using code_unit = CharT;
+    using char_type STRF_DEPRECATED = CharT;
 
     static STRF_HD const char* name() noexcept
     {
         return "UTF-8";
     };
-    static constexpr STRF_HD strf::char_encoding_id id() noexcept
+    static constexpr STRF_HD strf::charset_id id() noexcept
     {
-        return strf::eid_utf8;
+        return strf::csid_utf8;
     }
     static constexpr STRF_HD char32_t replacement_char() noexcept
     {
@@ -590,9 +591,9 @@ public:
     static STRF_HD void write_replacement_char
         ( strf::basic_outbuff<CharT>& );
 
-    static STRF_HD char32_t decode_char(CharT ch) noexcept
+    static STRF_HD char32_t decode_unit(CharT ch) noexcept
     {
-        if (ch < 0x80)
+        STRF_IF_LIKELY (ch < 0x80)
             return static_cast<char32_t>(ch);
         return 0xFFFD;
     }
@@ -627,42 +628,42 @@ public:
     }
     template <typename SrcCharT>
     static STRF_HD strf::dynamic_transcoder<SrcCharT, CharT>
-    find_transcoder_from(strf::tag<SrcCharT>, strf::char_encoding_id id) noexcept
+    find_transcoder_from(strf::tag<SrcCharT>, strf::charset_id id) noexcept
     {
         return find_transcoder_from<SrcCharT>(id);
     }
     template <typename DestCharT>
     static STRF_HD strf::dynamic_transcoder<CharT, DestCharT>
-    find_transcoder_to(strf::tag<DestCharT>, strf::char_encoding_id id) noexcept
+    find_transcoder_to(strf::tag<DestCharT>, strf::charset_id id) noexcept
     {
         return find_transcoder_to<DestCharT>(id);
     }
     template <typename DestCharT>
     static STRF_HD strf::dynamic_transcoder<CharT, DestCharT>
-    find_transcoder_to(strf::char_encoding_id id) noexcept
+    find_transcoder_to(strf::charset_id id) noexcept
     {
         using transcoder_type = strf::dynamic_transcoder<CharT, DestCharT>;
-        if (id == strf::eid_utf<DestCharT>) {
+        if (id == strf::get_csid_utf<DestCharT>()) {
             return transcoder_type{strf::utf_to_utf<CharT, DestCharT>{}};
         }
         return {};
     }
     template <typename SrcCharT>
     static STRF_HD strf::dynamic_transcoder<SrcCharT, CharT>
-    find_transcoder_from(strf::char_encoding_id id) noexcept
+    find_transcoder_from(strf::charset_id id) noexcept
     {
         using transcoder_type = strf::dynamic_transcoder<SrcCharT, CharT>;
-        if (id == strf::eid_utf<SrcCharT>) {
+        if (id == strf::get_csid_utf<SrcCharT>()) {
             return transcoder_type{strf::utf_to_utf<SrcCharT, CharT>{}};
         }
         return {};
     }
-    static strf::dynamic_char_encoding<CharT> to_dynamic() noexcept
+    static strf::dynamic_charset<CharT> to_dynamic() noexcept
     {
-        static const strf::dynamic_char_encoding_data<CharT> data = {
+        static const strf::dynamic_charset_data<CharT> data = {
             name(), id(), replacement_char(), 3, validate, encoded_char_size,
             encode_char, encode_fill, codepoints_fast_count,
-            codepoints_robust_count, write_replacement_char, decode_char,
+            codepoints_robust_count, write_replacement_char, decode_unit,
             strf::dynamic_transcoder<CharT,    CharT>{sanitizer()},
             strf::dynamic_transcoder<char32_t, CharT>{from_u32()},
             strf::dynamic_transcoder<CharT, char32_t>{to_u32()},
@@ -675,33 +676,31 @@ public:
 #if defined (__cpp_char8_t)
             find_transcoder_from<char8_t>,
             find_transcoder_to<char8_t>
-#else
-            nullptr,
-            nullptr
 #endif // defined (__cpp_char8_t)
         };
-        return strf::dynamic_char_encoding<CharT>{data};
+        return strf::dynamic_charset<CharT>{data};
     }
-    explicit operator strf::dynamic_char_encoding<CharT> () const
+    explicit operator strf::dynamic_charset<CharT> () const
     {
         return to_dynamic();
     }
 };
 
 template <typename CharT>
-class static_char_encoding<CharT, strf::eid_utf16>
+class static_charset<CharT, strf::csid_utf16>
 {
 public:
     static_assert(sizeof(CharT) == 2, "Incompatible character type for UTF-16");
-    using char_type = CharT;
+    using code_unit = CharT;
+    using char_type STRF_DEPRECATED = CharT;
 
     static STRF_HD const char* name() noexcept
     {
         return "UTF-16";
     };
-    static constexpr STRF_HD strf::char_encoding_id id() noexcept
+    static constexpr STRF_HD strf::charset_id id() noexcept
     {
-        return strf::eid_utf16;
+        return strf::csid_utf16;
     }
     static constexpr STRF_HD char32_t replacement_char() noexcept
     {
@@ -737,7 +736,7 @@ public:
     static STRF_HD void write_replacement_char
         ( strf::basic_outbuff<CharT>& );
 
-    static STRF_HD char32_t decode_char(CharT ch) noexcept
+    static STRF_HD char32_t decode_unit(CharT ch) noexcept
     {
         return ch;
     }
@@ -772,42 +771,42 @@ public:
     }
     template <typename SrcCharT>
     static STRF_HD strf::dynamic_transcoder<SrcCharT, CharT>
-    find_transcoder_from(strf::tag<SrcCharT>, strf::char_encoding_id id) noexcept
+    find_transcoder_from(strf::tag<SrcCharT>, strf::charset_id id) noexcept
     {
         return find_transcoder_from<SrcCharT>(id);
     }
     template <typename DestCharT>
     static STRF_HD strf::dynamic_transcoder<CharT, DestCharT>
-    find_transcoder_to(strf::tag<DestCharT>, strf::char_encoding_id id) noexcept
+    find_transcoder_to(strf::tag<DestCharT>, strf::charset_id id) noexcept
     {
         return find_transcoder_to<DestCharT>(id);
     }
     template <typename DestCharT>
     static STRF_HD strf::dynamic_transcoder<CharT, DestCharT>
-    find_transcoder_to(strf::char_encoding_id id) noexcept
+    find_transcoder_to(strf::charset_id id) noexcept
     {
         using transcoder_type = strf::dynamic_transcoder<CharT, DestCharT>;
-        if (id == strf::eid_utf<DestCharT>) {
+        if (id == strf::get_csid_utf<DestCharT>()) {
             return transcoder_type{strf::utf_to_utf<CharT, DestCharT>{}};
         }
         return {};
     }
     template <typename SrcCharT>
     static STRF_HD strf::dynamic_transcoder<SrcCharT, CharT>
-    find_transcoder_from(strf::char_encoding_id id) noexcept
+    find_transcoder_from(strf::charset_id id) noexcept
     {
         using transcoder_type = strf::dynamic_transcoder<SrcCharT, CharT>;
-        if (id == strf::eid_utf<SrcCharT>) {
+        if (id == strf::get_csid_utf<SrcCharT>()) {
             return transcoder_type{strf::utf_to_utf<SrcCharT, CharT>{}};
         }
         return {};
     }
-    static strf::dynamic_char_encoding<CharT> to_dynamic() noexcept
+    static strf::dynamic_charset<CharT> to_dynamic() noexcept
     {
-        static const strf::dynamic_char_encoding_data<CharT> data = {
+        static const strf::dynamic_charset_data<CharT> data = {
             name(), id(), replacement_char(), 1, validate, encoded_char_size,
             encode_char, encode_fill, codepoints_fast_count,
-            codepoints_robust_count, write_replacement_char, decode_char,
+            codepoints_robust_count, write_replacement_char, decode_unit,
             strf::dynamic_transcoder<CharT,    CharT>{sanitizer()},
             strf::dynamic_transcoder<char32_t, CharT>{from_u32()},
             strf::dynamic_transcoder<CharT, char32_t>{to_u32()},
@@ -825,28 +824,29 @@ public:
             nullptr
 #endif // defined (__cpp_char8_t)
         };
-        return strf::dynamic_char_encoding<CharT>{data};
+        return strf::dynamic_charset<CharT>{data};
     }
-    explicit operator strf::dynamic_char_encoding<CharT> () const
+    explicit operator strf::dynamic_charset<CharT> () const
     {
         return to_dynamic();
     }
 };
 
 template <typename CharT>
-class static_char_encoding<CharT, strf::eid_utf32>
+class static_charset<CharT, strf::csid_utf32>
 {
 public:
     static_assert(sizeof(CharT) == 4, "Incompatible character type for UTF-32");
-    using char_type = CharT;
+    using code_unit = CharT;
+    using char_type STRF_DEPRECATED = CharT;
 
     static STRF_HD const char* name() noexcept
     {
         return "UTF-32";
     };
-    static constexpr STRF_HD strf::char_encoding_id id() noexcept
+    static constexpr STRF_HD strf::charset_id id() noexcept
     {
-        return strf::eid_utf32;
+        return strf::csid_utf32;
     }
     static constexpr STRF_HD char32_t replacement_char() noexcept
     {
@@ -897,13 +897,17 @@ public:
         , std::size_t max_count, strf::surrogate_policy surr_poli ) noexcept
     {
         (void)surr_poli;
-        return codepoints_fast_count(src, src_size, max_count);
+        (void) src;
+        if (max_count <= src_size) {
+            return {max_count, max_count};
+        }
+        return {src_size, src_size};
     }
 
     static STRF_HD void write_replacement_char
         ( strf::basic_outbuff<CharT>& );
 
-    static STRF_HD char32_t decode_char(CharT ch) noexcept
+    static STRF_HD char32_t decode_unit(CharT ch) noexcept
     {
         return ch;
     }
@@ -938,42 +942,42 @@ public:
     }
     template <typename SrcCharT>
     static STRF_HD strf::dynamic_transcoder<SrcCharT, CharT>
-    find_transcoder_from(strf::tag<SrcCharT>, strf::char_encoding_id id) noexcept
+    find_transcoder_from(strf::tag<SrcCharT>, strf::charset_id id) noexcept
     {
         return find_transcoder_from<SrcCharT>(id);
     }
     template <typename DestCharT>
     static STRF_HD strf::dynamic_transcoder<CharT, DestCharT>
-    find_transcoder_to(strf::tag<DestCharT>, strf::char_encoding_id id) noexcept
+    find_transcoder_to(strf::tag<DestCharT>, strf::charset_id id) noexcept
     {
         return find_transcoder_to<DestCharT>(id);
     }
     template <typename DestCharT>
     static STRF_HD strf::dynamic_transcoder<CharT, DestCharT>
-    find_transcoder_to(strf::char_encoding_id id) noexcept
+    find_transcoder_to(strf::charset_id id) noexcept
     {
         using transcoder_type = strf::dynamic_transcoder<CharT, DestCharT>;
-        if (id == strf::eid_utf<DestCharT>) {
+        if (id == strf::get_csid_utf<DestCharT>()) {
             return transcoder_type{strf::utf_to_utf<CharT, DestCharT>{}};
         }
         return {};
     }
     template <typename SrcCharT>
     static STRF_HD strf::dynamic_transcoder<SrcCharT, CharT>
-    find_transcoder_from(strf::char_encoding_id id) noexcept
+    find_transcoder_from(strf::charset_id id) noexcept
     {
         using transcoder_type = strf::dynamic_transcoder<SrcCharT, CharT>;
-        if (id == strf::eid_utf<SrcCharT>) {
+        if (id == strf::get_csid_utf<SrcCharT>()) {
             return transcoder_type{strf::utf_to_utf<SrcCharT, CharT>{}};
         }
         return {};
     }
-    static strf::dynamic_char_encoding<CharT> to_dynamic() noexcept
+    static strf::dynamic_charset<CharT> to_dynamic() noexcept
     {
-        static const strf::dynamic_char_encoding_data<CharT> data = {
+        static const strf::dynamic_charset_data<CharT> data = {
             name(), id(), replacement_char(), 1, validate, encoded_char_size,
             encode_char, encode_fill, codepoints_fast_count,
-            codepoints_robust_count, write_replacement_char, decode_char,
+            codepoints_robust_count, write_replacement_char, decode_unit,
             strf::dynamic_transcoder<CharT,    CharT>{sanitizer()},
             strf::dynamic_transcoder<char32_t, CharT>{from_u32()},
             strf::dynamic_transcoder<CharT, char32_t>{to_u32()},
@@ -991,26 +995,26 @@ public:
             nullptr
 #endif // defined (__cpp_char8_t)
         };
-        return strf::dynamic_char_encoding<CharT>{data};
+        return strf::dynamic_charset<CharT>{data};
     }
-    explicit operator strf::dynamic_char_encoding<CharT> () const
+    explicit operator strf::dynamic_charset<CharT> () const
     {
         return to_dynamic();
     }
 };
 
 template <typename CharT>
-using utf8_impl = static_char_encoding<CharT, strf::eid_utf8>;
+using utf8_impl = static_charset<CharT, strf::csid_utf8>;
 
 template <typename CharT>
-using utf16_impl = static_char_encoding<CharT, strf::eid_utf16>;
+using utf16_impl = static_charset<CharT, strf::csid_utf16>;
 
 template <typename CharT>
-using utf32_impl = static_char_encoding<CharT, strf::eid_utf32>;
+using utf32_impl = static_charset<CharT, strf::csid_utf32>;
 
 template <typename SrcCharT, typename DestCharT>
 STRF_HD void strf::static_transcoder
-    <SrcCharT, DestCharT, strf::eid_utf8, strf::eid_utf32 >::transcode
+    <SrcCharT, DestCharT, strf::csid_utf8, strf::csid_utf32 >::transcode
     ( strf::basic_outbuff<DestCharT>& ob
     , const SrcCharT* src
     , std::size_t src_size
@@ -1059,15 +1063,14 @@ STRF_HD void strf::static_transcoder
                 ch32 = (x << 6) | (ch2 & 0x3F);
                 ++src_it;
             } else goto invalid_sequence;
-        } else if (0xEF < ch0) {
-            if ( src_it != src_end && is_utf8_continuation(ch1 = * src_it)
-              && first_2_of_4_are_valid(x = utf8_decode_first_2_of_4(ch0, ch1))
-              && ++src_it != src_end && is_utf8_continuation(ch2 = * src_it)
-              && ++src_it != src_end && is_utf8_continuation(ch3 = * src_it) )
-            {
-                ch32 = utf8_decode_last_2_of_4(x, ch2, ch3);
-                ++src_it;
-            } else goto invalid_sequence;
+        } else if ( src_it != src_end
+                 && is_utf8_continuation(ch1 = * src_it)
+                 && first_2_of_4_are_valid(x = utf8_decode_first_2_of_4(ch0, ch1))
+                 && ++src_it != src_end && is_utf8_continuation(ch2 = * src_it)
+                 && ++src_it != src_end && is_utf8_continuation(ch3 = * src_it) )
+        {
+            ch32 = utf8_decode_last_2_of_4(x, ch2, ch3);
+            ++src_it;
         } else {
             invalid_sequence:
             ch32 = 0xFFFD;
@@ -1086,7 +1089,7 @@ STRF_HD void strf::static_transcoder
 
 template <typename SrcCharT, typename DestCharT>
 STRF_HD std::size_t strf::static_transcoder
-    < SrcCharT, DestCharT, strf::eid_utf8, strf::eid_utf32 >::transcode_size
+    < SrcCharT, DestCharT, strf::csid_utf8, strf::csid_utf32 >::transcode_size
     ( const SrcCharT* src
     , std::size_t src_size
     , strf::surrogate_policy surr_poli )
@@ -1120,14 +1123,12 @@ STRF_HD std::size_t strf::static_transcoder
             {
                 ++src_it;
             }
-        } else if(0xEF < ch0) {
-            if (   src_it != src_end && is_utf8_continuation(ch1 = * src_it)
-              && first_2_of_4_are_valid(ch0, ch1)
-              && ++src_it != src_end && is_utf8_continuation(*src_it)
-              && ++src_it != src_end && is_utf8_continuation(*src_it) )
-            {
+        } else if (   src_it != src_end && is_utf8_continuation(ch1 = * src_it)
+                 && first_2_of_4_are_valid(ch0, ch1)
+                 && ++src_it != src_end && is_utf8_continuation(*src_it)
+                 && ++src_it != src_end && is_utf8_continuation(*src_it) )
+        {
                 ++src_it;
-            }
         }
     }
     return size;
@@ -1135,7 +1136,7 @@ STRF_HD std::size_t strf::static_transcoder
 
 template <typename SrcCharT, typename DestCharT>
 STRF_HD void strf::static_transcoder
-    < SrcCharT, DestCharT, strf::eid_utf8, strf::eid_utf8 >::transcode
+    < SrcCharT, DestCharT, strf::csid_utf8, strf::csid_utf8 >::transcode
     ( strf::basic_outbuff<DestCharT>& ob
     , const SrcCharT* src
     , std::size_t src_size
@@ -1190,20 +1191,19 @@ STRF_HD void strf::static_transcoder
                 dest_it[2] = ch2;
                 dest_it += 3;
             } else goto invalid_sequence;
-        } else if (0xF0 == (ch0 & 0xF8)) {
-            if ( src_it != src_end && is_utf8_continuation(ch1 = * src_it)
-              && first_2_of_4_are_valid(ch0, ch1)
-              && ++src_it != src_end && is_utf8_continuation(ch2 = * src_it)
-              && ++src_it != src_end && is_utf8_continuation(ch3 = * src_it) )
-            {
-                STRF_CHECK_DEST_SIZE(4);
-                ++src_it;
-                dest_it[0] = ch0;
-                dest_it[1] = ch1;
-                dest_it[2] = ch2;
-                dest_it[3] = ch3;
-                dest_it += 4;
-            } else goto invalid_sequence;
+        } else if ( src_it != src_end
+                 && is_utf8_continuation(ch1 = * src_it)
+                 && first_2_of_4_are_valid(ch0, ch1)
+                 && ++src_it != src_end && is_utf8_continuation(ch2 = * src_it)
+                 && ++src_it != src_end && is_utf8_continuation(ch3 = * src_it) )
+        {
+            STRF_CHECK_DEST_SIZE(4);
+            ++src_it;
+            dest_it[0] = ch0;
+            dest_it[1] = ch1;
+            dest_it[2] = ch2;
+            dest_it[3] = ch3;
+            dest_it += 4;
         } else {
             invalid_sequence:
             STRF_CHECK_DEST_SIZE(3);
@@ -1222,7 +1222,7 @@ STRF_HD void strf::static_transcoder
 
 template <typename SrcCharT, typename DestCharT>
 STRF_HD std::size_t strf::static_transcoder
-    < SrcCharT, DestCharT, strf::eid_utf8, strf::eid_utf8 >::transcode_size
+    < SrcCharT, DestCharT, strf::csid_utf8, strf::csid_utf8 >::transcode_size
     ( const SrcCharT* src
     , std::size_t src_size
     , strf::surrogate_policy surr_poli )
@@ -1265,8 +1265,8 @@ STRF_HD std::size_t strf::static_transcoder
             {
                 ++src_it;
             }
-        } else if( 0xEF < ch0
-              &&   src_it != src_end && is_utf8_continuation(ch1 = * src_it)
+        } else if( src_it != src_end
+              && is_utf8_continuation(ch1 = * src_it)
               && first_2_of_4_are_valid(ch0, ch1)
               && ++src_it != src_end && is_utf8_continuation(*src_it)
               && ++src_it != src_end && is_utf8_continuation(*src_it) )
@@ -1282,7 +1282,7 @@ STRF_HD std::size_t strf::static_transcoder
 
 template <typename CharT>
 STRF_HD strf::codepoints_count_result
-static_char_encoding<CharT, strf::eid_utf8>::codepoints_fast_count
+static_charset<CharT, strf::csid_utf8>::codepoints_fast_count
     ( const CharT* src
     , std::size_t src_size
     , std::size_t max_count ) noexcept
@@ -1296,12 +1296,15 @@ static_char_encoding<CharT, strf::eid_utf8>::codepoints_fast_count
         }
         ++it;
     }
+    while(it != end && strf::detail::is_utf8_continuation(*it)) {
+        ++it;
+    }
     return {count, static_cast<std::size_t>(it - src)};
 }
 
 template <typename CharT>
 STRF_HD strf::codepoints_count_result
-static_char_encoding<CharT, strf::eid_utf8>::codepoints_robust_count
+static_charset<CharT, strf::csid_utf8>::codepoints_robust_count
     ( const CharT* src
     , std::size_t src_size
     , std::size_t max_count
@@ -1337,14 +1340,12 @@ static_char_encoding<CharT, strf::eid_utf8>::codepoints_robust_count
             {
                 ++it;
             }
-        } else if(0xEF < ch0) {
-            if (   it != end && is_utf8_continuation(ch1 = * it)
-              && first_2_of_4_are_valid(ch0, ch1)
-              && ++it != end && is_utf8_continuation(*it)
-              && ++it != end && is_utf8_continuation(*it) )
-            {
-                ++it;
-            }
+        } else if (   it != end && is_utf8_continuation(ch1 = * it)
+                 && first_2_of_4_are_valid(ch0, ch1)
+                 && ++it != end && is_utf8_continuation(*it)
+                 && ++it != end && is_utf8_continuation(*it) )
+        {
+            ++it;
         }
     }
     return {count, static_cast<std::size_t>(it - src)};
@@ -1353,10 +1354,10 @@ static_char_encoding<CharT, strf::eid_utf8>::codepoints_robust_count
 
 template <typename CharT>
 STRF_HD void
-static_char_encoding<CharT, strf::eid_utf8>::encode_fill
+static_charset<CharT, strf::csid_utf8>::encode_fill
     ( strf::basic_outbuff<CharT>& ob, std::size_t count, char32_t ch )
 {
-    if (ch < 0x80) {
+    STRF_IF_LIKELY (ch < 0x80) {
         strf::detail::write_fill(ob, count, static_cast<CharT>(ch));
     } else if (ch < 0x800) {
         CharT ch0 = static_cast<CharT>(0xC0 | ((ch & 0x7C0) >> 6));
@@ -1383,11 +1384,11 @@ static_char_encoding<CharT, strf::eid_utf8>::encode_fill
 
 template <typename CharT>
 STRF_HD CharT*
-static_char_encoding<CharT, strf::eid_utf8>::encode_char
+static_charset<CharT, strf::csid_utf8>::encode_char
     ( CharT* dest
     , char32_t ch ) noexcept
 {
-    if (ch < 0x80) {
+    STRF_IF_LIKELY (ch < 0x80) {
         *dest = static_cast<CharT>(ch);
         return dest + 1;
     }
@@ -1417,7 +1418,7 @@ static_char_encoding<CharT, strf::eid_utf8>::encode_char
 
 template <typename SrcCharT, typename DestCharT>
 STRF_HD void strf::static_transcoder
-    < SrcCharT, DestCharT, strf::eid_utf32, strf::eid_utf8 >::transcode
+    < SrcCharT, DestCharT, strf::csid_utf32, strf::csid_utf8 >::transcode
     ( strf::basic_outbuff<DestCharT>& ob
     , const SrcCharT* src
     , std::size_t src_size
@@ -1430,31 +1431,31 @@ STRF_HD void strf::static_transcoder
     auto dest_end = ob.end();
     for(;src_it != src_end; ++src_it) {
         auto ch = *src_it;
-        if(ch < 0x80) {
+        STRF_IF_LIKELY (ch < 0x80) {
             STRF_CHECK_DEST;
             *dest_it = static_cast<DestCharT>(ch);
             ++dest_it;
         } else if (ch < 0x800) {
             STRF_CHECK_DEST_SIZE(2);
-            dest_it[0] = static_cast<DestCharT>(0xC0 | ((ch & 0x7C0) >> 6));
-            dest_it[1] = static_cast<DestCharT>(0x80 |  (ch &  0x3F));
+            dest_it[0] = static_cast<DestCharT>(0xC0 | (0x1F & (ch >> 6)));
+            dest_it[1] = static_cast<DestCharT>(0x80 | (0xBF &  ch));
             dest_it += 2;
         } else if (ch < 0x10000) {
-            if ( surr_poli == strf::surrogate_policy::lax
-              || strf::detail::not_surrogate(ch))
+            STRF_IF_LIKELY ( surr_poli == strf::surrogate_policy::lax
+                          || strf::detail::not_surrogate(ch))
             {
                 STRF_CHECK_DEST_SIZE(3);
-                dest_it[0] = static_cast<DestCharT>(0xE0 | ((ch & 0xF000) >> 12));
-                dest_it[1] = static_cast<DestCharT>(0x80 | ((ch &  0xFC0) >> 6));
-                dest_it[2] = static_cast<DestCharT>(0x80 |  (ch &   0x3F));
+                dest_it[0] = static_cast<DestCharT>(0xE0 | (0x0F & (ch >> 12)));
+                dest_it[1] = static_cast<DestCharT>(0x80 | (0xBF & (ch >> 6)));
+                dest_it[2] = static_cast<DestCharT>(0x80 | (0xBF &  ch ));
                 dest_it += 3;
             } else goto invalid_sequence;
         } else if (ch < 0x110000) {
             STRF_CHECK_DEST_SIZE(4);
-            dest_it[0] = static_cast<DestCharT>(0xF0 | ((ch & 0x1C0000) >> 18));
-            dest_it[1] = static_cast<DestCharT>(0x80 | ((ch &  0x3F000) >> 12));
-            dest_it[2] = static_cast<DestCharT>(0x80 | ((ch &    0xFC0) >> 6));
-            dest_it[3] = static_cast<DestCharT>(0x80 |  (ch &     0x3F));
+            dest_it[0] = static_cast<DestCharT>(0xF0 | (0x07 & (ch >> 18)));
+            dest_it[1] = static_cast<DestCharT>(0x80 | (0xBF & (ch >> 12)));
+            dest_it[2] = static_cast<DestCharT>(0x80 | (0xBF & (ch >> 6)));
+            dest_it[3] = static_cast<DestCharT>(0x80 | (0xBF &  ch));
             dest_it += 4;
         } else {
             invalid_sequence:
@@ -1463,7 +1464,7 @@ STRF_HD void strf::static_transcoder
             dest_it[1] = static_cast<DestCharT>('\xBF');
             dest_it[2] = static_cast<DestCharT>('\xBD');
             dest_it += 3;
-            if (inv_seq_notifier) {
+            STRF_IF_UNLIKELY (inv_seq_notifier) {
                 ob.advance_to(dest_it);
                 inv_seq_notifier.notify();
             }
@@ -1474,7 +1475,7 @@ STRF_HD void strf::static_transcoder
 
 template <typename SrcCharT, typename DestCharT>
 STRF_HD std::size_t strf::static_transcoder
-    < SrcCharT, DestCharT, strf::eid_utf32, strf::eid_utf8 >::transcode_size
+    < SrcCharT, DestCharT, strf::csid_utf32, strf::csid_utf8 >::transcode_size
     ( const SrcCharT* src
     , std::size_t src_size
     , strf::surrogate_policy surr_poli )
@@ -1485,7 +1486,7 @@ STRF_HD std::size_t strf::static_transcoder
     std::size_t count = 0;
     for(;src_it != src_end; ++src_it) {
         auto ch = *src_it;
-        if (ch < 0x110000) {
+        STRF_IF_LIKELY (ch < 0x110000) {
             count += 1 + (ch >= 0x80) + (ch >= 0x800) + (ch >= 0x10000);
         } else {
             count += 3;
@@ -1496,7 +1497,7 @@ STRF_HD std::size_t strf::static_transcoder
 
 template <typename CharT>
 STRF_HD void
-static_char_encoding<CharT, strf::eid_utf8>::write_replacement_char
+static_charset<CharT, strf::csid_utf8>::write_replacement_char
     ( strf::basic_outbuff<CharT>& ob )
 {
     auto dest_it = ob.pointer();
@@ -1511,7 +1512,7 @@ static_char_encoding<CharT, strf::eid_utf8>::write_replacement_char
 
 template <typename SrcCharT, typename DestCharT>
 STRF_HD void strf::static_transcoder
-    < SrcCharT, DestCharT, strf::eid_utf16, strf::eid_utf32 >::transcode
+    < SrcCharT, DestCharT, strf::csid_utf16, strf::csid_utf32 >::transcode
     ( strf::basic_outbuff<DestCharT>& ob
     , const SrcCharT* src
     , std::size_t src_size
@@ -1529,7 +1530,7 @@ STRF_HD void strf::static_transcoder
         ch = *src_it;
         src_it_next = src_it + 1;
 
-        if (strf::detail::not_surrogate(ch)) {
+        STRF_IF_LIKELY (strf::detail::not_surrogate(ch)) {
             ch32 = ch;
         } else if ( strf::detail::is_high_surrogate(ch)
                && src_it_next != src_end
@@ -1555,7 +1556,7 @@ STRF_HD void strf::static_transcoder
 
 template <typename SrcCharT, typename DestCharT>
 STRF_HD std::size_t strf::static_transcoder
-    < SrcCharT, DestCharT, strf::eid_utf16, strf::eid_utf32 >::transcode_size
+    < SrcCharT, DestCharT, strf::csid_utf16, strf::csid_utf32 >::transcode_size
     ( const SrcCharT* src
     , std::size_t src_size
     , strf::surrogate_policy surr_poli )
@@ -1584,7 +1585,7 @@ STRF_HD std::size_t strf::static_transcoder
 
 template <typename SrcCharT, typename DestCharT>
 STRF_HD void strf::static_transcoder
-    < SrcCharT, DestCharT, strf::eid_utf16, strf::eid_utf16 >::transcode
+    < SrcCharT, DestCharT, strf::csid_utf16, strf::csid_utf16 >::transcode
     ( strf::basic_outbuff<DestCharT>& ob
     , const SrcCharT* src
     , std::size_t src_size
@@ -1601,7 +1602,7 @@ STRF_HD void strf::static_transcoder
         ch = *src_it;
         src_it_next = src_it + 1;
 
-        if (strf::detail::not_surrogate(ch)) {
+        STRF_IF_LIKELY (strf::detail::not_surrogate(ch)) {
             STRF_CHECK_DEST;
             *dest_it = static_cast<DestCharT>(ch);
             ++dest_it;
@@ -1633,7 +1634,7 @@ STRF_HD void strf::static_transcoder
 
 template <typename SrcCharT, typename DestCharT>
 STRF_HD std::size_t strf::static_transcoder
-    < SrcCharT, DestCharT, strf::eid_utf16, strf::eid_utf16 >::transcode_size
+    < SrcCharT, DestCharT, strf::csid_utf16, strf::csid_utf16 >::transcode_size
     ( const SrcCharT* src
     , std::size_t src_size
     , strf::surrogate_policy surr_poli )
@@ -1649,7 +1650,7 @@ STRF_HD std::size_t strf::static_transcoder
         ++ count;
         if ( strf::detail::is_high_surrogate(ch)
           && src_it != src_end
-          && strf::detail::is_low_surrogate(*src_it))
+          && strf::detail::is_low_surrogate(*src_it) )
         {
             ++ src_it;
             ++ count;
@@ -1660,27 +1661,33 @@ STRF_HD std::size_t strf::static_transcoder
 
 template <typename CharT>
 STRF_HD strf::codepoints_count_result
-static_char_encoding<CharT, strf::eid_utf16>::codepoints_fast_count
+static_charset<CharT, strf::csid_utf16>::codepoints_fast_count
     ( const CharT* src
     , std::size_t src_size
     , std::size_t max_count ) noexcept
 {
+    if (src_size == 0) {
+        return {0, 0};
+    }
     std::size_t count = 0;
     auto it = src;
     const auto end = src + src_size;
-    while(it != end && count < max_count) {
-        if(strf::detail::is_high_surrogate(*it)) {
+    while (count < max_count) {
+        if (strf::detail::is_high_surrogate(*it)) {
             ++it;
         }
         ++it;
         ++count;
+        if (it >= end) {
+            return {count, src_size};
+        }
     }
     return {count, static_cast<std::size_t>(it - src)};
 }
 
 template <typename CharT>
 STRF_HD strf::codepoints_count_result
-static_char_encoding<CharT, strf::eid_utf16>::codepoints_robust_count
+static_charset<CharT, strf::csid_utf16>::codepoints_robust_count
     ( const CharT* src
     , std::size_t src_size
     , std::size_t max_count
@@ -1698,7 +1705,6 @@ static_char_encoding<CharT, strf::eid_utf16>::codepoints_robust_count
         if ( strf::detail::is_high_surrogate(ch) && it != end
           && strf::detail::is_low_surrogate(*it)) {
             ++ it;
-            ++ count;
         }
     }
     return {count, static_cast<std::size_t>(it - src)};
@@ -1706,11 +1712,11 @@ static_char_encoding<CharT, strf::eid_utf16>::codepoints_robust_count
 
 template <typename CharT>
 STRF_HD CharT*
-static_char_encoding<CharT, strf::eid_utf16>::encode_char
+static_charset<CharT, strf::csid_utf16>::encode_char
     ( CharT* dest
     , char32_t ch ) noexcept
 {
-    if (ch < 0x10000) {
+    STRF_IF_LIKELY (ch < 0x10000) {
         *dest = static_cast<CharT>(ch);
         return dest + 1;
     }
@@ -1726,10 +1732,10 @@ static_char_encoding<CharT, strf::eid_utf16>::encode_char
 
 template <typename CharT>
 STRF_HD void
-static_char_encoding<CharT, strf::eid_utf16>::encode_fill
+static_charset<CharT, strf::csid_utf16>::encode_fill
     ( strf::basic_outbuff<CharT>& ob, std::size_t count, char32_t ch )
 {
-    if (ch < 0x10000) {
+    STRF_IF_LIKELY (ch < 0x10000) {
         strf::detail::write_fill<CharT>(ob, count, static_cast<CharT>(ch));
     } else if (ch < 0x110000) {
         char32_t sub_codepoint = ch - 0x10000;
@@ -1743,7 +1749,7 @@ static_char_encoding<CharT, strf::eid_utf16>::encode_fill
 
 template <typename SrcCharT, typename DestCharT>
 STRF_HD void strf::static_transcoder
-    < SrcCharT, DestCharT, strf::eid_utf32, strf::eid_utf16 >::transcode
+    < SrcCharT, DestCharT, strf::csid_utf32, strf::csid_utf16 >::transcode
     ( strf::basic_outbuff<DestCharT>& ob
     , const SrcCharT* src
     , std::size_t src_size
@@ -1756,9 +1762,9 @@ STRF_HD void strf::static_transcoder
     auto dest_end = ob.end();
     for ( ; src_it != src_end; ++src_it) {
         auto ch = *src_it;
-        if (ch < 0x10000) {
-            if ( surr_poli == strf::surrogate_policy::lax
-              || strf::detail::not_surrogate(ch) )
+        STRF_IF_LIKELY (ch < 0x10000) {
+            STRF_IF_LIKELY ( surr_poli == strf::surrogate_policy::lax
+                          || strf::detail::not_surrogate(ch) )
             {
                 STRF_CHECK_DEST;
                 *dest_it = static_cast<DestCharT>(ch);
@@ -1786,7 +1792,7 @@ STRF_HD void strf::static_transcoder
 
 template <typename SrcCharT, typename DestCharT>
 STRF_HD std::size_t strf::static_transcoder
-    < SrcCharT, DestCharT, strf::eid_utf32, strf::eid_utf16 >::transcode_size
+    < SrcCharT, DestCharT, strf::csid_utf32, strf::csid_utf16 >::transcode_size
     ( const SrcCharT* src
     , std::size_t src_size
     , strf::surrogate_policy surr_poli )
@@ -1804,7 +1810,7 @@ STRF_HD std::size_t strf::static_transcoder
 
 template <typename CharT>
 STRF_HD void
-static_char_encoding<CharT, strf::eid_utf16>::write_replacement_char
+static_charset<CharT, strf::csid_utf16>::write_replacement_char
     ( strf::basic_outbuff<CharT>& ob )
 {
     ob.ensure(1);
@@ -1814,7 +1820,7 @@ static_char_encoding<CharT, strf::eid_utf16>::write_replacement_char
 
 template <typename SrcCharT, typename DestCharT>
 STRF_HD void strf::static_transcoder
-    < SrcCharT, DestCharT, strf::eid_utf32, strf::eid_utf32 >::transcode
+    < SrcCharT, DestCharT, strf::csid_utf32, strf::csid_utf32 >::transcode
     ( strf::basic_outbuff<DestCharT>& ob
     , const SrcCharT* src
     , std::size_t src_size
@@ -1827,7 +1833,7 @@ STRF_HD void strf::static_transcoder
     if (surr_poli == strf::surrogate_policy::lax) {
         for (auto src_it = src; src_it < src_end; ++src_it) {
             auto ch = *src_it;
-            if (ch >= 0x110000) {
+            STRF_IF_UNLIKELY (ch >= 0x110000) {
                 ch = 0xFFFD;
                 if (inv_seq_notifier) {
                     ob.advance_to(dest_it);
@@ -1841,7 +1847,7 @@ STRF_HD void strf::static_transcoder
     } else {
         for(auto src_it = src; src_it < src_end; ++src_it) {
             char32_t ch = *src_it;
-            if (ch >= 0x110000 || strf::detail::is_surrogate(ch)) {
+            STRF_IF_UNLIKELY (ch >= 0x110000 || strf::detail::is_surrogate(ch)) {
                 ch = 0xFFFD;
                 if (inv_seq_notifier) {
                     ob.advance_to(dest_it);
@@ -1858,7 +1864,7 @@ STRF_HD void strf::static_transcoder
 
 template <typename CharT>
 STRF_HD void
-static_char_encoding<CharT, strf::eid_utf32>::encode_fill
+static_charset<CharT, strf::csid_utf32>::encode_fill
     ( strf::basic_outbuff<CharT>& ob, std::size_t count, char32_t ch )
 {
     strf::detail::write_fill(ob, count, static_cast<CharT>(ch));
@@ -1866,7 +1872,7 @@ static_char_encoding<CharT, strf::eid_utf32>::encode_fill
 
 template <typename CharT>
 STRF_HD void
-static_char_encoding<CharT, strf::eid_utf32>::write_replacement_char
+static_charset<CharT, strf::csid_utf32>::write_replacement_char
     ( strf::basic_outbuff<CharT>& ob )
 {
     ob.ensure(1);
@@ -1877,7 +1883,7 @@ static_char_encoding<CharT, strf::eid_utf32>::write_replacement_char
 
 template <typename SrcCharT, typename DestCharT>
 STRF_HD void strf::static_transcoder
-    < SrcCharT, DestCharT, strf::eid_utf8, strf::eid_utf16 >::transcode
+    < SrcCharT, DestCharT, strf::csid_utf8, strf::csid_utf16 >::transcode
     ( strf::basic_outbuff<DestCharT>& ob
     , const SrcCharT* src
     , std::size_t src_size
@@ -1902,48 +1908,51 @@ STRF_HD void strf::static_transcoder
     for (;src_it != src_end; ++dest_it) {
         ch0 = (*src_it);
         ++src_it;
-        if (ch0 < 0x80) {
+        STRF_IF_LIKELY (ch0 < 0x80) {
             STRF_CHECK_DEST;
             *dest_it = ch0;
         } else if (0xC0 == (ch0 & 0xE0)) {
-            if ( ch0 > 0xC1
-              && src_it != src_end && is_utf8_continuation(ch1 = * src_it))
+            STRF_IF_LIKELY ( ch0 > 0xC1
+                          && src_it != src_end
+                          && is_utf8_continuation(ch1 = * src_it))
             {
                 STRF_CHECK_DEST;
                 *dest_it = utf8_decode(ch0, ch1);
                 ++src_it;
             } else goto invalid_sequence;
         } else if (0xE0 == ch0) {
-            if (   src_it != src_end && (((ch1 = * src_it) & 0xE0) == 0xA0)
-              && ++src_it != src_end && is_utf8_continuation(ch2 = * src_it) )
+            STRF_IF_LIKELY ( src_it != src_end
+                          && (((ch1 = * src_it) & 0xE0) == 0xA0)
+                          && ++src_it != src_end
+                          && is_utf8_continuation(ch2 = * src_it) )
             {
                 STRF_CHECK_DEST;
                 *dest_it = ((ch1 & 0x3F) << 6) | (ch2 & 0x3F);
                 ++src_it;
             } else goto invalid_sequence;
         } else if (0xE0 == (ch0 & 0xF0)) {
-            if (   src_it != src_end && is_utf8_continuation(ch1 = * src_it)
-              && first_2_of_3_are_valid( x = utf8_decode_first_2_of_3(ch0, ch1)
-                                       , surr_poli )
-              && ++src_it != src_end && is_utf8_continuation(ch2 = * src_it) )
+            STRF_IF_LIKELY (( src_it != src_end && is_utf8_continuation(ch1 = * src_it)
+                          && first_2_of_3_are_valid( x = utf8_decode_first_2_of_3(ch0, ch1)
+                                                  , surr_poli )
+                          && ++src_it != src_end
+                          && is_utf8_continuation(ch2 = * src_it) ))
             {
                 STRF_CHECK_DEST;
                 *dest_it = static_cast<DestCharT>((x << 6) | (ch2 & 0x3F));
                 ++src_it;
             } else goto invalid_sequence;
-        } else if (0xEF < ch0) {
-            if ( src_it != src_end && is_utf8_continuation(ch1 = * src_it)
+        } else if ( src_it != src_end
+                 && is_utf8_continuation(ch1 = * src_it)
                  && first_2_of_4_are_valid(x = utf8_decode_first_2_of_4(ch0, ch1))
                  && ++src_it != src_end && is_utf8_continuation(ch2 = * src_it)
                  && ++src_it != src_end && is_utf8_continuation(ch3 = * src_it) )
-            {
-                STRF_CHECK_DEST_SIZE(2);
-                x = utf8_decode_last_2_of_4(x, ch2, ch3) - 0x10000;
-                dest_it[0] = static_cast<DestCharT>(0xD800 +  (x >> 10));
-                dest_it[1] = static_cast<DestCharT>(0xDC00 +  (x & 0x3FF));
-                ++dest_it;
-                ++src_it;
-            } else goto invalid_sequence;
+        {
+            STRF_CHECK_DEST_SIZE(2);
+            x = utf8_decode_last_2_of_4(x, ch2, ch3) - 0x10000;
+            dest_it[0] = static_cast<DestCharT>(0xD800 +  (x >> 10));
+            dest_it[1] = static_cast<DestCharT>(0xDC00 +  (x & 0x3FF));
+            ++dest_it;
+            ++src_it;
         } else {
             invalid_sequence:
             STRF_CHECK_DEST;
@@ -1959,7 +1968,7 @@ STRF_HD void strf::static_transcoder
 
 template <typename SrcCharT, typename DestCharT>
 STRF_HD std::size_t strf::static_transcoder
-    < SrcCharT, DestCharT, strf::eid_utf8, strf::eid_utf16 >::transcode_size
+    < SrcCharT, DestCharT, strf::csid_utf8, strf::csid_utf16 >::transcode_size
     ( const SrcCharT* src
     , std::size_t src_size
     , strf::surrogate_policy surr_poli )
@@ -1995,24 +2004,21 @@ STRF_HD std::size_t strf::static_transcoder
             {
                 ++src_it;
             }
-        } else if(0xEF < ch0) {
-            if (   src_it != src_end && is_utf8_continuation(ch1 = * src_it)
-              && first_2_of_4_are_valid(ch0, ch1)
-              && ++src_it != src_end && is_utf8_continuation(*src_it)
-              && ++src_it != src_end && is_utf8_continuation(*src_it) )
-            {
-                ++src_it;
-                ++size;
-            }
+        } else if (   src_it != src_end && is_utf8_continuation(ch1 = * src_it)
+                 && first_2_of_4_are_valid(ch0, ch1)
+                 && ++src_it != src_end && is_utf8_continuation(*src_it)
+                 && ++src_it != src_end && is_utf8_continuation(*src_it) )
+        {
+            ++src_it;
+            ++size;
         }
-
     }
     return size;
 }
 
 template <typename SrcCharT, typename DestCharT>
 STRF_HD void strf::static_transcoder
-    < SrcCharT, DestCharT, strf::eid_utf16, strf::eid_utf8 >::transcode
+    < SrcCharT, DestCharT, strf::csid_utf16, strf::csid_utf8 >::transcode
     ( strf::basic_outbuff<DestCharT>& ob
     , const SrcCharT* src
     , std::size_t src_size
@@ -2027,33 +2033,33 @@ STRF_HD void strf::static_transcoder
 
     for( ; src_it < src_end; ++src_it) {
         auto ch = *src_it;
-        if (ch < 0x80) {
+        STRF_IF_LIKELY (ch < 0x80) {
             STRF_CHECK_DEST;
             *dest_it = static_cast<DestCharT>(ch);
             ++dest_it;
         } else if (ch < 0x800) {
             STRF_CHECK_DEST_SIZE(2);
-            dest_it[0] = static_cast<DestCharT>(0xC0 | ((ch & 0x7C0) >> 6));
-            dest_it[1] = static_cast<DestCharT>(0x80 |  (ch &  0x3F));
+            dest_it[0] = static_cast<DestCharT>(0xC0 | (0x1F & (ch >> 6)));
+            dest_it[1] = static_cast<DestCharT>(0x80 | (0xBF &  ch));
             dest_it += 2;
         } else if (strf::detail::not_surrogate(ch)) {
             three_bytes:
             STRF_CHECK_DEST_SIZE(3);
-            dest_it[0] = static_cast<DestCharT>(0xE0 | ((ch & 0xF000) >> 12));
-            dest_it[1] = static_cast<DestCharT>(0x80 | ((ch &  0xFC0) >> 6));
-            dest_it[2] = static_cast<DestCharT>(0x80 |  (ch &   0x3F));
+            dest_it[0] = static_cast<DestCharT>(0xE0 | (0x0F & (ch >> 12)));
+            dest_it[1] = static_cast<DestCharT>(0x80 | (0xBF & (ch >> 6)));
+            dest_it[2] = static_cast<DestCharT>(0x80 | (0xBF &  ch ));
             dest_it += 3;
         } else if ( strf::detail::is_high_surrogate(ch)
-               && src_it != src_end
+               && (src_it + 1) != src_end
                && strf::detail::is_low_surrogate(*(src_it + 1)))
         {
             STRF_CHECK_DEST_SIZE(4);
             unsigned long ch2 = *++src_it;
             unsigned long codepoint = 0x10000 + (((ch & 0x3FF) << 10) | (ch2 & 0x3FF));
-            dest_it[0] = static_cast<DestCharT>(0xF0 | ((codepoint & 0x1C0000) >> 18));
-            dest_it[1] = static_cast<DestCharT>(0x80 | ((codepoint &  0x3F000) >> 12));
-            dest_it[2] = static_cast<DestCharT>(0x80 | ((codepoint &    0xFC0) >> 6));
-            dest_it[3] = static_cast<DestCharT>(0x80 |  (codepoint &     0x3F));
+            dest_it[0] = static_cast<DestCharT>(0xF0 | (0x07 & (codepoint >> 18)));
+            dest_it[1] = static_cast<DestCharT>(0x80 | (0xBF & (codepoint >> 12)));
+            dest_it[2] = static_cast<DestCharT>(0x80 | (0xBF & (codepoint >> 6)));
+            dest_it[3] = static_cast<DestCharT>(0x80 | (0xBF &  codepoint));
             dest_it += 4;
         } else if (surr_poli == strf::surrogate_policy::lax) {
             goto three_bytes;
@@ -2074,7 +2080,7 @@ STRF_HD void strf::static_transcoder
 
 template <typename SrcCharT, typename DestCharT>
 STRF_HD std::size_t strf::static_transcoder
-    < SrcCharT, DestCharT, strf::eid_utf16, strf::eid_utf8 >::transcode_size
+    < SrcCharT, DestCharT, strf::csid_utf16, strf::csid_utf8 >::transcode_size
     ( const SrcCharT* src
     , std::size_t src_size
     , strf::surrogate_policy surr_poli )
@@ -2084,7 +2090,7 @@ STRF_HD std::size_t strf::static_transcoder
     std::size_t size = 0;
     for(auto it = src; it < src_end; ++it) {
         SrcCharT ch = *it;
-        if (ch < 0x80) {
+        STRF_IF_LIKELY (ch < 0x80) {
             ++size;
         } else if (ch < 0x800) {
             size += 2;
@@ -2102,19 +2108,32 @@ STRF_HD std::size_t strf::static_transcoder
 }
 
 template <typename CharT>
-using utf8 = strf::static_char_encoding<CharT, strf::eid_utf8>;
+using utf8_t = strf::static_charset<CharT, strf::csid_utf8>;
 
 template <typename CharT>
-using utf16 = strf::static_char_encoding<CharT, strf::eid_utf16>;
+using utf16_t = strf::static_charset<CharT, strf::csid_utf16>;
 
 template <typename CharT>
-using utf32 = strf::static_char_encoding<CharT, strf::eid_utf32>;
+using utf32_t = strf::static_charset<CharT, strf::csid_utf32>;
 
 template <typename CharT>
-using utf = strf::static_char_encoding<CharT, strf::eid_utf<CharT>>;
+using utf_t = strf::static_charset<CharT, strf::detail::csid_utf_impl<sizeof(CharT)>::csid>;
 
-// using utfw = strf::utf<wchar_t>;
-// using wchar_encoding = strf::utf<wchar_t>;
+#if defined(STRF_HAS_VARIABLE_TEMPLATES)
+
+template <typename CharT>
+STRF_DEVICE constexpr utf8_t<CharT> utf8 {};
+
+template <typename CharT>
+STRF_DEVICE constexpr utf16_t<CharT> utf16 {};
+
+template <typename CharT>
+STRF_DEVICE constexpr utf32_t<CharT> utf32 {};
+
+template <typename CharT>
+STRF_DEVICE constexpr utf_t<CharT> utf {};
+
+#endif // defined(STRF_HAS_VARIABLE_TEMPLATES)
 
 } // namespace strf
 

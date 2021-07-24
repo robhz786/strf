@@ -1,13 +1,14 @@
 #ifndef STRF_DETAIL_INPUT_TYPES_BOOL_HPP
 #define STRF_DETAIL_INPUT_TYPES_BOOL_HPP
 
+//  Copyright (C) (See commit logs on github.com/robhz786/strf)
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <strf/facets_pack.hpp>
 #include <strf/printer.hpp>
-#include <strf/detail/facets/char_encoding.hpp>
+#include <strf/detail/facets/charset.hpp>
 #include <strf/detail/facets/lettercase.hpp>
 
 namespace strf {
@@ -27,7 +28,10 @@ struct print_traits<bool>
 
     template <typename CharT, typename Preview, typename FPack>
     constexpr STRF_HD static auto make_printer_input
-        ( Preview& preview, const FPack& fp, bool x ) noexcept
+        ( strf::tag<CharT>
+        , Preview& preview
+        , const FPack& fp
+        , bool x ) noexcept
         -> strf::usual_printer_input
             < CharT, Preview, FPack, bool, strf::detail::bool_printer<CharT> >
     {
@@ -36,7 +40,8 @@ struct print_traits<bool>
 
     template <typename CharT, typename Preview, typename FPack, typename... T>
     constexpr STRF_HD static auto make_printer_input
-        ( Preview& preview
+        ( strf::tag<CharT>
+        , Preview& preview
         , const FPack& fp
         , strf::value_with_formatters<T...> x ) noexcept
         -> strf::usual_printer_input
@@ -59,12 +64,12 @@ class bool_printer: public printer<CharT>
 public:
 
     template <typename... T>
-    constexpr STRF_HD bool_printer
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD bool_printer
         ( const strf::usual_printer_input<T...>& input )
         : value_(input.arg)
-        , lettercase_(strf::get_facet<strf::lettercase_c, bool>(input.facets))
+        , lettercase_(strf::use_facet<strf::lettercase_c, bool>(input.facets))
     {
-        input.preview.subtract_width(5 - (int)input.arg);
+        input.preview.subtract_width(5u - (int)input.arg);
         input.preview.add_size(5 - (int)input.arg);
     }
 
@@ -111,16 +116,16 @@ public:
         ( const strf::usual_printer_input<CharT, T...>& input )
         : value_(input.arg.value())
         , afmt_(input.arg.get_alignment_format())
-        , lettercase_(strf::get_facet<strf::lettercase_c, bool>(input.facets))
+        , lettercase_(strf::use_facet<strf::lettercase_c, bool>(input.facets))
     {
-        auto enc = strf::get_facet<char_encoding_c<CharT>, bool>(input.facets);
-        std::int16_t w = 5 - (int)input.arg.value();
+        auto charset = strf::use_facet<charset_c<CharT>, bool>(input.facets);
+        std::uint16_t w = 5 - (int)input.arg.value();
         auto fmt_width = afmt_.width.round();
         if (fmt_width > w) {
-            encode_fill_ = enc.encode_fill_func();
+            encode_fill_ = charset.encode_fill_func();
             fillcount_ = static_cast<std::uint16_t>(fmt_width - w);
             input.preview.subtract_width(fmt_width);
-            input.preview.add_size(w + fillcount_ * enc.encoded_char_size(afmt_.fill));
+            input.preview.add_size(w + fillcount_ * charset.encoded_char_size(afmt_.fill));
         } else {
             fillcount_ = 0;
             input.preview.subtract_width(w);
@@ -143,12 +148,23 @@ template <typename CharT>
 void fmt_bool_printer<CharT>::print_to
     ( strf::basic_outbuff<CharT>& ob ) const
 {
-    if (afmt_.alignment != strf::text_alignment::left) {
-        std::uint16_t s = afmt_.alignment == strf::text_alignment::center;
-        std::uint16_t count = fillcount_ >> s;
-        encode_fill_(ob, count, afmt_.fill);
+    decltype(fillcount_) right_fillcount = 0;
+    if (fillcount_ > 0) {
+        decltype(fillcount_) left_fillcount;
+        switch (afmt_.alignment) {
+            case strf::text_alignment::left:
+                right_fillcount = fillcount_;
+                goto print_value;
+            case strf::text_alignment::right:
+                left_fillcount = fillcount_;
+                break;
+            default:
+                left_fillcount = fillcount_ >> 1;
+                right_fillcount = fillcount_ - left_fillcount;
+        }
+        encode_fill_(ob, left_fillcount, afmt_.fill);
     }
-
+    print_value:
     auto size = 5 - (int)value_;
     ob.ensure(size);
     auto p = ob.pointer();
@@ -168,13 +184,8 @@ void fmt_bool_printer<CharT>::print_to
     }
     ob.advance(size);
 
-    if ( afmt_.alignment == strf::text_alignment::left) {
-        encode_fill_(ob, fillcount_, afmt_.fill);
-    }
-    else if ( afmt_.alignment == strf::text_alignment::center) {
-        std::uint16_t half_count = fillcount_ >> 1;
-        std::uint16_t count = fillcount_ - half_count;
-        encode_fill_(ob, count, afmt_.fill);
+    if (right_fillcount != 0) {
+        encode_fill_(ob, right_fillcount, afmt_.fill);
     }
 }
 

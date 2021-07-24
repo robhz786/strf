@@ -1,0 +1,133 @@
+////
+Copyright (C) (See commit logs on github.com/robhz786/strf)
+Distributed under the Boost Software License, Version 1.0.
+(See accompanying file LICENSE_1_0.txt or copy at
+http://www.boost.org/LICENSE_1_0.txt)
+////
+
+[[main]]
+= `<strf/to_streambuf.hpp>` Header file reference
+:source-highlighter: prettify
+:sectnums:
+:toc: left
+:toc-title: <strf/to_streambuf.hpp>
+:toclevels: 1
+:icons: font
+
+:min_space_after_recycle: <<outbuff_hpp#min_space_after_recycle,min_space_after_recycle>>
+:basic_outbuff: <<outbuff_hpp#basic_outbuff,basic_outbuff>>
+:basic_streambuf_writer: <<basic_streambuf_writer,basic_streambuf_writer>>
+
+:destination_no_reserve: <<strf_hpp#destination,destination_no_reserve>>
+:OutbuffCreator: <<strf_hpp#OutbuffCreator,OutbuffCreator>>
+
+
+NOTE: This document is still a work in progress.
+
+NOTE: This header files includes `<strf.hpp>`
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template <typename CharT, typename Traits = std::char_traits<CharT> >
+class basic_streambuf_writer final: public basic_outbuff<CharT>
+{ /{asterisk}\...{asterisk}/ };
+
+using streambuf_writer  = basic_streambuf_writer<char>;
+using wstreambuf_writer = basic_streambuf_writer<wchar_t>;
+
+// Destination makers:
+
+template <typename CharT, typename Traits>
+/{asterisk} \... {asterisk}/ to(std::basic_streambuf<CharT, Traits>& dest);
+
+template <typename CharT, typename Traits>
+/{asterisk} \... {asterisk}/ to(std::basic_streambuf<CharT, Traits>* dest);
+
+} // namespace strf
+----
+
+[[basic_streambuf_writer]]
+== Class template `basic_streambuf_writer`
+=== Synopsis
+[source,cpp]
+----
+namespace strf {
+
+template <typename CharT, typename Traits = std::char_traits<CharT> >
+class basic_streambuf_writer final: public basic_outbuff<CharT> {
+public:
+    explicit basic_streambuf_writer(std::basic_streambuf<CharT, Traits>& dest);
+    explicit basic_streambuf_writer(std::basic_streambuf<CharT, Traits>* dest);
+
+    basic_streambuf_writer(const basic_streambuf_writer&) = delete;
+    basic_streambuf_writer(basic_streambuf_writer&&) = delete;
+
+    void recycle() override;
+    struct result {
+        std::streamsize count;
+        bool success;
+    };
+    result finish();
+};
+
+// Global type aliases
+
+using streambuf_writer
+    = basic_streambuf_writer<char, std::char_traits<char> >;
+
+using wstreambuf_writer
+    = basic_streambuf_writer<wchar_t, std::char_traits<wchar_t> >;
+
+} // namespace strf
+----
+=== Public member functions
+
+====
+[source,cpp]
+----
+void recycle() override;
+----
+[horizontal]
+Effects::
+- If `good()` is `true` then calls `dest.sputn(p0, pointer() - p0)`, where `dest` is the reference this object was initialized with, and `p0` is the return value of `pointer()` before any call to `advance` and `advance_to` since the last call to `recycle()`, or since this object's contruction, whatever happened last.
+- If the returned value of `dest.sputn` is less then `pointer() - p0`, calls `set_good(false)`.
+- Calls `set_pointer` and/or `set_end`.
+Postconditions:: `space() >= min_space_after_recycle<CharT>()`
+====
+====
+[source,cpp]
+----
+result finish();
+----
+[horizontal]
+Effects::
+- Calls `recycle()` and `set_good(false)`.
+Return value::
+- `result::count` is the sum of the values returned by `dest.sputn`.
+- `result::success` is the value `good()` would return before this call to `finish()`.
+====
+
+[[to]]
+== Function templates `to`
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template <typename CharT, typename Traits>
+__/{asterisk} see below {asterisk}/__ to(std::basic_streambuf<CharT, Traits>& dest);
+
+template <typename CharT, typename Traits>
+__/{asterisk} see below {asterisk}/__ to(std::basic_streambuf<CharT, Traits>* dest);
+
+
+} // namespace strf
+----
+[horizontal]
+Return type:: `{destination_no_reserve}<OBC>`, where `OBC` is an implementation-defined
+              type that satifies __{OutbuffCreator}__.
+Return value:: A destination object whose internal __{OutbuffCreator}__ object `obc`
+is such that `obc.create()` returns a `{basic_streambuf_writer}<CharT, Traits>` object initialized
+with `dest`.

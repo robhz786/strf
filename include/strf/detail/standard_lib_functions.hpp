@@ -1,9 +1,10 @@
+#ifndef STRF_DETAIL_STANDARD_LIB_FUNCTIONS_HPP
+#define STRF_DETAIL_STANDARD_LIB_FUNCTIONS_HPP
+
+//  Copyright (C) (See commit logs on github.com/robhz786/strf)
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
-
-#ifndef STRF_DETAIL_STANDARD_LIB_FUNCTIONS_HPP
-#define STRF_DETAIL_STANDARD_LIB_FUNCTIONS_HPP
 
 #include <strf/detail/strf_def.hpp>
 
@@ -37,19 +38,69 @@
 #if ! defined(STRF_CONSTEXPR_CHAR_TRAITS)
 #    define STRF_CONSTEXPR_CHAR_TRAITS inline
 #endif
-
 #if defined(STRF_WITH_CSTRING)
 #    include <cstring>
 #endif
 
-#ifdef STRF_USE_STD_BITOPS // __cpp_lib_bitops
+#if defined(__cpp_lib_bit_cast) || defined(__cpp_lib_bitops)
 #include <bit>
 #endif
 
 namespace strf {
 namespace detail {
 
-#ifdef STRF_USE_STD_BITOPS
+#if defined(__cpp_lib_bitops)
+#  define STRF_HAS_COUNTL_ZERO
+#  define STRF_HAS_COUNTR_ZERO
+
+inline STRF_HD int countl_zero_l(unsigned long x) noexcept
+{
+    return std::countl_zero(x);
+}
+inline STRF_HD int countl_zero_ll(unsigned long long x) noexcept
+{
+    return std::countl_zero(x);
+}
+inline STRF_HD int countr_zero_l(unsigned long x) noexcept
+{
+    return std::countr_zero(x);
+}
+inline STRF_HD int countr_zero_ll(unsigned long long x) noexcept
+{
+    return std::countr_zero(x);
+}
+
+#elif defined(__has_builtin)
+#  if __has_builtin(__builtin_clzll)
+#    define STRF_HAS_COUNTL_ZERO
+
+inline STRF_HD int countl_zero_l(unsigned long x) noexcept
+{
+    return __builtin_clzl(x);
+}
+inline STRF_HD int countl_zero_ll(unsigned long long x) noexcept
+{
+    return __builtin_clzll(x);
+}
+
+#  endif // __has_builtin(__builtin_clzll)
+
+#  if __has_builtin(__builtin_ctzll)
+#    define STRF_HAS_COUNTR_ZERO
+
+inline STRF_HD int countr_zero_l(unsigned long x) noexcept
+{
+    return __builtin_ctzl(x);
+}
+inline STRF_HD int countr_zero_ll(unsigned long long x) noexcept
+{
+    return __builtin_ctzll(x);
+}
+
+#  endif // __has_builtin(__builtin_ctzll)
+#endif
+
+#if defined(__cpp_lib_bit_cast)
 
 template< class To, class From >
 constexpr To STRF_HD bit_cast(const From& from) noexcept
@@ -58,7 +109,7 @@ constexpr To STRF_HD bit_cast(const From& from) noexcept
     return std::bit_cast<To, From>(from);
 }
 
-#else // STRF_USE_STD_BITOPS
+#else // defined(__cpp_lib_bit_cast)
 
 template< class To, class From >
 To STRF_HD bit_cast(const From& from) noexcept
@@ -74,7 +125,7 @@ To STRF_HD bit_cast(const From& from) noexcept
 #endif
 }
 
-#endif //STRF_USE_STD_BITOPS
+#endif // defined(__cpp_lib_bit_cast)
 
 #if ! defined(STRF_FREESTANDING)
 template <typename It>
@@ -86,25 +137,19 @@ template <typename It>
 struct iterator_value_type_impl
 {
     using type = typename It::value_type;
-    //std::remove_cv_t<std::remove_reference_t<decltype(*std::declval<It>())>>;
+    //strf::remove_cvref_t<decltype(*std::declval<It>())>;
 };
 
 template <typename T>
 struct iterator_value_type_impl<T*>
 {
-    using type = std::remove_cv_t<T>;
+    using type = strf::detail::remove_cv_t<T>;
 };
 
 template <typename It>
 using iterator_value_type = typename iterator_value_type_impl<It>::type;
 
 #endif
-
-template <typename IntT>
-constexpr IntT max(IntT a, IntT b)
-{
-    return a > b ? a : b;
-}
 
 template<class CharT>
 STRF_CONSTEXPR_CHAR_TRAITS
@@ -246,7 +291,7 @@ inline STRF_HD void copy_n
 }
 
 // template< class T >
-// constexpr T&& forward( std::remove_reference_t<T>&& t ) noexcept
+// constexpr T&& forward( strf::detail::remove_reference_t<T>&& t ) noexcept
 // {
 //     return static_cast<T&&>(t);
 // }
@@ -284,6 +329,83 @@ constexpr STRF_HD auto tag_invoke(Cpo cpo, Args&&... args)
 constexpr strf::detail::detail_tag_invoke_ns::tag_invoke_fn tag_invoke {};
 
 #endif // defined (STRF_NO_GLOBAL_CONSTEXPR_VARIABLE)
+
+// Not using generic iterators because std::distance
+// is not freestanding and can't be used in CUDA devices
+template <class T, class Compare>
+STRF_HD const T* lower_bound
+    ( const T* first
+    , const T* last
+    , const T& value
+    , Compare comp )
+{
+    std::ptrdiff_t search_range_length { last - first };
+
+    const T* iter;
+    while (search_range_length > 0) {
+        auto half_range_length = search_range_length/2;
+        iter = first;
+        iter += half_range_length;
+        if (comp(*iter, value)) {
+            first = ++iter;
+            search_range_length -= (half_range_length + 1);
+                // the extra +1 is since we've just checked the midpoint
+        }
+        else {
+            search_range_length = half_range_length;
+        }
+    }
+    return first;
+}
+
+
+namespace int_limits_ {
+
+// because numeric_limits::max() can't be used in CUDA devices
+// without emitting a warning
+
+template <typename IntT, bool Signed>
+struct int_limits_impl;
+
+template <typename IntT>
+struct int_limits_impl<IntT, true>
+{
+    static_assert(std::is_integral<IntT>::value, "");
+
+    // assuming two's complement
+    using uint_t = typename std::make_unsigned<IntT>::type;
+    constexpr static unsigned bits_count = sizeof(IntT) * 8;
+    constexpr static uint_t min_value_bits_ = (uint_t(1) << (bits_count - 1));
+    constexpr static uint_t max_value_bits_ = (uint_t(-1) >> 1);
+
+    constexpr static IntT min_value = static_cast<IntT>(min_value_bits_);
+    constexpr static IntT max_value = static_cast<IntT>(max_value_bits_);
+};
+
+template <typename UIntT>
+struct int_limits_impl<UIntT, false>
+{
+    static_assert(std::is_integral<UIntT>::value, "");
+    constexpr static UIntT min_value = 0;
+    constexpr static UIntT max_value = (UIntT)-1;
+};
+
+} // namespace int_limits_
+
+template <typename IntT>
+using int_limits = int_limits_::int_limits_impl<IntT, std::is_signed<IntT>::value>;
+
+template <typename IntT>
+constexpr STRF_HD IntT int_max()
+{
+    return int_limits<IntT>::max_value;
+}
+
+template <typename IntT>
+constexpr STRF_HD IntT int_min()
+{
+    return int_limits<IntT>::min_value;
+}
 
 } // namespace detail
 } // namespace strf

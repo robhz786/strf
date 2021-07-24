@@ -1,0 +1,634 @@
+////
+Copyright (C) (See commit logs on github.com/robhz786/strf)
+Distributed under the Boost Software License, Version 1.0.
+(See accompanying file LICENSE_1_0.txt or copy at
+http://www.boost.org/LICENSE_1_0.txt)
+////
+
+[[main]]
+= `<strf/outbuff.hpp>` Header file reference
+:source-highlighter: prettify
+:sectnums:
+:toc: left
+:toc-title: <strf/outbuff.hpp>
+:toclevels: 1
+:icons: font
+
+:min_space_after_recycle: <<min_space_after_recycle,min_space_after_recycle>>
+:basic_outbuff: <<basic_outbuff,basic_outbuff>>
+
+:basic_cstr_writer: <<basic_cstr_writer, basic_cstr_writer>>
+:basic_string_maker: <<basic_string_maker, basic_string_maker>>
+:basic_string_appender: <<basic_string_appender, basic_string_appender>>
+:basic_streambuf_writer: <<basic_streambuf_writer, basic_streambuf_writer>>
+:narrow_cfile_writer: <<narrow_cfile_writer, narrow_cfile_writer>>
+:wide_cfile_writer: <<wide_cfile_writer, wide_cfile_writer>>
+:garbage_buff: <<garbage_buff, garbage_buff>>
+:garbage_buff_end: <<garbage_buff, garbage_buff_end>>
+
+:char_type: <<basic_outbuff_char_type,char_type>>
+:pointer: <<basic_outbuff_pointer,pointer>>
+:end: <<basic_outbuff_end,end>>
+:space: <<basic_outbuff_space,space>>
+:recycle: <<basic_outbuff_recycle,recycle>>
+:require: <<basic_outbuff_require,require>>
+:advance_to: <<basic_outbuff_advance_to,advance_to>>
+:advance_count: <<basic_outbuff_advance_count,advance_count>>
+:advance: <<basic_outbuff_advance,advance>>
+:good: <<basic_outbuff_good,good>>
+:write: <<basic_outbuff_write,write>>
+:set_pointer: <<basic_outbuff_set_pointer,set_pointer>>
+:set_end: <<basic_outbuff_set_end,set_end>>
+:set_good: <<basic_outbuff_set_good,set_good>>
+:do_write: <<basic_outbuff_do_write,do_write>>
+
+////
+`<strf/outbuff.hpp>` is a lighweight header can be used in freestanding evironments. All other headers of the strf library include it. It's not affected by the `STRF_SEPARATE_COMPILATION` macro.
+////
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template <typename CharT>
+constexpr std::size_t min_space_after_recycle();
+
+template <typename CharT>
+class basic_outbuff
+{ /{asterisk} \... {asterisk}/ };
+
+template <typename CharT>
+void put(basic_outbuff<CharT>& ob, CharT c);
+
+template <typename CharT>
+class basic_cstr_writer final: public basic_outbuff<CharT>
+{ /{asterisk} \... {asterisk}/};
+
+template <typename CharT>
+class discarded_outbuff final: public basic_outbuff<CharT>
+{ /{asterisk} \... {asterisk}/};
+
+template <typename CharT>
+CharT* garbage_buff();
+
+template <typename CharT>
+CharT* garbage_buff_end();
+
+using bin_outbuff     = basic_outbuff<std::byte>;
+using u8outbuff       = basic_outbuff<char8_t>;
+using outbuff         = basic_outbuff<char>;
+using u16outbuff      = basic_outbuff<char16_t>;
+using u32outbuff      = basic_outbuff<char32_t>;
+using woutbuff        = basic_outbuff<wchar_t>;
+
+using u8cstr_writer  = basic_cstr_writer<char8_t>;
+using cstr_writer    = basic_cstr_writer<char>;
+using u16cstr_writer = basic_cstr_writer<char16_t>;
+using u32cstr_writer = basic_cstr_writer<char32_t>;
+using wcstr_writer   = basic_cstr_writer<wchar_t>;
+
+} // namespace strf
+----
+
+== Function template `min_space_after_recycle` [[min_space_after_recycle]]
+====
+[source,cpp]
+----
+template <typename CharT>
+constexpr std::size_t min_space_after_recycle();
+----
+[horizontal]
+Return value:: Implementation-defined value greater than or equal to 64.
+====
+
+== Class template `basic_outbuff` [[basic_outbuff]]
+
+=== Synopsis
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template <typename CharT>
+class basic_outbuff;
+{
+public:
+
+    using char_type = CharT;
+
+    basic_outbuff(const basic_outbuff&) = delete;
+    basic_outbuff(basic_outbuff&&) = delete;
+    basic_outbuff& operator=(const basic_outbuff&) = delete;
+    basic_outbuff& operator=(basic_outbuff&&) = delete;
+
+    virtual ~basic_outbuff() = default;
+
+    CharT{asterisk} {pointer}() const noexcept;
+    CharT{asterisk} {end}() const noexcept;
+    std::size_t {space}() const noexcept;
+    bool {good}() const noexcept;
+    void {advance_to}(CharT{asterisk} p);
+    void {advance}(std::size_t n);
+    void {require}(std::size_t s);
+
+    void {write}(const CharT* str, std::size_t str_len);
+
+    virtual void {recycle}() = 0;
+
+protected:
+
+    <<basic_outbuff_ctor_range,basic_outbuff>>(CharT{asterisk} pointer_, CharT{asterisk} end_);
+
+    <<basic_outbuff_ctor_count,basic_outbuff>>(CharT{asterisk} pointer_, std::size_t n);
+
+    void {set_pointer}(CharT{asterisk} p) noexcept;
+    void {set_end}(CharT{asterisk} e) noexcept;
+    void {set_good}(bool g) noexcept;
+
+    virtual void {do_write}(const CharT* str, std::size_t str_len);
+};
+
+// global functions
+
+template <typename CharT>
+void put( basic_outbuff<CharT>& ob, CharT ch );
+
+} // namespace strf
+----
+
+=== Member types
+
+[[basic_outbuff_char_type]]
+====
+[source,cpp,subs=normal]
+----
+using char_type = CharT;
+----
+====
+
+=== Public member functions
+
+[[basic_outbuff_pointer]]
+====
+[source,cpp]
+----
+CharT* pointer() const noxcept;
+----
+[horizontal]
+Return:: The memory position where the content shall be written.
+====
+[[basic_outbuff_end]]
+====
+[source,cpp]
+----
+CharT* end() const noxcept;
+----
+[horizontal]
+Return:: The end of memory position where the content shall be written.
+         Dereferencing `{end}()` has undefined behaviour.
+====
+[[basic_outbuff_space]]
+====
+[source,cpp]
+----
+std::size_t space() const noexcept;
+----
+[horizontal]
+Return:: `{end}() - {pointer}()`
+====
+[[basic_outbuff_recycle]]
+====
+[source,cpp]
+----
+virtual void recycle() = 0;
+----
+[horizontal]
+Posconditions::
+- `{space}() >= {min_space_after_recycle}<CharT>()`
+- The range [ `{pointer}()`, `{end}()` ) is valid accessible memory area
+- If the return value of `{good}()` was `false` before this call to `{recycle}()`, then `{good}()` remains returning `false`.
+====
+
+// Effect::
+// Depends on the derivate class, but if `{good}()` returns `true`,
+// then supposedly consumes the content in the range [`p`, `{pointer}()`),
+// where `p` is the value `{pointer}()` would have returned if called before
+// any call to `{advance}` or `{advance_to}` in this object since the last
+// time `{recycle}` was called in this object, or, in case `{recycle}`
+// was not called in this object yet, since this object was constructed.
+
+[[basic_outbuff_require]]
+====
+[source,cpp]
+----
+void require(std::size_t s)
+----
+[horizontal]
+Effect:: Calls `{recycle}()` if `{space}() < s`.
+Precondition:: `s \<= {min_space_after_recycle}<CharT>()`
+Postcondition:: `{space}() >= s`
+====
+[[basic_outbuff_advance_to]]
+====
+[source,cpp]
+----
+void advance_to(CharT* p)
+----
+[horizontal]
+Effect:: Advance the buffer's pointer to `p`.
+Precondition:: `{pointer}() \<= p && p \<= end()`
+Postcondition:: `{pointer}() == p`
+====
+[[basic_outbuff_advance_count]]
+====
+[source,cpp]
+----
+void advance(std::size_t n)
+----
+[horizontal]
+Effect:: Equivalent to `{advance_to}({pointer}() + n)`
+Precondition:: `n \<= {space}()`
+====
+[[basic_outbuff_advance]]
+====
+[source,cpp]
+----
+void advance()
+----
+[horizontal]
+Effect:: Equivalent to `{advance_to}(1)`
+Precondition:: `{pointer}() != {end}()`
+====
+[[basic_outbuff_good]]
+====
+[source,cpp]
+----
+bool good() const;
+----
+[horizontal]
+Return:: The state of this object.
+Semantincs:: `{good}() == false` means that writting anything on
+   `{pointer}()`, and calling `{advance_to}` and `{recycle}()` has no
+   relevant side effect besides their postconditions.
+Note:: The range [ `{pointer}()`, `{end}()` ) shall aways be a valid
+accessible memory, even when `{good}()` returns `false`.
+====
+
+[[basic_outbuff_write]]
+====
+[source,cpp]
+----
+void write(const CharT* str, std::size_t str_len);
+----
+[horizontal]
+Effect:: If `str_len \<= {space}()` is `true`, copy `str_len` characters of
+         string the `str` into `{pointer}()` and calls `{advance}(str_len)`.
+         Otherwise, calls `{do_write}(str, str_len)`.
+====
+
+=== Protected Member functions
+
+[[basic_outbuff_ctor_range]]
+====
+[source,cpp]
+----
+basic_outbuff(CharT* pointer_, CharT* end_)
+----
+[horizontal]
+Preconditions::
+- `pointer_ \<= end_`
+- The range [ `pointer_`, `end_` ) must be an accessible memory area.
+Posconditions::
+- `{pointer}() == pointer_`
+- `{end}() == end_`
+- `{good}() == true`
+====
+[[basic_outbuff_ctor_count]]
+====
+[source,cpp]
+----
+basic_outbuff(CharT* pointer_, std::size_t n)
+----
+[horizontal]
+Preconditions::
+- The range [ `pointer_`, `pointer_ + n ` ) must be an accessible memory area.
+Posconditions::
+- `{pointer}() == pointer_`
+- `{end}() == pointer_ + n`
+- `{good}() == true`
+====
+[[basic_outbuff_set_pointer]]
+====
+[source,cpp]
+----
+void set_pointer(CharT* p) noexcept
+----
+[horizontal]
+Postconditions:: `{pointer}() == p`
+====
+[[basic_outbuff_set_end]]
+====
+[source,cpp]
+----
+void set_end(CharT* e) noexcept
+----
+[horizontal]
+Postconditions:: `{end}() == e`
+====
+[[basic_outbuff_set_good]]
+====
+[source,cpp]
+----
+void set_good(bool g) noexcept
+----
+[horizontal]
+Postconditions:: `{good}() == g`
+====
+
+[[basic_outbuff_do_write]]
+====
+[source,cpp]
+----
+virtual void do_write(const CharT* str, std::size_t str_len);
+----
+[horizontal]
+Effect:: Writes the first `str_len` characters of string `str`
+        into this object, calling `{recycle}()` how many time
+        it is necessary.
+Note:: This function is made virtual so that any derived classes
+       can override it with an optimized version.
+====
+
+=== Global functions
+
+[[basic_outbuff_put]]
+====
+[source,cpp,subs=normal]
+----
+template <typename CharT>
+void put(basic_outbuff<CharT>& ob, CharT ch);
+----
+[horizontal]
+Effect:: Equivalent to:
++
+[source,cpp]
+----
+if (ob.space() == 0) {
+    ob.recycle();
+}
+*ob.pointer() = ch;
+ob.advance();
+----
+====
+
+[[basic_cstr_writer]]
+== Class template `basic_cstr_writer`
+
+[source,cpp]
+----
+namespace strf {
+
+template <typename CharT>
+class basic_cstr_writer final: public {basic_outbuff}<CharT> {
+public:
+    basic_cstr_writer(CharT* dest, CharT* dest_end) noexcept;
+
+    basic_cstr_writer(CharT* dest, std::size_t len) noexcept;
+
+    template <std::size_t N>
+    basic_cstr_writer(CharT (&dest)[N]) noexcept;
+
+    basic_cstr_writer(const basic_cstr_writer&) = delete;
+
+    void recycle() noexcept override;
+
+    struct result {
+        CharT* ptr;
+        bool truncated;
+    };
+
+    result finish() noexcept;
+};
+
+} // namespace strf
+----
+
+=== Public member functions
+
+====
+[source,cpp]
+----
+basic_cstr_writer(CharT* dest, CharT* dest_end) noexcept;
+----
+[horizontal]
+Precondition:: `dest < dest_end`
+Postconditions::
+- `{good}() == true`
+- `{pointer}() == dest`
+- `{end}() == dest_end - 1`
+====
+====
+[source,cpp]
+----
+basic_cstr_writer(CharT* dest, std::size_t dest_size) noexcept;
+----
+[horizontal]
+Precondition:: `dest_size != 0`
+Postconditions::
+- `{good}() == true`
+- `{pointer}() == dest`
+- `{end}() == dest + dest_size - 1`
+====
+====
+[source,cpp]
+----
+template <std::size_t N>
+basic_cstr_writer(CharT (&dest)[N]) noexcept;
+----
+[horizontal]
+Postconditions::
+- `{good}() == true`
+- `{pointer}() == dest`
+- `{end}() == dest + N - 1`
+====
+====
+[source,cpp]
+----
+void recycle() noexcept;
+----
+[horizontal]
+Postconditions::
+- `{good}() == false`
+- `{pointer}() == {garbage_buff}<CharT>()`
+- `{end}() == {garbage_buff_end}<CharT>()`
+====
+====
+[source,cpp]
+----
+result finish() noexcept;
+----
+[horizontal]
+Effects::
+- Assign to `'\0'` the position after the last written character in memory area used to initialize this object and set this object into "bad" state.
+Return value::
+- `result::truncated` is `true` if `recycle` or `finish` has ever been called in this object.
+- `result::ptr` points to the termination character `'\0'`.
+Postconditions::
+- `{good}() == false`
+- `{pointer}() == {garbage_buff}<CharT>()`
+- `{end}() == {garbage_buff_end}<CharT>()`
+====
+
+[[basic_char_array_writer]]
+== Class template `basic_char_array_writer`
+
+[source,cpp]
+----
+namespace strf {
+template <typename CharT>
+class basic_char_array_writer final : public {basic_outbuff}<CharT> {
+public:
+    template <std::size_t N>
+    basic_char_array_writer(CharT (&dest)[N]) noexcept;
+    basic_char_array_writer(CharT* dest, CharT* dest_end) noexcept;
+    basic_char_array_writer(CharT* dest, std::size_t dest_size) noexcept;
+    basic_char_array_writer(const basic_char_array_writer&) noexcept;
+
+    basic_char_array_writer& operator=(const basic_char_array_writer&) noexcept;
+    bool operator==(const basic_char_array_writer&) noexcept;
+
+    void recycle() noexcept override;
+
+    struct result {
+        CharT* ptr;
+        bool truncated;
+    };
+
+    result finish() noexcept;
+};
+} // namespace strf
+----
+
+=== Public member functions
+
+====
+[source,cpp]
+----
+template <std::size_t N>
+basic_char_array_writer(CharT (&dest)[N]) noexcept;
+----
+Postconditions::
+- `{good}() == true`
+- `{pointer}() == dest`
+- `{end}() == dest + N`
+====
+====
+[source,cpp]
+----
+basic_char_array_writer(CharT* dest, CharT* dest_end) noexcept;
+----
+[horizontal]
+Precondition:: `dest < dest_end`
+Postconditions::
+- `{good}() == true`
+- `{pointer}() == dest`
+- `{end}() == dest_end`
+====
+====
+[source,cpp]
+----
+basic_char_array_writer(CharT* dest, std::size_t dest_size) noexcept;
+----
+[horizontal]
+Precondition:: `dest_size != 0`
+Postconditions::
+- `{good}() == true`
+- `{pointer}() == dest`
+- `{end}() == dest + dest_size`
+====
+====
+[source,cpp]
+----
+void recycle() noexcept;
+----
+[horizontal]
+Postconditions::
+- `{good}() == false`
+- `{pointer}() == {garbage_buff}<CharT>()`
+- `{end}() == {garbage_buff_end}<CharT>()`
+====
+====
+[source,cpp]
+----
+result finish() noexcept;
+----
+Return value::
+- `result.truncated` is `true` when `{recycle}()` or `{do_write}(...)`
+   has been previously called in this object, which means that the
+   the range which with it was initialized is too small.
+- `result::ptr` is the one-past-the-end pointer of the characters written.
+   However, when `result.truncated` is `true`, the number of characters written
+   is unspecified.
+====
+
+
+[[discarded_outbuff]]
+== Class template `discarded_outbuff`
+
+`discarded_outbuff` it's the library's analogous to `/dev/null`.
+A `discarded_outbuff` object ignores anything written to it.
+
+[source,cpp]
+----
+namespace strf {
+
+template <typename CharT>
+class discarded_outbuff final: public basic_outbuff<CharT>
+{
+public:
+    discarded_outbuff() noexcept;
+    void recycle() noexcept override;
+};
+
+} // namespace strf
+----
+====
+[source,cpp]
+----
+discarded_outbuff() noexcept;
+----
+[horizontal]
+Postconditions::
+- `{good}() == false`
+- `{pointer}() == {garbage_buff}<CharT>()`
+- `{end}() == {garbage_buff_end}<CharT>()`
+====
+====
+[source,cpp]
+----
+void recycle() noexcept;
+----
+[horizontal]
+Postconditions::
+- `{good}() == false`
+- `{pointer}() == {garbage_buff}<CharT>()`
+- `{end}() == {garbage_buff_end}<CharT>()`
+====
+
+[[garbage_buff]]
+== Garbage buffer
+These function templates return the begin and the end of a memory area that is never supposed to be read. It can be used when implementing a class that derives from `basic_outbuff` to set the buffer when the state is "bad".
+
+[source,cpp]
+----
+template <typename CharT>
+CharT* garbage_buff() noexcept;
+----
+
+[source,cpp]
+----
+template <typename CharT>
+CharT* garbage_buff_end() noexcept;
+----
+
+

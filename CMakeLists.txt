@@ -25,14 +25,10 @@ option(
  STRF_BUILD_EXAMPLES
  "Test example programs"
   ${STRF_BUILD_EXAMPLES})
-option(
-  STRF_BUILD_BENCHMARKS
-  "Build performace test"
-  ${STRF_BUILD_BENCHMARKS})
 
 project (
   strf 
-  VERSION 0.14.0
+  VERSION 0.15.0
   LANGUAGES CXX)
 
 if (STRF_CUDA_SUPPORT)
@@ -44,19 +40,25 @@ if (STRF_BUILD_TESTS OR STRF_BUILD_EXAMPLES)
 endif (STRF_BUILD_TESTS OR STRF_BUILD_EXAMPLES)
 
 add_library(strf-header-only INTERFACE)
-add_library(strf STATIC src/strf.cpp)
+add_library(strf-static-lib  STATIC src/strf.cpp)
+
+target_compile_features(strf-header-only INTERFACE cxx_std_11)
+target_compile_features(strf-static-lib  PUBLIC    cxx_std_11)
+
+add_library(strf::strf-static-lib  ALIAS strf-static-lib)
+add_library(strf::strf-header-only ALIAS strf-header-only)
 
 target_compile_definitions(
-  strf
+  strf-static-lib
   PUBLIC STRF_SEPARATE_COMPILATION )
 
 if (STRF_FREESTANDING)
-  target_compile_definitions(strf PUBLIC STRF_FREESTANDING)
+  target_compile_definitions(strf-static-lib PUBLIC STRF_FREESTANDING)
   target_compile_definitions(strf-header-only INTERFACE STRF_FREESTANDING)
 endif (STRF_FREESTANDING)
 
 if (STRF_WITH_CSTRING)
-  target_compile_definitions(strf PUBLIC STRF_WITH_CSTRING)
+  target_compile_definitions(strf-static-lib PUBLIC STRF_WITH_CSTRING)
   target_compile_definitions(strf-header-only INTERFACE STRF_WITH_CSTRING)
 endif (STRF_WITH_CSTRING)
   
@@ -68,24 +70,24 @@ target_include_directories(
   )
 
 target_include_directories(
-  strf
+  strf-static-lib
   PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
   )
 
-set(features cxx_return_type_deduction cxx_decltype_auto)
-target_compile_features(strf PUBLIC ${features})
-target_compile_features(strf-header-only INTERFACE ${features})
 
 set_property(
   TARGET strf-header-only
   PROPERTY EXPORT_NAME strf-header-only)
 set_property(
-  TARGET strf
-  PROPERTY EXPORT_NAME strf)
+  TARGET strf-static-lib
+  PROPERTY EXPORT_NAME strf-static-lib)
+set_property(
+  TARGET strf-static-lib
+  PROPERTY OUTPUT_NAME strf )
 
-set(TARGETS_TO_INSTALL strf-header-only strf)
+set(TARGETS_TO_INSTALL strf-header-only strf-static-lib)
 
 if (${STRF_CUDA_SUPPORT})
   add_library(strf-cuda STATIC src/strf.cu)
@@ -95,13 +97,12 @@ if (${STRF_CUDA_SUPPORT})
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
   )
-  target_compile_features(strf-cuda PUBLIC ${features})
+  target_compile_features(strf-cuda PUBLIC cxx_std_11)
   set_property(
     TARGET strf-cuda
     PROPERTY EXPORT_NAME strf-cuda)
   list(APPEND TARGETS_TO_INSTALL strf-cuda)
 endif()
-
 
 include(CMakePackageConfigHelpers)
 
@@ -139,27 +140,10 @@ install(
   DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}" )
 
 if (STRF_BUILD_TESTS)
-  add_subdirectory(test test)
+  add_subdirectory(tests tests)
 endif(STRF_BUILD_TESTS)
 
 if (STRF_BUILD_EXAMPLES)
-  add_subdirectory(example example)
+  add_subdirectory(examples examples)
 endif (STRF_BUILD_EXAMPLES)
 
-if (STRF_BUILD_BENCHMARKS)
-  if ( NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/externals/fmt/CMakeLists.txt OR
-       NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/externals/google-benchmark/CMakeLists.txt )
-
-     message(
-      SEND_ERROR
-      "Building benchmarks requires externals libraries.\n"
-      "Run 'git submodule update --init'" )
-  endif ()
-
-  option(BENCHMARK_ENABLE_TESTING OFF)
-  option(BENCHMARK_ENABLE_GTEST_TESTS OFF)
-  add_subdirectory(externals/google-benchmark google-benchmark)
-  add_subdirectory(externals/fmt fmt)
-
-  add_subdirectory(benchmarks benchmarks)
-endif (STRF_BUILD_BENCHMARKS)

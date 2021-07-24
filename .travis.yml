@@ -18,6 +18,7 @@ branches:
   only:
     - master
     - develop
+    - /travis-.*/
     - /pr-.*/
     - /rc-.*/
     - /bugfix-.*/
@@ -74,8 +75,11 @@ jobs:
       - COPY="all the environment settings from your job"
 
   include:
+    - { os: "linux", env: [ "CXX=clang++-3.8", "CXX_STANDARD=11", CONFIG=Release  ], addons: *clang-38 }
     - { os: "linux", env: [ "CXX=clang++-3.8", "CXX_STANDARD=14", CONFIG=Debug    ], addons: *clang-38 }
     - { os: "linux", env: [ "CXX=clang++-8", "CXX_STANDARD=17", CONFIG=Debug    ], addons: *clang-8  }
+    - { os: "linux", env: [ "CXX=g++-6", "CXX_STANDARD=11", CONFIG=Debug    ], addons: *gcc-6 }
+    - { os: "linux", env: [ "CXX=g++-6", "CXX_STANDARD=11", CONFIG=Release  ], addons: *gcc-6 }
     - { os: "linux", env: [ "CXX=g++-6", "CXX_STANDARD=14", CONFIG=Debug    ], addons: *gcc-6 }
     - { os: "linux", env: [ "CXX=g++-6", "CXX_STANDARD=14", CONFIG=Release  ], addons: *gcc-6 }
     - { os: "linux", env: [ "CXX=g++-7", "CXX_STANDARD=14", CONFIG=Debug    ], addons: *gcc-7 }
@@ -90,8 +94,8 @@ jobs:
       before_install:
         - sudo apt-get update
         - sudo apt-get -y install libperlio-gzip-perl libjson-perl locales-all
-      env: [ "COMMENT=codecov.io", "CC=gcc-7", "CXX=g++-7", "CXX_STANDARD=14", "GCOV=gcov-7" ]
-      addons: *gcc-7
+      env: [ "COMMENT=codecov.io", "CC=gcc-9", "CXX=g++-9", "CXX_STANDARD=20", "GCOV=gcov-9" ]
+      addons: *gcc-9
       script:
         - pushd /tmp && git clone https://github.com/linux-test-project/lcov.git && export PATH=/tmp/lcov/bin:$PATH && which lcov && lcov --version && popd
         - ci/travis/codecov_build.sh

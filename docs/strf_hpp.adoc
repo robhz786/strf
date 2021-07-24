@@ -1,0 +1,68 @@
+////
+Copyright (C) (See commit logs on github.com/robhz786/strf)
+Distributed under the Boost Software License, Version 1.0.
+(See accompanying file LICENSE_1_0.txt or copy at
+http://www.boost.org/LICENSE_1_0.txt)
+////
+
+[[main]]
+= `<strf.hpp>` Header file reference
+:source-highlighter: prettify
+:source-language: cpp
+:toc: left
+:toc-title: <strf.hpp>
+:toclevels: 2
+:sectnums:
+:sectnumlevels: 2
+:icons: font
+
+:value_with_formatters: <<value_with_format,value_with_formatters>>
+:alignment_formatter: <<alignment_formatter,alignment_formatter>>
+:alignment_formatter_q: <<alignment_formatter,alignment_formatter_q>>
+:alignment_format: <<alignment_format,alignment_format>>
+:int_formatter: <<int_formatter,int_formatter>>
+:int_format: <<int_format_fn,int_format>>
+:float_formatter: <<float_formatter,float_formatter>>
+:float_format: <<float_format,float_format>>
+
+:pack: <<pack,pack>>
+:facets_pack: <<facets_pack,facets_pack>>
+:tag: <<tag,tag>>
+
+:boost_mp_replace_front: https://www.boost.org/doc/libs/develop/libs/mp11/doc/html/mp11.html#mp_replace_frontl_t[boost::mp_replace_front]
+:boost_mp_replace: https://www.boost.org/doc/libs/develop/libs/mp11/doc/html/mp11.html#mp_replacel_v_w[boost::mp_replace]
+
+:std_conditional_t: https://en.cppreference.com/w/cpp/types/conditional[std::conditional_t]
+
+:min_space_after_recycle: <<outbuff_hpp#min_space_after_recycle,min_space_after_recycle>>
+:basic_outbuff: <<outbuff_hpp#basic_outbuff,basic_outbuff>>
+
+NOTE: This document is still a work in progress.
+
+////
+
+`<<strf_hpp#main,<strf.hpp> >>` defines most of the library, including the main usage syntax , all printable types and all facets.
+
+If you are using strf as a static library ( instead of header-only ) you must have the macro `STRF_SEPARATE_COMPILATION` defined when including `<strf.hpp>`.
+
+When macro `STRF_FREESTANDING` is defined, `<strf.hpp>` depends only
+on https://en.cppreference.com/w/cpp/freestanding[freestanding] standard headers
+and `<utility>`.
+
+When macro `STRF_WITH_CSTRING` is defined `<strf.hpp>` uses `<cstring>`
+even when `STRF_FREESTANDING` is defined.
+
+`<<strf_hpp#main,<strf.hpp> >>` includes `<strf/outbuff.hpp>`.
+
+////
+
+include::ref_facets_pack.adoc[]
+include::ref_printer.adoc[]
+include::ref_format_functions.adoc[]
+include::ref_printable_types.adoc[]
+include::ref_destination.adoc[]
+include::ref_tr-string.adoc[]
+include::ref_numpunct.adoc[]
+include::ref_charset.adoc[]
+include::ref_width.adoc[]
+include::ref_misc.adoc[]

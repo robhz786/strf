@@ -1,0 +1,833 @@
+////
+Copyright (C) (See commit logs on github.com/robhz786/strf)
+Distributed under the Boost Software License, Version 1.0.
+(See accompanying file LICENSE_1_0.txt or copy at
+http://www.boost.org/LICENSE_1_0.txt)
+////
+
+:fmt_type: <<fmt_type,fmt_type>>
+:fmt: <<fmt,fmt>>
+:width_t: <<width_t,width_t>>
+:float_notation: <<float_format,float_notation>>
+:float_format: <<float_format,float_format>>
+:change_notation: <<float_format,change_notation>>
+:int_format: <<int_format,int_format>>
+:default_int_format: <<default_int_format,default_int_format>>
+:change_base: <<int_format,change_base>>
+:default_alignment_format: <<alignment_format,default_alignment_format>>
+:text_alignment: <<alignment_format,text_alignment>>
+:showsign: <<showsign,showsign>>
+:float_notation: <<float_notation,float_notation>>
+
+:tag: <<tag,tag>>
+
+== Format functions
+
+=== Global format functions
+[[format_function_aliases]]
+[source,cpp,subs=normal]
+----
+namespace strf {
+inline namespace format_functions {
+
+constexpr /{asterisk}...{asterisk}/ right {};
+constexpr /{asterisk}...{asterisk}/ left {};
+constexpr /{asterisk}...{asterisk}/ center {};
+constexpr /{asterisk}...{asterisk}/ pad0 {};
+constexpr /{asterisk}...{asterisk}/ punct {};
+constexpr /{asterisk}...{asterisk}/ hex {};
+constexpr /{asterisk}...{asterisk}/ dec {};
+constexpr /{asterisk}...{asterisk}/ oct {};
+constexpr /{asterisk}...{asterisk}/ bin {};
+constexpr /{asterisk}...{asterisk}/ fixed {};
+constexpr /{asterisk}...{asterisk}/ sci {};
+constexpr /{asterisk}...{asterisk}/ gen {};
+constexpr /{asterisk}...{asterisk}/ multi {};
+constexpr /{asterisk}...{asterisk}/ conv {};
+constexpr /{asterisk}...{asterisk}/ sani {};
+
+} // inline namespace format_functions
+} // namespace strf
+----
+
+The `format_functions` inline namespace contains callable objects
+that work as alias to format functions
+
+[%header,cols="22,25"]
+|===
+| Expression | Equivalent Expression
+|`left(_arg_, _width_)`        |`{fmt}(_arg_) < _width_`
+|`right(_arg_, _width_)`       |`{fmt}(_arg_) > _width_`
+|`center(_arg_, _width_)`      |`{fmt}(_arg_) ^ _width_`
+|`left(_arg_, _width_, _ch_)`  |`{fmt}(_arg_).fill(_ch_) < _width_`
+|`right(_arg_, _width_, _ch_)` |`{fmt}(_arg_).fill(_ch_) > _width_`
+|`center(_arg_, _width_, _ch_)`|`{fmt}(_arg_).fill(_ch_) ^ _width_`
+|`pad0(_arg_, _count_)`        |`{fmt}(_arg_).pad0(_count_)`
+|`punct(_arg_)`                |`{fmt}(_arg_).punct()`
+|`hex(_arg_)`                  |`{fmt}(_arg_).hex()`
+|`oct(_arg_)`                  |`{fmt}(_arg_).dec()`
+|`dec(_arg_)`                  |`{fmt}(_arg_).oct()`
+|`bin(_arg_)`                  |`{fmt}(_arg_).bin()`
+|`sci(_arg_)`                  |`{fmt}(_arg_).sic()`
+|`fixed(_arg_)`                |`{fmt}(_arg_).fixed()`
+|`gen(_arg_)`                  |`{fmt}(_arg_).gen()`
+|`sci(_arg_, _precision_)`     |`{fmt}(_arg_).sic().p(_precision_)`
+|`fixed(_arg_, _precision_)`   |`{fmt}(_arg_).fixed().p(_precision_)`
+|`gen(_arg_, _precision_)`     |`{fmt}(_arg_).gen().p(_precision_)`
+|`multi(_arg_, _count_)`       |`{fmt}(_arg_).multi(_count_)`
+|`sani(_arg_, _charset_)`      |`{fmt}(_arg_).sani(_charset_)`
+|`conv(_arg_, _charset_)`      |`{fmt}(_arg_).conv(_charset_)`
+|`sani(_arg_)`                 |`{fmt}(_arg_).sani()`
+|`conv(_arg_)`                 |`{fmt}(_arg_).conv()`
+|===
+
+=== Callable object `fmt` [[fmt]]
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template <typename T>
+using fmt_value_type = typename {fmt_type}<T>::value_type;
+
+constexpr struct /{asterisk}...{asterisk}/ {
+    template <typename T>
+    constexpr {fmt_type}<T> operator()(T&& value) const
+        noexcept(noexcept({fmt_type}<T>fmt_value_type<T>{(T&&)value}}))
+    {
+        return {fmt_type}<T>{fmt_value_type<T>{(T&&)value}};
+    }
+} fmt;
+
+} // namespace strf
+----
+
+=== Type alias template `fmt_type` [[fmt_type]]
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template <typename T>
+using fmt_type = /{asterisk}...{asterisk}/;
+
+} // namespace strf
+----
+
+`fmt_type<T>` is:
+
+* `T`, when `T` is `{value_with_formatters}</{asterisk} ... {asterisk}/>`
+* `{value_with_formatters}<PTraits, Fmts\...>`, where:
+** `PTraits` is the type `{print_traits_of}<T>`
+** `Fmts\...` is template paramenter pack used to define
+   `PTraits::<<PrintTraits_formatters,formatters>>` (
+    as a type alias to `{tag}<Fmt\...>` ).
+    When `PTraits::formatters` is not defined, `Fmt\...` is
+    empty.
+
+[[value_with_formatters]]
+=== Class template `value_with_formatters`
+[source,cpp]
+----
+namespace strf {
+
+template <typename ValueType, class... Fmts>
+class value_with_formatters;
+
+} // namespace strf
+----
+Compile-time requirements::
+- All types in `Fmt\...` satisfy <<Formatter,Formatter>>.
+- All types in `Fmt\...` are different.
+
+==== Synopsis
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template <typename PrintTraits, class\... Fmts>
+class value_with_formatters
+    : public Fmts::template fn<value_with_formatters<ValueType, Fmts\...>>\...
+{
+public:
+    using traits = PrintTraits;
+    using value_type = typename PrintTraits::forwarded_type;
+
+    constexpr explicit <<value_with_formatters_v,value_with_formatters>>(const value_type& v);
+
+    template <typename\... OtherFmts>
+    constexpr explicit <<value_with_formatters_vwf2,value_with_formatters>>
+        ( const value_with_formatters<PrintTraits, OtherFmts\...>& f );
+
+    template <typename\... OtherFmts>
+    constexpr explicit <<value_with_formatters_vwf2_rr,value_with_formatters>>
+        ( value_with_formatters<PrintTraits, OtherFmts\...>&& f );
+
+    template <typename OtherPrintTraits>
+    constexpr <<value_with_formatters_v_v2wf,value_with_formatters>>
+        ( const value_type& v
+        , const value_with_formatters<OtherPrintTraits, Fmts\...>& f );
+
+    template <typename OtherPrintTraits>
+    constexpr <<value_with_formatters_v_v2wf_rr,value_with_formatters>>
+        ( const value_type& v
+        , value_with_formatters<OtherPrintTraits, Fmts\...>&& f );
+
+    template <typename\... F, typename\... FInit>
+    constexpr <<value_with_formatters_v_t_i,value_with_formatters>>
+        ( const value_type& v
+        , {tag}<F\...>
+        , FInit&&\... finit );
+
+    template <typename Fmt, typename FmtInit, typename\... OtherFmts>
+    constexpr <<value_with_formatters_vwf2_t_i,value_with_formatters>>
+        ( const value_with_formatters<PrintTraits, OtherFmts\...>& f
+        , {tag}<Fmt>
+        , FmtInit&& fmt_init );
+
+    constexpr const value_type& value() const;
+
+    constexpr value_type& value();
+
+private:
+
+    value_type value_; // exposition only
+};
+
+} // namespace strf
+----
+
+[[value_with_formatters_v]]
+====
+[source,cpp,subs=normal]
+----
+constexpr value_with_formatters(const value_type& v);
+----
+Effects::
+* Initializes `value_` with `v`
+* Default initializes all public base class subobjects
+====
+
+[[value_with_formatters_vwf2]]
+====
+[source,cpp,subs=normal]
+----
+template <typename\... OtherFmts>
+constexpr explicit value_with_formatters
+    ( const value_with_formatters<PrintTraits, OtherFmts\...>& f );
+----
+Effects::
+* Initializes `value_` with `f.value()`
+* Initializes each public base class subobjects with the corresponding base class subobject of `f`
+====
+
+[[value_with_formatters_vwf2_rr]]
+====
+[source,cpp,subs=normal]
+----
+template <typename\... OtherFmts>
+constexpr explicit value_with_formatters
+    ( value_with_formatters<PrintTraits, OtherFmts\...>&& f );
+----
+Effects::
+* Initializes `value_` with `static_cast<value_type&&>(f.value())`
+* Initializes each public base class subobjects `b` with `std::move(bf)`, where `bf`
+  is the base class subobjects in `f` that corresponds to `b`
+====
+
+[[value_with_formatters_v_v2wf]]
+====
+[source,cpp,subs=normal]
+----
+template <typename OtherPrintTraits>
+constexpr value_with_formatters
+    ( const value_type& v
+    , const value_with_formatters<OtherPrintTraits, Fmts\...>& f );
+----
+Effects::
+* Initializes `value_` with `v`
+* Initializes each public base class subobjects with the corresponding base class subobject of `f`
+====
+
+[[value_with_formatters_v_v2wf_rr]]
+====
+[source,cpp,subs=normal]
+----
+template <typename OtherPrintTraits>
+constexpr value_with_formatters
+    ( const value_type& v
+    , value_with_formatters<OtherPrintTraits, Fmts\...>&& f );
+----
+Effects::
+* Initializes `value_` with `v`
+* Initializes each public base class subobjects `b` with `std::move(bf)`, where `bf`
+  is the base class subobjects in `f` that corresponds to `b`
+====
+
+[[value_with_formatters_v_t_i]]
+====
+[source,cpp,subs=normal]
+----
+template <typename\... F, typename\... FInit>
+constexpr value_with_formatters
+    ( const value_type& v
+    , {tag}<F\...>
+    , FInit&&\... finit );
+----
+Compile-time requirements::
+* `sizeof\...(F) == sizeof\...(FInit)`
+* There is no repeated type in `F\...`
+* All types in `F\...` are also in `Fmts\...`
+
+Effects::
+* Initializes `value_` with `v`
+* For each type in `F\...`, initializes the corresponding public base class subobjects
+  with the corresponging value in `std::forward<FInit>(finit)\...`
+* Default initializes the remaining public base class subobjects
+
+====
+
+[[value_with_formatters_vwf2_t_i]]
+====
+[source,cpp,subs=normal]
+----
+template <typename Fmt, typename FmtInit, typename\... OtherFmts>
+constexpr value_with_formatters
+    ( const value_with_formatters<PrintTraits, OtherFmts\...>& f
+    , {tag}<Fmt>
+    , FmtInit&& fmt_init );
+----
+Compile-time requirements::
+* `Fmt` is one the types in `Fmts\...`
+
+Effects::
+* Initializes `value_` with `f.value()`
+* Initializes the public base class subobject that corresponds to `Fmt`
+  with `std::forward<FmtInit>(fmt_init)`
+* Initializes the other public base class subobjects with the corresponding
+  base class subobject of `f`
+====
+
+
+[[value_with_formatters_value]]
+====
+[source,cpp,subs=normal]
+----
+constexpr const value_type& value() const;
+constexpr value_type& value();
+----
+Return `value_`
+====
+
+
+[[Formatter]]
+=== Type requirement _Formatter_
+
+// This is the requirement for a type to be a paramenter of the `value_with_formatters`
+// template.
+A type `Fmt` is a _Formatter_ if it has a member `fn` that is a type template
+with one template type parameter such that, given any types `T` and `U`:
+
+- `Fmt::template fn<T>` is well-formed if `T` is `value_with_formatters<ValueType, Fmts\...>`.
+  In this case, note that `Fmt` is in `Fmts\...` and `T` derives from `Fmt::template fn<T>`.
+- `Fmt::template fn<T>` is default constructible, assuming it is well-formed.
+- `Fmt::template fn<T>` can be constructed from `const Fmt::template fn<U>&`,
+  if both are well-formed.
+
+// Although it is not a compile-time requirement, it only makes sense to use a type `Fmt`
+// in `value_with_formatters` if `Fmt::template fn<T>` contains any __format function__.
+// These are member functions and they are of two kinds. In the first one, the return type
+// is `T`, `T&` or `T&&` depending of
+//
+// [source,cpp]
+// ----
+// struct fmt
+// {
+//     template <class T>
+//     class fn
+//     {
+//     public:
+//         // ...
+//
+//         T&   ff1(/*...*/) &
+//         {
+//             // ...
+//             return static_cast<T&>(*this);
+//         }
+//
+//         T&&  ff1(/*...*/) &&
+//         {
+//             // ...
+//             return static_cast<T&&>(*this);
+//         }
+//
+//         T    ff1(/*...*/) const &
+//         {
+//             // ...
+//             return static_cast<const T&>(*this);
+//         }
+//
+//     };
+// };
+// ----
+
+[[alignment_formatter]]
+=== _Formatter_ `alignment_formatter`
+
+The _Formatter_ defines the following format functions:
+
+// tag::alignment_format_functions[]
+
+[%header,cols="382,618",grid=rows]
+|===
+| Format functions | Effect
+
+|`operator<({width_t} _width_)`
+| Aligns to the left ( Or to the right on right-to-left (RTL) scripts, like arabic )
+
+|`operator>({width_t} _width_)`
+| Aligns to the right ( Or to the left on RTL scripts )
+
+|`operator^({width_t} _width_)`
+| Center alignment
+
+|`fill(char32_t ch)`
+| Sets the fill character.
+
+|`set_alignment_format(<<strf_hpp#alignment_format,alignment_format>>)`
+| Set all alignment formatting options simultaneously.
+
+|`set_alignment_format(<<strf_hpp#default_alignment_format,default_alignment_format>>)`
+| Set all alignment formatting options to default.
+
+//  It accepts only one argument, whose type can be any of those
+//  that can be returned by `get_alignment_format()`
+|===
+
+// end::alignment_format_functions[]
+
+
+And the following observers:
+
+[%header,cols="382,618",grid=rows]
+|===
+| Observers  | Return type
+
+| `width()`
+| {width_t}
+
+| `get_alignment_format()`
+| `default_text_alignment` or `text_alignment`, depending on whether any
+  alignment format function has been previously invoked.
+|===
+
+
+==== Enumeration `text_alignment` [[text_alignment]]
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+enum class text_alignment {left, right, center};
+
+}
+----
+
+==== struct `alignment_format` [[alignment_format]]
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+struct alignment_format {
+    char32_t fill = U' ';
+    {width_t} width = 0;
+    text_alignment alignment = text_alignment::right;
+};
+
+} // namespace strf
+----
+
+==== struct `default_alignment_format` [[default_alignment_format]]
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+struct default_alignment_format {
+    static constexpr char32_t fill = U' ';
+    static constexpr {width_t} width = 0;
+    static constexpr {text_alignment} alignment = text_alignment::right;
+
+    constexpr operator {alignment_format} () const noexcept
+    {
+        return {};
+    }
+};
+
+} // namespace strf
+----
+
+[[int_formatter]]
+=== _Formatter_ `int_formatter`
+
+This _Formatter_ defines the following format functions:
+
+// tag::int_format_functions[]
+[%header,cols="382,618",grid=rows]
+|===
+| Member function | Effect
+|`bin()`
+|  Uses the binary base.
+
+|`oct()`
+|  Uses the octal base.
+
+|`dec()`
+| Uses the decimal base.
+
+|`hex()`
+| Uses the hexadecimal base.
+
+|`operator*()`
+| Equivalent to the `'#'` format flag in `printf`. Only applicable in non-decimal bases.
+
+|`operator+()`
+| Equivalent to the `'+'` format flag in `printf`. Only applicable in decimal base.
+
+| `operator~()`
+| Equivalent to `fill_sign()`
+
+| `fill_sign()`
+| Similar to the `' '` format flag in `printf`:
+  prints an extra fill character ( specified by some of the alignment format function )
+  before non-negative numbers. Only applicable in decimal base.
+
+| `punct()`
+| Applies the numeric punctuation according to the `numpunct_c` facet
+
+| `operator!()`
+| Equivalent to `punct()`
+
+| [[int_pad0]] `pad0(unsigned w)`
+| Inserts zeros after the sign or base indication and before the digits
+  such that at least `w` characters are printed
+  ( not counting the fill characters caused by alignment formatting,
+   but still counting the extra fill character caused by `fill_sign()` ).
+
+| [[int_precision]] `p(unsigned precision)`
+| Inserts zeros after the sign or base indication and before the digits
+  such that at least `precision` digits are printed
+
+| `set_int_format(<<strf_hpp#int_format,int_format>>)`
+| Set all integers formatting options simultaneously.
+
+| `set_int_format(<<strf_hpp#default_int_format,default_int_format>>)`
+| Reset all integers formatting options to default.
+
+|===
+
+// end::int_format_functions[]
+
+And the following observer:
+
+[%header,cols="382,618",grid=rows]
+|===
+| Observer  | Return type
+| `get_int_format()`
+| `int_format`, `default_int_format` or an implementation-defined __IntFormat__ type.
+|===
+
+==== Type requirements __IntFormat__ [[IntFormat]]
+
+Given:
+
+* `F`, a __InttFormat__ type
+* `f`, a value of type `F`
+
+The following must hold:
+
+* `F` is copy-constructible
+* `F` is convertible to `{int_format}`
+* `F` has public member variables below:
+
+[%header,cols="191,191,618"]
+|===
+| Member        | Type             | Semantics / effect
+| `f.base`      | `int`            | Numeric base ( must be euqal to `2`, `8`, `10` or `16` )
+| `f.precision` | `unsigned`       | See `<<int_precision,p>>` format function.
+| `f.pad0wdith` | `unsigned`       | See `<<int_pad0,pad0>>` format function.
+| `f.sign`      | `showsign`       | See enumeration `{showsign}`
+| `f.showbase`  | `bool`           | Equivalent to the `'#'` format flag in printf
+| `f.punctuate` | `bool`           | Activates numeric punctuation.
+|===
+
+==== Struct template `int_format` [[int_format]]
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+struct int_format {
+    int base = 10;
+    unsigned precision = 0;
+    unsigned pad0width = 0;
+    showsign sign = <<showsign,showsign>>::negative_only;
+    bool showbase = false;
+};
+
+} // namespace strf
+----
+
+==== Struct template `default_int_format` [[default_int_format]]
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+
+struct default_int_format {
+    constexpr static int base = 10;
+    constexpr static unsigned precision = 0;
+    constexpr static unsigned pad0width = 0;
+    constexpr static strf::showsign sign = strf::showsign::negative_only;
+    constexpr static bool showbase = false;
+    constexpr static bool punctuate = false;
+
+    constexpr STRF_HD operator <<int_format,int_format>> () const
+    {
+        return {};
+    }
+};
+
+} // namespace strf
+----
+
+==== Enumeration `showsign` [[showsign]]
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+enum class showsign {
+    negative_only = ..., positive_also = ..., fill_instead_of_positive = ...
+};
+
+} // namespace strf
+----
+
+`showsign::negative_only`::: A sign is printed only before negative numbers.
+`showsign::positive_also`:::
+           Negatives numbers are prefixed with `'-'` and
+           non-negatives number are prefixed with `'+'`.
+`showsign::fill_instead_of_positive`:::
+           Negatives numbers are prefixed with `'-'` and
+           non-negatives number are prefixed with the fill character
+           ( from alignment formatting ).
+
+
+[[float_formatter]]
+=== _Formatter_ `float_formatter`
+
+The `float_formatter` _Formatter_ defines the following format functions:
+
+// tag::float_format_functions[]
+
+[%header,cols="382,618",grid=rows]
+|===
+| Member function | Effect
+|`operator*()`
+| Equivalent to the `'#'` format flag in `printf`
+
+|`operator+()`
+| Equivalent to the `'+'` format flag in `printf`
+
+| `fill_sign()`
+| Similar to the `' '` format flag in `printf`:
+  prints an extra fill character ( from the alignment formatting )
+  before non-negative numbers.
+
+| `operator~()`
+| Equivalent to `fill_sign()`
+
+| `punct()`
+| Applies the numeric punctuation according to the `numpunct_c` facet
+
+| `operator!()`
+| Equivalent to `punct()`
+
+|[[float_pad0]] `pad0(unsigned w)`
+| Similar to the `'0'` format flag in `printf`:
+
+For NaN and infinity, causes the the width ( from alignment
+formatting ) to be at least equal to `w`.
+
+For valid numbers, prints zeros after the sign and the base
+indication and before the digits such that at least `w` characters
+are printed ( not counting the fill characters caused by alignment formatting,
+but still counting the extra fill character caused by `fill_sign()` ).
+
+|`p(unsigned precision)`
+| Sets the precision. Effect varies according to the notation ( see below ).
+
+
+|[[set_float_notation]]`set_float_notation({float_notation})`
+| Sets the float notation ( see <<float_notation,below>> ).
+
+|`hex()`
+| Equivalent to `set_float_notation(float_notation::hex)`.
+
+|`fixed()`
+| Equivalent to `set_float_notation(float_notation::fixed)`.
+
+|`sci()`
+| Equivalent to `set_float_notation(float_notation::scientific)`.
+
+|`gen()`
+| Equivalent to `set_float_notation(float_notation::general)`.
+
+|`set_float_format(<<strf_hpp#float_format,float_format>>)`
+| Set all floating-point formatting options simultaneously.
+//  It accepts only one argument, whose type can be any of those
+//  that can be returned by `get_float_format()`
+
+|`set_float_format(<<strf_hpp#default_float_format,default_float_format>>)`
+| Reset all floating-point formatting options to default.
+
+|===
+
+// end::float_format_functions[]
+
+And the following observers:
+
+[%header,cols="382,618",grid=rows]
+|===
+| Observer  | Return type
+
+| `get_float_format()`
+| `{float_format}`, `{default_float_format}` or an implementation-defined type that
+  sastisfies __<<strf_hpp#FloatFormat,FloatFormat>>__ requirements.
+|===
+
+==== Enumeration `float_notation` [[float_notation]]
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+enum class float_notation {fixed, scientific, general, hex};
+};
+----
+
+// tag::float_notation[]
+`float_notation::hex`::
+ Hexadecimal
+`float_notation::fixed`::
+If precision is not set, prints the smallest number of digits
+such that the floating-point value can be exactly recovered.
+If precision is set, it is the number of fractional digits.
+`float_notation::scientific`::
+  If precision is not set, prints the smallest number of digits
+  such that the floating-point value can be exactly recovered.
+  If precision is set, it is the number of fractional digits.
+`float_notation::general`::
+If precision is not set, chooses the notation ( scientific or fixed ) that leads
+to the smallest number or characters such that the floating-point value
+can be exactly recovered.
+    +
+If precision is set, same effect as the `'g'` format flags in `printf`
+( except that the lettercase is specified by the
+<<lettercase,lettercase>> facet ):
++
+- The precision is the number of significant digts
+- If precision is 0, it is treated as 1
+- Trailing fractional zeros are removed unless `operator*` is used.
+- Selects the scientific notation iff the resulting exponent
+  is less than -4 or greater than or equal to the precision
+
+// end::float_notation[]
+
+==== Type requirements __FloatFormat__ [[FloatFormat]]
+
+Given:
+
+* `F`, a __FloatFormat__ type
+* `f`, a value of type `F`
+
+The following must hold:
+
+* `F` is copy-constructible
+* `F` is convertible to `{float_format}`
+* `F` has public member variables below:
+
+[%header,cols="191,191,618"]
+|===
+| Member      | Type             | Semantics / effect
+| `f.precision` | `unsigned`       | Floating-point precision. When it is equal to `(unsigned)-1`, then precision is considered as not specified, which means that the number or significant digits is such that the value can be fully recovered by a parser. Otherwise, the effect depends on `notation`.
+| `f.pad0wdith` | `unsigned`       | Same as of format function `<<float_pad0,pad0>>`
+| `f.notation`  | `{float_notation}` | See enumeration `{float_notation}`
+| `f.sign`      | `showsign`       | See enumeration `{showsign}`
+| `f.showpoint` | `bool`           | Equivalent to the `'#'` format flag in printf
+| `f.punctuate` | `bool`           | Activates numeric punctuation.
+|===
+
+==== Struct template `float_format` [[float_format]]
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+enum class float_notation {fixed, scientific, general, hex};
+
+struct float_format
+{
+    unsigned precision = (unsigned)-1;
+    unsigned pad0width = 0;
+    float_notation notation = float_notation::general
+    {showsign} sign = showsign::negative_only;
+    bool showpoint = false;
+    bool showpos = false;
+};
+
+} // namespace strf
+----
+==== Struct template `default_float_format` [[default_float_format]]
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+struct default_float_format
+{
+    constexpr static unsigned precision = (unsigned)-1;
+    constexpr static unsigned pad0width = 0;
+    constexpr static {float_notation} notation = {float_notation}::general;
+    constexpr static {showsign} sign = {showsign}::negative_only;
+    constexpr static bool showpoint = false;
+    constexpr static bool punctuate = false;
+
+    constexpr operator float_format () const noexcept;
+};
+} // namespace strf
+
+----
+
+[[quantity_formatter]]
+=== _Formatter_ `quantity_formatter`
+
+The `quantity_formatter` _Formatter_ defines the following format functions:
+
+[%header,cols="382,618",grid=rows]
+|===
+| Member function | Effect
+|`multi(std::size_t count)`
+| Causes the content to be printed `count` consecutives times
+|===
+
+And the following observer:
+
+[%header,cols="382,618",grid=rows]
+|===
+| Observer  | Return type
+
+| `count()`
+| `std::size_t`
+|===
+

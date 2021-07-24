@@ -1,6 +1,7 @@
 #ifndef STRF_DETAIL_OUTPUT_TYPES_STD_STREAMBUF_HPP
 #define STRF_DETAIL_OUTPUT_TYPES_STD_STREAMBUF_HPP
 
+//  Copyright (C) (See commit logs on github.com/robhz786/strf)
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -39,7 +40,7 @@ public:
     {
         std::streamsize count = this->pointer() - buf_;
         this->set_pointer(buf_);
-        if (this->good()) {
+        STRF_IF_LIKELY (this->good()) {
             auto count_inc = dest_.sputn(buf_, count);
             count_ += count_inc;
             this->set_good(count_inc == count);
@@ -58,7 +59,8 @@ public:
         auto g = this->good();
         this->set_pointer(buf_);
         this->set_good(false);
-        if (g) {
+        STRF_IF_LIKELY (g) {
+            this->set_good(false);
             auto count_inc = dest_.sputn(buf_, count);
             count_ += count_inc;
             g = (count_inc == count);
@@ -67,6 +69,19 @@ public:
     }
 
 private:
+
+    void do_write(const CharT* str, std::size_t str_len) override
+    {
+        std::streamsize count = this->pointer() - buf_;
+        this->set_pointer(buf_);
+        STRF_IF_LIKELY (this->good()) {
+            this->set_good(false);
+            auto count_inc = dest_.sputn(buf_, count);
+            count_inc += dest_.sputn(str, str_len);
+            count_ += count_inc;
+            this->set_good(count_inc == static_cast<std::streamsize>(count + str_len));
+        }
+    }
 
     std::basic_streambuf<CharT, Traits>& dest_;
     std::streamsize count_ = 0;
@@ -114,6 +129,8 @@ private:
 
 template <typename CharT, typename Traits>
 inline auto to( std::basic_streambuf<CharT, Traits>& dest )
+    -> strf::destination_no_reserve
+        < strf::detail::basic_streambuf_writer_creator<CharT, Traits> >
 {
     return strf::destination_no_reserve
         < strf::detail::basic_streambuf_writer_creator<CharT, Traits> >
@@ -123,6 +140,8 @@ inline auto to( std::basic_streambuf<CharT, Traits>& dest )
 
 template<typename CharT, typename Traits>
 inline auto to( std::basic_streambuf<CharT, Traits>* dest )
+    -> strf::destination_no_reserve
+        < strf::detail::basic_streambuf_writer_creator<CharT, Traits> >
 {
     return strf::to(*dest);
 }

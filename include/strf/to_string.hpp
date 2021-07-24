@@ -1,6 +1,7 @@
 #ifndef STRF_DETAIL_OUTPUT_TYPES_STD_STRING_HPP
 #define STRF_DETAIL_OUTPUT_TYPES_STD_STRING_HPP
 
+//  Copyright (C) (See commit logs on github.com/robhz786/strf)
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -40,7 +41,7 @@ public:
     {
         auto * p = this->pointer();
         this->set_pointer(buf_);
-        if (this->good()) {
+        STRF_IF_LIKELY (this->good()) {
             this->set_good(false);
             str_.append(buf_, p);
             this->set_good(true);
@@ -50,13 +51,25 @@ public:
     void finish()
     {
         auto * p = this->pointer();
-        if (this->good()) {
+        STRF_IF_LIKELY (this->good()) {
             this->set_good(false);
             str_.append(buf_, p);
         }
     }
 
 private:
+
+    void do_write(const CharT* str, std::size_t str_len) override
+    {
+        auto * p = this->pointer();
+        this->set_pointer(buf_);
+        STRF_IF_LIKELY (this->good()) {
+            this->set_good(false);
+            str_.append(buf_, p);
+            str_.append(str, str_len);
+            this->set_good(true);
+        }
+    }
 
     string_type_& str_;
     static constexpr std::size_t buf_size_
@@ -86,36 +99,88 @@ public:
     basic_string_maker(const basic_string_maker&) = delete;
     basic_string_maker(basic_string_maker&&) = delete;
 
-    ~basic_string_maker() = default;
-
-    void recycle() override
+    ~basic_string_maker()
     {
-        auto * p = this->pointer();
-        this->set_pointer(buf_);
-        if (this->good()) {
-            this->set_good(false);
-            str_.append(buf_, p);
-            this->set_good(true);
+        if (string_initialized_) {
+            string_ptr()->~string_type_();
         }
     }
 
+    void recycle() override;
+
     string_type_ finish()
     {
-        auto * p = this->pointer();
-        if (this->good()) {
+        STRF_IF_LIKELY (this->good()) {
             this->set_good(false);
-            str_.append(buf_, p);
+            std::size_t count = this->pointer() - buf_;
+            STRF_IF_LIKELY ( ! string_initialized_) {
+                return {buf_, count};
+            }
+            string_ptr() -> append(buf_, count);
+            return std::move(*string_ptr());
         }
-        return std::move(str_);
+        return {};
     }
 
 private:
 
-    string_type_ str_;
-    static constexpr std::size_t buf_size_
-        = strf::min_space_after_recycle<CharT>();
+    void do_write(const CharT* str, std::size_t str_len) override;
+
+    bool string_initialized_ = false;
+
+    string_type_* string_ptr()
+    {
+        void* ptr = &string_obj_space_;
+        return reinterpret_cast<string_type_*>(ptr);
+    }
+
+    static constexpr std::size_t buf_size_ = strf::min_space_after_recycle<CharT>();
     CharT buf_[buf_size_];
+
+    using string_storage_type_ = typename std::aligned_storage
+        < sizeof(string_type_), alignof(string_type_) >
+        :: type;
+
+    string_storage_type_ string_obj_space_;
 };
+
+template < typename CharT, typename Traits, typename Allocator >
+void basic_string_maker<CharT, Traits, Allocator>::recycle()
+{
+    std::size_t count = this->pointer() - buf_;
+    this->set_pointer(buf_);
+    STRF_IF_LIKELY (this->good()) {
+        this->set_good(false); // in case the following code throws
+        if ( ! string_initialized_) {
+            new (string_ptr()) string_type_{buf_, count};
+            string_initialized_ = true;
+        } else {
+            string_ptr() -> append(buf_, count);
+        }
+        this->set_good(true);
+    }
+}
+
+template < typename CharT, typename Traits, typename Allocator >
+void basic_string_maker<CharT, Traits, Allocator>::do_write(const CharT* str, std::size_t str_len)
+{
+    STRF_IF_LIKELY (this->good()) {
+        std::size_t buf_count = this->pointer() - buf_;
+        this->set_pointer(buf_);
+        this->set_good(false); // in case the following code throws
+        if ( ! string_initialized_) {
+            new (string_ptr()) string_type_();
+            string_ptr()->reserve((buf_count + str_len) << 1);
+            string_ptr()->append(buf_, buf_count);
+            string_ptr()->append(str, str_len);
+            string_initialized_ = true;
+        } else {
+            string_ptr()->append(buf_, buf_count);
+            string_ptr()->append(str, str_len);
+        }
+        this->set_good(true);
+    }
+}
 
 template < typename CharT
          , typename Traits = std::char_traits<CharT>
@@ -127,10 +192,10 @@ public:
 
     explicit basic_sized_string_maker(std::size_t count)
         : strf::basic_outbuff<CharT>(nullptr, nullptr)
-        , str_(count, (CharT)0)
+        , str_(count ? count : 1, (CharT)0)
     {
         this->set_pointer(&*str_.begin());
-        this->set_end(&*str_.begin() + count);
+        this->set_end(&*str_.begin() + (count ? count : 1));
     }
 
     basic_sized_string_maker(const basic_sized_string_maker&) = delete;
@@ -241,47 +306,55 @@ public:
 
 template <typename CharT, typename Traits, typename Allocator>
 inline auto append(std::basic_string<CharT, Traits, Allocator>& str)
+    -> strf::destination_no_reserve
+        < strf::detail::basic_string_appender_creator<CharT, Traits, Allocator> >
 {
-    return strf::destination_calc_size
+    return strf::destination_no_reserve
         < strf::detail::basic_string_appender_creator<CharT, Traits, Allocator> >
         { str };
 }
 
 template <typename CharT, typename Traits, typename Allocator>
 inline auto assign(std::basic_string<CharT, Traits, Allocator>& str)
+    -> strf::destination_no_reserve
+        < strf::detail::basic_string_appender_creator<CharT, Traits, Allocator> >
 {
     str.clear();
     return append(str);
 }
 
+#if defined(STRF_HAS_VARIABLE_TEMPLATES)
+
 template< typename CharT
         , typename Traits = std::char_traits<CharT>
         , typename Allocator = std::allocator<CharT> >
-constexpr strf::destination_calc_size
+constexpr strf::destination_no_reserve
     < strf::detail::basic_string_maker_creator<CharT, Traits, Allocator> >
     to_basic_string{};
 
+#endif // defined(STRF_HAS_VARIABLE_TEMPLATES)
+
 #if defined(__cpp_char8_t)
 
-constexpr strf::destination_calc_size
+constexpr strf::destination_no_reserve
     < strf::detail::basic_string_maker_creator<char8_t> >
     to_u8string{};
 
 #endif
 
-constexpr strf::destination_calc_size
+constexpr strf::destination_no_reserve
     < strf::detail::basic_string_maker_creator<char> >
     to_string{};
 
-constexpr strf::destination_calc_size
+constexpr strf::destination_no_reserve
     < strf::detail::basic_string_maker_creator<char16_t> >
     to_u16string{};
 
-constexpr strf::destination_calc_size
+constexpr strf::destination_no_reserve
     < strf::detail::basic_string_maker_creator<char32_t> >
     to_u32string{};
 
-constexpr strf::destination_calc_size
+constexpr strf::destination_no_reserve
     < strf::detail::basic_string_maker_creator<wchar_t> >
     to_wstring{};
 

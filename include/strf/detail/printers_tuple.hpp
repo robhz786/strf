@@ -1,6 +1,7 @@
 #ifndef STRF_DETAIL_PRINTERS_TUPLE_HPP
 #define STRF_DETAIL_PRINTERS_TUPLE_HPP
 
+//  Copyright (C) (See commit logs on github.com/robhz786/strf)
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -23,11 +24,11 @@ struct indexed_obj
 
 struct simple_tuple_from_args {};
 
-template <typename ISeq, typename ... T>
+template <typename ISeq, typename... T>
 class simple_tuple_impl;
 
-template <std::size_t ... I, typename ... T>
-class simple_tuple_impl<std::index_sequence<I...>, T...>
+template <std::size_t... I, typename... T>
+class simple_tuple_impl<strf::detail::index_sequence<I...>, T...>
     : private indexed_obj<I, T> ...
 {
     template <std::size_t J, typename U>
@@ -35,6 +36,7 @@ class simple_tuple_impl<std::index_sequence<I...>, T...>
     {
         return r;
     }
+
 
 public:
 
@@ -46,11 +48,14 @@ public:
     {
     }
 
-    constexpr STRF_HD explicit simple_tuple_impl(const simple_tuple_impl&) = default;
-    constexpr STRF_HD explicit simple_tuple_impl(simple_tuple_impl&&) = default;
+    constexpr explicit simple_tuple_impl(const simple_tuple_impl&) = default;
+    constexpr explicit simple_tuple_impl(simple_tuple_impl&&) = default;
 
     template <std::size_t J>
-    constexpr STRF_HD const auto& get() const
+    using element_type = decltype(get_<J>(*(const simple_tuple_impl*)0).obj);
+
+    template <std::size_t J>
+    constexpr STRF_HD const element_type<J>& get() const
     {
         return get_<J>(*this).obj;
     }
@@ -59,10 +64,10 @@ public:
 template <typename ... T>
 class simple_tuple
     : public strf::detail::simple_tuple_impl
-    < std::make_index_sequence<sizeof...(T)>, T...>
+    < strf::detail::make_index_sequence<sizeof...(T)>, T...>
 {
     using strf::detail::simple_tuple_impl
-        < std::make_index_sequence<sizeof...(T)>, T...>
+        < strf::detail::make_index_sequence<sizeof...(T)>, T...>
         ::simple_tuple_impl;
 };
 
@@ -75,7 +80,8 @@ make_simple_tuple(const Args& ... args)
 }
 
 template <std::size_t J, typename ... T>
-constexpr STRF_HD const auto& get(const simple_tuple<T...>& tp)
+constexpr STRF_HD auto get(const simple_tuple<T...>& tp)
+    -> const typename simple_tuple<T...>::element_type
 {
     return tp.template get<J>();
 }
@@ -100,7 +106,7 @@ class printers_tuple_impl;
 template < typename CharT
          , std::size_t ... I
          , typename ... Printers >
-class printers_tuple_impl<CharT, std::index_sequence<I...>, Printers...>
+class printers_tuple_impl<CharT, strf::detail::index_sequence<I...>, Printers...>
     : private detail::indexed_printer<I, Printers> ...
 {
     template <std::size_t J, typename T>
@@ -125,7 +131,10 @@ public:
     }
 
     template <std::size_t J>
-    STRF_HD const auto& get() const
+    using element_type = decltype(get_<J>(*(const printers_tuple_impl*)0).printer);
+
+    template <std::size_t J>
+    STRF_HD const element_type<J>& get() const
     {
         return get_<J>(*this).printer;
     }
@@ -136,7 +145,7 @@ template<typename CharT, std::size_t ... I, typename ... Printers>
 STRF_HD void write
     ( strf::basic_outbuff<CharT>& ob
     , const strf::detail::printers_tuple_impl
-        < CharT, std::index_sequence<I...>, Printers... >& printers )
+        < CharT, strf::detail::index_sequence<I...>, Printers... >& printers )
 {
     strf::detail::write_args<CharT>
         (ob, static_cast<const strf::printer<CharT>&>(printers.template get<I>())...);
@@ -145,7 +154,7 @@ STRF_HD void write
 template <typename CharT, typename ... Printers>
 using printers_tuple = printers_tuple_impl
         < CharT
-        , std::make_index_sequence<sizeof...(Printers)>
+        , strf::detail::make_index_sequence<sizeof...(Printers)>
         , Printers... >;
 
 template < typename CharT, typename Preview, typename FPack
@@ -160,7 +169,7 @@ public:
 template < typename CharT, typename Preview, typename FPack, typename ... Args >
 using printers_tuple_from_args
 = typename printers_tuple_alias
-    < CharT, Preview, FPack, std::make_index_sequence<sizeof...(Args)>, Args ...>
+    < CharT, Preview, FPack, strf::detail::make_index_sequence<sizeof...(Args)>, Args ...>
     :: type;
 
 } // namespace detail

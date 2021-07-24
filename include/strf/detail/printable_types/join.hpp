@@ -1,11 +1,12 @@
 #ifndef STRF_JOIN_HPP
 #define STRF_JOIN_HPP
 
+//  Copyright (C) (See commit logs on github.com/robhz786/strf)
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <strf/detail/facets/char_encoding.hpp>
+#include <strf/detail/facets/charset.hpp>
 #include <strf/detail/printers_tuple.hpp>
 
 #if defined(_MSC_VER)
@@ -36,7 +37,7 @@ template< typename CharT, typename Preview, typename FPack
 class join_printer_input
 {
 public:
-    using printer_type = std::conditional_t
+    using printer_type = strf::detail::conditional_t
         < HasAlignment
         , strf::detail::aligned_join_printer<CharT, Preview, FPack, FwdArgs...>
         , strf::detail::join_printer<CharT, Preview, FPack, FwdArgs...> >;
@@ -62,7 +63,10 @@ struct join_printing
 
     template< typename CharT, typename Preview, typename FPack, bool HasAlignment >
     STRF_HD constexpr static auto make_printer_input
-        ( Preview& preview, const FPack& facets, fmt_tmpl<HasAlignment> x)
+        ( strf::tag<CharT>
+        , Preview& preview
+        , const FPack& facets
+        , fmt_tmpl<HasAlignment> x )
         -> join_printer_input
             < CharT, Preview, FPack, HasAlignment, FwdArgs... >
     {
@@ -83,7 +87,7 @@ struct aligned_join_maker
     constexpr aligned_join_maker() = default;
     constexpr aligned_join_maker(const aligned_join_maker&) = default;
 
-    constexpr aligned_join_maker
+    constexpr STRF_HD aligned_join_maker
         ( strf::width_t width_
         , strf::text_alignment align_ = strf::text_alignment::right ) noexcept
         : width(width_)
@@ -92,7 +96,7 @@ struct aligned_join_maker
     }
 
     template <typename CharT>
-    constexpr aligned_join_maker
+    constexpr STRF_HD aligned_join_maker
         ( strf::width_t width_
         , strf::text_alignment align_
         , CharT fillchar_ ) noexcept
@@ -141,17 +145,15 @@ public:
               , true, FwdArgs...>& input )
         : afmt_(input.arg.get_alignment_format())
     {
-        auto enc = get_facet_<strf::char_encoding_c<CharT>>(input.facets);
-        encode_fill_func_ = enc.encode_fill_func();
+        auto charset = use_facet_<strf::charset_c<CharT>>(input.facets);
+        encode_fill_func_ = charset.encode_fill_func();
         strf::print_preview<ReqSize, strf::preview_width::yes> preview { afmt_.width };
         new (printers_ptr_()) printers_tuple_{input.arg.value().args, preview, input.facets};
-        if (preview.remaining_width() > 0) {
-            fillcount_ = preview.remaining_width().round();
-        }
+        fillcount_ = preview.remaining_width().round();
         STRF_IF_CONSTEXPR (static_cast<bool>(ReqSize)) {
             input.preview.add_size(preview.accumulated_size());
             if (fillcount_ > 0) {
-                auto fcharsize = enc.encoded_char_size(afmt_.fill);
+                auto fcharsize = charset.encoded_char_size(afmt_.fill);
                 input.preview.add_size(fillcount_ * fcharsize);
             }
         }
@@ -167,11 +169,8 @@ public:
               , true, FwdArgs...>& input )
         : afmt_(input.arg.get_alignment_format())
     {
-        auto enc = get_facet_<strf::char_encoding_c<CharT>>(input.facets);
-        encode_fill_func_ = enc.encode_fill_func();
-        if (afmt_.width < 0) {
-            afmt_.width = 0;
-        }
+        auto charset = use_facet_<strf::charset_c<CharT>>(input.facets);
+        encode_fill_func_ = charset.encode_fill_func();
         strf::width_t wmax = afmt_.width;
         strf::width_t diff = 0;
         if (input.preview.remaining_width() > afmt_.width) {
@@ -189,7 +188,7 @@ public:
         STRF_IF_CONSTEXPR (static_cast<bool>(ReqSize)) {
             input.preview.add_size(preview.accumulated_size());
             if (fillcount_ > 0) {
-                auto fcharsize = enc.encoded_char_size(afmt_.fill);
+                auto fcharsize = charset.encoded_char_size(afmt_.fill);
                 input.preview.add_size( fillcount_ * fcharsize);
             }
         }
@@ -226,17 +225,18 @@ public:
 
 private:
 
-    using printers_tuple_storage_ = typename std::aligned_storage_t
+    using printers_tuple_storage_ = typename std::aligned_storage
 #if defined(_MSC_VER)
-    <sizeof(std::tuple<Printers...>), alignof(strf::printer<CharT>)>;
+        <sizeof(std::tuple<Printers...>), alignof(strf::printer<CharT>)>
 #else
-    <sizeof(printers_tuple_), alignof(printers_tuple_)>;
+        <sizeof(printers_tuple_), alignof(printers_tuple_)>
 #endif
+        :: type;
     printers_tuple_storage_ pool_;
     strf::alignment_format afmt_;
     strf::encode_fill_f<CharT> encode_fill_func_;
     strf::width_t width_;
-    std::int16_t fillcount_ = 0;
+    std::uint16_t fillcount_ = 0;
 
 #if defined(__GNUC__) && (__GNUC__ == 6)
 #  pragma GCC diagnostic push
@@ -256,10 +256,13 @@ private:
 #  pragma GCC diagnostic pop
 #endif
 
-    template <typename Category, typename FPack>
-    static decltype(auto) STRF_HD get_facet_(const FPack& facets)
+    template < typename Category, typename FPack
+             , typename Tag = strf::aligned_join_maker>
+    static STRF_HD
+    STRF_DECLTYPE_AUTO((strf::use_facet<Category, Tag>(std::declval<FPack>())))
+    use_facet_(const FPack& facets)
     {
-        return facets.template get_facet<Category, strf::aligned_join_maker>();
+        return facets.template use_facet<Category, Tag>();
     }
 
     STRF_HD void write_fill_(strf::basic_outbuff<CharT>& ob, int count) const

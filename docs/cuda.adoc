@@ -1,0 +1,109 @@
+////
+Copyright (C) (See commit logs on github.com/robhz786/strf)
+Distributed under the Boost Software License, Version 1.0.
+(See accompanying file LICENSE_1_0.txt or copy at
+http://www.boost.org/LICENSE_1_0.txt)
+////
+
+:cstr_writer: <<outbuff_hpp#basic_cstr_writer,cstr_writer>>
+:basic_cstr_writer: <<outbuff_hpp#basic_cstr_writer,basic_cstr_writer>>
+
+:strf-version: develop
+:strf-src-root: https://github.com/robhz786/strf/blob/{strf-version}
+
+= Using Strf on CUDA devices
+:source-highlighter: prettify
+:icons: font
+
+== Everything goes to a raw string
+
+You can use Strf on CUDA devices but there are some limitations.
+Naturally, you can't write to `FILE*` nor `std::string`,
+but you can write raw strings using `{basic_cstr_writer}`.
+So, the kernel &#x2014; the function marked with `&#95;&#95;global&#95;&#95;`
+qualifier &#x2014; receives a `char*` ( or a pointer to another character type )
+where it writes the content, which must later be transferred to the host memory
+so that the host code can do something useful with it ( like sending to `stdout` ).
+
+[source,cpp,subs=normal]
+----
+#include <strf.hpp>
+
+&#95;&#95;global&#95;&#95; void sample(char* dest, std::size_t dest_size)
+{
+    strf::{cstr_writer} writer{dest, dest_size};
+    auto print = strf::to(writer);
+
+    print("Hello World!\n");
+    print("blah blah blah", 1234, '\n');
+
+    writer.finish();
+}
+----
+
+There is a more complete example {strf-src-root}/example/cuda.cu[here].
+You can also take a look at the the unit tests that run on CUDA device
+{strf-src-root}/test/main_cuda.cu[here].
+
+== Unsupported features on CUDA devices
+
+The folowing features are not supported on device code:
+
+* destinations types
+** `to_basic_string`, `to_string`, `to_u8string`,`to_u16string`,
+   `to_u32string`, `to_wstring`
+** `to(std::basic_streambuf</{asterisk}...{asterisk}/>`
+** `to(FILE{asterisk})`
+** `wto(FILE{asterisk})`
+* `<<strf_hpp#dynamic_charset,dynamic_charset>>`
+* `<<quick_reference#lettercase,uppercase>>`, `<<quick_reference#lettercase,lowercase>>`,
+  `<<quick_reference#lettercase,mixedcase>>` ( instead, you need to type
+   `<<quick_reference#lettercase,lettercase>>::upper`,
+   `<<quick_reference#lettercase,lettercase>>::lower` and
+   `<<quick_reference#lettercase,lettercase>>::mixed` ).
+
+////
+== Dealing with limited stack memory
+
+Strf tends to use a fairly amount of stack memory, which is particularly
+limited on device code. So
+
+Avoid passing too many arguments in `strf::to(dest)(/{asterisk}arguments...{asterisk}/)`
+because that may require too much stack memory, which tends to be particularly
+limited on device code.
+
+Instead, increase the number of calls to of arguments. For example, intead of:
+
+[source,cpp]
+----
+strf::to(dest)( arg1, arg2, arg3, arg4, arg5
+              , arg6, arg7, arg8, arg9, arg10
+              , arg11, arg12, arg13, arg14, arg15
+              , arg16, arg17, arg18, arg19, arg20
+              , arg21, arg22, arg23, arg24, arg25 );
+----
+
+do:
+[source,cpp]
+----
+strf::to(dest)(arg1, arg2, arg3, arg4, arg5);
+strf::to(dest)(arg6, arg7, arg8, arg9, arg10);
+strf::to(dest)(arg11, arg12, arg13, arg14, arg15);
+strf::to(dest)(arg16, arg17, arg18, arg19, arg20);
+strf::to(dest)(arg21, arg22, arg23, arg24, arg25);
+----
+
+, or:
+
+[source,cpp]
+----
+auto print = strf::to(dest);
+
+print(arg1, arg2, arg3, arg4, arg5);
+print(arg6, arg7, arg8, arg9, arg10);
+print(arg11, arg12, arg13, arg14, arg15);
+print(arg16, arg17, arg18, arg19, arg20);
+print(arg21, arg22, arg23, arg24, arg25);
+
+----
+////

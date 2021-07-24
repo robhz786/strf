@@ -1,6 +1,7 @@
 #ifndef STRF_OUTBUFF_FUNCTIONS_HPP
 #define STRF_OUTBUFF_FUNCTIONS_HPP
 
+//  Copyright (C) (See commit logs on github.com/robhz786/strf)
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -11,8 +12,10 @@
 namespace strf {
 namespace detail {
 
-template <typename DestCharT, typename SrcCharT>
-inline STRF_HD void outbuff_interchar_copy
+template < typename DestCharT
+         , typename SrcCharT
+         , strf::detail::enable_if_t<!std::is_same<SrcCharT, DestCharT>::value, int> = 0 >
+STRF_HD void outbuff_interchar_copy
     ( strf::basic_outbuff<DestCharT>& ob, const SrcCharT* str, std::size_t len )
 {
     do {
@@ -30,58 +33,21 @@ inline STRF_HD void outbuff_interchar_copy
     } while(ob.good());
 }
 
+template < typename CharT >
+inline STRF_HD void outbuff_interchar_copy
+    ( strf::basic_outbuff<CharT>& ob, const CharT* str, std::size_t len )
+{
+    ob.write(str, len);
+}
+
 } // namespace detail
 
-template <typename CharT>
-inline STRF_HD void write
-    ( strf::basic_outbuff<CharT>& ob
-    , const CharT* str
-    , std::size_t len )
-{
-    strf::detail::outbuff_interchar_copy(ob, str, len);
-}
-
-template <typename CharT>
-inline STRF_HD void write
-    ( strf::basic_outbuff_noexcept<CharT>& ob
-    , const CharT* str
-    , std::size_t len )
-{
-    strf::detail::outbuff_interchar_copy(ob, str, len);
-}
-
-template <typename CharT>
-inline STRF_HD void write
-    ( strf::basic_outbuff<CharT>& ob
-    , const CharT* str
-    , const CharT* str_end )
-{
-    STRF_ASSERT(str_end >= str);
-    strf::detail::outbuff_interchar_copy(ob, str, str_end - str);
-}
-
-template <typename CharT>
-inline STRF_HD void write
-    ( strf::basic_outbuff_noexcept<CharT>& ob
-    , const CharT* str
-    , const CharT* str_end ) noexcept
-{
-    STRF_ASSERT(str_end >= str);
-    strf::detail::outbuff_interchar_copy(ob, str, str_end - str);
-}
 
 inline STRF_HD void write
     ( strf::basic_outbuff<char>& ob
     , const char* str )
 {
-    strf::detail::outbuff_interchar_copy(ob, str, detail::str_length(str));
-}
-
-inline STRF_HD void write
-    ( strf::basic_outbuff_noexcept<char>& ob
-    , const char* str ) noexcept
-{
-    strf::detail::outbuff_interchar_copy(ob, str, detail::str_length(str));
+    ob.write(str, detail::str_length(str));
 }
 
 namespace detail {
@@ -114,7 +80,7 @@ template <typename CharT>
 inline STRF_HD void write_fill
     ( strf::basic_outbuff<CharT>& ob, std::size_t count, CharT ch )
 {
-    if (count <= ob.space()) { // the common case
+    STRF_IF_LIKELY (count <= ob.space()) {
         strf::detail::str_fill_n<CharT>(ob.pointer(), count, ch);
         ob.advance(count);
     } else {

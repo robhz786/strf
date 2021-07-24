@@ -1,11 +1,12 @@
 #ifndef STRF_DETAIL_FACETS_WIDTH_CALCULATOR_HPP
 #define STRF_DETAIL_FACETS_WIDTH_CALCULATOR_HPP
 
+//  Copyright (C) (See commit logs on github.com/robhz786/strf)
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <strf/detail/facets/char_encoding.hpp>
+#include <strf/detail/facets/charset.hpp>
 
 namespace strf {
 
@@ -16,146 +17,130 @@ struct width_and_pos {
     std::size_t pos;
 };
 
-class fast_width final
+class fast_width_t final
 {
 public:
     using category = width_calculator_c;
 
-    template <typename CharEncoding>
-    STRF_HD strf::width_t char_width
-        ( CharEncoding
-        , typename CharEncoding::char_type ) const noexcept
+    template <typename Charset>
+    constexpr STRF_HD strf::width_t char_width
+        ( Charset
+        , typename Charset::code_unit ) const noexcept
     {
         return 1;
     }
 
-    template <typename CharEncoding>
+    template <typename Charset>
     constexpr STRF_HD strf::width_t str_width
-        ( CharEncoding
+        ( Charset
         , strf::width_t limit
-        , const typename CharEncoding::char_type*
+        , const typename Charset::code_unit*
         , std::size_t str_len
         , strf::surrogate_policy ) const noexcept
     {
-        if (str_len <= (std::size_t) limit.floor()) {
-            return static_cast<std::int16_t>(str_len);
-        }
-        return limit;
+        return ( str_len <= limit.floor()
+               ? static_cast<std::uint16_t>(str_len)
+               : limit );
     }
 
-    template <typename CharEncoding>
-    constexpr STRF_HD strf::width_and_pos str_width_and_pos
-        ( CharEncoding
+    template <typename Charset>
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD strf::width_and_pos str_width_and_pos
+        ( Charset
         , strf::width_t limit
-        , const typename CharEncoding::char_type*
+        , const typename Charset::code_unit*
         , std::size_t str_len
         , strf::surrogate_policy ) const noexcept
     {
-        if (limit > 0) {
-            const auto limit_floor = static_cast<std::size_t>(limit.floor());
-            if (str_len <= limit_floor) {
-                return { static_cast<std::int16_t>(str_len), str_len };
-            }
-            return { static_cast<std::int16_t>(limit_floor), limit_floor };
+        const auto limit_floor = static_cast<std::size_t>(limit.floor());
+        if (str_len <= limit_floor) {
+            return { static_cast<std::uint16_t>(str_len), str_len };
         }
-        return {0, 0};
+        return { static_cast<std::uint16_t>(limit_floor), limit_floor };
     }
 };
 
-class width_as_fast_u32len final
+class width_as_fast_u32len_t final
 {
 public:
     using category = width_calculator_c;
 
-    template <typename CharEncoding>
+    template <typename Charset>
     constexpr STRF_HD strf::width_t char_width
-        ( CharEncoding
-        , typename CharEncoding::char_type ) const noexcept
+        ( Charset
+        , typename Charset::code_unit ) const noexcept
     {
         return 1;
     }
 
-    template <typename CharEncoding>
-    constexpr STRF_HD strf::width_t str_width
-        ( CharEncoding enc
+    template <typename Charset>
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD strf::width_t str_width
+        ( Charset charset
         , strf::width_t limit
-        , const typename CharEncoding::char_type* str
+        , const typename Charset::code_unit* str
         , std::size_t str_len
         , strf::surrogate_policy ) const
     {
-        if (limit > 0) {
-            auto lim = limit.floor();
-            auto ret = enc.codepoints_fast_count(str, str_len, lim);
-            STRF_ASSERT((std::ptrdiff_t)ret.count <= strf::width_max.floor());
-            return static_cast<std::int16_t>(ret.count);
-        }
-        return 0;
+        auto lim = limit.floor();
+        auto ret = charset.codepoints_fast_count(str, str_len, lim);
+        STRF_ASSERT(ret.count <= strf::width_max.floor());
+        return static_cast<std::uint16_t>(ret.count);
     }
 
-    template <typename CharEncoding>
-    constexpr STRF_HD strf::width_and_pos str_width_and_pos
-        ( CharEncoding enc
+    template <typename Charset>
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD strf::width_and_pos str_width_and_pos
+        ( Charset charset
         , strf::width_t limit
-        , const typename CharEncoding::char_type* str
+        , const typename Charset::code_unit* str
         , std::size_t str_len
         , strf::surrogate_policy ) const
     {
-        if (limit > 0) {
-            std::ptrdiff_t lim = limit.floor();
-            auto res = enc.codepoints_fast_count(str, str_len, lim);
-            STRF_ASSERT((std::ptrdiff_t)res.count <= lim);
-            return { static_cast<std::int16_t>(res.count), res.pos };
-        }
-        return {0, 0};
+        auto lim = limit.floor();
+        auto res = charset.codepoints_fast_count(str, str_len, lim);
+        STRF_ASSERT(res.count <= lim);
+        return { static_cast<std::uint16_t>(res.count), res.pos };
     }
 };
 
 
-class width_as_u32len final
+class width_as_u32len_t final
 {
 public:
     using category = width_calculator_c;
 
-    template <typename CharEncoding>
+    template <typename Charset>
     constexpr STRF_HD strf::width_t char_width
-        ( CharEncoding
-        , typename CharEncoding::char_type ) const noexcept
+        ( Charset
+        , typename Charset::code_unit ) const noexcept
     {
         return 1;
     }
 
-    template <typename CharEncoding>
-    constexpr STRF_HD strf::width_t str_width
-        ( CharEncoding enc
+    template <typename Charset>
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD strf::width_t str_width
+        ( Charset charset
         , strf::width_t limit
-        , const typename CharEncoding::char_type* str
+        , const typename Charset::code_unit* str
         , std::size_t str_len
         , strf::surrogate_policy surr_poli ) const
     {
-        if (limit > 0) {
-            auto lim = limit.floor();
-            auto ret = enc.codepoints_robust_count(str, str_len, lim, surr_poli);
-            STRF_ASSERT((std::ptrdiff_t)ret.count <= strf::width_max.floor());
-            return static_cast<std::int16_t>(ret.count);
-        }
-        return 0;
+        auto lim = limit.floor();
+        auto ret = charset.codepoints_robust_count(str, str_len, lim, surr_poli);
+        STRF_ASSERT(ret.count <= strf::width_max.floor());
+        return static_cast<std::uint16_t>(ret.count);
     }
 
-    template <typename CharEncoding>
-    constexpr STRF_HD strf::width_and_pos str_width_and_pos
-        ( CharEncoding enc
+    template <typename Charset>
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD strf::width_and_pos str_width_and_pos
+        ( Charset charset
         , strf::width_t limit
-        , const typename CharEncoding::char_type* str
+        , const typename Charset::code_unit* str
         , std::size_t str_len
         , strf::surrogate_policy surr_poli ) const
     {
-        if (limit > 0) {
-            std::ptrdiff_t lim = limit.floor();
-            auto res = enc.codepoints_robust_count(str, str_len, lim, surr_poli);
-            STRF_ASSERT((std::ptrdiff_t)res.count <= lim);
-            return { static_cast<std::int16_t>(res.count), res.pos };
-        }
-        return {0, 0};
+        auto lim = limit.floor();
+        auto res = charset.codepoints_robust_count(str, str_len, lim, surr_poli);
+        STRF_ASSERT(res.count <= lim);
+        return { static_cast<std::uint16_t>(res.count), res.pos };
     }
 
 };
@@ -237,44 +222,44 @@ public:
     {
     }
 
-    template <typename CharEncoding>
+    template <typename Charset>
     strf::width_t STRF_HD char_width
-        ( CharEncoding enc
-        , typename CharEncoding::char_type ch ) const
+        ( Charset charset
+        , typename Charset::code_unit ch ) const
     {
-        return func_(enc.decode_char(ch));
+        return func_(charset.decode_unit(ch));
     }
 
-    template <typename CharEncoding>
-    constexpr STRF_HD strf::width_t str_width
-        ( CharEncoding enc
+    template <typename Charset>
+    STRF_HD strf::width_t str_width
+        ( Charset charset
         , strf::width_t limit
-        , const typename CharEncoding::char_type* str
+        , const typename Charset::code_unit* str
         , std::size_t str_len
         , strf::surrogate_policy surr_poli ) const
     {
         strf::detail::width_accumulator<CharWidthFunc> acc(limit, func_);
         strf::invalid_seq_notifier inv_seq_notifier{};
-        enc.to_u32().transcode(acc, str, str_len, inv_seq_notifier, surr_poli);
+        charset.to_u32().transcode(acc, str, str_len, inv_seq_notifier, surr_poli);
         return acc.get_result().width;
     }
 
-    template <typename CharEncoding>
-    constexpr STRF_HD strf::width_and_pos str_width_and_pos
-        ( CharEncoding enc
+    template <typename Charset>
+    STRF_HD strf::width_and_pos str_width_and_pos
+        ( Charset charset
         , strf::width_t limit
-        , const typename CharEncoding::char_type* str
+        , const typename Charset::code_unit* str
         , std::size_t str_len
         , strf::surrogate_policy surr_poli ) const
     {
         strf::detail::width_accumulator<CharWidthFunc> acc(limit, func_);
         strf::invalid_seq_notifier inv_seq_notifier{};
-        enc.to_u32().transcode(acc, str, str_len, inv_seq_notifier, surr_poli);
+        charset.to_u32().transcode(acc, str, str_len, inv_seq_notifier, surr_poli);
         auto res = acc.get_result();
         if (res.whole_string_covered) {
             return {res.width, str_len};
         }
-        auto res2 = enc.codepoints_robust_count
+        auto res2 = charset.codepoints_robust_count
             (str, str_len, res.codepoints_count, surr_poli);
         return {res.width, res2.pos};
     }
@@ -291,12 +276,19 @@ width_by_func<CharWidthFunc> STRF_HD make_width_calculator(CharWidthFunc f)
     return width_by_func<CharWidthFunc>{f};
 }
 
+#if !defined(__CUDACC__) || (__CUDA_VER_MAJOR__ >= 11 && __CUDA_VER_MINOR__ >= 3)
+
+STRF_HD constexpr fast_width_t fast_width = fast_width_t{};
+STRF_HD constexpr width_as_fast_u32len_t width_as_fast_u32len = width_as_fast_u32len_t{};
+STRF_HD constexpr width_as_u32len_t width_as_u32len = width_as_u32len_t{};
+
+#endif
 
 struct width_calculator_c
 {
     static constexpr bool constrainable = true;
 
-    static constexpr STRF_HD strf::fast_width get_default() noexcept
+    static constexpr STRF_HD strf::width_as_u32len_t get_default() noexcept
     {
         return {};
     }

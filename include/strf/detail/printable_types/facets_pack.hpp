@@ -1,6 +1,7 @@
 #ifndef STRF_DETAIL_INPUT_TYPES_FACETS_PACK_HPP
 #define STRF_DETAIL_INPUT_TYPES_FACETS_PACK_HPP
 
+//  Copyright (C) (See commit logs on github.com/robhz786/strf)
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -54,7 +55,10 @@ struct print_traits<strf::inner_pack_with_args<ChildFPack, Args...>>
 
     template < typename CharT, typename Preview, typename FPack>
     STRF_HD constexpr static auto make_printer_input
-        (Preview& preview, const FPack& fp,  const forwarded_type& x)
+        ( strf::tag<CharT>
+        , Preview& preview
+        , const FPack& fp
+        , const forwarded_type& x )
         -> strf::usual_printer_input
             < CharT, Preview, FPack, forwarded_type
             , strf::detail::facets_pack_printer
@@ -107,33 +111,6 @@ private:
     printers_;
 };
 
-template <typename ... F>
-constexpr STRF_HD bool are_constrainable_impl()
-{
-    constexpr std::size_t N = sizeof...(F);
-    constexpr bool values[N] = {strf::is_constrainable_v<F> ...};
-
-    for (std::size_t i = 0; i < N; ++i) {
-        if( ! values[i]) {
-            return false;
-        }
-    }
-    return true;
-}
-
-template <>
-constexpr STRF_HD bool are_constrainable_impl<>()
-{
-    return true;
-}
-
-template <typename ... F>
-struct all_are_constrainable
-{
-    constexpr static bool value
-        = strf::detail::are_constrainable_impl<F...>();
-};
-
 } // namespace detail
 
 template <typename ... T>
@@ -141,8 +118,7 @@ STRF_HD auto with(T&& ... args)
     -> strf::inner_pack<decltype(strf::pack(std::forward<T>(args)...))>
 {
     static_assert
-        ( strf::is_constrainable_v
-            < decltype(strf::pack(std::forward<T>(args)...)) >
+        ( strf::is_constrainable<decltype(strf::pack(std::forward<T>(args)...))>()
         , "All facet categories must be constrainable" );
     return {std::forward<T>(args)...};
 }
