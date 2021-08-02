@@ -10,17 +10,19 @@
 
 #include "../tests/test_utils.hpp" // my own test framework
 
+#if defined(__GNUC__)
+#  pragma GCC diagnostic ignored "-Warray-bounds"
+#endif
+
 namespace xxx {
 
 // -----------------------------------------------------------------------------
-// This is the type we making printable
+// This is the type we are making printable
 struct ipv6address
 {
     std::uint16_t hextets[8];
 };
 // -----------------------------------------------------------------------------
-
-
 
 // This class evaluates the visibility of each hextet and colon. Implementation
 // is left at the end of this file, since it's the focus of this example.
