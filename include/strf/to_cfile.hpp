@@ -11,56 +11,115 @@
 #include <cstring>
 #include <cwchar>
 
+#if defined(__GNUC__) && (__GNUC__ >= 11)
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
+
 namespace strf {
 
-template <typename CharT, std::size_t BuffSize>
-class narrow_cfile_writer final: public strf::basic_outbuff<CharT>
+namespace detail {
+
+template <typename CharT>
+class narrow_cfile_writer_traits {
+public:
+    narrow_cfile_writer_traits() = delete;
+    narrow_cfile_writer_traits(const narrow_cfile_writer_traits&) = default;
+
+    STRF_HD narrow_cfile_writer_traits(FILE* file)
+        : file_(file)
+    {
+    }
+
+    STRF_HD std::size_t write(const CharT* ptr, std::size_t count) const noexcept {
+        return std::fwrite(ptr, sizeof(CharT), count, file_);
+    }
+
+private:
+    FILE* file_;
+};
+
+class wide_cfile_writer_traits {
+public:
+    wide_cfile_writer_traits() = delete;
+    wide_cfile_writer_traits(const wide_cfile_writer_traits&) = default;
+
+    STRF_HD wide_cfile_writer_traits(FILE* file)
+        : file_(file)
+    {
+    }
+
+    STRF_HD std::size_t write(const wchar_t* ptr, std::size_t count) const noexcept {
+        std::size_t successful_count = 0;
+        for (; successful_count < count; ++successful_count) {
+            if (std::fputwc(*ptr, file_) == WEOF) {
+                break;
+            }
+            ++ptr;
+        }
+        return successful_count;
+    }
+
+private:
+    FILE* file_;
+};
+
+struct cfile_writer_result {
+    std::size_t count;
+    bool success;
+};
+
+// The purpose of the Traits template parameter is to enable the
+// unit tests to simulate unsuccessful writings.
+// Also, to reduce the number of warning messages emitted by
+// nvcc ( CUDA compiler ) because of a __host__ __device__ functions
+// ( recycle and do_write ) calling a __host__ function ( fwrite )
+template <typename CharT, typename Traits>
+class cfile_writer_base
+    : public strf::basic_outbuff<CharT>
 {
-    static_assert(BuffSize >= strf::min_space_after_recycle<CharT>(), "BuffSize too small");
+    static_assert(noexcept(std::declval<Traits>().write(nullptr, 0)), "");
 
 public:
 
-    explicit STRF_HD narrow_cfile_writer(std::FILE* d)
-        : strf::basic_outbuff<CharT>(buf_, BuffSize)
-        , dest_(d)
-    {
-        STRF_ASSERT(d != nullptr);
-    }
-
-    STRF_HD narrow_cfile_writer() = delete;
-
-    narrow_cfile_writer(const narrow_cfile_writer&) = delete;
-    narrow_cfile_writer(narrow_cfile_writer&&) = delete;
-
-    STRF_HD ~narrow_cfile_writer()
+    template <typename... TraitsInitArgs>
+    STRF_HD cfile_writer_base
+        ( CharT* buff
+        , std::size_t buff_size
+        , TraitsInitArgs&&... args)
+        : strf::basic_outbuff<CharT>(buff, buff_size)
+        , buff_(buff)
+        , traits_(std::forward<TraitsInitArgs>(args)...)
     {
     }
 
-    STRF_HD void recycle() noexcept override
-    {
-        auto p = this->pointer();
-        this->set_pointer(buf_);
-        STRF_IF_LIKELY (this->good()) {
-            std::size_t count = p - buf_;
-            auto count_inc = std::fwrite(buf_, sizeof(CharT), count, dest_);
-            count_ += count_inc;
-            this->set_good(count == count_inc);
+    STRF_HD ~cfile_writer_base() {
+        if (this->good()) {
+            std::size_t count = this->pointer() - buff_;
+            traits_.write(buff_, count);
         }
     }
 
-    struct result
-    {
-        std::size_t count;
-        bool success;
-    };
+    STRF_HD void recycle() noexcept override {
+        auto p = this->pointer();
+        this->set_pointer(buff_);
+        STRF_IF_LIKELY (this->good()) {
+            std::size_t count = p - buff_;
+            auto count_inc = traits_.write(buff_, count);
+            count_ += count_inc;
+            bool success = count_inc == count;
+            this->set_good(success);
+        }
+    }
 
-    STRF_HD result finish()
-    {
+    using result = strf::detail::cfile_writer_result;
+
+    STRF_HD result finish() {
         bool g = this->good();
         this->set_good(false);
         STRF_IF_LIKELY (g) {
-            std::size_t count = this->pointer() - buf_;
-            auto count_inc = std::fwrite(buf_, sizeof(CharT), count, dest_);
+            std::size_t count = this->pointer() - buff_;
+            auto count_inc = traits_.write(buff_, count);
             count_ += count_inc;
             g = (count == count_inc);
         }
@@ -69,103 +128,87 @@ public:
 
 private:
 
-    STRF_HD void do_write(const CharT* str, std::size_t str_len) noexcept override
-    {
-#if defined(__GNUC__) && (__GNUC__ >= 11)
-#  pragma GCC diagnostic push
-#  pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-#endif
+    STRF_HD void do_write(const CharT* str, std::size_t str_len) noexcept override {
         auto p = this->pointer();
-        this->set_pointer(buf_);
+        this->set_pointer(buff_);
         STRF_IF_LIKELY (this->good()) {
-            std::size_t count = p - buf_;
-            auto count_inc = std::fwrite(buf_, sizeof(CharT), count, dest_);
-            count_inc += std::fwrite(str, sizeof(CharT), str_len, dest_);
+            std::size_t count = p - buff_;
+            auto count_inc = traits_.write(buff_, count);
+            if (count_inc == count) {
+                count_inc += traits_.write(str, str_len);
+            }
             count_ += count_inc;
             this->set_good(count_inc == count + str_len);
         }
-
-#if defined(__GNUC__) && (__GNUC__ >= 11)
-#  pragma GCC diagnostic pop
-#endif
     }
 
-    std::FILE* dest_;
+
     std::size_t count_ = 0;
-    CharT buf_[BuffSize];
+    CharT* const buff_;
+    Traits traits_;
 };
 
-class wide_cfile_writer final: public strf::basic_outbuff<wchar_t>
+} // namespace detail
+
+template <typename CharT, std::size_t BuffSize>
+class narrow_cfile_writer final
+    : public strf::detail::cfile_writer_base
+        < CharT, strf::detail::narrow_cfile_writer_traits<CharT> >
 {
+    static_assert(BuffSize >= strf::min_space_after_recycle<CharT>(), "BuffSize too small");
+
+    using impl_ = strf::detail::cfile_writer_base
+        < CharT, strf::detail::narrow_cfile_writer_traits<CharT> >;
 public:
 
-    STRF_HD explicit wide_cfile_writer(std::FILE* d)
-        : strf::basic_outbuff<wchar_t>(buf_, buf_size_)
-        , dest_(d)
+    explicit STRF_HD narrow_cfile_writer(std::FILE* file)
+        : impl_(buf_, BuffSize, file)
     {
-        STRF_ASSERT(d != nullptr);
+        STRF_ASSERT(file != nullptr);
     }
 
-    wide_cfile_writer() = delete;
-    wide_cfile_writer(const wide_cfile_writer&) = delete;
-    wide_cfile_writer(wide_cfile_writer&&) = delete;
+    STRF_HD narrow_cfile_writer() = delete;
 
-    STRF_HD ~wide_cfile_writer()
-    {
-    }
+    narrow_cfile_writer(const narrow_cfile_writer&) = delete;
+    narrow_cfile_writer(narrow_cfile_writer&&) = delete;
 
-    STRF_HD void recycle() noexcept override
-    {
-        auto p = this->pointer();
-        this->set_pointer(buf_);
-        STRF_IF_LIKELY (this->good()) {
-            for (auto it = buf_; it != p; ++it, ++count_) {
-                STRF_IF_UNLIKELY (std::fputwc(*it, dest_) == WEOF) {
-                    this->set_good(false);
-                    break;
-                }
-            }
-        }
-    }
+    ~narrow_cfile_writer() = default;
 
-    struct result
-    {
-        std::size_t count;
-        bool success;
-    };
-
-    STRF_HD result finish()
-    {
-        recycle();
-        auto g = this->good();
-        this->set_good(false);
-        return {count_, g};
-    }
+    using result = typename impl_::result;
+    using impl_::recycle;
+    using impl_::finish;
 
 private:
 
-    STRF_HD void do_write(const wchar_t* str, std::size_t str_len) noexcept override
+    CharT buf_[BuffSize];
+};
+
+class wide_cfile_writer final
+    : public strf::detail::cfile_writer_base
+        < wchar_t, strf::detail::wide_cfile_writer_traits >
+{
+    using impl_ = strf::detail::cfile_writer_base
+        < wchar_t, strf::detail::wide_cfile_writer_traits >;
+public:
+
+    explicit STRF_HD wide_cfile_writer(std::FILE* file)
+        : impl_(buf_, buf_size_, file)
     {
-        auto p = this->pointer();
-        this->set_pointer(buf_);
-        STRF_IF_LIKELY (this->good()) {
-            for (auto it = buf_; it != p; ++it, ++count_) {
-                STRF_IF_UNLIKELY (std::fputwc(*it, dest_) == WEOF) {
-                    this->set_good(false);
-                    return;
-                }
-            }
-            for (; str_len != 0; ++str, --str_len, ++count_) {
-                STRF_IF_UNLIKELY (std::fputwc(*str, dest_) == WEOF) {
-                    this->set_good(false);
-                    return;
-                }
-            }
-        }
+        STRF_ASSERT(file != nullptr);
     }
 
-    std::FILE* dest_;
-    std::size_t count_ = 0;
+    STRF_HD wide_cfile_writer() = delete;
+
+    wide_cfile_writer(const wide_cfile_writer&) = delete;
+    wide_cfile_writer(wide_cfile_writer&&) = delete;
+
+    ~wide_cfile_writer() = default;
+
+    using result = typename impl_::result;
+    using impl_::recycle;
+    using impl_::finish;
+
+private:
     static constexpr std::size_t buf_size_ = strf::min_space_after_recycle<wchar_t>();
     wchar_t buf_[buf_size_];
 };
@@ -185,8 +228,7 @@ public:
         : file_(file)
     {}
 
-    constexpr narrow_cfile_writer_creator
-        (const narrow_cfile_writer_creator&) = default;
+    constexpr narrow_cfile_writer_creator(const narrow_cfile_writer_creator&) = default;
 
     STRF_HD FILE* create() const
     {
@@ -241,8 +283,11 @@ STRF_HD inline auto wto(std::FILE* destination)
         (destination);
 }
 
-
 } // namespace strf
+
+#if defined(__GNUC__) && (__GNUC__ >= 11)
+#  pragma GCC diagnostic pop
+#endif
 
 #endif  // STRF_DETAIL_OUTPUT_TYPES_FILE_HPP
 

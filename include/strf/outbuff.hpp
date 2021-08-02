@@ -12,6 +12,11 @@
 #    include <cstring>
 #endif
 
+#if defined(__GNUC__)
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Warray-bounds"
+#endif
+
 namespace strf {
 namespace detail {
 class outbuff_test_tool;
@@ -293,6 +298,7 @@ public:
 
 private:
 
+
     STRF_HD void do_write(const CharT* str, std::size_t) noexcept override
     {
         auto sub_count = this->space();
@@ -312,7 +318,6 @@ private:
 
     CharT* it_ = nullptr;
 };
-
 
 #if defined(__cpp_char8_t)
 using u8cstr_writer = basic_cstr_writer<char8_t>;
@@ -462,6 +467,11 @@ private:
 };
 
 } // namespace strf
+
+#if defined(__GNUC__)
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Warray-bounds"
+#endif
 
 #endif  // STRF_OUTBUFF_HPP_INCLUDED
 
