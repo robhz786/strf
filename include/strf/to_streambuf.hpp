@@ -32,12 +32,19 @@ public:
     basic_streambuf_writer(const basic_streambuf_writer&) = delete;
     basic_streambuf_writer(basic_streambuf_writer&&) = delete;
 
-    ~basic_streambuf_writer()
-    {
+    ~basic_streambuf_writer() {
+        if (this->good()) {
+            std::streamsize count = this->pointer() - buf_;
+
+#if defined __cpp_exceptions
+            try { dest_.sputn(buf_, count); } catch(...) {};
+#else
+            dest_.sputn(buf_, count);
+#endif
+        }
     }
 
-    void recycle() override
-    {
+    void recycle() override {
         std::streamsize count = this->pointer() - buf_;
         this->set_pointer(buf_);
         STRF_IF_LIKELY (this->good()) {
@@ -47,14 +54,12 @@ public:
         }
     }
 
-    struct result
-    {
+    struct result {
         std::streamsize count;
         bool success;
     };
 
-    result finish()
-    {
+    result finish() {
         std::streamsize count = this->pointer() - buf_;
         auto g = this->good();
         this->set_pointer(buf_);
@@ -70,8 +75,7 @@ public:
 
 private:
 
-    void do_write(const CharT* str, std::size_t str_len) override
-    {
+    void do_write(const CharT* str, std::size_t str_len) override {
         std::streamsize count = this->pointer() - buf_;
         this->set_pointer(buf_);
         STRF_IF_LIKELY (this->good()) {

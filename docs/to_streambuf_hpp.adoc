@@ -60,9 +60,9 @@ class basic_streambuf_writer final: public basic_outbuff<CharT> {
 public:
     explicit basic_streambuf_writer(std::basic_streambuf<CharT, Traits>& dest);
     explicit basic_streambuf_writer(std::basic_streambuf<CharT, Traits>* dest);
-
     basic_streambuf_writer(const basic_streambuf_writer&) = delete;
     basic_streambuf_writer(basic_streambuf_writer&&) = delete;
+    ~basic_streambuf_writer();
 
     void recycle() override;
     struct result {
@@ -83,6 +83,15 @@ using wstreambuf_writer
 } // namespace strf
 ----
 === Public member functions
+
+====
+[source,cpp]
+----
+~basic_streambuf_writer();
+----
+[horizontal]
+Effect:: Calls `recycle()`
+====
 
 ====
 [source,cpp]
