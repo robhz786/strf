@@ -40,6 +40,7 @@ set(sources_freestanding
   utf32_to_utf16.cpp
   utf32.cpp
   width_calculator.cpp
+  std_width_calculator.cpp
   width_t.cpp
 )
 
@@ -170,6 +171,7 @@ if (${STRF_CUDA_SUPPORT})
   define_strf_cuda_test(utf32_to_utf16)
   define_strf_cuda_test(utf32)
   define_strf_cuda_test(width_calculator)
+  define_strf_cuda_test(std_width_calculator)
   define_strf_cuda_test(width_t)
 
 endif (${STRF_CUDA_SUPPORT})

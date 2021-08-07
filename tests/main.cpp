@@ -47,6 +47,7 @@ void test_facets_pack();
 void test_reserve();
 void test_width_t();
 void test_width_calculator();
+void test_std_width_calculator();
 void test_utf8_to_utf16();
 void test_utf8_to_utf32();
 void test_utf8();
@@ -113,6 +114,7 @@ int main() {
     test_utf32();
 
     test_width_calculator();
+    test_std_width_calculator();
     test_width_t();
 
     int err_count = test_utils::test_err_count();
