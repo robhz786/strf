@@ -304,7 +304,7 @@ STRF_FUNC_IMPL STRF_HD std_width_calc_func_return std_width_calc_func
     , unsigned state
     , bool return_pos ) noexcept
 {
-    // see https://unicode.org/reports/tr29/#Grapheme_Cluster_Boundaries
+    // following http://www.unicode.org/reports/tr29/tr29-37.html#Grapheme_Cluster_Boundaries
 
     using namespace strf::width_literal;
 
@@ -370,7 +370,7 @@ STRF_FUNC_IMPL STRF_HD std_width_calc_func_return std_width_calc_func
         goto handle_control;
     }
 
-#include <strf/detail/facets/std_width_tree>
+#include <strf/detail/ch32_width_and_gcb_prop>
 
     handle_zwj:
     if (state == after_xpic) {
