@@ -4,22 +4,46 @@
 // http://www.unicode.org/reports/tr29/tr29-37.html
 // https://unicode-org.github.io/icu-docs/apidoc/dev/icu4c/uchar_8h.html
 
+const char* to_str(UGraphemeClusterBreak cat) {
+    switch(cat) {
+        case U_GCB_OTHER: return "OTHER";
+        case U_GCB_CONTROL: return "CONTROL";
+        case U_GCB_CR: return "CR";
+        case U_GCB_LF: return "LF";
+        case U_GCB_EXTEND: return "EXTEND";
+        case U_GCB_L: return "L";
+        case U_GCB_LV: return "LV";
+        case U_GCB_LVT: return "LVT";
+        case U_GCB_T: return "T";
+        case U_GCB_V: return "V";
+        case U_GCB_SPACING_MARK: return "SPACING_MARK";
+        case U_GCB_PREPEND: return "PREPEND";
+        case U_GCB_REGIONAL_INDICATOR: return "REGIONAL_INDICATOR";
+        case U_GCB_E_BASE: return "E_BASE";
+        case U_GCB_E_BASE_GAZ: return "E_BASE_GAZ";
+        case U_GCB_E_MODIFIER: return "E_MODIFIER";
+        case U_GCB_GLUE_AFTER_ZWJ: return "GLUE_AFTER_ZWJ";
+        case U_GCB_ZWJ: return "ZWJ";
+        default: return "IVALID";
+    }
+}
+
 enum class category {
-    other,
-    extend,
-    control,
-    cr,
-    lf,
-    spacing_mark,
-    prepend,
-    hangul_l,
-    hangul_v,
-    hangul_t,
-    hangul_lv,
-    hangul_lvt,
-    regional_indicator,
+    other = U_GCB_OTHER,
+    extend = U_GCB_EXTEND,
+    control = U_GCB_CONTROL,
+    cr = U_GCB_CR,
+    lf = U_GCB_LF,
+    spacing_mark = U_GCB_SPACING_MARK,
+    prepend = U_GCB_PREPEND,
+    hangul_l = U_GCB_L,
+    hangul_v = U_GCB_V,
+    hangul_t = U_GCB_T,
+    hangul_lv = U_GCB_LV,
+    hangul_lvt = U_GCB_LVT,
+    regional_indicator = U_GCB_REGIONAL_INDICATOR,
+    zwj = U_GCB_ZWJ,
     extended_picto,
-    zwj,
 };
 
 const char* to_str(category cat) {
@@ -44,108 +68,18 @@ const char* to_str(category cat) {
     return "INVALID_CATEGORY";
 }
 
-inline bool is_zwj(UChar32 ch) {
-    return ch == 0x200D;
-}
-
-inline bool is_extend(UChar32 ch) {
-    return u_getIntPropertyValue(ch, UCHAR_GRAPHEME_EXTEND)
-        || u_getIntPropertyValue(ch, UCHAR_EMOJI_MODIFIER);
-}
-
-inline bool is_extended_picto(UChar32 ch) {
-    return u_getIntPropertyValue(ch, UCHAR_EXTENDED_PICTOGRAPHIC);
-}
-
-inline bool is_regional_indicator(UChar32 ch) {
-    return u_getIntPropertyValue(ch, UCHAR_REGIONAL_INDICATOR);
-}
-
-bool is_spacing_mark(UChar32 ch) {
-    auto gra_clu_brk = static_cast<UGraphemeClusterBreak>
-        ( u_getIntPropertyValue(ch, UCHAR_GRAPHEME_CLUSTER_BREAK) );
-
-    if (gra_clu_brk != U_GCB_EXTEND) {
-
-        if (ch == 0x0E33 || ch == 0x0EB3) {
-            return true;
-        }
-        auto gencat = static_cast<UCharCategory>
-            (u_getIntPropertyValue(ch, UCHAR_GENERAL_CATEGORY));
-
-        if ( gencat == U_COMBINING_SPACING_MARK
-          && ch != 0x102B
-          && ch != 0x102C
-          && ch != 0x1038
-          && ! (0x1062 <= ch && ch <= 0x1064)
-          && ! (0x1067 <= ch && ch <= 0x106D)
-          && ch != 0x1083
-          && ! (0x1087 <= ch && ch <= 0x108C)
-          && ch != 0x108F
-          && ! (0x109A <= ch && ch <= 0x109C)
-          && ch != 0x1A61
-          && ch != 0x1A63
-          && ch != 0x1A64
-          && ch != 0xAA7B
-          && ch != 0xAA7D
-          && ch != 0x11720
-          && ch != 0x11721 )
-        {
-            return true;
-        }
-    }
-    return false;
-}
-
-bool is_prepend(UChar32 ch) {
-    if (u_getIntPropertyValue(ch, UCHAR_PREPENDED_CONCATENATION_MARK))
-        return true;
-
-    auto insc = static_cast<UIndicSyllabicCategory>
-        (u_getIntPropertyValue(ch, UCHAR_INDIC_SYLLABIC_CATEGORY));
-
-    return insc == U_INSC_CONSONANT_PRECEDING_REPHA
-        || insc == U_INSC_CONSONANT_PREFIXED;
-}
-
-bool is_hangul(UChar32 ch) {
-    auto hst = static_cast<UHangulSyllableType>
-        (u_getIntPropertyValue(ch, UCHAR_HANGUL_SYLLABLE_TYPE));
-
-    return ( hst == U_HST_LEADING_JAMO
-          || hst == U_HST_VOWEL_JAMO
-          || hst == U_HST_TRAILING_JAMO
-          || hst == U_HST_LV_SYLLABLE
-          || hst == U_HST_LVT_SYLLABLE );
-}
-
-bool is_control(UChar32 ch) {
-    if (ch == 0x200C || ch == 0x200D) {
-        return false;
-    }
-    if (u_getIntPropertyValue(ch, UCHAR_PREPENDED_CONCATENATION_MARK)) {
-        return false;
-    }
-    auto gencat = static_cast<UCharCategory>(u_getIntPropertyValue(ch, UCHAR_GENERAL_CATEGORY));
-
-    return gencat == U_LINE_SEPARATOR || gencat == U_PARAGRAPH_SEPARATOR
-        || gencat == U_CONTROL_CHAR   || gencat == U_FORMAT_CHAR
-        || ( gencat == U_UNASSIGNED
-          && u_getIntPropertyValue(ch, UCHAR_DEFAULT_IGNORABLE_CODE_POINT));
-}
-
 bool is_fullwidth(UChar32 ch) {
     // according to http://eel.is/c++draft/format.string.std#11
-    return (0x1100 <= ch && ch <= 0x115F)
-        || (0x2329 <= ch && ch <= 0x232A)
-        || (0x2E80 <= ch && ch <= 0x303E)
-        || (0x3040 <= ch && ch <= 0xA4CF)
-        || (0xAC00 <= ch && ch <= 0xD7A3)
-        || (0xF900 <= ch && ch <= 0xFAFF)
-        || (0xFE10 <= ch && ch <= 0xFE19)
-        || (0xFE30 <= ch && ch <= 0xFE6F)
-        || (0xFF00 <= ch && ch <= 0xFF60)
-        || (0xFFE0 <= ch && ch <= 0xFFE6)
+    return  (0x1100 <= ch && ch <= 0x115F)
+        ||  (0x2329 <= ch && ch <= 0x232A)
+        ||  (0x2E80 <= ch && ch <= 0x303E)
+        ||  (0x3040 <= ch && ch <= 0xA4CF)
+        ||  (0xAC00 <= ch && ch <= 0xD7A3)
+        ||  (0xF900 <= ch && ch <= 0xFAFF)
+        ||  (0xFE10 <= ch && ch <= 0xFE19)
+        ||  (0xFE30 <= ch && ch <= 0xFE6F)
+        ||  (0xFF00 <= ch && ch <= 0xFF60)
+        ||  (0xFFE0 <= ch && ch <= 0xFFE6)
         || (0x1F300 <= ch && ch <= 0x1F64F)
         || (0x1F900 <= ch && ch <= 0x1F9FF)
         || (0x20000 <= ch && ch <= 0x2FFFD)
@@ -153,54 +87,15 @@ bool is_fullwidth(UChar32 ch) {
 }
 
 category category_according_to_icu(UChar32 ch) {
-    int is_control = ::is_control(ch);
-    int is_extend = ::is_extend(ch);
 
-    if (ch == 0x000D) {
-        return category::cr;
-    }
-    if (ch == 0x000A) {
-        return category::lf;
-    }
-    if (is_zwj(ch)) {
-        return category::zwj;
-    }
-    if (is_spacing_mark(ch)) {
-        return category::spacing_mark;
-    }
-    if (is_regional_indicator(ch)) {
-        return category::regional_indicator;
-    }
-    if (is_extended_picto(ch)) {
+    if (u_getIntPropertyValue(ch, UCHAR_EXTENDED_PICTOGRAPHIC)) {
         return category::extended_picto;
     }
-    if (is_prepend(ch)) {
-        return category::prepend;
+    if (ch == 0x11720 || ch == 0x11721) {
+        return category::other;
     }
-    auto hst = static_cast<UHangulSyllableType>
-        (u_getIntPropertyValue(ch, UCHAR_HANGUL_SYLLABLE_TYPE));
-    if (hst == U_HST_LEADING_JAMO) {
-        return category::hangul_l;
-    }
-    if (hst == U_HST_VOWEL_JAMO) {
-        return category::hangul_v;
-    }
-    if (hst == U_HST_TRAILING_JAMO) {
-        return category::hangul_t;
-    }
-    if (hst == U_HST_LV_SYLLABLE) {
-        return category::hangul_lv;
-    }
-    if (hst == U_HST_LVT_SYLLABLE) {
-        return category::hangul_lvt;
-    }
-    if (is_extend) {
-        return category::extend;
-    }
-    if (is_control) {
-        return category::control;
-    }
-    return category::other;
+    auto gcb = u_getIntPropertyValue(ch, UCHAR_GRAPHEME_CLUSTER_BREAK);
+    return static_cast<category>(gcb);
 }
 
 struct codepoint_properties {

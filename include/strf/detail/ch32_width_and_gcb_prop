@@ -2660,14 +2660,12 @@
                                     } else {                // 1F1AD .. 1F1E5
                                         goto handle_extended_picto;
                                     }
-                                } else {                    // 1F1E6 .. 1F20F
-                                    if (ch <= 0x1F200) {    // 1F1E6 .. 1F200
-                                        if (ch == 0x1F200)
-                                            goto handle_other;
-                                        goto handle_regional_indicator;
-                                    } else {                // 1F201 .. 1F20F
-                                        goto handle_extended_picto;
-                                    }
+                                } else if (ch <= 0x1F1FF) { // 1F1E6 .. 1F1FF
+                                    goto handle_regional_indicator;
+                                } else if (ch == 0x1F200) {
+                                    goto handle_other;
+                                } else  {                   // 1F201 .. 1F20F
+                                    goto handle_extended_picto;
                                 }
                             } else {                        // 1F210 .. 1F3FA
                                 if (ch <= 0x1F23F) {        // 1F210 .. 1F23F
