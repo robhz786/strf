@@ -517,6 +517,11 @@ STRF_HD std_width_calc_func_return std_width_calc_func
 
 #endif // ! defined(STRF_OMIT_IMPL)
 
+#if defined(__GNUC__) && (__GNUC__ >= 11)
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
+
 class std_width_decrementer: public strf::basic_outbuff<char32_t> {
 public:
     STRF_HD std_width_decrementer (strf::width_t initial_width)
@@ -665,7 +670,7 @@ public:
         ( Charset charset
         , typename Charset::code_unit ch )
     {
-        return char32_width(charset.encode_char(ch));
+        return char32_width(charset.decode_unit(ch));
     }
 
     template <typename Charset>
@@ -705,6 +710,9 @@ public:
     }
 };
 
+#if defined(__GNUC__) && (__GNUC__ >= 11)
+#  pragma GCC diagnostic pop
+#endif
 
 #if !defined(__CUDACC__) || (__CUDA_VER_MAJOR__ >= 11 && __CUDA_VER_MINOR__ >= 3)
 
@@ -719,7 +727,7 @@ struct width_calculator_c
 {
     static constexpr bool constrainable = true;
 
-    static constexpr STRF_HD strf::width_as_u32len_t get_default() noexcept
+    static constexpr STRF_HD strf::std_width_calc_t get_default() noexcept
     {
         return {};
     }

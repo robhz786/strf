@@ -218,12 +218,17 @@ are actually expected to be narrower.
 The C{plus}{plus} Standard mandates `std::format` to
 take the width of each grapheme cluster from its leading codepoint,
 which is `1` or `2` according to a certain table.footnote:[{std_width}].
-In strf, this behaviour is implemented in the `strf::std_width_calc` facet.
-But the default <<quick_reference#width_calculator,width calculation facet>>
-just count the number of codepoints, since this is way faster.
+In strf, this behaviour is implemented in the `strf::std_width_calc`,
+which is the default <<quick_reference#width_calculator,width calculation facet>>.
 
-So one advatange of Strf is that the width calculation is customizable:
-you can choose a less accurate but faster algorithm if you want.
+// The width calculation in the lastest version of {fmt} (8.0.1) doesn't
+// take into account grapheme clustering yet, but it takes into account
+// the codepoints width double width.
+
+However there is obviouly a performance price for such accuracy.
+And that's the advatange of Strf: width calculation is customizable.
+You can choose a less accurate but faster algorithm if you want.
+
 // Or, if know have extra information about how the text will be rendered
 // ( like the font or the laguage ), you can implement your one
 // width calculation facet with a lailored algorithm.
