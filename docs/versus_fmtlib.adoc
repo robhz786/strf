@@ -201,21 +201,32 @@ fmt::print(stdout, "{}\n", sqrtl(2.0)); // prints 1.41421
 
 :std_width: pass:n[http://eel.is/c++draft/format.string.std#11]
 
-The C{plus}{plus} Standard specifies that to calculate the width of a string,
-`std::format` shall identify each grapheme cluster in it and
-assume its width is equal to the width of its leading codepoint,
-which in turn is equal to `1` or `2`, according to a certain
-table.footnote:[{std_width}]
+When alignment formatting is applied over a input string,
+the formatting library needs to estimate how wide that string is
+to determine how many fill characters shall be printed.
 
-Strf is expected to implement that behaviour in version 0.16, and
-I think {fmt} will problably do it even earlier.
-Currently, the best that Strf does is to count the total
-number of codepoints, while {fmt} is a step ahead and
-take into account the width of each individual codepoint.
+In old formatting libraries like printf such witdh is simply
+assumed to be equal to its size. This is certainly not
+accurate if the string is enconded in UTF-8 or UTF-16, were multiple
+code units can represent a single codepoint and
+multiple codepoints can represent a single grapheme cluster.
+In addition, some codepoints are expected to have
+the double of the regular width, while
+https://en.wikipedia.org/wiki/Whitespace_character#Unicode[some others]
+are actually expected to be narrower.
 
-However, one advatange of Strf is that the width calculation is
-<<quick_reference#width_calculator,customizable>>: you can choose
-a less accurate but faster algorithm if you want.
+The C{plus}{plus} Standard mandates `std::format` to
+take the width of each grapheme cluster from its leading codepoint,
+which is `1` or `2` according to a certain table.footnote:[{std_width}].
+In strf, this behaviour is implemented in the `strf::std_width_calc` facet.
+But the default <<quick_reference#width_calculator,width calculation facet>>
+just count the number of codepoints, since this is way faster.
+
+So one advatange of Strf is that the width calculation is customizable:
+you can choose a less accurate but faster algorithm if you want.
+// Or, if know have extra information about how the text will be rendered
+// ( like the font or the laguage ), you can implement your one
+// width calculation facet with a lailored algorithm.
 
 == Extensibility
 
