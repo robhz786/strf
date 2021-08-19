@@ -197,16 +197,78 @@ fmt::print(stdout, "{}\n", sqrt(2.0));  // prints 1.4142135623730951 (ok)
 fmt::print(stdout, "{}\n", sqrtl(2.0)); // prints 1.41421
 ----
 
+== Numeric punctuation
+
+{fmt}'s and strf's ways of applying punctuation to integer and
+floating-point arguments are analogous.
+
+In {fmt}, you pass a `std::locale` object as an argument,
+before the format string, then use the `'L'` format flag
+for those arguments that shall conform to the `std::numpunct`
+facet installed in that `std::locale` object.
+
+In strf, you pass a `strf::numpunct` object to
+the `with` function, and apply the `punct` or `operator!`
+format function in those arguments you want to be
+punctuated.
+
+So the basic difference is that while {fmt} uses `std::locale`
+and `std::numpunct`, Strf has its own facets arquitecture.
+The rationale and advantages for this are explained in
+<<why_not_std_locale#,another article>>.
+
+== Multilingual support
+
+Strf has some extra advantages over {fmt} when developing an application
+that needs to provides multilingual support:
+
+Less translations errors::
+Since the programmer is commonly not same person who translates
+the messages and messages can be ambiguous, translation mistakes can happen.
+So, Strf allows you to add comments in the {tr-string} to prevent
+misinterpretations.
+
+Less syntax errors::
+The syntax of {tr-string} is less error-prone than the {fmt}'s format string.
+It is true that {fmt} can detect syntax error at compile-time with
+`FMT_STRING` or `FMT_COMPILE`, but it is very difficult ( if not impossible )
+to use such macros in multilingual programs, since the format
+strings are then likely to be evaluated at run-time.
+
+Reusability::
+In Strf, translation is decoupled from formatting.
+You can use the same tr-string multiple times with
+different format options.
+You can also joins or other "special" input types to
+reuse a tr-string:
++
+[source,cpp]
+----
+// returns "Failed to connect to server {}" translated to some language
+const char* tr_failed_to_connect_to_server_X();
+
+// ...
+strf::to(dest).tr(tr_failed_to_connect_to_server_X(), "some_server_name.com");
+
+// Now passing an ip address.
+// No need to create a new tr-string "Failed to connect to server {}.{}.{}.{}"
+std::uint8_t ip[4];
+// ...
+strf::to(dest).tr( tr_failed_to_connect_to_server_X()
+                 , strf::join(ip[0], '.', ip[1], '.', ip[2], '.', ip[3]) );
+         // or   , strf::separated_range(ip, ".");
+----
+
 == Width calculation
 
 :std_width: pass:n[http://eel.is/c++draft/format.string.std#11]
 
 When alignment formatting is applied over a input string,
 the formatting library needs to estimate how wide that string is
-to determine how many fill characters shall be printed.
+to determine how many fill characters it shall be print.
 
 In old formatting libraries like printf such witdh is simply
-assumed to be equal to its size. This is certainly not
+assumed to be equal to the string's size. This is certainly not
 accurate if the string is enconded in UTF-8 or UTF-16, were multiple
 code units can represent a single codepoint and
 multiple codepoints can represent a single grapheme cluster.
@@ -215,19 +277,22 @@ the double of the regular width, while
 https://en.wikipedia.org/wiki/Whitespace_character#Unicode[some others]
 are actually expected to be narrower.
 
-The C{plus}{plus} Standard mandates `std::format` to
-take the width of each grapheme cluster from its leading codepoint,
-which is `1` or `2` according to a certain table.footnote:[{std_width}].
-In strf, this behaviour is implemented in the `strf::std_width_calc`,
+The C{plus}{plus} Standard mandates `std::format` to take the width of
+each grapheme cluster as the width of its leading codepoint, which is
+`1` or `2` according to whether is within certain ranges.footnote:[{std_width}].
+In Strf, this behaviour is implemented in the `strf::std_width_calc`,
 which is the default <<quick_reference#width_calculator,width calculation facet>>.
 
 // The width calculation in the lastest version of {fmt} (8.0.1) doesn't
 // take into account grapheme clustering yet, but it takes into account
 // the codepoints width double width.
 
-However there is obviouly a performance price for such accuracy.
+However there is obviouly a performance price for more accuracy.
 And that's the advatange of Strf: width calculation is customizable.
 You can choose a less accurate but faster algorithm if you want.
+Or, you can try to implement one which is actually more accurate,
+or tailored to the environment the string is printed, __i.e.__
+that takes into account the language, the font, etc.
 
 // Or, if know have extra information about how the text will be rendered
 // ( like the font or the laguage ), you can implement your one
@@ -352,15 +417,27 @@ examples.
 // __OutputIterator__ requirements.
 //
 
-If you want Strf to print to an alternative destination,
-you need to create a class that derives from `strf::<<outbuff_hpp#basic_outbuff,basic_outbuff>>`.
-Having an object of such type, you can print things to it with the
+// If you want Strf to print to an alternative destination,
+// you need to create a class that derives from `strf::<<outbuff_hpp#basic_outbuff,basic_outbuff>>`.
+// Having an object of such type, you can print things to it with the
+// `strf::<<quick_reference#dest_outbuff,to>>(strf::basic_outbuff<__CharT__>&)`
+// function template.
+// 
+// In the case of {fmt}, you need to have (or create) a type that satisfies the
+// __OutputIterator__ requirements. With that, you can use the `{fmt_print_to}`
+// and `{fmt_print_to_n}` function templates.
+
+Both libraries support the usual destinations: `FILE*`, `std::ostream&`, `std::string`,
+and `char*`. In case you need to send the content to somewhere else, {fmt} provides
+the generic function `fmt::format_to` that writes to output iterators. This
+way, all you have to do is to create an adapter that conforms to the
+OutputIterator requirements and that writes to your desired target.
+
+In Strf, what you do instead is to create a concrete class that derives from
+the `strf::basic_outbuff` abstract class template. Having an object of such type,
+you can print things to it with the
 `strf::<<quick_reference#dest_outbuff,to>>(strf::basic_outbuff<__CharT__>&)`
 function template.
-
-In the case of {fmt}, you need to have (or create) a type that satisfies the
-__OutputIterator__ requirements. With that, you can use the `{fmt_print_to}`
-and `{fmt_print_to_n}` function templates.
 
 However, in Strf you can go a bit further and create your own
 __destination expression__ to be used in the <<tutorial#syntax,basic usage syntax>>
@@ -374,6 +451,32 @@ before the the `xstring` object is constructed, so that the adequate
 amount of memory can be allocated.
 
 This is all explained in <<howto_add_destination#,this guide>>.
+
+== Polymorphic destination
+
+But you are not only suppose to use `strf::basic_outbuff` when you want to
+extend Strf, but also any time you want to write a code that
+creates a textual content ( or even a binary content ) without concerning
+about where the such content goes.
+[source,cpp]
+----
+void write_some_text(strf::outbuff& dest, /* ...args... */);
+----
+In that sense, `strf::basic_outbuff` is similar to `std::basic_ostream`,
+but with several advantages.
+
+* It has better performance.
+* It's easier to derive from.
+* It can be used in a https://en.cppreference.com/w/cpp/freestanding[freestanding] environment
+* Among its <<quick_reference#outbuff_types,specializations>>, you can find one
+  ( actually two ) that can safely and efficiently write to `char*`
+  ( which, by the way, it what the library uses internally ).
+
+As far as I know, {fmt} doesn't have anyting equivalent to `strf::basic_outbuff`.
+You could, of course, write instead a generic code terms of output iterators
+using `fmt::format_to` or `fmt::format_to_n`.
+But that would force things to be template, which is not always
+possible or can lead to code-bloat
 
 == Error handling policy
 
@@ -404,95 +507,6 @@ indication. For example, when writing to a `char*`, the returned object contains
 a `bool` member `truncated` that tells whether the destination memory
 is too small.
 
-== Numeric punctuation
-
-{fmt}'s and strf's ways of applying punctuation to integer and
-floating-point arguments are analogous.
-
-In {fmt}, you pass a `std::locale` object as an argument,
-before the format string, then use the `'L'` format flag
-for those arguments that shall conform to the `std::numpunct`
-facet installed in that `std::locale` object.
-
-In strf, you pass a `strf::numpunct` object to
-the `with` function, and apply the `punct` or `operator!`
-format function in those arguments you want to be
-punctuated.
-
-So the basic difference is that while {fmt} uses `std::locale`
-and `std::numpunct`, Strf has its own facets arquitecture.
-The rationale and advantages for this are explained in
-<<why_not_std_locale#,another article>>.
-
-== Multilingual support
-
-Strf has some extra advantages over {fmt} when developing an application
-that needs to provides multilingual support:
-
-Less translations errors::
-Since the programmer is commonly not same person who translates
-the messages and messages can be ambiguous, translation mistakes can happen.
-So, Strf allows you to add comments in the {tr-string} to prevent
-misinterpretations.
-
-Less syntax errors::
-The syntax of {tr-string} is less error-prone than the {fmt}'s format string.
-It is true that {fmt} can detect syntax error at compile-time with
-`FMT_STRING` or `FMT_COMPILE`, but it is very difficult ( if not impossible )
-to use such macros in multilingual programs, since the format
-strings are then likely to be evaluated at run-time.
-
-Reusability::
-In Strf, translation is decoupled from formatting.
-You can use the same tr-string multiple times with
-different format options.
-You can also joins or other "special" input types to
-reuse a tr-string:
-+
-[source,cpp]
-----
-// returns "Failed to connect to server {}" translated to some language
-const char* tr_failed_to_connect_to_server_X();
-
-// ...
-strf::to(dest).tr(tr_failed_to_connect_to_server_X(), "some_server_name.com");
-
-// Now passing an ip address.
-// No need to create a new tr-string "Failed to connect to server {}.{}.{}.{}"
-std::uint8_t ip[4];
-// ...
-strf::to(dest).tr( tr_failed_to_connect_to_server_X()
-                 , strf::join(ip[0], '.', ip[1], '.', ip[2], '.', ip[3]) );
-         // or   , strf::separated_range(ip, ".");
-----
-
-// == Width calculation
-//
-// In old formatting libraries like `printf` and `std::ostream`, the
-// width of a string is assumed to be equal to its size.
-// Now that Unicode is so widely adopted,
-// calculating the width of a string accurately is not a trivial task
-// anymore.
-//
-// Firstly we need to take into account the existence
-// https://unicode.org/reports/tr29/#Grapheme_Cluster_Boundaries[grapheme cluster]:
-// a sequence of codepoints may be printed a one single character.
-// Secondly, not all characters have the same width.
-// There are half-width characters
-// ( the usual ones ), full-width character ( that are as twice as wide ),
-// as well as some space characters like the three-per-em-space U+2004,
-// the four-per-em-space U+2005 and
-// https://en.wikipedia.org/wiki/Whitespace_character#Unicode[others],
-// whose widths are not integers.
-//
-// On top of that, there is the fact that monospace fonts usually don't
-// cover many codepoints. When a codepoint is not covered, another
-// font is usually used just for that character, causing the width
-// to be different. This means that 100% of accurately may actually
-// be impossible.
-//
-// According to the C++ Standard, `std::format` shall calculate
-
 == Performance
 
 If you look at the
@@ -500,40 +514,20 @@ http://robhz786.github.io/strf-benchmarks/{strf-version}/results.html[benchmarks
 you can see that the performances of Strf and {fmt} depend on several things,
 like what you are printing, how you do it, what are the formatting options,
 the compiler, the destination type, etc. There are situations where {fmt} is faster,
-and others when others where it is Strf.
+and others when others where it is Strf. However it is possible to take some general conclusions.
 
-However it is possible to take some general conclusions:
+When it comes to writting to `char*`, we can conclude that:
 
-* Strf is faster when not using tr-string ( than when it is ).
-* {fmt} is faster when using `FMT_COMPILE` macro ( than when it isn't ), except
-  in `fmt::format_to_n`.
-
-When it comes to writting to `char*`, {fmt} provides `fmt::format_to`
-and `fmt::format_to_n`. The former is faster, but it does not take into
-account the size of the destination, which may be necessary in some situations.
-Strf has `strf::to` and `strf::to_range`.
-They both take into account the destinatination's size, and their only difference
-is that `strf::to_range` does not append the additional termination character (`'\0'`).
-
-The benchmarks results leads to conclude:
-
-* `strf::to` is faster than `fmt::format_to` when macro `FMT_COMPILE` is not used.
-* `strf::to` is faster than `fmt::format_to_n`,
-* When using `FMT_COMPILE`, `fmt::format_to` is faster than
-  `strf::to` when no formatting option is applied.
-* When formatting options are applied, `strf::to` is faster
-  than `fmt::format_to` ( with and without `FMT_COMPILE` )
-  when not using tr-string
-
+* `strf::to` is faster than `fmt::format_to_n`
+* `strf::to` is faster than `fmt::format_to`, except in the following two situations:
+** `fmt::format_to` is invoked with `FMT_COMPILE` and no formatting option is applied
+** `fmt::format_to` is invoked with `FMT_COMPILE` and `strf::to` is invoked with the tr-string
+  
 When comparing `strf::to_string` against `fmt::format`,
-we conclude:
+we conclude `strf::to_string` is faster than `fmt::format`,
+except when `strf::to_string` is invoked with the tr-string
+at the same time that no formatting option is applied.
 
-* `strf::to_string` without tr-string is faster than `fmt::format`
-   ( with and without `FMT_COMPILE` )
-* `strf::to_string` with tr-string is usually faster than `fmt::format`
-   without `FMT_COMPILE`.
-*  When formatting options are applied,
-  `strf::to_string` is faster than `fmt::format.
 
 Of course, it's very possible to be
 exceptions for the above conclusions, since these

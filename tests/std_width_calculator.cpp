@@ -1567,6 +1567,9 @@ STRF_HD void other_tests()
         TEST(u"..a" U16_EXTEND_x8 u"---").with(strf::std_width_calc_t{})
             (strf::right(u"a" U16_EXTEND_x8 u"---", 6, '.'));
 
+        TEST(u"......").with(strf::std_width_calc_t{})
+            (strf::right(u"a" U16_EXTEND_x8 u"---", 6, '.').p(0));
+
         TEST(u".....a" U16_EXTEND_x8).with(strf::std_width_calc_t{})
             (strf::right(u"a" U16_EXTEND_x8 u"---", 6, '.').p(1));
 

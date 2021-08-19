@@ -72,8 +72,6 @@ destinations, like those that allocate memory, which is the case of `to_string`.
 Using `reserve(size)` causes the destination to reserve enough space
 to store `size` characters. `reserve_calc()` has the same effect,
 except that it calculates the number of characters for you.
-`reserve_calc()` is currently the default, but this
-may change in future.
 
 [[facets]]
 === Facets
@@ -158,7 +156,7 @@ However, several facets can "belong" to the same category.
 For each facet category there is class or struct
 with a public static member function `get_default()` which
 returns the default facet value of such facet category.
-By convention, the name of such class or a struct is the name of the
+By convention, the name of such class or struct is the name of the
 category, and it has the "`_c`" suffix.
 For example, the category of `strf::lettercase` is `strf::lettercase_c`,
 and `strf::lettercase_c::get_default()` returns  `strf::lowercase`.
@@ -339,7 +337,7 @@ strf::to(str_maker) (_arg1_, _arg2_, _arg3_, _arg4_);
 std::string str = str_maker.finish()
 ----
 
-What makes the second form so interesting is that
+What makes the second form interesting is that
 it doesn't impose you to pass all arguments in
 a single statement. So you have the same flexibility
 as when writting into a `std::ostream`:
