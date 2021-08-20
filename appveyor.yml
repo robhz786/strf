@@ -19,23 +19,27 @@
 # That's it - the script will do everything else for you.
 #
 
-version: 0.9.{build}-{branch}
+version: 0.15.{build}-{branch}
 
 shallow_clone: true
 
 branches:
   only:
-    - master
+    - main
     - develop
     - /pr-.*/
     - /rc-.*/
-    - /bugfix-.*/
-    - /hotfix-.*/
-    - /feature-.*/
-    - /optimization-.*/
-    - /refactoring-.*/
-    - /redesign-.*/
-    - /task-.*/
+    - /appveyor-.*/
+#    - /bugfix-.*/
+#    - /hotfix-.*/
+#    - /feature-.*/
+#    - /optimization-.*/
+#    - /refactoring-.*/
+#    - /redesign-.*/
+#    - /task-.*/
+
+
+build: off
 
 matrix:
   # Adding MAYFAIL to any matrix job allows it to fail but the build stays green:
@@ -45,81 +49,114 @@ matrix:
 environment:
 
   matrix:
-    - FLAVOR: Visual Studio 2019 C++2a
-      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
-      GENERATOR: Visual Studio 16 2019
-      ARCH: x64
-      CONFIG: Debug
-      CXX_STANDARD: 20
+     - FLAVOR: G++9 Release C++20
+       APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
+       ARCH: x64
+       CONFIG: Release
+       CXX_STANDARD: 20
+       CXX: g++-9
+       CC: gcc-9
+       BUILD_SCRIPT: ci/appveyor/build.sh
+ 
+     - FLAVOR: G++ 7 Release C++20
+       APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
+       ARCH: x64
+       CONFIG: Release
+       CXX_STANDARD: 20
+       CXX: g++-7
+       CC: gcc-7
+       BUILD_SCRIPT: ci/appveyor/build.sh
+#      
+#     - FLAVOR: Codecov
+#       APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2004
+#       ARCH: x64
+#       CXX_STANDARD: 20
+#       BUILD_SCRIPT: ci/appveyor/codecov_build.sh
 
-    - FLAVOR: Visual Studio 2019 C++2a
-      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
-      GENERATOR: Visual Studio 16 2019
-      ARCH: x64
-      CONFIG: Release
-      CXX_STANDARD: 20
+     - FLAVOR: Ubsan
+       APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
+       ARCH: x64
+       CXX_STANDARD: 20
+       BUILD_SCRIPT: ci/appveyor/ubsan_build.sh
+ 
+     - FLAVOR: Visual Studio 2019 C++2a
+       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+       GENERATOR: Visual Studio 16 2019
+       ARCH: x64
+       CONFIG: Debug
+       CXX_STANDARD: 20
 
-    - FLAVOR: Visual Studio 2017 C++2a
-      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
-      GENERATOR: Visual Studio 15 2017
-      ARCH: x64
-      CONFIG: Debug
-      CXX_STANDARD: 20
-
-    - FLAVOR: Visual Studio 2017 C++2a
-      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
-      GENERATOR: Visual Studio 15 2017
-      ARCH: x64
-      CONFIG: Release
-      CXX_STANDARD: 20
-
-#    - FLAVOR: Visual Studio 2017 C++2a
-#      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
-#      GENERATOR: Visual Studio 15 2017
-#      ARCH: Win32
-#      platform: x86
-#      CONFIG: Debug
-#      CXX_STANDARD: 20
-#
-#    - FLAVOR: Visual Studio 2017 C++2a
-#      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
-#      GENERATOR: Visual Studio 15 2017
-#      ARCH: Win32
-#      platform: x86
-#      CONFIG: Release
-#      CXX_STANDARD: 20
-
-    - FLAVOR: Visual Studio 2017 C++17
-      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
-      GENERATOR: Visual Studio 15 2017
-      ARCH: x64
-      CONFIG: Release
-      CXX_STANDARD: 17
-
-    - FLAVOR: Visual Studio 2017 C++14 (Default)
-      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
-      GENERATOR: Visual Studio 15 2017
-      ARCH: x64
-      CONFIG: Release
-      CXX_STANDARD: 14
-
-    - FLAVOR: Visual Studio 2017 C++11 (Default)
-      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
-      GENERATOR: Visual Studio 15 2017
-      ARCH: x64
-      CONFIG: Debug
-      CXX_STANDARD: 11
-
-    - FLAVOR: Visual Studio 2017 C++11 (Default)
-      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
-      GENERATOR: Visual Studio 15 2017
-      ARCH: x64
-      CONFIG: Release
-      CXX_STANDARD: 11
+     - FLAVOR: Visual Studio 2019 C++2a
+       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+       GENERATOR: Visual Studio 16 2019
+       ARCH: x64
+       CONFIG: Release
+       CXX_STANDARD: 20
+ 
+     - FLAVOR: Visual Studio 2017 C++2a
+       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+       GENERATOR: Visual Studio 15 2017
+       ARCH: x64
+       CONFIG: Debug
+       CXX_STANDARD: 20
+ 
+     - FLAVOR: Visual Studio 2017 C++2a
+       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+       GENERATOR: Visual Studio 15 2017
+       ARCH: x64
+       CONFIG: Release
+       CXX_STANDARD: 20
+ 
+ #    - FLAVOR: Visual Studio 2017 C++2a
+ #      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+ #      GENERATOR: Visual Studio 15 2017
+ #      ARCH: Win32
+ #      platform: x86
+ #      CONFIG: Debug
+ #      CXX_STANDARD: 20
+ #
+ #    - FLAVOR: Visual Studio 2017 C++2a
+ #      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+ #      GENERATOR: Visual Studio 15 2017
+ #      ARCH: Win32
+ #      platform: x86
+ #      CONFIG: Release
+ #      CXX_STANDARD: 20
+ 
+     - FLAVOR: Visual Studio 2017 C++17
+       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+       GENERATOR: Visual Studio 15 2017
+       ARCH: x64
+       CONFIG: Release
+       CXX_STANDARD: 17
+ 
+     - FLAVOR: Visual Studio 2017 C++14 (Default)
+       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+       GENERATOR: Visual Studio 15 2017
+       ARCH: x64
+       CONFIG: Release
+       CXX_STANDARD: 14
+ 
+     - FLAVOR: Visual Studio 2017 C++11 (Default)
+       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+       GENERATOR: Visual Studio 15 2017
+       ARCH: x64
+       CONFIG: Debug
+       CXX_STANDARD: 11
+ 
+     - FLAVOR: Visual Studio 2017 C++11 (Default)
+       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+       GENERATOR: Visual Studio 15 2017
+       ARCH: x64
+       CONFIG: Release
+       CXX_STANDARD: 11
 
 
 build_script:
-  - ci\appveyor\build.bat
+  - cmd: ci\appveyor\build.bat
+  - sh: chmod +x $BUILD_SCRIPT
+  - sh: ls -l $BUILD_SCRIPT
+  - sh: ./$BUILD_SCRIPT
 
 test_script:
-  - ctest -V -C %CONFIG%
+  - cmd: ctest -V -C %CONFIG%

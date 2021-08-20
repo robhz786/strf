@@ -22,13 +22,17 @@ option(
   "Build unit tests"
   ${STRF_BUILD_TESTS} )
 option(
+  STRF_BUILD_CH32_WIDTH_AND_GCB_PROP
+  "Enable specifically test of file include/strf/detail/ch32_width_and_gcb_prop"
+  ${STRF_BUILD_CH32_WIDTH_AND_GCB_PROP})
+option(
  STRF_BUILD_EXAMPLES
  "Test example programs"
   ${STRF_BUILD_EXAMPLES})
 
 project (
-  strf 
-  VERSION 0.15.0
+  strf
+  VERSION 0.15.1
   LANGUAGES CXX)
 
 if (STRF_CUDA_SUPPORT)
@@ -61,7 +65,7 @@ if (STRF_WITH_CSTRING)
   target_compile_definitions(strf-static-lib PUBLIC STRF_WITH_CSTRING)
   target_compile_definitions(strf-header-only INTERFACE STRF_WITH_CSTRING)
 endif (STRF_WITH_CSTRING)
-  
+
 target_include_directories(
   strf-header-only
   INTERFACE
@@ -139,11 +143,29 @@ install(
   DIRECTORY include/strf
   DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}" )
 
-if (STRF_BUILD_TESTS)
+if (STRF_BUILD_TEST_CH32_WIDTH_AND_GCB_PROP)
+
+  set(icu_dir ${CMAKE_CURRENT_SOURCE_DIR}/externals/icu)
+  set(icu_lib_dir ${icu_dir}/lib)
+  set(icu_include_dir ${icu_dir}/include)
+
+  add_library(icudata SHARED IMPORTED)
+  add_library(icuuc   SHARED IMPORTED)
+
+  set_property(TARGET icudata PROPERTY IMPORTED_LOCATION ${icu_lib_dir}/libicudata.so)
+  set_property(TARGET icuuc   PROPERTY IMPORTED_LOCATION ${icu_lib_dir}/libicuuc.so)
+
+  target_include_directories(icudata INTERFACE ${icu_include_dir})
+  target_include_directories(icuuc   INTERFACE ${icu_include_dir})
+
+endif (STRF_BUILD_TEST_CH32_WIDTH_AND_GCB_PROP)
+
+if (STRF_BUILD_TESTS OR STRF_BUILD_CH32_WIDTH_AND_GCB_PROP)
   add_subdirectory(tests tests)
-endif(STRF_BUILD_TESTS)
+endif(STRF_BUILD_TESTS OR STRF_BUILD_CH32_WIDTH_AND_GCB_PROP)
 
 if (STRF_BUILD_EXAMPLES)
   add_subdirectory(examples examples)
 endif (STRF_BUILD_EXAMPLES)
+
 

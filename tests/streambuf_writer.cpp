@@ -35,7 +35,67 @@ static void test_successfull_writing()
 }
 
 template <typename CharT>
+static void when_finish_is_not_called()
+{
+    auto tiny_str = test_utils::make_tiny_string<CharT>();
+
+    std::basic_ostringstream<CharT> oss;
+    {
+        strf::basic_streambuf_writer<CharT> writer(oss.rdbuf());
+        strf::detail::copy_n<CharT>(tiny_str.begin(), tiny_str.size(), writer.pointer());
+        writer.advance(tiny_str.size());
+    }
+    auto obtained_content = oss.str();
+    TEST_TRUE(0 == obtained_content.compare( 0, tiny_str.size()
+                                           , tiny_str.begin()
+                                           , tiny_str.size() ));
+}
+
+template <typename CharT>
+static void when_finish_is_not_called_but_state_is_bad_anyway()
+{
+    auto tiny_str = test_utils::make_tiny_string<CharT>();
+
+    std::basic_ostringstream<CharT> oss;
+    {
+        strf::basic_streambuf_writer<CharT> writer(*oss.rdbuf());
+        strf::detail::copy_n(tiny_str.begin(), tiny_str.size(), writer.pointer());
+        writer.advance(tiny_str.size());
+        test_utils::turn_into_bad(writer);
+    }
+    TEST_TRUE(oss.str().empty());
+}
+
+template <typename CharT>
 static void test_failing_to_recycle()
+{
+    auto half_str = test_utils::make_half_string<CharT>();
+
+    std::basic_ostringstream<CharT> dest;
+    strf::basic_streambuf_writer<CharT> writer(*dest.rdbuf());
+
+    writer.write(half_str.begin(), half_str.size());
+    writer.recycle(); // first recycle works
+    test_utils::turn_into_bad(writer);
+
+    strf::to(writer)(strf::multi((CharT)'x', 10));
+    writer.recycle(); // this fails
+
+    auto status = writer.finish();
+    dest.rdbuf()->pubsync();
+
+    auto obtained_content = dest.str();
+
+    TEST_TRUE(! status.success);
+    TEST_EQ(status.count, obtained_content.size());
+    TEST_EQ(status.count, half_str.size());
+    TEST_TRUE(0 == obtained_content.compare( 0, half_str.size()
+                                           , half_str.begin()
+                                           , half_str.size() ));
+}
+
+template <typename CharT>
+static void test_failing_to_call_do_write()
 {
     auto half_str = test_utils::make_half_string<CharT>();
     auto double_str = test_utils::make_double_string<CharT>();
@@ -45,7 +105,6 @@ static void test_failing_to_recycle()
 
     writer.write(half_str.begin(), half_str.size());
     writer.recycle(); // first recycle works
-    test_utils::turn_into_bad(writer);
     writer.write(double_str.begin(), double_str.size());
     auto status = writer.finish();
     dest.rdbuf()->pubsync();
@@ -59,6 +118,8 @@ static void test_failing_to_recycle()
                                            , half_str.begin()
                                            , half_str.size() ));
 }
+
+
 
 template <typename CharT>
 static void test_failing_to_finish()
@@ -132,6 +193,16 @@ void test_streambuf_writer()
     test_successfull_writing<char16_t>();
     test_successfull_writing<char32_t>();
     test_successfull_writing<wchar_t>();
+
+    when_finish_is_not_called<char>();;
+    when_finish_is_not_called<char16_t>();
+    when_finish_is_not_called<char32_t>();
+    when_finish_is_not_called<wchar_t>();
+
+    when_finish_is_not_called_but_state_is_bad_anyway<char>();
+    when_finish_is_not_called_but_state_is_bad_anyway<char16_t>();
+    when_finish_is_not_called_but_state_is_bad_anyway<char32_t>();
+    when_finish_is_not_called_but_state_is_bad_anyway<wchar_t>();
 
     test_failing_to_recycle<char>();
     test_failing_to_recycle<char16_t>();

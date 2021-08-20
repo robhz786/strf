@@ -1,0 +1,2851 @@
+//  Copyright (C) (See commit logs on github.com/robhz786/strf)
+//  Distributed under the Boost Software License, Version 1.0.
+//  (See accompanying file LICENSE_1_0.txt or copy at
+//  http://www.boost.org/LICENSE_1_0.txt)
+
+// ( Include guard intentionally ommited )
+
+    if (ch <= 0xA8F1) {                                     //  007F ..  A8F1
+        if (ch <= 0x1059) {                                 //  007F ..  1059
+            if (ch <= 0xB44) {                              //  007F ..  0B44
+                if (ch <= 0x961) {                          //  007F ..  0961
+                    if (ch <= 0x6ED) {                      //  007F ..  06ED
+                        if (ch <= 0x5FF) {                  //  007F ..  05FF
+                            if (ch <= 0x482) {              //  007F ..  0482
+                                if (ch <= 0x2FF) {          //  007F ..  02FF
+                                    if (ch <= 0x9F) {       //  007F ..  009F
+                                        goto handle_control;
+                                    } else {                //  00A0 ..  02FF
+                                        if (ch == 0x00A9)
+                                            goto handle_extended_picto;
+                                        if (ch == 0x00AD)
+                                            goto handle_control;
+                                        if (ch == 0x00AE)
+                                            goto handle_extended_picto;
+                                        goto handle_other;
+                                    }
+                                } else {                    //  0300 ..  0482
+                                    if (ch <= 0x36F) {      //  0300 ..  036F
+                                        goto handle_extend;
+                                    } else {                //  0370 ..  0482
+                                        goto handle_other;
+                                    }
+                                }
+                            } else {                        //  0483 ..  05FF
+                                if (ch <= 0x590) {          //  0483 ..  0590
+                                    if (ch <= 0x489) {      //  0483 ..  0489
+                                        goto handle_extend;
+                                    } else {                //  048A ..  0590
+                                        goto handle_other;
+                                    }
+                                } else {                    //  0591 ..  05FF
+                                    if (ch <= 0x5C7) {      //  0591 ..  05C7
+                                        if (ch == 0x05BE)
+                                            goto handle_other;
+                                        if (ch == 0x05C0)
+                                            goto handle_other;
+                                        if (ch == 0x05C3)
+                                            goto handle_other;
+                                        if (ch == 0x05C6)
+                                            goto handle_other;
+                                        goto handle_extend;
+                                    } else {                //  05C8 ..  05FF
+                                        goto handle_other;
+                                    }
+                                }
+                            }
+                        } else {                            //  0600 ..  06ED
+                            if (ch <= 0x64A) {              //  0600 ..  064A
+                                if (ch <= 0x60F) {          //  0600 ..  060F
+                                    if (ch <= 0x605) {      //  0600 ..  0605
+                                        goto handle_prepend;
+                                    } else {                //  0606 ..  060F
+                                        goto handle_other;
+                                    }
+                                } else {                    //  0610 ..  064A
+                                    if (ch <= 0x61C) {      //  0610 ..  061C
+                                        if (ch == 0x061B)
+                                            goto handle_other;
+                                        if (ch == 0x061C)
+                                            goto handle_control;
+                                        goto handle_extend;
+                                    } else {                //  061D ..  064A
+                                        goto handle_other;
+                                    }
+                                }
+                            } else {                        //  064B ..  06ED
+                                if (ch <= 0x6D5) {          //  064B ..  06D5
+                                    if (ch <= 0x65F) {      //  064B ..  065F
+                                        goto handle_extend;
+                                    } else {                //  0660 ..  06D5
+                                        if (ch == 0x0670)
+                                            goto handle_extend;
+                                        goto handle_other;
+                                    }
+                                } else {                    //  06D6 ..  06ED
+                                    if (ch <= 0x6E4) {      //  06D6 ..  06E4
+                                        if (ch == 0x06DD)
+                                            goto handle_prepend;
+                                        if (ch == 0x06DE)
+                                            goto handle_other;
+                                        goto handle_extend;
+                                    } else {                //  06E5 ..  06ED
+                                        if (ch <= 0x6E6) {  //  06E5 ..  06E6
+                                            goto handle_other;
+                                        } else {            //  06E7 ..  06ED
+                                            if (ch == 0x06E9)
+                                                goto handle_other;
+                                            goto handle_extend;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } else {                                //  06EE ..  0961
+                        if (ch <= 0x858) {                  //  06EE ..  0858
+                            if (ch <= 0x7B0) {              //  06EE ..  07B0
+                                if (ch <= 0x74A) {          //  06EE ..  074A
+                                    if (ch <= 0x72F) {      //  06EE ..  072F
+                                        if (ch == 0x070F)
+                                            goto handle_prepend;
+                                        if (ch == 0x0711)
+                                            goto handle_extend;
+                                        goto handle_other;
+                                    } else {                //  0730 ..  074A
+                                        goto handle_extend;
+                                    }
+                                } else {                    //  074B ..  07B0
+                                    if (ch <= 0x7A5) {      //  074B ..  07A5
+                                        goto handle_other;
+                                    } else {                //  07A6 ..  07B0
+                                        goto handle_extend;
+                                    }
+                                }
+                            } else {                        //  07B1 ..  0858
+                                if (ch <= 0x7F3) {          //  07B1 ..  07F3
+                                    if (ch <= 0x7EA) {      //  07B1 ..  07EA
+                                        goto handle_other;
+                                    } else {                //  07EB ..  07F3
+                                        goto handle_extend;
+                                    }
+                                } else {                    //  07F4 ..  0858
+                                    if (ch <= 0x815) {      //  07F4 ..  0815
+                                        if (ch == 0x07FD)
+                                            goto handle_extend;
+                                        goto handle_other;
+                                    } else {                //  0816 ..  0858
+                                        if (ch <= 0x82D) {  //  0816 ..  082D
+                                            if (ch == 0x081A)
+                                                goto handle_other;
+                                            if (ch == 0x0824)
+                                                goto handle_other;
+                                            if (ch == 0x0828)
+                                                goto handle_other;
+                                            goto handle_extend;
+                                        } else {            //  082E ..  0858
+                                            goto handle_other;
+                                        }
+                                    }
+                                }
+                            }
+                        } else {                            //  0859 ..  0961
+                            if (ch <= 0x93D) {              //  0859 ..  093D
+                                if (ch <= 0x8D2) {          //  0859 ..  08D2
+                                    if (ch <= 0x85B) {      //  0859 ..  085B
+                                        goto handle_extend;
+                                    } else {                //  085C ..  08D2
+                                        goto handle_other;
+                                    }
+                                } else {                    //  08D3 ..  093D
+                                    if (ch <= 0x903) {      //  08D3 ..  0903
+                                        if (ch == 0x08E2)
+                                            goto handle_prepend;
+                                        if (ch == 0x0903)
+                                            goto handle_spacing_mark;
+                                        goto handle_extend;
+                                    } else {                //  0904 ..  093D
+                                        if (ch == 0x093A)
+                                            goto handle_extend;
+                                        if (ch == 0x093B)
+                                            goto handle_spacing_mark;
+                                        if (ch == 0x093C)
+                                            goto handle_extend;
+                                        goto handle_other;
+                                    }
+                                }
+                            } else {                        //  093E ..  0961
+                                if (ch <= 0x948) {          //  093E ..  0948
+                                    if (ch <= 0x940) {      //  093E ..  0940
+                                        goto handle_spacing_mark;
+                                    } else {                //  0941 ..  0948
+                                        goto handle_extend;
+                                    }
+                                } else {                    //  0949 ..  0961
+                                    if (ch <= 0x950) {      //  0949 ..  0950
+                                        if (ch == 0x094D)
+                                            goto handle_extend;
+                                        if (ch == 0x0950)
+                                            goto handle_other;
+                                        goto handle_spacing_mark;
+                                    } else {                //  0951 ..  0961
+                                        if (ch <= 0x957) {  //  0951 ..  0957
+                                            goto handle_extend;
+                                        } else {            //  0958 ..  0961
+                                            goto handle_other;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } else {                                    //  0962 ..  0B44
+                    if (ch <= 0xA46) {                      //  0962 ..  0A46
+                        if (ch <= 0x9CA) {                  //  0962 ..  09CA
+                            if (ch <= 0x9BE) {              //  0962 ..  09BE
+                                if (ch <= 0x981) {          //  0962 ..  0981
+                                    if (ch <= 0x963) {      //  0962 ..  0963
+                                        goto handle_extend;
+                                    } else {                //  0964 ..  0981
+                                        if (ch == 0x0981)
+                                            goto handle_extend;
+                                        goto handle_other;
+                                    }
+                                } else {                    //  0982 ..  09BE
+                                    if (ch <= 0x983) {      //  0982 ..  0983
+                                        goto handle_spacing_mark;
+                                    } else {                //  0984 ..  09BE
+                                        if (ch == 0x09BC)
+                                            goto handle_extend;
+                                        if (ch == 0x09BE)
+                                            goto handle_extend;
+                                        goto handle_other;
+                                    }
+                                }
+                            } else {                        //  09BF ..  09CA
+                                if (ch <= 0x9C4) {          //  09BF ..  09C4
+                                    if (ch <= 0x9C0) {      //  09BF ..  09C0
+                                        goto handle_spacing_mark;
+                                    } else {                //  09C1 ..  09C4
+                                        goto handle_extend;
+                                    }
+                                } else {                    //  09C5 ..  09CA
+                                    if (ch <= 0x9C6) {      //  09C5 ..  09C6
+                                        goto handle_other;
+                                    } else {                //  09C7 ..  09CA
+                                        if (ch <= 0x9C8) {  //  09C7 ..  09C8
+                                            goto handle_spacing_mark;
+                                        } else {            //  09C9 ..  09CA
+                                            goto handle_other;
+                                        }
+                                    }
+                                }
+                            }
+                        } else {                            //  09CB ..  0A46
+                            if (ch <= 0xA00) {              //  09CB ..  0A00
+                                if (ch <= 0x9E1) {          //  09CB ..  09E1
+                                    if (ch <= 0x9CD) {      //  09CB ..  09CD
+                                        if (ch == 0x09CD)
+                                            goto handle_extend;
+                                        goto handle_spacing_mark;
+                                    } else {                //  09CE ..  09E1
+                                        if (ch == 0x09D7)
+                                            goto handle_extend;
+                                        goto handle_other;
+                                    }
+                                } else {                    //  09E2 ..  0A00
+                                    if (ch <= 0x9E3) {      //  09E2 ..  09E3
+                                        goto handle_extend;
+                                    } else {                //  09E4 ..  0A00
+                                        if (ch == 0x09FE)
+                                            goto handle_extend;
+                                        goto handle_other;
+                                    }
+                                }
+                            } else {                        //  0A01 ..  0A46
+                                if (ch <= 0xA3D) {          //  0A01 ..  0A3D
+                                    if (ch <= 0xA03) {      //  0A01 ..  0A03
+                                        if (ch == 0x0A03)
+                                            goto handle_spacing_mark;
+                                        goto handle_extend;
+                                    } else {                //  0A04 ..  0A3D
+                                        if (ch == 0x0A3C)
+                                            goto handle_extend;
+                                        goto handle_other;
+                                    }
+                                } else {                    //  0A3E ..  0A46
+                                    if (ch <= 0xA40) {      //  0A3E ..  0A40
+                                        goto handle_spacing_mark;
+                                    } else {                //  0A41 ..  0A46
+                                        if (ch <= 0xA42) {  //  0A41 ..  0A42
+                                            goto handle_extend;
+                                        } else {            //  0A43 ..  0A46
+                                            goto handle_other;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } else {                                //  0A47 ..  0B44
+                        if (ch <= 0xAC0) {                  //  0A47 ..  0AC0
+                            if (ch <= 0xA6F) {              //  0A47 ..  0A6F
+                                if (ch <= 0xA4A) {          //  0A47 ..  0A4A
+                                    if (ch <= 0xA48) {      //  0A47 ..  0A48
+                                        goto handle_extend;
+                                    } else {                //  0A49 ..  0A4A
+                                        goto handle_other;
+                                    }
+                                } else {                    //  0A4B ..  0A6F
+                                    if (ch <= 0xA4D) {      //  0A4B ..  0A4D
+                                        goto handle_extend;
+                                    } else {                //  0A4E ..  0A6F
+                                        if (ch == 0x0A51)
+                                            goto handle_extend;
+                                        goto handle_other;
+                                    }
+                                }
+                            } else {                        //  0A70 ..  0AC0
+                                if (ch <= 0xA80) {          //  0A70 ..  0A80
+                                    if (ch <= 0xA71) {      //  0A70 ..  0A71
+                                        goto handle_extend;
+                                    } else {                //  0A72 ..  0A80
+                                        if (ch == 0x0A75)
+                                            goto handle_extend;
+                                        goto handle_other;
+                                    }
+                                } else {                    //  0A81 ..  0AC0
+                                    if (ch <= 0xA83) {      //  0A81 ..  0A83
+                                        if (ch == 0x0A83)
+                                            goto handle_spacing_mark;
+                                        goto handle_extend;
+                                    } else {                //  0A84 ..  0AC0
+                                        if (ch <= 0xABD) {  //  0A84 ..  0ABD
+                                            if (ch == 0x0ABC)
+                                                goto handle_extend;
+                                            goto handle_other;
+                                        } else {            //  0ABE ..  0AC0
+                                            goto handle_spacing_mark;
+                                        }
+                                    }
+                                }
+                            }
+                        } else {                            //  0AC1 ..  0B44
+                            if (ch <= 0xAE3) {              //  0AC1 ..  0AE3
+                                if (ch <= 0xACD) {          //  0AC1 ..  0ACD
+                                    if (ch <= 0xACA) {      //  0AC1 ..  0ACA
+                                        if (ch == 0x0AC6)
+                                            goto handle_other;
+                                        if (ch == 0x0AC9)
+                                            goto handle_spacing_mark;
+                                        if (ch == 0x0ACA)
+                                            goto handle_other;
+                                        goto handle_extend;
+                                    } else {                //  0ACB ..  0ACD
+                                        if (ch == 0x0ACD)
+                                            goto handle_extend;
+                                        goto handle_spacing_mark;
+                                    }
+                                } else {                    //  0ACE ..  0AE3
+                                    if (ch <= 0xAE1) {      //  0ACE ..  0AE1
+                                        goto handle_other;
+                                    } else {                //  0AE2 ..  0AE3
+                                        goto handle_extend;
+                                    }
+                                }
+                            } else {                        //  0AE4 ..  0B44
+                                if (ch <= 0xB01) {          //  0AE4 ..  0B01
+                                    if (ch <= 0xAF9) {      //  0AE4 ..  0AF9
+                                        goto handle_other;
+                                    } else {                //  0AFA ..  0B01
+                                        if (ch == 0x0B00)
+                                            goto handle_other;
+                                        goto handle_extend;
+                                    }
+                                } else {                    //  0B02 ..  0B44
+                                    if (ch <= 0xB03) {      //  0B02 ..  0B03
+                                        goto handle_spacing_mark;
+                                    } else {                //  0B04 ..  0B44
+                                        if (ch <= 0xB3D) {  //  0B04 ..  0B3D
+                                            if (ch == 0x0B3C)
+                                                goto handle_extend;
+                                            goto handle_other;
+                                        } else {            //  0B3E ..  0B44
+                                            if (ch == 0x0B40)
+                                                goto handle_spacing_mark;
+                                            goto handle_extend;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            } else {                                        //  0B45 ..  1059
+                if (ch <= 0xD3E) {                          //  0B45 ..  0D3E
+                    if (ch <= 0xC4D) {                      //  0B45 ..  0C4D
+                        if (ch <= 0xBC0) {                  //  0B45 ..  0BC0
+                            if (ch <= 0xB4D) {              //  0B45 ..  0B4D
+                                if (ch <= 0xB48) {          //  0B45 ..  0B48
+                                    if (ch <= 0xB46) {      //  0B45 ..  0B46
+                                        goto handle_other;
+                                    } else {                //  0B47 ..  0B48
+                                        goto handle_spacing_mark;
+                                    }
+                                } else {                    //  0B49 ..  0B4D
+                                    if (ch <= 0xB4A) {      //  0B49 ..  0B4A
+                                        goto handle_other;
+                                    } else {                //  0B4B ..  0B4D
+                                        if (ch == 0x0B4D)
+                                            goto handle_extend;
+                                        goto handle_spacing_mark;
+                                    }
+                                }
+                            } else {                        //  0B4E ..  0BC0
+                                if (ch <= 0xB57) {          //  0B4E ..  0B57
+                                    if (ch <= 0xB54) {      //  0B4E ..  0B54
+                                        goto handle_other;
+                                    } else {                //  0B55 ..  0B57
+                                        goto handle_extend;
+                                    }
+                                } else {                    //  0B58 ..  0BC0
+                                    if (ch <= 0xB61) {      //  0B58 ..  0B61
+                                        goto handle_other;
+                                    } else {                //  0B62 ..  0BC0
+                                        if (ch <= 0xB63) {  //  0B62 ..  0B63
+                                            goto handle_extend;
+                                        } else {            //  0B64 ..  0BC0
+                                            if (ch == 0x0B82)
+                                                goto handle_extend;
+                                            if (ch == 0x0BBE)
+                                                goto handle_extend;
+                                            if (ch == 0x0BBF)
+                                                goto handle_spacing_mark;
+                                            if (ch == 0x0BC0)
+                                                goto handle_extend;
+                                            goto handle_other;
+                                        }
+                                    }
+                                }
+                            }
+                        } else {                            //  0BC1 ..  0C4D
+                            if (ch <= 0xC00) {              //  0BC1 ..  0C00
+                                if (ch <= 0xBC5) {          //  0BC1 ..  0BC5
+                                    if (ch <= 0xBC2) {      //  0BC1 ..  0BC2
+                                        goto handle_spacing_mark;
+                                    } else {                //  0BC3 ..  0BC5
+                                        goto handle_other;
+                                    }
+                                } else {                    //  0BC6 ..  0C00
+                                    if (ch <= 0xBCD) {      //  0BC6 ..  0BCD
+                                        if (ch == 0x0BC9)
+                                            goto handle_other;
+                                        if (ch == 0x0BCD)
+                                            goto handle_extend;
+                                        goto handle_spacing_mark;
+                                    } else {                //  0BCE ..  0C00
+                                        if (ch == 0x0BD7)
+                                            goto handle_extend;
+                                        if (ch == 0x0C00)
+                                            goto handle_extend;
+                                        goto handle_other;
+                                    }
+                                }
+                            } else {                        //  0C01 ..  0C4D
+                                if (ch <= 0xC3D) {          //  0C01 ..  0C3D
+                                    if (ch <= 0xC04) {      //  0C01 ..  0C04
+                                        if (ch == 0x0C04)
+                                            goto handle_extend;
+                                        goto handle_spacing_mark;
+                                    } else {                //  0C05 ..  0C3D
+                                        goto handle_other;
+                                    }
+                                } else {                    //  0C3E ..  0C4D
+                                    if (ch <= 0xC40) {      //  0C3E ..  0C40
+                                        goto handle_extend;
+                                    } else {                //  0C41 ..  0C4D
+                                        if (ch <= 0xC45) {  //  0C41 ..  0C45
+                                            if (ch == 0x0C45)
+                                                goto handle_other;
+                                            goto handle_spacing_mark;
+                                        } else {            //  0C46 ..  0C4D
+                                            if (ch == 0x0C49)
+                                                goto handle_other;
+                                            goto handle_extend;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } else {                                //  0C4E ..  0D3E
+                        if (ch <= 0xCCD) {                  //  0C4E ..  0CCD
+                            if (ch <= 0xC63) {              //  0C4E ..  0C63
+                                if (ch <= 0xC56) {          //  0C4E ..  0C56
+                                    if (ch <= 0xC54) {      //  0C4E ..  0C54
+                                        goto handle_other;
+                                    } else {                //  0C55 ..  0C56
+                                        goto handle_extend;
+                                    }
+                                } else {                    //  0C57 ..  0C63
+                                    if (ch <= 0xC61) {      //  0C57 ..  0C61
+                                        goto handle_other;
+                                    } else {                //  0C62 ..  0C63
+                                        goto handle_extend;
+                                    }
+                                }
+                            } else {                        //  0C64 ..  0CCD
+                                if (ch <= 0xC83) {          //  0C64 ..  0C83
+                                    if (ch <= 0xC81) {      //  0C64 ..  0C81
+                                        if (ch == 0x0C81)
+                                            goto handle_extend;
+                                        goto handle_other;
+                                    } else {                //  0C82 ..  0C83
+                                        goto handle_spacing_mark;
+                                    }
+                                } else {                    //  0C84 ..  0CCD
+                                    if (ch <= 0xCBF) {      //  0C84 ..  0CBF
+                                        if (ch == 0x0CBC)
+                                            goto handle_extend;
+                                        if (ch == 0x0CBE)
+                                            goto handle_spacing_mark;
+                                        if (ch == 0x0CBF)
+                                            goto handle_extend;
+                                        goto handle_other;
+                                    } else {                //  0CC0 ..  0CCD
+                                        if (ch <= 0xCCB) {  //  0CC0 ..  0CCB
+                                            if (ch == 0x0CC2)
+                                                goto handle_extend;
+                                            if (ch == 0x0CC5)
+                                                goto handle_other;
+                                            if (ch == 0x0CC6)
+                                                goto handle_extend;
+                                            if (ch == 0x0CC9)
+                                                goto handle_other;
+                                            goto handle_spacing_mark;
+                                        } else {            //  0CCC ..  0CCD
+                                            goto handle_extend;
+                                        }
+                                    }
+                                }
+                            }
+                        } else {                            //  0CCE ..  0D3E
+                            if (ch <= 0xCE3) {              //  0CCE ..  0CE3
+                                if (ch <= 0xCD6) {          //  0CCE ..  0CD6
+                                    if (ch <= 0xCD4) {      //  0CCE ..  0CD4
+                                        goto handle_other;
+                                    } else {                //  0CD5 ..  0CD6
+                                        goto handle_extend;
+                                    }
+                                } else {                    //  0CD7 ..  0CE3
+                                    if (ch <= 0xCE1) {      //  0CD7 ..  0CE1
+                                        goto handle_other;
+                                    } else {                //  0CE2 ..  0CE3
+                                        goto handle_extend;
+                                    }
+                                }
+                            } else {                        //  0CE4 ..  0D3E
+                                if (ch <= 0xD01) {          //  0CE4 ..  0D01
+                                    if (ch <= 0xCFF) {      //  0CE4 ..  0CFF
+                                        goto handle_other;
+                                    } else {                //  0D00 ..  0D01
+                                        goto handle_extend;
+                                    }
+                                } else {                    //  0D02 ..  0D3E
+                                    if (ch <= 0xD03) {      //  0D02 ..  0D03
+                                        goto handle_spacing_mark;
+                                    } else {                //  0D04 ..  0D3E
+                                        if (ch <= 0xD3A) {  //  0D04 ..  0D3A
+                                            goto handle_other;
+                                        } else {            //  0D3B ..  0D3E
+                                            if (ch == 0x0D3D)
+                                                goto handle_other;
+                                            goto handle_extend;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } else {                                    //  0D3F ..  1059
+                    if (ch <= 0xEB3) {                      //  0D3F ..  0EB3
+                        if (ch <= 0xDD1) {                  //  0D3F ..  0DD1
+                            if (ch <= 0xD61) {              //  0D3F ..  0D61
+                                if (ch <= 0xD45) {          //  0D3F ..  0D45
+                                    if (ch <= 0xD40) {      //  0D3F ..  0D40
+                                        goto handle_spacing_mark;
+                                    } else {                //  0D41 ..  0D45
+                                        if (ch == 0x0D45)
+                                            goto handle_other;
+                                        goto handle_extend;
+                                    }
+                                } else {                    //  0D46 ..  0D61
+                                    if (ch <= 0xD4E) {      //  0D46 ..  0D4E
+                                        if (ch == 0x0D49)
+                                            goto handle_other;
+                                        if (ch == 0x0D4D)
+                                            goto handle_extend;
+                                        if (ch == 0x0D4E)
+                                            goto handle_prepend;
+                                        goto handle_spacing_mark;
+                                    } else {                //  0D4F ..  0D61
+                                        if (ch == 0x0D57)
+                                            goto handle_extend;
+                                        goto handle_other;
+                                    }
+                                }
+                            } else {                        //  0D62 ..  0DD1
+                                if (ch <= 0xD81) {          //  0D62 ..  0D81
+                                    if (ch <= 0xD63) {      //  0D62 ..  0D63
+                                        goto handle_extend;
+                                    } else {                //  0D64 ..  0D81
+                                        if (ch == 0x0D81)
+                                            goto handle_extend;
+                                        goto handle_other;
+                                    }
+                                } else {                    //  0D82 ..  0DD1
+                                    if (ch <= 0xD83) {      //  0D82 ..  0D83
+                                        goto handle_spacing_mark;
+                                    } else {                //  0D84 ..  0DD1
+                                        if (ch <= 0xDCF) {  //  0D84 ..  0DCF
+                                            if (ch == 0x0DCA)
+                                                goto handle_extend;
+                                            if (ch == 0x0DCF)
+                                                goto handle_extend;
+                                            goto handle_other;
+                                        } else {            //  0DD0 ..  0DD1
+                                            goto handle_spacing_mark;
+                                        }
+                                    }
+                                }
+                            }
+                        } else {                            //  0DD2 ..  0EB3
+                            if (ch <= 0xDF3) {              //  0DD2 ..  0DF3
+                                if (ch <= 0xDDF) {          //  0DD2 ..  0DDF
+                                    if (ch <= 0xDD7) {      //  0DD2 ..  0DD7
+                                        if (ch == 0x0DD5)
+                                            goto handle_other;
+                                        if (ch == 0x0DD7)
+                                            goto handle_other;
+                                        goto handle_extend;
+                                    } else {                //  0DD8 ..  0DDF
+                                        if (ch == 0x0DDF)
+                                            goto handle_extend;
+                                        goto handle_spacing_mark;
+                                    }
+                                } else {                    //  0DE0 ..  0DF3
+                                    if (ch <= 0xDF1) {      //  0DE0 ..  0DF1
+                                        goto handle_other;
+                                    } else {                //  0DF2 ..  0DF3
+                                        goto handle_spacing_mark;
+                                    }
+                                }
+                            } else {                        //  0DF4 ..  0EB3
+                                if (ch <= 0xE3A) {          //  0DF4 ..  0E3A
+                                    if (ch <= 0xE33) {      //  0DF4 ..  0E33
+                                        if (ch == 0x0E31)
+                                            goto handle_extend;
+                                        if (ch == 0x0E33)
+                                            goto handle_spacing_mark;
+                                        goto handle_other;
+                                    } else {                //  0E34 ..  0E3A
+                                        goto handle_extend;
+                                    }
+                                } else {                    //  0E3B ..  0EB3
+                                    if (ch <= 0xE46) {      //  0E3B ..  0E46
+                                        goto handle_other;
+                                    } else {                //  0E47 ..  0EB3
+                                        if (ch <= 0xE4E) {  //  0E47 ..  0E4E
+                                            goto handle_extend;
+                                        } else {            //  0E4F ..  0EB3
+                                            if (ch == 0x0EB1)
+                                                goto handle_extend;
+                                            if (ch == 0x0EB3)
+                                                goto handle_spacing_mark;
+                                            goto handle_other;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } else {                                //  0EB4 ..  1059
+                        if (ch <= 0xF87) {                  //  0EB4 ..  0F87
+                            if (ch <= 0xF17) {              //  0EB4 ..  0F17
+                                if (ch <= 0xEC7) {          //  0EB4 ..  0EC7
+                                    if (ch <= 0xEBC) {      //  0EB4 ..  0EBC
+                                        goto handle_extend;
+                                    } else {                //  0EBD ..  0EC7
+                                        goto handle_other;
+                                    }
+                                } else {                    //  0EC8 ..  0F17
+                                    if (ch <= 0xECD) {      //  0EC8 ..  0ECD
+                                        goto handle_extend;
+                                    } else {                //  0ECE ..  0F17
+                                        goto handle_other;
+                                    }
+                                }
+                            } else {                        //  0F18 ..  0F87
+                                if (ch <= 0xF3D) {          //  0F18 ..  0F3D
+                                    if (ch <= 0xF19) {      //  0F18 ..  0F19
+                                        goto handle_extend;
+                                    } else {                //  0F1A ..  0F3D
+                                        if (ch == 0x0F35)
+                                            goto handle_extend;
+                                        if (ch == 0x0F37)
+                                            goto handle_extend;
+                                        if (ch == 0x0F39)
+                                            goto handle_extend;
+                                        goto handle_other;
+                                    }
+                                } else {                    //  0F3E ..  0F87
+                                    if (ch <= 0xF3F) {      //  0F3E ..  0F3F
+                                        goto handle_spacing_mark;
+                                    } else {                //  0F40 ..  0F87
+                                        if (ch <= 0xF70) {  //  0F40 ..  0F70
+                                            goto handle_other;
+                                        } else {            //  0F71 ..  0F87
+                                            if (ch == 0x0F7F)
+                                                goto handle_spacing_mark;
+                                            if (ch == 0x0F85)
+                                                goto handle_other;
+                                            goto handle_extend;
+                                        }
+                                    }
+                                }
+                            }
+                        } else {                            //  0F88 ..  1059
+                            if (ch <= 0x103A) {             //  0F88 ..  103A
+                                if (ch <= 0xFBC) {          //  0F88 ..  0FBC
+                                    if (ch <= 0xF8C) {      //  0F88 ..  0F8C
+                                        goto handle_other;
+                                    } else {                //  0F8D ..  0FBC
+                                        if (ch == 0x0F98)
+                                            goto handle_other;
+                                        goto handle_extend;
+                                    }
+                                } else {                    //  0FBD ..  103A
+                                    if (ch <= 0x102C) {     //  0FBD ..  102C
+                                        if (ch == 0x0FC6)
+                                            goto handle_extend;
+                                        goto handle_other;
+                                    } else {                //  102D ..  103A
+                                        if (ch == 0x1031)
+                                            goto handle_spacing_mark;
+                                        if (ch == 0x1038)
+                                            goto handle_other;
+                                        goto handle_extend;
+                                    }
+                                }
+                            } else {                        //  103B ..  1059
+                                if (ch <= 0x103E) {         //  103B ..  103E
+                                    if (ch <= 0x103C) {     //  103B ..  103C
+                                        goto handle_spacing_mark;
+                                    } else {                //  103D ..  103E
+                                        goto handle_extend;
+                                    }
+                                } else {                    //  103F ..  1059
+                                    if (ch <= 0x1055) {     //  103F ..  1055
+                                        goto handle_other;
+                                    } else {                //  1056 ..  1059
+                                        if (ch <= 0x1057) { //  1056 ..  1057
+                                            goto handle_spacing_mark;
+                                        } else {            //  1058 ..  1059
+                                            goto handle_extend;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } else {                                            //  105A ..  A8F1
+            if (ch <= 0x1CE8) {                             //  105A ..  1CE8
+                if (ch <= 0x193B) {                         //  105A ..  193B
+                    if (ch <= 0x1753) {                     //  105A ..  1753
+                        if (ch <= 0x11A7) {                 //  105A ..  11A7
+                            if (ch <= 0x1074) {             //  105A ..  1074
+                                if (ch <= 0x1060) {         //  105A ..  1060
+                                    if (ch <= 0x105D) {     //  105A ..  105D
+                                        goto handle_other;
+                                    } else {                //  105E ..  1060
+                                        goto handle_extend;
+                                    }
+                                } else {                    //  1061 ..  1074
+                                    if (ch <= 0x1070) {     //  1061 ..  1070
+                                        goto handle_other;
+                                    } else {                //  1071 ..  1074
+                                        goto handle_extend;
+                                    }
+                                }
+                            } else {                        //  1075 ..  11A7
+                                if (ch <= 0x1086) {         //  1075 ..  1086
+                                    if (ch <= 0x1084) {     //  1075 ..  1084
+                                        if (ch == 0x1082)
+                                            goto handle_extend;
+                                        if (ch == 0x1084)
+                                            goto handle_spacing_mark;
+                                        goto handle_other;
+                                    } else {                //  1085 ..  1086
+                                        goto handle_extend;
+                                    }
+                                } else {                    //  1087 ..  11A7
+                                    if (ch <= 0x10FF) {     //  1087 ..  10FF
+                                        if (ch == 0x108D)
+                                            goto handle_extend;
+                                        if (ch == 0x109D)
+                                            goto handle_extend;
+                                        goto handle_other;
+                                    } else {                //  1100 ..  11A7
+                                        if (ch <= 0x115F) { //  1100 ..  115F
+                                            ch_width = 2_w;
+                                            goto handle_hangul_l;
+                                        } else {            //  1160 ..  11A7
+                                            goto handle_hangul_v;
+                                        }
+                                    }
+                                }
+                            }
+                        } else {                            //  11A8 ..  1753
+                            if (ch <= 0x1711) {             //  11A8 ..  1711
+                                if (ch <= 0x135C) {         //  11A8 ..  135C
+                                    if (ch <= 0x11FF) {     //  11A8 ..  11FF
+                                        goto handle_hangul_t;
+                                    } else {                //  1200 ..  135C
+                                        goto handle_other;
+                                    }
+                                } else {                    //  135D ..  1711
+                                    if (ch <= 0x135F) {     //  135D ..  135F
+                                        goto handle_extend;
+                                    } else {                //  1360 ..  1711
+                                        goto handle_other;
+                                    }
+                                }
+                            } else {                        //  1712 ..  1753
+                                if (ch <= 0x1731) {         //  1712 ..  1731
+                                    if (ch <= 0x1714) {     //  1712 ..  1714
+                                        goto handle_extend;
+                                    } else {                //  1715 ..  1731
+                                        goto handle_other;
+                                    }
+                                } else {                    //  1732 ..  1753
+                                    if (ch <= 0x1734) {     //  1732 ..  1734
+                                        goto handle_extend;
+                                    } else {                //  1735 ..  1753
+                                        if (ch <= 0x1751) { //  1735 ..  1751
+                                            goto handle_other;
+                                        } else {            //  1752 ..  1753
+                                            goto handle_extend;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } else {                                //  1754 ..  193B
+                        if (ch <= 0x1884) {                 //  1754 ..  1884
+                            if (ch <= 0x17BD) {             //  1754 ..  17BD
+                                if (ch <= 0x1773) {         //  1754 ..  1773
+                                    if (ch <= 0x1771) {     //  1754 ..  1771
+                                        goto handle_other;
+                                    } else {                //  1772 ..  1773
+                                        goto handle_extend;
+                                    }
+                                } else {                    //  1774 ..  17BD
+                                    if (ch <= 0x17B3) {     //  1774 ..  17B3
+                                        goto handle_other;
+                                    } else {                //  17B4 ..  17BD
+                                        if (ch == 0x17B6)
+                                            goto handle_spacing_mark;
+                                        goto handle_extend;
+                                    }
+                                }
+                            } else {                        //  17BE ..  1884
+                                if (ch <= 0x17D3) {         //  17BE ..  17D3
+                                    if (ch <= 0x17C8) {     //  17BE ..  17C8
+                                        if (ch == 0x17C6)
+                                            goto handle_extend;
+                                        goto handle_spacing_mark;
+                                    } else {                //  17C9 ..  17D3
+                                        goto handle_extend;
+                                    }
+                                } else {                    //  17D4 ..  1884
+                                    if (ch <= 0x180A) {     //  17D4 ..  180A
+                                        if (ch == 0x17DD)
+                                            goto handle_extend;
+                                        goto handle_other;
+                                    } else {                //  180B ..  1884
+                                        if (ch <= 0x180E) { //  180B ..  180E
+                                            if (ch == 0x180E)
+                                                goto handle_control;
+                                            goto handle_extend;
+                                        } else {            //  180F ..  1884
+                                            goto handle_other;
+                                        }
+                                    }
+                                }
+                            }
+                        } else {                            //  1885 ..  193B
+                            if (ch <= 0x1926) {             //  1885 ..  1926
+                                if (ch <= 0x191F) {         //  1885 ..  191F
+                                    if (ch <= 0x1886) {     //  1885 ..  1886
+                                        goto handle_extend;
+                                    } else {                //  1887 ..  191F
+                                        if (ch == 0x18A9)
+                                            goto handle_extend;
+                                        goto handle_other;
+                                    }
+                                } else {                    //  1920 ..  1926
+                                    if (ch <= 0x1922) {     //  1920 ..  1922
+                                        goto handle_extend;
+                                    } else {                //  1923 ..  1926
+                                        goto handle_spacing_mark;
+                                    }
+                                }
+                            } else {                        //  1927 ..  193B
+                                if (ch <= 0x192B) {         //  1927 ..  192B
+                                    if (ch <= 0x1928) {     //  1927 ..  1928
+                                        goto handle_extend;
+                                    } else {                //  1929 ..  192B
+                                        goto handle_spacing_mark;
+                                    }
+                                } else {                    //  192C ..  193B
+                                    if (ch <= 0x192F) {     //  192C ..  192F
+                                        goto handle_other;
+                                    } else {                //  1930 ..  193B
+                                        if (ch <= 0x1938) { //  1930 ..  1938
+                                            if (ch == 0x1932)
+                                                goto handle_extend;
+                                            goto handle_spacing_mark;
+                                        } else {            //  1939 ..  193B
+                                            goto handle_extend;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } else {                                    //  193C ..  1CE8
+                    if (ch <= 0x1B73) {                     //  193C ..  1B73
+                        if (ch <= 0x1A7C) {                 //  193C ..  1A7C
+                            if (ch <= 0x1A57) {             //  193C ..  1A57
+                                if (ch <= 0x1A18) {         //  193C ..  1A18
+                                    if (ch <= 0x1A16) {     //  193C ..  1A16
+                                        goto handle_other;
+                                    } else {                //  1A17 ..  1A18
+                                        goto handle_extend;
+                                    }
+                                } else {                    //  1A19 ..  1A57
+                                    if (ch <= 0x1A1B) {     //  1A19 ..  1A1B
+                                        if (ch == 0x1A1B)
+                                            goto handle_extend;
+                                        goto handle_spacing_mark;
+                                    } else {                //  1A1C ..  1A57
+                                        if (ch == 0x1A55)
+                                            goto handle_spacing_mark;
+                                        if (ch == 0x1A56)
+                                            goto handle_extend;
+                                        if (ch == 0x1A57)
+                                            goto handle_spacing_mark;
+                                        goto handle_other;
+                                    }
+                                }
+                            } else {                        //  1A58 ..  1A7C
+                                if (ch <= 0x1A64) {         //  1A58 ..  1A64
+                                    if (ch <= 0x1A62) {     //  1A58 ..  1A62
+                                        if (ch == 0x1A5F)
+                                            goto handle_other;
+                                        if (ch == 0x1A61)
+                                            goto handle_other;
+                                        goto handle_extend;
+                                    } else {                //  1A63 ..  1A64
+                                        goto handle_other;
+                                    }
+                                } else {                    //  1A65 ..  1A7C
+                                    if (ch <= 0x1A6C) {     //  1A65 ..  1A6C
+                                        goto handle_extend;
+                                    } else {                //  1A6D ..  1A7C
+                                        if (ch <= 0x1A72) { //  1A6D ..  1A72
+                                            goto handle_spacing_mark;
+                                        } else {            //  1A73 ..  1A7C
+                                            goto handle_extend;
+                                        }
+                                    }
+                                }
+                            }
+                        } else {                            //  1A7D ..  1B73
+                            if (ch <= 0x1B04) {             //  1A7D ..  1B04
+                                if (ch <= 0x1AC0) {         //  1A7D ..  1AC0
+                                    if (ch <= 0x1AAF) {     //  1A7D ..  1AAF
+                                        if (ch == 0x1A7F)
+                                            goto handle_extend;
+                                        goto handle_other;
+                                    } else {                //  1AB0 ..  1AC0
+                                        goto handle_extend;
+                                    }
+                                } else {                    //  1AC1 ..  1B04
+                                    if (ch <= 0x1AFF) {     //  1AC1 ..  1AFF
+                                        goto handle_other;
+                                    } else {                //  1B00 ..  1B04
+                                        if (ch == 0x1B04)
+                                            goto handle_spacing_mark;
+                                        goto handle_extend;
+                                    }
+                                }
+                            } else {                        //  1B05 ..  1B73
+                                if (ch <= 0x1B3C) {         //  1B05 ..  1B3C
+                                    if (ch <= 0x1B33) {     //  1B05 ..  1B33
+                                        goto handle_other;
+                                    } else {                //  1B34 ..  1B3C
+                                        if (ch == 0x1B3B)
+                                            goto handle_spacing_mark;
+                                        goto handle_extend;
+                                    }
+                                } else {                    //  1B3D ..  1B73
+                                    if (ch <= 0x1B44) {     //  1B3D ..  1B44
+                                        if (ch == 0x1B42)
+                                            goto handle_extend;
+                                        goto handle_spacing_mark;
+                                    } else {                //  1B45 ..  1B73
+                                        if (ch <= 0x1B6A) { //  1B45 ..  1B6A
+                                            goto handle_other;
+                                        } else {            //  1B6B ..  1B73
+                                            goto handle_extend;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } else {                                //  1B74 ..  1CE8
+                        if (ch <= 0x1BEE) {                 //  1B74 ..  1BEE
+                            if (ch <= 0x1BA5) {             //  1B74 ..  1BA5
+                                if (ch <= 0x1B82) {         //  1B74 ..  1B82
+                                    if (ch <= 0x1B7F) {     //  1B74 ..  1B7F
+                                        goto handle_other;
+                                    } else {                //  1B80 ..  1B82
+                                        if (ch == 0x1B82)
+                                            goto handle_spacing_mark;
+                                        goto handle_extend;
+                                    }
+                                } else {                    //  1B83 ..  1BA5
+                                    if (ch <= 0x1BA1) {     //  1B83 ..  1BA1
+                                        if (ch == 0x1BA1)
+                                            goto handle_spacing_mark;
+                                        goto handle_other;
+                                    } else {                //  1BA2 ..  1BA5
+                                        goto handle_extend;
+                                    }
+                                }
+                            } else {                        //  1BA6 ..  1BEE
+                                if (ch <= 0x1BAD) {         //  1BA6 ..  1BAD
+                                    if (ch <= 0x1BA7) {     //  1BA6 ..  1BA7
+                                        goto handle_spacing_mark;
+                                    } else {                //  1BA8 ..  1BAD
+                                        if (ch == 0x1BAA)
+                                            goto handle_spacing_mark;
+                                        goto handle_extend;
+                                    }
+                                } else {                    //  1BAE ..  1BEE
+                                    if (ch <= 0x1BE7) {     //  1BAE ..  1BE7
+                                        if (ch == 0x1BE6)
+                                            goto handle_extend;
+                                        if (ch == 0x1BE7)
+                                            goto handle_spacing_mark;
+                                        goto handle_other;
+                                    } else {                //  1BE8 ..  1BEE
+                                        if (ch <= 0x1BE9) { //  1BE8 ..  1BE9
+                                            goto handle_extend;
+                                        } else {            //  1BEA ..  1BEE
+                                            if (ch == 0x1BED)
+                                                goto handle_extend;
+                                            goto handle_spacing_mark;
+                                        }
+                                    }
+                                }
+                            }
+                        } else {                            //  1BEF ..  1CE8
+                            if (ch <= 0x1C2B) {             //  1BEF ..  1C2B
+                                if (ch <= 0x1BF3) {         //  1BEF ..  1BF3
+                                    if (ch <= 0x1BF1) {     //  1BEF ..  1BF1
+                                        goto handle_extend;
+                                    } else {                //  1BF2 ..  1BF3
+                                        goto handle_spacing_mark;
+                                    }
+                                } else {                    //  1BF4 ..  1C2B
+                                    if (ch <= 0x1C23) {     //  1BF4 ..  1C23
+                                        goto handle_other;
+                                    } else {                //  1C24 ..  1C2B
+                                        goto handle_spacing_mark;
+                                    }
+                                }
+                            } else {                        //  1C2C ..  1CE8
+                                if (ch <= 0x1C35) {         //  1C2C ..  1C35
+                                    if (ch <= 0x1C33) {     //  1C2C ..  1C33
+                                        goto handle_extend;
+                                    } else {                //  1C34 ..  1C35
+                                        goto handle_spacing_mark;
+                                    }
+                                } else {                    //  1C36 ..  1CE8
+                                    if (ch <= 0x1C37) {     //  1C36 ..  1C37
+                                        goto handle_extend;
+                                    } else {                //  1C38 ..  1CE8
+                                        if (ch <= 0x1CCF) { //  1C38 ..  1CCF
+                                            goto handle_other;
+                                        } else {            //  1CD0 ..  1CE8
+                                            if (ch == 0x1CD3)
+                                                goto handle_other;
+                                            if (ch == 0x1CE1)
+                                                goto handle_spacing_mark;
+                                            goto handle_extend;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            } else {                                        //  1CE9 ..  A8F1
+                if (ch <= 0x2757) {                         //  1CE9 ..  2757
+                    if (ch <= 0x231B) {                     //  1CE9 ..  231B
+                        if (ch <= 0x205F) {                 //  1CE9 ..  205F
+                            if (ch <= 0x1DFF) {             //  1CE9 ..  1DFF
+                                if (ch <= 0x1CF9) {         //  1CE9 ..  1CF9
+                                    if (ch <= 0x1CF7) {     //  1CE9 ..  1CF7
+                                        if (ch == 0x1CED)
+                                            goto handle_extend;
+                                        if (ch == 0x1CF4)
+                                            goto handle_extend;
+                                        if (ch == 0x1CF7)
+                                            goto handle_spacing_mark;
+                                        goto handle_other;
+                                    } else {                //  1CF8 ..  1CF9
+                                        goto handle_extend;
+                                    }
+                                } else {                    //  1CFA ..  1DFF
+                                    if (ch <= 0x1DBF) {     //  1CFA ..  1DBF
+                                        goto handle_other;
+                                    } else {                //  1DC0 ..  1DFF
+                                        if (ch == 0x1DFA)
+                                            goto handle_other;
+                                        goto handle_extend;
+                                    }
+                                }
+                            } else {                        //  1E00 ..  205F
+                                if (ch <= 0x200F) {         //  1E00 ..  200F
+                                    if (ch <= 0x200D) {     //  1E00 ..  200D
+                                        if (ch == 0x200B)
+                                            goto handle_control;
+                                        if (ch == 0x200C)
+                                            goto handle_extend;
+                                        if (ch == 0x200D)
+                                            goto handle_zwj;
+                                        goto handle_other;
+                                    } else {                //  200E ..  200F
+                                        goto handle_control;
+                                    }
+                                } else {                    //  2010 ..  205F
+                                    if (ch <= 0x2027) {     //  2010 ..  2027
+                                        goto handle_other;
+                                    } else {                //  2028 ..  205F
+                                        if (ch <= 0x202E) { //  2028 ..  202E
+                                            goto handle_control;
+                                        } else {            //  202F ..  205F
+                                            if (ch == 0x203C)
+                                                goto handle_extended_picto;
+                                            if (ch == 0x2049)
+                                                goto handle_extended_picto;
+                                            goto handle_other;
+                                        }
+                                    }
+                                }
+                            }
+                        } else {                            //  2060 ..  231B
+                            if (ch <= 0x2193) {             //  2060 ..  2193
+                                if (ch <= 0x20CF) {         //  2060 ..  20CF
+                                    if (ch <= 0x206F) {     //  2060 ..  206F
+                                        goto handle_control;
+                                    } else {                //  2070 ..  20CF
+                                        goto handle_other;
+                                    }
+                                } else {                    //  20D0 ..  2193
+                                    if (ch <= 0x20F0) {     //  20D0 ..  20F0
+                                        goto handle_extend;
+                                    } else {                //  20F1 ..  2193
+                                        if (ch == 0x2122)
+                                            goto handle_extended_picto;
+                                        if (ch == 0x2139)
+                                            goto handle_extended_picto;
+                                        goto handle_other;
+                                    }
+                                }
+                            } else {                        //  2194 ..  231B
+                                if (ch <= 0x21A8) {         //  2194 ..  21A8
+                                    if (ch <= 0x2199) {     //  2194 ..  2199
+                                        goto handle_extended_picto;
+                                    } else {                //  219A ..  21A8
+                                        goto handle_other;
+                                    }
+                                } else {                    //  21A9 ..  231B
+                                    if (ch <= 0x21AA) {     //  21A9 ..  21AA
+                                        goto handle_extended_picto;
+                                    } else {                //  21AB ..  231B
+                                        if (ch <= 0x2319) { //  21AB ..  2319
+                                            goto handle_other;
+                                        } else {            //  231A ..  231B
+                                            goto handle_extended_picto;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } else {                                //  231C ..  2757
+                        if (ch <= 0x25FA) {                 //  231C ..  25FA
+                            if (ch <= 0x23F3) {             //  231C ..  23F3
+                                if (ch <= 0x232A) {         //  231C ..  232A
+                                    if (ch <= 0x2328) {     //  231C ..  2328
+                                        if (ch == 0x2328)
+                                            goto handle_extended_picto;
+                                        goto handle_other;
+                                    } else {                //  2329 ..  232A
+                                        ch_width = 2_w;
+                                        goto handle_other;
+                                    }
+                                } else {                    //  232B ..  23F3
+                                    if (ch <= 0x23E8) {     //  232B ..  23E8
+                                        if (ch == 0x2388)
+                                            goto handle_extended_picto;
+                                        if (ch == 0x23CF)
+                                            goto handle_extended_picto;
+                                        goto handle_other;
+                                    } else {                //  23E9 ..  23F3
+                                        goto handle_extended_picto;
+                                    }
+                                }
+                            } else {                        //  23F4 ..  25FA
+                                if (ch <= 0x23FA) {         //  23F4 ..  23FA
+                                    if (ch <= 0x23F7) {     //  23F4 ..  23F7
+                                        goto handle_other;
+                                    } else {                //  23F8 ..  23FA
+                                        goto handle_extended_picto;
+                                    }
+                                } else {                    //  23FB ..  25FA
+                                    if (ch <= 0x25A9) {     //  23FB ..  25A9
+                                        if (ch == 0x24C2)
+                                            goto handle_extended_picto;
+                                        goto handle_other;
+                                    } else {                //  25AA ..  25FA
+                                        if (ch <= 0x25AB) { //  25AA ..  25AB
+                                            goto handle_extended_picto;
+                                        } else {            //  25AC ..  25FA
+                                            if (ch == 0x25B6)
+                                                goto handle_extended_picto;
+                                            if (ch == 0x25C0)
+                                                goto handle_extended_picto;
+                                            goto handle_other;
+                                        }
+                                    }
+                                }
+                            }
+                        } else {                            //  25FB ..  2757
+                            if (ch <= 0x2707) {             //  25FB ..  2707
+                                if (ch <= 0x268F) {         //  25FB ..  268F
+                                    if (ch <= 0x2685) {     //  25FB ..  2685
+                                        if (ch == 0x25FF)
+                                            goto handle_other;
+                                        if (ch == 0x2606)
+                                            goto handle_other;
+                                        if (ch == 0x2613)
+                                            goto handle_other;
+                                        goto handle_extended_picto;
+                                    } else {                //  2686 ..  268F
+                                        goto handle_other;
+                                    }
+                                } else {                    //  2690 ..  2707
+                                    if (ch <= 0x2705) {     //  2690 ..  2705
+                                        goto handle_extended_picto;
+                                    } else {                //  2706 ..  2707
+                                        goto handle_other;
+                                    }
+                                }
+                            } else {                        //  2708 ..  2757
+                                if (ch <= 0x2732) {         //  2708 ..  2732
+                                    if (ch <= 0x2716) {     //  2708 ..  2716
+                                        if (ch == 0x2713)
+                                            goto handle_other;
+                                        if (ch == 0x2715)
+                                            goto handle_other;
+                                        goto handle_extended_picto;
+                                    } else {                //  2717 ..  2732
+                                        if (ch == 0x271D)
+                                            goto handle_extended_picto;
+                                        if (ch == 0x2721)
+                                            goto handle_extended_picto;
+                                        if (ch == 0x2728)
+                                            goto handle_extended_picto;
+                                        goto handle_other;
+                                    }
+                                } else {                    //  2733 ..  2757
+                                    if (ch <= 0x2734) {     //  2733 ..  2734
+                                        goto handle_extended_picto;
+                                    } else {                //  2735 ..  2757
+                                        if (ch <= 0x2752) { //  2735 ..  2752
+                                            if (ch == 0x2744)
+                                                goto handle_extended_picto;
+                                            if (ch == 0x2747)
+                                                goto handle_extended_picto;
+                                            if (ch == 0x274C)
+                                                goto handle_extended_picto;
+                                            if (ch == 0x274E)
+                                                goto handle_extended_picto;
+                                            goto handle_other;
+                                        } else {            //  2753 ..  2757
+                                            if (ch == 0x2756)
+                                                goto handle_other;
+                                            goto handle_extended_picto;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } else {                                    //  2758 ..  A8F1
+                    if (ch <= 0x3098) {                     //  2758 ..  3098
+                        if (ch <= 0x2B1A) {                 //  2758 ..  2B1A
+                            if (ch <= 0x2797) {             //  2758 ..  2797
+                                if (ch <= 0x2767) {         //  2758 ..  2767
+                                    if (ch <= 0x2762) {     //  2758 ..  2762
+                                        goto handle_other;
+                                    } else {                //  2763 ..  2767
+                                        goto handle_extended_picto;
+                                    }
+                                } else {                    //  2768 ..  2797
+                                    if (ch <= 0x2794) {     //  2768 ..  2794
+                                        goto handle_other;
+                                    } else {                //  2795 ..  2797
+                                        goto handle_extended_picto;
+                                    }
+                                }
+                            } else {                        //  2798 ..  2B1A
+                                if (ch <= 0x2935) {         //  2798 ..  2935
+                                    if (ch <= 0x2933) {     //  2798 ..  2933
+                                        if (ch == 0x27A1)
+                                            goto handle_extended_picto;
+                                        if (ch == 0x27B0)
+                                            goto handle_extended_picto;
+                                        if (ch == 0x27BF)
+                                            goto handle_extended_picto;
+                                        goto handle_other;
+                                    } else {                //  2934 ..  2935
+                                        goto handle_extended_picto;
+                                    }
+                                } else {                    //  2936 ..  2B1A
+                                    if (ch <= 0x2B04) {     //  2936 ..  2B04
+                                        goto handle_other;
+                                    } else {                //  2B05 ..  2B1A
+                                        if (ch <= 0x2B07) { //  2B05 ..  2B07
+                                            goto handle_extended_picto;
+                                        } else {            //  2B08 ..  2B1A
+                                            goto handle_other;
+                                        }
+                                    }
+                                }
+                            }
+                        } else {                            //  2B1B ..  3098
+                            if (ch <= 0x2DDF) {             //  2B1B ..  2DDF
+                                if (ch <= 0x2CEE) {         //  2B1B ..  2CEE
+                                    if (ch <= 0x2B1C) {     //  2B1B ..  2B1C
+                                        goto handle_extended_picto;
+                                    } else {                //  2B1D ..  2CEE
+                                        if (ch == 0x2B50)
+                                            goto handle_extended_picto;
+                                        if (ch == 0x2B55)
+                                            goto handle_extended_picto;
+                                        goto handle_other;
+                                    }
+                                } else {                    //  2CEF ..  2DDF
+                                    if (ch <= 0x2CF1) {     //  2CEF ..  2CF1
+                                        goto handle_extend;
+                                    } else {                //  2CF2 ..  2DDF
+                                        if (ch == 0x2D7F)
+                                            goto handle_extend;
+                                        goto handle_other;
+                                    }
+                                }
+                            } else {                        //  2DE0 ..  3098
+                                if (ch <= 0x2E7F) {         //  2DE0 ..  2E7F
+                                    if (ch <= 0x2DFF) {     //  2DE0 ..  2DFF
+                                        goto handle_extend;
+                                    } else {                //  2E00 ..  2E7F
+                                        goto handle_other;
+                                    }
+                                } else {                    //  2E80 ..  3098
+                                    ch_width = 2_w;
+                                    if (ch <= 0x3029) {     //  2E80 ..  3029
+                                        goto handle_other;
+                                    } else {                //  302A ..  3098
+                                        if (ch <= 0x3030) { //  302A ..  3030
+                                            if (ch == 0x3030)
+                                                goto handle_extended_picto;
+                                            goto handle_extend;
+                                        } else {            //  3031 ..  3098
+                                            if (ch == 0x303D) {
+                                                goto handle_extended_picto;
+                                            }
+                                            if (ch == 0x303F) {
+                                                ch_width = 1;
+                                            }
+                                            goto handle_other;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } else {                                //  3099 ..  A8F1
+                        if (ch <= 0xA822) {                 //  3099 ..  A822
+                            if (ch <= 0xA67D) {             //  3099 ..  A67D
+                                if (ch <= 0xA4CF) {         //  3099 ..  A4CF
+                                    ch_width = 2_w;
+                                    if (ch <= 0x309A) {     //  3099 ..  309A
+                                        goto handle_extend;
+                                    } else {                //  309B ..  A4CF
+                                        if (ch == 0x3297)
+                                            goto handle_extended_picto;
+                                        if (ch == 0x3299)
+                                            goto handle_extended_picto;
+                                        goto handle_other;
+                                    }
+                                } else {                    //  A4D0 ..  A67D
+                                    if (ch <= 0xA66E) {     //  A4D0 ..  A66E
+                                        goto handle_other;
+                                    } else {                //  A66F ..  A67D
+                                        if (ch == 0xA673)
+                                            goto handle_other;
+                                        goto handle_extend;
+                                    }
+                                }
+                            } else {                        //  A67E ..  A822
+                                if (ch <= 0xA69F) {         //  A67E ..  A69F
+                                    if (ch <= 0xA69D) {     //  A67E ..  A69D
+                                        goto handle_other;
+                                    } else {                //  A69E ..  A69F
+                                        goto handle_extend;
+                                    }
+                                } else {                    //  A6A0 ..  A822
+                                    if (ch <= 0xA6EF) {     //  A6A0 ..  A6EF
+                                        goto handle_other;
+                                    } else {                //  A6F0 ..  A822
+                                        if (ch <= 0xA6F1) { //  A6F0 ..  A6F1
+                                            goto handle_extend;
+                                        } else {            //  A6F2 ..  A822
+                                            if (ch == 0xA802)
+                                                goto handle_extend;
+                                            if (ch == 0xA806)
+                                                goto handle_extend;
+                                            if (ch == 0xA80B)
+                                                goto handle_extend;
+                                            goto handle_other;
+                                        }
+                                    }
+                                }
+                            }
+                        } else {                            //  A823 ..  A8F1
+                            if (ch <= 0xA881) {             //  A823 ..  A881
+                                if (ch <= 0xA827) {         //  A823 ..  A827
+                                    if (ch <= 0xA824) {     //  A823 ..  A824
+                                        goto handle_spacing_mark;
+                                    } else {                //  A825 ..  A827
+                                        if (ch == 0xA827)
+                                            goto handle_spacing_mark;
+                                        goto handle_extend;
+                                    }
+                                } else {                    //  A828 ..  A881
+                                    if (ch <= 0xA87F) {     //  A828 ..  A87F
+                                        if (ch == 0xA82C)
+                                            goto handle_extend;
+                                        goto handle_other;
+                                    } else {                //  A880 ..  A881
+                                        goto handle_spacing_mark;
+                                    }
+                                }
+                            } else {                        //  A882 ..  A8F1
+                                if (ch <= 0xA8C3) {         //  A882 ..  A8C3
+                                    if (ch <= 0xA8B3) {     //  A882 ..  A8B3
+                                        goto handle_other;
+                                    } else {                //  A8B4 ..  A8C3
+                                        goto handle_spacing_mark;
+                                    }
+                                } else {                    //  A8C4 ..  A8F1
+                                    if (ch <= 0xA8C5) {     //  A8C4 ..  A8C5
+                                        goto handle_extend;
+                                    } else {                //  A8C6 ..  A8F1
+                                        if (ch <= 0xA8DF) { //  A8C6 ..  A8DF
+                                            goto handle_other;
+                                        } else {            //  A8E0 ..  A8F1
+                                            goto handle_extend;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    } else {                                                //  A8F2 ..10FFFF
+        if (ch <= 0x116AF) {                                //  A8F2 .. 116AF
+            if (ch <= 0x11037) {                            //  A8F2 .. 11037
+                if (ch <= 0xD7AF) {                         //  A8F2 ..  D7AF
+                    if (ch <= 0xAA2E) {                     //  A8F2 ..  AA2E
+                        if (ch <= 0xA97F) {                 //  A8F2 ..  A97F
+                            if (ch <= 0xA951) {             //  A8F2 ..  A951
+                                if (ch <= 0xA92D) {         //  A8F2 ..  A92D
+                                    if (ch <= 0xA925) {     //  A8F2 ..  A925
+                                        if (ch == 0xA8FF)
+                                            goto handle_extend;
+                                        goto handle_other;
+                                    } else {                //  A926 ..  A92D
+                                        goto handle_extend;
+                                    }
+                                } else {                    //  A92E ..  A951
+                                    if (ch <= 0xA946) {     //  A92E ..  A946
+                                        goto handle_other;
+                                    } else {                //  A947 ..  A951
+                                        goto handle_extend;
+                                    }
+                                }
+                            } else {                        //  A952 ..  A97F
+                                if (ch <= 0xA95F) {         //  A952 ..  A95F
+                                    if (ch <= 0xA953) {     //  A952 ..  A953
+                                        goto handle_spacing_mark;
+                                    } else {                //  A954 ..  A95F
+                                        goto handle_other;
+                                    }
+                                } else {                    //  A960 ..  A97F
+                                    if (ch <= 0xA97C) {     //  A960 ..  A97C
+                                        goto handle_hangul_l;
+                                    } else {                //  A97D ..  A97F
+                                        goto handle_other;
+                                    }
+                                }
+                            }
+                        } else {                            //  A980 ..  AA2E
+                            if (ch <= 0xA9B9) {             //  A980 ..  A9B9
+                                if (ch <= 0xA9B3) {         //  A980 ..  A9B3
+                                    if (ch <= 0xA983) {     //  A980 ..  A983
+                                        if (ch == 0xA983)
+                                            goto handle_spacing_mark;
+                                        goto handle_extend;
+                                    } else {                //  A984 ..  A9B3
+                                        if (ch == 0xA9B3)
+                                            goto handle_extend;
+                                        goto handle_other;
+                                    }
+                                } else {                    //  A9B4 ..  A9B9
+                                    if (ch <= 0xA9B5) {     //  A9B4 ..  A9B5
+                                        goto handle_spacing_mark;
+                                    } else {                //  A9B6 ..  A9B9
+                                        goto handle_extend;
+                                    }
+                                }
+                            } else {                        //  A9BA ..  AA2E
+                                if (ch <= 0xA9BD) {         //  A9BA ..  A9BD
+                                    if (ch <= 0xA9BB) {     //  A9BA ..  A9BB
+                                        goto handle_spacing_mark;
+                                    } else {                //  A9BC ..  A9BD
+                                        goto handle_extend;
+                                    }
+                                } else {                    //  A9BE ..  AA2E
+                                    if (ch <= 0xA9C0) {     //  A9BE ..  A9C0
+                                        goto handle_spacing_mark;
+                                    } else {                //  A9C1 ..  AA2E
+                                        if (ch <= 0xAA28) { //  A9C1 ..  AA28
+                                            if (ch == 0xA9E5)
+                                                goto handle_extend;
+                                            goto handle_other;
+                                        } else {            //  AA29 ..  AA2E
+                                            goto handle_extend;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } else {                                //  AA2F ..  D7AF
+                        if (ch <= 0xAABD) {                 //  AA2F ..  AABD
+                            if (ch <= 0xAA36) {             //  AA2F ..  AA36
+                                if (ch <= 0xAA32) {         //  AA2F ..  AA32
+                                    if (ch <= 0xAA30) {     //  AA2F ..  AA30
+                                        goto handle_spacing_mark;
+                                    } else {                //  AA31 ..  AA32
+                                        goto handle_extend;
+                                    }
+                                } else {                    //  AA33 ..  AA36
+                                    if (ch <= 0xAA34) {     //  AA33 ..  AA34
+                                        goto handle_spacing_mark;
+                                    } else {                //  AA35 ..  AA36
+                                        goto handle_extend;
+                                    }
+                                }
+                            } else {                        //  AA37 ..  AABD
+                                if (ch <= 0xAAB4) {         //  AA37 ..  AAB4
+                                    if (ch <= 0xAAB1) {     //  AA37 ..  AAB1
+                                        if (ch == 0xAA43)
+                                            goto handle_extend;
+                                        if (ch == 0xAA4C)
+                                            goto handle_extend;
+                                        if (ch == 0xAA4D)
+                                            goto handle_spacing_mark;
+                                        if (ch == 0xAA7C)
+                                            goto handle_extend;
+                                        if (ch == 0xAAB0)
+                                            goto handle_extend;
+                                        goto handle_other;
+                                    } else {                //  AAB2 ..  AAB4
+                                        goto handle_extend;
+                                    }
+                                } else {                    //  AAB5 ..  AABD
+                                    if (ch <= 0xAAB6) {     //  AAB5 ..  AAB6
+                                        goto handle_other;
+                                    } else {                //  AAB7 ..  AABD
+                                        if (ch <= 0xAAB8) { //  AAB7 ..  AAB8
+                                            goto handle_extend;
+                                        } else {            //  AAB9 ..  AABD
+                                            goto handle_other;
+                                        }
+                                    }
+                                }
+                            }
+                        } else {                            //  AABE ..  D7AF
+                            if (ch <= 0xAAEF) {             //  AABE ..  AAEF
+                                if (ch <= 0xAAEB) {         //  AABE ..  AAEB
+                                    if (ch <= 0xAAC1) {     //  AABE ..  AAC1
+                                        if (ch == 0xAAC0)
+                                            goto handle_other;
+                                        goto handle_extend;
+                                    } else {                //  AAC2 ..  AAEB
+                                        if (ch == 0xAAEB)
+                                            goto handle_spacing_mark;
+                                        goto handle_other;
+                                    }
+                                } else {                    //  AAEC ..  AAEF
+                                    if (ch <= 0xAAED) {     //  AAEC ..  AAED
+                                        goto handle_extend;
+                                    } else {                //  AAEE ..  AAEF
+                                        goto handle_spacing_mark;
+                                    }
+                                }
+                            } else {                        //  AAF0 ..  D7AF
+                                if (ch <= 0xABED) {         //  AAF0 ..  ABED
+                                    if (ch <= 0xABE2) {     //  AAF0 ..  ABE2
+                                        if (ch == 0xAAF5)
+                                            goto handle_spacing_mark;
+                                        if (ch == 0xAAF6)
+                                            goto handle_extend;
+                                        goto handle_other;
+                                    } else {                //  ABE3 ..  ABED
+                                        if (ch == 0xABE5)
+                                            goto handle_extend;
+                                        if (ch == 0xABE8)
+                                            goto handle_extend;
+                                        if (ch == 0xABEB)
+                                            goto handle_other;
+                                        if (ch == 0xABED)
+                                            goto handle_extend;
+                                        goto handle_spacing_mark;
+                                    }
+                                } else {                    //  ABEE ..  D7AF
+                                    if (ch <= 0xABFF) {     //  ABEE ..  ABFF
+                                        goto handle_other;
+                                    } else {                //  AC00 ..  D7AF
+                                        if (ch <= 0xD7A3) { //  AC00 ..  D7A3
+                                            ch_width = 2_w;
+                                            goto handle_hangul_lv_or_lvt;
+                                        } else {            //  D7A4 ..  D7AF
+                                            goto handle_other;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } else {                                    //  D7B0 .. 11037
+                    if (ch <= 0xFFEF) {                     //  D7B0 ..  FFEF
+                        if (ch <= 0xFE1F) {                 //  D7B0 ..  FE1F
+                            if (ch <= 0xF8FF) {             //  D7B0 ..  F8FF
+                                if (ch <= 0xD7CA) {         //  D7B0 ..  D7CA
+                                    if (ch <= 0xD7C6) {     //  D7B0 ..  D7C6
+                                        goto handle_hangul_v;
+                                    } else {                //  D7C7 ..  D7CA
+                                        goto handle_other;
+                                    }
+                                } else {                    //  D7CB ..  F8FF
+                                    if (ch <= 0xD7FB) {     //  D7CB ..  D7FB
+                                        goto handle_hangul_t;
+                                    } else {                //  D7FC ..  F8FF
+                                        goto handle_other;
+                                    }
+                                }
+                            } else {                        //  F900 ..  FE1F
+                                if (ch <= 0xFDFF) {         //  F900 ..  FDFF
+                                    if (ch <= 0xFAFF) {     //  F900 ..  FAFF
+                                        ch_width = 2_w;
+                                        goto handle_other;
+                                    } else {                //  FB00 ..  FDFF
+                                        if (ch == 0xFB1E)
+                                            goto handle_extend;
+                                        goto handle_other;
+                                    }
+                                } else {                    //  FE00 ..  FE1F
+                                    if (ch <= 0xFE0F) {     //  FE00 ..  FE0F
+                                        goto handle_extend;
+                                    } else {                //  FE10 ..  FE1F
+                                        if (ch <= 0xFE19) { //  FE10 ..  FE19
+                                            ch_width = 2_w;
+                                            goto handle_other;
+                                        } else {            //  FE1A ..  FE1F
+                                            goto handle_other;
+                                        }
+                                    }
+                                }
+                            }
+                        } else {                            //  FE20 ..  FFEF
+                            if (ch <= 0xFF60) {             //  FE20 ..  FF60
+                                if (ch <= 0xFE6F) {         //  FE20 ..  FE6F
+                                    if (ch <= 0xFE2F) {     //  FE20 ..  FE2F
+                                        goto handle_extend;
+                                    } else {                //  FE30 ..  FE6F
+                                        ch_width = 2_w;
+                                        goto handle_other;
+                                    }
+                                } else {                    //  FE70 ..  FF60
+                                    if (ch <= 0xFEFF) {     //  FE70 ..  FEFF
+                                        if (ch == 0xFEFF)
+                                            goto handle_control;
+                                        goto handle_other;
+                                    } else {                //  FF00 ..  FF60
+                                        ch_width = 2_w;
+                                        goto handle_other;
+                                    }
+                                }
+                            } else {                        //  FF61 ..  FFEF
+                                if (ch <= 0xFF9F) {         //  FF61 ..  FF9F
+                                    if (ch <= 0xFF9D) {     //  FF61 ..  FF9D
+                                        goto handle_other;
+                                    } else {                //  FF9E ..  FF9F
+                                        goto handle_extend;
+                                    }
+                                } else {                    //  FFA0 ..  FFEF
+                                    if (ch <= 0xFFDF) {     //  FFA0 ..  FFDF
+                                        goto handle_other;
+                                    } else {                //  FFE0 ..  FFEF
+                                        if (ch <= 0xFFE6) { //  FFE0 ..  FFE6
+                                            ch_width = 2_w;
+                                            goto handle_other;
+                                        } else {            //  FFE7 ..  FFEF
+                                            goto handle_other;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } else {                                //  FFF0 .. 11037
+                        if (ch <= 0x10A3A) {                //  FFF0 .. 10A3A
+                            if (ch <= 0x10A00) {            //  FFF0 .. 10A00
+                                if (ch <= 0x10375) {        //  FFF0 .. 10375
+                                    if (ch <= 0xFFFB) {     //  FFF0 ..  FFFB
+                                        goto handle_control;
+                                    } else {                //  FFFC .. 10375
+                                        if (ch == 0x101FD)
+                                            goto handle_extend;
+                                        if (ch == 0x102E0)
+                                            goto handle_extend;
+                                        goto handle_other;
+                                    }
+                                } else {                    // 10376 .. 10A00
+                                    if (ch <= 0x1037A) {    // 10376 .. 1037A
+                                        goto handle_extend;
+                                    } else {                // 1037B .. 10A00
+                                        goto handle_other;
+                                    }
+                                }
+                            } else {                        // 10A01 .. 10A3A
+                                if (ch <= 0x10A0B) {        // 10A01 .. 10A0B
+                                    if (ch <= 0x10A06) {    // 10A01 .. 10A06
+                                        if (ch == 0x10A04)
+                                            goto handle_other;
+                                        goto handle_extend;
+                                    } else {                // 10A07 .. 10A0B
+                                        goto handle_other;
+                                    }
+                                } else {                    // 10A0C .. 10A3A
+                                    if (ch <= 0x10A0F) {    // 10A0C .. 10A0F
+                                        goto handle_extend;
+                                    } else {                // 10A10 .. 10A3A
+                                        if (ch <= 0x10A37) {// 10A10 .. 10A37
+                                            goto handle_other;
+                                        } else {            // 10A38 .. 10A3A
+                                            goto handle_extend;
+                                        }
+                                    }
+                                }
+                            }
+                        } else {                            // 10A3B .. 11037
+                            if (ch <= 0x10D27) {            // 10A3B .. 10D27
+                                if (ch <= 0x10AE6) {        // 10A3B .. 10AE6
+                                    if (ch <= 0x10AE4) {    // 10A3B .. 10AE4
+                                        if (ch == 0x10A3F)
+                                            goto handle_extend;
+                                        goto handle_other;
+                                    } else {                // 10AE5 .. 10AE6
+                                        goto handle_extend;
+                                    }
+                                } else {                    // 10AE7 .. 10D27
+                                    if (ch <= 0x10D23) {    // 10AE7 .. 10D23
+                                        goto handle_other;
+                                    } else {                // 10D24 .. 10D27
+                                        goto handle_extend;
+                                    }
+                                }
+                            } else {                        // 10D28 .. 11037
+                                if (ch <= 0x10EAC) {        // 10D28 .. 10EAC
+                                    if (ch <= 0x10EAA) {    // 10D28 .. 10EAA
+                                        goto handle_other;
+                                    } else {                // 10EAB .. 10EAC
+                                        goto handle_extend;
+                                    }
+                                } else {                    // 10EAD .. 11037
+                                    if (ch <= 0x10F45) {    // 10EAD .. 10F45
+                                        goto handle_other;
+                                    } else {                // 10F46 .. 11037
+                                        if (ch <= 0x10F50) {// 10F46 .. 10F50
+                                            goto handle_extend;
+                                        } else {            // 10F51 .. 11037
+                                            if (ch == 0x11000)
+                                                goto handle_spacing_mark;
+                                            if (ch == 0x11001)
+                                                goto handle_extend;
+                                            if (ch == 0x11002)
+                                                goto handle_spacing_mark;
+                                            goto handle_other;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            } else {                                        // 11038 .. 116AF
+                if (ch <= 0x11340) {                        // 11038 .. 11340
+                    if (ch <= 0x111B5) {                    // 11038 .. 111B5
+                        if (ch <= 0x110FF) {                // 11038 .. 110FF
+                            if (ch <= 0x110AF) {            // 11038 .. 110AF
+                                if (ch <= 0x1107E) {        // 11038 .. 1107E
+                                    if (ch <= 0x11046) {    // 11038 .. 11046
+                                        goto handle_extend;
+                                    } else {                // 11047 .. 1107E
+                                        goto handle_other;
+                                    }
+                                } else {                    // 1107F .. 110AF
+                                    if (ch <= 0x11082) {    // 1107F .. 11082
+                                        if (ch == 0x11082)
+                                            goto handle_spacing_mark;
+                                        goto handle_extend;
+                                    } else {                // 11083 .. 110AF
+                                        goto handle_other;
+                                    }
+                                }
+                            } else {                        // 110B0 .. 110FF
+                                if (ch <= 0x110B6) {        // 110B0 .. 110B6
+                                    if (ch <= 0x110B2) {    // 110B0 .. 110B2
+                                        goto handle_spacing_mark;
+                                    } else {                // 110B3 .. 110B6
+                                        goto handle_extend;
+                                    }
+                                } else {                    // 110B7 .. 110FF
+                                    if (ch <= 0x110B8) {    // 110B7 .. 110B8
+                                        goto handle_spacing_mark;
+                                    } else {                // 110B9 .. 110FF
+                                        if (ch <= 0x110BA) {// 110B9 .. 110BA
+                                            goto handle_extend;
+                                        } else {            // 110BB .. 110FF
+                                            if (ch == 0x110BD)
+                                                goto handle_prepend;
+                                            if (ch == 0x110CD)
+                                                goto handle_prepend;
+                                            goto handle_other;
+                                        }
+                                    }
+                                }
+                            }
+                        } else {                            // 11100 .. 111B5
+                            if (ch <= 0x11144) {            // 11100 .. 11144
+                                if (ch <= 0x11126) {        // 11100 .. 11126
+                                    if (ch <= 0x11102) {    // 11100 .. 11102
+                                        goto handle_extend;
+                                    } else {                // 11103 .. 11126
+                                        goto handle_other;
+                                    }
+                                } else {                    // 11127 .. 11144
+                                    if (ch <= 0x11134) {    // 11127 .. 11134
+                                        if (ch == 0x1112C)
+                                            goto handle_spacing_mark;
+                                        goto handle_extend;
+                                    } else {                // 11135 .. 11144
+                                        goto handle_other;
+                                    }
+                                }
+                            } else {                        // 11145 .. 111B5
+                                if (ch <= 0x1117F) {        // 11145 .. 1117F
+                                    if (ch <= 0x11146) {    // 11145 .. 11146
+                                        goto handle_spacing_mark;
+                                    } else {                // 11147 .. 1117F
+                                        if (ch == 0x11173)
+                                            goto handle_extend;
+                                        goto handle_other;
+                                    }
+                                } else {                    // 11180 .. 111B5
+                                    if (ch <= 0x11182) {    // 11180 .. 11182
+                                        if (ch == 0x11182)
+                                            goto handle_spacing_mark;
+                                        goto handle_extend;
+                                    } else {                // 11183 .. 111B5
+                                        if (ch <= 0x111B2) {// 11183 .. 111B2
+                                            goto handle_other;
+                                        } else {            // 111B3 .. 111B5
+                                            goto handle_spacing_mark;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } else {                                // 111B6 .. 11340
+                        if (ch <= 0x11235) {                // 111B6 .. 11235
+                            if (ch <= 0x111C8) {            // 111B6 .. 111C8
+                                if (ch <= 0x111C1) {        // 111B6 .. 111C1
+                                    if (ch <= 0x111BE) {    // 111B6 .. 111BE
+                                        goto handle_extend;
+                                    } else {                // 111BF .. 111C1
+                                        if (ch == 0x111C1)
+                                            goto handle_other;
+                                        goto handle_spacing_mark;
+                                    }
+                                } else {                    // 111C2 .. 111C8
+                                    if (ch <= 0x111C3) {    // 111C2 .. 111C3
+                                        goto handle_prepend;
+                                    } else {                // 111C4 .. 111C8
+                                        goto handle_other;
+                                    }
+                                }
+                            } else {                        // 111C9 .. 11235
+                                if (ch <= 0x1122B) {        // 111C9 .. 1122B
+                                    if (ch <= 0x111CF) {    // 111C9 .. 111CF
+                                        if (ch == 0x111CD)
+                                            goto handle_other;
+                                        if (ch == 0x111CE)
+                                            goto handle_spacing_mark;
+                                        goto handle_extend;
+                                    } else {                // 111D0 .. 1122B
+                                        goto handle_other;
+                                    }
+                                } else {                    // 1122C .. 11235
+                                    if (ch <= 0x1122E) {    // 1122C .. 1122E
+                                        goto handle_spacing_mark;
+                                    } else {                // 1122F .. 11235
+                                        if (ch <= 0x11231) {// 1122F .. 11231
+                                            goto handle_extend;
+                                        } else {            // 11232 .. 11235
+                                            if (ch == 0x11234)
+                                                goto handle_extend;
+                                            goto handle_spacing_mark;
+                                        }
+                                    }
+                                }
+                            }
+                        } else {                            // 11236 .. 11340
+                            if (ch <= 0x112EA) {            // 11236 .. 112EA
+                                if (ch <= 0x112DF) {        // 11236 .. 112DF
+                                    if (ch <= 0x11237) {    // 11236 .. 11237
+                                        goto handle_extend;
+                                    } else {                // 11238 .. 112DF
+                                        if (ch == 0x1123E)
+                                            goto handle_extend;
+                                        if (ch == 0x112DF)
+                                            goto handle_extend;
+                                        goto handle_other;
+                                    }
+                                } else {                    // 112E0 .. 112EA
+                                    if (ch <= 0x112E2) {    // 112E0 .. 112E2
+                                        goto handle_spacing_mark;
+                                    } else {                // 112E3 .. 112EA
+                                        goto handle_extend;
+                                    }
+                                }
+                            } else {                        // 112EB .. 11340
+                                if (ch <= 0x11301) {        // 112EB .. 11301
+                                    if (ch <= 0x112FF) {    // 112EB .. 112FF
+                                        goto handle_other;
+                                    } else {                // 11300 .. 11301
+                                        goto handle_extend;
+                                    }
+                                } else {                    // 11302 .. 11340
+                                    if (ch <= 0x11303) {    // 11302 .. 11303
+                                        goto handle_spacing_mark;
+                                    } else {                // 11304 .. 11340
+                                        if (ch <= 0x1133A) {// 11304 .. 1133A
+                                            goto handle_other;
+                                        } else {            // 1133B .. 11340
+                                            if (ch == 0x1133D)
+                                                goto handle_other;
+                                            if (ch == 0x1133F)
+                                                goto handle_spacing_mark;
+                                            goto handle_extend;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } else {                                    // 11341 .. 116AF
+                    if (ch <= 0x114B2) {                    // 11341 .. 114B2
+                        if (ch <= 0x1136C) {                // 11341 .. 1136C
+                            if (ch <= 0x1134A) {            // 11341 .. 1134A
+                                if (ch <= 0x11346) {        // 11341 .. 11346
+                                    if (ch <= 0x11344) {    // 11341 .. 11344
+                                        goto handle_spacing_mark;
+                                    } else {                // 11345 .. 11346
+                                        goto handle_other;
+                                    }
+                                } else {                    // 11347 .. 1134A
+                                    if (ch <= 0x11348) {    // 11347 .. 11348
+                                        goto handle_spacing_mark;
+                                    } else {                // 11349 .. 1134A
+                                        goto handle_other;
+                                    }
+                                }
+                            } else {                        // 1134B .. 1136C
+                                if (ch <= 0x11361) {        // 1134B .. 11361
+                                    if (ch <= 0x1134D) {    // 1134B .. 1134D
+                                        goto handle_spacing_mark;
+                                    } else {                // 1134E .. 11361
+                                        if (ch == 0x11357)
+                                            goto handle_extend;
+                                        goto handle_other;
+                                    }
+                                } else {                    // 11362 .. 1136C
+                                    if (ch <= 0x11363) {    // 11362 .. 11363
+                                        goto handle_spacing_mark;
+                                    } else {                // 11364 .. 1136C
+                                        if (ch <= 0x11365) {// 11364 .. 11365
+                                            goto handle_other;
+                                        } else {            // 11366 .. 1136C
+                                            goto handle_extend;
+                                        }
+                                    }
+                                }
+                            }
+                        } else {                            // 1136D .. 114B2
+                            if (ch <= 0x11437) {            // 1136D .. 11437
+                                if (ch <= 0x11374) {        // 1136D .. 11374
+                                    if (ch <= 0x1136F) {    // 1136D .. 1136F
+                                        goto handle_other;
+                                    } else {                // 11370 .. 11374
+                                        goto handle_extend;
+                                    }
+                                } else {                    // 11375 .. 11437
+                                    if (ch <= 0x11434) {    // 11375 .. 11434
+                                        goto handle_other;
+                                    } else {                // 11435 .. 11437
+                                        goto handle_spacing_mark;
+                                    }
+                                }
+                            } else {                        // 11438 .. 114B2
+                                if (ch <= 0x11441) {        // 11438 .. 11441
+                                    if (ch <= 0x1143F) {    // 11438 .. 1143F
+                                        goto handle_extend;
+                                    } else {                // 11440 .. 11441
+                                        goto handle_spacing_mark;
+                                    }
+                                } else {                    // 11442 .. 114B2
+                                    if (ch <= 0x11446) {    // 11442 .. 11446
+                                        if (ch == 0x11445)
+                                            goto handle_spacing_mark;
+                                        goto handle_extend;
+                                    } else {                // 11447 .. 114B2
+                                        if (ch <= 0x114B0) {// 11447 .. 114B0
+                                            if (ch == 0x1145E)
+                                                goto handle_extend;
+                                            if (ch == 0x114B0)
+                                                goto handle_extend;
+                                            goto handle_other;
+                                        } else {            // 114B1 .. 114B2
+                                            goto handle_spacing_mark;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } else {                                // 114B3 .. 116AF
+                        if (ch <= 0x115C0) {                // 114B3 .. 115C0
+                            if (ch <= 0x115AF) {            // 114B3 .. 115AF
+                                if (ch <= 0x114BE) {        // 114B3 .. 114BE
+                                    if (ch <= 0x114BA) {    // 114B3 .. 114BA
+                                        if (ch == 0x114B9)
+                                            goto handle_spacing_mark;
+                                        goto handle_extend;
+                                    } else {                // 114BB .. 114BE
+                                        if (ch == 0x114BD)
+                                            goto handle_extend;
+                                        goto handle_spacing_mark;
+                                    }
+                                } else {                    // 114BF .. 115AF
+                                    if (ch <= 0x114C3) {    // 114BF .. 114C3
+                                        if (ch == 0x114C1)
+                                            goto handle_spacing_mark;
+                                        goto handle_extend;
+                                    } else {                // 114C4 .. 115AF
+                                        if (ch == 0x115AF)
+                                            goto handle_extend;
+                                        goto handle_other;
+                                    }
+                                }
+                            } else {                        // 115B0 .. 115C0
+                                if (ch <= 0x115B5) {        // 115B0 .. 115B5
+                                    if (ch <= 0x115B1) {    // 115B0 .. 115B1
+                                        goto handle_spacing_mark;
+                                    } else {                // 115B2 .. 115B5
+                                        goto handle_extend;
+                                    }
+                                } else {                    // 115B6 .. 115C0
+                                    if (ch <= 0x115B7) {    // 115B6 .. 115B7
+                                        goto handle_other;
+                                    } else {                // 115B8 .. 115C0
+                                        if (ch <= 0x115BB) {// 115B8 .. 115BB
+                                            goto handle_spacing_mark;
+                                        } else {            // 115BC .. 115C0
+                                            if (ch == 0x115BE)
+                                                goto handle_spacing_mark;
+                                            goto handle_extend;
+                                        }
+                                    }
+                                }
+                            }
+                        } else {                            // 115C1 .. 116AF
+                            if (ch <= 0x11632) {            // 115C1 .. 11632
+                                if (ch <= 0x115DD) {        // 115C1 .. 115DD
+                                    if (ch <= 0x115DB) {    // 115C1 .. 115DB
+                                        goto handle_other;
+                                    } else {                // 115DC .. 115DD
+                                        goto handle_extend;
+                                    }
+                                } else {                    // 115DE .. 11632
+                                    if (ch <= 0x1162F) {    // 115DE .. 1162F
+                                        goto handle_other;
+                                    } else {                // 11630 .. 11632
+                                        goto handle_spacing_mark;
+                                    }
+                                }
+                            } else {                        // 11633 .. 116AF
+                                if (ch <= 0x1163E) {        // 11633 .. 1163E
+                                    if (ch <= 0x1163A) {    // 11633 .. 1163A
+                                        goto handle_extend;
+                                    } else {                // 1163B .. 1163E
+                                        if (ch == 0x1163D)
+                                            goto handle_extend;
+                                        goto handle_spacing_mark;
+                                    }
+                                } else {                    // 1163F .. 116AF
+                                    if (ch <= 0x11640) {    // 1163F .. 11640
+                                        goto handle_extend;
+                                    } else {                // 11641 .. 116AF
+                                        if (ch <= 0x116AD) {// 11641 .. 116AD
+                                            if (ch == 0x116AB)
+                                                goto handle_extend;
+                                            if (ch == 0x116AC)
+                                                goto handle_spacing_mark;
+                                            if (ch == 0x116AD)
+                                                goto handle_extend;
+                                            goto handle_other;
+                                        } else {            // 116AE .. 116AF
+                                            goto handle_spacing_mark;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } else {                                            // 116B0 ..10FFFF
+            if (ch <= 0x1D9FF) {                            // 116B0 .. 1D9FF
+                if (ch <= 0x11D3B) {                        // 116B0 .. 11D3B
+                    if (ch <= 0x119E0) {                    // 116B0 .. 119E0
+                        if (ch <= 0x11930) {                // 116B0 .. 11930
+                            if (ch <= 0x11721) {            // 116B0 .. 11721
+                                if (ch <= 0x1171C) {        // 116B0 .. 1171C
+                                    if (ch <= 0x116B7) {    // 116B0 .. 116B7
+                                        if (ch == 0x116B6)
+                                            goto handle_spacing_mark;
+                                        goto handle_extend;
+                                    } else {                // 116B8 .. 1171C
+                                        goto handle_other;
+                                    }
+                                } else {                    // 1171D .. 11721
+                                    if (ch <= 0x1171F) {    // 1171D .. 1171F
+                                        goto handle_extend;
+                                    } else {                // 11720 .. 11721
+                                        goto handle_other;
+                                    }
+                                }
+                            } else {                        // 11722 .. 11930
+                                if (ch <= 0x1182B) {        // 11722 .. 1182B
+                                    if (ch <= 0x1172B) {    // 11722 .. 1172B
+                                        if (ch == 0x11726)
+                                            goto handle_spacing_mark;
+                                        goto handle_extend;
+                                    } else {                // 1172C .. 1182B
+                                        goto handle_other;
+                                    }
+                                } else {                    // 1182C .. 11930
+                                    if (ch <= 0x1182E) {    // 1182C .. 1182E
+                                        goto handle_spacing_mark;
+                                    } else {                // 1182F .. 11930
+                                        if (ch <= 0x1183A) {// 1182F .. 1183A
+                                            if (ch == 0x11838)
+                                                goto handle_spacing_mark;
+                                            goto handle_extend;
+                                        } else {            // 1183B .. 11930
+                                            if (ch == 0x11930)
+                                                goto handle_extend;
+                                            goto handle_other;
+                                        }
+                                    }
+                                }
+                            }
+                        } else {                            // 11931 .. 119E0
+                            if (ch <= 0x119D0) {            // 11931 .. 119D0
+                                if (ch <= 0x1193A) {        // 11931 .. 1193A
+                                    if (ch <= 0x11938) {    // 11931 .. 11938
+                                        if (ch == 0x11936)
+                                            goto handle_other;
+                                        goto handle_spacing_mark;
+                                    } else {                // 11939 .. 1193A
+                                        goto handle_other;
+                                    }
+                                } else {                    // 1193B .. 119D0
+                                    if (ch <= 0x11943) {    // 1193B .. 11943
+                                        if (ch == 0x1193D)
+                                            goto handle_spacing_mark;
+                                        if (ch == 0x1193F)
+                                            goto handle_prepend;
+                                        if (ch == 0x11940)
+                                            goto handle_spacing_mark;
+                                        if (ch == 0x11941)
+                                            goto handle_prepend;
+                                        if (ch == 0x11942)
+                                            goto handle_spacing_mark;
+                                        goto handle_extend;
+                                    } else {                // 11944 .. 119D0
+                                        goto handle_other;
+                                    }
+                                }
+                            } else {                        // 119D1 .. 119E0
+                                if (ch <= 0x119D7) {        // 119D1 .. 119D7
+                                    if (ch <= 0x119D3) {    // 119D1 .. 119D3
+                                        goto handle_spacing_mark;
+                                    } else {                // 119D4 .. 119D7
+                                        goto handle_extend;
+                                    }
+                                } else {                    // 119D8 .. 119E0
+                                    if (ch <= 0x119D9) {    // 119D8 .. 119D9
+                                        goto handle_other;
+                                    } else {                // 119DA .. 119E0
+                                        if (ch <= 0x119DB) {// 119DA .. 119DB
+                                            goto handle_extend;
+                                        } else {            // 119DC .. 119E0
+                                            if (ch == 0x119E0)
+                                                goto handle_extend;
+                                            goto handle_spacing_mark;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } else {                                // 119E1 .. 11D3B
+                        if (ch <= 0x11A83) {                // 119E1 .. 11A83
+                            if (ch <= 0x11A3E) {            // 119E1 .. 11A3E
+                                if (ch <= 0x11A0A) {        // 119E1 .. 11A0A
+                                    if (ch <= 0x11A00) {    // 119E1 .. 11A00
+                                        if (ch == 0x119E4)
+                                            goto handle_spacing_mark;
+                                        goto handle_other;
+                                    } else {                // 11A01 .. 11A0A
+                                        goto handle_extend;
+                                    }
+                                } else {                    // 11A0B .. 11A3E
+                                    if (ch <= 0x11A32) {    // 11A0B .. 11A32
+                                        goto handle_other;
+                                    } else {                // 11A33 .. 11A3E
+                                        if (ch == 0x11A39)
+                                            goto handle_spacing_mark;
+                                        if (ch == 0x11A3A)
+                                            goto handle_prepend;
+                                        goto handle_extend;
+                                    }
+                                }
+                            } else {                        // 11A3F .. 11A83
+                                if (ch <= 0x11A56) {        // 11A3F .. 11A56
+                                    if (ch <= 0x11A50) {    // 11A3F .. 11A50
+                                        if (ch == 0x11A47)
+                                            goto handle_extend;
+                                        goto handle_other;
+                                    } else {                // 11A51 .. 11A56
+                                        goto handle_extend;
+                                    }
+                                } else {                    // 11A57 .. 11A83
+                                    if (ch <= 0x11A58) {    // 11A57 .. 11A58
+                                        goto handle_spacing_mark;
+                                    } else {                // 11A59 .. 11A83
+                                        if (ch <= 0x11A5B) {// 11A59 .. 11A5B
+                                            goto handle_extend;
+                                        } else {            // 11A5C .. 11A83
+                                            goto handle_other;
+                                        }
+                                    }
+                                }
+                            }
+                        } else {                            // 11A84 .. 11D3B
+                            if (ch <= 0x11C3F) {            // 11A84 .. 11C3F
+                                if (ch <= 0x11A99) {        // 11A84 .. 11A99
+                                    if (ch <= 0x11A89) {    // 11A84 .. 11A89
+                                        goto handle_prepend;
+                                    } else {                // 11A8A .. 11A99
+                                        if (ch == 0x11A97)
+                                            goto handle_spacing_mark;
+                                        goto handle_extend;
+                                    }
+                                } else {                    // 11A9A .. 11C3F
+                                    if (ch <= 0x11C2F) {    // 11A9A .. 11C2F
+                                        if (ch == 0x11C2F)
+                                            goto handle_spacing_mark;
+                                        goto handle_other;
+                                    } else {                // 11C30 .. 11C3F
+                                        if (ch == 0x11C37)
+                                            goto handle_other;
+                                        if (ch == 0x11C3E)
+                                            goto handle_spacing_mark;
+                                        goto handle_extend;
+                                    }
+                                }
+                            } else {                        // 11C40 .. 11D3B
+                                if (ch <= 0x11CB6) {        // 11C40 .. 11CB6
+                                    if (ch <= 0x11C91) {    // 11C40 .. 11C91
+                                        goto handle_other;
+                                    } else {                // 11C92 .. 11CB6
+                                        if (ch == 0x11CA8)
+                                            goto handle_other;
+                                        if (ch == 0x11CA9)
+                                            goto handle_spacing_mark;
+                                        if (ch == 0x11CB1)
+                                            goto handle_spacing_mark;
+                                        if (ch == 0x11CB4)
+                                            goto handle_spacing_mark;
+                                        goto handle_extend;
+                                    }
+                                } else {                    // 11CB7 .. 11D3B
+                                    if (ch <= 0x11D30) {    // 11CB7 .. 11D30
+                                        goto handle_other;
+                                    } else {                // 11D31 .. 11D3B
+                                        if (ch <= 0x11D36) {// 11D31 .. 11D36
+                                            goto handle_extend;
+                                        } else {            // 11D37 .. 11D3B
+                                            if (ch == 0x11D3A)
+                                                goto handle_extend;
+                                            goto handle_other;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } else {                                    // 11D3C .. 1D9FF
+                    if (ch <= 0x16F92) {                    // 11D3C .. 16F92
+                        if (ch <= 0x1342F) {                // 11D3C .. 1342F
+                            if (ch <= 0x11D92) {            // 11D3C .. 11D92
+                                if (ch <= 0x11D89) {        // 11D3C .. 11D89
+                                    if (ch <= 0x11D47) {    // 11D3C .. 11D47
+                                        if (ch == 0x11D3E)
+                                            goto handle_other;
+                                        if (ch == 0x11D46)
+                                            goto handle_prepend;
+                                        goto handle_extend;
+                                    } else {                // 11D48 .. 11D89
+                                        goto handle_other;
+                                    }
+                                } else {                    // 11D8A .. 11D92
+                                    if (ch <= 0x11D8F) {    // 11D8A .. 11D8F
+                                        if (ch == 0x11D8F)
+                                            goto handle_other;
+                                        goto handle_spacing_mark;
+                                    } else {                // 11D90 .. 11D92
+                                        if (ch == 0x11D92)
+                                            goto handle_other;
+                                        goto handle_extend;
+                                    }
+                                }
+                            } else {                        // 11D93 .. 1342F
+                                if (ch <= 0x11EF2) {        // 11D93 .. 11EF2
+                                    if (ch <= 0x11D97) {    // 11D93 .. 11D97
+                                        if (ch == 0x11D95)
+                                            goto handle_extend;
+                                        if (ch == 0x11D97)
+                                            goto handle_extend;
+                                        goto handle_spacing_mark;
+                                    } else {                // 11D98 .. 11EF2
+                                        goto handle_other;
+                                    }
+                                } else {                    // 11EF3 .. 1342F
+                                    if (ch <= 0x11EF4) {    // 11EF3 .. 11EF4
+                                        goto handle_extend;
+                                    } else {                // 11EF5 .. 1342F
+                                        if (ch <= 0x11EF6) {// 11EF5 .. 11EF6
+                                            goto handle_spacing_mark;
+                                        } else {            // 11EF7 .. 1342F
+                                            goto handle_other;
+                                        }
+                                    }
+                                }
+                            }
+                        } else {                            // 13430 .. 16F92
+                            if (ch <= 0x16B2F) {            // 13430 .. 16B2F
+                                if (ch <= 0x16AEF) {        // 13430 .. 16AEF
+                                    if (ch <= 0x13438) {    // 13430 .. 13438
+                                        goto handle_control;
+                                    } else {                // 13439 .. 16AEF
+                                        goto handle_other;
+                                    }
+                                } else {                    // 16AF0 .. 16B2F
+                                    if (ch <= 0x16AF4) {    // 16AF0 .. 16AF4
+                                        goto handle_extend;
+                                    } else {                // 16AF5 .. 16B2F
+                                        goto handle_other;
+                                    }
+                                }
+                            } else {                        // 16B30 .. 16F92
+                                if (ch <= 0x16F50) {        // 16B30 .. 16F50
+                                    if (ch <= 0x16B36) {    // 16B30 .. 16B36
+                                        goto handle_extend;
+                                    } else {                // 16B37 .. 16F50
+                                        if (ch == 0x16F4F)
+                                            goto handle_extend;
+                                        goto handle_other;
+                                    }
+                                } else {                    // 16F51 .. 16F92
+                                    if (ch <= 0x16F87) {    // 16F51 .. 16F87
+                                        goto handle_spacing_mark;
+                                    } else {                // 16F88 .. 16F92
+                                        if (ch <= 0x16F8E) {// 16F88 .. 16F8E
+                                            goto handle_other;
+                                        } else {            // 16F8F .. 16F92
+                                            goto handle_extend;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } else {                                // 16F93 .. 1D9FF
+                        if (ch <= 0x1D172) {                // 16F93 .. 1D172
+                            if (ch <= 0x1BC9F) {            // 16F93 .. 1BC9F
+                                if (ch <= 0x16FF1) {        // 16F93 .. 16FF1
+                                    if (ch <= 0x16FEF) {    // 16F93 .. 16FEF
+                                        if (ch == 0x16FE4)
+                                            goto handle_extend;
+                                        goto handle_other;
+                                    } else {                // 16FF0 .. 16FF1
+                                        goto handle_spacing_mark;
+                                    }
+                                } else {                    // 16FF2 .. 1BC9F
+                                    if (ch <= 0x1BC9C) {    // 16FF2 .. 1BC9C
+                                        goto handle_other;
+                                    } else {                // 1BC9D .. 1BC9F
+                                        if (ch == 0x1BC9F)
+                                            goto handle_other;
+                                        goto handle_extend;
+                                    }
+                                }
+                            } else {                        // 1BCA0 .. 1D172
+                                if (ch <= 0x1D166) {        // 1BCA0 .. 1D166
+                                    if (ch <= 0x1BCA3) {    // 1BCA0 .. 1BCA3
+                                        goto handle_control;
+                                    } else {                // 1BCA4 .. 1D166
+                                        if (ch == 0x1D165)
+                                            goto handle_extend;
+                                        if (ch == 0x1D166)
+                                            goto handle_spacing_mark;
+                                        goto handle_other;
+                                    }
+                                } else {                    // 1D167 .. 1D172
+                                    if (ch <= 0x1D169) {    // 1D167 .. 1D169
+                                        goto handle_extend;
+                                    } else {                // 1D16A .. 1D172
+                                        if (ch <= 0x1D16D) {// 1D16A .. 1D16D
+                                            if (ch == 0x1D16D)
+                                                goto handle_spacing_mark;
+                                            goto handle_other;
+                                        } else {            // 1D16E .. 1D172
+                                            goto handle_extend;
+                                        }
+                                    }
+                                }
+                            }
+                        } else {                            // 1D173 .. 1D9FF
+                            if (ch <= 0x1D18B) {            // 1D173 .. 1D18B
+                                if (ch <= 0x1D182) {        // 1D173 .. 1D182
+                                    if (ch <= 0x1D17A) {    // 1D173 .. 1D17A
+                                        goto handle_control;
+                                    } else {                // 1D17B .. 1D182
+                                        goto handle_extend;
+                                    }
+                                } else {                    // 1D183 .. 1D18B
+                                    if (ch <= 0x1D184) {    // 1D183 .. 1D184
+                                        goto handle_other;
+                                    } else {                // 1D185 .. 1D18B
+                                        goto handle_extend;
+                                    }
+                                }
+                            } else {                        // 1D18C .. 1D9FF
+                                if (ch <= 0x1D1AD) {        // 1D18C .. 1D1AD
+                                    if (ch <= 0x1D1A9) {    // 1D18C .. 1D1A9
+                                        goto handle_other;
+                                    } else {                // 1D1AA .. 1D1AD
+                                        goto handle_extend;
+                                    }
+                                } else {                    // 1D1AE .. 1D9FF
+                                    if (ch <= 0x1D241) {    // 1D1AE .. 1D241
+                                        goto handle_other;
+                                    } else {                // 1D242 .. 1D9FF
+                                        if (ch <= 0x1D244) {// 1D242 .. 1D244
+                                            goto handle_extend;
+                                        } else {            // 1D245 .. 1D9FF
+                                            goto handle_other;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            } else {                                        // 1DA00 ..10FFFF
+                if (ch <= 0x1F3FA) {                        // 1DA00 .. 1F3FA
+                    if (ch <= 0x1EFFF) {                    // 1DA00 .. 1EFFF
+                        if (ch <= 0x1E02A) {                // 1DA00 .. 1E02A
+                            if (ch <= 0x1DA9A) {            // 1DA00 .. 1DA9A
+                                if (ch <= 0x1DA3A) {        // 1DA00 .. 1DA3A
+                                    if (ch <= 0x1DA36) {    // 1DA00 .. 1DA36
+                                        goto handle_extend;
+                                    } else {                // 1DA37 .. 1DA3A
+                                        goto handle_other;
+                                    }
+                                } else {                    // 1DA3B .. 1DA9A
+                                    if (ch <= 0x1DA6C) {    // 1DA3B .. 1DA6C
+                                        goto handle_extend;
+                                    } else {                // 1DA6D .. 1DA9A
+                                        if (ch == 0x1DA75)
+                                            goto handle_extend;
+                                        if (ch == 0x1DA84)
+                                            goto handle_extend;
+                                        goto handle_other;
+                                    }
+                                }
+                            } else {                        // 1DA9B .. 1E02A
+                                if (ch <= 0x1DFFF) {        // 1DA9B .. 1DFFF
+                                    if (ch <= 0x1DAAF) {    // 1DA9B .. 1DAAF
+                                        if (ch == 0x1DAA0)
+                                            goto handle_other;
+                                        goto handle_extend;
+                                    } else {                // 1DAB0 .. 1DFFF
+                                        goto handle_other;
+                                    }
+                                } else {                    // 1E000 .. 1E02A
+                                    if (ch <= 0x1E018) {    // 1E000 .. 1E018
+                                        if (ch == 0x1E007)
+                                            goto handle_other;
+                                        goto handle_extend;
+                                    } else {                // 1E019 .. 1E02A
+                                        if (ch <= 0x1E01A) {// 1E019 .. 1E01A
+                                            goto handle_other;
+                                        } else {            // 1E01B .. 1E02A
+                                            if (ch == 0x1E022)
+                                                goto handle_other;
+                                            if (ch == 0x1E025)
+                                                goto handle_other;
+                                            goto handle_extend;
+                                        }
+                                    }
+                                }
+                            }
+                        } else {                            // 1E02B .. 1EFFF
+                            if (ch <= 0x1E2EF) {            // 1E02B .. 1E2EF
+                                if (ch <= 0x1E136) {        // 1E02B .. 1E136
+                                    if (ch <= 0x1E12F) {    // 1E02B .. 1E12F
+                                        goto handle_other;
+                                    } else {                // 1E130 .. 1E136
+                                        goto handle_extend;
+                                    }
+                                } else {                    // 1E137 .. 1E2EF
+                                    if (ch <= 0x1E2EB) {    // 1E137 .. 1E2EB
+                                        goto handle_other;
+                                    } else {                // 1E2EC .. 1E2EF
+                                        goto handle_extend;
+                                    }
+                                }
+                            } else {                        // 1E2F0 .. 1EFFF
+                                if (ch <= 0x1E8D6) {        // 1E2F0 .. 1E8D6
+                                    if (ch <= 0x1E8CF) {    // 1E2F0 .. 1E8CF
+                                        goto handle_other;
+                                    } else {                // 1E8D0 .. 1E8D6
+                                        goto handle_extend;
+                                    }
+                                } else {                    // 1E8D7 .. 1EFFF
+                                    if (ch <= 0x1E943) {    // 1E8D7 .. 1E943
+                                        goto handle_other;
+                                    } else {                // 1E944 .. 1EFFF
+                                        if (ch <= 0x1E94A) {// 1E944 .. 1E94A
+                                            goto handle_extend;
+                                        } else {            // 1E94B .. 1EFFF
+                                            goto handle_other;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } else {                                // 1F000 .. 1F3FA
+                        if (ch <= 0x1F19A) {                // 1F000 .. 1F19A
+                            if (ch <= 0x1F16B) {            // 1F000 .. 1F16B
+                                if (ch <= 0x1F10C) {        // 1F000 .. 1F10C
+                                    if (ch <= 0x1F0FF) {    // 1F000 .. 1F0FF
+                                        goto handle_extended_picto;
+                                    } else {                // 1F100 .. 1F10C
+                                        goto handle_other;
+                                    }
+                                } else {                    // 1F10D .. 1F16B
+                                    if (ch <= 0x1F10F) {    // 1F10D .. 1F10F
+                                        goto handle_extended_picto;
+                                    } else {                // 1F110 .. 1F16B
+                                        if (ch == 0x1F12F)
+                                            goto handle_extended_picto;
+                                        goto handle_other;
+                                    }
+                                }
+                            } else {                        // 1F16C .. 1F19A
+                                if (ch <= 0x1F17D) {        // 1F16C .. 1F17D
+                                    if (ch <= 0x1F171) {    // 1F16C .. 1F171
+                                        goto handle_extended_picto;
+                                    } else {                // 1F172 .. 1F17D
+                                        goto handle_other;
+                                    }
+                                } else {                    // 1F17E .. 1F19A
+                                    if (ch <= 0x1F17F) {    // 1F17E .. 1F17F
+                                        goto handle_extended_picto;
+                                    } else {                // 1F180 .. 1F19A
+                                        if (ch <= 0x1F190) {// 1F180 .. 1F190
+                                            if (ch == 0x1F18E)
+                                                goto handle_extended_picto;
+                                            goto handle_other;
+                                        } else {            // 1F191 .. 1F19A
+                                            goto handle_extended_picto;
+                                        }
+                                    }
+                                }
+                            }
+                        } else {                            // 1F19B .. 1F3FA
+                            if (ch <= 0x1F20F) {            // 1F19B .. 1F20F
+                                if (ch <= 0x1F1E5) {        // 1F19B .. 1F1E5
+                                    if (ch <= 0x1F1AC) {    // 1F19B .. 1F1AC
+                                        goto handle_other;
+                                    } else {                // 1F1AD .. 1F1E5
+                                        goto handle_extended_picto;
+                                    }
+                                } else if (ch <= 0x1F1FF) { // 1F1E6 .. 1F1FF
+                                    goto handle_regional_indicator;
+                                } else if (ch == 0x1F200) {
+                                    goto handle_other;
+                                } else  {                   // 1F201 .. 1F20F
+                                    goto handle_extended_picto;
+                                }
+                            } else {                        // 1F210 .. 1F3FA
+                                if (ch <= 0x1F23F) {        // 1F210 .. 1F23F
+                                    if (ch <= 0x1F231) {    // 1F210 .. 1F231
+                                        if (ch == 0x1F21A)
+                                            goto handle_extended_picto;
+                                        if (ch == 0x1F22F)
+                                            goto handle_extended_picto;
+                                        goto handle_other;
+                                    } else {                // 1F232 .. 1F23F
+                                        if (ch == 0x1F23B)
+                                            goto handle_other;
+                                        goto handle_extended_picto;
+                                    }
+                                } else {                    // 1F240 .. 1F3FA
+                                    if (ch <= 0x1F248) {    // 1F240 .. 1F248
+                                        goto handle_other;
+                                    } else {                // 1F249 .. 1F3FA
+                                        if (ch <= 0x1F2FF) {// 1F249 .. 1F2FF
+                                            goto handle_extended_picto;
+                                        } else {            // 1F300 .. 1F3FA
+                                            ch_width = 2_w;
+                                            goto handle_extended_picto;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } else {                                    // 1F3FB ..10FFFF
+                    if (ch <= 0x1F88F) {                    // 1F3FB .. 1F88F
+                        if (ch <= 0x1F7D4) {                // 1F3FB .. 1F7D4
+                            if (ch <= 0x1F64F) {            // 1F3FB .. 1F64F
+                                ch_width = 2_w;
+                                if (ch <= 0x1F53D) {        // 1F3FB .. 1F53D
+                                    if (ch <= 0x1F3FF) {    // 1F3FB .. 1F3FF
+                                        goto handle_extend;
+                                    } else {                // 1F400 .. 1F53D
+                                        goto handle_extended_picto;
+                                    }
+                                } else {                    // 1F53E .. 1F64F
+                                    if (ch <= 0x1F545) {    // 1F53E .. 1F545
+                                        goto handle_other;
+                                    } else {                // 1F546 .. 1F64F
+                                        goto handle_extended_picto;
+                                    }
+                                }
+                            } else {                        // 1F650 .. 1F7D4
+                                if (ch <= 0x1F6FF) {        // 1F650 .. 1F6FF
+                                    if (ch <= 0x1F67F) {    // 1F650 .. 1F67F
+                                        goto handle_other;
+                                    } else {                // 1F680 .. 1F6FF
+                                        goto handle_extended_picto;
+                                    }
+                                } else {                    // 1F700 .. 1F7D4
+                                    if (ch <= 0x1F773) {    // 1F700 .. 1F773
+                                        goto handle_other;
+                                    } else {                // 1F774 .. 1F7D4
+                                        if (ch <= 0x1F77F) {// 1F774 .. 1F77F
+                                            goto handle_extended_picto;
+                                        } else {            // 1F780 .. 1F7D4
+                                            goto handle_other;
+                                        }
+                                    }
+                                }
+                            }
+                        } else {                            // 1F7D5 .. 1F88F
+                            if (ch <= 0x1F847) {            // 1F7D5 .. 1F847
+                                if (ch <= 0x1F80B) {        // 1F7D5 .. 1F80B
+                                    if (ch <= 0x1F7FF) {    // 1F7D5 .. 1F7FF
+                                        goto handle_extended_picto;
+                                    } else {                // 1F800 .. 1F80B
+                                        goto handle_other;
+                                    }
+                                } else {                    // 1F80C .. 1F847
+                                    if (ch <= 0x1F80F) {    // 1F80C .. 1F80F
+                                        goto handle_extended_picto;
+                                    } else {                // 1F810 .. 1F847
+                                        goto handle_other;
+                                    }
+                                }
+                            } else {                        // 1F848 .. 1F88F
+                                if (ch <= 0x1F859) {        // 1F848 .. 1F859
+                                    if (ch <= 0x1F84F) {    // 1F848 .. 1F84F
+                                        goto handle_extended_picto;
+                                    } else {                // 1F850 .. 1F859
+                                        goto handle_other;
+                                    }
+                                } else {                    // 1F85A .. 1F88F
+                                    if (ch <= 0x1F85F) {    // 1F85A .. 1F85F
+                                        goto handle_extended_picto;
+                                    } else {                // 1F860 .. 1F88F
+                                        if (ch <= 0x1F887) {// 1F860 .. 1F887
+                                            goto handle_other;
+                                        } else {            // 1F888 .. 1F88F
+                                            goto handle_extended_picto;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } else {                                // 1F890 ..10FFFF
+                        if (ch <= 0x2FFFD) {                // 1F890 .. 2FFFD
+                            if (ch <= 0x1F9FF) {            // 1F890 .. 1F9FF
+                                if (ch <= 0x1F8FF) {        // 1F890 .. 1F8FF
+                                    if (ch <= 0x1F8AD) {    // 1F890 .. 1F8AD
+                                        goto handle_other;
+                                    } else {                // 1F8AE .. 1F8FF
+                                        goto handle_extended_picto;
+                                    }
+                                } else {                    // 1F900 .. 1F9FF
+                                    ch_width = 2_w;
+                                    if (ch <= 0x1F90B) {    // 1F900 .. 1F90B
+                                        goto handle_other;
+                                    } else {                // 1F90C .. 1F9FF
+                                        if (ch == 0x1F93B)
+                                            goto handle_other;
+                                        if (ch == 0x1F946)
+                                            goto handle_other;
+                                        goto handle_extended_picto;
+                                    }
+                                }
+                            } else {                        // 1FA00 .. 2FFFD
+                                if (ch <= 0x1FBFF) {        // 1FA00 .. 1FBFF
+                                    if (ch <= 0x1FAFF) {    // 1FA00 .. 1FAFF
+                                        goto handle_extended_picto;
+                                    } else {                // 1FB00 .. 1FBFF
+                                        goto handle_other;
+                                    }
+                                } else {                    // 1FC00 .. 2FFFD
+                                    if (ch <= 0x1FFFD) {    // 1FC00 .. 1FFFD
+                                        goto handle_extended_picto;
+                                    } else {                // 1FFFE .. 2FFFD
+                                        if (ch <= 0x1FFFF) {// 1FFFE .. 1FFFF
+                                            goto handle_other;
+                                        } else {            // 20000 .. 2FFFD
+                                            ch_width = 2_w;
+                                            goto handle_other;
+                                        }
+                                    }
+                                }
+                            }
+                        } else {                            // 2FFFE ..10FFFF
+                            if (ch <= 0xE001F) {            // 2FFFE .. E001F
+                                if (ch <= 0x3FFFD) {        // 2FFFE .. 3FFFD
+                                    if (ch <= 0x2FFFF) {    // 2FFFE .. 2FFFF
+                                        goto handle_other;
+                                    } else {                // 30000 .. 3FFFD
+                                        ch_width = 2_w;
+                                        goto handle_other;
+                                    }
+                                } else {                    // 3FFFE .. E001F
+                                    if (ch <= 0xDFFFF) {    // 3FFFE .. DFFFF
+                                        goto handle_other;
+                                    } else {                // E0000 .. E001F
+                                        goto handle_control;
+                                    }
+                                }
+                            } else {                        // E0020 ..10FFFF
+                                if (ch <= 0xE00FF) {        // E0020 .. E00FF
+                                    if (ch <= 0xE007F) {    // E0020 .. E007F
+                                        goto handle_extend_and_control;
+                                    } else {                // E0080 .. E00FF
+                                        goto handle_control;
+                                    }
+                                } else {                    // E0100 ..10FFFF
+                                    if (ch <= 0xE01EF) {    // E0100 .. E01EF
+                                        goto handle_extend;
+                                    } else {                // E01F0 ..10FFFF
+                                        if (ch <= 0xE0FFF) {// E01F0 .. E0FFF
+                                            goto handle_control;
+                                        } else {            // E1000 ..10FFFF
+                                            goto handle_other;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }

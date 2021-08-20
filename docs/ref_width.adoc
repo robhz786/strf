@@ -390,7 +390,7 @@ Return value::: The return value `ret` is such that
   `cs.<<Charset_codepoints_robust_count,codepoints_robust_count>>(str, str_len, lim).pos`
 ====
 
-=== Class template `width_by_func` [[width_by_func]]
+=== Class template `width_by_func` __( deprecated )__ [[width_by_func]]
 
 The instances of the `width_by_func` class template are facets
 of the category `{width_calculator_c}`.
@@ -430,6 +430,13 @@ private:
 
     const CharWidthFunc func_; // exposition only
 };
+
+
+template <typename CharWidthFunc>
+width_by_func<CharWidthFunc> make_width_calculator(CharWidthFunc f)
+{
+    return width_by_func<CharWidthFunc>{f};
+}
 ----
 
 ==== Compile-time requirements
@@ -501,7 +508,7 @@ Return value::: The return value `ret` is such that:
 [source,cpp,subs=normal]
 ----
 cs.<<Charset_to_u32,to_u32>>().<<Transcoder_transcode,transcode>>
-    ( ob, str, ret.pos, {invalid_seq_policy}::replace, surr_poli )
+    ( ob, str, ret.pos, {invalid_seq_notifier}{}, surr_poli )
 ----
 , where `ob` is any object whose type derives from `{basic_outbuff}<char32_t>`.
 * `ret.pos` is the greatest value that is less than or equal to `str_len`
@@ -509,7 +516,7 @@ cs.<<Charset_to_u32,to_u32>>().<<Transcoder_transcode,transcode>>
   is less than or equal to `limit`.
 ====
 
-=== Function template `make_width_calculator` [[make_width_calculator]]
+==== Function template `make_width_calculator` [[make_width_calculator]]
 [source,cpp,subs=normal]
 ----
 template <typename CharWidthFunc>
@@ -517,6 +524,124 @@ template <typename CharWidthFunc>
 ----
 [horizontal]
 Return value::: `{width_by_func}<CharWidthFunc>{f}`
+
+
+=== Class `std_width_calc` [[std_width_calc]]
+
+The facet `std_width_calc` calculates the width just as
+http://eel.is/c++draft/format.string.std#11[specified] to `std::format`.
+
+
+[source,cpp,subs=normal]
+----
+class std_width_calc {
+public:
+    using category = {width_calculator_c};
+
+    template <typename Charset>
+    static {width_t} <<std_width_calc_char_width,char_width>>
+        ( Charset cs
+        , typename Charset::{code_unit} ) const;
+
+    template <typename Charset>
+    static {width_t} <<std_width_calc_str_width,str_width>>
+        ( Charset cs
+        , {width_t} limit
+        , const typename Charset::{code_unit}* str
+        , std::size_t str_len
+        , {surrogate_policy} ) const;
+
+    template <typename Charset>
+    static {width_and_pos} <<std_width_calc_str_width_and_pos,str_width_and_pos>>
+        ( Charset cs
+        , {width_t} limit
+        , const typename Charset::{code_unit}* str
+        , std::size_t str_len
+        , {surrogate_policy} ) const;
+};
+----
+==== Member functions
+
+[[std_width_calc_char_width]]
+====
+[source,cpp,subs=normal]
+----
+template <typename Charset>
+static {width_t} char_width
+    ( Charset cs
+    , typename Charset::{code_unit} ch) const;
+----
+[horizontal]
+Return value::
+----
+ (  (0x1100 <= ch32 && ch32 <= 0x115F)
+||  (0x2329 <= ch32 && ch32 <= 0x232A)
+||  (0x2E80 <= ch32 && ch32 <= 0x303E)
+||  (0x3040 <= ch32 && ch32 <= 0xA4CF)
+||  (0xAC00 <= ch32 && ch32 <= 0xD7A3)
+||  (0xF900 <= ch32 && ch32 <= 0xFAFF)
+||  (0xFE10 <= ch32 && ch32 <= 0xFE19)
+||  (0xFE30 <= ch32 && ch32 <= 0xFE6F)
+||  (0xFF00 <= ch32 && ch32 <= 0xFF60)
+||  (0xFFE0 <= ch32 && ch32 <= 0xFFE6)
+|| (0x1F300 <= ch32 && ch32 <= 0x1F64F)
+|| (0x1F900 <= ch32 && ch32 <= 0x1F9FF)
+|| (0x20000 <= ch32 && ch32 <= 0x2FFFD)
+|| (0x30000 <= ch32 && ch32 <= 0x3FFFD) )  ? width_t(2) : width_t(1)
+----
+, where `ch32` is the return value of `cs.decode_unit(ch)`
+
+====
+[[std_width_calc_str_width]]
+====
+[source,cpp,subs=normal]
+----
+template <typename Charset>
+static {width_t} str_width
+    ( Charset cs
+    , {width_t} limit
+    , const typename Charset::{code_unit}* str
+    , std::size_t str_len
+    , {surrogate_policy} surr_poli) const;
+----
+Return value:: `std::min(limit, w)`, where `w` is the sum of the extimated widths
+of the grapheme clusters in the UTF-32 string obtained by converting `str`
+to UTF-32 via `cs`, __i.e.__ by calling
++
+[source,cpp,subs=normal]
+----
+cs.<<Charset_to_u32,to_u32>>().<<Transcoder_transcode,transcode>>(..., str, str_len, {invalid_seq_notifier}{}, surr_poli )
+----
++
+The width of each grapheme cluster is assumed to be equal to the width
+of its first codepoints `ch32`, which is assumed to equal to
+`<<std_width_calc_char_width, char_width>>(<<strf_hpp.html#static_charset_constexpr,utf>><char32_t>, ch32)`.
+====
+
+
+[[std_width_calc_str_width_and_pos]]
+====
+[source,cpp,subs=normal]
+----
+template <typename Charset>
+static {width_and_pos} str_width_and_pos
+    ( Charset cs
+    , {width_t} limit
+    , const typename Charset::{code_unit}* str
+    , std::size_t str_len
+    , {surrogate_policy} surr_poli) const;
+----
+Return value:: a value `r` such that
++
+* `r.width` is same value returned by `str_width(cs, limit, str, str_len, surr_poli)`
+* `r.pos` is greateast value such that the expression below evaluates to `true`:
++
+[source,cpp,subs=normal]
+----
+str_width(cs, strf::width_t::max(), str, r.pos, surr_poli) \<= limit
+----
+====
+
 
 === Class `width_t` [[width_t]]
 
@@ -565,11 +690,12 @@ public:
     constexpr std::uint32_t underlying_value() const noexcept;
     constexpr static width_t from_underlying(std::uint32_t) noexcept;
 
+    constexpr static width_t max() noexcept; // maximum possible value
+    constexpr static width_t min() noexcept; // return zero
+
 private:
     std::uint32_t _underlying_value; // exposition only
 };
-
-constexpr width_t width_max = width_t::from_underlying(UINT32_MAX);
 
 constexpr bool operator==(width_t lhs, std::uint16_t rhs) noexcept;
 constexpr bool operator==(std::uint16_t lhs, width_t rhs) noexcept;

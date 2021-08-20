@@ -67,6 +67,127 @@ void test_wide_successfull_writing()
                                            , double_str.size() ));
 }
 
+struct traits_that_fails {
+    STRF_HD traits_that_fails(char* dest, std::size_t dest_size)
+        : dest_(dest)
+        , dest_end_(dest + dest_size)
+    {
+    }
+
+    STRF_HD std::size_t write(const char* ptr, std::size_t count) noexcept {
+        std::size_t size = dest_end_ - dest_;
+        std::size_t c = count <= size ? count : size;
+        memcpy(dest_, ptr, c);
+        dest_ += c;
+        return c;
+    }
+
+    char* dest_;
+    char* dest_end_;
+};
+
+void test_cfile_writer_base()
+{
+    char buff[strf::min_space_after_recycle<char>()];
+    char result_buff[strf::min_space_after_recycle<char>() + 50];
+
+    using tester_t = strf::detail::cfile_writer_base<char, traits_that_fails>;
+
+    {   // fails on recycle();
+        memset(result_buff, 0, sizeof(result_buff));
+        tester_t tester{buff, sizeof(buff), result_buff, 10};
+
+        memcpy(tester.pointer(), "0123456789abcdef", 16);
+        tester.advance(16);
+        tester.recycle();
+        TEST_FALSE(tester.good());
+
+        memcpy(tester.pointer(), "ABCDEF", 6);
+        tester.advance(6);
+        tester.recycle();
+
+        TEST_STRVIEW_EQ(result_buff, "0123456789", 10);
+        TEST_FALSE(tester.good());
+
+        auto r = tester.finish();
+        TEST_FALSE(r.success);
+        TEST_EQ(r.count, 10);
+        TEST_STRVIEW_EQ(result_buff, "0123456789", 10);
+    }
+    {   // fails on do_write(), in its first call to traits_.write
+        memset(result_buff, 0, sizeof(result_buff));
+        tester_t tester{buff, sizeof(buff), result_buff, 10};
+
+        strf::to(tester) (strf::multi('x', tester.space()));
+        tester.write("0123456789abcdef", 16);
+        TEST_STRVIEW_EQ(result_buff, "xxxxxxxxxx", 10);
+        TEST_FALSE(tester.good());
+
+        auto r = tester.finish();
+        TEST_FALSE(r.success);
+        TEST_EQ(r.count, 10);
+        TEST_STRVIEW_EQ(result_buff, "xxxxxxxxxx", 10);
+    }
+    {   // fails on do_write(), in its second call to traits_.write
+        memset(result_buff, 0, sizeof(result_buff));
+        tester_t tester{buff, sizeof(buff), result_buff, sizeof(buff) + 10};
+
+        strf::to(tester) (strf::multi('x', sizeof(buff)));
+        tester.write("0123456789abcdef", 16);
+        TEST_FALSE(tester.good());
+
+        auto r = tester.finish();
+
+        TEST_FALSE(r.success);
+        TEST_EQ(r.count, sizeof(buff) + 10);
+        TEST_CSTR_EQ(result_buff + sizeof(buff), "0123456789");
+    }
+    {   // fails on finish()
+        memset(result_buff, 0, sizeof(result_buff));
+        tester_t tester{buff, sizeof(buff), result_buff, 10};
+
+        memcpy(tester.pointer(), "0123456789abcdef", 16);
+        tester.advance(16);
+        auto r = tester.finish();
+
+        TEST_FALSE(r.success);
+        TEST_EQ(r.count, 10);
+        TEST_STRVIEW_EQ(result_buff, "0123456789", 10);
+    }
+    {   // succeeds in everything
+        memset(result_buff, 0, sizeof(result_buff));
+        tester_t tester{buff, sizeof(buff), result_buff, sizeof(result_buff)};
+
+        memcpy(tester.pointer(), "ABCD", 4);
+        tester.advance(4);
+        tester.recycle();
+        strf::to(tester) (strf::multi('x', sizeof(buff)));
+        tester.write("0123456789abcdef", 16);
+        auto r = tester.finish();
+
+        TEST_TRUE(r.success);
+
+        {
+            char expected[sizeof(result_buff)];
+            auto r2 = strf::to(expected)
+                ("ABCD", strf::multi('x', sizeof(buff)), "0123456789abcdef");
+            TEST_EQ(r.count, size_t(r2.ptr - expected));
+            TEST_STRVIEW_EQ(result_buff, expected, r.count);
+        }
+    }
+    {   // when finish() is not called
+        memset(result_buff, 0, sizeof(result_buff));
+        {
+            tester_t tester{buff, sizeof(buff), result_buff, sizeof(result_buff)};
+            memcpy(tester.pointer(), "ABCD", 4);
+            tester.advance(4);
+        }
+        // the destructor shall flush the content left in the buffer
+        TEST_CSTR_EQ(result_buff, "ABCD");
+    }
+}
+
+
 template <typename CharT>
 void test_narrow_failing_to_recycle()
 {
@@ -236,11 +357,12 @@ void test_cfile_writer()
 {
     std::srand(static_cast<unsigned>(std::time(nullptr)));
 
+    test_cfile_writer_base();
+
     test_destination<char>();
     test_destination<char16_t>();
     test_destination<char32_t>();
     test_destination<wchar_t>();
-
     test_wdestination();
 
     test_narrow_successfull_writing<char>();

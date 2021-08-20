@@ -62,6 +62,7 @@ public:
 
     narrow_cfile_writer(const narrow_cfile_writer&) = delete;
     narrow_cfile_writer(narrow_cfile_writer&&) = delete;
+    ~narrow_cfile_writer();
 
     void recycle() noexcept;
 
@@ -79,6 +80,14 @@ private:
 } // namespace strf
 ----
 === Public member functions
+====
+[source,cpp]
+----
+~narrow_cfile_writer();
+----
+[horizontal]
+Effect:: Calls `recycle()`
+====
 ====
 [source,cpp]
 ----
@@ -122,6 +131,7 @@ public:
 
     wide_cfile_writer(const narrow_cfile_writer&) = delete;
     wide_cfile_writer(narrow_cfile_writer&&) = delete;
+    ~wide_cfile_writer();
 
     void recycle() noexcept;
 
@@ -136,6 +146,14 @@ public:
 } // namespace strf
 ----
 === Public member functions
+====
+[source,cpp]
+----
+~wide_cfile_writer();
+----
+[horizontal]
+Effect:: Calls `recycle()`
+====
 ====
 [source,cpp]
 ----

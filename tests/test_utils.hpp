@@ -353,7 +353,7 @@ void STRF_HD test_message
     , const Args& ... args )
 {
     test_utils::print_test_message_header(filename, line);
-    to(test_utils::test_outbuff()) (args...);
+    to(test_utils::test_outbuff()).with(strf::lettercase::mixed) (args...);
     test_utils::print_test_message_end(funcname);
 }
 
