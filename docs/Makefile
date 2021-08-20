@@ -1,5 +1,5 @@
 
-StrfVersion = v0.15.0
+StrfVersion = v0.15.1
 
 all: \
     out/syntax.svg \
@@ -18,6 +18,9 @@ all: \
     out/to_cfile_hpp.html \
     out/to_streambuf_hpp.html \
     out/to_string_hpp.html
+
+clean:
+	rm -rf out/
 
 out/ :
 	mkdir -p out
