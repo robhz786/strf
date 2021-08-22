@@ -612,12 +612,9 @@ private:
     template <typename U>
     static strf::tag<> get_formatters_(...);
 
-    template <typename U>
-    using result_ = decltype(get_formatters_<U>((U*)0));
-
 public:
 
-    using type = result_<PrintTraits>;
+    using type = decltype(get_formatters_<PrintTraits>(0));
 };
 
 template <typename PrintTraits>

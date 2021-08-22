@@ -237,7 +237,7 @@ private:
     strf::width_t width_;
     std::uint16_t fillcount_ = 0;
 
-#if defined(__GNUC__) && (__GNUC__ == 6)
+#if defined(__GNUC__) && (__GNUC__ <= 6)
 #  pragma GCC diagnostic push
 #  pragma GCC diagnostic ignored "-Wstrict-aliasing"
 #endif
@@ -251,7 +251,7 @@ private:
         return *reinterpret_cast<const printers_tuple_*>(&pool_);
     }
 
-#if defined(__GNUC__) && (__GNUC__ == 6)
+#if defined(__GNUC__) && (__GNUC__ <= 6)
 #  pragma GCC diagnostic pop
 #endif
 
