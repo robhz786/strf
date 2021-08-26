@@ -41,7 +41,7 @@ so that the host code can do something useful with it ( like sending to `stdout`
 }
 ----
 
-There is a more complete example {strf-src-root}/example/cuda.cu[here].
+There is a more complete example {strf-src-root}/examples/cuda.cu[here].
 You can also take a look at the the unit tests that run on CUDA device
 {strf-src-root}/test/main_cuda.cu[here].
 

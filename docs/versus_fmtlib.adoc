@@ -311,7 +311,7 @@ For instance, the {fmt} documentation provides
 link:https://fmt.dev/latest/api.html#formatting-user-defined-types[an example]
 of how to do it with a struct named `point` that contains two `double` variables.
 If you compare it with the snippet below,
-//{strf-src-root}/example/extend_input_point2D.cpp[this example],
+//{strf-src-root}/examples/extend_input_point2D.cpp[this example],
 which does the similar thing in Strf, you may find that the Strf's way
 is more complicated, since the code is larger and it requires more
 specific knowledge about the library.

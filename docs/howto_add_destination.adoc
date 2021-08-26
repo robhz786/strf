@@ -325,10 +325,10 @@ auto to(foo& dest) {
 
 == Examples
 
-* {strf-src-root}/example/toQString.cpp[example/toQString.cpp] defines a
+* {strf-src-root}/examples/toQString.cpp[examples/toQString.cpp] defines a
   constexpr value named `toQSting`
   that is analogous to `<<quick_reference#destinations,strf::to_string>>`, except that
   it creates a `QString` ( from Qt framework ) instead of a `std::string`.
-* {strf-src-root}/example/appendQString.cpp[example/appendQString.cpp] defines
+* {strf-src-root}/examples/appendQString.cpp[examples/appendQString.cpp] defines
   a function `append` used to append content into a `QString` object
 

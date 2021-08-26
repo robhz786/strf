@@ -734,7 +734,7 @@ used above is documented <<strf_hpp#value_with_formatters_vwf2_t_i,here>>.
 
 And its done! I think is a pretty complete example of how to make
 `std::complex` printable. You can see the complete implementation
-{strf-src-root}/example/extend_input_std_complex.cpp[here].
+{strf-src-root}/examples/extend_input_std_complex.cpp[here].
 
 
 == The low-level way [[creating_printer]]
@@ -980,6 +980,6 @@ another printer &#x2014; you could name `fmt_std_complex_printer`
 &#x2014; to print formatted values, which is naturally a little
 bit more complex. However, it's basically the same idea:
 `print_to` prints the content and the constructor previews it. Here is a full implementation:
-{strf-src-root}/example/std_complex_printer.cpp[example/std_complex_printer.cpp].
+{strf-src-root}/examples/std_complex_printer.cpp[examples/std_complex_printer.cpp].
 
 
