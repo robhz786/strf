@@ -41,8 +41,9 @@ strf::basic_outbuff</{asterisk}char type{asterisk}/>& dest = /{asterisk}\...{ast
 strf::<<quick_reference#dest_outbuff,to>>(dest) (/{asterisk} arguments to be printed {asterisk}/);
 ----
 
-{basic_outbuff} is a simple class template.
-It contains a boolean &#x2014; which indicates whether
+So the first to learn is how {basic_outbuff} works.
+It is a simple class template that
+contains a boolean &#x2014; which indicates whether
 the state is "good" or "bad" &#x2014; and two pointers. One of them points
 to the end of buffer, and the other to the position where the
 next character shall be written. They are returned by the
@@ -54,7 +55,7 @@ https://en.cppreference.com/w/cpp/io/basic_streambuf/sputc[`sputc`]
 in `std::basic_streambuf`, or
 https://en.cppreference.com/w/cpp/io/basic_ostream/write[`write`]
 in `std::basic_ostream` ), in `basic_outbuff` you can write things directly to
-`pointer()` and then calls the `<<outbuff_hpp#basic_outbuff_advance,advance>>`
+`pointer()`. After that, you shall call the `<<outbuff_hpp#basic_outbuff_advance,advance>>`
 or the `<<outbuff_hpp#basic_outbuff_advance_to,advance_to>>` function to update
 the pointer. For instance:
 
@@ -63,15 +64,15 @@ the pointer. For instance:
 if (dest.space() < 5) {
     dest.recycle();
 }
-strncpy(dest.pointer(), "hello", 5);
+memcpy(dest.pointer(), "hello", 5);
 dest.advance(5);
 ----
 
-Of course, before writting anything to `pointer()`, one
-needs to check whether there is enough space.
-If not, one has to call the `{recycle}` function, as done above.
-This is the only pure virtual function in `{basic_outbuff}`.
-Its job is to flush the content written so far and reset the position of
+As done above, before writting anything to `pointer()`, one
+must check whether there is enough space,
+and if not, one must call the `{recycle}` function.
+This is the only pure virtual function in `{basic_outbuff}`,
+its job is to flush the content written so far and reset the position of
 `pointer()` and `end()` so that the space ( `end() - pointer()` )
 becames greater than or equal to `{min_space_after_recycle}</{asterisk}char type{asterisk}/>()`.
 This is a postcondition
@@ -212,7 +213,7 @@ Each of them causes the content to be printed into a different destination.
 Perhaps you want to create your own. For example, if you use Qt,
 you may want to create a `toQString` "destination",
 intended to create a `QString` object ( in the same way as
-`<<quick_reference#destinations,to_string>> is used to create
+`<<quick_reference#destinations,to_string>>` creates
 `std::string` objects ).
 This section explain how you can do that.
 
@@ -220,8 +221,8 @@ The first step, which involves most of the work, is
 to create a class that derives from `{basic_outbuff}`.
 The previous section provides some assistance on that.
 Sometimes it makes sense to actually create two of them;
-one having a constructor that receives the size and
-the other not, as explained soon.
+one having a constructor that receives the size
+while the other does not, as explained soon.
 
 The second step is to create a class that satisfies the requirements of
 __{OutbuffCreator}__ or __{SizedOutbuffCreator}__ or both.
@@ -235,55 +236,47 @@ _OutbuffCreator_ is for when it does not need that information.
 
 The third and final step is to define the "destination expression".
 It must be an expression ( a function call or a constexpr value )
-whose type is an instance of one the following class templates:
+whose type is an instance of one the class templates below,
+having the class created in step 2 as the template parameter.
 
-* `{destination_no_reserve}`: can only be used when your factory ( step 2 ) is _{OutbuffCreator}_
-* `{destination_calc_size}`: the factory must be _{SizedOutbuffCreator}_
-* `{destination_with_given_size}`: also _{SizedOutbuffCreator}_
-
-
-Where the class created in step 2 is the template parameter.
-The major difference between them lies in the implementation of
-`operator()` and `tr` member functions. In `{destination_no_reserve}`
-it is something like this:
-
+* `{destination_no_reserve}`: Its template argument must
+be _{OutbuffCreator}_, and it has the following effect when
+writing the arguments ( when its member function `operator()`
+or `tr` is called ):
++
 [source,cpp,subs=normal]
 ----
-typename my_outbuff_creator::outbuff_type dest{creator.create()};
+typename your_outbuff_creator::outbuff_type dest{creator.create()};
 // \... write content in dest \...
 return dest.finish();
 ----
+, where:
++
+** `your_outbuff_creator` is the template argument ( and the
+type defined in step 2). It must be be _{OutbuffCreator}_.
+** `creator` is an object of type `your_outbuff_creator`.
 
-Whereas in `{destination_calc_size}` it is:
-
+* `{destination_calc_size}`: Its template argument must
+be _{SizedOutbuffCreator}_, and it has the following effect when
+writing the arguments:
++
 [source,cpp,subs=normal]
 ----
 std::size_t size = /{asterisk} calculate size \... {asterisk}/;
-typename my_outbuff_creator::sized_outbuff_type dest{creator.create(**size**)};
+typename you_outbuff_creator::sized_outbuff_type dest{creator.create(**size**)};
 // \... write content in dest \...
 return dest.finish();
 ----
 
-, where `my_outbuff_creator` is the type defined in step2, and `creator`
-is a private member object of that type.
-
-The implementation of
-`{destination_with_given_size}` is similar to of `destination_calc_size`.
-The difference is that, instead of being calculated,
-the size is passed to the
-<<strf_hpp#destination_with_given_size_ctor,the constructor>>
-and stored in a member variable.
-However, in most cases, if any, it does't make sense to opt for `destination_with_given_size`.
-The reason why it was created was to be used as the return type
+* `{destination_with_given_size}`: the factory must be _{SizedOutbuffCreator}_,
+and it has the same effect as of `destination_calc_size`, except that the
+size is not calculated but is instead passed to its
+<<strf_hpp#destination_with_given_size_ctor,the constructor>>.
+In most cases, it does't make sense to opt for `destination_with_given_size`.
+The reason why it was created is to define the return type
 the `<<tutorial#,reserve>>` function.
-////
-`destination_no_reserve::<<strf_hpp#destination_no_reserve_reserve,reserve>>` and
-`destination_with_given_size::<<strf_hpp#destination_reserve_calc_reserve,reserve>>`
-that are designed to be uses as part of the `<<tutorial#,basic usage syntax>>`.
-////
 
-
-The code below illustrates the above steps:
+The sample below illustrates the above steps:
 
 [source,cpp,subs=normal]
 ----

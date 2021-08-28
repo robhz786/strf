@@ -50,7 +50,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 
       <text x="245" y="24" >
         <tspan class="code">.with(</tspan>
-        <tspan class="repl">facet_args...</tspan>
+        <tspan class="repl">facet_objs...</tspan>
         <tspan class="code">)</tspan>
       </text>
   </a>

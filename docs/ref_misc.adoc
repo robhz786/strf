@@ -7,7 +7,6 @@ http://www.boost.org/LICENSE_1_0.txt)
 
 :rank: <<rank,rank>>
 :tag: <<tag,tag>>
-:destination_no_reserve: <<destination,destination_no_reserve>>
 :OutbuffCreator: <<OutbuffCreator,OutbuffCreator>
 
 :basic_outbuff: <<outbuff_hpp#basic_outbuff,basic_outbuff>>

@@ -29,7 +29,7 @@ out/syntax.svg : syntax.svg out/
 	cp $< $@
 
 out/install.html : install.adoc out/
-	asciidoctor -v $< -o $@
+	asciidoctor -v --attribute=strf-version=$(StrfVersion) $< -o $@
 
 out/tutorial.html : tutorial.adoc out/
 	asciidoctor -v $< -o $@

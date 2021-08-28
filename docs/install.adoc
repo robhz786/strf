@@ -8,7 +8,55 @@ http://www.boost.org/LICENSE_1_0.txt)
 = Building, installing and using Strf library
 :source-highlighter: prettify
 
+== Header-only or static library
+
+:runtime_benchmarks_link: pass:n[http://robhz786.github.io/strf-benchmarks/{strf-version}/results.html]
+:compilation_benchmarks_link: pass:n[http://robhz786.github.io/strf-benchmarks/{strf-version}/results.html#_compilation_performance]
+
+The header-only variant has shown better performance on clang and gcc
+footnote:[{runtime_benchmarks_link}]
+and does not necessarily make the
+generated binaries bigger &#x2014; it depends on how much
+Strf is invoked in your code.footnote:[{compilation_benchmarks_link}]
+
+To use Strf as a header-only all you need to do is to add
+to the include paths of your project the `include` directory
+that is inside root directory of Strf.
+To use Strf as a static library you need also to define
+the macro `STRF_SEPARATE_COMPILATION`.
+To genereate the static library you only need to compile
+one source file: `src/strf.cpp`.
+
+Or, you can CMake.
+
+== If you are using CMake
+
 If you use CMake, you are probably already know with the proccess. Anyway:
+
+=== Option 1: The simple way ( using `add_subdirectory` )
+
+I don't see the CMake documentation recomending this approach, but
+I also don't see any problem in it when importing a library that is
+small and has no dependencies, which is the case of Strf.
+The idea is that you copy the whole Strf folder ( the one that
+is created by the command `git clone https://github.com/robhz786/strf` )
+somewhere inside your project directory ( like in a `external/`
+or `third_party/` subdirectory ), and then, in your CMakeLists.txt file,
+you add the command:
+
+[source]
+----
+add_subdirectory(external/strf) # or third_party/strf or whatever
+----
+
+This will add two targets in your project: `strf::strf-header-only`
+and `strf::strf-static-lib`.
+
+=== Option 2: Export and import
+
+// https://cmake.org/cmake/help/git-stage/guide/importing-exporting/index.html
+
+First you install Strf:
 
 [source,subs=normal]
 ----
@@ -20,8 +68,8 @@ cmake --build .
 cmake --install . --prefix __your/installation/directory__
 ----
 
-In your CMake project, you link your program or library against either
-`strf::strf-static-lib` and `strf::strf-header-only` target.
+The in your CMake project, you import Strf and link your program or library
+against either `strf::strf-static-lib` and `strf::strf-header-only` target.
 
 [source,cmake]
 ----
@@ -30,21 +78,6 @@ target_link_libraries(your_target strf::strf-header-only)
 # or
 # target_link_libraries(your_target strf::strf-static-lib)
 ----
-
-If you are not using CMake and want to use Strf as a header-only library,
-then you only need to add the `include` sub-directory as an include path.
-If you plan to use it as a static library, then you also need to define
-the macro `STRF_SEPARATE_COMPILATION` in your code: 
-
-[source,cpp]
-----
-// Make sure this define comes before including any of the library's header
-#define STRF_SEPARATE_COMPILATION
-#include <strf.hpp>
-----
-
-Building the library manually is supposed to be easy, since you only
-need to compile the file `src/strf.cpp`.
 
 == Running the unit tests
 

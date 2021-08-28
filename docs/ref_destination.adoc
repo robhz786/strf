@@ -21,7 +21,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 == Destinations
 
 The `destination_no_reserve`, `destination_reserve_calc` and
-`destination_with_given_size` class templates provide the
+`destination_with_given_size` class templates implement the
 basic usage syntax of the library:
 
 image::syntax.svg[]

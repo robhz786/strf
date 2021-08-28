@@ -264,203 +264,32 @@ void sample() {
 }
 ----
 
-[[destinations]]
 == Other destinations
 
-Up to here, we only covered things that define the content to be printed,
-not _where_ it is printed. Strf provides other expressions besides `to_string` to
-select the destination. Many of them are overloads of the `to` function template.
-You can just replace the `to_string` expression by `to(_dest_)`, where `_dest_`
-can be, for example, an array of `char`:
+Up to here, we only covered things that define the
+content to be printed, not _where_ it is printed.
+The <<quick_reference#,quick_reference>> provides a
+<<quick_reference#destinations,list of expressions>>
+that can be used instead of `to_string`, so that you can
+select alternative destinations.
+
+Now, every one of these expressions internally relies on a
+concrete class that derives from the `{basic_outbuff}` abstract
+class template. These classes are also
+<<quick_reference#outbuff_types, documented>>.
+This means that you can write a function or code
+that writes to a reference of `{basic_outbuff}`, so that
+it works with all destination types:
 
 [source,cpp,subs=normal]
 ----
-#include <strf.hpp> // another header !
-
-void sample() {
-    int x = 200;
-    char buff[200];
-    auto res = strf::to(buff) (x, " in hexadecimal is ", strf::hex(x));
-    assert(0 == strcmp(buff, "200 in hexadecimal is c8");
-    assert(strlen(buff) == (res.ptr - buff));
-    assert( ! res.truncated);
-
-    //now with a buffer that is too small
-    char small_buff[16];
-    auto res = strf::to(small_buff) (x, " in hexadecimal is ", strf::hex(x));
-    assert(res.truncated);
-    assert(res.ptr == small_buff + 15);
-    assert(*res.ptr == '\0');
-    assert(0 == strcmp(small_buff, "200 in hexadeci");
-}
-----
-
-However, there is another overload of `to` that deserves a special mention:
-the one that writes to `{basic_outbuff}` references:
-
-[source,cpp,subs=normal]
-----
-namespace strf {
-
-template <typename CharT>
-class basic_outbuff;
-
-using     outbuff = basic_outbuff<char>;
-using   u8outbuff = basic_outbuff<char8_t>;
-using  u16outbuff = basic_outbuff<char16_t>;
-using  u32outbuff = basic_outbuff<char32_t>;
-using    woutbuff = basic_outbuff<wchar_t>;
-using bin_outbuff = basic_outbuff<std::byte>;
-
-template <typename CharT>
-/{asterisk} \... {asterisk}/ to(strf::basic_outbuff<CharT>&);
-
-}
-----
-For every destination, there is a concrete class that derives from
-the `basic_outbuff` abstract class template.
-For example, when you use `to_string`, the library internally instantiates a
-`<<to_string_hpp#basic_string_maker, string_maker>>`. In the case of writting
-to a raw string, it is a `<<outbuff_hpp#basic_cstr_writer,cstr_writer`>>.
-
-So the statement:
-
-[source,cpp,subs=normal]
-----
-std::string str = strf::to_string(_arg1_, _arg2_, _arg3_, _arg4_);
-----
-is equivalent to:
-[source,cpp,subs=normal]
-----
-strf::string_maker str_maker;
-strf::to(str_maker) (_arg1_, _arg2_, _arg3_, _arg4_);
-std::string str = str_maker.finish()
-----
-
-What makes the second form interesting is that
-it doesn't impose you to pass all arguments in
-a single statement. So you have the same flexibility
-as when writting into a `std::ostream`:
-
-[source,cpp,subs=normal]
-----
-strf::string_maker str_maker;
-auto print = str_maker.with(_f1_, _f2_, _f3_);
-
-if (__condition1__) {
-    print(_arg1_, _arg2_);
-}
-while (__condition2__) {
-    print(_arg3_, _arg4_, _arg5_);
-    //\...
-}
-print.with(_f4_) (_arg6_, _arg7_);
-// \...
-auto str = str_maker.finish()
-----
-
-Another reason to use `basic_outbuff` is when you don't want
-to commit yourself to a destination type. Suppose you need to
-create a function that provides a textual message whose
-content and size are known only at run time.
-
-Instead of returning a string object:
-----
-std::string get_message();
-----
-, or writting to caller-supplied `char*`:
-----
-void get_message(char* dest, std::size_t dest_size);
-----
-, you can design your function like this:
-----
-void get_message(strf::outbuff& dest);
-----
-This way you let the caller to decide which `outbuff` implementation
-to use. It could be the `string_maker` or `cstr_writer` or
-another one. There is no significant performance difference
-between writing into a `cstr_writer` and directly into a
-`char*`.
-
-However, when writing to a string -- either a raw string
-or a `std::string` -- note that such string need to be further sent
-to some other destination -- a file, a log system, or whatever
--- otherwise it is useless, right?
-So what the caller can also do is to implement a new `outbuff`
-that writes directly into such final destination, thus
-avoiding the need of an intermediate string, which
-in turn avoids heap allocation ( which can happen when using `std::string`)
-or content trucation ( which can happen when using `char*`).
-
-////
-
- You certainly are
-familiar the following situation: Suppose you need to create
-a function aimed to provide a textual message whose content
-and size are known only at run time. How do you design it ?
-The usual solution is to return a string object, but
-it incurs a heap allocation which is higly undesirable
-in some environments:
-[source,cpp,subs=normal]
-----
-std::string get_message();
-----
-Another common approach is when the caller passes
-a `char*`. But then the caller never knows what
-size is adequate:
-[source,cpp,subs=normal]
-----
-void get_message(char* dest, std::size_t count);
-----
-You can also return a pointer to static buffer.
-But the fact that buffer is rewritten at every call
-can also be problematic:
-[source,cpp,subs=normal]
-----
-const char* get_message()
+void get_message(strf::basic_outbuff<char>& dest)
 {
-    static char buff[__big_enough_for_all_cases__];
-    //\... write into buff
-    return buff;
+    strf::to(dest) ("Hello World!");
 }
-But now you have another solution, you write into an `outbuff&`.
-[source,cpp,subs=normal]
 ----
-void get_message(strf::outbuff& dest);
-----
-And you leave the decision to the caller. The caller
-can use pass `string_maker` or a `cstr_writer`
-
-////
-
-[[error_handling]]
-== Error handling policy
-
-Strf does not throw exceptions. When there is something wrong,
-the usual approach is the library to print the
-https://en.wikipedia.org/wiki/Specials_(Unicode_block)#Replacement_character[replacement character]
-, or the https://en.wikipedia.org/wiki/Question_mark[question mark]
-when the encoding can't represent it.
-There are two situations when this can happen:
-when using the tr-string and when converting a string from one encoding to another
-( see <<quick_reference#charset_conversion, charset conversion>> ).
-In addition, for each of these cases there is a facet category
-(`<<strf_hpp#tr_error_notifier_c,tr_error_notifier_c>>` and
-`<<strf_hpp.html#invalid_seq_notifier_c,invalid_seq_notifier_c>>`)
-that enables you to specify a callback that is called in the error events,
-which can thus throw an exception if you want.
-
-== What's next ?
-
-The <<quick_reference#,quick reference>>  should explain most of things
-you need know about the library. This is the document you will probably
-use most of the time.
-
-For more specific things, there are the header references:
-
-[horizontal]
-`<<outbuff_hpp#,<strf/outbuff.hpp>>>` :: This is lighweight header can be used in freestanding environments and is the cornerstone of library. All other headers include it.
-`<<strf_hpp#,<strf.hpp>>>` :: Defines most of the library, including the main usage syntax , all printable types and all facets.
-`<<to_string_hpp#,<strf/to_string.hpp>>>` :: Provides utilities to write to `std::basic_string`. Includes `<<strf_hpp#main,<strf.hpp>>>`.
-`<<to_streambuf_hpp#,<strf/to_streambuf.hpp>>>` :: Provides utilities to write to `std::basic_streambuf`. Includes `<<strf_hpp#main,<strf.hpp>>>`.
-`<<to_cfile_hpp#,<strf/to_cfile.hpp>>>` :: Provides utilities to write to `FILE*`. Includes `<<strf_hpp#main,<strf.hpp>>>`.
+Hence, in a sense, `strf::{basic_outbuff}` is equivalent
+to `std::basic_ostream` or `std::basic_streambuf`,
+but with better performance, and it's easier to implement
+a class that derives from `strf::{basic_outbuff}`
+than from `std::basic_ostream` or `std::basic_streambuf`.
