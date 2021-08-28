@@ -7,7 +7,6 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <strf/printer.hpp>
-#include <strf/facets_pack.hpp>
 #include <strf/detail/facets/numpunct.hpp>
 #include <strf/detail/dragonbox.hpp>
 

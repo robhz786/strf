@@ -2,7 +2,7 @@
 #define STRF_DETAIL_INPUT_TYPES_STRING
 
 #include <strf/detail/facets/width_calculator.hpp>
-#include <strf/facets_pack.hpp>
+#include <strf/printer.hpp>
 
 namespace strf {
 namespace detail {

@@ -7,7 +7,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <initializer_list>
-#include <strf/detail/facets/charset.hpp>
+#include <strf/printer.hpp>
 
 namespace strf {
 
