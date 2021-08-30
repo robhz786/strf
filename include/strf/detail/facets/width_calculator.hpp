@@ -147,12 +147,12 @@ public:
 
 namespace detail {
 template <typename WFunc>
-class width_accumulator: public strf::basic_outbuff<char32_t>
+class width_accumulator: public strf::destination<char32_t>
 {
 public:
 
     STRF_HD width_accumulator(strf::width_t limit, WFunc func)
-        : strf::basic_outbuff<char32_t>(buff_, buff_ + buff_size_)
+        : strf::destination<char32_t>(buff_, buff_ + buff_size_)
         , limit_(limit)
         , func_(func)
     {
@@ -522,10 +522,10 @@ STRF_HD std_width_calc_func_return std_width_calc_func
 #  pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
 #endif
 
-class std_width_decrementer: public strf::basic_outbuff<char32_t> {
+class std_width_decrementer: public strf::destination<char32_t> {
 public:
     STRF_HD std_width_decrementer (strf::width_t initial_width)
-        : strf::basic_outbuff<char32_t>(buff_, buff_size_)
+        : strf::destination<char32_t>(buff_, buff_size_)
         , width_{initial_width}
     {
         this->set_good(initial_width != 0);
@@ -558,10 +558,10 @@ private:
     char32_t buff_[buff_size_];
 };
 
-class std_width_decrementer_with_pos: public strf::basic_outbuff<char32_t> {
+class std_width_decrementer_with_pos: public strf::destination<char32_t> {
 public:
     STRF_HD std_width_decrementer_with_pos (strf::width_t initial_width)
-        : strf::basic_outbuff<char32_t>(buff_, buff_size_)
+        : strf::destination<char32_t>(buff_, buff_size_)
         , width_{initial_width}
     {
         this->set_good(initial_width != 0);

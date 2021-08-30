@@ -14,12 +14,12 @@ http://www.boost.org/LICENSE_1_0.txt
 :toclevels: 1
 :icons: font
 
-:min_space_after_recycle: <<outbuff_hpp#min_space_after_recycle,min_space_after_recycle>>
-:basic_outbuff: <<outbuff_hpp#basic_outbuff,basic_outbuff>>
+:min_space_after_recycle: <<destination_hpp#min_space_after_recycle,min_space_after_recycle>>
+:destination: <<destination_hpp#destination,destination>>
 
-:destination_no_reserve: <<strf_hpp#destination,destination_no_reserve>>
-:OutbuffCreator: <<strf_hpp#OutbuffCreator,OutbuffCreator>>
-:SizedOutbuffCreator: <<strf_hpp#SizedOutbuffCreator,SizedOutbuffCreator>>
+:destination_no_reserve: <<strf_hpp#destination_no_reserve,destination_no_reserve>>
+:DestinationCreator: <<strf_hpp#DestinationCreator,DestinationCreator>>
+:SizedDestinationCreator: <<strf_hpp#SizedDestinationCreator,SizedDestinationCreator>>
 
 :basic_string_maker: <<basic_string_maker,basic_string_maker>>
 :basic_sized_string_maker: <<basic_sized_string_maker,basic_sized_string_maker>>
@@ -34,19 +34,19 @@ namespace strf {
 template < typename CharT
          , typename Traits = std::char_traits<CharT>
          , typename Allocator = std::allocator<CharT> >
-class basic_string_appender final: public basic_outbuff<CharT>
+class basic_string_appender final: public destination<CharT>
 { /{asterisk}\...{asterisk}/ };
 
 template < typename CharT
          , typename Traits = std::char_traits<CharT>
          , typename Allocator = std::allocator<CharT> >
-class basic_string_maker final: public basic_outbuff<CharT>
+class basic_string_maker final: public destination<CharT>
 { /{asterisk}\...{asterisk}/ };
 
 template < typename CharT
          , typename Traits = std::char_traits<CharT>
          , typename Allocator = std::allocator<CharT> >
-class basic_sized_string_maker final: public basic_outbuff<CharT>
+class basic_sized_string_maker final: public destination<CharT>
 { /{asterisk}\...{asterisk}/ };
 
 using string_appender           = basic_string_appender<char>;
@@ -102,8 +102,7 @@ namespace strf {
 template < typename CharT
          , typename Traits = std::char_traits<CharT>
          , typename Allocator = std::allocator<CharT> >
-class basic_string_maker final: public {basic_outbuff}<CharT>
-{
+class basic_string_maker final: public {destination}<CharT> {
 public:
     basic_string_maker();
     basic_string_maker(const basic_string_maker&) = delete;
@@ -141,7 +140,7 @@ Postconditions:: `space() >= min_space_after_recycle<CharT>()`
 basic_string<CharT, Traits, Allocator> finish()
 ----
 [horizontal]
-Effects:: Calls `recycle()` and `set_good(false)` and return the internal string.
+Effects:: Calls `recycle()` and `set_good(false)` and returns the internal string.
 Postconditions:: `good() == false`
 ====
 
@@ -155,7 +154,7 @@ namespace strf {
 template < typename CharT
          , typename Traits = std::char_traits<CharT>
          , typename Allocator = std::allocator<CharT> >
-class basic_sized_string_maker final : public {basic_outbuff}<CharT> {
+class basic_sized_string_maker final : public {destination}<CharT> {
 public:
     explicit basic_sized_string_maker(std::size_t capacity);
 
@@ -186,7 +185,7 @@ Effect:: Causes the capacity of the internal string to be equal to or greater th
 basic_string<CharT, Traits, Allocator> finish()
 ----
 [horizontal]
-Return value:: A string containing what has been written into this outbuff object
+Return value:: A string containing what has been written into this destination object
                ( assuming it's the the first call ).
 Postconditions:: `good() == false`
 Note:: This function should be called only once. Further calls may return empty strings.
@@ -202,7 +201,7 @@ namespace strf {
 template < typename CharT
          , typename Traits = std::char_traits<CharT>
          , typename Allocator = std::allocator<CharT> >
-class basic_string_appender final: public {basic_outbuff}<CharT>
+class basic_string_appender final: public {destination}<CharT>
 {
 public:
     explicit basic_string_appender(basic_string<CharT, Traits, Allocator>& dest);
@@ -244,6 +243,7 @@ Effects:: Calls `recycle()` and `set_good(false)`.
 Postcondition:: `good() == false`
 ====
 
+[[destinator_string_append]]
 == Function template `append`
 
 [source,cpp,subs=normal]
@@ -255,12 +255,15 @@ __/{asterisk} see below {asterisk}/__ append(std::basic_string<CharT, Traits, Al
 
 } // namespace strf
 ----
-
-Return type:: `{destination_no_reserve}<OBC>`, where `OBC` is a implementation-defined type
-              that satisfies  __{OutbuffCreator}__ and __{SizedOutbuffCreator}__.
-Return value:: A an object `obc` such that:
-- `obc.create()` returns `{basic_string_appender}<CharT, Traits, Allocator>{str}`
-- `obc.create(capacity)` calls `str.reserve(str.size() + capacity)` and returns
+Return type:: `{destination_no_reserve}<DestCreator>`, where `DestCreator`
+is an implementation-defined type that satisfies  __{DestinationCreator}__ and
+__{SizedDestinationCreator}__
+Return value:: An object whose `DestCreator` object
+  `&#95;dest&#95;creator` is such that
+- `&#95;dest&#95;creator.create()` returns
+  `{basic_string_appender}<CharT, Traits, Allocator>{str}`
+- `&#95;dest&#95;creator.create(capacity)` calls
+   `str.reserve(str.size() + capacity)` and returns
   `{basic_string_appender}<CharT, Traits, Allocator>{str}`
 
 == Function template `assign`
@@ -275,8 +278,7 @@ __/{asterisk} see below {asterisk}/__ assign(std::basic_string<CharT, Traits, Al
 } // namespace strf
 ----
 [horizontal]
-Return type:: Same as of `assign(str)`
-Effects:: Calls `str.clear()` and returns `assign(str)`.
+Effects:: Calls `str.clear()` and returns `<<destinator_string_append,append>>(str)`.
 
 [[to_basic_string]]
 == Variable template `to_basic_string`
@@ -289,6 +291,32 @@ template < typename CharT
          , typename Allocator = std::allocator<CharT> >
 constexpr <__/{asterisk} see below {asterisk}/__>  to_basic_string {};
 
+} // namespace strf
+----
+
+Type:: `{destination_no_reserve}<DestCreator>`, where `DestCreator` is
+        an implementation-defined type that satisfies
+        __{DestinationCreator}__ and __{SizedDestinationCreator}__.
+Value:: An object whose `DestCreator` object
+  `&#95;dest&#95;creator` is such that
+- `&#95;dest&#95;creator.create()` returns
++
+[source,cpp,subs=normal]
+----
+{basic_string_maker}<CharT, Traits, Allocator>{}.
+----
+- `&#95;dest&#95;creator.create(capacity)` returns
++
+[source,cpp,subs=normal]
+----
+{basic_sized_string_maker}<CharT, Traits, Allocator>{capacity}
+----
+
+=== Aliases
+[source,cpp,subs=normal]
+----
+namespace strf {
+
 constexpr auto to_u8string  = to_basic_string<char8_t>;
 constexpr auto to_string    = to_basic_string<char_t>;
 constexpr auto to_u16string = to_basic_string<char16_t>;
@@ -297,9 +325,3 @@ constexpr auto to_wstring   = to_basic_string<wchar_t>;
 
 } // namespace strf
 ----
-
-Type:: `{destination_no_reserve}<OBC>`, where `OBC` is a implementation-defined type
-       that satisfies  __{OutbuffCreator}__ and __{SizedOutbuffCreator}__.
-Value:: A destination object whose internal __{OutbuffCreator}__ object `obc` is such that:
-- `obc.create()` returns `{basic_string_maker}<CharT, Traits, Allocator>{}`.
-- `obc.create(capacity)` and returns `{basic_sized_string_maker}<CharT, Traits, Allocator>{capacity}`.

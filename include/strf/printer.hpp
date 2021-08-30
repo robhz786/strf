@@ -8,7 +8,7 @@
 
 #include <strf/width_t.hpp>
 #include <strf/facets_pack.hpp>
-#include <strf/outbuff_functions.hpp>
+#include <strf/destination_functions.hpp>
 #include <strf/detail/facets/charset.hpp>
 
 namespace strf {
@@ -24,7 +24,7 @@ public:
     {
     }
 
-    STRF_HD virtual void print_to(strf::basic_outbuff<CharT>& ob) const = 0;
+    STRF_HD virtual void print_to(strf::destination<CharT>& ob) const = 0;
 };
 
 struct string_input_tag_base
@@ -249,7 +249,7 @@ namespace detail {
 #if defined(__cpp_fold_expressions)
 
 template <typename CharT, typename ... Printers>
-inline STRF_HD void write_args( strf::basic_outbuff<CharT>& ob
+inline STRF_HD void write_args( strf::destination<CharT>& ob
                               , const Printers& ... printers )
 {
     (... , printers.print_to(ob));
@@ -258,13 +258,13 @@ inline STRF_HD void write_args( strf::basic_outbuff<CharT>& ob
 #else // defined(__cpp_fold_expressions)
 
 template <typename CharT>
-inline STRF_HD void write_args(strf::basic_outbuff<CharT>&)
+inline STRF_HD void write_args(strf::destination<CharT>&)
 {
 }
 
 template <typename CharT, typename Printer, typename ... Printers>
 inline STRF_HD void write_args
-    ( strf::basic_outbuff<CharT>& ob
+    ( strf::destination<CharT>& ob
     , const Printer& printer
     , const Printers& ... printers )
 {
@@ -2008,7 +2008,7 @@ STRF_HD void tr_string_write
     , const typename Charset::code_unit* str_end
     , const strf::printer<typename Charset::code_unit>* const * args
     , std::size_t num_args
-    , strf::basic_outbuff<typename Charset::code_unit>& ob
+    , strf::destination<typename Charset::code_unit>& ob
     , Charset charset
     , ErrHandler err_handler )
 {
@@ -2122,7 +2122,7 @@ public:
         }
     }
 
-    STRF_HD void print_to(strf::basic_outbuff<char_type>& ob) const
+    STRF_HD void print_to(strf::destination<char_type>& ob) const
     {
         strf::detail::tr_string_write
             ( tr_string_, tr_string_end_, printers_array_, num_printers_
@@ -2142,15 +2142,15 @@ private:
 
 } // namespace detail
 
-template < typename OutbuffCreator
+template < typename DestinationCreator
          , typename FPack = strf::facets_pack<> >
 class destination_with_given_size;
 
-template < typename OutbuffCreator
+template < typename DestinationCreator
          , typename FPack = strf::facets_pack<> >
 class destination_calc_size;
 
-template < typename OutbuffCreator
+template < typename DestinationCreator
          , typename FPack = strf::facets_pack<> >
 class destination_no_reserve;
 
@@ -2168,55 +2168,55 @@ inline STRF_HD void finish(strf::rank<1>, OB&)
 {
 }
 
-template <typename OutbuffCreator, bool Sized>
-struct outbuff_creator_traits;
+template <typename DestinationCreator, bool Sized>
+struct destination_creator_traits;
 
-template <typename OutbuffCreator>
-struct outbuff_creator_traits<OutbuffCreator, false>
+template <typename DestinationCreator>
+struct destination_creator_traits<DestinationCreator, false>
 {
-    using outbuff_type = typename OutbuffCreator::outbuff_type;
+    using destination_type = typename DestinationCreator::destination_type;
     using finish_return_type =
-        decltype(strf::detail::finish(strf::rank<2>(), std::declval<outbuff_type&>()));
+        decltype(strf::detail::finish(strf::rank<2>(), std::declval<destination_type&>()));
 };
 
-template <typename OutbuffCreator>
-struct outbuff_creator_traits<OutbuffCreator, true>
+template <typename DestinationCreator>
+struct destination_creator_traits<DestinationCreator, true>
 {
-    using outbuff_type = typename OutbuffCreator::sized_outbuff_type;
+    using destination_type = typename DestinationCreator::sized_destination_type;
     using finish_return_type =
-        decltype(strf::detail::finish(strf::rank<2>(), std::declval<outbuff_type&>()));
+        decltype(strf::detail::finish(strf::rank<2>(), std::declval<destination_type&>()));
 };
 
-template <typename OutbuffCreator, bool Sized>
-using outbuff_finish_return_type = typename
-    outbuff_creator_traits<OutbuffCreator, Sized>::finish_return_type;
+template <typename DestinationCreator, bool Sized>
+using destination_finish_return_type = typename
+    destination_creator_traits<DestinationCreator, Sized>::finish_return_type;
 
 struct destination_tag {};
 
 template < template <typename, typename> class DestinationTmpl
-         , bool Sized, class OutbuffCreator, class Preview, class FPack >
+         , bool Sized, class DestinationCreator, class Preview, class FPack >
 class destination_common
 {
-    using destination_type_ = DestinationTmpl<OutbuffCreator, FPack>;
+    using destination_type_ = DestinationTmpl<DestinationCreator, FPack>;
 
-    using char_type_ = typename OutbuffCreator::char_type;
+    using char_type_ = typename DestinationCreator::char_type;
 
     template <typename Arg>
     using printer_ = strf::printer_type<char_type_, Preview, FPack, Arg>;
 
-    using finish_return_type_ = outbuff_finish_return_type<OutbuffCreator, Sized>;
+    using finish_return_type_ = destination_finish_return_type<DestinationCreator, Sized>;
 
 public:
 
     template <typename... FPE>
     STRF_NODISCARD constexpr STRF_HD auto with(FPE&&... fpe) const &
         -> DestinationTmpl
-            < OutbuffCreator
+            < DestinationCreator
             , decltype( strf::pack( std::declval<const FPack&>()
                                   , std::forward<FPE>(fpe) ...) ) >
     {
-        static_assert( std::is_copy_constructible<OutbuffCreator>::value
-                     , "OutbuffCreator must be copy constructible" );
+        static_assert( std::is_copy_constructible<DestinationCreator>::value
+                     , "DestinationCreator must be copy constructible" );
 
         return { static_cast<const destination_type_&>(*this)
                , detail::destination_tag{}, std::forward<FPE>(fpe) ...};
@@ -2225,67 +2225,67 @@ public:
     template <typename... FPE>
     STRF_NODISCARD STRF_CONSTEXPR_IN_CXX14 STRF_HD auto with(FPE&& ... fpe) &&
         -> DestinationTmpl
-            < OutbuffCreator
+            < DestinationCreator
             , decltype( strf::pack( std::declval<const FPack&>()
                                   , std::forward<FPE>(fpe) ...) ) >
     {
-        static_assert( std::is_move_constructible<OutbuffCreator>::value
-                     , "OutbuffCreator must be move constructible" );
+        static_assert( std::is_move_constructible<DestinationCreator>::value
+                     , "DestinationCreator must be move constructible" );
 
         return { std::move(static_cast<const destination_type_&>(*this))
                , detail::destination_tag{}
                , std::forward<FPE>(fpe)...};
     }
 
-    constexpr STRF_HD strf::destination_no_reserve<OutbuffCreator, FPack>
+    constexpr STRF_HD strf::destination_no_reserve<DestinationCreator, FPack>
     no_reserve() const &
     {
         return { strf::detail::destination_tag{}
-               , static_cast<const destination_type_*>(this)->outbuff_creator_
+               , static_cast<const destination_type_*>(this)->destination_creator_
                , static_cast<const destination_type_*>(this)->fpack_ };
     }
 
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD strf::destination_no_reserve<OutbuffCreator, FPack>
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD strf::destination_no_reserve<DestinationCreator, FPack>
     no_reserve() &&
     {
         return { strf::detail::destination_tag{}
-               , std::move(static_cast<destination_type_*>(this)->outbuff_creator_)
+               , std::move(static_cast<destination_type_*>(this)->destination_creator_)
                , std::move(static_cast<destination_type_*>(this)->fpack_) };
     }
 
-    constexpr STRF_HD strf::destination_calc_size<OutbuffCreator, FPack>
+    constexpr STRF_HD strf::destination_calc_size<DestinationCreator, FPack>
     reserve_calc() const &
     {
         return { strf::detail::destination_tag{}
-               , static_cast<const destination_type_*>(this)->outbuff_creator_
+               , static_cast<const destination_type_*>(this)->destination_creator_
                , static_cast<const destination_type_*>(this)->fpack_ };
     }
 
-    STRF_CONSTEXPR_IN_CXX14 strf::destination_calc_size<OutbuffCreator, FPack>
+    STRF_CONSTEXPR_IN_CXX14 strf::destination_calc_size<DestinationCreator, FPack>
     STRF_HD reserve_calc() &&
     {
         auto& self = static_cast<destination_type_&>(*this);
         return { strf::detail::destination_tag{}
-               , self.outbuff_creator_
+               , self.destination_creator_
                , self.fpack_ };
     }
 
-    constexpr STRF_HD strf::destination_with_given_size<OutbuffCreator, FPack>
+    constexpr STRF_HD strf::destination_with_given_size<DestinationCreator, FPack>
     reserve(std::size_t size) const &
     {
         return { strf::detail::destination_tag{}
                , size
-               , static_cast<const destination_type_*>(this)->outbuff_creator_
+               , static_cast<const destination_type_*>(this)->destination_creator_
                , static_cast<const destination_type_*>(this)->fpack_ };
     }
 
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD strf::destination_with_given_size<OutbuffCreator, FPack>
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD strf::destination_with_given_size<DestinationCreator, FPack>
     reserve(std::size_t size) &&
     {
         auto& self = static_cast<destination_type_&>(*this);
         return { strf::detail::destination_tag{}
                , size
-               , self.outbuff_creator_
+               , self.destination_creator_
                , self.fpack_ };
     }
 
@@ -2394,19 +2394,19 @@ private:
 
 }// namespace detail
 
-template < typename OutbuffCreator, typename FPack >
+template < typename DestinationCreator, typename FPack >
 class destination_no_reserve
     : private strf::detail::destination_common
         < strf::destination_no_reserve
         , false
-        , OutbuffCreator
+        , DestinationCreator
         , strf::no_print_preview
         , FPack >
 {
     using common_ = strf::detail::destination_common
         < strf::destination_no_reserve
         , false
-        , OutbuffCreator
+        , DestinationCreator
         , strf::no_print_preview
         , FPack >;
 
@@ -2414,36 +2414,36 @@ class destination_no_reserve
     friend class strf::detail::destination_common;
 
     using preview_type_ = strf::no_print_preview;
-    using finish_return_type_ = strf::detail::outbuff_finish_return_type<OutbuffCreator, false>;
+    using finish_return_type_ = strf::detail::destination_finish_return_type<DestinationCreator, false>;
 
 public:
 
-    using char_type = typename OutbuffCreator::char_type;
+    using char_type = typename DestinationCreator::char_type;
 
     template < typename ... Args
              , strf::detail::enable_if_t
-                 < std::is_constructible<OutbuffCreator, Args...>::value
+                 < std::is_constructible<DestinationCreator, Args...>::value
                  , int > = 0 >
     constexpr STRF_HD destination_no_reserve(Args&&... args)
-        : outbuff_creator_(std::forward<Args>(args)...)
+        : destination_creator_(std::forward<Args>(args)...)
     {
     }
 
-    template < typename T = OutbuffCreator
+    template < typename T = DestinationCreator
              , strf::detail::enable_if_t
                  < std::is_copy_constructible<T>::value, int > = 0 >
     constexpr STRF_HD destination_no_reserve( strf::detail::destination_tag
-                                            , const OutbuffCreator& oc
+                                            , const DestinationCreator& oc
                                             , const FPack& fp )
-        : outbuff_creator_(oc)
+        : destination_creator_(oc)
         , fpack_(fp)
     {
     }
 
     constexpr STRF_HD destination_no_reserve( strf::detail::destination_tag
-                                            , OutbuffCreator&& oc
+                                            , DestinationCreator&& oc
                                             , FPack&& fp )
-        : outbuff_creator_(std::move(oc))
+        : destination_creator_(std::move(oc))
         , fpack_(std::move(fp))
     {
     }
@@ -2478,23 +2478,23 @@ private:
 
     template < typename OtherFPack
              , typename ... FPE
-             , typename T = OutbuffCreator
+             , typename T = DestinationCreator
              , strf::detail::enable_if_t<std::is_copy_constructible<T>::value, int> = 0 >
     constexpr STRF_HD destination_no_reserve
-        ( const destination_no_reserve<OutbuffCreator, OtherFPack>& other
+        ( const destination_no_reserve<DestinationCreator, OtherFPack>& other
         , detail::destination_tag
         , FPE&& ... fpe )
-        : outbuff_creator_(other.outbuff_creator_)
+        : destination_creator_(other.destination_creator_)
         , fpack_(other.fpack_, std::forward<FPE>(fpe)...)
     {
     }
 
     template < typename OtherFPack, typename ... FPE >
     constexpr STRF_HD destination_no_reserve
-        ( destination_no_reserve<OutbuffCreator, OtherFPack>&& other
+        ( destination_no_reserve<DestinationCreator, OtherFPack>&& other
         , detail::destination_tag
         , FPE&& ... fpe )
-        : outbuff_creator_(std::move(other.outbuff_creator_))
+        : destination_creator_(std::move(other.destination_creator_))
         , fpack_(std::move(other.fpack_), std::forward<FPE>(fpe)...)
     {
     }
@@ -2504,28 +2504,28 @@ private:
         ( const preview_type_&
         , const Printers& ... printers) const
     {
-        typename OutbuffCreator::outbuff_type ob{outbuff_creator_.create()};
+        typename DestinationCreator::destination_type ob{destination_creator_.create()};
         strf::detail::write_args(ob, printers...);
         return strf::detail::finish(strf::rank<2>(), ob);
     }
 
-    OutbuffCreator outbuff_creator_;
+    DestinationCreator destination_creator_;
     FPack fpack_;
 };
 
-template < typename OutbuffCreator, typename FPack >
+template < typename DestinationCreator, typename FPack >
 class destination_with_given_size
     : public strf::detail::destination_common
         < strf::destination_with_given_size
         , true
-        , OutbuffCreator
+        , DestinationCreator
         , strf::no_print_preview
         , FPack >
 {
     using common_ = strf::detail::destination_common
         < strf::destination_with_given_size
         , true
-        , OutbuffCreator
+        , DestinationCreator
         , strf::no_print_preview
         , FPack >;
 
@@ -2533,40 +2533,40 @@ class destination_with_given_size
     friend class strf::detail::destination_common;
 
     using preview_type_ = strf::no_print_preview;
-    using finish_return_type_ = strf::detail::outbuff_finish_return_type<OutbuffCreator, true>;
+    using finish_return_type_ = strf::detail::destination_finish_return_type<DestinationCreator, true>;
 
 public:
 
-    using char_type = typename OutbuffCreator::char_type;
+    using char_type = typename DestinationCreator::char_type;
 
     template < typename ... Args
              , strf::detail::enable_if_t
-                 < std::is_constructible<OutbuffCreator, Args...>::value
+                 < std::is_constructible<DestinationCreator, Args...>::value
                  , int > = 0 >
     constexpr STRF_HD destination_with_given_size(std::size_t size, Args&&... args)
         : size_(size)
-        , outbuff_creator_(std::forward<Args>(args)...)
+        , destination_creator_(std::forward<Args>(args)...)
     {
     }
 
-    template < typename T = OutbuffCreator
+    template < typename T = DestinationCreator
              , strf::detail::enable_if_t<std::is_copy_constructible<T>::value, int> = 0 >
     constexpr STRF_HD destination_with_given_size( strf::detail::destination_tag
                                                  , std::size_t size
-                                                 , const OutbuffCreator& oc
+                                                 , const DestinationCreator& oc
                                                  , const FPack& fp )
         : size_(size)
-        , outbuff_creator_(oc)
+        , destination_creator_(oc)
         , fpack_(fp)
     {
     }
 
     constexpr STRF_HD destination_with_given_size( strf::detail::destination_tag
                                                  , std::size_t size
-                                                 , OutbuffCreator&& oc
+                                                 , DestinationCreator&& oc
                                                  , FPack&& fp )
         : size_(size)
-        , outbuff_creator_(std::move(oc))
+        , destination_creator_(std::move(oc))
         , fpack_(std::move(fp))
     {
     }
@@ -2595,25 +2595,25 @@ private:
 
     template < typename OtherFPack
              , typename ... FPE
-             , typename T = OutbuffCreator
+             , typename T = DestinationCreator
              , strf::detail::enable_if_t<std::is_copy_constructible<T>::value, int> = 0>
     constexpr STRF_HD destination_with_given_size
-        ( const destination_with_given_size<OutbuffCreator, OtherFPack>& other
+        ( const destination_with_given_size<DestinationCreator, OtherFPack>& other
         , detail::destination_tag
         , FPE&& ... fpe )
         : size_(other.size_)
-        , outbuff_creator_(other.outbuff_creator_)
+        , destination_creator_(other.destination_creator_)
         , fpack_(other.fpack_, std::forward<FPE>(fpe)...)
     {
     }
 
     template < typename OtherFPack, typename ... FPE >
     constexpr STRF_HD destination_with_given_size
-        ( destination_with_given_size<OutbuffCreator, OtherFPack>&& other
+        ( destination_with_given_size<DestinationCreator, OtherFPack>&& other
         , detail::destination_tag
         , FPE&& ... fpe )
         : size_(other.size)
-        , outbuff_creator_(std::move(other.outbuff_creator_))
+        , destination_creator_(std::move(other.destination_creator_))
         , fpack_(std::move(other.fpack_), std::forward<FPE>(fpe)...)
     {
     }
@@ -2623,29 +2623,29 @@ private:
         ( const preview_type_&
         , const Printers& ... printers) const
     {
-        typename OutbuffCreator::sized_outbuff_type ob{outbuff_creator_.create(size_)};
+        typename DestinationCreator::sized_destination_type ob{destination_creator_.create(size_)};
         strf::detail::write_args(ob, printers...);
         return strf::detail::finish(strf::rank<2>(), ob);
     }
 
     std::size_t size_;
-    OutbuffCreator outbuff_creator_;
+    DestinationCreator destination_creator_;
     FPack fpack_;
 };
 
-template < typename OutbuffCreator, typename FPack >
+template < typename DestinationCreator, typename FPack >
 class destination_calc_size
     : public strf::detail::destination_common
         < strf::destination_calc_size
         , true
-        , OutbuffCreator
+        , DestinationCreator
         , strf::print_preview<strf::preview_size::yes, strf::preview_width::no>
         , FPack >
 {
     using common_ = strf::detail::destination_common
         < strf::destination_calc_size
         , true
-        , OutbuffCreator
+        , DestinationCreator
         , strf::print_preview<strf::preview_size::yes, strf::preview_width::no>
         , FPack >;
 
@@ -2654,36 +2654,36 @@ class destination_calc_size
 
     using preview_type_
         = strf::print_preview<strf::preview_size::yes, strf::preview_width::no>;
-    using finish_return_type_ = strf::detail::outbuff_finish_return_type<OutbuffCreator, true>;
+    using finish_return_type_ = strf::detail::destination_finish_return_type<DestinationCreator, true>;
 
 public:
 
-    using char_type = typename OutbuffCreator::char_type;
+    using char_type = typename DestinationCreator::char_type;
 
     template < typename ... Args
              , strf::detail::enable_if_t
-                 < std::is_constructible<OutbuffCreator, Args...>::value
+                 < std::is_constructible<DestinationCreator, Args...>::value
                  , int > = 0 >
     constexpr STRF_HD destination_calc_size(Args&&... args)
-        : outbuff_creator_(std::forward<Args>(args)...)
+        : destination_creator_(std::forward<Args>(args)...)
     {
     }
 
-    template < typename T = OutbuffCreator
+    template < typename T = DestinationCreator
              , strf::detail::enable_if_t
                  < std::is_copy_constructible<T>::value, int > = 0 >
     constexpr STRF_HD destination_calc_size( strf::detail::destination_tag
-                                           , const OutbuffCreator& oc
+                                           , const DestinationCreator& oc
                                            , const FPack& fp )
-        : outbuff_creator_(oc)
+        : destination_creator_(oc)
         , fpack_(fp)
     {
     }
 
     constexpr STRF_HD destination_calc_size( strf::detail::destination_tag
-                                           , OutbuffCreator&& oc
+                                           , DestinationCreator&& oc
                                            , FPack&& fp )
-        : outbuff_creator_(std::move(oc))
+        : destination_creator_(std::move(oc))
         , fpack_(std::move(fp))
     {
     }
@@ -2718,23 +2718,23 @@ private:
 
     template < typename OtherFPack
              , typename ... FPE
-             , typename T = OutbuffCreator
+             , typename T = DestinationCreator
              , strf::detail::enable_if_t<std::is_copy_constructible<T>::value, int> = 0 >
     STRF_HD destination_calc_size
-        ( const destination_calc_size<OutbuffCreator, OtherFPack>& other
+        ( const destination_calc_size<DestinationCreator, OtherFPack>& other
         , detail::destination_tag
         , FPE&& ... fpe )
-        : outbuff_creator_(other.outbuff_creator_)
+        : destination_creator_(other.destination_creator_)
         , fpack_(other.fpack_, std::forward<FPE>(fpe)...)
     {
     }
 
     template < typename OtherFPack, typename ... FPE >
     STRF_HD destination_calc_size
-        ( destination_calc_size<OutbuffCreator, OtherFPack>&& other
+        ( destination_calc_size<DestinationCreator, OtherFPack>&& other
         , detail::destination_tag
         , FPE&& ... fpe )
-        : outbuff_creator_(std::move(other.outbuff_creator_))
+        : destination_creator_(std::move(other.destination_creator_))
         , fpack_(std::move(other.fpack_), std::forward<FPE>(fpe)...)
     {
     }
@@ -2745,47 +2745,47 @@ private:
         , const Printers& ... printers ) const
     {
         std::size_t size = preview.accumulated_size();
-        typename OutbuffCreator::sized_outbuff_type ob{outbuff_creator_.create(size)};
+        typename DestinationCreator::sized_destination_type ob{destination_creator_.create(size)};
         strf::detail::write_args(ob, printers...);
         return strf::detail::finish(strf::rank<2>(), ob);
     }
 
-    OutbuffCreator outbuff_creator_;
+    DestinationCreator destination_creator_;
     FPack fpack_;
 };
 
 namespace detail {
 
 template <typename CharT>
-class outbuff_reference
+class destination_reference
 {
 public:
 
     using char_type = CharT;
-    using outbuff_type = strf::basic_outbuff<CharT>&;
+    using destination_type = strf::destination<CharT>&;
 
-    explicit STRF_HD outbuff_reference(strf::basic_outbuff<CharT>& ob) noexcept
+    explicit STRF_HD destination_reference(strf::destination<CharT>& ob) noexcept
         : ob_(ob)
     {
     }
 
-    STRF_HD strf::basic_outbuff<CharT>& create() const
+    STRF_HD strf::destination<CharT>& create() const
     {
         return ob_;
     }
 
 private:
-    strf::basic_outbuff<CharT>& ob_;
+    strf::destination<CharT>& ob_;
 };
 
 
 } // namespace detail
 
 template <typename CharT>
-strf::destination_no_reserve<strf::detail::outbuff_reference<CharT>>
-STRF_HD to(strf::basic_outbuff<CharT>& ob)
+strf::destination_no_reserve<strf::detail::destination_reference<CharT>>
+STRF_HD to(strf::destination<CharT>& ob)
 {
-    return strf::destination_no_reserve<strf::detail::outbuff_reference<CharT>>(ob);
+    return strf::destination_no_reserve<strf::detail::destination_reference<CharT>>(ob);
 }
 
 namespace detail {
@@ -2797,7 +2797,7 @@ public:
 
     using char_type = CharT;
     using finish_type = typename basic_cstr_writer<CharT>::result;
-    using outbuff_type = basic_cstr_writer<CharT>;
+    using destination_type = basic_cstr_writer<CharT>;
 
     STRF_CONSTEXPR_IN_CXX14 STRF_HD
     basic_cstr_writer_creator(CharT* dest, CharT* dest_end) noexcept
@@ -2825,7 +2825,7 @@ public:
 
     using char_type = CharT;
     using finish_type = typename basic_char_array_writer<CharT>::result;
-    using outbuff_type = basic_char_array_writer<CharT>;
+    using destination_type = basic_char_array_writer<CharT>;
 
     constexpr STRF_HD
     basic_char_array_writer_creator(CharT* dest, CharT* dest_end) noexcept

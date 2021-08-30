@@ -41,7 +41,7 @@ namespace detail {
 
 template <typename CharT>
 inline STRF_HD void repeat_sequence
-    ( strf::basic_outbuff<CharT>& ob
+    ( strf::destination<CharT>& ob
     , std::size_t count
     , CharT ch0
     , CharT ch1 ) noexcept
@@ -73,7 +73,7 @@ inline STRF_HD void repeat_sequence
 
 template <typename CharT>
 inline STRF_HD void repeat_sequence
-    ( strf::basic_outbuff<CharT>& ob
+    ( strf::destination<CharT>& ob
     , std::size_t count
     , CharT ch0
     , CharT ch1
@@ -107,7 +107,7 @@ inline STRF_HD void repeat_sequence
 
 template <typename CharT>
 inline STRF_HD void repeat_sequence
-    ( strf::basic_outbuff<CharT>& ob
+    ( strf::destination<CharT>& ob
     , std::size_t count
     , CharT ch0
     , CharT ch1
@@ -246,7 +246,7 @@ public:
     static_assert(sizeof(DestCharT) == 1, "Incompatible character type for UTF-8");
 
     static STRF_HD void transcode
-        ( strf::basic_outbuff<DestCharT>& ob
+        ( strf::destination<DestCharT>& ob
         , const SrcCharT* src
         , std::size_t src_size
         , strf::invalid_seq_notifier inv_seq_notifier
@@ -275,7 +275,7 @@ public:
     static_assert(sizeof(DestCharT) == 2, "Incompatible character type for UTF-16");
 
     static STRF_HD void transcode
-        ( strf::basic_outbuff<DestCharT>& ob
+        ( strf::destination<DestCharT>& ob
         , const SrcCharT* src
         , std::size_t src_size
         , strf::invalid_seq_notifier inv_seq_notifier
@@ -304,7 +304,7 @@ public:
     static_assert(sizeof(DestCharT) == 4, "Incompatible character type for UTF-32");
 
     static STRF_HD void transcode
-        ( strf::basic_outbuff<DestCharT>& ob
+        ( strf::destination<DestCharT>& ob
         , const SrcCharT* src
         , std::size_t src_size
         , strf::invalid_seq_notifier inv_seq_notifier
@@ -333,7 +333,7 @@ public:
     static_assert(sizeof(DestCharT) == 1, "Incompatible character type for UTF-8");
 
     static STRF_HD void transcode
-        ( strf::basic_outbuff<DestCharT>& ob
+        ( strf::destination<DestCharT>& ob
         , const SrcCharT* src
         , std::size_t src_size
         , strf::invalid_seq_notifier inv_seq_notifier
@@ -362,7 +362,7 @@ public:
     static_assert(sizeof(DestCharT) == 2, "Incompatible character type for UTF-16");
 
     static STRF_HD void transcode
-        ( strf::basic_outbuff<DestCharT>& ob
+        ( strf::destination<DestCharT>& ob
         , const SrcCharT* src
         , std::size_t src_size
         , strf::invalid_seq_notifier inv_seq_notifier
@@ -391,7 +391,7 @@ public:
     static_assert(sizeof(DestCharT) == 4, "Incompatible character type for UTF-32");
 
     static STRF_HD void transcode
-        ( strf::basic_outbuff<DestCharT>& ob
+        ( strf::destination<DestCharT>& ob
         , const SrcCharT* src
         , std::size_t src_size
         , strf::invalid_seq_notifier inv_seq_notifier
@@ -420,7 +420,7 @@ public:
     static_assert(sizeof(DestCharT) == 1, "Incompatible character type for UTF-1");
 
     static STRF_HD void transcode
-        ( strf::basic_outbuff<DestCharT>& ob
+        ( strf::destination<DestCharT>& ob
         , const SrcCharT* src
         , std::size_t src_size
         , strf::invalid_seq_notifier inv_seq_notifier
@@ -449,7 +449,7 @@ public:
     static_assert(sizeof(DestCharT) == 2, "Incompatible character type for UTF-16");
 
     static STRF_HD void transcode
-        ( strf::basic_outbuff<DestCharT>& ob
+        ( strf::destination<DestCharT>& ob
         , const SrcCharT* src
         , std::size_t src_size
         , strf::invalid_seq_notifier inv_seq_notifier
@@ -478,7 +478,7 @@ public:
     static_assert(sizeof(DestCharT) == 4, "Incompatible character type for UTF-32");
 
     static STRF_HD void transcode
-        ( strf::basic_outbuff<DestCharT>& ob
+        ( strf::destination<DestCharT>& ob
         , const SrcCharT* src
         , std::size_t src_size
         , strf::invalid_seq_notifier inv_seq_notifier
@@ -578,7 +578,7 @@ public:
         ( CharT* dest, char32_t ch ) noexcept;
 
     static STRF_HD void encode_fill
-        ( strf::basic_outbuff<CharT>&, std::size_t count, char32_t ch );
+        ( strf::destination<CharT>&, std::size_t count, char32_t ch );
 
     static STRF_HD strf::codepoints_count_result codepoints_fast_count
         ( const CharT* src, std::size_t src_size
@@ -589,7 +589,7 @@ public:
         , std::size_t max_count, strf::surrogate_policy surr_poli ) noexcept;
 
     static STRF_HD void write_replacement_char
-        ( strf::basic_outbuff<CharT>& );
+        ( strf::destination<CharT>& );
 
     static STRF_HD char32_t decode_unit(CharT ch) noexcept
     {
@@ -723,7 +723,7 @@ public:
         (CharT* dest, char32_t ch) noexcept;
 
     static STRF_HD void encode_fill
-        ( strf::basic_outbuff<CharT>&, std::size_t count, char32_t ch );
+        ( strf::destination<CharT>&, std::size_t count, char32_t ch );
 
     static STRF_HD strf::codepoints_count_result codepoints_fast_count
         ( const CharT* src, std::size_t src_size
@@ -734,7 +734,7 @@ public:
         , std::size_t max_count, strf::surrogate_policy surr_poli ) noexcept;
 
     static STRF_HD void write_replacement_char
-        ( strf::basic_outbuff<CharT>& );
+        ( strf::destination<CharT>& );
 
     static STRF_HD char32_t decode_unit(CharT ch) noexcept
     {
@@ -879,7 +879,7 @@ public:
         return dest + 1;
     }
     static STRF_HD void encode_fill
-        ( strf::basic_outbuff<CharT>&, std::size_t count, char32_t ch );
+        ( strf::destination<CharT>&, std::size_t count, char32_t ch );
 
     static STRF_HD strf::codepoints_count_result codepoints_fast_count
         ( const CharT* src, std::size_t src_size
@@ -905,7 +905,7 @@ public:
     }
 
     static STRF_HD void write_replacement_char
-        ( strf::basic_outbuff<CharT>& );
+        ( strf::destination<CharT>& );
 
     static STRF_HD char32_t decode_unit(CharT ch) noexcept
     {
@@ -1015,7 +1015,7 @@ using utf32_impl = static_charset<CharT, strf::csid_utf32>;
 template <typename SrcCharT, typename DestCharT>
 STRF_HD void strf::static_transcoder
     <SrcCharT, DestCharT, strf::csid_utf8, strf::csid_utf32 >::transcode
-    ( strf::basic_outbuff<DestCharT>& ob
+    ( strf::destination<DestCharT>& ob
     , const SrcCharT* src
     , std::size_t src_size
     , strf::invalid_seq_notifier inv_seq_notifier
@@ -1137,7 +1137,7 @@ STRF_HD std::size_t strf::static_transcoder
 template <typename SrcCharT, typename DestCharT>
 STRF_HD void strf::static_transcoder
     < SrcCharT, DestCharT, strf::csid_utf8, strf::csid_utf8 >::transcode
-    ( strf::basic_outbuff<DestCharT>& ob
+    ( strf::destination<DestCharT>& ob
     , const SrcCharT* src
     , std::size_t src_size
     , strf::invalid_seq_notifier inv_seq_notifier
@@ -1355,7 +1355,7 @@ static_charset<CharT, strf::csid_utf8>::codepoints_robust_count
 template <typename CharT>
 STRF_HD void
 static_charset<CharT, strf::csid_utf8>::encode_fill
-    ( strf::basic_outbuff<CharT>& ob, std::size_t count, char32_t ch )
+    ( strf::destination<CharT>& ob, std::size_t count, char32_t ch )
 {
     STRF_IF_LIKELY (ch < 0x80) {
         strf::detail::write_fill(ob, count, static_cast<CharT>(ch));
@@ -1419,7 +1419,7 @@ static_charset<CharT, strf::csid_utf8>::encode_char
 template <typename SrcCharT, typename DestCharT>
 STRF_HD void strf::static_transcoder
     < SrcCharT, DestCharT, strf::csid_utf32, strf::csid_utf8 >::transcode
-    ( strf::basic_outbuff<DestCharT>& ob
+    ( strf::destination<DestCharT>& ob
     , const SrcCharT* src
     , std::size_t src_size
     , strf::invalid_seq_notifier inv_seq_notifier
@@ -1498,7 +1498,7 @@ STRF_HD std::size_t strf::static_transcoder
 template <typename CharT>
 STRF_HD void
 static_charset<CharT, strf::csid_utf8>::write_replacement_char
-    ( strf::basic_outbuff<CharT>& ob )
+    ( strf::destination<CharT>& ob )
 {
     auto dest_it = ob.pointer();
     auto dest_end = ob.end();
@@ -1513,7 +1513,7 @@ static_charset<CharT, strf::csid_utf8>::write_replacement_char
 template <typename SrcCharT, typename DestCharT>
 STRF_HD void strf::static_transcoder
     < SrcCharT, DestCharT, strf::csid_utf16, strf::csid_utf32 >::transcode
-    ( strf::basic_outbuff<DestCharT>& ob
+    ( strf::destination<DestCharT>& ob
     , const SrcCharT* src
     , std::size_t src_size
     , strf::invalid_seq_notifier inv_seq_notifier
@@ -1586,7 +1586,7 @@ STRF_HD std::size_t strf::static_transcoder
 template <typename SrcCharT, typename DestCharT>
 STRF_HD void strf::static_transcoder
     < SrcCharT, DestCharT, strf::csid_utf16, strf::csid_utf16 >::transcode
-    ( strf::basic_outbuff<DestCharT>& ob
+    ( strf::destination<DestCharT>& ob
     , const SrcCharT* src
     , std::size_t src_size
     , strf::invalid_seq_notifier inv_seq_notifier
@@ -1733,7 +1733,7 @@ static_charset<CharT, strf::csid_utf16>::encode_char
 template <typename CharT>
 STRF_HD void
 static_charset<CharT, strf::csid_utf16>::encode_fill
-    ( strf::basic_outbuff<CharT>& ob, std::size_t count, char32_t ch )
+    ( strf::destination<CharT>& ob, std::size_t count, char32_t ch )
 {
     STRF_IF_LIKELY (ch < 0x10000) {
         strf::detail::write_fill<CharT>(ob, count, static_cast<CharT>(ch));
@@ -1750,7 +1750,7 @@ static_charset<CharT, strf::csid_utf16>::encode_fill
 template <typename SrcCharT, typename DestCharT>
 STRF_HD void strf::static_transcoder
     < SrcCharT, DestCharT, strf::csid_utf32, strf::csid_utf16 >::transcode
-    ( strf::basic_outbuff<DestCharT>& ob
+    ( strf::destination<DestCharT>& ob
     , const SrcCharT* src
     , std::size_t src_size
     , strf::invalid_seq_notifier inv_seq_notifier
@@ -1811,7 +1811,7 @@ STRF_HD std::size_t strf::static_transcoder
 template <typename CharT>
 STRF_HD void
 static_charset<CharT, strf::csid_utf16>::write_replacement_char
-    ( strf::basic_outbuff<CharT>& ob )
+    ( strf::destination<CharT>& ob )
 {
     ob.ensure(1);
     *ob.pointer() = 0xFFFD;
@@ -1821,7 +1821,7 @@ static_charset<CharT, strf::csid_utf16>::write_replacement_char
 template <typename SrcCharT, typename DestCharT>
 STRF_HD void strf::static_transcoder
     < SrcCharT, DestCharT, strf::csid_utf32, strf::csid_utf32 >::transcode
-    ( strf::basic_outbuff<DestCharT>& ob
+    ( strf::destination<DestCharT>& ob
     , const SrcCharT* src
     , std::size_t src_size
     , strf::invalid_seq_notifier inv_seq_notifier
@@ -1865,7 +1865,7 @@ STRF_HD void strf::static_transcoder
 template <typename CharT>
 STRF_HD void
 static_charset<CharT, strf::csid_utf32>::encode_fill
-    ( strf::basic_outbuff<CharT>& ob, std::size_t count, char32_t ch )
+    ( strf::destination<CharT>& ob, std::size_t count, char32_t ch )
 {
     strf::detail::write_fill(ob, count, static_cast<CharT>(ch));
 }
@@ -1873,7 +1873,7 @@ static_charset<CharT, strf::csid_utf32>::encode_fill
 template <typename CharT>
 STRF_HD void
 static_charset<CharT, strf::csid_utf32>::write_replacement_char
-    ( strf::basic_outbuff<CharT>& ob )
+    ( strf::destination<CharT>& ob )
 {
     ob.ensure(1);
     *ob.pointer() = 0xFFFD;
@@ -1884,7 +1884,7 @@ static_charset<CharT, strf::csid_utf32>::write_replacement_char
 template <typename SrcCharT, typename DestCharT>
 STRF_HD void strf::static_transcoder
     < SrcCharT, DestCharT, strf::csid_utf8, strf::csid_utf16 >::transcode
-    ( strf::basic_outbuff<DestCharT>& ob
+    ( strf::destination<DestCharT>& ob
     , const SrcCharT* src
     , std::size_t src_size
     , strf::invalid_seq_notifier inv_seq_notifier
@@ -2019,7 +2019,7 @@ STRF_HD std::size_t strf::static_transcoder
 template <typename SrcCharT, typename DestCharT>
 STRF_HD void strf::static_transcoder
     < SrcCharT, DestCharT, strf::csid_utf16, strf::csid_utf8 >::transcode
-    ( strf::basic_outbuff<DestCharT>& ob
+    ( strf::destination<DestCharT>& ob
     , const SrcCharT* src
     , std::size_t src_size
     , strf::invalid_seq_notifier inv_seq_notifier

@@ -7,8 +7,10 @@
 #include "test_utils.hpp"
 #include <sstream>
 
+namespace {
+
 template <typename CharT>
-static void test_successfull_writing()
+void test_successfull_writing()
 {
     auto tiny_str = test_utils::make_tiny_string<CharT>();
     auto double_str = test_utils::make_double_string<CharT>();
@@ -35,7 +37,7 @@ static void test_successfull_writing()
 }
 
 template <typename CharT>
-static void when_finish_is_not_called()
+void when_finish_is_not_called()
 {
     auto tiny_str = test_utils::make_tiny_string<CharT>();
 
@@ -52,7 +54,7 @@ static void when_finish_is_not_called()
 }
 
 template <typename CharT>
-static void when_finish_is_not_called_but_state_is_bad_anyway()
+void when_finish_is_not_called_but_state_is_bad_anyway()
 {
     auto tiny_str = test_utils::make_tiny_string<CharT>();
 
@@ -67,7 +69,7 @@ static void when_finish_is_not_called_but_state_is_bad_anyway()
 }
 
 template <typename CharT>
-static void test_failing_to_recycle()
+void test_failing_to_recycle()
 {
     auto half_str = test_utils::make_half_string<CharT>();
 
@@ -95,7 +97,7 @@ static void test_failing_to_recycle()
 }
 
 template <typename CharT>
-static void test_failing_to_call_do_write()
+void test_failing_to_call_do_write()
 {
     auto half_str = test_utils::make_half_string<CharT>();
     auto double_str = test_utils::make_double_string<CharT>();
@@ -122,7 +124,7 @@ static void test_failing_to_call_do_write()
 
 
 template <typename CharT>
-static void test_failing_to_finish()
+void test_failing_to_finish()
 {
     auto double_str = test_utils::make_double_string<CharT>();
     auto half_str = test_utils::make_half_string<CharT>();
@@ -149,7 +151,7 @@ static void test_failing_to_finish()
 }
 
 template <typename CharT>
-static void test_destination()
+void basic_tests()
 {
     auto half_str = test_utils::make_half_string<CharT>();
     auto full_str = test_utils::make_full_string<CharT>();
@@ -182,12 +184,14 @@ static void test_destination()
     }
 }
 
+} // unnamed namespace
+
 void test_streambuf_writer()
 {
-    test_destination<char>();
-    test_destination<char16_t>();
-    test_destination<char32_t>();
-    test_destination<wchar_t>();
+    basic_tests<char>();
+    basic_tests<char16_t>();
+    basic_tests<char32_t>();
+    basic_tests<wchar_t>();
 
     test_successfull_writing<char>();
     test_successfull_writing<char16_t>();

@@ -1395,7 +1395,7 @@ public:
         init_(i.preview, i.value);
     }
 
-    STRF_HD void print_to(strf::basic_outbuff<CharT>& ob) const override;
+    STRF_HD void print_to(strf::destination<CharT>& ob) const override;
 
 private:
 
@@ -1438,7 +1438,7 @@ private:
 
 template <typename CharT>
 STRF_HD void default_int_printer<CharT>::print_to
-    ( strf::basic_outbuff<CharT>& ob ) const
+    ( strf::destination<CharT>& ob ) const
 {
     ob.ensure(digcount_ + negative_);
     auto* it = ob.pointer();
@@ -1471,7 +1471,7 @@ public:
         }
     }
 
-    STRF_HD void print_to(strf::basic_outbuff<CharT>& ob) const override;
+    STRF_HD void print_to(strf::destination<CharT>& ob) const override;
 
 private:
 
@@ -1523,7 +1523,7 @@ private:
 
 template <typename CharT>
 STRF_HD void aligned_default_int_printer<CharT>::print_to
-    ( strf::basic_outbuff<CharT>& ob ) const
+    ( strf::destination<CharT>& ob ) const
 {
     unsigned right_fillcount = 0;
     if (fillcount_) {
@@ -1628,7 +1628,7 @@ public:
         i.preview.add_size(w);
     }
 
-    STRF_HD void print_to(strf::basic_outbuff<CharT>& ob) const
+    STRF_HD void print_to(strf::destination<CharT>& ob) const
     {
         ob.ensure(data_.digcount + data_.prefix != 0);
         auto it = ob.pointer();
@@ -1659,7 +1659,7 @@ public:
         i.preview.add_size(w);
     }
 
-    STRF_HD void print_to(strf::basic_outbuff<CharT>& ob) const override
+    STRF_HD void print_to(strf::destination<CharT>& ob) const override
     {
         ob.ensure(data_.digcount + data_.prefix);
         auto it = ob.pointer();
@@ -1692,7 +1692,7 @@ public:
         i.preview.add_size(w);
     }
 
-    STRF_HD void print_to(strf::basic_outbuff<CharT>& ob) const override
+    STRF_HD void print_to(strf::destination<CharT>& ob) const override
     {
         ob.ensure(data_.digcount + data_.prefix);
         auto it = ob.pointer();
@@ -1723,7 +1723,7 @@ public:
         i.preview.add_size(w);
     }
 
-    STRF_HD void print_to(strf::basic_outbuff<CharT>& ob) const override
+    STRF_HD void print_to(strf::destination<CharT>& ob) const override
     {
         if (data_.prefix != 0) {
             ob.ensure(2);
@@ -1981,7 +1981,7 @@ public:
     {
     }
 
-    STRF_HD void print_to(strf::basic_outbuff<CharT>& ob) const override;
+    STRF_HD void print_to(strf::destination<CharT>& ob) const override;
 
 private:
 
@@ -1992,7 +1992,7 @@ private:
 
 template <typename CharT, int Base>
 STRF_HD void int_printer_static_base_and_punct<CharT, Base, false>::print_to
-    ( strf::basic_outbuff<CharT>& ob ) const
+    ( strf::destination<CharT>& ob ) const
 {
     if (data_.left_fillcount > 0) {
         encode_fill_(ob, data_.left_fillcount, data_.fillchar);
@@ -2164,7 +2164,7 @@ public:
     {
     }
 
-    STRF_HD void print_to( strf::basic_outbuff<CharT>& ob ) const override;
+    STRF_HD void print_to( strf::destination<CharT>& ob ) const override;
 
 private:
 
@@ -2176,7 +2176,7 @@ private:
 
 template <typename CharT, int Base>
 STRF_HD void int_printer_static_base_and_punct<CharT, Base, true>::print_to
-        ( strf::basic_outbuff<CharT>& ob ) const
+        ( strf::destination<CharT>& ob ) const
 {
     if (data_.left_fillcount > 0) {
         encode_fill_(ob, data_.left_fillcount, data_.fillchar);

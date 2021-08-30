@@ -6,7 +6,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <strf/outbuff_functions.hpp>
+#include <strf/destination_functions.hpp>
 
 namespace strf {
 
@@ -170,7 +170,7 @@ constexpr std::size_t invalid_char_len = (std::size_t)-1;
 
 template <typename SrcCharT, typename DestCharT>
 using transcode_f = void (*)
-    ( strf::basic_outbuff<DestCharT>& ob
+    ( strf::destination<DestCharT>& ob
     , const SrcCharT* src
     , std::size_t src_size
     , strf::invalid_seq_notifier inv_seq_notifier
@@ -184,7 +184,7 @@ using transcode_size_f = std::size_t (*)
 
 template <typename CharT>
 using write_replacement_char_f = void (*)
-    ( strf::basic_outbuff<CharT>& );
+    ( strf::destination<CharT>& );
 
 // assume surragate_policy::lax
 using validate_f = std::size_t (*)(char32_t ch);
@@ -199,13 +199,13 @@ using encode_char_f = CharT*(*)
 
 template <typename CharT>
 using encode_fill_f = void (*)
-    ( strf::basic_outbuff<CharT>&, std::size_t count, char32_t ch );
+    ( strf::destination<CharT>&, std::size_t count, char32_t ch );
 
 namespace detail {
 
 template <typename CharT>
 void trivial_fill_f
-    ( strf::basic_outbuff<CharT>& ob, std::size_t count, char32_t ch )
+    ( strf::destination<CharT>& ob, std::size_t count, char32_t ch )
 {
     // same as strf::detail::write_fill<CharT>
     CharT narrow_ch = static_cast<CharT>(ch);
@@ -266,7 +266,7 @@ public:
     }
 
     STRF_HD void transcode
-        ( strf::basic_outbuff<DestCharT>& ob
+        ( strf::destination<DestCharT>& ob
         , const SrcCharT* src
         , std::size_t src_size
         , strf::invalid_seq_notifier inv_seq_notifier
@@ -471,7 +471,7 @@ public:
         return data_->encode_char_func(dest, ch);
     }
     STRF_HD void encode_fill
-        ( strf::basic_outbuff<CharT>& ob, std::size_t count, char32_t ch ) const
+        ( strf::destination<CharT>& ob, std::size_t count, char32_t ch ) const
     {
         data_->encode_fill_func(ob, count, ch);
     }
@@ -486,7 +486,7 @@ public:
     {
         return data_->codepoints_robust_count_func(src, src_size, max_count, surr_poli);
     }
-    STRF_HD void write_replacement_char(strf::basic_outbuff<CharT>& ob) const
+    STRF_HD void write_replacement_char(strf::destination<CharT>& ob) const
     {
         data_->write_replacement_char_func(ob);
     }
@@ -879,16 +879,16 @@ constexpr STRF_HD auto find_transcoder(SrcCharset src_cs, DestCharset dest_cs)
 namespace detail {
 
 template <typename DestCharT>
-class buffered_encoder: public strf::basic_outbuff<char32_t>
+class buffered_encoder: public strf::destination<char32_t>
 {
 public:
 
     STRF_HD buffered_encoder
         ( strf::transcode_f<char32_t, DestCharT> func
-        , strf::basic_outbuff<DestCharT>& ob
+        , strf::destination<DestCharT>& ob
         , strf::invalid_seq_notifier inv_seq_notifier
         , strf::surrogate_policy surr_poli )
-        : strf::basic_outbuff<char32_t>( buff_, buff_size_ )
+        : strf::destination<char32_t>( buff_, buff_size_ )
         , transcode_(func)
         , ob_(ob)
         , inv_seq_notifier_(inv_seq_notifier)
@@ -911,7 +911,7 @@ public:
 private:
 
     strf::transcode_f<char32_t, DestCharT> transcode_;
-    strf::basic_outbuff<DestCharT>& ob_;
+    strf::destination<DestCharT>& ob_;
     strf::invalid_seq_notifier inv_seq_notifier_;
     strf::surrogate_policy surr_poli_;
     constexpr static const std::size_t buff_size_ = 32;
@@ -932,13 +932,13 @@ STRF_HD void buffered_encoder<DestCharT>::recycle()
     }
 }
 
-class buffered_size_calculator: public strf::basic_outbuff<char32_t>
+class buffered_size_calculator: public strf::destination<char32_t>
 {
 public:
 
     STRF_HD buffered_size_calculator
         ( strf::transcode_size_f<char32_t> func, strf::surrogate_policy surr_poli )
-        : strf::basic_outbuff<char32_t>(buff_, buff_size_)
+        : strf::destination<char32_t>(buff_, buff_size_)
         , size_func_(func)
         , surr_poli_(surr_poli)
     {
@@ -978,7 +978,7 @@ STRF_FUNC_IMPL STRF_HD void buffered_size_calculator::recycle()
 
 template<typename SrcCharT, typename DestCharT>
 STRF_HD void decode_encode
-    ( strf::basic_outbuff<DestCharT>& ob
+    ( strf::destination<DestCharT>& ob
     , strf::transcode_f<SrcCharT, char32_t> to_u32
     , strf::transcode_f<char32_t, DestCharT> from_u32
     , const SrcCharT* src

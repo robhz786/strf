@@ -143,7 +143,7 @@ public:
 
 template<typename CharT, std::size_t ... I, typename ... Printers>
 STRF_HD void write
-    ( strf::basic_outbuff<CharT>& ob
+    ( strf::destination<CharT>& ob
     , const strf::detail::printers_tuple_impl
         < CharT, strf::detail::index_sequence<I...>, Printers... >& printers )
 {

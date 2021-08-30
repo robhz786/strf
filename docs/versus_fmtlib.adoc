@@ -418,11 +418,12 @@ examples.
 //
 
 // If you want Strf to print to an alternative destination,
-// you need to create a class that derives from `strf::<<outbuff_hpp#basic_outbuff,basic_outbuff>>`.
+// you need to create a class that derives from
+// `strf::<<destination_hpp#destination,destination>>`.
 // Having an object of such type, you can print things to it with the
-// `strf::<<quick_reference#dest_outbuff,to>>(strf::basic_outbuff<__CharT__>&)`
+// `strf::<<quick_reference#to_destination_ref,to>>(strf::destination<__CharT__>&)`
 // function template.
-// 
+//
 // In the case of {fmt}, you need to have (or create) a type that satisfies the
 // __OutputIterator__ requirements. With that, you can use the `{fmt_print_to}`
 // and `{fmt_print_to_n}` function templates.
@@ -434,9 +435,9 @@ way, all you have to do is to create an adapter that conforms to the
 OutputIterator requirements and that writes to your desired target.
 
 In Strf, what you do instead is to create a concrete class that derives from
-the `strf::basic_outbuff` abstract class template. Having an object of such type,
+the `strf::destination` abstract class template. Having an object of such type,
 you can print things to it with the
-`strf::<<quick_reference#dest_outbuff,to>>(strf::basic_outbuff<__CharT__>&)`
+`strf::<<quick_reference#to_destination_ref,to>>(strf::destination<__CharT__>&)`
 function template.
 
 However, in Strf you can go a bit further and create your own
@@ -454,25 +455,25 @@ This is all explained in <<howto_add_destination#,this guide>>.
 
 == Polymorphic destination
 
-But you are not only suppose to use `strf::basic_outbuff` when you want to
+But you are not only suppose to use `strf::destination` when you want to
 extend Strf, but also any time you want to write a code that
 creates a textual content ( or even a binary content ) without concerning
 about where the such content goes.
 [source,cpp]
 ----
-void write_some_text(strf::outbuff& dest, /* ...args... */);
+void write_some_text(strf::destination<char>& dest, /* ...args... */);
 ----
-In that sense, `strf::basic_outbuff` is similar to `std::basic_ostream`,
+In that sense, `strf::destination` is similar to `std::basic_ostream`,
 but with several advantages.
 
 * It has better performance.
 * It's easier to derive from.
 * It can be used in a https://en.cppreference.com/w/cpp/freestanding[freestanding] environment
-* Among its <<quick_reference#outbuff_types,specializations>>, you can find one
+* Among its <<quick_reference#destination_types,specializations>>, you can find one
   ( actually two ) that can safely and efficiently write to `char*`
   ( which, by the way, it what the library uses internally ).
 
-As far as I know, {fmt} doesn't have anyting equivalent to `strf::basic_outbuff`.
+As far as I know, {fmt} doesn't have anyting equivalent to `strf::destination`.
 You could, of course, write instead a generic code terms of output iterators
 using `fmt::format_to` or `fmt::format_to_n`.
 But that would force things to be template, which is not always
@@ -501,7 +502,7 @@ Optionally, you can set a callback to be invoked in such errors
 and `<<strf_hpp#invalid_seq_notifier_c,invalid_seq_notifier_c>>` )
 which can then throw an exception, if that's what you want.
 
-In addition to that, depending on the <<quick_reference#destinations,destination>>,
+In addition to that, depending on the <<quick_reference#destinators,destination>>,
 the return type of the <<tutorial#syntax,basic usage syntax>> may contain an error
 indication. For example, when writing to a `char*`, the returned object contains
 a `bool` member `truncated` that tells whether the destination memory
@@ -522,7 +523,7 @@ When it comes to writting to `char*`, we can conclude that:
 * `strf::to` is faster than `fmt::format_to`, except in the following two situations:
 ** `fmt::format_to` is invoked with `FMT_COMPILE` and no formatting option is applied
 ** `fmt::format_to` is invoked with `FMT_COMPILE` and `strf::to` is invoked with the tr-string
-  
+
 When comparing `strf::to_string` against `fmt::format`,
 we conclude `strf::to_string` is faster than `fmt::format`,
 except when `strf::to_string` is invoked with the tr-string

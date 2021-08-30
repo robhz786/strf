@@ -7,7 +7,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <strf/detail/standard_lib_functions.hpp>
-#include <strf/outbuff.hpp>
+#include <strf/destination.hpp>
 
 namespace strf {
 namespace detail {
@@ -15,8 +15,8 @@ namespace detail {
 template < typename DestCharT
          , typename SrcCharT
          , strf::detail::enable_if_t<!std::is_same<SrcCharT, DestCharT>::value, int> = 0 >
-STRF_HD void outbuff_interchar_copy
-    ( strf::basic_outbuff<DestCharT>& ob, const SrcCharT* str, std::size_t len )
+STRF_HD void destination_interchar_copy
+    ( strf::destination<DestCharT>& ob, const SrcCharT* str, std::size_t len )
 {
     do {
         std::size_t space = ob.space();
@@ -34,8 +34,8 @@ STRF_HD void outbuff_interchar_copy
 }
 
 template < typename CharT >
-inline STRF_HD void outbuff_interchar_copy
-    ( strf::basic_outbuff<CharT>& ob, const CharT* str, std::size_t len )
+inline STRF_HD void destination_interchar_copy
+    ( strf::destination<CharT>& ob, const CharT* str, std::size_t len )
 {
     ob.write(str, len);
 }
@@ -44,7 +44,7 @@ inline STRF_HD void outbuff_interchar_copy
 
 
 inline STRF_HD void write
-    ( strf::basic_outbuff<char>& ob
+    ( strf::destination<char>& ob
     , const char* str )
 {
     ob.write(str, detail::str_length(str));
@@ -54,7 +54,7 @@ namespace detail {
 
 template <typename CharT>
 void STRF_HD write_fill_continuation
-    ( strf::basic_outbuff<CharT>& ob, std::size_t count, CharT ch )
+    ( strf::destination<CharT>& ob, std::size_t count, CharT ch )
 {
     std::size_t space = ob.space();
     STRF_ASSERT(space < count);
@@ -78,7 +78,7 @@ void STRF_HD write_fill_continuation
 
 template <typename CharT>
 inline STRF_HD void write_fill
-    ( strf::basic_outbuff<CharT>& ob, std::size_t count, CharT ch )
+    ( strf::destination<CharT>& ob, std::size_t count, CharT ch )
 {
     STRF_IF_LIKELY (count <= ob.space()) {
         strf::detail::str_fill_n<CharT>(ob.pointer(), count, ch);

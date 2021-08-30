@@ -88,7 +88,7 @@ public:
     facets_pack_printer(const facets_pack_printer&) = delete;
     facets_pack_printer(facets_pack_printer&&) = delete;
 
-    STRF_HD void print_to(strf::basic_outbuff<CharT>& ob) const override
+    STRF_HD void print_to(strf::destination<CharT>& ob) const override
     {
         strf::detail::write(ob, printers_);
     }

@@ -5,8 +5,8 @@ Distributed under the Boost Software License, Version 1.0.
 http://www.boost.org/LICENSE_1_0.txt)
 ////
 
-:cstr_writer: <<outbuff_hpp#basic_cstr_writer,cstr_writer>>
-:basic_cstr_writer: <<outbuff_hpp#basic_cstr_writer,basic_cstr_writer>>
+:cstr_writer: <<destination_hpp#basic_cstr_writer,cstr_writer>>
+:basic_cstr_writer: <<destination_hpp#basic_cstr_writer,basic_cstr_writer>>
 
 :strf-version: develop
 :strf-src-root: https://github.com/robhz786/strf/blob/{strf-version}
@@ -49,12 +49,11 @@ You can also take a look at the the unit tests that run on CUDA device
 
 The folowing features are not supported on device code:
 
-* destinations types
-** `to_basic_string`, `to_string`, `to_u8string`,`to_u16string`,
-   `to_u32string`, `to_wstring`
-** `to(std::basic_streambuf</{asterisk}...{asterisk}/>`
-** `to(FILE{asterisk})`
-** `wto(FILE{asterisk})`
+* `to_basic_string`, `to_string`, `to_u8string`,`to_u16string`,
+  `to_u32string`, `to_wstring`
+* `to(std::basic_streambuf</{asterisk}...{asterisk}/>`
+* `to(FILE{asterisk})`
+* `wto(FILE{asterisk})`
 * `<<strf_hpp#dynamic_charset,dynamic_charset>>`
 * `<<quick_reference#lettercase,uppercase>>`, `<<quick_reference#lettercase,lowercase>>`,
   `<<quick_reference#lettercase,mixedcase>>` ( instead, you need to type

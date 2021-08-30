@@ -10,10 +10,10 @@ using namespace strf::width_literal;
 STRF_TEST_FUNC void test_miscellaneous()
 {
     {
-        // write into an outbuff reference
+        // write into an destination reference
         char buff[100];
         strf::cstr_writer str_writer{buff};
-        strf::outbuff& ob = str_writer;
+        strf::destination<char>& ob = str_writer;
 
         strf::to(ob)
             .with(strf::numpunct<10>(3))
@@ -23,8 +23,8 @@ STRF_TEST_FUNC void test_miscellaneous()
 
         TEST_CSTR_EQ(buff, "abc 1,000,000,000");
     }
-    {   // test discarded_outbuff
-        strf::discarded_outbuff<char> ob;
+    {   // test discarded_destination
+        strf::discarded_destination<char> ob;
         TEST_FALSE(ob.good());
         ob.recycle();
         TEST_TRUE(ob.space() >= strf::min_space_after_recycle<char>());

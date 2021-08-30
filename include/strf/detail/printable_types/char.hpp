@@ -146,7 +146,7 @@ public:
         }
     }
 
-    STRF_HD void print_to(strf::basic_outbuff<CharT>& ob) const override;
+    STRF_HD void print_to(strf::destination<CharT>& ob) const override;
 
 private:
 
@@ -155,7 +155,7 @@ private:
 
 template <typename CharT>
 STRF_HD void char_printer<CharT>::print_to
-    ( strf::basic_outbuff<CharT>& ob ) const
+    ( strf::destination<CharT>& ob ) const
 {
     ob.ensure(1);
     *ob.pointer() = ch_;
@@ -180,7 +180,7 @@ public:
         init_(input.preview, wcalc, charset);
     }
 
-    STRF_HD void print_to(strf::basic_outbuff<CharT>& ob) const override;
+    STRF_HD void print_to(strf::destination<CharT>& ob) const override;
 
 private:
 
@@ -245,7 +245,7 @@ STRF_HD void fmt_char_printer<CharT>::init_
 
 template <typename CharT>
 STRF_HD void fmt_char_printer<CharT>::print_to
-    ( strf::basic_outbuff<CharT>& ob ) const
+    ( strf::destination<CharT>& ob ) const
 {
     if (left_fillcount_ != 0) {
         encode_fill_fn_(ob, left_fillcount_, afmt_.fill);
@@ -294,7 +294,7 @@ public:
         }
     }
 
-    void STRF_HD print_to(strf::basic_outbuff<DestCharT>& dest) const override;
+    void STRF_HD print_to(strf::destination<DestCharT>& dest) const override;
 
 private:
     strf::encode_char_f<DestCharT> encode_char_f_;
@@ -303,7 +303,7 @@ private:
 };
 
 template <typename DestCharT>
-void STRF_HD conv_char32_printer<DestCharT>::print_to(strf::basic_outbuff<DestCharT>& dest) const
+void STRF_HD conv_char32_printer<DestCharT>::print_to(strf::destination<DestCharT>& dest) const
 {
     dest.ensure(encoded_char_size_);
     encode_char_f_(dest.pointer(), ch_);
@@ -326,7 +326,7 @@ public:
         init_(input.preview, charset, input.arg.get_alignment_format(), char_width);
     }
 
-    void STRF_HD print_to(strf::basic_outbuff<DestCharT>& dest) const override;
+    void STRF_HD print_to(strf::destination<DestCharT>& dest) const override;
 
 private:
 
@@ -373,7 +373,7 @@ void STRF_HD fmt_conv_char32_printer<DestCharT>::init_
 }
 
 template <typename DestCharT>
-void STRF_HD fmt_conv_char32_printer<DestCharT>::print_to(strf::basic_outbuff<DestCharT>& dest) const
+void STRF_HD fmt_conv_char32_printer<DestCharT>::print_to(strf::destination<DestCharT>& dest) const
 {
     if(fillcount_ == 0) {
         encode_fill_f_(dest, count_, ch_);

@@ -5,10 +5,10 @@
 
 #include "test_utils.hpp"
 
-STRF_TEST_FUNC void test_basic_outbuff()
+STRF_TEST_FUNC void test_destination_functions()
 {
 
-    {   // Cover strf::detail::outbuff_interchar_copy
+    {   // Cover strf::detail::destination_interchar_copy
 
         const unsigned char sample[10] =
             { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'};
@@ -17,7 +17,7 @@ STRF_TEST_FUNC void test_basic_outbuff()
             test_utils::input_tester_with_fixed_spaces<char, 5, 5> ob
                 { {"abcdefghij", __FILE__, __LINE__, BOOST_CURRENT_FUNCTION} };
 
-            strf::detail::outbuff_interchar_copy(ob, sample, sizeof(sample));
+            strf::detail::destination_interchar_copy(ob, sample, sizeof(sample));
 
             ob.finish();
         }
@@ -25,7 +25,7 @@ STRF_TEST_FUNC void test_basic_outbuff()
             test_utils::input_tester_with_fixed_spaces<char, 5, 6> ob
                 { {"abcdefghij", __FILE__, __LINE__, BOOST_CURRENT_FUNCTION} };
 
-            strf::detail::outbuff_interchar_copy(ob, sample, sizeof(sample));
+            strf::detail::destination_interchar_copy(ob, sample, sizeof(sample));
 
             ob.finish();
         }
@@ -33,7 +33,7 @@ STRF_TEST_FUNC void test_basic_outbuff()
             test_utils::input_tester_with_fixed_spaces<char, 5, 4> ob
                 { {"abcdefghi", __FILE__, __LINE__, BOOST_CURRENT_FUNCTION} };
 
-            strf::detail::outbuff_interchar_copy(ob, sample, sizeof(sample));
+            strf::detail::destination_interchar_copy(ob, sample, sizeof(sample));
 
             ob.finish();
         }
@@ -41,7 +41,7 @@ STRF_TEST_FUNC void test_basic_outbuff()
             test_utils::input_tester_with_fixed_spaces<char16_t, 5, 5> ob
                 { {u"abcdefghij", __FILE__, __LINE__, BOOST_CURRENT_FUNCTION} };
 
-            strf::detail::outbuff_interchar_copy(ob, sample, sizeof(sample));
+            strf::detail::destination_interchar_copy(ob, sample, sizeof(sample));
 
             ob.finish();
         }
@@ -49,7 +49,7 @@ STRF_TEST_FUNC void test_basic_outbuff()
             test_utils::input_tester_with_fixed_spaces<char16_t, 5, 6> ob
                 { {u"abcdefghij", __FILE__, __LINE__, BOOST_CURRENT_FUNCTION} };
 
-            strf::detail::outbuff_interchar_copy(ob, sample, sizeof(sample));
+            strf::detail::destination_interchar_copy(ob, sample, sizeof(sample));
 
             ob.finish();
         }
@@ -57,7 +57,7 @@ STRF_TEST_FUNC void test_basic_outbuff()
             test_utils::input_tester_with_fixed_spaces<char16_t, 5, 4> ob
                 { {u"abcdefghi", __FILE__, __LINE__, BOOST_CURRENT_FUNCTION} };
 
-            strf::detail::outbuff_interchar_copy(ob, sample, sizeof(sample));
+            strf::detail::destination_interchar_copy(ob, sample, sizeof(sample));
 
             ob.finish();
         }
@@ -89,14 +89,14 @@ STRF_TEST_FUNC void test_basic_outbuff()
         }
     }
     {
-        // Cover write(basic_outbuff<CharT>&, const CharT*)
+        // Cover write(destination<CharT>&, const CharT*)
         test_utils::input_tester_with_fixed_spaces<char, 5> ob
             { {"abcde", __FILE__, __LINE__, BOOST_CURRENT_FUNCTION} };
         write(ob, "abcde");
         ob.finish();
     }
     {
-        // Cover put(basic_outbuff<CharT>&, CharT)
+        // Cover put(destination<CharT>&, CharT)
 
         test_utils::input_tester_with_fixed_spaces<char, 3, 5> ob
             { {"abcd", __FILE__, __LINE__, BOOST_CURRENT_FUNCTION} };
@@ -112,7 +112,7 @@ STRF_TEST_FUNC void test_basic_outbuff()
         ob.finish();
     }
     {
-        // Cover basic_outbuff<CharT>::ensure()
+        // Cover destination<CharT>::ensure()
         test_utils::input_tester_with_fixed_spaces<char, 4, 4> ob
             { {"abcdefgh", __FILE__, __LINE__, BOOST_CURRENT_FUNCTION} };
 
@@ -136,7 +136,7 @@ STRF_TEST_FUNC void test_basic_outbuff()
         ob.finish();
     }
     {
-        // When basic_outbuff<CharT>::do_write() calls recycle()
+        // When destination<CharT>::do_write() calls recycle()
         // and the space() afterwards is greater than needed
 
         test_utils::input_tester_with_fixed_spaces<char, 5, 10> ob
@@ -146,7 +146,7 @@ STRF_TEST_FUNC void test_basic_outbuff()
         ob.finish();
     }
     {
-        // When basic_outbuff<CharT>::do_write() calls recycle()
+        // When destination<CharT>::do_write() calls recycle()
         // and the space() afterwards is exactly as needed
         test_utils::input_tester_with_fixed_spaces<char, 5, 5> ob
             { {"abcdefghij", __FILE__, __LINE__, BOOST_CURRENT_FUNCTION} };
@@ -155,7 +155,7 @@ STRF_TEST_FUNC void test_basic_outbuff()
         ob.finish();
     }
     {
-        // When basic_outbuff<CharT>::do_write() calls recycle()
+        // When destination<CharT>::do_write() calls recycle()
         // and the good() afterwards is false
         test_utils::input_tester_with_fixed_spaces<char, 5> ob
             { {"abcde", __FILE__, __LINE__, BOOST_CURRENT_FUNCTION} };
@@ -165,5 +165,5 @@ STRF_TEST_FUNC void test_basic_outbuff()
     }
 }
 
-REGISTER_STRF_TEST(test_basic_outbuff);
+REGISTER_STRF_TEST(test_destination_functions);
 

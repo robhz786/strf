@@ -14,7 +14,7 @@ all: \
     out/versus_fmtlib.html \
     out/why_not_std_locale.html \
     out/strf_hpp.html \
-    out/outbuff_hpp.html \
+    out/destination_hpp.html \
     out/to_cfile_hpp.html \
     out/to_streambuf_hpp.html \
     out/to_string_hpp.html
@@ -63,7 +63,7 @@ out/strf_hpp.html : strf_hpp.adoc \
                     ref_printer.adoc \
                     ref_format_functions.adoc \
                     ref_printable_types.adoc \
-                    ref_destination.adoc \
+                    ref_destinators.adoc \
                     ref_tr-string.adoc \
                     ref_charset.adoc \
                     ref_width.adoc \
@@ -72,7 +72,7 @@ out/strf_hpp.html : strf_hpp.adoc \
                     out /
 	asciidoctor -v $< -o - | sed 's/20em/34em/g' | sed 's/td.hdlist1{/td.hdlist1{min-width:9em;/g' > $@
 
-out/outbuff_hpp.html : outbuff_hpp.adoc out/
+out/destination_hpp.html : destination_hpp.adoc out/
 	asciidoctor -v $< -o - | sed 's/20em/34em/g' | sed 's/td.hdlist1{/td.hdlist1{min-width:9em;/g' > $@
 
 out/to_cfile_hpp.html : to_cfile_hpp.adoc out/

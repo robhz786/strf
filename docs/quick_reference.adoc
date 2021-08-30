@@ -164,7 +164,7 @@ include::ref_format_functions.adoc[tag=int_format_functions]
 |===
 | Expression |Header
 
-|`<<dest_outbuff,to>> (__outbuff_ref__)`
+|`<<to_destination_ref,to>> (__destination_ref__)`
 | `<<strf_hpp#,<strf.hpp> >>`
 
 |`<<dest_raw_string,to>> (__char_ptr__, __end__)`
@@ -226,21 +226,21 @@ where:
 * `__streambuf_ptr__` is a `std::streambuf<__CharT__, _Traits_>*`
 * `__streambuf_ref__` is a `std::streambuf<__CharT__, _Traits_>&`
 * `__cfile__` is a `FILE*`
-* `__outbuff_ref__` is a `basic_outbuff<__CharT__>&`,  where `__CharT__` is a character type.
+* `__destination_ref__` is a `destination<__CharT__>&`,  where `__CharT__` is a character type.
 * `__args\...__` is an argument list of printable values.
 
-[[dest_outbuff]]
+[[to_destination_ref]]
 ====
 [subs=normal]
 ----
-strf::to(__outbuff_ref__) (__args\...__)
+strf::to(__destination_ref__) (__args\...__)
 ----
 [horizontal]
-Return type:: `basic_outbuff<__CharT__>&`
-Return value:: `__outbuff_ref__`
+Return type:: `destination<__CharT__>&`
+Return value:: `__destination_ref__`
 Supports reserve:: No
 
-See the <<outbuff_types,list of types>> that derive from `basic_outbuff<__CharT__>&`.
+See the <<destination_types,list of types>> that derive from `destination<__CharT__>&`.
 ====
 
 [[dest_raw_string]]
@@ -257,7 +257,7 @@ Preconditions::
 * `__count__ > 0`
 * `__end__ > __char_ptr__`
 //-
-Return type:: `<<outbuff_hpp#basic_cstr_writer,basic_cstr_writer<__CharT__>::result`>>
+Return type:: `<<destination_hpp#basic_cstr_writer,basic_cstr_writer<__CharT__>::result`>>
 Return value:: a value `r`, such that:
 * `r.ptr` points to last written character which is always `'\0'`.
 * `r.truncated` is `true` when the destination string is too small. In this case, the number of
@@ -305,7 +305,7 @@ Header file:: `<<strf_hpp#,<strf.hpp> >>`
 Preconditions::
 * `__end__ >= __char_ptr__`
 //-
-Return type:: `<<outbuff_hpp#basic_char_array_writer,basic_char_array_writer<__CharT__>::result`>>
+Return type:: `<<destination_hpp#basic_char_array_writer,basic_char_array_writer<__CharT__>::result`>>
 Return value:: a value `r`, such that:
 * `r.ptr` is the one-past-the-end pointer of the characters written.
 * `r.truncated` is `true` when the destination is too small. In this case, the number of
@@ -423,22 +423,22 @@ Header file:: `<<to_cfile_hpp#,<strf/to_cfile.hpp> >>`
 Return type:: `<<to_cfile_hpp#wide_cfile_writer,wide_cfile_writer<__CharT__>::result>>`
 ====
 
-[[outbuff_types]]
-=== `basic_outbuff` classes
+[[destination_types]]
+=== `destination` classes
 
-The table below lists the concrete types that derivate from the `basic_outbuff<__CharT__>` abstract class.
+The table below lists the concrete types that derivate from the `destination<__CharT__>` abstract class.
 
 [%header,cols="47,53"]
 |===
 | Type | Description
 
-| `<<outbuff_hpp#basic_cstr_writer, basic_cstr_writer>><__CharT__>`
+| `<<destination_hpp#basic_cstr_writer, basic_cstr_writer>><__CharT__>`
 | Writes C strings. Always writes the termination character `'\0'`.
 
-| `<<outbuff_hpp#basic_char_array_writer, basic_char_array_writer>><__CharT__>`
+| `<<destination_hpp#basic_char_array_writer, basic_char_array_writer>><__CharT__>`
 | Writes to also `char*`, but does not append the termination character `'\0'`
 
-| `<<outbuff_hpp#discarded_outbuff,discarded_outbuff>><__CharT__>`
+| `<<destination_hpp#discarded_destination,discarded_destination>><__CharT__>`
 | Discards content. The equivalent of writing to '/dev/null'.
 
 | `<<to_string_hpp#basic_string_appender,basic_string_appender>><__CharT__, _Traits_~_opt_~, _A_~_opt_~>`
@@ -490,7 +490,7 @@ using wcstr_writer   = basic_cstr_writer<wchar_t>;
 ----
 namespace strf {
 
-template <typename CharT> class discarded_outbuff;
+template <typename CharT> class discarded_destination;
 
 } // namespace strf
 ----
@@ -907,7 +907,7 @@ https://en.wikipedia.org/wiki/Specials_(Unicode_block)#Replacement_character[rep
 if the destination charset supports it ( and by `'?'` otherwise ).
 
 An "invalid sequence" is any input that is non-conformant to the source charset,
-or that is impossible to write, in a conformant way, in the destination charset.
+or that is impossible translate to the destination charset.
 But there is an optional exception for surrogates characters.
 
 NOTE: When the input is UTF-8, the library follows the practice recommended by the

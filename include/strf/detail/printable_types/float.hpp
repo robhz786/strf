@@ -790,7 +790,7 @@ namespace detail {
 
 template <int Base, typename CharT, typename IntT>
 inline STRF_HD void write_int_with_leading_zeros
-    ( strf::basic_outbuff<CharT>& ob
+    ( strf::destination<CharT>& ob
     , IntT value
     , unsigned digcount
     , strf::lettercase lc )
@@ -808,7 +808,7 @@ inline STRF_HD void write_int_with_leading_zeros
 
 template <typename CharT>
 STRF_HD void print_amplified_integer_small_separator_1
-    ( strf::basic_outbuff<CharT>& ob
+    ( strf::destination<CharT>& ob
     , unsigned long long value
     , unsigned num_digits
     , strf::digits_distribution dist
@@ -848,7 +848,7 @@ STRF_HD void print_amplified_integer_small_separator_1
 
 template <typename CharT>
 STRF_HD void print_amplified_integer_small_separator_2
-    ( strf::basic_outbuff<CharT>& ob
+    ( strf::destination<CharT>& ob
     , unsigned long long value
     , unsigned num_digits
     , strf::digits_distribution dist
@@ -959,7 +959,7 @@ STRF_HD void print_amplified_integer_small_separator_2
 
 template <typename CharT>
 inline STRF_HD void print_amplified_integer_small_separator
-    ( strf::basic_outbuff<CharT>& ob
+    ( strf::destination<CharT>& ob
     , unsigned long long value
     , strf::digits_grouping grouping
     , unsigned num_digits
@@ -978,7 +978,7 @@ inline STRF_HD void print_amplified_integer_small_separator
 
 template <typename CharT>
 STRF_HD void print_amplified_integer_big_separator_1
-    ( strf::basic_outbuff<CharT>& ob
+    ( strf::destination<CharT>& ob
     , strf::encode_char_f<CharT> encode_char
     , unsigned long long value
     , unsigned num_digits
@@ -1018,7 +1018,7 @@ STRF_HD void print_amplified_integer_big_separator_1
 
 template <typename CharT>
 STRF_HD void print_amplified_integer_big_separator_2
-    ( strf::basic_outbuff<CharT>& ob
+    ( strf::destination<CharT>& ob
     , strf::encode_char_f<CharT> encode_char
     , unsigned long long value
     , unsigned num_digits
@@ -1128,7 +1128,7 @@ STRF_HD void print_amplified_integer_big_separator_2
 
 template <typename CharT>
 STRF_HD void print_amplified_integer_big_separator
-    ( strf::basic_outbuff<CharT>& ob
+    ( strf::destination<CharT>& ob
     , strf::encode_char_f<CharT> encode_char
     , unsigned long long value
     , strf::digits_grouping grouping
@@ -1149,7 +1149,7 @@ STRF_HD void print_amplified_integer_big_separator
 
 template <typename CharT>
 STRF_HD void print_scientific_notation
-    ( strf::basic_outbuff<CharT>& ob
+    ( strf::destination<CharT>& ob
     , strf::encode_char_f<CharT> encode_char
     , unsigned long long digits
     , unsigned num_digits
@@ -1226,7 +1226,7 @@ STRF_HD void print_scientific_notation
 }
 
 template <typename CharT>
-STRF_HD void print_nan(strf::basic_outbuff<CharT>& ob, strf::lettercase lc)
+STRF_HD void print_nan(strf::destination<CharT>& ob, strf::lettercase lc)
 {
     ob.ensure(3);
     auto p = ob.pointer();
@@ -1250,7 +1250,7 @@ STRF_HD void print_nan(strf::basic_outbuff<CharT>& ob, strf::lettercase lc)
 
 }
 template <typename CharT>
-STRF_HD void print_nan(strf::basic_outbuff<CharT>& ob, strf::lettercase lc
+STRF_HD void print_nan(strf::destination<CharT>& ob, strf::lettercase lc
                       , bool negative )
 {
     ob.ensure(3 + negative);
@@ -1278,7 +1278,7 @@ STRF_HD void print_nan(strf::basic_outbuff<CharT>& ob, strf::lettercase lc
 }
 
 template <typename CharT>
-STRF_HD void print_inf(strf::basic_outbuff<CharT>& ob, strf::lettercase lc)
+STRF_HD void print_inf(strf::destination<CharT>& ob, strf::lettercase lc)
 {
     ob.ensure(3);
     auto p = ob.pointer();
@@ -1302,7 +1302,7 @@ STRF_HD void print_inf(strf::basic_outbuff<CharT>& ob, strf::lettercase lc)
 }
 
 template <typename CharT>
-STRF_HD void print_inf( strf::basic_outbuff<CharT>& ob
+STRF_HD void print_inf( strf::destination<CharT>& ob
                       , strf::lettercase lc
                       , bool negative )
 {
@@ -1370,7 +1370,7 @@ public:
             || (value_.e10 < -(int)m10_digcount_ - 2 - (m10_digcount_ != 1));
     }
 
-    STRF_HD void print_to(strf::basic_outbuff<CharT>&) const override;
+    STRF_HD void print_to(strf::destination<CharT>&) const override;
 
     STRF_HD std::size_t size() const;
 
@@ -1404,7 +1404,7 @@ STRF_HD std::size_t fast_double_printer<CharT>::size() const
 
 template <typename CharT>
 STRF_HD void fast_double_printer<CharT>::print_to
-    ( strf::basic_outbuff<CharT>& ob ) const
+    ( strf::destination<CharT>& ob ) const
 {
     if (value_.nan) {
         strf::detail::print_nan(ob, lettercase_, value_.negative);
@@ -1544,7 +1544,7 @@ STRF_HD void fast_double_printer<CharT>::print_to
 //     }
 //
 //
-//     STRF_HD void print_to(strf::basic_outbuff<CharT>&) const override;
+//     STRF_HD void print_to(strf::destination<CharT>&) const override;
 //
 // private:
 //
@@ -1676,7 +1676,7 @@ STRF_HD void fast_double_printer<CharT>::print_to
 
 // template <typename CharT>
 // STRF_HD void fast_punct_double_printer<CharT>::print_to
-//     ( strf::basic_outbuff<CharT>& ob ) const
+//     ( strf::destination<CharT>& ob ) const
 // {
 //     if (value_.negative) {
 //         put(ob, static_cast<CharT>('-'));
@@ -2371,21 +2371,21 @@ public:
         }
     }
 
-    STRF_HD void print_to(strf::basic_outbuff<CharT>&) const override;
+    STRF_HD void print_to(strf::destination<CharT>&) const override;
 
 private:
 
     STRF_HD void print_fixed_
-        ( strf::basic_outbuff<CharT>& ob ) const noexcept;
+        ( strf::destination<CharT>& ob ) const noexcept;
 
     STRF_HD void print_scientific_
-        ( strf::basic_outbuff<CharT>& ob ) const noexcept;
+        ( strf::destination<CharT>& ob ) const noexcept;
 
     STRF_HD void print_hexadecimal_
-        ( strf::basic_outbuff<CharT>& ob ) const noexcept;
+        ( strf::destination<CharT>& ob ) const noexcept;
 
     STRF_HD void print_inf_or_nan_
-        ( strf::basic_outbuff<CharT>& ob ) const noexcept;
+        ( strf::destination<CharT>& ob ) const noexcept;
 
     strf::encode_char_f<CharT> encode_char_;
     strf::encode_fill_f<CharT> encode_fill_;
@@ -2400,7 +2400,7 @@ private:
 
 template <typename CharT>
 STRF_HD void punct_double_printer<CharT>::print_to
-    (strf::basic_outbuff<CharT>& ob) const
+    (strf::destination<CharT>& ob) const
 {
     if (data_.left_fillcount != 0) {
         encode_fill_(ob, data_.left_fillcount, data_.fillchar);
@@ -2425,7 +2425,7 @@ STRF_HD void punct_double_printer<CharT>::print_to
 
 template <typename CharT>
 STRF_HD void punct_double_printer<CharT>::print_fixed_
-    ( strf::basic_outbuff<CharT>& ob ) const noexcept
+    ( strf::destination<CharT>& ob ) const noexcept
 {
     if (data_.showsign) {
         put(ob, static_cast<CharT>(data_.sign));
@@ -2531,7 +2531,7 @@ STRF_HD void punct_double_printer<CharT>::print_fixed_
 
 template <typename CharT>
 STRF_HD void punct_double_printer<CharT>::print_scientific_
-    ( strf::basic_outbuff<CharT>& ob ) const noexcept
+    ( strf::destination<CharT>& ob ) const noexcept
 {
     if (data_.showsign) {
         put(ob, static_cast<CharT>(data_.sign));
@@ -2549,7 +2549,7 @@ STRF_HD void punct_double_printer<CharT>::print_scientific_
 
 template <typename CharT>
 STRF_HD void punct_double_printer<CharT>::print_hexadecimal_
-    ( strf::basic_outbuff<CharT>& ob ) const noexcept
+    ( strf::destination<CharT>& ob ) const noexcept
 {
     std::size_t sub_size = data_.sub_chars_count + decimal_point_size_ - data_.showpoint;
     ob.ensure(data_.sub_chars_count);
@@ -2614,7 +2614,7 @@ STRF_HD void punct_double_printer<CharT>::print_hexadecimal_
 
 template <typename CharT>
 STRF_HD void punct_double_printer<CharT>::print_inf_or_nan_
-    ( strf::basic_outbuff<CharT>& ob ) const noexcept
+    ( strf::destination<CharT>& ob ) const noexcept
 {
     if (data_.showsign) {
         put(ob, static_cast<CharT>(data_.sign));

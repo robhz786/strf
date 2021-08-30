@@ -198,7 +198,7 @@ public:
         printers_ptr_()->~printers_tuple_();
     }
 
-    STRF_HD void print_to(strf::basic_outbuff<CharT>& ob) const override
+    STRF_HD void print_to(strf::destination<CharT>& ob) const override
     {
         switch (afmt_.alignment) {
             case strf::text_alignment::left: {
@@ -264,7 +264,7 @@ private:
         return facets.template use_facet<Category, Tag>();
     }
 
-    STRF_HD void write_fill_(strf::basic_outbuff<CharT>& ob, int count) const
+    STRF_HD void write_fill_(strf::destination<CharT>& ob, int count) const
     {
         encode_fill_func_(ob, count, afmt_.fill);
     }
@@ -324,7 +324,7 @@ public:
     {
     }
 
-    STRF_HD void print_to(strf::basic_outbuff<CharT>& ob) const override
+    STRF_HD void print_to(strf::destination<CharT>& ob) const override
     {
         strf::detail::write(ob, printers_);
     }

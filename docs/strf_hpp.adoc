@@ -34,8 +34,8 @@ http://www.boost.org/LICENSE_1_0.txt)
 
 :std_conditional_t: https://en.cppreference.com/w/cpp/types/conditional[std::conditional_t]
 
-:min_space_after_recycle: <<outbuff_hpp#min_space_after_recycle,min_space_after_recycle>>
-:basic_outbuff: <<outbuff_hpp#basic_outbuff,basic_outbuff>>
+:min_space_after_recycle: <<destination_hpp#min_space_after_recycle,min_space_after_recycle>>
+:destination: <<destination_hpp#destination,destination>>
 
 NOTE: This document is still a work in progress.
 
@@ -52,7 +52,7 @@ and `<utility>`.
 When macro `STRF_WITH_CSTRING` is defined `<strf.hpp>` uses `<cstring>`
 even when `STRF_FREESTANDING` is defined.
 
-`<<strf_hpp#main,<strf.hpp> >>` includes `<strf/outbuff.hpp>`.
+`<<strf_hpp#main,<strf.hpp> >>` includes `<strf/destination.hpp>`.
 
 ////
 
@@ -60,7 +60,7 @@ include::ref_facets_pack.adoc[]
 include::ref_printer.adoc[]
 include::ref_format_functions.adoc[]
 include::ref_printable_types.adoc[]
-include::ref_destination.adoc[]
+include::ref_destinators.adoc[]
 include::ref_tr-string.adoc[]
 include::ref_numpunct.adoc[]
 include::ref_charset.adoc[]

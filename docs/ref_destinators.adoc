@@ -11,32 +11,32 @@ http://www.boost.org/LICENSE_1_0.txt)
 :print_preview: <<print_preview,print_preview>>
 :make_printer_input: <<make_printer_input,make_printer_input>>
 
-:basic_cstr_writer: <<outbuff_hpp#basic_cstr_writer,basic_cstr_writer>>
-:basic_char_array_writer: <<outbuff_hpp#basic_char_array_writer,basic_char_array_writer>>
-:destination_no_reserve: <<destination,destination_no_reserve>>
-:OutbuffCreator: <<OutbuffCreator,OutbuffCreator>>
-:SizedOutbuffCreator: <<SizedOutbuffCreator,SizedOutbuffCreator>>
+:basic_cstr_writer: <<destination_hpp#basic_cstr_writer,basic_cstr_writer>>
+:basic_char_array_writer: <<destination_hpp#basic_char_array_writer,basic_char_array_writer>>
+:destination_no_reserve: <<destinators,destination_no_reserve>>
+:DestinationCreator: <<DestinationCreator,DestinationCreator>>
+:SizedDestinationCreator: <<SizedDestinationCreator,SizedDestinationCreator>>
 
-[[destination]]
+[[destinators]]
 == Destinations
 
-The `destination_no_reserve`, `destination_reserve_calc` and
+The `destination_no_reserve`, `destination_calc_size` and
 `destination_with_given_size` class templates implement the
-basic usage syntax of the library:
+functions availabe in the basic usage syntax of the library:
 
 image::syntax.svg[]
 
 ////
 All of them contain a {facets_pack} member object in addition to
-__{OutbuffCreator}__ or __{SizeOutbuffCreator}__ member object and
+__{DestinationCreator}__ or __{SizeDestinationCreator}__ member object and
 in the above expression:
 ////
 
 * `no_reserve()` always returns a `destination_no_reserve` object
-* `reserve_calc()` always returns a `destination_reserve_calc` object.
+* `reserve_calc()` always returns a `destination_calc_size` object.
 * `reserve(__size__)` always returns a `destination_with_given_size` object.
-* The __destination__ is an expression whose type is an instance of one
-those three class templates.
+* The __dest-expr__ is an expression that is or creates an object whose type
+  is an instance of one those three class templates.
 
 === Destination makers
 
@@ -46,21 +46,23 @@ those three class templates.
 ----
 namespace strf {
 
-__/{asterisk} see below {asterisk}/__ to(char8_t{asterisk}  dest,  char8_t{asterisk}  end);
-__/{asterisk} see below {asterisk}/__ to(char{asterisk}     dest,  char{asterisk}     end);
-__/{asterisk} see below {asterisk}/__ to(char16_t{asterisk} dest,  char16_t{asterisk} end);
-__/{asterisk} see below {asterisk}/__ to(char32_t{asterisk} dest,  char32_t{asterisk} end);
-__/{asterisk} see below {asterisk}/__ to(wchar_t{asterisk}  dest,  wchar_t{asterisk}  end);
+__/{asterisk} see below {asterisk}/__ to(char8_t{asterisk}  begin,  char8_t{asterisk}  end);
+__/{asterisk} see below {asterisk}/__ to(char{asterisk}     begin,  char{asterisk}     end);
+__/{asterisk} see below {asterisk}/__ to(char16_t{asterisk} begin,  char16_t{asterisk} end);
+__/{asterisk} see below {asterisk}/__ to(char32_t{asterisk} begin,  char32_t{asterisk} end);
+__/{asterisk} see below {asterisk}/__ to(wchar_t{asterisk}  begin,  wchar_t{asterisk}  end);
 
 } // namespace strf
 ----
-[horizontal]
-[horizontal]
-Return type:: `{destination_no_reserve}<OBC>`, where `OBC` is an implementation-defined
-              type that satifies __{OutbuffCreator}__.
-Return value:: A destination object whose internal __{OutbuffCreator}__ object `obc`
-is such that `obc.create()` returns a `{basic_cstr_writer}<CharT>` object initialized
-with `dest` and `dest_end`, where, `CharT` is `std::remove_reference_t<decltype(*dest)>`.
+Return type:: `{destination_no_reserve}<DestCreator>`, where `DestCreator`
+         is an implementation-defined type that satifies __{DestinationCreator}__.
+Return value:: An object whose `DestCreator` object  `&#95;dest&#95;creator`
+is such that `&#95;dest&#95;creator.create()` returns
++
+[source,cpp,subs=normal]
+----
+{basic_cstr_writer}<__char_type__>{begin, end}
+----
 ====
 
 [[to_char_ptr_count]]
@@ -106,17 +108,19 @@ Return type and value:: Same as of `to(dest, dest + N)`;
 ----
 namespace strf {
 template <typename CharT>
-__/{asterisk} see below {asterisk}/__ to_range(CharT* dest, CharT* dest_end);
+__/{asterisk} see below {asterisk}/__ to_range(CharT* begin, CharT* end);
 
 } // namespace strf
 ----
-[horizontal]
-[horizontal]
-Return type:: `{destination_no_reserve}<OBC>`, where `OBC` is an implementation-defined
-              type that satifies __{OutbuffCreator}__.
-Return value:: A destination object whose internal __{OutbuffCreator}__ object `obc`
-is such that `obc.create()` returns a `{basic_char_array_writer}<CharT>` object initialized
-with `dest` and `dest_end`.
+Return type:: `{destination_no_reserve}<DestCreator>`, where `DestCreator`
+         is an implementation-defined type that satifies __{DestinationCreator}__.
+Return value:: An object whose `DestCreator` object  `&#95;dest&#95;creator`
+is such that `&#95;dest&#95;creator.create()` returns
++
+[source,cpp,subs=normal]
+----
+{basic_char_array_writer}<__char_type__>{begin, end}
+----
 ====
 [[to_range_array]]
 ====
@@ -156,23 +160,23 @@ Return type and value:: Same as of `to_range(dest, dest + count)`;
 ====
 [source,cpp,subs=normal]
 ----
-template <typename OutbuffCreator, typename FPack = {facets_pack}<>>
+template <typename DestinationCreator, typename FPack = {facets_pack}<>>
 class destination_no_reserve
 ----
 Compile-time requirements::
 - `FPack` is an instance of <<facets_pack,`facets_pack`>>.
-- `OutbuffCreator` satisfies <<OutbuffCreator,_OutbuffCreator_>>.
+- `DestinationCreator` satisfies <<DestinationCreator,_DestinationCreator_>>.
 ====
 ==== Synopsis
 [source,cpp,subs=normal]
 ----
 namespace strf {
 
-template <typename OutbuffCreator, typename FPack>
+template <typename DestinationCreator, typename FPack>
 class destination_no_reserve
 {
 public:
-    using char_type = typename OutbuffCreator::char_type;
+    using char_type = typename DestinationCreator::char_type;
 
     // <<destination_no_reserve_ctor,constructors>>
     template <typename\... Args>
@@ -182,22 +186,22 @@ public:
 
     // <<destination_no_reserve_with,facets>>
     template <typename\... FPE>
-    destination_no_reserve<OutbuffCreator, /{asterisk}\...{asterisk}/> with(FPE&&\...) const &;
+    destination_no_reserve<DestinationCreator, /{asterisk}\...{asterisk}/> with(FPE&&\...) const &;
 
     template <typename\... FPE>
-    destination_no_reserve<OutbuffCreator, /{asterisk}\...{asterisk}/> with(FPE&&\...) &&;
+    destination_no_reserve<DestinationCreator, /{asterisk}\...{asterisk}/> with(FPE&&\...) &&;
 
     // <<destination_no_reserve_reserve,size reserve>>
-    constexpr destination_calc_size<OutbuffCreator, FPack>
+    constexpr destination_calc_size<DestinationCreator, FPack>
     reserve_calc() const &;
 
-    constexpr destination_calc_size<OutbuffCreator, FPack>
+    constexpr destination_calc_size<DestinationCreator, FPack>
     reserve_calc() &&;
 
-    constexpr destination_with_given_size<OutbuffCreator, FPack>
+    constexpr destination_with_given_size<DestinationCreator, FPack>
     reserve(std::size_t) const &;
 
-    constexpr destination_with_given_size<OutbuffCreator, FPack>
+    constexpr destination_with_given_size<DestinationCreator, FPack>
     reserve(std::size_t) &&;
 
     constexpr destination_no_reserve&  no_reserve() &;
@@ -221,8 +225,8 @@ public:
               , const Args&\...) const;
 
 private:
-    OutbuffCreator &#95;outbuff_creator; // exposition only
-    FPack &#95;fpack;                    // exposition only
+    DestinationCreator &#95;dest&#95;creator; // exposition only
+    FPack &#95;fpack;                     // exposition only
 };
 
 } // namespace strf
@@ -240,9 +244,9 @@ constexpr destination_no_reserve(Args&&... args);
 ----
 Compile-time requirements::
 - `FPack` is https://en.cppreference.com/w/cpp/named_req/DefaultConstructible[_DefaultConstructible_]
-- `std::is_constructible<OutbuffCreator, Args\...>` is `true`, otherwise this constructor does not participate on overload resolution.
+- `std::is_constructible<DestinationCreator, Args\...>` is `true`, otherwise this constructor does not participate on overload resolution.
 Effect::
-- Initializes `_outbuff_creator` with `std::forward<Args>(args)\...`.
+- Initializes `&#95;dest&#95;creator` with `std::forward<Args>(args)\...`.
 ====
 ====
 [source,cpp]
@@ -252,7 +256,7 @@ constexpr destination_no_reserve(const destination_no_reserve&) = default;
 Copy constructor.
 
 Compile-time requirements::
-- `FPack` and `OutbuffCreator` are
+- `FPack` and `DestinationCreator` are
    https://en.cppreference.com/w/cpp/named_req/CopyConstructible[_CopyConstructible_]
 ====
 ====
@@ -272,17 +276,17 @@ template <typename\... FPE>
 ----
 Compile-time requirements::
 - All types in `FPE\...` satisfy <<FacetsPackElement, _FacetsPackElement_>>.
-- `OutbuffCreator` is https://en.cppreference.com/w/cpp/named_req/CopyConstructible[_CopyConstructible_]
+- `DestinationCreator` is https://en.cppreference.com/w/cpp/named_req/CopyConstructible[_CopyConstructible_]
 Return Type::
 +
 [source,cpp,subs=normal]
 ----
-destination_no_reserve< OutbuffCreator
+destination_no_reserve< DestinationCreator
                       , decltype(<<pack,pack>>( std::declval<const FPack&>()
                                      , std::forward<FPE>(fpe)\...) ) >
 ----
-Effect:: Creates a `destination_no_reserve` object whose `_outbuff_creator`
-is initialized with this `_outbuff_creator`, and whose `_fpack` is initialized
+Effect:: Creates a `destination_no_reserve` object whose `&#95;dest&#95;creator`
+is initialized with this `&#95;dest&#95;creator`, and whose `_fpack` is initialized
 with `pack(this\->_fpack, std::forward<FPE>(fpe)\...)`
 ====
 ====
@@ -293,17 +297,17 @@ template <typename\... FPE>
 ----
 Compile-time requirements::
 - All types in `FPE\...` satisfy <<FacetsPackElement, _FacetsPackElement_>>.
-- `OutbuffCreator` is https://en.cppreference.com/w/cpp/named_req/MoveConstructible[_MoveConstructible_]
+- `DestinationCreator` is https://en.cppreference.com/w/cpp/named_req/MoveConstructible[_MoveConstructible_]
 Return Type::
 +
 [source,cpp,subs=normal]
 ----
-destination_no_reserve< OutbuffCreator
+destination_no_reserve< DestinationCreator
                       , decltype(<<pack,pack>>( std::declval<const FPack&>()
                                      , std::forward<FPE>(fpe)\...) ) >
 ----
-Effect:: Creates an `destination_no_reserve` object whose `_outbuff_creator`
-is initialized with `std::move(_outbuff_creator)`, and whose `_fpack` is
+Effect:: Creates an `destination_no_reserve` object whose `&#95;dest&#95;creator`
+is initialized with `std::move(&#95;dest&#95;creator)`, and whose `_fpack` is
 initialized with `pack(std::move(this\->_fpack), std::forward<FPE>(fpe)\...)`
 ====
 [[destination_no_reserve_reserve]]
@@ -311,55 +315,55 @@ initialized with `pack(std::move(this\->_fpack), std::forward<FPE>(fpe)\...)`
 ====
 [source,cpp,subs=normal]
 ----
-constexpr destination_calc_size<OutbuffCreator, FPack> reserve_calc() const &;
+constexpr destination_calc_size<DestinationCreator, FPack> reserve_calc() const &;
 ----
 Compile-time requirements::
-- `OutbuffCreator` is https://en.cppreference.com/w/cpp/named_req/CopyConstructible[_CopyConstructible_]
-   and <<SizedOutbuffCreator,_SizedOutbuffCreator_>>.
+- `DestinationCreator` is https://en.cppreference.com/w/cpp/named_req/CopyConstructible[_CopyConstructible_]
+   and <<SizedDestinationCreator,_SizedDestinationCreator_>>.
 - `FPack` is https://en.cppreference.com/w/cpp/named_req/CopyConstructible[_CopyConstructible_].
-Effect:: Creates an `destination_calc_size` object whose `_outbuff_creator`
-is initialized with this `_outbuff_creator`, and whose `_fpack` is
+Effect:: Creates an `destination_calc_size` object whose `&#95;dest&#95;creator`
+is initialized with this `&#95;dest&#95;creator`, and whose `_fpack` is
 initialized with this `_fpack`.
 ====
 ====
 [source,cpp,subs=normal]
 ----
-constexpr destination_calc_size<OutbuffCreator, FPack> reserve_calc() &&;
+constexpr destination_calc_size<DestinationCreator, FPack> reserve_calc() &&;
 ----
 Compile-time requirements::
-- `OutbuffCreator` is https://en.cppreference.com/w/cpp/named_req/MoveConstructible[_MoveConstructible_]
-   and <<SizedOutbuffCreator,_SizedOutbuffCreator_>>.
+- `DestinationCreator` is https://en.cppreference.com/w/cpp/named_req/MoveConstructible[_MoveConstructible_]
+   and <<SizedDestinationCreator,_SizedDestinationCreator_>>.
 - `FPack` is https://en.cppreference.com/w/cpp/named_req/CopyConstructible[_CopyConstructible_].
-Effect:: Creates an `destination_calc_size` object whose `_outbuff_creator`
-is initialized with `std::move(_outbuff_creator)` from this object, and whose `_fpack` object is
+Effect:: Creates an `destination_calc_size` object whose `&#95;dest&#95;creator`
+is initialized with `std::move(&#95;dest&#95;creator)` from this object, and whose `_fpack` object is
 initialized with `std::move(_fpack)` from this object.
 ====
 ====
 [source,cpp,subs=normal]
 ----
-constexpr destination_with_given_size<OutbuffCreator, FPack>
+constexpr destination_with_given_size<DestinationCreator, FPack>
 reserve(std::size_t size) const &;
 ----
 Compile-time requirements::
-- `OutbuffCreator` is https://en.cppreference.com/w/cpp/named_req/CopyConstructible[_CopyConstructible_]
-   and <<SizedOutbuffCreator,_SizedOutbuffCreator_>>.
+- `DestinationCreator` is https://en.cppreference.com/w/cpp/named_req/CopyConstructible[_CopyConstructible_]
+   and <<SizedDestinationCreator,_SizedDestinationCreator_>>.
 - `FPack` is https://en.cppreference.com/w/cpp/named_req/CopyConstructible[_CopyConstructible_].
 Effect:: Creates an `destination_with_given_size` whose `_size` is initialized with `size`,
-whose `_outbuff_creator` is initialized with this `_outbuff_creator`, and whose `_fpack` is
+whose `&#95;dest&#95;creator` is initialized with this `&#95;dest&#95;creator`, and whose `_fpack` is
 initialized with this `_fpack`.
 ====
 ====
 [source,cpp,subs=normal]
 ----
-constexpr destination_with_given_size<OutbuffCreator, FPack>
+constexpr destination_with_given_size<DestinationCreator, FPack>
 reserve(std::size_t size) &&;
 ----
 Compile-time requirements::
-`OutbuffCreator` is https://en.cppreference.com/w/cpp/named_req/MoveConstructible[_MoveConstructible_]
-   and <<SizedOutbuffCreator,_SizedOutbuffCreator_>>.
+`DestinationCreator` is https://en.cppreference.com/w/cpp/named_req/MoveConstructible[_MoveConstructible_]
+   and <<SizedDestinationCreator,_SizedDestinationCreator_>>.
 - `FPack` is https://en.cppreference.com/w/cpp/named_req/CopyConstructible[_CopyConstructible_].
 Effect:: Creates an `destination_with_given_size` object whose `_size` is initialized with `size`,
-whose `_outbuff_creator` is initialized with `std::move(_outbuff_creator)  from this object,
+whose `&#95;dest&#95;creator` is initialized with `std::move(&#95;dest&#95;creator)  from this object,
 and whose `_fpack` is initialized with `std::move(_fpack)` from this object.
 ====
 ====
@@ -386,13 +390,13 @@ template <typename\... Args>
 Compile-time requirements::
 - All types in `Args\...` are <<Printable,_Printable_>>.
 // Return type::
-// - `decltype(std::declval<decltype(_outbuff_creator.create())&>().finish())` if such type is valid, otherwise `void`
+// - `decltype(std::declval<decltype(&#95;dest&#95;creator.create())&>().finish())` if such type is valid, otherwise `void`
 Effect::
-. Creates the <<ourbuff_hpp#basic_outbuff,outbuff>> object doing
+. Creates the <<destination_hpp#destination,destination>> object doing
 +
 [source,cpp,subs=normal]
 ----
-typename OutbuffCreator::outbuff_type ob{_outbuff_creator.create()};
+typename DestinationCreator::destination_type dest{&#95;dest&#95;creator.create()};
 ----
 . For each `arg` in `args\...`, does
 +
@@ -402,10 +406,10 @@ using preview_type = {print_preview}<preview_size::no, preview_width::no>;
 preview_type preview;
 using printer_type = {printer_type}<char_type, preview_type, FPack, Arg>;
 printer_type p{ {make_printer_input}<char_type>(preview, &#95;fpack, arg) };
-static_cast<const {printer}<char_type>&>(p).print_to(ob);
+static_cast<const {printer}<char_type>&>(p).print_to(dest);
 ----
 where `Arg` is the type in `Args\...` corresponding to `arg`
-. Returns `ob.finish()` if such expression is valid, which is optional.
+. Returns `dest.finish()` if such expression is valid, which is optional.
   Otherwise the return type is `void`.
 ====
 [[destination_no_reserve_tr]]
@@ -430,11 +434,11 @@ Effect:: __to-do__
 
 
 ////
-. Creates/get the <<ourbuff_hpp#basic_outbuff,outbuff>> object doing
+. Creates/get the <<destination_hpp#destination,destination>> object doing
 +
 [source,cpp,subs=normal]
 ----
-typename OutbuffCreator::outbuff_type ob{_outbuff_creator.create()};
+typename DestinationCreator::destination_type dest{&#95;dest&#95;creator.create()};
 ----
 . For each `arg` in `args\...`, creates a printer object by doing:
 +
@@ -442,9 +446,9 @@ typename OutbuffCreator::outbuff_type ob{_outbuff_creator.create()};
 ----
 ----
 , where `Arg` is the type in `Args\...` corresponding to `arg`
-. Prints into `ob` the content according the <<tr_string,tr-string syntax>>
+. Prints into `dest` the content according the <<tr_string,tr-string syntax>>
   and using the `p` objects.
-. Returns `ob.finish()` if such expression is valid, which is optional.
+. Returns `dest.finish()` if such expression is valid, which is optional.
   Otherwise the return type is `void`.
 ////
 
@@ -454,57 +458,57 @@ typename OutbuffCreator::outbuff_type ob{_outbuff_creator.create()};
 ====
 [source,cpp,subs=normal]
 ----
-template <typename SizedOutbuffCreator, typename FPack = {facets_pack}<>>
+template <typename SizedDestinationCreator, typename FPack = {facets_pack}<>>
 class destination_calc_size;
 ----
 Compile-time requirements::
 - `FPack` is an instance of <<facets_pack,`facets_pack`>>.
-- `SizedOutbuffCreator` satisfies <<SizedOutbuffCreator,_SizedOutbuffCreator_>>.
+- `SizedDestinationCreator` satisfies <<SizedDestinationCreator,_SizedDestinationCreator_>>.
 ====
 ==== Synopsis
 [source,cpp,subs=normal]
 ----
 namespace strf {
 
-template <typename SizedOutbuffCreator, typename FPack>
-class destination_reserve_calc
+template <typename SizedDestinationCreator, typename FPack>
+class destination_calc_size
 {
 public:
-    using char_type = typename SizedOutbuffCreator::char_type;
+    using char_type = typename SizedDestinationCreator::char_type;
 
-    // <<destination_reserve_calc_ctor,constructors>>
+    // <<destination_calc_size_ctor,constructors>>
     template <typename\... Args>
-    constexpr destination_reserve_calc(Args&&\...);
+    constexpr destination_calc_size(Args&&\...);
 
-    constexpr destination_reserve_calc(const destination_reserve_calc&) = default;
-    constexpr destination_reserve_calc(destination_reserve_calc&&) = default;
+    constexpr destination_calc_size(const destination_calc_size&) = default;
+    constexpr destination_calc_size(destination_calc_size&&) = default;
 
-    // <<destination_reserve_calc_with,facets>>
+    // <<destination_calc_size_with,facets>>
     template <typename\... FPE>
-    destination_reserve_calc<SizedOutbuffCreator, /{asterisk}\...{asterisk}/> with(FPE&&\...) const &;
+    destination_calc_size<SizedDestinationCreator, /{asterisk}\...{asterisk}/> with(FPE&&\...) const &;
 
     template <typename\... FPE>
-    destination_reserve_calc<SizedOutbuffCreator, /{asterisk}\...{asterisk}/> with(FPE&&\...) &&;
+    destination_calc_size<SizedDestinationCreator, /{asterisk}\...{asterisk}/> with(FPE&&\...) &&;
 
-    // <<destination_reserve_calc_reserve,size reserve>>
-    constexpr destination_no_reserve<SizedOutbuffCreator, FPack>
+    // <<destination_calc_size_reserve,size reserve>>
+    constexpr destination_no_reserve<SizedDestinationCreator, FPack>
     no_reserve() const &;
 
-    constexpr destination_no_reserve<SizedOutbuffCreator, FPack>
+    constexpr destination_no_reserve<SizedDestinationCreator, FPack>
     no_reserve() &&;
 
-    constexpr destination_with_given_size<SizedOutbuffCreator, FPack>
+    constexpr destination_with_given_size<SizedDestinationCreator, FPack>
     reserve(std::size_t) const &;
 
-    constexpr destination_with_given_size<SizedOutbuffCreator, FPack>
+    constexpr destination_with_given_size<SizedDestinationCreator, FPack>
     reserve(std::size_t) &&;
 
-    constexpr destination_reserve_calc&  reserve_calc() &;
-    constexpr destination_reserve_calc&& reserve_calc() &&;
-    constexpr const destination_reserve_calc&  reserve_calc() const &;
-    constexpr const destination_reserve_calc&& reserve_calc() const &&;
+    constexpr destination_calc_size&  reserve_calc() &;
+    constexpr destination_calc_size&& reserve_calc() &&;
+    constexpr const destination_calc_size&  reserve_calc() const &;
+    constexpr const destination_calc_size&& reserve_calc() const &&;
 
-    // <<destination_reserve_calc_printing,printing>>
+    // <<destination_calc_size_printing,printing>>
     template <typename\... Args>
     /{asterisk}\...{asterisk}/ operator()(const Args&\...) const;
 
@@ -518,46 +522,46 @@ public:
     /{asterisk}\...{asterisk}/ tr(std::basic_string_view<char_type>, const Args&\...) const;
 
 private:
-    OutbuffCreator _outbuff_creator; // exposition only
-    FPack _fpack;                    // exposition only
+    DestinationCreator &#95;dest&#95;creator; // exposition only
+    FPack _fpack;                     // exposition only
 };
 
 } // namespace strf
 ----
 
-[[destination_reserve_calc_ctor]]
+[[destination_calc_size_ctor]]
 ===== Constructors
 ====
 [source,cpp]
 ----
 template <typename... Args>
-constexpr destination_reserve_calc(Args&&... args);
+constexpr destination_calc_size(Args&&... args);
 ----
 Compile-time requirements::
 - `FPack` is https://en.cppreference.com/w/cpp/named_req/DefaultConstructible[_DefaultConstructible_]
-- `std::is_constructible<OutbuffCreator, Args\...>::value` is `true`, otherwise this constructor does not participate on overload resolution.
+- `std::is_constructible<DestinationCreator, Args\...>::value` is `true`, otherwise this constructor does not participate on overload resolution.
 Effect::
-- Initializes `_outbuff_creator` with `std::forward<Args>(args)\...`.
+- Initializes `&#95;dest&#95;creator` with `std::forward<Args>(args)\...`.
 ====
 ====
 [source,cpp]
 ----
-constexpr destination_reserve_calc(const destination_reserve_calc&) = default;
+constexpr destination_calc_size(const destination_calc_size&) = default;
 ----
 Copy constructor.
 
 Compile-time requirements::
-- `FPack` and `OutbuffCreator` are
+- `FPack` and `DestinationCreator` are
    https://en.cppreference.com/w/cpp/named_req/CopyConstructible[_CopyConstructible_]
 ====
 ====
 [source,cpp]
 ----
-constexpr destination_reserve_calc(destination_reserve_calc&&) = default;
+constexpr destination_calc_size(destination_calc_size&&) = default;
 ----
 Move constructor.
 ====
-[[destination_reserve_calc_with]]
+[[destination_calc_size_with]]
 ===== Facets
 ====
 [source,cpp,subs=normal]
@@ -567,17 +571,17 @@ template <typename\... FPE>
 ----
 Compile-time requirements::
 - All types in `FPE\...` satisfy <<FacetsPackElement, _FacetsPackElement_>>.
-- `OutbuffCreator` is https://en.cppreference.com/w/cpp/named_req/CopyConstructible[_CopyConstructible_]
+- `DestinationCreator` is https://en.cppreference.com/w/cpp/named_req/CopyConstructible[_CopyConstructible_]
 Return Type::
 +
 [source,cpp,subs=normal]
 ----
-destination_reserve_calc< OutbuffCreator
-                        , decltype(<<pack,pack>>( std::declval<const FPack&>()
-                                       , std::forward<FPE>(fpe)\...) ) >
+destination_calc_size< DestinationCreator
+                     , decltype(<<pack,pack>>( std::declval<const FPack&>()
+                                             , std::forward<FPE>(fpe)\...) ) >
 ----
-Effect:: Creates an `destination_reserve_calc` object whose `_outbuff_creator`
-is initialized with this `_outbuff_creator`, and whose `_fpack` is initialized
+Effect:: Creates an `destination_calc_size` object whose `&#95;dest&#95;creator`
+is initialized with this `&#95;dest&#95;creator`, and whose `_fpack` is initialized
 with `pack(this\->_fpack, std::forward<FPE>(fpe)\...)`
 ====
 ====
@@ -588,86 +592,86 @@ template <typename\... FPE>
 ----
 Compile-time requirements::
 - All types in `FPE\...` satisfy <<FacetsPackElement, _FacetsPackElement_>>.
-- `OutbuffCreator` is https://en.cppreference.com/w/cpp/named_req/MoveConstructible[_MoveConstructible_]
+- `DestinationCreator` is https://en.cppreference.com/w/cpp/named_req/MoveConstructible[_MoveConstructible_]
 Return Type::
 +
 [source,cpp,subs=normal]
 ----
-destination_reserve_calc< OutbuffCreator
-                        , decltype(<<pack,pack>>( std::declval<const FPack&>()
-                                       , std::forward<FPE>(fpe)\...) ) >
+destination_calc_size< DestinationCreator
+                     , decltype(<<pack,pack>>( std::declval<const FPack&>()
+                                             , std::forward<FPE>(fpe)\...) ) >
 ----
-Effect:: Creates an `destination_reserve_calc` object whose `_outbuff_creator`
-is initialized with `std::move(this\->_outbuff_creator)`, and whose `_fpack` is
+Effect:: Creates an `destination_calc_size` object whose `&#95;dest&#95;creator`
+is initialized with `std::move(this\->&#95;dest&#95;creator)`, and whose `_fpack` is
 initialized with `pack(std::move(this\->_fpack), std::forward<FPE>(fpe)\...)`
 ====
-[[destination_reserve_calc_reserve]]
+[[destination_calc_size_reserve]]
 ===== Size reserve
 ====
 [source,cpp,subs=normal]
 ----
-constexpr destination_no_reserve<OutbuffCreator, FPack> no_reserve() const &;
+constexpr destination_no_reserve<DestinationCreator, FPack> no_reserve() const &;
 ----
 Compile-time requirements::
-- `OutbuffCreator` is https://en.cppreference.com/w/cpp/named_req/CopyConstructible[_CopyConstructible_]
+- `DestinationCreator` is https://en.cppreference.com/w/cpp/named_req/CopyConstructible[_CopyConstructible_]
 - `FPack` is https://en.cppreference.com/w/cpp/named_req/CopyConstructible[_CopyConstructible_].
-Effect:: Creates an `destination_no_reserve` object whose `_outbuff_creator`
-is initialized with this `_outbuff_creator`, and whose `_fpack` is
+Effect:: Creates an `destination_no_reserve` object whose `&#95;dest&#95;creator`
+is initialized with this `&#95;dest&#95;creator`, and whose `_fpack` is
 initialized with this `_fpack`.
 ====
 ====
 [source,cpp,subs=normal]
 ----
-constexpr destination_calc_size<OutbuffCreator, FPack> reserve_calc() &&;
+constexpr destination_calc_size<DestinationCreator, FPack> reserve_calc() &&;
 ----
 Compile-time requirements::
-- `OutbuffCreator` is https://en.cppreference.com/w/cpp/named_req/MoveConstructible[_MoveConstructible_]
+- `DestinationCreator` is https://en.cppreference.com/w/cpp/named_req/MoveConstructible[_MoveConstructible_]
 - `FPack` is https://en.cppreference.com/w/cpp/named_req/CopyConstructible[_CopyConstructible_].
-Effect:: Creates an `destination_no_reserve` object whose `_outbuff_creator`
-is initialized with `std::move(_outbuff_creator)` from this object, and whose `_fpack` object is
+Effect:: Creates an `destination_no_reserve` object whose `&#95;dest&#95;creator`
+is initialized with `std::move(&#95;dest&#95;creator)` from this object, and whose `_fpack` object is
 initialized with `std::move(_fpack)` from this object.
 ====
 ====
 [source,cpp,subs=normal]
 ----
-constexpr destination_with_given_size<OutbuffCreator, FPack>
+constexpr destination_with_given_size<DestinationCreator, FPack>
 reserve(std::size_t size) const &;
 ----
 Compile-time requirements::
-- `OutbuffCreator` is https://en.cppreference.com/w/cpp/named_req/CopyConstructible[_CopyConstructible_]
-   and <<SizedOutbuffCreator,_SizedOutbuffCreator_>>.
+- `DestinationCreator` is https://en.cppreference.com/w/cpp/named_req/CopyConstructible[_CopyConstructible_]
+   and <<SizedDestinationCreator,_SizedDestinationCreator_>>.
 - `FPack` is https://en.cppreference.com/w/cpp/named_req/CopyConstructible[_CopyConstructible_].
 Effect:: Creates an `destination_with_given_size` whose `_size` is initialized with `size`,
-whose `_outbuff_creator` is initialized with this `_outbuff_creator`, and whose `_fpack` is
+whose `&#95;dest&#95;creator` is initialized with this `&#95;dest&#95;creator`, and whose `_fpack` is
 initialized with this `_fpack`.
 ====
 ====
 [source,cpp,subs=normal]
 ----
-constexpr destination_with_given_size<OutbuffCreator, FPack>
+constexpr destination_with_given_size<DestinationCreator, FPack>
 reserve(std::size_t) &&;
 ----
 Compile-time requirements::
-`OutbuffCreator` is https://en.cppreference.com/w/cpp/named_req/MoveConstructible[_MoveConstructible_]
-   and <<SizedOutbuffCreator,_SizedOutbuffCreator_>>.
+`DestinationCreator` is https://en.cppreference.com/w/cpp/named_req/MoveConstructible[_MoveConstructible_]
+   and <<SizedDestinationCreator,_SizedDestinationCreator_>>.
 - `FPack` is https://en.cppreference.com/w/cpp/named_req/CopyConstructible[_CopyConstructible_].
 Effect:: Creates an `destination_with_given_size` object whose `_size` is initialized with `size`,
-whose `_outbuff_creator` is initialized with `std::move(_outbuff_creator)  from this object,
+whose `&#95;dest&#95;creator` is initialized with `std::move(&#95;dest&#95;creator)  from this object,
 and whose `_fpack` is initialized with `std::move(_fpack)` from this object.
 ====
 ====
 [source,cpp,subs=normal]
 ----
-constexpr destination_reserve_calc&  reserve_calc() &;
-constexpr destination_reserve_calc&& reserve_calc() &&;
-constexpr const destination_reserve_calc&  reserve_calc() const &;
-constexpr const destination_reserve_calc&& reserve_calc() const &&;
+constexpr destination_calc_size&  reserve_calc() &;
+constexpr destination_calc_size&& reserve_calc() &&;
+constexpr const destination_calc_size&  reserve_calc() const &;
+constexpr const destination_calc_size&& reserve_calc() const &&;
 ----
 [horizontal]
 Effect:: None.
 Return:: This object.
 ====
-[[destination_reserve_calc_printing]]
+[[destination_calc_size_printing]]
 ===== Printing
 ====
 [source,cpp,subs=normal]
@@ -693,20 +697,20 @@ preview_type preview;
 using printer_type = {printer_type}<char_type, preview_type, FPack, Arg>;
 printer_type p{ {make_printer_input}<char_type>(preview, &#95;fpack, arg) };
 ----
-. Creates/get the <<ourbuff_hpp#basic_outbuff,outbuff>> object doing
+. Creates/get the <<destination_hpp#destination,destination>> object doing
 +
 [source,cpp,subs=normal]
 ----
-using ob_type = typename OutbuffCreator::size_outbuf_type;
-ob_type ob{_outbuff_creator.create(preview.<<size_preview_accumulated_size,accumulated_size>>())};
+using dest_type = typename DestinationCreator::sized_destination_type;
+dest_type dest{&#95;dest&#95;creator.create(preview.<<size_preview_accumulated_size,accumulated_size>>())};
 ----
 . For each `p` object does:
 +
 [source,cpp,subs=normal]
 ----
-static_cast<const {printer}<char_type>&>(p).print_to(ob);
+static_cast<const {printer}<char_type>&>(p).print_to(dest);
 ----
-. Returns `ob.finish()` if such expression is valid, which is optional. Otherwise the return type is `void`.
+. Returns `dest.finish()` if such expression is valid, which is optional. Otherwise the return type is `void`.
 ====
 ====
 [source,cpp,subs=normal]
@@ -739,16 +743,16 @@ auto p = static_cast< const {printer}<CharT>& >
 . Calculates the size of the content to be printed according to the
   <<tr_string,tr-string syntax>> and using the `preview` objects
   of the previous step.
-. Creates/get the <<ourbuff_hpp#basic_outbuff,outbuff>> object by doing
+. Creates/get the <<destination_hpp#destination,destination>> object by doing
 +
 [source,cpp,subs=normal]
 ----
-decltype(auto) ob = _outbuff_creator.create(size)
+decltype(auto) dest = &#95;dest&#95;creator.create(size)
 ----
 , where `size` is the value calculated in the previous step.
-. Prints into `ob` the content according the <<tr_string,tr-string syntax>>
+. Prints into `dest` the content according the <<tr_string,tr-string syntax>>
   and using the `p` objects.
-. Returns `ob.finish()` if such expression is valid, which is optional.
+. Returns `dest.finish()` if such expression is valid, which is optional.
   Otherwise the return type is `void`.
 ////
 ====
@@ -758,23 +762,23 @@ decltype(auto) ob = _outbuff_creator.create(size)
 ====
 [source,cpp,subs=normal]
 ----
-template <typename SizedOutbuffCreator, typename FPack = {facets_pack}<>>
+template <typename SizedDestinationCreator, typename FPack = {facets_pack}<>>
 class destination_with_given_size
 ----
 Compile-time requirements::
 - `FPack` is an instance of <<facets_pack,`facets_pack`>>.
-- `SizedOutbuffCreator` satisfies <<SizedOutbuffCreator,_SizedOutbuffCreator_>>.
+- `SizedDestinationCreator` satisfies <<SizedDestinationCreator,_SizedDestinationCreator_>>.
 ====
 ==== Synopsis
 [source,cpp,subs=normal]
 ----
 namespace strf {
 
-template <typename SizedOutbuffCreator, typename FPack>
+template <typename SizedDestinationCreator, typename FPack>
 class destination_with_given_size
 {
 public:
-    using char_type = typename SizedOutbuffCreator::char_type;
+    using char_type = typename SizedDestinationCreator::char_type;
 
     // <<destination_with_given_size_ctor,constructors>>
     template <typename\... Args>
@@ -784,22 +788,22 @@ public:
 
     // <<destination_with_given_size_with,facets>>
     template <typename\... FPE>
-    destination_with_given_size<SizedOutbuffCreator, /{asterisk}\...{asterisk}/> with(FPE&&\...) const &;
+    destination_with_given_size<SizedDestinationCreator, /{asterisk}\...{asterisk}/> with(FPE&&\...) const &;
 
     template <typename\... FPE>
-    destination_with_given_size<SizedOutbuffCreator, /{asterisk}\...{asterisk}/> with(FPE&&\...) &&;
+    destination_with_given_size<SizedDestinationCreator, /{asterisk}\...{asterisk}/> with(FPE&&\...) &&;
 
     // <<destination_with_given_size_reserve,size reserve>>
-    constexpr destination_calc_size<SizedOutbuffCreator, FPack>
+    constexpr destination_calc_size<SizedDestinationCreator, FPack>
     reserve_calc() const &;
 
-    constexpr destination_calc_size<SizedOutbuffCreator, FPack>
+    constexpr destination_calc_size<SizedDestinationCreator, FPack>
     reserve_calc() &&;
 
-    constexpr destination_no_reserve<SizedOutbuffCreator, FPack>
+    constexpr destination_no_reserve<SizedDestinationCreator, FPack>
     no_reserve() const &;
 
-    constexpr destination_no_reserve<SizedOutbuffCreator, FPack>
+    constexpr destination_no_reserve<SizedDestinationCreator, FPack>
     no_reserve() &&;
 
     constexpr destination_with_given_size&  reserve(std::size_t) &;
@@ -821,9 +825,9 @@ public:
     /{asterisk}\...{asterisk}/ tr(std::basic_string_view<char_type>, const Args&\...) const;
 
 private:
-    std::size_t _size              // exposition only
-    OutbuffCreator _outbuff_creator; // exposition only
-    FPack _fpack;                  // exposition only
+    std::size_t _size                 // exposition only
+    DestinationCreator &#95;dest&#95;creator; // exposition only
+    FPack _fpack;                     // exposition only
 };
 
 } // namespace strf
@@ -838,9 +842,9 @@ constexpr destination_with_given_size(std::size_t size, Args&&... args);
 ----
 Compile-time requirements::
 - `FPack` is https://en.cppreference.com/w/cpp/named_req/DefaultConstructible[_DefaultConstructible_]
-- `std::is_constructible<OutbuffCreator, Args\...>`, otherwise this constructor does not participate on overload resolution.
+- `std::is_constructible<DestinationCreator, Args\...>`, otherwise this constructor does not participate on overload resolution.
 Effect::
-- Initializes `_outbuff_creator` with `std::forward<Args>(args)\...`.
+- Initializes `&#95;dest&#95;creator` with `std::forward<Args>(args)\...`.
 - Initializes `_size` with `size`
 ====
 ====
@@ -851,7 +855,7 @@ constexpr destination_with_given_size(const destination_with_given_size&) = defa
 Copy constructor.
 
 Compile-time requirements::
-- `FPack` and `OutbuffCreator` are
+- `FPack` and `DestinationCreator` are
    https://en.cppreference.com/w/cpp/named_req/CopyConstructible[_CopyConstructible_]
 ====
 ====
@@ -871,18 +875,18 @@ template <typename\... FPE>
 ----
 Compile-time requirements::
 - All types in `FPE\...` satisfy <<FacetsPackElement, _FacetsPackElement_>>.
-- `OutbuffCreator` is https://en.cppreference.com/w/cpp/named_req/CopyConstructible[_CopyConstructible_]
+- `DestinationCreator` is https://en.cppreference.com/w/cpp/named_req/CopyConstructible[_CopyConstructible_]
 Return Type::
 +
 [source,cpp,subs=normal]
 ----
-destination_with_given_size< OutbuffCreator
+destination_with_given_size< DestinationCreator
                            , decltype(<<pack,pack>>( std::declval<const FPack&>()
-                                          , std::forward<FPE>(fpe)\...) ) >
+                                                   , std::forward<FPE>(fpe)\...) ) >
 ----
 Effect:: Creates an `destination_with_given_size` object
 whose `_size` is is initialized with this `_size`
-, whose `_outbuff_creator` is initialized with this `_outbuff_creator`
+, whose `&#95;dest&#95;creator` is initialized with this `&#95;dest&#95;creator`
 , and whose `_fpack` is initialized with `pack(this\->_fpack, std::forward<FPE>(fpe)\...)`
 
 ====
@@ -894,18 +898,18 @@ template <typename\... FPE>
 ----
 Compile-time requirements::
 - All types in `FPE\...` satisfy <<FacetsPackElement, _FacetsPackElement_>>.
-- `OutbuffCreator` is https://en.cppreference.com/w/cpp/named_req/MoveConstructible[_MoveConstructible_]
+- `DestinationCreator` is https://en.cppreference.com/w/cpp/named_req/MoveConstructible[_MoveConstructible_]
 Return Type::
 +
 [source,cpp,subs=normal]
 ----
-destination_with_given_size< OutbuffCreator
+destination_with_given_size< DestinationCreator
                            , decltype(<<pack,pack>>( std::declval<const FPack&>()
-                                          , std::forward<FPE>(fpe)\...) ) >
+                                                   , std::forward<FPE>(fpe)\...) ) >
 ----
 Effect:: Creates an `destination_with_given_size` object
 whose `_size` is is initialized with this `_size`
-, whose `_outbuff_creator` is initialized with `std::move(_outbuff_creator)` from this object
+, whose `&#95;dest&#95;creator` is initialized with `std::move(&#95;dest&#95;creator)` from this object
 , and whose `_fpack` is initialized with
 `pack(std::move(this\->_fpack), std::forward<FPE>(fpe)\...)`
 ====
@@ -914,51 +918,51 @@ whose `_size` is is initialized with this `_size`
 ====
 [source,cpp,subs=normal]
 ----
-constexpr destination_no_reserve<OutbuffCreator, FPack> no_reserve() const &;
+constexpr destination_no_reserve<DestinationCreator, FPack> no_reserve() const &;
 ----
 Compile-time requirements::
-- `OutbuffCreator` is https://en.cppreference.com/w/cpp/named_req/CopyConstructible[_CopyConstructible_]
+- `DestinationCreator` is https://en.cppreference.com/w/cpp/named_req/CopyConstructible[_CopyConstructible_]
 - `FPack` is https://en.cppreference.com/w/cpp/named_req/CopyConstructible[_CopyConstructible_].
 Effect:: Creates an `destination_no_reserve` object
-whose `_outbuff_creator` is initialized with this `_outbuff_creator`,
+whose `&#95;dest&#95;creator` is initialized with this `&#95;dest&#95;creator`,
 and whose `_fpack` is initialized with this `_fpack`.
 ====
 ====
 [source,cpp,subs=normal]
 ----
-constexpr destination_calc_size<OutbuffCreator, FPack> no_reserve() &&;
+constexpr destination_calc_size<DestinationCreator, FPack> no_reserve() &&;
 ----
 Compile-time requirements::
-- `OutbuffCreator` is https://en.cppreference.com/w/cpp/named_req/MoveConstructible[_MoveConstructible_]
+- `DestinationCreator` is https://en.cppreference.com/w/cpp/named_req/MoveConstructible[_MoveConstructible_]
 - `FPack` is https://en.cppreference.com/w/cpp/named_req/CopyConstructible[_CopyConstructible_].
-Effect:: Creates an `destination_no_reserve` object whose `_outbuff_creator`
-is initialized with `std::move(_outbuff_creator)` from this object, and whose `_fpack` object is
+Effect:: Creates an `destination_no_reserve` object whose `&#95;dest&#95;creator`
+is initialized with `std::move(&#95;dest&#95;creator)` from this object, and whose `_fpack` object is
 initialized with `std::move(_fpack)` from this object.
 ====
 ====
 [source,cpp,subs=normal]
 ----
-constexpr destination_calc_size<OutbuffCreator, FPack> reserve_calc() const &;
+constexpr destination_calc_size<DestinationCreator, FPack> reserve_calc() const &;
 ----
 Compile-time requirements::
-- `OutbuffCreator` is https://en.cppreference.com/w/cpp/named_req/CopyConstructible[_CopyConstructible_]
-   and <<SizedOutbuffCreator,_SizedOutbuffCreator_>>.
+- `DestinationCreator` is https://en.cppreference.com/w/cpp/named_req/CopyConstructible[_CopyConstructible_]
+   and <<SizedDestinationCreator,_SizedDestinationCreator_>>.
 - `FPack` is https://en.cppreference.com/w/cpp/named_req/CopyConstructible[_CopyConstructible_].
 Effect:: Creates an `destination_calc_size` object
-whose `_outbuff_creator` is initialized with this `_outbuff_creator`,
+whose `&#95;dest&#95;creator` is initialized with this `&#95;dest&#95;creator`,
 and whose `_fpack` is initialized with this `_fpack`.
 ====
 ====
 [source,cpp,subs=normal]
 ----
-constexpr destination_calc_size<OutbuffCreator, FPack> reserve_calc() &&;
+constexpr destination_calc_size<DestinationCreator, FPack> reserve_calc() &&;
 ----
 Compile-time requirements::
-- `OutbuffCreator` is https://en.cppreference.com/w/cpp/named_req/MoveConstructible[_MoveConstructible_]
-   and <<SizedOutbuffCreator,_SizedOutbuffCreator_>>.
+- `DestinationCreator` is https://en.cppreference.com/w/cpp/named_req/MoveConstructible[_MoveConstructible_]
+   and <<SizedDestinationCreator,_SizedDestinationCreator_>>.
 - `FPack` is https://en.cppreference.com/w/cpp/named_req/CopyConstructible[_CopyConstructible_].
-Effect:: Creates an `destination_calc_size` object whose `_outbuff_creator`
-is initialized with `std::move(_outbuff_creator)` from this object, and whose `_fpack` object is
+Effect:: Creates an `destination_calc_size` object whose `&#95;dest&#95;creator`
+is initialized with `std::move(&#95;dest&#95;creator)` from this object, and whose `_fpack` object is
 initialized with `std::move(_fpack)` from this object.
 ====
 ====
@@ -980,7 +984,7 @@ constexpr destination_with_given_size reserve(std::size_t size) const &&;
 [horizontal]
 Effect:: Creates an `destination_with_give_size` object
 whose `_size` is initialized with `size`,
-whose `_outbuff_creator` is initialized with this `_outbuff_creator`,
+whose `&#95;dest&#95;creator` is initialized with this `&#95;dest&#95;creator`,
 and whose `facets_pack` object with this `_fpack`.
 ====
 [[destination_with_given_size_printing]]
@@ -994,11 +998,11 @@ template <typename\... Args>
 Compile-time requirements::
 - All types in `Args\...` are <<Printable,_Printable_>>.
 Effect::
-. Creates/get the <<ourbuff_hpp#basic_outbuff,outbuff>> object doing
+. Creates/get the <<destination_hpp#destination,destination>> object doing
 +
 [source,cpp,subs=normal]
 ----
-decltype(auto) ob = _outbuff_creator.create(_size)
+decltype(auto) dest = &#95;dest&#95;creator.create(_size)
 ----
 . For each `arg` in `args\...` does:
 +
@@ -1008,10 +1012,10 @@ using preview_type = {print_preview}<preview_size::no, preview_width::no>;
 preview_type preview;
 using printer_type = {printer_type}<char_type, preview_type, FPack, Arg>;
 printer_type p{ {make_printer_input}<char_type>(preview, &#95;fpack, arg) };
-static_cast<const {printer}<char_type>&>(p).print_to(ob);
+static_cast<const {printer}<char_type>&>(p).print_to(dest);
 ----
 , where `Arg` is the type in `Args\...` corresponding to `arg`
-. Returns `ob.finish()` if such expression is valid, which is optional.
+. Returns `dest.finish()` if such expression is valid, which is optional.
   Otherwise the return type is `void`.
 ====
 ====
@@ -1034,11 +1038,11 @@ Compile-time requirements::
 Effect::
 __to-do__
 ////
-. Creates/get the <<ourbuff_hpp#basic_outbuff,outbuff>> object doing
+. Creates/get the <<destination_hpp#destination,destination>> object doing
 +
 [source,cpp,subs=normal]
 ----
-decltype(auto) ob = _outbuff_creator.create(_size)
+decltype(auto) dest = &#95;dest&#95;creator.create(_size)
 ----
 . For each `arg` in `args\...`, creates a printer object by doing:
 +
@@ -1049,60 +1053,60 @@ auto p = static_cast< const {printer}<CharT>& >
 ----
 , where `preview` is an instance of `preview<false, false>`,
 abs `chtag` is an expression of type `{tag}<CharT>`.
-. Prints into `ob` the content according the <<tr_string,tr-string syntax>>
+. Prints into `dest` the content according the <<tr_string,tr-string syntax>>
   and using the `p` objects.
-. Returns `ob.finish()` if such expression is valid ( which is optional ).
+. Returns `dest.finish()` if such expression is valid ( which is optional ).
 ////
 ====
 
-[[OutbuffCreator]]
-=== Type requirement _OutbuffCreator_
+[[DestinationCreator]]
+=== Type requirement _DestinationCreator_
 Given
 
 - `char_type`, a character type
-- `X`, an  _OutbuffCreator_ type for `char_type`
+- `X`, an  _DestinationCreator_ type for `char_type`
 - `x`, an expression of type `X` or `const X`
 
 The following must hold:
 
 - `X` is https://en.cppreference.com/w/cpp/named_req/CopyConstructible[CopyConstructible]
 - `X` has a member type alias `X::char_type` defined as `char_type`
-- `X` has the `X::outbuff_type` that is a type alias to a concrete type that is derives
-   from `basic_outbuff<X::char_type>`
+- `X` has the `X::destination_type` that is a type alias to a concrete type that is derives
+   from `destination<X::char_type>`
 
 And the following expression must be well-formed:
 
-[[OutbuffCreator_create]]
+[[DestinationCreator_create]]
 ====
 [source,cpp]
 ----
-typename X::outbuff_type{x.create()}
+typename X::destination_type{x.create()}
 ----
 ====
 
-[[SizedOutbuffCreator]]
-=== Type requirement _SizedOutbuffCreator_
+[[SizedDestinationCreator]]
+=== Type requirement _SizedDestinationCreator_
 Given
 
 - `char_type`, a character type
 - `size`, a value of the `std::size_t`
-- `X`, an  _SizedOutbuffCreator_ type for `char_type`
+- `X`, an  _SizedDestinationCreator_ type for `char_type`
 - `x`, an expression of type `X` or `const X`
 
 The following must hold:
 
 - `X` is https://en.cppreference.com/w/cpp/named_req/CopyConstructible[CopyConstructible]
 - `X` has a member type alias `T::char_type` defined as `char_type`
-- `X` has the `X::sized_outbuff_type` that is a type alias to a concrete type that derives
-   from `basic_outbuff<X::char_type>`
+- `X` has the `X::sized_destination_type` that is a type alias to a concrete type that derives
+   from `destination<X::char_type>`
 
 And the following expression must be well-formed:
 
-[[SizedOutbuffCreator_create]]
+[[SizedDestinationCreator_create]]
 ====
 [source,cpp]
 ----
-typename X::sized_outbuff_type{x.create(size)}
+typename X::sized_destination_type{x.create(size)}
 ----
 ====
 

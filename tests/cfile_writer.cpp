@@ -301,7 +301,7 @@ void test_wide_failing_to_finish()
 }
 
 template <typename CharT>
-void test_destination()
+void test_narrow_cfile_writer_creator()
 {
     auto half_str = test_utils::make_half_string<CharT>();
     auto full_str = test_utils::make_full_string<CharT>();
@@ -327,7 +327,7 @@ void test_destination()
 
 }
 
-void test_wdestination()
+void test_wide_cfile_writer_creator()
 {
     auto half_str = test_utils::make_half_string<wchar_t>();
     auto full_str = test_utils::make_full_string<wchar_t>();
@@ -359,11 +359,11 @@ void test_cfile_writer()
 
     test_cfile_writer_base();
 
-    test_destination<char>();
-    test_destination<char16_t>();
-    test_destination<char32_t>();
-    test_destination<wchar_t>();
-    test_wdestination();
+    test_narrow_cfile_writer_creator<char>();
+    test_narrow_cfile_writer_creator<char16_t>();
+    test_narrow_cfile_writer_creator<char32_t>();
+    test_narrow_cfile_writer_creator<wchar_t>();
+    test_wide_cfile_writer_creator();
 
     test_narrow_successfull_writing<char>();
     test_narrow_successfull_writing<char16_t>();

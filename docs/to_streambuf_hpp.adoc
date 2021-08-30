@@ -14,12 +14,12 @@ http://www.boost.org/LICENSE_1_0.txt)
 :toclevels: 1
 :icons: font
 
-:min_space_after_recycle: <<outbuff_hpp#min_space_after_recycle,min_space_after_recycle>>
-:basic_outbuff: <<outbuff_hpp#basic_outbuff,basic_outbuff>>
+:min_space_after_recycle: <<destination_hpp#min_space_after_recycle,min_space_after_recycle>>
+:destination: <<destination_hpp#destination,destination>>
 :basic_streambuf_writer: <<basic_streambuf_writer,basic_streambuf_writer>>
 
-:destination_no_reserve: <<strf_hpp#destination,destination_no_reserve>>
-:OutbuffCreator: <<strf_hpp#OutbuffCreator,OutbuffCreator>>
+:destination_no_reserve: <<strf_hpp#destinators,destination_no_reserve>>
+:DestinationCreator: <<strf_hpp#DestinationCreator,DestinationCreator>>
 
 
 NOTE: This document is still a work in progress.
@@ -31,7 +31,7 @@ NOTE: This header files includes `<strf.hpp>`
 namespace strf {
 
 template <typename CharT, typename Traits = std::char_traits<CharT> >
-class basic_streambuf_writer final: public basic_outbuff<CharT>
+class basic_streambuf_writer final: public destination<CharT>
 { /{asterisk}\...{asterisk}/ };
 
 using streambuf_writer  = basic_streambuf_writer<char>;
@@ -56,7 +56,7 @@ template <typename CharT, typename Traits>
 namespace strf {
 
 template <typename CharT, typename Traits = std::char_traits<CharT> >
-class basic_streambuf_writer final: public basic_outbuff<CharT> {
+class basic_streambuf_writer final: public destination<CharT> {
 public:
     explicit basic_streambuf_writer(std::basic_streambuf<CharT, Traits>& dest);
     explicit basic_streambuf_writer(std::basic_streambuf<CharT, Traits>* dest);
@@ -135,8 +135,12 @@ __/{asterisk} see below {asterisk}/__ to(std::basic_streambuf<CharT, Traits>* de
 } // namespace strf
 ----
 [horizontal]
-Return type:: `{destination_no_reserve}<OBC>`, where `OBC` is an implementation-defined
-              type that satifies __{OutbuffCreator}__.
-Return value:: A destination object whose internal __{OutbuffCreator}__ object `obc`
-is such that `obc.create()` returns a `{basic_streambuf_writer}<CharT, Traits>` object initialized
-with `dest`.
+Return type:: `{destination_no_reserve}<DestCreator>`, where `DestCreator`
+         is an implementation-defined type that satifies __{DestinationCreator}__.
+Return value:: An object whose `DestCreator` object  `&#95;dest&#95;creator`
+is such that `&#95;dest&#95;creator.create()` returns
++
+[source,cpp,subs=normal]
+----
+{basic_streambuf_writer}<CharT, Traits>{dest}
+----
