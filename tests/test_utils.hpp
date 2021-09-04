@@ -607,7 +607,7 @@ auto STRF_HD make_tester
    , int line
    , const char* function
    , double reserve_factor = 1.0 )
-    -> strf::destination_calc_size<test_utils::input_tester_creator<CharT>>
+   -> strf::destination_calc_size<test_utils::input_tester_creator<CharT>>
 {
     return {expected, filename, line, function, reserve_factor};
 }

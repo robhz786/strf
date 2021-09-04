@@ -476,8 +476,7 @@ using discarded_outbuff = discarded_destination<CharT>;
 } // namespace strf
 
 #if defined(__GNUC__)
-#  pragma GCC diagnostic push
-#  pragma GCC diagnostic ignored "-Warray-bounds"
+#  pragma GCC diagnostic pop
 #endif
 
 #endif  // STRF_DESTINATION_HPP_INCLUDED
