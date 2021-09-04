@@ -146,7 +146,7 @@ public:
         }
     }
 
-    STRF_HD void print_to(strf::destination<CharT>& ob) const override;
+    STRF_HD void print_to(strf::destination<CharT>& dest) const override;
 
 private:
 
@@ -155,11 +155,11 @@ private:
 
 template <typename CharT>
 STRF_HD void char_printer<CharT>::print_to
-    ( strf::destination<CharT>& ob ) const
+    ( strf::destination<CharT>& dest ) const
 {
-    ob.ensure(1);
-    *ob.pointer() = ch_;
-    ob.advance();
+    dest.ensure(1);
+    *dest.pointer() = ch_;
+    dest.advance();
 }
 
 
@@ -180,7 +180,7 @@ public:
         init_(input.preview, wcalc, charset);
     }
 
-    STRF_HD void print_to(strf::destination<CharT>& ob) const override;
+    STRF_HD void print_to(strf::destination<CharT>& dest) const override;
 
 private:
 
@@ -245,32 +245,32 @@ STRF_HD void fmt_char_printer<CharT>::init_
 
 template <typename CharT>
 STRF_HD void fmt_char_printer<CharT>::print_to
-    ( strf::destination<CharT>& ob ) const
+    ( strf::destination<CharT>& dest ) const
 {
     if (left_fillcount_ != 0) {
-        encode_fill_fn_(ob, left_fillcount_, afmt_.fill);
+        encode_fill_fn_(dest, left_fillcount_, afmt_.fill);
     }
     if (count_ == 1) {
-        ob.ensure(1);
-        * ob.pointer() = ch_;
-        ob.advance();
+        dest.ensure(1);
+        * dest.pointer() = ch_;
+        dest.advance();
     } else {
         std::size_t count = count_;
         while(true) {
-            std::size_t space = ob.space();
+            std::size_t space = dest.space();
             if (count <= space) {
-                strf::detail::str_fill_n(ob.pointer(), count, ch_);
-                ob.advance(count);
+                strf::detail::str_fill_n(dest.pointer(), count, ch_);
+                dest.advance(count);
                 break;
             }
-            strf::detail::str_fill_n(ob.pointer(), space, ch_);
+            strf::detail::str_fill_n(dest.pointer(), space, ch_);
             count -= space;
-            ob.advance_to(ob.end());
-            ob.recycle();
+            dest.advance_to(dest.end());
+            dest.recycle();
         }
     }
     if (right_fillcount_ != 0) {
-        encode_fill_fn_(ob, right_fillcount_, afmt_.fill);
+        encode_fill_fn_(dest, right_fillcount_, afmt_.fill);
     }
 }
 

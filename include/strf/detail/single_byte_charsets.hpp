@@ -18,31 +18,31 @@
 
 #define STRF_CHECK_DEST                          \
     STRF_IF_UNLIKELY (dest_it == dest_end) {     \
-        ob.advance_to(dest_it);                  \
-        ob.recycle();                            \
-        STRF_IF_UNLIKELY (!ob.good()) {          \
+        dest.advance_to(dest_it);                \
+        dest.recycle();                          \
+        STRF_IF_UNLIKELY (!dest.good()) {        \
             return;                              \
         }                                        \
-        dest_it = ob.pointer();                  \
-        dest_end = ob.end();                     \
+        dest_it = dest.pointer();                \
+        dest_end = dest.end();                   \
     }
 
 #define STRF_CHECK_DEST_SIZE(SIZE)                  \
     STRF_IF_UNLIKELY (dest_it + SIZE > dest_end) {  \
-        ob.advance_to(dest_it);                     \
-        ob.recycle();                               \
-        STRF_IF_UNLIKELY (!ob.good()) {             \
+        dest.advance_to(dest_it);                   \
+        dest.recycle();                             \
+        STRF_IF_UNLIKELY (!dest.good()) {           \
             return;                                 \
         }                                           \
-        dest_it = ob.pointer();                     \
-        dest_end = ob.end();                        \
+        dest_it = dest.pointer();                   \
+        dest_end = dest.end();                      \
     }
 
 #endif // ! defined(STRF_CHECK_DEST)
 
-#define STRF_DEF_SINGLE_BYTE_CHARSET_(CHARSET)                                 \
+#define STRF_DEF_SINGLE_BYTE_CHARSET_(CHARSET)                                \
     template <typename CharT>                                                 \
-    class static_charset<CharT, strf::csid_ ## CHARSET>                        \
+    class static_charset<CharT, strf::csid_ ## CHARSET>                       \
         : public strf::detail::single_byte_charset                            \
             < CharT, strf::detail::impl_ ## CHARSET >                         \
     { };                                                                      \
@@ -2152,7 +2152,7 @@ template <typename SrcCharT, typename DestCharT, class Impl>
 struct single_byte_charset_to_utf32
 {
     static STRF_HD void transcode
-        ( strf::destination<DestCharT>& ob
+        ( strf::destination<DestCharT>& dest
         , const SrcCharT* src
         , std::size_t src_size
         , strf::invalid_seq_notifier inv_seq_notifier
@@ -2178,15 +2178,15 @@ struct single_byte_charset_to_utf32
 
 template <typename SrcCharT, typename DestCharT, class Impl>
 STRF_HD void single_byte_charset_to_utf32<SrcCharT, DestCharT, Impl>::transcode
-    ( strf::destination<DestCharT>& ob
+    ( strf::destination<DestCharT>& dest
     , const SrcCharT* src
     , std::size_t src_size
     , strf::invalid_seq_notifier inv_seq_notifier
     , strf::surrogate_policy surr_poli )
 {
     (void) surr_poli;
-    auto dest_it = ob.pointer();
-    auto dest_end = ob.end();
+    auto dest_it = dest.pointer();
+    auto dest_end = dest.end();
     auto src_end = src + src_size;
     for (auto src_it = src; src_it < src_end; ++src_it, ++dest_it) {
         STRF_CHECK_DEST;
@@ -2196,19 +2196,19 @@ STRF_HD void single_byte_charset_to_utf32<SrcCharT, DestCharT, Impl>::transcode
         } else  {
             *dest_it = 0xFFFD;
             if (inv_seq_notifier) {
-                ob.advance_to(dest_it + 1);
+                dest.advance_to(dest_it + 1);
                 inv_seq_notifier.notify();
             }
         }
     }
-    ob.advance_to(dest_it);
+    dest.advance_to(dest_it);
 }
 
 template <typename SrcCharT, typename DestCharT, class Impl>
 struct utf32_to_single_byte_charset
 {
     static STRF_HD void transcode
-        ( strf::destination<DestCharT>& ob
+        ( strf::destination<DestCharT>& dest
         , const SrcCharT* src
         , std::size_t src_size
         , strf::invalid_seq_notifier inv_seq_notifier
@@ -2233,15 +2233,15 @@ struct utf32_to_single_byte_charset
 
 template <typename SrcCharT, typename DestCharT, class Impl>
 STRF_HD void utf32_to_single_byte_charset<SrcCharT, DestCharT, Impl>::transcode
-    ( strf::destination<DestCharT>& ob
+    ( strf::destination<DestCharT>& dest
     , const SrcCharT* src
     , std::size_t src_size
     , strf::invalid_seq_notifier inv_seq_notifier
     , strf::surrogate_policy surr_poli )
 {
     (void)surr_poli;
-    auto dest_it = ob.pointer();
-    auto dest_end = ob.end();
+    auto dest_it = dest.pointer();
+    auto dest_end = dest.end();
     auto src_end = src + src_size;
     for(auto src_it = src; src_it != src_end; ++src_it, ++dest_it) {
         STRF_CHECK_DEST;
@@ -2251,19 +2251,19 @@ STRF_HD void utf32_to_single_byte_charset<SrcCharT, DestCharT, Impl>::transcode
         } else {
             * dest_it = '?';
             if (inv_seq_notifier) {
-                ob.advance_to(dest_it + 1);
+                dest.advance_to(dest_it + 1);
                 inv_seq_notifier.notify();
             }
         }
     }
-    ob.advance_to(dest_it);
+    dest.advance_to(dest_it);
 }
 
 template <typename SrcCharT, typename DestCharT, class Impl>
 struct single_byte_charset_sanitizer
 {
     static STRF_HD void transcode
-        ( strf::destination<DestCharT>& ob
+        ( strf::destination<DestCharT>& dest
         , const SrcCharT* src
         , std::size_t src_size
         , strf::invalid_seq_notifier inv_seq_notifier
@@ -2289,15 +2289,15 @@ struct single_byte_charset_sanitizer
 
 template <typename SrcCharT, typename DestCharT, class Impl>
 STRF_HD void single_byte_charset_sanitizer<SrcCharT, DestCharT, Impl>::transcode
-    ( strf::destination<DestCharT>& ob
+    ( strf::destination<DestCharT>& dest
     , const SrcCharT* src
     , std::size_t src_size
     , strf::invalid_seq_notifier inv_seq_notifier
     , strf::surrogate_policy surr_poli )
 {
     (void) surr_poli;
-    auto dest_it = ob.pointer();
-    auto dest_end = ob.end();
+    auto dest_it = dest.pointer();
+    auto dest_end = dest.end();
     auto src_end = src + src_size;
     for (auto src_it = src; src_it < src_end; ++src_it, ++dest_it) {
         STRF_CHECK_DEST;
@@ -2308,12 +2308,12 @@ STRF_HD void single_byte_charset_sanitizer<SrcCharT, DestCharT, Impl>::transcode
         else {
             *dest_it = '?';
             STRF_IF_UNLIKELY (inv_seq_notifier) {
-                ob.advance_to(dest_it);
+                dest.advance_to(dest_it);
                 inv_seq_notifier.notify();
             }
         }
     }
-    ob.advance_to(dest_it);
+    dest.advance_to(dest_it);
 }
 
 template <std::size_t wchar_size, typename CharT, strf::charset_id>
@@ -2409,9 +2409,9 @@ public:
     {
         return 1;
     }
-    static STRF_HD void write_replacement_char(strf::destination<CharT>& ob)
+    static STRF_HD void write_replacement_char(strf::destination<CharT>& dest)
     {
-        strf::put(ob, static_cast<CharT>('?'));
+        strf::put(dest, static_cast<CharT>('?'));
     }
     static STRF_HD std::size_t validate(char32_t ch32) noexcept
     {
@@ -2424,7 +2424,7 @@ public:
     static STRF_HD CharT* encode_char(CharT* dest, char32_t ch);
 
     static STRF_HD void encode_fill
-        ( strf::destination<CharT>& ob, std::size_t count, char32_t ch );
+        ( strf::destination<CharT>& dest, std::size_t count, char32_t ch );
 
     static STRF_HD strf::codepoints_count_result codepoints_fast_count
         ( const CharT* src, std::size_t src_size
@@ -2611,7 +2611,7 @@ STRF_HD CharT* single_byte_charset<CharT, Impl>::encode_char
 
 template <typename CharT, class Impl>
 STRF_HD void single_byte_charset<CharT, Impl>::encode_fill
-    ( strf::destination<CharT>& ob, std::size_t count, char32_t ch )
+    ( strf::destination<CharT>& dest, std::size_t count, char32_t ch )
 {
     unsigned ch2 = Impl::encode(ch);
     STRF_IF_UNLIKELY (ch2 >= 0x100) {
@@ -2619,16 +2619,16 @@ STRF_HD void single_byte_charset<CharT, Impl>::encode_fill
     }
     auto ch3 = static_cast<CharT>(ch2);
     while(true) {
-        std::size_t available = ob.space();
+        std::size_t available = dest.space();
         STRF_IF_LIKELY (count <= available) {
-            strf::detail::str_fill_n<CharT>(ob.pointer(), count, ch3);
-            ob.advance(count);
+            strf::detail::str_fill_n<CharT>(dest.pointer(), count, ch3);
+            dest.advance(count);
             return;
         }
-        strf::detail::str_fill_n<CharT>(ob.pointer(), available, ch3);
-        ob.advance_to(ob.end());
+        strf::detail::str_fill_n<CharT>(dest.pointer(), available, ch3);
+        dest.advance_to(dest.end());
         count -= available;
-        ob.recycle();
+        dest.recycle();
     }
 }
 

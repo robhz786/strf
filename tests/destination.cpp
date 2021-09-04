@@ -14,154 +14,154 @@ STRF_TEST_FUNC void test_destination_functions()
             { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'};
 
         {
-            test_utils::input_tester_with_fixed_spaces<char, 5, 5> ob
+            test_utils::input_tester_with_fixed_spaces<char, 5, 5> dest
                 { {"abcdefghij", __FILE__, __LINE__, BOOST_CURRENT_FUNCTION} };
 
-            strf::detail::destination_interchar_copy(ob, sample, sizeof(sample));
+            strf::detail::destination_interchar_copy(dest, sample, sizeof(sample));
 
-            ob.finish();
+            dest.finish();
         }
         {
-            test_utils::input_tester_with_fixed_spaces<char, 5, 6> ob
+            test_utils::input_tester_with_fixed_spaces<char, 5, 6> dest
                 { {"abcdefghij", __FILE__, __LINE__, BOOST_CURRENT_FUNCTION} };
 
-            strf::detail::destination_interchar_copy(ob, sample, sizeof(sample));
+            strf::detail::destination_interchar_copy(dest, sample, sizeof(sample));
 
-            ob.finish();
+            dest.finish();
         }
         {
-            test_utils::input_tester_with_fixed_spaces<char, 5, 4> ob
+            test_utils::input_tester_with_fixed_spaces<char, 5, 4> dest
                 { {"abcdefghi", __FILE__, __LINE__, BOOST_CURRENT_FUNCTION} };
 
-            strf::detail::destination_interchar_copy(ob, sample, sizeof(sample));
+            strf::detail::destination_interchar_copy(dest, sample, sizeof(sample));
 
-            ob.finish();
+            dest.finish();
         }
         {
-            test_utils::input_tester_with_fixed_spaces<char16_t, 5, 5> ob
+            test_utils::input_tester_with_fixed_spaces<char16_t, 5, 5> dest
                 { {u"abcdefghij", __FILE__, __LINE__, BOOST_CURRENT_FUNCTION} };
 
-            strf::detail::destination_interchar_copy(ob, sample, sizeof(sample));
+            strf::detail::destination_interchar_copy(dest, sample, sizeof(sample));
 
-            ob.finish();
+            dest.finish();
         }
         {
-            test_utils::input_tester_with_fixed_spaces<char16_t, 5, 6> ob
+            test_utils::input_tester_with_fixed_spaces<char16_t, 5, 6> dest
                 { {u"abcdefghij", __FILE__, __LINE__, BOOST_CURRENT_FUNCTION} };
 
-            strf::detail::destination_interchar_copy(ob, sample, sizeof(sample));
+            strf::detail::destination_interchar_copy(dest, sample, sizeof(sample));
 
-            ob.finish();
+            dest.finish();
         }
         {
-            test_utils::input_tester_with_fixed_spaces<char16_t, 5, 4> ob
+            test_utils::input_tester_with_fixed_spaces<char16_t, 5, 4> dest
                 { {u"abcdefghi", __FILE__, __LINE__, BOOST_CURRENT_FUNCTION} };
 
-            strf::detail::destination_interchar_copy(ob, sample, sizeof(sample));
+            strf::detail::destination_interchar_copy(dest, sample, sizeof(sample));
 
-            ob.finish();
+            dest.finish();
         }
     }
     {   // Cover strf::detail::write_fill
         {
-            test_utils::input_tester_with_fixed_spaces<char, 5, 8> ob
+            test_utils::input_tester_with_fixed_spaces<char, 5, 8> dest
                 { {"aaaaaaaaaa", __FILE__, __LINE__, BOOST_CURRENT_FUNCTION} };
 
-            strf::detail::write_fill(ob, 10, 'a');
-            TEST_TRUE(ob.good());
-            ob.finish();
+            strf::detail::write_fill(dest, 10, 'a');
+            TEST_TRUE(dest.good());
+            dest.finish();
         }
         {
-            test_utils::input_tester_with_fixed_spaces<char, 5, 5> ob
+            test_utils::input_tester_with_fixed_spaces<char, 5, 5> dest
                 { {"aaaaaaaaaa", __FILE__, __LINE__, BOOST_CURRENT_FUNCTION} };
 
-            strf::detail::write_fill(ob, 10, 'a');
-            TEST_TRUE(ob.good());
-            ob.finish();
+            strf::detail::write_fill(dest, 10, 'a');
+            TEST_TRUE(dest.good());
+            dest.finish();
         }
         {
-            test_utils::input_tester_with_fixed_spaces<char, 5, 3> ob
+            test_utils::input_tester_with_fixed_spaces<char, 5, 3> dest
                 { {"aaaaaaaa", __FILE__, __LINE__, BOOST_CURRENT_FUNCTION} };
 
-            strf::detail::write_fill(ob, 10, 'a');
-            TEST_FALSE(ob.good());
-            ob.finish();
+            strf::detail::write_fill(dest, 10, 'a');
+            TEST_FALSE(dest.good());
+            dest.finish();
         }
     }
     {
         // Cover write(destination<CharT>&, const CharT*)
-        test_utils::input_tester_with_fixed_spaces<char, 5> ob
+        test_utils::input_tester_with_fixed_spaces<char, 5> dest
             { {"abcde", __FILE__, __LINE__, BOOST_CURRENT_FUNCTION} };
-        write(ob, "abcde");
-        ob.finish();
+        write(dest, "abcde");
+        dest.finish();
     }
     {
         // Cover put(destination<CharT>&, CharT)
 
-        test_utils::input_tester_with_fixed_spaces<char, 3, 5> ob
+        test_utils::input_tester_with_fixed_spaces<char, 3, 5> dest
             { {"abcd", __FILE__, __LINE__, BOOST_CURRENT_FUNCTION} };
 
         // When put does not call recycle()
-        strf::put(ob, 'a');
-        strf::put(ob, 'b');
-        strf::put(ob, 'c');
+        strf::put(dest, 'a');
+        strf::put(dest, 'b');
+        strf::put(dest, 'c');
 
         // When it does
-        strf::put(ob, 'd');
+        strf::put(dest, 'd');
 
-        ob.finish();
+        dest.finish();
     }
     {
         // Cover destination<CharT>::ensure()
-        test_utils::input_tester_with_fixed_spaces<char, 4, 4> ob
+        test_utils::input_tester_with_fixed_spaces<char, 4, 4> dest
             { {"abcdefgh", __FILE__, __LINE__, BOOST_CURRENT_FUNCTION} };
 
-        ob.ensure(2); // when argument is less than space()
-        ob.pointer()[0] = 'a';
-        ob.pointer()[1] = 'b';
-        ob.advance(2);
+        dest.ensure(2); // when argument is less than space()
+        dest.pointer()[0] = 'a';
+        dest.pointer()[1] = 'b';
+        dest.advance(2);
 
-        ob.ensure(2); // when argument is equal to space()
-        ob.pointer()[0] = 'c';
-        ob.pointer()[1] = 'd';
-        ob.advance(2);
+        dest.ensure(2); // when argument is equal to space()
+        dest.pointer()[0] = 'c';
+        dest.pointer()[1] = 'd';
+        dest.advance(2);
 
-        ob.ensure(4); // When argument is greater than space()
-        ob.pointer()[0] = 'e';
-        ob.pointer()[1] = 'f';
-        ob.pointer()[2] = 'g';
-        ob.pointer()[3] = 'h';
-        ob.advance(4);
+        dest.ensure(4); // When argument is greater than space()
+        dest.pointer()[0] = 'e';
+        dest.pointer()[1] = 'f';
+        dest.pointer()[2] = 'g';
+        dest.pointer()[3] = 'h';
+        dest.advance(4);
 
-        ob.finish();
+        dest.finish();
     }
     {
         // When destination<CharT>::do_write() calls recycle()
         // and the space() afterwards is greater than needed
 
-        test_utils::input_tester_with_fixed_spaces<char, 5, 10> ob
+        test_utils::input_tester_with_fixed_spaces<char, 5, 10> dest
             { {"abcdefghij", __FILE__, __LINE__, BOOST_CURRENT_FUNCTION} };
 
-        ob.write("abcdefghij", 10);
-        ob.finish();
+        dest.write("abcdefghij", 10);
+        dest.finish();
     }
     {
         // When destination<CharT>::do_write() calls recycle()
         // and the space() afterwards is exactly as needed
-        test_utils::input_tester_with_fixed_spaces<char, 5, 5> ob
+        test_utils::input_tester_with_fixed_spaces<char, 5, 5> dest
             { {"abcdefghij", __FILE__, __LINE__, BOOST_CURRENT_FUNCTION} };
 
-        ob.write("abcdefghij", 10);
-        ob.finish();
+        dest.write("abcdefghij", 10);
+        dest.finish();
     }
     {
         // When destination<CharT>::do_write() calls recycle()
         // and the good() afterwards is false
-        test_utils::input_tester_with_fixed_spaces<char, 5> ob
+        test_utils::input_tester_with_fixed_spaces<char, 5> dest
             { {"abcde", __FILE__, __LINE__, BOOST_CURRENT_FUNCTION} };
 
-        ob.write("abcdefghij", 10);
-        ob.finish();
+        dest.write("abcdefghij", 10);
+        dest.finish();
     }
 }
 

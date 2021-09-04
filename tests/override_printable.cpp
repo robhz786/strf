@@ -19,11 +19,11 @@ public:
         input.preview.add_size(2 + (int)input.arg);
     }
 
-    void STRF_HD print_to(strf::destination<CharT>& ob) const override
+    void STRF_HD print_to(strf::destination<CharT>& dest) const override
     {
         int size = 2 + (int)value_;
-        ob.ensure(size);
-        auto p = ob.pointer();
+        dest.ensure(size);
+        auto p = dest.pointer();
         if (value_) {
             p[0] = static_cast<CharT>('y');
             p[1] = static_cast<CharT>('e');
@@ -32,7 +32,7 @@ public:
             p[0] = static_cast<CharT>('n');
             p[1] = static_cast<CharT>('o');
         }
-        ob.advance(size);
+        dest.advance(size);
     }
 
 private:

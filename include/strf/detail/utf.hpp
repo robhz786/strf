@@ -15,24 +15,24 @@ namespace strf {
 
 #define STRF_CHECK_DEST                         \
     STRF_IF_UNLIKELY (dest_it == dest_end) {    \
-        ob.advance_to(dest_it);                 \
-        ob.recycle();                           \
-        STRF_IF_UNLIKELY (!ob.good()) {         \
+        dest.advance_to(dest_it);               \
+        dest.recycle();                         \
+        STRF_IF_UNLIKELY (!dest.good()) {       \
             return;                             \
         }                                       \
-        dest_it = ob.pointer();                 \
-        dest_end = ob.end();                    \
+        dest_it = dest.pointer();               \
+        dest_end = dest.end();                  \
     }
 
 #define STRF_CHECK_DEST_SIZE(SIZE)                  \
     STRF_IF_UNLIKELY (dest_it + SIZE > dest_end) {  \
-        ob.advance_to(dest_it);                     \
-        ob.recycle();                               \
-        STRF_IF_UNLIKELY (!ob.good()) {             \
+        dest.advance_to(dest_it);                   \
+        dest.recycle();                             \
+        STRF_IF_UNLIKELY (!dest.good()) {           \
             return;                                 \
         }                                           \
-        dest_it = ob.pointer();                     \
-        dest_end = ob.end();                        \
+        dest_it = dest.pointer();                   \
+        dest_end = dest.end();                      \
     }
 
 #endif // ! defined(STRF_CHECK_DEST)
@@ -41,50 +41,50 @@ namespace detail {
 
 template <typename CharT>
 inline STRF_HD void repeat_sequence
-    ( strf::destination<CharT>& ob
+    ( strf::destination<CharT>& dest
     , std::size_t count
     , CharT ch0
     , CharT ch1 ) noexcept
 {
-    auto p = ob.pointer();
+    auto p = dest.pointer();
     constexpr std::size_t seq_size = 2;
     std::size_t space;
     std::size_t inner_count;
     while (1) {
-        space = (ob.end() - p) / seq_size;
+        space = (dest.end() - p) / seq_size;
         inner_count = (space < count ? space : count);
         for (; inner_count; --inner_count) {
             p[0] = ch0;
             p[1] = ch1;
             p += seq_size;
         }
-        ob.advance_to(p);
+        dest.advance_to(p);
         STRF_IF_LIKELY (count <= space) {
             return;
         }
-        ob.recycle();
-        STRF_IF_UNLIKELY (!ob.good()) {
+        dest.recycle();
+        STRF_IF_UNLIKELY (!dest.good()) {
             return;
         }
-        p = ob.pointer();
+        p = dest.pointer();
         count -= space;
     }
 }
 
 template <typename CharT>
 inline STRF_HD void repeat_sequence
-    ( strf::destination<CharT>& ob
+    ( strf::destination<CharT>& dest
     , std::size_t count
     , CharT ch0
     , CharT ch1
     , CharT ch2 ) noexcept
 {
-    auto p = ob.pointer();
+    auto p = dest.pointer();
     constexpr std::size_t seq_size = 3;
     std::size_t space;
     std::size_t inner_count;
     while (1) {
-        space = (ob.end() - p) / seq_size;
+        space = (dest.end() - p) / seq_size;
         inner_count = (space < count ? space : count);
         for (; inner_count; --inner_count) {
             p[0] = ch0;
@@ -92,34 +92,34 @@ inline STRF_HD void repeat_sequence
             p[2] = ch2;
             p += seq_size;
         }
-        ob.advance_to(p);
+        dest.advance_to(p);
         STRF_IF_LIKELY (count <= space) {
             return;
         }
-        ob.recycle();
-        STRF_IF_UNLIKELY (!ob.good()) {
+        dest.recycle();
+        STRF_IF_UNLIKELY (!dest.good()) {
             return;
         }
-        p = ob.pointer();
+        p = dest.pointer();
         count -= space;
     }
 }
 
 template <typename CharT>
 inline STRF_HD void repeat_sequence
-    ( strf::destination<CharT>& ob
+    ( strf::destination<CharT>& dest
     , std::size_t count
     , CharT ch0
     , CharT ch1
     , CharT ch2
     , CharT ch3 ) noexcept
 {
-    auto p = ob.pointer();
+    auto p = dest.pointer();
     constexpr std::size_t seq_size = 4;
     std::size_t space;
     std::size_t inner_count;
     while (1) {
-        space = (ob.end() - p) / seq_size;
+        space = (dest.end() - p) / seq_size;
         inner_count = (space < count ? space : count);
         for (; inner_count; --inner_count) {
             p[0] = ch0;
@@ -128,15 +128,15 @@ inline STRF_HD void repeat_sequence
             p[3] = ch3;
             p += seq_size;
         }
-        ob.advance_to(p);
+        dest.advance_to(p);
         STRF_IF_LIKELY (count <= space) {
             return;
         }
-        ob.recycle();
-        STRF_IF_UNLIKELY (!ob.good()) {
+        dest.recycle();
+        STRF_IF_UNLIKELY (!dest.good()) {
             return;
         }
-        p = ob.pointer();
+        p = dest.pointer();
         count -= space;
     }
 }
@@ -246,7 +246,7 @@ public:
     static_assert(sizeof(DestCharT) == 1, "Incompatible character type for UTF-8");
 
     static STRF_HD void transcode
-        ( strf::destination<DestCharT>& ob
+        ( strf::destination<DestCharT>& dest
         , const SrcCharT* src
         , std::size_t src_size
         , strf::invalid_seq_notifier inv_seq_notifier
@@ -275,7 +275,7 @@ public:
     static_assert(sizeof(DestCharT) == 2, "Incompatible character type for UTF-16");
 
     static STRF_HD void transcode
-        ( strf::destination<DestCharT>& ob
+        ( strf::destination<DestCharT>& dest
         , const SrcCharT* src
         , std::size_t src_size
         , strf::invalid_seq_notifier inv_seq_notifier
@@ -304,7 +304,7 @@ public:
     static_assert(sizeof(DestCharT) == 4, "Incompatible character type for UTF-32");
 
     static STRF_HD void transcode
-        ( strf::destination<DestCharT>& ob
+        ( strf::destination<DestCharT>& dest
         , const SrcCharT* src
         , std::size_t src_size
         , strf::invalid_seq_notifier inv_seq_notifier
@@ -333,7 +333,7 @@ public:
     static_assert(sizeof(DestCharT) == 1, "Incompatible character type for UTF-8");
 
     static STRF_HD void transcode
-        ( strf::destination<DestCharT>& ob
+        ( strf::destination<DestCharT>& dest
         , const SrcCharT* src
         , std::size_t src_size
         , strf::invalid_seq_notifier inv_seq_notifier
@@ -362,7 +362,7 @@ public:
     static_assert(sizeof(DestCharT) == 2, "Incompatible character type for UTF-16");
 
     static STRF_HD void transcode
-        ( strf::destination<DestCharT>& ob
+        ( strf::destination<DestCharT>& dest
         , const SrcCharT* src
         , std::size_t src_size
         , strf::invalid_seq_notifier inv_seq_notifier
@@ -391,7 +391,7 @@ public:
     static_assert(sizeof(DestCharT) == 4, "Incompatible character type for UTF-32");
 
     static STRF_HD void transcode
-        ( strf::destination<DestCharT>& ob
+        ( strf::destination<DestCharT>& dest
         , const SrcCharT* src
         , std::size_t src_size
         , strf::invalid_seq_notifier inv_seq_notifier
@@ -420,7 +420,7 @@ public:
     static_assert(sizeof(DestCharT) == 1, "Incompatible character type for UTF-1");
 
     static STRF_HD void transcode
-        ( strf::destination<DestCharT>& ob
+        ( strf::destination<DestCharT>& dest
         , const SrcCharT* src
         , std::size_t src_size
         , strf::invalid_seq_notifier inv_seq_notifier
@@ -449,7 +449,7 @@ public:
     static_assert(sizeof(DestCharT) == 2, "Incompatible character type for UTF-16");
 
     static STRF_HD void transcode
-        ( strf::destination<DestCharT>& ob
+        ( strf::destination<DestCharT>& dest
         , const SrcCharT* src
         , std::size_t src_size
         , strf::invalid_seq_notifier inv_seq_notifier
@@ -478,7 +478,7 @@ public:
     static_assert(sizeof(DestCharT) == 4, "Incompatible character type for UTF-32");
 
     static STRF_HD void transcode
-        ( strf::destination<DestCharT>& ob
+        ( strf::destination<DestCharT>& dest
         , const SrcCharT* src
         , std::size_t src_size
         , strf::invalid_seq_notifier inv_seq_notifier
@@ -1015,7 +1015,7 @@ using utf32_impl = static_charset<CharT, strf::csid_utf32>;
 template <typename SrcCharT, typename DestCharT>
 STRF_HD void strf::static_transcoder
     <SrcCharT, DestCharT, strf::csid_utf8, strf::csid_utf32 >::transcode
-    ( strf::destination<DestCharT>& ob
+    ( strf::destination<DestCharT>& dest
     , const SrcCharT* src
     , std::size_t src_size
     , strf::invalid_seq_notifier inv_seq_notifier
@@ -1033,8 +1033,8 @@ STRF_HD void strf::static_transcoder
     unsigned long x;
     auto src_it = src;
     auto src_end = src + src_size;
-    auto dest_it = ob.pointer();
-    auto dest_end = ob.end();
+    auto dest_it = dest.pointer();
+    auto dest_end = dest.end();
     DestCharT ch32;
 
     while(src_it != src_end) {
@@ -1075,7 +1075,7 @@ STRF_HD void strf::static_transcoder
             invalid_sequence:
             ch32 = 0xFFFD;
             if (inv_seq_notifier) {
-                ob.advance_to(dest_it);
+                dest.advance_to(dest_it);
                 inv_seq_notifier.notify();
             }
         }
@@ -1084,7 +1084,7 @@ STRF_HD void strf::static_transcoder
         *dest_it = ch32;
         ++dest_it;
     }
-    ob.advance_to(dest_it);
+    dest.advance_to(dest_it);
 }
 
 template <typename SrcCharT, typename DestCharT>
@@ -1137,7 +1137,7 @@ STRF_HD std::size_t strf::static_transcoder
 template <typename SrcCharT, typename DestCharT>
 STRF_HD void strf::static_transcoder
     < SrcCharT, DestCharT, strf::csid_utf8, strf::csid_utf8 >::transcode
-    ( strf::destination<DestCharT>& ob
+    ( strf::destination<DestCharT>& dest
     , const SrcCharT* src
     , std::size_t src_size
     , strf::invalid_seq_notifier inv_seq_notifier
@@ -1151,8 +1151,8 @@ STRF_HD void strf::static_transcoder
     std::uint8_t ch0, ch1, ch2, ch3;
     auto src_it = src;
     auto src_end = src + src_size;
-    auto dest_it = ob.pointer();
-    auto dest_end = ob.end();
+    auto dest_it = dest.pointer();
+    auto dest_end = dest.end();
     while(src_it != src_end) {
         ch0 = (*src_it);
         ++src_it;
@@ -1212,12 +1212,12 @@ STRF_HD void strf::static_transcoder
             dest_it[2] = static_cast<DestCharT>('\xBD');
             dest_it += 3;
             if (inv_seq_notifier) {
-                ob.advance_to(dest_it);
+                dest.advance_to(dest_it);
                 inv_seq_notifier.notify();
             }
         }
     }
-    ob.advance_to(dest_it);
+    dest.advance_to(dest_it);
 }
 
 template <typename SrcCharT, typename DestCharT>
@@ -1355,30 +1355,30 @@ static_charset<CharT, strf::csid_utf8>::codepoints_robust_count
 template <typename CharT>
 STRF_HD void
 static_charset<CharT, strf::csid_utf8>::encode_fill
-    ( strf::destination<CharT>& ob, std::size_t count, char32_t ch )
+    ( strf::destination<CharT>& dest, std::size_t count, char32_t ch )
 {
     STRF_IF_LIKELY (ch < 0x80) {
-        strf::detail::write_fill(ob, count, static_cast<CharT>(ch));
+        strf::detail::write_fill(dest, count, static_cast<CharT>(ch));
     } else if (ch < 0x800) {
         CharT ch0 = static_cast<CharT>(0xC0 | ((ch & 0x7C0) >> 6));
         CharT ch1 = static_cast<CharT>(0x80 |  (ch &  0x3F));
-        strf::detail::repeat_sequence<CharT>(ob, count, ch0, ch1);
+        strf::detail::repeat_sequence<CharT>(dest, count, ch0, ch1);
     } else if (ch <  0x10000) {
         CharT ch0 = static_cast<CharT>(0xE0 | ((ch & 0xF000) >> 12));
         CharT ch1 = static_cast<CharT>(0x80 | ((ch &  0xFC0) >> 6));
         CharT ch2 = static_cast<CharT>(0x80 |  (ch &   0x3F));
-        strf::detail::repeat_sequence<CharT>(ob, count, ch0, ch1, ch2);
+        strf::detail::repeat_sequence<CharT>(dest, count, ch0, ch1, ch2);
     } else if (ch < 0x110000) {
         CharT ch0 = static_cast<CharT>(0xF0 | ((ch & 0x1C0000) >> 18));
         CharT ch1 = static_cast<CharT>(0x80 | ((ch &  0x3F000) >> 12));
         CharT ch2 = static_cast<CharT>(0x80 | ((ch &    0xFC0) >> 6));
         CharT ch3 = static_cast<CharT>(0x80 |  (ch &     0x3F));
-        strf::detail::repeat_sequence<CharT>(ob, count, ch0, ch1, ch2, ch3);
+        strf::detail::repeat_sequence<CharT>(dest, count, ch0, ch1, ch2, ch3);
     } else {
         CharT ch0 = static_cast<CharT>('\xEF');
         CharT ch1 = static_cast<CharT>('\xBF');
         CharT ch2 = static_cast<CharT>('\xBD');
-        strf::detail::repeat_sequence<CharT>(ob, count, ch0, ch1, ch2);
+        strf::detail::repeat_sequence<CharT>(dest, count, ch0, ch1, ch2);
     }
 }
 
@@ -1419,7 +1419,7 @@ static_charset<CharT, strf::csid_utf8>::encode_char
 template <typename SrcCharT, typename DestCharT>
 STRF_HD void strf::static_transcoder
     < SrcCharT, DestCharT, strf::csid_utf32, strf::csid_utf8 >::transcode
-    ( strf::destination<DestCharT>& ob
+    ( strf::destination<DestCharT>& dest
     , const SrcCharT* src
     , std::size_t src_size
     , strf::invalid_seq_notifier inv_seq_notifier
@@ -1427,8 +1427,8 @@ STRF_HD void strf::static_transcoder
 {
     auto src_it = src;
     auto src_end = src + src_size;
-    auto dest_it = ob.pointer();
-    auto dest_end = ob.end();
+    auto dest_it = dest.pointer();
+    auto dest_end = dest.end();
     for(;src_it != src_end; ++src_it) {
         auto ch = *src_it;
         STRF_IF_LIKELY (ch < 0x80) {
@@ -1465,12 +1465,12 @@ STRF_HD void strf::static_transcoder
             dest_it[2] = static_cast<DestCharT>('\xBD');
             dest_it += 3;
             STRF_IF_UNLIKELY (inv_seq_notifier) {
-                ob.advance_to(dest_it);
+                dest.advance_to(dest_it);
                 inv_seq_notifier.notify();
             }
         }
     }
-    ob.advance_to(dest_it);
+    dest.advance_to(dest_it);
 }
 
 template <typename SrcCharT, typename DestCharT>
@@ -1498,22 +1498,22 @@ STRF_HD std::size_t strf::static_transcoder
 template <typename CharT>
 STRF_HD void
 static_charset<CharT, strf::csid_utf8>::write_replacement_char
-    ( strf::destination<CharT>& ob )
+    ( strf::destination<CharT>& dest )
 {
-    auto dest_it = ob.pointer();
-    auto dest_end = ob.end();
+    auto dest_it = dest.pointer();
+    auto dest_end = dest.end();
     STRF_CHECK_DEST_SIZE(3);
     dest_it[0] = static_cast<CharT>('\xEF');
     dest_it[1] = static_cast<CharT>('\xBF');
     dest_it[2] = static_cast<CharT>('\xBD');
     dest_it += 3;
-    ob.advance_to(dest_it);
+    dest.advance_to(dest_it);
 }
 
 template <typename SrcCharT, typename DestCharT>
 STRF_HD void strf::static_transcoder
     < SrcCharT, DestCharT, strf::csid_utf16, strf::csid_utf32 >::transcode
-    ( strf::destination<DestCharT>& ob
+    ( strf::destination<DestCharT>& dest
     , const SrcCharT* src
     , std::size_t src_size
     , strf::invalid_seq_notifier inv_seq_notifier
@@ -1523,8 +1523,8 @@ STRF_HD void strf::static_transcoder
     DestCharT ch32;
     const SrcCharT* src_it_next;
     auto src_end = src + src_size;
-    auto dest_it = ob.pointer();
-    auto dest_end = ob.end();
+    auto dest_it = dest.pointer();
+    auto dest_end = dest.end();
     for(auto src_it = src; src_it != src_end; src_it = src_it_next) {
         src_it_next = src_it + 1;
         ch = *src_it;
@@ -1542,7 +1542,7 @@ STRF_HD void strf::static_transcoder
         } else {
             ch32 = 0xFFFD;
             if (inv_seq_notifier) {
-                ob.advance_to(dest_it);
+                dest.advance_to(dest_it);
                 inv_seq_notifier.notify();
             }
         }
@@ -1551,7 +1551,7 @@ STRF_HD void strf::static_transcoder
         *dest_it = ch32;
         ++dest_it;
     }
-    ob.advance_to(dest_it);
+    dest.advance_to(dest_it);
 }
 
 template <typename SrcCharT, typename DestCharT>
@@ -1586,7 +1586,7 @@ STRF_HD std::size_t strf::static_transcoder
 template <typename SrcCharT, typename DestCharT>
 STRF_HD void strf::static_transcoder
     < SrcCharT, DestCharT, strf::csid_utf16, strf::csid_utf16 >::transcode
-    ( strf::destination<DestCharT>& ob
+    ( strf::destination<DestCharT>& dest
     , const SrcCharT* src
     , std::size_t src_size
     , strf::invalid_seq_notifier inv_seq_notifier
@@ -1596,8 +1596,8 @@ STRF_HD void strf::static_transcoder
     auto src_it = src;
     const auto src_end = src + src_size;
     const SrcCharT* src_it_next;
-    auto dest_it = ob.pointer();
-    auto dest_end = ob.end();
+    auto dest_it = dest.pointer();
+    auto dest_end = dest.end();
     for( ; src_it != src_end; src_it = src_it_next) {
         ch = *src_it;
         src_it_next = src_it + 1;
@@ -1624,12 +1624,12 @@ STRF_HD void strf::static_transcoder
             *dest_it = 0xFFFD;
             ++dest_it;
             if (inv_seq_notifier) {
-                ob.advance_to(dest_it);
+                dest.advance_to(dest_it);
                 inv_seq_notifier.notify();
             }
         }
     }
-    ob.advance_to(dest_it);
+    dest.advance_to(dest_it);
 }
 
 template <typename SrcCharT, typename DestCharT>
@@ -1733,24 +1733,24 @@ static_charset<CharT, strf::csid_utf16>::encode_char
 template <typename CharT>
 STRF_HD void
 static_charset<CharT, strf::csid_utf16>::encode_fill
-    ( strf::destination<CharT>& ob, std::size_t count, char32_t ch )
+    ( strf::destination<CharT>& dest, std::size_t count, char32_t ch )
 {
     STRF_IF_LIKELY (ch < 0x10000) {
-        strf::detail::write_fill<CharT>(ob, count, static_cast<CharT>(ch));
+        strf::detail::write_fill<CharT>(dest, count, static_cast<CharT>(ch));
     } else if (ch < 0x110000) {
         char32_t sub_codepoint = ch - 0x10000;
         CharT ch0 = static_cast<CharT>(0xD800 + (sub_codepoint >> 10));
         CharT ch1 = static_cast<CharT>(0xDC00 + (sub_codepoint &  0x3FF));
-        strf::detail::repeat_sequence<CharT>(ob, count, ch0, ch1);
+        strf::detail::repeat_sequence<CharT>(dest, count, ch0, ch1);
     } else {
-        strf::detail::write_fill<CharT>(ob, count, 0xFFFD);
+        strf::detail::write_fill<CharT>(dest, count, 0xFFFD);
     }
 }
 
 template <typename SrcCharT, typename DestCharT>
 STRF_HD void strf::static_transcoder
     < SrcCharT, DestCharT, strf::csid_utf32, strf::csid_utf16 >::transcode
-    ( strf::destination<DestCharT>& ob
+    ( strf::destination<DestCharT>& dest
     , const SrcCharT* src
     , std::size_t src_size
     , strf::invalid_seq_notifier inv_seq_notifier
@@ -1758,8 +1758,8 @@ STRF_HD void strf::static_transcoder
 {
     auto src_it = src;
     const auto src_end = src + src_size;
-    auto dest_it = ob.pointer();
-    auto dest_end = ob.end();
+    auto dest_it = dest.pointer();
+    auto dest_end = dest.end();
     for ( ; src_it != src_end; ++src_it) {
         auto ch = *src_it;
         STRF_IF_LIKELY (ch < 0x10000) {
@@ -1782,12 +1782,12 @@ STRF_HD void strf::static_transcoder
             *dest_it = 0xFFFD;
             ++dest_it;
             if (inv_seq_notifier) {
-                ob.advance_to(dest_it);
+                dest.advance_to(dest_it);
                 inv_seq_notifier.notify();
             }
         }
     }
-    ob.advance_to(dest_it);
+    dest.advance_to(dest_it);
 }
 
 template <typename SrcCharT, typename DestCharT>
@@ -1811,32 +1811,32 @@ STRF_HD std::size_t strf::static_transcoder
 template <typename CharT>
 STRF_HD void
 static_charset<CharT, strf::csid_utf16>::write_replacement_char
-    ( strf::destination<CharT>& ob )
+    ( strf::destination<CharT>& dest )
 {
-    ob.ensure(1);
-    *ob.pointer() = 0xFFFD;
-    ob.advance();
+    dest.ensure(1);
+    *dest.pointer() = 0xFFFD;
+    dest.advance();
 }
 
 template <typename SrcCharT, typename DestCharT>
 STRF_HD void strf::static_transcoder
     < SrcCharT, DestCharT, strf::csid_utf32, strf::csid_utf32 >::transcode
-    ( strf::destination<DestCharT>& ob
+    ( strf::destination<DestCharT>& dest
     , const SrcCharT* src
     , std::size_t src_size
     , strf::invalid_seq_notifier inv_seq_notifier
     , strf::surrogate_policy surr_poli )
 {
     const auto src_end = src + src_size;
-    auto dest_it = ob.pointer();
-    auto dest_end = ob.end();
+    auto dest_it = dest.pointer();
+    auto dest_end = dest.end();
     if (surr_poli == strf::surrogate_policy::lax) {
         for (auto src_it = src; src_it < src_end; ++src_it) {
             auto ch = *src_it;
             STRF_IF_UNLIKELY (ch >= 0x110000) {
                 ch = 0xFFFD;
                 if (inv_seq_notifier) {
-                    ob.advance_to(dest_it);
+                    dest.advance_to(dest_it);
                     inv_seq_notifier.notify();
                 }
             }
@@ -1850,7 +1850,7 @@ STRF_HD void strf::static_transcoder
             STRF_IF_UNLIKELY (ch >= 0x110000 || strf::detail::is_surrogate(ch)) {
                 ch = 0xFFFD;
                 if (inv_seq_notifier) {
-                    ob.advance_to(dest_it);
+                    dest.advance_to(dest_it);
                     inv_seq_notifier.notify();
                 }
             }
@@ -1859,32 +1859,32 @@ STRF_HD void strf::static_transcoder
             ++dest_it;
         }
     }
-    ob.advance_to(dest_it);
+    dest.advance_to(dest_it);
 }
 
 template <typename CharT>
 STRF_HD void
 static_charset<CharT, strf::csid_utf32>::encode_fill
-    ( strf::destination<CharT>& ob, std::size_t count, char32_t ch )
+    ( strf::destination<CharT>& dest, std::size_t count, char32_t ch )
 {
-    strf::detail::write_fill(ob, count, static_cast<CharT>(ch));
+    strf::detail::write_fill(dest, count, static_cast<CharT>(ch));
 }
 
 template <typename CharT>
 STRF_HD void
 static_charset<CharT, strf::csid_utf32>::write_replacement_char
-    ( strf::destination<CharT>& ob )
+    ( strf::destination<CharT>& dest )
 {
-    ob.ensure(1);
-    *ob.pointer() = 0xFFFD;
-    ob.advance();
+    dest.ensure(1);
+    *dest.pointer() = 0xFFFD;
+    dest.advance();
 }
 
 
 template <typename SrcCharT, typename DestCharT>
 STRF_HD void strf::static_transcoder
     < SrcCharT, DestCharT, strf::csid_utf8, strf::csid_utf16 >::transcode
-    ( strf::destination<DestCharT>& ob
+    ( strf::destination<DestCharT>& dest
     , const SrcCharT* src
     , std::size_t src_size
     , strf::invalid_seq_notifier inv_seq_notifier
@@ -1902,8 +1902,8 @@ STRF_HD void strf::static_transcoder
     unsigned long x;
     auto src_it = src;
     const auto src_end = src + src_size;
-    auto dest_it = ob.pointer();
-    auto dest_end = ob.end();
+    auto dest_it = dest.pointer();
+    auto dest_end = dest.end();
 
     for (;src_it != src_end; ++dest_it) {
         ch0 = (*src_it);
@@ -1958,12 +1958,12 @@ STRF_HD void strf::static_transcoder
             STRF_CHECK_DEST;
             *dest_it = 0xFFFD;
             if (inv_seq_notifier) {
-                ob.advance_to(dest_it);
+                dest.advance_to(dest_it);
                 inv_seq_notifier.notify();
             }
         }
     }
-    ob.advance_to(dest_it);
+    dest.advance_to(dest_it);
 }
 
 template <typename SrcCharT, typename DestCharT>
@@ -2019,7 +2019,7 @@ STRF_HD std::size_t strf::static_transcoder
 template <typename SrcCharT, typename DestCharT>
 STRF_HD void strf::static_transcoder
     < SrcCharT, DestCharT, strf::csid_utf16, strf::csid_utf8 >::transcode
-    ( strf::destination<DestCharT>& ob
+    ( strf::destination<DestCharT>& dest
     , const SrcCharT* src
     , std::size_t src_size
     , strf::invalid_seq_notifier inv_seq_notifier
@@ -2028,8 +2028,8 @@ STRF_HD void strf::static_transcoder
     (void) inv_seq_notifier;
     auto src_it = src;
     const auto src_end = src + src_size;
-    auto dest_it = ob.pointer();
-    auto dest_end = ob.end();
+    auto dest_it = dest.pointer();
+    auto dest_end = dest.end();
 
     for( ; src_it < src_end; ++src_it) {
         auto ch = *src_it;
@@ -2070,12 +2070,12 @@ STRF_HD void strf::static_transcoder
             dest_it[2] = static_cast<DestCharT>('\xBD');
             dest_it += 3;
             if (inv_seq_notifier) {
-                ob.advance_to(dest_it);
+                dest.advance_to(dest_it);
                 inv_seq_notifier.notify();
             }
         }
     }
-    ob.advance_to(dest_it);
+    dest.advance_to(dest_it);
 }
 
 template <typename SrcCharT, typename DestCharT>

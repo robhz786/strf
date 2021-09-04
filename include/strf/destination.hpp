@@ -177,16 +177,16 @@ void destination<CharT>::do_write(const CharT* str, std::size_t str_len)
 }
 
 template <typename CharT>
-inline STRF_HD void put(strf::destination<CharT>& ob, CharT c)
+inline STRF_HD void put(strf::destination<CharT>& dest, CharT c)
 {
-    auto p = ob.pointer();
-    STRF_IF_LIKELY (p != ob.end()) {
+    auto p = dest.pointer();
+    STRF_IF_LIKELY (p != dest.end()) {
         *p = c;
-        ob.advance_to(p + 1);
+        dest.advance_to(p + 1);
     } else {
-        ob.recycle();
-        *ob.pointer() = c;
-        ob.advance();
+        dest.recycle();
+        *dest.pointer() = c;
+        dest.advance();
     }
 }
 
@@ -214,9 +214,9 @@ class destination_test_tool
 {
 public:
     template<typename CharT>
-    static STRF_HD void turn_into_bad(destination<CharT>& ob)
+    static STRF_HD void turn_into_bad(destination<CharT>& dest)
     {
-        ob.set_good(false);
+        dest.set_good(false);
     }
 };
 

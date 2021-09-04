@@ -170,7 +170,7 @@ constexpr std::size_t invalid_char_len = (std::size_t)-1;
 
 template <typename SrcCharT, typename DestCharT>
 using transcode_f = void (*)
-    ( strf::destination<DestCharT>& ob
+    ( strf::destination<DestCharT>& dest
     , const SrcCharT* src
     , std::size_t src_size
     , strf::invalid_seq_notifier inv_seq_notifier
@@ -205,15 +205,15 @@ namespace detail {
 
 template <typename CharT>
 void trivial_fill_f
-    ( strf::destination<CharT>& ob, std::size_t count, char32_t ch )
+    ( strf::destination<CharT>& dest, std::size_t count, char32_t ch )
 {
     // same as strf::detail::write_fill<CharT>
     CharT narrow_ch = static_cast<CharT>(ch);
-    STRF_IF_LIKELY (count <= ob.space()) {
-        strf::detail::str_fill_n<CharT>(ob.pointer(), count, narrow_ch);
-        ob.advance(count);
+    STRF_IF_LIKELY (count <= dest.space()) {
+        strf::detail::str_fill_n<CharT>(dest.pointer(), count, narrow_ch);
+        dest.advance(count);
     } else {
-        write_fill_continuation<CharT>(ob, count, narrow_ch);
+        write_fill_continuation<CharT>(dest, count, narrow_ch);
     }
 }
 
@@ -266,13 +266,13 @@ public:
     }
 
     STRF_HD void transcode
-        ( strf::destination<DestCharT>& ob
+        ( strf::destination<DestCharT>& dest
         , const SrcCharT* src
         , std::size_t src_size
         , strf::invalid_seq_notifier inv_seq_notifier
         , strf::surrogate_policy surr_poli ) const
     {
-        transcode_func_(ob, src, src_size, inv_seq_notifier, surr_poli);
+        transcode_func_(dest, src, src_size, inv_seq_notifier, surr_poli);
     }
 
     STRF_HD std::size_t transcode_size
@@ -471,9 +471,9 @@ public:
         return data_->encode_char_func(dest, ch);
     }
     STRF_HD void encode_fill
-        ( strf::destination<CharT>& ob, std::size_t count, char32_t ch ) const
+        ( strf::destination<CharT>& dest, std::size_t count, char32_t ch ) const
     {
-        data_->encode_fill_func(ob, count, ch);
+        data_->encode_fill_func(dest, count, ch);
     }
     STRF_HD strf::codepoints_count_result codepoints_fast_count
         ( const code_unit* src, std::size_t src_size, std::size_t max_count ) const
@@ -486,9 +486,9 @@ public:
     {
         return data_->codepoints_robust_count_func(src, src_size, max_count, surr_poli);
     }
-    STRF_HD void write_replacement_char(strf::destination<CharT>& ob) const
+    STRF_HD void write_replacement_char(strf::destination<CharT>& dest) const
     {
-        data_->write_replacement_char_func(ob);
+        data_->write_replacement_char_func(dest);
     }
     STRF_HD char32_t decode_unit(code_unit ch) const
     {
@@ -885,12 +885,12 @@ public:
 
     STRF_HD buffered_encoder
         ( strf::transcode_f<char32_t, DestCharT> func
-        , strf::destination<DestCharT>& ob
+        , strf::destination<DestCharT>& dest
         , strf::invalid_seq_notifier inv_seq_notifier
         , strf::surrogate_policy surr_poli )
         : strf::destination<char32_t>( buff_, buff_size_ )
         , transcode_(func)
-        , ob_(ob)
+        , dest_(dest)
         , inv_seq_notifier_(inv_seq_notifier)
         , surr_poli_(surr_poli)
     {
@@ -901,8 +901,8 @@ public:
     STRF_HD void finish()
     {
         auto p = this->pointer();
-        STRF_IF_LIKELY (p != buff_ && ob_.good()) {
-            transcode_( ob_, buff_, static_cast<std::size_t>(p - buff_)
+        STRF_IF_LIKELY (p != buff_ && dest_.good()) {
+            transcode_( dest_, buff_, static_cast<std::size_t>(p - buff_)
                       , inv_seq_notifier_, surr_poli_);
         }
         this->set_good(false);
@@ -911,7 +911,7 @@ public:
 private:
 
     strf::transcode_f<char32_t, DestCharT> transcode_;
-    strf::destination<DestCharT>& ob_;
+    strf::destination<DestCharT>& dest_;
     strf::invalid_seq_notifier inv_seq_notifier_;
     strf::surrogate_policy surr_poli_;
     constexpr static const std::size_t buff_size_ = 32;
@@ -924,9 +924,9 @@ STRF_HD void buffered_encoder<DestCharT>::recycle()
 {
     auto p = this->pointer();
     this->set_pointer(buff_);
-    STRF_IF_LIKELY (p != buff_ && ob_.good()) {
+    STRF_IF_LIKELY (p != buff_ && dest_.good()) {
         this->set_good(false);
-        transcode_( ob_, buff_, static_cast<std::size_t>(p - buff_)
+        transcode_( dest_, buff_, static_cast<std::size_t>(p - buff_)
                   , inv_seq_notifier_, surr_poli_);
         this->set_good(true);
     }
@@ -978,7 +978,7 @@ STRF_FUNC_IMPL STRF_HD void buffered_size_calculator::recycle()
 
 template<typename SrcCharT, typename DestCharT>
 STRF_HD void decode_encode
-    ( strf::destination<DestCharT>& ob
+    ( strf::destination<DestCharT>& dest
     , strf::transcode_f<SrcCharT, char32_t> to_u32
     , strf::transcode_f<char32_t, DestCharT> from_u32
     , const SrcCharT* src
@@ -986,7 +986,7 @@ STRF_HD void decode_encode
     , strf::invalid_seq_notifier inv_seq_notifier
     , strf::surrogate_policy surr_poli )
 {
-    strf::detail::buffered_encoder<DestCharT> tmp{from_u32, ob, inv_seq_notifier, surr_poli};
+    strf::detail::buffered_encoder<DestCharT> tmp{from_u32, dest, inv_seq_notifier, surr_poli};
     to_u32(tmp, src, src_size, inv_seq_notifier, surr_poli);
     tmp.finish();
 }

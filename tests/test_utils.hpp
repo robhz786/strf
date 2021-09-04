@@ -217,9 +217,9 @@ inline strf::detail::simple_string_view<CharT> STRF_HD make_tiny_string()
 }
 
 template <typename CharT>
-inline void STRF_HD turn_into_bad(strf::destination<CharT>& ob)
+inline void STRF_HD turn_into_bad(strf::destination<CharT>& dest)
 {
-    strf::detail::destination_test_tool::turn_into_bad(ob);
+    strf::detail::destination_test_tool::turn_into_bad(dest);
 }
 
 inline STRF_HD int& test_err_count()

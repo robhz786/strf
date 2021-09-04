@@ -308,9 +308,9 @@ static strf::destination<char>*& test_messages_destination_ptr()
     return ptr;
 }
 
-void set_test_messages_destination(strf::destination<char>& ob)
+void set_test_messages_destination(strf::destination<char>& dest)
 {
-    test_messages_destination_ptr() = &ob;
+    test_messages_destination_ptr() = &dest;
 }
 
 strf::destination<char>& test_messages_destination()

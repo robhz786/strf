@@ -198,25 +198,25 @@ public:
         printers_ptr_()->~printers_tuple_();
     }
 
-    STRF_HD void print_to(strf::destination<CharT>& ob) const override
+    STRF_HD void print_to(strf::destination<CharT>& dest) const override
     {
         switch (afmt_.alignment) {
             case strf::text_alignment::left: {
-                strf::detail::write(ob, printers_());
-                write_fill_(ob, fillcount_);
+                strf::detail::write(dest, printers_());
+                write_fill_(dest, fillcount_);
                 break;
             }
             case strf::text_alignment::right: {
-                write_fill_(ob, fillcount_);
-                strf::detail::write(ob, printers_());
+                write_fill_(dest, fillcount_);
+                strf::detail::write(dest, printers_());
                 break;
             }
             default: {
                 STRF_ASSERT(afmt_.alignment == strf::text_alignment::center);
                 auto half_fillcount = fillcount_ >> 1;
-                write_fill_(ob, half_fillcount);
-                strf::detail::write(ob, printers_());
-                write_fill_(ob, fillcount_ - half_fillcount);
+                write_fill_(dest, half_fillcount);
+                strf::detail::write(dest, printers_());
+                write_fill_(dest, fillcount_ - half_fillcount);
                 break;
             }
         }
@@ -264,9 +264,9 @@ private:
         return facets.template use_facet<Category, Tag>();
     }
 
-    STRF_HD void write_fill_(strf::destination<CharT>& ob, int count) const
+    STRF_HD void write_fill_(strf::destination<CharT>& dest, int count) const
     {
-        encode_fill_func_(ob, count, afmt_.fill);
+        encode_fill_func_(dest, count, afmt_.fill);
     }
 };
 
@@ -324,9 +324,9 @@ public:
     {
     }
 
-    STRF_HD void print_to(strf::destination<CharT>& ob) const override
+    STRF_HD void print_to(strf::destination<CharT>& dest) const override
     {
-        strf::detail::write(ob, printers_);
+        strf::detail::write(dest, printers_);
     }
 
 private:

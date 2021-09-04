@@ -24,7 +24,7 @@ public:
     {
     }
 
-    STRF_HD virtual void print_to(strf::destination<CharT>& ob) const = 0;
+    STRF_HD virtual void print_to(strf::destination<CharT>& dest) const = 0;
 };
 
 struct string_input_tag_base
@@ -249,10 +249,10 @@ namespace detail {
 #if defined(__cpp_fold_expressions)
 
 template <typename CharT, typename ... Printers>
-inline STRF_HD void write_args( strf::destination<CharT>& ob
+inline STRF_HD void write_args( strf::destination<CharT>& dest
                               , const Printers& ... printers )
 {
-    (... , printers.print_to(ob));
+    (... , printers.print_to(dest));
 }
 
 #else // defined(__cpp_fold_expressions)
@@ -264,13 +264,13 @@ inline STRF_HD void write_args(strf::destination<CharT>&)
 
 template <typename CharT, typename Printer, typename ... Printers>
 inline STRF_HD void write_args
-    ( strf::destination<CharT>& ob
+    ( strf::destination<CharT>& dest
     , const Printer& printer
     , const Printers& ... printers )
 {
-    printer.print_to(ob);
-    if (ob.good()) {
-        write_args<CharT>(ob, printers ...);
+    printer.print_to(dest);
+    if (dest.good()) {
+        write_args<CharT>(dest, printers ...);
     }
 }
 
@@ -2008,7 +2008,7 @@ STRF_HD void tr_string_write
     , const typename Charset::code_unit* str_end
     , const strf::printer<typename Charset::code_unit>* const * args
     , std::size_t num_args
-    , strf::destination<typename Charset::code_unit>& ob
+    , strf::destination<typename Charset::code_unit>& dest
     , Charset charset
     , ErrHandler err_handler )
 {
@@ -2021,17 +2021,17 @@ STRF_HD void tr_string_write
         const char_type* prev = it;
         it = strf::detail::str_find<char_type>(it, (str_end - it), '{');
         if (it == nullptr) {
-            ob.write(prev, str_end - prev);
+            dest.write(prev, str_end - prev);
             return;
         }
-        ob.write(prev, it - prev);
+        dest.write(prev, it - prev);
         ++it;
         after_the_brace:
         if (it == str_end) {
             if (arg_idx < num_args) {
-                args[arg_idx]->print_to(ob);
+                args[arg_idx]->print_to(dest);
             } else {
-                charset.write_replacement_char(ob);
+                charset.write_replacement_char(dest);
                 err_handler.handle(str, str_len, (it - str) - 1, charset);
             }
             break;
@@ -2039,19 +2039,19 @@ STRF_HD void tr_string_write
         auto ch = *it;
         if (ch == '}') {
             if (arg_idx < num_args) {
-                args[arg_idx]->print_to(ob);
+                args[arg_idx]->print_to(dest);
                 ++arg_idx;
             } else {
-                charset.write_replacement_char(ob);
+                charset.write_replacement_char(dest);
                 err_handler.handle(str, str_len, (it - str) - 1, charset);
             }
             ++it;
         } else if (char_type('0') <= ch && ch <= char_type('9')) {
             auto result = strf::detail::read_uint(it, str_end, num_args);
             if (result.value < num_args) {
-                args[result.value]->print_to(ob);
+                args[result.value]->print_to(dest);
             } else {
-                charset.write_replacement_char(ob);
+                charset.write_replacement_char(dest);
                 err_handler.handle(str, str_len, (it - str) - 1, charset);
             }
             it = strf::detail::str_find<char_type>(result.it, str_end - result.it, '}');
@@ -2063,19 +2063,19 @@ STRF_HD void tr_string_write
             auto it2 = it + 1;
             it2 = strf::detail::str_find<char_type>(it2, str_end - it2, '{');
             if (it2 == nullptr) {
-                ob.write(it, str_end - it);
+                dest.write(it, str_end - it);
                 return;
             }
-            ob.write(it, (it2 - it));
+            dest.write(it, (it2 - it));
             it = it2 + 1;
             goto after_the_brace;
         } else {
             if (ch != '-') {
                 if (arg_idx < num_args) {
-                    args[arg_idx]->print_to(ob);
+                    args[arg_idx]->print_to(dest);
                     ++arg_idx;
                 } else {
-                    charset.write_replacement_char(ob);
+                    charset.write_replacement_char(dest);
                     err_handler.handle(str, str_len, (it - str) - 1, charset);
                 }
             }
@@ -2122,11 +2122,11 @@ public:
         }
     }
 
-    STRF_HD void print_to(strf::destination<char_type>& ob) const
+    STRF_HD void print_to(strf::destination<char_type>& dest) const
     {
         strf::detail::tr_string_write
             ( tr_string_, tr_string_end_, printers_array_, num_printers_
-            , ob, charset_, err_handler_ );
+            , dest, charset_, err_handler_ );
     }
 
 private:
@@ -2156,15 +2156,15 @@ class destination_no_reserve;
 
 namespace detail {
 
-template < typename OB >
-inline STRF_HD decltype(std::declval<OB&>().finish())
-    finish(strf::rank<2>, OB& ob)
+template <typename Dest>
+inline STRF_HD decltype(std::declval<Dest&>().finish())
+    finish(strf::rank<2>, Dest& dest)
 {
-    return ob.finish();
+    return dest.finish();
 }
 
-template < typename OB >
-inline STRF_HD void finish(strf::rank<1>, OB&)
+template <typename Dest>
+inline STRF_HD void finish(strf::rank<1>, Dest&)
 {
 }
 
@@ -2504,9 +2504,9 @@ private:
         ( const preview_type_&
         , const Printers& ... printers) const
     {
-        typename DestinationCreator::destination_type ob{destination_creator_.create()};
-        strf::detail::write_args(ob, printers...);
-        return strf::detail::finish(strf::rank<2>(), ob);
+        typename DestinationCreator::destination_type dest{destination_creator_.create()};
+        strf::detail::write_args(dest, printers...);
+        return strf::detail::finish(strf::rank<2>(), dest);
     }
 
     DestinationCreator destination_creator_;
@@ -2623,9 +2623,9 @@ private:
         ( const preview_type_&
         , const Printers& ... printers) const
     {
-        typename DestinationCreator::sized_destination_type ob{destination_creator_.create(size_)};
-        strf::detail::write_args(ob, printers...);
-        return strf::detail::finish(strf::rank<2>(), ob);
+        typename DestinationCreator::sized_destination_type dest{destination_creator_.create(size_)};
+        strf::detail::write_args(dest, printers...);
+        return strf::detail::finish(strf::rank<2>(), dest);
     }
 
     std::size_t size_;
@@ -2745,9 +2745,9 @@ private:
         , const Printers& ... printers ) const
     {
         std::size_t size = preview.accumulated_size();
-        typename DestinationCreator::sized_destination_type ob{destination_creator_.create(size)};
-        strf::detail::write_args(ob, printers...);
-        return strf::detail::finish(strf::rank<2>(), ob);
+        typename DestinationCreator::sized_destination_type dest{destination_creator_.create(size)};
+        strf::detail::write_args(dest, printers...);
+        return strf::detail::finish(strf::rank<2>(), dest);
     }
 
     DestinationCreator destination_creator_;
@@ -2764,18 +2764,18 @@ public:
     using char_type = CharT;
     using destination_type = strf::destination<CharT>&;
 
-    explicit STRF_HD destination_reference(strf::destination<CharT>& ob) noexcept
-        : ob_(ob)
+    explicit STRF_HD destination_reference(strf::destination<CharT>& dest) noexcept
+        : dest_(dest)
     {
     }
 
     STRF_HD strf::destination<CharT>& create() const
     {
-        return ob_;
+        return dest_;
     }
 
 private:
-    strf::destination<CharT>& ob_;
+    strf::destination<CharT>& dest_;
 };
 
 
@@ -2783,9 +2783,9 @@ private:
 
 template <typename CharT>
 strf::destination_no_reserve<strf::detail::destination_reference<CharT>>
-STRF_HD to(strf::destination<CharT>& ob)
+STRF_HD to(strf::destination<CharT>& dest)
 {
-    return strf::destination_no_reserve<strf::detail::destination_reference<CharT>>(ob);
+    return strf::destination_no_reserve<strf::detail::destination_reference<CharT>>(dest);
 }
 
 namespace detail {

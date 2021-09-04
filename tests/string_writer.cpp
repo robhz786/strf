@@ -17,44 +17,44 @@ static void test_string_appender()
 
     {   // when nothing is actually appended
         std::basic_string<CharT> str = tiny_str;
-        strf::basic_string_appender<CharT> ob(str);
-        ob.finish();
+        strf::basic_string_appender<CharT> dest(str);
+        dest.finish();
         TEST_TRUE(str == tiny_str);
     }
 
     {   // when nor recycle() neither do_write() is called
         std::basic_string<CharT> str = tiny_str;
-        strf::basic_string_appender<CharT> ob(str);
-        ob.write(&tiny_str2[0], tiny_str2.size());
-        ob.finish();
+        strf::basic_string_appender<CharT> dest(str);
+        dest.write(&tiny_str2[0], tiny_str2.size());
+        dest.finish();
         TEST_TRUE(str == tiny_str + tiny_str2);
     }
 
     {   // when recycle() is called
         std::basic_string<CharT> str = tiny_str;
-        strf::basic_string_appender<CharT> ob(str);
+        strf::basic_string_appender<CharT> dest(str);
 
-        const std::size_t count0 = ob.space() > 5 ? ob.space() - 5 : 0;
+        const std::size_t count0 = dest.space() > 5 ? dest.space() - 5 : 0;
         auto first_append = test_utils::make_random_std_string<CharT>(count0);
-        ob.write(&first_append[0], count0);
-        ob.recycle();
-        ob.write(&half_str[0], half_str.size());
-        ob.recycle();
-        ob.write(&half_str2[0], half_str2.size());
-        ob.finish();
+        dest.write(&first_append[0], count0);
+        dest.recycle();
+        dest.write(&half_str[0], half_str.size());
+        dest.recycle();
+        dest.write(&half_str2[0], half_str2.size());
+        dest.finish();
 
         TEST_TRUE(str == tiny_str + first_append + half_str + half_str2);
     }
 
     {   // when do_write() is called
         std::basic_string<CharT> str = tiny_str;
-        strf::basic_string_appender<CharT> ob(str);
+        strf::basic_string_appender<CharT> dest(str);
 
-        const std::size_t count0 = ob.space() > 5 ? ob.space() - 5 : 0;
+        const std::size_t count0 = dest.space() > 5 ? dest.space() - 5 : 0;
         auto first_append = test_utils::make_random_std_string<CharT>(count0);
-        ob.write(&first_append[0], count0);
-        ob.write(&half_str[0], half_str.size());
-        ob.finish();
+        dest.write(&first_append[0], count0);
+        dest.write(&half_str[0], half_str.size());
+        dest.finish();
 
         TEST_TRUE(str == tiny_str + first_append + half_str);
     }
@@ -91,46 +91,46 @@ static void test_string_maker()
     const auto half_str2  = test_utils::make_random_std_string<CharT>(half_size);
 
     {   // when nothing is actually written
-        strf::basic_string_maker<CharT> ob;
-        auto str = ob.finish();
+        strf::basic_string_maker<CharT> dest;
+        auto str = dest.finish();
         TEST_TRUE(str.empty());
     }
     {   // when nor recycle() neither do_write() is called
-        strf::basic_string_maker<CharT> ob;
-        ob.write(&tiny_str[0], tiny_str.size());
-        ob.write(&tiny_str2[0], tiny_str2.size());
-        auto str = ob.finish();
+        strf::basic_string_maker<CharT> dest;
+        dest.write(&tiny_str[0], tiny_str.size());
+        dest.write(&tiny_str2[0], tiny_str2.size());
+        auto str = dest.finish();
         TEST_TRUE(str == tiny_str + tiny_str2);
     }
     {   // when recycle() is called
-        strf::basic_string_maker<CharT> ob;
-        const std::size_t count0 = ob.space() > 5 ? ob.space() - 5 : 0;
+        strf::basic_string_maker<CharT> dest;
+        const std::size_t count0 = dest.space() > 5 ? dest.space() - 5 : 0;
         auto part0 = test_utils::make_random_std_string<CharT>(count0);
-        ob.write(&part0[0], count0);
-        ob.recycle();
-        ob.write(&half_str[0], half_str.size());
-        ob.recycle();
-        ob.write(&half_str2[0], half_str2.size());
-        auto str = ob.finish();
+        dest.write(&part0[0], count0);
+        dest.recycle();
+        dest.write(&half_str[0], half_str.size());
+        dest.recycle();
+        dest.write(&half_str2[0], half_str2.size());
+        auto str = dest.finish();
         TEST_TRUE(str == part0 + half_str + half_str2);
     }
     {   // when do_write() is called
-        strf::basic_string_maker<CharT> ob;
-        const std::size_t count0 = ob.space() > 5 ? ob.space() - 5 : 0;
+        strf::basic_string_maker<CharT> dest;
+        const std::size_t count0 = dest.space() > 5 ? dest.space() - 5 : 0;
         auto part0 = test_utils::make_random_std_string<CharT>(count0);
-        ob.write(&part0[0], count0);
-        ob.write(&half_str[0], half_str.size());
-        auto str = ob.finish();
+        dest.write(&part0[0], count0);
+        dest.write(&half_str[0], half_str.size());
+        auto str = dest.finish();
         TEST_TRUE(str == part0 + half_str);
     }
     {   // when recyle() and do_write() is called
-        strf::basic_string_maker<CharT> ob;
+        strf::basic_string_maker<CharT> dest;
         auto str0 = test_utils::make_random_std_string<CharT>(15);
-        ob.write(&str0[0], str0.size());
-        ob.recycle();
-        auto str1 = test_utils::make_random_std_string<CharT>(ob.space() + 50);
-        ob.write(&str1[0], str1.size());
-        auto str = ob.finish();
+        dest.write(&str0[0], str0.size());
+        dest.recycle();
+        auto str1 = test_utils::make_random_std_string<CharT>(dest.space() + 50);
+        dest.write(&str1[0], str1.size());
+        auto str = dest.finish();
         TEST_TRUE(str == str0 + str1);
     }
 
@@ -155,48 +155,48 @@ static void test_sized_string_maker()
     const auto half_str2  = test_utils::make_random_std_string<CharT>(half_size);
 
     {   // when reserved size is zero and nothing is written
-        strf::basic_sized_string_maker<CharT> ob(0);
-        auto str = ob.finish();
+        strf::basic_sized_string_maker<CharT> dest(0);
+        auto str = dest.finish();
         TEST_TRUE(str.empty());
     }
     {   // when reserved size is zero but something is written
-        strf::basic_sized_string_maker<CharT> ob(0);
-        ob.write(&tiny_str[0], tiny_str.size());
-        auto str = ob.finish();
+        strf::basic_sized_string_maker<CharT> dest(0);
+        dest.write(&tiny_str[0], tiny_str.size());
+        auto str = dest.finish();
         TEST_TRUE(str == tiny_str);
     }
     {   // when nor recycle() neither do_write() is called
-        strf::basic_sized_string_maker<CharT> ob(tiny_str.size() + tiny_str2.size());
-        ob.write(&tiny_str[0], tiny_str.size());
-        ob.write(&tiny_str2[0], tiny_str2.size());
-        auto str = ob.finish();
+        strf::basic_sized_string_maker<CharT> dest(tiny_str.size() + tiny_str2.size());
+        dest.write(&tiny_str[0], tiny_str.size());
+        dest.write(&tiny_str2[0], tiny_str2.size());
+        auto str = dest.finish();
         TEST_TRUE(str == tiny_str + tiny_str2);
     }
     {   // when nor recycle() neither do_write() is called
         // and the content is smaller than the reserved size
-        strf::basic_sized_string_maker<CharT> ob(tiny_str.size() + tiny_str2.size() + 20);
-        ob.write(&tiny_str[0], tiny_str.size());
-        ob.write(&tiny_str2[0], tiny_str2.size());
-        auto str = ob.finish();
+        strf::basic_sized_string_maker<CharT> dest(tiny_str.size() + tiny_str2.size() + 20);
+        dest.write(&tiny_str[0], tiny_str.size());
+        dest.write(&tiny_str2[0], tiny_str2.size());
+        auto str = dest.finish();
         TEST_TRUE(str == tiny_str + tiny_str2);
         TEST_TRUE(str.capacity() >= str.size() + 20);
     }
     {   // when recyle() is called
-        strf::basic_sized_string_maker<CharT> ob(20);
+        strf::basic_sized_string_maker<CharT> dest(20);
         auto str0 = test_utils::make_random_std_string<CharT>(15);
-        ob.write(&str0[0], str0.size());
-        ob.recycle();
-        ob.write(&half_str[0], half_str.size());
-        ob.recycle();
-        auto str = ob.finish();
+        dest.write(&str0[0], str0.size());
+        dest.recycle();
+        dest.write(&half_str[0], half_str.size());
+        dest.recycle();
+        auto str = dest.finish();
         TEST_TRUE(str == str0 + half_str);
     }
     {   // when do_write() is called
-        strf::basic_sized_string_maker<CharT> ob(20);
+        strf::basic_sized_string_maker<CharT> dest(20);
         auto str0 = test_utils::make_random_std_string<CharT>(100);
-        ob.write(&str0[0], str0.size());
-        ob.write(&half_str[0], half_str.size());
-        auto str = ob.finish();
+        dest.write(&str0[0], str0.size());
+        dest.write(&half_str[0], half_str.size());
+        auto str = dest.finish();
         TEST_TRUE(str == str0 + half_str);
     }
     {   // test strf::to_basic_string.reseve(...)
