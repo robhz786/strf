@@ -927,8 +927,8 @@ inline STRF_HD CharT* write_int_txtdigits_backwards( IntT value
 
 //     dest.ensure(1);
 
-//     auto ptr = dest.pointer();
-//     auto end = dest.end();
+//     auto ptr = dest.buffer_ptr();
+//     auto end = dest.buffer_end();
 //     auto grp_it = last_grp;
 //     auto n = *grp_it;
 
@@ -943,8 +943,8 @@ inline STRF_HD CharT* write_int_txtdigits_backwards( IntT value
 //         if (ptr == end || (n == 0 && ptr + sep_size >= end)) {
 //             dest.advance_to(ptr);
 //             dest.recycle();
-//             ptr = dest.pointer();
-//             end = dest.end();
+//             ptr = dest.buffer_ptr();
+//             end = dest.buffer_end();
 //         }
 //         if (n == 0) {
 //             ptr = encode_char(ptr, sep);
@@ -969,7 +969,7 @@ public:
         static_assert(std::is_unsigned<IntT>::value, "expected unsigned int");
 
         dest.ensure(digcount);
-        auto p = dest.pointer() + digcount;
+        auto p = dest.buffer_ptr() + digcount;
         intdigits_backwards_writer<Base>::write_txtdigits_backwards(value, p, lc);
         dest.advance_to(p);
     }
@@ -987,7 +987,7 @@ public:
         static_assert(std::is_unsigned<UIntT>::value, "expected unsigned int");
         auto size = digcount + seps_count;
         dest.ensure(size);
-        auto next_p = dest.pointer() + size;
+        auto next_p = dest.buffer_ptr() + size;
         intdigits_backwards_writer<Base>::write_txtdigits_backwards_little_sep
             (next_p, uvalue, grouping.get_iterator(), sep, lc);
         dest.advance_to(next_p);
@@ -1013,8 +1013,8 @@ public:
 
         auto dist = grouping.distribute(digcount);
         dest.ensure(dist.highest_group);
-        auto oit = dest.pointer();
-        auto end = dest.end();
+        auto oit = dest.buffer_ptr();
+        auto end = dest.buffer_end();
         strf::detail::copy_n(digits, dist.highest_group, oit);
         oit += dist.highest_group;
         digits += dist.highest_group;
@@ -1025,8 +1025,8 @@ public:
                 if (oit + sep_size + middle_groups > end) {
                     dest.advance_to(oit);
                     dest.recycle();
-                    oit = dest.pointer();
-                    end = dest.end();
+                    oit = dest.buffer_ptr();
+                    end = dest.buffer_end();
                 }
                 oit = encode_char(oit, sep);
                 strf::detail::copy_n(digits, middle_groups, oit);
@@ -1040,8 +1040,8 @@ public:
             if (oit + sep_size + grp > end) {
                 dest.advance_to(oit);
                 dest.recycle();
-                oit = dest.pointer();
-                end = dest.end();
+                oit = dest.buffer_ptr();
+                end = dest.buffer_end();
             }
             oit = encode_char(oit, sep);
             strf::detail::copy_n(digits, grp, oit);
@@ -1072,15 +1072,15 @@ public:
             strf::put(dest, static_cast<CharT>('0' + value));
             return;
         }
-        auto it = dest.pointer();
-        auto end = dest.end();
+        auto it = dest.buffer_ptr();
+        auto end = dest.buffer_end();
         UIntT mask = (UIntT)1 << (digcount - 1);
         do {
             if (it == end) {
                 dest.advance_to(it);
                 dest.recycle();
-                it = dest.pointer();
-                end = dest.end();
+                it = dest.buffer_ptr();
+                end = dest.buffer_end();
             }
             *it = (CharT)'0' + (0 != (value & mask));
             ++it;
@@ -1107,8 +1107,8 @@ public:
 
         UIntT mask = (UIntT)1 << (digcount - 1);
         auto dist = grouping.distribute(digcount);
-        auto oit = dest.pointer();
-        auto end = dest.end();
+        auto oit = dest.buffer_ptr();
+        auto end = dest.buffer_end();
         while (dist.highest_group--) {
             *oit++ = (CharT)'0' + (0 != (value & mask));
             mask = mask >> 1;
@@ -1119,16 +1119,16 @@ public:
                 if (oit == end) {
                     dest.advance_to(oit);
                     dest.recycle();
-                    oit = dest.pointer();
-                    end = dest.end();
+                    oit = dest.buffer_ptr();
+                    end = dest.buffer_end();
                 }
                 *oit++ = sep;
                 for (auto i = middle_groups; i ; --i) {
                     if (oit == end) {
                         dest.advance_to(oit);
                         dest.recycle();
-                        oit = dest.pointer();
-                        end = dest.end();
+                        oit = dest.buffer_ptr();
+                        end = dest.buffer_end();
                     }
                     *oit++ = (CharT)'0' + (0 != (value & mask));
                     mask = mask >> 1;
@@ -1140,16 +1140,16 @@ public:
             if (oit == end) {
                 dest.advance_to(oit);
                 dest.recycle();
-                oit = dest.pointer();
-                end = dest.end();
+                oit = dest.buffer_ptr();
+                end = dest.buffer_end();
             }
             *oit++ = sep;
             for (auto g = dist.low_groups.highest_group(); g; --g) {
                 if (oit == end) {
                     dest.advance_to(oit);
                     dest.recycle();
-                    oit = dest.pointer();
-                    end = dest.end();
+                    oit = dest.buffer_ptr();
+                    end = dest.buffer_end();
                 }
                 *oit++ = (CharT)'0' + (0 != (value & mask));
                 mask = mask >> 1;
@@ -1177,8 +1177,8 @@ public:
         auto dist = grouping.distribute(digcount);
         UIntT mask = (UIntT)1 << (digcount - 1);
         dest.ensure(dist.highest_group);
-        auto oit = dest.pointer();
-        auto end = dest.end();
+        auto oit = dest.buffer_ptr();
+        auto end = dest.buffer_end();
         while (dist.highest_group--) {
             *oit++ = (CharT)'0' + (0 != (value & mask));
             mask = mask >> 1;
@@ -1190,16 +1190,16 @@ public:
                 if (oit + sep_size > end) {
                     dest.advance_to(oit);
                     dest.recycle();
-                    oit = dest.pointer();
-                    end = dest.end();
+                    oit = dest.buffer_ptr();
+                    end = dest.buffer_end();
                 }
                 oit = encode_char(oit, sep);
                 for (auto i = middle_groups; i ; --i) {
                     if (oit == end) {
                         dest.advance_to(oit);
                         dest.recycle();
-                        oit = dest.pointer();
-                        end = dest.end();
+                        oit = dest.buffer_ptr();
+                        end = dest.buffer_end();
                     }
                     *oit++ = (CharT)'0' + (0 != (value & mask));
                     mask = mask >> 1;
@@ -1210,16 +1210,16 @@ public:
             if (oit + sep_size > end) {
                 dest.advance_to(oit);
                 dest.recycle();
-                oit = dest.pointer();
-                end = dest.end();
+                oit = dest.buffer_ptr();
+                end = dest.buffer_end();
             }
             oit = encode_char(oit, sep);
             for (auto g = dist.low_groups.highest_group(); g; --g) {
                 if (oit == end) {
                     dest.advance_to(oit);
                     dest.recycle();
-                    oit = dest.pointer();
-                    end = dest.end();
+                    oit = dest.buffer_ptr();
+                    end = dest.buffer_end();
                 }
                 *oit++ = (CharT)'0' + (0 != (value & mask));
                 mask = mask >> 1;

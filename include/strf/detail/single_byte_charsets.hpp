@@ -23,8 +23,8 @@
         STRF_IF_UNLIKELY (!dest.good()) {        \
             return;                              \
         }                                        \
-        dest_it = dest.pointer();                \
-        dest_end = dest.end();                   \
+        dest_it = dest.buffer_ptr();                \
+        dest_end = dest.buffer_end();                   \
     }
 
 #define STRF_CHECK_DEST_SIZE(SIZE)                  \
@@ -34,8 +34,8 @@
         STRF_IF_UNLIKELY (!dest.good()) {           \
             return;                                 \
         }                                           \
-        dest_it = dest.pointer();                   \
-        dest_end = dest.end();                      \
+        dest_it = dest.buffer_ptr();                   \
+        dest_end = dest.buffer_end();                      \
     }
 
 #endif // ! defined(STRF_CHECK_DEST)
@@ -2185,8 +2185,8 @@ STRF_HD void single_byte_charset_to_utf32<SrcCharT, DestCharT, Impl>::transcode
     , strf::surrogate_policy surr_poli )
 {
     (void) surr_poli;
-    auto dest_it = dest.pointer();
-    auto dest_end = dest.end();
+    auto dest_it = dest.buffer_ptr();
+    auto dest_end = dest.buffer_end();
     auto src_end = src + src_size;
     for (auto src_it = src; src_it < src_end; ++src_it, ++dest_it) {
         STRF_CHECK_DEST;
@@ -2240,8 +2240,8 @@ STRF_HD void utf32_to_single_byte_charset<SrcCharT, DestCharT, Impl>::transcode
     , strf::surrogate_policy surr_poli )
 {
     (void)surr_poli;
-    auto dest_it = dest.pointer();
-    auto dest_end = dest.end();
+    auto dest_it = dest.buffer_ptr();
+    auto dest_end = dest.buffer_end();
     auto src_end = src + src_size;
     for(auto src_it = src; src_it != src_end; ++src_it, ++dest_it) {
         STRF_CHECK_DEST;
@@ -2296,8 +2296,8 @@ STRF_HD void single_byte_charset_sanitizer<SrcCharT, DestCharT, Impl>::transcode
     , strf::surrogate_policy surr_poli )
 {
     (void) surr_poli;
-    auto dest_it = dest.pointer();
-    auto dest_end = dest.end();
+    auto dest_it = dest.buffer_ptr();
+    auto dest_end = dest.buffer_end();
     auto src_end = src + src_size;
     for (auto src_it = src; src_it < src_end; ++src_it, ++dest_it) {
         STRF_CHECK_DEST;
@@ -2619,14 +2619,14 @@ STRF_HD void single_byte_charset<CharT, Impl>::encode_fill
     }
     auto ch3 = static_cast<CharT>(ch2);
     while(true) {
-        std::size_t available = dest.space();
+        std::size_t available = dest.buffer_space();
         STRF_IF_LIKELY (count <= available) {
-            strf::detail::str_fill_n<CharT>(dest.pointer(), count, ch3);
+            strf::detail::str_fill_n<CharT>(dest.buffer_ptr(), count, ch3);
             dest.advance(count);
             return;
         }
-        strf::detail::str_fill_n<CharT>(dest.pointer(), available, ch3);
-        dest.advance_to(dest.end());
+        strf::detail::str_fill_n<CharT>(dest.buffer_ptr(), available, ch3);
+        dest.advance_to(dest.buffer_end());
         count -= available;
         dest.recycle();
     }

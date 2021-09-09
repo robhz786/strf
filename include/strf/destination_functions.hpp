@@ -19,16 +19,16 @@ STRF_HD void destination_interchar_copy
     ( strf::destination<DestCharT>& dest, const SrcCharT* str, std::size_t len )
 {
     do {
-        std::size_t space = dest.space();
+        std::size_t space = dest.buffer_space();
         if (space >= len) {
-            detail::copy_n(str, len, dest.pointer());
+            detail::copy_n(str, len, dest.buffer_ptr());
             dest.advance(len);
             return;
         }
-        strf::detail::copy_n(str, space, dest.pointer());
+        strf::detail::copy_n(str, space, dest.buffer_ptr());
         str += space;
         len -= space;
-        dest.advance_to(dest.end());
+        dest.advance_to(dest.buffer_end());
         dest.recycle();
     } while(dest.good());
 }
@@ -56,22 +56,22 @@ template <typename CharT>
 void STRF_HD write_fill_continuation
     ( strf::destination<CharT>& dest, std::size_t count, CharT ch )
 {
-    std::size_t space = dest.space();
+    std::size_t space = dest.buffer_space();
     STRF_ASSERT(space < count);
-    strf::detail::str_fill_n<CharT>(dest.pointer(), space, ch);
+    strf::detail::str_fill_n<CharT>(dest.buffer_ptr(), space, ch);
     count -= space;
-    dest.advance_to(dest.end());
+    dest.advance_to(dest.buffer_end());
     dest.recycle();
     while (dest.good()) {
-        space = dest.space();
+        space = dest.buffer_space();
         if (count <= space) {
-            strf::detail::str_fill_n<CharT>(dest.pointer(), count, ch);
+            strf::detail::str_fill_n<CharT>(dest.buffer_ptr(), count, ch);
             dest.advance(count);
             break;
         }
-        strf::detail::str_fill_n(dest.pointer(), space, ch);
+        strf::detail::str_fill_n(dest.buffer_ptr(), space, ch);
         count -= space;
-        dest.advance_to(dest.end());
+        dest.advance_to(dest.buffer_end());
         dest.recycle();
     }
 }
@@ -80,8 +80,8 @@ template <typename CharT>
 inline STRF_HD void write_fill
     ( strf::destination<CharT>& dest, std::size_t count, CharT ch )
 {
-    STRF_IF_LIKELY (count <= dest.space()) {
-        strf::detail::str_fill_n<CharT>(dest.pointer(), count, ch);
+    STRF_IF_LIKELY (count <= dest.buffer_space()) {
+        strf::detail::str_fill_n<CharT>(dest.buffer_ptr(), count, ch);
         dest.advance(count);
     } else {
         write_fill_continuation<CharT>(dest, count, ch);

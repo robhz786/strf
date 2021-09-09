@@ -100,10 +100,10 @@ void recycle() override;
 ----
 [horizontal]
 Effects::
-- If `good()` is `true` then calls `dest.sputn(p0, pointer() - p0)`, where `dest` is the reference this object was initialized with, and `p0` is the return value of `pointer()` before any call to `advance` and `advance_to` since the last call to `recycle()`, or since this object's contruction, whatever happened last.
-- If the returned value of `dest.sputn` is less then `pointer() - p0`, calls `set_good(false)`.
-- Calls `set_pointer` and/or `set_end`.
-Postconditions:: `space() >= min_space_after_recycle<CharT>()`
+- If `good()` is `true` then calls `dest.sputn(p0, buffer_ptr() - p0)`, where `dest` is the reference this object was initialized with, and `p0` is the return value of `buffer_ptr()` before any call to `advance` and `advance_to` since the last call to `recycle()`, or since this object's contruction, whatever happened last.
+- If the returned value of `dest.sputn` is less then `buffer_ptr() - p0`, calls `set_good(false)`.
+- Calls `set_buffer_ptr` and/or `set_buffer_end`.
+Postconditions:: `buffer_space() >= min_space_after_recycle<CharT>()`
 ====
 ====
 [source,cpp]

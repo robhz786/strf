@@ -95,14 +95,14 @@ public:
 
     STRF_HD ~cfile_writer_base() {
         if (this->good()) {
-            std::size_t count = this->pointer() - buff_;
+            std::size_t count = this->buffer_ptr() - buff_;
             traits_.write(buff_, count);
         }
     }
 
     STRF_HD void recycle() noexcept override {
-        auto p = this->pointer();
-        this->set_pointer(buff_);
+        auto p = this->buffer_ptr();
+        this->set_buffer_ptr(buff_);
         STRF_IF_LIKELY (this->good()) {
             std::size_t count = p - buff_;
             auto count_inc = traits_.write(buff_, count);
@@ -118,7 +118,7 @@ public:
         bool g = this->good();
         this->set_good(false);
         STRF_IF_LIKELY (g) {
-            std::size_t count = this->pointer() - buff_;
+            std::size_t count = this->buffer_ptr() - buff_;
             auto count_inc = traits_.write(buff_, count);
             count_ += count_inc;
             g = (count == count_inc);
@@ -129,8 +129,8 @@ public:
 private:
 
     STRF_HD void do_write(const CharT* str, std::size_t str_len) noexcept override {
-        auto p = this->pointer();
-        this->set_pointer(buff_);
+        auto p = this->buffer_ptr();
+        this->set_buffer_ptr(buff_);
         STRF_IF_LIKELY (this->good()) {
             std::size_t count = p - buff_;
             auto count_inc = traits_.write(buff_, count);

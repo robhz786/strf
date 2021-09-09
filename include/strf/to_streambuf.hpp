@@ -34,7 +34,7 @@ public:
 
     ~basic_streambuf_writer() {
         if (this->good()) {
-            std::streamsize count = this->pointer() - buf_;
+            std::streamsize count = this->buffer_ptr() - buf_;
 
 #if defined __cpp_exceptions
             try { dest_.sputn(buf_, count); } catch(...) {};
@@ -45,8 +45,8 @@ public:
     }
 
     void recycle() override {
-        std::streamsize count = this->pointer() - buf_;
-        this->set_pointer(buf_);
+        std::streamsize count = this->buffer_ptr() - buf_;
+        this->set_buffer_ptr(buf_);
         STRF_IF_LIKELY (this->good()) {
             auto count_inc = dest_.sputn(buf_, count);
             count_ += count_inc;
@@ -60,9 +60,9 @@ public:
     };
 
     result finish() {
-        std::streamsize count = this->pointer() - buf_;
+        std::streamsize count = this->buffer_ptr() - buf_;
         auto g = this->good();
-        this->set_pointer(buf_);
+        this->set_buffer_ptr(buf_);
         this->set_good(false);
         STRF_IF_LIKELY (g) {
             this->set_good(false);
@@ -76,8 +76,8 @@ public:
 private:
 
     void do_write(const CharT* str, std::size_t str_len) override {
-        std::streamsize count = this->pointer() - buf_;
-        this->set_pointer(buf_);
+        std::streamsize count = this->buffer_ptr() - buf_;
+        this->set_buffer_ptr(buf_);
         STRF_IF_LIKELY (this->good()) {
             this->set_good(false);
             auto count_inc = dest_.sputn(buf_, count);

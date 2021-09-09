@@ -45,8 +45,8 @@ private:
 
 void QStringCreator::recycle()
 {
-    std::size_t count = this->pointer() - buffer_;
-    this->set_pointer(buffer_);
+    std::size_t count = this->buffer_ptr() - buffer_;
+    this->set_buffer_ptr(buffer_);
     if (this->good()) {
         this->set_good(false);
         QChar qchar_buffer[buffer_size_];

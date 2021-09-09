@@ -203,15 +203,15 @@ void base64_printer<CharT>::write_identation_(strf::destination<CharT>& dest) co
     using traits = std::char_traits<CharT>;
     std::size_t count = fmt_.indentation();
     while(true) {
-        std::size_t buff_size = dest.space();
+        std::size_t buff_size = dest.buffer_space();
         if (buff_size >= count) {
-            traits::assign(dest.pointer(), count, CharT(' '));
+            traits::assign(dest.buffer_ptr(), count, CharT(' '));
             dest.advance(count);
             return;
         }
-        traits::assign(dest.pointer(), buff_size, CharT(' '));
+        traits::assign(dest.buffer_ptr(), buff_size, CharT(' '));
         count -= buff_size;
-        dest.advance_to(dest.end());
+        dest.advance_to(dest.buffer_end());
         dest.recycle();
     };
 }
@@ -222,7 +222,7 @@ void base64_printer<CharT>::encode_all_data_in_this_line_(strf::destination<Char
     auto data_it = static_cast<const std::uint8_t*>(fmt_.value().bytes);
     for (std::ptrdiff_t count = fmt_.value().num_bytes; count > 0; count -= 3) {
         dest.ensure(4);
-        encode_3bytes_(dest.pointer(), data_it, count);
+        encode_3bytes_(dest.buffer_ptr(), data_it, count);
         dest.advance(4);
         data_it += 3;
     }
@@ -271,7 +271,7 @@ void base64_printer<CharT>::write_multiline_(strf::destination<CharT>& dest) con
     while (remaining_bytes > 0) {
         if (cursor_pos + 4 < facet_.line_length) {
             dest.ensure(4);
-            encode_3bytes_(dest.pointer(), data_it, remaining_bytes);
+            encode_3bytes_(dest.buffer_ptr(), data_it, remaining_bytes);
             dest.advance(4);
             cursor_pos += 4;
         } else {
@@ -284,7 +284,7 @@ void base64_printer<CharT>::write_multiline_(strf::destination<CharT>& dest) con
                     write_identation_(dest);
                 }
                 dest.ensure(1);
-                * dest.pointer() = tmp[i];
+                * dest.buffer_ptr() = tmp[i];
                 dest.advance(1);
                 ++cursor_pos;
             }
@@ -301,8 +301,8 @@ template <typename CharT>
 void base64_printer<CharT>::write_end_of_line_(strf::destination<CharT>& dest) const
 {
     dest.ensure(2);
-    dest.pointer()[0] = facet_.eol[0];
-    dest.pointer()[1] = facet_.eol[1];
+    dest.buffer_ptr()[0] = facet_.eol[0];
+    dest.buffer_ptr()[1] = facet_.eol[1];
     dest.advance(facet_.eol[1] == '\0' ? 1 : 2);
 }
 

@@ -16,9 +16,9 @@ http://www.boost.org/LICENSE_1_0.txt)
 :destination: <<destination_hpp#destination,destination>>
 :recycle: <<destination_hpp#destination_recycle,recycle>>
 :good: <<destination_hpp#destination_good,good>>
-:pointer: <<destination_hpp#destination_pointer,pointer>>
+:buffer_ptr: <<destination_hpp#destination_buffer_ptr,buffer_ptr>>
 :set_good: <<destination_hpp#destination_set_good,set_good>>
-:set_pointer: <<destination_hpp#destination_set_pointer,set_pointer>>
+:set_buffer_ptr: <<destination_hpp#destination_set_buffer_ptr,set_buffer_ptr>>
 :to: <<quick_reference#to_destination_ref,to>>
 
 :destination_no_reserve: <<strf_hpp#destination_no_reserve,destination_no_reserve>>
@@ -47,39 +47,39 @@ contains a boolean &#x2014; which indicates whether
 the state is "good" or "bad" &#x2014; and two pointers. One of them points
 to the end of buffer, and the other to the position where the
 next character shall be written. They are returned by the
-`<<destination_hpp#destination_end,end>>` and
-`<<destination_hpp#destination_pointer,pointer>>` functions respectively.
+`<<destination_hpp#destination_buffer_end,buffer_end>>` and
+`<<destination_hpp#destination_buffer_ptr,buffer_ptr>>` functions respectively.
 Contrary to what is common in output streams abstractions,
 where you need to use high-lever functions to insert content ( like
 https://en.cppreference.com/w/cpp/io/basic_streambuf/sputc[`sputc`]
 in `std::basic_streambuf`, or
 https://en.cppreference.com/w/cpp/io/basic_ostream/write[`write`]
 in `std::basic_ostream` ), in `destination` you can write things directly to
-`pointer()`. After that, you shall call the `<<destination_hpp#destination_advance,advance>>`
+`buffer_ptr()`. After that, you shall call the `<<destination_hpp#destination_advance,advance>>`
 or the `<<destination_hpp#destination_advance_to,advance_to>>` function to update
-the pointer. For instance:
+the buffer pointer. For instance:
 
 [source,cpp,subs=normal]
 ----
-if (dest.space() < 5) {
+if (dest.buffer_space() < 5) {
     dest.recycle();
 }
-memcpy(dest.pointer(), "hello", 5);
+memcpy(dest.buffer_ptr(), "hello", 5);
 dest.advance(5);
 ----
 
-As done above, before writting anything to `pointer()`, one
+As done above, before writting anything to `buffer_ptr()`, one
 must check whether there is enough space,
 and if not, one must call the `{recycle}` function.
 This is the only pure virtual function in `{destination}`,
 its job is to flush the content written so far and reset the position of
-`pointer()` and `end()` so that the space ( `end() - pointer()` )
+`buffer_ptr()` and `buffer_end()` so that the space ( `buffer_end() - buffer_ptr()` )
 becames greater than or equal to `{min_space_after_recycle}</{asterisk}char type{asterisk}/>()`.
 This is a postcondition
 even when the state is "bad". The "bad" state implies that writting
-anything in the range [`pointer(), end()`) doesn't have any relevent
+anything in the range [`buffer_ptr(), buffer_end()`) doesn't have any relevent
 side effect, though the behaviour is still defined, __i.e.__
-the range [`pointer(), end()`) must be valid accessible memory area
+the range [`buffer_ptr(), buffer_end()`) must be valid accessible memory area
 ( sometimes `<<destination_hpp#garbage_buff,garbage_buff>>`
 is used to handle the bad state ).
 The state can change from "good" to "bad" in `{recycle}`,
@@ -122,10 +122,10 @@ whatever it is. If `print` never throws, then
 void my_destination::recycle()
 {
     if ({good}()) {
-        bool success = print(buff, {pointer}());
+        bool success = print(buff, {buffer_ptr}());
         {set_good}(success);
     }
-    {set_pointer}(buff);
+    {set_buffer_ptr}(buff);
 }
 ----
 
@@ -135,8 +135,8 @@ Otherwise, it makes more sense to do:
 ----
 void my_destination::recycle()
 {
-    auto ptr = {pointer}();
-    {set_pointer}(buff);
+    auto ptr = {buffer_ptr}();
+    {set_buffer_ptr}(buff);
     if ({good}()) {
         {set_good}(false);
         bool success = print(buff, ptr);
@@ -156,7 +156,7 @@ my_destination::~my_destination()
 {
     if({good}()) {
         try {
-            print(buff, {pointer}());
+            print(buff, {buffer_ptr}());
         } catch(...)
         {
         } // Need to silence the exception. Not good
@@ -174,7 +174,7 @@ void my_destination::finish()
     bool is_good = {good}();
     {set_good}(false);
     if (is_good) {
-        print(buff, ({pointer}() - buff));
+        print(buff, ({buffer_ptr}() - buff));
     }
 }
 ----
@@ -202,7 +202,7 @@ which is something that destructors can't do.
 
 
 ////
-`{set_good}` and `{set_pointer}` are protected member functions.
+`{set_good}` and `{set_buffer_ptr}` are protected member functions.
 ////
 
 == How to create destination expression

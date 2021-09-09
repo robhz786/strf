@@ -23,7 +23,7 @@ public:
     {
         int size = 2 + (int)value_;
         dest.ensure(size);
-        auto p = dest.pointer();
+        auto p = dest.buffer_ptr();
         if (value_) {
             p[0] = static_cast<CharT>('y');
             p[1] = static_cast<CharT>('e');

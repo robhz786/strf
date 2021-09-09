@@ -380,7 +380,7 @@ Effect:: Converts the content of `src` from one encoding to another writing
     of `surr_poli` is `surrogate_policy::lax`.
 Precondition:: `x.transcode_func() != nullptr` is `true`
 Postconditions:: `dest.recycle()` is not called() if
-        `dest.space() >= x.transcode_size(src, src_size, surr_poli)` is `true`.
+        `dest.buffer_space() >= x.transcode_size(src, src_size, surr_poli)` is `true`.
 ====
 [[Transcoder_transcode_size_func]]
 ====
@@ -1541,7 +1541,7 @@ then writes the result to `ob` using `from_u32`.
 
 [horizontal]
 Postcondition:: `ob.<<destination_hpp#destination_recycle,recycle>>()` is not called if
-`ob.<<destination_hpp#destination_space,space>>()` is not less then the value returned by
+`ob.<<destination_hpp#destination_buffer_space,buffer_space>>()` is not less then the value returned by
 `{decode_encode_size}(to_u32, size_calc_func, src, src_size, inv_seq_notifier, surr_poli)`,
 where `size_calc_func` is the return value of
 `dest_enc.<<Charset_from_u32,from_u32>>().<<Transcoder_transcode_size_func, transcode_size_func>>()`,

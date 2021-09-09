@@ -17,12 +17,12 @@ static STRF_TEST_FUNC void test_cstr_writer_destination_too_small()
     {
         char buff[4];
         strf::basic_cstr_writer<char> sw(buff);
-        TEST_EQ(sw.space(), 3);
+        TEST_EQ(sw.buffer_space(), 3);
         strf::put(sw, 'a');
-        TEST_EQ(sw.space(), 2);
+        TEST_EQ(sw.buffer_space(), 2);
         strf::put(sw, 'b');
         strf::put(sw, 'c');
-        TEST_EQ(sw.space(), 0);
+        TEST_EQ(sw.buffer_space(), 0);
         strf::put(sw, 'd');
         strf::put(sw, 'e');
         strf::put(sw, 'f');

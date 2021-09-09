@@ -39,8 +39,8 @@ public:
 
     void recycle() override
     {
-        auto * p = this->pointer();
-        this->set_pointer(buf_);
+        auto * p = this->buffer_ptr();
+        this->set_buffer_ptr(buf_);
         STRF_IF_LIKELY (this->good()) {
             this->set_good(false);
             str_.append(buf_, p);
@@ -50,7 +50,7 @@ public:
 
     void finish()
     {
-        auto * p = this->pointer();
+        auto * p = this->buffer_ptr();
         STRF_IF_LIKELY (this->good()) {
             this->set_good(false);
             str_.append(buf_, p);
@@ -61,8 +61,8 @@ private:
 
     void do_write(const CharT* str, std::size_t str_len) override
     {
-        auto * p = this->pointer();
-        this->set_pointer(buf_);
+        auto * p = this->buffer_ptr();
+        this->set_buffer_ptr(buf_);
         STRF_IF_LIKELY (this->good()) {
             this->set_good(false);
             str_.append(buf_, p);
@@ -112,7 +112,7 @@ public:
     {
         STRF_IF_LIKELY (this->good()) {
             this->set_good(false);
-            std::size_t count = this->pointer() - buf_;
+            std::size_t count = this->buffer_ptr() - buf_;
             STRF_IF_LIKELY ( ! string_initialized_) {
                 return {buf_, count};
             }
@@ -147,8 +147,8 @@ private:
 template < typename CharT, typename Traits, typename Allocator >
 void basic_string_maker<CharT, Traits, Allocator>::recycle()
 {
-    std::size_t count = this->pointer() - buf_;
-    this->set_pointer(buf_);
+    std::size_t count = this->buffer_ptr() - buf_;
+    this->set_buffer_ptr(buf_);
     STRF_IF_LIKELY (this->good()) {
         this->set_good(false); // in case the following code throws
         if ( ! string_initialized_) {
@@ -165,8 +165,8 @@ template < typename CharT, typename Traits, typename Allocator >
 void basic_string_maker<CharT, Traits, Allocator>::do_write(const CharT* str, std::size_t str_len)
 {
     STRF_IF_LIKELY (this->good()) {
-        std::size_t buf_count = this->pointer() - buf_;
-        this->set_pointer(buf_);
+        std::size_t buf_count = this->buffer_ptr() - buf_;
+        this->set_buffer_ptr(buf_);
         this->set_good(false); // in case the following code throws
         if ( ! string_initialized_) {
             new (string_ptr()) string_type_();
@@ -194,8 +194,8 @@ public:
         : strf::destination<CharT>(nullptr, nullptr)
         , str_(count ? count : 1, (CharT)0)
     {
-        this->set_pointer(&*str_.begin());
-        this->set_end(&*str_.begin() + (count ? count : 1));
+        this->set_buffer_ptr(&*str_.begin());
+        this->set_buffer_end(&*str_.begin() + (count ? count : 1));
     }
 
     basic_sized_string_maker(const basic_sized_string_maker&) = delete;
@@ -203,17 +203,17 @@ public:
 
     void recycle() override
     {
-        std::size_t original_size = this->pointer() - str_.data();
+        std::size_t original_size = this->buffer_ptr() - str_.data();
         constexpr std::size_t min_buff_size = strf::min_space_after_recycle<CharT>();
         auto append_size = strf::detail::max<std::size_t>(original_size, min_buff_size);
         str_.append(append_size, (CharT)0);
-        this->set_pointer(&*str_.begin() + original_size);
-        this->set_end(&*str_.begin() + original_size + append_size);
+        this->set_buffer_ptr(&*str_.begin() + original_size);
+        this->set_buffer_end(&*str_.begin() + original_size + append_size);
     }
 
     std::basic_string<CharT, Traits, Allocator> finish()
     {
-        str_.resize(this->pointer() - str_.data());
+        str_.resize(this->buffer_ptr() - str_.data());
         return std::move(str_);
     }
 

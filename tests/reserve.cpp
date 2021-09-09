@@ -32,7 +32,7 @@ public:
 
     void STRF_HD recycle() override
     {
-        this->set_pointer(buff_);
+        this->set_buffer_ptr(buff_);
     }
 
     std::size_t STRF_HD finish()

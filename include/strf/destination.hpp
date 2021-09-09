@@ -52,11 +52,11 @@ public:
 
     virtual STRF_HD ~destination() { };
 
-    STRF_HD char_type* pointer() const noexcept
+    STRF_HD char_type* buffer_ptr() const noexcept
     {
         return pointer_;
     }
-    STRF_HD char_type* end() const noexcept
+    STRF_HD char_type* buffer_end() const noexcept
     {
         return end_;
     }
@@ -66,7 +66,7 @@ public:
         STRF_ASSERT(pointer_ <= end_);
         return end_ - pointer_;
     }
-    STRF_HD std::size_t space() const noexcept
+    STRF_HD std::size_t buffer_space() const noexcept
     {
         STRF_ASSERT(pointer_ <= end_);
         return end_ - pointer_;
@@ -83,32 +83,28 @@ public:
     }
     STRF_HD void advance(std::size_t n)
     {
-        STRF_ASSERT(pointer() + n <= end());
+        STRF_ASSERT(buffer_ptr() + n <= buffer_end());
         pointer_ += n;
     }
     STRF_HD void advance() noexcept
     {
-        STRF_ASSERT(pointer() < end());
+        STRF_ASSERT(buffer_ptr() < buffer_end());
         ++pointer_;
-    }
-    STRF_HD void require(std::size_t s)
-    {
-        STRF_ASSERT(s <= strf::min_space_after_recycle<CharT>());
-        STRF_IF_UNLIKELY (pointer() + s > end()) {
-            recycle();
-        }
-        STRF_ASSERT(pointer() + s <= end());
     }
     STRF_HD void ensure(std::size_t s)
     {
-        require(s);
+        STRF_ASSERT(s <= strf::min_space_after_recycle<CharT>());
+        STRF_IF_UNLIKELY (buffer_ptr() + s > buffer_end()) {
+            recycle();
+        }
+        STRF_ASSERT(buffer_ptr() + s <= buffer_end());
     }
 
     STRF_HD virtual void recycle() = 0;
 
     STRF_HD void write(const char_type* str, std::size_t str_len)
     {
-        STRF_IF_LIKELY (str_len <= space()) {
+        STRF_IF_LIKELY (str_len <= buffer_space()) {
 #if !defined(STRF_FREESTANDING) || defined(STRF_WITH_CSTRING)
             memcpy(pointer_, str, str_len * sizeof(char_type));
             pointer_ += str_len;
@@ -122,6 +118,24 @@ public:
         }
     }
 
+    // old names keeped to preserve backwards compatibiliy
+    STRF_HD char_type* pointer() const noexcept
+    {
+        return buffer_ptr();
+    }
+    STRF_HD char_type* end() const noexcept
+    {
+        return buffer_end();
+    }
+    STRF_HD std::size_t space() const noexcept
+    {
+        return buffer_space();
+    }
+    STRF_HD void require(std::size_t s)
+    {
+        ensure(s);
+    }
+
 protected:
 
     STRF_HD destination(char_type* p, char_type* e) noexcept
@@ -132,14 +146,20 @@ protected:
         : pointer_(p), end_(p + s)
     { }
 
-    STRF_HD void set_pointer(char_type* p) noexcept
+    STRF_HD void set_buffer_ptr(char_type* p) noexcept
     { pointer_ = p; };
-    STRF_HD void set_end(char_type* e) noexcept
+    STRF_HD void set_buffer_end(char_type* e) noexcept
     { end_ = e; };
     STRF_HD void set_good(bool g) noexcept
     { good_ = g; };
 
     STRF_HD virtual void do_write(const char_type* src, std::size_t src_size);
+
+    // old names for backwards compatibility
+    STRF_HD void set_pointer(char_type* p) noexcept
+    { pointer_ = p; };
+    STRF_HD void set_end(char_type* e) noexcept
+    { end_ = e; };
 
 private:
 
@@ -153,7 +173,7 @@ template <typename CharT>
 void destination<CharT>::do_write(const CharT* str, std::size_t str_len)
 {
     for(;;) {
-        std::size_t s = space();
+        std::size_t s = buffer_space();
         std::size_t sub_count = (str_len <= s ? str_len : s);
         str_len -= sub_count;
 
@@ -179,13 +199,13 @@ void destination<CharT>::do_write(const CharT* str, std::size_t str_len)
 template <typename CharT>
 inline STRF_HD void put(strf::destination<CharT>& dest, CharT c)
 {
-    auto p = dest.pointer();
-    STRF_IF_LIKELY (p != dest.end()) {
+    auto p = dest.buffer_ptr();
+    STRF_IF_LIKELY (p != dest.buffer_end()) {
         *p = c;
         dest.advance_to(p + 1);
     } else {
         dest.recycle();
-        *dest.pointer() = c;
+        *dest.buffer_ptr() = c;
         dest.advance();
     }
 }
@@ -271,11 +291,11 @@ public:
     STRF_HD void recycle() noexcept override
     {
         if (this->good()) {
-            it_ = this->pointer();
+            it_ = this->buffer_ptr();
             this->set_good(false);
-            this->set_end(garbage_buff_end<CharT>());
+            this->set_buffer_end(garbage_buff_end<CharT>());
         }
-        this->set_pointer(garbage_buff<CharT>());
+        this->set_buffer_ptr(garbage_buff<CharT>());
     }
 
     struct result
@@ -288,11 +308,11 @@ public:
     {
         bool g = this->good();
         STRF_IF_LIKELY (g) {
-            it_ = this->pointer();
+            it_ = this->buffer_ptr();
             this->set_good(false);
         }
-        this->set_pointer(garbage_buff<CharT>());
-        this->set_end(garbage_buff_end<CharT>());
+        this->set_buffer_ptr(garbage_buff<CharT>());
+        this->set_buffer_end(garbage_buff_end<CharT>());
 
         *it_ = CharT();
 
@@ -304,8 +324,8 @@ private:
 
     STRF_HD void do_write(const CharT* str, std::size_t) noexcept override
     {
-        auto sub_count = this->space();
-        auto ptr = this->pointer();
+        auto sub_count = this->buffer_space();
+        auto ptr = this->buffer_ptr();
 #if !defined(STRF_FREESTANDING) || defined(STRF_WITH_CSTRING)
         memcpy(ptr, str, sub_count * sizeof(CharT));
 #else
@@ -313,9 +333,9 @@ private:
             *ptr = *str;
         }
 #endif
-        it_ = this->end();
-        this->set_pointer(garbage_buff<CharT>());
-        this->set_end(garbage_buff_end<CharT>());
+        it_ = this->buffer_end();
+        this->set_buffer_ptr(garbage_buff<CharT>());
+        this->set_buffer_end(garbage_buff_end<CharT>());
         this->set_good(false);
     }
 
@@ -361,7 +381,7 @@ public:
     }
 
     STRF_HD basic_char_array_writer(const basic_char_array_writer& r) noexcept
-        : destination<CharT>(r.pointer(), r.end())
+        : destination<CharT>(r.buffer_ptr(), r.buffer_end())
         , it_(r.it_)
     {
         this->set_good(r.good());
@@ -370,8 +390,8 @@ public:
     STRF_HD basic_char_array_writer& operator=(const basic_char_array_writer& r) noexcept
     {
         this->set_good(r.good());
-        this->set_pointer(r.pointer());
-        this->set_end(r.end());
+        this->set_buffer_ptr(r.buffer_ptr());
+        this->set_buffer_end(r.buffer_end());
         it_ = r.it_;
         return *this;
     }
@@ -379,19 +399,19 @@ public:
     {
         if (this->good()) {
             return ( r.good()
-                  && this->pointer() == r.pointer()
-                  && this->end() == r.end() );
+                  && this->buffer_ptr() == r.buffer_ptr()
+                  && this->buffer_end() == r.buffer_end() );
         }
         return ! r.good() && it_ == r.it_;
     }
     STRF_HD void recycle() noexcept override
     {
         if (this->good()) {
-            it_ = this->pointer();
+            it_ = this->buffer_ptr();
             this->set_good(false);
-            this->set_end(garbage_buff_end<CharT>());
+            this->set_buffer_end(garbage_buff_end<CharT>());
         }
-        this->set_pointer(garbage_buff<CharT>());
+        this->set_buffer_ptr(garbage_buff<CharT>());
     }
 
     struct result
@@ -403,7 +423,7 @@ public:
     STRF_HD result finish() noexcept
     {
         bool truncated = ! this->good();
-        CharT* ptr = truncated ? it_ : this->pointer();
+        CharT* ptr = truncated ? it_ : this->buffer_ptr();
         return { ptr, truncated };
     }
 
@@ -411,8 +431,8 @@ private:
 
     STRF_HD void do_write(const CharT* str, std::size_t) noexcept override
     {
-        auto sub_count = this->space();
-        auto ptr = this->pointer();
+        auto sub_count = this->buffer_space();
+        auto ptr = this->buffer_ptr();
 #if !defined(STRF_FREESTANDING) || defined(STRF_WITH_CHAR_ARRAYING)
         memcpy(ptr, str, sub_count * sizeof(CharT));
 #else
@@ -420,9 +440,9 @@ private:
             *ptr = *str;
         }
 #endif
-        it_ = this->end();
-        this->set_pointer(garbage_buff<CharT>());
-        this->set_end(garbage_buff_end<CharT>());
+        it_ = this->buffer_end();
+        this->set_buffer_ptr(garbage_buff<CharT>());
+        this->set_buffer_end(garbage_buff_end<CharT>());
         this->set_good(false);
     }
 
@@ -458,14 +478,14 @@ public:
 
     STRF_HD void recycle() noexcept override
     {
-        this->set_pointer(strf::garbage_buff<CharT>());
+        this->set_buffer_ptr(strf::garbage_buff<CharT>());
     }
 
 private:
 
     STRF_HD void do_write(const CharT*, std::size_t) noexcept override
     {
-        this->set_pointer(strf::garbage_buff<CharT>());
+        this->set_buffer_ptr(strf::garbage_buff<CharT>());
     }
 };
 

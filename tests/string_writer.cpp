@@ -34,7 +34,7 @@ static void test_string_appender()
         std::basic_string<CharT> str = tiny_str;
         strf::basic_string_appender<CharT> dest(str);
 
-        const std::size_t count0 = dest.space() > 5 ? dest.space() - 5 : 0;
+        const std::size_t count0 = dest.buffer_space() > 5 ? dest.buffer_space() - 5 : 0;
         auto first_append = test_utils::make_random_std_string<CharT>(count0);
         dest.write(&first_append[0], count0);
         dest.recycle();
@@ -50,7 +50,7 @@ static void test_string_appender()
         std::basic_string<CharT> str = tiny_str;
         strf::basic_string_appender<CharT> dest(str);
 
-        const std::size_t count0 = dest.space() > 5 ? dest.space() - 5 : 0;
+        const std::size_t count0 = dest.buffer_space() > 5 ? dest.buffer_space() - 5 : 0;
         auto first_append = test_utils::make_random_std_string<CharT>(count0);
         dest.write(&first_append[0], count0);
         dest.write(&half_str[0], half_str.size());
@@ -104,7 +104,7 @@ static void test_string_maker()
     }
     {   // when recycle() is called
         strf::basic_string_maker<CharT> dest;
-        const std::size_t count0 = dest.space() > 5 ? dest.space() - 5 : 0;
+        const std::size_t count0 = dest.buffer_space() > 5 ? dest.buffer_space() - 5 : 0;
         auto part0 = test_utils::make_random_std_string<CharT>(count0);
         dest.write(&part0[0], count0);
         dest.recycle();
@@ -116,7 +116,7 @@ static void test_string_maker()
     }
     {   // when do_write() is called
         strf::basic_string_maker<CharT> dest;
-        const std::size_t count0 = dest.space() > 5 ? dest.space() - 5 : 0;
+        const std::size_t count0 = dest.buffer_space() > 5 ? dest.buffer_space() - 5 : 0;
         auto part0 = test_utils::make_random_std_string<CharT>(count0);
         dest.write(&part0[0], count0);
         dest.write(&half_str[0], half_str.size());
@@ -128,7 +128,7 @@ static void test_string_maker()
         auto str0 = test_utils::make_random_std_string<CharT>(15);
         dest.write(&str0[0], str0.size());
         dest.recycle();
-        auto str1 = test_utils::make_random_std_string<CharT>(dest.space() + 50);
+        auto str1 = test_utils::make_random_std_string<CharT>(dest.buffer_space() + 50);
         dest.write(&str1[0], str1.size());
         auto str = dest.finish();
         TEST_TRUE(str == str0 + str1);

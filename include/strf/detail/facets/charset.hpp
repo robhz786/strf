@@ -209,8 +209,8 @@ void trivial_fill_f
 {
     // same as strf::detail::write_fill<CharT>
     CharT narrow_ch = static_cast<CharT>(ch);
-    STRF_IF_LIKELY (count <= dest.space()) {
-        strf::detail::str_fill_n<CharT>(dest.pointer(), count, narrow_ch);
+    STRF_IF_LIKELY (count <= dest.buffer_space()) {
+        strf::detail::str_fill_n<CharT>(dest.buffer_ptr(), count, narrow_ch);
         dest.advance(count);
     } else {
         write_fill_continuation<CharT>(dest, count, narrow_ch);
@@ -900,7 +900,7 @@ public:
 
     STRF_HD void finish()
     {
-        auto p = this->pointer();
+        auto p = this->buffer_ptr();
         STRF_IF_LIKELY (p != buff_ && dest_.good()) {
             transcode_( dest_, buff_, static_cast<std::size_t>(p - buff_)
                       , inv_seq_notifier_, surr_poli_);
@@ -922,8 +922,8 @@ private:
 template <typename DestCharT>
 STRF_HD void buffered_encoder<DestCharT>::recycle()
 {
-    auto p = this->pointer();
-    this->set_pointer(buff_);
+    auto p = this->buffer_ptr();
+    this->set_buffer_ptr(buff_);
     STRF_IF_LIKELY (p != buff_ && dest_.good()) {
         this->set_good(false);
         transcode_( dest_, buff_, static_cast<std::size_t>(p - buff_)
@@ -965,9 +965,9 @@ private:
 
 STRF_FUNC_IMPL STRF_HD void buffered_size_calculator::recycle()
 {
-    auto p = this->pointer();
+    auto p = this->buffer_ptr();
     STRF_IF_LIKELY (p != buff_) {
-        this->set_pointer(buff_);
+        this->set_buffer_ptr(buff_);
         sum_ += size_func_(buff_, static_cast<std::size_t>(p - buff_), surr_poli_);
     }
 }

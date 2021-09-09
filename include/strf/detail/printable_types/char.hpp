@@ -158,7 +158,7 @@ STRF_HD void char_printer<CharT>::print_to
     ( strf::destination<CharT>& dest ) const
 {
     dest.ensure(1);
-    *dest.pointer() = ch_;
+    *dest.buffer_ptr() = ch_;
     dest.advance();
 }
 
@@ -252,20 +252,20 @@ STRF_HD void fmt_char_printer<CharT>::print_to
     }
     if (count_ == 1) {
         dest.ensure(1);
-        * dest.pointer() = ch_;
+        * dest.buffer_ptr() = ch_;
         dest.advance();
     } else {
         std::size_t count = count_;
         while(true) {
-            std::size_t space = dest.space();
+            std::size_t space = dest.buffer_space();
             if (count <= space) {
-                strf::detail::str_fill_n(dest.pointer(), count, ch_);
+                strf::detail::str_fill_n(dest.buffer_ptr(), count, ch_);
                 dest.advance(count);
                 break;
             }
-            strf::detail::str_fill_n(dest.pointer(), space, ch_);
+            strf::detail::str_fill_n(dest.buffer_ptr(), space, ch_);
             count -= space;
-            dest.advance_to(dest.end());
+            dest.advance_to(dest.buffer_end());
             dest.recycle();
         }
     }
@@ -306,7 +306,7 @@ template <typename DestCharT>
 void STRF_HD conv_char32_printer<DestCharT>::print_to(strf::destination<DestCharT>& dest) const
 {
     dest.ensure(encoded_char_size_);
-    encode_char_f_(dest.pointer(), ch_);
+    encode_char_f_(dest.buffer_ptr(), ch_);
     dest.advance(encoded_char_size_);
 }
 

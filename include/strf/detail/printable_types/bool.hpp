@@ -84,7 +84,7 @@ void STRF_HD bool_printer<CharT>::print_to(strf::destination<CharT>& dest) const
 {
     auto size = 5 - (int)value_;
     dest.ensure(size);
-    auto p = dest.pointer();
+    auto p = dest.buffer_ptr();
     const unsigned mask_first_char = static_cast<unsigned>(lettercase_) >> 8;
     const unsigned mask_others_chars = static_cast<unsigned>(lettercase_) & 0x20;
     if (value_) {
@@ -165,7 +165,7 @@ void fmt_bool_printer<CharT>::print_to
     print_value:
     auto size = 5 - (int)value_;
     dest.ensure(size);
-    auto p = dest.pointer();
+    auto p = dest.buffer_ptr();
     const unsigned mask_first_char = static_cast<unsigned>(lettercase_) >> 8;
     const unsigned mask_others_chars = static_cast<unsigned>(lettercase_) & 0x20;
     if (value_) {

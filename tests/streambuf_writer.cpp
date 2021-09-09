@@ -44,7 +44,7 @@ void when_finish_is_not_called()
     std::basic_ostringstream<CharT> oss;
     {
         strf::basic_streambuf_writer<CharT> writer(oss.rdbuf());
-        strf::detail::copy_n<CharT>(tiny_str.begin(), tiny_str.size(), writer.pointer());
+        strf::detail::copy_n<CharT>(tiny_str.begin(), tiny_str.size(), writer.buffer_ptr());
         writer.advance(tiny_str.size());
     }
     auto obtained_content = oss.str();
@@ -61,7 +61,7 @@ void when_finish_is_not_called_but_state_is_bad_anyway()
     std::basic_ostringstream<CharT> oss;
     {
         strf::basic_streambuf_writer<CharT> writer(*oss.rdbuf());
-        strf::detail::copy_n(tiny_str.begin(), tiny_str.size(), writer.pointer());
+        strf::detail::copy_n(tiny_str.begin(), tiny_str.size(), writer.buffer_ptr());
         writer.advance(tiny_str.size());
         test_utils::turn_into_bad(writer);
     }

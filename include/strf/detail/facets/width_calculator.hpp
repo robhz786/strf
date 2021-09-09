@@ -188,8 +188,8 @@ private:
 template <typename WFunc>
 void STRF_HD width_accumulator<WFunc>::recycle()
 {
-    auto end = this->pointer();
-    this->set_pointer(buff_);
+    auto end = this->buffer_ptr();
+    this->set_buffer_ptr(buff_);
     if (this->good()) {
         auto it = buff_;
         for (; it != end; ++it)
@@ -533,19 +533,19 @@ public:
 
     STRF_HD void recycle() noexcept override {
         if (this->good()) {
-            auto res = detail::std_width_calc_func(buff_, this->pointer(), width_, state_, false);
+            auto res = detail::std_width_calc_func(buff_, this->buffer_ptr(), width_, state_, false);
             width_ = res.width;
             state_ = res.state;
             if (width_ == 0) {
                 this->set_good(false);
             }
         }
-        this->set_pointer(buff_);
+        this->set_buffer_ptr(buff_);
     }
 
     STRF_HD strf::width_t get_remaining_width() {
-        if (width_ != 0 && this->pointer() != buff_) {
-            auto res = detail::std_width_calc_func(buff_, this->pointer(), width_, state_, false);
+        if (width_ != 0 && this->buffer_ptr() != buff_) {
+            auto res = detail::std_width_calc_func(buff_, this->buffer_ptr(), width_, state_, false);
             return res.width;
         }
         return width_;
@@ -569,15 +569,15 @@ public:
 
     STRF_HD void recycle() noexcept override {
         if (this->good()) {
-            auto res = detail::std_width_calc_func(buff_, this->pointer(), width_, state_, true);
+            auto res = detail::std_width_calc_func(buff_, this->buffer_ptr(), width_, state_, true);
             width_ = res.width;
             state_ = res.state;
             codepoints_count_ += (res.ptr - buff_);
-            if (width_ == 0 && res.ptr != this->pointer()) {
+            if (width_ == 0 && res.ptr != this->buffer_ptr()) {
                 this->set_good(false);
             }
         }
-        this->set_pointer(buff_);
+        this->set_buffer_ptr(buff_);
     }
 
     struct result {
@@ -590,10 +590,10 @@ public:
         if (! this->good()) {
             return {0, false, codepoints_count_};
         }
-        auto res = detail::std_width_calc_func(buff_, this->pointer(), width_, state_, true);
+        auto res = detail::std_width_calc_func(buff_, this->buffer_ptr(), width_, state_, true);
         width_ = res.width;
         codepoints_count_ += (res.ptr - buff_);
-        bool whole_string_covered = (res.ptr == this->pointer());
+        bool whole_string_covered = (res.ptr == this->buffer_ptr());
         return {width_, whole_string_covered, codepoints_count_};
     }
 

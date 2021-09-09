@@ -116,28 +116,28 @@ STRF_TEST_FUNC void test_destination_functions()
         test_utils::input_tester_with_fixed_spaces<char, 4, 4> dest
             { {"abcdefgh", __FILE__, __LINE__, BOOST_CURRENT_FUNCTION} };
 
-        dest.ensure(2); // when argument is less than space()
-        dest.pointer()[0] = 'a';
-        dest.pointer()[1] = 'b';
+        dest.ensure(2); // when argument is less than buffer_space()
+        dest.buffer_ptr()[0] = 'a';
+        dest.buffer_ptr()[1] = 'b';
         dest.advance(2);
 
-        dest.ensure(2); // when argument is equal to space()
-        dest.pointer()[0] = 'c';
-        dest.pointer()[1] = 'd';
+        dest.ensure(2); // when argument is equal to buffer_space()
+        dest.buffer_ptr()[0] = 'c';
+        dest.buffer_ptr()[1] = 'd';
         dest.advance(2);
 
-        dest.ensure(4); // When argument is greater than space()
-        dest.pointer()[0] = 'e';
-        dest.pointer()[1] = 'f';
-        dest.pointer()[2] = 'g';
-        dest.pointer()[3] = 'h';
+        dest.ensure(4); // When argument is greater than buffer_space()
+        dest.buffer_ptr()[0] = 'e';
+        dest.buffer_ptr()[1] = 'f';
+        dest.buffer_ptr()[2] = 'g';
+        dest.buffer_ptr()[3] = 'h';
         dest.advance(4);
 
         dest.finish();
     }
     {
         // When destination<CharT>::do_write() calls recycle()
-        // and the space() afterwards is greater than needed
+        // and the buffer_space() afterwards is greater than needed
 
         test_utils::input_tester_with_fixed_spaces<char, 5, 10> dest
             { {"abcdefghij", __FILE__, __LINE__, BOOST_CURRENT_FUNCTION} };
@@ -147,7 +147,7 @@ STRF_TEST_FUNC void test_destination_functions()
     }
     {
         // When destination<CharT>::do_write() calls recycle()
-        // and the space() afterwards is exactly as needed
+        // and the buffer_space() afterwards is exactly as needed
         test_utils::input_tester_with_fixed_spaces<char, 5, 5> dest
             { {"abcdefghij", __FILE__, __LINE__, BOOST_CURRENT_FUNCTION} };
 

@@ -483,7 +483,7 @@ STRF_HD input_tester<CharOut>::input_tester
             ( src_filename_, src_line_, function_
             , "Warning: reserved more characters (", size
             , ") then the tester buffer size (", buffer_size_, ")." );
-        this->set_end(buffer_ + buffer_size_);
+        this->set_buffer_end(buffer_ + buffer_size_);
     }
 }
 
@@ -498,21 +498,21 @@ void STRF_HD input_tester<CharOut>::recycle()
     test_failure_(" destination::recycle() called "
                   "( calculated size too small ).\n");
 
-    if ( this->pointer() + strf::min_space_after_recycle<CharOut>()
+    if ( this->buffer_ptr() + strf::min_space_after_recycle<CharOut>()
        > buffer_ + buffer_size_ )
     {
-        pointer_before_overflow_ = this->pointer();
-        this->set_pointer(strf::garbage_buff<CharOut>());
-        this->set_end(strf::garbage_buff_end<CharOut>());
+        pointer_before_overflow_ = this->buffer_ptr();
+        this->set_buffer_ptr(strf::garbage_buff<CharOut>());
+        this->set_buffer_end(strf::garbage_buff_end<CharOut>());
     } else {
-        this->set_end(buffer_ + buffer_size_);
+        this->set_buffer_end(buffer_ + buffer_size_);
     }
 }
 
 template <typename CharOut>
 void STRF_HD input_tester<CharOut>::finish()
 {
-    auto pointer = pointer_before_overflow_ ? pointer_before_overflow_ : this->pointer();
+    auto pointer = pointer_before_overflow_ ? pointer_before_overflow_ : this->buffer_ptr();
     strf::detail::simple_string_view<CharOut> result{buffer_, pointer};
     bool failed_content = wrong_content_(result);
     bool failed_size = wrong_size_(result.size());
@@ -741,8 +741,8 @@ STRF_HD input_tester_with_fixed_spaces_base<CharT>::input_tester_with_fixed_spac
     if (expected.size() > buff_total_size) {
         emit_error_message_("\nBuffer smaller than expected content size");
         this->set_good(false);
-        this->set_pointer(strf::garbage_buff<CharT>());
-        this->set_end(strf::garbage_buff_end<CharT>());
+        this->set_buffer_ptr(strf::garbage_buff<CharT>());
+        this->set_buffer_end(strf::garbage_buff_end<CharT>());
     }
 }
 
@@ -750,24 +750,24 @@ template <typename CharT>
 STRF_HD void input_tester_with_fixed_spaces_base<CharT>::recycle()
 {
     if (this->good()) {
-        if (this->pointer() > this->end()) {
+        if (this->buffer_ptr() > this->buffer_end()) {
             emit_error_message_("\nContent inserted after end()");
-            if (this->pointer() < dest_end_) {
-                dest_end_ = this->pointer();
+            if (this->buffer_ptr() < dest_end_) {
+                dest_end_ = this->buffer_ptr();
             }
             goto set_bad;
         }
         if (++spaces_index_ < num_spaces_) {
-            this->set_end(this->end() + spaces_[spaces_index_]);
+            this->set_buffer_end(this->buffer_end() + spaces_[spaces_index_]);
         } else {
-            dest_end_ = this->pointer();
+            dest_end_ = this->buffer_ptr();
             goto set_bad;
         }
     } else {
         set_bad:
         this->set_good(false);
-        this->set_pointer(strf::garbage_buff<CharT>());
-        this->set_end(strf::garbage_buff_end<CharT>());
+        this->set_buffer_ptr(strf::garbage_buff<CharT>());
+        this->set_buffer_end(strf::garbage_buff_end<CharT>());
     }
 }
 
@@ -776,10 +776,10 @@ template <typename CharT>
 STRF_HD void input_tester_with_fixed_spaces_base<CharT>::finish()
 {
     if (this->good()) {
-        dest_end_ = this->pointer();
+        dest_end_ = this->buffer_ptr();
         this->set_good(false);
-        this->set_pointer(strf::garbage_buff<CharT>());
-        this->set_end(strf::garbage_buff_end<CharT>());
+        this->set_buffer_ptr(strf::garbage_buff<CharT>());
+        this->set_buffer_end(strf::garbage_buff_end<CharT>());
     }
     strf::detail::simple_string_view<CharT> result{dest_, dest_end_};
     bool as_expected =

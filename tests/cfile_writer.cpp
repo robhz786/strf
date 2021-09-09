@@ -97,12 +97,12 @@ void test_cfile_writer_base()
         memset(result_buff, 0, sizeof(result_buff));
         tester_t tester{buff, sizeof(buff), result_buff, 10};
 
-        memcpy(tester.pointer(), "0123456789abcdef", 16);
+        memcpy(tester.buffer_ptr(), "0123456789abcdef", 16);
         tester.advance(16);
         tester.recycle();
         TEST_FALSE(tester.good());
 
-        memcpy(tester.pointer(), "ABCDEF", 6);
+        memcpy(tester.buffer_ptr(), "ABCDEF", 6);
         tester.advance(6);
         tester.recycle();
 
@@ -118,7 +118,7 @@ void test_cfile_writer_base()
         memset(result_buff, 0, sizeof(result_buff));
         tester_t tester{buff, sizeof(buff), result_buff, 10};
 
-        strf::to(tester) (strf::multi('x', tester.space()));
+        strf::to(tester) (strf::multi('x', tester.buffer_space()));
         tester.write("0123456789abcdef", 16);
         TEST_STRVIEW_EQ(result_buff, "xxxxxxxxxx", 10);
         TEST_FALSE(tester.good());
@@ -146,7 +146,7 @@ void test_cfile_writer_base()
         memset(result_buff, 0, sizeof(result_buff));
         tester_t tester{buff, sizeof(buff), result_buff, 10};
 
-        memcpy(tester.pointer(), "0123456789abcdef", 16);
+        memcpy(tester.buffer_ptr(), "0123456789abcdef", 16);
         tester.advance(16);
         auto r = tester.finish();
 
@@ -158,7 +158,7 @@ void test_cfile_writer_base()
         memset(result_buff, 0, sizeof(result_buff));
         tester_t tester{buff, sizeof(buff), result_buff, sizeof(result_buff)};
 
-        memcpy(tester.pointer(), "ABCD", 4);
+        memcpy(tester.buffer_ptr(), "ABCD", 4);
         tester.advance(4);
         tester.recycle();
         strf::to(tester) (strf::multi('x', sizeof(buff)));
@@ -179,7 +179,7 @@ void test_cfile_writer_base()
         memset(result_buff, 0, sizeof(result_buff));
         {
             tester_t tester{buff, sizeof(buff), result_buff, sizeof(result_buff)};
-            memcpy(tester.pointer(), "ABCD", 4);
+            memcpy(tester.buffer_ptr(), "ABCD", 4);
             tester.advance(4);
         }
         // the destructor shall flush the content left in the buffer

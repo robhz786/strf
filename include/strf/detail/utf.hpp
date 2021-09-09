@@ -20,8 +20,8 @@ namespace strf {
         STRF_IF_UNLIKELY (!dest.good()) {       \
             return;                             \
         }                                       \
-        dest_it = dest.pointer();               \
-        dest_end = dest.end();                  \
+        dest_it = dest.buffer_ptr();            \
+        dest_end = dest.buffer_end();           \
     }
 
 #define STRF_CHECK_DEST_SIZE(SIZE)                  \
@@ -31,8 +31,8 @@ namespace strf {
         STRF_IF_UNLIKELY (!dest.good()) {           \
             return;                                 \
         }                                           \
-        dest_it = dest.pointer();                   \
-        dest_end = dest.end();                      \
+        dest_it = dest.buffer_ptr();                \
+        dest_end = dest.buffer_end();               \
     }
 
 #endif // ! defined(STRF_CHECK_DEST)
@@ -46,12 +46,12 @@ inline STRF_HD void repeat_sequence
     , CharT ch0
     , CharT ch1 ) noexcept
 {
-    auto p = dest.pointer();
+    auto p = dest.buffer_ptr();
     constexpr std::size_t seq_size = 2;
     std::size_t space;
     std::size_t inner_count;
     while (1) {
-        space = (dest.end() - p) / seq_size;
+        space = (dest.buffer_end() - p) / seq_size;
         inner_count = (space < count ? space : count);
         for (; inner_count; --inner_count) {
             p[0] = ch0;
@@ -66,7 +66,7 @@ inline STRF_HD void repeat_sequence
         STRF_IF_UNLIKELY (!dest.good()) {
             return;
         }
-        p = dest.pointer();
+        p = dest.buffer_ptr();
         count -= space;
     }
 }
@@ -79,12 +79,12 @@ inline STRF_HD void repeat_sequence
     , CharT ch1
     , CharT ch2 ) noexcept
 {
-    auto p = dest.pointer();
+    auto p = dest.buffer_ptr();
     constexpr std::size_t seq_size = 3;
     std::size_t space;
     std::size_t inner_count;
     while (1) {
-        space = (dest.end() - p) / seq_size;
+        space = (dest.buffer_end() - p) / seq_size;
         inner_count = (space < count ? space : count);
         for (; inner_count; --inner_count) {
             p[0] = ch0;
@@ -100,7 +100,7 @@ inline STRF_HD void repeat_sequence
         STRF_IF_UNLIKELY (!dest.good()) {
             return;
         }
-        p = dest.pointer();
+        p = dest.buffer_ptr();
         count -= space;
     }
 }
@@ -114,12 +114,12 @@ inline STRF_HD void repeat_sequence
     , CharT ch2
     , CharT ch3 ) noexcept
 {
-    auto p = dest.pointer();
+    auto p = dest.buffer_ptr();
     constexpr std::size_t seq_size = 4;
     std::size_t space;
     std::size_t inner_count;
     while (1) {
-        space = (dest.end() - p) / seq_size;
+        space = (dest.buffer_end() - p) / seq_size;
         inner_count = (space < count ? space : count);
         for (; inner_count; --inner_count) {
             p[0] = ch0;
@@ -136,7 +136,7 @@ inline STRF_HD void repeat_sequence
         STRF_IF_UNLIKELY (!dest.good()) {
             return;
         }
-        p = dest.pointer();
+        p = dest.buffer_ptr();
         count -= space;
     }
 }
@@ -1033,8 +1033,8 @@ STRF_HD void strf::static_transcoder
     unsigned long x;
     auto src_it = src;
     auto src_end = src + src_size;
-    auto dest_it = dest.pointer();
-    auto dest_end = dest.end();
+    auto dest_it = dest.buffer_ptr();
+    auto dest_end = dest.buffer_end();
     DestCharT ch32;
 
     while(src_it != src_end) {
@@ -1151,8 +1151,8 @@ STRF_HD void strf::static_transcoder
     std::uint8_t ch0, ch1, ch2, ch3;
     auto src_it = src;
     auto src_end = src + src_size;
-    auto dest_it = dest.pointer();
-    auto dest_end = dest.end();
+    auto dest_it = dest.buffer_ptr();
+    auto dest_end = dest.buffer_end();
     while(src_it != src_end) {
         ch0 = (*src_it);
         ++src_it;
@@ -1427,8 +1427,8 @@ STRF_HD void strf::static_transcoder
 {
     auto src_it = src;
     auto src_end = src + src_size;
-    auto dest_it = dest.pointer();
-    auto dest_end = dest.end();
+    auto dest_it = dest.buffer_ptr();
+    auto dest_end = dest.buffer_end();
     for(;src_it != src_end; ++src_it) {
         auto ch = *src_it;
         STRF_IF_LIKELY (ch < 0x80) {
@@ -1500,8 +1500,8 @@ STRF_HD void
 static_charset<CharT, strf::csid_utf8>::write_replacement_char
     ( strf::destination<CharT>& dest )
 {
-    auto dest_it = dest.pointer();
-    auto dest_end = dest.end();
+    auto dest_it = dest.buffer_ptr();
+    auto dest_end = dest.buffer_end();
     STRF_CHECK_DEST_SIZE(3);
     dest_it[0] = static_cast<CharT>('\xEF');
     dest_it[1] = static_cast<CharT>('\xBF');
@@ -1523,8 +1523,8 @@ STRF_HD void strf::static_transcoder
     DestCharT ch32;
     const SrcCharT* src_it_next;
     auto src_end = src + src_size;
-    auto dest_it = dest.pointer();
-    auto dest_end = dest.end();
+    auto dest_it = dest.buffer_ptr();
+    auto dest_end = dest.buffer_end();
     for(auto src_it = src; src_it != src_end; src_it = src_it_next) {
         src_it_next = src_it + 1;
         ch = *src_it;
@@ -1596,8 +1596,8 @@ STRF_HD void strf::static_transcoder
     auto src_it = src;
     const auto src_end = src + src_size;
     const SrcCharT* src_it_next;
-    auto dest_it = dest.pointer();
-    auto dest_end = dest.end();
+    auto dest_it = dest.buffer_ptr();
+    auto dest_end = dest.buffer_end();
     for( ; src_it != src_end; src_it = src_it_next) {
         ch = *src_it;
         src_it_next = src_it + 1;
@@ -1758,8 +1758,8 @@ STRF_HD void strf::static_transcoder
 {
     auto src_it = src;
     const auto src_end = src + src_size;
-    auto dest_it = dest.pointer();
-    auto dest_end = dest.end();
+    auto dest_it = dest.buffer_ptr();
+    auto dest_end = dest.buffer_end();
     for ( ; src_it != src_end; ++src_it) {
         auto ch = *src_it;
         STRF_IF_LIKELY (ch < 0x10000) {
@@ -1814,7 +1814,7 @@ static_charset<CharT, strf::csid_utf16>::write_replacement_char
     ( strf::destination<CharT>& dest )
 {
     dest.ensure(1);
-    *dest.pointer() = 0xFFFD;
+    *dest.buffer_ptr() = 0xFFFD;
     dest.advance();
 }
 
@@ -1828,8 +1828,8 @@ STRF_HD void strf::static_transcoder
     , strf::surrogate_policy surr_poli )
 {
     const auto src_end = src + src_size;
-    auto dest_it = dest.pointer();
-    auto dest_end = dest.end();
+    auto dest_it = dest.buffer_ptr();
+    auto dest_end = dest.buffer_end();
     if (surr_poli == strf::surrogate_policy::lax) {
         for (auto src_it = src; src_it < src_end; ++src_it) {
             auto ch = *src_it;
@@ -1876,7 +1876,7 @@ static_charset<CharT, strf::csid_utf32>::write_replacement_char
     ( strf::destination<CharT>& dest )
 {
     dest.ensure(1);
-    *dest.pointer() = 0xFFFD;
+    *dest.buffer_ptr() = 0xFFFD;
     dest.advance();
 }
 
@@ -1902,8 +1902,8 @@ STRF_HD void strf::static_transcoder
     unsigned long x;
     auto src_it = src;
     const auto src_end = src + src_size;
-    auto dest_it = dest.pointer();
-    auto dest_end = dest.end();
+    auto dest_it = dest.buffer_ptr();
+    auto dest_end = dest.buffer_end();
 
     for (;src_it != src_end; ++dest_it) {
         ch0 = (*src_it);
@@ -2028,8 +2028,8 @@ STRF_HD void strf::static_transcoder
     (void) inv_seq_notifier;
     auto src_it = src;
     const auto src_end = src + src_size;
-    auto dest_it = dest.pointer();
-    auto dest_end = dest.end();
+    auto dest_it = dest.buffer_ptr();
+    auto dest_end = dest.buffer_end();
 
     for( ; src_it < src_end; ++src_it) {
         auto ch = *src_it;
