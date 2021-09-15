@@ -68,11 +68,16 @@ cmake --build .
 cmake --install . --prefix __your/installation/directory__
 ----
 
-The in your CMake project, you import Strf and link your program or library
-against either `strf::strf-static-lib` and `strf::strf-header-only` target.
+The `__your/installation/directory__` used above must added to
+the `CMAKE_PREFIX_PATH` variable used in your CMake project.
+Then, the command `find_package(strf)` will bring into your
+project the targets `strf::strf-header-only` and
+`strf::strf-static-lib`.
 
 [source,cmake]
 ----
+# In your CMake project file:
+
 find_package(strf)
 target_link_libraries(your_target strf::strf-header-only)
 # or

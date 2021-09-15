@@ -30,9 +30,10 @@ option(
  "Test example programs"
   ${STRF_BUILD_EXAMPLES})
 
+set(STRF_VERSION 0.15.1)
 project (
   strf
-  VERSION 0.15.1
+  VERSION ${STRF_VERSION}
   LANGUAGES CXX)
 
 if (STRF_CUDA_SUPPORT)
@@ -42,6 +43,10 @@ endif ()
 if (STRF_BUILD_TESTS OR STRF_BUILD_EXAMPLES)
   enable_testing()
 endif (STRF_BUILD_TESTS OR STRF_BUILD_EXAMPLES)
+
+# https://cmake.org/cmake/help/git-stage/guide/importing-exporting/index.html
+include(CMakePackageConfigHelpers)
+include(GNUInstallDirs)
 
 add_library(strf-header-only INTERFACE)
 add_library(strf-static-lib  STATIC src/strf.cpp)
@@ -68,18 +73,13 @@ endif (STRF_WITH_CSTRING)
 
 target_include_directories(
   strf-header-only
-  INTERFACE
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+  INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   )
 
 target_include_directories(
   strf-static-lib
-  PUBLIC
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+  PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   )
-
 
 set_property(
   TARGET strf-header-only
@@ -90,52 +90,55 @@ set_property(
 set_property(
   TARGET strf-static-lib
   PROPERTY OUTPUT_NAME strf )
+set_target_properties(
+  strf-header-only strf-static-lib
+  PROPERTIES
+  VERSION ${STRF_VERSION})
 
 set(TARGETS_TO_INSTALL strf-header-only strf-static-lib)
 
-if (${STRF_CUDA_SUPPORT})
+if (${STRF_CUDA_SUPPORT})  
   add_library(strf-cuda STATIC src/strf.cu)
   target_include_directories(
     strf-cuda
-    PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
-  )
-  target_compile_features(strf-cuda PUBLIC cxx_std_11)
-  set_property(
-    TARGET strf-cuda
-    PROPERTY EXPORT_NAME strf-cuda)
+    PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include> )
+  #target_compile_features(strf-cuda PUBLIC cxx_std_11)
+  set_target_properties(
+    strf-cuda
+    PROPERTIES
+    EXPORT_NAME strf-cuda
+    VERSION ${STRF_VERSION})   
   list(APPEND TARGETS_TO_INSTALL strf-cuda)
 endif()
 
-include(CMakePackageConfigHelpers)
+configure_package_config_file(
+  "${CMAKE_CURRENT_SOURCE_DIR}/Config.cmake.in"
+  "${CMAKE_CURRENT_BINARY_DIR}/strf-config.cmake"
+  INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/strf
+)
 
 write_basic_package_version_file(
   "strf-config-version.cmake"
-  VERSION ${PROJECT_VERSION}
+  VERSION ${STRF_VERSION}
   COMPATIBILITY SameMinorVersion)
-
-include(GNUInstallDirs)
 
 install(
   TARGETS ${TARGETS_TO_INSTALL}
-  EXPORT strf
-  RUNTIME DESTINATION  "${CMAKE_INSTALL_BINDIR}"
-  ARCHIVE DESTINATION  "${CMAKE_INSTALL_LIBDIR}"
-  LIBRARY DESTINATION  "${CMAKE_INSTALL_LIBDIR}"
+  EXPORT strf-targets
+  ARCHIVE  DESTINATION "${CMAKE_INSTALL_LIBDIR}"
   INCLUDES DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
 )
 install(
-  EXPORT strf
-  FILE "strf-config.cmake"
+  EXPORT strf-targets
   NAMESPACE strf::
-  DESTINATION "lib/cmake/strf" )
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/strf )
 
 install(
-  FILES "${CMAKE_CURRENT_BINARY_DIR}/strf-config-version.cmake"
+  FILES
+  "${CMAKE_CURRENT_BINARY_DIR}/strf-config.cmake"
+  "${CMAKE_CURRENT_BINARY_DIR}/strf-config-version.cmake"
   DESTINATION "lib/cmake/strf" )
 
-# TODO: These should be pulled into the installation directory by some target...
 install(
   FILES include/strf.hpp
   DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}" )
