@@ -44,19 +44,19 @@ somewhere inside your project directory ( like in a `external/`
 or `third_party/` subdirectory ), and then, in your CMakeLists.txt file,
 you add the command:
 
-[source]
+[source,subs=normal]
 ----
-add_subdirectory(external/strf) # or third_party/strf or whatever
+add_subdirectory(__<strf-dir>__)
 ----
 
-This will add two targets in your project: `strf::strf-header-only`
+This adds two targets in your project: `strf::strf-header-only`
 and `strf::strf-static-lib`.
 
 === Option 2: Export and import
 
 // https://cmake.org/cmake/help/git-stage/guide/importing-exporting/index.html
 
-First you install Strf:
+First you install Strf in some location:
 
 [source,subs=normal]
 ----
@@ -65,11 +65,17 @@ mkdir build_strf
 cd build_strf
 cmake ../strf
 cmake --build .
-cmake --install . --prefix __your/installation/directory__
+cmake --install . --prefix __<installation-directory>__
 ----
 
-The `__your/installation/directory__` used above must added to
+The `__<installation-directory>__` used above must added to
 the `CMAKE_PREFIX_PATH` variable used in your CMake project.
+
+[source,subs=normal]
+----
+cmake -G __<generator-name>__ -DCMAKE_PREFIX_PATH=__<installation-directory>__ ... __<path-to-source>__
+----
+
 Then, the command `find_package(strf)` will bring into your
 project the targets `strf::strf-header-only` and
 `strf::strf-static-lib`.
@@ -77,6 +83,7 @@ project the targets `strf::strf-header-only` and
 [source,cmake]
 ----
 # In your CMake project file:
+# ...
 
 find_package(strf)
 target_link_libraries(your_target strf::strf-header-only)
@@ -86,10 +93,12 @@ target_link_libraries(your_target strf::strf-header-only)
 
 == Running the unit tests
 
-To build the unit test, just add the flag `-DSTRF_BUILD_TEST=ON` on
-the first `cmake` command invocation in the above snippet,
-then run command `ctest` after the command `cmake --build .`
-
+To build the unit test, just turn on the `STRF_BUILD_TEST` CMake option:
+[source,subs=normal]
+----
+cmake -G __<generator-name>__  -DSTRF_BUILD_TEST=ON ... __<Strf-root-dir>__
+cmake --build . && ctest
+----
 == Freestanding Strf
 
 There is an experimental variant of the Strf library: if you use the CMake option

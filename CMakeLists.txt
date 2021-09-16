@@ -106,8 +106,12 @@ if (${STRF_CUDA_SUPPORT})
   set_target_properties(
     strf-cuda
     PROPERTIES
-    EXPORT_NAME strf-cuda
-    VERSION ${STRF_VERSION})   
+    VERSION ${STRF_VERSION}
+    CUDA_SEPARABLE_COMPILATION ON
+    EXPORT_NAME strf-cuda )
+  target_compile_definitions(
+    strf-cuda
+    PUBLIC STRF_CUDA_SEPARATE_COMPILATION )
   list(APPEND TARGETS_TO_INSTALL strf-cuda)
 endif()
 

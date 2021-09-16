@@ -18,8 +18,14 @@
 #  endif
 #endif // ! defined(STRF_ASSERT)
 
-#if defined(STRF_SOURCE) && !defined(STRF_SEPARATE_COMPILATION)
-#define STRF_SEPARATE_COMPILATION
+#if defined(__CUDACC__)
+#  undef STRF_SEPARATE_COMPILATION
+#endif
+
+#if defined(STRF_SOURCE) || (defined(STRF_CUDA_SEPARATE_COMPILATION) && defined(__CUDACC__))
+#  if ! defined(STRF_SEPARATE_COMPILATION)
+#     define STRF_SEPARATE_COMPILATION
+#  endif
 #endif
 
 #if defined(STRF_SOURCE)

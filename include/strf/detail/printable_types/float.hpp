@@ -86,8 +86,8 @@ STRF_FUNC_IMPL STRF_HD detail::double_dec decode(double d)
 
 #else  // ! defined(STRF_OMIT_IMPL)
 
-detail::double_dec decode(double d);
-detail::double_dec decode(float f);
+STRF_HD detail::double_dec decode(double d);
+STRF_HD detail::double_dec decode(float f);
 
 #endif // ! defined(STRF_OMIT_IMPL)
 
