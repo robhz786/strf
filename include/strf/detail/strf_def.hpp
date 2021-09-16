@@ -24,13 +24,11 @@
 
 #if defined(STRF_SOURCE)
 // When building static library
-#  define STRF_FUNC
 #  define STRF_FUNC_IMPL
 #  define STRF_EXPLICIT_TEMPLATE template
 #elif defined(STRF_SEPARATE_COMPILATION)
 // When using static library
 #  define STRF_OMIT_IMPL
-#  define STRF_FUNC
 #  define STRF_EXPLICIT_TEMPLATE extern template
 #else
 // When using header-only library
@@ -116,27 +114,27 @@
 //#define STRF_NOEXCEPT_NOEXCEPT(X) noexcept(noexcept(X))
 
 #ifdef __CUDACC__
+#  define STRF_FORCEINLINE __forceinline__
+#elif defined(__GNUC__) || defined(__clang__)
+#  define STRF_FORCEINLINE inline __attribute__((always_inline))
+#elif defined(_MSC_VER)
+#  define STRF_FORCEINLINE __forceinline
+#else
+#  define STRF_FORCEINLINE inline
+#endif
 
-#define STRF_HOST    __host__
-#define STRF_DEVICE  __device__
-#define STRF_FD      __forceinline__          __device__
-#define STRF_FH      __forceinline__ __host__
-#define STRF_FHD     __forceinline__ __host__ __device__
-#define STRF_HD                      __host__ __device__
-
+#ifdef __CUDACC__
+#  define STRF_HOST    __host__
+#  define STRF_DEVICE  __device__
+#  define STRF_HD      __host__ __device__
 #else // __CUDACC__
-
-#define STRF_FD inline
-#define STRF_FH inline
-#define STRF_FHD inline
-#define STRF_HD
-#define STRF_HOST
-#define STRF_DEVICE
-
+#  define STRF_HD
+#  define STRF_HOST
+#  define STRF_DEVICE
 #endif // __CUDACC__
 
 #ifdef __CUDA_ARCH__
-#define STRF_NO_GLOBAL_CONSTEXPR_VARIABLE
+#  define STRF_NO_GLOBAL_CONSTEXPR_VARIABLE
 #endif
 
 namespace strf { namespace detail {

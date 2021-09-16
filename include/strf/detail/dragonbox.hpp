@@ -24,16 +24,13 @@
 // Suppress additional buffer overrun check
 // I have no idea why MSVC thinks some functions here are vulnerable to the buffer overrun attacks
 // No, they aren't.
-#if defined(__GNUC__) || defined(__clang__)
-#define JKJ_SAFEBUFFERS
-#define JKJ_FORCEINLINE inline __attribute__((always_inline))
-#elif defined(_MSC_VER) && !defined(__CUDACC__)
+#if defined(_MSC_VER) && !defined(__CUDACC__)
 #define JKJ_SAFEBUFFERS __declspec(safebuffers)
-#define JKJ_FORCEINLINE __forceinline
 #else
 #define JKJ_SAFEBUFFERS
-#define JKJ_FORCEINLINE inline
 #endif
+
+#define JKJ_FORCEINLINE STRF_FORCEINLINE
 
 #if defined(__SIZEOF_INT128__) && !defined(__CUDACC__)
 #define JKJ_WITH_INTERNAL_INT128
