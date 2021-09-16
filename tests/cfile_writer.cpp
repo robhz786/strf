@@ -7,6 +7,9 @@
 
 #include <ctime>
 #include <cstdlib>
+#if defined(__GNUC__)
+#  pragma GCC diagnostic ignored "-Warray-bounds"
+#endif
 #include <strf/to_cfile.hpp>
 #include "test_utils.hpp"
 
