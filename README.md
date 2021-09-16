@@ -3,16 +3,20 @@
 [![Build Status](https://ci.appveyor.com/api/projects/status/github/robhz786/strf?branch=main&svg=true)](https://ci.appveyor.com/project/robhz786/strf/branch/main)
 [![codecov](https://codecov.io/gh/robhz786/strf/branch/main/graph/badge.svg?token=d5DIZzYv5O)](https://codecov.io/gh/robhz786/strf)
 
-Yet another C++ formatting library.
+Strf is a C++11 text formatting library that
 
-__Attention__ : Branch `master` was renamed to `main` when version 0.15.0 was released.
+* [is fast](http://robhz786.github.io/strf-benchmarks/v0.15.1/results.html)
+* [is highly extensible](http://robhz786.github.io/strf/v0.15.1/versus_fmtlib.html#_extensibility)
+* [can do thing that others can't](https://robhz786.github.io/strf/v0.15.1/versus_fmtlib.html#_strf)
+
+__Attention__ : Branch `master` was renamed to `main` at the time of release 0.15.0.
 
 ## Documentation
 
 * Overview
   * [Tutorial](http://robhz786.github.io/strf/v0.15.1/tutorial.html)
   * [Quick reference](http://robhz786.github.io/strf/v0.15.1/quick_reference.html)
-  * [Strf versus {fmt}](http://robhz786.github.io/strf/v0.15.1/versus_fmtlib.html)  ( a quick comparison )
+  * [Strf versus {fmt}](http://robhz786.github.io/strf/v0.15.1/versus_fmtlib.html)
 * How to extend strf:
   * [Adding destination](http://robhz786.github.io/strf/v0.15.1/howto_add_destination.html)
   * [Adding printable types](http://robhz786.github.io/strf/v0.15.1/howto_add_printable_types.html)
@@ -35,4 +39,41 @@ Strf has been tested in the following compilers:
 * GCC 6.3.0
 * Visual Studio 2017 15.8
 * NVCC 11.0
+
+## A glance
+
+```c++
+#include <strf/to_string.hpp>
+#include <assert>
+
+constexpr int x = 255;
+
+void samples()
+{
+    // Creating std::string
+    auto str = strf::to_string(x, " in hexadecimal is ", *strf::hex(x), '.');
+    assert("255 in hexadecimal is 0xff.");
+
+    // Alternative syntax
+    auto str_tr = strf::to_string.tr("{} in hexadecimal is {}.", x, *strf::hex(x));
+    assert(str_tr == str);
+
+    // Applying a facet
+    auto to_string_mc = strf::to_string.with(strf::mixedcase);
+    auto str_mc = to_string_mc(x, " in hexadecimal is ", *strf::hex(x), '.');
+    assert(str_mc == "255 in hexadecimal is 0xFF.");
+
+    // Achieving the same result, but in multiple steps:
+    strf::string_maker str_maker;
+    strf::to(str_maker) (x, " in hexadecimal is ");
+    strf::to(str_maker).with(strf::mixedcase) (*strf::hex(x), '.');
+    auto str_mc_2 = str_maker.finish();
+    assert(str_mc_2 == str_mc);
+
+    // Writing instead to char*
+    char buff[200];
+    strf::to(buff, sizeof(buff)) (x, " in hexadecimal is ", *strf::hex(x), '.');
+    assert(str == buff);
+}
+```
 
