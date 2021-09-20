@@ -1968,58 +1968,69 @@ inline STRF_HD strf::detail::float_init_result init_double_data_with_precision_g
     // - Trailing fractional zeros are removed when showpoint is false.
 
     int xz; // number of zeros to be added or ( if negative ) digits to be removed
-    int p = precision != 0 ? precision : 1;
+    const int p = precision != 0 ? precision : 1;
     int int_digcount = (int)data.m10_digcount + data.e10;
     // equivalent to:
     // const int sci_notation_exp = (int)data.m10_digcount + data.e10 - 1;
     // if (sci_notation_exp < -4 || sci_notation_exp >= p);
     if (int_digcount < -3 || int_digcount > p) {
-        int_digcount = 1;
         data.form = detail::float_form::sci;
         const int sci_notation_exp = (int)data.m10_digcount + data.e10 - 1;
-        data.showpoint = showpoint || (p > 1 && data.m10_digcount > 1);
         data.sub_chars_count += 4 + (sci_notation_exp > 99 || sci_notation_exp < -99);
-
-        xz = ( (p < (int)data.m10_digcount || showpoint)
-             ? p - (int)data.m10_digcount
-             : 0 );
-        data.sub_chars_count += (int)data.m10_digcount;
+        xz = p - (int)data.m10_digcount;
+        if (xz < 0) {
+            int_digcount = 1;
+            data.sub_chars_count += p;
+            goto remove_fractional_trailing_digits;
+        }
+        STRF_ASSERT(p >= (int)data.m10_digcount);
+        if (showpoint) {
+            data.extra_zeros = static_cast<detail::chars_count_t>(xz);
+            data.sub_chars_count += p;
+            data.showpoint = true;
+        } else {
+            data.sub_chars_count += (int)data.m10_digcount;
+            data.showpoint = data.m10_digcount > 1;
+        }
+        goto end;
     } else {
         data.form = detail::float_form::fixed;
         STRF_ASSERT (p >= int_digcount);
-        data.showpoint = showpoint || (p > int_digcount && data.e10 < 0);
         if (grouping.any_separator(int_digcount)) {
-            data.sep_count = static_cast<detail::chars_count_t>(grouping.separators_count(int_digcount));
+            data.sep_count = static_cast<detail::chars_count_t>
+                (grouping.separators_count(int_digcount));
             data.sub_chars_count += data.sep_count;
         }
         if (data.e10 >= 0) {
             data.sub_chars_count += static_cast<detail::chars_count_t>(int_digcount);
-            //data.showpoint = showpoint;
-            // STRF_ASSERT(p >= int_digcount);
-            // STRF_ASSERT(p >= (int)data.m10_digcount);
-            xz = showpoint ? p - int_digcount : 0;
+            if (showpoint && p > int_digcount) {
+                xz = p - int_digcount;
+                data.extra_zeros = static_cast<detail::chars_count_t>(xz);
+                data.sub_chars_count += data.extra_zeros;
+            }
+            data.showpoint = showpoint;
+            goto end;
         } else {
-            const int digcount = (int)data.m10_digcount;
-            if (p < digcount || showpoint) {
-                xz = p - digcount;
-                //data.showpoint = showpoint || (p > int_digcount);
-            } else {
-                xz = 0;
-                //data.showpoint = true;
+            data.sub_chars_count +=
+                ( data.e10 <= -(int)data.m10_digcount
+                ? static_cast<detail::chars_count_t>(1 - data.e10)
+                : data.m10_digcount );
+            xz = p - (int)data.m10_digcount;
+            if (xz < 0) {
+                data.sub_chars_count -= static_cast<detail::chars_count_t>(-xz);
+                goto remove_fractional_trailing_digits;
             }
-            if (data.e10 <= -digcount) {
-                data.sub_chars_count += static_cast<detail::chars_count_t>(1 - data.e10);
-            } else {
-                data.sub_chars_count += static_cast<detail::chars_count_t>(digcount);
+            data.showpoint = true;
+            if (showpoint) {
+                data.extra_zeros = static_cast<detail::chars_count_t>(xz);
+                data.sub_chars_count += data.extra_zeros;
             }
+            goto end;
         }
     }
-    data.sub_chars_count += static_cast<strf::detail::make_signed_t<detail::chars_count_t>>(xz);
+    {
+        remove_fractional_trailing_digits:
 
-    if (xz >= 0) {
-        data.extra_zeros = static_cast<detail::chars_count_t>(xz);
-    } else {
-        data.extra_zeros = 0;
         unsigned dp = -xz;
         data.m10_digcount -= static_cast<detail::chars_count_t>(dp);
         data.e10 += dp;
@@ -2028,18 +2039,23 @@ inline STRF_HD strf::detail::float_init_result init_double_data_with_precision_g
         data.m10 = data.m10 / p10;
         auto middle = p10 >> 1;
         data.m10 += (remainer > middle || (remainer == middle && (data.m10 & 1) == 1));
-
-        while ((int)data.m10_digcount > int_digcount && data.m10 % 10 == 0) {
+        bool has_fractional_digits = true;
+        while (true) {
+            if ((int)data.m10_digcount <= int_digcount) {
+                has_fractional_digits = false;
+                break;
+            }
+            if (data.m10 % 10 != 0) {
+                break;
+            }
             data.m10 /= 10;
             -- data.m10_digcount;
             -- data.sub_chars_count;
             ++ data.e10;
         }
-        const bool is_sci = data.form == detail::float_form::sci;
-        int frac_digcount = is_sci * (data.m10_digcount - 1)
-            - ! is_sci * (data.e10 < 0) * data.e10;
-        data.showpoint = showpoint || (frac_digcount != 0);
+        data.showpoint = showpoint || has_fractional_digits;
     }
+    end:
     data.sub_chars_count += data.showpoint;
     return init_double_printer_data_fill
         ( data, rounded_fmt_width
@@ -2059,15 +2075,15 @@ inline STRF_HD strf::detail::float_init_result init_double_data_with_precision_s
     data.form = detail::float_form::sci;
     data.m10_digcount = static_cast<detail::chars_count_t>
         (strf::detail::count_digits<10>(data.m10));
-    int xz; // number of zeros to be added or ( if negative ) digits to be removed
 
     const int sci_notation_exp = (int)data.m10_digcount + data.e10 - 1;
     const unsigned frac_digits = data.m10_digcount - 1;
-    xz = (precision - frac_digits);
     data.showpoint = showpoint || (precision != 0);
+    data.sub_chars_count += data.showpoint;
     data.sub_chars_count += 5 + precision;
     data.sub_chars_count += (sci_notation_exp > 99 || sci_notation_exp < -99);
 
+    int xz = (precision - frac_digits);
     if (xz >= 0) {
         data.extra_zeros = static_cast<detail::chars_count_t>(xz);
     } else {
@@ -2081,7 +2097,6 @@ inline STRF_HD strf::detail::float_init_result init_double_data_with_precision_s
         auto middle = p10 >> 1;
         data.m10 += (remainer > middle || (remainer == middle && (data.m10 & 1) == 1));
     }
-    data.sub_chars_count += data.showpoint;
     return init_double_printer_data_fill
         ( data, rounded_fmt_width
         , (detail::max)(data.sub_chars_count, data.pad0width)
@@ -2102,8 +2117,9 @@ inline STRF_HD strf::detail::float_init_result init_double_data_with_precision_f
         (strf::detail::count_digits<10>(data.m10));
     data.showpoint = showpoint || (precision != 0);
     data.form = detail::float_form::fixed;
-    const int frac_digits = data.e10 < 0 ? -data.e10 : 0;
+    data.sub_chars_count += data.showpoint;
 
+    const int frac_digits = data.e10 < 0 ? -data.e10 : 0;
     int xz = (precision - frac_digits);
     if (xz <= -(int)data.m10_digcount) {
         data.extra_zeros = precision;
@@ -2114,10 +2130,11 @@ inline STRF_HD strf::detail::float_init_result init_double_data_with_precision_f
         data.sub_chars_count += 1 + precision;
     } else {
         auto int_digcount = ( (int)data.m10_digcount > -data.e10
-                              ? (int)data.m10_digcount + data.e10
-                              : 1 );
+                            ? (int)data.m10_digcount + data.e10
+                            : 1 );
         if (grouping.any_separator(int_digcount)) {
-            data.sep_count = static_cast<detail::chars_count_t>(grouping.separators_count(int_digcount));
+            data.sep_count = static_cast<detail::chars_count_t>
+                (grouping.separators_count(int_digcount));
             data.sub_chars_count += static_cast<detail::chars_count_t>(data.sep_count);
         }
         data.sub_chars_count += static_cast<detail::chars_count_t>(int_digcount + precision);
@@ -2136,7 +2153,6 @@ inline STRF_HD strf::detail::float_init_result init_double_data_with_precision_f
 
         }
     }
-    data.sub_chars_count += data.showpoint;
     return init_double_printer_data_fill
         ( data, rounded_fmt_width
         , (detail::max)(data.sub_chars_count, data.pad0width)
