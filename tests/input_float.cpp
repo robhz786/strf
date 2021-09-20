@@ -420,6 +420,7 @@ STRF_TEST_FUNC void basic_tests()
     TEST("______________1.0000")  (j(strf::fixed(1.0).p(4)));
     TEST("______________1.2500")  (j(strf::fixed(1.25).p(4)));
     TEST("____________1.001000")  (j(strf::fixed(1.001).p(6)));
+    TEST("_______________0.000")  (j(strf::fixed(1e-30).p(3)));
     TEST("_______________0.125")  (j(strf::fixed(0.125)));
 
     // test rounding

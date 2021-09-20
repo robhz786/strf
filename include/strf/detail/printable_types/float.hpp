@@ -2027,17 +2027,26 @@ inline STRF_HD strf::detail::float_init_result init_dec_double_printer_data_with
     } else {
         STRF_ASSERT (notation == float_notation::fixed);
         data.showpoint = showpoint || (precision != 0);
-        const int frac_digits = (data.e10 < 0) * -data.e10;
-        xz = (precision - frac_digits);
         data.form = detail::float_form::fixed;
-        auto int_digcount = ( (int)data.m10_digcount > -data.e10
-                            ? (int)data.m10_digcount + data.e10
-                            : 1 );
-        if (grouping.any_separator(int_digcount)) {
-            data.sep_count = static_cast<detail::chars_count_t>(grouping.separators_count(int_digcount));
-            data.sub_chars_count += static_cast<detail::chars_count_t>(data.sep_count);
+        const int frac_digits = data.e10 < 0 ? -data.e10 : 0;
+        xz = (precision - frac_digits);
+        if (xz > -(int)data.m10_digcount) {
+            auto int_digcount = ( (int)data.m10_digcount > -data.e10
+                                ? (int)data.m10_digcount + data.e10
+                                : 1 );
+            if (grouping.any_separator(int_digcount)) {
+                data.sep_count = static_cast<detail::chars_count_t>(grouping.separators_count(int_digcount));
+                data.sub_chars_count += static_cast<detail::chars_count_t>(data.sep_count);
+            }
+            data.sub_chars_count += static_cast<detail::chars_count_t>(int_digcount + precision);
+        } else {
+            xz = precision;
+            data.m10_digcount = 1;
+            data.m10 = 0;
+            data.e10 = 0;
+            data.sep_count = 0;
+            data.sub_chars_count += 1 + precision;
         }
-        data.sub_chars_count += static_cast<detail::chars_count_t>(int_digcount + precision);
     }
     if (xz >= 0) {
         data.extra_zeros = static_cast<detail::chars_count_t>(xz);
