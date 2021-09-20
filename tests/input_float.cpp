@@ -843,6 +843,10 @@ STRF_TEST_FUNC void test_punctuation()
 
 STRF_TEST_FUNC void test_input_float()
 {
+    TEST("120") (strf::gen(120.1, 3));
+    TEST("       120") (strf::gen(120.1, 3) > 10);
+    TEST("       130") (strf::gen(391.0/3.0, 3) > 10);
+    TEST("       460") (strf::gen(1381.0/3.0, 3) > 10);
 
 #if defined(__GNUC__) && (__GNUC__ == 7 || __GNUC__ == 8)
 #  pragma GCC diagnostic push

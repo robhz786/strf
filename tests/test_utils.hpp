@@ -496,7 +496,7 @@ template <typename CharOut>
 void STRF_HD input_tester<CharOut>::recycle()
 {
     test_failure_(" destination::recycle() called "
-                  "( calculated size too small ).\n");
+                  "( it means the calculated size too small ).\n");
 
     if ( this->buffer_ptr() + strf::min_space_after_recycle<CharOut>()
        > buffer_ + buffer_size_ )
