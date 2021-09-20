@@ -364,7 +364,8 @@ STRF_TEST_FUNC void basic_tests()
     TEST("_____________1.2e-05")  (j(strf::fmt(0.0000123).p(2)));
     TEST("_______________1e+01") (j(strf::fmt(12.0).p(1)));
     TEST("_____________1.2e+02") (j(strf::fmt(123.0).p(2)));
-    TEST("_________________123") (j(strf::fmt(123.0).p(4)));
+    TEST("_________________120") (j(strf::fmt(120.0).p(4)));
+    TEST("_________________120") (j(strf::fmt(120.1).p(3)));
     TEST("_______________1e+04") (j(strf::fmt(10000.0).p(4)));
     TEST("_______________10000") (j(strf::fmt(10000.0).p(5)));
     TEST("_______________10000") (j(strf::fmt(10000.0).p(6)));
@@ -843,11 +844,6 @@ STRF_TEST_FUNC void test_punctuation()
 
 STRF_TEST_FUNC void test_input_float()
 {
-    TEST("120") (strf::gen(120.1, 3));
-    TEST("       120") (strf::gen(120.1, 3) > 10);
-    TEST("       130") (strf::gen(391.0/3.0, 3) > 10);
-    TEST("       460") (strf::gen(1381.0/3.0, 3) > 10);
-
 #if defined(__GNUC__) && (__GNUC__ == 7 || __GNUC__ == 8)
 #  pragma GCC diagnostic push
 #  pragma GCC diagnostic ignored "-Warray-bounds"

@@ -1969,12 +1969,12 @@ inline STRF_HD strf::detail::float_init_result init_double_data_with_precision_g
 
     int xz; // number of zeros to be added or ( if negative ) digits to be removed
     int p = precision != 0 ? precision : 1;
-    const int int_digcount_fixed = (int)data.m10_digcount + data.e10;
-
+    int int_digcount = (int)data.m10_digcount + data.e10;
     // equivalent to:
     // const int sci_notation_exp = (int)data.m10_digcount + data.e10 - 1;
     // if (sci_notation_exp < -4 || sci_notation_exp >= p);
-    if (int_digcount_fixed < -3 || int_digcount_fixed > p) {
+    if (int_digcount < -3 || int_digcount > p) {
+        int_digcount = 1;
         data.form = detail::float_form::sci;
         const int sci_notation_exp = (int)data.m10_digcount + data.e10 - 1;
         data.showpoint = showpoint || (p > 1 && data.m10_digcount > 1);
@@ -1986,23 +1986,23 @@ inline STRF_HD strf::detail::float_init_result init_double_data_with_precision_g
         data.sub_chars_count += (int)data.m10_digcount;
     } else {
         data.form = detail::float_form::fixed;
-        STRF_ASSERT (p >= int_digcount_fixed);
-        data.showpoint = showpoint || (p > int_digcount_fixed && data.e10 < 0);
-        if (grouping.any_separator(int_digcount_fixed)) {
-            data.sep_count = static_cast<detail::chars_count_t>(grouping.separators_count(int_digcount_fixed));
+        STRF_ASSERT (p >= int_digcount);
+        data.showpoint = showpoint || (p > int_digcount && data.e10 < 0);
+        if (grouping.any_separator(int_digcount)) {
+            data.sep_count = static_cast<detail::chars_count_t>(grouping.separators_count(int_digcount));
             data.sub_chars_count += data.sep_count;
         }
         if (data.e10 >= 0) {
-            data.sub_chars_count += static_cast<detail::chars_count_t>(int_digcount_fixed);
+            data.sub_chars_count += static_cast<detail::chars_count_t>(int_digcount);
             //data.showpoint = showpoint;
-            // STRF_ASSERT(p >= int_digcount_fixed);
+            // STRF_ASSERT(p >= int_digcount);
             // STRF_ASSERT(p >= (int)data.m10_digcount);
-            xz = showpoint ? p - int_digcount_fixed : 0;
+            xz = showpoint ? p - int_digcount : 0;
         } else {
             const int digcount = (int)data.m10_digcount;
             if (p < digcount || showpoint) {
                 xz = p - digcount;
-                //data.showpoint = showpoint || (p > int_digcount_fixed);
+                //data.showpoint = showpoint || (p > int_digcount);
             } else {
                 xz = 0;
                 //data.showpoint = true;
@@ -2029,16 +2029,16 @@ inline STRF_HD strf::detail::float_init_result init_double_data_with_precision_g
         auto middle = p10 >> 1;
         data.m10 += (remainer > middle || (remainer == middle && (data.m10 & 1) == 1));
 
-        while (data.m10 % 10 == 0) {
+        while ((int)data.m10_digcount > int_digcount && data.m10 % 10 == 0) {
             data.m10 /= 10;
             -- data.m10_digcount;
             -- data.sub_chars_count;
             ++ data.e10;
         }
         const bool is_sci = data.form == detail::float_form::sci;
-        int frac_digits = is_sci * (data.m10_digcount - 1)
+        int frac_digcount = is_sci * (data.m10_digcount - 1)
             - ! is_sci * (data.e10 < 0) * data.e10;
-        data.showpoint = showpoint || (frac_digits != 0);
+        data.showpoint = showpoint || (frac_digcount != 0);
     }
     data.sub_chars_count += data.showpoint;
     return init_double_printer_data_fill
