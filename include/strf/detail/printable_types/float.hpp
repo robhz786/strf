@@ -1947,107 +1947,75 @@ inline STRF_HD strf::detail::float_init_result init_hex_double_printer_data
         ( data, rounded_fmt_width, content_width, alignment );
 }
 
-inline STRF_HD strf::detail::float_init_result init_dec_double_printer_data_with_precision
+inline STRF_HD strf::detail::float_init_result init_double_data_with_precision_general
     ( strf::detail::double_printer_data& data
     , strf::digits_grouping grouping
     , detail::chars_count_t precision
     , unsigned rounded_fmt_width
     , strf::text_alignment alignment
-    , strf::float_notation notation
     , bool showpoint ) noexcept
 {
     data.sep_count = 0;
     data.extra_zeros = 0;
-    data.m10_digcount
-        = static_cast<detail::chars_count_t>(strf::detail::count_digits<10>(data.m10));
+    data.m10_digcount = static_cast<detail::chars_count_t>
+        (strf::detail::count_digits<10>(data.m10));
+
+    // As in printf:
+    // - Select the scientific notation if the resulting exponent
+    //   is less than -4 or greater than or equal to the precision
+    // - The precision specifies the number of significant digits.
+    // - If the precision is 0, it is treated as 1
+    // - Trailing fractional zeros are removed when showpoint is false.
 
     int xz; // number of zeros to be added or ( if negative ) digits to be removed
-    if (notation == float_notation::general) {
-        // As in printf:
-        // - Select the scientific notation if the resulting exponent
-        //   is less than -4 or greater than or equal to the precision
-        // - The precision specifies the number of significant digits.
-        // - If the precision is 0, it is treated as 1
-        // - Trailing fractional zeros are removed when showpoint is false.
+    int p = precision != 0 ? precision : 1;
+    const int int_digcount_fixed = (int)data.m10_digcount + data.e10;
 
-        int p = precision != 0 ? precision : 1;
-        const int int_digcount_fixed = (int)data.m10_digcount + data.e10;
-        // same as:
-        // const int sci_notation_exp = (int)data.m10_digcount + data.e10 - 1;
-        // if (sci_notation_exp < -4 || sci_notation_exp >= p);
-        if (int_digcount_fixed < -3 || int_digcount_fixed > p) {
-            data.form = detail::float_form::sci;
-            const int sci_notation_exp = (int)data.m10_digcount + data.e10 - 1;
-            data.showpoint = showpoint || (p > 1 && data.m10_digcount > 1);
-            data.sub_chars_count += 4 + (sci_notation_exp > 99 || sci_notation_exp < -99);
-
-            xz = ( (p < (int)data.m10_digcount || showpoint)
-                 ? p - (int)data.m10_digcount
-                 : 0 );
-            data.sub_chars_count += (int)data.m10_digcount;
-        } else {
-            data.form = detail::float_form::fixed;
-            STRF_ASSERT (p >= int_digcount_fixed);
-            data.showpoint = showpoint || (p > int_digcount_fixed && data.e10 < 0);
-            if (grouping.any_separator(int_digcount_fixed)) {
-                data.sep_count = static_cast<detail::chars_count_t>(grouping.separators_count(int_digcount_fixed));
-                data.sub_chars_count += data.sep_count;
-            }
-            if (data.e10 >= 0) {
-                data.sub_chars_count += static_cast<detail::chars_count_t>(int_digcount_fixed);
-                //data.showpoint = showpoint;
-                // STRF_ASSERT(p >= int_digcount_fixed);
-                // STRF_ASSERT(p >= (int)data.m10_digcount);
-                xz = showpoint ? p - int_digcount_fixed : 0;
-            } else {
-                const int digcount = (int)data.m10_digcount;
-                if (p < digcount || showpoint) {
-                    xz = p - digcount;
-                    //data.showpoint = showpoint || (p > int_digcount_fixed);
-                } else {
-                    xz = 0;
-                    //data.showpoint = true;
-                }
-                if (data.e10 <= -digcount) {
-                    data.sub_chars_count += static_cast<detail::chars_count_t>(1 - data.e10);
-                } else {
-                    data.sub_chars_count += static_cast<detail::chars_count_t>(digcount);
-                }
-            }
-        }
-        data.sub_chars_count += static_cast<strf::detail::make_signed_t<detail::chars_count_t>>(xz);
-    } else if (notation == float_notation::scientific) {
-        const int sci_notation_exp = (int)data.m10_digcount + data.e10 - 1;
-        const unsigned frac_digits = data.m10_digcount - 1;
-        xz = (precision - frac_digits);
+    // equivalent to:
+    // const int sci_notation_exp = (int)data.m10_digcount + data.e10 - 1;
+    // if (sci_notation_exp < -4 || sci_notation_exp >= p);
+    if (int_digcount_fixed < -3 || int_digcount_fixed > p) {
         data.form = detail::float_form::sci;
-        data.showpoint = showpoint || (precision != 0);
-        data.sub_chars_count += 5 + precision;
-        data.sub_chars_count += (sci_notation_exp > 99 || sci_notation_exp < -99);
+        const int sci_notation_exp = (int)data.m10_digcount + data.e10 - 1;
+        data.showpoint = showpoint || (p > 1 && data.m10_digcount > 1);
+        data.sub_chars_count += 4 + (sci_notation_exp > 99 || sci_notation_exp < -99);
+
+        xz = ( (p < (int)data.m10_digcount || showpoint)
+             ? p - (int)data.m10_digcount
+             : 0 );
+        data.sub_chars_count += (int)data.m10_digcount;
     } else {
-        STRF_ASSERT (notation == float_notation::fixed);
-        data.showpoint = showpoint || (precision != 0);
         data.form = detail::float_form::fixed;
-        const int frac_digits = data.e10 < 0 ? -data.e10 : 0;
-        xz = (precision - frac_digits);
-        if (xz > -(int)data.m10_digcount) {
-            auto int_digcount = ( (int)data.m10_digcount > -data.e10
-                                ? (int)data.m10_digcount + data.e10
-                                : 1 );
-            if (grouping.any_separator(int_digcount)) {
-                data.sep_count = static_cast<detail::chars_count_t>(grouping.separators_count(int_digcount));
-                data.sub_chars_count += static_cast<detail::chars_count_t>(data.sep_count);
-            }
-            data.sub_chars_count += static_cast<detail::chars_count_t>(int_digcount + precision);
+        STRF_ASSERT (p >= int_digcount_fixed);
+        data.showpoint = showpoint || (p > int_digcount_fixed && data.e10 < 0);
+        if (grouping.any_separator(int_digcount_fixed)) {
+            data.sep_count = static_cast<detail::chars_count_t>(grouping.separators_count(int_digcount_fixed));
+            data.sub_chars_count += data.sep_count;
+        }
+        if (data.e10 >= 0) {
+            data.sub_chars_count += static_cast<detail::chars_count_t>(int_digcount_fixed);
+            //data.showpoint = showpoint;
+            // STRF_ASSERT(p >= int_digcount_fixed);
+            // STRF_ASSERT(p >= (int)data.m10_digcount);
+            xz = showpoint ? p - int_digcount_fixed : 0;
         } else {
-            xz = precision;
-            data.m10_digcount = 1;
-            data.m10 = 0;
-            data.e10 = 0;
-            data.sep_count = 0;
-            data.sub_chars_count += 1 + precision;
+            const int digcount = (int)data.m10_digcount;
+            if (p < digcount || showpoint) {
+                xz = p - digcount;
+                //data.showpoint = showpoint || (p > int_digcount_fixed);
+            } else {
+                xz = 0;
+                //data.showpoint = true;
+            }
+            if (data.e10 <= -digcount) {
+                data.sub_chars_count += static_cast<detail::chars_count_t>(1 - data.e10);
+            } else {
+                data.sub_chars_count += static_cast<detail::chars_count_t>(digcount);
+            }
         }
     }
+    data.sub_chars_count += static_cast<strf::detail::make_signed_t<detail::chars_count_t>>(xz);
+
     if (xz >= 0) {
         data.extra_zeros = static_cast<detail::chars_count_t>(xz);
     } else {
@@ -2060,17 +2028,112 @@ inline STRF_HD strf::detail::float_init_result init_dec_double_printer_data_with
         data.m10 = data.m10 / p10;
         auto middle = p10 >> 1;
         data.m10 += (remainer > middle || (remainer == middle && (data.m10 & 1) == 1));
-        if (notation == float_notation::general) {
-            while (data.m10 % 10 == 0) {
-                data.m10 /= 10;
-                -- data.m10_digcount;
-                -- data.sub_chars_count;
-                ++ data.e10;
-            }
-            const bool is_sci = data.form == detail::float_form::sci;
-            int frac_digits = is_sci * (data.m10_digcount - 1)
-                - ! is_sci * (data.e10 < 0) * data.e10;
-            data.showpoint = showpoint || (frac_digits != 0);
+
+        while (data.m10 % 10 == 0) {
+            data.m10 /= 10;
+            -- data.m10_digcount;
+            -- data.sub_chars_count;
+            ++ data.e10;
+        }
+        const bool is_sci = data.form == detail::float_form::sci;
+        int frac_digits = is_sci * (data.m10_digcount - 1)
+            - ! is_sci * (data.e10 < 0) * data.e10;
+        data.showpoint = showpoint || (frac_digits != 0);
+    }
+    data.sub_chars_count += data.showpoint;
+    return init_double_printer_data_fill
+        ( data, rounded_fmt_width
+        , (detail::max)(data.sub_chars_count, data.pad0width)
+        , alignment );
+}
+
+inline STRF_HD strf::detail::float_init_result init_double_data_with_precision_scientific
+    ( strf::detail::double_printer_data& data
+    , detail::chars_count_t precision
+    , unsigned rounded_fmt_width
+    , strf::text_alignment alignment
+    , bool showpoint ) noexcept
+{
+    data.sep_count = 0;
+    data.extra_zeros = 0;
+    data.form = detail::float_form::sci;
+    data.m10_digcount = static_cast<detail::chars_count_t>
+        (strf::detail::count_digits<10>(data.m10));
+    int xz; // number of zeros to be added or ( if negative ) digits to be removed
+
+    const int sci_notation_exp = (int)data.m10_digcount + data.e10 - 1;
+    const unsigned frac_digits = data.m10_digcount - 1;
+    xz = (precision - frac_digits);
+    data.showpoint = showpoint || (precision != 0);
+    data.sub_chars_count += 5 + precision;
+    data.sub_chars_count += (sci_notation_exp > 99 || sci_notation_exp < -99);
+
+    if (xz >= 0) {
+        data.extra_zeros = static_cast<detail::chars_count_t>(xz);
+    } else {
+        data.extra_zeros = 0;
+        unsigned dp = -xz;
+        data.m10_digcount -= static_cast<detail::chars_count_t>(dp);
+        data.e10 += dp;
+        auto p10 = strf::detail::pow10(dp);
+        auto remainer = data.m10 % p10;
+        data.m10 = data.m10 / p10;
+        auto middle = p10 >> 1;
+        data.m10 += (remainer > middle || (remainer == middle && (data.m10 & 1) == 1));
+    }
+    data.sub_chars_count += data.showpoint;
+    return init_double_printer_data_fill
+        ( data, rounded_fmt_width
+        , (detail::max)(data.sub_chars_count, data.pad0width)
+        , alignment );
+}
+
+inline STRF_HD strf::detail::float_init_result init_double_data_with_precision_fixed
+    ( strf::detail::double_printer_data& data
+    , strf::digits_grouping grouping
+    , detail::chars_count_t precision
+    , unsigned rounded_fmt_width
+    , strf::text_alignment alignment
+    , bool showpoint ) noexcept
+{
+    data.sep_count = 0;
+    data.extra_zeros = 0;
+    data.m10_digcount = static_cast<detail::chars_count_t>
+        (strf::detail::count_digits<10>(data.m10));
+    data.showpoint = showpoint || (precision != 0);
+    data.form = detail::float_form::fixed;
+    const int frac_digits = data.e10 < 0 ? -data.e10 : 0;
+
+    int xz = (precision - frac_digits);
+    if (xz <= -(int)data.m10_digcount) {
+        data.extra_zeros = precision;
+        data.m10_digcount = 1;
+        data.m10 = 0;
+        data.e10 = 0;
+        data.sep_count = 0;
+        data.sub_chars_count += 1 + precision;
+    } else {
+        auto int_digcount = ( (int)data.m10_digcount > -data.e10
+                              ? (int)data.m10_digcount + data.e10
+                              : 1 );
+        if (grouping.any_separator(int_digcount)) {
+            data.sep_count = static_cast<detail::chars_count_t>(grouping.separators_count(int_digcount));
+            data.sub_chars_count += static_cast<detail::chars_count_t>(data.sep_count);
+        }
+        data.sub_chars_count += static_cast<detail::chars_count_t>(int_digcount + precision);
+        if (xz >= 0) {
+            data.extra_zeros = static_cast<detail::chars_count_t>(xz);
+        } else {
+            data.extra_zeros = 0;
+            unsigned dp = -xz;
+            data.m10_digcount -= static_cast<detail::chars_count_t>(dp);
+            data.e10 += dp;
+            auto p10 = strf::detail::pow10(dp);
+            auto remainer = data.m10 % p10;
+            data.m10 = data.m10 / p10;
+            auto middle = p10 >> 1;
+            data.m10 += (remainer > middle || (remainer == middle && (data.m10 & 1) == 1));
+
         }
     }
     data.sub_chars_count += data.showpoint;
@@ -2080,82 +2143,109 @@ inline STRF_HD strf::detail::float_init_result init_dec_double_printer_data_with
         , alignment );
 }
 
-inline STRF_HD strf::detail::float_init_result init_dec_double_printer_data_without_precision
+inline STRF_HD strf::detail::float_init_result init_double_data_without_precision_general
     ( strf::detail::double_printer_data& data
     , strf::digits_grouping grouping
     , unsigned rounded_fmt_width
     , strf::text_alignment alignment
-    , strf::float_notation notation
     , bool showpoint ) noexcept
 {
     data.sep_count = 0;
     data.extra_zeros = 0;
-    data.m10_digcount
-        = static_cast<detail::chars_count_t>(strf::detail::count_digits<10>(data.m10));
+    data.m10_digcount = static_cast<detail::chars_count_t>
+        (strf::detail::count_digits<10>(data.m10));
 
-    switch (notation) {
-        case float_notation::general: {
-            const int sci_notation_exp = (int)data.m10_digcount + data.e10 - 1;
-            const int scientific_width
-                = data.m10_digcount
-                + 4 + (sci_notation_exp > 99 || sci_notation_exp < -99)
-                + (showpoint || data.m10_digcount != 1);
-            const auto fixed_int_digcount = (int)data.m10_digcount + data.e10;
-            int fixed_width = ( data.e10 >= 0
-                              ? fixed_int_digcount + showpoint
-                              : data.e10 <= -(int)data.m10_digcount
-                              ? 2 - data.e10
-                              : 1 + (int)data.m10_digcount );
-            if (fixed_width <= scientific_width) {
-                if (grouping.any_separator(fixed_int_digcount)) {
-                    auto sep_count = grouping.separators_count(fixed_int_digcount);
-                    fixed_width += sep_count;
-                    if (fixed_width > scientific_width) {
-                        goto general_scientific;
-                    }
-                    data.sep_count = static_cast<decltype(data.sep_count)>(sep_count);
-                }
-                data.form = detail::float_form::fixed;
-                data.showpoint = showpoint || (data.e10 < 0);
-                data.sub_chars_count += static_cast<detail::chars_count_t>(fixed_width);
-            } else {
-                general_scientific:
-                data.form = detail::float_form::sci;
-                data.sub_chars_count += static_cast<detail::chars_count_t>(scientific_width);
-                data.showpoint = showpoint || (data.m10_digcount != 1);
+    const int sci_notation_exp = (int)data.m10_digcount + data.e10 - 1;
+    const int scientific_width
+        = data.m10_digcount
+        + 4 + (sci_notation_exp > 99 || sci_notation_exp < -99)
+        + (showpoint || data.m10_digcount != 1);
+    const auto fixed_int_digcount = (int)data.m10_digcount + data.e10;
+    int fixed_width = ( data.e10 >= 0
+                      ? fixed_int_digcount + showpoint
+                      : data.e10 <= -(int)data.m10_digcount
+                      ? 2 - data.e10
+                      : 1 + (int)data.m10_digcount );
+    if (fixed_width <= scientific_width) {
+        if (grouping.any_separator(fixed_int_digcount)) {
+            auto sep_count = grouping.separators_count(fixed_int_digcount);
+            fixed_width += sep_count;
+            if (fixed_width > scientific_width) {
+                goto scientific;
             }
-            break;
-        } case float_notation::fixed: {
-            data.form = detail::float_form::fixed;
-            data.showpoint = showpoint || (data.e10 < 0);
-            auto int_digcount = (int)data.m10_digcount + data.e10;
-            if (grouping.any_separator(int_digcount)) {
-                data.sep_count
-                    = static_cast<detail::chars_count_t>(grouping.separators_count(int_digcount));
-                data.sub_chars_count += data.sep_count;
-            }
-            data.sub_chars_count +=
-                ( data.e10 >= 0
-                ? static_cast<detail::chars_count_t>(int_digcount + showpoint)
-                : data.e10 <= -(int)data.m10_digcount
-                ? static_cast<detail::chars_count_t>(2 - data.e10)
-                : 1 + data.m10_digcount );
-            break;
-        } default: {
-            STRF_ASSERT(notation == float_notation::scientific);
-            const int sci_notation_exp = (int)data.m10_digcount + data.e10 - 1;
-            data.form = detail::float_form::sci;
-            data.showpoint = showpoint || (data.m10_digcount != 1);
-            data.sub_chars_count += 4 + data.showpoint;
-            data.sub_chars_count += (sci_notation_exp > 99 || sci_notation_exp < -99);
-            data.sub_chars_count += data.m10_digcount;
+            data.sep_count = static_cast<decltype(data.sep_count)>(sep_count);
         }
+        data.form = detail::float_form::fixed;
+        data.showpoint = showpoint || (data.e10 < 0);
+        data.sub_chars_count += static_cast<detail::chars_count_t>(fixed_width);
+    } else {
+        scientific:
+        data.form = detail::float_form::sci;
+        data.sub_chars_count += static_cast<detail::chars_count_t>(scientific_width);
+        data.showpoint = showpoint || (data.m10_digcount != 1);
     }
     return init_double_printer_data_fill
         ( data, rounded_fmt_width
         , (detail::max)(data.sub_chars_count, data.pad0width)
         , alignment );
 }
+
+inline STRF_HD strf::detail::float_init_result init_double_data_without_precision_scientific
+    ( strf::detail::double_printer_data& data
+    , unsigned rounded_fmt_width
+    , strf::text_alignment alignment
+    , bool showpoint ) noexcept
+{
+    data.sep_count = 0;
+    data.extra_zeros = 0;
+    data.form = detail::float_form::sci;
+    data.m10_digcount = static_cast<detail::chars_count_t>
+        (strf::detail::count_digits<10>(data.m10));
+
+    const int sci_notation_exp = (int)data.m10_digcount + data.e10 - 1;
+    data.showpoint = showpoint || (data.m10_digcount != 1);
+    data.sub_chars_count += 4 + data.showpoint;
+    data.sub_chars_count += (sci_notation_exp > 99 || sci_notation_exp < -99);
+    data.sub_chars_count += data.m10_digcount;
+
+    return init_double_printer_data_fill
+        ( data, rounded_fmt_width
+        , (detail::max)(data.sub_chars_count, data.pad0width)
+        , alignment );
+}
+
+inline STRF_HD strf::detail::float_init_result init_double_data_without_precision_fixed
+    ( strf::detail::double_printer_data& data
+    , strf::digits_grouping grouping
+    , unsigned rounded_fmt_width
+    , strf::text_alignment alignment
+    , bool showpoint ) noexcept
+{
+    data.sep_count = 0;
+    data.extra_zeros = 0;
+    data.form = detail::float_form::fixed;
+    data.m10_digcount = static_cast<detail::chars_count_t>
+        (strf::detail::count_digits<10>(data.m10));
+    data.showpoint = showpoint || (data.e10 < 0);
+    auto int_digcount = (int)data.m10_digcount + data.e10;
+    if (grouping.any_separator(int_digcount)) {
+        data.sep_count
+            = static_cast<detail::chars_count_t>(grouping.separators_count(int_digcount));
+        data.sub_chars_count += data.sep_count;
+    }
+    data.sub_chars_count +=
+        ( data.e10 >= 0
+        ? static_cast<detail::chars_count_t>(int_digcount + showpoint)
+        : data.e10 <= -(int)data.m10_digcount
+        ? static_cast<detail::chars_count_t>(2 - data.e10)
+        : 1 + data.m10_digcount );
+    return init_double_printer_data_fill
+        ( data, rounded_fmt_width
+        , (detail::max)(data.sub_chars_count, data.pad0width)
+        , alignment );
+}
+
+
 
 STRF_FUNC_IMPL STRF_HD strf::detail::float_init_result init_float_printer_data
     ( strf::detail::double_printer_data& data
@@ -2207,14 +2297,32 @@ STRF_FUNC_IMPL STRF_HD strf::detail::float_init_result init_float_printer_data
         data.m10 = res.significand;
         data.e10 = res.exponent;
     }
-    if (ffmt.precision == (detail::chars_count_t)-1) {
-        return init_dec_double_printer_data_without_precision
-            ( data, grp, rounded_fmt_width, afmt.alignment
-            , ffmt.notation, ffmt.showpoint);
+    switch (ffmt.notation) {
+        case strf::float_notation::general:
+            if (ffmt.precision == (detail::chars_count_t)-1) {
+                return init_double_data_without_precision_general
+                    ( data, grp, rounded_fmt_width, afmt.alignment, ffmt.showpoint);
+            }
+            return init_double_data_with_precision_general
+                ( data, grp, ffmt.precision, rounded_fmt_width, afmt.alignment, ffmt.showpoint );
+
+        case strf::float_notation::scientific:
+            if (ffmt.precision == (detail::chars_count_t)-1) {
+                return init_double_data_without_precision_scientific
+                    ( data, rounded_fmt_width, afmt.alignment, ffmt.showpoint);
+            }
+            return init_double_data_with_precision_scientific
+                ( data, ffmt.precision, rounded_fmt_width, afmt.alignment, ffmt.showpoint );
+
+        default:
+            STRF_ASSERT(ffmt.notation == strf::float_notation::fixed);
+            if (ffmt.precision == (detail::chars_count_t)-1) {
+                return init_double_data_without_precision_fixed
+                    ( data, grp, rounded_fmt_width, afmt.alignment, ffmt.showpoint);
+            }
+            return init_double_data_with_precision_fixed
+                ( data, grp, ffmt.precision, rounded_fmt_width, afmt.alignment, ffmt.showpoint );
     }
-    return init_dec_double_printer_data_with_precision
-        ( data, grp, ffmt.precision, rounded_fmt_width, afmt.alignment
-        , ffmt.notation, ffmt.showpoint );
 }
 
 STRF_FUNC_IMPL STRF_HD strf::detail::float_init_result init_float_printer_data
@@ -2267,14 +2375,33 @@ STRF_FUNC_IMPL STRF_HD strf::detail::float_init_result init_float_printer_data
         data.m10 = res.significand;
         data.e10 = res.exponent;
     }
-    if (ffmt.precision == (detail::chars_count_t)-1) {
-        return init_dec_double_printer_data_without_precision
-            ( data, grp, rounded_fmt_width, afmt.alignment
-            , ffmt.notation, ffmt.showpoint);
+
+    switch (ffmt.notation) {
+        case strf::float_notation::general:
+            if (ffmt.precision == (detail::chars_count_t)-1) {
+                return init_double_data_without_precision_general
+                    ( data, grp, rounded_fmt_width, afmt.alignment, ffmt.showpoint);
+            }
+            return init_double_data_with_precision_general
+                ( data, grp, ffmt.precision, rounded_fmt_width, afmt.alignment, ffmt.showpoint );
+
+        case strf::float_notation::scientific:
+            if (ffmt.precision == (detail::chars_count_t)-1) {
+                return init_double_data_without_precision_scientific
+                    ( data, rounded_fmt_width, afmt.alignment, ffmt.showpoint);
+            }
+            return init_double_data_with_precision_scientific
+                ( data, ffmt.precision, rounded_fmt_width, afmt.alignment, ffmt.showpoint );
+
+        default:
+            STRF_ASSERT(ffmt.notation == strf::float_notation::fixed);
+            if (ffmt.precision == (detail::chars_count_t)-1) {
+                return init_double_data_without_precision_fixed
+                    ( data, grp, rounded_fmt_width, afmt.alignment, ffmt.showpoint);
+            }
+            return init_double_data_with_precision_fixed
+                ( data, grp, ffmt.precision, rounded_fmt_width, afmt.alignment, ffmt.showpoint );
     }
-    return init_dec_double_printer_data_with_precision
-        ( data, grp, ffmt.precision, rounded_fmt_width, afmt.alignment
-        , ffmt.notation, ffmt.showpoint );
 }
 
 
