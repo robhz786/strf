@@ -84,15 +84,12 @@ target_include_directories(
 set_property(
   TARGET strf-header-only
   PROPERTY EXPORT_NAME strf-header-only)
-set_property(
-  TARGET strf-static-lib
-  PROPERTY EXPORT_NAME strf-static-lib)
-set_property(
-  TARGET strf-static-lib
-  PROPERTY OUTPUT_NAME strf )
+
 set_target_properties(
-  strf-header-only strf-static-lib
+  strf-static-lib
   PROPERTIES
+  OUTPUT_NAME strf
+  EXPORT_NAME strf-static-lib
   VERSION ${STRF_VERSION})
 
 set(TARGETS_TO_INSTALL strf-header-only strf-static-lib)
