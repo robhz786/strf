@@ -30,7 +30,7 @@ option(
  "Test example programs"
   ${STRF_BUILD_EXAMPLES})
 
-set(STRF_VERSION 0.15.1)
+set(STRF_VERSION 0.15.2)
 project (
   strf
   VERSION ${STRF_VERSION}

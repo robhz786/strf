@@ -1,5 +1,5 @@
 
-StrfVersion = 0.15.1
+StrfVersion = 0.15.2
 StrfRev = v$(StrfVersion)
 
 all: \

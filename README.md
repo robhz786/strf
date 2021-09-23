@@ -5,31 +5,31 @@
 
 Strf is a C++11 text formatting library that
 
-* [is fast](http://robhz786.github.io/strf-benchmarks/v0.15.1/results.html)
-* [is highly extensible](http://robhz786.github.io/strf/v0.15.1/versus_fmtlib.html#_extensibility)
-* [can do thing that others can't](https://robhz786.github.io/strf/v0.15.1/versus_fmtlib.html#_strf)
+* [is fast](http://robhz786.github.io/strf-benchmarks/v0.15.2/results.html)
+* [is highly extensible](http://robhz786.github.io/strf/v0.15.2/versus_fmtlib.html#_extensibility)
+* [can do thing that others can't](https://robhz786.github.io/strf/v0.15.2/versus_fmtlib.html#_strf)
 
 __Attention__ : Branch `master` was renamed to `main` at the time of release 0.15.0.
 
 ## Documentation
 
 * Overview
-  * [Tutorial](http://robhz786.github.io/strf/v0.15.1/tutorial.html)
-  * [Quick reference](http://robhz786.github.io/strf/v0.15.1/quick_reference.html)
-  * [Strf versus {fmt}](http://robhz786.github.io/strf/v0.15.1/versus_fmtlib.html)
+  * [Tutorial](http://robhz786.github.io/strf/v0.15.2/tutorial.html)
+  * [Quick reference](http://robhz786.github.io/strf/v0.15.2/quick_reference.html)
+  * [Strf versus {fmt}](http://robhz786.github.io/strf/v0.15.2/versus_fmtlib.html)
 * How to extend strf:
-  * [Adding destination](http://robhz786.github.io/strf/v0.15.1/howto_add_destination.html)
-  * [Adding printable types](http://robhz786.github.io/strf/v0.15.1/howto_add_printable_types.html)
-  * [Overriding printable types](http://robhz786.github.io/strf/v0.15.1/howto_override_printable_types.html)
+  * [Adding destination](http://robhz786.github.io/strf/v0.15.2/howto_add_destination.html)
+  * [Adding printable types](http://robhz786.github.io/strf/v0.15.2/howto_add_printable_types.html)
+  * [Overriding printable types](http://robhz786.github.io/strf/v0.15.2/howto_override_printable_types.html)
 * Header references:
-  * [`<strf.hpp>`](http://robhz786.github.io/strf/v0.15.1/strf_hpp.html) is the main header. This document is big and covers many details you will probably never need to know. So it's not the best starting point.
-  * [`<strf/destination.hpp>`](http://robhz786.github.io/strf/v0.15.1/destination_hpp.html) is a lightweight and freestanding header that defines the `destination` class template. All other headers depend on this one.
-  * [`<strf/to_string.hpp>`](http://robhz786.github.io/strf/v0.15.1/to_string_hpp.html) adds support for writting to `std::basic_string`. It includes `<strf.hpp>`.
-  * [`<strf/to_cfile.hpp>`](http://robhz786.github.io/strf/v0.15.1/to_cfile_hpp.html)  adds support for writting to `FILE*`. It includes `<strf.hpp>`.
-  * [`<strf/to_streambuf.hpp>`](http://robhz786.github.io/strf/v0.15.1/to_streambuf_hpp.html) adds support for writting to `std::basic_streambuf`. It includes `<strf.hpp>`.
+  * [`<strf.hpp>`](http://robhz786.github.io/strf/v0.15.2/strf_hpp.html) is the main header. This document is big and covers many details you will probably never need to know. So it's not the best starting point.
+  * [`<strf/destination.hpp>`](http://robhz786.github.io/strf/v0.15.2/destination_hpp.html) is a lightweight and freestanding header that defines the `destination` class template. All other headers depend on this one.
+  * [`<strf/to_string.hpp>`](http://robhz786.github.io/strf/v0.15.2/to_string_hpp.html) adds support for writting to `std::basic_string`. It includes `<strf.hpp>`.
+  * [`<strf/to_cfile.hpp>`](http://robhz786.github.io/strf/v0.15.2/to_cfile_hpp.html)  adds support for writting to `FILE*`. It includes `<strf.hpp>`.
+  * [`<strf/to_streambuf.hpp>`](http://robhz786.github.io/strf/v0.15.2/to_streambuf_hpp.html) adds support for writting to `std::basic_streambuf`. It includes `<strf.hpp>`.
 * Miscellaneous
-  * [How to use strf on CUDA devices](http://robhz786.github.io/strf/v0.15.1/cuda.html)
-  * [Benchmarks](http://robhz786.github.io/strf-benchmarks/v0.15.1/results.html)
+  * [How to use strf on CUDA devices](http://robhz786.github.io/strf/v0.15.2/cuda.html)
+  * [Benchmarks](http://robhz786.github.io/strf-benchmarks/v0.15.2/results.html)
 
 ## Requirements
 
