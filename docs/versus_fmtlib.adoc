@@ -20,7 +20,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 :icons: font
 :toc: left
 
-This is a brief comparison between Strf version 0.15 and {fmt} version 8.0.1.
+A non-exhaustive comparison between Strf {strf-version} and {fmt} 8.0.1.
 
 // == Usability
 //
@@ -60,18 +60,6 @@ This is a brief comparison between Strf version 0.15 and {fmt} version 8.0.1.
 // ////
 //
 // ////
-
-// === Printing to `char*`
-//
-//
-// __to-do__
-//
-//
-//
-// == Run-time Performance
-//
-// == Compilation Performance
-//
 
 == Capabilities in general
 
@@ -508,32 +496,32 @@ indication. For example, when writing to a `char*`, the returned object contains
 a `bool` member `truncated` that tells whether the destination memory
 is too small.
 
-== Performance
-
-If you look at the
-http://robhz786.github.io/strf-benchmarks/{strf-version}/results.html[benchmarks],
-you can see that the performances of Strf and {fmt} depend on several things,
-like what you are printing, how you do it, what are the formatting options,
-the compiler, the destination type, etc. There are situations where {fmt} is faster,
-and others when others where it is Strf. However it is possible to take some general conclusions.
-
-When it comes to writting to `char*`, we can conclude that:
-
-* `strf::to` is faster than `fmt::format_to_n`
-* `strf::to` is faster than `fmt::format_to`, except in the following two situations:
-** `fmt::format_to` is invoked with `FMT_COMPILE` and no formatting option is applied
-** `fmt::format_to` is invoked with `FMT_COMPILE` and `strf::to` is invoked with the tr-string
-
-When comparing `strf::to_string` against `fmt::format`,
-we conclude `strf::to_string` is faster than `fmt::format`,
-except when `strf::to_string` is invoked with the tr-string
-at the same time that no formatting option is applied.
-
-
-Of course, it's very possible to be
-exceptions for the above conclusions, since these
-http://robhz786.github.io/strf-benchmarks/{strf-version}/results.html[benchmarks]
-are far of covering all possible situations.
+//  == Performance
+//  
+//  If you look at the
+//  http://robhz786.github.io/strf-benchmarks/{strf-version}/results.html[benchmarks],
+//  you can see that the performances of Strf and {fmt} depend on several things,
+//  like what you are printing, how you do it, what are the formatting options,
+//  the compiler, the destination type, etc. There are situations where {fmt} is faster,
+//  and others when others where it is Strf. However it is possible to take some general conclusions.
+//  
+//  When it comes to writting to `char*`, we can conclude that:
+//  
+//  * `strf::to` is faster than `fmt::format_to_n`
+//  * `strf::to` is faster than `fmt::format_to`, except in the following two situations:
+//  ** `fmt::format_to` is invoked with `FMT_COMPILE` and no formatting option is applied
+//  ** `fmt::format_to` is invoked with `FMT_COMPILE` and `strf::to` is invoked with the tr-string
+//  
+//  When comparing `strf::to_string` against `fmt::format`,
+//  we conclude `strf::to_string` is faster than `fmt::format`,
+//  except when `strf::to_string` is invoked with the tr-string
+//  at the same time that no formatting option is applied.
+//  
+//  
+//  Of course, it's very possible to be
+//  exceptions for the above conclusions, since these
+//  http://robhz786.github.io/strf-benchmarks/{strf-version}/results.html[benchmarks]
+//  are far of covering all possible situations.
 
 
 
