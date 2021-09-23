@@ -28,7 +28,6 @@
 // #pragma warning ( disable : 5045 )
 #endif // defined(_MSC_VER)
 
-#include <strf/destination.hpp>
 #include <strf/detail/single_byte_charsets.hpp>
 
 //

@@ -2,7 +2,7 @@
 #define STRF_DETAIL_INPUT_TYPES_STRING
 
 #include <strf/detail/facets/width_calculator.hpp>
-#include <strf/facets_pack.hpp>
+#include <strf/printer.hpp>
 
 namespace strf {
 namespace detail {
@@ -807,7 +807,7 @@ public:
         input.preview.add_size(res.pos);
     }
 
-    STRF_HD void print_to(strf::basic_outbuff<DestCharT>& ob) const override;
+    STRF_HD void print_to(strf::destination<DestCharT>& dest) const override;
 
 private:
 
@@ -827,9 +827,9 @@ private:
 
 template<typename SrcCharT, typename DestCharT>
 STRF_HD void string_printer<SrcCharT, DestCharT>::print_to
-    ( strf::basic_outbuff<DestCharT>& ob ) const
+    ( strf::destination<DestCharT>& dest ) const
 {
-    strf::detail::outbuff_interchar_copy(ob, str_, len_);
+    strf::detail::destination_interchar_copy(dest, str_, len_);
 }
 
 template <typename SrcCharT, typename DestCharT>
@@ -884,7 +884,7 @@ public:
 
     STRF_HD ~aligned_string_printer();
 
-    STRF_HD void print_to(strf::basic_outbuff<DestCharT>& ob) const override;
+    STRF_HD void print_to(strf::destination<DestCharT>& dest) const override;
 
 private:
 
@@ -963,14 +963,14 @@ inline STRF_HD std::uint16_t aligned_string_printer<SrcCharT, DestCharT>::init_
 
 template<typename SrcCharT, typename DestCharT>
 void STRF_HD aligned_string_printer<SrcCharT, DestCharT>::print_to
-    ( strf::basic_outbuff<DestCharT>& ob ) const
+    ( strf::destination<DestCharT>& dest ) const
 {
     if (left_fillcount_ > 0) {
-        encode_fill_(ob, left_fillcount_, afmt_.fill);
+        encode_fill_(dest, left_fillcount_, afmt_.fill);
     }
-    strf::detail::outbuff_interchar_copy(ob, str_, len_);
+    strf::detail::destination_interchar_copy(dest, str_, len_);
     if (right_fillcount_ > 0) {
-        encode_fill_(ob, right_fillcount_, afmt_.fill);
+        encode_fill_(dest, right_fillcount_, afmt_.fill);
     }
 }
 
@@ -1083,7 +1083,7 @@ public:
 
     STRF_HD ~conv_string_printer() { }
 
-    STRF_HD void print_to(strf::basic_outbuff<DestCharT>& ob) const override;
+    STRF_HD void print_to(strf::destination<DestCharT>& dest) const override;
 
 private:
 
@@ -1140,13 +1140,13 @@ private:
 
 template<typename SrcCharT, typename DestCharT>
 STRF_HD void conv_string_printer<SrcCharT, DestCharT>::print_to
-    ( strf::basic_outbuff<DestCharT>& ob ) const
+    ( strf::destination<DestCharT>& dest ) const
 {
     if (can_transcode_directly()) {
-        transcode_(ob, str_, len_, inv_seq_notifier_, surr_poli_);
+        transcode_(dest, str_, len_, inv_seq_notifier_, surr_poli_);
     } else {
         strf::decode_encode<SrcCharT, DestCharT>
-            ( ob, src_to_u32_, u32_to_dest_, str_
+            ( dest, src_to_u32_, u32_to_dest_, str_
             , len_, inv_seq_notifier_, surr_poli_ );
     }
 }
@@ -1199,7 +1199,7 @@ public:
              , use_facet_<strf::charset_c<DestCharT>, SrcCharT>(input.facets) );
     }
 
-    STRF_HD void print_to(strf::basic_outbuff<DestCharT>& ob) const override;
+    STRF_HD void print_to(strf::destination<DestCharT>& dest) const override;
 
 private:
 
@@ -1296,20 +1296,20 @@ void STRF_HD aligned_conv_string_printer<SrcCharT, DestCharT>::init_
 
 template<typename SrcCharT, typename DestCharT>
 void STRF_HD aligned_conv_string_printer<SrcCharT, DestCharT>::print_to
-    ( strf::basic_outbuff<DestCharT>& ob ) const
+    ( strf::destination<DestCharT>& dest ) const
 {
     if (left_fillcount_ > 0) {
-        encode_fill_(ob, left_fillcount_, afmt_.fill);
+        encode_fill_(dest, left_fillcount_, afmt_.fill);
     }
     if (can_transcode_directly()) {
-        transcode_(ob, str_, len_, inv_seq_notifier_, surr_poli_);
+        transcode_(dest, str_, len_, inv_seq_notifier_, surr_poli_);
     } else {
         strf::decode_encode<SrcCharT, DestCharT>
-            ( ob, src_to_u32_, u32_to_dest_, str_
+            ( dest, src_to_u32_, u32_to_dest_, str_
             , len_, inv_seq_notifier_, surr_poli_ );
     }
     if (right_fillcount_ > 0) {
-        encode_fill_(ob, right_fillcount_, afmt_.fill);
+        encode_fill_(dest, right_fillcount_, afmt_.fill);
     }
 }
 

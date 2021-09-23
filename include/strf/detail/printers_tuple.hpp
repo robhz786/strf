@@ -143,12 +143,12 @@ public:
 
 template<typename CharT, std::size_t ... I, typename ... Printers>
 STRF_HD void write
-    ( strf::basic_outbuff<CharT>& ob
+    ( strf::destination<CharT>& dest
     , const strf::detail::printers_tuple_impl
         < CharT, strf::detail::index_sequence<I...>, Printers... >& printers )
 {
     strf::detail::write_args<CharT>
-        (ob, static_cast<const strf::printer<CharT>&>(printers.template get<I>())...);
+        (dest, static_cast<const strf::printer<CharT>&>(printers.template get<I>())...);
 }
 
 template <typename CharT, typename ... Printers>

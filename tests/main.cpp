@@ -8,20 +8,20 @@
 
 namespace test_utils {
 
-static strf::outbuff*& test_outbuff_ptr()
+static strf::destination<char>*& test_messages_destination_ptr()
 {
-    static strf::outbuff* ptr = nullptr;
+    static strf::destination<char>* ptr = nullptr;
     return ptr;
 }
 
-void set_test_outbuff(strf::outbuff& ob)
+void set_test_messages_destination(strf::destination<char>& dest)
 {
-    test_outbuff_ptr() = &ob;
+    test_messages_destination_ptr() = &dest;
 }
 
-strf::outbuff& test_outbuff()
+strf::destination<char>& test_messages_destination()
 {
-    auto * ptr = test_outbuff_ptr();
+    auto * ptr = test_messages_destination_ptr();
     return *ptr;
 }
 
@@ -61,15 +61,15 @@ void test_single_byte_charsets();
 void test_cstr_writer();
 void test_locale();
 void test_cfile_writer();
-void test_basic_outbuff();
+void test_destination_functions();
 void test_printable_overriding();
 void test_streambuf_writer();
 void test_string_writer();
 void test_to_range();
 
 int main() {
-    strf::narrow_cfile_writer<char, 1024> test_outbuff(stdout);
-    test_utils::set_test_outbuff(test_outbuff);
+    strf::narrow_cfile_writer<char, 1024> test_msg_dest(stdout);
+    test_utils::set_test_messages_destination(test_msg_dest);
 
 #if ! defined(STRF_FREESTANDING)
 
@@ -80,7 +80,7 @@ int main() {
 
 #endif // ! defined(STRF_FREESTANDING)
 
-    test_basic_outbuff();
+    test_destination_functions();
     test_cstr_writer();
     test_to_range();
     test_dynamic_charset();
@@ -119,10 +119,9 @@ int main() {
 
     int err_count = test_utils::test_err_count();
     if (err_count == 0) {
-        strf::write(test_outbuff, "All test passed!\n");
+        strf::write(test_msg_dest, "All test passed!\n");
     } else {
-        strf::to(test_outbuff) (err_count, " tests failed!\n");
+        strf::to(test_msg_dest) (err_count, " tests failed!\n");
     }
-    test_outbuff.finish();
     return err_count;
 }

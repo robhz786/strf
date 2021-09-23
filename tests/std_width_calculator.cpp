@@ -1463,7 +1463,7 @@ STRF_HD void test_std_width_decrementer()
         strf::to(decr) (strf::conv(U16_other U16_other U16_other));
         TEST_TRUE(0 == decr.get_remaining_width());
     }
-    {   // cover get_remaining_width() when pointer() == buff_
+    {   // cover get_remaining_width() when buffer_ptr() == buff_
         strf::detail::std_width_decrementer decr{(strf::width_t::max)()};
         strf::to(decr) (strf::conv(U16_other U16_other U16_other));
         decr.recycle();

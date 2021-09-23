@@ -147,12 +147,12 @@ public:
 
 namespace detail {
 template <typename WFunc>
-class width_accumulator: public strf::basic_outbuff<char32_t>
+class width_accumulator: public strf::destination<char32_t>
 {
 public:
 
     STRF_HD width_accumulator(strf::width_t limit, WFunc func)
-        : strf::basic_outbuff<char32_t>(buff_, buff_ + buff_size_)
+        : strf::destination<char32_t>(buff_, buff_ + buff_size_)
         , limit_(limit)
         , func_(func)
     {
@@ -188,8 +188,8 @@ private:
 template <typename WFunc>
 void STRF_HD width_accumulator<WFunc>::recycle()
 {
-    auto end = this->pointer();
-    this->set_pointer(buff_);
+    auto end = this->buffer_ptr();
+    this->set_buffer_ptr(buff_);
     if (this->good()) {
         auto it = buff_;
         for (; it != end; ++it)
@@ -522,10 +522,10 @@ STRF_HD std_width_calc_func_return std_width_calc_func
 #  pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
 #endif
 
-class std_width_decrementer: public strf::basic_outbuff<char32_t> {
+class std_width_decrementer: public strf::destination<char32_t> {
 public:
     STRF_HD std_width_decrementer (strf::width_t initial_width)
-        : strf::basic_outbuff<char32_t>(buff_, buff_size_)
+        : strf::destination<char32_t>(buff_, buff_size_)
         , width_{initial_width}
     {
         this->set_good(initial_width != 0);
@@ -533,19 +533,19 @@ public:
 
     STRF_HD void recycle() noexcept override {
         if (this->good()) {
-            auto res = detail::std_width_calc_func(buff_, this->pointer(), width_, state_, false);
+            auto res = detail::std_width_calc_func(buff_, this->buffer_ptr(), width_, state_, false);
             width_ = res.width;
             state_ = res.state;
             if (width_ == 0) {
                 this->set_good(false);
             }
         }
-        this->set_pointer(buff_);
+        this->set_buffer_ptr(buff_);
     }
 
     STRF_HD strf::width_t get_remaining_width() {
-        if (width_ != 0 && this->pointer() != buff_) {
-            auto res = detail::std_width_calc_func(buff_, this->pointer(), width_, state_, false);
+        if (width_ != 0 && this->buffer_ptr() != buff_) {
+            auto res = detail::std_width_calc_func(buff_, this->buffer_ptr(), width_, state_, false);
             return res.width;
         }
         return width_;
@@ -558,10 +558,10 @@ private:
     char32_t buff_[buff_size_];
 };
 
-class std_width_decrementer_with_pos: public strf::basic_outbuff<char32_t> {
+class std_width_decrementer_with_pos: public strf::destination<char32_t> {
 public:
     STRF_HD std_width_decrementer_with_pos (strf::width_t initial_width)
-        : strf::basic_outbuff<char32_t>(buff_, buff_size_)
+        : strf::destination<char32_t>(buff_, buff_size_)
         , width_{initial_width}
     {
         this->set_good(initial_width != 0);
@@ -569,15 +569,15 @@ public:
 
     STRF_HD void recycle() noexcept override {
         if (this->good()) {
-            auto res = detail::std_width_calc_func(buff_, this->pointer(), width_, state_, true);
+            auto res = detail::std_width_calc_func(buff_, this->buffer_ptr(), width_, state_, true);
             width_ = res.width;
             state_ = res.state;
             codepoints_count_ += (res.ptr - buff_);
-            if (width_ == 0 && res.ptr != this->pointer()) {
+            if (width_ == 0 && res.ptr != this->buffer_ptr()) {
                 this->set_good(false);
             }
         }
-        this->set_pointer(buff_);
+        this->set_buffer_ptr(buff_);
     }
 
     struct result {
@@ -590,10 +590,10 @@ public:
         if (! this->good()) {
             return {0, false, codepoints_count_};
         }
-        auto res = detail::std_width_calc_func(buff_, this->pointer(), width_, state_, true);
+        auto res = detail::std_width_calc_func(buff_, this->buffer_ptr(), width_, state_, true);
         width_ = res.width;
         codepoints_count_ += (res.ptr - buff_);
-        bool whole_string_covered = (res.ptr == this->pointer());
+        bool whole_string_covered = (res.ptr == this->buffer_ptr());
         return {width_, whole_string_covered, codepoints_count_};
     }
 

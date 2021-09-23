@@ -6,7 +6,6 @@
 #include "test_utils.hpp"
 
 #if defined(__GNUC__) && (__GNUC__ == 7 || __GNUC__ == 8)
-#  pragma GCC diagnostic push
 #  pragma GCC diagnostic ignored "-Warray-bounds"
 #endif
 
@@ -33,35 +32,35 @@ STRF_TEST_FUNC void char_range_basic_operations()
     }
     {   // construct from array
         strf::basic_char_array_writer<CharT> sw(buff);
-        TEST_TRUE(sw.pointer() == &buff[0]);
-        TEST_EQ(sw.space(), buff_size);
+        TEST_TRUE(sw.buffer_ptr() == &buff[0]);
+        TEST_EQ(sw.buffer_space(), buff_size);
         TEST_TRUE(sw.good());
     }
     {   // construct from pointer and size
         strf::basic_char_array_writer<CharT> sw(buff, 4);
-        TEST_TRUE(sw.pointer() == &buff[0]);
-        TEST_EQ(sw.space(), 4);
+        TEST_TRUE(sw.buffer_ptr() == &buff[0]);
+        TEST_EQ(sw.buffer_space(), 4);
         TEST_TRUE(sw.good());
     }
     {   // construct from range
         strf::basic_char_array_writer<CharT> sw(buff, buff + 4);
-        TEST_TRUE(sw.pointer() == &buff[0]);
-        TEST_EQ(sw.space(), 4);
+        TEST_TRUE(sw.buffer_ptr() == &buff[0]);
+        TEST_EQ(sw.buffer_space(), 4);
         TEST_TRUE(sw.good());
     }
     {   // Calling recycle always fails
         strf::basic_char_array_writer<CharT> sw(buff);
         sw.recycle();
-        TEST_TRUE(sw.pointer() != &buff[0]);
-        TEST_TRUE(sw.space() >= strf::min_space_after_recycle<CharT>())
+        TEST_TRUE(sw.buffer_ptr() != &buff[0]);
+        TEST_TRUE(sw.buffer_space() >= strf::min_space_after_recycle<CharT>())
         TEST_FALSE(sw.good());
 
-        // and causes pointer() to point to somewhere else than
+        // and causes buffer_ptr() to point to somewhere else than
         // anywhere inside the initial range
-        TEST_FALSE(&buff[0] <= sw.pointer() && sw.pointer() < buff + buff_size);
+        TEST_FALSE(&buff[0] <= sw.buffer_ptr() && sw.buffer_ptr() < buff + buff_size);
     }
     {   // When calling finish() after recycle(),
-        // the returned pointer is equal to the value pointer()
+        // the returned pointer is equal to the value buffer_ptr()
         // would have returned just before recycle()
 
         strf::basic_char_array_writer<CharT> sw(buff);
@@ -77,8 +76,8 @@ STRF_TEST_FUNC void char_range_basic_operations()
         strf::basic_char_array_writer<CharT> sw1(buff);
         strf::basic_char_array_writer<CharT> sw2{sw1};
         TEST_TRUE(sw1 == sw2);
-        TEST_TRUE(sw1.pointer() == sw2.pointer());
-        TEST_TRUE(sw1.end() == sw2.end());
+        TEST_TRUE(sw1.buffer_ptr() == sw2.buffer_ptr());
+        TEST_TRUE(sw1.buffer_end() == sw2.buffer_end());
         TEST_EQ(sw1.good(), sw2.good());
         auto r1 = sw1.finish();
         auto r2 = sw2.finish();
@@ -97,8 +96,8 @@ STRF_TEST_FUNC void char_range_basic_operations()
 
         strf::basic_char_array_writer<CharT> sw2{sw1};
         TEST_TRUE(sw1 == sw2);
-        TEST_TRUE(sw1.pointer() == sw2.pointer());
-        TEST_TRUE(sw1.end() == sw2.end());
+        TEST_TRUE(sw1.buffer_ptr() == sw2.buffer_ptr());
+        TEST_TRUE(sw1.buffer_end() == sw2.buffer_end());
         TEST_EQ(sw1.good(), sw2.good());
         auto r1 = sw1.finish();
         auto r2 = sw2.finish();
@@ -123,8 +122,8 @@ STRF_TEST_FUNC void char_range_basic_operations()
 
         sw1 = sw2;
         TEST_TRUE(sw1 == sw2);
-        TEST_TRUE(sw1.pointer() == sw2.pointer());
-        TEST_TRUE(sw1.end() == sw2.end());
+        TEST_TRUE(sw1.buffer_ptr() == sw2.buffer_ptr());
+        TEST_TRUE(sw1.buffer_end() == sw2.buffer_end());
         TEST_EQ(sw1.good(), sw2.good());
         auto r1 = sw1.finish();
         auto r2 = sw2.finish();
@@ -151,8 +150,8 @@ STRF_TEST_FUNC void char_range_basic_operations()
 
         sw1 = sw2;
         TEST_TRUE(sw1 == sw2);
-        TEST_TRUE(sw1.pointer() == sw2.pointer());
-        TEST_TRUE(sw1.end() == sw2.end());
+        TEST_TRUE(sw1.buffer_ptr() == sw2.buffer_ptr());
+        TEST_TRUE(sw1.buffer_end() == sw2.buffer_end());
         TEST_EQ(sw1.good(), sw2.good());
         auto r1 = sw1.finish();
         auto r2 = sw2.finish();
@@ -166,14 +165,14 @@ static STRF_TEST_FUNC void char_range_destination_too_small()
     {
         char buff[4];
         strf::basic_char_array_writer<char> sw(buff);
-        TEST_EQ(sw.space(), 4);
+        TEST_EQ(sw.buffer_space(), 4);
         strf::put(sw, 'a');
-        TEST_EQ(sw.space(), 3);
+        TEST_EQ(sw.buffer_space(), 3);
         strf::put(sw, 'b');
         strf::put(sw, 'c');
         TEST_TRUE(sw.good());
         strf::put(sw, 'd');
-        TEST_EQ(sw.space(), 0);
+        TEST_EQ(sw.buffer_space(), 0);
         strf::put(sw, 'e');
         TEST_FALSE(sw.good());
         strf::put(sw, 'f');

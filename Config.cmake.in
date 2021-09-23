@@ -1,0 +1,5 @@
+@PACKAGE_INIT@
+
+include("${CMAKE_CURRENT_LIST_DIR}/strf-targets.cmake")
+
+check_required_components(strf-static-lib strf-header-only)

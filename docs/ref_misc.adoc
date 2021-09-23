@@ -7,10 +7,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 
 :rank: <<rank,rank>>
 :tag: <<tag,tag>>
-:destination_no_reserve: <<destination,destination_no_reserve>>
-:OutbuffCreator: <<OutbuffCreator,OutbuffCreator>
-
-:basic_outbuff: <<outbuff_hpp#basic_outbuff,basic_outbuff>>
+:destination: <<destination_hpp#destination,destination>>
 :facet_traits: <<facet_traits,facet_traits>>
 
 == Miscellaneous
@@ -108,74 +105,72 @@ struct rank<0>
 ----
 ////
 
-=== `Outbuff` writing functions
-
-[source,cpp,subs=normal]
-----
-namespace strf {
-
-template <typename CharT>
-void write( {basic_outbuff}<CharT>& ob
-          , const CharT{asterisk} data
-          , std::size_t count );
-
-template <typename CharT>
-void write( {basic_outbuff}<CharT>& ob
-          , const CharT{asterisk} data
-          , const CharT{asterisk} data_end );
-
-void write({basic_outbuff}<char>& ob, const char{asterisk} cstr);
-
-void write({basic_outbuff}<wchar_t>& ob, const wchar_t{asterisk} cstr);
-
-} // namespace strf
-----
-
-
-[[basic_outbuff_write_range]]
-====
-[source,cpp,subs=normal]
-----
-template <typename CharT>
-void write( {basic_outbuff}<CharT>& ob
-          , const CharT{asterisk} data
-          , const CharT{asterisk} data_end );
-----
-[horizontal]
-Effect:: Writes the the range [ `data`, `data_end` ) into `ob`, calling `ob.recycle()`
-         as many times as necessary.
-====
-[[basic_outbuff_write_size]]
-====
-[source,cpp,subs=normal]
-----
-template <typename CharT>
-void write( {basic_outbuff}<CharT>& ob
-          , const CharT{asterisk} data
-          , std::size_t data_size );
-----
-[horizontal]
-Effect:: Equivalent to `write(ob, data, data + data_size)`
-====
-[[basic_outbuff_write_cstr]]
-====
-[source,cpp]
-----
-void write( {basic_outbuff}<char>& ob
-          , const char* cstr );
-----
-[horizontal]
-Effect:: Equivalent to `write(ob, cstr, std::strlen(cstr))`
-====
-
-[[basic_outbuff_write_wcstr]]
-====
-[source,cpp,subs=normal]
-----
-void write( {basic_outbuff}<wchar_t>& ob
-          , const wchar_t{asterisk} wcstr );
-----
-[horizontal]
-Effect:: Equivalent to `write(ob, wcstr, std::wstrlen(wcstr))`
-====
+// === `destination` writing functions
+// 
+// [source,cpp,subs=normal]
+// ----
+// namespace strf {
+// 
+// template <typename CharT>
+// void write( {destination}<CharT>& ob
+//           , const CharT{asterisk} data
+//           , std::size_t count );
+// 
+// template <typename CharT>
+// void write( {destination}<CharT>& ob
+//           , const CharT{asterisk} data
+//           , const CharT{asterisk} data_end );
+// 
+// void write({destination}<char>& ob, const char{asterisk} cstr);
+// 
+// void write({destination}<wchar_t>& ob, const wchar_t{asterisk} cstr);
+// 
+// } // namespace strf
+// ----
+// 
+// 
+// [[destination_write_range]]
+// ====
+// [source,cpp,subs=normal]
+// ----
+// template <typename CharT>
+// void write( {destination}<CharT>& ob
+//           , const CharT{asterisk} data
+//           , const CharT{asterisk} data_end );
+// ----
+// [horizontal]
+// Effect:: Writes the the range [ `data`, `data_end` ) into `ob`, calling `ob.recycle()`
+//          as many times as necessary.
+// ====
+// [[destination_write_size]]
+// ====
+// [source,cpp,subs=normal]
+// ----
+// template <typename CharT>
+// void write( {destination}<CharT>& ob
+//           , const CharT{asterisk} data
+//           , std::size_t data_size );
+// ----
+// [horizontal]
+// Effect:: Equivalent to `write(ob, data, data + data_size)`
+// ====
+// [[destination_write_cstr]]
+// ====
+// [source,cpp,subs=normal]
+// ----
+// void write({destination}<char>& ob, const char* cstr);
+// ----
+// [horizontal]
+// Effect:: Equivalent to `write(ob, cstr, std::strlen(cstr))`
+// ====
+// 
+// [[destination_write_wcstr]]
+// ====
+// [source,cpp,subs=normal]
+// ----
+// void write({destination}<wchar_t>& ob, const wchar_t{asterisk} wcstr);
+// ----
+// [horizontal]
+// Effect:: Equivalent to `write(ob, wcstr, std::wstrlen(wcstr))`
+// ====
 

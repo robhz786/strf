@@ -76,7 +76,7 @@ struct cfile_writer_result {
 // ( recycle and do_write ) calling a __host__ function ( fwrite )
 template <typename CharT, typename Traits>
 class cfile_writer_base
-    : public strf::basic_outbuff<CharT>
+    : public strf::destination<CharT>
 {
     static_assert(noexcept(std::declval<Traits>().write(nullptr, 0)), "");
 
@@ -87,7 +87,7 @@ public:
         ( CharT* buff
         , std::size_t buff_size
         , TraitsInitArgs&&... args)
-        : strf::basic_outbuff<CharT>(buff, buff_size)
+        : strf::destination<CharT>(buff, buff_size)
         , buff_(buff)
         , traits_(std::forward<TraitsInitArgs>(args)...)
     {
@@ -95,14 +95,14 @@ public:
 
     STRF_HD ~cfile_writer_base() {
         if (this->good()) {
-            std::size_t count = this->pointer() - buff_;
+            std::size_t count = this->buffer_ptr() - buff_;
             traits_.write(buff_, count);
         }
     }
 
     STRF_HD void recycle() noexcept override {
-        auto p = this->pointer();
-        this->set_pointer(buff_);
+        auto p = this->buffer_ptr();
+        this->set_buffer_ptr(buff_);
         STRF_IF_LIKELY (this->good()) {
             std::size_t count = p - buff_;
             auto count_inc = traits_.write(buff_, count);
@@ -118,7 +118,7 @@ public:
         bool g = this->good();
         this->set_good(false);
         STRF_IF_LIKELY (g) {
-            std::size_t count = this->pointer() - buff_;
+            std::size_t count = this->buffer_ptr() - buff_;
             auto count_inc = traits_.write(buff_, count);
             count_ += count_inc;
             g = (count == count_inc);
@@ -129,8 +129,8 @@ public:
 private:
 
     STRF_HD void do_write(const CharT* str, std::size_t str_len) noexcept override {
-        auto p = this->pointer();
-        this->set_pointer(buff_);
+        auto p = this->buffer_ptr();
+        this->set_buffer_ptr(buff_);
         STRF_IF_LIKELY (this->good()) {
             std::size_t count = p - buff_;
             auto count_inc = traits_.write(buff_, count);
@@ -221,8 +221,8 @@ class narrow_cfile_writer_creator
 public:
 
     using char_type = CharT;
-    using outbuff_type = strf::narrow_cfile_writer<CharT, strf::min_space_after_recycle<CharT>()>;
-    using finish_type = typename outbuff_type::result;
+    using destination_type = strf::narrow_cfile_writer<CharT, strf::min_space_after_recycle<CharT>()>;
+    using finish_type = typename destination_type::result;
 
     constexpr STRF_HD narrow_cfile_writer_creator(FILE* file) noexcept
         : file_(file)
@@ -244,8 +244,8 @@ class wide_cfile_writer_creator
 public:
 
     using char_type = wchar_t;
-    using outbuff_type = strf::wide_cfile_writer;
-    using finish_type = typename outbuff_type::result;
+    using destination_type = strf::wide_cfile_writer;
+    using finish_type = typename destination_type::result;
 
     constexpr STRF_HD wide_cfile_writer_creator(FILE* file) noexcept
         : file_(file)
@@ -267,20 +267,20 @@ private:
 
 
 template <typename CharT = char>
-STRF_HD inline auto to(std::FILE* destination)
+STRF_HD inline auto to(std::FILE* destfile)
     -> strf::destination_no_reserve<strf::detail::narrow_cfile_writer_creator<CharT>>
 {
     return strf::destination_no_reserve
         < strf::detail::narrow_cfile_writer_creator<CharT> >
-        (destination);
+        (destfile);
 }
 
-STRF_HD inline auto wto(std::FILE* destination)
+STRF_HD inline auto wto(std::FILE* destfile)
     -> strf::destination_no_reserve<strf::detail::wide_cfile_writer_creator>
 {
     return strf::destination_no_reserve
         < strf::detail::wide_cfile_writer_creator >
-        (destination);
+        (destfile);
 }
 
 } // namespace strf

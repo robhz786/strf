@@ -8,12 +8,12 @@
 #include <climits>
 #include <algorithm>
 
-class QStringCreator: public strf::basic_outbuff<char16_t>
+class QStringCreator: public strf::destination<char16_t>
 {
 public:
 
     QStringCreator()
-        : strf::basic_outbuff<char16_t>(buffer_, buffer_size_)
+        : strf::destination<char16_t>(buffer_, buffer_size_)
     {
     }
 
@@ -26,7 +26,7 @@ public:
     QStringCreator(const QStringCreator&) = delete;
 
     explicit QStringCreator(std::size_t size)
-        : strf::basic_outbuff<char16_t>(buffer_, buffer_size_)
+        : strf::destination<char16_t>(buffer_, buffer_size_)
     {
         Q_ASSERT(size < static_cast<std::size_t>(INT_MAX));
         str_.reserve(static_cast<int>(size));
@@ -45,8 +45,8 @@ private:
 
 void QStringCreator::recycle()
 {
-    std::size_t count = this->pointer() - buffer_;
-    this->set_pointer(buffer_);
+    std::size_t count = this->buffer_ptr() - buffer_;
+    this->set_buffer_ptr(buffer_);
     if (this->good()) {
         this->set_good(false);
         QChar qchar_buffer[buffer_size_];
@@ -68,8 +68,8 @@ class QStringCreatorFactory
 public:
     using char_type = char16_t;
     using finish_type = QString;
-    using outbuff_type = QStringCreator;
-    using sized_outbuff_type = QStringCreator;
+    using destination_type = QStringCreator;
+    using sized_destination_type = QStringCreator;
 
     strf::tag<> create() const
     {

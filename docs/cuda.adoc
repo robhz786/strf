@@ -5,11 +5,11 @@ Distributed under the Boost Software License, Version 1.0.
 http://www.boost.org/LICENSE_1_0.txt)
 ////
 
-:cstr_writer: <<outbuff_hpp#basic_cstr_writer,cstr_writer>>
-:basic_cstr_writer: <<outbuff_hpp#basic_cstr_writer,basic_cstr_writer>>
+:cstr_writer: <<destination_hpp#basic_cstr_writer,cstr_writer>>
+:basic_cstr_writer: <<destination_hpp#basic_cstr_writer,basic_cstr_writer>>
 
-:strf-version: develop
-:strf-src-root: https://github.com/robhz786/strf/blob/{strf-version}
+:strf-revision: develop
+:strf-src-root: https://github.com/robhz786/strf/blob/{strf-revision}
 
 = Using Strf on CUDA devices
 :source-highlighter: prettify
@@ -17,13 +17,15 @@ http://www.boost.org/LICENSE_1_0.txt)
 
 == Everything goes to a raw string
 
-You can use Strf on CUDA devices but there are some limitations.
-Naturally, you can't write to `FILE*` nor `std::string`,
-but you can write raw strings using `{basic_cstr_writer}`.
+It is possible to use Strf on CUDA devices,
+but are naturally some limitations:
+you can't write to `FILE*` nor `std::string`,
+nor anything that is not usable in device code.
+Basically, you can only write raw strings.
+
 So, the kernel &#x2014; the function marked with `&#95;&#95;global&#95;&#95;`
-qualifier &#x2014; receives a `char*` ( or a pointer to another character type )
-where it writes the content, which must later be transferred to the host memory
-so that the host code can do something useful with it ( like sending to `stdout` ).
+qualifier &#x2014; needs to receive a `char*` ( or a pointer to another character type )
+pointing to where the content is to be written.
 
 [source,cpp,subs=normal]
 ----
@@ -41,20 +43,38 @@ so that the host code can do something useful with it ( like sending to `stdout`
 }
 ----
 
-There is a more complete example {strf-src-root}/example/cuda.cu[here].
-You can also take a look at the the unit tests that run on CUDA device
+There is a more complete example {strf-src-root}/examples/cuda.cu[here].
+You can also take a look at the unit tests that run on CUDA device
 {strf-src-root}/test/main_cuda.cu[here].
+
+== Static link and CMake
+
+To build Strf as static library for CUDA, you only need to compile the file
+`{strf-src-root}/src/strf.cu[strf/strf.cu]`. And your code 
+shall define the macro `STRF_CUDA_SEPARATE_COMPILATION`.
+
+Alternatively, you can use Strf CMake project. In this case, you need
+to turn on the `STRF_CUDA_SUPPORT` option:
+[source,bash,subs=normal]
+----
+cmake -G __<generator-name>__ -DSTRF_CUDA_SEPARATE_COMPILATION=ON ... __<path-to-source>__
+----
+
+As explained in <<install#,another document>>, it is possible to
+integrate Strf using `add_subdirectory`, or
+exporting and importing. Both solution gives you the
+`strf::strf-cuda` CMake target, which represents the Srtf static
+library for CUDA.
 
 == Unsupported features on CUDA devices
 
 The folowing features are not supported on device code:
 
-* destinations types
-** `to_basic_string`, `to_string`, `to_u8string`,`to_u16string`,
-   `to_u32string`, `to_wstring`
-** `to(std::basic_streambuf</{asterisk}...{asterisk}/>`
-** `to(FILE{asterisk})`
-** `wto(FILE{asterisk})`
+* `to_basic_string`, `to_string`, `to_u8string`,`to_u16string`,
+  `to_u32string`, `to_wstring`
+* `to(std::basic_streambuf</{asterisk}...{asterisk}/>`
+* `to(FILE{asterisk})`
+* `wto(FILE{asterisk})`
 * `<<strf_hpp#dynamic_charset,dynamic_charset>>`
 * `<<quick_reference#lettercase,uppercase>>`, `<<quick_reference#lettercase,lowercase>>`,
   `<<quick_reference#lettercase,mixedcase>>` ( instead, you need to type

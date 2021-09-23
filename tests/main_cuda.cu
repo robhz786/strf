@@ -8,20 +8,20 @@
 
 namespace test_utils {
 
-STRF_HD strf::outbuff*& test_outbuff_ptr()
+STRF_HD strf::destination<char>*& test_messages_destination_ptr()
 {
-    static strf::outbuff* ptr = nullptr;
+    static strf::destination<char>* ptr = nullptr;
     return ptr;
 }
 
-STRF_HD void set_test_outbuff(strf::outbuff& ob)
+STRF_HD void set_test_messages_destination(strf::destination<char>& ob)
 {
-    test_outbuff_ptr() = &ob;
+    test_messages_destination_ptr() = &ob;
 }
 
-STRF_HD strf::outbuff& test_outbuff()
+STRF_HD strf::destination<char>& test_messages_destination()
 {
-    auto * ptr = test_outbuff_ptr();
+    auto * ptr = test_messages_destination_ptr();
     return *ptr;
 }
 
@@ -37,7 +37,7 @@ __global__ void kernel_main
     , std::size_t err_msg_size )
 {
     strf::cstr_writer out(err_msg, err_msg_size);
-    test_utils::set_test_outbuff(out);
+    test_utils::set_test_messages_destination(out);
 
     run_all_tests ();
 

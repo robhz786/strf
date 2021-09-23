@@ -9,18 +9,18 @@
 //     - https://github.com/ned14/quickcpplib
 //     - https://github.com/ned14/llfio
 
-#include <strf/outbuff.hpp>
+#include <strf/destination.hpp>
 #include <llfio.hpp>
 
 namespace llfio = LLFIO_V2_NAMESPACE;
 
 template <typename CharT, std::size_t BufferSize>
-class llfio_file_writer final: public strf::basic_outbuff<CharT>
+class llfio_file_writer final: public strf::destination<CharT>
 {
 public:
 
     llfio_file_writer(llfio::file_handle&& file, std::size_t offset = 0)
-        : strf::basic_outbuff<CharT>{buffer_, BufferSize}
+        : strf::destination<CharT>{buffer_, BufferSize}
         , file_{std::move(file)}
         , offset_{offset}
     {
@@ -29,13 +29,13 @@ public:
     llfio_file_writer(const llfio_file_writer&) = delete;
 
     llfio_file_writer(llfio_file_writer&& other)
-        : strf::basic_outbuff<CharT>{buffer_, BufferSize}
+        : strf::destination<CharT>{buffer_, BufferSize}
         , file_{std::move(other.file_)}
         , offset_{other.offset_}
         , error_{other.error_}
     {
         if (other.good()) {
-            std::size_t chars_count = other.pointer() - other.buffer_;
+            std::size_t chars_count = other.buffer_ptr() - other.buffer_;
             memcpy(buffer_, other.buffer_, chars_count * sizeof(CharT));
             this->advance(chars_count);
         } else {
@@ -64,8 +64,8 @@ private:
     void set_bad_() noexcept
     {
         this->set_good(false);
-        this->set_pointer(strf::garbage_buff<CharT>());
-        this->set_end(strf::garbage_buff_end<CharT>());
+        this->set_buffer_ptr(strf::garbage_buff<CharT>());
+        this->set_buffer_end(strf::garbage_buff_end<CharT>());
     }
 
     llfio::result<llfio::file_handle::const_buffers_type>
@@ -90,18 +90,18 @@ template <typename CharT, std::size_t BufferSize>
 void llfio_file_writer<CharT, BufferSize>::recycle() noexcept
 {
     if (this->good()) {
-        std::size_t chars_count = this->pointer() - buffer_;
+        std::size_t chars_count = this->buffer_ptr() - buffer_;
         if (chars_count) {
             auto result = write_(chars_count);
             if (! result.has_error()) {
-                this->set_pointer(buffer_);
+                this->set_buffer_ptr(buffer_);
             } else {
                 error_ = result.assume_error();
                 set_bad_();
             }
         }
     } else {
-        this->set_pointer(strf::garbage_buff<CharT>());
+        this->set_buffer_ptr(strf::garbage_buff<CharT>());
     }
 }
 
@@ -109,7 +109,7 @@ template <typename CharT, std::size_t BufferSize>
 llfio::result<void> llfio_file_writer<CharT, BufferSize>::close() noexcept
 {
     if (this->good()) {
-        std::size_t chars_count = this->pointer() - buffer_;
+        std::size_t chars_count = this->buffer_ptr() - buffer_;
         if (chars_count) {
             auto result = write_(chars_count);
             if (result.has_error()) {
@@ -129,7 +129,7 @@ template <typename CharT, std::size_t BufferSize>
 llfio::file_handle llfio_file_writer<CharT, BufferSize>::release_handle() noexcept
 {
     if (this->good()) {
-        std::size_t chars_count = this->pointer() - buffer_;
+        std::size_t chars_count = this->buffer_ptr() - buffer_;
         if (chars_count) {
             auto result = write_(chars_count);
             if (result.has_error()) {

@@ -7,7 +7,6 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <strf/printer.hpp>
-#include <strf/facets_pack.hpp>
 #include <strf/detail/facets/width_calculator.hpp>
 
 namespace strf {
@@ -147,7 +146,7 @@ public:
         }
     }
 
-    STRF_HD void print_to(strf::basic_outbuff<CharT>& ob) const override;
+    STRF_HD void print_to(strf::destination<CharT>& dest) const override;
 
 private:
 
@@ -156,11 +155,11 @@ private:
 
 template <typename CharT>
 STRF_HD void char_printer<CharT>::print_to
-    ( strf::basic_outbuff<CharT>& ob ) const
+    ( strf::destination<CharT>& dest ) const
 {
-    ob.ensure(1);
-    *ob.pointer() = ch_;
-    ob.advance();
+    dest.ensure(1);
+    *dest.buffer_ptr() = ch_;
+    dest.advance();
 }
 
 
@@ -181,7 +180,7 @@ public:
         init_(input.preview, wcalc, charset);
     }
 
-    STRF_HD void print_to(strf::basic_outbuff<CharT>& ob) const override;
+    STRF_HD void print_to(strf::destination<CharT>& dest) const override;
 
 private:
 
@@ -246,32 +245,32 @@ STRF_HD void fmt_char_printer<CharT>::init_
 
 template <typename CharT>
 STRF_HD void fmt_char_printer<CharT>::print_to
-    ( strf::basic_outbuff<CharT>& ob ) const
+    ( strf::destination<CharT>& dest ) const
 {
     if (left_fillcount_ != 0) {
-        encode_fill_fn_(ob, left_fillcount_, afmt_.fill);
+        encode_fill_fn_(dest, left_fillcount_, afmt_.fill);
     }
     if (count_ == 1) {
-        ob.ensure(1);
-        * ob.pointer() = ch_;
-        ob.advance();
+        dest.ensure(1);
+        * dest.buffer_ptr() = ch_;
+        dest.advance();
     } else {
         std::size_t count = count_;
         while(true) {
-            std::size_t space = ob.space();
+            std::size_t space = dest.buffer_space();
             if (count <= space) {
-                strf::detail::str_fill_n(ob.pointer(), count, ch_);
-                ob.advance(count);
+                strf::detail::str_fill_n(dest.buffer_ptr(), count, ch_);
+                dest.advance(count);
                 break;
             }
-            strf::detail::str_fill_n(ob.pointer(), space, ch_);
+            strf::detail::str_fill_n(dest.buffer_ptr(), space, ch_);
             count -= space;
-            ob.advance_to(ob.end());
-            ob.recycle();
+            dest.advance_to(dest.buffer_end());
+            dest.recycle();
         }
     }
     if (right_fillcount_ != 0) {
-        encode_fill_fn_(ob, right_fillcount_, afmt_.fill);
+        encode_fill_fn_(dest, right_fillcount_, afmt_.fill);
     }
 }
 
@@ -295,7 +294,7 @@ public:
         }
     }
 
-    void STRF_HD print_to(strf::basic_outbuff<DestCharT>& dest) const override;
+    void STRF_HD print_to(strf::destination<DestCharT>& dest) const override;
 
 private:
     strf::encode_char_f<DestCharT> encode_char_f_;
@@ -304,10 +303,10 @@ private:
 };
 
 template <typename DestCharT>
-void STRF_HD conv_char32_printer<DestCharT>::print_to(strf::basic_outbuff<DestCharT>& dest) const
+void STRF_HD conv_char32_printer<DestCharT>::print_to(strf::destination<DestCharT>& dest) const
 {
     dest.ensure(encoded_char_size_);
-    encode_char_f_(dest.pointer(), ch_);
+    encode_char_f_(dest.buffer_ptr(), ch_);
     dest.advance(encoded_char_size_);
 }
 
@@ -327,7 +326,7 @@ public:
         init_(input.preview, charset, input.arg.get_alignment_format(), char_width);
     }
 
-    void STRF_HD print_to(strf::basic_outbuff<DestCharT>& dest) const override;
+    void STRF_HD print_to(strf::destination<DestCharT>& dest) const override;
 
 private:
 
@@ -374,7 +373,7 @@ void STRF_HD fmt_conv_char32_printer<DestCharT>::init_
 }
 
 template <typename DestCharT>
-void STRF_HD fmt_conv_char32_printer<DestCharT>::print_to(strf::basic_outbuff<DestCharT>& dest) const
+void STRF_HD fmt_conv_char32_printer<DestCharT>::print_to(strf::destination<DestCharT>& dest) const
 {
     if(fillcount_ == 0) {
         encode_fill_f_(dest, count_, ch_);

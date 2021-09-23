@@ -7,7 +7,7 @@
 
 #include "test_utils.hpp"
 
-class reservation_tester : public strf::basic_outbuff<char>
+class reservation_tester : public strf::destination<char>
 {
     constexpr static std::size_t buff_size_ = strf::min_space_after_recycle<char>();
     char buff_[buff_size_];
@@ -15,13 +15,13 @@ class reservation_tester : public strf::basic_outbuff<char>
 public:
 
     STRF_HD reservation_tester(strf::tag<void>)
-        : strf::basic_outbuff<char>{ buff_, buff_ + buff_size_ }
+        : strf::destination<char>{ buff_, buff_ + buff_size_ }
         , buff_{0}
     {
     }
 
     STRF_HD reservation_tester(std::size_t size)
-        : strf::basic_outbuff<char>{ buff_, buff_ + buff_size_ }
+        : strf::destination<char>{ buff_, buff_ + buff_size_ }
         , buff_{0}
         , reserved_size_{size}
     {
@@ -32,7 +32,7 @@ public:
 
     void STRF_HD recycle() override
     {
-        this->set_pointer(buff_);
+        this->set_buffer_ptr(buff_);
     }
 
     std::size_t STRF_HD finish()
@@ -51,8 +51,8 @@ class reservation_tester_creator
 public:
 
     using char_type = char;
-    using outbuff_type = reservation_tester;
-    using sized_outbuff_type = reservation_tester;
+    using destination_type = reservation_tester;
+    using sized_destination_type = reservation_tester;
 
     strf::tag<void> STRF_HD create() const
     {

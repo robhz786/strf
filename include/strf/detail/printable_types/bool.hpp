@@ -6,9 +6,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <strf/facets_pack.hpp>
 #include <strf/printer.hpp>
-#include <strf/detail/facets/charset.hpp>
 #include <strf/detail/facets/lettercase.hpp>
 
 namespace strf {
@@ -73,7 +71,7 @@ public:
         input.preview.add_size(5 - (int)input.arg);
     }
 
-    void STRF_HD print_to(strf::basic_outbuff<CharT>& ob) const override;
+    void STRF_HD print_to(strf::destination<CharT>& dest) const override;
 
 private:
 
@@ -82,11 +80,11 @@ private:
 };
 
 template <typename CharT>
-void STRF_HD bool_printer<CharT>::print_to(strf::basic_outbuff<CharT>& ob) const
+void STRF_HD bool_printer<CharT>::print_to(strf::destination<CharT>& dest) const
 {
     auto size = 5 - (int)value_;
-    ob.ensure(size);
-    auto p = ob.pointer();
+    dest.ensure(size);
+    auto p = dest.buffer_ptr();
     const unsigned mask_first_char = static_cast<unsigned>(lettercase_) >> 8;
     const unsigned mask_others_chars = static_cast<unsigned>(lettercase_) & 0x20;
     if (value_) {
@@ -101,7 +99,7 @@ void STRF_HD bool_printer<CharT>::print_to(strf::basic_outbuff<CharT>& ob) const
         p[3] = static_cast<CharT>('S' | mask_others_chars);
         p[4] = static_cast<CharT>('E' | mask_others_chars);
     }
-    ob.advance(size);
+    dest.advance(size);
 }
 
 template <typename CharT>
@@ -133,7 +131,7 @@ public:
         }
     }
 
-    void STRF_HD print_to(strf::basic_outbuff<CharT>& ob) const override;
+    void STRF_HD print_to(strf::destination<CharT>& dest) const override;
 
 private:
 
@@ -146,7 +144,7 @@ private:
 
 template <typename CharT>
 void fmt_bool_printer<CharT>::print_to
-    ( strf::basic_outbuff<CharT>& ob ) const
+    ( strf::destination<CharT>& dest ) const
 {
     decltype(fillcount_) right_fillcount = 0;
     if (fillcount_ > 0) {
@@ -162,12 +160,12 @@ void fmt_bool_printer<CharT>::print_to
                 left_fillcount = fillcount_ >> 1;
                 right_fillcount = fillcount_ - left_fillcount;
         }
-        encode_fill_(ob, left_fillcount, afmt_.fill);
+        encode_fill_(dest, left_fillcount, afmt_.fill);
     }
     print_value:
     auto size = 5 - (int)value_;
-    ob.ensure(size);
-    auto p = ob.pointer();
+    dest.ensure(size);
+    auto p = dest.buffer_ptr();
     const unsigned mask_first_char = static_cast<unsigned>(lettercase_) >> 8;
     const unsigned mask_others_chars = static_cast<unsigned>(lettercase_) & 0x20;
     if (value_) {
@@ -182,10 +180,10 @@ void fmt_bool_printer<CharT>::print_to
         p[3] = static_cast<CharT>('S' | mask_others_chars);
         p[4] = static_cast<CharT>('E' | mask_others_chars);
     }
-    ob.advance(size);
+    dest.advance(size);
 
     if (right_fillcount != 0) {
-        encode_fill_(ob, right_fillcount, afmt_.fill);
+        encode_fill_(dest, right_fillcount, afmt_.fill);
     }
 }
 

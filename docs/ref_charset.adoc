@@ -272,7 +272,7 @@ constexpr std::size_t invalid_char_len = (std::size_t)-1;
 
 template <typename SrcCharT, typename DestCharT>
 using transcode_f = void ({asterisk})
-    ( {basic_outbuff}<DestCharT>& ob
+    ( {destination}<DestCharT>& ob
     , const SrcCharT{asterisk} src
     , std::size_t src_size
     , {invalid_seq_notifier} inv_seq_notifier
@@ -285,7 +285,7 @@ using transcode_size_f = std::size_t ({asterisk})
     , {surrogate_policy} surr_poli );
 
 template <typename CharT>
-using write_replacement_char_f = void({asterisk})( {basic_outbuff}<CharT>& );
+using write_replacement_char_f = void({asterisk})( {destination}<CharT>& );
 
 using validate_f = std::size_t ({asterisk})(char32_t ch);
 
@@ -296,7 +296,7 @@ using encode_char_f = CharT{asterisk}({asterisk}) (CharT{asterisk} dest, char32_
 
 template <typename CharT>
 using encode_fill_f = void ({asterisk})
-    ( {basic_outbuff}<CharT>&
+    ( {destination}<CharT>&
     , std::size_t count
     , char32_t ch );
 
@@ -335,7 +335,7 @@ Given
 * `DestCharT`, one of the types: `char`, `char8_t`, `char16_t`, `char32_t` or `wchar_t`
 * `X`, a _Transcoder_ type from `SrcCharT` to `DestCharT`
 * `x`, an expression of type `X` or `const X`
-* `dest`, an lvalue reference of type `{basic_outbuff}<DestCharT>`
+* `dest`, an lvalue reference of type `{destination}<DestCharT>`
 * `src`, a value of type `const SrcCharT*`
 * `src_size`, a value of type `std::size_t` equal to the size of
               the array pointed by `src`
@@ -380,7 +380,7 @@ Effect:: Converts the content of `src` from one encoding to another writing
     of `surr_poli` is `surrogate_policy::lax`.
 Precondition:: `x.transcode_func() != nullptr` is `true`
 Postconditions:: `dest.recycle()` is not called() if
-        `dest.space() >= x.transcode_size(src, src_size, surr_poli)` is `true`.
+        `dest.buffer_space() >= x.transcode_size(src, src_size, surr_poli)` is `true`.
 ====
 [[Transcoder_transcode_size_func]]
 ====
@@ -438,7 +438,7 @@ Given
 * `max_count`, a value of type `std::size_t`
 * `ch32`, a value of type `char32_t`
 * `ch`, a value of type `CharT`
-* `ob`, an lvalue reference of type `{basic_outbuff}<CharT>`
+* `ob`, an lvalue reference of type `{destination}<CharT>`
 * `cs_id`, value of type `{charset_id}`
 
 The following must hold:
@@ -982,7 +982,7 @@ public:
         ( {static_transcoder}<Src, Dest> st );
 
     void transcode
-        ( {basic_outbuff}<DestCharT>& ob
+        ( {destination}<DestCharT>& ob
         , const SrcCharT* src
         , std::size_t src_size
         , {invalid_seq_notifier} inv_seq_notifier
@@ -1042,7 +1042,7 @@ Postconditions::
 [source,cpp,subs=normal]
 ----
 void transcode
-    ( {basic_outbuff}<DestCharT>& ob
+    ( {destination}<DestCharT>& ob
     , const SrcCharT* src
     , std::size_t src_size
     , {invalid_seq_notifier} inv_seq_notifier
@@ -1143,7 +1143,7 @@ public:
     code_unit* encode_char(code_unit* dest, char32_t ch) const; // noexcept
 
     void encode_fill
-        ( {basic_outbuff}<CharT>& ob, std::size_t count, char32_t ch ) const;
+        ( {destination}<CharT>& ob, std::size_t count, char32_t ch ) const;
 
     std::size_t codepoints_fast_count
         ( const code_unit* src, std::size_t src_size
@@ -1153,7 +1153,7 @@ public:
         ( const code_unit* src, std::size_t src_size
         , std::size_t max_count, {surrogate_policy} surr_poli ) const;
 
-    void write_replacement_char({basic_outbuff}<CharT>& ob) const;
+    void write_replacement_char({destination}<CharT>& ob) const;
 
     char32_t decode_unit(code_unit ch) const;
 
@@ -1310,7 +1310,7 @@ Effect:: Calls and returns `this\->data\->encoded_char_func(ch)`.
 [source,cpp,subs=normal]
 ----
 void encode_fill
-    ( {basic_outbuff}<CharT>& ob, std::size_t count, char32_t ch ) const;
+    ( {destination}<CharT>& ob, std::size_t count, char32_t ch ) const;
 ----
 [horizontal]
 Effect:: Calls and returns
@@ -1340,7 +1340,7 @@ Effect:: Calls and returns
 ====
 [source,cpp,subs=normal]
 ----
-void write_replacement_char({basic_outbuff}<CharT>& ob) const;
+void write_replacement_char({destination}<CharT>& ob) const;
 ----
 [horizontal]
 Effect:: Calls `this\->data\->write_replacement_char_func(ob)`.
@@ -1525,7 +1525,7 @@ namespace strf {
 
 template<class SrcCharT, class DestCharT>
 void decode_encode
-    ( {basic_outbuff}<DestCharT>& ob
+    ( {destination}<DestCharT>& ob
     , {transcode_f}<SrcCharT, char32_t> to_u32
     , {transcode_f}<char32_t, DestCharT> from_u32
     , const SrcCharT* src
@@ -1540,8 +1540,8 @@ Converts the content in `src` to UTF-32 using `to_u32`,
 then writes the result to `ob` using `from_u32`.
 
 [horizontal]
-Postcondition:: `ob.<<outbuff_hpp#basic_outbuff_recycle,recycle>>()` is not called if
-`ob.<<outbuf_hpp#basic_outbuff_space,space>>()` is not less then the value returned by
+Postcondition:: `ob.<<destination_hpp#destination_recycle,recycle>>()` is not called if
+`ob.<<destination_hpp#destination_buffer_space,buffer_space>>()` is not less then the value returned by
 `{decode_encode_size}(to_u32, size_calc_func, src, src_size, inv_seq_notifier, surr_poli)`,
 where `size_calc_func` is the return value of
 `dest_enc.<<Charset_from_u32,from_u32>>().<<Transcoder_transcode_size_func, transcode_size_func>>()`,

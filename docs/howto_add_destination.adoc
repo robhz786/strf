@@ -5,81 +5,82 @@ Distributed under the Boost Software License, Version 1.0.
 http://www.boost.org/LICENSE_1_0.txt)
 ////
 
-:strf-version: develop
-:strf-src-root: https://github.com/robhz786/strf/blob/{strf-version}
+:strf-revision: develop
+:strf-src-root: https://github.com/robhz786/strf/blob/{strf-revision}
 
 = How to add a new destination
 :source-highlighter: prettify
 :icons: font
 
-:min_space_after_recycle: <<outbuff_hpp#min_space_after_recycle,min_space_after_recycle>>
-:basic_outbuff: <<outbuff_hpp#basic_outbuff,basic_outbuff>>
-:recycle: <<outbuff_hpp#basic_outbuff_recycle,recycle>>
-:good: <<outbuff_hpp#basic_outbuff_good,good>>
-:pointer: <<outbuff_hpp#basic_outbuff_pointer,pointer>>
-:set_good: <<outbuff_hpp#basic_outbuff_set_good,set_good>>
-:set_pointer: <<outbuff_hpp#basic_outbuff_set_pointer,set_pointer>>
-:to: <<quick_reference#dest_outbuff,to>>
+:min_space_after_recycle: <<destination_hpp#min_space_after_recycle,min_space_after_recycle>>
+:destination: <<destination_hpp#destination,destination>>
+:recycle: <<destination_hpp#destination_recycle,recycle>>
+:good: <<destination_hpp#destination_good,good>>
+:buffer_ptr: <<destination_hpp#destination_buffer_ptr,buffer_ptr>>
+:set_good: <<destination_hpp#destination_set_good,set_good>>
+:set_buffer_ptr: <<destination_hpp#destination_set_buffer_ptr,set_buffer_ptr>>
+:to: <<quick_reference#to_destination_ref,to>>
 
 :destination_no_reserve: <<strf_hpp#destination_no_reserve,destination_no_reserve>>
 :destination_calc_size: <<strf_hpp#destination_calc_size,destination_calc_size>>
 :destination_with_given_size: <<strf_hpp#destination_with_given_size,destination_with_given_size>>
-:OutbuffCreator: <<strf_hpp#OutbuffCreator,OutbuffCreator>>
-:SizedOutbuffCreator: <<strf_hpp#SizedOutbuffCreator,SizedOutbuffCreator>>
+:DestinationCreator: <<strf_hpp#DestinationCreator,DestinationCreator>>
+:SizedDestinationCreator: <<strf_hpp#SizedDestinationCreator,SizedDestinationCreator>>
 
-== The `basic_outbuff` class template
+== The `destination` class template
 
 Creating a new output type involves defining a concrete class
-that derives from {basic_outbuff}.
+that derives from {destination}.
 Once this is done, one can write things to objects
 of such type with the `{to}` function template,
 using the basic usage `<<tutorial#,syntax>>` of the library:
 
 [source,cpp,subs=normal]
 ----
-strf::basic_outbuff</{asterisk}char type{asterisk}/>& dest = /{asterisk}\...{asterisk}/;
-strf::<<quick_reference#dest_outbuff,to>>(dest) (/{asterisk} arguments to be printed {asterisk}/);
+strf::destination</{asterisk}char type{asterisk}/>& dest = /{asterisk}\...{asterisk}/;
+strf::<<quick_reference#to_destination_ref,to>>(dest) (/{asterisk} arguments to be printed {asterisk}/);
 ----
 
-{basic_outbuff} is a simple class template.
-It contains a boolean &#x2014; which indicates whether
+So the first to learn is how {destination} works.
+It is a simple class template that
+contains a boolean &#x2014; which indicates whether
 the state is "good" or "bad" &#x2014; and two pointers. One of them points
 to the end of buffer, and the other to the position where the
 next character shall be written. They are returned by the
-`<<outbuff_hpp#basic_outbuff_end,end>>` and
-`<<outbuff_hpp#basic_outbuff_pointer,pointer>>` functions respectively.
+`<<destination_hpp#destination_buffer_end,buffer_end>>` and
+`<<destination_hpp#destination_buffer_ptr,buffer_ptr>>` functions respectively.
 Contrary to what is common in output streams abstractions,
 where you need to use high-lever functions to insert content ( like
 https://en.cppreference.com/w/cpp/io/basic_streambuf/sputc[`sputc`]
 in `std::basic_streambuf`, or
 https://en.cppreference.com/w/cpp/io/basic_ostream/write[`write`]
-in `std::basic_ostream` ), in `basic_outbuff` you can write things directly to
-`pointer()` and then calls the `<<outbuff_hpp#basic_outbuff_advance,advance>>`
-or the `<<outbuff_hpp#basic_outbuff_advance_to,advance_to>>` function to update
-the pointer. For instance:
+in `std::basic_ostream` ), in `destination` you can write things directly to
+`buffer_ptr()`. After that, you shall call the `<<destination_hpp#destination_advance,advance>>`
+or the `<<destination_hpp#destination_advance_to,advance_to>>` function to update
+the buffer pointer. For instance:
 
 [source,cpp,subs=normal]
 ----
-if (dest.space() < 5) {
+if (dest.buffer_space() < 5) {
     dest.recycle();
 }
-strncpy(dest.pointer(), "hello", 5);
+memcpy(dest.buffer_ptr(), "hello", 5);
 dest.advance(5);
 ----
 
-Of course, before writting anything to `pointer()`, one
-needs to check whether there is enough space.
-If not, one has to call the `{recycle}` function, as done above.
-This is the only pure virtual function in `{basic_outbuff}`.
-Its job is to flush the content written so far and reset the position of
-`pointer()` and `end()` so that the space ( `end() - pointer()` )
+As done above, before writting anything to `buffer_ptr()`, one
+must check whether there is enough space,
+and if not, one must call the `{recycle}` function.
+This is the only pure virtual function in `{destination}`,
+its job is to flush the content written so far and reset the position of
+`buffer_ptr()` and `buffer_end()` so that the space ( `buffer_end() - buffer_ptr()` )
 becames greater than or equal to `{min_space_after_recycle}</{asterisk}char type{asterisk}/>()`.
 This is a postcondition
 even when the state is "bad". The "bad" state implies that writting
-anything in the range [`pointer(), end()`) doesn't have any relevent
+anything in the range [`buffer_ptr(), buffer_end()`) doesn't have any relevent
 side effect, though the behaviour is still defined, __i.e.__
-the range [`pointer(), end()`) must be valid accessible memory area
-( sometimes `<<outbuff_hpp#garbage_buff,garbage_buff>>`
+the range [`buffer_ptr(), buffer_end()`) must be valid accessible memory area
+( sometimes `<<destination_hpp#garbage_buff,garbage_buff>>`
 is used to handle the bad state ).
 The state can change from "good" to "bad" in `{recycle}`,
 but never from "bad" to "good".
@@ -88,17 +89,17 @@ A typical implementation would look like this:
 
 [source,cpp,subs=normal]
 ----
-class my_outbuff: public strf::outbuff {
+class my_destination: public strf::destination<char> {
 public:
-    my_outbuff(/{asterisk}\...{asterisk}/)
-        : strf::outbuff{buff, sizeof(buff)}
+    my_destination(/{asterisk}\...{asterisk}/)
+        : strf::destination<char>{buff, sizeof(buff)}
         // \...
     {
         /{asterisk}\...{asterisk}/
     }
 
-    my_outbuff(const my_outbuff&) = delete;
-    ~my_outbuff();
+    my_destination(const my_destination&) = delete;
+    ~my_destination();
 
     void recyle() override;
     void finish();
@@ -118,13 +119,13 @@ whatever it is. If `print` never throws, then
 
 [source,cpp,subs=normal]
 ----
-void my_outbuff::recycle()
+void my_destination::recycle()
 {
     if ({good}()) {
-        bool success = print(buff, {pointer}());
+        bool success = print(buff, {buffer_ptr}());
         {set_good}(success);
     }
-    {set_pointer}(buff);
+    {set_buffer_ptr}(buff);
 }
 ----
 
@@ -132,10 +133,10 @@ Otherwise, it makes more sense to do:
 
 [source,cpp,subs=normal]
 ----
-void my_outbuff::recycle()
+void my_destination::recycle()
 {
-    auto ptr = {pointer}();
-    {set_pointer}(buff);
+    auto ptr = {buffer_ptr}();
+    {set_buffer_ptr}(buff);
     if ({good}()) {
         {set_good}(false);
         bool success = print(buff, ptr);
@@ -151,11 +152,11 @@ https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md#Rc-
 
 [source,cpp,subs=normal]
 ----
-my_outbuff::~my_outbuff()
+my_destination::~my_destination()
 {
     if({good}()) {
         try {
-            print(buff, {pointer}());
+            print(buff, {buffer_ptr}());
         } catch(...)
         {
         } // Need to silence the exception. Not good
@@ -168,12 +169,12 @@ to do this final flush:
 
 [source,cpp,subs=normal]
 ----
-void my_outbuff::finish()
+void my_destination::finish()
 {
     bool is_good = {good}();
     {set_good}(false);
     if (is_good) {
-        print(buff, ({pointer}() - buff));
+        print(buff, ({buffer_ptr}() - buff));
     }
 }
 ----
@@ -182,7 +183,7 @@ void my_outbuff::finish()
 
 [source,cpp,subs=normal]
 ----
-my_outbuff dest{ /{asterisk}\...{asterisk}/ };
+my_destination dest{ /{asterisk}\...{asterisk}/ };
 
 strf::{to}(dest) (/{asterisk}\...{asterisk}/);
 strf::{to}(dest) (/{asterisk}\...{asterisk}/);
@@ -192,16 +193,16 @@ strf::{to}(dest) (/{asterisk}\...{asterisk}/);
 dest.finish();
 ----
 Almost
-<<quick_reference#outbuff_types,all classes of this library that derive from `basic_outbuff`>>
+<<quick_reference#destination_types,all classes of this library that derive from `destination`>>
 have a `finish` function ( the only exception is
-<<outbuff_hpp#discarded_outbuff,discarded_outbuff>>.
+<<destination_hpp#discarded_destination,discarded_destination>>.
 So you may want to follow the convention.
 Another reason for creating `finish` is that may return a value,
 which is something that destructors can't do.
 
 
 ////
-`{set_good}` and `{set_pointer}` are protected member functions.
+`{set_good}` and `{set_buffer_ptr}` are protected member functions.
 ////
 
 == How to create destination expression
@@ -212,86 +213,78 @@ Each of them causes the content to be printed into a different destination.
 Perhaps you want to create your own. For example, if you use Qt,
 you may want to create a `toQString` "destination",
 intended to create a `QString` object ( in the same way as
-`<<quick_reference#destinations,to_string>> is used to create
+`<<quick_reference#destinations,to_string>>` creates
 `std::string` objects ).
 This section explain how you can do that.
 
 The first step, which involves most of the work, is
-to create a class that derives from `{basic_outbuff}`.
+to create a class that derives from `{destination}`.
 The previous section provides some assistance on that.
 Sometimes it makes sense to actually create two of them;
-one having a constructor that receives the size and
-the other not, as explained soon.
+one having a constructor that receives the size
+while the other does not, as explained soon.
 
 The second step is to create a class that satisfies the requirements of
-__{OutbuffCreator}__ or __{SizedOutbuffCreator}__ or both.
+__{DestinationCreator}__ or __{SizedDestinationCreator}__ or both.
 It acts as a factory ( or something analogous to that ) of the class(es)
 you defined in step 1.
-_SizedOutbuffCreator_ is for the case when the constructor
-of your outbuff class requires the number of characters to be printed
+_SizedDestinationCreator_ is for the case when the constructor
+of your destination class requires the number of characters to be printed
 ( because it needs to allocate memory or something ).
-_OutbuffCreator_ is for when it does not need that information.
+_DestinationCreator_ is for when it does not need that information.
 
 
 The third and final step is to define the "destination expression".
 It must be an expression ( a function call or a constexpr value )
-whose type is an instance of one the following class templates:
+whose type is an instance of one the class templates below,
+having the class created in step 2 as the template parameter.
 
-* `{destination_no_reserve}`: can only be used when your factory ( step 2 ) is _{OutbuffCreator}_
-* `{destination_calc_size}`: the factory must be _{SizedOutbuffCreator}_
-* `{destination_with_given_size}`: also _{SizedOutbuffCreator}_
-
-
-Where the class created in step 2 is the template parameter.
-The major difference between them lies in the implementation of
-`operator()` and `tr` member functions. In `{destination_no_reserve}`
-it is something like this:
-
+* `{destination_no_reserve}`: Its template argument must
+be _{DestinationCreator}_, and it has the following effect when
+writing the arguments ( when its member function `operator()`
+or `tr` is called ):
++
 [source,cpp,subs=normal]
 ----
-typename my_outbuff_creator::outbuff_type dest{creator.create()};
+typename your_destination_creator::destination_type dest{creator.create()};
 // \... write content in dest \...
 return dest.finish();
 ----
+, where:
++
+** `your_destination_creator` is the template argument ( and the
+type defined in step 2). It must be be _{DestinationCreator}_.
+** `creator` is an object of type `your_destination_creator`.
 
-Whereas in `{destination_calc_size}` it is:
-
+* `{destination_calc_size}`: Its template argument must
+be _{SizedDestinationCreator}_, and it has the following effect when
+writing the arguments:
++
 [source,cpp,subs=normal]
 ----
 std::size_t size = /{asterisk} calculate size \... {asterisk}/;
-typename my_outbuff_creator::sized_outbuff_type dest{creator.create(**size**)};
+typename you_destination_creator::sized_destination_type dest{creator.create(**size**)};
 // \... write content in dest \...
 return dest.finish();
 ----
 
-, where `my_outbuff_creator` is the type defined in step2, and `creator`
-is a private member object of that type.
-
-The implementation of
-`{destination_with_given_size}` is similar to of `destination_calc_size`.
-The difference is that, instead of being calculated,
-the size is passed to the
-<<strf_hpp#destination_with_given_size_ctor,the constructor>>
-and stored in a member variable.
-However, in most cases, if any, it does't make sense to opt for `destination_with_given_size`.
-The reason why it was created was to be used as the return type
+* `{destination_with_given_size}`: the factory must be _{SizedDestinationCreator}_,
+and it has the same effect as of `destination_calc_size`, except that the
+size is not calculated but is instead passed to its
+<<strf_hpp#destination_with_given_size_ctor,the constructor>>.
+In most cases, it does't make sense to opt for `destination_with_given_size`.
+The reason why it was created is to define the return type
 the `<<tutorial#,reserve>>` function.
-////
-`destination_no_reserve::<<strf_hpp#destination_no_reserve_reserve,reserve>>` and
-`destination_with_given_size::<<strf_hpp#destination_reserve_calc_reserve,reserve>>`
-that are designed to be uses as part of the `<<tutorial#,basic usage syntax>>`.
-////
 
-
-The code below illustrates the above steps:
+The sample below illustrates the above steps:
 
 [source,cpp,subs=normal]
 ----
 // some type that is able to receive text
 class foo { /{asterisk} \... {asterisk}/ };
 
-// step 1: define your outbuff class
-class foo_writer: strf::{basic_outbuff}<char> {
+// step 1: define your destination class
+class foo_writer: strf::{destination}<char> {
 public:
     explicit foo_writer(foo&);
     void recycle() override;
@@ -299,10 +292,10 @@ public:
     //\...
 };
 
-// step 2: define the outbuff creator
+// step 2: define the destination creator
 class foo_writer_creator {
 public:
-    using outbuff_type = foo_writer;
+    using destination_type = foo_writer;
     using char_type = char;
 
     foo_writer_creator(foo& f): f_(f) {}
@@ -325,10 +318,10 @@ auto to(foo& dest) {
 
 == Examples
 
-* {strf-src-root}/example/toQString.cpp[example/toQString.cpp] defines a
+* {strf-src-root}/examples/toQString.cpp[examples/toQString.cpp] defines a
   constexpr value named `toQSting`
   that is analogous to `<<quick_reference#destinations,strf::to_string>>`, except that
   it creates a `QString` ( from Qt framework ) instead of a `std::string`.
-* {strf-src-root}/example/appendQString.cpp[example/appendQString.cpp] defines
+* {strf-src-root}/examples/appendQString.cpp[examples/appendQString.cpp] defines
   a function `append` used to append content into a `QString` object
 

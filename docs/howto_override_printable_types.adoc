@@ -5,8 +5,6 @@ Distributed under the Boost Software License, Version 1.0.
 http://www.boost.org/LICENSE_1_0.txt)
 ////
 
-:strf-version: develop
-
 :print_override_c: <<strf_hpp#print_override_c,print_override_c>>
 :make_printer_input: <<strf_hpp#make_printer_input,make_printer_input>>
 :use_facet: <<strf_hpp#use_facet,use_facet>>

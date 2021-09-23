@@ -55,13 +55,13 @@ inline std::string unique_tmp_file_name()
     char dirname[MAX_PATH];
     GetTempPathA(MAX_PATH, dirname);
     char fullname[MAX_PATH];
-    sprintf_s(fullname, MAX_PATH, "%s\\test_boost_outbuff_%x.txt", dirname, std::rand());
+    sprintf_s(fullname, MAX_PATH, "%s\\test_strf_%x.txt", dirname, std::rand());
     return fullname;
 
 #else // defined(_WIN32)
 
    char fullname[200];
-   sprintf(fullname, "/tmp/test_boost_outbuff_%x.txt", std::rand());
+   sprintf(fullname, "/tmp/test_strf_%x.txt", std::rand());
    return fullname;
 
 #endif  // defined(_WIN32)
@@ -217,9 +217,9 @@ inline strf::detail::simple_string_view<CharT> STRF_HD make_tiny_string()
 }
 
 template <typename CharT>
-inline void STRF_HD turn_into_bad(strf::basic_outbuff<CharT>& ob)
+inline void STRF_HD turn_into_bad(strf::destination<CharT>& dest)
 {
-    strf::detail::outbuff_test_tool::turn_into_bad(ob);
+    strf::detail::destination_test_tool::turn_into_bad(dest);
 }
 
 inline STRF_HD int& test_err_count()
@@ -228,9 +228,9 @@ inline STRF_HD int& test_err_count()
     return count;
 }
 
-// function test_outbuff() is a customization point
+// function test_messages_destination() is a customization point
 // it needs to be defined by the test program
-STRF_HD strf::outbuff& test_outbuff();
+STRF_HD strf::destination<char>& test_messages_destination();
 
 class test_scope
 {
@@ -273,7 +273,7 @@ public:
         return id_;
     }
 
-    STRF_HD static void print_stack(strf::outbuff& out)
+    STRF_HD static void print_stack(strf::destination<char>& out)
     {
         auto current_id = (current_test_scope_() == nullptr ? 0 : current_test_scope_()->id());
         if (current_id != last_printed_scope_id_()) {
@@ -336,13 +336,13 @@ private:
 
 inline STRF_HD void print_test_message_header(const char* filename, int line)
 {
-    test_scope::print_stack(test_outbuff());
-    to(test_utils::test_outbuff()) (filename, ':', line, ": ");
+    test_scope::print_stack(test_messages_destination());
+    to(test_utils::test_messages_destination()) (filename, ':', line, ": ");
 }
 
 inline STRF_HD void print_test_message_end(const char* funcname)
 {
-    to(test_utils::test_outbuff()) ("\n    In function '", funcname, "'\n");
+    to(test_utils::test_messages_destination()) ("\n    In function '", funcname, "'\n");
 }
 
 template <typename ... Args>
@@ -353,7 +353,7 @@ void STRF_HD test_message
     , const Args& ... args )
 {
     test_utils::print_test_message_header(filename, line);
-    to(test_utils::test_outbuff()).with(strf::lettercase::mixed) (args...);
+    to(test_utils::test_messages_destination()).with(strf::lettercase::mixed) (args...);
     test_utils::print_test_message_end(funcname);
 }
 
@@ -370,7 +370,7 @@ void STRF_HD test_failure
 
 template <typename CharOut>
 class input_tester
-    : public strf::basic_outbuff<CharOut>
+    : public strf::destination<CharOut>
 {
 
 public:
@@ -442,7 +442,7 @@ private:
     void STRF_HD test_failure_(const MsgArgs&... msg_args)
     {
         before_emitting_error_message_();
-        strf::to(test_utils::test_outbuff()) (msg_args...);
+        strf::to(test_utils::test_messages_destination()) (msg_args...);
     }
 
     bool STRF_HD wrong_size_(std::size_t result_size) const;
@@ -470,7 +470,7 @@ STRF_HD input_tester<CharOut>::input_tester
     , const char* function
     , double reserve_factor
     , std::size_t size )
-    : strf::basic_outbuff<CharOut>{buffer_, size}
+    : strf::destination<CharOut>{buffer_, size}
     , expected_(expected)
     , reserved_size_(size)
     , src_filename_(src_filename)
@@ -483,7 +483,7 @@ STRF_HD input_tester<CharOut>::input_tester
             ( src_filename_, src_line_, function_
             , "Warning: reserved more characters (", size
             , ") then the tester buffer size (", buffer_size_, ")." );
-        this->set_end(buffer_ + buffer_size_);
+        this->set_buffer_end(buffer_ + buffer_size_);
     }
 }
 
@@ -495,31 +495,31 @@ STRF_HD input_tester<CharOut>::~input_tester()
 template <typename CharOut>
 void STRF_HD input_tester<CharOut>::recycle()
 {
-    test_failure_(" basic_outbuff::recycle() called "
-                  "( calculated size too small ).\n");
+    test_failure_(" destination::recycle() called "
+                  "( it means the calculated size too small ).\n");
 
-    if ( this->pointer() + strf::min_space_after_recycle<CharOut>()
+    if ( this->buffer_ptr() + strf::min_space_after_recycle<CharOut>()
        > buffer_ + buffer_size_ )
     {
-        pointer_before_overflow_ = this->pointer();
-        this->set_pointer(strf::garbage_buff<CharOut>());
-        this->set_end(strf::garbage_buff_end<CharOut>());
+        pointer_before_overflow_ = this->buffer_ptr();
+        this->set_buffer_ptr(strf::garbage_buff<CharOut>());
+        this->set_buffer_end(strf::garbage_buff_end<CharOut>());
     } else {
-        this->set_end(buffer_ + buffer_size_);
+        this->set_buffer_end(buffer_ + buffer_size_);
     }
 }
 
 template <typename CharOut>
 void STRF_HD input_tester<CharOut>::finish()
 {
-    auto pointer = pointer_before_overflow_ ? pointer_before_overflow_ : this->pointer();
+    auto pointer = pointer_before_overflow_ ? pointer_before_overflow_ : this->buffer_ptr();
     strf::detail::simple_string_view<CharOut> result{buffer_, pointer};
     bool failed_content = wrong_content_(result);
     bool failed_size = wrong_size_(result.size());
     if (failed_size || failed_content){
         ++ test_err_count();
         print_test_message_header(src_filename_, src_line_);
-        auto& tout = test_utils::test_outbuff();
+        auto& tout = test_utils::test_messages_destination();
         if (failed_content) {
             strf::to(tout) ("\n  expected: \"", strf::conv(expected_));
             strf::to(tout) ("\"\n  obtained: \"", strf::conv(result), '\"');
@@ -555,7 +555,7 @@ class input_tester_creator
 public:
 
     using char_type = CharT;
-    using sized_outbuff_type = test_utils::input_tester<CharT>;
+    using sized_destination_type = test_utils::input_tester<CharT>;
 
     STRF_HD input_tester_creator
         ( strf::detail::simple_string_view<CharT> expected
@@ -607,7 +607,7 @@ auto STRF_HD make_tester
    , int line
    , const char* function
    , double reserve_factor = 1.0 )
-    -> strf::destination_calc_size<test_utils::input_tester_creator<CharT>>
+   -> strf::destination_calc_size<test_utils::input_tester_creator<CharT>>
 {
     return {expected, filename, line, function, reserve_factor};
 }
@@ -660,7 +660,7 @@ struct reduce<X, Others...>{
 } // namespace detail
 
 template <typename CharT>
-class input_tester_with_fixed_spaces_base: public strf::basic_outbuff<CharT>
+class input_tester_with_fixed_spaces_base: public strf::destination<CharT>
 {
 public:
 
@@ -711,7 +711,7 @@ private:
     STRF_HD void emit_error_message_(const Args&... args)
     {
         before_emitting_error_message_();
-        strf::to(test_utils::test_outbuff()) (args...);
+        strf::to(test_utils::test_messages_destination()) (args...);
     }
 };
 
@@ -727,7 +727,7 @@ STRF_HD input_tester_with_fixed_spaces_base<CharT>::input_tester_with_fixed_spac
     , const unsigned* spaces_array
     , std::size_t num_spaces
     , unsigned first_space )
-    : strf::basic_outbuff<CharT>{buff, first_space}
+    : strf::destination<CharT>{buff, first_space}
     , expected_{expected}
     , src_filename_{src_filename}
     , src_line_{src_line}
@@ -741,8 +741,8 @@ STRF_HD input_tester_with_fixed_spaces_base<CharT>::input_tester_with_fixed_spac
     if (expected.size() > buff_total_size) {
         emit_error_message_("\nBuffer smaller than expected content size");
         this->set_good(false);
-        this->set_pointer(strf::garbage_buff<CharT>());
-        this->set_end(strf::garbage_buff_end<CharT>());
+        this->set_buffer_ptr(strf::garbage_buff<CharT>());
+        this->set_buffer_end(strf::garbage_buff_end<CharT>());
     }
 }
 
@@ -750,24 +750,24 @@ template <typename CharT>
 STRF_HD void input_tester_with_fixed_spaces_base<CharT>::recycle()
 {
     if (this->good()) {
-        if (this->pointer() > this->end()) {
+        if (this->buffer_ptr() > this->buffer_end()) {
             emit_error_message_("\nContent inserted after end()");
-            if (this->pointer() < dest_end_) {
-                dest_end_ = this->pointer();
+            if (this->buffer_ptr() < dest_end_) {
+                dest_end_ = this->buffer_ptr();
             }
             goto set_bad;
         }
         if (++spaces_index_ < num_spaces_) {
-            this->set_end(this->end() + spaces_[spaces_index_]);
+            this->set_buffer_end(this->buffer_end() + spaces_[spaces_index_]);
         } else {
-            dest_end_ = this->pointer();
+            dest_end_ = this->buffer_ptr();
             goto set_bad;
         }
     } else {
         set_bad:
         this->set_good(false);
-        this->set_pointer(strf::garbage_buff<CharT>());
-        this->set_end(strf::garbage_buff_end<CharT>());
+        this->set_buffer_ptr(strf::garbage_buff<CharT>());
+        this->set_buffer_end(strf::garbage_buff_end<CharT>());
     }
 }
 
@@ -776,10 +776,10 @@ template <typename CharT>
 STRF_HD void input_tester_with_fixed_spaces_base<CharT>::finish()
 {
     if (this->good()) {
-        dest_end_ = this->pointer();
+        dest_end_ = this->buffer_ptr();
         this->set_good(false);
-        this->set_pointer(strf::garbage_buff<CharT>());
-        this->set_end(strf::garbage_buff_end<CharT>());
+        this->set_buffer_ptr(strf::garbage_buff<CharT>());
+        this->set_buffer_end(strf::garbage_buff_end<CharT>());
     }
     strf::detail::simple_string_view<CharT> result{dest_, dest_end_};
     bool as_expected =
@@ -872,7 +872,7 @@ class input_tester_with_fixed_spaces_creator
 public:
 
     using char_type = CharT;
-    using outbuff_type = test_utils::input_tester_with_fixed_spaces<CharT, Spaces...>;
+    using destination_type = test_utils::input_tester_with_fixed_spaces<CharT, Spaces...>;
 
     STRF_HD input_tester_with_fixed_spaces_creator
         ( strf::detail::simple_string_view<CharT> expected

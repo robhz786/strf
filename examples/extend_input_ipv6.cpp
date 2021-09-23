@@ -119,7 +119,7 @@ public:
         init_(input.preview, encoding);
     }
 
-    void print_to(strf::basic_outbuff<CharT>& dest) const override;
+    void print_to(strf::destination<CharT>& dest) const override;
 
 private:
 
@@ -132,7 +132,7 @@ private:
     ipv6style style_;
 
     std::uint16_t count_ipv6_characters() const;
-    void print_ipv6(strf::basic_outbuff<CharT>& dest) const;
+    void print_ipv6(strf::destination<CharT>& dest) const;
 
     template <typename Preview, typename Charset>
     void init_(Preview& preview, Charset charset);
@@ -179,7 +179,7 @@ std::uint16_t ipv6_printer<CharT>::count_ipv6_characters() const
 }
 
 template <typename CharT>
-void ipv6_printer<CharT>::print_to(strf::basic_outbuff<CharT>& dest) const
+void ipv6_printer<CharT>::print_to(strf::destination<CharT>& dest) const
 {
     if (fillcount_ == 0) {
         print_ipv6(dest);
@@ -203,7 +203,7 @@ void ipv6_printer<CharT>::print_to(strf::basic_outbuff<CharT>& dest) const
 }
 
 template <typename CharT>
-void ipv6_printer<CharT>::print_ipv6(strf::basic_outbuff<CharT>& dest) const
+void ipv6_printer<CharT>::print_ipv6(strf::destination<CharT>& dest) const
 {
     const unsigned precision = (style_ == ipv6style::big ? 4 : 0);
     for (int i = 0; i < 8; ++i) {
@@ -302,20 +302,20 @@ void tests()
 
 namespace test_utils {
 
-static strf::outbuff*& test_outbuff_ptr()
+static strf::destination<char>*& test_messages_destination_ptr()
 {
-    static strf::outbuff* ptr = nullptr;
+    static strf::destination<char>* ptr = nullptr;
     return ptr;
 }
 
-void set_test_outbuff(strf::outbuff& ob)
+void set_test_messages_destination(strf::destination<char>& dest)
 {
-    test_outbuff_ptr() = &ob;
+    test_messages_destination_ptr() = &dest;
 }
 
-strf::outbuff& test_outbuff()
+strf::destination<char>& test_messages_destination()
 {
-    auto * ptr = test_outbuff_ptr();
+    auto * ptr = test_messages_destination_ptr();
     return *ptr;
 }
 
@@ -324,18 +324,17 @@ strf::outbuff& test_outbuff()
 
 int main()
 {
-    strf::narrow_cfile_writer<char, 512> test_outbuff(stdout);
-    test_utils::set_test_outbuff(test_outbuff);
+    strf::narrow_cfile_writer<char, 512> msg_dest(stdout);
+    test_utils::set_test_messages_destination(msg_dest);
 
     tests();
 
     int err_count = test_utils::test_err_count();
     if (err_count == 0) {
-        strf::write(test_outbuff, "All test passed!\n");
+        strf::write(msg_dest, "All test passed!\n");
     } else {
-        strf::to(test_outbuff) (err_count, " tests failed!\n");
+        strf::to(msg_dest) (err_count, " tests failed!\n");
     }
-    test_outbuff.finish();
     return err_count;
 }
 

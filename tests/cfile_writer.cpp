@@ -7,6 +7,9 @@
 
 #include <ctime>
 #include <cstdlib>
+#if defined(__GNUC__)
+#  pragma GCC diagnostic ignored "-Warray-bounds"
+#endif
 #include <strf/to_cfile.hpp>
 #include "test_utils.hpp"
 
@@ -97,12 +100,12 @@ void test_cfile_writer_base()
         memset(result_buff, 0, sizeof(result_buff));
         tester_t tester{buff, sizeof(buff), result_buff, 10};
 
-        memcpy(tester.pointer(), "0123456789abcdef", 16);
+        memcpy(tester.buffer_ptr(), "0123456789abcdef", 16);
         tester.advance(16);
         tester.recycle();
         TEST_FALSE(tester.good());
 
-        memcpy(tester.pointer(), "ABCDEF", 6);
+        memcpy(tester.buffer_ptr(), "ABCDEF", 6);
         tester.advance(6);
         tester.recycle();
 
@@ -118,7 +121,7 @@ void test_cfile_writer_base()
         memset(result_buff, 0, sizeof(result_buff));
         tester_t tester{buff, sizeof(buff), result_buff, 10};
 
-        strf::to(tester) (strf::multi('x', tester.space()));
+        strf::to(tester) (strf::multi('x', tester.buffer_space()));
         tester.write("0123456789abcdef", 16);
         TEST_STRVIEW_EQ(result_buff, "xxxxxxxxxx", 10);
         TEST_FALSE(tester.good());
@@ -146,7 +149,7 @@ void test_cfile_writer_base()
         memset(result_buff, 0, sizeof(result_buff));
         tester_t tester{buff, sizeof(buff), result_buff, 10};
 
-        memcpy(tester.pointer(), "0123456789abcdef", 16);
+        memcpy(tester.buffer_ptr(), "0123456789abcdef", 16);
         tester.advance(16);
         auto r = tester.finish();
 
@@ -158,7 +161,7 @@ void test_cfile_writer_base()
         memset(result_buff, 0, sizeof(result_buff));
         tester_t tester{buff, sizeof(buff), result_buff, sizeof(result_buff)};
 
-        memcpy(tester.pointer(), "ABCD", 4);
+        memcpy(tester.buffer_ptr(), "ABCD", 4);
         tester.advance(4);
         tester.recycle();
         strf::to(tester) (strf::multi('x', sizeof(buff)));
@@ -179,7 +182,7 @@ void test_cfile_writer_base()
         memset(result_buff, 0, sizeof(result_buff));
         {
             tester_t tester{buff, sizeof(buff), result_buff, sizeof(result_buff)};
-            memcpy(tester.pointer(), "ABCD", 4);
+            memcpy(tester.buffer_ptr(), "ABCD", 4);
             tester.advance(4);
         }
         // the destructor shall flush the content left in the buffer
@@ -301,7 +304,7 @@ void test_wide_failing_to_finish()
 }
 
 template <typename CharT>
-void test_destination()
+void test_narrow_cfile_writer_creator()
 {
     auto half_str = test_utils::make_half_string<CharT>();
     auto full_str = test_utils::make_full_string<CharT>();
@@ -327,7 +330,7 @@ void test_destination()
 
 }
 
-void test_wdestination()
+void test_wide_cfile_writer_creator()
 {
     auto half_str = test_utils::make_half_string<wchar_t>();
     auto full_str = test_utils::make_full_string<wchar_t>();
@@ -359,11 +362,11 @@ void test_cfile_writer()
 
     test_cfile_writer_base();
 
-    test_destination<char>();
-    test_destination<char16_t>();
-    test_destination<char32_t>();
-    test_destination<wchar_t>();
-    test_wdestination();
+    test_narrow_cfile_writer_creator<char>();
+    test_narrow_cfile_writer_creator<char16_t>();
+    test_narrow_cfile_writer_creator<char32_t>();
+    test_narrow_cfile_writer_creator<wchar_t>();
+    test_wide_cfile_writer_creator();
 
     test_narrow_successfull_writing<char>();
     test_narrow_successfull_writing<char16_t>();

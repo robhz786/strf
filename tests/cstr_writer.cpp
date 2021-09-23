@@ -10,17 +10,19 @@
 #  pragma GCC diagnostic ignored "-Warray-bounds"
 #endif
 
+namespace {
+
 static STRF_TEST_FUNC void test_cstr_writer_destination_too_small()
 {
     {
         char buff[4];
         strf::basic_cstr_writer<char> sw(buff);
-        TEST_EQ(sw.space(), 3);
+        TEST_EQ(sw.buffer_space(), 3);
         strf::put(sw, 'a');
-        TEST_EQ(sw.space(), 2);
+        TEST_EQ(sw.buffer_space(), 2);
         strf::put(sw, 'b');
         strf::put(sw, 'c');
-        TEST_EQ(sw.space(), 0);
+        TEST_EQ(sw.buffer_space(), 0);
         strf::put(sw, 'd');
         strf::put(sw, 'e');
         strf::put(sw, 'f');
@@ -83,7 +85,7 @@ static STRF_TEST_FUNC void test_write_into_cstr_writer_after_finish()
 }
 
 template <typename CharT>
-STRF_TEST_FUNC void test_destinations()
+STRF_TEST_FUNC void test_cstr_writer_creator()
 {
 
     const auto half_str = test_utils::make_half_string<CharT>();
@@ -143,16 +145,17 @@ STRF_TEST_FUNC void test_destinations()
     }
 }
 
+} // unnamed namespace
 
 STRF_TEST_FUNC void test_cstr_writer()
 {
     test_cstr_writer_destination_too_small();
     test_write_into_cstr_writer_after_finish();
 
-    test_destinations<char>();
-    test_destinations<char16_t>();
-    test_destinations<char32_t>();
-    test_destinations<wchar_t>();
+    test_cstr_writer_creator<char>();
+    test_cstr_writer_creator<char16_t>();
+    test_cstr_writer_creator<char32_t>();
+    test_cstr_writer_creator<wchar_t>();
 }
 
 REGISTER_STRF_TEST(test_cstr_writer);
