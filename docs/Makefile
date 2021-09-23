@@ -1,5 +1,6 @@
 
-StrfVersion = v0.15.1
+StrfVersion = 0.15.1
+StrfRev = v$(StrfVersion)
 
 all: \
     out/syntax.svg \
@@ -29,7 +30,7 @@ out/syntax.svg : syntax.svg out/
 	cp $< $@
 
 out/install.html : install.adoc out/
-	asciidoctor -v --attribute=strf-version=$(StrfVersion) $< -o $@
+	asciidoctor -v --attribute=strf-version=$(StrfVersion) --attribute=strf-revision=$(StrfRev) $< -o $@
 
 out/tutorial.html : tutorial.adoc out/
 	asciidoctor -v $< -o $@
@@ -41,19 +42,19 @@ out/locale_hpp.html : locale_hpp.adoc out/
 	asciidoctor -v $< -o $@
 
 out/howto_add_destination.html : howto_add_destination.adoc out/
-	asciidoctor -v --attribute=strf-version=$(StrfVersion) $< -o $@
+	asciidoctor -v --attribute=strf-version=$(StrfVersion) --attribute=strf-revision=$(StrfRev) $< -o $@
 
 out/howto_add_printable_types.html : howto_add_printable_types.adoc out/
-	asciidoctor -v --attribute=strf-version=$(StrfVersion) $< -o $@
+	asciidoctor -v --attribute=strf-version=$(StrfVersion) --attribute=strf-revision=$(StrfRev) $< -o $@
 
 out/howto_override_printable_types.html : howto_override_printable_types.adoc out/
-	asciidoctor -v --attribute=strf-version=$(StrfVersion) $< -o $@
+	asciidoctor -v --attribute=strf-version=$(StrfVersion) --attribute=strf-revision=$(StrfRev) $< -o $@
 
 out/cuda.html : cuda.adoc out/
-	asciidoctor -v --attribute=strf-version=$(StrfVersion) $< -o $@
+	asciidoctor -v --attribute=strf-version=$(StrfVersion) --attribute=strf-revision=$(StrfRev) $< -o $@
 
 out/versus_fmtlib.html : versus_fmtlib.adoc out/
-	asciidoctor -v --attribute=strf-version=$(StrfVersion) $< -o $@
+	asciidoctor -v --attribute=strf-version=$(StrfVersion) --attribute=strf-revision=$(StrfRev) $< -o $@
 
 out/why_not_std_locale.html : why_not_std_locale.adoc out/
 	asciidoctor -v $< -o $@

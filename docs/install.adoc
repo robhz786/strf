@@ -10,8 +10,8 @@ http://www.boost.org/LICENSE_1_0.txt)
 
 == Header-only or static library
 
-:runtime_benchmarks_link: pass:n[http://robhz786.github.io/strf-benchmarks/{strf-version}/results.html]
-:compilation_benchmarks_link: pass:n[http://robhz786.github.io/strf-benchmarks/{strf-version}/results.html#_compilation_performance]
+:runtime_benchmarks_link: pass:n[http://robhz786.github.io/strf-benchmarks/v{strf-version}/results.html]
+:compilation_benchmarks_link: pass:n[http://robhz786.github.io/strf-benchmarks/v{strf-version}/results.html#_compilation_performance]
 
 The header-only variant has shown better performance on clang and gcc
 footnote:[{runtime_benchmarks_link}]
@@ -27,7 +27,7 @@ the macro `STRF_SEPARATE_COMPILATION`.
 To genereate the static library you only need to compile
 one source file: `src/strf.cpp`.
 
-Or, you can CMake.
+Or, you can use CMake.
 
 == If you are using CMake
 

@@ -5,9 +5,6 @@ Distributed under the Boost Software License, Version 1.0.
 http://www.boost.org/LICENSE_1_0.txt)
 ////
 
-:strf-version: develop
-:strf-src-root: https://github.com/robhz786/strf/blob/{strf-version}
-
 = Why does Strf not use `std::locale` ?
 :source-highlighter: prettify
 

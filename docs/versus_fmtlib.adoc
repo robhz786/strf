@@ -5,11 +5,9 @@ Distributed under the Boost Software License, Version 1.0.
 http://www.boost.org/LICENSE_1_0.txt)
 ////
 
-:strf-version: develop
-:strf-src-root: https://github.com/robhz786/strf/blob/{strf-version}
+
 :fmt_print_to: link:https://fmt.dev/latest/api.html#_CPPv2N3fmt9format_toE8OutputItRK1SDpRR4Args[fmt::print_to]
 :fmt_print_to_n: link:https://fmt.dev/latest/api.html#_CPPv2N3fmt11format_to_nE8OutputIt6size_tRK1SDpRK4Args[fmt::print_to_n]
-
 
 :tr-string: <<quick_reference#tr_string,tr-string>>
 
@@ -299,7 +297,6 @@ For instance, the {fmt} documentation provides
 link:https://fmt.dev/latest/api.html#formatting-user-defined-types[an example]
 of how to do it with a struct named `point` that contains two `double` variables.
 If you compare it with the snippet below,
-//{strf-src-root}/examples/extend_input_point2D.cpp[this example],
 which does the similar thing in Strf, you may find that the Strf's way
 is more complicated, since the code is larger and it requires more
 specific knowledge about the library.
@@ -499,7 +496,7 @@ is too small.
 //  == Performance
 //  
 //  If you look at the
-//  http://robhz786.github.io/strf-benchmarks/{strf-version}/results.html[benchmarks],
+//  http://robhz786.github.io/strf-benchmarks/v{strf-version}/results.html[benchmarks],
 //  you can see that the performances of Strf and {fmt} depend on several things,
 //  like what you are printing, how you do it, what are the formatting options,
 //  the compiler, the destination type, etc. There are situations where {fmt} is faster,
@@ -520,7 +517,7 @@ is too small.
 //  
 //  Of course, it's very possible to be
 //  exceptions for the above conclusions, since these
-//  http://robhz786.github.io/strf-benchmarks/{strf-version}/results.html[benchmarks]
+//  http://robhz786.github.io/strf-benchmarks/v{strf-version}/results.html[benchmarks]
 //  are far of covering all possible situations.
 
 

@@ -8,8 +8,8 @@ http://www.boost.org/LICENSE_1_0.txt)
 :cstr_writer: <<destination_hpp#basic_cstr_writer,cstr_writer>>
 :basic_cstr_writer: <<destination_hpp#basic_cstr_writer,basic_cstr_writer>>
 
-:strf-version: develop
-:strf-src-root: https://github.com/robhz786/strf/blob/{strf-version}
+:strf-revision: develop
+:strf-src-root: https://github.com/robhz786/strf/blob/{strf-revision}
 
 = Using Strf on CUDA devices
 :source-highlighter: prettify
