@@ -357,7 +357,7 @@ public:
 
     constexpr STRF_HD strf::float_notation float_notation() const noexcept
     {
-        return strf::float_notation::hex;
+        return strf::float_notation::general;
     }
     constexpr STRF_HD strf::default_float_format get_float_format() const noexcept
     {
