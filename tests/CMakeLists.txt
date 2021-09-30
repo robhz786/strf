@@ -18,7 +18,19 @@ if (STRF_BUILD_TEST_CH32_WIDTH_AND_GCB_PROP)
 
 endif ()
 
+
 if (STRF_BUILD_TESTS)
+
+  if (NOT STRF_FREESTANDING)
+    enable_language(C)
+    add_library(ryu STATIC
+      "externals/ryu/ryu/f2s.c"
+      "externals/ryu/ryu/d2s.c"
+      "externals/ryu/ryu/d2fixed.c")
+    target_include_directories(ryu PUBLIC externals/ryu)
+    add_executable(fuzzy_input_float fuzzy_input_float.cpp)
+    target_link_libraries(fuzzy_input_float ryu strf::strf-header-only)
+  endif (NOT STRF_FREESTANDING)
 
   set(sources_freestanding
     cstr_writer.cpp
@@ -77,7 +89,6 @@ if (STRF_BUILD_TESTS)
   target_link_libraries(test-static-lib    strf-static-lib)
 
   set_target_properties(test-header-only  PROPERTIES OUTPUT_NAME header-only)
-
   set_target_properties(test-static-lib   PROPERTIES OUTPUT_NAME static-lib)
 
   target_link_libraries(test-header-only  strf-header-only)
