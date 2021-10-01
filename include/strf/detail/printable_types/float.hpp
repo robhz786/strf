@@ -326,6 +326,15 @@ public:
     {
         return move_self_downcast_();
     }
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD adapted_to_no_punct_
+    set_float_notation(strf::float_notation notation) const & noexcept
+    {
+        float_format format;
+        format.notation = notation;
+        return { self_downcast_()
+               , strf::tag<float_formatter_no_punct>{}
+               , format };
+    }
     STRF_CONSTEXPR_IN_CXX14 STRF_HD adapted_to_full_dynamic_
     set_float_format(strf::float_format format) && noexcept
     {
@@ -480,6 +489,12 @@ public:
         data_.notation = n;
         return move_self_downcast_();
     }
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&&
+    set_float_notation(strf::float_notation notation) && noexcept
+    {
+        data_.notation = notation;
+        return move_self_downcast_();
+    }
     STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& set_float_format(strf::float_format_no_punct data) && noexcept
     {
         data_ = data;
@@ -611,6 +626,12 @@ public:
     STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& hex() && noexcept
     {
         data_.notation = strf::float_notation::hex;
+        return move_self_downcast_();
+    }
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&&
+    set_float_notation(strf::float_notation notation) && noexcept
+    {
+        data_.notation = notation;
         return move_self_downcast_();
     }
     STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& float_notation(strf::float_notation n) && noexcept
