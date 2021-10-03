@@ -461,7 +461,6 @@ STRF_TEST_FUNC void basic_tests()
     TEST("_____________2.3e+15") (j(strf::sci(2.250001e+15).p(1)));
     TEST("____________2.25e+15") (j(strf::sci(2.250001e+15).p(2)));
 
-
     // ---------------------------------------------------------------
     // alignment
     TEST("_________******-1.25") (j(strf::right(-1.25, 11, '*')));
@@ -840,6 +839,65 @@ STRF_TEST_FUNC void test_punctuation()
     }
 }
 
+STRF_TEST_FUNC void round_up_999()
+{
+    // When 999... is rounded up becaming 1000...
+
+    // strf::sci
+    TEST("1e-04")      (strf::sci(9.6e-5).p(0));
+    TEST("1.000e-04")  (strf::sci(9.9996e-5).p(3));
+    TEST("1.000e+06")  (strf::sci(9.9996e+5).p(3));
+    TEST("1.000e+100") (strf::sci(9.9996e+99, 3));
+    TEST("1.000e-99")  (strf::sci(9.9996e-100, 3));
+    TEST("1e+100")     (strf::sci(9.5e+99, 0));
+    TEST("1e-99")      (strf::sci(9.5e-100, 0));
+
+    // strf::fixed
+    TEST("9.9996")    ( strf::fixed(9.9996).p(4));
+    TEST("10.000")    ( strf::fixed(9.9996).p(3));
+    TEST("10")        ( strf::fixed(9.9996).p(0));
+    TEST("10.")       (*strf::fixed(9.9996).p(0));
+
+    TEST("0.009995")  ( strf::fixed(9.995e-03).p(6));
+    TEST("0.01000")   ( strf::fixed(9.995e-03).p(5));
+
+    TEST("0.9995")  ( strf::fixed(9.995e-01).p(4));
+    TEST("1.000")   ( strf::fixed(9.995e-01).p(3));
+
+    // strf::gen
+    TEST("0.001")      ( strf::gen(9.9996e-4).p(2));
+    TEST("0.0010")     (*strf::gen(9.9996e-4).p(2));
+    TEST("0.0001000")  (*strf::gen(9.9996e-5).p(4));
+
+    TEST("1e-05")     ( strf::gen(9.6e-6).p(0));
+    TEST("0.0001")    ( strf::gen(9.6e-5).p(1));
+    TEST("1e-05")     ( strf::gen(9.9996e-6).p(4));
+    TEST("1.000e-05") (*strf::gen(9.9996e-6).p(4));
+
+    TEST("1.000e+05") (*strf::gen(9.9996e+4).p(4));
+    TEST("1.000e+04") (*strf::gen(9.9996e+3).p(4));
+    TEST("1000.")     (*strf::gen(9.9996e+2).p(4));
+
+    TEST("9.9996e+05") ( strf::gen(9.9996e+5).p(5));
+    TEST("1e+05")      ( strf::gen(9.9996e+4).p(4));
+    TEST("1e+04")      ( strf::gen(9.9996e+3).p(4));
+    TEST("1000")       ( strf::gen(9.9996e+2).p(4));
+    TEST("9.9996e+05") (*strf::gen(9.9996e+5).p(5));
+    TEST("1.000e+05")  (*strf::gen(9.9996e+4).p(4));
+    TEST("1.000e+04")  (*strf::gen(9.9996e+3).p(4));
+    TEST("1000.")      (*strf::gen(9.9996e+2).p(4));
+
+    TEST("99996")     ( strf::gen(99996.0).p(5));
+    TEST("1e+05")     ( strf::gen(99996.0).p(4));
+
+    TEST("10")        ( strf::gen(9.996).p(3));
+    TEST("10.")       (*strf::gen(9.9996).p(2));
+    TEST("10.0")      (*strf::gen(9.996).p(3));
+    TEST("10")        ( strf::gen(9.9996).p(2));
+    TEST("1e+01")     ( strf::gen(9.6).p(1));
+    TEST("1.e+01")    (*strf::gen(9.6).p(1));
+}
+
 } // unnamed namespace
 
 STRF_TEST_FUNC void test_input_float()
@@ -874,6 +932,7 @@ STRF_TEST_FUNC void test_input_float()
 
     basic_tests();
     test_float32();
+    round_up_999();
 
 #if defined(__GNUC__) && (__GNUC__ == 7 || __GNUC__ == 8)
 #  pragma GCC diagnostic pop

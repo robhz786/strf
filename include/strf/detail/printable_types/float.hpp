@@ -1968,6 +1968,55 @@ inline STRF_HD strf::detail::float_init_result init_hex_double_printer_data
         ( data, rounded_fmt_width, content_width, alignment );
 }
 
+inline STRF_HD strf::detail::float_init_result init_double_data_with_precision_general_1digit
+    ( strf::detail::double_printer_data& data
+    , strf::digits_grouping grouping
+    , detail::chars_count_t precision
+    , unsigned rounded_fmt_width
+    , strf::text_alignment alignment
+    , bool alt_form ) noexcept
+{
+    if (precision == 0) {
+        precision = 1;
+    }
+    data.extra_zeros = 0;
+    if (data.e10 < -4 || (int)precision <= data.e10) {
+        data.form = detail::float_form::sci;
+        data.sub_chars_count = data.showsign + 5 + (data.e10 > 99 || data.e10 < -99);
+        if (alt_form) {
+            data.showpoint = true;
+            data.extra_zeros = precision - 1;
+            data.sub_chars_count += data.extra_zeros + 1;
+        } else {
+            data.showpoint = false;
+        }
+    } else { // -4 <= data.e10 && data.e10 < precision
+        data.form = detail::float_form::fixed;
+        data.sub_chars_count = data.showsign;
+        if (data.e10 < 0) {
+            data.showpoint = true;
+            data.sub_chars_count = 2 - data.e10;
+            if (alt_form) {
+                data.extra_zeros = precision - 1;
+                data.sub_chars_count += data.extra_zeros;
+            }
+        } else {
+            data.showpoint = alt_form;
+            unsigned int_digcount = 1 + data.e10;
+            data.sep_count = grouping.separators_count(int_digcount);
+            data.sub_chars_count = 1 + data.e10 + data.sep_count + data.showpoint;
+            if (alt_form && precision > int_digcount) {
+                data.extra_zeros = precision - int_digcount;
+                data.sub_chars_count += data.extra_zeros;
+            }
+        }
+    }
+    return init_double_printer_data_fill
+        ( data, rounded_fmt_width
+        , (detail::max)(data.sub_chars_count, data.pad0width)
+        , alignment );
+}
+
 inline STRF_HD strf::detail::float_init_result init_double_data_with_precision_general
     ( strf::detail::double_printer_data& data
     , strf::digits_grouping grouping
@@ -2018,8 +2067,7 @@ inline STRF_HD strf::detail::float_init_result init_double_data_with_precision_g
         data.form = detail::float_form::fixed;
         STRF_ASSERT (p >= int_digcount);
         if (grouping.any_separator(int_digcount)) {
-            data.sep_count = static_cast<detail::chars_count_t>
-                (grouping.separators_count(int_digcount));
+            data.sep_count = grouping.separators_count(int_digcount);
             data.sub_chars_count += data.sep_count;
         }
         if (data.e10 >= 0) {
@@ -2059,7 +2107,18 @@ inline STRF_HD strf::detail::float_init_result init_double_data_with_precision_g
         auto remainer = data.m10 % p10;
         data.m10 = data.m10 / p10;
         auto middle = p10 >> 1;
-        data.m10 += (remainer > middle || (remainer == middle && (data.m10 & 1) == 1));
+        if (remainer > middle || (remainer == middle && (data.m10 & 1) == 1)) {
+            // round up
+            ++ data.m10;
+            STRF_IF_UNLIKELY (data.m10 == strf::detail::pow10(data.m10_digcount)) {
+                data.m10 = 1;
+                data.e10 += data.m10_digcount;
+                data.m10_digcount = 1;
+                return init_double_data_with_precision_general_1digit
+                    ( data, grouping, precision, rounded_fmt_width
+                    , alignment, showpoint );
+            }
+        }
         bool has_fractional_digits = true;
         while (true) {
             if ((int)data.m10_digcount <= int_digcount) {
@@ -2116,7 +2175,21 @@ inline STRF_HD strf::detail::float_init_result init_double_data_with_precision_s
         auto remainer = data.m10 % p10;
         data.m10 = data.m10 / p10;
         auto middle = p10 >> 1;
-        data.m10 += (remainer > middle || (remainer == middle && (data.m10 & 1) == 1));
+        if (remainer > middle || (remainer == middle && (data.m10 & 1) == 1)) {
+            // round up
+            ++ data.m10;
+            if (data.m10 == strf::detail::pow10(data.m10_digcount)) {
+                data.e10 += data.m10_digcount;
+                if (data.e10 == 100) {
+                    ++ data.sub_chars_count;
+                } else if (data.e10 == -99) {
+                    -- data.sub_chars_count;
+                }
+                data.m10 = 1;
+                data.m10_digcount = 1;
+                data.extra_zeros = precision;
+            }
+        }
     }
     return init_double_printer_data_fill
         ( data, rounded_fmt_width
@@ -2170,7 +2243,22 @@ inline STRF_HD strf::detail::float_init_result init_double_data_with_precision_f
             auto remainer = data.m10 % p10;
             data.m10 = data.m10 / p10;
             auto middle = p10 >> 1;
-            data.m10 += (remainer > middle || (remainer == middle && (data.m10 & 1) == 1));
+            if (remainer > middle || (remainer == middle && (data.m10 & 1) == 1)) {
+                // round up
+                ++data.m10;
+                if (data.m10 == strf::detail::pow10(data.m10_digcount)) {
+                    data.e10 += data.m10_digcount;
+                    data.m10 = 1;
+                    data.m10_digcount = 1;
+                    if (data.e10 <= 0) {
+                        STRF_ASSERT((int)precision >= -data.e10);
+                        data.extra_zeros = (int)precision + data.e10;
+                    } else {
+                        data.extra_zeros = precision;
+                        ++data.sub_chars_count;
+                    }
+                }
+            }
 
         }
     }
