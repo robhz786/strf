@@ -2216,12 +2216,23 @@ inline STRF_HD strf::detail::float_init_result init_double_data_with_precision_f
     const int frac_digits = data.e10 < 0 ? -data.e10 : 0;
     int xz = (precision - frac_digits);
     if (xz <= -(int)data.m10_digcount) {
-        data.extra_zeros = precision;
-        data.m10_digcount = 1;
-        data.m10 = 0;
-        data.e10 = 0;
-        data.sep_count = 0;
+        STRF_ASSERT(data.e10 <= -(int)(precision + data.m10_digcount));
         data.sub_chars_count += 1 + precision;
+        if ( xz == -(int)data.m10_digcount
+          && data.m10 > (strf::detail::pow10(data.m10_digcount) >> 1) ) {
+            // round up ( to something like 0.0001 )
+            data.e10 += data.m10_digcount;
+            data.m10 = 1;
+            data.m10_digcount = 1;
+            data.extra_zeros = 0;
+        } else {
+            // round down to zero
+            data.extra_zeros = precision;
+            data.m10_digcount = 1;
+            data.m10 = 0;
+            data.e10 = 0;
+            data.sep_count = 0;
+        }
     } else {
         auto int_digcount = ( (int)data.m10_digcount > -data.e10
                             ? (int)data.m10_digcount + data.e10
