@@ -2291,34 +2291,38 @@ inline STRF_HD strf::detail::float_init_result init_double_data_without_precisio
     data.m10_digcount = static_cast<detail::chars_count_t>
         (strf::detail::count_digits<10>(data.m10));
 
-    const int sci_notation_exp = (int)data.m10_digcount + data.e10 - 1;
-    const int scientific_width
-        = data.m10_digcount
-        + 4 + (sci_notation_exp > 99 || sci_notation_exp < -99)
-        + (showpoint || data.m10_digcount != 1);
-    const auto fixed_int_digcount = (int)data.m10_digcount + data.e10;
-    int fixed_width = ( data.e10 >= 0
-                      ? fixed_int_digcount + showpoint
-                      : data.e10 <= -(int)data.m10_digcount
-                      ? 2 - data.e10
-                      : 1 + (int)data.m10_digcount );
-    if (fixed_width <= scientific_width) {
-        if (grouping.any_separator(fixed_int_digcount)) {
-            auto sep_count = grouping.separators_count(fixed_int_digcount);
-            fixed_width += sep_count;
-            if (fixed_width > scientific_width) {
+    const int sci_showpoint = showpoint || data.m10_digcount != 1;
+    const int sci_sub_width = 4 + sci_showpoint;
+    const int digcount_plus_e10 = (int)data.m10_digcount + data.e10;
+    int fixed_sub_width =  ( data.e10 >= 0
+                           ? data.e10 + showpoint
+                           : ( digcount_plus_e10 <= 0
+                             ? 2 - digcount_plus_e10
+                             : 1 ) );
+    if (sci_sub_width < fixed_sub_width) {
+        scientific:
+        data.form = detail::float_form::sci;
+        data.showpoint = sci_showpoint;
+        data.sub_chars_count += data.m10_digcount;
+        data.sub_chars_count += static_cast<detail::chars_count_t>(sci_sub_width);
+        const int sci_notation_exp = (int)data.m10_digcount + data.e10 - 1;
+        if (sci_notation_exp > 99 || sci_notation_exp < -99) {
+          ++data.sub_chars_count;
+        }
+    } else {
+        const auto int_digcount = digcount_plus_e10;
+        if (grouping.any_separator(int_digcount)) {
+            auto sep_count = grouping.separators_count(int_digcount);
+            fixed_sub_width += sep_count;
+            if (fixed_sub_width > sci_sub_width) {
                 goto scientific;
             }
             data.sep_count = static_cast<decltype(data.sep_count)>(sep_count);
         }
         data.form = detail::float_form::fixed;
         data.showpoint = showpoint || (data.e10 < 0);
-        data.sub_chars_count += static_cast<detail::chars_count_t>(fixed_width);
-    } else {
-        scientific:
-        data.form = detail::float_form::sci;
-        data.sub_chars_count += static_cast<detail::chars_count_t>(scientific_width);
-        data.showpoint = showpoint || (data.m10_digcount != 1);
+        data.sub_chars_count += static_cast<detail::chars_count_t>(fixed_sub_width);
+        data.sub_chars_count += data.m10_digcount;
     }
     return init_double_printer_data_fill
         ( data, rounded_fmt_width
