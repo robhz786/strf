@@ -29,14 +29,19 @@ class simple_tuple_impl;
 
 template <std::size_t... I, typename... T>
 class simple_tuple_impl<strf::detail::index_sequence<I...>, T...>
-    : private indexed_obj<I, T> ...
+    : public indexed_obj<I, T> ...
 {
     template <std::size_t J, typename U>
-    static constexpr STRF_HD const indexed_obj<J, U>& get_(const indexed_obj<J, U>& r)
+    static constexpr STRF_HD const indexed_obj<J, U>& get_(const indexed_obj<J, U>* r) noexcept
+    {
+        return *r;
+    }
+
+    template <typename U>
+    static constexpr STRF_HD const U& as_cref(const U& r) noexcept
     {
         return r;
     }
-
 
 public:
 
@@ -52,12 +57,10 @@ public:
     constexpr explicit simple_tuple_impl(simple_tuple_impl&&) = default;
 
     template <std::size_t J>
-    using element_type = decltype(get_<J>(*(const simple_tuple_impl*)0).obj);
-
-    template <std::size_t J>
-    constexpr STRF_HD const element_type<J>& get() const
+    constexpr STRF_HD auto get() const noexcept
+        -> decltype(as_cref(get_<J>(this).obj))
     {
-        return get_<J>(*this).obj;
+        return get_<J>(this).obj;
     }
 };
 
@@ -81,7 +84,7 @@ make_simple_tuple(const Args& ... args)
 
 template <std::size_t J, typename ... T>
 constexpr STRF_HD auto get(const simple_tuple<T...>& tp)
-    -> const typename simple_tuple<T...>::element_type
+    -> decltype(tp.template get<J>())
 {
     return tp.template get<J>();
 }
@@ -107,10 +110,16 @@ template < typename CharT
          , std::size_t ... I
          , typename ... Printers >
 class printers_tuple_impl<CharT, strf::detail::index_sequence<I...>, Printers...>
-    : private detail::indexed_printer<I, Printers> ...
+    : public detail::indexed_printer<I, Printers> ...
 {
     template <std::size_t J, typename T>
-    static STRF_HD const indexed_printer<J, T>& get_(const indexed_printer<J, T>& r)
+    static constexpr STRF_HD const indexed_printer<J, T>& get_(const indexed_printer<J, T>* r) noexcept
+    {
+        return *r;
+    }
+
+    template <typename U>
+    static constexpr STRF_HD const U& as_cref(const U& r) noexcept
     {
         return r;
     }
@@ -131,12 +140,10 @@ public:
     }
 
     template <std::size_t J>
-    using element_type = decltype(get_<J>(*(const printers_tuple_impl*)0).printer);
-
-    template <std::size_t J>
-    STRF_HD const element_type<J>& get() const
+    constexpr STRF_HD auto get() const noexcept
+        -> decltype(as_cref(get_<J>(this).printer))
     {
-        return get_<J>(*this).printer;
+        return get_<J>(this).printer;
     }
 };
 

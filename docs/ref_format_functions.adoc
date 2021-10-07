@@ -92,15 +92,27 @@ using fmt_value_type = typename {fmt_type}<T>::value_type;
 
 constexpr struct /{asterisk}...{asterisk}/ {
     template <typename T>
-    constexpr {fmt_type}<T> operator()(T&& value) const
-        noexcept(noexcept({fmt_type}<T>fmt_value_type<T>{(T&&)value}}))
-    {
-        return {fmt_type}<T>{fmt_value_type<T>{(T&&)value}};
-    }
+    constexpr /{asterisk}...{asterisk}/  operator()(T&& value) const;
 } fmt;
 
 } // namespace strf
 ----
+
+==== Member function
+====
+[source,cpp]
+----
+constexpr /* see below...*/ operator()(T&& value) const;
+----
+
+Return value::
+* `value`, if `std::remove_cvref_t<T>` is an instance of `{value_with_formatters}`
+* `{fmt_type}<T>{ fmt_value_type<T>{ (T&&)value } }`, otherwise
+
+Return type::
+* `T&&`, if `std::remove_cvref<T>` is an instance of `value_with_formatters`
+* `{fmt_type}<T>`, otherwise
+====
 
 === Type alias template `fmt_type` [[fmt_type]]
 
@@ -113,17 +125,16 @@ using fmt_type = /{asterisk}...{asterisk}/;
 
 } // namespace strf
 ----
-
 `fmt_type<T>` is:
 
-* `T`, when `T` is `{value_with_formatters}</{asterisk} ... {asterisk}/>`
-* `{value_with_formatters}<PTraits, Fmts\...>`, where:
-** `PTraits` is the type `{print_traits_of}<T>`
+* `fmt_type<T>`, if `T` is a reference or has any cv-qualifier
+* otherwise, it is `T`, if `T` is an instance of `{value_with_formatters}`
+* otherwise, it is `{value_with_formatters}<PTraits, Fmts\...>`, where:
+** `PTraits` is `{print_traits_of}<T>`
 ** `Fmts\...` is template paramenter pack used to define
    `PTraits::<<PrintTraits_formatters,formatters>>` (
     as a type alias to `{tag}<Fmt\...>` ).
-    When `PTraits::formatters` is not defined, `Fmt\...` is
-    empty.
+***  If `PTraits::formatters` is not defined, `T` is `{value_with_formatters}<PTraits>`.
 
 [[value_with_formatters]]
 === Class template `value_with_formatters`

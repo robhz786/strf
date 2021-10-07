@@ -2299,7 +2299,7 @@ public:
         p.~printer();
     }
 
-#if defined(__GNUC__) && (__GNUC__ == 6)
+#if defined(__GNUC__) && (__GNUC__ <= 6)
 #  pragma GCC diagnostic push
 #  pragma GCC diagnostic ignored "-Wstrict-aliasing"
 #endif
@@ -2309,7 +2309,7 @@ public:
         return * reinterpret_cast<const strf::printer<CharT>*>(&storage_);
     }
 
-#if defined(__GNUC__) && (__GNUC__ == 6)
+#if defined(__GNUC__) && (__GNUC__ <= 6)
 #  pragma GCC diagnostic pop
 #endif
 

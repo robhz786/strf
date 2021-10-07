@@ -45,7 +45,7 @@ pointing to where the content is to be written.
 
 There is a more complete example {strf-src-root}/examples/cuda.cu[here].
 You can also take a look at the unit tests that run on CUDA device
-{strf-src-root}/test/main_cuda.cu[here].
+{strf-src-root}/tests/main_cuda.cu[here].
 
 == Static link and CMake
 
