@@ -1,12 +1,12 @@
 #include <strf/to_cfile.hpp>
 
 
-void __device__ device_sample1(strf::outbuff& out)
+void __device__ device_sample1(strf::print_dest<char>& out)
 {
     strf::to(out) ("At device_sample1.\n");
 }
 
-void __device__ device_sample2(strf::outbuff& out)
+void __device__ device_sample2(strf::print_dest<char>& out)
 {
     strf::to(out) ("At device_sample2.\n");
 }

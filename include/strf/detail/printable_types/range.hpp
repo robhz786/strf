@@ -250,7 +250,7 @@ public:
         preview_(input.preview);
     }
 
-    STRF_HD void print_to(strf::destination<CharT>& dest) const override;
+    STRF_HD void print_to(strf::print_dest<CharT>& dest) const override;
 
 private:
 
@@ -284,7 +284,7 @@ STRF_HD void range_printer<CharT, FPack, It>::preview_(Preview& preview) const
 
 template <typename CharT, typename FPack, typename It>
 STRF_HD void range_printer<CharT, FPack, It>::print_to
-    ( strf::destination<CharT>& dest ) const
+    ( strf::print_dest<CharT>& dest ) const
 {
     strf::no_print_preview no_preview;
     for(auto it = begin_; it != end_; ++it) {
@@ -313,7 +313,7 @@ public:
         preview_(input.preview);
     }
 
-    STRF_HD void print_to(strf::destination<CharT>& dest) const override;
+    STRF_HD void print_to(strf::print_dest<CharT>& dest) const override;
 
 private:
 
@@ -380,7 +380,7 @@ STRF_HD void separated_range_printer<CharT, FPack, It>::preview_(Preview& previe
 
 template <typename CharT, typename FPack, typename It>
 STRF_HD void separated_range_printer<CharT, FPack, It>::print_to
-    ( strf::destination<CharT>& dest ) const
+    ( strf::print_dest<CharT>& dest ) const
 {
     strf::no_print_preview no_preview;
     auto it = begin_;
@@ -423,7 +423,7 @@ public:
         preview_(input.preview);
     }
 
-    STRF_HD void print_to(strf::destination<CharT>& dest) const override;
+    STRF_HD void print_to(strf::print_dest<CharT>& dest) const override;
 
 private:
 
@@ -466,7 +466,7 @@ template< typename CharT
         , typename It
         , typename ... Fmts >
 STRF_HD void fmt_range_printer<CharT, FPack, It, Fmts ...>::print_to
-    ( strf::destination<CharT>& dest ) const
+    ( strf::print_dest<CharT>& dest ) const
 {
     strf::no_print_preview no_preview;
     auto r = fmt_.value();
@@ -504,7 +504,7 @@ public:
         preview_(input.preview);
     }
 
-    STRF_HD void print_to(strf::destination<CharT>& dest) const override;
+    STRF_HD void print_to(strf::print_dest<CharT>& dest) const override;
 
 private:
 
@@ -577,7 +577,7 @@ template< typename CharT
         , typename It
         , typename ... Fmts >
 STRF_HD void fmt_separated_range_printer<CharT, FPack, It, Fmts ...>
-::print_to( strf::destination<CharT>& dest ) const
+::print_to( strf::print_dest<CharT>& dest ) const
 {
     strf::no_print_preview no_preview;
     auto r = fmt_.value();
@@ -616,7 +616,7 @@ public:
         preview_(input.preview);
     }
 
-    STRF_HD void print_to(strf::destination<CharT>& dest) const override;
+    STRF_HD void print_to(strf::print_dest<CharT>& dest) const override;
 
 private:
 
@@ -655,7 +655,7 @@ STRF_HD void transformed_range_printer<CharT, FPack, It, UnaryOp>
 
 template <typename CharT, typename FPack, typename It, typename UnaryOp>
 STRF_HD void transformed_range_printer<CharT, FPack, It, UnaryOp>::print_to
-    ( strf::destination<CharT>& dest ) const
+    ( strf::print_dest<CharT>& dest ) const
 {
     strf::no_print_preview no_preview;
     for(auto it = begin_; it != end_; ++it) {
@@ -685,7 +685,7 @@ public:
         preview_(input.preview);
     }
 
-    STRF_HD void print_to(strf::destination<CharT>& dest) const override;
+    STRF_HD void print_to(strf::print_dest<CharT>& dest) const override;
 
 private:
 
@@ -756,7 +756,7 @@ STRF_HD void sep_transformed_range_printer<CharT, FPack, It, UnaryOp>
 
 template <typename CharT, typename FPack, typename It, typename UnaryOp>
 STRF_HD void sep_transformed_range_printer<CharT, FPack, It, UnaryOp>::print_to
-    ( strf::destination<CharT>& dest ) const
+    ( strf::print_dest<CharT>& dest ) const
 {
     using preview_type = strf::print_preview
         < strf::preview_size::no, strf::preview_width::no >;

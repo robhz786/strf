@@ -19,7 +19,7 @@ public:
         input.preview.add_size(2 + (int)input.arg);
     }
 
-    void STRF_HD print_to(strf::destination<CharT>& dest) const override
+    void STRF_HD print_to(strf::print_dest<CharT>& dest) const override
     {
         int size = 2 + (int)value_;
         dest.ensure(size);

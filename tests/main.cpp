@@ -8,18 +8,18 @@
 
 namespace test_utils {
 
-static strf::destination<char>*& test_messages_destination_ptr()
+static strf::print_dest<char>*& test_messages_destination_ptr()
 {
-    static strf::destination<char>* ptr = nullptr;
+    static strf::print_dest<char>* ptr = nullptr;
     return ptr;
 }
 
-void set_test_messages_destination(strf::destination<char>& dest)
+void set_test_messages_destination(strf::print_dest<char>& dest)
 {
     test_messages_destination_ptr() = &dest;
 }
 
-strf::destination<char>& test_messages_destination()
+strf::print_dest<char>& test_messages_destination()
 {
     auto * ptr = test_messages_destination_ptr();
     return *ptr;

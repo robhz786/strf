@@ -168,9 +168,12 @@ class dynamic_transcoder;
 
 constexpr std::size_t invalid_char_len = (std::size_t)-1;
 
+template <typename CharT>
+using transcode_dest = strf::destination<CharT, 3>;
+
 template <typename SrcCharT, typename DestCharT>
 using transcode_f = void (*)
-    ( strf::destination<DestCharT>& dest
+    ( strf::transcode_dest<DestCharT>& dest
     , const SrcCharT* src
     , std::size_t src_size
     , strf::invalid_seq_notifier inv_seq_notifier
@@ -184,7 +187,7 @@ using transcode_size_f = std::size_t (*)
 
 template <typename CharT>
 using write_replacement_char_f = void (*)
-    ( strf::destination<CharT>& );
+    ( strf::transcode_dest<CharT>& );
 
 // assume surragate_policy::lax
 using validate_f = std::size_t (*)(char32_t ch);
@@ -199,13 +202,13 @@ using encode_char_f = CharT*(*)
 
 template <typename CharT>
 using encode_fill_f = void (*)
-    ( strf::destination<CharT>&, std::size_t count, char32_t ch );
+    ( strf::transcode_dest<CharT>&, std::size_t count, char32_t ch );
 
 namespace detail {
 
 template <typename CharT>
 void trivial_fill_f
-    ( strf::destination<CharT>& dest, std::size_t count, char32_t ch )
+    ( strf::transcode_dest<CharT>& dest, std::size_t count, char32_t ch )
 {
     // same as strf::detail::write_fill<CharT>
     CharT narrow_ch = static_cast<CharT>(ch);
@@ -266,7 +269,7 @@ public:
     }
 
     STRF_HD void transcode
-        ( strf::destination<DestCharT>& dest
+        ( strf::transcode_dest<DestCharT>& dest
         , const SrcCharT* src
         , std::size_t src_size
         , strf::invalid_seq_notifier inv_seq_notifier
@@ -471,7 +474,7 @@ public:
         return data_->encode_char_func(dest, ch);
     }
     STRF_HD void encode_fill
-        ( strf::destination<CharT>& dest, std::size_t count, char32_t ch ) const
+        ( strf::transcode_dest<CharT>& dest, std::size_t count, char32_t ch ) const
     {
         data_->encode_fill_func(dest, count, ch);
     }
@@ -486,7 +489,7 @@ public:
     {
         return data_->codepoints_robust_count_func(src, src_size, max_count, surr_poli);
     }
-    STRF_HD void write_replacement_char(strf::destination<CharT>& dest) const
+    STRF_HD void write_replacement_char(strf::transcode_dest<CharT>& dest) const
     {
         data_->write_replacement_char_func(dest);
     }
@@ -879,16 +882,16 @@ constexpr STRF_HD auto find_transcoder(SrcCharset src_cs, DestCharset dest_cs)
 namespace detail {
 
 template <typename DestCharT>
-class buffered_encoder: public strf::destination<char32_t>
+class buffered_encoder: public strf::transcode_dest<char32_t>
 {
 public:
 
     STRF_HD buffered_encoder
         ( strf::transcode_f<char32_t, DestCharT> func
-        , strf::destination<DestCharT>& dest
+        , strf::transcode_dest<DestCharT>& dest
         , strf::invalid_seq_notifier inv_seq_notifier
         , strf::surrogate_policy surr_poli )
-        : strf::destination<char32_t>( buff_, buff_size_ )
+        : strf::transcode_dest<char32_t>( buff_, buff_size_ )
         , transcode_(func)
         , dest_(dest)
         , inv_seq_notifier_(inv_seq_notifier)
@@ -911,7 +914,7 @@ public:
 private:
 
     strf::transcode_f<char32_t, DestCharT> transcode_;
-    strf::destination<DestCharT>& dest_;
+    strf::transcode_dest<DestCharT>& dest_;
     strf::invalid_seq_notifier inv_seq_notifier_;
     strf::surrogate_policy surr_poli_;
     constexpr static const std::size_t buff_size_ = 32;
@@ -932,13 +935,13 @@ STRF_HD void buffered_encoder<DestCharT>::recycle()
     }
 }
 
-class buffered_size_calculator: public strf::destination<char32_t>
+class buffered_size_calculator: public strf::transcode_dest<char32_t>
 {
 public:
 
     STRF_HD buffered_size_calculator
         ( strf::transcode_size_f<char32_t> func, strf::surrogate_policy surr_poli )
-        : strf::destination<char32_t>(buff_, buff_size_)
+        : strf::transcode_dest<char32_t>(buff_, buff_size_)
         , size_func_(func)
         , surr_poli_(surr_poli)
     {
@@ -978,7 +981,7 @@ STRF_FUNC_IMPL STRF_HD void buffered_size_calculator::recycle()
 
 template<typename SrcCharT, typename DestCharT>
 STRF_HD void decode_encode
-    ( strf::destination<DestCharT>& dest
+    ( strf::transcode_dest<DestCharT>& dest
     , strf::transcode_f<SrcCharT, char32_t> to_u32
     , strf::transcode_f<char32_t, DestCharT> from_u32
     , const SrcCharT* src

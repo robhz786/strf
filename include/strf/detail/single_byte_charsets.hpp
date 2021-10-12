@@ -2152,7 +2152,7 @@ template <typename SrcCharT, typename DestCharT, class Impl>
 struct single_byte_charset_to_utf32
 {
     static STRF_HD void transcode
-        ( strf::destination<DestCharT>& dest
+        ( strf::transcode_dest<DestCharT>& dest
         , const SrcCharT* src
         , std::size_t src_size
         , strf::invalid_seq_notifier inv_seq_notifier
@@ -2178,7 +2178,7 @@ struct single_byte_charset_to_utf32
 
 template <typename SrcCharT, typename DestCharT, class Impl>
 STRF_HD void single_byte_charset_to_utf32<SrcCharT, DestCharT, Impl>::transcode
-    ( strf::destination<DestCharT>& dest
+    ( strf::transcode_dest<DestCharT>& dest
     , const SrcCharT* src
     , std::size_t src_size
     , strf::invalid_seq_notifier inv_seq_notifier
@@ -2208,7 +2208,7 @@ template <typename SrcCharT, typename DestCharT, class Impl>
 struct utf32_to_single_byte_charset
 {
     static STRF_HD void transcode
-        ( strf::destination<DestCharT>& dest
+        ( strf::transcode_dest<DestCharT>& dest
         , const SrcCharT* src
         , std::size_t src_size
         , strf::invalid_seq_notifier inv_seq_notifier
@@ -2233,7 +2233,7 @@ struct utf32_to_single_byte_charset
 
 template <typename SrcCharT, typename DestCharT, class Impl>
 STRF_HD void utf32_to_single_byte_charset<SrcCharT, DestCharT, Impl>::transcode
-    ( strf::destination<DestCharT>& dest
+    ( strf::transcode_dest<DestCharT>& dest
     , const SrcCharT* src
     , std::size_t src_size
     , strf::invalid_seq_notifier inv_seq_notifier
@@ -2263,7 +2263,7 @@ template <typename SrcCharT, typename DestCharT, class Impl>
 struct single_byte_charset_sanitizer
 {
     static STRF_HD void transcode
-        ( strf::destination<DestCharT>& dest
+        ( strf::transcode_dest<DestCharT>& dest
         , const SrcCharT* src
         , std::size_t src_size
         , strf::invalid_seq_notifier inv_seq_notifier
@@ -2289,7 +2289,7 @@ struct single_byte_charset_sanitizer
 
 template <typename SrcCharT, typename DestCharT, class Impl>
 STRF_HD void single_byte_charset_sanitizer<SrcCharT, DestCharT, Impl>::transcode
-    ( strf::destination<DestCharT>& dest
+    ( strf::transcode_dest<DestCharT>& dest
     , const SrcCharT* src
     , std::size_t src_size
     , strf::invalid_seq_notifier inv_seq_notifier
@@ -2409,7 +2409,7 @@ public:
     {
         return 1;
     }
-    static STRF_HD void write_replacement_char(strf::destination<CharT>& dest)
+    static STRF_HD void write_replacement_char(strf::transcode_dest<CharT>& dest)
     {
         strf::put(dest, static_cast<CharT>('?'));
     }
@@ -2424,7 +2424,7 @@ public:
     static STRF_HD CharT* encode_char(CharT* dest, char32_t ch);
 
     static STRF_HD void encode_fill
-        ( strf::destination<CharT>& dest, std::size_t count, char32_t ch );
+        ( strf::transcode_dest<CharT>& dest, std::size_t count, char32_t ch );
 
     static STRF_HD strf::codepoints_count_result codepoints_fast_count
         ( const CharT* src, std::size_t src_size
@@ -2611,7 +2611,7 @@ STRF_HD CharT* single_byte_charset<CharT, Impl>::encode_char
 
 template <typename CharT, class Impl>
 STRF_HD void single_byte_charset<CharT, Impl>::encode_fill
-    ( strf::destination<CharT>& dest, std::size_t count, char32_t ch )
+    ( strf::transcode_dest<CharT>& dest, std::size_t count, char32_t ch )
 {
     unsigned ch2 = Impl::encode(ch);
     STRF_IF_UNLIKELY (ch2 >= 0x100) {

@@ -13,7 +13,7 @@ STRF_TEST_FUNC void test_miscellaneous()
         // write into an destination reference
         char buff[100];
         strf::cstr_writer str_writer{buff};
-        strf::destination<char>& dest = str_writer;
+        strf::print_dest<char>& dest = str_writer;
 
         strf::to(dest)
             .with(strf::numpunct<10>(3))

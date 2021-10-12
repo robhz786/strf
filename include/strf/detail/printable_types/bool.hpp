@@ -71,7 +71,7 @@ public:
         input.preview.add_size(5 - (int)input.arg);
     }
 
-    void STRF_HD print_to(strf::destination<CharT>& dest) const override;
+    void STRF_HD print_to(strf::print_dest<CharT>& dest) const override;
 
 private:
 
@@ -80,7 +80,7 @@ private:
 };
 
 template <typename CharT>
-void STRF_HD bool_printer<CharT>::print_to(strf::destination<CharT>& dest) const
+void STRF_HD bool_printer<CharT>::print_to(strf::print_dest<CharT>& dest) const
 {
     auto size = 5 - (int)value_;
     dest.ensure(size);
@@ -131,7 +131,7 @@ public:
         }
     }
 
-    void STRF_HD print_to(strf::destination<CharT>& dest) const override;
+    void STRF_HD print_to(strf::print_dest<CharT>& dest) const override;
 
 private:
 
@@ -144,7 +144,7 @@ private:
 
 template <typename CharT>
 void fmt_bool_printer<CharT>::print_to
-    ( strf::destination<CharT>& dest ) const
+    ( strf::print_dest<CharT>& dest ) const
 {
     decltype(fillcount_) right_fillcount = 0;
     if (fillcount_ > 0) {

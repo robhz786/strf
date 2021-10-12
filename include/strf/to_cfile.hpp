@@ -76,7 +76,7 @@ struct cfile_writer_result {
 // ( recycle and do_write ) calling a __host__ function ( fwrite )
 template <typename CharT, typename Traits>
 class cfile_writer_base
-    : public strf::destination<CharT>
+    : public strf::print_dest<CharT>
 {
     static_assert(noexcept(std::declval<Traits>().write(nullptr, 0)), "");
 
@@ -87,7 +87,7 @@ public:
         ( CharT* buff
         , std::size_t buff_size
         , TraitsInitArgs&&... args)
-        : strf::destination<CharT>(buff, buff_size)
+        : strf::print_dest<CharT>(buff, buff_size)
         , buff_(buff)
         , traits_(std::forward<TraitsInitArgs>(args)...)
     {
@@ -146,6 +146,14 @@ private:
     std::size_t count_ = 0;
     CharT* const buff_;
     Traits traits_;
+};
+
+template <typename CharT, typename Traits>
+class cfile_writer_base_v2
+{
+    static_assert(noexcept(std::declval<Traits>().write(nullptr, 0)), "");
+public:
+
 };
 
 } // namespace detail

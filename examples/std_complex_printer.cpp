@@ -169,7 +169,7 @@ public:
     template <typename... T>
     explicit std_complex_printer(strf::usual_printer_input<T...> x);
 
-    void print_to(strf::destination<CharT>& dest) const override;
+    void print_to(strf::print_dest<CharT>& dest) const override;
 
 private:
 
@@ -230,7 +230,7 @@ void std_complex_printer<CharT, FloatT>::preview_(Preview& pp, const WidthCalc& 
 }
 
 template <typename CharT, typename FloatT>
-void std_complex_printer<CharT, FloatT>::print_to(strf::destination<CharT>& dest) const
+void std_complex_printer<CharT, FloatT>::print_to(strf::print_dest<CharT>& dest) const
 {
     auto print = strf::to(dest).with(lettercase_, numpunct_, encoding_);
     if (form_ == complex_form::polar) {
@@ -274,7 +274,7 @@ public:
             , x.arg.width() );
     }
 
-    void print_to(strf::destination<CharT>& dest) const override;
+    void print_to(strf::print_dest<CharT>& dest) const override;
 
 private:
 
@@ -286,7 +286,7 @@ private:
         , WidthCalc wcalc
         , strf::width_t fmt_width );
 
-    void print_complex_value_( strf::destination<CharT>& dest ) const;
+    void print_complex_value_( strf::print_dest<CharT>& dest ) const;
 
     template <typename Preview, typename WidthCalc>
     void preview_without_fill_(Preview& preview, WidthCalc wcalc) const;
@@ -371,7 +371,7 @@ void fmt_std_complex_printer<CharT, FloatT>::preview_without_fill_
 
 template <typename CharT, typename FloatT>
 void fmt_std_complex_printer<CharT, FloatT>::print_to
-    ( strf::destination<CharT>& dest ) const
+    ( strf::print_dest<CharT>& dest ) const
 {
     if (fillcount_ == 0) {
         print_complex_value_(dest);
@@ -398,7 +398,7 @@ void fmt_std_complex_printer<CharT, FloatT>::print_to
 
 template <typename CharT, typename FloatT>
 void fmt_std_complex_printer<CharT, FloatT>::print_complex_value_
-    ( strf::destination<CharT>& dest ) const
+    ( strf::print_dest<CharT>& dest ) const
 {
     auto facets = strf::pack(lettercase_, numpunct10_, numpunct16_, encoding_);
     auto first_val = strf::fmt(coordinates_.first).set_float_format(float_fmt_);
@@ -470,18 +470,18 @@ template <> struct is_float32<float>: std::true_type {};
 
 namespace test_utils {
 
-static strf::destination<char>*& test_messages_destination_ptr()
+static strf::print_dest<char>*& test_messages_destination_ptr()
 {
-    static strf::destination<char>* ptr = nullptr;
+    static strf::print_dest<char>* ptr = nullptr;
     return ptr;
 }
 
-void set_test_messages_destination(strf::destination<char>& dest)
+void set_test_messages_destination(strf::print_dest<char>& dest)
 {
     test_messages_destination_ptr() = &dest;
 }
 
-strf::destination<char>& test_messages_destination()
+strf::print_dest<char>& test_messages_destination()
 {
     auto * ptr = test_messages_destination_ptr();
     return *ptr;

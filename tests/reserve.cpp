@@ -7,7 +7,7 @@
 
 #include "test_utils.hpp"
 
-class reservation_tester : public strf::destination<char>
+class reservation_tester : public strf::print_dest<char>
 {
     constexpr static std::size_t buff_size_ = strf::min_space_after_recycle<char>();
     char buff_[buff_size_];
@@ -15,13 +15,13 @@ class reservation_tester : public strf::destination<char>
 public:
 
     STRF_HD reservation_tester(strf::tag<void>)
-        : strf::destination<char>{ buff_, buff_ + buff_size_ }
+        : strf::print_dest<char>{ buff_, buff_ + buff_size_ }
         , buff_{0}
     {
     }
 
     STRF_HD reservation_tester(std::size_t size)
-        : strf::destination<char>{ buff_, buff_ + buff_size_ }
+        : strf::print_dest<char>{ buff_, buff_ + buff_size_ }
         , buff_{0}
         , reserved_size_{size}
     {

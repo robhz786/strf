@@ -37,13 +37,23 @@ constexpr STRF_HD std::size_t min_space_after_recycle()
     return STRF_MIN_SPACE_AFTER_RECYCLE;
 }
 
-
-template <typename CharT>
-class destination
+template <typename CharT, unsigned SpaceFactor>
+class destination: public destination<CharT, SpaceFactor - 1>
 {
 public:
+    static constexpr std::size_t space_after_recycle = (std::size_t)1 << SpaceFactor;
 
+protected:
+    using destination<CharT, SpaceFactor - 1>::destination;
+};
+
+template <typename CharT>
+class destination<CharT, 0>
+{
+public:
+    static constexpr std::size_t space_after_recycle = 1;
     using char_type = CharT;
+    using value_type = CharT;
 
     STRF_HD destination(const destination&) = delete;
     STRF_HD destination(destination&&) = delete;
@@ -170,7 +180,7 @@ private:
 };
 
 template <typename CharT>
-void destination<CharT>::do_write(const CharT* str, std::size_t str_len)
+void destination<CharT, 0>::do_write(const CharT* str, std::size_t str_len)
 {
     for(;;) {
         std::size_t s = buffer_space();
@@ -197,7 +207,7 @@ void destination<CharT>::do_write(const CharT* str, std::size_t str_len)
 }
 
 template <typename CharT>
-inline STRF_HD void put(strf::destination<CharT>& dest, CharT c)
+inline STRF_HD void put(strf::destination<CharT, 0>& dest, CharT c)
 {
     auto p = dest.buffer_ptr();
     STRF_IF_LIKELY (p != dest.buffer_end()) {
@@ -212,21 +222,21 @@ inline STRF_HD void put(strf::destination<CharT>& dest, CharT c)
 
 // type aliases for backwards compatibility
 
-template <typename CharT>
-using basic_outbuff = destination<CharT>;
+// template <typename CharT>
+// using basic_outbuff = destination<CharT>;
 
-#if defined(__cpp_lib_byte)
-using bin_outbuff           = basic_outbuff<std::byte>;
-#endif
+// #if defined(__cpp_lib_byte)
+// using bin_outbuff           = basic_outbuff<std::byte>;
+// #endif
 
-#if defined(__cpp_char8_t)
-using u8outbuff           = basic_outbuff<char8_t>;
-#endif
+// #if defined(__cpp_char8_t)
+// using u8outbuff           = basic_outbuff<char8_t>;
+// #endif
 
-using outbuff             = basic_outbuff<char>;
-using u16outbuff          = basic_outbuff<char16_t>;
-using u32outbuff          = basic_outbuff<char32_t>;
-using woutbuff            = basic_outbuff<wchar_t>;
+// using outbuff             = basic_outbuff<char>;
+// using u16outbuff          = basic_outbuff<char16_t>;
+// using u32outbuff          = basic_outbuff<char32_t>;
+// using woutbuff            = basic_outbuff<wchar_t>;
 
 namespace detail {
 
@@ -234,7 +244,7 @@ class destination_test_tool
 {
 public:
     template<typename CharT>
-    static STRF_HD void turn_into_bad(destination<CharT>& dest)
+    static STRF_HD void turn_into_bad(destination<CharT, 0>& dest)
     {
         dest.set_good(false);
     }
@@ -242,47 +252,53 @@ public:
 
 } // namespace detail
 
+constexpr std::size_t log2_garbage_buff_size = 7;
+constexpr std::size_t garbage_buff_size = 1 << log2_garbage_buff_size;
+
 template <typename CharT>
 inline STRF_HD CharT* garbage_buff() noexcept
 {
-    static CharT arr[ STRF_MIN_SPACE_AFTER_RECYCLE ];
+    static CharT arr[ garbage_buff_size ];
     return arr;
 }
 
 template <typename CharT>
 inline STRF_HD CharT* garbage_buff_end() noexcept
 {
-    return strf::garbage_buff<CharT>() + strf::min_space_after_recycle<CharT>();
+    return strf::garbage_buff<CharT>() + garbage_buff_size;
 }
 
 template <typename CharT>
-class basic_cstr_writer final: public strf::destination<CharT>
+class basic_cstr_writer final
+    : public strf::destination<CharT, strf::log2_garbage_buff_size>
 {
+    using dest_t_ = strf::destination<CharT, strf::log2_garbage_buff_size>;
+
 public:
 
     struct range{ CharT* dest; CharT* dest_end; };
 
     STRF_HD basic_cstr_writer(range r) noexcept
-        : destination<CharT>(r.dest, r.dest_end - 1)
+        : dest_t_(r.dest, r.dest_end - 1)
     {
         STRF_ASSERT(r.dest < r.dest_end);
     }
 
     STRF_HD basic_cstr_writer(CharT* dest, CharT* dest_end) noexcept
-        : destination<CharT>(dest, dest_end - 1)
+        : dest_t_(dest, dest_end - 1)
     {
         STRF_ASSERT(dest < dest_end);
     }
 
     STRF_HD basic_cstr_writer(CharT* dest, std::size_t len) noexcept
-        : destination<CharT>(dest, dest + len - 1)
+        : dest_t_(dest, dest + len - 1)
     {
         STRF_ASSERT(len != 0);
     }
 
     template <std::size_t N>
     STRF_HD basic_cstr_writer(CharT (&dest)[N]) noexcept
-        : destination<CharT>(dest, dest + N - 1)
+        : dest_t_(dest, dest + N - 1)
     {
     }
 
@@ -351,37 +367,40 @@ using u32cstr_writer = basic_cstr_writer<char32_t>;
 using wcstr_writer = basic_cstr_writer<wchar_t>;
 
 template <typename CharT>
-class basic_char_array_writer final: public strf::destination<CharT>
+class basic_char_array_writer final
+    : public strf::destination<CharT, strf::log2_garbage_buff_size>
 {
+    using dest_t_ = strf::destination<CharT, strf::log2_garbage_buff_size>;
+
 public:
 
     struct range{ CharT* dest; CharT* dest_end; };
 
     STRF_HD basic_char_array_writer(range r) noexcept
-        : destination<CharT>(r.dest, r.dest_end)
+        : dest_t_(r.dest, r.dest_end)
     {
         STRF_ASSERT(r.dest <= r.dest_end);
     }
 
     STRF_HD basic_char_array_writer(CharT* dest, CharT* dest_end) noexcept
-        : destination<CharT>(dest, dest_end)
+        : dest_t_(dest, dest_end)
     {
         STRF_ASSERT(dest <= dest_end);
     }
 
     STRF_HD basic_char_array_writer(CharT* dest, std::size_t len) noexcept
-        : destination<CharT>(dest, dest + len)
+        : dest_t_(dest, dest + len)
     {
     }
 
     template <std::size_t N>
     STRF_HD basic_char_array_writer(CharT (&dest)[N]) noexcept
-        : destination<CharT>(dest, dest + N)
+        : dest_t_(dest, dest + N)
     {
     }
 
     STRF_HD basic_char_array_writer(const basic_char_array_writer& r) noexcept
-        : destination<CharT>(r.buffer_ptr(), r.buffer_end())
+        : dest_t_(r.buffer_ptr(), r.buffer_end())
         , it_(r.it_)
     {
         this->set_good(r.good());
@@ -460,12 +479,13 @@ using wchar_array_writer = basic_char_array_writer<wchar_t>;
 
 template <typename CharT>
 class discarded_destination final
-    : public strf::destination<CharT>
+    : public strf::destination<CharT, strf::log2_garbage_buff_size>
 {
+    using dest_t_ = strf::destination<CharT, strf::log2_garbage_buff_size>;
 public:
 
     STRF_HD discarded_destination() noexcept
-        : destination<CharT>
+        : dest_t_
             { strf::garbage_buff<CharT>()
             , strf::garbage_buff_end<CharT>() }
     {

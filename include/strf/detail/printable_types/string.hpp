@@ -807,7 +807,7 @@ public:
         input.preview.add_size(res.pos);
     }
 
-    STRF_HD void print_to(strf::destination<DestCharT>& dest) const override;
+    STRF_HD void print_to(strf::print_dest<DestCharT>& dest) const override;
 
 private:
 
@@ -827,7 +827,7 @@ private:
 
 template<typename SrcCharT, typename DestCharT>
 STRF_HD void string_printer<SrcCharT, DestCharT>::print_to
-    ( strf::destination<DestCharT>& dest ) const
+    ( strf::print_dest<DestCharT>& dest ) const
 {
     strf::detail::destination_interchar_copy(dest, str_, len_);
 }
@@ -884,7 +884,7 @@ public:
 
     STRF_HD ~aligned_string_printer();
 
-    STRF_HD void print_to(strf::destination<DestCharT>& dest) const override;
+    STRF_HD void print_to(strf::print_dest<DestCharT>& dest) const override;
 
 private:
 
@@ -963,7 +963,7 @@ inline STRF_HD std::uint16_t aligned_string_printer<SrcCharT, DestCharT>::init_
 
 template<typename SrcCharT, typename DestCharT>
 void STRF_HD aligned_string_printer<SrcCharT, DestCharT>::print_to
-    ( strf::destination<DestCharT>& dest ) const
+    ( strf::print_dest<DestCharT>& dest ) const
 {
     if (left_fillcount_ > 0) {
         encode_fill_(dest, left_fillcount_, afmt_.fill);
@@ -1083,7 +1083,7 @@ public:
 
     STRF_HD ~conv_string_printer() { }
 
-    STRF_HD void print_to(strf::destination<DestCharT>& dest) const override;
+    STRF_HD void print_to(strf::print_dest<DestCharT>& dest) const override;
 
 private:
 
@@ -1140,7 +1140,7 @@ private:
 
 template<typename SrcCharT, typename DestCharT>
 STRF_HD void conv_string_printer<SrcCharT, DestCharT>::print_to
-    ( strf::destination<DestCharT>& dest ) const
+    ( strf::print_dest<DestCharT>& dest ) const
 {
     if (can_transcode_directly()) {
         transcode_(dest, str_, len_, inv_seq_notifier_, surr_poli_);
@@ -1199,7 +1199,7 @@ public:
              , use_facet_<strf::charset_c<DestCharT>, SrcCharT>(input.facets) );
     }
 
-    STRF_HD void print_to(strf::destination<DestCharT>& dest) const override;
+    STRF_HD void print_to(strf::print_dest<DestCharT>& dest) const override;
 
 private:
 
@@ -1296,7 +1296,7 @@ void STRF_HD aligned_conv_string_printer<SrcCharT, DestCharT>::init_
 
 template<typename SrcCharT, typename DestCharT>
 void STRF_HD aligned_conv_string_printer<SrcCharT, DestCharT>::print_to
-    ( strf::destination<DestCharT>& dest ) const
+    ( strf::print_dest<DestCharT>& dest ) const
 {
     if (left_fillcount_ > 0) {
         encode_fill_(dest, left_fillcount_, afmt_.fill);

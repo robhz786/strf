@@ -12,6 +12,15 @@
 #include <strf/detail/facets/charset.hpp>
 
 namespace strf {
+namespace detail {
+constexpr std::size_t print_dest_space_factor = 6;
+} // namespace detail
+
+// constexpr std::size_t required_print_space_after_flush
+// = 1 << strf::detail::print_dest_space_factor();
+
+template <typename CharT>
+using print_dest = strf::destination<CharT, strf::detail::print_dest_space_factor>;
 
 template <typename CharT>
 class printer
@@ -24,7 +33,7 @@ public:
     {
     }
 
-    STRF_HD virtual void print_to(strf::destination<CharT>& dest) const = 0;
+    STRF_HD virtual void print_to(strf::print_dest<CharT>& dest) const = 0;
 };
 
 struct string_input_tag_base
@@ -249,7 +258,7 @@ namespace detail {
 #if defined(__cpp_fold_expressions)
 
 template <typename CharT, typename ... Printers>
-inline STRF_HD void write_args( strf::destination<CharT>& dest
+inline STRF_HD void write_args( strf::print_dest<CharT>& dest
                               , const Printers& ... printers )
 {
     (... , printers.print_to(dest));
@@ -258,13 +267,13 @@ inline STRF_HD void write_args( strf::destination<CharT>& dest
 #else // defined(__cpp_fold_expressions)
 
 template <typename CharT>
-inline STRF_HD void write_args(strf::destination<CharT>&)
+inline STRF_HD void write_args(strf::print_dest<CharT>&)
 {
 }
 
 template <typename CharT, typename Printer, typename ... Printers>
 inline STRF_HD void write_args
-    ( strf::destination<CharT>& dest
+    ( strf::print_dest<CharT>& dest
     , const Printer& printer
     , const Printers& ... printers )
 {
@@ -2043,7 +2052,7 @@ STRF_HD void tr_string_write
     , const typename Charset::code_unit* str_end
     , const strf::printer<typename Charset::code_unit>* const * args
     , std::size_t num_args
-    , strf::destination<typename Charset::code_unit>& dest
+    , strf::print_dest<typename Charset::code_unit>& dest
     , Charset charset
     , ErrHandler err_handler )
 {
@@ -2157,7 +2166,7 @@ public:
         }
     }
 
-    STRF_HD void print_to(strf::destination<char_type>& dest) const
+    STRF_HD void print_to(strf::print_dest<char_type>& dest) const
     {
         strf::detail::tr_string_write
             ( tr_string_, tr_string_end_, printers_array_, num_printers_
@@ -2797,20 +2806,20 @@ class destination_reference
 public:
 
     using char_type = CharT;
-    using destination_type = strf::destination<CharT>&;
+    using destination_type = strf::print_dest<CharT>&;
 
-    explicit STRF_HD destination_reference(strf::destination<CharT>& dest) noexcept
+    explicit STRF_HD destination_reference(strf::print_dest<CharT>& dest) noexcept
         : dest_(dest)
     {
     }
 
-    STRF_HD strf::destination<CharT>& create() const
+    STRF_HD strf::print_dest<CharT>& create() const
     {
         return dest_;
     }
 
 private:
-    strf::destination<CharT>& dest_;
+    strf::print_dest<CharT>& dest_;
 };
 
 
@@ -2818,7 +2827,7 @@ private:
 
 template <typename CharT>
 strf::destination_no_reserve<strf::detail::destination_reference<CharT>>
-STRF_HD to(strf::destination<CharT>& dest)
+STRF_HD to(strf::print_dest<CharT>& dest)
 {
     return strf::destination_no_reserve<strf::detail::destination_reference<CharT>>(dest);
 }

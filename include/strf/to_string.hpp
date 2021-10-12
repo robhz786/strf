@@ -15,20 +15,20 @@ namespace strf {
 template < typename CharT
          , typename Traits = std::char_traits<CharT>
          , typename Allocator = std::allocator<CharT> >
-class basic_string_appender final: public strf::destination<CharT>
+class basic_string_appender final: public strf::print_dest<CharT>
 {
     using string_type_ = std::basic_string<CharT, Traits, Allocator>;
 
 public:
 
     basic_string_appender(string_type_& str)
-        : strf::destination<CharT>(buf_, buf_size_)
+        : strf::print_dest<CharT>(buf_, buf_size_)
         , str_(str)
     {
     }
     basic_string_appender( string_type_& str
                          , std::size_t size )
-        : strf::destination<CharT>(buf_, buf_size_)
+        : strf::print_dest<CharT>(buf_, buf_size_)
         , str_(str)
     {
         str_.reserve(size);
@@ -80,14 +80,14 @@ private:
 template < typename CharT
          , typename Traits = std::char_traits<CharT>
          , typename Allocator = std::allocator<CharT> >
-class basic_string_maker final: public strf::destination<CharT>
+class basic_string_maker final: public strf::print_dest<CharT>
 {
     using string_type_ = std::basic_string<CharT, Traits, Allocator>;
 
 public:
 
     basic_string_maker()
-        : strf::destination<CharT>(buf_, buf_size_)
+        : strf::print_dest<CharT>(buf_, buf_size_)
     {
     }
 
@@ -186,12 +186,12 @@ template < typename CharT
          , typename Traits = std::char_traits<CharT>
          , typename Allocator = std::allocator<CharT> >
 class basic_sized_string_maker final
-    : public strf::destination<CharT>
+    : public strf::print_dest<CharT>
 {
 public:
 
     explicit basic_sized_string_maker(std::size_t count)
-        : strf::destination<CharT>(nullptr, nullptr)
+        : strf::print_dest<CharT>(nullptr, nullptr)
         , str_(count ? count : 1, (CharT)0)
     {
         this->set_buffer_ptr(&*str_.begin());

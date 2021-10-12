@@ -119,7 +119,7 @@ public:
         init_(input.preview, encoding);
     }
 
-    void print_to(strf::destination<CharT>& dest) const override;
+    void print_to(strf::print_dest<CharT>& dest) const override;
 
 private:
 
@@ -132,7 +132,7 @@ private:
     ipv6style style_;
 
     std::uint16_t count_ipv6_characters() const;
-    void print_ipv6(strf::destination<CharT>& dest) const;
+    void print_ipv6(strf::print_dest<CharT>& dest) const;
 
     template <typename Preview, typename Charset>
     void init_(Preview& preview, Charset charset);
@@ -179,7 +179,7 @@ std::uint16_t ipv6_printer<CharT>::count_ipv6_characters() const
 }
 
 template <typename CharT>
-void ipv6_printer<CharT>::print_to(strf::destination<CharT>& dest) const
+void ipv6_printer<CharT>::print_to(strf::print_dest<CharT>& dest) const
 {
     if (fillcount_ == 0) {
         print_ipv6(dest);
@@ -203,7 +203,7 @@ void ipv6_printer<CharT>::print_to(strf::destination<CharT>& dest) const
 }
 
 template <typename CharT>
-void ipv6_printer<CharT>::print_ipv6(strf::destination<CharT>& dest) const
+void ipv6_printer<CharT>::print_ipv6(strf::print_dest<CharT>& dest) const
 {
     const unsigned precision = (style_ == ipv6style::big ? 4 : 0);
     for (int i = 0; i < 8; ++i) {
@@ -302,18 +302,18 @@ void tests()
 
 namespace test_utils {
 
-static strf::destination<char>*& test_messages_destination_ptr()
+static strf::print_dest<char>*& test_messages_destination_ptr()
 {
-    static strf::destination<char>* ptr = nullptr;
+    static strf::print_dest<char>* ptr = nullptr;
     return ptr;
 }
 
-void set_test_messages_destination(strf::destination<char>& dest)
+void set_test_messages_destination(strf::print_dest<char>& dest)
 {
     test_messages_destination_ptr() = &dest;
 }
 
-strf::destination<char>& test_messages_destination()
+strf::print_dest<char>& test_messages_destination()
 {
     auto * ptr = test_messages_destination_ptr();
     return *ptr;

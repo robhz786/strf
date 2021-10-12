@@ -1439,16 +1439,27 @@ STRF_HD void test_single_char32_width()
 #define U16_EXTEND_x8  U16_EXTEND_x4 U16_EXTEND_x4
 #define U16_EXTEND_x16 U16_EXTEND_x8 U16_EXTEND_x8
 
+#define U32_other      U"A"
+#define U32_ZWJ        U"\u200D"
+#define U32_XPIC       U"\u00A9"
+#define U32_EXTEND_x4  U"\u036F\u036F\u036F\u036F"
+#define U32_EXTEND_x8  U32_EXTEND_x4 U32_EXTEND_x4
+#define U32_EXTEND_x16 U32_EXTEND_x8 U32_EXTEND_x8
+
+STRF_HD void puts(strf::transcode_dest<char32_t>& dest, const char32_t* str) {
+    dest.write(str, strf::detail::str_length(str));
+}
+
 STRF_HD void test_std_width_decrementer()
 {
     {   // cover recycle
         strf::detail::std_width_decrementer decr{(strf::width_t::max)()};
-        strf::to(decr) (strf::conv(U16_XPIC));
-        strf::to(decr) (strf::conv(U16_ZWJ U16_XPIC U16_EXTEND_x8));
+        puts(decr, U32_XPIC);
+        puts(decr, U32_ZWJ U32_XPIC U32_EXTEND_x8);
         decr.recycle();
-        strf::to(decr) (strf::conv(U16_ZWJ U16_XPIC U16_EXTEND_x8));
+        puts(decr, U32_ZWJ U32_XPIC U32_EXTEND_x8);
         decr.recycle();
-        strf::to(decr) (strf::conv(U16_ZWJ U16_XPIC U16_EXTEND_x8));
+        puts(decr, U32_ZWJ U32_XPIC U32_EXTEND_x8);
 
         auto width = (strf::width_t::max)() - decr.get_remaining_width();
         TEST_TRUE(width == 1);
@@ -1456,16 +1467,16 @@ STRF_HD void test_std_width_decrementer()
 
     {   // cover recycle with width == 0
         strf::detail::std_width_decrementer decr{3};
-        strf::to(decr) (strf::conv(U16_other U16_other U16_other));
+        puts(decr, U32_other U32_other U32_other);
         decr.recycle();
-        strf::to(decr) (strf::conv(U16_other U16_other U16_other));
+        puts(decr, U32_other U32_other U32_other);
         decr.recycle();
-        strf::to(decr) (strf::conv(U16_other U16_other U16_other));
+        puts(decr, U32_other U32_other U32_other);
         TEST_TRUE(0 == decr.get_remaining_width());
     }
     {   // cover get_remaining_width() when buffer_ptr() == buff_
         strf::detail::std_width_decrementer decr{(strf::width_t::max)()};
-        strf::to(decr) (strf::conv(U16_other U16_other U16_other));
+        puts(decr, U32_other U32_other U32_other);
         decr.recycle();
         auto width = (strf::width_t::max)() - decr.get_remaining_width();
         TEST_TRUE(width == 3);
@@ -1476,12 +1487,12 @@ STRF_HD void test_std_width_decrementer_with_pos()
 {
     {   // when the remaining width is not zero
         strf::detail::std_width_decrementer_with_pos decr{(strf::width_t::max)()};
-        strf::to(decr) (strf::conv(U16_XPIC));
-        strf::to(decr) (strf::conv(U16_ZWJ U16_XPIC U16_EXTEND_x8));
+        puts(decr, U32_XPIC);
+        puts(decr, U32_ZWJ U32_XPIC U32_EXTEND_x8);
         decr.recycle();
-        strf::to(decr) (strf::conv(U16_ZWJ U16_XPIC U16_EXTEND_x8));
+        puts(decr, U32_ZWJ U32_XPIC U32_EXTEND_x8);
         decr.recycle();
-        strf::to(decr) (strf::conv(U16_ZWJ U16_XPIC U16_EXTEND_x8));
+        puts(decr, U32_ZWJ U32_XPIC U32_EXTEND_x8);
 
         auto res = decr.get_remaining_width_and_codepoints_count();
         auto width = (strf::width_t::max)() - res.remaining_width;
@@ -1491,12 +1502,12 @@ STRF_HD void test_std_width_decrementer_with_pos()
     {   // when the remaining width is not zero, and recycle() is called
         // immediatelly before_remaining_width_and_codepoints_count
         strf::detail::std_width_decrementer_with_pos decr{(strf::width_t::max)()};
-        strf::to(decr) (strf::conv(U16_XPIC));
-        strf::to(decr) (strf::conv(U16_ZWJ U16_XPIC U16_EXTEND_x8));
+        puts(decr, U32_XPIC);
+        puts(decr, U32_ZWJ U32_XPIC U32_EXTEND_x8);
         decr.recycle();
-        strf::to(decr) (strf::conv(U16_ZWJ U16_XPIC U16_EXTEND_x8));
+        puts(decr, U32_ZWJ U32_XPIC U32_EXTEND_x8);
         decr.recycle();
-        strf::to(decr) (strf::conv(U16_ZWJ U16_XPIC U16_EXTEND_x8));
+        puts(decr, U32_ZWJ U32_XPIC U32_EXTEND_x8);
         decr.recycle();
 
         auto res = decr.get_remaining_width_and_codepoints_count();
@@ -1506,9 +1517,10 @@ STRF_HD void test_std_width_decrementer_with_pos()
     }
     {   // when the remaining width is zero, but all input was processed
         strf::detail::std_width_decrementer_with_pos decr{4};
-        strf::to(decr) (U"ABC", strf::conv(U16_XPIC));
-        strf::to(decr) (strf::conv(U16_ZWJ U16_XPIC U16_EXTEND_x16));
-        strf::to(decr) (strf::conv(U16_ZWJ U16_XPIC U16_EXTEND_x16));
+        puts(decr, U"ABC");
+        puts(decr, U32_XPIC);
+        puts(decr, U32_ZWJ U32_XPIC U32_EXTEND_x16);
+        puts(decr, U32_ZWJ U32_XPIC U32_EXTEND_x16);
 
         auto res = decr.get_remaining_width_and_codepoints_count();
         TEST_TRUE(res.remaining_width == 0);
@@ -1519,9 +1531,10 @@ STRF_HD void test_std_width_decrementer_with_pos()
         // and recycle() is called immediatelly before
         // get_remaining_width_and_codepoints_count
         strf::detail::std_width_decrementer_with_pos decr{4};
-        strf::to(decr) (U"ABC", strf::conv(U16_XPIC));
-        strf::to(decr) (strf::conv(U16_ZWJ U16_XPIC U16_EXTEND_x16));
-        strf::to(decr) (strf::conv(U16_ZWJ U16_XPIC U16_EXTEND_x16));
+        puts(decr, U"ABC");
+        puts(decr, U32_XPIC);
+        puts(decr, U32_ZWJ U32_XPIC U32_EXTEND_x16);
+        puts(decr, U32_ZWJ U32_XPIC U32_EXTEND_x16);
         decr.recycle();
 
         auto res = decr.get_remaining_width_and_codepoints_count();
@@ -1532,10 +1545,11 @@ STRF_HD void test_std_width_decrementer_with_pos()
     {   // when the remaining width becames zero before
         // the whole content is processed
         strf::detail::std_width_decrementer_with_pos decr{4};
-        strf::to(decr) (U"ABC", strf::conv(U16_XPIC));
-        strf::to(decr) (strf::conv(U16_ZWJ U16_XPIC U16_EXTEND_x16));
-        strf::to(decr) (strf::conv(U16_ZWJ U16_XPIC U16_EXTEND_x16));
-        strf::to(decr) (U"ABC");
+        puts(decr, U"ABC");
+        puts(decr, U32_XPIC);
+        puts(decr, U32_ZWJ U32_XPIC U32_EXTEND_x16);
+        puts(decr, U32_ZWJ U32_XPIC U32_EXTEND_x16);
+        puts(decr, U"ABC");
         auto res = decr.get_remaining_width_and_codepoints_count();
         TEST_TRUE(res.remaining_width == 0);
         TEST_TRUE(!res.whole_string_covered);
@@ -1546,12 +1560,13 @@ STRF_HD void test_std_width_decrementer_with_pos()
         // and recycle() is called immediatelly before
         // get_remaining_width_and_codepoints_count
         strf::detail::std_width_decrementer_with_pos decr{4};
-        strf::to(decr) (U"ABC", strf::conv(U16_XPIC));
-        strf::to(decr) (strf::conv(U16_ZWJ U16_XPIC U16_EXTEND_x16));
-        strf::to(decr) (strf::conv(U16_ZWJ U16_XPIC U16_EXTEND_x16));
-        strf::to(decr) (U"ABC");
+        puts(decr, U"ABC");
+        puts(decr, U32_XPIC);
+        puts(decr, U32_ZWJ U32_XPIC U32_EXTEND_x16);
+        puts(decr, U32_ZWJ U32_XPIC U32_EXTEND_x16);
+        puts(decr, U"ABC");
         decr.recycle();
-        strf::to(decr) (U"ABC");
+        puts(decr, U"ABC");
         decr.recycle();
 
         auto res = decr.get_remaining_width_and_codepoints_count();
