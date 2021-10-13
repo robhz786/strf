@@ -112,18 +112,18 @@ struct rank<0>
 // namespace strf {
 // 
 // template <typename CharT>
-// void write( {destination}<CharT>& ob
+// void write( {destination}<CharT>& dest
 //           , const CharT{asterisk} data
 //           , std::size_t count );
 // 
 // template <typename CharT>
-// void write( {destination}<CharT>& ob
+// void write( {destination}<CharT>& dest
 //           , const CharT{asterisk} data
 //           , const CharT{asterisk} data_end );
 // 
-// void write({destination}<char>& ob, const char{asterisk} cstr);
+// void write({destination}<char>& dest, const char{asterisk} cstr);
 // 
-// void write({destination}<wchar_t>& ob, const wchar_t{asterisk} cstr);
+// void write({destination}<wchar_t>& dest, const wchar_t{asterisk} cstr);
 // 
 // } // namespace strf
 // ----
@@ -134,12 +134,12 @@ struct rank<0>
 // [source,cpp,subs=normal]
 // ----
 // template <typename CharT>
-// void write( {destination}<CharT>& ob
+// void write( {destination}<CharT>& dest
 //           , const CharT{asterisk} data
 //           , const CharT{asterisk} data_end );
 // ----
 // [horizontal]
-// Effect:: Writes the the range [ `data`, `data_end` ) into `ob`, calling `ob.recycle()`
+// Effect:: Writes the the range [ `data`, `data_end` ) into `dest`, calling `dest.recycle()`
 //          as many times as necessary.
 // ====
 // [[destination_write_size]]
@@ -147,30 +147,30 @@ struct rank<0>
 // [source,cpp,subs=normal]
 // ----
 // template <typename CharT>
-// void write( {destination}<CharT>& ob
+// void write( {destination}<CharT>& dest
 //           , const CharT{asterisk} data
 //           , std::size_t data_size );
 // ----
 // [horizontal]
-// Effect:: Equivalent to `write(ob, data, data + data_size)`
+// Effect:: Equivalent to `write(dest, data, data + data_size)`
 // ====
 // [[destination_write_cstr]]
 // ====
 // [source,cpp,subs=normal]
 // ----
-// void write({destination}<char>& ob, const char* cstr);
+// void write({destination}<char>& dest, const char* cstr);
 // ----
 // [horizontal]
-// Effect:: Equivalent to `write(ob, cstr, std::strlen(cstr))`
+// Effect:: Equivalent to `write(dest, cstr, std::strlen(cstr))`
 // ====
 // 
 // [[destination_write_wcstr]]
 // ====
 // [source,cpp,subs=normal]
 // ----
-// void write({destination}<wchar_t>& ob, const wchar_t{asterisk} wcstr);
+// void write({destination}<wchar_t>& dest, const wchar_t{asterisk} wcstr);
 // ----
 // [horizontal]
-// Effect:: Equivalent to `write(ob, wcstr, std::wstrlen(wcstr))`
+// Effect:: Equivalent to `write(dest, wcstr, std::wstrlen(wcstr))`
 // ====
 

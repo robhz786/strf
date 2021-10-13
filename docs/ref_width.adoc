@@ -477,13 +477,13 @@ template <typename Charset>
 ----
 [horizontal]
 Return value::: The sum of the values of `func_(ch32)`, where `ch32` is
-   each of the `char32_t` values that would be written into `ob` --
-   an arbitrary object whose type derives from `{destination}<char32_t>` -- by the call
+   each of the `char32_t` values that would be written into `dest` --
+   an arbitrary object whose type derives from `{transcode_dest}<char32_t>` -- by the call
 +
 [source,cpp,subs=normal]
 ----
 cs.<<Charset_to_u32,to_u32>>().<<Transcoder_transcode,transcode>>
-    ( ob, str, str_len, {invalid_seq_notifier}{}, surr_poli )
+    ( dest, str, str_len, {invalid_seq_notifier}{}, surr_poli )
 ----
 , if such value is less than or equal to `limit`. Otherwise, the return value
   can be anyone that is greater than or equal to `limit`.
@@ -503,14 +503,14 @@ template <typename Charset>
 [horizontal]
 Return value::: The return value `ret` is such that:
 * `ret.width` is the sum of the values of `func_(ch32)`, where `ch32` is
-   each of the `char32_t` values that are written into `ob` by the call
+   each of the `char32_t` values that are written into `dest` by the call
 +
 [source,cpp,subs=normal]
 ----
 cs.<<Charset_to_u32,to_u32>>().<<Transcoder_transcode,transcode>>
-    ( ob, str, ret.pos, {invalid_seq_notifier}{}, surr_poli )
+    ( dest, str, ret.pos, {invalid_seq_notifier}{}, surr_poli )
 ----
-, where `ob` is any object whose type derives from `{destination}<char32_t>`.
+, where `dest` is any object whose type derives from `{transcode_dest}<char32_t>`.
 * `ret.pos` is the greatest value that is less than or equal to `str_len`
   such that `str_width_and_pos(cs, limit, str, ret.pos, surr_poli).width`
   is less than or equal to `limit`.

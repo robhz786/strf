@@ -21,6 +21,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 :scid_iso_8859_15:  <<charset_id,scid_iso_8859_15>>
 :scid_windows_1252: <<charset_id,scid_windows_1252>>
 
+:transcode_dest: <<transcode_dest,transcode_dest>>
 :invalid_char_len: <<charset_function_pointers,invalid_char_len>>
 :transcode_f: <<charset_function_pointers,transcode_f>>
 :transcode_size_f: <<charset_function_pointers,transcode_size_f>>
@@ -264,15 +265,29 @@ to be a _{Charset}_ type for `CharT`. The library provides
 two class templates that satisfy that: `{static_charset}`
 and `{dynamic_charset}`
 
+=== Type alias template `transcode_dest` [[transcode_dest]]
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template <typename CharT>
+using transcode_dest = {destination}<CharT, 3>;
+
+} // namespace strf
+----
+
 === Aliases for pointers to functions [[charset_function_pointers]]
 
 [source,cpp,subs=normal]
 ----
+namespace strf {
+
 constexpr std::size_t invalid_char_len = (std::size_t)-1;
 
 template <typename SrcCharT, typename DestCharT>
 using transcode_f = void ({asterisk})
-    ( {destination}<DestCharT>& ob
+    ( {transcode_dest}<DestCharT>& dest
     , const SrcCharT{asterisk} src
     , std::size_t src_size
     , {invalid_seq_notifier} inv_seq_notifier
@@ -285,7 +300,7 @@ using transcode_size_f = std::size_t ({asterisk})
     , {surrogate_policy} surr_poli );
 
 template <typename CharT>
-using write_replacement_char_f = void({asterisk})( {destination}<CharT>& );
+using write_replacement_char_f = void({asterisk})( {transcode_dest}<CharT>& );
 
 using validate_f = std::size_t ({asterisk})(char32_t ch);
 
@@ -296,7 +311,7 @@ using encode_char_f = CharT{asterisk}({asterisk}) (CharT{asterisk} dest, char32_
 
 template <typename CharT>
 using encode_fill_f = void ({asterisk})
-    ( {destination}<CharT>&
+    ( {transcode_dest}<CharT>&
     , std::size_t count
     , char32_t ch );
 
@@ -325,6 +340,7 @@ template <typename SrcCharT, typename DestCharT>
 using find_transcoder_f = {dynamic_transcoder}<SrcCharT, DestCharT> ({asterisk})
     ( {charset_id} );
 
+} // namespace strf
 ----
 
 === Type requirement _Transcoder_ [[Transcoder]]
@@ -335,7 +351,7 @@ Given
 * `DestCharT`, one of the types: `char`, `char8_t`, `char16_t`, `char32_t` or `wchar_t`
 * `X`, a _Transcoder_ type from `SrcCharT` to `DestCharT`
 * `x`, an expression of type `X` or `const X`
-* `dest`, an lvalue reference of type `{destination}<DestCharT>`
+* `dest`, an lvalue reference of type `{transcode_dest}<DestCharT>`
 * `src`, a value of type `const SrcCharT*`
 * `src_size`, a value of type `std::size_t` equal to the size of
               the array pointed by `src`
@@ -438,7 +454,7 @@ Given
 * `max_count`, a value of type `std::size_t`
 * `ch32`, a value of type `char32_t`
 * `ch`, a value of type `CharT`
-* `ob`, an lvalue reference of type `{destination}<CharT>`
+* `dest`, an lvalue reference of type `{transcode_dest}<CharT>`
 * `cs_id`, value of type `{charset_id}`
 
 The following must hold:
@@ -490,10 +506,10 @@ Return value:: The character used to signalize an error. Usually it is the https
 ====
 [source,cpp]
 ----
-x.write_replacement_char(ob)
+x.write_replacement_char(dest)
 ----
 [horizontal]
-Return type:: Writes into `ob` the codepoint returned by `x.replacement_char()` encoded in this charset.
+Return type:: Writes into `dest` the codepoint returned by `x.replacement_char()` encoded in this charset.
 ====
 ====
 [source,cpp]
@@ -502,7 +518,7 @@ x.replacement_char_size()
 ----
 [horizontal]
 Return type:: `std::size_t`
-Return value:: The number of characters that `x.write_replacement_char(ob)` writes into `ob`.
+Return value:: The number of characters that `x.write_replacement_char(dest)` writes into `dest`.
 ====
 ====
 [source,cpp]
@@ -553,10 +569,10 @@ Note:: This function does not check whether `ch32` is a legal code point, only i
 ====
 [source,cpp]
 ----
-x.encode_fill(ob, count, ch32)
+x.encode_fill(dest, count, ch32)
 ----
 [horizontal]
-Effect:: Writes `count` times into `ob` the UTF-32 character `ch32` encoded into
+Effect:: Writes `count` times into `dest` the UTF-32 character `ch32` encoded into
          this encoding, if it is supported. Otherwise writes `x.replacement_char()`
          instead.
 Return type:: `void`
@@ -645,8 +661,8 @@ x.encode_fill_func()
 ----
 [horizontal]
 Return type:: `{encode_fill_f}<CharT>`
-Return value:: A function pointer such that `x.encode_fill_func() (ob, count, ch32)`
-               has the same effect as `x.encode_fill(ob, count, ch32)`.
+Return value:: A function pointer such that `x.encode_fill_func() (dest, count, ch32)`
+               has the same effect as `x.encode_fill(dest, count, ch32)`.
 ====
 ====
 [source,cpp]
@@ -655,8 +671,8 @@ x.write_replacement_char_func()
 ----
 [horizontal]
 Return type:: `{write_replacement_char_f}<CharT>`
-Return value:: A function pointer such that `x.write_replacement_char_func() (ob)`
-               has the same effect as `x.write_replacement_char(ob)`
+Return value:: A function pointer such that `x.write_replacement_char_func() (dest)`
+               has the same effect as `x.write_replacement_char(dest)`
 ====
 ====
 [source,cpp]
@@ -982,7 +998,7 @@ public:
         ( {static_transcoder}<Src, Dest> st );
 
     void transcode
-        ( {destination}<DestCharT>& ob
+        ( {transcode_dest}<DestCharT>& dest
         , const SrcCharT* src
         , std::size_t src_size
         , {invalid_seq_notifier} inv_seq_notifier
@@ -1042,14 +1058,14 @@ Postconditions::
 [source,cpp,subs=normal]
 ----
 void transcode
-    ( {destination}<DestCharT>& ob
+    ( {transcode_dest}<DestCharT>& dest
     , const SrcCharT* src
     , std::size_t src_size
     , {invalid_seq_notifier} inv_seq_notifier
     , {surrogate_policy} surr_poli ) const;
 ----
 [horizontal]
-Effect:: Calls `transcode_func()(ob, src, src_size, inv_seq_notifier, surr_poli)`
+Effect:: Calls `transcode_func()(dest, src, src_size, inv_seq_notifier, surr_poli)`
 ====
 ====
 [source,cpp,subs=normal]
@@ -1143,7 +1159,7 @@ public:
     code_unit* encode_char(code_unit* dest, char32_t ch) const; // noexcept
 
     void encode_fill
-        ( {destination}<CharT>& ob, std::size_t count, char32_t ch ) const;
+        ( {transcode_dest}<CharT>& dest, std::size_t count, char32_t ch ) const;
 
     std::size_t codepoints_fast_count
         ( const code_unit* src, std::size_t src_size
@@ -1153,7 +1169,7 @@ public:
         ( const code_unit* src, std::size_t src_size
         , std::size_t max_count, {surrogate_policy} surr_poli ) const;
 
-    void write_replacement_char({destination}<CharT>& ob) const;
+    void write_replacement_char({transcode_dest}<CharT>& dest) const;
 
     char32_t decode_unit(code_unit ch) const;
 
@@ -1310,11 +1326,11 @@ Effect:: Calls and returns `this\->data\->encoded_char_func(ch)`.
 [source,cpp,subs=normal]
 ----
 void encode_fill
-    ( {destination}<CharT>& ob, std::size_t count, char32_t ch ) const;
+    ( {transcode_dest}<CharT>& dest, std::size_t count, char32_t ch ) const;
 ----
 [horizontal]
 Effect:: Calls and returns
-       `this\->data\->encode_fill_func(ob, count, ch)`.
+       `this\->data\->encode_fill_func(dest, count, ch)`.
 ====
 ====
 [source,cpp,subs=normal]
@@ -1340,10 +1356,10 @@ Effect:: Calls and returns
 ====
 [source,cpp,subs=normal]
 ----
-void write_replacement_char({destination}<CharT>& ob) const;
+void write_replacement_char({transcode_dest}<CharT>& dest) const;
 ----
 [horizontal]
-Effect:: Calls `this\->data\->write_replacement_char_func(ob)`.
+Effect:: Calls `this\->data\->write_replacement_char_func(dest)`.
 ====
 ====
 [source,cpp,subs=normal]
@@ -1525,7 +1541,7 @@ namespace strf {
 
 template<class SrcCharT, class DestCharT>
 void decode_encode
-    ( {destination}<DestCharT>& ob
+    ( {transcode_dest}<DestCharT>& dest
     , {transcode_f}<SrcCharT, char32_t> to_u32
     , {transcode_f}<char32_t, DestCharT> from_u32
     , const SrcCharT* src
@@ -1537,11 +1553,11 @@ void decode_encode
 ----
 
 Converts the content in `src` to UTF-32 using `to_u32`,
-then writes the result to `ob` using `from_u32`.
+then writes the result to `dest` using `from_u32`.
 
 [horizontal]
-Postcondition:: `ob.<<destination_hpp#destination_recycle,recycle>>()` is not called if
-`ob.<<destination_hpp#destination_buffer_space,buffer_space>>()` is not less then the value returned by
+Postcondition:: `dest.<<destination_hpp#destination_recycle,recycle>>()` is not called if
+`dest.<<destination_hpp#destination_buffer_space,buffer_space>>()` is not less then the value returned by
 `{decode_encode_size}(to_u32, size_calc_func, src, src_size, inv_seq_notifier, surr_poli)`,
 where `size_calc_func` is the return value of
 `dest_enc.<<Charset_from_u32,from_u32>>().<<Transcoder_transcode_size_func, transcode_size_func>>()`,

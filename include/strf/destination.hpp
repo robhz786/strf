@@ -37,21 +37,31 @@ constexpr STRF_HD std::size_t min_space_after_recycle()
     return STRF_MIN_SPACE_AFTER_RECYCLE;
 }
 
-template <typename CharT, unsigned SpaceFactor>
-class destination: public destination<CharT, SpaceFactor - 1>
+template <typename CharT, unsigned Log2BufferSpace>
+class destination: public destination<CharT, Log2BufferSpace - 1>
 {
 public:
-    static constexpr std::size_t space_after_recycle = (std::size_t)1 << SpaceFactor;
+    static constexpr std::size_t buffer_space_after_recycle
+        = (std::size_t)1 << Log2BufferSpace;
+
+    STRF_HD void ensure(std::size_t s)
+    {
+        STRF_ASSERT(s <= buffer_space_after_recycle);
+        STRF_IF_UNLIKELY (this->buffer_ptr() + s > this->buffer_end()) {
+            this->recycle();
+        }
+        STRF_ASSERT(this->buffer_ptr() + s <= this->buffer_end());
+    }
 
 protected:
-    using destination<CharT, SpaceFactor - 1>::destination;
+    using destination<CharT, Log2BufferSpace - 1>::destination;
 };
 
 template <typename CharT>
 class destination<CharT, 0>
 {
 public:
-    static constexpr std::size_t space_after_recycle = 1;
+    static constexpr std::size_t buffer_space_after_recycle = 1;
     using char_type = CharT;
     using value_type = CharT;
 
@@ -103,7 +113,7 @@ public:
     }
     STRF_HD void ensure(std::size_t s)
     {
-        STRF_ASSERT(s <= strf::min_space_after_recycle<CharT>());
+        STRF_ASSERT(s <= 1);
         STRF_IF_UNLIKELY (buffer_ptr() + s > buffer_end()) {
             recycle();
         }
@@ -222,21 +232,21 @@ inline STRF_HD void put(strf::destination<CharT, 0>& dest, CharT c)
 
 // type aliases for backwards compatibility
 
-// template <typename CharT>
-// using basic_outbuff = destination<CharT>;
+template <typename CharT>
+using basic_outbuff = destination<CharT, 6>;
 
-// #if defined(__cpp_lib_byte)
-// using bin_outbuff           = basic_outbuff<std::byte>;
-// #endif
+#if defined(__cpp_lib_byte)
+using bin_outbuff           = basic_outbuff<std::byte>;
+#endif
 
-// #if defined(__cpp_char8_t)
-// using u8outbuff           = basic_outbuff<char8_t>;
-// #endif
+#if defined(__cpp_char8_t)
+using u8outbuff           = basic_outbuff<char8_t>;
+#endif
 
-// using outbuff             = basic_outbuff<char>;
-// using u16outbuff          = basic_outbuff<char16_t>;
-// using u32outbuff          = basic_outbuff<char32_t>;
-// using woutbuff            = basic_outbuff<wchar_t>;
+using outbuff             = basic_outbuff<char>;
+using u16outbuff          = basic_outbuff<char16_t>;
+using u32outbuff          = basic_outbuff<char32_t>;
+using woutbuff            = basic_outbuff<wchar_t>;
 
 namespace detail {
 
@@ -252,7 +262,7 @@ public:
 
 } // namespace detail
 
-constexpr std::size_t log2_garbage_buff_size = 7;
+constexpr unsigned log2_garbage_buff_size = 6;
 constexpr std::size_t garbage_buff_size = 1 << log2_garbage_buff_size;
 
 template <typename CharT>

@@ -22,7 +22,6 @@ http://www.boost.org/LICENSE_1_0.txt)
 :make_default_printer_input: <<make_default_printer_input,make_default_printer_input>>
 :make_printer_input: <<make_printer_input,make_printer_input>>
 
-:destination: <<destination_hpp#destination,destination>>
 :use_facet: <<use_facet,use_facet>>
 :tag: <<tag,tag>>
 :rank: <<rank,rank>>
@@ -373,6 +372,19 @@ using printer_type = typename printer_input_type<CharT, Preview, FPack, Arg>::pr
 } // namespace strf
 ----
 
+[[print_dest]]
+=== Type alias template `print_dest`
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template <typename CharT>
+using print_dest = {destination}<CharT, 6>;
+
+}
+----
+
 [[printer]]
 === Class template `printer`
 
@@ -385,7 +397,7 @@ class printer {
 public:
     using char_type = CharT;
     virtual ~printer() {}
-    virtual void print_to({destination}<CharT>&) const = 0;
+    virtual void print_to({print_dest}<CharT>&) const = 0;
 };
 
 } // namespace strf

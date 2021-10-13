@@ -16,6 +16,8 @@ http://www.boost.org/LICENSE_1_0.txt)
 :sectnumlevels: 2
 :icons: font
 
+:destination: <<destination_hpp#destination,destination>>
+:print_dest: <<print_dest,print_dest>>
 :value_with_formatters: <<value_with_format,value_with_formatters>>
 :alignment_formatter: <<alignment_formatter,alignment_formatter>>
 :alignment_formatter_q: <<alignment_formatter,alignment_formatter_q>>
@@ -24,7 +26,6 @@ http://www.boost.org/LICENSE_1_0.txt)
 :int_format: <<int_format_fn,int_format>>
 :float_formatter: <<float_formatter,float_formatter>>
 :float_format: <<float_format,float_format>>
-
 :pack: <<pack,pack>>
 :facets_pack: <<facets_pack,facets_pack>>
 :tag: <<tag,tag>>

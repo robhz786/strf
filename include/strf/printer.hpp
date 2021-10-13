@@ -12,15 +12,9 @@
 #include <strf/detail/facets/charset.hpp>
 
 namespace strf {
-namespace detail {
-constexpr std::size_t print_dest_space_factor = 6;
-} // namespace detail
-
-// constexpr std::size_t required_print_space_after_flush
-// = 1 << strf::detail::print_dest_space_factor();
 
 template <typename CharT>
-using print_dest = strf::destination<CharT, strf::detail::print_dest_space_factor>;
+using print_dest = strf::destination<CharT, 6>;
 
 template <typename CharT>
 class printer

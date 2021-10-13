@@ -7,9 +7,11 @@ http://www.boost.org/LICENSE_1_0.txt)
 
 :printer_type: <<printer_type,printer_type>>
 :printer: <<printer,printer>>
+:print_dest: <<print_dest,print_dest>>
 :tag: <<tag,tag>>
 :print_preview: <<print_preview,print_preview>>
 :make_printer_input: <<make_printer_input,make_printer_input>>
+
 
 :basic_cstr_writer: <<destination_hpp#basic_cstr_writer,basic_cstr_writer>>
 :basic_char_array_writer: <<destination_hpp#basic_char_array_writer,basic_char_array_writer>>
@@ -392,7 +394,7 @@ Compile-time requirements::
 // Return type::
 // - `decltype(std::declval<decltype(&#95;dest&#95;creator.create())&>().finish())` if such type is valid, otherwise `void`
 Effect::
-. Creates the <<destination_hpp#destination,destination>> object doing
+. Creates the `{print_dest}` object doing
 +
 [source,cpp,subs=normal]
 ----
@@ -434,7 +436,7 @@ Effect:: __to-do__
 
 
 ////
-. Creates/get the <<destination_hpp#destination,destination>> object doing
+. Creates/get the `{print_dest}` object doing
 +
 [source,cpp,subs=normal]
 ----
@@ -697,7 +699,7 @@ preview_type preview;
 using printer_type = {printer_type}<char_type, preview_type, FPack, Arg>;
 printer_type p{ {make_printer_input}<char_type>(preview, &#95;fpack, arg) };
 ----
-. Creates/get the <<destination_hpp#destination,destination>> object doing
+. Creates/get the `{print_dest}` object doing
 +
 [source,cpp,subs=normal]
 ----
@@ -743,7 +745,7 @@ auto p = static_cast< const {printer}<CharT>& >
 . Calculates the size of the content to be printed according to the
   <<tr_string,tr-string syntax>> and using the `preview` objects
   of the previous step.
-. Creates/get the <<destination_hpp#destination,destination>> object by doing
+. Creates/get the `{print_dest}` object by doing
 +
 [source,cpp,subs=normal]
 ----
@@ -998,7 +1000,7 @@ template <typename\... Args>
 Compile-time requirements::
 - All types in `Args\...` are <<Printable,_Printable_>>.
 Effect::
-. Creates/get the <<destination_hpp#destination,destination>> object doing
+. Creates/get the `{print_dest}` object doing
 +
 [source,cpp,subs=normal]
 ----
@@ -1038,7 +1040,7 @@ Compile-time requirements::
 Effect::
 __to-do__
 ////
-. Creates/get the <<destination_hpp#destination,destination>> object doing
+. Creates/get the `{print_dest}` object doing
 +
 [source,cpp,subs=normal]
 ----
@@ -1072,7 +1074,7 @@ The following must hold:
 - `X` is https://en.cppreference.com/w/cpp/named_req/CopyConstructible[CopyConstructible]
 - `X` has a member type alias `X::char_type` defined as `char_type`
 - `X` has the `X::destination_type` that is a type alias to a concrete type that is derives
-   from `destination<X::char_type>`
+   from `{print_dest}<X::char_type>`
 
 And the following expression must be well-formed:
 
@@ -1098,7 +1100,7 @@ The following must hold:
 - `X` is https://en.cppreference.com/w/cpp/named_req/CopyConstructible[CopyConstructible]
 - `X` has a member type alias `T::char_type` defined as `char_type`
 - `X` has the `X::sized_destination_type` that is a type alias to a concrete type that derives
-   from `destination<X::char_type>`
+   from `print_dest<X::char_type>`
 
 And the following expression must be well-formed:
 

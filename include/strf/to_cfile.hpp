@@ -148,14 +148,6 @@ private:
     Traits traits_;
 };
 
-template <typename CharT, typename Traits>
-class cfile_writer_base_v2
-{
-    static_assert(noexcept(std::declval<Traits>().write(nullptr, 0)), "");
-public:
-
-};
-
 } // namespace detail
 
 template <typename CharT, std::size_t BuffSize>

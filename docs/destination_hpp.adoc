@@ -25,6 +25,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 :wide_cfile_writer: <<wide_cfile_writer, wide_cfile_writer>>
 :garbage_buff: <<garbage_buff, garbage_buff>>
 :garbage_buff_end: <<garbage_buff, garbage_buff_end>>
+:log2_garbage_buff_size: <<garbage_buff, log2_garbage_buff_size>>
 
 :char_type: <<destination_char_type,char_type>>
 :buffer_ptr: <<destination_buffer_ptr,buffer_ptr>>
@@ -46,6 +47,8 @@ http://www.boost.org/LICENSE_1_0.txt)
 `<strf/destination.hpp>` is a lighweight header can be used in freestanding evironments. All other headers of the strf library include it. It's not affected by the `STRF_SEPARATE_COMPILATION` macro.
 ////
 
+== Synopsis
+
 [source,cpp,subs=normal]
 ----
 namespace strf {
@@ -53,12 +56,12 @@ namespace strf {
 template <typename CharT>
 constexpr std::size_t min_space_after_recycle();
 
-template <typename CharT>
+template <typename CharT, unsigned>
 class destination
 { /{asterisk} \... {asterisk}/ };
 
 template <typename CharT>
-void put(destination<CharT>& ob, CharT c);
+void put(destination<CharT>& dest, CharT c);
 
 template <typename CharT>
 class basic_cstr_writer final: public destination<CharT>
@@ -67,6 +70,9 @@ class basic_cstr_writer final: public destination<CharT>
 template <typename CharT>
 class discarded_destination final: public destination<CharT>
 { /{asterisk} \... {asterisk}/};
+
+constexpr std::size_t log2_garbage_buff_size = /{asterisk}...{asterisk}/;
+constexpr std::size_t garbage_buff_size = 1 << log2_garbage_buff_size;
 
 template <typename CharT>
 CharT* garbage_buff();
@@ -102,12 +108,23 @@ Return value:: Implementation-defined value greater than or equal to 64.
 ----
 namespace strf {
 
-template <typename CharT>
-class destination;
+template <typename CharT, unsinged Log2BufferSpace>
+class destination: destination<CharT, Log2BufferSpace - 1>
 {
 public:
+    static constexpr std::size_t buffer_space_after_recycle = 1ull << Log2BufferSpace;
 
+protected:
+    using destination<CharT, Log2BufferSpace - 1>::destination;        
+};
+
+template <typename CharT>
+class destination<CharT, 0>
+{
+public:
+    static constexpr std::size_t buffer_space_after_recycle = 1;
     using char_type = CharT;
+    using value_type = CharT;
 
     destination(const destination&) = delete;
     destination(destination&&) = delete;
@@ -144,7 +161,7 @@ protected:
 // global functions
 
 template <typename CharT>
-void put(destination<CharT>& ob, CharT ch );
+void put(destination<CharT>& dest, CharT ch );
 
 } // namespace strf
 ----
@@ -197,7 +214,7 @@ virtual void recycle() = 0;
 ----
 [horizontal]
 Posconditions::
-- `{buffer_space}() >= {min_space_after_recycle}<CharT>()`
+- `{buffer_space}() >= buffer_space_after_recycle`
 - The range [ `{buffer_ptr}()`, `{buffer_end}()` ) is valid accessible memory area
 - If the return value of `{good}()` was `false` before this call to `{recycle}()`, then `{good}()` remains returning `false`.
 ====
@@ -218,7 +235,7 @@ void ensure(std::size_t s)
 ----
 [horizontal]
 Effect:: Calls `{recycle}()` if `{buffer_space}() < s`.
-Precondition:: `s \<= {min_space_after_recycle}<CharT>()`
+Precondition:: `s \<= buffer_space_after_recycle`
 Postcondition:: `{buffer_space}() >= s`
 ====
 [[destination_advance_to]]
@@ -359,34 +376,34 @@ Note:: This function is made virtual so that any derived classes
 [source,cpp,subs=normal]
 ----
 template <typename CharT>
-void put(destination<CharT>& ob, CharT ch);
+void put(destination<CharT>& dest, CharT ch);
 ----
 [horizontal]
 Effect:: Equivalent to:
 +
 [source,cpp]
 ----
-if (ob.buffer_space() == 0) {
-    ob.recycle();
+if (dest.buffer_space() == 0) {
+    dest.recycle();
 }
-*ob.buffer_ptr() = ch;
-ob.advance();
+*dest.buffer_ptr() = ch;
+dest.advance();
 ----
 ====
 
 [[basic_cstr_writer]]
 == Class template `basic_cstr_writer`
 
-[source,cpp]
+[source,cpp,subs=normal]
 ----
 namespace strf {
 
 template <typename CharT>
-class basic_cstr_writer final: public {destination}<CharT> {
+class basic_cstr_writer final: public {destination}<CharT, {log2_garbage_buff_size}> {
 public:
-    basic_cstr_writer(CharT* dest, CharT* dest_end) noexcept;
+    basic_cstr_writer(CharT{asterisk} dest, CharT{asterisk} dest_end) noexcept;
 
-    basic_cstr_writer(CharT* dest, std::size_t len) noexcept;
+    basic_cstr_writer(CharT{asterisk} dest, std::size_t len) noexcept;
 
     template <std::size_t N>
     basic_cstr_writer(CharT (&dest)[N]) noexcept;
@@ -396,7 +413,7 @@ public:
     void recycle() noexcept override;
 
     struct result {
-        CharT* ptr;
+        CharT{asterisk} ptr;
         bool truncated;
     };
 
@@ -475,16 +492,16 @@ Postconditions::
 [[basic_char_array_writer]]
 == Class template `basic_char_array_writer`
 
-[source,cpp]
+[source,cpp,subs=normal]
 ----
 namespace strf {
 template <typename CharT>
-class basic_char_array_writer final : public {destination}<CharT> {
+class basic_char_array_writer final : public {destination}<CharT, {log2_garbage_buff_size}> {
 public:
     template <std::size_t N>
     basic_char_array_writer(CharT (&dest)[N]) noexcept;
-    basic_char_array_writer(CharT* dest, CharT* dest_end) noexcept;
-    basic_char_array_writer(CharT* dest, std::size_t dest_size) noexcept;
+    basic_char_array_writer(CharT{asterisk} dest, CharT{asterisk} dest_end) noexcept;
+    basic_char_array_writer(CharT{asterisk} dest, std::size_t dest_size) noexcept;
     basic_char_array_writer(const basic_char_array_writer&) noexcept;
 
     basic_char_array_writer& operator=(const basic_char_array_writer&) noexcept;
@@ -493,7 +510,7 @@ public:
     void recycle() noexcept override;
 
     struct result {
-        CharT* ptr;
+        CharT{asterisk} ptr;
         bool truncated;
     };
 
@@ -576,7 +593,7 @@ A `discarded_destination` object ignores anything written to it.
 namespace strf {
 
 template <typename CharT>
-class discarded_destination final: public destination<CharT>
+class discarded_destination final: public destination<CharT, {log2_garbage_buff_size}>
 {
 public:
     discarded_destination() noexcept;
@@ -610,18 +627,39 @@ Postconditions::
 
 [[garbage_buff]]
 == Garbage buffer
+
 These function templates return the begin and the end of a memory area that is never supposed to be read. It can be used when implementing a class that derives from `destination` to set the buffer when the state is "bad".
 
+====
+[source,cpp]
+----
+constexpr unsigned log2_garbage_buff_size = /{asterisk}...{asterisk}/;
+----
+Implementation-defined type that is greater than or equal to `6`;
+====
+
+====
+[source,cpp]
+----
+constexpr std::size_t garbage_buff_size = (std::size_t)1 << log2_garbage_buff_size;
+----
+====
+
+====
 [source,cpp]
 ----
 template <typename CharT>
 CharT* garbage_buff() noexcept;
 ----
+Returns the begin a memory area of `garbage_buff_size` elements that are never supposed to be read.
+====
 
+====
 [source,cpp]
 ----
 template <typename CharT>
 CharT* garbage_buff_end() noexcept;
 ----
-
+Returns `garbage_buff() + garbage_buff_size`
+====
 
