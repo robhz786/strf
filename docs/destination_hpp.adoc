@@ -14,7 +14,6 @@ http://www.boost.org/LICENSE_1_0.txt)
 :toclevels: 1
 :icons: font
 
-:min_space_after_recycle: <<min_space_after_recycle,min_space_after_recycle>>
 :destination: <<destination,destination>>
 
 :basic_cstr_writer: <<basic_cstr_writer, basic_cstr_writer>>
@@ -53,9 +52,6 @@ http://www.boost.org/LICENSE_1_0.txt)
 ----
 namespace strf {
 
-template <typename CharT>
-constexpr std::size_t min_space_after_recycle();
-
 template <typename CharT, unsigned>
 class destination
 { /{asterisk} \... {asterisk}/ };
@@ -88,17 +84,6 @@ using wcstr_writer   = basic_cstr_writer<wchar_t>;
 
 } // namespace strf
 ----
-
-== Function template `min_space_after_recycle` [[min_space_after_recycle]]
-====
-[source,cpp]
-----
-template <typename CharT>
-constexpr std::size_t min_space_after_recycle();
-----
-[horizontal]
-Return value:: Implementation-defined value greater than or equal to 64.
-====
 
 == Class template `destination` [[destination]]
 

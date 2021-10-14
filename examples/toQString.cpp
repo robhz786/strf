@@ -39,7 +39,7 @@ public:
 private:
 
     QString str_;
-    constexpr static std::size_t buffer_size_ = strf::min_space_after_recycle<char16_t>();
+    constexpr static std::size_t buffer_size_ = strf::print_dest_min_buffer_size;
     char16_t buffer_[buffer_size_];
 };
 

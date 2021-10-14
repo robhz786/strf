@@ -73,7 +73,7 @@ private:
 
     string_type_& str_;
     static constexpr std::size_t buf_size_
-        = strf::min_space_after_recycle<CharT>();
+        = strf::print_dest_min_buffer_size;
     CharT buf_[buf_size_];
 };
 
@@ -134,7 +134,7 @@ private:
         return reinterpret_cast<string_type_*>(ptr);
     }
 
-    static constexpr std::size_t buf_size_ = strf::min_space_after_recycle<CharT>();
+    static constexpr std::size_t buf_size_ = strf::print_dest_min_buffer_size;
     CharT buf_[buf_size_];
 
     using string_storage_type_ = typename std::aligned_storage
@@ -204,7 +204,7 @@ public:
     void recycle() override
     {
         std::size_t original_size = this->buffer_ptr() - str_.data();
-        constexpr std::size_t min_buff_size = strf::min_space_after_recycle<CharT>();
+        constexpr std::size_t min_buff_size = strf::print_dest_min_buffer_size;
         auto append_size = strf::detail::max<std::size_t>(original_size, min_buff_size);
         str_.append(append_size, (CharT)0);
         this->set_buffer_ptr(&*str_.begin() + original_size);

@@ -27,7 +27,6 @@ http://www.boost.org/LICENSE_1_0.txt)
 :rank: <<rank,rank>>
 :join: <<join,join>>
 
-
 == Requirements of printable types
 
 This section provides what one needs to be known to add a new printable type
@@ -379,11 +378,23 @@ using printer_type = typename printer_input_type<CharT, Preview, FPack, Arg>::pr
 ----
 namespace strf {
 
-template <typename CharT>
-using print_dest = {destination}<CharT, 6>;
+constexpr unsigned print_dest_log2_buffer_space = ...;
 
+constexpr std::size_t print_dest_min_buffer_size =
+    (std::size_t)1 << print_dest_log2_buffer_space;
+
+template <typename CharT>
+using print_dest = {destination}<CharT, print_dest_log2_buffer_space>;
 }
 ----
+
+* `print_dest_log2_buffer_space` is an implementation-defined value
+greater than or equal to `6`.
+
+* `print_dest_min_buffer_size` is greater than or equal to `64`. This means
+that the post-condition of `print_dest<...>::recycle()` is that
+the buffer's space ( the value returned by `print_dest<...>::buffer_space()` )
+is at least equal to this value.
 
 [[printer]]
 === Class template `printer`

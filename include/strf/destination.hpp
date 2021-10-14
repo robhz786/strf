@@ -22,21 +22,6 @@ namespace detail {
 class destination_test_tool;
 } // namespace detail
 
-#define STRF_MIN_SPACE_AFTER_RECYCLE 64
-
-template <typename CharT>
-STRF_DEPRECATED
-constexpr STRF_HD std::size_t min_size_after_recycle()
-{
-    return STRF_MIN_SPACE_AFTER_RECYCLE;
-}
-
-template <typename CharT>
-constexpr STRF_HD std::size_t min_space_after_recycle()
-{
-    return STRF_MIN_SPACE_AFTER_RECYCLE;
-}
-
 template <typename CharT, unsigned Log2BufferSpace>
 class destination: public destination<CharT, Log2BufferSpace - 1>
 {

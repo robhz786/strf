@@ -157,7 +157,7 @@ std::basic_string<CharT> make_random_std_string(std::size_t size)
 template <typename CharT>
 constexpr STRF_HD  std::size_t full_string_size()
 {
-    return strf::min_space_after_recycle<CharT>();
+    return strf::print_dest_min_buffer_size;
 }
 template <typename CharT>
 constexpr STRF_HD  std::size_t half_string_size()
@@ -498,7 +498,7 @@ void STRF_HD input_tester<CharOut>::recycle()
     test_failure_(" destination::recycle() called "
                   "( it means the calculated size too small ).\n");
 
-    if ( this->buffer_ptr() + strf::min_space_after_recycle<CharOut>()
+    if ( this->buffer_ptr() + strf::print_dest_min_buffer_size
        > buffer_ + buffer_size_ )
     {
         pointer_before_overflow_ = this->buffer_ptr();

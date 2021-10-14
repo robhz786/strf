@@ -9,7 +9,7 @@
 
 class reservation_tester : public strf::print_dest<char>
 {
-    constexpr static std::size_t buff_size_ = strf::min_space_after_recycle<char>();
+    constexpr static std::size_t buff_size_ = strf::print_dest_min_buffer_size;
     char buff_[buff_size_];
 
 public:

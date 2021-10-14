@@ -11,7 +11,7 @@ static void test_string_appender()
 {
     const auto tiny_str   = test_utils::make_random_std_string<CharT>(5);
     const auto tiny_str2  = test_utils::make_random_std_string<CharT>(6);
-    constexpr std::size_t half_size = strf::min_space_after_recycle<CharT>() / 2;
+    constexpr std::size_t half_size = strf::print_dest_min_buffer_size / 2;
     const auto half_str   = test_utils::make_random_std_string<CharT>(half_size);
     const auto half_str2  = test_utils::make_random_std_string<CharT>(half_size);
 
@@ -63,14 +63,14 @@ static void test_string_appender()
         std::basic_string<CharT> str = tiny_str;
         strf::append(str) (tiny_str2, half_str);
         const auto last_str = test_utils::make_random_std_string<CharT>
-            (strf::min_space_after_recycle<CharT>() - 10);
+            (strf::print_dest_min_buffer_size - 10);
         strf::append(str) (half_str2, last_str);
         TEST_TRUE(str == tiny_str + tiny_str2 + half_str + half_str2 + last_str);
     }
 
     {   // testing strf::append(...).reserve(...)
         const auto last_str = test_utils::make_random_std_string<CharT>
-            (strf::min_space_after_recycle<CharT>() - 10);
+            (strf::print_dest_min_buffer_size - 10);
 
         std::basic_string<CharT> str = half_str;
         strf::append(str)
@@ -86,7 +86,7 @@ static void test_string_maker()
 {
     const auto tiny_str   = test_utils::make_random_std_string<CharT>(5);
     const auto tiny_str2  = test_utils::make_random_std_string<CharT>(6);
-    constexpr std::size_t half_size = strf::min_space_after_recycle<CharT>() / 2;
+    constexpr std::size_t half_size = strf::print_dest_min_buffer_size / 2;
     const auto half_str   = test_utils::make_random_std_string<CharT>(half_size);
     const auto half_str2  = test_utils::make_random_std_string<CharT>(half_size);
 
@@ -150,7 +150,7 @@ static void test_sized_string_maker()
 {
     const auto tiny_str   = test_utils::make_random_std_string<CharT>(5);
     const auto tiny_str2  = test_utils::make_random_std_string<CharT>(6);
-    constexpr std::size_t half_size = strf::min_space_after_recycle<CharT>() / 2;
+    constexpr std::size_t half_size = strf::print_dest_min_buffer_size / 2;
     const auto half_str   = test_utils::make_random_std_string<CharT>(half_size);
     const auto half_str2  = test_utils::make_random_std_string<CharT>(half_size);
 

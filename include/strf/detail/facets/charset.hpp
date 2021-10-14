@@ -171,6 +171,8 @@ constexpr std::size_t invalid_char_len = (std::size_t)-1;
 template <typename CharT>
 using transcode_dest = strf::destination<CharT, 3>;
 
+constexpr std::size_t transcode_dest_min_buffer_size = 8;
+
 template <typename SrcCharT, typename DestCharT>
 using transcode_f = void (*)
     ( strf::transcode_dest<DestCharT>& dest
