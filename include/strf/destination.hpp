@@ -22,8 +22,8 @@ namespace detail {
 class destination_test_tool;
 } // namespace detail
 
-template <typename CharT, unsigned Log2BufferSpace>
-class destination: public destination<CharT, Log2BufferSpace - 1>
+template <typename T, unsigned Log2BufferSpace>
+class destination: public destination<T, Log2BufferSpace - 1>
 {
 public:
     static constexpr std::size_t buffer_space_after_recycle
@@ -43,16 +43,15 @@ public:
     }
 
 protected:
-    using destination<CharT, Log2BufferSpace - 1>::destination;
+    using destination<T, Log2BufferSpace - 1>::destination;
 };
 
-template <typename CharT>
-class destination<CharT, 0>
+template <typename T>
+class destination<T, 0>
 {
 public:
     static constexpr std::size_t buffer_space_after_recycle = 1;
-    using char_type = CharT;
-    using value_type = CharT;
+    using value_type = T;
 
     STRF_HD destination(const destination&) = delete;
     STRF_HD destination(destination&&) = delete;
@@ -61,11 +60,11 @@ public:
 
     virtual STRF_HD ~destination() { };
 
-    STRF_HD char_type* buffer_ptr() const noexcept
+    STRF_HD value_type* buffer_ptr() const noexcept
     {
         return pointer_;
     }
-    STRF_HD char_type* buffer_end() const noexcept
+    STRF_HD value_type* buffer_end() const noexcept
     {
         return end_;
     }
@@ -84,7 +83,7 @@ public:
     {
         return good_;
     }
-    STRF_HD void advance_to(char_type* p)
+    STRF_HD void advance_to(value_type* p)
     {
         STRF_ASSERT(pointer_ <= p);
         STRF_ASSERT(p <= end_);
@@ -116,28 +115,28 @@ public:
 
     STRF_HD virtual void recycle() = 0;
 
-    STRF_HD void write(const char_type* str, std::size_t str_len)
+    STRF_HD void write(const value_type* data, std::size_t count)
     {
-        STRF_IF_LIKELY (str_len <= buffer_space()) {
+        STRF_IF_LIKELY (count <= buffer_space()) {
 #if !defined(STRF_FREESTANDING) || defined(STRF_WITH_CSTRING)
-            memcpy(pointer_, str, str_len * sizeof(char_type));
-            pointer_ += str_len;
+            memcpy(pointer_, data, count * sizeof(value_type));
+            pointer_ += count;
 #else
-            for(; str_len != 0; ++pointer_, ++str, --str_len) {
-                *pointer_ = *str;
+            for(; count != 0; ++pointer_, ++data, --count) {
+                *pointer_ = *data;
             }
 #endif
         } else {
-            do_write(str, str_len);
+            do_write(data, count);
         }
     }
 
     // old names keeped to preserve backwards compatibiliy
-    STRF_HD char_type* pointer() const noexcept
+    STRF_HD value_type* pointer() const noexcept
     {
         return buffer_ptr();
     }
-    STRF_HD char_type* end() const noexcept
+    STRF_HD value_type* end() const noexcept
     {
         return buffer_end();
     }
@@ -152,55 +151,55 @@ public:
 
 protected:
 
-    STRF_HD destination(char_type* p, char_type* e) noexcept
+    STRF_HD destination(value_type* p, value_type* e) noexcept
         : pointer_(p), end_(e)
     { }
 
-    STRF_HD destination(char_type* p, std::size_t s) noexcept
+    STRF_HD destination(value_type* p, std::size_t s) noexcept
         : pointer_(p), end_(p + s)
     { }
 
-    STRF_HD void set_buffer_ptr(char_type* p) noexcept
+    STRF_HD void set_buffer_ptr(value_type* p) noexcept
     { pointer_ = p; };
-    STRF_HD void set_buffer_end(char_type* e) noexcept
+    STRF_HD void set_buffer_end(value_type* e) noexcept
     { end_ = e; };
     STRF_HD void set_good(bool g) noexcept
     { good_ = g; };
 
-    STRF_HD virtual void do_write(const char_type* src, std::size_t src_size);
+    STRF_HD virtual void do_write(const value_type* src, std::size_t src_size);
 
     // old names for backwards compatibility
-    STRF_HD void set_pointer(char_type* p) noexcept
+    STRF_HD void set_pointer(value_type* p) noexcept
     { pointer_ = p; };
-    STRF_HD void set_end(char_type* e) noexcept
+    STRF_HD void set_end(value_type* e) noexcept
     { end_ = e; };
 
 private:
 
-    char_type* pointer_;
-    char_type* end_;
+    value_type* pointer_;
+    value_type* end_;
     bool good_ = true;
     friend class strf::detail::destination_test_tool;
 };
 
-template <typename CharT>
-void destination<CharT, 0>::do_write(const CharT* str, std::size_t str_len)
+template <typename T>
+void destination<T, 0>::do_write(const T* data, std::size_t count)
 {
     for(;;) {
         std::size_t s = buffer_space();
-        std::size_t sub_count = (str_len <= s ? str_len : s);
-        str_len -= sub_count;
+        std::size_t sub_count = (count <= s ? count : s);
+        count -= sub_count;
 
 #if !defined(STRF_FREESTANDING) || defined(STRF_WITH_CSTRING)
-        memcpy(pointer_, str, sub_count * sizeof(char_type));
-        str += sub_count;
+        memcpy(pointer_, data, sub_count * sizeof(value_type));
+        data += sub_count;
         pointer_ += sub_count;
 #else
-        for(; sub_count != 0; ++pointer_, ++str, --sub_count) {
-            *pointer_ = *str;
+        for(; sub_count != 0; ++pointer_, ++data, --sub_count) {
+            *pointer_ = *data;
         }
 #endif
-        if (str_len == 0) {
+        if (count == 0) {
             break;
         }
         recycle();
@@ -210,8 +209,8 @@ void destination<CharT, 0>::do_write(const CharT* str, std::size_t str_len)
     }
 }
 
-template <typename CharT>
-inline STRF_HD void put(strf::destination<CharT, 0>& dest, CharT c)
+template <typename T>
+inline STRF_HD void put(strf::destination<T, 0>& dest, T c)
 {
     auto p = dest.buffer_ptr();
     STRF_IF_LIKELY (p != dest.buffer_end()) {
@@ -229,8 +228,8 @@ namespace detail {
 class destination_test_tool
 {
 public:
-    template<typename CharT>
-    static STRF_HD void turn_into_bad(destination<CharT, 0>& dest)
+    template<typename T>
+    static STRF_HD void turn_into_bad(destination<T, 0>& dest)
     {
         dest.set_good(false);
     }
@@ -241,17 +240,17 @@ public:
 constexpr unsigned log2_garbage_buff_size = 6;
 constexpr std::size_t garbage_buff_size = 1 << log2_garbage_buff_size;
 
-template <typename CharT>
-inline STRF_HD CharT* garbage_buff() noexcept
+template <typename T>
+inline STRF_HD T* garbage_buff() noexcept
 {
-    static CharT arr[ garbage_buff_size ];
+    static T arr[ garbage_buff_size ];
     return arr;
 }
 
-template <typename CharT>
-inline STRF_HD CharT* garbage_buff_end() noexcept
+template <typename T>
+inline STRF_HD T* garbage_buff_end() noexcept
 {
-    return strf::garbage_buff<CharT>() + garbage_buff_size;
+    return strf::garbage_buff<T>() + garbage_buff_size;
 }
 
 template <typename CharT>
@@ -324,15 +323,15 @@ public:
 private:
 
 
-    STRF_HD void do_write(const CharT* str, std::size_t) noexcept override
+    STRF_HD void do_write(const CharT* data, std::size_t) noexcept override
     {
         auto sub_count = this->buffer_space();
         auto ptr = this->buffer_ptr();
 #if !defined(STRF_FREESTANDING) || defined(STRF_WITH_CSTRING)
-        memcpy(ptr, str, sub_count * sizeof(CharT));
+        memcpy(ptr, data, sub_count * sizeof(CharT));
 #else
-        for(; sub_count != 0; ++ptr, ++str, --sub_count) {
-            *ptr = *str;
+        for(; sub_count != 0; ++ptr, ++data, --sub_count) {
+            *ptr = *data;
         }
 #endif
         it_ = this->buffer_end();
@@ -434,15 +433,15 @@ public:
 
 private:
 
-    STRF_HD void do_write(const CharT* str, std::size_t) noexcept override
+    STRF_HD void do_write(const CharT* data, std::size_t) noexcept override
     {
         auto sub_count = this->buffer_space();
         auto ptr = this->buffer_ptr();
 #if !defined(STRF_FREESTANDING) || defined(STRF_WITH_CHAR_ARRAYING)
-        memcpy(ptr, str, sub_count * sizeof(CharT));
+        memcpy(ptr, data, sub_count * sizeof(CharT));
 #else
-        for(; sub_count != 0; ++ptr, ++str, --sub_count) {
-            *ptr = *str;
+        for(; sub_count != 0; ++ptr, ++data, --sub_count) {
+            *ptr = *data;
         }
 #endif
         it_ = this->buffer_end();
@@ -463,17 +462,17 @@ using u16char_array_writer = basic_char_array_writer<char16_t>;
 using u32char_array_writer = basic_char_array_writer<char32_t>;
 using wchar_array_writer = basic_char_array_writer<wchar_t>;
 
-template <typename CharT>
+template <typename T>
 class discarded_destination final
-    : public strf::destination<CharT, strf::log2_garbage_buff_size>
+    : public strf::destination<T, strf::log2_garbage_buff_size>
 {
-    using dest_t_ = strf::destination<CharT, strf::log2_garbage_buff_size>;
+    using dest_t_ = strf::destination<T, strf::log2_garbage_buff_size>;
 public:
 
     STRF_HD discarded_destination() noexcept
         : dest_t_
-            { strf::garbage_buff<CharT>()
-            , strf::garbage_buff_end<CharT>() }
+            { strf::garbage_buff<T>()
+            , strf::garbage_buff_end<T>() }
     {
         this->set_good(false);
     }
@@ -484,14 +483,14 @@ public:
 
     STRF_HD void recycle() noexcept override
     {
-        this->set_buffer_ptr(strf::garbage_buff<CharT>());
+        this->set_buffer_ptr(strf::garbage_buff<T>());
     }
 
 private:
 
-    STRF_HD void do_write(const CharT*, std::size_t) noexcept override
+    STRF_HD void do_write(const T*, std::size_t) noexcept override
     {
-        this->set_buffer_ptr(strf::garbage_buff<CharT>());
+        this->set_buffer_ptr(strf::garbage_buff<T>());
     }
 };
 

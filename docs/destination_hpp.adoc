@@ -26,7 +26,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 :garbage_buff_end: <<garbage_buff, garbage_buff_end>>
 :log2_garbage_buff_size: <<garbage_buff, log2_garbage_buff_size>>
 
-:char_type: <<destination_char_type,char_type>>
+:value_type: <<destination_value_type,value_type>>
 :buffer_ptr: <<destination_buffer_ptr,buffer_ptr>>
 :buffer_end: <<destination_buffer_end,buffer_end>>
 :buffer_space: <<destination_buffer_space,buffer_space>>
@@ -94,23 +94,22 @@ using wcstr_writer   = basic_cstr_writer<wchar_t>;
 ----
 namespace strf {
 
-template <typename CharT, unsinged Log2BufferSpace>
-class destination: destination<CharT, Log2BufferSpace - 1>
+template <typename T, unsinged Log2BufferSpace>
+class destination: destination<T, Log2BufferSpace - 1>
 {
 public:
     static constexpr std::size_t buffer_space_after_recycle = 1ull << Log2BufferSpace;
 
 protected:
-    using destination<CharT, Log2BufferSpace - 1>::destination;        
+    using destination<T, Log2BufferSpace - 1>::destination;
 };
 
-template <typename CharT>
-class destination<CharT, 0>
+template <typename T>
+class destination<T, 0>
 {
 public:
     static constexpr std::size_t buffer_space_after_recycle = 1;
-    using char_type = CharT;
-    using value_type = CharT;
+    using value_type = T;
 
     destination(const destination&) = delete;
     destination(destination&&) = delete;
@@ -119,47 +118,47 @@ public:
 
     virtual ~destination() = default;
 
-    CharT{asterisk} {buffer_ptr}() const noexcept;
-    CharT{asterisk} {buffer_end}() const noexcept;
+    T{asterisk} {buffer_ptr}() const noexcept;
+    T{asterisk} {buffer_end}() const noexcept;
     std::size_t {buffer_space}() const noexcept;
     bool {good}() const noexcept;
-    void {advance_to}(CharT{asterisk} p);
+    void {advance_to}(T{asterisk} p);
     void {advance}(std::size_t n);
     void {ensure}(std::size_t s);
     void {flush}();
 
-    void {write}(const CharT* str, std::size_t str_len);
+    void {write}(const T{asterisk} data, std::size_t count);
 
     virtual void {recycle}() = 0;
 
 protected:
 
-    <<destination_ctor_range,destination>>(CharT{asterisk} buff, CharT{asterisk} buff_end);
+    <<destination_ctor_range,destination>>(T{asterisk} buff, T{asterisk} buff_end);
 
-    <<destination_ctor_count,destination>>(CharT{asterisk} buff, std::size_t buff_size);
+    <<destination_ctor_count,destination>>(T{asterisk} buff, std::size_t buff_size);
 
-    void {set_buffer_ptr}(CharT{asterisk} p) noexcept;
-    void {set_buffer_end}(CharT{asterisk} e) noexcept;
+    void {set_buffer_ptr}(T{asterisk} p) noexcept;
+    void {set_buffer_end}(T{asterisk} e) noexcept;
     void {set_good}(bool g) noexcept;
 
-    virtual void {do_write}(const CharT* str, std::size_t str_len);
+    virtual void {do_write}(const T{asterisk} data, std::size_t count);
 };
 
 // global functions
 
-template <typename CharT>
-void put(destination<CharT>& dest, CharT ch );
+template <typename T>
+void put(destination<T, 0>& dest, T value);
 
 } // namespace strf
 ----
 
 === Member types
 
-[[destination_char_type]]
+[[destination_value_type]]
 ====
 [source,cpp,subs=normal]
 ----
-using char_type = CharT;
+using value_type = T;
 ----
 ====
 
@@ -169,7 +168,7 @@ using char_type = CharT;
 ====
 [source,cpp]
 ----
-CharT* buffer_ptr() const noxcept;
+T* buffer_ptr() const noxcept;
 ----
 [horizontal]
 Return:: The memory position where the content shall be written.
@@ -178,7 +177,7 @@ Return:: The memory position where the content shall be written.
 ====
 [source,cpp]
 ----
-CharT* buffer_end() const noxcept;
+T* buffer_end() const noxcept;
 ----
 [horizontal]
 Return:: The end of memory position where the content shall be written.
@@ -240,7 +239,7 @@ Postcondition:: `{buffer_space}() >= s`
 ====
 [source,cpp]
 ----
-void advance_to(CharT* p)
+void advance_to(T* p)
 ----
 [horizontal]
 Effect:: Advance the buffer's pointer to `p`.
@@ -286,12 +285,13 @@ accessible memory, even when `{good}()` returns `false`.
 ====
 [source,cpp]
 ----
-void write(const CharT* str, std::size_t str_len);
+void write(const T* data, std::size_t count);
 ----
 [horizontal]
-Effect:: If `str_len \<= {buffer_space}()` is `true`, copy `str_len` characters of
-         string the `str` into `{buffer_ptr}()` and calls `{advance}(str_len)`.
-         Otherwise, calls `{do_write}(str, str_len)`.
+Effect:: If `count \<= {buffer_space}()` is `true`, copy `count` elements of
+         of the array pointer by `data` into `{buffer_ptr}()` and calls
+         `{advance}(count)`.
+         Otherwise, calls `{do_write}(data, count)`.
 ====
 
 === Protected Member functions
@@ -300,7 +300,7 @@ Effect:: If `str_len \<= {buffer_space}()` is `true`, copy `str_len` characters 
 ====
 [source,cpp]
 ----
-destination(CharT* buff_, CharT* buff_end_)
+destination(T* buff_, T* buff_end_)
 ----
 [horizontal]
 Preconditions::
@@ -315,7 +315,7 @@ Posconditions::
 ====
 [source,cpp]
 ----
-destination(CharT* buff_, std::size_t buff_size_)
+destination(T* buff_, std::size_t buff_size_)
 ----
 [horizontal]
 Preconditions::
@@ -329,7 +329,7 @@ Posconditions::
 ====
 [source,cpp]
 ----
-void set_buffer_ptr(CharT* p) noexcept
+void set_buffer_ptr(T* p) noexcept
 ----
 [horizontal]
 Postconditions:: `{buffer_ptr}() == p`
@@ -338,7 +338,7 @@ Postconditions:: `{buffer_ptr}() == p`
 ====
 [source,cpp]
 ----
-void set_buffer_end(CharT* e) noexcept
+void set_buffer_end(T* e) noexcept
 ----
 [horizontal]
 Postconditions:: `{buffer_end}() == e`
@@ -357,11 +357,11 @@ Postconditions:: `{good}() == g`
 ====
 [source,cpp]
 ----
-virtual void do_write(const CharT* str, std::size_t str_len);
+virtual void do_write(const T* data, std::size_t count);
 ----
 [horizontal]
-Effect:: Writes the first `str_len` characters of string `str`
-        into this object, calling `{recycle}()` how many time
+Effect:: Writes the first `count` elements of the array pointed
+        by `data` into this object, calling `{recycle}()` how many time
         it is necessary.
 Note:: This function is made virtual so that any derived classes
        can override it with an optimized version.
@@ -373,18 +373,18 @@ Note:: This function is made virtual so that any derived classes
 ====
 [source,cpp,subs=normal]
 ----
-template <typename CharT>
-void put(destination<CharT>& dest, CharT ch);
+template <typename T>
+void put(destination<T, 0>& dest, T value);
 ----
 [horizontal]
-Effect:: Equivalent to:
+Effect::
 +
 [source,cpp]
 ----
 if (dest.buffer_space() == 0) {
     dest.recycle();
 }
-*dest.buffer_ptr() = ch;
+*dest.buffer_ptr() = value;
 dest.advance();
 ----
 ====
