@@ -30,6 +30,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 :buffer_ptr: <<destination_buffer_ptr,buffer_ptr>>
 :buffer_end: <<destination_buffer_end,buffer_end>>
 :buffer_space: <<destination_buffer_space,buffer_space>>
+:flush: <<destination_flush,flush>>
 :recycle: <<destination_recycle,recycle>>
 :ensure: <<destination_ensure,ensure>>
 :advance_to: <<destination_advance_to,advance_to>>
@@ -125,6 +126,7 @@ public:
     void {advance_to}(CharT{asterisk} p);
     void {advance}(std::size_t n);
     void {ensure}(std::size_t s);
+    void {flush}();
 
     void {write}(const CharT* str, std::size_t str_len);
 
@@ -191,6 +193,17 @@ std::size_t buffer_space() const noexcept;
 [horizontal]
 Return:: `{buffer_end}() - {buffer_ptr}()`
 ====
+
+[[destination_flush]]
+====
+[source,cpp]
+----
+void flush();
+----
+[horizontal]
+Effect:: Calls `recycle()`
+====
+
 [[destination_recycle]]
 ====
 [source,cpp]

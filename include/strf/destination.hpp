@@ -29,13 +29,17 @@ public:
     static constexpr std::size_t buffer_space_after_recycle
         = (std::size_t)1 << Log2BufferSpace;
 
-    STRF_HD void ensure(std::size_t s)
-    {
+    STRF_HD void ensure(std::size_t s) {
         STRF_ASSERT(s <= buffer_space_after_recycle);
         STRF_IF_UNLIKELY (this->buffer_ptr() + s > this->buffer_end()) {
             this->recycle();
         }
         STRF_ASSERT(this->buffer_ptr() + s <= this->buffer_end());
+    }
+
+    STRF_HD void flush() {
+        this->recycle();
+        STRF_ASSERT(this->buffer_space() >= buffer_space_after_recycle);
     }
 
 protected:
@@ -103,6 +107,11 @@ public:
             recycle();
         }
         STRF_ASSERT(buffer_ptr() + s <= buffer_end());
+    }
+    STRF_HD void flush()
+    {
+        recycle();
+        STRF_ASSERT(buffer_space() >= 0);
     }
 
     STRF_HD virtual void recycle() = 0;
