@@ -215,24 +215,6 @@ inline STRF_HD void put(strf::destination<CharT, 0>& dest, CharT c)
     }
 }
 
-// type aliases for backwards compatibility
-
-template <typename CharT>
-using basic_outbuff = destination<CharT, 6>;
-
-#if defined(__cpp_lib_byte)
-using bin_outbuff           = basic_outbuff<std::byte>;
-#endif
-
-#if defined(__cpp_char8_t)
-using u8outbuff           = basic_outbuff<char8_t>;
-#endif
-
-using outbuff             = basic_outbuff<char>;
-using u16outbuff          = basic_outbuff<char16_t>;
-using u32outbuff          = basic_outbuff<char32_t>;
-using woutbuff            = basic_outbuff<wchar_t>;
-
 namespace detail {
 
 class destination_test_tool
@@ -503,10 +485,6 @@ private:
         this->set_buffer_ptr(strf::garbage_buff<CharT>());
     }
 };
-
-
-template <typename CharT>
-using discarded_outbuff = discarded_destination<CharT>;
 
 } // namespace strf
 
