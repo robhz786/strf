@@ -20,7 +20,7 @@ void test_narrow_successfull_writing()
     auto double_str = test_utils::make_double_string<CharT>();
 
     std::FILE* file = std::tmpfile();
-    strf::narrow_cfile_writer<CharT, strf::print_dest_min_buffer_size> writer(file);
+    strf::narrow_cfile_writer<CharT, strf::print_dest_space_after_flush> writer(file);
 
     writer.write(tiny_str.begin(), tiny_str.size());
     writer.write(double_str.begin(), double_str.size());
@@ -91,8 +91,8 @@ struct traits_that_fails {
 
 void test_cfile_writer_base()
 {
-    char buff[strf::print_dest_min_buffer_size];
-    char result_buff[strf::print_dest_min_buffer_size + 50];
+    char buff[strf::print_dest_space_after_flush];
+    char result_buff[strf::print_dest_space_after_flush + 50];
 
     using tester_t = strf::detail::cfile_writer_base<char, traits_that_fails>;
 
@@ -199,7 +199,7 @@ void test_narrow_failing_to_recycle_buffer()
 
     auto path = test_utils::unique_tmp_file_name();
     std::FILE* file = std::fopen(path.c_str(), "w");
-    strf::narrow_cfile_writer<CharT, strf::print_dest_min_buffer_size> writer(file);
+    strf::narrow_cfile_writer<CharT, strf::print_dest_space_after_flush> writer(file);
 
     writer.write(half_str.begin(), half_str.size());
     writer.recycle_buffer(); // first recycle shall work
@@ -255,7 +255,7 @@ void test_narrow_failing_to_finish()
 
     auto path = test_utils::unique_tmp_file_name();
     std::FILE* file = std::fopen(path.c_str(), "w");
-    strf::narrow_cfile_writer<CharT, strf::print_dest_min_buffer_size> writer(file);
+    strf::narrow_cfile_writer<CharT, strf::print_dest_space_after_flush> writer(file);
 
     writer.write(double_str.begin(), double_str.size());
     writer.recycle_buffer();

@@ -15,15 +15,13 @@ http://www.boost.org/LICENSE_1_0.txt)
 :icons: font
 
 :print_dest: <<strf_hpp#print_dest,print_dest>>
-
+:print_dest_space_after_flush: <<strf_hpp#print_dest_space_after_flush,print_dest_space_after_flush>>
 :narrow_cfile_writer: <<narrow_cfile_writer,narrow_cfile_writer>>
 :wide_cfile_writer: <<wide_cfile_writer,wide_cfile_writer>>
 
 :destination_no_reserve: <<strf_hpp#destinators,destination_no_reserve>>
 :DestinationCreator: <<strf_hpp#DestinationCreator,DestinationCreator>>
 
-
-NOTE: This document is still a work in progress.
 
 NOTE: This header files includes `<strf.hpp>`
 
@@ -198,7 +196,7 @@ is such that `&#95;dest&#95;creator.create()` returns
 +
 [source,cpp,subs=normal]
 ----
-{narrow_cfile_writer}< CharT, {print_dest_min_buffer_size} >{dest}
+{narrow_cfile_writer}< CharT, {print_dest_space_after_flush} >{dest}
 ----
 
 [[wto]]

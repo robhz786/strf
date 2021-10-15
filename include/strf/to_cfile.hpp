@@ -155,7 +155,7 @@ class narrow_cfile_writer final
     : public strf::detail::cfile_writer_base
         < CharT, strf::detail::narrow_cfile_writer_traits<CharT> >
 {
-    static_assert(BuffSize >= strf::print_dest_min_buffer_size, "BuffSize too small");
+    static_assert(BuffSize >= strf::print_dest_space_after_flush, "BuffSize too small");
 
     using impl_ = strf::detail::cfile_writer_base
         < CharT, strf::detail::narrow_cfile_writer_traits<CharT> >;
@@ -209,7 +209,7 @@ public:
     using impl_::finish;
 
 private:
-    static constexpr std::size_t buf_size_ = strf::print_dest_min_buffer_size;
+    static constexpr std::size_t buf_size_ = strf::print_dest_space_after_flush;
     wchar_t buf_[buf_size_];
 };
 
@@ -221,7 +221,7 @@ class narrow_cfile_writer_creator
 public:
 
     using char_type = CharT;
-    using destination_type = strf::narrow_cfile_writer<CharT, strf::print_dest_min_buffer_size>;
+    using destination_type = strf::narrow_cfile_writer<CharT, strf::print_dest_space_after_flush>;
     using finish_type = typename destination_type::result;
 
     constexpr STRF_HD narrow_cfile_writer_creator(FILE* file) noexcept

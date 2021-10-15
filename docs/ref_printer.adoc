@@ -378,20 +378,20 @@ using printer_type = typename printer_input_type<CharT, Preview, FPack, Arg>::pr
 ----
 namespace strf {
 
-constexpr unsigned print_dest_log2_buffer_space = ...;
+constexpr unsigned log2_print_dest_space_after_flush = ...;
 
-constexpr std::size_t print_dest_min_buffer_size =
-    (std::size_t)1 << print_dest_log2_buffer_space;
+constexpr std::size_t print_dest_space_after_flush =
+    (std::size_t)1 << log2_print_dest_space_after_flush;
 
 template <typename CharT>
-using print_dest = {destination}<CharT, print_dest_log2_buffer_space>;
+using print_dest = {destination}<CharT, log2_print_dest_space_after_flush>;
 }
 ----
 
-* `print_dest_log2_buffer_space` is an implementation-defined value
+* `log2_print_dest_space_after_flush` is an implementation-defined value
 greater than or equal to `6`.
 
-* `print_dest_min_buffer_size` is greater than or equal to `64`. This means
+* `print_dest_space_after_flush` is greater than or equal to `64`. This means
 that the post-condition of `print_dest<...>::recycle_buffer()` is that
 the buffer's space ( the value returned by `print_dest<...>::buffer_space()` )
 is at least equal to this value.

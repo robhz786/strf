@@ -52,7 +52,7 @@ STRF_TEST_FUNC void char_range_basic_operations()
         strf::basic_char_array_writer<CharT> sw(buff);
         sw.recycle_buffer();
         TEST_TRUE(sw.buffer_ptr() != &buff[0]);
-        TEST_TRUE(sw.buffer_space() >= strf::print_dest_min_buffer_size)
+        TEST_TRUE(sw.buffer_space() >= strf::print_dest_space_after_flush)
         TEST_FALSE(sw.good());
 
         // and causes buffer_ptr() to point to somewhere else than

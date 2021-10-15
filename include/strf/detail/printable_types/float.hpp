@@ -877,7 +877,7 @@ STRF_HD void print_amplified_integer_small_separator_2
 {
     STRF_ASSERT(dist.highest_group < num_digits);
 
-    constexpr std::size_t size_after_recycle = strf::print_dest_min_buffer_size;
+    constexpr std::size_t size_after_recycle = strf::print_dest_space_after_flush;
     (void) size_after_recycle;
 
     constexpr auto max_digits = detail::max_num_digits<unsigned long long, 10>();
@@ -1049,7 +1049,7 @@ STRF_HD void print_amplified_integer_big_separator_2
 {
     STRF_ASSERT(dist.highest_group < num_digits);
 
-    constexpr std::size_t size_after_recycle = strf::print_dest_min_buffer_size;
+    constexpr std::size_t size_after_recycle = strf::print_dest_space_after_flush;
     (void) size_after_recycle;
 
     constexpr auto max_digits = detail::max_num_digits<unsigned long long, 10>();

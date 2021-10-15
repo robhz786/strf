@@ -26,7 +26,7 @@ private:
 
     QString& str_;
     std::size_t count_ = 0;
-    constexpr static std::size_t buffer_size_ = strf::print_dest_min_buffer_size;
+    constexpr static std::size_t buffer_size_ = strf::print_dest_space_after_flush;
     char16_t buffer_[buffer_size_];
 };
 

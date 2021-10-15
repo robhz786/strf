@@ -90,7 +90,7 @@ private:
     std::basic_streambuf<CharT, Traits>& dest_;
     std::streamsize count_ = 0;
     static constexpr std::size_t buf_size_
-        = strf::print_dest_min_buffer_size;
+        = strf::print_dest_space_after_flush;
     CharT buf_[buf_size_];
 };
 

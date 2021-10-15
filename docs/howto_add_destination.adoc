@@ -27,7 +27,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 :destination_with_given_size: <<strf_hpp#destination_with_given_size,destination_with_given_size>>
 :DestinationCreator: <<strf_hpp#DestinationCreator,DestinationCreator>>
 :SizedDestinationCreator: <<strf_hpp#SizedDestinationCreator,SizedDestinationCreator>>
-:print_dest_min_buffer_size: <<strf_hpp#print_dest,print_dest_min_buffer_size>>
+:print_dest_space_after_flush: <<strf_hpp#print_dest,print_dest_space_after_flush>>
 
 == The `print_dest` class template
 
@@ -78,7 +78,7 @@ This is the only pure virtual function in `{print_dest}`;
 its job is to flush the content written so far and reset the position of
 `buffer_ptr()` and `buffer_end()`. After `{recycle_buffer}` is called,
 the buffer's space ( `buffer_end() - buffer_ptr()` ) is
-guaranteed to be at least `{print_dest_min_buffer_size}`
+guaranteed to be at least `{print_dest_space_after_flush}`
 ( which is currently `64` but may be greater in future versions ).
 This is a postcondition even when the state is "bad".
 The state may change from "good" to "bad" in `{recycle_buffer}`,
@@ -127,7 +127,7 @@ private:
     bool print(const char* str_begin, const char* str_end)
     { /{asterisk}\...{asterisk}/ }
 
-    char buff[strf::{print_dest_min_buffer_size}];
+    char buff[strf::{print_dest_space_after_flush}];
 };
 ----
 

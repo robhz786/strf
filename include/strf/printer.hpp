@@ -13,15 +13,15 @@
 
 namespace strf {
 
-constexpr unsigned print_dest_log2_buffer_space = 6;
+constexpr unsigned log2_print_dest_space_after_flush = 6;
 
-constexpr std::size_t print_dest_min_buffer_size =
-    (std::size_t)1 << strf::print_dest_log2_buffer_space;
+constexpr std::size_t print_dest_space_after_flush =
+    (std::size_t)1 << strf::log2_print_dest_space_after_flush;
 
-static_assert(print_dest_min_buffer_size == 64, "");
+static_assert(print_dest_space_after_flush == 64, "");
 
 template <typename CharT>
-using print_dest = strf::destination<CharT, print_dest_log2_buffer_space>;
+using print_dest = strf::destination<CharT, log2_print_dest_space_after_flush>;
 
 template <typename CharT>
 class printer
