@@ -69,7 +69,7 @@ void when_finish_is_not_called_but_state_is_bad_anyway()
 }
 
 template <typename CharT>
-void test_failing_to_recycle()
+void test_failing_to_recycle_buffer()
 {
     auto half_str = test_utils::make_half_string<CharT>();
 
@@ -77,11 +77,11 @@ void test_failing_to_recycle()
     strf::basic_streambuf_writer<CharT> writer(*dest.rdbuf());
 
     writer.write(half_str.begin(), half_str.size());
-    writer.recycle(); // first recycle works
+    writer.recycle_buffer(); // first recycle works
     test_utils::turn_into_bad(writer);
 
     strf::to(writer)(strf::multi((CharT)'x', 10));
-    writer.recycle(); // this fails
+    writer.recycle_buffer(); // this fails
 
     auto status = writer.finish();
     dest.rdbuf()->pubsync();
@@ -106,7 +106,7 @@ void test_failing_to_call_do_write()
     strf::basic_streambuf_writer<CharT> writer(*dest.rdbuf());
 
     writer.write(half_str.begin(), half_str.size());
-    writer.recycle(); // first recycle works
+    writer.recycle_buffer(); // first recycle works
     writer.write(double_str.begin(), double_str.size());
     auto status = writer.finish();
     dest.rdbuf()->pubsync();
@@ -133,7 +133,7 @@ void test_failing_to_finish()
     strf::basic_streambuf_writer<CharT> writer(*dest.rdbuf());
 
     writer.write(double_str.begin(), double_str.size());
-    writer.recycle();
+    writer.recycle_buffer();
     writer.write(half_str.begin(), half_str.size());
     test_utils::turn_into_bad(writer);
 
@@ -208,10 +208,10 @@ void test_streambuf_writer()
     when_finish_is_not_called_but_state_is_bad_anyway<char32_t>();
     when_finish_is_not_called_but_state_is_bad_anyway<wchar_t>();
 
-    test_failing_to_recycle<char>();
-    test_failing_to_recycle<char16_t>();
-    test_failing_to_recycle<char32_t>();
-    test_failing_to_recycle<wchar_t>();
+    test_failing_to_recycle_buffer<char>();
+    test_failing_to_recycle_buffer<char16_t>();
+    test_failing_to_recycle_buffer<char32_t>();
+    test_failing_to_recycle_buffer<wchar_t>();
 
     test_failing_to_finish<char>();
     test_failing_to_finish<char16_t>();

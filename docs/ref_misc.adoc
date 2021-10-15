@@ -139,7 +139,7 @@ struct rank<0>
 //           , const CharT{asterisk} data_end );
 // ----
 // [horizontal]
-// Effect:: Writes the the range [ `data`, `data_end` ) into `dest`, calling `dest.recycle()`
+// Effect:: Writes the the range [ `data`, `data_end` ) into `dest`, calling `dest.recycle_buffer()`
 //          as many times as necessary.
 // ====
 // [[destination_write_size]]

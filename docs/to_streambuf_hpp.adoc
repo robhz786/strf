@@ -59,7 +59,7 @@ public:
     basic_streambuf_writer(basic_streambuf_writer&&) = delete;
     ~basic_streambuf_writer();
 
-    void recycle() override;
+    void recycle_buffer() override;
     struct result {
         std::streamsize count;
         bool success;
@@ -85,17 +85,17 @@ using wstreambuf_writer
 ~basic_streambuf_writer();
 ----
 [horizontal]
-Effect:: Calls `recycle()`
+Effect:: Calls `recycle_buffer()`
 ====
 
 ====
 [source,cpp]
 ----
-void recycle() override;
+void recycle_buffer() override;
 ----
 [horizontal]
 Effects::
-- If `good()` is `true` then calls `dest.sputn(p0, buffer_ptr() - p0)`, where `dest` is the reference this object was initialized with, and `p0` is the return value of `buffer_ptr()` before any call to `advance` and `advance_to` since the last call to `recycle()`, or since this object's contruction, whatever happened last.
+- If `good()` is `true` then calls `dest.sputn(p0, buffer_ptr() - p0)`, where `dest` is the reference this object was initialized with, and `p0` is the return value of `buffer_ptr()` before any call to `advance` and `advance_to` since the last call to `recycle_buffer()`, or since this object's contruction, whatever happened last.
 - If the returned value of `dest.sputn` is less then `buffer_ptr() - p0`, calls `set_good(false)`.
 - Calls `set_buffer_ptr` and/or `set_buffer_end`.
 Postconditions:: `buffer_space() >= print_dest_min_buffer_size`
@@ -107,7 +107,7 @@ result finish();
 ----
 [horizontal]
 Effects::
-- Calls `recycle()` and `set_good(false)`.
+- Calls `recycle_buffer()` and `set_good(false)`.
 Return value::
 - `result::count` is the sum of the values returned by `dest.sputn`.
 - `result::success` is the value `good()` would return before this call to `finish()`.

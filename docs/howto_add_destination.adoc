@@ -14,7 +14,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 
 :destination: <<destination_hpp#destination,destination>>
 :print_dest: <<strf_hpp#print_dest,print_dest>>
-:recycle: <<destination_hpp#destination_recycle,recycle>>
+:recycle_buffer: <<destination_hpp#destination_recycle_buffer,recycle_buffer>>
 :good: <<destination_hpp#destination_good,good>>
 :buffer_ptr: <<destination_hpp#destination_buffer_ptr,buffer_ptr>>
 :buffer_space: <<destination_hpp#destination_buffer_space,buffer_space>>
@@ -65,7 +65,7 @@ its buffer:
 [source,cpp,subs=normal]
 ----
 if (dst.{buffer_space}() < 5) {
-    dst.recycle();
+    dst.recycle_buffer();
 }
 memcpy(dst.buffer_ptr(), "hello", 5);
 dst.advance(5);
@@ -73,15 +73,15 @@ dst.advance(5);
 
 As demonstrated above, before writting anything to `buffer_ptr()`, one
 must check whether there is enough space,
-and if not, one must call the `{recycle}` function.
+and if not, one must call the `{recycle_buffer}` function.
 This is the only pure virtual function in `{print_dest}`;
 its job is to flush the content written so far and reset the position of
-`buffer_ptr()` and `buffer_end()`. After `{recycle}` is called,
+`buffer_ptr()` and `buffer_end()`. After `{recycle_buffer}` is called,
 the buffer's space ( `buffer_end() - buffer_ptr()` ) is
 guaranteed to be at least `{print_dest_min_buffer_size}`
 ( which is currently `64` but may be greater in future versions ).
 This is a postcondition even when the state is "bad".
-The state may change from "good" to "bad" in `{recycle}`,
+The state may change from "good" to "bad" in `{recycle_buffer}`,
 but never from "bad" to "good".
 The "bad" state implies that writting
 anything in the range [`buffer_ptr(), buffer_end()`) has no relevent
@@ -134,11 +134,11 @@ private:
 The `print` member function above represents the code
 that would send the content to the actual destination,
 whatever it is. If `print` never throws, then
-`recycle` could be implemented like below:
+`recycle_buffer` could be implemented like below:
 
 [source,cpp,subs=normal]
 ----
-void my_destination::recycle()
+void my_destination::recycle_buffer()
 {
     if ({good}()) {
         bool success = print(buff, {buffer_ptr}());
@@ -152,7 +152,7 @@ Otherwise, it makes more sense to do:
 
 [source,cpp,subs=normal]
 ----
-void my_destination::recycle()
+void my_destination::recycle_buffer()
 {
     auto ptr = {buffer_ptr}();
     {set_buffer_ptr}(buff);
@@ -306,7 +306,7 @@ class foo { /{asterisk} \... {asterisk}/ };
 class foo_writer: strf::{print_dest}<char> {
 public:
     explicit foo_writer(foo&);
-    void recycle() override;
+    void recycle_buffer() override;
     auto finish() \-> /{asterisk} \... {asterisk}/;
     //\...
 };

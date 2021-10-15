@@ -212,7 +212,7 @@ void base64_printer<CharT>::write_identation_(strf::print_dest<CharT>& dest) con
         traits::assign(dest.buffer_ptr(), buff_size, CharT(' '));
         count -= buff_size;
         dest.advance_to(dest.buffer_end());
-        dest.recycle();
+        dest.recycle_buffer();
     };
 }
 

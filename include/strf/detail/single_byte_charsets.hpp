@@ -19,23 +19,23 @@
 #define STRF_CHECK_DEST                          \
     STRF_IF_UNLIKELY (dest_it == dest_end) {     \
         dest.advance_to(dest_it);                \
-        dest.recycle();                          \
+        dest.recycle_buffer();                   \
         STRF_IF_UNLIKELY (!dest.good()) {        \
             return;                              \
         }                                        \
-        dest_it = dest.buffer_ptr();                \
-        dest_end = dest.buffer_end();                   \
+        dest_it = dest.buffer_ptr();             \
+        dest_end = dest.buffer_end();            \
     }
 
 #define STRF_CHECK_DEST_SIZE(SIZE)                  \
     STRF_IF_UNLIKELY (dest_it + SIZE > dest_end) {  \
         dest.advance_to(dest_it);                   \
-        dest.recycle();                             \
+        dest.recycle_buffer();                      \
         STRF_IF_UNLIKELY (!dest.good()) {           \
             return;                                 \
         }                                           \
-        dest_it = dest.buffer_ptr();                   \
-        dest_end = dest.buffer_end();                      \
+        dest_it = dest.buffer_ptr();                \
+        dest_end = dest.buffer_end();               \
     }
 
 #endif // ! defined(STRF_CHECK_DEST)
@@ -2628,7 +2628,7 @@ STRF_HD void single_byte_charset<CharT, Impl>::encode_fill
         strf::detail::str_fill_n<CharT>(dest.buffer_ptr(), available, ch3);
         dest.advance_to(dest.buffer_end());
         count -= available;
-        dest.recycle();
+        dest.recycle_buffer();
     }
 }
 

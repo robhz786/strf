@@ -221,7 +221,7 @@ static_cast<const printer<CharT>&>(p).<<printer,print_to>>(dest);
 ----
 statisfies the following postconditions when `Preview::<<print_preview,size_required>>` is `true`:
 
-*  if `predicted_size \<= dest_buff_space` is `true` then `dest.recycle()` is not called.
+*  if `predicted_size \<= dest_buff_space` is `true` then `dest.recycle_buffer()` is not called.
 ====
 
 ====
@@ -392,7 +392,7 @@ using print_dest = {destination}<CharT, print_dest_log2_buffer_space>;
 greater than or equal to `6`.
 
 * `print_dest_min_buffer_size` is greater than or equal to `64`. This means
-that the post-condition of `print_dest<...>::recycle()` is that
+that the post-condition of `print_dest<...>::recycle_buffer()` is that
 the buffer's space ( the value returned by `print_dest<...>::buffer_space()` )
 is at least equal to this value.
 

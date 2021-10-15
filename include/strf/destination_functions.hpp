@@ -29,7 +29,7 @@ STRF_HD void destination_interchar_copy
         str += space;
         len -= space;
         dest.advance_to(dest.buffer_end());
-        dest.recycle();
+        dest.recycle_buffer();
     } while(dest.good());
 }
 
@@ -61,7 +61,7 @@ void STRF_HD write_fill_continuation
     strf::detail::str_fill_n<CharT>(dest.buffer_ptr(), space, ch);
     count -= space;
     dest.advance_to(dest.buffer_end());
-    dest.recycle();
+    dest.recycle_buffer();
     while (dest.good()) {
         space = dest.buffer_space();
         if (count <= space) {
@@ -72,7 +72,7 @@ void STRF_HD write_fill_continuation
         strf::detail::str_fill_n(dest.buffer_ptr(), space, ch);
         count -= space;
         dest.advance_to(dest.buffer_end());
-        dest.recycle();
+        dest.recycle_buffer();
     }
 }
 

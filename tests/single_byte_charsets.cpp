@@ -1445,7 +1445,7 @@ STRF_TEST_FUNC void test_single_byte_charsets()
                                , { 0x80, 0x2121, 0x2123 } );
 
    {
-       // transcoding a large string to cover detail::buffered_encoder::recycle()
+       // transcoding a large string to cover detail::buffered_encoder::recycle_buffer()
        const char* win1256_str =
            "abcdefghijklmnopqrstuvwxyz 0123456789 ----- !@#$%&*()"
            "__\xD8\xD9\xDA\xDB\xDC\xDD\xDE\xDF \xE1\xE3 \xE4 \xEC\xED"

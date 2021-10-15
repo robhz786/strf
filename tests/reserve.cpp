@@ -30,7 +30,7 @@ public:
     reservation_tester(const reservation_tester&) = delete;
     reservation_tester(reservation_tester&&) = delete;
 
-    void STRF_HD recycle() override
+    void STRF_HD recycle_buffer() override
     {
         this->set_buffer_ptr(buff_);
     }

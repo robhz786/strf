@@ -37,7 +37,7 @@ public:
     basic_string_appender(const basic_string_appender&) = delete;
     basic_string_appender(basic_string_appender&&) = delete;
 
-    void recycle() override
+    void recycle_buffer() override
     {
         auto * p = this->buffer_ptr();
         this->set_buffer_ptr(buf_);
@@ -106,7 +106,7 @@ public:
         }
     }
 
-    void recycle() override;
+    void recycle_buffer() override;
 
     string_type_ finish()
     {
@@ -145,7 +145,7 @@ private:
 };
 
 template < typename CharT, typename Traits, typename Allocator >
-void basic_string_maker<CharT, Traits, Allocator>::recycle()
+void basic_string_maker<CharT, Traits, Allocator>::recycle_buffer()
 {
     std::size_t count = this->buffer_ptr() - buf_;
     this->set_buffer_ptr(buf_);
@@ -201,7 +201,7 @@ public:
     basic_sized_string_maker(const basic_sized_string_maker&) = delete;
     basic_sized_string_maker(basic_sized_string_maker&&) = delete;
 
-    void recycle() override
+    void recycle_buffer() override
     {
         std::size_t original_size = this->buffer_ptr() - str_.data();
         constexpr std::size_t min_buff_size = strf::print_dest_min_buffer_size;

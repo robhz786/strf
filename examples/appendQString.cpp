@@ -18,7 +18,7 @@ public:
     QStringAppender(QStringAppender&& str) = delete;
     QStringAppender(const QStringAppender& str) = delete;
 
-    void recycle() override;
+    void recycle_buffer() override;
 
     std::size_t finish();
 
@@ -44,7 +44,7 @@ QStringAppender::QStringAppender(QString& str, std::size_t size)
     str_.reserve(str_.size() + static_cast<int>(size));
 }
 
-void QStringAppender::recycle()
+void QStringAppender::recycle_buffer()
 {
     std::size_t count = this->buffer_ptr() - buffer_;
     this->set_buffer_ptr(buffer_);
@@ -60,7 +60,7 @@ void QStringAppender::recycle()
 
 std::size_t QStringAppender::finish()
 {
-    recycle();
+    recycle_buffer();
     return count_;
 }
 

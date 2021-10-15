@@ -31,7 +31,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 :buffer_end: <<destination_buffer_end,buffer_end>>
 :buffer_space: <<destination_buffer_space,buffer_space>>
 :flush: <<destination_flush,flush>>
-:recycle: <<destination_recycle,recycle>>
+:recycle_buffer: <<destination_recycle_buffer,recycle_buffer>>
 :ensure: <<destination_ensure,ensure>>
 :advance_to: <<destination_advance_to,advance_to>>
 :advance_count: <<destination_advance_count,advance_count>>
@@ -129,7 +129,7 @@ public:
 
     void {write}(const T{asterisk} data, std::size_t count);
 
-    virtual void {recycle}() = 0;
+    virtual void {recycle_buffer}() = 0;
 
 protected:
 
@@ -200,20 +200,20 @@ Return:: `{buffer_end}() - {buffer_ptr}()`
 void flush();
 ----
 [horizontal]
-Effect:: Calls `recycle()`
+Effect:: Calls `recycle_buffer()`
 ====
 
-[[destination_recycle]]
+[[destination_recycle_buffer]]
 ====
 [source,cpp]
 ----
-virtual void recycle() = 0;
+virtual void recycle_buffer() = 0;
 ----
 [horizontal]
 Posconditions::
 - `{buffer_space}() >= buffer_space_after_recycle`
 - The range [ `{buffer_ptr}()`, `{buffer_end}()` ) is valid accessible memory area
-- If the return value of `{good}()` was `false` before this call to `{recycle}()`, then `{good}()` remains returning `false`.
+- If the return value of `{good}()` was `false` before this call to `{recycle_buffer}()`, then `{good}()` remains returning `false`.
 ====
 
 // Effect::
@@ -221,7 +221,7 @@ Posconditions::
 // then supposedly consumes the content in the range [`p`, `{buffer_ptr}()`),
 // where `p` is the value `{buffer_ptr}()` would have returned if called before
 // any call to `{advance}` or `{advance_to}` in this object since the last
-// time `{recycle}` was called in this object, or, in case `{recycle}`
+// time `{recycle_buffer}` was called in this object, or, in case `{recycle_buffer}`
 // was not called in this object yet, since this object was constructed.
 
 [[destination_ensure]]
@@ -231,7 +231,7 @@ Posconditions::
 void ensure(std::size_t s)
 ----
 [horizontal]
-Effect:: Calls `{recycle}()` if `{buffer_space}() < s`.
+Effect:: Calls `{recycle_buffer}()` if `{buffer_space}() < s`.
 Precondition:: `s \<= buffer_space_after_recycle`
 Postcondition:: `{buffer_space}() >= s`
 ====
@@ -275,7 +275,7 @@ bool good() const;
 [horizontal]
 Return:: The state of this object.
 Semantincs:: `{good}() == false` means that writting anything on
-   `{buffer_ptr}()`, and calling `{advance_to}` and `{recycle}()` has no
+   `{buffer_ptr}()`, and calling `{advance_to}` and `{recycle_buffer}()` has no
    relevant side effect besides their postconditions.
 Note:: The range [ `{buffer_ptr}()`, `{buffer_end}()` ) shall aways be a valid
 accessible memory, even when `{good}()` returns `false`.
@@ -361,7 +361,7 @@ virtual void do_write(const T* data, std::size_t count);
 ----
 [horizontal]
 Effect:: Writes the first `count` elements of the array pointed
-        by `data` into this object, calling `{recycle}()` how many time
+        by `data` into this object, calling `{recycle_buffer}()` how many time
         it is necessary.
 Note:: This function is made virtual so that any derived classes
        can override it with an optimized version.
@@ -382,7 +382,7 @@ Effect::
 [source,cpp]
 ----
 if (dest.buffer_space() == 0) {
-    dest.recycle();
+    dest.recycle_buffer();
 }
 *dest.buffer_ptr() = value;
 dest.advance();
@@ -408,7 +408,7 @@ public:
 
     basic_cstr_writer(const basic_cstr_writer&) = delete;
 
-    void recycle() noexcept override;
+    void recycle_buffer() noexcept override;
 
     struct result {
         CharT{asterisk} ptr;
@@ -462,7 +462,7 @@ Postconditions::
 ====
 [source,cpp]
 ----
-void recycle() noexcept;
+void recycle_buffer() noexcept;
 ----
 [horizontal]
 Postconditions::
@@ -479,7 +479,7 @@ result finish() noexcept;
 Effects::
 - Assign to `'\0'` the position after the last written character in memory area used to initialize this object and set this object into "bad" state.
 Return value::
-- `result::truncated` is `true` if `recycle` or `finish` has ever been called in this object.
+- `result::truncated` is `true` if `recycle_buffer` or `finish` has ever been called in this object.
 - `result::ptr` points to the termination character `'\0'`.
 Postconditions::
 - `{good}() == false`
@@ -505,7 +505,7 @@ public:
     basic_char_array_writer& operator=(const basic_char_array_writer&) noexcept;
     bool operator==(const basic_char_array_writer&) noexcept;
 
-    void recycle() noexcept override;
+    void recycle_buffer() noexcept override;
 
     struct result {
         CharT{asterisk} ptr;
@@ -557,7 +557,7 @@ Postconditions::
 ====
 [source,cpp]
 ----
-void recycle() noexcept;
+void recycle_buffer() noexcept;
 ----
 [horizontal]
 Postconditions::
@@ -571,7 +571,7 @@ Postconditions::
 result finish() noexcept;
 ----
 Return value::
-- `result.truncated` is `true` when `{recycle}()` or `{do_write}(...)`
+- `result.truncated` is `true` when `{recycle_buffer}()` or `{do_write}(...)`
    has been previously called in this object, which means that the
    the range which with it was initialized is too small.
 - `result::ptr` is the one-past-the-end pointer of the characters written.
@@ -595,7 +595,7 @@ class discarded_destination final: public destination<CharT, {log2_garbage_buff_
 {
 public:
     discarded_destination() noexcept;
-    void recycle() noexcept override;
+    void recycle_buffer() noexcept override;
 };
 
 } // namespace strf
@@ -614,7 +614,7 @@ Postconditions::
 ====
 [source,cpp]
 ----
-void recycle() noexcept;
+void recycle_buffer() noexcept;
 ----
 [horizontal]
 Postconditions::

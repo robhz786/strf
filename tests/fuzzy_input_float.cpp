@@ -379,7 +379,7 @@ void test_mantissa(std::uint64_t mantissa) {
     strf::to(test_utils::test_messages_destination())
         .with(strf::lettercase::mixed)
         ( "\ntesting mantissa = ", *strf::hex(mantissa).pad0(15));
-    test_utils::test_messages_destination() .recycle();
+    test_utils::test_messages_destination() .recycle_buffer();
 
     for (std::uint32_t exponent = 0; exponent < 0x7FF; ++exponent) {
         test_exp_and_mantissa(exponent, mantissa);

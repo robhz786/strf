@@ -266,7 +266,7 @@ STRF_HD void fmt_char_printer<CharT>::print_to
             strf::detail::str_fill_n(dest.buffer_ptr(), space, ch_);
             count -= space;
             dest.advance_to(dest.buffer_end());
-            dest.recycle();
+            dest.recycle_buffer();
         }
     }
     if (right_fillcount_ != 0) {

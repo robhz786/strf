@@ -32,7 +32,7 @@ public:
         str_.reserve(static_cast<int>(size));
     }
 
-    void recycle() override;
+    void recycle_buffer() override;
 
     QString finish();
 
@@ -43,7 +43,7 @@ private:
     char16_t buffer_[buffer_size_];
 };
 
-void QStringCreator::recycle()
+void QStringCreator::recycle_buffer()
 {
     std::size_t count = this->buffer_ptr() - buffer_;
     this->set_buffer_ptr(buffer_);
@@ -58,7 +58,7 @@ void QStringCreator::recycle()
 
 QString QStringCreator::finish()
 {
-    recycle();
+    recycle_buffer();
     this->set_good(false);
     return std::move(str_);
 }

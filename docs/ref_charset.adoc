@@ -395,7 +395,7 @@ Effect:: Converts the content of `src` from one encoding to another writing
     non-conformity is due to a surrogate character and the value
     of `surr_poli` is `surrogate_policy::lax`.
 Precondition:: `x.transcode_func() != nullptr` is `true`
-Postconditions:: `dest.recycle()` is not called() if
+Postconditions:: `dest.recycle_buffer()` is not called() if
         `dest.buffer_space() >= x.transcode_size(src, src_size, surr_poli)` is `true`.
 ====
 [[Transcoder_transcode_size_func]]
@@ -1556,7 +1556,7 @@ Converts the content in `src` to UTF-32 using `to_u32`,
 then writes the result to `dest` using `from_u32`.
 
 [horizontal]
-Postcondition:: `dest.<<destination_hpp#destination_recycle,recycle>>()` is not called if
+Postcondition:: `dest.<<destination_hpp#destination_recycle_buffer,recycle_buffer>>()` is not called if
 `dest.<<destination_hpp#destination_buffer_space,buffer_space>>()` is not less then the value returned by
 `{decode_encode_size}(to_u32, size_calc_func, src, src_size, inv_seq_notifier, surr_poli)`,
 where `size_calc_func` is the return value of

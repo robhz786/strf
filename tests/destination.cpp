@@ -101,7 +101,7 @@ STRF_TEST_FUNC void test_destination_functions()
         test_utils::input_tester_with_fixed_spaces<char, 3, 5> dest
             { {"abcd", __FILE__, __LINE__, BOOST_CURRENT_FUNCTION} };
 
-        // When put does not call recycle()
+        // When put does not call recycle_buffer()
         strf::put(dest, 'a');
         strf::put(dest, 'b');
         strf::put(dest, 'c');
@@ -136,7 +136,7 @@ STRF_TEST_FUNC void test_destination_functions()
         dest.finish();
     }
     {
-        // When destination<CharT>::do_write() calls recycle()
+        // When destination<CharT>::do_write() calls recycle_buffer()
         // and the buffer_space() afterwards is greater than needed
 
         test_utils::input_tester_with_fixed_spaces<char, 5, 10> dest
@@ -146,7 +146,7 @@ STRF_TEST_FUNC void test_destination_functions()
         dest.finish();
     }
     {
-        // When destination<CharT>::do_write() calls recycle()
+        // When destination<CharT>::do_write() calls recycle_buffer()
         // and the buffer_space() afterwards is exactly as needed
         test_utils::input_tester_with_fixed_spaces<char, 5, 5> dest
             { {"abcdefghij", __FILE__, __LINE__, BOOST_CURRENT_FUNCTION} };
@@ -155,7 +155,7 @@ STRF_TEST_FUNC void test_destination_functions()
         dest.finish();
     }
     {
-        // When destination<CharT>::do_write() calls recycle()
+        // When destination<CharT>::do_write() calls recycle_buffer()
         // and the good() afterwards is false
         test_utils::input_tester_with_fixed_spaces<char, 5> dest
             { {"abcde", __FILE__, __LINE__, BOOST_CURRENT_FUNCTION} };

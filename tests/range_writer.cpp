@@ -50,7 +50,7 @@ STRF_TEST_FUNC void char_range_basic_operations()
     }
     {   // Calling recycle always fails
         strf::basic_char_array_writer<CharT> sw(buff);
-        sw.recycle();
+        sw.recycle_buffer();
         TEST_TRUE(sw.buffer_ptr() != &buff[0]);
         TEST_TRUE(sw.buffer_space() >= strf::print_dest_min_buffer_size)
         TEST_FALSE(sw.good());
@@ -59,15 +59,15 @@ STRF_TEST_FUNC void char_range_basic_operations()
         // anywhere inside the initial range
         TEST_FALSE(&buff[0] <= sw.buffer_ptr() && sw.buffer_ptr() < buff + buff_size);
     }
-    {   // When calling finish() after recycle(),
+    {   // When calling finish() after recycle_buffer(),
         // the returned pointer is equal to the value buffer_ptr()
-        // would have returned just before recycle()
+        // would have returned just before recycle_buffer()
 
         strf::basic_char_array_writer<CharT> sw(buff);
         strf::put(sw, (CharT)'a');
         strf::put(sw, (CharT)'b');
         strf::put(sw, (CharT)'c');
-        sw.recycle();
+        sw.recycle_buffer();
         auto r = sw.finish();
         TEST_TRUE(r.truncated);
         TEST_TRUE(r.ptr == buff + 3);
@@ -92,7 +92,7 @@ STRF_TEST_FUNC void char_range_basic_operations()
         strf::put(sw1, (CharT)'b');
         strf::put(sw1, (CharT)'c');
 
-        sw1.recycle();
+        sw1.recycle_buffer();
 
         strf::basic_char_array_writer<CharT> sw2{sw1};
         TEST_TRUE(sw1 == sw2);
@@ -146,7 +146,7 @@ STRF_TEST_FUNC void char_range_basic_operations()
         strf::put(sw2, (CharT)'a');
         strf::put(sw2, (CharT)'b');
         strf::put(sw2, (CharT)'c');
-        sw2.recycle();
+        sw2.recycle_buffer();
 
         sw1 = sw2;
         TEST_TRUE(sw1 == sw2);

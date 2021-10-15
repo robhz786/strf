@@ -32,13 +32,13 @@ public:
     STRF_HD void ensure(std::size_t s) {
         STRF_ASSERT(s <= buffer_space_after_recycle);
         STRF_IF_UNLIKELY (this->buffer_ptr() + s > this->buffer_end()) {
-            this->recycle();
+            this->recycle_buffer();
         }
         STRF_ASSERT(this->buffer_ptr() + s <= this->buffer_end());
     }
 
     STRF_HD void flush() {
-        this->recycle();
+        this->recycle_buffer();
         STRF_ASSERT(this->buffer_space() >= buffer_space_after_recycle);
     }
 
@@ -103,17 +103,17 @@ public:
     {
         STRF_ASSERT(s <= 1);
         STRF_IF_UNLIKELY (buffer_ptr() + s > buffer_end()) {
-            recycle();
+            recycle_buffer();
         }
         STRF_ASSERT(buffer_ptr() + s <= buffer_end());
     }
     STRF_HD void flush()
     {
-        recycle();
+        recycle_buffer();
         STRF_ASSERT(buffer_space() >= 0);
     }
 
-    STRF_HD virtual void recycle() = 0;
+    STRF_HD virtual void recycle_buffer() = 0;
 
     STRF_HD void write(const value_type* data, std::size_t count)
     {
@@ -202,7 +202,7 @@ void destination<T, 0>::do_write(const T* data, std::size_t count)
         if (count == 0) {
             break;
         }
-        recycle();
+        recycle_buffer();
         if (!good_) {
             break;
         }
@@ -217,7 +217,7 @@ inline STRF_HD void put(strf::destination<T, 0>& dest, T c)
         *p = c;
         dest.advance_to(p + 1);
     } else {
-        dest.recycle();
+        dest.recycle_buffer();
         *dest.buffer_ptr() = c;
         dest.advance();
     }
@@ -289,7 +289,7 @@ public:
 
     basic_cstr_writer(const basic_cstr_writer& r) = delete;
 
-    STRF_HD void recycle() noexcept override
+    STRF_HD void recycle_buffer() noexcept override
     {
         if (this->good()) {
             it_ = this->buffer_ptr();
@@ -408,7 +408,7 @@ public:
         }
         return ! r.good() && it_ == r.it_;
     }
-    STRF_HD void recycle() noexcept override
+    STRF_HD void recycle_buffer() noexcept override
     {
         if (this->good()) {
             it_ = this->buffer_ptr();
@@ -481,7 +481,7 @@ public:
     {
     }
 
-    STRF_HD void recycle() noexcept override
+    STRF_HD void recycle_buffer() noexcept override
     {
         this->set_buffer_ptr(strf::garbage_buff<T>());
     }

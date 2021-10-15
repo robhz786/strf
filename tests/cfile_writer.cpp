@@ -96,18 +96,18 @@ void test_cfile_writer_base()
 
     using tester_t = strf::detail::cfile_writer_base<char, traits_that_fails>;
 
-    {   // fails on recycle();
+    {   // fails on recycle_buffer();
         memset(result_buff, 0, sizeof(result_buff));
         tester_t tester{buff, sizeof(buff), result_buff, 10};
 
         memcpy(tester.buffer_ptr(), "0123456789abcdef", 16);
         tester.advance(16);
-        tester.recycle();
+        tester.recycle_buffer();
         TEST_FALSE(tester.good());
 
         memcpy(tester.buffer_ptr(), "ABCDEF", 6);
         tester.advance(6);
-        tester.recycle();
+        tester.recycle_buffer();
 
         TEST_STRVIEW_EQ(result_buff, "0123456789", 10);
         TEST_FALSE(tester.good());
@@ -163,7 +163,7 @@ void test_cfile_writer_base()
 
         memcpy(tester.buffer_ptr(), "ABCD", 4);
         tester.advance(4);
-        tester.recycle();
+        tester.recycle_buffer();
         strf::to(tester) (strf::multi('x', sizeof(buff)));
         tester.write("0123456789abcdef", 16);
         auto r = tester.finish();
@@ -192,7 +192,7 @@ void test_cfile_writer_base()
 
 
 template <typename CharT>
-void test_narrow_failing_to_recycle()
+void test_narrow_failing_to_recycle_buffer()
 {
     auto half_str = test_utils::make_half_string<CharT>();
     auto double_str = test_utils::make_double_string<CharT>();
@@ -202,7 +202,7 @@ void test_narrow_failing_to_recycle()
     strf::narrow_cfile_writer<CharT, strf::print_dest_min_buffer_size> writer(file);
 
     writer.write(half_str.begin(), half_str.size());
-    writer.recycle(); // first recycle shall work
+    writer.recycle_buffer(); // first recycle shall work
     test_utils::turn_into_bad(writer);
     writer.write(double_str.begin(), double_str.size());
 
@@ -219,7 +219,7 @@ void test_narrow_failing_to_recycle()
                                            , half_str.size() ));
 }
 
-void test_wide_failing_to_recycle()
+void test_wide_failing_to_recycle_buffer()
 {
     auto half_str = test_utils::make_half_string<wchar_t>();
     auto double_str = test_utils::make_double_string<wchar_t>();
@@ -229,7 +229,7 @@ void test_wide_failing_to_recycle()
     strf::wide_cfile_writer writer(file);
 
     writer.write(half_str.begin(), half_str.size());
-    writer.recycle();
+    writer.recycle_buffer();
     test_utils::turn_into_bad(writer);
     writer.write(double_str.begin(), double_str.size());
 
@@ -258,7 +258,7 @@ void test_narrow_failing_to_finish()
     strf::narrow_cfile_writer<CharT, strf::print_dest_min_buffer_size> writer(file);
 
     writer.write(double_str.begin(), double_str.size());
-    writer.recycle();
+    writer.recycle_buffer();
     writer.write(half_str.begin(), half_str.size());
     test_utils::turn_into_bad(writer);
 
@@ -285,7 +285,7 @@ void test_wide_failing_to_finish()
     strf::wide_cfile_writer writer(file);
 
     writer.write(double_str.begin(), double_str.size());
-    writer.recycle();
+    writer.recycle_buffer();
     writer.write(half_str.begin(), half_str.size());
     test_utils::turn_into_bad(writer);
 
@@ -373,10 +373,10 @@ void test_cfile_writer()
     test_narrow_successfull_writing<char32_t>();
     test_narrow_successfull_writing<wchar_t>();
 
-    test_narrow_failing_to_recycle<char>();
-    test_narrow_failing_to_recycle<char16_t>();
-    test_narrow_failing_to_recycle<char32_t>();
-    test_narrow_failing_to_recycle<wchar_t>();
+    test_narrow_failing_to_recycle_buffer<char>();
+    test_narrow_failing_to_recycle_buffer<char16_t>();
+    test_narrow_failing_to_recycle_buffer<char32_t>();
+    test_narrow_failing_to_recycle_buffer<wchar_t>();
 
     test_narrow_failing_to_finish<char>();
     test_narrow_failing_to_finish<char16_t>();
@@ -384,6 +384,6 @@ void test_cfile_writer()
     test_narrow_failing_to_finish<wchar_t>();
 
     test_wide_successfull_writing();
-    test_wide_failing_to_recycle();
+    test_wide_failing_to_recycle_buffer();
     test_wide_failing_to_finish();
 }

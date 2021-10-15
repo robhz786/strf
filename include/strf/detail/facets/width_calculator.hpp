@@ -158,7 +158,7 @@ public:
     {
     }
 
-    STRF_HD void recycle() override;
+    STRF_HD void recycle_buffer() override;
 
     struct result
     {
@@ -169,7 +169,7 @@ public:
 
     result STRF_HD get_result()
     {
-        recycle();
+        recycle_buffer();
         this->set_good(false);
         return {width_, whole_string_covered_, codepoints_count_};
     }
@@ -186,7 +186,7 @@ private:
 };
 
 template <typename WFunc>
-void STRF_HD width_accumulator<WFunc>::recycle()
+void STRF_HD width_accumulator<WFunc>::recycle_buffer()
 {
     auto end = this->buffer_ptr();
     this->set_buffer_ptr(buff_);
@@ -531,7 +531,7 @@ public:
         this->set_good(initial_width != 0);
     }
 
-    STRF_HD void recycle() noexcept override {
+    STRF_HD void recycle_buffer() noexcept override {
         if (this->good()) {
             auto res = detail::std_width_calc_func(buff_, this->buffer_ptr(), width_, state_, false);
             width_ = res.width;
@@ -567,7 +567,7 @@ public:
         this->set_good(initial_width != 0);
     }
 
-    STRF_HD void recycle() noexcept override {
+    STRF_HD void recycle_buffer() noexcept override {
         if (this->good()) {
             auto res = detail::std_width_calc_func(buff_, this->buffer_ptr(), width_, state_, true);
             width_ = res.width;

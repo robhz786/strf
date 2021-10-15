@@ -423,7 +423,7 @@ public:
 
     using char_type = CharOut;
 
-    void STRF_HD recycle() override;
+    void STRF_HD recycle_buffer() override;
 
     void STRF_HD finish();
 
@@ -493,9 +493,9 @@ STRF_HD input_tester<CharOut>::~input_tester()
 }
 
 template <typename CharOut>
-void STRF_HD input_tester<CharOut>::recycle()
+void STRF_HD input_tester<CharOut>::recycle_buffer()
 {
-    test_failure_(" destination::recycle() called "
+    test_failure_(" destination::recycle_buffer() called "
                   "( it means the calculated size too small ).\n");
 
     if ( this->buffer_ptr() + strf::print_dest_min_buffer_size
@@ -681,7 +681,7 @@ public:
              print_test_message_end(function_);
          }
     }
-    STRF_HD void recycle() override;
+    STRF_HD void recycle_buffer() override;
 
     STRF_HD void finish();
 
@@ -747,7 +747,7 @@ STRF_HD input_tester_with_fixed_spaces_base<CharT>::input_tester_with_fixed_spac
 }
 
 template <typename CharT>
-STRF_HD void input_tester_with_fixed_spaces_base<CharT>::recycle()
+STRF_HD void input_tester_with_fixed_spaces_base<CharT>::recycle_buffer()
 {
     if (this->good()) {
         if (this->buffer_ptr() > this->buffer_end()) {

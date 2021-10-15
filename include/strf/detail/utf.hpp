@@ -16,7 +16,7 @@ namespace strf {
 #define STRF_CHECK_DEST                         \
     STRF_IF_UNLIKELY (dest_it == dest_end) {    \
         dest.advance_to(dest_it);               \
-        dest.recycle();                         \
+        dest.recycle_buffer();                  \
         STRF_IF_UNLIKELY (!dest.good()) {       \
             return;                             \
         }                                       \
@@ -27,7 +27,7 @@ namespace strf {
 #define STRF_CHECK_DEST_SIZE(SIZE)                  \
     STRF_IF_UNLIKELY (dest_it + SIZE > dest_end) {  \
         dest.advance_to(dest_it);                   \
-        dest.recycle();                             \
+        dest.recycle_buffer();                      \
         STRF_IF_UNLIKELY (!dest.good()) {           \
             return;                                 \
         }                                           \
@@ -62,7 +62,7 @@ inline STRF_HD void repeat_sequence
         STRF_IF_LIKELY (count <= space) {
             return;
         }
-        dest.recycle();
+        dest.recycle_buffer();
         STRF_IF_UNLIKELY (!dest.good()) {
             return;
         }
@@ -96,7 +96,7 @@ inline STRF_HD void repeat_sequence
         STRF_IF_LIKELY (count <= space) {
             return;
         }
-        dest.recycle();
+        dest.recycle_buffer();
         STRF_IF_UNLIKELY (!dest.good()) {
             return;
         }
@@ -132,7 +132,7 @@ inline STRF_HD void repeat_sequence
         STRF_IF_LIKELY (count <= space) {
             return;
         }
-        dest.recycle();
+        dest.recycle_buffer();
         STRF_IF_UNLIKELY (!dest.good()) {
             return;
         }
