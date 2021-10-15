@@ -14,8 +14,8 @@ http://www.boost.org/LICENSE_1_0.txt)
 :toclevels: 1
 :icons: font
 
-:min_space_after_recycle: <<destination_hpp#min_space_after_recycle,min_space_after_recycle>>
-:destination: <<destination_hpp#destination,destination>>
+:print_dest: <<strf_hpp#print_dest,print_dest>>
+
 :narrow_cfile_writer: <<narrow_cfile_writer,narrow_cfile_writer>>
 :wide_cfile_writer: <<wide_cfile_writer,wide_cfile_writer>>
 
@@ -32,10 +32,10 @@ NOTE: This header files includes `<strf.hpp>`
 namespace strf {
 
 template <typename CharT, std::size_t BuffSize>
-class narrow_cfile_writer final: public destination<CharT>
+class narrow_cfile_writer final: public print_dest<CharT>
 { /{asterisk}\...{asterisk}/ };
 
-class wide_cfile_writer final: public destination<wchar_t>
+class wide_cfile_writer final: public print_dest<wchar_t>
 { /{asterisk}\...{asterisk}/ };
 
 // Destination makers:
@@ -56,7 +56,7 @@ template <typename CharT = char>
 namespace strf {
 
 template <typename CharT, std::size_t BuffSize>
-class narrow_cfile_writer final: public {destination}<CharT> {
+class narrow_cfile_writer final: public {print_dest}<CharT> {
 public:
     explicit narrow_cfile_writer(std::FILE{asterisk} dest);
 
@@ -125,7 +125,7 @@ Return value::
 ----
 namespace strf {
 
-class wide_cfile_writer final: public {destination}<wchar_t> {
+class wide_cfile_writer final: public {print_dest}<wchar_t> {
 public:
     explicit wide_cfile_writer(std::FILE{asterisk} dest);
 
@@ -198,7 +198,7 @@ is such that `&#95;dest&#95;creator.create()` returns
 +
 [source,cpp,subs=normal]
 ----
-{narrow_cfile_writer}< CharT, {min_space_after_recycle}<CharT>() >{dest}
+{narrow_cfile_writer}< CharT, {print_dest_min_buffer_size} >{dest}
 ----
 
 [[wto]]

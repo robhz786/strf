@@ -5,7 +5,7 @@ Distributed under the Boost Software License, Version 1.0.
 http://www.boost.org/LICENSE_1_0.txt)
 ////
 
-
+:print_dest: <<strf_hpp#print_dest,print_dest>>
 :fmt_print_to: link:https://fmt.dev/latest/api.html#_CPPv2N3fmt9format_toE8OutputItRK1SDpRR4Args[fmt::print_to]
 :fmt_print_to_n: link:https://fmt.dev/latest/api.html#_CPPv2N3fmt11format_to_nE8OutputIt6size_tRK1SDpRK4Args[fmt::print_to_n]
 
@@ -420,9 +420,9 @@ way, all you have to do is to create an adapter that conforms to the
 OutputIterator requirements and that writes to your desired target.
 
 In Strf, what you do instead is to create a concrete class that derives from
-the `strf::destination` abstract class template. Having an object of such type,
+the `{print_dest}` abstract class template. Having an object of such type,
 you can print things to it with the
-`strf::<<quick_reference#to_destination_ref,to>>(strf::destination<__CharT__>&)`
+`strf::<<quick_reference#to_destination_ref,to>>(strf::print_dest<__CharT__>&)`
 function template.
 
 However, in Strf you can go a bit further and create your own
@@ -438,32 +438,34 @@ amount of memory can be allocated.
 
 This is all explained in <<howto_add_destination#,this guide>>.
 
-== Polymorphic destination
-
-But you are not only suppose to use `strf::destination` when you want to
-extend Strf, but also any time you want to write a code that
-creates a textual content ( or even a binary content ) without concerning
-about where the such content goes.
-[source,cpp]
-----
-void write_some_text(strf::destination<char>& dest, /* ...args... */);
-----
-In that sense, `strf::destination` is similar to `std::basic_ostream`,
-but with several advantages.
-
-* It has better performance.
-* It's easier to derive from.
-* It can be used in a https://en.cppreference.com/w/cpp/freestanding[freestanding] environment
-* Among its <<quick_reference#destination_types,specializations>>, you can find one
-  ( actually two ) that can safely and efficiently write to `char*`
-  ( which, by the way, it what the library uses internally ).
-
-As far as I know, {fmt} doesn't have anyting equivalent to `strf::destination`.
-You could, of course, write instead a generic code terms of output iterators
-using `fmt::format_to` or `fmt::format_to_n`.
-But that would force things to be template, which is not always
-possible or can lead to code-bloat
-
+// == Polymorphic destination
+//
+// // Sometimes we need or want the code to be independent
+// // of the destination type.
+// 
+// `{print_dest}` enables you to write a code that
+// creates a textual content ( or even a binary content ) without concerning
+// about where the such content goes.
+// [source,cpp]
+// ----
+// void write_some_text(strf::print_dest<char>& dest, /* ...args... */);
+// ----
+// In that sense, `strf::print_dest` is similar to `std::basic_ostream`,
+// but with several advantages.
+// 
+// * It has better performance.
+// * It's easier to derive from.
+// * It can be used in a https://en.cppreference.com/w/cpp/freestanding[freestanding] environment
+// * Among its <<quick_reference#destination_types,specializations>>, you can find one
+//   ( actually two ) that can safely and efficiently write to `char*`
+//   ( which, by the way, it what the library uses internally ).
+// 
+// As far as I know, {fmt} doesn't have anyting equivalent to `strf::print_dest`.
+// You could, of course, write instead a generic code terms of output iterators
+// using `fmt::format_to` or `fmt::format_to_n`.
+// But that would force things to be template, which is not always
+// possible or can lead to code-bloat
+// 
 == Error handling policy
 
 Neither {fmt} nor Strf ever change the value of `errno`.

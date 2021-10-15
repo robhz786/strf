@@ -35,7 +35,6 @@ http://www.boost.org/LICENSE_1_0.txt)
 
 :std_conditional_t: https://en.cppreference.com/w/cpp/types/conditional[std::conditional_t]
 
-:min_space_after_recycle: <<destination_hpp#min_space_after_recycle,min_space_after_recycle>>
 :destination: <<destination_hpp#destination,destination>>
 
 NOTE: This document is still a work in progress.

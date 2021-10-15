@@ -226,7 +226,7 @@ where:
 * `__streambuf_ptr__` is a `std::streambuf<__CharT__, _Traits_>*`
 * `__streambuf_ref__` is a `std::streambuf<__CharT__, _Traits_>&`
 * `__cfile__` is a `FILE*`
-* `__destination_ref__` is a `destination<__CharT__>&`,  where `__CharT__` is a character type.
+* `__destination_ref__` is a `print_dest<__CharT__>&`,  where `__CharT__` is a character type.
 * `__args\...__` is an argument list of printable values.
 
 [[to_destination_ref]]
@@ -236,8 +236,7 @@ where:
 strf::to(__destination_ref__) (__args\...__)
 ----
 [horizontal]
-Return type:: `destination<__CharT__>&`
-Return value:: `__destination_ref__`
+Return type:: `void`
 Supports reserve:: No
 
 See the <<destination_types,list of types>> that derive from `destination<__CharT__>&`.

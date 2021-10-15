@@ -12,11 +12,12 @@ http://www.boost.org/LICENSE_1_0.txt)
 :source-highlighter: prettify
 :icons: font
 
-:min_space_after_recycle: <<destination_hpp#min_space_after_recycle,min_space_after_recycle>>
 :destination: <<destination_hpp#destination,destination>>
+:print_dest: <<strf_hpp#print_dest,print_dest>>
 :recycle: <<destination_hpp#destination_recycle,recycle>>
 :good: <<destination_hpp#destination_good,good>>
 :buffer_ptr: <<destination_hpp#destination_buffer_ptr,buffer_ptr>>
+:buffer_space: <<destination_hpp#destination_buffer_space,buffer_space>>
 :set_good: <<destination_hpp#destination_set_good,set_good>>
 :set_buffer_ptr: <<destination_hpp#destination_set_buffer_ptr,set_buffer_ptr>>
 :to: <<quick_reference#to_destination_ref,to>>
@@ -26,73 +27,91 @@ http://www.boost.org/LICENSE_1_0.txt)
 :destination_with_given_size: <<strf_hpp#destination_with_given_size,destination_with_given_size>>
 :DestinationCreator: <<strf_hpp#DestinationCreator,DestinationCreator>>
 :SizedDestinationCreator: <<strf_hpp#SizedDestinationCreator,SizedDestinationCreator>>
+:print_dest_min_buffer_size: <<strf_hpp#print_dest,print_dest_min_buffer_size>>
 
-== The `destination` class template
+== The `print_dest` class template
 
 Creating a new output type involves defining a concrete class
-that derives from {destination}.
-Once this is done, one can write things to objects
+that derives from `{print_dest}`.
+Having done that, one can write things to objects
 of such type with the `{to}` function template,
 using the basic usage `<<tutorial#,syntax>>` of the library:
 
 [source,cpp,subs=normal]
 ----
-strf::destination</{asterisk}char type{asterisk}/>& dest = /{asterisk}\...{asterisk}/;
-strf::<<quick_reference#to_destination_ref,to>>(dest) (/{asterisk} arguments to be printed {asterisk}/);
+strf::print_dest</{asterisk}char type{asterisk}/>& dst = /{asterisk}\...{asterisk}/;
+strf::<<quick_reference#to_destination_ref,to>>(dst) (/{asterisk} arguments to be printed {asterisk}/);
 ----
 
-So the first to learn is how {destination} works.
-It is a simple class template that
+But before learning how to implement such class,
+it makes sense to first undestand how one uses the
+`{print_dest}` interface, __i.e.__, how to write things
+to it.
+`print_dest` is a simple class template: it
 contains a boolean &#x2014; which indicates whether
-the state is "good" or "bad" &#x2014; and two pointers. One of them points
+the state is "good" or "bad" &#x2014; and two pointers; one of them points
 to the end of buffer, and the other to the position where the
 next character shall be written. They are returned by the
 `<<destination_hpp#destination_buffer_end,buffer_end>>` and
 `<<destination_hpp#destination_buffer_ptr,buffer_ptr>>` functions respectively.
 Contrary to what is common in output streams abstractions,
-where you need to use high-lever functions to insert content ( like
+where you need to use high-level functions to insert content ( like
 https://en.cppreference.com/w/cpp/io/basic_streambuf/sputc[`sputc`]
 in `std::basic_streambuf`, or
 https://en.cppreference.com/w/cpp/io/basic_ostream/write[`write`]
-in `std::basic_ostream` ), in `destination` you can write things directly to
-`buffer_ptr()`. After that, you shall call the `<<destination_hpp#destination_advance,advance>>`
-or the `<<destination_hpp#destination_advance_to,advance_to>>` function to update
-the buffer pointer. For instance:
+in `std::basic_ostream` ), in `{print_dest}`, one can write things directly to
+its buffer:
 
 [source,cpp,subs=normal]
 ----
-if (dest.buffer_space() < 5) {
-    dest.recycle();
+if (dst.{buffer_space}() < 5) {
+    dst.recycle();
 }
-memcpy(dest.buffer_ptr(), "hello", 5);
-dest.advance(5);
+memcpy(dst.buffer_ptr(), "hello", 5);
+dst.advance(5);
 ----
 
-As done above, before writting anything to `buffer_ptr()`, one
+As demonstrated above, before writting anything to `buffer_ptr()`, one
 must check whether there is enough space,
 and if not, one must call the `{recycle}` function.
-This is the only pure virtual function in `{destination}`,
+This is the only pure virtual function in `{print_dest}`;
 its job is to flush the content written so far and reset the position of
-`buffer_ptr()` and `buffer_end()` so that the space ( `buffer_end() - buffer_ptr()` )
-becames greater than or equal to `{min_space_after_recycle}</{asterisk}char type{asterisk}/>()`.
-This is a postcondition
-even when the state is "bad". The "bad" state implies that writting
-anything in the range [`buffer_ptr(), buffer_end()`) doesn't have any relevent
-side effect, though the behaviour is still defined, __i.e.__
-the range [`buffer_ptr(), buffer_end()`) must be valid accessible memory area
-( sometimes `<<destination_hpp#garbage_buff,garbage_buff>>`
-is used to handle the bad state ).
-The state can change from "good" to "bad" in `{recycle}`,
+`buffer_ptr()` and `buffer_end()`. After `{recycle}` is called,
+the buffer's space ( `buffer_end() - buffer_ptr()` ) is
+guaranteed to be at least `{print_dest_min_buffer_size}`
+( which is currently `64` but may be greater in future versions ).
+This is a postcondition even when the state is "bad".
+The state may change from "good" to "bad" in `{recycle}`,
 but never from "bad" to "good".
+The "bad" state implies that writting
+anything in the range [`buffer_ptr(), buffer_end()`) has no relevent
+side effect, though the behaviour is still defined, __i.e.__
+the range must be a valid accessible memory area.
+Sometimes, `<<destination_hpp#garbage_buff,garbage_buff>>`
+is used to handle the bad state.
 
-A typical implementation would look like this:
+// This means it's not necessary to always check the state before
+// writting anything to `buffer_ptr()`. At worse, it is waste
+// of CPU resource.
+
+
+After writing to `buffer_ptr()`, it is necessary to advance
+the buffer pointer, otherwise the content will be overwritten
+next time something is written in `buffer_ptr()`.
+This is can be done with the
+`<<destination_hpp#destination_advance,advance>>`
+or the `<<destination_hpp#destination_advance_to,advance_to>>`
+member function, as shown above.
+
+
+Now, let's see how a typical implementation would look like:
 
 [source,cpp,subs=normal]
 ----
-class my_destination: public strf::destination<char> {
+class my_destination: public strf::print_dest<char> {
 public:
     my_destination(/{asterisk}\...{asterisk}/)
-        : strf::destination<char>{buff, sizeof(buff)}
+        : strf::print_dest<char>{buff, sizeof(buff)}
         // \...
     {
         /{asterisk}\...{asterisk}/
@@ -108,11 +127,11 @@ private:
     bool print(const char* str_begin, const char* str_end)
     { /{asterisk}\...{asterisk}/ }
 
-    char buff[strf::{min_space_after_recycle}()];
+    char buff[strf::{print_dest_min_buffer_size}];
 };
 ----
 
-Where the `print` member function represents the code
+The `print` member function above represents the code
 that would send the content to the actual destination,
 whatever it is. If `print` never throws, then
 `recycle` could be implemented like below:
@@ -183,14 +202,14 @@ void my_destination::finish()
 
 [source,cpp,subs=normal]
 ----
-my_destination dest{ /{asterisk}\...{asterisk}/ };
+my_destination dst{ /{asterisk}\...{asterisk}/ };
 
-strf::{to}(dest) (/{asterisk}\...{asterisk}/);
-strf::{to}(dest) (/{asterisk}\...{asterisk}/);
-some_function(dest);
-strf::{to}(dest) (/{asterisk}\...{asterisk}/);
+strf::{to}(dst) (/{asterisk}\...{asterisk}/);
+strf::{to}(dst) (/{asterisk}\...{asterisk}/);
+some_function(dst);
+strf::{to}(dst) (/{asterisk}\...{asterisk}/);
 
-dest.finish();
+dst.finish();
 ----
 Almost
 <<quick_reference#destination_types,all classes of this library that derive from `destination`>>
@@ -218,7 +237,7 @@ intended to create a `QString` object ( in the same way as
 This section explain how you can do that.
 
 The first step, which involves most of the work, is
-to create a class that derives from `{destination}`.
+to create a class that derives from `{print_dest}`.
 The previous section provides some assistance on that.
 Sometimes it makes sense to actually create two of them;
 one having a constructor that receives the size
@@ -246,9 +265,9 @@ or `tr` is called ):
 +
 [source,cpp,subs=normal]
 ----
-typename your_destination_creator::destination_type dest{creator.create()};
-// \... write content in dest \...
-return dest.finish();
+typename your_destination_creator::destination_type dst{creator.create()};
+// \... write content in dst \...
+return dst.finish();
 ----
 , where:
 +
@@ -263,9 +282,9 @@ writing the arguments:
 [source,cpp,subs=normal]
 ----
 std::size_t size = /{asterisk} calculate size \... {asterisk}/;
-typename you_destination_creator::sized_destination_type dest{creator.create(**size**)};
-// \... write content in dest \...
-return dest.finish();
+typename you_destination_creator::sized_destination_type dst{creator.create(**size**)};
+// \... write content in dst \...
+return dst.finish();
 ----
 
 * `{destination_with_given_size}`: the factory must be _{SizedDestinationCreator}_,
@@ -284,7 +303,7 @@ The sample below illustrates the above steps:
 class foo { /{asterisk} \... {asterisk}/ };
 
 // step 1: define your destination class
-class foo_writer: strf::{destination}<char> {
+class foo_writer: strf::{print_dest}<char> {
 public:
     explicit foo_writer(foo&);
     void recycle() override;
@@ -308,10 +327,10 @@ private:
 }
 
 // step3: define the destination expression
-auto to(foo& dest) {
-    strf::{destination_no_reserve}<foo_writer_creator> x{dest};
+auto to(foo& dst) {
+    strf::{destination_no_reserve}<foo_writer_creator> x{dst};
     // x contains a member object of type foo_writer_creator
-    // initialized with dest
+    // initialized with dst
     return x;
 }
 ----
