@@ -389,6 +389,29 @@ dest.advance();
 ----
 ====
 
+[[print_dest]]
+== Type alias template `print_dest`
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+constexpr unsigned log2_print_dest_space_after_flush = ...;
+
+constexpr std::size_t print_dest_space_after_flush =
+    (std::size_t)1 << log2_print_dest_space_after_flush;
+
+template <typename CharT>
+using print_dest = {destination}<CharT, log2_print_dest_space_after_flush>;
+
+} // namespace strf
+----
+
+* `log2_print_dest_space_after_flush` is an implementation-defined value
+that is greater than or equal to `6`.
+
+* `print_dest_space_after_flush` is greater than or equal to `64`.
+
 [[basic_cstr_writer]]
 == Class template `basic_cstr_writer`
 
@@ -629,11 +652,12 @@ Postconditions::
 These function templates return the begin and the end of a memory area that is never supposed to be read. It can be used when implementing a class that derives from `destination` to set the buffer when the state is "bad".
 
 ====
-[source,cpp]
+[source,cpp,subs=normal]
 ----
-constexpr unsigned log2_garbage_buff_size = /{asterisk}...{asterisk}/;
+constexpr unsigned log2_garbage_buff_size = ...;
 ----
-Implementation-defined type that is greater than or equal to `6`;
+Implementation-defined type that is greater than or equal to
+`<<print_dest,log2_print_dest_space_after_flush>>`;
 ====
 
 ====

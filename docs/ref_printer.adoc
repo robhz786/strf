@@ -371,31 +371,6 @@ using printer_type = typename printer_input_type<CharT, Preview, FPack, Arg>::pr
 } // namespace strf
 ----
 
-[[print_dest]]
-=== Type alias template `print_dest`
-
-[source,cpp,subs=normal]
-----
-namespace strf {
-
-constexpr unsigned log2_print_dest_space_after_flush = ...;
-
-constexpr std::size_t print_dest_space_after_flush =
-    (std::size_t)1 << log2_print_dest_space_after_flush;
-
-template <typename CharT>
-using print_dest = {destination}<CharT, log2_print_dest_space_after_flush>;
-}
-----
-
-* `log2_print_dest_space_after_flush` is an implementation-defined value
-greater than or equal to `6`.
-
-* `print_dest_space_after_flush` is greater than or equal to `64`. This means
-that the post-condition of `print_dest<...>::recycle_buffer()` is that
-the buffer's space ( the value returned by `print_dest<...>::buffer_space()` )
-is at least equal to this value.
-
 [[printer]]
 === Class template `printer`
 

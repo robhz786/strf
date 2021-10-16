@@ -14,8 +14,8 @@ http://www.boost.org/LICENSE_1_0.txt)
 :toclevels: 1
 :icons: font
 
-:print_dest: <<strf_hpp#print_dest,print_dest>>
-:print_dest_space_after_flush: <<strf_hpp#print_dest_space_after_flush,print_dest_space_after_flush>>
+:print_dest: <<destination_hpp#print_dest,print_dest>>
+:print_dest_space_after_flush: <<destination_hpp#print_dest_space_after_flush,print_dest_space_after_flush>>
 :narrow_cfile_writer: <<narrow_cfile_writer,narrow_cfile_writer>>
 :wide_cfile_writer: <<wide_cfile_writer,wide_cfile_writer>>
 

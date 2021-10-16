@@ -9,7 +9,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 :strf-src-root: https://github.com/robhz786/strf/blob/{strf-revision}
 
 :destination:   <<destination_hpp#destination,destination>>
-:print_dest:   <<strf_hpp#print_dest,print_dest>>
+:print_dest:   <<destination_hpp#print_dest,print_dest>>
 
 :PrintTraits:     <<strf_hpp#PrintTraits,PrintTraits>>
 :PrinterInput:    <<strf_hpp#PrintInput,PrinterInput>>

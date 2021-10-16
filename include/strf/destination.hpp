@@ -343,6 +343,16 @@ private:
     CharT* it_ = nullptr;
 };
 
+constexpr unsigned log2_print_dest_space_after_flush = 6;
+
+constexpr std::size_t print_dest_space_after_flush =
+    (std::size_t)1 << strf::log2_print_dest_space_after_flush;
+
+static_assert(print_dest_space_after_flush == 64, "");
+
+template <typename CharT>
+using print_dest = strf::destination<CharT, log2_print_dest_space_after_flush>;
+
 #if defined(__cpp_char8_t)
 using u8cstr_writer = basic_cstr_writer<char8_t>;
 #endif
