@@ -5,10 +5,9 @@ Distributed under the Boost Software License, Version 1.0.
 http://www.boost.org/LICENSE_1_0.txt)
 ////
 
-:printer: <<printer,printer>>
-:printer_type: <<printer_type,printer_type>>
-:printer_traits: <<printer_traits,printer_traits>>
-:printer_type_getter_c: <<printer_type_getter_c,printer_type_getter_c>>
+:arg_printer:      <<arg_printer,arg_printer>>
+:arg_printer_type: <<arg_printer_type,arg_printer_type>>
+:print_traits:     <<print_traits,print_traits>>
 
 :print_preview: <<print_preview, print_preview>>
 :facets_pack: <<facets_pack, facets_pack>>
@@ -208,7 +207,7 @@ A type alias to `Preview`.
 ----
 T::printer_type
 ----
-A type that is constructible from `X` and convertible to `const {printer}<CharT>&`,
+A type that is constructible from `X` and convertible to `const {arg_printer}<CharT>&`,
 such that the sequence:
 
 [source,cpp,subs=normal]
@@ -217,7 +216,7 @@ std::size_t s  = x.preview.<<size_preview_accumulated_size,accumulated_size>>();
 typename T::printer_type p{x};
 std::size_t predicted_size  = x.preview.<<size_preview_accumulated_size,accumulated_size>>() - s;
 std::size_t dest_buff_space = dest.<<destination_hpp#destination_buffer_space,buffer_space>>();
-static_cast<const printer<CharT>&>(p).<<printer,print_to>>(dest);
+static_cast<const printer<CharT>&>(p).<<arg_printer,print_to>>(dest);
 ----
 statisfies the following postconditions when `Preview::<<print_preview,size_required>>` is `true`:
 
@@ -353,7 +352,7 @@ Otherwise, it returns
 ----
 
 
-=== Type alias template `printer_type` [[printer_type]]
+=== Type alias template `arg_printer_type` [[arg_printer_type]]
 
 [source,cpp,subs=normal]
 ----
@@ -366,23 +365,23 @@ using printer_input_type = decltype
                                , std::declval<Arg>() ) );
 
 template <typename CharT, typename Preview, typename FPack, typename Arg>
-using printer_type = typename printer_input_type<CharT, Preview, FPack, Arg>::printer_type;
+using arg_printer_type = typename printer_input_type<CharT, Preview, FPack, Arg>::printer_type;
 
 } // namespace strf
 ----
 
-[[printer]]
-=== Class template `printer`
+[[arg_printer]]
+=== Class template `arg_printer`
 
 [source,cpp,subs=normal]
 ----
 namespace strf {
 
 template <typename CharT>
-class printer {
+class arg_printer {
 public:
     using char_type = CharT;
-    virtual ~printer() {}
+    virtual ~arg_printer() {}
     virtual void print_to({print_dest}<CharT>&) const = 0;
 };
 
@@ -591,19 +590,19 @@ Compile-time requirements::
 
 Effects::
 * When `SizeRequired` is `preview_size::yes`, for each argument `arg` in `args\...`
-  instantiates the correponding printer type with `pp`, `facets`, and `arg`.
+  instantiates the correponding `arg_printer` type with `pp`, `facets`, and `arg`.
   This translates into the following expression:
 +
 [source,cpp,subs=normal]
 ----
-(\..., {printer_type}< CharT
-                  , {print_preview}<SizeRequired, WidthRequired>
-                  , facets_pack<FPE\...>
-                  , Args >{{make_printer_input}<CharT>(pp, facets, args)} );
+(\..., {arg_printer_type}< CharT
+                      , {print_preview}<SizeRequired, WidthRequired>
+                      , facets_pack<FPE\...>
+                      , Args >{{make_printer_input}<CharT>(pp, facets, args)} );
 ----
 * When `SizeRequired` is `preview_size::no` and `WidthRequired` is `preview_width::yes`,
-  for each argument `arg` in `args\...` instantiates the correponding printer
-  type with `pp`, `facets`, and `arg` ( again, using `{printer_type}`  and
+  for each argument `arg` in `args\...` instantiates the correponding `arg_printer`
+  type with `pp`, `facets`, and `arg` ( again, using `{arg_printer_type}`  and
   `{make_printer_input}` ), while `pp.<<width_preview,remaining_width>>() > 0`
   is `true`.
   This implies that not necessarily all argument in `arg\...` are used.

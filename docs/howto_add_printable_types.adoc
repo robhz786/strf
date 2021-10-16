@@ -19,7 +19,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 :Formatter:                  <<strf_hpp#Formatter,Formatter>>
 :print_override_c:           <<strf_hpp#print_override_c,print_override_c>>
 :no_print_override:          <<strf_hpp#no_print_override,no_print_override>>
-:printer:                    <<strf_hpp#printer,printer>>
+:arg_printer:                <<strf_hpp#arg_printer,arg_printer>>
 :print_preview:              <<strf_hpp#print_preview,print_preview>>
 :preview:                    <<strf_hpp#preview,preview>>
 :value_with_formatters:      <<strf_hpp#value_with_formatters,value_with_formatters>>
@@ -784,15 +784,15 @@ Most of the work lies in creating the class &#x2014;
  or, more likely, the class template &#x2014;
 used in its fifth template parameter, named here as `std_complex_printer`.
 It must be a concrete
-class that derives from `{printer}<CharT>`, or that is
+class that derives from `{arg_printer}<CharT>`, or that is
 https://en.cppreference.com/w/cpp/language/cast_operator[convertible]
-to `const {printer}<CharT>&`. It must also be constructible from the
+to `const {arg_printer}<CharT>&`. It must also be constructible from the
 return type of our `make_printer_input` member function:
 
 [source,cpp,subs=normal]
 ----
 template <typename CharT, typename FloatT>
-class std_complex_printer: public strf::printer<CharT> {
+class std_complex_printer: public strf::arg_printer<CharT> {
 public:
 
     template <typename\... T>

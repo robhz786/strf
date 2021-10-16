@@ -128,7 +128,7 @@ constexpr STRF_HD auto tag_invoke(strf::print_traits_tag, wchar_t) noexcept
 namespace detail {
 
 template <typename CharT>
-class char_printer: public strf::printer<CharT>
+class char_printer: public strf::arg_printer<CharT>
 {
 public:
     template <typename... T>
@@ -164,7 +164,7 @@ STRF_HD void char_printer<CharT>::print_to
 
 
 template <typename CharT>
-class fmt_char_printer: public strf::printer<CharT>
+class fmt_char_printer: public strf::arg_printer<CharT>
 {
 public:
     template <typename... T>
@@ -275,7 +275,7 @@ STRF_HD void fmt_char_printer<CharT>::print_to
 }
 
 template <typename DestCharT>
-class conv_char32_printer: public strf::printer<DestCharT>
+class conv_char32_printer: public strf::arg_printer<DestCharT>
 {
 public:
     template <typename... T>
@@ -311,7 +311,7 @@ void STRF_HD conv_char32_printer<DestCharT>::print_to(strf::print_dest<DestCharT
 }
 
 template <typename DestCharT>
-class fmt_conv_char32_printer: public strf::printer<DestCharT>
+class fmt_conv_char32_printer: public strf::arg_printer<DestCharT>
 {
 public:
 

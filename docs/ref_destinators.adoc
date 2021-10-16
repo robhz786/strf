@@ -5,8 +5,8 @@ Distributed under the Boost Software License, Version 1.0.
 http://www.boost.org/LICENSE_1_0.txt)
 ////
 
-:printer_type: <<printer_type,printer_type>>
-:printer: <<printer,printer>>
+:arg_printer_type: <<arg_printer_type,arg_printer_type>>
+:arg_printer:      <<arg_printer,arg_printer>>
 :print_dest: <<destination_hpp#print_dest,print_dest>>
 :tag: <<tag,tag>>
 :print_preview: <<print_preview,print_preview>>
@@ -404,11 +404,11 @@ typename DestinationCreator::destination_type dest{&#95;dest&#95;creator.create(
 +
 [source,cpp,subs=normal]
 ----
-using preview_type = {print_preview}<preview_size::no, preview_width::no>;
-preview_type preview;
-using printer_type = {printer_type}<char_type, preview_type, FPack, Arg>;
-printer_type p{ {make_printer_input}<char_type>(preview, &#95;fpack, arg) };
-static_cast<const {printer}<char_type>&>(p).print_to(dest);
+using preview_t = {print_preview}<preview_size::no, preview_width::no>;
+preview_t preview;
+using printer_t = {arg_printer_type}<char_type, preview_type, FPack, Arg>;
+printer_t p{ {make_printer_input}<char_type>(preview, &#95;fpack, arg) };
+static_cast<const {arg_printer}<char_type>&>(p).print_to(dest);
 ----
 where `Arg` is the type in `Args\...` corresponding to `arg`
 . Returns `dest.finish()` if such expression is valid, which is optional.
@@ -442,7 +442,7 @@ Effect:: __to-do__
 ----
 typename DestinationCreator::destination_type dest{&#95;dest&#95;creator.create()};
 ----
-. For each `arg` in `args\...`, creates a printer object by doing:
+. For each `arg` in `args\...`, creates an `arg_printer` object by doing:
 +
 [source,cpp,subs=normal]
 ----
@@ -692,12 +692,12 @@ Effect::
 using preview_type = {print_preview}<preview_size::yes, preview_width::no>;
 preview_type preview;
 ----
-. For each `arg` in `args\...`, creates a printer object by doing:
+. For each `arg` in `args\...`, creates an `arg_printer` object by doing:
 +
 [source,cpp,subs=normal]
 ----
-using printer_type = {printer_type}<char_type, preview_type, FPack, Arg>;
-printer_type p{ {make_printer_input}<char_type>(preview, &#95;fpack, arg) };
+using printer_t = {arg_printer_type}<char_type, preview_type, FPack, Arg>;
+printer_t p{ {make_printer_input}<char_type>(preview, &#95;fpack, arg) };
 ----
 . Creates/get the `{print_dest}` object doing
 +
@@ -710,7 +710,7 @@ dest_type dest{&#95;dest&#95;creator.create(preview.<<size_preview_accumulated_s
 +
 [source,cpp,subs=normal]
 ----
-static_cast<const {printer}<char_type>&>(p).print_to(dest);
+static_cast<const {arg_printer}<char_type>&>(p).print_to(dest);
 ----
 . Returns `dest.finish()` if such expression is valid, which is optional. Otherwise the return type is `void`.
 ====
@@ -739,8 +739,8 @@ Effect:: __to-do__
 [source,cpp,subs=normal]
 ----
 print_preview<preview_size::yes, preview_width::no> preview;
-auto p = static_cast< const {printer}<CharT>& >
-    ( {printer_type}<CharT, FPack, T>{ fpack, preview, x, {tag}<CharT>{} } )
+auto p = static_cast< const {arg_printer}<CharT>& >
+    ( {arg_printer_type}<CharT, FPack, T>{ fpack, preview, x, {tag}<CharT>{} } )
 ----
 . Calculates the size of the content to be printed according to the
   <<tr_string,tr-string syntax>> and using the `preview` objects
@@ -1010,11 +1010,11 @@ decltype(auto) dest = &#95;dest&#95;creator.create(_size)
 +
 [source,cpp,subs=normal]
 ----
-using preview_type = {print_preview}<preview_size::no, preview_width::no>;
-preview_type preview;
-using printer_type = {printer_type}<char_type, preview_type, FPack, Arg>;
-printer_type p{ {make_printer_input}<char_type>(preview, &#95;fpack, arg) };
-static_cast<const {printer}<char_type>&>(p).print_to(dest);
+using preview_t = {print_preview}<preview_size::no, preview_width::no>;
+preview_t preview;
+using printer_t = {arg_printer_type}<char_type, preview_type, FPack, Arg>;
+printer_t p{ {make_printer_input}<char_type>(preview, &#95;fpack, arg) };
+static_cast<const {arg_printer}<char_type>&>(p).print_to(dest);
 ----
 , where `Arg` is the type in `Args\...` corresponding to `arg`
 . Returns `dest.finish()` if such expression is valid, which is optional.
@@ -1046,12 +1046,12 @@ __to-do__
 ----
 decltype(auto) dest = &#95;dest&#95;creator.create(_size)
 ----
-. For each `arg` in `args\...`, creates a printer object by doing:
+. For each `arg` in `args\...`, creates an `{arg_printer}` object by doing:
 +
 [source,cpp,subs=normal]
 ----
-auto p = static_cast< const {printer}<CharT>& >
-    ( {printer_type}<CharT, FPack, T>{fpack, preview, x, chtag} )
+auto p = static_cast< const {arg_printer}<CharT>& >
+    ( {arg_printer_type}<CharT, FPack, T>{fpack, preview, x, chtag} )
 ----
 , where `preview` is an instance of `preview<false, false>`,
 abs `chtag` is an expression of type `{tag}<CharT>`.

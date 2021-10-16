@@ -745,7 +745,7 @@ constexpr STRF_HD auto tag_invoke(strf::print_traits_tag, const wchar_t*) noexce
 namespace detail {
 
 template <typename SrcCharT, typename DestCharT>
-class string_printer: public strf::printer<DestCharT>
+class string_printer: public strf::arg_printer<DestCharT>
 {
 public:
     static_assert(sizeof(SrcCharT) == sizeof(DestCharT), "");
@@ -833,7 +833,7 @@ STRF_HD void string_printer<SrcCharT, DestCharT>::print_to
 }
 
 template <typename SrcCharT, typename DestCharT>
-class aligned_string_printer: public strf::printer<DestCharT>
+class aligned_string_printer: public strf::arg_printer<DestCharT>
 {
 public:
     static_assert(sizeof(SrcCharT) == sizeof(DestCharT), "");
@@ -1035,7 +1035,7 @@ constexpr STRF_HD auto get_src_charset
 }
 
 template<typename SrcCharT, typename DestCharT>
-class conv_string_printer: public strf::printer<DestCharT>
+class conv_string_printer: public strf::arg_printer<DestCharT>
 {
 public:
 
@@ -1152,7 +1152,7 @@ STRF_HD void conv_string_printer<SrcCharT, DestCharT>::print_to
 }
 
 template<typename SrcCharT, typename DestCharT>
-class aligned_conv_string_printer: public printer<DestCharT>
+class aligned_conv_string_printer: public arg_printer<DestCharT>
 {
 public:
 
@@ -1427,8 +1427,8 @@ public:
 
     STRF_HD ~conv_string_printer_variant()
     {
-        const strf::printer<DestCharT>& p = *this;
-        p.~printer();
+        const strf::arg_printer<DestCharT>& p = *this;
+        p.~arg_printer();
     }
 
 #if defined(__GNUC__) && (__GNUC__ <= 6)
@@ -1436,9 +1436,9 @@ public:
 #  pragma GCC diagnostic ignored "-Wstrict-aliasing"
 #endif
 
-    STRF_HD operator const strf::printer<DestCharT>& () const
+    STRF_HD operator const strf::arg_printer<DestCharT>& () const
     {
-        return * reinterpret_cast<const strf::printer<DestCharT>*>(&pool_);
+        return * reinterpret_cast<const strf::arg_printer<DestCharT>*>(&pool_);
     }
 
 #if defined(__GNUC__) && (__GNUC__ <= 6)
@@ -1450,7 +1450,7 @@ private:
     static constexpr std::size_t pool_size_ =
         sizeof(strf::detail::conv_string_printer<DestCharT, DestCharT>);
     using storage_type_ = typename std::aligned_storage
-        < pool_size_, alignof(strf::printer<DestCharT>)>
+        < pool_size_, alignof(strf::arg_printer<DestCharT>)>
         :: type;
 
     storage_type_ pool_;
@@ -1483,8 +1483,8 @@ public:
 
     STRF_HD ~aligned_conv_string_printer_variant()
     {
-        const strf::printer<DestCharT>& p = *this;
-        p.~printer();
+        const strf::arg_printer<DestCharT>& p = *this;
+        p.~arg_printer();
     }
 
 #if defined(__GNUC__) && (__GNUC__ <= 6)
@@ -1492,9 +1492,9 @@ public:
 #  pragma GCC diagnostic ignored "-Wstrict-aliasing"
 #endif
 
-    STRF_HD operator const strf::printer<DestCharT>& () const
+    STRF_HD operator const strf::arg_printer<DestCharT>& () const
     {
-        return * reinterpret_cast<const strf::printer<DestCharT>*>(&pool_);
+        return * reinterpret_cast<const strf::arg_printer<DestCharT>*>(&pool_);
     }
 
 #if defined(__GNUC__) && (__GNUC__ <= 6)
@@ -1506,7 +1506,7 @@ private:
     static constexpr std::size_t pool_size_ =
         sizeof(strf::detail::aligned_conv_string_printer<DestCharT, DestCharT>);
     using storage_type_ = typename std::aligned_storage
-        < pool_size_, alignof(strf::printer<DestCharT>)>
+        < pool_size_, alignof(strf::arg_printer<DestCharT>)>
         :: type;
 
     storage_type_ pool_;

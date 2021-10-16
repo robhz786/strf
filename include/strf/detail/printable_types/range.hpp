@@ -233,7 +233,7 @@ struct print_traits<strf::separated_transformed_range_p<It, SepCharT, UnaryOp>>
 namespace detail {
 
 template <typename CharT, typename FPack, typename It>
-class range_printer: public strf::printer<CharT>
+class range_printer: public strf::arg_printer<CharT>
 {
 public:
 
@@ -255,7 +255,7 @@ public:
 private:
 
     template <typename Preview>
-    using printer_type_ = strf::printer_type
+    using printer_type_ = strf::arg_printer_type
         < CharT, Preview, FPack, strf::detail::remove_cv_t<value_type> >;
 
     STRF_HD void preview_(strf::no_print_preview&) const
@@ -294,7 +294,7 @@ STRF_HD void range_printer<CharT, FPack, It>::print_to
 }
 
 template <typename CharT, typename FPack, typename It>
-class separated_range_printer: public strf::printer<CharT>
+class separated_range_printer: public strf::arg_printer<CharT>
 {
 public:
 
@@ -318,7 +318,7 @@ public:
 private:
 
     template <typename Preview>
-    using printer_type_ = strf::printer_type
+    using printer_type_ = strf::arg_printer_type
         < CharT, Preview, FPack, strf::detail::remove_cv_t<value_type> >;
 
     STRF_CONSTEXPR_IN_CXX14 STRF_HD void preview_(strf::no_print_preview&) const
@@ -401,7 +401,7 @@ template < typename CharT
          , typename FPack
          , typename It
          , typename ... Fmts >
-class fmt_range_printer: public strf::printer<CharT>
+class fmt_range_printer: public strf::arg_printer<CharT>
 {
     using value_type_ = strf::detail::iterator_value_type<It>;
     using value_fmt_type_ = strf::fmt_type<value_type_>;
@@ -428,7 +428,7 @@ public:
 private:
 
     template <typename Preview>
-    using printer_type_ = strf::printer_type
+    using printer_type_ = strf::arg_printer_type
         < CharT, Preview, FPack, value_fmt_type_adapted_ >;
 
     STRF_HD void preview_(strf::no_print_preview&) const
@@ -482,7 +482,7 @@ template< typename CharT
         , typename FPack
         , typename It
         , typename ... Fmts >
-class fmt_separated_range_printer: public strf::printer<CharT>
+class fmt_separated_range_printer: public strf::arg_printer<CharT>
 {
     using value_type_ = strf::detail::iterator_value_type<It>;
     using value_fmt_type_ = strf::fmt_type<value_type_>;
@@ -509,7 +509,7 @@ public:
 private:
 
     template <typename Preview>
-    using printer_type_ = strf::printer_type
+    using printer_type_ = strf::arg_printer_type
         < CharT, Preview, FPack, value_fmt_type_adapted_ >;
 
     STRF_HD void preview_(strf::no_print_preview&) const
@@ -598,7 +598,7 @@ STRF_HD void fmt_separated_range_printer<CharT, FPack, It, Fmts ...>
 }
 
 template <typename CharT, typename FPack, typename It, typename UnaryOp>
-class transformed_range_printer: public strf::printer<CharT>
+class transformed_range_printer: public strf::arg_printer<CharT>
 {
 public:
 
@@ -621,7 +621,7 @@ public:
 private:
 
     template <typename Preview, typename Op = UnaryOp>
-    using printer_type_ = strf::printer_type
+    using printer_type_ = strf::arg_printer_type
         < CharT
         , Preview, FPack
         , strf::detail::remove_reference_t
@@ -666,7 +666,7 @@ STRF_HD void transformed_range_printer<CharT, FPack, It, UnaryOp>::print_to
 }
 
 template <typename CharT, typename FPack, typename It, typename UnaryOp>
-class sep_transformed_range_printer: public strf::printer<CharT>
+class sep_transformed_range_printer: public strf::arg_printer<CharT>
 {
 public:
     using iterator = It;
@@ -690,7 +690,7 @@ public:
 private:
 
     template <typename Preview, typename Op = UnaryOp>
-    using printer_type_ = strf::printer_type
+    using printer_type_ = strf::arg_printer_type
         < CharT
         , Preview, FPack
         , strf::detail::remove_reference_t

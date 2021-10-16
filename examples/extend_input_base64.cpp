@@ -101,7 +101,7 @@ struct base64_printing
 };
 
 template <typename CharT>
-class base64_printer: public strf::printer<CharT>
+class base64_printer: public strf::arg_printer<CharT>
 {
 public:
 

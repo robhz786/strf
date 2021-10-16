@@ -57,7 +57,7 @@ tag_invoke(strf::print_traits_tag, bool) noexcept { return {}; }
 namespace detail {
 
 template <typename CharT>
-class bool_printer: public printer<CharT>
+class bool_printer: public arg_printer<CharT>
 {
 public:
 
@@ -103,7 +103,7 @@ void STRF_HD bool_printer<CharT>::print_to(strf::print_dest<CharT>& dest) const
 }
 
 template <typename CharT>
-class fmt_bool_printer: public printer<CharT>
+class fmt_bool_printer: public arg_printer<CharT>
 {
     using this_type_ = fmt_bool_printer<CharT>;
 

@@ -1385,7 +1385,7 @@ constexpr STRF_HD auto tag_invoke(strf::print_traits_tag, const void*) noexcept
 namespace detail {
 
 template <typename CharT>
-class default_int_printer: public strf::printer<CharT>
+class default_int_printer: public strf::arg_printer<CharT>
 {
 public:
 
@@ -1451,7 +1451,7 @@ STRF_HD void default_int_printer<CharT>::print_to
 }
 
 template <typename CharT>
-class aligned_default_int_printer: public strf::printer<CharT>
+class aligned_default_int_printer: public strf::arg_printer<CharT>
 {
 public:
 
@@ -1617,7 +1617,7 @@ inline STRF_HD unsigned init
 }
 
 template <typename CharT>
-class int_printer_no_pad0_nor_punct<CharT, 10>: public strf::printer<CharT>
+class int_printer_no_pad0_nor_punct<CharT, 10>: public strf::arg_printer<CharT>
 {
 public:
     template <typename... T>
@@ -1645,7 +1645,7 @@ private:
 };
 
 template <typename CharT>
-class int_printer_no_pad0_nor_punct<CharT, 16>: public strf::printer<CharT>
+class int_printer_no_pad0_nor_punct<CharT, 16>: public strf::arg_printer<CharT>
 {
 public:
 
@@ -1681,7 +1681,7 @@ private:
 
 
 template <typename CharT>
-class int_printer_no_pad0_nor_punct<CharT, 8>: public strf::printer<CharT>
+class int_printer_no_pad0_nor_punct<CharT, 8>: public strf::arg_printer<CharT>
 {
 public:
     template <typename... T>
@@ -1709,7 +1709,7 @@ private:
 };
 
 template <typename CharT>
-class int_printer_no_pad0_nor_punct<CharT, 2>: public strf::printer<CharT>
+class int_printer_no_pad0_nor_punct<CharT, 2>: public strf::arg_printer<CharT>
 {
 public:
 
@@ -1950,7 +1950,7 @@ STRF_HD fmt_int_printer_data_init_result init_fmt_int_printer_data
 #endif // defined(STRF_OMIT_IMPL)
 
 template <typename CharT, int Base>
-class int_printer_static_base_and_punct<CharT, Base, false>: public printer<CharT>
+class int_printer_static_base_and_punct<CharT, Base, false>: public arg_printer<CharT>
 {
 public:
 
@@ -2099,7 +2099,7 @@ STRF_HD fmt_int_printer_data_init_result init_punct_fmt_int_printer_data
 #endif // defined(STRF_OMIT_IMPL)
 
 template <typename CharT, int Base>
-class int_printer_static_base_and_punct<CharT, Base, true>: public printer<CharT>
+class int_printer_static_base_and_punct<CharT, Base, true>: public arg_printer<CharT>
 {
 public:
 
@@ -2295,8 +2295,8 @@ public:
 
     STRF_HD ~int_printer_full_dynamic()
     {
-        const strf::printer<CharT>& p = *this;
-        p.~printer();
+        const strf::arg_printer<CharT>& p = *this;
+        p.~arg_printer();
     }
 
 #if defined(__GNUC__) && (__GNUC__ <= 6)
@@ -2304,9 +2304,9 @@ public:
 #  pragma GCC diagnostic ignored "-Wstrict-aliasing"
 #endif
 
-    STRF_HD operator const strf::printer<CharT>& () const
+    STRF_HD operator const strf::arg_printer<CharT>& () const
     {
-        return * reinterpret_cast<const strf::printer<CharT>*>(&storage_);
+        return * reinterpret_cast<const strf::arg_printer<CharT>*>(&storage_);
     }
 
 #if defined(__GNUC__) && (__GNUC__ <= 6)
@@ -2319,7 +2319,7 @@ private:
         sizeof(strf::detail::int_printer_static_base_and_punct<CharT, 10, true>);
 
     using storage_type_ = typename std::aligned_storage
-        < pool_size_, alignof(strf::printer<CharT>)>
+        < pool_size_, alignof(strf::arg_printer<CharT>)>
         :: type;
 
     storage_type_ storage_;

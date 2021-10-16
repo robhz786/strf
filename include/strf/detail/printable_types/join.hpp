@@ -129,7 +129,7 @@ struct aligned_join_maker
 namespace detail {
 
 template<typename CharT, typename... Printers>
-class aligned_join_printer_impl: public printer<CharT>
+class aligned_join_printer_impl: public arg_printer<CharT>
 {
     using printers_tuple_ = strf::detail::printers_tuple<CharT, Printers...>;
 
@@ -226,7 +226,7 @@ private:
 
     using printers_tuple_storage_ = typename std::aligned_storage
 #if defined(_MSC_VER)
-        <sizeof(std::tuple<Printers...>), alignof(strf::printer<CharT>)>
+        <sizeof(std::tuple<Printers...>), alignof(strf::arg_printer<CharT>)>
 #else
         <sizeof(printers_tuple_), alignof(printers_tuple_)>
 #endif
@@ -277,7 +277,7 @@ template < typename CharT, strf::preview_size PrevSize, strf::preview_width Prev
          , typename FPack, typename Arg >
 struct print_impl_with_width_preview_<CharT, print_preview<PrevSize, PrevWidth>, FPack, Arg>
 {
-    using type = strf::printer_type
+    using type = strf::arg_printer_type
         < CharT, strf::print_preview <PrevSize, strf::preview_width::yes>, FPack, Arg >;
 };
 
@@ -308,7 +308,7 @@ public:
 };
 
 template<typename CharT, typename... Printers>
-class join_printer_impl: public printer<CharT> {
+class join_printer_impl: public arg_printer<CharT> {
 public:
 
     template<typename Preview, typename FPack, typename... FwdArgs>
@@ -337,7 +337,7 @@ private:
 template <typename CharT, typename Preview, typename FPack, typename... FwdArgs>
 class join_printer
     : public strf::detail::join_printer_impl
-        < CharT, strf::printer_type<CharT, Preview, FPack, FwdArgs>... >
+        < CharT, strf::arg_printer_type<CharT, Preview, FPack, FwdArgs>... >
 {
 public:
 
@@ -346,7 +346,7 @@ public:
         ( const strf::detail::join_printer_input
               < CharT, Preview, FPack2, false, FwdArgs... >& input )
         : strf::detail::join_printer_impl
-            < CharT, strf::printer_type<CharT, Preview, FPack, FwdArgs>... >
+            < CharT, strf::arg_printer_type<CharT, Preview, FPack, FwdArgs>... >
             ( input.arg.value().args, input.preview, input.facets )
     {
     }

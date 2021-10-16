@@ -1352,7 +1352,7 @@ STRF_HD void print_inf( strf::print_dest<CharT>& dest
 }
 
 template <typename CharT>
-class fast_double_printer: public strf::printer<CharT>
+class fast_double_printer: public strf::arg_printer<CharT>
 {
 public:
 
@@ -2323,7 +2323,7 @@ STRF_HD strf::detail::float_init_result init_float_printer_data
 
 
 template <typename CharT>
-class punct_double_printer: public strf::printer<CharT>
+class punct_double_printer: public strf::arg_printer<CharT>
 {
 public:
 

@@ -65,8 +65,8 @@ preview_and_print_result preview_and_print(char* buff, std::size_t buff_size, co
     strf::width_t initial_width = (strf::width_t::max)();
     strf::print_size_and_width_preview preview(initial_width);
     auto printer_input = strf::make_printer_input<char>(preview, strf::pack(), arg);
-    using printer_type = typename decltype(printer_input)::printer_type;
-    printer_type printer{printer_input};
+    using arg_printer_type = typename decltype(printer_input)::printer_type;
+    arg_printer_type printer{printer_input};
     strf::cstr_writer dest{buff, buff_size};
     printer.print_to(dest);
     auto end = dest.finish().ptr;

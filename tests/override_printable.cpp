@@ -6,7 +6,7 @@
 #include "test_utils.hpp"
 
 template <typename CharT>
-class my_bool_printer: public strf::printer<CharT>
+class my_bool_printer: public strf::arg_printer<CharT>
 {
 public:
 

@@ -73,7 +73,7 @@ template < typename CharT
          , typename ParentFPack
          , typename ChildFPack
          , typename ... Args >
-class facets_pack_printer: public strf::printer<CharT>
+class facets_pack_printer: public strf::arg_printer<CharT>
 {
 public:
 

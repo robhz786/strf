@@ -14,12 +14,12 @@
 namespace strf {
 
 template <typename CharT>
-class printer
+class arg_printer
 {
 public:
     using char_type = CharT;
 
-    STRF_HD virtual ~printer()
+    STRF_HD virtual ~arg_printer()
     {
     }
 
@@ -1079,7 +1079,7 @@ using printer_input_type = decltype
                                      , std::declval<Arg>() ) );
 
 template <typename CharT, typename Preview, typename FPack, typename Arg>
-using printer_type = typename printer_input_type<CharT, Preview, FPack, Arg>::printer_type;
+using arg_printer_type = typename printer_input_type<CharT, Preview, FPack, Arg>::printer_type;
 
 template < typename CharT
          , strf::preview_size SizeRequired
@@ -1123,7 +1123,7 @@ STRF_HD void preview_only_width
 {
     using preview_type = strf::print_preview<strf::preview_size::no, strf::preview_width::yes>;
 
-    (void) strf::printer_type<CharT, preview_type, strf::facets_pack<FPE...>, Arg>
+    (void) strf::arg_printer_type<CharT, preview_type, strf::facets_pack<FPE...>, Arg>
         ( strf::make_printer_input<CharT>(pp, facets, arg) );
 
     if (pp.remaining_width() > 0) {
@@ -1165,7 +1165,7 @@ STRF_HD void preview
 {
     using preview_type = strf::print_preview<strf::preview_size::yes, WidthRequired>;
     strf::detail::do_nothing_with
-        ( strf::printer_type<CharT, preview_type, strf::facets_pack<FPE...>, Args>
+        ( strf::arg_printer_type<CharT, preview_type, strf::facets_pack<FPE...>, Args>
           ( strf::make_printer_input<CharT>(pp, facets, args) ) ... );
 }
 
@@ -2040,7 +2040,7 @@ template <typename Charset, typename ErrHandler>
 STRF_HD void tr_string_write
     ( const typename Charset::code_unit* str
     , const typename Charset::code_unit* str_end
-    , const strf::printer<typename Charset::code_unit>* const * args
+    , const strf::arg_printer<typename Charset::code_unit>* const * args
     , std::size_t num_args
     , strf::print_dest<typename Charset::code_unit>& dest
     , Charset charset
@@ -2133,7 +2133,7 @@ public:
     STRF_HD tr_string_printer
         ( strf::print_preview<SizeRequested, strf::preview_width::no>& preview
         , const strf::print_preview<SizeRequested, strf::preview_width::no>* args_preview
-        , std::initializer_list<const strf::printer<char_type>*> printers
+        , std::initializer_list<const strf::arg_printer<char_type>*> printers
         , const char_type* tr_string
         , const char_type* tr_string_end
         , Charset charset
@@ -2167,7 +2167,7 @@ private:
 
     const char_type* tr_string_;
     const char_type* tr_string_end_;
-    const strf::printer<char_type>* const * printers_array_;
+    const strf::arg_printer<char_type>* const * printers_array_;
     std::size_t num_printers_;
     Charset charset_;
     ErrHandler err_handler_;
@@ -2236,7 +2236,7 @@ class destination_common
     using char_type_ = typename DestinationCreator::char_type;
 
     template <typename Arg>
-    using printer_ = strf::printer_type<char_type_, Preview, FPack, Arg>;
+    using printer_ = strf::arg_printer_type<char_type_, Preview, FPack, Arg>;
 
     using finish_return_type_ = destination_finish_return_type<DestinationCreator, Sized>;
 
@@ -2358,13 +2358,13 @@ public:
 
 private:
 
-    static inline STRF_HD const strf::printer<char_type_>&
-    as_printer_cref_(const strf::printer<char_type_>& p)
+    static inline STRF_HD const strf::arg_printer<char_type_>&
+    as_printer_cref_(const strf::arg_printer<char_type_>& p)
     {
         return p;
     }
-    static inline STRF_HD const strf::printer<char_type_>*
-    as_printer_cptr_(const strf::printer<char_type_>& p)
+    static inline STRF_HD const strf::arg_printer<char_type_>*
+    as_printer_cptr_(const strf::arg_printer<char_type_>& p)
     {
          return &p;
     }
@@ -2407,7 +2407,7 @@ private:
         ( const char_type_* str
         , const char_type_* str_end
         , Preview* preview_arr
-        , std::initializer_list<const strf::printer<char_type_>*> args ) const &
+        , std::initializer_list<const strf::arg_printer<char_type_>*> args ) const &
     {
         const auto& self = static_cast<const destination_type_&>(*this);
 
