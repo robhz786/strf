@@ -626,7 +626,7 @@ struct string_printing
         , strf::transcoding_formatter<SrcCharT> >;
 
     template <typename DestCharT, typename Preview, typename FPack>
-    constexpr STRF_HD static auto make_printer_input
+    constexpr STRF_HD static auto make_input
         ( strf::tag<DestCharT>
         , Preview& preview
         , const FPack& facets
@@ -642,7 +642,7 @@ struct string_printing
 
     template < typename DestCharT, typename Preview, typename FPack
              , bool HasPrecision, bool HasAlignment, typename TranscodeFormatter>
-    constexpr STRF_HD static auto make_printer_input
+    constexpr STRF_HD static auto make_input
         ( strf::tag<DestCharT>
         , Preview& preview
         , const FPack& facets

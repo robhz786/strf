@@ -167,7 +167,7 @@ class std_complex_printer: public strf::arg_printer<CharT>
 public:
 
     template <typename... T>
-    explicit std_complex_printer(strf::usual_printer_input<T...> x);
+    explicit std_complex_printer(strf::usual_arg_printer_input<T...> x);
 
     void print_to(strf::print_dest<CharT>& dest) const override;
 
@@ -189,7 +189,7 @@ private:
 template <typename CharT, typename FloatT>
 template <typename... T>
 inline std_complex_printer<CharT, FloatT>::std_complex_printer
-    ( strf::usual_printer_input<T...> x )
+    ( strf::usual_arg_printer_input<T...> x )
     : encoding_(strf::use_facet<strf::charset_c<CharT>, FloatT>(x.facets))
     , numpunct_(strf::use_facet<strf::numpunct_c<10>, FloatT>(x.facets))
     , lettercase_(strf::use_facet<strf::lettercase_c, FloatT>(x.facets))
@@ -256,7 +256,7 @@ class fmt_std_complex_printer: public strf::arg_printer<CharT>
 public:
 
     template <typename... T>
-    fmt_std_complex_printer(strf::usual_printer_input<T...> x)
+    fmt_std_complex_printer(strf::usual_arg_printer_input<T...> x)
         : encoding_(strf::use_facet<strf::charset_c<CharT>, complex_type_>(x.facets))
         , numpunct10_(strf::use_facet<strf::numpunct_c<10>, FloatT>(x.facets))
         , numpunct16_(strf::use_facet<strf::numpunct_c<16>, FloatT>(x.facets))
@@ -433,12 +433,12 @@ struct print_traits<std::complex<FloatT>>
         , strf::alignment_formatter >;
 
     template <typename CharT, typename Preview, typename FPack>
-    static auto make_printer_input
+    static auto make_input
         ( strf::tag<CharT>
         , Preview& preview
         , const FPack& fp
         , std::complex<FloatT> arg)
-        -> strf::usual_printer_input
+        -> strf::usual_arg_printer_input
             < CharT, Preview, FPack, std::complex<FloatT>
             , std_complex_printer<CharT, FloatT> >
     {
@@ -446,12 +446,12 @@ struct print_traits<std::complex<FloatT>>
     }
 
     template < typename CharT, typename Preview, typename FPack, typename... T >
-    static auto make_printer_input
+    static auto make_input
         ( strf::tag<CharT>
         , Preview& preview
         , const FPack& fp
         , strf::value_with_formatters<T...> arg )
-        -> strf::usual_printer_input
+        -> strf::usual_arg_printer_input
             < CharT, Preview, FPack, strf::value_with_formatters<T...>
             , fmt_std_complex_printer<CharT, FloatT> >
     {

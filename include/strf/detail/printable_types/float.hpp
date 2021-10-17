@@ -748,13 +748,13 @@ struct fast_double_printer_input
 
 // template <typename CharT, typename Preview, typename FPack, typename FloatT>
 // using fast_punct_double_printer_input =
-//     strf::usual_printer_input< CharT, Preview, FPack, FloatT
+//     strf::usual_arg_printer_input< CharT, Preview, FPack, FloatT
 //                              , strf::detail::fast_punct_double_printer<CharT> >;
 
 template < typename CharT, typename Preview, typename FPack
          , typename FloatT, typename FloatFormatter, bool HasAlignment >
 using fmt_double_printer_input =
-    strf::usual_printer_input
+    strf::usual_arg_printer_input
         < CharT, Preview, FPack
         , strf::detail::float_with_formatters<FloatT, FloatFormatter, HasAlignment>
         , strf::detail::punct_double_printer<CharT> >;
@@ -767,7 +767,7 @@ struct float_printing
     using formatters = strf::tag<strf::float_formatter, strf::alignment_formatter>;
 
     template <typename CharT, typename Preview, typename FPack>
-    STRF_HD constexpr static auto make_printer_input
+    STRF_HD constexpr static auto make_input
         ( strf::tag<CharT>, Preview& preview, const FPack& fp, FloatT x ) noexcept
         -> strf::detail::fast_double_printer_input<CharT, Preview, FloatT>
     {
@@ -776,7 +776,7 @@ struct float_printing
 
     template < typename CharT, typename Preview, typename FPack
              , typename FloatFormatter, bool HasAlignment >
-    STRF_HD constexpr static auto make_printer_input
+    STRF_HD constexpr static auto make_input
         ( strf::tag<CharT>
         , Preview& preview
         , const FPack& fp

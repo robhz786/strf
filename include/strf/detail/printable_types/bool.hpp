@@ -25,24 +25,24 @@ struct print_traits<bool>
     using formatters = strf::tag<strf::alignment_formatter>;
 
     template <typename CharT, typename Preview, typename FPack>
-    constexpr STRF_HD static auto make_printer_input
+    constexpr STRF_HD static auto make_input
         ( strf::tag<CharT>
         , Preview& preview
         , const FPack& fp
         , bool x ) noexcept
-        -> strf::usual_printer_input
+        -> strf::usual_arg_printer_input
             < CharT, Preview, FPack, bool, strf::detail::bool_printer<CharT> >
     {
         return {preview, fp, x};
     }
 
     template <typename CharT, typename Preview, typename FPack, typename... T>
-    constexpr STRF_HD static auto make_printer_input
+    constexpr STRF_HD static auto make_input
         ( strf::tag<CharT>
         , Preview& preview
         , const FPack& fp
         , strf::value_with_formatters<T...> x ) noexcept
-        -> strf::usual_printer_input
+        -> strf::usual_arg_printer_input
             < CharT, Preview, FPack
             , strf::value_with_formatters<T...>
             , strf::detail::fmt_bool_printer<CharT> >
@@ -63,7 +63,7 @@ public:
 
     template <typename... T>
     STRF_CONSTEXPR_IN_CXX14 STRF_HD bool_printer
-        ( const strf::usual_printer_input<T...>& input )
+        ( const strf::usual_arg_printer_input<T...>& input )
         : value_(input.arg)
         , lettercase_(strf::use_facet<strf::lettercase_c, bool>(input.facets))
     {
@@ -111,7 +111,7 @@ public:
 
     template <typename... T>
     STRF_HD fmt_bool_printer
-        ( const strf::usual_printer_input<CharT, T...>& input )
+        ( const strf::usual_arg_printer_input<CharT, T...>& input )
         : value_(input.arg.value())
         , afmt_(input.arg.get_alignment_format())
         , lettercase_(strf::use_facet<strf::lettercase_c, bool>(input.facets))

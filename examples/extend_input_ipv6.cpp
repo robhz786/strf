@@ -107,7 +107,7 @@ class ipv6_printer: public strf::arg_printer<CharT>
 public:
 
     template <typename... T>
-    ipv6_printer(strf::usual_printer_input<CharT, T...> input)
+    ipv6_printer(strf::usual_arg_printer_input<CharT, T...> input)
         : addr_(input.arg.value())
         , alignment_fmt_(input.arg.get_alignment_format())
         , lettercase_(strf::use_facet<strf::lettercase_c, xxx::ipv6address>(input.facets))
@@ -227,12 +227,12 @@ struct print_traits<xxx::ipv6address> {
     using formatters = strf::tag<ipv6_formatter, strf::alignment_formatter>;
 
     template <typename CharT, typename Preview, typename FPack, typename... T>
-    static auto make_printer_input
+    static auto make_input
         ( strf::tag<CharT>
         , Preview& preview
         , const FPack& fp
         , strf::value_with_formatters<T...> arg )
-        -> strf::usual_printer_input
+        -> strf::usual_arg_printer_input
             < CharT
             , Preview
             , FPack

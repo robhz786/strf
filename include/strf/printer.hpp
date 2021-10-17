@@ -491,7 +491,7 @@ private:
 };
 
 template <typename CharT, typename Preview, typename FPack, typename Arg, typename Printer>
-struct usual_printer_input;
+struct usual_arg_printer_input;
 
 template< typename CharT
         , strf::preview_size PreviewSize
@@ -499,7 +499,7 @@ template< typename CharT
         , typename FPack
         , typename Arg
         , typename Printer >
-struct usual_printer_input
+struct usual_arg_printer_input
     < CharT, strf::print_preview<PreviewSize, PreviewWidth>, FPack, Arg, Printer >
 {
     using char_type = CharT;
@@ -760,12 +760,12 @@ template < typename UnadaptedMaker
          , typename Preview
          , typename FPack
          , typename Arg >
-struct can_make_printer_input_impl
+struct can_make_arg_printer_input_impl
 {
     template <typename P>
     static STRF_HD auto test_(Preview& preview, const FPack& facets, const Arg& arg)
         -> decltype( std::declval<const P&>()
-                         .make_printer_input
+                         .make_input
                              ( strf::tag<CharT>{}, preview, facets, arg )
                    , std::true_type{} );
 
@@ -784,8 +784,8 @@ template < typename UnadaptedMaker
          , typename Preview
          , typename FPack
          , typename Arg >
-using can_make_printer_input = typename
-    can_make_printer_input_impl<UnadaptedMaker, CharT, Preview, FPack, Arg>
+using can_make_arg_printer_input = typename
+    can_make_arg_printer_input_impl<UnadaptedMaker, CharT, Preview, FPack, Arg>
     ::result;
 
 struct arg_adapter_rm_fmt
@@ -830,7 +830,7 @@ template < typename PrintTraits
 struct adapter_selector_3<PrintTraits, Maker, CharT, Preview, FPack, DefaultVwf, DefaultVwf>
 {
     static constexpr bool can_pass_directly =
-        can_make_printer_input<Maker, CharT, Preview, FPack, DefaultVwf>
+        can_make_arg_printer_input<Maker, CharT, Preview, FPack, DefaultVwf>
         ::value;
 
     using adapter_type = typename std::conditional
@@ -850,10 +850,10 @@ template < typename PrintTraits
 struct adapter_selector_2
 {
     static constexpr bool can_pass_directly =
-        can_make_printer_input<Maker, CharT, Preview, FPack, Arg>
+        can_make_arg_printer_input<Maker, CharT, Preview, FPack, Arg>
         ::value;
     static constexpr bool can_pass_as_fmt =
-        can_make_printer_input<Maker, CharT, Preview, FPack, DefaultVwf>
+        can_make_arg_printer_input<Maker, CharT, Preview, FPack, DefaultVwf>
         ::value;
     static constexpr bool shall_adapt = !can_pass_directly && can_pass_as_fmt;
 
@@ -1014,11 +1014,11 @@ template < typename CharT
              = strf::detail::mk_pr_in::helper_no_override<CharT, Preview, FPack, Arg>
          , typename Maker = typename Helper::maker_type
          , typename ChTag = strf::tag<CharT> >
-constexpr STRF_HD auto make_default_printer_input(Preview& p, const FPack& fp, const Arg& arg)
-    noexcept(noexcept(Maker::make_printer_input(ChTag{}, p, fp, Helper::adapt_arg(arg))))
-    -> decltype(Maker::make_printer_input(ChTag{}, p, fp, Helper::adapt_arg(arg)))
+constexpr STRF_HD auto make_default_arg_printer_input(Preview& p, const FPack& fp, const Arg& arg)
+    noexcept(noexcept(Maker::make_input(ChTag{}, p, fp, Helper::adapt_arg(arg))))
+    -> decltype(Maker::make_input(ChTag{}, p, fp, Helper::adapt_arg(arg)))
 {
-    return Maker::make_printer_input(ChTag{}, p, fp, Helper::adapt_arg(arg));
+    return Maker::make_input(ChTag{}, p, fp, Helper::adapt_arg(arg));
 }
 
 template < typename CharT
@@ -1028,26 +1028,26 @@ template < typename CharT
          , typename Helper = strf::detail::mk_pr_in::helper<CharT, Preview, FPack, Arg>
          , typename Maker = typename Helper::maker_type
          , typename ChTag = strf::tag<CharT> >
-constexpr STRF_HD auto make_printer_input(Preview& p, const FPack& fp, const Arg& arg)
-    -> decltype(((const Maker*)0)->make_printer_input(ChTag{}, p, fp, Helper::adapt_arg(arg)))
+constexpr STRF_HD auto make_arg_printer_input(Preview& p, const FPack& fp, const Arg& arg)
+    -> decltype(((const Maker*)0)->make_input(ChTag{}, p, fp, Helper::adapt_arg(arg)))
 {
     return Helper::get_maker(fp)
-        .make_printer_input(strf::tag<CharT>{}, p, fp, Helper::adapt_arg(arg));
+        .make_input(strf::tag<CharT>{}, p, fp, Helper::adapt_arg(arg));
 }
 
 struct no_print_override
 {
     using category = print_override_c;
     template <typename CharT, typename Preview, typename FPack, typename Arg>
-    constexpr static STRF_HD auto make_printer_input
+    constexpr static STRF_HD auto make_input
         ( strf::tag<CharT>
         , Preview& preview
         , const FPack& facets
         , Arg&& arg )
-        noexcept(noexcept(strf::make_default_printer_input<CharT>(preview, facets, arg)))
-        -> decltype(strf::make_default_printer_input<CharT>(preview, facets, arg))
+        noexcept(noexcept(strf::make_default_arg_printer_input<CharT>(preview, facets, arg)))
+        -> decltype(strf::make_default_arg_printer_input<CharT>(preview, facets, arg))
     {
-        return strf::make_default_printer_input<CharT>(preview, facets, arg);
+        return strf::make_default_arg_printer_input<CharT>(preview, facets, arg);
     }
 };
 
@@ -1074,9 +1074,10 @@ using override_tag = typename strf::print_traits_of<T>::override_tag;
 
 template <typename CharT, typename Preview, typename FPack, typename Arg>
 using printer_input_type = decltype
-    ( strf::make_printer_input<CharT>( std::declval<Preview&>()
-                                     , std::declval<const FPack&>()
-                                     , std::declval<Arg>() ) );
+    ( strf::make_arg_printer_input<CharT>
+        ( std::declval<Preview&>()
+        , std::declval<const FPack&>()
+        , std::declval<Arg>() ) );
 
 template <typename CharT, typename Preview, typename FPack, typename Arg>
 using arg_printer_type = typename printer_input_type<CharT, Preview, FPack, Arg>::printer_type;
@@ -1124,7 +1125,7 @@ STRF_HD void preview_only_width
     using preview_type = strf::print_preview<strf::preview_size::no, strf::preview_width::yes>;
 
     (void) strf::arg_printer_type<CharT, preview_type, strf::facets_pack<FPE...>, Arg>
-        ( strf::make_printer_input<CharT>(pp, facets, arg) );
+        ( strf::make_arg_printer_input<CharT>(pp, facets, arg) );
 
     if (pp.remaining_width() > 0) {
         strf::detail::preview_only_width<CharT>(pp, facets, other_args...);
@@ -1166,7 +1167,7 @@ STRF_HD void preview
     using preview_type = strf::print_preview<strf::preview_size::yes, WidthRequired>;
     strf::detail::do_nothing_with
         ( strf::arg_printer_type<CharT, preview_type, strf::facets_pack<FPE...>, Args>
-          ( strf::make_printer_input<CharT>(pp, facets, args) ) ... );
+          ( strf::make_arg_printer_input<CharT>(pp, facets, args) ) ... );
 }
 
 template <typename> struct is_char: public std::false_type {};
@@ -2332,7 +2333,7 @@ public:
             ( preview
             , as_printer_cref_
               ( printer_<Args>
-                ( strf::make_printer_input<char_type_>
+                ( strf::make_arg_printer_input<char_type_>
                   ( preview, self.fpack_, args ) ) )... );
     }
 
@@ -2398,7 +2399,7 @@ private:
             , preview_arr
             , { as_printer_cptr_
                 ( printer_<Args>
-                  ( strf::make_printer_input<char_type_>
+                  ( strf::make_arg_printer_input<char_type_>
                     ( preview_arr[I], fpack, args ) ) )... } );
     }
 

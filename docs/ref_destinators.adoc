@@ -10,7 +10,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 :print_dest: <<destination_hpp#print_dest,print_dest>>
 :tag: <<tag,tag>>
 :print_preview: <<print_preview,print_preview>>
-:make_printer_input: <<make_printer_input,make_printer_input>>
+:make_arg_printer_input: <<make_arg_printer_input,make_arg_printer_input>>
 
 
 :basic_cstr_writer: <<destination_hpp#basic_cstr_writer,basic_cstr_writer>>
@@ -407,7 +407,7 @@ typename DestinationCreator::destination_type dest{&#95;dest&#95;creator.create(
 using preview_t = {print_preview}<preview_size::no, preview_width::no>;
 preview_t preview;
 using printer_t = {arg_printer_type}<char_type, preview_type, FPack, Arg>;
-printer_t p{ {make_printer_input}<char_type>(preview, &#95;fpack, arg) };
+printer_t p{ {make_arg_printer_input}<char_type>(preview, &#95;fpack, arg) };
 static_cast<const {arg_printer}<char_type>&>(p).print_to(dest);
 ----
 where `Arg` is the type in `Args\...` corresponding to `arg`
@@ -697,7 +697,7 @@ preview_type preview;
 [source,cpp,subs=normal]
 ----
 using printer_t = {arg_printer_type}<char_type, preview_type, FPack, Arg>;
-printer_t p{ {make_printer_input}<char_type>(preview, &#95;fpack, arg) };
+printer_t p{ {make_arg_printer_input}<char_type>(preview, &#95;fpack, arg) };
 ----
 . Creates/get the `{print_dest}` object doing
 +
@@ -1013,7 +1013,7 @@ decltype(auto) dest = &#95;dest&#95;creator.create(_size)
 using preview_t = {print_preview}<preview_size::no, preview_width::no>;
 preview_t preview;
 using printer_t = {arg_printer_type}<char_type, preview_type, FPack, Arg>;
-printer_t p{ {make_printer_input}<char_type>(preview, &#95;fpack, arg) };
+printer_t p{ {make_arg_printer_input}<char_type>(preview, &#95;fpack, arg) };
 static_cast<const {arg_printer}<char_type>&>(p).print_to(dest);
 ----
 , where `Arg` is the type in `Args\...` corresponding to `arg`

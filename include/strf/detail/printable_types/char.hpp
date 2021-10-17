@@ -26,12 +26,12 @@ struct char_printing
     using formatters = strf::tag<strf::quantity_formatter, strf::alignment_formatter>;
 
     template <typename DestCharT, typename Preview, typename FPack>
-    constexpr STRF_HD static auto make_printer_input
+    constexpr STRF_HD static auto make_input
         ( strf::tag<DestCharT>
         , Preview& preview
         , const FPack& fp
         , SrcCharT x ) noexcept
-        -> strf::usual_printer_input
+        -> strf::usual_arg_printer_input
             < DestCharT, Preview, FPack, SrcCharT, strf::detail::char_printer<DestCharT> >
     {
         static_assert( std::is_same<SrcCharT, DestCharT>::value, "Character type mismatch.");
@@ -39,12 +39,12 @@ struct char_printing
     }
 
     template <typename DestCharT, typename Preview, typename FPack, typename... T>
-    constexpr STRF_HD static auto make_printer_input
+    constexpr STRF_HD static auto make_input
         ( strf::tag<DestCharT>
         , Preview& preview
         , const FPack& fp
         , strf::value_with_formatters<T...> x ) noexcept
-        -> strf::usual_printer_input
+        -> strf::usual_arg_printer_input
             < DestCharT, Preview, FPack
             , strf::value_with_formatters<T...>
             , strf::detail::fmt_char_printer<DestCharT> >
@@ -69,12 +69,12 @@ struct print_traits<char32_t>
     using formatters = strf::tag<strf::quantity_formatter, strf::alignment_formatter>;
 
     template <typename DestCharT, typename Preview, typename FPack>
-    constexpr STRF_HD static auto make_printer_input
+    constexpr STRF_HD static auto make_input
         ( strf::tag<DestCharT>
         , Preview& preview
         , const FPack& fp
         , char32_t x ) noexcept
-        -> strf::usual_printer_input
+        -> strf::usual_arg_printer_input
             < DestCharT, Preview, FPack, char32_t
             , strf::detail::conditional_t
                 < std::is_same<DestCharT, char32_t>::value
@@ -85,12 +85,12 @@ struct print_traits<char32_t>
     }
 
     template <typename DestCharT, typename Preview, typename FPack, typename... F>
-    constexpr STRF_HD static auto make_printer_input
+    constexpr STRF_HD static auto make_input
         ( strf::tag<DestCharT>
         , Preview& preview
         , const FPack& fp
         , strf::value_with_formatters<F...> x ) noexcept
-        -> strf::usual_printer_input
+        -> strf::usual_arg_printer_input
             < DestCharT, Preview, FPack, strf::value_with_formatters<F...>
             , strf::detail::conditional_t
                 < std::is_same<DestCharT, char32_t>::value
@@ -133,11 +133,11 @@ class char_printer: public strf::arg_printer<CharT>
 public:
     template <typename... T>
     STRF_HD char_printer
-        ( const strf::usual_printer_input<CharT, T...>& input )
+        ( const strf::usual_arg_printer_input<CharT, T...>& input )
         : ch_(static_cast<CharT>(input.arg))
     {
         input.preview.add_size(1);
-        using preview_type = typename strf::usual_printer_input<CharT, T...>::preview_type;
+        using preview_type = typename strf::usual_arg_printer_input<CharT, T...>::preview_type;
         STRF_IF_CONSTEXPR(preview_type::width_required) {
             auto&& wcalc = use_facet<strf::width_calculator_c, CharT>(input.facets);
             auto charset = use_facet<strf::charset_c<CharT>, CharT>(input.facets);
@@ -169,7 +169,7 @@ class fmt_char_printer: public strf::arg_printer<CharT>
 public:
     template <typename... T>
     STRF_HD fmt_char_printer
-        ( const usual_printer_input<CharT, T...>& input )
+        ( const usual_arg_printer_input<CharT, T...>& input )
         : count_(input.arg.count())
         , afmt_(input.arg.get_alignment_format())
         , ch_(static_cast<CharT>(input.arg.value()))
@@ -279,7 +279,7 @@ class conv_char32_printer: public strf::arg_printer<DestCharT>
 {
 public:
     template <typename... T>
-    STRF_HD conv_char32_printer(strf::usual_printer_input<T...> input)
+    STRF_HD conv_char32_printer(strf::usual_arg_printer_input<T...> input)
         : ch_(input.arg)
     {
         auto encoding = strf::use_facet<charset_c<DestCharT>, char32_t>(input.facets);
@@ -287,7 +287,7 @@ public:
         encode_char_f_ = encoding.encode_char_func();
         encoded_char_size_ = encoding.encoded_char_size(input.arg);
         input.preview.add_size(encoded_char_size_);
-        using preview_type = typename strf::usual_printer_input<T...>::preview_type;
+        using preview_type = typename strf::usual_arg_printer_input<T...>::preview_type;
         STRF_IF_CONSTEXPR (preview_type::width_required) {
             auto&& wcalc = use_facet<strf::width_calculator_c, char32_t>(input.facets);
             input.preview.subtract_width(wcalc.char_width(strf::utf_t<char32_t>{}, ch_));
@@ -316,7 +316,7 @@ class fmt_conv_char32_printer: public strf::arg_printer<DestCharT>
 public:
 
     template <typename... T>
-    STRF_HD fmt_conv_char32_printer(strf::usual_printer_input<T...> input)
+    STRF_HD fmt_conv_char32_printer(strf::usual_arg_printer_input<T...> input)
         : count_(input.arg.count())
         , ch_(input.arg.value())
     {

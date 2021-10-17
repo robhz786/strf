@@ -61,7 +61,7 @@ struct join_printing
     using formatters = strf::tag<strf::alignment_formatter>;
 
     template< typename CharT, typename Preview, typename FPack, bool HasAlignment >
-    STRF_HD constexpr static auto make_printer_input
+    STRF_HD constexpr static auto make_input
         ( strf::tag<CharT>
         , Preview& preview
         , const FPack& facets

@@ -134,7 +134,7 @@ public:
         , Preview& preview
         , const FPack& fp )
         : indexed_printer<I, Printers>
-            ( strf::make_printer_input<CharT>
+            ( strf::make_arg_printer_input<CharT>
               ( preview, fp, args.template get<I>() ) ) ...
     {
     }
