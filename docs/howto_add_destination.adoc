@@ -41,7 +41,7 @@ using the basic usage `<<tutorial#,syntax>>` of the library:
 [source,cpp,subs=normal]
 ----
 strf::print_dest</{asterisk}char type{asterisk}/>& dst = /{asterisk}\...{asterisk}/;
-strf::<<quick_reference#to_destination_ref,to>>(dst) (/{asterisk} arguments to be printed {asterisk}/);
+strf::<<quick_reference#to_print_dest_ref,to>>(dst) (/{asterisk} arguments to be printed {asterisk}/);
 ----
 
 But before learning how to implement such class,
@@ -214,7 +214,7 @@ strf::{to}(dst) (/{asterisk}\...{asterisk}/);
 dst.finish();
 ----
 Almost
-<<quick_reference#destination_types,all classes of this library that derive from `destination`>>
+<<quick_reference#destination_types,all destination classes of this library>>
 have a `finish` function ( the only exception is
 <<destination_hpp#discarded_destination,discarded_destination>>.
 So you may want to follow the convention.

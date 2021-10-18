@@ -15,16 +15,19 @@ http://www.boost.org/LICENSE_1_0.txt)
 :icons: font
 
 :destination: <<destination,destination>>
+:put: <<destination_put,put>>
+
+:print_dest: <<print_dest,print_dest>>
+:print_dest_space_after_flush: <<print_dest,print_dest_space_after_flush>>
 
 :basic_cstr_writer: <<basic_cstr_writer, basic_cstr_writer>>
-:basic_string_maker: <<basic_string_maker, basic_string_maker>>
-:basic_string_appender: <<basic_string_appender, basic_string_appender>>
-:basic_streambuf_writer: <<basic_streambuf_writer, basic_streambuf_writer>>
-:narrow_cfile_writer: <<narrow_cfile_writer, narrow_cfile_writer>>
-:wide_cfile_writer: <<wide_cfile_writer, wide_cfile_writer>>
+:basic_char_array_writer: <<basic_char_array_writer, basic_char_array_writer>>
+:discarded_destination: <<discarded_destination,discarded_destination>>
+
 :garbage_buff: <<garbage_buff, garbage_buff>>
 :garbage_buff_end: <<garbage_buff, garbage_buff_end>>
 :log2_garbage_buff_size: <<garbage_buff, log2_garbage_buff_size>>
+:garbage_buff_size: <<garbage_buff, garbage_buff_size>>
 
 :value_type: <<destination_value_type,value_type>>
 :buffer_ptr: <<destination_buffer_ptr,buffer_ptr>>
@@ -53,29 +56,28 @@ http://www.boost.org/LICENSE_1_0.txt)
 ----
 namespace strf {
 
-template <typename CharT, unsigned>
-class destination
-{ /{asterisk} \... {asterisk}/ };
+template <typename T, unsigned Log2BufferSpace>
+class {destination};
+
+constexpr std::size_t {print_dest_space_after_flush} = ...; // >= 64
 
 template <typename CharT>
-void put(destination<CharT>& dest, CharT c);
+using {print_dest} = destination<CharT, ...>;
 
 template <typename CharT>
-class basic_cstr_writer final: public destination<CharT>
-{ /{asterisk} \... {asterisk}/};
+class {basic_cstr_writer};
 
 template <typename CharT>
-class discarded_destination final: public destination<CharT>
-{ /{asterisk} \... {asterisk}/};
-
-constexpr std::size_t log2_garbage_buff_size = /{asterisk}...{asterisk}/;
-constexpr std::size_t garbage_buff_size = 1 << log2_garbage_buff_size;
+class {basic_char_array_writer};
 
 template <typename CharT>
-CharT* garbage_buff();
+class {discarded_destination};
 
 template <typename CharT>
-CharT* garbage_buff_end();
+CharT* {garbage_buff}();
+
+template <typename CharT>
+CharT* {garbage_buff_end}();
 
 using u8cstr_writer  = basic_cstr_writer<char8_t>;
 using cstr_writer    = basic_cstr_writer<char>;
@@ -94,7 +96,7 @@ using wcstr_writer   = basic_cstr_writer<wchar_t>;
 ----
 namespace strf {
 
-template <typename T, unsinged Log2BufferSpace>
+template <typename T, unsigned Log2BufferSpace>
 class destination: destination<T, Log2BufferSpace - 1>
 {
 public:
@@ -147,7 +149,7 @@ protected:
 // global functions
 
 template <typename T>
-void put(destination<T, 0>& dest, T value);
+void {put}(destination<T, 0>& dest, T value);
 
 } // namespace strf
 ----
@@ -396,10 +398,8 @@ dest.advance();
 ----
 namespace strf {
 
-constexpr unsigned log2_print_dest_space_after_flush = ...;
-
-constexpr std::size_t print_dest_space_after_flush =
-    (std::size_t)1 << log2_print_dest_space_after_flush;
+constexpr unsigned    log2_print_dest_space_after_flush = ...; // >= 6
+constexpr std::size_t      print_dest_space_after_flush = ...; // >= 64
 
 template <typename CharT>
 using print_dest = {destination}<CharT, log2_print_dest_space_after_flush>;
@@ -410,7 +410,7 @@ using print_dest = {destination}<CharT, log2_print_dest_space_after_flush>;
 * `log2_print_dest_space_after_flush` is an implementation-defined value
 that is greater than or equal to `6`.
 
-* `print_dest_space_after_flush` is greater than or equal to `64`.
+* `print_dest_space_after_flush` is equal to `(std::size_t)1 << log2_print_dest_space_after_flush`
 
 [[basic_cstr_writer]]
 == Class template `basic_cstr_writer`
