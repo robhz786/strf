@@ -18,7 +18,7 @@ template <typename CharT> class fmt_bool_printer;
 } // namespace detail
 
 template <>
-struct print_traits<bool>
+struct printing_traits<bool>
 {
     using override_tag = bool;
     using forwarded_type = bool;
@@ -51,8 +51,8 @@ struct print_traits<bool>
     }
 };
 
-constexpr STRF_HD strf::print_traits<bool>
-tag_invoke(strf::print_traits_tag, bool) noexcept { return {}; }
+constexpr STRF_HD strf::printing_traits<bool>
+tag_invoke(strf::printing_tag, bool) noexcept { return {}; }
 
 namespace detail {
 

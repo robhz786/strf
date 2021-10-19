@@ -18,7 +18,7 @@ struct ipv4address
 namespace strf {
 
 template <>
-struct print_traits<xxx::ipv4address> {
+struct printing_traits<xxx::ipv4address> {
 
     using override_tag = xxx::ipv4address;
     using forwarded_type = xxx::ipv4address;

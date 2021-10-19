@@ -703,13 +703,13 @@ template <typename> struct float_printing;
 
 template<typename FloatT, typename FloatFormatter, bool Align>
 using float_with_formatters = strf::value_with_formatters
-    < strf::print_traits<FloatT>
+    < strf::printing_traits<FloatT>
     , FloatFormatter
     , strf::alignment_formatter_q<Align> >;
 
 template<typename FloatT>
 using float_with_default_formatters = strf::value_with_formatters
-    < strf::print_traits<FloatT>
+    < strf::printing_traits<FloatT>
     , strf::float_formatter
     , strf::alignment_formatter >;
 
@@ -794,18 +794,18 @@ struct float_printing
 
 } // namespace detail
 
-template <> struct print_traits<float>:  public strf::detail::float_printing<float> {};
-template <> struct print_traits<double>: public strf::detail::float_printing<double> {};
+template <> struct printing_traits<float>:  public strf::detail::float_printing<float> {};
+template <> struct printing_traits<double>: public strf::detail::float_printing<double> {};
 
-STRF_HD constexpr auto tag_invoke(strf::print_traits_tag, float)
-    -> strf::print_traits<float>
+STRF_HD constexpr auto tag_invoke(strf::printing_tag, float)
+    -> strf::printing_traits<float>
     { return {}; }
 
-STRF_HD constexpr auto tag_invoke(strf::print_traits_tag, double)
-    -> strf::print_traits<double>
+STRF_HD constexpr auto tag_invoke(strf::printing_tag, double)
+    -> strf::printing_traits<double>
     { return {}; }
 
-void tag_invoke(strf::print_traits_tag, long double) = delete;
+void tag_invoke(strf::printing_tag, long double) = delete;
 
 namespace detail {
 

@@ -7,16 +7,16 @@ http://www.boost.org/LICENSE_1_0.txt)
 
 :arg_printer:      <<arg_printer,arg_printer>>
 :arg_printer_type: <<arg_printer_type,arg_printer_type>>
-:print_traits:     <<print_traits,print_traits>>
+:printing_traits:  <<printing_traits,printing_traits>>
 
 :print_preview: <<print_preview, print_preview>>
 :facets_pack: <<facets_pack, facets_pack>>
 :value_with_formatters: <<value_with_formatters, value_with_formatters>>
 
-:PrintTraits: <<PrintTraits,PrintTraits>>
+:PrintingTraits: <<PrintingTraits,PrintingTraits>>
 :Printable: <<Printable,Printable>>
 :PrinterInput: <<PrinterInput,PrinterInput>>
-:print_traits_of: <<print_traits_of,print_traits_of>>
+:printing_traits_of: <<printing_traits_of,printing_traits_of>>
 :print_override_c: <<print_override_c,print_override_c>>
 :make_default_arg_printer_input: <<make_default_arg_printer_input,make_default_arg_printer_input>>
 :make_arg_printer_input: <<make_arg_printer_input,make_arg_printer_input>>
@@ -36,42 +36,42 @@ or override an existing one.
 
 A type `T` is _Printable_ if:
 
-* `print_traits_of<T>` is defined and is a  _{PrintTraits}_ type
-* `print_traits_of<T>::<<PrintTraits_forwarded_type,forwarded_type>>` is implicitly convertible from `T`
+* `printing_traits_of<T>` is defined and is a  _{PrintingTraits}_ type
+* `printing_traits_of<T>::<<PrintingTraits_forwarded_type,forwarded_type>>` is implicitly convertible from `T`
 
-[[print_traits_of]]
-=== Type alias template `print_traits_of`
+[[printing_traits_of]]
+=== Type alias template `printing_traits_of`
 
 [source,cpp,subs=normal]
 ----
 namespace strf {
 
-struct print_traits_tag;
+struct printing_tag;
 
-template <typename T> print_traits;
+template <typename T> printing_traits;
 
-template <typename T> using print_traits_of = /{asterisk} see below\... {asterisk}/;
+template <typename T> using printing_traits_of = /{asterisk} see below\... {asterisk}/;
 
 } // namespace strf
 ----
 
-`print_traits_of<T>` is:
+`printing_traits_of<T>` is:
 
-*  `print_traits_of<std::remove_cvref<T>>`, if `T` is a reference type or has any cv-qualifier
+*  `printing_traits_of<std::remove_cvref<T>>`, if `T` is a reference type or has any cv-qualifier
 *  otherwise, it is `Traits`, when `T` is `{value_with_formatters}<Traits, /{asterisk}\... {asterisk}/>`
-*  otherwise, it is `print_traits<T>` if such template specialization is defined
-*  otherwise, it is `decltype(tag_invoke(print_traits_tag{}, std::declval<T>()))`
+*  otherwise, it is `printing_traits<T>` if such template specialization is defined
+*  otherwise, it is `decltype(tag_invoke(printing_tag{}, std::declval<T>()))`
 
-[[PrintTraits]]
-=== Type requirement _PrintTraits_
+[[PrintingTraits]]
+=== Type requirement _PrintingTraits_
 
 Given
 
-* `T`, a _PrintTraits_ type.
-* `P`, a _{Printable}_ type such that `{print_traits_of}<P>` is `T`.
+* `T`, a _PrintingTraits_ type.
+* `P`, a _{Printable}_ type such that `{printing_traits_of}<P>` is `T`.
 
 ==== Member types
-[[PrintTraits_forwarded_type]]
+[[PrintingTraits_forwarded_type]]
 ====
 [source,cpp]
 ----
@@ -85,7 +85,7 @@ and must be copy-constructible. And its copy-constructor should be fast.
 situations ( for example, the objects created by `fmt` and `{join}` ).
 ====
 
-[[PrintTraits_override_tag]]
+[[PrintingTraits_override_tag]]
 ====
 .( Optional )
 [source,cpp]
@@ -102,7 +102,7 @@ to obtain the _PrinterInput_ object:
 facet object. While when `override_tag` is not defined, this _Printable_ type is not overridable.
 ====
 
-[[PrintTraits_formatters]]
+[[PrintingTraits_formatters]]
 ====
 .( Optional )
 [source,cpp]
@@ -113,12 +113,12 @@ A type alias to `{tag}<F\...>`, where all types in `F\...` satisfy __<<Formatter
 It affects the return type of `<<fmt,fmt>>`.
 ====
 
-[[PrintTraits_functions]]
+[[PrintingTraits_functions]]
 ==== Member static function templates
 
 Given
 
-* `T`, a _PrintTraits_ type.
+* `T`, a _PrintingTraits_ type.
 * `CharT`, a character type
 * `fpack`, a value of type `{facets_pack}</{asterisk}\... {asterisk}/>`
 * `preview`, an lvalue of type `{print_preview}</{asterisk}\... {asterisk}/>`
@@ -144,7 +144,7 @@ Return value:: A value `r` such that `&r.preview == &preview`
 namespace strf {
 
 template <typename T>
-using override_tag = typename {print_traits_of}<T>::<<PrintTraits_override_tag,override_tag>>;
+using override_tag = typename {printing_traits_of}<T>::<<PrintingTraits_override_tag,override_tag>>;
 
 } // namespace strf
 ----
@@ -161,8 +161,8 @@ constexpr bool is_overridable = ... /{asterisk}see below{asterisk}/;
 } // namespace strf
 ----
 
-`is_overridable<T>` is `true` if `{print_traits_of}<T>` has the public member type alias
-`<<PrintTraits_override_tag,override_tag>>`. Otherwise it is `false`.
+`is_overridable<T>` is `true` if `{printing_traits_of}<T>` has the public member type alias
+`<<PrintingTraits_override_tag,override_tag>>`. Otherwise it is `false`.
 
 === Type alias template `forwarded_printable_type` [[forwarded_printable_type]]
 
@@ -171,7 +171,7 @@ constexpr bool is_overridable = ... /{asterisk}see below{asterisk}/;
 namespace strf {
 
 template <typename T>
-using forwarded_printable_type = typename {print_traits_of}<T>::<<PrintTraits_forwarded_type,forwarded_type>>;
+using forwarded_printable_type = typename {printing_traits_of}<T>::<<PrintingTraits_forwarded_type,forwarded_type>>;
 
 } // namespace strf
 ----
@@ -274,7 +274,7 @@ constexpr auto make_default_arg_printer_input
 The expression `make_default_arg_printer_input<CharT>(preview, facets, arg)` is equivalent to
 [source,cpp,subs=normal]
 ----
-{print_traits_of}<Arg>::<<PrintTraits_functions,make_input>>({tag}<CharT>{}, preview, facets, arg);
+{printing_traits_of}<Arg>::<<PrintingTraits_functions,make_input>>({tag}<CharT>{}, preview, facets, arg);
 ----
 
 === Facet category `print_override_c` [[print_override_c]]
@@ -336,12 +336,12 @@ constexpr /{asterisk}\...{asterisk}/ make_arg_printer_input(Preview& preview, co
 } // namespace strf
 ----
 
-If `{print_traits_of}<Arg>::override_tag` is defined,
+If `{printing_traits_of}<Arg>::override_tag` is defined,
 `make_arg_printer_input` returns
 [source,cpp,subs=normal]
 ----
 {use_facet}< {print_override_c}
-         , typename {print_traits_of}<Arg>::override_tag >(facets)
+         , typename {printing_traits_of}<Arg>::override_tag >(facets)
     .make_input({tag}<CharT>{}, preview, facets, arg);
 ----
 
@@ -349,7 +349,7 @@ Otherwise, it returns
 
 [source,cpp,subs=normal]
 ----
-{print_traits_of}<Arg>::make_input({tag}<CharT>{}, preview, facets, arg)
+{printing_traits_of}<Arg>::make_input({tag}<CharT>{}, preview, facets, arg)
 ----
 
 

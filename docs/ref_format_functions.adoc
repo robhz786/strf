@@ -130,9 +130,9 @@ using fmt_type = /{asterisk}...{asterisk}/;
 * `fmt_type<T>`, if `T` is a reference or has any cv-qualifier
 * otherwise, it is `T`, if `T` is an instance of `{value_with_formatters}`
 * otherwise, it is `{value_with_formatters}<PTraits, Fmts\...>`, where:
-** `PTraits` is `{print_traits_of}<T>`
+** `PTraits` is `{printing_traits_of}<T>`
 ** `Fmts\...` is template paramenter pack used to define
-   `PTraits::<<PrintTraits_formatters,formatters>>` (
+   `PTraits::<<PrintingTraits_formatters,formatters>>` (
     as a type alias to `{tag}<Fmt\...>` ).
 ***  If `PTraits::formatters` is not defined, `T` is `{value_with_formatters}<PTraits>`.
 
@@ -156,33 +156,33 @@ Compile-time requirements::
 ----
 namespace strf {
 
-template <typename PrintTraits, class\... Fmts>
+template <typename PrintingTraits, class\... Fmts>
 class value_with_formatters
     : public Fmts::template fn<value_with_formatters<ValueType, Fmts\...>>\...
 {
 public:
-    using traits = PrintTraits;
-    using value_type = typename PrintTraits::forwarded_type;
+    using traits = PrintingTraits;
+    using value_type = typename PrintingTraits::forwarded_type;
 
     constexpr explicit <<value_with_formatters_v,value_with_formatters>>(const value_type& v);
 
     template <typename\... OtherFmts>
     constexpr explicit <<value_with_formatters_vwf2,value_with_formatters>>
-        ( const value_with_formatters<PrintTraits, OtherFmts\...>& f );
+        ( const value_with_formatters<PrintingTraits, OtherFmts\...>& f );
 
     template <typename\... OtherFmts>
     constexpr explicit <<value_with_formatters_vwf2_rr,value_with_formatters>>
-        ( value_with_formatters<PrintTraits, OtherFmts\...>&& f );
+        ( value_with_formatters<PrintingTraits, OtherFmts\...>&& f );
 
-    template <typename OtherPrintTraits>
+    template <typename OtherPrintingTraits>
     constexpr <<value_with_formatters_v_v2wf,value_with_formatters>>
         ( const value_type& v
-        , const value_with_formatters<OtherPrintTraits, Fmts\...>& f );
+        , const value_with_formatters<OtherPrintingTraits, Fmts\...>& f );
 
-    template <typename OtherPrintTraits>
+    template <typename OtherPrintingTraits>
     constexpr <<value_with_formatters_v_v2wf_rr,value_with_formatters>>
         ( const value_type& v
-        , value_with_formatters<OtherPrintTraits, Fmts\...>&& f );
+        , value_with_formatters<OtherPrintingTraits, Fmts\...>&& f );
 
     template <typename\... F, typename\... FInit>
     constexpr <<value_with_formatters_v_t_i,value_with_formatters>>
@@ -192,7 +192,7 @@ public:
 
     template <typename Fmt, typename FmtInit, typename\... OtherFmts>
     constexpr <<value_with_formatters_vwf2_t_i,value_with_formatters>>
-        ( const value_with_formatters<PrintTraits, OtherFmts\...>& f
+        ( const value_with_formatters<PrintingTraits, OtherFmts\...>& f
         , {tag}<Fmt>
         , FmtInit&& fmt_init );
 
@@ -225,7 +225,7 @@ Effects::
 ----
 template <typename\... OtherFmts>
 constexpr explicit value_with_formatters
-    ( const value_with_formatters<PrintTraits, OtherFmts\...>& f );
+    ( const value_with_formatters<PrintingTraits, OtherFmts\...>& f );
 ----
 Effects::
 * Initializes `value_` with `f.value()`
@@ -238,7 +238,7 @@ Effects::
 ----
 template <typename\... OtherFmts>
 constexpr explicit value_with_formatters
-    ( value_with_formatters<PrintTraits, OtherFmts\...>&& f );
+    ( value_with_formatters<PrintingTraits, OtherFmts\...>&& f );
 ----
 Effects::
 * Initializes `value_` with `static_cast<value_type&&>(f.value())`
@@ -250,10 +250,10 @@ Effects::
 ====
 [source,cpp,subs=normal]
 ----
-template <typename OtherPrintTraits>
+template <typename OtherPrintingTraits>
 constexpr value_with_formatters
     ( const value_type& v
-    , const value_with_formatters<OtherPrintTraits, Fmts\...>& f );
+    , const value_with_formatters<OtherPrintingTraits, Fmts\...>& f );
 ----
 Effects::
 * Initializes `value_` with `v`
@@ -264,10 +264,10 @@ Effects::
 ====
 [source,cpp,subs=normal]
 ----
-template <typename OtherPrintTraits>
+template <typename OtherPrintingTraits>
 constexpr value_with_formatters
     ( const value_type& v
-    , value_with_formatters<OtherPrintTraits, Fmts\...>&& f );
+    , value_with_formatters<OtherPrintingTraits, Fmts\...>&& f );
 ----
 Effects::
 * Initializes `value_` with `v`
@@ -304,7 +304,7 @@ Effects::
 ----
 template <typename Fmt, typename FmtInit, typename\... OtherFmts>
 constexpr value_with_formatters
-    ( const value_with_formatters<PrintTraits, OtherFmts\...>& f
+    ( const value_with_formatters<PrintingTraits, OtherFmts\...>& f
     , {tag}<Fmt>
     , FmtInit&& fmt_init );
 ----

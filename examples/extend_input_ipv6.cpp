@@ -217,11 +217,11 @@ void ipv6_printer<CharT>::print_ipv6(strf::print_dest<CharT>& dest) const
 }
 
 // -----------------------------------------------------------------------------
-// 3. Specialize print_traits template
+// 3. Specialize printing_traits template
 // -----------------------------------------------------------------------------
 
 template <>
-struct print_traits<xxx::ipv6address> {
+struct printing_traits<xxx::ipv6address> {
     using override_tag = xxx::ipv6address;
     using forwarded_type = xxx::ipv6address;
     using formatters = strf::tag<ipv6_formatter, strf::alignment_formatter>;

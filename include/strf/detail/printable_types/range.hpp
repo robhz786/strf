@@ -82,7 +82,7 @@ template < typename Iterator
          , typename VF = strf::fmt_type<V> >
 using range_with_formatters
     = strf::detail::mp_replace_front
-        < VF, strf::print_traits<strf::range_p<Iterator>> >;
+        < VF, strf::printing_traits<strf::range_p<Iterator>> >;
 
 template < typename Iterator
          , typename CharT
@@ -90,7 +90,7 @@ template < typename Iterator
          , typename VF = strf::fmt_type<V> >
 using sep_range_with_formatters
     = strf::detail::mp_replace_front
-        < VF, strf::print_traits<strf::separated_range_p<Iterator, CharT>> >;
+        < VF, strf::printing_traits<strf::separated_range_p<Iterator, CharT>> >;
 
 namespace detail {
 
@@ -115,7 +115,7 @@ class sep_transformed_range_printer;
 } // namespace detail
 
 template <typename It>
-struct print_traits<strf::range_p<It>>
+struct printing_traits<strf::range_p<It>>
 {
     using forwarded_type = strf::range_p<It>;
     using formatters = strf::formatters_of<decltype(*std::declval<It>())>;
@@ -138,11 +138,11 @@ struct print_traits<strf::range_p<It>>
         ( strf::tag<CharT>
         , Preview& preview
         , const FPack& fp
-        , strf::value_with_formatters<strf::print_traits<strf::range_p<It>>, Fmts...> x )
+        , strf::value_with_formatters<strf::printing_traits<strf::range_p<It>>, Fmts...> x )
         ->  strf::usual_arg_printer_input
             < CharT
             , Preview, FPack
-            , strf::value_with_formatters<strf::print_traits<strf::range_p<It>>, Fmts ...>
+            , strf::value_with_formatters<strf::printing_traits<strf::range_p<It>>, Fmts ...>
             , strf::detail::fmt_range_printer<CharT, FPack, It, Fmts...> >
     {
         return {preview, fp, x};
@@ -150,7 +150,7 @@ struct print_traits<strf::range_p<It>>
 };
 
 template <typename It, typename SepCharT>
-struct print_traits<strf::separated_range_p<It, SepCharT>>
+struct printing_traits<strf::separated_range_p<It, SepCharT>>
 {
     using forwarded_type = strf::separated_range_p<It, SepCharT>;
     using formatters = strf::formatters_of<decltype(*std::declval<It>())>;
@@ -176,12 +176,12 @@ struct print_traits<strf::separated_range_p<It, SepCharT>>
         , Preview& preview
         , const FPack& fp
         , strf::value_with_formatters
-            < strf::print_traits<strf::separated_range_p<It, SepCharT>>, Fmts... > x )
+            < strf::printing_traits<strf::separated_range_p<It, SepCharT>>, Fmts... > x )
         ->  strf::usual_arg_printer_input
             < DestCharT
             , Preview, FPack
             , strf::value_with_formatters
-                < strf::print_traits<strf::separated_range_p<It, SepCharT>>, Fmts... >
+                < strf::printing_traits<strf::separated_range_p<It, SepCharT>>, Fmts... >
             , strf::detail::fmt_separated_range_printer<DestCharT, FPack, It, Fmts...> >
     {
         static_assert( std::is_same<SepCharT, DestCharT>::value
@@ -191,7 +191,7 @@ struct print_traits<strf::separated_range_p<It, SepCharT>>
 };
 
 template <typename It, typename UnaryOp>
-struct print_traits<strf::transformed_range_p<It, UnaryOp>>
+struct printing_traits<strf::transformed_range_p<It, UnaryOp>>
 {
     using forwarded_type = strf::transformed_range_p<It, UnaryOp>;
 
@@ -210,7 +210,7 @@ struct print_traits<strf::transformed_range_p<It, UnaryOp>>
 };
 
 template <typename It, typename SepCharT, typename UnaryOp>
-struct print_traits<strf::separated_transformed_range_p<It, SepCharT, UnaryOp>>
+struct printing_traits<strf::separated_transformed_range_p<It, SepCharT, UnaryOp>>
 {
     using forwarded_type = strf::separated_transformed_range_p<It, SepCharT, UnaryOp>;
 
@@ -410,7 +410,7 @@ class fmt_range_printer: public strf::arg_printer<CharT>
 
     using fmt_type_adapted_ = detail::mp_replace_front
         < value_fmt_type_adapted_
-        , strf::print_traits<strf::range_p<It>> >;
+        , strf::printing_traits<strf::range_p<It>> >;
 
 public:
 
@@ -491,7 +491,7 @@ class fmt_separated_range_printer: public strf::arg_printer<CharT>
 
     using fmt_type_adapted_ = detail::mp_replace_front
         < value_fmt_type_adapted_
-        , strf::print_traits<strf::separated_range_p<It, CharT>> >;
+        , strf::printing_traits<strf::separated_range_p<It, CharT>> >;
 
 public:
 

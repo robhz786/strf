@@ -118,7 +118,7 @@ struct bool_wrapper {
 namespace strf {
 
 template <>
-struct print_traits<bool_wrapper> {
+struct printing_traits<bool_wrapper> {
     using forwarded_type = bool_wrapper;
     using override_tag = bool_wrapper;
 

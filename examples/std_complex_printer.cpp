@@ -417,13 +417,13 @@ void fmt_std_complex_printer<CharT, FloatT>::print_complex_value_
 }
 
 //--------------------------------------------------------------------------------
-// 4 // Define the PrintTraits class
+// 4 // Define the PrintingTraits class
 //--------------------------------------------------------------------------------
 
 namespace strf {
 
 template <typename FloatT>
-struct print_traits<std::complex<FloatT>>
+struct printing_traits<std::complex<FloatT>>
 {
     using override_tag = std::complex<FloatT>;
     using forwarded_type = std::complex<FloatT>;

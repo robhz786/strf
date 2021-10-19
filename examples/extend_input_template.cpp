@@ -33,7 +33,7 @@ struct base_printing {
 };
 
 template <typename T>
-inline base_printing<T> tag_invoke(strf::print_traits_tag, const xxx::base<T>&)
+inline base_printing<T> tag_invoke(strf::printing_tag, const xxx::base<T>&)
     { return {}; }
 
 } // namespace strf

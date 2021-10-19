@@ -1257,65 +1257,65 @@ public:
 
 } // namespace detail
 
-template <> struct print_traits<signed char>:
+template <> struct printing_traits<signed char>:
     public strf::detail::int_printing<signed char> {};
-template <> struct print_traits<short>:
+template <> struct printing_traits<short>:
     public strf::detail::int_printing<short> {};
-template <> struct print_traits<int>:
+template <> struct printing_traits<int>:
     public strf::detail::int_printing<int> {};
-template <> struct print_traits<long>:
+template <> struct printing_traits<long>:
     public strf::detail::int_printing<long> {};
-template <> struct print_traits<long long>:
+template <> struct printing_traits<long long>:
     public strf::detail::int_printing<long long> {};
 
-template <> struct print_traits<unsigned char>:
+template <> struct printing_traits<unsigned char>:
     public strf::detail::int_printing<unsigned char> {};
-template <> struct print_traits<unsigned short>:
+template <> struct printing_traits<unsigned short>:
     public strf::detail::int_printing<unsigned short> {};
-template <> struct print_traits<unsigned int>:
+template <> struct printing_traits<unsigned int>:
     public strf::detail::int_printing<unsigned int> {};
-template <> struct print_traits<unsigned long>:
+template <> struct printing_traits<unsigned long>:
     public strf::detail::int_printing<unsigned long> {};
-template <> struct print_traits<unsigned long long>:
+template <> struct printing_traits<unsigned long long>:
     public strf::detail::int_printing<unsigned long long> {};
 
-constexpr STRF_HD auto tag_invoke(strf::print_traits_tag, signed char) noexcept
+constexpr STRF_HD auto tag_invoke(strf::printing_tag, signed char) noexcept
     -> strf::detail::int_printing<signed char>
     { return {}; }
 
-constexpr STRF_HD auto tag_invoke(strf::print_traits_tag, short) noexcept
+constexpr STRF_HD auto tag_invoke(strf::printing_tag, short) noexcept
     -> strf::detail::int_printing<short>
     { return {}; }
 
-constexpr STRF_HD auto tag_invoke(strf::print_traits_tag, int) noexcept
+constexpr STRF_HD auto tag_invoke(strf::printing_tag, int) noexcept
     -> strf::detail::int_printing<int>
     { return {}; }
 
-constexpr STRF_HD auto tag_invoke(strf::print_traits_tag, long) noexcept
+constexpr STRF_HD auto tag_invoke(strf::printing_tag, long) noexcept
     -> strf::detail::int_printing<long>
     { return {}; }
 
-constexpr STRF_HD auto tag_invoke(strf::print_traits_tag, long long) noexcept
+constexpr STRF_HD auto tag_invoke(strf::printing_tag, long long) noexcept
     -> strf::detail::int_printing<long long>
     { return {}; }
 
-constexpr STRF_HD auto tag_invoke(strf::print_traits_tag, unsigned char) noexcept
+constexpr STRF_HD auto tag_invoke(strf::printing_tag, unsigned char) noexcept
     -> strf::detail::int_printing<unsigned char>
     { return {}; }
 
-constexpr STRF_HD auto tag_invoke(strf::print_traits_tag, unsigned short) noexcept
+constexpr STRF_HD auto tag_invoke(strf::printing_tag, unsigned short) noexcept
     -> strf::detail::int_printing<unsigned short>
     { return {}; }
 
-constexpr STRF_HD auto tag_invoke(strf::print_traits_tag, unsigned int) noexcept
+constexpr STRF_HD auto tag_invoke(strf::printing_tag, unsigned int) noexcept
     -> strf::detail::int_printing<unsigned int>
     { return {}; }
 
-constexpr STRF_HD auto tag_invoke(strf::print_traits_tag, unsigned long) noexcept
+constexpr STRF_HD auto tag_invoke(strf::printing_tag, unsigned long) noexcept
     -> strf::detail::int_printing<unsigned long>
     { return {}; }
 
-constexpr STRF_HD auto tag_invoke(strf::print_traits_tag, unsigned long long) noexcept
+constexpr STRF_HD auto tag_invoke(strf::printing_tag, unsigned long long) noexcept
     -> strf::detail::int_printing<unsigned long long>
     { return {}; }
 
@@ -1378,7 +1378,7 @@ struct voidptr_printing
 
 } // namespace detail
 
-constexpr STRF_HD auto tag_invoke(strf::print_traits_tag, const void*) noexcept
+constexpr STRF_HD auto tag_invoke(strf::printing_tag, const void*) noexcept
     -> strf::detail::voidptr_printing
     { return {}; }
 

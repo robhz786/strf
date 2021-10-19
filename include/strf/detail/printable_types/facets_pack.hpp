@@ -47,7 +47,7 @@ class facets_pack_printer;
 } // namespace detail
 
 template <typename ChildFPack, typename... Args>
-struct print_traits<strf::inner_pack_with_args<ChildFPack, Args...>>
+struct printing_traits<strf::inner_pack_with_args<ChildFPack, Args...>>
 {
     using forwarded_type = strf::inner_pack_with_args<ChildFPack, Args...>;
 

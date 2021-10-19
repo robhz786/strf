@@ -145,7 +145,7 @@ std::pair<FloatT, FloatT> complex_coordinates
 namespace strf {
 
 template <typename FloatT>
-struct print_traits<std::complex<FloatT>>
+struct printing_traits<std::complex<FloatT>>
 {
     using override_tag = std::complex<FloatT>;
     using forwarded_type = std::complex<FloatT>;
