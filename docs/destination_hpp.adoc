@@ -22,7 +22,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 
 :basic_cstr_writer: <<basic_cstr_writer, basic_cstr_writer>>
 :basic_char_array_writer: <<basic_char_array_writer, basic_char_array_writer>>
-:discarded_destination: <<discarded_destination,discarded_destination>>
+:discarder: <<discarder,discarder>>
 
 :garbage_buff: <<garbage_buff, garbage_buff>>
 :garbage_buff_end: <<garbage_buff, garbage_buff_end>>
@@ -71,7 +71,7 @@ template <typename CharT>
 class {basic_char_array_writer};
 
 template <typename CharT>
-class {discarded_destination};
+class {discarder};
 
 template <typename CharT>
 CharT* {garbage_buff}();
@@ -603,21 +603,21 @@ Return value::
 ====
 
 
-[[discarded_destination]]
-== Class template `discarded_destination`
+[[discarder]]
+== Class template `discarder`
 
-`discarded_destination` it's the library's analogous to `/dev/null`.
-A `discarded_destination` object ignores anything written to it.
+`discarder` it's the library's analogous to `/dev/null`.
+A `discarder` object ignores anything written to it.
 
 [source,cpp]
 ----
 namespace strf {
 
 template <typename CharT>
-class discarded_destination final: public destination<CharT, {log2_garbage_buff_size}>
+class discarder final: public destination<CharT, {log2_garbage_buff_size}>
 {
 public:
-    discarded_destination() noexcept;
+    discarder() noexcept;
     void recycle_buffer() noexcept override;
 };
 
@@ -626,7 +626,7 @@ public:
 ====
 [source,cpp]
 ----
-discarded_destination() noexcept;
+discarder() noexcept;
 ----
 [horizontal]
 Postconditions::

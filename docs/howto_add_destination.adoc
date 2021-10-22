@@ -216,7 +216,7 @@ dst.finish();
 Almost
 <<quick_reference#destination_types,all destination classes of this library>>
 have a `finish` function ( the only exception is
-<<destination_hpp#discarded_destination,discarded_destination>>.
+<<destination_hpp#discarder,discarder>>.
 So you may want to follow the convention.
 Another reason for creating `finish` is that may return a value,
 which is something that destructors can't do.

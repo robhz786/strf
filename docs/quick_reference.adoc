@@ -438,8 +438,8 @@ The table below lists the concrete types that derivate from the `{print_dest}<__
 | `<<destination_hpp#basic_char_array_writer, basic_char_array_writer>><__CharT__>`
 | Writes to also `char*`, but does not append the termination character `'\0'`
 
-| `<<destination_hpp#discarded_destination,discarded_destination>><__CharT__>`
-| Discards content. The equivalent of writing to '/dev/null'.
+| `<<destination_hpp#discarder,discarder>><__CharT__>`
+| Discards the content. The analogous of `/dev/null`.
 
 | `<<to_string_hpp#basic_string_appender,basic_string_appender>><__CharT__, _Traits_~_opt_~, _A_~_opt_~>`
 | Appends to `std::basic_string` objects.
@@ -490,7 +490,7 @@ using wcstr_writer   = basic_cstr_writer<wchar_t>;
 ----
 namespace strf {
 
-template <typename CharT> class discarded_destination;
+template <typename CharT> class discarder;
 
 } // namespace strf
 ----

@@ -23,8 +23,8 @@ STRF_TEST_FUNC void test_miscellaneous()
 
         TEST_CSTR_EQ(buff, "abc 1,000,000,000");
     }
-    {   // test discarded_destination
-        strf::discarded_destination<char> dest;
+    {   // test discarder
+        strf::discarder<char> dest;
         TEST_FALSE(dest.good());
         dest.recycle_buffer();
         TEST_TRUE(dest.buffer_space() >= strf::print_dest_space_after_flush);

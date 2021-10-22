@@ -473,21 +473,20 @@ using u32char_array_writer = basic_char_array_writer<char32_t>;
 using wchar_array_writer = basic_char_array_writer<wchar_t>;
 
 template <typename T>
-class discarded_destination final
+class discarder final
     : public strf::destination<T, strf::log2_garbage_buff_size>
 {
     using dest_t_ = strf::destination<T, strf::log2_garbage_buff_size>;
+
 public:
 
-    STRF_HD discarded_destination() noexcept
-        : dest_t_
-            { strf::garbage_buff<T>()
-            , strf::garbage_buff_end<T>() }
+    STRF_HD discarder() noexcept
+        : dest_t_{strf::garbage_buff<T>(), strf::garbage_buff_end<T>()}
     {
         this->set_good(false);
     }
 
-    STRF_HD ~discarded_destination()
+    STRF_HD ~discarder()
     {
     }
 
