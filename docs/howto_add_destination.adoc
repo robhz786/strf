@@ -226,7 +226,7 @@ which is something that destructors can't do.
 `{set_good}` and `{set_buffer_ptr}` are protected member functions.
 ////
 
-== How to create destination expression
+== How to create a printer expression
 
 There are <<quick_reference#destinations,several expressions>> that can be used as
 the prefix in the `<<tutorial#,basic usage syntax>>`.
@@ -236,11 +236,11 @@ you may want to create a `toQString` "destination",
 intended to create a `QString` object ( in the same way as
 `<<quick_reference#destinations,to_string>>` creates
 `std::string` objects ).
-This section explain how you can do that.
+This section explains how you can do that.
 
 The first step, which involves most of the work, is
-to create a class that derives from `{print_dest}`.
-The previous section provides some assistance on that.
+to create a class that derives from `{print_dest}`,
+which is covered in previous section.
 Sometimes it makes sense to actually create two of them;
 one having a constructor that receives the size
 while the other does not, as explained soon.
@@ -255,7 +255,7 @@ of your destination class requires the number of characters to be printed
 _DestinationCreator_ is for when it does not need that information.
 
 
-The third and final step is to define the "destination expression".
+The third and final step is to define the "printer expression".
 It must be an expression ( a function call or a constexpr value )
 whose type is an instance of one the class templates below,
 having the class created in step 2 as the template parameter.

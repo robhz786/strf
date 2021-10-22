@@ -37,7 +37,7 @@ in the above expression:
 * `no_reserve()` always returns a `printer_no_reserve` object
 * `reserve_calc()` always returns a `printer_with_size_calc` object.
 * `reserve(__size__)` always returns a `printer_with_given_size` object.
-* The __dest-expr__ is an expression that is or creates an object whose type
+* The __printer__ is an expression that is or creates an object whose type
   is an instance of one those three class templates.
 
 ====

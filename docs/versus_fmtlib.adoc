@@ -426,15 +426,16 @@ you can print things to it with the
 function template.
 
 However, in Strf you can go a bit further and create your own
-__destination expression__ to be used in the <<tutorial#syntax,basic usage syntax>>
+__printer expression__ to be used in the <<tutorial#syntax,basic usage syntax>>
 of the library. For example, suppose a codebase uses a string class of its own
 instead of `std::string`. Suppose it's name is `xstring`:
-just like there is `<<quick_reference#destinations,strf::to_string>>`, it is possible to define
-a __destination expression__ named `to_xstring` intended to
+just like there is `<<quick_reference#destinations,strf::to_string>>`,
+it is possible to define
+a __printer expression__ named `to_xstring` intended to
 create `xstring` objects. If desirable, it is possible to implement it
-in such a way that the size of the content is always pre-calculated
+in such a way that the size of the content is calculated
 before the the `xstring` object is constructed, so that the adequate
-amount of memory can be allocated.
+amount of memory can be preallocated.
 
 This is all explained in <<howto_add_destination#,this guide>>.
 
