@@ -2195,15 +2195,15 @@ private:
 
 template < typename DestinationCreator
          , typename FPack = strf::facets_pack<> >
-class destination_with_given_size;
+class printer_with_given_size;
 
 template < typename DestinationCreator
          , typename FPack = strf::facets_pack<> >
-class destination_calc_size;
+class printer_with_size_calc;
 
 template < typename DestinationCreator
          , typename FPack = strf::facets_pack<> >
-class destination_no_reserve;
+class printer_no_reserve;
 
 namespace detail {
 
@@ -2246,7 +2246,7 @@ struct destination_tag {};
 
 template < template <typename, typename> class DestinationTmpl
          , bool Sized, class DestinationCreator, class Preview, class FPack >
-class destination_common
+class printer_common
 {
     using destination_type_ = DestinationTmpl<DestinationCreator, FPack>;
 
@@ -2288,7 +2288,7 @@ public:
                , std::forward<FPE>(fpe)...};
     }
 
-    constexpr STRF_HD strf::destination_no_reserve<DestinationCreator, FPack>
+    constexpr STRF_HD strf::printer_no_reserve<DestinationCreator, FPack>
     no_reserve() const &
     {
         return { strf::detail::destination_tag{}
@@ -2296,7 +2296,7 @@ public:
                , static_cast<const destination_type_*>(this)->fpack_ };
     }
 
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD strf::destination_no_reserve<DestinationCreator, FPack>
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD strf::printer_no_reserve<DestinationCreator, FPack>
     no_reserve() &&
     {
         return { strf::detail::destination_tag{}
@@ -2304,7 +2304,7 @@ public:
                , std::move(static_cast<destination_type_*>(this)->fpack_) };
     }
 
-    constexpr STRF_HD strf::destination_calc_size<DestinationCreator, FPack>
+    constexpr STRF_HD strf::printer_with_size_calc<DestinationCreator, FPack>
     reserve_calc() const &
     {
         return { strf::detail::destination_tag{}
@@ -2312,7 +2312,7 @@ public:
                , static_cast<const destination_type_*>(this)->fpack_ };
     }
 
-    STRF_CONSTEXPR_IN_CXX14 strf::destination_calc_size<DestinationCreator, FPack>
+    STRF_CONSTEXPR_IN_CXX14 strf::printer_with_size_calc<DestinationCreator, FPack>
     STRF_HD reserve_calc() &&
     {
         auto& self = static_cast<destination_type_&>(*this);
@@ -2321,7 +2321,7 @@ public:
                , self.fpack_ };
     }
 
-    constexpr STRF_HD strf::destination_with_given_size<DestinationCreator, FPack>
+    constexpr STRF_HD strf::printer_with_given_size<DestinationCreator, FPack>
     reserve(std::size_t size) const &
     {
         return { strf::detail::destination_tag{}
@@ -2330,7 +2330,7 @@ public:
                , static_cast<const destination_type_*>(this)->fpack_ };
     }
 
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD strf::destination_with_given_size<DestinationCreator, FPack>
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD strf::printer_with_given_size<DestinationCreator, FPack>
     reserve(std::size_t size) &&
     {
         auto& self = static_cast<destination_type_&>(*this);
@@ -2446,23 +2446,23 @@ private:
 }// namespace detail
 
 template < typename DestinationCreator, typename FPack >
-class destination_no_reserve
-    : private strf::detail::destination_common
-        < strf::destination_no_reserve
+class printer_no_reserve
+    : private strf::detail::printer_common
+        < strf::printer_no_reserve
         , false
         , DestinationCreator
         , strf::no_print_preview
         , FPack >
 {
-    using common_ = strf::detail::destination_common
-        < strf::destination_no_reserve
+    using common_ = strf::detail::printer_common
+        < strf::printer_no_reserve
         , false
         , DestinationCreator
         , strf::no_print_preview
         , FPack >;
 
     template <template <typename, typename> class, bool, class, class, class>
-    friend class strf::detail::destination_common;
+    friend class strf::detail::printer_common;
 
     using preview_type_ = strf::no_print_preview;
     using finish_return_type_ = strf::detail::destination_finish_return_type<DestinationCreator, false>;
@@ -2475,7 +2475,7 @@ public:
              , strf::detail::enable_if_t
                  < std::is_constructible<DestinationCreator, Args...>::value
                  , int > = 0 >
-    constexpr STRF_HD destination_no_reserve(Args&&... args)
+    constexpr STRF_HD printer_no_reserve(Args&&... args)
         : destination_creator_(std::forward<Args>(args)...)
     {
     }
@@ -2483,17 +2483,19 @@ public:
     template < typename T = DestinationCreator
              , strf::detail::enable_if_t
                  < std::is_copy_constructible<T>::value, int > = 0 >
-    constexpr STRF_HD destination_no_reserve( strf::detail::destination_tag
-                                            , const DestinationCreator& oc
-                                            , const FPack& fp )
+    constexpr STRF_HD printer_no_reserve
+        ( strf::detail::destination_tag
+        , const DestinationCreator& oc
+        , const FPack& fp )
         : destination_creator_(oc)
         , fpack_(fp)
     {
     }
 
-    constexpr STRF_HD destination_no_reserve( strf::detail::destination_tag
-                                            , DestinationCreator&& oc
-                                            , FPack&& fp )
+    constexpr STRF_HD printer_no_reserve
+        ( strf::detail::destination_tag
+        , DestinationCreator&& oc
+        , FPack&& fp )
         : destination_creator_(std::move(oc))
         , fpack_(std::move(fp))
     {
@@ -2505,19 +2507,19 @@ public:
     using common_::reserve_calc;
     using common_::reserve;
 
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD destination_no_reserve& no_reserve() &
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD printer_no_reserve& no_reserve() &
     {
         return *this;
     }
-    constexpr STRF_HD const destination_no_reserve& no_reserve() const &
+    constexpr STRF_HD const printer_no_reserve& no_reserve() const &
     {
         return *this;
     }
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD destination_no_reserve&& no_reserve() &&
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD printer_no_reserve&& no_reserve() &&
     {
         return std::move(*this);
     }
-    constexpr STRF_HD const destination_no_reserve&& no_reserve() const &&
+    constexpr STRF_HD const printer_no_reserve&& no_reserve() const &&
     {
         return std::move(*this);
     }
@@ -2525,14 +2527,14 @@ public:
 private:
 
     template <class, class>
-    friend class destination_no_reserve;
+    friend class printer_no_reserve;
 
     template < typename OtherFPack
              , typename ... FPE
              , typename T = DestinationCreator
              , strf::detail::enable_if_t<std::is_copy_constructible<T>::value, int> = 0 >
-    constexpr STRF_HD destination_no_reserve
-        ( const destination_no_reserve<DestinationCreator, OtherFPack>& other
+    constexpr STRF_HD printer_no_reserve
+        ( const printer_no_reserve<DestinationCreator, OtherFPack>& other
         , detail::destination_tag
         , FPE&& ... fpe )
         : destination_creator_(other.destination_creator_)
@@ -2541,8 +2543,8 @@ private:
     }
 
     template < typename OtherFPack, typename ... FPE >
-    constexpr STRF_HD destination_no_reserve
-        ( destination_no_reserve<DestinationCreator, OtherFPack>&& other
+    constexpr STRF_HD printer_no_reserve
+        ( printer_no_reserve<DestinationCreator, OtherFPack>&& other
         , detail::destination_tag
         , FPE&& ... fpe )
         : destination_creator_(std::move(other.destination_creator_))
@@ -2565,23 +2567,23 @@ private:
 };
 
 template < typename DestinationCreator, typename FPack >
-class destination_with_given_size
-    : public strf::detail::destination_common
-        < strf::destination_with_given_size
+class printer_with_given_size
+    : public strf::detail::printer_common
+        < strf::printer_with_given_size
         , true
         , DestinationCreator
         , strf::no_print_preview
         , FPack >
 {
-    using common_ = strf::detail::destination_common
-        < strf::destination_with_given_size
+    using common_ = strf::detail::printer_common
+        < strf::printer_with_given_size
         , true
         , DestinationCreator
         , strf::no_print_preview
         , FPack >;
 
     template < template <typename, typename> class, bool, class, class, class>
-    friend class strf::detail::destination_common;
+    friend class strf::detail::printer_common;
 
     using preview_type_ = strf::no_print_preview;
     using finish_return_type_ = strf::detail::destination_finish_return_type<DestinationCreator, true>;
@@ -2594,7 +2596,7 @@ public:
              , strf::detail::enable_if_t
                  < std::is_constructible<DestinationCreator, Args...>::value
                  , int > = 0 >
-    constexpr STRF_HD destination_with_given_size(std::size_t size, Args&&... args)
+    constexpr STRF_HD printer_with_given_size(std::size_t size, Args&&... args)
         : size_(size)
         , destination_creator_(std::forward<Args>(args)...)
     {
@@ -2602,20 +2604,22 @@ public:
 
     template < typename T = DestinationCreator
              , strf::detail::enable_if_t<std::is_copy_constructible<T>::value, int> = 0 >
-    constexpr STRF_HD destination_with_given_size( strf::detail::destination_tag
-                                                 , std::size_t size
-                                                 , const DestinationCreator& oc
-                                                 , const FPack& fp )
+    constexpr STRF_HD printer_with_given_size
+        ( strf::detail::destination_tag
+        , std::size_t size
+        , const DestinationCreator& oc
+        , const FPack& fp )
         : size_(size)
         , destination_creator_(oc)
         , fpack_(fp)
     {
     }
 
-    constexpr STRF_HD destination_with_given_size( strf::detail::destination_tag
-                                                 , std::size_t size
-                                                 , DestinationCreator&& oc
-                                                 , FPack&& fp )
+    constexpr STRF_HD printer_with_given_size
+        ( strf::detail::destination_tag
+        , std::size_t size
+        , DestinationCreator&& oc
+        , FPack&& fp )
         : size_(size)
         , destination_creator_(std::move(oc))
         , fpack_(std::move(fp))
@@ -2628,12 +2632,12 @@ public:
     using common_::reserve_calc;
     using common_::no_reserve;
 
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD destination_with_given_size& reserve(std::size_t size) &
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD printer_with_given_size& reserve(std::size_t size) &
     {
         size_ = size;
         return *this;
     }
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD destination_with_given_size&& reserve(std::size_t size) &&
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD printer_with_given_size&& reserve(std::size_t size) &&
     {
         size_ = size;
         return std::move(*this);
@@ -2642,14 +2646,14 @@ public:
 private:
 
     template <class, class>
-    friend class destination_with_given_size;
+    friend class printer_with_given_size;
 
     template < typename OtherFPack
              , typename ... FPE
              , typename T = DestinationCreator
              , strf::detail::enable_if_t<std::is_copy_constructible<T>::value, int> = 0>
-    constexpr STRF_HD destination_with_given_size
-        ( const destination_with_given_size<DestinationCreator, OtherFPack>& other
+    constexpr STRF_HD printer_with_given_size
+        ( const printer_with_given_size<DestinationCreator, OtherFPack>& other
         , detail::destination_tag
         , FPE&& ... fpe )
         : size_(other.size_)
@@ -2659,8 +2663,8 @@ private:
     }
 
     template < typename OtherFPack, typename ... FPE >
-    constexpr STRF_HD destination_with_given_size
-        ( destination_with_given_size<DestinationCreator, OtherFPack>&& other
+    constexpr STRF_HD printer_with_given_size
+        ( printer_with_given_size<DestinationCreator, OtherFPack>&& other
         , detail::destination_tag
         , FPE&& ... fpe )
         : size_(other.size)
@@ -2685,23 +2689,23 @@ private:
 };
 
 template < typename DestinationCreator, typename FPack >
-class destination_calc_size
-    : public strf::detail::destination_common
-        < strf::destination_calc_size
+class printer_with_size_calc
+    : public strf::detail::printer_common
+        < strf::printer_with_size_calc
         , true
         , DestinationCreator
         , strf::print_preview<strf::preview_size::yes, strf::preview_width::no>
         , FPack >
 {
-    using common_ = strf::detail::destination_common
-        < strf::destination_calc_size
+    using common_ = strf::detail::printer_common
+        < strf::printer_with_size_calc
         , true
         , DestinationCreator
         , strf::print_preview<strf::preview_size::yes, strf::preview_width::no>
         , FPack >;
 
     template < template <typename, typename> class, bool, class, class, class>
-    friend class strf::detail::destination_common;
+    friend class strf::detail::printer_common;
 
     using preview_type_
         = strf::print_preview<strf::preview_size::yes, strf::preview_width::no>;
@@ -2715,7 +2719,7 @@ public:
              , strf::detail::enable_if_t
                  < std::is_constructible<DestinationCreator, Args...>::value
                  , int > = 0 >
-    constexpr STRF_HD destination_calc_size(Args&&... args)
+    constexpr STRF_HD printer_with_size_calc(Args&&... args)
         : destination_creator_(std::forward<Args>(args)...)
     {
     }
@@ -2723,17 +2727,19 @@ public:
     template < typename T = DestinationCreator
              , strf::detail::enable_if_t
                  < std::is_copy_constructible<T>::value, int > = 0 >
-    constexpr STRF_HD destination_calc_size( strf::detail::destination_tag
-                                           , const DestinationCreator& oc
-                                           , const FPack& fp )
+    constexpr STRF_HD printer_with_size_calc
+        ( strf::detail::destination_tag
+        , const DestinationCreator& oc
+        , const FPack& fp )
         : destination_creator_(oc)
         , fpack_(fp)
     {
     }
 
-    constexpr STRF_HD destination_calc_size( strf::detail::destination_tag
-                                           , DestinationCreator&& oc
-                                           , FPack&& fp )
+    constexpr STRF_HD printer_with_size_calc
+        ( strf::detail::destination_tag
+        , DestinationCreator&& oc
+        , FPack&& fp )
         : destination_creator_(std::move(oc))
         , fpack_(std::move(fp))
     {
@@ -2745,19 +2751,19 @@ public:
     using common_::no_reserve;
     using common_::reserve;
 
-    constexpr STRF_HD const destination_calc_size & reserve_calc() const &
+    constexpr STRF_HD const printer_with_size_calc & reserve_calc() const &
     {
         return *this;
     }
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD destination_calc_size & reserve_calc() &
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD printer_with_size_calc & reserve_calc() &
     {
         return *this;
     }
-    constexpr STRF_HD const destination_calc_size && reserve_calc() const &&
+    constexpr STRF_HD const printer_with_size_calc && reserve_calc() const &&
     {
         return std::move(*this);
     }
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD destination_calc_size && reserve_calc() &&
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD printer_with_size_calc && reserve_calc() &&
     {
         return std::move(*this);
     }
@@ -2765,14 +2771,14 @@ public:
 private:
 
     template <typename, typename>
-    friend class destination_calc_size;
+    friend class printer_with_size_calc;
 
     template < typename OtherFPack
              , typename ... FPE
              , typename T = DestinationCreator
              , strf::detail::enable_if_t<std::is_copy_constructible<T>::value, int> = 0 >
-    STRF_HD destination_calc_size
-        ( const destination_calc_size<DestinationCreator, OtherFPack>& other
+    STRF_HD printer_with_size_calc
+        ( const printer_with_size_calc<DestinationCreator, OtherFPack>& other
         , detail::destination_tag
         , FPE&& ... fpe )
         : destination_creator_(other.destination_creator_)
@@ -2781,8 +2787,8 @@ private:
     }
 
     template < typename OtherFPack, typename ... FPE >
-    STRF_HD destination_calc_size
-        ( destination_calc_size<DestinationCreator, OtherFPack>&& other
+    STRF_HD printer_with_size_calc
+        ( printer_with_size_calc<DestinationCreator, OtherFPack>&& other
         , detail::destination_tag
         , FPE&& ... fpe )
         : destination_creator_(std::move(other.destination_creator_))
@@ -2833,10 +2839,10 @@ private:
 } // namespace detail
 
 template <typename CharT>
-strf::destination_no_reserve<strf::detail::destination_reference<CharT>>
+strf::printer_no_reserve<strf::detail::destination_reference<CharT>>
 STRF_HD to(strf::print_dest<CharT>& dest)
 {
-    return strf::destination_no_reserve<strf::detail::destination_reference<CharT>>(dest);
+    return strf::printer_no_reserve<strf::detail::destination_reference<CharT>>(dest);
 }
 
 namespace detail {
@@ -2904,21 +2910,21 @@ private:
 template<std::size_t N>
 inline STRF_HD auto to(char8_t (&dest)[N])
 {
-    return strf::destination_no_reserve
+    return strf::printer_no_reserve
         < strf::detail::basic_cstr_writer_creator<char8_t> >
         (dest, dest + N);
 }
 
 inline STRF_HD auto to(char8_t* dest, char8_t* end)
 {
-    return strf::destination_no_reserve
+    return strf::printer_no_reserve
         < strf::detail::basic_cstr_writer_creator<char8_t> >
         (dest, end);
 }
 
 inline STRF_HD auto to(char8_t* dest, std::size_t count)
 {
-    return strf::destination_no_reserve
+    return strf::printer_no_reserve
         < strf::detail::basic_cstr_writer_creator<char8_t> >
         (dest, dest + count);
 }
@@ -2927,142 +2933,142 @@ inline STRF_HD auto to(char8_t* dest, std::size_t count)
 
 template<std::size_t N>
 inline STRF_HD auto to(char (&dest)[N])
-    -> strf::destination_no_reserve
+    -> strf::printer_no_reserve
         < strf::detail::basic_cstr_writer_creator<char> >
 {
-    return strf::destination_no_reserve
+    return strf::printer_no_reserve
         < strf::detail::basic_cstr_writer_creator<char> >
         (dest, dest + N);
 }
 
 inline STRF_HD auto to(char* dest, char* end)
-    -> strf::destination_no_reserve
+    -> strf::printer_no_reserve
         < strf::detail::basic_cstr_writer_creator<char> >
 {
-    return strf::destination_no_reserve
+    return strf::printer_no_reserve
         < strf::detail::basic_cstr_writer_creator<char> >
         (dest, end);
 }
 
 inline STRF_HD auto to(char* dest, std::size_t count)
-    -> strf::destination_no_reserve
+    -> strf::printer_no_reserve
         < strf::detail::basic_cstr_writer_creator<char> >
 {
-    return strf::destination_no_reserve
+    return strf::printer_no_reserve
         < strf::detail::basic_cstr_writer_creator<char> >
         (dest, dest + count);
 }
 
 template<std::size_t N>
 inline STRF_HD auto to(char16_t (&dest)[N])
-    -> strf::destination_no_reserve
+    -> strf::printer_no_reserve
         < strf::detail::basic_cstr_writer_creator<char16_t> >
 {
-    return strf::destination_no_reserve
+    return strf::printer_no_reserve
         < strf::detail::basic_cstr_writer_creator<char16_t> >
         (dest, dest + N);
 }
 
 inline STRF_HD auto to(char16_t* dest, char16_t* end)
-    -> strf::destination_no_reserve
+    -> strf::printer_no_reserve
         < strf::detail::basic_cstr_writer_creator<char16_t> >
 {
-    return strf::destination_no_reserve
+    return strf::printer_no_reserve
         < strf::detail::basic_cstr_writer_creator<char16_t> >
         (dest, end);
 }
 
 inline STRF_HD auto to(char16_t* dest, std::size_t count)
-    -> strf::destination_no_reserve
+    -> strf::printer_no_reserve
         < strf::detail::basic_cstr_writer_creator<char16_t> >
 {
-    return strf::destination_no_reserve
+    return strf::printer_no_reserve
         < strf::detail::basic_cstr_writer_creator<char16_t> >
         (dest, dest + count);
 }
 
 template<std::size_t N>
 inline STRF_HD auto to(char32_t (&dest)[N])
-    -> strf::destination_no_reserve
+    -> strf::printer_no_reserve
         < strf::detail::basic_cstr_writer_creator<char32_t> >
 {
-    return strf::destination_no_reserve
+    return strf::printer_no_reserve
         < strf::detail::basic_cstr_writer_creator<char32_t> >
         (dest, dest + N);
 }
 
 inline STRF_HD auto to(char32_t* dest, char32_t* end)
-    -> strf::destination_no_reserve
+    -> strf::printer_no_reserve
         < strf::detail::basic_cstr_writer_creator<char32_t> >
 {
-    return strf::destination_no_reserve
+    return strf::printer_no_reserve
         < strf::detail::basic_cstr_writer_creator<char32_t> >
         (dest, end);
 }
 
 inline STRF_HD auto to(char32_t* dest, std::size_t count)
-    -> strf::destination_no_reserve
+    -> strf::printer_no_reserve
         < strf::detail::basic_cstr_writer_creator<char32_t> >
 {
-    return strf::destination_no_reserve
+    return strf::printer_no_reserve
         < strf::detail::basic_cstr_writer_creator<char32_t> >
         (dest, dest + count);
 }
 
 template<std::size_t N>
 inline STRF_HD auto to(wchar_t (&dest)[N])
-    -> strf::destination_no_reserve
+    -> strf::printer_no_reserve
         < strf::detail::basic_cstr_writer_creator<wchar_t> >
 {
-    return strf::destination_no_reserve
+    return strf::printer_no_reserve
         < strf::detail::basic_cstr_writer_creator<wchar_t> >
         (dest, dest + N);
 }
 
 inline STRF_HD auto to(wchar_t* dest, wchar_t* end)
-    -> strf::destination_no_reserve
+    -> strf::printer_no_reserve
         < strf::detail::basic_cstr_writer_creator<wchar_t> >
 {
-    return strf::destination_no_reserve
+    return strf::printer_no_reserve
         < strf::detail::basic_cstr_writer_creator<wchar_t> >
         (dest, end);
 }
 
 inline STRF_HD auto to(wchar_t* dest, std::size_t count)
-    -> strf::destination_no_reserve
+    -> strf::printer_no_reserve
         < strf::detail::basic_cstr_writer_creator<wchar_t> >
 {
-    return strf::destination_no_reserve
+    return strf::printer_no_reserve
         < strf::detail::basic_cstr_writer_creator<wchar_t> >
         (dest, dest + count);
 }
 
 template<typename CharT, std::size_t N>
 inline STRF_HD auto to_range(CharT (&dest)[N])
-    -> strf::destination_no_reserve
+    -> strf::printer_no_reserve
         < strf::detail::basic_char_array_writer_creator<CharT> >
 {
-    return strf::destination_no_reserve
+    return strf::printer_no_reserve
         < strf::detail::basic_char_array_writer_creator<CharT> >
         (dest, dest + N);
 }
 
 template<typename CharT>
 inline STRF_HD auto to_range(CharT* dest, CharT* end)
-    -> strf::destination_no_reserve
+    -> strf::printer_no_reserve
         < strf::detail::basic_char_array_writer_creator<CharT> >
 {
-    return strf::destination_no_reserve
+    return strf::printer_no_reserve
         < strf::detail::basic_char_array_writer_creator<CharT> >
         (dest, end);
 }
 
 template<typename CharT>
 inline STRF_HD auto to_range(CharT* dest, std::size_t count)
-    -> strf::destination_no_reserve
+    -> strf::printer_no_reserve
         < strf::detail::basic_char_array_writer_creator<CharT> >
 {
-    return strf::destination_no_reserve
+    return strf::printer_no_reserve
         < strf::detail::basic_char_array_writer_creator<CharT> >
         (dest, dest + count);
 }

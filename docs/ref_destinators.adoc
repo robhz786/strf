@@ -15,15 +15,15 @@ http://www.boost.org/LICENSE_1_0.txt)
 
 :basic_cstr_writer: <<destination_hpp#basic_cstr_writer,basic_cstr_writer>>
 :basic_char_array_writer: <<destination_hpp#basic_char_array_writer,basic_char_array_writer>>
-:destination_no_reserve: <<destinators,destination_no_reserve>>
+:printer_no_reserve: <<printer_no_reserve,printer_no_reserve>>
 :DestinationCreator: <<DestinationCreator,DestinationCreator>>
 :SizedDestinationCreator: <<SizedDestinationCreator,SizedDestinationCreator>>
 
 [[destinators]]
-== Destinations
+== Printers
 
-The `destination_no_reserve`, `destination_calc_size` and
-`destination_with_given_size` class templates implement the
+The `printer_no_reserve`, `printer_with_size_calc` and
+`printer_with_given_size` class templates implement the
 functions availabe in the basic usage syntax of the library:
 
 image::syntax.svg[]
@@ -34,13 +34,11 @@ __{DestinationCreator}__ or __{SizeDestinationCreator}__ member object and
 in the above expression:
 ////
 
-* `no_reserve()` always returns a `destination_no_reserve` object
-* `reserve_calc()` always returns a `destination_calc_size` object.
-* `reserve(__size__)` always returns a `destination_with_given_size` object.
+* `no_reserve()` always returns a `printer_no_reserve` object
+* `reserve_calc()` always returns a `printer_with_size_calc` object.
+* `reserve(__size__)` always returns a `printer_with_given_size` object.
 * The __dest-expr__ is an expression that is or creates an object whose type
   is an instance of one those three class templates.
-
-=== Destination makers
 
 ====
 [[to_char_ptr_range]]
@@ -56,7 +54,7 @@ __/{asterisk} see below {asterisk}/__ to(wchar_t{asterisk}  begin,  wchar_t{aste
 
 } // namespace strf
 ----
-Return type:: `{destination_no_reserve}<DestCreator>`, where `DestCreator`
+Return type:: `{printer_no_reserve}<DestCreator>`, where `DestCreator`
          is an implementation-defined type that satifies __{DestinationCreator}__.
 Return value:: An object whose `DestCreator` object  `&#95;dest&#95;creator`
 is such that `&#95;dest&#95;creator.create()` returns
@@ -114,7 +112,7 @@ __/{asterisk} see below {asterisk}/__ to_range(CharT* begin, CharT* end);
 
 } // namespace strf
 ----
-Return type:: `{destination_no_reserve}<DestCreator>`, where `DestCreator`
+Return type:: `{printer_no_reserve}<DestCreator>`, where `DestCreator`
          is an implementation-defined type that satifies __{DestinationCreator}__.
 Return value:: An object whose `DestCreator` object  `&#95;dest&#95;creator`
 is such that `&#95;dest&#95;creator.create()` returns
@@ -152,18 +150,13 @@ Return type and value:: Same as of `to_range(dest, dest + count)`;
 ====
 
 
-
-
-
-
-
-[[destination_no_reserve]]
-=== Class template `destination_no_reserve`
+[[printer_no_reserve]]
+=== Class template `printer_no_reserve`
 ====
 [source,cpp,subs=normal]
 ----
 template <typename DestinationCreator, typename FPack = {facets_pack}<>>
-class destination_no_reserve
+class printer_no_reserve
 ----
 Compile-time requirements::
 - `FPack` is an instance of <<facets_pack,`facets_pack`>>.
@@ -175,43 +168,43 @@ Compile-time requirements::
 namespace strf {
 
 template <typename DestinationCreator, typename FPack>
-class destination_no_reserve
+class printer_no_reserve
 {
 public:
     using char_type = typename DestinationCreator::char_type;
 
-    // <<destination_no_reserve_ctor,constructors>>
+    // <<printer_no_reserve_ctor,constructors>>
     template <typename\... Args>
-    constexpr destination_no_reserve(Args&&\...);
-    constexpr destination_no_reserve(const destination_no_reserve&);
-    constexpr destination_no_reserve(destination_no_reserve&&);
+    constexpr printer_no_reserve(Args&&\...);
+    constexpr printer_no_reserve(const printer_no_reserve&);
+    constexpr printer_no_reserve(printer_no_reserve&&);
 
-    // <<destination_no_reserve_with,facets>>
+    // <<printer_no_reserve_with,facets>>
     template <typename\... FPE>
-    destination_no_reserve<DestinationCreator, /{asterisk}\...{asterisk}/> with(FPE&&\...) const &;
+    printer_no_reserve<DestinationCreator, /{asterisk}\...{asterisk}/> with(FPE&&\...) const &;
 
     template <typename\... FPE>
-    destination_no_reserve<DestinationCreator, /{asterisk}\...{asterisk}/> with(FPE&&\...) &&;
+    printer_no_reserve<DestinationCreator, /{asterisk}\...{asterisk}/> with(FPE&&\...) &&;
 
-    // <<destination_no_reserve_reserve,size reserve>>
-    constexpr destination_calc_size<DestinationCreator, FPack>
+    // <<printer_no_reserve_reserve,size reserve>>
+    constexpr printer_with_size_calc<DestinationCreator, FPack>
     reserve_calc() const &;
 
-    constexpr destination_calc_size<DestinationCreator, FPack>
+    constexpr printer_with_size_calc<DestinationCreator, FPack>
     reserve_calc() &&;
 
-    constexpr destination_with_given_size<DestinationCreator, FPack>
+    constexpr printer_with_given_size<DestinationCreator, FPack>
     reserve(std::size_t) const &;
 
-    constexpr destination_with_given_size<DestinationCreator, FPack>
+    constexpr printer_with_given_size<DestinationCreator, FPack>
     reserve(std::size_t) &&;
 
-    constexpr destination_no_reserve&  no_reserve() &;
-    constexpr destination_no_reserve&& no_reserve() &&;
-    constexpr const destination_no_reserve&  no_reserve() const &;
-    constexpr const destination_no_reserve&& no_reserve() const &&;
+    constexpr printer_no_reserve&  no_reserve() &;
+    constexpr printer_no_reserve&& no_reserve() &&;
+    constexpr const printer_no_reserve&  no_reserve() const &;
+    constexpr const printer_no_reserve&& no_reserve() const &&;
 
-    // <<destination_no_reserve_printing,printing>>
+    // <<printer_no_reserve_printing,printing>>
     template <typename\... Args>
     /{asterisk}\...{asterisk}/ operator()(const Args&\...) const;
 
@@ -236,13 +229,13 @@ private:
 
 ==== Public member functions
 
-[[destination_no_reserve_ctor]]
+[[printer_no_reserve_ctor]]
 ===== Constructors
 ====
 [source,cpp]
 ----
 template <typename... Args>
-constexpr destination_no_reserve(Args&&... args);
+constexpr printer_no_reserve(Args&&... args);
 ----
 Compile-time requirements::
 - `FPack` is https://en.cppreference.com/w/cpp/named_req/DefaultConstructible[_DefaultConstructible_]
@@ -253,7 +246,7 @@ Effect::
 ====
 [source,cpp]
 ----
-constexpr destination_no_reserve(const destination_no_reserve&) = default;
+constexpr printer_no_reserve(const printer_no_reserve&) = default;
 ----
 Copy constructor.
 
@@ -264,11 +257,11 @@ Compile-time requirements::
 ====
 [source,cpp]
 ----
-constexpr destination_no_reserve(destination_no_reserve&&) = default;
+constexpr printer_no_reserve(printer_no_reserve&&) = default;
 ----
 Move constructor.
 ====
-[[destination_no_reserve_with]]
+[[printer_no_reserve_with]]
 ===== Facets
 ====
 [source,cpp,subs=normal]
@@ -283,11 +276,11 @@ Return Type::
 +
 [source,cpp,subs=normal]
 ----
-destination_no_reserve< DestinationCreator
+printer_no_reserve< DestinationCreator
                       , decltype(<<pack,pack>>( std::declval<const FPack&>()
                                      , std::forward<FPE>(fpe)\...) ) >
 ----
-Effect:: Creates a `destination_no_reserve` object whose `&#95;dest&#95;creator`
+Effect:: Creates a `printer_no_reserve` object whose `&#95;dest&#95;creator`
 is initialized with this `&#95;dest&#95;creator`, and whose `_fpack` is initialized
 with `pack(this\->_fpack, std::forward<FPE>(fpe)\...)`
 ====
@@ -304,84 +297,84 @@ Return Type::
 +
 [source,cpp,subs=normal]
 ----
-destination_no_reserve< DestinationCreator
+printer_no_reserve< DestinationCreator
                       , decltype(<<pack,pack>>( std::declval<const FPack&>()
                                      , std::forward<FPE>(fpe)\...) ) >
 ----
-Effect:: Creates an `destination_no_reserve` object whose `&#95;dest&#95;creator`
+Effect:: Creates an `printer_no_reserve` object whose `&#95;dest&#95;creator`
 is initialized with `std::move(&#95;dest&#95;creator)`, and whose `_fpack` is
 initialized with `pack(std::move(this\->_fpack), std::forward<FPE>(fpe)\...)`
 ====
-[[destination_no_reserve_reserve]]
+[[printer_no_reserve_reserve]]
 ===== Size reserve
 ====
 [source,cpp,subs=normal]
 ----
-constexpr destination_calc_size<DestinationCreator, FPack> reserve_calc() const &;
+constexpr printer_with_size_calc<DestinationCreator, FPack> reserve_calc() const &;
 ----
 Compile-time requirements::
 - `DestinationCreator` is https://en.cppreference.com/w/cpp/named_req/CopyConstructible[_CopyConstructible_]
    and <<SizedDestinationCreator,_SizedDestinationCreator_>>.
 - `FPack` is https://en.cppreference.com/w/cpp/named_req/CopyConstructible[_CopyConstructible_].
-Effect:: Creates an `destination_calc_size` object whose `&#95;dest&#95;creator`
+Effect:: Creates an `printer_with_size_calc` object whose `&#95;dest&#95;creator`
 is initialized with this `&#95;dest&#95;creator`, and whose `_fpack` is
 initialized with this `_fpack`.
 ====
 ====
 [source,cpp,subs=normal]
 ----
-constexpr destination_calc_size<DestinationCreator, FPack> reserve_calc() &&;
+constexpr printer_with_size_calc<DestinationCreator, FPack> reserve_calc() &&;
 ----
 Compile-time requirements::
 - `DestinationCreator` is https://en.cppreference.com/w/cpp/named_req/MoveConstructible[_MoveConstructible_]
    and <<SizedDestinationCreator,_SizedDestinationCreator_>>.
 - `FPack` is https://en.cppreference.com/w/cpp/named_req/CopyConstructible[_CopyConstructible_].
-Effect:: Creates an `destination_calc_size` object whose `&#95;dest&#95;creator`
+Effect:: Creates an `printer_with_size_calc` object whose `&#95;dest&#95;creator`
 is initialized with `std::move(&#95;dest&#95;creator)` from this object, and whose `_fpack` object is
 initialized with `std::move(_fpack)` from this object.
 ====
 ====
 [source,cpp,subs=normal]
 ----
-constexpr destination_with_given_size<DestinationCreator, FPack>
+constexpr printer_with_given_size<DestinationCreator, FPack>
 reserve(std::size_t size) const &;
 ----
 Compile-time requirements::
 - `DestinationCreator` is https://en.cppreference.com/w/cpp/named_req/CopyConstructible[_CopyConstructible_]
    and <<SizedDestinationCreator,_SizedDestinationCreator_>>.
 - `FPack` is https://en.cppreference.com/w/cpp/named_req/CopyConstructible[_CopyConstructible_].
-Effect:: Creates an `destination_with_given_size` whose `_size` is initialized with `size`,
+Effect:: Creates an `printer_with_given_size` whose `_size` is initialized with `size`,
 whose `&#95;dest&#95;creator` is initialized with this `&#95;dest&#95;creator`, and whose `_fpack` is
 initialized with this `_fpack`.
 ====
 ====
 [source,cpp,subs=normal]
 ----
-constexpr destination_with_given_size<DestinationCreator, FPack>
+constexpr printer_with_given_size<DestinationCreator, FPack>
 reserve(std::size_t size) &&;
 ----
 Compile-time requirements::
 `DestinationCreator` is https://en.cppreference.com/w/cpp/named_req/MoveConstructible[_MoveConstructible_]
    and <<SizedDestinationCreator,_SizedDestinationCreator_>>.
 - `FPack` is https://en.cppreference.com/w/cpp/named_req/CopyConstructible[_CopyConstructible_].
-Effect:: Creates an `destination_with_given_size` object whose `_size` is initialized with `size`,
+Effect:: Creates an `printer_with_given_size` object whose `_size` is initialized with `size`,
 whose `&#95;dest&#95;creator` is initialized with `std::move(&#95;dest&#95;creator)  from this object,
 and whose `_fpack` is initialized with `std::move(_fpack)` from this object.
 ====
 ====
 [source,cpp,subs=normal]
 ----
-constexpr destination_no_reserve&  no_reserve() &;
-constexpr destination_no_reserve&& no_reserve() &&;
-constexpr const destination_no_reserve&  no_reserve() const &;
-constexpr const destination_no_reserve&& no_reserve() const &&;
+constexpr printer_no_reserve&  no_reserve() &;
+constexpr printer_no_reserve&& no_reserve() &&;
+constexpr const printer_no_reserve&  no_reserve() const &;
+constexpr const printer_no_reserve&& no_reserve() const &&;
 ----
 [horizontal]
 Effect:: None.
 Return:: This object.
 ====
 
-[[destination_no_reserve_printing]]
+[[printer_no_reserve_printing]]
 ===== Printing
 ====
 [source,cpp,subs=normal]
@@ -414,7 +407,7 @@ where `Arg` is the type in `Args\...` corresponding to `arg`
 . Returns `dest.finish()` if such expression is valid, which is optional.
   Otherwise the return type is `void`.
 ====
-[[destination_no_reserve_tr]]
+[[printer_no_reserve_tr]]
 ====
 [source,cpp,subs=normal]
 ----
@@ -455,13 +448,13 @@ typename DestinationCreator::destination_type dest{&#95;dest&#95;creator.create(
 ////
 
 ====
-[[destination_calc_size]]
-=== Class template `destination_calc_size`
+[[printer_with_size_calc]]
+=== Class template `printer_with_size_calc`
 ====
 [source,cpp,subs=normal]
 ----
 template <typename SizedDestinationCreator, typename FPack = {facets_pack}<>>
-class destination_calc_size;
+class printer_with_size_calc;
 ----
 Compile-time requirements::
 - `FPack` is an instance of <<facets_pack,`facets_pack`>>.
@@ -473,44 +466,44 @@ Compile-time requirements::
 namespace strf {
 
 template <typename SizedDestinationCreator, typename FPack>
-class destination_calc_size
+class printer_with_size_calc
 {
 public:
     using char_type = typename SizedDestinationCreator::char_type;
 
-    // <<destination_calc_size_ctor,constructors>>
+    // <<printer_with_size_calc_ctor,constructors>>
     template <typename\... Args>
-    constexpr destination_calc_size(Args&&\...);
+    constexpr printer_with_size_calc(Args&&\...);
 
-    constexpr destination_calc_size(const destination_calc_size&) = default;
-    constexpr destination_calc_size(destination_calc_size&&) = default;
+    constexpr printer_with_size_calc(const printer_with_size_calc&) = default;
+    constexpr printer_with_size_calc(printer_with_size_calc&&) = default;
 
-    // <<destination_calc_size_with,facets>>
+    // <<printer_with_size_calc_with,facets>>
     template <typename\... FPE>
-    destination_calc_size<SizedDestinationCreator, /{asterisk}\...{asterisk}/> with(FPE&&\...) const &;
+    printer_with_size_calc<SizedDestinationCreator, /{asterisk}\...{asterisk}/> with(FPE&&\...) const &;
 
     template <typename\... FPE>
-    destination_calc_size<SizedDestinationCreator, /{asterisk}\...{asterisk}/> with(FPE&&\...) &&;
+    printer_with_size_calc<SizedDestinationCreator, /{asterisk}\...{asterisk}/> with(FPE&&\...) &&;
 
-    // <<destination_calc_size_reserve,size reserve>>
-    constexpr destination_no_reserve<SizedDestinationCreator, FPack>
+    // <<printer_with_size_calc_reserve,size reserve>>
+    constexpr printer_no_reserve<SizedDestinationCreator, FPack>
     no_reserve() const &;
 
-    constexpr destination_no_reserve<SizedDestinationCreator, FPack>
+    constexpr printer_no_reserve<SizedDestinationCreator, FPack>
     no_reserve() &&;
 
-    constexpr destination_with_given_size<SizedDestinationCreator, FPack>
+    constexpr printer_with_given_size<SizedDestinationCreator, FPack>
     reserve(std::size_t) const &;
 
-    constexpr destination_with_given_size<SizedDestinationCreator, FPack>
+    constexpr printer_with_given_size<SizedDestinationCreator, FPack>
     reserve(std::size_t) &&;
 
-    constexpr destination_calc_size&  reserve_calc() &;
-    constexpr destination_calc_size&& reserve_calc() &&;
-    constexpr const destination_calc_size&  reserve_calc() const &;
-    constexpr const destination_calc_size&& reserve_calc() const &&;
+    constexpr printer_with_size_calc&  reserve_calc() &;
+    constexpr printer_with_size_calc&& reserve_calc() &&;
+    constexpr const printer_with_size_calc&  reserve_calc() const &;
+    constexpr const printer_with_size_calc&& reserve_calc() const &&;
 
-    // <<destination_calc_size_printing,printing>>
+    // <<printer_with_size_calc_printing,printing>>
     template <typename\... Args>
     /{asterisk}\...{asterisk}/ operator()(const Args&\...) const;
 
@@ -531,13 +524,13 @@ private:
 } // namespace strf
 ----
 
-[[destination_calc_size_ctor]]
+[[printer_with_size_calc_ctor]]
 ===== Constructors
 ====
 [source,cpp]
 ----
 template <typename... Args>
-constexpr destination_calc_size(Args&&... args);
+constexpr printer_with_size_calc(Args&&... args);
 ----
 Compile-time requirements::
 - `FPack` is https://en.cppreference.com/w/cpp/named_req/DefaultConstructible[_DefaultConstructible_]
@@ -548,7 +541,7 @@ Effect::
 ====
 [source,cpp]
 ----
-constexpr destination_calc_size(const destination_calc_size&) = default;
+constexpr printer_with_size_calc(const printer_with_size_calc&) = default;
 ----
 Copy constructor.
 
@@ -559,11 +552,11 @@ Compile-time requirements::
 ====
 [source,cpp]
 ----
-constexpr destination_calc_size(destination_calc_size&&) = default;
+constexpr printer_with_size_calc(printer_with_size_calc&&) = default;
 ----
 Move constructor.
 ====
-[[destination_calc_size_with]]
+[[printer_with_size_calc_with]]
 ===== Facets
 ====
 [source,cpp,subs=normal]
@@ -578,11 +571,11 @@ Return Type::
 +
 [source,cpp,subs=normal]
 ----
-destination_calc_size< DestinationCreator
+printer_with_size_calc< DestinationCreator
                      , decltype(<<pack,pack>>( std::declval<const FPack&>()
                                              , std::forward<FPE>(fpe)\...) ) >
 ----
-Effect:: Creates an `destination_calc_size` object whose `&#95;dest&#95;creator`
+Effect:: Creates an `printer_with_size_calc` object whose `&#95;dest&#95;creator`
 is initialized with this `&#95;dest&#95;creator`, and whose `_fpack` is initialized
 with `pack(this\->_fpack, std::forward<FPE>(fpe)\...)`
 ====
@@ -599,81 +592,81 @@ Return Type::
 +
 [source,cpp,subs=normal]
 ----
-destination_calc_size< DestinationCreator
+printer_with_size_calc< DestinationCreator
                      , decltype(<<pack,pack>>( std::declval<const FPack&>()
                                              , std::forward<FPE>(fpe)\...) ) >
 ----
-Effect:: Creates an `destination_calc_size` object whose `&#95;dest&#95;creator`
+Effect:: Creates an `printer_with_size_calc` object whose `&#95;dest&#95;creator`
 is initialized with `std::move(this\->&#95;dest&#95;creator)`, and whose `_fpack` is
 initialized with `pack(std::move(this\->_fpack), std::forward<FPE>(fpe)\...)`
 ====
-[[destination_calc_size_reserve]]
+[[printer_with_size_calc_reserve]]
 ===== Size reserve
 ====
 [source,cpp,subs=normal]
 ----
-constexpr destination_no_reserve<DestinationCreator, FPack> no_reserve() const &;
+constexpr printer_no_reserve<DestinationCreator, FPack> no_reserve() const &;
 ----
 Compile-time requirements::
 - `DestinationCreator` is https://en.cppreference.com/w/cpp/named_req/CopyConstructible[_CopyConstructible_]
 - `FPack` is https://en.cppreference.com/w/cpp/named_req/CopyConstructible[_CopyConstructible_].
-Effect:: Creates an `destination_no_reserve` object whose `&#95;dest&#95;creator`
+Effect:: Creates an `printer_no_reserve` object whose `&#95;dest&#95;creator`
 is initialized with this `&#95;dest&#95;creator`, and whose `_fpack` is
 initialized with this `_fpack`.
 ====
 ====
 [source,cpp,subs=normal]
 ----
-constexpr destination_calc_size<DestinationCreator, FPack> reserve_calc() &&;
+constexpr printer_with_size_calc<DestinationCreator, FPack> reserve_calc() &&;
 ----
 Compile-time requirements::
 - `DestinationCreator` is https://en.cppreference.com/w/cpp/named_req/MoveConstructible[_MoveConstructible_]
 - `FPack` is https://en.cppreference.com/w/cpp/named_req/CopyConstructible[_CopyConstructible_].
-Effect:: Creates an `destination_no_reserve` object whose `&#95;dest&#95;creator`
+Effect:: Creates an `printer_no_reserve` object whose `&#95;dest&#95;creator`
 is initialized with `std::move(&#95;dest&#95;creator)` from this object, and whose `_fpack` object is
 initialized with `std::move(_fpack)` from this object.
 ====
 ====
 [source,cpp,subs=normal]
 ----
-constexpr destination_with_given_size<DestinationCreator, FPack>
+constexpr printer_with_given_size<DestinationCreator, FPack>
 reserve(std::size_t size) const &;
 ----
 Compile-time requirements::
 - `DestinationCreator` is https://en.cppreference.com/w/cpp/named_req/CopyConstructible[_CopyConstructible_]
    and <<SizedDestinationCreator,_SizedDestinationCreator_>>.
 - `FPack` is https://en.cppreference.com/w/cpp/named_req/CopyConstructible[_CopyConstructible_].
-Effect:: Creates an `destination_with_given_size` whose `_size` is initialized with `size`,
+Effect:: Creates an `printer_with_given_size` whose `_size` is initialized with `size`,
 whose `&#95;dest&#95;creator` is initialized with this `&#95;dest&#95;creator`, and whose `_fpack` is
 initialized with this `_fpack`.
 ====
 ====
 [source,cpp,subs=normal]
 ----
-constexpr destination_with_given_size<DestinationCreator, FPack>
+constexpr printer_with_given_size<DestinationCreator, FPack>
 reserve(std::size_t) &&;
 ----
 Compile-time requirements::
 `DestinationCreator` is https://en.cppreference.com/w/cpp/named_req/MoveConstructible[_MoveConstructible_]
    and <<SizedDestinationCreator,_SizedDestinationCreator_>>.
 - `FPack` is https://en.cppreference.com/w/cpp/named_req/CopyConstructible[_CopyConstructible_].
-Effect:: Creates an `destination_with_given_size` object whose `_size` is initialized with `size`,
+Effect:: Creates an `printer_with_given_size` object whose `_size` is initialized with `size`,
 whose `&#95;dest&#95;creator` is initialized with `std::move(&#95;dest&#95;creator)  from this object,
 and whose `_fpack` is initialized with `std::move(_fpack)` from this object.
 ====
 ====
 [source,cpp,subs=normal]
 ----
-constexpr destination_calc_size&  reserve_calc() &;
-constexpr destination_calc_size&& reserve_calc() &&;
-constexpr const destination_calc_size&  reserve_calc() const &;
-constexpr const destination_calc_size&& reserve_calc() const &&;
+constexpr printer_with_size_calc&  reserve_calc() &;
+constexpr printer_with_size_calc&& reserve_calc() &&;
+constexpr const printer_with_size_calc&  reserve_calc() const &;
+constexpr const printer_with_size_calc&& reserve_calc() const &&;
 ----
 [horizontal]
 Effect:: None.
 Return:: This object.
 ====
-[[destination_calc_size_printing]]
+[[printer_with_size_calc_printing]]
 ===== Printing
 ====
 [source,cpp,subs=normal]
@@ -759,13 +752,13 @@ decltype(auto) dest = &#95;dest&#95;creator.create(size)
 ////
 ====
 
-[[destination_with_given_size]]
-=== Class template `destination_with_given_size`
+[[printer_with_given_size]]
+=== Class template `printer_with_given_size`
 ====
 [source,cpp,subs=normal]
 ----
 template <typename SizedDestinationCreator, typename FPack = {facets_pack}<>>
-class destination_with_given_size
+class printer_with_given_size
 ----
 Compile-time requirements::
 - `FPack` is an instance of <<facets_pack,`facets_pack`>>.
@@ -777,43 +770,43 @@ Compile-time requirements::
 namespace strf {
 
 template <typename SizedDestinationCreator, typename FPack>
-class destination_with_given_size
+class printer_with_given_size
 {
 public:
     using char_type = typename SizedDestinationCreator::char_type;
 
-    // <<destination_with_given_size_ctor,constructors>>
+    // <<printer_with_given_size_ctor,constructors>>
     template <typename\... Args>
-    constexpr destination_with_given_size(std::size_t, Args&&\...);
-    constexpr destination_with_given_size(const destination_with_given_size&) = default;
-    constexpr destination_with_given_size(destination_with_given_size&&) = default;
+    constexpr printer_with_given_size(std::size_t, Args&&\...);
+    constexpr printer_with_given_size(const printer_with_given_size&) = default;
+    constexpr printer_with_given_size(printer_with_given_size&&) = default;
 
-    // <<destination_with_given_size_with,facets>>
+    // <<printer_with_given_size_with,facets>>
     template <typename\... FPE>
-    destination_with_given_size<SizedDestinationCreator, /{asterisk}\...{asterisk}/> with(FPE&&\...) const &;
+    printer_with_given_size<SizedDestinationCreator, /{asterisk}\...{asterisk}/> with(FPE&&\...) const &;
 
     template <typename\... FPE>
-    destination_with_given_size<SizedDestinationCreator, /{asterisk}\...{asterisk}/> with(FPE&&\...) &&;
+    printer_with_given_size<SizedDestinationCreator, /{asterisk}\...{asterisk}/> with(FPE&&\...) &&;
 
-    // <<destination_with_given_size_reserve,size reserve>>
-    constexpr destination_calc_size<SizedDestinationCreator, FPack>
+    // <<printer_with_given_size_reserve,size reserve>>
+    constexpr printer_with_size_calc<SizedDestinationCreator, FPack>
     reserve_calc() const &;
 
-    constexpr destination_calc_size<SizedDestinationCreator, FPack>
+    constexpr printer_with_size_calc<SizedDestinationCreator, FPack>
     reserve_calc() &&;
 
-    constexpr destination_no_reserve<SizedDestinationCreator, FPack>
+    constexpr printer_no_reserve<SizedDestinationCreator, FPack>
     no_reserve() const &;
 
-    constexpr destination_no_reserve<SizedDestinationCreator, FPack>
+    constexpr printer_no_reserve<SizedDestinationCreator, FPack>
     no_reserve() &&;
 
-    constexpr destination_with_given_size&  reserve(std::size_t) &;
-    constexpr destination_with_given_size&& reserve(std::size_t) &&;
-    constexpr destination_with_given_size   reserve(std::size_t) const &;
-    constexpr destination_with_given_size   reserve(std::size_t) const &&;
+    constexpr printer_with_given_size&  reserve(std::size_t) &;
+    constexpr printer_with_given_size&& reserve(std::size_t) &&;
+    constexpr printer_with_given_size   reserve(std::size_t) const &;
+    constexpr printer_with_given_size   reserve(std::size_t) const &&;
 
-    // <<destination_with_given_size_printing,printing>>
+    // <<printer_with_given_size_printing,printing>>
     template <typename\... Args>
     /{asterisk}\...{asterisk}/ operator()(const Args&\...) const;
 
@@ -834,13 +827,13 @@ private:
 
 } // namespace strf
 ----
-[[destination_with_given_size_ctor]]
+[[printer_with_given_size_ctor]]
 ===== Constructors
 ====
 [source,cpp]
 ----
 template <typename... Args>
-constexpr destination_with_given_size(std::size_t size, Args&&... args);
+constexpr printer_with_given_size(std::size_t size, Args&&... args);
 ----
 Compile-time requirements::
 - `FPack` is https://en.cppreference.com/w/cpp/named_req/DefaultConstructible[_DefaultConstructible_]
@@ -852,7 +845,7 @@ Effect::
 ====
 [source,cpp]
 ----
-constexpr destination_with_given_size(const destination_with_given_size&) = default;
+constexpr printer_with_given_size(const printer_with_given_size&) = default;
 ----
 Copy constructor.
 
@@ -863,11 +856,11 @@ Compile-time requirements::
 ====
 [source,cpp]
 ----
-constexpr destination_with_given_size(destination_with_given_size&&) = default;
+constexpr printer_with_given_size(printer_with_given_size&&) = default;
 ----
 Move constructor.
 ====
-[[destination_with_given_size_with]]
+[[printer_with_given_size_with]]
 ===== Facets
 ====
 [source,cpp,subs=normal]
@@ -882,11 +875,11 @@ Return Type::
 +
 [source,cpp,subs=normal]
 ----
-destination_with_given_size< DestinationCreator
+printer_with_given_size< DestinationCreator
                            , decltype(<<pack,pack>>( std::declval<const FPack&>()
                                                    , std::forward<FPE>(fpe)\...) ) >
 ----
-Effect:: Creates an `destination_with_given_size` object
+Effect:: Creates an `printer_with_given_size` object
 whose `_size` is is initialized with this `_size`
 , whose `&#95;dest&#95;creator` is initialized with this `&#95;dest&#95;creator`
 , and whose `_fpack` is initialized with `pack(this\->_fpack, std::forward<FPE>(fpe)\...)`
@@ -905,73 +898,73 @@ Return Type::
 +
 [source,cpp,subs=normal]
 ----
-destination_with_given_size< DestinationCreator
+printer_with_given_size< DestinationCreator
                            , decltype(<<pack,pack>>( std::declval<const FPack&>()
                                                    , std::forward<FPE>(fpe)\...) ) >
 ----
-Effect:: Creates an `destination_with_given_size` object
+Effect:: Creates an `printer_with_given_size` object
 whose `_size` is is initialized with this `_size`
 , whose `&#95;dest&#95;creator` is initialized with `std::move(&#95;dest&#95;creator)` from this object
 , and whose `_fpack` is initialized with
 `pack(std::move(this\->_fpack), std::forward<FPE>(fpe)\...)`
 ====
-[[destination_with_given_size_reserve]]
+[[printer_with_given_size_reserve]]
 ===== Size reserve
 ====
 [source,cpp,subs=normal]
 ----
-constexpr destination_no_reserve<DestinationCreator, FPack> no_reserve() const &;
+constexpr printer_no_reserve<DestinationCreator, FPack> no_reserve() const &;
 ----
 Compile-time requirements::
 - `DestinationCreator` is https://en.cppreference.com/w/cpp/named_req/CopyConstructible[_CopyConstructible_]
 - `FPack` is https://en.cppreference.com/w/cpp/named_req/CopyConstructible[_CopyConstructible_].
-Effect:: Creates an `destination_no_reserve` object
+Effect:: Creates an `printer_no_reserve` object
 whose `&#95;dest&#95;creator` is initialized with this `&#95;dest&#95;creator`,
 and whose `_fpack` is initialized with this `_fpack`.
 ====
 ====
 [source,cpp,subs=normal]
 ----
-constexpr destination_calc_size<DestinationCreator, FPack> no_reserve() &&;
+constexpr printer_with_size_calc<DestinationCreator, FPack> no_reserve() &&;
 ----
 Compile-time requirements::
 - `DestinationCreator` is https://en.cppreference.com/w/cpp/named_req/MoveConstructible[_MoveConstructible_]
 - `FPack` is https://en.cppreference.com/w/cpp/named_req/CopyConstructible[_CopyConstructible_].
-Effect:: Creates an `destination_no_reserve` object whose `&#95;dest&#95;creator`
+Effect:: Creates an `printer_no_reserve` object whose `&#95;dest&#95;creator`
 is initialized with `std::move(&#95;dest&#95;creator)` from this object, and whose `_fpack` object is
 initialized with `std::move(_fpack)` from this object.
 ====
 ====
 [source,cpp,subs=normal]
 ----
-constexpr destination_calc_size<DestinationCreator, FPack> reserve_calc() const &;
+constexpr printer_with_size_calc<DestinationCreator, FPack> reserve_calc() const &;
 ----
 Compile-time requirements::
 - `DestinationCreator` is https://en.cppreference.com/w/cpp/named_req/CopyConstructible[_CopyConstructible_]
    and <<SizedDestinationCreator,_SizedDestinationCreator_>>.
 - `FPack` is https://en.cppreference.com/w/cpp/named_req/CopyConstructible[_CopyConstructible_].
-Effect:: Creates an `destination_calc_size` object
+Effect:: Creates an `printer_with_size_calc` object
 whose `&#95;dest&#95;creator` is initialized with this `&#95;dest&#95;creator`,
 and whose `_fpack` is initialized with this `_fpack`.
 ====
 ====
 [source,cpp,subs=normal]
 ----
-constexpr destination_calc_size<DestinationCreator, FPack> reserve_calc() &&;
+constexpr printer_with_size_calc<DestinationCreator, FPack> reserve_calc() &&;
 ----
 Compile-time requirements::
 - `DestinationCreator` is https://en.cppreference.com/w/cpp/named_req/MoveConstructible[_MoveConstructible_]
    and <<SizedDestinationCreator,_SizedDestinationCreator_>>.
 - `FPack` is https://en.cppreference.com/w/cpp/named_req/CopyConstructible[_CopyConstructible_].
-Effect:: Creates an `destination_calc_size` object whose `&#95;dest&#95;creator`
+Effect:: Creates an `printer_with_size_calc` object whose `&#95;dest&#95;creator`
 is initialized with `std::move(&#95;dest&#95;creator)` from this object, and whose `_fpack` object is
 initialized with `std::move(_fpack)` from this object.
 ====
 ====
 [source,cpp,subs=normal]
 ----
-constexpr destination_with_given_size&  reserve(std::size_t size) &;
-constexpr destination_with_given_size&& reserve(std::size_t size) &&;
+constexpr printer_with_given_size&  reserve(std::size_t size) &;
+constexpr printer_with_given_size&& reserve(std::size_t size) &&;
 ----
 [horizontal]
 Effect:: assign `size` to `_size`.
@@ -980,8 +973,8 @@ Return:: This object.
 ====
 [source,cpp,subs=normal]
 ----
-constexpr destination_with_given_size reserve(std::size_t size) const &;
-constexpr destination_with_given_size reserve(std::size_t size) const &&;
+constexpr printer_with_given_size reserve(std::size_t size) const &;
+constexpr printer_with_given_size reserve(std::size_t size) const &&;
 ----
 [horizontal]
 Effect:: Creates an `destination_with_give_size` object
@@ -989,7 +982,7 @@ whose `_size` is initialized with `size`,
 whose `&#95;dest&#95;creator` is initialized with this `&#95;dest&#95;creator`,
 and whose `facets_pack` object with this `_fpack`.
 ====
-[[destination_with_given_size_printing]]
+[[printer_with_given_size_printing]]
 ===== Printing
 ====
 [source,cpp,subs=normal]

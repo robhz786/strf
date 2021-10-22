@@ -489,7 +489,7 @@ Optionally, you can set a callback to be invoked in such errors
 and `<<strf_hpp#invalid_seq_notifier_c,invalid_seq_notifier_c>>` )
 which can then throw an exception, if that's what you want.
 
-In addition to that, depending on the <<quick_reference#destinators,destination>>,
+In addition to that, depending on the <<quick_reference#destinations,destination>>,
 the return type of the <<tutorial#syntax,basic usage syntax>> may contain an error
 indication. For example, when writing to a `char*`, the returned object contains
 a `bool` member `truncated` that tells whether the destination memory

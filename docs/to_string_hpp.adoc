@@ -18,7 +18,7 @@ http://www.boost.org/LICENSE_1_0.txt
 :destination: <<destination_hpp#destination,destination>>
 :print_dest: <<destination_hpp#print_dest,print_dest>>
 
-:destination_no_reserve: <<strf_hpp#destination_no_reserve,destination_no_reserve>>
+:printer_no_reserve: <<strf_hpp#printer_no_reserve,printer_no_reserve>>
 :DestinationCreator: <<strf_hpp#DestinationCreator,DestinationCreator>>
 :SizedDestinationCreator: <<strf_hpp#SizedDestinationCreator,SizedDestinationCreator>>
 
@@ -244,7 +244,7 @@ Effects:: Calls `recycle_buffer()` and `set_good(false)`.
 Postcondition:: `good() == false`
 ====
 
-[[destinator_string_append]]
+[[std_string_append]]
 == Function template `append`
 
 [source,cpp,subs=normal]
@@ -256,7 +256,7 @@ __/{asterisk} see below {asterisk}/__ append(std::basic_string<CharT, Traits, Al
 
 } // namespace strf
 ----
-Return type:: `{destination_no_reserve}<DestCreator>`, where `DestCreator`
+Return type:: `{printer_no_reserve}<DestCreator>`, where `DestCreator`
 is an implementation-defined type that satisfies  __{DestinationCreator}__ and
 __{SizedDestinationCreator}__
 Return value:: An object whose `DestCreator` object
@@ -279,7 +279,7 @@ __/{asterisk} see below {asterisk}/__ assign(std::basic_string<CharT, Traits, Al
 } // namespace strf
 ----
 [horizontal]
-Effects:: Calls `str.clear()` and returns `<<destinator_string_append,append>>(str)`.
+Effects:: Calls `str.clear()` and returns `<<std_string_append,append>>(str)`.
 
 [[to_basic_string]]
 == Variable template `to_basic_string`
@@ -295,7 +295,7 @@ constexpr <__/{asterisk} see below {asterisk}/__>  to_basic_string {};
 } // namespace strf
 ----
 
-Type:: `{destination_no_reserve}<DestCreator>`, where `DestCreator` is
+Type:: `{printer_no_reserve}<DestCreator>`, where `DestCreator` is
         an implementation-defined type that satisfies
         __{DestinationCreator}__ and __{SizedDestinationCreator}__.
 Value:: An object whose `DestCreator` object

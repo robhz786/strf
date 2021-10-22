@@ -595,7 +595,7 @@ auto STRF_HD make_tester
     , int line
     , const char* function
     , double reserve_factor = 1.0 )
-    -> strf::destination_calc_size<test_utils::input_tester_creator<CharT>>
+    -> strf::printer_with_size_calc<test_utils::input_tester_creator<CharT>>
 {
     return {expected, filename, line, function, reserve_factor};
 }
@@ -607,7 +607,7 @@ auto STRF_HD make_tester
    , int line
    , const char* function
    , double reserve_factor = 1.0 )
-   -> strf::destination_calc_size<test_utils::input_tester_creator<CharT>>
+   -> strf::printer_with_size_calc<test_utils::input_tester_creator<CharT>>
 {
     return {expected, filename, line, function, reserve_factor};
 }
@@ -902,7 +902,7 @@ struct input_tester_with_fixed_spaces_creator_creator
 
     template <unsigned... Spaces, typename CharT>
     STRF_HD auto create(const CharT* expected) const noexcept
-        -> strf::destination_no_reserve
+        -> strf::printer_no_reserve
             < input_tester_with_fixed_spaces_creator<CharT, Spaces...> >
     {
         return {expected, filename, line, function};

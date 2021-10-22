@@ -23,9 +23,9 @@ http://www.boost.org/LICENSE_1_0.txt)
 :set_buffer_ptr: <<destination_hpp#destination_set_buffer_ptr,set_buffer_ptr>>
 :to: <<quick_reference#to_destination_ref,to>>
 
-:destination_no_reserve: <<strf_hpp#destination_no_reserve,destination_no_reserve>>
-:destination_calc_size: <<strf_hpp#destination_calc_size,destination_calc_size>>
-:destination_with_given_size: <<strf_hpp#destination_with_given_size,destination_with_given_size>>
+:printer_no_reserve: <<strf_hpp#printer_no_reserve,printer_no_reserve>>
+:printer_with_size_calc: <<strf_hpp#printer_with_size_calc,printer_with_size_calc>>
+:printer_with_given_size: <<strf_hpp#printer_with_given_size,printer_with_given_size>>
 :DestinationCreator: <<strf_hpp#DestinationCreator,DestinationCreator>>
 :SizedDestinationCreator: <<strf_hpp#SizedDestinationCreator,SizedDestinationCreator>>
 :print_dest_space_after_flush: <<destination_hpp#print_dest,print_dest_space_after_flush>>
@@ -260,7 +260,7 @@ It must be an expression ( a function call or a constexpr value )
 whose type is an instance of one the class templates below,
 having the class created in step 2 as the template parameter.
 
-* `{destination_no_reserve}`: Its template argument must
+* `{printer_no_reserve}`: Its template argument must
 be _{DestinationCreator}_, and it has the following effect when
 writing the arguments ( when its member function `operator()`
 or `tr` is called ):
@@ -277,7 +277,7 @@ return dst.finish();
 type defined in step 2). It must be be _{DestinationCreator}_.
 ** `creator` is an object of type `your_destination_creator`.
 
-* `{destination_calc_size}`: Its template argument must
+* `{printer_with_size_calc}`: Its template argument must
 be _{SizedDestinationCreator}_, and it has the following effect when
 writing the arguments:
 +
@@ -289,13 +289,14 @@ typename you_destination_creator::sized_destination_type dst{creator.create(**si
 return dst.finish();
 ----
 
-* `{destination_with_given_size}`: the factory must be _{SizedDestinationCreator}_,
-and it has the same effect as of `destination_calc_size`, except that the
+* `{printer_with_given_size}`: its factory must also be _{SizedDestinationCreator}_,
+and it has the same effect as of `printer_with_size_calc`, except that the
 size is not calculated but is instead passed to its
-<<strf_hpp#destination_with_given_size_ctor,the constructor>>.
-In most cases, it does't make sense to opt for `destination_with_given_size`.
-The reason why it was created is to define the return type
-the `<<tutorial#,reserve>>` function.
+<<strf_hpp#printer_with_given_size_ctor,the constructor>>.
+It does't make sense to opt for `printer_with_given_size` in most cases, if any.
+It exists because it's needed for the definition of the `<<tutorial#,reserve>>`
+function. It's only by calling this function that one is actually
+expected to ever use `{printer_with_given_size}`.
 
 The sample below illustrates the above steps:
 
@@ -304,11 +305,14 @@ The sample below illustrates the above steps:
 // some type that is able to receive text
 class foo { /{asterisk} \... {asterisk}/ };
 
-// step 1: define your destination class
-class foo_writer: strf::{print_dest}<char> {
+// step 1: define your {print_dest} class
+class foo_writer: strf::print_dest<char> {
 public:
     explicit foo_writer(foo&);
+    foo_writer(const foo_writer&) = delete;
+
     void recycle_buffer() override;
+
     auto finish() \-> /{asterisk} \... {asterisk}/;
     //\...
 };
@@ -328,9 +332,9 @@ private:
     foo& f_;
 }
 
-// step3: define the destination expression
+// step3: define the expression that creates the printer object
 auto to(foo& dst) {
-    strf::{destination_no_reserve}<foo_writer_creator> x{dst};
+    strf::{printer_no_reserve}<foo_writer_creator> x{dst};
     // x contains a member object of type foo_writer_creator
     // initialized with dst
     return x;

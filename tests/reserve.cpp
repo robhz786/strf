@@ -65,7 +65,7 @@ public:
 };
 
 constexpr auto STRF_HD reservation_test()
-    -> strf::destination_no_reserve<reservation_tester_creator>
+    -> strf::printer_no_reserve<reservation_tester_creator>
 {
     return {};
 }

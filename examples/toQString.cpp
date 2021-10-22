@@ -81,7 +81,7 @@ public:
     }
 };
 
-constexpr strf::destination_no_reserve<QStringCreatorFactory> toQString{};
+constexpr strf::printer_no_reserve<QStringCreatorFactory> toQString{};
 
 int main()
 {

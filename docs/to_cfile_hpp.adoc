@@ -19,7 +19,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 :narrow_cfile_writer: <<narrow_cfile_writer,narrow_cfile_writer>>
 :wide_cfile_writer: <<wide_cfile_writer,wide_cfile_writer>>
 
-:destination_no_reserve: <<strf_hpp#destinators,destination_no_reserve>>
+:printer_no_reserve: <<strf_hpp#printer_no_reserve,printer_no_reserve>>
 :DestinationCreator: <<strf_hpp#DestinationCreator,DestinationCreator>>
 
 
@@ -189,7 +189,7 @@ __/{asterisk} see below {asterisk}/__ to(std::FILE{asterisk} dest);
 } // namespace strf
 ----
 [horizontal]
-Return type:: `{destination_no_reserve}<DestCreator>`, where `DestCreator` is an
+Return type:: `{printer_no_reserve}<DestCreator>`, where `DestCreator` is an
            implementation-defined type that satifies __{DestinationCreator}__.
 Return value:: An object whose `DestCreator` object `&#95;dest&#95;creator`
 is such that `&#95;dest&#95;creator.create()` returns
@@ -211,7 +211,7 @@ __/{asterisk} see below {asterisk}/__ wto(std::FILE{asterisk} dest);
 } // namespace strf
 ----
 [horizontal]
-Return type:: `{destination_no_reserve}<DestCreator>`, where `DestCreator`
+Return type:: `{printer_no_reserve}<DestCreator>`, where `DestCreator`
        is an implementation-defined type that satifies __{DestinationCreator}__.
 Return value:: An object whose `DestCreator` object `&#95;dest&#95;creator`
        is such that `&#95;dest&#95;creator.create()` returns
