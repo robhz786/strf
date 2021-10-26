@@ -14,8 +14,8 @@ http://www.boost.org/LICENSE_1_0.txt)
 :toclevels: 1
 :icons: font
 
-:destination: <<destination,destination>>
-:put: <<destination_put,put>>
+:output_buffer: <<output_buffer,output_buffer>>
+:put: <<output_buffer_put,put>>
 
 :print_dest: <<print_dest,print_dest>>
 :print_dest_space_after_flush: <<print_dest,print_dest_space_after_flush>>
@@ -29,22 +29,22 @@ http://www.boost.org/LICENSE_1_0.txt)
 :log2_garbage_buff_size: <<garbage_buff, log2_garbage_buff_size>>
 :garbage_buff_size: <<garbage_buff, garbage_buff_size>>
 
-:value_type: <<destination_value_type,value_type>>
-:buffer_ptr: <<destination_buffer_ptr,buffer_ptr>>
-:buffer_end: <<destination_buffer_end,buffer_end>>
-:buffer_space: <<destination_buffer_space,buffer_space>>
-:flush: <<destination_flush,flush>>
-:recycle_buffer: <<destination_recycle_buffer,recycle_buffer>>
-:ensure: <<destination_ensure,ensure>>
-:advance_to: <<destination_advance_to,advance_to>>
-:advance_count: <<destination_advance_count,advance_count>>
-:advance: <<destination_advance,advance>>
-:good: <<destination_good,good>>
-:write: <<destination_write,write>>
-:set_buffer_ptr: <<destination_set_buffer_ptr,set_buffer_ptr>>
-:set_buffer_end: <<destination_set_buffer_end,set_buffer_end>>
-:set_good: <<destination_set_good,set_good>>
-:do_write: <<destination_do_write,do_write>>
+:value_type: <<output_buffer_value_type,value_type>>
+:buffer_ptr: <<output_buffer_buffer_ptr,buffer_ptr>>
+:buffer_end: <<output_buffer_buffer_end,buffer_end>>
+:buffer_space: <<output_buffer_buffer_space,buffer_space>>
+:flush: <<output_buffer_flush,flush>>
+:recycle_buffer: <<output_buffer_recycle_buffer,recycle_buffer>>
+:ensure: <<output_buffer_ensure,ensure>>
+:advance_to: <<output_buffer_advance_to,advance_to>>
+:advance_count: <<output_buffer_advance_count,advance_count>>
+:advance: <<output_buffer_advance,advance>>
+:good: <<output_buffer_good,good>>
+:write: <<output_buffer_write,write>>
+:set_buffer_ptr: <<output_buffer_set_buffer_ptr,set_buffer_ptr>>
+:set_buffer_end: <<output_buffer_set_buffer_end,set_buffer_end>>
+:set_good: <<output_buffer_set_good,set_good>>
+:do_write: <<output_buffer_do_write,do_write>>
 
 ////
 `<strf/destination.hpp>` is a lighweight header can be used in freestanding evironments. All other headers of the strf library include it. It's not affected by the `STRF_SEPARATE_COMPILATION` macro.
@@ -57,12 +57,12 @@ http://www.boost.org/LICENSE_1_0.txt)
 namespace strf {
 
 template <typename T, unsigned Log2BufferSpace>
-class {destination};
+class {output_buffer};
 
 constexpr std::size_t {print_dest_space_after_flush} = ...; // >= 64
 
 template <typename CharT>
-using {print_dest} = destination<CharT, ...>;
+using {print_dest} = output_buffer<CharT, ...>;
 
 template <typename CharT>
 class {basic_cstr_writer};
@@ -88,7 +88,7 @@ using wcstr_writer   = basic_cstr_writer<wchar_t>;
 } // namespace strf
 ----
 
-== Class template `destination` [[destination]]
+== Class template `output_buffer` [[output_buffer]]
 
 === Synopsis
 
@@ -97,28 +97,28 @@ using wcstr_writer   = basic_cstr_writer<wchar_t>;
 namespace strf {
 
 template <typename T, unsigned Log2BufferSpace>
-class destination: destination<T, Log2BufferSpace - 1>
+class output_buffer: output_buffer<T, Log2BufferSpace - 1>
 {
 public:
     static constexpr std::size_t buffer_space_after_recycle = 1ull << Log2BufferSpace;
 
 protected:
-    using destination<T, Log2BufferSpace - 1>::destination;
+    using output_buffer<T, Log2BufferSpace - 1>::output_buffer;
 };
 
 template <typename T>
-class destination<T, 0>
+class output_buffer<T, 0>
 {
 public:
     static constexpr std::size_t buffer_space_after_recycle = 1;
     using value_type = T;
 
-    destination(const destination&) = delete;
-    destination(destination&&) = delete;
-    destination& operator=(const destination&) = delete;
-    destination& operator=(destination&&) = delete;
+    output_buffer(const output_buffer&) = delete;
+    output_buffer(output_buffer&&) = delete;
+    output_buffer& operator=(const output_buffer&) = delete;
+    output_buffer& operator=(output_buffer&&) = delete;
 
-    virtual ~destination() = default;
+    virtual ~output_buffer() = default;
 
     T{asterisk} {buffer_ptr}() const noexcept;
     T{asterisk} {buffer_end}() const noexcept;
@@ -135,9 +135,9 @@ public:
 
 protected:
 
-    <<destination_ctor_range,destination>>(T{asterisk} buff, T{asterisk} buff_end);
+    <<output_buffer_ctor_range,output_buffer>>(T{asterisk} buff, T{asterisk} buff_end);
 
-    <<destination_ctor_count,destination>>(T{asterisk} buff, std::size_t buff_size);
+    <<output_buffer_ctor_count,output_buffer>>(T{asterisk} buff, std::size_t buff_size);
 
     void {set_buffer_ptr}(T{asterisk} p) noexcept;
     void {set_buffer_end}(T{asterisk} e) noexcept;
@@ -149,14 +149,14 @@ protected:
 // global functions
 
 template <typename T>
-void {put}(destination<T, 0>& dest, T value);
+void {put}(output_buffer<T, 0>& dest, T value);
 
 } // namespace strf
 ----
 
 === Member types
 
-[[destination_value_type]]
+[[output_buffer_value_type]]
 ====
 [source,cpp,subs=normal]
 ----
@@ -166,7 +166,7 @@ using value_type = T;
 
 === Public member functions
 
-[[destination_buffer_ptr]]
+[[output_buffer_buffer_ptr]]
 ====
 [source,cpp]
 ----
@@ -175,7 +175,7 @@ T* buffer_ptr() const noxcept;
 [horizontal]
 Return:: The memory position where the content shall be written.
 ====
-[[destination_buffer_end]]
+[[output_buffer_buffer_end]]
 ====
 [source,cpp]
 ----
@@ -185,7 +185,7 @@ T* buffer_end() const noxcept;
 Return:: The end of memory position where the content shall be written.
          Dereferencing `{buffer_end}()` has undefined behaviour.
 ====
-[[destination_buffer_space]]
+[[output_buffer_buffer_space]]
 ====
 [source,cpp]
 ----
@@ -195,7 +195,7 @@ std::size_t buffer_space() const noexcept;
 Return:: `{buffer_end}() - {buffer_ptr}()`
 ====
 
-[[destination_flush]]
+[[output_buffer_flush]]
 ====
 [source,cpp]
 ----
@@ -205,7 +205,7 @@ void flush();
 Effect:: Calls `recycle_buffer()`
 ====
 
-[[destination_recycle_buffer]]
+[[output_buffer_recycle_buffer]]
 ====
 [source,cpp]
 ----
@@ -226,7 +226,7 @@ Posconditions::
 // time `{recycle_buffer}` was called in this object, or, in case `{recycle_buffer}`
 // was not called in this object yet, since this object was constructed.
 
-[[destination_ensure]]
+[[output_buffer_ensure]]
 ====
 [source,cpp]
 ----
@@ -237,7 +237,7 @@ Effect:: Calls `{recycle_buffer}()` if `{buffer_space}() < s`.
 Precondition:: `s \<= buffer_space_after_recycle`
 Postcondition:: `{buffer_space}() >= s`
 ====
-[[destination_advance_to]]
+[[output_buffer_advance_to]]
 ====
 [source,cpp]
 ----
@@ -248,7 +248,7 @@ Effect:: Advance the buffer's pointer to `p`.
 Precondition:: `{buffer_ptr}() \<= p && p \<= buffer_end()`
 Postcondition:: `{buffer_ptr}() == p`
 ====
-[[destination_advance_count]]
+[[output_buffer_advance_count]]
 ====
 [source,cpp]
 ----
@@ -258,7 +258,7 @@ void advance(std::size_t n)
 Effect:: Equivalent to `{advance_to}({buffer_ptr}() + n)`
 Precondition:: `n \<= {buffer_space}()`
 ====
-[[destination_advance]]
+[[output_buffer_advance]]
 ====
 [source,cpp]
 ----
@@ -268,7 +268,7 @@ void advance()
 Effect:: Equivalent to `{advance_to}(1)`
 Precondition:: `{buffer_ptr}() != {buffer_end}()`
 ====
-[[destination_good]]
+[[output_buffer_good]]
 ====
 [source,cpp]
 ----
@@ -283,7 +283,7 @@ Note:: The range [ `{buffer_ptr}()`, `{buffer_end}()` ) shall aways be a valid
 accessible memory, even when `{good}()` returns `false`.
 ====
 
-[[destination_write]]
+[[output_buffer_write]]
 ====
 [source,cpp]
 ----
@@ -298,11 +298,11 @@ Effect:: If `count \<= {buffer_space}()` is `true`, copy `count` elements of
 
 === Protected Member functions
 
-[[destination_ctor_range]]
+[[output_buffer_ctor_range]]
 ====
 [source,cpp]
 ----
-destination(T* buff_, T* buff_end_)
+output_buffer(T* buff_, T* buff_end_)
 ----
 [horizontal]
 Preconditions::
@@ -313,11 +313,11 @@ Posconditions::
 - `{buffer_end}() == end_`
 - `{good}() == true`
 ====
-[[destination_ctor_count]]
+[[output_buffer_ctor_count]]
 ====
 [source,cpp]
 ----
-destination(T* buff_, std::size_t buff_size_)
+output_buffer(T* buff_, std::size_t buff_size_)
 ----
 [horizontal]
 Preconditions::
@@ -327,7 +327,7 @@ Posconditions::
 - `{buffer_end}() == buff_ + n`
 - `{good}() == true`
 ====
-[[destination_set_buffer_ptr]]
+[[output_buffer_set_buffer_ptr]]
 ====
 [source,cpp]
 ----
@@ -336,7 +336,7 @@ void set_buffer_ptr(T* p) noexcept
 [horizontal]
 Postconditions:: `{buffer_ptr}() == p`
 ====
-[[destination_set_buffer_end]]
+[[output_buffer_set_buffer_end]]
 ====
 [source,cpp]
 ----
@@ -345,7 +345,7 @@ void set_buffer_end(T* e) noexcept
 [horizontal]
 Postconditions:: `{buffer_end}() == e`
 ====
-[[destination_set_good]]
+[[output_buffer_set_good]]
 ====
 [source,cpp]
 ----
@@ -355,7 +355,7 @@ void set_good(bool g) noexcept
 Postconditions:: `{good}() == g`
 ====
 
-[[destination_do_write]]
+[[output_buffer_do_write]]
 ====
 [source,cpp]
 ----
@@ -371,12 +371,12 @@ Note:: This function is made virtual so that any derived classes
 
 === Global functions
 
-[[destination_put]]
+[[output_buffer_put]]
 ====
 [source,cpp,subs=normal]
 ----
 template <typename T>
-void put(destination<T, 0>& dest, T value);
+void put(output_buffer<T, 0>& dest, T value);
 ----
 [horizontal]
 Effect::
@@ -402,7 +402,7 @@ constexpr unsigned    log2_print_dest_space_after_flush = ...; // >= 6
 constexpr std::size_t      print_dest_space_after_flush = ...; // >= 64
 
 template <typename CharT>
-using print_dest = {destination}<CharT, log2_print_dest_space_after_flush>;
+using print_dest = {output_buffer}<CharT, log2_print_dest_space_after_flush>;
 
 } // namespace strf
 ----
@@ -420,7 +420,7 @@ that is greater than or equal to `6`.
 namespace strf {
 
 template <typename CharT>
-class basic_cstr_writer final: public {destination}<CharT, {log2_garbage_buff_size}> {
+class basic_cstr_writer final: public {output_buffer}<CharT, {log2_garbage_buff_size}> {
 public:
     basic_cstr_writer(CharT{asterisk} dest, CharT{asterisk} dest_end) noexcept;
 
@@ -517,7 +517,7 @@ Postconditions::
 ----
 namespace strf {
 template <typename CharT>
-class basic_char_array_writer final : public {destination}<CharT, {log2_garbage_buff_size}> {
+class basic_char_array_writer final : public {output_buffer}<CharT, {log2_garbage_buff_size}> {
 public:
     template <std::size_t N>
     basic_char_array_writer(CharT (&dest)[N]) noexcept;
@@ -614,7 +614,7 @@ A `discarder` object ignores anything written to it.
 namespace strf {
 
 template <typename CharT>
-class discarder final: public destination<CharT, {log2_garbage_buff_size}>
+class discarder final: public output_buffer<CharT, {log2_garbage_buff_size}>
 {
 public:
     discarder() noexcept;
@@ -649,7 +649,7 @@ Postconditions::
 [[garbage_buff]]
 == Garbage buffer
 
-These function templates return the begin and the end of a memory area that is never supposed to be read. It can be used when implementing a class that derives from `destination` to set the buffer when the state is "bad".
+These function templates return the begin and the end of a memory area that is never supposed to be read. It can be used when implementing a class that derives from `output_buffer` to set the buffer when the state is "bad".
 
 ====
 [source,cpp,subs=normal]

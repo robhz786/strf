@@ -15,8 +15,8 @@ namespace detail {
 template < typename DestCharT
          , typename SrcCharT
          , strf::detail::enable_if_t<!std::is_same<SrcCharT, DestCharT>::value, int> = 0 >
-STRF_HD void destination_interchar_copy
-    ( strf::destination<DestCharT, 0>& dest, const SrcCharT* str, std::size_t len )
+STRF_HD void output_buffer_interchar_copy
+    ( strf::output_buffer<DestCharT, 0>& dest, const SrcCharT* str, std::size_t len )
 {
     do {
         std::size_t space = dest.buffer_space();
@@ -34,8 +34,8 @@ STRF_HD void destination_interchar_copy
 }
 
 template < typename CharT >
-inline STRF_HD void destination_interchar_copy
-    ( strf::destination<CharT, 0>& dest, const CharT* str, std::size_t len )
+inline STRF_HD void output_buffer_interchar_copy
+    ( strf::output_buffer<CharT, 0>& dest, const CharT* str, std::size_t len )
 {
     dest.write(str, len);
 }
@@ -44,7 +44,7 @@ inline STRF_HD void destination_interchar_copy
 
 
 inline STRF_HD void write
-    ( strf::destination<char, 0>& dest
+    ( strf::output_buffer<char, 0>& dest
     , const char* str )
 {
     dest.write(str, detail::str_length(str));
@@ -54,7 +54,7 @@ namespace detail {
 
 template <typename CharT>
 void STRF_HD write_fill_continuation
-    ( strf::destination<CharT, 0>& dest, std::size_t count, CharT ch )
+    ( strf::output_buffer<CharT, 0>& dest, std::size_t count, CharT ch )
 {
     std::size_t space = dest.buffer_space();
     STRF_ASSERT(space < count);
@@ -78,7 +78,7 @@ void STRF_HD write_fill_continuation
 
 template <typename CharT>
 inline STRF_HD void write_fill
-    ( strf::destination<CharT, 0>& dest, std::size_t count, CharT ch )
+    ( strf::output_buffer<CharT, 0>& dest, std::size_t count, CharT ch )
 {
     STRF_IF_LIKELY (count <= dest.buffer_space()) {
         strf::detail::str_fill_n<CharT>(dest.buffer_ptr(), count, ch);

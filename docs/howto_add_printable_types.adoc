@@ -8,7 +8,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 :strf-revision: develop
 :strf-src-root: https://github.com/robhz786/strf/blob/{strf-revision}
 
-:destination:   <<destination_hpp#destination,destination>>
+:output_buffer:   <<destination_hpp#output_buffer,output_buffer>>
 :print_dest:   <<destination_hpp#print_dest,print_dest>>
 
 :PrintingTraits:  <<strf_hpp#PrintingTraits,PrintingTraits>>
@@ -875,14 +875,14 @@ we must inform the size of the content that `print_to` writes.
 Actually, let me rephare that, because it's a little bit tricky:
 our constructor must inform
 a size `s` that ensures that `print_to` does not call
-`dest.<<destination_hpp#destination_recycle_buffer,recycle_buffer>>()` if
-`dest.<<destination_hpp#destination_space,space>>() >= s`,
+`dest.<<destination_hpp#output_buffer_recycle_buffer,recycle_buffer>>()` if
+`dest.<<destination_hpp#output_buffer_space,space>>() >= s`,
 where `dest` is the argument passed to `print_to`.
 
 However, you only need to be that cautious when your
 `print_to` function directly calls `dest.recycle_buffer()`,
 which is only the case when you write things directly to
-`dest.<<destination_hpp#destination_buffer_ptr,buffer_ptr>>()`.
+`dest.<<destination_hpp#output_buffer_buffer_ptr,buffer_ptr>>()`.
 If you need to go that low-level, I would recomend you to
 read <<howto_add_destination#,this document>> to understand
 how `print_dest` works.

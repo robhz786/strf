@@ -33,8 +33,6 @@ class basic_streambuf_writer final: public print_dest<CharT>
 using streambuf_writer  = basic_streambuf_writer<char>;
 using wstreambuf_writer = basic_streambuf_writer<wchar_t>;
 
-// Destination makers:
-
 template <typename CharT, typename Traits>
 /{asterisk} \... {asterisk}/ to(std::basic_streambuf<CharT, Traits>& dest);
 

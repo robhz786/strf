@@ -19,11 +19,11 @@
 
 namespace strf {
 namespace detail {
-class destination_test_tool;
+class output_buffer_test_tool;
 } // namespace detail
 
 template <typename T, unsigned Log2BufferSpace>
-class destination: public destination<T, Log2BufferSpace - 1>
+class output_buffer: public output_buffer<T, Log2BufferSpace - 1>
 {
 public:
     static constexpr std::size_t buffer_space_after_recycle
@@ -43,22 +43,22 @@ public:
     }
 
 protected:
-    using destination<T, Log2BufferSpace - 1>::destination;
+    using output_buffer<T, Log2BufferSpace - 1>::output_buffer;
 };
 
 template <typename T>
-class destination<T, 0>
+class output_buffer<T, 0>
 {
 public:
     static constexpr std::size_t buffer_space_after_recycle = 1;
     using value_type = T;
 
-    STRF_HD destination(const destination&) = delete;
-    STRF_HD destination(destination&&) = delete;
-    destination& operator=(const destination&) = delete;
-    destination& operator=(destination&&) = delete;
+    STRF_HD output_buffer(const output_buffer&) = delete;
+    STRF_HD output_buffer(output_buffer&&) = delete;
+    output_buffer& operator=(const output_buffer&) = delete;
+    output_buffer& operator=(output_buffer&&) = delete;
 
-    virtual STRF_HD ~destination() { };
+    virtual STRF_HD ~output_buffer() { };
 
     STRF_HD value_type* buffer_ptr() const noexcept
     {
@@ -151,11 +151,11 @@ public:
 
 protected:
 
-    STRF_HD destination(value_type* p, value_type* e) noexcept
+    STRF_HD output_buffer(value_type* p, value_type* e) noexcept
         : pointer_(p), end_(e)
     { }
 
-    STRF_HD destination(value_type* p, std::size_t s) noexcept
+    STRF_HD output_buffer(value_type* p, std::size_t s) noexcept
         : pointer_(p), end_(p + s)
     { }
 
@@ -179,11 +179,11 @@ private:
     value_type* pointer_;
     value_type* end_;
     bool good_ = true;
-    friend class strf::detail::destination_test_tool;
+    friend class strf::detail::output_buffer_test_tool;
 };
 
 template <typename T>
-void destination<T, 0>::do_write(const T* data, std::size_t count)
+void output_buffer<T, 0>::do_write(const T* data, std::size_t count)
 {
     for(;;) {
         std::size_t s = buffer_space();
@@ -210,7 +210,7 @@ void destination<T, 0>::do_write(const T* data, std::size_t count)
 }
 
 template <typename T>
-inline STRF_HD void put(strf::destination<T, 0>& dest, T c)
+inline STRF_HD void put(strf::output_buffer<T, 0>& dest, T c)
 {
     auto p = dest.buffer_ptr();
     STRF_IF_LIKELY (p != dest.buffer_end()) {
@@ -225,11 +225,11 @@ inline STRF_HD void put(strf::destination<T, 0>& dest, T c)
 
 namespace detail {
 
-class destination_test_tool
+class output_buffer_test_tool
 {
 public:
     template<typename T>
-    static STRF_HD void turn_into_bad(destination<T, 0>& dest)
+    static STRF_HD void turn_into_bad(output_buffer<T, 0>& dest)
     {
         dest.set_good(false);
     }
@@ -255,9 +255,9 @@ inline STRF_HD T* garbage_buff_end() noexcept
 
 template <typename CharT>
 class basic_cstr_writer final
-    : public strf::destination<CharT, strf::log2_garbage_buff_size>
+    : public strf::output_buffer<CharT, strf::log2_garbage_buff_size>
 {
-    using dest_t_ = strf::destination<CharT, strf::log2_garbage_buff_size>;
+    using dest_t_ = strf::output_buffer<CharT, strf::log2_garbage_buff_size>;
 
 public:
 
@@ -351,7 +351,7 @@ constexpr std::size_t print_dest_space_after_flush =
 static_assert(print_dest_space_after_flush == 64, "");
 
 template <typename CharT>
-using print_dest = strf::destination<CharT, log2_print_dest_space_after_flush>;
+using print_dest = strf::output_buffer<CharT, log2_print_dest_space_after_flush>;
 
 #if defined(__cpp_char8_t)
 using u8cstr_writer = basic_cstr_writer<char8_t>;
@@ -363,9 +363,9 @@ using wcstr_writer = basic_cstr_writer<wchar_t>;
 
 template <typename CharT>
 class basic_char_array_writer final
-    : public strf::destination<CharT, strf::log2_garbage_buff_size>
+    : public strf::output_buffer<CharT, strf::log2_garbage_buff_size>
 {
-    using dest_t_ = strf::destination<CharT, strf::log2_garbage_buff_size>;
+    using dest_t_ = strf::output_buffer<CharT, strf::log2_garbage_buff_size>;
 
 public:
 
@@ -474,9 +474,9 @@ using wchar_array_writer = basic_char_array_writer<wchar_t>;
 
 template <typename T>
 class discarder final
-    : public strf::destination<T, strf::log2_garbage_buff_size>
+    : public strf::output_buffer<T, strf::log2_garbage_buff_size>
 {
-    using dest_t_ = strf::destination<T, strf::log2_garbage_buff_size>;
+    using dest_t_ = strf::output_buffer<T, strf::log2_garbage_buff_size>;
 
 public:
 

@@ -829,7 +829,7 @@ template<typename SrcCharT, typename DestCharT>
 STRF_HD void string_printer<SrcCharT, DestCharT>::print_to
     ( strf::print_dest<DestCharT>& dest ) const
 {
-    strf::detail::destination_interchar_copy(dest, str_, len_);
+    strf::detail::output_buffer_interchar_copy(dest, str_, len_);
 }
 
 template <typename SrcCharT, typename DestCharT>
@@ -968,7 +968,7 @@ void STRF_HD aligned_string_printer<SrcCharT, DestCharT>::print_to
     if (left_fillcount_ > 0) {
         encode_fill_(dest, left_fillcount_, afmt_.fill);
     }
-    strf::detail::destination_interchar_copy(dest, str_, len_);
+    strf::detail::output_buffer_interchar_copy(dest, str_, len_);
     if (right_fillcount_ > 0) {
         encode_fill_(dest, right_fillcount_, afmt_.fill);
     }

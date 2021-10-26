@@ -6,7 +6,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <strf/destination_functions.hpp>
+#include <strf/output_buffer_functions.hpp>
 
 namespace strf {
 
@@ -169,7 +169,7 @@ class dynamic_transcoder;
 constexpr std::size_t invalid_char_len = (std::size_t)-1;
 
 template <typename CharT>
-using transcode_dest = strf::destination<CharT, 3>;
+using transcode_dest = strf::output_buffer<CharT, 3>;
 
 constexpr std::size_t transcode_dest_min_buffer_size = 8;
 

@@ -272,7 +272,7 @@ and `{dynamic_charset}`
 namespace strf {
 
 template <typename CharT>
-using transcode_dest = {destination}<CharT, 3>;
+using transcode_dest = {output_buffer}<CharT, 3>;
 
 } // namespace strf
 ----
@@ -1556,8 +1556,8 @@ Converts the content in `src` to UTF-32 using `to_u32`,
 then writes the result to `dest` using `from_u32`.
 
 [horizontal]
-Postcondition:: `dest.<<destination_hpp#destination_recycle_buffer,recycle_buffer>>()` is not called if
-`dest.<<destination_hpp#destination_buffer_space,buffer_space>>()` is not less then the value returned by
+Postcondition:: `dest.<<destination_hpp#output_buffer_recycle_buffer,recycle_buffer>>()` is not called if
+`dest.<<destination_hpp#output_buffer_buffer_space,buffer_space>>()` is not less then the value returned by
 `{decode_encode_size}(to_u32, size_calc_func, src, src_size, inv_seq_notifier, surr_poli)`,
 where `size_calc_func` is the return value of
 `dest_enc.<<Charset_from_u32,from_u32>>().<<Transcoder_transcode_size_func, transcode_size_func>>()`,

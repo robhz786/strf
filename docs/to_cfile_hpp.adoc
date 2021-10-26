@@ -36,8 +36,6 @@ class narrow_cfile_writer final: public print_dest<CharT>
 class wide_cfile_writer final: public print_dest<wchar_t>
 { /{asterisk}\...{asterisk}/ };
 
-// Destination makers:
-
 template <typename CharT = char>
 /{asterisk} \... {asterisk}/  to(std::FILE{asterisk});
 
@@ -100,7 +98,7 @@ Effects::
     whatever happened last.
 -  If the returned value of `std::fwrite` is less than `(buffer_ptr() - p0)`, calls `set_good(false)`.
 -  Calls `set_buffer_ptr` and/or `set_buffer_end`.
-Postconditions:: `<<destination_hpp#destination_buffer_space,buffer_space>>() >= BuffSize`
+Postconditions:: `<<destination_hpp#output_buffer_buffer_space,buffer_space>>() >= BuffSize`
 ====
 ====
 [source,cpp]

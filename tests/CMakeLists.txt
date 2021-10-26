@@ -48,7 +48,7 @@ if (STRF_BUILD_TESTS)
     input_range.cpp
     input_string.cpp
     override_printable.cpp
-    destination.cpp
+    output_buffer.cpp
     join.cpp
     miscellaneous.cpp
     numpunct.cpp
@@ -178,7 +178,7 @@ if (STRF_BUILD_TESTS)
     define_strf_cuda_test(input_range)
     define_strf_cuda_test(input_string)
     define_strf_cuda_test(override_printable)
-    define_strf_cuda_test(destination)
+    define_strf_cuda_test(output_buffer)
     define_strf_cuda_test(join)
     define_strf_cuda_test(miscellaneous)
     define_strf_cuda_test(numpunct)

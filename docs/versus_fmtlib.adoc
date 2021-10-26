@@ -404,9 +404,9 @@ examples.
 
 // If you want Strf to print to an alternative destination,
 // you need to create a class that derives from
-// `strf::<<destination_hpp#destination,destination>>`.
+// `strf::<<destination_hpp#print_dest,print_dest>>`.
 // Having an object of such type, you can print things to it with the
-// `strf::<<quick_reference#to_destination_ref,to>>(strf::destination<__CharT__>&)`
+// `strf::<<quick_reference#to_print_dest_ref,to>>(strf::print_dest<__CharT__>&)`
 // function template.
 //
 // In the case of {fmt}, you need to have (or create) a type that satisfies the
@@ -422,7 +422,7 @@ OutputIterator requirements and that writes to your desired target.
 In Strf, what you do instead is to create a concrete class that derives from
 the `{print_dest}` abstract class template. Having an object of such type,
 you can print things to it with the
-`strf::<<quick_reference#to_destination_ref,to>>(strf::print_dest<__CharT__>&)`
+`strf::<<quick_reference#to_print_dest_ref,to>>(strf::print_dest<__CharT__>&)`
 function template.
 
 However, in Strf you can go a bit further and create your own

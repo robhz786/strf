@@ -215,7 +215,7 @@ such that the sequence:
 std::size_t s  = x.preview.<<size_preview_accumulated_size,accumulated_size>>();
 typename T::printer_type p{x};
 std::size_t predicted_size  = x.preview.<<size_preview_accumulated_size,accumulated_size>>() - s;
-std::size_t dest_buff_space = dest.<<destination_hpp#destination_buffer_space,buffer_space>>();
+std::size_t dest_buff_space = dest.<<destination_hpp#output_buffer_buffer_space,buffer_space>>();
 static_cast<const printer<CharT>&>(p).<<arg_printer,print_to>>(dest);
 ----
 statisfies the following postconditions when `Preview::<<print_preview,size_required>>` is `true`:

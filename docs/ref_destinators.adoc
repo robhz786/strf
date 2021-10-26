@@ -277,8 +277,8 @@ Return Type::
 [source,cpp,subs=normal]
 ----
 printer_no_reserve< DestinationCreator
-                      , decltype(<<pack,pack>>( std::declval<const FPack&>()
-                                     , std::forward<FPE>(fpe)\...) ) >
+                  , decltype(<<pack,pack>>( std::declval<const FPack&>()
+                                 , std::forward<FPE>(fpe)\...) ) >
 ----
 Effect:: Creates a `printer_no_reserve` object whose `&#95;dest&#95;creator`
 is initialized with this `&#95;dest&#95;creator`, and whose `_fpack` is initialized
@@ -298,8 +298,8 @@ Return Type::
 [source,cpp,subs=normal]
 ----
 printer_no_reserve< DestinationCreator
-                      , decltype(<<pack,pack>>( std::declval<const FPack&>()
-                                     , std::forward<FPE>(fpe)\...) ) >
+                  , decltype(<<pack,pack>>( std::declval<const FPack&>()
+                                 , std::forward<FPE>(fpe)\...) ) >
 ----
 Effect:: Creates an `printer_no_reserve` object whose `&#95;dest&#95;creator`
 is initialized with `std::move(&#95;dest&#95;creator)`, and whose `_fpack` is
@@ -411,15 +411,15 @@ where `Arg` is the type in `Args\...` corresponding to `arg`
 ====
 [source,cpp,subs=normal]
 ----
-template <typename ... Args>
+template <typename\... Args>
 /{asterisk}\...{asterisk}/ tr( const char_type* tr_string
           , const Args&\... args) const;
 
-template <typename ... Args>
+template <typename\... Args>
 /{asterisk}\...{asterisk}/ tr( const std::basic_string_view<char_type>& tr_string
           , const Args&\... args) const;
 
-template <typename ... Args>
+template <typename\... Args>
 /{asterisk}\...{asterisk}/ tr( std::basic_string_view<char_type> tr_string
           , const Args&\... args) const;
 ----
@@ -572,8 +572,8 @@ Return Type::
 [source,cpp,subs=normal]
 ----
 printer_with_size_calc< DestinationCreator
-                     , decltype(<<pack,pack>>( std::declval<const FPack&>()
-                                             , std::forward<FPE>(fpe)\...) ) >
+                      , decltype(<<pack,pack>>( std::declval<const FPack&>()
+                                     , std::forward<FPE>(fpe)\...) ) >
 ----
 Effect:: Creates an `printer_with_size_calc` object whose `&#95;dest&#95;creator`
 is initialized with this `&#95;dest&#95;creator`, and whose `_fpack` is initialized
@@ -593,8 +593,8 @@ Return Type::
 [source,cpp,subs=normal]
 ----
 printer_with_size_calc< DestinationCreator
-                     , decltype(<<pack,pack>>( std::declval<const FPack&>()
-                                             , std::forward<FPE>(fpe)\...) ) >
+                      , decltype(<<pack,pack>>( std::declval<const FPack&>()
+                                     , std::forward<FPE>(fpe)\...) ) >
 ----
 Effect:: Creates an `printer_with_size_calc` object whose `&#95;dest&#95;creator`
 is initialized with `std::move(this\->&#95;dest&#95;creator)`, and whose `_fpack` is
@@ -710,15 +710,15 @@ static_cast<const {arg_printer}<char_type>&>(p).print_to(dest);
 ====
 [source,cpp,subs=normal]
 ----
-template <typename ... Args>
+template <typename\... Args>
 /{asterisk}\...{asterisk}/ tr( const char_type* tr_string
           , const Args&\... args) const;
 
-template <typename ... Args>
+template <typename\... Args>
 /{asterisk}\...{asterisk}/ tr( const std::basic_string_view<char_type>& tr_string
           , const Args&\... args) const;
 
-template <typename ... Args>
+template <typename\... Args>
 /{asterisk}\...{asterisk}/ tr( std::basic_string_view<char_type> tr_string
           , const Args&\... args) const;
 ----
@@ -876,8 +876,8 @@ Return Type::
 [source,cpp,subs=normal]
 ----
 printer_with_given_size< DestinationCreator
-                           , decltype(<<pack,pack>>( std::declval<const FPack&>()
-                                                   , std::forward<FPE>(fpe)\...) ) >
+                       , decltype(<<pack,pack>>( std::declval<const FPack&>()
+                                      , std::forward<FPE>(fpe)\...) ) >
 ----
 Effect:: Creates an `printer_with_given_size` object
 whose `_size` is is initialized with this `_size`
@@ -899,8 +899,8 @@ Return Type::
 [source,cpp,subs=normal]
 ----
 printer_with_given_size< DestinationCreator
-                           , decltype(<<pack,pack>>( std::declval<const FPack&>()
-                                                   , std::forward<FPE>(fpe)\...) ) >
+                       , decltype(<<pack,pack>>( std::declval<const FPack&>()
+                                      , std::forward<FPE>(fpe)\...) ) >
 ----
 Effect:: Creates an `printer_with_given_size` object
 whose `_size` is is initialized with this `_size`
@@ -1016,15 +1016,15 @@ static_cast<const {arg_printer}<char_type>&>(p).print_to(dest);
 ====
 [source,cpp,subs=normal]
 ----
-template <typename ... Args>
+template <typename\... Args>
 /{asterisk}\...{asterisk}/ tr( const char_type* tr_string
           , const Args&\... args) const;
 
-template <typename ... Args>
+template <typename\... Args>
 /{asterisk}\...{asterisk}/ tr( const std::basic_string_view<char_type>& tr_string
           , const Args&\... args) const;
 
-template <typename ... Args>
+template <typename\... Args>
 /{asterisk}\...{asterisk}/ tr( std::basic_string_view<char_type> tr_string
           , const Args&\... args) const;
 ----

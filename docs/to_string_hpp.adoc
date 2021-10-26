@@ -15,7 +15,7 @@ http://www.boost.org/LICENSE_1_0.txt
 :icons: font
 
 :print_dest_space_after_flush: <<destination_hpp#print_dest_space_after_flush,print_dest_space_after_flush>>
-:destination: <<destination_hpp#destination,destination>>
+:output_buffer: <<destination_hpp#output_buffer,output_buffer>>
 :print_dest: <<destination_hpp#print_dest,print_dest>>
 
 :printer_no_reserve: <<strf_hpp#printer_no_reserve,printer_no_reserve>>
@@ -67,8 +67,6 @@ using pre_sized_u8string_maker  = basic_sized_string_maker<char8_t>;
 using pre_sized_u16string_maker = basic_sized_string_maker<char16_t>;
 using pre_sized_u32string_maker = basic_sized_string_maker<char32_t>;
 using pre_sized_wstring_maker   = basic_sized_string_maker<wchar_t>;
-
-// Destination makers:
 
 template <typename CharT, typename Traits, typename Allocator>
 /{asterisk}\...{asterisk}/ append(std::basic_string<CharT, Traits, Allocator>& str);

@@ -12,15 +12,15 @@ http://www.boost.org/LICENSE_1_0.txt)
 :source-highlighter: prettify
 :icons: font
 
-:destination: <<destination_hpp#destination,destination>>
+:output_buffer: <<destination_hpp#output_buffer,output_buffer>>
 :print_dest: <<destination_hpp#print_dest,print_dest>>
-:recycle_buffer: <<destination_hpp#destination_recycle_buffer,recycle_buffer>>
-:flush: <<destination_hpp#destination_flush,flush>>
-:good: <<destination_hpp#destination_good,good>>
-:buffer_ptr: <<destination_hpp#destination_buffer_ptr,buffer_ptr>>
-:buffer_space: <<destination_hpp#destination_buffer_space,buffer_space>>
-:set_good: <<destination_hpp#destination_set_good,set_good>>
-:set_buffer_ptr: <<destination_hpp#destination_set_buffer_ptr,set_buffer_ptr>>
+:recycle_buffer: <<destination_hpp#output_buffer_recycle_buffer,recycle_buffer>>
+:flush: <<destination_hpp#output_buffer_flush,flush>>
+:good: <<destination_hpp#output_buffer_good,good>>
+:buffer_ptr: <<destination_hpp#output_buffer_buffer_ptr,buffer_ptr>>
+:buffer_space: <<destination_hpp#output_buffer_buffer_space,buffer_space>>
+:set_good: <<destination_hpp#output_buffer_set_good,set_good>>
+:set_buffer_ptr: <<destination_hpp#output_buffer_set_buffer_ptr,set_buffer_ptr>>
 :to: <<quick_reference#to_destination_ref,to>>
 
 :printer_no_reserve: <<strf_hpp#printer_no_reserve,printer_no_reserve>>
@@ -53,15 +53,15 @@ contains a boolean &#x2014; which indicates whether
 the state is "good" or "bad" &#x2014; and two pointers; one of them points
 to the end of buffer, and the other to the position where the
 next character shall be written. They are returned by the
-`<<destination_hpp#destination_buffer_end,buffer_end>>` and
-`<<destination_hpp#destination_buffer_ptr,buffer_ptr>>` functions respectively.
+`<<destination_hpp#output_buffer_buffer_end,buffer_end>>` and
+`<<destination_hpp#output_buffer_buffer_ptr,buffer_ptr>>` functions respectively.
 Contrary to what is common in output streams abstractions,
 where you need to use high-level functions to insert content ( like
 https://en.cppreference.com/w/cpp/io/basic_streambuf/sputc[`sputc`]
 in `std::basic_streambuf`, or
 https://en.cppreference.com/w/cpp/io/basic_ostream/write[`write`]
 in `std::basic_ostream` ), in `{print_dest}`, one can write things directly to
-its buffer:
+its buffer.
 
 [source,cpp,subs=normal]
 ----
@@ -101,12 +101,11 @@ After writing to `buffer_ptr()`, it is necessary to advance
 the buffer pointer, otherwise the content will be overwritten
 next time something is written in `buffer_ptr()`.
 This is can be done with the
-`<<destination_hpp#destination_advance,advance>>`
-or the `<<destination_hpp#destination_advance_to,advance_to>>`
+`<<destination_hpp#output_buffer_advance,advance>>`
+or the `<<destination_hpp#output_buffer_advance_to,advance_to>>`
 member function, as shown above.
 
-
-Now, let's see how a typical implementation would look like:
+Now, we can see how a typical implementation would look like:
 
 [source,cpp,subs=normal]
 ----
@@ -284,7 +283,7 @@ writing the arguments:
 [source,cpp,subs=normal]
 ----
 std::size_t size = /{asterisk} calculate size \... {asterisk}/;
-typename you_destination_creator::sized_destination_type dst{creator.create(**size**)};
+typename your_destination_creator::sized_destination_type dst{creator.create(**size**)};
 // \... write content in dst \...
 return dst.finish();
 ----

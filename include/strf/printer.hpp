@@ -8,7 +8,6 @@
 
 #include <strf/width_t.hpp>
 #include <strf/facets_pack.hpp>
-#include <strf/destination_functions.hpp>
 #include <strf/detail/facets/charset.hpp>
 
 namespace strf {

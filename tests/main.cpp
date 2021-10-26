@@ -61,7 +61,7 @@ void test_single_byte_charsets();
 void test_cstr_writer();
 void test_locale();
 void test_cfile_writer();
-void test_destination_functions();
+void test_output_buffer_functions();
 void test_printable_overriding();
 void test_streambuf_writer();
 void test_string_writer();
@@ -80,7 +80,7 @@ int main() {
 
 #endif // ! defined(STRF_FREESTANDING)
 
-    test_destination_functions();
+    test_output_buffer_functions();
     test_cstr_writer();
     test_to_range();
     test_dynamic_charset();

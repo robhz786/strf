@@ -16,7 +16,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 :sectnumlevels: 2
 :icons: font
 
-:destination: <<destination_hpp#destination,destination>>
+:output_buffer: <<destination_hpp#output_buffer,output_buffer>>
 :print_dest: <<destination_hpp#print_dest,print_dest>>
 :value_with_formatters: <<value_with_format,value_with_formatters>>
 :alignment_formatter: <<alignment_formatter,alignment_formatter>>
@@ -34,8 +34,6 @@ http://www.boost.org/LICENSE_1_0.txt)
 :boost_mp_replace: https://www.boost.org/doc/libs/develop/libs/mp11/doc/html/mp11.html#mp_replacel_v_w[boost::mp_replace]
 
 :std_conditional_t: https://en.cppreference.com/w/cpp/types/conditional[std::conditional_t]
-
-:destination: <<destination_hpp#destination,destination>>
 
 NOTE: This document is still a work in progress.
 
