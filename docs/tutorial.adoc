@@ -6,7 +6,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 ////
 
 :numpunct:      <<quick_reference#numpunct,numpunct>>
-:print_dest:    <<destination_hpp#print_dest,print_dest>>
+:destination:    <<destination_hpp#destination,destination>>
 
 = Tutorial of the Strf library
 :source-highlighter: prettify
@@ -275,23 +275,23 @@ that can be used instead of `to_string`, so that you can
 select alternative destinations.
 
 Now, every one of these expressions internally relies on a
-concrete class that derives from the `{print_dest}` abstract
+concrete class that derives from the `{destination}` abstract
 class template. These classes are also
 <<quick_reference#destination_types, documented>>.
 This means that you can write a function or code
-that writes to a reference of `{print_dest}`, so that
+that writes to a reference of `{destination}`, so that
 it works with all kind of destinations:
 
 [source,cpp,subs=normal]
 ----
-void get_message(strf::print_dest<char>& dest)
+void get_message(strf::destination<char>& dest)
 {
     strf::to(dest) ("Hello World!");
 }
 ----
 
-Hence, in a sense, `strf::{print_dest}` is equivalent
+Hence, in a sense, `strf::{destination}` is equivalent
 to `std::basic_ostream` or `std::basic_streambuf`,
 but with better performance, and it's easier to implement
-a class that derives from `strf::print_dest`
+a class that derives from `strf::destination`
 than from `std::basic_ostream` or `std::basic_streambuf`.

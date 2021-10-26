@@ -15,12 +15,12 @@
 namespace llfio = LLFIO_V2_NAMESPACE;
 
 template <typename CharT, std::size_t BufferSize>
-class llfio_file_writer final: public strf::print_dest<CharT>
+class llfio_file_writer final: public strf::destination<CharT>
 {
 public:
 
     llfio_file_writer(llfio::file_handle&& file, std::size_t offset = 0)
-        : strf::print_dest<CharT>{buffer_, BufferSize}
+        : strf::destination<CharT>{buffer_, BufferSize}
         , file_{std::move(file)}
         , offset_{offset}
     {
@@ -29,7 +29,7 @@ public:
     llfio_file_writer(const llfio_file_writer&) = delete;
 
     llfio_file_writer(llfio_file_writer&& other)
-        : strf::print_dest<CharT>{buffer_, BufferSize}
+        : strf::destination<CharT>{buffer_, BufferSize}
         , file_{std::move(other.file_)}
         , offset_{other.offset_}
         , error_{other.error_}
@@ -83,7 +83,7 @@ private:
     std::size_t offset_ = 0;
     llfio::error_info error_;
     CharT buffer_[BufferSize];
-    static_assert(BufferSize >= strf::print_dest_space_after_flush);
+    static_assert(BufferSize >= strf::destination_space_after_flush);
 };
 
 template <typename CharT, std::size_t BufferSize>

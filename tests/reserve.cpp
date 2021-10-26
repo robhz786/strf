@@ -7,21 +7,21 @@
 
 #include "test_utils.hpp"
 
-class reservation_tester : public strf::print_dest<char>
+class reservation_tester : public strf::destination<char>
 {
-    constexpr static std::size_t buff_size_ = strf::print_dest_space_after_flush;
+    constexpr static std::size_t buff_size_ = strf::destination_space_after_flush;
     char buff_[buff_size_];
 
 public:
 
     STRF_HD reservation_tester(strf::tag<void>)
-        : strf::print_dest<char>{ buff_, buff_ + buff_size_ }
+        : strf::destination<char>{ buff_, buff_ + buff_size_ }
         , buff_{0}
     {
     }
 
     STRF_HD reservation_tester(std::size_t size)
-        : strf::print_dest<char>{ buff_, buff_ + buff_size_ }
+        : strf::destination<char>{ buff_, buff_ + buff_size_ }
         , buff_{0}
         , reserved_size_{size}
     {

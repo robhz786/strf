@@ -5,7 +5,7 @@ Distributed under the Boost Software License, Version 1.0.
 http://www.boost.org/LICENSE_1_0.txt)
 ////
 
-:print_dest: <<destination_hpp#print_dest,print_dest>>
+:destination: <<destination_hpp#destination,destination>>
 :fmt_print_to: link:https://fmt.dev/latest/api.html#_CPPv2N3fmt9format_toE8OutputItRK1SDpRR4Args[fmt::print_to]
 :fmt_print_to_n: link:https://fmt.dev/latest/api.html#_CPPv2N3fmt11format_to_nE8OutputIt6size_tRK1SDpRK4Args[fmt::print_to_n]
 
@@ -404,9 +404,9 @@ examples.
 
 // If you want Strf to print to an alternative destination,
 // you need to create a class that derives from
-// `strf::<<destination_hpp#print_dest,print_dest>>`.
+// `strf::<<destination_hpp#destination,destination>>`.
 // Having an object of such type, you can print things to it with the
-// `strf::<<quick_reference#to_print_dest_ref,to>>(strf::print_dest<__CharT__>&)`
+// `strf::<<quick_reference#to_destination_ref,to>>(strf::destination<__CharT__>&)`
 // function template.
 //
 // In the case of {fmt}, you need to have (or create) a type that satisfies the
@@ -420,9 +420,9 @@ way, all you have to do is to create an adapter that conforms to the
 OutputIterator requirements and that writes to your desired target.
 
 In Strf, what you do instead is to create a concrete class that derives from
-the `{print_dest}` abstract class template. Having an object of such type,
+the `{destination}` abstract class template. Having an object of such type,
 you can print things to it with the
-`strf::<<quick_reference#to_print_dest_ref,to>>(strf::print_dest<__CharT__>&)`
+`strf::<<quick_reference#to_destination_ref,to>>(strf::destination<__CharT__>&)`
 function template.
 
 However, in Strf you can go a bit further and create your own
@@ -444,14 +444,14 @@ This is all explained in <<howto_add_destination#,this guide>>.
 // // Sometimes we need or want the code to be independent
 // // of the destination type.
 // 
-// `{print_dest}` enables you to write a code that
+// `{destination}` enables you to write a code that
 // creates a textual content ( or even a binary content ) without concerning
 // about where the such content goes.
 // [source,cpp]
 // ----
-// void write_some_text(strf::print_dest<char>& dest, /* ...args... */);
+// void write_some_text(strf::destination<char>& dest, /* ...args... */);
 // ----
-// In that sense, `strf::print_dest` is similar to `std::basic_ostream`,
+// In that sense, `strf::destination` is similar to `std::basic_ostream`,
 // but with several advantages.
 // 
 // * It has better performance.
@@ -461,7 +461,7 @@ This is all explained in <<howto_add_destination#,this guide>>.
 //   ( actually two ) that can safely and efficiently write to `char*`
 //   ( which, by the way, it what the library uses internally ).
 // 
-// As far as I know, {fmt} doesn't have anyting equivalent to `strf::print_dest`.
+// As far as I know, {fmt} doesn't have anyting equivalent to `strf::destination`.
 // You could, of course, write instead a generic code terms of output iterators
 // using `fmt::format_to` or `fmt::format_to_n`.
 // But that would force things to be template, which is not always

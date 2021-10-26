@@ -12,17 +12,17 @@
 namespace strf {
 
 template <typename CharT, typename Traits = std::char_traits<CharT> >
-class basic_streambuf_writer final: public strf::print_dest<CharT>
+class basic_streambuf_writer final: public strf::destination<CharT>
 {
 public:
 
     explicit basic_streambuf_writer(std::basic_streambuf<CharT, Traits>& d)
-        : strf::print_dest<CharT>(buf_, buf_size_)
+        : strf::destination<CharT>(buf_, buf_size_)
         , dest_(d)
     {
     }
     explicit basic_streambuf_writer(std::basic_streambuf<CharT, Traits>* d)
-        : strf::print_dest<CharT>(buf_, buf_size_)
+        : strf::destination<CharT>(buf_, buf_size_)
         , dest_(*d)
     {
     }
@@ -90,7 +90,7 @@ private:
     std::basic_streambuf<CharT, Traits>& dest_;
     std::streamsize count_ = 0;
     static constexpr std::size_t buf_size_
-        = strf::print_dest_space_after_flush;
+        = strf::destination_space_after_flush;
     CharT buf_[buf_size_];
 };
 

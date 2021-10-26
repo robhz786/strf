@@ -914,7 +914,7 @@ inline STRF_HD CharT* write_int_txtdigits_backwards( IntT value
 
 // template <typename CharT>
 // STRF_HD void write_digits_big_sep
-//     ( strf::print_dest<CharT>& dest
+//     ( strf::destination<CharT>& dest
 //     , strf::encode_char_f<CharT> encode_char
 //     , const std::uint8_t* last_grp
 //     , unsigned char* digits
@@ -961,7 +961,7 @@ public:
 
     template <typename IntT, typename CharT>
     static inline STRF_HD void write
-        ( strf::print_dest<CharT>& dest
+        ( strf::destination<CharT>& dest
         , IntT value
         , unsigned digcount
         , strf::lettercase lc )
@@ -976,7 +976,7 @@ public:
 
     template <typename UIntT, typename CharT>
     static STRF_HD void write_little_sep
-        ( strf::print_dest<CharT>& dest
+        ( strf::destination<CharT>& dest
         , UIntT uvalue
         , strf::digits_grouping grouping
         , unsigned digcount
@@ -995,7 +995,7 @@ public:
 
     template <typename UIntT, typename CharT>
     static STRF_HD void write_big_sep
-        ( strf::print_dest<CharT>& dest
+        ( strf::destination<CharT>& dest
         , strf::encode_char_f<CharT> encode_char
         , UIntT value
         , strf::digits_grouping grouping
@@ -1061,7 +1061,7 @@ public:
 
     template <typename CharT, typename UIntT>
     static STRF_HD void write
-        ( strf::print_dest<CharT>& dest
+        ( strf::destination<CharT>& dest
         , UIntT value
         , unsigned digcount
         , strf::lettercase = strf::lowercase )
@@ -1093,7 +1093,7 @@ public:
 
     template <typename UIntT, typename CharT>
     static STRF_HD void write_little_sep
-        ( strf::print_dest<CharT>& dest
+        ( strf::destination<CharT>& dest
         , UIntT value
         , strf::digits_grouping grouping
         , unsigned digcount
@@ -1162,7 +1162,7 @@ public:
 
     template <typename UIntT, typename CharT>
     static STRF_HD void write_big_sep
-        ( strf::print_dest<CharT>& dest
+        ( strf::destination<CharT>& dest
         , strf::encode_char_f<CharT> encode_char
         , UIntT value
         , strf::digits_grouping grouping
@@ -1233,7 +1233,7 @@ public:
 
 template <int Base, typename CharT, typename UIntT>
 inline STRF_HD void write_int
-    ( strf::print_dest<CharT>& dest
+    ( strf::destination<CharT>& dest
     , UIntT value
     , unsigned digcount
     , strf::lettercase lc )
@@ -1243,7 +1243,7 @@ inline STRF_HD void write_int
 
 template <int Base, typename CharT, typename UIntT>
 inline STRF_HD void write_int_little_sep
-    ( strf::print_dest<CharT>& dest
+    ( strf::destination<CharT>& dest
     , UIntT value
     , strf::digits_grouping grouping
     , unsigned digcount
@@ -1257,7 +1257,7 @@ inline STRF_HD void write_int_little_sep
 
 template <int Base, typename CharT, typename UIntT>
 inline STRF_HD void write_int_big_sep
-    ( strf::print_dest<CharT>& dest
+    ( strf::destination<CharT>& dest
     , strf::encode_char_f<CharT> encode_char
     , UIntT value
     , strf::digits_grouping grouping

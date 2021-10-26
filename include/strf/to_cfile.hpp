@@ -76,7 +76,7 @@ struct cfile_writer_result {
 // ( recycle and do_write ) calling a __host__ function ( fwrite )
 template <typename CharT, typename Traits>
 class cfile_writer_base
-    : public strf::print_dest<CharT>
+    : public strf::destination<CharT>
 {
     static_assert(noexcept(std::declval<Traits>().write(nullptr, 0)), "");
 
@@ -87,7 +87,7 @@ public:
         ( CharT* buff
         , std::size_t buff_size
         , TraitsInitArgs&&... args)
-        : strf::print_dest<CharT>(buff, buff_size)
+        : strf::destination<CharT>(buff, buff_size)
         , buff_(buff)
         , traits_(std::forward<TraitsInitArgs>(args)...)
     {
@@ -155,7 +155,7 @@ class narrow_cfile_writer final
     : public strf::detail::cfile_writer_base
         < CharT, strf::detail::narrow_cfile_writer_traits<CharT> >
 {
-    static_assert(BuffSize >= strf::print_dest_space_after_flush, "BuffSize too small");
+    static_assert(BuffSize >= strf::destination_space_after_flush, "BuffSize too small");
 
     using impl_ = strf::detail::cfile_writer_base
         < CharT, strf::detail::narrow_cfile_writer_traits<CharT> >;
@@ -209,7 +209,7 @@ public:
     using impl_::finish;
 
 private:
-    static constexpr std::size_t buf_size_ = strf::print_dest_space_after_flush;
+    static constexpr std::size_t buf_size_ = strf::destination_space_after_flush;
     wchar_t buf_[buf_size_];
 };
 
@@ -221,7 +221,7 @@ class narrow_cfile_writer_creator
 public:
 
     using char_type = CharT;
-    using destination_type = strf::narrow_cfile_writer<CharT, strf::print_dest_space_after_flush>;
+    using destination_type = strf::narrow_cfile_writer<CharT, strf::destination_space_after_flush>;
     using finish_type = typename destination_type::result;
 
     constexpr STRF_HD narrow_cfile_writer_creator(FILE* file) noexcept

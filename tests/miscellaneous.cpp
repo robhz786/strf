@@ -13,7 +13,7 @@ STRF_TEST_FUNC void test_miscellaneous()
         // write into an destination reference
         char buff[100];
         strf::cstr_writer str_writer{buff};
-        strf::print_dest<char>& dest = str_writer;
+        strf::destination<char>& dest = str_writer;
 
         strf::to(dest)
             .with(strf::numpunct<10>(3))
@@ -27,7 +27,7 @@ STRF_TEST_FUNC void test_miscellaneous()
         strf::discarder<char> dest;
         TEST_FALSE(dest.good());
         dest.recycle_buffer();
-        TEST_TRUE(dest.buffer_space() >= strf::print_dest_space_after_flush);
+        TEST_TRUE(dest.buffer_space() >= strf::destination_space_after_flush);
         TEST_FALSE(dest.good());
         char buff[200];
         dest.write(buff, sizeof(buff)/sizeof(buff[0]));

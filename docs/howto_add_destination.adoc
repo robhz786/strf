@@ -13,7 +13,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 :icons: font
 
 :output_buffer: <<destination_hpp#output_buffer,output_buffer>>
-:print_dest: <<destination_hpp#print_dest,print_dest>>
+:destination: <<destination_hpp#destination,destination>>
 :recycle_buffer: <<destination_hpp#output_buffer_recycle_buffer,recycle_buffer>>
 :flush: <<destination_hpp#output_buffer_flush,flush>>
 :good: <<destination_hpp#output_buffer_good,good>>
@@ -28,27 +28,27 @@ http://www.boost.org/LICENSE_1_0.txt)
 :printer_with_given_size: <<strf_hpp#printer_with_given_size,printer_with_given_size>>
 :DestinationCreator: <<strf_hpp#DestinationCreator,DestinationCreator>>
 :SizedDestinationCreator: <<strf_hpp#SizedDestinationCreator,SizedDestinationCreator>>
-:print_dest_space_after_flush: <<destination_hpp#print_dest,print_dest_space_after_flush>>
+:destination_space_after_flush: <<destination_hpp#destination,destination_space_after_flush>>
 
-== The `print_dest` class template
+== The `destination` class template
 
 Creating a new output type involves defining a concrete class
-that derives from `{print_dest}`.
+that derives from `{destination}`.
 Having done that, one can write things to objects
 of such type with the `{to}` function template,
 using the basic usage `<<tutorial#,syntax>>` of the library:
 
 [source,cpp,subs=normal]
 ----
-strf::print_dest</{asterisk}char type{asterisk}/>& dst = /{asterisk}\...{asterisk}/;
-strf::<<quick_reference#to_print_dest_ref,to>>(dst) (/{asterisk} arguments to be printed {asterisk}/);
+strf::destination</{asterisk}char type{asterisk}/>& dst = /{asterisk}\...{asterisk}/;
+strf::<<quick_reference#to_destination_ref,to>>(dst) (/{asterisk} arguments to be printed {asterisk}/);
 ----
 
 But before learning how to implement such class,
 it makes sense to first undestand how one uses the
-`{print_dest}` interface, __i.e.__, how to write things
+`{destination}` interface, __i.e.__, how to write things
 to it.
-`print_dest` is a simple class template: it
+`destination` is a simple class template: it
 contains a boolean &#x2014; which indicates whether
 the state is "good" or "bad" &#x2014; and two pointers; one of them points
 to the end of buffer, and the other to the position where the
@@ -60,7 +60,7 @@ where you need to use high-level functions to insert content ( like
 https://en.cppreference.com/w/cpp/io/basic_streambuf/sputc[`sputc`]
 in `std::basic_streambuf`, or
 https://en.cppreference.com/w/cpp/io/basic_ostream/write[`write`]
-in `std::basic_ostream` ), in `{print_dest}`, one can write things directly to
+in `std::basic_ostream` ), in `{destination}`, one can write things directly to
 its buffer.
 
 [source,cpp,subs=normal]
@@ -76,11 +76,11 @@ As demonstrated above, before writting anything to `buffer_ptr()`, one
 must check whether there is enough space,
 and if not, one must call the `{recycle_buffer}` function
 ( or `{flush}`, which calls `recycle_buffer` ).
-This is the only pure virtual function in `{print_dest}`;
+This is the only pure virtual function in `{destination}`;
 its job is to flush the content written so far and reset the position of
 `buffer_ptr()` and `buffer_end()`. After `{recycle_buffer}` is called,
 the buffer's space ( `buffer_end() - buffer_ptr()` ) is
-guaranteed to be at least `{print_dest_space_after_flush}`
+guaranteed to be at least `{destination_space_after_flush}`
 ( which is currently `64` but may be greater in future versions ).
 This is a postcondition even when the state is "bad".
 The state may change from "good" to "bad" in `{recycle_buffer}`,
@@ -109,10 +109,10 @@ Now, we can see how a typical implementation would look like:
 
 [source,cpp,subs=normal]
 ----
-class my_destination: public strf::print_dest<char> {
+class my_destination: public strf::destination<char> {
 public:
     my_destination(/{asterisk}\...{asterisk}/)
-        : strf::print_dest<char>{buff, sizeof(buff)}
+        : strf::destination<char>{buff, sizeof(buff)}
         // \...
     {
         /{asterisk}\...{asterisk}/
@@ -128,7 +128,7 @@ private:
     bool print(const char* str_begin, const char* str_end)
     { /{asterisk}\...{asterisk}/ }
 
-    char buff[strf::{print_dest_space_after_flush}];
+    char buff[strf::{destination_space_after_flush}];
 };
 ----
 
@@ -238,7 +238,7 @@ intended to create a `QString` object ( in the same way as
 This section explains how you can do that.
 
 The first step, which involves most of the work, is
-to create a class that derives from `{print_dest}`,
+to create a class that derives from `{destination}`,
 which is covered in previous section.
 Sometimes it makes sense to actually create two of them;
 one having a constructor that receives the size
@@ -304,8 +304,8 @@ The sample below illustrates the above steps:
 // some type that is able to receive text
 class foo { /{asterisk} \... {asterisk}/ };
 
-// step 1: define your {print_dest} class
-class foo_writer: strf::print_dest<char> {
+// step 1: define your {destination} class
+class foo_writer: strf::destination<char> {
 public:
     explicit foo_writer(foo&);
     foo_writer(const foo_writer&) = delete;

@@ -15,20 +15,20 @@ namespace strf {
 template < typename CharT
          , typename Traits = std::char_traits<CharT>
          , typename Allocator = std::allocator<CharT> >
-class basic_string_appender final: public strf::print_dest<CharT>
+class basic_string_appender final: public strf::destination<CharT>
 {
     using string_type_ = std::basic_string<CharT, Traits, Allocator>;
 
 public:
 
     basic_string_appender(string_type_& str)
-        : strf::print_dest<CharT>(buf_, buf_size_)
+        : strf::destination<CharT>(buf_, buf_size_)
         , str_(str)
     {
     }
     basic_string_appender( string_type_& str
                          , std::size_t size )
-        : strf::print_dest<CharT>(buf_, buf_size_)
+        : strf::destination<CharT>(buf_, buf_size_)
         , str_(str)
     {
         str_.reserve(size);
@@ -73,21 +73,21 @@ private:
 
     string_type_& str_;
     static constexpr std::size_t buf_size_
-        = strf::print_dest_space_after_flush;
+        = strf::destination_space_after_flush;
     CharT buf_[buf_size_];
 };
 
 template < typename CharT
          , typename Traits = std::char_traits<CharT>
          , typename Allocator = std::allocator<CharT> >
-class basic_string_maker final: public strf::print_dest<CharT>
+class basic_string_maker final: public strf::destination<CharT>
 {
     using string_type_ = std::basic_string<CharT, Traits, Allocator>;
 
 public:
 
     basic_string_maker()
-        : strf::print_dest<CharT>(buf_, buf_size_)
+        : strf::destination<CharT>(buf_, buf_size_)
     {
     }
 
@@ -134,7 +134,7 @@ private:
         return reinterpret_cast<string_type_*>(ptr);
     }
 
-    static constexpr std::size_t buf_size_ = strf::print_dest_space_after_flush;
+    static constexpr std::size_t buf_size_ = strf::destination_space_after_flush;
     CharT buf_[buf_size_];
 
     using string_storage_type_ = typename std::aligned_storage
@@ -186,12 +186,12 @@ template < typename CharT
          , typename Traits = std::char_traits<CharT>
          , typename Allocator = std::allocator<CharT> >
 class basic_sized_string_maker final
-    : public strf::print_dest<CharT>
+    : public strf::destination<CharT>
 {
 public:
 
     explicit basic_sized_string_maker(std::size_t count)
-        : strf::print_dest<CharT>(nullptr, nullptr)
+        : strf::destination<CharT>(nullptr, nullptr)
         , str_(count ? count : 1, (CharT)0)
     {
         this->set_buffer_ptr(&*str_.begin());
@@ -204,7 +204,7 @@ public:
     void recycle_buffer() override
     {
         std::size_t original_size = this->buffer_ptr() - str_.data();
-        constexpr std::size_t min_buff_size = strf::print_dest_space_after_flush;
+        constexpr std::size_t min_buff_size = strf::destination_space_after_flush;
         auto append_size = strf::detail::max<std::size_t>(original_size, min_buff_size);
         str_.append(append_size, (CharT)0);
         this->set_buffer_ptr(&*str_.begin() + original_size);

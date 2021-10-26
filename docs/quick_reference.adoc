@@ -14,7 +14,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 :icons: font
 
 
-:print_dest:     <<destination_hpp#print_dest,print_dest>>
+:destination:     <<destination_hpp#destination,destination>>
 :numpunct_c:     <<strf_hpp#numpunct_c,numpunct_c>>
 :numpunct:       <<strf_hpp#numpunct,numpunct>>
 :width_t:        <<strf_hpp#width_t,width_t>>
@@ -165,7 +165,7 @@ include::ref_format_functions.adoc[tag=int_format_functions]
 |===
 | Expression |Header
 
-|`<<to_print_dest_ref,to>> (__print_dest_ref__)`
+|`<<to_destination_ref,to>> (__destination_ref__)`
 | `<<strf_hpp#,<strf.hpp> >>`
 
 |`<<dest_raw_string,to>> (__char_ptr__, __end__)`
@@ -227,20 +227,20 @@ where:
 * `__streambuf_ptr__` is a `std::streambuf<__CharT__, _Traits_>*`
 * `__streambuf_ref__` is a `std::streambuf<__CharT__, _Traits_>&`
 * `__cfile__` is a `FILE*`
-* `__print_dest_ref__` is a `{print_dest}<__CharT__>&`,  where `__CharT__` is a character type.
+* `__destination_ref__` is a `{destination}<__CharT__>&`,  where `__CharT__` is a character type.
 * `__args\...__` is an argument list of printable values.
 
-[[to_print_dest_ref]]
+[[to_destination_ref]]
 ====
 [subs=normal]
 ----
-strf::to(__print_dest_ref__) (__args\...__)
+strf::to(__destination_ref__) (__args\...__)
 ----
 [horizontal]
 Return type:: `void`
 Supports reserve:: No
 
-See the <<destination_types,list of types>> that derive from `{print_dest}<__CharT__>&`.
+See the <<destination_types,list of types>> that derive from `{destination}<__CharT__>&`.
 ====
 
 [[dest_raw_string]]
@@ -426,7 +426,7 @@ Return type:: `<<to_cfile_hpp#wide_cfile_writer,wide_cfile_writer<__CharT__>::re
 [[destination_types]]
 === `destination` classes
 
-The table below lists the concrete types that derivate from the `{print_dest}<__CharT__>` abstract class.
+The table below lists the concrete types that derivate from the `{destination}<__CharT__>` abstract class.
 
 [%header,cols="47,53"]
 |===

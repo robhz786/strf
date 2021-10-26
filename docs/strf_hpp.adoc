@@ -17,7 +17,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 :icons: font
 
 :output_buffer: <<destination_hpp#output_buffer,output_buffer>>
-:print_dest: <<destination_hpp#print_dest,print_dest>>
+:destination: <<destination_hpp#destination,destination>>
 :value_with_formatters: <<value_with_format,value_with_formatters>>
 :alignment_formatter: <<alignment_formatter,alignment_formatter>>
 :alignment_formatter_q: <<alignment_formatter,alignment_formatter_q>>

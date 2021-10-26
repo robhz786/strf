@@ -150,7 +150,7 @@ public:
 
 template<typename CharT, std::size_t ... I, typename ... Printers>
 STRF_HD void write
-    ( strf::print_dest<CharT>& dest
+    ( strf::destination<CharT>& dest
     , const strf::detail::printers_tuple_impl
         < CharT, strf::detail::index_sequence<I...>, Printers... >& printers )
 {

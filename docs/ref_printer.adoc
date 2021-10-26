@@ -384,7 +384,7 @@ class arg_printer {
 public:
     using char_type = CharT;
     virtual ~arg_printer() {}
-    virtual void print_to({print_dest}<CharT>&) const = 0;
+    virtual void print_to({destination}<CharT>&) const = 0;
 };
 
 } // namespace strf

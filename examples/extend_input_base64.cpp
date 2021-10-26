@@ -121,7 +121,7 @@ public:
         , strf::print_preview<PreviewSize, strf::preview_width::no>& preview
         , const base64_input_with_formatters& fmt );
 
-    void print_to(strf::print_dest<CharT>& dest) const override;
+    void print_to(strf::destination<CharT>& dest) const override;
 
 private:
 
@@ -131,15 +131,15 @@ private:
 
     void calc_size_(strf::size_preview<true>&) const;
 
-    void write_single_line_(strf::print_dest<CharT>& dest) const;
+    void write_single_line_(strf::destination<CharT>& dest) const;
 
-    void encode_all_data_in_this_line_(strf::print_dest<CharT>& dest) const;
+    void encode_all_data_in_this_line_(strf::destination<CharT>& dest) const;
 
-    void write_multiline_(strf::print_dest<CharT>& dest) const;
+    void write_multiline_(strf::destination<CharT>& dest) const;
 
-    void write_identation_(strf::print_dest<CharT>& dest) const;
+    void write_identation_(strf::destination<CharT>& dest) const;
 
-    void write_end_of_line_(strf::print_dest<CharT>& dest) const;
+    void write_end_of_line_(strf::destination<CharT>& dest) const;
 
     void encode_3bytes_
         ( CharT* dest
@@ -181,7 +181,7 @@ void base64_printer<CharT>::calc_size_(strf::size_preview<true>& preview) const
 //[ base64_printer__write
 
 template <typename CharT>
-void base64_printer<CharT>::print_to(strf::print_dest<CharT>& dest) const
+void base64_printer<CharT>::print_to(strf::destination<CharT>& dest) const
 {
     if (facet_.single_line()) {
         write_single_line_(dest);
@@ -191,14 +191,14 @@ void base64_printer<CharT>::print_to(strf::print_dest<CharT>& dest) const
 }
 
 template <typename CharT>
-void base64_printer<CharT>::write_single_line_(strf::print_dest<CharT>& dest) const
+void base64_printer<CharT>::write_single_line_(strf::destination<CharT>& dest) const
 {
     write_identation_(dest);
     encode_all_data_in_this_line_(dest);
 }
 
 template <typename CharT>
-void base64_printer<CharT>::write_identation_(strf::print_dest<CharT>& dest) const
+void base64_printer<CharT>::write_identation_(strf::destination<CharT>& dest) const
 {
     using traits = std::char_traits<CharT>;
     std::size_t count = fmt_.indentation();
@@ -217,7 +217,7 @@ void base64_printer<CharT>::write_identation_(strf::print_dest<CharT>& dest) con
 }
 
 template <typename CharT>
-void base64_printer<CharT>::encode_all_data_in_this_line_(strf::print_dest<CharT>& dest) const
+void base64_printer<CharT>::encode_all_data_in_this_line_(strf::destination<CharT>& dest) const
 {
     auto data_it = static_cast<const std::uint8_t*>(fmt_.value().bytes);
     for (std::ptrdiff_t count = fmt_.value().num_bytes; count > 0; count -= 3) {
@@ -260,7 +260,7 @@ auto base64_printer<CharT>::encode_(std::uint8_t hextet) const -> CharT
 //]
 
 template <typename CharT>
-void base64_printer<CharT>::write_multiline_(strf::print_dest<CharT>& dest) const
+void base64_printer<CharT>::write_multiline_(strf::destination<CharT>& dest) const
 {
     write_identation_(dest);
 
@@ -298,7 +298,7 @@ void base64_printer<CharT>::write_multiline_(strf::print_dest<CharT>& dest) cons
 }
 
 template <typename CharT>
-void base64_printer<CharT>::write_end_of_line_(strf::print_dest<CharT>& dest) const
+void base64_printer<CharT>::write_end_of_line_(strf::destination<CharT>& dest) const
 {
     dest.ensure(2);
     dest.buffer_ptr()[0] = facet_.eol[0];

@@ -17,8 +17,8 @@ http://www.boost.org/LICENSE_1_0.txt)
 :output_buffer: <<output_buffer,output_buffer>>
 :put: <<output_buffer_put,put>>
 
-:print_dest: <<print_dest,print_dest>>
-:print_dest_space_after_flush: <<print_dest,print_dest_space_after_flush>>
+:destination: <<destination,destination>>
+:destination_space_after_flush: <<destination,destination_space_after_flush>>
 
 :basic_cstr_writer: <<basic_cstr_writer, basic_cstr_writer>>
 :basic_char_array_writer: <<basic_char_array_writer, basic_char_array_writer>>
@@ -59,10 +59,10 @@ namespace strf {
 template <typename T, unsigned Log2BufferSpace>
 class {output_buffer};
 
-constexpr std::size_t {print_dest_space_after_flush} = ...; // >= 64
+constexpr std::size_t {destination_space_after_flush} = ...; // >= 64
 
 template <typename CharT>
-using {print_dest} = output_buffer<CharT, ...>;
+using {destination} = output_buffer<CharT, ...>;
 
 template <typename CharT>
 class {basic_cstr_writer};
@@ -391,26 +391,26 @@ dest.advance();
 ----
 ====
 
-[[print_dest]]
-== Type alias template `print_dest`
+[[destination]]
+== Type alias template `destination`
 
 [source,cpp,subs=normal]
 ----
 namespace strf {
 
-constexpr unsigned    log2_print_dest_space_after_flush = ...; // >= 6
-constexpr std::size_t      print_dest_space_after_flush = ...; // >= 64
+constexpr unsigned    log2_destination_space_after_flush = ...; // >= 6
+constexpr std::size_t      destination_space_after_flush = ...; // >= 64
 
 template <typename CharT>
-using print_dest = {output_buffer}<CharT, log2_print_dest_space_after_flush>;
+using destination = {output_buffer}<CharT, log2_destination_space_after_flush>;
 
 } // namespace strf
 ----
 
-* `log2_print_dest_space_after_flush` is an implementation-defined value
+* `log2_destination_space_after_flush` is an implementation-defined value
 that is greater than or equal to `6`.
 
-* `print_dest_space_after_flush` is equal to `(std::size_t)1 << log2_print_dest_space_after_flush`
+* `destination_space_after_flush` is equal to `(std::size_t)1 << log2_destination_space_after_flush`
 
 [[basic_cstr_writer]]
 == Class template `basic_cstr_writer`
@@ -657,7 +657,7 @@ These function templates return the begin and the end of a memory area that is n
 constexpr unsigned log2_garbage_buff_size = ...;
 ----
 Implementation-defined type that is greater than or equal to
-`<<print_dest,log2_print_dest_space_after_flush>>`;
+`<<destination,log2_destination_space_after_flush>>`;
 ====
 
 ====

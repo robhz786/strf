@@ -12,7 +12,7 @@ public:
 
     err_handler(const err_handler&) = default;
 
-    STRF_HD err_handler(strf::print_dest<char>& log)
+    STRF_HD err_handler(strf::destination<char>& log)
         : log_(log)
     {
     }
@@ -29,7 +29,7 @@ public:
     }
 
 private:
-    strf::print_dest<char>& log_;
+    strf::destination<char>& log_;
 };
 
 STRF_TEST_FUNC void test_tr_string()

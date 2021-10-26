@@ -8,12 +8,12 @@
 #include <climits>
 #include <algorithm>
 
-class QStringCreator: public strf::print_dest<char16_t>
+class QStringCreator: public strf::destination<char16_t>
 {
 public:
 
     QStringCreator()
-        : strf::print_dest<char16_t>(buffer_, buffer_size_)
+        : strf::destination<char16_t>(buffer_, buffer_size_)
     {
     }
 
@@ -26,7 +26,7 @@ public:
     QStringCreator(const QStringCreator&) = delete;
 
     explicit QStringCreator(std::size_t size)
-        : strf::print_dest<char16_t>(buffer_, buffer_size_)
+        : strf::destination<char16_t>(buffer_, buffer_size_)
     {
         Q_ASSERT(size < static_cast<std::size_t>(INT_MAX));
         str_.reserve(static_cast<int>(size));
@@ -39,7 +39,7 @@ public:
 private:
 
     QString str_;
-    constexpr static std::size_t buffer_size_ = strf::print_dest_space_after_flush;
+    constexpr static std::size_t buffer_size_ = strf::destination_space_after_flush;
     char16_t buffer_[buffer_size_];
 };
 

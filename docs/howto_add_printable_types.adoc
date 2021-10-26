@@ -9,7 +9,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 :strf-src-root: https://github.com/robhz786/strf/blob/{strf-revision}
 
 :output_buffer:   <<destination_hpp#output_buffer,output_buffer>>
-:print_dest:   <<destination_hpp#print_dest,print_dest>>
+:destination:   <<destination_hpp#destination,destination>>
 
 :PrintingTraits:  <<strf_hpp#PrintingTraits,PrintingTraits>>
 :PrinterInput:    <<strf_hpp#PrintInput,PrinterInput>>
@@ -797,7 +797,7 @@ public:
     template <typename\... T>
     explicit std_complex_printer(strf::usual_arg_printer_input<T\...>);
 
-    void print_to(strf::{print_dest}<CharT>& dest) const override;
+    void print_to(strf::{destination}<CharT>& dest) const override;
 
 private:
 
@@ -819,7 +819,7 @@ The `print_to` member function is responsible for writing the content:
 [source,cpp,subs=normal]
 ----
 template <typename CharT, typename FloatT>
-void std_complex_printer<CharT, FloatT>::print_to(strf::{print_dest}<CharT>& dest) const
+void std_complex_printer<CharT, FloatT>::print_to(strf::{destination}<CharT>& dest) const
 {
     auto print = strf::to(dest).with(lettercase_, numpunct_, charset_);
     if (form_ == complex_form::polar) {
@@ -885,7 +885,7 @@ which is only the case when you write things directly to
 `dest.<<destination_hpp#output_buffer_buffer_ptr,buffer_ptr>>()`.
 If you need to go that low-level, I would recomend you to
 read <<howto_add_destination#,this document>> to understand
-how `print_dest` works.
+how `destination` works.
 
 Now, if that is too complicated, you can just instead
 define your constructor with this:

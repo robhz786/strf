@@ -157,7 +157,7 @@ std::basic_string<CharT> make_random_std_string(std::size_t size)
 template <typename CharT>
 constexpr STRF_HD  std::size_t full_string_size()
 {
-    return strf::print_dest_space_after_flush;
+    return strf::destination_space_after_flush;
 }
 template <typename CharT>
 constexpr STRF_HD  std::size_t half_string_size()
@@ -230,7 +230,7 @@ inline STRF_HD int& test_err_count()
 
 // function test_messages_destination() is a customization point
 // it needs to be defined by the test program
-STRF_HD strf::print_dest<char>& test_messages_destination();
+STRF_HD strf::destination<char>& test_messages_destination();
 
 class test_scope
 {
@@ -273,7 +273,7 @@ public:
         return id_;
     }
 
-    STRF_HD static void print_stack(strf::print_dest<char>& out)
+    STRF_HD static void print_stack(strf::destination<char>& out)
     {
         auto current_id = (current_test_scope_() == nullptr ? 0 : current_test_scope_()->id());
         if (current_id != last_printed_scope_id_()) {
@@ -370,7 +370,7 @@ void STRF_HD test_failure
 
 template <typename CharOut>
 class input_tester
-    : public strf::print_dest<CharOut>
+    : public strf::destination<CharOut>
 {
 
 public:
@@ -470,7 +470,7 @@ STRF_HD input_tester<CharOut>::input_tester
     , const char* function
     , double reserve_factor
     , std::size_t size )
-    : strf::print_dest<CharOut>{buffer_, size}
+    : strf::destination<CharOut>{buffer_, size}
     , expected_(expected)
     , reserved_size_(size)
     , src_filename_(src_filename)
@@ -498,7 +498,7 @@ void STRF_HD input_tester<CharOut>::recycle_buffer()
     test_failure_(" destination::recycle_buffer() called "
                   "( it means the calculated size too small ).\n");
 
-    if ( this->buffer_ptr() + strf::print_dest_space_after_flush
+    if ( this->buffer_ptr() + strf::destination_space_after_flush
        > buffer_ + buffer_size_ )
     {
         pointer_before_overflow_ = this->buffer_ptr();
@@ -660,7 +660,7 @@ struct reduce<X, Others...>{
 } // namespace detail
 
 template <typename CharT>
-class input_tester_with_fixed_spaces_base: public strf::print_dest<CharT>
+class input_tester_with_fixed_spaces_base: public strf::destination<CharT>
 {
 public:
 
@@ -727,7 +727,7 @@ STRF_HD input_tester_with_fixed_spaces_base<CharT>::input_tester_with_fixed_spac
     , const unsigned* spaces_array
     , std::size_t num_spaces
     , unsigned first_space )
-    : strf::print_dest<CharT>{buff, first_space}
+    : strf::destination<CharT>{buff, first_space}
     , expected_{expected}
     , src_filename_{src_filename}
     , src_line_{src_line}
