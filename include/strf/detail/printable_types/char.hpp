@@ -136,13 +136,13 @@ public:
         ( const strf::usual_arg_printer_input<CharT, T...>& input )
         : ch_(static_cast<CharT>(input.arg))
     {
-        input.preview.add_size(1);
-        using preview_type = typename strf::usual_arg_printer_input<CharT, T...>::preview_type;
-        STRF_IF_CONSTEXPR(preview_type::width_required) {
+        input.pre.add_size(1);
+        using pre_t = typename strf::usual_arg_printer_input<CharT, T...>::pre_printing_type;
+        STRF_IF_CONSTEXPR(pre_t::width_required) {
             auto&& wcalc = use_facet<strf::width_calculator_c, CharT>(input.facets);
             auto charset = use_facet<strf::charset_c<CharT>, CharT>(input.facets);
             auto w = wcalc.char_width(charset, static_cast<CharT>(ch_));
-            input.preview.subtract_width(w);
+            input.pre.subtract_width(w);
         }
     }
 
@@ -177,7 +177,7 @@ public:
         auto charset = use_facet_<strf::charset_c<CharT>>(input.facets);
         auto&& wcalc = use_facet_<strf::width_calculator_c>(input.facets);
         encode_fill_fn_ = charset.encode_fill_func();
-        init_(input.preview, wcalc, charset);
+        init_(input.pre, wcalc, charset);
     }
 
     STRF_HD void print_to(strf::destination<CharT>& dest) const override;
@@ -286,11 +286,11 @@ public:
         STRF_MAYBE_UNUSED(encoding);
         encode_char_f_ = encoding.encode_char_func();
         encoded_char_size_ = encoding.encoded_char_size(input.arg);
-        input.preview.add_size(encoded_char_size_);
-        using preview_type = typename strf::usual_arg_printer_input<T...>::preview_type;
-        STRF_IF_CONSTEXPR (preview_type::width_required) {
+        input.pre.add_size(encoded_char_size_);
+        using pre_t = typename strf::usual_arg_printer_input<T...>::pre_printing_type;
+        STRF_IF_CONSTEXPR (pre_t::width_required) {
             auto&& wcalc = use_facet<strf::width_calculator_c, char32_t>(input.facets);
-            input.preview.subtract_width(wcalc.char_width(strf::utf_t<char32_t>{}, ch_));
+            input.pre.subtract_width(wcalc.char_width(strf::utf_t<char32_t>{}, ch_));
         }
     }
 
@@ -323,7 +323,7 @@ public:
         auto charset = strf::use_facet<charset_c<DestCharT>, char32_t>(input.facets);
         auto&& wcalc = use_facet<strf::width_calculator_c, char32_t>(input.facets);
         auto char_width = wcalc.char_width(strf::utf_t<char32_t>{}, ch_);
-        init_(input.preview, charset, input.arg.get_alignment_format(), char_width);
+        init_(input.pre, charset, input.arg.get_alignment_format(), char_width);
     }
 
     void STRF_HD print_to(strf::destination<DestCharT>& dest) const override;

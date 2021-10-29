@@ -892,8 +892,8 @@ define your constructor with this:
 
 [source,cpp,subs=normal]
 ----
-using preview_type = typename strf::usual_arg_printer_input<T\...>::preview_type;
-static_assert(! preview_type::<<strf_hpp#pre_printing,size_required>>);
+using pre_t = typename strf::usual_arg_printer_input<T\...>::pre_printing_type;
+static_assert(! pre_t::<<strf_hpp#pre_printing,size_required>>);
 ----
 That prevents your printable type to compile when the feature
 `<<tutorial#syntax,reserve_calc>>` is used,
@@ -901,17 +901,17 @@ which may not be a problem in many cases.
 
 When the second template argument of this
 `pre_printing` is `precalc_width::yes`, then we must inform
-`x.preview` the `width`. This happens only when your printable type
+`x.pre` the `width`. This happens only when your printable type
 is used it in an <<quick_reference#aligned_join,aligned join>>.
 So if you don't care about supporting that situation, you can just do:
 
 [source,cpp,subs=normal]
 ----
-using preview_type = typename strf::usual_arg_printer_input<T...>::preview_type;
-static_assert(! preview_type::<<strf_hpp#pre_printing,width_required>>);
+using pre_t = typename strf::usual_arg_printer_input<T...>::pre_printing_type;
+static_assert(! pre_t::<<strf_hpp#pre_printing,width_required>>);
 
-// or, if you don't want to preview the size either:
-static_assert(preview_type::<<strf_hpp#pre_printing,nothing_required>>);
+// or, if you don't want to calculate the size either:
+static_assert(pre_t::<<strf_hpp#pre_printing,nothing_required>>);
 ----
 
 Fortunately, in our case, calculating the size and width is not that difficult.
@@ -977,7 +977,8 @@ But, of course, we are not done yet, since it only handles
 another printer &#x2014; you could name `fmt_std_complex_printer`
 &#x2014; to print formatted values, which is naturally a little
 bit more complex. However, it's basically the same idea:
-`print_to` prints the content and the constructor previews it. Here is a full implementation:
+`print_to` prints the content and the constructor precalculates its size and/or width.
+You can see a full implementation in
 {strf-src-root}/examples/std_complex_printer.cpp[examples/std_complex_printer.cpp].
 
 

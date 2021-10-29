@@ -247,7 +247,7 @@ public:
         , begin_(input.arg.begin)
         , end_(input.arg.end)
     {
-        preview_(input.preview);
+        preview_(input.pre);
     }
 
     STRF_HD void print_to(strf::destination<CharT>& dest) const override;
@@ -310,7 +310,7 @@ public:
         , sep_begin_(input.arg.sep_begin)
         , sep_len_(input.arg.sep_len)
     {
-        preview_(input.preview);
+        preview_(input.pre);
     }
 
     STRF_HD void print_to(strf::destination<CharT>& dest) const override;
@@ -420,7 +420,7 @@ public:
         : fp_(input.facets)
         , fmt_(input.arg)
     {
-        preview_(input.preview);
+        preview_(input.pre);
     }
 
     STRF_HD void print_to(strf::destination<CharT>& dest) const override;
@@ -501,7 +501,7 @@ public:
         : fp_(input.facets)
         , fmt_(input.arg)
     {
-        preview_(input.preview);
+        preview_(input.pre);
     }
 
     STRF_HD void print_to(strf::destination<CharT>& dest) const override;
@@ -613,7 +613,7 @@ public:
         , end_(input.arg.end)
         , op_(input.arg.op)
     {
-        preview_(input.preview);
+        preview_(input.pre);
     }
 
     STRF_HD void print_to(strf::destination<CharT>& dest) const override;
@@ -682,7 +682,7 @@ public:
         , sep_len_(input.arg.sep_len)
         , op_(input.arg.op)
     {
-        preview_(input.preview);
+        preview_(input.pre);
     }
 
     STRF_HD void print_to(strf::destination<CharT>& dest) const override;

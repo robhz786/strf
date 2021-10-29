@@ -525,11 +525,11 @@ struct usual_arg_printer_input
 {
     using char_type = CharT;
     using arg_type = Arg;
-    using preview_type = strf::pre_printing<PrecalcSize, PrecalcWidth>;
+    using pre_printing_type = strf::pre_printing<PrecalcSize, PrecalcWidth>;
     using fpack_type = FPack;
     using printer_type = Printer;
 
-    preview_type& preview;
+    pre_printing_type& pre;
     FPack facets;
     Arg arg;
 };

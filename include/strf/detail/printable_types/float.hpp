@@ -719,8 +719,8 @@ struct fast_double_printer_input
     using printer_type = strf::detail::fast_double_printer<CharT>;
 
     template <typename FPack>
-    STRF_HD fast_double_printer_input(Preview& preview_, const FPack& fp_, FloatT arg_)
-        : preview(preview_)
+    STRF_HD fast_double_printer_input(Preview& pre_, const FPack& fp_, FloatT arg_)
+        : pre(pre_)
         , value(arg_)
         , lcase(strf::use_facet<strf::lettercase_c, float>(fp_))
     {
@@ -728,10 +728,10 @@ struct fast_double_printer_input
 
     template <typename FPack>
     STRF_HD fast_double_printer_input
-        ( Preview& preview_
+        ( Preview& pre_
         , const FPack& fp_
         , strf::detail::float_with_default_formatters<FloatT> input )
-        : preview(preview_)
+        : pre(pre_)
         , value(input.value())
         , lcase(strf::use_facet<strf::lettercase_c, float>(fp_))
     {
@@ -740,7 +740,7 @@ struct fast_double_printer_input
     fast_double_printer_input(const fast_double_printer_input&) = default;
     fast_double_printer_input(fast_double_printer_input&&) = default;
 
-    Preview& preview;
+    Preview& pre;
     FloatT value;
     strf::lettercase lcase;
 };
@@ -1365,8 +1365,8 @@ public:
         STRF_IF_CONSTEXPR (Preview::width_required || Preview::size_required) {
             s = size();
         }
-        input.preview.subtract_width(s);
-        input.preview.add_size(s);
+        input.pre.subtract_width(s);
+        input.pre.add_size(s);
     }
 
     STRF_HD fast_double_printer(float f, strf::lettercase lc) noexcept
@@ -2363,19 +2363,19 @@ public:
         } else {
             decimal_point_size_ = 0;
         }
-        input.preview.subtract_width(r.fillcount);
-        input.preview.subtract_width(r.content_width);
+        input.pre.subtract_width(r.fillcount);
+        input.pre.subtract_width(r.content_width);
         STRF_IF_CONSTEXPR (Preview::size_required) {
-            input.preview.add_size(r.content_width);
+            input.pre.add_size(r.content_width);
             if (r.fillcount) {
                 std::size_t fillchar_size = charset.encoded_char_size(data_.fillchar);
-                input.preview.add_size(fillchar_size * r.fillcount);
+                input.pre.add_size(fillchar_size * r.fillcount);
             }
             if (notation != strf::float_notation::hex && data_.sep_count){
-                input.preview.add_size(data_.sep_count * (sep_size_ - 1));
+                input.pre.add_size(data_.sep_count * (sep_size_ - 1));
             }
             if (data_.showpoint) {
-                input.preview.add_size(decimal_point_size_ - 1);
+                input.pre.add_size(decimal_point_size_ - 1);
             }
         }
     }
@@ -2394,13 +2394,13 @@ public:
             ( data_, input.arg.value(), grouping_, input.arg.get_float_format()
             , input.arg.get_alignment_format() );
         decimal_point_size_ = data_.showpoint;
-        input.preview.subtract_width(r.fillcount);
-        input.preview.subtract_width(r.content_width);
+        input.pre.subtract_width(r.fillcount);
+        input.pre.subtract_width(r.content_width);
         STRF_IF_CONSTEXPR (Preview::size_required) {
-            input.preview.add_size(r.content_width);
+            input.pre.add_size(r.content_width);
             if (r.fillcount) {
                 std::size_t fillchar_size = charset.encoded_char_size(data_.fillchar);
-                input.preview.add_size(fillchar_size * r.fillcount);
+                input.pre.add_size(fillchar_size * r.fillcount);
             }
         }
     }

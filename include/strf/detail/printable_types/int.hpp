@@ -1120,33 +1120,33 @@ constexpr STRF_HD bool negative(const T& x) noexcept
 template <typename IntT>
 struct int_printing;
 
-template <typename CharT, typename Preview, typename IntT>
+template <typename CharT, typename Pre, typename IntT>
 struct default_int_printer_input
 {
     using printer_type = strf::detail::default_int_printer<CharT>;
 
     template<typename FPack>
     constexpr STRF_HD default_int_printer_input
-        ( Preview& preview_, const FPack&, IntT arg_) noexcept
-        : preview(preview_)
+        ( Pre& pre_, const FPack&, IntT arg_) noexcept
+        : pre(pre_)
         , value(arg_)
     {
     }
 
     template<typename FPack, typename PTraits>
     constexpr STRF_HD default_int_printer_input
-        ( Preview& preview_
+        ( Pre& pre_
         , const FPack&
         , strf::value_with_formatters
             < PTraits
             , strf::int_formatter
             , strf::alignment_formatter > arg_ ) noexcept
-        : preview(preview_)
+        : pre(pre_)
         , value(arg_.value())
     {
     }
 
-    Preview& preview;
+    Pre& pre;
     IntT value;
 };
 
@@ -1392,7 +1392,7 @@ public:
     template <typename... T>
     STRF_HD default_int_printer(strf::detail::default_int_printer_input<T...> i)
     {
-        init_(i.preview, i.value);
+        init_(i.pre, i.value);
     }
 
     STRF_HD void print_to(strf::destination<CharT>& dest) const override;
@@ -1464,10 +1464,10 @@ public:
         auto encoding = strf::use_facet<strf::charset_c<CharT>, int>(i.facets);
         STRF_MAYBE_UNUSED(encoding);
         encode_fill_ = encoding.encode_fill_func();
-        i.preview.subtract_width(fillcount_ + digcount_ + negative_);
-        STRF_IF_CONSTEXPR(strf::usual_arg_printer_input<T...>::preview_type::size_required) {
+        i.pre.subtract_width(fillcount_ + digcount_ + negative_);
+        STRF_IF_CONSTEXPR(strf::usual_arg_printer_input<T...>::pre_printing_type::size_required) {
             auto fillsize = fillcount_ * encoding.encoded_char_size(fillchar_);
-            i.preview.add_size(fillsize + digcount_ + negative_);
+            i.pre.add_size(fillsize + digcount_ + negative_);
         }
     }
 
@@ -1624,8 +1624,8 @@ public:
     STRF_HD int_printer_no_pad0_nor_punct(strf::usual_arg_printer_input<T...> i) noexcept
     {
         auto w = strf::detail::init(data_, i.arg.get_int_format(), i.arg.value());
-        i.preview.subtract_width(w);
-        i.preview.add_size(w);
+        i.pre.subtract_width(w);
+        i.pre.add_size(w);
     }
 
     STRF_HD void print_to(strf::destination<CharT>& dest) const
@@ -1655,8 +1655,8 @@ public:
         auto value = i.arg.value();
         auto w = strf::detail::init(data_, i.arg.get_int_format(), value);
         lettercase_ = strf::use_facet<strf::lettercase_c, decltype(value)>(i.facets);
-        i.preview.subtract_width(w);
-        i.preview.add_size(w);
+        i.pre.subtract_width(w);
+        i.pre.add_size(w);
     }
 
     STRF_HD void print_to(strf::destination<CharT>& dest) const override
@@ -1688,8 +1688,8 @@ public:
     STRF_HD int_printer_no_pad0_nor_punct(strf::usual_arg_printer_input<T...> i) noexcept
     {
         auto w = strf::detail::init(data_, i.arg.get_int_format(), i.arg.value());
-        i.preview.subtract_width(w);
-        i.preview.add_size(w);
+        i.pre.subtract_width(w);
+        i.pre.add_size(w);
     }
 
     STRF_HD void print_to(strf::destination<CharT>& dest) const override
@@ -1719,8 +1719,8 @@ public:
         auto value = i.arg.value();
         auto w = strf::detail::init(data_, i.arg.get_int_format(), value);
         lettercase_ = strf::use_facet<strf::lettercase_c, decltype(value)>(i.facets);
-        i.preview.subtract_width(w);
-        i.preview.add_size(w);
+        i.pre.subtract_width(w);
+        i.pre.add_size(w);
     }
 
     STRF_HD void print_to(strf::destination<CharT>& dest) const override
@@ -1967,12 +1967,12 @@ public:
         auto afmt = i.arg.get_alignment_format();
         detail::init_1(data_, ifmt, ivalue);
         auto w = detail::init_fmt_int_printer_data<Base>(data_, ifmt, afmt);
-        i.preview.subtract_width(w.sub_width + w.fillcount);
-        using preview_type = typename strf::usual_arg_printer_input<T...>::preview_type;
-        STRF_IF_CONSTEXPR (preview_type::size_required) {
-            i.preview.add_size(w.sub_width);
+        i.pre.subtract_width(w.sub_width + w.fillcount);
+        using pre_t = typename strf::usual_arg_printer_input<T...>::pre_printing_type;
+        STRF_IF_CONSTEXPR (pre_t::size_required) {
+            i.pre.add_size(w.sub_width);
             if (w.fillcount) {
-                i.preview.add_size(w.fillcount * charset.encoded_char_size(afmt.fill));
+                i.pre.add_size(w.fillcount * charset.encoded_char_size(afmt.fill));
             }
         }
     }
@@ -2110,7 +2110,7 @@ public:
             ( i.arg.value()
             , i.arg.get_int_format()
             , i.arg.get_alignment_format()
-            , i.preview
+            , i.pre
             , i.facets )
     {
     }
@@ -2251,7 +2251,7 @@ public:
                     thousands_sep = numpunct.thousands_sep();
                 }
                 new ((void*)&storage_) int_printer_static_base_and_punct<CharT, 16, true>
-                    ( ivalue, ifmt16, afmt, i.preview, lc, grp, thousands_sep, charset );
+                    ( ivalue, ifmt16, afmt, i.pre, lc, grp, thousands_sep, charset );
                 break;
             }
             case 8: {
@@ -2263,7 +2263,7 @@ public:
                     thousands_sep = numpunct.thousands_sep();
                 }
                 new ((void*)&storage_) int_printer_static_base_and_punct<CharT, 8, true>
-                    ( ivalue, ifmt8, afmt, i.preview, lc, grp, thousands_sep, charset );
+                    ( ivalue, ifmt8, afmt, i.pre, lc, grp, thousands_sep, charset );
                 break;
             }
             case 2: {
@@ -2275,7 +2275,7 @@ public:
                     thousands_sep = numpunct.thousands_sep();
                 }
                 new ((void*)&storage_) int_printer_static_base_and_punct<CharT, 2, true>
-                    ( ivalue, ifmt2, afmt, i.preview, lc, grp, thousands_sep, charset );
+                    ( ivalue, ifmt2, afmt, i.pre, lc, grp, thousands_sep, charset );
                 break;
             }
             default:  {
@@ -2287,7 +2287,7 @@ public:
                     thousands_sep = numpunct.thousands_sep();
                 }
                 new ((void*)&storage_) int_printer_static_base_and_punct<CharT, 10, true>
-                    ( ivalue, ifmt10, afmt, i.preview, lc, grp, thousands_sep, charset );
+                    ( ivalue, ifmt10, afmt, i.pre, lc, grp, thousands_sep, charset );
                 break;
             }
         }

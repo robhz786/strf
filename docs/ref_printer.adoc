@@ -182,8 +182,8 @@ using forwarded_printable_type = typename {printing_traits_of}<T>::<<PrintingTra
 Given
 
 * `CharT`, a character type
-* `Preview`, an instance of the `{pre_printing}` class template
-* `X`, a _PrinterInput_ type for types `CharT` and `Preview`
+* `PrePriting`, an instance of the `{pre_printing}` class template
+* `X`, a _PrinterInput_ type for types `CharT` and `PrePriting`
 * `x`, a value of type `X`
 
 ====
@@ -197,9 +197,9 @@ A type alias to `CharT`.
 ====
 [source,cpp,subs=normal]
 ----
-T::preview_type
+T::pre_printing_type
 ----
-A type alias to `Preview`.
+A type alias to `PrePriting`.
 ====
 
 ====
@@ -212,13 +212,13 @@ such that the sequence:
 
 [source,cpp,subs=normal]
 ----
-std::size_t s = x.preview.<<size_accumulator_accumulated_size,accumulated_size>>();
+std::size_t s = x.pre.<<size_accumulator_accumulated_size,accumulated_size>>();
 typename T::printer_type p{x};
-std::size_t predicted_size = x.preview.<<size_accumulator_accumulated_size,accumulated_size>>() - s;
+std::size_t predicted_size = x.pre.<<size_accumulator_accumulated_size,accumulated_size>>() - s;
 std::size_t dest_buff_space = dest.<<destination_hpp#output_buffer_buffer_space,buffer_space>>();
 static_cast<const printer<CharT>&>(p).<<arg_printer,print_to>>(dest);
 ----
-statisfies the following postconditions when `Preview::<<pre_printing,size_required>>` is `true`:
+statisfies the following postconditions when `PrePriting::<<pre_printing,size_required>>` is `true`:
 
 *  if `predicted_size \<= dest_buff_space` is `true` then `dest.recycle_buffer()` is not called.
 ====
@@ -226,9 +226,9 @@ statisfies the following postconditions when `Preview::<<pre_printing,size_requi
 ====
 [source,cpp,subs=normal]
 ----
-x.preview
+x.pre
 ----
-A lvalue reference of type `Preview`.
+A lvalue reference of type `PrePriting`.
 ====
 
 === Class template `usual_arg_printer_input` [[usual_arg_printer_input]]
@@ -237,23 +237,23 @@ A lvalue reference of type `Preview`.
 
 [source,cpp,subs=normal]
 ----
-template <typename CharT, typename Preview, typename FPack, typename Arg, typename Printer>
+template <typename CharT, typename PrePriting, typename FPack, typename Arg, typename Printer>
 struct usual_arg_printer_input
 {
     using char_type = CharT;
     using arg_type = Arg;
-    using preview_type = Preview;
+    using pre_printing_type = PrePriting;
     using fpack_type = FPack;
     using printer_type = Printer;
 
-    preview_type& preview;
+    pre_printing_type& pre;
     FPack facets;
     Arg arg;
 };
 ----
 ////
 Compile-time requirements::
-* `Preview` is an instance of the `{pre_printing}` class template.
+* `PrePriting` is an instance of the `{pre_printing}` class template.
 ////
 
 === Function template `make_default_arg_printer_input` [[make_default_arg_printer_input]]

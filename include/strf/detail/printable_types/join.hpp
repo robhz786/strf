@@ -41,7 +41,7 @@ public:
         , strf::detail::aligned_join_printer<CharT, Preview, FPack, FwdArgs...>
         , strf::detail::join_printer<CharT, Preview, FPack, FwdArgs...> >;
 
-    Preview& preview;
+    Preview& pre;
     FPack facets;
     strf::value_with_formatters
         < strf::detail::join_printing<FwdArgs...>
@@ -150,10 +150,10 @@ public:
         new (printers_ptr_()) printers_tuple_{input.arg.value().args, preview, input.facets};
         fillcount_ = preview.remaining_width().round();
         STRF_IF_CONSTEXPR (static_cast<bool>(PrecalcSize)) {
-            input.preview.add_size(preview.accumulated_size());
+            input.pre.add_size(preview.accumulated_size());
             if (fillcount_ > 0) {
                 auto fcharsize = charset.encoded_char_size(afmt_.fill);
-                input.preview.add_size(fillcount_ * fcharsize);
+                input.pre.add_size(fillcount_ * fcharsize);
             }
         }
     }
@@ -171,9 +171,9 @@ public:
         encode_fill_func_ = charset.encode_fill_func();
         strf::width_t wmax = afmt_.width;
         strf::width_t diff = 0;
-        if (input.preview.remaining_width() > afmt_.width) {
-            wmax = input.preview.remaining_width();
-            diff = input.preview.remaining_width() - afmt_.width;
+        if (input.pre.remaining_width() > afmt_.width) {
+            wmax = input.pre.remaining_width();
+            diff = input.pre.remaining_width() - afmt_.width;
         }
         strf::pre_printing<PrecalcSize, strf::precalc_width::yes> preview{wmax};
         // to-do: what if the line below throws ?
@@ -182,12 +182,12 @@ public:
             fillcount_ = (preview.remaining_width() - diff).round();
         }
         width_t width = fillcount_ + wmax - preview.remaining_width();
-        input.preview.subtract_width(width);
+        input.pre.subtract_width(width);
         STRF_IF_CONSTEXPR (static_cast<bool>(PrecalcSize)) {
-            input.preview.add_size(preview.accumulated_size());
+            input.pre.add_size(preview.accumulated_size());
             if (fillcount_ > 0) {
                 auto fcharsize = charset.encoded_char_size(afmt_.fill);
-                input.preview.add_size( fillcount_ * fcharsize);
+                input.pre.add_size( fillcount_ * fcharsize);
             }
         }
     }
@@ -346,7 +346,7 @@ public:
               < CharT, Preview, FPack2, false, FwdArgs... >& input )
         : strf::detail::join_printer_impl
             < CharT, strf::arg_printer_type<CharT, Preview, FPack, FwdArgs>... >
-            ( input.arg.value().args, input.preview, input.facets )
+            ( input.arg.value().args, input.pre, input.facets )
     {
     }
 

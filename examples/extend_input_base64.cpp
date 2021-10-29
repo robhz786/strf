@@ -110,7 +110,7 @@ public:
         ( const strf::usual_arg_printer_input<T...>& input)
         : base64_printer
             ( strf::use_facet<base64_facet_c, base64_facet_c>(input.facets)
-            , input.preview
+            , input.pre
             , input.arg )
     {
     }

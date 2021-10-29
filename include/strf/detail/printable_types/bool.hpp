@@ -67,8 +67,8 @@ public:
         : value_(input.arg)
         , lettercase_(strf::use_facet<strf::lettercase_c, bool>(input.facets))
     {
-        input.preview.subtract_width(5u - (int)input.arg);
-        input.preview.add_size(5 - (int)input.arg);
+        input.pre.subtract_width(5u - (int)input.arg);
+        input.pre.add_size(5 - (int)input.arg);
     }
 
     void STRF_HD print_to(strf::destination<CharT>& dest) const override;
@@ -122,12 +122,12 @@ public:
         if (fmt_width > w) {
             encode_fill_ = charset.encode_fill_func();
             fillcount_ = static_cast<std::uint16_t>(fmt_width - w);
-            input.preview.subtract_width(fmt_width);
-            input.preview.add_size(w + fillcount_ * charset.encoded_char_size(afmt_.fill));
+            input.pre.subtract_width(fmt_width);
+            input.pre.add_size(w + fillcount_ * charset.encoded_char_size(afmt_.fill));
         } else {
             fillcount_ = 0;
-            input.preview.subtract_width(w);
-            input.preview.add_size(w);
+            input.pre.subtract_width(w);
+            input.pre.add_size(w);
         }
     }
 

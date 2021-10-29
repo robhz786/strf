@@ -81,7 +81,7 @@ public:
     STRF_HD facets_pack_printer
         ( const strf::usual_arg_printer_input<T...>& input )
         : fp_{input.facets, input.arg.fp}
-        , printers_{input.arg.args, input.preview, fp_}
+        , printers_{input.arg.args, input.pre, fp_}
     {
     }
 

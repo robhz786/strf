@@ -116,7 +116,7 @@ public:
         auto encoding = use_facet<strf::charset_c<CharT>, xxx::ipv6address>(input.facets);
 
         encode_fill_fn_ = encoding.encode_fill_func();
-        init_(input.preview, encoding);
+        init_(input.pre, encoding);
     }
 
     void print_to(strf::destination<CharT>& dest) const override;

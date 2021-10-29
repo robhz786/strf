@@ -15,8 +15,8 @@ public:
         ( const strf::usual_arg_printer_input<T...>& input )
         : value_(input.arg)
     {
-        input.preview.subtract_width(2 + (int)input.arg);
-        input.preview.add_size(2 + (int)input.arg);
+        input.pre.subtract_width(2 + (int)input.arg);
+        input.pre.add_size(2 + (int)input.arg);
     }
 
     void STRF_HD print_to(strf::destination<CharT>& dest) const override

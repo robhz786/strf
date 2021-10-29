@@ -196,7 +196,7 @@ inline std_complex_printer<CharT, FloatT>::std_complex_printer
     , form_(strf::use_facet<complex_form_c, std::complex<FloatT>>(x.facets))
     , coordinates_(::complex_coordinates(form_, x.arg))
 {
-    preview_( x.preview
+    preview_( x.pre
             , strf::use_facet<strf::width_calculator_c, std::complex<FloatT>>(x.facets) );
 }
 
@@ -269,7 +269,7 @@ public:
         , alignment_(x.arg.get_alignment_format().alignment)
     {
         init_fillcount_and_preview_
-            ( x.preview
+            ( x.pre
             , strf::use_facet<strf::width_calculator_c, complex_type_>(x.facets)
             , x.arg.width() );
     }

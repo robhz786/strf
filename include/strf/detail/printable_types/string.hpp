@@ -549,7 +549,7 @@ struct string_printer_input
     using printer_type = strf::detail::string_printer<CharT, CharT>;
 
     strf::detail::simple_string_view<CharT> arg;
-    Preview& preview;
+    Preview& pre;
     FPack facets;
 };
 
@@ -612,7 +612,7 @@ struct fmt_string_printer_input
         , strf::string_precision_formatter<HasPrecision>
         , strf::alignment_formatter_q<HasAlignment>
         , TranscodeFormatter > arg;
-    Preview& preview;
+    Preview& pre;
     FPack facets;
 };
 
@@ -760,11 +760,11 @@ public:
             auto&& wcalc = use_facet_<strf::width_calculator_c>(input.facets);
             auto w = wcalc.str_width
                 ( use_facet_<strf::charset_c<SrcCharT>>(input.facets)
-                , input.preview.remaining_width(), str_, len_
+                , input.pre.remaining_width(), str_, len_
                 , use_facet_<strf::surrogate_policy_c>(input.facets) );
-           input.preview.subtract_width(w);
+           input.pre.subtract_width(w);
         }
-        input.preview.add_size(input.arg.length());
+        input.pre.add_size(input.arg.length());
     }
 
     template < typename Preview, typename FPack, typename CvFormat >
@@ -779,13 +779,13 @@ public:
             auto&& wcalc = use_facet_<strf::width_calculator_c>(input.facets);
             auto w = wcalc.str_width
                 ( use_facet_<strf::charset_c<SrcCharT>>(input.facets)
-                , input.preview.remaining_width()
+                , input.pre.remaining_width()
                 , str_
                 , input.arg.value().size()
                 , use_facet_<strf::surrogate_policy_c>(input.facets) );
-           input.preview.subtract_width(w);
+           input.pre.subtract_width(w);
         }
-        input.preview.add_size(input.arg.value().size());
+        input.pre.add_size(input.arg.value().size());
     }
 
     template < typename Preview, typename FPack, typename CvFormat >
@@ -803,8 +803,8 @@ public:
             , input.arg.value().size()
             , use_facet_<strf::surrogate_policy_c>(input.facets) );
         len_ = res.pos;
-        input.preview.subtract_width(res.width);
-        input.preview.add_size(res.pos);
+        input.pre.subtract_width(res.width);
+        input.pre.add_size(res.pos);
     }
 
     STRF_HD void print_to(strf::destination<DestCharT>& dest) const override;
@@ -852,14 +852,14 @@ public:
         auto src_charset = use_facet_<strf::charset_c<SrcCharT>>(input.facets);
         auto dest_charset = use_facet_<strf::charset_c<DestCharT>>(input.facets);
         strf::width_t limit =
-            ( Preview::width_required && input.preview.remaining_width() > afmt_.width
-            ? input.preview.remaining_width()
+            ( Preview::width_required && input.pre.remaining_width() > afmt_.width
+            ? input.pre.remaining_width()
             : afmt_.width );
         auto surr_poli = use_facet_<strf::surrogate_policy_c>(input.facets);
         auto strw = wcalc.str_width(src_charset, limit, str_, len_, surr_poli);
         encode_fill_ = dest_charset.encode_fill_func();
-        auto fillcount = init_(input.preview, strw);
-        precalc_size_(input.preview, dest_charset, fillcount);
+        auto fillcount = init_(input.pre, strw);
+        precalc_size_(input.pre, dest_charset, fillcount);
     }
 
     template < typename Preview, typename FPack, typename CvFormat >
@@ -878,8 +878,8 @@ public:
             ( src_charset, input.arg.precision(), str_, input.arg.value().size(), surr_poli );
         len_ = res.pos;
         encode_fill_ = dest_charset.encode_fill_func();
-        auto fillcount = init_(input.preview, res.width);
-        precalc_size_(input.preview, dest_charset, fillcount);
+        auto fillcount = init_(input.pre, res.width);
+        precalc_size_(input.pre, dest_charset, fillcount);
     }
 
     STRF_HD ~aligned_string_printer();
@@ -1053,11 +1053,11 @@ public:
         auto dest_charset = use_facet_<strf::charset_c<DestCharT>, SrcCharT>(input.facets);
         STRF_IF_CONSTEXPR (Preview::width_required) {
             auto&& wcalc = use_facet_<strf::width_calculator_c, SrcCharT>(input.facets);
-            auto w = wcalc.str_width( src_charset, input.preview.remaining_width()
+            auto w = wcalc.str_width( src_charset, input.pre.remaining_width()
                                     , str_, len_, surr_poli_);
-            input.preview.subtract_width(w);
+            input.pre.subtract_width(w);
         }
-        init_(input.preview, src_charset, dest_charset);
+        init_(input.pre, src_charset, dest_charset);
     }
 
     template <typename Preview, typename FPack, typename CvFormat>
@@ -1076,8 +1076,8 @@ public:
             ( src_charset, input.arg.precision(), str_
             , input.arg.value().size(), surr_poli_ );
         len_ = res.pos;
-        input.preview.subtract_width(res.width);
-        init_( input.preview, src_charset
+        input.pre.subtract_width(res.width);
+        init_( input.pre, src_charset
              , use_facet_<strf::charset_c<DestCharT>, SrcCharT>(input.facets));
     }
 
@@ -1170,11 +1170,11 @@ public:
         auto src_charset = strf::detail::get_src_charset(input);
         auto&& wcalc = use_facet_<strf::width_calculator_c, SrcCharT>(input.facets);
         strf::width_t limit =
-            ( Preview::width_required && input.preview.remaining_width() > afmt_.width
-            ? input.preview.remaining_width()
+            ( Preview::width_required && input.pre.remaining_width() > afmt_.width
+            ? input.pre.remaining_width()
             : afmt_.width );
         auto str_width = wcalc.str_width(src_charset, limit, str_, len_, surr_poli_);
-        init_( input.preview, str_width, src_charset
+        init_( input.pre, str_width, src_charset
              , use_facet_<strf::charset_c<DestCharT>, SrcCharT>(input.facets) );
     }
 
@@ -1195,7 +1195,7 @@ public:
             ( src_charset, input.arg.precision(), str_
             , input.arg.value().size(), surr_poli_ );
         len_ = res.pos;
-        init_( input.preview, res.width, src_charset
+        init_( input.pre, res.width, src_charset
              , use_facet_<strf::charset_c<DestCharT>, SrcCharT>(input.facets) );
     }
 
