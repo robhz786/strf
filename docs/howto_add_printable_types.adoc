@@ -21,7 +21,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 :no_print_override:          <<strf_hpp#no_print_override,no_print_override>>
 :arg_printer:                <<strf_hpp#arg_printer,arg_printer>>
 :pre_printing:               <<strf_hpp#pre_printing,pre_printing>>
-:preview:                    <<strf_hpp#preview,preview>>
+:precalculate:               <<strf_hpp#precalculate,precalculate>>
 :value_with_formatters:      <<strf_hpp#value_with_formatters,value_with_formatters>>
 :make_arg_printer_input:         <<strf_hpp#make_arg_printer_input,make_arg_printer_input>>
 :strf_make_arg_printer_input:    <<strf_hpp#make_arg_printer_input,strf::make_arg_printer_input>>
@@ -923,7 +923,7 @@ For the floating point values, we can use the global function template
 `{pre}`, which we actually could use for the whole content . I mean, I could
 implement the `pre_` member function very similiarly to `print_to`,
 basically just replacing every `print(__args__...)` by
-`strf::preview(pp, facets, __args__...)`. But there is a more efficient
+`strf::precalculate(pp, facets, __args__...)`. But there is a more efficient
 implementation:
 ////
 
@@ -935,7 +935,7 @@ void std_complex_printer<CharT, FloatT>::pre_(Pre& pp, const WidthCalc& wcalc) c
 {
     // calculate the size and/or width of the floating-point values:
     auto facets = strf::pack(lettercase_, numpunct_, charset_);
-    strf::preview<CharT>(pp, facets, coordinates_.first, coordinates_.second);
+    strf::precalculate<CharT>(pp, facets, coordinates_.first, coordinates_.second);
 
     // calculate the size and/or width of the other characters:
     switch (form_) {

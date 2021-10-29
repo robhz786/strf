@@ -226,7 +226,7 @@ void std_complex_printer<CharT, FloatT>::preview_(Preview& pp, const WidthCalc& 
     }
 
     auto facets = strf::pack(lettercase_, numpunct_, encoding_);
-    strf::preview<CharT>(pp, facets, coordinates_.first, coordinates_.second);
+    strf::precalculate<CharT>(pp, facets, coordinates_.first, coordinates_.second);
 }
 
 template <typename CharT, typename FloatT>
@@ -342,7 +342,7 @@ void fmt_std_complex_printer<CharT, FloatT>::preview_without_fill_
     ( Preview& pp, WidthCalc wcalc) const
 {
     auto facets = strf::pack(wcalc, lettercase_, numpunct10_, numpunct16_, encoding_);
-    strf::preview<CharT>
+    strf::precalculate<CharT>
         ( pp, facets
         , strf::fmt(coordinates_.first).set_float_format(float_fmt_)
         , strf::fmt(coordinates_.second).set_float_format(float_fmt_) ) ;
@@ -626,19 +626,19 @@ void tests()
     // size and width pre-calculation
     {
         strf::full_pre_printing pp{strf::width_max};
-        strf::preview<char>(pp, strf::pack(), *strf::fmt(x));
+        strf::precalculate<char>(pp, strf::pack(), *strf::fmt(x));
         TEST_EQ(pp.accumulated_size(), 14);
         TEST_TRUE(strf::width_max - pp.remaining_width() == 14);
     }
     {
         strf::full_pre_printing pp{strf::width_max};
-        strf::preview<char>(pp, strf::pack(), *strf::fmt(x).algebric());
+        strf::precalculate<char>(pp, strf::pack(), *strf::fmt(x).algebric());
         TEST_EQ(pp.accumulated_size(), 17);
         TEST_TRUE(strf::width_max - pp.remaining_width() == 17);
     }
     {
         strf::full_pre_printing pp{strf::width_max};
-        strf::preview<char>(pp, strf::pack(), *strf::fmt(x).polar());
+        strf::precalculate<char>(pp, strf::pack(), *strf::fmt(x).polar());
         TEST_EQ(pp.accumulated_size(), 27);
         TEST_TRUE(strf::width_max - pp.remaining_width() == 25);
     }

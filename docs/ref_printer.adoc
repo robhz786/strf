@@ -561,7 +561,7 @@ Postcondition:: `remaining_width() == 0`
 ====
 
 
-=== Function template `preview` [[preview]]
+=== Function template `precalculate` [[precalculate]]
 
 [source,cpp,subs=normal]
 ----
@@ -570,7 +570,7 @@ template < typename CharT
          , <<pre_printing,precalc_width>> PrecalcWidth
          , typename\... FPE
          , typename\... Args >
-void preview
+void precalculate
     ( {pre_printing}<PrecalcSize, PrecalcWidth>& pp
     , const {facets_pack}<FPE\...>& facets
     , const Args&\... args );
