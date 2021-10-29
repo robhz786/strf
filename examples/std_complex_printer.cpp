@@ -282,7 +282,7 @@ private:
              , strf::precalc_width PrecalcWidth
              , typename WidthCalc >
     void init_fillcount_and_preview_
-        ( strf::pre_printing<PrecalcSize, PrecalcWidth>& preview
+        ( strf::preprinting<PrecalcSize, PrecalcWidth>& preview
         , WidthCalc wcalc
         , strf::width_t fmt_width );
 
@@ -307,14 +307,14 @@ private:
 template <typename CharT, typename FloatT>
 template <strf::precalc_size PrecalcSize, strf::precalc_width PrecalcWidth, typename WidthCalc>
 void fmt_std_complex_printer<CharT, FloatT>::init_fillcount_and_preview_
-    ( strf::pre_printing<PrecalcSize, PrecalcWidth>& preview
+    ( strf::preprinting<PrecalcSize, PrecalcWidth>& preview
     , WidthCalc wcalc
     , strf::width_t fmt_width )
 {
     strf::width_t fillchar_width = wcalc.char_width(strf::utf_t<char32_t>{}, fillchar_);
     if (fmt_width >= preview.remaining_width() || ! (bool)PrecalcWidth ) {
         preview.clear_remaining_width();
-        strf::pre_printing<PrecalcSize, strf::precalc_width::yes> sub_preview{fmt_width};
+        strf::preprinting<PrecalcSize, strf::precalc_width::yes> sub_preview{fmt_width};
         preview_without_fill_(sub_preview, wcalc);
         fillcount_ = static_cast<std::uint16_t>
             ((sub_preview.remaining_width() / fillchar_width).round());
@@ -625,19 +625,19 @@ void tests()
 
     // size and width pre-calculation
     {
-        strf::full_pre_printing pp{strf::width_max};
+        strf::full_preprinting pp{strf::width_max};
         strf::precalculate<char>(pp, strf::pack(), *strf::fmt(x));
         TEST_EQ(pp.accumulated_size(), 14);
         TEST_TRUE(strf::width_max - pp.remaining_width() == 14);
     }
     {
-        strf::full_pre_printing pp{strf::width_max};
+        strf::full_preprinting pp{strf::width_max};
         strf::precalculate<char>(pp, strf::pack(), *strf::fmt(x).algebric());
         TEST_EQ(pp.accumulated_size(), 17);
         TEST_TRUE(strf::width_max - pp.remaining_width() == 17);
     }
     {
-        strf::full_pre_printing pp{strf::width_max};
+        strf::full_preprinting pp{strf::width_max};
         strf::precalculate<char>(pp, strf::pack(), *strf::fmt(x).polar());
         TEST_EQ(pp.accumulated_size(), 27);
         TEST_TRUE(strf::width_max - pp.remaining_width() == 25);

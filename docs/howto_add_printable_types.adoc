@@ -20,7 +20,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 :print_override_c:           <<strf_hpp#print_override_c,print_override_c>>
 :no_print_override:          <<strf_hpp#no_print_override,no_print_override>>
 :arg_printer:                <<strf_hpp#arg_printer,arg_printer>>
-:pre_printing:               <<strf_hpp#pre_printing,pre_printing>>
+:preprinting:                <<strf_hpp#preprinting,preprinting>>
 :precalculate:               <<strf_hpp#precalculate,precalculate>>
 :value_with_formatters:      <<strf_hpp#value_with_formatters,value_with_formatters>>
 :make_arg_printer_input:         <<strf_hpp#make_arg_printer_input,make_arg_printer_input>>
@@ -132,7 +132,7 @@ struct printing_traits<std::complex<FloatT>> {
     If you just need/want to support one character type, like `char`,
     then use instead `strf::tag<char>` ( and remove the `typename CharT`
     from the template parameters list )
-<2> `Pre` is expected to be an instance of the `{pre_printing}`
+<2> `Pre` is expected to be an instance of the `{preprinting}`
 class template.
 <3> `FPack` is expected to be an instance of the `{facets_pack}` class template.
 `fp` contains the facet objects.
@@ -868,9 +868,9 @@ The type you choose to extract the charset facet object makes
 no difference since charset facets are not constrainable.
 
 Now, in addition to initialize the object, the constructor *must*
-do another thing. `{usual_arg_printer_input}` contains a `{pre_printing}`
+do another thing. `{usual_arg_printer_input}` contains a `{preprinting}`
 reference, named `pre`. When the first template argument of this
-`pre_printing` is `precalc_size::yes`, then
+`preprinting` is `precalc_size::yes`, then
 we must inform the size of the content that `print_to` writes.
 Actually, let me rephare that, because it's a little bit tricky:
 our constructor must inform
@@ -892,26 +892,26 @@ define your constructor with this:
 
 [source,cpp,subs=normal]
 ----
-using pre_t = typename strf::usual_arg_printer_input<T\...>::pre_printing_type;
-static_assert(! pre_t::<<strf_hpp#pre_printing,size_required>>);
+using pre_t = typename strf::usual_arg_printer_input<T\...>::preprinting_type;
+static_assert(! pre_t::<<strf_hpp#preprinting,size_required>>);
 ----
 That prevents your printable type to compile when the feature
 `<<tutorial#syntax,reserve_calc>>` is used,
 which may not be a problem in many cases.
 
 When the second template argument of this
-`pre_printing` is `precalc_width::yes`, then we must inform
+`preprinting` is `precalc_width::yes`, then we must inform
 `x.pre` the `width`. This happens only when your printable type
 is used it in an <<quick_reference#aligned_join,aligned join>>.
 So if you don't care about supporting that situation, you can just do:
 
 [source,cpp,subs=normal]
 ----
-using pre_t = typename strf::usual_arg_printer_input<T...>::pre_printing_type;
-static_assert(! pre_t::<<strf_hpp#pre_printing,width_required>>);
+using pre_t = typename strf::usual_arg_printer_input<T...>::preprinting_type;
+static_assert(! pre_t::<<strf_hpp#preprinting,width_required>>);
 
 // or, if you don't want to calculate the size either:
-static_assert(pre_t::<<strf_hpp#pre_printing,nothing_required>>);
+static_assert(pre_t::<<strf_hpp#preprinting,nothing_required>>);
 ----
 
 Fortunately, in our case, calculating the size and width is not that difficult.

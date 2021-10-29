@@ -9,7 +9,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 :arg_printer:      <<arg_printer,arg_printer>>
 :destination: <<destination_hpp#destination,destination>>
 :tag: <<tag,tag>>
-:pre_printing: <<pre_printing,pre_printing>>
+:preprinting: <<preprinting,preprinting>>
 :make_arg_printer_input: <<make_arg_printer_input,make_arg_printer_input>>
 
 
@@ -397,7 +397,7 @@ typename DestinationCreator::destination_type dest{&#95;dest&#95;creator.create(
 +
 [source,cpp,subs=normal]
 ----
-using pre_t = {pre_printing}<precalc_size::no, precalc_width::no>;
+using pre_t = {preprinting}<precalc_size::no, precalc_width::no>;
 pre_t pre;
 using printer_t = {arg_printer_type}<char_type, pre_t, FPack, Arg>;
 printer_t p{ {make_arg_printer_input}<char_type>(pre, &#95;fpack, arg) };
@@ -678,11 +678,11 @@ Compile-time requirements::
 - All types in `Args\...` are <<Printable,_Printable_>>.
 Effect::
 . Creates an object `pre` of type
-  `{pre_printing}<precalc_size::yes, precalc_width::no>`.
+  `{preprinting}<precalc_size::yes, precalc_width::no>`.
 +
 [source,cpp,subs=normal]
 ----
-using pre_type = {pre_printing}<precalc_size::yes, precalc_width::no>;
+using pre_type = {preprinting}<precalc_size::yes, precalc_width::no>;
 pre_type pre;
 ----
 . For each `arg` in `args\...`, creates an `arg_printer` object by doing:
@@ -731,7 +731,7 @@ Effect:: __to-do__
 +
 [source,cpp,subs=normal]
 ----
-pre_printing<precalc_size::yes, precalc_width::no> pre;
+preprinting<precalc_size::yes, precalc_width::no> pre;
 auto p = static_cast< const {arg_printer}<CharT>& >
     ( {arg_printer_type}<CharT, FPack, T>{ fpack, pre, x, {tag}<CharT>{} } )
 ----
@@ -1003,7 +1003,7 @@ decltype(auto) dest = &#95;dest&#95;creator.create(_size)
 +
 [source,cpp,subs=normal]
 ----
-using pre_t = {pre_printing}<precalc_size::no, precalc_width::no>;
+using pre_t = {preprinting}<precalc_size::no, precalc_width::no>;
 pre_t pre;
 using arg_printer_t = {arg_printer_type}<char_type, pre_t, FPack, Arg>;
 arg_printer_t p{ {make_arg_printer_input}<char_type>(pre, &#95;fpack, arg) };
@@ -1046,7 +1046,7 @@ decltype(auto) dest = &#95;dest&#95;creator.create(_size)
 auto p = static_cast< const {arg_printer}<CharT>& >
     ( {arg_printer_type}<CharT, FPack, T>{fpack, pre, x, chtag} )
 ----
-, where `pre` is an instance of `pre_printing<precalc_size::no, precalc_width::no>`,
+, where `pre` is an instance of `preprinting<precalc_size::no, precalc_width::no>`,
 abs `chtag` is an expression of type `{tag}<CharT>`.
 . Prints into `dest` the content according the <<tr_string,tr-string syntax>>
   and using the `p` objects.

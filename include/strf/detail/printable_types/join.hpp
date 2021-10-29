@@ -139,14 +139,14 @@ public:
     STRF_HD aligned_join_printer_impl
         ( const strf::detail::join_printer_input
               < CharT
-              , strf::pre_printing<PrecalcSize, strf::precalc_width::no>
+              , strf::preprinting<PrecalcSize, strf::precalc_width::no>
               , FPack
               , true, FwdArgs...>& input )
         : afmt_(input.arg.get_alignment_format())
     {
         auto charset = use_facet_<strf::charset_c<CharT>>(input.facets);
         encode_fill_func_ = charset.encode_fill_func();
-        strf::pre_printing<PrecalcSize, strf::precalc_width::yes> preview { afmt_.width };
+        strf::preprinting<PrecalcSize, strf::precalc_width::yes> preview { afmt_.width };
         new (printers_ptr_()) printers_tuple_{input.arg.value().args, preview, input.facets};
         fillcount_ = preview.remaining_width().round();
         STRF_IF_CONSTEXPR (static_cast<bool>(PrecalcSize)) {
@@ -162,7 +162,7 @@ public:
     STRF_HD aligned_join_printer_impl
         ( const strf::detail::join_printer_input
               < CharT
-              , strf::pre_printing<PrecalcSize, strf::precalc_width::yes>
+              , strf::preprinting<PrecalcSize, strf::precalc_width::yes>
               , FPack
               , true, FwdArgs...>& input )
         : afmt_(input.arg.get_alignment_format())
@@ -175,7 +175,7 @@ public:
             wmax = input.pre.remaining_width();
             diff = input.pre.remaining_width() - afmt_.width;
         }
-        strf::pre_printing<PrecalcSize, strf::precalc_width::yes> preview{wmax};
+        strf::preprinting<PrecalcSize, strf::precalc_width::yes> preview{wmax};
         // to-do: what if the line below throws ?
         new (printers_ptr_()) printers_tuple_{input.arg.value().args, preview, input.facets};
         if (preview.remaining_width() > diff) {
@@ -274,10 +274,10 @@ struct print_impl_with_width_precalc_;
 
 template < typename CharT, strf::precalc_size PrecalcSize, strf::precalc_width PrecalcWidth
          , typename FPack, typename Arg >
-struct print_impl_with_width_precalc_<CharT, pre_printing<PrecalcSize, PrecalcWidth>, FPack, Arg>
+struct print_impl_with_width_precalc_<CharT, preprinting<PrecalcSize, PrecalcWidth>, FPack, Arg>
 {
     using type = strf::arg_printer_type
-        < CharT, strf::pre_printing<PrecalcSize, strf::precalc_width::yes>, FPack, Arg >;
+        < CharT, strf::preprinting<PrecalcSize, strf::precalc_width::yes>, FPack, Arg >;
 };
 
 template<typename CharT, typename Preview, typename FPack, typename... Args>

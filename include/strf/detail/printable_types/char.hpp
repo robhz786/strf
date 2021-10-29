@@ -137,7 +137,7 @@ public:
         : ch_(static_cast<CharT>(input.arg))
     {
         input.pre.add_size(1);
-        using pre_t = typename strf::usual_arg_printer_input<CharT, T...>::pre_printing_type;
+        using pre_t = typename strf::usual_arg_printer_input<CharT, T...>::preprinting_type;
         STRF_IF_CONSTEXPR(pre_t::width_required) {
             auto&& wcalc = use_facet<strf::width_calculator_c, CharT>(input.facets);
             auto charset = use_facet<strf::charset_c<CharT>, CharT>(input.facets);
@@ -287,7 +287,7 @@ public:
         encode_char_f_ = encoding.encode_char_func();
         encoded_char_size_ = encoding.encoded_char_size(input.arg);
         input.pre.add_size(encoded_char_size_);
-        using pre_t = typename strf::usual_arg_printer_input<T...>::pre_printing_type;
+        using pre_t = typename strf::usual_arg_printer_input<T...>::preprinting_type;
         STRF_IF_CONSTEXPR (pre_t::width_required) {
             auto&& wcalc = use_facet<strf::width_calculator_c, char32_t>(input.facets);
             input.pre.subtract_width(wcalc.char_width(strf::utf_t<char32_t>{}, ch_));

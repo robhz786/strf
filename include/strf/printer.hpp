@@ -223,7 +223,7 @@ using preview_width STRF_DEPRECATED_MSG("preview_width was renamed to precalc_wi
     = precalc_width;
 
 template <strf::precalc_size SizeRequired, strf::precalc_width WidthRequired>
-class pre_printing
+class preprinting
     : public strf::size_accumulator<static_cast<bool>(SizeRequired)>
     , public strf::width_decumulator<static_cast<bool>(WidthRequired)>
 {
@@ -235,34 +235,34 @@ public:
     static constexpr bool something_required = size_required || width_required;
 
     template <strf::precalc_width W = WidthRequired>
-    STRF_HD constexpr explicit pre_printing
+    STRF_HD constexpr explicit preprinting
         ( strf::detail::enable_if_t<static_cast<bool>(W), strf::width_t> initial_width ) noexcept
         : strf::width_decumulator<true>{initial_width}
     {
     }
 
-    constexpr STRF_HD pre_printing() noexcept
+    constexpr STRF_HD preprinting() noexcept
     {
     }
 };
 
 
-using no_pre_printing
-    = strf::pre_printing<strf::precalc_size::no, strf::precalc_width::no>;
-using full_pre_printing
-    = strf::pre_printing<strf::precalc_size::yes, strf::precalc_width::yes>;
+using no_preprinting
+    = strf::preprinting<strf::precalc_size::no, strf::precalc_width::no>;
+using full_preprinting
+    = strf::preprinting<strf::precalc_size::yes, strf::precalc_width::yes>;
 
 template <strf::precalc_size SizeRequired, strf::precalc_width WidthRequired>
-using print_preview STRF_DEPRECATED_MSG("print_preview renamed to pre_printing")
-    = strf::pre_printing<SizeRequired, WidthRequired>;
+using print_preview STRF_DEPRECATED_MSG("print_preview renamed to preprinting")
+    = strf::preprinting<SizeRequired, WidthRequired>;
 
 using no_print_preview
-    STRF_DEPRECATED_MSG("no_print_preview renamed to no_pre_printing")
-    = strf::no_pre_printing;
+    STRF_DEPRECATED_MSG("no_print_preview renamed to no_preprinting")
+    = strf::no_preprinting;
 
 using print_size_and_width_preview
-    STRF_DEPRECATED_MSG("print_size_and_width_preview to fulll_pre_printing")
-    = strf::full_pre_printing;
+    STRF_DEPRECATED_MSG("print_size_and_width_preview to fulll_preprinting")
+    = strf::full_preprinting;
 
 namespace detail {
 
@@ -521,15 +521,15 @@ template< typename CharT
         , typename Arg
         , typename Printer >
 struct usual_arg_printer_input
-    < CharT, strf::pre_printing<PrecalcSize, PrecalcWidth>, FPack, Arg, Printer >
+    < CharT, strf::preprinting<PrecalcSize, PrecalcWidth>, FPack, Arg, Printer >
 {
     using char_type = CharT;
     using arg_type = Arg;
-    using pre_printing_type = strf::pre_printing<PrecalcSize, PrecalcWidth>;
+    using preprinting_type = strf::preprinting<PrecalcSize, PrecalcWidth>;
     using fpack_type = FPack;
     using printer_type = Printer;
 
-    pre_printing_type& pre;
+    preprinting_type& pre;
     FPack facets;
     Arg arg;
 };
@@ -1124,7 +1124,7 @@ template < typename CharT
          , strf::precalc_width WidthRequired
          , typename... FPE >
 STRF_HD void precalculate
-    ( strf::pre_printing<SizeRequired, WidthRequired>&
+    ( strf::preprinting<SizeRequired, WidthRequired>&
     , const strf::facets_pack<FPE...> &)
 {
 }
@@ -1134,7 +1134,7 @@ template < typename CharT
          , typename Arg
          , typename... Args >
 STRF_HD STRF_CONSTEXPR_IN_CXX14 void precalculate
-    ( strf::pre_printing<strf::precalc_size::no, strf::precalc_width::no>
+    ( strf::preprinting<strf::precalc_size::no, strf::precalc_width::no>
     , const strf::facets_pack<FPE...>&
     , const Arg&
     , const Args&... ) noexcept
@@ -1145,7 +1145,7 @@ namespace detail {
 
 template < typename CharT, typename... FPE >
 STRF_HD STRF_CONSTEXPR_IN_CXX14 void precalculate_only_width
-    ( strf::pre_printing<strf::precalc_size::no, strf::precalc_width::yes>&
+    ( strf::preprinting<strf::precalc_size::no, strf::precalc_width::yes>&
     , const strf::facets_pack<FPE...>& ) noexcept
 {
 }
@@ -1155,12 +1155,12 @@ template < typename CharT
          , typename Arg
          , typename... OtherArgs >
 STRF_HD void precalculate_only_width
-    ( strf::pre_printing<strf::precalc_size::no, strf::precalc_width::yes>& pp
+    ( strf::preprinting<strf::precalc_size::no, strf::precalc_width::yes>& pp
     , const strf::facets_pack<FPE...>& facets
     , const Arg& arg
     , const OtherArgs&... other_args )
 {
-    using preview_type = strf::pre_printing<strf::precalc_size::no, strf::precalc_width::yes>;
+    using preview_type = strf::preprinting<strf::precalc_size::no, strf::precalc_width::yes>;
 
     (void) strf::arg_printer_type<CharT, preview_type, strf::facets_pack<FPE...>, Arg>
         ( strf::make_arg_printer_input<CharT>(pp, facets, arg) );
@@ -1174,7 +1174,7 @@ STRF_HD void precalculate_only_width
 
 template <typename CharT, typename... FPE, typename... Args>
 STRF_HD void precalculate
-    ( strf::pre_printing<strf::precalc_size::no, strf::precalc_width::yes>& pp
+    ( strf::preprinting<strf::precalc_size::no, strf::precalc_width::yes>& pp
     , const strf::facets_pack<FPE...>& facets
     , const Args&... args )
 {
@@ -1198,11 +1198,11 @@ template < typename CharT
          , typename... FPE
          , typename... Args >
 STRF_HD void precalculate
-    ( strf::pre_printing<strf::precalc_size::yes, WidthRequired>& pp
+    ( strf::preprinting<strf::precalc_size::yes, WidthRequired>& pp
     , const strf::facets_pack<FPE...>& facets
     , const Args&... args )
 {
-    using preview_type = strf::pre_printing<strf::precalc_size::yes, WidthRequired>;
+    using preview_type = strf::preprinting<strf::precalc_size::yes, WidthRequired>;
     strf::detail::do_nothing_with
         ( strf::arg_printer_type<CharT, preview_type, strf::facets_pack<FPE...>, Args>
           ( strf::make_arg_printer_input<CharT>(pp, facets, args) ) ... );
@@ -1984,7 +1984,7 @@ STRF_HD read_uint_result<CharT> read_uint(const CharT* it, const CharT* end, std
 
 template <typename CharT>
 STRF_HD inline std::size_t tr_string_size
-    ( const strf::pre_printing<strf::precalc_size::no, strf::precalc_width::no>*
+    ( const strf::preprinting<strf::precalc_size::no, strf::precalc_width::no>*
     , std::size_t
     , const CharT*
     , const CharT*
@@ -1995,7 +1995,7 @@ STRF_HD inline std::size_t tr_string_size
 
 template <typename CharT>
 STRF_HD std::size_t tr_string_size
-    ( const strf::pre_printing<strf::precalc_size::yes, strf::precalc_width::no>* args_preview
+    ( const strf::preprinting<strf::precalc_size::yes, strf::precalc_width::no>* args_preview
     , std::size_t num_args
     , const CharT* it
     , const CharT* end
@@ -2170,8 +2170,8 @@ public:
 
     template <strf::precalc_size SizeRequested>
     STRF_HD tr_string_printer
-        ( strf::pre_printing<SizeRequested, strf::precalc_width::no>& preview
-        , const strf::pre_printing<SizeRequested, strf::precalc_width::no>* args_preview
+        ( strf::preprinting<SizeRequested, strf::precalc_width::no>& preview
+        , const strf::preprinting<SizeRequested, strf::precalc_width::no>* args_preview
         , std::initializer_list<const strf::arg_printer<char_type>*> printers
         , const char_type* tr_string
         , const char_type* tr_string_end
@@ -2473,20 +2473,20 @@ class printer_no_reserve
         < strf::printer_no_reserve
         , false
         , DestinationCreator
-        , strf::no_pre_printing
+        , strf::no_preprinting
         , FPack >
 {
     using common_ = strf::detail::printer_common
         < strf::printer_no_reserve
         , false
         , DestinationCreator
-        , strf::no_pre_printing
+        , strf::no_preprinting
         , FPack >;
 
     template <template <typename, typename> class, bool, class, class, class>
     friend class strf::detail::printer_common;
 
-    using preview_type_ = strf::no_pre_printing;
+    using preview_type_ = strf::no_preprinting;
     using finish_return_type_ = strf::detail::destination_finish_return_type<DestinationCreator, false>;
 
 public:
@@ -2594,20 +2594,20 @@ class printer_with_given_size
         < strf::printer_with_given_size
         , true
         , DestinationCreator
-        , strf::no_pre_printing
+        , strf::no_preprinting
         , FPack >
 {
     using common_ = strf::detail::printer_common
         < strf::printer_with_given_size
         , true
         , DestinationCreator
-        , strf::no_pre_printing
+        , strf::no_preprinting
         , FPack >;
 
     template < template <typename, typename> class, bool, class, class, class>
     friend class strf::detail::printer_common;
 
-    using preview_type_ = strf::no_pre_printing;
+    using preview_type_ = strf::no_preprinting;
     using finish_return_type_ = strf::detail::destination_finish_return_type<DestinationCreator, true>;
 
 public:
@@ -2716,21 +2716,21 @@ class printer_with_size_calc
         < strf::printer_with_size_calc
         , true
         , DestinationCreator
-        , strf::pre_printing<strf::precalc_size::yes, strf::precalc_width::no>
+        , strf::preprinting<strf::precalc_size::yes, strf::precalc_width::no>
         , FPack >
 {
     using common_ = strf::detail::printer_common
         < strf::printer_with_size_calc
         , true
         , DestinationCreator
-        , strf::pre_printing<strf::precalc_size::yes, strf::precalc_width::no>
+        , strf::preprinting<strf::precalc_size::yes, strf::precalc_width::no>
         , FPack >;
 
     template < template <typename, typename> class, bool, class, class, class>
     friend class strf::detail::printer_common;
 
     using preview_type_
-        = strf::pre_printing<strf::precalc_size::yes, strf::precalc_width::no>;
+        = strf::preprinting<strf::precalc_size::yes, strf::precalc_width::no>;
     using finish_return_type_ = strf::detail::destination_finish_return_type<DestinationCreator, true>;
 
 public:

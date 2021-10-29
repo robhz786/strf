@@ -9,7 +9,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 :arg_printer_type: <<arg_printer_type,arg_printer_type>>
 :printing_traits:  <<printing_traits,printing_traits>>
 
-:pre_printing: <<pre_printing, pre_printing>>
+:preprinting: <<preprinting, preprinting>>
 :facets_pack: <<facets_pack, facets_pack>>
 :value_with_formatters: <<value_with_formatters, value_with_formatters>>
 
@@ -121,7 +121,7 @@ Given
 * `T`, a _PrintingTraits_ type.
 * `CharT`, a character type
 * `fpack`, a value of type `{facets_pack}</{asterisk}\... {asterisk}/>`
-* `preview`, an lvalue of type `{pre_printing}</{asterisk}\... {asterisk}/>`
+* `preview`, an lvalue of type `{preprinting}</{asterisk}\... {asterisk}/>`
 * `v`, a value of type `T::forwarded_type` or `{value_with_formatters}<T, F\...>`,
    where `F\...` is such that `T::formatters` is an alias to `{tag}<F\...>`.
 
@@ -182,7 +182,7 @@ using forwarded_printable_type = typename {printing_traits_of}<T>::<<PrintingTra
 Given
 
 * `CharT`, a character type
-* `PrePriting`, an instance of the `{pre_printing}` class template
+* `PrePriting`, an instance of the `{preprinting}` class template
 * `X`, a _PrinterInput_ type for types `CharT` and `PrePriting`
 * `x`, a value of type `X`
 
@@ -197,7 +197,7 @@ A type alias to `CharT`.
 ====
 [source,cpp,subs=normal]
 ----
-T::pre_printing_type
+T::preprinting_type
 ----
 A type alias to `PrePriting`.
 ====
@@ -218,7 +218,7 @@ std::size_t predicted_size = x.pre.<<size_accumulator_accumulated_size,accumulat
 std::size_t dest_buff_space = dest.<<destination_hpp#output_buffer_buffer_space,buffer_space>>();
 static_cast<const printer<CharT>&>(p).<<arg_printer,print_to>>(dest);
 ----
-statisfies the following postconditions when `PrePriting::<<pre_printing,size_required>>` is `true`:
+statisfies the following postconditions when `PrePriting::<<preprinting,size_required>>` is `true`:
 
 *  if `predicted_size \<= dest_buff_space` is `true` then `dest.recycle_buffer()` is not called.
 ====
@@ -242,18 +242,18 @@ struct usual_arg_printer_input
 {
     using char_type = CharT;
     using arg_type = Arg;
-    using pre_printing_type = PrePriting;
+    using preprinting_type = PrePriting;
     using fpack_type = FPack;
     using printer_type = Printer;
 
-    pre_printing_type& pre;
+    preprinting_type& pre;
     FPack facets;
     Arg arg;
 };
 ----
 ////
 Compile-time requirements::
-* `PrePriting` is an instance of the `{pre_printing}` class template.
+* `PrePriting` is an instance of the `{preprinting}` class template.
 ////
 
 === Function template `make_default_arg_printer_input` [[make_default_arg_printer_input]]
@@ -390,7 +390,7 @@ public:
 } // namespace strf
 ----
 
-=== Class template `pre_printing` [[pre_printing]]
+=== Class template `preprinting` [[preprinting]]
 
 [source,cpp,subs=normal]
 ----
@@ -400,7 +400,7 @@ enum class precalc_width: bool { no = false, yes = true };
 enum class precalc_size : bool { no = false, yes = true };
 
 template <precalc_size PrecalcSize, precalc_width PrecalcWidth>
-class pre_printing
+class preprinting
     : public size_accumulator<static_cast<bool>(PrecalcSize)>
     , public width_decumulator<static_cast<bool>(PrecalcWidth)>
 {
@@ -411,8 +411,8 @@ public:
     static constexpr bool nothing_required = ! size_required && ! width_required;
     static constexpr bool something_required = size_required || width_required;
 
-    constexpr pre_printing() noexcept = default;
-    constexpr explicit pre_printing(<<width_t,width_t>> initial_width) noexcept;
+    constexpr preprinting() noexcept = default;
+    constexpr explicit preprinting(<<width_t,width_t>> initial_width) noexcept;
 };
 
 } // namespace strf
@@ -421,7 +421,7 @@ public:
 ====
 [source,cpp,subs=normal]
 ----
-constexpr pre_printing() noexcept;
+constexpr preprinting() noexcept;
 ----
 [horizontal]
 Effect:: Default-construct each of the base classes.
@@ -429,7 +429,7 @@ Effect:: Default-construct each of the base classes.
 ====
 [source,cpp,subs=normal]
 ----
-constexpr explicit pre_printing(<<width_t,width_t>> initial_width) noexcept;
+constexpr explicit preprinting(<<width_t,width_t>> initial_width) noexcept;
 ----
 Compile-time requirement:: `PrecalcWidth` is `precalc_width::yes`, otherwise this constructor
 does not participate in overload resolution.
@@ -566,12 +566,12 @@ Postcondition:: `remaining_width() == 0`
 [source,cpp,subs=normal]
 ----
 template < typename CharT
-         , <<pre_printing,precalc_size>> PrecalcSize
-         , <<pre_printing,precalc_width>> PrecalcWidth
+         , <<preprinting,precalc_size>> PrecalcSize
+         , <<preprinting,precalc_width>> PrecalcWidth
          , typename\... FPE
          , typename\... Args >
 void precalculate
-    ( {pre_printing}<PrecalcSize, PrecalcWidth>& pp
+    ( {preprinting}<PrecalcSize, PrecalcWidth>& pp
     , const {facets_pack}<FPE\...>& facets
     , const Args&\... args );
 ----
@@ -591,7 +591,7 @@ Effects::
 [source,cpp,subs=normal]
 ----
 (\..., {arg_printer_type}< CharT
-                      , {pre_printing}<PrecalcSize, PrecalcWidth>
+                      , {preprinting}<PrecalcSize, PrecalcWidth>
                       , facets_pack<FPE\...>
                       , Args >{{make_arg_printer_input}<CharT>(pp, facets, args)} );
 ----
