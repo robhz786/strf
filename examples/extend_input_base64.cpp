@@ -87,16 +87,16 @@ struct base64_printing
     using forwarded_type = base64_input;
     using formatters = strf::tag<base64_formatter>;
 
-    template <typename CharT, typename Preview, typename FPack>
+    template <typename CharT, typename PrePrinting, typename FPack>
     static auto make_input
         ( strf::tag<CharT>
-        , Preview& preview
+        , PrePrinting& pre
         , const FPack& fp
         , base64_input_with_formatters x )
         -> strf::usual_arg_printer_input
-            < CharT, Preview, FPack, base64_input_with_formatters, base64_printer<CharT> >
+            < CharT, PrePrinting, FPack, base64_input_with_formatters, base64_printer<CharT> >
     {
-        return {preview, fp, x};
+        return {pre, fp, x};
     }
 };
 
@@ -118,7 +118,7 @@ public:
     template <strf::precalc_size PrecalcSize>
     base64_printer
         ( base64_facet facet
-        , strf::preprinting<PrecalcSize, strf::precalc_width::no>& preview
+        , strf::preprinting<PrecalcSize, strf::precalc_width::no>& pre
         , const base64_input_with_formatters& fmt );
 
     void print_to(strf::destination<CharT>& dest) const override;
@@ -156,25 +156,25 @@ template <typename CharT>
 template <strf::precalc_size PrecalcSize>
 base64_printer<CharT>::base64_printer
     ( base64_facet facet
-    , strf::preprinting<PrecalcSize, strf::precalc_width::no>& preview
+    , strf::preprinting<PrecalcSize, strf::precalc_width::no>& pre
     , const base64_input_with_formatters& fmt )
     : facet_(facet)
     , fmt_(fmt)
 {
-    calc_size_(preview);
+    calc_size_(pre);
 }
 
 template <typename CharT>
-void base64_printer<CharT>::calc_size_(strf::size_accumulator<true>& preview) const
+void base64_printer<CharT>::calc_size_(strf::size_accumulator<true>& pre) const
 {
     std::size_t num_digits = 4 * (fmt_.value().num_bytes + 2) / 3;
-    preview.add_size(num_digits);
+    pre.add_size(num_digits);
     if (facet_.line_length > 0 && facet_.eol[0] != '\0') {
         std::size_t num_lines
             = (num_digits + facet_.line_length - 1)
             / facet_.line_length;
         std::size_t eol_size = 1 + (facet_.eol[1] != '\0');
-        preview.add_size(num_lines * (fmt_.indentation() + eol_size));
+        pre.add_size(num_lines * (fmt_.indentation() + eol_size));
     }
 }
 

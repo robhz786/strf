@@ -53,34 +53,34 @@ inline FloatT make_float
     return strf::detail::bit_cast<FloatT>(v);
 }
 
-struct preview_and_print_result {
+struct precalc_and_print_result {
     int count;
     int predicted_size;
     int predicted_width;
 };
 
 template <typename Arg>
-preview_and_print_result preview_and_print(char* buff, std::size_t buff_size, const Arg& arg) {
+precalc_and_print_result precalc_and_print(char* buff, std::size_t buff_size, const Arg& arg) {
 
     strf::width_t initial_width = (strf::width_t::max)();
-    strf::full_preprinting preview(initial_width);
-    auto printer_input = strf::make_arg_printer_input<char>(preview, strf::pack(), arg);
+    strf::full_preprinting pre(initial_width);
+    auto printer_input = strf::make_arg_printer_input<char>(pre, strf::pack(), arg);
     using arg_printer_type = typename decltype(printer_input)::printer_type;
     arg_printer_type printer{printer_input};
     strf::cstr_writer dest{buff, buff_size};
     printer.print_to(dest);
     auto end = dest.finish().ptr;
 
-    preview_and_print_result result;
+    precalc_and_print_result result;
     result.count = static_cast<int>(end - buff);
-    result.predicted_size = static_cast<int>(preview.accumulated_size());
-    result.predicted_width = (initial_width - preview.remaining_width()).round();
+    result.predicted_size = static_cast<int>(pre.accumulated_size());
+    result.predicted_width = (initial_width - pre.remaining_width()).round();
     return result;
 }
 
 template <std::size_t BuffSize, typename Arg>
-preview_and_print_result preview_and_print(char(&buff)[BuffSize], const Arg& arg) {
-    return preview_and_print(buff, BuffSize, arg);
+precalc_and_print_result precalc_and_print(char(&buff)[BuffSize], const Arg& arg) {
+    return precalc_and_print(buff, BuffSize, arg);
 }
 
 template <typename Arg>
@@ -91,7 +91,7 @@ int strf_print_and_check
     , std::size_t buff_size
     , const Arg& arg)
 {
-    auto r = preview_and_print(buff, buff_size, arg);
+    auto r = precalc_and_print(buff, buff_size, arg);
     bool t1 = r.count == r.predicted_size;
     bool t2 = r.count == r.predicted_size;
     if (!t1 || !t2) {
@@ -135,7 +135,7 @@ void test_vs_sprintf
 {
     char strf_buff[500];
     char sprintf_buff[500];
-    auto strf_result = preview_and_print(strf_buff, strf_arg);
+    auto strf_result = precalc_and_print(strf_buff, strf_arg);
 
     bool t1 = strf_result.count == strf_result.predicted_size;
     bool t2 = strf_result.count == strf_result.predicted_width;

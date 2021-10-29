@@ -24,10 +24,10 @@ struct printing_traits<xxx::point2D<FloatT>> {
 
     using formatters = strf::tag<strf::alignment_formatter, strf::float_formatter>;
 
-    template <typename CharT, typename Preview, typename FPack, typename... T>
+    template <typename CharT, typename PrePrinting, typename FPack, typename... T>
     constexpr static auto make_input
         ( strf::tag<CharT>
-        , Preview& preview
+        , PrePrinting& pre
         , const FPack& fp
         , strf::value_with_formatters<T...> arg ) noexcept
     {
@@ -39,7 +39,7 @@ struct printing_traits<xxx::point2D<FloatT>> {
             , strf::fmt(p.y).set_float_format(arg.get_float_format())
             , (CharT)')' )
             .set_alignment_format(arg.get_alignment_format());
-        return strf::make_arg_printer_input<CharT>(preview, fp, arg2);
+        return strf::make_arg_printer_input<CharT>(pre, fp, arg2);
     }
 };
 

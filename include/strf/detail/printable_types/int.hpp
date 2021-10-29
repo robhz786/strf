@@ -1181,77 +1181,77 @@ public:
     using formatters = strf::tag< strf::int_formatter
                                 , strf::alignment_formatter >;
 
-    template <typename CharT, typename Preview, typename FPack>
+    template <typename CharT, typename PrePrinting, typename FPack>
     constexpr STRF_HD static auto make_input
         ( strf::tag<CharT>
-        , Preview& preview
+        , PrePrinting& pre
         , const FPack& facets
         , IntT x ) noexcept
-        -> strf::detail::default_int_printer_input<CharT, Preview, IntT>
+        -> strf::detail::default_int_printer_input<CharT, PrePrinting, IntT>
     {
-        return {preview, facets, x};
+        return {pre, facets, x};
     }
 
-    template < typename CharT, typename Preview, typename FPack
+    template < typename CharT, typename PrePrinting, typename FPack
              , typename PTraits, int Base, bool HasAlignment >
     constexpr STRF_HD static auto make_input
         ( strf::tag<CharT>
-        , Preview& preview
+        , PrePrinting& pre
         , const FPack& facets
         , vwf_nopp_<PTraits, Base, HasAlignment> x ) noexcept
         -> strf::usual_arg_printer_input
-            < CharT, Preview, FPack, vwf_nopp_<PTraits, Base, HasAlignment>
+            < CharT, PrePrinting, FPack, vwf_nopp_<PTraits, Base, HasAlignment>
             , strf::detail::conditional_t
                 < HasAlignment
                 , strf::detail::int_printer_static_base_and_punct<CharT, Base, false>
                 , strf::detail::int_printer_no_pad0_nor_punct<CharT, Base> > >
     {
-        return {preview, facets, x};
+        return {pre, facets, x};
     }
 
-    template < typename CharT, typename Preview, typename FPack
+    template < typename CharT, typename PrePrinting, typename FPack
              , typename PTraits, int Base, bool Punctuate, bool HasAlignment >
     constexpr STRF_HD static auto make_input
         ( strf::tag<CharT>
-        , Preview& preview
+        , PrePrinting& pre
         , const FPack& facets
         , vwf_bp_<PTraits, Base, Punctuate, HasAlignment> x )
         -> strf::usual_arg_printer_input
-            < CharT, Preview, FPack, vwf_bp_<PTraits, Base, Punctuate, HasAlignment>
+            < CharT, PrePrinting, FPack, vwf_bp_<PTraits, Base, Punctuate, HasAlignment>
             , strf::detail::int_printer_static_base_and_punct<CharT, Base, Punctuate> >
     {
-        return {preview, facets, x};
+        return {pre, facets, x};
     }
 
-    template < typename CharT, typename Preview, typename FPack
+    template < typename CharT, typename PrePrinting, typename FPack
              , typename PTraits, bool HasAlignment>
     constexpr STRF_HD static auto make_input
         ( strf::tag<CharT>
-        , Preview& preview
+        , PrePrinting& pre
         , const FPack& facets
         , vwf_<PTraits, HasAlignment> x )
         -> strf::detail::conditional_t
             < ! HasAlignment
-            , strf::detail::default_int_printer_input<CharT, Preview, IntT>
+            , strf::detail::default_int_printer_input<CharT, PrePrinting, IntT>
             , strf::usual_arg_printer_input
-                < CharT, Preview, FPack, vwf_<PTraits, HasAlignment>
+                < CharT, PrePrinting, FPack, vwf_<PTraits, HasAlignment>
                 , strf::detail::aligned_default_int_printer<CharT> > >
     {
-        return {preview, facets, x};
+        return {pre, facets, x};
     }
 
-    template < typename CharT, typename Preview, typename FPack
+    template < typename CharT, typename PrePrinting, typename FPack
              , typename PTraits, bool HasAlignment>
     constexpr STRF_HD static auto make_input
         ( strf::tag<CharT>
-        , Preview& preview
+        , PrePrinting& pre
         , const FPack& facets
         , vwf_full_dynamic_<PTraits, HasAlignment> x )
         -> strf::usual_arg_printer_input
-                < CharT, Preview, FPack, vwf_full_dynamic_<PTraits, HasAlignment>
+                < CharT, PrePrinting, FPack, vwf_full_dynamic_<PTraits, HasAlignment>
                 , strf::detail::int_printer_full_dynamic<CharT> >
     {
-        return {preview, facets, x};
+        return {pre, facets, x};
     }
 };
 
@@ -1327,14 +1327,14 @@ struct voidptr_printing
     using forwarded_type = const void*;
     using formatters = strf::tag<strf::alignment_formatter>;
 
-    template <typename CharT, typename Preview, typename FPack>
+    template <typename CharT, typename PrePrinting, typename FPack>
     constexpr STRF_HD static auto make_input
         ( strf::tag<CharT>
-        , Preview& preview
+        , PrePrinting& pre
         , const FPack& facets
         , const void* x ) noexcept
     -> decltype( strf::make_default_arg_printer_input<CharT>
-                   ( preview
+                   ( pre
                    , strf::pack
                        ( strf::use_facet<strf::numpunct_c<16>, const void*>(facets)
                        , strf::lettercase::lower
@@ -1342,7 +1342,7 @@ struct voidptr_printing
                    , *strf::hex(strf::detail::bit_cast<std::size_t>(x)) ) )
     {
         return strf::make_default_arg_printer_input<CharT>
-            ( preview
+            ( pre
             , strf::pack
                 ( strf::use_facet<strf::numpunct_c<16>, const void*>(facets)
                 , strf::use_facet<strf::lettercase_c, const void*>(facets)
@@ -1350,14 +1350,14 @@ struct voidptr_printing
             , *strf::hex(strf::detail::bit_cast<std::size_t>(x)) );
     }
 
-    template <typename CharT, typename Preview, typename FPack, typename... T>
+    template <typename CharT, typename PrePrinting, typename FPack, typename... T>
     constexpr STRF_HD static auto make_input
         ( strf::tag<CharT>
-        , Preview& preview
+        , PrePrinting& pre
         , const FPack& facets
         , strf::value_with_formatters<T...> x ) noexcept
     -> decltype( strf::make_default_arg_printer_input<CharT>
-                   ( preview
+                   ( pre
                    , strf::pack
                        ( strf::use_facet<strf::numpunct_c<16>, const void*>(facets)
                        , strf::use_facet<strf::lettercase_c, const void*>(facets)
@@ -1366,7 +1366,7 @@ struct voidptr_printing
                                    .set_alignment_format(x.get_alignment_format()) ) )
     {
         return strf::make_default_arg_printer_input<CharT>
-            ( preview
+            ( pre
             , strf::pack
                 ( strf::use_facet<strf::numpunct_c<16>, const void*>(facets)
                 , strf::use_facet<strf::lettercase_c, const void*>(facets)
@@ -1399,10 +1399,10 @@ public:
 
 private:
 
-    template < typename Preview
+    template < typename PrePrinting
              , typename IntT
              , strf::detail::enable_if_t<std::is_signed<IntT>::value, int> = 0 >
-    STRF_HD void init_(Preview& preview, IntT value)
+    STRF_HD void init_(PrePrinting& pre, IntT value)
     {
         using uint = typename std::make_unsigned<IntT>::type;
         uint uvalue;
@@ -1415,20 +1415,20 @@ private:
         }
         uvalue_ = uvalue;
         digcount_ = strf::detail::count_digits<10>(uvalue);
-        preview.subtract_width(digcount_ + negative_);
-        preview.add_size(digcount_ + negative_);
+        pre.subtract_width(digcount_ + negative_);
+        pre.add_size(digcount_ + negative_);
     }
 
-   template < typename Preview
+   template < typename PrePrinting
             , typename UIntT
             , strf::detail::enable_if_t< ! std::is_signed<UIntT>::value, int> = 0 >
-    STRF_HD void init_(Preview& preview, UIntT value)
+    STRF_HD void init_(PrePrinting& pre, UIntT value)
     {
         uvalue_ = value;
         negative_ = false;
         digcount_ = strf::detail::count_digits<10>(value);
-        preview.subtract_width(digcount_);
-        preview.add_size(digcount_);
+        pre.subtract_width(digcount_);
+        pre.add_size(digcount_);
     }
 
     unsigned long long uvalue_;
@@ -2115,15 +2115,15 @@ public:
     {
     }
 
-    template <typename IntT, typename Preview, typename FPack>
+    template <typename IntT, typename PrePrinting, typename FPack>
     STRF_HD int_printer_static_base_and_punct
         ( IntT ivalue
         , int_format_static_base_and_punct<Base, true> ifmt
         , alignment_format afmt
-        , Preview& preview
+        , PrePrinting& pre
         , const FPack& facets )
         : int_printer_static_base_and_punct
-            ( ivalue, ifmt, afmt, preview
+            ( ivalue, ifmt, afmt, pre
             , strf::use_facet<lettercase_c, IntT>(facets)
             , strf::use_facet<numpunct_c<Base>, IntT>(facets).grouping()
             , strf::use_facet<numpunct_c<Base>, IntT>(facets).thousands_sep()
@@ -2131,12 +2131,12 @@ public:
     {
     }
 
-    template <typename IntT, typename Preview, typename Charset>
+    template <typename IntT, typename PrePrinting, typename Charset>
     STRF_HD int_printer_static_base_and_punct
         ( IntT ivalue
         , int_format_static_base_and_punct<Base, true> ifmt
         , alignment_format afmt
-        , Preview& preview
+        , PrePrinting& pre
         , strf::lettercase lc
         , strf::digits_grouping grp
         , char32_t thousands_sep
@@ -2150,13 +2150,13 @@ public:
         detail::init_1(data_, ifmt, ivalue);
         const auto w = detail::init_punct_fmt_int_printer_data<Base>
             (data_, charset.validate_func(), ifmt, afmt);
-        preview.subtract_width(w.sub_width + w.fillcount + data_.sepcount);
-        STRF_IF_CONSTEXPR (Preview::size_required) {
-            preview.add_size(w.sub_width);
+        pre.subtract_width(w.sub_width + w.fillcount + data_.sepcount);
+        STRF_IF_CONSTEXPR (PrePrinting::size_required) {
+            pre.add_size(w.sub_width);
             if (w.fillcount) {
-                preview.add_size(w.fillcount * charset.encoded_char_size(afmt.fill));
+                pre.add_size(w.fillcount * charset.encoded_char_size(afmt.fill));
             }
-            preview.add_size(data_.sepcount * data_.sepsize);
+            pre.add_size(data_.sepcount * data_.sepsize);
         }
     }
 

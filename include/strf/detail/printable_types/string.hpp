@@ -543,13 +543,13 @@ template <typename SrcCharT, typename DestCharT> class aligned_conv_string_print
 template <typename DestCharT> class conv_string_printer_variant;
 template <typename DestCharT> class aligned_conv_string_printer_variant;
 
-template <typename CharT, typename Preview, typename FPack>
+template <typename CharT, typename PrePrinting, typename FPack>
 struct string_printer_input
 {
     using printer_type = strf::detail::string_printer<CharT, CharT>;
 
     strf::detail::simple_string_view<CharT> arg;
-    Preview& pre;
+    PrePrinting& pre;
     FPack facets;
 };
 
@@ -597,7 +597,7 @@ struct string_printing;
 
 template < typename DestCharT, typename SrcCharT
          , bool HasPrecision, bool HasAlignment, typename TranscodeFormatter
-         , typename Preview, typename FPack >
+         , typename PrePrinting, typename FPack >
 struct fmt_string_printer_input
 {
     using printer_type = typename strf::detail::string_printer_type
@@ -612,7 +612,7 @@ struct fmt_string_printer_input
         , strf::string_precision_formatter<HasPrecision>
         , strf::alignment_formatter_q<HasAlignment>
         , TranscodeFormatter > arg;
-    Preview& pre;
+    PrePrinting& pre;
     FPack facets;
 };
 
@@ -625,26 +625,26 @@ struct string_printing
         , strf::alignment_formatter
         , strf::transcoding_formatter<SrcCharT> >;
 
-    template <typename DestCharT, typename Preview, typename FPack>
+    template <typename DestCharT, typename PrePrinting, typename FPack>
     constexpr STRF_HD static auto make_input
         ( strf::tag<DestCharT>
-        , Preview& preview
+        , PrePrinting& pre
         , const FPack& facets
         , forwarded_type x ) noexcept
-        -> strf::detail::string_printer_input<DestCharT, Preview, FPack>
+        -> strf::detail::string_printer_input<DestCharT, PrePrinting, FPack>
     {
         static_assert
             ( std::is_same<SrcCharT, DestCharT>::value
             , "Character type mismatch. Use `conv` or `sani` format function." );
 
-        return {x, preview, facets};
+        return {x, pre, facets};
     }
 
-    template < typename DestCharT, typename Preview, typename FPack
+    template < typename DestCharT, typename PrePrinting, typename FPack
              , bool HasPrecision, bool HasAlignment, typename TranscodeFormatter>
     constexpr STRF_HD static auto make_input
         ( strf::tag<DestCharT>
-        , Preview& preview
+        , PrePrinting& pre
         , const FPack& facets
         , const strf::value_with_formatters
             < string_printing<SrcCharT>
@@ -653,9 +653,9 @@ struct string_printing
             , TranscodeFormatter >& x ) noexcept
         -> strf::detail::fmt_string_printer_input
             < DestCharT, SrcCharT, HasPrecision, HasAlignment
-            , TranscodeFormatter, Preview, FPack >
+            , TranscodeFormatter, PrePrinting, FPack >
     {
-        return {x, preview, facets};
+        return {x, pre, facets};
     }
 };
 
@@ -750,13 +750,13 @@ class string_printer: public strf::arg_printer<DestCharT>
 public:
     static_assert(sizeof(SrcCharT) == sizeof(DestCharT), "");
 
-    template <typename Preview, typename FPack>
+    template <typename PrePrinting, typename FPack>
     STRF_CONSTEXPR_IN_CXX14 STRF_HD string_printer
-        ( const strf::detail::string_printer_input<SrcCharT, Preview, FPack>& input )
+        ( const strf::detail::string_printer_input<SrcCharT, PrePrinting, FPack>& input )
         : str_(input.arg.data())
         , len_(input.arg.length())
     {
-        STRF_IF_CONSTEXPR(Preview::width_required) {
+        STRF_IF_CONSTEXPR(PrePrinting::width_required) {
             auto&& wcalc = use_facet_<strf::width_calculator_c>(input.facets);
             auto w = wcalc.str_width
                 ( use_facet_<strf::charset_c<SrcCharT>>(input.facets)
@@ -767,15 +767,15 @@ public:
         input.pre.add_size(input.arg.length());
     }
 
-    template < typename Preview, typename FPack, typename CvFormat >
+    template < typename PrePrinting, typename FPack, typename CvFormat >
     STRF_CONSTEXPR_IN_CXX14 STRF_HD string_printer
         ( const strf::detail::fmt_string_printer_input
-            < DestCharT, SrcCharT, false, false, CvFormat, Preview, FPack >&
+            < DestCharT, SrcCharT, false, false, CvFormat, PrePrinting, FPack >&
             input )
         : str_(input.arg.value().data())
         , len_(input.arg.value().size())
     {
-        STRF_IF_CONSTEXPR(Preview::width_required) {
+        STRF_IF_CONSTEXPR(PrePrinting::width_required) {
             auto&& wcalc = use_facet_<strf::width_calculator_c>(input.facets);
             auto w = wcalc.str_width
                 ( use_facet_<strf::charset_c<SrcCharT>>(input.facets)
@@ -788,10 +788,10 @@ public:
         input.pre.add_size(input.arg.value().size());
     }
 
-    template < typename Preview, typename FPack, typename CvFormat >
+    template < typename PrePrinting, typename FPack, typename CvFormat >
     STRF_CONSTEXPR_IN_CXX14 STRF_HD string_printer
         ( const strf::detail::fmt_string_printer_input
-            < DestCharT, SrcCharT, true, false, CvFormat, Preview, FPack >&
+            < DestCharT, SrcCharT, true, false, CvFormat, PrePrinting, FPack >&
             input )
         : str_(input.arg.value().data())
     {
@@ -838,10 +838,10 @@ class aligned_string_printer: public strf::arg_printer<DestCharT>
 public:
     static_assert(sizeof(SrcCharT) == sizeof(DestCharT), "");
 
-    template < typename Preview, typename FPack, typename CvFormat >
+    template < typename PrePrinting, typename FPack, typename CvFormat >
     STRF_HD aligned_string_printer
         ( const strf::detail::fmt_string_printer_input
-            < DestCharT, SrcCharT, false, true, CvFormat, Preview, FPack >&
+            < DestCharT, SrcCharT, false, true, CvFormat, PrePrinting, FPack >&
             input )
         : str_(input.arg.value().data())
         , len_(input.arg.value().size())
@@ -852,7 +852,7 @@ public:
         auto src_charset = use_facet_<strf::charset_c<SrcCharT>>(input.facets);
         auto dest_charset = use_facet_<strf::charset_c<DestCharT>>(input.facets);
         strf::width_t limit =
-            ( Preview::width_required && input.pre.remaining_width() > afmt_.width
+            ( PrePrinting::width_required && input.pre.remaining_width() > afmt_.width
             ? input.pre.remaining_width()
             : afmt_.width );
         auto surr_poli = use_facet_<strf::surrogate_policy_c>(input.facets);
@@ -862,10 +862,10 @@ public:
         precalc_size_(input.pre, dest_charset, fillcount);
     }
 
-    template < typename Preview, typename FPack, typename CvFormat >
+    template < typename PrePrinting, typename FPack, typename CvFormat >
     STRF_HD aligned_string_printer
         ( const strf::detail::fmt_string_printer_input
-            < DestCharT, SrcCharT, true, true, CvFormat, Preview, FPack >&
+            < DestCharT, SrcCharT, true, true, CvFormat, PrePrinting, FPack >&
             input )
         : str_(input.arg.value().begin())
         , afmt_(input.arg.get_alignment_format())
@@ -905,16 +905,16 @@ private:
         return facets.template use_facet<Category, Tag>();
     }
 
-    template <typename Preview>
-    STRF_HD std::uint16_t init_(Preview&, strf::width_t strw);
+    template <typename PrePrinting>
+    STRF_HD std::uint16_t init_(PrePrinting&, strf::width_t strw);
 
     template <typename Charset>
-    STRF_HD void precalc_size_( strf::size_accumulator<true>& preview
+    STRF_HD void precalc_size_( strf::size_accumulator<true>& pre
                               , Charset charset, std::uint16_t fillcount )
     {
-        preview.add_size(len_);
+        pre.add_size(len_);
         if (fillcount > 0) {
-            preview.add_size(fillcount * charset.encoded_char_size(afmt_.fill));
+            pre.add_size(fillcount * charset.encoded_char_size(afmt_.fill));
         }
     }
 
@@ -930,9 +930,9 @@ STRF_HD aligned_string_printer<SrcCharT, DestCharT>::~aligned_string_printer()
 }
 
 template<typename SrcCharT, typename DestCharT>
-template <typename Preview>
+template <typename PrePrinting>
 inline STRF_HD std::uint16_t aligned_string_printer<SrcCharT, DestCharT>::init_
-    ( Preview& preview, strf::width_t strw )
+    ( PrePrinting& pre, strf::width_t strw )
 {
     if (afmt_.width > strw) {
         std::uint16_t fillcount = (afmt_.width - strw).round();
@@ -951,12 +951,12 @@ inline STRF_HD std::uint16_t aligned_string_printer<SrcCharT, DestCharT>::init_
                 left_fillcount_ = fillcount;
                 right_fillcount_ = 0;
         }
-        preview.subtract_width(strw + fillcount);
+        pre.subtract_width(strw + fillcount);
         return fillcount;
     } else {
         right_fillcount_ = 0;
         left_fillcount_ = 0;
-        preview.subtract_width(strw);
+        pre.subtract_width(strw);
         return 0;
     }
 }
@@ -974,12 +974,12 @@ void STRF_HD aligned_string_printer<SrcCharT, DestCharT>::print_to
     }
 }
 
-template < typename DestCharT, typename Preview, typename FPack
+template < typename DestCharT, typename PrePrinting, typename FPack
          , typename SrcCharT, bool HasP, bool HasA, typename SrcCharset >
 constexpr STRF_HD auto get_src_charset
     ( const strf::detail::fmt_string_printer_input
         < DestCharT, SrcCharT, HasP, HasA
-        , strf::transcoding_formatter_conv_with_charset<SrcCharset>, Preview, FPack>&
+        , strf::transcoding_formatter_conv_with_charset<SrcCharset>, PrePrinting, FPack>&
       input )
     -> decltype(input.arg.get_charset())
 {
@@ -988,12 +988,12 @@ constexpr STRF_HD auto get_src_charset
     return input.arg.get_charset();
 }
 
-template < typename DestCharT, typename Preview, typename FPack
+template < typename DestCharT, typename PrePrinting, typename FPack
          , typename SrcCharT, bool HasP, bool HasA, typename SrcCharset >
 constexpr STRF_HD auto get_src_charset
     ( const strf::detail::fmt_string_printer_input
         < DestCharT, SrcCharT, HasP, HasA
-        , strf::transcoding_formatter_sani_with_charset<SrcCharset>, Preview, FPack >&
+        , strf::transcoding_formatter_sani_with_charset<SrcCharset>, PrePrinting, FPack >&
       input )
     -> decltype(input.arg.get_charset())
 {
@@ -1002,12 +1002,12 @@ constexpr STRF_HD auto get_src_charset
     return input.arg.get_charset();
 }
 
-template < typename DestCharT, typename Preview, typename FPack
+template < typename DestCharT, typename PrePrinting, typename FPack
          , typename SrcCharT, bool HasP, bool HasA >
 constexpr STRF_HD auto get_src_charset
     ( const strf::detail::fmt_string_printer_input
         < DestCharT, SrcCharT, HasP, HasA
-        , strf::transcoding_formatter_conv<SrcCharT>, Preview, FPack >&
+        , strf::transcoding_formatter_conv<SrcCharT>, PrePrinting, FPack >&
       input )
     -> decltype(strf::use_facet
                    <strf::charset_c<SrcCharT>, strf::string_input_tag<SrcCharT>>
@@ -1018,12 +1018,12 @@ constexpr STRF_HD auto get_src_charset
         ( input.facets );
 }
 
-template < typename DestCharT, typename Preview, typename FPack
+template < typename DestCharT, typename PrePrinting, typename FPack
          , typename SrcCharT, bool HasP, bool HasA >
 constexpr STRF_HD auto get_src_charset
     ( const strf::detail::fmt_string_printer_input
         < DestCharT, SrcCharT, HasP, HasA
-        , strf::transcoding_formatter_sani<SrcCharT>, Preview, FPack >&
+        , strf::transcoding_formatter_sani<SrcCharT>, PrePrinting, FPack >&
       input )
     -> decltype(strf::use_facet
                    <strf::charset_c<SrcCharT>, strf::string_input_tag<SrcCharT>>
@@ -1039,10 +1039,10 @@ class conv_string_printer: public strf::arg_printer<DestCharT>
 {
 public:
 
-    template <typename Preview, typename FPack, typename CvFormat>
+    template <typename PrePrinting, typename FPack, typename CvFormat>
     STRF_HD conv_string_printer
         ( const strf::detail::fmt_string_printer_input
-            < DestCharT, SrcCharT, false, false, CvFormat, Preview, FPack >&
+            < DestCharT, SrcCharT, false, false, CvFormat, PrePrinting, FPack >&
             input )
         : str_(input.arg.value().data())
         , len_(input.arg.value().size())
@@ -1051,7 +1051,7 @@ public:
     {
         auto src_charset  = strf::detail::get_src_charset(input);
         auto dest_charset = use_facet_<strf::charset_c<DestCharT>, SrcCharT>(input.facets);
-        STRF_IF_CONSTEXPR (Preview::width_required) {
+        STRF_IF_CONSTEXPR (PrePrinting::width_required) {
             auto&& wcalc = use_facet_<strf::width_calculator_c, SrcCharT>(input.facets);
             auto w = wcalc.str_width( src_charset, input.pre.remaining_width()
                                     , str_, len_, surr_poli_);
@@ -1060,10 +1060,10 @@ public:
         init_(input.pre, src_charset, dest_charset);
     }
 
-    template <typename Preview, typename FPack, typename CvFormat>
+    template <typename PrePrinting, typename FPack, typename CvFormat>
     STRF_HD conv_string_printer
         ( const strf::detail::fmt_string_printer_input
-            < DestCharT, SrcCharT, true, false, CvFormat, Preview, FPack >&
+            < DestCharT, SrcCharT, true, false, CvFormat, PrePrinting, FPack >&
             input )
         : str_(input.arg.value().data())
         , inv_seq_notifier_(use_facet_<strf::invalid_seq_notifier_c, SrcCharT>(input.facets))
@@ -1087,8 +1087,8 @@ public:
 
 private:
 
-    template < typename Preview, typename SrcCharset, typename DestCharset >
-    STRF_HD void init_(Preview& preview, SrcCharset src_charset, DestCharset dest_charset)
+    template < typename PrePrinting, typename SrcCharset, typename DestCharset >
+    STRF_HD void init_(PrePrinting& pre, SrcCharset src_charset, DestCharset dest_charset)
     {
         auto transcoder = find_transcoder(src_charset, dest_charset);
         STRF_MAYBE_UNUSED(transcoder);
@@ -1097,7 +1097,7 @@ private:
             src_to_u32_ = src_charset.to_u32().transcode_func();
             u32_to_dest_ = dest_charset.from_u32().transcode_func();
         }
-        STRF_IF_CONSTEXPR (Preview::size_required) {
+        STRF_IF_CONSTEXPR (PrePrinting::size_required) {
             strf::transcode_size_f<SrcCharT>  transcode_size
                 = transcoder.transcode_size_func();
             std::size_t s = 0;
@@ -1109,7 +1109,7 @@ private:
                     , dest_charset.from_u32().transcode_size_func()
                     , str_, len_, inv_seq_notifier_, surr_poli_ );
             }
-            preview.add_size(s);
+            pre.add_size(s);
         }
     }
 
@@ -1156,10 +1156,10 @@ class aligned_conv_string_printer: public arg_printer<DestCharT>
 {
 public:
 
-    template <typename Preview, typename FPack, typename CvFormat>
+    template <typename PrePrinting, typename FPack, typename CvFormat>
     STRF_HD aligned_conv_string_printer
         ( const strf::detail::fmt_string_printer_input
-            < DestCharT, SrcCharT, false, true, CvFormat, Preview, FPack >&
+            < DestCharT, SrcCharT, false, true, CvFormat, PrePrinting, FPack >&
             input )
         : str_(input.arg.value().data())
         , len_(input.arg.value().size())
@@ -1170,7 +1170,7 @@ public:
         auto src_charset = strf::detail::get_src_charset(input);
         auto&& wcalc = use_facet_<strf::width_calculator_c, SrcCharT>(input.facets);
         strf::width_t limit =
-            ( Preview::width_required && input.pre.remaining_width() > afmt_.width
+            ( PrePrinting::width_required && input.pre.remaining_width() > afmt_.width
             ? input.pre.remaining_width()
             : afmt_.width );
         auto str_width = wcalc.str_width(src_charset, limit, str_, len_, surr_poli_);
@@ -1178,10 +1178,10 @@ public:
              , use_facet_<strf::charset_c<DestCharT>, SrcCharT>(input.facets) );
     }
 
-    template <typename Preview, typename FPack, typename CvFormat>
+    template <typename PrePrinting, typename FPack, typename CvFormat>
     STRF_HD aligned_conv_string_printer
         ( const strf::detail::fmt_string_printer_input
-            < DestCharT, SrcCharT, true, true, CvFormat, Preview, FPack >&
+            < DestCharT, SrcCharT, true, true, CvFormat, PrePrinting, FPack >&
             input )
         : str_(input.arg.value().data())
         , len_(input.arg.value().size())
@@ -1231,16 +1231,16 @@ private:
         return facets.template use_facet<Category, Tag>();
     }
 
-    template < typename Preview, typename SrcCharset, typename DestCharset>
+    template < typename PrePrinting, typename SrcCharset, typename DestCharset>
     STRF_HD void init_
-        ( Preview& preview, strf::width_t str_width
+        ( PrePrinting& pre, strf::width_t str_width
         , SrcCharset src_charset, DestCharset dest_charset );
 };
 
 template <typename SrcCharT, typename DestCharT>
-template <typename Preview, typename SrcCharset, typename DestCharset>
+template <typename PrePrinting, typename SrcCharset, typename DestCharset>
 void STRF_HD aligned_conv_string_printer<SrcCharT, DestCharT>::init_
-    ( Preview& preview, strf::width_t str_width
+    ( PrePrinting& pre, strf::width_t str_width
     , SrcCharset src_charset, DestCharset dest_charset )
 {
     encode_fill_ = dest_charset.encode_fill_func();
@@ -1269,13 +1269,13 @@ void STRF_HD aligned_conv_string_printer<SrcCharT, DestCharT>::init_
                 left_fillcount_ = fillcount;
                 right_fillcount_ = 0;
         }
-        preview.subtract_width(str_width + fillcount);
+        pre.subtract_width(str_width + fillcount);
     } else {
         right_fillcount_ = 0;
         left_fillcount_ = 0;
-        preview.subtract_width(str_width);
+        pre.subtract_width(str_width);
     }
-    STRF_IF_CONSTEXPR (Preview::size_required) {
+    STRF_IF_CONSTEXPR (PrePrinting::size_required) {
         std::size_t s = 0;
         strf::transcode_size_f<SrcCharT> transcode_size
                 = transcoder.transcode_size_func();
@@ -1290,7 +1290,7 @@ void STRF_HD aligned_conv_string_printer<SrcCharT, DestCharT>::init_
         if (fillcount > 0) {
             s += dest_charset.encoded_char_size(afmt_.fill) * fillcount;
         }
-        preview.add_size(s);
+        pre.add_size(s);
     }
 }
 
@@ -1407,11 +1407,11 @@ class conv_string_printer_variant
 {
 public:
 
-    template < typename Preview, typename FPack, typename SrcCharT
+    template < typename PrePrinting, typename FPack, typename SrcCharT
              , bool HasPrecision, typename CvFormat >
     STRF_HD conv_string_printer_variant
         ( const strf::detail::fmt_string_printer_input
-            < DestCharT, SrcCharT, HasPrecision, false, CvFormat, Preview, FPack >&
+            < DestCharT, SrcCharT, HasPrecision, false, CvFormat, PrePrinting, FPack >&
             input )
     {
         auto src_charset  = strf::detail::get_src_charset(input);
@@ -1461,11 +1461,11 @@ class aligned_conv_string_printer_variant
 {
 public:
 
-    template < typename Preview, typename FPack, typename SrcCharT
+    template < typename PrePrinting, typename FPack, typename SrcCharT
              , bool HasPrecision, typename CvFormat >
     STRF_HD aligned_conv_string_printer_variant
         ( const strf::detail::fmt_string_printer_input
-            < DestCharT, SrcCharT, HasPrecision, true, CvFormat, Preview, FPack >&
+            < DestCharT, SrcCharT, HasPrecision, true, CvFormat, PrePrinting, FPack >&
             input )
     {
         auto src_charset  = strf::detail::get_src_charset(input);

@@ -21,14 +21,14 @@ struct base_printing {
     using override_tag = const xxx::base<T>&;
     using forwarded_type = const xxx::base<T>&;
 
-    template <typename CharT, typename Preview, typename FPack>
+    template <typename CharT, typename PrePrinting, typename FPack>
     static auto make_input
         ( strf::tag<CharT>
-        , Preview& preview
+        , PrePrinting& pre
         , const FPack& fp
         , forwarded_type x ) noexcept
     {
-        return strf::make_default_arg_printer_input<CharT>(preview, fp, x.value);
+        return strf::make_default_arg_printer_input<CharT>(pre, fp, x.value);
     }
 };
 

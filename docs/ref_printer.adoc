@@ -121,7 +121,7 @@ Given
 * `T`, a _PrintingTraits_ type.
 * `CharT`, a character type
 * `fpack`, a value of type `{facets_pack}</{asterisk}\... {asterisk}/>`
-* `preview`, an lvalue of type `{preprinting}</{asterisk}\... {asterisk}/>`
+* `pre`, an lvalue of type `{preprinting}</{asterisk}\... {asterisk}/>`
 * `v`, a value of type `T::forwarded_type` or `{value_with_formatters}<T, F\...>`,
    where `F\...` is such that `T::formatters` is an alias to `{tag}<F\...>`.
 
@@ -129,11 +129,11 @@ The following syntax is satisfied:
 ====
 [source,cpp,subs=normal]
 ----
-T::make_input({tag}<CharT>{}, preview, fpack, v)
+T::make_input({tag}<CharT>{}, pre, fpack, v)
 ----
 [horizontal]
 Return type:: A _{PrinterInput}_ type.
-Return value:: A value `r` such that `&r.preview == &preview`
+Return value:: A value `r` such that `&r.pre == &pre`
 ====
 
 

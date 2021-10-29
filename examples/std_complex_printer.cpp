@@ -173,8 +173,8 @@ public:
 
 private:
 
-    template <typename Preview, typename WidthCalc>
-    void preview_(Preview& preview, const WidthCalc& wcalc) const;
+    template <typename PrePrinting, typename WidthCalc>
+    void preprinting_(PrePrinting& pre, const WidthCalc& wcalc) const;
 
     strf::dynamic_charset<CharT> encoding_;
     strf::numpunct<10> numpunct_;
@@ -196,13 +196,13 @@ inline std_complex_printer<CharT, FloatT>::std_complex_printer
     , form_(strf::use_facet<complex_form_c, std::complex<FloatT>>(x.facets))
     , coordinates_(::complex_coordinates(form_, x.arg))
 {
-    preview_( x.pre
+    preprinting_( x.pre
             , strf::use_facet<strf::width_calculator_c, std::complex<FloatT>>(x.facets) );
 }
 
 template <typename CharT, typename FloatT>
-template <typename Preview, typename WidthCalc>
-void std_complex_printer<CharT, FloatT>::preview_(Preview& pp, const WidthCalc& wcalc) const
+template <typename PrePrinting, typename WidthCalc>
+void std_complex_printer<CharT, FloatT>::preprinting_(PrePrinting& pp, const WidthCalc& wcalc) const
 {
     switch (form_) {
         case complex_form::algebric:
@@ -268,7 +268,7 @@ public:
         , fillchar_(x.arg.get_alignment_format().fill)
         , alignment_(x.arg.get_alignment_format().alignment)
     {
-        init_fillcount_and_preview_
+        init_fillcount_and_do_preprinting_
             ( x.pre
             , strf::use_facet<strf::width_calculator_c, complex_type_>(x.facets)
             , x.arg.width() );
@@ -281,15 +281,15 @@ private:
     template < strf::precalc_size PrecalcSize
              , strf::precalc_width PrecalcWidth
              , typename WidthCalc >
-    void init_fillcount_and_preview_
-        ( strf::preprinting<PrecalcSize, PrecalcWidth>& preview
+    void init_fillcount_and_do_preprinting_
+        ( strf::preprinting<PrecalcSize, PrecalcWidth>& pre
         , WidthCalc wcalc
         , strf::width_t fmt_width );
 
     void print_complex_value_( strf::destination<CharT>& dest ) const;
 
-    template <typename Preview, typename WidthCalc>
-    void preview_without_fill_(Preview& preview, WidthCalc wcalc) const;
+    template <typename PrePrinting, typename WidthCalc>
+    void do_preprinting_without_fill_(PrePrinting& pre, WidthCalc wcalc) const;
 
     strf::dynamic_charset<CharT> encoding_;
     strf::numpunct<10> numpunct10_;
@@ -306,40 +306,40 @@ private:
 
 template <typename CharT, typename FloatT>
 template <strf::precalc_size PrecalcSize, strf::precalc_width PrecalcWidth, typename WidthCalc>
-void fmt_std_complex_printer<CharT, FloatT>::init_fillcount_and_preview_
-    ( strf::preprinting<PrecalcSize, PrecalcWidth>& preview
+void fmt_std_complex_printer<CharT, FloatT>::init_fillcount_and_do_preprinting_
+    ( strf::preprinting<PrecalcSize, PrecalcWidth>& pre
     , WidthCalc wcalc
     , strf::width_t fmt_width )
 {
     strf::width_t fillchar_width = wcalc.char_width(strf::utf_t<char32_t>{}, fillchar_);
-    if (fmt_width >= preview.remaining_width() || ! (bool)PrecalcWidth ) {
-        preview.clear_remaining_width();
-        strf::preprinting<PrecalcSize, strf::precalc_width::yes> sub_preview{fmt_width};
-        preview_without_fill_(sub_preview, wcalc);
+    if (fmt_width >= pre.remaining_width() || ! (bool)PrecalcWidth ) {
+        pre.clear_remaining_width();
+        strf::preprinting<PrecalcSize, strf::precalc_width::yes> sub_pre{fmt_width};
+        do_preprinting_without_fill_(sub_pre, wcalc);
         fillcount_ = static_cast<std::uint16_t>
-            ((sub_preview.remaining_width() / fillchar_width).round());
-        preview.add_size(sub_preview.accumulated_size());
+            ((sub_pre.remaining_width() / fillchar_width).round());
+        pre.add_size(sub_pre.accumulated_size());
     } else {
-        auto previous_remaining_width = preview.remaining_width();
-        preview_without_fill_(preview, wcalc);
-        if (preview.remaining_width() > 0) {
-            auto content_width = previous_remaining_width - preview.remaining_width();
+        auto previous_remaining_width = pre.remaining_width();
+        do_preprinting_without_fill_(pre, wcalc);
+        if (pre.remaining_width() > 0) {
+            auto content_width = previous_remaining_width - pre.remaining_width();
             if (fmt_width > content_width) {
                 fillcount_ = static_cast<std::uint16_t>
                     (((fmt_width - content_width) / fillchar_width).round());
-                preview.subtract_width(fillcount_);
+                pre.subtract_width(fillcount_);
             }
         }
     }
     if (fillcount_ && static_cast<bool>(PrecalcSize)) {
-        preview.add_size(fillcount_ * encoding_.encoded_char_size(fillchar_));
+        pre.add_size(fillcount_ * encoding_.encoded_char_size(fillchar_));
     }
 }
 
 template <typename CharT, typename FloatT>
-template <typename Preview, typename WidthCalc>
-void fmt_std_complex_printer<CharT, FloatT>::preview_without_fill_
-    ( Preview& pp, WidthCalc wcalc) const
+template <typename PrePrinting, typename WidthCalc>
+void fmt_std_complex_printer<CharT, FloatT>::do_preprinting_without_fill_
+    ( PrePrinting& pp, WidthCalc wcalc) const
 {
     auto facets = strf::pack(wcalc, lettercase_, numpunct10_, numpunct16_, encoding_);
     strf::precalculate<CharT>
@@ -432,30 +432,30 @@ struct printing_traits<std::complex<FloatT>>
         , strf::float_formatter
         , strf::alignment_formatter >;
 
-    template <typename CharT, typename Preview, typename FPack>
+    template <typename CharT, typename PrePrinting, typename FPack>
     static auto make_input
         ( strf::tag<CharT>
-        , Preview& preview
+        , PrePrinting& pre
         , const FPack& fp
         , std::complex<FloatT> arg)
         -> strf::usual_arg_printer_input
-            < CharT, Preview, FPack, std::complex<FloatT>
+            < CharT, PrePrinting, FPack, std::complex<FloatT>
             , std_complex_printer<CharT, FloatT> >
     {
-        return {preview, fp, arg};
+        return {pre, fp, arg};
     }
 
-    template < typename CharT, typename Preview, typename FPack, typename... T >
+    template < typename CharT, typename PrePrinting, typename FPack, typename... T >
     static auto make_input
         ( strf::tag<CharT>
-        , Preview& preview
+        , PrePrinting& pre
         , const FPack& fp
         , strf::value_with_formatters<T...> arg )
         -> strf::usual_arg_printer_input
-            < CharT, Preview, FPack, strf::value_with_formatters<T...>
+            < CharT, PrePrinting, FPack, strf::value_with_formatters<T...>
             , fmt_std_complex_printer<CharT, FloatT> >
     {
-        return {preview, fp, arg};
+        return {pre, fp, arg};
     }
 };
 

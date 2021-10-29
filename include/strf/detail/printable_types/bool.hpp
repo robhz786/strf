@@ -24,30 +24,30 @@ struct printing_traits<bool>
     using forwarded_type = bool;
     using formatters = strf::tag<strf::alignment_formatter>;
 
-    template <typename CharT, typename Preview, typename FPack>
+    template <typename CharT, typename PrePrinting, typename FPack>
     constexpr STRF_HD static auto make_input
         ( strf::tag<CharT>
-        , Preview& preview
+        , PrePrinting& pre
         , const FPack& fp
         , bool x ) noexcept
         -> strf::usual_arg_printer_input
-            < CharT, Preview, FPack, bool, strf::detail::bool_printer<CharT> >
+            < CharT, PrePrinting, FPack, bool, strf::detail::bool_printer<CharT> >
     {
-        return {preview, fp, x};
+        return {pre, fp, x};
     }
 
-    template <typename CharT, typename Preview, typename FPack, typename... T>
+    template <typename CharT, typename PrePrinting, typename FPack, typename... T>
     constexpr STRF_HD static auto make_input
         ( strf::tag<CharT>
-        , Preview& preview
+        , PrePrinting& pre
         , const FPack& fp
         , strf::value_with_formatters<T...> x ) noexcept
         -> strf::usual_arg_printer_input
-            < CharT, Preview, FPack
+            < CharT, PrePrinting, FPack
             , strf::value_with_formatters<T...>
             , strf::detail::fmt_bool_printer<CharT> >
     {
-        return {preview, fp, x};
+        return {pre, fp, x};
     }
 };
 
