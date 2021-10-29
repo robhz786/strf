@@ -415,10 +415,6 @@ public:
     constexpr explicit pre_printing(<<width_t,width_t>> initial_width) noexcept;
 };
 
-using no_pre_printing = pre_printing<precalc_size::no, precalc_width::no>;
-using print_size_and_width_preview = pre_printing< precalc_size::yes
-                                                 , precalc_width::yes >;
-
 } // namespace strf
 ----
 ==== Constructors

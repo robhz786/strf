@@ -625,19 +625,19 @@ void tests()
 
     // size and width pre-calculation
     {
-        strf::print_size_and_width_preview pp{strf::width_max};
+        strf::full_pre_printing pp{strf::width_max};
         strf::preview<char>(pp, strf::pack(), *strf::fmt(x));
         TEST_EQ(pp.accumulated_size(), 14);
         TEST_TRUE(strf::width_max - pp.remaining_width() == 14);
     }
     {
-        strf::print_size_and_width_preview pp{strf::width_max};
+        strf::full_pre_printing pp{strf::width_max};
         strf::preview<char>(pp, strf::pack(), *strf::fmt(x).algebric());
         TEST_EQ(pp.accumulated_size(), 17);
         TEST_TRUE(strf::width_max - pp.remaining_width() == 17);
     }
     {
-        strf::print_size_and_width_preview pp{strf::width_max};
+        strf::full_pre_printing pp{strf::width_max};
         strf::preview<char>(pp, strf::pack(), *strf::fmt(x).polar());
         TEST_EQ(pp.accumulated_size(), 27);
         TEST_TRUE(strf::width_max - pp.remaining_width() == 25);

@@ -249,15 +249,20 @@ public:
 
 using no_pre_printing
     = strf::pre_printing<strf::precalc_size::no, strf::precalc_width::no>;
-using print_size_and_width_preview
+using full_pre_printing
     = strf::pre_printing<strf::precalc_size::yes, strf::precalc_width::yes>;
 
 template <strf::precalc_size SizeRequired, strf::precalc_width WidthRequired>
 using print_preview STRF_DEPRECATED_MSG("print_preview renamed to pre_printing")
     = strf::pre_printing<SizeRequired, WidthRequired>;
 
-using no_print_preview STRF_DEPRECATED_MSG("no_print_preview renamed to no_pre_printing")
+using no_print_preview
+    STRF_DEPRECATED_MSG("no_print_preview renamed to no_pre_printing")
     = strf::no_pre_printing;
+
+using print_size_and_width_preview
+    STRF_DEPRECATED_MSG("print_size_and_width_preview to fulll_pre_printing")
+    = strf::full_pre_printing;
 
 namespace detail {
 
