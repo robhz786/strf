@@ -282,7 +282,7 @@ private:
              , strf::preview_width PreviewWidth
              , typename WidthCalc >
     void init_fillcount_and_preview_
-        ( strf::print_preview<PreviewSize, PreviewWidth>& preview
+        ( strf::pre_printing<PreviewSize, PreviewWidth>& preview
         , WidthCalc wcalc
         , strf::width_t fmt_width );
 
@@ -307,14 +307,14 @@ private:
 template <typename CharT, typename FloatT>
 template <strf::preview_size PreviewSize, strf::preview_width PreviewWidth, typename WidthCalc>
 void fmt_std_complex_printer<CharT, FloatT>::init_fillcount_and_preview_
-    ( strf::print_preview<PreviewSize, PreviewWidth>& preview
+    ( strf::pre_printing<PreviewSize, PreviewWidth>& preview
     , WidthCalc wcalc
     , strf::width_t fmt_width )
 {
     strf::width_t fillchar_width = wcalc.char_width(strf::utf_t<char32_t>{}, fillchar_);
     if (fmt_width >= preview.remaining_width() || ! (bool)PreviewWidth ) {
         preview.clear_remaining_width();
-        strf::print_preview<PreviewSize, strf::preview_width::yes> sub_preview{fmt_width};
+        strf::pre_printing<PreviewSize, strf::preview_width::yes> sub_preview{fmt_width};
         preview_without_fill_(sub_preview, wcalc);
         fillcount_ = static_cast<std::uint16_t>
             ((sub_preview.remaining_width() / fillchar_width).round());
@@ -623,7 +623,7 @@ void tests()
         .with(strf::iso_8859_3<char>, punct, strf::uppercase)
         (* !strf::center(x, 40, '_').sci().polar());
 
-    // preview
+    // size and width pre-calculation
     {
         strf::print_size_and_width_preview pp{strf::width_max};
         strf::preview<char>(pp, strf::pack(), *strf::fmt(x));

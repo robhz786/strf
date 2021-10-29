@@ -118,7 +118,7 @@ public:
     template <strf::preview_size PreviewSize>
     base64_printer
         ( base64_facet facet
-        , strf::print_preview<PreviewSize, strf::preview_width::no>& preview
+        , strf::pre_printing<PreviewSize, strf::preview_width::no>& preview
         , const base64_input_with_formatters& fmt );
 
     void print_to(strf::destination<CharT>& dest) const override;
@@ -156,7 +156,7 @@ template <typename CharT>
 template <strf::preview_size PreviewSize>
 base64_printer<CharT>::base64_printer
     ( base64_facet facet
-    , strf::print_preview<PreviewSize, strf::preview_width::no>& preview
+    , strf::pre_printing<PreviewSize, strf::preview_width::no>& preview
     , const base64_input_with_formatters& fmt )
     : facet_(facet)
     , fmt_(fmt)

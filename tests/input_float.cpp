@@ -95,7 +95,7 @@ STRF_TEST_FUNC void test_floating_point(FloatT value)
     }
 #endif
     {
-        strf::print_preview<strf::preview_size::yes, strf::preview_width::yes> p{strf::width_max};
+        strf::pre_printing<strf::preview_size::yes, strf::preview_width::yes> p{strf::width_max};
         strf::preview<char>(p, strf::pack(), value);
         std::size_t content_size = res.ptr - buff;
         TEST_EQ(p.accumulated_size(), content_size);

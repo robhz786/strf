@@ -9,7 +9,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 :arg_printer_type: <<arg_printer_type,arg_printer_type>>
 :printing_traits:  <<printing_traits,printing_traits>>
 
-:print_preview: <<print_preview, print_preview>>
+:pre_printing: <<pre_printing, pre_printing>>
 :facets_pack: <<facets_pack, facets_pack>>
 :value_with_formatters: <<value_with_formatters, value_with_formatters>>
 
@@ -121,7 +121,7 @@ Given
 * `T`, a _PrintingTraits_ type.
 * `CharT`, a character type
 * `fpack`, a value of type `{facets_pack}</{asterisk}\... {asterisk}/>`
-* `preview`, an lvalue of type `{print_preview}</{asterisk}\... {asterisk}/>`
+* `preview`, an lvalue of type `{pre_printing}</{asterisk}\... {asterisk}/>`
 * `v`, a value of type `T::forwarded_type` or `{value_with_formatters}<T, F\...>`,
    where `F\...` is such that `T::formatters` is an alias to `{tag}<F\...>`.
 
@@ -182,7 +182,7 @@ using forwarded_printable_type = typename {printing_traits_of}<T>::<<PrintingTra
 Given
 
 * `CharT`, a character type
-* `Preview`, an instance of the `{print_preview}` class template
+* `Preview`, an instance of the `{pre_printing}` class template
 * `X`, a _PrinterInput_ type for types `CharT` and `Preview`
 * `x`, a value of type `X`
 
@@ -218,7 +218,7 @@ std::size_t predicted_size  = x.preview.<<size_preview_accumulated_size,accumula
 std::size_t dest_buff_space = dest.<<destination_hpp#output_buffer_buffer_space,buffer_space>>();
 static_cast<const printer<CharT>&>(p).<<arg_printer,print_to>>(dest);
 ----
-statisfies the following postconditions when `Preview::<<print_preview,size_required>>` is `true`:
+statisfies the following postconditions when `Preview::<<pre_printing,size_required>>` is `true`:
 
 *  if `predicted_size \<= dest_buff_space` is `true` then `dest.recycle_buffer()` is not called.
 ====
@@ -253,7 +253,7 @@ struct usual_arg_printer_input
 ----
 ////
 Compile-time requirements::
-* `Preview` is an instance of the `{print_preview}` class template.
+* `Preview` is an instance of the `{pre_printing}` class template.
 ////
 
 === Function template `make_default_arg_printer_input` [[make_default_arg_printer_input]]
@@ -262,19 +262,19 @@ Compile-time requirements::
 ----
 namespace strf {
 
-template <typename CharT, typename Preview, typename FPack, typename Arg>
+template <typename CharT, typename Pre, typename FPack, typename Arg>
 constexpr auto make_default_arg_printer_input
-    ( Preview& preview, const FPack& facets, const Arg& arg)
+    ( Pre& pre, const FPack& facets, const Arg& arg)
     noexcept(/{asterisk} see below\... {asterisk}/)
     \-> /{asterisk} see below\... {asterisk}/
 
 } // namespace strf
 ----
 
-The expression `make_default_arg_printer_input<CharT>(preview, facets, arg)` is equivalent to
+The expression `make_default_arg_printer_input<CharT>(pre, facets, arg)` is equivalent to
 [source,cpp,subs=normal]
 ----
-{printing_traits_of}<Arg>::<<PrintingTraits_functions,make_input>>({tag}<CharT>{}, preview, facets, arg);
+{printing_traits_of}<Arg>::<<PrintingTraits_functions,make_input>>({tag}<CharT>{}, pre, facets, arg);
 ----
 
 === Facet category `print_override_c` [[print_override_c]]
@@ -312,12 +312,12 @@ namespace strf {
 struct no_print_override {
     using category = print_override_c;
 
-    template <typename CharT, typename Preview, typename FPack, typename Arg>
+    template <typename CharT, typename Pre, typename FPack, typename Arg>
     constexpr static auto make_input
-        ( {tag}<CharT>{}, Preview& preview, const FPack& facets, Arg&& arg )
-        noexcept(noexcept({make_default_arg_printer_input}<CharT>(preview, facets, arg)))
+        ( {tag}<CharT>{}, Pre& pre, const FPack& facets, Arg&& arg )
+        noexcept(noexcept({make_default_arg_printer_input}<CharT>(pre, facets, arg)))
     {
-        return {make_default_arg_printer_input}<CharT>(preview, facets, arg);
+        return {make_default_arg_printer_input}<CharT>(pre, facets, arg);
     }
 };
 
@@ -330,8 +330,8 @@ struct no_print_override {
 ----
 namespace strf {
 
-template <typename CharT, typename Preview, typename FPack, typename Arg>
-constexpr /{asterisk}\...{asterisk}/ make_arg_printer_input(Preview& preview, const FPack& facets, const Arg& arg);
+template <typename CharT, typename Pre, typename FPack, typename Arg>
+constexpr /{asterisk}\...{asterisk}/ make_arg_printer_input(Pre& pre, const FPack& facets, const Arg& arg);
 
 } // namespace strf
 ----
@@ -342,14 +342,14 @@ If `{printing_traits_of}<Arg>::override_tag` is defined,
 ----
 {use_facet}< {print_override_c}
          , typename {printing_traits_of}<Arg>::override_tag >(facets)
-    .make_input({tag}<CharT>{}, preview, facets, arg);
+    .make_input({tag}<CharT>{}, pre, facets, arg);
 ----
 
 Otherwise, it returns
 
 [source,cpp,subs=normal]
 ----
-{printing_traits_of}<Arg>::make_input({tag}<CharT>{}, preview, facets, arg)
+{printing_traits_of}<Arg>::make_input({tag}<CharT>{}, pre, facets, arg)
 ----
 
 
@@ -359,15 +359,15 @@ Otherwise, it returns
 ----
 namespace strf {
 
-template <typename CharT, typename Preview, typename FPack, typename Arg>
+template <typename CharT, typename Pre, typename FPack, typename Arg>
 using printer_input_type = decltype
     ( {make_arg_printer_input}<CharT>
-        ( std::declval<Preview&>()
+        ( std::declval<Pre&>()
         , std::declval<const FPack&>()
         , std::declval<Arg>() ) );
 
-template <typename CharT, typename Preview, typename FPack, typename Arg>
-using arg_printer_type = typename printer_input_type<CharT, Preview, FPack, Arg>::printer_type;
+template <typename CharT, typename Pre, typename FPack, typename Arg>
+using arg_printer_type = typename printer_input_type<CharT, Pre, FPack, Arg>::printer_type;
 
 } // namespace strf
 ----
@@ -390,7 +390,7 @@ public:
 } // namespace strf
 ----
 
-=== Class template `print_preview` [[print_preview]]
+=== Class template `pre_printing` [[pre_printing]]
 
 [source,cpp,subs=normal]
 ----
@@ -400,7 +400,7 @@ enum class preview_width: bool { no = false, yes = true };
 enum class preview_size : bool { no = false, yes = true };
 
 template <preview_size SizeRequired, preview_width WidthRequired>
-class print_preview
+class pre_printing
     : public size_preview<static_cast<bool>(SizeRequired)>
     , public width_preview<static_cast<bool>(WidthRequired)>
 {
@@ -411,16 +411,13 @@ public:
     static constexpr bool nothing_required = ! size_required && ! width_required;
     static constexpr bool something_required = size_required || width_required;
 
-    constexpr print_preview() noexcept = default;
-    constexpr explicit print_preview(<<width_t,width_t>> initial_width) noexcept;
+    constexpr pre_printing() noexcept = default;
+    constexpr explicit pre_printing(<<width_t,width_t>> initial_width) noexcept;
 };
 
-
-using no_print_preview = print_preview<preview_size::no, preview_width::no>;
-using print_size_preview  = print_preview<preview_size::yes, preview_width::no>;
-using print_width_preview = print_preview<preview_size::no, preview_width::yes>;
-using print_size_and_width_preview = print_preview< preview_size::yes
-                                                  , preview_width::yes >;
+using no_pre_printing = pre_printing<preview_size::no, preview_width::no>;
+using print_size_and_width_preview = pre_printing< preview_size::yes
+                                                 , preview_width::yes >;
 
 } // namespace strf
 ----
@@ -428,7 +425,7 @@ using print_size_and_width_preview = print_preview< preview_size::yes
 ====
 [source,cpp,subs=normal]
 ----
-constexpr print_preview() noexcept;
+constexpr pre_printing() noexcept;
 ----
 [horizontal]
 Effect:: Default-construct each of the base classes.
@@ -436,7 +433,7 @@ Effect:: Default-construct each of the base classes.
 ====
 [source,cpp,subs=normal]
 ----
-constexpr explicit print_preview(<<width_t,width_t>> initial_width) noexcept;
+constexpr explicit pre_printing(<<width_t,width_t>> initial_width) noexcept;
 ----
 Compile-time requirement:: `WidthRequired` is `preview_width::yes`, otherwise this constructor
 does not participate in overload resolution.
@@ -573,12 +570,12 @@ Postcondition:: `remaining_width() == 0`
 [source,cpp,subs=normal]
 ----
 template < typename CharT
-         , <<print_preview,preview_size>> SizeRequired
-         , <<print_preview,preview_width>> WidthRequired
+         , <<pre_printing,preview_size>> SizeRequired
+         , <<pre_printing,preview_width>> WidthRequired
          , typename\... FPE
          , typename\... Args >
 void preview
-    ( {print_preview}<SizeRequired, WidthRequired>& pp
+    ( {pre_printing}<SizeRequired, WidthRequired>& pp
     , const {facets_pack}<FPE\...>& facets
     , const Args&\... args );
 ----
@@ -598,7 +595,7 @@ Effects::
 [source,cpp,subs=normal]
 ----
 (\..., {arg_printer_type}< CharT
-                      , {print_preview}<SizeRequired, WidthRequired>
+                      , {pre_printing}<SizeRequired, WidthRequired>
                       , facets_pack<FPE\...>
                       , Args >{{make_arg_printer_input}<CharT>(pp, facets, args)} );
 ----

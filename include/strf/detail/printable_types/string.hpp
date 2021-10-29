@@ -859,7 +859,7 @@ public:
         auto strw = wcalc.str_width(src_charset, limit, str_, len_, surr_poli);
         encode_fill_ = dest_charset.encode_fill_func();
         auto fillcount = init_(input.preview, strw);
-        preview_size_(input.preview, dest_charset, fillcount);
+        precalc_size_(input.preview, dest_charset, fillcount);
     }
 
     template < typename Preview, typename FPack, typename CvFormat >
@@ -879,7 +879,7 @@ public:
         len_ = res.pos;
         encode_fill_ = dest_charset.encode_fill_func();
         auto fillcount = init_(input.preview, res.width);
-        preview_size_(input.preview, dest_charset, fillcount);
+        precalc_size_(input.preview, dest_charset, fillcount);
     }
 
     STRF_HD ~aligned_string_printer();
@@ -909,7 +909,7 @@ private:
     STRF_HD std::uint16_t init_(Preview&, strf::width_t strw);
 
     template <typename Charset>
-    STRF_HD void preview_size_( strf::size_preview<true>& preview
+    STRF_HD void precalc_size_( strf::size_preview<true>& preview
                               , Charset charset, std::uint16_t fillcount )
     {
         preview.add_size(len_);
@@ -919,7 +919,7 @@ private:
     }
 
     template <typename Charset>
-    STRF_HD void preview_size_(strf::size_preview<false>&, Charset, std::uint16_t)
+    STRF_HD void precalc_size_(strf::size_preview<false>&, Charset, std::uint16_t)
     {
     }
 };

@@ -67,24 +67,24 @@ struct italian_bool_facet
 {
     using category = strf::{print_override_c};
 
-    template <typename CharT, typename Preview, typename FPack>
+    template <typename CharT, typename Pre, typename FPack>
     constexpr static auto make_input
-        ( Preview& preview, const FPack&, bool x ) noexcept
+        ( Pre& pre, const FPack&, bool x ) noexcept
     {
         return strf::{make_arg_printer_input}<CharT>
-            ( preview
+            ( pre
             , strf::{pack}()
             , strf::conv(x ? "vero" : "falso") );
     }
 
-    template <typename CharT, typename Preview, typename FPack, typename... T>
+    template <typename CharT, typename Pre, typename FPack, typename... T>
     constexpr static auto make_input
-        ( Preview& preview
+        ( Pre& pre
         , const FPack& fp
         , strf::{value_with_formatters}<T\...> x ) noexcept
     {
         return strf::{make_arg_printer_input}<CharT>
-            ( preview
+            ( pre
             , fp
             , strf::conv(x.value() ? "vero" : "falso")
                 .{set_alignment_format}(x.{get_alignment_format}()) );

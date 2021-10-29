@@ -139,14 +139,14 @@ public:
     STRF_HD aligned_join_printer_impl
         ( const strf::detail::join_printer_input
               < CharT
-              , strf::print_preview<ReqSize, strf::preview_width::no>
+              , strf::pre_printing<ReqSize, strf::preview_width::no>
               , FPack
               , true, FwdArgs...>& input )
         : afmt_(input.arg.get_alignment_format())
     {
         auto charset = use_facet_<strf::charset_c<CharT>>(input.facets);
         encode_fill_func_ = charset.encode_fill_func();
-        strf::print_preview<ReqSize, strf::preview_width::yes> preview { afmt_.width };
+        strf::pre_printing<ReqSize, strf::preview_width::yes> preview { afmt_.width };
         new (printers_ptr_()) printers_tuple_{input.arg.value().args, preview, input.facets};
         fillcount_ = preview.remaining_width().round();
         STRF_IF_CONSTEXPR (static_cast<bool>(ReqSize)) {
@@ -163,7 +163,7 @@ public:
     STRF_HD aligned_join_printer_impl
         ( const strf::detail::join_printer_input
               < CharT
-              , strf::print_preview<ReqSize, strf::preview_width::yes>
+              , strf::pre_printing<ReqSize, strf::preview_width::yes>
               , FPack
               , true, FwdArgs...>& input )
         : afmt_(input.arg.get_alignment_format())
@@ -176,7 +176,7 @@ public:
             wmax = input.preview.remaining_width();
             diff = input.preview.remaining_width() - afmt_.width;
         }
-        strf::print_preview<ReqSize, strf::preview_width::yes> preview{wmax};
+        strf::pre_printing<ReqSize, strf::preview_width::yes> preview{wmax};
         // to-do: what if the line below throws ?
         new (printers_ptr_()) printers_tuple_{input.arg.value().args, preview, input.facets};
         if (preview.remaining_width() > diff) {
@@ -275,10 +275,10 @@ struct print_impl_with_width_preview_;
 
 template < typename CharT, strf::preview_size PrevSize, strf::preview_width PrevWidth
          , typename FPack, typename Arg >
-struct print_impl_with_width_preview_<CharT, print_preview<PrevSize, PrevWidth>, FPack, Arg>
+struct print_impl_with_width_preview_<CharT, pre_printing<PrevSize, PrevWidth>, FPack, Arg>
 {
     using type = strf::arg_printer_type
-        < CharT, strf::print_preview <PrevSize, strf::preview_width::yes>, FPack, Arg >;
+        < CharT, strf::pre_printing <PrevSize, strf::preview_width::yes>, FPack, Arg >;
 };
 
 template<typename CharT, typename Preview, typename FPack, typename... Args>

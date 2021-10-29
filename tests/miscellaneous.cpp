@@ -34,7 +34,7 @@ STRF_TEST_FUNC void test_miscellaneous()
         TEST_FALSE(dest.good());
     }
     {   // preview size
-        strf::print_preview<strf::preview_size::yes, strf::preview_width::no> p;
+        strf::pre_printing<strf::preview_size::yes, strf::preview_width::no> p;
 
         strf::preview<char>(p, strf::pack());
         TEST_EQ(p.accumulated_size(), 0);
@@ -44,7 +44,7 @@ STRF_TEST_FUNC void test_miscellaneous()
     }
 
     {   // preview size and width
-        strf::print_preview<strf::preview_size::yes, strf::preview_width::yes>p{1000};
+        strf::pre_printing<strf::preview_size::yes, strf::preview_width::yes>p{1000};
 
         strf::preview<char>(p, strf::pack());
         TEST_EQ(p.accumulated_size(), 0);
@@ -56,7 +56,7 @@ STRF_TEST_FUNC void test_miscellaneous()
     }
 
     {   // preview width
-        strf::print_preview<strf::preview_size::no, strf::preview_width::yes>p{8_w};
+        strf::pre_printing<strf::preview_size::no, strf::preview_width::yes>p{8_w};
 
         strf::preview<char>(p, strf::pack());
         TEST_TRUE(p.remaining_width() == 8_w);
@@ -69,22 +69,22 @@ STRF_TEST_FUNC void test_miscellaneous()
         TEST_TRUE(p.remaining_width() == 0);
     }
     {   // preview width
-        strf::print_preview<strf::preview_size::no, strf::preview_width::yes>p{8_w};
+        strf::pre_printing<strf::preview_size::no, strf::preview_width::yes>p{8_w};
         p.subtract_width(8);
         TEST_TRUE(p.remaining_width() == 0);
     }
     {   // preview width
-        strf::print_preview<strf::preview_size::no, strf::preview_width::yes>p{8_w};
+        strf::pre_printing<strf::preview_size::no, strf::preview_width::yes>p{8_w};
         p.subtract_width(9);
         TEST_TRUE(p.remaining_width() == 0);
     }
     {   // clear_remaining_width
-        strf::print_preview<strf::preview_size::no, strf::preview_width::yes> p{8_w};
+        strf::pre_printing<strf::preview_size::no, strf::preview_width::yes> p{8_w};
         p.clear_remaining_width();
         TEST_TRUE(p.remaining_width() == 0);
     }
     {   // no preview
-        strf::no_print_preview p;
+        strf::no_pre_printing p;
         strf::preview<char>(p, strf::pack());
         strf::preview<char>(p, strf::pack(), 1, 23, 456);
         TEST_EQ(p.accumulated_size(), 0);
