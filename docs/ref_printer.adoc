@@ -402,7 +402,7 @@ enum class precalc_size : bool { no = false, yes = true };
 template <precalc_size PrecalcSize, precalc_width PrecalcWidth>
 class pre_printing
     : public size_accumulator<static_cast<bool>(PrecalcSize)>
-    , public width_preview<static_cast<bool>(PrecalcWidth)>
+    , public width_decumulator<static_cast<bool>(PrecalcWidth)>
 {
 public:
 
@@ -437,7 +437,7 @@ constexpr explicit pre_printing(<<width_t,width_t>> initial_width) noexcept;
 ----
 Compile-time requirement:: `PrecalcWidth` is `precalc_width::yes`, otherwise this constructor
 does not participate in overload resolution.
-Effect:: Initializes `<<width_preview, width_preview>>` base
+Effect:: Initializes `<<width_decumulator, width_decumulator>>` base
 with `initial_width`.
 ====
 [[size_accumulator]]
@@ -494,19 +494,19 @@ Return value::
 When `Active` is `false`::: `0`
 When `Active` is `true` ::: The internally stored size value.
 ====
-[[width_preview]]
-=== Class template `width_preview`
+[[width_decumulator]]
+=== Class template `width_decumulator`
 
 [source,cpp,subs=normal]
 ----
 namespace strf {
 template <bool Active>
-class width_preview
+class width_decumulator
 {
 public:
-    constexpr width_preview() noexcept;
+    constexpr width_decumulator() noexcept;
 
-    explicit constexpr width_preview(<<width_t,width_t>> initial_width) noexcept;
+    explicit constexpr width_decumulator(<<width_t,width_t>> initial_width) noexcept;
 
     constexpr void subtract_width(<<width_t,width_t>>) noexcept;
 
@@ -525,7 +525,7 @@ public:
 ====
 [source,cpp]
 ----
-constexpr width_preview() noexcept;
+constexpr width_decumulator() noexcept;
 ----
 Postcondition:: `remaining_width() == 0`
 ====
@@ -533,7 +533,7 @@ Postcondition:: `remaining_width() == 0`
 ====
 [source,cpp,subs=normal]
 ----
-constexpr width_preview(<<width_t,width_t>> initial_width) noexcept;
+constexpr width_decumulator(<<width_t,width_t>> initial_width) noexcept;
 ----
 Compile-time requirement:: `Active` is `true`, otherwise this constructor
 does not participate in overload resolution.
@@ -602,7 +602,7 @@ Effects::
 * When `PrecalcSize` is `precalc_size::no` and `PrecalcWidth` is `precalc_width::yes`,
   for each argument `arg` in `args\...` instantiates the correponding `arg_printer`
   type with `pp`, `facets`, and `arg` ( again, using `{arg_printer_type}`  and
-  `{make_arg_printer_input}` ), while `pp.<<width_preview,remaining_width>>() > 0`
+  `{make_arg_printer_input}` ), while `pp.<<width_decumulator,remaining_width>>() > 0`
   is `true`.
   This implies that not necessarily all argument in `arg\...` are used.
 * When `PrecalcSize` is `precalc_size::no` and `PrecalcWidth` is `precalc_width::no`,

@@ -270,11 +270,11 @@ private:
 };
 
 template <typename CharT, typename Preview, typename FPack, typename Arg>
-struct print_impl_with_width_preview_;
+struct print_impl_with_width_precalc_;
 
 template < typename CharT, strf::precalc_size PrecalcSize, strf::precalc_width PrecalcWidth
          , typename FPack, typename Arg >
-struct print_impl_with_width_preview_<CharT, pre_printing<PrecalcSize, PrecalcWidth>, FPack, Arg>
+struct print_impl_with_width_precalc_<CharT, pre_printing<PrecalcSize, PrecalcWidth>, FPack, Arg>
 {
     using type = strf::arg_printer_type
         < CharT, strf::pre_printing<PrecalcSize, strf::precalc_width::yes>, FPack, Arg >;
@@ -283,7 +283,7 @@ struct print_impl_with_width_preview_<CharT, pre_printing<PrecalcSize, PrecalcWi
 template<typename CharT, typename Preview, typename FPack, typename... Args>
 using aligned_join_printer_impl_of = strf::detail::aligned_join_printer_impl
     < CharT
-    , typename print_impl_with_width_preview_<CharT, Preview, FPack, Args>::type... >;
+    , typename print_impl_with_width_precalc_<CharT, Preview, FPack, Args>::type... >;
 
 template<typename CharT, typename Preview, typename FPack, typename... FwdArgs>
 class aligned_join_printer

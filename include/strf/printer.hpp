@@ -72,18 +72,18 @@ struct is_tr_string<strf::is_tr_string_of<CharIn>> : std::true_type
 };
 
 template <bool Active>
-class width_preview;
+class width_decumulator;
 
 template <>
-class width_preview<true>
+class width_decumulator<true>
 {
 public:
 
-    explicit constexpr STRF_HD width_preview(strf::width_t initial_width) noexcept
+    explicit constexpr STRF_HD width_decumulator(strf::width_t initial_width) noexcept
         : width_(initial_width)
     {}
 
-    STRF_HD width_preview(const width_preview&) = delete;
+    STRF_HD width_decumulator(const width_decumulator&) = delete;
 
     STRF_CONSTEXPR_IN_CXX14 STRF_HD void subtract_width(strf::width_t w) noexcept
     {
@@ -139,11 +139,11 @@ private:
 };
 
 template <>
-class width_preview<false>
+class width_decumulator<false>
 {
 public:
 
-    constexpr STRF_HD width_preview() noexcept
+    constexpr STRF_HD width_decumulator() noexcept
     {
     }
 
@@ -225,7 +225,7 @@ using preview_width STRF_DEPRECATED_MSG("preview_width was renamed to precalc_wi
 template <strf::precalc_size SizeRequired, strf::precalc_width WidthRequired>
 class pre_printing
     : public strf::size_accumulator<static_cast<bool>(SizeRequired)>
-    , public strf::width_preview<static_cast<bool>(WidthRequired)>
+    , public strf::width_decumulator<static_cast<bool>(WidthRequired)>
 {
 public:
 
@@ -237,7 +237,7 @@ public:
     template <strf::precalc_width W = WidthRequired>
     STRF_HD constexpr explicit pre_printing
         ( strf::detail::enable_if_t<static_cast<bool>(W), strf::width_t> initial_width ) noexcept
-        : strf::width_preview<true>{initial_width}
+        : strf::width_decumulator<true>{initial_width}
     {
     }
 
