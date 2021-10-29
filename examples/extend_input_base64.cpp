@@ -125,11 +125,11 @@ public:
 
 private:
 
-    void calc_size_(strf::size_preview<false>&) const
+    void calc_size_(strf::size_accumulator<false>&) const
     {
     }
 
-    void calc_size_(strf::size_preview<true>&) const;
+    void calc_size_(strf::size_accumulator<true>&) const;
 
     void write_single_line_(strf::destination<CharT>& dest) const;
 
@@ -165,7 +165,7 @@ base64_printer<CharT>::base64_printer
 }
 
 template <typename CharT>
-void base64_printer<CharT>::calc_size_(strf::size_preview<true>& preview) const
+void base64_printer<CharT>::calc_size_(strf::size_accumulator<true>& preview) const
 {
     std::size_t num_digits = 4 * (fmt_.value().num_bytes + 2) / 3;
     preview.add_size(num_digits);

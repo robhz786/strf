@@ -909,7 +909,7 @@ private:
     STRF_HD std::uint16_t init_(Preview&, strf::width_t strw);
 
     template <typename Charset>
-    STRF_HD void precalc_size_( strf::size_preview<true>& preview
+    STRF_HD void precalc_size_( strf::size_accumulator<true>& preview
                               , Charset charset, std::uint16_t fillcount )
     {
         preview.add_size(len_);
@@ -919,7 +919,7 @@ private:
     }
 
     template <typename Charset>
-    STRF_HD void precalc_size_(strf::size_preview<false>&, Charset, std::uint16_t)
+    STRF_HD void precalc_size_(strf::size_accumulator<false>&, Charset, std::uint16_t)
     {
     }
 };

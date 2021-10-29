@@ -212,9 +212,9 @@ such that the sequence:
 
 [source,cpp,subs=normal]
 ----
-std::size_t s  = x.preview.<<size_preview_accumulated_size,accumulated_size>>();
+std::size_t s = x.preview.<<size_accumulator_accumulated_size,accumulated_size>>();
 typename T::printer_type p{x};
-std::size_t predicted_size  = x.preview.<<size_preview_accumulated_size,accumulated_size>>() - s;
+std::size_t predicted_size = x.preview.<<size_accumulator_accumulated_size,accumulated_size>>() - s;
 std::size_t dest_buff_space = dest.<<destination_hpp#output_buffer_buffer_space,buffer_space>>();
 static_cast<const printer<CharT>&>(p).<<arg_printer,print_to>>(dest);
 ----
@@ -401,7 +401,7 @@ enum class precalc_size : bool { no = false, yes = true };
 
 template <precalc_size PrecalcSize, precalc_width PrecalcWidth>
 class pre_printing
-    : public size_preview<static_cast<bool>(PrecalcSize)>
+    : public size_accumulator<static_cast<bool>(PrecalcSize)>
     , public width_preview<static_cast<bool>(PrecalcWidth)>
 {
 public:
@@ -440,17 +440,17 @@ does not participate in overload resolution.
 Effect:: Initializes `<<width_preview, width_preview>>` base
 with `initial_width`.
 ====
-[[size_preview]]
-=== Class template `size_preview`
+[[size_accumulator]]
+=== Class template `size_accumulator`
 [source,cpp,subs=normal]
 ----
 namespace strf {
 template <bool Active>
-class size_preview
+class size_accumulator
 {
 public:
-    explicit constexpr size_preview() noexcept;
-    explicit constexpr size_preview(std::size_t initial_size) noexcept;
+    explicit constexpr size_accumulator() noexcept;
+    explicit constexpr size_accumulator(std::size_t initial_size) noexcept;
 
     constexpr void add_size(std::size_t) noexcept;
     constexpr std::size_t accumulated_size() const noexcept;
@@ -462,14 +462,14 @@ public:
 ====
 [source,cpp]
 ----
-explicit constexpr size_preview() noexcept;
+explicit constexpr size_accumulator() noexcept;
 ----
 Postcondition:: `accumulated_size() == 0`
 ====
 ====
 [source,cpp]
 ----
-explicit constexpr size_preview(std::size_t initial_size) noexcept;
+explicit constexpr size_accumulator(std::size_t initial_size) noexcept;
 ----
 Compile-time requirement:: `Active` is `true`, otherwise this constructor
 does not participate in overload resolution.
@@ -484,7 +484,7 @@ Effects::
 When `Active` is `false`::: None
 When `Active` is `true` ::: The internally stored size value ( that is returned by `accumulated_size()` ) is incremented by `s`.
 ====
-[[size_preview_accumulated_size]]
+[[size_accumulator_accumulated_size]]
 ====
 [source,cpp]
 ----

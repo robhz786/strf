@@ -163,18 +163,18 @@ public:
 };
 
 template <bool Active>
-class size_preview;
+class size_accumulator;
 
 template <>
-class size_preview<true>
+class size_accumulator<true>
 {
 public:
-    explicit constexpr STRF_HD size_preview(std::size_t initial_size = 0) noexcept
+    explicit constexpr STRF_HD size_accumulator(std::size_t initial_size = 0) noexcept
         : size_(initial_size)
     {
     }
 
-    STRF_HD size_preview(const size_preview&) = delete;
+    STRF_HD size_accumulator(const size_accumulator&) = delete;
 
     STRF_CONSTEXPR_IN_CXX14 STRF_HD void add_size(std::size_t s) noexcept
     {
@@ -192,11 +192,11 @@ private:
 };
 
 template <>
-class size_preview<false>
+class size_accumulator<false>
 {
 public:
 
-    constexpr STRF_HD size_preview() noexcept
+    constexpr STRF_HD size_accumulator() noexcept
     {
     }
 
@@ -210,6 +210,10 @@ public:
     }
 };
 
+template <bool Active>
+using size_preview STRF_DEPRECATED_MSG("size_preview was renamed to size_accumulator")
+    = size_accumulator<Active>;
+
 enum class precalc_width: bool { no = false, yes = true };
 enum class precalc_size : bool { no = false, yes = true };
 
@@ -220,7 +224,7 @@ using preview_width STRF_DEPRECATED_MSG("preview_width was renamed to precalc_wi
 
 template <strf::precalc_size SizeRequired, strf::precalc_width WidthRequired>
 class pre_printing
-    : public strf::size_preview<static_cast<bool>(SizeRequired)>
+    : public strf::size_accumulator<static_cast<bool>(SizeRequired)>
     , public strf::width_preview<static_cast<bool>(WidthRequired)>
 {
 public:
