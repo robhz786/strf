@@ -396,18 +396,18 @@ public:
 ----
 namespace strf {
 
-enum class preview_width: bool { no = false, yes = true };
-enum class preview_size : bool { no = false, yes = true };
+enum class precalc_width: bool { no = false, yes = true };
+enum class precalc_size : bool { no = false, yes = true };
 
-template <preview_size SizeRequired, preview_width WidthRequired>
+template <precalc_size PrecalcSize, precalc_width PrecalcWidth>
 class pre_printing
-    : public size_preview<static_cast<bool>(SizeRequired)>
-    , public width_preview<static_cast<bool>(WidthRequired)>
+    : public size_preview<static_cast<bool>(PrecalcSize)>
+    , public width_preview<static_cast<bool>(PrecalcWidth)>
 {
 public:
 
-    static constexpr bool size_required = static_cast<bool>(SizeRequired);
-    static constexpr bool width_required = static_cast<bool>(WidthRequired);
+    static constexpr bool size_required = static_cast<bool>(PrecalcSize);
+    static constexpr bool width_required = static_cast<bool>(PrecalcWidth);
     static constexpr bool nothing_required = ! size_required && ! width_required;
     static constexpr bool something_required = size_required || width_required;
 
@@ -415,9 +415,9 @@ public:
     constexpr explicit pre_printing(<<width_t,width_t>> initial_width) noexcept;
 };
 
-using no_pre_printing = pre_printing<preview_size::no, preview_width::no>;
-using print_size_and_width_preview = pre_printing< preview_size::yes
-                                                 , preview_width::yes >;
+using no_pre_printing = pre_printing<precalc_size::no, precalc_width::no>;
+using print_size_and_width_preview = pre_printing< precalc_size::yes
+                                                 , precalc_width::yes >;
 
 } // namespace strf
 ----
@@ -435,7 +435,7 @@ Effect:: Default-construct each of the base classes.
 ----
 constexpr explicit pre_printing(<<width_t,width_t>> initial_width) noexcept;
 ----
-Compile-time requirement:: `WidthRequired` is `preview_width::yes`, otherwise this constructor
+Compile-time requirement:: `PrecalcWidth` is `precalc_width::yes`, otherwise this constructor
 does not participate in overload resolution.
 Effect:: Initializes `<<width_preview, width_preview>>` base
 with `initial_width`.
@@ -570,12 +570,12 @@ Postcondition:: `remaining_width() == 0`
 [source,cpp,subs=normal]
 ----
 template < typename CharT
-         , <<pre_printing,preview_size>> SizeRequired
-         , <<pre_printing,preview_width>> WidthRequired
+         , <<pre_printing,precalc_size>> PrecalcSize
+         , <<pre_printing,precalc_width>> PrecalcWidth
          , typename\... FPE
          , typename\... Args >
 void preview
-    ( {pre_printing}<SizeRequired, WidthRequired>& pp
+    ( {pre_printing}<PrecalcSize, PrecalcWidth>& pp
     , const {facets_pack}<FPE\...>& facets
     , const Args&\... args );
 ----
@@ -588,23 +588,23 @@ Compile-time requirements::
   ( since this is a requirement of `{facets_pack}` ).
 
 Effects::
-* When `SizeRequired` is `preview_size::yes`, for each argument `arg` in `args\...`
+* When `PrecalcSize` is `precalc_size::yes`, for each argument `arg` in `args\...`
   instantiates the correponding `arg_printer` type with `pp`, `facets`, and `arg`.
   This translates into the following expression:
 +
 [source,cpp,subs=normal]
 ----
 (\..., {arg_printer_type}< CharT
-                      , {pre_printing}<SizeRequired, WidthRequired>
+                      , {pre_printing}<PrecalcSize, PrecalcWidth>
                       , facets_pack<FPE\...>
                       , Args >{{make_arg_printer_input}<CharT>(pp, facets, args)} );
 ----
-* When `SizeRequired` is `preview_size::no` and `WidthRequired` is `preview_width::yes`,
+* When `PrecalcSize` is `precalc_size::no` and `PrecalcWidth` is `precalc_width::yes`,
   for each argument `arg` in `args\...` instantiates the correponding `arg_printer`
   type with `pp`, `facets`, and `arg` ( again, using `{arg_printer_type}`  and
   `{make_arg_printer_input}` ), while `pp.<<width_preview,remaining_width>>() > 0`
   is `true`.
   This implies that not necessarily all argument in `arg\...` are used.
-* When `SizeRequired` is `preview_size::no` and `WidthRequired` is `preview_width::no`,
+* When `PrecalcSize` is `precalc_size::no` and `PrecalcWidth` is `precalc_width::no`,
   does nothing
 

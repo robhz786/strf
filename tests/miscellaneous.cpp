@@ -34,7 +34,7 @@ STRF_TEST_FUNC void test_miscellaneous()
         TEST_FALSE(dest.good());
     }
     {   // preview size
-        strf::pre_printing<strf::preview_size::yes, strf::preview_width::no> p;
+        strf::pre_printing<strf::precalc_size::yes, strf::precalc_width::no> p;
 
         strf::preview<char>(p, strf::pack());
         TEST_EQ(p.accumulated_size(), 0);
@@ -44,7 +44,7 @@ STRF_TEST_FUNC void test_miscellaneous()
     }
 
     {   // preview size and width
-        strf::pre_printing<strf::preview_size::yes, strf::preview_width::yes>p{1000};
+        strf::pre_printing<strf::precalc_size::yes, strf::precalc_width::yes>p{1000};
 
         strf::preview<char>(p, strf::pack());
         TEST_EQ(p.accumulated_size(), 0);
@@ -56,7 +56,7 @@ STRF_TEST_FUNC void test_miscellaneous()
     }
 
     {   // preview width
-        strf::pre_printing<strf::preview_size::no, strf::preview_width::yes>p{8_w};
+        strf::pre_printing<strf::precalc_size::no, strf::precalc_width::yes>p{8_w};
 
         strf::preview<char>(p, strf::pack());
         TEST_TRUE(p.remaining_width() == 8_w);
@@ -69,17 +69,17 @@ STRF_TEST_FUNC void test_miscellaneous()
         TEST_TRUE(p.remaining_width() == 0);
     }
     {   // preview width
-        strf::pre_printing<strf::preview_size::no, strf::preview_width::yes>p{8_w};
+        strf::pre_printing<strf::precalc_size::no, strf::precalc_width::yes>p{8_w};
         p.subtract_width(8);
         TEST_TRUE(p.remaining_width() == 0);
     }
     {   // preview width
-        strf::pre_printing<strf::preview_size::no, strf::preview_width::yes>p{8_w};
+        strf::pre_printing<strf::precalc_size::no, strf::precalc_width::yes>p{8_w};
         p.subtract_width(9);
         TEST_TRUE(p.remaining_width() == 0);
     }
     {   // clear_remaining_width
-        strf::pre_printing<strf::preview_size::no, strf::preview_width::yes> p{8_w};
+        strf::pre_printing<strf::precalc_size::no, strf::precalc_width::yes> p{8_w};
         p.clear_remaining_width();
         TEST_TRUE(p.remaining_width() == 0);
     }

@@ -759,7 +759,7 @@ STRF_HD void sep_transformed_range_printer<CharT, FPack, It, UnaryOp>::print_to
     ( strf::destination<CharT>& dest ) const
 {
     using preview_type = strf::pre_printing
-        < strf::preview_size::no, strf::preview_width::no >;
+        < strf::precalc_size::no, strf::precalc_width::no >;
     preview_type no_pre;
     auto it = begin_;
     if (it != end_) {

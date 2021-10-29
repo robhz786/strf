@@ -278,11 +278,11 @@ public:
 
 private:
 
-    template < strf::preview_size PreviewSize
-             , strf::preview_width PreviewWidth
+    template < strf::precalc_size PrecalcSize
+             , strf::precalc_width PrecalcWidth
              , typename WidthCalc >
     void init_fillcount_and_preview_
-        ( strf::pre_printing<PreviewSize, PreviewWidth>& preview
+        ( strf::pre_printing<PrecalcSize, PrecalcWidth>& preview
         , WidthCalc wcalc
         , strf::width_t fmt_width );
 
@@ -305,16 +305,16 @@ private:
 };
 
 template <typename CharT, typename FloatT>
-template <strf::preview_size PreviewSize, strf::preview_width PreviewWidth, typename WidthCalc>
+template <strf::precalc_size PrecalcSize, strf::precalc_width PrecalcWidth, typename WidthCalc>
 void fmt_std_complex_printer<CharT, FloatT>::init_fillcount_and_preview_
-    ( strf::pre_printing<PreviewSize, PreviewWidth>& preview
+    ( strf::pre_printing<PrecalcSize, PrecalcWidth>& preview
     , WidthCalc wcalc
     , strf::width_t fmt_width )
 {
     strf::width_t fillchar_width = wcalc.char_width(strf::utf_t<char32_t>{}, fillchar_);
-    if (fmt_width >= preview.remaining_width() || ! (bool)PreviewWidth ) {
+    if (fmt_width >= preview.remaining_width() || ! (bool)PrecalcWidth ) {
         preview.clear_remaining_width();
-        strf::pre_printing<PreviewSize, strf::preview_width::yes> sub_preview{fmt_width};
+        strf::pre_printing<PrecalcSize, strf::precalc_width::yes> sub_preview{fmt_width};
         preview_without_fill_(sub_preview, wcalc);
         fillcount_ = static_cast<std::uint16_t>
             ((sub_preview.remaining_width() / fillchar_width).round());
@@ -331,7 +331,7 @@ void fmt_std_complex_printer<CharT, FloatT>::init_fillcount_and_preview_
             }
         }
     }
-    if (fillcount_ && static_cast<bool>(PreviewSize)) {
+    if (fillcount_ && static_cast<bool>(PrecalcSize)) {
         preview.add_size(fillcount_ * encoding_.encoded_char_size(fillchar_));
     }
 }
