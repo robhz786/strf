@@ -713,14 +713,14 @@ using float_with_default_formatters = strf::value_with_formatters
     , strf::float_formatter
     , strf::alignment_formatter >;
 
-template < typename CharT, typename Preview, typename FloatT>
+template <typename CharT, typename PrePrinting, typename FloatT>
 struct fast_double_printer_input
 {
     using printer_type = strf::detail::fast_double_printer<CharT>;
 
     template <typename FPack>
-    STRF_HD fast_double_printer_input(Preview& preview_, const FPack& fp_, FloatT arg_)
-        : preview(preview_)
+    STRF_HD fast_double_printer_input(PrePrinting& pre_, const FPack& fp_, FloatT arg_)
+        : pre(pre_)
         , value(arg_)
         , lcase(strf::use_facet<strf::lettercase_c, float>(fp_))
     {
@@ -728,10 +728,10 @@ struct fast_double_printer_input
 
     template <typename FPack>
     STRF_HD fast_double_printer_input
-        ( Preview& preview_
+        ( PrePrinting& pre_
         , const FPack& fp_
         , strf::detail::float_with_default_formatters<FloatT> input )
-        : preview(preview_)
+        : pre(pre_)
         , value(input.value())
         , lcase(strf::use_facet<strf::lettercase_c, float>(fp_))
     {
@@ -740,22 +740,22 @@ struct fast_double_printer_input
     fast_double_printer_input(const fast_double_printer_input&) = default;
     fast_double_printer_input(fast_double_printer_input&&) = default;
 
-    Preview& preview;
+    PrePrinting& pre;
     FloatT value;
     strf::lettercase lcase;
 };
 
 
-// template <typename CharT, typename Preview, typename FPack, typename FloatT>
+// template <typename CharT, typename PrePrinting, typename FPack, typename FloatT>
 // using fast_punct_double_printer_input =
-//     strf::usual_arg_printer_input< CharT, Preview, FPack, FloatT
+//     strf::usual_arg_printer_input< CharT, PrePrinting, FPack, FloatT
 //                              , strf::detail::fast_punct_double_printer<CharT> >;
 
-template < typename CharT, typename Preview, typename FPack
+template < typename CharT, typename PrePrinting, typename FPack
          , typename FloatT, typename FloatFormatter, bool HasAlignment >
 using fmt_double_printer_input =
     strf::usual_arg_printer_input
-        < CharT, Preview, FPack
+        < CharT, PrePrinting, FPack
         , strf::detail::float_with_formatters<FloatT, FloatFormatter, HasAlignment>
         , strf::detail::punct_double_printer<CharT> >;
 
@@ -766,29 +766,29 @@ struct float_printing
     using forwarded_type = FloatT;
     using formatters = strf::tag<strf::float_formatter, strf::alignment_formatter>;
 
-    template <typename CharT, typename Preview, typename FPack>
+    template <typename CharT, typename PrePrinting, typename FPack>
     STRF_HD constexpr static auto make_input
-        ( strf::tag<CharT>, Preview& preview, const FPack& fp, FloatT x ) noexcept
-        -> strf::detail::fast_double_printer_input<CharT, Preview, FloatT>
+        ( strf::tag<CharT>, PrePrinting& pre, const FPack& fp, FloatT x ) noexcept
+        -> strf::detail::fast_double_printer_input<CharT, PrePrinting, FloatT>
     {
-        return {preview, fp, x};
+        return {pre, fp, x};
     }
 
-    template < typename CharT, typename Preview, typename FPack
+    template < typename CharT, typename PrePrinting, typename FPack
              , typename FloatFormatter, bool HasAlignment >
     STRF_HD constexpr static auto make_input
         ( strf::tag<CharT>
-        , Preview& preview
+        , PrePrinting& pre
         , const FPack& fp
         , strf::detail::float_with_formatters
             < FloatT, FloatFormatter, HasAlignment > x ) noexcept
         -> strf::detail::conditional_t
             < HasAlignment || FloatFormatter::has_float_formatting
             , strf::detail::fmt_double_printer_input
-                < CharT, Preview, FPack, FloatT, FloatFormatter, HasAlignment >
-            , fast_double_printer_input<CharT, Preview, FloatT> >
+                < CharT, PrePrinting, FPack, FloatT, FloatFormatter, HasAlignment >
+            , fast_double_printer_input<CharT, PrePrinting, FloatT> >
     {
-        return {preview, fp, x};
+        return {pre, fp, x};
     }
 };
 
@@ -1356,17 +1356,17 @@ class fast_double_printer: public strf::arg_printer<CharT>
 {
 public:
 
-    template <typename FloatT, typename Preview>
+    template <typename FloatT, typename PrePrinting>
     STRF_HD fast_double_printer
-        ( strf::detail::fast_double_printer_input<CharT, Preview, FloatT> input) noexcept
+        ( strf::detail::fast_double_printer_input<CharT, PrePrinting, FloatT> input) noexcept
         : fast_double_printer(input.value, input.lcase)
     {
         std::size_t s = 0;
-        STRF_IF_CONSTEXPR (Preview::width_required || Preview::size_required) {
+        STRF_IF_CONSTEXPR (PrePrinting::width_required || PrePrinting::size_required) {
             s = size();
         }
-        input.preview.subtract_width(s);
-        input.preview.add_size(s);
+        input.pre.subtract_width(s);
+        input.pre.add_size(s);
     }
 
     STRF_HD fast_double_printer(float f, strf::lettercase lc) noexcept
@@ -2327,10 +2327,10 @@ class punct_double_printer: public strf::arg_printer<CharT>
 {
 public:
 
-    template < typename Preview, typename FPack, typename FloatT, bool HasAlignment>
+    template < typename PrePrinting, typename FPack, typename FloatT, bool HasAlignment>
     STRF_HD punct_double_printer
         ( const strf::detail::fmt_double_printer_input
-            < CharT, Preview, FPack, FloatT
+            < CharT, PrePrinting, FPack, FloatT
             , strf::float_formatter_full_dynamic, HasAlignment >& input )
         : lettercase_(strf::use_facet<strf::lettercase_c, FloatT>(input.facets))
     {
@@ -2363,29 +2363,29 @@ public:
         } else {
             decimal_point_size_ = 0;
         }
-        input.preview.subtract_width(r.fillcount);
-        input.preview.subtract_width(r.content_width);
-        STRF_IF_CONSTEXPR (Preview::size_required) {
-            input.preview.add_size(r.content_width);
+        input.pre.subtract_width(r.fillcount);
+        input.pre.subtract_width(r.content_width);
+        STRF_IF_CONSTEXPR (PrePrinting::size_required) {
+            input.pre.add_size(r.content_width);
             if (r.fillcount) {
                 std::size_t fillchar_size = charset.encoded_char_size(data_.fillchar);
-                input.preview.add_size(fillchar_size * r.fillcount);
+                input.pre.add_size(fillchar_size * r.fillcount);
             }
             if (notation != strf::float_notation::hex && data_.sep_count){
-                input.preview.add_size(data_.sep_count * (sep_size_ - 1));
+                input.pre.add_size(data_.sep_count * (sep_size_ - 1));
             }
             if (data_.showpoint) {
-                input.preview.add_size(decimal_point_size_ - 1);
+                input.pre.add_size(decimal_point_size_ - 1);
             }
         }
     }
 
-    template < typename Preview, typename FPack, typename FloatT
+    template < typename PrePrinting, typename FPack, typename FloatT
              , typename FloatFormatter, bool HasAlignment
              , strf::detail::enable_if_t<!FloatFormatter::has_punct, int> = 0 >
     STRF_HD punct_double_printer
         ( const strf::detail::fmt_double_printer_input
-            < CharT, Preview, FPack, FloatT, FloatFormatter, HasAlignment >& input )
+            < CharT, PrePrinting, FPack, FloatT, FloatFormatter, HasAlignment >& input )
         : lettercase_(strf::use_facet<strf::lettercase_c, FloatT>(input.facets))
     {
         auto charset = use_facet<strf::charset_c<CharT>, FloatT>(input.facets);
@@ -2394,13 +2394,13 @@ public:
             ( data_, input.arg.value(), grouping_, input.arg.get_float_format()
             , input.arg.get_alignment_format() );
         decimal_point_size_ = data_.showpoint;
-        input.preview.subtract_width(r.fillcount);
-        input.preview.subtract_width(r.content_width);
-        STRF_IF_CONSTEXPR (Preview::size_required) {
-            input.preview.add_size(r.content_width);
+        input.pre.subtract_width(r.fillcount);
+        input.pre.subtract_width(r.content_width);
+        STRF_IF_CONSTEXPR (PrePrinting::size_required) {
+            input.pre.add_size(r.content_width);
             if (r.fillcount) {
                 std::size_t fillchar_size = charset.encoded_char_size(data_.fillchar);
-                input.preview.add_size(fillchar_size * r.fillcount);
+                input.pre.add_size(fillchar_size * r.fillcount);
             }
         }
     }

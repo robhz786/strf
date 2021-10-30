@@ -72,18 +72,18 @@ struct is_tr_string<strf::is_tr_string_of<CharIn>> : std::true_type
 };
 
 template <bool Active>
-class width_preview;
+class width_decumulator;
 
 template <>
-class width_preview<true>
+class width_decumulator<true>
 {
 public:
 
-    explicit constexpr STRF_HD width_preview(strf::width_t initial_width) noexcept
+    explicit constexpr STRF_HD width_decumulator(strf::width_t initial_width) noexcept
         : width_(initial_width)
     {}
 
-    STRF_HD width_preview(const width_preview&) = delete;
+    STRF_HD width_decumulator(const width_decumulator&) = delete;
 
     STRF_CONSTEXPR_IN_CXX14 STRF_HD void subtract_width(strf::width_t w) noexcept
     {
@@ -139,11 +139,11 @@ private:
 };
 
 template <>
-class width_preview<false>
+class width_decumulator<false>
 {
 public:
 
-    constexpr STRF_HD width_preview() noexcept
+    constexpr STRF_HD width_decumulator() noexcept
     {
     }
 
@@ -163,18 +163,18 @@ public:
 };
 
 template <bool Active>
-class size_preview;
+class size_accumulator;
 
 template <>
-class size_preview<true>
+class size_accumulator<true>
 {
 public:
-    explicit constexpr STRF_HD size_preview(std::size_t initial_size = 0) noexcept
+    explicit constexpr STRF_HD size_accumulator(std::size_t initial_size = 0) noexcept
         : size_(initial_size)
     {
     }
 
-    STRF_HD size_preview(const size_preview&) = delete;
+    STRF_HD size_accumulator(const size_accumulator&) = delete;
 
     STRF_CONSTEXPR_IN_CXX14 STRF_HD void add_size(std::size_t s) noexcept
     {
@@ -192,11 +192,11 @@ private:
 };
 
 template <>
-class size_preview<false>
+class size_accumulator<false>
 {
 public:
 
-    constexpr STRF_HD size_preview() noexcept
+    constexpr STRF_HD size_accumulator() noexcept
     {
     }
 
@@ -210,13 +210,22 @@ public:
     }
 };
 
-enum class preview_width: bool { no = false, yes = true };
-enum class preview_size : bool { no = false, yes = true };
+template <bool Active>
+using size_preview STRF_DEPRECATED_MSG("size_preview was renamed to size_accumulator")
+    = size_accumulator<Active>;
 
-template <strf::preview_size SizeRequired, strf::preview_width WidthRequired>
-class print_preview
-    : public strf::size_preview<static_cast<bool>(SizeRequired)>
-    , public strf::width_preview<static_cast<bool>(WidthRequired)>
+enum class precalc_width: bool { no = false, yes = true };
+enum class precalc_size : bool { no = false, yes = true };
+
+using preview_size STRF_DEPRECATED_MSG("preview_size was renamed to precalc_size")
+    = precalc_size;
+using preview_width STRF_DEPRECATED_MSG("preview_width was renamed to precalc_width")
+    = precalc_width;
+
+template <strf::precalc_size SizeRequired, strf::precalc_width WidthRequired>
+class preprinting
+    : public strf::size_accumulator<static_cast<bool>(SizeRequired)>
+    , public strf::width_decumulator<static_cast<bool>(WidthRequired)>
 {
 public:
 
@@ -225,22 +234,35 @@ public:
     static constexpr bool nothing_required = ! size_required && ! width_required;
     static constexpr bool something_required = size_required || width_required;
 
-    template <strf::preview_width W = WidthRequired>
-    STRF_HD constexpr explicit print_preview
+    template <strf::precalc_width W = WidthRequired>
+    STRF_HD constexpr explicit preprinting
         ( strf::detail::enable_if_t<static_cast<bool>(W), strf::width_t> initial_width ) noexcept
-        : strf::width_preview<true>{initial_width}
+        : strf::width_decumulator<true>{initial_width}
     {
     }
 
-    constexpr STRF_HD print_preview() noexcept
+    constexpr STRF_HD preprinting() noexcept
     {
     }
 };
 
-using no_print_preview = strf::print_preview<strf::preview_size::no, strf::preview_width::no>;
-using print_size_preview  = strf::print_preview<strf::preview_size::yes, strf::preview_width::no>;
-using print_width_preview = strf::print_preview<strf::preview_size::no, strf::preview_width::yes>;
-using print_size_and_width_preview = strf::print_preview<strf::preview_size::yes, strf::preview_width::yes>;
+
+using no_preprinting
+    = strf::preprinting<strf::precalc_size::no, strf::precalc_width::no>;
+using full_preprinting
+    = strf::preprinting<strf::precalc_size::yes, strf::precalc_width::yes>;
+
+template <strf::precalc_size SizeRequired, strf::precalc_width WidthRequired>
+using print_preview STRF_DEPRECATED_MSG("print_preview renamed to preprinting")
+    = strf::preprinting<SizeRequired, WidthRequired>;
+
+using no_print_preview
+    STRF_DEPRECATED_MSG("no_print_preview renamed to no_preprinting")
+    = strf::no_preprinting;
+
+using print_size_and_width_preview
+    STRF_DEPRECATED_MSG("print_size_and_width_preview to fulll_preprinting")
+    = strf::full_preprinting;
 
 namespace detail {
 
@@ -489,25 +511,25 @@ private:
     value_type value_;
 };
 
-template <typename CharT, typename Preview, typename FPack, typename Arg, typename Printer>
+template <typename CharT, typename PrePrinting, typename FPack, typename Arg, typename Printer>
 struct usual_arg_printer_input;
 
 template< typename CharT
-        , strf::preview_size PreviewSize
-        , strf::preview_width PreviewWidth
+        , strf::precalc_size PrecalcSize
+        , strf::precalc_width PrecalcWidth
         , typename FPack
         , typename Arg
         , typename Printer >
 struct usual_arg_printer_input
-    < CharT, strf::print_preview<PreviewSize, PreviewWidth>, FPack, Arg, Printer >
+    < CharT, strf::preprinting<PrecalcSize, PrecalcWidth>, FPack, Arg, Printer >
 {
     using char_type = CharT;
     using arg_type = Arg;
-    using preview_type = strf::print_preview<PreviewSize, PreviewWidth>;
+    using preprinting_type = strf::preprinting<PrecalcSize, PrecalcWidth>;
     using fpack_type = FPack;
     using printer_type = Printer;
 
-    preview_type& preview;
+    preprinting_type& pre;
     FPack facets;
     Arg arg;
 };
@@ -772,16 +794,16 @@ namespace mk_pr_in {
 
 template < typename UnadaptedMaker
          , typename CharT
-         , typename Preview
+         , typename PrePrinting
          , typename FPack
          , typename Arg >
 struct can_make_arg_printer_input_impl
 {
     template <typename P>
-    static STRF_HD auto test_(Preview& preview, const FPack& facets, const Arg& arg)
+    static STRF_HD auto test_(PrePrinting& pre, const FPack& facets, const Arg& arg)
         -> decltype( std::declval<const P&>()
                          .make_input
-                             ( strf::tag<CharT>{}, preview, facets, arg )
+                             ( strf::tag<CharT>{}, pre, facets, arg )
                    , std::true_type{} );
 
     template <typename P>
@@ -789,18 +811,18 @@ struct can_make_arg_printer_input_impl
 
     using result = decltype
         ( test_<UnadaptedMaker>
-            ( std::declval<Preview&>()
+            ( std::declval<PrePrinting&>()
             , std::declval<FPack>()
             , std::declval<Arg>() ));
 };
 
 template < typename UnadaptedMaker
          , typename CharT
-         , typename Preview
+         , typename PrePrinting
          , typename FPack
          , typename Arg >
 using can_make_arg_printer_input = typename
-    can_make_arg_printer_input_impl<UnadaptedMaker, CharT, Preview, FPack, Arg>
+    can_make_arg_printer_input_impl<UnadaptedMaker, CharT, PrePrinting, FPack, Arg>
     ::result;
 
 struct arg_adapter_rm_fmt
@@ -826,7 +848,7 @@ struct arg_adapter_cast
 template < typename PrintingTraits
          , typename Maker
          , typename CharT
-         , typename Preview
+         , typename PrePrinting
          , typename FPack
          , typename Vwf
          , typename DefaultVwf >
@@ -839,13 +861,13 @@ struct adapter_selector_3
 template < typename PrintingTraits
          , typename Maker
          , typename CharT
-         , typename Preview
+         , typename PrePrinting
          , typename FPack
          , typename DefaultVwf >
-struct adapter_selector_3<PrintingTraits, Maker, CharT, Preview, FPack, DefaultVwf, DefaultVwf>
+struct adapter_selector_3<PrintingTraits, Maker, CharT, PrePrinting, FPack, DefaultVwf, DefaultVwf>
 {
     static constexpr bool can_pass_directly =
-        can_make_arg_printer_input<Maker, CharT, Preview, FPack, DefaultVwf>
+        can_make_arg_printer_input<Maker, CharT, PrePrinting, FPack, DefaultVwf>
         ::value;
 
     using adapter_type = typename std::conditional
@@ -858,17 +880,17 @@ struct adapter_selector_3<PrintingTraits, Maker, CharT, Preview, FPack, DefaultV
 template < typename PrintingTraits
          , typename Maker
          , typename CharT
-         , typename Preview
+         , typename PrePrinting
          , typename FPack
          , typename Arg
          , typename DefaultVwf >
 struct adapter_selector_2
 {
     static constexpr bool can_pass_directly =
-        can_make_arg_printer_input<Maker, CharT, Preview, FPack, Arg>
+        can_make_arg_printer_input<Maker, CharT, PrePrinting, FPack, Arg>
         ::value;
     static constexpr bool can_pass_as_fmt =
-        can_make_arg_printer_input<Maker, CharT, Preview, FPack, DefaultVwf>
+        can_make_arg_printer_input<Maker, CharT, PrePrinting, FPack, DefaultVwf>
         ::value;
     static constexpr bool shall_adapt = !can_pass_directly && can_pass_as_fmt;
 
@@ -881,37 +903,37 @@ struct adapter_selector_2
 template < typename PrintingTraits
          , typename Maker
          , typename CharT
-         , typename Preview
+         , typename PrePrinting
          , typename FPack
          , typename DefaultVwf
          , typename... Fmts >
 struct adapter_selector_2
-    < PrintingTraits, Maker, CharT, Preview, FPack
-    , strf::value_with_formatters<PrintingTraits, Fmts...>, DefaultVwf>
+    < PrintingTraits, Maker, CharT, PrePrinting, FPack
+    , strf::value_with_formatters<PrintingTraits, Fmts...>, DefaultVwf >
 {
     using vwf = strf::value_with_formatters<PrintingTraits, Fmts...>;
     using other = adapter_selector_3
-        < PrintingTraits, Maker, CharT, Preview, FPack, vwf, DefaultVwf>;
+        < PrintingTraits, Maker, CharT, PrePrinting, FPack, vwf, DefaultVwf >;
     using adapter_type = typename other::adapter_type;
 };
 
 template < typename PrintingTraits
          , typename Maker
          , typename CharT
-         , typename Preview
+         , typename PrePrinting
          , typename FPack
          , typename Arg >
 struct adapter_selector
 {
     using vwf = default_value_with_formatter_of_printing_traits<PrintingTraits>;
-    using other = adapter_selector_2<PrintingTraits, Maker, CharT, Preview, FPack, Arg, vwf>;
+    using other = adapter_selector_2<PrintingTraits, Maker, CharT, PrePrinting, FPack, Arg, vwf>;
     using adapter_type = typename other::adapter_type;
 };
 
 template < typename PrintingTraits, typename Maker, typename CharT
-         , typename Preview, typename FPack, typename Arg >
+         , typename PrePrinting, typename FPack, typename Arg >
 using select_adapter = typename
-    adapter_selector<PrintingTraits, Maker, CharT, Preview, FPack, Arg>
+    adapter_selector<PrintingTraits, Maker, CharT, PrePrinting, FPack, Arg>
     ::adapter_type;
 
 template <typename Overrider, typename OverrideTag>
@@ -942,7 +964,7 @@ struct maker_getter_printing_traits
 
 template < typename PrintingTraits
          , typename CharT
-         , typename Preview
+         , typename PrePrinting
          , typename FPack
          , typename Arg
          , bool HasOverrideTag >
@@ -962,58 +984,58 @@ struct maker_getter_selector_2
 
 template < typename PrintingTraits
          , typename CharT
-         , typename Preview
+         , typename PrePrinting
          , typename FPack
          , typename Arg >
-struct maker_getter_selector_2<PrintingTraits, CharT, Preview, FPack, Arg, false>
+struct maker_getter_selector_2<PrintingTraits, CharT, PrePrinting, FPack, Arg, false>
 {
     using maker_getter_type = maker_getter_printing_traits<PrintingTraits>;
 };
 
 template < typename PrintingTraits
          , typename CharT
-         , typename Preview
+         , typename PrePrinting
          , typename FPack
          , typename Arg >
 struct maker_getter_selector
 {
     using other = maker_getter_selector_2
-        < PrintingTraits, CharT, Preview, FPack, Arg
+        < PrintingTraits, CharT, PrePrinting, FPack, Arg
         , has_override_tag<PrintingTraits>::value >;
     using maker_getter_type = typename other::maker_getter_type;
 };
 
-template < typename PrintingTraits, typename CharT, typename Preview
+template < typename PrintingTraits, typename CharT, typename PrePrinting
          , typename FPack, typename Arg >
 using select_maker_getter = typename maker_getter_selector
-    <PrintingTraits, CharT, Preview, FPack, Arg>
+    <PrintingTraits, CharT, PrePrinting, FPack, Arg>
     :: maker_getter_type;
 
-template <typename CharT, typename Preview, typename FPack, typename Arg>
+template <typename CharT, typename PrePrinting, typename FPack, typename Arg>
 struct selector
 {
     using traits = strf::printing_traits_of<Arg>;
-    using maker_getter_type = select_maker_getter<traits, CharT, Preview, FPack, Arg>;
+    using maker_getter_type = select_maker_getter<traits, CharT, PrePrinting, FPack, Arg>;
     using maker_type = typename maker_getter_type::maker_type;
-    using adapter_type = select_adapter<traits, maker_type, CharT, Preview, FPack, Arg>;
+    using adapter_type = select_adapter<traits, maker_type, CharT, PrePrinting, FPack, Arg>;
 };
 
-template <typename CharT, typename Preview, typename FPack, typename Arg>
+template <typename CharT, typename PrePrinting, typename FPack, typename Arg>
 struct selector_no_override
 {
     using traits = strf::printing_traits_of<Arg>;
     using maker_getter_type = maker_getter_printing_traits<traits>;
-    using adapter_type = select_adapter<traits, traits, CharT, Preview, FPack, Arg>;
+    using adapter_type = select_adapter<traits, traits, CharT, PrePrinting, FPack, Arg>;
 };
 
-template < typename CharT, typename Preview, typename FPack, typename Arg
-         , typename Selector = selector<CharT, Preview, FPack, Arg> >
+template < typename CharT, typename PrePrinting, typename FPack, typename Arg
+         , typename Selector = selector<CharT, PrePrinting, FPack, Arg> >
 struct helper: Selector::maker_getter_type, Selector::adapter_type
 {
 };
 
-template < typename CharT, typename Preview, typename FPack, typename Arg
-         , typename Selector = selector_no_override<CharT, Preview, FPack, Arg> >
+template < typename CharT, typename PrePrinting, typename FPack, typename Arg
+         , typename Selector = selector_no_override<CharT, PrePrinting, FPack, Arg> >
 struct helper_no_override: Selector::maker_getter_type, Selector::adapter_type
 {
 };
@@ -1022,14 +1044,14 @@ struct helper_no_override: Selector::maker_getter_type, Selector::adapter_type
 } // namespace detail
 
 template < typename CharT
-         , typename Preview
+         , typename PrePrinting
          , typename FPack
          , typename Arg
          , typename Helper
-             = strf::detail::mk_pr_in::helper_no_override<CharT, Preview, FPack, Arg>
+             = strf::detail::mk_pr_in::helper_no_override<CharT, PrePrinting, FPack, Arg>
          , typename Maker = typename Helper::maker_type
          , typename ChTag = strf::tag<CharT> >
-constexpr STRF_HD auto make_default_arg_printer_input(Preview& p, const FPack& fp, const Arg& arg)
+constexpr STRF_HD auto make_default_arg_printer_input(PrePrinting& p, const FPack& fp, const Arg& arg)
     noexcept(noexcept(Maker::make_input(ChTag{}, p, fp, Helper::adapt_arg(arg))))
     -> decltype(Maker::make_input(ChTag{}, p, fp, Helper::adapt_arg(arg)))
 {
@@ -1037,13 +1059,13 @@ constexpr STRF_HD auto make_default_arg_printer_input(Preview& p, const FPack& f
 }
 
 template < typename CharT
-         , typename Preview
+         , typename PrePrinting
          , typename FPack
          , typename Arg
-         , typename Helper = strf::detail::mk_pr_in::helper<CharT, Preview, FPack, Arg>
+         , typename Helper = strf::detail::mk_pr_in::helper<CharT, PrePrinting, FPack, Arg>
          , typename Maker = typename Helper::maker_type
          , typename ChTag = strf::tag<CharT> >
-constexpr STRF_HD auto make_arg_printer_input(Preview& p, const FPack& fp, const Arg& arg)
+constexpr STRF_HD auto make_arg_printer_input(PrePrinting& p, const FPack& fp, const Arg& arg)
     -> decltype(((const Maker*)0)->make_input(ChTag{}, p, fp, Helper::adapt_arg(arg)))
 {
     return Helper::get_maker(fp)
@@ -1053,16 +1075,16 @@ constexpr STRF_HD auto make_arg_printer_input(Preview& p, const FPack& fp, const
 struct no_print_override
 {
     using category = print_override_c;
-    template <typename CharT, typename Preview, typename FPack, typename Arg>
+    template <typename CharT, typename PrePrinting, typename FPack, typename Arg>
     constexpr static STRF_HD auto make_input
         ( strf::tag<CharT>
-        , Preview& preview
+        , PrePrinting& pre
         , const FPack& facets
         , Arg&& arg )
-        noexcept(noexcept(strf::make_default_arg_printer_input<CharT>(preview, facets, arg)))
-        -> decltype(strf::make_default_arg_printer_input<CharT>(preview, facets, arg))
+        noexcept(noexcept(strf::make_default_arg_printer_input<CharT>(pre, facets, arg)))
+        -> decltype(strf::make_default_arg_printer_input<CharT>(pre, facets, arg))
     {
-        return strf::make_default_arg_printer_input<CharT>(preview, facets, arg);
+        return strf::make_default_arg_printer_input<CharT>(pre, facets, arg);
     }
 };
 
@@ -1087,22 +1109,23 @@ constexpr bool is_overridable
 template <typename T>
 using override_tag = typename strf::printing_traits_of<T>::override_tag;
 
-template <typename CharT, typename Preview, typename FPack, typename Arg>
+template <typename CharT, typename PrePrinting, typename FPack, typename Arg>
 using printer_input_type = decltype
     ( strf::make_arg_printer_input<CharT>
-        ( std::declval<Preview&>()
+        ( std::declval<PrePrinting&>()
         , std::declval<const FPack&>()
         , std::declval<Arg>() ) );
 
-template <typename CharT, typename Preview, typename FPack, typename Arg>
-using arg_printer_type = typename printer_input_type<CharT, Preview, FPack, Arg>::printer_type;
+template <typename CharT, typename PrePrinting, typename FPack, typename Arg>
+using arg_printer_type = typename printer_input_type<CharT, PrePrinting, FPack, Arg>::printer_type;
 
 template < typename CharT
-         , strf::preview_size SizeRequired
-         , strf::preview_width WidthRequired
+         , strf::precalc_size SizeRequired
+         , strf::precalc_width WidthRequired
          , typename... FPE >
-STRF_HD void preview( strf::print_preview<SizeRequired, WidthRequired>&
-                    , const strf::facets_pack<FPE...> &)
+STRF_HD void precalculate
+    ( strf::preprinting<SizeRequired, WidthRequired>&
+    , const strf::facets_pack<FPE...> &)
 {
 }
 
@@ -1110,8 +1133,8 @@ template < typename CharT
          , typename... FPE
          , typename Arg
          , typename... Args >
-STRF_HD STRF_CONSTEXPR_IN_CXX14 void preview
-    ( strf::print_preview<strf::preview_size::no, strf::preview_width::no>
+STRF_HD STRF_CONSTEXPR_IN_CXX14 void precalculate
+    ( strf::preprinting<strf::precalc_size::no, strf::precalc_width::no>
     , const strf::facets_pack<FPE...>&
     , const Arg&
     , const Args&... ) noexcept
@@ -1121,8 +1144,8 @@ STRF_HD STRF_CONSTEXPR_IN_CXX14 void preview
 namespace detail {
 
 template < typename CharT, typename... FPE >
-STRF_HD STRF_CONSTEXPR_IN_CXX14 void preview_only_width
-    ( strf::print_preview<strf::preview_size::no, strf::preview_width::yes>&
+STRF_HD STRF_CONSTEXPR_IN_CXX14 void precalculate_only_width
+    ( strf::preprinting<strf::precalc_size::no, strf::precalc_width::yes>&
     , const strf::facets_pack<FPE...>& ) noexcept
 {
 }
@@ -1131,32 +1154,32 @@ template < typename CharT
          , typename... FPE
          , typename Arg
          , typename... OtherArgs >
-STRF_HD void preview_only_width
-    ( strf::print_preview<strf::preview_size::no, strf::preview_width::yes>& pp
+STRF_HD void precalculate_only_width
+    ( strf::preprinting<strf::precalc_size::no, strf::precalc_width::yes>& pp
     , const strf::facets_pack<FPE...>& facets
     , const Arg& arg
     , const OtherArgs&... other_args )
 {
-    using preview_type = strf::print_preview<strf::preview_size::no, strf::preview_width::yes>;
+    using pp_type = strf::preprinting<strf::precalc_size::no, strf::precalc_width::yes>;
 
-    (void) strf::arg_printer_type<CharT, preview_type, strf::facets_pack<FPE...>, Arg>
+    (void) strf::arg_printer_type<CharT, pp_type, strf::facets_pack<FPE...>, Arg>
         ( strf::make_arg_printer_input<CharT>(pp, facets, arg) );
 
     if (pp.remaining_width() > 0) {
-        strf::detail::preview_only_width<CharT>(pp, facets, other_args...);
+        strf::detail::precalculate_only_width<CharT>(pp, facets, other_args...);
     }
 }
 
 } // namespace detail
 
 template <typename CharT, typename... FPE, typename... Args>
-STRF_HD void preview
-    ( strf::print_preview<strf::preview_size::no, strf::preview_width::yes>& pp
+STRF_HD void precalculate
+    ( strf::preprinting<strf::precalc_size::no, strf::precalc_width::yes>& pp
     , const strf::facets_pack<FPE...>& facets
     , const Args&... args )
 {
     if (pp.remaining_width() > 0) {
-        strf::detail::preview_only_width<CharT>(pp, facets, args...);
+        strf::detail::precalculate_only_width<CharT>(pp, facets, args...);
     }
 }
 
@@ -1171,17 +1194,17 @@ STRF_HD STRF_CONSTEXPR_IN_CXX14 void do_nothing_with(const Args...) noexcept
 } // namespace detail
 
 template < typename CharT
-         , strf::preview_width WidthRequired
+         , strf::precalc_width WidthRequired
          , typename... FPE
          , typename... Args >
-STRF_HD void preview
-    ( strf::print_preview<strf::preview_size::yes, WidthRequired>& pp
+STRF_HD void precalculate
+    ( strf::preprinting<strf::precalc_size::yes, WidthRequired>& pp
     , const strf::facets_pack<FPE...>& facets
     , const Args&... args )
 {
-    using preview_type = strf::print_preview<strf::preview_size::yes, WidthRequired>;
+    using pp_type = strf::preprinting<strf::precalc_size::yes, WidthRequired>;
     strf::detail::do_nothing_with
-        ( strf::arg_printer_type<CharT, preview_type, strf::facets_pack<FPE...>, Args>
+        ( strf::arg_printer_type<CharT, pp_type, strf::facets_pack<FPE...>, Args>
           ( strf::make_arg_printer_input<CharT>(pp, facets, args) ) ... );
 }
 
@@ -1961,7 +1984,7 @@ STRF_HD read_uint_result<CharT> read_uint(const CharT* it, const CharT* end, std
 
 template <typename CharT>
 STRF_HD inline std::size_t tr_string_size
-    ( const strf::print_preview<strf::preview_size::no, strf::preview_width::no>*
+    ( const strf::preprinting<strf::precalc_size::no, strf::precalc_width::no>*
     , std::size_t
     , const CharT*
     , const CharT*
@@ -1972,7 +1995,7 @@ STRF_HD inline std::size_t tr_string_size
 
 template <typename CharT>
 STRF_HD std::size_t tr_string_size
-    ( const strf::print_preview<strf::preview_size::yes, strf::preview_width::no>* args_preview
+    ( const strf::preprinting<strf::precalc_size::yes, strf::precalc_width::no>* args_pre
     , std::size_t num_args
     , const CharT* it
     , const CharT* end
@@ -1994,7 +2017,7 @@ STRF_HD std::size_t tr_string_size
         after_the_brace:
         if (it == end) {
             if (arg_idx < num_args) {
-                count += args_preview[arg_idx].accumulated_size();
+                count += args_pre[arg_idx].accumulated_size();
             } else {
                 count += inv_arg_size;
             }
@@ -2004,7 +2027,7 @@ STRF_HD std::size_t tr_string_size
         auto ch = *it;
         if (ch == '}') {
             if (arg_idx < num_args) {
-                count += args_preview[arg_idx].accumulated_size();
+                count += args_pre[arg_idx].accumulated_size();
                 ++arg_idx;
             } else {
                 count += inv_arg_size;
@@ -2014,7 +2037,7 @@ STRF_HD std::size_t tr_string_size
             auto result = strf::detail::read_uint(it, end, num_args);
 
             if (result.value < num_args) {
-                count += args_preview[result.value].accumulated_size();
+                count += args_pre[result.value].accumulated_size();
             } else {
                 count += inv_arg_size;
             }
@@ -2035,7 +2058,7 @@ STRF_HD std::size_t tr_string_size
         } else {
             if (ch != '-') {
                 if (arg_idx < num_args) {
-                    count += args_preview[arg_idx].accumulated_size();
+                    count += args_pre[arg_idx].accumulated_size();
                     ++arg_idx;
                 } else {
                     count += inv_arg_size;
@@ -2145,10 +2168,10 @@ class tr_string_printer
     using char_type = typename Charset::code_unit;
 public:
 
-    template <strf::preview_size SizeRequested>
+    template <strf::precalc_size SizeRequested>
     STRF_HD tr_string_printer
-        ( strf::print_preview<SizeRequested, strf::preview_width::no>& preview
-        , const strf::print_preview<SizeRequested, strf::preview_width::no>* args_preview
+        ( strf::preprinting<SizeRequested, strf::precalc_width::no>& pre
+        , const strf::preprinting<SizeRequested, strf::precalc_width::no>* args_pre
         , std::initializer_list<const strf::arg_printer<char_type>*> printers
         , const char_type* tr_string
         , const char_type* tr_string_end
@@ -2164,11 +2187,11 @@ public:
         STRF_IF_CONSTEXPR (static_cast<bool>(SizeRequested)) {
             auto invalid_arg_size = charset.replacement_char_size();
             std::size_t s = strf::detail::tr_string_size
-                ( args_preview, printers.size(), tr_string, tr_string_end
+                ( args_pre, printers.size(), tr_string, tr_string_end
                 , invalid_arg_size );
-            preview.add_size(s);
+            pre.add_size(s);
         } else {
-            (void) args_preview;
+            (void) args_pre;
         }
     }
 
@@ -2244,7 +2267,7 @@ using destination_finish_return_type = typename
 struct destination_tag {};
 
 template < template <typename, typename> class DestinationTmpl
-         , bool Sized, class DestinationCreator, class Preview, class FPack >
+         , bool Sized, class DestinationCreator, class PrePrinting, class FPack >
 class printer_common
 {
     using destination_type_ = DestinationTmpl<DestinationCreator, FPack>;
@@ -2252,7 +2275,7 @@ class printer_common
     using char_type_ = typename DestinationCreator::char_type;
 
     template <typename Arg>
-    using printer_ = strf::arg_printer_type<char_type_, Preview, FPack, Arg>;
+    using printer_ = strf::arg_printer_type<char_type_, PrePrinting, FPack, Arg>;
 
     using finish_return_type_ = destination_finish_return_type<DestinationCreator, Sized>;
 
@@ -2343,13 +2366,13 @@ public:
     finish_return_type_ STRF_HD operator()(const Args& ... args) const &
     {
         const auto& self = static_cast<const destination_type_&>(*this);
-        Preview preview;
+        PrePrinting pre;
         return self.write_
-            ( preview
+            ( pre
             , as_printer_cref_
               ( printer_<Args>
                 ( strf::make_arg_printer_input<char_type_>
-                  ( preview, self.fpack_, args ) ) )... );
+                  ( pre, self.fpack_, args ) ) )... );
     }
 
 #if defined(STRF_HAS_STD_STRING_VIEW)
@@ -2405,24 +2428,24 @@ private:
         , const Args& ... args) const &
     {
         constexpr std::size_t args_count = sizeof...(args);
-        Preview preview_arr[args_count ? args_count : 1];
+        PrePrinting pre_arr[args_count ? args_count : 1];
         const auto& fpack = static_cast<const destination_type_&>(*this).fpack_;
         (void)fpack;
         return tr_write_3_
             ( str
             , str_end
-            , preview_arr
+            , pre_arr
             , { as_printer_cptr_
                 ( printer_<Args>
                   ( strf::make_arg_printer_input<char_type_>
-                    ( preview_arr[I], fpack, args ) ) )... } );
+                    ( pre_arr[I], fpack, args ) ) )... } );
     }
 
     template <typename ... Args>
     finish_return_type_ STRF_HD tr_write_3_
         ( const char_type_* str
         , const char_type_* str_end
-        , Preview* preview_arr
+        , PrePrinting* pre_arr
         , std::initializer_list<const strf::arg_printer<char_type_>*> args ) const &
     {
         const auto& self = static_cast<const destination_type_&>(*this);
@@ -2434,11 +2457,11 @@ private:
         auto&& err_hdl = strf::use_facet<caterr, void>(self.fpack_);
         using err_hdl_type = strf::detail::remove_cvref_t<decltype(err_hdl)>;
 
-        Preview preview;
+        PrePrinting pre;
         strf::detail::tr_string_printer<decltype(charset), err_hdl_type>
-            tr_printer(preview, preview_arr, args, str, str_end, charset, err_hdl);
+            tr_printer(pre, pre_arr, args, str, str_end, charset, err_hdl);
 
-        return self.write_(preview, tr_printer);
+        return self.write_(pre, tr_printer);
     }
 };
 
@@ -2450,20 +2473,20 @@ class printer_no_reserve
         < strf::printer_no_reserve
         , false
         , DestinationCreator
-        , strf::no_print_preview
+        , strf::no_preprinting
         , FPack >
 {
     using common_ = strf::detail::printer_common
         < strf::printer_no_reserve
         , false
         , DestinationCreator
-        , strf::no_print_preview
+        , strf::no_preprinting
         , FPack >;
 
     template <template <typename, typename> class, bool, class, class, class>
     friend class strf::detail::printer_common;
 
-    using preview_type_ = strf::no_print_preview;
+    using preprinting_type_ = strf::no_preprinting;
     using finish_return_type_ = strf::detail::destination_finish_return_type<DestinationCreator, false>;
 
 public:
@@ -2553,7 +2576,7 @@ private:
 
     template <typename ... Printers>
     finish_return_type_ STRF_HD write_
-        ( const preview_type_&
+        ( const preprinting_type_&
         , const Printers& ... printers) const
     {
         typename DestinationCreator::destination_type dest{destination_creator_.create()};
@@ -2571,20 +2594,20 @@ class printer_with_given_size
         < strf::printer_with_given_size
         , true
         , DestinationCreator
-        , strf::no_print_preview
+        , strf::no_preprinting
         , FPack >
 {
     using common_ = strf::detail::printer_common
         < strf::printer_with_given_size
         , true
         , DestinationCreator
-        , strf::no_print_preview
+        , strf::no_preprinting
         , FPack >;
 
     template < template <typename, typename> class, bool, class, class, class>
     friend class strf::detail::printer_common;
 
-    using preview_type_ = strf::no_print_preview;
+    using preprinting_type_ = strf::no_preprinting;
     using finish_return_type_ = strf::detail::destination_finish_return_type<DestinationCreator, true>;
 
 public:
@@ -2674,7 +2697,7 @@ private:
 
     template <typename ... Printers>
     STRF_HD finish_return_type_ write_
-        ( const preview_type_&
+        ( const preprinting_type_&
         , const Printers& ... printers) const
     {
         typename DestinationCreator::sized_destination_type dest{destination_creator_.create(size_)};
@@ -2693,21 +2716,21 @@ class printer_with_size_calc
         < strf::printer_with_size_calc
         , true
         , DestinationCreator
-        , strf::print_preview<strf::preview_size::yes, strf::preview_width::no>
+        , strf::preprinting<strf::precalc_size::yes, strf::precalc_width::no>
         , FPack >
 {
     using common_ = strf::detail::printer_common
         < strf::printer_with_size_calc
         , true
         , DestinationCreator
-        , strf::print_preview<strf::preview_size::yes, strf::preview_width::no>
+        , strf::preprinting<strf::precalc_size::yes, strf::precalc_width::no>
         , FPack >;
 
     template < template <typename, typename> class, bool, class, class, class>
     friend class strf::detail::printer_common;
 
-    using preview_type_
-        = strf::print_preview<strf::preview_size::yes, strf::preview_width::no>;
+    using preprinting_type_
+        = strf::preprinting<strf::precalc_size::yes, strf::precalc_width::no>;
     using finish_return_type_ = strf::detail::destination_finish_return_type<DestinationCreator, true>;
 
 public:
@@ -2797,10 +2820,10 @@ private:
 
     template <typename ... Printers>
     finish_return_type_ STRF_HD write_
-        ( const preview_type_& preview
+        ( const preprinting_type_& pre
         , const Printers& ... printers ) const
     {
-        std::size_t size = preview.accumulated_size();
+        std::size_t size = pre.accumulated_size();
         typename DestinationCreator::sized_destination_type dest{destination_creator_.create(size)};
         strf::detail::write_args(dest, printers...);
         return strf::detail::finish(strf::rank<2>(), dest);

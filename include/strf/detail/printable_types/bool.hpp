@@ -24,30 +24,30 @@ struct printing_traits<bool>
     using forwarded_type = bool;
     using formatters = strf::tag<strf::alignment_formatter>;
 
-    template <typename CharT, typename Preview, typename FPack>
+    template <typename CharT, typename PrePrinting, typename FPack>
     constexpr STRF_HD static auto make_input
         ( strf::tag<CharT>
-        , Preview& preview
+        , PrePrinting& pre
         , const FPack& fp
         , bool x ) noexcept
         -> strf::usual_arg_printer_input
-            < CharT, Preview, FPack, bool, strf::detail::bool_printer<CharT> >
+            < CharT, PrePrinting, FPack, bool, strf::detail::bool_printer<CharT> >
     {
-        return {preview, fp, x};
+        return {pre, fp, x};
     }
 
-    template <typename CharT, typename Preview, typename FPack, typename... T>
+    template <typename CharT, typename PrePrinting, typename FPack, typename... T>
     constexpr STRF_HD static auto make_input
         ( strf::tag<CharT>
-        , Preview& preview
+        , PrePrinting& pre
         , const FPack& fp
         , strf::value_with_formatters<T...> x ) noexcept
         -> strf::usual_arg_printer_input
-            < CharT, Preview, FPack
+            < CharT, PrePrinting, FPack
             , strf::value_with_formatters<T...>
             , strf::detail::fmt_bool_printer<CharT> >
     {
-        return {preview, fp, x};
+        return {pre, fp, x};
     }
 };
 
@@ -67,8 +67,8 @@ public:
         : value_(input.arg)
         , lettercase_(strf::use_facet<strf::lettercase_c, bool>(input.facets))
     {
-        input.preview.subtract_width(5u - (int)input.arg);
-        input.preview.add_size(5 - (int)input.arg);
+        input.pre.subtract_width(5u - (int)input.arg);
+        input.pre.add_size(5 - (int)input.arg);
     }
 
     void STRF_HD print_to(strf::destination<CharT>& dest) const override;
@@ -122,12 +122,12 @@ public:
         if (fmt_width > w) {
             encode_fill_ = charset.encode_fill_func();
             fillcount_ = static_cast<std::uint16_t>(fmt_width - w);
-            input.preview.subtract_width(fmt_width);
-            input.preview.add_size(w + fillcount_ * charset.encoded_char_size(afmt_.fill));
+            input.pre.subtract_width(fmt_width);
+            input.pre.add_size(w + fillcount_ * charset.encoded_char_size(afmt_.fill));
         } else {
             fillcount_ = 0;
-            input.preview.subtract_width(w);
-            input.preview.add_size(w);
+            input.pre.subtract_width(w);
+            input.pre.add_size(w);
         }
     }
 

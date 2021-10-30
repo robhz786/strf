@@ -116,7 +116,7 @@ public:
         auto encoding = use_facet<strf::charset_c<CharT>, xxx::ipv6address>(input.facets);
 
         encode_fill_fn_ = encoding.encode_fill_func();
-        init_(input.preview, encoding);
+        init_(input.pre, encoding);
     }
 
     void print_to(strf::destination<CharT>& dest) const override;
@@ -134,28 +134,28 @@ private:
     std::uint16_t count_ipv6_characters() const;
     void print_ipv6(strf::destination<CharT>& dest) const;
 
-    template <typename Preview, typename Charset>
-    void init_(Preview& preview, Charset charset);
+    template <typename PrePrinting, typename Charset>
+    void init_(PrePrinting& pre, Charset charset);
 };
 
 template <typename CharT>
-template <typename Preview, typename Charset>
-void ipv6_printer<CharT>::init_(Preview& preview, Charset charset)
+template <typename PrePrinting, typename Charset>
+void ipv6_printer<CharT>::init_(PrePrinting& pre, Charset charset)
 {
     if (style_ == ipv6style::little) {
         abbrev_ = xxx::ipv6address_abbreviation{addr_};
     }
     auto count = count_ipv6_characters();
     if (count > alignment_fmt_.width) {
-        preview.subtract_width(count);
+        pre.subtract_width(count);
     } else {
         fillcount_ = (alignment_fmt_.width - count).round();
-        if (Preview::size_required && fillcount_ > 0) {
-            preview.add_size(fillcount_ * charset.encoded_char_size(alignment_fmt_.fill));
+        if (PrePrinting::size_required && fillcount_ > 0) {
+            pre.add_size(fillcount_ * charset.encoded_char_size(alignment_fmt_.fill));
         }
-        preview.subtract_width(alignment_fmt_.width);
+        pre.subtract_width(alignment_fmt_.width);
     }
-    preview.add_size(count);
+    pre.add_size(count);
 }
 
 inline std::uint16_t hex_digits_count(std::uint16_t x)
@@ -226,20 +226,20 @@ struct printing_traits<xxx::ipv6address> {
     using forwarded_type = xxx::ipv6address;
     using formatters = strf::tag<ipv6_formatter, strf::alignment_formatter>;
 
-    template <typename CharT, typename Preview, typename FPack, typename... T>
+    template <typename CharT, typename PrePrinting, typename FPack, typename... T>
     static auto make_input
         ( strf::tag<CharT>
-        , Preview& preview
+        , PrePrinting& pre
         , const FPack& fp
         , strf::value_with_formatters<T...> arg )
         -> strf::usual_arg_printer_input
             < CharT
-            , Preview
+            , PrePrinting
             , FPack
             , strf::value_with_formatters<T...>
             , ipv6_printer<CharT> >
     {
-        return {preview, fp, arg};
+        return {pre, fp, arg};
     }
 };
 

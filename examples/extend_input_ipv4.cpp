@@ -32,27 +32,27 @@ struct printing_traits<xxx::ipv4address> {
         return strf::join(bytes[0], dot, bytes[1], dot, bytes[2], dot, bytes[3]);
     }
 
-    template <typename CharT, typename Preview, typename FPack>
+    template <typename CharT, typename PrePrinting, typename FPack>
     static auto make_input
         ( strf::tag<CharT>
-        , Preview& preview
+        , PrePrinting& pre
         , const FPack& fp
         , forwarded_type arg )
     {
         auto arg2 = transform_arg<CharT>(arg);
-        return strf::make_default_arg_printer_input<CharT>(preview, fp, arg2);
+        return strf::make_default_arg_printer_input<CharT>(pre, fp, arg2);
     }
 
-    template <typename CharT, typename Preview, typename FPack, typename... T>
+    template <typename CharT, typename PrePrinting, typename FPack, typename... T>
     static auto make_input
         ( strf::tag<CharT>
-        , Preview& preview
+        , PrePrinting& pre
         , const FPack& fp
         , strf::value_with_formatters<T...> arg )
     {
         auto arg2 = transform_arg<CharT>(arg.value());
         auto arg3 = arg2.set_alignment_format(arg.get_alignment_format());
-        return strf::make_default_arg_printer_input<CharT>(preview, fp, arg3);
+        return strf::make_default_arg_printer_input<CharT>(pre, fp, arg3);
     }
 };
 

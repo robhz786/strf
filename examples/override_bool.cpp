@@ -9,16 +9,16 @@ struct my_bool_override
 {
     using category = strf::print_override_c;
 
-    template <typename CharT, typename Preview, typename FPack, typename... T>
+    template <typename CharT, typename PrePrinting, typename FPack, typename... T>
     constexpr auto make_input
         ( strf::tag<CharT>
-        , Preview& preview
+        , PrePrinting& pre
         , const FPack& fp
         , strf::value_with_formatters<T...> x ) const noexcept
     {
         bool value = x.value();
         return strf::make_arg_printer_input<CharT>
-            ( preview
+            ( pre
             , fp
             , strf::conv(false_true_strings[value], strf::utf_t<char>{})
                 .set_alignment_format(x.get_alignment_format()) );

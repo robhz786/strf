@@ -154,10 +154,10 @@ struct printing_traits<std::complex<FloatT>>
         , strf::alignment_formatter
         , strf::float_formatter >;
 
-    // template <typename CharT, typename Preview, typename FPack>
+    // template <typename CharT, typename PrePrinting, typename FPack>
     // static auto make_input
     //     ( strf::tag<CharT>
-    //     , Preview& preview
+    //     , PrePrinting& pre
     //     , const FPack& fp
     //     , std::complex<FloatT> arg)
     // {
@@ -171,13 +171,13 @@ struct printing_traits<std::complex<FloatT>>
     //         , v.second
     //         , strf::multi((CharT)')', has_brackets) );
 
-    //     return strf::make_default_arg_printer_input<CharT>(preview, fp, arg2);
+    //     return strf::make_default_arg_printer_input<CharT>(pre, fp, arg2);
     // }
 
-    template <typename CharT, typename Preview, typename FPack, typename... T>
+    template <typename CharT, typename PrePrinting, typename FPack, typename... T>
     static auto make_input
         ( strf::tag<CharT>
-        , Preview& preview
+        , PrePrinting& pre
         , const FPack& fp
         , strf::value_with_formatters<T...> arg )
     {
@@ -191,7 +191,7 @@ struct printing_traits<std::complex<FloatT>>
             , strf::fmt(v.second).set_float_format(arg.get_float_format())
             , strf::multi((CharT)')', has_brackets) );
         auto arg3 = arg2.set_alignment_format(arg.get_alignment_format());
-        return strf::make_default_arg_printer_input<CharT>(preview, fp, arg3);
+        return strf::make_default_arg_printer_input<CharT>(pre, fp, arg3);
     }
 
 private:

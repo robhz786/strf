@@ -20,8 +20,8 @@ http://www.boost.org/LICENSE_1_0.txt)
 :print_override_c:           <<strf_hpp#print_override_c,print_override_c>>
 :no_print_override:          <<strf_hpp#no_print_override,no_print_override>>
 :arg_printer:                <<strf_hpp#arg_printer,arg_printer>>
-:print_preview:              <<strf_hpp#print_preview,print_preview>>
-:preview:                    <<strf_hpp#preview,preview>>
+:preprinting:                <<strf_hpp#preprinting,preprinting>>
+:precalculate:               <<strf_hpp#precalculate,precalculate>>
 :value_with_formatters:      <<strf_hpp#value_with_formatters,value_with_formatters>>
 :make_arg_printer_input:         <<strf_hpp#make_arg_printer_input,make_arg_printer_input>>
 :strf_make_arg_printer_input:    <<strf_hpp#make_arg_printer_input,strf::make_arg_printer_input>>
@@ -110,10 +110,10 @@ struct printing_traits<std::complex<FloatT>> {
     using override_tag = std::complex<FloatT>;
     using forwarded_type = std::complex<FloatT>;
 
-    template <typename CharT, typename Preview, typename FPack>
+    template <typename CharT, typename Pre, typename FPack>
     static auto make_input
         ( strf::tag<CharT> // <1>
-        , Preview& preview // <2>
+        , Pre& pre // <2>
         , const FPack& fp  // <3>
         , std::complex<FloatT> arg )// <4>
     {
@@ -122,7 +122,7 @@ struct printing_traits<std::complex<FloatT>> {
             , static_cast<CharT>(','), arg.imag()
             , static_cast<CharT>(')') );
 
-        return strf::make_arg_printer_input<CharT>(preview, fp, arg2);
+        return strf::make_arg_printer_input<CharT>(pre, fp, arg2);
     }
 };
 
@@ -132,7 +132,7 @@ struct printing_traits<std::complex<FloatT>> {
     If you just need/want to support one character type, like `char`,
     then use instead `strf::tag<char>` ( and remove the `typename CharT`
     from the template parameters list )
-<2> `Preview` is expected to be an instance of the `{print_preview}`
+<2> `Pre` is expected to be an instance of the `{preprinting}`
 class template.
 <3> `FPack` is expected to be an instance of the `{facets_pack}` class template.
 `fp` contains the facet objects.
@@ -144,18 +144,18 @@ That's because the expression:
 
 [source,cpp,subs=normal]
 ----
-{strf_make_arg_printer_input}<CharT>(__preview__, __fp__, __foo__)
+{strf_make_arg_printer_input}<CharT>(__pre__, __fp__, __foo__)
 ----
 is equivalent to:
 [source,cpp,subs=normal]
 ----
-__overrider__.make_input({tag}<CharT>{}, __preview__, __fp__, __foo__)
+__overrider__.make_input({tag}<CharT>{}, __pre__, __fp__, __foo__)
 ----
 , where `__overrider__` is a facet object of the `{print_override_c}` category.
 If it is the default facet, then such expression is equivalent to:
 [source,cpp,subs=normal]
 ----
-__foo_printing_traits__::make_input({tag}<CharT>{}, __preview__, __fp__, __foo__)
+__foo_printing_traits__::make_input({tag}<CharT>{}, __pre__, __fp__, __foo__)
 ----
 where `__foo_printing_traits__` is the return type of
 `tag_invoke(strf::printing_tag{}, __foo__)`
@@ -171,7 +171,7 @@ __i.e.__ to simply convert the value to another type that is already printable.
 A <<creating_printer,further section>> explains how to deal with such cases.
 
 ////
-The `Preview` template parameter is always an instance of the `preview`
+The `Pre` template parameter is always an instance of the `pre`
 value that is an already printable.
 ////
 
@@ -232,10 +232,10 @@ struct printing_traits<std::complex<FloatT>> {
     using override_tag = std::complex<FloatT>;
     using forwarded_type = std::complex<FloatT>;
 
-    template <typename CharT, typename Preview, typename FPack>
+    template <typename CharT, typename Pre, typename FPack>
     static auto make_input
         ( strf::tag<CharT>
-        , Preview& preview
+        , Pre& pre
         , const FPack& fp
         , std::complex<FloatT> arg)
     {
@@ -249,7 +249,7 @@ struct printing_traits<std::complex<FloatT>> {
             , v.second
             , strf::{multi}(static_cast<CharT>(')'), has_brackets) );
 
-        return strf::make_arg_printer_input<CharT>(preview, fp, arg2);
+        return strf::make_arg_printer_input<CharT>(pre, fp, arg2);
     }
 
 private:
@@ -321,13 +321,13 @@ if (form != complex_form::polar) {
             , strf::{conv}(middle_string(form), strf::{utf}<char16_t>)
             , v.second
             , static_cast<CharT>(')') );
-    return strf::make_arg_printer_input<CharT>(preview, fp, j1);
+    return strf::make_arg_printer_input<CharT>(pre, fp, j1);
 }
 auto j2 = strf::join
     ( v.first
     , strf::{conv}(middle_string(form), strf::{utf}<char16_t>)
     , v.second );
-return strf::make_arg_printer_input<CharT>(preview, fp, j2); // different return type !
+return strf::make_arg_printer_input<CharT>(pre, fp, j2); // different return type !
 ----
 
 That wouldn't compile since `j1` and `j2` have different types.
@@ -415,10 +415,10 @@ struct printing_traits<std::complex<FloatT>> {
 
     // \...
 
-    template <typename CharT, typename Preview, typename FPack>
+    template <typename CharT, typename Pre, typename FPack>
     static auto make_input
         ( strf::tag<CharT>
-        , Preview& preview
+        , Pre& pre
         , const FPack& fp
         , std::complex<FloatT> arg)
     {
@@ -426,10 +426,10 @@ struct printing_traits<std::complex<FloatT>> {
         // ( same as before )
     }
 
-    template < typename CharT, typename Preview, typename FPack, typename\... T>
+    template < typename CharT, typename Pre, typename FPack, typename\... T>
     static auto make_input
         ( strf::tag<CharT>
-        , Preview& preview
+        , Pre& pre
         , const FPack& fp
         , strf::{value_with_formatters}<T\...> arg )
     {
@@ -445,7 +445,7 @@ struct printing_traits<std::complex<FloatT>> {
             , strf::fmt(v.second).{set_float_format}(arg.{get_float_format}())
             , strf::{multi}(static_cast<CharT>(')'), has_brackets) );
         auto arg3 = arg2.{set_alignment_format}(arg.{get_alignment_format}());
-        return strf::make_arg_printer_input<CharT>(preview, fp, arg3);
+        return strf::make_arg_printer_input<CharT>(pre, fp, arg3);
     }
 };
 
@@ -474,13 +474,13 @@ without formatting ), but we could also remove it. Because when the expression
 below is not well-formed:
 [source,cpp,subs=normal]
 ----
-__PrintingTraits__::make_input({tag}<CharT>{}, preview, fp, x)
+__PrintingTraits__::make_input({tag}<CharT>{}, pre, fp, x)
 ----
 , and the type of `x` is not an instance `{value_with_formatters}`, then
 the library invokes the following instead:
 [source,cpp,subs=normal]
 ----
-__PrintingTraits__::make_input({tag}<CharT>{}, preview, fp, strf::fmt(x))
+__PrintingTraits__::make_input({tag}<CharT>{}, pre, fp, strf::fmt(x))
 ----
 
 Anyway, let's examine the new function. You can see there are few changes from
@@ -624,10 +624,10 @@ struct printing_traits<std::complex<FloatT>> {
         , strf::alignment_formatter
         , strf::float_formatter >;
 
-    template <typename CharT, typename Preview, typename FPack>
+    template <typename CharT, typename Pre, typename FPack>
     static auto make_input
         ( strf::tag<CharT>
-        , Preview& preview
+        , Pre& pre
         , const FPack& fp
         , std::complex<FloatT> arg)
     {
@@ -635,10 +635,10 @@ struct printing_traits<std::complex<FloatT>> {
         //\...
     }
 
-    template < typename CharT, typename Preview, typename FPack, typename\... T>
+    template < typename CharT, typename Pre, typename FPack, typename\... T>
     static auto make_input
         ( strf::tag<CharT>
-        , Preview& preview
+        , Pre& pre
         , const FPack& fp
         , strf::{value_with_formatters}<T\...> arg )
     {
@@ -758,17 +758,17 @@ struct printing_traits<std::complex<FloatT>>
     using formatters = strf::tag< ... /{asterisk}same as before{asterisk}/>;
 
     // make_print_input that handles unformatted values
-    template <typename CharT, typename Preview, typename FPack>
+    template <typename CharT, typename Pre, typename FPack>
     static auto make_input
         ( strf::tag<CharT>
-        , Preview& preview
+        , Pre& pre
         , const FPack& fp
         , std::complex<FloatT> arg )
         \-> strf::{usual_arg_printer_input}
-            < CharT, Preview, FPack, std::complex<FloatT>
+            < CharT, Pre, FPack, std::complex<FloatT>
             , std_complex_printer<CharT, FloatT> >
     {
-        return {preview, fp, arg};
+        return {pre, fp, arg};
     }
 
     ... /{asterisk} omitting the make_print_input overload that handles formatted values {asterisk}/ ...
@@ -801,8 +801,8 @@ public:
 
 private:
 
-    template <typename Preview, typename WCalc>
-    void preview_(Preview& preview, const WCalc& wcalc) const;
+    template <typename Pre, typename WCalc>
+    void pre_(Pre& pre, const WCalc& wcalc) const;
 
     strf::{dynamic_charset}<CharT> charset_;
     strf::{numpunct}<10> numpunct_;
@@ -849,7 +849,7 @@ inline std_complex_printer<CharT, FloatT>::std_complex_printer
 {
     auto wcalc = strf::{use_facet}< strf::{width_calculator_c}
                                 , std::complex<FloatT> >(x.facets);
-    preview_(x.preview, wcalc);
+    pre_(x.pre, wcalc);
 }
 ----
 
@@ -868,9 +868,9 @@ The type you choose to extract the charset facet object makes
 no difference since charset facets are not constrainable.
 
 Now, in addition to initialize the object, the constructor *must*
-do another thing. `{usual_arg_printer_input}` contains a `{print_preview}`
-reference, named `preview`. When the first template argument of this
-`print_preview` is `preview_size::yes`, then
+do another thing. `{usual_arg_printer_input}` contains a `{preprinting}`
+reference, named `pre`. When the first template argument of this
+`preprinting` is `precalc_size::yes`, then
 we must inform the size of the content that `print_to` writes.
 Actually, let me rephare that, because it's a little bit tricky:
 our constructor must inform
@@ -892,52 +892,52 @@ define your constructor with this:
 
 [source,cpp,subs=normal]
 ----
-using preview_type = typename strf::usual_arg_printer_input<T\...>::preview_type;
-static_assert(! preview_type::<<strf_hpp#print_preview,size_required>>);
+using pre_t = typename strf::usual_arg_printer_input<T\...>::preprinting_type;
+static_assert(! pre_t::<<strf_hpp#preprinting,size_required>>);
 ----
 That prevents your printable type to compile when the feature
 `<<tutorial#syntax,reserve_calc>>` is used,
 which may not be a problem in many cases.
 
 When the second template argument of this
-`print_preview` is `preview_width::yes`, then we must inform
-`x.preview` the `width`. This happens only when your printable type
+`preprinting` is `precalc_width::yes`, then we must inform
+`x.pre` the `width`. This happens only when your printable type
 is used it in an <<quick_reference#aligned_join,aligned join>>.
 So if you don't care about supporting that situation, you can just do:
 
 [source,cpp,subs=normal]
 ----
-using preview_type = typename strf::usual_arg_printer_input<T...>::preview_type;
-static_assert(! preview_type::<<strf_hpp#print_preview,width_required>>);
+using pre_t = typename strf::usual_arg_printer_input<T...>::preprinting_type;
+static_assert(! pre_t::<<strf_hpp#preprinting,width_required>>);
 
-// or, if you don't want to preview the size either:
-static_assert(preview_type::<<strf_hpp#print_preview,nothing_required>>);
+// or, if you don't want to calculate the size either:
+static_assert(pre_t::<<strf_hpp#preprinting,nothing_required>>);
 ----
 
-Fortunately, in our case, previewing the size and width is not that difficult.
+Fortunately, in our case, calculating the size and width is not that difficult.
 For the floating point values, we can use the global function template
-`{preview}`. The rest of the content we can easily calculate manually:
+`{pre}`. The rest of the content we can easily calculate manually:
 
 ////
 For the floating point values, we can use the global function template
-`{preview}`, which we actually could use for the whole content . I mean, I could
-implement the `preview_` member function very similiarly to `print_to`,
+`{pre}`, which we actually could use for the whole content . I mean, I could
+implement the `pre_` member function very similiarly to `print_to`,
 basically just replacing every `print(__args__...)` by
-`strf::preview(pp, facets, __args__...)`. But there is a more efficient
+`strf::precalculate(pp, facets, __args__...)`. But there is a more efficient
 implementation:
 ////
 
 [source,cpp,subs=normal]
 ----
 template <typename CharT, typename FloatT>
-template <typename Preview, typename WidthCalc>
-void std_complex_printer<CharT, FloatT>::preview_(Preview& pp, const WidthCalc& wcalc) const
+template <typename Pre, typename WidthCalc>
+void std_complex_printer<CharT, FloatT>::pre_(Pre& pp, const WidthCalc& wcalc) const
 {
-    // preview the size and/or width of the floating-point values:
+    // calculate the size and/or width of the floating-point values:
     auto facets = strf::pack(lettercase_, numpunct_, charset_);
-    strf::preview<CharT>(pp, facets, coordinates_.first, coordinates_.second);
+    strf::precalculate<CharT>(pp, facets, coordinates_.first, coordinates_.second);
 
-    // preview the other characters:
+    // calculate the size and/or width of the other characters:
     switch (form_) {
         case complex_form::algebric:
             pp.subtract_width(7);
@@ -977,7 +977,8 @@ But, of course, we are not done yet, since it only handles
 another printer &#x2014; you could name `fmt_std_complex_printer`
 &#x2014; to print formatted values, which is naturally a little
 bit more complex. However, it's basically the same idea:
-`print_to` prints the content and the constructor previews it. Here is a full implementation:
+`print_to` prints the content and the constructor precalculates its size and/or width.
+You can see a full implementation in
 {strf-src-root}/examples/std_complex_printer.cpp[examples/std_complex_printer.cpp].
 
 
