@@ -102,12 +102,12 @@ struct ipv6_formatter
 // 2. Create the printer class
 // -----------------------------------------------------------------------------
 template <typename CharT>
-class ipv6_printer: public strf::arg_printer<CharT>
+class ipv6_printer: public strf::stringifier<CharT>
 {
 public:
 
     template <typename... T>
-    ipv6_printer(strf::usual_arg_printer_input<CharT, T...> input)
+    ipv6_printer(strf::usual_stringifier_input<CharT, T...> input)
         : addr_(input.arg.value())
         , alignment_fmt_(input.arg.get_alignment_format())
         , lettercase_(strf::use_facet<strf::lettercase_c, xxx::ipv6address>(input.facets))
@@ -232,7 +232,7 @@ struct printing_traits<xxx::ipv6address> {
         , PrePrinting& pre
         , const FPack& fp
         , strf::value_with_formatters<T...> arg )
-        -> strf::usual_arg_printer_input
+        -> strf::usual_stringifier_input
             < CharT
             , PrePrinting
             , FPack

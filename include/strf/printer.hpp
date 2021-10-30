@@ -13,17 +13,22 @@
 namespace strf {
 
 template <typename CharT>
-class arg_printer
+class stringifier
 {
 public:
     using char_type = CharT;
 
-    STRF_HD virtual ~arg_printer()
+    STRF_HD virtual ~stringifier()
     {
     }
 
     STRF_HD virtual void print_to(strf::destination<CharT>& dest) const = 0;
 };
+
+template <typename CharT>
+using arg_printer
+STRF_DEPRECATED_MSG("arg_printer was renamed to stringifier")
+= stringifier<CharT>;
 
 struct string_input_tag_base
 {
@@ -268,11 +273,11 @@ namespace detail {
 
 #if defined(__cpp_fold_expressions)
 
-template <typename CharT, typename ... Printers>
+template <typename CharT, typename... Stringifiers>
 inline STRF_HD void write_args( strf::destination<CharT>& dest
-                              , const Printers& ... printers )
+                              , const Stringifiers&... stringifiers )
 {
-    (... , printers.print_to(dest));
+    (... , stringifiers.print_to(dest));
 }
 
 #else // defined(__cpp_fold_expressions)
@@ -282,15 +287,15 @@ inline STRF_HD void write_args(strf::destination<CharT>&)
 {
 }
 
-template <typename CharT, typename Printer, typename ... Printers>
+template <typename CharT, typename Stringifier, typename... Stringifiers>
 inline STRF_HD void write_args
     ( strf::destination<CharT>& dest
-    , const Printer& printer
-    , const Printers& ... printers )
+    , const Stringifier& stringifier
+    , const Stringifiers&... stringifiers )
 {
-    printer.print_to(dest);
+    stringifier.print_to(dest);
     if (dest.good()) {
-        write_args<CharT>(dest, printers ...);
+        write_args<CharT>(dest, stringifiers...);
     }
 }
 
@@ -303,14 +308,14 @@ namespace detail{
 template
     < class From
     , class To
-    , template <class ...> class List
-    , class ... T >
+    , template <class...> class List
+    , class... T >
 struct fmt_replace_impl2
 {
     template <class U>
     using f = strf::detail::conditional_t<std::is_same<From, U>::value, To, U>;
 
-    using type = List<f<T> ...>;
+    using type = List<f<T>...>;
 };
 
 template <class From, class List>
@@ -318,9 +323,9 @@ struct fmt_replace_impl;
 
 template
     < class From
-    , template <class ...> class List
-    , class ... T>
-struct fmt_replace_impl<From, List<T ...> >
+    , template <class...> class List
+    , class... T>
+struct fmt_replace_impl<From, List<T...> >
 {
     template <class To>
     using type_tmpl =
@@ -371,7 +376,7 @@ using fmt_replace
     = typename strf::detail::fmt_replace_impl<From, List>
     ::template type_tmpl<To>;
 
-template <typename PrintingTraits, class ... Fmts>
+template <typename PrintingTraits, class... Fmts>
 class value_with_formatters;
 
 namespace detail {
@@ -402,15 +407,15 @@ struct is_value_with_formatters<T&&> : is_value_with_formatters<T>
 
 } // namespace detail
 
-template <typename PrintingTraits, class ... Fmts>
+template <typename PrintingTraits, class... Fmts>
 class value_with_formatters
-    : public Fmts::template fn<value_with_formatters<PrintingTraits, Fmts ...>> ...
+    : public Fmts::template fn<value_with_formatters<PrintingTraits, Fmts...>> ...
 {
 public:
     using traits = PrintingTraits;
     using value_type = typename PrintingTraits::forwarded_type;
 
-    template <typename ... OtherFmts>
+    template <typename... OtherFmts>
     using replace_fmts = strf::value_with_formatters<PrintingTraits, OtherFmts ...>;
 
     explicit constexpr STRF_HD value_with_formatters(const value_type& v)
@@ -511,28 +516,37 @@ private:
     value_type value_;
 };
 
-template <typename CharT, typename PrePrinting, typename FPack, typename Arg, typename Printer>
-struct usual_arg_printer_input;
+template <typename CharT, typename PrePrinting, typename FPack, typename Arg, typename Stringifier>
+struct usual_stringifier_input;
+
+template <typename CharT, typename PrePrinting, typename FPack, typename Arg, typename Stringifier>
+using usual_arg_printer_input
+STRF_DEPRECATED_MSG("usual_arg_printer_input was renamed to usual_stringifier_input")
+= usual_stringifier_input<CharT, PrePrinting, FPack, Arg, Stringifier>;
 
 template< typename CharT
         , strf::precalc_size PrecalcSize
         , strf::precalc_width PrecalcWidth
         , typename FPack
         , typename Arg
-        , typename Printer >
-struct usual_arg_printer_input
-    < CharT, strf::preprinting<PrecalcSize, PrecalcWidth>, FPack, Arg, Printer >
+        , typename Stringifier >
+struct usual_stringifier_input
+    < CharT, strf::preprinting<PrecalcSize, PrecalcWidth>, FPack, Arg, Stringifier >
 {
     using char_type = CharT;
     using arg_type = Arg;
     using preprinting_type = strf::preprinting<PrecalcSize, PrecalcWidth>;
     using fpack_type = FPack;
-    using printer_type = Printer;
+    using stringifier_type = Stringifier;
+    using printer_type STRF_DEPRECATED_MSG("printer_type renamed to stringifier_type")
+        = Stringifier;
 
     preprinting_type& pre;
     FPack facets;
     Arg arg;
 };
+
+
 
 template<typename T>
 struct printing_traits;
@@ -797,7 +811,7 @@ template < typename UnadaptedMaker
          , typename PrePrinting
          , typename FPack
          , typename Arg >
-struct can_make_arg_printer_input_impl
+struct can_make_stringifier_input_impl
 {
     template <typename P>
     static STRF_HD auto test_(PrePrinting& pre, const FPack& facets, const Arg& arg)
@@ -821,8 +835,8 @@ template < typename UnadaptedMaker
          , typename PrePrinting
          , typename FPack
          , typename Arg >
-using can_make_arg_printer_input = typename
-    can_make_arg_printer_input_impl<UnadaptedMaker, CharT, PrePrinting, FPack, Arg>
+using can_make_stringifier_input = typename
+    can_make_stringifier_input_impl<UnadaptedMaker, CharT, PrePrinting, FPack, Arg>
     ::result;
 
 struct arg_adapter_rm_fmt
@@ -867,7 +881,7 @@ template < typename PrintingTraits
 struct adapter_selector_3<PrintingTraits, Maker, CharT, PrePrinting, FPack, DefaultVwf, DefaultVwf>
 {
     static constexpr bool can_pass_directly =
-        can_make_arg_printer_input<Maker, CharT, PrePrinting, FPack, DefaultVwf>
+        can_make_stringifier_input<Maker, CharT, PrePrinting, FPack, DefaultVwf>
         ::value;
 
     using adapter_type = typename std::conditional
@@ -887,10 +901,10 @@ template < typename PrintingTraits
 struct adapter_selector_2
 {
     static constexpr bool can_pass_directly =
-        can_make_arg_printer_input<Maker, CharT, PrePrinting, FPack, Arg>
+        can_make_stringifier_input<Maker, CharT, PrePrinting, FPack, Arg>
         ::value;
     static constexpr bool can_pass_as_fmt =
-        can_make_arg_printer_input<Maker, CharT, PrePrinting, FPack, DefaultVwf>
+        can_make_stringifier_input<Maker, CharT, PrePrinting, FPack, DefaultVwf>
         ::value;
     static constexpr bool shall_adapt = !can_pass_directly && can_pass_as_fmt;
 
@@ -1051,6 +1065,7 @@ template < typename CharT
              = strf::detail::mk_pr_in::helper_no_override<CharT, PrePrinting, FPack, Arg>
          , typename Maker = typename Helper::maker_type
          , typename ChTag = strf::tag<CharT> >
+STRF_DEPRECATED_MSG("make_default_arg_printer_input was renamed to make_default_stringifier_input")
 constexpr STRF_HD auto make_default_arg_printer_input(PrePrinting& p, const FPack& fp, const Arg& arg)
     noexcept(noexcept(Maker::make_input(ChTag{}, p, fp, Helper::adapt_arg(arg))))
     -> decltype(Maker::make_input(ChTag{}, p, fp, Helper::adapt_arg(arg)))
@@ -1065,7 +1080,37 @@ template < typename CharT
          , typename Helper = strf::detail::mk_pr_in::helper<CharT, PrePrinting, FPack, Arg>
          , typename Maker = typename Helper::maker_type
          , typename ChTag = strf::tag<CharT> >
+STRF_DEPRECATED_MSG("make_arg_printer_input was renamed to make_stringifier_input")
 constexpr STRF_HD auto make_arg_printer_input(PrePrinting& p, const FPack& fp, const Arg& arg)
+    -> decltype(((const Maker*)0)->make_input(ChTag{}, p, fp, Helper::adapt_arg(arg)))
+{
+    return Helper::get_maker(fp)
+        .make_input(strf::tag<CharT>{}, p, fp, Helper::adapt_arg(arg));
+}
+
+template < typename CharT
+         , typename PrePrinting
+         , typename FPack
+         , typename Arg
+         , typename Helper
+             = strf::detail::mk_pr_in::helper_no_override<CharT, PrePrinting, FPack, Arg>
+         , typename Maker = typename Helper::maker_type
+         , typename ChTag = strf::tag<CharT> >
+constexpr STRF_HD auto make_default_stringifier_input(PrePrinting& p, const FPack& fp, const Arg& arg)
+    noexcept(noexcept(Maker::make_input(ChTag{}, p, fp, Helper::adapt_arg(arg))))
+    -> decltype(Maker::make_input(ChTag{}, p, fp, Helper::adapt_arg(arg)))
+{
+    return Maker::make_input(ChTag{}, p, fp, Helper::adapt_arg(arg));
+}
+
+template < typename CharT
+         , typename PrePrinting
+         , typename FPack
+         , typename Arg
+         , typename Helper = strf::detail::mk_pr_in::helper<CharT, PrePrinting, FPack, Arg>
+         , typename Maker = typename Helper::maker_type
+         , typename ChTag = strf::tag<CharT> >
+constexpr STRF_HD auto make_stringifier_input(PrePrinting& p, const FPack& fp, const Arg& arg)
     -> decltype(((const Maker*)0)->make_input(ChTag{}, p, fp, Helper::adapt_arg(arg)))
 {
     return Helper::get_maker(fp)
@@ -1081,10 +1126,10 @@ struct no_print_override
         , PrePrinting& pre
         , const FPack& facets
         , Arg&& arg )
-        noexcept(noexcept(strf::make_default_arg_printer_input<CharT>(pre, facets, arg)))
-        -> decltype(strf::make_default_arg_printer_input<CharT>(pre, facets, arg))
+        noexcept(noexcept(strf::make_default_stringifier_input<CharT>(pre, facets, arg)))
+        -> decltype(strf::make_default_stringifier_input<CharT>(pre, facets, arg))
     {
-        return strf::make_default_arg_printer_input<CharT>(pre, facets, arg);
+        return strf::make_default_stringifier_input<CharT>(pre, facets, arg);
     }
 };
 
@@ -1110,14 +1155,17 @@ template <typename T>
 using override_tag = typename strf::printing_traits_of<T>::override_tag;
 
 template <typename CharT, typename PrePrinting, typename FPack, typename Arg>
-using printer_input_type = decltype
-    ( strf::make_arg_printer_input<CharT>
+using stringifier_input_type = decltype
+    ( strf::make_stringifier_input<CharT>
         ( std::declval<PrePrinting&>()
         , std::declval<const FPack&>()
         , std::declval<Arg>() ) );
 
 template <typename CharT, typename PrePrinting, typename FPack, typename Arg>
-using arg_printer_type = typename printer_input_type<CharT, PrePrinting, FPack, Arg>::printer_type;
+using stringifier_type = typename stringifier_input_type<CharT, PrePrinting, FPack, Arg>::printer_type;
+
+template <typename CharT, typename PrePrinting, typename FPack, typename Arg>
+using arg_printer_type = stringifier_type<CharT, PrePrinting, FPack, Arg>;
 
 template < typename CharT
          , strf::precalc_size SizeRequired
@@ -1162,8 +1210,8 @@ STRF_HD void precalculate_only_width
 {
     using pp_type = strf::preprinting<strf::precalc_size::no, strf::precalc_width::yes>;
 
-    (void) strf::arg_printer_type<CharT, pp_type, strf::facets_pack<FPE...>, Arg>
-        ( strf::make_arg_printer_input<CharT>(pp, facets, arg) );
+    (void) strf::stringifier_type<CharT, pp_type, strf::facets_pack<FPE...>, Arg>
+        ( strf::make_stringifier_input<CharT>(pp, facets, arg) );
 
     if (pp.remaining_width() > 0) {
         strf::detail::precalculate_only_width<CharT>(pp, facets, other_args...);
@@ -1204,8 +1252,8 @@ STRF_HD void precalculate
 {
     using pp_type = strf::preprinting<strf::precalc_size::yes, WidthRequired>;
     strf::detail::do_nothing_with
-        ( strf::arg_printer_type<CharT, pp_type, strf::facets_pack<FPE...>, Args>
-          ( strf::make_arg_printer_input<CharT>(pp, facets, args) ) ... );
+        ( strf::stringifier_type<CharT, pp_type, strf::facets_pack<FPE...>, Args>
+          ( strf::make_stringifier_input<CharT>(pp, facets, args) ) ... );
 }
 
 template <typename> struct is_char: public std::false_type {};
@@ -2079,7 +2127,7 @@ template <typename Charset, typename ErrHandler>
 STRF_HD void tr_string_write
     ( const typename Charset::code_unit* str
     , const typename Charset::code_unit* str_end
-    , const strf::arg_printer<typename Charset::code_unit>* const * args
+    , const strf::stringifier<typename Charset::code_unit>* const * args
     , std::size_t num_args
     , strf::destination<typename Charset::code_unit>& dest
     , Charset charset
@@ -2172,22 +2220,22 @@ public:
     STRF_HD tr_string_printer
         ( strf::preprinting<SizeRequested, strf::precalc_width::no>& pre
         , const strf::preprinting<SizeRequested, strf::precalc_width::no>* args_pre
-        , std::initializer_list<const strf::arg_printer<char_type>*> printers
+        , std::initializer_list<const strf::stringifier<char_type>*> stringifiers
         , const char_type* tr_string
         , const char_type* tr_string_end
         , Charset charset
         , ErrHandler err_handler ) noexcept
         : tr_string_(tr_string)
         , tr_string_end_(tr_string_end)
-        , printers_array_(printers.begin())
-        , num_printers_(printers.size())
+        , stringifiers_array_(stringifiers.begin())
+        , num_stringifiers_(stringifiers.size())
         , charset_(charset)
         , err_handler_(err_handler)
     {
         STRF_IF_CONSTEXPR (static_cast<bool>(SizeRequested)) {
             auto invalid_arg_size = charset.replacement_char_size();
             std::size_t s = strf::detail::tr_string_size
-                ( args_pre, printers.size(), tr_string, tr_string_end
+                ( args_pre, stringifiers.size(), tr_string, tr_string_end
                 , invalid_arg_size );
             pre.add_size(s);
         } else {
@@ -2198,7 +2246,7 @@ public:
     STRF_HD void print_to(strf::destination<char_type>& dest) const
     {
         strf::detail::tr_string_write
-            ( tr_string_, tr_string_end_, printers_array_, num_printers_
+            ( tr_string_, tr_string_end_, stringifiers_array_, num_stringifiers_
             , dest, charset_, err_handler_ );
     }
 
@@ -2206,8 +2254,8 @@ private:
 
     const char_type* tr_string_;
     const char_type* tr_string_end_;
-    const strf::arg_printer<char_type>* const * printers_array_;
-    std::size_t num_printers_;
+    const strf::stringifier<char_type>* const * stringifiers_array_;
+    std::size_t num_stringifiers_;
     Charset charset_;
     ErrHandler err_handler_;
 };
@@ -2275,7 +2323,7 @@ class printer_common
     using char_type_ = typename DestinationCreator::char_type;
 
     template <typename Arg>
-    using printer_ = strf::arg_printer_type<char_type_, PrePrinting, FPack, Arg>;
+    using stringifier_ = strf::stringifier_type<char_type_, PrePrinting, FPack, Arg>;
 
     using finish_return_type_ = destination_finish_return_type<DestinationCreator, Sized>;
 
@@ -2369,9 +2417,9 @@ public:
         PrePrinting pre;
         return self.write_
             ( pre
-            , as_printer_cref_
-              ( printer_<Args>
-                ( strf::make_arg_printer_input<char_type_>
+            , as_stringifier_cref_
+              ( stringifier_<Args>
+                ( strf::make_stringifier_input<char_type_>
                   ( pre, self.fpack_, args ) ) )... );
     }
 
@@ -2397,13 +2445,13 @@ public:
 
 private:
 
-    static inline STRF_HD const strf::arg_printer<char_type_>&
-    as_printer_cref_(const strf::arg_printer<char_type_>& p)
+    static inline STRF_HD const strf::stringifier<char_type_>&
+    as_stringifier_cref_(const strf::stringifier<char_type_>& p)
     {
         return p;
     }
-    static inline STRF_HD const strf::arg_printer<char_type_>*
-    as_printer_cptr_(const strf::arg_printer<char_type_>& p)
+    static inline STRF_HD const strf::stringifier<char_type_>*
+    as_stringifier_cptr_(const strf::stringifier<char_type_>& p)
     {
          return &p;
     }
@@ -2435,9 +2483,9 @@ private:
             ( str
             , str_end
             , pre_arr
-            , { as_printer_cptr_
-                ( printer_<Args>
-                  ( strf::make_arg_printer_input<char_type_>
+            , { as_stringifier_cptr_
+                ( stringifier_<Args>
+                  ( strf::make_stringifier_input<char_type_>
                     ( pre_arr[I], fpack, args ) ) )... } );
     }
 
@@ -2446,7 +2494,7 @@ private:
         ( const char_type_* str
         , const char_type_* str_end
         , PrePrinting* pre_arr
-        , std::initializer_list<const strf::arg_printer<char_type_>*> args ) const &
+        , std::initializer_list<const strf::stringifier<char_type_>*> args ) const &
     {
         const auto& self = static_cast<const destination_type_&>(*this);
 
@@ -2574,13 +2622,13 @@ private:
     {
     }
 
-    template <typename ... Printers>
+    template <typename ... Stringifiers>
     finish_return_type_ STRF_HD write_
         ( const preprinting_type_&
-        , const Printers& ... printers) const
+        , const Stringifiers& ... stringifiers) const
     {
         typename DestinationCreator::destination_type dest{destination_creator_.create()};
-        strf::detail::write_args(dest, printers...);
+        strf::detail::write_args(dest, stringifiers...);
         return strf::detail::finish(strf::rank<2>(), dest);
     }
 
@@ -2695,13 +2743,13 @@ private:
     {
     }
 
-    template <typename ... Printers>
+    template <typename ... Stringifiers>
     STRF_HD finish_return_type_ write_
         ( const preprinting_type_&
-        , const Printers& ... printers) const
+        , const Stringifiers& ... stringifiers) const
     {
         typename DestinationCreator::sized_destination_type dest{destination_creator_.create(size_)};
-        strf::detail::write_args(dest, printers...);
+        strf::detail::write_args(dest, stringifiers...);
         return strf::detail::finish(strf::rank<2>(), dest);
     }
 
@@ -2818,14 +2866,14 @@ private:
     {
     }
 
-    template <typename ... Printers>
+    template <typename ... Stringifiers>
     finish_return_type_ STRF_HD write_
         ( const preprinting_type_& pre
-        , const Printers& ... printers ) const
+        , const Stringifiers& ... stringifiers ) const
     {
         std::size_t size = pre.accumulated_size();
         typename DestinationCreator::sized_destination_type dest{destination_creator_.create(size)};
-        strf::detail::write_args(dest, printers...);
+        strf::detail::write_args(dest, stringifiers...);
         return strf::detail::finish(strf::rank<2>(), dest);
     }
 

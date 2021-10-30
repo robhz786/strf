@@ -5,12 +5,12 @@ Distributed under the Boost Software License, Version 1.0.
 http://www.boost.org/LICENSE_1_0.txt)
 ////
 
-:arg_printer_type: <<arg_printer_type,arg_printer_type>>
-:arg_printer:      <<arg_printer,arg_printer>>
+:stringifier_type: <<stringifier_type,stringifier_type>>
+:stringifier:      <<stringifier,stringifier>>
 :destination: <<destination_hpp#destination,destination>>
 :tag: <<tag,tag>>
 :preprinting: <<preprinting,preprinting>>
-:make_arg_printer_input: <<make_arg_printer_input,make_arg_printer_input>>
+:make_stringifier_input: <<make_stringifier_input,make_stringifier_input>>
 
 
 :basic_cstr_writer: <<destination_hpp#basic_cstr_writer,basic_cstr_writer>>
@@ -399,9 +399,9 @@ typename DestinationCreator::destination_type dest{&#95;dest&#95;creator.create(
 ----
 using pre_t = {preprinting}<precalc_size::no, precalc_width::no>;
 pre_t pre;
-using printer_t = {arg_printer_type}<char_type, pre_t, FPack, Arg>;
-printer_t p{ {make_arg_printer_input}<char_type>(pre, &#95;fpack, arg) };
-static_cast<const {arg_printer}<char_type>&>(p).print_to(dest);
+using printer_t = {stringifier_type}<char_type, pre_t, FPack, Arg>;
+printer_t p{ {make_stringifier_input}<char_type>(pre, &#95;fpack, arg) };
+static_cast<const {stringifier}<char_type>&>(p).print_to(dest);
 ----
 where `Arg` is the type in `Args\...` corresponding to `arg`
 . Returns `dest.finish()` if such expression is valid, which is optional.
@@ -435,7 +435,7 @@ Effect:: __to-do__
 ----
 typename DestinationCreator::destination_type dest{&#95;dest&#95;creator.create()};
 ----
-. For each `arg` in `args\...`, creates an `arg_printer` object by doing:
+. For each `arg` in `args\...`, creates an `stringifier` object by doing:
 +
 [source,cpp,subs=normal]
 ----
@@ -685,12 +685,12 @@ Effect::
 using pre_type = {preprinting}<precalc_size::yes, precalc_width::no>;
 pre_type pre;
 ----
-. For each `arg` in `args\...`, creates an `arg_printer` object by doing:
+. For each `arg` in `args\...`, creates an `stringifier` object by doing:
 +
 [source,cpp,subs=normal]
 ----
-using arg_printer_t = {arg_printer_type}<char_type, pre_type, FPack, Arg>;
-arg_printer_t p{ {make_arg_printer_input}<char_type>(pre, &#95;fpack, arg) };
+using stringifier_t = {stringifier_type}<char_type, pre_type, FPack, Arg>;
+stringifier_t p{ {make_stringifier_input}<char_type>(pre, &#95;fpack, arg) };
 ----
 . Creates/get the `{destination}` object doing
 +
@@ -703,7 +703,7 @@ dest_type dest{&#95;dest&#95;creator.create(pre.<<size_accumulator_accumulated_s
 +
 [source,cpp,subs=normal]
 ----
-static_cast<const {arg_printer}<char_type>&>(p).print_to(dest);
+static_cast<const {stringifier}<char_type>&>(p).print_to(dest);
 ----
 . Returns `dest.finish()` if such expression is valid, which is optional. Otherwise the return type is `void`.
 ====
@@ -732,8 +732,8 @@ Effect:: __to-do__
 [source,cpp,subs=normal]
 ----
 preprinting<precalc_size::yes, precalc_width::no> pre;
-auto p = static_cast< const {arg_printer}<CharT>& >
-    ( {arg_printer_type}<CharT, FPack, T>{ fpack, pre, x, {tag}<CharT>{} } )
+auto p = static_cast< const {stringifier}<CharT>& >
+    ( {stringifier_type}<CharT, FPack, T>{ fpack, pre, x, {tag}<CharT>{} } )
 ----
 . Calculates the size of the content to be printed according to the
   <<tr_string,tr-string syntax>> and using the `pre` objects
@@ -1005,9 +1005,9 @@ decltype(auto) dest = &#95;dest&#95;creator.create(_size)
 ----
 using pre_t = {preprinting}<precalc_size::no, precalc_width::no>;
 pre_t pre;
-using arg_printer_t = {arg_printer_type}<char_type, pre_t, FPack, Arg>;
-arg_printer_t p{ {make_arg_printer_input}<char_type>(pre, &#95;fpack, arg) };
-static_cast<const {arg_printer}<char_type>&>(p).print_to(dest);
+using stringifier_t = {stringifier_type}<char_type, pre_t, FPack, Arg>;
+stringifier_t p{ {make_stringifier_input}<char_type>(pre, &#95;fpack, arg) };
+static_cast<const {stringifier}<char_type>&>(p).print_to(dest);
 ----
 , where `Arg` is the type in `Args\...` corresponding to `arg`
 . Returns `dest.finish()` if such expression is valid, which is optional.
@@ -1039,12 +1039,12 @@ __to-do__
 ----
 decltype(auto) dest = &#95;dest&#95;creator.create(_size)
 ----
-. For each `arg` in `args\...`, creates an `{arg_printer}` object by doing:
+. For each `arg` in `args\...`, creates an `{stringifier}` object by doing:
 +
 [source,cpp,subs=normal]
 ----
-auto p = static_cast< const {arg_printer}<CharT>& >
-    ( {arg_printer_type}<CharT, FPack, T>{fpack, pre, x, chtag} )
+auto p = static_cast< const {stringifier}<CharT>& >
+    ( {stringifier_type}<CharT, FPack, T>{fpack, pre, x, chtag} )
 ----
 , where `pre` is an instance of `preprinting<precalc_size::no, precalc_width::no>`,
 abs `chtag` is an expression of type `{tag}<CharT>`.

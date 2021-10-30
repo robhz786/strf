@@ -6,13 +6,13 @@
 #include "test_utils.hpp"
 
 template <typename CharT>
-class my_bool_printer: public strf::arg_printer<CharT>
+class my_bool_printer: public strf::stringifier<CharT>
 {
 public:
 
     template <typename... T>
     STRF_CONSTEXPR_IN_CXX14 STRF_HD my_bool_printer
-        ( const strf::usual_arg_printer_input<T...>& input )
+        ( const strf::usual_stringifier_input<T...>& input )
         : value_(input.arg)
     {
         input.pre.subtract_width(2 + (int)input.arg);
@@ -50,7 +50,7 @@ struct my_bool_printing_override
         , PrePrinting& pre
         , const FPack& fp
         , bool x ) noexcept
-        -> strf::usual_arg_printer_input<CharT, PrePrinting, FPack, bool, my_bool_printer<CharT>>
+        -> strf::usual_stringifier_input<CharT, PrePrinting, FPack, bool, my_bool_printer<CharT>>
     {
         return {pre, fp, x};
     }
@@ -61,13 +61,13 @@ struct my_bool_printing_override
         , PrePrinting& pre
         , const FPack& fp
         , strf::value_with_formatters<T...> x ) noexcept
-        -> decltype( strf::make_arg_printer_input<CharT>
+        -> decltype( strf::make_stringifier_input<CharT>
                        ( pre
                        , fp
                        , strf::join(x.value())
                            .set_alignment_format(x.get_alignment_format()) ) )
     {
-        return strf::make_arg_printer_input<CharT>
+        return strf::make_stringifier_input<CharT>
             ( pre
             , fp
             , strf::join(x.value())
@@ -85,7 +85,7 @@ struct my_int_printing_override
         , PrePrinting& pre
         , const FPack&
         , strf::value_with_formatters<T...> x ) noexcept
-        -> decltype( strf::make_arg_printer_input<CharT>
+        -> decltype( strf::make_stringifier_input<CharT>
                        ( pre
                        , strf::pack()
                        , strf::join
@@ -94,7 +94,7 @@ struct my_int_printing_override
                            , static_cast<CharT>(')') )
                            .set_alignment_format(x.get_alignment_format()) ) )
     {
-        return strf::make_arg_printer_input<CharT>
+        return strf::make_stringifier_input<CharT>
             ( pre
             , strf::pack()
             , strf::join
@@ -128,12 +128,12 @@ struct printing_traits<bool_wrapper> {
         , PrePrinting& pre
         , const FPack& fp
         , bool_wrapper f )
-        -> decltype( strf::make_arg_printer_input<CharT>
+        -> decltype( strf::make_stringifier_input<CharT>
                      ( pre
                      , strf::pack(fp, strf::constrain<strf::is_char>(strf::no_print_override{}))
                      , strf::join(static_cast<CharT>('['), f.x, static_cast<CharT>(']')) ) )
     {
-        return strf::make_arg_printer_input<CharT>
+        return strf::make_stringifier_input<CharT>
             ( pre
             , strf::pack(fp, strf::constrain<strf::is_char>(strf::no_print_override{}))
             , strf::join(static_cast<CharT>('['), f.x, static_cast<CharT>(']')) );

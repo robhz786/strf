@@ -134,7 +134,7 @@ public:
         , PrePrinting& pre
         , const FPack& fp )
         : indexed_printer<I, Printers>
-            ( strf::make_arg_printer_input<CharT>
+            ( strf::make_stringifier_input<CharT>
               ( pre, fp, args.template get<I>() ) ) ...
     {
     }
@@ -155,7 +155,7 @@ STRF_HD void write
         < CharT, strf::detail::index_sequence<I...>, Printers... >& printers )
 {
     strf::detail::write_args<CharT>
-        (dest, static_cast<const strf::arg_printer<CharT>&>(printers.template get<I>())...);
+        (dest, static_cast<const strf::stringifier<CharT>&>(printers.template get<I>())...);
 }
 
 template <typename CharT, typename ... Printers>
@@ -170,7 +170,7 @@ class printers_tuple_alias
 {
 public:
     using type = printers_tuple_impl
-        <CharT, ISeq, strf::arg_printer_type<CharT, PrePrinting, FPack, Args> ...>;
+        <CharT, ISeq, strf::stringifier_type<CharT, PrePrinting, FPack, Args> ...>;
 };
 
 template < typename CharT, typename PrePrinting, typename FPack, typename ... Args >

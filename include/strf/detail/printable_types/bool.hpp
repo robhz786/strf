@@ -30,7 +30,7 @@ struct printing_traits<bool>
         , PrePrinting& pre
         , const FPack& fp
         , bool x ) noexcept
-        -> strf::usual_arg_printer_input
+        -> strf::usual_stringifier_input
             < CharT, PrePrinting, FPack, bool, strf::detail::bool_printer<CharT> >
     {
         return {pre, fp, x};
@@ -42,7 +42,7 @@ struct printing_traits<bool>
         , PrePrinting& pre
         , const FPack& fp
         , strf::value_with_formatters<T...> x ) noexcept
-        -> strf::usual_arg_printer_input
+        -> strf::usual_stringifier_input
             < CharT, PrePrinting, FPack
             , strf::value_with_formatters<T...>
             , strf::detail::fmt_bool_printer<CharT> >
@@ -57,13 +57,13 @@ tag_invoke(strf::printing_tag, bool) noexcept { return {}; }
 namespace detail {
 
 template <typename CharT>
-class bool_printer: public arg_printer<CharT>
+class bool_printer: public stringifier<CharT>
 {
 public:
 
     template <typename... T>
     STRF_CONSTEXPR_IN_CXX14 STRF_HD bool_printer
-        ( const strf::usual_arg_printer_input<T...>& input )
+        ( const strf::usual_stringifier_input<T...>& input )
         : value_(input.arg)
         , lettercase_(strf::use_facet<strf::lettercase_c, bool>(input.facets))
     {
@@ -103,7 +103,7 @@ void STRF_HD bool_printer<CharT>::print_to(strf::destination<CharT>& dest) const
 }
 
 template <typename CharT>
-class fmt_bool_printer: public arg_printer<CharT>
+class fmt_bool_printer: public stringifier<CharT>
 {
     using this_type_ = fmt_bool_printer<CharT>;
 
@@ -111,7 +111,7 @@ public:
 
     template <typename... T>
     STRF_HD fmt_bool_printer
-        ( const strf::usual_arg_printer_input<CharT, T...>& input )
+        ( const strf::usual_stringifier_input<CharT, T...>& input )
         : value_(input.arg.value())
         , afmt_(input.arg.get_alignment_format())
         , lettercase_(strf::use_facet<strf::lettercase_c, bool>(input.facets))

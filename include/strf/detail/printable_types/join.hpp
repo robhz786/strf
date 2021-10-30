@@ -129,7 +129,7 @@ struct aligned_join_maker
 namespace detail {
 
 template<typename CharT, typename... Printers>
-class aligned_join_printer_impl: public arg_printer<CharT>
+class aligned_join_printer_impl: public stringifier<CharT>
 {
     using printers_tuple_ = strf::detail::printers_tuple<CharT, Printers...>;
 
@@ -225,7 +225,7 @@ private:
 
     using printers_tuple_storage_ = typename std::aligned_storage
 #if defined(_MSC_VER)
-        <sizeof(std::tuple<Printers...>), alignof(strf::arg_printer<CharT>)>
+        <sizeof(std::tuple<Printers...>), alignof(strf::stringifier<CharT>)>
 #else
         <sizeof(printers_tuple_), alignof(printers_tuple_)>
 #endif
@@ -276,7 +276,7 @@ template < typename CharT, strf::precalc_size PrecalcSize, strf::precalc_width P
          , typename FPack, typename Arg >
 struct print_impl_with_width_precalc_<CharT, preprinting<PrecalcSize, PrecalcWidth>, FPack, Arg>
 {
-    using type = strf::arg_printer_type
+    using type = strf::stringifier_type
         < CharT, strf::preprinting<PrecalcSize, strf::precalc_width::yes>, FPack, Arg >;
 };
 
@@ -307,7 +307,7 @@ public:
 };
 
 template<typename CharT, typename... Printers>
-class join_printer_impl: public arg_printer<CharT> {
+class join_printer_impl: public stringifier<CharT> {
 public:
 
     template<typename PrePrinting, typename FPack, typename... FwdArgs>
@@ -336,7 +336,7 @@ private:
 template <typename CharT, typename PrePrinting, typename FPack, typename... FwdArgs>
 class join_printer
     : public strf::detail::join_printer_impl
-        < CharT, strf::arg_printer_type<CharT, PrePrinting, FPack, FwdArgs>... >
+        < CharT, strf::stringifier_type<CharT, PrePrinting, FPack, FwdArgs>... >
 {
 public:
 
@@ -345,7 +345,7 @@ public:
         ( const strf::detail::join_printer_input
               < CharT, PrePrinting, FPack2, false, FwdArgs... >& input )
         : strf::detail::join_printer_impl
-            < CharT, strf::arg_printer_type<CharT, PrePrinting, FPack, FwdArgs>... >
+            < CharT, strf::stringifier_type<CharT, PrePrinting, FPack, FwdArgs>... >
             ( input.arg.value().args, input.pre, input.facets )
     {
     }

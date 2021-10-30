@@ -19,13 +19,13 @@ http://www.boost.org/LICENSE_1_0.txt)
 :Formatter:                  <<strf_hpp#Formatter,Formatter>>
 :print_override_c:           <<strf_hpp#print_override_c,print_override_c>>
 :no_print_override:          <<strf_hpp#no_print_override,no_print_override>>
-:arg_printer:                <<strf_hpp#arg_printer,arg_printer>>
+:stringifier:                <<strf_hpp#stringifier,stringifier>>
 :preprinting:                <<strf_hpp#preprinting,preprinting>>
 :precalculate:               <<strf_hpp#precalculate,precalculate>>
 :value_with_formatters:      <<strf_hpp#value_with_formatters,value_with_formatters>>
-:make_arg_printer_input:         <<strf_hpp#make_arg_printer_input,make_arg_printer_input>>
-:strf_make_arg_printer_input:    <<strf_hpp#make_arg_printer_input,strf::make_arg_printer_input>>
-:usual_arg_printer_input:        <<strf_hpp#usual_arg_printer_input,usual_arg_printer_input>>
+:make_stringifier_input:         <<strf_hpp#make_stringifier_input,make_stringifier_input>>
+:strf_make_stringifier_input:    <<strf_hpp#make_stringifier_input,strf::make_stringifier_input>>
+:usual_stringifier_input:        <<strf_hpp#usual_stringifier_input,usual_stringifier_input>>
 
 :alignment_formatter:   <<strf_hpp#alignment_formatter,alignment_formatter>>
 :alignment_formatter_q: <<strf_hpp#alignment_formatter,alignment_formatter_q>>
@@ -122,7 +122,7 @@ struct printing_traits<std::complex<FloatT>> {
             , static_cast<CharT>(','), arg.imag()
             , static_cast<CharT>(')') );
 
-        return strf::make_arg_printer_input<CharT>(pre, fp, arg2);
+        return strf::make_stringifier_input<CharT>(pre, fp, arg2);
     }
 };
 
@@ -144,7 +144,7 @@ That's because the expression:
 
 [source,cpp,subs=normal]
 ----
-{strf_make_arg_printer_input}<CharT>(__pre__, __fp__, __foo__)
+{strf_make_stringifier_input}<CharT>(__pre__, __fp__, __foo__)
 ----
 is equivalent to:
 [source,cpp,subs=normal]
@@ -160,7 +160,7 @@ __foo_printing_traits__::make_input({tag}<CharT>{}, __pre__, __fp__, __foo__)
 where `__foo_printing_traits__` is the return type of
 `tag_invoke(strf::printing_tag{}, __foo__)`
 
-WARNING: `make_arg_printer_input` function does not actually print the value,
+WARNING: `make_stringifier_input` function does not actually print the value,
 it just returns an object that the library knows how to print.
 Make sure that this returned object does not contain any dangling reference.
 For example, if the `join` in the above example contained a
@@ -249,7 +249,7 @@ struct printing_traits<std::complex<FloatT>> {
             , v.second
             , strf::{multi}(static_cast<CharT>(')'), has_brackets) );
 
-        return strf::make_arg_printer_input<CharT>(pre, fp, arg2);
+        return strf::make_stringifier_input<CharT>(pre, fp, arg2);
     }
 
 private:
@@ -321,13 +321,13 @@ if (form != complex_form::polar) {
             , strf::{conv}(middle_string(form), strf::{utf}<char16_t>)
             , v.second
             , static_cast<CharT>(')') );
-    return strf::make_arg_printer_input<CharT>(pre, fp, j1);
+    return strf::make_stringifier_input<CharT>(pre, fp, j1);
 }
 auto j2 = strf::join
     ( v.first
     , strf::{conv}(middle_string(form), strf::{utf}<char16_t>)
     , v.second );
-return strf::make_arg_printer_input<CharT>(pre, fp, j2); // different return type !
+return strf::make_stringifier_input<CharT>(pre, fp, j2); // different return type !
 ----
 
 That wouldn't compile since `j1` and `j2` have different types.
@@ -445,7 +445,7 @@ struct printing_traits<std::complex<FloatT>> {
             , strf::fmt(v.second).{set_float_format}(arg.{get_float_format}())
             , strf::{multi}(static_cast<CharT>(')'), has_brackets) );
         auto arg3 = arg2.{set_alignment_format}(arg.{get_alignment_format}());
-        return strf::make_arg_printer_input<CharT>(pre, fp, arg3);
+        return strf::make_stringifier_input<CharT>(pre, fp, arg3);
     }
 };
 
@@ -739,7 +739,7 @@ And its done! I think is a pretty complete example of how to make
 
 Sometimes, when creating a __PrinterTraits__ class,
 it is not possible possible to make its `make_input`
-member function just return `strf::make_arg_printer_input(__something__..)`
+member function just return `strf::make_stringifier_input(__something__..)`
 as we did in the previous sections.
 
 So let's see another approach to make `std::complex`
@@ -764,7 +764,7 @@ struct printing_traits<std::complex<FloatT>>
         , Pre& pre
         , const FPack& fp
         , std::complex<FloatT> arg )
-        \-> strf::{usual_arg_printer_input}
+        \-> strf::{usual_stringifier_input}
             < CharT, Pre, FPack, std::complex<FloatT>
             , std_complex_printer<CharT, FloatT> >
     {
@@ -777,25 +777,25 @@ struct printing_traits<std::complex<FloatT>>
 ----
 
 The return type of `make_input` must aways be a __{PrinterInput}__
-type, and the `{usual_arg_printer_input}` class template is syntatic sugar to
+type, and the `{usual_stringifier_input}` class template is syntatic sugar to
 achieve that.
 Most of the work lies in creating the class &#x2014;
  or, more likely, the class template &#x2014;
 used in its fifth template parameter, named here as `std_complex_printer`.
 It must be a concrete
-class that derives from `{arg_printer}<CharT>`, or that is
+class that derives from `{stringifier}<CharT>`, or that is
 https://en.cppreference.com/w/cpp/language/cast_operator[convertible]
-to `const {arg_printer}<CharT>&`. It must also be constructible from the
+to `const {stringifier}<CharT>&`. It must also be constructible from the
 return type of our `make_input` member function:
 
 [source,cpp,subs=normal]
 ----
 template <typename CharT, typename FloatT>
-class std_complex_printer: public strf::arg_printer<CharT> {
+class std_complex_printer: public strf::stringifier<CharT> {
 public:
 
     template <typename\... T>
-    explicit std_complex_printer(strf::usual_arg_printer_input<T\...>);
+    explicit std_complex_printer(strf::usual_stringifier_input<T\...>);
 
     void print_to(strf::{destination}<CharT>& dest) const override;
 
@@ -840,7 +840,7 @@ Now let's look the constructor:
 template <typename CharT, typename FloatT>
 template <typename\... T>
 inline std_complex_printer<CharT, FloatT>::std_complex_printer
-    ( strf::{usual_arg_printer_input}<T\...> x )
+    ( strf::{usual_stringifier_input}<T\...> x )
     : charset_(strf::{use_facet}<strf::{charset_c}<CharT>, void>(x.facets))
     , numpunct_(strf::{use_facet}<strf::{numpunct_c}<10>, FloatT>(x.facets))
     , lettercase_(strf::{use_facet}<strf::{lettercase_c}, FloatT>(x.facets))
@@ -868,7 +868,7 @@ The type you choose to extract the charset facet object makes
 no difference since charset facets are not constrainable.
 
 Now, in addition to initialize the object, the constructor *must*
-do another thing. `{usual_arg_printer_input}` contains a `{preprinting}`
+do another thing. `{usual_stringifier_input}` contains a `{preprinting}`
 reference, named `pre`. When the first template argument of this
 `preprinting` is `precalc_size::yes`, then
 we must inform the size of the content that `print_to` writes.
@@ -892,7 +892,7 @@ define your constructor with this:
 
 [source,cpp,subs=normal]
 ----
-using pre_t = typename strf::usual_arg_printer_input<T\...>::preprinting_type;
+using pre_t = typename strf::usual_stringifier_input<T\...>::preprinting_type;
 static_assert(! pre_t::<<strf_hpp#preprinting,size_required>>);
 ----
 That prevents your printable type to compile when the feature
@@ -907,7 +907,7 @@ So if you don't care about supporting that situation, you can just do:
 
 [source,cpp,subs=normal]
 ----
-using pre_t = typename strf::usual_arg_printer_input<T...>::preprinting_type;
+using pre_t = typename strf::usual_stringifier_input<T...>::preprinting_type;
 static_assert(! pre_t::<<strf_hpp#preprinting,width_required>>);
 
 // or, if you don't want to calculate the size either:

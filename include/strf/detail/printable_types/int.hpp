@@ -1199,7 +1199,7 @@ public:
         , PrePrinting& pre
         , const FPack& facets
         , vwf_nopp_<PTraits, Base, HasAlignment> x ) noexcept
-        -> strf::usual_arg_printer_input
+        -> strf::usual_stringifier_input
             < CharT, PrePrinting, FPack, vwf_nopp_<PTraits, Base, HasAlignment>
             , strf::detail::conditional_t
                 < HasAlignment
@@ -1216,7 +1216,7 @@ public:
         , PrePrinting& pre
         , const FPack& facets
         , vwf_bp_<PTraits, Base, Punctuate, HasAlignment> x )
-        -> strf::usual_arg_printer_input
+        -> strf::usual_stringifier_input
             < CharT, PrePrinting, FPack, vwf_bp_<PTraits, Base, Punctuate, HasAlignment>
             , strf::detail::int_printer_static_base_and_punct<CharT, Base, Punctuate> >
     {
@@ -1233,7 +1233,7 @@ public:
         -> strf::detail::conditional_t
             < ! HasAlignment
             , strf::detail::default_int_printer_input<CharT, PrePrinting, IntT>
-            , strf::usual_arg_printer_input
+            , strf::usual_stringifier_input
                 < CharT, PrePrinting, FPack, vwf_<PTraits, HasAlignment>
                 , strf::detail::aligned_default_int_printer<CharT> > >
     {
@@ -1247,7 +1247,7 @@ public:
         , PrePrinting& pre
         , const FPack& facets
         , vwf_full_dynamic_<PTraits, HasAlignment> x )
-        -> strf::usual_arg_printer_input
+        -> strf::usual_stringifier_input
                 < CharT, PrePrinting, FPack, vwf_full_dynamic_<PTraits, HasAlignment>
                 , strf::detail::int_printer_full_dynamic<CharT> >
     {
@@ -1333,7 +1333,7 @@ struct voidptr_printing
         , PrePrinting& pre
         , const FPack& facets
         , const void* x ) noexcept
-    -> decltype( strf::make_default_arg_printer_input<CharT>
+    -> decltype( strf::make_default_stringifier_input<CharT>
                    ( pre
                    , strf::pack
                        ( strf::use_facet<strf::numpunct_c<16>, const void*>(facets)
@@ -1341,7 +1341,7 @@ struct voidptr_printing
                        , strf::use_facet<strf::charset_c<CharT>, const void*>(facets) )
                    , *strf::hex(strf::detail::bit_cast<std::size_t>(x)) ) )
     {
-        return strf::make_default_arg_printer_input<CharT>
+        return strf::make_default_stringifier_input<CharT>
             ( pre
             , strf::pack
                 ( strf::use_facet<strf::numpunct_c<16>, const void*>(facets)
@@ -1356,7 +1356,7 @@ struct voidptr_printing
         , PrePrinting& pre
         , const FPack& facets
         , strf::value_with_formatters<T...> x ) noexcept
-    -> decltype( strf::make_default_arg_printer_input<CharT>
+    -> decltype( strf::make_default_stringifier_input<CharT>
                    ( pre
                    , strf::pack
                        ( strf::use_facet<strf::numpunct_c<16>, const void*>(facets)
@@ -1365,7 +1365,7 @@ struct voidptr_printing
                    , *strf::hex(strf::detail::bit_cast<std::size_t>(x.value()))
                                    .set_alignment_format(x.get_alignment_format()) ) )
     {
-        return strf::make_default_arg_printer_input<CharT>
+        return strf::make_default_stringifier_input<CharT>
             ( pre
             , strf::pack
                 ( strf::use_facet<strf::numpunct_c<16>, const void*>(facets)
@@ -1385,7 +1385,7 @@ constexpr STRF_HD auto tag_invoke(strf::printing_tag, const void*) noexcept
 namespace detail {
 
 template <typename CharT>
-class default_int_printer: public strf::arg_printer<CharT>
+class default_int_printer: public strf::stringifier<CharT>
 {
 public:
 
@@ -1451,12 +1451,12 @@ STRF_HD void default_int_printer<CharT>::print_to
 }
 
 template <typename CharT>
-class aligned_default_int_printer: public strf::arg_printer<CharT>
+class aligned_default_int_printer: public strf::stringifier<CharT>
 {
 public:
 
     template <typename... T>
-    STRF_HD aligned_default_int_printer(strf::usual_arg_printer_input<T...> i)
+    STRF_HD aligned_default_int_printer(strf::usual_stringifier_input<T...> i)
     {
         init_(i.arg.value());
         init_fill_(i.arg.get_alignment_format());
@@ -1465,7 +1465,7 @@ public:
         STRF_MAYBE_UNUSED(encoding);
         encode_fill_ = encoding.encode_fill_func();
         i.pre.subtract_width(fillcount_ + digcount_ + negative_);
-        STRF_IF_CONSTEXPR(strf::usual_arg_printer_input<T...>::preprinting_type::size_required) {
+        STRF_IF_CONSTEXPR(strf::usual_stringifier_input<T...>::preprinting_type::size_required) {
             auto fillsize = fillcount_ * encoding.encoded_char_size(fillchar_);
             i.pre.add_size(fillsize + digcount_ + negative_);
         }
@@ -1617,11 +1617,11 @@ inline STRF_HD unsigned init
 }
 
 template <typename CharT>
-class int_printer_no_pad0_nor_punct<CharT, 10>: public strf::arg_printer<CharT>
+class int_printer_no_pad0_nor_punct<CharT, 10>: public strf::stringifier<CharT>
 {
 public:
     template <typename... T>
-    STRF_HD int_printer_no_pad0_nor_punct(strf::usual_arg_printer_input<T...> i) noexcept
+    STRF_HD int_printer_no_pad0_nor_punct(strf::usual_stringifier_input<T...> i) noexcept
     {
         auto w = strf::detail::init(data_, i.arg.get_int_format(), i.arg.value());
         i.pre.subtract_width(w);
@@ -1645,12 +1645,12 @@ private:
 };
 
 template <typename CharT>
-class int_printer_no_pad0_nor_punct<CharT, 16>: public strf::arg_printer<CharT>
+class int_printer_no_pad0_nor_punct<CharT, 16>: public strf::stringifier<CharT>
 {
 public:
 
     template <typename... T>
-    STRF_HD int_printer_no_pad0_nor_punct(strf::usual_arg_printer_input<T...> i) noexcept
+    STRF_HD int_printer_no_pad0_nor_punct(strf::usual_stringifier_input<T...> i) noexcept
     {
         auto value = i.arg.value();
         auto w = strf::detail::init(data_, i.arg.get_int_format(), value);
@@ -1681,11 +1681,11 @@ private:
 
 
 template <typename CharT>
-class int_printer_no_pad0_nor_punct<CharT, 8>: public strf::arg_printer<CharT>
+class int_printer_no_pad0_nor_punct<CharT, 8>: public strf::stringifier<CharT>
 {
 public:
     template <typename... T>
-    STRF_HD int_printer_no_pad0_nor_punct(strf::usual_arg_printer_input<T...> i) noexcept
+    STRF_HD int_printer_no_pad0_nor_punct(strf::usual_stringifier_input<T...> i) noexcept
     {
         auto w = strf::detail::init(data_, i.arg.get_int_format(), i.arg.value());
         i.pre.subtract_width(w);
@@ -1709,12 +1709,12 @@ private:
 };
 
 template <typename CharT>
-class int_printer_no_pad0_nor_punct<CharT, 2>: public strf::arg_printer<CharT>
+class int_printer_no_pad0_nor_punct<CharT, 2>: public strf::stringifier<CharT>
 {
 public:
 
     template <typename... T>
-    STRF_HD int_printer_no_pad0_nor_punct(strf::usual_arg_printer_input<T...> i) noexcept
+    STRF_HD int_printer_no_pad0_nor_punct(strf::usual_stringifier_input<T...> i) noexcept
     {
         auto value = i.arg.value();
         auto w = strf::detail::init(data_, i.arg.get_int_format(), value);
@@ -1950,13 +1950,13 @@ STRF_HD fmt_int_printer_data_init_result init_fmt_int_printer_data
 #endif // defined(STRF_OMIT_IMPL)
 
 template <typename CharT, int Base>
-class int_printer_static_base_and_punct<CharT, Base, false>: public arg_printer<CharT>
+class int_printer_static_base_and_punct<CharT, Base, false>: public stringifier<CharT>
 {
 public:
 
     template <typename... T>
     STRF_HD explicit int_printer_static_base_and_punct
-        ( const strf::usual_arg_printer_input<T...>& i )
+        ( const strf::usual_stringifier_input<T...>& i )
     {
         auto ivalue = i.arg.value();
         using int_type = decltype(ivalue);
@@ -1968,7 +1968,7 @@ public:
         detail::init_1(data_, ifmt, ivalue);
         auto w = detail::init_fmt_int_printer_data<Base>(data_, ifmt, afmt);
         i.pre.subtract_width(w.sub_width + w.fillcount);
-        using pre_t = typename strf::usual_arg_printer_input<T...>::preprinting_type;
+        using pre_t = typename strf::usual_stringifier_input<T...>::preprinting_type;
         STRF_IF_CONSTEXPR (pre_t::size_required) {
             i.pre.add_size(w.sub_width);
             if (w.fillcount) {
@@ -2099,13 +2099,13 @@ STRF_HD fmt_int_printer_data_init_result init_punct_fmt_int_printer_data
 #endif // defined(STRF_OMIT_IMPL)
 
 template <typename CharT, int Base>
-class int_printer_static_base_and_punct<CharT, Base, true>: public arg_printer<CharT>
+class int_printer_static_base_and_punct<CharT, Base, true>: public stringifier<CharT>
 {
 public:
 
     template <typename... T>
     STRF_HD explicit int_printer_static_base_and_punct
-        ( const strf::usual_arg_printer_input<T...>& i)
+        ( const strf::usual_stringifier_input<T...>& i)
         : int_printer_static_base_and_punct
             ( i.arg.value()
             , i.arg.get_int_format()
@@ -2231,7 +2231,7 @@ public:
 
     template <typename... T>
     STRF_HD explicit int_printer_full_dynamic
-        ( const strf::usual_arg_printer_input<T...>& i )
+        ( const strf::usual_stringifier_input<T...>& i )
     {
         auto ifmt = i.arg.get_int_format();
         auto afmt = i.arg.get_alignment_format();
@@ -2295,8 +2295,8 @@ public:
 
     STRF_HD ~int_printer_full_dynamic()
     {
-        const strf::arg_printer<CharT>& p = *this;
-        p.~arg_printer();
+        const strf::stringifier<CharT>& p = *this;
+        p.~stringifier();
     }
 
 #if defined(__GNUC__) && (__GNUC__ <= 6)
@@ -2304,9 +2304,9 @@ public:
 #  pragma GCC diagnostic ignored "-Wstrict-aliasing"
 #endif
 
-    STRF_HD operator const strf::arg_printer<CharT>& () const
+    STRF_HD operator const strf::stringifier<CharT>& () const
     {
-        return * reinterpret_cast<const strf::arg_printer<CharT>*>(&storage_);
+        return * reinterpret_cast<const strf::stringifier<CharT>*>(&storage_);
     }
 
 #if defined(__GNUC__) && (__GNUC__ <= 6)
@@ -2319,7 +2319,7 @@ private:
         sizeof(strf::detail::int_printer_static_base_and_punct<CharT, 10, true>);
 
     using storage_type_ = typename std::aligned_storage
-        < pool_size_, alignof(strf::arg_printer<CharT>)>
+        < pool_size_, alignof(strf::stringifier<CharT>)>
         :: type;
 
     storage_type_ storage_;

@@ -6,7 +6,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 ////
 
 :print_override_c: <<strf_hpp#print_override_c,print_override_c>>
-:make_arg_printer_input: <<strf_hpp#make_arg_printer_input,make_arg_printer_input>>
+:make_stringifier_input: <<strf_hpp#make_stringifier_input,make_stringifier_input>>
 :use_facet: <<strf_hpp#use_facet,use_facet>>
 :pack: <<strf_hpp#pack,pack>>
 :set_alignment_format: <<strf_hpp#alignment_formatter,set_alignment_format>>
@@ -71,7 +71,7 @@ struct italian_bool_facet
     constexpr static auto make_input
         ( Pre& pre, const FPack&, bool x ) noexcept
     {
-        return strf::{make_arg_printer_input}<CharT>
+        return strf::{make_stringifier_input}<CharT>
             ( pre
             , strf::{pack}()
             , strf::conv(x ? "vero" : "falso") );
@@ -83,7 +83,7 @@ struct italian_bool_facet
         , const FPack& fp
         , strf::{value_with_formatters}<T\...> x ) noexcept
     {
-        return strf::{make_arg_printer_input}<CharT>
+        return strf::{make_stringifier_input}<CharT>
             ( pre
             , fp
             , strf::conv(x.value() ? "vero" : "falso")

@@ -162,12 +162,12 @@ std::pair<FloatT, FloatT> complex_coordinates
 //--------------------------------------------------------------------------------
 
 template <typename CharT, typename FloatT>
-class std_complex_printer: public strf::arg_printer<CharT>
+class std_complex_printer: public strf::stringifier<CharT>
 {
 public:
 
     template <typename... T>
-    explicit std_complex_printer(strf::usual_arg_printer_input<T...> x);
+    explicit std_complex_printer(strf::usual_stringifier_input<T...> x);
 
     void print_to(strf::destination<CharT>& dest) const override;
 
@@ -189,7 +189,7 @@ private:
 template <typename CharT, typename FloatT>
 template <typename... T>
 inline std_complex_printer<CharT, FloatT>::std_complex_printer
-    ( strf::usual_arg_printer_input<T...> x )
+    ( strf::usual_stringifier_input<T...> x )
     : encoding_(strf::use_facet<strf::charset_c<CharT>, FloatT>(x.facets))
     , numpunct_(strf::use_facet<strf::numpunct_c<10>, FloatT>(x.facets))
     , lettercase_(strf::use_facet<strf::lettercase_c, FloatT>(x.facets))
@@ -248,7 +248,7 @@ void std_complex_printer<CharT, FloatT>::print_to(strf::destination<CharT>& dest
 //--------------------------------------------------------------------------------
 
 template <typename CharT, typename FloatT>
-class fmt_std_complex_printer: public strf::arg_printer<CharT>
+class fmt_std_complex_printer: public strf::stringifier<CharT>
 {
     using complex_type_ = std::complex<FloatT>;
     static constexpr char32_t anglechar_ = 0x2220;
@@ -256,7 +256,7 @@ class fmt_std_complex_printer: public strf::arg_printer<CharT>
 public:
 
     template <typename... T>
-    fmt_std_complex_printer(strf::usual_arg_printer_input<T...> x)
+    fmt_std_complex_printer(strf::usual_stringifier_input<T...> x)
         : encoding_(strf::use_facet<strf::charset_c<CharT>, complex_type_>(x.facets))
         , numpunct10_(strf::use_facet<strf::numpunct_c<10>, FloatT>(x.facets))
         , numpunct16_(strf::use_facet<strf::numpunct_c<16>, FloatT>(x.facets))
@@ -438,7 +438,7 @@ struct printing_traits<std::complex<FloatT>>
         , PrePrinting& pre
         , const FPack& fp
         , std::complex<FloatT> arg)
-        -> strf::usual_arg_printer_input
+        -> strf::usual_stringifier_input
             < CharT, PrePrinting, FPack, std::complex<FloatT>
             , std_complex_printer<CharT, FloatT> >
     {
@@ -451,7 +451,7 @@ struct printing_traits<std::complex<FloatT>>
         , PrePrinting& pre
         , const FPack& fp
         , strf::value_with_formatters<T...> arg )
-        -> strf::usual_arg_printer_input
+        -> strf::usual_stringifier_input
             < CharT, PrePrinting, FPack, strf::value_with_formatters<T...>
             , fmt_std_complex_printer<CharT, FloatT> >
     {

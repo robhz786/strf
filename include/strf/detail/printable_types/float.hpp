@@ -748,13 +748,13 @@ struct fast_double_printer_input
 
 // template <typename CharT, typename PrePrinting, typename FPack, typename FloatT>
 // using fast_punct_double_printer_input =
-//     strf::usual_arg_printer_input< CharT, PrePrinting, FPack, FloatT
+//     strf::usual_stringifier_input< CharT, PrePrinting, FPack, FloatT
 //                              , strf::detail::fast_punct_double_printer<CharT> >;
 
 template < typename CharT, typename PrePrinting, typename FPack
          , typename FloatT, typename FloatFormatter, bool HasAlignment >
 using fmt_double_printer_input =
-    strf::usual_arg_printer_input
+    strf::usual_stringifier_input
         < CharT, PrePrinting, FPack
         , strf::detail::float_with_formatters<FloatT, FloatFormatter, HasAlignment>
         , strf::detail::punct_double_printer<CharT> >;
@@ -1352,7 +1352,7 @@ STRF_HD void print_inf( strf::destination<CharT>& dest
 }
 
 template <typename CharT>
-class fast_double_printer: public strf::arg_printer<CharT>
+class fast_double_printer: public strf::stringifier<CharT>
 {
 public:
 
@@ -2323,7 +2323,7 @@ STRF_HD strf::detail::float_init_result init_float_printer_data
 
 
 template <typename CharT>
-class punct_double_printer: public strf::arg_printer<CharT>
+class punct_double_printer: public strf::stringifier<CharT>
 {
 public:
 

@@ -57,7 +57,7 @@ struct printing_traits<strf::inner_pack_with_args<ChildFPack, Args...>>
         , PrePrinting& pre
         , const FPack& fp
         , const forwarded_type& x )
-        -> strf::usual_arg_printer_input
+        -> strf::usual_stringifier_input
             < CharT, PrePrinting, FPack, forwarded_type
             , strf::detail::facets_pack_printer
                 < CharT, PrePrinting, FPack, ChildFPack, Args... > >
@@ -73,13 +73,13 @@ template < typename CharT
          , typename ParentFPack
          , typename ChildFPack
          , typename ... Args >
-class facets_pack_printer: public strf::arg_printer<CharT>
+class facets_pack_printer: public strf::stringifier<CharT>
 {
 public:
 
     template <typename... T>
     STRF_HD facets_pack_printer
-        ( const strf::usual_arg_printer_input<T...>& input )
+        ( const strf::usual_stringifier_input<T...>& input )
         : fp_{input.facets, input.arg.fp}
         , printers_{input.arg.args, input.pre, fp_}
     {

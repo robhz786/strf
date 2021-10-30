@@ -93,7 +93,7 @@ struct base64_printing
         , PrePrinting& pre
         , const FPack& fp
         , base64_input_with_formatters x )
-        -> strf::usual_arg_printer_input
+        -> strf::usual_stringifier_input
             < CharT, PrePrinting, FPack, base64_input_with_formatters, base64_printer<CharT> >
     {
         return {pre, fp, x};
@@ -101,13 +101,13 @@ struct base64_printing
 };
 
 template <typename CharT>
-class base64_printer: public strf::arg_printer<CharT>
+class base64_printer: public strf::stringifier<CharT>
 {
 public:
 
     template <typename ... T>
     base64_printer
-        ( const strf::usual_arg_printer_input<T...>& input)
+        ( const strf::usual_stringifier_input<T...>& input)
         : base64_printer
             ( strf::use_facet<base64_facet_c, base64_facet_c>(input.facets)
             , input.pre

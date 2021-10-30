@@ -17,7 +17,7 @@ struct my_bool_override
         , strf::value_with_formatters<T...> x ) const noexcept
     {
         bool value = x.value();
-        return strf::make_arg_printer_input<CharT>
+        return strf::make_stringifier_input<CharT>
             ( pre
             , fp
             , strf::conv(false_true_strings[value], strf::utf_t<char>{})
