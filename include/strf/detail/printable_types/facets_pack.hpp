@@ -6,7 +6,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <strf/detail/printers_tuple.hpp>
+#include <strf/detail/stringifiers_tuple.hpp>
 
 namespace strf {
 
@@ -101,7 +101,7 @@ private:
 
     strf::facets_pack<ParentFPack, ChildFPack> fp_;
 
-    strf::detail::printers_tuple_from_args
+    strf::detail::stringifiers_tuple_from_args
         < CharT
         , PrePrinting
         , strf::facets_pack<ParentFPack, ChildFPack>

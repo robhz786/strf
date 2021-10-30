@@ -1,5 +1,5 @@
-#ifndef STRF_DETAIL_PRINTERS_TUPLE_HPP
-#define STRF_DETAIL_PRINTERS_TUPLE_HPP
+#ifndef STRF_DETAIL_STRINGIFIERS_TUPLE_HPP
+#define STRF_DETAIL_STRINGIFIERS_TUPLE_HPP
 
 //  Copyright (C) (See commit logs on github.com/robhz786/strf)
 //  Distributed under the Boost Software License, Version 1.0.
@@ -104,12 +104,12 @@ struct indexed_printer
 template < typename CharT
          , typename ISeq
          , typename ... Printers >
-class printers_tuple_impl;
+class stringifiers_tuple_impl;
 
 template < typename CharT
          , std::size_t ... I
          , typename ... Printers >
-class printers_tuple_impl<CharT, strf::detail::index_sequence<I...>, Printers...>
+class stringifiers_tuple_impl<CharT, strf::detail::index_sequence<I...>, Printers...>
     : public detail::indexed_printer<I, Printers> ...
 {
     template <std::size_t J, typename T>
@@ -129,7 +129,7 @@ public:
     static constexpr std::size_t size = sizeof...(Printers);
 
     template <typename PrePrinting, typename FPack, typename... Args>
-    STRF_HD printers_tuple_impl
+    STRF_HD stringifiers_tuple_impl
         ( const strf::detail::simple_tuple<Args...>& args
         , PrePrinting& pre
         , const FPack& fp )
@@ -151,7 +151,7 @@ public:
 template<typename CharT, std::size_t ... I, typename ... Printers>
 STRF_HD void write
     ( strf::destination<CharT>& dest
-    , const strf::detail::printers_tuple_impl
+    , const strf::detail::stringifiers_tuple_impl
         < CharT, strf::detail::index_sequence<I...>, Printers... >& printers )
 {
     strf::detail::write_args<CharT>
@@ -159,28 +159,28 @@ STRF_HD void write
 }
 
 template <typename CharT, typename ... Printers>
-using printers_tuple = printers_tuple_impl
+using stringifiers_tuple = stringifiers_tuple_impl
         < CharT
         , strf::detail::make_index_sequence<sizeof...(Printers)>
         , Printers... >;
 
 template < typename CharT, typename PrePrinting, typename FPack
          , typename ISeq, typename... Args >
-class printers_tuple_alias
+class stringifiers_tuple_alias
 {
 public:
-    using type = printers_tuple_impl
+    using type = stringifiers_tuple_impl
         <CharT, ISeq, strf::stringifier_type<CharT, PrePrinting, FPack, Args> ...>;
 };
 
 template < typename CharT, typename PrePrinting, typename FPack, typename ... Args >
-using printers_tuple_from_args
-= typename printers_tuple_alias
+using stringifiers_tuple_from_args
+= typename stringifiers_tuple_alias
     < CharT, PrePrinting, FPack, strf::detail::make_index_sequence<sizeof...(Args)>, Args ...>
     :: type;
 
 } // namespace detail
 } // namespace strf
 
-#endif  // STRF_DETAIL_PRINTERS_TUPLE_HPP
+#endif  // STRF_DETAIL_STRINGIFIERS_TUPLE_HPP
 

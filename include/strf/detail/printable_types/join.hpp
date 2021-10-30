@@ -6,7 +6,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <strf/detail/printers_tuple.hpp>
+#include <strf/detail/stringifiers_tuple.hpp>
 
 #if defined(_MSC_VER)
 #include <tuple>
@@ -131,7 +131,7 @@ namespace detail {
 template<typename CharT, typename... Printers>
 class aligned_join_printer_impl: public stringifier<CharT>
 {
-    using printers_tuple_ = strf::detail::printers_tuple<CharT, Printers...>;
+    using stringifiers_tuple_ = strf::detail::stringifiers_tuple<CharT, Printers...>;
 
 public:
 
@@ -147,7 +147,7 @@ public:
         auto charset = use_facet_<strf::charset_c<CharT>>(input.facets);
         encode_fill_func_ = charset.encode_fill_func();
         strf::preprinting<PrecalcSize, strf::precalc_width::yes> pre { afmt_.width };
-        new (printers_ptr_()) printers_tuple_{input.arg.value().args, pre, input.facets};
+        new (printers_ptr_()) stringifiers_tuple_{input.arg.value().args, pre, input.facets};
         fillcount_ = pre.remaining_width().round();
         STRF_IF_CONSTEXPR (static_cast<bool>(PrecalcSize)) {
             input.pre.add_size(pre.accumulated_size());
@@ -177,7 +177,7 @@ public:
         }
         strf::preprinting<PrecalcSize, strf::precalc_width::yes> pre{wmax};
         // to-do: what if the line below throws ?
-        new (printers_ptr_()) printers_tuple_{input.arg.value().args, pre, input.facets};
+        new (printers_ptr_()) stringifiers_tuple_{input.arg.value().args, pre, input.facets};
         if (pre.remaining_width() > diff) {
             fillcount_ = (pre.remaining_width() - diff).round();
         }
@@ -194,7 +194,7 @@ public:
 
     STRF_HD ~aligned_join_printer_impl()
     {
-        printers_ptr_()->~printers_tuple_();
+        printers_ptr_()->~stringifiers_tuple_();
     }
 
     STRF_HD void print_to(strf::destination<CharT>& dest) const override
@@ -223,14 +223,14 @@ public:
 
 private:
 
-    using printers_tuple_storage_ = typename std::aligned_storage
+    using stringifiers_tuple_storage_ = typename std::aligned_storage
 #if defined(_MSC_VER)
         <sizeof(std::tuple<Printers...>), alignof(strf::stringifier<CharT>)>
 #else
-        <sizeof(printers_tuple_), alignof(printers_tuple_)>
+        <sizeof(stringifiers_tuple_), alignof(stringifiers_tuple_)>
 #endif
         :: type;
-    printers_tuple_storage_ pool_;
+    stringifiers_tuple_storage_ pool_;
     strf::alignment_format afmt_;
     strf::encode_fill_f<CharT> encode_fill_func_;
     strf::width_t width_;
@@ -241,13 +241,13 @@ private:
 #  pragma GCC diagnostic ignored "-Wstrict-aliasing"
 #endif
 
-    STRF_HD printers_tuple_ * printers_ptr_()
+    STRF_HD stringifiers_tuple_ * printers_ptr_()
     {
-        return reinterpret_cast<printers_tuple_*>(&pool_);
+        return reinterpret_cast<stringifiers_tuple_*>(&pool_);
     }
-    STRF_HD const printers_tuple_& printers_() const
+    STRF_HD const stringifiers_tuple_& printers_() const
     {
-        return *reinterpret_cast<const printers_tuple_*>(&pool_);
+        return *reinterpret_cast<const stringifiers_tuple_*>(&pool_);
     }
 
 #if defined(__GNUC__) && (__GNUC__ <= 6)
@@ -330,7 +330,7 @@ public:
 
 private:
 
-    strf::detail::printers_tuple<CharT, Printers...> printers_;
+    strf::detail::stringifiers_tuple<CharT, Printers...> printers_;
 };
 
 template <typename CharT, typename PrePrinting, typename FPack, typename... FwdArgs>
