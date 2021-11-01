@@ -17,10 +17,10 @@ namespace strf {
 namespace detail {
 
 template <typename CharT, typename PrePrinting, typename FPack, typename... FwdArgs>
-class join_printer;
+class join_stringifier;
 
 template <typename CharT, typename PrePrinting, typename FPack, typename... FwdArgs>
-class aligned_join_printer;
+class aligned_join_stringifier;
 
 template <typename... FwdArgs>
 struct join_printing;
@@ -33,13 +33,13 @@ struct join_t
 
 template< typename CharT, typename PrePrinting, typename FPack
         , bool HasAlignment, typename... FwdArgs>
-class join_printer_input
+class join_stringifier_input
 {
 public:
     using printer_type = strf::detail::conditional_t
         < HasAlignment
-        , strf::detail::aligned_join_printer<CharT, PrePrinting, FPack, FwdArgs...>
-        , strf::detail::join_printer<CharT, PrePrinting, FPack, FwdArgs...> >;
+        , strf::detail::aligned_join_stringifier<CharT, PrePrinting, FPack, FwdArgs...>
+        , strf::detail::join_stringifier<CharT, PrePrinting, FPack, FwdArgs...> >;
 
     PrePrinting& pre;
     FPack facets;
@@ -66,7 +66,7 @@ struct join_printing
         , PrePrinting& pre
         , const FPack& facets
         , fmt_tmpl<HasAlignment> x )
-        -> join_printer_input
+        -> join_stringifier_input
             < CharT, PrePrinting, FPack, HasAlignment, FwdArgs... >
     {
         return {pre, facets, x};
@@ -129,15 +129,15 @@ struct aligned_join_maker
 namespace detail {
 
 template<typename CharT, typename... Printers>
-class aligned_join_printer_impl: public stringifier<CharT>
+class aligned_join_stringifier_impl: public stringifier<CharT>
 {
     using stringifiers_tuple_ = strf::detail::stringifiers_tuple<CharT, Printers...>;
 
 public:
 
     template <strf::precalc_size PrecalcSize, typename FPack, typename... FwdArgs>
-    STRF_HD aligned_join_printer_impl
-        ( const strf::detail::join_printer_input
+    STRF_HD aligned_join_stringifier_impl
+        ( const strf::detail::join_stringifier_input
               < CharT
               , strf::preprinting<PrecalcSize, strf::precalc_width::no>
               , FPack
@@ -159,8 +159,8 @@ public:
     }
 
     template <strf::precalc_size PrecalcSize, typename FPack, typename... FwdArgs>
-    STRF_HD aligned_join_printer_impl
-        ( const strf::detail::join_printer_input
+    STRF_HD aligned_join_stringifier_impl
+        ( const strf::detail::join_stringifier_input
               < CharT
               , strf::preprinting<PrecalcSize, strf::precalc_width::yes>
               , FPack
@@ -192,7 +192,7 @@ public:
         }
     }
 
-    STRF_HD ~aligned_join_printer_impl()
+    STRF_HD ~aligned_join_stringifier_impl()
     {
         printers_ptr_()->~stringifiers_tuple_();
     }
@@ -281,37 +281,37 @@ struct print_impl_with_width_precalc_<CharT, preprinting<PrecalcSize, PrecalcWid
 };
 
 template<typename CharT, typename PrePrinting, typename FPack, typename... Args>
-using aligned_join_printer_impl_of = strf::detail::aligned_join_printer_impl
+using aligned_join_stringifier_impl_of = strf::detail::aligned_join_stringifier_impl
     < CharT
     , typename print_impl_with_width_precalc_<CharT, PrePrinting, FPack, Args>::type... >;
 
 template<typename CharT, typename PrePrinting, typename FPack, typename... FwdArgs>
-class aligned_join_printer
-    : public strf::detail::aligned_join_printer_impl_of
+class aligned_join_stringifier
+    : public strf::detail::aligned_join_stringifier_impl_of
         < CharT, PrePrinting, FPack, FwdArgs... >
 {
 public:
 
     template <typename FPack2>
-    constexpr STRF_HD aligned_join_printer
-        ( const strf::detail::join_printer_input
+    constexpr STRF_HD aligned_join_stringifier
+        ( const strf::detail::join_stringifier_input
             < CharT, PrePrinting, FPack2, true, FwdArgs... >& input )
-        : strf::detail::aligned_join_printer_impl_of
+        : strf::detail::aligned_join_stringifier_impl_of
             < CharT, PrePrinting, FPack, FwdArgs... > (input)
     {
     }
 
-    virtual STRF_HD ~aligned_join_printer()
+    virtual STRF_HD ~aligned_join_stringifier()
     {
     }
 };
 
 template<typename CharT, typename... Printers>
-class join_printer_impl: public stringifier<CharT> {
+class join_stringifier_impl: public stringifier<CharT> {
 public:
 
     template<typename PrePrinting, typename FPack, typename... FwdArgs>
-    STRF_HD join_printer_impl
+    STRF_HD join_stringifier_impl
         ( const strf::detail::simple_tuple<FwdArgs...>& args
         , PrePrinting& pre
         , const FPack& facets )
@@ -319,7 +319,7 @@ public:
     {
     }
 
-    STRF_HD ~join_printer_impl()
+    STRF_HD ~join_stringifier_impl()
     {
     }
 
@@ -334,23 +334,23 @@ private:
 };
 
 template <typename CharT, typename PrePrinting, typename FPack, typename... FwdArgs>
-class join_printer
-    : public strf::detail::join_printer_impl
+class join_stringifier
+    : public strf::detail::join_stringifier_impl
         < CharT, strf::stringifier_type<CharT, PrePrinting, FPack, FwdArgs>... >
 {
 public:
 
     template <typename FPack2>
-    STRF_HD join_printer
-        ( const strf::detail::join_printer_input
+    STRF_HD join_stringifier
+        ( const strf::detail::join_stringifier_input
               < CharT, PrePrinting, FPack2, false, FwdArgs... >& input )
-        : strf::detail::join_printer_impl
+        : strf::detail::join_stringifier_impl
             < CharT, strf::stringifier_type<CharT, PrePrinting, FPack, FwdArgs>... >
             ( input.arg.value().args, input.pre, input.facets )
     {
     }
 
-    virtual STRF_HD ~join_printer()
+    virtual STRF_HD ~join_stringifier()
     {
     }
 };

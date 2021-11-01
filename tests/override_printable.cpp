@@ -6,12 +6,12 @@
 #include "test_utils.hpp"
 
 template <typename CharT>
-class my_bool_printer: public strf::stringifier<CharT>
+class my_bool_stringifier: public strf::stringifier<CharT>
 {
 public:
 
     template <typename... T>
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD my_bool_printer
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD my_bool_stringifier
         ( const strf::usual_stringifier_input<T...>& input )
         : value_(input.arg)
     {
@@ -50,7 +50,8 @@ struct my_bool_printing_override
         , PrePrinting& pre
         , const FPack& fp
         , bool x ) noexcept
-        -> strf::usual_stringifier_input<CharT, PrePrinting, FPack, bool, my_bool_printer<CharT>>
+        -> strf::usual_stringifier_input
+            <CharT, PrePrinting, FPack, bool, my_bool_stringifier<CharT>>
     {
         return {pre, fp, x};
     }

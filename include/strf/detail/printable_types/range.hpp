@@ -95,22 +95,22 @@ using sep_range_with_formatters
 namespace detail {
 
 template <typename CharT, typename FPack, typename It>
-class range_printer;
+class range_stringifier;
 
 template <typename CharT, typename FPack, typename It>
-class separated_range_printer;
+class separated_range_stringifier;
 
 template <typename CharT, typename FPack, typename It, typename... Fmts>
-class fmt_range_printer;
+class fmt_range_stringifier;
 
 template <typename CharT, typename FPack, typename It, typename... Fmts>
-class fmt_separated_range_printer;
+class fmt_separated_range_stringifier;
 
 template <typename CharT, typename FPack, typename It, typename UnaryOp>
-class transformed_range_printer;
+class transformed_range_stringifier;
 
 template <typename CharT, typename FPack, typename It, typename UnaryOp>
-class sep_transformed_range_printer;
+class sep_transformed_range_stringifier;
 
 } // namespace detail
 
@@ -128,7 +128,7 @@ struct printing_traits<strf::range_p<It>>
         , forwarded_type x)
         -> strf::usual_stringifier_input
             < CharT, PrePrinting, FPack, forwarded_type
-            , strf::detail::range_printer<CharT, FPack, It> >
+            , strf::detail::range_stringifier<CharT, FPack, It> >
     {
         return {pre, fp, x};
     }
@@ -143,7 +143,7 @@ struct printing_traits<strf::range_p<It>>
             < CharT
             , PrePrinting, FPack
             , strf::value_with_formatters<strf::printing_traits<strf::range_p<It>>, Fmts ...>
-            , strf::detail::fmt_range_printer<CharT, FPack, It, Fmts...> >
+            , strf::detail::fmt_range_stringifier<CharT, FPack, It, Fmts...> >
     {
         return {pre, fp, x};
     }
@@ -163,7 +163,7 @@ struct printing_traits<strf::separated_range_p<It, SepCharT>>
         ,  forwarded_type x)
         -> strf::usual_stringifier_input
             < DestCharT, PrePrinting, FPack, forwarded_type
-            , strf::detail::separated_range_printer<DestCharT, FPack, It> >
+            , strf::detail::separated_range_stringifier<DestCharT, FPack, It> >
     {
         static_assert( std::is_same<SepCharT, DestCharT>::value
                      , "Character type of range separator string is different." );
@@ -182,7 +182,7 @@ struct printing_traits<strf::separated_range_p<It, SepCharT>>
             , PrePrinting, FPack
             , strf::value_with_formatters
                 < strf::printing_traits<strf::separated_range_p<It, SepCharT>>, Fmts... >
-            , strf::detail::fmt_separated_range_printer<DestCharT, FPack, It, Fmts...> >
+            , strf::detail::fmt_separated_range_stringifier<DestCharT, FPack, It, Fmts...> >
     {
         static_assert( std::is_same<SepCharT, DestCharT>::value
                      , "Character type of range separator string is different." );
@@ -203,7 +203,7 @@ struct printing_traits<strf::transformed_range_p<It, UnaryOp>>
         , forwarded_type x)
         -> strf::usual_stringifier_input
             < CharT, PrePrinting, FPack, forwarded_type
-            , strf::detail::transformed_range_printer<CharT, FPack, It, UnaryOp> >
+            , strf::detail::transformed_range_stringifier<CharT, FPack, It, UnaryOp> >
     {
         return {pre, fp, x};
     }
@@ -222,7 +222,7 @@ struct printing_traits<strf::separated_transformed_range_p<It, SepCharT, UnaryOp
         , forwarded_type x )
         -> strf::usual_stringifier_input
             < DestCharT, PrePrinting, FPack, forwarded_type
-            , strf::detail::sep_transformed_range_printer<DestCharT, FPack, It, UnaryOp> >
+            , strf::detail::sep_transformed_range_stringifier<DestCharT, FPack, It, UnaryOp> >
     {
         static_assert( std::is_same<SepCharT, DestCharT>::value
                      , "Character type of range separator string is different." );
@@ -233,7 +233,7 @@ struct printing_traits<strf::separated_transformed_range_p<It, SepCharT, UnaryOp
 namespace detail {
 
 template <typename CharT, typename FPack, typename It>
-class range_printer: public strf::stringifier<CharT>
+class range_stringifier: public strf::stringifier<CharT>
 {
 public:
 
@@ -241,7 +241,7 @@ public:
     using value_type = strf::detail::iterator_value_type<It>;
 
     template <typename... T>
-    STRF_HD range_printer
+    STRF_HD range_stringifier
         ( const strf::usual_stringifier_input<T...>& input )
         : fp_(input.facets)
         , begin_(input.arg.begin)
@@ -274,7 +274,7 @@ private:
 template <typename CharT, typename FPack, typename It>
 template < typename PrePrinting
          , strf::detail::enable_if_t<PrePrinting::something_required, int> >
-STRF_HD void range_printer<CharT, FPack, It>::do_preprinting_(PrePrinting& pre) const
+STRF_HD void range_stringifier<CharT, FPack, It>::do_preprinting_(PrePrinting& pre) const
 {
     for(auto it = begin_; it != end_; ++it) {
         printer_type_<PrePrinting>
@@ -283,7 +283,7 @@ STRF_HD void range_printer<CharT, FPack, It>::do_preprinting_(PrePrinting& pre) 
 }
 
 template <typename CharT, typename FPack, typename It>
-STRF_HD void range_printer<CharT, FPack, It>::print_to
+STRF_HD void range_stringifier<CharT, FPack, It>::print_to
     ( strf::destination<CharT>& dest ) const
 {
     strf::no_preprinting no_pre;
@@ -294,7 +294,7 @@ STRF_HD void range_printer<CharT, FPack, It>::print_to
 }
 
 template <typename CharT, typename FPack, typename It>
-class separated_range_printer: public strf::stringifier<CharT>
+class separated_range_stringifier: public strf::stringifier<CharT>
 {
 public:
 
@@ -302,7 +302,7 @@ public:
     using value_type = strf::detail::iterator_value_type<It>;
 
     template <typename... T>
-    STRF_HD separated_range_printer
+    STRF_HD separated_range_stringifier
         ( const strf::usual_stringifier_input<T...>& input )
         : fp_(input.facets)
         , begin_(input.arg.begin)
@@ -348,7 +348,7 @@ private:
 template <typename CharT, typename FPack, typename It>
 template < typename PrePrinting
          , strf::detail::enable_if_t<PrePrinting::something_required, int> >
-STRF_HD void separated_range_printer<CharT, FPack, It>::do_preprinting_(PrePrinting& pre) const
+STRF_HD void separated_range_stringifier<CharT, FPack, It>::do_preprinting_(PrePrinting& pre) const
 {
     std::size_t count = 0;
     for(auto it = begin_; it != end_; ++it) {
@@ -379,7 +379,7 @@ STRF_HD void separated_range_printer<CharT, FPack, It>::do_preprinting_(PrePrint
 }
 
 template <typename CharT, typename FPack, typename It>
-STRF_HD void separated_range_printer<CharT, FPack, It>::print_to
+STRF_HD void separated_range_stringifier<CharT, FPack, It>::print_to
     ( strf::destination<CharT>& dest ) const
 {
     strf::no_preprinting no_pre;
@@ -401,7 +401,7 @@ template < typename CharT
          , typename FPack
          , typename It
          , typename ... Fmts >
-class fmt_range_printer: public strf::stringifier<CharT>
+class fmt_range_stringifier: public strf::stringifier<CharT>
 {
     using value_type_ = strf::detail::iterator_value_type<It>;
     using value_fmt_type_ = strf::fmt_type<value_type_>;
@@ -415,7 +415,7 @@ class fmt_range_printer: public strf::stringifier<CharT>
 public:
 
     template <typename... T>
-    STRF_HD fmt_range_printer
+    STRF_HD fmt_range_stringifier
         ( const strf::usual_stringifier_input<T...>& input )
         : fp_(input.facets)
         , fmt_(input.arg)
@@ -450,7 +450,7 @@ template < typename CharT
          , typename ... Fmts >
 template < typename PrePrinting
          , strf::detail::enable_if_t<PrePrinting::something_required, int> >
-STRF_HD void fmt_range_printer<CharT, FPack, It, Fmts ...>::do_preprinting_
+STRF_HD void fmt_range_stringifier<CharT, FPack, It, Fmts ...>::do_preprinting_
     ( PrePrinting& pre ) const
 {
     auto r = fmt_.value();
@@ -465,7 +465,7 @@ template< typename CharT
         , typename FPack
         , typename It
         , typename ... Fmts >
-STRF_HD void fmt_range_printer<CharT, FPack, It, Fmts ...>::print_to
+STRF_HD void fmt_range_stringifier<CharT, FPack, It, Fmts ...>::print_to
     ( strf::destination<CharT>& dest ) const
 {
     strf::no_preprinting no_pre;
@@ -482,7 +482,7 @@ template< typename CharT
         , typename FPack
         , typename It
         , typename ... Fmts >
-class fmt_separated_range_printer: public strf::stringifier<CharT>
+class fmt_separated_range_stringifier: public strf::stringifier<CharT>
 {
     using value_type_ = strf::detail::iterator_value_type<It>;
     using value_fmt_type_ = strf::fmt_type<value_type_>;
@@ -496,7 +496,7 @@ class fmt_separated_range_printer: public strf::stringifier<CharT>
 public:
 
     template <typename... T>
-    STRF_HD fmt_separated_range_printer
+    STRF_HD fmt_separated_range_stringifier
         ( const strf::usual_stringifier_input<T...>& input )
         : fp_(input.facets)
         , fmt_(input.arg)
@@ -539,7 +539,7 @@ template< typename CharT
         , typename ... Fmts >
 template < typename PrePrinting
          , strf::detail::enable_if_t<PrePrinting::something_required, int> >
-STRF_HD void fmt_separated_range_printer<CharT, FPack, It, Fmts ...>::do_preprinting_
+STRF_HD void fmt_separated_range_stringifier<CharT, FPack, It, Fmts ...>::do_preprinting_
     ( PrePrinting& pre ) const
 {
     auto r = fmt_.value();
@@ -576,7 +576,7 @@ template< typename CharT
         , typename FPack
         , typename It
         , typename ... Fmts >
-STRF_HD void fmt_separated_range_printer<CharT, FPack, It, Fmts ...>
+STRF_HD void fmt_separated_range_stringifier<CharT, FPack, It, Fmts ...>
 ::print_to( strf::destination<CharT>& dest ) const
 {
     strf::no_preprinting no_pre;
@@ -598,7 +598,7 @@ STRF_HD void fmt_separated_range_printer<CharT, FPack, It, Fmts ...>
 }
 
 template <typename CharT, typename FPack, typename It, typename UnaryOp>
-class transformed_range_printer: public strf::stringifier<CharT>
+class transformed_range_stringifier: public strf::stringifier<CharT>
 {
 public:
 
@@ -606,7 +606,7 @@ public:
     using value_type = strf::detail::iterator_value_type<It>;
 
     template <typename... T>
-    STRF_HD transformed_range_printer
+    STRF_HD transformed_range_stringifier
         ( const strf::usual_stringifier_input<T...>& input )
         : fp_(input.facets)
         , begin_(input.arg.begin)
@@ -644,7 +644,7 @@ private:
 template <typename CharT, typename FPack, typename It, typename UnaryOp>
 template < typename PrePrinting
          , strf::detail::enable_if_t<PrePrinting::something_required, int> >
-STRF_HD void transformed_range_printer<CharT, FPack, It, UnaryOp>
+STRF_HD void transformed_range_stringifier<CharT, FPack, It, UnaryOp>
     ::do_preprinting_(PrePrinting& pre) const
 {
     for(auto it = begin_; it != end_; ++it) {
@@ -654,7 +654,7 @@ STRF_HD void transformed_range_printer<CharT, FPack, It, UnaryOp>
 }
 
 template <typename CharT, typename FPack, typename It, typename UnaryOp>
-STRF_HD void transformed_range_printer<CharT, FPack, It, UnaryOp>::print_to
+STRF_HD void transformed_range_stringifier<CharT, FPack, It, UnaryOp>::print_to
     ( strf::destination<CharT>& dest ) const
 {
     strf::no_preprinting no_pre;
@@ -666,14 +666,14 @@ STRF_HD void transformed_range_printer<CharT, FPack, It, UnaryOp>::print_to
 }
 
 template <typename CharT, typename FPack, typename It, typename UnaryOp>
-class sep_transformed_range_printer: public strf::stringifier<CharT>
+class sep_transformed_range_stringifier: public strf::stringifier<CharT>
 {
 public:
     using iterator = It;
     using value_type = strf::detail::iterator_value_type<It>;
 
     template <typename... T>
-    STRF_HD sep_transformed_range_printer
+    STRF_HD sep_transformed_range_stringifier
         ( const strf::usual_stringifier_input<T...>& input )
         : fp_(input.facets)
         , begin_(input.arg.begin)
@@ -723,7 +723,7 @@ private:
 template <typename CharT, typename FPack, typename It, typename UnaryOp>
 template < typename PrePrinting
          , strf::detail::enable_if_t<PrePrinting::something_required, int> >
-STRF_HD void sep_transformed_range_printer<CharT, FPack, It, UnaryOp>
+STRF_HD void sep_transformed_range_stringifier<CharT, FPack, It, UnaryOp>
     ::do_preprinting_(PrePrinting& pre) const
 {
     std::size_t count = 0;
@@ -755,7 +755,7 @@ STRF_HD void sep_transformed_range_printer<CharT, FPack, It, UnaryOp>
 }
 
 template <typename CharT, typename FPack, typename It, typename UnaryOp>
-STRF_HD void sep_transformed_range_printer<CharT, FPack, It, UnaryOp>::print_to
+STRF_HD void sep_transformed_range_stringifier<CharT, FPack, It, UnaryOp>::print_to
     ( strf::destination<CharT>& dest ) const
 {
     strf::no_preprinting no_pre;

@@ -158,16 +158,16 @@ std::pair<FloatT, FloatT> complex_coordinates
 }
 
 //--------------------------------------------------------------------------------
-// 3.1 // std_complex_printer to handle values without formatting
+// 3.1 // std_complex_stringifier to handle values without formatting
 //--------------------------------------------------------------------------------
 
 template <typename CharT, typename FloatT>
-class std_complex_printer: public strf::stringifier<CharT>
+class std_complex_stringifier: public strf::stringifier<CharT>
 {
 public:
 
     template <typename... T>
-    explicit std_complex_printer(strf::usual_stringifier_input<T...> x);
+    explicit std_complex_stringifier(strf::usual_stringifier_input<T...> x);
 
     void print_to(strf::destination<CharT>& dest) const override;
 
@@ -188,7 +188,7 @@ private:
 
 template <typename CharT, typename FloatT>
 template <typename... T>
-inline std_complex_printer<CharT, FloatT>::std_complex_printer
+inline std_complex_stringifier<CharT, FloatT>::std_complex_stringifier
     ( strf::usual_stringifier_input<T...> x )
     : encoding_(strf::use_facet<strf::charset_c<CharT>, FloatT>(x.facets))
     , numpunct_(strf::use_facet<strf::numpunct_c<10>, FloatT>(x.facets))
@@ -202,7 +202,7 @@ inline std_complex_printer<CharT, FloatT>::std_complex_printer
 
 template <typename CharT, typename FloatT>
 template <typename PrePrinting, typename WidthCalc>
-void std_complex_printer<CharT, FloatT>::preprinting_(PrePrinting& pp, const WidthCalc& wcalc) const
+void std_complex_stringifier<CharT, FloatT>::preprinting_(PrePrinting& pp, const WidthCalc& wcalc) const
 {
     switch (form_) {
         case complex_form::algebric:
@@ -230,7 +230,7 @@ void std_complex_printer<CharT, FloatT>::preprinting_(PrePrinting& pp, const Wid
 }
 
 template <typename CharT, typename FloatT>
-void std_complex_printer<CharT, FloatT>::print_to(strf::destination<CharT>& dest) const
+void std_complex_stringifier<CharT, FloatT>::print_to(strf::destination<CharT>& dest) const
 {
     auto print = strf::to(dest).with(lettercase_, numpunct_, encoding_);
     if (form_ == complex_form::polar) {
@@ -244,11 +244,11 @@ void std_complex_printer<CharT, FloatT>::print_to(strf::destination<CharT>& dest
 }
 
 //--------------------------------------------------------------------------------
-// 3.2 // fmt_std_complex_printer to handle formatted values
+// 3.2 // fmt_std_complex_stringifier to handle formatted values
 //--------------------------------------------------------------------------------
 
 template <typename CharT, typename FloatT>
-class fmt_std_complex_printer: public strf::stringifier<CharT>
+class fmt_std_complex_stringifier: public strf::stringifier<CharT>
 {
     using complex_type_ = std::complex<FloatT>;
     static constexpr char32_t anglechar_ = 0x2220;
@@ -256,7 +256,7 @@ class fmt_std_complex_printer: public strf::stringifier<CharT>
 public:
 
     template <typename... T>
-    fmt_std_complex_printer(strf::usual_stringifier_input<T...> x)
+    fmt_std_complex_stringifier(strf::usual_stringifier_input<T...> x)
         : encoding_(strf::use_facet<strf::charset_c<CharT>, complex_type_>(x.facets))
         , numpunct10_(strf::use_facet<strf::numpunct_c<10>, FloatT>(x.facets))
         , numpunct16_(strf::use_facet<strf::numpunct_c<16>, FloatT>(x.facets))
@@ -306,7 +306,7 @@ private:
 
 template <typename CharT, typename FloatT>
 template <strf::precalc_size PrecalcSize, strf::precalc_width PrecalcWidth, typename WidthCalc>
-void fmt_std_complex_printer<CharT, FloatT>::init_fillcount_and_do_preprinting_
+void fmt_std_complex_stringifier<CharT, FloatT>::init_fillcount_and_do_preprinting_
     ( strf::preprinting<PrecalcSize, PrecalcWidth>& pre
     , WidthCalc wcalc
     , strf::width_t fmt_width )
@@ -338,7 +338,7 @@ void fmt_std_complex_printer<CharT, FloatT>::init_fillcount_and_do_preprinting_
 
 template <typename CharT, typename FloatT>
 template <typename PrePrinting, typename WidthCalc>
-void fmt_std_complex_printer<CharT, FloatT>::do_preprinting_without_fill_
+void fmt_std_complex_stringifier<CharT, FloatT>::do_preprinting_without_fill_
     ( PrePrinting& pp, WidthCalc wcalc) const
 {
     auto facets = strf::pack(wcalc, lettercase_, numpunct10_, numpunct16_, encoding_);
@@ -370,7 +370,7 @@ void fmt_std_complex_printer<CharT, FloatT>::do_preprinting_without_fill_
 }
 
 template <typename CharT, typename FloatT>
-void fmt_std_complex_printer<CharT, FloatT>::print_to
+void fmt_std_complex_stringifier<CharT, FloatT>::print_to
     ( strf::destination<CharT>& dest ) const
 {
     if (fillcount_ == 0) {
@@ -397,7 +397,7 @@ void fmt_std_complex_printer<CharT, FloatT>::print_to
 }
 
 template <typename CharT, typename FloatT>
-void fmt_std_complex_printer<CharT, FloatT>::print_complex_value_
+void fmt_std_complex_stringifier<CharT, FloatT>::print_complex_value_
     ( strf::destination<CharT>& dest ) const
 {
     auto facets = strf::pack(lettercase_, numpunct10_, numpunct16_, encoding_);
@@ -440,7 +440,7 @@ struct printing_traits<std::complex<FloatT>>
         , std::complex<FloatT> arg)
         -> strf::usual_stringifier_input
             < CharT, PrePrinting, FPack, std::complex<FloatT>
-            , std_complex_printer<CharT, FloatT> >
+            , std_complex_stringifier<CharT, FloatT> >
     {
         return {pre, fp, arg};
     }
@@ -453,7 +453,7 @@ struct printing_traits<std::complex<FloatT>>
         , strf::value_with_formatters<T...> arg )
         -> strf::usual_stringifier_input
             < CharT, PrePrinting, FPack, strf::value_with_formatters<T...>
-            , fmt_std_complex_printer<CharT, FloatT> >
+            , fmt_std_complex_stringifier<CharT, FloatT> >
     {
         return {pre, fp, arg};
     }

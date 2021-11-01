@@ -1165,7 +1165,9 @@ template <typename CharT, typename PrePrinting, typename FPack, typename Arg>
 using stringifier_type = typename stringifier_input_type<CharT, PrePrinting, FPack, Arg>::printer_type;
 
 template <typename CharT, typename PrePrinting, typename FPack, typename Arg>
-using arg_printer_type = stringifier_type<CharT, PrePrinting, FPack, Arg>;
+using arg_printer_type
+STRF_DEPRECATED_MSG("arg_printer_type was renamed to stringifier_type")
+= stringifier_type<CharT, PrePrinting, FPack, Arg>;
 
 template < typename CharT
          , strf::precalc_size SizeRequired

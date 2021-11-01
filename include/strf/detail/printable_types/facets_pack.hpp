@@ -42,7 +42,7 @@ struct inner_pack
 namespace detail {
 
 template < typename, typename, typename, typename, typename ... >
-class facets_pack_printer;
+class facets_pack_stringifier;
 
 } // namespace detail
 
@@ -59,7 +59,7 @@ struct printing_traits<strf::inner_pack_with_args<ChildFPack, Args...>>
         , const forwarded_type& x )
         -> strf::usual_stringifier_input
             < CharT, PrePrinting, FPack, forwarded_type
-            , strf::detail::facets_pack_printer
+            , strf::detail::facets_pack_stringifier
                 < CharT, PrePrinting, FPack, ChildFPack, Args... > >
     {
         return {pre, fp, x};
@@ -73,27 +73,27 @@ template < typename CharT
          , typename ParentFPack
          , typename ChildFPack
          , typename ... Args >
-class facets_pack_printer: public strf::stringifier<CharT>
+class facets_pack_stringifier: public strf::stringifier<CharT>
 {
 public:
 
     template <typename... T>
-    STRF_HD facets_pack_printer
+    STRF_HD facets_pack_stringifier
         ( const strf::usual_stringifier_input<T...>& input )
         : fp_{input.facets, input.arg.fp}
         , printers_{input.arg.args, input.pre, fp_}
     {
     }
 
-    facets_pack_printer(const facets_pack_printer&) = delete;
-    facets_pack_printer(facets_pack_printer&&) = delete;
+    facets_pack_stringifier(const facets_pack_stringifier&) = delete;
+    facets_pack_stringifier(facets_pack_stringifier&&) = delete;
 
     STRF_HD void print_to(strf::destination<CharT>& dest) const override
     {
         strf::detail::write(dest, printers_);
     }
 
-    STRF_HD virtual ~facets_pack_printer()
+    STRF_HD virtual ~facets_pack_stringifier()
     {
     }
 

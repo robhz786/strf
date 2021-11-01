@@ -102,12 +102,12 @@ struct ipv6_formatter
 // 2. Create the printer class
 // -----------------------------------------------------------------------------
 template <typename CharT>
-class ipv6_printer: public strf::stringifier<CharT>
+class ipv6_stringifier: public strf::stringifier<CharT>
 {
 public:
 
     template <typename... T>
-    ipv6_printer(strf::usual_stringifier_input<CharT, T...> input)
+    ipv6_stringifier(strf::usual_stringifier_input<CharT, T...> input)
         : addr_(input.arg.value())
         , alignment_fmt_(input.arg.get_alignment_format())
         , lettercase_(strf::use_facet<strf::lettercase_c, xxx::ipv6address>(input.facets))
@@ -140,7 +140,7 @@ private:
 
 template <typename CharT>
 template <typename PrePrinting, typename Charset>
-void ipv6_printer<CharT>::init_(PrePrinting& pre, Charset charset)
+void ipv6_stringifier<CharT>::init_(PrePrinting& pre, Charset charset)
 {
     if (style_ == ipv6style::little) {
         abbrev_ = xxx::ipv6address_abbreviation{addr_};
@@ -164,7 +164,7 @@ inline std::uint16_t hex_digits_count(std::uint16_t x)
 }
 
 template <typename CharT>
-std::uint16_t ipv6_printer<CharT>::count_ipv6_characters() const
+std::uint16_t ipv6_stringifier<CharT>::count_ipv6_characters() const
 {
     if (style_ == ipv6style::big) {
         return 39;
@@ -179,7 +179,7 @@ std::uint16_t ipv6_printer<CharT>::count_ipv6_characters() const
 }
 
 template <typename CharT>
-void ipv6_printer<CharT>::print_to(strf::destination<CharT>& dest) const
+void ipv6_stringifier<CharT>::print_to(strf::destination<CharT>& dest) const
 {
     if (fillcount_ == 0) {
         print_ipv6(dest);
@@ -203,7 +203,7 @@ void ipv6_printer<CharT>::print_to(strf::destination<CharT>& dest) const
 }
 
 template <typename CharT>
-void ipv6_printer<CharT>::print_ipv6(strf::destination<CharT>& dest) const
+void ipv6_stringifier<CharT>::print_ipv6(strf::destination<CharT>& dest) const
 {
     const unsigned precision = (style_ == ipv6style::big ? 4 : 0);
     for (int i = 0; i < 8; ++i) {
@@ -237,7 +237,7 @@ struct printing_traits<xxx::ipv6address> {
             , PrePrinting
             , FPack
             , strf::value_with_formatters<T...>
-            , ipv6_printer<CharT> >
+            , ipv6_stringifier<CharT> >
     {
         return {pre, fp, arg};
     }

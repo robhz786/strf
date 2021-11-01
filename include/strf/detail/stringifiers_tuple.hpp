@@ -90,10 +90,10 @@ constexpr STRF_HD auto get(const simple_tuple<T...>& tp)
 }
 
 template <std::size_t I, typename Printer>
-struct indexed_printer
+struct indexed_stringifier
 {
     template <typename Arg>
-    STRF_HD indexed_printer(const Arg& arg)
+    STRF_HD indexed_stringifier(const Arg& arg)
         : printer(arg)
     {
     }
@@ -110,10 +110,10 @@ template < typename CharT
          , std::size_t ... I
          , typename ... Printers >
 class stringifiers_tuple_impl<CharT, strf::detail::index_sequence<I...>, Printers...>
-    : public detail::indexed_printer<I, Printers> ...
+    : public detail::indexed_stringifier<I, Printers> ...
 {
     template <std::size_t J, typename T>
-    static constexpr STRF_HD const indexed_printer<J, T>& get_(const indexed_printer<J, T>* r) noexcept
+    static constexpr STRF_HD const indexed_stringifier<J, T>& get_(const indexed_stringifier<J, T>* r) noexcept
     {
         return *r;
     }
@@ -133,7 +133,7 @@ public:
         ( const strf::detail::simple_tuple<Args...>& args
         , PrePrinting& pre
         , const FPack& fp )
-        : indexed_printer<I, Printers>
+        : indexed_stringifier<I, Printers>
             ( strf::make_stringifier_input<CharT>
               ( pre, fp, args.template get<I>() ) ) ...
     {

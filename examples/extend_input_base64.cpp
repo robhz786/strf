@@ -76,7 +76,7 @@ struct base64_formatter
 struct base64_printing;
 
 template <typename CharT>
-class base64_printer;
+class base64_stringifier;
 
 using base64_input_with_formatters =
     strf::value_with_formatters<base64_printing, base64_formatter>;
@@ -94,21 +94,21 @@ struct base64_printing
         , const FPack& fp
         , base64_input_with_formatters x )
         -> strf::usual_stringifier_input
-            < CharT, PrePrinting, FPack, base64_input_with_formatters, base64_printer<CharT> >
+            < CharT, PrePrinting, FPack, base64_input_with_formatters, base64_stringifier<CharT> >
     {
         return {pre, fp, x};
     }
 };
 
 template <typename CharT>
-class base64_printer: public strf::stringifier<CharT>
+class base64_stringifier: public strf::stringifier<CharT>
 {
 public:
 
     template <typename ... T>
-    base64_printer
+    base64_stringifier
         ( const strf::usual_stringifier_input<T...>& input)
-        : base64_printer
+        : base64_stringifier
             ( strf::use_facet<base64_facet_c, base64_facet_c>(input.facets)
             , input.pre
             , input.arg )
@@ -116,7 +116,7 @@ public:
     }
 
     template <strf::precalc_size PrecalcSize>
-    base64_printer
+    base64_stringifier
         ( base64_facet facet
         , strf::preprinting<PrecalcSize, strf::precalc_width::no>& pre
         , const base64_input_with_formatters& fmt );
@@ -154,7 +154,7 @@ private:
 
 template <typename CharT>
 template <strf::precalc_size PrecalcSize>
-base64_printer<CharT>::base64_printer
+base64_stringifier<CharT>::base64_stringifier
     ( base64_facet facet
     , strf::preprinting<PrecalcSize, strf::precalc_width::no>& pre
     , const base64_input_with_formatters& fmt )
@@ -165,7 +165,7 @@ base64_printer<CharT>::base64_printer
 }
 
 template <typename CharT>
-void base64_printer<CharT>::calc_size_(strf::size_accumulator<true>& pre) const
+void base64_stringifier<CharT>::calc_size_(strf::size_accumulator<true>& pre) const
 {
     std::size_t num_digits = 4 * (fmt_.value().num_bytes + 2) / 3;
     pre.add_size(num_digits);
@@ -178,10 +178,10 @@ void base64_printer<CharT>::calc_size_(strf::size_accumulator<true>& pre) const
     }
 }
 
-//[ base64_printer__write
+//[ base64_stringifier__write
 
 template <typename CharT>
-void base64_printer<CharT>::print_to(strf::destination<CharT>& dest) const
+void base64_stringifier<CharT>::print_to(strf::destination<CharT>& dest) const
 {
     if (facet_.single_line()) {
         write_single_line_(dest);
@@ -191,14 +191,14 @@ void base64_printer<CharT>::print_to(strf::destination<CharT>& dest) const
 }
 
 template <typename CharT>
-void base64_printer<CharT>::write_single_line_(strf::destination<CharT>& dest) const
+void base64_stringifier<CharT>::write_single_line_(strf::destination<CharT>& dest) const
 {
     write_identation_(dest);
     encode_all_data_in_this_line_(dest);
 }
 
 template <typename CharT>
-void base64_printer<CharT>::write_identation_(strf::destination<CharT>& dest) const
+void base64_stringifier<CharT>::write_identation_(strf::destination<CharT>& dest) const
 {
     using traits = std::char_traits<CharT>;
     std::size_t count = fmt_.indentation();
@@ -217,7 +217,7 @@ void base64_printer<CharT>::write_identation_(strf::destination<CharT>& dest) co
 }
 
 template <typename CharT>
-void base64_printer<CharT>::encode_all_data_in_this_line_(strf::destination<CharT>& dest) const
+void base64_stringifier<CharT>::encode_all_data_in_this_line_(strf::destination<CharT>& dest) const
 {
     auto data_it = static_cast<const std::uint8_t*>(fmt_.value().bytes);
     for (std::ptrdiff_t count = fmt_.value().num_bytes; count > 0; count -= 3) {
@@ -229,7 +229,7 @@ void base64_printer<CharT>::encode_all_data_in_this_line_(strf::destination<Char
 }
 
 template <typename CharT>
-void base64_printer<CharT>::encode_3bytes_
+void base64_stringifier<CharT>::encode_3bytes_
     ( CharT* dest
     , const std::uint8_t* data
     , std::size_t data_size ) const
@@ -245,7 +245,7 @@ void base64_printer<CharT>::encode_3bytes_
 }
 
 template <typename CharT>
-auto base64_printer<CharT>::encode_(std::uint8_t hextet) const -> CharT
+auto base64_stringifier<CharT>::encode_(std::uint8_t hextet) const -> CharT
 {
     assert(hextet <= 63);
     std::uint8_t ch =
@@ -260,7 +260,7 @@ auto base64_printer<CharT>::encode_(std::uint8_t hextet) const -> CharT
 //]
 
 template <typename CharT>
-void base64_printer<CharT>::write_multiline_(strf::destination<CharT>& dest) const
+void base64_stringifier<CharT>::write_multiline_(strf::destination<CharT>& dest) const
 {
     write_identation_(dest);
 
@@ -298,7 +298,7 @@ void base64_printer<CharT>::write_multiline_(strf::destination<CharT>& dest) con
 }
 
 template <typename CharT>
-void base64_printer<CharT>::write_end_of_line_(strf::destination<CharT>& dest) const
+void base64_stringifier<CharT>::write_end_of_line_(strf::destination<CharT>& dest) const
 {
     dest.ensure(2);
     dest.buffer_ptr()[0] = facet_.eol[0];
