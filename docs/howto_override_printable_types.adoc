@@ -15,7 +15,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 :value_with_formatters: <<strf_hpp#value_with_formatters,value_with_formatters>>
 :print_override_c: <<strf_hpp#print_override_c,print_override_c>>
 :PrintingTraits: <<strf_hpp#PrintingTraits,PrintingTraits>>
-:PrinterInput: <<strf_hpp#PrintInput,PrintInput>>
+:StringifierInput: <<strf_hpp#StringifierInput,StringifierInput>>
 :printing_traits_of: <<strf_hpp#printing_traits_of,printing_traits_of>>
 :lettercase: <<strf_hpp#lettercase,lettercase>>
 :override_tag: <<strf_hpp#override_tag,override_tag>>
@@ -30,10 +30,10 @@ http://www.boost.org/LICENSE_1_0.txt)
 :toc-title: Adding printable types
 
 Strf allows you not only to <<howto_add_printable_types#,add printable types>>,
-but also to override existing ones. The procedure is similar. The
-main difference is that instead of a _{PrintingTraits}_ type,
+but also to override existing ones. The procedure is similar; the
+main difference is that instead of defining a _{PrintingTraits}_ type,
 you create a facet of the `{print_override_c}` category,
-which is almost the same.
+which is almost the same thing.
 So this document presumes you already know how to do that.
 If you don't,
 <<howto_add_printable_types#CreatePrintingTraits,click here>>
@@ -53,7 +53,7 @@ In the following example, we override the `bool` type,
 causing its values to be printed in a another language:
 
 which also has a `make_input` function template
-that returns a _{PrinterInput}_ object.
+that returns a _{StringifierInput}_ object.
 
 As an example, let's to override the `bool` type,
 so that its values will be printed in italian (as "vero" and "falso" )
@@ -93,7 +93,7 @@ struct italian_bool_facet
 ----
 Everything in `make_input`
 ( semantics, return type, arguments, etc )
-is just like as in the __PrintTrait__ requirements, except that here it is
+is just like as in the __PrintingTraits__ requirements, except that here it is
 allowed to be non-static, though it must be then const (
 so instead of hardcoded strings like `"vero"`, and `"falso"`
 , we could use member variables, which would probably make more sense ).
@@ -179,7 +179,7 @@ These cannot be changed in our `italian_bool_facet` facet:
 whatever is defined in `{printing_traits_of}<bool>`, still applies here.
 This implies that you cannot change the format functions
 when overriding a printable type.
-The only thing that you actually change are the `make_print_input` functions.
+The only thing that you actually change are the `make_input` functions.
 ////
 
 
@@ -217,7 +217,7 @@ then it will override all types that are overridables,
 If you use the value `italian_bool_facet{}` directly, __i.e.__
 without `strf::constrain`,
 then all arguments to be printed would be passed to
-`italian_bool_facet::make_printed_input` &#x2014; raw strings,
+`italian_bool_facet::make_input` &#x2014; raw strings,
 integers, float points values, everything
 would be and printed as "vero" or "falso"
 ( unless when it fails to compile for not being

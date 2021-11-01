@@ -11,8 +11,8 @@ http://www.boost.org/LICENSE_1_0.txt)
 :output_buffer:   <<destination_hpp#output_buffer,output_buffer>>
 :destination:   <<destination_hpp#destination,destination>>
 
-:PrintingTraits:  <<strf_hpp#PrintingTraits,PrintingTraits>>
-:PrinterInput:    <<strf_hpp#PrintInput,PrinterInput>>
+:PrintingTraits:   <<strf_hpp#PrintingTraits,PrintingTraits>>
+:StringifierInput: <<strf_hpp#StringifierInput,StringifierInput>>
 :override_tag:    <<strf_hpp#PrintingTraits_override_tag,override_tag>>
 :forwarded_type:  <<strf_hpp#PrintingTraits_forwarded_type,forwarded_type>>
 :formatters:      <<strf_hpp#PrintingTraits_formatters,formatters>>
@@ -93,11 +93,7 @@ or the return type of `tag_invoke` must satisfy __{PrintingTraits}__.
 
 == Creating a __{PrintingTraits}__ class [[CreatePrintingTraits]]
 
-According to the documentation, a __{PrintingTraits}__ class
-must contain a static template function named `make_print_input`
-that kind of tells the library how to print the value.
-
-For example, let's see how we can make
+As an example, let's see how we can make
 https://en.cppreference.com/w/cpp/numeric/complex[`std::complex`]
 printable:
 
@@ -112,10 +108,10 @@ struct printing_traits<std::complex<FloatT>> {
 
     template <typename CharT, typename Pre, typename FPack>
     static auto make_input
-        ( strf::tag<CharT> // <1>
-        , Pre& pre // <2>
-        , const FPack& fp  // <3>
-        , std::complex<FloatT> arg )// <4>
+        ( strf::tag<CharT>           // <1>
+        , Pre& pre                   // <2>
+        , const FPack& fp            // <3>
+        , std::complex<FloatT> arg ) // <4>
     {
         auto arg2 =  strf::join
             ( static_cast<CharT>('('), arg.real()
@@ -129,9 +125,9 @@ struct printing_traits<std::complex<FloatT>> {
 } // namespace strf
 ----
 <1> This parameter is solely there to make `CharT` deducible.
-    If you just need/want to support one character type, like `char`,
-    then use instead `strf::tag<char>` ( and remove the `typename CharT`
-    from the template parameters list )
+    If you just need or want to support only one character type, like `char`,
+    then use instead `strf::tag<char>`, and remove `CharT`
+    from the template parameters list.
 <2> `Pre` is expected to be an instance of the `{preprinting}`
 class template.
 <3> `FPack` is expected to be an instance of the `{facets_pack}` class template.
@@ -139,34 +135,41 @@ class template.
 <4> The last parameter is the value to be printed.
 
 What the above code basically does is to tell the library to handle
-`std::complex` values in the same way that it would handle the `{join}` object created above ( `arg2` ).
-That's because the expression:
+`std::complex` values in the same way that it would handle the `{join}`
+object created above ( `arg2` ). That's because the expression:
 
 [source,cpp,subs=normal]
 ----
 {strf_make_stringifier_input}<CharT>(__pre__, __fp__, __foo__)
 ----
-is equivalent to:
-[source,cpp,subs=normal]
-----
-__overrider__.make_input({tag}<CharT>{}, __pre__, __fp__, __foo__)
-----
-, where `__overrider__` is a facet object of the `{print_override_c}` category.
-If it is the default facet, then such expression is equivalent to:
+is equivalent to
+
+// [source,cpp,subs=normal]
+// ----
+// __overrider__.make_input({tag}<CharT>{}, __pre__, __fp__, __foo__)
+// ----
+// , where `__overrider__` is a facet object of the `{print_override_c}` category.
+// If it is the default facet, then such expression is equivalent to:
+
 [source,cpp,subs=normal]
 ----
 __foo_printing_traits__::make_input({tag}<CharT>{}, __pre__, __fp__, __foo__)
 ----
 where `__foo_printing_traits__` is the return type of
-`tag_invoke(strf::printing_tag{}, __foo__)`
+`tag_invoke(strf::printing_tag{}, __foo__)`.
 
-WARNING: `make_stringifier_input` function does not actually print the value,
-it just returns an object that the library knows how to print.
-Make sure that this returned object does not contain any dangling reference.
-For example, if the `join` in the above example contained a
-reference to any local object, we would get undefined behaviour.
+( Actually, `{strf_make_stringifier_input}` may call something else
+if there is a <<howto_override_printable_types#,overriding>>
+facet in `__fp__`. But you don't have to thing about this now. )
 
-Anyway, sometimes it is not possible to use this tactic,
+WARNING: Pay attention to not create dangling references.
+This would happen, for instance, if the `join` in the snippet above
+contained a pointer to any local variable.
+Remember that `make_stringifier_input` function does not actually
+print the value, it just creates and returns an object.
+
+Anyway, sometimes it is not possible to just return
+`strf::make_stringified_input(__something__...)`,
 __i.e.__ to simply convert the value to another type that is already printable.
 A <<creating_printer,further section>> explains how to deal with such cases.
 
@@ -187,7 +190,7 @@ shall be printed in:
 ----
 enum class complex_form { vector, algebric, polar };
 ----
-.Same complex number printed in different forms
+
 [caption=,cols="50,50"]
 |===
 |`complex_form::vector`   | `(3, 4)`
@@ -200,20 +203,15 @@ _{Facet}_ requirement, we do the following:
 
 [source,cpp,subs=normal]
 ----
-
 struct complex_form_c {
     static constexpr complex_form get_default() noexcept {
         return complex_form::vector;
     }
 };
 
-namespace strf {
-
-template <> struct facet_traits<complex_form> {
+template <> struct strf::facet_traits<complex_form> {
     using category = complex_form_c;
 };
-
-} // namespace strf;
 ----
 
 Now let's reimplement `make_input` to take
@@ -222,8 +220,9 @@ into account this new facet:
 [source,cpp,subs=normal]
 ----
 template <typename FloatT>
-std::pair<FloatT, FloatT> complex_coordinates
-    ( std::complex<FloatT> x, complex_form form ) noexcept;
+std::pair<FloatT, FloatT> complex_coordinates // helper function
+    ( std::complex<FloatT> x
+    , complex_form form ) noexcept;
 
 namespace strf {
 
@@ -757,7 +756,7 @@ struct printing_traits<std::complex<FloatT>>
     using forwarded_type = std::complex<FloatT>;
     using formatters = strf::tag< ... /{asterisk}same as before{asterisk}/>;
 
-    // make_print_input that handles unformatted values
+    // make_input that handles unformatted values
     template <typename CharT, typename Pre, typename FPack>
     static auto make_input
         ( strf::tag<CharT>
@@ -771,12 +770,12 @@ struct printing_traits<std::complex<FloatT>>
         return {pre, fp, arg};
     }
 
-    ... /{asterisk} omitting the make_print_input overload that handles formatted values {asterisk}/ ...
+    ... /{asterisk} omitting the make_input overload that handles formatted values {asterisk}/ ...
 };
 } // namespace strf
 ----
 
-The return type of `make_input` must aways be a __{PrinterInput}__
+The return type of `make_input` must aways be a __{StringifierInput}__
 type, and the `{usual_stringifier_input}` class template is syntatic sugar to
 achieve that.
 Most of the work lies in creating the class &#x2014;

@@ -15,7 +15,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 
 :PrintingTraits: <<PrintingTraits,PrintingTraits>>
 :Printable: <<Printable,Printable>>
-:PrinterInput: <<PrinterInput,PrinterInput>>
+:StringifierInput: <<StringifierInput,StringifierInput>>
 :printing_traits_of: <<printing_traits_of,printing_traits_of>>
 :print_override_c: <<print_override_c,print_override_c>>
 :make_default_stringifier_input: <<make_default_stringifier_input,make_default_stringifier_input>>
@@ -93,7 +93,7 @@ situations ( for example, the objects created by `fmt` and `{join}` ).
 T::override_tag
 ----
 When defined, `strf::{make_stringifier_input}` uses the following expression
-to obtain the _PrinterInput_ object:
+to obtain the _StringifierInput_ object:
 [source,cpp,subs=normal]
 ----
 <<use_facet,use_facet>><{print_override_c}, override_tag>(_facets_).make_input(...)
@@ -132,7 +132,7 @@ The following syntax is satisfied:
 T::make_input({tag}<CharT>{}, pre, fpack, v)
 ----
 [horizontal]
-Return type:: A _{PrinterInput}_ type.
+Return type:: A _{StringifierInput}_ type.
 Return value:: A value `r` such that `&r.pre == &pre`
 ====
 
@@ -177,13 +177,13 @@ using forwarded_printable_type = typename {printing_traits_of}<T>::<<PrintingTra
 ----
 
 
-=== Type requirements _PrinterInput_ [[PrinterInput]]
+=== Type requirements _StringifierInput_ [[StringifierInput]]
 
 Given
 
 * `CharT`, a character type
 * `PrePriting`, an instance of the `{preprinting}` class template
-* `X`, a _PrinterInput_ type for types `CharT` and `PrePriting`
+* `X`, a _StringifierInput_ type for types `CharT` and `PrePriting`
 * `x`, a value of type `X`
 
 ====
@@ -233,7 +233,7 @@ A lvalue reference of type `PrePriting`.
 
 === Class template `usual_stringifier_input` [[usual_stringifier_input]]
 
-`usual_stringifier_input` is a syntactic sugar to create `PrinterInput` types.
+`usual_stringifier_input` is a syntactic sugar to create `StringifierInput` types.
 
 [source,cpp,subs=normal]
 ----
@@ -282,7 +282,7 @@ The expression `make_default_stringifier_input<CharT>(pre, facets, arg)` is equi
 This facet category affects the return type and value of `strf::{make_stringifier_input}`
 function template.
 It enables the user change how a printable type is printed,
-by making the library use an the alternative __{PrinterInput}__ object.
+by making the library use an the alternative __{StringifierInput}__ object.
 A facet of this category should **aways** be <<constrain,constrained>> to the
 printable type intended to be overriden.
 
