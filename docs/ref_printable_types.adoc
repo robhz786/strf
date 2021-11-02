@@ -89,7 +89,7 @@ Influential facet categories::
 === `bool` [[printable_bool]]
 Type:: `bool`
 
-Overridable:: Yes, `<<PrintingTraits_override_tag,override_tag>>` is `bool`.
+Overridable:: Yes, `<<PrintableTraits_override_tag,override_tag>>` is `bool`.
 
 Formatters::
 * `<<alignment_formatter,alignment_formatter>>`
@@ -101,7 +101,7 @@ Influential facet categories::
 === `const void*`
 Types:: `const void*`
 
-Overridable:: Yes, `<<PrintingTraits_override_tag,override_tag>>` is `const void*`
+Overridable:: Yes, `<<PrintableTraits_override_tag,override_tag>>` is `const void*`
 
 Formatters::
 * `<<alignment_formatter,alignment_formatter>>`
@@ -122,7 +122,7 @@ Types::
 `unsigned long int` and
 `unsigned long long int`
 
-Overridable:: Yes, `<<PrintingTraits_override_tag,override_tag>>` is the same as the input type ( `short`,
+Overridable:: Yes, `<<PrintableTraits_override_tag,override_tag>>` is the same as the input type ( `short`,
 `int`,
 `long int`,
 `long long int`,
@@ -145,7 +145,7 @@ Influential facet categories::
 === Floating Points
 Types:: `float`, `double`
 
-Overridable:: Yes, `<<PrintingTraits_override_tag,override_tag>>` is the same as the input type ( `float` or `double` )
+Overridable:: Yes, `<<PrintableTraits_override_tag,override_tag>>` is the same as the input type ( `float` or `double` )
 
 Formatters::
 * `<<alignment_formatter,alignment_formatter>>`

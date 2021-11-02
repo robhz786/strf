@@ -11,11 +11,11 @@ http://www.boost.org/LICENSE_1_0.txt)
 :output_buffer:   <<destination_hpp#output_buffer,output_buffer>>
 :destination:   <<destination_hpp#destination,destination>>
 
-:PrintingTraits:   <<strf_hpp#PrintingTraits,PrintingTraits>>
+:PrintableTraits:   <<strf_hpp#PrintableTraits,PrintableTraits>>
 :StringifierInput: <<strf_hpp#StringifierInput,StringifierInput>>
-:override_tag:    <<strf_hpp#PrintingTraits_override_tag,override_tag>>
-:forwarded_type:  <<strf_hpp#PrintingTraits_forwarded_type,forwarded_type>>
-:formatters:      <<strf_hpp#PrintingTraits_formatters,formatters>>
+:override_tag:    <<strf_hpp#PrintableTraits_override_tag,override_tag>>
+:forwarded_type:  <<strf_hpp#PrintableTraits_forwarded_type,forwarded_type>>
+:formatters:      <<strf_hpp#PrintableTraits_formatters,formatters>>
 :Formatter:                  <<strf_hpp#Formatter,Formatter>>
 :print_override_c:           <<strf_hpp#print_override_c,print_override_c>>
 :no_print_override:          <<strf_hpp#no_print_override,no_print_override>>
@@ -72,9 +72,9 @@ you overload `tag_invoke` function, like this:
 ----
 namespace strf {
 
-struct your_type_printing_traits { /{asterisk}\...{asterisk}/ }; // a __{PrintingTraits}__ type
+struct your_printable_type_traits { /{asterisk}\...{asterisk}/ }; // a __{PrintableTraits}__ type
 
-your_type_printing_traits tag_invoke(strf::printing_tag, const your_type&);
+your_printable_type_traits tag_invoke(strf::printable_tag, const your_type&);
 
 }
 ----
@@ -84,14 +84,14 @@ the return type, which it obtains with `decltype`.
 Actually, even the declaration
 is only necessary if you want to match types that derive from
 or are implicitly convertible to `your_type`. Otherwise, you can
-just define the template specialization `printing_traits<your_type>`,
+just define the template specialization `printable_traits<your_type>`,
 since this is the fallback the library uses when there is not
 matching overload.
 
-Whatever approach you use, `printing_traits<your_type>`
-or the return type of `tag_invoke` must satisfy __{PrintingTraits}__.
+Whatever approach you use, `printable_traits<your_type>`
+or the return type of `tag_invoke` must satisfy __{PrintableTraits}__.
 
-== Creating a __{PrintingTraits}__ class [[CreatePrintingTraits]]
+== Creating a __{PrintableTraits}__ class [[CreatePrintableTraits]]
 
 As an example, let's see how we can make
 https://en.cppreference.com/w/cpp/numeric/complex[`std::complex`]
@@ -102,7 +102,7 @@ printable:
 namespace strf {
 
 template <typename FloatT>
-struct printing_traits<std::complex<FloatT>> {
+struct printable_traits<std::complex<FloatT>> {
     using override_tag = std::complex<FloatT>;
     using forwarded_type = std::complex<FloatT>;
 
@@ -153,10 +153,10 @@ is equivalent to
 
 [source,cpp,subs=normal]
 ----
-__foo_printing_traits__::make_input({tag}<CharT>{}, __pre__, __fp__, __foo__)
+__foo_type_traits__::make_input({tag}<CharT>{}, __pre__, __fp__, __foo__)
 ----
-where `__foo_printing_traits__` is the return type of
-`tag_invoke(strf::printing_tag{}, __foo__)`.
+where `__foo_type_traits__` is the return type of
+`tag_invoke(strf::printable_tag{}, __foo__)`.
 
 ( Actually, `{strf_make_stringifier_input}` may call something else
 if there is a <<howto_override_printable_types#,overriding>>
@@ -227,7 +227,7 @@ std::pair<FloatT, FloatT> complex_coordinates // helper function
 namespace strf {
 
 template <typename FloatT>
-struct printing_traits<std::complex<FloatT>> {
+struct printable_traits<std::complex<FloatT>> {
     using override_tag = std::complex<FloatT>;
     using forwarded_type = std::complex<FloatT>;
 
@@ -295,7 +295,7 @@ named `complex_coordinates` whose implementation is not the point here:
 std::pair<FloatT,FloatT> v = ::complex_coordinates(arg, form);
 ----
 
-If we want to the parenthesis to not be printed in the polar form,
+If we want the parenthesis to not be printed in the polar form,
 we can achieve that using the `{multi}` format function.
 It causes a character to be printed __n__ times,
 where __n__ in our case is either 0 or 1.
@@ -386,7 +386,7 @@ select them:
 namespace strf {
 
 template <typename FloatT>
-struct printing_traits<std::complex<FloatT>> {
+struct printable_traits<std::complex<FloatT>> {
     // ...
     using {formatters} = strf::{tag}<{alignment_formatter}, {float_formatter}>;
     // ...
@@ -398,7 +398,7 @@ struct printing_traits<std::complex<FloatT>> {
 After that, whenever a value `x` is a `std::complex`,
 expressions like `+strf::fmt(x)` and `*strf::sci(x) > 20` and `right(x, 20, '_').sci()`
 are all well-formed, and the type of `strf::fmt(x)` is
-`{value_with_formatters}<printing_traits<std::complex<...>>, Fmts\...>`, where `Fmts\...`
+`{value_with_formatters}<printable_traits<std::complex<...>>, Fmts\...>`, where `Fmts\...`
 are the types you used in to define the `formatters` type alias.
 
 Though well-formed, they are still not printable.
@@ -410,7 +410,7 @@ member function template:
 namespace strf {
 
 template <typename FloatT>
-struct printing_traits<std::complex<FloatT>> {
+struct printable_traits<std::complex<FloatT>> {
 
     // \...
 
@@ -468,18 +468,18 @@ static_assert(! std::is_same_v(decltype(arg1), decltype(arg2)));
 static_assert(! std::is_same_v(decltype(arg2), decltype(arg3)));
 ----
 
-We can keep the old `make_input` ( that takes `std::complex`
+We can keep the old `make_input` ( the one that takes `std::complex`
 without formatting ), but we could also remove it. Because when the expression
 below is not well-formed:
 [source,cpp,subs=normal]
 ----
-__PrintingTraits__::make_input({tag}<CharT>{}, pre, fp, x)
+__PrintableTraits__::make_input({tag}<CharT>{}, pre, fp, x)
 ----
 , and the type of `x` is not an instance `{value_with_formatters}`, then
 the library invokes the following instead:
 [source,cpp,subs=normal]
 ----
-__PrintingTraits__::make_input({tag}<CharT>{}, pre, fp, strf::fmt(x))
+__PrintableTraits__::make_input({tag}<CharT>{}, pre, fp, strf::fmt(x))
 ----
 
 Anyway, let's examine the new function. You can see there are few changes from
@@ -605,7 +605,7 @@ The `static_cast` expressions above work because
 Not only that, `T` is expected to be an instance of `{value_with_formatters}`
 that has `std_complex_formatter` as one of its template arguments.
 
-In our __PrintingTraits__ class, there are only two small
+In our __PrintableTraits__ class, there are only two small
 modifications: `formatters` and the first line
 of `make_input`:
 
@@ -614,7 +614,7 @@ of `make_input`:
 namespace strf {
 
 template <typename FloatT>
-struct printing_traits<std::complex<FloatT>> {
+struct printable_traits<std::complex<FloatT>> {
 
     // \...
 
@@ -743,14 +743,14 @@ as we did in the previous sections.
 
 So let's see another approach to make `std::complex`
 printable &#x2014; the low-level way.
-First, let's redefine `printing_traits<std::complex<...>>`:
+First, let's redefine `printable_traits<std::complex<...>>`:
 
 
 [source,cpp,subs=normal]
 ----
 namespace strf {
 template <typename FloatT>
-struct printing_traits<std::complex<FloatT>>
+struct printable_traits<std::complex<FloatT>>
 {
     using override_tag = std::complex<FloatT>;
     using forwarded_type = std::complex<FloatT>;

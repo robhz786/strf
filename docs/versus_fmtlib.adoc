@@ -314,7 +314,7 @@ template <typename FloatT>
 struct point{ FloatT x, y; };
 
 template <typename FloatT>
-struct strf::printing_traits<point<FloatT>> {
+struct strf::printable_traits<point<FloatT>> {
     using forwarded_type = point<FloatT>;
     using formatters = strf::tag<strf::alignment_formatter, strf::float_formatter>; // <1>
 

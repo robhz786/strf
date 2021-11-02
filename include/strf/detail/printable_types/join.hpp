@@ -76,7 +76,7 @@ struct join_printing
 } // namespace detail
 
 template <typename... FwdArgs>
-struct printing_traits<strf::detail::join_t<FwdArgs...>>
+struct printable_traits<strf::detail::join_t<FwdArgs...>>
     : strf::detail::join_printing<FwdArgs...>
 {
 };

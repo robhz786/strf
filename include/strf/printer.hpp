@@ -549,61 +549,59 @@ struct usual_stringifier_input
 
 
 template<typename T>
-struct printing_traits;
+struct printable_traits;
 
 template<typename PrintingTraits, typename... Fmts>
-struct printing_traits<strf::value_with_formatters<PrintingTraits, Fmts...>> : PrintingTraits
+struct printable_traits<strf::value_with_formatters<PrintingTraits, Fmts...>> : PrintingTraits
 {
 };
 
 namespace detail {
 
 template <typename T>
-struct printing_traits_finder;
+struct printable_traits_finder;
 
 } // namespace detail
 
 template <typename T>
-using printing_traits_of = typename
-    detail::printing_traits_finder<strf::detail::remove_cvref_t<T>>
+using printable_traits_of = typename
+    detail::printable_traits_finder<strf::detail::remove_cvref_t<T>>
     ::traits;
 
-struct printing_tag
+struct printable_tag
 {
 private:
-    static const printing_tag& tag_();
+    static const printable_tag& tag_();
 
 public:
 
     template < typename Arg >
-    constexpr STRF_HD auto operator()(Arg&&) const -> strf::printing_traits_of<Arg>
+    constexpr STRF_HD auto operator()(Arg&&) const -> strf::printable_traits_of<Arg>
     {
         return {};
     }
 };
 
-using printing_traits_tag = printing_tag;
-
 using print_traits_tag
-STRF_DEPRECATED_MSG("print_traits_tag type renamed to printing_tag")
-=  printing_tag;
+STRF_DEPRECATED_MSG("print_traits_tag type renamed to printable_tag")
+=  printable_tag;
 
 template <typename T>
 using print_traits
-STRF_DEPRECATED_MSG("print_traits renamed to printing_traits")
-= printing_traits<T>;
+STRF_DEPRECATED_MSG("print_traits renamed to printable_traits")
+= printable_traits<T>;
 
 template <typename T>
 using print_traits_of
-STRF_DEPRECATED_MSG("print_traits_of renamed to printing_traits_of")
-= printing_traits_of<T>;
+STRF_DEPRECATED_MSG("print_traits_of renamed to printable_traits_of")
+= printable_traits_of<T>;
 
 namespace detail {
 
 template <typename T>
-struct has_printing_traits_specialization
+struct has_printable_traits_specialization
 {
-    template <typename U, typename = typename strf::printing_traits<U>::forwarded_type>
+    template <typename U, typename = typename strf::printable_traits<U>::forwarded_type>
     static std::true_type test(const U*);
 
     template <typename U>
@@ -615,57 +613,55 @@ struct has_printing_traits_specialization
     constexpr static bool value = result::value;
 };
 
-struct printing_tag;
-
-struct select_printing_traits_specialization
+struct select_printable_traits_specialization
 {
     template <typename T>
-    using select = strf::printing_traits<T>;
+    using select = strf::printable_traits<T>;
 };
 
-struct select_printing_traits_from_tag_invoke
+struct select_printable_traits_from_tag_invoke
 {
     template <typename T>
     using select = decltype
-        ( strf::detail::tag_invoke(strf::printing_tag{}, std::declval<T>() ));
+        ( strf::detail::tag_invoke(strf::printable_tag{}, std::declval<T>() ));
 };
 
 template <typename T>
-struct printing_traits_finder
+struct printable_traits_finder
 {
     using selector_ = strf::detail::conditional_t
-        < strf::detail::has_printing_traits_specialization<T>::value
-        , strf::detail::select_printing_traits_specialization
-        , strf::detail::select_printing_traits_from_tag_invoke >;
+        < strf::detail::has_printable_traits_specialization<T>::value
+        , strf::detail::select_printable_traits_specialization
+        , strf::detail::select_printable_traits_from_tag_invoke >;
 
     using traits = typename selector_::template select<T>;
     using forwarded_type = typename traits::forwarded_type;
 };
 
 template <typename Traits, typename... F>
-struct printing_traits_finder<strf::value_with_formatters<Traits, F...>>
+struct printable_traits_finder<strf::value_with_formatters<Traits, F...>>
 {
     using traits = Traits;
     using forwarded_type = strf::value_with_formatters<Traits, F...>;
 };
 
 template <typename T>
-struct printing_traits_finder<T&> : printing_traits_finder<T>
+struct printable_traits_finder<T&> : printable_traits_finder<T>
 {
 };
 
 template <typename T>
-struct printing_traits_finder<T&&> : printing_traits_finder<T>
+struct printable_traits_finder<T&&> : printable_traits_finder<T>
 {
 };
 
 template <typename T>
-struct printing_traits_finder<const T> : printing_traits_finder<T>
+struct printable_traits_finder<const T> : printable_traits_finder<T>
 {
 };
 
 template <typename T>
-struct printing_traits_finder<volatile T> : printing_traits_finder<T>
+struct printable_traits_finder<volatile T> : printable_traits_finder<T>
 {
 };
 
@@ -681,7 +677,7 @@ struct mp_define_value_with_formatters<PrintingTraits, List<Fmts...>>
 };
 
 template <typename PrintingTraits>
-struct extract_formatters_from_printing_traits_impl
+struct extract_formatters_from_printable_traits_impl
 {
 private:
     template <typename U, typename Fmts = typename U::formatters>
@@ -696,21 +692,21 @@ public:
 };
 
 template <typename PrintingTraits>
-using extract_formatters_from_printing_traits =
-    typename extract_formatters_from_printing_traits_impl<PrintingTraits>::type;
+using extract_formatters_from_printable_traits =
+    typename extract_formatters_from_printable_traits_impl<PrintingTraits>::type;
 
 template <typename PrintingTraits>
-using default_value_with_formatter_of_printing_traits = typename
+using default_value_with_formatter_of_printable_traits = typename
     strf::detail::mp_define_value_with_formatters
         < PrintingTraits
-        , extract_formatters_from_printing_traits<PrintingTraits> >
+        , extract_formatters_from_printable_traits<PrintingTraits> >
     :: type;
 
 template <typename T>
 struct formatters_finder
 {
-    using traits = typename printing_traits_finder<T>::traits;
-    using formatters = extract_formatters_from_printing_traits<traits>;
+    using traits = typename printable_traits_finder<T>::traits;
+    using formatters = extract_formatters_from_printable_traits<traits>;
     using fmt_type = typename
         strf::detail::mp_define_value_with_formatters<traits, formatters>::type;
 };
@@ -727,7 +723,7 @@ struct formatters_finder<strf::value_with_formatters<PrintingTraits, Fmts...>>
 
 template <typename T>
 using forwarded_printable_type = typename
-    detail::printing_traits_finder<strf::detail::remove_cvref_t<T>>
+    detail::printable_traits_finder<strf::detail::remove_cvref_t<T>>
     ::forwarded_type;
 
 template <typename T>
@@ -939,7 +935,7 @@ template < typename PrintingTraits
          , typename Arg >
 struct adapter_selector
 {
-    using vwf = default_value_with_formatter_of_printing_traits<PrintingTraits>;
+    using vwf = default_value_with_formatter_of_printable_traits<PrintingTraits>;
     using other = adapter_selector_2<PrintingTraits, Maker, CharT, PrePrinting, FPack, Arg, vwf>;
     using adapter_type = typename other::adapter_type;
 };
@@ -964,7 +960,7 @@ struct maker_getter_overrider
 };
 
 template <typename PrintingTraits>
-struct maker_getter_printing_traits
+struct maker_getter_printable_traits
 {
     using return_maker_type = PrintingTraits;
     using maker_type = PrintingTraits;
@@ -991,7 +987,7 @@ struct maker_getter_selector_2
     using overrider = strf::detail::remove_cvref_t<overrider_>;
     using maker_getter_type = typename std::conditional
         < std::is_same<overrider, strf::no_print_override>::value
-        , maker_getter_printing_traits<PrintingTraits>
+        , maker_getter_printable_traits<PrintingTraits>
         , maker_getter_overrider<overrider, override_tag> >
         ::type;
 };
@@ -1003,7 +999,7 @@ template < typename PrintingTraits
          , typename Arg >
 struct maker_getter_selector_2<PrintingTraits, CharT, PrePrinting, FPack, Arg, false>
 {
-    using maker_getter_type = maker_getter_printing_traits<PrintingTraits>;
+    using maker_getter_type = maker_getter_printable_traits<PrintingTraits>;
 };
 
 template < typename PrintingTraits
@@ -1028,7 +1024,7 @@ using select_maker_getter = typename maker_getter_selector
 template <typename CharT, typename PrePrinting, typename FPack, typename Arg>
 struct selector
 {
-    using traits = strf::printing_traits_of<Arg>;
+    using traits = strf::printable_traits_of<Arg>;
     using maker_getter_type = select_maker_getter<traits, CharT, PrePrinting, FPack, Arg>;
     using maker_type = typename maker_getter_type::maker_type;
     using adapter_type = select_adapter<traits, maker_type, CharT, PrePrinting, FPack, Arg>;
@@ -1037,8 +1033,8 @@ struct selector
 template <typename CharT, typename PrePrinting, typename FPack, typename Arg>
 struct selector_no_override
 {
-    using traits = strf::printing_traits_of<Arg>;
-    using maker_getter_type = maker_getter_printing_traits<traits>;
+    using traits = strf::printable_traits_of<Arg>;
+    using maker_getter_type = maker_getter_printable_traits<traits>;
     using adapter_type = select_adapter<traits, traits, CharT, PrePrinting, FPack, Arg>;
 };
 
@@ -1147,12 +1143,12 @@ struct print_override_c
 
 template <typename T>
 constexpr bool is_overridable
-    = strf::detail::has_override_tag<strf::printing_traits_of<T>>::value;
+    = strf::detail::has_override_tag<strf::printable_traits_of<T>>::value;
 
 #endif // defined(STRF_HAS_VARIABLE_TEMPLATES)
 
 template <typename T>
-using override_tag = typename strf::printing_traits_of<T>::override_tag;
+using override_tag = typename strf::printable_traits_of<T>::override_tag;
 
 template <typename CharT, typename PrePrinting, typename FPack, typename Arg>
 using stringifier_input_type = decltype

@@ -423,7 +423,7 @@ void fmt_std_complex_stringifier<CharT, FloatT>::print_complex_value_
 namespace strf {
 
 template <typename FloatT>
-struct printing_traits<std::complex<FloatT>>
+struct printable_traits<std::complex<FloatT>>
 {
     using override_tag = std::complex<FloatT>;
     using forwarded_type = std::complex<FloatT>;

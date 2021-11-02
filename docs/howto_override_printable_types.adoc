@@ -14,9 +14,9 @@ http://www.boost.org/LICENSE_1_0.txt)
 :constrain: <<strf_hpp#constrain,constrain>>
 :value_with_formatters: <<strf_hpp#value_with_formatters,value_with_formatters>>
 :print_override_c: <<strf_hpp#print_override_c,print_override_c>>
-:PrintingTraits: <<strf_hpp#PrintingTraits,PrintingTraits>>
+:PrintableTraits: <<strf_hpp#PrintableTraits,PrintableTraits>>
 :StringifierInput: <<strf_hpp#StringifierInput,StringifierInput>>
-:printing_traits_of: <<strf_hpp#printing_traits_of,printing_traits_of>>
+:printable_traits_of: <<strf_hpp#printable_traits_of,printable_traits_of>>
 :lettercase: <<strf_hpp#lettercase,lettercase>>
 :override_tag: <<strf_hpp#override_tag,override_tag>>
 :is_overridable: <<strf_hpp#is_overridable,is_overridable>>
@@ -31,18 +31,18 @@ http://www.boost.org/LICENSE_1_0.txt)
 
 Strf allows you not only to <<howto_add_printable_types#,add printable types>>,
 but also to override existing ones. The procedure is similar; the
-main difference is that instead of defining a _{PrintingTraits}_ type,
+main difference is that instead of defining a _{PrintableTraits}_ type,
 you create a facet of the `{print_override_c}` category,
 which is almost the same thing.
 So this document presumes you already know how to do that.
 If you don't,
-<<howto_add_printable_types#CreatePrintingTraits,click here>>
+<<howto_add_printable_types#CreatePrintableTraits,click here>>
 to get some explanation.
 
 
 The facet shall contain the
 `make_input` member function templates that will
-replace those defined in the _{PrintingTraits}_ class of the
+replace those defined in the _{PrintableTraits}_ class of the
 overrided type.
 For example, one could define a facet to override the `bool` like this:
 
@@ -93,12 +93,12 @@ struct italian_bool_facet
 ----
 Everything in `make_input`
 ( semantics, return type, arguments, etc )
-is just like as in the __PrintingTraits__ requirements, except that here it is
+is just like as in the __PrintableTraits__ requirements, except that here it is
 allowed to be non-static, though it must be then const (
 so instead of hardcoded strings like `"vero"`, and `"falso"`
 , we could use member variables, which would probably make more sense ).
 
-Just as it is usual in __PrintingTraits__ classes,
+Just as it is usual in __PrintableTraits__ classes,
 you can see that we have two `make_input` fuctions
 ( though the first one is unnecessary ).
 The second one handles `bool` values with formatting.
@@ -123,11 +123,11 @@ you can see that we only need to handle
 And that's what we did in the implementation above.
 
 ////
-specified by the `<<strf_hpp#PrintingTraits_formatters,formatters>>`
-type alias defined in the __PrintingTraits__ class,
+specified by the `<<strf_hpp#PrintableTraits_formatters,formatters>>`
+type alias defined in the __PrintableTraits__ class,
 and we can't change them ( neither can you change
-`<<strf_hpp#PrintingTraits_forwarded_type,forwarded_type>>`
-nor `<<strf_hpp#PrintingTraits_override_tag,override_tag>>` ).
+`<<strf_hpp#PrintableTraits_forwarded_type,forwarded_type>>`
+nor `<<strf_hpp#PrintableTraits_override_tag,override_tag>>` ).
 
 Even if you don't want to support formatting,
 it still makes sense to overload `make_input`
@@ -136,20 +136,20 @@ a `static_assert` with an explanatory message.
 
 When you override a printable type, the format
 functions are still the same.
-They are specified by the `<<strf_hpp#PrintingTraits_formatters,formatters>>`
-type alias defined in the __PrintingTraits__ class,
+They are specified by the `<<strf_hpp#PrintableTraits_formatters,formatters>>`
+type alias defined in the __PrintableTraits__ class,
 and you can't change them ( neither can you change
-`<<strf_hpp#PrintingTraits_forwarded_type,forwarded_type>>`
-nor `<<strf_hpp#PrintingTraits_override_tag,override_tag>>` ).
+`<<strf_hpp#PrintableTraits_forwarded_type,forwarded_type>>`
+nor `<<strf_hpp#PrintableTraits_override_tag,override_tag>>` ).
 ////
 
 ////
 The format functions are the same as in the original type.
-They are specified by the `<<strf_hpp#PrintingTraits_formatters,formatters>>`
-type alias defined in the __PrintingTraits__ class,
+They are specified by the `<<strf_hpp#PrintableTraits_formatters,formatters>>`
+type alias defined in the __PrintableTraits__ class,
 and you can't change them ( neither can you change
-`<<strf_hpp#PrintingTraits_forwarded_type,forwarded_type>>`
-nor `<<strf_hpp#PrintingTraits_override_tag,override_tag>>` ).
+`<<strf_hpp#PrintableTraits_forwarded_type,forwarded_type>>`
+nor `<<strf_hpp#PrintableTraits_override_tag,override_tag>>` ).
 So, when overriding a type, you should check
 <<strf_hpp#printable_types_list,its documentation>>
 what are the format functions ( or the __Formatters__ )
@@ -158,12 +158,12 @@ applicable to it.
 
 
 ////
-The __PrintingTraits__ type requirement specifies some
-member types aliases: `<<strf_hpp#PrintingTraits_formatters,formatters>>`,
-`<<strf_hpp#PrintingTraits_forwarded_type,forwarded_type>>`
-and `<<strf_hpp#PrintingTraits_override_tag,override_tag>>`
+The __PrintableTraits__ type requirement specifies some
+member types aliases: `<<strf_hpp#PrintableTraits_formatters,formatters>>`,
+`<<strf_hpp#PrintableTraits_forwarded_type,forwarded_type>>`
+and `<<strf_hpp#PrintableTraits_override_tag,override_tag>>`
 These cannot be changed in our `italian_bool_facet` facet:
-whatever is defined in `{printing_traits_of}<bool>`, still applies here.
+whatever is defined in `{printable_traits_of}<bool>`, still applies here.
 This implies that you cannot change the format functions
 when overriding a printable type. The only thing that
 you change is that you replate the `make_input` overloads.
@@ -171,12 +171,12 @@ you change is that you replate the `make_input` overloads.
 
 
 ////
-In the __PrintingTraits__ requirements, you can see that there are some
-member types aliases: `<<strf_hpp#PrintingTraits_formatters,formatters>>`,
-`<<strf_hpp#PrintingTraits_forwarded_type,forwarded_type>>`
-and `<<strf_hpp#PrintingTraits_override_tag,override_tag>>`
+In the __PrintableTraits__ requirements, you can see that there are some
+member types aliases: `<<strf_hpp#PrintableTraits_formatters,formatters>>`,
+`<<strf_hpp#PrintableTraits_forwarded_type,forwarded_type>>`
+and `<<strf_hpp#PrintableTraits_override_tag,override_tag>>`
 These cannot be changed in our `italian_bool_facet` facet:
-whatever is defined in `{printing_traits_of}<bool>`, still applies here.
+whatever is defined in `{printable_traits_of}<bool>`, still applies here.
 This implies that you cannot change the format functions
 when overriding a printable type.
 The only thing that you actually change are the `make_input` functions.
@@ -244,16 +244,16 @@ constexpr auto italian_bool = strf::{constrain}<is_bool>(italian_bool_facet{});
 ----
 
 `strf::{override_tag}<X>` is a type alias to
-`strf::{printing_traits_of}<X>::<<strf_hpp#PrintingTraits_override_tag,override_tag>>`,
+`strf::{printable_traits_of}<X>::<<strf_hpp#PrintableTraits_override_tag,override_tag>>`,
 which is usually the same as
-`strf::{printing_traits_of}<X>::<<strf_hpp#PrintingTraits_forwarded_type,forwarded_type>>`,
+`strf::{printable_traits_of}<X>::<<strf_hpp#PrintableTraits_forwarded_type,forwarded_type>>`,
 which is usually the same as
 `std::{remove_cvref_t}<X>`.
 In fact, `strf::{override_tag}<bool>` is an alias to `bool`,
 but it is a better practice to use `strf::{override_tag}` instead.
 
-When `strf::{printing_traits_of}<X>` ( the __{PrintingTraits}__ class of `X` )
-does not have the member type alias `<<strf_hpp#PrintingTraits_override_tag,override_tag>>`,
+When `strf::{printable_traits_of}<X>` ( the __{PrintableTraits}__ class of `X` )
+does not have the member type alias `<<strf_hpp#PrintableTraits_override_tag,override_tag>>`,
 then `X` is not overridable.
 An example of an non-overridable type is `char`
 ( that's why `'\'` was printed as "\" and not as "vero" in the previous snippet ).

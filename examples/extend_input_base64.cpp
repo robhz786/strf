@@ -316,7 +316,7 @@ inline auto base64(const void* bytes, std::size_t num_bytes)
 
 namespace strf {
 
-xxx::base64_printing tag_invoke(strf::printing_tag, xxx::base64_input)
+xxx::base64_printing tag_invoke(strf::printable_tag, xxx::base64_input)
 {
     return {};
 }

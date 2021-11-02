@@ -663,7 +663,7 @@ struct string_printing
 
 template <typename CharIn>
 constexpr STRF_HD auto tag_invoke
-    (strf::printing_tag, strf::detail::simple_string_view<CharIn>) noexcept
+    (strf::printable_tag, strf::detail::simple_string_view<CharIn>) noexcept
     -> strf::detail::string_printing<CharIn>
     { return {}; }
 
@@ -671,7 +671,7 @@ constexpr STRF_HD auto tag_invoke
 
 template <typename CharIn, typename Traits, typename Allocator>
 constexpr STRF_HD auto tag_invoke
-    (strf::printing_tag, const std::basic_string<CharIn, Traits, Allocator>&) noexcept
+    (strf::printable_tag, const std::basic_string<CharIn, Traits, Allocator>&) noexcept
     -> strf::detail::string_printing<CharIn>
     { return {}; }
 
@@ -681,35 +681,35 @@ constexpr STRF_HD auto tag_invoke
 
 template <typename CharIn, typename Traits>
 constexpr STRF_HD auto tag_invoke
-    (strf::printing_tag, std::basic_string_view<CharIn, Traits>) noexcept
+    (strf::printable_tag, std::basic_string_view<CharIn, Traits>) noexcept
     -> strf::detail::string_printing<CharIn>
     { return {}; }
 
 #if defined(__cpp_char8_t)
 
 constexpr STRF_HD auto tag_invoke
-    (strf::printing_tag, std::basic_string_view<char8_t>) noexcept
+    (strf::printable_tag, std::basic_string_view<char8_t>) noexcept
     -> strf::detail::string_printing<char8_t>
     { return {}; }
 
 #endif // defined(__cpp_char8_t)
 
-constexpr STRF_HD auto tag_invoke(strf::printing_tag, std::basic_string_view<char>) noexcept
+constexpr STRF_HD auto tag_invoke(strf::printable_tag, std::basic_string_view<char>) noexcept
     -> strf::detail::string_printing<char>
     { return {}; }
 
 
-constexpr STRF_HD auto tag_invoke(strf::printing_tag, std::basic_string_view<char16_t>) noexcept
+constexpr STRF_HD auto tag_invoke(strf::printable_tag, std::basic_string_view<char16_t>) noexcept
     -> strf::detail::string_printing<char16_t>
     { return {}; }
 
 
-constexpr STRF_HD auto tag_invoke(strf::printing_tag, std::basic_string_view<char32_t>) noexcept
+constexpr STRF_HD auto tag_invoke(strf::printable_tag, std::basic_string_view<char32_t>) noexcept
     -> strf::detail::string_printing<char32_t>
     { return {}; }
 
 
-constexpr STRF_HD auto tag_invoke(strf::printing_tag, std::basic_string_view<wchar_t>) noexcept
+constexpr STRF_HD auto tag_invoke(strf::printable_tag, std::basic_string_view<wchar_t>) noexcept
     -> strf::detail::string_printing<wchar_t>
     { return {}; }
 
@@ -718,27 +718,27 @@ constexpr STRF_HD auto tag_invoke(strf::printing_tag, std::basic_string_view<wch
 #if defined(__cpp_char8_t)
 
 
-constexpr STRF_HD auto tag_invoke(strf::printing_tag, const char8_t*) noexcept
+constexpr STRF_HD auto tag_invoke(strf::printable_tag, const char8_t*) noexcept
     -> strf::detail::string_printing<char8_t>
     { return {}; }
 
 #endif
 
-constexpr STRF_HD auto tag_invoke(strf::printing_tag, const char*) noexcept
+constexpr STRF_HD auto tag_invoke(strf::printable_tag, const char*) noexcept
     -> strf::detail::string_printing<char>
     { return {}; }
 
-constexpr STRF_HD auto tag_invoke(strf::printing_tag, const char16_t*) noexcept
+constexpr STRF_HD auto tag_invoke(strf::printable_tag, const char16_t*) noexcept
     -> strf::detail::string_printing<char16_t>
     { return {}; }
 
 
-constexpr STRF_HD auto tag_invoke(strf::printing_tag, const char32_t*) noexcept
+constexpr STRF_HD auto tag_invoke(strf::printable_tag, const char32_t*) noexcept
     -> strf::detail::string_printing<char32_t>
     { return {}; }
 
 
-constexpr STRF_HD auto tag_invoke(strf::printing_tag, const wchar_t*) noexcept
+constexpr STRF_HD auto tag_invoke(strf::printable_tag, const wchar_t*) noexcept
     -> strf::detail::string_printing<wchar_t>
     { return {}; }
 
