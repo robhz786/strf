@@ -305,7 +305,7 @@ Header file:: `<<strf_hpp#,<strf.hpp> >>`
 Preconditions::
 * `__end__ >= __char_ptr__`
 //-
-Return type:: `<<destination_hpp#basic_char_array_writer,basic_char_array_writer<__CharT__>::result`>>
+Return type:: `<<destination_hpp#array_destination,array_destination<__CharT__>::result`>>
 Return value:: a value `r`, such that:
 * `r.ptr` is the one-past-the-end pointer of the characters written.
 * `r.truncated` is `true` when the destination is too small. In this case, the number of
@@ -435,7 +435,7 @@ The table below lists the concrete types that derivate from the `{destination}<_
 | `<<destination_hpp#basic_cstr_writer, basic_cstr_writer>><__CharT__>`
 | Writes C strings. Always writes the termination character `'\0'`.
 
-| `<<destination_hpp#basic_char_array_writer, basic_char_array_writer>><__CharT__>`
+| `<<destination_hpp#array_destination, array_destination>><__CharT__>`
 | Writes to also `char*`, but does not append the termination character `'\0'`
 
 | `<<destination_hpp#discarder,discarder>><__CharT__>`

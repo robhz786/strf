@@ -2944,25 +2944,25 @@ private:
 };
 
 template <typename CharT>
-class basic_char_array_writer_creator
+class array_destination_creator
 {
 public:
 
     using char_type = CharT;
-    using finish_type = typename basic_char_array_writer<CharT>::result;
-    using destination_type = basic_char_array_writer<CharT>;
+    using finish_type = typename array_destination<CharT>::result;
+    using destination_type = array_destination<CharT>;
 
     constexpr STRF_HD
-    basic_char_array_writer_creator(CharT* dest, CharT* dest_end) noexcept
+    array_destination_creator(CharT* dest, CharT* dest_end) noexcept
         : dest_(dest)
         , dest_end_(dest_end)
     {
         STRF_ASSERT_IN_CONSTEXPR(dest < dest_end);
     }
 
-    STRF_HD typename basic_char_array_writer<CharT>::range create() const noexcept
+    STRF_HD typename array_destination<CharT>::range create() const noexcept
     {
-        return typename basic_char_array_writer<CharT>::range{dest_, dest_end_};
+        return typename array_destination<CharT>::range{dest_, dest_end_};
     }
 
 private:
@@ -3114,30 +3114,30 @@ inline STRF_HD auto to(wchar_t* dest, std::size_t count)
 template<typename CharT, std::size_t N>
 inline STRF_HD auto to_range(CharT (&dest)[N])
     -> strf::printer_no_reserve
-        < strf::detail::basic_char_array_writer_creator<CharT> >
+        < strf::detail::array_destination_creator<CharT> >
 {
     return strf::printer_no_reserve
-        < strf::detail::basic_char_array_writer_creator<CharT> >
+        < strf::detail::array_destination_creator<CharT> >
         (dest, dest + N);
 }
 
 template<typename CharT>
 inline STRF_HD auto to_range(CharT* dest, CharT* end)
     -> strf::printer_no_reserve
-        < strf::detail::basic_char_array_writer_creator<CharT> >
+        < strf::detail::array_destination_creator<CharT> >
 {
     return strf::printer_no_reserve
-        < strf::detail::basic_char_array_writer_creator<CharT> >
+        < strf::detail::array_destination_creator<CharT> >
         (dest, end);
 }
 
 template<typename CharT>
 inline STRF_HD auto to_range(CharT* dest, std::size_t count)
     -> strf::printer_no_reserve
-        < strf::detail::basic_char_array_writer_creator<CharT> >
+        < strf::detail::array_destination_creator<CharT> >
 {
     return strf::printer_no_reserve
-        < strf::detail::basic_char_array_writer_creator<CharT> >
+        < strf::detail::array_destination_creator<CharT> >
         (dest, dest + count);
 }
 

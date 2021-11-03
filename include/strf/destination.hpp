@@ -362,7 +362,7 @@ using u32cstr_writer = basic_cstr_writer<char32_t>;
 using wcstr_writer = basic_cstr_writer<wchar_t>;
 
 template <typename CharT>
-class basic_char_array_writer final
+class array_destination final
     : public strf::output_buffer<CharT, strf::log2_garbage_buff_size>
 {
     using dest_t_ = strf::output_buffer<CharT, strf::log2_garbage_buff_size>;
@@ -371,37 +371,37 @@ public:
 
     struct range{ CharT* dest; CharT* dest_end; };
 
-    STRF_HD basic_char_array_writer(range r) noexcept
+    STRF_HD array_destination(range r) noexcept
         : dest_t_(r.dest, r.dest_end)
     {
         STRF_ASSERT(r.dest <= r.dest_end);
     }
 
-    STRF_HD basic_char_array_writer(CharT* dest, CharT* dest_end) noexcept
+    STRF_HD array_destination(CharT* dest, CharT* dest_end) noexcept
         : dest_t_(dest, dest_end)
     {
         STRF_ASSERT(dest <= dest_end);
     }
 
-    STRF_HD basic_char_array_writer(CharT* dest, std::size_t len) noexcept
+    STRF_HD array_destination(CharT* dest, std::size_t len) noexcept
         : dest_t_(dest, dest + len)
     {
     }
 
     template <std::size_t N>
-    STRF_HD basic_char_array_writer(CharT (&dest)[N]) noexcept
+    STRF_HD array_destination(CharT (&dest)[N]) noexcept
         : dest_t_(dest, dest + N)
     {
     }
 
-    STRF_HD basic_char_array_writer(const basic_char_array_writer& r) noexcept
+    STRF_HD array_destination(const array_destination& r) noexcept
         : dest_t_(r.buffer_ptr(), r.buffer_end())
         , it_(r.it_)
     {
         this->set_good(r.good());
     }
 
-    STRF_HD basic_char_array_writer& operator=(const basic_char_array_writer& r) noexcept
+    STRF_HD array_destination& operator=(const array_destination& r) noexcept
     {
         this->set_good(r.good());
         this->set_buffer_ptr(r.buffer_ptr());
@@ -409,7 +409,7 @@ public:
         it_ = r.it_;
         return *this;
     }
-    STRF_HD bool operator==(const basic_char_array_writer& r) const noexcept
+    STRF_HD bool operator==(const array_destination& r) const noexcept
     {
         if (this->good()) {
             return ( r.good()
@@ -463,14 +463,18 @@ private:
     CharT* it_ = nullptr;
 };
 
+template <typename CharT>
+using basic_char_array_writer
+STRF_DEPRECATED_MSG("basic_char_array_writer renamed to array_destination")
+= array_destination<CharT>;
 
 #if defined(__cpp_char8_t)
-using u8char_array_writer = basic_char_array_writer<char8_t>;
+using u8char_array_writer  STRF_DEPRECATED = array_destination<char8_t>;
 #endif
-using char_array_writer = basic_char_array_writer<char>;
-using u16char_array_writer = basic_char_array_writer<char16_t>;
-using u32char_array_writer = basic_char_array_writer<char32_t>;
-using wchar_array_writer = basic_char_array_writer<wchar_t>;
+using char_array_writer    STRF_DEPRECATED = array_destination<char>;
+using u16char_array_writer STRF_DEPRECATED = array_destination<char16_t>;
+using u32char_array_writer STRF_DEPRECATED = array_destination<char32_t>;
+using wchar_array_writer   STRF_DEPRECATED = array_destination<wchar_t>;
 
 template <typename T>
 class discarder final

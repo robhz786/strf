@@ -21,7 +21,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 :destination_space_after_flush: <<destination,destination_space_after_flush>>
 
 :basic_cstr_writer: <<basic_cstr_writer, basic_cstr_writer>>
-:basic_char_array_writer: <<basic_char_array_writer, basic_char_array_writer>>
+:array_destination: <<array_destination, array_destination>>
 :discarder: <<discarder,discarder>>
 
 :garbage_buff: <<garbage_buff, garbage_buff>>
@@ -68,7 +68,7 @@ template <typename CharT>
 class {basic_cstr_writer};
 
 template <typename CharT>
-class {basic_char_array_writer};
+class {array_destination};
 
 template <typename CharT>
 class {discarder};
@@ -510,23 +510,23 @@ Postconditions::
 - `{buffer_end}() == {garbage_buff_end}<CharT>()`
 ====
 
-[[basic_char_array_writer]]
-== Class template `basic_char_array_writer`
+[[array_destination]]
+== Class template `array_destination`
 
 [source,cpp,subs=normal]
 ----
 namespace strf {
 template <typename CharT>
-class basic_char_array_writer final : public {output_buffer}<CharT, {log2_garbage_buff_size}> {
+class array_destination final : public {output_buffer}<CharT, {log2_garbage_buff_size}> {
 public:
     template <std::size_t N>
-    basic_char_array_writer(CharT (&dest)[N]) noexcept;
-    basic_char_array_writer(CharT{asterisk} dest, CharT{asterisk} dest_end) noexcept;
-    basic_char_array_writer(CharT{asterisk} dest, std::size_t dest_size) noexcept;
-    basic_char_array_writer(const basic_char_array_writer&) noexcept;
+    array_destination(CharT (&dest)[N]) noexcept;
+    array_destination(CharT{asterisk} dest, CharT{asterisk} dest_end) noexcept;
+    array_destination(CharT{asterisk} dest, std::size_t dest_size) noexcept;
+    array_destination(const array_destination&) noexcept;
 
-    basic_char_array_writer& operator=(const basic_char_array_writer&) noexcept;
-    bool operator==(const basic_char_array_writer&) noexcept;
+    array_destination& operator=(const array_destination&) noexcept;
+    bool operator==(const array_destination&) noexcept;
 
     void recycle_buffer() noexcept override;
 
@@ -546,7 +546,7 @@ public:
 [source,cpp]
 ----
 template <std::size_t N>
-basic_char_array_writer(CharT (&dest)[N]) noexcept;
+array_destination(CharT (&dest)[N]) noexcept;
 ----
 Postconditions::
 - `{good}() == true`
@@ -556,7 +556,7 @@ Postconditions::
 ====
 [source,cpp]
 ----
-basic_char_array_writer(CharT* dest, CharT* dest_end) noexcept;
+array_destination(CharT* dest, CharT* dest_end) noexcept;
 ----
 [horizontal]
 Precondition:: `dest < dest_end`
@@ -568,7 +568,7 @@ Postconditions::
 ====
 [source,cpp]
 ----
-basic_char_array_writer(CharT* dest, std::size_t dest_size) noexcept;
+array_destination(CharT* dest, std::size_t dest_size) noexcept;
 ----
 [horizontal]
 Precondition:: `dest_size != 0`
