@@ -26,7 +26,7 @@ http://www.boost.org/LICENSE_1_0.txt
 :basic_sized_string_maker: <<basic_sized_string_maker,basic_sized_string_maker>>
 :basic_string_appender: <<basic_string_appender,basic_string_appender>>
 
-NOTE: This header files includes `<strf.hpp>`
+NOTE: This header file includes `<<strf_hpp#,<strf.hpp>>>`
 
 [source,cpp,subs=normal]
 ----

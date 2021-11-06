@@ -24,6 +24,7 @@ __Attention__ : Branch `master` was renamed to `main` at the time of release 0.1
 * Header references:
   * [`<strf.hpp>`](http://robhz786.github.io/strf/v0.15.3/strf_hpp.html) is the main header. This document is big and covers many details you will probably never need to know. So it's not the best starting point.
   * [`<strf/destination.hpp>`](http://robhz786.github.io/strf/v0.15.3/destination_hpp.html) is a lightweight and freestanding header that defines the `destination` class template. All other headers depend on this one.
+  * [`<strf/iterator.hpp>`](http://robhz786.github.io/strf/v0.15.3/iterator_hpp.html) defines an output iterator adapter for the `destination` class template.
   * [`<strf/to_string.hpp>`](http://robhz786.github.io/strf/v0.15.3/to_string_hpp.html) adds support for writting to `std::basic_string`. It includes `<strf.hpp>`.
   * [`<strf/to_cfile.hpp>`](http://robhz786.github.io/strf/v0.15.3/to_cfile_hpp.html)  adds support for writting to `FILE*`. It includes `<strf.hpp>`.
   * [`<strf/to_streambuf.hpp>`](http://robhz786.github.io/strf/v0.15.3/to_streambuf_hpp.html) adds support for writting to `std::basic_streambuf`. It includes `<strf.hpp>`.

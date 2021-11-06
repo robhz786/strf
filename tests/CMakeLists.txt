@@ -74,7 +74,8 @@ if (STRF_BUILD_TESTS)
     locale.cpp
     cfile_writer.cpp
     streambuf_writer.cpp
-    string_writer.cpp )
+    string_writer.cpp
+    output_buffer_iterator.cpp )
 
   if (STRF_FREESTANDING)
     set(sources ${sources_freestanding})

@@ -18,7 +18,8 @@ all: \
     out/destination_hpp.html \
     out/to_cfile_hpp.html \
     out/to_streambuf_hpp.html \
-    out/to_string_hpp.html
+    out/to_string_hpp.html \
+    out/iterator_hpp.html
 
 clean:
 	rm -rf out/
@@ -83,5 +84,8 @@ out/to_streambuf_hpp.html : to_streambuf_hpp.adoc out/
 	asciidoctor -v $< -o - | sed 's/20em/34em/g' | sed 's/td.hdlist1{/td.hdlist1{min-width:9em;/g' > $@
 
 out/to_string_hpp.html : to_string_hpp.adoc out/
+	asciidoctor -v $< -o - | sed 's/20em/34em/g' | sed 's/td.hdlist1{/td.hdlist1{min-width:9em;/g' > $@
+
+out/iterator_hpp.html : iterator_hpp.adoc out/
 	asciidoctor -v $< -o - | sed 's/20em/34em/g' | sed 's/td.hdlist1{/td.hdlist1{min-width:9em;/g' > $@
 

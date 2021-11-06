@@ -9,7 +9,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 :source-highlighter: prettify
 :icons: font
 
-NOTE: This header files includes `<strf.hpp>`
+NOTE: This header file includes `<<strf_hpp#,<strf.hpp>>>`
 
 [source,cpp,subs=normal]
 ----

@@ -62,6 +62,7 @@ void test_cstr_writer();
 void test_locale();
 void test_cfile_writer();
 void test_output_buffer_functions();
+void test_output_buffer_iterator();
 void test_printable_overriding();
 void test_streambuf_writer();
 void test_string_writer();
@@ -77,6 +78,7 @@ int main() {
     test_cfile_writer();
     test_streambuf_writer();
     test_string_writer();
+    test_output_buffer_iterator();
 
 #endif // ! defined(STRF_FREESTANDING)
 

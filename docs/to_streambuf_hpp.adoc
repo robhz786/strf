@@ -20,7 +20,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 :printer_no_reserve: <<strf_hpp#printer_no_reserve,printer_no_reserve>>
 :DestinationCreator: <<strf_hpp#DestinationCreator,DestinationCreator>>
 
-NOTE: This header files includes `<strf.hpp>`
+NOTE: This header file includes `<<strf_hpp#,<strf.hpp>>>`
 
 [source,cpp,subs=normal]
 ----
