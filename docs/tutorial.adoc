@@ -290,7 +290,7 @@ void get_message(strf::destination<char>& dest)
 }
 ----
 
-Hence, in a sense, `strf::{destination}` is equivalent
+Hence, in a sense, `strf::{destination}` is similar
 to `std::basic_ostream` or `std::basic_streambuf`,
 but with better performance, and it's easier to implement
 a class that derives from `strf::destination`

@@ -5,7 +5,10 @@ Distributed under the Boost Software License, Version 1.0.
 http://www.boost.org/LICENSE_1_0.txt)
 ////
 
+:output_buffer: <<destination_hpp#output_buffer,output_buffer>>
 :destination: <<destination_hpp#destination,destination>>
+:string_maker: <<to_string_hpp#basic_string_maker,string_maker>>
+
 :fmt_print_to: link:https://fmt.dev/latest/api.html#_CPPv2N3fmt9format_toE8OutputItRK1SDpRR4Args[fmt::print_to]
 :fmt_print_to_n: link:https://fmt.dev/latest/api.html#_CPPv2N3fmt11format_to_nE8OutputIt6size_tRK1SDpRK4Args[fmt::print_to_n]
 
@@ -276,13 +279,71 @@ which is the default <<quick_reference#width_calculator,width calculation facet>
 However there is obviouly a performance price for more accuracy.
 And that's the advatange of Strf: width calculation is customizable.
 You can choose a less accurate but faster algorithm if you want.
-Or, you can try to implement one which is actually more accurate,
+Or, you can try to implement one which is even more accurate,
 or tailored to the environment the string is printed, __i.e.__
 that takes into account the language, the font, etc.
 
 // Or, if know have extra information about how the text will be rendered
 // ( like the font or the laguage ), you can implement your one
 // width calculation facet with a lailored algorithm.
+
+
+
+== Error handling policy
+
+Neither {fmt} nor Strf ever change the value of `errno`.
+
+{fmt} throws an exception when it founds someting wrong at run-time.
+// A run-time error can be something wrong in the format string
+// ( which can be avoided at compile-time if you use `FMT_STRING` or `FMT_COMPILE` )
+// or some system error.
+
+Strf does not throw, but it also doesn't prevent exceptions
+to propagate from whatever it depends on, like the language runtime or
+user extensions. So an exception may arise when writing to a `std::streambuf`
+or `std::string`, for example.
+
+Instead of throwing, Strf's policy is to print the replacement character `U'\uFFFD'`
+( or `'?'`, depending on the charset ) indicating where the error occured.
+This can happen when parsing the {tr-string} or in
+<<quick_reference#charset_conversion,charset conversion>> or sanitization.
+Optionally, you can set a callback to be invoked in such errors
+( see `<<strf_hpp#tr_error_notifier_c,tr_error_notifier_c>>`
+and `<<strf_hpp#invalid_seq_notifier_c,invalid_seq_notifier_c>>` )
+which can then throw an exception, if that's what you want.
+
+In addition to that, depending on the <<quick_reference#destinations,destination>>,
+the return type of the <<tutorial#syntax,basic usage syntax>> may contain an error
+indication. For example, when writing to a `char*`, the returned object contains
+a `bool` member `truncated` that tells whether the destination memory
+is too small.
+
+//  == Performance
+//
+//  If you look at the
+//  http://robhz786.github.io/strf-benchmarks/v{strf-version}/results.html[benchmarks],
+//  you can see that the performances of Strf and {fmt} depend on several things,
+//  like what you are printing, how you do it, what are the formatting options,
+//  the compiler, the destination type, etc. There are situations where {fmt} is faster,
+//  and others when others where it is Strf. However it is possible to take some general conclusions.
+//
+//  When it comes to writting to `char*`, we can conclude that:
+//
+//  * `strf::to` is faster than `fmt::format_to_n`
+//  * `strf::to` is faster than `fmt::format_to`, except in the following two situations:
+//  ** `fmt::format_to` is invoked with `FMT_COMPILE` and no formatting option is applied
+//  ** `fmt::format_to` is invoked with `FMT_COMPILE` and `strf::to` is invoked with the tr-string
+//
+//  When comparing `strf::to_string` against `fmt::format`,
+//  we conclude `strf::to_string` is faster than `fmt::format`,
+//  except when `strf::to_string` is invoked with the tr-string
+//  at the same time that no formatting option is applied.
+//
+//
+//  Of course, it's very possible to be
+//  exceptions for the above conclusions, since these
+//  http://robhz786.github.io/strf-benchmarks/v{strf-version}/results.html[benchmarks]
+//  are far of covering all possible situations.
 
 == Extensibility
 
@@ -439,89 +500,90 @@ amount of memory can be preallocated.
 
 This is all explained in <<howto_add_destination#,this guide>>.
 
-// == Polymorphic destination
-//
-// // Sometimes we need or want the code to be independent
-// // of the destination type.
-// 
-// `{destination}` enables you to write a code that
-// creates a textual content ( or even a binary content ) without concerning
-// about where the such content goes.
-// [source,cpp]
-// ----
-// void write_some_text(strf::destination<char>& dest, /* ...args... */);
-// ----
-// In that sense, `strf::destination` is similar to `std::basic_ostream`,
-// but with several advantages.
-// 
-// * It has better performance.
-// * It's easier to derive from.
-// * It can be used in a https://en.cppreference.com/w/cpp/freestanding[freestanding] environment
-// * Among its <<quick_reference#destination_types,specializations>>, you can find one
-//   ( actually two ) that can safely and efficiently write to `char*`
-//   ( which, by the way, it what the library uses internally ).
-// 
-// As far as I know, {fmt} doesn't have anyting equivalent to `strf::destination`.
-// You could, of course, write instead a generic code terms of output iterators
-// using `fmt::format_to` or `fmt::format_to_n`.
-// But that would force things to be template, which is not always
-// possible or can lead to code-bloat
-// 
-== Error handling policy
+== A polymorphic destination
 
-Neither {fmt} nor Strf ever change the value of `errno`.
+Both Strf and {fmt} can write to `std::basic_ostream`.
+However, `std::basic_ostream` has some problems:
 
-{fmt} throws an exception when it founds someting wrong at run-time.
-// A run-time error can be something wrong in the format string
-// ( which can be avoided at compile-time if you use `FMT_STRING` or `FMT_COMPILE` )
-// or some system error.
+* It can not be used in https://en.cppreference.com/w/cpp/freestanding[freestanding] environments.
+* It is difficult for most people to implement specializations.
+* Although it has a specialization that writes to `std::string`, it has bad performance.
+* It has no specialization to write to `char*`.
 
-Strf does not throw, but it also doesn't prevent exceptions
-to propagate from whatever it depends on, like the language runtime or
-user extensions. So an exception may arise when writing to a `std::streambuf`
-or `std::string`, for example.
+That's why Strf has its own abraction for output streams:
+`strf::{destination}`. Initially created for internal use,
+after many redesigns and renamings it's now part of the public API,
+and is an alternative to `strf::basic_ostream` and/or `strf::basic_streambuf`
+without the issues mentioned above.
 
-Instead of throwing, Strf's policy is to print the replacement character `U'\uFFFD'`
-( or `'?'`, depending on the charset ) indicating where the error occured.
-This can happen when parsing the {tr-string} or in
-<<quick_reference#charset_conversion,charset conversion>> or sanitization.
-Optionally, you can set a callback to be invoked in such errors
-( see `<<strf_hpp#tr_error_notifier_c,tr_error_notifier_c>>`
-and `<<strf_hpp#invalid_seq_notifier_c,invalid_seq_notifier_c>>` )
-which can then throw an exception, if that's what you want.
+If you need to create a function aimed to
+provide some textual content ( or even binary content ),
+you can make it write it into a `strf::destination` object taken by reference
+as a parameter:
 
-In addition to that, depending on the <<quick_reference#destinations,destination>>,
-the return type of the <<tutorial#syntax,basic usage syntax>> may contain an error
-indication. For example, when writing to a `char*`, the returned object contains
-a `bool` member `truncated` that tells whether the destination memory
-is too small.
+[source,cpp]
+----
+void get_message(strf::destination<char>& dest) {
+    strf::to(dest) (...);
+}
+----
+But why not just return a `std::string` instead? Because, despite being
+the usual approach, it's not suitable or possible in some situations.
+In embedded, one would probably prefer `get_message` to write to
+`char*`, which, conversely, is not what one would want if
+using `std::string` is not an issue. Doesn't it bothers you that
+there is no good universal solution for such a common task?
+So, maybe `strf::destination` can be the one.
+It satisfies both worlds by leading to the caller the decision
+of which `std::destination` specialization to use:
+it can be `<<to_string_hpp#basic_string_maker,basic_string_maker>>`
+if one wants the content be stored in a `std::string`,
+or `<<destination_hpp#basic_cstr_writer,basic_cstr_writer>>`
+or `<<destination_hpp#array_destination,array_destination>>`
+if one wants it into a `char*`. There are
+<<quick_reference#destination_types,other specializations>> as well,
+and it's easy to <<howto_add_destination#,create a new one>>.
 
-//  == Performance
-//  
-//  If you look at the
-//  http://robhz786.github.io/strf-benchmarks/v{strf-version}/results.html[benchmarks],
-//  you can see that the performances of Strf and {fmt} depend on several things,
-//  like what you are printing, how you do it, what are the formatting options,
-//  the compiler, the destination type, etc. There are situations where {fmt} is faster,
-//  and others when others where it is Strf. However it is possible to take some general conclusions.
-//  
-//  When it comes to writting to `char*`, we can conclude that:
-//  
-//  * `strf::to` is faster than `fmt::format_to_n`
-//  * `strf::to` is faster than `fmt::format_to`, except in the following two situations:
-//  ** `fmt::format_to` is invoked with `FMT_COMPILE` and no formatting option is applied
-//  ** `fmt::format_to` is invoked with `FMT_COMPILE` and `strf::to` is invoked with the tr-string
-//  
-//  When comparing `strf::to_string` against `fmt::format`,
-//  we conclude `strf::to_string` is faster than `fmt::format`,
-//  except when `strf::to_string` is invoked with the tr-string
-//  at the same time that no formatting option is applied.
-//  
-//  
-//  Of course, it's very possible to be
-//  exceptions for the above conclusions, since these
-//  http://robhz786.github.io/strf-benchmarks/v{strf-version}/results.html[benchmarks]
-//  are far of covering all possible situations.
+But what's performance overhead ? I mean, writing to
+`<<destination_hpp#basic_cstr_writer,basic_cstr_writer>>` or
+`<<destination_hpp#array_destination,array_destination>>` can not
+be as fast as writing directly to `char*`, or is it? Well, actually, yes,
+it should be, at least if you are using Strf, because what
+`strf::to(__char_ptr__, __size__)(...)` internally does is to create
+a `basic_cstr_writer` object then write into it. Similarly,
+`strf::to_string` internally uses `strf::string_maker`.
 
+As far as I know, {fmt} doesn't provide anything equivalent
+to `std::destination`. Yes, it can write to generic output
+iterators (with `fmt::format_to` and `fmt::format_to_n`), but
+that's not as good &mdash; you can't have a function that writes into
+a generic output iterator, unless it's actually a function template,
+and some can't be. 
 
+However, I must acknowledge that `strf::destination` doesn't
+count so much as an advantage of Strf over {fmt}, because you can
+use it with {fmt} too!
+You just need to create an output iterator adapter, which can be
+done with the `<<iterator_hpp#make_iterator,make_iterator>>`
+function template, defined in `<<iterator_hpp#,<strf/iterator.hpp>>>`
+( a small header that impacts very little the compilation time ):
+
+[source,cpp,subs=normal]
+----
+#include <strf/iterator.hpp>
+#include <fmt/core.h>
+
+void get_message(strf::destination<char>& dest) {
+    auto it = make_iterator(dest);
+    fmt::format_to(it, ...);
+    // ...
+}
+----
+
+So, even if you are not willing use Strf as a formatting library instead of {fmt}
+or std::format, you might still consider `strf::destination`.
+In this case, however, there is some overhead ( using {fmt} to write to an
+`std::destination` object tends to be slower than when {fmt} writes directly
+to the actual final destination ), as shown in the
+http://robhz786.github.io/strf-benchmarks/v{strf-version}/results.html[benchmarks].
 
