@@ -62,10 +62,10 @@ out/why_not_std_locale.html : why_not_std_locale.adoc out/
 
 out/strf_hpp.html : strf_hpp.adoc \
                     ref_facets_pack.adoc \
-                    ref_printer.adoc \
+                    ref_printers.adoc \
                     ref_format_functions.adoc \
                     ref_printable_types.adoc \
-                    ref_destinators.adoc \
+                    ref_printable_types_requirements.adoc \
                     ref_tr-string.adoc \
                     ref_charset.adoc \
                     ref_width.adoc \

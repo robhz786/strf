@@ -82,257 +82,6 @@ that work as alias to format functions
 |`conv(_arg_)`                 |`{fmt}(_arg_).conv()`
 |===
 
-=== Callable object `fmt` [[fmt]]
-
-[source,cpp,subs=normal]
-----
-namespace strf {
-
-template <typename T>
-using fmt_value_type = typename {fmt_type}<T>::value_type;
-
-constexpr struct /{asterisk}...{asterisk}/ {
-    template <typename T>
-    constexpr /{asterisk}...{asterisk}/  operator()(T&& value) const;
-} fmt;
-
-} // namespace strf
-----
-
-==== Member function
-====
-[source,cpp]
-----
-constexpr /* see below...*/ operator()(T&& value) const;
-----
-
-Return value::
-* `value`, if `std::remove_cvref_t<T>` is an instance of `{value_with_formatters}`
-* `{fmt_type}<T>{ fmt_value_type<T>{ (T&&)value } }`, otherwise
-
-Return type::
-* `T&&`, if `std::remove_cvref<T>` is an instance of `value_with_formatters`
-* `{fmt_type}<T>`, otherwise
-====
-
-=== Type alias template `fmt_type` [[fmt_type]]
-
-[source,cpp,subs=normal]
-----
-namespace strf {
-
-template <typename T>
-using fmt_type = /{asterisk}...{asterisk}/;
-
-} // namespace strf
-----
-`fmt_type<T>` is:
-
-* `fmt_type<T>`, if `T` is a reference or has any cv-qualifier
-* otherwise, it is `T`, if `T` is an instance of `{value_with_formatters}`
-* otherwise, it is `{value_with_formatters}<PTraits, Fmts\...>`, where:
-** `PTraits` is `{printable_traits_of}<T>`
-** `Fmts\...` is template paramenter pack used to define
-   `PTraits::<<PrintableTraits_formatters,formatters>>` (
-    as a type alias to `{tag}<Fmt\...>` ).
-***  If `PTraits::formatters` is not defined, `T` is `{value_with_formatters}<PTraits>`.
-
-[[value_with_formatters]]
-=== Class template `value_with_formatters`
-[source,cpp]
-----
-namespace strf {
-
-template <typename PrintableTraits, class... Fmts>
-class value_with_formatters;
-
-} // namespace strf
-----
-Compile-time requirements::
-- `PrintableTraits` satisfies __{PrintableTraits}__.
-- All types in `Fmt\...` satisfy __<<Formatter,Formatter>>__.
-- All types in `Fmt\...` are different.
-
-==== Synopsis
-[source,cpp,subs=normal]
-----
-namespace strf {
-
-template <typename PrintableTraits, class\... Fmts>
-class value_with_formatters
-    : public Fmts::template fn<value_with_formatters<ValueType, Fmts\...>>\...
-{
-public:
-    using traits = PrintableTraits;
-    using value_type = typename PrintableTraits::forwarded_type;
-
-    constexpr explicit <<value_with_formatters_v,value_with_formatters>>(const value_type& v);
-
-    template <typename\... OtherFmts>
-    constexpr explicit <<value_with_formatters_vwf2,value_with_formatters>>
-        ( const value_with_formatters<PrintableTraits, OtherFmts\...>& f );
-
-    template <typename\... OtherFmts>
-    constexpr explicit <<value_with_formatters_vwf2_rr,value_with_formatters>>
-        ( value_with_formatters<PrintableTraits, OtherFmts\...>&& f );
-
-    template <typename OtherPrintableTraits>
-    constexpr <<value_with_formatters_v_v2wf,value_with_formatters>>
-        ( const value_type& v
-        , const value_with_formatters<OtherPrintableTraits, Fmts\...>& f );
-
-    template <typename OtherPrintableTraits>
-    constexpr <<value_with_formatters_v_v2wf_rr,value_with_formatters>>
-        ( const value_type& v
-        , value_with_formatters<OtherPrintableTraits, Fmts\...>&& f );
-
-    template <typename\... F, typename\... FInit>
-    constexpr <<value_with_formatters_v_t_i,value_with_formatters>>
-        ( const value_type& v
-        , {tag}<F\...>
-        , FInit&&\... finit );
-
-    template <typename Fmt, typename FmtInit, typename\... OtherFmts>
-    constexpr <<value_with_formatters_vwf2_t_i,value_with_formatters>>
-        ( const value_with_formatters<PrintableTraits, OtherFmts\...>& f
-        , {tag}<Fmt>
-        , FmtInit&& fmt_init );
-
-    constexpr const value_type& value() const;
-
-    constexpr value_type& value();
-
-private:
-
-    value_type value_; // exposition only
-};
-
-} // namespace strf
-----
-
-[[value_with_formatters_v]]
-====
-[source,cpp,subs=normal]
-----
-constexpr value_with_formatters(const value_type& v);
-----
-Effects::
-* Initializes `value_` with `v`
-* Default initializes all public base class subobjects
-====
-
-[[value_with_formatters_vwf2]]
-====
-[source,cpp,subs=normal]
-----
-template <typename\... OtherFmts>
-constexpr explicit value_with_formatters
-    ( const value_with_formatters<PrintableTraits, OtherFmts\...>& f );
-----
-Effects::
-* Initializes `value_` with `f.value()`
-* Initializes each public base class subobjects with the corresponding base class subobject of `f`
-====
-
-[[value_with_formatters_vwf2_rr]]
-====
-[source,cpp,subs=normal]
-----
-template <typename\... OtherFmts>
-constexpr explicit value_with_formatters
-    ( value_with_formatters<PrintableTraits, OtherFmts\...>&& f );
-----
-Effects::
-* Initializes `value_` with `static_cast<value_type&&>(f.value())`
-* Initializes each public base class subobjects `b` with `std::move(bf)`, where `bf`
-  is the base class subobjects in `f` that corresponds to `b`
-====
-
-[[value_with_formatters_v_v2wf]]
-====
-[source,cpp,subs=normal]
-----
-template <typename OtherPrintableTraits>
-constexpr value_with_formatters
-    ( const value_type& v
-    , const value_with_formatters<OtherPrintableTraits, Fmts\...>& f );
-----
-Effects::
-* Initializes `value_` with `v`
-* Initializes each public base class subobjects with the corresponding base class subobject of `f`
-====
-
-[[value_with_formatters_v_v2wf_rr]]
-====
-[source,cpp,subs=normal]
-----
-template <typename OtherPrintableTraits>
-constexpr value_with_formatters
-    ( const value_type& v
-    , value_with_formatters<OtherPrintableTraits, Fmts\...>&& f );
-----
-Effects::
-* Initializes `value_` with `v`
-* Initializes each public base class subobjects `b` with `std::move(bf)`, where `bf`
-  is the base class subobjects in `f` that corresponds to `b`
-====
-
-[[value_with_formatters_v_t_i]]
-====
-[source,cpp,subs=normal]
-----
-template <typename\... F, typename\... FInit>
-constexpr value_with_formatters
-    ( const value_type& v
-    , {tag}<F\...>
-    , FInit&&\... finit );
-----
-Compile-time requirements::
-* `sizeof\...(F) == sizeof\...(FInit)`
-* There is no repeated type in `F\...`
-* All types in `F\...` are also in `Fmts\...`
-
-Effects::
-* Initializes `value_` with `v`
-* For each type in `F\...`, initializes the corresponding public base class subobjects
-  with the corresponging value in `std::forward<FInit>(finit)\...`
-* Default initializes the remaining public base class subobjects
-
-====
-
-[[value_with_formatters_vwf2_t_i]]
-====
-[source,cpp,subs=normal]
-----
-template <typename Fmt, typename FmtInit, typename\... OtherFmts>
-constexpr value_with_formatters
-    ( const value_with_formatters<PrintableTraits, OtherFmts\...>& f
-    , {tag}<Fmt>
-    , FmtInit&& fmt_init );
-----
-Compile-time requirements::
-* `Fmt` is one the types in `Fmts\...`
-
-Effects::
-* Initializes `value_` with `f.value()`
-* Initializes the public base class subobject that corresponds to `Fmt`
-  with `std::forward<FmtInit>(fmt_init)`
-* Initializes the other public base class subobjects with the corresponding
-  base class subobject of `f`
-====
-
-
-[[value_with_formatters_value]]
-====
-[source,cpp,subs=normal]
-----
-constexpr const value_type& value() const;
-constexpr value_type& value();
-----
-Return `value_`
-====
-
-
 [[Formatter]]
 === Type requirement _Formatter_
 
@@ -844,3 +593,252 @@ And the following observer:
 | `std::size_t`
 |===
 
+=== Callable object `fmt` [[fmt]]
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template <typename T>
+using fmt_value_type = typename {fmt_type}<T>::value_type;
+
+constexpr struct /{asterisk}...{asterisk}/ {
+    template <typename T>
+    constexpr /{asterisk}...{asterisk}/  operator()(T&& value) const;
+} fmt;
+
+} // namespace strf
+----
+
+==== Member function
+====
+[source,cpp]
+----
+constexpr /* see below...*/ operator()(T&& value) const;
+----
+
+Return value::
+* `value`, if `std::remove_cvref_t<T>` is an instance of `{value_with_formatters}`
+* `{fmt_type}<T>{ fmt_value_type<T>{ (T&&)value } }`, otherwise
+
+Return type::
+* `T&&`, if `std::remove_cvref<T>` is an instance of `value_with_formatters`
+* `{fmt_type}<T>`, otherwise
+====
+
+=== Type alias template `fmt_type` [[fmt_type]]
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template <typename T>
+using fmt_type = /{asterisk}...{asterisk}/;
+
+} // namespace strf
+----
+`fmt_type<T>` is:
+
+* `fmt_type<T>`, if `T` is a reference or has any cv-qualifier
+* otherwise, it is `T`, if `T` is an instance of `{value_with_formatters}`
+* otherwise, it is `{value_with_formatters}<PTraits, Fmts\...>`, where:
+** `PTraits` is `{printable_traits_of}<T>`
+** `Fmts\...` is template paramenter pack used to define
+   `PTraits::<<PrintableTraits_formatters,formatters>>` (
+    as a type alias to `{tag}<Fmt\...>` ).
+***  If `PTraits::formatters` is not defined, `T` is `{value_with_formatters}<PTraits>`.
+
+[[value_with_formatters]]
+=== Class template `value_with_formatters`
+[source,cpp]
+----
+namespace strf {
+
+template <typename PrintableTraits, class... Fmts>
+class value_with_formatters;
+
+} // namespace strf
+----
+Compile-time requirements::
+- `PrintableTraits` satisfies __{PrintableTraits}__.
+- All types in `Fmt\...` satisfy __<<Formatter,Formatter>>__.
+- All types in `Fmt\...` are different.
+
+==== Synopsis
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template <typename PrintableTraits, class\... Fmts>
+class value_with_formatters
+    : public Fmts::template fn<value_with_formatters<ValueType, Fmts\...>>\...
+{
+public:
+    using traits = PrintableTraits;
+    using value_type = typename PrintableTraits::forwarded_type;
+
+    constexpr explicit <<value_with_formatters_v,value_with_formatters>>(const value_type& v);
+
+    template <typename\... OtherFmts>
+    constexpr explicit <<value_with_formatters_vwf2,value_with_formatters>>
+        ( const value_with_formatters<PrintableTraits, OtherFmts\...>& f );
+
+    template <typename\... OtherFmts>
+    constexpr explicit <<value_with_formatters_vwf2_rr,value_with_formatters>>
+        ( value_with_formatters<PrintableTraits, OtherFmts\...>&& f );
+
+    template <typename OtherPrintableTraits>
+    constexpr <<value_with_formatters_v_v2wf,value_with_formatters>>
+        ( const value_type& v
+        , const value_with_formatters<OtherPrintableTraits, Fmts\...>& f );
+
+    template <typename OtherPrintableTraits>
+    constexpr <<value_with_formatters_v_v2wf_rr,value_with_formatters>>
+        ( const value_type& v
+        , value_with_formatters<OtherPrintableTraits, Fmts\...>&& f );
+
+    template <typename\... F, typename\... FInit>
+    constexpr <<value_with_formatters_v_t_i,value_with_formatters>>
+        ( const value_type& v
+        , {tag}<F\...>
+        , FInit&&\... finit );
+
+    template <typename Fmt, typename FmtInit, typename\... OtherFmts>
+    constexpr <<value_with_formatters_vwf2_t_i,value_with_formatters>>
+        ( const value_with_formatters<PrintableTraits, OtherFmts\...>& f
+        , {tag}<Fmt>
+        , FmtInit&& fmt_init );
+
+    constexpr const value_type& value() const;
+
+    constexpr value_type& value();
+
+private:
+
+    value_type value_; // exposition only
+};
+
+} // namespace strf
+----
+
+[[value_with_formatters_v]]
+====
+[source,cpp,subs=normal]
+----
+constexpr value_with_formatters(const value_type& v);
+----
+Effects::
+* Initializes `value_` with `v`
+* Default initializes all public base class subobjects
+====
+
+[[value_with_formatters_vwf2]]
+====
+[source,cpp,subs=normal]
+----
+template <typename\... OtherFmts>
+constexpr explicit value_with_formatters
+    ( const value_with_formatters<PrintableTraits, OtherFmts\...>& f );
+----
+Effects::
+* Initializes `value_` with `f.value()`
+* Initializes each public base class subobjects with the corresponding base class subobject of `f`
+====
+
+[[value_with_formatters_vwf2_rr]]
+====
+[source,cpp,subs=normal]
+----
+template <typename\... OtherFmts>
+constexpr explicit value_with_formatters
+    ( value_with_formatters<PrintableTraits, OtherFmts\...>&& f );
+----
+Effects::
+* Initializes `value_` with `static_cast<value_type&&>(f.value())`
+* Initializes each public base class subobjects `b` with `std::move(bf)`, where `bf`
+  is the base class subobjects in `f` that corresponds to `b`
+====
+
+[[value_with_formatters_v_v2wf]]
+====
+[source,cpp,subs=normal]
+----
+template <typename OtherPrintableTraits>
+constexpr value_with_formatters
+    ( const value_type& v
+    , const value_with_formatters<OtherPrintableTraits, Fmts\...>& f );
+----
+Effects::
+* Initializes `value_` with `v`
+* Initializes each public base class subobjects with the corresponding base class subobject of `f`
+====
+
+[[value_with_formatters_v_v2wf_rr]]
+====
+[source,cpp,subs=normal]
+----
+template <typename OtherPrintableTraits>
+constexpr value_with_formatters
+    ( const value_type& v
+    , value_with_formatters<OtherPrintableTraits, Fmts\...>&& f );
+----
+Effects::
+* Initializes `value_` with `v`
+* Initializes each public base class subobjects `b` with `std::move(bf)`, where `bf`
+  is the base class subobjects in `f` that corresponds to `b`
+====
+
+[[value_with_formatters_v_t_i]]
+====
+[source,cpp,subs=normal]
+----
+template <typename\... F, typename\... FInit>
+constexpr value_with_formatters
+    ( const value_type& v
+    , {tag}<F\...>
+    , FInit&&\... finit );
+----
+Compile-time requirements::
+* `sizeof\...(F) == sizeof\...(FInit)`
+* There is no repeated type in `F\...`
+* All types in `F\...` are also in `Fmts\...`
+
+Effects::
+* Initializes `value_` with `v`
+* For each type in `F\...`, initializes the corresponding public base class subobjects
+  with the corresponging value in `std::forward<FInit>(finit)\...`
+* Default initializes the remaining public base class subobjects
+
+====
+
+[[value_with_formatters_vwf2_t_i]]
+====
+[source,cpp,subs=normal]
+----
+template <typename Fmt, typename FmtInit, typename\... OtherFmts>
+constexpr value_with_formatters
+    ( const value_with_formatters<PrintableTraits, OtherFmts\...>& f
+    , {tag}<Fmt>
+    , FmtInit&& fmt_init );
+----
+Compile-time requirements::
+* `Fmt` is one the types in `Fmts\...`
+
+Effects::
+* Initializes `value_` with `f.value()`
+* Initializes the public base class subobject that corresponds to `Fmt`
+  with `std::forward<FmtInit>(fmt_init)`
+* Initializes the other public base class subobjects with the corresponding
+  base class subobject of `f`
+====
+
+
+[[value_with_formatters_value]]
+====
+[source,cpp,subs=normal]
+----
+constexpr const value_type& value() const;
+constexpr value_type& value();
+----
+Return `value_`
+====

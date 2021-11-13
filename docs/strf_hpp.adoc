@@ -18,7 +18,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 
 :output_buffer: <<destination_hpp#output_buffer,output_buffer>>
 :destination: <<destination_hpp#destination,destination>>
-:value_with_formatters: <<value_with_format,value_with_formatters>>
+:value_with_formatters: <<value_with_formatters,value_with_formatters>>
 :alignment_formatter: <<alignment_formatter,alignment_formatter>>
 :alignment_formatter_q: <<alignment_formatter,alignment_formatter_q>>
 :alignment_format: <<alignment_format,alignment_format>>
@@ -54,13 +54,13 @@ even when `STRF_FREESTANDING` is defined.
 
 ////
 
-include::ref_facets_pack.adoc[]
-include::ref_printer.adoc[]
-include::ref_format_functions.adoc[]
 include::ref_printable_types.adoc[]
-include::ref_destinators.adoc[]
-include::ref_tr-string.adoc[]
+include::ref_format_functions.adoc[]
 include::ref_numpunct.adoc[]
 include::ref_charset.adoc[]
 include::ref_width.adoc[]
+include::ref_printable_types_requirements.adoc[]
+include::ref_facets_pack.adoc[]
+include::ref_printers.adoc[]
+include::ref_tr-string.adoc[]
 include::ref_misc.adoc[]
