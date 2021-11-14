@@ -8,13 +8,12 @@ cmake_minimum_required (VERSION 3.0)
 
 if (STRF_BUILD_TEST_CH32_WIDTH_AND_GCB_PROP)
 
-  add_executable(test-ch32_width_and_gcb_prop ch32_width_and_gcb_prop.cpp)
-  target_link_libraries(test-ch32_width_and_gcb_prop strf-header-only icudata icuuc)
-  set_target_properties(test-ch32_width_and_gcb_prop PROPERTIES OUTPUT_NAME ch32_width_and_gcb_prop)
+  add_executable(test_ch32_width_and_gcb_prop ch32_width_and_gcb_prop.cpp)
+  target_link_libraries(test_ch32_width_and_gcb_prop Strf::StrfHeaderOnly icudata icuuc)
   add_test(
     NAME ch32_width_and_gcb_prop COMMAND
     ${CMAKE_COMMAND} -E env LD_LIBRARY_PATH=${icu_lib_dir}
-    ${CMAKE_CURRENT_BINARY_DIR}/ch32_width_and_gcb_prop )
+    ${CMAKE_CURRENT_BINARY_DIR}/test_ch32_width_and_gcb_prop )
 
 endif ()
 
@@ -23,13 +22,13 @@ if (STRF_BUILD_TESTS)
 
   if (NOT STRF_FREESTANDING)
     enable_language(C)
-    add_library(ryu STATIC
+    add_library(Ryu STATIC
       "externals/ryu/ryu/f2s.c"
       "externals/ryu/ryu/d2s.c"
       "externals/ryu/ryu/d2fixed.c")
-    target_include_directories(ryu PUBLIC externals/ryu)
-    add_executable(fuzzy_input_float fuzzy_input_float.cpp)
-    target_link_libraries(fuzzy_input_float ryu strf::strf-header-only)
+    target_include_directories(Ryu PUBLIC externals/ryu)
+    add_executable(test_fuzzy_input_float fuzzy_input_float.cpp)
+    target_link_libraries(test_fuzzy_input_float Ryu Strf::StrfHeaderOnly)
   endif (NOT STRF_FREESTANDING)
 
   set(sources_freestanding
@@ -83,36 +82,36 @@ if (STRF_BUILD_TESTS)
     set(sources ${sources_freestanding} ${sources_hosted})
   endif ()
 
-  add_executable(test-header-only main.cpp ${sources})
-  add_executable(test-static-lib  main.cpp ${sources})
+  add_executable(TestHeaderOnly main.cpp ${sources})
+  add_executable(TestStatic     main.cpp ${sources})
 
-  target_link_libraries(test-header-only   strf-header-only)
-  target_link_libraries(test-static-lib    strf-static-lib)
+  target_link_libraries(TestHeaderOnly   Strf::StrfHeaderOnly)
+  target_link_libraries(TestStatic       Strf::StrfStatic)
 
-  set_target_properties(test-header-only  PROPERTIES OUTPUT_NAME header-only)
-  set_target_properties(test-static-lib   PROPERTIES OUTPUT_NAME static-lib)
+  set_target_properties(TestHeaderOnly  PROPERTIES OUTPUT_NAME test_header_only)
+  set_target_properties(TestStatic      PROPERTIES OUTPUT_NAME test_static_lib)
 
-  target_link_libraries(test-header-only  strf-header-only)
-  target_link_libraries(test-static-lib   strf-static-lib)
+  target_link_libraries(TestHeaderOnly  Strf::StrfHeaderOnly)
+  target_link_libraries(TestStatic      Strf::StrfStatic)
 
-  add_test(NAME run-tests-header-only COMMAND  header-only)
-  add_test(NAME run-tests-static-lib  COMMAND  static-lib)
+  add_test(NAME header_only COMMAND  TestHeaderOnly)
+  add_test(NAME static_lib  COMMAND  TestStatic)
 
   if (${STRF_CUDA_SUPPORT})
 
-    add_library(cuda-main-header-only STATIC main_cuda.cu)
-    add_library(cuda-main-static-lib STATIC main_cuda.cu)
+    add_library(CudaMainHeaderOnly STATIC main_cuda.cu)
+    add_library(CudaMainStatic     STATIC main_cuda.cu)
 
-    target_include_directories(cuda-main-header-only PRIVATE ./)
-    target_include_directories(cuda-main-static-lib  PRIVATE ./)
+    target_include_directories(CudaMainHeaderOnly PRIVATE ./)
+    target_include_directories(CudaMainStatic     PRIVATE ./)
 
-    target_link_libraries(cuda-main-header-only strf-header-only)
-    target_link_libraries(cuda-main-static-lib strf-cuda)
+    target_link_libraries(CudaMainHeaderOnly Strf::StrfHeaderOnly)
+    target_link_libraries(CudaMainStatic     Strf::StrfCuda)
 
-    set_target_properties(cuda-main-header-only PROPERTIES
+    set_target_properties(CudaMainHeaderOnly PROPERTIES
       CUDA_SEPARABLE_COMPILATION ON)
 
-    set_target_properties(cuda-main-static-lib  PROPERTIES
+    set_target_properties(CudaMainStatic     PROPERTIES
       CUDA_SEPARABLE_COMPILATION ON)
 
   endif (${STRF_CUDA_SUPPORT})
@@ -121,44 +120,44 @@ if (STRF_BUILD_TESTS)
 
     configure_file(${basename}.cpp ${basename}.cu COPYONLY)
 
-    add_executable(cuda-${basename}-header-only ${basename}.cu)
-    add_executable(cuda-${basename}-static-lib  ${basename}.cu)
+    add_executable(test_cuda_${basename}_header_only ${basename}.cu)
+    add_executable(test_cuda_${basename}_static_lib  ${basename}.cu)
 
-    target_include_directories(cuda-${basename}-header-only PRIVATE ./)
-    target_include_directories(cuda-${basename}-static-lib  PRIVATE ./)
+    target_include_directories(test_cuda_${basename}_header_only PRIVATE ./)
+    target_include_directories(test_cuda_${basename}_static_lib  PRIVATE ./)
 
-    target_compile_definitions(cuda-${basename}-header-only PUBLIC
+    target_compile_definitions(test_cuda_${basename}_header_only PUBLIC
       "STRF_TEST_FUNC=__device__" )
-    target_compile_definitions(cuda-${basename}-static-lib  PUBLIC
+    target_compile_definitions(test_cuda_${basename}_static_lib  PUBLIC
       "STRF_TEST_FUNC=__device__" )
 
     set_target_properties(
-      cuda-${basename}-header-only
-      PROPERTIES OUTPUT_NAME cuda-${basename}-header-only)
+      test_cuda_${basename}_header_only
+      PROPERTIES OUTPUT_NAME cuda_${basename}_header_only)
     set_target_properties(
-      cuda-${basename}-static-lib
-      PROPERTIES OUTPUT_NAME cuda-${basename}-static-lib )
+      test_cuda_${basename}_static_lib
+      PROPERTIES OUTPUT_NAME cuda_${basename}_static_lib )
 
     target_link_libraries(
-      cuda-${basename}-header-only
-      cuda-main-header-only
-      strf-header-only )
+      test_cuda_${basename}_header_only
+      CudaMainHeaderOnly
+      Strf::StrfHeaderOnly )
     target_link_libraries(
-      cuda-${basename}-static-lib
-      cuda-main-static-lib
-      strf-cuda )
+      test_cuda_${basename}_static_lib
+      CudaMainStatic
+      Strf::StrfCuda )
 
-    set_target_properties(cuda-${basename}-header-only PROPERTIES
+    set_target_properties(test_cuda_${basename}_header_only PROPERTIES
       CUDA_SEPARABLE_COMPILATION ON)
-    set_target_properties(cuda-${basename}-static-lib  PROPERTIES
+    set_target_properties(test_cuda_${basename}_static_lib  PROPERTIES
       CUDA_SEPARABLE_COMPILATION ON)
 
     add_test(
-      NAME run-cuda-${basename}-header-only
-      COMMAND cuda-${basename}-header-only)
+      NAME    cuda_${basename}_header_only
+      COMMAND test_cuda_${basename}_header_only)
     add_test(
-      NAME run-cuda-${basename}-static-lib
-      COMMAND cuda-${basename}-static-lib )
+      NAME    cuda_${basename}_static_lib
+      COMMAND test_cuda_${basename}_static_lib )
 
   endfunction()
 

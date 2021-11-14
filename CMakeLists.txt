@@ -32,7 +32,7 @@ option(
 
 set(STRF_VERSION 0.15.3)
 project (
-  strf
+  Strf
   VERSION ${STRF_VERSION}
   LANGUAGES CXX)
 
@@ -48,96 +48,97 @@ endif (STRF_BUILD_TESTS OR STRF_BUILD_EXAMPLES)
 include(CMakePackageConfigHelpers)
 include(GNUInstallDirs)
 
-add_library(strf-header-only INTERFACE)
-add_library(strf-static-lib  STATIC src/strf.cpp)
+add_library(StrfHeaderOnly INTERFACE)
+add_library(StrfStatic  STATIC src/strf.cpp)
 
-target_compile_features(strf-header-only INTERFACE cxx_std_11)
-target_compile_features(strf-static-lib  PUBLIC    cxx_std_11)
+target_compile_features(StrfHeaderOnly INTERFACE cxx_std_11)
+target_compile_features(StrfStatic  PUBLIC    cxx_std_11)
 
-add_library(strf::strf-static-lib  ALIAS strf-static-lib)
-add_library(strf::strf-header-only ALIAS strf-header-only)
+add_library(Strf::StrfStatic  ALIAS StrfStatic)
+add_library(Strf::StrfHeaderOnly ALIAS StrfHeaderOnly)
 
 target_compile_definitions(
-  strf-static-lib
+  StrfStatic
   PUBLIC STRF_SEPARATE_COMPILATION )
 
 if (STRF_FREESTANDING)
-  target_compile_definitions(strf-static-lib PUBLIC STRF_FREESTANDING)
-  target_compile_definitions(strf-header-only INTERFACE STRF_FREESTANDING)
+  target_compile_definitions(StrfStatic PUBLIC STRF_FREESTANDING)
+  target_compile_definitions(StrfHeaderOnly INTERFACE STRF_FREESTANDING)
 endif (STRF_FREESTANDING)
 
 if (STRF_WITH_CSTRING)
-  target_compile_definitions(strf-static-lib PUBLIC STRF_WITH_CSTRING)
-  target_compile_definitions(strf-header-only INTERFACE STRF_WITH_CSTRING)
+  target_compile_definitions(StrfStatic PUBLIC STRF_WITH_CSTRING)
+  target_compile_definitions(StrfHeaderOnly INTERFACE STRF_WITH_CSTRING)
 endif (STRF_WITH_CSTRING)
 
 target_include_directories(
-  strf-header-only
+  StrfHeaderOnly
   INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   )
 
 target_include_directories(
-  strf-static-lib
+  StrfStatic
   PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   )
 
 set_property(
-  TARGET strf-header-only
-  PROPERTY EXPORT_NAME strf-header-only)
+  TARGET StrfHeaderOnly
+  PROPERTY EXPORT_NAME StrfHeaderOnly)
 
 set_target_properties(
-  strf-static-lib
+  StrfStatic
   PROPERTIES
   OUTPUT_NAME strf
-  EXPORT_NAME strf-static-lib
+  EXPORT_NAME StrfStatic
   VERSION ${STRF_VERSION})
 
-set(TARGETS_TO_INSTALL strf-header-only strf-static-lib)
+set(TARGETS_TO_INSTALL StrfHeaderOnly StrfStatic)
 
 if (${STRF_CUDA_SUPPORT})  
-  add_library(strf-cuda STATIC src/strf.cu)
+  add_library(StrfCuda STATIC src/strf.cu)
+  add_library(Strf::StrfCuda ALIAS StrfCuda)
   target_include_directories(
-    strf-cuda
+    StrfCuda
     PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include> )
-  #target_compile_features(strf-cuda PUBLIC cxx_std_11)
+  #target_compile_features(StrfCuda PUBLIC cxx_std_11)
   set_target_properties(
-    strf-cuda
+    StrfCuda
     PROPERTIES
     VERSION ${STRF_VERSION}
     CUDA_SEPARABLE_COMPILATION ON
-    EXPORT_NAME strf-cuda )
+    EXPORT_NAME StrfCuda )
   target_compile_definitions(
-    strf-cuda
+    StrfCuda
     PUBLIC STRF_CUDA_SEPARATE_COMPILATION )
-  list(APPEND TARGETS_TO_INSTALL strf-cuda)
+  list(APPEND TARGETS_TO_INSTALL StrfCuda)
 endif()
 
 configure_package_config_file(
   "${CMAKE_CURRENT_SOURCE_DIR}/Config.cmake.in"
-  "${CMAKE_CURRENT_BINARY_DIR}/strf-config.cmake"
+  "${CMAKE_CURRENT_BINARY_DIR}/StrfConfig.cmake"
   INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/strf
 )
 
 write_basic_package_version_file(
-  "strf-config-version.cmake"
+  "StrfConfigVersion.cmake"
   VERSION ${STRF_VERSION}
   COMPATIBILITY SameMinorVersion)
 
 install(
   TARGETS ${TARGETS_TO_INSTALL}
-  EXPORT strf-targets
+  EXPORT StrfTargets
   ARCHIVE  DESTINATION "${CMAKE_INSTALL_LIBDIR}"
   INCLUDES DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
 )
 install(
-  EXPORT strf-targets
-  NAMESPACE strf::
+  EXPORT StrfTargets
+  NAMESPACE Strf::
   DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/strf )
 
 install(
   FILES
-  "${CMAKE_CURRENT_BINARY_DIR}/strf-config.cmake"
-  "${CMAKE_CURRENT_BINARY_DIR}/strf-config-version.cmake"
+  "${CMAKE_CURRENT_BINARY_DIR}/StrfConfig.cmake"
+  "${CMAKE_CURRENT_BINARY_DIR}/StrfConfigVersion.cmake"
   DESTINATION "lib/cmake/strf" )
 
 install(

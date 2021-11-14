@@ -49,8 +49,8 @@ you add the command:
 add_subdirectory(__<strf-dir>__)
 ----
 
-This adds two targets in your project: `strf::strf-header-only`
-and `strf::strf-static-lib`.
+This adds two targets in your project: `Strf::StrfHeaderOnly`
+and `Strf::StrfStatic`.
 
 === Option 2: Export and import
 
@@ -76,19 +76,19 @@ the `CMAKE_PREFIX_PATH` variable used in your CMake project.
 cmake -G __<generator-name>__ -DCMAKE_PREFIX_PATH=__<installation-directory>__ ... __<path-to-source>__
 ----
 
-Then, the command `find_package(strf)` will bring into your
-project the targets `strf::strf-header-only` and
-`strf::strf-static-lib`.
+Then, the command `find_package(Strf)` will bring into your
+project the targets `Strf::StrfHeaderOnly` and
+`Strf::StrfStatic`.
 
 [source,cmake]
 ----
 # In your CMake project file:
 # ...
 
-find_package(strf)
-target_link_libraries(your_target strf::strf-header-only)
+find_package(Strf)
+target_link_libraries(your_target Strf::StrfHeaderOnly)
 # or
-# target_link_libraries(your_target strf::strf-static-lib)
+# target_link_libraries(your_target Strf::StrfStatic)
 ----
 
 == Running the unit tests

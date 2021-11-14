@@ -63,7 +63,7 @@ cmake -G __<generator-name>__ -DSTRF_CUDA_SEPARATE_COMPILATION=ON ... __<path-to
 As explained in <<install#,another document>>, it is possible to
 integrate Strf using `add_subdirectory`, or
 exporting and importing. Both solution gives you the
-`strf::strf-cuda` CMake target, which represents the Srtf static
+`Strf::StrfCuda` CMake target, which represents the Srtf static
 library for CUDA.
 
 == Unsupported features on CUDA devices
