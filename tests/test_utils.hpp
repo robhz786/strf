@@ -983,10 +983,75 @@ struct input_tester_with_fixed_spaces_creator_creator
               , "exception " #EXCEP " not thrown as expected" );        \
   }
 
+
+namespace test_utils {
+namespace detail {
+
+struct testfunc_node {
+    typedef void (*func_ptr_t)(void);
+
+    func_ptr_t testfunc = nullptr;
+    testfunc_node* next = nullptr;
+};
+
+struct testfunc_list_t {
+    testfunc_node* first = nullptr;
+    testfunc_node* last = nullptr;
+};
+
+inline testfunc_list_t& testfunc_list() {
+    static testfunc_list_t lst;
+    return lst;
+}
+
+inline void add_testfunc(testfunc_node* node) {
+    node->next = nullptr;
+    auto& list = testfunc_list();
+    if (list.last) {
+        list.last->next = node;
+        list.last = node;
+    } else {
+        list.first = node;
+        list.last = node;
+    }
+}
+
+class testfunc_node_registration {
+public:
+    testfunc_node_registration(testfunc_node::func_ptr_t func) {
+        node_.testfunc = func;
+        add_testfunc(&node_);
+    }
+
+private:
+    testfunc_node node_;
+};
+
+
+} // namespace detail
+
+inline void run_all_tests() {
+    for ( auto* node = detail::testfunc_list().first
+        ; node != nullptr
+        ; node = node->next)
+    {
+        if (node->testfunc)
+            node->testfunc();
+    }
+}
+
+} // namespace test_utils
+
+
 #if defined(__CUDACC__)
-#define REGISTER_STRF_TEST(FUNC) STRF_TEST_FUNC void run_all_tests() { FUNC(); }
+#  define REGISTER_STRF_TEST(FUNC) STRF_TEST_FUNC void run_all_tests() { FUNC(); }
 #else
-#define REGISTER_STRF_TEST(FUNC)
-#endif
+#  define REGISTER_STRF_TEST(FUNC)                                    \
+       namespace {                                                    \
+           const test_utils::detail::testfunc_node_registration       \
+               testfunc_reg_ ## __LINE__{FUNC};                       \
+       }
+
+#endif // defined(__CUDACC__)
 
 #endif // defined(STRF_TEST_TEST_UTILS_HPP_INCLUDED)
