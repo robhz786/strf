@@ -35,6 +35,16 @@ struct int_format
 
     constexpr int_format(const int_format&) = default;
 
+    STRF_CONSTEXPR_IN_CXX14 int_format& operator=(const int_format& other) noexcept {
+        base = other.base;
+        precision = other.precision;
+        pad0width = other.pad0width;
+        sign = other.sign;
+        showbase = other.showbase;
+        punctuate = other.punctuate;
+        return *this;
+    }
+
     int base;
     unsigned precision;
     unsigned pad0width;

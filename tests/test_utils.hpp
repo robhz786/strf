@@ -1049,7 +1049,7 @@ inline void run_all_tests() {
 #  define REGISTER_STRF_TEST(FUNC)                                    \
        namespace {                                                    \
            const test_utils::detail::testfunc_node_registration       \
-               testfunc_reg_ ## __LINE__{FUNC};                       \
+               TEST_STR_CONCAT(testfunc_reg_, __LINE__) {FUNC};       \
        }
 
 #endif // defined(__CUDACC__)

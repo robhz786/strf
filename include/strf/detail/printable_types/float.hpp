@@ -117,6 +117,16 @@ struct float_format
 
     constexpr float_format(const float_format&) = default;
 
+    STRF_CONSTEXPR_IN_CXX14 float_format& operator=(const float_format& other) noexcept {
+        precision = other.precision;
+        pad0width = other.pad0width;
+        notation = other.notation;
+        sign = other.sign;
+        showpoint = other.showpoint;
+        punctuate = other.punctuate;
+        return *this;
+    }
+
     detail::chars_count_t precision;
     detail::chars_count_t pad0width;
     strf::float_notation notation;

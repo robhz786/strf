@@ -5,7 +5,7 @@
 
 #include "test_utils.hpp"
 
-inline namespace {
+namespace {
 
 STRF_HD unsigned count_digits(strf::digits_distribution dist)
 {
