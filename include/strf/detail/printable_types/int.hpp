@@ -1186,10 +1186,11 @@ private:
               , alignment_formatter_q<HasAlignment> >;
 public:
 
-    using override_tag = IntT;
+    using representative_type = IntT;
     using forwarded_type = IntT;
     using formatters = strf::tag< strf::int_formatter
                                 , strf::alignment_formatter >;
+    using is_overridable = std::true_type;
 
     template <typename CharT, typename PrePrinting, typename FPack>
     constexpr STRF_HD static auto make_input
@@ -1333,9 +1334,10 @@ namespace detail {
 
 struct voidptr_printing
 {
-    using override_tag = const void*;
+    using representative_type = const void*;
     using forwarded_type = const void*;
     using formatters = strf::tag<strf::alignment_formatter>;
+    using is_overridable = std::true_type;
 
     template <typename CharT, typename PrePrinting, typename FPack>
     constexpr STRF_HD static auto make_input

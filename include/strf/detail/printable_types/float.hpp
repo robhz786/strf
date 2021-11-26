@@ -772,9 +772,10 @@ using fmt_double_stringifier_input =
 template <typename FloatT>
 struct float_printing
 {
-    using override_tag = FloatT;
+    using representative_type = FloatT;
     using forwarded_type = FloatT;
     using formatters = strf::tag<strf::float_formatter, strf::alignment_formatter>;
+    using is_overridable = std::true_type;
 
     template <typename CharT, typename PrePrinting, typename FPack>
     STRF_HD constexpr static auto make_input

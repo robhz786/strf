@@ -619,11 +619,13 @@ struct fmt_string_stringifier_input
 template <typename SrcCharT>
 struct string_printing
 {
+    using representative_type = strf::string_input_tag<SrcCharT>;
     using forwarded_type = strf::detail::simple_string_view<SrcCharT>;
     using formatters = strf::tag
         < strf::string_precision_formatter<false>
         , strf::alignment_formatter
         , strf::transcoding_formatter<SrcCharT> >;
+    using is_overridable = std::false_type;
 
     template <typename DestCharT, typename PrePrinting, typename FPack>
     constexpr STRF_HD static auto make_input

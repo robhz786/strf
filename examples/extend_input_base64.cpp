@@ -83,7 +83,7 @@ using base64_input_with_formatters =
 
 struct base64_printing
 {
-    using override_tag = base64_input;
+    using representative_type = base64_input;
     using forwarded_type = base64_input;
     using formatters = strf::tag<base64_formatter>;
 

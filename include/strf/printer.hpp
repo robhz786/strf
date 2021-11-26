@@ -55,11 +55,6 @@ struct tr_string_input_tag: strf::string_input_tag<CharIn>
 };
 
 template <typename CharIn>
-struct range_separator_input_tag: strf::string_input_tag<CharIn>
-{
-};
-
-template <typename CharIn>
 struct is_tr_string_of
 {
     template <typename T>
@@ -785,20 +780,20 @@ struct no_print_override;
 
 namespace detail {
 
-template <typename T>
-struct has_override_tag_helper
-{
-    template <typename U, typename F = typename U::override_tag>
-    static STRF_HD std::true_type test_(const U*);
+template <typename PrintableTraits>
+struct get_is_overridable_helper {
+    template <typename U>
+    static STRF_HD typename U::is_overridable test_(const U*);
 
     template <typename U>
     static STRF_HD std::false_type test_(...);
 
-    using result = decltype(test_<T>((T*)0));
+    using result = decltype(test_<PrintableTraits>((PrintableTraits*)0));
 };
 
-template <typename T>
-struct has_override_tag: has_override_tag_helper<T>::result{};
+template <typename PrintableTraits>
+using get_is_overridable = typename
+    get_is_overridable_helper<PrintableTraits>::result;
 
 namespace mk_pr_in {
 
@@ -977,18 +972,18 @@ template < typename PrintingTraits
          , typename PrePrinting
          , typename FPack
          , typename Arg
-         , bool HasOverrideTag >
+         , bool Overridable >
 struct maker_getter_selector_2
 {
-    static_assert(HasOverrideTag, "");
-    using override_tag = typename PrintingTraits::override_tag;
+    static_assert(Overridable, "");
+    using representative_type = typename PrintingTraits::representative_type;
     using overrider_ = decltype
-        ( strf::use_facet<strf::print_override_c, override_tag>(*(const FPack*)0) );
+        ( strf::use_facet<strf::print_override_c, representative_type>(*(const FPack*)0) );
     using overrider = strf::detail::remove_cvref_t<overrider_>;
     using maker_getter_type = typename std::conditional
         < std::is_same<overrider, strf::no_print_override>::value
         , maker_getter_printable_traits<PrintingTraits>
-        , maker_getter_overrider<overrider, override_tag> >
+        , maker_getter_overrider<overrider, representative_type> >
         ::type;
 };
 
@@ -1011,7 +1006,7 @@ struct maker_getter_selector
 {
     using other = maker_getter_selector_2
         < PrintingTraits, CharT, PrePrinting, FPack, Arg
-        , has_override_tag<PrintingTraits>::value >;
+        , get_is_overridable<PrintingTraits>::value >;
     using maker_getter_type = typename other::maker_getter_type;
 };
 
@@ -1139,16 +1134,36 @@ struct print_override_c
     }
 };
 
+namespace detail {
+
+template <typename T>
+struct is_printable_and_overridable_helper {
+    
+    template <typename U>
+    static STRF_HD typename printable_traits_of<U>::is_overridable test_(const U*);
+
+    template <typename U>
+    static STRF_HD std::false_type test_(...);
+
+    using result = decltype(test_<T>((T*)0));
+};
+
+} // namespace detail
+
+template <typename T>
+using is_printable_and_overridable = typename
+    strf::detail::is_printable_and_overridable_helper<T>::result;
+
 #if defined(STRF_HAS_VARIABLE_TEMPLATES)
 
 template <typename T>
-constexpr bool is_overridable
-    = strf::detail::has_override_tag<strf::printable_traits_of<T>>::value;
+constexpr bool is_printable_and_overridable_v = is_printable_and_overridable<T>::value;
 
 #endif // defined(STRF_HAS_VARIABLE_TEMPLATES)
 
 template <typename T>
-using override_tag = typename strf::printable_traits_of<T>::override_tag;
+using representative_of_printable = typename
+    strf::printable_traits_of<T>::representative_type;
 
 template <typename CharT, typename PrePrinting, typename FPack, typename Arg>
 using stringifier_input_type = decltype

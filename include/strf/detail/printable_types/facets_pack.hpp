@@ -50,6 +50,8 @@ template <typename ChildFPack, typename... Args>
 struct printable_traits<strf::inner_pack_with_args<ChildFPack, Args...>>
 {
     using forwarded_type = strf::inner_pack_with_args<ChildFPack, Args...>;
+    using representative_type = strf::facets_pack<>;
+    using is_overridable = std::false_type;
 
     template < typename CharT, typename PrePrinting, typename FPack>
     STRF_HD constexpr static auto make_input

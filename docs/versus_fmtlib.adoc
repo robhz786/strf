@@ -69,7 +69,7 @@ Some things that are directly supported by {fmt}, but not by Strf:
 
 - Printing date and time ( link:https://fmt.dev/latest/api.html#chrono-api[link] )
 - Printing any type that can be printed by `std::ostream` ( link:https://fmt.dev/latest/api.html#std-ostream-support[link] )
-- Printing `std::tuples` ( https://fmt.dev/latest/api.html#ranges-api[link] )
+- Printing `std::tuple` ( https://fmt.dev/latest/api.html#ranges-api[link] )
 - Specifying colors ( https://fmt.dev/latest/api.html#color-api[link] )
 - Writing to output iterators ( https://fmt.dev/latest/api.html#output-iterator-support[link] )
 - Named arguments in the format string. ( https://fmt.dev/latest/api.html#named-arguments[link] )
@@ -535,7 +535,7 @@ using `std::string` is not an issue. Doesn't it bothers you that
 there is no good universal solution for such a common task?
 So, maybe `strf::destination` can be the one.
 It satisfies both worlds by leading to the caller the decision
-of which `std::destination` specialization to use:
+of which `strf::destination` specialization to use:
 it can be `<<to_string_hpp#basic_string_maker,basic_string_maker>>`
 if one wants the content be stored in a `std::string`,
 or `<<destination_hpp#basic_cstr_writer,basic_cstr_writer>>`
@@ -554,11 +554,11 @@ a `basic_cstr_writer` object then write into it. Similarly,
 `strf::to_string` internally uses `strf::string_maker`.
 
 As far as I know, {fmt} doesn't provide anything equivalent
-to `std::destination`. Yes, it can write to generic output
+to `strf::destination`. Yes, it can write to generic output
 iterators (with `fmt::format_to` and `fmt::format_to_n`), but
 that's not as good &mdash; you can't have a function that writes into
 a generic output iterator, unless it's actually a function template,
-and some can't be. 
+and some can't be.
 
 However, I must acknowledge that `strf::destination` doesn't
 count so much as an advantage of Strf over {fmt}, because you can
@@ -583,7 +583,7 @@ void get_message(strf::destination<char>& dest) {
 So, even if you are not willing use Strf as a formatting library instead of {fmt}
 or std::format, you might still consider `strf::destination`.
 In this case, however, there is some overhead ( using {fmt} to write to an
-`std::destination` object tends to be slower than when {fmt} writes directly
+`strf::destination` object tends to be slower than when {fmt} writes directly
 to the actual final destination ), as shown in the
 http://robhz786.github.io/strf-benchmarks/v{strf-version}/results.html[benchmarks].
 

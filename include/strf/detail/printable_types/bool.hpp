@@ -20,9 +20,10 @@ template <typename CharT> class fmt_bool_stringifier;
 template <>
 struct printable_traits<bool>
 {
-    using override_tag = bool;
+    using representative_type = bool;
     using forwarded_type = bool;
     using formatters = strf::tag<strf::alignment_formatter>;
+    using is_overridable = std::true_type;
 
     template <typename CharT, typename PrePrinting, typename FPack>
     constexpr STRF_HD static auto make_input

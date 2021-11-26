@@ -7,6 +7,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 
 :numpunct:      <<quick_reference#numpunct,numpunct>>
 :destination:    <<destination_hpp#destination,destination>>
+:UnaryTypeTrait: link:https://en.cppreference.com/w/cpp/named_req/UnaryTypeTrait[UnaryTypeTrait]
 
 = Tutorial of the Strf library
 :source-highlighter: prettify
@@ -111,7 +112,7 @@ You can constrain facets to a set of input types:
 [source,cpp]
 ----
 auto str = strf::to_string
-    .with(std::constrain<std::is_floating_point>(strf::uppercase))
+    .with(strf::constrain<std::is_floating_point>(strf::uppercase))
     ( true, ' '*strf::hex(0xab), ' ', 1.0e+50 );
 
 assert(str == "true 0xab 1E+50");
@@ -132,7 +133,7 @@ the order matters. The later one wins:
 ----
 
 auto fa = strf::mixedcase;
-auto fb = std::constrain<std::is_floating_point>(strf::uppercase);
+auto fb = strf::constrain<std::is_floating_point>(strf::uppercase);
 
 using namespace strf;
 auto str_ab = to_string .with(fa, fb) (true, ' ', *hex(0xab), ' ', 1e+9);
@@ -144,6 +145,22 @@ auto str_ba = to_string .with(fb, fa) (true, ' ', *hex(0xab), ' ', 1e+9);
 assert(str_ab == "True 0xAB 1E+9");
 assert(str_ba == "True 0xAB 1e+9");
 ----
+
+You can see that the template argument passed to `constrain` is a
+__{UnaryTypeTrait}__, __i.e.__, a type template with a static
+constexpr boolean member variable named `value`. Now, the type the library
+passes to this __UnaryTypeTrait__ is what is called as the
+__representative type__ of the printable type, which is usually
+the same as the printable type itself, but not always.
+For example, in the case of strings, it is
+`strf::string_input_tag<__char_type__>`.
+The representative of each printable type is documented
+in the API reference, in the section
+<<strf_hpp#printable_types_list,"List of printable types">>,
+but it can also be obtained programmatically, with
+`<<strf_hpp#representative_of_printable,representative_of_printable>>`
+type alias template.
+
 
 [[facets_categories]]
 === Facets categories
@@ -201,7 +218,7 @@ which you create with the <<strf_hpp#pack,`pack`>> function template:
 ----
 constexpr auto my_facets = strf::pack
     ( strf::mixedcase
-    , std::constrain<strf::is_bool>(strf::uppercase)
+    , strf::constrain<strf::is_bool>(strf::uppercase)
     , strf::{numpunct}<10>{3}.thousands_sep(U'.').decimal_point(U',')
     , strf::{numpunct}<16>{4}.thousands_sep(U'\'')
     , strf::<<strf_hpp#static_charset_constexpr,windows_1252>><char> );

@@ -13,7 +13,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 
 :PrintableTraits:   <<strf_hpp#PrintableTraits,PrintableTraits>>
 :StringifierInput: <<strf_hpp#StringifierInput,StringifierInput>>
-:override_tag:    <<strf_hpp#PrintableTraits_override_tag,override_tag>>
+:representative_type:    <<strf_hpp#PrintableTraits_representative_type,representative_type>>
 :forwarded_type:  <<strf_hpp#PrintableTraits_forwarded_type,forwarded_type>>
 :formatters:      <<strf_hpp#PrintableTraits_formatters,formatters>>
 :Formatter:                  <<strf_hpp#Formatter,Formatter>>
@@ -103,7 +103,7 @@ namespace strf {
 
 template <typename FloatT>
 struct printable_traits<std::complex<FloatT>> {
-    using override_tag = std::complex<FloatT>;
+    using representative_type = std::complex<FloatT>;
     using forwarded_type = std::complex<FloatT>;
 
     template <typename CharT, typename Pre, typename FPack>
@@ -228,7 +228,7 @@ namespace strf {
 
 template <typename FloatT>
 struct printable_traits<std::complex<FloatT>> {
-    using override_tag = std::complex<FloatT>;
+    using representative_type = std::complex<FloatT>;
     using forwarded_type = std::complex<FloatT>;
 
     template <typename CharT, typename Pre, typename FPack>
@@ -752,7 +752,7 @@ namespace strf {
 template <typename FloatT>
 struct printable_traits<std::complex<FloatT>>
 {
-    using override_tag = std::complex<FloatT>;
+    using representative_type = std::complex<FloatT>;
     using forwarded_type = std::complex<FloatT>;
     using formatters = strf::tag< ... /{asterisk}same as before{asterisk}/>;
 
@@ -859,7 +859,7 @@ one that would change often &#x2014; every time the facets are different &#x2014
 thus causing some code bloat.
 
 Usually the second template argument in `{use_facet}` is the input type,
-which here is `std::comple<FloatT>`. However, I decided that
+which here is `std::complex<FloatT>`. However, I decided that
 it makes more sense to use `FloatT` for the numeric punctuation
 and letter case. There is no strict rule for that.
 

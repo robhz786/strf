@@ -120,8 +120,10 @@ namespace strf {
 
 template <>
 struct printable_traits<bool_wrapper> {
+    using representative_type = bool_wrapper;
     using forwarded_type = bool_wrapper;
     using override_tag = bool_wrapper;
+    using is_overridable = std::true_type;
 
     template <typename CharT, typename PrePrinting, typename FPack>
     STRF_HD static auto make_input

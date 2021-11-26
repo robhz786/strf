@@ -50,7 +50,7 @@ You can also take a look at the unit tests that run on CUDA device
 == Static link and CMake
 
 To build Strf as static library for CUDA, you only need to compile the file
-`{strf-src-root}/src/strf.cu[strf/strf.cu]`. And your code 
+`{strf-src-root}/src/strf.cu[strf/strf.cu]`. And your code
 shall define the macro `STRF_CUDA_SEPARATE_COMPILATION`.
 
 Alternatively, you can use Strf CMake project. In this case, you need

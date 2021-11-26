@@ -11,14 +11,35 @@ http://www.boost.org/LICENSE_1_0.txt)
 Types::
 `const CharT*`, `std::string_view<CharT, Traits>`
 and `std::basic_string<CharT, Traits, Alloc>`
-::
++
 where:
-::
++
 - `CharT` is the character type. If it is not the same as the output character type, then it is necessary to use the `conv` or `sani` format function.
 - `Traits` can be any type that satisfies https://en.cppreference.com/w/cpp/named_req/CharTraits[CharTraits]
 - `Alloc` can be any type that satisfies https://en.cppreference.com/w/cpp/named_req/Allocator[Allocator]
 
 Overridable:: No
+
+Representative type:: `string_input_tag<CharT>`,  where `string_input_tag` is defined as below:
++
+[source,cpp]
+----
+namespace strf {
+
+struct string_input_tag_base {};
+
+template <typename CharT>
+struct string_input_tag: string_input_tag_base{}
+
+} // namespace strf
+----
+
+Influenced by facet categories::
+- `<<width_calculator_c,width_calculator_c>>`
+- `<<charset_c,charset_c>><__CharType__>`
+- `<<surrogate_policy,surrogate_policy_c>>`
+- `<<invalid_seq_notifier_c,invalid_seq_notifier_c>>`
+
 
 Format functions::
 ( in addition to <<alignment_formatter, alignment functions>> )
@@ -61,16 +82,12 @@ auto str = strf::to_string(strf::center(u" Hello! ", 16, '*').conv());
 assert(str == "**** Hello! ****");
 ----
 
-//-
-Influential facet categories::
-- `<<width_calculator_c,width_calculator_c>>`
-- `<<charset_c,charset_c>><__CharType__>`
-- `<<surrogate_policy,surrogate_policy_c>>`
-- `<<invalid_seq_notifier_c,invalid_seq_notifier_c>>`
+
 
 === Single characters
 Type:: The same as the output character type or `char32_t`. In the later case,
        the UTF-32 character is encoded to the destination charset.
+Representative type:: The same as the input type
 
 Overridable:: No
 
@@ -79,7 +96,7 @@ Formatters::
 * `<<quantity_formatter,quantity_formatter>>`
 
 //-
-Influential facet categories::
+Influenced by facet categories::
 * `<<width_calculator_c,width_calculator_c>>`
 * `<<charset_c,charset_c>><__CharType__>`: in two situations:
 **  when using <<alignment_formatter,alignment formatting>>
@@ -89,24 +106,24 @@ Influential facet categories::
 === `bool` [[printable_bool]]
 Type:: `bool`
 
-Overridable:: Yes, `<<PrintableTraits_override_tag,override_tag>>` is `bool`.
-
+Representative type:: `bool`
+Overridable:: Yes
 Formatters::
 * `<<alignment_formatter,alignment_formatter>>`
 
-Influential facet categories::
+Influenced by facet categories::
 - `<<lettercase,lettercase_c>>`
 - `<<charset_c,charset_c>><__CharType__>`: Used to encode the <<alignment_formatter,fill character>>.
 
 === `const void*`
 Types:: `const void*`
-
-Overridable:: Yes, `<<PrintableTraits_override_tag,override_tag>>` is `const void*`
+Representative type:: `const void*`
+Overridable:: Yes
 
 Formatters::
 * `<<alignment_formatter,alignment_formatter>>`
 
-Influential facet categories::
+Influenced by facet categories::
 - `<<lettercase,lettercase_c>>`
 - `<<charset_c,charset_c>><__CharType__>`: Used to encode the <<alignment_formatter,fill character>>.
 
@@ -122,7 +139,7 @@ Types::
 `unsigned long int` and
 `unsigned long long int`
 
-Overridable:: Yes, `<<PrintableTraits_override_tag,override_tag>>` is the same as the input type ( `short`,
+Representative type:: The same as the input type ( `short`,
 `int`,
 `long int`,
 `long long int`,
@@ -131,12 +148,14 @@ Overridable:: Yes, `<<PrintableTraits_override_tag,override_tag>>` is the same a
 `unsigned long int` or
 `unsigned long long int` )
 
+Overridable:: Yes
+
 Formatters::
 * `<<alignment_formatter,alignment_formatter>>`
 * `<<int_formatter,int_formatter>>`
 
 //-
-Influential facet categories::
+Influenced by facet categories::
 - `<<lettercase,lettercase_c>>`
 - `<<numpunct, numpunct_c>><__Base__>`
 - `<<charset_c,charset_c>><__CharType__>`: Used to encode the <<alignment_formatter,fill character>> and the <<numpunct,punctuation characters>>.
@@ -144,15 +163,15 @@ Influential facet categories::
 
 === Floating Points
 Types:: `float`, `double`
-
-Overridable:: Yes, `<<PrintableTraits_override_tag,override_tag>>` is the same as the input type ( `float` or `double` )
+Representative type:: The same as the input type ( `float` or `double` )
+Overridable:: Yes
 
 Formatters::
 * `<<alignment_formatter,alignment_formatter>>`
 * `<<float_formatter,float_formatter>>`
 
 //-
-Influential facet categories::
+Influenced by facet categories::
 - `<<lettercase,lettercase_c>>`
 - `<<numpunct,numpunct_c>><10>`
 - `<<numpunct,numpunct_c>><16>`

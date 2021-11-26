@@ -18,8 +18,10 @@ http://www.boost.org/LICENSE_1_0.txt)
 :StringifierInput: <<strf_hpp#StringifierInput,StringifierInput>>
 :printable_traits_of: <<strf_hpp#printable_traits_of,printable_traits_of>>
 :lettercase: <<strf_hpp#lettercase,lettercase>>
-:override_tag: <<strf_hpp#override_tag,override_tag>>
-:is_overridable: <<strf_hpp#is_overridable,is_overridable>>
+:representative_of_printable: <<strf_hpp#representative_of_printable,representative_of_printable>>
+
+
+:is_printable_and_overridable: <<strf_hpp#is_printable_and_overridable,is_printable_and_overridable>>
 :remove_cvref_t: link:https://en.cppreference.com/w/cpp/types/remove_cvref[remove_cvref_t]
 
 
@@ -124,63 +126,11 @@ you can see that we only need to handle
 And that's what we did in the implementation above.
 
 ////
-specified by the `<<strf_hpp#PrintableTraits_formatters,formatters>>`
-type alias defined in the __PrintableTraits__ class,
-and we can't change them ( neither can you change
-`<<strf_hpp#PrintableTraits_forwarded_type,forwarded_type>>`
-nor `<<strf_hpp#PrintableTraits_override_tag,override_tag>>` ).
-
 Even if you don't want to support formatting,
 it still makes sense to overload `make_input`
 taking the `{value_with_formatters}` argument and add
 a `static_assert` with an explanatory message.
 
-When you override a printable type, the format
-functions are still the same.
-They are specified by the `<<strf_hpp#PrintableTraits_formatters,formatters>>`
-type alias defined in the __PrintableTraits__ class,
-and you can't change them ( neither can you change
-`<<strf_hpp#PrintableTraits_forwarded_type,forwarded_type>>`
-nor `<<strf_hpp#PrintableTraits_override_tag,override_tag>>` ).
-////
-
-////
-The format functions are the same as in the original type.
-They are specified by the `<<strf_hpp#PrintableTraits_formatters,formatters>>`
-type alias defined in the __PrintableTraits__ class,
-and you can't change them ( neither can you change
-`<<strf_hpp#PrintableTraits_forwarded_type,forwarded_type>>`
-nor `<<strf_hpp#PrintableTraits_override_tag,override_tag>>` ).
-So, when overriding a type, you should check
-<<strf_hpp#printable_types_list,its documentation>>
-what are the format functions ( or the __Formatters__ )
-applicable to it.
-////
-
-
-////
-The __PrintableTraits__ type requirement specifies some
-member types aliases: `<<strf_hpp#PrintableTraits_formatters,formatters>>`,
-`<<strf_hpp#PrintableTraits_forwarded_type,forwarded_type>>`
-and `<<strf_hpp#PrintableTraits_override_tag,override_tag>>`
-These cannot be changed in our `italian_bool_facet` facet:
-whatever is defined in `{printable_traits_of}<bool>`, still applies here.
-This implies that you cannot change the format functions
-when overriding a printable type. The only thing that
-you change is that you replate the `make_input` overloads.
-////
-
-
-////
-In the __PrintableTraits__ requirements, you can see that there are some
-member types aliases: `<<strf_hpp#PrintableTraits_formatters,formatters>>`,
-`<<strf_hpp#PrintableTraits_forwarded_type,forwarded_type>>`
-and `<<strf_hpp#PrintableTraits_override_tag,override_tag>>`
-These cannot be changed in our `italian_bool_facet` facet:
-whatever is defined in `{printable_traits_of}<bool>`, still applies here.
-This implies that you cannot change the format functions
-when overriding a printable type.
-The only thing that you actually change are the `make_input` functions.
 ////
 
 
@@ -239,26 +189,26 @@ and we do do the following to achieve this:
 [source,cpp,subs=normal]
 ----
 template <typename T>
-struct is_bool: std::is_same<T, strf::{override_tag}<bool>> {};
+struct is_bool: std::is_same<T, strf::{representative_of_printable}<bool>> {};
 
 constexpr auto italian_bool = strf::{constrain}<is_bool>(italian_bool_facet{});
 ----
 
-`strf::{override_tag}<X>` is a type alias to
-`strf::{printable_traits_of}<X>::<<strf_hpp#PrintableTraits_override_tag,override_tag>>`,
-which is usually the same as
-`strf::{printable_traits_of}<X>::<<strf_hpp#PrintableTraits_forwarded_type,forwarded_type>>`,
-which is usually the same as
-`std::{remove_cvref_t}<X>`.
-In fact, `strf::{override_tag}<bool>` is an alias to `bool`,
-but it is a better practice to use `strf::{override_tag}` instead.
+// `strf::{representative_of_printable}<X>` is a type alias to
+// `strf::{printable_traits_of}<X>::<<strf_hpp#PrintableTraits_representative_type,representative_type>>`,
+// which is usually the same as
+// `strf::{printable_traits_of}<X>::<<strf_hpp#PrintableTraits_forwarded_type,forwarded_type>>`,
+// which is usually the same as
+// `std::{remove_cvref_t}<X>`.
+// In fact, `strf::{representative_of_printable}<bool>` is an alias to `bool`,
+// but it is a better practice to use `strf::{representative_of_printable}` instead.
 
 When `strf::{printable_traits_of}<X>` ( the __{PrintableTraits}__ class of `X` )
-does not have the member type alias `<<strf_hpp#PrintableTraits_override_tag,override_tag>>`,
-then `X` is not overridable.
+does not have the member type alias `<<strf_hpp#PrintableTraits_is_overridable,is_overridable>>`,
+or it is an alias to `std::false_type`, then `X` is not overridable.
 An example of an non-overridable type is `char`
 ( that's why `'\'` was printed as "\" and not as "vero" in the previous snippet ).
-You can use `strf::{is_overridable}<X>` to check at compile-time
+You can use `strf::{is_printable_and_overridable}<X>` to check at compile-time
 whether a type `X` is overridable.
 
 Ok, now thinks should work:

@@ -27,10 +27,10 @@ struct my_bool_override
     const char* false_true_strings[2] = {"false", "true"};
 };
 
-static_assert(strf::is_overridable<bool>, "bool not overridable");
+static_assert(strf::is_printable_and_overridable_v<bool>, "bool not overridable");
 
 template <typename T>
-struct is_bool: std::is_same<T, strf::override_tag<bool>> {};
+struct is_bool: std::is_same<T, strf::representative_of_printable<bool>> {};
 
 constexpr auto italian_bool = strf::constrain<is_bool>(my_bool_override{{"falso", "vero"}});
 

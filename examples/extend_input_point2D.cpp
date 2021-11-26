@@ -20,9 +20,10 @@ namespace strf {
 template <typename FloatT>
 struct printable_traits<xxx::point2D<FloatT>> {
 
+    using representative_type = xxx::point2D<FloatT>;
     using forwarded_type = xxx::point2D<FloatT>;
-
     using formatters = strf::tag<strf::alignment_formatter, strf::float_formatter>;
+    using is_overridable = std::true_type;
 
     template <typename CharT, typename PrePrinting, typename FPack, typename... T>
     constexpr static auto make_input

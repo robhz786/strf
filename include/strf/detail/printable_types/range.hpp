@@ -117,8 +117,10 @@ class sep_transformed_range_stringifier;
 template <typename It>
 struct printable_traits<strf::range_p<It>>
 {
+    using representative_type = strf::range_p<It>;
     using forwarded_type = strf::range_p<It>;
     using formatters = strf::formatters_of<decltype(*std::declval<It>())>;
+    using is_overridable = std::false_type;
 
     template <typename CharT, typename PrePrinting, typename FPack>
     STRF_HD constexpr static auto make_input
@@ -152,8 +154,10 @@ struct printable_traits<strf::range_p<It>>
 template <typename It, typename SepCharT>
 struct printable_traits<strf::separated_range_p<It, SepCharT>>
 {
+    using representative_type = strf::separated_range_p<It, SepCharT>;
     using forwarded_type = strf::separated_range_p<It, SepCharT>;
     using formatters = strf::formatters_of<decltype(*std::declval<It>())>;
+    using is_overridable = std::false_type;
 
     template <typename DestCharT, typename PrePrinting, typename FPack>
     STRF_HD constexpr static auto make_input
@@ -193,7 +197,9 @@ struct printable_traits<strf::separated_range_p<It, SepCharT>>
 template <typename It, typename UnaryOp>
 struct printable_traits<strf::transformed_range_p<It, UnaryOp>>
 {
+    using representative_type = strf::transformed_range_p<It, UnaryOp>;
     using forwarded_type = strf::transformed_range_p<It, UnaryOp>;
+    using is_overridable = std::false_type;
 
     template <typename CharT, typename PrePrinting, typename FPack>
     STRF_HD constexpr static auto make_input
@@ -212,7 +218,9 @@ struct printable_traits<strf::transformed_range_p<It, UnaryOp>>
 template <typename It, typename SepCharT, typename UnaryOp>
 struct printable_traits<strf::separated_transformed_range_p<It, SepCharT, UnaryOp>>
 {
+    using representative_type = strf::separated_transformed_range_p<It, SepCharT, UnaryOp>;
     using forwarded_type = strf::separated_transformed_range_p<It, SepCharT, UnaryOp>;
+    using is_overridable = std::false_type;
 
     template <typename DestCharT, typename PrePrinting, typename FPack>
     STRF_HD constexpr static auto make_input
@@ -335,8 +343,7 @@ private:
     const CharT* sep_begin_;
     std::size_t sep_len_;
 
-    template < typename Category
-             , typename Tag = strf::range_separator_input_tag<CharT> >
+    template <typename Category, typename Tag = strf::string_input_tag<CharT>>
     static STRF_HD
     STRF_DECLTYPE_AUTO((strf::use_facet<Category, Tag>(std::declval<FPack>())))
     use_facet_(const FPack& fp)
@@ -523,8 +530,7 @@ private:
     const FPack& fp_;
     fmt_type_adapted_ fmt_;
 
-    template < typename Category
-             , typename Tag = strf::range_separator_input_tag<CharT>>
+    template <typename Category, typename Tag = strf::string_input_tag<CharT>>
     static inline STRF_HD
     STRF_DECLTYPE_AUTO((strf::use_facet<Category, Tag>(*(const FPack*)0)))
     use_facet_(const FPack& fp)
@@ -710,8 +716,7 @@ private:
     std::size_t sep_len_;
     UnaryOp op_;
 
-    template < typename Category
-             , typename Tag = strf::range_separator_input_tag<CharT> >
+    template <typename Category, typename Tag = strf::string_input_tag<CharT>>
     static STRF_HD
     STRF_DECLTYPE_AUTO((strf::use_facet<Category, Tag>(std::declval<FPack>())))
     use_facet_(const FPack& fp)

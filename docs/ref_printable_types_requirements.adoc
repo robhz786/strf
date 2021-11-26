@@ -20,7 +20,11 @@ http://www.boost.org/LICENSE_1_0.txt)
 :print_override_c: <<print_override_c,print_override_c>>
 :make_default_stringifier_input: <<make_default_stringifier_input,make_default_stringifier_input>>
 :make_stringifier_input: <<make_stringifier_input,make_stringifier_input>>
+:representative_of_printable: <<representative_of_printable,representative_of_printable>>
+:is_printable_and_overridable: <<is_printable_and_overridable,is_printable_and_overridable>>
 
+:constrain: <<constrain,constrain>>
+:constrained_fpe: <<constrained_fpe,constrained_fpe>>
 :use_facet: <<use_facet,use_facet>>
 :tag: <<tag,tag>>
 :rank: <<rank,rank>>
@@ -85,21 +89,28 @@ and must be copy-constructible. And its copy-constructor should be fast.
 situations ( for example, the objects created by `fmt` and `{join}` ).
 ====
 
-[[PrintableTraits_override_tag]]
+[[PrintableTraits_representative_type]]
+====
+[source,cpp]
+----
+T::representative_type
+----
+The type used as the template argument in `{use_facet}`.
+This means it is the type that is tested by the
+the __UnaryTypeTrait__ template argument passed to
+`{constrain}` or `{constrained_fpe}`.
+====
+
+[[PrintableTraits_is_overridable]]
 ====
 .( Optional )
 [source,cpp]
 ----
-T::override_tag
+T::is_overridable
 ----
-When defined, `strf::{make_stringifier_input}` uses the following expression
-to obtain the _StringifierInput_ object:
-[source,cpp,subs=normal]
-----
-<<use_facet,use_facet>><{print_override_c}, override_tag>(_facets_).make_input(...)
-----
-, which would mean that the corresponding _Printable_ type could be overriden by an
-facet object. While when `override_tag` is not defined, this _Printable_ type is not overridable.
+A type alias to either `std::true_type` or `std::false_type`.
+It influences the behavior of `{make_stringifier_input}`.
+Assumed to be `std::false_type` if not defined.
 ====
 
 [[PrintableTraits_formatters]]
@@ -111,6 +122,7 @@ T::formatters
 ----
 A type alias to `{tag}<F\...>`, where all types in `F\...` satisfy __<<Formatter,Formatter>>__.
 It affects the return type of `<<fmt,fmt>>`.
+Assumed to be `{tag}<>` if not defined.
 ====
 
 [[PrintableTraits_functions]]
@@ -136,33 +148,36 @@ Return type:: A _{StringifierInput}_ type.
 Return value:: A value `r` such that `&r.pre == &pre`
 ====
 
-
-=== Type alias template `override_tag` [[override_tag]]
-
-[source,cpp,subs=normal]
-----
-namespace strf {
-
-template <typename T>
-using override_tag = typename {printable_traits_of}<T>::<<PrintableTraits_override_tag,override_tag>>;
-
-} // namespace strf
-----
-
-=== Variable template `is_overridable` [[is_overridable]]
+=== Type alias template `representative_of_printable` [[representative_of_printable]]
 
 [source,cpp,subs=normal]
 ----
 namespace strf {
 
 template <typename T>
-constexpr bool is_overridable = ... /{asterisk}see below{asterisk}/;
+using representative_of_printable = typename {printable_traits_of}<T>::<<PrintableTraits_representative_type,representative_type>>;
 
 } // namespace strf
 ----
 
-`is_overridable<T>` is `true` if `{printable_traits_of}<T>` has the public member type alias
-`<<PrintableTraits_override_tag,override_tag>>`. Otherwise it is `false`.
+=== Variable template `is_printable_and_overridable` [[is_printable_and_overridable]]
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template <typename T>
+using is_printable_and_overridable = ... /{asterisk}see below{asterisk}/;
+
+template <typename T>
+constexpr bool is_printable_and_overridable_v = is_printable_and_overridable<T>::value;
+
+} // namespace strf
+----
+
+`is_printable_and_overridable<T>` is an alias to
+`{printable_traits_of}<T>::<<PrintableTraits_is_overridable,is_overridable>>`
+if such type is defined, otherwise it is an alias to `std::false_type`.
 
 === Type alias template `forwarded_printable_type` [[forwarded_printable_type]]
 
@@ -336,12 +351,11 @@ constexpr /{asterisk}\...{asterisk}/ make_stringifier_input(Pre& pre, const FPac
 } // namespace strf
 ----
 
-If `{printable_traits_of}<Arg>::override_tag` is defined,
+If `{printable_traits_of}<Arg>::<<PrintableTraits_is_overridable,is_overridable>>::value` is `true`,
 `make_stringifier_input` returns
 [source,cpp,subs=normal]
 ----
-{use_facet}< {print_override_c}
-         , typename {printable_traits_of}<Arg>::override_tag >(facets)
+{use_facet}< {print_override_c}, {representative_of_printable}<Arg> > (facets)
     .make_input({tag}<CharT>{}, pre, facets, arg);
 ----
 

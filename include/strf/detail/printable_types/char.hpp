@@ -21,9 +21,10 @@ template <typename> class fmt_conv_char32_stringifier;
 template <typename SrcCharT>
 struct char_printing
 {
-    // using override_tag = SrcCharT;
+    using representative_type = SrcCharT;
     using forwarded_type = SrcCharT;
     using formatters = strf::tag<strf::quantity_formatter, strf::alignment_formatter>;
+    using is_overridable = std::false_type;
 
     template <typename DestCharT, typename PrePrinting, typename FPack>
     constexpr STRF_HD static auto make_input
@@ -64,9 +65,10 @@ template <> struct printable_traits<wchar_t>  : public char_printing <wchar_t> {
 template <>
 struct printable_traits<char32_t>
 {
-    // using override_tag = char32_t;
+    using representative_type = char32_t;
     using forwarded_type = char32_t;
     using formatters = strf::tag<strf::quantity_formatter, strf::alignment_formatter>;
+    using is_overridable = std::false_type;
 
     template <typename DestCharT, typename PrePrinting, typename FPack>
     constexpr STRF_HD static auto make_input
