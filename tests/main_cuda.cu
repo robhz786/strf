@@ -36,7 +36,7 @@ __global__ void kernel_main
     , char* err_msg
     , std::size_t err_msg_size )
 {
-    strf::cstr_writer out(err_msg, err_msg_size);
+    strf::cstr_destination out(err_msg, err_msg_size);
     test_utils::set_test_messages_destination(out);
 
     run_all_tests ();

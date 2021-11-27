@@ -20,7 +20,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 :destination: <<destination,destination>>
 :destination_space_after_flush: <<destination,destination_space_after_flush>>
 
-:basic_cstr_writer: <<basic_cstr_writer, basic_cstr_writer>>
+:basic_cstr_destination: <<basic_cstr_destination, basic_cstr_destination>>
 :array_destination: <<array_destination, array_destination>>
 :discarder: <<discarder,discarder>>
 
@@ -65,7 +65,7 @@ template <typename CharT>
 using {destination} = output_buffer<CharT, ...>;
 
 template <typename CharT>
-class {basic_cstr_writer};
+class {basic_cstr_destination};
 
 template <typename CharT>
 class {array_destination};
@@ -79,11 +79,11 @@ CharT* {garbage_buff}();
 template <typename CharT>
 CharT* {garbage_buff_end}();
 
-using u8cstr_writer  = basic_cstr_writer<char8_t>;
-using cstr_writer    = basic_cstr_writer<char>;
-using u16cstr_writer = basic_cstr_writer<char16_t>;
-using u32cstr_writer = basic_cstr_writer<char32_t>;
-using wcstr_writer   = basic_cstr_writer<wchar_t>;
+using u8cstr_destination  = basic_cstr_destination<char8_t>;
+using cstr_destination    = basic_cstr_destination<char>;
+using u16cstr_destination = basic_cstr_destination<char16_t>;
+using u32cstr_destination = basic_cstr_destination<char32_t>;
+using wcstr_destination   = basic_cstr_destination<wchar_t>;
 
 } // namespace strf
 ----
@@ -412,24 +412,24 @@ that is greater than or equal to `6`.
 
 * `destination_space_after_flush` is equal to `(std::size_t)1 << log2_destination_space_after_flush`
 
-[[basic_cstr_writer]]
-== Class template `basic_cstr_writer`
+[[basic_cstr_destination]]
+== Class template `basic_cstr_destination`
 
 [source,cpp,subs=normal]
 ----
 namespace strf {
 
 template <typename CharT>
-class basic_cstr_writer final: public {output_buffer}<CharT, {log2_garbage_buff_size}> {
+class basic_cstr_destination final: public {output_buffer}<CharT, {log2_garbage_buff_size}> {
 public:
-    basic_cstr_writer(CharT{asterisk} dest, CharT{asterisk} dest_end) noexcept;
+    basic_cstr_destination(CharT{asterisk} dest, CharT{asterisk} dest_end) noexcept;
 
-    basic_cstr_writer(CharT{asterisk} dest, std::size_t len) noexcept;
+    basic_cstr_destination(CharT{asterisk} dest, std::size_t len) noexcept;
 
     template <std::size_t N>
-    basic_cstr_writer(CharT (&dest)[N]) noexcept;
+    basic_cstr_destination(CharT (&dest)[N]) noexcept;
 
-    basic_cstr_writer(const basic_cstr_writer&) = delete;
+    basic_cstr_destination(const basic_cstr_destination&) = delete;
 
     void recycle_buffer() noexcept override;
 
@@ -449,7 +449,7 @@ public:
 ====
 [source,cpp]
 ----
-basic_cstr_writer(CharT* dest, CharT* dest_end) noexcept;
+basic_cstr_destination(CharT* dest, CharT* dest_end) noexcept;
 ----
 [horizontal]
 Precondition:: `dest < dest_end`
@@ -461,7 +461,7 @@ Postconditions::
 ====
 [source,cpp]
 ----
-basic_cstr_writer(CharT* dest, std::size_t dest_size) noexcept;
+basic_cstr_destination(CharT* dest, std::size_t dest_size) noexcept;
 ----
 [horizontal]
 Precondition:: `dest_size != 0`
@@ -474,7 +474,7 @@ Postconditions::
 [source,cpp]
 ----
 template <std::size_t N>
-basic_cstr_writer(CharT (&dest)[N]) noexcept;
+basic_cstr_destination(CharT (&dest)[N]) noexcept;
 ----
 [horizontal]
 Postconditions::

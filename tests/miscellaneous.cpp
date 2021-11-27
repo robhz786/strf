@@ -12,7 +12,7 @@ STRF_TEST_FUNC void test_miscellaneous()
     {
         // write into an destination reference
         char buff[100];
-        strf::cstr_writer str_writer{buff};
+        strf::cstr_destination str_writer{buff};
         strf::destination<char>& dest = str_writer;
 
         strf::to(dest)

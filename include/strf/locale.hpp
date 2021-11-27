@@ -103,7 +103,7 @@ STRF_FUNC_IMPL char32_t decode_first_char_from_utf16(const wchar_t* src)
 STRF_FUNC_IMPL char32_t decode_first_char(strf::transcode_f<char, char32_t>& decode, const char* str)
 {
     char32_t buff32[2] = { 0xFFFD, 0 };
-    strf::u32cstr_writer dest(buff32);
+    strf::u32cstr_destination dest(buff32);
     decode(dest, str, strlen(str), {}, strf::surrogate_policy::strict);
     return buff32[0];
 }

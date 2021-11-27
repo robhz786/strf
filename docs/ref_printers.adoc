@@ -13,7 +13,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 :make_stringifier_input: <<make_stringifier_input,make_stringifier_input>>
 
 
-:basic_cstr_writer: <<destination_hpp#basic_cstr_writer,basic_cstr_writer>>
+:basic_cstr_destination: <<destination_hpp#basic_cstr_destination,basic_cstr_destination>>
 :basic_char_array_writer: <<destination_hpp#basic_char_array_writer,basic_char_array_writer>>
 :printer_no_reserve: <<printer_no_reserve,printer_no_reserve>>
 :DestinationCreator: <<DestinationCreator,DestinationCreator>>
@@ -61,7 +61,7 @@ is such that `&#95;dest&#95;creator.create()` returns
 +
 [source,cpp,subs=normal]
 ----
-{basic_cstr_writer}<__char_type__>{begin, end}
+{basic_cstr_destination}<__char_type__>{begin, end}
 ----
 ====
 

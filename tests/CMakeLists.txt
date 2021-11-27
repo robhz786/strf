@@ -32,7 +32,7 @@ if (STRF_BUILD_TESTS)
   endif (NOT STRF_FREESTANDING)
 
   set(sources_freestanding
-    cstr_writer.cpp
+    cstr_destination.cpp
     dynamic_charset.cpp
     encode_char.cpp
     encode_fill.cpp
@@ -164,7 +164,7 @@ if (STRF_BUILD_TESTS)
   if (${STRF_CUDA_SUPPORT})
 
     # define_strf_cuda_test(dynamic_charset) # to-do
-    define_strf_cuda_test(cstr_writer)
+    define_strf_cuda_test(cstr_destination)
     define_strf_cuda_test(encode_char)
     define_strf_cuda_test(encode_fill)
     define_strf_cuda_test(facets_pack)

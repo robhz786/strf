@@ -257,7 +257,7 @@ Preconditions::
 * `__count__ > 0`
 * `__end__ > __char_ptr__`
 //-
-Return type:: `<<destination_hpp#basic_cstr_writer,basic_cstr_writer<__CharT__>::result`>>
+Return type:: `<<destination_hpp#basic_cstr_destination,basic_cstr_destination<__CharT__>::result`>>
 Return value:: a value `r`, such that:
 * `r.ptr` points to last written character which is always `'\0'`.
 * `r.truncated` is `true` when the destination string is too small. In this case, the number of
@@ -432,7 +432,7 @@ The table below lists the concrete types that derivate from the `{destination}<_
 |===
 | Type | Description
 
-| `<<destination_hpp#basic_cstr_writer, basic_cstr_writer>><__CharT__>`
+| `<<destination_hpp#basic_cstr_destination, basic_cstr_destination>><__CharT__>`
 | Writes C strings. Always writes the termination character `'\0'`.
 
 | `<<destination_hpp#array_destination, array_destination>><__CharT__>`
@@ -473,13 +473,13 @@ where:
 ----
 namespace strf {
 
-template <typename CharT> class basic_cstr_writer;
+template <typename CharT> class basic_cstr_destination;
 
-using u8cstr_writer  = basic_cstr_writer<char8_t>;
-using cstr_writer    = basic_cstr_writer<char>;
-using u16cstr_writer = basic_cstr_writer<char16_t>;
-using u32cstr_writer = basic_cstr_writer<char32_t>;
-using wcstr_writer   = basic_cstr_writer<wchar_t>;
+using u8cstr_destination  = basic_cstr_destination<char8_t>;
+using cstr_destination    = basic_cstr_destination<char>;
+using u16cstr_destination = basic_cstr_destination<char16_t>;
+using u32cstr_destination = basic_cstr_destination<char32_t>;
+using wcstr_destination   = basic_cstr_destination<wchar_t>;
 
 } // namespace strf
 ----

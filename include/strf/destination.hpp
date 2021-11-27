@@ -254,7 +254,7 @@ inline STRF_HD T* garbage_buff_end() noexcept
 }
 
 template <typename CharT>
-class basic_cstr_writer final
+class basic_cstr_destination final
     : public strf::output_buffer<CharT, strf::log2_garbage_buff_size>
 {
     using dest_t_ = strf::output_buffer<CharT, strf::log2_garbage_buff_size>;
@@ -263,31 +263,31 @@ public:
 
     struct range{ CharT* dest; CharT* dest_end; };
 
-    STRF_HD basic_cstr_writer(range r) noexcept
+    STRF_HD basic_cstr_destination(range r) noexcept
         : dest_t_(r.dest, r.dest_end - 1)
     {
         STRF_ASSERT(r.dest < r.dest_end);
     }
 
-    STRF_HD basic_cstr_writer(CharT* dest, CharT* dest_end) noexcept
+    STRF_HD basic_cstr_destination(CharT* dest, CharT* dest_end) noexcept
         : dest_t_(dest, dest_end - 1)
     {
         STRF_ASSERT(dest < dest_end);
     }
 
-    STRF_HD basic_cstr_writer(CharT* dest, std::size_t len) noexcept
+    STRF_HD basic_cstr_destination(CharT* dest, std::size_t len) noexcept
         : dest_t_(dest, dest + len - 1)
     {
         STRF_ASSERT(len != 0);
     }
 
     template <std::size_t N>
-    STRF_HD basic_cstr_writer(CharT (&dest)[N]) noexcept
+    STRF_HD basic_cstr_destination(CharT (&dest)[N]) noexcept
         : dest_t_(dest, dest + N - 1)
     {
     }
 
-    basic_cstr_writer(const basic_cstr_writer& r) = delete;
+    basic_cstr_destination(const basic_cstr_destination& r) = delete;
 
     STRF_HD void recycle_buffer() noexcept override
     {
@@ -354,12 +354,39 @@ template <typename CharT>
 using destination = strf::output_buffer<CharT, log2_destination_space_after_flush>;
 
 #if defined(__cpp_char8_t)
-using u8cstr_writer = basic_cstr_writer<char8_t>;
+using u8cstr_destination  = basic_cstr_destination<char8_t>;
 #endif
-using cstr_writer = basic_cstr_writer<char>;
-using u16cstr_writer = basic_cstr_writer<char16_t>;
-using u32cstr_writer = basic_cstr_writer<char32_t>;
-using wcstr_writer = basic_cstr_writer<wchar_t>;
+using cstr_destination    = basic_cstr_destination<char>;
+using u16cstr_destination = basic_cstr_destination<char16_t>;
+using u32cstr_destination = basic_cstr_destination<char32_t>;
+using wcstr_destination   = basic_cstr_destination<wchar_t>;
+
+template <typename CharT>
+using basic_cstr_writer
+STRF_DEPRECATED_MSG("basic_cstr_writer renamed to basic_cstr_destination")
+= basic_cstr_destination<CharT>;
+
+#if defined(__cpp_char8_t)
+using u8cstr_writer
+STRF_DEPRECATED_MSG("u8cstr_writer renamed to u8cstr_destination")
+= basic_cstr_destination<char8_t>;
+#endif
+
+using cstr_writer
+STRF_DEPRECATED_MSG("cstr_writer renamed to cstr_destination")
+= basic_cstr_destination<char>;
+
+using u16cstr_writer
+STRF_DEPRECATED_MSG("u16cstr_writer renamed to u16cstr_destination")
+= basic_cstr_destination<char16_t>;
+
+using u32cstr_writer
+STRF_DEPRECATED_MSG("u32cstr_writer renamed to u32cstr_destination")
+= basic_cstr_destination<char32_t>;
+
+using wcstr_writer
+STRF_DEPRECATED_MSG("wcstr_writer renamed to wcstr_destination")
+= basic_cstr_destination<wchar_t>;
 
 template <typename CharT>
 class array_destination final

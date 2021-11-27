@@ -148,7 +148,7 @@ STRF_TEST_FUNC void test_tr_string()
     // Customizing error handling
     {
         char buff[200];
-        strf::cstr_writer log(buff);
+        strf::cstr_destination log(buff);
         TEST(u8"0__\uFFFD--1==2..3::\uFFFD~~")
             .with(err_handler{log})
             .tr(u8"{ }__{10}--{}=={}..{}::{}~~", 0, 1, 2, 3);
@@ -159,7 +159,7 @@ STRF_TEST_FUNC void test_tr_string()
     }
     {
         char buff[200];
-        strf::cstr_writer log(buff);
+        strf::cstr_destination log(buff);
         TEST(u8"0__\uFFFD--1==2..3::\uFFFD~~")
             .with(err_handler{log})
             .tr(u8"{ }__{10}--{}=={}..{}::{blah}~~", 0, 1, 2, 3);
@@ -170,7 +170,7 @@ STRF_TEST_FUNC void test_tr_string()
     }
     {
         char buff[200];
-        strf::cstr_writer log(buff);
+        strf::cstr_destination log(buff);
         TEST(u"0__2--1==2..3::\uFFFD")
             .with(err_handler{log})
             .tr(u"{ }__{2}--{}=={}..{}::{", 0, 1, 2, 3);

@@ -60,7 +60,7 @@ STRF_HD void general_tests
 
         // test write_replacement_char
         char buff [10];
-        strf::cstr_writer w{buff};
+        strf::cstr_destination w{buff};
         charset.write_replacement_char(w);
         auto r = w.finish();
         TEST_EQ(r.ptr, buff + 1);

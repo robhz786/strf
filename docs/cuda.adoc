@@ -5,8 +5,8 @@ Distributed under the Boost Software License, Version 1.0.
 http://www.boost.org/LICENSE_1_0.txt)
 ////
 
-:cstr_writer: <<destination_hpp#basic_cstr_writer,cstr_writer>>
-:basic_cstr_writer: <<destination_hpp#basic_cstr_writer,basic_cstr_writer>>
+:cstr_destination: <<destination_hpp#basic_cstr_destination,cstr_destination>>
+:basic_cstr_destination: <<destination_hpp#basic_cstr_destination,basic_cstr_destination>>
 
 :strf-revision: develop
 :strf-src-root: https://github.com/robhz786/strf/blob/{strf-revision}
@@ -33,7 +33,7 @@ pointing to where the content is to be written.
 
 &#95;&#95;global&#95;&#95; void sample(char* dest, std::size_t dest_size)
 {
-    strf::{cstr_writer} writer{dest, dest_size};
+    strf::{cstr_destination} writer{dest, dest_size};
     auto print = strf::to(writer);
 
     print("Hello World!\n");
