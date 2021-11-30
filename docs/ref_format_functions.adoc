@@ -394,7 +394,7 @@ The _Formatter_ defines the following format functions:
 | Format functions | Effect
 
 |`operator<({width_t} _width_)`
-| Aligns to the left ( Or to the right on right-to-left (RTL) scripts, like arabic )
+| Aligns to the left ( Or to the right on right-to-left (RTL) scripts, like Arabic )
 
 |`operator>({width_t} _width_)`
 | Aligns to the right ( Or to the left on RTL scripts )
