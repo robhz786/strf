@@ -919,7 +919,7 @@ NOTE: The library does not sanitizes non-conformities when converting a single c
 like punctuation characters or the the fill character ( they are in UTF-32 ). In this case
 the replacement character is only used when the destination charset is not able
 to print the codepoint.
-For example, if the you use `(char32_t)0xFFFFFFF` as the <<numpunct,decimal point>>,
+For example, if you use `(char32_t)0xFFFFFFF` as the <<numpunct,decimal point>>,
 then it will printed as "\uFFFD" if the destination is UTF-8 or UTF-16, but
 if the destination is UTF-32, then the library just writes `(char32_t)0xFFFFFFF`
 verbatim.
