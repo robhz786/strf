@@ -1018,7 +1018,7 @@ assert(result == "*15.00 \xE2\x82\xAC \x80"); // width calculated as 11
   Nonconformities do not cause undefined behaviour, but lead to incorrect
   values. For example, the width of an UTF-8 string may simply be calculated as
   the number of bytes that are not in the range [`0x80`, `0xBF`], __i.e.__,
-  btye that are not continuation bytes. This way, any extra continuation byte -- that
+  byte that are not continuation bytes. This way, any extra continuation byte -- that
   would replaced by a `"\uFFFD"` during sanitization -- is not counted.
 +
 .Example
