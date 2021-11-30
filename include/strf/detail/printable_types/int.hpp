@@ -1133,7 +1133,7 @@ struct int_printing;
 template <typename CharT, typename Pre, typename IntT>
 struct default_int_stringifier_input
 {
-    using printer_type = strf::detail::default_int_stringifier<CharT>;
+    using stringifier_type = strf::detail::default_int_stringifier<CharT>;
 
     template<typename FPack>
     constexpr STRF_HD default_int_stringifier_input

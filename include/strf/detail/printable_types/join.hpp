@@ -36,7 +36,7 @@ template< typename CharT, typename PrePrinting, typename FPack
 class join_stringifier_input
 {
 public:
-    using printer_type = strf::detail::conditional_t
+    using stringifier_type = strf::detail::conditional_t
         < HasAlignment
         , strf::detail::aligned_join_stringifier<CharT, PrePrinting, FPack, FwdArgs...>
         , strf::detail::join_stringifier<CharT, PrePrinting, FPack, FwdArgs...> >;

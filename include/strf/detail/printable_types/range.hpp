@@ -263,7 +263,7 @@ public:
 private:
 
     template <typename PrePrinting>
-    using printer_type_ = strf::stringifier_type
+    using stringifier_type_ = strf::stringifier_type
         < CharT, PrePrinting, FPack, strf::detail::remove_cv_t<value_type> >;
 
     STRF_HD void do_preprinting_(strf::no_preprinting&) const
@@ -285,7 +285,7 @@ template < typename PrePrinting
 STRF_HD void range_stringifier<CharT, FPack, It>::do_preprinting_(PrePrinting& pre) const
 {
     for(auto it = begin_; it != end_; ++it) {
-        printer_type_<PrePrinting>
+        stringifier_type_<PrePrinting>
             ( strf::make_stringifier_input<CharT>(pre, fp_, *it) );
     }
 }
@@ -296,7 +296,7 @@ STRF_HD void range_stringifier<CharT, FPack, It>::print_to
 {
     strf::no_preprinting no_pre;
     for(auto it = begin_; it != end_; ++it) {
-        printer_type_<strf::no_preprinting>
+        stringifier_type_<strf::no_preprinting>
             ( strf::make_stringifier_input<CharT>(no_pre, fp_, *it) ).print_to(dest);
     }
 }
@@ -326,7 +326,7 @@ public:
 private:
 
     template <typename PrePrinting>
-    using printer_type_ = strf::stringifier_type
+    using stringifier_type_ = strf::stringifier_type
         < CharT, PrePrinting, FPack, strf::detail::remove_cv_t<value_type> >;
 
     STRF_CONSTEXPR_IN_CXX14 STRF_HD void do_preprinting_(strf::no_preprinting&) const
@@ -359,7 +359,7 @@ STRF_HD void separated_range_stringifier<CharT, FPack, It>::do_preprinting_(PreP
 {
     std::size_t count = 0;
     for(auto it = begin_; it != end_; ++it) {
-        printer_type_<PrePrinting>(strf::make_stringifier_input<CharT>(pre, fp_, *it));
+        stringifier_type_<PrePrinting>(strf::make_stringifier_input<CharT>(pre, fp_, *it));
         ++ count;
         STRF_IF_CONSTEXPR (!PrePrinting::size_required) {
             if (pre.remaining_width() <= 0) {
@@ -392,12 +392,12 @@ STRF_HD void separated_range_stringifier<CharT, FPack, It>::print_to
     strf::no_preprinting no_pre;
     auto it = begin_;
     if (it != end_) {
-        printer_type_<strf::no_preprinting>
+        stringifier_type_<strf::no_preprinting>
             ( strf::make_stringifier_input<CharT>(no_pre, fp_, *it) )
             .print_to(dest);
         while (++it != end_) {
             dest.write(sep_begin_, sep_len_);
-            printer_type_<strf::no_preprinting>
+            stringifier_type_<strf::no_preprinting>
                 ( strf::make_stringifier_input<CharT>(no_pre, fp_, *it) )
                 .print_to(dest);
         }
@@ -435,7 +435,7 @@ public:
 private:
 
     template <typename PrePrinting>
-    using printer_type_ = strf::stringifier_type
+    using stringifier_type_ = strf::stringifier_type
         < CharT, PrePrinting, FPack, value_fmt_type_adapted_ >;
 
     STRF_HD void do_preprinting_(strf::no_preprinting&) const
@@ -462,7 +462,7 @@ STRF_HD void fmt_range_stringifier<CharT, FPack, It, Fmts ...>::do_preprinting_
 {
     auto r = fmt_.value();
     for(auto it = r.begin; it != r.end; ++it) {
-        printer_type_<PrePrinting>
+        stringifier_type_<PrePrinting>
             ( strf::make_stringifier_input<CharT>
                 ( pre, fp_, value_fmt_type_adapted_{{*it}, fmt_} ) );
     }
@@ -478,7 +478,7 @@ STRF_HD void fmt_range_stringifier<CharT, FPack, It, Fmts ...>::print_to
     strf::no_preprinting no_pre;
     auto r = fmt_.value();
     for(auto it = r.begin; it != r.end; ++it) {
-        printer_type_<strf::no_preprinting>
+        stringifier_type_<strf::no_preprinting>
             ( strf::make_stringifier_input<CharT>
                 ( no_pre, fp_, value_fmt_type_adapted_{{*it}, fmt_} ) )
             .print_to(dest);
@@ -516,7 +516,7 @@ public:
 private:
 
     template <typename PrePrinting>
-    using printer_type_ = strf::stringifier_type
+    using stringifier_type_ = strf::stringifier_type
         < CharT, PrePrinting, FPack, value_fmt_type_adapted_ >;
 
     STRF_HD void do_preprinting_(strf::no_preprinting&) const
@@ -551,7 +551,7 @@ STRF_HD void fmt_separated_range_stringifier<CharT, FPack, It, Fmts ...>::do_pre
     auto r = fmt_.value();
     std::size_t count = 0;
     for(auto it = r.begin; it != r.end; ++it) {
-        printer_type_<PrePrinting>
+        stringifier_type_<PrePrinting>
             ( strf::make_stringifier_input<CharT>
                 ( pre, fp_, value_fmt_type_adapted_{{*it}, fmt_} ) );
         ++ count;
@@ -589,13 +589,13 @@ STRF_HD void fmt_separated_range_stringifier<CharT, FPack, It, Fmts ...>
     auto r = fmt_.value();
     auto it = r.begin;
     if (it != r.end) {
-        printer_type_<strf::no_preprinting>
+        stringifier_type_<strf::no_preprinting>
             ( strf::make_stringifier_input<CharT>
                 ( no_pre, fp_, value_fmt_type_adapted_{{*it}, fmt_} ) )
             .print_to(dest);
         while(++it != r.end) {
             dest.write(r.sep_begin, r.sep_len);
-            printer_type_<strf::no_preprinting>
+            stringifier_type_<strf::no_preprinting>
                 ( strf::make_stringifier_input<CharT>
                     ( no_pre, fp_, value_fmt_type_adapted_{{*it}, fmt_} ) )
                 .print_to(dest);
@@ -627,7 +627,7 @@ public:
 private:
 
     template <typename PrePrinting, typename Op = UnaryOp>
-    using printer_type_ = strf::stringifier_type
+    using stringifier_type_ = strf::stringifier_type
         < CharT
         , PrePrinting, FPack
         , strf::detail::remove_reference_t
@@ -654,7 +654,7 @@ STRF_HD void transformed_range_stringifier<CharT, FPack, It, UnaryOp>
     ::do_preprinting_(PrePrinting& pre) const
 {
     for(auto it = begin_; it != end_; ++it) {
-        printer_type_<PrePrinting>
+        stringifier_type_<PrePrinting>
             ( strf::make_stringifier_input<CharT>(pre, fp_, op_(*it)) );
     }
 }
@@ -665,7 +665,7 @@ STRF_HD void transformed_range_stringifier<CharT, FPack, It, UnaryOp>::print_to
 {
     strf::no_preprinting no_pre;
     for(auto it = begin_; it != end_; ++it) {
-        printer_type_<strf::no_preprinting>
+        stringifier_type_<strf::no_preprinting>
             ( strf::make_stringifier_input<CharT>(no_pre, fp_, op_(*it)) )
             .print_to(dest);
     }
@@ -696,7 +696,7 @@ public:
 private:
 
     template <typename PrePrinting, typename Op = UnaryOp>
-    using printer_type_ = strf::stringifier_type
+    using stringifier_type_ = strf::stringifier_type
         < CharT
         , PrePrinting, FPack
         , strf::detail::remove_reference_t
@@ -733,7 +733,7 @@ STRF_HD void sep_transformed_range_stringifier<CharT, FPack, It, UnaryOp>
 {
     std::size_t count = 0;
     for(auto it = begin_; it != end_; ++it) {
-        printer_type_<PrePrinting>
+        stringifier_type_<PrePrinting>
             ( strf::make_stringifier_input<CharT>(pre, fp_, op_(*it)) );
         ++ count;
         STRF_IF_CONSTEXPR (!PrePrinting::size_required) {
@@ -766,12 +766,12 @@ STRF_HD void sep_transformed_range_stringifier<CharT, FPack, It, UnaryOp>::print
     strf::no_preprinting no_pre;
     auto it = begin_;
     if (it != end_) {
-        printer_type_<strf::no_preprinting>
+        stringifier_type_<strf::no_preprinting>
             ( strf::make_stringifier_input<CharT>(no_pre, fp_, op_(*it)) )
             .print_to(dest);
         while (++it != end_) {
             dest.write(sep_begin_, sep_len_);
-            printer_type_<strf::no_preprinting>
+            stringifier_type_<strf::no_preprinting>
                 ( strf::make_stringifier_input<CharT>(no_pre, fp_, op_(*it)) )
                 .print_to(dest);
         }

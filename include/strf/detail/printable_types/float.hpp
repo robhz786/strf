@@ -726,7 +726,7 @@ using float_with_default_formatters = strf::value_with_formatters
 template <typename CharT, typename PrePrinting, typename FloatT>
 struct fast_double_stringifier_input
 {
-    using printer_type = strf::detail::fast_double_stringifier<CharT>;
+    using stringifier_type = strf::detail::fast_double_stringifier<CharT>;
 
     template <typename FPack>
     STRF_HD fast_double_stringifier_input(PrePrinting& pre_, const FPack& fp_, FloatT arg_)

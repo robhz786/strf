@@ -13,7 +13,7 @@ void __device__ device_sample2(strf::destination<char>& out)
 
 void __global__ kernel_sample(char* dest, std::size_t dest_size, std::size_t* dest_len)
 {
-    strf::cstr_writer out(dest, dest_size);
+    strf::cstr_destination out(dest, dest_size);
 
     strf::to(out) ("At kernel_sample.\n");
     device_sample1(out);

@@ -546,7 +546,7 @@ template <typename DestCharT> class aligned_conv_string_stringifier_variant;
 template <typename CharT, typename PrePrinting, typename FPack>
 struct string_stringifier_input
 {
-    using printer_type = strf::detail::string_stringifier<CharT, CharT>;
+    using stringifier_type = strf::detail::string_stringifier<CharT, CharT>;
 
     strf::detail::simple_string_view<CharT> arg;
     PrePrinting& pre;
@@ -600,7 +600,7 @@ template < typename DestCharT, typename SrcCharT
          , typename PrePrinting, typename FPack >
 struct fmt_string_stringifier_input
 {
-    using printer_type = typename strf::detail::string_stringifier_type
+    using stringifier_type = typename strf::detail::string_stringifier_type
         < DestCharT, SrcCharT, HasAlignment
         , TranscodeFormatter::shall_not_transcode_nor_sanitize
         , TranscodeFormatter::shall_sanitize

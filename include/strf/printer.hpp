@@ -1173,7 +1173,7 @@ using stringifier_input_type = decltype
         , std::declval<Arg>() ) );
 
 template <typename CharT, typename PrePrinting, typename FPack, typename Arg>
-using stringifier_type = typename stringifier_input_type<CharT, PrePrinting, FPack, Arg>::printer_type;
+using stringifier_type = typename stringifier_input_type<CharT, PrePrinting, FPack, Arg>::stringifier_type;
 
 template <typename CharT, typename PrePrinting, typename FPack, typename Arg>
 using arg_printer_type
