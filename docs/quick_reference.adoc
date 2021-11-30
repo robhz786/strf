@@ -852,7 +852,7 @@ assert(s == "one hundred billions = 1\2250000\225000\2250000");
 [[charset_conversion]]
 === Charset conversion
 
-Since the library knows the encoding correspondig to each
+Since the library knows the encoding corresponding to each
 character type, and knows how to convert from one to another,
 it is possible to mix input string of difference characters
 types, though you need to use the function `conv`:
