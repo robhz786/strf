@@ -5,7 +5,7 @@ Distributed under the Boost Software License, Version 1.0.
 http://www.boost.org/LICENSE_1_0.txt)
 ////
 
-= The Strf formatting library - Quit Reference
+= The Strf formatting library - Quick Reference
 :source-highlighter: prettify
 :sectnums:
 :sectnumlevels: 0
@@ -660,7 +660,7 @@ assert(str == "Paul likes sandwich.");
 [[tr_string_error]]
 === Tr-string error handling
 
-When the argument associated with a `"{"` does not exists, the library does two things:
+When the argument associated with a `"{"` does not exist, the library does two things:
 
 - It prints a https://en.wikipedia.org/wiki/Specials_(Unicode_block)#Replacement_character[replacement character `"\uFFFD"` (&#65533;) ] ( or `"?"` when the charset can't represent it ) where the missing argument would be printed.
 - It calls the `handle` function on the facet object correspoding to the `<<strf_hpp#tr_error_notifier_c,tr_error_notifier_c>>` category, which, by default, does nothing.
@@ -852,7 +852,7 @@ assert(s == "one hundred billions = 1\2250000\225000\2250000");
 [[charset_conversion]]
 === Charset conversion
 
-Since the library knows the encoding correspondig to each
+Since the library knows the encoding corresponding to each
 character type, and knows how to convert from one to another,
 it is possible to mix input string of difference characters
 types, though you need to use the function `conv`:
@@ -919,7 +919,7 @@ NOTE: The library does not sanitizes non-conformities when converting a single c
 like punctuation characters or the the fill character ( they are in UTF-32 ). In this case
 the replacement character is only used when the destination charset is not able
 to print the codepoint.
-For example, if the you use `(char32_t)0xFFFFFFF` as the <<numpunct,decimal point>>,
+For example, if you use `(char32_t)0xFFFFFFF` as the <<numpunct,decimal point>>,
 then it will printed as "\uFFFD" if the destination is UTF-8 or UTF-16, but
 if the destination is UTF-32, then the library just writes `(char32_t)0xFFFFFFF`
 verbatim.
@@ -1018,7 +1018,7 @@ assert(result == "*15.00 \xE2\x82\xAC \x80"); // width calculated as 11
   Nonconformities do not cause undefined behaviour, but lead to incorrect
   values. For example, the width of an UTF-8 string may simply be calculated as
   the number of bytes that are not in the range [`0x80`, `0xBF`], __i.e.__,
-  btye that are not continuation bytes. This way, any extra continuation byte -- that
+  byte that are not continuation bytes. This way, any extra continuation byte -- that
   would replaced by a `"\uFFFD"` during sanitization -- is not counted.
 +
 .Example

@@ -199,7 +199,7 @@ static void test_sized_string_maker()
         auto str = dest.finish();
         TEST_TRUE(str == str0 + half_str);
     }
-    {   // test strf::to_basic_string.reseve(...)
+    {   // test strf::to_basic_string.reserve(...)
 #if defined(STRF_HAS_VARIABLE_TEMPLATES)
 
         auto str = strf::to_basic_string<CharT>.reserve(1000)(tiny_str, tiny_str2);

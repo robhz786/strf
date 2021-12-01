@@ -56,7 +56,7 @@ assert(str == "} {x} {aaa {bbb}");
 
 ==== Syntax error handling
 
-When the argument associated with a `"{"` does not exists, the library does two things:
+When the argument associated with a `"{"` does not exist, the library does two things:
 
 - It prints a https://en.wikipedia.org/wiki/Specials_(Unicode_block)#Replacement_character[replacement character `"\uFFFD"` (&#65533;) ]
  ( or `"?"` when the charset can't represent it ) where the missing argument would be printed.
