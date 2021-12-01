@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 2.0.10">
-<title>The Strf formatting library - Quit Reference</title>
+<title>The Strf formatting library - Quick Reference</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
 /* Asciidoctor default stylesheet | MIT License | https://asciidoctor.org */
@@ -439,7 +439,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </head>
 <body class="article toc2 toc-left">
 <div id="header">
-<h1>The Strf formatting library - Quit Reference</h1>
+<h1>The Strf formatting library - Quick Reference</h1>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
 <ul class="sectlevel1">
@@ -644,7 +644,7 @@ assert(str == "~~~+1.~~~")</code></pre>
 <tbody>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>operator&lt;(<a href="strf_hpp.html#width_t">width_t</a> <em>width</em>)</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Aligns to the left ( Or to the right on right-to-left (RTL) scripts, like arabic )</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Aligns to the left ( Or to the right on right-to-left (RTL) scripts, like Arabic )</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>operator&gt;(<a href="strf_hpp.html#width_t">width_t</a> <em>width</em>)</code></p></td>
@@ -1780,7 +1780,7 @@ assert(str == "Paul likes sandwich.");</code></pre>
 <div class="sect2">
 <h3 id="tr_string_error">Tr-string error handling</h3>
 <div class="paragraph">
-<p>When the argument associated with a <code>"{"</code> does not exists, the library does two things:</p>
+<p>When the argument associated with a <code>"{"</code> does not exist, the library does two things:</p>
 </div>
 <div class="ulist">
 <ul>
@@ -2069,7 +2069,7 @@ assert(s == "one hundred billions = 1\2250000\225000\2250000");</code></pre>
 <div class="sect2">
 <h3 id="charset_conversion">Charset conversion</h3>
 <div class="paragraph">
-<p>Since the library knows the encoding correspondig to each
+<p>Since the library knows the encoding corresponding to each
 character type, and knows how to convert from one to another,
 it is possible to mix input string of difference characters
 types, though you need to use the function <code>conv</code>:</p>
@@ -2157,7 +2157,7 @@ The library does not sanitizes non-conformities when converting a single charact
 like punctuation characters or the the fill character ( they are in UTF-32 ). In this case
 the replacement character is only used when the destination charset is not able
 to print the codepoint.
-For example, if the you use <code>(char32_t)0xFFFFFFF</code> as the <a href="#numpunct">decimal point</a>,
+For example, if you use <code>(char32_t)0xFFFFFFF</code> as the <a href="#numpunct">decimal point</a>,
 then it will printed as "\uFFFD" if the destination is UTF-8 or UTF-16, but
 if the destination is UTF-32, then the library just writes <code>(char32_t)0xFFFFFFF</code>
 verbatim.
@@ -2274,7 +2274,7 @@ it assumes that the measured string is conformant to its charset.
 Nonconformities do not cause undefined behaviour, but lead to incorrect
 values. For example, the width of an UTF-8 string may simply be calculated as
 the number of bytes that are not in the range [<code>0x80</code>, <code>0xBF</code>], <em>i.e.</em>,
-btye that are not continuation bytes. This way, any extra continuation byte&#8201;&#8212;&#8201;that
+byte that are not continuation bytes. This way, any extra continuation byte&#8201;&#8212;&#8201;that
 would replaced by a <code>"\uFFFD"</code> during sanitization&#8201;&#8212;&#8201;is not counted.</p>
 <div class="listingblock">
 <div class="title">Example</div>
@@ -2586,7 +2586,7 @@ assert(...abcdef123...);</code></pre>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-09-24 16:47:46 -0300
+Last updated 2021-12-01 15:19:10 -0300
 </div>
 </div>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.min.css">
