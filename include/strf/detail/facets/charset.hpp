@@ -953,7 +953,7 @@ public:
 
     STRF_HD std::size_t get_sum()
     {
-        recycle_buffer();
+        flush();
         return sum_;
     }
 

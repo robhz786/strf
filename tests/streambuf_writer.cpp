@@ -77,11 +77,11 @@ void test_failing_to_recycle_buffer()
     strf::basic_streambuf_writer<CharT> writer(*dest.rdbuf());
 
     writer.write(half_str.begin(), half_str.size());
-    writer.recycle_buffer(); // first recycle works
+    writer.flush(); // first flush() works
     test_utils::turn_into_bad(writer);
 
     strf::to(writer)(strf::multi((CharT)'x', 10));
-    writer.recycle_buffer(); // this fails
+    writer.flush(); // this fails
 
     auto status = writer.finish();
     dest.rdbuf()->pubsync();
@@ -106,7 +106,7 @@ void test_failing_to_call_do_write()
     strf::basic_streambuf_writer<CharT> writer(*dest.rdbuf());
 
     writer.write(half_str.begin(), half_str.size());
-    writer.recycle_buffer(); // first recycle works
+    writer.flush(); // first flush() works
     writer.write(double_str.begin(), double_str.size());
     auto status = writer.finish();
     dest.rdbuf()->pubsync();
@@ -133,7 +133,7 @@ void test_failing_to_finish()
     strf::basic_streambuf_writer<CharT> writer(*dest.rdbuf());
 
     writer.write(double_str.begin(), double_str.size());
-    writer.recycle_buffer();
+    writer.flush();
     writer.write(half_str.begin(), half_str.size());
     test_utils::turn_into_bad(writer);
 

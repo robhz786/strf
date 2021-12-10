@@ -169,7 +169,7 @@ public:
 
     result STRF_HD get_result()
     {
-        recycle_buffer();
+        flush();
         this->set_good(false);
         return {width_, whole_string_covered_, codepoints_count_};
     }

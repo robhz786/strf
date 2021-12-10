@@ -202,7 +202,7 @@ void output_buffer<T, 0>::do_write(const T* data, std::size_t count)
         if (count == 0) {
             break;
         }
-        recycle_buffer();
+        flush();
         if (!good_) {
             break;
         }
@@ -217,7 +217,7 @@ inline STRF_HD void put(strf::output_buffer<T, 0>& dest, T c)
         *p = c;
         dest.advance_to(p + 1);
     } else {
-        dest.recycle_buffer();
+        dest.flush();
         *dest.buffer_ptr() = c;
         dest.advance();
     }

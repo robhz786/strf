@@ -37,9 +37,9 @@ static void test_string_appender()
         const std::size_t count0 = dest.buffer_space() > 5 ? dest.buffer_space() - 5 : 0;
         auto first_append = test_utils::make_random_std_string<CharT>(count0);
         dest.write(&first_append[0], count0);
-        dest.recycle_buffer();
+        dest.flush();
         dest.write(&half_str[0], half_str.size());
-        dest.recycle_buffer();
+        dest.flush();
         dest.write(&half_str2[0], half_str2.size());
         dest.finish();
 
@@ -107,9 +107,9 @@ static void test_string_maker()
         const std::size_t count0 = dest.buffer_space() > 5 ? dest.buffer_space() - 5 : 0;
         auto part0 = test_utils::make_random_std_string<CharT>(count0);
         dest.write(&part0[0], count0);
-        dest.recycle_buffer();
+        dest.flush();
         dest.write(&half_str[0], half_str.size());
-        dest.recycle_buffer();
+        dest.flush();
         dest.write(&half_str2[0], half_str2.size());
         auto str = dest.finish();
         TEST_TRUE(str == part0 + half_str + half_str2);
@@ -127,7 +127,7 @@ static void test_string_maker()
         strf::basic_string_maker<CharT> dest;
         auto str0 = test_utils::make_random_std_string<CharT>(15);
         dest.write(&str0[0], str0.size());
-        dest.recycle_buffer();
+        dest.flush();
         auto str1 = test_utils::make_random_std_string<CharT>(dest.buffer_space() + 50);
         dest.write(&str1[0], str1.size());
         auto str = dest.finish();
@@ -185,9 +185,9 @@ static void test_sized_string_maker()
         strf::basic_sized_string_maker<CharT> dest(20);
         auto str0 = test_utils::make_random_std_string<CharT>(15);
         dest.write(&str0[0], str0.size());
-        dest.recycle_buffer();
+        dest.flush();
         dest.write(&half_str[0], half_str.size());
-        dest.recycle_buffer();
+        dest.flush();
         auto str = dest.finish();
         TEST_TRUE(str == str0 + half_str);
     }

@@ -58,7 +58,7 @@ void QStringCreator::recycle_buffer()
 
 QString QStringCreator::finish()
 {
-    recycle_buffer();
+    flush();
     this->set_good(false);
     return std::move(str_);
 }

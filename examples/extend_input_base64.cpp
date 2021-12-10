@@ -212,7 +212,7 @@ void base64_stringifier<CharT>::write_identation_(strf::destination<CharT>& dest
         traits::assign(dest.buffer_ptr(), buff_size, CharT(' '));
         count -= buff_size;
         dest.advance_to(dest.buffer_end());
-        dest.recycle_buffer();
+        dest.flush();
     };
 }
 

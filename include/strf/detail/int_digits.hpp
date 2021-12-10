@@ -942,7 +942,7 @@ inline STRF_HD CharT* write_int_txtdigits_backwards( IntT value
 //         --n;
 //         if (ptr == end || (n == 0 && ptr + sep_size >= end)) {
 //             dest.advance_to(ptr);
-//             dest.recycle_buffer();
+//             dest.flush();
 //             ptr = dest.buffer_ptr();
 //             end = dest.buffer_end();
 //         }
@@ -1024,7 +1024,7 @@ public:
             do {
                 if (oit + sep_size + middle_groups > end) {
                     dest.advance_to(oit);
-                    dest.recycle_buffer();
+                    dest.flush();
                     oit = dest.buffer_ptr();
                     end = dest.buffer_end();
                 }
@@ -1039,7 +1039,7 @@ public:
             auto grp = dist.low_groups.highest_group();
             if (oit + sep_size + grp > end) {
                 dest.advance_to(oit);
-                dest.recycle_buffer();
+                dest.flush();
                 oit = dest.buffer_ptr();
                 end = dest.buffer_end();
             }
@@ -1078,7 +1078,7 @@ public:
         do {
             if (it == end) {
                 dest.advance_to(it);
-                dest.recycle_buffer();
+                dest.flush();
                 it = dest.buffer_ptr();
                 end = dest.buffer_end();
             }
@@ -1118,7 +1118,7 @@ public:
             do {
                 if (oit == end) {
                     dest.advance_to(oit);
-                    dest.recycle_buffer();
+                    dest.flush();
                     oit = dest.buffer_ptr();
                     end = dest.buffer_end();
                 }
@@ -1126,7 +1126,7 @@ public:
                 for (auto i = middle_groups; i ; --i) {
                     if (oit == end) {
                         dest.advance_to(oit);
-                        dest.recycle_buffer();
+                        dest.flush();
                         oit = dest.buffer_ptr();
                         end = dest.buffer_end();
                     }
@@ -1139,7 +1139,7 @@ public:
         while ( ! dist.low_groups.empty() ) {
             if (oit == end) {
                 dest.advance_to(oit);
-                dest.recycle_buffer();
+                dest.flush();
                 oit = dest.buffer_ptr();
                 end = dest.buffer_end();
             }
@@ -1147,7 +1147,7 @@ public:
             for (auto g = dist.low_groups.highest_group(); g; --g) {
                 if (oit == end) {
                     dest.advance_to(oit);
-                    dest.recycle_buffer();
+                    dest.flush();
                     oit = dest.buffer_ptr();
                     end = dest.buffer_end();
                 }
@@ -1189,7 +1189,7 @@ public:
             do {
                 if (oit + sep_size > end) {
                     dest.advance_to(oit);
-                    dest.recycle_buffer();
+                    dest.flush();
                     oit = dest.buffer_ptr();
                     end = dest.buffer_end();
                 }
@@ -1197,7 +1197,7 @@ public:
                 for (auto i = middle_groups; i ; --i) {
                     if (oit == end) {
                         dest.advance_to(oit);
-                        dest.recycle_buffer();
+                        dest.flush();
                         oit = dest.buffer_ptr();
                         end = dest.buffer_end();
                     }
@@ -1209,7 +1209,7 @@ public:
         while ( ! dist.low_groups.empty() ) {
             if (oit + sep_size > end) {
                 dest.advance_to(oit);
-                dest.recycle_buffer();
+                dest.flush();
                 oit = dest.buffer_ptr();
                 end = dest.buffer_end();
             }
@@ -1217,7 +1217,7 @@ public:
             for (auto g = dist.low_groups.highest_group(); g; --g) {
                 if (oit == end) {
                     dest.advance_to(oit);
-                    dest.recycle_buffer();
+                    dest.flush();
                     oit = dest.buffer_ptr();
                     end = dest.buffer_end();
                 }

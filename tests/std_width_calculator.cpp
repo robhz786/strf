@@ -1452,32 +1452,32 @@ STRF_HD void puts(strf::transcode_dest<char32_t>& dest, const char32_t* str) {
 
 STRF_HD void test_std_width_decrementer()
 {
-    {   // cover recycle
+    {   // cover flush()
         strf::detail::std_width_decrementer decr{(strf::width_t::max)()};
         puts(decr, U32_XPIC);
         puts(decr, U32_ZWJ U32_XPIC U32_EXTEND_x8);
-        decr.recycle_buffer();
+        decr.flush();
         puts(decr, U32_ZWJ U32_XPIC U32_EXTEND_x8);
-        decr.recycle_buffer();
+        decr.flush();
         puts(decr, U32_ZWJ U32_XPIC U32_EXTEND_x8);
 
         auto width = (strf::width_t::max)() - decr.get_remaining_width();
         TEST_TRUE(width == 1);
     }
 
-    {   // cover recycle with width == 0
+    {   // cover flush() with width == 0
         strf::detail::std_width_decrementer decr{3};
         puts(decr, U32_other U32_other U32_other);
-        decr.recycle_buffer();
+        decr.flush();
         puts(decr, U32_other U32_other U32_other);
-        decr.recycle_buffer();
+        decr.flush();
         puts(decr, U32_other U32_other U32_other);
         TEST_TRUE(0 == decr.get_remaining_width());
     }
     {   // cover get_remaining_width() when buffer_ptr() == buff_
         strf::detail::std_width_decrementer decr{(strf::width_t::max)()};
         puts(decr, U32_other U32_other U32_other);
-        decr.recycle_buffer();
+        decr.flush();
         auto width = (strf::width_t::max)() - decr.get_remaining_width();
         TEST_TRUE(width == 3);
     }
@@ -1489,9 +1489,9 @@ STRF_HD void test_std_width_decrementer_with_pos()
         strf::detail::std_width_decrementer_with_pos decr{(strf::width_t::max)()};
         puts(decr, U32_XPIC);
         puts(decr, U32_ZWJ U32_XPIC U32_EXTEND_x8);
-        decr.recycle_buffer();
+        decr.flush();
         puts(decr, U32_ZWJ U32_XPIC U32_EXTEND_x8);
-        decr.recycle_buffer();
+        decr.flush();
         puts(decr, U32_ZWJ U32_XPIC U32_EXTEND_x8);
 
         auto res = decr.get_remaining_width_and_codepoints_count();
@@ -1504,11 +1504,11 @@ STRF_HD void test_std_width_decrementer_with_pos()
         strf::detail::std_width_decrementer_with_pos decr{(strf::width_t::max)()};
         puts(decr, U32_XPIC);
         puts(decr, U32_ZWJ U32_XPIC U32_EXTEND_x8);
-        decr.recycle_buffer();
+        decr.flush();
         puts(decr, U32_ZWJ U32_XPIC U32_EXTEND_x8);
-        decr.recycle_buffer();
+        decr.flush();
         puts(decr, U32_ZWJ U32_XPIC U32_EXTEND_x8);
-        decr.recycle_buffer();
+        decr.flush();
 
         auto res = decr.get_remaining_width_and_codepoints_count();
         auto width = (strf::width_t::max)() - res.remaining_width;
@@ -1535,7 +1535,7 @@ STRF_HD void test_std_width_decrementer_with_pos()
         puts(decr, U32_XPIC);
         puts(decr, U32_ZWJ U32_XPIC U32_EXTEND_x16);
         puts(decr, U32_ZWJ U32_XPIC U32_EXTEND_x16);
-        decr.recycle_buffer();
+        decr.flush();
 
         auto res = decr.get_remaining_width_and_codepoints_count();
         TEST_TRUE(res.remaining_width == 0);
@@ -1565,9 +1565,9 @@ STRF_HD void test_std_width_decrementer_with_pos()
         puts(decr, U32_ZWJ U32_XPIC U32_EXTEND_x16);
         puts(decr, U32_ZWJ U32_XPIC U32_EXTEND_x16);
         puts(decr, U"ABC");
-        decr.recycle_buffer();
+        decr.flush();
         puts(decr, U"ABC");
-        decr.recycle_buffer();
+        decr.flush();
 
         auto res = decr.get_remaining_width_and_codepoints_count();
         TEST_TRUE(res.remaining_width == 0);
