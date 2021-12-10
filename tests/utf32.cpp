@@ -12,15 +12,15 @@ STRF_TEST_FUNC void utf32_valid_sequences()
     TEST(U" ab\u0080\u0800\uD7FF\U00010000\U0010FFFF")
         (strf::sani(U"ab\u0080\u0800\uD7FF\U00010000\U0010FFFF") > 8);
 
-    TEST_CALLING_RECYCLE_AT<2>    (U"ab") (strf::sani(U"ab\U0010FFFF"));
-    TEST_CALLING_RECYCLE_AT<3>    (U"ab\U0010FFFF") (strf::sani(U"ab\U0010FFFF"));
-    TEST_CALLING_RECYCLE_AT<2, 1> (U"ab\U0010FFFF") (strf::sani(U"ab\U0010FFFF"));
+    TEST_TRUNCATING_AT(2, U"ab") (strf::sani(U"ab\U0010FFFF"));
+    TEST_TRUNCATING_AT(3, U"ab\U0010FFFF") (strf::sani(U"ab\U0010FFFF"));
+    TEST_CALLING_RECYCLE_AT(2, U"ab\U0010FFFF") (strf::sani(U"ab\U0010FFFF"));
 
-    TEST_CALLING_RECYCLE_AT<2>    (U"ab")
+    TEST_TRUNCATING_AT(2, U"ab")
         .with(strf::surrogate_policy::lax) (strf::sani(U"ab\U0010FFFF"));
-    TEST_CALLING_RECYCLE_AT<3>    (U"ab\U0010FFFF")
+    TEST_TRUNCATING_AT(3, U"ab\U0010FFFF")
         .with(strf::surrogate_policy::lax) (strf::sani(U"ab\U0010FFFF"));
-    TEST_CALLING_RECYCLE_AT<2, 1> (U"ab\U0010FFFF")
+    TEST_CALLING_RECYCLE_AT(2, U"ab\U0010FFFF")
         .with(strf::surrogate_policy::lax) (strf::sani(U"ab\U0010FFFF"));
 
     {
@@ -55,9 +55,9 @@ STRF_TEST_FUNC void utf32_valid_sequences()
         TEST(_str_DC00_) .with(strf::surrogate_policy::lax) (strf::sani(str_DC00_) > 3);
         TEST(_str_DFFF_) .with(strf::surrogate_policy::lax) (strf::sani(str_DFFF_) > 3);
 
-        TEST_CALLING_RECYCLE_AT<2> (_str_D800)
+        TEST_TRUNCATING_AT(2, _str_D800)
             .with(strf::surrogate_policy::lax) (strf::sani(str_D800) > 2);
-        TEST_CALLING_RECYCLE_AT<1> (U" ")
+        TEST_TRUNCATING_AT(1, U" ")
             .with(strf::surrogate_policy::lax) (strf::sani(str_D800) > 2);
     }
 }
@@ -69,9 +69,9 @@ STRF_TEST_FUNC void utf32_invalid_sequences()
         const char32_t str[] = {0xD800, 0xDFFF, 0};
         TEST(U" \uFFFD\uFFFD") (strf::sani(str) > 3);
 
-        TEST_CALLING_RECYCLE_AT<2>  (U" \uFFFD") (strf::sani(str) > 3);
-        TEST_CALLING_RECYCLE_AT<3>  (U" \uFFFD\uFFFD") (strf::sani(str) > 3);
-        TEST_CALLING_RECYCLE_AT<1>  (U" ") (strf::sani(str) > 3);
+        TEST_TRUNCATING_AT(2, U" \uFFFD") (strf::sani(str) > 3);
+        TEST_TRUNCATING_AT(3, U" \uFFFD\uFFFD") (strf::sani(str) > 3);
+        TEST_TRUNCATING_AT(1, U" ") (strf::sani(str) > 3);
     }
     {   // codepoint too big
         const char32_t str[] = {0x110000, 0};
@@ -99,7 +99,7 @@ STRF_TEST_FUNC void utf32_error_notifier()
         TEST_EQ(::error_handler_calls_count, 3);
 
         ::error_handler_calls_count = 0;
-        TEST_CALLING_RECYCLE_AT<1>(U"\uFFFD")
+        TEST_TRUNCATING_AT(1, U"\uFFFD")
             .with(notifier, strf::surrogate_policy::strict)
             (strf::sani(invalid_input));
         TEST_TRUE(::error_handler_calls_count > 0);
@@ -114,7 +114,7 @@ STRF_TEST_FUNC void utf32_error_notifier()
         TEST_EQ(::error_handler_calls_count, 2);
 
         ::error_handler_calls_count = 0;
-        TEST_CALLING_RECYCLE_AT<1>(U"\uFFFD")
+        TEST_TRUNCATING_AT(1, U"\uFFFD")
             .with(notifier, strf::surrogate_policy::lax)
             (strf::sani(invalid_input));
         TEST_TRUE(::error_handler_calls_count > 0);
@@ -276,9 +276,10 @@ STRF_HD void utf32_codepoints_count()
 STRF_TEST_FUNC void utf32_miscellaneous()
 {
     {   // cover write_replacement_char(x);
-        TEST(U"\uFFFD")                           .tr(U"{10}");
-        TEST_CALLING_RECYCLE_AT<2,1> (U"  \uFFFD").tr(U"  {10}");
-        TEST_CALLING_RECYCLE_AT<2>   (U"  ")      .tr(U"  {10}");
+        TEST(U"\uFFFD")                         .tr(U"{10}");
+        TEST_CALLING_RECYCLE_AT(2, U"  \uFFFD").tr(U"  {10}");
+        TEST_TRUNCATING_AT     (3, U"  \uFFFD").tr(U"  {10}");
+        TEST_TRUNCATING_AT     (2, U"  ")      .tr(U"  {10}");
     }
     strf::utf32_t<char32_t> charset;
     TEST_EQ(1, charset.validate(U'a'));

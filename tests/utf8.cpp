@@ -30,25 +30,24 @@ STRF_TEST_FUNC void utf8_sani_valid_sequences()
     TEST(u8"ab\u0080\u0800\uD7FF\uE000\U00010000\U0010FFFF")
         (strf::sani(u8"ab\u0080\u0800\uD7FF\uE000\U00010000\U0010FFFF") > 8);
 
-    TEST_CALLING_RECYCLE_AT<2,2>(u8"abcd") (strf::sani("abcdef"));
+    TEST_TRUNCATING_AT(4, u8"abcd") (strf::sani("abcdef"));
 
-    TEST_CALLING_RECYCLE_AT<3> (u8"ab") (strf::sani(u8"ab\u0080"));
-    TEST_CALLING_RECYCLE_AT<4> (u8"ab") (strf::sani(u8"ab\u0800"));
-    TEST_CALLING_RECYCLE_AT<4> (u8"ab") (strf::sani(u8"ab\uD7FF"));
-    TEST_CALLING_RECYCLE_AT<5> (u8"ab") (strf::sani(u8"ab\U00010000"));
-    TEST_CALLING_RECYCLE_AT<5> (u8"ab") (strf::sani(u8"ab\U0010FFFF"));
+    TEST_TRUNCATING_AT(3, u8"ab") (strf::sani(u8"ab\u0080"));
+    TEST_TRUNCATING_AT(4, u8"ab") (strf::sani(u8"ab\u0800"));
+    TEST_TRUNCATING_AT(4, u8"ab") (strf::sani(u8"ab\uD7FF"));
+    TEST_TRUNCATING_AT(5, u8"ab") (strf::sani(u8"ab\U00010000"));
+    TEST_TRUNCATING_AT(5, u8"ab") (strf::sani(u8"ab\U0010FFFF"));
 
-    TEST_CALLING_RECYCLE_AT<4> (u8"ab\u0080")     (strf::sani(u8"ab\u0080"));
-    TEST_CALLING_RECYCLE_AT<5> (u8"ab\u0800")     (strf::sani(u8"ab\u0800"));
-    TEST_CALLING_RECYCLE_AT<5> (u8"ab\uD7FF")     (strf::sani(u8"ab\uD7FF"));
-    TEST_CALLING_RECYCLE_AT<6> (u8"ab\U00010000") (strf::sani(u8"ab\U00010000"));
-    TEST_CALLING_RECYCLE_AT<6> (u8"ab\U0010FFFF") (strf::sani(u8"ab\U0010FFFF"));
+    TEST_TRUNCATING_AT(4, u8"ab\u0080")     (strf::sani(u8"ab\u0080"));
+    TEST_TRUNCATING_AT(5, u8"ab\u0800")     (strf::sani(u8"ab\u0800"));
+    TEST_TRUNCATING_AT(5, u8"ab\uD7FF")     (strf::sani(u8"ab\uD7FF"));
+    TEST_TRUNCATING_AT(6, u8"ab\U00010000") (strf::sani(u8"ab\U00010000"));
+    TEST_TRUNCATING_AT(6, u8"ab\U0010FFFF") (strf::sani(u8"ab\U0010FFFF"));
 
-    TEST_CALLING_RECYCLE_AT<3, 1> (u8"ab\u0080")     (strf::sani(u8"ab\u0080"));
-    TEST_CALLING_RECYCLE_AT<4, 1> (u8"ab\u0800")     (strf::sani(u8"ab\u0800"));
-    TEST_CALLING_RECYCLE_AT<4, 1> (u8"ab\uD7FF")     (strf::sani(u8"ab\uD7FF"));
-    TEST_CALLING_RECYCLE_AT<5, 2> (u8"ab\U00010000") (strf::sani(u8"ab\U00010000"));
-    TEST_CALLING_RECYCLE_AT<5, 1> (u8"ab\U0010FFFF") (strf::sani(u8"ab\U0010FFFF"));
+    TEST_CALLING_RECYCLE_AT(3, u8"ab\u0080")     (strf::sani(u8"ab\u0080"));
+    TEST_CALLING_RECYCLE_AT(4, u8"ab\uD7FF")     (strf::sani(u8"ab\uD7FF"));
+    TEST_CALLING_RECYCLE_AT(5, u8"ab\U00010000") (strf::sani(u8"ab\U00010000"));
+    TEST_CALLING_RECYCLE_AT(5, u8"ab\U0010FFFF") (strf::sani(u8"ab\U0010FFFF"));
 
     {
         // when surrogates are allowed
@@ -57,9 +56,9 @@ STRF_TEST_FUNC void utf8_sani_valid_sequences()
         TEST(" \xED\xB0\x80") .with(strf::surrogate_policy::lax) (strf::sani("\xED\xB0\x80") > 2);
         TEST(" \xED\xBF\xBF") .with(strf::surrogate_policy::lax) (strf::sani("\xED\xBF\xBF") > 2);
 
-        TEST_CALLING_RECYCLE_AT<4> (" \xED\xA0\x80")
+        TEST_TRUNCATING_AT(4, " \xED\xA0\x80")
             .with(strf::surrogate_policy::lax) (strf::sani("\xED\xA0\x80") > 2);
-        TEST_CALLING_RECYCLE_AT<3> (u8" ")
+        TEST_TRUNCATING_AT(3, u8" ")
             .with(strf::surrogate_policy::lax) (strf::sani("\xED\xA0\x80") > 2);
     }
 }
@@ -174,8 +173,9 @@ STRF_TEST_FUNC void utf8_sani_invalid_sequences()
     TEST(u8" \uFFFD_") (strf::sani("\xED\x9F_") > 3);
 
     // cover when recycle needs to be called
-    TEST_CALLING_RECYCLE_AT<3,7>(u8" \uFFFD\uFFFD\uFFFD")  (strf::sani("\xED\xA0\x80") > 4);
-    TEST_CALLING_RECYCLE_AT<4>  (u8" \uFFFD")              (strf::sani("\xED\xA0\x80") > 4);
+    TEST_CALLING_RECYCLE_AT(3, u8" \uFFFD\uFFFD\uFFFD")  (strf::sani("\xED\xA0\x80") > 4);
+    TEST_TRUNCATING_AT     (10, u8" \uFFFD\uFFFD\uFFFD")  (strf::sani("\xED\xA0\x80") > 4);
+    TEST_TRUNCATING_AT     (4, u8" \uFFFD")              (strf::sani("\xED\xA0\x80") > 4);
 }
 
 STRF_TEST_FUNC int error_handler_calls_count = 0 ;
@@ -190,7 +190,7 @@ STRF_TEST_FUNC void utf8_sani_error_notifier()
     TEST_EQ(::error_handler_calls_count, 3);
 
     ::error_handler_calls_count = 0;
-    TEST_CALLING_RECYCLE_AT<3>(u8"\uFFFD").with(notifier) (strf::sani("\xED\xA0\x80"));
+    TEST_TRUNCATING_AT(3, u8"\uFFFD").with(notifier) (strf::sani("\xED\xA0\x80"));
     TEST_TRUE(::error_handler_calls_count > 0);
 
 #if defined(__cpp_exceptions) && __cpp_exceptions  && ! defined(__CUDACC__)
@@ -377,9 +377,10 @@ STRF_HD void utf8_codepoints_count()
 STRF_TEST_FUNC void utf8_miscellaneous()
 {
     {  // cover write_replacement_char(x);
-        TEST(u8"\uFFFD")                         .tr(u8"{10}");
-        TEST_CALLING_RECYCLE_AT<2,1> (u8"\uFFFD").tr(u8"{10}");
-        TEST_CALLING_RECYCLE_AT<2>   (u8"")      .tr(u8"{10}");
+        TEST(u8"\uFFFD")                       .tr(u8"{10}");
+        TEST_CALLING_RECYCLE_AT(2, u8"\uFFFD") .tr(u8"{10}");
+        TEST_TRUNCATING_AT     (3, u8"\uFFFD") .tr(u8"{10}");
+        TEST_TRUNCATING_AT     (2, u8"")       .tr(u8"{10}");
     }
     strf::utf_t<char> charset;
     {

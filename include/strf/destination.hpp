@@ -110,7 +110,7 @@ public:
     STRF_HD void flush()
     {
         recycle_buffer();
-        STRF_ASSERT(buffer_space() >= 0);
+        STRF_ASSERT(buffer_space() != 0);
     }
 
     STRF_HD virtual void recycle_buffer() = 0;

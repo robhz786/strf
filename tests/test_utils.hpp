@@ -660,43 +660,36 @@ struct reduce<X, Others...>{
 } // namespace detail
 
 template <typename CharT>
-class input_tester_with_fixed_spaces_base: public strf::destination<CharT>
-{
+struct recycle_call_tester_input {
+    strf::detail::simple_string_view<CharT> expected;
+    const char* function;
+    const char* src_filename;
+    int src_line;
+    std::size_t initial_space;
+};
+
+template <typename CharT>
+class recycle_call_tester: public strf::destination<CharT> {
 public:
 
-    STRF_HD input_tester_with_fixed_spaces_base
-        ( strf::detail::simple_string_view<CharT> expected
-        , const char* src_filename
-        , int src_line
-        , const char* function
-        , CharT* buff
-        , std::size_t buff_total_size
-        , const unsigned* spaces_array
-        , std::size_t num_spaces
-        , unsigned first_space );
-
-    STRF_HD ~input_tester_with_fixed_spaces_base()
+    STRF_HD recycle_call_tester(recycle_call_tester_input<CharT> input)
+        : strf::destination<CharT>{buffer_, input.initial_space}
+        , expected_(input.expected)
+        , function_(input.function)
+        , src_filename_(input.src_filename)
+        , src_line_(input.src_line)
     {
-         if (error_message_emitted_) {
-             print_test_message_end(function_);
-         }
+        if (input.initial_space + strf::destination_space_after_flush > buffer_size_) {
+            emit_error_message_("\nUnsupported test case: Initial space too big");
+            this->set_buffer_end(buffer_);
+        }
     }
+
     STRF_HD void recycle_buffer() override;
 
     STRF_HD void finish();
 
 private:
-
-    bool error_message_emitted_ = false;
-    strf::detail::simple_string_view<CharT> expected_;
-    const char* src_filename_;
-    int src_line_;
-    const char* function_;
-    CharT* const dest_;
-    CharT* dest_end_;
-    const unsigned* spaces_;
-    const std::size_t num_spaces_;
-    unsigned spaces_index_ = 0;
 
     STRF_HD void before_emitting_error_message_()
     {
@@ -713,78 +706,52 @@ private:
         before_emitting_error_message_();
         strf::to(test_utils::test_messages_destination()) (args...);
     }
+
+    bool recycle_buffer_not_called_yet = true;
+    bool error_message_emitted_ = false;
+    strf::detail::simple_string_view<CharT> expected_;
+    const char* function_;
+    const char* src_filename_;
+    int src_line_;
+    CharT* dest_end_;
+
+    enum {buffer_size_ = 320};
+    CharT buffer_[buffer_size_];
 };
 
-
 template <typename CharT>
-STRF_HD input_tester_with_fixed_spaces_base<CharT>::input_tester_with_fixed_spaces_base
-    ( strf::detail::simple_string_view<CharT> expected
-    , const char* src_filename
-    , int src_line
-    , const char* function
-    , CharT* buff
-    , std::size_t buff_total_size
-    , const unsigned* spaces_array
-    , std::size_t num_spaces
-    , unsigned first_space )
-    : strf::destination<CharT>{buff, first_space}
-    , expected_{expected}
-    , src_filename_{src_filename}
-    , src_line_{src_line}
-    , function_{function}
-    , dest_{buff}
-    , dest_end_{buff + buff_total_size}
-    , spaces_{spaces_array}
-    , num_spaces_{num_spaces}
-    , spaces_index_{0}
+STRF_HD void recycle_call_tester<CharT>::recycle_buffer()
 {
-    if (expected.size() > buff_total_size) {
-        emit_error_message_("\nBuffer smaller than expected content size");
-        this->set_good(false);
-        this->set_buffer_ptr(strf::garbage_buff<CharT>());
-        this->set_buffer_end(strf::garbage_buff_end<CharT>());
-    }
-}
-
-template <typename CharT>
-STRF_HD void input_tester_with_fixed_spaces_base<CharT>::recycle_buffer()
-{
-    if (this->good()) {
+    if (recycle_buffer_not_called_yet) {
         if (this->buffer_ptr() > this->buffer_end()) {
-            emit_error_message_("\nContent inserted after end()");
-            if (this->buffer_ptr() < dest_end_) {
-                dest_end_ = this->buffer_ptr();
-            }
-            goto set_bad;
+            emit_error_message_( "\nContent written after buffer_end()." );
         }
-        if (++spaces_index_ < num_spaces_) {
-            this->set_buffer_end(this->buffer_end() + spaces_[spaces_index_]);
-        } else {
-            dest_end_ = this->buffer_ptr();
-            goto set_bad;
-        }
+        this->set_buffer_end(buffer_ + buffer_size_);
+        recycle_buffer_not_called_yet = false;
     } else {
-        set_bad:
+        emit_error_message_( "\nrecycle_buffer() called more than once here.");
         this->set_good(false);
         this->set_buffer_ptr(strf::garbage_buff<CharT>());
         this->set_buffer_end(strf::garbage_buff_end<CharT>());
     }
 }
 
-
 template <typename CharT>
-STRF_HD void input_tester_with_fixed_spaces_base<CharT>::finish()
+STRF_HD void recycle_call_tester<CharT>::finish()
 {
+    if (recycle_buffer_not_called_yet) {
+        emit_error_message_( "\nrecycle_buffer() was not called.");
+    }
     if (this->good()) {
         dest_end_ = this->buffer_ptr();
         this->set_good(false);
         this->set_buffer_ptr(strf::garbage_buff<CharT>());
         this->set_buffer_end(strf::garbage_buff_end<CharT>());
     }
-    strf::detail::simple_string_view<CharT> result{dest_, dest_end_};
+    strf::detail::simple_string_view<CharT> result{buffer_, dest_end_};
     bool as_expected =
         ( result.size() == expected_.size()
-       && strf::detail::str_equal<CharT>(expected_.begin(), dest_, expected_.size()) );
+       && strf::detail::str_equal<CharT>(expected_.begin(), buffer_, expected_.size()) );
 
     if ( ! as_expected ) {
         emit_error_message_
@@ -799,122 +766,179 @@ STRF_HD void input_tester_with_fixed_spaces_base<CharT>::finish()
 }
 
 template <typename CharT>
-struct input_tester_with_fixed_spaces_input
-{
-    strf::detail::simple_string_view<CharT> expected;
-    const char* src_filename;
-    int src_line;
-    const char* funcname;
-};
-
-
-template <unsigned...>
-struct array_of_uint_filler;
-
-template <>
-struct array_of_uint_filler<>
-{
-    static STRF_HD void fill(unsigned*)
-    {
-    }
-};
-
-template <unsigned FirstValue, unsigned... OtherValues>
-struct array_of_uint_filler<FirstValue, OtherValues...>
-{
-    static STRF_HD void fill(unsigned* array)
-    {
-        array[0] = FirstValue;
-        array_of_uint_filler<OtherValues...>::fill(array + 1);
-    }
-};
-
-template <std::size_t Size>
-struct array_of_uint
-{
-    template <unsigned... Values>
-    STRF_HD array_of_uint(array_of_uint_filler<Values...>)
-    {
-        array_of_uint_filler<Values...>::fill(array);
-    }
-    unsigned array[Size];
-};
-
-
-template <typename CharT, unsigned FirstSpace, unsigned... Spaces>
-class input_tester_with_fixed_spaces
-    : public input_tester_with_fixed_spaces_base<CharT>
-{
-    static constexpr std::size_t num_spaces_ = 1 + sizeof...(Spaces);
-
+class recycle_call_tester_creator {
 public:
-    template <unsigned... Values>
-    STRF_HD input_tester_with_fixed_spaces
-        ( input_tester_with_fixed_spaces_input<CharT> i )
-        : input_tester_with_fixed_spaces_base<CharT>
-            { i.expected, i.src_filename, i.src_line, i.funcname
-            , buff_, buff_size_, spaces_.array, num_spaces_, FirstSpace}
-        , spaces_{array_of_uint_filler<FirstSpace, Spaces...>{}}
-    {
-    }
-
-private:
-
-    array_of_uint<num_spaces_> spaces_;
-    static constexpr std::size_t buff_size_ = detail::reduce<FirstSpace, Spaces...>::value;
-    CharT buff_[buff_size_ + 80];
-};
-
-
-template <typename CharT, unsigned... Spaces>
-class input_tester_with_fixed_spaces_creator
-{
-public:
-
+    using destination_type = recycle_call_tester<CharT>;
     using char_type = CharT;
-    using destination_type = test_utils::input_tester_with_fixed_spaces<CharT, Spaces...>;
 
-    STRF_HD input_tester_with_fixed_spaces_creator
+    STRF_HD recycle_call_tester_creator
         ( strf::detail::simple_string_view<CharT> expected
+        , const char* function
         , const char* src_filename
         , int src_line
-        , const char* funcname )
-        : input {expected, src_filename, src_line, funcname}
+        , std::size_t initial_space )
+        : input_{expected, function, src_filename, src_line, initial_space}
+    {}
+
+    recycle_call_tester_creator(const recycle_call_tester_creator&) = default;
+
+    STRF_HD recycle_call_tester_input<CharT> create() const { return input_; }
+
+public:
+    recycle_call_tester_input<CharT> input_;
+};
+
+template <typename CharT>
+STRF_HD auto test_recycle_call
+    ( const CharT* expected
+    , const char* function
+    , const char* src_filename
+    , int src_line
+    , std::size_t initial_space )
+    -> strf::printer_no_reserve<test_utils::recycle_call_tester_creator<CharT>>
+{
+    return {expected, function, src_filename, src_line, initial_space};
+}
+
+template <typename CharT>
+class failed_recycle_call_tester: public strf::destination<CharT> {
+public:
+
+    STRF_HD failed_recycle_call_tester(recycle_call_tester_input<CharT> input)
+        : strf::destination<CharT>{buffer_, input.initial_space}
+        , expected_(input.expected)
+        , function_(input.function)
+        , src_filename_(input.src_filename)
+        , src_line_(input.src_line)
     {
+        if (input.initial_space + strf::destination_space_after_flush > buffer_size_) {
+            emit_error_message_("\nUnsupported test case: Initial space too big");
+            this->set_buffer_end(buffer_);
+        }
     }
 
-    STRF_HD input_tester_with_fixed_spaces_input<CharT> create() const noexcept
-    {
-        return input;
-    }
+    STRF_HD void recycle_buffer() override;
+
+    STRF_HD void finish();
 
 private:
 
-    input_tester_with_fixed_spaces_input<CharT> input;
-};
-
-
-struct input_tester_with_fixed_spaces_creator_creator
-{
-    const char* filename;
-    int line;
-    const char* function;
-
-    template <unsigned... Spaces, typename CharT>
-    STRF_HD auto create(const CharT* expected) const noexcept
-        -> strf::printer_no_reserve
-            < input_tester_with_fixed_spaces_creator<CharT, Spaces...> >
+    STRF_HD void before_emitting_error_message_()
     {
-        return {expected, filename, line, function};
+        if (!error_message_emitted_) {
+            ++ test_err_count();
+            print_test_message_header(src_filename_, src_line_);
+            error_message_emitted_ = true;
+        }
     }
+
+    template <typename... Args>
+    STRF_HD void emit_error_message_(const Args&... args)
+    {
+        before_emitting_error_message_();
+        strf::to(test_utils::test_messages_destination()) (args...);
+    }
+
+    bool recycle_buffer_not_called_yet = true;
+    bool error_message_emitted_ = false;
+    strf::detail::simple_string_view<CharT> expected_;
+    const char* function_;
+    const char* src_filename_;
+    int src_line_;
+    CharT* dest_end_;
+
+    enum {buffer_size_ = 320};
+    CharT buffer_[buffer_size_];
 };
+
+template <typename CharT>
+STRF_HD void failed_recycle_call_tester<CharT>::recycle_buffer()
+{
+    if (recycle_buffer_not_called_yet) {
+        if (this->buffer_ptr() > this->buffer_end()) {
+            emit_error_message_( "\nContent written after buffer_end()." );
+        }
+        dest_end_ = this->buffer_ptr();
+        recycle_buffer_not_called_yet = false;
+    } else {
+        emit_error_message_( "\nrecycle_buffer() called more than once here.");
+    }
+    this->set_good(false);
+    this->set_buffer_ptr(strf::garbage_buff<CharT>());
+    this->set_buffer_end(strf::garbage_buff_end<CharT>());
+}
+
+template <typename CharT>
+STRF_HD void failed_recycle_call_tester<CharT>::finish()
+{
+    if (recycle_buffer_not_called_yet) {
+        dest_end_ = this->buffer_ptr();
+    }
+    this->set_good(false);
+    this->set_buffer_ptr(strf::garbage_buff<CharT>());
+    this->set_buffer_end(strf::garbage_buff_end<CharT>());
+
+    strf::detail::simple_string_view<CharT> result{buffer_, dest_end_};
+    bool as_expected =
+        ( result.size() == expected_.size()
+       && strf::detail::str_equal<CharT>(expected_.begin(), buffer_, expected_.size()) );
+
+    if ( ! as_expected ) {
+        emit_error_message_
+            ( "\n  expected: \"", strf::conv(expected_)
+            , "\"\n  obtained: \"", strf::conv(result), '\"');
+    }
+
+    if (error_message_emitted_) {
+        print_test_message_end(function_);
+        error_message_emitted_ = false;
+    }
+}
+
+template <typename CharT>
+class failed_recycle_call_tester_creator {
+public:
+    using destination_type = failed_recycle_call_tester<CharT>;
+    using char_type = CharT;
+
+    STRF_HD failed_recycle_call_tester_creator
+        ( strf::detail::simple_string_view<CharT> expected
+        , const char* function
+        , const char* src_filename
+        , int src_line
+        , std::size_t initial_space )
+        : input_{expected, function, src_filename, src_line, initial_space}
+    {}
+
+    failed_recycle_call_tester_creator(const failed_recycle_call_tester_creator&) = default;
+
+    STRF_HD recycle_call_tester_input<CharT> create() const { return input_; }
+
+public:
+    recycle_call_tester_input<CharT> input_;
+};
+
+template <typename CharT>
+STRF_HD auto test_failed_recycle_call
+    ( const CharT* expected
+    , const char* function
+    , const char* src_filename
+    , int src_line
+    , std::size_t initial_space )
+    -> strf::printer_no_reserve<test_utils::failed_recycle_call_tester_creator<CharT>>
+{
+    return {expected, function, src_filename, src_line, initial_space};
+}
 
 } // namespace test_utils
 
-#define TEST_CALLING_RECYCLE_AT                                         \
-    test_utils::input_tester_with_fixed_spaces_creator_creator          \
-        {__FILE__, __LINE__, BOOST_CURRENT_FUNCTION}                    \
-        . template create
+#define TEST_CALLING_RECYCLE_AT(SPACE, EXPECTED)                       \
+    test_utils::test_recycle_call                                      \
+        (EXPECTED, BOOST_CURRENT_FUNCTION, __FILE__, __LINE__, SPACE)
+
+#define TEST_TRUNCATING_AT(SPACE, EXPECTED)                             \
+    test_utils::test_failed_recycle_call                                \
+        (EXPECTED, BOOST_CURRENT_FUNCTION, __FILE__, __LINE__, SPACE)
 
 #define TEST(EXPECTED)                                                  \
     test_utils::make_tester( (EXPECTED), __FILE__, __LINE__             \

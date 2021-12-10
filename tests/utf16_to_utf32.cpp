@@ -12,17 +12,17 @@ STRF_TEST_FUNC void utf16_to_utf32_valid_sequences()
     TEST(U" ab\u0080\u0800\uD7FF\U00010000\U0010FFFF")
         (strf::sani(u"ab\u0080\u0800\uD7FF\U00010000\U0010FFFF") > 8);
 
-    TEST_CALLING_RECYCLE_AT<2> (U"ab") (strf::sani(u"ab\uD7FF"));
-    TEST_CALLING_RECYCLE_AT<2> (U"ab") (strf::sani(u"ab\U00010000"));
+    TEST_TRUNCATING_AT(2, U"ab") (strf::sani(u"ab\uD7FF"));
+    TEST_TRUNCATING_AT(2, U"ab") (strf::sani(u"ab\U00010000"));
 
-    TEST_CALLING_RECYCLE_AT<3> (U"ab\uD7FF")     (strf::sani(u"ab\uD7FF"));
-    TEST_CALLING_RECYCLE_AT<3> (U"ab\U00010000") (strf::sani(u"ab\U00010000"));
-    TEST_CALLING_RECYCLE_AT<3> (U"ab\U0010FFFF") (strf::sani(u"ab\U0010FFFF"));
+    TEST_TRUNCATING_AT(3, U"ab\uD7FF")     (strf::sani(u"ab\uD7FF"));
+    TEST_TRUNCATING_AT(3, U"ab\U00010000") (strf::sani(u"ab\U00010000"));
+    TEST_TRUNCATING_AT(3, U"ab\U0010FFFF") (strf::sani(u"ab\U0010FFFF"));
 
-    TEST_CALLING_RECYCLE_AT<2, 1> (U"ab\uD7FF")     (strf::sani(u"ab\uD7FF"));
-    TEST_CALLING_RECYCLE_AT<2, 2> (U"ab\U00010000") (strf::sani(u"ab\U00010000"));
-    TEST_CALLING_RECYCLE_AT<2, 1> (U"ab\U0010FFFF") (strf::sani(u"ab\U0010FFFF"));
-    {
+    TEST_CALLING_RECYCLE_AT(2, U"ab\uD7FF")     (strf::sani(u"ab\uD7FF"));
+    TEST_CALLING_RECYCLE_AT(2, U"ab\U00010000") (strf::sani(u"ab\U00010000"));
+    TEST_CALLING_RECYCLE_AT(2, U"ab\U0010FFFF") (strf::sani(u"ab\U0010FFFF"));
+{
         // when surrogates are allowed
         const char32_t u32str_D800[] = {U' ', 0xD800, 0};
         const char32_t u32str_DBFF[] = {U' ', 0xDBFF, 0};
@@ -63,9 +63,11 @@ STRF_TEST_FUNC void utf16_to_utf32_valid_sequences()
 
         TEST(U" \U00010000") .with(strf::surrogate_policy::lax) (strf::sani(u"\U00010000") > 2);
 
-        TEST_CALLING_RECYCLE_AT<1, 1> (u32str_D800)
+        TEST_CALLING_RECYCLE_AT(1, u32str_D800)
             .with(strf::surrogate_policy::lax) (strf::sani(u16str_D800) > 2);
-        TEST_CALLING_RECYCLE_AT<1> (U" ")
+        TEST_TRUNCATING_AT     (2, u32str_D800)
+            .with(strf::surrogate_policy::lax) (strf::sani(u16str_D800) > 2);
+        TEST_TRUNCATING_AT     (1, U" ")
             .with(strf::surrogate_policy::lax) (strf::sani(u16str_D800) > 2);
     }
 
@@ -122,7 +124,7 @@ STRF_TEST_FUNC void utf16_to_utf32_error_notifier()
     TEST_EQ(::error_handler_calls_count, 2);
 
     ::error_handler_calls_count = 0;
-    TEST_CALLING_RECYCLE_AT<1>(U"\uFFFD").with(notifier) (strf::sani(invalid_input));
+    TEST_TRUNCATING_AT(1, U"\uFFFD").with(notifier) (strf::sani(invalid_input));
     TEST_TRUE(::error_handler_calls_count > 0);
 
 #if defined(__cpp_exceptions) && __cpp_exceptions  && ! defined(__CUDACC__)

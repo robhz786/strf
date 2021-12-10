@@ -48,7 +48,7 @@ STRF_TEST_FUNC void char_range_basic_operations()
         TEST_EQ(sw.buffer_space(), 4);
         TEST_TRUE(sw.good());
     }
-    {   // Calling recycle always fails
+    {   // Calling recycle_buffer always fails
         strf::array_destination<CharT> sw(buff);
         sw.recycle_buffer();
         TEST_TRUE(sw.buffer_ptr() != &buff[0]);

@@ -285,7 +285,10 @@ STRF_TEST_FUNC void test_input_int_no_punct()
     TEST("0b1010101010101010101010101010101010101010101010101010101010101010")
         (*strf::bin(0xaaaaaaaaaaaaaaaaLL) );
 
-    TEST_CALLING_RECYCLE_AT<4,3, 5> ("111100001111") (strf::bin(0xf0f));
+    TEST_CALLING_RECYCLE_AT( 4, "111100001111") (strf::bin(0xf0f));
+    TEST_CALLING_RECYCLE_AT( 7, "111100001111") (strf::bin(0xf0f));
+    TEST_CALLING_RECYCLE_AT(11, "111100001111") (strf::bin(0xf0f));
+
 
     TEST("1111111111111111111111111111111111111111111111111111111111111111")
         ( strf::bin(0xffffffffffffffffLL) );
@@ -734,8 +737,24 @@ STRF_TEST_FUNC void test_input_int_punct()
              u8"51\U0010FFFF" u8"615")
             .with(punct2(3, 2)) (strf::punct(18446744073709551615ull));
 
-        TEST_CALLING_RECYCLE_AT <2, 5, 5, 6, 4>
-            ("10\xCB\x9A" "000\xCB\x9A" "000\xCB\x9A" "0000\xCB\x9A" "00")
+        TEST_CALLING_RECYCLE_AT
+            (2, "10\xCB\x9A" "000\xCB\x9A" "000\xCB\x9A" "0000\xCB\x9A" "00")
+            .with(strf::numpunct<10>{2,4,3}.thousands_sep(0x2DA))
+            (strf::punct(10000000000000ull));
+        TEST_CALLING_RECYCLE_AT
+            (7, "10\xCB\x9A" "000\xCB\x9A" "000\xCB\x9A" "0000\xCB\x9A" "00")
+            .with(strf::numpunct<10>{2,4,3}.thousands_sep(0x2DA))
+            (strf::punct(10000000000000ull));
+        TEST_CALLING_RECYCLE_AT
+            (12, "10\xCB\x9A" "000\xCB\x9A" "000\xCB\x9A" "0000\xCB\x9A" "00")
+            .with(strf::numpunct<10>{2,4,3}.thousands_sep(0x2DA))
+            (strf::punct(10000000000000ull));
+        TEST_CALLING_RECYCLE_AT
+            (18, "10\xCB\x9A" "000\xCB\x9A" "000\xCB\x9A" "0000\xCB\x9A" "00")
+            .with(strf::numpunct<10>{2,4,3}.thousands_sep(0x2DA))
+            (strf::punct(10000000000000ull));
+        TEST_CALLING_RECYCLE_AT
+            (21, "10\xCB\x9A" "000\xCB\x9A" "000\xCB\x9A" "0000\xCB\x9A" "00")
             .with(strf::numpunct<10>{2,4,3}.thousands_sep(0x2DA))
             (strf::punct(10000000000000ull));
     }
@@ -900,7 +919,15 @@ STRF_TEST_FUNC void test_input_int_punct()
         TEST("1010'1010'1010'10'10") .with(punct(2,2,4)) (!strf::bin(0xAAAA));
         TEST("10'1010'1010'10'10") .with(punct(2,2,4)) (!strf::bin(0x2AAA));
         TEST("1'0101'0101'01'01") .with(punct(2,2,4)) (!strf::bin(0x1555));
-        TEST_CALLING_RECYCLE_AT<7,3,2,5,7,3>  ("10'1010'1010'101010'10")
+        TEST_CALLING_RECYCLE_AT(7,  "10'1010'1010'101010'10")
+            .with(punct(2,6,4)) (!strf::bin(0x2AAAAull));
+        TEST_CALLING_RECYCLE_AT(10, "10'1010'1010'101010'10")
+            .with(punct(2,6,4)) (!strf::bin(0x2AAAAull));
+        TEST_CALLING_RECYCLE_AT(12, "10'1010'1010'101010'10")
+            .with(punct(2,6,4)) (!strf::bin(0x2AAAAull));
+        TEST_CALLING_RECYCLE_AT(17, "10'1010'1010'101010'10")
+            .with(punct(2,6,4)) (!strf::bin(0x2AAAAull));
+        TEST_CALLING_RECYCLE_AT(21, "10'1010'1010'101010'10")
             .with(punct(2,6,4)) (!strf::bin(0x2AAAAull));
 
         numpunct_maker<2> grp_big(0x10FFFF);
@@ -919,9 +946,29 @@ STRF_TEST_FUNC void test_input_int_punct()
              u8"01\U0010FFFF" u8"01")
             .with(grp_big(2,2,4)) (!strf::bin(0x1555));
 
-        TEST_CALLING_RECYCLE_AT<10,6,5,5,8,5,6>
-            (u8"10\U0010FFFF" u8"1010\U0010FFFF" u8"1010\U0010FFFF"
-             u8"101010\U0010FFFF" u8"10")
+        TEST_CALLING_RECYCLE_AT
+            (10, u8"10\U0010FFFF" u8"1010\U0010FFFF" u8"1010\U0010FFFF"
+                 u8"101010\U0010FFFF" u8"10")
+            .with(grp_big(2,6,4)) (!strf::bin(0x2AAAAull));
+        TEST_CALLING_RECYCLE_AT
+            (16, u8"10\U0010FFFF" u8"1010\U0010FFFF" u8"1010\U0010FFFF"
+                 u8"101010\U0010FFFF" u8"10")
+            .with(grp_big(2,6,4)) (!strf::bin(0x2AAAAull));
+        TEST_CALLING_RECYCLE_AT
+            (21, u8"10\U0010FFFF" u8"1010\U0010FFFF" u8"1010\U0010FFFF"
+                 u8"101010\U0010FFFF" u8"10")
+            .with(grp_big(2,6,4)) (!strf::bin(0x2AAAAull));
+        TEST_CALLING_RECYCLE_AT
+            (26, u8"10\U0010FFFF" u8"1010\U0010FFFF" u8"1010\U0010FFFF"
+                 u8"101010\U0010FFFF" u8"10")
+            .with(grp_big(2,6,4)) (!strf::bin(0x2AAAAull));
+        TEST_CALLING_RECYCLE_AT
+            (31, u8"10\U0010FFFF" u8"1010\U0010FFFF" u8"1010\U0010FFFF"
+                 u8"101010\U0010FFFF" u8"10")
+            .with(grp_big(2,6,4)) (!strf::bin(0x2AAAAull));
+        TEST_CALLING_RECYCLE_AT
+            (33, u8"10\U0010FFFF" u8"1010\U0010FFFF" u8"1010\U0010FFFF"
+                 u8"101010\U0010FFFF" u8"10")
             .with(grp_big(2,6,4)) (!strf::bin(0x2AAAAull));
     }
     {
