@@ -249,7 +249,7 @@ public:
         ( strf::transcode_dest<DestCharT>& dest
         , const SrcCharT* src
         , std::size_t src_size
-        , strf::invalid_seq_notifier inv_seq_notifier
+        , strf::invalid_seq_notifier* inv_seq_notifier
         , strf::surrogate_policy surr_poli );
 
     static STRF_HD std::size_t transcode_size
@@ -278,7 +278,7 @@ public:
         ( strf::transcode_dest<DestCharT>& dest
         , const SrcCharT* src
         , std::size_t src_size
-        , strf::invalid_seq_notifier inv_seq_notifier
+        , strf::invalid_seq_notifier* inv_seq_notifier
         , strf::surrogate_policy surr_poli );
 
     static STRF_HD std::size_t transcode_size
@@ -307,7 +307,7 @@ public:
         ( strf::transcode_dest<DestCharT>& dest
         , const SrcCharT* src
         , std::size_t src_size
-        , strf::invalid_seq_notifier inv_seq_notifier
+        , strf::invalid_seq_notifier* inv_seq_notifier
         , strf::surrogate_policy surr_poli );
 
     static STRF_HD std::size_t transcode_size
@@ -336,7 +336,7 @@ public:
         ( strf::transcode_dest<DestCharT>& dest
         , const SrcCharT* src
         , std::size_t src_size
-        , strf::invalid_seq_notifier inv_seq_notifier
+        , strf::invalid_seq_notifier* inv_seq_notifier
         , strf::surrogate_policy surr_poli );
 
     static STRF_HD std::size_t transcode_size
@@ -365,7 +365,7 @@ public:
         ( strf::transcode_dest<DestCharT>& dest
         , const SrcCharT* src
         , std::size_t src_size
-        , strf::invalid_seq_notifier inv_seq_notifier
+        , strf::invalid_seq_notifier* inv_seq_notifier
         , strf::surrogate_policy surr_poli );
 
     static STRF_HD std::size_t transcode_size
@@ -394,7 +394,7 @@ public:
         ( strf::transcode_dest<DestCharT>& dest
         , const SrcCharT* src
         , std::size_t src_size
-        , strf::invalid_seq_notifier inv_seq_notifier
+        , strf::invalid_seq_notifier* inv_seq_notifier
         , strf::surrogate_policy surr_poli );
 
     static STRF_HD std::size_t transcode_size
@@ -423,7 +423,7 @@ public:
         ( strf::transcode_dest<DestCharT>& dest
         , const SrcCharT* src
         , std::size_t src_size
-        , strf::invalid_seq_notifier inv_seq_notifier
+        , strf::invalid_seq_notifier* inv_seq_notifier
         , strf::surrogate_policy surr_poli );
 
     static STRF_HD std::size_t transcode_size
@@ -452,7 +452,7 @@ public:
         ( strf::transcode_dest<DestCharT>& dest
         , const SrcCharT* src
         , std::size_t src_size
-        , strf::invalid_seq_notifier inv_seq_notifier
+        , strf::invalid_seq_notifier* inv_seq_notifier
         , strf::surrogate_policy surr_poli );
 
     static STRF_HD std::size_t transcode_size
@@ -481,7 +481,7 @@ public:
         ( strf::transcode_dest<DestCharT>& dest
         , const SrcCharT* src
         , std::size_t src_size
-        , strf::invalid_seq_notifier inv_seq_notifier
+        , strf::invalid_seq_notifier* inv_seq_notifier
         , strf::surrogate_policy surr_poli );
 
     static STRF_HD std::size_t transcode_size
@@ -1018,7 +1018,7 @@ STRF_HD void strf::static_transcoder
     ( strf::transcode_dest<DestCharT>& dest
     , const SrcCharT* src
     , std::size_t src_size
-    , strf::invalid_seq_notifier inv_seq_notifier
+    , strf::invalid_seq_notifier* inv_seq_notifier
     , strf::surrogate_policy surr_poli )
 {
     using strf::detail::utf8_decode;
@@ -1076,7 +1076,7 @@ STRF_HD void strf::static_transcoder
             ch32 = 0xFFFD;
             if (inv_seq_notifier) {
                 dest.advance_to(dest_it);
-                inv_seq_notifier.notify();
+                inv_seq_notifier->notify();
             }
         }
 
@@ -1140,7 +1140,7 @@ STRF_HD void strf::static_transcoder
     ( strf::transcode_dest<DestCharT>& dest
     , const SrcCharT* src
     , std::size_t src_size
-    , strf::invalid_seq_notifier inv_seq_notifier
+    , strf::invalid_seq_notifier* inv_seq_notifier
     , strf::surrogate_policy surr_poli )
 {
     using strf::detail::utf8_decode;
@@ -1213,7 +1213,7 @@ STRF_HD void strf::static_transcoder
             dest_it += 3;
             if (inv_seq_notifier) {
                 dest.advance_to(dest_it);
-                inv_seq_notifier.notify();
+                inv_seq_notifier->notify();
             }
         }
     }
@@ -1422,7 +1422,7 @@ STRF_HD void strf::static_transcoder
     ( strf::transcode_dest<DestCharT>& dest
     , const SrcCharT* src
     , std::size_t src_size
-    , strf::invalid_seq_notifier inv_seq_notifier
+    , strf::invalid_seq_notifier* inv_seq_notifier
     , strf::surrogate_policy surr_poli )
 {
     auto src_it = src;
@@ -1466,7 +1466,7 @@ STRF_HD void strf::static_transcoder
             dest_it += 3;
             STRF_IF_UNLIKELY (inv_seq_notifier) {
                 dest.advance_to(dest_it);
-                inv_seq_notifier.notify();
+                inv_seq_notifier->notify();
             }
         }
     }
@@ -1516,7 +1516,7 @@ STRF_HD void strf::static_transcoder
     ( strf::transcode_dest<DestCharT>& dest
     , const SrcCharT* src
     , std::size_t src_size
-    , strf::invalid_seq_notifier inv_seq_notifier
+    , strf::invalid_seq_notifier* inv_seq_notifier
     , strf::surrogate_policy surr_poli )
 {
     unsigned long ch, ch2;
@@ -1543,7 +1543,7 @@ STRF_HD void strf::static_transcoder
             ch32 = 0xFFFD;
             if (inv_seq_notifier) {
                 dest.advance_to(dest_it);
-                inv_seq_notifier.notify();
+                inv_seq_notifier->notify();
             }
         }
 
@@ -1589,7 +1589,7 @@ STRF_HD void strf::static_transcoder
     ( strf::transcode_dest<DestCharT>& dest
     , const SrcCharT* src
     , std::size_t src_size
-    , strf::invalid_seq_notifier inv_seq_notifier
+    , strf::invalid_seq_notifier* inv_seq_notifier
     , strf::surrogate_policy surr_poli )
 {
     unsigned long ch, ch2;
@@ -1625,7 +1625,7 @@ STRF_HD void strf::static_transcoder
             ++dest_it;
             if (inv_seq_notifier) {
                 dest.advance_to(dest_it);
-                inv_seq_notifier.notify();
+                inv_seq_notifier->notify();
             }
         }
     }
@@ -1753,7 +1753,7 @@ STRF_HD void strf::static_transcoder
     ( strf::transcode_dest<DestCharT>& dest
     , const SrcCharT* src
     , std::size_t src_size
-    , strf::invalid_seq_notifier inv_seq_notifier
+    , strf::invalid_seq_notifier* inv_seq_notifier
     , strf::surrogate_policy surr_poli )
 {
     auto src_it = src;
@@ -1783,7 +1783,7 @@ STRF_HD void strf::static_transcoder
             ++dest_it;
             if (inv_seq_notifier) {
                 dest.advance_to(dest_it);
-                inv_seq_notifier.notify();
+                inv_seq_notifier->notify();
             }
         }
     }
@@ -1824,7 +1824,7 @@ STRF_HD void strf::static_transcoder
     ( strf::transcode_dest<DestCharT>& dest
     , const SrcCharT* src
     , std::size_t src_size
-    , strf::invalid_seq_notifier inv_seq_notifier
+    , strf::invalid_seq_notifier* inv_seq_notifier
     , strf::surrogate_policy surr_poli )
 {
     const auto src_end = src + src_size;
@@ -1837,7 +1837,7 @@ STRF_HD void strf::static_transcoder
                 ch = 0xFFFD;
                 if (inv_seq_notifier) {
                     dest.advance_to(dest_it);
-                    inv_seq_notifier.notify();
+                    inv_seq_notifier->notify();
                 }
             }
             STRF_CHECK_DEST;
@@ -1851,7 +1851,7 @@ STRF_HD void strf::static_transcoder
                 ch = 0xFFFD;
                 if (inv_seq_notifier) {
                     dest.advance_to(dest_it);
-                    inv_seq_notifier.notify();
+                    inv_seq_notifier->notify();
                 }
             }
             STRF_CHECK_DEST;
@@ -1887,7 +1887,7 @@ STRF_HD void strf::static_transcoder
     ( strf::transcode_dest<DestCharT>& dest
     , const SrcCharT* src
     , std::size_t src_size
-    , strf::invalid_seq_notifier inv_seq_notifier
+    , strf::invalid_seq_notifier* inv_seq_notifier
     , strf::surrogate_policy surr_poli )
 {
     using strf::detail::utf8_decode;
@@ -1959,7 +1959,7 @@ STRF_HD void strf::static_transcoder
             *dest_it = 0xFFFD;
             if (inv_seq_notifier) {
                 dest.advance_to(dest_it);
-                inv_seq_notifier.notify();
+                inv_seq_notifier->notify();
             }
         }
     }
@@ -2022,7 +2022,7 @@ STRF_HD void strf::static_transcoder
     ( strf::transcode_dest<DestCharT>& dest
     , const SrcCharT* src
     , std::size_t src_size
-    , strf::invalid_seq_notifier inv_seq_notifier
+    , strf::invalid_seq_notifier* inv_seq_notifier
     , strf::surrogate_policy surr_poli )
 {
     (void) inv_seq_notifier;
@@ -2071,7 +2071,7 @@ STRF_HD void strf::static_transcoder
             dest_it += 3;
             if (inv_seq_notifier) {
                 dest.advance_to(dest_it);
-                inv_seq_notifier.notify();
+                inv_seq_notifier->notify();
             }
         }
     }

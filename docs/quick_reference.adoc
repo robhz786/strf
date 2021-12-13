@@ -20,6 +20,9 @@ http://www.boost.org/LICENSE_1_0.txt)
 :width_t:        <<strf_hpp#width_t,width_t>>
 :float_notation: <<float_notation,float_notation>>
 
+:invalid_seq_notifier_c:  <<strf_hpp#invalid_seq_notifier_c,invalid_seq_notifier_c>>
+:invalid_seq_notifier:    <<strf_hpp#invalid_seq_notifier,invalid_seq_notifier>>
+:invalid_seq_notifier_ptr:  <<strf_hpp#invalid_seq_notifier_ptr,invalid_seq_notifier_ptr>>
 
 [[format_functions]]
 == Format Functions
@@ -975,20 +978,30 @@ assert(utf16_lax == original);                         // surrogate preserved
 [[invalid_seq_notifier]]
 === Encoding error notifier function
 
-The facet `<<strf_hpp#invalid_seq_notifier,invalid_seq_notifier>>` contains
-a function pointer that is called every time an ivalid sequence is sanitized,
-unless it is null, which is the default.
+The `{invalid_seq_notifier_c}` facet category enables you to
+to specify a function to be called every time an invalid
+sequence is detected. 
 
-The code below throws an exception if `u16str` contains any invalid sequence:
-[source,cpp]
+The example below throws an exception if `u16str` contains any invalid sequence:
+[source,cpp,subs=normal]
 ----
-std::u16string u16str = /* ... */;
-notifier_func =  [](){
-    throw std::sytem_error(std::make_error_code(std::errc::illegal_byte_sequence));
-};
-strf::invalid_seq_notifier notifier{ notifier_func };
+#include <strf/to_string.hpp>
 
-auto str = strf::to_string.width(notifier)(strf::conv(u16str));
+struct my_notifier: strf::{invalid_seq_notifier} {
+
+    void notify() override {
+        throw std::sytem_error(std::make_error_code(std::errc::illegal_byte_sequence));
+    }
+};
+
+int main() {
+    std::u16string u16str = /* ... */;
+    my_notifier notifier;
+    strf::{invalid_seq_notifier_ptr} notifier_ptr{&notifier};
+    auto str = strf::to_string.width(notifier_ptr)(strf::conv(u16str));
+
+    return 0;
+}
 ----
 
 

@@ -239,7 +239,7 @@ public:
         , strf::surrogate_policy surr_poli ) const
     {
         strf::detail::width_accumulator<CharWidthFunc> acc(limit, func_);
-        strf::invalid_seq_notifier inv_seq_notifier{};
+        strf::invalid_seq_notifier* inv_seq_notifier = nullptr;
         charset.to_u32().transcode(acc, str, str_len, inv_seq_notifier, surr_poli);
         return acc.get_result().width;
     }
@@ -253,7 +253,7 @@ public:
         , strf::surrogate_policy surr_poli ) const
     {
         strf::detail::width_accumulator<CharWidthFunc> acc(limit, func_);
-        strf::invalid_seq_notifier inv_seq_notifier{};
+        strf::invalid_seq_notifier* inv_seq_notifier = nullptr;
         charset.to_u32().transcode(acc, str, str_len, inv_seq_notifier, surr_poli);
         auto res = acc.get_result();
         if (res.whole_string_covered) {
@@ -682,7 +682,7 @@ public:
         , strf::surrogate_policy surr_poli )
     {
         strf::detail::std_width_decrementer decr{limit};
-        strf::invalid_seq_notifier inv_seq_notifier{};
+        strf::invalid_seq_notifier* inv_seq_notifier = nullptr;
         charset.to_u32().transcode(decr, str, str_len, inv_seq_notifier, surr_poli);
         return (limit - decr.get_remaining_width());
     }
@@ -696,7 +696,7 @@ public:
         , strf::surrogate_policy surr_poli )
     {
         strf::detail::std_width_decrementer_with_pos decr{limit};
-        strf::invalid_seq_notifier inv_seq_notifier{};
+        strf::invalid_seq_notifier* inv_seq_notifier = nullptr;
         charset.to_u32().transcode(decr, str, str_len, inv_seq_notifier, surr_poli);
         auto res = decr.get_remaining_width_and_codepoints_count();
 

@@ -28,16 +28,12 @@ STRF_HD unsigned count_fffd( strf::detail::simple_string_view<char32_t> str)
     return count;
 }
 
-STRF_HD unsigned& encoding_error_handler_calls()
-{
-  static unsigned x;
-  return x;
-}
-
-STRF_HD void encoding_error_handler()
-{
-    ++encoding_error_handler_calls();
-}
+struct invalid_seq_counter: strf::invalid_seq_notifier {
+    void STRF_HD notify() override {
+        ++ notifications_count;
+    }
+    std::size_t notifications_count = 0;
+};
 
 STRF_HD void general_tests
     ( strf::dynamic_charset<char> charset
@@ -124,11 +120,11 @@ STRF_HD void general_tests
 
     {   // converting a string to UTF-32 with strf::invalid_seq_notifier
 
-        ::encoding_error_handler_calls() = 0;
+        invalid_seq_counter invalid_seq_handler;
         TEST(decoded_0_to_0xff)
-            .with(strf::invalid_seq_notifier{encoding_error_handler})
+            .with(strf::invalid_seq_notifier_ptr{&invalid_seq_handler})
             (strf::sani(str_0_to_xff, charset));
-        TEST_EQ(::encoding_error_handler_calls(), fffd_count);
+        TEST_EQ(invalid_seq_handler.notifications_count, fffd_count);
     }
 
     {   // converting individual characters to UTF-32 ( cover decode_unit )
@@ -161,11 +157,11 @@ STRF_HD void general_tests
 
     {   // encode string from UTF-32 with strf::invalid_seq_notifier
 
-        ::encoding_error_handler_calls() = 0;
+        invalid_seq_counter invalid_seq_handler;
         char result[0x101];
         auto res = strf::to(result)
             .with(charset)
-            .with(strf::invalid_seq_notifier{encoding_error_handler})
+            .with(strf::invalid_seq_notifier_ptr{&invalid_seq_handler})
             (strf::conv(decoded_0_to_0xff, strf::utf_t<char32_t>()));
         TEST_FALSE(res.truncated);
         TEST_EQ(res.ptr - result, 0x100);
@@ -180,7 +176,7 @@ STRF_HD void general_tests
         }
 
         // check notifier calls
-        TEST_EQ(encoding_error_handler_calls(), fffd_count);
+        TEST_EQ(invalid_seq_handler.notifications_count, fffd_count);
     }
 
     {   // encode UTF-32 characters individually
@@ -216,11 +212,11 @@ STRF_HD void general_tests
     }
     {    // sanitize string  with strf::invalid_seq_notifier
 
-        ::encoding_error_handler_calls() = 0;
+        invalid_seq_counter invalid_seq_handler;
         char result[0x101];
         auto res = strf::to(result) .with(charset)
             .with(charset)
-            .with(strf::invalid_seq_notifier{encoding_error_handler})
+            .with(strf::invalid_seq_notifier_ptr{&invalid_seq_handler})
             (strf::sani(str_0_to_xff));
 
         TEST_FALSE(res.truncated);
@@ -234,7 +230,7 @@ STRF_HD void general_tests
         }
 
         // check notifier calls
-        TEST_EQ(encoding_error_handler_calls(), fffd_count);
+        TEST_EQ(invalid_seq_handler.notifications_count, fffd_count);
     }
     {   // encode_fill
         TEST("aaaaa").with(charset) (strf::multi(U'a', 5));

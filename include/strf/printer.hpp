@@ -1138,7 +1138,7 @@ namespace detail {
 
 template <typename T>
 struct is_printable_and_overridable_helper {
-    
+
     template <typename U>
     static STRF_HD typename printable_traits_of<U>::is_overridable test_(const U*);
 

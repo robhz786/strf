@@ -37,6 +37,13 @@ http://www.boost.org/LICENSE_1_0.txt)
 :codepoints_robust_count_f: <<charset_function_pointers,codepoints_robust_count_f>>
 :decode_unit_f: <<charset_function_pointers,decode_unit_f>>
 :find_transcoder_f: <<charset_function_pointers,find_transcoder_f>>
+:facet_traits: <<facet_traits,facet_tratis>>
+:facet_category: <<facet_category,facet_category>>
+
+:invalid_seq_notifier_c: <<invalid_seq_notifier_c,invalid_seq_notifier_c>>
+:invalid_seq_notifier: <<invalid_seq_notifier,invalid_seq_notifier>>
+:invalid_seq_notifier_nullptr: <<invalid_seq_notifier_nullptr,invalid_seq_notifier_nullptr>>
+:InvalidSeqNotifierPtr: <<InvalidSeqNotifierPtr,InvalidSeqNotifierPtr>>
 
 :static_transcoder: <<static_transcoder,static_transcoder>>
 :static_charset: <<static_charset,static_charset>>
@@ -100,15 +107,73 @@ constexpr charset_id  scid_windows_1258 = /* ... */;
 ----
 
 === Facet category `invalid_seq_notifier_c` [[invalid_seq_notifier_c]]
+
+A facet of the `invalid_seq_notifier_c` category must satisfy the
+__{InvalidSeqNotifierPtr}__ type requirements.
+
 [source,cpp,subs=normal]
 ----
 namespace strf {
 struct invalid_seq_notifier_c {
     static constexpr bool constrainable = false;
-    static constexpr {invalid_seq_notifier} get_default() noexcept {
-        return {}
+    static constexpr {invalid_seq_notifier_nullptr} get_default() noexcept {
+        return {};
     }
 };
+} // namespace strf
+----
+
+
+==== Type requirement __InvalidSeqNotifierPtr__ [[InvalidSeqNotifierPtr]]
+
+Given
+
+* `X`, a __InvalidSeqNotifierPtr__ type
+* `x`, a const value of type `X`
+
+The following must hold:
+
+* `{facet_category}<X>` is a type alias to `invalid_seq_notifier_c`
+* `X` is __MoveConstructible__
+
+====
+[source,cpp]
+----
+x.get()
+----
+[horizontal]
+Return type:: `{invalid_seq_notifier}{asterisk}`
+====
+
+==== Struct `invalid_seq_notifier_nullptr` [[invalid_seq_notifier_nullptr]]
+
+[source,cpp]
+----
+namespace strf {
+
+struct invalid_seq_notifier_nullptr {
+    using category = invalid_seq_notifier_c;
+
+    constexpr invalid_seq_notifier* get() const { return nullptr; }
+};
+
+} // namespace strf
+----
+
+==== Struct `invalid_seq_notifier_ptr` [[invalid_seq_notifier_ptr]]
+
+[source,cpp]
+----
+namespace strf {
+
+struct invalid_seq_notifier_ptr {
+    using category = invalid_seq_notifier_c;
+
+    constexpr invalid_seq_notifier* get() const { return ptr; }
+
+    invalid_seq_notifier* ptr = nullptr;
+};
+
 } // namespace strf
 ----
 
@@ -119,94 +184,13 @@ namespace strf {
 
 class invalid_seq_notifier {
 public:
-
-    using category = invalid_seq_notifier_c;
-
-    typedef void(*notify_fptr)();
-
-    constexpr invalid_seq_notifier() noexcept = default;
-    constexpr invalid_seq_notifier(const invalid_seq_notifier&) noexcept = default;
-
-    constexpr explicit invalid_seq_notifier(notify_fptr) noexcept;
-    constexpr invalid_seq_notifier& operator=(notify_fptr) noexcept;
-    constexpr invalid_seq_notifier& operator=(const invalid_seq_notifier& other) noexcept;
-    constexpr bool operator==(const invalid_seq_notifier& other) noexcept;
-    constexpr operator bool() const noexcept;
-    constexpr void notify() const;
-
-private:
-    notify_fptr notify_func_ = nullptr; // exposition only
+    virtual ~invalid_seq_notifier() {}
+    virtual void notify() = 0;
 };
 
 } // namespace strf
 
 ----
-
-
-====
-[source,cpp]
-----
-constexpr invalid_seq_notifier() noexcept;
-----
-Trivial default constructor
-[horizontal]
-Poscondition:: `notify_func_ == nullptr`
-====
-
-====
-[source,cpp]
-----
-constexpr invalid_seq_notifier(const invalid_seq_notifier& other) noexcept;
-----
-Trivial copy constructor
-[horizontal]
-Poscondition:: `notify_func_ == other.notify_func_`
-====
-
-====
-[source,cpp]
-----
-constexpr explicit invalid_seq_notifier(notify_fptr fptr) noexcept;
-----
-[horizontal]
-Poscondition:: `notify_func_ == fptr`
-====
-
-====
-[source,cpp]
-----
-constexpr invalid_seq_notifier& operator=(const invalid_seq_notifier& other) noexcept;
-----
-[horizontal]
-Poscondition:: `notify_func_ == other.notify_func_`
-====
-
-====
-[source,cpp]
-----
-constexpr bool operator==(const invalid_seq_notifier& other) noexcept;
-----
-[horizontal]
-Return value:: `notify_func_ == other.notify_func_`
-====
-
-====
-[source,cpp]
-----
-constexpr operator bool() const noexcept;
-----
-[horizontal]
-Return value:: `notify_func_ != nullptr`
-====
-
-====
-[source,cpp]
-----
-constexpr void notify() const noexcept;
-----
-[horizontal]
-Effect:: Calls `notify_func_` if it is not null.
-====
 
 === Facet category `surrogate_policy_c` [[surrogate_policy]]
 
@@ -290,7 +274,7 @@ using transcode_f = void ({asterisk})
     ( {transcode_dest}<DestCharT>& dest
     , const SrcCharT{asterisk} src
     , std::size_t src_size
-    , {invalid_seq_notifier} inv_seq_notifier
+    , {invalid_seq_notifier}{asterisk} inv_seq_notifier
     , {surrogate_policy} surr_poli );
 
 template <typename SrcCharT>
@@ -355,7 +339,7 @@ Given
 * `src`, a value of type `const SrcCharT*`
 * `src_size`, a value of type `std::size_t` equal to the size of
               the array pointed by `src`
-* `inv_seq_notifier`, a value of type `{invalid_seq_notifier}`
+* `inv_seq_notifier`, is a pointer of type `{invalid_seq_notifier}`
 * `surr_poli`, a value of type `{surrogate_policy}`
 
 The following must hold:
@@ -371,7 +355,7 @@ x.transcode_size(src, src_size, surr_poli)
 [horizontal]
 Return type:: `std::size_t`
 Return value:: The number of character that
-  `x.transcode(dest, src, src_size, {invalid_seq_notifier}{}, surr_poli)`
+  `x.transcode(dest, src, src_size, nullptr, surr_poli)`
   would write into `dest`, or a value a greater than that if such exact calculation is
   difficult ( but ideally not much greater ).
 Precondition:: `x.transcode_func() != nullptr` is `true`
@@ -1001,7 +985,7 @@ public:
         ( {transcode_dest}<DestCharT>& dest
         , const SrcCharT* src
         , std::size_t src_size
-        , {invalid_seq_notifier} inv_seq_notifier
+        , {invalid_seq_notifier}{asterisk} inv_seq_notifier
         , {surrogate_policy} surr_poli ) const;
 
     std::size_t transcode_size
@@ -1061,7 +1045,7 @@ void transcode
     ( {transcode_dest}<DestCharT>& dest
     , const SrcCharT* src
     , std::size_t src_size
-    , {invalid_seq_notifier} inv_seq_notifier
+    , {invalid_seq_notifier}{asterisk} inv_seq_notifier
     , {surrogate_policy} surr_poli ) const;
 ----
 [horizontal]
@@ -1546,7 +1530,7 @@ void decode_encode
     , {transcode_f}<char32_t, DestCharT> from_u32
     , const SrcCharT* src
     , std::size_t src_size
-    , {invalid_seq_notifier} inv_seq_notifier
+    , {invalid_seq_notifier}{asterisk} inv_seq_notifier
     , {surrogate_policy} surr_poli );
 
 } // namespace strf
@@ -1577,7 +1561,7 @@ std::size_t decode_encode_size
     , {transcode_size_f}<char32_t> size_calc_func
     , const SrcCharT* src
     , std::size_t src_size
-    , {invalid_seq_notifier} inv_seq_notifier
+    , {invalid_seq_notifier}{asterisk} inv_seq_notifier
     , {surrogate_policy} surr_poli );
 
 } // namespace strf

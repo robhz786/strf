@@ -2155,7 +2155,7 @@ struct single_byte_charset_to_utf32
         ( strf::transcode_dest<DestCharT>& dest
         , const SrcCharT* src
         , std::size_t src_size
-        , strf::invalid_seq_notifier inv_seq_notifier
+        , strf::invalid_seq_notifier* inv_seq_notifier
         , strf::surrogate_policy surr_poli );
 
     static constexpr STRF_HD std::size_t transcode_size
@@ -2181,7 +2181,7 @@ STRF_HD void single_byte_charset_to_utf32<SrcCharT, DestCharT, Impl>::transcode
     ( strf::transcode_dest<DestCharT>& dest
     , const SrcCharT* src
     , std::size_t src_size
-    , strf::invalid_seq_notifier inv_seq_notifier
+    , strf::invalid_seq_notifier* inv_seq_notifier
     , strf::surrogate_policy surr_poli )
 {
     (void) surr_poli;
@@ -2197,7 +2197,7 @@ STRF_HD void single_byte_charset_to_utf32<SrcCharT, DestCharT, Impl>::transcode
             *dest_it = 0xFFFD;
             if (inv_seq_notifier) {
                 dest.advance_to(dest_it + 1);
-                inv_seq_notifier.notify();
+                inv_seq_notifier->notify();
             }
         }
     }
@@ -2211,7 +2211,7 @@ struct utf32_to_single_byte_charset
         ( strf::transcode_dest<DestCharT>& dest
         , const SrcCharT* src
         , std::size_t src_size
-        , strf::invalid_seq_notifier inv_seq_notifier
+        , strf::invalid_seq_notifier* inv_seq_notifier
         , strf::surrogate_policy surr_poli );
 
     static constexpr STRF_HD std::size_t transcode_size
@@ -2236,7 +2236,7 @@ STRF_HD void utf32_to_single_byte_charset<SrcCharT, DestCharT, Impl>::transcode
     ( strf::transcode_dest<DestCharT>& dest
     , const SrcCharT* src
     , std::size_t src_size
-    , strf::invalid_seq_notifier inv_seq_notifier
+    , strf::invalid_seq_notifier* inv_seq_notifier
     , strf::surrogate_policy surr_poli )
 {
     (void)surr_poli;
@@ -2252,7 +2252,7 @@ STRF_HD void utf32_to_single_byte_charset<SrcCharT, DestCharT, Impl>::transcode
             * dest_it = '?';
             if (inv_seq_notifier) {
                 dest.advance_to(dest_it + 1);
-                inv_seq_notifier.notify();
+                inv_seq_notifier->notify();
             }
         }
     }
@@ -2266,7 +2266,7 @@ struct single_byte_charset_sanitizer
         ( strf::transcode_dest<DestCharT>& dest
         , const SrcCharT* src
         , std::size_t src_size
-        , strf::invalid_seq_notifier inv_seq_notifier
+        , strf::invalid_seq_notifier* inv_seq_notifier
         , strf::surrogate_policy surr_poli );
 
     static constexpr STRF_HD std::size_t transcode_size
@@ -2292,7 +2292,7 @@ STRF_HD void single_byte_charset_sanitizer<SrcCharT, DestCharT, Impl>::transcode
     ( strf::transcode_dest<DestCharT>& dest
     , const SrcCharT* src
     , std::size_t src_size
-    , strf::invalid_seq_notifier inv_seq_notifier
+    , strf::invalid_seq_notifier* inv_seq_notifier
     , strf::surrogate_policy surr_poli )
 {
     (void) surr_poli;
@@ -2309,7 +2309,7 @@ STRF_HD void single_byte_charset_sanitizer<SrcCharT, DestCharT, Impl>::transcode
             *dest_it = '?';
             STRF_IF_UNLIKELY (inv_seq_notifier) {
                 dest.advance_to(dest_it);
-                inv_seq_notifier.notify();
+                inv_seq_notifier->notify();
             }
         }
     }

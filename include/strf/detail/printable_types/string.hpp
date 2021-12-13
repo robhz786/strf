@@ -1048,7 +1048,8 @@ public:
             input )
         : str_(input.arg.value().data())
         , len_(input.arg.value().size())
-        , inv_seq_notifier_(use_facet_<strf::invalid_seq_notifier_c, SrcCharT>(input.facets))
+        , inv_seq_notifier_
+              ( use_facet_<strf::invalid_seq_notifier_c, SrcCharT>(input.facets).get() )
         , surr_poli_(use_facet_<strf::surrogate_policy_c, SrcCharT>(input.facets))
     {
         auto src_charset  = strf::detail::get_src_charset(input);
@@ -1068,7 +1069,8 @@ public:
             < DestCharT, SrcCharT, true, false, CvFormat, PrePrinting, FPack >&
             input )
         : str_(input.arg.value().data())
-        , inv_seq_notifier_(use_facet_<strf::invalid_seq_notifier_c, SrcCharT>(input.facets))
+        , inv_seq_notifier_
+            ( use_facet_<strf::invalid_seq_notifier_c, SrcCharT>(input.facets).get() )
         , surr_poli_(use_facet_<strf::surrogate_policy_c, SrcCharT>(input.facets))
     {
         auto src_charset  = strf::detail::get_src_charset(input);
@@ -1127,7 +1129,7 @@ private:
         strf::transcode_f<SrcCharT, char32_t>  src_to_u32_;
     };
     strf::transcode_f<char32_t, DestCharT>  u32_to_dest_ = nullptr;
-    const strf::invalid_seq_notifier inv_seq_notifier_;
+    strf::invalid_seq_notifier* inv_seq_notifier_;
     const strf::surrogate_policy surr_poli_;
 
     template < typename Category, typename SrcChar, typename FPack
@@ -1166,7 +1168,8 @@ public:
         : str_(input.arg.value().data())
         , len_(input.arg.value().size())
         , afmt_(input.arg.get_alignment_format())
-        , inv_seq_notifier_(use_facet_<strf::invalid_seq_notifier_c, SrcCharT>(input.facets))
+        , inv_seq_notifier_
+            ( use_facet_<strf::invalid_seq_notifier_c, SrcCharT>(input.facets).get() )
         , surr_poli_(use_facet_<strf::surrogate_policy_c, SrcCharT>(input.facets))
     {
         auto src_charset = strf::detail::get_src_charset(input);
@@ -1188,7 +1191,8 @@ public:
         : str_(input.arg.value().data())
         , len_(input.arg.value().size())
         , afmt_(input.arg.get_alignment_format())
-        , inv_seq_notifier_(use_facet_<strf::invalid_seq_notifier_c, SrcCharT>(input.facets))
+        , inv_seq_notifier_
+            ( use_facet_<strf::invalid_seq_notifier_c, SrcCharT>(input.facets).get() )
         , surr_poli_(use_facet_<strf::surrogate_policy_c, SrcCharT>(input.facets))
     {
         auto src_charset = strf::detail::get_src_charset(input);
@@ -1219,7 +1223,7 @@ private:
     };
     strf::transcode_f<char32_t, DestCharT>  u32_to_dest_ = nullptr;
     strf::encode_fill_f<DestCharT> encode_fill_ = nullptr;
-    const strf::invalid_seq_notifier inv_seq_notifier_;
+    strf::invalid_seq_notifier* inv_seq_notifier_;
     const strf::surrogate_policy  surr_poli_;
     std::uint16_t left_fillcount_ = 0;
     std::uint16_t right_fillcount_ = 0;

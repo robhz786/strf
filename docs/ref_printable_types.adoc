@@ -9,7 +9,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 
 === Strings
 Types::
-`const CharT*`, `std::string_view<CharT, Traits>`
+`const CharT*`, `std::basic_string_view<CharT, Traits>`
 and `std::basic_string<CharT, Traits, Alloc>`
 +
 where:

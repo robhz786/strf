@@ -80,81 +80,99 @@ STRF_TEST_FUNC void utf32_invalid_sequences()
     }
 }
 
-STRF_TEST_FUNC int error_handler_calls_count = 0 ;
+struct invalid_seq_counter: strf::invalid_seq_notifier {
+    void STRF_HD notify() override {
+        ++ notifications_count;
+    }
+    std::size_t notifications_count = 0;
+};
+
+#if defined(__cpp_exceptions) && __cpp_exceptions  && ! defined(__CUDACC__)
+
 struct dummy_exception {};
+
+struct notifier_that_throws : strf::invalid_seq_notifier {
+    void STRF_HD notify() override {
+        throw dummy_exception{};
+    }
+};
+#endif // __cpp_exceptions
 
 STRF_TEST_FUNC void utf32_error_notifier()
 {
+    {
+        invalid_seq_counter notifier;
+        strf::invalid_seq_notifier_ptr notifier_ptr{&notifier};
 
-    strf::invalid_seq_notifier notifier{ [](){++error_handler_calls_count;} };
+        {   // strf::surrogate_policy::strict
 
+            const char32_t invalid_input[] = {0xD800, 0xDFFF, 0x110000, 0};
+            TEST(U"\uFFFD\uFFFD\uFFFD")
+                .with(notifier_ptr, strf::surrogate_policy::strict)
+                (strf::sani(invalid_input));
+            TEST_EQ(notifier.notifications_count, 3);
 
-    {   // strf::surrogate_policy::strict
-        const char32_t invalid_input[] = {0xD800, 0xDFFF, 0x110000, 0};
+            notifier.notifications_count = 0;
+            TEST_TRUNCATING_AT(1, U"\uFFFD")
+                .with(notifier_ptr, strf::surrogate_policy::strict)
+                (strf::sani(invalid_input));
+            TEST_TRUE(notifier.notifications_count > 0);
+        }
 
-        ::error_handler_calls_count = 0;
-        TEST(U"\uFFFD\uFFFD\uFFFD")
-            .with(notifier, strf::surrogate_policy::strict)
-            (strf::sani(invalid_input));
-        TEST_EQ(::error_handler_calls_count, 3);
+        {   // using strf::surrogate_policy::lax
+            const char32_t invalid_input[] = {0x110000, 0x110001, 0};
+            notifier.notifications_count = 0;
+            TEST(U"\uFFFD\uFFFD")
+                .with(notifier_ptr, strf::surrogate_policy::lax)
+                (strf::sani(invalid_input));
+            TEST_EQ(notifier.notifications_count, 2);
 
-        ::error_handler_calls_count = 0;
-        TEST_TRUNCATING_AT(1, U"\uFFFD")
-            .with(notifier, strf::surrogate_policy::strict)
-            (strf::sani(invalid_input));
-        TEST_TRUE(::error_handler_calls_count > 0);
-    }
-
-    {   // using strf::surrogate_policy::lax
-        const char32_t invalid_input[] = {0x110000, 0x110001, 0};
-        ::error_handler_calls_count = 0;
-        TEST(U"\uFFFD\uFFFD")
-            .with(notifier, strf::surrogate_policy::lax)
-            (strf::sani(invalid_input));
-        TEST_EQ(::error_handler_calls_count, 2);
-
-        ::error_handler_calls_count = 0;
-        TEST_TRUNCATING_AT(1, U"\uFFFD")
-            .with(notifier, strf::surrogate_policy::lax)
-            (strf::sani(invalid_input));
-        TEST_TRUE(::error_handler_calls_count > 0);
+            notifier.notifications_count = 0;
+            TEST_TRUNCATING_AT(1, U"\uFFFD")
+                .with(notifier_ptr, strf::surrogate_policy::lax)
+                (strf::sani(invalid_input));
+            TEST_TRUE(notifier.notifications_count > 0);
+        }
     }
 
 #if defined(__cpp_exceptions) && __cpp_exceptions  && ! defined(__CUDACC__)
 
-    // check that an exception can be thrown, i.e,
-    // ensure there is no `noexcept` blocking it
-    strf::invalid_seq_notifier notifier_that_throws{ [](){ throw dummy_exception{}; } };
+    {
+        // check that an exception can be thrown, i.e,
+        // ensure there is no `noexcept` blocking it
+        notifier_that_throws notifier;
+        strf::invalid_seq_notifier_ptr notifier_ptr{&notifier};
 
-    {   // using strf::surrogate_policy::strict
-        const char32_t invalid_input[] = {0xD800, 0xDFFF, 0x110000, 0};
-        bool thrown = false;
-        try {
-            char32_t buff[10];
-            strf::to(buff)
-                .with(notifier_that_throws, strf::surrogate_policy::strict)
-                (strf::sani(invalid_input));
-        } catch (dummy_exception&) {
-            thrown = true;
-        } catch(...) {
+        {   // using strf::surrogate_policy::strict
+            const char32_t invalid_input[] = {0xD800, 0xDFFF, 0x110000, 0};
+            bool thrown = false;
+            try {
+                char32_t buff[10];
+                strf::to(buff)
+                    .with(notifier_ptr, strf::surrogate_policy::strict)
+                    (strf::sani(invalid_input));
+            } catch (dummy_exception&) {
+                thrown = true;
+            } catch(...) {
+            }
+            TEST_TRUE(thrown);
         }
-        TEST_TRUE(thrown);
-    }
-    {   // using strf::surrogate_policy::lax
-        const char32_t invalid_input[] = {0x110000, 0x110001, 0};
-        bool thrown = false;
-        try {
-            char32_t buff[10];
-            strf::to(buff)
-                .with(notifier_that_throws, strf::surrogate_policy::lax)
-                (strf::sani(invalid_input));
-        } catch (dummy_exception&) {
-            thrown = true;
-        } catch(...) {
+        {   // using strf::surrogate_policy::lax
+            const char32_t invalid_input[] = {0x110000, 0x110001, 0};
+            bool thrown = false;
+            try {
+                char32_t buff[10];
+                strf::to(buff)
+                    .with(notifier_ptr, strf::surrogate_policy::lax)
+                    (strf::sani(invalid_input));
+            } catch (dummy_exception&) {
+                thrown = true;
+            } catch(...) {
+            }
+            TEST_TRUE(thrown);
         }
-        TEST_TRUE(thrown);
-    }
 
+    }
 #endif // __cpp_exceptions
 
 }
