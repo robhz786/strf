@@ -2155,7 +2155,7 @@ struct single_byte_charset_to_utf32
         ( strf::transcode_dest<DestCharT>& dest
         , const SrcCharT* src
         , std::size_t src_size
-        , strf::invalid_seq_notifier* inv_seq_notifier
+        , strf::transcoding_error_notifier* err_notifier
         , strf::surrogate_policy surr_poli );
 
     static constexpr STRF_HD std::size_t transcode_size
@@ -2181,7 +2181,7 @@ STRF_HD void single_byte_charset_to_utf32<SrcCharT, DestCharT, Impl>::transcode
     ( strf::transcode_dest<DestCharT>& dest
     , const SrcCharT* src
     , std::size_t src_size
-    , strf::invalid_seq_notifier* inv_seq_notifier
+    , strf::transcoding_error_notifier* err_notifier
     , strf::surrogate_policy surr_poli )
 {
     (void) surr_poli;
@@ -2194,11 +2194,11 @@ STRF_HD void single_byte_charset_to_utf32<SrcCharT, DestCharT, Impl>::transcode
         STRF_IF_LIKELY (ch32 != 0xFFFD) {
             *dest_it = static_cast<DestCharT>(ch32);
         } else  {
-            *dest_it = 0xFFFD;
-            if (inv_seq_notifier) {
-                dest.advance_to(dest_it + 1);
-                inv_seq_notifier->notify();
+            if (err_notifier) {
+                dest.advance_to(dest_it);
+                err_notifier->invalid_sequence(Impl::name(), src_it, 1, 1);
             }
+            *dest_it = 0xFFFD;
         }
     }
     dest.advance_to(dest_it);
@@ -2211,7 +2211,7 @@ struct utf32_to_single_byte_charset
         ( strf::transcode_dest<DestCharT>& dest
         , const SrcCharT* src
         , std::size_t src_size
-        , strf::invalid_seq_notifier* inv_seq_notifier
+        , strf::transcoding_error_notifier* err_notifier
         , strf::surrogate_policy surr_poli );
 
     static constexpr STRF_HD std::size_t transcode_size
@@ -2236,24 +2236,28 @@ STRF_HD void utf32_to_single_byte_charset<SrcCharT, DestCharT, Impl>::transcode
     ( strf::transcode_dest<DestCharT>& dest
     , const SrcCharT* src
     , std::size_t src_size
-    , strf::invalid_seq_notifier* inv_seq_notifier
+    , strf::transcoding_error_notifier* err_notifier
     , strf::surrogate_policy surr_poli )
 {
     (void)surr_poli;
     auto dest_it = dest.buffer_ptr();
     auto dest_end = dest.buffer_end();
     auto src_end = src + src_size;
-    for(auto src_it = src; src_it != src_end; ++src_it, ++dest_it) {
+    for (auto src_it = src; src_it != src_end; ++src_it, ++dest_it) {
         STRF_CHECK_DEST;
-        auto ch2 = Impl::encode(*src_it);
+        char32_t ch2 = Impl::encode(*src_it);
         STRF_IF_LIKELY (ch2 < 0x100) {
             * dest_it = static_cast<DestCharT>(ch2);
         } else {
-            * dest_it = '?';
-            if (inv_seq_notifier) {
-                dest.advance_to(dest_it + 1);
-                inv_seq_notifier->notify();
+            if (err_notifier) {
+                dest.advance_to(dest_it);
+                if (ch2 <= 0x10FFFF) {
+                    err_notifier->unsupported_codepoint(Impl::name(), ch2);
+                } else {
+                    err_notifier->invalid_sequence("UTF-32", &ch2, 4, 1);
+                }
             }
+            * dest_it = '?';
         }
     }
     dest.advance_to(dest_it);
@@ -2266,7 +2270,7 @@ struct single_byte_charset_sanitizer
         ( strf::transcode_dest<DestCharT>& dest
         , const SrcCharT* src
         , std::size_t src_size
-        , strf::invalid_seq_notifier* inv_seq_notifier
+        , strf::transcoding_error_notifier* err_notifier
         , strf::surrogate_policy surr_poli );
 
     static constexpr STRF_HD std::size_t transcode_size
@@ -2292,7 +2296,7 @@ STRF_HD void single_byte_charset_sanitizer<SrcCharT, DestCharT, Impl>::transcode
     ( strf::transcode_dest<DestCharT>& dest
     , const SrcCharT* src
     , std::size_t src_size
-    , strf::invalid_seq_notifier* inv_seq_notifier
+    , strf::transcoding_error_notifier* err_notifier
     , strf::surrogate_policy surr_poli )
 {
     (void) surr_poli;
@@ -2306,11 +2310,11 @@ STRF_HD void single_byte_charset_sanitizer<SrcCharT, DestCharT, Impl>::transcode
             *dest_it = static_cast<SrcCharT>(ch);
         }
         else {
-            *dest_it = '?';
-            STRF_IF_UNLIKELY (inv_seq_notifier) {
+            STRF_IF_UNLIKELY (err_notifier) {
                 dest.advance_to(dest_it);
-                inv_seq_notifier->notify();
+                err_notifier->invalid_sequence(Impl::name(), src_it, 1, 1);
             }
+            *dest_it = '?';
         }
     }
     dest.advance_to(dest_it);

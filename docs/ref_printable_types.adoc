@@ -38,7 +38,7 @@ Influenced by facet categories::
 - `<<width_calculator_c,width_calculator_c>>`
 - `<<charset_c,charset_c>><__CharType__>`
 - `<<surrogate_policy,surrogate_policy_c>>`
-- `<<invalid_seq_notifier_c,invalid_seq_notifier_c>>`
+- `<<transcoding_error_notifier_c,transcoding_error_notifier_c>>`
 
 
 Format functions::

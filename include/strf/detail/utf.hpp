@@ -249,7 +249,7 @@ public:
         ( strf::transcode_dest<DestCharT>& dest
         , const SrcCharT* src
         , std::size_t src_size
-        , strf::invalid_seq_notifier* inv_seq_notifier
+        , strf::transcoding_error_notifier* err_notifier
         , strf::surrogate_policy surr_poli );
 
     static STRF_HD std::size_t transcode_size
@@ -278,7 +278,7 @@ public:
         ( strf::transcode_dest<DestCharT>& dest
         , const SrcCharT* src
         , std::size_t src_size
-        , strf::invalid_seq_notifier* inv_seq_notifier
+        , strf::transcoding_error_notifier* err_notifier
         , strf::surrogate_policy surr_poli );
 
     static STRF_HD std::size_t transcode_size
@@ -307,7 +307,7 @@ public:
         ( strf::transcode_dest<DestCharT>& dest
         , const SrcCharT* src
         , std::size_t src_size
-        , strf::invalid_seq_notifier* inv_seq_notifier
+        , strf::transcoding_error_notifier* err_notifier
         , strf::surrogate_policy surr_poli );
 
     static STRF_HD std::size_t transcode_size
@@ -336,7 +336,7 @@ public:
         ( strf::transcode_dest<DestCharT>& dest
         , const SrcCharT* src
         , std::size_t src_size
-        , strf::invalid_seq_notifier* inv_seq_notifier
+        , strf::transcoding_error_notifier* err_notifier
         , strf::surrogate_policy surr_poli );
 
     static STRF_HD std::size_t transcode_size
@@ -365,7 +365,7 @@ public:
         ( strf::transcode_dest<DestCharT>& dest
         , const SrcCharT* src
         , std::size_t src_size
-        , strf::invalid_seq_notifier* inv_seq_notifier
+        , strf::transcoding_error_notifier* err_notifier
         , strf::surrogate_policy surr_poli );
 
     static STRF_HD std::size_t transcode_size
@@ -394,7 +394,7 @@ public:
         ( strf::transcode_dest<DestCharT>& dest
         , const SrcCharT* src
         , std::size_t src_size
-        , strf::invalid_seq_notifier* inv_seq_notifier
+        , strf::transcoding_error_notifier* err_notifier
         , strf::surrogate_policy surr_poli );
 
     static STRF_HD std::size_t transcode_size
@@ -423,7 +423,7 @@ public:
         ( strf::transcode_dest<DestCharT>& dest
         , const SrcCharT* src
         , std::size_t src_size
-        , strf::invalid_seq_notifier* inv_seq_notifier
+        , strf::transcoding_error_notifier* err_notifier
         , strf::surrogate_policy surr_poli );
 
     static STRF_HD std::size_t transcode_size
@@ -452,7 +452,7 @@ public:
         ( strf::transcode_dest<DestCharT>& dest
         , const SrcCharT* src
         , std::size_t src_size
-        , strf::invalid_seq_notifier* inv_seq_notifier
+        , strf::transcoding_error_notifier* err_notifier
         , strf::surrogate_policy surr_poli );
 
     static STRF_HD std::size_t transcode_size
@@ -481,7 +481,7 @@ public:
         ( strf::transcode_dest<DestCharT>& dest
         , const SrcCharT* src
         , std::size_t src_size
-        , strf::invalid_seq_notifier* inv_seq_notifier
+        , strf::transcoding_error_notifier* err_notifier
         , strf::surrogate_policy surr_poli );
 
     static STRF_HD std::size_t transcode_size
@@ -1018,7 +1018,7 @@ STRF_HD void strf::static_transcoder
     ( strf::transcode_dest<DestCharT>& dest
     , const SrcCharT* src
     , std::size_t src_size
-    , strf::invalid_seq_notifier* inv_seq_notifier
+    , strf::transcoding_error_notifier* err_notifier
     , strf::surrogate_policy surr_poli )
 {
     using strf::detail::utf8_decode;
@@ -1037,8 +1037,9 @@ STRF_HD void strf::static_transcoder
     auto dest_end = dest.buffer_end();
     DestCharT ch32;
 
-    while(src_it != src_end) {
+    while (src_it != src_end) {
         ch0 = (*src_it);
+        const SrcCharT* seq_begin = src_it;
         ++src_it;
         if (ch0 < 0x80) {
             ch32 = ch0;
@@ -1074,9 +1075,10 @@ STRF_HD void strf::static_transcoder
         } else {
             invalid_sequence:
             ch32 = 0xFFFD;
-            if (inv_seq_notifier) {
+            if (err_notifier) {
                 dest.advance_to(dest_it);
-                inv_seq_notifier->notify();
+                err_notifier->invalid_sequence
+                    ("UTF-8", (const void*)seq_begin, 1, src_it - seq_begin);
             }
         }
 
@@ -1140,7 +1142,7 @@ STRF_HD void strf::static_transcoder
     ( strf::transcode_dest<DestCharT>& dest
     , const SrcCharT* src
     , std::size_t src_size
-    , strf::invalid_seq_notifier* inv_seq_notifier
+    , strf::transcoding_error_notifier* err_notifier
     , strf::surrogate_policy surr_poli )
 {
     using strf::detail::utf8_decode;
@@ -1155,6 +1157,7 @@ STRF_HD void strf::static_transcoder
     auto dest_end = dest.buffer_end();
     while(src_it != src_end) {
         ch0 = (*src_it);
+        const SrcCharT* seq_begin = src_it;
         ++src_it;
         if(ch0 < 0x80) {
             STRF_CHECK_DEST;
@@ -1206,15 +1209,16 @@ STRF_HD void strf::static_transcoder
             dest_it += 4;
         } else {
             invalid_sequence:
+            if (err_notifier) {
+                dest.advance_to(dest_it);
+                err_notifier->invalid_sequence
+                    ("UTF-8", (const void*)seq_begin, 1, src_it - seq_begin);
+            }
             STRF_CHECK_DEST_SIZE(3);
             dest_it[0] = static_cast<DestCharT>('\xEF');
             dest_it[1] = static_cast<DestCharT>('\xBF');
             dest_it[2] = static_cast<DestCharT>('\xBD');
             dest_it += 3;
-            if (inv_seq_notifier) {
-                dest.advance_to(dest_it);
-                inv_seq_notifier->notify();
-            }
         }
     }
     dest.advance_to(dest_it);
@@ -1422,7 +1426,7 @@ STRF_HD void strf::static_transcoder
     ( strf::transcode_dest<DestCharT>& dest
     , const SrcCharT* src
     , std::size_t src_size
-    , strf::invalid_seq_notifier* inv_seq_notifier
+    , strf::transcoding_error_notifier* err_notifier
     , strf::surrogate_policy surr_poli )
 {
     auto src_it = src;
@@ -1459,15 +1463,15 @@ STRF_HD void strf::static_transcoder
             dest_it += 4;
         } else {
             invalid_sequence:
+            STRF_IF_UNLIKELY (err_notifier) {
+                dest.advance_to(dest_it);
+                err_notifier->invalid_sequence("UTF-32", (const void*)src_it, 4, 1);
+            }
             STRF_CHECK_DEST_SIZE(3);
             dest_it[0] = static_cast<DestCharT>('\xEF');
             dest_it[1] = static_cast<DestCharT>('\xBF');
             dest_it[2] = static_cast<DestCharT>('\xBD');
             dest_it += 3;
-            STRF_IF_UNLIKELY (inv_seq_notifier) {
-                dest.advance_to(dest_it);
-                inv_seq_notifier->notify();
-            }
         }
     }
     dest.advance_to(dest_it);
@@ -1516,34 +1520,32 @@ STRF_HD void strf::static_transcoder
     ( strf::transcode_dest<DestCharT>& dest
     , const SrcCharT* src
     , std::size_t src_size
-    , strf::invalid_seq_notifier* inv_seq_notifier
+    , strf::transcoding_error_notifier* err_notifier
     , strf::surrogate_policy surr_poli )
 {
     unsigned long ch, ch2;
     DestCharT ch32;
-    const SrcCharT* src_it_next;
     auto src_end = src + src_size;
     auto dest_it = dest.buffer_ptr();
     auto dest_end = dest.buffer_end();
-    for(auto src_it = src; src_it != src_end; src_it = src_it_next) {
-        src_it_next = src_it + 1;
+    auto src_it = src;
+    while (src_it != src_end) {
         ch = *src_it;
-        src_it_next = src_it + 1;
-
+        ++src_it;
         STRF_IF_LIKELY (strf::detail::not_surrogate(ch)) {
             ch32 = ch;
         } else if ( strf::detail::is_high_surrogate(ch)
-               && src_it_next != src_end
-               && strf::detail::is_low_surrogate(ch2 = *src_it_next)) {
+               && src_it != src_end
+               && strf::detail::is_low_surrogate(ch2 = *src_it)) {
             ch32 = 0x10000 + (((ch & 0x3FF) << 10) | (ch2 & 0x3FF));
-            ++src_it_next;
+            ++src_it;
         } else if (surr_poli == strf::surrogate_policy::lax) {
             ch32 = ch;
         } else {
             ch32 = 0xFFFD;
-            if (inv_seq_notifier) {
+            if (err_notifier) {
                 dest.advance_to(dest_it);
-                inv_seq_notifier->notify();
+                err_notifier->invalid_sequence("UTF-16", src_it - 1, 2, 1);
             }
         }
 
@@ -1589,28 +1591,27 @@ STRF_HD void strf::static_transcoder
     ( strf::transcode_dest<DestCharT>& dest
     , const SrcCharT* src
     , std::size_t src_size
-    , strf::invalid_seq_notifier* inv_seq_notifier
+    , strf::transcoding_error_notifier* err_notifier
     , strf::surrogate_policy surr_poli )
 {
     unsigned long ch, ch2;
     auto src_it = src;
     const auto src_end = src + src_size;
-    const SrcCharT* src_it_next;
     auto dest_it = dest.buffer_ptr();
     auto dest_end = dest.buffer_end();
-    for( ; src_it != src_end; src_it = src_it_next) {
+    while (src_it != src_end) {
         ch = *src_it;
-        src_it_next = src_it + 1;
+        ++src_it;
 
         STRF_IF_LIKELY (strf::detail::not_surrogate(ch)) {
             STRF_CHECK_DEST;
             *dest_it = static_cast<DestCharT>(ch);
             ++dest_it;
         } else if ( strf::detail::is_high_surrogate(ch)
-                 && src_it_next != src_end
-                 && strf::detail::is_low_surrogate(ch2 = *src_it_next))
+                 && src_it != src_end
+                 && strf::detail::is_low_surrogate(ch2 = *src_it))
         {
-            ++src_it_next;
+            ++src_it;
             STRF_CHECK_DEST_SIZE(2);
             dest_it[0] = static_cast<DestCharT>(ch);
             dest_it[1] = static_cast<DestCharT>(ch2);
@@ -1620,13 +1621,13 @@ STRF_HD void strf::static_transcoder
             *dest_it = static_cast<DestCharT>(ch);
             ++dest_it;
         } else {
+            if (err_notifier) {
+                dest.advance_to(dest_it);
+                err_notifier->invalid_sequence("UTF-16", src_it - 1, 2, 1);
+            }
             STRF_CHECK_DEST;
             *dest_it = 0xFFFD;
             ++dest_it;
-            if (inv_seq_notifier) {
-                dest.advance_to(dest_it);
-                inv_seq_notifier->notify();
-            }
         }
     }
     dest.advance_to(dest_it);
@@ -1753,7 +1754,7 @@ STRF_HD void strf::static_transcoder
     ( strf::transcode_dest<DestCharT>& dest
     , const SrcCharT* src
     , std::size_t src_size
-    , strf::invalid_seq_notifier* inv_seq_notifier
+    , strf::transcoding_error_notifier* err_notifier
     , strf::surrogate_policy surr_poli )
 {
     auto src_it = src;
@@ -1778,13 +1779,13 @@ STRF_HD void strf::static_transcoder
             dest_it += 2;
         } else {
             invalid_char:
+            if (err_notifier) {
+                dest.advance_to(dest_it);
+                err_notifier->invalid_sequence("UTF-32", src_it, 4, 1);
+            }
             STRF_CHECK_DEST;
             *dest_it = 0xFFFD;
             ++dest_it;
-            if (inv_seq_notifier) {
-                dest.advance_to(dest_it);
-                inv_seq_notifier->notify();
-            }
         }
     }
     dest.advance_to(dest_it);
@@ -1824,7 +1825,7 @@ STRF_HD void strf::static_transcoder
     ( strf::transcode_dest<DestCharT>& dest
     , const SrcCharT* src
     , std::size_t src_size
-    , strf::invalid_seq_notifier* inv_seq_notifier
+    , strf::transcoding_error_notifier* err_notifier
     , strf::surrogate_policy surr_poli )
 {
     const auto src_end = src + src_size;
@@ -1835,9 +1836,9 @@ STRF_HD void strf::static_transcoder
             auto ch = *src_it;
             STRF_IF_UNLIKELY (ch >= 0x110000) {
                 ch = 0xFFFD;
-                if (inv_seq_notifier) {
+                if (err_notifier) {
                     dest.advance_to(dest_it);
-                    inv_seq_notifier->notify();
+                    err_notifier->invalid_sequence("UTF-32", src_it, 4, 1);
                 }
             }
             STRF_CHECK_DEST;
@@ -1849,9 +1850,9 @@ STRF_HD void strf::static_transcoder
             char32_t ch = *src_it;
             STRF_IF_UNLIKELY (ch >= 0x110000 || strf::detail::is_surrogate(ch)) {
                 ch = 0xFFFD;
-                if (inv_seq_notifier) {
+                if (err_notifier) {
                     dest.advance_to(dest_it);
-                    inv_seq_notifier->notify();
+                    err_notifier->invalid_sequence("UTF-32", src_it, 4, 1);
                 }
             }
             STRF_CHECK_DEST;
@@ -1887,7 +1888,7 @@ STRF_HD void strf::static_transcoder
     ( strf::transcode_dest<DestCharT>& dest
     , const SrcCharT* src
     , std::size_t src_size
-    , strf::invalid_seq_notifier* inv_seq_notifier
+    , strf::transcoding_error_notifier* err_notifier
     , strf::surrogate_policy surr_poli )
 {
     using strf::detail::utf8_decode;
@@ -1907,6 +1908,7 @@ STRF_HD void strf::static_transcoder
 
     for (;src_it != src_end; ++dest_it) {
         ch0 = (*src_it);
+        const SrcCharT* seq_begin = src_it;
         ++src_it;
         STRF_IF_LIKELY (ch0 < 0x80) {
             STRF_CHECK_DEST;
@@ -1955,12 +1957,12 @@ STRF_HD void strf::static_transcoder
             ++src_it;
         } else {
             invalid_sequence:
+            if (err_notifier) {
+                dest.advance_to(dest_it);
+                err_notifier->invalid_sequence("UTF-8", seq_begin, 1, src_it - seq_begin);
+            }
             STRF_CHECK_DEST;
             *dest_it = 0xFFFD;
-            if (inv_seq_notifier) {
-                dest.advance_to(dest_it);
-                inv_seq_notifier->notify();
-            }
         }
     }
     dest.advance_to(dest_it);
@@ -2022,17 +2024,18 @@ STRF_HD void strf::static_transcoder
     ( strf::transcode_dest<DestCharT>& dest
     , const SrcCharT* src
     , std::size_t src_size
-    , strf::invalid_seq_notifier* inv_seq_notifier
+    , strf::transcoding_error_notifier* err_notifier
     , strf::surrogate_policy surr_poli )
 {
-    (void) inv_seq_notifier;
+    (void) err_notifier;
     auto src_it = src;
     const auto src_end = src + src_size;
     auto dest_it = dest.buffer_ptr();
     auto dest_end = dest.buffer_end();
 
-    for( ; src_it < src_end; ++src_it) {
+    while (src_it < src_end) {
         auto ch = *src_it;
+        ++src_it;
         STRF_IF_LIKELY (ch < 0x80) {
             STRF_CHECK_DEST;
             *dest_it = static_cast<DestCharT>(ch);
@@ -2050,11 +2053,12 @@ STRF_HD void strf::static_transcoder
             dest_it[2] = static_cast<DestCharT>(0x80 | (0xBF &  ch ));
             dest_it += 3;
         } else if ( strf::detail::is_high_surrogate(ch)
-               && (src_it + 1) != src_end
-               && strf::detail::is_low_surrogate(*(src_it + 1)))
+               && src_it != src_end
+               && strf::detail::is_low_surrogate(*src_it) )
         {
             STRF_CHECK_DEST_SIZE(4);
-            unsigned long ch2 = *++src_it;
+            unsigned long ch2 = *src_it;
+            ++src_it;
             unsigned long codepoint = 0x10000 + (((ch & 0x3FF) << 10) | (ch2 & 0x3FF));
             dest_it[0] = static_cast<DestCharT>(0xF0 | (0x07 & (codepoint >> 18)));
             dest_it[1] = static_cast<DestCharT>(0x80 | (0xBF & (codepoint >> 12)));
@@ -2064,15 +2068,15 @@ STRF_HD void strf::static_transcoder
         } else if (surr_poli == strf::surrogate_policy::lax) {
             goto three_bytes;
         } else { // invalid sequece
+            if (err_notifier) {
+                dest.advance_to(dest_it);
+                err_notifier->invalid_sequence("UTF-16", src_it - 1, 2, 1);
+            }
             STRF_CHECK_DEST_SIZE(3);
             dest_it[0] = static_cast<DestCharT>('\xEF');
             dest_it[1] = static_cast<DestCharT>('\xBF');
             dest_it[2] = static_cast<DestCharT>('\xBD');
             dest_it += 3;
-            if (inv_seq_notifier) {
-                dest.advance_to(dest_it);
-                inv_seq_notifier->notify();
-            }
         }
     }
     dest.advance_to(dest_it);

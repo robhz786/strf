@@ -307,10 +307,11 @@ Instead of throwing, Strf's policy is to print the replacement character `U'\uFF
 ( or `'?'`, depending on the charset ) indicating where the error occured.
 This can happen when parsing the {tr-string} or in
 <<quick_reference#charset_conversion,charset conversion>> or sanitization.
-Optionally, you can set a callback to be invoked in such errors
-( see `<<strf_hpp#tr_error_notifier_c,tr_error_notifier_c>>`
-and `<<strf_hpp#invalid_seq_notifier_c,invalid_seq_notifier_c>>` )
-which can then throw an exception, if that's what you want.
+However, in case you want it to do something more than just that ( like an
+to throw, or to log a message ), this can be specified with the
+`<<strf_hpp#tr_error_notifier_c,tr_error_notifier_c>>` and/or
+`<<strf_hpp#transcoding_error_notifier_c,transcoding_error_notifier_c>>
+facets.
 
 In addition to that, depending on the <<quick_reference#destinations,destination>>,
 the return type of the <<tutorial#syntax,basic usage syntax>> may contain an error

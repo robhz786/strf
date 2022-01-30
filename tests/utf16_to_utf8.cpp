@@ -3,7 +3,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include "test_utils.hpp"
+#include "test_invalid_sequences.hpp"
 
 namespace {
 
@@ -66,27 +66,45 @@ STRF_TEST_FUNC void utf16_to_utf8_valid_sequences()
 
 }
 
+#define TEST_INVALID_SEQS(INPUT, ...)                                   \
+    test_utils::test_invalid_sequences                                  \
+        <strf::csid_utf16, strf::csid_utf8, char16_t, char>             \
+        ( BOOST_CURRENT_FUNCTION, __FILE__, __LINE__                    \
+        , strf::surrogate_policy::strict, (INPUT), __VA_ARGS__ );
+
+#define TEST_INVALID_SEQS_LAX(INPUT, ...)                               \
+    test_utils::test_invalid_sequences                                  \
+        <strf::csid_utf16, strf::csid_utf8, char16_t, char>             \
+        ( BOOST_CURRENT_FUNCTION, __FILE__, __LINE__                    \
+        , strf::surrogate_policy::lax, (INPUT), __VA_ARGS__ );
+
 STRF_TEST_FUNC void utf16_to_utf8_invalid_sequences()
 {
+    const char16_t str_dfff[] = {0xDFFF, 0};
+    const char16_t str_d800[] = {0xD800, 0};
     {
         // high surrogate at the end
         const char16_t str[] = {0xD800, 0};
         TEST(u8" \uFFFD") (strf::sani(str) > 2);
+        TEST_INVALID_SEQS(str, str_d800);
     }
     {
         // high surrogate followed by another high surrogate
         const char16_t str[] = {0xD800, 0xD800, 0};
         TEST(u8" \uFFFD\uFFFD") (strf::sani(str) > 3);
+        TEST_INVALID_SEQS(str, str_d800, str_d800);
     }
     {
         // low surrogate followed by a high surrogate
         const char16_t str[] = {0xDFFF, 0xD800, 0};
         TEST(u8" \uFFFD\uFFFD") (strf::sani(str) > 3);
+        TEST_INVALID_SEQS(str, str_dfff, str_d800);
     }
     {
         // a low surrogate
         const char16_t str[] = {0xDFFF, 0};
         TEST(u8" \uFFFD") (strf::sani(str) > 2);
+        TEST_INVALID_SEQS(str, str_dfff);
 
         TEST_TRUNCATING_AT     (4, u8" \uFFFD") (strf::sani(str) > 2);
         TEST_CALLING_RECYCLE_AT(3, u8" \uFFFD") (strf::sani(str) > 2);
@@ -97,15 +115,18 @@ STRF_TEST_FUNC void utf16_to_utf8_invalid_sequences()
         // a high surrogate
         const char16_t str[] = {'_', 0xD800, '_', 0};
         TEST(u8" _\uFFFD_") (strf::sani(str) > 4);
+        TEST_INVALID_SEQS(str, str_d800);
     }
     {
         // low surrogate followed by a high surrogate
         const char16_t str[] = {'_', 0xDFFF, 0xD800, '_', 0};
         TEST(u8" _\uFFFD\uFFFD_") (strf::sani(str) > 5);
+        TEST_INVALID_SEQS(str, str_dfff, str_d800);
     }
     {
         const char16_t str[] = {'_', 0xDFFF, '_', 0};
         TEST(u8" _\uFFFD_") (strf::sani(str) > 4);
+        TEST_INVALID_SEQS(str, str_dfff);
     }
     {
         const char16_t str[] = {'_', 0xD800, '_', 0};
@@ -113,8 +134,8 @@ STRF_TEST_FUNC void utf16_to_utf8_invalid_sequences()
     }
 }
 
-struct invalid_seq_counter: strf::invalid_seq_notifier {
-    void STRF_HD notify() override {
+struct invalid_seq_counter: strf::transcoding_error_notifier {
+    void STRF_HD invalid_sequence(const char*, const void*, std::size_t, std::size_t) override {
         ++ notifications_count;
     }
     std::size_t notifications_count = 0;
@@ -124,8 +145,8 @@ struct invalid_seq_counter: strf::invalid_seq_notifier {
 
 struct dummy_exception {};
 
-struct notifier_that_throws : strf::invalid_seq_notifier {
-    void STRF_HD notify() override {
+struct notifier_that_throws : strf::transcoding_error_notifier {
+    void STRF_HD invalid_sequence(const char*, const void*, std::size_t, std::size_t) override {
         throw dummy_exception{};
     }
 };
@@ -137,7 +158,7 @@ STRF_TEST_FUNC void utf16_to_utf8_error_notifier()
     const char16_t invalid_input[] = {0xDFFF, 0xD800, 0};
     {
         invalid_seq_counter notifier;
-        strf::invalid_seq_notifier_ptr notifier_ptr{&notifier};
+        strf::transcoding_error_notifier_ptr notifier_ptr{&notifier};
 
         TEST(u8"\uFFFD\uFFFD").with(notifier_ptr) (strf::sani(invalid_input));
         TEST_EQ(notifier.notifications_count, 2);
@@ -152,7 +173,7 @@ STRF_TEST_FUNC void utf16_to_utf8_error_notifier()
         // check that an exception can be thrown, i.e,
         // ensure there is no `noexcept` blocking it
         notifier_that_throws notifier;
-        strf::invalid_seq_notifier_ptr notifier_ptr{&notifier};
+        strf::transcoding_error_notifier_ptr notifier_ptr{&notifier};
         bool thrown = false;
         try {
             char buff[40];

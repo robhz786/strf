@@ -3,7 +3,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include "test_utils.hpp"
+#include "test_invalid_sequences.hpp"
 
 namespace {
 
@@ -70,8 +70,23 @@ STRF_TEST_FUNC void utf32_to_utf16_valid_sequences()
     }
 }
 
+#define TEST_INVALID_SEQS(INPUT, ...)                                   \
+    test_utils::test_invalid_sequences                                  \
+        <strf::csid_utf32, strf::csid_utf16, char32_t, char16_t>        \
+        ( BOOST_CURRENT_FUNCTION, __FILE__, __LINE__                    \
+        , strf::surrogate_policy::strict, (INPUT), __VA_ARGS__ );
+
+#define TEST_INVALID_SEQS_LAX(INPUT, ...)                               \
+    test_utils::test_invalid_sequences                                  \
+        <strf::csid_utf32, strf::csid_utf16, char32_t, char16_t>        \
+        ( BOOST_CURRENT_FUNCTION, __FILE__, __LINE__                    \
+        , strf::surrogate_policy::lax, (INPUT), __VA_ARGS__ );
+
 STRF_TEST_FUNC void utf32_to_utf16_invalid_sequences()
 {
+    const char32_t str_dfff[] = {0xDFFF, 0};
+    const char32_t str_d800[] = {0xD800, 0};
+    const char32_t str_110000[] = {0x110000, 0};
     {
         // surrogates
         const char32_t str[] = {0xD800, 0xDFFF, 0};
@@ -82,14 +97,18 @@ STRF_TEST_FUNC void utf32_to_utf16_invalid_sequences()
         TEST_CALLING_RECYCLE_AT(2, u" \uFFFD\uFFFD") (strf::sani(str) > 3);
     }
     {   // codepoint too big
-        const char32_t str[] = {0x110000, 0};
-        TEST(u" \uFFFD") (strf::sani(str) > 2);
-        TEST(u" \uFFFD") .with(strf::surrogate_policy::lax) (strf::sani(str) > 2);
+        const char32_t str[] = {0xD800, 0xDFFF, 0x110000, 0};
+        TEST(u" \uFFFD\uFFFD\uFFFD") (strf::sani(str) > 4);
+        TEST_INVALID_SEQS(str, str_d800, str_dfff, str_110000);
+
+        const char16_t expected_lax[] = {0xD800, 0xDFFF, 0xFFFD, 0};
+        TEST(expected_lax).with(strf::surrogate_policy::lax) (strf::sani(str));
+        TEST_INVALID_SEQS_LAX(str, str_110000);
     }
 }
 
-struct invalid_seq_counter: strf::invalid_seq_notifier {
-    void STRF_HD notify() override {
+struct invalid_seq_counter: strf::transcoding_error_notifier {
+    void STRF_HD invalid_sequence(const char*, const void*, std::size_t, std::size_t) override {
         ++ notifications_count;
     }
     std::size_t notifications_count = 0;
@@ -99,8 +118,8 @@ struct invalid_seq_counter: strf::invalid_seq_notifier {
 
 struct dummy_exception {};
 
-struct notifier_that_throws : strf::invalid_seq_notifier {
-    void STRF_HD notify() override {
+struct notifier_that_throws : strf::transcoding_error_notifier {
+    void STRF_HD invalid_sequence(const char*, const void*, std::size_t, std::size_t) override {
         throw dummy_exception{};
     }
 };
@@ -112,7 +131,7 @@ STRF_TEST_FUNC void utf32_to_utf16_error_notifier()
     const char32_t invalid_input[] = {0x110000, 0xFFFFFF, 0};
     {
         invalid_seq_counter notifier;
-        strf::invalid_seq_notifier_ptr notifier_ptr{&notifier};
+        strf::transcoding_error_notifier_ptr notifier_ptr{&notifier};
 
         TEST(u"\uFFFD\uFFFD").with(notifier_ptr) (strf::sani(invalid_input));
         TEST_EQ(notifier.notifications_count, 2);
@@ -140,7 +159,7 @@ STRF_TEST_FUNC void utf32_to_utf16_error_notifier()
         // check that an exception can be thrown, i.e,
         // ensure there is no `noexcept` blocking it
         notifier_that_throws notifier;
-        strf::invalid_seq_notifier_ptr notifier_ptr{&notifier};
+        strf::transcoding_error_notifier_ptr notifier_ptr{&notifier};
         {
             bool thrown = false;
             try {

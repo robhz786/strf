@@ -3,7 +3,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include "test_utils.hpp"
+#include "test_invalid_sequences.hpp"
 
 #ifndef __cpp_char8_t
 using char8_t = char;
@@ -63,123 +63,178 @@ STRF_TEST_FUNC void utf8_sani_valid_sequences()
     }
 }
 
+#define TEST_INVALID_SEQS(INPUT, ...) \
+    test_utils::test_invalid_sequences<strf::csid_utf8, strf::csid_utf8, char, char> \
+        ( BOOST_CURRENT_FUNCTION, __FILE__, __LINE__                                 \
+        , strf::surrogate_policy::strict, (INPUT), __VA_ARGS__ );
+
+#define TEST_INVALID_SEQS_LAX(INPUT, ...) \
+    test_utils::test_invalid_sequences<strf::csid_utf8, strf::csid_utf8, char, char> \
+        ( BOOST_CURRENT_FUNCTION, __FILE__, __LINE__                                 \
+        , strf::surrogate_policy::lax, (INPUT), __VA_ARGS__ );
+
 STRF_TEST_FUNC void utf8_sani_invalid_sequences()
 {
+
     // sample from Tabble 3-8 of Unicode standard
     TEST(u8" \uFFFD\uFFFD\uFFFD")  (strf::sani("\xF1\x80\x80\xE1\x80\xC0") > 4);
     TEST(u8" \uFFFD\uFFFD\uFFFD_") (strf::sani("\xF1\x80\x80\xE1\x80\xC0_") > 5);
+    TEST_INVALID_SEQS(" \xF1\x80\x80\xE1\x80\xC0 ", "\xF1\x80\x80", "\xE1\x80", "\xC0");
 
     // missing leading byte
     TEST(u8" \uFFFD")  (strf::sani("\xBF") > 2);
     TEST(u8" \uFFFD_") (strf::sani("\xBF_") > 3);
+    TEST_INVALID_SEQS("\xBF", "\xBF");
 
     // missing leading byte
     TEST(u8" \uFFFD\uFFFD")  (strf::sani("\x80\x80") > 3);
     TEST(u8" \uFFFD\uFFFD_") (strf::sani("\x80\x80_") > 4);
+    TEST_INVALID_SEQS(" \x80\x80 ", "\x80", "\x80");
 
     // overlong sequence
     TEST(u8" \uFFFD\uFFFD")  (strf::sani("\xC1\xBF") > 3);
     TEST(u8" \uFFFD\uFFFD_") (strf::sani("\xC1\xBF_") > 4);
+    TEST_INVALID_SEQS(" \xC1\xBF ", "\xC1", "\xBF");
 
     // overlong sequence
     TEST(u8" \uFFFD\uFFFD\uFFFD")  (strf::sani("\xE0\x9F\x80") > 4);
     TEST(u8" \uFFFD\uFFFD\uFFFD_") (strf::sani("\xE0\x9F\x80_") > 5);
+    TEST_INVALID_SEQS(" \xE0\x9F\x80 ", "\xE0", "\x9F", "\x80");
 
     // overlong sequence with extra continuation bytes
     TEST(u8" \uFFFD\uFFFD\uFFFD")  (strf::sani("\xC1\xBF\x80") > 4);
     TEST(u8" \uFFFD\uFFFD\uFFFD_") (strf::sani("\xC1\xBF\x80_") > 5);
+    TEST_INVALID_SEQS(" \xC1\xBF\x80 ", "\xC1", "\xBF", "\x80");
 
     // overlong sequence with extra continuation bytes
     TEST(u8" \uFFFD\uFFFD\uFFFD\uFFFD")  (strf::sani("\xE0\x9F\x80\x80") > 5);
     TEST(u8" \uFFFD\uFFFD\uFFFD\uFFFD_") (strf::sani("\xE0\x9F\x80\x80_") > 6);
+    TEST_INVALID_SEQS(" \xE0\x9F\x80\x80 ", "\xE0", "\x9F", "\x80", "\x80");
 
     // overlong sequence
     TEST(u8" \uFFFD\uFFFD\uFFFD\uFFFD")  (strf::sani("\xF0\x8F\xBF\xBF" ) > 5);
     TEST(u8" \uFFFD\uFFFD\uFFFD\uFFFD_") (strf::sani("\xF0\x8F\xBF\xBF_" ) > 6);
+    TEST_INVALID_SEQS(" \xF0\x8F\xBF\xBF ", "\xF0", "\x8F", "\xBF", "\xBF");
 
     // overlong sequence with extra continuation bytes
     TEST(u8" \uFFFD\uFFFD\uFFFD\uFFFD\uFFFD")  (strf::sani("\xF0\x8F\xBF\xBF\x80" ) > 6);
     TEST(u8" \uFFFD\uFFFD\uFFFD\uFFFD\uFFFD_") (strf::sani("\xF0\x8F\xBF\xBF\x80_" ) > 7);
-
+    TEST_INVALID_SEQS(" \xF0\x8F\xBF\xBF\x80 ", "\xF0", "\x8F", "\xBF", "\xBF", "\x80");
 
     // codepoint too big
     TEST(u8" \uFFFD\uFFFD\uFFFD\uFFFD")  (strf::sani("\xF4\xBF\xBF\xBF") > 5);
     TEST(u8" \uFFFD\uFFFD\uFFFD\uFFFD_") (strf::sani("\xF4\xBF\xBF\xBF_") > 6);
+    TEST_INVALID_SEQS(" \xF4\xBF\xBF\xBF ", "\xF4", "\xBF", "\xBF", "\xBF");
 
     TEST(u8" \uFFFD\uFFFD\uFFFD\uFFFD_")  (strf::sani("\xF4\x90\x80\x80_") > 6);
+    TEST_INVALID_SEQS(" \xF4\x90\x80\x80  ", "\xF4", "\x90", "\x80", "\x80");
     TEST(u8" \uFFFD\uFFFD\uFFFD\uFFFD_")  (strf::sani("\xF5\x80\x80\x80_") > 6);
+    TEST_INVALID_SEQS(" \xF5\x80\x80\x80  ", "\xF5", "\x80", "\x80", "\x80");
     TEST(u8" \uFFFD\uFFFD\uFFFD\uFFFD_")  (strf::sani("\xF6\x80\x80\x80_") > 6);
+    TEST_INVALID_SEQS(" \xF6\x80\x80\x80  ", "\xF6", "\x80", "\x80", "\x80");
     TEST(u8" \uFFFD\uFFFD\uFFFD\uFFFD_")  (strf::sani("\xF7\x80\x80\x80_") > 6);
+    TEST_INVALID_SEQS(" \xF7\x80\x80\x80  ", "\xF7", "\x80", "\x80", "\x80");
     TEST(u8" \uFFFD\uFFFD\uFFFD\uFFFD_")  (strf::sani("\xF8\x80\x80\x80_") > 6);
+    TEST_INVALID_SEQS(" \xF8\x80\x80\x80  ", "\xF8", "\x80", "\x80", "\x80");
     TEST(u8" \uFFFD\uFFFD\uFFFD\uFFFD_")  (strf::sani("\xF9\x80\x80\x80_") > 6);
+    TEST_INVALID_SEQS(" \xF9\x80\x80\x80  ", "\xF9", "\x80", "\x80", "\x80");
     TEST(u8" \uFFFD\uFFFD\uFFFD\uFFFD_")  (strf::sani("\xFA\x80\x80\x80_") > 6);
+    TEST_INVALID_SEQS(" \xFA\x80\x80\x80  ", "\xFA", "\x80", "\x80", "\x80");
     TEST(u8" \uFFFD\uFFFD\uFFFD\uFFFD_")  (strf::sani("\xFB\x80\x80\x80_") > 6);
+    TEST_INVALID_SEQS(" \xFB\x80\x80\x80  ", "\xFB", "\x80", "\x80", "\x80");
     TEST(u8" \uFFFD\uFFFD\uFFFD\uFFFD_")  (strf::sani("\xFC\x80\x80\x80_") > 6);
+    TEST_INVALID_SEQS(" \xFC\x80\x80\x80  ", "\xFC", "\x80", "\x80", "\x80");
     TEST(u8" \uFFFD\uFFFD\uFFFD\uFFFD_")  (strf::sani("\xFD\x80\x80\x80_") > 6);
+    TEST_INVALID_SEQS(" \xFD\x80\x80\x80  ", "\xFD", "\x80", "\x80", "\x80");
     TEST(u8" \uFFFD\uFFFD\uFFFD\uFFFD_")  (strf::sani("\xFE\x80\x80\x80_") > 6);
+    TEST_INVALID_SEQS(" \xFE\x80\x80\x80  ", "\xFE", "\x80", "\x80", "\x80");
     TEST(u8" \uFFFD\uFFFD\uFFFD\uFFFD_")  (strf::sani("\xFF\x80\x80\x80_") > 6);
-    TEST(u8"  \uFFFD\uFFFD\uFFFD_")        (strf::sani("\xFF\x80\x80_") > 6);
+    TEST_INVALID_SEQS(" \xFF\x80\x80\x80  ", "\xFF", "\x80", "\x80", "\x80");
+    TEST(u8"  \uFFFD\uFFFD\uFFFD_")       (strf::sani("\xFF\x80\x80_") > 6);
+    TEST_INVALID_SEQS(" \xFF\x80\x80  ", "\xFF", "\x80", "\x80");
 
     // codepoint too big with extra continuation bytes
     TEST(u8" \uFFFD\uFFFD\uFFFD\uFFFD\uFFFD\uFFFD")  (strf::sani("\xF5\x90\x80\x80\x80\x80") > 7);
     TEST(u8" \uFFFD\uFFFD\uFFFD\uFFFD\uFFFD\uFFFD_") (strf::sani("\xF5\x90\x80\x80\x80\x80_") > 8);
+    TEST_INVALID_SEQS(" \xF5\x90\x80\x80\x80\x80 ", "\xF5", "\x90", "\x80", "\x80", "\x80", "\x80");
 
     // missing continuation byte(s)
     TEST(u8" \uFFFD")  (strf::sani("\xC2") > 2);
     TEST(u8" \uFFFD_") (strf::sani("\xC2_") > 3);
+    TEST_INVALID_SEQS(" \xC2 ", "\xC2");
 
     TEST(u8" \uFFFD")  (strf::sani("\xE0") > 2);
     TEST(u8" \uFFFD_") (strf::sani("\xE0_") > 3);
+    TEST_INVALID_SEQS(" \xE0 ", "\xE0");
 
     TEST(u8" \uFFFD")  (strf::sani("\xE0\xA0") > 2);
     TEST(u8" \uFFFD_") (strf::sani("\xE0\xA0_") > 3);
+    TEST_INVALID_SEQS(" \xE0\xA0 ", "\xE0\xA0");
 
     TEST(u8" \uFFFD")  (strf::sani("\xE1") > 2);
     TEST(u8" \uFFFD_") (strf::sani("\xE1_") > 3);
+    TEST_INVALID_SEQS(" \xE1 ", "\xE1");
 
     TEST(u8" \uFFFD")  (strf::sani("\xF0\x90\xBF" ) > 2);
     TEST(u8" \uFFFD_") (strf::sani("\xF0\x90\xBF_" ) > 3);
+    TEST_INVALID_SEQS(" \xF0\x90\xBF ", "\xF0\x90\xBF");
 
     TEST(u8" \uFFFD")  (strf::sani("\xF1") > 2);
     TEST(u8" \uFFFD_") (strf::sani("\xF1_") > 3);
+    TEST_INVALID_SEQS(" \xF1 ", "\xF1");
 
     TEST(u8" \uFFFD")  (strf::sani("\xF1\x81") > 2);
     TEST(u8" \uFFFD_") (strf::sani("\xF1\x81_") > 3);
+    TEST_INVALID_SEQS(" \xF1\x81 ", "\xF1\x81");
 
     TEST(u8" \uFFFD")  (strf::sani("\xF1\x81\x81") > 2);
     TEST(u8" \uFFFD_") (strf::sani("\xF1\x81\x81_") > 3);
+    TEST_INVALID_SEQS(" \xF1\x81\x81 ", "\xF1\x81\x81");
 
     // surrogate
     TEST(u8" \uFFFD\uFFFD\uFFFD")  (strf::sani("\xED\xA0\x80") > 4);
+    TEST_INVALID_SEQS(" \xED\xA0\x80 ", "\xED", "\xA0", "\x80");
     TEST(u8" \uFFFD\uFFFD\uFFFD")  (strf::sani("\xED\xAF\xBF") > 4);
+    TEST_INVALID_SEQS(" \xED\xAF\xBF ", "\xED", "\xAF", "\xBF");
     TEST(u8" \uFFFD\uFFFD\uFFFD")  (strf::sani("\xED\xB0\x80") > 4);
+    TEST_INVALID_SEQS(" \xED\xB0\x80 ", "\xED", "\xB0", "\x80");
     TEST(u8" \uFFFD\uFFFD\uFFFD")  (strf::sani("\xED\xBF\xBF") > 4);
+    TEST_INVALID_SEQS(" \xED\xB0\x80 ", "\xED", "\xB0", "\x80");
     TEST(u8" \uFFFD\uFFFD\uFFFD_")  (strf::sani("\xED\xA0\x80_") > 5);
+    TEST_INVALID_SEQS(" \xED\xA0\x80 ", "\xED", "\xA0", "\x80");
     TEST(u8" \uFFFD\uFFFD\uFFFD_")  (strf::sani("\xED\xAF\xBF_") > 5);
+    TEST_INVALID_SEQS(" \xED\xAF\xBF ", "\xED", "\xAF", "\xBF");
     TEST(u8" \uFFFD\uFFFD\uFFFD_")  (strf::sani("\xED\xB0\x80_") > 5);
+    TEST_INVALID_SEQS(" \xED\xB0\x80 ", "\xED", "\xB0", "\x80");
     TEST(u8" \uFFFD\uFFFD\uFFFD_")  (strf::sani("\xED\xBF\xBF_") > 5);
+    TEST_INVALID_SEQS(" \xED\xBF\xBF ", "\xED", "\xBF", "\xBF");
 
     // missing continuation, but could only be a surrogate.
     TEST(u8" \uFFFD\uFFFD")  (strf::sani("\xED\xA0") > 3);
+    TEST_INVALID_SEQS(" \xED\xA0 ", "\xED", "\xA0");
     TEST(u8" \uFFFD\uFFFD_") (strf::sani("\xED\xBF_") > 4);
+    TEST_INVALID_SEQS(" \xED\xBF ", "\xED", "\xBF");
 
     // missing continuation. It could only be a surrogate, but surrogates are allowed
     auto allow_surr = strf::surrogate_policy::lax;
     TEST(u8" \uFFFD")  .with(allow_surr) (strf::sani("\xED\xA0") > 2);
+    TEST_INVALID_SEQS_LAX("\xED\xA0", "\xED\xA0");
     TEST(u8" \uFFFD_") .with(allow_surr) (strf::sani("\xED\xBF_") > 3);
+    TEST_INVALID_SEQS_LAX("\xED\xBF", "\xED\xBF");
 
     // missing continuation. Now it starts with \xED, but it is not a surrogate
     TEST(u8" \uFFFD")  (strf::sani("\xED\x9F") > 2);
     TEST(u8" \uFFFD_") (strf::sani("\xED\x9F_") > 3);
+    TEST_INVALID_SEQS(" \xED\x9F ", "\xED\x9F");
 
     // cover when recycle_buffer() needs to be called
     TEST_CALLING_RECYCLE_AT(3, u8" \uFFFD\uFFFD\uFFFD")  (strf::sani("\xED\xA0\x80") > 4);
-    TEST_TRUNCATING_AT     (10, u8" \uFFFD\uFFFD\uFFFD")  (strf::sani("\xED\xA0\x80") > 4);
+    TEST_TRUNCATING_AT     (10, u8" \uFFFD\uFFFD\uFFFD") (strf::sani("\xED\xA0\x80") > 4);
     TEST_TRUNCATING_AT     (4, u8" \uFFFD")              (strf::sani("\xED\xA0\x80") > 4);
 }
 
-struct invalid_seq_counter: strf::invalid_seq_notifier {
-    void STRF_HD notify() override {
+struct invalid_seq_counter: strf::transcoding_error_notifier {
+    void STRF_HD invalid_sequence(const char*, const void*, std::size_t, std::size_t) override {
         ++ notifications_count;
     }
     std::size_t notifications_count = 0;
@@ -188,8 +243,8 @@ struct invalid_seq_counter: strf::invalid_seq_notifier {
 #if defined(__cpp_exceptions) && __cpp_exceptions  && ! defined(__CUDACC__)
 
 struct dummy_exception {};
-struct notifier_that_throws : strf::invalid_seq_notifier {
-    void STRF_HD notify() override {
+struct notifier_that_throws : strf::transcoding_error_notifier {
+    void STRF_HD invalid_sequence(const char*, const void*, std::size_t, std::size_t) override {
         throw dummy_exception{};
     }
 };
@@ -201,7 +256,7 @@ STRF_TEST_FUNC void utf8_sani_error_notifier()
 {
     {
         invalid_seq_counter notifier;
-        strf::invalid_seq_notifier_ptr notifier_ptr{&notifier};
+        strf::transcoding_error_notifier_ptr notifier_ptr{&notifier};
 
         TEST(u8"\uFFFD\uFFFD\uFFFD").with(notifier_ptr) (strf::sani("\xED\xA0\x80"));
         TEST_EQ(notifier.notifications_count, 3);
@@ -217,7 +272,7 @@ STRF_TEST_FUNC void utf8_sani_error_notifier()
         // check that an exception can be thrown, i.e,
         // ensure there is no `noexcept` blocking it
         notifier_that_throws notifier;
-        strf::invalid_seq_notifier_ptr notifier_ptr{&notifier};
+        strf::transcoding_error_notifier_ptr notifier_ptr{&notifier};
         bool thrown = false;
         try {
             char buff[40];

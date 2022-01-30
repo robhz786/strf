@@ -5,80 +5,16 @@
 
 #include "test_utils.hpp"
 
+using test_utils::simple_array;
+using test_utils::make_simple_array;
+using test_utils::span;
+
 namespace {
-
-template <typename T, std::size_t N>
-struct simple_array {
-    T elements[N];
-};
-
-template <typename T, typename... Args>
-STRF_HD simple_array<T, sizeof... (Args)> make_simple_array(const Args&... args)
-{
-    return simple_array<T, sizeof... (Args)>{{ static_cast<T>(args)... }};
-}
 
 template <std::size_t N>
 using size_array  = simple_array<std::size_t, N>;
 
-template <typename T>
-class span {
-public:
-
-    using const_iterator = T*;
-    using iterator = T*;
-
-    template <typename U, std::size_t N>
-    STRF_HD span(simple_array<U, N>& arr)
-        : begin_(&arr.elements[0])
-        , size_(N)
-    {
-    }
-    STRF_HD span(T* ptr, std::size_t s)
-        : begin_(ptr)
-        , size_(s)
-    {
-    }
-    STRF_HD span(T* b, T* e)
-        : begin_(b)
-        , size_(e - b)
-    {
-    }
-
-    span(const span&) = default;
-
-    STRF_HD T* begin() const { return begin_; }
-    STRF_HD T* end()   const { return begin_ + size_; }
-
-    STRF_HD std::size_t size() const { return size_; }
-
-private:
-    T* begin_;
-    std::size_t size_;
-};
-
-template <typename T, typename U>
-STRF_HD bool operator==(const span<T>& l, const span<U>& r) noexcept
-{
-    if (l.size() != r.size())
-        return false;
-
-    for (std::size_t i = 0; i < l.size(); ++i) {
-        if (l.begin()[i] != r.begin()[i]) {
-            return false;
-        }
-    }
-    return true;
-}
-
-template <typename T, typename U>
-STRF_HD bool operator!=(const span<T>& l, const span<U>& r) noexcept
-{
-    return ! (l == r);
-}
-
 using char32_range = strf::detail::simple_string_view<char32_t>;
-
 
 STRF_HD auto hex_ch32(char32_t ch)
     -> decltype(strf::join("", strf::hex(0u).p(6)))

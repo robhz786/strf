@@ -28,8 +28,11 @@ STRF_HD unsigned count_fffd( strf::detail::simple_string_view<char32_t> str)
     return count;
 }
 
-struct invalid_seq_counter: strf::invalid_seq_notifier {
-    void STRF_HD notify() override {
+struct invalid_seq_counter: strf::transcoding_error_notifier {
+    void STRF_HD invalid_sequence(const char*, const void*, std::size_t, std::size_t) override {
+        ++ notifications_count;
+    }
+    void STRF_HD unsupported_codepoint(const char*, unsigned) override {
         ++ notifications_count;
     }
     std::size_t notifications_count = 0;
@@ -118,11 +121,11 @@ STRF_HD void general_tests
         TEST(decoded_0_to_0xff) (strf::sani(str_0_to_xff, charset));
     }
 
-    {   // converting a string to UTF-32 with strf::invalid_seq_notifier
+    {   // converting a string to UTF-32 with strf::transcoding_error_notifier
 
         invalid_seq_counter invalid_seq_handler;
         TEST(decoded_0_to_0xff)
-            .with(strf::invalid_seq_notifier_ptr{&invalid_seq_handler})
+            .with(strf::transcoding_error_notifier_ptr{&invalid_seq_handler})
             (strf::sani(str_0_to_xff, charset));
         TEST_EQ(invalid_seq_handler.notifications_count, fffd_count);
     }
@@ -155,13 +158,13 @@ STRF_HD void general_tests
         }
     }
 
-    {   // encode string from UTF-32 with strf::invalid_seq_notifier
+    {   // encode string from UTF-32 with strf::transcoding_error_notifier
 
         invalid_seq_counter invalid_seq_handler;
         char result[0x101];
         auto res = strf::to(result)
             .with(charset)
-            .with(strf::invalid_seq_notifier_ptr{&invalid_seq_handler})
+            .with(strf::transcoding_error_notifier_ptr{&invalid_seq_handler})
             (strf::conv(decoded_0_to_0xff, strf::utf_t<char32_t>()));
         TEST_FALSE(res.truncated);
         TEST_EQ(res.ptr - result, 0x100);
@@ -210,13 +213,13 @@ STRF_HD void general_tests
             TEST_EQ(result[i], expected_ch);
         }
     }
-    {    // sanitize string  with strf::invalid_seq_notifier
+    {    // sanitize string  with strf::transcoding_error_notifier
 
         invalid_seq_counter invalid_seq_handler;
         char result[0x101];
         auto res = strf::to(result) .with(charset)
             .with(charset)
-            .with(strf::invalid_seq_notifier_ptr{&invalid_seq_handler})
+            .with(strf::transcoding_error_notifier_ptr{&invalid_seq_handler})
             (strf::sani(str_0_to_xff));
 
         TEST_FALSE(res.truncated);

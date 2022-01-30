@@ -7,10 +7,14 @@ http://www.boost.org/LICENSE_1_0.txt)
 
 == Character encodings
 
-:invalid_seq_notifier: <<invalid_seq_notifier,invalid_seq_notifier>>
-:invalid_seq_notifier_c: <<invalid_seq_notifier_c,invalid_seq_notifier_c>>
+:transcoding_error_notifier: <<transcoding_error_notifier,transcoding_error_notifier>>
+:transcoding_error_notifier_c: <<transcoding_error_notifier_c,transcoding_error_notifier_c>>
+:transcoding_error_notifier_nullptr: <<transcoding_error_notifier_nullptr,transcoding_error_notifier_nullptr>>
+:TranscodingErrorNotifierPtr: <<TranscodingErrorNotifierPtr,TranscodingErrorNotifierPtr>>
+
 :surrogate_policy: <<surrogate_policy,surrogate_policy>>
 :surrogate_policy_c: <<surrogate_policy,surrogate_policy_c>>
+
 :charset_id: <<charset_id,charset_id>>
 :scid_utf8:         <<charset_id,scid_utf8>>
 :scid_utf16:        <<charset_id,scid_utf16>>
@@ -40,10 +44,6 @@ http://www.boost.org/LICENSE_1_0.txt)
 :facet_traits: <<facet_traits,facet_tratis>>
 :facet_category: <<facet_category,facet_category>>
 
-:invalid_seq_notifier_c: <<invalid_seq_notifier_c,invalid_seq_notifier_c>>
-:invalid_seq_notifier: <<invalid_seq_notifier,invalid_seq_notifier>>
-:invalid_seq_notifier_nullptr: <<invalid_seq_notifier_nullptr,invalid_seq_notifier_nullptr>>
-:InvalidSeqNotifierPtr: <<InvalidSeqNotifierPtr,InvalidSeqNotifierPtr>>
 
 :static_transcoder: <<static_transcoder,static_transcoder>>
 :static_charset: <<static_charset,static_charset>>
@@ -106,17 +106,17 @@ constexpr charset_id  scid_windows_1258 = /* ... */;
 } // namespace strf
 ----
 
-=== Facet category `invalid_seq_notifier_c` [[invalid_seq_notifier_c]]
+=== Facet category `transcoding_error_notifier_c` [[transcoding_error_notifier_c]]
 
-A facet of the `invalid_seq_notifier_c` category must satisfy the
-__{InvalidSeqNotifierPtr}__ type requirements.
+A facet of the `transcoding_error_notifier_c` category must satisfy the
+__{TranscodingErrorNotifierPtr}__ type requirements.
 
 [source,cpp,subs=normal]
 ----
 namespace strf {
-struct invalid_seq_notifier_c {
+struct transcoding_error_notifier_c {
     static constexpr bool constrainable = false;
-    static constexpr {invalid_seq_notifier_nullptr} get_default() noexcept {
+    static constexpr {transcoding_error_notifier_nullptr} get_default() noexcept {
         return {};
     }
 };
@@ -124,16 +124,16 @@ struct invalid_seq_notifier_c {
 ----
 
 
-==== Type requirement __InvalidSeqNotifierPtr__ [[InvalidSeqNotifierPtr]]
+==== Type requirement __TranscodingErrorNotifierPtr__ [[TranscodingErrorNotifierPtr]]
 
 Given
 
-* `X`, a __InvalidSeqNotifierPtr__ type
+* `X`, a __TranscodingErrorNotifierPtr__ type
 * `x`, a const value of type `X`
 
 The following must hold:
 
-* `{facet_category}<X>` is a type alias to `invalid_seq_notifier_c`
+* `{facet_category}<X>` is a type alias to `transcoding_error_notifier_c`
 * `X` is __MoveConstructible__
 
 ====
@@ -142,50 +142,63 @@ The following must hold:
 x.get()
 ----
 [horizontal]
-Return type:: `{invalid_seq_notifier}{asterisk}`
+Return type:: `{transcoding_error_notifier}{asterisk}`
 ====
 
-==== Struct `invalid_seq_notifier_nullptr` [[invalid_seq_notifier_nullptr]]
+==== Struct `transcoding_error_notifier_nullptr` [[transcoding_error_notifier_nullptr]]
 
 [source,cpp]
 ----
 namespace strf {
 
-struct invalid_seq_notifier_nullptr {
-    using category = invalid_seq_notifier_c;
+struct transcoding_error_notifier_nullptr {
+    using category = transcoding_error_notifier_c;
 
-    constexpr invalid_seq_notifier* get() const { return nullptr; }
+    constexpr transcoding_error_notifier* get() const { return nullptr; }
 };
 
 } // namespace strf
 ----
 
-==== Struct `invalid_seq_notifier_ptr` [[invalid_seq_notifier_ptr]]
+==== Struct `transcoding_error_notifier_ptr` [[transcoding_error_notifier_ptr]]
 
 [source,cpp]
 ----
 namespace strf {
 
-struct invalid_seq_notifier_ptr {
-    using category = invalid_seq_notifier_c;
+struct transcoding_error_notifier_ptr {
+    using category = transcoding_error_notifier_c;
 
-    constexpr invalid_seq_notifier* get() const { return ptr; }
+    constexpr transcoding_error_notifier* get() const { return ptr; }
 
-    invalid_seq_notifier* ptr = nullptr;
+    transcoding_error_notifier* ptr = nullptr;
 };
 
 } // namespace strf
 ----
 
-==== Class invalid_seq_notifier [[invalid_seq_notifier]]
+==== Class transcoding_error_notifier [[transcoding_error_notifier]]
 [source,cpp,subs=normal]
 ----
 namespace strf {
 
-class invalid_seq_notifier {
+class transcoding_error_notifier {
 public:
-    virtual ~invalid_seq_notifier() {}
-    virtual void notify() = 0;
+    virtual ~transcoding_error_notifier() {}
+
+    virtual void invalid_sequence
+        ( const char* source_charset_name
+        , const void* sequence_ptr
+        , std::size_t code_unit_size
+        , std::size_t code_units_count )
+    {
+    }
+
+    virtual void unsupported_codepoint
+        ( const char* destination_charset_name
+        , unsigned codepoint )
+    {
+    }
 };
 
 } // namespace strf
@@ -274,7 +287,7 @@ using transcode_f = void ({asterisk})
     ( {transcode_dest}<DestCharT>& dest
     , const SrcCharT{asterisk} src
     , std::size_t src_size
-    , {invalid_seq_notifier}{asterisk} inv_seq_notifier
+    , {transcoding_error_notifier}{asterisk} err_notifier
     , {surrogate_policy} surr_poli );
 
 template <typename SrcCharT>
@@ -339,7 +352,7 @@ Given
 * `src`, a value of type `const SrcCharT*`
 * `src_size`, a value of type `std::size_t` equal to the size of
               the array pointed by `src`
-* `inv_seq_notifier`, is a pointer of type `{invalid_seq_notifier}`
+* `err_notifier`, is a pointer of type `{transcoding_error_notifier}`
 * `surr_poli`, a value of type `{surrogate_policy}`
 
 The following must hold:
@@ -364,20 +377,40 @@ Precondition:: `x.transcode_func() != nullptr` is `true`
 ====
 [source,cpp]
 ----
-x.transcode(dest, src, src_size, inv_seq_notifier, surr_poli)
+x.transcode(dest, src, src_size, err_notifier, surr_poli)
 ----
 [horizontal]
 Effect:: Converts the content of `src` from one encoding to another writing
-    the result to `dest`. Each sequence in `src` that is invalid is
-    translated instead by the replacement character ( that is returned by
-    `<<Charset_replacement_char, x.replacement_char()>>` ).
-    And each time that happens, `inv_seq_notifier.notify()` shall be called
-    if the value of `(bool)inv_seq_notifier` is `true`.
-    A sequence in `src` is considered invalid if it is non-conformant
-    to its corresponding encoding or would cause content written in `dest`
-    to be non-conformant to the destination encoding, unless such
-    non-conformity is due to a surrogate character and the value
-    of `surr_poli` is `surrogate_policy::lax`.
+the result to `dest`.
++
+--
+Each sequence in `src` that is invalid ( non-conformant to the
+source character encoding ) shall be
+translated to the replacement character ( that is returned by
+`dest_sc.<<Charset_replacement_char, replacement_char()>>`,
+where `dest_sc` represents the destination encoding ).
+Each time that happens,
+`err_notifier\-><<transcoding_error_notifier,invalid_sequence>>(name, seq, ch_size, count)`
+shall be called if `err_notifer` is not null, where:
+
+* `name` is the return of `src_sc.name()`, `src_sc` represents the source character encoding.
+* `seq` points to the first character of the invalid sequence
+* `count` is number of characters in the invalid sequence
+* `ch_size` is `sizeof(SrcCharT)`
+--
++
+Note that a surrogate codepoint shall not be considered invalid
+if `surr_poli` is equall to `surrogate_policy::lax`.
++
+Each codepoint in `src` that is not supported by the destintation
+character encoding shall be translated to the replacement character ( that is returned by
+`dest_sc.<<Charset_replacement_char, replacement_char()>>`,
+where `dest_sc` represents the destination encoding ).
+Each time that happens,
+`err_notifier\-><<transcoding_error_notifier,unsupported_codepoint>>(dest_sc.<<Charset_name,name()>>, code)`
+shall be called if `err_notifier` is not null.
+
+
 Precondition:: `x.transcode_func() != nullptr` is `true`
 Postconditions:: `dest.recycle_buffer()` is not called() if
         `dest.buffer_space() >= x.transcode_size(src, src_size, surr_poli)` is `true`.
@@ -403,9 +436,9 @@ x.transcode_func()
 [horizontal]
 Return type:: `{transcode_f}<SrcCharT, DestCharT>`
 Return value:: A function pointer such that
-   `x.transcode_func() (dest, src, src_size, inv_seq_notifier, surr_poli)`
+   `x.transcode_func() (dest, src, src_size, err_notifier, surr_poli)`
    has the same effect as
-   `x.transcode(dest, src, src_size, inv_seq_notifier, surr_poli)`.
+   `x.transcode(dest, src, src_size, err_notifier, surr_poli)`.
 ====
 '''
 [[Transcoder_null]]
@@ -467,6 +500,7 @@ Return type:: `{charset_id}`
 Return value:: The `{charset_id}` that corresponds to this encoding.
 ====
 
+[[Charset_name]]
 ====
 [source,cpp]
 ----
@@ -985,7 +1019,7 @@ public:
         ( {transcode_dest}<DestCharT>& dest
         , const SrcCharT* src
         , std::size_t src_size
-        , {invalid_seq_notifier}{asterisk} inv_seq_notifier
+        , {transcoding_error_notifier}{asterisk} err_notifier
         , {surrogate_policy} surr_poli ) const;
 
     std::size_t transcode_size
@@ -1045,11 +1079,11 @@ void transcode
     ( {transcode_dest}<DestCharT>& dest
     , const SrcCharT* src
     , std::size_t src_size
-    , {invalid_seq_notifier}{asterisk} inv_seq_notifier
+    , {transcoding_error_notifier}{asterisk} err_notifier
     , {surrogate_policy} surr_poli ) const;
 ----
 [horizontal]
-Effect:: Calls `transcode_func()(dest, src, src_size, inv_seq_notifier, surr_poli)`
+Effect:: Calls `transcode_func()(dest, src, src_size, err_notifier, surr_poli)`
 ====
 ====
 [source,cpp,subs=normal]
@@ -1530,7 +1564,7 @@ void decode_encode
     , {transcode_f}<char32_t, DestCharT> from_u32
     , const SrcCharT* src
     , std::size_t src_size
-    , {invalid_seq_notifier}{asterisk} inv_seq_notifier
+    , {transcoding_error_notifier}{asterisk} err_notifier
     , {surrogate_policy} surr_poli );
 
 } // namespace strf
@@ -1542,7 +1576,7 @@ then writes the result to `dest` using `from_u32`.
 [horizontal]
 Postcondition:: `dest.<<destination_hpp#output_buffer_recycle_buffer,recycle_buffer>>()` is not called if
 `dest.<<destination_hpp#output_buffer_buffer_space,buffer_space>>()` is not less then the value returned by
-`{decode_encode_size}(to_u32, size_calc_func, src, src_size, inv_seq_notifier, surr_poli)`,
+`{decode_encode_size}(to_u32, size_calc_func, src, src_size, err_notifier, surr_poli)`,
 where `size_calc_func` is the return value of
 `dest_enc.<<Charset_from_u32,from_u32>>().<<Transcoder_transcode_size_func, transcode_size_func>>()`,
 where `dest_enc` is the __Charset__ object such that the return value of
@@ -1561,7 +1595,7 @@ std::size_t decode_encode_size
     , {transcode_size_f}<char32_t> size_calc_func
     , const SrcCharT* src
     , std::size_t src_size
-    , {invalid_seq_notifier}{asterisk} inv_seq_notifier
+    , {transcoding_error_notifier}{asterisk} err_notifier
     , {surrogate_policy} surr_poli );
 
 } // namespace strf

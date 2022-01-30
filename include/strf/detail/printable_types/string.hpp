@@ -1048,8 +1048,8 @@ public:
             input )
         : str_(input.arg.value().data())
         , len_(input.arg.value().size())
-        , inv_seq_notifier_
-              ( use_facet_<strf::invalid_seq_notifier_c, SrcCharT>(input.facets).get() )
+        , err_notifier_
+              ( use_facet_<strf::transcoding_error_notifier_c, SrcCharT>(input.facets).get() )
         , surr_poli_(use_facet_<strf::surrogate_policy_c, SrcCharT>(input.facets))
     {
         auto src_charset  = strf::detail::get_src_charset(input);
@@ -1069,8 +1069,8 @@ public:
             < DestCharT, SrcCharT, true, false, CvFormat, PrePrinting, FPack >&
             input )
         : str_(input.arg.value().data())
-        , inv_seq_notifier_
-            ( use_facet_<strf::invalid_seq_notifier_c, SrcCharT>(input.facets).get() )
+        , err_notifier_
+            ( use_facet_<strf::transcoding_error_notifier_c, SrcCharT>(input.facets).get() )
         , surr_poli_(use_facet_<strf::surrogate_policy_c, SrcCharT>(input.facets))
     {
         auto src_charset  = strf::detail::get_src_charset(input);
@@ -1111,7 +1111,7 @@ private:
                 s = strf::decode_encode_size<SrcCharT>
                     ( src_charset.to_u32().transcode_func()
                     , dest_charset.from_u32().transcode_size_func()
-                    , str_, len_, inv_seq_notifier_, surr_poli_ );
+                    , str_, len_, err_notifier_, surr_poli_ );
             }
             pre.add_size(s);
         }
@@ -1129,7 +1129,7 @@ private:
         strf::transcode_f<SrcCharT, char32_t>  src_to_u32_;
     };
     strf::transcode_f<char32_t, DestCharT>  u32_to_dest_ = nullptr;
-    strf::invalid_seq_notifier* inv_seq_notifier_;
+    strf::transcoding_error_notifier* err_notifier_;
     const strf::surrogate_policy surr_poli_;
 
     template < typename Category, typename SrcChar, typename FPack
@@ -1147,11 +1147,11 @@ STRF_HD void conv_string_stringifier<SrcCharT, DestCharT>::print_to
     ( strf::destination<DestCharT>& dest ) const
 {
     if (can_transcode_directly()) {
-        transcode_(dest, str_, len_, inv_seq_notifier_, surr_poli_);
+        transcode_(dest, str_, len_, err_notifier_, surr_poli_);
     } else {
         strf::decode_encode<SrcCharT, DestCharT>
             ( dest, src_to_u32_, u32_to_dest_, str_
-            , len_, inv_seq_notifier_, surr_poli_ );
+            , len_, err_notifier_, surr_poli_ );
     }
 }
 
@@ -1168,8 +1168,8 @@ public:
         : str_(input.arg.value().data())
         , len_(input.arg.value().size())
         , afmt_(input.arg.get_alignment_format())
-        , inv_seq_notifier_
-            ( use_facet_<strf::invalid_seq_notifier_c, SrcCharT>(input.facets).get() )
+        , err_notifier_
+            ( use_facet_<strf::transcoding_error_notifier_c, SrcCharT>(input.facets).get() )
         , surr_poli_(use_facet_<strf::surrogate_policy_c, SrcCharT>(input.facets))
     {
         auto src_charset = strf::detail::get_src_charset(input);
@@ -1191,8 +1191,8 @@ public:
         : str_(input.arg.value().data())
         , len_(input.arg.value().size())
         , afmt_(input.arg.get_alignment_format())
-        , inv_seq_notifier_
-            ( use_facet_<strf::invalid_seq_notifier_c, SrcCharT>(input.facets).get() )
+        , err_notifier_
+            ( use_facet_<strf::transcoding_error_notifier_c, SrcCharT>(input.facets).get() )
         , surr_poli_(use_facet_<strf::surrogate_policy_c, SrcCharT>(input.facets))
     {
         auto src_charset = strf::detail::get_src_charset(input);
@@ -1223,7 +1223,7 @@ private:
     };
     strf::transcode_f<char32_t, DestCharT>  u32_to_dest_ = nullptr;
     strf::encode_fill_f<DestCharT> encode_fill_ = nullptr;
-    strf::invalid_seq_notifier* inv_seq_notifier_;
+    strf::transcoding_error_notifier* err_notifier_;
     const strf::surrogate_policy  surr_poli_;
     std::uint16_t left_fillcount_ = 0;
     std::uint16_t right_fillcount_ = 0;
@@ -1291,7 +1291,7 @@ void STRF_HD aligned_conv_string_stringifier<SrcCharT, DestCharT>::init_
             s = strf::decode_encode_size<SrcCharT>
                 ( src_charset.to_u32().transcode_func()
                 , dest_charset.from_u32().transcode_size_func()
-                , str_, len_, inv_seq_notifier_, surr_poli_ );
+                , str_, len_, err_notifier_, surr_poli_ );
         }
         if (fillcount > 0) {
             s += dest_charset.encoded_char_size(afmt_.fill) * fillcount;
@@ -1308,11 +1308,11 @@ void STRF_HD aligned_conv_string_stringifier<SrcCharT, DestCharT>::print_to
         encode_fill_(dest, left_fillcount_, afmt_.fill);
     }
     if (can_transcode_directly()) {
-        transcode_(dest, str_, len_, inv_seq_notifier_, surr_poli_);
+        transcode_(dest, str_, len_, err_notifier_, surr_poli_);
     } else {
         strf::decode_encode<SrcCharT, DestCharT>
             ( dest, src_to_u32_, u32_to_dest_, str_
-            , len_, inv_seq_notifier_, surr_poli_ );
+            , len_, err_notifier_, surr_poli_ );
     }
     if (right_fillcount_ > 0) {
         encode_fill_(dest, right_fillcount_, afmt_.fill);

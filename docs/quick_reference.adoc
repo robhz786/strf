@@ -5,6 +5,7 @@ Distributed under the Boost Software License, Version 1.0.
 http://www.boost.org/LICENSE_1_0.txt)
 ////
 
+
 = The Strf formatting library - Quit Reference
 :source-highlighter: prettify
 :sectnums:
@@ -13,16 +14,21 @@ http://www.boost.org/LICENSE_1_0.txt)
 :toclevels: 2
 :icons: font
 
+:strf-revision: develop
+:strf-src-root: https://github.com/robhz786/strf/blob/{strf-revision}
 
 :destination:     <<destination_hpp#destination,destination>>
 :numpunct_c:     <<strf_hpp#numpunct_c,numpunct_c>>
 :numpunct:       <<strf_hpp#numpunct,numpunct>>
 :width_t:        <<strf_hpp#width_t,width_t>>
 :float_notation: <<float_notation,float_notation>>
+:TranscodingErrorNotifierPtr: <<strf_hpp#TranscodingErrorNotifierPtr,TranscodingErrorNotifierPtr>>
 
-:invalid_seq_notifier_c:  <<strf_hpp#invalid_seq_notifier_c,invalid_seq_notifier_c>>
-:invalid_seq_notifier:    <<strf_hpp#invalid_seq_notifier,invalid_seq_notifier>>
-:invalid_seq_notifier_ptr:  <<strf_hpp#invalid_seq_notifier_ptr,invalid_seq_notifier_ptr>>
+:transcoding_error_notifier_c:  <<strf_hpp#transcoding_error_notifier_c,transcoding_error_notifier_c>>
+:transcoding_error_notifier:    <<strf_hpp#transcoding_error_notifier,transcoding_error_notifier>>
+:transcoding_error_notifier_ptr:  <<strf_hpp#transcoding_error_notifier_ptr,transcoding_error_notifier_ptr>>
+
+:narrow_cfile_writer: <<to_cfile_hpp#narrow_cfile_writer,narrow_cfile_writer>>
 
 [[format_functions]]
 == Format Functions
@@ -675,18 +681,19 @@ When the argument associated with a `"{"` does not exists, the library does two 
 |===
 |Category |Constrainable | Description
 
-|`<<numpunct, numpunct_c>><10>`      |Yes |Numeric punctuation for decimal base
-|`<<numpunct, numpunct_c>><16>`      |Yes |Numeric punctuation for hexadecimal base
-|`<<numpunct, numpunct_c>><8>`       |Yes |Numeric punctuation for octal base
-|`<<numpunct, numpunct_c>><2>`       |Yes |Numeric punctuation for binary base
+|`<<numpunct, numpunct_c>><10>`   |Yes |Numeric punctuation for decimal base
+|`<<numpunct, numpunct_c>><16>`   |Yes |Numeric punctuation for hexadecimal base
+|`<<numpunct, numpunct_c>><8>`    |Yes |Numeric punctuation for octal base
+|`<<numpunct, numpunct_c>><2>`    |Yes |Numeric punctuation for binary base
 
-|`<<lettercase,lettercase_c>>`        |Yes |Letter case for printing numeric and booleans values
+|`<<lettercase,lettercase_c>>`    |Yes |Letter case for printing numeric and booleans values
 
 |`<<charset,charset_c>><CharT>`   |No  |The character encoding correponding to character type `CharT`
-|`<<invalid_seq_notifier,invalid_seq_notifier_c>>`  |Yes | Callback to notify nonconformities to the character encoding.
-|`<<surrogate_policy,surrogate_policy_c>>` |Yes |Wheter surrogates are treated as errors
-|`<<tr_string_error,tr_error_notifier_c>>`   |No  |  Callback to notify errors on the tr-string
-|`<<width_calculator,width_calculator_c>>` |Yes |Defines how the width is calculated
+|`<<transcoding_error_notifier,transcoding_error_notifier_c>>`
+                                       |Yes | Notifies nonconformities to the character encoding.
+|`<<surrogate_policy,surrogate_policy_c>>`  |Yes | Wheter surrogates are treated as errors
+|`<<tr_string_error,tr_error_notifier_c>>`  |No  | Notifies errors on the tr-string
+|`<<width_calculator,width_calculator_c>>`  |Yes |Defines how the width is calculated
 |`<<howto_override_printable_types#,print_override_c>>`     |Yes   | Overrides printable types
 |===
 
@@ -975,32 +982,44 @@ assert(utf16_strict == u"-\uFFFD\uFFFD\uFFFD---");     // surrogate sanitized
 assert(utf16_lax == original);                         // surrogate preserved
 ----
 
-[[invalid_seq_notifier]]
-=== Encoding error notifier function
+[[transcoding_error_notifier]]
+=== Transcoding error handling
 
-The `{invalid_seq_notifier_c}` facet category enables you to
-to specify a function to be called every time an invalid
-sequence is detected. 
+Sometimes just printing a replacement character to signalize an encoding conversion
+errors may not be enough. In this case, you can create a class deriving from
+`{transcoding_error_notifier}` to do something more, like throwing an
+exception or logging the failure.
 
-The example below throws an exception if `u16str` contains any invalid sequence:
+`transcoding_error_notifier::invalid_sequence` virtual function is to be
+called when the source has any invalid sequence, while
+`transcoding_error_notifier::unsupported_codepoint` is for when the
+destination encoding is not able to represent a codepoint.
+You can see an example
+{strf-src-root}/examples/transcoding_error_notifier.cpp[here]
+
+But pay attention: this type is not a facet. The actual facet
+must be a __{TranscodingErrorNotifierPtr}__ type, which is
+supposed to hold a pointer ( raw or smart ) to your
+`transcoding_error_notifier` object.
+
 [source,cpp,subs=normal]
 ----
+#include <strf/to_cfile.hpp>
 #include <strf/to_string.hpp>
 
-struct my_notifier: strf::{invalid_seq_notifier} {
-
-    void notify() override {
-        throw std::sytem_error(std::make_error_code(std::errc::illegal_byte_sequence));
-    }
+class my_notifier: public strf::transcodint_error_notifier {
+    //\...
+    // {strf-src-root}/examples/transcoding_error_notifier.cpp[(click here to see an implementation example)]
+    //\...
 };
 
-int main() {
-    std::u16string u16str = /* ... */;
-    my_notifier notifier;
-    strf::{invalid_seq_notifier_ptr} notifier_ptr{&notifier};
-    auto str = strf::to_string.width(notifier_ptr)(strf::conv(u16str));
+void sample() {
+    strf::{narrow_cfile_writer}<char> err_dest{stderr};
+    my_notifier notifer{err_dest};
+    strf::{transcoding_error_notifier_ptr} notifier_ptr{&notifer};
 
-    return 0;
+    auto str = strf::to_string.with(notifier_ptr) ( /{asterisk} \... {asterisk}/ );
+    // \...
 }
 ----
 

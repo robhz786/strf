@@ -1023,6 +1023,75 @@ STRF_HD auto test_failed_recycle_call
 
 
 namespace test_utils {
+
+template <typename T, std::size_t N>
+struct simple_array {
+    T elements[N];
+};
+
+template <typename T, typename... Args>
+STRF_HD simple_array<T, sizeof... (Args)> make_simple_array(const Args&... args)
+{
+    return simple_array<T, sizeof... (Args)>{{ static_cast<T>(args)... }};
+}
+
+template <typename T>
+class span {
+public:
+
+    using const_iterator = T*;
+    using iterator = T*;
+
+    template <typename U, std::size_t N>
+    STRF_HD span(simple_array<U, N>& arr)
+        : begin_(&arr.elements[0])
+        , size_(N)
+    {
+    }
+    STRF_HD span(T* ptr, std::size_t s)
+        : begin_(ptr)
+        , size_(s)
+    {
+    }
+    STRF_HD span(T* b, T* e)
+        : begin_(b)
+        , size_(e - b)
+    {
+    }
+
+    span(const span&) = default;
+
+    STRF_HD T* begin() const { return begin_; }
+    STRF_HD T* end()   const { return begin_ + size_; }
+
+    STRF_HD std::size_t size() const { return size_; }
+    STRF_HD T& operator[](std::size_t i) const { return begin_[i]; }
+
+private:
+    T* begin_;
+    std::size_t size_;
+};
+
+template <typename T, typename U>
+STRF_HD bool operator==(const span<T>& l, const span<U>& r) noexcept
+{
+    if (l.size() != r.size())
+        return false;
+
+    for (std::size_t i = 0; i < l.size(); ++i) {
+        if (l.begin()[i] != r.begin()[i]) {
+            return false;
+        }
+    }
+    return true;
+}
+
+template <typename T, typename U>
+STRF_HD bool operator!=(const span<T>& l, const span<U>& r) noexcept
+{
+    return ! (l == r);
+}
+
 namespace detail {
 
 struct testfunc_node {

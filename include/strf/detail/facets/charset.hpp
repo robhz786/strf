@@ -33,52 +33,71 @@ struct facet_traits<strf::surrogate_policy>
     using category = strf::surrogate_policy_c;
 };
 
-struct invalid_seq_notifier_c;
+struct transcoding_error_notifier_c;
 
-class invalid_seq_notifier {
+class transcoding_error_notifier {
 public:
-    virtual STRF_HD ~invalid_seq_notifier() {}
-    virtual STRF_HD void notify() = 0;
+    virtual STRF_HD ~transcoding_error_notifier() {}
+
+    virtual STRF_HD void invalid_sequence
+        ( const char* charset_name
+        , const void* sequence_ptr
+        , std::size_t code_unit_size
+        , std::size_t code_units_count )
+    {
+        (void) charset_name;
+        (void) sequence_ptr;
+        (void) code_unit_size;
+        (void) code_units_count;
+    }
+
+    virtual STRF_HD void unsupported_codepoint
+        ( const char* charset_name
+        , unsigned codepoint )
+    {
+        (void) charset_name;
+        (void) codepoint;
+    }
 };
 
-struct invalid_seq_notifier_nullptr {
-    using category = invalid_seq_notifier_c;
+struct transcoding_error_notifier_nullptr {
+    using category = transcoding_error_notifier_c;
 
-    constexpr STRF_HD invalid_seq_notifier* get() const { return nullptr; }
+    constexpr STRF_HD transcoding_error_notifier* get() const { return nullptr; }
 };
 
-struct invalid_seq_notifier_ptr {
-    using category = invalid_seq_notifier_c;
+struct transcoding_error_notifier_ptr {
+    using category = transcoding_error_notifier_c;
 
-    constexpr invalid_seq_notifier_ptr() noexcept = default;
+    constexpr transcoding_error_notifier_ptr() noexcept = default;
 
-    constexpr invalid_seq_notifier_ptr(const invalid_seq_notifier_ptr&) noexcept = default;
+    constexpr transcoding_error_notifier_ptr(const transcoding_error_notifier_ptr&) noexcept = default;
 
-    STRF_HD constexpr invalid_seq_notifier_ptr(invalid_seq_notifier* p) noexcept
+    STRF_HD constexpr transcoding_error_notifier_ptr(transcoding_error_notifier* p) noexcept
         : ptr(p)
     {
     }
 
-    STRF_HD STRF_CONSTEXPR_IN_CXX14 invalid_seq_notifier_ptr& operator=
-        ( const invalid_seq_notifier_ptr& other ) noexcept
+    STRF_HD STRF_CONSTEXPR_IN_CXX14 transcoding_error_notifier_ptr& operator=
+        ( const transcoding_error_notifier_ptr& other ) noexcept
     {
         ptr = other.ptr;
         return *this;
     }
-    STRF_HD constexpr bool operator==(const invalid_seq_notifier_ptr& other) const {
+    STRF_HD constexpr bool operator==(const transcoding_error_notifier_ptr& other) const {
         return ptr == other.ptr;
     }
 
-    constexpr STRF_HD invalid_seq_notifier* get() const { return ptr; }
+    constexpr STRF_HD transcoding_error_notifier* get() const { return ptr; }
 
-    invalid_seq_notifier* ptr = nullptr;
+    transcoding_error_notifier* ptr = nullptr;
 };
 
-struct invalid_seq_notifier_c
+struct transcoding_error_notifier_c
 {
     static constexpr bool constrainable = false;
 
-    static constexpr STRF_HD strf::invalid_seq_notifier_nullptr get_default() noexcept
+    static constexpr STRF_HD strf::transcoding_error_notifier_nullptr get_default() noexcept
     {
         return {};
     }
@@ -172,7 +191,7 @@ using transcode_f = void (*)
     ( strf::transcode_dest<DestCharT>& dest
     , const SrcCharT* src
     , std::size_t src_size
-    , strf::invalid_seq_notifier* inv_seq_notifier
+    , strf::transcoding_error_notifier* err_notifier
     , strf::surrogate_policy surr_poli );
 
 template <typename SrcCharT>
@@ -268,10 +287,10 @@ public:
         ( strf::transcode_dest<DestCharT>& dest
         , const SrcCharT* src
         , std::size_t src_size
-        , strf::invalid_seq_notifier* inv_seq_notifier
+        , strf::transcoding_error_notifier* err_notifier
         , strf::surrogate_policy surr_poli ) const
     {
-        transcode_func_(dest, src, src_size, inv_seq_notifier, surr_poli);
+        transcode_func_(dest, src, src_size, err_notifier, surr_poli);
     }
 
     STRF_HD std::size_t transcode_size
@@ -885,12 +904,12 @@ public:
     STRF_HD buffered_encoder
         ( strf::transcode_f<char32_t, DestCharT> func
         , strf::transcode_dest<DestCharT>& dest
-        , strf::invalid_seq_notifier* inv_seq_notifier
+        , strf::transcoding_error_notifier* err_notifier
         , strf::surrogate_policy surr_poli )
         : strf::transcode_dest<char32_t>( buff_, buff_size_ )
         , transcode_(func)
         , dest_(dest)
-        , inv_seq_notifier_(inv_seq_notifier)
+        , err_notifier_(err_notifier)
         , surr_poli_(surr_poli)
     {
     }
@@ -902,7 +921,7 @@ public:
         auto p = this->buffer_ptr();
         STRF_IF_LIKELY (p != buff_ && dest_.good()) {
             transcode_( dest_, buff_, static_cast<std::size_t>(p - buff_)
-                      , inv_seq_notifier_, surr_poli_);
+                      , err_notifier_, surr_poli_);
         }
         this->set_good(false);
     }
@@ -911,7 +930,7 @@ private:
 
     strf::transcode_f<char32_t, DestCharT> transcode_;
     strf::transcode_dest<DestCharT>& dest_;
-    strf::invalid_seq_notifier* inv_seq_notifier_;
+    strf::transcoding_error_notifier* err_notifier_;
     strf::surrogate_policy surr_poli_;
     constexpr static const std::size_t buff_size_ = 32;
     char32_t buff_[buff_size_];
@@ -926,7 +945,7 @@ STRF_HD void buffered_encoder<DestCharT>::recycle_buffer()
     STRF_IF_LIKELY (p != buff_ && dest_.good()) {
         this->set_good(false);
         transcode_( dest_, buff_, static_cast<std::size_t>(p - buff_)
-                  , inv_seq_notifier_, surr_poli_);
+                  , err_notifier_, surr_poli_);
         this->set_good(true);
     }
 }
@@ -982,11 +1001,11 @@ STRF_HD void decode_encode
     , strf::transcode_f<char32_t, DestCharT> from_u32
     , const SrcCharT* src
     , std::size_t src_size
-    , strf::invalid_seq_notifier* inv_seq_notifier
+    , strf::transcoding_error_notifier* err_notifier
     , strf::surrogate_policy surr_poli )
 {
-    strf::detail::buffered_encoder<DestCharT> tmp{from_u32, dest, inv_seq_notifier, surr_poli};
-    to_u32(tmp, src, src_size, inv_seq_notifier, surr_poli);
+    strf::detail::buffered_encoder<DestCharT> tmp{from_u32, dest, err_notifier, surr_poli};
+    to_u32(tmp, src, src_size, err_notifier, surr_poli);
     tmp.finish();
 }
 
@@ -996,11 +1015,11 @@ STRF_HD std::size_t decode_encode_size
     , strf::transcode_size_f<char32_t> size_calc_func
     , const SrcCharT* src
     , std::size_t src_size
-    , strf::invalid_seq_notifier* inv_seq_notifier
+    , strf::transcoding_error_notifier* err_notifier
     , strf::surrogate_policy surr_poli )
 {
     strf::detail::buffered_size_calculator acc{size_calc_func, surr_poli};
-    to_u32(acc, src, src_size, inv_seq_notifier, surr_poli);
+    to_u32(acc, src, src_size, err_notifier, surr_poli);
     return acc.get_sum();
 }
 
