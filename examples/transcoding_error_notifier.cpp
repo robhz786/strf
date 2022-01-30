@@ -91,7 +91,6 @@ int main()
     assert(output == "---?---...?...");
     assert(err_msg ==
            "The sequence 0xF0 0x90 0xBF is not valid in UTF-8.\n"
-           "The codepoint U+FFFD can not be encoded in ISO-8859-1.\n"
            "The codepoint U+20DF can not be encoded in ISO-8859-1.\n" );
 
     return 0;

@@ -158,30 +158,6 @@ STRF_HD void general_tests
         }
     }
 
-    {   // encode string from UTF-32 with strf::transcoding_error_notifier
-
-        invalid_seq_counter invalid_seq_handler;
-        char result[0x101];
-        auto res = strf::to(result)
-            .with(charset)
-            .with(strf::transcoding_error_notifier_ptr{&invalid_seq_handler})
-            (strf::conv(decoded_0_to_0xff, strf::utf_t<char32_t>()));
-        TEST_FALSE(res.truncated);
-        TEST_EQ(res.ptr - result, 0x100);
-
-        // check each encoded character
-        for(unsigned i = 0; i < 0x100; ++i) {
-            TEST_SCOPE_DESCRIPTION("i = ", i);
-            auto ch32 = decoded_0_to_0xff[i];
-            char expected_ch = ch32 == 0xFFFD ? '?' : (char)i;
-
-            TEST_EQ(result[i], expected_ch);
-        }
-
-        // check notifier calls
-        TEST_EQ(invalid_seq_handler.notifications_count, fffd_count);
-    }
-
     {   // encode UTF-32 characters individually
 
         for(unsigned i = 0; i < 0x100; ++i) {
@@ -194,7 +170,7 @@ STRF_HD void general_tests
             TEST_EQ(buff[0], expected_ch);
             TEST_EQ(ptr - buff, 1);
             TEST_EQ(charset.encoded_char_size(ch32), 1);
-            TEST_EQ(charset.validate(ch32), (ch32 == 0xFFFD ? (std::size_t)-1 : 1));
+            TEST_EQ(charset.validate(ch32), 1);
         }
 
     }

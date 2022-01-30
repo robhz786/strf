@@ -408,7 +408,8 @@ character encoding shall be translated to the replacement character ( that is re
 where `dest_sc` represents the destination encoding ).
 Each time that happens,
 `err_notifier\-><<transcoding_error_notifier,unsupported_codepoint>>(dest_sc.<<Charset_name,name()>>, code)`
-shall be called if `err_notifier` is not null.
+shall be called if `err_notifier` is not null and `code` ( which is the
+unsupported codepoint ) is not `0xFFFD`.
 
 
 Precondition:: `x.transcode_func() != nullptr` is `true`
