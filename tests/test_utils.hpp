@@ -368,11 +368,74 @@ void STRF_HD test_failure
     test_message(filename, line, funcname, args...);
 }
 
-template <typename CharOut>
-class input_tester
-    : public strf::destination<CharOut>
-{
+class test_failure_notifier: public strf::destination<char> {
+public:
+    STRF_HD test_failure_notifier
+        ( const char* funcname
+        , const char* srcfile
+        , int srcline
+        , strf::destination<char>& dest = test_utils::test_messages_destination() )
+        : strf::destination<char>{buff_, buffsize_}
+        , dest_(dest)
+        , funcname_(funcname)
+        , srcfile_(srcfile)
+        , srcline_(srcline)
+    {
+    }
 
+    STRF_HD ~test_failure_notifier()
+    {
+#if __cpp_exceptions  && ! defined(__CUDACC__)
+        try {
+            finish();
+        } catch(...) {
+        }
+#endif
+    }
+
+    STRF_HD void recycle_buffer() override {
+        if (this->buffer_ptr() != buff_) {
+            ensure_notification_init_();
+            dest_.write(buff_, this->buffer_ptr() - buff_);
+            this->set_buffer_ptr(buff_);
+        }
+    }
+
+    STRF_HD void finish() {
+        if (!finished_) {
+            recycle_buffer();
+            if (has_error_) {
+                test_utils::print_test_message_end(funcname_);
+            }
+            finished_ = true;
+        }
+    }
+
+private:
+
+    STRF_HD void ensure_notification_init_() {
+        if (!has_error_) {
+            has_error_ = true;
+            ++ test_utils::test_err_count();
+            test_utils::print_test_message_header(srcfile_, srcline_);
+        }
+    }
+
+    bool has_error_ = false;
+    bool finished_ = false;
+
+    strf::destination<char>& dest_;
+    const char* funcname_;
+    const char* srcfile_;
+    int srcline_;
+    constexpr static std::size_t buffsize_ =
+        strf::destination<char>::buffer_space_after_recycle;
+    char buff_[buffsize_];
+};
+
+
+template <typename CharOut>
+class input_tester : public strf::destination<CharOut>{
 public:
 
     struct input{
@@ -429,32 +492,13 @@ public:
 
 private:
 
-    STRF_HD void before_emitting_error_message_()
-    {
-        if (!error_message_emitted_) {
-            ++ test_err_count();
-            print_test_message_header(src_filename_, src_line_);
-            error_message_emitted_ = true;
-        }
-    }
-
-    template <typename ... MsgArgs>
-    void STRF_HD test_failure_(const MsgArgs&... msg_args)
-    {
-        before_emitting_error_message_();
-        strf::to(test_utils::test_messages_destination()) (msg_args...);
-    }
-
     bool STRF_HD wrong_size_(std::size_t result_size) const;
     bool STRF_HD wrong_content_( strf::detail::simple_string_view<CharOut> result ) const;
 
+    test_failure_notifier notifier_;
     strf::detail::simple_string_view<CharOut> expected_;
     std::size_t reserved_size_;
-    const char* src_filename_;
-    const char* function_;
-    int src_line_;
     double reserve_factor_;
-    bool error_message_emitted_ = false;
 
     CharOut* pointer_before_overflow_ = nullptr;
     enum {buffer_size_ = 280};
@@ -471,17 +515,14 @@ STRF_HD input_tester<CharOut>::input_tester
     , double reserve_factor
     , std::size_t size )
     : strf::destination<CharOut>{buffer_, size}
+    , notifier_{function, src_filename, src_line}
     , expected_(expected)
     , reserved_size_(size)
-    , src_filename_(src_filename)
-    , function_(function)
-    , src_line_(src_line)
     , reserve_factor_(reserve_factor)
 {
     if (size > buffer_size_) {
-        test_utils::test_message
-            ( src_filename_, src_line_, function_
-            , "Warning: reserved more characters (", size
+        strf::to(notifier_)
+            ( "Warning: reserved more characters (", size
             , ") then the tester buffer size (", buffer_size_, ")." );
         this->set_buffer_end(buffer_ + buffer_size_);
     }
@@ -495,8 +536,9 @@ STRF_HD input_tester<CharOut>::~input_tester()
 template <typename CharOut>
 void STRF_HD input_tester<CharOut>::recycle_buffer()
 {
-    test_failure_(" destination::recycle_buffer() called "
-                  "( it means the calculated size too small ).\n");
+    strf::to(notifier_)
+        (" destination::recycle_buffer() called "
+         "( it means the calculated size too small ).\n");
 
     if ( this->buffer_ptr() + strf::destination_space_after_flush
        > buffer_ + buffer_size_ )
@@ -517,19 +559,16 @@ void STRF_HD input_tester<CharOut>::finish()
     bool failed_content = wrong_content_(result);
     bool failed_size = wrong_size_(result.size());
     if (failed_size || failed_content){
-        ++ test_err_count();
-        print_test_message_header(src_filename_, src_line_);
-        auto& tout = test_utils::test_messages_destination();
         if (failed_content) {
-            strf::to(tout) ("\n  expected: \"", strf::conv(expected_));
-            strf::to(tout) ("\"\n  obtained: \"", strf::conv(result), '\"');
+            strf::to(notifier_) ("\n  expected: \"", strf::conv(expected_));
+            strf::to(notifier_) ("\"\n  obtained: \"", strf::conv(result), '\"');
         }
         if (failed_size) {
-            strf::to(tout) ("\n  reserved size  : ", reserved_size_);
-            strf::to(tout) ("\n  necessary size : ", result.size());
+            strf::to(notifier_) ("\n  reserved size  : ", reserved_size_);
+            strf::to(notifier_) ("\n  necessary size : ", result.size());
         }
-        print_test_message_end(function_);
     }
+    notifier_.finish();
 }
 
 template <typename CharOut>
@@ -675,12 +714,10 @@ public:
     STRF_HD recycle_call_tester(recycle_call_tester_input<CharT> input)
         : strf::destination<CharT>{buffer_, input.initial_space}
         , expected_(input.expected)
-        , function_(input.function)
-        , src_filename_(input.src_filename)
-        , src_line_(input.src_line)
+        , notifier_{input.function, input.src_filename, input.src_line}
     {
         if (input.initial_space + strf::destination_space_after_flush > buffer_size_) {
-            emit_error_message_("\nUnsupported test case: Initial space too big");
+            strf::to(notifier_) ("\nUnsupported test case: Initial space too big");
             this->set_buffer_end(buffer_);
         }
     }
@@ -691,28 +728,9 @@ public:
 
 private:
 
-    STRF_HD void before_emitting_error_message_()
-    {
-        if (!error_message_emitted_) {
-            ++ test_err_count();
-            print_test_message_header(src_filename_, src_line_);
-            error_message_emitted_ = true;
-        }
-    }
-
-    template <typename... Args>
-    STRF_HD void emit_error_message_(const Args&... args)
-    {
-        before_emitting_error_message_();
-        strf::to(test_utils::test_messages_destination()) (args...);
-    }
-
     bool recycle_buffer_not_called_yet = true;
-    bool error_message_emitted_ = false;
     strf::detail::simple_string_view<CharT> expected_;
-    const char* function_;
-    const char* src_filename_;
-    int src_line_;
+    test_failure_notifier notifier_;
     CharT* dest_end_;
 
     enum {buffer_size_ = 320};
@@ -724,12 +742,12 @@ STRF_HD void recycle_call_tester<CharT>::recycle_buffer()
 {
     if (recycle_buffer_not_called_yet) {
         if (this->buffer_ptr() > this->buffer_end()) {
-            emit_error_message_( "\nContent written after buffer_end()." );
+            strf::to(notifier_) ( "\nContent written after buffer_end()." );
         }
         this->set_buffer_end(buffer_ + buffer_size_);
         recycle_buffer_not_called_yet = false;
     } else {
-        emit_error_message_( "\nrecycle_buffer() called more than once here.");
+        strf::to(notifier_) ( "\nrecycle_buffer() called more than once here.");
         this->set_good(false);
         this->set_buffer_ptr(strf::garbage_buff<CharT>());
         this->set_buffer_end(strf::garbage_buff_end<CharT>());
@@ -740,7 +758,7 @@ template <typename CharT>
 STRF_HD void recycle_call_tester<CharT>::finish()
 {
     if (recycle_buffer_not_called_yet) {
-        emit_error_message_( "\nrecycle_buffer() was not called.");
+        strf::to(notifier_) ( "\nrecycle_buffer() was not called.");
     }
     if (this->good()) {
         dest_end_ = this->buffer_ptr();
@@ -754,15 +772,11 @@ STRF_HD void recycle_call_tester<CharT>::finish()
        && strf::detail::str_equal<CharT>(expected_.begin(), buffer_, expected_.size()) );
 
     if ( ! as_expected ) {
-        emit_error_message_
+        strf::to(notifier_)
             ( "\n  expected: \"", strf::conv(expected_)
             , "\"\n  obtained: \"", strf::conv(result), '\"');
     }
-
-    if (error_message_emitted_) {
-        print_test_message_end(function_);
-        error_message_emitted_ = false;
-    }
+    notifier_.finish();
 }
 
 template <typename CharT>
