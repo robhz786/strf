@@ -17,7 +17,6 @@ struct digits_group_common
     // The groups are stored in an underlying_int_t_ value.
     // Each group occupies  grp_bits_count_ bits
 
-
     using underlying_int_t_ = std::uint32_t;
     constexpr static unsigned grp_bits_count_ = 5;
     constexpr static unsigned grps_count_max = sizeof(underlying_int_t_) * 8 / grp_bits_count_;
@@ -25,7 +24,6 @@ struct digits_group_common
     constexpr static underlying_int_t_ grp_bits_mask_ = (1 << grp_bits_count_) - 1;
     constexpr static unsigned repeat_last = 2;
     constexpr static unsigned dont_repeat_last = 3;
-
 };
 
 } // namespace detail
@@ -44,7 +42,6 @@ class digits_grouping_iterator
 public:
 
     digits_grouping_iterator() = delete;
-    constexpr digits_grouping_iterator(const digits_grouping_iterator&) noexcept = default;
     constexpr STRF_HD explicit digits_grouping_iterator(digits_grouping) noexcept;
 
     constexpr STRF_HD bool operator==(const digits_grouping_iterator& other) const noexcept
@@ -56,12 +53,6 @@ public:
         return grps_ != other.grps_;
     }
 
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD digits_grouping_iterator& operator=
-        ( const digits_grouping_iterator& other ) noexcept
-    {
-        grps_ = other.grps_;
-        return *this;
-    }
     STRF_CONSTEXPR_IN_CXX14 STRF_HD unsigned current() const noexcept
     {
         STRF_ASSERT(! ended());
@@ -117,8 +108,6 @@ public:
     constexpr static auto grp_max = common::grp_max;
     constexpr static auto grps_count_max = common::grps_count_max;
 
-    constexpr reverse_digits_groups() noexcept = default;
-    constexpr reverse_digits_groups(const reverse_digits_groups&) noexcept = default;
     constexpr STRF_HD bool operator==(const reverse_digits_groups& other) const noexcept
     {
         return grps_ == other.grps_;
@@ -126,12 +115,6 @@ public:
     constexpr STRF_HD bool operator!=(const reverse_digits_groups& other) const noexcept
     {
         return grps_ != other.grps_;
-    }
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD reverse_digits_groups& operator=
-        ( const reverse_digits_groups& other ) noexcept
-    {
-        grps_ = other.grps_;
-        return *this;
     }
     STRF_CONSTEXPR_IN_CXX14 STRF_HD void push_low(unsigned grp) noexcept
     {
@@ -196,8 +179,6 @@ public:
 
     STRF_HD explicit digits_grouping(const char* str) noexcept;
 
-    constexpr digits_grouping(const digits_grouping&) noexcept = default;
-
     constexpr STRF_HD bool operator==(const digits_grouping& other) const noexcept
     {
         return grps_ == other.grps_;
@@ -205,12 +186,6 @@ public:
     constexpr STRF_HD bool operator!=(const digits_grouping& other) const noexcept
     {
         return grps_ != other.grps_;
-    }
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD digits_grouping& operator=
-        ( const digits_grouping& other ) noexcept
-    {
-        grps_ = other.grps_;
-        return *this;
     }
     STRF_CONSTEXPR_IN_CXX14 STRF_HD bool any_separator(int digcount) const noexcept
     {
@@ -352,9 +327,6 @@ class digits_grouping_creator
 
 public:
 
-    constexpr digits_grouping_creator() noexcept = default;
-    constexpr digits_grouping_creator(const digits_grouping_creator&) noexcept = delete;
-
     STRF_CONSTEXPR_IN_CXX14 STRF_HD void push_high(int grp) noexcept
     {
         if (failed_ || grp < 1 || grp > (int)grp_max_ || ! enough_space_to_push()) {
@@ -448,7 +420,6 @@ public:
     using category = strf::numpunct_c<Base>;
 
     constexpr numpunct() = default;
-    constexpr numpunct(const numpunct& ) = default;
 
     template <typename... IntArgs>
     constexpr STRF_HD explicit numpunct(int grp0, IntArgs... grps) noexcept
@@ -461,12 +432,6 @@ public:
     {
     }
 
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD numpunct& operator=(const numpunct& other) noexcept
-    {
-        grouping_ = other.grouping_;
-        decimal_point_ = other.decimal_point_;
-        thousands_sep_ = other.thousands_sep_;
-    }
     constexpr STRF_HD bool operator==(const numpunct& other) const noexcept
     {
         return grouping_ == other.grouping_
@@ -544,12 +509,6 @@ class default_numpunct
 public:
     using category = strf::numpunct_c<Base>;
 
-    constexpr default_numpunct() noexcept = default;
-    constexpr default_numpunct(const default_numpunct&) noexcept = default;
-
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD default_numpunct& operator=(const default_numpunct&) noexcept
-    {
-    }
     constexpr STRF_HD bool operator==(const default_numpunct&) const noexcept
     {
         return true;
@@ -596,13 +555,6 @@ class no_grouping final
 public:
     using category = strf::numpunct_c<Base>;
 
-    constexpr no_grouping() noexcept = default;
-    constexpr no_grouping(const no_grouping&) noexcept = default;
-
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD no_grouping& operator=(const no_grouping& other) noexcept
-    {
-        decimal_point_ = other.decimal_point_;
-    }
     constexpr STRF_HD bool operator==(const no_grouping& other) const noexcept
     {
         return decimal_point_ == other.decimal_point_;

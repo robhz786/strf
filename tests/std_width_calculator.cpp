@@ -28,6 +28,8 @@ public:
     using const_iterator = T*;
     using iterator = T*;
 
+    span() = default;
+
     template <typename U, std::size_t N>
     STRF_HD span(simple_array<U, N>& arr)
         : begin_(&arr.elements[0])
@@ -45,16 +47,14 @@ public:
     {
     }
 
-    span(const span&) = default;
-
     STRF_HD T* begin() const { return begin_; }
     STRF_HD T* end()   const { return begin_ + size_; }
 
     STRF_HD std::size_t size() const { return size_; }
 
 private:
-    T* begin_;
-    std::size_t size_;
+    T* begin_ = nullptr;
+    std::size_t size_ = 0;
 };
 
 template <typename T, typename U>

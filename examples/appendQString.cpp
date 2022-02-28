@@ -77,8 +77,6 @@ public:
         : str_(str)
     {}
 
-    QStringAppenderFactory(const QStringAppenderFactory& str) = default;
-
     QString& create() const
     {
         return str_;

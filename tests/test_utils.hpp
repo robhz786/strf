@@ -392,8 +392,6 @@ public:
         {
         }
 
-        input(const input&) = default;
-
         strf::detail::simple_string_view<CharOut> expected;
         const char* src_filename;
         int src_line;
@@ -570,9 +568,6 @@ public:
         , reserve_factor_(reserve_factor)
     {
     }
-
-    input_tester_creator(const input_tester_creator& ) = default;
-    input_tester_creator(input_tester_creator&& ) = default;
 
     typename test_utils::input_tester<CharT>::input STRF_HD create(std::size_t size) const
     {

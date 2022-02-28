@@ -44,7 +44,6 @@ public:
     typedef void(*notify_fptr)();
 
     constexpr invalid_seq_notifier() noexcept = default;
-    constexpr invalid_seq_notifier(const invalid_seq_notifier&) noexcept = default;
 
     constexpr STRF_HD explicit invalid_seq_notifier(notify_fptr f) noexcept
         : notify_func_(f)
@@ -53,12 +52,6 @@ public:
     STRF_CONSTEXPR_IN_CXX14 STRF_HD invalid_seq_notifier& operator=(notify_fptr f) noexcept
     {
         notify_func_ = f;
-        return *this;
-    }
-    STRF_CONSTEXPR_IN_CXX14
-    STRF_HD invalid_seq_notifier& operator=(const invalid_seq_notifier& other) noexcept
-    {
-        notify_func_ = other.notify_func_;
         return *this;
     }
     constexpr STRF_HD bool operator==(const invalid_seq_notifier& other) const noexcept
@@ -361,8 +354,6 @@ struct dynamic_charset_data
     {
     }
 
-    constexpr dynamic_charset_data(const dynamic_charset_data&) = default;
-
     const char* name;
     strf::charset_id id;
     char32_t replacement_char;
@@ -408,8 +399,6 @@ public:
     using code_unit = CharT;
     using char_type STRF_DEPRECATED = CharT;
 
-    dynamic_charset(const dynamic_charset& ) = default;
-
     STRF_HD dynamic_charset
         ( const strf::dynamic_charset_data<CharT>& data )
         : data_(&data)
@@ -422,11 +411,6 @@ public:
     {
     }
 
-    STRF_HD dynamic_charset& operator=(const dynamic_charset& other) noexcept
-    {
-        data_ = other.data_;
-        return *this;
-    }
     STRF_HD bool operator==(const dynamic_charset& other) const noexcept
     {
         return data_->id == other.data_->id;

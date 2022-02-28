@@ -215,8 +215,6 @@ class width_by_func
 public:
     using category = strf::width_calculator_c;
 
-    width_by_func() = default;
-
     explicit STRF_HD width_by_func(CharWidthFunc f)
         : func_(f)
     {
@@ -288,7 +286,6 @@ struct std_width_calc_func_return {
         , ptr(ptr_)
     {
     }
-    std_width_calc_func_return(const std_width_calc_func_return&) = default;
 
     strf::width_t width;
     unsigned state;

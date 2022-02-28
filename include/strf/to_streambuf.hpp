@@ -115,8 +115,6 @@ public:
     {
     }
 
-    basic_streambuf_writer_creator(const basic_streambuf_writer_creator&) = default;
-
     std::basic_streambuf<CharT, Traits>& create() const noexcept
     {
         return dest_;

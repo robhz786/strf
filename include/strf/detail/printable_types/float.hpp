@@ -115,8 +115,6 @@ struct float_format
     {
     }
 
-    constexpr float_format(const float_format&) = default;
-
     detail::chars_count_t precision;
     detail::chars_count_t pad0width;
     strf::float_notation notation;
@@ -736,9 +734,6 @@ struct fast_double_printer_input
         , lcase(strf::use_facet<strf::lettercase_c, float>(fp_))
     {
     }
-
-    fast_double_printer_input(const fast_double_printer_input&) = default;
-    fast_double_printer_input(fast_double_printer_input&&) = default;
 
     Preview& preview;
     FloatT value;

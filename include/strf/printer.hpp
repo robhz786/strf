@@ -1198,12 +1198,10 @@ struct alignment_format
         , alignment(alignment_)
     {
     }
-    constexpr alignment_format(const alignment_format&) = default;
 
     char32_t fill = U' ';
     strf::width_t width = 0;
     strf::text_alignment alignment = strf::text_alignment::right;
-
 };
 
 struct default_alignment_format

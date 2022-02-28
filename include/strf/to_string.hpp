@@ -263,8 +263,6 @@ public:
     {
     }
 
-    basic_string_appender_creator(const basic_string_appender_creator&) = default;
-
     std::basic_string<CharT, Traits, Allocator>& create() const noexcept
     {
         return str_;
