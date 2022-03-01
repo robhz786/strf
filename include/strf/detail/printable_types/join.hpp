@@ -83,9 +83,6 @@ struct printable_traits<strf::detail::join_t<FwdArgs...>>
 
 struct aligned_join_maker
 {
-    constexpr aligned_join_maker() = default;
-    constexpr aligned_join_maker(const aligned_join_maker&) = default;
-
     constexpr STRF_HD aligned_join_maker
         ( strf::width_t width_
         , strf::text_alignment align_ = strf::text_alignment::right ) noexcept

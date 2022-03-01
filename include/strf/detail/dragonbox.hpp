@@ -1897,7 +1897,6 @@ namespace dragonbox {
 						STRF_HD symmetric_boundary(bool closed) : is_closed(closed) {
 						}
 						symmetric_boundary() = default;
-						symmetric_boundary(const symmetric_boundary&) = default;
 
 						static constexpr bool is_symmetric = true;
 						bool is_closed;

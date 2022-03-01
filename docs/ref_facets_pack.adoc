@@ -65,7 +65,7 @@ Compile-time requirements:: `(std::is_default_constructible_v<FPE> && \...)` is 
 template <typename... U>
 constexpr explicit facets_pack(U&&... u)
 ----
-Effects:: Initializes each element with the correspondig value in `std::forward<U>(u)\...`.
+Effects:: Initializes each element with the corresponding value in `std::forward<U>(u)\...`.
 Compile-time requirements:: This constructor does not participate in overload resolution, unless the following conditions are met
 - `sizeof\...(U) != 0` is `true`
 - `sizeof\...(U) == sizeof\...(FPE)` is `true`
@@ -110,7 +110,7 @@ Compile-time requirements::  `FCat` is a _{FacetCategory}_ type.
 
 [[has_facet]]
 === Hypothetical function template `has_facet`
-NOTE: This function template does not exists in this library.
+NOTE: This function template does not exist in this library.
        It is only documented to help to explain the
        <<use_facet, `use_facet`>> function template.
 ====

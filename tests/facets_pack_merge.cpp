@@ -30,7 +30,6 @@ struct facet_type
         : value(v)
     {
     }
-    facet_type(const facet_type&) = default;
 
     using category = fcategory;
     int value = 0;

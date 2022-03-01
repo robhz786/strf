@@ -1297,19 +1297,10 @@ struct alignment_format
         , alignment(alignment_)
     {
     }
-    constexpr alignment_format(const alignment_format&) = default;
-
-    STRF_CONSTEXPR_IN_CXX14 alignment_format& operator=(const alignment_format& other) noexcept {
-        fill = other.fill;
-        width = other.width;
-        alignment = other.alignment;
-        return *this;
-    }
 
     char32_t fill = U' ';
     strf::width_t width = 0;
     strf::text_alignment alignment = strf::text_alignment::right;
-
 };
 
 struct default_alignment_format

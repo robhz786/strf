@@ -70,8 +70,6 @@ struct facet<N, facet_conf::enable_copy_and_move> : public facet_base
         : facet_base(v, log)
     {
     }
-    STRF_CONSTEXPR_IN_CXX14 facet(const facet& f) = default;
-    STRF_CONSTEXPR_IN_CXX14 facet(facet&& f) = default;
 
     using category = fcategory<N>;
 };
@@ -83,7 +81,7 @@ struct facet<N, facet_conf::enable_copy> : public facet_base
         : facet_base(v, log)
     {
     }
-    STRF_CONSTEXPR_IN_CXX14 facet(const facet& f) = default;
+    STRF_CONSTEXPR_IN_CXX14 facet(const facet&) = default;
 
     using category = fcategory<N>;
 };
@@ -96,7 +94,7 @@ struct facet<N, facet_conf::enable_only_move> : public facet_base
     {
     }
     STRF_CONSTEXPR_IN_CXX14 facet(const facet& f) = delete;
-    STRF_CONSTEXPR_IN_CXX14 facet(facet&& f) = default;
+    STRF_CONSTEXPR_IN_CXX14 facet(facet&& f)      = default;
 
     using category = fcategory<N>;
 };

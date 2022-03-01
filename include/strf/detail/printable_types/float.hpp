@@ -115,18 +115,6 @@ struct float_format
     {
     }
 
-    constexpr float_format(const float_format&) = default;
-
-    STRF_CONSTEXPR_IN_CXX14 float_format& operator=(const float_format& other) noexcept {
-        precision = other.precision;
-        pad0width = other.pad0width;
-        notation = other.notation;
-        sign = other.sign;
-        showpoint = other.showpoint;
-        punctuate = other.punctuate;
-        return *this;
-    }
-
     detail::chars_count_t precision;
     detail::chars_count_t pad0width;
     strf::float_notation notation;
@@ -746,9 +734,6 @@ struct fast_double_stringifier_input
         , lcase(strf::use_facet<strf::lettercase_c, float>(fp_))
     {
     }
-
-    fast_double_stringifier_input(const fast_double_stringifier_input&) = default;
-    fast_double_stringifier_input(fast_double_stringifier_input&&) = default;
 
     PrePrinting& pre;
     FloatT value;

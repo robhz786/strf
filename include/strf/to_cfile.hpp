@@ -24,7 +24,6 @@ template <typename CharT>
 class narrow_cfile_writer_traits {
 public:
     narrow_cfile_writer_traits() = delete;
-    narrow_cfile_writer_traits(const narrow_cfile_writer_traits&) = default;
 
     STRF_HD narrow_cfile_writer_traits(FILE* file)
         : file_(file)
@@ -42,7 +41,6 @@ private:
 class wide_cfile_writer_traits {
 public:
     wide_cfile_writer_traits() = delete;
-    wide_cfile_writer_traits(const wide_cfile_writer_traits&) = default;
 
     STRF_HD wide_cfile_writer_traits(FILE* file)
         : file_(file)
@@ -228,8 +226,6 @@ public:
         : file_(file)
     {}
 
-    constexpr narrow_cfile_writer_creator(const narrow_cfile_writer_creator&) = default;
-
     STRF_HD FILE* create() const
     {
         return file_;
@@ -250,8 +246,6 @@ public:
     constexpr STRF_HD wide_cfile_writer_creator(FILE* file) noexcept
         : file_(file)
     {}
-
-    constexpr wide_cfile_writer_creator(const wide_cfile_writer_creator&) = default;
 
     STRF_HD FILE* create() const noexcept
     {

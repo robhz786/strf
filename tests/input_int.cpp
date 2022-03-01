@@ -565,7 +565,6 @@ struct numpunct_maker {
         : separator(sep)
     {
     }
-    numpunct_maker(const numpunct_maker&) = default;
 
     template <typename... G>
     STRF_HD strf::numpunct<Base> operator() (G... grp) const

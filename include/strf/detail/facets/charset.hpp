@@ -71,19 +71,11 @@ struct transcoding_error_notifier_ptr {
 
     constexpr transcoding_error_notifier_ptr() noexcept = default;
 
-    constexpr transcoding_error_notifier_ptr(const transcoding_error_notifier_ptr&) noexcept = default;
-
     STRF_HD constexpr transcoding_error_notifier_ptr(transcoding_error_notifier* p) noexcept
         : ptr(p)
     {
     }
 
-    STRF_HD STRF_CONSTEXPR_IN_CXX14 transcoding_error_notifier_ptr& operator=
-        ( const transcoding_error_notifier_ptr& other ) noexcept
-    {
-        ptr = other.ptr;
-        return *this;
-    }
     STRF_HD constexpr bool operator==(const transcoding_error_notifier_ptr& other) const {
         return ptr == other.ptr;
     }
@@ -379,8 +371,6 @@ struct dynamic_charset_data
     {
     }
 
-    constexpr dynamic_charset_data(const dynamic_charset_data&) = default;
-
     const char* name;
     strf::charset_id id;
     char32_t replacement_char;
@@ -426,8 +416,6 @@ public:
     using code_unit = CharT;
     using char_type STRF_DEPRECATED = CharT;
 
-    dynamic_charset(const dynamic_charset& ) = default;
-
     STRF_HD dynamic_charset
         ( const strf::dynamic_charset_data<CharT>& data )
         : data_(&data)
@@ -440,11 +428,6 @@ public:
     {
     }
 
-    STRF_HD dynamic_charset& operator=(const dynamic_charset& other) noexcept
-    {
-        data_ = other.data_;
-        return *this;
-    }
     STRF_HD bool operator==(const dynamic_charset& other) const noexcept
     {
         return data_->id == other.data_->id;

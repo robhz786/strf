@@ -10,8 +10,6 @@ class err_handler {
 public:
     using category = strf::tr_error_notifier_c;
 
-    err_handler(const err_handler&) = default;
-
     STRF_HD err_handler(strf::destination<char>& log)
         : log_(log)
     {

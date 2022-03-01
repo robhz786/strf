@@ -12,8 +12,6 @@ public:
     {
     }
 
-    my_notifier(const my_notifier&) = default;
-
     void unsupported_codepoint(const char* charset, unsigned codepoint) override
     {
         strf::to(dest_).with(strf::uppercase)

@@ -40,16 +40,6 @@ public:
         return {from_underlying_tag{}, v};
     }
 
-    constexpr STRF_HD width_t(const width_t& other) noexcept
-        : value_(other.value_)
-    {
-    }
-
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD width_t& operator=(const width_t& other) noexcept
-    {
-        value_ = other.value_;
-        return *this;
-    }
     STRF_CONSTEXPR_IN_CXX14 STRF_HD width_t& operator=(std::uint16_t& x) noexcept
     {
         value_ = static_cast<std::uint32_t>(x) << 16;

@@ -33,18 +33,6 @@ struct int_format
     {
     }
 
-    constexpr int_format(const int_format&) = default;
-
-    STRF_CONSTEXPR_IN_CXX14 int_format& operator=(const int_format& other) noexcept {
-        base = other.base;
-        precision = other.precision;
-        pad0width = other.pad0width;
-        sign = other.sign;
-        showbase = other.showbase;
-        punctuate = other.punctuate;
-        return *this;
-    }
-
     int base;
     unsigned precision;
     unsigned pad0width;
@@ -69,9 +57,6 @@ struct int_format_static_base_and_punct
         , showbase(showbase_)
     {
     }
-
-    constexpr int_format_static_base_and_punct
-        ( const int_format_static_base_and_punct& ) = default;
 
     constexpr static int base = Base;
     unsigned precision = 0;
@@ -199,7 +184,6 @@ class default_int_formatter_fn
 public:
 
     constexpr default_int_formatter_fn() noexcept = default;
-    constexpr default_int_formatter_fn(const default_int_formatter_fn&) noexcept = default;
 
     template <typename U>
     constexpr STRF_HD default_int_formatter_fn(const default_int_formatter_fn<U>&) noexcept
@@ -876,9 +860,6 @@ public:
         : data_(data)
     {
     }
-
-    constexpr int_formatter_full_dynamic_fn
-        ( const int_formatter_full_dynamic_fn& ) noexcept = default;
 
     template <typename U>
     constexpr STRF_HD explicit int_formatter_full_dynamic_fn

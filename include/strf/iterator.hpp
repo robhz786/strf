@@ -20,7 +20,6 @@ public:
     using pointer = void;
     using reference = void;
 
-    constexpr STRF_HD output_buffer_iterator(const output_buffer_iterator&) noexcept = default;
     constexpr STRF_HD output_buffer_iterator() = delete;
     constexpr STRF_HD explicit output_buffer_iterator(strf::output_buffer<T, 0>& d) noexcept
         : dest_(&d)

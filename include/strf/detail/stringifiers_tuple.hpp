@@ -53,9 +53,6 @@ public:
     {
     }
 
-    constexpr explicit simple_tuple_impl(const simple_tuple_impl&) = default;
-    constexpr explicit simple_tuple_impl(simple_tuple_impl&&) = default;
-
     template <std::size_t J>
     constexpr STRF_HD auto get() const noexcept
         -> decltype(as_cref(get_<J>(this).obj))

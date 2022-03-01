@@ -455,8 +455,6 @@ public:
         {
         }
 
-        input(const input&) = default;
-
         strf::detail::simple_string_view<CharOut> expected;
         const char* src_filename;
         int src_line;
@@ -609,9 +607,6 @@ public:
         , reserve_factor_(reserve_factor)
     {
     }
-
-    input_tester_creator(const input_tester_creator& ) = default;
-    input_tester_creator(input_tester_creator&& ) = default;
 
     typename test_utils::input_tester<CharT>::input STRF_HD create(std::size_t size) const
     {
@@ -794,8 +789,6 @@ public:
         : input_{expected, function, src_filename, src_line, initial_space}
     {}
 
-    recycle_call_tester_creator(const recycle_call_tester_creator&) = default;
-
     STRF_HD recycle_call_tester_input<CharT> create() const { return input_; }
 
 public:
@@ -924,8 +917,6 @@ public:
         : input_{expected, function, src_filename, src_line, initial_space}
     {}
 
-    failed_recycle_call_tester_creator(const failed_recycle_call_tester_creator&) = default;
-
     STRF_HD recycle_call_tester_input<CharT> create() const { return input_; }
 
 public:
@@ -1042,6 +1033,8 @@ public:
     using const_iterator = T*;
     using iterator = T*;
 
+    span() = default;
+
     template <typename U, std::size_t N>
     STRF_HD span(simple_array<U, N>& arr)
         : begin_(&arr.elements[0])
@@ -1059,8 +1052,6 @@ public:
     {
     }
 
-    span(const span&) = default;
-
     STRF_HD T* begin() const { return begin_; }
     STRF_HD T* end()   const { return begin_ + size_; }
 
@@ -1068,8 +1059,8 @@ public:
     STRF_HD T& operator[](std::size_t i) const { return begin_[i]; }
 
 private:
-    T* begin_;
-    std::size_t size_;
+    T* begin_ = nullptr;
+    std::size_t size_ = 0;
 };
 
 template <typename T, typename U>

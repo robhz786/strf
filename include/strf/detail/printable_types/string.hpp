@@ -356,9 +356,6 @@ public:
     {
     }
 
-    transcoding_formatter_conv_with_charset_fn
-        ( const transcoding_formatter_conv_with_charset_fn& other ) noexcept = default;
-
     template <typename U>
     STRF_HD explicit transcoding_formatter_conv_with_charset_fn
         ( const strf::transcoding_formatter_conv_with_charset_fn<U, Charset>& other ) noexcept
@@ -397,9 +394,6 @@ public:
         : charset_(e)
     {
     }
-
-    transcoding_formatter_sani_with_charset_fn
-        ( const transcoding_formatter_sani_with_charset_fn& other ) noexcept = default;
 
     template <typename U>
     STRF_HD explicit transcoding_formatter_sani_with_charset_fn

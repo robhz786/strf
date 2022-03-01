@@ -31,8 +31,7 @@ class ipv6address_abbreviation
 public:
     explicit ipv6address_abbreviation(ipv6address addr);
     constexpr ipv6address_abbreviation() noexcept;
-    constexpr ipv6address_abbreviation(const ipv6address_abbreviation&) noexcept = default;
-    constexpr ipv6address_abbreviation& operator=(const ipv6address_abbreviation&) noexcept = default;
+
     bool operator==(ipv6address_abbreviation other) const noexcept;
 
     constexpr  bool hextet_visible(unsigned index) const noexcept;
@@ -71,7 +70,6 @@ struct ipv6_formatter
     {
     public:
         constexpr fn() = default;
-        constexpr fn(const fn&) = default;
 
         template <typename U>
         constexpr explicit fn(const fn<U>& u)
