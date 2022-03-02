@@ -468,28 +468,6 @@ struct printable_traits<std::complex<FloatT>>
 template <typename T> struct is_float32: std::false_type {};
 template <> struct is_float32<float>: std::true_type {};
 
-namespace test_utils {
-
-static strf::destination<char>*& test_messages_destination_ptr()
-{
-    static strf::destination<char>* ptr = nullptr;
-    return ptr;
-}
-
-void set_test_messages_destination(strf::destination<char>& dest)
-{
-    test_messages_destination_ptr() = &dest;
-}
-
-strf::destination<char>& test_messages_destination()
-{
-    auto * ptr = test_messages_destination_ptr();
-    return *ptr;
-}
-
-} // namespace test_utils
-
-
 void tests()
 {
     // Using strf internal test framework ( defined in tests/test_utils.hpp )
@@ -647,7 +625,7 @@ void tests()
 int main()
 {
     strf::narrow_cfile_writer<char, 512> test_msg_dest(stdout);
-    test_utils::set_test_messages_destination(test_msg_dest);
+    test_utils::test_messages_destination_guard g(test_msg_dest);
 
     tests();
 

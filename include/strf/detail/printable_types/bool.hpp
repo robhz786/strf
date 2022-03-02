@@ -136,7 +136,7 @@ public:
 
 private:
 
-    strf::encode_fill_f<CharT> encode_fill_;
+    strf::encode_fill_f<CharT> encode_fill_ = nullptr;
     std::uint16_t fillcount_;
     bool value_;
     strf::alignment_format afmt_;

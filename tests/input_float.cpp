@@ -88,7 +88,7 @@ STRF_TEST_FUNC void test_floating_point(FloatT value)
     auto res = strf::to(buff) (value);
 #if ! defined (STRF_FREESTANDING)
     {
-        char* end;
+        char* end = nullptr;
         auto parsed = read_floating_point(strf::tag<FloatT>{}, buff, &end);
         TEST_EQ(parsed, value);
         TEST_EQ((void*)end, (void*)res.ptr);
@@ -122,7 +122,7 @@ STRF_TEST_FUNC void test_floating_point
         ( "ieee_exp=", ieee_exponent, ' '
         , " ieee_mantissa=", strf::hex(ieee_mantissa).p((helper::mantissa_bits_size + 7) / 8)
         , " value=", value );
-    test_floating_point(value);
+    test_floating_point(value); // NOLINT(clang-analyzer-core.StackAddressEscape)
 }
 
 #if defined(IGNORING_GCC_WARNING_ARRAY_BOUNDS)

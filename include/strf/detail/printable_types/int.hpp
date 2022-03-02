@@ -1834,6 +1834,7 @@ inline STRF_HD void init_1
     , strf::int_format_static_base_and_punct<Base, Punctuate>
     , IntT value ) noexcept
 {
+    data.sign = '\0';
     data.uvalue = static_cast<decltype(data.uvalue)>(value);
 }
 

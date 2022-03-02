@@ -228,9 +228,50 @@ inline STRF_HD int& test_err_count()
     return count;
 }
 
-// function test_messages_destination() is a customization point
-// it needs to be defined by the test program
-STRF_HD strf::destination<char>& test_messages_destination();
+#if defined(__CUDACC__)
+
+STRF_HD strf::destination<char>&  test_messages_destination();
+STRF_HD strf::destination<char>*& test_messages_destination_ptr();
+
+#else
+
+inline STRF_HD strf::destination<char>*& test_messages_destination_ptr()
+{
+    static strf::destination<char>* ptr = nullptr;
+    return ptr;
+}
+
+inline STRF_HD strf::destination<char>& test_messages_destination()
+{
+    auto * ptr = test_messages_destination_ptr();
+    if (ptr == nullptr) {
+        static strf::discarder<char> discarder;
+        return discarder;
+    }
+    return *ptr;
+}
+
+#endif
+
+class test_messages_destination_guard
+{
+public:
+    test_messages_destination_guard(strf::destination<char>& dst)
+    {
+        previous_dst_ = test_messages_destination_ptr();
+        test_messages_destination_ptr() = &dst;
+    }
+
+    test_messages_destination_guard(const test_messages_destination_guard&) = delete;
+
+    ~test_messages_destination_guard()
+    {
+        test_messages_destination_ptr() = previous_dst_;
+    }
+
+private:
+    strf::destination<char>* previous_dst_ = nullptr;
+};
 
 class test_scope
 {
@@ -394,16 +435,12 @@ public:
     }
 
     STRF_HD void recycle_buffer() override {
-        if (this->buffer_ptr() != buff_) {
-            ensure_notification_init_();
-            dest_.write(buff_, this->buffer_ptr() - buff_);
-            this->set_buffer_ptr(buff_);
-        }
+        do_recycle();
     }
 
     STRF_HD void finish() {
         if (!finished_) {
-            recycle_buffer();
+            do_recycle();
             if (has_error_) {
                 test_utils::print_test_message_end(funcname_);
             }
@@ -412,6 +449,13 @@ public:
     }
 
 private:
+    STRF_HD void do_recycle() {
+        if (this->buffer_ptr() != buff_) {
+            ensure_notification_init_();
+            dest_.write(buff_, this->buffer_ptr() - buff_);
+            this->set_buffer_ptr(buff_);
+        }
+    }
 
     STRF_HD void ensure_notification_init_() {
         if (!has_error_) {
@@ -710,6 +754,7 @@ public:
         : strf::destination<CharT>{buffer_, input.initial_space}
         , expected_(input.expected)
         , notifier_{input.function, input.src_filename, input.src_line}
+        , dest_end_{buffer_}
     {
         if (input.initial_space + strf::destination_space_after_flush > buffer_size_) {
             strf::to(notifier_) ("\nUnsupported test case: Initial space too big");
@@ -817,6 +862,7 @@ public:
         , function_(input.function)
         , src_filename_(input.src_filename)
         , src_line_(input.src_line)
+        , dest_end_{buffer_}
     {
         if (input.initial_space + strf::destination_space_after_flush > buffer_size_) {
             emit_error_message_("\nUnsupported test case: Initial space too big");

@@ -357,10 +357,10 @@ void STRF_HD fmt_conv_char32_stringifier<DestCharT>::init_
 {
     encode_fill_f_ = charset.encode_fill_func();
     auto content_width = checked_mul(ch_width, count_);
+    fillchar_ = afmt.fill;
+    alignment_ = afmt.alignment;
     if (content_width < afmt.width) {
         fillcount_ = static_cast<std::uint16_t>((afmt.width - content_width).round());
-        fillchar_ = afmt.fill;
-        alignment_ = afmt.alignment;
         pre.subtract_width(content_width + fillcount_);
     } else {
         fillcount_ = 0;

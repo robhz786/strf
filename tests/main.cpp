@@ -6,31 +6,9 @@
 #include "test_utils.hpp"
 #include <strf/to_cfile.hpp>
 
-namespace test_utils {
-
-static strf::destination<char>*& test_messages_destination_ptr()
-{
-    static strf::destination<char>* ptr = nullptr;
-    return ptr;
-}
-
-void set_test_messages_destination(strf::destination<char>& dest)
-{
-    test_messages_destination_ptr() = &dest;
-}
-
-strf::destination<char>& test_messages_destination()
-{
-    auto * ptr = test_messages_destination_ptr();
-    return *ptr;
-}
-
-} // namespace test_utils
-
-
 int main() {
     strf::narrow_cfile_writer<char, 1024> test_msg_dest(stdout);
-    test_utils::set_test_messages_destination(test_msg_dest);
+    test_utils::test_messages_destination_guard g{test_msg_dest};
     test_utils::run_all_tests();
 
     int err_count = test_utils::test_err_count();
@@ -39,5 +17,6 @@ int main() {
     } else {
         strf::to(test_msg_dest) (err_count, " tests failed!\n");
     }
+    test_utils::test_messages_destination_ptr() = nullptr; // to silence clang-tidy
     return err_count;
 }

@@ -297,33 +297,10 @@ void tests()
     TEST("....AA:BB:1:2::").with(strf::mixedcase)   (strf::right(addr_aabb12, 15, '.'));
 }
 
-
-namespace test_utils {
-
-static strf::destination<char>*& test_messages_destination_ptr()
-{
-    static strf::destination<char>* ptr = nullptr;
-    return ptr;
-}
-
-void set_test_messages_destination(strf::destination<char>& dest)
-{
-    test_messages_destination_ptr() = &dest;
-}
-
-strf::destination<char>& test_messages_destination()
-{
-    auto * ptr = test_messages_destination_ptr();
-    return *ptr;
-}
-
-} // namespace test_utils
-
-
 int main()
 {
     strf::narrow_cfile_writer<char, 512> msg_dest(stdout);
-    test_utils::set_test_messages_destination(msg_dest);
+    test_utils::test_messages_destination_guard g(msg_dest);
 
     tests();
 

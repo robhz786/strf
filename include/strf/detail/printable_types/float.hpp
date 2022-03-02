@@ -1733,7 +1733,6 @@ inline STRF_HD strf::detail::float_init_result init_double_data_with_precision_g
     if (precision == 0) {
         precision = 1;
     }
-    data.extra_zeros = 0;
     if (data.e10 < -4 || (int)precision <= data.e10) {
         data.form = detail::float_form::sci;
         data.sub_chars_count = data.showsign + 5 + (data.e10 > 99 || data.e10 < -99);
@@ -1780,7 +1779,6 @@ inline STRF_HD strf::detail::float_init_result init_double_data_with_precision_g
     , bool showpoint ) noexcept
 {
     data.sep_count = 0;
-    data.extra_zeros = 0;
     data.m10_digcount = static_cast<detail::chars_count_t>
         (strf::detail::count_digits<10>(data.m10));
 
@@ -1905,7 +1903,6 @@ inline STRF_HD strf::detail::float_init_result init_double_data_with_precision_s
     , bool showpoint ) noexcept
 {
     data.sep_count = 0;
-    data.extra_zeros = 0;
     data.form = detail::float_form::sci;
     data.m10_digcount = static_cast<detail::chars_count_t>
         (strf::detail::count_digits<10>(data.m10));
@@ -1960,7 +1957,6 @@ inline STRF_HD strf::detail::float_init_result init_double_data_with_precision_f
     , bool showpoint ) noexcept
 {
     data.sep_count = 0;
-    data.extra_zeros = 0;
     data.m10_digcount = static_cast<detail::chars_count_t>
         (strf::detail::count_digits<10>(data.m10));
     data.showpoint = showpoint || (precision != 0);
@@ -1978,7 +1974,6 @@ inline STRF_HD strf::detail::float_init_result init_double_data_with_precision_f
             data.e10 += data.m10_digcount;
             data.m10 = 1;
             data.m10_digcount = 1;
-            data.extra_zeros = 0;
         } else {
             // round down to zero
             data.extra_zeros = precision;
@@ -2041,7 +2036,6 @@ inline STRF_HD strf::detail::float_init_result init_double_data_without_precisio
     , bool showpoint ) noexcept
 {
     data.sep_count = 0;
-    data.extra_zeros = 0;
     data.m10_digcount = static_cast<detail::chars_count_t>
         (strf::detail::count_digits<10>(data.m10));
 
@@ -2091,7 +2085,6 @@ inline STRF_HD strf::detail::float_init_result init_double_data_without_precisio
     , bool showpoint ) noexcept
 {
     data.sep_count = 0;
-    data.extra_zeros = 0;
     data.form = detail::float_form::sci;
     data.m10_digcount = static_cast<detail::chars_count_t>
         (strf::detail::count_digits<10>(data.m10));
@@ -2116,7 +2109,6 @@ inline STRF_HD strf::detail::float_init_result init_double_data_without_precisio
     , bool showpoint ) noexcept
 {
     data.sep_count = 0;
-    data.extra_zeros = 0;
     data.form = detail::float_form::fixed;
     data.m10_digcount = static_cast<detail::chars_count_t>
         (strf::detail::count_digits<10>(data.m10));
@@ -2164,8 +2156,11 @@ STRF_FUNC_IMPL STRF_HD strf::detail::float_init_result init_float_stringifier_da
     data.sub_chars_count = data.showsign;
     data.pad0width = ffmt.pad0width;
     data.fillchar = afmt.fill;
+    data.sep_count = 0;
+    data.extra_zeros = 0;
     if (bits_exponent == 0x7FF) {
         // infinit or nan
+        data.subnormal = false;
         data.form = static_cast<detail::float_form>(bits_mantissa == 0);
         data.sub_chars_count += 3;
         data.showpoint = false;
@@ -2242,8 +2237,11 @@ STRF_FUNC_IMPL STRF_HD strf::detail::float_init_result init_float_stringifier_da
     data.sub_chars_count = data.showsign;
     data.pad0width = ffmt.pad0width;
     data.fillchar = afmt.fill;
+    data.sep_count = 0;
+    data.extra_zeros = 0;
     if (bits_exponent == 0xFF) {
         // infinit or nan
+        data.subnormal = false;
         data.form = static_cast<detail::float_form>(bits_mantissa == 0);
         data.sub_chars_count += 3;
         data.showpoint = false;
@@ -2417,7 +2415,7 @@ private:
     STRF_HD void print_inf_or_nan_
         ( strf::destination<CharT>& dest ) const noexcept;
 
-    strf::encode_char_f<CharT> encode_char_;
+    strf::encode_char_f<CharT> encode_char_ = nullptr;
     strf::encode_fill_f<CharT> encode_fill_;
     strf::digits_grouping grouping_;
     unsigned sep_size_ = 1;

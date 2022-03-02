@@ -29,7 +29,7 @@ STRF_TEST_FUNC void test_char
 
     TEST_EQ(std::size_t(it - buff), encoded_char.size());
     TEST_TRUE(strf::detail::str_equal(encoded_char.data(), buff, encoded_char.size()));
-}
+} // NOLINT(clang-analyzer-core.StackAddressEscape)
 
 STRF_TEST_FUNC void test_encode_char()
 {

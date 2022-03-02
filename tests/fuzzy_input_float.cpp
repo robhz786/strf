@@ -388,26 +388,9 @@ void test_mantissa(std::uint64_t mantissa) {
 
 } // unnamed namespace
 
-namespace test_utils {
-
-static strf::destination<char>*& test_messages_destination_ptr() {
-    static strf::destination<char>* ptr = nullptr;
-    return ptr;
-}
-void set_test_messages_destination(strf::destination<char>& dest) {
-    test_messages_destination_ptr() = &dest;
-}
-strf::destination<char>& test_messages_destination() {
-    auto * ptr = test_messages_destination_ptr();
-    return *ptr;
-}
-
-} // namespace test_utils
-
-
 int main() {
     strf::narrow_cfile_writer<char, 1024> test_msg_dest(stdout);
-    test_utils::set_test_messages_destination(test_msg_dest);
+    test_utils::test_messages_destination_guard g(test_msg_dest);
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_int_distribution<std::uint64_t> distrib{0, 0xFFFFFFFFFFFFF};
