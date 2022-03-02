@@ -9,7 +9,7 @@
 using char8_t = char;
 #endif
 
-#define LEN(STR) (sizeof(STR) / sizeof(STR[0]) - 1)
+#define LEN(STR) (sizeof(STR) / sizeof((STR)[0]) - 1)
 
 #define TEST_FILL(ENC, CODEPOINT, STR)                                     \
     TEST(STR STR STR STR STR STR STR STR) .with(ENC)                       \

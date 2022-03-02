@@ -64,7 +64,7 @@ void basic_samples()
 {
     // Creating a std::string
     auto str = strf::to_string(x, " in hexadecimal is ", *strf::hex(x), '.');
-    assert("255 in hexadecimal is 0xff.");
+    assert(str == "255 in hexadecimal is 0xff.");
 
     // Alternative syntax to enable i18n
     auto str_tr = strf::to_string.tr("{} in hexadecimal is {}.", x, *strf::hex(x));

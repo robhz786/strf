@@ -3,7 +3,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#define _CRT_SECURE_NO_WARNINGS
+#define _CRT_SECURE_NO_WARNINGS // NOLINT(bugprone-reserved-identifier,cert-dcl37-c,cert-dcl51-cpp)
 
 #include <strf/locale.hpp>
 #include "test_utils.hpp"
@@ -16,15 +16,15 @@
 
 void test_locale()
 {
-    if (setlocale(LC_NUMERIC, LOCALE_NAME(en, US))) {
+    if (setlocale(LC_NUMERIC, LOCALE_NAME(en, US))) { // NOLINT(concurrency-mt-unsafe)
         auto punct = strf::locale_numpunct();
         TEST("10,000,000,000,000,000.") .with(punct) (*!strf::fixed(1e+16));
     }
-    if (setlocale(LC_NUMERIC, LOCALE_NAME(de, DE))) {
+    if (setlocale(LC_NUMERIC, LOCALE_NAME(de, DE))) { // NOLINT(concurrency-mt-unsafe)
         auto punct = strf::locale_numpunct();
         TEST("10.000.000.000.000.000,") .with(punct) (*!strf::fixed(1e+16));
     }
-    if (setlocale(LC_NUMERIC, LOCALE_NAME(as, IN))) {
+    if (setlocale(LC_NUMERIC, LOCALE_NAME(as, IN))) { // NOLINT(concurrency-mt-unsafe)
         auto punct = strf::locale_numpunct();
         TEST("10,00,00,00,00,00,00,000.") .with(punct) (*!strf::fixed(1e+16));
     }

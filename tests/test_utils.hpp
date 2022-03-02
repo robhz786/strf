@@ -1143,12 +1143,12 @@ struct testfunc_list_t {
     testfunc_node* last = nullptr;
 };
 
-inline testfunc_list_t& testfunc_list() {
+inline testfunc_list_t& testfunc_list() noexcept {
     static testfunc_list_t lst;
     return lst;
 }
 
-inline void add_testfunc(testfunc_node* node) {
+inline void add_testfunc(testfunc_node* node) noexcept {
     node->next = nullptr;
     auto& list = testfunc_list();
     if (list.last) {
@@ -1162,7 +1162,7 @@ inline void add_testfunc(testfunc_node* node) {
 
 class testfunc_node_registration {
 public:
-    testfunc_node_registration(testfunc_node::func_ptr_t func) {
+    testfunc_node_registration(testfunc_node::func_ptr_t func) noexcept {
         node_.testfunc = func;
         add_testfunc(&node_);
     }

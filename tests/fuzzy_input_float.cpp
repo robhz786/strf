@@ -3,7 +3,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#define _CRT_SECURE_NO_WARNINGS
+#define _CRT_SECURE_NO_WARNINGS // NOLINT(bugprone-reserved-identifier,cert-dcl37-c,cert-dcl51-cpp)
 
 #include <strf/to_cfile.hpp>
 #include <ryu/ryu.h>
@@ -34,8 +34,8 @@ template <>
 struct floating_point_traits<double>
 {
     using uint_equiv = std::uint64_t;
-    static constexpr int exponent_bits_size = 11;
-    static constexpr int mantissa_bits_size = 52;
+    static constexpr unsigned exponent_bits_size = 11;
+    static constexpr unsigned mantissa_bits_size = 52;
     static constexpr uint_equiv mantissa_bits_mask = 0xFFFFFFFFFFFFFULL;
 };
 
@@ -54,9 +54,9 @@ inline FloatT make_float
 }
 
 struct precalc_and_print_result {
-    int count;
-    int predicted_size;
-    int predicted_width;
+    int count = 0;
+    int predicted_size = 0;
+    int predicted_width = 0;
 };
 
 template <typename Arg>
@@ -140,6 +140,7 @@ void test_vs_sprintf
     bool t1 = strf_result.count == strf_result.predicted_size;
     bool t2 = strf_result.count == strf_result.predicted_width;
 
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg,hicpp-vararg)
     auto sprintf_len = sprintf(sprintf_buff, sprintf_fmt, args...);
     bool t3 = strf_result.count == sprintf_len;
     bool t4 = t3 && strf::detail::str_equal(strf_buff, sprintf_buff, sprintf_len);

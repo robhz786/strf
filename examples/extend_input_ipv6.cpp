@@ -105,7 +105,7 @@ class ipv6_stringifier: public strf::stringifier<CharT>
 public:
 
     template <typename... T>
-    ipv6_stringifier(strf::usual_stringifier_input<CharT, T...> input)
+    explicit ipv6_stringifier(strf::usual_stringifier_input<CharT, T...> input)
         : addr_(input.arg.value())
         , alignment_fmt_(input.arg.get_alignment_format())
         , lettercase_(strf::use_facet<strf::lettercase_c, xxx::ipv6address>(input.facets))
@@ -181,21 +181,23 @@ void ipv6_stringifier<CharT>::print_to(strf::destination<CharT>& dest) const
 {
     if (fillcount_ == 0) {
         print_ipv6(dest);
-    } else switch(alignment_fmt_.alignment) {
-        case strf::text_alignment::left:
-            print_ipv6(dest);
-            encode_fill_fn_(dest, fillcount_, alignment_fmt_.fill);
-            break;
-        case strf::text_alignment::right:
-            encode_fill_fn_(dest, fillcount_, alignment_fmt_.fill);
-            print_ipv6(dest);
-            break;
-        default:{
-            assert(alignment_fmt_.alignment == strf::text_alignment::center);
-            std::uint16_t halfcount = fillcount_ / 2;
-            encode_fill_fn_(dest, halfcount, alignment_fmt_.fill);
-            print_ipv6(dest);
-            encode_fill_fn_(dest, fillcount_ - halfcount, alignment_fmt_.fill);
+    } else {
+        switch(alignment_fmt_.alignment) {
+            case strf::text_alignment::left:
+                print_ipv6(dest);
+                encode_fill_fn_(dest, fillcount_, alignment_fmt_.fill);
+                break;
+            case strf::text_alignment::right:
+                encode_fill_fn_(dest, fillcount_, alignment_fmt_.fill);
+                print_ipv6(dest);
+                break;
+            default:{
+                assert(alignment_fmt_.alignment == strf::text_alignment::center);
+                std::uint16_t halfcount = fillcount_ / 2;
+                encode_fill_fn_(dest, halfcount, alignment_fmt_.fill);
+                print_ipv6(dest);
+                encode_fill_fn_(dest, fillcount_ - halfcount, alignment_fmt_.fill);
+            }
         }
     }
 }
@@ -342,8 +344,9 @@ ipv6address_abbreviation::ipv6address_abbreviation(ipv6address addr)
         const auto leading_zeros_count = zi;
         if (leading_zeros_count < 4) {
             while(1) {
-                if (++zi == 6)
+                if (++zi == 6) {
                     goto hide_leading_zeros;
+                }
                 if (addr.hextets[zi] == 0 && addr.hextets[zi + 1] == 0) {
                     break;
                 }
@@ -422,7 +425,7 @@ ipv6address_abbreviation::ipv6address_abbreviation(ipv6address addr)
     visible_hextets_count_ = static_cast<std::uint8_t>(trailing_zeros_start);
     visible_colons_count_  = static_cast<std::uint8_t>(trailing_zeros_start + 1);
     hextets_visibility_bits_ = 0xFFU >>  trailing_zeros_count;
-    colons_visibility_bits_  = 0xFFU >> (trailing_zeros_count - 1);
+    colons_visibility_bits_  = 0xFFU >> (trailing_zeros_count - 1U);
 }
 constexpr ipv6address_abbreviation::ipv6address_abbreviation() noexcept
     : hextets_visibility_bits_(0xFF)
@@ -440,11 +443,11 @@ bool ipv6address_abbreviation::operator==(ipv6address_abbreviation other) const 
 }
 constexpr  bool ipv6address_abbreviation::hextet_visible(unsigned index) const noexcept
 {
-    return index < 8 && (hextets_visibility_bits_ & (1 << index));
+    return index < 8 && (hextets_visibility_bits_ & (1U << index));
 }
 constexpr  bool ipv6address_abbreviation::colon_visible(unsigned index) const noexcept
 {
-    return index < 7 && (colons_visibility_bits_ & (1 << index));
+    return index < 7 && (colons_visibility_bits_ & (1U << index));
 }
 constexpr  std::uint8_t ipv6address_abbreviation::visible_hextets_count() const noexcept
 {

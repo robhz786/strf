@@ -27,7 +27,7 @@ class facet_base
 {
 public:
 
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD facet_base(int v, ctor_log* log = nullptr)
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD explicit facet_base(int v, ctor_log* log = nullptr)
         : value(v)
         , log_(log)
     {
@@ -66,7 +66,7 @@ struct facet;
 template <int N>
 struct facet<N, facet_conf::enable_copy_and_move> : public facet_base
 {
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD facet(int v, ctor_log* log = nullptr)
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD explicit facet(int v, ctor_log* log = nullptr)
         : facet_base(v, log)
     {
     }
@@ -77,7 +77,7 @@ struct facet<N, facet_conf::enable_copy_and_move> : public facet_base
 template <int N>
 struct facet<N, facet_conf::enable_copy> : public facet_base
 {
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD facet(int v, ctor_log* log = nullptr)
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD explicit facet(int v, ctor_log* log = nullptr)
         : facet_base(v, log)
     {
     }
@@ -89,7 +89,7 @@ struct facet<N, facet_conf::enable_copy> : public facet_base
 template <int N>
 struct facet<N, facet_conf::enable_only_move> : public facet_base
 {
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD facet(int v, ctor_log* log = nullptr)
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD explicit facet(int v, ctor_log* log = nullptr)
         : facet_base(v, log)
     {
     }
@@ -102,12 +102,15 @@ struct facet<N, facet_conf::enable_only_move> : public facet_base
 template <int N>
 struct facet<N, facet_conf::disable_copy_and_move> : public facet_base
 {
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD facet(int v, ctor_log* log = nullptr)
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD explicit facet(int v, ctor_log* log = nullptr)
         : facet_base(v, log)
     {
     }
-    STRF_CONSTEXPR_IN_CXX14 facet(const facet& f) = delete;
-    STRF_CONSTEXPR_IN_CXX14 facet(facet&& f) = delete;
+    facet(const facet& f) = delete;
+    facet(facet&& f) = delete;
+    facet& operator=(const facet&) = delete;
+    facet& operator=(facet&&) = delete;
+    ~facet() = default;
 
     using category = fcategory<N>;
 };

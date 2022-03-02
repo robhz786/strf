@@ -7,7 +7,7 @@
 
 class my_notifier: public strf::transcoding_error_notifier {
 public:
-    my_notifier(strf::destination<char>& dest)
+    explicit my_notifier(strf::destination<char>& dest)
         : dest_(dest)
     {
     }
@@ -42,24 +42,24 @@ public:
 
 private:
 
-    static unsigned long extract_unit_and_advance(const void*& ptr, std::size_t size) {
+    static std::size_t extract_unit_and_advance(const void*& ptr, std::size_t size) {
         const auto *uptr = static_cast<const unsigned char*>(ptr);
         ptr = uptr + size;
         return extract_unit(uptr, size);
     }
 
-    static unsigned long extract_unit(const unsigned char* uptr, std::size_t size) {
+    static std::size_t extract_unit(const unsigned char* uptr, std::size_t size) {
         switch (size) {
             case 1:
                 return *uptr;
             case 2: {
-                std::uint16_t tmp;
+                std::uint16_t tmp = 0;
                 memcpy(&tmp, uptr, 2);
                 return tmp;
             }
             default: {
                 assert(size == 4);
-                std::uint32_t tmp;
+                std::uint32_t tmp = 0;
                 memcpy(&tmp, uptr, 4);
                 return tmp;
             }

@@ -71,7 +71,14 @@ void allow_surrogates ()
         ( strf::conv(input_utf16) );
 
     assert(str_strict == u8"-\uFFFD---");  // surrogate sanitized
-    assert(str_lax == (const char8_t*)"-\xED\xA0\x80---"); // surrogate allowed
+#if defined(__cpp_char8_t)
+    //const char8_t str8_with_surr[] = {u8'-', u8'\xED', u8'\xA0', u8'\x80', u8'-', u8'-', u8'-'};
+    const char8_t str8_with_surr[] = u8"-\xED\xA0\x80---";
+#else
+    const char    str8_with_surr[] = "-\xED\xA0\x80---";
+#endif
+    assert(str_lax == str8_with_surr); // surrogate allowed
+    (void) str8_with_surr;
 
     // now back to UTF-16
     auto utf16_strict = strf::to_u16string(strf::conv(str_lax));
@@ -101,7 +108,6 @@ int main()
     arg();
     allow_surrogates();
     char32();
-
     return 0;
 }
 

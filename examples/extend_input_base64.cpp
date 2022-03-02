@@ -52,7 +52,7 @@ struct base64_formatter
         fn() = default;
 
         template <typename U>
-        fn(const fn<U>& other) : indentation_(other.indentation())
+        explicit fn(const fn<U>& other) : indentation_(other.indentation())
         {
         }
 
@@ -106,7 +106,7 @@ class base64_stringifier: public strf::stringifier<CharT>
 public:
 
     template <typename ... T>
-    base64_stringifier
+    explicit base64_stringifier
         ( const strf::usual_stringifier_input<T...>& input)
         : base64_stringifier
             ( strf::use_facet<base64_facet_c, base64_facet_c>(input.facets)
@@ -219,7 +219,7 @@ void base64_stringifier<CharT>::write_identation_(strf::destination<CharT>& dest
 template <typename CharT>
 void base64_stringifier<CharT>::encode_all_data_in_this_line_(strf::destination<CharT>& dest) const
 {
-    const auto *data_it = static_cast<const std::uint8_t*>(fmt_.value().bytes);
+    const auto* data_it = static_cast<const std::uint8_t*>(fmt_.value().bytes);
     for (std::ptrdiff_t count = fmt_.value().num_bytes; count > 0; count -= 3) {
         dest.ensure(4);
         encode_3bytes_(dest.buffer_ptr(), data_it, count);
@@ -234,14 +234,14 @@ void base64_stringifier<CharT>::encode_3bytes_
     , const std::uint8_t* data
     , std::size_t data_size ) const
 {
-    dest[0] = encode_(data[0] >> 2);
-    dest[1] = encode_(((data[0] & 0x03) << 4) |
-                      (data_size < 2 ? 0 : ((data[1] & 0xF0) >> 4)));
-    dest[2] = (data_size < 2)
+    dest[0] = encode_(data[0] >> 2U);
+    dest[1] = encode_(((data[0] & 0x03U) << 4U) |
+                      (data_size < 2U ? 0U : ((data[1] & 0xF0U) >> 4U)));
+    dest[2] = (data_size < 2U)
         ? '='
-        : encode_(((data[1] & 0x0F) << 2) |
-                 (data_size < 3 ? 0 : ((data[2] & 0xC0) >> 6)));
-    dest[3] = data_size < 3 ? '=' : encode_(data[2] & 0x3F);
+        : encode_(((data[1] & 0x0FU) << 2U) |
+                 (data_size < 3U ? 0U : ((data[2] & 0xC0U) >> 6U)));
+    dest[3] = data_size < 3U ? '=' : encode_(data[2] & 0x3FU);
 }
 
 template <typename CharT>
@@ -308,7 +308,7 @@ void base64_stringifier<CharT>::write_end_of_line_(strf::destination<CharT>& des
 
 inline auto base64(const void* bytes, std::size_t num_bytes)
 {
-    base64_input data{ reinterpret_cast<const unsigned char*>(bytes), num_bytes };
+    base64_input data{ static_cast<const unsigned char*>(bytes), num_bytes };
     return base64_input_with_formatters{ data };
 }
 

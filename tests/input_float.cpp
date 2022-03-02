@@ -14,9 +14,9 @@ template <>
 struct floating_point_traits<float>
 {
     using uint_equiv = unsigned;
-    static constexpr int exponent_bits_size = 8;
-    static constexpr int mantissa_bits_size = 23;
-    static constexpr unsigned max_normal_exp = (1 << exponent_bits_size) - 2;
+    static constexpr unsigned exponent_bits_size = 8;
+    static constexpr unsigned mantissa_bits_size = 23;
+    static constexpr unsigned max_normal_exp = (1U << exponent_bits_size) - 2;
     static constexpr uint_equiv mantissa_bits_mask = 0x7FFFFF;
 };
 
@@ -24,10 +24,10 @@ template <>
 struct floating_point_traits<double>
 {
     using uint_equiv = std::uint64_t;
-    static constexpr int exponent_bits_size = 11;
-    static constexpr int mantissa_bits_size = 52;
-    static constexpr unsigned max_normal_exp = (1 << exponent_bits_size) - 2;
-    static constexpr uint_equiv mantissa_bits_mask = 0xFFFFFFFFFFFFFULL;
+    static constexpr unsigned exponent_bits_size = 11;
+    static constexpr unsigned mantissa_bits_size = 52;
+    static constexpr unsigned max_normal_exp = (1U << exponent_bits_size) - 2;
+    static constexpr uint_equiv mantissa_bits_mask = 0xfffffffffffffULL;
 };
 
 template <typename FloatT, typename helper = floating_point_traits<FloatT>>
@@ -117,7 +117,7 @@ STRF_TEST_FUNC void test_floating_point
     , bool negative = false )
 {
     ieee_mantissa = ieee_mantissa & helper::mantissa_bits_mask;
-    FloatT value = make_float<FloatT>(ieee_exponent, ieee_mantissa, negative);
+    auto value = make_float<FloatT>(ieee_exponent, ieee_mantissa, negative);
     TEST_SCOPE_DESCRIPTION
         ( "ieee_exp=", ieee_exponent, ' '
         , " ieee_mantissa=", strf::hex(ieee_mantissa).p((helper::mantissa_bits_size + 7) / 8)
@@ -542,7 +542,7 @@ STRF_TEST_FUNC void test_float32()
     TEST("_______________0x1.ffcp+0") (j(strf::hex(0x1.ffcp+0F)));
     TEST("__________0x1.8abcdep+127") (j(strf::hex(0x1.8abcdecp+127F)));
     TEST("_________-0x1.8abcdep-126") (j(strf::hex(-0x1.8abcdecp-126F)));
-    float denorm_min = strf::detail::bit_cast<float>(static_cast<std::uint32_t>(1));
+    auto denorm_min = strf::detail::bit_cast<float>(static_cast<std::uint32_t>(1));
     TEST("__________0x0.000002p-126") (j(strf::hex(denorm_min)));
     TEST("__________0x1.fffffep+127") (j(strf::hex(float_max<float>())));
 }
@@ -672,7 +672,7 @@ STRF_TEST_FUNC void test_hexadecimal()
 template <int Base>
 struct numpunct_maker {
 
-    STRF_HD numpunct_maker(char32_t sep)
+    STRF_HD explicit numpunct_maker(char32_t sep)
         : separator(sep)
     {
     }

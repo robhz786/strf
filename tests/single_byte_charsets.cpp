@@ -22,8 +22,9 @@ STRF_HD unsigned count_fffd( strf::detail::simple_string_view<char32_t> str)
 {
     unsigned count = 0;
     for (const auto *it = str.begin(); it != str.end(); ++it) {
-        if (*it == 0xFFFD)
+        if (*it == 0xFFFD) {
             ++count;
+        }
     }
     return count;
 }

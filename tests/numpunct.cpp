@@ -55,7 +55,7 @@ STRF_HD const char* result(strf::digits_distribution dist)
     return buff;
 }
 
-}
+} // anonymous namespace
 
 STRF_TEST_FUNC void test_numpunct()
 {

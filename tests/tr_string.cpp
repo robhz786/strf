@@ -10,7 +10,7 @@ class err_handler {
 public:
     using category = strf::tr_error_notifier_c;
 
-    STRF_HD err_handler(strf::destination<char>& log)
+    STRF_HD explicit err_handler(strf::destination<char>& log)
         : log_(log)
     {
     }

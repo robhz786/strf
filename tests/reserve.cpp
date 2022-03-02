@@ -3,7 +3,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#define  _CRT_SECURE_NO_WARNINGS
+#define  _CRT_SECURE_NO_WARNINGS // NOLINT(bugprone-reserved-identifier,cert-dcl37-c,cert-dcl51-cpp)
 
 #include "test_utils.hpp"
 
@@ -14,13 +14,13 @@ class reservation_tester : public strf::destination<char>
 
 public:
 
-    STRF_HD reservation_tester(strf::tag<void>)
+    STRF_HD explicit reservation_tester(strf::tag<void>)
         : strf::destination<char>{ buff_, buff_ + buff_size_ }
         , buff_{0}
     {
     }
 
-    STRF_HD reservation_tester(std::size_t size)
+    STRF_HD explicit reservation_tester(std::size_t size)
         : strf::destination<char>{ buff_, buff_ + buff_size_ }
         , buff_{0}
         , reserved_size_{size}
@@ -29,6 +29,10 @@ public:
 
     reservation_tester(const reservation_tester&) = delete;
     reservation_tester(reservation_tester&&) = delete;
+    reservation_tester& operator=(const reservation_tester&) = delete;
+    reservation_tester& operator=(reservation_tester&&) = delete;
+
+    ~reservation_tester() override = default;
 
     void STRF_HD recycle_buffer() override
     {

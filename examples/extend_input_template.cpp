@@ -9,7 +9,7 @@ namespace xxx {
 
 template <typename T>
 struct base {
-    base(const T& t) : value(t) {}
+    explicit base(const T& t) : value(t) {}
     T value;
 };
 } // namespace xxx
@@ -42,7 +42,7 @@ namespace yyy {
 
 template <typename T>
 struct derived: xxx::base<T> {
-    derived(const T& t): xxx::base<T>{t} {}
+    explicit derived(const T& t): xxx::base<T>{t} {}
 };
 
 } // namespace yyy

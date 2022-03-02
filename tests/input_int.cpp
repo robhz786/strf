@@ -20,7 +20,7 @@ STRF_TEST_FUNC void test_input_ptr()
         (strf::right(ptr, 8, '.'));
 }
 
-STRF_TEST_FUNC void test_input_int_no_punct()
+STRF_TEST_FUNC void test_input_int_no_punct() // NOLINT(google-readability-function-size,hicpp-function-size)
 {
     TEST_EQ(1,  strf::detail::count_digits<10>(1ULL));
     TEST_EQ(2,  strf::detail::count_digits<10>(10ULL));
@@ -561,7 +561,7 @@ STRF_TEST_FUNC void test_input_int_no_punct()
 template <int Base>
 struct numpunct_maker {
 
-    STRF_HD numpunct_maker(char32_t sep)
+    STRF_HD explicit numpunct_maker(char32_t sep)
         : separator(sep)
     {
     }

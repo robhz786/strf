@@ -11,12 +11,14 @@ class QStringAppender: public strf::destination<char16_t>
 {
 public:
 
-    QStringAppender(QString& str);
-
+    explicit QStringAppender(QString& str);
     explicit QStringAppender(QString& str, std::size_t size);
+    QStringAppender(QStringAppender&&) = delete;
+    QStringAppender(const QStringAppender&) = delete;
+    ~QStringAppender() override = default;
 
-    QStringAppender(QStringAppender&& str) = delete;
-    QStringAppender(const QStringAppender& str) = delete;
+    QStringAppender& operator=(const QStringAppender&) = delete;
+    QStringAppender& operator=(QStringAppender&&) = delete;
 
     void recycle_buffer() override;
 
@@ -27,7 +29,7 @@ private:
     QString& str_;
     std::size_t count_ = 0;
     constexpr static std::size_t buffer_size_ = strf::destination_space_after_flush;
-    char16_t buffer_[buffer_size_];
+    char16_t buffer_[buffer_size_] = {0};
 };
 
 QStringAppender::QStringAppender(QString& str)
@@ -52,7 +54,7 @@ void QStringAppender::recycle_buffer()
         this->set_good(false);
         QChar qchar_buffer[buffer_size_];
         std::copy_n(buffer_, count, qchar_buffer);
-        str_.append(qchar_buffer, count);
+        str_.append(qchar_buffer, static_cast<int>(count));
         count_ += count;
         this->set_good(true);
     }
@@ -73,7 +75,7 @@ public:
     using destination_type = QStringAppender;
     using sized_destination_type = QStringAppender;
 
-    QStringAppenderFactory(QString& str)
+    explicit QStringAppenderFactory(QString& str)
         : str_(str)
     {}
 
@@ -83,7 +85,10 @@ public:
     }
     QString& create(std::size_t size ) const
     {
-        str_.reserve(str_.size() + size);
+        const auto max_size = (std::numeric_limits<int>::max)() - str_.size();
+        if (size <= static_cast<std::size_t>(max_size)) {
+            str_.reserve(static_cast<int>(size) + str_.size());
+        }
         return str_;
     }
 

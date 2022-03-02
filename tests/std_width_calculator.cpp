@@ -150,7 +150,7 @@ STRF_HD size_array<sizeof...(Args)> sizes(Args... args) {
     return size_array<sizeof...(Args)>{{static_cast<std::size_t>(args)...}};
 }
 
-STRF_HD void test_many_sequences()
+STRF_HD void test_many_sequences() // NOLINT(google-readability-function-size,hicpp-function-size)
 {
     constexpr char32_t control = 0x0001;
     constexpr char32_t cr = 0x000D;
@@ -1539,7 +1539,7 @@ STRF_HD void other_tests()
     {
         // empty input to std_width_calc_func
         strf::width_t initial_width = 5;
-        char32_t ch;
+        char32_t ch = 'X';
         auto r = strf::detail::std_width_calc_func(&ch, &ch, initial_width, 0, true);
         TEST_TRUE(r.ptr == &ch);
         TEST_EQ(r.state, 0);

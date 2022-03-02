@@ -11,7 +11,7 @@ class my_bool_stringifier: public strf::stringifier<CharT>
 public:
 
     template <typename... T>
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD my_bool_stringifier
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD explicit my_bool_stringifier
         ( const strf::usual_stringifier_input<T...>& input )
         : value_(input.arg)
     {
@@ -143,7 +143,7 @@ struct printable_traits<bool_wrapper> {
     }
 };
 
-}// namepsace strf
+}// namespace strf
 
 STRF_TEST_FUNC void test_printable_overriding()
 {

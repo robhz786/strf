@@ -22,15 +22,20 @@ public:
     {
     }
 
-    QStringCreator(QStringCreator&&) = delete;
-    QStringCreator(const QStringCreator&) = delete;
-
     explicit QStringCreator(std::size_t size)
         : strf::destination<char16_t>(buffer_, buffer_size_)
     {
         Q_ASSERT(size < static_cast<std::size_t>(INT_MAX));
         str_.reserve(static_cast<int>(size));
     }
+
+    QStringCreator(QStringCreator&&) = delete;
+    QStringCreator(const QStringCreator&) = delete;
+
+    QStringCreator& operator=(QStringCreator&&) = delete;
+    QStringCreator& operator=(const QStringCreator&) = delete;
+
+    ~QStringCreator() override = default;
 
     void recycle_buffer() override;
 
@@ -40,12 +45,12 @@ private:
 
     QString str_;
     constexpr static std::size_t buffer_size_ = strf::destination_space_after_flush;
-    char16_t buffer_[buffer_size_];
+    char16_t buffer_[buffer_size_] = {0};
 };
 
 void QStringCreator::recycle_buffer()
 {
-    std::size_t count = this->buffer_ptr() - buffer_;
+    auto count = static_cast<int>(this->buffer_ptr() - buffer_);
     this->set_buffer_ptr(buffer_);
     if (this->good()) {
         this->set_good(false);

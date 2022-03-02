@@ -3,7 +3,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#define _USE_MATH_DEFINES
+#define _USE_MATH_DEFINES // NOLINT(bugprone-reserved-identifier,cert-dcl37-c,cert-dcl51-cpp)
 #include <strf/to_cfile.hpp>
 #include <strf/to_string.hpp>
 #include <utility>
@@ -28,7 +28,7 @@ namespace strf {
 template <> struct facet_traits<complex_form> {
     using category = complex_form_c;
 };
-} // namespace strf;
+} // namespace strf
 
 //--------------------------------------------------------------------------------
 // 2 //  Define format functions
@@ -50,13 +50,13 @@ struct std_complex_formatter {
 
         constexpr fn() noexcept = default;
 
-        constexpr fn(complex_form_fmt f) noexcept
+        constexpr explicit fn(complex_form_fmt f) noexcept
             : form_(f)
         {
         }
 
         template <class U>
-        constexpr fn(const fn<U>& u) noexcept
+        constexpr explicit fn(const fn<U>& u) noexcept
             : form_(u.form())
         {
         }
@@ -256,7 +256,7 @@ class fmt_std_complex_stringifier: public strf::stringifier<CharT>
 public:
 
     template <typename... T>
-    fmt_std_complex_stringifier(strf::usual_stringifier_input<T...> x)
+    explicit fmt_std_complex_stringifier(strf::usual_stringifier_input<T...> x)
         : encoding_(strf::use_facet<strf::charset_c<CharT>, complex_type_>(x.facets))
         , numpunct10_(strf::use_facet<strf::numpunct_c<10>, FloatT>(x.facets))
         , numpunct16_(strf::use_facet<strf::numpunct_c<16>, FloatT>(x.facets))

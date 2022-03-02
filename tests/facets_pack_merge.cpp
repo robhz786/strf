@@ -16,9 +16,11 @@ struct simple_array
 template <typename T, std::size_t N>
 static STRF_HD bool operator==(const simple_array<T, N>& a, const simple_array<T, N>& b)
 {
-    for (std::size_t i = 0; i < N; ++i)
-        if(a.array[i] != b.array[i])
+    for (std::size_t i = 0; i < N; ++i) {
+        if(a.array[i] != b.array[i]) {
             return false;
+        }
+    }
     return true;
 }
 
@@ -26,7 +28,7 @@ struct fcategory;
 
 struct facet_type
 {
-    STRF_HD facet_type(int v = 0)
+    STRF_HD explicit facet_type(int v = 0)
         : value(v)
     {
     }
@@ -80,13 +82,13 @@ template<typename T> using filter_le7 = filter_le<T, 7>;
 
 STRF_TEST_FUNC void test_facets_pack_merge()
 {
-    facet_type f1 = {1};
-    facet_type f2 = {2};
-    facet_type f3 = {3};
-    facet_type f4 = {4};
-    facet_type f5 = {5};
-    facet_type f6 = {6};
-    facet_type f7 = {7};
+    facet_type f1{1};
+    facet_type f2{2};
+    facet_type f3{3};
+    facet_type f4{4};
+    facet_type f5{5};
+    facet_type f6{6};
+    facet_type f7{7};
 
     auto x1 = strf::constrain<filter_le1>(f1);
     auto x2 = strf::constrain<filter_le2>(f2);

@@ -229,7 +229,7 @@ struct invalid_seq_counter: strf::transcoding_error_notifier {
 
 #if defined(__cpp_exceptions) && __cpp_exceptions  && ! defined(__CUDACC__)
 
-struct dummy_exception {};
+struct dummy_exception: public std::exception {};
 
 struct notifier_that_throws : strf::transcoding_error_notifier {
     void STRF_HD invalid_sequence(const char*, const void*, std::size_t, std::size_t) override {
