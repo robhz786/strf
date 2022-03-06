@@ -28,7 +28,7 @@ struct iterator_traits<const_iterator<T>>
     using value_type = T;
 };
 
-} // namespace std;
+} // namespace std
 
 #endif // ! defined(STRF_FREESTANDING)
 
@@ -40,7 +40,7 @@ struct simple_array
 
     STRF_HD const const_iterator begin() const
     {
-        return {(const T*)array};
+        return {static_cast<const T*>(array)};
     }
     STRF_HD const const_iterator end() const
     {

@@ -43,7 +43,7 @@ public:
 private:
 
     static unsigned long extract_unit_and_advance(const void*& ptr, std::size_t size) {
-        auto uptr = static_cast<const unsigned char*>(ptr);
+        const auto *uptr = static_cast<const unsigned char*>(ptr);
         ptr = uptr + size;
         return extract_unit(uptr, size);
     }

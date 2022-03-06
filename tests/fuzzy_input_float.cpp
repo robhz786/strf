@@ -36,7 +36,7 @@ struct floating_point_traits<double>
     using uint_equiv = std::uint64_t;
     static constexpr int exponent_bits_size = 11;
     static constexpr int mantissa_bits_size = 52;
-    static constexpr uint_equiv mantissa_bits_mask = 0xFFFFFFFFFFFFFull;
+    static constexpr uint_equiv mantissa_bits_mask = 0xFFFFFFFFFFFFFULL;
 };
 
 template <typename FloatT, typename helper = floating_point_traits<FloatT>>
@@ -69,7 +69,7 @@ precalc_and_print_result precalc_and_print(char* buff, std::size_t buff_size, co
     stringifier_type printer{printer_input};
     strf::cstr_destination dest{buff, buff_size};
     printer.print_to(dest);
-    auto end = dest.finish().ptr;
+    auto *end = dest.finish().ptr;
 
     precalc_and_print_result result;
     result.count = static_cast<int>(end - buff);

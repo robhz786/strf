@@ -16,12 +16,12 @@
 
 namespace {
 
-constexpr strf::charset_id invalid_csid = (strf::charset_id)0xf3b2a6b2;
+constexpr strf::charset_id invalid_csid = static_cast<strf::charset_id>(0xf3b2a6b2);
 
 STRF_HD unsigned count_fffd( strf::detail::simple_string_view<char32_t> str)
 {
     unsigned count = 0;
-    for (auto it = str.begin(); it != str.end(); ++it) {
+    for (const auto *it = str.begin(); it != str.end(); ++it) {
         if (*it == 0xFFFD)
             ++count;
     }
@@ -150,10 +150,10 @@ STRF_HD void general_tests
         // check each encoded character
         for(unsigned i = 0; i < 0x100; ++i) {
             auto ch32 = decoded_0_to_0xff[i];
-            char expected_ch = ch32 == 0xFFFD ? '?' : (char)i;
+            char expected_ch = ch32 == 0xFFFD ? '?' : static_cast<char>(i);
 
             TEST_SCOPE_DESCRIPTION( "i=", *strf::hex(i), " result[i]=", result[i]
-                                  , " ch32=", *strf::hex((unsigned)ch32) );
+                                  , " ch32=", *strf::hex(static_cast<unsigned>(ch32)) );
             TEST_EQ(result[i], expected_ch);
         }
     }
@@ -163,10 +163,10 @@ STRF_HD void general_tests
         for(unsigned i = 0; i < 0x100; ++i) {
             TEST_SCOPE_DESCRIPTION("i = ", i);
             auto ch32 = decoded_0_to_0xff[i];
-            char expected_ch = ch32 == 0xFFFD ? '?' : (char)i;
+            char expected_ch = ch32 == 0xFFFD ? '?' : static_cast<char>(i);
 
             char buff[20];
-            auto ptr = charset.encode_char(buff, ch32);
+            auto *ptr = charset.encode_char(buff, ch32);
             TEST_EQ(buff[0], expected_ch);
             TEST_EQ(ptr - buff, 1);
             TEST_EQ(charset.encoded_char_size(ch32), 1);
@@ -185,7 +185,7 @@ STRF_HD void general_tests
         // check each encoded character
         for(unsigned i = 0; i < 0x100; ++i) {
             TEST_SCOPE_DESCRIPTION("i = ", *strf::hex(i));
-            char expected_ch = decoded_0_to_0xff[i] == 0xFFFD ? '?' : (char)i;
+            char expected_ch = decoded_0_to_0xff[i] == 0xFFFD ? '?' : static_cast<char>(i);
             TEST_EQ(result[i], expected_ch);
         }
     }
@@ -204,7 +204,7 @@ STRF_HD void general_tests
         // check each encoded character
         for(unsigned i = 0; i < 0x100; ++i) {
             TEST_SCOPE_DESCRIPTION("i = ", i);
-            char expected_ch = decoded_0_to_0xff[i] == 0xFFFD ? '?' : (char)i;
+            char expected_ch = decoded_0_to_0xff[i] == 0xFFFD ? '?' : static_cast<char>(i);
             TEST_EQ(result[i], expected_ch);
         }
 
@@ -237,7 +237,7 @@ STRF_HD void general_tests
             for(unsigned i = 0; i < 0x100; ++i) {
                 TEST_SCOPE_DESCRIPTION("i = ", i);
                 auto wch = decoded_wstr[i];
-                char expected_ch = wch == 0xFFFD ? '?' : (char)i;
+                char expected_ch = wch == 0xFFFD ? '?' : static_cast<char>(i);
                 TEST_EQ(result[i], expected_ch);
             }
         }

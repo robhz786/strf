@@ -158,7 +158,7 @@ void ipv6_stringifier<CharT>::init_(PrePrinting& pre, Charset charset)
 
 inline std::uint16_t hex_digits_count(std::uint16_t x)
 {
-    return x > 0xFFF ? 4 : ( x > 0xFFu ? 3 : ( x > 0xF ? 2 : 1 ) );
+    return x > 0xFFF ? 4 : ( x > 0xFFU ? 3 : ( x > 0xF ? 2 : 1 ) );
 }
 
 template <typename CharT>
@@ -209,7 +209,7 @@ void ipv6_stringifier<CharT>::print_ipv6(strf::destination<CharT>& dest) const
             strf::to(dest).with(lettercase_) (strf::hex(addr_.hextets[i]).p(precision));
         }
         if (abbrev_.colon_visible(i)) {
-            strf::put(dest, (CharT)':');
+            strf::put(dest, static_cast<CharT>(':'));
         }
     }
 }
@@ -363,8 +363,8 @@ ipv6address_abbreviation::ipv6address_abbreviation(ipv6address addr)
             hide_leading_zeros:
             visible_hextets_count_ = static_cast<std::uint8_t>(8 - leading_zeros_count);
             visible_colons_count_ = visible_hextets_count_ + 1;
-            hextets_visibility_bits_ = 0xFFu << leading_zeros_count;
-            colons_visibility_bits_ = 0x7Fu & (0x7Fu << (leading_zeros_count - 2));
+            hextets_visibility_bits_ = 0xFFU << leading_zeros_count;
+            colons_visibility_bits_ = 0x7FU & (0x7FU << (leading_zeros_count - 2));
         }
     } else {
         unsigned zi = 2;
@@ -413,16 +413,16 @@ ipv6address_abbreviation::ipv6address_abbreviation(ipv6address addr)
     hide_middle_zeros:
     visible_hextets_count_ = static_cast<std::uint8_t>(8 - middle_zeros_count);
     visible_colons_count_ = visible_hextets_count_;
-    hextets_visibility_bits_ = ~(~(0xFFu << middle_zeros_count) << middle_zeros_start);
-    colons_visibility_bits_  = 0x7Fu & ~(~(0xFFu << (middle_zeros_count - 1)) << middle_zeros_start);
+    hextets_visibility_bits_ = ~(~(0xFFU << middle_zeros_count) << middle_zeros_start);
+    colons_visibility_bits_  = 0x7FU & ~(~(0xFFU << (middle_zeros_count - 1)) << middle_zeros_start);
     return;
 
     hide_trailing_zeros:
     auto trailing_zeros_count = static_cast<std::uint8_t>(8 - trailing_zeros_start);
     visible_hextets_count_ = static_cast<std::uint8_t>(trailing_zeros_start);
     visible_colons_count_  = static_cast<std::uint8_t>(trailing_zeros_start + 1);
-    hextets_visibility_bits_ = 0xFFu >>  trailing_zeros_count;
-    colons_visibility_bits_  = 0xFFu >> (trailing_zeros_count - 1);
+    hextets_visibility_bits_ = 0xFFU >>  trailing_zeros_count;
+    colons_visibility_bits_  = 0xFFU >> (trailing_zeros_count - 1);
 }
 constexpr ipv6address_abbreviation::ipv6address_abbreviation() noexcept
     : hextets_visibility_bits_(0xFF)

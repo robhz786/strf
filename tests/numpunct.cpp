@@ -69,14 +69,14 @@ STRF_TEST_FUNC void test_numpunct()
         TEST_TRUE(grouper.thousands_sep_count(12) == 2);
     }
 
-    auto big_value = 10000000000000000000ull;
+    auto big_value = 10000000000000000000ULL;
     {
         auto punct = strf::numpunct<10>{4, 3, 2}.thousands_sep(U'.');
-        TEST("1.00.00.000.0000").with(punct)(strf::punct(100000000000ll));
+        TEST("1.00.00.000.0000").with(punct)(strf::punct(100000000000LL));
     }
     {
         auto punct = strf::numpunct<10>{3};
-        TEST("100,000,000,000").with(punct)(strf::punct(100000000000ll));
+        TEST("100,000,000,000").with(punct)(strf::punct(100000000000LL));
     }
     {
         strf::numpunct<10> grouper{};

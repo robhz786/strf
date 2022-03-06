@@ -81,7 +81,7 @@ STRF_TEST_FUNC void test_input_string()
             .with(strf::iso_8859_3_t<char>{})
             (strf::conv("---\xA5---", strf::iso_8859_3_t<char>{}));
         {
-            const char8_t expected[] = { '-', '-', '-', (char8_t)'\xA5', '-', '-', '-', '\0' };
+            const char8_t expected[] = { '-', '-', '-', static_cast<char8_t>('\xA5'), '-', '-', '-', '\0' };
             TEST(expected)
                 .with(strf::iso_8859_3_t<char8_t>{})
                 (strf::conv("---\xA5---", strf::iso_8859_3_t<char>{}));
@@ -90,7 +90,7 @@ STRF_TEST_FUNC void test_input_string()
             .with(strf::iso_8859_3_t<char>{})
             (strf::right("---\xA5---", 10, U'.').conv(strf::iso_8859_3_t<char>{}));
         {
-            const char8_t expected[] = { '.', '.', '.', '-', '-', '-', (char8_t)'\xA5', '-', '-', '-', '\0' };
+            const char8_t expected[] = { '.', '.', '.', '-', '-', '-', static_cast<char8_t>('\xA5'), '-', '-', '-', '\0' };
             TEST(expected)
                 .with(strf::iso_8859_3_t<char8_t>{})
                 (strf::right("---\xA5---", 10, U'.').conv(strf::iso_8859_3_t<char>{}));

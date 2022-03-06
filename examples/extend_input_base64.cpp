@@ -219,7 +219,7 @@ void base64_stringifier<CharT>::write_identation_(strf::destination<CharT>& dest
 template <typename CharT>
 void base64_stringifier<CharT>::encode_all_data_in_this_line_(strf::destination<CharT>& dest) const
 {
-    auto data_it = static_cast<const std::uint8_t*>(fmt_.value().bytes);
+    const auto *data_it = static_cast<const std::uint8_t*>(fmt_.value().bytes);
     for (std::ptrdiff_t count = fmt_.value().num_bytes; count > 0; count -= 3) {
         dest.ensure(4);
         encode_3bytes_(dest.buffer_ptr(), data_it, count);
@@ -264,7 +264,7 @@ void base64_stringifier<CharT>::write_multiline_(strf::destination<CharT>& dest)
 {
     write_identation_(dest);
 
-    auto data_it = static_cast<const std::uint8_t*>(fmt_.value().bytes);
+    const auto *data_it = static_cast<const std::uint8_t*>(fmt_.value().bytes);
     std::ptrdiff_t remaining_bytes = fmt_.value().num_bytes;
     unsigned cursor_pos = 0;
 
@@ -339,7 +339,7 @@ void tests()
             .with(xxx::base64_facet{50, {'\n', '\0'}})
             (xxx::base64(data, data_size).indentation(4));
 
-        auto expected =
+        const auto *expected =
             "    VGhlIHF1aWNrIGJyb3duIGZveCBqdW1wcyBvdmVyIHRoZSBsYX\n"
             "    p5IGRvZy4=\n";
 
@@ -353,7 +353,7 @@ void tests()
             .with(xxx::base64_facet{30})
             (xxx::base64(data, data_size).indentation(4));
 
-        auto expected =
+        const auto *expected =
             "    VGhlIHF1aWNrIGJyb3duIGZveCBqdW\r\n"
             "    1wcyBvdmVyIHRoZSBsYXp5IGRvZy4=\r\n";
 
@@ -442,7 +442,7 @@ void tests()
             .with(xxx::base64_facet{50, {'\n', '\0'}})
             (strf::fmt_separated_range(vec, "------------\n").indentation(4));
 
-        auto expected =
+        const auto *expected =
             "    YWJj\n"
             "------------\n"
             "    YWJjZA==\n"
@@ -466,7 +466,7 @@ void sample()
         .with(xxx::base64_facet{50, {'\n', '\0'}})
         ( xxx::base64(msg, strlen(msg)).indentation(4) );
 
-    auto expected =
+    const auto *expected =
         "    VGhlIHF1aWNrIGJyb3duIGZveCBqdW1wcyBvdmVyIHRoZSBsYX\n"
         "    p5IGRvZy4=\n";
 

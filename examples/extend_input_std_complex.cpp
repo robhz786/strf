@@ -27,9 +27,9 @@ template <> struct facet_traits<complex_form> {
 struct std_complex_formatter {
 
     enum class complex_form_fmt {
-        vector   = (int)complex_form::vector,
-        algebric = (int)complex_form::algebric,
-        polar    = (int)complex_form::polar,
+        vector   = static_cast<int>(complex_form::vector),
+        algebric = static_cast<int>(complex_form::algebric),
+        polar    = static_cast<int>(complex_form::polar),
         use_facet = 1 + std::max({vector, algebric, polar})
     };
 
@@ -166,11 +166,11 @@ struct printable_traits<std::complex<FloatT>>
     //     auto v = ::complex_coordinates(arg, form);
     //     unsigned has_brackets = form != complex_form::polar;
     //     auto arg2 = strf::join
-    //         ( strf::multi((CharT)'(', has_brackets)
+    //         ( strf::multi(static_cast<CharT>('('), has_brackets)
     //         , v.first
     //         , strf::conv(middle_string(form), strf::utf_t<char16_t>())
     //         , v.second
-    //         , strf::multi((CharT)')', has_brackets) );
+    //         , strf::multi(static_cast<CharT>(')'), has_brackets) );
 
     //     return strf::make_default_stringifier_input<CharT>(pre, fp, arg2);
     // }
@@ -186,11 +186,11 @@ struct printable_traits<std::complex<FloatT>>
         auto v = ::complex_coordinates(arg.value(), form);
         unsigned has_brackets = form != complex_form::polar;
         auto arg2 = strf::join
-            ( strf::multi((CharT)'(', has_brackets)
+            ( strf::multi(static_cast<CharT>('('), has_brackets)
             , strf::fmt(v.first).set_float_format(arg.get_float_format())
             , strf::conv(middle_string(form), strf::utf_t<char16_t>())
             , strf::fmt(v.second).set_float_format(arg.get_float_format())
-            , strf::multi((CharT)')', has_brackets) );
+            , strf::multi(static_cast<CharT>(')'), has_brackets) );
         auto arg3 = arg2.set_alignment_format(arg.get_alignment_format());
         return strf::make_default_stringifier_input<CharT>(pre, fp, arg3);
     }

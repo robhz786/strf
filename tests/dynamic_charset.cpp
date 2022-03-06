@@ -45,7 +45,7 @@ void test_dynamic_charset()
             .thousands_sep(0xFFFFFFFF)
             .decimal_point(0xFFFFFFFF);
 
-        auto input = !strf::fixed(10.5).fill((char32_t)0xFFFFFF) ^ 6;
+        auto input = !strf::fixed(10.5).fill(static_cast<char32_t>(0xFFFFFF)) ^ 6;
 
         TEST("?10?5?").with(punct, dyn_ascii) (input);
         TEST("\xEF\xBF\xBD" "10\xEF\xBF\xBD" "5\xEF\xBF\xBD").with(punct, dyn_utf8) (input);
@@ -61,7 +61,7 @@ void test_dynamic_charset()
         TEST(U"   x").with(custom_wcalc, dyn_utf32)(strf::fmt(U'x') > 4);
     }
     {
-        const auto invalid_csid = (strf::charset_id) 0x0;
+        const auto invalid_csid = static_cast<strf::charset_id>(0x0);
         auto transc1 = dyn_utf8.find_transcoder_to(strf::tag<wchar_t>{}, invalid_csid);
         TEST_TRUE(transc1.transcode_func() == nullptr);
 

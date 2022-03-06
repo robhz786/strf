@@ -80,7 +80,7 @@ void test_failing_to_recycle_buffer()
     writer.flush(); // first flush() works
     test_utils::turn_into_bad(writer);
 
-    strf::to(writer)(strf::multi((CharT)'x', 10));
+    strf::to(writer)(strf::multi(static_cast<CharT>('x'), 10));
     writer.flush(); // this fails
 
     auto status = writer.finish();

@@ -37,9 +37,9 @@ template <> struct facet_traits<complex_form> {
 struct std_complex_formatter {
 
     enum class complex_form_fmt {
-        vector   = (int)complex_form::vector,
-        algebric = (int)complex_form::algebric,
-        polar    = (int)complex_form::polar,
+        vector   = static_cast<int>(complex_form::vector),
+        algebric = static_cast<int>(complex_form::algebric),
+        polar    = static_cast<int>(complex_form::polar),
         use_facet = 1 + (std::max)({vector, algebric, polar})
     };
 
@@ -237,9 +237,9 @@ void std_complex_stringifier<CharT, FloatT>::print_to(strf::destination<CharT>& 
         print(coordinates_.first, U'\u2220', static_cast<CharT>(' ') );
         print(coordinates_.second );
     } else {
-        print((CharT)'(', coordinates_.first);
+        print(static_cast<CharT>('('), coordinates_.first);
         print(strf::conv(form_ == complex_form::algebric ? " + i*" : ", ") );
-        print(coordinates_.second, (CharT)')');
+        print(coordinates_.second, static_cast<CharT>(')'));
     }
 }
 
@@ -312,7 +312,7 @@ void fmt_std_complex_stringifier<CharT, FloatT>::init_fillcount_and_do_preprinti
     , strf::width_t fmt_width )
 {
     strf::width_t fillchar_width = wcalc.char_width(strf::utf_t<char32_t>{}, fillchar_);
-    if (fmt_width >= pre.remaining_width() || ! (bool)PrecalcWidth ) {
+    if (fmt_width >= pre.remaining_width() || ! static_cast<bool>(PrecalcWidth) ) {
         pre.clear_remaining_width();
         strf::preprinting<PrecalcSize, strf::precalc_width::yes> sub_pre{fmt_width};
         do_preprinting_without_fill_(sub_pre, wcalc);
@@ -411,8 +411,9 @@ void fmt_std_complex_stringifier<CharT, FloatT>::print_complex_value_
                                  ? " + i*"
                                  : ", " );
         strf::to(dest).with(facets)
-            ( (CharT)'(', first_val, strf::conv(middle_str)
-            , second_val, (CharT)')');
+            ( static_cast<CharT>('(')
+            , first_val, strf::conv(middle_str), second_val
+            , static_cast<CharT>(')') );
     }
 }
 

@@ -27,7 +27,7 @@ struct floating_point_traits<double>
     static constexpr int exponent_bits_size = 11;
     static constexpr int mantissa_bits_size = 52;
     static constexpr unsigned max_normal_exp = (1 << exponent_bits_size) - 2;
-    static constexpr uint_equiv mantissa_bits_mask = 0xFFFFFFFFFFFFFull;
+    static constexpr uint_equiv mantissa_bits_mask = 0xFFFFFFFFFFFFFULL;
 };
 
 template <typename FloatT, typename helper = floating_point_traits<FloatT>>
@@ -486,11 +486,11 @@ STRF_TEST_FUNC void basic_tests()
     TEST("_______________-1.25") (j(strf::center(-1.25, 5, '*')));
 
     TEST("_____________\xEF\xBF\xBD\xEF\xBF\xBD-1.25")
-        (j(strf::right(-1.25, 7, (char32_t)0xFFFFFFF)));
+        (j(strf::right(-1.25, 7, static_cast<char32_t>(0xFFFFFFF))));
     TEST("_____________-1.25\xEF\xBF\xBD\xEF\xBF\xBD")
-        (j(strf::left(-1.25, 7, (char32_t)0xFFFFFFF)));
+        (j(strf::left(-1.25, 7, static_cast<char32_t>(0xFFFFFFF))));
     TEST("_____________\xEF\xBF\xBD-1.25\xEF\xBF\xBD")
-        (j(strf::center(-1.25, 7, (char32_t)0xFFFFFFF)));
+        (j(strf::center(-1.25, 7, static_cast<char32_t>(0xFFFFFFF))));
 
     //----------------------------------------------------------------
     // pad0
@@ -529,20 +529,20 @@ STRF_TEST_FUNC void basic_tests()
 STRF_TEST_FUNC void test_float32()
 {
     constexpr auto j = strf::join_right(25, '_');
-    TEST("_______________________+0") (j(+strf::fixed(0.0f)));
+    TEST("_______________________+0") (j(+strf::fixed(0.0F)));
     TEST("___________+1.1754944e-38") (j(+*strf::gen(+1.1754944e-38)));
-    TEST("____________________+1.25") (j(+strf::fixed(1.25f)));
-    TEST("________________+1.250000") (j(+strf::fixed(1.25f).p(6)));
-    TEST("_____________________+0.1") (j(+strf::fixed(0.1f)));
-    TEST("__________________+1.e+20") (j(+*strf::sci(1e+20f)));
-    TEST("____________+1.000000e+20") (j(+strf::sci(1e+20f).p(6)));
-    TEST("____________________+1.25") (j(+strf::gen(1.25f)));
-    TEST("___________________+1.250") (j(+*strf::gen(1.25f).p(4)));
+    TEST("____________________+1.25") (j(+strf::fixed(1.25F)));
+    TEST("________________+1.250000") (j(+strf::fixed(1.25F).p(6)));
+    TEST("_____________________+0.1") (j(+strf::fixed(0.1F)));
+    TEST("__________________+1.e+20") (j(+*strf::sci(1e+20F)));
+    TEST("____________+1.000000e+20") (j(+strf::sci(1e+20F).p(6)));
+    TEST("____________________+1.25") (j(+strf::gen(1.25F)));
+    TEST("___________________+1.250") (j(+*strf::gen(1.25F).p(4)));
 
-    TEST("_______________0x1.ffcp+0") (j(strf::hex(0x1.ffcp+0f)));
-    TEST("__________0x1.8abcdep+127") (j(strf::hex(0x1.8abcdecp+127f)));
-    TEST("_________-0x1.8abcdep-126") (j(strf::hex(-0x1.8abcdecp-126f)));
-    float denorm_min = strf::detail::bit_cast<float>((std::uint32_t)1);
+    TEST("_______________0x1.ffcp+0") (j(strf::hex(0x1.ffcp+0F)));
+    TEST("__________0x1.8abcdep+127") (j(strf::hex(0x1.8abcdecp+127F)));
+    TEST("_________-0x1.8abcdep-126") (j(strf::hex(-0x1.8abcdecp-126F)));
+    float denorm_min = strf::detail::bit_cast<float>(static_cast<std::uint32_t>(1));
     TEST("__________0x0.000002p-126") (j(strf::hex(denorm_min)));
     TEST("__________0x1.fffffep+127") (j(strf::hex(float_max<float>())));
 }
@@ -560,7 +560,7 @@ STRF_TEST_FUNC void test_hexadecimal()
     TEST("__________________-0x1p-3") (j(strf::hex(-0.125)));
     TEST("__________________0x1p+11") (j(strf::hex(2048.0)));
     TEST("__0x1.fffffffffffffp+1023") (j(strf::hex(float_max<double>())));
-    auto denorm_min = strf::detail::bit_cast<double>((std::uint64_t)1);
+    auto denorm_min = strf::detail::bit_cast<double>(static_cast<std::uint64_t>(1));
     TEST("__0x0.0000000000001p-1022") (j(strf::hex(denorm_min)));
     TEST("________________0x1p-1022") (j(strf::hex(0x1p-1022)));
     TEST("_______________0x1.p-1022") (j(*strf::hex(0x1p-1022)));

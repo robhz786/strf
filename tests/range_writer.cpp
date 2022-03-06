@@ -18,13 +18,17 @@ STRF_TEST_FUNC void char_range_basic_operations()
         constexpr std::size_t expected_size = 8;
         const CharT expected[expected_size] = { '1', '2', '3', '4', '5', 'a', 'b', 'c' };
         {
-            auto res = strf::to_range(buff)(12345, (CharT)'a', (CharT)'b', (CharT)'c');
+            auto res = strf::to_range(buff)
+                ( 12345, static_cast<CharT>('a')
+                , static_cast<CharT>('b'), static_cast<CharT>('c'));
             TEST_EQ(res.ptr - buff, 8);
             TEST_FALSE(res.truncated);
             TEST_TRUE(strf::detail::str_equal(buff, expected, expected_size));
         }
         {
-            auto res = strf::to_range(buff)(12345, (CharT)'a', (CharT)'b', (CharT)'c', (CharT)'d');
+            auto res = strf::to_range(buff)
+                ( 12345, static_cast<CharT>('a'), static_cast<CharT>('b')
+                , static_cast<CharT>('c'), static_cast<CharT>('d') );
             TEST_EQ(res.ptr - buff, 8);
             TEST_TRUE(res.truncated);
             TEST_TRUE(strf::detail::str_equal(buff, expected, expected_size));
@@ -64,9 +68,9 @@ STRF_TEST_FUNC void char_range_basic_operations()
         // would have returned just before flush()
 
         strf::array_destination<CharT> sw(buff);
-        strf::put(sw, (CharT)'a');
-        strf::put(sw, (CharT)'b');
-        strf::put(sw, (CharT)'c');
+        strf::put(sw, static_cast<CharT>('a'));
+        strf::put(sw, static_cast<CharT>('b'));
+        strf::put(sw, static_cast<CharT>('c'));
         sw.flush();
         auto r = sw.finish();
         TEST_TRUE(r.truncated);
@@ -88,9 +92,9 @@ STRF_TEST_FUNC void char_range_basic_operations()
         // copy "bad" object
 
         strf::array_destination<CharT> sw1(buff);
-        strf::put(sw1, (CharT)'a');
-        strf::put(sw1, (CharT)'b');
-        strf::put(sw1, (CharT)'c');
+        strf::put(sw1, static_cast<CharT>('a'));
+        strf::put(sw1, static_cast<CharT>('b'));
+        strf::put(sw1, static_cast<CharT>('c'));
 
         sw1.flush();
 
@@ -112,13 +116,13 @@ STRF_TEST_FUNC void char_range_basic_operations()
 
         TEST_FALSE(sw1 == sw2);
 
-        strf::put(sw1, (CharT)'a');
-        strf::put(sw1, (CharT)'b');
-        strf::put(sw1, (CharT)'c');
+        strf::put(sw1, static_cast<CharT>('a'));
+        strf::put(sw1, static_cast<CharT>('b'));
+        strf::put(sw1, static_cast<CharT>('c'));
 
-        strf::put(sw2, (CharT)'a');
-        strf::put(sw2, (CharT)'b');
-        strf::put(sw2, (CharT)'c');
+        strf::put(sw2, static_cast<CharT>('a'));
+        strf::put(sw2, static_cast<CharT>('b'));
+        strf::put(sw2, static_cast<CharT>('c'));
 
         sw1 = sw2;
         TEST_TRUE(sw1 == sw2);
@@ -139,13 +143,13 @@ STRF_TEST_FUNC void char_range_basic_operations()
 
         TEST_FALSE(sw1 == sw2);
 
-        strf::put(sw1, (CharT)'a');
-        strf::put(sw1, (CharT)'b');
-        strf::put(sw1, (CharT)'c');
+        strf::put(sw1, static_cast<CharT>('a'));
+        strf::put(sw1, static_cast<CharT>('b'));
+        strf::put(sw1, static_cast<CharT>('c'));
 
-        strf::put(sw2, (CharT)'a');
-        strf::put(sw2, (CharT)'b');
-        strf::put(sw2, (CharT)'c');
+        strf::put(sw2, static_cast<CharT>('a'));
+        strf::put(sw2, static_cast<CharT>('b'));
+        strf::put(sw2, static_cast<CharT>('c'));
         sw2.flush();
 
         sw1 = sw2;

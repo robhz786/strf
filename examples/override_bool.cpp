@@ -37,7 +37,7 @@ constexpr auto italian_bool = strf::constrain<is_bool>(my_bool_override{{"falso"
 int main()
 {
     auto str = strf::to_string.with(italian_bool)
-        (true, '/', false, '/', 1, '/', 0, '/', 1.0, '/', 0.0, '/', (void*)0);
+        (true, '/', false, '/', 1, '/', 0, '/', 1.0, '/', 0.0, '/', static_cast<void*>(0));
     assert(str == "vero/falso/1/0/1/0/0x0");
 
     // with formatting
@@ -48,7 +48,7 @@ int main()
 
     // what happens when you don't constrain an overrider facet:
     str = strf::to_string.with(my_bool_override{{"falso", "vero"}})
-        (true, '/', false, '/', 1, '/', 0, '/', 1.0, '/', 0.0, '/', (void*)0);
+        (true, '/', false, '/', 1, '/', 0, '/', 1.0, '/', 0.0, '/', static_cast<void*>(0));
     assert(str == "vero/falso/vero/falso/vero/falso/falso");
 
     return 0;

@@ -22,10 +22,10 @@ STRF_TEST_FUNC void test_char
     , strf::detail::simple_string_view<CharT> encoded_char )
 {
     TEST_SCOPE_DESCRIPTION( "encoding: ", charset.name()
-                          , "; char: \\u'", strf::hex((unsigned)ch), '\'');
+                          , "; char: \\u'", strf::hex(static_cast<unsigned>(ch)), '\'');
 
     CharT buff[100];
-    auto it = charset.encode_char(buff, ch);
+    auto *it = charset.encode_char(buff, ch);
 
     TEST_EQ(std::size_t(it - buff), encoded_char.size());
     TEST_TRUE(strf::detail::str_equal(encoded_char.data(), buff, encoded_char.size()));

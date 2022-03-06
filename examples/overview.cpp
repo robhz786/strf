@@ -114,7 +114,7 @@ void basic_facet_sample()
     auto punct = strf::numpunct<base>{4, 3, 2}.thousands_sep(U'.');
     auto s = strf::to_string
         .with(punct)
-        ("one hundred billions = ", strf::punct(100000000000ll));
+        ("one hundred billions = ", strf::punct(100000000000LL));
 
     assert(s == "one hundred billions = 1.00.00.000.0000");
 //]
@@ -126,7 +126,7 @@ void constrained_facet()
     //[ constrained_facet_sample
     auto facet_obj = strf::constrain<std::is_signed>(strf::numpunct<10>{3});
 
-    auto s = strf::to_string.with(facet_obj)(strf::punct(100000u), "  ", strf::punct(100000));
+    auto s = strf::to_string.with(facet_obj)(strf::punct(100000U), "  ", strf::punct(100000));
 
     assert(s == "100000  100,000");
     //]
@@ -148,7 +148,7 @@ void overriding_sample()
         .with( punct_dec_1
              , punct_dec_2
              , strf::constrain<std::is_signed>(punct_dec_3) )
-        ( strf::punct(100000), "  ", strf::punct(100000u) ) ;
+        ( strf::punct(100000), "  ", strf::punct(100000U) ) ;
 
     assert(s == "100^000  10.00.00");
     //]
@@ -162,7 +162,7 @@ void sample_numpunct_with_alternative_encoding()
     auto s = strf::to_string
         .with(strf::windows_1252<char>)
         .with(strf::numpunct<10>{4, 3, 2}.thousands_sep(0x2022))
-        ("one hundred billions = ", strf::punct(100000000000ll));
+        ("one hundred billions = ", strf::punct(100000000000LL));
 
     // The character U+2022 is encoded as '\225' in Windows-1252
     assert(s == "one hundred billions = 1\225""0000\225""000\225""0000");
@@ -217,7 +217,7 @@ void numpunct()
 
     auto str = strf::to_string
         .with(strf::numpunct<base>{3}.thousands_sep(U'.'))
-        (strf::punct(100000000000ll));
+        (strf::punct(100000000000LL));
 
     assert(str == "100.000.000.000");
     //]
@@ -229,7 +229,7 @@ void variable_grouping()
     constexpr int base = 10;
 
     auto punct = strf::numpunct<base>{4, 3, 2};
-    auto str = strf::to_string.with(punct)(strf::punct(100000000000ll));
+    auto str = strf::to_string.with(punct)(strf::punct(100000000000LL));
     assert(str == "1,00,00,000,0000");
     //]
 }
@@ -247,7 +247,7 @@ void punct_non_decimal()
 
 void fast_width()
 {
-    auto str = "15.00 \xE2\x82\xAC \x80"; // "15.00 € \x80"
+    const auto *str = "15.00 \xE2\x82\xAC \x80"; // "15.00 € \x80"
     auto result = strf::to_string.with(strf::fast_width)
         ( strf::right(str, 12, '*') );
 
@@ -256,7 +256,7 @@ void fast_width()
 
 void width_as_fast_u32len()
 {
-    auto str = "15.00 \xE2\x82\xAC \x80"; // "15.00 € \x80"
+    const auto *str = "15.00 \xE2\x82\xAC \x80"; // "15.00 € \x80"
     auto result = strf::to_string .with(strf::width_as_fast_u32len)
         ( strf::right(str, 12, '*'));
     assert(result == "****15.00 \xE2\x82\xAC \x80"); // width calculated as 8
@@ -264,7 +264,7 @@ void width_as_fast_u32len()
 
 void width_as_u32len()
 {
-    auto str = "15.00 \xE2\x82\xAC \x80"; // "15.00 € \x80"
+    const auto *str = "15.00 \xE2\x82\xAC \x80"; // "15.00 € \x80"
     auto result = strf::to_string .with(strf::width_as_u32len) ( strf::right(str, 12, '*'));
 
     assert(result == "***15.00 \xE2\x82\xAC \x80"); // width calculated as 9
@@ -272,7 +272,7 @@ void width_as_u32len()
 
 void width_in_conv()
 {
-    auto str = "15.00 \xE2\x82\xAC \x80"; // "15.00 € \x80"
+    const auto *str = "15.00 \xE2\x82\xAC \x80"; // "15.00 € \x80"
 
     auto res1 = strf::to_u16string.with(strf::fast_width)          (strf::conv(str) > 12);
     auto res2 = strf::to_u16string.with(strf::width_as_fast_u32len)(strf::conv(str) > 12);
@@ -301,7 +301,7 @@ void width_func()
         return roman_numerals_width[ch - 0x2160];
     };
     auto my_wcalc = strf::make_width_calculator(wfunc);
-    auto str = u8"\u2163 + \u2167 = \u216B"; // "Ⅳ + Ⅷ = Ⅻ"
+    const auto *str = u8"\u2163 + \u2167 = \u216B"; // "Ⅳ + Ⅷ = Ⅻ"
     auto result = strf::to_u8string.with(my_wcalc) (strf::right(str, 18, '.'));
 
     // width calculated as 13.3624, rounded to 13:

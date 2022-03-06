@@ -34,11 +34,11 @@ struct printable_traits<xxx::point2D<FloatT>> {
     {
         auto p = arg.value(); // the Point2D<FloatT> value
         auto arg2 = strf::join
-            ( (CharT)'('
+            ( static_cast<CharT>('(')
             , strf::fmt(p.x).set_float_format(arg.get_float_format())
             , strf::conv(u", ")
             , strf::fmt(p.y).set_float_format(arg.get_float_format())
-            , (CharT)')' )
+            , static_cast<CharT>(')') )
             .set_alignment_format(arg.get_alignment_format());
         return strf::make_stringifier_input<CharT>(pre, fp, arg2);
     }

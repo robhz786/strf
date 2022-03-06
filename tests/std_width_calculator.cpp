@@ -17,9 +17,9 @@ using size_array  = simple_array<std::size_t, N>;
 using char32_range = strf::detail::simple_string_view<char32_t>;
 
 STRF_HD auto hex_ch32(char32_t ch)
-    -> decltype(strf::join("", strf::hex(0u).p(6)))
+    -> decltype(strf::join("", strf::hex(0U).p(6)))
 {
-    return strf::join("U+", strf::hex((unsigned)ch).p(4));
+    return strf::join("U+", strf::hex(static_cast<unsigned>(ch)).p(4));
 }
 
 STRF_HD void test_width_char_by_char
@@ -34,9 +34,9 @@ STRF_HD void test_width_char_by_char
     const auto initial_width = (strf::width_t::max)();
     auto remaining_width = initial_width;
     unsigned state = 0;
-    auto obtained_sizes_it = size_buffer;
+    auto *obtained_sizes_it = size_buffer;
     const char32_t* grapheme_begin = chars.begin();
-    for(auto ptr = chars.begin(); ptr < chars.end(); ++ptr) {
+    for(const auto *ptr = chars.begin(); ptr < chars.end(); ++ptr) {
         auto r = strf::detail::std_width_calc_func(ptr, ptr + 1, remaining_width, state, false);
         if (ptr == chars.begin()) {
             remaining_width = r.width;

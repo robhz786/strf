@@ -15,15 +15,15 @@ public:
         ( const strf::usual_stringifier_input<T...>& input )
         : value_(input.arg)
     {
-        input.pre.subtract_width(2 + (int)input.arg);
-        input.pre.add_size(2 + (int)input.arg);
+        input.pre.subtract_width(2 + static_cast<int>(input.arg));
+        input.pre.add_size(2 + static_cast<int>(input.arg));
     }
 
     void STRF_HD print_to(strf::destination<CharT>& dest) const override
     {
-        int size = 2 + (int)value_;
+        int size = 2 + static_cast<int>(value_);
         dest.ensure(size);
-        auto p = dest.buffer_ptr();
+        auto *p = dest.buffer_ptr();
         if (value_) {
             p[0] = static_cast<CharT>('y');
             p[1] = static_cast<CharT>('e');
