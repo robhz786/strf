@@ -234,6 +234,7 @@ public:
         < typename F = Facet
         , strf::detail::enable_if_t<std::is_copy_constructible<F>::value, int> = 0 >
     constexpr STRF_HD fpe_wrapper(const Facet& facet)
+        noexcept(noexcept(Facet(std::declval<const F&>())))
         : facet_(facet)
     {
     }
@@ -242,6 +243,7 @@ public:
         < typename F = Facet
         , strf::detail::enable_if_t<std::is_constructible<Facet, F&&>::value, int> = 0 >
     constexpr STRF_HD fpe_wrapper(F&& facet)
+        noexcept(noexcept(Facet(std::declval<F>())))
         : facet_(std::forward<F>(facet))
     {
     }
@@ -280,6 +282,7 @@ public:
         , strf::detail::enable_if_t<std::is_copy_constructible<F>::value, int> = 0 >
     constexpr STRF_HD fpe_wrapper
         ( const strf::constrained_fpe<Filter, FPE>& cfpe )
+        noexcept(noexcept(F(std::declval<const F&>())))
         : fpe_(cfpe.get())
     {
     }
@@ -289,6 +292,7 @@ public:
         , strf::detail::enable_if_t<std::is_move_constructible<F>::value, int> = 0 >
     constexpr STRF_HD fpe_wrapper
         ( strf::constrained_fpe<Filter, FPE>&& cfpe )
+        noexcept(noexcept(F(std::declval<F>())))
         : fpe_(std::move(cfpe.get()))
     {
     }
@@ -314,7 +318,7 @@ class fpe_wrapper<Rank, const FPE&>
 {
 public:
 
-    constexpr STRF_HD fpe_wrapper(const FPE& fpe)
+    constexpr STRF_HD fpe_wrapper(const FPE& fpe) noexcept
         : fpe_(fpe)
     {
     }
@@ -358,6 +362,7 @@ public:
         < typename FP = fp_type_
         , strf::detail::enable_if_t<std::is_copy_constructible<FP>::value, int> = 0 >
     constexpr STRF_HD fpe_wrapper(const fp_type_& fp)
+        noexcept(noexcept(fp_type_(std::declval<const fp_type_&>())))
         : fp_(fp)
     {
     }
@@ -366,6 +371,7 @@ public:
         < typename FP = fp_type_
         , strf::detail::enable_if_t<std::is_move_constructible<FP>::value, int> = 0 >
     constexpr STRF_HD fpe_wrapper(fp_type_&& fp)
+        noexcept(noexcept(fp_type_(std::declval<fp_type_>())))
         : fp_(std::move(fp))
     {
     }
@@ -409,6 +415,8 @@ public:
            && ! strf::detail::cvref_is_same<facets_pack_base, U...>::value
             , int > = 0 >
     constexpr STRF_HD facets_pack_base(U&& ... fpe)
+        noexcept(strf::detail::fold_and
+                 < noexcept(FPEWrappers(std::declval<U>()))... >::value)
         : FPEWrappers(std::forward<U>(fpe))...
     {
     }
@@ -477,6 +485,8 @@ public:
                && std::is_constructible<B, const OthersFPE&...>::value
                 , int > = 0 >
     constexpr STRF_HD facets_pack_base(const TipFPE& tip, const OthersFPE& ... others)
+        noexcept( noexcept(base_tip_fpe_(std::declval<const TipFPE&>()))
+               && noexcept(base_others_fpe_(std::declval<const OthersFPE&>()...)) )
         : base_tip_fpe_(tip)
         , base_others_fpe_(others...)
     {
@@ -490,6 +500,8 @@ public:
                && std::is_constructible<base_others_fpe_, Others&&...>::value
                 , int > = 0 >
     constexpr STRF_HD facets_pack_base(Tip&& tip, Others&& ... others)
+        noexcept( noexcept(base_tip_fpe_(std::declval<Tip>()))
+               && noexcept(base_others_fpe_(std::declval<Others>()...)) )
         : base_tip_fpe_(std::forward<Tip>(tip))
         , base_others_fpe_(std::forward<Others>(others)...)
     {
@@ -545,6 +557,7 @@ public:
            && std::is_constructible<FPE, U>::value
             , int > = 0 >
     constexpr STRF_HD explicit constrained_fpe(U&& arg)
+        noexcept(noexcept(FPE(std::declval<U>())))
         : fpe_(std::forward<U>(arg))
     {
     }
@@ -609,6 +622,7 @@ public:
            && ! strf::detail::cvref_is_same<facets_pack, U...>::value
             , int > = 0 >
     constexpr STRF_HD explicit facets_pack(U&&... fpe)
+        noexcept(noexcept(base_type_(std::declval<U>()...)))
         : base_type_(std::forward<U>(fpe)...)
     {
     }
@@ -639,12 +653,14 @@ public:
     }
 };
 
-template <typename ... T>
-constexpr STRF_HD strf::facets_pack<strf::detail::remove_cvref_t<T>...>
-    pack(T&& ... args)
+template <typename... Args>
+constexpr STRF_HD strf::facets_pack<strf::detail::remove_cvref_t<Args>...>
+    pack(Args&&... args)
+    noexcept(noexcept(strf::facets_pack<strf::detail::remove_cvref_t<Args>...>
+                      {std::declval<Args>()...}))
 {
-    return strf::facets_pack<strf::detail::remove_cvref_t<T>...>
-        { std::forward<T>(args)... };
+    return strf::facets_pack<strf::detail::remove_cvref_t<Args>...>
+        { std::forward<Args>(args)... };
 }
 
 template <template <class> class Filter, typename T>

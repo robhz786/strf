@@ -2338,14 +2338,21 @@ class printer_common
 
     using finish_return_type_ = destination_finish_return_type<DestinationCreator, Sized>;
 
+    template <typename... FPE>
+    using with_return_type =
+        DestinationTmpl
+            < DestinationCreator
+            , decltype(strf::pack(std::declval<const FPack&>(), std::declval<FPE>()...)) >;
+
 public:
 
     template <typename... FPE>
     STRF_NODISCARD constexpr STRF_HD auto with(FPE&&... fpe) const &
-        -> DestinationTmpl
-            < DestinationCreator
-            , decltype( strf::pack( std::declval<const FPack&>()
-                                  , std::forward<FPE>(fpe) ...) ) >
+        noexcept(noexcept(with_return_type<FPE...>
+                          ( std::declval<const destination_type_&>()
+                          , detail::destination_tag()
+                          , std::declval<FPE>()... )))
+        -> with_return_type<FPE...>
     {
         static_assert( std::is_copy_constructible<DestinationCreator>::value
                      , "DestinationCreator must be copy constructible" );
@@ -2356,10 +2363,11 @@ public:
 
     template <typename... FPE>
     STRF_NODISCARD STRF_CONSTEXPR_IN_CXX14 STRF_HD auto with(FPE&& ... fpe) &&
-        -> DestinationTmpl
-            < DestinationCreator
-            , decltype( strf::pack( std::declval<const FPack&>()
-                                  , std::forward<FPE>(fpe) ...) ) >
+        noexcept(noexcept(with_return_type<FPE...>
+                          ( std::declval<destination_type_>()
+                          , detail::destination_tag()
+                          , std::declval<FPE>()... )))
+        -> with_return_type<FPE...>
     {
         static_assert( std::is_move_constructible<DestinationCreator>::value
                      , "DestinationCreator must be move constructible" );
@@ -2371,6 +2379,10 @@ public:
 
     constexpr STRF_HD strf::printer_no_reserve<DestinationCreator, FPack>
     no_reserve() const &
+        noexcept(noexcept(strf::printer_no_reserve<DestinationCreator, FPack>
+                          ( strf::detail::destination_tag()
+                          , std::declval<const DestinationCreator&>()
+                          , std::declval<const FPack&>() )))
     {
         return { strf::detail::destination_tag{}
                , static_cast<const destination_type_*>(this)->destination_creator_
@@ -2379,6 +2391,10 @@ public:
 
     STRF_CONSTEXPR_IN_CXX14 STRF_HD strf::printer_no_reserve<DestinationCreator, FPack>
     no_reserve() &&
+        noexcept(noexcept(strf::printer_no_reserve<DestinationCreator, FPack>
+                          ( strf::detail::destination_tag()
+                          , std::declval<DestinationCreator>()
+                          , std::declval<FPack>() )))
     {
         return { strf::detail::destination_tag{}
                , std::move(static_cast<destination_type_*>(this)->destination_creator_)
@@ -2387,6 +2403,10 @@ public:
 
     constexpr STRF_HD strf::printer_with_size_calc<DestinationCreator, FPack>
     reserve_calc() const &
+        noexcept(noexcept(strf::printer_with_size_calc<DestinationCreator, FPack>
+                          ( strf::detail::destination_tag()
+                          , std::declval<const DestinationCreator&>()
+                          , std::declval<const FPack&>() )))
     {
         return { strf::detail::destination_tag{}
                , static_cast<const destination_type_*>(this)->destination_creator_
@@ -2395,15 +2415,24 @@ public:
 
     STRF_CONSTEXPR_IN_CXX14 strf::printer_with_size_calc<DestinationCreator, FPack>
     STRF_HD reserve_calc() &&
+        noexcept(noexcept(strf::printer_with_size_calc<DestinationCreator, FPack>
+                          ( strf::detail::destination_tag()
+                          , std::declval<DestinationCreator>()
+                          , std::declval<FPack>() )))
     {
         auto& self = static_cast<destination_type_&>(*this);
         return { strf::detail::destination_tag{}
-               , self.destination_creator_
-               , self.fpack_ };
+               , std::move(self.destination_creator_)
+               , std::move(self.fpack_) };
     }
 
     constexpr STRF_HD strf::printer_with_given_size<DestinationCreator, FPack>
     reserve(std::size_t size) const &
+        noexcept(noexcept(strf::printer_with_given_size<DestinationCreator, FPack>
+                          ( strf::detail::destination_tag()
+                          , std::size_t()
+                          , std::declval<const DestinationCreator&>()
+                          , std::declval<const FPack&>() )))
     {
         return { strf::detail::destination_tag{}
                , size
@@ -2413,12 +2442,17 @@ public:
 
     STRF_CONSTEXPR_IN_CXX14 STRF_HD strf::printer_with_given_size<DestinationCreator, FPack>
     reserve(std::size_t size) &&
+        noexcept(noexcept(strf::printer_with_given_size<DestinationCreator, FPack>
+                          ( strf::detail::destination_tag()
+                          , std::size_t()
+                          , std::declval<DestinationCreator>()
+                          , std::declval<FPack>() )))
     {
         auto& self = static_cast<destination_type_&>(*this);
         return { strf::detail::destination_tag{}
                , size
-               , self.destination_creator_
-               , self.fpack_ };
+               , std::move(self.destination_creator_)
+               , std::move(self.fpack_) };
     }
 
     template <typename ... Args>
@@ -2457,12 +2491,12 @@ public:
 private:
 
     static inline STRF_HD const strf::stringifier<char_type_>&
-    as_stringifier_cref_(const strf::stringifier<char_type_>& p)
+    as_stringifier_cref_(const strf::stringifier<char_type_>& p) noexcept
     {
         return p;
     }
     static inline STRF_HD const strf::stringifier<char_type_>*
-    as_stringifier_cptr_(const strf::stringifier<char_type_>& p)
+    as_stringifier_cptr_(const strf::stringifier<char_type_>& p) noexcept
     {
          return &p;
     }
@@ -2553,10 +2587,14 @@ public:
     using char_type = typename DestinationCreator::char_type;
 
     template < typename ... Args
+             , typename FP = FPack
              , strf::detail::enable_if_t
                  < std::is_constructible<DestinationCreator, Args...>::value
+                && std::is_default_constructible<FP>::value
                  , int > = 0 >
     constexpr STRF_HD printer_no_reserve(Args&&... args)
+        noexcept( noexcept(DestinationCreator(std::declval<Args>()...))
+               && noexcept(FP()) )
         : destination_creator_(std::forward<Args>(args)...)
     {
     }
@@ -2568,6 +2606,8 @@ public:
         ( strf::detail::destination_tag
         , const DestinationCreator& oc
         , const FPack& fp )
+        noexcept( noexcept(DestinationCreator(std::declval<const DestinationCreator&>()))
+               && noexcept(FPack(std::declval<const FPack&>())) )
         : destination_creator_(oc)
         , fpack_(fp)
     {
@@ -2577,6 +2617,8 @@ public:
         ( strf::detail::destination_tag
         , DestinationCreator&& oc
         , FPack&& fp )
+        noexcept( noexcept(DestinationCreator(std::declval<DestinationCreator>()))
+               && noexcept(FPack(std::declval<FPack>())) )
         : destination_creator_(std::move(oc))
         , fpack_(std::move(fp))
     {
@@ -2588,19 +2630,19 @@ public:
     using common_::reserve_calc;
     using common_::reserve;
 
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD printer_no_reserve& no_reserve() &
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD printer_no_reserve& no_reserve() & noexcept
     {
         return *this;
     }
-    constexpr STRF_HD const printer_no_reserve& no_reserve() const &
+    constexpr STRF_HD const printer_no_reserve& no_reserve() const & noexcept
     {
         return *this;
     }
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD printer_no_reserve&& no_reserve() &&
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD printer_no_reserve&& no_reserve() && noexcept
     {
         return std::move(*this);
     }
-    constexpr STRF_HD const printer_no_reserve&& no_reserve() const &&
+    constexpr STRF_HD const printer_no_reserve&& no_reserve() const && noexcept
     {
         return std::move(*this);
     }
@@ -2618,6 +2660,8 @@ private:
         ( const printer_no_reserve<DestinationCreator, OtherFPack>& other
         , detail::destination_tag
         , FPE&& ... fpe )
+        noexcept( noexcept(DestinationCreator(std::declval<const DestinationCreator&>()))
+               && noexcept(FPack(std::declval<const OtherFPack&>(), std::declval<FPE>()...)) )
         : destination_creator_(other.destination_creator_)
         , fpack_(other.fpack_, std::forward<FPE>(fpe)...)
     {
@@ -2628,6 +2672,8 @@ private:
         ( printer_no_reserve<DestinationCreator, OtherFPack>&& other
         , detail::destination_tag
         , FPE&& ... fpe )
+        noexcept( noexcept(DestinationCreator(std::declval<DestinationCreator>()))
+               && noexcept(FPack(std::declval<OtherFPack>(), std::declval<FPE>()...)) )
         : destination_creator_(std::move(other.destination_creator_))
         , fpack_(std::move(other.fpack_), std::forward<FPE>(fpe)...)
     {
@@ -2674,10 +2720,14 @@ public:
     using char_type = typename DestinationCreator::char_type;
 
     template < typename ... Args
+             , typename FP = FPack
              , strf::detail::enable_if_t
                  < std::is_constructible<DestinationCreator, Args...>::value
+                && std::is_default_constructible<FP>::value
                  , int > = 0 >
     constexpr STRF_HD printer_with_given_size(std::size_t size, Args&&... args)
+        noexcept( noexcept(DestinationCreator(std::declval<Args>()...))
+               && noexcept(FP()) )
         : size_(size)
         , destination_creator_(std::forward<Args>(args)...)
     {
@@ -2690,6 +2740,8 @@ public:
         , std::size_t size
         , const DestinationCreator& oc
         , const FPack& fp )
+        noexcept( noexcept(DestinationCreator(std::declval<const DestinationCreator&>()))
+               && noexcept(FPack(std::declval<const FPack&>())) )
         : size_(size)
         , destination_creator_(oc)
         , fpack_(fp)
@@ -2701,6 +2753,8 @@ public:
         , std::size_t size
         , DestinationCreator&& oc
         , FPack&& fp )
+        noexcept( noexcept(DestinationCreator(std::declval<DestinationCreator>()))
+               && noexcept(FPack(std::declval<FPack>())) )
         : size_(size)
         , destination_creator_(std::move(oc))
         , fpack_(std::move(fp))
@@ -2713,12 +2767,12 @@ public:
     using common_::reserve_calc;
     using common_::no_reserve;
 
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD printer_with_given_size& reserve(std::size_t size) &
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD printer_with_given_size& reserve(std::size_t size) & noexcept
     {
         size_ = size;
         return *this;
     }
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD printer_with_given_size&& reserve(std::size_t size) &&
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD printer_with_given_size&& reserve(std::size_t size) && noexcept
     {
         size_ = size;
         return std::move(*this);
@@ -2737,6 +2791,8 @@ private:
         ( const printer_with_given_size<DestinationCreator, OtherFPack>& other
         , detail::destination_tag
         , FPE&& ... fpe )
+        noexcept( noexcept(DestinationCreator(std::declval<const DestinationCreator&>()))
+               && noexcept(FPack(std::declval<const FPack&>(), std::declval<const FPE&>()...)) )
         : size_(other.size_)
         , destination_creator_(other.destination_creator_)
         , fpack_(other.fpack_, std::forward<FPE>(fpe)...)
@@ -2748,6 +2804,8 @@ private:
         ( printer_with_given_size<DestinationCreator, OtherFPack>&& other
         , detail::destination_tag
         , FPE&& ... fpe )
+        noexcept( noexcept(DestinationCreator(std::declval<DestinationCreator>()))
+               && noexcept(FPack(std::declval<FPack>(), std::declval<FPE>()...)) )
         : size_(other.size)
         , destination_creator_(std::move(other.destination_creator_))
         , fpack_(std::move(other.fpack_), std::forward<FPE>(fpe)...)
@@ -2797,10 +2855,14 @@ public:
     using char_type = typename DestinationCreator::char_type;
 
     template < typename ... Args
+             , typename FP = FPack
              , strf::detail::enable_if_t
                  < std::is_constructible<DestinationCreator, Args...>::value
+                && std::is_default_constructible<FP>::value
                  , int > = 0 >
     constexpr STRF_HD printer_with_size_calc(Args&&... args)
+        noexcept( noexcept(DestinationCreator(std::declval<Args>()...))
+               && noexcept(FP()) )
         : destination_creator_(std::forward<Args>(args)...)
     {
     }
@@ -2812,6 +2874,8 @@ public:
         ( strf::detail::destination_tag
         , const DestinationCreator& oc
         , const FPack& fp )
+        noexcept( noexcept(DestinationCreator(std::declval<const DestinationCreator&>()))
+               && noexcept(FPack(std::declval<const FPack&>())) )
         : destination_creator_(oc)
         , fpack_(fp)
     {
@@ -2821,6 +2885,8 @@ public:
         ( strf::detail::destination_tag
         , DestinationCreator&& oc
         , FPack&& fp )
+        noexcept( noexcept(DestinationCreator(std::declval<DestinationCreator>()))
+               && noexcept(FPack(std::declval<FPack>())) )
         : destination_creator_(std::move(oc))
         , fpack_(std::move(fp))
     {
@@ -2832,19 +2898,19 @@ public:
     using common_::no_reserve;
     using common_::reserve;
 
-    constexpr STRF_HD const printer_with_size_calc & reserve_calc() const &
+    constexpr STRF_HD const printer_with_size_calc & reserve_calc() const& noexcept
     {
         return *this;
     }
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD printer_with_size_calc & reserve_calc() &
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD printer_with_size_calc & reserve_calc() & noexcept
     {
         return *this;
     }
-    constexpr STRF_HD const printer_with_size_calc && reserve_calc() const &&
+    constexpr STRF_HD const printer_with_size_calc && reserve_calc() const&& noexcept
     {
         return std::move(*this);
     }
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD printer_with_size_calc && reserve_calc() &&
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD printer_with_size_calc && reserve_calc() && noexcept
     {
         return std::move(*this);
     }
@@ -2862,6 +2928,8 @@ private:
         ( const printer_with_size_calc<DestinationCreator, OtherFPack>& other
         , detail::destination_tag
         , FPE&& ... fpe )
+        noexcept( noexcept(DestinationCreator(std::declval<const DestinationCreator&>()))
+               && noexcept(FPack(std::declval<const OtherFPack&>(), std::declval<FPE>()...)) )
         : destination_creator_(other.destination_creator_)
         , fpack_(other.fpack_, std::forward<FPE>(fpe)...)
     {
@@ -2872,6 +2940,8 @@ private:
         ( printer_with_size_calc<DestinationCreator, OtherFPack>&& other
         , detail::destination_tag
         , FPE&& ... fpe )
+        noexcept( noexcept(DestinationCreator(std::declval<DestinationCreator>()))
+               && noexcept(FPack(std::declval<OtherFPack>(), std::declval<FPE>()...)) )
         : destination_creator_(std::move(other.destination_creator_))
         , fpack_(std::move(other.fpack_), std::forward<FPE>(fpe)...)
     {
@@ -2907,7 +2977,7 @@ public:
     {
     }
 
-    STRF_HD strf::destination<CharT>& create() const
+    STRF_HD strf::destination<CharT>& create() const noexcept
     {
         return dest_;
     }
@@ -2921,7 +2991,7 @@ private:
 
 template <typename CharT>
 strf::printer_no_reserve<strf::detail::destination_reference<CharT>>
-STRF_HD to(strf::destination<CharT>& dest)
+STRF_HD to(strf::destination<CharT>& dest) noexcept
 {
     return strf::printer_no_reserve<strf::detail::destination_reference<CharT>>(dest);
 }
@@ -2989,21 +3059,21 @@ private:
 #if defined(__cpp_char8_t)
 
 template<std::size_t N>
-inline STRF_HD auto to(char8_t (&dest)[N])
+inline STRF_HD auto to(char8_t (&dest)[N]) noexcept
 {
     return strf::printer_no_reserve
         < strf::detail::basic_cstr_destination_creator<char8_t> >
         (dest, dest + N);
 }
 
-inline STRF_HD auto to(char8_t* dest, char8_t* end)
+inline STRF_HD auto to(char8_t* dest, char8_t* end) noexcept
 {
     return strf::printer_no_reserve
         < strf::detail::basic_cstr_destination_creator<char8_t> >
         (dest, end);
 }
 
-inline STRF_HD auto to(char8_t* dest, std::size_t count)
+inline STRF_HD auto to(char8_t* dest, std::size_t count) noexcept
 {
     return strf::printer_no_reserve
         < strf::detail::basic_cstr_destination_creator<char8_t> >
@@ -3013,7 +3083,7 @@ inline STRF_HD auto to(char8_t* dest, std::size_t count)
 #endif
 
 template<std::size_t N>
-inline STRF_HD auto to(char (&dest)[N])
+inline STRF_HD auto to(char (&dest)[N]) noexcept
     -> strf::printer_no_reserve
         < strf::detail::basic_cstr_destination_creator<char> >
 {
@@ -3022,7 +3092,7 @@ inline STRF_HD auto to(char (&dest)[N])
         (dest, dest + N);
 }
 
-inline STRF_HD auto to(char* dest, char* end)
+inline STRF_HD auto to(char* dest, char* end) noexcept
     -> strf::printer_no_reserve
         < strf::detail::basic_cstr_destination_creator<char> >
 {
@@ -3031,7 +3101,7 @@ inline STRF_HD auto to(char* dest, char* end)
         (dest, end);
 }
 
-inline STRF_HD auto to(char* dest, std::size_t count)
+inline STRF_HD auto to(char* dest, std::size_t count) noexcept
     -> strf::printer_no_reserve
         < strf::detail::basic_cstr_destination_creator<char> >
 {
@@ -3041,7 +3111,7 @@ inline STRF_HD auto to(char* dest, std::size_t count)
 }
 
 template<std::size_t N>
-inline STRF_HD auto to(char16_t (&dest)[N])
+inline STRF_HD auto to(char16_t (&dest)[N]) noexcept
     -> strf::printer_no_reserve
         < strf::detail::basic_cstr_destination_creator<char16_t> >
 {
@@ -3050,7 +3120,7 @@ inline STRF_HD auto to(char16_t (&dest)[N])
         (dest, dest + N);
 }
 
-inline STRF_HD auto to(char16_t* dest, char16_t* end)
+inline STRF_HD auto to(char16_t* dest, char16_t* end) noexcept
     -> strf::printer_no_reserve
         < strf::detail::basic_cstr_destination_creator<char16_t> >
 {
@@ -3059,7 +3129,7 @@ inline STRF_HD auto to(char16_t* dest, char16_t* end)
         (dest, end);
 }
 
-inline STRF_HD auto to(char16_t* dest, std::size_t count)
+inline STRF_HD auto to(char16_t* dest, std::size_t count) noexcept
     -> strf::printer_no_reserve
         < strf::detail::basic_cstr_destination_creator<char16_t> >
 {
@@ -3069,7 +3139,7 @@ inline STRF_HD auto to(char16_t* dest, std::size_t count)
 }
 
 template<std::size_t N>
-inline STRF_HD auto to(char32_t (&dest)[N])
+inline STRF_HD auto to(char32_t (&dest)[N]) noexcept
     -> strf::printer_no_reserve
         < strf::detail::basic_cstr_destination_creator<char32_t> >
 {
@@ -3078,7 +3148,7 @@ inline STRF_HD auto to(char32_t (&dest)[N])
         (dest, dest + N);
 }
 
-inline STRF_HD auto to(char32_t* dest, char32_t* end)
+inline STRF_HD auto to(char32_t* dest, char32_t* end) noexcept
     -> strf::printer_no_reserve
         < strf::detail::basic_cstr_destination_creator<char32_t> >
 {
@@ -3087,7 +3157,7 @@ inline STRF_HD auto to(char32_t* dest, char32_t* end)
         (dest, end);
 }
 
-inline STRF_HD auto to(char32_t* dest, std::size_t count)
+inline STRF_HD auto to(char32_t* dest, std::size_t count) noexcept
     -> strf::printer_no_reserve
         < strf::detail::basic_cstr_destination_creator<char32_t> >
 {
@@ -3097,7 +3167,7 @@ inline STRF_HD auto to(char32_t* dest, std::size_t count)
 }
 
 template<std::size_t N>
-inline STRF_HD auto to(wchar_t (&dest)[N])
+inline STRF_HD auto to(wchar_t (&dest)[N]) noexcept
     -> strf::printer_no_reserve
         < strf::detail::basic_cstr_destination_creator<wchar_t> >
 {
@@ -3106,7 +3176,7 @@ inline STRF_HD auto to(wchar_t (&dest)[N])
         (dest, dest + N);
 }
 
-inline STRF_HD auto to(wchar_t* dest, wchar_t* end)
+inline STRF_HD auto to(wchar_t* dest, wchar_t* end) noexcept
     -> strf::printer_no_reserve
         < strf::detail::basic_cstr_destination_creator<wchar_t> >
 {
@@ -3115,7 +3185,7 @@ inline STRF_HD auto to(wchar_t* dest, wchar_t* end)
         (dest, end);
 }
 
-inline STRF_HD auto to(wchar_t* dest, std::size_t count)
+inline STRF_HD auto to(wchar_t* dest, std::size_t count) noexcept
     -> strf::printer_no_reserve
         < strf::detail::basic_cstr_destination_creator<wchar_t> >
 {
@@ -3125,7 +3195,7 @@ inline STRF_HD auto to(wchar_t* dest, std::size_t count)
 }
 
 template<typename CharT, std::size_t N>
-inline STRF_HD auto to_range(CharT (&dest)[N])
+inline STRF_HD auto to_range(CharT (&dest)[N]) noexcept
     -> strf::printer_no_reserve
         < strf::detail::array_destination_creator<CharT> >
 {
@@ -3135,7 +3205,7 @@ inline STRF_HD auto to_range(CharT (&dest)[N])
 }
 
 template<typename CharT>
-inline STRF_HD auto to_range(CharT* dest, CharT* end)
+inline STRF_HD auto to_range(CharT* dest, CharT* end) noexcept
     -> strf::printer_no_reserve
         < strf::detail::array_destination_creator<CharT> >
 {
@@ -3145,7 +3215,7 @@ inline STRF_HD auto to_range(CharT* dest, CharT* end)
 }
 
 template<typename CharT>
-inline STRF_HD auto to_range(CharT* dest, std::size_t count)
+inline STRF_HD auto to_range(CharT* dest, std::size_t count) noexcept
     -> strf::printer_no_reserve
         < strf::detail::array_destination_creator<CharT> >
 {
