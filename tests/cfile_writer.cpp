@@ -198,7 +198,7 @@ void test_narrow_failing_to_flush()
     auto double_str = test_utils::make_double_string<CharT>();
 
     auto path = test_utils::unique_tmp_file_name();
-    std::FILE* file = std::fopen(path.c_str(), "w");
+    std::FILE* file = std::fopen(path.c_str(), "we");
     strf::narrow_cfile_writer<CharT, strf::destination_space_after_flush> writer(file);
 
     writer.write(half_str.begin(), half_str.size());
@@ -225,7 +225,7 @@ void test_wide_failing_to_flush()
     auto double_str = test_utils::make_double_string<wchar_t>();
 
     auto path = test_utils::unique_tmp_file_name();
-    std::FILE* file = std::fopen(path.c_str(), "w");
+    std::FILE* file = std::fopen(path.c_str(), "we");
     strf::wide_cfile_writer writer(file);
 
     writer.write(half_str.begin(), half_str.size());
@@ -254,7 +254,7 @@ void test_narrow_failing_to_finish()
     auto half_str = test_utils::make_half_string<CharT>();
 
     auto path = test_utils::unique_tmp_file_name();
-    std::FILE* file = std::fopen(path.c_str(), "w");
+    std::FILE* file = std::fopen(path.c_str(), "we");
     strf::narrow_cfile_writer<CharT, strf::destination_space_after_flush> writer(file);
 
     writer.write(double_str.begin(), double_str.size());
@@ -281,7 +281,7 @@ void test_wide_failing_to_finish()
     auto half_str = test_utils::make_half_string<wchar_t>();
 
     auto path = test_utils::unique_tmp_file_name();
-    std::FILE* file = std::fopen(path.c_str(), "w");
+    std::FILE* file = std::fopen(path.c_str(), "we");
     strf::wide_cfile_writer writer(file);
 
     writer.write(double_str.begin(), double_str.size());
@@ -310,7 +310,7 @@ void test_narrow_cfile_writer_creator()
     auto full_str = test_utils::make_full_string<CharT>();
 
     auto path = test_utils::unique_tmp_file_name();
-    std::FILE* file = std::fopen(path.c_str(), "w");
+    std::FILE* file = std::fopen(path.c_str(), "we");
 
     auto status = strf::to<CharT>(file)(half_str, full_str);
     std::fclose(file);
@@ -336,7 +336,7 @@ void test_wide_cfile_writer_creator()
     auto full_str = test_utils::make_full_string<wchar_t>();
 
     auto path = test_utils::unique_tmp_file_name();
-    std::FILE* file = std::fopen(path.c_str(), "w");
+    std::FILE* file = std::fopen(path.c_str(), "we");
 
     auto status = strf::wto(file)(half_str, full_str);
     std::fclose(file);
@@ -358,6 +358,7 @@ void test_wide_cfile_writer_creator()
 
 void test_cfile_writer()
 {
+    // NOLINTNEXTLINE(cert-msc32-c,cert-msc51-cpp)
     std::srand(static_cast<unsigned>(std::time(nullptr)));
 
     test_cfile_writer_base();

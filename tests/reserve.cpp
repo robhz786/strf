@@ -133,16 +133,19 @@ STRF_TEST_FUNC void test_reserve()
 
     {
         const auto tester = reservation_test();
+        // NOLINTNEXTLINE(hicpp-move-const-arg,performance-move-const-arg)
         auto size = std::move(tester) ("abcd");
         TEST_EQ(size, not_reserved);
     }
     {
         const auto tester = reservation_test();
+        // NOLINTNEXTLINE(hicpp-move-const-arg,performance-move-const-arg)
         auto size = std::move(tester).reserve(5555) ("abcd");
         TEST_EQ(size, 5555);
     }
     {
         const auto tester = reservation_test() .reserve(5555);
+        // NOLINTNEXTLINE(hicpp-move-const-arg,performance-move-const-arg)
         auto size = std::move(tester).reserve_calc() ("abcd");
         TEST_EQ(size, 4);
     }

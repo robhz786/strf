@@ -11,8 +11,8 @@ struct const_iterator
     using value_type = T;
     STRF_HD const T& operator*() const { return *ptr; }
     STRF_HD const_iterator operator++() { ++ptr; return *this; }
-    STRF_HD const_iterator operator++(int) { ++ptr; return const_iterator{ptr - 1}; }
-    STRF_HD bool operator==(const const_iterator& other) const { return ptr == other.ptr; }
+    STRF_HD const const_iterator operator++(int) { ++ptr; return const_iterator{ptr - 1}; }
+
     STRF_HD bool operator!=(const const_iterator& other) const { return ptr != other.ptr; }
 
     const T* ptr;

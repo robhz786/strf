@@ -336,6 +336,15 @@ public:
         }
     }
 
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD void push_high(unsigned grp) noexcept
+    {
+        if (failed_ || grp < 1 || grp > grp_max_ || ! enough_space_to_push()) {
+            failed_ = true;
+        } else {
+            reverse_grps_ = ( reverse_grps_ << grp_bits_count_ ) | grp;
+        }
+    }
+
     constexpr STRF_HD bool failed() const noexcept
     {
         return failed_;

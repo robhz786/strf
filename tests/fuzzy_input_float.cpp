@@ -237,7 +237,7 @@ public:
         auto dec = strf::detail::decode(value);
         m10 = dec.m10;
         e10 = dec.e10;
-        digcount = strf::detail::count_digits<10>(dec.m10);
+        digcount = static_cast<int>(strf::detail::count_digits<10>(dec.m10));
 
         test_identificator_.description_writer()
             .with(strf::lettercase::mixed)
