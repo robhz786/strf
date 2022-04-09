@@ -187,9 +187,9 @@ public:
     virtual ~transcoding_error_notifier() {}
 
     virtual void invalid_sequence
-        ( const char* source_charset_name
+        ( std::size_t code_unit_size
+        , const char* source_charset_name
         , const void* sequence_ptr
-        , std::size_t code_unit_size
         , std::size_t code_units_count )
     {
     }
@@ -390,7 +390,7 @@ translated to the replacement character ( that is returned by
 `dest_sc.<<Charset_replacement_char, replacement_char()>>`,
 where `dest_sc` represents the destination encoding ).
 Each time that happens,
-`err_notifier\-><<transcoding_error_notifier,invalid_sequence>>(name, seq, ch_size, count)`
+`err_notifier\-><<transcoding_error_notifier,invalid_sequence>>(ch_size, name, seq, count)`
 shall be called if `err_notifer` is not null, where:
 
 * `name` is the return of `src_sc.name()`, `src_sc` represents the source character encoding.

@@ -2204,7 +2204,7 @@ STRF_HD void single_byte_charset_to_utf32<SrcCharT, DestCharT, Impl>::transcode
         } else  {
             if (err_notifier) {
                 dest.advance_to(dest_it);
-                err_notifier->invalid_sequence(Impl::name(), src_it, 1, 1);
+                err_notifier->invalid_sequence(sizeof(SrcCharT), Impl::name(), src_it, 1);
             }
             *dest_it = 0xFFFD;
         }
@@ -2262,7 +2262,7 @@ STRF_HD void utf32_to_single_byte_charset<SrcCharT, DestCharT, Impl>::transcode
                 if (ch2 <= 0x10FFFF) {
                     err_notifier->unsupported_codepoint(Impl::name(), ch2);
                 } else {
-                    err_notifier->invalid_sequence("UTF-32", &ch2, 4, 1);
+                    err_notifier->invalid_sequence(4, "UTF-32", &ch2, 1);
                 }
             }
             * dest_it = '?';
@@ -2320,7 +2320,7 @@ STRF_HD void single_byte_charset_sanitizer<SrcCharT, DestCharT, Impl>::transcode
         else {
             STRF_IF_UNLIKELY (err_notifier) {
                 dest.advance_to(dest_it);
-                err_notifier->invalid_sequence(Impl::name(), src_it, 1, 1);
+                err_notifier->invalid_sequence(sizeof(SrcCharT), Impl::name(), src_it, 1);
             }
             *dest_it = '?';
         }

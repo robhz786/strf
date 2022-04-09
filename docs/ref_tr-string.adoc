@@ -86,7 +86,7 @@ struct tr_error_notifier_c {
 `default_tr_error_notifier` is the default facet of the `tr_error_notifier_c` category.
 It's a dummy error handler.
 
-[source,cpp]
+[source,cpp,subs=normal]
 ----
 namespace strf {
 

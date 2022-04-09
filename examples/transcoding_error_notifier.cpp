@@ -20,9 +20,9 @@ public:
     }
 
     void invalid_sequence
-        ( const char* charset_name
+        ( std::size_t code_unit_size
+        , const char* charset_name
         , const void* sequence_ptr
-        , std::size_t code_unit_size
         , std::size_t count ) override
     {
         if (code_unit_size != 1 && code_unit_size != 2 && code_unit_size != 4) {

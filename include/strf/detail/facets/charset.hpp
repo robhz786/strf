@@ -40,14 +40,14 @@ public:
     virtual STRF_HD ~transcoding_error_notifier() {}
 
     virtual STRF_HD void invalid_sequence
-        ( const char* charset_name
+        ( std::size_t code_unit_size
+        , const char* charset_name
         , const void* sequence_ptr
-        , std::size_t code_unit_size
         , std::size_t code_units_count )
     {
+        (void) code_unit_size;
         (void) charset_name;
         (void) sequence_ptr;
-        (void) code_unit_size;
         (void) code_units_count;
     }
 

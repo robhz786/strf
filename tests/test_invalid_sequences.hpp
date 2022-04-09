@@ -44,9 +44,9 @@ public:
     }
 
     STRF_HD void invalid_sequence
-        ( const char* charset_name
+        ( std::size_t code_unit_size
+        , const char* charset_name
         , const void* sequence_ptr
-        , std::size_t code_unit_size
         , std::size_t code_units_count ) override
     {
         (void) charset_name;

@@ -1078,7 +1078,7 @@ STRF_HD void strf::static_transcoder
             if (err_notifier) {
                 dest.advance_to(dest_it);
                 err_notifier->invalid_sequence
-                    ("UTF-8", (const void*)seq_begin, 1, src_it - seq_begin);
+                    (1, "UTF-8", (const void*)seq_begin, src_it - seq_begin);
             }
         }
 
@@ -1212,7 +1212,7 @@ STRF_HD void strf::static_transcoder
             if (err_notifier) {
                 dest.advance_to(dest_it);
                 err_notifier->invalid_sequence
-                    ("UTF-8", (const void*)seq_begin, 1, src_it - seq_begin);
+                    (1, "UTF-8", (const void*)seq_begin, src_it - seq_begin);
             }
             STRF_CHECK_DEST_SIZE(3);
             dest_it[0] = static_cast<DestCharT>('\xEF');
@@ -1465,7 +1465,7 @@ STRF_HD void strf::static_transcoder
             invalid_sequence:
             STRF_IF_UNLIKELY (err_notifier) {
                 dest.advance_to(dest_it);
-                err_notifier->invalid_sequence("UTF-32", (const void*)src_it, 4, 1);
+                err_notifier->invalid_sequence(4, "UTF-32", (const void*)src_it, 1);
             }
             STRF_CHECK_DEST_SIZE(3);
             dest_it[0] = static_cast<DestCharT>('\xEF');
@@ -1545,7 +1545,7 @@ STRF_HD void strf::static_transcoder
             ch32 = 0xFFFD;
             if (err_notifier) {
                 dest.advance_to(dest_it);
-                err_notifier->invalid_sequence("UTF-16", src_it - 1, 2, 1);
+                err_notifier->invalid_sequence(2, "UTF-16", src_it - 1, 1);
             }
         }
 
@@ -1623,7 +1623,7 @@ STRF_HD void strf::static_transcoder
         } else {
             if (err_notifier) {
                 dest.advance_to(dest_it);
-                err_notifier->invalid_sequence("UTF-16", src_it - 1, 2, 1);
+                err_notifier->invalid_sequence(2, "UTF-16", src_it - 1, 1);
             }
             STRF_CHECK_DEST;
             *dest_it = 0xFFFD;
@@ -1781,7 +1781,7 @@ STRF_HD void strf::static_transcoder
             invalid_char:
             if (err_notifier) {
                 dest.advance_to(dest_it);
-                err_notifier->invalid_sequence("UTF-32", src_it, 4, 1);
+                err_notifier->invalid_sequence(4, "UTF-32", src_it, 1);
             }
             STRF_CHECK_DEST;
             *dest_it = 0xFFFD;
@@ -1838,7 +1838,7 @@ STRF_HD void strf::static_transcoder
                 ch = 0xFFFD;
                 if (err_notifier) {
                     dest.advance_to(dest_it);
-                    err_notifier->invalid_sequence("UTF-32", src_it, 4, 1);
+                    err_notifier->invalid_sequence(4, "UTF-32", src_it, 1);
                 }
             }
             STRF_CHECK_DEST;
@@ -1852,7 +1852,7 @@ STRF_HD void strf::static_transcoder
                 ch = 0xFFFD;
                 if (err_notifier) {
                     dest.advance_to(dest_it);
-                    err_notifier->invalid_sequence("UTF-32", src_it, 4, 1);
+                    err_notifier->invalid_sequence(4, "UTF-32", src_it, 1);
                 }
             }
             STRF_CHECK_DEST;
@@ -1959,7 +1959,7 @@ STRF_HD void strf::static_transcoder
             invalid_sequence:
             if (err_notifier) {
                 dest.advance_to(dest_it);
-                err_notifier->invalid_sequence("UTF-8", seq_begin, 1, src_it - seq_begin);
+                err_notifier->invalid_sequence(1, "UTF-8", seq_begin, src_it - seq_begin);
             }
             STRF_CHECK_DEST;
             *dest_it = 0xFFFD;
@@ -2070,7 +2070,7 @@ STRF_HD void strf::static_transcoder
         } else { // invalid sequece
             if (err_notifier) {
                 dest.advance_to(dest_it);
-                err_notifier->invalid_sequence("UTF-16", src_it - 1, 2, 1);
+                err_notifier->invalid_sequence(2, "UTF-16", src_it - 1, 1);
             }
             STRF_CHECK_DEST_SIZE(3);
             dest_it[0] = static_cast<DestCharT>('\xEF');
