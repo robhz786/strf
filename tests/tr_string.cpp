@@ -19,8 +19,8 @@ public:
     void STRF_HD handle
         ( const typename Charset::code_unit* str
         , std::size_t str_len
-        , std::size_t err_pos
-        , Charset charset ) noexcept
+        , Charset charset
+        , std::size_t err_pos ) noexcept
     {
         strf::detail::simple_string_view<typename Charset::code_unit> s(str, str_len);
         strf::to(log_) ("\n[", strf::dec(err_pos) > 2, "] ", strf::conv(s, charset));

@@ -1994,8 +1994,8 @@ struct default_tr_error_notifier
     inline STRF_HD void handle
         ( const typename Charset::code_unit* str
         , std::size_t str_len
-        , std::size_t err_pos
-        , Charset charset ) noexcept
+        , Charset charset
+        , std::size_t err_pos ) noexcept
     {
         (void) str;
         (void) str_len;
@@ -2164,7 +2164,7 @@ STRF_HD void tr_string_write
                 args[arg_idx]->print_to(dest);
             } else {
                 charset.write_replacement_char(dest);
-                err_handler.handle(str, str_len, (it - str) - 1, charset);
+                err_handler.handle(str, str_len, charset, (it - str) - 1);
             }
             break;
         }
@@ -2175,7 +2175,7 @@ STRF_HD void tr_string_write
                 ++arg_idx;
             } else {
                 charset.write_replacement_char(dest);
-                err_handler.handle(str, str_len, (it - str) - 1, charset);
+                err_handler.handle(str, str_len, charset, (it - str) - 1);
             }
             ++it;
         } else if (char_type('0') <= ch && ch <= char_type('9')) {
@@ -2184,7 +2184,7 @@ STRF_HD void tr_string_write
                 args[result.value]->print_to(dest);
             } else {
                 charset.write_replacement_char(dest);
-                err_handler.handle(str, str_len, (it - str) - 1, charset);
+                err_handler.handle(str, str_len, charset, (it - str) - 1);
             }
             it = strf::detail::str_find<char_type>(result.it, str_end - result.it, '}');
             if (it == nullptr) {
@@ -2208,7 +2208,7 @@ STRF_HD void tr_string_write
                     ++arg_idx;
                 } else {
                     charset.write_replacement_char(dest);
-                    err_handler.handle(str, str_len, (it - str) - 1, charset);
+                    err_handler.handle(str, str_len, charset, (it - str) - 1);
                 }
             }
             auto it2 = it + 1;

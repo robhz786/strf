@@ -97,8 +97,8 @@ struct default_tr_error_notifier {
     void handle
         ( const typename Charset::{code_unit}* str
         , std::size_t str_len
-        , std::size_t err_pos
-        , Charset charset ) noexcept
+        , Charset charset
+        , std::size_t err_pos ) noexcept
     {
     }
 };
@@ -127,7 +127,7 @@ The following must host:
 ====
 [source,cpp]
 ----
-x.handle(str, str_len, err_pos, charset)
+x.handle(str, str_len, charset, err_pos)
 ----
 [horizontal]
 Semantics:: `str` is a tr-string that contains an error. `err_pos` is the
