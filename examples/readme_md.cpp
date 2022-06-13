@@ -338,7 +338,7 @@ void ranges()
 
     // With separator and formatting
     str = strf::to_string( "--["
-                         , *strf::hex(strf::separated_range(array, " / ")).p(4)
+                         , *strf::fmt_separated_range(array, " / ").hex().p(4)
                          , "]--");
     assert(str == "--[0x000a / 0x0014 / 0x001e / 0x0028]--");
 
