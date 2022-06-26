@@ -167,7 +167,7 @@ include::ref_format_functions.adoc[tag=int_format_functions]
 |===
 
 
-== Destinations [[destinations]]
+== Printer expressions [[printers]]
 
 [%header,cols="10,4"]
 |===
@@ -461,7 +461,7 @@ The table below lists the concrete types that derivate from the `{destination}<_
 | `<<to_streambuf_hpp#basic_streambuf_writer,basic_streambuf_writer>><__CharT__, _Traits_~_opt_~>`
 | Writes to `std::basic_streambuf` object
 
-| `<<to_cfile_hpp#narrow_cfile_writer,narrow_cfile_writer>><__CharT__~_opt_~>`
+| `<<to_cfile_hpp#narrow_cfile_writer,narrow_cfile_writer>><__CharT__>`
 | Writes to `FILE*` using narrow-oriented functions.
 
 | `<<to_cfile_hpp#wide_cfile_writer,wide_cfile_writer>>`

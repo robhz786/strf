@@ -225,15 +225,15 @@ which is something that destructors can't do.
 `{set_good}` and `{set_buffer_ptr}` are protected member functions.
 ////
 
-== How to create a printer expression
+== How to create a printer expression [[create_printer]]
 
-There are <<quick_reference#destinations,several expressions>> that can be used as
+There are <<quick_reference#printers,several expressions>> that can be used as
 the prefix in the `<<tutorial#,basic usage syntax>>`.
 Each of them causes the content to be printed into a different destination.
 Perhaps you want to create your own. For example, if you use Qt,
 you may want to create a `toQString` "destination",
 intended to create a `QString` object ( in the same way as
-`<<quick_reference#destinations,to_string>>` creates
+`<<quick_reference#printers,to_string>>` creates
 `std::string` objects ).
 This section explains how you can do that.
 
@@ -344,7 +344,7 @@ auto to(foo& dst) {
 
 * {strf-src-root}/examples/toQString.cpp[examples/toQString.cpp] defines a
   constexpr value named `toQSting`
-  that is analogous to `<<quick_reference#destinations,strf::to_string>>`, except that
+  that is analogous to `<<quick_reference#printers,strf::to_string>>`, except that
   it creates a `QString` ( from Qt framework ) instead of a `std::string`.
 * {strf-src-root}/examples/appendQString.cpp[examples/appendQString.cpp] defines
   a function `append` used to append content into a `QString` object

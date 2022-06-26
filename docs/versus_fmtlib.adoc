@@ -491,7 +491,7 @@ However, in Strf you can go a bit further and create your own
 __printer expression__ to be used in the <<tutorial#syntax,basic usage syntax>>
 of the library. For example, suppose a codebase uses a string class of its own
 instead of `std::string`. Suppose it's name is `xstring`:
-just like there is `<<quick_reference#destinations,strf::to_string>>`,
+just like there is `<<quick_reference#printers,strf::to_string>>`,
 it is possible to define
 a __printer expression__ named `to_xstring` intended to
 create `xstring` objects. If desirable, it is possible to implement it

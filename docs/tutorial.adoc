@@ -14,15 +14,18 @@ http://www.boost.org/LICENSE_1_0.txt)
 :sectnums:
 :sectnumlevels: 2
 :icons: font
+:toc: left
+:toc-title: Tutorial
 
 == Syntax [[syntax]]
 
 image::syntax.svg[]
 
-The __printer__ is an expression that defines where the
-content goes to as well as the return type of the whole expression above.
-The library provides many options to be used as the __printer__,
-and you can even define your own.
+The __printer__ is an expression that determinates where the
+content goes to as well as the return type of the above whole expression.
+The library provides <<quick_reference#printers,many options>> to be used
+as the __printer__, and you can even
+<<howto_add_destination#create_printer,define your own>>.
 However, for convenience, most code samples in this tutorial use `to_string`:
 [source,cpp]
 ----
@@ -70,17 +73,22 @@ auto s = strf::to_string.tr("{} in hexadecimal is {}", x, strf::hex(x));
 ----
 
 The `reserve`, `no_reseve` and `reserve_calc` functions are only available for some
-__printers__s, `to_string` being one of them.
+__printers__, `to_string` being one of them.
 Using `reserve(size)` causes the destination to reserve enough space
 to store `size` characters. `reserve_calc()` has the same effect,
 except that it calculates the number of characters for you.
 
 [[facets]]
-=== Facets
+== Facets
 
-The `with` function receives __facet objects__,
-which somehow complement format functions. They also influence
-how the data is printed. A facet example is the `lettercase` enumeration:
+The `with` function receives __facet objects__, which complement
+format functions, since they also influence how things are stringified.
+We are *not* talking here about the facets used in `std::ostream`.
+In Strf, facets have a different design ( more based on static rather
+than dynamic polymorphism ),
+and are not necessarily related to localization.
+
+An example of a facet is the `lettercase` enumeration:
 
 [source,cpp]
 ----
@@ -105,10 +113,76 @@ assert(str_uppercase == "TRUE 0XAB 1E+50");
 assert(str_mixedcase == "True 0xAB 1e+50");
 ----
 
+[[facet_categories]]
+=== Facet categories
+
+In this library, the term _facet_ always refers to types. So the type
+`strf::lettercase` is a facet, while `strf::uppercase` is a __facet value__
+( or you could call it a __facet object__, which make more sense when the facet is a class or struct ).
+In addition, a facet is always associated to one ( and only one ) __facet category__,
+and several facets can belong to the same category.
+
+// For each facet category there is class or struct
+// with a public static member function `get_default()` that
+// returns the default facet value of such facet category.
+// By convention, the name of such class or struct is the name of the
+// category, and it has the "`_c`" suffix.
+// For example, the category of `strf::lettercase` is `strf::lettercase_c`,
+// and `strf::lettercase_c::get_default()` returns  `strf::lowercase`.
+// The <<strf_hpp#facet_traits,`facet_traits`>>
+// struct template provides way to programmatically obtain the category
+// a given facet.
+
+
+For each facet category there is class or struct that defines it.
+By convention, its name has the "`_c`" suffix.
+Also, it has a public static member function named `get_default()` that
+returns the default facet value of the category.
+For example, the category of `strf::lettercase` is
+`<<strf_hpp#lettercase,strf::lettercase_c`>>,
+and `strf::lettercase_c::get_default()` returns  `strf::lowercase`.
+
+The <<strf_hpp#facet_traits,`facet_traits`>>
+struct template provides way to programmatically obtain the category
+a given facet.
+
+Informaly ( perhaps in future it will be formal thanks to C++20 Concepts ),
+for each facet category there is a list of requirements a type
+must satisfy to be a facet of the category. In the case of `strf::lettercase_c`,
+the requirement is, well, simply to be the `strf::lettercase` type.
+( but others facet categories can be more elaborated ).
+
+
+//  However other categories require the facet to
+// contain member functions with expe signatures, effects,
+// preconditions, posconditions and so on.
+
+////
+If you ever need to create your own facet category ( in
+case you need to a new printable type ),
+
+One precondition for all facets, regardless of the category,
+is to be move-constructible.
+
+The design of the facets currently provided by the library
+////
+
+The design of facets varies a lot according to their categories.
+But all facets currently available in the library are small
+( in terms of `sizeof` ) and have fast copy constructors.
+In addition, most of them can be instantiated as `constexpr` values.
+
+Since Strf is designed for extensibility, if you ever decide to
+<<howto_add_printable_types#,add a new printable type>>,
+you can also create new facet categories for it,
+as well as making it (or not) affected by the some of the existing ones.
+
+You can see a list of the current facets categories <<quick_reference#facets,here>>.
+
 [[constrained_facets]]
 === Constrained facets
 
-You can constrain facets to a set of input types:
+You can constrain a facet object to a specific group of input types:
 [source,cpp]
 ----
 auto str = strf::to_string
@@ -117,7 +191,7 @@ auto str = strf::to_string
 
 assert(str == "true 0xab 1E+50");
 ----
-, or to a set of arguments:
+, or to a group of arguments:
 [source,cpp]
 ----
 auto str = strf::to_string
@@ -127,7 +201,7 @@ auto str = strf::to_string
 
 assert(str == "true 1e+50 / TRUE 1E+50 / true 1e+50 );
 ----
-When there are multiple facets objects of the same _category_,
+When there are multiple facets objects of the same <<facet_categories,_category_>>,
 the order matters. The later one wins:
 [source,cpp]
 ----
@@ -148,8 +222,8 @@ assert(str_ba == "True 0xAB 1e+9");
 
 You can see that the template argument passed to `constrain` is a
 __{UnaryTypeTrait}__, __i.e.__, a type template with a static
-constexpr boolean member variable named `value`. Now, the type the library
-passes to this __UnaryTypeTrait__ is what is called as the
+constexpr boolean member variable named `value`. The type the library
+passes to this __UnaryTypeTrait__ is called the
 __representative type__ of the printable type, which is usually
 the same as the printable type itself, but not always.
 For example, in the case of strings, it is
@@ -161,58 +235,12 @@ but it can also be obtained programmatically, with
 `<<strf_hpp#representative_of_printable,representative_of_printable>>`
 type alias template.
 
-
-[[facets_categories]]
-=== Facets categories
-
-But what does it mean for two facet objects to belong to same __facet category__?
-In this library, the term _facet_ always refers to types. So the type
-`strf::lettercase` is a facet, while `strf::uppercase` is a facet value.
-In addition, a facet is always associated to one, and only one, facet category.
-However, several facets can "belong" to the same category.
-
-For each facet category there is class or struct
-with a public static member function `get_default()` which
-returns the default facet value of such facet category.
-By convention, the name of such class or struct is the name of the
-category, and it has the "`_c`" suffix.
-For example, the category of `strf::lettercase` is `strf::lettercase_c`,
-and `strf::lettercase_c::get_default()` returns  `strf::lowercase`.
-
-Informaly ( perhaps in future it will be formal thanks to C++20 Concepts )
-for each facet category there is a list of requirements a type
-must satisfy to be a facet of the category. In the case of
-`strf::lettercase_c`, the requirement is, well, to be the
-`strf::lettercase` type, since this is only facet of this category
-by design. However other categories require the facet to
-contain member functions with specified signatures, effects,
-preconditions, posconditions and so on.
-
-////
-If you ever need to create your own facet category ( in
-case you need to a new printable type ),
-
-One precondition for all facets, regardless of the category,
-is to be move-constructible.
-
-The design of the facets currently provided by the library
-////
-
-The design of the facets varies a lot according to their categories.
-But all facets currently available in the library have something in common:
-they all are small types ( in terms of `sizeof()` ) and provide a fast
-copy constructor.
-In addition, most of them can be instantiated as `constexpr` values.
-
-The <<strf_hpp#facet_traits,`facet_traits`>>
-struct template provides the category a given facet.
-
 [[facets_pack]]
 === Facets packs
 
-To avoid retyping all the facets object that you commonly use,
+To avoid retyping all the facets objects that you commonly use,
 you can store them into a <<strf_hpp#facets_pack,`facets_pack`>>,
-which you create with the <<strf_hpp#pack,`pack`>> function template:
+which you can create with the <<strf_hpp#pack,`pack`>> function template:
 
 [source,cpp,subs=normal]
 ----
@@ -230,9 +258,13 @@ auto str2 = strf::to_string.with(my_facets) (/{asterisk} \... {asterisk}/);
 // \...
 ----
 
+The `facets_pack` class template is more similar to `std::tuple` than to `std::locale`.
+It stores all the facets objects by value, and extracting one from it ( 
+with the `<<strf_hpp#use_facet,strf::use_facet>>` function template ) is just as fast as
+calling a trivial getter function.
+
 Any value that can be passed to the `with` function, can also be passed to `pack`,
 and vice-versa. This means a `facets_pack` can contain another `facets_pack`.
-
 So the expression:
 [source,cpp,subs=normal]
 ----
@@ -243,24 +275,24 @@ is equivalent to
 ----
 __printer__.with(strf::pack(_f1_, strf::pack(_f2_, _f3_), _f4_), _f5_) (/{asterisk} args\... {asterisk}/);
 ----
-, which is also equivalent to:
+, which, by the way, is also equivalent to:
 [source,cpp,subs=normal]
 ----
 __printer__.with(_f1_).with(_f2_).with(_f3_).with(_f4_).with(_f5_) (/{asterisk} args\... {asterisk}/);
 ----
 
-[[locales]]
-=== Locales
+[[Locales]]
+== Locales
 
 Strf is a locale-independent library. When you don't specify any facet
 object, everything is printed as in the "C" locale.
 However, the header `<strf/locale.hpp>` provides the function `locale_numpunct`
 that returns a `{numpunct}<10>` object that reflects the numeric punctuation of
 the current locale ( decimal point, thousands separator and digits grouping ).
-`locale_numpunct()` is not thread safe. Actually using locales
-in general is not thread safe. However, once you store its returned
-value into a `{numpunct}<10>` object, that object is not affected anymore when
-the locale changes. Also, `{numpunct}<10>` is a facet.
+`locale_numpunct()` is not thread safe -- it shall be called while another
+thread is modifing the gloabl locale -- but once the returned value
+is stored into a `{numpunct}<10>` object, that object is not affected anymore when
+the locale changes.
 
 [source,cpp,subs=normal]
 ----
@@ -282,33 +314,185 @@ void sample() {
 }
 ----
 
+// The template parameter of `numpuct` specifies the numeric base,
+// which means you can apply punctuation to non-decimal base also,
+// though this does not relate to localization anymore.
+
+Strf does not use `std::numpunct` for reasons explained in
+<<why_not_std_locale#,another document>>.
+
 == Other destinations
 
-Up to here, we only covered things that define the
+Up to here, we only covered things that influence the
 content to be printed, not _where_ it is printed.
 The <<quick_reference#,quick_reference>> provides a
-<<quick_reference#destinations,list of expressions>>
-that can be used instead of `to_string`, so that you can
-select alternative destinations.
+<<quick_reference#printers,list of printer expressions>>
+that can be used instead to `to_string`.
 
-Now, every one of these expressions internally relies on a
-concrete class that derives from the `{destination}` abstract
-class template. These classes are also
-<<quick_reference#destination_types, documented>>.
-This means that you can write a function or code
-that writes to a reference of `{destination}`, so that
-it works with all kind of destinations:
+
+
+//Alternatively,
+However, you can also use the classes that derive
+from the `{destination}` abstract class template
+(listed <<quick_reference#destination_types, here>>).
+Each of the printer expressions relies in one of them
+internally, and they can be used directly instead of
+the printer expression. This approach is more verbose,
+but it has some advantages.
+
+The table below show some examples. Note a pattern there:
+all these classes have a `finish` member function that returns
+the same as the compact expressions used on the left column.
+It is important to call `finish` even if you don't need
+the returned value, because it flushes the content remained in
+the internal buffer ( though you can also call `flush()` ).
+
+// Alternatively, you can use a class that derives from the
+// `{destination}` abstract class template.
+// You can see a list of them
+// <<quick_reference#destination_types, here>>.
+// Each of the printer expressions relies in one of them
+// internally.
+
+// Now, for each of these printer expressions there is
+// concrete class that derives from the
+// `{destination}` abstract class template.
+//  You can see a list of them
+// <<quick_reference#destination_types, here>>, and you
+// can see bellow example of how to use them:
+
+[caption=,title='examples']
+[%header,cols="50,50"]
+|===
+| Compact form | Equivalent long form
+
+m| auto str = strf::to_string (__args__\...);
+m| strf::string_maker dst(_size_); +
+strf::to(dst) (__args__\...); +
+auto str = dst.finish();
+
+m| auto str = strf::to_string.reserve(__size__) (__args__\...);
+m| strf::pre_sized_string_maker dst(_size_); +
+strf::to(dst) (__args__\...); +
+auto str = dst.finish();
+
+m| auto result = strf::to(stdout) (__args__\...);
+m| strf::narrow_cfile_writer<char> dst(stdout); +
+strf::to(dst) (_args_\...); +
+auto result = dst.finish();
+
+m| char buf[200]; +
+auto result = strf::to(buf) (__args__\...);
+m| char buf[200]; +
+strf::cstr_destination dst(buf); +
+strf::to(dst) (__args__\...); +
+auto result = dst.finish();
+|===
+
+The first advantage of the longer form is that you don't have
+to pass all the arguments in a single statement. Thus,
+some of the statements may be inside conditionals or loops,
+and some of them may use different facets than others:
 
 [source,cpp,subs=normal]
 ----
-void get_message(strf::destination<char>& dest)
+strf::string_maker dst;
+std::to(dst) (__arg1__, __arg2__);
+if (/{asterisk} some condition {asterisk}/) {
+    std::to(dst).with(_f1_, _f2_) (__arg3__, __arg4__);
+}
+while (/{asterisk} \... {asterisk}/) {
+    // \...
+    std::to(dst).with(_f3_, _f4_) (__arg5__, __arg5__);
+}
+std::string result = dst.finish();
+----
+
+The second reason is naturally to
+https://en.wikipedia.org/wiki/Separation_of_concerns[separate concerns]:
+you can have one piece of code concerned only
+in what is printed, like a functions
+that writes to a `strf::{destination}<char>&` :
+
+[source,cpp,subs=normal]
+----
+void get_message(strf::destination<char>& dst)
 {
-    strf::to(dest) ("Hello World!");
+    strf::to(dst) ("Hello");
+    // write stuffs to dst \...
 }
 ----
 
-Hence, in a sense, `strf::{destination}` is similar
-to `std::basic_ostream` or `std::basic_streambuf`,
-but with better performance, and it's easier to implement
-a class that derives from `strf::destination`
-than from `std::basic_ostream` or `std::basic_streambuf`.
+, while another part of the code (that instantiates the destination object)
+decides where the content goes.
+// ( by selecting one the concrete classes that derives from `{destination}`).
+
+I know, there is actually nothing really innovative in that design -- it's it's just plain OO,
+and it's how peolple already basically do with `std::basic_ostream`.
+So, you may question: if Strf can write to `std::basic_ostream` as well
+( which it can ), why not just keep using `std::basic_ostream`
+instead of start using `strf::destination` ? 
+
+// I would say the main reason has to do in how to create a specialization
+// of `strf::destination` ( which is explained in
+// <<howto_add_destination#,another document>> ).
+
+I would say the main reason is that `strf::destination` is more suitable
+to be specialized. As a result, it has more specializations -- like one that
+write to `char*`, which you don't have for `std::ostream`. You can also easily
+create your own, as explained in <<howto_add_destination#,another tutorial>>.
+
+In case you use {fmt} or `std::format`, the header
+`<<iterator_hpp#,<strf/iterator.hpp> >>` defines an output iterator adapter
+so that you can also write to `strf::destination` with `fmt::format_to`
+( or `std::format_to` ).
+
+
+////
+
+Ehe header
+`<<iterator_hpp#,<strf/iterator.hpp> >>` defines an output iterator adapter
+to 
+
+
+so that you can write to `strf::destination`
+
+so that you can reuse code that based
+to make it easier to adapt code based on {fmt} or `std::format` 
+to integrate `strf::destination` 
+
+
+
+To make its applicability broader, the 
+
+
+augment the applicability 
+
+
+// I would say the main reason is that `std::basic_ostream` is not suitable
+// to be specialized from, which is a major flaw for an abstract class.
+// It's not only that it is complicated, but also 
+// but also
+
+
+There is nothing really new in that design -- it's it's just plain OO,
+and it's like it's already done with `std::basic_ostream`.
+And you can use Strf to print to `std::basic_ostream` as well, but there are
+some advantages in using `strf::destination` instead:
+
+* It is simple to create your own class that derives from `strf::destination`
+  ( as explained <<howto_add_destination#,here>> ).
+* `std::basic_ostream` is not suitable to all kinds of destinations ( like `char*` ).
+* `strf::destination` doesn't store any information regarding formatting, localization,
+   or encoding. Its sole concern is where the content goes to.
+
+Notably, `std::format` fixes many of the design flaws of `std::ostream` when it
+comes to formatting, but
+it doesn't provide an alternative class to abstract destinations; it can write
+to output iterators, but that's different. However, it is possible to combine
+`std::format` and `strf::destination` with an output iterator adapter,
+like the one that is defined in
+`<<iterator_hpp#,<strf/iterator.hpp> >>`
+
+
+////
