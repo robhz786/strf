@@ -6,7 +6,8 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <strf/printer.hpp>
+#include <strf/detail/printable_traits.hpp>
+#include <strf/detail/stringifier.hpp>
 
 namespace strf {
 namespace detail {

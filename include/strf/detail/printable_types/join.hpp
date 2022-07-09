@@ -7,6 +7,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <strf/detail/stringifiers_tuple.hpp>
+#include <strf/detail/format_functions.hpp>
+#include <strf/detail/facets/charset.hpp>
 
 #if defined(_MSC_VER)
 #include <tuple>

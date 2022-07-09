@@ -6,8 +6,9 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <strf/printer.hpp>
+#include <strf/detail/format_functions.hpp>
 #include <strf/detail/facets/numpunct.hpp>
+#include <strf/detail/facets/charset.hpp>
 #include <strf/detail/int_digits.hpp>
 
 // todo: optimize as in:

@@ -42,6 +42,8 @@
 #include <strf/detail/printable_types/facets_pack.hpp>
 #include <strf/detail/printable_types/range.hpp>
 
+#include <strf/printer.hpp>
+#include <strf/precalculate.hpp>
 
 #if defined(_MSC_VER)
 #pragma warning ( pop )

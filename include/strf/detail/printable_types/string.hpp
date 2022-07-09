@@ -2,102 +2,12 @@
 #define STRF_DETAIL_INPUT_TYPES_STRING
 
 #include <strf/detail/facets/width_calculator.hpp>
-#include <strf/printer.hpp>
+#include <strf/detail/facets/charset.hpp>
+#include <strf/detail/format_functions.hpp>
+#include <strf/detail/stringifier.hpp>
+#include <strf/detail/simple_string_view.hpp>
 
 namespace strf {
-namespace detail {
-
-template <typename CharIn>
-class simple_string_view
-{
-public:
-
-    using iterator = const CharIn*;
-    using const_iterator = const CharIn*;
-
-    template < typename StringType
-             , typename = decltype(std::declval<const StringType&>().data())
-             , typename = decltype(std::declval<const StringType&>().size())  >
-    constexpr STRF_HD simple_string_view(const StringType& s)
-        : begin_(s.data())
-        , len_(s.size())
-    {
-    }
-
-    constexpr STRF_HD simple_string_view(const CharIn* begin, const CharIn* end) noexcept
-        : begin_(begin)
-        , len_(end - begin)
-    {
-    }
-    constexpr STRF_HD simple_string_view(const CharIn* str, std::size_t len) noexcept
-        : begin_(str)
-        , len_(len)
-    {
-    }
-
-    STRF_CONSTEXPR_CHAR_TRAITS
-    STRF_HD simple_string_view(const CharIn* str) noexcept
-        : begin_(str)
-        , len_(strf::detail::str_length<CharIn>(str))
-    {
-    }
-    constexpr STRF_HD const CharIn* begin() const
-    {
-        return begin_;
-    }
-    constexpr STRF_HD const CharIn* data() const
-    {
-        return begin_;
-    }
-    constexpr STRF_HD const CharIn* end() const
-    {
-        return begin_ + len_;
-    }
-    constexpr STRF_HD std::size_t size() const
-    {
-        return len_;
-    }
-    constexpr STRF_HD std::size_t length() const
-    {
-        return len_;
-    }
-    constexpr STRF_HD CharIn operator[](std::size_t pos) const
-    {
-        return begin_[pos];
-    }
-
-private:
-
-    const CharIn* begin_;
-    const std::size_t len_;
-};
-
-template <typename CharT>
-STRF_HD bool operator==
-    ( strf::detail::simple_string_view<CharT> str1
-    , strf::detail::simple_string_view<CharT> str2 )
-{
-    if (str1.size() != str2.size())
-        return false;
-
-    return strf::detail::str_equal(str1.data(), str2.data(), str1.size());
-}
-
-template <typename CharT>
-constexpr STRF_HD simple_string_view<CharT> make_simple_string_view
-    ( const CharT* str, std::size_t len) noexcept
-{
-    return {str, len};
-}
-
-template <typename CharT>
-constexpr STRF_HD simple_string_view<CharT> make_simple_string_view
-    ( const CharT* str, const CharT* str_end) noexcept
-{
-    return {str, str_end};
-}
-
-} // namespace detail
 
 template <typename T, typename CharT>
 class transcoding_formatter_fn;

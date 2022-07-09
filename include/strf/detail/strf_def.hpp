@@ -270,6 +270,14 @@ template <> struct wchar_equiv_impl<4> { using type = char32_t; };
 
 using wchar_equiv = typename wchar_equiv_impl<sizeof(wchar_t)>::type;
 
+template <typename... T> struct mp_type_list
+{
+    template <typename FT>
+    using add_front = mp_type_list<FT, T...>;
+
+    static constexpr std::size_t size = sizeof...(T);
+};
+
 } // namespace detail
 
 struct absolute_lowest_rank
@@ -301,6 +309,16 @@ struct tag<T>
     explicit constexpr STRF_HD tag() noexcept { }
     using type = T;
 };
+
+template <typename> struct is_char: public std::false_type {};
+
+#if defined(__cpp_char8_t)
+template <> struct is_char<char8_t>: public std::true_type {};
+#endif
+template <> struct is_char<char>: public std::true_type {};
+template <> struct is_char<char16_t>: public std::true_type {};
+template <> struct is_char<char32_t>: public std::true_type {};
+template <> struct is_char<wchar_t>: public std::true_type {};
 
 } // namespace strf
 
