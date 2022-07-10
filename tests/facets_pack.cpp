@@ -53,8 +53,8 @@ public:
         }
     }
 
-    facet_base& operator=(const facet_base&) = delete;
-    facet_base& operator=(facet_base&&) = delete;
+    facet_base& operator=(const facet_base&) noexcept = delete;
+    facet_base& operator=(facet_base&&) noexcept = delete;
 
     STRF_CONSTEXPR_IN_CXX14 STRF_HD int value() const
     {
