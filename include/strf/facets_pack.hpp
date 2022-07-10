@@ -91,6 +91,43 @@ template <typename F>
 using facet_category
 = typename strf::facet_traits<F>::category;
 
+namespace detail {
+
+template <typename T>
+struct is_facet_helper
+{
+    template < typename U
+             , typename C = strf::facet_category<U>
+             , typename F = strf::detail::remove_cvref_t<decltype(C::get_default())>
+             , typename C2 = strf::facet_category<F> >
+    static STRF_HD std::is_same<C, C2> test_(U*);
+
+    template <typename U>
+    static STRF_HD std::false_type test_(...);
+
+    using result = decltype(test_<T>((T*)0));
+};
+
+template <typename T>
+using is_facet = typename is_facet_helper<strf::detail::remove_cvref_t<T>>::result;
+
+template <typename T>
+struct is_fpe: is_facet<T>
+{
+};
+
+template <typename... T>
+struct is_fpe<strf::facets_pack<T...>> : std::true_type
+{
+};
+
+template <template <class> class Filter, typename FPE>
+struct is_fpe<strf::constrained_fpe<Filter, FPE>> : std::true_type
+{
+};
+
+} // namespace detail
+
 template <typename FPE>
 constexpr STRF_HD bool is_constrainable() noexcept
 {

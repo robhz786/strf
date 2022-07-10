@@ -208,7 +208,7 @@ void ipv6_stringifier<CharT>::print_ipv6(strf::destination<CharT>& dest) const
     const unsigned precision = (style_ == ipv6style::big ? 4 : 0);
     for (int i = 0; i < 8; ++i) {
         if (abbrev_.hextet_visible(i)) {
-            strf::to(dest).with(lettercase_) (strf::hex(addr_.hextets[i]).p(precision));
+            strf::to(dest) (lettercase_, strf::hex(addr_.hextets[i]).p(precision));
         }
         if (abbrev_.colon_visible(i)) {
             strf::put(dest, static_cast<CharT>(':'));
@@ -290,13 +290,13 @@ void tests()
     // test lettercase
     xxx::ipv6address addr_aabb12{{0xaa, 0xbb, 1, 2, 0, 0, 0, 0}};
 
-    TEST("aa:bb:1:2::").with(strf::lowercase)   (addr_aabb12);
-    TEST("AA:BB:1:2::").with(strf::uppercase)   (addr_aabb12);
-    TEST("AA:BB:1:2::").with(strf::mixedcase)   (addr_aabb12);
+    TEST("aa:bb:1:2::") (strf::lowercase, addr_aabb12);
+    TEST("AA:BB:1:2::") (strf::uppercase, addr_aabb12);
+    TEST("AA:BB:1:2::") (strf::mixedcase, addr_aabb12);
 
-    TEST("....aa:bb:1:2::").with(strf::lowercase)   (strf::right(addr_aabb12, 15, '.'));
-    TEST("....AA:BB:1:2::").with(strf::uppercase)   (strf::right(addr_aabb12, 15, '.'));
-    TEST("....AA:BB:1:2::").with(strf::mixedcase)   (strf::right(addr_aabb12, 15, '.'));
+    TEST("....aa:bb:1:2::") (strf::lowercase, strf::right(addr_aabb12, 15, '.'));
+    TEST("....AA:BB:1:2::") (strf::uppercase, strf::right(addr_aabb12, 15, '.'));
+    TEST("....AA:BB:1:2::") (strf::mixedcase, strf::right(addr_aabb12, 15, '.'));
 }
 
 int main()

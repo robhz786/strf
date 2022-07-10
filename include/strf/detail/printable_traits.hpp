@@ -102,6 +102,27 @@ struct printable_traits_finder
     using forwarded_type = typename traits::forwarded_type;
 };
 
+template <typename T>
+struct is_printable_helper {
+
+    template < typename U
+             , typename selector_ = strf::detail::conditional_t
+                 < strf::detail::has_printable_traits_specialization<U>::value
+                 , strf::detail::select_printable_traits_specialization
+                 , strf::detail::select_printable_traits_from_tag_invoke >
+             , typename PT = typename selector_::template select<U> >
+    static STRF_HD std::true_type test_(const U*);
+
+    template <typename U>
+    static STRF_HD std::false_type test_(...);
+
+    using result = decltype(test_<T>((T*)0));
+};
+
+template <typename T>
+using is_printable =
+    typename detail::is_printable_helper< strf::detail::remove_cvref_t<T> >::result;
+
 template <typename Traits, typename... F>
 struct printable_traits_finder<strf::value_with_formatters<Traits, F...>>
 {

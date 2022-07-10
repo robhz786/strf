@@ -6,8 +6,8 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <strf/detail/printable_traits.hpp>
-#include <strf/detail/tr_printer.hpp>
+#include <strf/detail/do_print.hpp>
+#include <strf/detail/do_tr_print.hpp>
 
 namespace strf {
 
@@ -59,6 +59,90 @@ struct destination_creator_traits<DestinationCreator, true>
 template <typename DestinationCreator, bool Sized>
 using destination_finish_return_type = typename
     destination_creator_traits<DestinationCreator, Sized>::finish_return_type;
+
+struct no_reserve_policy
+{
+public:
+
+    template <typename DestCreator>
+    using return_type = strf::detail::destination_finish_return_type<DestCreator, false>;
+
+    using preprinting_type = strf::preprinting
+        <strf::precalc_size::yes, strf::precalc_width::no>;
+
+    template <bool Ln, typename DestCreator, typename... Stringifiers>
+    static STRF_HD return_type<DestCreator> print
+        ( const DestCreator& dest_creator
+        , const preprinting_type&
+        , const Stringifiers& ... stringifiers )
+    {
+        typename DestCreator::destination_type dest{dest_creator.create()};
+        strf::detail::write_args(dest, stringifiers...);
+        STRF_IF_CONSTEXPR (Ln) {
+            using char_type = typename DestCreator::char_type;
+            strf::put<char_type>(dest, static_cast<char_type>('\n'));
+        }
+        return strf::detail::finish(strf::rank<2>(), dest);
+    }
+};
+
+struct reserve_size_policy
+{
+public:
+    std::size_t size = 0;
+
+    STRF_HD explicit reserve_size_policy(std::size_t s)
+        : size(s)
+    {
+    }
+
+    template <typename DestCreator>
+    using return_type = strf::detail::destination_finish_return_type<DestCreator, true>;
+
+    using preprinting_type = strf::preprinting
+        <strf::precalc_size::yes, strf::precalc_width::no>;
+
+    template <bool Ln, typename DestCreator, typename... Stringifiers>
+    STRF_HD return_type<DestCreator> print
+        ( const DestCreator& dest_creator
+        , const preprinting_type&
+        , const Stringifiers& ... stringifiers ) const
+    {
+        typename DestCreator::sized_destination_type dest{dest_creator.create(size)};
+        strf::detail::write_args(dest, stringifiers...);
+        STRF_IF_CONSTEXPR (Ln) {
+            using char_type = typename DestCreator::char_type;
+            strf::put<char_type>(dest, static_cast<char_type>('\n'));
+        }
+        return strf::detail::finish(strf::rank<2>(), dest);
+    }
+};
+
+struct reserve_calc_policy
+{
+public:
+    template <typename DestCreator>
+    using return_type = strf::detail::destination_finish_return_type<DestCreator, true>;
+
+    using preprinting_type = strf::preprinting
+        <strf::precalc_size::yes, strf::precalc_width::no>;
+
+    template <bool Ln, typename DestCreator, typename... Stringifiers>
+    static STRF_HD return_type<DestCreator> print
+        ( const DestCreator& dest_creator
+        , const preprinting_type& pre
+        , const Stringifiers& ... stringifiers )
+    {
+        std::size_t size = pre.accumulated_size();
+        typename DestCreator::sized_destination_type dest{dest_creator.create(size)};
+        strf::detail::write_args(dest, stringifiers...);
+        STRF_IF_CONSTEXPR (Ln) {
+            using char_type = typename DestCreator::char_type;
+            strf::put<char_type>(dest, static_cast<char_type>('\n'));
+        }
+        return strf::detail::finish(strf::rank<2>(), dest);
+    }
+};
 
 struct destination_tag {};
 
@@ -193,105 +277,33 @@ public:
     }
 
     template <typename ... Args>
-    finish_return_type_ STRF_HD operator()(const Args& ... args) const &
+    inline finish_return_type_ STRF_HD operator()(Args&& ... args) const &
     {
         const auto& self = static_cast<const destination_type_&>(*this);
-        PrePrinting pre;
-        return self.write_
-            ( pre
-            , as_stringifier_cref_
-              ( stringifier_<Args>
-                ( strf::make_stringifier_input<char_type_>
-                  ( pre, self.fpack_, args ) ) )... );
-    }
-
-#if defined(STRF_HAS_STD_STRING_VIEW)
-
-    template <typename ... Args>
-    finish_return_type_ STRF_HD tr
-        ( const std::basic_string_view<char_type_>& str
-        , const Args& ... args ) const &
-    {
-        return tr_write_(str.data(), str.size(), args...);
-    }
-
-#else
-
-    template <typename ... Args>
-    finish_return_type_ STRF_HD tr(const char_type_* str, const Args& ... args) const &
-    {
-        return tr_write_(str, strf::detail::str_length<char_type_>(str), args...);
-    }
-
-#endif
-
-private:
-
-    static inline STRF_HD const strf::stringifier<char_type_>&
-    as_stringifier_cref_(const strf::stringifier<char_type_>& p) noexcept
-    {
-        return p;
-    }
-    static inline STRF_HD const strf::stringifier<char_type_>*
-    as_stringifier_cptr_(const strf::stringifier<char_type_>& p) noexcept
-    {
-         return &p;
-    }
-
-    template < typename ... Args >
-    finish_return_type_ STRF_HD tr_write_
-        ( const char_type_* str
-        , std::size_t str_len
-        , const Args& ... args) const &
-    {
-        return tr_write_2_
-            ( str, str + str_len
-            , strf::detail::make_index_sequence<sizeof...(args)>()
-            , args...);
-    }
-
-    template < std::size_t ... I, typename ... Args >
-    finish_return_type_ STRF_HD tr_write_2_
-        ( const char_type_* str
-        , const char_type_* str_end
-        , strf::detail::index_sequence<I...>
-        , const Args& ... args) const &
-    {
-        constexpr std::size_t args_count = sizeof...(args);
-        PrePrinting pre_arr[args_count ? args_count : 1];
-        const auto& fpack = static_cast<const destination_type_&>(*this).fpack_;
-        (void)fpack;
-        return tr_write_3_
-            ( str
-            , str_end
-            , pre_arr
-            , { as_stringifier_cptr_
-                ( stringifier_<Args>
-                  ( strf::make_stringifier_input<char_type_>
-                    ( pre_arr[I], fpack, args ) ) )... } );
+        return strf::do_print_::do_print<false>( self.get_policy()
+                                               , self.destination_creator_
+                                               , self.fpack_
+                                               , (Args&&)args... );
     }
 
     template <typename ... Args>
-    finish_return_type_ STRF_HD tr_write_3_
-        ( const char_type_* str
-        , const char_type_* str_end
-        , PrePrinting* pre_arr
-        , std::initializer_list<const strf::stringifier<char_type_>*> args ) const &
+    inline finish_return_type_ STRF_HD ln(Args&& ... args) const &
     {
         const auto& self = static_cast<const destination_type_&>(*this);
+        return strf::do_print_::do_print<true>( self.get_policy()
+                                              , self.destination_creator_
+                                              , self.fpack_
+                                              , (Args&&)args... );
+    }
 
-        using catenc = strf::charset_c<char_type_>;
-        auto charset = strf::use_facet<catenc, void>(self.fpack_);
-
-        using caterr = strf::tr_error_notifier_c;
-        auto&& err_hdl = strf::use_facet<caterr, void>(self.fpack_);
-        using err_hdl_type = strf::detail::remove_cvref_t<decltype(err_hdl)>;
-
-        PrePrinting pre;
-        strf::detail::tr_string_printer<decltype(charset), err_hdl_type>
-            tr_printer(pre, pre_arr, args, str, str_end, charset, err_hdl);
-
-        return self.write_(pre, tr_printer);
+    template <typename ... Args>
+    finish_return_type_ STRF_HD tr(Args&& ... args) const &
+    {
+        const auto& self = static_cast<const destination_type_&>(*this);
+        return strf::do_tr_print_::do_tr_print( self.get_policy()
+                                              , self.destination_creator_
+                                              , self.fpack_
+                                              , (Args&&)args... );
     }
 };
 
@@ -363,6 +375,7 @@ public:
 
     using common_::with;
     using common_::operator();
+    using common_::ln;
     using common_::tr;
     using common_::reserve_calc;
     using common_::reserve;
@@ -416,14 +429,9 @@ private:
     {
     }
 
-    template <typename ... Stringifiers>
-    finish_return_type_ STRF_HD write_
-        ( const preprinting_type_&
-        , const Stringifiers& ... stringifiers) const
+    constexpr STRF_HD strf::detail::no_reserve_policy get_policy() const
     {
-        typename DestinationCreator::destination_type dest{destination_creator_.create()};
-        strf::detail::write_args(dest, stringifiers...);
-        return strf::detail::finish(strf::rank<2>(), dest);
+        return {};
     }
 
     DestinationCreator destination_creator_;
@@ -500,6 +508,7 @@ public:
 
     using common_::with;
     using common_::operator();
+    using common_::ln;
     using common_::tr;
     using common_::reserve_calc;
     using common_::no_reserve;
@@ -549,19 +558,14 @@ private:
     {
     }
 
-    template <typename ... Stringifiers>
-    STRF_HD finish_return_type_ write_
-        ( const preprinting_type_&
-        , const Stringifiers& ... stringifiers) const
-    {
-        typename DestinationCreator::sized_destination_type dest{destination_creator_.create(size_)};
-        strf::detail::write_args(dest, stringifiers...);
-        return strf::detail::finish(strf::rank<2>(), dest);
-    }
-
     std::size_t size_;
     DestinationCreator destination_creator_;
     FPack fpack_;
+
+    constexpr STRF_HD strf::detail::reserve_size_policy get_policy() const
+    {
+        return strf::detail::reserve_size_policy{size_};
+    }
 };
 
 template < typename DestinationCreator, typename FPack >
@@ -631,6 +635,7 @@ public:
 
     using common_::with;
     using common_::operator();
+    using common_::ln;
     using common_::tr;
     using common_::no_reserve;
     using common_::reserve;
@@ -684,15 +689,9 @@ private:
     {
     }
 
-    template <typename ... Stringifiers>
-    finish_return_type_ STRF_HD write_
-        ( const preprinting_type_& pre
-        , const Stringifiers& ... stringifiers ) const
+    constexpr STRF_HD strf::detail::reserve_calc_policy get_policy() const
     {
-        std::size_t size = pre.accumulated_size();
-        typename DestinationCreator::sized_destination_type dest{destination_creator_.create(size)};
-        strf::detail::write_args(dest, stringifiers...);
-        return strf::detail::finish(strf::rank<2>(), dest);
+        return {};
     }
 
     DestinationCreator destination_creator_;

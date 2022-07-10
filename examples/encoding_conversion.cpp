@@ -96,9 +96,9 @@ void allow_surrogates ()
 void char32()
 {
     char32_t ch = 0x20AC; // euro sign
-    assert(strf::to_string.with(strf::utf<char>)         (ch) == "\xE2\x82\xAC");
-    assert(strf::to_string.with(strf::iso_8859_15<char>) (ch) == "\xA4");
-    assert(strf::to_string.with(strf::iso_8859_1<char>)  (ch) == "?");
+    assert(strf::to_string (strf::utf<char>, ch) == "\xE2\x82\xAC");
+    assert(strf::to_string (strf::iso_8859_15<char>, ch) == "\xA4");
+    assert(strf::to_string (strf::iso_8859_1<char>, ch) == "?");
     (void) ch;
 }
 
