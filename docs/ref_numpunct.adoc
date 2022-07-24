@@ -131,11 +131,11 @@ respectively )
 ////
 
 
-[source,cpp,subs=normal]
-----
 `numpunct<__Base__>` is a facet of the `{numpunct_c}<_Base_>` category,
 and it satisfies the requirements of __{NumericPunctuation}__.
 
+[source,cpp,subs=normal]
+----
 template <int Base>
 class numpunct {
 public:

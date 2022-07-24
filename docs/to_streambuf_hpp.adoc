@@ -17,7 +17,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 :destination: <<destination_hpp#destination,destination>>
 :destination_space_after_flush: <<destination_hpp#destination_space_after_flush,destination_space_after_flush>>
 :basic_streambuf_writer: <<basic_streambuf_writer,basic_streambuf_writer>>
-:printer_no_reserve: <<strf_hpp#printer_no_reserve,printer_no_reserve>>
+:printing_syntax: <<strf_hpp#printing_syntax,printing_syntax>>
 :DestinationCreator: <<strf_hpp#DestinationCreator,DestinationCreator>>
 
 NOTE: This header file includes `<<strf_hpp#,<strf.hpp>>>`
@@ -129,7 +129,7 @@ __/{asterisk} see below {asterisk}/__ to(std::basic_streambuf<CharT, Traits>* de
 } // namespace strf
 ----
 [horizontal]
-Return type:: `{printer_no_reserve}<DestCreator>`, where `DestCreator`
+Return type:: `{printing_syntax}<DestCreator>`, where `DestCreator`
          is an implementation-defined type that satifies __{DestinationCreator}__.
 Return value:: An object whose `DestCreator` object  `&#95;dest&#95;creator`
 is such that `&#95;dest&#95;creator.create()` returns

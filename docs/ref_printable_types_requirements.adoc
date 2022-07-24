@@ -220,7 +220,7 @@ A type alias to `PrePriting`.
 ====
 [source,cpp,subs=normal]
 ----
-T::printer_type
+T::stringifier_type
 ----
 A type that is constructible from `X` and convertible to `const {stringifier}<CharT>&`,
 such that the sequence:
@@ -228,10 +228,10 @@ such that the sequence:
 [source,cpp,subs=normal]
 ----
 std::size_t s = x.pre.<<size_accumulator_accumulated_size,accumulated_size>>();
-typename T::printer_type p{x};
+typename T::stringifier_type p{x};
 std::size_t predicted_size = x.pre.<<size_accumulator_accumulated_size,accumulated_size>>() - s;
 std::size_t dest_buff_space = dest.<<destination_hpp#output_buffer_buffer_space,buffer_space>>();
-static_cast<const printer<CharT>&>(p).<<stringifier,print_to>>(dest);
+static_cast<const stringifier<CharT>&>(p).<<stringifier,print_to>>(dest);
 ----
 statisfies the following postconditions when `PrePriting::<<preprinting,size_required>>` is `true`:
 
@@ -252,14 +252,14 @@ A lvalue reference of type `PrePriting`.
 
 [source,cpp,subs=normal]
 ----
-template <typename CharT, typename PrePriting, typename FPack, typename Arg, typename Printer>
+template <typename CharT, typename PrePriting, typename FPack, typename Arg, typename Stringifier>
 struct usual_stringifier_input
 {
     using char_type = CharT;
     using arg_type = Arg;
     using preprinting_type = PrePriting;
     using fpack_type = FPack;
-    using printer_type = Printer;
+    using stringifier_type = Stringifier;
 
     preprinting_type& pre;
     FPack facets;
@@ -374,14 +374,14 @@ Otherwise, it returns
 namespace strf {
 
 template <typename CharT, typename Pre, typename FPack, typename Arg>
-using printer_input_type = decltype
+using stringifier_input_type = decltype
     ( {make_stringifier_input}<CharT>
         ( std::declval<Pre&>()
         , std::declval<const FPack&>()
         , std::declval<Arg>() ) );
 
 template <typename CharT, typename Pre, typename FPack, typename Arg>
-using stringifier_type = typename printer_input_type<CharT, Pre, FPack, Arg>::printer_type;
+using stringifier_type = typename stringifier_input_type<CharT, Pre, FPack, Arg>::stringifier_type;
 
 } // namespace strf
 ----

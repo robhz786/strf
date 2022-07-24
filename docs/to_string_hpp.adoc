@@ -18,7 +18,7 @@ http://www.boost.org/LICENSE_1_0.txt
 :output_buffer: <<destination_hpp#output_buffer,output_buffer>>
 :destination: <<destination_hpp#destination,destination>>
 
-:printer_no_reserve: <<strf_hpp#printer_no_reserve,printer_no_reserve>>
+:printing_syntax: <<strf_hpp#printing_syntax,printing_syntax>>
 :DestinationCreator: <<strf_hpp#DestinationCreator,DestinationCreator>>
 :SizedDestinationCreator: <<strf_hpp#SizedDestinationCreator,SizedDestinationCreator>>
 
@@ -254,7 +254,7 @@ __/{asterisk} see below {asterisk}/__ append(std::basic_string<CharT, Traits, Al
 
 } // namespace strf
 ----
-Return type:: `{printer_no_reserve}<DestCreator>`, where `DestCreator`
+Return type:: `{printing_syntax}<DestCreator>`, where `DestCreator`
 is an implementation-defined type that satisfies  __{DestinationCreator}__ and
 __{SizedDestinationCreator}__
 Return value:: An object whose `DestCreator` object
@@ -293,7 +293,7 @@ constexpr <__/{asterisk} see below {asterisk}/__>  to_basic_string {};
 } // namespace strf
 ----
 
-Type:: `{printer_no_reserve}<DestCreator>`, where `DestCreator` is
+Type:: `{printing_syntax}<DestCreator>`, where `DestCreator` is
         an implementation-defined type that satisfies
         __{DestinationCreator}__ and __{SizedDestinationCreator}__.
 Value:: An object whose `DestCreator` object

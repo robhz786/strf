@@ -262,19 +262,17 @@ private:
 
 template <typename CharT = char>
 STRF_HD inline auto to(std::FILE* destfile)
-    -> strf::printer_no_reserve<strf::detail::narrow_cfile_writer_creator<CharT>>
+    -> strf::printing_syntax<strf::detail::narrow_cfile_writer_creator<CharT>>
 {
-    return strf::printer_no_reserve
-        < strf::detail::narrow_cfile_writer_creator<CharT> >
-        (destfile);
+    return strf::make_printing_syntax
+        ( strf::detail::narrow_cfile_writer_creator<CharT>(destfile) );
 }
 
 STRF_HD inline auto wto(std::FILE* destfile)
-    -> strf::printer_no_reserve<strf::detail::wide_cfile_writer_creator>
+    -> strf::printing_syntax<strf::detail::wide_cfile_writer_creator>
 {
-    return strf::printer_no_reserve
-        < strf::detail::wide_cfile_writer_creator >
-        (destfile);
+    return strf::make_printing_syntax
+        ( strf::detail::wide_cfile_writer_creator(destfile) );
 }
 
 } // namespace strf

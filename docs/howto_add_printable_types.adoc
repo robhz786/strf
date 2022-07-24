@@ -171,7 +171,7 @@ print the value, it just creates and returns an object.
 Anyway, sometimes it is not possible to just return
 `strf::make_stringified_input(__something__...)`,
 __i.e.__ to simply convert the value to another type that is already printable.
-A <<creating_printer,further section>> explains how to deal with such cases.
+A <<creating_stringifier,further section>> explains how to deal with such cases.
 
 ////
 The `Pre` template parameter is always an instance of the `pre`
@@ -371,7 +371,7 @@ comply with the __{Formatter}__ requirements.
 If you want to add format functions
 you need to create a formatter class and/or
 select one or some of those provided by the library.
-Then, in your __PrinterTraits__ class, you need
+Then, in your __PrintableTraits__ class, you need
 to define a member `{formatters}` as a type alias
 to `{tag}<Fmts\...>`,
 where `Fmts\...` are the __{Formatter}__ types you want
@@ -734,9 +734,9 @@ And its done! I think is a pretty complete example of how to make
 {strf-src-root}/examples/extend_input_std_complex.cpp[here].
 
 
-== The low-level way [[creating_printer]]
+== The low-level way [[creating_stringifier]]
 
-Sometimes, when creating a __PrinterTraits__ class,
+Sometimes, when creating a __PrintableTraits__ class,
 it is not possible possible to make its `make_input`
 member function just return `strf::make_stringifier_input(__something__..)`
 as we did in the previous sections.
@@ -973,7 +973,7 @@ there is no further need to call `subract_width`.
 With this, are ready with our `std_complex_printer` class template.
 But, of course, we are not done yet, since it only handles
 `std::complex` values without formatting. We need to create
-another printer &#x2014; you could name `fmt_std_complex_printer`
+another stringifier &#x2014; you could name `fmt_std_complex_printer`
 &#x2014; to print formatted values, which is naturally a little
 bit more complex. However, it's basically the same idea:
 `print_to` prints the content and the constructor precalculates its size and/or width.

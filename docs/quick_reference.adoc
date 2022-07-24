@@ -167,7 +167,7 @@ include::ref_format_functions.adoc[tag=int_format_functions]
 |===
 
 
-== Printer expressions [[printers]]
+== Printing __target__ expressions [[targets]]
 
 [%header,cols="10,4"]
 |===

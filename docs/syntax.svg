@@ -8,8 +8,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 -->
 
 <svg
-   width="700px"
-   height="234px"
+   viewBox="75 5 615 280"
    xmlns:svg="http://www.w3.org/2000/svg"
    xmlns="http://www.w3.org/2000/svg">
 
@@ -18,7 +17,7 @@ http://www.boost.org/LICENSE_1_0.txt)
     .code {
     font-style:normal;
     font-family:"Courier New";
-    font-size:95%;
+    font-size:90%;
     }
     .repl {
     font-style:italic;
@@ -28,12 +27,12 @@ http://www.boost.org/LICENSE_1_0.txt)
     rect{
     fill:#d7e3f4;
     stroke:black;
-    stroke-width:1.5;
+    stroke-width:1.2;
     }
     path{
     stroke:black;
-    stroke-width:1.5;
-    fill:white;
+    stroke-width:1.2;
+    fill:transparent;
     }
     path.arrow{
     fill:black;
@@ -45,98 +44,83 @@ http://www.boost.org/LICENSE_1_0.txt)
     }
     /* ]]> */
   </style>
-  <a href="quick_reference.html#facets" target="_parent">
-      <rect width="170" height="28" rx="10" ry="10" x="200" y="5"/>
 
-      <text x="205" y="24" >
-        <tspan class="code">.with(</tspan>
-        <tspan class="repl">facet_objs...</tspan>
-        <tspan class="code">)</tspan>
-      </text>
-  </a>
+  <symbol>
+  <path d="M0 0 a11 11 0 0 1 +11 +11"/> <!--rd-->
+  <path d="M0 0 a11 11 0 0 0 +11 -11"/> <!--ru-->
+  <path d="M0 0 a11 11 0 0 0 -11 +11"/> <!--ld-->
+  <path d="M0 0 a11 11 0 0 1 -11 -11"/> <!--lu-->
+  <path d="M0 0 a11 11 0 0 0 -11 -11"/> <!--ul-->
+  <path d="M0 0 a11 11 0 0 1 -11 +11"/> <!--dl-->
+  </symbol>
 
-  <a href="quick_reference.html#reserve" target="_parent">
-    <rect width="170" height="28" rx="10" ry="10" x="200" y="49"/>
-    <text x="205" y="68" >
-      <tspan class="code">.no_reserve()</tspan>
-    </text>
-  </a>
+  <rect width="80" height="28" x="100" y="186" rx="11" ry="11"/>
+  <text x="115" y="204" >
+    <tspan class="repl">target</tspan>
+  </text>
 
-  <a href="quick_reference.html#reserve" target="_parent">
-    <rect width="170" height="28" rx="10" ry="10" x="200" y="93"/>
-    <text x="205" y="112" >
+  <path d="M180 200 H400"/>
+
+  <path d="M220  24 a11 11 0 0 0 -11 +11 v154 a11 11 0 0 0 11 11"/>
+  <path d="M220  68 a11 11 0 0 0 -11 +11"/> <!--ld-->
+  <path d="M220 112 a11 11 0 0 0 -11 +11"/> <!--ld-->
+  <path d="M220 156 a11 11 0 0 0 -11 +11"/> <!--ld-->
+
+  <path d="M370  24 a11 11 0 0 1 +11 +11 v154 a11 11 0 0 1 -11 +11"/>
+  <path d="M370  68 a11 11 0 0 1 +11 +11"/> <!--rd-->
+  <path d="M370 112 a11 11 0 0 1 +11 +11"/> <!--rd-->
+  <path d="M370 156 a11 11 0 0 1 +11 +11"/> <!--rd-->
+
+  <rect width="150" height="28" x="220"  y="10" rx="11" ry="11"/>
+  <rect width="150" height="28" x="220"  y="54" rx="11" ry="11"/>
+  <rect width="150" height="28" x="220"  y="98" rx="11" ry="11"/>
+  <rect width="150" height="28" x="220" y="142" rx="11" ry="11"/>
+
+  <text x="225" y="28" >
+    <tspan class="code">.with(</tspan>
+    <tspan class="repl">fargs...</tspan>
+    <tspan class="code">)</tspan>
+  </text>
+  <text x="225" y="74" >
       <tspan class="code">.reserve(</tspan>
       <tspan class="repl">size</tspan>
       <tspan class="code">)</tspan>
-    </text>
-  </a>
+  </text>
+  <text x="225" y="116" class="code"> .reserve_calc() </text>
+  <text x="225" y="160" class="code"> .no_reserve()   </text>
 
-  <a href="quick_reference.html#reserve" target="_parent">
-    <rect width="170" height="28" rx="10" ry="10" x="200" y="137"/>
-    <text x="205" y="156" class="code">.reserve_calc()</text>
-  </a>
+  <path d="M411 189  v-44 a11 11 0 0 1 +11 -11"/> <!-- arc ur -->
+  <path d="M411 189       a11 11 0 0 1 +11 -11"/> <!-- arc ur -->
+  <path d="M400 200       a10 11 0 0 0 +11 -11"/> <!-- arc ru -->
+  <path d="M400 200       a11 11 0 0 1 +11 +11"/> <!-- arc rd -->
+  <path d="M411 211       a11 11 0 0 0 +11 +11"/> <!-- arc dr -->
+  <path d="M411 211  v44  a11 11 0 0 0 +11 +11"/> <!-- arc dr -->
 
-  <a href="quick_reference.html#destinations" target="_parent">
-    <rect width="100" height="28" rx="10" ry="10" x="30" y="181"/>
-    <text x="55" y="200" class="repl">printer</text>
-  </a>
+  <rect width="265" height="28" x="422" y="120" rx="11" ry="11"/>
+  <rect width="265" height="28" x="422" y="164" rx="11" ry="11"/>
+  <rect width="265" height="28" x="422" y="208" rx="11" ry="11"/>
+  <rect width="265" height="28" x="422" y="252" rx="11" ry="11"/>
+  <!-- 265 + 422 = 687 -->
 
-  <path d="M130 195 H410"/>
-  <path d="M189 30  V184"/>
-  <path d="M381 30  V184"/>
-
-  <path d="M200 19 A11 11 0 0 0 189 30"/>
-  <path d="M370 19 A11 11 0 0 1 381 30"/>
-
-  <path d="M200 63 A11 11 0 0 0 189 74"/>
-  <path d="M370 63 A11 11 0 0 1 381 74"/>
-
-  <path d="M200 107 A11 11 0 0 0 189 118"/>
-  <path d="M370 107 A11 11 0 0 1 381 118"/>
-
-  <path d="M200 151 A11 11 0 0 0 189 162"/>
-  <path d="M370 151 A11 11 0 0 1 381 162"/>
-
-  <path d="M200 195 A11 11 0 0 1 189 184"/>
-  <path d="M370 195 A11 11 0 0 0 381 184"/>
-
-  <path d="M410 195 A11 11 0 0 0 421 184"/>
-  <path d="M421 184 A11 11 0 0 1 432 173"/>
-
-  <path d="M410 195 A11 11 0 0 1 421 206"/>
-  <path d="M421 206 A11 11 0 0 0 432 214"/>
-
-  <a href="quick_reference.html#input_types" target="_parent">
-    <rect width="195" height="28" rx="10" ry="10" x="432" y="159"/>
-    <text x="450" y="178">
-      <tspan class="code">(</tspan>
-      <tspan class="repl">args...</tspan>
-      <tspan class="code">)</tspan>
-    </text>
-  </a>
-  <a href="quick_reference.html#tr_string" target="_parent">
-    <rect width="195" height="28" rx="10" ry="10" x="432" y="203"/>
-    <text x="440" y="222">
-      <tspan class="code">.tr(</tspan>
-      <tspan class="repl">tr-string</tspan>
-      <tspan class="code">,</tspan>
-      <tspan class="repl">args...</tspan>
-      <tspan class="code">)</tspan>
-    </text>
-  </a>
-
-  <!--
-  <path d="M218 151 A11 11 0 0 0 229 140"/>
-  <path d="M218 151 A11 11 0 0 0 218 173"/>
-
-  <path d="M432 151 A11 11 0 0 1 421 140"/>
-  <path d="M432 151 A11 11 0 0 1 432 173"/>
-
-  <path d="M218 173 H432"/>
-  <path class="arrow" d="M332 151 l -17 -4 v 8"/>
-  <path class="arrow" d="M318 173 l  17 -4 v 8"/>
-  -->
-
-  <path class="arrow" d="M170 195 l -17 -4 v 8"/>
+  <text x="430" y="138">
+    <tspan class="code">(</tspan>
+    <tspan class="repl">fargs... , pargs...</tspan>
+    <tspan class="code">)</tspan>
+  </text>
+  <text x="430" y="184">
+    <tspan class="code">.ln(</tspan>
+    <tspan class="repl">fargs... , pargs...</tspan>
+    <tspan class="code">)</tspan>
+  </text>
+  <text x="430" y="226">
+    <tspan class="code">.tr(</tspan>
+    <tspan class="repl">fargs... , tr-string , pargs...</tspan>
+    <tspan class="code">)</tspan>
+  </text>
+  <text x="430" y="270">
+    <tspan class="code">.trln(</tspan>
+    <tspan class="repl">fargs... , tr-string , pargs...</tspan>
+    <tspan class="code">)</tspan>
+  </text>
 
 </svg>

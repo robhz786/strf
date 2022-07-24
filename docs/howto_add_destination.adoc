@@ -23,9 +23,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 :set_buffer_ptr: <<destination_hpp#output_buffer_set_buffer_ptr,set_buffer_ptr>>
 :to: <<quick_reference#to_destination_ref,to>>
 
-:printer_no_reserve: <<strf_hpp#printer_no_reserve,printer_no_reserve>>
-:printer_with_size_calc: <<strf_hpp#printer_with_size_calc,printer_with_size_calc>>
-:printer_with_given_size: <<strf_hpp#printer_with_given_size,printer_with_given_size>>
+:printing_syntax: <<strf_hpp#printing_syntax,printing_syntax>>
 :DestinationCreator: <<strf_hpp#DestinationCreator,DestinationCreator>>
 :SizedDestinationCreator: <<strf_hpp#SizedDestinationCreator,SizedDestinationCreator>>
 :destination_space_after_flush: <<destination_hpp#destination,destination_space_after_flush>>
@@ -225,15 +223,15 @@ which is something that destructors can't do.
 `{set_good}` and `{set_buffer_ptr}` are protected member functions.
 ////
 
-== How to create a printer expression [[create_printer]]
+== How to create a __target__ expression [[create_target]]
 
-There are <<quick_reference#printers,several expressions>> that can be used as
+There are <<quick_reference#targets,several expressions>> that can be used as
 the prefix in the `<<tutorial#,basic usage syntax>>`.
 Each of them causes the content to be printed into a different destination.
 Perhaps you want to create your own. For example, if you use Qt,
 you may want to create a `toQString` "destination",
 intended to create a `QString` object ( in the same way as
-`<<quick_reference#printers,to_string>>` creates
+`<<quick_reference#targets,to_string>>` creates
 `std::string` objects ).
 This section explains how you can do that.
 
@@ -253,49 +251,9 @@ of your destination class requires the number of characters to be printed
 ( because it needs to allocate memory or something ).
 _DestinationCreator_ is for when it does not need that information.
 
-
-The third and final step is to define the "printer expression".
+The third and final step is to define the "target expression".
 It must be an expression ( a function call or a constexpr value )
-whose type is an instance of one the class templates below,
-having the class created in step 2 as the template parameter.
-
-* `{printer_no_reserve}`: Its template argument must
-be _{DestinationCreator}_, and it has the following effect when
-writing the arguments ( when its member function `operator()`
-or `tr` is called ):
-+
-[source,cpp,subs=normal]
-----
-typename your_destination_creator::destination_type dst{creator.create()};
-// \... write content in dst \...
-return dst.finish();
-----
-, where:
-+
-** `your_destination_creator` is the template argument ( and the
-type defined in step 2). It must be be _{DestinationCreator}_.
-** `creator` is an object of type `your_destination_creator`.
-
-* `{printer_with_size_calc}`: Its template argument must
-be _{SizedDestinationCreator}_, and it has the following effect when
-writing the arguments:
-+
-[source,cpp,subs=normal]
-----
-std::size_t size = /{asterisk} calculate size \... {asterisk}/;
-typename your_destination_creator::sized_destination_type dst{creator.create(**size**)};
-// \... write content in dst \...
-return dst.finish();
-----
-
-* `{printer_with_given_size}`: its factory must also be _{SizedDestinationCreator}_,
-and it has the same effect as of `printer_with_size_calc`, except that the
-size is not calculated but is instead passed to its
-<<strf_hpp#printer_with_given_size_ctor,the constructor>>.
-It does't make sense to opt for `printer_with_given_size` in most cases, if any.
-It exists because it's needed for the definition of the `<<tutorial#,reserve>>`
-function. It's only by calling this function that one is actually
-expected to ever use `{printer_with_given_size}`.
+whose type is an instance of one the `{printing_syntax}` class template.
 
 The sample below illustrates the above steps:
 
@@ -331,9 +289,9 @@ private:
     foo& f_;
 }
 
-// step3: define the expression that creates the printer object
+// step3: define the expression that creates a printing_syntax object
 auto to(foo& dst) {
-    strf::{printer_no_reserve}<foo_writer_creator> x{dst};
+    strf::{printing_syntax}<foo_writer_creator> x{dst};
     // x contains a member object of type foo_writer_creator
     // initialized with dst
     return x;
@@ -344,7 +302,7 @@ auto to(foo& dst) {
 
 * {strf-src-root}/examples/toQString.cpp[examples/toQString.cpp] defines a
   constexpr value named `toQSting`
-  that is analogous to `<<quick_reference#printers,strf::to_string>>`, except that
+  that is analogous to `<<quick_reference#targets,strf::to_string>>`, except that
   it creates a `QString` ( from Qt framework ) instead of a `std::string`.
 * {strf-src-root}/examples/appendQString.cpp[examples/appendQString.cpp] defines
   a function `append` used to append content into a `QString` object

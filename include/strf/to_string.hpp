@@ -300,21 +300,20 @@ public:
     }
 };
 
-}
+} // namespace detail
 
 template <typename CharT, typename Traits, typename Allocator>
 inline auto append(std::basic_string<CharT, Traits, Allocator>& str)
-    -> strf::printer_no_reserve
+    -> strf::printing_syntax
         < strf::detail::basic_string_appender_creator<CharT, Traits, Allocator> >
 {
-    return strf::printer_no_reserve
-        < strf::detail::basic_string_appender_creator<CharT, Traits, Allocator> >
-        { str };
+    return strf::make_printing_syntax
+        ( strf::detail::basic_string_appender_creator<CharT, Traits, Allocator>{str} );
 }
 
 template <typename CharT, typename Traits, typename Allocator>
 inline auto assign(std::basic_string<CharT, Traits, Allocator>& str)
-    -> strf::printer_no_reserve
+    -> strf::printing_syntax
         < strf::detail::basic_string_appender_creator<CharT, Traits, Allocator> >
 {
     str.clear();
@@ -326,7 +325,7 @@ inline auto assign(std::basic_string<CharT, Traits, Allocator>& str)
 template< typename CharT
         , typename Traits = std::char_traits<CharT>
         , typename Allocator = std::allocator<CharT> >
-constexpr strf::printer_no_reserve
+constexpr strf::printing_syntax
     < strf::detail::basic_string_maker_creator<CharT, Traits, Allocator> >
     to_basic_string{};
 
@@ -334,25 +333,25 @@ constexpr strf::printer_no_reserve
 
 #if defined(__cpp_char8_t)
 
-constexpr strf::printer_no_reserve
+constexpr strf::printing_syntax
     < strf::detail::basic_string_maker_creator<char8_t> >
     to_u8string{};
 
 #endif
 
-constexpr strf::printer_no_reserve
+constexpr strf::printing_syntax
     < strf::detail::basic_string_maker_creator<char> >
     to_string{};
 
-constexpr strf::printer_no_reserve
+constexpr strf::printing_syntax
     < strf::detail::basic_string_maker_creator<char16_t> >
     to_u16string{};
 
-constexpr strf::printer_no_reserve
+constexpr strf::printing_syntax
     < strf::detail::basic_string_maker_creator<char32_t> >
     to_u32string{};
 
-constexpr strf::printer_no_reserve
+constexpr strf::printing_syntax
     < strf::detail::basic_string_maker_creator<wchar_t> >
     to_wstring{};
 

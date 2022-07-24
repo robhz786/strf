@@ -99,7 +99,7 @@ private:
 
 inline auto append(QString& str)
 {
-    return strf::printer_no_reserve<QStringAppenderFactory> {str};
+    return strf::make_printing_syntax(QStringAppenderFactory{str});
 }
 
 int main()

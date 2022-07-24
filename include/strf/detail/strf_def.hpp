@@ -288,12 +288,14 @@ struct absolute_lowest_rank
 template <std::size_t N>
 struct rank: rank<N - 1>
 {
+    constexpr static std::size_t number = N;
     explicit constexpr STRF_HD rank() noexcept { };
 };
 
 template <>
 struct rank<0>: absolute_lowest_rank
 {
+    constexpr static std::size_t number = 0;
     explicit constexpr STRF_HD rank() noexcept { }
 };
 

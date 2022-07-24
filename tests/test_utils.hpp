@@ -673,9 +673,14 @@ auto STRF_HD make_tester
     , int line
     , const char* function
     , double reserve_factor = 1.0 )
-    -> strf::printer_with_size_calc<test_utils::input_tester_creator<CharT>>
+    -> strf::printing_syntax
+        < test_utils::input_tester_creator<CharT>
+        , strf::reserve_calc >
 {
-    return {expected, filename, line, function, reserve_factor};
+    return strf::make_printing_syntax
+        ( test_utils::input_tester_creator<CharT>
+            {expected, filename, line, function, reserve_factor}
+        , strf::reserve_calc{} );
 }
 
 template<typename CharT>
@@ -685,9 +690,14 @@ auto STRF_HD make_tester
    , int line
    , const char* function
    , double reserve_factor = 1.0 )
-   -> strf::printer_with_size_calc<test_utils::input_tester_creator<CharT>>
+    -> strf::printing_syntax
+        < test_utils::input_tester_creator<CharT>
+        , strf::reserve_calc >
 {
-    return {expected, filename, line, function, reserve_factor};
+    return strf::make_printing_syntax
+        ( test_utils::input_tester_creator<CharT>
+            {expected, filename, line, function, reserve_factor}
+        , strf::reserve_calc{} );
 }
 
 #if defined(_MSC_VER)
@@ -847,9 +857,11 @@ STRF_HD auto test_recycle_call
     , const char* src_filename
     , int src_line
     , std::size_t initial_space )
-    -> strf::printer_no_reserve<test_utils::recycle_call_tester_creator<CharT>>
+    -> strf::printing_syntax<test_utils::recycle_call_tester_creator<CharT>>
 {
-    return {expected, function, src_filename, src_line, initial_space};
+    return strf::make_printing_syntax
+        ( test_utils::recycle_call_tester_creator<CharT>
+            {expected, function, src_filename, src_line, initial_space} );
 }
 
 template <typename CharT>
@@ -976,9 +988,11 @@ STRF_HD auto test_failed_recycle_call
     , const char* src_filename
     , int src_line
     , std::size_t initial_space )
-    -> strf::printer_no_reserve<test_utils::failed_recycle_call_tester_creator<CharT>>
+    -> strf::printing_syntax<test_utils::failed_recycle_call_tester_creator<CharT>>
 {
-    return {expected, function, src_filename, src_line, initial_space};
+    return strf::make_printing_syntax
+        ( test_utils::failed_recycle_call_tester_creator<CharT>
+          {expected, function, src_filename, src_line, initial_space} );
 }
 
 } // namespace test_utils

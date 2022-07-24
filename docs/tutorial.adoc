@@ -19,13 +19,13 @@ http://www.boost.org/LICENSE_1_0.txt)
 
 == Syntax [[syntax]]
 
-image::syntax.svg[]
+image::syntax.svg[width=660,align=center]
 
-The __printer__ is an expression that determinates where the
-content goes to as well as the return type of the above whole expression.
-The library provides <<quick_reference#printers,many options>> to be used
-as the __printer__, and you can even
-<<howto_add_destination#create_printer,define your own>>.
+The __target__ expression is a customization point and it determinates
+where the content goes to as well as the return type of the above whole expression.
+The library provides <<quick_reference#targets,many options>> to be used
+as the __target__, and you can
+<<howto_add_destination#create_target,create your own>>.
 However, for convenience, most code samples in this tutorial use `to_string`:
 [source,cpp]
 ----
@@ -73,7 +73,7 @@ auto s = strf::to_string.tr("{} in hexadecimal is {}", x, strf::hex(x));
 ----
 
 The `reserve`, `no_reseve` and `reserve_calc` functions are only available for some
-__printers__, `to_string` being one of them.
+__targets__, `to_string` being one of them.
 Using `reserve(size)` causes the destination to reserve enough space
 to store `size` characters. `reserve_calc()` has the same effect,
 except that it calculates the number of characters for you.
@@ -268,17 +268,17 @@ and vice-versa. This means a `facets_pack` can contain another `facets_pack`.
 So the expression:
 [source,cpp,subs=normal]
 ----
-__printer__.with(_f1_, _f2_, _f3_, _f4_, _f5_) (/{asterisk} args\... {asterisk}/);
+__target__.with(_f1_, _f2_, _f3_, _f4_, _f5_) (/{asterisk} args\... {asterisk}/);
 ----
 is equivalent to
 [source,cpp,subs=normal]
 ----
-__printer__.with(strf::pack(_f1_, strf::pack(_f2_, _f3_), _f4_), _f5_) (/{asterisk} args\... {asterisk}/);
+__target__.with(strf::pack(_f1_, strf::pack(_f2_, _f3_), _f4_), _f5_) (/{asterisk} args\... {asterisk}/);
 ----
 , which, by the way, is also equivalent to:
 [source,cpp,subs=normal]
 ----
-__printer__.with(_f1_).with(_f2_).with(_f3_).with(_f4_).with(_f5_) (/{asterisk} args\... {asterisk}/);
+__target__.with(_f1_).with(_f2_).with(_f3_).with(_f4_).with(_f5_) (/{asterisk} args\... {asterisk}/);
 ----
 
 [[Locales]]
@@ -326,7 +326,7 @@ Strf does not use `std::numpunct` for reasons explained in
 Up to here, we only covered things that influence the
 content to be printed, not _where_ it is printed.
 The <<quick_reference#,quick_reference>> provides a
-<<quick_reference#printers,list of printer expressions>>
+<<quick_reference#targets,list of target expressions>>
 that can be used instead to `to_string`.
 
 
@@ -335,9 +335,9 @@ that can be used instead to `to_string`.
 However, you can also use the classes that derive
 from the `{destination}` abstract class template
 (listed <<quick_reference#destination_types, here>>).
-Each of the printer expressions relies in one of them
+Each of the target expressions relies in one of them
 internally, and they can be used directly instead of
-the printer expression. This approach is more verbose,
+the target expression. This approach is more verbose,
 but it has some advantages.
 
 The table below show some examples. Note a pattern there:
@@ -351,10 +351,10 @@ the internal buffer ( though you can also call `flush()` ).
 // `{destination}` abstract class template.
 // You can see a list of them
 // <<quick_reference#destination_types, here>>.
-// Each of the printer expressions relies in one of them
+// Each of the target expressions relies in one of them
 // internally.
 
-// Now, for each of these printer expressions there is
+// Now, for each of these target expressions there is
 // concrete class that derives from the
 // `{destination}` abstract class template.
 //  You can see a list of them

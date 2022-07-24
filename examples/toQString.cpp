@@ -86,7 +86,7 @@ public:
     }
 };
 
-constexpr strf::printer_no_reserve<QStringCreatorFactory> toQString{};
+constexpr strf::printing_syntax<QStringCreatorFactory> toQString{};
 
 int main()
 {

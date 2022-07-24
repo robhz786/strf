@@ -116,7 +116,7 @@ private:
 public:
 
     template <bool Ln, typename ReservePolicy, typename DestCreator>
-    static return_type<ReservePolicy, DestCreator> print
+    static STRF_HD return_type<ReservePolicy, DestCreator> print
         ( ReservePolicy reserve_policy
         , const DestCreator& dest_creator
         , Fpes... fpes
@@ -137,7 +137,7 @@ public:
 };
 
 template <bool Ln, typename ReservePolicy, typename DestCreator, typename... Args>
-inline typename ReservePolicy::template return_type<DestCreator> do_print
+inline STRF_HD typename ReservePolicy::template return_type<DestCreator> do_print
     ( ReservePolicy reserve_policy
     , const DestCreator& dest_creator
     , Args&&... args )

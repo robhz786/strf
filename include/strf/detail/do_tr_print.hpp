@@ -127,11 +127,12 @@ private:
     template <typename CharT>
     using strf_inilist_ = std::initializer_list<const strf::stringifier<CharT>*>;
 
-    template < typename ReservePolicy
+    template < bool Ln
+             , typename ReservePolicy
              , typename DestCreator
              , typename Charset
              , typename ErrHandler >
-    static return_type<ReservePolicy, DestCreator> print_3_
+    static STRF_HD return_type<ReservePolicy, DestCreator> print_3_
         ( ReservePolicy reserve_policy
         , const DestCreator& dest_creator
         , Charset charset
@@ -145,15 +146,16 @@ private:
             ( pre, preprinting_arr, stringifiers
             , tr_string.begin(), tr_string.end()
             , charset, err_handler );
-        return reserve_policy.template print<false>(dest_creator, pre, tr_printer);
+        return reserve_policy.template print<Ln>(dest_creator, pre, tr_printer);
     }
 
-    template < typename ReservePolicy
+    template < bool Ln
+             , typename ReservePolicy
              , typename DestCreator
              , typename Charset
              , typename ErrHandler
              , typename... Stringifiers >
-    static return_type<ReservePolicy, DestCreator> print_2_
+    static STRF_HD return_type<ReservePolicy, DestCreator> print_2_
         ( ReservePolicy reserve_policy
         , const DestCreator& dest_creator
         , Charset charset
@@ -162,14 +164,14 @@ private:
         , strf::detail::simple_string_view<typename DestCreator::char_type> tr_string
         , const Stringifiers&... stringifiers )
     {
-        return print_3_( reserve_policy, dest_creator, charset, err_handler
-                       , preprinting_arr, tr_string, {&stringifiers...} );
+        return print_3_<Ln>( reserve_policy, dest_creator, charset, err_handler
+                           , preprinting_arr, tr_string, {&stringifiers...} );
     }
 
 public:
 
-    template <typename ReservePolicy, typename DestCreator>
-    static return_type<ReservePolicy, DestCreator> print
+    template <bool Ln, typename ReservePolicy, typename DestCreator>
+    static STRF_HD return_type<ReservePolicy, DestCreator> print
         ( ReservePolicy reserve_policy
         , const DestCreator& dest_creator
         , Fpes... fpes
@@ -178,7 +180,6 @@ public:
     {
         using preprinting_t = typename ReservePolicy::preprinting_type;
         using char_type = typename DestCreator::char_type;
-        preprinting_t pre;
         auto fp = strf::pack((Fpes&&)fpes...);
 
         using charset_cat = strf::charset_c<char_type>;
@@ -190,7 +191,7 @@ public:
         constexpr std::size_t printables_count = sizeof...(printables);
         preprinting_t preprinting_arr[printables_count ? printables_count : 1];
 
-        return print_2_
+        return print_2_<Ln>
             ( reserve_policy, dest_creator, charset, err_handler, preprinting_arr, tr_string
             , as_stringifier_cref_<char_type>
                 ( strf::stringifier_type
@@ -210,8 +211,8 @@ struct check_tr_string_type
 };
 
 
-template <typename ReservePolicy, typename DestCreator, typename... Args>
-inline typename ReservePolicy::template return_type<DestCreator> do_tr_print
+template <bool Ln, typename ReservePolicy, typename DestCreator, typename... Args>
+inline STRF_HD typename ReservePolicy::template return_type<DestCreator> do_tr_print
     ( ReservePolicy reserve_policy
     , const DestCreator& dest_creator
     , Args&&... args )
@@ -226,7 +227,7 @@ inline typename ReservePolicy::template return_type<DestCreator> do_tr_print
     using tr_checker = strf::do_tr_print_::check_tr_string_type<char_type, tr_string_t>;
     static_assert(tr_checker::passed, "");
 
-    return impl::template print(reserve_policy, dest_creator, (Args&&)args...);
+    return impl::template print<Ln>(reserve_policy, dest_creator, (Args&&)args...);
 }
 
 } // namespace do_tr_print_
