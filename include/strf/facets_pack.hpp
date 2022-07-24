@@ -27,15 +27,22 @@ struct cvref_is_same<A, B>
 {
 };
 
-template <typename F, typename = typename F::category>
-constexpr STRF_HD bool has_category_member_type(F*)
+template <typename T>
+struct has_category_member_type
 {
-    return true;
-}
-constexpr STRF_HD bool has_category_member_type(...)
-{
-    return false;
-}
+    template <typename U, typename = typename U::category>
+    static STRF_HD std::true_type test(U&)
+    {
+        return {};
+    }
+    template <typename U>
+    static STRF_HD std::false_type test(...)
+    {
+        return {};
+    }
+
+    constexpr static bool value = decltype(test<T>(std::declval<T&>()))::value;
+};
 
 template <typename F, bool has_it_as_member_type>
 struct category_member_type_or_void_2;
@@ -55,7 +62,7 @@ struct category_member_type_or_void_2<F, false>
 template <typename F>
 using category_member_type_or_void
 = strf::detail::category_member_type_or_void_2
-    < F, strf::detail::has_category_member_type((F*)0) >;
+    < F, has_category_member_type<F>::value >;
 
 template <typename T, bool v = T::constrainable>
 constexpr STRF_HD bool get_constrainable(T*)
@@ -294,6 +301,18 @@ public:
         return facet_;
     }
 
+    constexpr STRF_HD const Facet& do_get_element
+        ( std::integral_constant<std::size_t, Rank::number> ) const
+    {
+        return facet_;
+    }
+
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD Facet& do_get_element
+        ( std::integral_constant<std::size_t, Rank::number> )
+    {
+        return facet_;
+    }
+
 private:
     Facet facet_;
 };
@@ -345,6 +364,18 @@ public:
         return strf::detail::do_get_facet<Category, Tag>(fpe_);
     }
 
+    constexpr STRF_HD const FPE& do_get_element
+        ( std::integral_constant<std::size_t, Rank::number> ) const
+    {
+        return fpe_;
+    }
+
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD FPE& do_get_element
+        ( std::integral_constant<std::size_t, Rank::number> )
+    {
+        return fpe_;
+    }
+
 private:
 
     FPE fpe_;
@@ -373,6 +404,18 @@ public:
             , strf::detail::has_facet<Category, Tag, FPE>() > ) const
     {
         return strf::detail::do_get_facet<Category, Tag>(fpe_);
+    }
+
+    constexpr STRF_HD const FPE& do_get_element
+        ( std::integral_constant<std::size_t, Rank::number> ) const
+    {
+        return fpe_;
+    }
+
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD FPE& do_get_element
+        ( std::integral_constant<std::size_t, Rank::number> )
+    {
+        return fpe_;
     }
 
 private:
@@ -424,6 +467,18 @@ public:
         return fp_.template get_facet<Category, Tag>();
     }
 
+    constexpr STRF_HD const fp_type_& do_get_element
+        ( std::integral_constant<std::size_t, Rank::number> ) const
+    {
+        return fp_;
+    }
+
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD fp_type_& do_get_element
+        ( std::integral_constant<std::size_t, Rank::number> )
+    {
+        return fp_;
+    }
+
 private:
 
     fp_type_ fp_;
@@ -458,13 +513,14 @@ public:
     {
     }
 
-    using FPEWrappers::do_get_facet ...;
+    using FPEWrappers::do_get_facet... ;
+    using FPEWrappers::do_get_element... ;
 };
 
-template <typename RankNumSeq, typename ... FPE>
+template <typename RankNumSeq, typename... FPE>
 struct facets_pack_base_trait;
 
-template <std::size_t ... RankNum, typename ... FPE>
+template <std::size_t... RankNum, typename... FPE>
 struct facets_pack_base_trait<strf::detail::index_sequence<RankNum...>, FPE...>
 {
     using type = facets_pack_base
@@ -494,6 +550,10 @@ class facets_pack_base<RankN>
 public:
 
     STRF_CONSTEXPR_IN_CXX14 STRF_HD void do_get_facet() const
+    {
+    }
+
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD void do_get_element() const
     {
     }
 };
@@ -545,7 +605,9 @@ public:
     }
 
     using base_tip_fpe_::do_get_facet;
+    using base_tip_fpe_::do_get_element;
     using base_others_fpe_::do_get_facet;
+    using base_others_fpe_::do_get_element;
 };
 
 
@@ -614,7 +676,6 @@ private:
     FPE fpe_;
 };
 
-
 template <>
 class facets_pack<>
 {
@@ -632,11 +693,15 @@ public:
     }
 };
 
+
+struct merge_1st {}; // tag type
+
 template <typename ... FPE>
 class facets_pack: private strf::detail::facets_pack_base_t<FPE...>
 {
     using base_type_ = strf::detail::facets_pack_base_t<FPE...>;
     using base_type_::do_get_facet;
+    using base_type_::do_get_element;
 
     template <typename Tag, typename Category>
     constexpr STRF_HD STRF_DECLTYPE_AUTO(Category::get_default()) do_get_facet
@@ -646,6 +711,9 @@ class facets_pack: private strf::detail::facets_pack_base_t<FPE...>
     {
         return Category::get_default();
     }
+
+    template <typename...>
+    friend class facets_pack;
 
 public:
 
@@ -688,7 +756,81 @@ public:
             , strf::tag<Category>()
             , std::true_type() );
     }
+
+    template <std::size_t Index>
+    constexpr STRF_HD auto get_element() const
+        -> decltype(this->do_get_element(std::integral_constant<std::size_t, Index>{}))
+    {
+        return this->do_get_element(std::integral_constant<std::size_t, Index>{});
+    }
+
+    template <std::size_t Index>
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD auto get_element()
+        -> decltype(this->do_get_element(std::integral_constant<std::size_t, Index>{}))
+    {
+        return this->do_get_element(std::integral_constant<std::size_t, Index>{});
+    }
+
+private:
+
+    template < typename... PackedFpes
+             , std::size_t... I
+             , typename... OtherFpes
+             , strf::detail::enable_if_t<sizeof...(I) != 0, int> = 0 >
+    constexpr STRF_HD facets_pack
+        ( strf::detail::index_sequence<I...>
+        , const facets_pack<PackedFpes...>& fp
+        , OtherFpes&&... fpes )
+        : facets_pack(fp.template get_element<I>()..., (OtherFpes&&)fpes...)
+    {
+    }
+
+    template < typename... PackedFpes
+             , std::size_t... I
+             , typename... OtherFpes
+             , strf::detail::enable_if_t<sizeof...(I) != 0, int> = 0 >
+    constexpr STRF_HD facets_pack
+        ( strf::detail::index_sequence<I...>
+        , facets_pack<PackedFpes...>&& fp
+        , OtherFpes&&... fpes )
+        : facets_pack(std::move(fp.template get_element<I>())..., (OtherFpes&&)fpes...)
+    {
+    }
+
+    template <typename... Fpes>
+    constexpr STRF_HD facets_pack
+        ( strf::detail::index_sequence<>
+        , facets_pack<>
+        , Fpes&&... fpes )
+        : base_type_((Fpes&&)fpes...)
+    {
+    }
+
+public:
+
+    template <typename... PackedFpes, typename... OtherFpes>
+    constexpr STRF_HD facets_pack
+        ( strf::merge_1st
+        , const facets_pack<PackedFpes...>& fp
+        , OtherFpes&&... fpes )
+        : facets_pack( strf::detail::make_index_sequence<sizeof...(PackedFpes)>()
+                     , fp
+                     , (OtherFpes&&)fpes...)
+    {
+    }
+
+    template <typename... PackedFpes, typename... OtherFpes>
+    constexpr STRF_HD facets_pack
+        ( strf::merge_1st
+        , facets_pack<PackedFpes...>&& fp
+        , OtherFpes&&... fpes)
+        : facets_pack( strf::detail::make_index_sequence<sizeof...(PackedFpes)>()
+                     , std::move(fp)
+                     , (OtherFpes&&)fpes... )
+    {
+    }
 };
+
 
 template <typename... Args>
 constexpr STRF_HD strf::facets_pack<strf::detail::remove_cvref_t<Args>...>
