@@ -118,14 +118,14 @@ public:
 private:
 
     template <typename CharT>
-    static inline STRF_HD const strf::stringifier<CharT>&
-    as_stringifier_cref_(const strf::stringifier<CharT>& p) noexcept
+    static inline STRF_HD const strf::printer<CharT>&
+    as_printer_cref_(const strf::printer<CharT>& p) noexcept
     {
         return p;
     }
 
     template <typename CharT>
-    using strf_inilist_ = std::initializer_list<const strf::stringifier<CharT>*>;
+    using strf_inilist_ = std::initializer_list<const strf::printer<CharT>*>;
 
     template < bool Ln
              , typename ReservePolicy
@@ -139,11 +139,11 @@ private:
         , const ErrHandler& err_handler
         , const typename ReservePolicy::preprinting_type* preprinting_arr
         , strf::detail::simple_string_view<typename DestCreator::char_type> tr_string
-        , strf_inilist_<typename DestCreator::char_type> stringifiers )
+        , strf_inilist_<typename DestCreator::char_type> printers )
     {
         typename ReservePolicy::preprinting_type pre;
         strf::detail::tr_string_printer<Charset, ErrHandler> tr_printer
-            ( pre, preprinting_arr, stringifiers
+            ( pre, preprinting_arr, printers
             , tr_string.begin(), tr_string.end()
             , charset, err_handler );
         return reserve_policy.template print<Ln>(dest_creator, pre, tr_printer);
@@ -154,7 +154,7 @@ private:
              , typename DestCreator
              , typename Charset
              , typename ErrHandler
-             , typename... Stringifiers >
+             , typename... Printers >
     static STRF_HD return_type<ReservePolicy, DestCreator> print_2_
         ( ReservePolicy reserve_policy
         , const DestCreator& dest_creator
@@ -162,10 +162,10 @@ private:
         , const ErrHandler& err_handler
         , const typename ReservePolicy::preprinting_type* preprinting_arr
         , strf::detail::simple_string_view<typename DestCreator::char_type> tr_string
-        , const Stringifiers&... stringifiers )
+        , const Printers&... printers )
     {
         return print_3_<Ln>( reserve_policy, dest_creator, charset, err_handler
-                           , preprinting_arr, tr_string, {&stringifiers...} );
+                           , preprinting_arr, tr_string, {&printers...} );
     }
 
 public:
@@ -193,10 +193,10 @@ public:
 
         return print_2_<Ln>
             ( reserve_policy, dest_creator, charset, err_handler, preprinting_arr, tr_string
-            , as_stringifier_cref_<char_type>
-                ( strf::stringifier_type
+            , as_printer_cref_<char_type>
+                ( strf::printer_type
                   < char_type, preprinting_t, decltype(fp), Printables >
-                    ( strf::make_stringifier_input<char_type>
+                    ( strf::make_printer_input<char_type>
                       ( preprinting_arr[I], fp, (Printables&&)printables ) ) )... );
     }
 };

@@ -6,7 +6,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 ////
 
 :print_override_c: <<strf_hpp#print_override_c,print_override_c>>
-:make_stringifier_input: <<strf_hpp#make_stringifier_input,make_stringifier_input>>
+:make_printer_input: <<strf_hpp#make_printer_input,make_printer_input>>
 :use_facet: <<strf_hpp#use_facet,use_facet>>
 :pack: <<strf_hpp#pack,pack>>
 :set_alignment_format: <<strf_hpp#alignment_formatter,set_alignment_format>>
@@ -15,7 +15,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 :value_with_formatters: <<strf_hpp#value_with_formatters,value_with_formatters>>
 :print_override_c: <<strf_hpp#print_override_c,print_override_c>>
 :PrintableTraits: <<strf_hpp#PrintableTraits,PrintableTraits>>
-:StringifierInput: <<strf_hpp#StringifierInput,StringifierInput>>
+:PrinterInput: <<strf_hpp#PrinterInput,PrinterInput>>
 :printable_traits_of: <<strf_hpp#printable_traits_of,printable_traits_of>>
 :lettercase: <<strf_hpp#lettercase,lettercase>>
 :representative_of_printable: <<strf_hpp#representative_of_printable,representative_of_printable>>
@@ -55,7 +55,7 @@ In the following example, we override the `bool` type,
 causing its values to be printed in a another language:
 
 which also has a `make_input` function template
-that returns a _{StringifierInput}_ object.
+that returns a _{PrinterInput}_ object.
 
 As an example, let's to override the `bool` type,
 so that its values will be printed in italian (as "vero" and "falso" )
@@ -73,7 +73,7 @@ struct italian_bool_facet
     constexpr static auto make_input
         ( strf::tag<CharT>, Pre& pre, const FPack&, bool x ) noexcept
     {
-        return strf::{make_stringifier_input}<CharT>
+        return strf::{make_printer_input}<CharT>
             ( pre
             , strf::{pack}()
             , strf::conv(x ? "vero" : "falso") );
@@ -86,7 +86,7 @@ struct italian_bool_facet
         , const FPack& fp
         , strf::{value_with_formatters}<T\...> x ) noexcept
     {
-        return strf::{make_stringifier_input}<CharT>
+        return strf::{make_printer_input}<CharT>
             ( pre
             , fp
             , strf::conv(x.value() ? "vero" : "falso")

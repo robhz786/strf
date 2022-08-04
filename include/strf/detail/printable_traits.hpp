@@ -292,7 +292,7 @@ template < typename UnadaptedMaker
          , typename PrePrinting
          , typename FPack
          , typename Arg >
-struct can_make_stringifier_input_impl
+struct can_make_printer_input_impl
 {
     template <typename P>
     static STRF_HD auto test_(PrePrinting& pre, const FPack& facets, const Arg& arg)
@@ -316,8 +316,8 @@ template < typename UnadaptedMaker
          , typename PrePrinting
          , typename FPack
          , typename Arg >
-using can_make_stringifier_input = typename
-    can_make_stringifier_input_impl<UnadaptedMaker, CharT, PrePrinting, FPack, Arg>
+using can_make_printer_input = typename
+    can_make_printer_input_impl<UnadaptedMaker, CharT, PrePrinting, FPack, Arg>
     ::result;
 
 struct arg_adapter_rm_fmt
@@ -362,7 +362,7 @@ template < typename PrintingTraits
 struct adapter_selector_3<PrintingTraits, Maker, CharT, PrePrinting, FPack, DefaultVwf, DefaultVwf>
 {
     static constexpr bool can_pass_directly =
-        can_make_stringifier_input<Maker, CharT, PrePrinting, FPack, DefaultVwf>
+        can_make_printer_input<Maker, CharT, PrePrinting, FPack, DefaultVwf>
         ::value;
 
     using adapter_type = typename std::conditional
@@ -382,10 +382,10 @@ template < typename PrintingTraits
 struct adapter_selector_2
 {
     static constexpr bool can_pass_directly =
-        can_make_stringifier_input<Maker, CharT, PrePrinting, FPack, Arg>
+        can_make_printer_input<Maker, CharT, PrePrinting, FPack, Arg>
         ::value;
     static constexpr bool can_pass_as_fmt =
-        can_make_stringifier_input<Maker, CharT, PrePrinting, FPack, DefaultVwf>
+        can_make_printer_input<Maker, CharT, PrePrinting, FPack, DefaultVwf>
         ::value;
     static constexpr bool shall_adapt = !can_pass_directly && can_pass_as_fmt;
 
@@ -546,7 +546,7 @@ template < typename CharT
              = strf::detail::mk_pr_in::helper_no_override<CharT, PrePrinting, FPack, Arg>
          , typename Maker = typename Helper::maker_type
          , typename ChTag = strf::tag<CharT> >
-STRF_DEPRECATED_MSG("make_default_arg_printer_input was renamed to make_default_stringifier_input")
+STRF_DEPRECATED_MSG("make_default_arg_printer_input was renamed to make_default_printer_input")
 constexpr STRF_HD auto make_default_arg_printer_input(PrePrinting& p, const FPack& fp, const Arg& arg)
     noexcept(noexcept(Maker::make_input(ChTag{}, p, fp, Helper::adapt_arg(arg))))
     -> decltype(Maker::make_input(ChTag{}, p, fp, Helper::adapt_arg(arg)))
@@ -561,7 +561,7 @@ template < typename CharT
          , typename Helper = strf::detail::mk_pr_in::helper<CharT, PrePrinting, FPack, Arg>
          , typename Maker = typename Helper::maker_type
          , typename ChTag = strf::tag<CharT> >
-STRF_DEPRECATED_MSG("make_arg_printer_input was renamed to make_stringifier_input")
+STRF_DEPRECATED_MSG("make_arg_printer_input was renamed to make_printer_input")
 constexpr STRF_HD auto make_arg_printer_input(PrePrinting& p, const FPack& fp, const Arg& arg)
     -> decltype(((const Maker*)0)->make_input(ChTag{}, p, fp, Helper::adapt_arg(arg)))
 {
@@ -577,7 +577,7 @@ template < typename CharT
              = strf::detail::mk_pr_in::helper_no_override<CharT, PrePrinting, FPack, Arg>
          , typename Maker = typename Helper::maker_type
          , typename ChTag = strf::tag<CharT> >
-constexpr STRF_HD auto make_default_stringifier_input(PrePrinting& p, const FPack& fp, const Arg& arg)
+constexpr STRF_HD auto make_default_printer_input(PrePrinting& p, const FPack& fp, const Arg& arg)
     noexcept(noexcept(Maker::make_input(ChTag{}, p, fp, Helper::adapt_arg(arg))))
     -> decltype(Maker::make_input(ChTag{}, p, fp, Helper::adapt_arg(arg)))
 {
@@ -591,7 +591,7 @@ template < typename CharT
          , typename Helper = strf::detail::mk_pr_in::helper<CharT, PrePrinting, FPack, Arg>
          , typename Maker = typename Helper::maker_type
          , typename ChTag = strf::tag<CharT> >
-constexpr STRF_HD auto make_stringifier_input(PrePrinting& p, const FPack& fp, const Arg& arg)
+constexpr STRF_HD auto make_printer_input(PrePrinting& p, const FPack& fp, const Arg& arg)
     -> decltype(((const Maker*)0)->make_input(ChTag{}, p, fp, Helper::adapt_arg(arg)))
 {
     return Helper::get_maker(fp)
@@ -607,10 +607,10 @@ struct no_print_override
         , PrePrinting& pre
         , const FPack& facets
         , Arg&& arg )
-        noexcept(noexcept(strf::make_default_stringifier_input<CharT>(pre, facets, arg)))
-        -> decltype(strf::make_default_stringifier_input<CharT>(pre, facets, arg))
+        noexcept(noexcept(strf::make_default_printer_input<CharT>(pre, facets, arg)))
+        -> decltype(strf::make_default_printer_input<CharT>(pre, facets, arg))
     {
-        return strf::make_default_stringifier_input<CharT>(pre, facets, arg);
+        return strf::make_default_printer_input<CharT>(pre, facets, arg);
     }
 };
 
@@ -656,44 +656,42 @@ using representative_of_printable = typename
     strf::printable_traits_of<T>::representative_type;
 
 template <typename CharT, typename PrePrinting, typename FPack, typename Arg>
-using stringifier_input_type = decltype
-    ( strf::make_stringifier_input<CharT>
+using printer_input_type = decltype
+    ( strf::make_printer_input<CharT>
         ( std::declval<PrePrinting&>()
         , std::declval<const FPack&>()
         , std::declval<Arg>() ) );
 
 template <typename CharT, typename PrePrinting, typename FPack, typename Arg>
-using stringifier_type = typename stringifier_input_type<CharT, PrePrinting, FPack, Arg>::stringifier_type;
+using printer_type = typename printer_input_type<CharT, PrePrinting, FPack, Arg>::printer_type;
 
 template <typename CharT, typename PrePrinting, typename FPack, typename Arg>
 using arg_printer_type
-STRF_DEPRECATED_MSG("arg_printer_type was renamed to stringifier_type")
-= stringifier_type<CharT, PrePrinting, FPack, Arg>;
+STRF_DEPRECATED_MSG("arg_printer_type was renamed to printer_type")
+= printer_type<CharT, PrePrinting, FPack, Arg>;
 
-template <typename CharT, typename PrePrinting, typename FPack, typename Arg, typename Stringifier>
-struct usual_stringifier_input;
+template <typename CharT, typename PrePrinting, typename FPack, typename Arg, typename Printer>
+struct usual_printer_input;
 
-template <typename CharT, typename PrePrinting, typename FPack, typename Arg, typename Stringifier>
+template <typename CharT, typename PrePrinting, typename FPack, typename Arg, typename Printer>
 using usual_arg_printer_input
-STRF_DEPRECATED_MSG("usual_arg_printer_input was renamed to usual_stringifier_input")
-= usual_stringifier_input<CharT, PrePrinting, FPack, Arg, Stringifier>;
+STRF_DEPRECATED_MSG("usual_arg_printer_input was renamed to usual_printer_input")
+= usual_printer_input<CharT, PrePrinting, FPack, Arg, Printer>;
 
 template< typename CharT
         , strf::precalc_size PrecalcSize
         , strf::precalc_width PrecalcWidth
         , typename FPack
         , typename Arg
-        , typename Stringifier >
-struct usual_stringifier_input
-    < CharT, strf::preprinting<PrecalcSize, PrecalcWidth>, FPack, Arg, Stringifier >
+        , typename Printer >
+struct usual_printer_input
+    < CharT, strf::preprinting<PrecalcSize, PrecalcWidth>, FPack, Arg, Printer >
 {
     using char_type = CharT;
     using arg_type = Arg;
     using preprinting_type = strf::preprinting<PrecalcSize, PrecalcWidth>;
     using fpack_type = FPack;
-    using stringifier_type = Stringifier;
-    using printer_type STRF_DEPRECATED_MSG("printer_type renamed to stringifier_type")
-        = Stringifier;
+    using printer_type = Printer;
 
     preprinting_type& pre;
     FPack facets;

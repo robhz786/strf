@@ -1,5 +1,5 @@
-#ifndef STRF_DETAIL_STRINGIFIER_HPP
-#define STRF_DETAIL_STRINGIFIER_HPP
+#ifndef STRF_DETAIL_PRINTER_HPP
+#define STRF_DETAIL_PRINTER_HPP
 
 //  Copyright (C) (See commit logs on github.com/robhz786/strf)
 //  Distributed under the Boost Software License, Version 1.0.
@@ -11,12 +11,12 @@
 namespace strf {
 
 template <typename CharT>
-class stringifier
+class printer
 {
 public:
     using char_type = CharT;
 
-    STRF_HD virtual ~stringifier()
+    STRF_HD virtual ~printer()
     {
     }
 
@@ -25,19 +25,19 @@ public:
 
 template <typename CharT>
 using arg_printer
-STRF_DEPRECATED_MSG("arg_printer was renamed to stringifier")
-= stringifier<CharT>;
+STRF_DEPRECATED_MSG("arg_printer was renamed to printer")
+= printer<CharT>;
 
 
 namespace detail {
 
 #if defined(__cpp_fold_expressions)
 
-template <typename CharT, typename... Stringifiers>
+template <typename CharT, typename... Printers>
 inline STRF_HD void write_args( strf::destination<CharT>& dest
-                              , const Stringifiers&... stringifiers )
+                              , const Printers&... printers )
 {
-    (... , stringifiers.print_to(dest));
+    (... , printers.print_to(dest));
 }
 
 #else // defined(__cpp_fold_expressions)
@@ -47,15 +47,15 @@ inline STRF_HD void write_args(strf::destination<CharT>&)
 {
 }
 
-template <typename CharT, typename Stringifier, typename... Stringifiers>
+template <typename CharT, typename Printer, typename... Printers>
 inline STRF_HD void write_args
     ( strf::destination<CharT>& dest
-    , const Stringifier& stringifier
-    , const Stringifiers&... stringifiers )
+    , const Printer& printer
+    , const Printers&... printers )
 {
-    stringifier.print_to(dest);
+    printer.print_to(dest);
     if (dest.good()) {
-        write_args<CharT>(dest, stringifiers...);
+        write_args<CharT>(dest, printers...);
     }
 }
 
@@ -106,5 +106,5 @@ using is_string = std::is_base_of<string_input_tag_base, T>;
 
 } // namespace strf
 
-#endif  // STRF_DETAIL_STRINGIFIER_HPP
+#endif  // STRF_DETAIL_PRINTER_HPP
 

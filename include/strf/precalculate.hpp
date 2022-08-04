@@ -53,8 +53,8 @@ STRF_HD void precalculate_only_width
 {
     using pp_type = strf::preprinting<strf::precalc_size::no, strf::precalc_width::yes>;
 
-    (void) strf::stringifier_type<CharT, pp_type, strf::facets_pack<FPE...>, Arg>
-        ( strf::make_stringifier_input<CharT>(pp, facets, arg) );
+    (void) strf::printer_type<CharT, pp_type, strf::facets_pack<FPE...>, Arg>
+        ( strf::make_printer_input<CharT>(pp, facets, arg) );
 
     if (pp.remaining_width() > 0) {
         strf::detail::precalculate_only_width<CharT>(pp, facets, other_args...);
@@ -95,8 +95,8 @@ STRF_HD void precalculate
 {
     using pp_type = strf::preprinting<strf::precalc_size::yes, WidthRequired>;
     strf::detail::do_nothing_with
-        ( strf::stringifier_type<CharT, pp_type, strf::facets_pack<FPE...>, Args>
-          ( strf::make_stringifier_input<CharT>(pp, facets, args) ) ... );
+        ( strf::printer_type<CharT, pp_type, strf::facets_pack<FPE...>, Args>
+          ( strf::make_printer_input<CharT>(pp, facets, args) ) ... );
 }
 
 

@@ -6,7 +6,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <strf/detail/stringifiers_tuple.hpp>
+#include <strf/detail/printers_tuple.hpp>
 #include <strf/detail/format_functions.hpp>
 
 namespace strf {
@@ -43,7 +43,7 @@ struct inner_pack
 namespace detail {
 
 template < typename, typename, typename, typename, typename ... >
-class facets_pack_stringifier;
+class facets_pack_printer;
 
 } // namespace detail
 
@@ -60,9 +60,9 @@ struct printable_traits<strf::inner_pack_with_args<ChildFPack, Args...>>
         , PrePrinting& pre
         , const FPack& fp
         , const forwarded_type& x )
-        -> strf::usual_stringifier_input
+        -> strf::usual_printer_input
             < CharT, PrePrinting, FPack, forwarded_type
-            , strf::detail::facets_pack_stringifier
+            , strf::detail::facets_pack_printer
                 < CharT, PrePrinting, FPack, ChildFPack, Args... > >
     {
         return {pre, fp, x};
@@ -76,27 +76,27 @@ template < typename CharT
          , typename ParentFPack
          , typename ChildFPack
          , typename ... Args >
-class facets_pack_stringifier: public strf::stringifier<CharT>
+class facets_pack_printer: public strf::printer<CharT>
 {
 public:
 
     template <typename... T>
-    STRF_HD facets_pack_stringifier
-        ( const strf::usual_stringifier_input<T...>& input )
+    STRF_HD facets_pack_printer
+        ( const strf::usual_printer_input<T...>& input )
         : fp_{input.facets, input.arg.fp}
         , printers_{input.arg.args, input.pre, fp_}
     {
     }
 
-    facets_pack_stringifier(const facets_pack_stringifier&) = delete;
-    facets_pack_stringifier(facets_pack_stringifier&&) = delete;
+    facets_pack_printer(const facets_pack_printer&) = delete;
+    facets_pack_printer(facets_pack_printer&&) = delete;
 
     STRF_HD void print_to(strf::destination<CharT>& dest) const override
     {
         strf::detail::write(dest, printers_);
     }
 
-    STRF_HD virtual ~facets_pack_stringifier()
+    STRF_HD virtual ~facets_pack_printer()
     {
     }
 
@@ -104,7 +104,7 @@ private:
 
     strf::facets_pack<ParentFPack, ChildFPack> fp_;
 
-    strf::detail::stringifiers_tuple_from_args
+    strf::detail::printers_tuple_from_args
         < CharT
         , PrePrinting
         , strf::facets_pack<ParentFPack, ChildFPack>

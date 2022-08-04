@@ -5,8 +5,8 @@ Distributed under the Boost Software License, Version 1.0.
 http://www.boost.org/LICENSE_1_0.txt)
 ////
 
-:stringifier:      <<stringifier,stringifier>>
-:stringifier_type: <<stringifier_type,stringifier_type>>
+:printer:      <<printer,printer>>
+:printer_type: <<printer_type,printer_type>>
 :printable_traits:  <<printable_traits,printable_traits>>
 
 :preprinting: <<preprinting, preprinting>>
@@ -15,11 +15,11 @@ http://www.boost.org/LICENSE_1_0.txt)
 
 :PrintableTraits: <<PrintableTraits,PrintableTraits>>
 :Printable: <<Printable,Printable>>
-:StringifierInput: <<StringifierInput,StringifierInput>>
+:PrinterInput: <<PrinterInput,PrinterInput>>
 :printable_traits_of: <<printable_traits_of,printable_traits_of>>
 :print_override_c: <<print_override_c,print_override_c>>
-:make_default_stringifier_input: <<make_default_stringifier_input,make_default_stringifier_input>>
-:make_stringifier_input: <<make_stringifier_input,make_stringifier_input>>
+:make_default_printer_input: <<make_default_printer_input,make_default_printer_input>>
+:make_printer_input: <<make_printer_input,make_printer_input>>
 :representative_of_printable: <<representative_of_printable,representative_of_printable>>
 :is_printable_and_overridable: <<is_printable_and_overridable,is_printable_and_overridable>>
 
@@ -109,7 +109,7 @@ the __UnaryTypeTrait__ template argument passed to
 T::is_overridable
 ----
 A type alias to either `std::true_type` or `std::false_type`.
-It influences the behavior of `{make_stringifier_input}`.
+It influences the behavior of `{make_printer_input}`.
 Assumed to be `std::false_type` if not defined.
 ====
 
@@ -144,7 +144,7 @@ The following syntax is satisfied:
 T::make_input({tag}<CharT>{}, pre, fpack, v)
 ----
 [horizontal]
-Return type:: A _{StringifierInput}_ type.
+Return type:: A _{PrinterInput}_ type.
 Return value:: A value `r` such that `&r.pre == &pre`
 ====
 
@@ -192,13 +192,13 @@ using forwarded_printable_type = typename {printable_traits_of}<T>::<<PrintableT
 ----
 
 
-=== Type requirements _StringifierInput_ [[StringifierInput]]
+=== Type requirements _PrinterInput_ [[PrinterInput]]
 
 Given
 
 * `CharT`, a character type
 * `PrePriting`, an instance of the `{preprinting}` class template
-* `X`, a _StringifierInput_ type for types `CharT` and `PrePriting`
+* `X`, a _PrinterInput_ type for types `CharT` and `PrePriting`
 * `x`, a value of type `X`
 
 ====
@@ -220,18 +220,18 @@ A type alias to `PrePriting`.
 ====
 [source,cpp,subs=normal]
 ----
-T::stringifier_type
+T::printer_type
 ----
-A type that is constructible from `X` and convertible to `const {stringifier}<CharT>&`,
+A type that is constructible from `X` and convertible to `const {printer}<CharT>&`,
 such that the sequence:
 
 [source,cpp,subs=normal]
 ----
 std::size_t s = x.pre.<<size_accumulator_accumulated_size,accumulated_size>>();
-typename T::stringifier_type p{x};
+typename T::printer_type p{x};
 std::size_t predicted_size = x.pre.<<size_accumulator_accumulated_size,accumulated_size>>() - s;
 std::size_t dest_buff_space = dest.<<destination_hpp#output_buffer_buffer_space,buffer_space>>();
-static_cast<const stringifier<CharT>&>(p).<<stringifier,print_to>>(dest);
+static_cast<const printer<CharT>&>(p).<<printer,print_to>>(dest);
 ----
 statisfies the following postconditions when `PrePriting::<<preprinting,size_required>>` is `true`:
 
@@ -246,20 +246,20 @@ x.pre
 A lvalue reference of type `PrePriting`.
 ====
 
-=== Class template `usual_stringifier_input` [[usual_stringifier_input]]
+=== Class template `usual_printer_input` [[usual_printer_input]]
 
-`usual_stringifier_input` is a syntactic sugar to create `StringifierInput` types.
+`usual_printer_input` is a syntactic sugar to create `PrinterInput` types.
 
 [source,cpp,subs=normal]
 ----
-template <typename CharT, typename PrePriting, typename FPack, typename Arg, typename Stringifier>
-struct usual_stringifier_input
+template <typename CharT, typename PrePriting, typename FPack, typename Arg, typename Printer>
+struct usual_printer_input
 {
     using char_type = CharT;
     using arg_type = Arg;
     using preprinting_type = PrePriting;
     using fpack_type = FPack;
-    using stringifier_type = Stringifier;
+    using printer_type = Printer;
 
     preprinting_type& pre;
     FPack facets;
@@ -271,14 +271,14 @@ Compile-time requirements::
 * `PrePriting` is an instance of the `{preprinting}` class template.
 ////
 
-=== Function template `make_default_stringifier_input` [[make_default_stringifier_input]]
+=== Function template `make_default_printer_input` [[make_default_printer_input]]
 
 [source,cpp,subs=normal]
 ----
 namespace strf {
 
 template <typename CharT, typename Pre, typename FPack, typename Arg>
-constexpr auto make_default_stringifier_input
+constexpr auto make_default_printer_input
     ( Pre& pre, const FPack& facets, const Arg& arg)
     noexcept(/{asterisk} see below\... {asterisk}/)
     \-> /{asterisk} see below\... {asterisk}/
@@ -286,7 +286,7 @@ constexpr auto make_default_stringifier_input
 } // namespace strf
 ----
 
-The expression `make_default_stringifier_input<CharT>(pre, facets, arg)` is equivalent to
+The expression `make_default_printer_input<CharT>(pre, facets, arg)` is equivalent to
 [source,cpp,subs=normal]
 ----
 {printable_traits_of}<Arg>::<<PrintableTraits_functions,make_input>>({tag}<CharT>{}, pre, facets, arg);
@@ -294,10 +294,10 @@ The expression `make_default_stringifier_input<CharT>(pre, facets, arg)` is equi
 
 === Facet category `print_override_c` [[print_override_c]]
 
-This facet category affects the return type and value of `strf::{make_stringifier_input}`
+This facet category affects the return type and value of `strf::{make_printer_input}`
 function template.
 It enables the user change how a printable type is printed,
-by making the library use an the alternative __{StringifierInput}__ object.
+by making the library use an the alternative __{PrinterInput}__ object.
 A facet of this category should **aways** be <<constrain,constrained>> to the
 printable type intended to be overriden.
 
@@ -330,29 +330,29 @@ struct no_print_override {
     template <typename CharT, typename Pre, typename FPack, typename Arg>
     constexpr static auto make_input
         ( {tag}<CharT>{}, Pre& pre, const FPack& facets, Arg&& arg )
-        noexcept(noexcept({make_default_stringifier_input}<CharT>(pre, facets, arg)))
+        noexcept(noexcept({make_default_printer_input}<CharT>(pre, facets, arg)))
     {
-        return {make_default_stringifier_input}<CharT>(pre, facets, arg);
+        return {make_default_printer_input}<CharT>(pre, facets, arg);
     }
 };
 
 } // namespace strf
 ----
 
-=== Function template `make_stringifier_input` [[make_stringifier_input]]
+=== Function template `make_printer_input` [[make_printer_input]]
 
 [source,cpp,subs=normal]
 ----
 namespace strf {
 
 template <typename CharT, typename Pre, typename FPack, typename Arg>
-constexpr /{asterisk}\...{asterisk}/ make_stringifier_input(Pre& pre, const FPack& facets, const Arg& arg);
+constexpr /{asterisk}\...{asterisk}/ make_printer_input(Pre& pre, const FPack& facets, const Arg& arg);
 
 } // namespace strf
 ----
 
 If `{printable_traits_of}<Arg>::<<PrintableTraits_is_overridable,is_overridable>>::value` is `true`,
-`make_stringifier_input` returns
+`make_printer_input` returns
 [source,cpp,subs=normal]
 ----
 {use_facet}< {print_override_c}, {representative_of_printable}<Arg> > (facets)
@@ -367,37 +367,37 @@ Otherwise, it returns
 ----
 
 
-=== Type alias template `stringifier_type` [[stringifier_type]]
+=== Type alias template `printer_type` [[printer_type]]
 
 [source,cpp,subs=normal]
 ----
 namespace strf {
 
 template <typename CharT, typename Pre, typename FPack, typename Arg>
-using stringifier_input_type = decltype
-    ( {make_stringifier_input}<CharT>
+using printer_input_type = decltype
+    ( {make_printer_input}<CharT>
         ( std::declval<Pre&>()
         , std::declval<const FPack&>()
         , std::declval<Arg>() ) );
 
 template <typename CharT, typename Pre, typename FPack, typename Arg>
-using stringifier_type = typename stringifier_input_type<CharT, Pre, FPack, Arg>::stringifier_type;
+using printer_type = typename printer_input_type<CharT, Pre, FPack, Arg>::printer_type;
 
 } // namespace strf
 ----
 
-[[stringifier]]
-=== Class template `stringifier`
+[[printer]]
+=== Class template `printer`
 
 [source,cpp,subs=normal]
 ----
 namespace strf {
 
 template <typename CharT>
-class stringifier {
+class printer {
 public:
     using char_type = CharT;
-    virtual ~stringifier() {}
+    virtual ~printer() {}
     virtual void print_to({destination}<CharT>&) const = 0;
 };
 
@@ -599,20 +599,20 @@ Compile-time requirements::
 
 Effects::
 * When `PrecalcSize` is `precalc_size::yes`, for each argument `arg` in `args\...`
-  instantiates the correponding `stringifier` type with `pp`, `facets`, and `arg`.
+  instantiates the correponding `printer` type with `pp`, `facets`, and `arg`.
   This translates into the following expression:
 +
 [source,cpp,subs=normal]
 ----
-(\..., {stringifier_type}< CharT
+(\..., {printer_type}< CharT
                       , {preprinting}<PrecalcSize, PrecalcWidth>
                       , facets_pack<FPE\...>
-                      , Args >{{make_stringifier_input}<CharT>(pp, facets, args)} );
+                      , Args >{{make_printer_input}<CharT>(pp, facets, args)} );
 ----
 * When `PrecalcSize` is `precalc_size::no` and `PrecalcWidth` is `precalc_width::yes`,
-  for each argument `arg` in `args\...` instantiates the correponding `stringifier`
-  type with `pp`, `facets`, and `arg` ( again, using `{stringifier_type}`  and
-  `{make_stringifier_input}` ), while `pp.<<width_decumulator,remaining_width>>() > 0`
+  for each argument `arg` in `args\...` instantiates the correponding `printer`
+  type with `pp`, `facets`, and `arg` ( again, using `{printer_type}`  and
+  `{make_printer_input}` ), while `pp.<<width_decumulator,remaining_width>>() > 0`
   is `true`.
   This implies that not necessarily all argument in `arg\...` are used.
 * When `PrecalcSize` is `precalc_size::no` and `PrecalcWidth` is `precalc_width::no`,

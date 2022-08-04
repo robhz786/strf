@@ -63,14 +63,14 @@ public:
     using preprinting_type = strf::preprinting
         <strf::precalc_size::yes, strf::precalc_width::no>;
 
-    template <bool Ln, typename DestCreator, typename... Stringifiers>
+    template <bool Ln, typename DestCreator, typename... Printers>
     static STRF_HD return_type<DestCreator> print
         ( const DestCreator& dest_creator
         , const preprinting_type&
-        , const Stringifiers& ... stringifiers )
+        , const Printers& ... printers )
     {
         typename DestCreator::destination_type dest{dest_creator.create()};
-        strf::detail::write_args(dest, stringifiers...);
+        strf::detail::write_args(dest, printers...);
         STRF_IF_CONSTEXPR (Ln) {
             using char_type = typename DestCreator::char_type;
             strf::put<char_type>(dest, static_cast<char_type>('\n'));
@@ -95,14 +95,14 @@ public:
     using preprinting_type = strf::preprinting
         <strf::precalc_size::yes, strf::precalc_width::no>;
 
-    template <bool Ln, typename DestCreator, typename... Stringifiers>
+    template <bool Ln, typename DestCreator, typename... Printers>
     STRF_HD return_type<DestCreator> print
         ( const DestCreator& dest_creator
         , const preprinting_type&
-        , const Stringifiers& ... stringifiers ) const
+        , const Printers& ... printers ) const
     {
         typename DestCreator::sized_destination_type dest{dest_creator.create(size)};
-        strf::detail::write_args(dest, stringifiers...);
+        strf::detail::write_args(dest, printers...);
         STRF_IF_CONSTEXPR (Ln) {
             using char_type = typename DestCreator::char_type;
             strf::put<char_type>(dest, static_cast<char_type>('\n'));
@@ -120,15 +120,15 @@ public:
     using preprinting_type = strf::preprinting
         <strf::precalc_size::yes, strf::precalc_width::no>;
 
-    template <bool Ln, typename DestCreator, typename... Stringifiers>
+    template <bool Ln, typename DestCreator, typename... Printers>
     static STRF_HD return_type<DestCreator> print
         ( const DestCreator& dest_creator
         , const preprinting_type& pre
-        , const Stringifiers& ... stringifiers )
+        , const Printers& ... printers )
     {
         std::size_t size = pre.accumulated_size() + Ln;
         typename DestCreator::sized_destination_type dest{dest_creator.create(size)};
-        strf::detail::write_args(dest, stringifiers...);
+        strf::detail::write_args(dest, printers...);
         STRF_IF_CONSTEXPR (Ln) {
             using char_type = typename DestCreator::char_type;
             strf::put<char_type>(dest, static_cast<char_type>('\n'));

@@ -1,5 +1,5 @@
-#ifndef STRF_DETAIL_STRINGIFIERS_TUPLE_HPP
-#define STRF_DETAIL_STRINGIFIERS_TUPLE_HPP
+#ifndef STRF_DETAIL_PRINTERS_TUPLE_HPP
+#define STRF_DETAIL_PRINTERS_TUPLE_HPP
 
 //  Copyright (C) (See commit logs on github.com/robhz786/strf)
 //  Distributed under the Boost Software License, Version 1.0.
@@ -7,7 +7,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <strf/detail/printable_traits.hpp>
-#include <strf/detail/stringifier.hpp>
+#include <strf/detail/printer.hpp>
 
 namespace strf {
 namespace detail {
@@ -88,10 +88,10 @@ constexpr STRF_HD auto get(const simple_tuple<T...>& tp)
 }
 
 template <std::size_t I, typename Printer>
-struct indexed_stringifier
+struct indexed_printer
 {
     template <typename Arg>
-    STRF_HD indexed_stringifier(const Arg& arg)
+    STRF_HD indexed_printer(const Arg& arg)
         : printer(arg)
     {
     }
@@ -102,16 +102,16 @@ struct indexed_stringifier
 template < typename CharT
          , typename ISeq
          , typename ... Printers >
-class stringifiers_tuple_impl;
+class printers_tuple_impl;
 
 template < typename CharT
          , std::size_t ... I
          , typename ... Printers >
-class stringifiers_tuple_impl<CharT, strf::detail::index_sequence<I...>, Printers...>
-    : public detail::indexed_stringifier<I, Printers> ...
+class printers_tuple_impl<CharT, strf::detail::index_sequence<I...>, Printers...>
+    : public detail::indexed_printer<I, Printers> ...
 {
     template <std::size_t J, typename T>
-    static constexpr STRF_HD const indexed_stringifier<J, T>& get_(const indexed_stringifier<J, T>* r) noexcept
+    static constexpr STRF_HD const indexed_printer<J, T>& get_(const indexed_printer<J, T>* r) noexcept
     {
         return *r;
     }
@@ -127,12 +127,12 @@ public:
     static constexpr std::size_t size = sizeof...(Printers);
 
     template <typename PrePrinting, typename FPack, typename... Args>
-    STRF_HD stringifiers_tuple_impl
+    STRF_HD printers_tuple_impl
         ( const strf::detail::simple_tuple<Args...>& args
         , PrePrinting& pre
         , const FPack& fp )
-        : indexed_stringifier<I, Printers>
-            ( strf::make_stringifier_input<CharT>
+        : indexed_printer<I, Printers>
+            ( strf::make_printer_input<CharT>
               ( pre, fp, args.template get<I>() ) ) ...
     {
     }
@@ -149,36 +149,36 @@ public:
 template<typename CharT, std::size_t ... I, typename ... Printers>
 STRF_HD void write
     ( strf::destination<CharT>& dest
-    , const strf::detail::stringifiers_tuple_impl
+    , const strf::detail::printers_tuple_impl
         < CharT, strf::detail::index_sequence<I...>, Printers... >& printers )
 {
     strf::detail::write_args<CharT>
-        (dest, static_cast<const strf::stringifier<CharT>&>(printers.template get<I>())...);
+        (dest, static_cast<const strf::printer<CharT>&>(printers.template get<I>())...);
 }
 
 template <typename CharT, typename ... Printers>
-using stringifiers_tuple = stringifiers_tuple_impl
+using printers_tuple = printers_tuple_impl
         < CharT
         , strf::detail::make_index_sequence<sizeof...(Printers)>
         , Printers... >;
 
 template < typename CharT, typename PrePrinting, typename FPack
          , typename ISeq, typename... Args >
-class stringifiers_tuple_alias
+class printers_tuple_alias
 {
 public:
-    using type = stringifiers_tuple_impl
-        <CharT, ISeq, strf::stringifier_type<CharT, PrePrinting, FPack, Args> ...>;
+    using type = printers_tuple_impl
+        <CharT, ISeq, strf::printer_type<CharT, PrePrinting, FPack, Args> ...>;
 };
 
 template < typename CharT, typename PrePrinting, typename FPack, typename ... Args >
-using stringifiers_tuple_from_args
-= typename stringifiers_tuple_alias
+using printers_tuple_from_args
+= typename printers_tuple_alias
     < CharT, PrePrinting, FPack, strf::detail::make_index_sequence<sizeof...(Args)>, Args ...>
     :: type;
 
 } // namespace detail
 } // namespace strf
 
-#endif  // STRF_DETAIL_STRINGIFIERS_TUPLE_HPP
+#endif  // STRF_DETAIL_PRINTERS_TUPLE_HPP
 

@@ -64,9 +64,9 @@ precalc_and_print_result precalc_and_print(char* buff, std::size_t buff_size, co
 
     strf::width_t initial_width = (strf::width_t::max)();
     strf::full_preprinting pre(initial_width);
-    auto printer_input = strf::make_stringifier_input<char>(pre, strf::pack(), arg);
-    using stringifier_type = typename decltype(printer_input)::stringifier_type;
-    stringifier_type printer{printer_input};
+    auto printer_input = strf::make_printer_input<char>(pre, strf::pack(), arg);
+    using printer_type = typename decltype(printer_input)::printer_type;
+    printer_type printer{printer_input};
     strf::cstr_destination dest{buff, buff_size};
     printer.print_to(dest);
     auto *end = dest.finish().ptr;

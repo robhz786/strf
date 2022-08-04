@@ -6,7 +6,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <strf/detail/stringifier.hpp>
+#include <strf/detail/printer.hpp>
 #include <strf/detail/preprinting.hpp>
 #include <strf/detail/standard_lib_functions.hpp>
 
@@ -166,7 +166,7 @@ template <typename Charset, typename ErrHandler>
 STRF_HD void tr_string_write
     ( const typename Charset::code_unit* str
     , const typename Charset::code_unit* str_end
-    , const strf::stringifier<typename Charset::code_unit>* const * args
+    , const strf::printer<typename Charset::code_unit>* const * args
     , std::size_t num_args
     , strf::destination<typename Charset::code_unit>& dest
     , Charset charset
@@ -259,22 +259,22 @@ public:
     STRF_HD tr_string_printer
         ( strf::preprinting<SizeRequested, strf::precalc_width::no>& pre
         , const strf::preprinting<SizeRequested, strf::precalc_width::no>* args_pre
-        , std::initializer_list<const strf::stringifier<char_type>*> stringifiers
+        , std::initializer_list<const strf::printer<char_type>*> printers
         , const char_type* tr_string
         , const char_type* tr_string_end
         , Charset charset
         , ErrHandler err_handler ) noexcept
         : tr_string_(tr_string)
         , tr_string_end_(tr_string_end)
-        , stringifiers_array_(stringifiers.begin())
-        , num_stringifiers_(stringifiers.size())
+        , printers_array_(printers.begin())
+        , num_printers_(printers.size())
         , charset_(charset)
         , err_handler_(err_handler)
     {
         STRF_IF_CONSTEXPR (static_cast<bool>(SizeRequested)) {
             auto invalid_arg_size = charset.replacement_char_size();
             std::size_t s = strf::detail::tr_string_size
-                ( args_pre, stringifiers.size(), tr_string, tr_string_end
+                ( args_pre, printers.size(), tr_string, tr_string_end
                 , invalid_arg_size );
             pre.add_size(s);
         } else {
@@ -285,7 +285,7 @@ public:
     STRF_HD void print_to(strf::destination<char_type>& dest) const
     {
         strf::detail::tr_string_write
-            ( tr_string_, tr_string_end_, stringifiers_array_, num_stringifiers_
+            ( tr_string_, tr_string_end_, printers_array_, num_printers_
             , dest, charset_, err_handler_ );
     }
 
@@ -293,8 +293,8 @@ private:
 
     const char_type* tr_string_;
     const char_type* tr_string_end_;
-    const strf::stringifier<char_type>* const * stringifiers_array_;
-    std::size_t num_stringifiers_;
+    const strf::printer<char_type>* const * printers_array_;
+    std::size_t num_printers_;
     Charset charset_;
     ErrHandler err_handler_;
 };

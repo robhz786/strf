@@ -107,8 +107,8 @@ public:
 private:
 
     template <typename CharT>
-    static inline STRF_HD const strf::stringifier<CharT>&
-    as_stringifier_cref_(const strf::stringifier<CharT>& p) noexcept
+    static inline STRF_HD const strf::printer<CharT>&
+    as_printer_cref_(const strf::printer<CharT>& p) noexcept
     {
         return p;
     }
@@ -128,10 +128,10 @@ public:
         auto fp = strf::pack((Fpes&&)fpes...);
         return reserve_policy.template print<Ln>
             ( dest_creator, pre
-            , as_stringifier_cref_<char_type>
-                ( strf::stringifier_type
+            , as_printer_cref_<char_type>
+                ( strf::printer_type
                   < char_type, preprinting_t, decltype(fp), Printables >
-                    ( strf::make_stringifier_input<char_type>
+                    ( strf::make_printer_input<char_type>
                         ( pre, fp, (Printables&&)printables ) ) )... );
     }
 };

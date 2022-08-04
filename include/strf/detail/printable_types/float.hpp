@@ -694,9 +694,9 @@ private:
 
 namespace detail {
 
-template <typename> class fast_double_stringifier;
-// template <typename> class fast_punct_double_stringifier;
-template <typename> class punct_double_stringifier;
+template <typename> class fast_double_printer;
+// template <typename> class fast_punct_double_printer;
+template <typename> class punct_double_printer;
 
 template <typename> struct float_printing;
 
@@ -713,12 +713,12 @@ using float_with_default_formatters = strf::value_with_formatters
     , strf::alignment_formatter >;
 
 template <typename CharT, typename PrePrinting, typename FloatT>
-struct fast_double_stringifier_input
+struct fast_double_printer_input
 {
-    using stringifier_type = strf::detail::fast_double_stringifier<CharT>;
+    using printer_type = strf::detail::fast_double_printer<CharT>;
 
     template <typename FPack>
-    STRF_HD fast_double_stringifier_input(PrePrinting& pre_, const FPack& fp_, FloatT arg_)
+    STRF_HD fast_double_printer_input(PrePrinting& pre_, const FPack& fp_, FloatT arg_)
         : pre(pre_)
         , value(arg_)
         , lcase(strf::use_facet<strf::lettercase_c, float>(fp_))
@@ -726,7 +726,7 @@ struct fast_double_stringifier_input
     }
 
     template <typename FPack>
-    STRF_HD fast_double_stringifier_input
+    STRF_HD fast_double_printer_input
         ( PrePrinting& pre_
         , const FPack& fp_
         , strf::detail::float_with_default_formatters<FloatT> input )
@@ -743,17 +743,17 @@ struct fast_double_stringifier_input
 
 
 // template <typename CharT, typename PrePrinting, typename FPack, typename FloatT>
-// using fast_punct_double_stringifier_input =
-//     strf::usual_stringifier_input< CharT, PrePrinting, FPack, FloatT
-//                              , strf::detail::fast_punct_double_stringifier<CharT> >;
+// using fast_punct_double_printer_input =
+//     strf::usual_printer_input< CharT, PrePrinting, FPack, FloatT
+//                              , strf::detail::fast_punct_double_printer<CharT> >;
 
 template < typename CharT, typename PrePrinting, typename FPack
          , typename FloatT, typename FloatFormatter, bool HasAlignment >
-using fmt_double_stringifier_input =
-    strf::usual_stringifier_input
+using fmt_double_printer_input =
+    strf::usual_printer_input
         < CharT, PrePrinting, FPack
         , strf::detail::float_with_formatters<FloatT, FloatFormatter, HasAlignment>
-        , strf::detail::punct_double_stringifier<CharT> >;
+        , strf::detail::punct_double_printer<CharT> >;
 
 template <typename FloatT>
 struct float_printing
@@ -766,7 +766,7 @@ struct float_printing
     template <typename CharT, typename PrePrinting, typename FPack>
     STRF_HD constexpr static auto make_input
         ( strf::tag<CharT>, PrePrinting& pre, const FPack& fp, FloatT x ) noexcept
-        -> strf::detail::fast_double_stringifier_input<CharT, PrePrinting, FloatT>
+        -> strf::detail::fast_double_printer_input<CharT, PrePrinting, FloatT>
     {
         return {pre, fp, x};
     }
@@ -781,9 +781,9 @@ struct float_printing
             < FloatT, FloatFormatter, HasAlignment > x ) noexcept
         -> strf::detail::conditional_t
             < HasAlignment || FloatFormatter::has_float_formatting
-            , strf::detail::fmt_double_stringifier_input
+            , strf::detail::fmt_double_printer_input
                 < CharT, PrePrinting, FPack, FloatT, FloatFormatter, HasAlignment >
-            , fast_double_stringifier_input<CharT, PrePrinting, FloatT> >
+            , fast_double_printer_input<CharT, PrePrinting, FloatT> >
     {
         return {pre, fp, x};
     }
@@ -1349,14 +1349,14 @@ STRF_HD void print_inf( strf::destination<CharT>& dest
 }
 
 template <typename CharT>
-class fast_double_stringifier: public strf::stringifier<CharT>
+class fast_double_printer: public strf::printer<CharT>
 {
 public:
 
     template <typename FloatT, typename PrePrinting>
-    STRF_HD fast_double_stringifier
-        ( strf::detail::fast_double_stringifier_input<CharT, PrePrinting, FloatT> input) noexcept
-        : fast_double_stringifier(input.value, input.lcase)
+    STRF_HD fast_double_printer
+        ( strf::detail::fast_double_printer_input<CharT, PrePrinting, FloatT> input) noexcept
+        : fast_double_printer(input.value, input.lcase)
     {
         std::size_t s = 0;
         STRF_IF_CONSTEXPR (PrePrinting::width_required || PrePrinting::size_required) {
@@ -1366,7 +1366,7 @@ public:
         input.pre.add_size(s);
     }
 
-    STRF_HD fast_double_stringifier(float f, strf::lettercase lc) noexcept
+    STRF_HD fast_double_printer(float f, strf::lettercase lc) noexcept
         : value_(decode(f))
         , m10_digcount_(strf::detail::count_digits<10>(value_.m10))
         , lettercase_(lc)
@@ -1377,7 +1377,7 @@ public:
             || (value_.e10 < -(int)m10_digcount_ - 2 - (m10_digcount_ != 1));
     }
 
-    STRF_HD fast_double_stringifier(double d, strf::lettercase lc) noexcept
+    STRF_HD fast_double_printer(double d, strf::lettercase lc) noexcept
         : value_(decode(d))
         , m10_digcount_(strf::detail::count_digits<10>(value_.m10))
         , lettercase_(lc)
@@ -1401,7 +1401,7 @@ private:
 };
 
 template <typename CharT>
-STRF_HD std::size_t fast_double_stringifier<CharT>::size() const
+STRF_HD std::size_t fast_double_printer<CharT>::size() const
 {
     int sci_e10 = value_.e10 - 1 + (int)m10_digcount_;
     return ( value_.nan * 3
@@ -1421,7 +1421,7 @@ STRF_HD std::size_t fast_double_stringifier<CharT>::size() const
 }
 
 template <typename CharT>
-STRF_HD void fast_double_stringifier<CharT>::print_to
+STRF_HD void fast_double_printer<CharT>::print_to
     ( strf::destination<CharT>& dest ) const
 {
     if (value_.nan) {
@@ -1581,7 +1581,7 @@ constexpr bool inf_or_nan(float_form f)
     return static_cast<std::uint8_t>(f) < 2;
 }
 
-struct double_stringifier_data
+struct double_printer_data
 {
     strf::detail::float_form form;
     char sign;
@@ -1620,8 +1620,8 @@ struct float_init_result {
 
 #if ! defined(STRF_OMIT_IMPL)
 
-inline STRF_HD strf::detail::float_init_result init_double_stringifier_data_fill
-    ( strf::detail::double_stringifier_data& data
+inline STRF_HD strf::detail::float_init_result init_double_printer_data_fill
+    ( strf::detail::double_printer_data& data
     , unsigned rounded_fmt_width
     , detail::chars_count_t content_width
     , strf::text_alignment alignment ) noexcept
@@ -1666,8 +1666,8 @@ inline STRF_HD strf::detail::float_init_result init_double_stringifier_data_fill
     return {content_width, fillcount};
 }
 
-inline STRF_HD strf::detail::float_init_result init_hex_double_stringifier_data
-    ( strf::detail::double_stringifier_data& data
+inline STRF_HD strf::detail::float_init_result init_hex_double_printer_data
+    ( strf::detail::double_printer_data& data
     , strf::float_format fdata
     , unsigned rounded_fmt_width
     , strf::text_alignment alignment ) noexcept
@@ -1719,12 +1719,12 @@ inline STRF_HD strf::detail::float_init_result init_hex_double_stringifier_data
     detail::chars_count_t content_width =
         (detail::max)(data.sub_chars_count + data.extra_zeros, data.pad0width);
 
-    return init_double_stringifier_data_fill
+    return init_double_printer_data_fill
         ( data, rounded_fmt_width, content_width, alignment );
 }
 
 inline STRF_HD strf::detail::float_init_result init_double_data_with_precision_general_1digit
-    ( strf::detail::double_stringifier_data& data
+    ( strf::detail::double_printer_data& data
     , strf::digits_grouping grouping
     , detail::chars_count_t precision
     , unsigned rounded_fmt_width
@@ -1765,14 +1765,14 @@ inline STRF_HD strf::detail::float_init_result init_double_data_with_precision_g
             }
         }
     }
-    return init_double_stringifier_data_fill
+    return init_double_printer_data_fill
         ( data, rounded_fmt_width
         , (detail::max)(data.sub_chars_count, data.pad0width)
         , alignment );
 }
 
 inline STRF_HD strf::detail::float_init_result init_double_data_with_precision_general
-    ( strf::detail::double_stringifier_data& data
+    ( strf::detail::double_printer_data& data
     , strf::digits_grouping grouping
     , detail::chars_count_t precision
     , unsigned rounded_fmt_width
@@ -1890,14 +1890,14 @@ inline STRF_HD strf::detail::float_init_result init_double_data_with_precision_g
     }
     end:
     data.sub_chars_count += data.showpoint;
-    return init_double_stringifier_data_fill
+    return init_double_printer_data_fill
         ( data, rounded_fmt_width
         , (detail::max)(data.sub_chars_count, data.pad0width)
         , alignment );
 }
 
 inline STRF_HD strf::detail::float_init_result init_double_data_with_precision_scientific
-    ( strf::detail::double_stringifier_data& data
+    ( strf::detail::double_printer_data& data
     , detail::chars_count_t precision
     , unsigned rounded_fmt_width
     , strf::text_alignment alignment
@@ -1943,14 +1943,14 @@ inline STRF_HD strf::detail::float_init_result init_double_data_with_precision_s
             }
         }
     }
-    return init_double_stringifier_data_fill
+    return init_double_printer_data_fill
         ( data, rounded_fmt_width
         , (detail::max)(data.sub_chars_count, data.pad0width)
         , alignment );
 }
 
 inline STRF_HD strf::detail::float_init_result init_double_data_with_precision_fixed
-    ( strf::detail::double_stringifier_data& data
+    ( strf::detail::double_printer_data& data
     , strf::digits_grouping grouping
     , detail::chars_count_t precision
     , unsigned rounded_fmt_width
@@ -2023,14 +2023,14 @@ inline STRF_HD strf::detail::float_init_result init_double_data_with_precision_f
 
         }
     }
-    return init_double_stringifier_data_fill
+    return init_double_printer_data_fill
         ( data, rounded_fmt_width
         , (detail::max)(data.sub_chars_count, data.pad0width)
         , alignment );
 }
 
 inline STRF_HD strf::detail::float_init_result init_double_data_without_precision_general
-    ( strf::detail::double_stringifier_data& data
+    ( strf::detail::double_printer_data& data
     , strf::digits_grouping grouping
     , unsigned rounded_fmt_width
     , strf::text_alignment alignment
@@ -2073,14 +2073,14 @@ inline STRF_HD strf::detail::float_init_result init_double_data_without_precisio
         data.sub_chars_count += static_cast<detail::chars_count_t>(fixed_sub_width);
         data.sub_chars_count += data.m10_digcount;
     }
-    return init_double_stringifier_data_fill
+    return init_double_printer_data_fill
         ( data, rounded_fmt_width
         , (detail::max)(data.sub_chars_count, data.pad0width)
         , alignment );
 }
 
 inline STRF_HD strf::detail::float_init_result init_double_data_without_precision_scientific
-    ( strf::detail::double_stringifier_data& data
+    ( strf::detail::double_printer_data& data
     , unsigned rounded_fmt_width
     , strf::text_alignment alignment
     , bool showpoint ) noexcept
@@ -2096,14 +2096,14 @@ inline STRF_HD strf::detail::float_init_result init_double_data_without_precisio
     data.sub_chars_count += (sci_notation_exp > 99 || sci_notation_exp < -99);
     data.sub_chars_count += data.m10_digcount;
 
-    return init_double_stringifier_data_fill
+    return init_double_printer_data_fill
         ( data, rounded_fmt_width
         , (detail::max)(data.sub_chars_count, data.pad0width)
         , alignment );
 }
 
 inline STRF_HD strf::detail::float_init_result init_double_data_without_precision_fixed
-    ( strf::detail::double_stringifier_data& data
+    ( strf::detail::double_printer_data& data
     , strf::digits_grouping grouping
     , unsigned rounded_fmt_width
     , strf::text_alignment alignment
@@ -2126,7 +2126,7 @@ inline STRF_HD strf::detail::float_init_result init_double_data_without_precisio
         : data.e10 <= -(int)data.m10_digcount
         ? static_cast<detail::chars_count_t>(2 - data.e10)
         : 1 + data.m10_digcount );
-    return init_double_stringifier_data_fill
+    return init_double_printer_data_fill
         ( data, rounded_fmt_width
         , (detail::max)(data.sub_chars_count, data.pad0width)
         , alignment );
@@ -2134,8 +2134,8 @@ inline STRF_HD strf::detail::float_init_result init_double_data_without_precisio
 
 
 
-STRF_FUNC_IMPL STRF_HD strf::detail::float_init_result init_float_stringifier_data
-    ( strf::detail::double_stringifier_data& data
+STRF_FUNC_IMPL STRF_HD strf::detail::float_init_result init_float_printer_data
+    ( strf::detail::double_printer_data& data
     , double d
     , strf::digits_grouping grp
     , strf::float_format ffmt
@@ -2168,14 +2168,14 @@ STRF_FUNC_IMPL STRF_HD strf::detail::float_init_result init_float_stringifier_da
         if (data.pad0width > rounded_fmt_width) {
             rounded_fmt_width = data.pad0width;
         }
-        return init_double_stringifier_data_fill
+        return init_double_printer_data_fill
             ( data, rounded_fmt_width, 3 + data.showsign, afmt.alignment );
     }
     data.subnormal = bits_exponent == 0;
     if (ffmt.notation == strf::float_notation::hex) {
         data.mantissa = bits_mantissa;
         data.exponent = bits_exponent - bias + data.subnormal;
-        return init_hex_double_stringifier_data
+        return init_hex_double_printer_data
             ( data, ffmt, rounded_fmt_width, afmt.alignment);
     }
     if (bits_exponent == 0 && bits_mantissa == 0) {
@@ -2215,8 +2215,8 @@ STRF_FUNC_IMPL STRF_HD strf::detail::float_init_result init_float_stringifier_da
     }
 }
 
-STRF_FUNC_IMPL STRF_HD strf::detail::float_init_result init_float_stringifier_data
-    ( strf::detail::double_stringifier_data& data
+STRF_FUNC_IMPL STRF_HD strf::detail::float_init_result init_float_printer_data
+    ( strf::detail::double_printer_data& data
     , float f
     , strf::digits_grouping grp
     , strf::float_format ffmt
@@ -2249,14 +2249,14 @@ STRF_FUNC_IMPL STRF_HD strf::detail::float_init_result init_float_stringifier_da
         if (data.pad0width > rounded_fmt_width) {
             rounded_fmt_width = data.pad0width;
         }
-        return init_double_stringifier_data_fill
+        return init_double_printer_data_fill
             ( data, rounded_fmt_width, 3 + data.showsign, afmt.alignment );
     }
     data.subnormal = bits_exponent == 0;
     if (ffmt.notation == strf::float_notation::hex) {
         data.mantissa = (std::uint64_t)bits_mantissa << 29;
         data.exponent = bits_exponent - bias + data.subnormal;
-        return init_hex_double_stringifier_data
+        return init_hex_double_printer_data
             ( data, ffmt, rounded_fmt_width, afmt.alignment);
     }
     if (bits_exponent == 0 && bits_mantissa == 0) {
@@ -2300,15 +2300,15 @@ STRF_FUNC_IMPL STRF_HD strf::detail::float_init_result init_float_stringifier_da
 
 #else // ! defined(STRF_OMIT_IMPL)
 
-STRF_HD strf::detail::float_init_result init_float_stringifier_data
-    ( strf::detail::double_stringifier_data& data
+STRF_HD strf::detail::float_init_result init_float_printer_data
+    ( strf::detail::double_printer_data& data
     , double d
     , strf::digits_grouping grp
     , strf::float_format ffmt
     , strf::alignment_format afmt ) noexcept;
 
-STRF_HD strf::detail::float_init_result init_float_stringifier_data
-    ( strf::detail::double_stringifier_data& data
+STRF_HD strf::detail::float_init_result init_float_printer_data
+    ( strf::detail::double_printer_data& data
     , float f
     , strf::digits_grouping grp
     , strf::float_format ffmt
@@ -2318,13 +2318,13 @@ STRF_HD strf::detail::float_init_result init_float_stringifier_data
 
 
 template <typename CharT>
-class punct_double_stringifier: public strf::stringifier<CharT>
+class punct_double_printer: public strf::printer<CharT>
 {
 public:
 
     template < typename PrePrinting, typename FPack, typename FloatT, bool HasAlignment>
-    STRF_HD punct_double_stringifier
-        ( const strf::detail::fmt_double_stringifier_input
+    STRF_HD punct_double_printer
+        ( const strf::detail::fmt_double_printer_input
             < CharT, PrePrinting, FPack, FloatT
             , strf::float_formatter_full_dynamic, HasAlignment >& input )
         : lettercase_(strf::use_facet<strf::lettercase_c, FloatT>(input.facets))
@@ -2349,7 +2349,7 @@ public:
                 sep_size_ = static_cast<detail::chars_count_t>(ps);
             }
         }
-        auto r = strf::detail::init_float_stringifier_data
+        auto r = strf::detail::init_float_printer_data
             ( data_, input.arg.value(), grouping_, input.arg.get_float_format()
             , input.arg.get_alignment_format() );
         if (data_.showpoint) {
@@ -2378,14 +2378,14 @@ public:
     template < typename PrePrinting, typename FPack, typename FloatT
              , typename FloatFormatter, bool HasAlignment
              , strf::detail::enable_if_t<!FloatFormatter::has_punct, int> = 0 >
-    STRF_HD punct_double_stringifier
-        ( const strf::detail::fmt_double_stringifier_input
+    STRF_HD punct_double_printer
+        ( const strf::detail::fmt_double_printer_input
             < CharT, PrePrinting, FPack, FloatT, FloatFormatter, HasAlignment >& input )
         : lettercase_(strf::use_facet<strf::lettercase_c, FloatT>(input.facets))
     {
         auto charset = use_facet<strf::charset_c<CharT>, FloatT>(input.facets);
         encode_fill_ = charset.encode_fill_func();
-        auto r = strf::detail::init_float_stringifier_data
+        auto r = strf::detail::init_float_printer_data
             ( data_, input.arg.value(), grouping_, input.arg.get_float_format()
             , input.arg.get_alignment_format() );
         decimal_point_size_ = data_.showpoint;
@@ -2424,11 +2424,11 @@ private:
     char32_t decimal_point_ = '.';
     char32_t thousands_sep_ = ',';
     strf::lettercase lettercase_;
-    strf::detail::double_stringifier_data data_;
+    strf::detail::double_printer_data data_;
 };
 
 template <typename CharT>
-STRF_HD void punct_double_stringifier<CharT>::print_to
+STRF_HD void punct_double_printer<CharT>::print_to
     (strf::destination<CharT>& dest) const
 {
     if (data_.left_fillcount != 0) {
@@ -2453,7 +2453,7 @@ STRF_HD void punct_double_stringifier<CharT>::print_to
 }
 
 template <typename CharT>
-STRF_HD void punct_double_stringifier<CharT>::print_fixed_
+STRF_HD void punct_double_printer<CharT>::print_fixed_
     ( strf::destination<CharT>& dest ) const noexcept
 {
     if (data_.showsign) {
@@ -2559,7 +2559,7 @@ STRF_HD void punct_double_stringifier<CharT>::print_fixed_
 }
 
 template <typename CharT>
-STRF_HD void punct_double_stringifier<CharT>::print_scientific_
+STRF_HD void punct_double_printer<CharT>::print_scientific_
     ( strf::destination<CharT>& dest ) const noexcept
 {
     if (data_.showsign) {
@@ -2577,7 +2577,7 @@ STRF_HD void punct_double_stringifier<CharT>::print_scientific_
 }
 
 template <typename CharT>
-STRF_HD void punct_double_stringifier<CharT>::print_hexadecimal_
+STRF_HD void punct_double_printer<CharT>::print_hexadecimal_
     ( strf::destination<CharT>& dest ) const noexcept
 {
     std::size_t sub_size = data_.sub_chars_count + decimal_point_size_ - data_.showpoint;
@@ -2642,7 +2642,7 @@ STRF_HD void punct_double_stringifier<CharT>::print_hexadecimal_
 }
 
 template <typename CharT>
-STRF_HD void punct_double_stringifier<CharT>::print_inf_or_nan_
+STRF_HD void punct_double_printer<CharT>::print_inf_or_nan_
     ( strf::destination<CharT>& dest ) const noexcept
 {
     if (data_.showsign) {
@@ -2658,25 +2658,25 @@ STRF_HD void punct_double_stringifier<CharT>::print_inf_or_nan_
 #if defined(STRF_SEPARATE_COMPILATION)
 
 #if defined(__cpp_char8_t)
-STRF_EXPLICIT_TEMPLATE class punct_double_stringifier<char8_t>;
-STRF_EXPLICIT_TEMPLATE class fast_double_stringifier<char8_t>;
-// STRF_EXPLICIT_TEMPLATE class fast_punct_double_stringifier<char8_t>;
+STRF_EXPLICIT_TEMPLATE class punct_double_printer<char8_t>;
+STRF_EXPLICIT_TEMPLATE class fast_double_printer<char8_t>;
+// STRF_EXPLICIT_TEMPLATE class fast_punct_double_printer<char8_t>;
 #endif
 
-STRF_EXPLICIT_TEMPLATE class punct_double_stringifier<char>;
-STRF_EXPLICIT_TEMPLATE class punct_double_stringifier<char16_t>;
-STRF_EXPLICIT_TEMPLATE class punct_double_stringifier<char32_t>;
-STRF_EXPLICIT_TEMPLATE class punct_double_stringifier<wchar_t>;
+STRF_EXPLICIT_TEMPLATE class punct_double_printer<char>;
+STRF_EXPLICIT_TEMPLATE class punct_double_printer<char16_t>;
+STRF_EXPLICIT_TEMPLATE class punct_double_printer<char32_t>;
+STRF_EXPLICIT_TEMPLATE class punct_double_printer<wchar_t>;
 
-STRF_EXPLICIT_TEMPLATE class fast_double_stringifier<char>;
-STRF_EXPLICIT_TEMPLATE class fast_double_stringifier<char16_t>;
-STRF_EXPLICIT_TEMPLATE class fast_double_stringifier<char32_t>;
-STRF_EXPLICIT_TEMPLATE class fast_double_stringifier<wchar_t>;
+STRF_EXPLICIT_TEMPLATE class fast_double_printer<char>;
+STRF_EXPLICIT_TEMPLATE class fast_double_printer<char16_t>;
+STRF_EXPLICIT_TEMPLATE class fast_double_printer<char32_t>;
+STRF_EXPLICIT_TEMPLATE class fast_double_printer<wchar_t>;
 
-// STRF_EXPLICIT_TEMPLATE class fast_punct_double_stringifier<char>;
-// STRF_EXPLICIT_TEMPLATE class fast_punct_double_stringifier<char16_t>;
-// STRF_EXPLICIT_TEMPLATE class fast_punct_double_stringifier<char32_t>;
-// STRF_EXPLICIT_TEMPLATE class fast_punct_double_stringifier<wchar_t>;
+// STRF_EXPLICIT_TEMPLATE class fast_punct_double_printer<char>;
+// STRF_EXPLICIT_TEMPLATE class fast_punct_double_printer<char16_t>;
+// STRF_EXPLICIT_TEMPLATE class fast_punct_double_printer<char32_t>;
+// STRF_EXPLICIT_TEMPLATE class fast_punct_double_printer<wchar_t>;
 
 #endif // defined(STRF_SEPARATE_COMPILATION)
 
