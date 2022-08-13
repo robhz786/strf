@@ -46,6 +46,7 @@ if (STRF_BUILD_TESTS)
     input_int.cpp
     input_range.cpp
     input_string.cpp
+    input_tr_string.cpp
     override_printable.cpp
     output_buffer.cpp
     join.cpp
@@ -186,6 +187,7 @@ if (STRF_BUILD_TESTS)
     define_strf_cuda_test(reserve)
     define_strf_cuda_test(single_byte_charsets)
     define_strf_cuda_test(tr_string)
+    define_strf_cuda_test(input_tr_string)
     define_strf_cuda_test(utf8_to_utf16)
     define_strf_cuda_test(utf8_to_utf32)
     define_strf_cuda_test(utf8)

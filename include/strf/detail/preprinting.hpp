@@ -18,6 +18,7 @@ template <>
 class width_decumulator<true>
 {
 public:
+    constexpr width_decumulator() = default;
 
     explicit constexpr STRF_HD width_decumulator(strf::width_t initial_width) noexcept
         : width_(initial_width)
@@ -50,6 +51,10 @@ public:
     {
         return width_;
     }
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD void reset_remaining_width(strf::width_t w) noexcept
+    {
+        width_ = w;
+    }
 
 private:
 
@@ -75,7 +80,7 @@ private:
         }
     }
 
-    strf::width_t width_;
+    strf::width_t width_ = strf::width_max;
 };
 
 template <>
@@ -173,6 +178,7 @@ public:
     static constexpr bool width_required = static_cast<bool>(WidthRequired);
     static constexpr bool nothing_required = ! size_required && ! width_required;
     static constexpr bool something_required = size_required || width_required;
+    static constexpr bool all_required =       size_required && width_required;
 
     template <strf::precalc_width W = WidthRequired>
     STRF_HD constexpr explicit preprinting

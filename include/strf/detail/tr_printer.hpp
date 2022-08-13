@@ -80,6 +80,262 @@ STRF_HD inline std::size_t tr_string_size
     return 0;
 }
 
+template <typename CharT, strf::precalc_size PreSize, strf::precalc_width PreWidth>
+struct tr_preprinting;
+
+struct eval_to_false_t {
+    constexpr operator bool() const { return false; };
+};
+
+template <typename CharT>
+class tr_pre_size
+{
+    const std::size_t* size_array_;
+    const std::size_t array_size_;
+    std::size_t replacement_char_size_;
+    std::size_t size_ = 0;
+
+public:
+    constexpr STRF_HD tr_pre_size
+        ( const std::size_t* size_array
+        , std::size_t array_size
+        , std::size_t replacement_char_size )
+        : size_array_(size_array)
+        , array_size_(array_size)
+        , replacement_char_size_(replacement_char_size)
+    {
+    }
+
+    STRF_HD std::size_t accumulated_size() const
+    {
+        return size_;
+    }
+
+    STRF_HD eval_to_false_t account_arg(std::size_t index)
+    {
+        if (index < array_size_) {
+            size_ += size_array_[index];
+        } else {
+            size_ += replacement_char_size_;
+        }
+        return {};
+    }
+
+    STRF_HD eval_to_false_t account_string(const CharT* begin, const CharT* end)
+    {
+        size_ += (end - begin);
+        return {};
+    }
+    constexpr STRF_HD std::size_t num_args() const
+    {
+        return array_size_;
+    }
+};
+
+template <typename CharT, typename Charset, typename WidthCalculator>
+class tr_pre_width
+{
+    const strf::width_t* width_array_;
+    const std::size_t array_size_;
+    strf::width_t remaining_width_;
+    strf::surrogate_policy surr_poli_;
+    WidthCalculator wcalc_;
+    Charset charset_;
+
+    STRF_HD STRF_CONSTEXPR_IN_CXX14 bool subtract_(strf::width_t w)
+    {
+        if (w < remaining_width_) {
+            remaining_width_ -= w;
+            return false;
+        }
+        remaining_width_ = 0;
+        return true;
+    }
+public:
+
+    constexpr STRF_HD tr_pre_width
+        ( const strf::width_t* width_array
+        , std::size_t width_array_size
+        , strf::width_t width
+        , strf::surrogate_policy surr_poli
+        , WidthCalculator wcalc
+        , Charset charset )
+        : width_array_(width_array)
+        , array_size_(width_array_size)
+        , remaining_width_(width)
+        , surr_poli_(surr_poli)
+        , wcalc_(wcalc)
+        , charset_(charset)
+    {
+    }
+
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD bool account_arg(std::size_t index)
+    {
+        return subtract_(index < array_size_ ? width_array_[index] : strf::width_t(1));
+    }
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD bool account_string(const CharT* begin, const CharT* end)
+    {
+        const auto str_width = wcalc_.str_width
+            (charset_, remaining_width_, begin, (end - begin), surr_poli_);
+        return subtract_(str_width);
+    }
+    constexpr STRF_HD strf::width_t remaining_width() const
+    {
+        return remaining_width_ > 0 ? remaining_width_ : strf::width_t(0);
+    }
+    constexpr STRF_HD std::size_t num_args() const
+    {
+        return array_size_;
+    }
+};
+
+
+
+template <typename CharT, typename Charset, typename WidthCalculator>
+class tr_pre_size_and_width
+{
+    const std::size_t* size_array_;
+    const strf::width_t* width_array_;
+    const std::size_t array_size_;
+    std::size_t size_ = 0;
+    strf::width_t remaining_width_;
+    strf::surrogate_policy surr_poli_;
+    WidthCalculator wcalc_;
+    Charset charset_;
+
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD void subtract_width_(strf::width_t w)
+    {
+        if (w <= remaining_width_) {
+            remaining_width_ -= w;
+        } else {
+            remaining_width_ = 0;
+        }
+    }
+
+public:
+    constexpr STRF_HD tr_pre_size_and_width
+        ( const std::size_t* size_array
+        , const strf::width_t* width_array
+        , std::size_t array_size
+        , strf::width_t width
+        , strf::surrogate_policy surr_poli
+        , WidthCalculator wcalc
+        , Charset charset )
+        : size_array_(size_array)
+        , width_array_(width_array)
+        , array_size_(array_size)
+        , remaining_width_(width)
+        , surr_poli_(surr_poli)
+        , wcalc_(wcalc)
+        , charset_(charset)
+    {
+    }
+
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD eval_to_false_t account_arg(std::size_t index)
+    {
+        if (index < array_size_) {
+            size_ += size_array_[index];
+            subtract_width_(width_array_[index]);
+        } else {
+            size_ += charset_.replacement_char_size();
+            subtract_width_(1);
+        }
+        return {};
+    }
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD eval_to_false_t account_string
+        ( const CharT* begin, const CharT* end )
+    {
+        size_ += (end - begin);
+        auto w = wcalc_.str_width(charset_, remaining_width_, begin, (end - begin), surr_poli_);
+        subtract_width_(w);
+        return {};
+    }
+    STRF_HD std::size_t accumulated_size() const
+    {
+        return size_;
+    }
+    constexpr STRF_HD strf::width_t remaining_width() const
+    {
+        return remaining_width_;
+    }
+    constexpr STRF_HD std::size_t num_args() const
+    {
+        return array_size_;
+    }
+};
+
+
+template <typename CharT, typename TrPre>
+STRF_HD void tr_do_preprinting
+    ( TrPre & pre
+    , const CharT* it
+    , const CharT* end )
+{
+    std::size_t arg_idx = 0;
+    while (it != end) {
+        const CharT* prev = it;
+        it = strf::detail::str_find<CharT>(it, (end - it), '{');
+        if (it == nullptr) {
+            pre.account_string(prev, end);
+            return;
+        }
+        if (pre.account_string(prev, it)) {
+            return;
+        }
+        ++it;
+
+        after_the_opening_brace:
+        if (it == end) {
+            pre.account_arg(arg_idx);
+            return;
+        }
+
+        auto ch = *it;
+        if (ch == '}') {
+            if (pre.account_arg(arg_idx)) {
+                return;
+            }
+            ++arg_idx;
+            ++it;
+        } else if (CharT('0') <= ch && ch <= CharT('9')) {
+            auto result = strf::detail::read_uint(it, end, pre.num_args());
+            if (pre.account_arg(result.value)) {
+                return;
+            }
+            it = strf::detail::str_find<CharT>(result.it, end - result.it, '}');
+            if (it == nullptr) {
+                return;
+            }
+            ++it;
+        } else if(ch == '{') {
+            auto it2 = it + 1;
+            it2 = strf::detail::str_find<CharT>(it2, end - it2, '{');
+            if (it2 == nullptr) {
+                pre.account_string(it, end);
+                return;
+            }
+            if (pre.account_string(it, it2)) {
+                return;
+            }
+            it = it2 + 1;
+            goto after_the_opening_brace;
+        } else {
+            if (ch != '-') {
+                if (pre.account_arg(arg_idx)) {
+                    return;
+                }
+                ++arg_idx;
+            }
+            auto it2 = it + 1;
+            it = strf::detail::str_find<CharT>(it2, (end - it2), '}');
+            if (it == nullptr) {
+                return;
+            }
+            ++it;
+        }
+    }
+}
+
 template <typename CharT>
 STRF_HD std::size_t tr_string_size
     ( const strf::preprinting<strf::precalc_size::yes, strf::precalc_width::no>* args_pre
@@ -101,7 +357,7 @@ STRF_HD std::size_t tr_string_size
         count += (it - prev);
         ++it;
 
-        after_the_brace:
+        after_the_opening_brace:
         if (it == end) {
             if (arg_idx < num_args) {
                 count += args_pre[arg_idx].accumulated_size();
@@ -141,7 +397,7 @@ STRF_HD std::size_t tr_string_size
             }
             count += (it2 - it);
             it = it2 + 1;
-            goto after_the_brace;
+            goto after_the_opening_brace;
         } else {
             if (ch != '-') {
                 if (arg_idx < num_args) {
@@ -186,7 +442,7 @@ STRF_HD void tr_string_write
         }
         dest.write(prev, it - prev);
         ++it;
-        after_the_brace:
+        after_the_opening_brace:
         if (it == str_end) {
             if (arg_idx < num_args) {
                 args[arg_idx]->print_to(dest);
@@ -228,7 +484,7 @@ STRF_HD void tr_string_write
             }
             dest.write(it, (it2 - it));
             it = it2 + 1;
-            goto after_the_brace;
+            goto after_the_opening_brace;
         } else {
             if (ch != '-') {
                 if (arg_idx < num_args) {

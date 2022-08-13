@@ -7,6 +7,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 
 :strf-revision: develop
 :strf-src-root: https://github.com/robhz786/strf/blob/{strf-revision}
+:UnaryTypeTrait: link:https://en.cppreference.com/w/cpp/named_req/UnaryTypeTrait[UnaryTypeTrait]
 
 :output_buffer:   <<destination_hpp#output_buffer,output_buffer>>
 :destination:   <<destination_hpp#destination,destination>>
@@ -35,7 +36,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 :get_alignment_format:  <<strf_hpp#alignment_formatter_fn_false,get_alignment_format>>
 :set_alignment_format:  <<strf_hpp#alignment_formatter_fn_false,set_alignment_format>>
 
-:join:            <<quick_referance#joins,join>>
+:join:            <<quick_reference#join,join>>
 :Facet:           <<strf_hpp#Facet,Facet>>
 :use_facet:       <<strf_hpp#use_facet,use_facet>>
 :facets_pack:     <<strf_hpp#facets_pack,facets_pack>>
@@ -103,15 +104,15 @@ namespace strf {
 
 template <typename FloatT>
 struct printable_traits<std::complex<FloatT>> {
-    using representative_type = std::complex<FloatT>;
-    using forwarded_type = std::complex<FloatT>;
+    using representative_type = std::complex<FloatT>;  // <1>
+    using forwarded_type = std::complex<FloatT>;       // <2>
 
     template <typename CharT, typename Pre, typename FPack>
     static auto make_input
-        ( strf::tag<CharT>           // <1>
-        , Pre& pre                   // <2>
-        , const FPack& fp            // <3>
-        , std::complex<FloatT> arg ) // <4>
+        ( strf::tag<CharT>           // <3>
+        , Pre& pre                   // <4>
+        , const FPack& fp            // <5>
+        , std::complex<FloatT> arg ) // <6>
     {
         auto arg2 =  strf::join
             ( static_cast<CharT>('('), arg.real()
@@ -124,15 +125,23 @@ struct printable_traits<std::complex<FloatT>> {
 
 } // namespace strf
 ----
-<1> This parameter is solely there to make `CharT` deducible.
+<1> This is the type that is tested by the __{UnaryTypeTrait}__s that
+    parameterize <<tutorial#constrained_facets,constrained facets>>.
+    It is usually the printable type itself.
+<2> This is usually the printable type itself or a const reference to it.
+    The library uses it in some situations for argument forwarding.
+    {join} objects store values of this type, instead of the printable type.
+    The printable type must be implicitly convertible to its
+    `representative_type`.
+<3> This parameter is solely there to make `CharT` deducible.
     If you just need or want to support only one character type, like `char`,
     then use instead `strf::tag<char>`, and remove `CharT`
     from the template parameters list.
-<2> `Pre` is expected to be an instance of the `{preprinting}`
-class template.
-<3> `FPack` is expected to be an instance of the `{facets_pack}` class template.
-`fp` contains the facet objects.
-<4> The last parameter is the value to be printed.
+<4> The library will always use an instance of the `{preprinting}` class template
+    as the `Pre` argument
+<5> The library will always use an instance of the `{facets_pack}` class template
+    as the `FPack` argument. `fp` contains the facet objects.
+<6> The last parameter is the value to be printed.
 
 What the above code basically does is to tell the library to handle
 `std::complex` values in the same way that it would handle the `{join}`

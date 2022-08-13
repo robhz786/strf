@@ -41,6 +41,7 @@
 #include <strf/detail/printable_types/join.hpp>
 #include <strf/detail/printable_types/facets_pack.hpp>
 #include <strf/detail/printable_types/range.hpp>
+#include <strf/detail/printable_types/tr_string.hpp>
 
 #include <strf/precalculate.hpp>
 #include <strf/printing_syntax.hpp>

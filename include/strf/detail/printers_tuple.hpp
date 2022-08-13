@@ -126,14 +126,31 @@ public:
 
     static constexpr std::size_t size = sizeof...(Printers);
 
-    template <typename PrePrinting, typename FPack, typename... Args>
+    template < typename... Args
+             , typename... FPElems
+             , strf::precalc_size SizeRequired
+             , strf::precalc_width WidthRequired >
     STRF_HD printers_tuple_impl
         ( const strf::detail::simple_tuple<Args...>& args
-        , PrePrinting& pre
-        , const FPack& fp )
+        , strf::preprinting<SizeRequired, WidthRequired>& pre
+        , const strf::facets_pack<FPElems...>& fp )
         : indexed_printer<I, Printers>
             ( strf::make_printer_input<CharT>
               ( pre, fp, args.template get<I>() ) ) ...
+    {
+    }
+
+    template < typename... Args
+             , typename... FPElems
+             , strf::precalc_size SizeRequired
+             , strf::precalc_width WidthRequired >
+    STRF_HD printers_tuple_impl
+        ( const strf::detail::simple_tuple<Args...>& args
+        , const strf::facets_pack<FPElems...>& fp
+        , strf::preprinting<SizeRequired, WidthRequired>* pp_array )
+        : indexed_printer<I, Printers>
+            ( strf::make_printer_input<CharT>
+              ( pp_array[I], fp, args.template get<I>() ) ) ...
     {
     }
 

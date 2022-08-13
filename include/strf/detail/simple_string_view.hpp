@@ -15,6 +15,7 @@ class simple_string_view
 {
 public:
 
+    using char_type = CharIn;
     using iterator = const CharIn*;
     using const_iterator = const CharIn*;
 
@@ -124,6 +125,60 @@ constexpr STRF_HD simple_string_view<CharT> make_simple_string_view
 {
     return {str, str_end};
 }
+
+template <typename CharT>
+constexpr STRF_HD simple_string_view<CharT> to_simple_string_view(simple_string_view<CharT> s)
+{
+    return simple_string_view<CharT>{s};
+}
+
+template <typename CharT>
+constexpr STRF_HD simple_string_view<CharT> to_simple_string_view(const CharT* cstr)
+{
+    return simple_string_view<CharT>{cstr};
+}
+
+#if defined(STRF_HAS_STD_STRING_DECLARATION)
+
+template <typename CharT, typename Traits, typename Allocator>
+constexpr STRF_HD strf::detail::simple_string_view<CharT> to_simple_string_view
+    (const std::basic_string<CharT, Traits, Allocator>& s) noexcept
+    { return {s.data(), s.size()}; }
+
+#endif // defined(STRF_HAS_STD_STRING_DECLARATION)
+
+#if defined(STRF_HAS_STD_STRING_VIEW)
+
+template <typename CharT, typename Traits>
+constexpr STRF_HD strf::detail::simple_string_view<CharT> to_simple_string_view
+    ( std::basic_string_view<CharT, Traits> s ) noexcept
+    { return {s.data(), s.size()}; }
+
+#if defined(__cpp_char8_t)
+
+constexpr STRF_HD strf::detail::string_printing<char8_t> to_simple_string_view
+    ( std::basic_string_view<char8_t> s) noexcept
+    { return {s.data(), s.size()}; }
+
+#endif // defined(__cpp_char8_t)
+
+constexpr STRF_HD strf::detail::simple_string_view<char> to_simple_string_view
+    (std::basic_string_view<char> s) noexcept
+    { return {s.data(), s.size()}; }
+
+constexpr STRF_HD strf::detail::simple_string_view<char16_t> to_simple_string_view
+    (std::basic_string_view<char16_t> s) noexcept
+    { return {s.data(), s.size()}; }
+
+constexpr STRF_HD strf::detail::simple_string_view<char32_t> to_simple_string_view
+    (std::basic_string_view<char32_t> s) noexcept
+    { return {s.data(), s.size()}; }
+
+constexpr STRF_HD strf::detail::simple_string_view<wchar_t> to_simple_string_view
+    (std::basic_string_view<wchar_t> s) noexcept
+    { return {s.data(), s.size()}; }
+
+#endif // defined(STRF_HAS_STD_STRING_VIEW)
 
 } // namespace detail
 } // namespace strf

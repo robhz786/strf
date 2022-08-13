@@ -23,6 +23,9 @@ http://www.boost.org/LICENSE_1_0.txt)
 :representative_of_printable: <<representative_of_printable,representative_of_printable>>
 :is_printable_and_overridable: <<is_printable_and_overridable,is_printable_and_overridable>>
 
+:width_decumulator: << width_decumulator, width_decumulator>>
+:size_accumulator: <<size_accumulator,size_accumulator>>
+
 :constrain: <<constrain,constrain>>
 :constrained_fpe: <<constrained_fpe,constrained_fpe>>
 :use_facet: <<use_facet,use_facet>>
@@ -415,8 +418,8 @@ enum class precalc_size : bool { no = false, yes = true };
 
 template <precalc_size PrecalcSize, precalc_width PrecalcWidth>
 class preprinting
-    : public size_accumulator<static_cast<bool>(PrecalcSize)>
-    , public width_decumulator<static_cast<bool>(PrecalcWidth)>
+    : public {size_accumulator}<static_cast<bool>(PrecalcSize)>
+    , public {width_decumulator}<static_cast<bool>(PrecalcWidth)>
 {
 public:
 
@@ -447,7 +450,7 @@ constexpr explicit preprinting(<<width_t,width_t>> initial_width) noexcept;
 ----
 Compile-time requirement:: `PrecalcWidth` is `precalc_width::yes`, otherwise this constructor
 does not participate in overload resolution.
-Effect:: Initializes `<<width_decumulator, width_decumulator>>` base
+Effect:: Initializes `{width_decumulator}` base
 with `initial_width`.
 ====
 [[size_accumulator]]
@@ -537,7 +540,7 @@ public:
 ----
 constexpr width_decumulator() noexcept;
 ----
-Postcondition:: `remaining_width() == 0`
+Postcondition:: `remaining_width() == width_max`
 ====
 
 ====
@@ -600,14 +603,15 @@ Compile-time requirements::
 Effects::
 * When `PrecalcSize` is `precalc_size::yes`, for each argument `arg` in `args\...`
   instantiates the correponding `printer` type with `pp`, `facets`, and `arg`.
-  This translates into the following expression:
+  This translates into the following
+  https://en.cppreference.com/w/cpp/language/fold[fold expression]:
 +
 [source,cpp,subs=normal]
 ----
 (\..., {printer_type}< CharT
-                      , {preprinting}<PrecalcSize, PrecalcWidth>
-                      , facets_pack<FPE\...>
-                      , Args >{{make_printer_input}<CharT>(pp, facets, args)} );
+                  , {preprinting}<PrecalcSize, PrecalcWidth>
+                  , facets_pack<FPE\...>
+                  , Args >  {{make_printer_input}<CharT>(pp, facets, args)} );
 ----
 * When `PrecalcSize` is `precalc_size::no` and `PrecalcWidth` is `precalc_width::yes`,
   for each argument `arg` in `args\...` instantiates the correponding `printer`

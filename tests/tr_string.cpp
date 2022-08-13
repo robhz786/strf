@@ -5,6 +5,8 @@
 
 #include "test_utils.hpp"
 
+namespace {
+
 class err_handler {
 
 public:
@@ -30,6 +32,8 @@ private:
     strf::destination<char>& log_;
 };
 
+} // unnamed nameapce
+
 STRF_TEST_FUNC void test_tr_string()
 {
     // basic test
@@ -37,6 +41,11 @@ STRF_TEST_FUNC void test_tr_string()
         .tr("{}__{}__{}", "aaa", strf::right("bbb", 5, '.'), *strf::hex(10)>4);
 
     TEST(u8"_0__1__2")   .tr(u8"_{}__{}__{}",    0, 1, 2);
+
+    TEST(u8"---_\uFFFD_+++") (u8"---", strf::tr(u8"_{}_"), u8"+++");
+
+    TEST(u8"---_0_\uFFFD_+++") (u8"---", strf::tr(u8"_{}_{}_", 0), u8"+++");
+
     TEST(u8"_0__1__2\n") .trln(u8"_{}__{}__{}",    0, 1, 2);
     TEST(u8"{0_{_{1_{2") .tr(u8"{{{}_{{_{{{}_{{{}",  0, 1, 2);
     TEST(u8"0__1__2")    .tr(u8"{}__{}__{}",     0, 1, 2);

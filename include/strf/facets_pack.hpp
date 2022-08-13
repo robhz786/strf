@@ -871,6 +871,14 @@ constexpr STRF_HD auto get_facet(const strf::facets_pack<FPE...>& fp)
     return fp.template use_facet<FacetCategory, Tag>();
 }
 
+template
+    < typename FacetCategory
+    , typename Tag
+    , typename FPack >
+using facet_type_in_pack = strf::detail::remove_cv_t
+    < decltype(std::declval<FPack>(). template use_facet<FacetCategory, Tag>()) >;
+
+
 } // namespace strf
 
 #endif  // STRF_DETAIL_FACETS_PACK_HPP
