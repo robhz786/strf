@@ -163,7 +163,7 @@ class printing_syntax;
 ----
 Compile-time requirements::
 - `DestCreator` satisfy either {DestinationCreator} or {SizedDestinationCreator}.
-- `ReservePolicy` is `no_reserve`, `reserve_size` or `reserve_calc`
+- `ReservePolicy` is `no_reserve`, `reserve_given_space` or `reserve_calc`
 - All types in `FPE\...` satisfy <<FacetsPackElement, _FacetsPackElement_>>.
 ====
 
@@ -177,9 +177,10 @@ struct no_reserve {};
 
 struct reserve_calc {};
 
-struct reserve_size {
-    std::size_t size;
-    reserve_size(std::size_t s) : size(s) {}
+struct reserve_given_space {
+    explicit reserve_given_space(std::size_t s) : space(s) {}
+
+    std::size_t space;
 };
 
 template < typename DestCreator
@@ -207,7 +208,7 @@ public:
     return_type <<printing_syntax_call_operator,operator()>>(Args&& \... args) const;
     return_type <<printing_syntax_ln,ln>>(Args&&\... args) const;
     return_type <<printing_syntax_tr,tr>>(Args&&\... args) const;
-    return_type <<<<printing_syntax_trln,trln>>(Args&&\... args) const;
+    return_type <<printing_syntax_trln,trln>>(Args&&\... args) const;
 
     // change reserve policy
     constexpr /{asterisk} \... {asterisk}/ <<printing_syntax_reserve,reserve>>(std::size_t capacity) /{asterisk} \... {asterisk}/;
@@ -271,7 +272,7 @@ constexpr printing_syntax() = default;
 ----
 Only participates in overload resolution if `DestCreator` and all types
 in `FPE\...` are default-constructible and `ReservePolicy` is not
-`reserve_size`.
+`reserve_given_space`.
 ****
 
 ****
@@ -279,14 +280,14 @@ in `FPE\...` are default-constructible and `ReservePolicy` is not
 ----
 constexpr printing_syntax(const DestCreator& dest_creator)
 ----
-Effects:
+Effects::
 Initializes the inther `DestCreator` object with `dest_creator`
 
 Compile time requirements::
 Only participates in overload resolution if `DestCreator`
 is copy-constructible and all types in `FPE\...` are
 default-constructible and `ReservePolicy` is not
-`reserve_size`.
+`reserve_given_space`.
 ****
 
 ****
@@ -294,30 +295,32 @@ default-constructible and `ReservePolicy` is not
 ----
 constexpr printing_syntax(DestCreator&& dest_creator)
 ----
-Effects:
+Effects::
 Initializes the inther `DestCreator` object with `dest_creator`
 
 Compile time requirements::
 Only participates in overload resolution if `DestCreator`
 is move-constructible and all types in `FPE\...` are
 default-constructible and `ReservePolicy` is not
-`reserve_size`.
+`reserve_given_space`.
 ****
 
 ****
 [source,cpp,subs=normal]
 ----
-constexpr printing_syntax(const DestCreator& dest_creator, ReservePolicy poli, U&&\... fpes
+constexpr printing_syntax(const DestCreator& dest_creator, ReservePolicy poli, U&&\... fpes)
 ----
-Effects:
+Effects::
+
 - Initializes the internal `DestCreator` object with `dest_creator`,
 - Initializes the internal `ReservePolicy` object  with `poli`,
 - Initializes the of the internal `FPE\...` object with the correspoding value in `(U&&)fpes\...`
 
 Compile time requirements::
 Only participates in overload resolution if:
- - `DestCreator` is copy-constructible
- -  Each type in `FPE\...` is constructible from the corresponding type in `U\...`
++
+- `DestCreator` is copy-constructible
+-  Each type in `FPE\...` is constructible from the corresponding type in `U\...`
 ****
 
 ****
@@ -325,19 +328,18 @@ Only participates in overload resolution if:
 ----
 constexpr printing_syntax(DestCreator&& dest_creator, ReservePolicy poli, U&&\... fpes
 ----
-Effects:
+Effects::
+
 - Initializes the internal `DestCreator` object with `dest_creator`,
 - Initializes the internal `ReservePolicy` object  with `poli`,
 - Initializes the of the internal `FPE\...` object with the correspoding value in `(U&&)fpes\...`
 
 Compile time requirements::
 Only participates in overload resolution if:
++
  - `DestCreator` is move-constructible
  -  Each type in `FPE\...` is constructible from the corresponding type in `U\...`
 ****
-
-
-
 
 ==== Member functions for printing
 
@@ -362,15 +364,15 @@ Executes the following steps:
 
 [%header,frame=all,grid=all,cols="1"]
 |===
-^|When `ReservePolicy` is `strf::reserve_size`
+^|When `ReservePolicy` is `strf::reserve_given_space`
 a|
 [start=3]
-. Let `dest_creator` be the internal `DestCreator` object, and `poli` be the internal `reserve_size` object. Do:
+. Let `dest_creator` be the internal `DestCreator` object, and `poli` be the internal `reserve_given_space` object. Do:
 +
 [source,cpp,subs=normal]
 ----
 using dest_type = typename DestCreator::sized_destination_type;
-dest_type dest{dest&#95;creator.create(poli.size)};
+dest_type dest{dest&#95;creator.create(poli.space)};
 ----
 . For each `parg` in `pargs\...`, do:
 +
@@ -492,25 +494,25 @@ __to-do__
 ****
 [source,cpp,subs=normal]
 ----
-constexpr /{asterisk} \... {asterisk}/  reserve(std::size space) /{asterisk} \... {asterisk}/;
+constexpr /{asterisk} \... {asterisk}/  reserve(std::size_t space) /{asterisk} \... {asterisk}/;
 ----
 
 [%header,frame=all,grid=none,cols="1"]
 |===
-^|When `ReservePolicy` is `strf::reserve_size`
+^|When `ReservePolicy` is `strf::reserve_given_space`
 a|
 [source,cpp,subs=normal]
 ----
-constexpr       printing_syntax &  reserve(std::size space) &;
-constexpr       printing_syntax && reserve(std::size space) &&;
+constexpr       printing_syntax &  reserve(std::size_t space) &;
+constexpr       printing_syntax && reserve(std::size_t space) &&;
 ----
-Changes the space stored in the internal `strf::reserve_size` object,
+Changes the space stored in the internal `strf::reserve_given_space` object,
 and returns `*this` or `std::move(*this)`.
 a|
 [source,cpp,subs=normal]
 ----
-constexpr printing_syntax reserve(std::size space) const &;
-constexpr printing_syntax reserve(std::size space) const &&;
+constexpr printing_syntax reserve(std::size_t space) const &;
+constexpr printing_syntax reserve(std::size_t space) const &&;
 ----
 Returns a new `printing_syntax` whose internal `DestCreator` and `FPE\...` objects
 are copy-constructed or move-constructed ( depedending on the overload used )
@@ -524,10 +526,10 @@ a|
 [source,cpp,subs=normal]
 ----
 constexpr printing_syntax<DestCreator, strf::reserve_calc, FPE\...>
-reserve(std::size space) const &;
+reserve(std::size_t space) const &;
 
 constexpr printing_syntax<DestCreator, strf::reserve_calc, FPE\...>
-reserve(std::size space) &&;
+reserve(std::size_t space) &&;
 ----
 Returns a new `printing_syntax` whose internal `DestCreator` and `FPE\...` objects
 are copy-constructed or move-constructed ( depedending on the overload used )

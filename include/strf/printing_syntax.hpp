@@ -61,7 +61,7 @@ public:
     using return_type = strf::detail::destination_finish_return_type<DestCreator, false>;
 
     using preprinting_type = strf::preprinting
-        <strf::precalc_size::yes, strf::precalc_width::no>;
+        <strf::precalc_size::no, strf::precalc_width::no>;
 
     template <bool Ln, typename DestCreator, typename... Printers>
     static STRF_HD return_type<DestCreator> print
@@ -79,13 +79,13 @@ public:
     }
 };
 
-struct reserve_size
+struct reserve_given_space
 {
 public:
-    std::size_t size = 0;
+    std::size_t space = 0;
 
-    STRF_HD constexpr explicit reserve_size(std::size_t s)
-        : size(s)
+    STRF_HD constexpr explicit reserve_given_space(std::size_t s)
+        : space(s)
     {
     }
 
@@ -101,7 +101,7 @@ public:
         , const preprinting_type&
         , const Printers& ... printers ) const
     {
-        typename DestCreator::sized_destination_type dest{dest_creator.create(size)};
+        typename DestCreator::sized_destination_type dest{dest_creator.create(space)};
         strf::detail::write_args(dest, printers...);
         STRF_IF_CONSTEXPR (Ln) {
             using char_type = typename DestCreator::char_type;
@@ -249,10 +249,10 @@ public:
 
 
 template <typename DestCreator, typename Policy, typename... FPEs>
-class reserve_size_return_new_pss
+class reserve_given_space_return_new_pss
 {
 private:
-    using new_poli_ = strf::reserve_size;
+    using new_poli_ = strf::reserve_given_space;
 
     using new_pss_ = printing_syntax
         <DestCreator, new_poli_, FPEs...>;
@@ -267,19 +267,19 @@ public:
                  < std::is_copy_constructible<FP>::value
                 && std::is_copy_constructible<DC>::value
                  , int > = 0 >
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD new_pss_ reserve(std::size_t size) const &
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD new_pss_ reserve(std::size_t space) const &
     {
         const auto& self = static_cast<const this_pss_&>(*this);
         return { self.dest_creator_
-               , new_poli_{size}
+               , new_poli_{space}
                , self.fpack_ };
     }
 
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD new_pss_ reserve(std::size_t size) &&
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD new_pss_ reserve(std::size_t space) &&
     {
         auto& self = static_cast<this_pss_&>(*this);
         return { (DestCreator&&) self.dest_creator_
-               , new_poli_{size}
+               , new_poli_{space}
                , std::move(self.fpack_) };
     }
 };
@@ -288,7 +288,7 @@ public:
 template <typename DestCreator, typename... FPEs>
 class reserve_funcs<DestCreator, strf::no_reserve, FPEs...>
     : public reserve_calc_return_new_pss<DestCreator, strf::no_reserve, FPEs...>
-    , public reserve_size_return_new_pss<DestCreator, strf::no_reserve, FPEs...>
+    , public reserve_given_space_return_new_pss<DestCreator, strf::no_reserve, FPEs...>
 {
     using this_pss_ = printing_syntax<DestCreator, strf::no_reserve, FPEs...>;
 
@@ -326,8 +326,8 @@ public:
 
 template <typename DestCreator, typename... FPEs>
 class reserve_funcs<DestCreator, strf::reserve_calc, FPEs...>
-    : public no_reserve_return_new_pss  <DestCreator, strf::reserve_calc, FPEs...>
-    , public reserve_size_return_new_pss<DestCreator, strf::reserve_calc, FPEs...>
+    : public no_reserve_return_new_pss<DestCreator, strf::reserve_calc, FPEs...>
+    , public reserve_given_space_return_new_pss<DestCreator, strf::reserve_calc, FPEs...>
 {
     using this_pss_ = printing_syntax
         <DestCreator, strf::reserve_calc, FPEs...>;
@@ -365,14 +365,14 @@ public:
 
 
 template <typename DestCreator, typename... FPEs>
-class reserve_funcs<DestCreator, strf::reserve_size, FPEs...>
-    : public no_reserve_return_new_pss  <DestCreator, strf::reserve_size, FPEs...>
-    , public reserve_calc_return_new_pss<DestCreator, strf::reserve_size, FPEs...>
+class reserve_funcs<DestCreator, strf::reserve_given_space, FPEs...>
+    : public no_reserve_return_new_pss  <DestCreator, strf::reserve_given_space, FPEs...>
+    , public reserve_calc_return_new_pss<DestCreator, strf::reserve_given_space, FPEs...>
 {
     static_assert( can_create_dest_with_size<DestCreator>::value
-                 , "reserve_size policy not applicable to this DestinationCreator" );
+                 , "reserve_given_space policy not applicable to this DestinationCreator" );
 public:
-    using reserve_policy_t = strf::reserve_size;
+    using reserve_policy_t = strf::reserve_given_space;
 
 private:
     template <typename Poli>
@@ -388,11 +388,11 @@ public:
 
     constexpr reserve_funcs() = default;
 
-    constexpr STRF_HD explicit reserve_funcs(strf::reserve_size poli)
+    constexpr STRF_HD explicit reserve_funcs(strf::reserve_given_space poli)
         : poli_(poli)
     {
     }
-    constexpr STRF_HD strf::reserve_size get_reserve_policy() const
+    constexpr STRF_HD strf::reserve_given_space get_reserve_policy() const
     {
         return poli_;
     }
@@ -403,10 +403,10 @@ public:
                  < std::is_copy_constructible<FP>::value
                 && std::is_copy_constructible<DC>::value
                  , int > = 0 >
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD this_pss_ reserve_size(std::size_t size) const &
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD this_pss_ reserve_given_space(std::size_t space) const &
     {
         auto& self = static_cast<const this_pss_&>(*this);
-        return {self.dest_creator_, reserve_policy_t{size}, self.fpack_};
+        return {self.dest_creator_, reserve_policy_t{space}, self.fpack_};
     }
 
     template < typename FP = strf::facets_pack<FPEs...>
@@ -415,20 +415,20 @@ public:
                  < std::is_copy_constructible<FP>::value
                 && std::is_copy_constructible<DC>::value
                  , int > = 0 >
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD this_pss_ reserve_size(std::size_t size) const &&
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD this_pss_ reserve_given_space(std::size_t space) const &&
     {
         auto& self = static_cast<const this_pss_&>(*this);
-        return {self.dest_creator_, reserve_policy_t{size}, self.fpack_};
+        return {self.dest_creator_, reserve_policy_t{space}, self.fpack_};
     }
 
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD this_pss_& reserve_size(std::size_t size) &
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD this_pss_& reserve_given_space(std::size_t space) &
     {
-        poli_.size = size;
+        poli_.space = space;
         return static_cast<pss_<reserve_policy_t>&>(*this);
     }
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD this_pss_&& reserve_size(std::size_t size) &&
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD this_pss_&& reserve_given_space(std::size_t space) &&
     {
-        poli_.size = size;
+        poli_.space = space;
         return static_cast<pss_<reserve_policy_t>&&>(*this);
     }
 };
@@ -595,7 +595,7 @@ private:
     friend class pss_::reserve_calc_return_new_pss;
 
     template <class, class, class...>
-    friend class pss_::reserve_size_return_new_pss;
+    friend class pss_::reserve_given_space_return_new_pss;
 
     template <bool, class, class, class...>
     friend class pss_::fpe_funcs_copy_impl;
