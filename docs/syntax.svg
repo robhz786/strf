@@ -8,7 +8,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 -->
 
 <svg
-   viewBox="75 5 615 280"
+   viewBox="55 5 660 280"
    xmlns:svg="http://www.w3.org/2000/svg"
    xmlns="http://www.w3.org/2000/svg">
 
@@ -17,12 +17,12 @@ http://www.boost.org/LICENSE_1_0.txt)
     .code {
     font-style:normal;
     font-family:"Courier New";
-    font-size:90%;
+    font-size:100%;
     }
     .repl {
     font-style:italic;
     font-family:Arial;
-    font-size:95%;
+    font-size:100%;
     }
     rect{
     fill:#d7e3f4;
@@ -54,40 +54,40 @@ http://www.boost.org/LICENSE_1_0.txt)
   <path d="M0 0 a11 11 0 0 1 -11 +11"/> <!--dl-->
   </symbol>
 
-  <rect width="80" height="28" x="100" y="186" rx="11" ry="11"/>
-  <text x="115" y="204" >
+  <rect width="95" height="28" x="65" y="186" rx="11" ry="11"/>
+  <text x="90" y="204" >
     <tspan class="repl">target</tspan>
   </text>
 
-  <path d="M180 200 H400"/>
+  <path d="M160 200 H400"/>
 
-  <path d="M220  24 a11 11 0 0 0 -11 +11 v154 a11 11 0 0 0 11 11"/>
-  <path d="M220  68 a11 11 0 0 0 -11 +11"/> <!--ld-->
-  <path d="M220 112 a11 11 0 0 0 -11 +11"/> <!--ld-->
-  <path d="M220 156 a11 11 0 0 0 -11 +11"/> <!--ld-->
+  <path d="M200  24 a11 11 0 0 0 -11 +11 v154 a11 11 0 0 0 11 11"/>
+  <path d="M200  68 a11 11 0 0 0 -11 +11"/> <!--ld-->
+  <path d="M200 112 a11 11 0 0 0 -11 +11"/> <!--ld-->
+  <path d="M200 156 a11 11 0 0 0 -11 +11"/> <!--ld-->
 
   <path d="M370  24 a11 11 0 0 1 +11 +11 v154 a11 11 0 0 1 -11 +11"/>
   <path d="M370  68 a11 11 0 0 1 +11 +11"/> <!--rd-->
   <path d="M370 112 a11 11 0 0 1 +11 +11"/> <!--rd-->
   <path d="M370 156 a11 11 0 0 1 +11 +11"/> <!--rd-->
 
-  <rect width="150" height="28" x="220"  y="10" rx="11" ry="11"/>
-  <rect width="150" height="28" x="220"  y="54" rx="11" ry="11"/>
-  <rect width="150" height="28" x="220"  y="98" rx="11" ry="11"/>
-  <rect width="150" height="28" x="220" y="142" rx="11" ry="11"/>
+  <rect width="170" height="28" x="200"  y="10" rx="11" ry="11"/>
+  <rect width="170" height="28" x="200"  y="54" rx="11" ry="11"/>
+  <rect width="170" height="28" x="200"  y="98" rx="11" ry="11"/>
+  <rect width="170" height="28" x="200" y="142" rx="11" ry="11"/>
 
-  <text x="225" y="28" >
+  <text x="210" y="28" >
     <tspan class="code">.with(</tspan>
     <tspan class="repl">fargs...</tspan>
     <tspan class="code">)</tspan>
   </text>
-  <text x="225" y="74" >
+  <text x="210" y="74" >
       <tspan class="code">.reserve(</tspan>
       <tspan class="repl">size</tspan>
       <tspan class="code">)</tspan>
   </text>
-  <text x="225" y="116" class="code"> .reserve_calc() </text>
-  <text x="225" y="160" class="code"> .no_reserve()   </text>
+  <text x="210" y="116" class="code"> .reserve_calc() </text>
+  <text x="210" y="160" class="code"> .no_reserve()   </text>
 
   <path d="M411 189  v-44 a11 11 0 0 1 +11 -11"/> <!-- arc ur -->
   <path d="M411 189       a11 11 0 0 1 +11 -11"/> <!-- arc ur -->
@@ -96,10 +96,10 @@ http://www.boost.org/LICENSE_1_0.txt)
   <path d="M411 211       a11 11 0 0 0 +11 +11"/> <!-- arc dr -->
   <path d="M411 211  v44  a11 11 0 0 0 +11 +11"/> <!-- arc dr -->
 
-  <rect width="265" height="28" x="422" y="120" rx="11" ry="11"/>
-  <rect width="265" height="28" x="422" y="164" rx="11" ry="11"/>
-  <rect width="265" height="28" x="422" y="208" rx="11" ry="11"/>
-  <rect width="265" height="28" x="422" y="252" rx="11" ry="11"/>
+  <rect width="185" height="28" x="422" y="120" rx="11" ry="11"/>
+  <rect width="215" height="28" x="422" y="164" rx="11" ry="11"/>
+  <rect width="275" height="28" x="422" y="208" rx="11" ry="11"/>
+  <rect width="285" height="28" x="422" y="252" rx="11" ry="11"/>
   <!-- 265 + 422 = 687 -->
 
   <text x="430" y="138">
