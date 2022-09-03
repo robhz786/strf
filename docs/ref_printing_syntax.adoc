@@ -76,10 +76,10 @@ __/{asterisk} see below {asterisk}/__ to(wchar_t{asterisk}  dest, std::size_t co
 
 } // namespace strf
 ----
-
 [horizontal]
 Return type and value:: Same as of `to(dest, dest + count)`;
 ====
+
 ====
 [[to_char_array]]
 [source,cpp,subs=normal]
@@ -119,6 +119,8 @@ is such that `&#95;dest&#95;creator.create()` returns
 {basic_char_array_writer}<__char_type__>{begin, end}
 ----
 ====
+
+
 [[to_range_array]]
 ====
 [source,cpp,subs=normal]
@@ -132,6 +134,8 @@ __/{asterisk} see below {asterisk}/__ to_range(CharT (&dest)[N]);
 [horizontal]
 Return type and value:: Same as of `to_range(dest, dest + N)`;
 ====
+
+
 [[to_range_count]]
 ====
 [source,cpp,subs=normal]
@@ -167,6 +171,7 @@ Compile-time requirements::
 - `ReservePolicy` is `no_reserve`, `reserve_given_space` or `reserve_calc`
 - All types in `FPE\...` satisfy <<FacetsPackElement, _FacetsPackElement_>>.
 ====
+
 
 ==== Synopsis
 
@@ -246,27 +251,27 @@ public:
 ////
 
 [[printing_syntax_return_type]]
-****
+====
 [source,cpp,subs=normal]
 ----
 return_type
 ----
 `decltype(std::declval<const typename DestCreator::destination_type&>().finish()`,
 if such type is well-formed, otherwise `void`
-****
+====
 
-****
+====
 [source,cpp,subs=normal]
 ----
 char_type
 ----
 A type alias to `DestCreator::char_type`
-****
+====
 
 ==== Constructors
 
 [[printing_syntax_default_ctor]]
-****
+====
 [source,cpp,subs=normal]
 ----
 constexpr printing_syntax() = default;
@@ -274,9 +279,9 @@ constexpr printing_syntax() = default;
 Only participates in overload resolution if `DestCreator` and all types
 in `FPE\...` are default-constructible and `ReservePolicy` is not
 `reserve_given_space`.
-****
+====
 
-****
+====
 [source,cpp,subs=normal]
 ----
 constexpr printing_syntax(const DestCreator& dest_creator)
@@ -289,9 +294,9 @@ Only participates in overload resolution if `DestCreator`
 is copy-constructible and all types in `FPE\...` are
 default-constructible and `ReservePolicy` is not
 `reserve_given_space`.
-****
+====
 
-****
+====
 [source,cpp,subs=normal]
 ----
 constexpr printing_syntax(DestCreator&& dest_creator)
@@ -304,9 +309,9 @@ Only participates in overload resolution if `DestCreator`
 is move-constructible and all types in `FPE\...` are
 default-constructible and `ReservePolicy` is not
 `reserve_given_space`.
-****
+====
 
-****
+====
 [source,cpp,subs=normal]
 ----
 constexpr printing_syntax(const DestCreator& dest_creator, ReservePolicy poli, U&&\... fpes)
@@ -322,9 +327,9 @@ Only participates in overload resolution if:
 +
 - `DestCreator` is copy-constructible
 -  Each type in `FPE\...` is constructible from the corresponding type in `U\...`
-****
+====
 
-****
+====
 [source,cpp,subs=normal]
 ----
 constexpr printing_syntax(DestCreator&& dest_creator, ReservePolicy poli, U&&\... fpes
@@ -340,12 +345,12 @@ Only participates in overload resolution if:
 +
  - `DestCreator` is move-constructible
  -  Each type in `FPE\...` is constructible from the corresponding type in `U\...`
-****
+====
 
 ==== Member functions for printing
 
 [[printing_syntax_call_operator]]
-****
+====
 [source,cpp,subs=normal]
 ----
 <<printing_syntax_return_type,return_type>> operator()(Args&&\... args) const;
@@ -353,7 +358,7 @@ Only participates in overload resolution if:
 
 .**Effect**
 [%collapsible]
-====
+=====
 Executes the following steps:
 
 . Distinguish the leading arguments in `args\...` that specify facets,
@@ -452,12 +457,12 @@ static_cast<const {printer}<char_type>&>(p).print_to(dest);
 . Return `dest.finish()` if such expression is valid.
 
 |===
+=====
 ====
-****
 
 
 [[printing_syntax_ln]]
-****
+====
 [source,cpp,subs=normal]
 ----
 <<printing_syntax_return_type,return_type>> ln(Args&& \... args) const;
@@ -467,10 +472,10 @@ Effect:: Equivalent to
 ----
 return operator() ((Args&&)args\..., (char_type)'\n');
 ----
-****
+====
 
 [[printing_syntax_tr]]
-****
+====
 [source,cpp,subs=normal]
 ----
 <<printing_syntax_return_type,return_type>> tr(Args&&\... args) const;
@@ -489,10 +494,10 @@ where:
 ** `facets\...` are the arguments in `args\...` that correspond to `Facets\...`
 ** `pargs\...` are the remaining arguments in `args\...` .
 
-****
+====
 
 [[printing_syntax_trln]]
-****
+====
 [source,cpp,subs=normal]
 ----
 <<printing_syntax_return_type,return_type>> trln(Args&& \... args) const;
@@ -504,12 +509,12 @@ Effect::: Equivalent to
 return operator() ( (Args&&)args\..., (char_type)'\n' );
 ----
 
-****
+====
 
 ==== Member functions to change Reserve Policy
 
 [[printing_syntax_reserve]]
-****
+====
 [source,cpp,subs=normal]
 ----
 constexpr /{asterisk} \... {asterisk}/  reserve(std::size_t space) /{asterisk} \... {asterisk}/;
@@ -554,10 +559,10 @@ are copy-constructed or move-constructed ( depedending on the overload used )
 from the internal `DestCreator` and `FPE\...` objects of this object,
 and the the internal `strf::reserve_calc` object is initialized with `space`
 |===
-****
+====
 
 [[printing_syntax_reserve_calc]]
-****
+====
 [source,cpp,subs=normal]
 ----
 constexpr /{asterisk} \... {asterisk}/  reserve_calc() /{asterisk} \... {asterisk}/;
@@ -594,12 +599,12 @@ are copy-constructed or move-constructed ( depedending on the overload used )
 from the internal `DestCreator` and `FPE\...` objects of this object.
 |===
 
-****
+====
 
 
 
 [[printing_syntax_no_reserve]]
-****
+====
 [source,cpp,subs=normal]
 ----
 constexpr /{asterisk} \... {asterisk}/  no_reserve() /{asterisk} \... {asterisk}/;
@@ -633,12 +638,12 @@ are copy-constructed or move-constructed ( depedending on the overload used )
 from the internal `DestCreator` and `FPE\...` objects of this object.
 |===
 
-****
+====
 
 ==== Member functions to add facet values
 
 [[printing_syntax_with]]
-****
+====
 [source,cpp]
 ----
 template <typename... U>
@@ -664,10 +669,10 @@ are copy-constructed or move-constructed ( depedending on the overload used )
 from the internal `DestCreator` and `FPE\...` objects of this object.
 and each the internal `std::remove_cvref_t<U>\...` object is initialized with the
 correspoding value in `(U&&)fpes\...`.
-****
+====
 
 
-****
+====
 [source,cpp,subs=normal]
 ----
 constexpr const printing_syntax& with() const &;
@@ -676,7 +681,7 @@ constexpr printing_syntax& with() &;
 constexpr printing_syntax&& with() &&;
 ----
 Just returns `*this` or `std::move(*this)`
-****
+====
 
 
 
