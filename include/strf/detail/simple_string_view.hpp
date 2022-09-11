@@ -156,7 +156,7 @@ constexpr STRF_HD strf::detail::simple_string_view<CharT> to_simple_string_view
 
 #if defined(__cpp_char8_t)
 
-constexpr STRF_HD strf::detail::string_printing<char8_t> to_simple_string_view
+constexpr STRF_HD strf::detail::simple_string_view<char8_t> to_simple_string_view
     ( std::basic_string_view<char8_t> s) noexcept
     { return {s.data(), s.size()}; }
 

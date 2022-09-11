@@ -209,6 +209,7 @@ STRF_TEST_FUNC void test_without_preprinting()
 
 template <typename String, typename... Args>
 auto first_char_of_tr_string(String str, Args&&...)
+    -> strf::detail::remove_cvref_t<decltype(str[0])>
 {
     return str[0];
 }

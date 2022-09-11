@@ -77,7 +77,7 @@ STRF_HD void precalculate
 namespace detail {
 
 template <typename... Args>
-STRF_HD STRF_CONSTEXPR_IN_CXX14 void do_nothing_with(const Args...) noexcept
+STRF_HD STRF_CONSTEXPR_IN_CXX14 void do_nothing_with(const Args&...) noexcept
 {
     // workaround for the lack of support for fold expressions
 }
