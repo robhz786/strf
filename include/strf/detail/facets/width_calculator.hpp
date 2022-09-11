@@ -81,7 +81,7 @@ public:
         , strf::surrogate_policy ) const
     {
         auto lim = limit.floor();
-        auto ret = charset.codepoints_fast_count(str, str_len, lim);
+        auto ret = charset.count_codepoints_fast(str, str_len, lim);
         STRF_ASSERT(ret.count <= strf::width_max.floor());
         return static_cast<std::uint16_t>(ret.count);
     }
@@ -95,7 +95,7 @@ public:
         , strf::surrogate_policy ) const
     {
         auto lim = limit.floor();
-        auto res = charset.codepoints_fast_count(str, str_len, lim);
+        auto res = charset.count_codepoints_fast(str, str_len, lim);
         STRF_ASSERT(res.count <= lim);
         return { static_cast<std::uint16_t>(res.count), res.pos };
     }
@@ -124,7 +124,7 @@ public:
         , strf::surrogate_policy surr_poli ) const
     {
         auto lim = limit.floor();
-        auto ret = charset.codepoints_robust_count(str, str_len, lim, surr_poli);
+        auto ret = charset.count_codepoints(str, str_len, lim, surr_poli);
         STRF_ASSERT(ret.count <= strf::width_max.floor());
         return static_cast<std::uint16_t>(ret.count);
     }
@@ -138,7 +138,7 @@ public:
         , strf::surrogate_policy surr_poli ) const
     {
         auto lim = limit.floor();
-        auto res = charset.codepoints_robust_count(str, str_len, lim, surr_poli);
+        auto res = charset.count_codepoints(str, str_len, lim, surr_poli);
         STRF_ASSERT(res.count <= lim);
         return { static_cast<std::uint16_t>(res.count), res.pos };
     }
@@ -257,7 +257,7 @@ public:
         if (res.whole_string_covered) {
             return {res.width, str_len};
         }
-        auto res2 = charset.codepoints_robust_count
+        auto res2 = charset.count_codepoints
             (str, str_len, res.codepoints_count, surr_poli);
         return {res.width, res2.pos};
     }
@@ -701,7 +701,7 @@ public:
         if (res.whole_string_covered) {
             return {width, str_len};
         }
-        auto res2 = charset.codepoints_robust_count
+        auto res2 = charset.count_codepoints
             (str, str_len, res.codepoints_count, surr_poli);
         return {width, res2.pos};
     }

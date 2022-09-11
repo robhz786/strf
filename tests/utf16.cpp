@@ -223,45 +223,45 @@ STRF_TEST_FUNC void utf16_sani_find_transcoder()
 }
 
 template <std::size_t N>
-STRF_HD std::size_t utf16_codepoints_robust_count_strict(const char16_t (&str)[N])
+STRF_HD std::size_t utf16_count_codepoints_strict(const char16_t (&str)[N])
 {
-    return strf::utf16_t<char16_t>::codepoints_robust_count
+    return strf::utf16_t<char16_t>::count_codepoints
         (str, N - 1, 100000, strf::surrogate_policy::strict)
         .count;
 }
 
 template <std::size_t N>
-STRF_HD std::size_t utf16_codepoints_robust_count_lax(const char16_t (&str)[N])
+STRF_HD std::size_t utf16_count_codepoints_lax(const char16_t (&str)[N])
 {
-    return strf::utf16_t<char16_t>::codepoints_robust_count
+    return strf::utf16_t<char16_t>::count_codepoints
         (str, N - 1, 100000, strf::surrogate_policy::lax)
         .count;
 }
 
 template <std::size_t N>
-STRF_HD std::size_t utf16_codepoints_fast_count(const char16_t (&str)[N])
+STRF_HD std::size_t utf16_count_codepoints_fast(const char16_t (&str)[N])
 {
-    return strf::utf16_t<char16_t>::codepoints_fast_count(str, N - 1, 100000).count;
+    return strf::utf16_t<char16_t>::count_codepoints_fast(str, N - 1, 100000).count;
 }
 
 STRF_HD void utf16_codepoints_count()
 {
     {   // test valid input
-        TEST_EQ(0, utf16_codepoints_robust_count_strict(u""));
-        TEST_EQ(3, utf16_codepoints_robust_count_strict(u"abc"));
-        TEST_EQ(1, utf16_codepoints_robust_count_strict(u"\uD7FF"));
-        TEST_EQ(1, utf16_codepoints_robust_count_strict(u"\uE000"));
-        TEST_EQ(1, utf16_codepoints_robust_count_strict(u"\U0010FFFF"));
+        TEST_EQ(0, utf16_count_codepoints_strict(u""));
+        TEST_EQ(3, utf16_count_codepoints_strict(u"abc"));
+        TEST_EQ(1, utf16_count_codepoints_strict(u"\uD7FF"));
+        TEST_EQ(1, utf16_count_codepoints_strict(u"\uE000"));
+        TEST_EQ(1, utf16_count_codepoints_strict(u"\U0010FFFF"));
 
-        TEST_EQ(1, utf16_codepoints_robust_count_lax(u"\uD7FF"));
-        TEST_EQ(1, utf16_codepoints_robust_count_lax(u"\uE000"));
-        TEST_EQ(1, utf16_codepoints_robust_count_lax(u"\U0010FFFF"));
+        TEST_EQ(1, utf16_count_codepoints_lax(u"\uD7FF"));
+        TEST_EQ(1, utf16_count_codepoints_lax(u"\uE000"));
+        TEST_EQ(1, utf16_count_codepoints_lax(u"\U0010FFFF"));
 
-        TEST_EQ(0, utf16_codepoints_fast_count(u""));
-        TEST_EQ(3, utf16_codepoints_fast_count(u"abc"));
-        TEST_EQ(1, utf16_codepoints_fast_count(u"\uD7FF"));
-        TEST_EQ(1, utf16_codepoints_fast_count(u"\uE000"));
-        TEST_EQ(1, utf16_codepoints_fast_count(u"\U0010FFFF"));
+        TEST_EQ(0, utf16_count_codepoints_fast(u""));
+        TEST_EQ(3, utf16_count_codepoints_fast(u"abc"));
+        TEST_EQ(1, utf16_count_codepoints_fast(u"\uD7FF"));
+        TEST_EQ(1, utf16_count_codepoints_fast(u"\uE000"));
+        TEST_EQ(1, utf16_count_codepoints_fast(u"\U0010FFFF"));
     }
     {   // when surrogates are allowed
         const char16_t u16str_D800[] = {0xD800, 0};
@@ -269,31 +269,31 @@ STRF_HD void utf16_codepoints_count()
         const char16_t u16str_DC00[] = {0xDC00, 0};
         const char16_t u16str_DFFF[] = {0xDFFF, 0};
 
-        TEST_EQ(1, utf16_codepoints_robust_count_lax(u16str_D800));
-        TEST_EQ(1, utf16_codepoints_robust_count_lax(u16str_DBFF));
-        TEST_EQ(1, utf16_codepoints_robust_count_lax(u16str_DC00));
-        TEST_EQ(1, utf16_codepoints_robust_count_lax(u16str_DFFF));
+        TEST_EQ(1, utf16_count_codepoints_lax(u16str_D800));
+        TEST_EQ(1, utf16_count_codepoints_lax(u16str_DBFF));
+        TEST_EQ(1, utf16_count_codepoints_lax(u16str_DC00));
+        TEST_EQ(1, utf16_count_codepoints_lax(u16str_DFFF));
     }
     {   // invalid sequences
         {
             // high surrogate followed by another high surrogate
             const char16_t str[] = {0xD800, 0xD800, 0};
-            TEST_EQ(2, utf16_codepoints_robust_count_lax(str));
+            TEST_EQ(2, utf16_count_codepoints_lax(str));
         }
         {
             // low surrogate followed by a high surrogate
             const char16_t str[] = {0xDFFF, 0xD800, 0};
-            TEST_EQ(2, utf16_codepoints_robust_count_lax(str));
+            TEST_EQ(2, utf16_count_codepoints_lax(str));
         }
         {
             // a low surrogate
             const char16_t str[] = {0xDFFF, 0};
-            TEST_EQ(1, utf16_codepoints_robust_count_lax(str));
+            TEST_EQ(1, utf16_count_codepoints_lax(str));
         }
         {
             // a high surrogate
             const char16_t str[] = {0xD800, 0};
-            TEST_EQ(1, utf16_codepoints_robust_count_lax(str));
+            TEST_EQ(1, utf16_count_codepoints_lax(str));
         }
     }
     {   // when limit is less than or equal to count
@@ -304,32 +304,32 @@ STRF_HD void utf16_codepoints_count()
         constexpr auto strict = strf::surrogate_policy::strict;
 
         {
-            auto r = charset.codepoints_robust_count(str, str_len, 8, strict);
+            auto r = charset.count_codepoints(str, str_len, 8, strict);
             TEST_EQ(r.pos, str_len);
             TEST_EQ(r.count, 8);
         }
         {
-            auto r = charset.codepoints_robust_count(str, str_len, 7, strict);
+            auto r = charset.count_codepoints(str, str_len, 7, strict);
             TEST_EQ(r.pos, str_len - 2);
             TEST_EQ(r.count, 7);
         }
         {
-            auto r = charset.codepoints_robust_count(str, str_len, 0, strict);
+            auto r = charset.count_codepoints(str, str_len, 0, strict);
             TEST_EQ(r.pos, 0);
             TEST_EQ(r.count, 0);
         }
         {
-            auto r = charset.codepoints_fast_count(str, str_len, 8);
+            auto r = charset.count_codepoints_fast(str, str_len, 8);
             TEST_EQ(r.pos, str_len);
             TEST_EQ(r.count, 8);
         }
         {
-            auto r = charset.codepoints_fast_count(str, str_len, 7);
+            auto r = charset.count_codepoints_fast(str, str_len, 7);
             TEST_EQ(r.pos, str_len - 2);
             TEST_EQ(r.count, 7);
         }
         {
-            auto r = charset.codepoints_fast_count(str, str_len, 0);
+            auto r = charset.count_codepoints_fast(str, str_len, 0);
             TEST_EQ(r.pos, 0);
             TEST_EQ(r.count, 0);
         }

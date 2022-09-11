@@ -280,7 +280,7 @@ template <typename Charset>
 [horizontal]
 Return value:::
 * `0`, if `limit \<= 0` is `true`
-* otherwise, `cs.<<Charset_codepoints_fast_count,codepoints_fast_count>>(str, str_len, limit.floor()).count`.
+* otherwise, `cs.<<Charset_count_codepoints_fast,count_codepoints_fast>>(str, str_len, limit.floor()).count`.
 ====
 [[width_as_fast_u32len_str_width_and_pos]]
 ====
@@ -299,7 +299,7 @@ Return value::: The return value `ret` is such that
 
 * If `limit \<= 0` is `true`, then then `ret.width` and `ret.pos` are `0`;
 * otherwise, `ret.width` is equal to `ret2.count` and `ret.pos` is equal
-  to `cs.<<Charset_codepoints_fast_count,codepoints_fast_count>>(str, str_len, lim).pos`
+  to `cs.<<Charset_count_codepoints_fast,count_codepoints_fast>>(str, str_len, lim).pos`
 ====
 
 === Class `width_as_u32len_t` [[width_as_u32len]]
@@ -368,7 +368,7 @@ template <typename Charset>
 [horizontal]
 Return value:::
 * `0`, if `limit \<= 0` is `true`
-* otherwise, `cs.<<Charset_codepoints_robust_count,codepoints_robust_count>>(str, str_len, limit.floor()).count`.
+* otherwise, `cs.<<Charset_count_codepoints,count_codepoints>>(str, str_len, limit.floor()).count`.
 ====
 [[width_as_u32len_str_width_and_pos]]
 ====
@@ -387,7 +387,7 @@ Return value::: The return value `ret` is such that
 
 * If `limit \<= 0` is `true`, then then `ret.width` and `ret.pos` are `0`;
 * otherwise, `ret.width` is equal to `ret2.count` and `ret.pos` is equal to
-  `cs.<<Charset_codepoints_robust_count,codepoints_robust_count>>(str, str_len, lim).pos`
+  `cs.<<Charset_count_codepoints,count_codepoints>>(str, str_len, lim).pos`
 ====
 
 === Class template `width_by_func` __( deprecated )__ [[width_by_func]]

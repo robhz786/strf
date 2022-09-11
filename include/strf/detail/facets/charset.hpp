@@ -229,23 +229,38 @@ void trivial_fill_f
 
 } // namespace detail
 
-struct codepoints_count_result {
+struct count_codepoints_result {
     std::size_t count;
     std::size_t pos;
 };
 
 template <typename CharT>
-using codepoints_fast_count_f = strf::codepoints_count_result (*)
+using count_codepoints_fast_f = strf::count_codepoints_result (*)
     ( const CharT* src
     , std::size_t src_size
     , std::size_t max_count );
 
 template <typename CharT>
-using codepoints_robust_count_f = strf::codepoints_count_result (*)
+using count_codepoints_f = strf::count_codepoints_result (*)
     ( const CharT* src
     , std::size_t src_size
     , std::size_t max_count
     , strf::surrogate_policy surr_poli );
+
+
+using codepoints_count_result
+    STRF_DEPRECATED_MSG("codepoints_count_result was renamed to count_codepoints_result")
+     = count_codepoints_result;
+
+template <typename CharT>
+using codepoints_fast_count_f
+    STRF_DEPRECATED_MSG("codepoints_fast_count_f was renamed to count_codepoints_fast_f")
+    = count_codepoints_fast_f<CharT>;
+
+template <typename CharT>
+using codepoints_robust_count_f
+    STRF_DEPRECATED_MSG("codepoints_robust_count_f was renamed to count_codepoints_f")
+     = count_codepoints_f<CharT>;
 
 template <typename CharT>
 using decode_unit_f = char32_t (*)
@@ -323,8 +338,8 @@ struct dynamic_charset_data
         , strf::encoded_char_size_f encoded_char_size_func_
         , strf::encode_char_f<CharT> encode_char_func_
         , strf::encode_fill_f<CharT> encode_fill_func_
-        , strf::codepoints_fast_count_f<CharT> codepoints_fast_count_func_
-        , strf::codepoints_robust_count_f<CharT> codepoints_robust_count_func_
+        , strf::count_codepoints_fast_f<CharT> count_codepoints_fast_func_
+        , strf::count_codepoints_f<CharT> count_codepoints_func_
         , strf::write_replacement_char_f<CharT> write_replacement_char_func_
         , strf::decode_unit_f<CharT> decode_unit_func_
         , strf::dynamic_transcoder<CharT, CharT> sanitizer_
@@ -353,8 +368,8 @@ struct dynamic_charset_data
         , encoded_char_size_func(encoded_char_size_func_)
         , encode_char_func(encode_char_func_)
         , encode_fill_func(encode_fill_func_)
-        , codepoints_fast_count_func(codepoints_fast_count_func_)
-        , codepoints_robust_count_func(codepoints_robust_count_func_)
+        , count_codepoints_fast_func(count_codepoints_fast_func_)
+        , count_codepoints_func(count_codepoints_func_)
         , write_replacement_char_func(write_replacement_char_func_)
         , decode_unit_func(decode_unit_func_)
         , sanitizer(sanitizer_)
@@ -379,8 +394,8 @@ struct dynamic_charset_data
     strf::encoded_char_size_f encoded_char_size_func;
     strf::encode_char_f<CharT> encode_char_func;
     strf::encode_fill_f<CharT> encode_fill_func;
-    strf::codepoints_fast_count_f<CharT> codepoints_fast_count_func;
-    strf::codepoints_robust_count_f<CharT> codepoints_robust_count_func;
+    strf::count_codepoints_fast_f<CharT> count_codepoints_fast_func;
+    strf::count_codepoints_f<CharT> count_codepoints_func;
     strf::write_replacement_char_f<CharT> write_replacement_char_func;
     strf::decode_unit_f<CharT> decode_unit_func;
 
@@ -476,16 +491,16 @@ public:
     {
         data_->encode_fill_func(dest, count, ch);
     }
-    STRF_HD strf::codepoints_count_result codepoints_fast_count
+    STRF_HD strf::count_codepoints_result count_codepoints_fast
         ( const code_unit* src, std::size_t src_size, std::size_t max_count ) const
     {
-        return data_->codepoints_fast_count_func(src, src_size, max_count);
+        return data_->count_codepoints_fast_func(src, src_size, max_count);
     }
-    STRF_HD strf::codepoints_count_result codepoints_robust_count
+    STRF_HD strf::count_codepoints_result count_codepoints
         ( const code_unit* src, std::size_t src_size
         , std::size_t max_count, strf::surrogate_policy surr_poli ) const
     {
-        return data_->codepoints_robust_count_func(src, src_size, max_count, surr_poli);
+        return data_->count_codepoints_func(src, src_size, max_count, surr_poli);
     }
     STRF_HD void write_replacement_char(strf::transcode_dest<CharT>& dest) const
     {

@@ -2438,7 +2438,7 @@ public:
     static STRF_HD void encode_fill
         ( strf::transcode_dest<CharT>& dest, std::size_t count, char32_t ch );
 
-    static STRF_HD strf::codepoints_count_result codepoints_fast_count
+    static STRF_HD strf::count_codepoints_result count_codepoints_fast
         ( const CharT* src, std::size_t src_size
         , std::size_t max_count ) noexcept
     {
@@ -2448,7 +2448,7 @@ public:
         }
         return {src_size, src_size};
     }
-    static STRF_HD strf::codepoints_count_result codepoints_robust_count
+    static STRF_HD strf::count_codepoints_result count_codepoints
         ( const CharT* src, std::size_t src_size
         , std::size_t max_count, strf::surrogate_policy surr_poli ) noexcept
     {
@@ -2532,8 +2532,8 @@ public:
     {
         static const strf::dynamic_charset_data<CharT> data = {
             name(), id(), replacement_char(), 1, validate, encoded_char_size,
-            encode_char, encode_fill, codepoints_fast_count,
-            codepoints_robust_count, write_replacement_char, decode_unit,
+            encode_char, encode_fill, count_codepoints_fast,
+            count_codepoints, write_replacement_char, decode_unit,
             strf::dynamic_transcoder<CharT, CharT>{sanitizer()},
             strf::dynamic_transcoder<char32_t, CharT>{from_u32()},
             strf::dynamic_transcoder<CharT, char32_t>{to_u32()},
@@ -2558,8 +2558,8 @@ public:
     {
         return {
             name(), id(), replacement_char(), 1, validate, encoded_char_size,
-            encode_char, encode_fill, codepoints_fast_count,
-            codepoints_robust_count, write_replacement_char, decode_unit,
+            encode_char, encode_fill, count_codepoints_fast,
+            count_codepoints, write_replacement_char, decode_unit,
             strf::dynamic_transcoder<CharT, CharT>{sanitizer()},
             strf::dynamic_transcoder<char32_t, CharT>{from_u32()},
             strf::dynamic_transcoder<CharT, char32_t>{to_u32()},
