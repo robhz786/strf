@@ -100,7 +100,7 @@ template <typename T, unsigned Log2BufferSpace>
 class output_buffer: output_buffer<T, Log2BufferSpace - 1>
 {
 public:
-    static constexpr std::size_t buffer_space_after_recycle = 1ull << Log2BufferSpace;
+    static constexpr std::size_t min_space_after_recycle = 1ull << Log2BufferSpace;
 
 protected:
     using output_buffer<T, Log2BufferSpace - 1>::output_buffer;
@@ -110,7 +110,7 @@ template <typename T>
 class output_buffer<T, 0>
 {
 public:
-    static constexpr std::size_t buffer_space_after_recycle = 1;
+    static constexpr std::size_t min_space_after_recycle = 1;
     using value_type = T;
 
     output_buffer(const output_buffer&) = delete;
@@ -213,7 +213,7 @@ virtual void recycle_buffer() = 0;
 ----
 [horizontal]
 Posconditions::
-- `{buffer_space}() >= buffer_space_after_recycle`
+- `{buffer_space}() >= min_space_after_recycle`
 - The range [ `{buffer_ptr}()`, `{buffer_end}()` ) is valid accessible memory area
 - If the return value of `{good}()` was `false` before this call to `{recycle_buffer}()`, then `{good}()` remains returning `false`.
 ====
@@ -234,7 +234,7 @@ void ensure(std::size_t s)
 ----
 [horizontal]
 Effect:: Calls `{recycle_buffer}()` if `{buffer_space}() < s`.
-Precondition:: `s \<= buffer_space_after_recycle`
+Precondition:: `s \<= min_space_after_recycle`
 Postcondition:: `{buffer_space}() >= s`
 ====
 [[output_buffer_advance_to]]

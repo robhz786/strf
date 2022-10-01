@@ -26,11 +26,11 @@ template <typename T, unsigned Log2BufferSpace>
 class output_buffer: public output_buffer<T, Log2BufferSpace - 1>
 {
 public:
-    static constexpr std::size_t buffer_space_after_recycle
+    static constexpr std::size_t min_space_after_recycle
         = (std::size_t)1 << Log2BufferSpace;
 
     STRF_HD void ensure(std::size_t s) {
-        STRF_ASSERT(s <= buffer_space_after_recycle);
+        STRF_ASSERT(s <= min_space_after_recycle);
         STRF_IF_UNLIKELY (this->buffer_ptr() + s > this->buffer_end()) {
             this->recycle_buffer();
         }
@@ -39,7 +39,7 @@ public:
 
     STRF_HD void flush() {
         this->recycle_buffer();
-        STRF_ASSERT(this->buffer_space() >= buffer_space_after_recycle);
+        STRF_ASSERT(this->buffer_space() >= min_space_after_recycle);
     }
 
 protected:
@@ -50,7 +50,7 @@ template <typename T>
 class output_buffer<T, 0>
 {
 public:
-    static constexpr std::size_t buffer_space_after_recycle = 1;
+    static constexpr std::size_t min_space_after_recycle = 1;
     using value_type = T;
 
     STRF_HD output_buffer(const output_buffer&) = delete;

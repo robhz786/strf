@@ -473,7 +473,7 @@ private:
     const char* srcfile_;
     int srcline_;
     constexpr static std::size_t buffsize_ =
-        strf::destination<char>::buffer_space_after_recycle;
+        strf::destination<char>::min_space_after_recycle;
     char buff_[buffsize_];
 };
 
