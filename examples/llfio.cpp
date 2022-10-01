@@ -48,7 +48,7 @@ public:
         (void) close();
     }
 
-    void recycle_buffer() noexcept override;
+    void recycle() noexcept override;
 
     llfio::result<void> close() noexcept;
 
@@ -87,7 +87,7 @@ private:
 };
 
 template <typename CharT, std::size_t BufferSize>
-void llfio_file_writer<CharT, BufferSize>::recycle_buffer() noexcept
+void llfio_file_writer<CharT, BufferSize>::recycle() noexcept
 {
     if (this->good()) {
         std::size_t chars_count = this->buffer_ptr() - buffer_;

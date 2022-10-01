@@ -238,7 +238,7 @@ static_cast<const printer<CharT>&>(p).<<printer,print_to>>(dest);
 ----
 statisfies the following postconditions when `PrePriting::<<preprinting,size_required>>` is `true`:
 
-*  if `predicted_size \<= dest_buff_space` is `true` then `dest.recycle_buffer()` is not called.
+*  if `predicted_size \<= dest_buff_space` is `true` then `dest.recycle()` is not called.
 ====
 
 ====

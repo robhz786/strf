@@ -434,7 +434,7 @@ public:
 #endif
     }
 
-    STRF_HD void recycle_buffer() override {
+    STRF_HD void recycle() override {
         do_recycle();
     }
 
@@ -528,7 +528,7 @@ public:
 
     using char_type = CharOut;
 
-    void STRF_HD recycle_buffer() override;
+    void STRF_HD recycle() override;
 
     void STRF_HD finish();
 
@@ -576,10 +576,10 @@ STRF_HD input_tester<CharOut>::~input_tester()
 }
 
 template <typename CharOut>
-void STRF_HD input_tester<CharOut>::recycle_buffer()
+void STRF_HD input_tester<CharOut>::recycle()
 {
     strf::to(notifier_)
-        (" destination::recycle_buffer() called "
+        (" destination::recycle() called "
          "( it means the calculated size too small ).\n");
 
     if ( this->buffer_ptr() + strf::destination_space_after_flush
@@ -772,13 +772,13 @@ public:
         }
     }
 
-    STRF_HD void recycle_buffer() override;
+    STRF_HD void recycle() override;
 
     STRF_HD void finish();
 
 private:
 
-    bool recycle_buffer_not_called_yet = true;
+    bool recycle_not_called_yet = true;
     strf::detail::simple_string_view<CharT> expected_;
     test_failure_notifier notifier_;
     CharT* dest_end_;
@@ -788,16 +788,16 @@ private:
 };
 
 template <typename CharT>
-STRF_HD void recycle_call_tester<CharT>::recycle_buffer()
+STRF_HD void recycle_call_tester<CharT>::recycle()
 {
-    if (recycle_buffer_not_called_yet) {
+    if (recycle_not_called_yet) {
         if (this->buffer_ptr() > this->buffer_end()) {
             strf::to(notifier_) ( "\nContent written after buffer_end()." );
         }
         this->set_buffer_end(buffer_ + buffer_size_);
-        recycle_buffer_not_called_yet = false;
+        recycle_not_called_yet = false;
     } else {
-        strf::to(notifier_) ( "\nrecycle_buffer() called more than once here.");
+        strf::to(notifier_) ( "\nrecycle() called more than once here.");
         this->set_good(false);
         this->set_buffer_ptr(strf::garbage_buff<CharT>());
         this->set_buffer_end(strf::garbage_buff_end<CharT>());
@@ -807,8 +807,8 @@ STRF_HD void recycle_call_tester<CharT>::recycle_buffer()
 template <typename CharT>
 STRF_HD void recycle_call_tester<CharT>::finish()
 {
-    if (recycle_buffer_not_called_yet) {
-        strf::to(notifier_) ( "\nrecycle_buffer() was not called.");
+    if (recycle_not_called_yet) {
+        strf::to(notifier_) ( "\nrecycle() was not called.");
     }
     if (this->good()) {
         dest_end_ = this->buffer_ptr();
@@ -882,7 +882,7 @@ public:
         }
     }
 
-    STRF_HD void recycle_buffer() override;
+    STRF_HD void recycle() override;
 
     STRF_HD void finish();
 
@@ -904,7 +904,7 @@ private:
         strf::to(test_utils::test_messages_destination()) (args...);
     }
 
-    bool recycle_buffer_not_called_yet = true;
+    bool recycle_not_called_yet = true;
     bool error_message_emitted_ = false;
     strf::detail::simple_string_view<CharT> expected_;
     const char* function_;
@@ -917,16 +917,16 @@ private:
 };
 
 template <typename CharT>
-STRF_HD void failed_recycle_call_tester<CharT>::recycle_buffer()
+STRF_HD void failed_recycle_call_tester<CharT>::recycle()
 {
-    if (recycle_buffer_not_called_yet) {
+    if (recycle_not_called_yet) {
         if (this->buffer_ptr() > this->buffer_end()) {
             emit_error_message_( "\nContent written after buffer_end()." );
         }
         dest_end_ = this->buffer_ptr();
-        recycle_buffer_not_called_yet = false;
+        recycle_not_called_yet = false;
     } else {
-        emit_error_message_( "\nrecycle_buffer() called more than once here.");
+        emit_error_message_( "\nrecycle() called more than once here.");
     }
     this->set_good(false);
     this->set_buffer_ptr(strf::garbage_buff<CharT>());
@@ -936,7 +936,7 @@ STRF_HD void failed_recycle_call_tester<CharT>::recycle_buffer()
 template <typename CharT>
 STRF_HD void failed_recycle_call_tester<CharT>::finish()
 {
-    if (recycle_buffer_not_called_yet) {
+    if (recycle_not_called_yet) {
         dest_end_ = this->buffer_ptr();
     }
     this->set_good(false);

@@ -44,7 +44,7 @@ public:
         }
     }
 
-    void recycle_buffer() override {
+    void recycle() override {
         std::streamsize count = this->buffer_ptr() - buf_;
         this->set_buffer_ptr(buf_);
         STRF_IF_LIKELY (this->good()) {

@@ -106,7 +106,7 @@ public:
     basic_string_maker();
     basic_string_maker(const basic_string_maker&) = delete;
     basic_string_maker(basic_string_maker&&) = delete;
-    void recycle_buffer() override;
+    void recycle() override;
     basic_string<CharT, Traits, Allocator> finish();
 };
 
@@ -125,11 +125,11 @@ using u8string_maker  = basic_string_maker<char8_t>;
 ====
 [source,cpp]
 ----
-void recycle_buffer() override;
+void recycle() override;
 ----
 [horizontal]
 Effects::
-- If `good()` is `true` then calls `str.append(p0, buffer_ptr())`, where `str` is the private string object that is later returned by `finish()`, and `p0` is the value that `buffer_ptr()` would return before any call to `advance` and `advance_to` since the last call to `recycle_buffer()`, or since this object's contruction, whatever happened last.
+- If `good()` is `true` then calls `str.append(p0, buffer_ptr())`, where `str` is the private string object that is later returned by `finish()`, and `p0` is the value that `buffer_ptr()` would return before any call to `advance` and `advance_to` since the last call to `recycle()`, or since this object's contruction, whatever happened last.
 - Calls `set_buffer_ptr` and/or `set_buffer_end`.
 Postconditions:: `buffer_space() >= {destination_space_after_flush}`
 ====
@@ -139,7 +139,7 @@ Postconditions:: `buffer_space() >= {destination_space_after_flush}`
 basic_string<CharT, Traits, Allocator> finish()
 ----
 [horizontal]
-Effects:: Calls `recycle_buffer()` and `set_good(false)` and returns the internal string.
+Effects:: Calls `recycle()` and `set_good(false)` and returns the internal string.
 Postconditions:: `good() == false`
 ====
 
@@ -160,7 +160,7 @@ public:
     basic_sized_string_maker(const basic_sized_string_maker&) = delete;
     basic_sized_string_maker(basic_sized_string_maker&&) = delete;
 
-    void recycle_buffer() override;
+    void recycle() override;
     std::basic_string<CharT, Traits, Allocator> finish();
 };
 
@@ -206,7 +206,7 @@ public:
     explicit basic_string_appender(basic_string<CharT, Traits, Allocator>& dest);
     basic_string_appender(const basic_string_appender&) = delete;
     basic_string_appender(basic_string_appender&&) = delete;
-    void recycle_buffer() override;
+    void recycle() override;
     void finish();
 };
 
@@ -224,11 +224,11 @@ using wstring_appender   = basic_string_appender<wchar_t>;
 ====
 [source,cpp]
 ----
-void recycle_buffer() override;
+void recycle() override;
 ----
 [horizontal]
 Effects::
-- If `good()` is `true` then calls `str.append(p0, buffer_ptr())`, where `str` is the reference that this object was initialized with, and `p0` is the return value of `buffer_ptr()` before any call to `advance` and `advance_to` since the last call to `recycle_buffer()` ( all in this object ), or since this object's contruction, whatever happened last.
+- If `good()` is `true` then calls `str.append(p0, buffer_ptr())`, where `str` is the reference that this object was initialized with, and `p0` is the return value of `buffer_ptr()` before any call to `advance` and `advance_to` since the last call to `recycle()` ( all in this object ), or since this object's contruction, whatever happened last.
 - Calls `set_buffer_ptr` and/or `set_buffer_end`.
 Postconditions:: `buffer_space() >= {destination_space_after_flush}`
 ====
@@ -238,7 +238,7 @@ Postconditions:: `buffer_space() >= {destination_space_after_flush}`
 void finish()
 ----
 [horizontal]
-Effects:: Calls `recycle_buffer()` and `set_good(false)`.
+Effects:: Calls `recycle()` and `set_good(false)`.
 Postcondition:: `good() == false`
 ====
 

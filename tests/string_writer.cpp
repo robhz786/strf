@@ -22,7 +22,7 @@ static void test_string_appender()
         TEST_TRUE(str == tiny_str);
     }
 
-    {   // when nor recycle_buffer() neither do_write() is called
+    {   // when nor recycle() neither do_write() is called
         std::basic_string<CharT> str = tiny_str;
         strf::basic_string_appender<CharT> dest(str);
         dest.write(&tiny_str2[0], tiny_str2.size());
@@ -30,7 +30,7 @@ static void test_string_appender()
         TEST_TRUE(str == tiny_str + tiny_str2);
     }
 
-    {   // when recycle_buffer() is called
+    {   // when recycle() is called
         std::basic_string<CharT> str = tiny_str;
         strf::basic_string_appender<CharT> dest(str);
 
@@ -95,14 +95,14 @@ static void test_string_maker()
         auto str = dest.finish();
         TEST_TRUE(str.empty());
     }
-    {   // when nor recycle_buffer() neither do_write() is called
+    {   // when nor recycle() neither do_write() is called
         strf::basic_string_maker<CharT> dest;
         dest.write(&tiny_str[0], tiny_str.size());
         dest.write(&tiny_str2[0], tiny_str2.size());
         auto str = dest.finish();
         TEST_TRUE(str == tiny_str + tiny_str2);
     }
-    {   // when recycle_buffer() is called
+    {   // when recycle() is called
         strf::basic_string_maker<CharT> dest;
         const std::size_t count0 = dest.buffer_space() > 5 ? dest.buffer_space() - 5 : 0;
         auto part0 = test_utils::make_random_std_string<CharT>(count0);
@@ -165,14 +165,14 @@ static void test_sized_string_maker()
         auto str = dest.finish();
         TEST_TRUE(str == tiny_str);
     }
-    {   // when nor recycle_buffer() neither do_write() is called
+    {   // when nor recycle() neither do_write() is called
         strf::basic_sized_string_maker<CharT> dest(tiny_str.size() + tiny_str2.size());
         dest.write(&tiny_str[0], tiny_str.size());
         dest.write(&tiny_str2[0], tiny_str2.size());
         auto str = dest.finish();
         TEST_TRUE(str == tiny_str + tiny_str2);
     }
-    {   // when nor recycle_buffer() neither do_write() is called
+    {   // when nor recycle() neither do_write() is called
         // and the content is smaller than the reserved size
         strf::basic_sized_string_maker<CharT> dest(tiny_str.size() + tiny_str2.size() + 20);
         dest.write(&tiny_str[0], tiny_str.size());

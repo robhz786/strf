@@ -413,7 +413,7 @@ unsupported codepoint ) is not `0xFFFD`.
 
 
 Precondition:: `x.transcode_func() != nullptr` is `true`
-Postconditions:: `dest.recycle_buffer()` is not called() if
+Postconditions:: `dest.recycle()` is not called() if
         `dest.buffer_space() >= x.transcode_size(src, src_size, surr_poli)` is `true`.
 ====
 [[Transcoder_transcode_size_func]]
@@ -1575,7 +1575,7 @@ Converts the content in `src` to UTF-32 using `to_u32`,
 then writes the result to `dest` using `from_u32`.
 
 [horizontal]
-Postcondition:: `dest.<<destination_hpp#output_buffer_recycle_buffer,recycle_buffer>>()` is not called if
+Postcondition:: `dest.<<destination_hpp#output_buffer_recycle,recycle>>()` is not called if
 `dest.<<destination_hpp#output_buffer_buffer_space,buffer_space>>()` is not less then the value returned by
 `{decode_encode_size}(to_u32, size_calc_func, src, src_size, err_notifier, surr_poli)`,
 where `size_calc_func` is the return value of

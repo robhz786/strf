@@ -1435,7 +1435,7 @@ STRF_HD void test_std_width_decrementer_with_pos()
         TEST_TRUE(width == 1);
         TEST_TRUE(res.whole_string_covered);
     }
-    {   // when the remaining width is not zero, and recycle_buffer() is called
+    {   // when the remaining width is not zero, and recycle() is called
         // immediatelly before_remaining_width_and_codepoints_count
         strf::detail::std_width_decrementer_with_pos decr{(strf::width_t::max)()};
         puts(decr, U32_XPIC);
@@ -1464,7 +1464,7 @@ STRF_HD void test_std_width_decrementer_with_pos()
         TEST_EQ(res.codepoints_count, 40);
     }
     {   // when the remaining width is zero, but all input was processed
-        // and recycle_buffer() is called immediatelly before
+        // and recycle() is called immediatelly before
         // get_remaining_width_and_codepoints_count
         strf::detail::std_width_decrementer_with_pos decr{4};
         puts(decr, U"ABC");
@@ -1493,7 +1493,7 @@ STRF_HD void test_std_width_decrementer_with_pos()
     }
     {   // when the remaining width becames zero before
         // the whole content is processed
-        // and recycle_buffer() is called immediatelly before
+        // and recycle() is called immediatelly before
         // get_remaining_width_and_codepoints_count
         strf::detail::std_width_decrementer_with_pos decr{4};
         puts(decr, U"ABC");

@@ -912,7 +912,7 @@ public:
     {
     }
 
-    STRF_HD void recycle_buffer() override;
+    STRF_HD void recycle() override;
 
     STRF_HD void finish()
     {
@@ -936,7 +936,7 @@ private:
 
 
 template <typename DestCharT>
-STRF_HD void buffered_encoder<DestCharT>::recycle_buffer()
+STRF_HD void buffered_encoder<DestCharT>::recycle()
 {
     auto p = this->buffer_ptr();
     this->set_buffer_ptr(buff_);
@@ -960,7 +960,7 @@ public:
     {
     }
 
-    STRF_HD void recycle_buffer() override;
+    STRF_HD void recycle() override;
 
     STRF_HD std::size_t get_sum()
     {
@@ -979,7 +979,7 @@ private:
 
 #if ! defined(STRF_OMIT_IMPL)
 
-STRF_FUNC_IMPL STRF_HD void buffered_size_calculator::recycle_buffer()
+STRF_FUNC_IMPL STRF_HD void buffered_size_calculator::recycle()
 {
     auto p = this->buffer_ptr();
     STRF_IF_LIKELY (p != buff_) {

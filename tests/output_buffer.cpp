@@ -94,7 +94,7 @@ STRF_TEST_FUNC void test_output_buffer_functions()
         test_utils::recycle_call_tester<char> dest
                 { {"abcd", BOOST_CURRENT_FUNCTION, __FILE__, __LINE__, 3} };
 
-        // When put does not call recycle_buffer()
+        // When put does not call recycle()
         strf::put(dest, 'a');
         strf::put(dest, 'b');
         strf::put(dest, 'c');
@@ -142,7 +142,7 @@ STRF_TEST_FUNC void test_output_buffer_functions()
         }
     }
     {
-        // When output_buffer<CharT>::do_write() calls recycle_buffer()
+        // When output_buffer<CharT>::do_write() calls recycle()
         // and the good() afterwards is false
         test_utils::failed_recycle_call_tester<char> dest
                 { {"abcde", BOOST_CURRENT_FUNCTION, __FILE__, __LINE__, 5} };

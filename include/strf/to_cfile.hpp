@@ -98,7 +98,7 @@ public:
         }
     }
 
-    STRF_HD void recycle_buffer() noexcept override {
+    STRF_HD void recycle() noexcept override {
         auto p = this->buffer_ptr();
         this->set_buffer_ptr(buff_);
         STRF_IF_LIKELY (this->good()) {
@@ -173,7 +173,7 @@ public:
     ~narrow_cfile_writer() = default;
 
     using result = typename impl_::result;
-    using impl_::recycle_buffer;
+    using impl_::recycle;
     using impl_::finish;
 
 private:
@@ -203,7 +203,7 @@ public:
     ~wide_cfile_writer() = default;
 
     using result = typename impl_::result;
-    using impl_::recycle_buffer;
+    using impl_::recycle;
     using impl_::finish;
 
 private:

@@ -69,7 +69,7 @@ void when_finish_is_not_called_but_state_is_bad_anyway()
 }
 
 template <typename CharT>
-void test_failing_to_recycle_buffer()
+void test_failing_to_recycle()
 {
     auto half_str = test_utils::make_half_string<CharT>();
 
@@ -208,10 +208,10 @@ void test_streambuf_writer()
     when_finish_is_not_called_but_state_is_bad_anyway<char32_t>();
     when_finish_is_not_called_but_state_is_bad_anyway<wchar_t>();
 
-    test_failing_to_recycle_buffer<char>();
-    test_failing_to_recycle_buffer<char16_t>();
-    test_failing_to_recycle_buffer<char32_t>();
-    test_failing_to_recycle_buffer<wchar_t>();
+    test_failing_to_recycle<char>();
+    test_failing_to_recycle<char16_t>();
+    test_failing_to_recycle<char32_t>();
+    test_failing_to_recycle<wchar_t>();
 
     test_failing_to_finish<char>();
     test_failing_to_finish<char16_t>();

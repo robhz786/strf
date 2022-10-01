@@ -59,7 +59,7 @@ public:
     narrow_cfile_writer(narrow_cfile_writer&&) = delete;
     ~narrow_cfile_writer();
 
-    void recycle_buffer() noexcept;
+    void recycle() noexcept;
 
     struct result  {
         std::size_t count;
@@ -81,19 +81,19 @@ private:
 ~narrow_cfile_writer();
 ----
 [horizontal]
-Effect:: Calls `recycle_buffer()`
+Effect:: Calls `recycle()`
 ====
 ====
 [source,cpp]
 ----
-void recycle_buffer() override;
+void recycle() override;
 ----
 [horizontal]
 Effects::
 - If `good() == true`, calls `std::fwrite(p0, buffer_ptr() - p0, sizeof(CharT), dest)`,
     where `dest` is the `FILE{asterisk}` used to initialize this object, and
     `p0` is value `buffer_ptr()` would return before any call to `advance` and `advance_to`
-    since the last call to `recycle_buffer()`, or since this object's contruction,
+    since the last call to `recycle()`, or since this object's contruction,
     whatever happened last.
 -  If the returned value of `std::fwrite` is less than `(buffer_ptr() - p0)`, calls `set_good(false)`.
 -  Calls `set_buffer_ptr` and/or `set_buffer_end`.
@@ -106,7 +106,7 @@ result finish();
 ----
 [horizontal]
 Effects::
-- Calls `recycle_buffer()` and `set_good(false)`.
+- Calls `recycle()` and `set_good(false)`.
 Return value::
 - `result::count` is the sum of values returned by all calls `std::fwrite` done by this object.
 - `result::success` is the value `good()` would return before this call to `finish()`
@@ -128,7 +128,7 @@ public:
     wide_cfile_writer(narrow_cfile_writer&&) = delete;
     ~wide_cfile_writer();
 
-    void recycle_buffer() noexcept;
+    void recycle() noexcept;
 
     struct result {
         std::size_t count;
@@ -147,16 +147,16 @@ public:
 ~wide_cfile_writer();
 ----
 [horizontal]
-Effect:: Calls `recycle_buffer()`
+Effect:: Calls `recycle()`
 ====
 ====
 [source,cpp]
 ----
-void recycle_buffer() override;
+void recycle() override;
 ----
 [horizontal]
 Effects::
-- If `good() == true`, for each character `ch` in the range [ `p0`, `buffer_ptr()` ) calls `std::fputwc(ch, dest)`, until WEOF is returned or the whole range is read, where `dest` is the `FILE{asterisk}` used to initialize this object, and `p0` is the value `buffer_ptr()` would return before any call to `advance` and `advance_to` since the last call to `recycle_buffer()`, or since this object's contruction, whatever happened last.
+- If `good() == true`, for each character `ch` in the range [ `p0`, `buffer_ptr()` ) calls `std::fputwc(ch, dest)`, until WEOF is returned or the whole range is read, where `dest` is the `FILE{asterisk}` used to initialize this object, and `p0` is the value `buffer_ptr()` would return before any call to `advance` and `advance_to` since the last call to `recycle()`, or since this object's contruction, whatever happened last.
 - If `std::fputwc` returns `WEOF`, calls `set_good(false)`.
 - Calls `set_buffer_ptr` and/or `set_buffer_end`.
 ====
@@ -167,7 +167,7 @@ result finish();
 ----
 [horizontal]
 Effects::
-- Calls `recycle_buffer()` and `set_good(false)`.
+- Calls `recycle()` and `set_good(false)`.
 Return value::
 - `result::count` is the number of calls to `std::fputwc` by this object that did not return WEOF .
 - `result::success` is the value `good()` would return before this call to `finish()`

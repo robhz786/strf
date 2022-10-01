@@ -14,7 +14,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 
 :output_buffer: <<destination_hpp#output_buffer,output_buffer>>
 :destination: <<destination_hpp#destination,destination>>
-:recycle_buffer: <<destination_hpp#output_buffer_recycle_buffer,recycle_buffer>>
+:recycle: <<destination_hpp#output_buffer_recycle,recycle>>
 :flush: <<destination_hpp#output_buffer_flush,flush>>
 :good: <<destination_hpp#output_buffer_good,good>>
 :buffer_ptr: <<destination_hpp#output_buffer_buffer_ptr,buffer_ptr>>
@@ -64,7 +64,7 @@ its buffer.
 [source,cpp,subs=normal]
 ----
 if (dst.{buffer_space}() < 5) {
-    dst.recycle_buffer();
+    dst.recycle();
 }
 memcpy(dst.buffer_ptr(), "hello", 5);
 dst.advance(5);
@@ -72,16 +72,16 @@ dst.advance(5);
 
 As demonstrated above, before writting anything to `buffer_ptr()`, one
 must check whether there is enough space,
-and if not, one must call the `{recycle_buffer}` function
-( or `{flush}`, which calls `recycle_buffer` ).
+and if not, one must call the `{recycle}` function
+( or `{flush}`, which calls `recycle` ).
 This is the only pure virtual function in `{destination}`;
 its job is to flush the content written so far and reset the position of
-`buffer_ptr()` and `buffer_end()`. After `{recycle_buffer}` is called,
+`buffer_ptr()` and `buffer_end()`. After `{recycle}` is called,
 the buffer's space ( `buffer_end() - buffer_ptr()` ) is
 guaranteed to be at least `{destination_space_after_flush}`
 ( which is currently `64` but may be greater in future versions ).
 This is a postcondition even when the state is "bad".
-The state may change from "good" to "bad" in `{recycle_buffer}`,
+The state may change from "good" to "bad" in `{recycle}`,
 but never from "bad" to "good".
 The "bad" state implies that writting
 anything in the range [`buffer_ptr(), buffer_end()`) has no relevent
@@ -119,7 +119,7 @@ public:
     my_destination(const my_destination&) = delete;
     ~my_destination();
 
-    void recycle_buffer() override;
+    void recycle() override;
     void finish();
 
 private:
@@ -133,11 +133,11 @@ private:
 The `print` member function above represents the code
 that would send the content to the actual destination,
 whatever it is. If `print` never throws, then
-`recycle_buffer` could be implemented like below:
+`recycle` could be implemented like below:
 
 [source,cpp,subs=normal]
 ----
-void my_destination::recycle_buffer()
+void my_destination::recycle()
 {
     if ({good}()) {
         bool success = print(buff, {buffer_ptr}());
@@ -151,7 +151,7 @@ Otherwise, it makes more sense to do:
 
 [source,cpp,subs=normal]
 ----
-void my_destination::recycle_buffer()
+void my_destination::recycle()
 {
     auto ptr = {buffer_ptr}();
     {set_buffer_ptr}(buff);
@@ -268,7 +268,7 @@ public:
     explicit foo_writer(foo&);
     foo_writer(const foo_writer&) = delete;
 
-    void recycle_buffer() override;
+    void recycle() override;
 
     auto finish() \-> /{asterisk} \... {asterisk}/;
     //\...

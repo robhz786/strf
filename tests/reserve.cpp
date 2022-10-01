@@ -34,7 +34,7 @@ public:
 
     ~reservation_tester() override = default;
 
-    void STRF_HD recycle_buffer() override
+    void STRF_HD recycle() override
     {
         this->set_buffer_ptr(buff_);
     }

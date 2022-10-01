@@ -37,7 +37,7 @@ public:
 
     ~QStringCreator() override = default;
 
-    void recycle_buffer() override;
+    void recycle() override;
 
     QString finish();
 
@@ -48,7 +48,7 @@ private:
     char16_t buffer_[buffer_size_] = {0};
 };
 
-void QStringCreator::recycle_buffer()
+void QStringCreator::recycle()
 {
     auto count = static_cast<int>(this->buffer_ptr() - buffer_);
     this->set_buffer_ptr(buffer_);

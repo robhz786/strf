@@ -222,7 +222,7 @@ STRF_TEST_FUNC void utf8_to_utf16_invalid_sequences()
     TEST(u" \uFFFD_") (strf::sani("\xED\x9F_") > 3);
     TEST_INVALID_SEQS(" \xED\x9F ", "\xED\x9F");
 
-    // cover when recycle_buffer() needs to be called
+    // cover when recycle() needs to be called
     TEST_CALLING_RECYCLE_AT(2, u" \uFFFD\uFFFD\uFFFD")  (strf::sani("\xED\xA0\x80") > 4);
     TEST_TRUNCATING_AT     (4, u" \uFFFD\uFFFD\uFFFD")  (strf::sani("\xED\xA0\x80") > 4);
     TEST_TRUNCATING_AT     (2, u" \uFFFD")              (strf::sani("\xED\xA0\x80") > 4);
