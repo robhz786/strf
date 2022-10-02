@@ -28,11 +28,13 @@ http://www.boost.org/LICENSE_1_0.txt)
 :garbage_buff_end: <<garbage_buff, garbage_buff_end>>
 :log2_garbage_buff_size: <<garbage_buff, log2_garbage_buff_size>>
 :garbage_buff_size: <<garbage_buff, garbage_buff_size>>
-
 :value_type: <<output_buffer_value_type,value_type>>
 :buffer_ptr: <<output_buffer_buffer_ptr,buffer_ptr>>
+:ptr: <<output_buffer_buffer_ptr,ptr>>
 :buffer_end: <<output_buffer_buffer_end,buffer_end>>
+:end: <<output_buffer_buffer_end,end>>
 :buffer_space: <<output_buffer_buffer_space,buffer_space>>
+:space: <<output_buffer_buffer_space,space>>
 :flush: <<output_buffer_flush,flush>>
 :recycle: <<output_buffer_recycle,recycle>>
 :ensure: <<output_buffer_ensure,ensure>>
@@ -42,7 +44,9 @@ http://www.boost.org/LICENSE_1_0.txt)
 :good: <<output_buffer_good,good>>
 :write: <<output_buffer_write,write>>
 :set_buffer_ptr: <<output_buffer_set_buffer_ptr,set_buffer_ptr>>
+:set_ptr: <<output_buffer_set_buffer_ptr,set_buffer_ptr>>
 :set_buffer_end: <<output_buffer_set_buffer_end,set_buffer_end>>
+:set_end: <<output_buffer_set_buffer_end,set_buffer_end>>
 :set_good: <<output_buffer_set_good,set_good>>
 :do_write: <<output_buffer_do_write,do_write>>
 
@@ -121,8 +125,14 @@ public:
     virtual ~output_buffer() = default;
 
     T{asterisk} {buffer_ptr}() const noexcept;
+    T{asterisk} {ptr}() const noexcept;
+
     T{asterisk} {buffer_end}() const noexcept;
+    T{asterisk} {end}() const noexcept;
+
     std::size_t {buffer_space}() const noexcept;
+    std::size_t {space}() const noexcept;
+
     bool {good}() const noexcept;
     void {advance_to}(T{asterisk} p);
     void {advance}(std::size_t n);
@@ -140,7 +150,11 @@ protected:
     <<output_buffer_ctor_count,output_buffer>>(T{asterisk} buff, std::size_t buff_size);
 
     void {set_buffer_ptr}(T{asterisk} p) noexcept;
+    void {set_ptr}(T{asterisk} p) noexcept;
+
     void {set_buffer_end}(T{asterisk} e) noexcept;
+    void {set_end}(T{asterisk} e) noexcept;
+
     void {set_good}(bool g) noexcept;
 
     virtual void {do_write}(const T{asterisk} data, std::size_t count);
@@ -171,6 +185,7 @@ using value_type = T;
 [source,cpp]
 ----
 T* buffer_ptr() const noxcept;
+T* ptr() const noxcept;
 ----
 [horizontal]
 Return:: The memory position where the content shall be written.
@@ -180,6 +195,7 @@ Return:: The memory position where the content shall be written.
 [source,cpp]
 ----
 T* buffer_end() const noxcept;
+T* end() const noxcept;
 ----
 [horizontal]
 Return:: The end of memory position where the content shall be written.
@@ -190,6 +206,7 @@ Return:: The end of memory position where the content shall be written.
 [source,cpp]
 ----
 std::size_t buffer_space() const noexcept;
+std::size_t space() const noexcept;
 ----
 [horizontal]
 Return:: `{buffer_end}() - {buffer_ptr}()`
@@ -331,7 +348,8 @@ Posconditions::
 ====
 [source,cpp]
 ----
-void set_buffer_ptr(T* p) noexcept
+void set_buffer_ptr(T* p) noexcept;
+void set_ptr(T* p) noexcept;
 ----
 [horizontal]
 Postconditions:: `{buffer_ptr}() == p`
@@ -340,7 +358,8 @@ Postconditions:: `{buffer_ptr}() == p`
 ====
 [source,cpp]
 ----
-void set_buffer_end(T* e) noexcept
+void set_buffer_end(T* e) noexcept;
+void set_end(T* e) noexcept;
 ----
 [horizontal]
 Postconditions:: `{buffer_end}() == e`
@@ -349,7 +368,7 @@ Postconditions:: `{buffer_end}() == e`
 ====
 [source,cpp]
 ----
-void set_good(bool g) noexcept
+void set_good(bool g) noexcept;
 ----
 [horizontal]
 Postconditions:: `{good}() == g`

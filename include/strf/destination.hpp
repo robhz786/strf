@@ -64,15 +64,28 @@ public:
     {
         return pointer_;
     }
+    STRF_HD value_type* ptr() const noexcept
+    {
+        return pointer_;
+    }
     STRF_HD value_type* buffer_end() const noexcept
     {
         return end_;
     }
+    STRF_HD value_type* end() const noexcept
+    {
+        return end_;
+    }
+
     STRF_DEPRECATED
     STRF_HD std::size_t size() const noexcept
     {
         STRF_ASSERT(pointer_ <= end_);
         return end_ - pointer_;
+    }
+    STRF_HD std::size_t space() const noexcept
+    {
+        return buffer_space();
     }
     STRF_HD std::size_t buffer_space() const noexcept
     {
@@ -136,14 +149,6 @@ public:
     {
         return buffer_ptr();
     }
-    STRF_HD value_type* end() const noexcept
-    {
-        return buffer_end();
-    }
-    STRF_HD std::size_t space() const noexcept
-    {
-        return buffer_space();
-    }
     STRF_HD void require(std::size_t s)
     {
         ensure(s);
@@ -161,7 +166,11 @@ protected:
 
     STRF_HD void set_buffer_ptr(value_type* p) noexcept
     { pointer_ = p; };
+    STRF_HD void set_ptr(value_type* p) noexcept
+    { pointer_ = p; };
     STRF_HD void set_buffer_end(value_type* e) noexcept
+    { end_ = e; };
+    STRF_HD void set_end(value_type* e) noexcept
     { end_ = e; };
     STRF_HD void set_good(bool g) noexcept
     { good_ = g; };
@@ -171,8 +180,6 @@ protected:
     // old names for backwards compatibility
     STRF_HD void set_pointer(value_type* p) noexcept
     { pointer_ = p; };
-    STRF_HD void set_end(value_type* e) noexcept
-    { end_ = e; };
 
 private:
 
