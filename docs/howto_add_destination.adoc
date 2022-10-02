@@ -26,7 +26,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 :printing_syntax: <<strf_hpp#printing_syntax,printing_syntax>>
 :DestinationCreator: <<strf_hpp#DestinationCreator,DestinationCreator>>
 :SizedDestinationCreator: <<strf_hpp#SizedDestinationCreator,SizedDestinationCreator>>
-:destination_space_after_flush: <<destination_hpp#destination,destination_space_after_flush>>
+:min_destination_buffer_size: <<destination_hpp#destination,min_destination_buffer_size>>
 
 == The `destination` class template
 
@@ -78,7 +78,7 @@ This is the only pure virtual function in `{destination}`;
 its job is to flush the content written so far and reset the position of
 `buffer_ptr()` and `buffer_end()`. After `{recycle}` is called,
 the buffer's space ( `buffer_end() - buffer_ptr()` ) is
-guaranteed to be at least `{destination_space_after_flush}`
+guaranteed to be at least `{min_destination_buffer_size}`
 ( which is currently `64` but may be greater in future versions ).
 This is a postcondition even when the state is "bad".
 The state may change from "good" to "bad" in `{recycle}`,
@@ -126,7 +126,7 @@ private:
     bool print(const char* str_begin, const char* str_end)
     { /{asterisk}\...{asterisk}/ }
 
-    char buff[strf::{destination_space_after_flush}];
+    char buff[strf::{min_destination_buffer_size}];
 };
 ----
 

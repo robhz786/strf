@@ -14,7 +14,7 @@ http://www.boost.org/LICENSE_1_0.txt
 :toclevels: 1
 :icons: font
 
-:destination_space_after_flush: <<destination_hpp#destination_space_after_flush,destination_space_after_flush>>
+:min_destination_buffer_size: <<destination_hpp#min_destination_buffer_size,min_destination_buffer_size>>
 :output_buffer: <<destination_hpp#output_buffer,output_buffer>>
 :destination: <<destination_hpp#destination,destination>>
 
@@ -131,7 +131,7 @@ void recycle() override;
 Effects::
 - If `good()` is `true` then calls `str.append(p0, buffer_ptr())`, where `str` is the private string object that is later returned by `finish()`, and `p0` is the value that `buffer_ptr()` would return before any call to `advance` and `advance_to` since the last call to `recycle()`, or since this object's contruction, whatever happened last.
 - Calls `set_buffer_ptr` and/or `set_buffer_end`.
-Postconditions:: `buffer_space() >= {destination_space_after_flush}`
+Postconditions:: `buffer_space() >= {min_destination_buffer_size}`
 ====
 ====
 [source,cpp]
@@ -230,7 +230,7 @@ void recycle() override;
 Effects::
 - If `good()` is `true` then calls `str.append(p0, buffer_ptr())`, where `str` is the reference that this object was initialized with, and `p0` is the return value of `buffer_ptr()` before any call to `advance` and `advance_to` since the last call to `recycle()` ( all in this object ), or since this object's contruction, whatever happened last.
 - Calls `set_buffer_ptr` and/or `set_buffer_end`.
-Postconditions:: `buffer_space() >= {destination_space_after_flush}`
+Postconditions:: `buffer_space() >= {min_destination_buffer_size}`
 ====
 ====
 [source,cpp]

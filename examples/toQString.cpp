@@ -44,7 +44,7 @@ public:
 private:
 
     QString str_;
-    constexpr static std::size_t buffer_size_ = strf::destination_space_after_flush;
+    constexpr static std::size_t buffer_size_ = strf::min_destination_buffer_size;
     char16_t buffer_[buffer_size_] = {0};
 };
 

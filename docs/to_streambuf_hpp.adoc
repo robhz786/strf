@@ -15,7 +15,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 :icons: font
 
 :destination: <<destination_hpp#destination,destination>>
-:destination_space_after_flush: <<destination_hpp#destination_space_after_flush,destination_space_after_flush>>
+:min_destination_buffer_size: <<destination_hpp#min_destination_buffer_size,min_destination_buffer_size>>
 :basic_streambuf_writer: <<basic_streambuf_writer,basic_streambuf_writer>>
 :printing_syntax: <<strf_hpp#printing_syntax,printing_syntax>>
 :DestinationCreator: <<strf_hpp#DestinationCreator,DestinationCreator>>
@@ -97,7 +97,7 @@ Effects::
 - If `good()` is `true` then calls `dest.sputn(p0, buffer_ptr() - p0)`, where `dest` is the reference this object was initialized with, and `p0` is the return value of `buffer_ptr()` before any call to `advance` and `advance_to` since the last call to `recycle()`, or since this object's contruction, whatever happened last.
 - If the returned value of `dest.sputn` is less then `buffer_ptr() - p0`, calls `set_good(false)`.
 - Calls `set_buffer_ptr` and/or `set_buffer_end`.
-Postconditions:: `buffer_space() >= {destination_space_after_flush}`
+Postconditions:: `buffer_space() >= {min_destination_buffer_size}`
 ====
 ====
 [source,cpp]

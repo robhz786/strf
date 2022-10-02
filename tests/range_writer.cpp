@@ -56,7 +56,7 @@ STRF_TEST_FUNC void char_range_basic_operations()
         strf::array_destination<CharT> sw(buff);
         sw.flush();
         TEST_TRUE(sw.buffer_ptr() != &buff[0]);
-        TEST_TRUE(sw.buffer_space() >= strf::destination_space_after_flush)
+        TEST_TRUE(sw.buffer_space() >= strf::min_destination_buffer_size)
         TEST_FALSE(sw.good());
 
         // and causes buffer_ptr() to point to somewhere else than

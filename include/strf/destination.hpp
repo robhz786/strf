@@ -343,15 +343,15 @@ private:
     CharT* it_ = nullptr;
 };
 
-constexpr unsigned log2_destination_space_after_flush = 6;
+constexpr unsigned log2_min_destination_buffer_size = 6;
 
-constexpr std::size_t destination_space_after_flush =
-    (std::size_t)1 << strf::log2_destination_space_after_flush;
+constexpr std::size_t min_destination_buffer_size =
+    (std::size_t)1 << strf::log2_min_destination_buffer_size;
 
-static_assert(destination_space_after_flush == 64, "");
+static_assert(min_destination_buffer_size == 64, "");
 
 template <typename CharT>
-using destination = strf::output_buffer<CharT, log2_destination_space_after_flush>;
+using destination = strf::output_buffer<CharT, log2_min_destination_buffer_size>;
 
 #if defined(__cpp_char8_t)
 using u8cstr_destination  = basic_cstr_destination<char8_t>;

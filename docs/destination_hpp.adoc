@@ -18,7 +18,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 :put: <<output_buffer_put,put>>
 
 :destination: <<destination,destination>>
-:destination_space_after_flush: <<destination,destination_space_after_flush>>
+:min_destination_buffer_size: <<destination,min_destination_buffer_size>>
 
 :basic_cstr_destination: <<basic_cstr_destination, basic_cstr_destination>>
 :array_destination: <<array_destination, array_destination>>
@@ -59,7 +59,7 @@ namespace strf {
 template <typename T, unsigned Log2BufferSpace>
 class {output_buffer};
 
-constexpr std::size_t {destination_space_after_flush} = ...; // >= 64
+constexpr std::size_t {min_destination_buffer_size} = ...; // >= 64
 
 template <typename CharT>
 using {destination} = output_buffer<CharT, ...>;
@@ -398,19 +398,19 @@ dest.advance();
 ----
 namespace strf {
 
-constexpr unsigned    log2_destination_space_after_flush = ...; // >= 6
-constexpr std::size_t      destination_space_after_flush = ...; // >= 64
+constexpr unsigned    log2_min_destination_buffer_size = ...; // >= 6
+constexpr std::size_t      min_destination_buffer_size = ...; // >= 64
 
 template <typename CharT>
-using destination = {output_buffer}<CharT, log2_destination_space_after_flush>;
+using destination = {output_buffer}<CharT, log2_min_destination_buffer_size>;
 
 } // namespace strf
 ----
 
-* `log2_destination_space_after_flush` is an implementation-defined value
+* `log2_min_destination_buffer_size` is an implementation-defined value
 that is greater than or equal to `6`.
 
-* `destination_space_after_flush` is equal to `(std::size_t)1 << log2_destination_space_after_flush`
+* `min_destination_buffer_size` is equal to `(std::size_t)1 << log2_min_destination_buffer_size`
 
 [[basic_cstr_destination]]
 == Class template `basic_cstr_destination`
@@ -657,7 +657,7 @@ These function templates return the begin and the end of a memory area that is n
 constexpr unsigned log2_garbage_buff_size = ...;
 ----
 Implementation-defined type that is greater than or equal to
-`<<destination,log2_destination_space_after_flush>>`;
+`<<destination,log2_min_destination_buffer_size>>`;
 ====
 
 ====

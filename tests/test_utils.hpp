@@ -157,7 +157,7 @@ std::basic_string<CharT> make_random_std_string(std::size_t size)
 template <typename CharT>
 constexpr STRF_HD  std::size_t full_string_size()
 {
-    return strf::destination_space_after_flush;
+    return strf::min_destination_buffer_size;
 }
 template <typename CharT>
 constexpr STRF_HD  std::size_t half_string_size()
@@ -582,7 +582,7 @@ void STRF_HD input_tester<CharOut>::recycle()
         (" destination::recycle() called "
          "( it means the calculated size too small ).\n");
 
-    if ( this->buffer_ptr() + strf::destination_space_after_flush
+    if ( this->buffer_ptr() + strf::min_destination_buffer_size
        > buffer_ + buffer_size_ )
     {
         pointer_before_overflow_ = this->buffer_ptr();
@@ -766,7 +766,7 @@ public:
         , notifier_{input.function, input.src_filename, input.src_line}
         , dest_end_{buffer_}
     {
-        if (input.initial_space + strf::destination_space_after_flush > buffer_size_) {
+        if (input.initial_space + strf::min_destination_buffer_size > buffer_size_) {
             strf::to(notifier_) ("\nUnsupported test case: Initial space too big");
             this->set_buffer_end(buffer_);
         }
@@ -876,7 +876,7 @@ public:
         , src_line_(input.src_line)
         , dest_end_{buffer_}
     {
-        if (input.initial_space + strf::destination_space_after_flush > buffer_size_) {
+        if (input.initial_space + strf::min_destination_buffer_size > buffer_size_) {
             emit_error_message_("\nUnsupported test case: Initial space too big");
             this->set_buffer_end(buffer_);
         }

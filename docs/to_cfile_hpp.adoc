@@ -15,7 +15,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 :icons: font
 
 :destination: <<destination_hpp#destination,destination>>
-:destination_space_after_flush: <<destination_hpp#destination_space_after_flush,destination_space_after_flush>>
+:min_destination_buffer_size: <<destination_hpp#min_destination_buffer_size,min_destination_buffer_size>>
 :narrow_cfile_writer: <<narrow_cfile_writer,narrow_cfile_writer>>
 :wide_cfile_writer: <<wide_cfile_writer,wide_cfile_writer>>
 
@@ -193,7 +193,7 @@ is such that `&#95;dest&#95;creator.create()` returns
 +
 [source,cpp,subs=normal]
 ----
-{narrow_cfile_writer}< CharT, {destination_space_after_flush} >{dest}
+{narrow_cfile_writer}< CharT, {min_destination_buffer_size} >{dest}
 ----
 
 [[wto]]

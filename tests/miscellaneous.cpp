@@ -27,7 +27,7 @@ STRF_TEST_FUNC void test_miscellaneous()
         strf::discarder<char> dest;
         TEST_FALSE(dest.good());
         dest.recycle();
-        TEST_TRUE(dest.buffer_space() >= strf::destination_space_after_flush);
+        TEST_TRUE(dest.buffer_space() >= strf::min_destination_buffer_size);
         TEST_FALSE(dest.good());
         char buff[200];
         dest.write(buff, sizeof(buff)/sizeof(buff[0]));

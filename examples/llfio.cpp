@@ -83,7 +83,7 @@ private:
     std::size_t offset_ = 0;
     llfio::error_info error_;
     CharT buffer_[BufferSize];
-    static_assert(BufferSize >= strf::destination_space_after_flush);
+    static_assert(BufferSize >= strf::min_destination_buffer_size);
 };
 
 template <typename CharT, std::size_t BufferSize>
