@@ -11,7 +11,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 
 :preprinting: <<preprinting, preprinting>>
 :facets_pack: <<facets_pack, facets_pack>>
-:value_with_formatters: <<value_with_formatters, value_with_formatters>>
+:printable_with_fmt: <<printable_with_fmt, printable_with_fmt>>
 
 :PrintableTraits: <<PrintableTraits,PrintableTraits>>
 :Printable: <<Printable,Printable>>
@@ -65,7 +65,7 @@ template <typename T> using printable_traits_of = /{asterisk} see below\... {ast
 `printable_traits_of<T>` is:
 
 *  `printable_traits_of<std::remove_cvref<T>>`, if `T` is a reference type or has any cv-qualifier
-*  otherwise, it is `Traits`, when `T` is `{value_with_formatters}<Traits, /{asterisk}\... {asterisk}/>`
+*  otherwise, it is `Traits`, when `T` is `{printable_with_fmt}<Traits, /{asterisk}\... {asterisk}/>`
 *  otherwise, it is `printable_traits<T>` if such template specialization is defined
 *  otherwise, it is `decltype(tag_invoke(printable_tag{}, std::declval<T>()))`
 
@@ -137,7 +137,7 @@ Given
 * `CharT`, a character type
 * `fpack`, a value of type `{facets_pack}</{asterisk}\... {asterisk}/>`
 * `pre`, an lvalue of type `{preprinting}</{asterisk}\... {asterisk}/>`
-* `v`, a value of type `T::forwarded_type` or `{value_with_formatters}<T, F\...>`,
+* `v`, a value of type `T::forwarded_type` or `{printable_with_fmt}<T, F\...>`,
    where `F\...` is such that `T::formatters` is an alias to `{tag}<F\...>`.
 
 The following syntax is satisfied:

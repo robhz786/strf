@@ -1,5 +1,5 @@
-#ifndef STRF_DETAIL_VALUE_WITH_FORMATTERS_HPP
-#define STRF_DETAIL_VALUE_WITH_FORMATTERS_HPP
+#ifndef STRF_DETAIL_PRINTABLE_WITH_FMT_HPP
+#define STRF_DETAIL_PRINTABLE_WITH_FMT_HPP
 
 //  Copyright (C) (See commit logs on github.com/robhz786/strf)
 //  Distributed under the Boost Software License, Version 1.0.
@@ -84,84 +84,89 @@ using fmt_replace
     ::template type_tmpl<To>;
 
 template <typename PrintingTraits, class... Fmts>
-class value_with_formatters;
+class printable_with_fmt;
+
+template <typename PrintingTraits, class... Fmts>
+using value_with_formatters
+STRF_DEPRECATED_MSG("value_with_formatters renamed to printable_with_fmt")
+= printable_with_fmt<PrintingTraits, Fmts...>;
 
 namespace detail {
 
 template <typename T>
-struct is_value_with_formatters : std::false_type
+struct is_printable_with_fmt : std::false_type
 { };
 
 template <typename... T>
-struct is_value_with_formatters<strf::value_with_formatters<T...>>: std::true_type
+struct is_printable_with_fmt<strf::printable_with_fmt<T...>>: std::true_type
 { };
 
 template <typename T>
-struct is_value_with_formatters<const T> : is_value_with_formatters<T>
+struct is_printable_with_fmt<const T> : is_printable_with_fmt<T>
 { };
 
 template <typename T>
-struct is_value_with_formatters<volatile T> : is_value_with_formatters<T>
+struct is_printable_with_fmt<volatile T> : is_printable_with_fmt<T>
 { };
 
 template <typename T>
-struct is_value_with_formatters<T&> : is_value_with_formatters<T>
+struct is_printable_with_fmt<T&> : is_printable_with_fmt<T>
 { };
 
 template <typename T>
-struct is_value_with_formatters<T&&> : is_value_with_formatters<T>
+struct is_printable_with_fmt<T&&> : is_printable_with_fmt<T>
 { };
 
 } // namespace detail
 
 template <typename PrintingTraits, class... Fmts>
-class value_with_formatters
-    : public Fmts::template fn<value_with_formatters<PrintingTraits, Fmts...>> ...
+class printable_with_fmt
+    : public Fmts::template fn<printable_with_fmt<PrintingTraits, Fmts...>> ...
 {
 public:
     using traits = PrintingTraits;
     using value_type = typename PrintingTraits::forwarded_type;
 
     template <typename... OtherFmts>
-    using replace_fmts = strf::value_with_formatters<PrintingTraits, OtherFmts ...>;
+    using replace_fmts = strf::printable_with_fmt<PrintingTraits, OtherFmts ...>;
 
-    explicit constexpr STRF_HD value_with_formatters(const value_type& v)
+    explicit constexpr STRF_HD printable_with_fmt(const value_type& v)
         : value_(v)
     {
     }
 
     template <typename OtherPrintingTraits>
-    constexpr STRF_HD value_with_formatters
+    constexpr STRF_HD printable_with_fmt
         ( const value_type& v
-        , const strf::value_with_formatters<OtherPrintingTraits, Fmts...>& f )
-        : Fmts::template fn<value_with_formatters<PrintingTraits, Fmts...>>
+        , const strf::printable_with_fmt<OtherPrintingTraits, Fmts...>& f )
+        : Fmts::template fn<printable_with_fmt<PrintingTraits, Fmts...>>
             ( static_cast
               < const typename Fmts
-             :: template fn<value_with_formatters<OtherPrintingTraits, Fmts...>>& >(f) )
+             :: template fn<printable_with_fmt<OtherPrintingTraits, Fmts...>>& >(f) )
         ...
         , value_(v)
     {
     }
 
     template <typename OtherPrintingTraits>
-    constexpr STRF_HD value_with_formatters
+    constexpr STRF_HD printable_with_fmt
         ( const value_type& v
-        , strf::value_with_formatters<OtherPrintingTraits, Fmts...>&& f )
-        : Fmts::template fn<value_with_formatters<PrintingTraits, Fmts...>>
+        , strf::printable_with_fmt<OtherPrintingTraits, Fmts...>&& f )
+        : Fmts::template fn<printable_with_fmt<PrintingTraits, Fmts...>>
             ( static_cast
               < typename Fmts
-             :: template fn<value_with_formatters<OtherPrintingTraits, Fmts...>> &&>(f) )
+             :: template fn<printable_with_fmt<OtherPrintingTraits, Fmts...>> &&>(f) )
         ...
         , value_(static_cast<value_type&&>(v))
     {
     }
 
     template <typename... F, typename... FInit>
-    constexpr STRF_HD value_with_formatters
+    constexpr STRF_HD printable_with_fmt
         ( const value_type& v
         , strf::tag<F...>
         , FInit&&... finit )
-        : F::template fn<value_with_formatters<PrintingTraits, Fmts...>>
+        : F::template fn<printable_with_fmt<PrintingTraits, Fmts...>>
             (std::forward<FInit>(finit))
         ...
         , value_(v)
@@ -169,39 +174,39 @@ public:
     }
 
     template <typename... OtherFmts>
-    constexpr STRF_HD explicit value_with_formatters
-        ( const strf::value_with_formatters<PrintingTraits, OtherFmts...>& f )
-        : Fmts::template fn<value_with_formatters<PrintingTraits, Fmts...>>
+    constexpr STRF_HD explicit printable_with_fmt
+        ( const strf::printable_with_fmt<PrintingTraits, OtherFmts...>& f )
+        : Fmts::template fn<printable_with_fmt<PrintingTraits, Fmts...>>
             ( static_cast
               < const typename OtherFmts
-             :: template fn<value_with_formatters<PrintingTraits, OtherFmts ...>>& >(f) )
+             :: template fn<printable_with_fmt<PrintingTraits, OtherFmts ...>>& >(f) )
         ...
         , value_(f.value())
     {
     }
 
     template <typename ... OtherFmts>
-    constexpr STRF_HD explicit value_with_formatters
-        ( strf::value_with_formatters<PrintingTraits, OtherFmts...>&& f )
-        : Fmts::template fn<value_with_formatters<PrintingTraits, Fmts...>>
+    constexpr STRF_HD explicit printable_with_fmt
+        ( strf::printable_with_fmt<PrintingTraits, OtherFmts...>&& f )
+        : Fmts::template fn<printable_with_fmt<PrintingTraits, Fmts...>>
             ( static_cast
               < typename OtherFmts
-             :: template fn<value_with_formatters<PrintingTraits, OtherFmts ...>>&& >(f) )
+             :: template fn<printable_with_fmt<PrintingTraits, OtherFmts ...>>&& >(f) )
         ...
         , value_(static_cast<value_type&&>(f.value()))
     {
     }
 
     template <typename Fmt, typename FmtInit, typename ... OtherFmts>
-    constexpr STRF_HD value_with_formatters
-        ( const strf::value_with_formatters<PrintingTraits, OtherFmts...>& f
+    constexpr STRF_HD printable_with_fmt
+        ( const strf::printable_with_fmt<PrintingTraits, OtherFmts...>& f
         , strf::tag<Fmt>
         , FmtInit&& fmt_init )
-        : Fmts::template fn<value_with_formatters<PrintingTraits, Fmts...>>
+        : Fmts::template fn<printable_with_fmt<PrintingTraits, Fmts...>>
             ( strf::detail::fmt_forward_switcher
                   < Fmt
                   , Fmts
-                  , strf::value_with_formatters<PrintingTraits, OtherFmts...> >
+                  , strf::printable_with_fmt<PrintingTraits, OtherFmts...> >
               :: template f<FmtInit>(fmt_init, f) )
             ...
         , value_(f.value())
@@ -225,5 +230,5 @@ private:
 
 } // namespace strf
 
-#endif  // STRF_DETAIL_VALUE_WITH_FORMATTERS_HPP
+#endif  // STRF_DETAIL_PRINTABLE_WITH_FMT_HPP
 

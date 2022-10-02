@@ -6,7 +6,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <strf/detail/value_with_formatters.hpp>
+#include <strf/detail/printable_with_fmt.hpp>
 #include <strf/detail/preprinting.hpp>
 #include <strf/facets_pack.hpp>
 
@@ -16,7 +16,7 @@ template<typename T>
 struct printable_traits;
 
 template<typename PrintingTraits, typename... Fmts>
-struct printable_traits<strf::value_with_formatters<PrintingTraits, Fmts...>> : PrintingTraits
+struct printable_traits<strf::printable_with_fmt<PrintingTraits, Fmts...>> : PrintingTraits
 {
 };
 
@@ -124,10 +124,10 @@ using is_printable =
     typename detail::is_printable_helper< strf::detail::remove_cvref_t<T> >::result;
 
 template <typename Traits, typename... F>
-struct printable_traits_finder<strf::value_with_formatters<Traits, F...>>
+struct printable_traits_finder<strf::printable_with_fmt<Traits, F...>>
 {
     using traits = Traits;
-    using forwarded_type = strf::value_with_formatters<Traits, F...>;
+    using forwarded_type = strf::printable_with_fmt<Traits, F...>;
 };
 
 template <typename T>
@@ -151,14 +151,14 @@ struct printable_traits_finder<volatile T> : printable_traits_finder<T>
 };
 
 template <typename PrintingTraits, typename Formatters>
-struct mp_define_value_with_formatters;
+struct mp_define_printable_with_fmt;
 
 template < typename PrintingTraits
          , template <class...> class List
          , typename... Fmts >
-struct mp_define_value_with_formatters<PrintingTraits, List<Fmts...>>
+struct mp_define_printable_with_fmt<PrintingTraits, List<Fmts...>>
 {
-    using type = strf::value_with_formatters<PrintingTraits, Fmts...>;
+    using type = strf::printable_with_fmt<PrintingTraits, Fmts...>;
 };
 
 template <typename PrintingTraits>
@@ -182,7 +182,7 @@ using extract_formatters_from_printable_traits =
 
 template <typename PrintingTraits>
 using default_value_with_formatter_of_printable_traits = typename
-    strf::detail::mp_define_value_with_formatters
+    strf::detail::mp_define_printable_with_fmt
         < PrintingTraits
         , extract_formatters_from_printable_traits<PrintingTraits> >
     :: type;
@@ -193,15 +193,15 @@ struct formatters_finder
     using traits = typename printable_traits_finder<T>::traits;
     using formatters = extract_formatters_from_printable_traits<traits>;
     using fmt_type = typename
-        strf::detail::mp_define_value_with_formatters<traits, formatters>::type;
+        strf::detail::mp_define_printable_with_fmt<traits, formatters>::type;
 };
 
 template <typename PrintingTraits, typename... Fmts>
-struct formatters_finder<strf::value_with_formatters<PrintingTraits, Fmts...>>
+struct formatters_finder<strf::printable_with_fmt<PrintingTraits, Fmts...>>
 {
     using traits = PrintingTraits;
     using formatters = strf::tag<Fmts...>;
-    using fmt_type = strf::value_with_formatters<PrintingTraits, Fmts...>;
+    using fmt_type = strf::printable_with_fmt<PrintingTraits, Fmts...>;
 };
 
 } // namespace detail
@@ -240,7 +240,7 @@ namespace detail_format_functions {
 struct fmt_fn
 {
     template < typename T
-             , bool IsVWF = detail::is_value_with_formatters<T>::value
+             , bool IsVWF = detail::is_printable_with_fmt<T>::value
              , strf::detail::enable_if_t<!IsVWF, int> = 0 >
     constexpr STRF_HD fmt_type<T> operator()(T&& value) const
         noexcept(noexcept(fmt_type<T>{fmt_value_type<T>{(T&&)value}}))
@@ -249,7 +249,7 @@ struct fmt_fn
     }
 
     template < typename T
-             , bool IsVWF = detail::is_value_with_formatters<T>::value
+             , bool IsVWF = detail::is_printable_with_fmt<T>::value
              , strf::detail::enable_if_t<IsVWF, int> = 0 >
     constexpr STRF_HD T&& operator()(T&& value) const
     {
@@ -324,7 +324,7 @@ struct arg_adapter_rm_fmt
 {
     template <typename PrintingTraits, typename... Fmts>
     static constexpr STRF_HD const typename PrintingTraits::forwarded_type&
-    adapt_arg(const strf::value_with_formatters<PrintingTraits, Fmts...>& x)
+    adapt_arg(const strf::printable_with_fmt<PrintingTraits, Fmts...>& x)
     {
         return x.value();
     }
@@ -404,9 +404,9 @@ template < typename PrintingTraits
          , typename... Fmts >
 struct adapter_selector_2
     < PrintingTraits, Maker, CharT, PrePrinting, FPack
-    , strf::value_with_formatters<PrintingTraits, Fmts...>, DefaultVwf >
+    , strf::printable_with_fmt<PrintingTraits, Fmts...>, DefaultVwf >
 {
-    using vwf = strf::value_with_formatters<PrintingTraits, Fmts...>;
+    using vwf = strf::printable_with_fmt<PrintingTraits, Fmts...>;
     using other = adapter_selector_3
         < PrintingTraits, Maker, CharT, PrePrinting, FPack, vwf, DefaultVwf >;
     using adapter_type = typename other::adapter_type;

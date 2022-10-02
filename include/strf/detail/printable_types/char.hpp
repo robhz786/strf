@@ -44,10 +44,10 @@ struct char_printing
         ( strf::tag<DestCharT>
         , PrePrinting& pre
         , const FPack& fp
-        , strf::value_with_formatters<T...> x ) noexcept
+        , strf::printable_with_fmt<T...> x ) noexcept
         -> strf::usual_printer_input
             < DestCharT, PrePrinting, FPack
-            , strf::value_with_formatters<T...>
+            , strf::printable_with_fmt<T...>
             , strf::detail::fmt_char_printer<DestCharT> >
     {
         static_assert( std::is_same<SrcCharT, DestCharT>::value, "Character type mismatch.");
@@ -91,9 +91,9 @@ struct printable_traits<char32_t>
         ( strf::tag<DestCharT>
         , PrePrinting& pre
         , const FPack& fp
-        , strf::value_with_formatters<F...> x ) noexcept
+        , strf::printable_with_fmt<F...> x ) noexcept
         -> strf::usual_printer_input
-            < DestCharT, PrePrinting, FPack, strf::value_with_formatters<F...>
+            < DestCharT, PrePrinting, FPack, strf::printable_with_fmt<F...>
             , strf::detail::conditional_t
                 < std::is_same<DestCharT, char32_t>::value
                 , strf::detail::fmt_char_printer<DestCharT>

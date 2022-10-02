@@ -61,7 +61,7 @@ struct my_bool_printing_override
         ( strf::tag<CharT>
         , PrePrinting& pre
         , const FPack& fp
-        , strf::value_with_formatters<T...> x ) noexcept
+        , strf::printable_with_fmt<T...> x ) noexcept
         -> decltype( strf::make_printer_input<CharT>
                        ( pre
                        , fp
@@ -85,7 +85,7 @@ struct my_int_printing_override
         ( strf::tag<CharT>
         , PrePrinting& pre
         , const FPack&
-        , strf::value_with_formatters<T...> x ) noexcept
+        , strf::printable_with_fmt<T...> x ) noexcept
         -> decltype( strf::make_printer_input<CharT>
                        ( pre
                        , strf::pack()

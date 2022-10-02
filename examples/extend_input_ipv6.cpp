@@ -231,12 +231,12 @@ struct printable_traits<xxx::ipv6address> {
         ( strf::tag<CharT>
         , PrePrinting& pre
         , const FPack& fp
-        , strf::value_with_formatters<T...> arg )
+        , strf::printable_with_fmt<T...> arg )
         -> strf::usual_printer_input
             < CharT
             , PrePrinting
             , FPack
-            , strf::value_with_formatters<T...>
+            , strf::printable_with_fmt<T...>
             , ipv6_printer<CharT> >
     {
         return {pre, fp, arg};

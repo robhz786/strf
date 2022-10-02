@@ -45,7 +45,7 @@ public:
 
     PrePrinting& pre;
     FPack facets;
-    strf::value_with_formatters
+    strf::printable_with_fmt
         < strf::detail::join_printing<FwdArgs...>
         , strf::alignment_formatter_q<HasAlignment> > arg;
 };
@@ -56,7 +56,7 @@ struct join_printing
     using forwarded_type = strf::detail::join_t<FwdArgs...>;
 
     template <bool HasAlignment>
-    using fmt_tmpl = strf::value_with_formatters
+    using fmt_tmpl = strf::printable_with_fmt
         < join_printing<FwdArgs...>
         , strf::alignment_formatter_q<HasAlignment> >;
 
@@ -112,7 +112,7 @@ struct aligned_join_maker
     char32_t fillchar = U' ';
 
     template<typename... Args>
-    constexpr STRF_HD strf::value_with_formatters
+    constexpr STRF_HD strf::printable_with_fmt
         < strf::detail::join_printing<strf::forwarded_printable_type<Args>...>
         , strf::alignment_formatter_q<true> >
     operator()(const Args&... args) const
@@ -357,12 +357,12 @@ public:
 } // namespace detail
 
 template<typename... Args>
-constexpr STRF_HD strf::value_with_formatters
+constexpr STRF_HD strf::printable_with_fmt
     < strf::detail::join_printing<strf::forwarded_printable_type<Args>...>
     , strf::alignment_formatter_q<false> >
 join(const Args&... args)
 {
-    return strf::value_with_formatters
+    return strf::printable_with_fmt
         < strf::detail::join_printing<strf::forwarded_printable_type<Args>...>
         , strf::alignment_formatter_q<false> >
         { strf::detail::join_t<strf::forwarded_printable_type<Args>...>

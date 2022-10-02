@@ -18,7 +18,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 
 :output_buffer: <<destination_hpp#output_buffer,output_buffer>>
 :destination: <<destination_hpp#destination,destination>>
-:value_with_formatters: <<value_with_formatters,value_with_formatters>>
+:printable_with_fmt: <<printable_with_fmt,printable_with_fmt>>
 :alignment_formatter: <<alignment_formatter,alignment_formatter>>
 :alignment_formatter_q: <<alignment_formatter,alignment_formatter_q>>
 :alignment_format: <<alignment_format,alignment_format>>

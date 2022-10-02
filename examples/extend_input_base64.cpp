@@ -79,7 +79,7 @@ template <typename CharT>
 class base64_printer;
 
 using base64_input_with_formatters =
-    strf::value_with_formatters<base64_printing, base64_formatter>;
+    strf::printable_with_fmt<base64_printing, base64_formatter>;
 
 struct base64_printing
 {

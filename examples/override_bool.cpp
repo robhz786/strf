@@ -14,7 +14,7 @@ struct my_bool_override
         ( strf::tag<CharT>
         , PrePrinting& pre
         , const FPack& fp
-        , strf::value_with_formatters<T...> x ) const noexcept
+        , strf::printable_with_fmt<T...> x ) const noexcept
     {
         bool value = x.value();
         return strf::make_printer_input<CharT>

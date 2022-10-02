@@ -701,13 +701,13 @@ template <typename> class punct_double_printer;
 template <typename> struct float_printing;
 
 template<typename FloatT, typename FloatFormatter, bool Align>
-using float_with_formatters = strf::value_with_formatters
+using float_with_formatters = strf::printable_with_fmt
     < strf::printable_traits<FloatT>
     , FloatFormatter
     , strf::alignment_formatter_q<Align> >;
 
 template<typename FloatT>
-using float_with_default_formatters = strf::value_with_formatters
+using float_with_default_formatters = strf::printable_with_fmt
     < strf::printable_traits<FloatT>
     , strf::float_formatter
     , strf::alignment_formatter >;

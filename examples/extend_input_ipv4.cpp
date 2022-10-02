@@ -48,7 +48,7 @@ struct printable_traits<xxx::ipv4address> {
         ( strf::tag<CharT>
         , PrePrinting& pre
         , const FPack& fp
-        , strf::value_with_formatters<T...> arg )
+        , strf::printable_with_fmt<T...> arg )
     {
         auto arg2 = transform_arg<CharT>(arg.value());
         auto arg3 = arg2.set_alignment_format(arg.get_alignment_format());

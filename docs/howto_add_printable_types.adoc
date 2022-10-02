@@ -23,7 +23,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 :printer:                <<strf_hpp#printer,printer>>
 :preprinting:                <<strf_hpp#preprinting,preprinting>>
 :precalculate:               <<strf_hpp#precalculate,precalculate>>
-:value_with_formatters:      <<strf_hpp#value_with_formatters,value_with_formatters>>
+:printable_with_fmt:      <<strf_hpp#printable_with_fmt,printable_with_fmt>>
 :make_printer_input:         <<strf_hpp#make_printer_input,make_printer_input>>
 :strf_make_printer_input:    <<strf_hpp#make_printer_input,strf::make_printer_input>>
 :usual_printer_input:        <<strf_hpp#usual_printer_input,usual_printer_input>>
@@ -407,7 +407,7 @@ struct printable_traits<std::complex<FloatT>> {
 After that, whenever a value `x` is a `std::complex`,
 expressions like `+strf::fmt(x)` and `*strf::sci(x) > 20` and `right(x, 20, '_').sci()`
 are all well-formed, and the type of `strf::fmt(x)` is
-`{value_with_formatters}<printable_traits<std::complex<...>>, Fmts\...>`, where `Fmts\...`
+`{printable_with_fmt}<printable_traits<std::complex<...>>, Fmts\...>`, where `Fmts\...`
 are the types you used in to define the `formatters` type alias.
 
 Though well-formed, they are still not printable.
@@ -439,7 +439,7 @@ struct printable_traits<std::complex<FloatT>> {
         ( strf::tag<CharT>
         , Pre& pre
         , const FPack& fp
-        , strf::{value_with_formatters}<T\...> arg )
+        , strf::{printable_with_fmt}<T\...> arg )
     {
         // handles value with formatting
 
@@ -461,9 +461,9 @@ struct printable_traits<std::complex<FloatT>> {
 ----
 
 Instead of taking a raw `std::complex<Float>`, the new overload takes a
-`{value_with_formatters}<T\...>` which matches the return type of the format functions.
+`{printable_with_fmt}<T\...>` which matches the return type of the format functions.
 Note that we need to add that template parameter pack because the __Formatters__ types
-in `{value_with_formatters}` may change as some format functions are used. For example:
+in `{printable_with_fmt}` may change as some format functions are used. For example:
 [source,cpp,subs=normal]
 ----
 std::complex<double> x;
@@ -484,7 +484,7 @@ below is not well-formed:
 ----
 __PrintableTraits__::make_input({tag}<CharT>{}, pre, fp, x)
 ----
-, and the type of `x` is not an instance `{value_with_formatters}`, then
+, and the type of `x` is not an instance `{printable_with_fmt}`, then
 the library invokes the following instead:
 [source,cpp,subs=normal]
 ----
@@ -611,7 +611,7 @@ object is taken.
 The `static_cast` expressions above work because
 `fn<T>` is supposed to be a base class of `T`
 ( yes, it's the https://en.wikipedia.org/wiki/Curiously_recurring_template_pattern[CRTP] ).
-Not only that, `T` is expected to be an instance of `{value_with_formatters}`
+Not only that, `T` is expected to be an instance of `{printable_with_fmt}`
 that has `std_complex_formatter` as one of its template arguments.
 
 In our __PrintableTraits__ class, there are only two small
@@ -648,7 +648,7 @@ struct printable_traits<std::complex<FloatT>> {
         ( strf::tag<CharT>
         , Pre& pre
         , const FPack& fp
-        , strf::{value_with_formatters}<T\...> arg )
+        , strf::{printable_with_fmt}<T\...> arg )
     {
         auto form = arg.form(strf::use_facet<complex_form_c, std::complex<FloatT>>(fp));
 
@@ -735,8 +735,8 @@ with (copied from) the correponding base class subobject of this object,
 except the `std_complex_formatter::fn<T>` one,
 which is initialized instead with `complex_form_fmt::polar`.
 This is why we also need to add that constructor that has
-a `complex_form_fmt` parameter. The `value_with_formtters` constructor
-used above is documented <<strf_hpp#value_with_formatters_vwf2_t_i,here>>.
+a `complex_form_fmt` parameter. The `printable_with_fmt` constructor
+used above is documented <<strf_hpp#printable_with_fmt_vwf2_t_i,here>>.
 
 And its done! I think is a pretty complete example of how to make
 `std::complex` printable. You can see the complete implementation

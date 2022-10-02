@@ -180,7 +180,7 @@ struct printable_traits<std::complex<FloatT>>
         ( strf::tag<CharT>
         , PrePrinting& pre
         , const FPack& fp
-        , strf::value_with_formatters<T...> arg )
+        , strf::printable_with_fmt<T...> arg )
     {
         auto form = arg.form(strf::use_facet<complex_form_c, std::complex<FloatT>>(fp));
         auto v = ::complex_coordinates(arg.value(), form);

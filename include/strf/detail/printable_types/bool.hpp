@@ -44,10 +44,10 @@ struct printable_traits<bool>
         ( strf::tag<CharT>
         , PrePrinting& pre
         , const FPack& fp
-        , strf::value_with_formatters<T...> x ) noexcept
+        , strf::printable_with_fmt<T...> x ) noexcept
         -> strf::usual_printer_input
             < CharT, PrePrinting, FPack
-            , strf::value_with_formatters<T...>
+            , strf::printable_with_fmt<T...>
             , strf::detail::fmt_bool_printer<CharT> >
     {
         return {pre, fp, x};

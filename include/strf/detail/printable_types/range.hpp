@@ -141,11 +141,11 @@ struct printable_traits<strf::range_p<It>>
         ( strf::tag<CharT>
         , PrePrinting& pre
         , const FPack& fp
-        , strf::value_with_formatters<strf::printable_traits<strf::range_p<It>>, Fmts...> x )
+        , strf::printable_with_fmt<strf::printable_traits<strf::range_p<It>>, Fmts...> x )
         ->  strf::usual_printer_input
             < CharT
             , PrePrinting, FPack
-            , strf::value_with_formatters<strf::printable_traits<strf::range_p<It>>, Fmts ...>
+            , strf::printable_with_fmt<strf::printable_traits<strf::range_p<It>>, Fmts ...>
             , strf::detail::fmt_range_printer<CharT, FPack, It, Fmts...> >
     {
         return {pre, fp, x};
@@ -180,12 +180,12 @@ struct printable_traits<strf::separated_range_p<It, SepCharT>>
         ( strf::tag<DestCharT>
         , PrePrinting& pre
         , const FPack& fp
-        , strf::value_with_formatters
+        , strf::printable_with_fmt
             < strf::printable_traits<strf::separated_range_p<It, SepCharT>>, Fmts... > x )
         ->  strf::usual_printer_input
             < DestCharT
             , PrePrinting, FPack
-            , strf::value_with_formatters
+            , strf::printable_with_fmt
                 < strf::printable_traits<strf::separated_range_p<It, SepCharT>>, Fmts... >
             , strf::detail::fmt_separated_range_printer<DestCharT, FPack, It, Fmts...> >
     {

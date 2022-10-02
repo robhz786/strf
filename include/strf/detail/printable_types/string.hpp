@@ -511,7 +511,7 @@ struct fmt_string_printer_input
         , TranscodeFormatter::has_charset >
         :: type;
 
-    strf::value_with_formatters
+    strf::printable_with_fmt
         < string_printing<SrcCharT>
         , strf::string_precision_formatter<HasPrecision>
         , strf::alignment_formatter_q<HasAlignment>
@@ -552,7 +552,7 @@ struct string_printing
         ( strf::tag<DestCharT>
         , PrePrinting& pre
         , const FPack& facets
-        , const strf::value_with_formatters
+        , const strf::printable_with_fmt
             < string_printing<SrcCharT>
             , strf::string_precision_formatter<HasPrecision>
             , strf::alignment_formatter_q<HasAlignment>

@@ -12,7 +12,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 :set_alignment_format: <<strf_hpp#alignment_formatter,set_alignment_format>>
 :get_alignment_format: <<strf_hpp#alignment_formatter,get_alignment_format>>
 :constrain: <<strf_hpp#constrain,constrain>>
-:value_with_formatters: <<strf_hpp#value_with_formatters,value_with_formatters>>
+:printable_with_fmt: <<strf_hpp#printable_with_fmt,printable_with_fmt>>
 :print_override_c: <<strf_hpp#print_override_c,print_override_c>>
 :PrintableTraits: <<strf_hpp#PrintableTraits,PrintableTraits>>
 :PrinterInput: <<strf_hpp#PrinterInput,PrinterInput>>
@@ -84,7 +84,7 @@ struct italian_bool_facet
         ( strf::tag<CharT>
         , Pre& pre
         , const FPack& fp
-        , strf::{value_with_formatters}<T\...> x ) noexcept
+        , strf::{printable_with_fmt}<T\...> x ) noexcept
     {
         return strf::{make_printer_input}<CharT>
             ( pre
@@ -111,7 +111,7 @@ is still well-formed, because the format functions
 that are applicable to a printable type keep being the same
 when we override it. We can't change them.
 So it makes sense to overload `make_input`
-with `{value_with_formatters}` argument even
+with `{printable_with_fmt}` argument even
 if you don't want to support formatting, just to
 add a `static_assert` to emit a clear error message.
 
@@ -128,7 +128,7 @@ And that's what we did in the implementation above.
 ////
 Even if you don't want to support formatting,
 it still makes sense to overload `make_input`
-taking the `{value_with_formatters}` argument and add
+taking the `{printable_with_fmt}` argument and add
 a `static_assert` with an explanatory message.
 
 ////

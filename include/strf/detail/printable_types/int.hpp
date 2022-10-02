@@ -1129,7 +1129,7 @@ struct default_int_printer_input
     constexpr STRF_HD default_int_printer_input
         ( Pre& pre_
         , const FPack&
-        , strf::value_with_formatters
+        , strf::printable_with_fmt
             < PTraits
             , strf::int_formatter
             , strf::alignment_formatter > arg_ ) noexcept
@@ -1148,22 +1148,22 @@ struct int_printing
 private:
 
     template <typename P, bool HasAlignment>
-    using vwf_ = value_with_formatters
+    using vwf_ = printable_with_fmt
               < P, int_formatter
               , alignment_formatter_q<HasAlignment> >;
 
     template <typename P, int Base, bool HasAlignment>
-    using vwf_nopp_ = value_with_formatters
+    using vwf_nopp_ = printable_with_fmt
               < P, int_formatter_no_pad0_nor_punct<Base>
               , alignment_formatter_q<HasAlignment> >;
 
     template <typename P, int Base, bool Punctuate, bool HasAlignment>
-    using vwf_bp_ = value_with_formatters
+    using vwf_bp_ = printable_with_fmt
               < P, int_formatter_static_base_and_punct<Base, Punctuate>
               , alignment_formatter_q<HasAlignment> >;
 
     template <typename P, bool HasAlignment>
-    using vwf_full_dynamic_ = value_with_formatters
+    using vwf_full_dynamic_ = printable_with_fmt
               < P, int_formatter_full_dynamic
               , alignment_formatter_q<HasAlignment> >;
 public:
@@ -1349,7 +1349,7 @@ struct voidptr_printing
         ( strf::tag<CharT>
         , PrePrinting& pre
         , const FPack& facets
-        , strf::value_with_formatters<T...> x ) noexcept
+        , strf::printable_with_fmt<T...> x ) noexcept
     -> decltype( strf::make_default_printer_input<CharT>
                    ( pre
                    , strf::pack

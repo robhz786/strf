@@ -385,7 +385,7 @@ struct strf::printable_traits<point<FloatT>> {
         ( strf::tag<CharT>
         , Pre& pre
         , const FPack& fp
-        , strf::value_with_formatters<T...> arg ) noexcept
+        , strf::printable_with_fmt<T...> arg ) noexcept
     {
         point<FloatT> p = arg.value();
         auto arg2 = strf::join

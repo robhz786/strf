@@ -451,9 +451,9 @@ struct printable_traits<std::complex<FloatT>>
         ( strf::tag<CharT>
         , PrePrinting& pre
         , const FPack& fp
-        , strf::value_with_formatters<T...> arg )
+        , strf::printable_with_fmt<T...> arg )
         -> strf::usual_printer_input
-            < CharT, PrePrinting, FPack, strf::value_with_formatters<T...>
+            < CharT, PrePrinting, FPack, strf::printable_with_fmt<T...>
             , fmt_std_complex_printer<CharT, FloatT> >
     {
         return {pre, fp, arg};
