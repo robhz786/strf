@@ -17,7 +17,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 :Printable: <<Printable,Printable>>
 :PrinterInput: <<PrinterInput,PrinterInput>>
 :printable_traits_of: <<printable_traits_of,printable_traits_of>>
-:print_override_c: <<print_override_c,print_override_c>>
+:printable_overrider_c: <<printable_overrider_c,printable_overrider_c>>
 :make_default_printer_input: <<make_default_printer_input,make_default_printer_input>>
 :make_printer_input: <<make_printer_input,make_printer_input>>
 :representative_of_printable: <<representative_of_printable,representative_of_printable>>
@@ -295,7 +295,7 @@ The expression `make_default_printer_input<CharT>(pre, facets, arg)` is equivale
 {printable_traits_of}<Arg>::<<PrintableTraits_functions,make_input>>({tag}<CharT>{}, pre, facets, arg);
 ----
 
-=== Facet category `print_override_c` [[print_override_c]]
+=== Facet category `printable_overrider_c` [[printable_overrider_c]]
 
 This facet category affects the return type and value of `strf::{make_printer_input}`
 function template.
@@ -308,10 +308,10 @@ printable type intended to be overriden.
 ----
 namespace strf {
 
-struct print_override_c {
+struct printable_overrider_c {
     static constexpr bool constrainable = true;
 
-    constexpr static <<no_print_override,no_print_override>> get_default() noexcept {
+    constexpr static <<dont_override,dont_override>> get_default() noexcept {
         return {};
     }
 };
@@ -319,16 +319,16 @@ struct print_override_c {
 } // namespace strf
 ----
 
-==== Struct `no_print_override` [[no_print_override]]
+==== Struct `dont_override` [[dont_override]]
 
-`no_print_override` is the default facet of `print_override_c` category.
+`dont_override` is the default facet of `printable_overrider_c` category.
 
 [source,cpp,subs=normal]
 ----
 namespace strf {
 
-struct no_print_override {
-    using category = print_override_c;
+struct dont_override {
+    using category = printable_overrider_c;
 
     template <typename CharT, typename Pre, typename FPack, typename Arg>
     constexpr static auto make_input
@@ -358,7 +358,7 @@ If `{printable_traits_of}<Arg>::<<PrintableTraits_is_overridable,is_overridable>
 `make_printer_input` returns
 [source,cpp,subs=normal]
 ----
-{use_facet}< {print_override_c}, {representative_of_printable}<Arg> > (facets)
+{use_facet}< {printable_overrider_c}, {representative_of_printable}<Arg> > (facets)
     .make_input({tag}<CharT>{}, pre, facets, arg);
 ----
 

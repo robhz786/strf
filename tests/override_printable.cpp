@@ -40,9 +40,9 @@ private:
     bool value_;
 };
 
-struct my_bool_printing_override
+struct my_bool_printing_overrider
 {
-    using category = strf::print_override_c;
+    using category = strf::printable_overrider_c;
 
     template <typename CharT, typename PrePrinting, typename FPack>
     constexpr static STRF_HD auto make_input
@@ -76,9 +76,9 @@ struct my_bool_printing_override
     }
 };
 
-struct my_int_printing_override
+struct my_int_printing_overrider
 {
-    using category = strf::print_override_c;
+    using category = strf::printable_overrider_c;
 
     template <typename CharT, typename PrePrinting, typename FPack, typename... T>
     constexpr static STRF_HD auto make_input
@@ -133,12 +133,12 @@ struct printable_traits<bool_wrapper> {
         , bool_wrapper f )
         -> decltype( strf::make_printer_input<CharT>
                      ( pre
-                     , strf::pack(fp, strf::constrain<strf::is_char>(strf::no_print_override{}))
+                     , strf::pack(fp, strf::constrain<strf::is_char>(strf::dont_override{}))
                      , strf::join(static_cast<CharT>('['), f.x, static_cast<CharT>(']')) ) )
     {
         return strf::make_printer_input<CharT>
             ( pre
-            , strf::pack(fp, strf::constrain<strf::is_char>(strf::no_print_override{}))
+            , strf::pack(fp, strf::constrain<strf::is_char>(strf::dont_override{}))
             , strf::join(static_cast<CharT>('['), f.x, static_cast<CharT>(']')) );
     }
 };
@@ -147,12 +147,12 @@ struct printable_traits<bool_wrapper> {
 
 STRF_TEST_FUNC void test_printable_overriding()
 {
-    auto alt_bool = strf::constrain<is_bool>(my_bool_printing_override{});
-    auto alt_int = strf::constrain<strf::is_int_number>(my_int_printing_override{});
+    auto alt_bool = strf::constrain<is_bool>(my_bool_printing_overrider{});
+    auto alt_int = strf::constrain<strf::is_int_number>(my_int_printing_overrider{});
 
     TEST("yes/no").with(alt_bool) (true, '/', false);
     TEST("..yes../..no..").with(alt_bool) (strf::center(true, 7, '.'), '/', strf::center(false, 6, '.'));
-    TEST("no").with(my_bool_printing_override{}) (false);
+    TEST("no").with(my_bool_printing_overrider{}) (false);
     TEST("123").with(alt_bool) (123);
     TEST("[yes]/[no]").with(alt_bool) (bool_wrapper{true}, '/', bool_wrapper{false});
 

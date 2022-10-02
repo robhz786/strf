@@ -265,8 +265,16 @@ constexpr detail_format_functions::fmt_fn fmt {};
 
 } // inline namespace format_functions
 
-struct print_override_c;
-struct no_print_override;
+struct printable_overrider_c;
+struct dont_override;
+
+using print_override_c
+STRF_DEPRECATED_MSG("print_override_c was renamed printable_overrider_c")
+= printable_overrider_c;
+
+using no_print_override
+STRF_DEPRECATED_MSG("no_print_override was renamed dont_override")
+= dont_override;
 
 namespace detail {
 
@@ -440,7 +448,7 @@ struct maker_getter_overrider
     template <typename FPack>
     static constexpr STRF_HD return_maker_type get_maker(const FPack& fp)
     {
-        return strf::use_facet<strf::print_override_c, OverrideTag>(fp);
+        return strf::use_facet<strf::printable_overrider_c, OverrideTag>(fp);
     }
 };
 
@@ -468,10 +476,10 @@ struct maker_getter_selector_2
     static_assert(Overridable, "");
     using representative_type = typename PrintingTraits::representative_type;
     using overrider_ = decltype
-        ( strf::use_facet<strf::print_override_c, representative_type>(*(const FPack*)0) );
+        ( strf::use_facet<strf::printable_overrider_c, representative_type>(*(const FPack*)0) );
     using overrider = strf::detail::remove_cvref_t<overrider_>;
     using maker_getter_type = typename std::conditional
-        < std::is_same<overrider, strf::no_print_override>::value
+        < std::is_same<overrider, strf::dont_override>::value
         , maker_getter_printable_traits<PrintingTraits>
         , maker_getter_overrider<overrider, representative_type> >
         ::type;
@@ -598,9 +606,9 @@ constexpr STRF_HD auto make_printer_input(PrePrinting& p, const FPack& fp, const
         .make_input(strf::tag<CharT>{}, p, fp, Helper::adapt_arg(arg));
 }
 
-struct no_print_override
+struct dont_override
 {
-    using category = print_override_c;
+    using category = printable_overrider_c;
     template <typename CharT, typename PrePrinting, typename FPack, typename Arg>
     constexpr static STRF_HD auto make_input
         ( strf::tag<CharT>
@@ -614,11 +622,11 @@ struct no_print_override
     }
 };
 
-struct print_override_c
+struct printable_overrider_c
 {
     static constexpr bool constrainable = true;
 
-    constexpr static STRF_HD no_print_override get_default() noexcept
+    constexpr static STRF_HD dont_override get_default() noexcept
     {
         return {};
     }

@@ -693,7 +693,7 @@ When the argument associated with a `"{"` does not exist, the library does two t
 |`<<surrogate_policy,surrogate_policy_c>>`  |Yes | Wheter surrogates are treated as errors
 |`<<tr_string_error,tr_error_notifier_c>>`  |No  | Notifies errors on the tr-string
 |`<<width_calculator,width_calculator_c>>`  |Yes |Defines how the width is calculated
-|`<<howto_override_printable_types#,print_override_c>>`     |Yes   | Overrides printable types
+|`<<howto_override_printable_types#,printable_overrider_c>>`     |Yes   | Overrides printable types
 |===
 
 [[numpunct]]

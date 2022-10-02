@@ -18,8 +18,8 @@ http://www.boost.org/LICENSE_1_0.txt)
 :forwarded_type:  <<strf_hpp#PrintableTraits_forwarded_type,forwarded_type>>
 :formatters:      <<strf_hpp#PrintableTraits_formatters,formatters>>
 :Formatter:                  <<strf_hpp#Formatter,Formatter>>
-:print_override_c:           <<strf_hpp#print_override_c,print_override_c>>
-:no_print_override:          <<strf_hpp#no_print_override,no_print_override>>
+:printable_overrider_c:           <<strf_hpp#printable_overrider_c,printable_overrider_c>>
+:dont_override:          <<strf_hpp#dont_override,dont_override>>
 :printer:                <<strf_hpp#printer,printer>>
 :preprinting:                <<strf_hpp#preprinting,preprinting>>
 :precalculate:               <<strf_hpp#precalculate,precalculate>>
@@ -157,7 +157,7 @@ is equivalent to
 // ----
 // __overrider__.make_input({tag}<CharT>{}, __pre__, __fp__, __foo__)
 // ----
-// , where `__overrider__` is a facet object of the `{print_override_c}` category.
+// , where `__overrider__` is a facet object of the `{printable_overrider_c}` category.
 // If it is the default facet, then such expression is equivalent to:
 
 [source,cpp,subs=normal]

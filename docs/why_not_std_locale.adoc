@@ -91,7 +91,7 @@ auto punct = strf::numpunct<10> (3, 2, 1)
 ( Be aware that `strf::numpunct` does not affect `bool` values,
 contrary to `std::numpunct` which
 has the `truename()` and `falsename()` functions.
-Instead, in Strf there is the `<<howto_override_printable_types#,print_override_c>>`
+Instead, in Strf there is the `<<howto_override_printable_types#,printable_overrider_c>>`
 facet category, which enables you to override how
 values of `bool` are printed. )
 
