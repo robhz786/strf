@@ -77,12 +77,6 @@ public:
         return end_;
     }
 
-    STRF_DEPRECATED
-    STRF_HD std::size_t size() const noexcept
-    {
-        STRF_ASSERT(pointer_ <= end_);
-        return end_ - pointer_;
-    }
     STRF_HD std::size_t space() const noexcept
     {
         return buffer_space();
