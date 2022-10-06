@@ -75,7 +75,7 @@ struct italian_bool_facet
         return strf::{make_printer_input}<CharT>
             ( pre
             , strf::{pack}()
-            , strf::conv(x ? "vero" : "falso") );
+            , strf::transcode(x ? "vero" : "falso") );
     }
 
     template <typename CharT, typename Pre, typename FPack, typename... T>
@@ -88,7 +88,7 @@ struct italian_bool_facet
         return strf::{make_printer_input}<CharT>
             ( pre
             , fp
-            , strf::conv(x.value() ? "vero" : "falso")
+            , strf::transcode(x.value() ? "vero" : "falso")
                 .{set_alignment_format}(x.{get_alignment_format}()) );
     }
 };

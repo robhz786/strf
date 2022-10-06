@@ -20,7 +20,7 @@ struct my_bool_overrider
         return strf::make_printer_input<CharT>
             ( pre
             , fp
-            , strf::conv(false_true_strings[value], strf::utf_t<char>{})
+            , strf::transcode(false_true_strings[value], strf::utf_t<char>{})
                 .set_alignment_format(x.get_alignment_format()) );
     }
 

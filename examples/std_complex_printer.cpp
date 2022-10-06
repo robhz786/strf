@@ -238,7 +238,7 @@ void std_complex_printer<CharT, FloatT>::print_to(strf::destination<CharT>& dest
         print(coordinates_.second );
     } else {
         print(static_cast<CharT>('('), coordinates_.first);
-        print(strf::conv(form_ == complex_form::algebric ? " + i*" : ", ") );
+        print(strf::transcode(form_ == complex_form::algebric ? " + i*" : ", ") );
         print(coordinates_.second, static_cast<CharT>(')'));
     }
 }
@@ -412,7 +412,7 @@ void fmt_std_complex_printer<CharT, FloatT>::print_complex_value_
                                  : ", " );
         strf::to(dest).with(facets)
             ( static_cast<CharT>('(')
-            , first_val, strf::conv(middle_str), second_val
+            , first_val, strf::transcode(middle_str), second_val
             , static_cast<CharT>(')') );
     }
 }

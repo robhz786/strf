@@ -84,17 +84,17 @@ Some things that are directly supported by Strf, but not by {fmt}:
 [source,cpp]
 ----
 auto str = strf::to_string( "aaa-"
-                          , strf::conv(u"bbb-")
-                          , strf::conv(U"ccc-")
-                          , strf::conv(L"ddd") );
+                          , strf::transcode(u"bbb-")
+                          , strf::transcode(U"ccc-")
+                          , strf::transcode(L"ddd") );
 
 assert(str   ==  "aaa-bbb-ccc-ddd");
 ----
 [source,cpp]
 ----
 auto str_utf8 = strf::to_u8string
-        ( strf::conv("--\xA4--", strf::iso_8859_1<char>)
-        , strf::conv("--\xA4--", strf::iso_8859_15<char>));
+        ( strf::transcode("--\xA4--", strf::iso_8859_1<char>)
+        , strf::transcode("--\xA4--", strf::iso_8859_15<char>));
 assert(str_utf8 == u8"--\u00A4----\u20AC--");
 ----
 
@@ -391,7 +391,7 @@ struct strf::printable_traits<point<FloatT>> {
         auto arg2 = strf::join
             ( (CharT)'('
             , strf::fmt(p.x).set_float_format(arg.get_float_format()) // <2>
-            , strf::conv(", ")                                        // <3>
+            , strf::transcode(", ")                                   // <3>
             , strf::fmt(p.y).set_float_format(arg.get_float_format()) // <4>
             , (CharT)')' )
             .set_alignment_format(arg.get_alignment_format());        // <5>

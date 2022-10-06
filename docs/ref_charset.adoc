@@ -731,7 +731,7 @@ x.sanitizer()
 ----
 [horizontal]
 Return type:: A __{Transcoder}__ from `CharT` to `CharT`
-Return value:: A transcoder that "converts" this encoding to this encoding,
+Return value:: A transcoder that converts this encoding to this encoding,
                __i.e.__ a sanitizer of this encoding.
 ====
 [[Charset_find_transcoder_to]]

@@ -387,19 +387,35 @@ constexpr STRF_HD auto multi(T&& value, C&& count)
 }
 
 template <typename T>
-constexpr STRF_HD auto conv(T&& value)
-    noexcept(noexcept(strf::fmt((T&&)value).convert_charset()))
-    -> strf::detail::remove_cvref_t<decltype(strf::fmt((T&&)value).convert_charset())>
+constexpr STRF_HD auto transcode(T&& value)
+    noexcept(noexcept(strf::fmt((T&&)value).transcode()))
+    -> strf::detail::remove_cvref_t<decltype(strf::fmt((T&&)value).transcode())>
 {
-    return strf::fmt((T&&)value).convert_charset();
+    return strf::fmt((T&&)value).transcode();
+}
+
+template <typename T, typename Charset>
+    constexpr STRF_HD auto transcode(T&& value, Charset&& charset)
+    noexcept(noexcept(strf::fmt((T&&)value).transcode_from(charset)))
+    -> strf::detail::remove_cvref_t<decltype(strf::fmt((T&&)value).transcode_from(charset))>
+{
+    return strf::fmt((T&&)value).transcode_from(charset);
+}
+
+template <typename T>
+constexpr STRF_HD auto conv(T&& value)
+    noexcept(noexcept(strf::fmt((T&&)value).transcode()))
+    -> strf::detail::remove_cvref_t<decltype(strf::fmt((T&&)value).transcode())>
+{
+    return strf::fmt((T&&)value).transcode();
 }
 
 template <typename T, typename Charset>
     constexpr STRF_HD auto conv(T&& value, Charset&& charset)
-    noexcept(noexcept(strf::fmt((T&&)value).convert_from_charset(charset)))
-    -> strf::detail::remove_cvref_t<decltype(strf::fmt((T&&)value).convert_from_charset(charset))>
+    noexcept(noexcept(strf::fmt((T&&)value).transcode_from(charset)))
+    -> strf::detail::remove_cvref_t<decltype(strf::fmt((T&&)value).transcode_from(charset))>
 {
-    return strf::fmt((T&&)value).convert_from_charset(charset);
+    return strf::fmt((T&&)value).transcode_from(charset);
 }
 
 template <typename T>
@@ -587,20 +603,20 @@ struct multi_fn {
     }
 };
 
-struct conv_fn {
+struct transcode_fn {
     template <typename T>
     constexpr STRF_HD auto operator()(T&& value) const
-        noexcept(noexcept(strf::fmt((T&&)value).convert_charset()))
-        -> strf::detail::remove_cvref_t<decltype(strf::fmt((T&&)value).convert_charset())>
+        noexcept(noexcept(strf::fmt((T&&)value).transcode()))
+        -> strf::detail::remove_cvref_t<decltype(strf::fmt((T&&)value).transcode())>
     {
-        return strf::fmt((T&&)value).convert_charset();
+        return strf::fmt((T&&)value).transcode();
     }
     template <typename T, typename Charset>
         constexpr STRF_HD auto operator()(T&& value, Charset&& charset) const
-        noexcept(noexcept(strf::fmt((T&&)value).convert_from_charset(charset)))
-        -> strf::detail::remove_cvref_t<decltype(strf::fmt((T&&)value).convert_from_charset(charset))>
+        noexcept(noexcept(strf::fmt((T&&)value).transcode_from(charset)))
+        -> strf::detail::remove_cvref_t<decltype(strf::fmt((T&&)value).transcode_from(charset))>
     {
-        return strf::fmt((T&&)value).convert_from_charset(charset);
+        return strf::fmt((T&&)value).transcode_from(charset);
     }
 };
 
@@ -703,13 +719,15 @@ constexpr strf::detail_format_functions::fixed_fn  fixed {};
 constexpr strf::detail_format_functions::sci_fn    sci {};
 constexpr strf::detail_format_functions::gen_fn    gen {};
 constexpr strf::detail_format_functions::multi_fn  multi {};
-constexpr strf::detail_format_functions::conv_fn   conv {};
-constexpr strf::detail_format_functions::sani_fn   sani {};
 constexpr strf::detail_format_functions::right_fn  right {};
 constexpr strf::detail_format_functions::left_fn   left {};
 constexpr strf::detail_format_functions::center_fn center {};
 constexpr strf::detail_format_functions::pad0_fn   pad0 {};
 constexpr strf::detail_format_functions::punct_fn  punct {};
+constexpr strf::detail_format_functions::transcode_fn   transcode {};
+STRF_DEPRECATED_MSG("conv was renamed to transcode")
+constexpr strf::detail_format_functions::transcode_fn   conv {};
+constexpr strf::detail_format_functions::sani_fn        sani {};
 
 #endif // defined (STRF_NO_GLOBAL_CONSTEXPR_VARIABLE)
 

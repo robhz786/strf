@@ -76,24 +76,24 @@ STRF_TEST_FUNC void test_input_string()
 
     {   // by-pass encoding sanitization
 
-        TEST("---\x99---") (strf::conv("---\x99---"));
+        TEST("---\x99---") (strf::transcode("---\x99---"));
         TEST("---\xA5---")
             .with(strf::iso_8859_3_t<char>{})
-            (strf::conv("---\xA5---", strf::iso_8859_3_t<char>{}));
+            (strf::transcode("---\xA5---", strf::iso_8859_3_t<char>{}));
         {
             const char8_t expected[] = { '-', '-', '-', static_cast<char8_t>('\xA5'), '-', '-', '-', '\0' };
             TEST(expected)
                 .with(strf::iso_8859_3_t<char8_t>{})
-                (strf::conv("---\xA5---", strf::iso_8859_3_t<char>{}));
+                (strf::transcode("---\xA5---", strf::iso_8859_3_t<char>{}));
         }
         TEST("...---\xA5---")
             .with(strf::iso_8859_3_t<char>{})
-            (strf::right("---\xA5---", 10, U'.').conv(strf::iso_8859_3_t<char>{}));
+            (strf::right("---\xA5---", 10, U'.').transcode(strf::iso_8859_3_t<char>{}));
         {
             const char8_t expected[] = { '.', '.', '.', '-', '-', '-', static_cast<char8_t>('\xA5'), '-', '-', '-', '\0' };
             TEST(expected)
                 .with(strf::iso_8859_3_t<char8_t>{})
-                (strf::right("---\xA5---", 10, U'.').conv(strf::iso_8859_3_t<char>{}));
+                (strf::right("---\xA5---", 10, U'.').transcode(strf::iso_8859_3_t<char>{}));
         }
     }
     {   // encoding sanitization
@@ -109,8 +109,8 @@ STRF_TEST_FUNC void test_input_string()
             .with(strf::iso_8859_3_t<char>{})
             (strf::sani("---\xA5---", strf::iso_8859_3_t<char>{}) > 9);
 
-        TEST("...---\x99---") (strf::conv("---\x99---").fill(U'.') > 10);
-        TEST("...---\x99---") (strf::conv("---\x99---", strf::utf_t<char>{}).fill(U'.') > 10);
+        TEST("...---\x99---") (strf::transcode("---\x99---").fill(U'.') > 10);
+        TEST("...---\x99---") (strf::transcode("---\x99---", strf::utf_t<char>{}).fill(U'.') > 10);
     }
     {   // encoding conversion
 
@@ -120,40 +120,40 @@ STRF_TEST_FUNC void test_input_string()
 
         TEST("--?--\x80--")
             .with(strf::windows_1252_t<char>{})
-            (strf::conv("--\xC9\x90--\xE2\x82\xAC--", strf::utf_t<char>{}));
+            (strf::transcode("--\xC9\x90--\xE2\x82\xAC--", strf::utf_t<char>{}));
 
         TEST(".......--?--\x80--")
             .with(strf::windows_1252_t<char>{})
-            (strf::right("--\xC9\x90--\xE2\x82\xAC--", 15, U'.').conv(strf::utf_t<char>{}));
+            (strf::right("--\xC9\x90--\xE2\x82\xAC--", 15, U'.').transcode(strf::utf_t<char>{}));
     }
 
     {   // convertion from utf32
 
         TEST(u8"--\u0080--\u07ff--\u0800--\uffff--\U00010000--\U0010ffff")
-            ( strf::conv(U"--\u0080--\u07ff--\u0800--\uffff--\U00010000--\U0010ffff") );
+            ( strf::transcode(U"--\u0080--\u07ff--\u0800--\uffff--\U00010000--\U0010ffff") );
 
         TEST(u"--\u0080--\u07ff--\u0800--\uffff--\U00010000--\U0010ffff")
-            ( strf::conv(U"--\u0080--\u07ff--\u0800--\uffff--\U00010000--\U0010ffff") );
+            ( strf::transcode(U"--\u0080--\u07ff--\u0800--\uffff--\U00010000--\U0010ffff") );
 
         const char32_t abc[] = U"abc";
         const char32_t def[] = U"def";
         const char32_t ghi[] = U"ghi";
-        TEST("abc")      ( strf::conv(abc) );
-        TEST("   abc")   ( strf::conv(abc) > 6 );
-        TEST("abc...")   ( strf::conv(abc).fill('.') < 6 );
-        TEST("...abc")   ( strf::conv(abc).fill('.') > 6 );
-        TEST(".abc..")   ( strf::conv(abc).fill('.') ^ 6 );
-        TEST("     abc")   ( strf::join_right(8)(strf::conv(abc)) );
-        TEST("...abc~~")   ( strf::join_right(8, '.')(strf::conv(abc).fill(U'~') < 5));
-        TEST(".....abc")   ( strf::join_right(8, '.')(strf::conv(abc).fill(U'~') < 3));
-        TEST(".....abc")   ( strf::join_right(8, '.')(strf::conv(abc).fill(U'~') < 2));
+        TEST("abc")      ( strf::transcode(abc) );
+        TEST("   abc")   ( strf::transcode(abc) > 6 );
+        TEST("abc...")   ( strf::transcode(abc).fill('.') < 6 );
+        TEST("...abc")   ( strf::transcode(abc).fill('.') > 6 );
+        TEST(".abc..")   ( strf::transcode(abc).fill('.') ^ 6 );
+        TEST("     abc")   ( strf::join_right(8)(strf::transcode(abc)) );
+        TEST("...abc~~")   ( strf::join_right(8, '.')(strf::transcode(abc).fill(U'~') < 5));
+        TEST(".....abc")   ( strf::join_right(8, '.')(strf::transcode(abc).fill(U'~') < 3));
+        TEST(".....abc")   ( strf::join_right(8, '.')(strf::transcode(abc).fill(U'~') < 2));
 
-        TEST("   abcdefghi") ( strf::conv(U"") > 3, strf::conv(abc) > 3
-                             , strf::conv(def) < 3, strf::conv(ghi) ^ 3 );
-        TEST("  abcdefghi")  ( strf::conv(U"") > 2, strf::conv(abc) > 2
-                             , strf::conv(def) < 2, strf::conv(ghi) ^ 2 );
-        TEST("abcdefghi")    ( strf::conv(U"") > 0, strf::conv(abc) > 0
-                             , strf::conv(def) < 0, strf::conv(ghi) ^ 0 );
+        TEST("   abcdefghi") ( strf::transcode(U"") > 3, strf::transcode(abc) > 3
+                             , strf::transcode(def) < 3, strf::transcode(ghi) ^ 3 );
+        TEST("  abcdefghi")  ( strf::transcode(U"") > 2, strf::transcode(abc) > 2
+                             , strf::transcode(def) < 2, strf::transcode(ghi) ^ 2 );
+        TEST("abcdefghi")    ( strf::transcode(U"") > 0, strf::transcode(abc) > 0
+                             , strf::transcode(def) < 0, strf::transcode(ghi) ^ 0 );
 
     }
 }

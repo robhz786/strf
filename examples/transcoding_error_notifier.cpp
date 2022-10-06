@@ -81,8 +81,8 @@ int main()
     strf::transcoding_error_notifier_ptr notifier_ptr{&notifier};
 
     auto output = strf::to_string.with(strf::iso_8859_1<char>, notifier_ptr)
-        ( strf::conv("---\xF0\x90\xBF---", strf::utf8<char>)    // invalid input
-        , strf::conv(u8"...\u20DF...",  strf::utf8<char8_t>) ); // unsupported codepoint
+        ( strf::transcode("---\xF0\x90\xBF---", strf::utf8<char>)    // invalid input
+        , strf::transcode(u8"...\u20DF...",  strf::utf8<char8_t>) ); // unsupported codepoint
 
     auto err_msg = err_str_maker.finish();
 

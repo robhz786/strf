@@ -20,7 +20,7 @@ and `std::basic_string<CharT, Traits, Alloc>`
 +
 where:
 +
-- `CharT` is the character type. If it is not the same as the output character type, then it is necessary to use the `conv` or `sani` format function.
+- `CharT` is the character type. If it is not the same as the output character type, then it is necessary to use the `transcode` or `sani` format function.
 - `Traits` can be any type that satisfies https://en.cppreference.com/w/cpp/named_req/CharTraits[CharTraits]
 - `Alloc` can be any type that satisfies https://en.cppreference.com/w/cpp/named_req/Allocator[Allocator]
 
@@ -69,22 +69,20 @@ Format functions::
 `sanitize_charset()`::: Translates input string from the charset associated to `CharT` to
             the output charset. If these charsets are the same
             then sanitizes the input string.
-`template <typename Charset> convert_from_charset(Charset cs)`:::
+`template <typename Charset> transcode_from(Charset cs)`:::
    Convert the input string from `cs` to the
    output charset, if these charsets are not the same.
    Otherwise, copies input string as it is.
-`convert_charset()` ::: Translates input string from the charset associated to `CharT` to
+`transcode()` ::: Translates input string from the charset associated to `CharT` to
           the output charset, if these charsets are not the same.
           Otherwise, copies the input string as it is.
 `template <typename Charset>  sani(Charset cs)`::: Equivanlent to `sanitize_charset(cs)`
-`template <typename Charset>  conv(Charset cs)`::: Equivanlent to `convert_charset(cs)`
 `sani()`::: Equivalent to `sanitize_charset()`
-`conv()`::: Equivalent to `convert_charset()`
 +
 .Example
 [source,cpp]
 ----
-auto str = strf::to_string(strf::center(u" Hello! ", 16, '*').conv());
+auto str = strf::to_string(strf::center(u" Hello! ", 16, '*').transcode());
 assert(str == "**** Hello! ****");
 ----
 

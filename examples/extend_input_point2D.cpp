@@ -36,7 +36,7 @@ struct printable_traits<xxx::point2D<FloatT>> {
         auto arg2 = strf::join
             ( static_cast<CharT>('(')
             , strf::fmt(p.x).set_float_format(arg.get_float_format())
-            , strf::conv(u", ")
+            , strf::transcode(u", ")
             , strf::fmt(p.y).set_float_format(arg.get_float_format())
             , static_cast<CharT>(')') )
             .set_alignment_format(arg.get_alignment_format());

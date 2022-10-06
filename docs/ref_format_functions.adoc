@@ -44,7 +44,7 @@ constexpr /{asterisk}...{asterisk}/ fixed {};
 constexpr /{asterisk}...{asterisk}/ sci {};
 constexpr /{asterisk}...{asterisk}/ gen {};
 constexpr /{asterisk}...{asterisk}/ multi {};
-constexpr /{asterisk}...{asterisk}/ conv {};
+constexpr /{asterisk}...{asterisk}/ transcode {};
 constexpr /{asterisk}...{asterisk}/ sani {};
 
 } // inline namespace format_functions
@@ -77,9 +77,9 @@ that work as alias to format functions
 |`gen(_arg_, _precision_)`     |`{fmt}(_arg_).gen().p(_precision_)`
 |`multi(_arg_, _count_)`       |`{fmt}(_arg_).multi(_count_)`
 |`sani(_arg_, _charset_)`      |`{fmt}(_arg_).sani(_charset_)`
-|`conv(_arg_, _charset_)`      |`{fmt}(_arg_).conv(_charset_)`
+|`transcode(_arg_, _charset_)` |`{fmt}(_arg_).transcode_from(_charset_)`
 |`sani(_arg_)`                 |`{fmt}(_arg_).sani()`
-|`conv(_arg_)`                 |`{fmt}(_arg_).conv()`
+|`transcode(_arg_)`            |`{fmt}(_arg_).transcode()`
 |===
 
 [[Formatter]]

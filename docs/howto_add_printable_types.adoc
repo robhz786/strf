@@ -51,8 +51,8 @@ http://www.boost.org/LICENSE_1_0.txt)
 :numpunct:               <<strf_hpp#numpunct,numpunct>>
 
 :multi:           <<quick_reference#multi,multi>>
-:conv:            <<quick_reference#string_formatting,conv>>
-:utf:           <<quick_reference#static_char_constexpr,utf>>
+:transcode:       <<quick_reference#string_formatting,transcode>>
+:utf:             <<quick_reference#static_char_constexpr,utf>>
 
 :middle_dots:     &#183;&#183;&#183;
 :four_dots:       &#x2025; &#2025;
@@ -253,7 +253,7 @@ struct printable_traits<std::complex<FloatT>> {
         auto arg2 = strf::join
             ( strf::{multi}(static_cast<CharT>('('), has_brackets)
             , v.first
-            , strf::{conv}(middle_string(form), strf::{utf}<char16_t>)
+            , strf::{transcode}(middle_string(form), strf::{utf}<char16_t>)
             , v.second
             , strf::{multi}(static_cast<CharT>(')'), has_brackets) );
 
@@ -326,14 +326,14 @@ if (form != complex_form::polar) {
     auto j1 = strf::join
             ( static_cast<CharT>('(')
             , v.first
-            , strf::{conv}(middle_string(form), strf::{utf}<char16_t>)
+            , strf::{transcode}(middle_string(form), strf::{utf}<char16_t>)
             , v.second
             , static_cast<CharT>(')') );
     return strf::make_printer_input<CharT>(pre, fp, j1);
 }
 auto j2 = strf::join
     ( v.first
-    , strf::{conv}(middle_string(form), strf::{utf}<char16_t>)
+    , strf::{transcode}(middle_string(form), strf::{utf}<char16_t>)
     , v.second );
 return strf::make_printer_input<CharT>(pre, fp, j2); // different return type !
 ----
@@ -343,7 +343,7 @@ That wouldn't compile since `j1` and `j2` have different types.
 At last, we need to select a different middle string for each form.
 No big deal here, we just created a fuction `middle_string` to handle that.
 But what may have caught your eye is that the string is passed to
-the `{conv}` function. The code wouldn't compile without it, unless
+the `{transcode}` function. The code wouldn't compile without it, unless
 when `CharT` is the same as the string's character type, and even
 in this case, there is the risk of the destination encoding differing
 from the one used in the string ( especially if we were using a `char`
@@ -354,7 +354,7 @@ string, instead of a `char16_t` string as we did above ).
 auto arg2 = strf::{join}
     ( /{asterisk} \... {asterisk}/
     , /{asterisk} \... {asterisk}/
-    , strf::{conv}(middle_string(form), strf::{utf}<char16_t>)
+    , strf::{transcode}(middle_string(form), strf::{utf}<char16_t>)
     , /{asterisk} \... {asterisk}/
     , /{asterisk} \... {asterisk}/ );
 ----
@@ -449,7 +449,7 @@ struct printable_traits<std::complex<FloatT>> {
         auto arg2 = strf::join
             ( strf::{multi}(static_cast<CharT>('('), has_brackets)
             , strf::fmt(v.first).{set_float_format}(arg.{get_float_format}())
-            , strf::conv(middle_string(form), strf::{utf}<char16_t>)
+            , strf::transcode(middle_string(form), strf::{utf}<char16_t>)
             , strf::fmt(v.second).{set_float_format}(arg.{get_float_format}())
             , strf::{multi}(static_cast<CharT>(')'), has_brackets) );
         auto arg3 = arg2.{set_alignment_format}(arg.{get_alignment_format}());
@@ -835,7 +835,7 @@ void std_complex_printer<CharT, FloatT>::print_to(strf::{destination}<CharT>& de
         print(coordinates_.second );
     } else {
         print((CharT)'(', coordinates_.first);
-        print(strf::conv(form_ == complex_form::algebric ? " + i*" : ", ") );
+        print(strf::transcode(form_ == complex_form::algebric ? " + i*" : ", ") );
         print(coordinates_.second, (CharT)')');
     }
 }

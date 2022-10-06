@@ -71,9 +71,9 @@ that work as alias to format functions:
 |`gen(_arg_, _precision_)`     |`fmt(_arg_).gen().p(_precision_)`
 |`multi(_arg_, _count_)`       |`fmt(_arg_).multi(_count_)`
 |`sani(_arg_, _charset_)`      |`fmt(_arg_).sani(_charset_)`
-|`conv(_arg_, _charset_)`      |`fmt(_arg_).conv(_charset_)`
+|`transcode(_arg_, _charset_)` |`fmt(_arg_).transcode_from(_charset_)`
 |`sani(_arg_)`                 |`fmt(_arg_).sani()`
-|`conv(_arg_)`                 |`fmt(_arg_).cont()`
+|`transcode(_arg_)`            |`fmt(_arg_).transcode()`
 |===
 
 .Example
@@ -137,16 +137,10 @@ include::ref_format_functions.adoc[tag=int_format_functions]
 | `template <typename Charset> sani(Charset cs)`
 | Equivalent to `sanitize_from_charset(cs)`
 
-| `template <typename Charset> conv(Charset cs)`
-| Equivalent to `convert_from_charset(cs)`
-
-| `conv()`
-| Equivalent to `convert_from_charset()`
-
 | `sani()`
 | Equivalent to `sanitize_from_charset()`
 
-| `template <typename Charset> convert_from_charset(Charset cs)`
+| `template <typename Charset> transcode_from(Charset cs)`
 | Transcodes the input string from the charset represented by `cs`,
   if it is not already destination charset.
 
@@ -154,7 +148,7 @@ include::ref_format_functions.adoc[tag=int_format_functions]
 | Transcodes the input string from the charset represented by `cs`,
   or just sanitizes it, if `cs` is also the destination charset.
 
-| `convert_charset()`
+| `transcode()`
 | Transcodes the input string from the charset that correspods
   to its character type, if it is not already the same
   as the destination charset.
@@ -864,49 +858,49 @@ assert(s == "one hundred billions = 1\2250000\225000\2250000");
 Since the library knows the encoding corresponding to each
 character type, and knows how to convert from one to another,
 it is possible to mix input string of difference characters
-types, though you need to use the function `conv`:
+types, though you need to use the function `transcode`:
 
 [source,cpp]
 ----
 auto str   = strf::to_string( "aaa-"
-                            , strf::conv(u"bbb-")
-                            , strf::conv(U"ccc-")
-                            , strf::conv(L"ddd") );
+                            , strf::transcode(u"bbb-")
+                            , strf::transcode(U"ccc-")
+                            , strf::transcode(L"ddd") );
 
-auto str16 = strf::to_u16string( strf::conv("aaa-")
+auto str16 = strf::to_u16string( strf::transcode("aaa-")
                                , u"bbb-"
-                               , strf::conv(U"ccc-")
-                               , strf::conv(L"ddd") );
+                               , strf::transcode(U"ccc-")
+                               , strf::transcode(L"ddd") );
 
 assert(str   ==  "aaa-bbb-ccc-ddd");
 assert(str16 == u"aaa-bbb-ccc-ddd");
 ----
 
-The `conv` function can also specify an alternative encoding
+The `transcode` function can also specify an alternative encoding
 for a specific input string argument:
 
 [source,cpp]
 ----
 auto str_utf8 = strf::to_u8string
-    ( strf::conv("--\xA4--", strf::iso_8859_1<char>)
-    , strf::conv("--\xA4--", strf::iso_8859_15<char>));
+    ( strf::transcode("--\xA4--", strf::iso_8859_1<char>)
+    , strf::transcode("--\xA4--", strf::iso_8859_15<char>));
 
 assert(str_utf8 == u8"--\u00A4----\u20AC--");
 ----
 
-The `sani` function has the same effect as `conv`,
+The `sani` function has the same effect as `transcode`,
 except when the input encoding is same as the output.
-In this case `sani` causes the input to be sanitized, whereas `conv` does not:
+In this case `sani` causes the input to be sanitized, whereas `transcode` does not:
 
 [source, cpp]
 ----
 auto str = strf::to_string
     .with(strf::iso_8859_3<char>)    // the output charset
-    ( strf::conv("--\xff--")                           // not sanitized
-    , strf::conv("--\xff--", strf::iso_8859_3<char>)   // not sanitized ( same charset )
-    , strf::conv("--\xff--", strf::utf8<char>)         // sanitized ( different charset )
-    , strf::sani("--\xff--")                           // sanitized
-    , strf::sani("--\xff--", strf::iso_8859_3<char>) ) // sanitized
+    ( strf::transcode("--\xff--")                          // not sanitized
+    , strf::transcode("--\xff--", strf::iso_8859_3<char>)  // not sanitized ( same charset )
+    , strf::transcode("--\xff--", strf::utf8<char>)        // sanitized ( different charset )
+    , strf::sani("--\xff--")                               // sanitized
+    , strf::sani("--\xff--", strf::iso_8859_3<char>) )     // sanitized
 
 assert(str == "--\xff----\xff----?----?----?--");
 ----
@@ -965,17 +959,17 @@ When the value is `surrogate_policy::lax`, those situations are allowed.
 std::u16string original {u'-', 0xD800 ,u'-', u'-', u'-'};
 
 // convert to UTF-8
-auto str_strict = strf::to_u8string(strf::conv(original));
+auto str_strict = strf::to_u8string(strf::transcode(original));
 auto str_lax =
-    strf::to_u8string .with(strf::surrogate_policy::lax) (strf::conv(original));
+    strf::to_u8string .with(strf::surrogate_policy::lax) (strf::transcode(original));
 
 assert(str_strict == u8"-\uFFFD---");                  // surrogate sanitized
 assert(str_lax == (const char8_t*)"-\xED\xA0\x80---"); // surrogate allowed
 
 // convert back to UTF-16
-auto utf16_strict = strf::to_u16string(strf::conv(str_lax));
+auto utf16_strict = strf::to_u16string(strf::transcode(str_lax));
 auto utf16_lax =
-    strf::to_u16string .with(strf::surrogate_policy::lax) (strf::conv(str_lax));
+    strf::to_u16string .with(strf::surrogate_policy::lax) (strf::transcode(str_lax));
 
 assert(utf16_strict == u"-\uFFFD\uFFFD\uFFFD---");     // surrogate sanitized
 assert(utf16_lax == original);                         // surrogate preserved
@@ -1110,7 +1104,7 @@ to be encoded in UTF ( internally, it is converted to UTF-32 ).
 The width calculation algorithm is applied
 on the input, not the output string. Keep that in mind when
 converting from one charset to another using
-`<<charset_conversion,conv>>` or `<<charset_conversion,sani`>>.
+`<<charset_conversion,transcode>>` or `<<charset_conversion,sani`>>.
 For example, when converting from UTF-8 to UTF-16 and using
 the `fast_width` facet, the
 width of the string is its size in UTF-8, not in UTF-16.
@@ -1119,11 +1113,11 @@ width of the string is its size in UTF-8, not in UTF-16.
 auto str = "15.00 \xE2\x82\xAC \x80"; // "15.00 € \x80"
 
 auto res1 = strf::to_u16string.with(strf::fast_width)
-            (strf::conv(str) > 12);
+            (strf::transcode(str) > 12);
 auto res2 = strf::to_u16string.with(strf::width_as_fast_u32len)
-            (strf::conv(str) > 12);
+            (strf::transcode(str) > 12);
 auto res3 = strf::to_u16string.with(strf::width_as_u32len)
-            (strf::conv(str) > 12);
+            (strf::transcode(str) > 12);
 
 assert(res1 == u" 15.00 \u20AC \uFFFD");  // width calculated as strlen(str)
 assert(res2 == u"    15.00 \u20AC \uFFFD"); // width calculated as 8

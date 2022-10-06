@@ -144,7 +144,7 @@ STRF_HD void general_tests
 
         char result[0x101];
         auto res = strf::to(result).with(charset)
-            (strf::conv(decoded_0_to_0xff, strf::utf_t<char32_t>()));
+            (strf::transcode(decoded_0_to_0xff, strf::utf_t<char32_t>()));
         TEST_FALSE(res.truncated);
         TEST_EQ(res.ptr - result, 0x100);
 
@@ -221,16 +221,16 @@ STRF_HD void general_tests
 
         // ( first create wchar_t string from the char32 string )
         wchar_t decoded_wstr_buff[sizeof(wchar_t) == 2 ? 0x201 : 0x101];
-        auto r = strf::to(decoded_wstr_buff) (strf::conv(decoded_0_to_0xff));
+        auto r = strf::to(decoded_wstr_buff) (strf::transcode(decoded_0_to_0xff));
         strf::detail::simple_string_view<wchar_t> decoded_wstr{decoded_wstr_buff, r.ptr};
 
         {   // to wide string
-            TEST(decoded_wstr) (strf::conv(str_0_to_xff, charset));
+            TEST(decoded_wstr) (strf::transcode(str_0_to_xff, charset));
         }
 
         {   // from wide string
             char result[0x101];
-            auto res = strf::to(result).with(charset) (strf::conv(decoded_wstr));;
+            auto res = strf::to(result).with(charset) (strf::transcode(decoded_wstr));;
             TEST_FALSE(res.truncated);
             TEST_EQ(res.ptr - result, 0x100);
 
@@ -1445,7 +1445,7 @@ STRF_TEST_FUNC void test_single_byte_charsets()
            "\xEB\xEC\xED\xEE \xEF\xF0 \xF1 \xF2 \xBB \xAC 0123456789 ";
 
        TEST(iso8859_6_str) .with(strf::iso_8859_6_t<char>{})
-           (strf::conv(win1256_str, strf::windows_1256_t<char>{}));
+           (strf::transcode(win1256_str, strf::windows_1256_t<char>{}));
    }
 }
 

@@ -602,8 +602,8 @@ void STRF_HD input_tester<CharOut>::finish()
     bool failed_size = wrong_size_(result.size());
     if (failed_size || failed_content){
         if (failed_content) {
-            strf::to(notifier_) ("\n  expected: \"", strf::conv(expected_));
-            strf::to(notifier_) ("\"\n  obtained: \"", strf::conv(result), '\"');
+            strf::to(notifier_) ("\n  expected: \"", strf::transcode(expected_));
+            strf::to(notifier_) ("\"\n  obtained: \"", strf::transcode(result), '\"');
         }
         if (failed_size) {
             strf::to(notifier_) ("\n  reserved size  : ", reserved_size_);
@@ -823,8 +823,8 @@ STRF_HD void recycle_call_tester<CharT>::finish()
 
     if ( ! as_expected ) {
         strf::to(notifier_)
-            ( "\n  expected: \"", strf::conv(expected_)
-            , "\"\n  obtained: \"", strf::conv(result), '\"');
+            ( "\n  expected: \"", strf::transcode(expected_)
+            , "\"\n  obtained: \"", strf::transcode(result), '\"');
     }
     notifier_.finish();
 }
@@ -950,8 +950,8 @@ STRF_HD void failed_recycle_call_tester<CharT>::finish()
 
     if ( ! as_expected ) {
         emit_error_message_
-            ( "\n  expected: \"", strf::conv(expected_)
-            , "\"\n  obtained: \"", strf::conv(result), '\"');
+            ( "\n  expected: \"", strf::transcode(expected_)
+            , "\"\n  obtained: \"", strf::transcode(result), '\"');
     }
 
     if (error_message_emitted_) {
