@@ -63,6 +63,24 @@ STRF_DEPRECATED_MSG("print_traits_of renamed to printable_traits_of")
 namespace detail {
 
 template <typename T>
+struct has_tag_invoke_with_printable_tag_tester
+{
+    template < typename U
+             , typename = decltype(strf::detail::tag_invoke(strf::printable_tag{}, std::declval<U>())) >
+    static STRF_HD std::true_type test_(const U*);
+
+    template <typename U>
+    static STRF_HD std::false_type test_(...);
+
+    using result = decltype(test_<T>((T*)0));
+};
+
+template <typename T>
+using  has_tag_invoke_with_printable_tag =
+    typename has_tag_invoke_with_printable_tag_tester<strf::detail::remove_cvref_t<T>>::result;
+
+
+template <typename T>
 struct has_printable_traits_specialization
 {
     template <typename U, typename = typename strf::printable_traits<U>::forwarded_type>
@@ -76,6 +94,28 @@ struct has_printable_traits_specialization
 
     constexpr static bool value = result::value;
 };
+
+template <bool HasPrintableTraits, typename T>
+struct is_printable_tester_2;
+
+template <typename T>
+struct is_printable_tester_2<true, T> : std::true_type
+{
+};
+
+template <typename T>
+struct is_printable_tester_2<false, T>: has_tag_invoke_with_printable_tag<T>
+{
+};
+
+template <typename T>
+struct is_printable_tester
+    : is_printable_tester_2<strf::detail::has_printable_traits_specialization<T>::value, T>
+{
+};
+
+template <typename T>
+using is_printable = is_printable_tester< strf::detail::remove_cvref_t<T> >;
 
 struct select_printable_traits_specialization
 {
@@ -101,27 +141,6 @@ struct printable_traits_finder
     using traits = typename selector_::template select<T>;
     using forwarded_type = typename traits::forwarded_type;
 };
-
-template <typename T>
-struct is_printable_helper {
-
-    template < typename U
-             , typename selector_ = strf::detail::conditional_t
-                 < strf::detail::has_printable_traits_specialization<U>::value
-                 , strf::detail::select_printable_traits_specialization
-                 , strf::detail::select_printable_traits_from_tag_invoke >
-             , typename PT = typename selector_::template select<U> >
-    static STRF_HD std::true_type test_(const U*);
-
-    template <typename U>
-    static STRF_HD std::false_type test_(...);
-
-    using result = decltype(test_<T>((T*)0));
-};
-
-template <typename T>
-using is_printable =
-    typename detail::is_printable_helper< strf::detail::remove_cvref_t<T> >::result;
 
 template <typename Traits, typename... F>
 struct printable_traits_finder<strf::printable_with_fmt<Traits, F...>>

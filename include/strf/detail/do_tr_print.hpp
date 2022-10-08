@@ -9,7 +9,6 @@
 #include <strf/detail/simple_string_view.hpp>
 #include <strf/detail/printable_traits.hpp>
 #include <strf/detail/tr_printer.hpp>
-#include <strf/facets_pack.hpp>
 
 namespace strf {
 
