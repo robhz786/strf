@@ -66,10 +66,10 @@ template <typename T>
 struct has_printable_traits_specialization
 {
     template <typename U, typename = typename strf::printable_traits<U>::forwarded_type>
-    static std::true_type test(const U*);
+    static STRF_HD std::true_type test(const U*);
 
     template <typename U>
-    static std::false_type test(...);
+    static STRF_HD std::false_type test(...);
 
     using T_ = strf::detail::remove_cvref_t<T>;
     using result = decltype(test<T_>((const T_*)0));

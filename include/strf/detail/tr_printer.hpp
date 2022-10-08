@@ -84,7 +84,7 @@ template <typename CharT, strf::precalc_size PreSize, strf::precalc_width PreWid
 struct tr_preprinting;
 
 struct eval_to_false_t {
-    constexpr operator bool() const { return false; };
+    constexpr STRF_HD operator bool() const { return false; };
 };
 
 template <typename CharT>

@@ -122,15 +122,15 @@ class printers_array_deferred_init_impl
 
 public:
 
-    constexpr STRF_HD printers_array_deferred_init_impl() = default;
-    constexpr STRF_HD printers_array_deferred_init_impl
+    constexpr printers_array_deferred_init_impl() = default;
+    constexpr printers_array_deferred_init_impl
         (const printers_array_deferred_init_impl&) = delete;
 
     template < typename... Args
              , typename... FPElems
              , strf::precalc_size SizeRequired
              , strf::precalc_width WidthRequired >
-    void construct
+    STRF_HD void construct
         ( const strf::detail::simple_tuple<Args...>& args
         , const strf::facets_pack<FPElems...>& fp
         , strf::preprinting<SizeRequired, WidthRequired>* pp_array
@@ -150,7 +150,7 @@ public:
     }
 
     template <typename... Args, typename... FPElems>
-    void construct
+    STRF_HD void construct
         ( const strf::detail::simple_tuple<Args...>& args
         , const strf::facets_pack<FPElems...>& fp
         , strf::no_preprinting& pp
@@ -170,7 +170,7 @@ public:
     }
 
 
-    void destroy()
+    STRF_HD void destroy()
     {
 #if defined(__GNUC__) && (__GNUC__ <= 6)
 #  pragma GCC diagnostic push
@@ -536,7 +536,7 @@ public:
             , num_printers_, dest, charset_, err_handler_ );
     }
 
-    ~tr_printer()
+    STRF_HD ~tr_printer()
     {
         storage_.destroy();
     }

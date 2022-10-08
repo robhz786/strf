@@ -642,7 +642,7 @@ public:
                  < std::is_copy_constructible<DC>::value
                 && std::is_constructible<strf::facets_pack<FPEs...>, otherFPEs...>::value
                  , int > = 0 >
-    constexpr printing_syntax
+    constexpr STRF_HD printing_syntax
         ( const DestCreator& destCreator
         , ReservePolicy poli
         , otherFPEs&&... fpes )
@@ -658,7 +658,7 @@ public:
                  < std::is_move_constructible<DC>::value
                 && std::is_constructible<strf::facets_pack<FPEs...>, otherFPEs...>::value
                  , int > = 0 >
-    constexpr printing_syntax
+    constexpr STRF_HD printing_syntax
         ( DestCreator&& destCreator
         , ReservePolicy poli
         , otherFPEs&&... fpes )
