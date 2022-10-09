@@ -24,13 +24,11 @@ struct destroyable_base
     STRF_HD virtual ~destroyable_base() {}
 };
 
-template <typename PrintersTupleImpl>
+template <typename CharT, typename IdxSeq, typename... Printers>
 struct tr_printers_container;
 
 template <typename CharT, std::size_t... I, typename... Printers >
-struct tr_printers_container
-    < strf::detail::printers_tuple_impl
-        < CharT, strf::detail::index_sequence<I...>, Printers...> >
+struct tr_printers_container<CharT, strf::detail::index_sequence<I...>, Printers...>
     : destroyable_base
 {
     using printers_tuple_t_ = strf::detail::printers_tuple_impl
@@ -72,6 +70,13 @@ struct tr_printers_container
     {
     }
 };
+
+template < typename CharT, typename PrePrinting, typename FPack, typename... Args >
+using tr_printers_container_alias = tr_printers_container
+    < CharT
+    , strf::detail::make_index_sequence<sizeof...(Args)>
+    , strf::printer_type<CharT, PrePrinting, FPack, Args>... >;
+
 
 // template <typename CharT>
 // class printers_array_deferred_init_impl<CharT, 0, 0>
@@ -139,14 +144,13 @@ public:
         using pp_t = strf::preprinting<SizeRequired, WidthRequired>;
         using fp_t = strf::facets_pack<FPElems...>;
 
-        using printer_tuple_t =
-            strf::detail::printers_tuple_from_args<CharT, pp_t, fp_t, Args...>;
+        using printers_container =
+            strf::detail::tr_printers_container_alias<CharT, pp_t, fp_t, Args...>;
 
-        static_assert(sizeof(printer_tuple_t) <= MemSize, "");
-        static_assert(alignof(printer_tuple_t) <= Alignment, "");
+        static_assert(sizeof(printers_container) <= MemSize, "");
+        static_assert(alignof(printers_container) <= Alignment, "");
 
-        new (&storage_) tr_printers_container<printer_tuple_t>
-            (args, fp, pp_array, array_of_pointers_ref);
+        new (&storage_) printers_container(args, fp, pp_array, array_of_pointers_ref);
     }
 
     template <typename... Args, typename... FPElems>
@@ -159,14 +163,13 @@ public:
         using pp_t = strf::no_preprinting;
         using fp_t = strf::facets_pack<FPElems...>;
 
-        using printer_tuple_t =
-            strf::detail::printers_tuple_from_args<CharT, pp_t, fp_t, Args...>;
+        using printers_container =
+            strf::detail::tr_printers_container_alias<CharT, pp_t, fp_t, Args...>;
 
-        static_assert(sizeof(printer_tuple_t) <= MemSize, "");
-        static_assert(alignof(printer_tuple_t) <= Alignment, "");
+        static_assert(sizeof(printers_container) <= MemSize, "");
+        static_assert(alignof(printers_container) <= Alignment, "");
 
-        new (&storage_) tr_printers_container<printer_tuple_t>
-            (args, pp, fp, array_of_pointers_ref);
+        new (&storage_) printers_container(args, pp, fp, array_of_pointers_ref);
     }
 
 
@@ -193,11 +196,10 @@ class tr_printer;
 template <typename CharT, typename Pre, typename FPack, typename... Args>
 struct printers_array_deferred_init_alias_helper
 {
-    using data_t = tr_printers_container
-        < strf::detail::printers_tuple_from_args<CharT, Pre, FPack, Args...> >;
+    using data_t = tr_printers_container_alias<CharT, Pre, FPack, Args...>;
 
     using type = printers_array_deferred_init_impl
-        <CharT, sizeof(data_t), alignof(data_t) >;
+        <CharT, sizeof(data_t), alignof(destroyable_base) >;
 };
 
 template <typename CharT, typename Pre, typename FPack, typename... Args>
@@ -222,9 +224,6 @@ struct tr_printer_alias_helper<CharT, Pre, FPack>
 
     using type = tr_printer_no_args<CharT, charset_t, tr_error_notifier_t>;
 };
-
-
-
 
 
 template <typename CharT, typename Pre, typename FPack, typename... Args>

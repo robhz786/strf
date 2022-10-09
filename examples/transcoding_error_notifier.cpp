@@ -35,7 +35,7 @@ public:
             auto unit = extract_unit_and_advance(sequence_ptr, code_unit_size);
             strf::to(dest_)
                 .with(strf::mixedcase)
-                (*strf::hex(unit).pad0(code_unit_size * 2), ' ');
+                (*strf::hex(unit).pad0(static_cast<unsigned>(code_unit_size) * 2), ' ');
         }
         strf::to(dest_) ( "is not valid in ", charset_name, ".\n");
     }
