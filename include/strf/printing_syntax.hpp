@@ -137,7 +137,7 @@ public:
     }
 };
 
-namespace pss_ {
+namespace detail {
 
 template <typename DestCreator>
 struct can_create_dest_with_size
@@ -572,39 +572,42 @@ public:
     }
 };
 
-} // namespace pss_
+} // namespace detail
 
 template < typename DestCreator
          , typename ReservePolicy = strf::no_reserve
          , typename... FPEs>
 class printing_syntax
-    : public pss_::reserve_funcs<DestCreator, ReservePolicy, FPEs...>
-    , public pss_::fpe_funcs<DestCreator, ReservePolicy, FPEs...>
+    : public detail::reserve_funcs<DestCreator, ReservePolicy, FPEs...>
+    , public detail::fpe_funcs<DestCreator, ReservePolicy, FPEs...>
 {
 private:
     DestCreator dest_creator_;
     strf::facets_pack<FPEs...> fpack_;
 
     template <class, class, class...>
-    friend class pss_::reserve_funcs;
+    friend class ::strf::detail::reserve_funcs;
 
     template <class, class, class...>
-    friend class pss_::no_reserve_return_new_pss;
+    friend class ::strf::detail::no_reserve_return_new_pss;
 
     template <class, class, class...>
-    friend class pss_::reserve_calc_return_new_pss;
+    friend class ::strf::detail::reserve_calc_return_new_pss;
 
     template <class, class, class...>
-    friend class pss_::reserve_given_space_return_new_pss;
+    friend class ::strf::detail::reserve_given_space_return_new_pss;
 
     template <bool, class, class, class...>
-    friend class pss_::fpe_funcs_copy_impl;
+    friend class ::strf::detail::fpe_funcs_copy_impl;
 
     template <bool, class, class, class...>
-    friend class pss_::fpe_funcs_move_impl;
+    friend class ::strf::detail::fpe_funcs_move_impl;
 
     template <class, class, class...>
-    friend class pss_::fpe_funcs;
+    friend class ::strf::detail::fpe_funcs;
+
+    using reserve_funcs_t_ = ::strf::detail::reserve_funcs<DestCreator, ReservePolicy, FPEs...>;
+    using fpe_funcs_t_ = ::strf::detail::fpe_funcs<DestCreator, ReservePolicy, FPEs...>;
 
 public:
 
@@ -646,7 +649,7 @@ public:
         ( const DestCreator& destCreator
         , ReservePolicy poli
         , otherFPEs&&... fpes )
-        : pss_::reserve_funcs<DestCreator, ReservePolicy, FPEs...>(poli)
+        : reserve_funcs_t_(poli)
         , dest_creator_(destCreator)
         , fpack_((otherFPEs&&)fpes...)
     {
@@ -662,7 +665,7 @@ public:
         ( DestCreator&& destCreator
         , ReservePolicy poli
         , otherFPEs&&... fpes )
-        : pss_::reserve_funcs<DestCreator, ReservePolicy, FPEs...>(poli)
+        : reserve_funcs_t_(poli)
         , dest_creator_(destCreator)
         , fpack_((otherFPEs&&)fpes...)
     {
