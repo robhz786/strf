@@ -53,7 +53,6 @@ struct tr_printers_container<CharT, strf::detail::index_sequence<I...>, Printers
         array_of_pointers_ref = array_of_pointers;
     }
 
-
     template < typename... Args, typename... FPElems >
     STRF_HD tr_printers_container
         ( const strf::detail::simple_tuple<Args...>& args
@@ -70,13 +69,6 @@ struct tr_printers_container<CharT, strf::detail::index_sequence<I...>, Printers
     {
     }
 };
-
-template < typename CharT, typename PrePrinting, typename FPack, typename... Args >
-using tr_printers_container_alias = tr_printers_container
-    < CharT
-    , strf::detail::make_index_sequence<sizeof...(Args)>
-    , strf::printer_type<CharT, PrePrinting, FPack, Args>... >;
-
 
 // template <typename CharT>
 // class printers_array_deferred_init_impl<CharT, 0, 0>
@@ -144,8 +136,10 @@ public:
         using pp_t = strf::preprinting<SizeRequired, WidthRequired>;
         using fp_t = strf::facets_pack<FPElems...>;
 
-        using printers_container =
-            strf::detail::tr_printers_container_alias<CharT, pp_t, fp_t, Args...>;
+        using printers_container = strf::detail::tr_printers_container
+			< CharT
+			, strf::detail::make_index_sequence<sizeof...(Args)>
+			, strf::printer_type<CharT, pp_t, fp_t, Args>... >;
 
         static_assert(sizeof(printers_container) <= MemSize, "");
         static_assert(alignof(printers_container) <= Alignment, "");
@@ -163,8 +157,10 @@ public:
         using pp_t = strf::no_preprinting;
         using fp_t = strf::facets_pack<FPElems...>;
 
-        using printers_container =
-            strf::detail::tr_printers_container_alias<CharT, pp_t, fp_t, Args...>;
+        using printers_container = strf::detail::tr_printers_container
+			< CharT
+			, strf::detail::make_index_sequence<sizeof...(Args)>
+			, strf::printer_type<CharT, pp_t, fp_t, Args>... >;
 
         static_assert(sizeof(printers_container) <= MemSize, "");
         static_assert(alignof(printers_container) <= Alignment, "");
@@ -196,7 +192,10 @@ class tr_printer;
 template <typename CharT, typename Pre, typename FPack, typename... Args>
 struct printers_array_deferred_init_alias_helper
 {
-    using data_t = tr_printers_container_alias<CharT, Pre, FPack, Args...>;
+    using data_t = tr_printers_container
+		< CharT
+		, strf::detail::make_index_sequence<sizeof...(Args)>
+		, strf::printer_type<CharT, Pre, FPack, Args>... >;
 
     using type = printers_array_deferred_init_impl
         <CharT, sizeof(data_t), alignof(destroyable_base) >;
