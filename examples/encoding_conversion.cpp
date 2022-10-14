@@ -71,9 +71,9 @@ void allow_surrogates ()
         ( strf::transcode(input_utf16) );
 
     assert(str_strict == u8"-\uFFFD---");  // surrogate sanitized
+
 #if defined(__cpp_char8_t)
-    //const char8_t str8_with_surr[] = {u8'-', u8'\xED', u8'\xA0', u8'\x80', u8'-', u8'-', u8'-'};
-    const char8_t str8_with_surr[] = u8"-\xED\xA0\x80---";
+    const char8_t str8_with_surr[] = {'-', 0xED, 0xA0, 0x80, '-', '-', '-', 0};
 #else
     const char    str8_with_surr[] = "-\xED\xA0\x80---";
 #endif
