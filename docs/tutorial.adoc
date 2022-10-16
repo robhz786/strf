@@ -74,8 +74,8 @@ auto s = strf::to_string.tr("{} in hexadecimal is {}", x, strf::hex(x));
 
 The `reserve`, `no_reseve` and `reserve_calc` functions are only available for some
 __targets__, `to_string` being one of them.
-Using `reserve(size)` causes the destination to reserve enough space
-to store `size` characters. `reserve_calc()` has the same effect,
+Using `reserve(space)` causes the destination to reserve enough space
+to store `space` characters. `reserve_calc()` has the same effect,
 except that it calculates the number of characters for you.
 
 [[facets]]
