@@ -882,7 +882,7 @@ STRF_HD void print_amplified_integer_small_separator_2
     auto digits = strf::detail::write_int_dec_txtdigits_backwards
         (value, digits_buff + max_digits);
 
-    unsigned grp_size;
+    unsigned grp_size = 0;
 
     dest.ensure(dist.highest_group);
     strf::detail::copy_n(digits, dist.highest_group, dest.buffer_ptr());
@@ -1054,7 +1054,7 @@ STRF_HD void print_amplified_integer_big_separator_2
     auto digits = strf::detail::write_int_dec_txtdigits_backwards
         (value, digits_buff + max_digits);
 
-    unsigned grp_size;
+    unsigned grp_size = 0;
 
     dest.ensure(dist.highest_group);
     strf::detail::copy_n(digits, dist.highest_group, dest.buffer_ptr());
@@ -1215,7 +1215,7 @@ STRF_HD void print_scientific_notation
     // exponent
 
     unsigned adv = 4;
-    CharT* it;
+    CharT* it = nullptr;
     unsigned e10u = std::abs(exponent);
     STRF_ASSERT(e10u < 1000);
 
@@ -1790,7 +1790,7 @@ inline STRF_HD strf::detail::float_init_result init_double_data_with_precision_g
     // - If the precision is 0, it is treated as 1
     // - Trailing fractional zeros are removed when showpoint is false.
 
-    int xz; // number of zeros to be added or ( if negative ) digits to be removed
+    int xz = 0; // number of zeros to be added or ( if negative ) digits to be removed
     const int p = precision != 0 ? precision : 1;
     int int_digcount = (int)data.m10_digcount + data.e10;
     // equivalent to:

@@ -1521,7 +1521,7 @@ STRF_HD void aligned_default_int_printer<CharT>::print_to
 {
     unsigned right_fillcount = 0;
     if (fillcount_) {
-        unsigned left_fillcount;
+        unsigned left_fillcount = 0;
         switch(alignment_) {
             case strf::text_alignment::left:
                 right_fillcount = fillcount_;
@@ -1622,7 +1622,7 @@ public:
         i.pre.add_size(w);
     }
 
-    STRF_HD void print_to(strf::destination<CharT>& dest) const
+    STRF_HD void print_to(strf::destination<CharT>& dest) const override
     {
         dest.ensure(data_.digcount + data_.prefix != 0);
         auto it = dest.buffer_ptr();
@@ -1851,7 +1851,7 @@ STRF_HD fmt_int_printer_data_init_result init_fmt_int_printer_data
     , strf::default_alignment_format ) noexcept
 {
     data.digcount = strf::detail::count_digits<Base>(data.uvalue);
-    unsigned prefix_size;
+    unsigned prefix_size = 0;
     STRF_IF_CONSTEXPR (Base == 10 ) {
         prefix_size = data.has_prefix;
     } else STRF_IF_CONSTEXPR (Base == 8 ) {
@@ -1890,7 +1890,7 @@ STRF_HD fmt_int_printer_data_init_result init_fmt_int_printer_data
 #else
 {
     data.digcount = strf::detail::count_digits<Base>(data.uvalue);
-    unsigned prefix_size;
+    unsigned prefix_size = 0;
     STRF_IF_CONSTEXPR (Base == 10 ) {
         prefix_size = data.has_prefix;
     } else STRF_IF_CONSTEXPR (Base == 8 ) {
@@ -2040,7 +2040,7 @@ STRF_HD fmt_int_printer_data_init_result init_punct_fmt_int_printer_data
             data.sepsize = 0;
         }
     }
-    unsigned prefix_size;
+    unsigned prefix_size = 0;
     STRF_IF_CONSTEXPR (Base == 10 ) {
         prefix_size = data.has_prefix;
     } else STRF_IF_CONSTEXPR (Base == 8 ) {

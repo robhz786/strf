@@ -48,8 +48,8 @@ inline STRF_HD void repeat_sequence
 {
     auto p = dest.buffer_ptr();
     constexpr std::size_t seq_size = 2;
-    std::size_t space;
-    std::size_t inner_count;
+    std::size_t space = 0;
+    std::size_t inner_count = 0;
     while (1) {
         space = (dest.buffer_end() - p) / seq_size;
         inner_count = (space < count ? space : count);
@@ -81,8 +81,8 @@ inline STRF_HD void repeat_sequence
 {
     auto p = dest.buffer_ptr();
     constexpr std::size_t seq_size = 3;
-    std::size_t space;
-    std::size_t inner_count;
+    std::size_t space = 0;
+    std::size_t inner_count = 0;
     while (1) {
         space = (dest.buffer_end() - p) / seq_size;
         inner_count = (space < count ? space : count);
@@ -116,8 +116,8 @@ inline STRF_HD void repeat_sequence
 {
     auto p = dest.buffer_ptr();
     constexpr std::size_t seq_size = 4;
-    std::size_t space;
-    std::size_t inner_count;
+    std::size_t space = 0;
+    std::size_t inner_count = 0;
     while (1) {
         space = (dest.buffer_end() - p) / seq_size;
         inner_count = (space < count ? space : count);
@@ -1029,8 +1029,8 @@ STRF_HD void strf::static_transcoder
     using strf::detail::first_2_of_4_are_valid;
     using strf::detail::is_utf8_continuation;
 
-    std::uint8_t ch0, ch1, ch2, ch3;
-    unsigned long x;
+    std::uint8_t ch0 = 0, ch1 = 0, ch2 = 0, ch3 = 0;
+    unsigned long x = 0;
     auto src_it = src;
     auto src_end = src + src_size;
     auto dest_it = dest.buffer_ptr();
@@ -1100,7 +1100,7 @@ STRF_HD std::size_t strf::static_transcoder
     using strf::detail::first_2_of_3_are_valid;
     using strf::detail::first_2_of_4_are_valid;
 
-    std::uint8_t ch0, ch1;
+    std::uint8_t ch0 = 0, ch1 = 0;
     auto src_it = src;
     auto src_end = src + src_size;
     std::size_t size = 0;
@@ -1150,7 +1150,7 @@ STRF_HD void strf::static_transcoder
     using strf::detail::first_2_of_3_are_valid;
     using strf::detail::first_2_of_4_are_valid;
 
-    std::uint8_t ch0, ch1, ch2, ch3;
+    std::uint8_t ch0 = 0, ch1 = 0, ch2 = 0, ch3 = 0;
     auto src_it = src;
     auto src_end = src + src_size;
     auto dest_it = dest.buffer_ptr();
@@ -1236,7 +1236,7 @@ STRF_HD std::size_t strf::static_transcoder
     using strf::detail::first_2_of_3_are_valid;
     using strf::detail::first_2_of_4_are_valid;
 
-    std::uint8_t ch0, ch1;
+    std::uint8_t ch0 = 0, ch1 = 0;
     const SrcCharT* src_it = src;
     auto src_end = src + src_size;
     std::size_t size = 0;
@@ -1319,7 +1319,7 @@ static_charset<CharT, strf::csid_utf8>::count_codepoints
     using strf::detail::first_2_of_3_are_valid;
     using strf::detail::first_2_of_4_are_valid;
 
-    std::uint8_t ch0, ch1;
+    std::uint8_t ch0 = 0, ch1 = 0;
     std::size_t count = 0;
     auto it = src;
     auto end = src + src_size;
@@ -1523,8 +1523,8 @@ STRF_HD void strf::static_transcoder
     , strf::transcoding_error_notifier* err_notifier
     , strf::surrogate_policy surr_poli )
 {
-    unsigned long ch, ch2;
-    DestCharT ch32;
+    unsigned long ch = 0, ch2 = 0;
+    DestCharT ch32 = 0;
     auto src_end = src + src_size;
     auto dest_it = dest.buffer_ptr();
     auto dest_end = dest.buffer_end();
@@ -1564,11 +1564,11 @@ STRF_HD std::size_t strf::static_transcoder
     , strf::surrogate_policy surr_poli )
 {
     (void) surr_poli;
-    unsigned long ch;
+    unsigned long ch = 0;
     std::size_t count = 0;
     auto src_it = src;
     const auto src_end = src + src_size;
-    const SrcCharT* src_it_next;
+    const SrcCharT* src_it_next = nullptr;
     for(; src_it != src_end; src_it = src_it_next) {
         src_it_next = src_it + 1;
         ch = *src_it;
@@ -1594,7 +1594,7 @@ STRF_HD void strf::static_transcoder
     , strf::transcoding_error_notifier* err_notifier
     , strf::surrogate_policy surr_poli )
 {
-    unsigned long ch, ch2;
+    unsigned long ch = 0, ch2 = 0;
     auto src_it = src;
     const auto src_end = src + src_size;
     auto dest_it = dest.buffer_ptr();
@@ -1644,7 +1644,7 @@ STRF_HD std::size_t strf::static_transcoder
     std::size_t count = 0;
     const SrcCharT* src_it = src;
     const auto src_end = src + src_size;
-    unsigned long ch;
+    unsigned long ch = 0;
     while (src_it != src_end) {
         ch = *src_it;
         ++ src_it;
@@ -1698,7 +1698,7 @@ static_charset<CharT, strf::csid_utf16>::count_codepoints
     std::size_t count = 0;
     const CharT* it = src;
     const auto end = src + src_size;
-    unsigned long ch;
+    unsigned long ch = 0;
     while (it != end && count < max_count) {
         ch = *it;
         ++ it;
@@ -1899,8 +1899,8 @@ STRF_HD void strf::static_transcoder
     using strf::detail::first_2_of_3_are_valid;
     using strf::detail::first_2_of_4_are_valid;
 
-    std::uint8_t ch0, ch1, ch2, ch3;
-    unsigned long x;
+    std::uint8_t ch0 = 0, ch1 = 0, ch2 = 0, ch3 = 0;
+    unsigned long x = 0;
     auto src_it = src;
     const auto src_end = src + src_size;
     auto dest_it = dest.buffer_ptr();
@@ -1982,7 +1982,7 @@ STRF_HD std::size_t strf::static_transcoder
     using strf::detail::first_2_of_4_are_valid;
 
     std::size_t size = 0;
-    std::uint8_t ch0, ch1;
+    std::uint8_t ch0 = 0, ch1 = 0;
     auto src_it = src;
     const auto src_end = src + src_size;
     while(src_it < src_end) {

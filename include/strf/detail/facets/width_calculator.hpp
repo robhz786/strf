@@ -322,7 +322,7 @@ STRF_FUNC_IMPL STRF_HD std_width_calc_func_return std_width_calc_func
     constexpr state_t after_cr         = 1 << 12;
 
     strf::width_t ch_width;
-    char32_t ch;
+    char32_t ch = 0;
     goto next_codepoint;
 
     handle_other:

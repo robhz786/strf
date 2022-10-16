@@ -341,7 +341,7 @@ STRF_HD const T* lower_bound
 {
     std::ptrdiff_t search_range_length { last - first };
 
-    const T* iter;
+    const T* iter = nullptr;
     while (search_range_length > 0) {
         auto half_range_length = search_range_length/2;
         iter = first;

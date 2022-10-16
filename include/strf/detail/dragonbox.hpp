@@ -2655,7 +2655,7 @@ namespace dragonbox {
 
 				if (remainder == 0) {
 					auto n32 = quotient_by_pow10_8;
-					std::uint32_t quotient32;
+					std::uint32_t quotient32 = 0;
 
 					// Is n divisible by 10^8?
 					// This branch is extremely unlikely.
@@ -2705,7 +2705,7 @@ namespace dragonbox {
 				// If the number is not divisible by 1'0000'0000, work with the remainder.
 
 				// Perform a binary search.
-				std::uint32_t quotient32;
+				std::uint32_t quotient32 = 0;
 				std::uint32_t multiplier = 100000000;
 				int s = 0;
 
