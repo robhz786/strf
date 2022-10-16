@@ -232,7 +232,7 @@ STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_2::encode_ext(char32_t ch)
         , {0x02D9, 0xFF}, {0x02DB, 0xB2}, {0x02DD, 0xBD}, {0xFFFD, '?' } };
 
     const ch32_to_char* char_map_end = char_map + detail::array_size(char_map);
-    auto it = strf::detail::lower_bound
+    const auto *it = strf::detail::lower_bound
         ( char_map, char_map_end, ch32_to_char{ch, 0}, cmp_ch32_to_char{} );
     return it != char_map_end && it->key == ch ? it->value : 0x100;
 }
@@ -324,7 +324,7 @@ STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_3::encode_ext(char32_t ch)
         , {0xFFFD, '?'} };
 
     const ch32_to_char* char_map_end = char_map + detail::array_size(char_map);
-    auto it = strf::detail::lower_bound
+    const auto *it = strf::detail::lower_bound
         ( char_map, char_map_end, ch32_to_char{ch, 0}, cmp_ch32_to_char{} );
     return it != char_map_end && it->key == ch ? it->value : 0x100;
 }
@@ -409,7 +409,7 @@ STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_4::encode_ext(char32_t ch)
         , {0x02C7, 0xB7}, {0x02D9, 0xFF}, {0x02DB, 0xB2}, {0xFFFD, '?'} };
 
     const ch32_to_char* char_map_end = char_map + detail::array_size(char_map);
-    auto it = strf::detail::lower_bound
+    const auto *it = strf::detail::lower_bound
         ( char_map, char_map_end, ch32_to_char{ch, 0}, cmp_ch32_to_char{} );
     return it != char_map_end && it->key == ch ? it->value : 0x100;
 }
@@ -494,7 +494,7 @@ STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_5::encode_ext(char32_t ch)
         , {0x045E, 0xFE}, {0x045F, 0xFF}, {0x2116, 0xF0}, {0xFFFD, '?'} };
 
     const ch32_to_char* char_map_end = char_map + detail::array_size(char_map);
-    auto it = strf::detail::lower_bound
+    const auto *it = strf::detail::lower_bound
         ( char_map, char_map_end, ch32_to_char{ch, 0}, cmp_ch32_to_char{} );
     return it != char_map_end && it->key == ch ? it->value : 0x100;
 }
@@ -570,7 +570,7 @@ STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_6::encode_ext(char32_t ch)
         , {0x0651, 0xF1}, {0x0652, 0xF2}, {0xFFFD, '?'} };
 
     const ch32_to_char* char_map_end = char_map + detail::array_size(char_map);
-    auto it = strf::detail::lower_bound
+    const auto *it = strf::detail::lower_bound
         ( char_map, char_map_end, ch32_to_char{ch, 0}, cmp_ch32_to_char{} );
     return it != char_map_end && it->key == ch ? it->value : 0x100;
 }
@@ -655,7 +655,7 @@ STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_7::encode_ext(char32_t ch)
         , {0xFFFD, '?'} };
 
     const ch32_to_char* char_map_end = char_map + detail::array_size(char_map);
-    auto it = strf::detail::lower_bound
+    const auto *it = strf::detail::lower_bound
         ( char_map, char_map_end, ch32_to_char{ch, 0}, cmp_ch32_to_char{} );
     return it != char_map_end && it->key == ch ? it->value : 0x100;
 }
@@ -732,7 +732,7 @@ STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_8::encode_ext(char32_t ch)
         , {0x200E, 0xFD}, {0x200F, 0xFE}, {0x2017, 0xDF}, {0xFFFD, '?'} };
 
     const ch32_to_char* char_map_end = char_map + detail::array_size(char_map);
-    auto it = strf::detail::lower_bound
+    const auto *it = strf::detail::lower_bound
         ( char_map, char_map_end, ch32_to_char{ch, 0}, cmp_ch32_to_char{} );
     return it != char_map_end && it->key == ch ? it->value : 0x100;
 }
@@ -870,7 +870,7 @@ STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_10::encode_ext(char32_t ch)
         , {0x017D, 0xAC}, {0x017E, 0xBC}, {0x2015, 0xBD}, {0xFFFD, '?'} };
 
     const ch32_to_char* char_map_end = char_map + detail::array_size(char_map);
-    auto it = strf::detail::lower_bound
+    const auto *it = strf::detail::lower_bound
         ( char_map, char_map_end, ch32_to_char{ch, 0}, cmp_ch32_to_char{} );
     return it != char_map_end && it->key == ch ? it->value : 0x100;
 }
@@ -953,7 +953,7 @@ STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_11::encode_ext(char32_t ch)
         , {0x0E59, 0xF9}, {0x0E5A, 0xFA}, {0x0E5B, 0xFB}, {0xFFFD, '?'} };
 
     const ch32_to_char* char_map_end = char_map + detail::array_size(char_map);
-    auto it = strf::detail::lower_bound
+    const auto *it = strf::detail::lower_bound
         ( char_map, char_map_end, ch32_to_char{ch, 0}, cmp_ch32_to_char{} );
     return it != char_map_end && it->key == ch ? it->value : 0x100;
 }
@@ -1038,7 +1038,7 @@ STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_13::encode_ext(char32_t ch)
         , {0x201C, 0xB4}, {0x201D, 0xA1}, {0x201E, 0xA5}, {0xFFFD, '?'} };
 
     const ch32_to_char* char_map_end = char_map + detail::array_size(char_map);
-    auto it = strf::detail::lower_bound
+    const auto *it = strf::detail::lower_bound
         ( char_map, char_map_end, ch32_to_char{ch, 0}, cmp_ch32_to_char{} );
     return it != char_map_end && it->key == ch ? it->value : 0x100;
 }
@@ -1123,7 +1123,7 @@ STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_14::encode_ext(char32_t ch)
         , {0x1E85, 0xBE}, {0x1EF2, 0xAC}, {0x1EF3, 0xBC}, {0xFFFD, '?'} };
 
     const ch32_to_char* char_map_end = char_map + detail::array_size(char_map);
-    auto it = strf::detail::lower_bound
+    const auto *it = strf::detail::lower_bound
         ( char_map, char_map_end, ch32_to_char{ch, 0}, cmp_ch32_to_char{} );
     return it != char_map_end && it->key == ch ? it->value : 0x100;
 }
@@ -1277,7 +1277,7 @@ STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_16::encode_ext(char32_t ch)
         , {0x201D, 0xB5}, {0x201E, 0xA5}, {0x20AC, 0xA4}, {0xFFFD, '?'} };
 
     const ch32_to_char* char_map_end = char_map + detail::array_size(char_map);
-    auto it = strf::detail::lower_bound
+    const auto *it = strf::detail::lower_bound
         ( char_map, char_map_end, ch32_to_char{ch, 0}, cmp_ch32_to_char{} );
     return it != char_map_end && it->key == ch ? it->value : 0x100;
 }
@@ -1373,7 +1373,7 @@ STRF_FUNC_IMPL STRF_HD unsigned impl_windows_1250::encode_ext(char32_t ch)
         , {0xFFFD, '?'} };
 
     const ch32_to_char* char_map_end = char_map + detail::array_size(char_map);
-    auto it = strf::detail::lower_bound
+    const auto *it = strf::detail::lower_bound
         ( char_map, char_map_end, ch32_to_char{ch, 0}, cmp_ch32_to_char{} );
     return it != char_map_end && it->key == ch ? it->value : 0x100;
 };
@@ -1472,7 +1472,7 @@ STRF_FUNC_IMPL STRF_HD unsigned impl_windows_1251::encode_ext(char32_t ch)
         , {0xFFFD, '?'} };
 
     const ch32_to_char* char_map_end = char_map + detail::array_size(char_map);
-    auto it = strf::detail::lower_bound
+    const auto *it = strf::detail::lower_bound
         ( char_map, char_map_end, ch32_to_char{ch, 0}, cmp_ch32_to_char{} );
     return it != char_map_end && it->key == ch ? it->value : 0x100;
 }
@@ -1655,7 +1655,7 @@ STRF_FUNC_IMPL STRF_HD unsigned impl_windows_1253::encode_ext(char32_t ch)
         , {0x2122, 0x99}, {0xFFFD, '?'} };
 
     const ch32_to_char* char_map_end = char_map + detail::array_size(char_map);
-    auto it = strf::detail::lower_bound
+    const auto *it = strf::detail::lower_bound
         ( char_map, char_map_end, ch32_to_char{ch, 0}, cmp_ch32_to_char{} );
     return it != char_map_end && it->key == ch ? it->value : 0x100;
 }
@@ -1853,7 +1853,7 @@ STRF_FUNC_IMPL STRF_HD unsigned impl_windows_1255::encode_ext(char32_t ch)
         , {0x20AC, 0x80}, {0x2122, 0x99}, {0xFFFD, '?'}};
 
     const ch32_to_char* char_map_end = char_map + detail::array_size(char_map);
-    auto it = strf::detail::lower_bound
+    const auto *it = strf::detail::lower_bound
         ( char_map, char_map_end, ch32_to_char{ch, 0}, cmp_ch32_to_char{} );
     return it != char_map_end && it->key == ch ? it->value : 0x100;
 }
@@ -1952,7 +1952,7 @@ STRF_FUNC_IMPL STRF_HD unsigned impl_windows_1256::encode_ext(char32_t ch)
         , {0xFFFD, '?'} };
 
     const ch32_to_char* char_map_end = char_map + detail::array_size(char_map);
-    auto it = strf::detail::lower_bound
+    const auto *it = strf::detail::lower_bound
         ( char_map, char_map_end, ch32_to_char{ch, 0}, cmp_ch32_to_char{} );
     return it != char_map_end && it->key == ch ? it->value : 0x100;
 }
@@ -2050,7 +2050,7 @@ STRF_FUNC_IMPL STRF_HD unsigned impl_windows_1257::encode_ext(char32_t ch)
         , {0x20AC, 0x80}, {0x2122, 0x99}, {0xFFFD, '?'} };
 
     const ch32_to_char* char_map_end = char_map + detail::array_size(char_map);
-    auto it = strf::detail::lower_bound
+    const auto *it = strf::detail::lower_bound
         ( char_map, char_map_end, ch32_to_char{ch, 0}, cmp_ch32_to_char{} );
     return it != char_map_end && it->key == ch ? it->value : 0x100;
 }
@@ -2149,7 +2149,7 @@ STRF_FUNC_IMPL STRF_HD unsigned impl_windows_1258::encode_ext(char32_t ch)
         , {0x2122, 0x99}, {0xFFFD, '?'} };
 
     const ch32_to_char* char_map_end = char_map + detail::array_size(char_map);
-    auto it = strf::detail::lower_bound
+    const auto *it = strf::detail::lower_bound
         ( char_map, char_map_end, ch32_to_char{ch, 0}, cmp_ch32_to_char{} );
     return it != char_map_end && it->key == ch ? it->value : 0x100;
 }
@@ -2193,10 +2193,10 @@ STRF_HD void single_byte_charset_to_utf32<SrcCharT, DestCharT, Impl>::transcode
     , strf::surrogate_policy surr_poli )
 {
     (void) surr_poli;
-    auto dest_it = dest.buffer_ptr();
-    auto dest_end = dest.buffer_end();
-    auto src_end = src + src_size;
-    for (auto src_it = src; src_it < src_end; ++src_it, ++dest_it) {
+    auto *dest_it = dest.buffer_ptr();
+    auto *dest_end = dest.buffer_end();
+    const auto *src_end = src + src_size;
+    for (const auto *src_it = src; src_it < src_end; ++src_it, ++dest_it) {
         STRF_CHECK_DEST;
         char32_t ch32 = Impl::decode(static_cast<std::uint8_t>(*src_it));
         STRF_IF_LIKELY (ch32 != 0xFFFD) {
@@ -2248,10 +2248,10 @@ STRF_HD void utf32_to_single_byte_charset<SrcCharT, DestCharT, Impl>::transcode
     , strf::surrogate_policy surr_poli )
 {
     (void)surr_poli;
-    auto dest_it = dest.buffer_ptr();
-    auto dest_end = dest.buffer_end();
-    auto src_end = src + src_size;
-    for (auto src_it = src; src_it != src_end; ++src_it, ++dest_it) {
+    auto *dest_it = dest.buffer_ptr();
+    auto *dest_end = dest.buffer_end();
+    const auto *src_end = src + src_size;
+    for (const auto *src_it = src; src_it != src_end; ++src_it, ++dest_it) {
         STRF_CHECK_DEST;
         char32_t ch2 = Impl::encode(*src_it);
         STRF_IF_LIKELY (ch2 < 0x100) {
@@ -2308,10 +2308,10 @@ STRF_HD void single_byte_charset_sanitizer<SrcCharT, DestCharT, Impl>::transcode
     , strf::surrogate_policy surr_poli )
 {
     (void) surr_poli;
-    auto dest_it = dest.buffer_ptr();
-    auto dest_end = dest.buffer_end();
-    auto src_end = src + src_size;
-    for (auto src_it = src; src_it < src_end; ++src_it, ++dest_it) {
+    auto *dest_it = dest.buffer_ptr();
+    auto *dest_end = dest.buffer_end();
+    const auto *src_end = src + src_size;
+    for (const auto *src_it = src; src_it < src_end; ++src_it, ++dest_it) {
         STRF_CHECK_DEST;
         auto ch = static_cast<std::uint8_t>(*src_it);
         STRF_IF_LIKELY (Impl::is_valid(ch)) {

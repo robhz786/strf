@@ -99,7 +99,7 @@ public:
     }
 
     STRF_HD void recycle() noexcept override {
-        auto p = this->buffer_ptr();
+        auto *p = this->buffer_ptr();
         this->set_buffer_ptr(buff_);
         STRF_IF_LIKELY (this->good()) {
             std::size_t count = p - buff_;
@@ -127,7 +127,7 @@ public:
 private:
 
     STRF_HD void do_write(const CharT* str, std::size_t str_len) noexcept override {
-        auto p = this->buffer_ptr();
+        auto *p = this->buffer_ptr();
         this->set_buffer_ptr(buff_);
         STRF_IF_LIKELY (this->good()) {
             std::size_t count = p - buff_;

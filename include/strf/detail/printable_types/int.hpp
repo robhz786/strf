@@ -1625,7 +1625,7 @@ public:
     STRF_HD void print_to(strf::destination<CharT>& dest) const override
     {
         dest.ensure(data_.digcount + data_.prefix != 0);
-        auto it = dest.buffer_ptr();
+        auto *it = dest.buffer_ptr();
         if (data_.prefix != 0) {
             *it++ = static_cast<CharT>(data_.prefix);
         }
@@ -1656,7 +1656,7 @@ public:
     STRF_HD void print_to(strf::destination<CharT>& dest) const override
     {
         dest.ensure(data_.digcount + data_.prefix);
-        auto it = dest.buffer_ptr();
+        auto *it = dest.buffer_ptr();
         if (data_.prefix != 0) {
             it[0] = static_cast<CharT>('0');
             it[1] = static_cast<CharT>('X' | ((lettercase_ != strf::uppercase) << 5));
@@ -1689,7 +1689,7 @@ public:
     STRF_HD void print_to(strf::destination<CharT>& dest) const override
     {
         dest.ensure(data_.digcount + data_.prefix);
-        auto it = dest.buffer_ptr();
+        auto *it = dest.buffer_ptr();
         if (data_.prefix != 0) {
             *it++ = '0';
         }
@@ -1721,7 +1721,7 @@ public:
     {
         if (data_.prefix != 0) {
             dest.ensure(2);
-            auto it = dest.buffer_ptr();
+            auto *it = dest.buffer_ptr();
             it[0] = static_cast<CharT>('0');
             it[1] = static_cast<CharT>('B' | ((lettercase_ != strf::uppercase) << 5));
             dest.advance_to(it + 2);
@@ -2004,7 +2004,7 @@ STRF_HD void int_printer_static_base_and_punct<CharT, Base, false>::print_to
         } else {
             constexpr CharT xb = Base == 16 ? 'X' : 'B';
             dest.ensure(2);
-            auto it = dest.buffer_ptr();
+            auto *it = dest.buffer_ptr();
             it[0] = static_cast<CharT>('0');
             it[1] = static_cast<CharT>(xb | ((lettercase_ != strf::uppercase) << 5));
             dest.advance_to(it + 2);
@@ -2188,7 +2188,7 @@ STRF_HD void int_printer_static_base_and_punct<CharT, Base, true>::print_to
         } else {
             constexpr CharT xb = Base == 16 ? 'X' : 'B';
             dest.ensure(2);
-            auto it = dest.buffer_ptr();
+            auto *it = dest.buffer_ptr();
             it[0] = static_cast<CharT>('0');
             it[1] = static_cast<CharT>(xb | ((lettercase_ != strf::uppercase) << 5));
             dest.advance_to(it + 2);

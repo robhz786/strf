@@ -46,7 +46,7 @@ inline STRF_HD void repeat_sequence
     , CharT ch0
     , CharT ch1 ) noexcept
 {
-    auto p = dest.buffer_ptr();
+    auto *p = dest.buffer_ptr();
     constexpr std::size_t seq_size = 2;
     std::size_t space = 0;
     std::size_t inner_count = 0;
@@ -79,7 +79,7 @@ inline STRF_HD void repeat_sequence
     , CharT ch1
     , CharT ch2 ) noexcept
 {
-    auto p = dest.buffer_ptr();
+    auto *p = dest.buffer_ptr();
     constexpr std::size_t seq_size = 3;
     std::size_t space = 0;
     std::size_t inner_count = 0;
@@ -114,7 +114,7 @@ inline STRF_HD void repeat_sequence
     , CharT ch2
     , CharT ch3 ) noexcept
 {
-    auto p = dest.buffer_ptr();
+    auto *p = dest.buffer_ptr();
     constexpr std::size_t seq_size = 4;
     std::size_t space = 0;
     std::size_t inner_count = 0;
@@ -1031,10 +1031,10 @@ STRF_HD void strf::static_transcoder
 
     std::uint8_t ch0 = 0, ch1 = 0, ch2 = 0, ch3 = 0;
     unsigned long x = 0;
-    auto src_it = src;
-    auto src_end = src + src_size;
-    auto dest_it = dest.buffer_ptr();
-    auto dest_end = dest.buffer_end();
+    const auto *src_it = src;
+    const auto *src_end = src + src_size;
+    auto *dest_it = dest.buffer_ptr();
+    auto *dest_end = dest.buffer_end();
     DestCharT ch32;
 
     while (src_it != src_end) {
@@ -1101,8 +1101,8 @@ STRF_HD std::size_t strf::static_transcoder
     using strf::detail::first_2_of_4_are_valid;
 
     std::uint8_t ch0 = 0, ch1 = 0;
-    auto src_it = src;
-    auto src_end = src + src_size;
+    const auto *src_it = src;
+    const auto *src_end = src + src_size;
     std::size_t size = 0;
     while (src_it != src_end) {
         ch0 = (*src_it);
@@ -1151,10 +1151,10 @@ STRF_HD void strf::static_transcoder
     using strf::detail::first_2_of_4_are_valid;
 
     std::uint8_t ch0 = 0, ch1 = 0, ch2 = 0, ch3 = 0;
-    auto src_it = src;
-    auto src_end = src + src_size;
-    auto dest_it = dest.buffer_ptr();
-    auto dest_end = dest.buffer_end();
+    const auto *src_it = src;
+    const auto *src_end = src + src_size;
+    auto *dest_it = dest.buffer_ptr();
+    auto *dest_end = dest.buffer_end();
     while(src_it != src_end) {
         ch0 = (*src_it);
         const SrcCharT* seq_begin = src_it;
@@ -1238,7 +1238,7 @@ STRF_HD std::size_t strf::static_transcoder
 
     std::uint8_t ch0 = 0, ch1 = 0;
     const SrcCharT* src_it = src;
-    auto src_end = src + src_size;
+    const auto *src_end = src + src_size;
     std::size_t size = 0;
     while(src_it != src_end) {
         ch0 = *src_it;
@@ -1292,8 +1292,8 @@ static_charset<CharT, strf::csid_utf8>::count_codepoints_fast
     , std::size_t max_count ) noexcept
 {
     std::size_t count = 0;
-    auto it = src;
-    auto end = src + src_size;
+    const auto *it = src;
+    const auto *end = src + src_size;
     while (it != end && count < max_count) {
         if (!strf::detail::is_utf8_continuation(*it)) {
             ++ count;
@@ -1321,8 +1321,8 @@ static_charset<CharT, strf::csid_utf8>::count_codepoints
 
     std::uint8_t ch0 = 0, ch1 = 0;
     std::size_t count = 0;
-    auto it = src;
-    auto end = src + src_size;
+    const auto *it = src;
+    const auto *end = src + src_size;
     while (it != end && count != max_count) {
         ch0 = (*it);
         ++it;
@@ -1429,10 +1429,10 @@ STRF_HD void strf::static_transcoder
     , strf::transcoding_error_notifier* err_notifier
     , strf::surrogate_policy surr_poli )
 {
-    auto src_it = src;
-    auto src_end = src + src_size;
-    auto dest_it = dest.buffer_ptr();
-    auto dest_end = dest.buffer_end();
+    const auto *src_it = src;
+    const auto *src_end = src + src_size;
+    auto *dest_it = dest.buffer_ptr();
+    auto *dest_end = dest.buffer_end();
     for(;src_it != src_end; ++src_it) {
         auto ch = *src_it;
         STRF_IF_LIKELY (ch < 0x80) {
@@ -1485,8 +1485,8 @@ STRF_HD std::size_t strf::static_transcoder
     , strf::surrogate_policy surr_poli )
 {
     (void) surr_poli;
-    auto src_it = src;
-    auto src_end = src + src_size;
+    const auto *src_it = src;
+    const auto *src_end = src + src_size;
     std::size_t count = 0;
     for(;src_it != src_end; ++src_it) {
         auto ch = *src_it;
@@ -1504,8 +1504,8 @@ STRF_HD void
 static_charset<CharT, strf::csid_utf8>::write_replacement_char
     ( strf::transcode_dest<CharT>& dest )
 {
-    auto dest_it = dest.buffer_ptr();
-    auto dest_end = dest.buffer_end();
+    auto *dest_it = dest.buffer_ptr();
+    auto *dest_end = dest.buffer_end();
     STRF_CHECK_DEST_SIZE(3);
     dest_it[0] = static_cast<CharT>('\xEF');
     dest_it[1] = static_cast<CharT>('\xBF');
@@ -1525,10 +1525,10 @@ STRF_HD void strf::static_transcoder
 {
     unsigned long ch = 0, ch2 = 0;
     DestCharT ch32 = 0;
-    auto src_end = src + src_size;
-    auto dest_it = dest.buffer_ptr();
-    auto dest_end = dest.buffer_end();
-    auto src_it = src;
+    const auto *src_end = src + src_size;
+    auto *dest_it = dest.buffer_ptr();
+    auto *dest_end = dest.buffer_end();
+    const auto *src_it = src;
     while (src_it != src_end) {
         ch = *src_it;
         ++src_it;
@@ -1566,8 +1566,8 @@ STRF_HD std::size_t strf::static_transcoder
     (void) surr_poli;
     unsigned long ch = 0;
     std::size_t count = 0;
-    auto src_it = src;
-    const auto src_end = src + src_size;
+    const auto *src_it = src;
+    const auto *const src_end = src + src_size;
     const SrcCharT* src_it_next = nullptr;
     for(; src_it != src_end; src_it = src_it_next) {
         src_it_next = src_it + 1;
@@ -1595,10 +1595,10 @@ STRF_HD void strf::static_transcoder
     , strf::surrogate_policy surr_poli )
 {
     unsigned long ch = 0, ch2 = 0;
-    auto src_it = src;
-    const auto src_end = src + src_size;
-    auto dest_it = dest.buffer_ptr();
-    auto dest_end = dest.buffer_end();
+    const auto *src_it = src;
+    const auto *const src_end = src + src_size;
+    auto *dest_it = dest.buffer_ptr();
+    auto *dest_end = dest.buffer_end();
     while (src_it != src_end) {
         ch = *src_it;
         ++src_it;
@@ -1643,7 +1643,7 @@ STRF_HD std::size_t strf::static_transcoder
     (void) surr_poli;
     std::size_t count = 0;
     const SrcCharT* src_it = src;
-    const auto src_end = src + src_size;
+    const auto *const src_end = src + src_size;
     unsigned long ch = 0;
     while (src_it != src_end) {
         ch = *src_it;
@@ -1671,8 +1671,8 @@ static_charset<CharT, strf::csid_utf16>::count_codepoints_fast
         return {0, 0};
     }
     std::size_t count = 0;
-    auto it = src;
-    const auto end = src + src_size;
+    const auto *it = src;
+    const auto *const end = src + src_size;
     while (count < max_count) {
         if (strf::detail::is_high_surrogate(*it)) {
             ++it;
@@ -1697,7 +1697,7 @@ static_charset<CharT, strf::csid_utf16>::count_codepoints
     (void) surr_poli;
     std::size_t count = 0;
     const CharT* it = src;
-    const auto end = src + src_size;
+    const auto *const end = src + src_size;
     unsigned long ch = 0;
     while (it != end && count < max_count) {
         ch = *it;
@@ -1757,10 +1757,10 @@ STRF_HD void strf::static_transcoder
     , strf::transcoding_error_notifier* err_notifier
     , strf::surrogate_policy surr_poli )
 {
-    auto src_it = src;
-    const auto src_end = src + src_size;
-    auto dest_it = dest.buffer_ptr();
-    auto dest_end = dest.buffer_end();
+    const auto *src_it = src;
+    const auto *const src_end = src + src_size;
+    auto *dest_it = dest.buffer_ptr();
+    auto *dest_end = dest.buffer_end();
     for ( ; src_it != src_end; ++src_it) {
         auto ch = *src_it;
         STRF_IF_LIKELY (ch < 0x10000) {
@@ -1801,7 +1801,7 @@ STRF_HD std::size_t strf::static_transcoder
     (void) surr_poli;
     std::size_t count = 0;
     const SrcCharT* src_it = src;
-    const auto src_end = src + src_size;
+    const auto *const src_end = src + src_size;
     for ( ; src_it != src_end; ++src_it) {
         auto ch = *src_it;
         count += 1 + (0x10000 <= ch && ch < 0x110000);
@@ -1828,11 +1828,11 @@ STRF_HD void strf::static_transcoder
     , strf::transcoding_error_notifier* err_notifier
     , strf::surrogate_policy surr_poli )
 {
-    const auto src_end = src + src_size;
-    auto dest_it = dest.buffer_ptr();
-    auto dest_end = dest.buffer_end();
+    const auto *const src_end = src + src_size;
+    auto *dest_it = dest.buffer_ptr();
+    auto *dest_end = dest.buffer_end();
     if (surr_poli == strf::surrogate_policy::lax) {
-        for (auto src_it = src; src_it < src_end; ++src_it) {
+        for (const auto *src_it = src; src_it < src_end; ++src_it) {
             auto ch = *src_it;
             STRF_IF_UNLIKELY (ch >= 0x110000) {
                 ch = 0xFFFD;
@@ -1846,7 +1846,7 @@ STRF_HD void strf::static_transcoder
             ++dest_it;
         }
     } else {
-        for(auto src_it = src; src_it < src_end; ++src_it) {
+        for(const auto *src_it = src; src_it < src_end; ++src_it) {
             char32_t ch = *src_it;
             STRF_IF_UNLIKELY (ch >= 0x110000 || strf::detail::is_surrogate(ch)) {
                 ch = 0xFFFD;
@@ -1901,10 +1901,10 @@ STRF_HD void strf::static_transcoder
 
     std::uint8_t ch0 = 0, ch1 = 0, ch2 = 0, ch3 = 0;
     unsigned long x = 0;
-    auto src_it = src;
-    const auto src_end = src + src_size;
-    auto dest_it = dest.buffer_ptr();
-    auto dest_end = dest.buffer_end();
+    const auto *src_it = src;
+    const auto *const src_end = src + src_size;
+    auto *dest_it = dest.buffer_ptr();
+    auto *dest_end = dest.buffer_end();
 
     for (;src_it != src_end; ++dest_it) {
         ch0 = (*src_it);
@@ -1983,8 +1983,8 @@ STRF_HD std::size_t strf::static_transcoder
 
     std::size_t size = 0;
     std::uint8_t ch0 = 0, ch1 = 0;
-    auto src_it = src;
-    const auto src_end = src + src_size;
+    const auto *src_it = src;
+    const auto *const src_end = src + src_size;
     while(src_it < src_end) {
         ch0 = *src_it;
         ++src_it;
@@ -2028,10 +2028,10 @@ STRF_HD void strf::static_transcoder
     , strf::surrogate_policy surr_poli )
 {
     (void) err_notifier;
-    auto src_it = src;
-    const auto src_end = src + src_size;
-    auto dest_it = dest.buffer_ptr();
-    auto dest_end = dest.buffer_end();
+    const auto *src_it = src;
+    const auto *const src_end = src + src_size;
+    auto *dest_it = dest.buffer_ptr();
+    auto *dest_end = dest.buffer_end();
 
     while (src_it < src_end) {
         auto ch = *src_it;
@@ -2090,9 +2090,9 @@ STRF_HD std::size_t strf::static_transcoder
     , strf::surrogate_policy surr_poli )
 {
     (void) surr_poli;
-    const auto src_end = src + src_size;
+    const auto *const src_end = src + src_size;
     std::size_t size = 0;
-    for(auto it = src; it < src_end; ++it) {
+    for(const auto *it = src; it < src_end; ++it) {
         SrcCharT ch = *it;
         STRF_IF_LIKELY (ch < 0x80) {
             ++size;

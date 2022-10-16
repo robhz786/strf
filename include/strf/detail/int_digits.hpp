@@ -969,7 +969,7 @@ public:
         static_assert(std::is_unsigned<IntT>::value, "expected unsigned int");
 
         dest.ensure(digcount);
-        auto p = dest.buffer_ptr() + digcount;
+        auto *p = dest.buffer_ptr() + digcount;
         intdigits_backwards_writer<Base>::write_txtdigits_backwards(value, p, lc);
         dest.advance_to(p);
     }
@@ -987,7 +987,7 @@ public:
         static_assert(std::is_unsigned<UIntT>::value, "expected unsigned int");
         auto size = digcount + seps_count;
         dest.ensure(size);
-        auto next_p = dest.buffer_ptr() + size;
+        auto *next_p = dest.buffer_ptr() + size;
         intdigits_backwards_writer<Base>::write_txtdigits_backwards_little_sep
             (next_p, uvalue, grouping.get_iterator(), sep, lc);
         dest.advance_to(next_p);
@@ -1013,8 +1013,8 @@ public:
 
         auto dist = grouping.distribute(digcount);
         dest.ensure(dist.highest_group);
-        auto oit = dest.buffer_ptr();
-        auto end = dest.buffer_end();
+        auto *oit = dest.buffer_ptr();
+        auto *end = dest.buffer_end();
         strf::detail::copy_n(digits, dist.highest_group, oit);
         oit += dist.highest_group;
         digits += dist.highest_group;
@@ -1072,8 +1072,8 @@ public:
             strf::put(dest, static_cast<CharT>('0' + value));
             return;
         }
-        auto it = dest.buffer_ptr();
-        auto end = dest.buffer_end();
+        auto *it = dest.buffer_ptr();
+        auto *end = dest.buffer_end();
         UIntT mask = (UIntT)1 << (digcount - 1);
         do {
             if (it == end) {
@@ -1107,8 +1107,8 @@ public:
 
         UIntT mask = (UIntT)1 << (digcount - 1);
         auto dist = grouping.distribute(digcount);
-        auto oit = dest.buffer_ptr();
-        auto end = dest.buffer_end();
+        auto *oit = dest.buffer_ptr();
+        auto *end = dest.buffer_end();
         while (dist.highest_group--) {
             *oit++ = (CharT)'0' + (0 != (value & mask));
             mask = mask >> 1;
@@ -1177,8 +1177,8 @@ public:
         auto dist = grouping.distribute(digcount);
         UIntT mask = (UIntT)1 << (digcount - 1);
         dest.ensure(dist.highest_group);
-        auto oit = dest.buffer_ptr();
-        auto end = dest.buffer_end();
+        auto *oit = dest.buffer_ptr();
+        auto *end = dest.buffer_end();
         while (dist.highest_group--) {
             *oit++ = (CharT)'0' + (0 != (value & mask));
             mask = mask >> 1;

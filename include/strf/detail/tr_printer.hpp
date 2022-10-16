@@ -308,7 +308,7 @@ STRF_HD void tr_do_preprinting
             }
             ++it;
         } else if(ch == '{') {
-            auto it2 = it + 1;
+            const auto *it2 = it + 1;
             it2 = strf::detail::str_find<CharT>(it2, end - it2, '{');
             if (it2 == nullptr) {
                 pre.account_string(it, end);
@@ -326,7 +326,7 @@ STRF_HD void tr_do_preprinting
                 }
                 ++arg_idx;
             }
-            auto it2 = it + 1;
+            const auto *it2 = it + 1;
             it = strf::detail::str_find<CharT>(it2, (end - it2), '}');
             if (it == nullptr) {
                 return;
@@ -390,7 +390,7 @@ STRF_HD std::size_t tr_string_size
             }
             ++it;
         } else if(ch == '{') {
-            auto it2 = it + 1;
+            const auto *it2 = it + 1;
             it2 = strf::detail::str_find<CharT>(it2, end - it2, '{');
             if (it2 == nullptr) {
                 return count += end - it;
@@ -407,7 +407,7 @@ STRF_HD std::size_t tr_string_size
                     count += inv_arg_size;
                 }
             }
-            auto it2 = it + 1;
+            const auto *it2 = it + 1;
             it = strf::detail::str_find<CharT>(it2, (end - it2), '}');
             if (it == nullptr) {
                 break;

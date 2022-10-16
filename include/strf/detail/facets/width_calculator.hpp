@@ -191,7 +191,7 @@ void STRF_HD width_accumulator<WFunc>::recycle()
     auto end = this->buffer_ptr();
     this->set_buffer_ptr(buff_);
     if (this->good()) {
-        auto it = buff_;
+        auto *it = buff_;
         for (; it != end; ++it)
         {
             auto w = width_ + func_(*it);

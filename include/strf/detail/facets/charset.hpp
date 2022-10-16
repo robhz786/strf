@@ -916,7 +916,7 @@ public:
 
     STRF_HD void finish()
     {
-        auto p = this->buffer_ptr();
+        auto *p = this->buffer_ptr();
         STRF_IF_LIKELY (p != buff_ && dest_.good()) {
             transcode_( dest_, buff_, static_cast<std::size_t>(p - buff_)
                       , err_notifier_, surr_poli_);
@@ -938,7 +938,7 @@ private:
 template <typename DestCharT>
 STRF_HD void buffered_encoder<DestCharT>::recycle()
 {
-    auto p = this->buffer_ptr();
+    auto *p = this->buffer_ptr();
     this->set_buffer_ptr(buff_);
     STRF_IF_LIKELY (p != buff_ && dest_.good()) {
         this->set_good(false);
@@ -981,7 +981,7 @@ private:
 
 STRF_FUNC_IMPL STRF_HD void buffered_size_calculator::recycle()
 {
-    auto p = this->buffer_ptr();
+    auto *p = this->buffer_ptr();
     STRF_IF_LIKELY (p != buff_) {
         this->set_buffer_ptr(buff_);
         sum_ += size_func_(buff_, static_cast<std::size_t>(p - buff_), surr_poli_);

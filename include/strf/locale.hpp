@@ -53,7 +53,7 @@ STRF_FUNC_IMPL strf::digits_grouping parse_win_grouping(const wchar_t* str)
         return {};
     }
     strf::digits_grouping_creator creator;
-    auto it = str;
+    const auto *it = str;
     while (true) {
         if (strf::detail::not_digit(*it)) {
             return {}; // invalid input
@@ -204,7 +204,7 @@ STRF_FUNC_IMPL strf::numpunct<10> locale_numpunct() noexcept
 
 #else // defined(_WIN32)
 
-    auto loc = localeconv();
+    auto *loc = localeconv();
     return strf::detail::make_numpunct
         ( nl_langinfo(CODESET)
         , loc->decimal_point

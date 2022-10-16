@@ -285,7 +285,7 @@ template < typename PrePrinting
          , strf::detail::enable_if_t<PrePrinting::something_required, int> >
 STRF_HD void range_printer<CharT, FPack, It>::do_preprinting_(PrePrinting& pre) const
 {
-    for(auto it = begin_; it != end_; ++it) {
+    for(iterator it = begin_; it != end_; ++it) {
         printer_type_<PrePrinting>
             ( strf::make_printer_input<CharT>(pre, fp_, *it) );
     }
@@ -296,7 +296,7 @@ STRF_HD void range_printer<CharT, FPack, It>::print_to
     ( strf::destination<CharT>& dest ) const
 {
     strf::no_preprinting no_pre;
-    for(auto it = begin_; it != end_; ++it) {
+    for(iterator it = begin_; it != end_; ++it) {
         printer_type_<strf::no_preprinting>
             ( strf::make_printer_input<CharT>(no_pre, fp_, *it) ).print_to(dest);
     }
@@ -359,7 +359,7 @@ template < typename PrePrinting
 STRF_HD void separated_range_printer<CharT, FPack, It>::do_preprinting_(PrePrinting& pre) const
 {
     std::size_t count = 0;
-    for(auto it = begin_; it != end_; ++it) {
+    for(iterator it = begin_; it != end_; ++it) {
         printer_type_<PrePrinting>(strf::make_printer_input<CharT>(pre, fp_, *it));
         ++ count;
         STRF_IF_CONSTEXPR (!PrePrinting::size_required) {
@@ -391,7 +391,7 @@ STRF_HD void separated_range_printer<CharT, FPack, It>::print_to
     ( strf::destination<CharT>& dest ) const
 {
     strf::no_preprinting no_pre;
-    auto it = begin_;
+    auto it = begin_; // NOLINT (llvm-qualified-auto)
     if (it != end_) {
         printer_type_<strf::no_preprinting>
             ( strf::make_printer_input<CharT>(no_pre, fp_, *it) )
@@ -462,7 +462,7 @@ STRF_HD void fmt_range_printer<CharT, FPack, It, Fmts ...>::do_preprinting_
     ( PrePrinting& pre ) const
 {
     auto r = fmt_.value();
-    for(auto it = r.begin; it != r.end; ++it) {
+    for(auto it = r.begin; it != r.end; ++it) { // NOLINTLINE(llvm-qualified-auto)
         printer_type_<PrePrinting>
             ( strf::make_printer_input<CharT>
                 ( pre, fp_, value_fmt_type_adapted_{{*it}, fmt_} ) );
@@ -478,7 +478,7 @@ STRF_HD void fmt_range_printer<CharT, FPack, It, Fmts ...>::print_to
 {
     strf::no_preprinting no_pre;
     auto r = fmt_.value();
-    for(auto it = r.begin; it != r.end; ++it) {
+    for(auto it = r.begin; it != r.end; ++it) { // NOLINTLINE(llvm-qualified-auto)
         printer_type_<strf::no_preprinting>
             ( strf::make_printer_input<CharT>
                 ( no_pre, fp_, value_fmt_type_adapted_{{*it}, fmt_} ) )
@@ -551,7 +551,7 @@ STRF_HD void fmt_separated_range_printer<CharT, FPack, It, Fmts ...>::do_preprin
 {
     auto r = fmt_.value();
     std::size_t count = 0;
-    for(auto it = r.begin; it != r.end; ++it) {
+    for(auto it = r.begin; it != r.end; ++it) { // NOLINT(llvm-qualified-auto)
         printer_type_<PrePrinting>
             ( strf::make_printer_input<CharT>
                 ( pre, fp_, value_fmt_type_adapted_{{*it}, fmt_} ) );
@@ -654,7 +654,7 @@ template < typename PrePrinting
 STRF_HD void transformed_range_printer<CharT, FPack, It, UnaryOp>
     ::do_preprinting_(PrePrinting& pre) const
 {
-    for(auto it = begin_; it != end_; ++it) {
+    for(iterator it = begin_; it != end_; ++it) {
         printer_type_<PrePrinting>
             ( strf::make_printer_input<CharT>(pre, fp_, op_(*it)) );
     }
@@ -665,7 +665,7 @@ STRF_HD void transformed_range_printer<CharT, FPack, It, UnaryOp>::print_to
     ( strf::destination<CharT>& dest ) const
 {
     strf::no_preprinting no_pre;
-    for(auto it = begin_; it != end_; ++it) {
+    for(iterator it = begin_; it != end_; ++it) {
         printer_type_<strf::no_preprinting>
             ( strf::make_printer_input<CharT>(no_pre, fp_, op_(*it)) )
             .print_to(dest);
@@ -733,7 +733,7 @@ STRF_HD void sep_transformed_range_printer<CharT, FPack, It, UnaryOp>
     ::do_preprinting_(PrePrinting& pre) const
 {
     std::size_t count = 0;
-    for(auto it = begin_; it != end_; ++it) {
+    for(iterator it = begin_; it != end_; ++it) {
         printer_type_<PrePrinting>
             ( strf::make_printer_input<CharT>(pre, fp_, op_(*it)) );
         ++ count;

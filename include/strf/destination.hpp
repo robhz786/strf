@@ -213,7 +213,7 @@ void output_buffer<T, 0>::do_write(const T* data, std::size_t count)
 template <typename T>
 inline STRF_HD void put(strf::output_buffer<T, 0>& dest, T c)
 {
-    auto p = dest.buffer_ptr();
+    auto *p = dest.buffer_ptr();
     STRF_IF_LIKELY (p != dest.buffer_end()) {
         *p = c;
         dest.advance_to(p + 1);
@@ -327,7 +327,7 @@ private:
     STRF_HD void do_write(const CharT* data, std::size_t) noexcept override
     {
         auto sub_count = this->buffer_space();
-        auto ptr = this->buffer_ptr();
+        auto *ptr = this->buffer_ptr();
 #if !defined(STRF_FREESTANDING) || defined(STRF_WITH_CSTRING)
         memcpy(ptr, data, sub_count * sizeof(CharT));
 #else
@@ -474,7 +474,7 @@ private:
     STRF_HD void do_write(const CharT* data, std::size_t) noexcept override
     {
         auto sub_count = this->buffer_space();
-        auto ptr = this->buffer_ptr();
+        auto *ptr = this->buffer_ptr();
 #if !defined(STRF_FREESTANDING) || defined(STRF_WITH_CHAR_ARRAYING)
         memcpy(ptr, data, sub_count * sizeof(CharT));
 #else
