@@ -70,7 +70,7 @@ public:
         : value_(input.arg)
         , lettercase_(strf::use_facet<strf::lettercase_c, bool>(input.facets))
     {
-        input.pre.subtract_width(5u - (int)input.arg);
+        input.pre.subtract_width(5U - (int)input.arg);
         input.pre.add_size(5 - (int)input.arg);
     }
 

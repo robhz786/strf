@@ -156,7 +156,7 @@ STRF_HD strf::width_t checked_mul(strf::width_t w, std::size_t x) noexcept
 {
     std::uint64_t tmp = x;
     tmp *= w.underlying_value();
-    if (tmp <= 0xFFFFFFFFuLL) {
+    if (tmp <= 0xFFFFFFFFULL) {
         return strf::width_t::from_underlying(static_cast<std::uint32_t>(tmp));
     }
     return strf::width_max;

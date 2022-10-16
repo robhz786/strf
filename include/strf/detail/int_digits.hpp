@@ -31,19 +31,19 @@ inline STRF_HD unsigned long long pow10(unsigned n) noexcept
 {
     static const unsigned long long p10[] =
         { 1, 10, 100, 1000, 10000, 100000, 1000000
-        , 10000000ull
-        , 100000000ull
-        , 1000000000ull
-        , 10000000000ull
-        , 100000000000ull
-        , 1000000000000ull
-        , 10000000000000ull
-        , 100000000000000ull
-        , 1000000000000000ull
-        , 10000000000000000ull
-        , 100000000000000000ull
-        , 1000000000000000000ull
-        , 10000000000000000000ull };
+        , 10000000ULL
+        , 100000000ULL
+        , 1000000000ULL
+        , 10000000000ULL
+        , 100000000000ULL
+        , 1000000000000ULL
+        , 10000000000000ULL
+        , 100000000000000ULL
+        , 1000000000000000ULL
+        , 10000000000000000ULL
+        , 100000000000000000ULL
+        , 1000000000000000000ULL
+        , 10000000000000000000ULL };
     STRF_ASSERT(n <= 19);
 
     return p10[n];
@@ -495,20 +495,20 @@ struct digits_counter<10, 4>
 {
     STRF_CONSTEXPR_IN_CXX14 static STRF_HD unsigned count_digits_unsigned(uint_fast32_t value) noexcept
     {
-        if (value <= 9999ul) {
-            if (value <= 99ul) {
-                return value <= 9ul ? 1 : 2;
+        if (value <= 9999UL) {
+            if (value <= 99UL) {
+                return value <= 9UL ? 1 : 2;
             } else {
-                return value <= 999ul ? 3 : 4;
+                return value <= 999UL ? 3 : 4;
             }
-        } else if (value <= 99999999ul) {
-            if (value <= 999999ul) {
-                return value <= 99999ul ? 5 : 6;
+        } else if (value <= 99999999UL) {
+            if (value <= 999999UL) {
+                return value <= 99999UL ? 5 : 6;
             } else {
-                return value <= 9999999ul ? 7 : 8;
+                return value <= 9999999UL ? 7 : 8;
             }
         }
-        return value <= 999999999ul ? 9 : 10;
+        return value <= 999999999UL ? 9 : 10;
     }
 
     template <typename IntT>
@@ -524,38 +524,38 @@ struct digits_counter<10, 8>
     STRF_CONSTEXPR_IN_CXX14 static STRF_HD unsigned count_digits_unsigned
         ( uint_fast64_t value ) noexcept
     {
-        if (value <= 99999999ull) {
+        if (value <= 99999999ULL) {
             if (value <= 9999) {
-                if (value <= 99ull) {
-                    return value <= 9ull ? 1 : 2;
+                if (value <= 99ULL) {
+                    return value <= 9ULL ? 1 : 2;
                 } else {
-                    return value <= 999ull ? 3 : 4;
+                    return value <= 999ULL ? 3 : 4;
                 }
             } else {
-                if (value <= 999999ull) {
-                    return value <= 99999ull ? 5 : 6;
+                if (value <= 999999ULL) {
+                    return value <= 99999ULL ? 5 : 6;
                 } else {
-                    return value <= 9999999ull ? 7 : 8;
+                    return value <= 9999999ULL ? 7 : 8;
                 }
             }
-        } else if (value <= 9999999999999999ull) {
-            if (value <= 999999999999ull) {
-                if (value <= 9999999999ull) {
-                    return value <= 999999999ull ? 9 : 10;
+        } else if (value <= 9999999999999999ULL) {
+            if (value <= 999999999999ULL) {
+                if (value <= 9999999999ULL) {
+                    return value <= 999999999ULL ? 9 : 10;
                 } else {
-                    return value <= 99999999999ull ? 11 : 12;
+                    return value <= 99999999999ULL ? 11 : 12;
                 }
             } else {
-                if (value <= 99999999999999ull ) {
-                    return value <= 9999999999999ull ? 13 : 14;
+                if (value <= 99999999999999ULL ) {
+                    return value <= 9999999999999ULL ? 13 : 14;
                 } else {
-                    return value <= 999999999999999ull ? 15 : 16;
+                    return value <= 999999999999999ULL ? 15 : 16;
                 }
             }
-        } else if (value <= 999999999999999999ull){
-            return value <=  99999999999999999ull ? 17 : 18;
+        } else if (value <= 999999999999999999ULL){
+            return value <=  99999999999999999ULL ? 17 : 18;
         }
-        return value <= 9999999999999999999ull ? 19 : 20;
+        return value <= 9999999999999999999ULL ? 19 : 20;
     }
 
     template <typename IntT>

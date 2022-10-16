@@ -214,7 +214,7 @@ namespace dragonbox {
 		// }
 		STRF_HD static constexpr bool is_finite(unsigned int exponent_bits) noexcept {
 			//constexpr unsigned int exponent_bits_all_set = (1u << format::exponent_bits) - 1;
-			return exponent_bits != ((1u << format::exponent_bits) - 1);
+			return exponent_bits != ((1U << format::exponent_bits) - 1);
 		}
 		// STRF_HD static constexpr bool has_all_zero_significand_bits(signed_significand s) noexcept {
 		// 	return (s << 1) == 0;
@@ -775,9 +775,9 @@ namespace dragonbox {
 				STRF_HD static inline std::uint32_t mod_inv(std::size_t x) noexcept {
 					STRF_ASSERT(x < table_size);
 					static constexpr std::uint32_t table[table_size] = {
-						0x1ul, 0xcccccccdul, 0xc28f5c29ul, 0x26e978d5ul, 0x3afb7e91ul,
-						0xbcbe61dul, 0x68c26139ul, 0xae8d46a5ul,
-						0x22e90e21ul, 0x3a2e9c6dul, 0x3ed61f49ul
+						0x1UL, 0xcccccccdUL, 0xc28f5c29UL, 0x26e978d5UL, 0x3afb7e91UL,
+						0xbcbe61dUL, 0x68c26139UL, 0xae8d46a5UL,
+						0x22e90e21UL, 0x3a2e9c6dUL, 0x3ed61f49UL
 					};
 					return table[x];
 				}
@@ -785,8 +785,8 @@ namespace dragonbox {
 				STRF_HD static inline std::uint32_t max_quotients(std::size_t x) noexcept {
 					STRF_ASSERT(x < table_size);
 					static constexpr std::uint32_t  table[table_size] = {
-						0xfffffffful, 0x33333333ul, 0xa3d70a3ul, 0x20c49baul, 0x68db8bul,
-						0x14f8b5ul, 0x431bdul, 0xd6bful, 0x2af3ul, 0x897ul, 0x1b7ul
+						0xffffffffUL, 0x33333333UL, 0xa3d70a3UL, 0x20c49baUL, 0x68db8bUL,
+						0x14f8b5UL, 0x431bdUL, 0xd6bfUL, 0x2af3UL, 0x897UL, 0x1b7UL
 					};
 					return table[x];
 				}
@@ -799,14 +799,14 @@ namespace dragonbox {
 				STRF_HD static inline std::uint64_t mod_inv(std::size_t x) noexcept {
 					STRF_ASSERT(x < table_size);
 					static constexpr std::uint64_t table[table_size] = {
-						0x1ull, 0xcccccccccccccccdull, 0x8f5c28f5c28f5c29ull,
-						0x1cac083126e978d5ull, 0xd288ce703afb7e91ull, 0x5d4e8fb00bcbe61dull,
-						0x790fb65668c26139ull, 0xe5032477ae8d46a5ull, 0xc767074b22e90e21ull,
-						0x8e47ce423a2e9c6dull, 0x4fa7f60d3ed61f49ull, 0xfee64690c913975ull,
-						0x3662e0e1cf503eb1ull, 0xa47a2cf9f6433fbdull, 0x54186f653140a659ull,
-						0x7738164770402145ull, 0xe4a4d1417cd9a041ull, 0xc75429d9e5c5200dull,
-						0xc1773b91fac10669ull, 0x26b172506559ce15ull, 0xd489e3a9addec2d1ull,
-						0x90e860bb892c8d5dull, 0x502e79bf1b6f4f79ull, 0xdcd618596be30fe5ull
+						0x1ULL, 0xcccccccccccccccdULL, 0x8f5c28f5c28f5c29ULL,
+						0x1cac083126e978d5ULL, 0xd288ce703afb7e91ULL, 0x5d4e8fb00bcbe61dULL,
+						0x790fb65668c26139ULL, 0xe5032477ae8d46a5ULL, 0xc767074b22e90e21ULL,
+						0x8e47ce423a2e9c6dULL, 0x4fa7f60d3ed61f49ULL, 0xfee64690c913975ULL,
+						0x3662e0e1cf503eb1ULL, 0xa47a2cf9f6433fbdULL, 0x54186f653140a659ULL,
+						0x7738164770402145ULL, 0xe4a4d1417cd9a041ULL, 0xc75429d9e5c5200dULL,
+						0xc1773b91fac10669ULL, 0x26b172506559ce15ULL, 0xd489e3a9addec2d1ULL,
+						0x90e860bb892c8d5dULL, 0x502e79bf1b6f4f79ULL, 0xdcd618596be30fe5ULL
 					};
 					return table[x];
 				}
@@ -814,12 +814,12 @@ namespace dragonbox {
 				STRF_HD static inline std::uint64_t max_quotients(std::size_t x) noexcept {
 					STRF_ASSERT(x < table_size);
 					static constexpr std::uint64_t table[table_size] = {
-						0xffffffffffffffffull, 0x3333333333333333ull, 0xa3d70a3d70a3d70ull,
-						0x20c49ba5e353f7cull, 0x68db8bac710cb2ull, 0x14f8b588e368f0ull,
-						0x431bde82d7b63ull, 0xd6bf94d5e57aull, 0x2af31dc46118ull,
-						0x89705f4136bull, 0x1b7cdfd9d7bull, 0x57f5ff85e5ull, 0x119799812dull,
-						0x384b84d09ull, 0xb424dc35ull, 0x24075f3dull, 0x734aca5ull, 0x170ef54ull,
-						0x49c977ull, 0xec1e4ull, 0x2f394ull, 0x971dull, 0x1e39ull, 0x60bull
+						0xffffffffffffffffULL, 0x3333333333333333ULL, 0xa3d70a3d70a3d70ULL,
+						0x20c49ba5e353f7cULL, 0x68db8bac710cb2ULL, 0x14f8b588e368f0ULL,
+						0x431bde82d7b63ULL, 0xd6bf94d5e57aULL, 0x2af31dc46118ULL,
+						0x89705f4136bULL, 0x1b7cdfd9d7bULL, 0x57f5ff85e5ULL, 0x119799812dULL,
+						0x384b84d09ULL, 0xb424dc35ULL, 0x24075f3dULL, 0x734aca5ULL, 0x170ef54ULL,
+						0x49c977ULL, 0xec1e4ULL, 0x2f394ULL, 0x971dULL, 0x1e39ULL, 0x60bULL
 					};
 					return table[x];
 				}
@@ -1767,12 +1767,12 @@ namespace dragonbox {
 
 			STRF_HD static inline std::uint64_t pow5(std::size_t idx) noexcept {
 				static const std::uint64_t table[compression_ratio] = {
-					1ull, 5ull, 25ull, 125ull, 625ull, 3125ull, 15625ull, 78125ull,
-					390625ull, 1953125ull, 9765625ull, 48828125ull, 244140625ull,
-					1220703125ull, 6103515625ull, 30517578125ull, 152587890625ull,
-					762939453125ull, 3814697265625ull, 19073486328125ull, 95367431640625ull,
-					476837158203125ull, 2384185791015625ull, 11920928955078125ull,
-					59604644775390625ull, 298023223876953125ull, 1490116119384765625ull };
+					1ULL, 5ULL, 25ULL, 125ULL, 625ULL, 3125ULL, 15625ULL, 78125ULL,
+					390625ULL, 1953125ULL, 9765625ULL, 48828125ULL, 244140625ULL,
+					1220703125ULL, 6103515625ULL, 30517578125ULL, 152587890625ULL,
+					762939453125ULL, 3814697265625ULL, 19073486328125ULL, 95367431640625ULL,
+					476837158203125ULL, 2384185791015625ULL, 11920928955078125ULL,
+					59604644775390625ULL, 298023223876953125ULL, 1490116119384765625ULL };
 				return table[idx];
 			}
 

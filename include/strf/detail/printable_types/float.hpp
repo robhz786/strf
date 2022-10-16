@@ -69,7 +69,7 @@ STRF_FUNC_IMPL STRF_HD detail::double_dec decode(double d)
     const std::uint32_t exponent
         = static_cast<std::uint32_t>((bits << 1) >> (m_size + 1));
     const bool sign = (bits >> (m_size + e_size));
-    const std::uint64_t mantissa = bits & 0xFFFFFFFFFFFFFull;
+    const std::uint64_t mantissa = bits & 0xFFFFFFFFFFFFFULL;
 
     if (exponent == 0 && mantissa == 0) {
         return {0, 0, sign, false, false};
@@ -1544,7 +1544,7 @@ inline STRF_HD detail::chars_count_t exponent_hex_digcount(long exponent)
 inline STRF_HD detail::chars_count_t mantissa_hex_digcount(std::uint64_t mantissa)
 {
     STRF_ASSERT(mantissa != 0);
-    STRF_ASSERT(mantissa == (mantissa & 0xFFFFFFFFFFFFFull));
+    STRF_ASSERT(mantissa == (mantissa & 0xFFFFFFFFFFFFFULL));
 
 #if defined(STRF_HAS_COUNTR_ZERO)
     return 13 - (strf::detail::countr_zero_ll(mantissa) >> 2);
@@ -1702,7 +1702,7 @@ inline STRF_HD strf::detail::float_init_result init_hex_double_printer_data
             } else {
                 // round mantissa if necessary
                 unsigned s = (13 - fdata.precision) << 2;
-                auto d = 1ull << s;
+                auto d = 1ULL << s;
                 auto mask = d - 1;
                 auto mantissa_low = data.mantissa & mask;
                 if ( mantissa_low > (d >> 1)) {
@@ -2147,7 +2147,7 @@ STRF_FUNC_IMPL STRF_HD strf::detail::float_init_result init_float_printer_data
 
     std::uint64_t bits = strf::detail::to_bits(d);
     const std::uint32_t bits_exponent = static_cast<std::uint32_t>((bits << 1) >> (m_size + 1));
-    const std::uint64_t bits_mantissa = bits & 0xFFFFFFFFFFFFFull;
+    const std::uint64_t bits_mantissa = bits & 0xFFFFFFFFFFFFFULL;
     const bool negative = (bits >> (m_size + e_size));
 
     chars_count_t rounded_fmt_width = afmt.width.round();
@@ -2605,19 +2605,19 @@ STRF_HD void punct_double_printer<CharT>::print_hexadecimal_
     }
     if (data_.mantissa != 0) {
         std::uint8_t digits[13] =
-            { static_cast<std::uint8_t>((data_.mantissa & (0xFull << 48)) >> 48)
-            , static_cast<std::uint8_t>((data_.mantissa & (0xFull << 44)) >> 44)
-            , static_cast<std::uint8_t>((data_.mantissa & (0xFull << 40)) >> 40)
-            , static_cast<std::uint8_t>((data_.mantissa & (0xFull << 36)) >> 36)
-            , static_cast<std::uint8_t>((data_.mantissa & (0xFull << 32)) >> 32)
-            , static_cast<std::uint8_t>((data_.mantissa & (0xFull << 28)) >> 28)
-            , static_cast<std::uint8_t>((data_.mantissa & (0xFull << 24)) >> 24)
-            , static_cast<std::uint8_t>((data_.mantissa & (0xFull << 20)) >> 20)
-            , static_cast<std::uint8_t>((data_.mantissa & (0xFull << 16)) >> 16)
-            , static_cast<std::uint8_t>((data_.mantissa & (0xFull << 12)) >> 12)
-            , static_cast<std::uint8_t>((data_.mantissa & (0xFull <<  8)) >>  8)
-            , static_cast<std::uint8_t>((data_.mantissa & (0xFull <<  4)) >>  4)
-            , static_cast<std::uint8_t>(data_.mantissa & 0xFull) };
+            { static_cast<std::uint8_t>((data_.mantissa & (0xFULL << 48)) >> 48)
+            , static_cast<std::uint8_t>((data_.mantissa & (0xFULL << 44)) >> 44)
+            , static_cast<std::uint8_t>((data_.mantissa & (0xFULL << 40)) >> 40)
+            , static_cast<std::uint8_t>((data_.mantissa & (0xFULL << 36)) >> 36)
+            , static_cast<std::uint8_t>((data_.mantissa & (0xFULL << 32)) >> 32)
+            , static_cast<std::uint8_t>((data_.mantissa & (0xFULL << 28)) >> 28)
+            , static_cast<std::uint8_t>((data_.mantissa & (0xFULL << 24)) >> 24)
+            , static_cast<std::uint8_t>((data_.mantissa & (0xFULL << 20)) >> 20)
+            , static_cast<std::uint8_t>((data_.mantissa & (0xFULL << 16)) >> 16)
+            , static_cast<std::uint8_t>((data_.mantissa & (0xFULL << 12)) >> 12)
+            , static_cast<std::uint8_t>((data_.mantissa & (0xFULL <<  8)) >>  8)
+            , static_cast<std::uint8_t>((data_.mantissa & (0xFULL <<  4)) >>  4)
+            , static_cast<std::uint8_t>(data_.mantissa & 0xFULL) };
 
         const char offset_digit_a = ('A' | ((lettercase_ == strf::lowercase) << 5)) - 10;
         for(detail::chars_count_t i = 0; i < data_.mantissa_digcount; ++i) {
