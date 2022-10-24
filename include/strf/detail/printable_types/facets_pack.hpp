@@ -22,7 +22,7 @@ template <typename FPack>
 struct inner_pack
 {
     template <typename ... T>
-    STRF_HD constexpr inner_pack(T&& ... args)
+    STRF_HD constexpr explicit inner_pack(T&& ... args)
         : fp{std::forward<T>(args)...}
     {
     }
@@ -81,7 +81,7 @@ class facets_pack_printer: public strf::printer<CharT>
 public:
 
     template <typename... T>
-    STRF_HD facets_pack_printer
+    STRF_HD explicit facets_pack_printer
         ( const strf::usual_printer_input<T...>& input )
         : fp_{input.facets, input.arg.fp}
         , printers_{input.arg.args, input.pre, fp_}
@@ -118,10 +118,11 @@ template <typename ... T>
 STRF_HD auto with(T&& ... args)
     -> strf::inner_pack<decltype(strf::pack(std::forward<T>(args)...))>
 {
+    using fp_type = decltype(strf::pack(std::forward<T>(args)...));
     static_assert
-        ( strf::is_constrainable<decltype(strf::pack(std::forward<T>(args)...))>()
+        ( strf::is_constrainable<fp_type>()
         , "All facet categories must be constrainable" );
-    return {std::forward<T>(args)...};
+    return strf::inner_pack<fp_type>{std::forward<T>(args)...};
 }
 
 } // namespace strf

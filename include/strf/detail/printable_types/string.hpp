@@ -284,7 +284,7 @@ class transcoding_formatter_transcode_with_charset_fn
 {
 public:
 
-    STRF_HD transcoding_formatter_transcode_with_charset_fn(Charset e)
+    STRF_HD explicit transcoding_formatter_transcode_with_charset_fn(Charset e)
         : charset_(e)
     {
     }
@@ -323,7 +323,7 @@ class transcoding_formatter_sani_with_charset_fn
 {
 public:
 
-    STRF_HD transcoding_formatter_sani_with_charset_fn(Charset e)
+    STRF_HD explicit transcoding_formatter_sani_with_charset_fn(Charset e)
         : charset_(e)
     {
     }
@@ -382,12 +382,12 @@ template <typename T>
 class string_precision_formatter_fn<T, true>
 {
 public:
-    constexpr STRF_HD string_precision_formatter_fn(strf::width_t p) noexcept
+    constexpr STRF_HD explicit string_precision_formatter_fn(strf::width_t p) noexcept
         : precision_(p)
     {
     }
     template <typename U>
-    constexpr STRF_HD string_precision_formatter_fn
+    constexpr STRF_HD explicit string_precision_formatter_fn
         ( strf::string_precision_formatter_fn<U, true> other ) noexcept
         : precision_(other.precision())
     {
@@ -435,7 +435,7 @@ public:
     {
     }
     template <typename U>
-    constexpr STRF_HD string_precision_formatter_fn
+    constexpr STRF_HD explicit string_precision_formatter_fn
         ( strf::string_precision_formatter_fn<U, false> ) noexcept
     {
     }
@@ -680,7 +680,7 @@ public:
     static_assert(sizeof(SrcCharT) == sizeof(DestCharT), "");
 
     template <typename PrePrinting, typename FPack>
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD string_printer
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD explicit string_printer
         ( const strf::detail::string_printer_input<SrcCharT, PrePrinting, FPack>& input )
         : str_(input.arg.data())
         , len_(input.arg.length())
@@ -697,7 +697,7 @@ public:
     }
 
     template < typename PrePrinting, typename FPack, typename CvFormat >
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD string_printer
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD explicit string_printer
         ( const strf::detail::fmt_string_printer_input
             < DestCharT, SrcCharT, false, false, CvFormat, PrePrinting, FPack >&
             input )
@@ -718,7 +718,7 @@ public:
     }
 
     template < typename PrePrinting, typename FPack, typename CvFormat >
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD string_printer
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD explicit string_printer
         ( const strf::detail::fmt_string_printer_input
             < DestCharT, SrcCharT, true, false, CvFormat, PrePrinting, FPack >&
             input )
@@ -768,7 +768,7 @@ public:
     static_assert(sizeof(SrcCharT) == sizeof(DestCharT), "");
 
     template < typename PrePrinting, typename FPack, typename CvFormat >
-    STRF_HD aligned_string_printer
+    STRF_HD explicit aligned_string_printer
         ( const strf::detail::fmt_string_printer_input
             < DestCharT, SrcCharT, false, true, CvFormat, PrePrinting, FPack >&
             input )
@@ -792,7 +792,7 @@ public:
     }
 
     template < typename PrePrinting, typename FPack, typename CvFormat >
-    STRF_HD aligned_string_printer
+    STRF_HD explicit aligned_string_printer
         ( const strf::detail::fmt_string_printer_input
             < DestCharT, SrcCharT, true, true, CvFormat, PrePrinting, FPack >&
             input )
@@ -969,7 +969,7 @@ class transcode_string_printer: public strf::printer<DestCharT>
 public:
 
     template <typename PrePrinting, typename FPack, typename CvFormat>
-    STRF_HD transcode_string_printer
+    STRF_HD explicit transcode_string_printer
         ( const strf::detail::fmt_string_printer_input
             < DestCharT, SrcCharT, false, false, CvFormat, PrePrinting, FPack >&
             input )
@@ -991,7 +991,7 @@ public:
     }
 
     template <typename PrePrinting, typename FPack, typename CvFormat>
-    STRF_HD transcode_string_printer
+    STRF_HD explicit transcode_string_printer
         ( const strf::detail::fmt_string_printer_input
             < DestCharT, SrcCharT, true, false, CvFormat, PrePrinting, FPack >&
             input )
@@ -1088,7 +1088,7 @@ class aligned_transcode_string_printer: public printer<DestCharT>
 public:
 
     template <typename PrePrinting, typename FPack, typename CvFormat>
-    STRF_HD aligned_transcode_string_printer
+    STRF_HD explicit aligned_transcode_string_printer
         ( const strf::detail::fmt_string_printer_input
             < DestCharT, SrcCharT, false, true, CvFormat, PrePrinting, FPack >&
             input )
@@ -1111,7 +1111,7 @@ public:
     }
 
     template <typename PrePrinting, typename FPack, typename CvFormat>
-    STRF_HD aligned_transcode_string_printer
+    STRF_HD explicit aligned_transcode_string_printer
         ( const strf::detail::fmt_string_printer_input
             < DestCharT, SrcCharT, true, true, CvFormat, PrePrinting, FPack >&
             input )
@@ -1342,7 +1342,7 @@ public:
 
     template < typename PrePrinting, typename FPack, typename SrcCharT
              , bool HasPrecision, typename CvFormat >
-    STRF_HD transcode_string_printer_variant
+    STRF_HD explicit transcode_string_printer_variant
         ( const strf::detail::fmt_string_printer_input
             < DestCharT, SrcCharT, HasPrecision, false, CvFormat, PrePrinting, FPack >&
             input )
@@ -1360,7 +1360,7 @@ public:
 
     STRF_HD ~transcode_string_printer_variant()
     {
-        const strf::printer<DestCharT>& p = *this;
+        const auto& p = static_cast<const strf::printer<DestCharT>&>(*this) ;
         p.~printer();
     }
 
@@ -1369,7 +1369,7 @@ public:
 #  pragma GCC diagnostic ignored "-Wstrict-aliasing"
 #endif
 
-    STRF_HD operator const strf::printer<DestCharT>& () const
+    STRF_HD explicit operator const strf::printer<DestCharT>& () const
     {
         return * reinterpret_cast<const strf::printer<DestCharT>*>(&pool_);
     }
@@ -1396,7 +1396,7 @@ public:
 
     template < typename PrePrinting, typename FPack, typename SrcCharT
              , bool HasPrecision, typename CvFormat >
-    STRF_HD aligned_transcode_string_printer_variant
+    STRF_HD explicit aligned_transcode_string_printer_variant
         ( const strf::detail::fmt_string_printer_input
             < DestCharT, SrcCharT, HasPrecision, true, CvFormat, PrePrinting, FPack >&
             input )
@@ -1416,7 +1416,7 @@ public:
 
     STRF_HD ~aligned_transcode_string_printer_variant()
     {
-        const strf::printer<DestCharT>& p = *this;
+        const auto& p = static_cast<const strf::printer<DestCharT>&>(*this);
         p.~printer();
     }
 
@@ -1425,7 +1425,7 @@ public:
 #  pragma GCC diagnostic ignored "-Wstrict-aliasing"
 #endif
 
-    STRF_HD operator const strf::printer<DestCharT>& () const
+    STRF_HD explicit operator const strf::printer<DestCharT>& () const
     {
         return * reinterpret_cast<const strf::printer<DestCharT>*>(&pool_);
     }

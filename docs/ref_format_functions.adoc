@@ -355,7 +355,7 @@ struct default_int_format {
     constexpr static bool showbase = false;
     constexpr static bool punctuate = false;
 
-    constexpr STRF_HD operator <<int_format,int_format>> () const
+    constexpr operator <<int_format,int_format>> () const
     {
         return {};
     }

@@ -140,7 +140,7 @@ public:
     }
     static constexpr STRF_HD width_t min() noexcept
     {
-        return 0;
+        return static_cast<width_t>(0);
     }
 
 private:

@@ -85,7 +85,7 @@ struct printable_traits<strf::detail::join_t<FwdArgs...>>
 
 struct aligned_join_maker
 {
-    constexpr STRF_HD aligned_join_maker
+    constexpr STRF_HD explicit aligned_join_maker
         ( strf::width_t width_
         , strf::text_alignment align_ = strf::text_alignment::right ) noexcept
         : width(width_)
@@ -135,7 +135,7 @@ class aligned_join_printer_impl: public printer<CharT>
 public:
 
     template <strf::precalc_size PrecalcSize, typename FPack, typename... FwdArgs>
-    STRF_HD aligned_join_printer_impl
+    STRF_HD explicit aligned_join_printer_impl
         ( const strf::detail::join_printer_input
               < CharT
               , strf::preprinting<PrecalcSize, strf::precalc_width::no>
@@ -158,7 +158,7 @@ public:
     }
 
     template <strf::precalc_size PrecalcSize, typename FPack, typename... FwdArgs>
-    STRF_HD aligned_join_printer_impl
+    STRF_HD explicit aligned_join_printer_impl
         ( const strf::detail::join_printer_input
               < CharT
               , strf::preprinting<PrecalcSize, strf::precalc_width::yes>
@@ -292,7 +292,7 @@ class aligned_join_printer
 public:
 
     template <typename FPack2>
-    constexpr STRF_HD aligned_join_printer
+    constexpr STRF_HD explicit aligned_join_printer
         ( const strf::detail::join_printer_input
             < CharT, PrePrinting, FPack2, true, FwdArgs... >& input )
         : strf::detail::aligned_join_printer_impl_of
@@ -340,7 +340,7 @@ class join_printer
 public:
 
     template <typename FPack2>
-    STRF_HD join_printer
+    STRF_HD explicit join_printer
         ( const strf::detail::join_printer_input
               < CharT, PrePrinting, FPack2, false, FwdArgs... >& input )
         : strf::detail::join_printer_impl

@@ -277,7 +277,7 @@ public:
     template
         < typename F = Facet
         , strf::detail::enable_if_t<std::is_copy_constructible<F>::value, int> = 0 >
-    constexpr STRF_HD fpe_wrapper(const Facet& facet)
+    constexpr STRF_HD explicit fpe_wrapper(const Facet& facet)
         noexcept(noexcept(Facet(std::declval<const F&>())))
         : facet_(facet)
     {
@@ -286,7 +286,7 @@ public:
     template
         < typename F = Facet
         , strf::detail::enable_if_t<std::is_constructible<Facet, F&&>::value, int> = 0 >
-    constexpr STRF_HD fpe_wrapper(F&& facet)
+    constexpr STRF_HD explicit fpe_wrapper(F&& facet)
         noexcept(noexcept(Facet(std::declval<F>())))
         : facet_(std::forward<F>(facet))
     {
@@ -336,7 +336,7 @@ public:
     template
         < typename F = FPE
         , strf::detail::enable_if_t<std::is_copy_constructible<F>::value, int> = 0 >
-    constexpr STRF_HD fpe_wrapper
+    constexpr STRF_HD explicit fpe_wrapper
         ( const strf::constrained_fpe<Filter, FPE>& cfpe )
         noexcept(noexcept(F(std::declval<const F&>())))
         : fpe_(cfpe.get())
@@ -346,7 +346,7 @@ public:
     template
         < typename F = FPE
         , strf::detail::enable_if_t<std::is_move_constructible<F>::value, int> = 0 >
-    constexpr STRF_HD fpe_wrapper
+    constexpr STRF_HD explicit fpe_wrapper
         ( strf::constrained_fpe<Filter, FPE>&& cfpe )
         noexcept(noexcept(F(std::declval<F>())))
         : fpe_(std::move(cfpe.get()))
@@ -386,7 +386,7 @@ class fpe_wrapper<Rank, const FPE&>
 {
 public:
 
-    constexpr STRF_HD fpe_wrapper(const FPE& fpe) noexcept
+    constexpr STRF_HD explicit fpe_wrapper(const FPE& fpe) noexcept
         : fpe_(fpe)
     {
     }
@@ -441,7 +441,7 @@ public:
     template
         < typename FP = fp_type_
         , strf::detail::enable_if_t<std::is_copy_constructible<FP>::value, int> = 0 >
-    constexpr STRF_HD fpe_wrapper(const fp_type_& fp)
+    constexpr STRF_HD explicit fpe_wrapper(const fp_type_& fp)
         noexcept(noexcept(fp_type_(std::declval<const fp_type_&>())))
         : fp_(fp)
     {
@@ -450,7 +450,7 @@ public:
     template
         < typename FP = fp_type_
         , strf::detail::enable_if_t<std::is_move_constructible<FP>::value, int> = 0 >
-    constexpr STRF_HD fpe_wrapper(fp_type_&& fp)
+    constexpr STRF_HD explicit fpe_wrapper(fp_type_&& fp)
         noexcept(noexcept(fp_type_(std::declval<fp_type_>())))
         : fp_(std::move(fp))
     {
@@ -506,7 +506,7 @@ public:
            && strf::detail::fold_and<std::is_constructible<FPE, U>::value...>::value
            && ! strf::detail::cvref_is_same<facets_pack_base, U...>::value
             , int > = 0 >
-    constexpr STRF_HD facets_pack_base(U&& ... fpe)
+    constexpr STRF_HD explicit facets_pack_base(U&& ... fpe)
         noexcept(strf::detail::fold_and
                  < noexcept(FPEWrappers(std::declval<U>()))... >::value)
         : FPEWrappers(std::forward<U>(fpe))...

@@ -104,17 +104,6 @@ public:
     using return_type =
         typename ReservePolicy::template return_type<DestCreator>;
 
-private:
-
-    template <typename CharT>
-    static inline STRF_HD const strf::printer<CharT>&
-    as_printer_cref_(const strf::printer<CharT>& p) noexcept
-    {
-        return p;
-    }
-
-public:
-
     template <bool Ln, typename ReservePolicy, typename DestCreator>
     static STRF_HD return_type<ReservePolicy, DestCreator> print
         ( ReservePolicy reserve_policy
@@ -128,7 +117,7 @@ public:
         auto fp = strf::pack((Fpes&&)fpes...);
         return reserve_policy.template print<Ln>
             ( dest_creator, pre
-            , as_printer_cref_<char_type>
+            , static_cast<const strf::printer<char_type>&>
                 ( strf::printer_type
                   < char_type, preprinting_t, decltype(fp), Printables >
                     ( strf::make_printer_input<char_type>

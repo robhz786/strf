@@ -71,7 +71,7 @@ struct transcoding_error_notifier_ptr {
 
     constexpr transcoding_error_notifier_ptr() noexcept = default;
 
-    STRF_HD constexpr transcoding_error_notifier_ptr(transcoding_error_notifier* p) noexcept
+    STRF_HD constexpr explicit transcoding_error_notifier_ptr(transcoding_error_notifier* p) noexcept
         : ptr(p)
     {
     }
@@ -431,7 +431,7 @@ public:
     using code_unit = CharT;
     using char_type STRF_DEPRECATED = CharT;
 
-    STRF_HD dynamic_charset
+    STRF_HD explicit dynamic_charset
         ( const strf::dynamic_charset_data<CharT>& data )
         : data_(&data)
     {

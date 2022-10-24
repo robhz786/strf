@@ -18,6 +18,7 @@ namespace strf {
 
 struct int_format
 {
+#if __cplusplus < 201402L
     constexpr STRF_HD int_format
         ( int base_ = 10
         , unsigned precision_ = 0
@@ -33,13 +34,14 @@ struct int_format
         , punctuate(punctuate_)
     {
     }
+#endif // __cplusplus < 201402L
 
-    int base;
-    unsigned precision;
-    unsigned pad0width;
-    strf::showsign sign;
-    bool showbase;
-    bool punctuate;
+    int base = 10;
+    unsigned precision = 0;
+    unsigned pad0width = 0;
+    strf::showsign sign = strf::showsign::negative_only;
+    bool showbase = false;
+    bool punctuate = false;
 };
 
 using int_format_full_dynamic = int_format;
@@ -47,6 +49,8 @@ using int_format_full_dynamic = int_format;
 template <int Base, bool Punctuate>
 struct int_format_static_base_and_punct
 {
+
+#if __cplusplus < 201402L
     constexpr STRF_HD int_format_static_base_and_punct
         ( unsigned precision_ = 0
         , unsigned pad0width_ = 0
@@ -58,6 +62,7 @@ struct int_format_static_base_and_punct
         , showbase(showbase_)
     {
     }
+#endif // __cplusplus < 201402L
 
     constexpr static int base = Base;
     unsigned precision = 0;
@@ -384,7 +389,7 @@ public:
 
     constexpr int_formatter_no_pad0_nor_punct_fn()  noexcept = default;
 
-    constexpr STRF_HD int_formatter_no_pad0_nor_punct_fn(strf::tag<>) noexcept
+    constexpr STRF_HD explicit int_formatter_no_pad0_nor_punct_fn(strf::tag<>) noexcept
     {
     }
 
@@ -613,7 +618,7 @@ public:
 
     constexpr int_formatter_static_base_and_punct_fn()  noexcept = default;
 
-    constexpr STRF_HD int_formatter_static_base_and_punct_fn(strf::tag<>) noexcept
+    constexpr STRF_HD explicit int_formatter_static_base_and_punct_fn(strf::tag<>) noexcept
     {
     }
 
@@ -856,7 +861,7 @@ public:
 
     constexpr int_formatter_full_dynamic_fn() noexcept = default;
 
-    constexpr STRF_HD int_formatter_full_dynamic_fn
+    constexpr STRF_HD explicit int_formatter_full_dynamic_fn
         ( int_format_full_dynamic data )  noexcept
         : data_(data)
     {
@@ -1384,7 +1389,7 @@ class default_int_printer: public strf::printer<CharT>
 public:
 
     template <typename... T>
-    STRF_HD default_int_printer(strf::detail::default_int_printer_input<T...> i)
+    STRF_HD explicit default_int_printer(strf::detail::default_int_printer_input<T...> i)
     {
         init_(i.pre, i.value);
     }
@@ -1450,7 +1455,7 @@ class aligned_default_int_printer: public strf::printer<CharT>
 public:
 
     template <typename... T>
-    STRF_HD aligned_default_int_printer(strf::usual_printer_input<T...> i)
+    STRF_HD explicit aligned_default_int_printer(strf::usual_printer_input<T...> i)
     {
         init_(i.arg.value());
         init_fill_(i.arg.get_alignment_format());
@@ -1615,7 +1620,7 @@ class int_printer_no_pad0_nor_punct<CharT, 10>: public strf::printer<CharT>
 {
 public:
     template <typename... T>
-    STRF_HD int_printer_no_pad0_nor_punct(strf::usual_printer_input<T...> i) noexcept
+    STRF_HD explicit int_printer_no_pad0_nor_punct(strf::usual_printer_input<T...> i) noexcept
     {
         auto w = strf::detail::init(data_, i.arg.get_int_format(), i.arg.value());
         i.pre.subtract_width(w);
@@ -1644,7 +1649,7 @@ class int_printer_no_pad0_nor_punct<CharT, 16>: public strf::printer<CharT>
 public:
 
     template <typename... T>
-    STRF_HD int_printer_no_pad0_nor_punct(strf::usual_printer_input<T...> i) noexcept
+    STRF_HD explicit int_printer_no_pad0_nor_punct(strf::usual_printer_input<T...> i) noexcept
     {
         auto value = i.arg.value();
         auto w = strf::detail::init(data_, i.arg.get_int_format(), value);
@@ -1679,7 +1684,7 @@ class int_printer_no_pad0_nor_punct<CharT, 8>: public strf::printer<CharT>
 {
 public:
     template <typename... T>
-    STRF_HD int_printer_no_pad0_nor_punct(strf::usual_printer_input<T...> i) noexcept
+    STRF_HD explicit int_printer_no_pad0_nor_punct(strf::usual_printer_input<T...> i) noexcept
     {
         auto w = strf::detail::init(data_, i.arg.get_int_format(), i.arg.value());
         i.pre.subtract_width(w);
@@ -1708,7 +1713,7 @@ class int_printer_no_pad0_nor_punct<CharT, 2>: public strf::printer<CharT>
 public:
 
     template <typename... T>
-    STRF_HD int_printer_no_pad0_nor_punct(strf::usual_printer_input<T...> i) noexcept
+    STRF_HD explicit int_printer_no_pad0_nor_punct(strf::usual_printer_input<T...> i) noexcept
     {
         auto value = i.arg.value();
         auto w = strf::detail::init(data_, i.arg.get_int_format(), value);
@@ -2290,7 +2295,7 @@ public:
 
     STRF_HD ~int_printer_full_dynamic()
     {
-        const strf::printer<CharT>& p = *this;
+        const auto& p = static_cast<const strf::printer<CharT>&>(*this);
         p.~printer();
     }
 
@@ -2299,7 +2304,7 @@ public:
 #  pragma GCC diagnostic ignored "-Wstrict-aliasing"
 #endif
 
-    STRF_HD operator const strf::printer<CharT>& () const
+    STRF_HD explicit operator const strf::printer<CharT>& () const
     {
         return * reinterpret_cast<const strf::printer<CharT>*>(&storage_);
     }

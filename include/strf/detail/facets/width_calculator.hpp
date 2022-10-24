@@ -521,7 +521,7 @@ STRF_HD std_width_calc_func_return std_width_calc_func
 
 class std_width_decrementer: public strf::transcode_dest<char32_t> {
 public:
-    STRF_HD std_width_decrementer (strf::width_t initial_width)
+    STRF_HD explicit std_width_decrementer (strf::width_t initial_width)
         : strf::transcode_dest<char32_t>(buff_, buff_size_)
         , width_{initial_width}
     {
@@ -557,7 +557,7 @@ private:
 
 class std_width_decrementer_with_pos: public strf::transcode_dest<char32_t> {
 public:
-    STRF_HD std_width_decrementer_with_pos (strf::width_t initial_width)
+    STRF_HD explicit std_width_decrementer_with_pos (strf::width_t initial_width)
         : strf::transcode_dest<char32_t>(buff_, buff_size_)
         , width_{initial_width}
     {

@@ -100,6 +100,8 @@ enum class float_notation{fixed, scientific, general, hex};
 
 struct float_format
 {
+#if __cplusplus < 201402L
+
     constexpr STRF_HD float_format
       ( detail::chars_count_t precision_ = (detail::chars_count_t)-1
       , detail::chars_count_t pad0width_ = 0
@@ -116,12 +118,14 @@ struct float_format
     {
     }
 
-    detail::chars_count_t precision;
-    detail::chars_count_t pad0width;
-    strf::float_notation notation;
-    strf::showsign sign;
-    bool showpoint;
-    bool punctuate;
+#endif // __cplusplus < 201402L
+
+    detail::chars_count_t precision = (detail::chars_count_t)-1;
+    detail::chars_count_t pad0width = 0;
+    strf::float_notation notation = strf::float_notation::general;
+    strf::showsign sign = strf::showsign::negative_only;
+    bool showpoint = false;
+    bool punctuate = false;
 };
 
 struct float_format_no_punct
@@ -1354,7 +1358,7 @@ class fast_double_printer: public strf::printer<CharT>
 public:
 
     template <typename FloatT, typename PrePrinting>
-    STRF_HD fast_double_printer
+    STRF_HD explicit fast_double_printer
         ( strf::detail::fast_double_printer_input<CharT, PrePrinting, FloatT> input) noexcept
         : fast_double_printer(input.value, input.lcase)
     {
@@ -2323,7 +2327,7 @@ class punct_double_printer: public strf::printer<CharT>
 public:
 
     template < typename PrePrinting, typename FPack, typename FloatT, bool HasAlignment>
-    STRF_HD punct_double_printer
+    STRF_HD explicit punct_double_printer
         ( const strf::detail::fmt_double_printer_input
             < CharT, PrePrinting, FPack, FloatT
             , strf::float_formatter_full_dynamic, HasAlignment >& input )
@@ -2378,7 +2382,7 @@ public:
     template < typename PrePrinting, typename FPack, typename FloatT
              , typename FloatFormatter, bool HasAlignment
              , strf::detail::enable_if_t<!FloatFormatter::has_punct, int> = 0 >
-    STRF_HD punct_double_printer
+    STRF_HD explicit punct_double_printer
         ( const strf::detail::fmt_double_printer_input
             < CharT, PrePrinting, FPack, FloatT, FloatFormatter, HasAlignment >& input )
         : lettercase_(strf::use_facet<strf::lettercase_c, FloatT>(input.facets))

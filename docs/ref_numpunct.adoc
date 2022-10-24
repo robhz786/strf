@@ -172,7 +172,7 @@ public:
     // utilities
     constexpr {digits_distribution} <<numpunct_thousands_distribute,distribute>>(unsiged digcount) const noexcept;
     constexpr bool <<numpunct_any_group_separation,any_group_separation>>(unsigned digcount) const noexcept;
-    constexpr STRF_HD unsigned <<numpunct_thousands_sep_count,thousands_sep_count>>(unsigned digcount) const noexcept;
+    constexpr unsigned <<numpunct_thousands_sep_count,thousands_sep_count>>(unsigned digcount) const noexcept;
 
 private:
     char32_t decimal_point_ = U'.';  // exposition only
@@ -323,7 +323,7 @@ public:
     constexpr {digits_distribution} distribute(unsiged digcount) const
 
     constexpr bool any_group_separation(unsigned digcount) const noexcept;
-    constexpr STRF_HD unsigned thousands_sep_count(unsigned digcount) const noexcept;
+    constexpr unsigned thousands_sep_count(unsigned digcount) const noexcept;
 
     constexpr char32_t decimal_point() const noexcept;
     constexpr char32_t thousands_sep() const noexcept;
@@ -430,7 +430,7 @@ public:
     constexpr {digits_distribution} distribute(unsiged digcount) const
 
     constexpr bool any_group_separation(unsigned digcount) const noexcept;
-    constexpr STRF_HD unsigned thousands_sep_count(unsigned digcount) const noexcept;
+    constexpr unsigned thousands_sep_count(unsigned digcount) const noexcept;
 
     constexpr char32_t   decimal_point() const noexcept;
     constexpr no_grouping&  decimal_point(char32_t ch) & noexcept;

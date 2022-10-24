@@ -74,7 +74,7 @@ struct tag
 template <typename T>
 struct tag<T>
 {
-    explicit constexpr STRF_HD tag() noexcept { }
+    explicit constexpr tag() noexcept { }
     using type = T;
 };
 

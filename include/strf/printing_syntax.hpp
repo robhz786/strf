@@ -621,7 +621,7 @@ public:
                 && std::is_copy_constructible<DC>::value
                 && std::is_default_constructible<Poly>::value
                  , int > = 0 >
-    constexpr STRF_HD printing_syntax(const DestCreator& destCreator)
+    constexpr STRF_HD explicit printing_syntax(const DestCreator& destCreator)
         : dest_creator_(destCreator)
     {
     }
@@ -634,7 +634,7 @@ public:
                 && std::is_move_constructible<DC>::value
                 && std::is_default_constructible<Poly>::value
                  , int > = 0 >
-    constexpr STRF_HD printing_syntax(DestCreator&& destCreator)
+    constexpr STRF_HD explicit printing_syntax(DestCreator&& destCreator)
         : dest_creator_(std::move(destCreator))
     {
     }

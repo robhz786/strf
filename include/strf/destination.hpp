@@ -264,7 +264,7 @@ public:
 
     struct range{ CharT* dest; CharT* dest_end; };
 
-    STRF_HD basic_cstr_destination(range r) noexcept
+    STRF_HD explicit basic_cstr_destination(range r) noexcept
         : dest_t_(r.dest, r.dest_end - 1)
     {
         STRF_ASSERT(r.dest < r.dest_end);
@@ -283,7 +283,7 @@ public:
     }
 
     template <std::size_t N>
-    STRF_HD basic_cstr_destination(CharT (&dest)[N]) noexcept
+    STRF_HD explicit basic_cstr_destination(CharT (&dest)[N]) noexcept
         : dest_t_(dest, dest + N - 1)
     {
     }
@@ -399,7 +399,7 @@ public:
 
     struct range{ CharT* dest; CharT* dest_end; };
 
-    STRF_HD array_destination(range r) noexcept
+    STRF_HD explicit array_destination(range r) noexcept
         : dest_t_(r.dest, r.dest_end)
     {
         STRF_ASSERT(r.dest <= r.dest_end);
@@ -417,7 +417,7 @@ public:
     }
 
     template <std::size_t N>
-    STRF_HD array_destination(CharT (&dest)[N]) noexcept
+    STRF_HD explicit array_destination(CharT (&dest)[N]) noexcept
         : dest_t_(dest, dest + N)
     {
     }

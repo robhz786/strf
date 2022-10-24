@@ -1150,7 +1150,7 @@ public:
 
     using code_unit = CharT;
 
-    dynamic_charset(const dynamic_charset& other) = default;
+    explicit dynamic_charset(const dynamic_charset& other) = default;
 
     dynamic_charset
         ( const {dynamic_charset_data}<CharT>& d );

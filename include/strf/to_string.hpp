@@ -21,7 +21,7 @@ class basic_string_appender final: public strf::destination<CharT>
 
 public:
 
-    basic_string_appender(string_type_& str)
+    explicit basic_string_appender(string_type_& str)
         : strf::destination<CharT>(buf_, buf_size_)
         , str_(str)
     {
@@ -91,7 +91,7 @@ public:
     {
     }
 
-    basic_string_maker(strf::tag<void>)
+    explicit basic_string_maker(strf::tag<void>)
         : basic_string_maker()
     {
     }
@@ -257,7 +257,7 @@ public:
     using sized_destination_type = destination_type;
     using finish_type = void;
 
-    basic_string_appender_creator
+    explicit basic_string_appender_creator
         ( std::basic_string<CharT, Traits, Allocator>& str )
         : str_(str)
     {

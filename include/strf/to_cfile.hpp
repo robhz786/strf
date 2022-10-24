@@ -25,7 +25,7 @@ class narrow_cfile_writer_traits {
 public:
     narrow_cfile_writer_traits() = delete;
 
-    STRF_HD narrow_cfile_writer_traits(FILE* file)
+    STRF_HD explicit narrow_cfile_writer_traits(FILE* file)
         : file_(file)
     {
     }
@@ -42,7 +42,7 @@ class wide_cfile_writer_traits {
 public:
     wide_cfile_writer_traits() = delete;
 
-    STRF_HD wide_cfile_writer_traits(FILE* file)
+    STRF_HD explicit wide_cfile_writer_traits(FILE* file)
         : file_(file)
     {
     }
@@ -222,7 +222,7 @@ public:
     using destination_type = strf::narrow_cfile_writer<CharT, strf::min_destination_buffer_size>;
     using finish_type = typename destination_type::result;
 
-    constexpr STRF_HD narrow_cfile_writer_creator(FILE* file) noexcept
+    constexpr STRF_HD explicit narrow_cfile_writer_creator(FILE* file) noexcept
         : file_(file)
     {}
 
@@ -243,7 +243,7 @@ public:
     using destination_type = strf::wide_cfile_writer;
     using finish_type = typename destination_type::result;
 
-    constexpr STRF_HD wide_cfile_writer_creator(FILE* file) noexcept
+    constexpr STRF_HD explicit wide_cfile_writer_creator(FILE* file) noexcept
         : file_(file)
     {}
 

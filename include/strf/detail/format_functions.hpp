@@ -19,6 +19,9 @@ enum class text_alignment {left, right, center};
 
 struct alignment_format
 {
+
+#if __cplusplus < 201402L
+
     constexpr STRF_HD alignment_format
         ( char32_t fill_ = U' '
         , strf::width_t width_ = 0
@@ -28,6 +31,8 @@ struct alignment_format
         , alignment(alignment_)
     {
     }
+
+#endif // __cplusplus < 201402L
 
     char32_t fill = U' ';
     strf::width_t width = 0;
@@ -256,7 +261,7 @@ class quantity_formatter_fn
 {
 public:
 
-    constexpr STRF_HD quantity_formatter_fn(std::size_t count) noexcept
+    constexpr STRF_HD explicit quantity_formatter_fn(std::size_t count) noexcept
         : count_(count)
     {
     }

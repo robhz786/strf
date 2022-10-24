@@ -15,7 +15,7 @@ namespace detail {
 template <std::size_t I, typename T>
 struct indexed_obj
 {
-    constexpr STRF_HD indexed_obj(const T& cp)
+    constexpr STRF_HD explicit indexed_obj(const T& cp)
         : obj(cp)
     {
     }
@@ -91,7 +91,7 @@ template <std::size_t I, typename Printer>
 struct indexed_printer
 {
     template <typename Arg>
-    STRF_HD indexed_printer(const Arg& arg)
+    STRF_HD explicit indexed_printer(const Arg& arg)
         : printer(arg)
     {
     }

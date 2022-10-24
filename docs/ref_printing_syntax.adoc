@@ -197,8 +197,8 @@ class printing_syntax
 public:
     // constructors
     constexpr printing_syntax();
-    constexpr printing_syntax(const DestCreator& dest_creator);
-    constexpr printing_syntax(DestCreator&& dest_creator);
+    constexpr explicit printing_syntax(const DestCreator& dest_creator);
+    constexpr explicit printing_syntax(DestCreator&& dest_creator);
 
     template <typename\... U>
     constexpr printing_syntax

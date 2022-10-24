@@ -292,14 +292,14 @@ STRF_HD void tr_do_preprinting
 
         auto ch = *it;
         if (ch == '}') {
-            if (pre.account_arg(arg_idx)) {
+            if (static_cast<bool>(pre.account_arg(arg_idx))) {
                 return;
             }
             ++arg_idx;
             ++it;
         } else if (CharT('0') <= ch && ch <= CharT('9')) {
             auto result = strf::detail::read_uint(it, end, pre.num_args());
-            if (pre.account_arg(result.value)) {
+            if (static_cast<bool>(pre.account_arg(result.value))) {
                 return;
             }
             it = strf::detail::str_find<CharT>(result.it, end - result.it, '}');
@@ -321,7 +321,7 @@ STRF_HD void tr_do_preprinting
             goto after_the_opening_brace;
         } else {
             if (ch != '-') {
-                if (pre.account_arg(arg_idx)) {
+                if (static_cast<bool>(pre.account_arg(arg_idx))) {
                     return;
                 }
                 ++arg_idx;

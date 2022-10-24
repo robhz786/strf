@@ -134,7 +134,7 @@ class char_printer: public strf::printer<CharT>
 {
 public:
     template <typename... T>
-    STRF_HD char_printer
+    STRF_HD explicit char_printer
         ( const strf::usual_printer_input<CharT, T...>& input )
         : ch_(static_cast<CharT>(input.arg))
     {
@@ -170,7 +170,7 @@ class fmt_char_printer: public strf::printer<CharT>
 {
 public:
     template <typename... T>
-    STRF_HD fmt_char_printer
+    STRF_HD explicit fmt_char_printer
         ( const usual_printer_input<CharT, T...>& input )
         : count_(input.arg.count())
         , afmt_(input.arg.get_alignment_format())
@@ -281,7 +281,7 @@ class conv_char32_printer: public strf::printer<DestCharT>
 {
 public:
     template <typename... T>
-    STRF_HD conv_char32_printer(strf::usual_printer_input<T...> input)
+    STRF_HD explicit conv_char32_printer(strf::usual_printer_input<T...> input)
         : ch_(input.arg)
     {
         auto encoding = strf::use_facet<charset_c<DestCharT>, char32_t>(input.facets);
@@ -318,7 +318,7 @@ class fmt_conv_char32_printer: public strf::printer<DestCharT>
 public:
 
     template <typename... T>
-    STRF_HD fmt_conv_char32_printer(strf::usual_printer_input<T...> input)
+    STRF_HD explicit fmt_conv_char32_printer(strf::usual_printer_input<T...> input)
         : count_(input.arg.count())
         , ch_(input.arg.value())
     {

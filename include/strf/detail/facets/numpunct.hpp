@@ -89,7 +89,7 @@ private:
 
     friend class strf::digits_grouping;
 
-    constexpr STRF_HD digits_grouping_iterator(underlying_int_t_ grps) noexcept
+    constexpr STRF_HD explicit digits_grouping_iterator(underlying_int_t_ grps) noexcept
         : grps_(grps)
     {
     }

@@ -250,7 +250,7 @@ public:
     using value_type = strf::detail::iterator_value_type<It>;
 
     template <typename... T>
-    STRF_HD range_printer
+    STRF_HD explicit range_printer
         ( const strf::usual_printer_input<T...>& input )
         : fp_(input.facets)
         , begin_(input.arg.begin)
@@ -311,7 +311,7 @@ public:
     using value_type = strf::detail::iterator_value_type<It>;
 
     template <typename... T>
-    STRF_HD separated_range_printer
+    STRF_HD explicit separated_range_printer
         ( const strf::usual_printer_input<T...>& input )
         : fp_(input.facets)
         , begin_(input.arg.begin)
@@ -423,7 +423,7 @@ class fmt_range_printer: public strf::printer<CharT>
 public:
 
     template <typename... T>
-    STRF_HD fmt_range_printer
+    STRF_HD explicit fmt_range_printer
         ( const strf::usual_printer_input<T...>& input )
         : fp_(input.facets)
         , fmt_(input.arg)
@@ -504,7 +504,7 @@ class fmt_separated_range_printer: public strf::printer<CharT>
 public:
 
     template <typename... T>
-    STRF_HD fmt_separated_range_printer
+    STRF_HD explicit fmt_separated_range_printer
         ( const strf::usual_printer_input<T...>& input )
         : fp_(input.facets)
         , fmt_(input.arg)
@@ -613,7 +613,7 @@ public:
     using value_type = strf::detail::iterator_value_type<It>;
 
     template <typename... T>
-    STRF_HD transformed_range_printer
+    STRF_HD explicit transformed_range_printer
         ( const strf::usual_printer_input<T...>& input )
         : fp_(input.facets)
         , begin_(input.arg.begin)
@@ -680,7 +680,7 @@ public:
     using value_type = strf::detail::iterator_value_type<It>;
 
     template <typename... T>
-    STRF_HD sep_transformed_range_printer
+    STRF_HD explicit sep_transformed_range_printer
         ( const strf::usual_printer_input<T...>& input )
         : fp_(input.facets)
         , begin_(input.arg.begin)
