@@ -32,8 +32,6 @@ public:
     reservation_tester& operator=(const reservation_tester&) = delete;
     reservation_tester& operator=(reservation_tester&&) = delete;
 
-    ~reservation_tester() override = default;
-
     void STRF_HD recycle() override
     {
         this->set_buffer_ptr(buff_);

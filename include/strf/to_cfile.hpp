@@ -170,8 +170,6 @@ public:
     narrow_cfile_writer(const narrow_cfile_writer&) = delete;
     narrow_cfile_writer(narrow_cfile_writer&&) = delete;
 
-    ~narrow_cfile_writer() = default;
-
     using result = typename impl_::result;
     using impl_::recycle;
     using impl_::finish;
@@ -199,8 +197,6 @@ public:
 
     wide_cfile_writer(const wide_cfile_writer&) = delete;
     wide_cfile_writer(wide_cfile_writer&&) = delete;
-
-    ~wide_cfile_writer() = default;
 
     using result = typename impl_::result;
     using impl_::recycle;

@@ -37,7 +37,7 @@ struct transcoding_error_notifier_c;
 
 class transcoding_error_notifier {
 public:
-    virtual STRF_HD ~transcoding_error_notifier() {}
+    virtual STRF_HD ~transcoding_error_notifier() STRF_DEFAULT_IMPL;
 
     virtual STRF_HD void invalid_sequence
         ( std::size_t code_unit_size

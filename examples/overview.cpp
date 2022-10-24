@@ -138,7 +138,7 @@ void overriding_sample()
     //[ facets_overriding
     auto punct_dec_1 = strf::numpunct<10>{1};
     auto punct_dec_2 = strf::numpunct<10>{2}.thousands_sep('.');
-    auto punct_dec_3 = strf::numpunct<10>{3}.thousands_sep('^');;
+    auto punct_dec_3 = strf::numpunct<10>{3}.thousands_sep('^');
 
     // Below, punct_dec_3 overrides punct_dec_2, but only for signed types.
     // punct_dec_2 overrides punct_dec_1 for all input types,

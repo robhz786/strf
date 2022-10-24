@@ -230,7 +230,7 @@ STRF_HD void general_tests
 
         {   // from wide string
             char result[0x101];
-            auto res = strf::to(result).with(charset) (strf::transcode(decoded_wstr));;
+            auto res = strf::to(result).with(charset) (strf::transcode(decoded_wstr));
             TEST_FALSE(res.truncated);
             TEST_EQ(res.ptr - result, 0x100);
 

@@ -299,10 +299,6 @@ public:
             < CharT, PrePrinting, FPack, FwdArgs... > (input)
     {
     }
-
-    virtual STRF_HD ~aligned_join_printer()
-    {
-    }
 };
 
 template<typename CharT, typename... Printers>
@@ -315,10 +311,6 @@ public:
         , PrePrinting& pre
         , const FPack& facets )
         : printers_{args, pre, facets}
-    {
-    }
-
-    STRF_HD ~join_printer_impl()
     {
     }
 
@@ -346,10 +338,6 @@ public:
         : strf::detail::join_printer_impl
             < CharT, strf::printer_type<CharT, PrePrinting, FPack, FwdArgs>... >
             ( input.arg.value().args, input.pre, input.facets )
-    {
-    }
-
-    virtual STRF_HD ~join_printer()
     {
     }
 };

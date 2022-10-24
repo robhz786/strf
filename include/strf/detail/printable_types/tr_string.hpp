@@ -21,7 +21,7 @@ namespace detail {
 
 struct destroyable_base
 {
-    STRF_HD virtual ~destroyable_base() {}
+    virtual STRF_HD ~destroyable_base() STRF_DEFAULT_IMPL;
 };
 
 template <typename CharT, typename IdxSeq, typename... Printers>
@@ -63,10 +63,6 @@ struct tr_printers_container<CharT, strf::detail::index_sequence<I...>, Printers
         , array_of_pointers{ & tuple.template get<I>()...}
     {
         array_of_pointers_ref = array_of_pointers;
-    }
-
-    STRF_HD ~tr_printers_container()
-    {
     }
 };
 

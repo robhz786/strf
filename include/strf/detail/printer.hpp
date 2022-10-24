@@ -16,11 +16,9 @@ class printer
 public:
     using char_type = CharT;
 
-    STRF_HD virtual ~printer()
-    {
-    }
+    virtual STRF_HD ~printer() STRF_DEFAULT_IMPL;
 
-    STRF_HD virtual void print_to(strf::destination<CharT>& dest) const = 0;
+    virtual STRF_HD void print_to(strf::destination<CharT>& dest) const = 0;
 };
 
 template <typename CharT>

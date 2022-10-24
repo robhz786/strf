@@ -198,7 +198,7 @@ void test_streambuf_writer()
     test_successfull_writing<char32_t>();
     test_successfull_writing<wchar_t>();
 
-    when_finish_is_not_called<char>();;
+    when_finish_is_not_called<char>();
     when_finish_is_not_called<char16_t>();
     when_finish_is_not_called<char32_t>();
     when_finish_is_not_called<wchar_t>();

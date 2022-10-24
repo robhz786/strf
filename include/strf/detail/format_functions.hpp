@@ -65,9 +65,7 @@ class alignment_formatter_fn<T, true>
 
 public:
 
-    constexpr STRF_HD alignment_formatter_fn() noexcept
-    {
-    }
+    constexpr alignment_formatter_fn() noexcept = default;
 
     constexpr STRF_HD explicit alignment_formatter_fn
         ( strf::alignment_format data) noexcept
@@ -148,9 +146,7 @@ class alignment_formatter_fn<T, false>
 
 public:
 
-    constexpr STRF_HD alignment_formatter_fn() noexcept
-    {
-    }
+    constexpr alignment_formatter_fn() noexcept = default;
 
     template <typename U>
     constexpr STRF_HD explicit alignment_formatter_fn(const alignment_formatter_fn<U, false>&) noexcept
@@ -266,9 +262,7 @@ public:
     {
     }
 
-    constexpr STRF_HD quantity_formatter_fn() noexcept
-    {
-    }
+    constexpr quantity_formatter_fn() noexcept = default;
 
     template <typename U>
     constexpr STRF_HD explicit quantity_formatter_fn(const quantity_formatter_fn<U>& u) noexcept

@@ -1977,10 +1977,6 @@ public:
         }
     }
 
-    STRF_HD ~int_printer_static_base_and_punct()
-    {
-    }
-
     STRF_HD void print_to(strf::destination<CharT>& dest) const override;
 
 private:
@@ -2158,10 +2154,6 @@ public:
             }
             pre.add_size(data_.sepcount * data_.sepsize);
         }
-    }
-
-    STRF_HD ~int_printer_static_base_and_punct()
-    {
     }
 
     STRF_HD void print_to( strf::destination<CharT>& dest ) const override;

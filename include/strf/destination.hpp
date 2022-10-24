@@ -58,7 +58,7 @@ public:
     output_buffer& operator=(const output_buffer&) = delete;
     output_buffer& operator=(output_buffer&&) = delete;
 
-    virtual STRF_HD ~output_buffer() { };
+    virtual STRF_HD ~output_buffer() STRF_DEFAULT_IMPL;
 
     STRF_HD value_type* buffer_ptr() const noexcept
     {
@@ -516,10 +516,6 @@ public:
         : dest_t_{strf::garbage_buff<T>(), strf::garbage_buff_end<T>()}
     {
         this->set_good(false);
-    }
-
-    STRF_HD ~discarder()
-    {
     }
 
     STRF_HD void recycle() noexcept override

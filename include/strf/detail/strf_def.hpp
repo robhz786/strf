@@ -133,10 +133,12 @@
 #  define STRF_HOST    __host__
 #  define STRF_DEVICE  __device__
 #  define STRF_HD      __host__ __device__
+#  define STRF_DEFAULT_IMPL {}
 #else // __CUDACC__
 #  define STRF_HD
 #  define STRF_HOST
 #  define STRF_DEVICE
+#  define STRF_DEFAULT_IMPL = default
 #endif // __CUDACC__
 
 #ifdef __CUDA_ARCH__
@@ -282,33 +284,33 @@ template <typename... T> struct mp_type_list
 
 struct absolute_lowest_rank
 {
-    explicit constexpr STRF_HD absolute_lowest_rank() noexcept { };
+    explicit constexpr absolute_lowest_rank() noexcept = default;
 };
 
 template <std::size_t N>
 struct rank: rank<N - 1>
 {
     constexpr static std::size_t number = N;
-    explicit constexpr STRF_HD rank() noexcept { };
+    explicit constexpr rank() noexcept = default;
 };
 
 template <>
 struct rank<0>: absolute_lowest_rank
 {
     constexpr static std::size_t number = 0;
-    explicit constexpr STRF_HD rank() noexcept { }
+    explicit constexpr rank() noexcept = default;
 };
 
 template <typename ... >
 struct tag
 {
-    explicit constexpr STRF_HD tag() noexcept { }
+    explicit constexpr tag() noexcept = default;
 };
 
 template <typename T>
 struct tag<T>
 {
-    explicit constexpr STRF_HD tag() noexcept { }
+    explicit constexpr tag() noexcept = default;
     using type = T;
 };
 

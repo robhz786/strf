@@ -96,10 +96,6 @@ public:
         strf::detail::write(dest, printers_);
     }
 
-    STRF_HD virtual ~facets_pack_printer()
-    {
-    }
-
 private:
 
     strf::facets_pack<ParentFPack, ChildFPack> fp_;

@@ -111,9 +111,7 @@ class transcoding_formatter_fn
 
 public:
 
-    constexpr STRF_HD transcoding_formatter_fn() noexcept
-    {
-    }
+    constexpr transcoding_formatter_fn() noexcept = default;
 
     template <typename U>
     constexpr STRF_HD explicit transcoding_formatter_fn
@@ -231,9 +229,7 @@ template <typename T, typename CharT>
 class transcoding_formatter_transcode_fn
 {
 public:
-    constexpr STRF_HD transcoding_formatter_transcode_fn() noexcept
-    {
-    }
+    constexpr transcoding_formatter_transcode_fn() noexcept = default;
 
     template <typename U>
     constexpr STRF_HD explicit transcoding_formatter_transcode_fn
@@ -257,9 +253,7 @@ template <typename T, typename CharT>
 class transcoding_formatter_sani_fn
 {
 public:
-    constexpr STRF_HD transcoding_formatter_sani_fn() noexcept
-    {
-    }
+    constexpr transcoding_formatter_sani_fn() noexcept = default;
 
     template <typename U>
     constexpr STRF_HD explicit transcoding_formatter_sani_fn
@@ -431,9 +425,7 @@ class string_precision_formatter_fn<T, false>
 
 public:
 
-    constexpr STRF_HD string_precision_formatter_fn() noexcept
-    {
-    }
+    constexpr string_precision_formatter_fn() noexcept = default;
     template <typename U>
     constexpr STRF_HD explicit string_precision_formatter_fn
         ( strf::string_precision_formatter_fn<U, false> ) noexcept
@@ -811,8 +803,6 @@ public:
         precalc_size_(input.pre, dest_charset, fillcount);
     }
 
-    STRF_HD ~aligned_string_printer();
-
     STRF_HD void print_to(strf::destination<DestCharT>& dest) const override;
 
 private:
@@ -852,11 +842,6 @@ private:
     {
     }
 };
-
-template<typename SrcCharT, typename DestCharT>
-STRF_HD aligned_string_printer<SrcCharT, DestCharT>::~aligned_string_printer()
-{
-}
 
 template<typename SrcCharT, typename DestCharT>
 template <typename PrePrinting>
@@ -1011,8 +996,6 @@ public:
         init_( input.pre, src_charset
              , use_facet_<strf::charset_c<DestCharT>, SrcCharT>(input.facets));
     }
-
-    STRF_HD ~transcode_string_printer() { }
 
     STRF_HD void print_to(strf::destination<DestCharT>& dest) const override;
 

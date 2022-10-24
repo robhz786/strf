@@ -113,7 +113,7 @@ STRF_TEST_FUNC void utf8_to_utf32_invalid_sequences()
 
     // overlong sequence
     TEST(U" \uFFFD\uFFFD\uFFFD\uFFFD")  (strf::sani("\xF0\x8F\xBF\xBF" ) > 5);
-    TEST(U" \uFFFD\uFFFD\uFFFD\uFFFD_") (strf::sani("\xF0\x8F\xBF\xBF_" ) > 6);;
+    TEST(U" \uFFFD\uFFFD\uFFFD\uFFFD_") (strf::sani("\xF0\x8F\xBF\xBF_" ) > 6);
     TEST_INVALID_SEQS(" \xF0\x8F\xBF\xBF ", "\xF0", "\x8F", "\xBF", "\xBF");
 
     // overlong sequence with extra continuation bytes

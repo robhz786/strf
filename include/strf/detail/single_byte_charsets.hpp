@@ -2505,7 +2505,7 @@ public:
     static STRF_HD strf::dynamic_transcoder<char, CharT>
     find_transcoder_from(strf::tag<char>, strf::charset_id id) noexcept
     {
-        return find_transcoder_from_narrow<char>(id);;
+        return find_transcoder_from_narrow<char>(id);
     }
     static STRF_HD strf::dynamic_transcoder<CharT, char>
     find_transcoder_to(strf::tag<char>, strf::charset_id id) noexcept
