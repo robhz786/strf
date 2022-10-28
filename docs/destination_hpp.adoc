@@ -449,6 +449,11 @@ public:
     basic_cstr_destination(CharT (&dest)[N]) noexcept;
 
     basic_cstr_destination(const basic_cstr_destination&) = delete;
+    basic_cstr_destination(basic_cstr_destination&&) = delete;
+    basic_cstr_destination& operator=(const basic_cstr_destination&) = delete;
+    basic_cstr_destination& operator=(basic_cstr_destination&&) = delete;
+
+    basic_cstr_destination() override = default;
 
     void recycle() noexcept override;
 
@@ -542,10 +547,13 @@ public:
     array_destination(CharT (&dest)[N]) noexcept;
     array_destination(CharT{asterisk} dest, CharT{asterisk} dest_end) noexcept;
     array_destination(CharT{asterisk} dest, std::size_t dest_size) noexcept;
-    array_destination(const array_destination&) noexcept;
 
-    array_destination& operator=(const array_destination&) noexcept;
-    bool operator==(const array_destination&) noexcept;
+    array_destination(const array_destination&) = delete;
+    array_destination(array_destination&&) = delete;
+    array_destination& operator=(const array_destination&) = delete;
+    array_destination& operator=(array_destination&&) = delete;
+
+    ~array_destination() override = default;
 
     void recycle() noexcept override;
 

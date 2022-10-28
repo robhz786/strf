@@ -288,7 +288,12 @@ public:
     {
     }
 
-    basic_cstr_destination(const basic_cstr_destination& r) = delete;
+    basic_cstr_destination(const basic_cstr_destination&&) = delete;
+    basic_cstr_destination(basic_cstr_destination&&) = delete;
+    basic_cstr_destination& operator=(const basic_cstr_destination&) = delete;
+    basic_cstr_destination& operator=(basic_cstr_destination&&) = delete;
+
+    STRF_HD ~basic_cstr_destination() override STRF_DEFAULT_IMPL;
 
     STRF_HD void recycle() noexcept override
     {
@@ -422,30 +427,13 @@ public:
     {
     }
 
-    STRF_HD array_destination(const array_destination& r) noexcept
-        : dest_t_(r.buffer_ptr(), r.buffer_end())
-        , it_(r.it_)
-    {
-        this->set_good(r.good());
-    }
+    array_destination(const array_destination&&) = delete;
+    array_destination(array_destination&&) = delete;
+    array_destination& operator=(const array_destination&) = delete;
+    array_destination& operator=(array_destination&&) = delete;
 
-    STRF_HD array_destination& operator=(const array_destination& r) noexcept
-    {
-        this->set_good(r.good());
-        this->set_buffer_ptr(r.buffer_ptr());
-        this->set_buffer_end(r.buffer_end());
-        it_ = r.it_;
-        return *this;
-    }
-    STRF_HD bool operator==(const array_destination& r) const noexcept
-    {
-        if (this->good()) {
-            return ( r.good()
-                  && this->buffer_ptr() == r.buffer_ptr()
-                  && this->buffer_end() == r.buffer_end() );
-        }
-        return ! r.good() && it_ == r.it_;
-    }
+    STRF_HD ~array_destination() override STRF_DEFAULT_IMPL;
+
     STRF_HD void recycle() noexcept override
     {
         if (this->good()) {

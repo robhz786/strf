@@ -76,92 +76,92 @@ STRF_TEST_FUNC void char_range_basic_operations()
         TEST_TRUE(r.truncated);
         TEST_TRUE(r.ptr == buff + 3);
     }
-    {   // Copy constructor
-        strf::array_destination<CharT> sw1(buff);
-        strf::array_destination<CharT> sw2{sw1};
-        TEST_TRUE(sw1 == sw2);
-        TEST_TRUE(sw1.buffer_ptr() == sw2.buffer_ptr());
-        TEST_TRUE(sw1.buffer_end() == sw2.buffer_end());
-        TEST_EQ(sw1.good(), sw2.good());
-        auto r1 = sw1.finish();
-        auto r2 = sw2.finish();
-        TEST_TRUE(r1.ptr == r2.ptr);
-        TEST_EQ(r1.truncated, r2.truncated);
-    }
-    {   // Copy constructor
-        // copy "bad" object
+    // {   // Copy constructor
+    //     strf::array_destination<CharT> sw1(buff);
+    //     strf::array_destination<CharT> sw2{sw1};
+    //     TEST_TRUE(sw1 == sw2);
+    //     TEST_TRUE(sw1.buffer_ptr() == sw2.buffer_ptr());
+    //     TEST_TRUE(sw1.buffer_end() == sw2.buffer_end());
+    //     TEST_EQ(sw1.good(), sw2.good());
+    //     auto r1 = sw1.finish();
+    //     auto r2 = sw2.finish();
+    //     TEST_TRUE(r1.ptr == r2.ptr);
+    //     TEST_EQ(r1.truncated, r2.truncated);
+    // }
+    // {   // Copy constructor
+    //     // copy "bad" object
 
-        strf::array_destination<CharT> sw1(buff);
-        strf::put(sw1, static_cast<CharT>('a'));
-        strf::put(sw1, static_cast<CharT>('b'));
-        strf::put(sw1, static_cast<CharT>('c'));
+    //     strf::array_destination<CharT> sw1(buff);
+    //     strf::put(sw1, static_cast<CharT>('a'));
+    //     strf::put(sw1, static_cast<CharT>('b'));
+    //     strf::put(sw1, static_cast<CharT>('c'));
 
-        sw1.flush();
+    //     sw1.flush();
 
-        strf::array_destination<CharT> sw2{sw1};
-        TEST_TRUE(sw1 == sw2);
-        TEST_TRUE(sw1.buffer_ptr() == sw2.buffer_ptr());
-        TEST_TRUE(sw1.buffer_end() == sw2.buffer_end());
-        TEST_EQ(sw1.good(), sw2.good());
-        auto r1 = sw1.finish();
-        auto r2 = sw2.finish();
-        TEST_TRUE(r1.ptr == r2.ptr);
-        TEST_EQ(r1.truncated, r2.truncated);
-    }
-    {   // Copy assignment
+    //     strf::array_destination<CharT> sw2{sw1};
+    //     TEST_TRUE(sw1 == sw2);
+    //     TEST_TRUE(sw1.buffer_ptr() == sw2.buffer_ptr());
+    //     TEST_TRUE(sw1.buffer_end() == sw2.buffer_end());
+    //     TEST_EQ(sw1.good(), sw2.good());
+    //     auto r1 = sw1.finish();
+    //     auto r2 = sw2.finish();
+    //     TEST_TRUE(r1.ptr == r2.ptr);
+    //     TEST_EQ(r1.truncated, r2.truncated);
+    // }
+    // {   // Copy assignment
 
-        CharT buff2[10];
-        strf::array_destination<CharT> sw1(buff);
-        strf::array_destination<CharT> sw2(buff2);
+    //     CharT buff2[10];
+    //     strf::array_destination<CharT> sw1(buff);
+    //     strf::array_destination<CharT> sw2(buff2);
 
-        TEST_FALSE(sw1 == sw2);
+    //     TEST_FALSE(sw1 == sw2);
 
-        strf::put(sw1, static_cast<CharT>('a'));
-        strf::put(sw1, static_cast<CharT>('b'));
-        strf::put(sw1, static_cast<CharT>('c'));
+    //     strf::put(sw1, static_cast<CharT>('a'));
+    //     strf::put(sw1, static_cast<CharT>('b'));
+    //     strf::put(sw1, static_cast<CharT>('c'));
 
-        strf::put(sw2, static_cast<CharT>('a'));
-        strf::put(sw2, static_cast<CharT>('b'));
-        strf::put(sw2, static_cast<CharT>('c'));
+    //     strf::put(sw2, static_cast<CharT>('a'));
+    //     strf::put(sw2, static_cast<CharT>('b'));
+    //     strf::put(sw2, static_cast<CharT>('c'));
 
-        sw1 = sw2;
-        TEST_TRUE(sw1 == sw2);
-        TEST_TRUE(sw1.buffer_ptr() == sw2.buffer_ptr());
-        TEST_TRUE(sw1.buffer_end() == sw2.buffer_end());
-        TEST_EQ(sw1.good(), sw2.good());
-        auto r1 = sw1.finish();
-        auto r2 = sw2.finish();
-        TEST_TRUE(r1.ptr == r2.ptr);
-        TEST_EQ(r1.truncated, r2.truncated);
-    }
-    {   // Copy assignment
-        // copy a "bad" object
+    //     sw1 = sw2;
+    //     TEST_TRUE(sw1 == sw2);
+    //     TEST_TRUE(sw1.buffer_ptr() == sw2.buffer_ptr());
+    //     TEST_TRUE(sw1.buffer_end() == sw2.buffer_end());
+    //     TEST_EQ(sw1.good(), sw2.good());
+    //     auto r1 = sw1.finish();
+    //     auto r2 = sw2.finish();
+    //     TEST_TRUE(r1.ptr == r2.ptr);
+    //     TEST_EQ(r1.truncated, r2.truncated);
+    // }
+    // {   // Copy assignment
+    //     // copy a "bad" object
 
-        CharT buff2[10];
-        strf::array_destination<CharT> sw1(buff);
-        strf::array_destination<CharT> sw2(buff2);
+    //     CharT buff2[10];
+    //     strf::array_destination<CharT> sw1(buff);
+    //     strf::array_destination<CharT> sw2(buff2);
 
-        TEST_FALSE(sw1 == sw2);
+    //     TEST_FALSE(sw1 == sw2);
 
-        strf::put(sw1, static_cast<CharT>('a'));
-        strf::put(sw1, static_cast<CharT>('b'));
-        strf::put(sw1, static_cast<CharT>('c'));
+    //     strf::put(sw1, static_cast<CharT>('a'));
+    //     strf::put(sw1, static_cast<CharT>('b'));
+    //     strf::put(sw1, static_cast<CharT>('c'));
 
-        strf::put(sw2, static_cast<CharT>('a'));
-        strf::put(sw2, static_cast<CharT>('b'));
-        strf::put(sw2, static_cast<CharT>('c'));
-        sw2.flush();
+    //     strf::put(sw2, static_cast<CharT>('a'));
+    //     strf::put(sw2, static_cast<CharT>('b'));
+    //     strf::put(sw2, static_cast<CharT>('c'));
+    //     sw2.flush();
 
-        sw1 = sw2;
-        TEST_TRUE(sw1 == sw2);
-        TEST_TRUE(sw1.buffer_ptr() == sw2.buffer_ptr());
-        TEST_TRUE(sw1.buffer_end() == sw2.buffer_end());
-        TEST_EQ(sw1.good(), sw2.good());
-        auto r1 = sw1.finish();
-        auto r2 = sw2.finish();
-        TEST_TRUE(r1.ptr == r2.ptr);
-        TEST_EQ(r1.truncated, r2.truncated);
-    }
+    //     sw1 = sw2;
+    //     TEST_TRUE(sw1 == sw2);
+    //     TEST_TRUE(sw1.buffer_ptr() == sw2.buffer_ptr());
+    //     TEST_TRUE(sw1.buffer_end() == sw2.buffer_end());
+    //     TEST_EQ(sw1.good(), sw2.good());
+    //     auto r1 = sw1.finish();
+    //     auto r2 = sw2.finish();
+    //     TEST_TRUE(r1.ptr == r2.ptr);
+    //     TEST_EQ(r1.truncated, r2.truncated);
+    // }
 }
 
 static STRF_TEST_FUNC void char_range_destination_too_small()
