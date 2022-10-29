@@ -288,7 +288,7 @@ public:
     {
     }
 
-    basic_cstr_destination(const basic_cstr_destination&&) = delete;
+    basic_cstr_destination(const basic_cstr_destination&) = delete;
     basic_cstr_destination(basic_cstr_destination&&) = delete;
     basic_cstr_destination& operator=(const basic_cstr_destination&) = delete;
     basic_cstr_destination& operator=(basic_cstr_destination&&) = delete;
@@ -427,7 +427,7 @@ public:
     {
     }
 
-    array_destination(const array_destination&&) = delete;
+    array_destination(const array_destination&) = delete;
     array_destination(array_destination&&) = delete;
     array_destination& operator=(const array_destination&) = delete;
     array_destination& operator=(array_destination&&) = delete;

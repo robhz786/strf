@@ -26,16 +26,19 @@ public:
         , str_(str)
     {
     }
-    basic_string_appender( string_type_& str
-                         , std::size_t size )
+    basic_string_appender( string_type_& str, std::size_t size )
         : strf::destination<CharT>(buf_, buf_size_)
         , str_(str)
     {
         str_.reserve(size);
     }
 
+    basic_string_appender() = delete;
+    ~basic_string_appender() = default;
     basic_string_appender(const basic_string_appender&) = delete;
     basic_string_appender(basic_string_appender&&) = delete;
+    basic_string_appender& operator=(const basic_string_appender&) = delete;
+    basic_string_appender& operator=(basic_string_appender&&) = delete;
 
     void recycle() override
     {
@@ -98,6 +101,8 @@ public:
 
     basic_string_maker(const basic_string_maker&) = delete;
     basic_string_maker(basic_string_maker&&) = delete;
+    basic_string_maker& operator=(const basic_string_maker&) = delete;
+    basic_string_maker& operator=(basic_string_maker&&) = delete;
 
     ~basic_string_maker()
     {
@@ -197,9 +202,12 @@ public:
         this->set_buffer_ptr(&*str_.begin());
         this->set_buffer_end(&*str_.begin() + (count ? count : 1));
     }
-
+    basic_sized_string_maker() = delete;
+    ~basic_sized_string_maker() = default;
     basic_sized_string_maker(const basic_sized_string_maker&) = delete;
     basic_sized_string_maker(basic_sized_string_maker&&) = delete;
+    basic_sized_string_maker& operator=(const basic_sized_string_maker&) = delete;
+    basic_sized_string_maker& operator=(basic_sized_string_maker&&) = delete;
 
     void recycle() override
     {

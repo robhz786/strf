@@ -430,6 +430,13 @@ public:
 
     constexpr preprinting() noexcept = default;
     constexpr explicit preprinting(<<width_t,width_t>> initial_width) noexcept;
+
+    preprinting(const preprinting&) = delete;
+    preprinting(preprinting&&) = delete;
+    preprinting& operator=(const preprinting&) = delete;
+    preprinting& operator=(preprinting&&) = delete;
+
+    ~preprinting() = default;
 };
 
 } // namespace strf
@@ -464,6 +471,11 @@ class size_accumulator
 public:
     explicit constexpr size_accumulator() noexcept;
     explicit constexpr size_accumulator(std::size_t initial_size) noexcept;
+
+    size_accumulator(const size_accumulator&) = delete;
+    size_accumulator(size_accumulator&&) = delete;
+    size_accumulator& operator=(const size_accumulator&) = delete;
+    size_accumulator& operator=(size_accumulator&&) = delete;
 
     constexpr void add_size(std::size_t) noexcept;
     constexpr std::size_t accumulated_size() const noexcept;
@@ -518,6 +530,11 @@ class width_decumulator
 {
 public:
     constexpr width_decumulator() noexcept;
+
+    width_decumulator(const width_decumulator&) = delete;
+    width_decumulator(width_decumulator&&) = delete;
+    width_decumulator& operator=(const width_decumulator&) = delete;
+    width_decumulator& operator=(width_decumulator&&) = delete;
 
     explicit constexpr width_decumulator(<<width_t,width_t>> initial_width) noexcept;
 

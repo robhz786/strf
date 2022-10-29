@@ -31,6 +31,8 @@ public:
 
     basic_streambuf_writer(const basic_streambuf_writer&) = delete;
     basic_streambuf_writer(basic_streambuf_writer&&) = delete;
+    basic_streambuf_writer& operator=(const basic_streambuf_writer&) = delete;
+    basic_streambuf_writer& operator=(basic_streambuf_writer&&) = delete;
 
     ~basic_streambuf_writer() {
         if (this->good()) {

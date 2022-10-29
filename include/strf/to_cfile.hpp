@@ -79,6 +79,10 @@ class cfile_writer_base
     static_assert(noexcept(std::declval<Traits>().write(nullptr, 0)), "");
 
 public:
+    cfile_writer_base(const cfile_writer_base&) = delete;
+    cfile_writer_base(cfile_writer_base&&) = delete;
+    cfile_writer_base& operator=(const cfile_writer_base&) = delete;
+    cfile_writer_base& operator=(cfile_writer_base&&) = delete;
 
     template <typename... TraitsInitArgs>
     STRF_HD cfile_writer_base
@@ -165,10 +169,13 @@ public:
         STRF_ASSERT(file != nullptr);
     }
 
-    STRF_HD narrow_cfile_writer() = delete;
+    narrow_cfile_writer() = delete;
+    ~narrow_cfile_writer() = default;
 
     narrow_cfile_writer(const narrow_cfile_writer&) = delete;
     narrow_cfile_writer(narrow_cfile_writer&&) = delete;
+    narrow_cfile_writer& operator=(const narrow_cfile_writer&) = delete;
+    narrow_cfile_writer& operator=(narrow_cfile_writer&&) = delete;
 
     using result = typename impl_::result;
     using impl_::recycle;
@@ -193,10 +200,13 @@ public:
         STRF_ASSERT(file != nullptr);
     }
 
-    STRF_HD wide_cfile_writer() = delete;
+    wide_cfile_writer() = delete;
+    ~wide_cfile_writer() = default;
 
     wide_cfile_writer(const wide_cfile_writer&) = delete;
     wide_cfile_writer(wide_cfile_writer&&) = delete;
+    wide_cfile_writer& operator=(const wide_cfile_writer&) = delete;
+    wide_cfile_writer& operator=(wide_cfile_writer&&) = delete;
 
     using result = typename impl_::result;
     using impl_::recycle;

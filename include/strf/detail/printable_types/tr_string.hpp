@@ -22,6 +22,12 @@ namespace detail {
 struct destroyable_base
 {
     virtual STRF_HD ~destroyable_base() STRF_DEFAULT_IMPL;
+
+    destroyable_base() = default;
+    destroyable_base(const destroyable_base&) = default;
+    destroyable_base(destroyable_base&&) = default;
+    destroyable_base& operator=(const destroyable_base&) = default;
+    destroyable_base& operator=(destroyable_base&&) = default;
 };
 
 template <typename CharT, typename IdxSeq, typename... Printers>
@@ -56,7 +62,7 @@ struct tr_printers_container<CharT, strf::detail::index_sequence<I...>, Printers
     template < typename... Args, typename... FPElems >
     STRF_HD tr_printers_container
         ( const strf::detail::simple_tuple<Args...>& args
-        , strf::no_preprinting pp
+        , strf::no_preprinting& pp
         , const strf::facets_pack<FPElems...>& fp
         , const strf::printer<CharT>**& array_of_pointers_ref )
         : tuple{args, pp, fp}
@@ -115,9 +121,17 @@ class printers_array_deferred_init_impl
 
 public:
 
-    constexpr printers_array_deferred_init_impl() = default;
-    constexpr printers_array_deferred_init_impl
-        (const printers_array_deferred_init_impl&) = delete;
+    printers_array_deferred_init_impl() = default;
+    ~printers_array_deferred_init_impl() = default;
+
+    printers_array_deferred_init_impl(const printers_array_deferred_init_impl&) = delete;
+    printers_array_deferred_init_impl(printers_array_deferred_init_impl&&) = delete;
+
+    printers_array_deferred_init_impl&
+    operator=(const printers_array_deferred_init_impl&) = delete;
+
+    printers_array_deferred_init_impl&
+    operator=(printers_array_deferred_init_impl&&) = delete;
 
     template < typename... Args
              , typename... FPElems
@@ -529,6 +543,11 @@ public:
             ( tr_string_.begin(), tr_string_.end(), printers_
             , num_printers_, dest, charset_, err_handler_ );
     }
+
+    tr_printer(const tr_printer&) = delete;
+    tr_printer(tr_printer&&) = delete;
+    tr_printer& operator=(const tr_printer&) = delete;
+    tr_printer& operator=(tr_printer&&) = delete;
 
     STRF_HD ~tr_printer()
     {

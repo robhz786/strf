@@ -2220,7 +2220,6 @@ template <typename CharT>
 class int_printer_full_dynamic
 {
 public:
-
     template <typename... T>
     STRF_HD explicit int_printer_full_dynamic
         ( const strf::usual_printer_input<T...>& i )
@@ -2284,6 +2283,11 @@ public:
             }
         }
     }
+
+    int_printer_full_dynamic(const int_printer_full_dynamic&) = delete;
+    int_printer_full_dynamic(int_printer_full_dynamic&&) = delete;
+    int_printer_full_dynamic& operator=(const int_printer_full_dynamic&) = delete;
+    int_printer_full_dynamic& operator=(int_printer_full_dynamic&&) = delete;
 
     STRF_HD ~int_printer_full_dynamic()
     {

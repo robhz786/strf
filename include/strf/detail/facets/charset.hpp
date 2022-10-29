@@ -39,6 +39,12 @@ class transcoding_error_notifier {
 public:
     virtual STRF_HD ~transcoding_error_notifier() STRF_DEFAULT_IMPL;
 
+    transcoding_error_notifier() = default;
+    transcoding_error_notifier(const transcoding_error_notifier&) = default;
+    transcoding_error_notifier(transcoding_error_notifier&&) = default;
+    transcoding_error_notifier& operator=(const transcoding_error_notifier&) = default;
+    transcoding_error_notifier& operator=(transcoding_error_notifier&&) = default;
+
     virtual STRF_HD void invalid_sequence
         ( std::size_t code_unit_size
         , const char* charset_name

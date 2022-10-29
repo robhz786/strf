@@ -16,6 +16,12 @@ class printer
 public:
     using char_type = CharT;
 
+    printer() = default;
+    printer(const printer&) = default;
+    printer(printer&&) = default;
+    printer& operator=(const printer&) = default;
+    printer& operator=(printer&&) = default;
+
     virtual STRF_HD ~printer() STRF_DEFAULT_IMPL;
 
     virtual STRF_HD void print_to(strf::destination<CharT>& dest) const = 0;

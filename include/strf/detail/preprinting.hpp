@@ -18,13 +18,17 @@ template <>
 class width_decumulator<true>
 {
 public:
-    constexpr width_decumulator() = default;
+    width_decumulator() = default;
+    ~width_decumulator() = default;
 
     explicit constexpr STRF_HD width_decumulator(strf::width_t initial_width) noexcept
         : width_(initial_width)
     {}
 
-    STRF_HD width_decumulator(const width_decumulator&) = delete;
+    width_decumulator(const width_decumulator&) = delete;
+    width_decumulator(width_decumulator&&) = delete;
+    width_decumulator& operator=(const width_decumulator&) = delete;
+    width_decumulator& operator=(width_decumulator&&) = delete;
 
     STRF_CONSTEXPR_IN_CXX14 STRF_HD void subtract_width(strf::width_t w) noexcept
     {
@@ -117,7 +121,11 @@ public:
     {
     }
 
-    STRF_HD size_accumulator(const size_accumulator&) = delete;
+    ~size_accumulator() = default;
+    size_accumulator(const size_accumulator&) = delete;
+    size_accumulator(size_accumulator&&) = delete;
+    size_accumulator& operator=(const size_accumulator&) = delete;
+    size_accumulator& operator=(size_accumulator&&) = delete;
 
     STRF_CONSTEXPR_IN_CXX14 STRF_HD void add_size(std::size_t s) noexcept
     {
@@ -184,6 +192,13 @@ public:
     }
 
     constexpr preprinting() noexcept = default;
+
+    preprinting(const preprinting&) = delete;
+    preprinting(preprinting&&) = delete;
+    preprinting& operator=(const preprinting&) = delete;
+    preprinting& operator=(preprinting&&) = delete;
+
+    ~preprinting() = default;
 };
 
 

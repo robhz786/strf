@@ -31,6 +31,7 @@ public:
     reservation_tester(reservation_tester&&) = delete;
     reservation_tester& operator=(const reservation_tester&) = delete;
     reservation_tester& operator=(reservation_tester&&) = delete;
+    ~reservation_tester() = default;
 
     void STRF_HD recycle() override
     {

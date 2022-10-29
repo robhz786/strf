@@ -1341,6 +1341,11 @@ public:
         }
     }
 
+    transcode_string_printer_variant(const transcode_string_printer_variant &) = delete;
+    transcode_string_printer_variant(transcode_string_printer_variant&&) = delete;
+    transcode_string_printer_variant& operator=(const transcode_string_printer_variant&) = delete;
+    transcode_string_printer_variant& operator=(transcode_string_printer_variant&&) = delete;
+
     STRF_HD ~transcode_string_printer_variant()
     {
         const auto& p = static_cast<const strf::printer<DestCharT>&>(*this) ;
@@ -1396,6 +1401,15 @@ public:
                 strf::detail::aligned_transcode_string_printer<SrcCharT, DestCharT>(input);
         }
     }
+
+    aligned_transcode_string_printer_variant(const aligned_transcode_string_printer_variant&) = delete;
+    aligned_transcode_string_printer_variant(aligned_transcode_string_printer_variant&&) = delete;
+
+    aligned_transcode_string_printer_variant&
+    operator=(const aligned_transcode_string_printer_variant&) = delete;
+
+    aligned_transcode_string_printer_variant&
+    operator=(aligned_transcode_string_printer_variant&&) = delete;
 
     STRF_HD ~aligned_transcode_string_printer_variant()
     {

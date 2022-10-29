@@ -25,7 +25,7 @@ template < typename CharT
          , typename Arg
          , typename... Args >
 STRF_HD STRF_CONSTEXPR_IN_CXX14 void precalculate
-    ( strf::preprinting<strf::precalc_size::no, strf::precalc_width::no>
+    ( strf::preprinting<strf::precalc_size::no, strf::precalc_width::no>&
     , const strf::facets_pack<FPE...>&
     , const Arg&
     , const Args&... ) noexcept
