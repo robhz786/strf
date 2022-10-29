@@ -47,6 +47,7 @@ strf::numpunct<10> make_numpunct
 
 namespace detail {
 
+// NOLINTNEXTLINE(misc-definitions-in-headers)
 STRF_FUNC_IMPL strf::digits_grouping parse_win_grouping(const wchar_t* str)
 {
     if (str[0] == L'\0') {
@@ -81,6 +82,7 @@ STRF_FUNC_IMPL strf::digits_grouping parse_win_grouping(const wchar_t* str)
     }
 }
 
+// NOLINTNEXTLINE(misc-definitions-in-headers)
 STRF_FUNC_IMPL char32_t decode_first_char_from_utf16(const wchar_t* src)
 {
     char32_t ch0 = src[0];
@@ -100,6 +102,7 @@ STRF_FUNC_IMPL char32_t decode_first_char_from_utf16(const wchar_t* src)
 
 #if ! defined (_WIN32)
 
+// NOLINTNEXTLINE(misc-definitions-in-headers)
 STRF_FUNC_IMPL char32_t decode_first_char(strf::transcode_f<char, char32_t>& decode, const char* str)
 {
     char32_t buff32[2] = { 0xFFFD, 0 };
@@ -108,6 +111,7 @@ STRF_FUNC_IMPL char32_t decode_first_char(strf::transcode_f<char, char32_t>& dec
     return buff32[0];
 }
 
+// NOLINTNEXTLINE(misc-definitions-in-headers)
 STRF_FUNC_IMPL strf::transcode_f<char, char32_t> get_decoder(const char* charset_name)
 {
     if (0 == strcmp(charset_name, "UTF-8")) {
@@ -129,6 +133,7 @@ STRF_FUNC_IMPL strf::transcode_f<char, char32_t> get_decoder(const char* charset
     return nullptr;
 }
 
+// NOLINTNEXTLINE(misc-definitions-in-headers)
 STRF_FUNC_IMPL strf::numpunct<10> make_numpunct
     ( const char* encoding_name
     , const char* decimal_point_str
@@ -180,6 +185,7 @@ STRF_FUNC_IMPL strf::numpunct<10> make_numpunct
 
 } // namespace detail
 
+// NOLINTNEXTLINE(misc-definitions-in-headers)
 STRF_FUNC_IMPL strf::numpunct<10> locale_numpunct() noexcept
 {
 #if defined(_WIN32)

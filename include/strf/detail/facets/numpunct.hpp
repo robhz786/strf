@@ -400,6 +400,7 @@ private:
 
 #if ! defined(STRF_OMIT_IMPL)
 
+// NOLINTNEXTLINE(misc-definitions-in-headers)
 STRF_FUNC_IMPL STRF_HD digits_grouping::digits_grouping(const char* str) noexcept
 {
     strf::digits_grouping_creator creator;

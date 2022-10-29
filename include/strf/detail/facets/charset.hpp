@@ -985,6 +985,7 @@ private:
 
 #if ! defined(STRF_OMIT_IMPL)
 
+// NOLINTNEXTLINE(misc-definitions-in-headers)
 STRF_FUNC_IMPL STRF_HD void buffered_size_calculator::recycle()
 {
     auto *p = this->buffer_ptr();

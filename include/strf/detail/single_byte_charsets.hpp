@@ -203,6 +203,7 @@ private:
 
 #if ! defined(STRF_OMIT_IMPL)
 
+// NOLINTNEXTLINE(misc-definitions-in-headers)
 STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_2::encode_ext(char32_t ch)
 {
     static const ch32_to_char char_map[] =
@@ -296,6 +297,7 @@ private:
 
 #if ! defined(STRF_OMIT_IMPL)
 
+// NOLINTNEXTLINE(misc-definitions-in-headers)
 STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_3::encode_ext(char32_t ch)
 {
     static const ch32_to_char char_map[] =
@@ -380,6 +382,7 @@ private:
 
 #if ! defined(STRF_OMIT_IMPL)
 
+// NOLINTNEXTLINE(misc-definitions-in-headers)
 STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_4::encode_ext(char32_t ch)
 {
     static const ch32_to_char char_map[] =
@@ -465,6 +468,7 @@ private:
 
 #if ! defined(STRF_OMIT_IMPL)
 
+// NOLINTNEXTLINE(misc-definitions-in-headers)
 STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_5::encode_ext(char32_t ch)
 {
     static const ch32_to_char char_map[] =
@@ -552,6 +556,7 @@ private:
 
 #if ! defined(STRF_OMIT_IMPL)
 
+// NOLINTNEXTLINE(misc-definitions-in-headers)
 STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_6::encode_ext(char32_t ch)
 {
     static const ch32_to_char char_map[] =
@@ -626,6 +631,7 @@ private:
 
 #if ! defined(STRF_OMIT_IMPL)
 
+// NOLINTNEXTLINE(misc-definitions-in-headers)
 STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_7::encode_ext(char32_t ch)
 {
     static const ch32_to_char char_map[] =
@@ -712,6 +718,7 @@ private:
 
 #if ! defined(STRF_OMIT_IMPL)
 
+// NOLINTNEXTLINE(misc-definitions-in-headers)
 STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_8::encode_ext(char32_t ch)
 {
     static const ch32_to_char char_map[] =
@@ -841,6 +848,7 @@ private:
 
 #if ! defined(STRF_OMIT_IMPL)
 
+// NOLINTNEXTLINE(misc-definitions-in-headers)
 STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_10::encode_ext(char32_t ch)
 {
     static const ch32_to_char char_map[] =
@@ -926,6 +934,7 @@ private:
 
 #if ! defined(STRF_OMIT_IMPL)
 
+// NOLINTNEXTLINE(misc-definitions-in-headers)
 STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_11::encode_ext(char32_t ch)
 {
     static const ch32_to_char char_map[] =
@@ -1009,6 +1018,7 @@ private:
 
 #if ! defined(STRF_OMIT_IMPL)
 
+// NOLINTNEXTLINE(misc-definitions-in-headers)
 STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_13::encode_ext(char32_t ch)
 {
     static const ch32_to_char char_map[] =
@@ -1094,6 +1104,7 @@ private:
 
 #if ! defined(STRF_OMIT_IMPL)
 
+// NOLINTNEXTLINE(misc-definitions-in-headers)
 STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_14::encode_ext(char32_t ch)
 {
     static const ch32_to_char char_map[] =
@@ -1172,6 +1183,7 @@ private:
 
 #if ! defined(STRF_OMIT_IMPL)
 
+// NOLINTNEXTLINE(misc-definitions-in-headers)
 STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_15::encode_ext(char32_t ch)
 {
     switch(ch) {
@@ -1248,6 +1260,7 @@ private:
 
 #if ! defined(STRF_OMIT_IMPL)
 
+// NOLINTNEXTLINE(misc-definitions-in-headers)
 STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_16::encode_ext(char32_t ch)
 {
     static const ch32_to_char char_map[] =
@@ -1335,6 +1348,7 @@ private:
 
 #if ! defined(STRF_OMIT_IMPL)
 
+// NOLINTNEXTLINE(misc-definitions-in-headers)
 STRF_FUNC_IMPL STRF_HD unsigned impl_windows_1250::encode_ext(char32_t ch)
 {
     static const ch32_to_char char_map[] =
@@ -1434,6 +1448,7 @@ private:
 
 #if ! defined(STRF_OMIT_IMPL)
 
+// NOLINTNEXTLINE(misc-definitions-in-headers)
 STRF_FUNC_IMPL STRF_HD unsigned impl_windows_1251::encode_ext(char32_t ch)
 {
     static const ch32_to_char char_map[] =
@@ -1522,6 +1537,7 @@ private:
 
 #if ! defined(STRF_OMIT_IMPL)
 
+// NOLINTNEXTLINE(misc-definitions-in-headers)
 STRF_FUNC_IMPL STRF_HD unsigned impl_windows_1252::encode_ext(char32_t ch)
 {
     switch(ch) {
@@ -1618,6 +1634,7 @@ private:
 
 #if ! defined(STRF_OMIT_IMPL)
 
+// NOLINTNEXTLINE(misc-definitions-in-headers)
 STRF_FUNC_IMPL STRF_HD unsigned impl_windows_1253::encode_ext(char32_t ch)
 {
     static const ch32_to_char char_map[] =
@@ -1713,6 +1730,7 @@ private:
 
 #if ! defined(STRF_OMIT_IMPL)
 
+// NOLINTNEXTLINE(misc-definitions-in-headers)
 STRF_FUNC_IMPL STRF_HD unsigned impl_windows_1254::encode_ext(char32_t ch)
 {
     switch(ch) {
@@ -1818,6 +1836,7 @@ private:
 
 #if ! defined(STRF_OMIT_IMPL)
 
+// NOLINTNEXTLINE(misc-definitions-in-headers)
 STRF_FUNC_IMPL STRF_HD unsigned impl_windows_1255::encode_ext(char32_t ch)
 {
     static const ch32_to_char char_map[] =
@@ -1914,6 +1933,7 @@ private:
 
 #if ! defined(STRF_OMIT_IMPL)
 
+// NOLINTNEXTLINE(misc-definitions-in-headers)
 STRF_FUNC_IMPL STRF_HD unsigned impl_windows_1256::encode_ext(char32_t ch)
 {
     static const ch32_to_char char_map[] =
@@ -2013,6 +2033,7 @@ private:
 
 #if ! defined(STRF_OMIT_IMPL)
 
+// NOLINTNEXTLINE(misc-definitions-in-headers)
 STRF_FUNC_IMPL STRF_HD unsigned impl_windows_1257::encode_ext(char32_t ch)
 {
     static const ch32_to_char char_map[] =
@@ -2111,6 +2132,7 @@ private:
 
 #if ! defined(STRF_OMIT_IMPL)
 
+// NOLINTNEXTLINE(misc-definitions-in-headers)
 STRF_FUNC_IMPL STRF_HD unsigned impl_windows_1258::encode_ext(char32_t ch)
 {
     static const ch32_to_char char_map[] =

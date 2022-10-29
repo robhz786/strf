@@ -294,6 +294,7 @@ struct std_width_calc_func_return {
 
 #if ! defined(STRF_OMIT_IMPL)
 
+// NOLINTNEXTLINE(misc-definitions-in-headers,google-readability-function-size,hicpp-function-size)
 STRF_FUNC_IMPL STRF_HD std_width_calc_func_return std_width_calc_func
     ( const char32_t* str
     , const char32_t* end

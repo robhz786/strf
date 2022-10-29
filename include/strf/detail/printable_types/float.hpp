@@ -35,6 +35,7 @@ struct double_dec
 
 #if ! defined(STRF_OMIT_IMPL)
 
+// NOLINTNEXTLINE(misc-definitions-in-headers)
 STRF_FUNC_IMPL STRF_HD detail::double_dec decode(float f)
 {
     constexpr int e_size = 8;
@@ -60,6 +61,7 @@ STRF_FUNC_IMPL STRF_HD detail::double_dec decode(float f)
     return {fdec.significand, fdec.exponent, sign, false, false};
 }
 
+// NOLINTNEXTLINE(misc-definitions-in-headers)
 STRF_FUNC_IMPL STRF_HD detail::double_dec decode(double d)
 {
     constexpr int e_size = 11; // bits in exponent
@@ -2137,7 +2139,7 @@ inline STRF_HD strf::detail::float_init_result init_double_data_without_precisio
 }
 
 
-
+// NOLINTNEXTLINE(misc-definitions-in-headers)
 STRF_FUNC_IMPL STRF_HD strf::detail::float_init_result init_float_printer_data
     ( strf::detail::double_printer_data& data
     , double d
@@ -2219,6 +2221,7 @@ STRF_FUNC_IMPL STRF_HD strf::detail::float_init_result init_float_printer_data
     }
 }
 
+// NOLINTNEXTLINE(misc-definitions-in-headers)
 STRF_FUNC_IMPL STRF_HD strf::detail::float_init_result init_float_printer_data
     ( strf::detail::double_printer_data& data
     , float f
