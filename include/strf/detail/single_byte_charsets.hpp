@@ -56,14 +56,14 @@
                                                                               \
     template <typename SrcCharT, typename DestCharT>                          \
     class static_transcoder                                                   \
-        < SrcCharT, DestCharT, strf::csid_utf32, strf::csid_ ## CHARSET >       \
+        < SrcCharT, DestCharT, strf::csid_utf32, strf::csid_ ## CHARSET >     \
         : public strf::detail::utf32_to_single_byte_charset                   \
             < SrcCharT, DestCharT, strf::detail::impl_ ## CHARSET >           \
     {};                                                                       \
                                                                               \
     template <typename SrcCharT, typename DestCharT>                          \
     class static_transcoder                                                   \
-        < SrcCharT, DestCharT, strf::csid_ ## CHARSET, strf::csid_utf32 >       \
+        < SrcCharT, DestCharT, strf::csid_ ## CHARSET, strf::csid_utf32 >     \
         : public strf::detail::single_byte_charset_to_utf32                   \
             < SrcCharT, DestCharT, strf::detail::impl_ ## CHARSET >           \
     {};                                                                       \
@@ -77,7 +77,7 @@
 
 #define STRF_DEF_SINGLE_BYTE_CHARSET(CHARSET)    \
     STRF_DEF_SINGLE_BYTE_CHARSET_(CHARSET)       \
-    template <typename CharT> STRF_DEVICE CHARSET ## _t<CharT> CHARSET = {};
+    template <typename CharT> STRF_DEVICE constexpr CHARSET ## _t<CharT> CHARSET = {};
 
 #else
 

@@ -1,5 +1,13 @@
 Checks: '*,
+        -google-build-using-namespace,
+        -google-readability-casting,
+        -google-readability-braces-around-statements,
+        -google-explicit-constructor,
+        -google-readability-todo
+        -hicpp-multiway-paths-covered,
+        -hicpp-braces-around-statements,
         -hicpp-explicit-conversions,
+        -hicpp-vararg,
         -modernize-*,
         -readability-*,
         -darwin-*,
@@ -13,20 +21,27 @@ Checks: '*,
         -altera-unroll-loops,
         -altera-struct-pack-align,
         -altera-id-dependent-backward-branch,
+        -hicpp-signed-bitwise,
         -hicpp-avoid-c-arrays,
         -hicpp-no-array-decay,
+        -cppcoreguidelines-pro-type-vararg,
         -cppcoreguidelines-avoid-c-arrays,
         -cppcoreguidelines-avoid-magic-numbers,
         -cppcoreguidelines-pro-bounds-pointer-arithmetic,
         -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
+        -misc-definitions-in-headers,
         -misc-non-private-member-variables-in-classes,
+        -misc-redundant-expression
         -google-build-using-namespace,
         -llvm-include-order,
         -hicpp-named-parameter,
         -cppcoreguidelines-avoid-goto,
         -hicpp-avoid-goto,
-        
+        -cert-dcl50-cpp,
         -bugprone-exception-escape,
         -cppcoreguidelines-macro-usage,
         -cppcoreguidelines-owning-memory,
         -cppcoreguidelines-pro-bounds-constant-array-index'
+
+
+# misc-definitions-in-headers is causing warning for constexpr variable templates
