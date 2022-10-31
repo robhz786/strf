@@ -730,7 +730,7 @@ constexpr strf::detail_format_functions::sani_fn        sani {};
 
 #endif // defined (STRF_NO_GLOBAL_CONSTEXPR_VARIABLE)
 
-} // inline namespace format_functions
+}  // namespace format_functions
 
 
 namespace detail {

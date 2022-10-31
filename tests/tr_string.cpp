@@ -32,7 +32,7 @@ private:
     strf::destination<char>& log_;
 };
 
-} // unnamed nameapce
+}  // unnamed namespace
 
 STRF_TEST_FUNC void test_tr_string()
 {

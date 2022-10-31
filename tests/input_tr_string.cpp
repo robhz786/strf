@@ -432,7 +432,7 @@ STRF_TEST_FUNC void test_full_precalculation() // size and width
     TEST_FULL_PRECALC(3, 10, 7, "...{- a comment here"     , 123);
 }
 
-} // unammed namespace
+}  // unnamed namespace
 
 STRF_TEST_FUNC void test_input_tr_string()
 {

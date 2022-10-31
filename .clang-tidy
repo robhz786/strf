@@ -31,7 +31,7 @@ Checks: '*,
         -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
         -misc-definitions-in-headers,
         -misc-non-private-member-variables-in-classes,
-        -misc-redundant-expression
+        -misc-redundant-expression,
         -google-build-using-namespace,
         -llvm-include-order,
         -hicpp-named-parameter,

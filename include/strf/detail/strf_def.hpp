@@ -150,7 +150,8 @@ namespace strf { namespace detail {
 template <typename T>
 inline STRF_HD void pretend_to_use(const T& arg) noexcept { (void)arg; }
 
-}}
+} // namespace detail
+} // namespace strf
 
 #define STRF_MAYBE_UNUSED(X) strf::detail::pretend_to_use((X));
 

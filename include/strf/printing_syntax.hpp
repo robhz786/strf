@@ -823,7 +823,7 @@ private:
     CharT* dest_end_;
 };
 
-}
+}  // namespace detail
 
 #if defined(__cpp_char8_t)
 

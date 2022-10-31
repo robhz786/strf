@@ -65,7 +65,7 @@ namespace dragonbox {
 			static_assert(std::is_unsigned<T>::value, "");
 			return std::numeric_limits<T>::digits;
 		}
-	}
+	}  // namespace detail
 
 	// These classes expose encoding specs of IEEE-754-like floating-point formats.
 	// Currently available formats are IEEE754-binary32 & IEEE754-binary64.
@@ -453,7 +453,7 @@ namespace dragonbox {
 				return count;
 #endif
 			}
-		}
+		}  // namespace bits
 
 		////////////////////////////////////////////////////////////////////////////////////////
 		// Utilities for wide unsigned integer arithmetic.
@@ -614,7 +614,7 @@ namespace dragonbox {
 			STRF_HD inline std::uint64_t umul96_lower64(std::uint32_t x, std::uint64_t y) noexcept {
 				return x * y;
 			}
-		}
+		}  // namespace wuint
 
 		////////////////////////////////////////////////////////////////////////////////////////
 		// Some simple utilities for constexpr computation.
@@ -759,7 +759,7 @@ namespace dragonbox {
 					floor_log10_pow2_minus_log10_4_over_3_input_limit,
 					0, log10_4_over_3_fractional_digits>(e);
 			}
-		}
+		}  // namespace log
 
 		////////////////////////////////////////////////////////////////////////////////////////
 		// Utilities for fast divisibility tests.
@@ -945,8 +945,8 @@ namespace dragonbox {
 					max_pow2 + (log::floor_log2_pow10(N + max_pow5) - (N + max_pow5)) < 70) >;
 				return divide_by_pow10_<N>(c{}, n);
 			}
-		}
-	}
+		}  // namespace div
+	}  // namespace detail
 
 	////////////////////////////////////////////////////////////////////////////////////////
 	// Return types for the main interface function.
@@ -1803,7 +1803,7 @@ namespace dragonbox {
 		STRF_HD constexpr static int calculate_max_power_of_10() noexcept {
 			return do_calculate_max_power_of_10<UInt, kappa>(0, 1, max_possible_significand / 10);
 		}
-	}
+	}  // namespace detail
 
 
 	////////////////////////////////////////////////////////////////////////////////////////
@@ -1837,7 +1837,7 @@ namespace dragonbox {
 						r.is_negative = s.is_negative();
 					}
 				};
-			}
+			}  // namespace sign
 
 			// Trailing zero policies.
 			namespace trailing_zero {
@@ -1881,7 +1881,7 @@ namespace dragonbox {
 						r.may_have_trailing_zeros = false;
 					}
 				};
-			}
+			}  // namespace trailing_zero
 
 			// Decimal-to-binary rounding mode policies.
 			namespace decimal_to_binary_rounding {
@@ -1953,7 +1953,7 @@ namespace dragonbox {
 							return true;
 						}
 					};
-				}
+				}  // namespace interval_type
 
 				struct nearest_to_even : base {
 					using decimal_to_binary_rounding_policy = nearest_to_even;
@@ -2158,7 +2158,7 @@ namespace dragonbox {
 						// 	return f();
 						// }
 					};
-				}
+				}  // namespace detail
 
 				// struct nearest_to_even_static_boundary : base {
 				// 	using decimal_to_binary_rounding_policy = nearest_to_even_static_boundary;
@@ -2256,7 +2256,7 @@ namespace dragonbox {
 				// 		return f(detail::right_closed_directed{});
 				// 	}
 				// };
-			}
+			}  // namespace decimal_to_binary_rounding
 
 			// Binary-to-decimal rounding policies.
 			// (Always assumes nearest rounding modes.)
@@ -2321,7 +2321,7 @@ namespace dragonbox {
 				// 		--r.significand;
 				// 	}
 				// };
-			}
+			}  // namespace binary_to_decimal_rounding
 
 			// Cache policies.
 			namespace cache {
@@ -2412,21 +2412,21 @@ namespace dragonbox {
 				// 		}
 				// 	}
 				// };
-			}
-		}
-	}
+			}  // namespace cache
+		}  // namespace policy_impl
+	}  // namespace detail
 
 	namespace policy {
 		namespace sign {
 			constexpr auto ignore = detail::policy_impl::sign::ignore{};
 		// constexpr auto return_sign = detail::policy_impl::sign::return_sign{};
-		}
+		} // namespace sign
 
 		namespace trailing_zero {
 			constexpr auto ignore = detail::policy_impl::trailing_zero::ignore{};
 			constexpr auto remove = detail::policy_impl::trailing_zero::remove{};
 			constexpr auto report = detail::policy_impl::trailing_zero::report{};
-		}
+		} // namespace trailing_zero
 
 		namespace decimal_to_binary_rounding {
 			constexpr auto nearest_to_even =
@@ -2459,7 +2459,7 @@ namespace dragonbox {
 			// 	detail::policy_impl::decimal_to_binary_rounding::toward_zero{};
 			// constexpr auto away_from_zero =
 			// 	detail::policy_impl::decimal_to_binary_rounding::away_from_zero{};
-		}
+		}  // namespace decimal_to_binary_rounding
 
 		namespace binary_to_decimal_rounding {
 			// constexpr auto do_not_care =
@@ -2472,13 +2472,13 @@ namespace dragonbox {
 			// 	detail::policy_impl::binary_to_decimal_rounding::away_from_zero{};
 			// constexpr auto toward_zero =
 			// 	detail::policy_impl::binary_to_decimal_rounding::toward_zero{};
-		}
+		}  // namespace binary_to_decimal_rounding
 
 		namespace cache {
 			constexpr auto full = detail::policy_impl::cache::full{};
 			// constexpr auto compact = detail::policy_impl::cache::compact{};
-		}
-	}
+		} // namespace cache
+	}  // namespace policy
 
 	namespace detail {
 		////////////////////////////////////////////////////////////////////////////////////////
@@ -3243,7 +3243,7 @@ namespace dragonbox {
 				return is_product_integer(std::integral_constant<integer_check_case_id, case_id>(), two_f, exponent, minus_k);
 			}
 		};
-	}
+	}  // namespace detail
 
 	template <typename Float>
 	using return_type = decimal_fp<

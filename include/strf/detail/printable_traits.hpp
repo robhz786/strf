@@ -282,7 +282,7 @@ constexpr detail_format_functions::fmt_fn fmt {};
 
 #endif
 
-} // inline namespace format_functions
+}  // namespace format_functions
 
 struct printable_overrider_c;
 struct dont_override;
