@@ -1,5 +1,5 @@
-#ifndef STRF_DETAIL_OUTPUT_TYPES_STD_STRING_HPP
-#define STRF_DETAIL_OUTPUT_TYPES_STD_STRING_HPP
+#ifndef STRF_TO_STRING_HPP
+#define STRF_TO_STRING_HPP
 
 //  Copyright (C) (See commit logs on github.com/robhz786/strf)
 //  Distributed under the Boost Software License, Version 1.0.
@@ -366,5 +366,5 @@ constexpr strf::printing_syntax
 
 } // namespace strf
 
-#endif  // STRF_DETAIL_OUTPUT_TYPES_STD_STRING_HPP
+#endif // STRF_TO_STRING_HPP
 

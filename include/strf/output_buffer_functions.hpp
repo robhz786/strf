@@ -1,5 +1,5 @@
-#ifndef STRF_OUTBUFF_FUNCTIONS_HPP
-#define STRF_OUTBUFF_FUNCTIONS_HPP
+#ifndef STRF_OUTPUT_BUFFER_FUNCTIONS_HPP
+#define STRF_OUTPUT_BUFFER_FUNCTIONS_HPP
 
 //  Copyright (C) (See commit logs on github.com/robhz786/strf)
 //  Distributed under the Boost Software License, Version 1.0.
@@ -91,5 +91,5 @@ inline STRF_HD void write_fill
 } // namespace detail
 } // namespace strf
 
-#endif  // STRF_OUTBUFF_FUNCTIONS_HPP
+#endif // STRF_OUTPUT_BUFFER_FUNCTIONS_HPP
 

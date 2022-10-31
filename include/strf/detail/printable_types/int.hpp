@@ -1,5 +1,5 @@
-#ifndef STRF_DETAIL_INPUT_TYPES_INT_HPP_INCLUDED
-#define STRF_DETAIL_INPUT_TYPES_INT_HPP_INCLUDED
+#ifndef STRF_DETAIL_PRINTABLE_TYPES_INT_HPP
+#define STRF_DETAIL_PRINTABLE_TYPES_INT_HPP
 
 //  Copyright (C) (See commit logs on github.com/robhz786/strf)
 //  Distributed under the Boost Software License, Version 1.0.
@@ -2445,4 +2445,4 @@ template <> struct is_int_number<unsigned long long>: public std::true_type {};
 
 } // namespace strf
 
-#endif // STRF_DETAIL_INPUT_TYPES_FMT_INT_HPP_INCLUDED
+#endif // STRF_DETAIL_PRINTABLE_TYPES_INT_HPP

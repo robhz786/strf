@@ -1,5 +1,5 @@
-#ifndef STRF_JOIN_HPP
-#define STRF_JOIN_HPP
+#ifndef STRF_DETAIL_PRINTABLE_TYPES_JOIN_HPP
+#define STRF_DETAIL_PRINTABLE_TYPES_JOIN_HPP
 
 //  Copyright (C) (See commit logs on github.com/robhz786/strf)
 //  Distributed under the Boost Software License, Version 1.0.
@@ -409,5 +409,5 @@ constexpr STRF_HD strf::aligned_join_maker join_right(strf::width_t width, CharT
 
 } // namespace strf
 
-#endif  // STRF_JOIN_HPP
+#endif // STRF_DETAIL_PRINTABLE_TYPES_JOIN_HPP
 

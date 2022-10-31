@@ -1,5 +1,5 @@
-#ifndef STRF_DETAIL_INPUT_TYPES_CHAR_HPP_INCLUDED
-#define STRF_DETAIL_INPUT_TYPES_CHAR_HPP_INCLUDED
+#ifndef STRF_DETAIL_PRINTABLE_TYPES_CHAR_HPP
+#define STRF_DETAIL_PRINTABLE_TYPES_CHAR_HPP
 
 //  Copyright (C) (See commit logs on github.com/robhz786/strf)
 //  Distributed under the Boost Software License, Version 1.0.
@@ -432,4 +432,4 @@ STRF_EXPLICIT_TEMPLATE class fmt_conv_char32_printer<wchar_t>;
 
 } // namespace strf
 
-#endif // STRF_DETAIL_INPUT_TYPES_CHAR_HPP_INCLUDED
+#endif // STRF_DETAIL_PRINTABLE_TYPES_CHAR_HPP

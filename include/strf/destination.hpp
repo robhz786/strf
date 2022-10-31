@@ -1,5 +1,5 @@
-#ifndef STRF_DESTINATION_HPP_INCLUDED
-#define STRF_DESTINATION_HPP_INCLUDED
+#ifndef STRF_DESTINATION_HPP
+#define STRF_DESTINATION_HPP
 
 //  Copyright (C) (See commit logs on github.com/robhz786/strf)
 //  Distributed under the Boost Software License, Version 1.0.
@@ -525,5 +525,5 @@ private:
 #  pragma GCC diagnostic pop
 #endif
 
-#endif  // STRF_DESTINATION_HPP_INCLUDED
+#endif // STRF_DESTINATION_HPP
 

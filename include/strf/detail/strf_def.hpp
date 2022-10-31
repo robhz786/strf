@@ -1,5 +1,5 @@
-#ifndef STRF_DETAIL_COMMMON_HPP
-#define STRF_DETAIL_COMMMON_HPP
+#ifndef STRF_DETAIL_STRF_DEF_HPP
+#define STRF_DETAIL_STRF_DEF_HPP
 
 //  Copyright (C) (See commit logs on github.com/robhz786/strf)
 //  Distributed under the Boost Software License, Version 1.0.
@@ -327,5 +327,5 @@ template <> struct is_char<wchar_t>: public std::true_type {};
 
 } // namespace strf
 
-#endif  // STRF_DETAIL_COMMMON_HPP
+#endif // STRF_DETAIL_STRF_DEF_HPP
 

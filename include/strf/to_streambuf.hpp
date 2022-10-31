@@ -1,5 +1,5 @@
-#ifndef STRF_DETAIL_OUTPUT_TYPES_STD_STREAMBUF_HPP
-#define STRF_DETAIL_OUTPUT_TYPES_STD_STREAMBUF_HPP
+#ifndef STRF_TO_STREAMBUF_HPP
+#define STRF_TO_STREAMBUF_HPP
 
 //  Copyright (C) (See commit logs on github.com/robhz786/strf)
 //  Distributed under the Boost Software License, Version 1.0.
@@ -151,5 +151,5 @@ inline auto to( std::basic_streambuf<CharT, Traits>* dest )
 
 } // namespace strf
 
-#endif  // STRF_DETAIL_OUTPUT_TYPES_STD_STREAMBUF_HPP
+#endif // STRF_TO_STREAMBUF_HPP
 

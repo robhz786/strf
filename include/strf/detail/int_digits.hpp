@@ -1,5 +1,5 @@
-#ifndef STRF_DETAIL_NUMBER_OF_DIGITS_HPP
-#define STRF_DETAIL_NUMBER_OF_DIGITS_HPP
+#ifndef STRF_DETAIL_INT_DIGITS_HPP
+#define STRF_DETAIL_INT_DIGITS_HPP
 
 //  Copyright (C) (See commit logs on github.com/robhz786/strf)
 //  Distributed under the Boost Software License, Version 1.0.
@@ -1275,5 +1275,5 @@ inline STRF_HD void write_int_big_sep
 
 } // namespace strf
 
-#endif  // STRF_DETAIL_NUMBER_OF_DIGITS_HPP
+#endif // STRF_DETAIL_INT_DIGITS_HPP
 

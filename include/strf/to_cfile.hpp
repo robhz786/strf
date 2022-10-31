@@ -1,5 +1,5 @@
-#ifndef STRF_DETAIL_OUTPUT_TYPES_FILE_HPP
-#define STRF_DETAIL_OUTPUT_TYPES_FILE_HPP
+#ifndef STRF_TO_CFILE_HPP
+#define STRF_TO_CFILE_HPP
 
 //  Copyright (C) (See commit logs on github.com/robhz786/strf)
 //  Distributed under the Boost Software License, Version 1.0.
@@ -287,5 +287,5 @@ STRF_HD inline auto wto(std::FILE* destfile)
 #  pragma GCC diagnostic pop
 #endif
 
-#endif  // STRF_DETAIL_OUTPUT_TYPES_FILE_HPP
+#endif // STRF_TO_CFILE_HPP
 

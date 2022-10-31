@@ -1,5 +1,5 @@
-#ifndef STRF_DETAIL_FACETS_PACK_HPP
-#define STRF_DETAIL_FACETS_PACK_HPP
+#ifndef STRF_FACETS_PACK_HPP
+#define STRF_FACETS_PACK_HPP
 
 //  Copyright (C) (See commit logs on github.com/robhz786/strf)
 //  Distributed under the Boost Software License, Version 1.0.
@@ -881,5 +881,5 @@ using facet_type_in_pack = strf::detail::remove_cv_t
 
 } // namespace strf
 
-#endif  // STRF_DETAIL_FACETS_PACK_HPP
+#endif // STRF_FACETS_PACK_HPP
 

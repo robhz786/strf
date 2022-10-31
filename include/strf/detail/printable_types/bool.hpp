@@ -1,5 +1,5 @@
-#ifndef STRF_DETAIL_INPUT_TYPES_BOOL_HPP
-#define STRF_DETAIL_INPUT_TYPES_BOOL_HPP
+#ifndef STRF_DETAIL_PRINTABLE_TYPES_BOOL_HPP
+#define STRF_DETAIL_PRINTABLE_TYPES_BOOL_HPP
 
 //  Copyright (C) (See commit logs on github.com/robhz786/strf)
 //  Distributed under the Boost Software License, Version 1.0.
@@ -207,5 +207,5 @@ STRF_EXPLICIT_TEMPLATE class bool_printer<wchar_t>;
 } // namespace detail
 } // namespace strf
 
-#endif  // STRF_DETAIL_INPUT_TYPES_BOOL_HPP
+#endif // STRF_DETAIL_PRINTABLE_TYPES_BOOL_HPP
 

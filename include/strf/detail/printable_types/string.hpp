@@ -1,5 +1,5 @@
-#ifndef STRF_DETAIL_INPUT_TYPES_STRING
-#define STRF_DETAIL_INPUT_TYPES_STRING
+#ifndef STRF_DETAIL_PRINTABLE_TYPES_STRING_HPP
+#define STRF_DETAIL_PRINTABLE_TYPES_STRING_HPP
 
 #include <strf/detail/facets/width_calculator.hpp>
 #include <strf/detail/facets/charset.hpp>
@@ -1445,5 +1445,5 @@ private:
 } // namespace detail
 } // namespace strf
 
-#endif  /* STRF_DETAIL_INPUT_TYPES_CHAR_PTR */
+#endif // STRF_DETAIL_PRINTABLE_TYPES_STRING_HPP
 

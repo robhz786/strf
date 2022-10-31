@@ -1,3 +1,6 @@
+#ifndef STRF_DETAIL_DRAGONBOX_HPP
+#define STRF_DETAIL_DRAGONBOX_HPP
+
 // Copyright 2020-2021 Junekey Jeon
 //
 // The contents of this file may be used under the terms of
@@ -15,9 +18,6 @@
 // is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
 // KIND, either express or implied.
 
-
-#ifndef JKJ_DRAGONBOX
-#define JKJ_DRAGONBOX
 
 #include <strf/detail/standard_lib_functions.hpp>
 

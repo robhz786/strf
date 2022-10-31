@@ -1,5 +1,5 @@
-#ifndef STRF_DETAIL_INPUT_TYPES_FLOAT_HPP
-#define STRF_DETAIL_INPUT_TYPES_FLOAT_HPP
+#ifndef STRF_DETAIL_PRINTABLE_TYPES_FLOAT_HPP
+#define STRF_DETAIL_PRINTABLE_TYPES_FLOAT_HPP
 
 //  Copyright (C) (See commit logs on github.com/robhz786/strf)
 //  Distributed under the Boost Software License, Version 1.0.
@@ -2691,5 +2691,5 @@ STRF_EXPLICIT_TEMPLATE class fast_double_printer<wchar_t>;
 
 } // namespace strf
 
-#endif  // STRF_DETAIL_INPUT_TYPES_FLOAT_HPP
+#endif // STRF_DETAIL_PRINTABLE_TYPES_FLOAT_HPP
 
