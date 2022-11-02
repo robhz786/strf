@@ -95,7 +95,7 @@ public:
     {
     }
 
-    STRF_HD ~cfile_writer_base() {
+    STRF_HD ~cfile_writer_base() override {
         if (this->good()) {
             std::size_t count = this->buffer_ptr() - buff_;
             traits_.write(buff_, count);
@@ -170,7 +170,7 @@ public:
     }
 
     narrow_cfile_writer() = delete;
-    ~narrow_cfile_writer() = default;
+    ~narrow_cfile_writer() override = default;
 
     narrow_cfile_writer(const narrow_cfile_writer&) = delete;
     narrow_cfile_writer(narrow_cfile_writer&&) = delete;
@@ -201,7 +201,7 @@ public:
     }
 
     wide_cfile_writer() = delete;
-    ~wide_cfile_writer() = default;
+    ~wide_cfile_writer() override = default;
 
     wide_cfile_writer(const wide_cfile_writer&) = delete;
     wide_cfile_writer(wide_cfile_writer&&) = delete;

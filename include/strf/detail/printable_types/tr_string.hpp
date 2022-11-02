@@ -549,7 +549,7 @@ public:
     tr_printer& operator=(const tr_printer&) = delete;
     tr_printer& operator=(tr_printer&&) = delete;
 
-    STRF_HD ~tr_printer()
+    STRF_HD ~tr_printer() override
     {
         storage_.destroy();
     }

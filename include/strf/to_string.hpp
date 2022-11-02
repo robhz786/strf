@@ -34,7 +34,7 @@ public:
     }
 
     basic_string_appender() = delete;
-    ~basic_string_appender() = default;
+    ~basic_string_appender() override = default;
     basic_string_appender(const basic_string_appender&) = delete;
     basic_string_appender(basic_string_appender&&) = delete;
     basic_string_appender& operator=(const basic_string_appender&) = delete;
@@ -104,7 +104,7 @@ public:
     basic_string_maker& operator=(const basic_string_maker&) = delete;
     basic_string_maker& operator=(basic_string_maker&&) = delete;
 
-    ~basic_string_maker()
+    ~basic_string_maker() override
     {
         if (string_initialized_) {
             string_ptr()->~string_type_();
@@ -203,7 +203,7 @@ public:
         this->set_buffer_end(&*str_.begin() + (count ? count : 1));
     }
     basic_sized_string_maker() = delete;
-    ~basic_sized_string_maker() = default;
+    ~basic_sized_string_maker() override = default;
     basic_sized_string_maker(const basic_sized_string_maker&) = delete;
     basic_sized_string_maker(basic_sized_string_maker&&) = delete;
     basic_sized_string_maker& operator=(const basic_sized_string_maker&) = delete;

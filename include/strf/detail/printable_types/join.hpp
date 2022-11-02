@@ -195,7 +195,7 @@ public:
     aligned_join_printer_impl& operator=(const aligned_join_printer_impl&) = delete;
     aligned_join_printer_impl& operator=(aligned_join_printer_impl&&) = delete;
 
-    STRF_HD ~aligned_join_printer_impl()
+    STRF_HD ~aligned_join_printer_impl() override
     {
         printers_ptr_()->~printers_tuple_();
     }

@@ -34,7 +34,7 @@ public:
     basic_streambuf_writer& operator=(const basic_streambuf_writer&) = delete;
     basic_streambuf_writer& operator=(basic_streambuf_writer&&) = delete;
 
-    ~basic_streambuf_writer() {
+    ~basic_streambuf_writer() override {
         if (this->good()) {
             std::streamsize count = this->buffer_ptr() - buf_;
 
