@@ -224,7 +224,7 @@ void trivial_fill_f
     ( strf::transcode_dest<CharT>& dest, std::size_t count, char32_t ch )
 {
     // same as strf::detail::write_fill<CharT>
-    CharT narrow_ch = static_cast<CharT>(ch);
+    auto narrow_ch = static_cast<CharT>(ch);
     STRF_IF_LIKELY (count <= dest.buffer_space()) {
         strf::detail::str_fill_n<CharT>(dest.buffer_ptr(), count, narrow_ch);
         dest.advance(count);

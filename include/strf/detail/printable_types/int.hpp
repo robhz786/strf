@@ -2198,7 +2198,7 @@ STRF_HD void int_printer_static_base_and_punct<CharT, Base, true>::print_to
     if (data_.sepcount == 0) {
         dig_writer::write(dest, data_.uvalue, data_.digcount, lettercase_);
     } else if (data_.sepsize == 1) {
-        CharT sepchar = static_cast<CharT>(data_.sepchar);
+        auto sepchar = static_cast<CharT>(data_.sepchar);
         if (data_.sepchar >= 0x80) {
             encode_char_(&sepchar, data_.sepchar);
         }

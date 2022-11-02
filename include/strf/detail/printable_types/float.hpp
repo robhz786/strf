@@ -42,7 +42,7 @@ STRF_FUNC_IMPL STRF_HD detail::double_dec decode(float f)
     constexpr int m_size = 23;
 
     std::uint32_t bits = strf::detail::to_bits(f);
-    const std::uint32_t exponent
+    const auto exponent
         = static_cast<std::uint32_t>((bits << 1) >> (m_size + 1));
     const bool sign = (bits >> (m_size + e_size));
     const std::uint32_t mantissa = bits & 0x7FFFFF;
@@ -68,7 +68,7 @@ STRF_FUNC_IMPL STRF_HD detail::double_dec decode(double d)
     constexpr int m_size = 52; // bits in matissa
 
     std::uint64_t bits = strf::detail::to_bits(d);
-    const std::uint32_t exponent
+    const auto exponent
         = static_cast<std::uint32_t>((bits << 1) >> (m_size + 1));
     const bool sign = (bits >> (m_size + e_size));
     const std::uint64_t mantissa = bits & 0xFFFFFFFFFFFFFULL;
@@ -2152,7 +2152,7 @@ STRF_FUNC_IMPL STRF_HD strf::detail::float_init_result init_float_printer_data
     constexpr int m_size = 52; // bits in matissa
 
     std::uint64_t bits = strf::detail::to_bits(d);
-    const std::uint32_t bits_exponent = static_cast<std::uint32_t>((bits << 1) >> (m_size + 1));
+    const auto bits_exponent = static_cast<std::uint32_t>((bits << 1) >> (m_size + 1));
     const std::uint64_t bits_mantissa = bits & 0xFFFFFFFFFFFFFULL;
     const bool negative = (bits >> (m_size + e_size));
 
@@ -2235,7 +2235,7 @@ STRF_FUNC_IMPL STRF_HD strf::detail::float_init_result init_float_printer_data
 
     std::uint32_t bits = strf::detail::to_bits(f);
     const std::uint32_t bits_mantissa = bits & 0x7FFFFF;
-    const std::uint32_t bits_exponent = static_cast<std::uint32_t>((bits << 1) >> (m_size + 1));
+    const auto bits_exponent = static_cast<std::uint32_t>((bits << 1) >> (m_size + 1));
     const bool negative = (bits >> (m_size + e_size));
 
     chars_count_t rounded_fmt_width = afmt.width.round();

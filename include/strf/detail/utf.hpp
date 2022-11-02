@@ -1364,24 +1364,24 @@ static_charset<CharT, strf::csid_utf8>::encode_fill
     STRF_IF_LIKELY (ch < 0x80) {
         strf::detail::write_fill(dest, count, static_cast<CharT>(ch));
     } else if (ch < 0x800) {
-        CharT ch0 = static_cast<CharT>(0xC0 | ((ch & 0x7C0) >> 6));
-        CharT ch1 = static_cast<CharT>(0x80 |  (ch &  0x3F));
+        auto ch0 = static_cast<CharT>(0xC0 | ((ch & 0x7C0) >> 6));
+        auto ch1 = static_cast<CharT>(0x80 |  (ch &  0x3F));
         strf::detail::repeat_sequence<CharT>(dest, count, ch0, ch1);
     } else if (ch <  0x10000) {
-        CharT ch0 = static_cast<CharT>(0xE0 | ((ch & 0xF000) >> 12));
-        CharT ch1 = static_cast<CharT>(0x80 | ((ch &  0xFC0) >> 6));
-        CharT ch2 = static_cast<CharT>(0x80 |  (ch &   0x3F));
+        auto ch0 = static_cast<CharT>(0xE0 | ((ch & 0xF000) >> 12));
+        auto ch1 = static_cast<CharT>(0x80 | ((ch &  0xFC0) >> 6));
+        auto ch2 = static_cast<CharT>(0x80 |  (ch &   0x3F));
         strf::detail::repeat_sequence<CharT>(dest, count, ch0, ch1, ch2);
     } else if (ch < 0x110000) {
-        CharT ch0 = static_cast<CharT>(0xF0 | ((ch & 0x1C0000) >> 18));
-        CharT ch1 = static_cast<CharT>(0x80 | ((ch &  0x3F000) >> 12));
-        CharT ch2 = static_cast<CharT>(0x80 | ((ch &    0xFC0) >> 6));
-        CharT ch3 = static_cast<CharT>(0x80 |  (ch &     0x3F));
+        auto ch0 = static_cast<CharT>(0xF0 | ((ch & 0x1C0000) >> 18));
+        auto ch1 = static_cast<CharT>(0x80 | ((ch &  0x3F000) >> 12));
+        auto ch2 = static_cast<CharT>(0x80 | ((ch &    0xFC0) >> 6));
+        auto ch3 = static_cast<CharT>(0x80 |  (ch &     0x3F));
         strf::detail::repeat_sequence<CharT>(dest, count, ch0, ch1, ch2, ch3);
     } else {
-        CharT ch0 = static_cast<CharT>('\xEF');
-        CharT ch1 = static_cast<CharT>('\xBF');
-        CharT ch2 = static_cast<CharT>('\xBD');
+        auto ch0 = static_cast<CharT>('\xEF');
+        auto ch1 = static_cast<CharT>('\xBF');
+        auto ch2 = static_cast<CharT>('\xBD');
         strf::detail::repeat_sequence<CharT>(dest, count, ch0, ch1, ch2);
     }
 }
@@ -1740,8 +1740,8 @@ static_charset<CharT, strf::csid_utf16>::encode_fill
         strf::detail::write_fill<CharT>(dest, count, static_cast<CharT>(ch));
     } else if (ch < 0x110000) {
         char32_t sub_codepoint = ch - 0x10000;
-        CharT ch0 = static_cast<CharT>(0xD800 + (sub_codepoint >> 10));
-        CharT ch1 = static_cast<CharT>(0xDC00 + (sub_codepoint &  0x3FF));
+        auto ch0 = static_cast<CharT>(0xD800 + (sub_codepoint >> 10));
+        auto ch1 = static_cast<CharT>(0xDC00 + (sub_codepoint &  0x3FF));
         strf::detail::repeat_sequence<CharT>(dest, count, ch0, ch1);
     } else {
         strf::detail::write_fill<CharT>(dest, count, 0xFFFD);
