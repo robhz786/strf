@@ -112,7 +112,7 @@ struct is_facet_helper
     template <typename U>
     static STRF_HD std::false_type test_(...);
 
-    using result = decltype(test_<T>((T*)0));
+    using result = decltype(test_<T>((T*){}));
 };
 
 template <typename T>
@@ -143,7 +143,7 @@ constexpr STRF_HD bool is_constrainable() noexcept
 template <typename Facet>
 constexpr STRF_HD bool is_constrainable_facet() noexcept
 {
-    return strf::detail::get_constrainable((strf::facet_category<Facet>*)0);
+    return strf::detail::get_constrainable((strf::facet_category<Facet>*){});
 }
 
 #if defined(STRF_HAS_VARIABLE_TEMPLATES)

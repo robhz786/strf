@@ -72,7 +72,7 @@ struct has_tag_invoke_with_printable_tag_tester
     template <typename U>
     static STRF_HD std::false_type test_(...);
 
-    using result = decltype(test_<T>((T*)0));
+    using result = decltype(test_<T>((T*){}));
 };
 
 template <typename T>
@@ -90,7 +90,7 @@ struct has_printable_traits_specialization
     static STRF_HD std::false_type test(...);
 
     using T_ = strf::detail::remove_cvref_t<T>;
-    using result = decltype(test<T_>((const T_*)0));
+    using result = decltype(test<T_>((const T_*){}));
 
     constexpr static bool value = result::value;
 };
@@ -192,7 +192,7 @@ private:
 
 public:
 
-    using type = decltype(get_formatters_<PrintingTraits>(0));
+    using type = decltype(get_formatters_<PrintingTraits>(nullptr));
 };
 
 template <typename PrintingTraits>
@@ -305,7 +305,7 @@ struct get_is_overridable_helper {
     template <typename U>
     static STRF_HD std::false_type test_(...);
 
-    using result = decltype(test_<PrintableTraits>((PrintableTraits*)0));
+    using result = decltype(test_<PrintableTraits>((PrintableTraits*){}));
 };
 
 template <typename PrintableTraits>
@@ -495,7 +495,7 @@ struct maker_getter_selector_2
     static_assert(Overridable, "");
     using representative_type = typename PrintingTraits::representative_type;
     using overrider_ = decltype
-        ( strf::use_facet<strf::printable_overrider_c, representative_type>(*(const FPack*)0) );
+        ( strf::use_facet<strf::printable_overrider_c, representative_type>(std::declval<FPack>()) );
     using overrider = strf::detail::remove_cvref_t<overrider_>;
     using maker_getter_type = typename std::conditional
         < std::is_same<overrider, strf::dont_override>::value
@@ -619,7 +619,7 @@ template < typename CharT
          , typename Maker = typename Helper::maker_type
          , typename ChTag = strf::tag<CharT> >
 constexpr STRF_HD auto make_printer_input(PrePrinting& p, const FPack& fp, const Arg& arg)
-    -> decltype(((const Maker*)0)->make_input(ChTag{}, p, fp, Helper::adapt_arg(arg)))
+    -> decltype(((const Maker*){})->make_input(ChTag{}, p, fp, Helper::adapt_arg(arg)))
 {
     return Helper::get_maker(fp)
         .make_input(strf::tag<CharT>{}, p, fp, Helper::adapt_arg(arg));
@@ -662,7 +662,7 @@ struct is_printable_and_overridable_helper {
     template <typename U>
     static STRF_HD std::false_type test_(...);
 
-    using result = decltype(test_<T>((T*)0));
+    using result = decltype(test_<T>((T*){}));
 };
 
 } // namespace detail

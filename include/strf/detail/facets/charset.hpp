@@ -676,7 +676,7 @@ class has_static_transcoder_impl
         return {};
     }
 
-    using result_ = decltype(test_((SrcCharset*)0, (DestCharset*)0));
+    using result_ = decltype(test_((SrcCharset*){}, (DestCharset*){}));
 
 public:
 
@@ -695,7 +695,7 @@ class has_find_transcoder_from_impl
     template <typename S, typename D>
     static auto test(strf::tag<S> stag, const D* d)
         -> decltype( d->find_transcoder_from(stag, strf::csid_utf8)
-               , std::true_type() );
+                   , std::true_type() );
 
     template <typename S, typename D>
     static std::false_type test(...);
@@ -703,7 +703,7 @@ class has_find_transcoder_from_impl
 public:
 
     static constexpr bool value
-    = decltype(test<SrcCharT, DestCharset>(strf::tag<SrcCharT>(), 0))::value;
+    = decltype(test<SrcCharT, DestCharset>(strf::tag<SrcCharT>(), nullptr))::value;
 };
 
 template <typename DestCharT, typename SrcCharset>
@@ -719,7 +719,7 @@ class has_find_transcoder_to_impl
 
 public:
     static constexpr bool value
-    = decltype(test<DestCharT, SrcCharset>(strf::tag<DestCharT>(), 0))::value;
+    = decltype(test<DestCharT, SrcCharset>(strf::tag<DestCharT>(), nullptr))::value;
 };
 
 template <typename DestCharT, typename SrcCharset>
