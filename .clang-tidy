@@ -3,7 +3,9 @@ Checks: '*,
         -google-readability-casting,
         -google-readability-braces-around-statements,
         -google-explicit-constructor,
-        -google-readability-todo
+        -google-readability-todo,
+        -google-runtime-references,
+        -google-build-using-namespace,
         -hicpp-multiway-paths-covered,
         -hicpp-braces-around-statements,
         -hicpp-explicit-conversions,
@@ -32,7 +34,6 @@ Checks: '*,
         -misc-definitions-in-headers,
         -misc-non-private-member-variables-in-classes,
         -misc-redundant-expression,
-        -google-build-using-namespace,
         -llvm-include-order,
         -hicpp-named-parameter,
         -cppcoreguidelines-avoid-goto,
@@ -44,4 +45,9 @@ Checks: '*,
         -cppcoreguidelines-pro-bounds-constant-array-index'
 
 
-# misc-definitions-in-headers is causing warning for constexpr variable templates
+# misc-definitions-in-headers is causing warning for every constexpr variable templates
+
+# google-runtime-references: "non-const reference parameter 'n', make it const or use a pointer"
+#    This guideline has been removed from Google Style Guide:
+#     - https://github.com/google/styleguide/commit/7a7a2f510efe7d7fc
+#     - https://google.github.io/styleguide/cppguide.html#Inputs_and_Outputs
