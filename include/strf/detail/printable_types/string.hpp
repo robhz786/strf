@@ -867,12 +867,11 @@ inline STRF_HD std::uint16_t aligned_string_printer<SrcCharT, DestCharT>::init_
         }
         pre.subtract_width(strw + fillcount);
         return fillcount;
-    } else {
-        right_fillcount_ = 0;
-        left_fillcount_ = 0;
-        pre.subtract_width(strw);
-        return 0;
     }
+    right_fillcount_ = 0;
+    left_fillcount_ = 0;
+    pre.subtract_width(strw);
+    return 0;
 }
 
 template<typename SrcCharT, typename DestCharT>

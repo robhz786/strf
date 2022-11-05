@@ -49,12 +49,12 @@ STRF_FUNC_IMPL STRF_HD detail::double_dec decode(float f)
 
     if (exponent == 0 && mantissa == 0) {
         return {0, 0, sign, false, false};
-    } else if (exponent == 0xFF) {
+    }
+    if (exponent == 0xFF) {
         if (mantissa == 0) {
             return {0, 0, sign, true, false};
-        } else {
-            return {0, 0, sign, false, true};
         }
+        return {0, 0, sign, false, true};
     }
     namespace dragonbox = strf::detail::jkj::dragonbox;
     auto fdec = dragonbox::to_decimal<float>(exponent, mantissa);
@@ -75,12 +75,12 @@ STRF_FUNC_IMPL STRF_HD detail::double_dec decode(double d)
 
     if (exponent == 0 && mantissa == 0) {
         return {0, 0, sign, false, false};
-    } else if (exponent == 0x7FF) {
+    }
+    if (exponent == 0x7FF) {
         if (mantissa == 0) {
             return {0, 0, sign, true, false};
-        } else {
-            return {0, 0, sign, false, true};
         }
+        return {0, 0, sign, false, true};
     }
     namespace dragonbox = strf::detail::jkj::dragonbox;
     auto ddec = dragonbox::to_decimal<double>(exponent, mantissa);

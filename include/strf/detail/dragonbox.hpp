@@ -3208,11 +3208,11 @@ namespace dragonbox {
 					return false;
 				}
 				// For k >= 0
-				else if (exponent <= case_fc_pm_half_upper_threshold) {
+				if (exponent <= case_fc_pm_half_upper_threshold) {
 					return true;
 				}
 				// For k < 0
-				else if (exponent > divisibility_check_by_5_threshold) {
+				if (exponent > divisibility_check_by_5_threshold) {
 					return false;
 				}
 				return div::divisible_by_power_of_5<max_power_of_factor_of_5 + 1>(two_f, minus_k);
@@ -3226,11 +3226,11 @@ namespace dragonbox {
 				if (exponent > divisibility_check_by_5_threshold) {
 					return false;
 				}
-				else if (exponent > case_fc_upper_threshold) {
+				if (exponent > case_fc_upper_threshold) {
 					return div::divisible_by_power_of_5<max_power_of_factor_of_5 + 1>(two_f, minus_k);
 				}
 				// Both exponents are nonnegative
-				else if (exponent >= case_fc_lower_threshold) {
+				if (exponent >= case_fc_lower_threshold) {
 					return true;
 				}
 				// Exponent for 2 is negative

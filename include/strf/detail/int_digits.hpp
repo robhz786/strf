@@ -477,7 +477,8 @@ struct digits_counter<10, 2>
     {
         if (value <= 99) {
             return value <= 9 ? 1 : 2;
-        } else if (value <= 9999) {
+        }
+        if (value <= 9999) {
             return value <= 999 ? 3 : 4;
         }
         return 5;
@@ -498,15 +499,14 @@ struct digits_counter<10, 4>
         if (value <= 9999UL) {
             if (value <= 99UL) {
                 return value <= 9UL ? 1 : 2;
-            } else {
-                return value <= 999UL ? 3 : 4;
             }
-        } else if (value <= 99999999UL) {
+            return value <= 999UL ? 3 : 4;
+        }
+        if (value <= 99999999UL) {
             if (value <= 999999UL) {
                 return value <= 99999UL ? 5 : 6;
-            } else {
-                return value <= 9999999UL ? 7 : 8;
             }
+            return value <= 9999999UL ? 7 : 8;
         }
         return value <= 999999999UL ? 9 : 10;
     }
@@ -528,31 +528,27 @@ struct digits_counter<10, 8>
             if (value <= 9999) {
                 if (value <= 99ULL) {
                     return value <= 9ULL ? 1 : 2;
-                } else {
-                    return value <= 999ULL ? 3 : 4;
                 }
-            } else {
-                if (value <= 999999ULL) {
-                    return value <= 99999ULL ? 5 : 6;
-                } else {
-                    return value <= 9999999ULL ? 7 : 8;
-                }
+                return value <= 999ULL ? 3 : 4;
             }
-        } else if (value <= 9999999999999999ULL) {
+            if (value <= 999999ULL) {
+                return value <= 99999ULL ? 5 : 6;
+            }
+            return value <= 9999999ULL ? 7 : 8;
+        }
+        if (value <= 9999999999999999ULL) {
             if (value <= 999999999999ULL) {
                 if (value <= 9999999999ULL) {
                     return value <= 999999999ULL ? 9 : 10;
-                } else {
-                    return value <= 99999999999ULL ? 11 : 12;
                 }
-            } else {
-                if (value <= 99999999999999ULL ) {
-                    return value <= 9999999999999ULL ? 13 : 14;
-                } else {
-                    return value <= 999999999999999ULL ? 15 : 16;
-                }
+                return value <= 99999999999ULL ? 11 : 12;
             }
-        } else if (value <= 999999999999999999ULL){
+            if (value <= 99999999999999ULL ) {
+                return value <= 9999999999999ULL ? 13 : 14;
+            }
+            return value <= 999999999999999ULL ? 15 : 16;
+        }
+        if (value <= 999999999999999999ULL){
             return value <=  99999999999999999ULL ? 17 : 18;
         }
         return value <= 9999999999999999999ULL ? 19 : 20;
@@ -617,12 +613,11 @@ public:
         if (uvalue < 10) {
             *--it = static_cast<CharT>('0' + uvalue);
             return it;
-        } else {
-            auto index = uvalue << 1;
-            it[-2] = arr[index];
-            it[-1] = arr[index + 1];
-            return it - 2;
         }
+        auto index = uvalue << 1;
+        it[-2] = arr[index];
+        it[-1] = arr[index + 1];
+        return it - 2;
     }
     template <typename UIntT, typename CharT>
     static STRF_HD void write_txtdigits_backwards_little_sep

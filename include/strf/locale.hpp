@@ -117,15 +117,17 @@ STRF_FUNC_IMPL strf::transcode_f<char, char32_t> get_decoder(const char* charset
     if (0 == strcmp(charset_name, "UTF-8")) {
         return strf::utf8_to_utf32<char, char32_t>::transcode;
     }
-    else if (0 == strcmp(charset_name, "ISO-8859-1")) {
+    if (0 == strcmp(charset_name, "ISO-8859-1")) {
         return strf::static_transcoder
             < char, char32_t, strf::csid_iso_8859_1, strf::csid_utf32 >
             ::transcode_func();
-    } else if (0 == strcmp(charset_name, "ISO-8859-3")) {
+    }
+    if (0 == strcmp(charset_name, "ISO-8859-3")) {
         return strf::static_transcoder
             < char, char32_t, strf::csid_iso_8859_3, strf::csid_utf32 >
             ::transcode_func();
-    } else if (0 == strcmp(charset_name, "ISO-8859-15")) {
+    }
+    if (0 == strcmp(charset_name, "ISO-8859-15")) {
         return strf::static_transcoder
             < char, char32_t, strf::csid_iso_8859_15, strf::csid_utf32 >
             ::transcode_func();
