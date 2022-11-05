@@ -701,7 +701,7 @@ STRF_TEST_FUNC void test_input_int_punct()
     }
 
     {
-        numpunct_maker<10> punct2(0x10FFFF);
+        const numpunct_maker<10> punct2(0x10FFFF);
 
         TEST(u8"18\U0010FFFF" u8"446\U0010FFFF" u8"744\U0010FFFF" u8"073\U0010FFFF"
              u8"709\U0010FFFF" u8"551\U0010FFFF" u8"61\U0010FFFF" u8"5")
@@ -910,7 +910,7 @@ STRF_TEST_FUNC void test_input_int_punct()
         TEST("12,34,567") .with(punct(3, 2)) (!strf::oct(01234567));
     }
     {
-        numpunct_maker<2> punct('\'');
+        const numpunct_maker<2> punct('\'');
 
         TEST("0") .with(punct(1)) (!strf::bin(0));
         TEST("1'0") .with(punct(1)) (!strf::bin(2));
@@ -929,7 +929,7 @@ STRF_TEST_FUNC void test_input_int_punct()
         TEST_CALLING_RECYCLE_AT(21, "10'1010'1010'101010'10")
             .with(punct(2,6,4)) (!strf::bin(0x2AAAAULL));
 
-        numpunct_maker<2> grp_big(0x10FFFF);
+        const numpunct_maker<2> grp_big(0x10FFFF);
 
         TEST(u8"0") .with(grp_big(1)) (!strf::bin(0));
         TEST(u8"1\U0010FFFF" u8"0") .with(grp_big(1)) (!strf::bin(2));

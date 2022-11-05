@@ -107,7 +107,7 @@ STRF_TEST_FUNC void test_input_range()
             , "---" );
     }
     {
-        simple_array<const char*, 3> vec{ { "aa", "bb", "cc" } };
+        const simple_array<const char*, 3> vec{ { "aa", "bb", "cc" } };
         TEST("aabbcc") (strf::range(vec));
         TEST("..aa..bb..cc") (strf::right(strf::range(vec), 4, '.'));
         TEST("..aa..bb..cc--")
@@ -165,7 +165,7 @@ STRF_TEST_FUNC void test_input_range()
              (strf::join_right(7)("--", strf::separated_range(vec, ", "), "--"));
     }
     {
-        simple_array<int, 3> stl_array{ {11, 22, 33} };
+        const simple_array<int, 3> stl_array{ {11, 22, 33} };
         TEST( "112233")        (strf::range({11, 22, 33}));
         TEST( "112233")        (strf::range(stl_array));
         TEST( "11, 22, 33")    (strf::separated_range(stl_array,  ", "));
@@ -183,7 +183,7 @@ STRF_TEST_FUNC void test_input_range()
         TEST(u"+11") (+strf::fmt_separated_range(arr,  u", "));
         TEST( "0xb") (*strf::hex(strf::separated_range(arr,   ", ")));
 
-        simple_array<int, 1> stl_arr{{11}};
+        const simple_array<int, 1> stl_arr{{11}};
 
         TEST( "11") (strf::range(stl_arr));
         TEST( "+11") (+strf::fmt_range(stl_arr));
@@ -195,7 +195,7 @@ STRF_TEST_FUNC void test_input_range()
 
     }
     {  // Emtpy range
-        simple_array<int, 0> stl_arr{{}};
+        const simple_array<int, 0> stl_arr{{}};
         TEST( "") (strf::range(stl_arr));
         TEST(u"") (+strf::fmt_range(stl_arr));
         TEST( "") (*strf::hex(strf::range(stl_arr)));
@@ -207,7 +207,7 @@ STRF_TEST_FUNC void test_input_range()
     {   // Range transformed by functor
         auto func = [](int x){ return strf::join('<', -x, '>'); };
         int arr [3] = {11, 22, 33};
-        simple_array<int, 3> stl_arr{{11, 22, 33}};
+        const simple_array<int, 3> stl_arr{{11, 22, 33}};
 
         TEST("<-11><-22><-33>") ( strf::range(arr, func) );
         TEST("<-11><-22><-33>") ( strf::range(stl_arr, func) );

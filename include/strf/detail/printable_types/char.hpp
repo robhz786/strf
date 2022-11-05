@@ -226,7 +226,7 @@ STRF_HD void fmt_char_printer<CharT>::init_
             right_fillcount_ = fillcount;
             break;
         case strf::text_alignment::center: {
-            std::uint16_t halfcount = fillcount >> 1;
+            const std::uint16_t halfcount = fillcount >> 1;
             left_fillcount_ = halfcount;
             right_fillcount_ = fillcount - halfcount;
             break;
@@ -259,7 +259,7 @@ STRF_HD void fmt_char_printer<CharT>::print_to
     } else {
         std::size_t count = count_;
         while(true) {
-            std::size_t space = dest.buffer_space();
+            const std::size_t space = dest.buffer_space();
             if (count <= space) {
                 strf::detail::str_fill_n(dest.buffer_ptr(), count, ch_);
                 dest.advance(count);

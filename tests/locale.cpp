@@ -31,8 +31,8 @@ void test_locale()
 #if ! defined(_WIN32)
     {
         using strf::detail::make_numpunct;
-        strf::digits_grouping empty_grouping{-1};
-        strf::digits_grouping non_empty_grouping{1, 2, 3};
+        const strf::digits_grouping empty_grouping{-1};
+        const strf::digits_grouping non_empty_grouping{1, 2, 3};
         {
             auto p = make_numpunct("unknown_encoding", ".xx", ",yy", non_empty_grouping);
             TEST_TRUE(p.decimal_point() == U'.');

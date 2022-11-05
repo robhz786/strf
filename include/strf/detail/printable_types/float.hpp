@@ -41,7 +41,7 @@ STRF_FUNC_IMPL STRF_HD detail::double_dec decode(float f)
     constexpr int e_size = 8;
     constexpr int m_size = 23;
 
-    std::uint32_t bits = strf::detail::to_bits(f);
+    const std::uint32_t bits = strf::detail::to_bits(f);
     const auto exponent
         = static_cast<std::uint32_t>((bits << 1) >> (m_size + 1));
     const bool sign = (bits >> (m_size + e_size));
@@ -67,7 +67,7 @@ STRF_FUNC_IMPL STRF_HD detail::double_dec decode(double d)
     constexpr int e_size = 11; // bits in exponent
     constexpr int m_size = 52; // bits in matissa
 
-    std::uint64_t bits = strf::detail::to_bits(d);
+    const std::uint64_t bits = strf::detail::to_bits(d);
     const auto exponent
         = static_cast<std::uint32_t>((bits << 1) >> (m_size + 1));
     const bool sign = (bits >> (m_size + e_size));
@@ -1364,12 +1364,11 @@ public:
         ( strf::detail::fast_double_printer_input<CharT, PrePrinting, FloatT> input) noexcept
         : fast_double_printer(input.value, input.lcase)
     {
-        std::size_t s = 0;
         STRF_IF_CONSTEXPR (PrePrinting::width_required || PrePrinting::size_required) {
-            s = size();
+            const auto s = size();
+            input.pre.subtract_width(s);
+            input.pre.add_size(s);
         }
-        input.pre.subtract_width(s);
-        input.pre.add_size(s);
     }
 
     STRF_HD fast_double_printer(float f, strf::lettercase lc) noexcept
@@ -1409,7 +1408,7 @@ private:
 template <typename CharT>
 STRF_HD std::size_t fast_double_printer<CharT>::size() const
 {
-    int sci_e10 = value_.e10 - 1 + (int)m10_digcount_;
+    const int sci_e10 = value_.e10 - 1 + (int)m10_digcount_;
     return ( value_.nan * 3
            + (value_.infinity * 3)
            + value_.negative
@@ -1707,7 +1706,7 @@ inline STRF_HD strf::detail::float_init_result init_hex_double_printer_data
                 }
             } else {
                 // round mantissa if necessary
-                unsigned s = (13 - fdata.precision) << 2;
+                const unsigned s = (13 - fdata.precision) << 2;
                 auto d = 1ULL << s;
                 auto mask = d - 1;
                 auto mantissa_low = data.mantissa & mask;
@@ -1722,7 +1721,7 @@ inline STRF_HD strf::detail::float_init_result init_hex_double_printer_data
             }
         }
     }
-    detail::chars_count_t content_width =
+    const detail::chars_count_t content_width =
         (detail::max)(data.sub_chars_count + data.extra_zeros, data.pad0width);
 
     return init_double_printer_data_fill
@@ -1762,7 +1761,7 @@ inline STRF_HD strf::detail::float_init_result init_double_data_with_precision_g
             }
         } else {
             data.showpoint = alt_form;
-            unsigned int_digcount = 1 + data.e10;
+            const unsigned int_digcount = 1 + data.e10;
             data.sep_count = grouping.separators_count(int_digcount);
             data.sub_chars_count = 1 + data.e10 + data.sep_count + data.showpoint;
             if (alt_form && precision > int_digcount) {
@@ -1859,7 +1858,7 @@ inline STRF_HD strf::detail::float_init_result init_double_data_with_precision_g
     {
         remove_fractional_trailing_digits:
 
-        unsigned dp = -xz;
+        const unsigned dp = -xz;
         data.m10_digcount -= static_cast<detail::chars_count_t>(dp);
         data.e10 += dp;
         auto p10 = strf::detail::pow10(dp);
@@ -1921,12 +1920,12 @@ inline STRF_HD strf::detail::float_init_result init_double_data_with_precision_s
     data.sub_chars_count += 5 + precision;
     data.sub_chars_count += (sci_notation_exp > 99 || sci_notation_exp < -99);
 
-    int xz = (precision - frac_digits);
+    const int xz = (precision - frac_digits);
     if (xz >= 0) {
         data.extra_zeros = static_cast<detail::chars_count_t>(xz);
     } else {
         data.extra_zeros = 0;
-        unsigned dp = -xz;
+        const unsigned dp = -xz;
         data.m10_digcount -= static_cast<detail::chars_count_t>(dp);
         data.e10 += dp;
         auto p10 = strf::detail::pow10(dp);
@@ -1971,7 +1970,7 @@ inline STRF_HD strf::detail::float_init_result init_double_data_with_precision_f
     data.sub_chars_count += data.showpoint;
 
     const int frac_digits = data.e10 < 0 ? -data.e10 : 0;
-    int xz = (precision - frac_digits);
+    const int xz = (precision - frac_digits);
     if (xz <= -(int)data.m10_digcount) {
         STRF_ASSERT(data.e10 <= -(int)(precision + data.m10_digcount));
         data.sub_chars_count += 1 + precision;
@@ -2003,7 +2002,7 @@ inline STRF_HD strf::detail::float_init_result init_double_data_with_precision_f
             data.extra_zeros = static_cast<detail::chars_count_t>(xz);
         } else {
             data.extra_zeros = 0;
-            unsigned dp = -xz;
+            const unsigned dp = -xz;
             data.m10_digcount -= static_cast<detail::chars_count_t>(dp);
             data.e10 += dp;
             auto p10 = strf::detail::pow10(dp);
@@ -2151,7 +2150,7 @@ STRF_FUNC_IMPL STRF_HD strf::detail::float_init_result init_float_printer_data
     constexpr int e_size = 11; // bits in exponent
     constexpr int m_size = 52; // bits in matissa
 
-    std::uint64_t bits = strf::detail::to_bits(d);
+    const std::uint64_t bits = strf::detail::to_bits(d);
     const auto bits_exponent = static_cast<std::uint32_t>((bits << 1) >> (m_size + 1));
     const std::uint64_t bits_mantissa = bits & 0xFFFFFFFFFFFFFULL;
     const bool negative = (bits >> (m_size + e_size));
@@ -2233,7 +2232,7 @@ STRF_FUNC_IMPL STRF_HD strf::detail::float_init_result init_float_printer_data
     constexpr int e_size = 8;
     constexpr int m_size = 23;
 
-    std::uint32_t bits = strf::detail::to_bits(f);
+    const std::uint32_t bits = strf::detail::to_bits(f);
     const std::uint32_t bits_mantissa = bits & 0x7FFFFF;
     const auto bits_exponent = static_cast<std::uint32_t>((bits << 1) >> (m_size + 1));
     const bool negative = (bits >> (m_size + e_size));
@@ -2370,7 +2369,7 @@ public:
         STRF_IF_CONSTEXPR (PrePrinting::size_required) {
             input.pre.add_size(r.content_width);
             if (r.fillcount) {
-                std::size_t fillchar_size = charset.encoded_char_size(data_.fillchar);
+                const std::size_t fillchar_size = charset.encoded_char_size(data_.fillchar);
                 input.pre.add_size(fillchar_size * r.fillcount);
             }
             if (notation != strf::float_notation::hex && data_.sep_count){
@@ -2401,7 +2400,7 @@ public:
         STRF_IF_CONSTEXPR (PrePrinting::size_required) {
             input.pre.add_size(r.content_width);
             if (r.fillcount) {
-                std::size_t fillchar_size = charset.encoded_char_size(data_.fillchar);
+                const std::size_t fillchar_size = charset.encoded_char_size(data_.fillchar);
                 input.pre.add_size(fillchar_size * r.fillcount);
             }
         }
@@ -2499,7 +2498,7 @@ STRF_HD void punct_double_printer<CharT>::print_fixed_
     } else {
         STRF_ASSERT(data_.e10 < 0);
 
-        detail::chars_count_t e10u = - data_.e10;
+        const detail::chars_count_t e10u = - data_.e10;
         if (e10u >= data_.m10_digcount) {
             dest.ensure(1 + decimal_point_size_);
             auto *it = dest.buffer_ptr();
@@ -2587,7 +2586,7 @@ template <typename CharT>
 STRF_HD void punct_double_printer<CharT>::print_hexadecimal_
     ( strf::destination<CharT>& dest ) const noexcept
 {
-    std::size_t sub_size = data_.sub_chars_count + decimal_point_size_ - data_.showpoint;
+    const std::size_t sub_size = data_.sub_chars_count + decimal_point_size_ - data_.showpoint;
     dest.ensure(data_.sub_chars_count);
     auto *it = dest.buffer_ptr();
     if (data_.showsign)  {
@@ -2611,7 +2610,7 @@ STRF_HD void punct_double_printer<CharT>::print_hexadecimal_
         }
     }
     if (data_.mantissa != 0) {
-        std::uint8_t digits[13] =
+        const std::uint8_t digits[13] =
             { static_cast<std::uint8_t>((data_.mantissa & (0xFULL << 48)) >> 48)
             , static_cast<std::uint8_t>((data_.mantissa & (0xFULL << 44)) >> 44)
             , static_cast<std::uint8_t>((data_.mantissa & (0xFULL << 40)) >> 40)

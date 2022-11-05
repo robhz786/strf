@@ -194,8 +194,8 @@ STRF_TEST_FUNC void utf16_sani_find_transcoder()
     using static_transcoder_type = strf::static_transcoder
         <char16_t, char16_t, strf::csid_utf16, strf::csid_utf16>;
 
-    strf::dynamic_charset<char16_t> dyn_cs = strf::utf16_t<char16_t>{}.to_dynamic();
-    strf::dynamic_transcoder<char16_t, char16_t> tr = strf::find_transcoder(dyn_cs, dyn_cs);
+    const strf::dynamic_charset<char16_t> dyn_cs = strf::utf16_t<char16_t>{}.to_dynamic();
+    const strf::dynamic_transcoder<char16_t, char16_t> tr = strf::find_transcoder(dyn_cs, dyn_cs);
 
     TEST_TRUE(tr.transcode_func()      == static_transcoder_type::transcode);
     TEST_TRUE(tr.transcode_size_func() == static_transcoder_type::transcode_size);
@@ -300,7 +300,7 @@ STRF_HD void utf16_codepoints_count()
 
         const char16_t str[] = u"a\0\u0080\u0800\uD7FF\uE000\U00010000\U0010FFFF";
         const auto str_len = sizeof(str)/2 - 1;
-        strf::utf16_t<char16_t> charset;
+        const strf::utf16_t<char16_t> charset;
         constexpr auto strict = strf::surrogate_policy::strict;
 
         {
@@ -338,7 +338,7 @@ STRF_HD void utf16_codepoints_count()
 
 STRF_TEST_FUNC void utf16_miscellaneous()
 {
-    strf::utf16_t<char16_t> charset;
+    const strf::utf16_t<char16_t> charset;
     {  // cover write_replacement_char(x);
         TEST(u"\uFFFD")                         .tr(u"{10}");
         TEST_CALLING_RECYCLE_AT(2, u"  \uFFFD").tr(u"  {10}");

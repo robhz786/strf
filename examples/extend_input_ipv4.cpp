@@ -71,9 +71,9 @@ int main()
     assert(str == "isocpp.org: .....198.199.109.141");
 
     // ipv4address in ranges
-    std::vector<xxx::ipv4address> vec = { {{127, 0, 0, 1}}
-                                        , {{146, 20, 110, 251}}
-                                        , {{110, 110, 110, 110}} };
+    const std::vector<xxx::ipv4address> vec = { {{127, 0, 0, 1}}
+                                              , {{146, 20, 110, 251}}
+                                              , {{110, 110, 110, 110}} };
     str = strf::to_string("[", strf::separated_range(vec, " ; "), "]");
     assert(str == "[127.0.0.1 ; 146.20.110.251 ; 110.110.110.110]");
 

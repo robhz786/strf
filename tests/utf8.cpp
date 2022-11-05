@@ -294,8 +294,8 @@ STRF_TEST_FUNC void utf8_sani_find_transcoder()
     using static_transcoder_type = strf::static_transcoder
         <char, char, strf::csid_utf8, strf::csid_utf8>;
 
-    strf::dynamic_charset<char> dyn_cs  = strf::utf8_t<char>{}.to_dynamic();
-    strf::dynamic_transcoder<char, char> tr = strf::find_transcoder(dyn_cs, dyn_cs);
+    const strf::dynamic_charset<char> dyn_cs  = strf::utf8_t<char>{}.to_dynamic();
+    const strf::dynamic_transcoder<char, char> tr = strf::find_transcoder(dyn_cs, dyn_cs);
 
     TEST_TRUE(tr.transcode_func()      == static_transcoder_type::transcode);
     TEST_TRUE(tr.transcode_size_func() == static_transcoder_type::transcode_size);
@@ -415,7 +415,7 @@ STRF_HD void utf8_codepoints_count()
 
         const char8_t str[] = u8"a\0\u0080\u0800\uD7FF\uE000\U00010000\U0010FFFF";
         const auto str_len = sizeof(str) - 1;
-        strf::utf8_t<char8_t> charset;
+        const strf::utf8_t<char8_t> charset;
 
         {
             auto r = charset.count_codepoints(str, str_len, 8, strict);
@@ -458,7 +458,7 @@ STRF_TEST_FUNC void utf8_miscellaneous()
         TEST_TRUNCATING_AT     (3, u8"\uFFFD") .tr(u8"{10}");
         TEST_TRUNCATING_AT     (2, u8"")       .tr(u8"{10}");
     }
-    strf::utf_t<char> charset;
+    const strf::utf_t<char> charset;
     {
         using utf16_to_utf8 = strf::static_transcoder
             <char16_t, char, strf::csid_utf16, strf::csid_utf8>;

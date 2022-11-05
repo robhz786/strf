@@ -35,19 +35,19 @@ STRF_TEST_FUNC void char_range_basic_operations()
         }
     }
     {   // construct from array
-        strf::array_destination<CharT> sw(buff);
+        const strf::array_destination<CharT> sw(buff);
         TEST_TRUE(sw.buffer_ptr() == &buff[0]);
         TEST_EQ(sw.buffer_space(), buff_size);
         TEST_TRUE(sw.good());
     }
     {   // construct from pointer and size
-        strf::array_destination<CharT> sw(buff, 4);
+        const strf::array_destination<CharT> sw(buff, 4);
         TEST_TRUE(sw.buffer_ptr() == &buff[0]);
         TEST_EQ(sw.buffer_space(), 4);
         TEST_TRUE(sw.good());
     }
     {   // construct from range
-        strf::array_destination<CharT> sw(buff, buff + 4);
+        const strf::array_destination<CharT> sw(buff, buff + 4);
         TEST_TRUE(sw.buffer_ptr() == &buff[0]);
         TEST_EQ(sw.buffer_space(), 4);
         TEST_TRUE(sw.good());

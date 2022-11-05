@@ -15,7 +15,7 @@ void test_successfull_writing()
     auto tiny_str = test_utils::make_tiny_string<CharT>();
     auto double_str = test_utils::make_double_string<CharT>();
 
-    std::basic_ostringstream<CharT> dest;
+    const std::basic_ostringstream<CharT> dest;
     strf::basic_streambuf_writer<CharT> writer(*dest.rdbuf());
 
     writer.write(tiny_str.begin(), tiny_str.size());
@@ -41,7 +41,7 @@ void when_finish_is_not_called()
 {
     auto tiny_str = test_utils::make_tiny_string<CharT>();
 
-    std::basic_ostringstream<CharT> oss;
+    const std::basic_ostringstream<CharT> oss;
     {
         strf::basic_streambuf_writer<CharT> writer(oss.rdbuf());
         strf::detail::copy_n<CharT>(tiny_str.begin(), tiny_str.size(), writer.buffer_ptr());
@@ -58,7 +58,7 @@ void when_finish_is_not_called_but_state_is_bad_anyway()
 {
     auto tiny_str = test_utils::make_tiny_string<CharT>();
 
-    std::basic_ostringstream<CharT> oss;
+    const std::basic_ostringstream<CharT> oss;
     {
         strf::basic_streambuf_writer<CharT> writer(*oss.rdbuf());
         strf::detail::copy_n(tiny_str.begin(), tiny_str.size(), writer.buffer_ptr());
@@ -73,7 +73,7 @@ void test_failing_to_recycle()
 {
     auto half_str = test_utils::make_half_string<CharT>();
 
-    std::basic_ostringstream<CharT> dest;
+    const std::basic_ostringstream<CharT> dest;
     strf::basic_streambuf_writer<CharT> writer(*dest.rdbuf());
 
     writer.write(half_str.begin(), half_str.size());
@@ -129,7 +129,7 @@ void test_failing_to_finish()
     auto double_str = test_utils::make_double_string<CharT>();
     auto half_str = test_utils::make_half_string<CharT>();
 
-    std::basic_ostringstream<CharT> dest;
+    const std::basic_ostringstream<CharT> dest;
     strf::basic_streambuf_writer<CharT> writer(*dest.rdbuf());
 
     writer.write(double_str.begin(), double_str.size());
@@ -157,7 +157,7 @@ void basic_tests()
     auto full_str = test_utils::make_full_string<CharT>();
 
     {
-        std::basic_ostringstream<CharT> dest;
+        const std::basic_ostringstream<CharT> dest;
         strf::to(dest.rdbuf()) (half_str, full_str);
         auto obtained_content = dest.str();
         TEST_EQ(obtained_content.size(), half_str.size() + full_str.size());
@@ -170,7 +170,7 @@ void basic_tests()
                                                , full_str.size() ));
     }
     {
-        std::basic_ostringstream<CharT> dest;
+        const std::basic_ostringstream<CharT> dest;
         strf::to(*dest.rdbuf()) (half_str, full_str);
         auto obtained_content = dest.str();
         TEST_EQ(obtained_content.size(), half_str.size() + full_str.size());

@@ -184,7 +184,7 @@ struct printable_traits<std::complex<FloatT>>
     {
         auto form = arg.form(strf::use_facet<complex_form_c, std::complex<FloatT>>(fp));
         auto v = ::complex_coordinates(arg.value(), form);
-        unsigned has_brackets = form != complex_form::polar;
+        const unsigned has_brackets = form != complex_form::polar;
         auto arg2 = strf::join
             ( strf::multi(static_cast<CharT>('('), has_brackets)
             , strf::fmt(v.first).set_float_format(arg.get_float_format())

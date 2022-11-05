@@ -141,7 +141,7 @@ private:
         , strf_inilist_<typename DestCreator::char_type> printers )
     {
         typename ReservePolicy::preprinting_type pre;
-        strf::detail::tr_string_printer<Charset, ErrHandler> tr_printer
+        const strf::detail::tr_string_printer<Charset, ErrHandler> tr_printer
             ( pre, preprinting_arr, printers
             , tr_string.begin(), tr_string.end()
             , charset, err_handler );

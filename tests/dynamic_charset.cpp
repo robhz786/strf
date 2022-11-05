@@ -74,11 +74,11 @@ void test_dynamic_charset()
         auto transc4 = dyn_utf8.find_transcoder_from(strf::tag<wchar_t>{}, invalid_csid);
         TEST_TRUE(transc4.transcode_func() == nullptr);
 
-        strf::dynamic_charset_data<char> invalid_data = {
+        const strf::dynamic_charset_data<char> invalid_data = {
             "invalid", invalid_csid, '?', 1, nullptr, nullptr, nullptr, nullptr,
             nullptr, nullptr, nullptr, nullptr, {}, {}, {} };
 
-        strf::dynamic_charset<char> invalid_encoding{invalid_data};
+        const strf::dynamic_charset<char> invalid_encoding{invalid_data};
 
         auto transc5 = invalid_encoding.find_transcoder_from(strf::tag<char>{}, invalid_csid);
         auto transc6 = invalid_encoding.find_transcoder_from(strf::tag<char16_t>{}, invalid_csid);

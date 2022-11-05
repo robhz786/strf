@@ -91,7 +91,7 @@ constexpr strf::printing_syntax<QStringCreatorFactory> toQString{};
 int main()
 {
     int x = 255;
-    QString str = toQString(x, u" in hexadecimal is ", *strf::hex(x));
+    const QString str = toQString(x, u" in hexadecimal is ", *strf::hex(x));
     assert(str == "255 in hexadecimal is 0xff");
 
     return 0;

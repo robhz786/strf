@@ -591,7 +591,7 @@ public:
         auto res = detail::std_width_calc_func(buff_, this->buffer_ptr(), width_, state_, true);
         width_ = res.width;
         codepoints_count_ += (res.ptr - buff_);
-        bool whole_string_covered = (res.ptr == this->buffer_ptr());
+        const bool whole_string_covered = (res.ptr == this->buffer_ptr());
         return {width_, whole_string_covered, codepoints_count_};
     }
 
@@ -698,7 +698,7 @@ public:
         charset.to_u32().transcode(decr, str, str_len, err_notifier, surr_poli);
         auto res = decr.get_remaining_width_and_codepoints_count();
 
-        strf::width_t width = limit - res.remaining_width;
+        const strf::width_t width = limit - res.remaining_width;
         if (res.whole_string_covered) {
             return {width, str_len};
         }

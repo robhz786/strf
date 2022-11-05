@@ -19,7 +19,7 @@ STRF_HD void output_buffer_interchar_copy
     ( strf::output_buffer<DestCharT, 0>& dest, const SrcCharT* str, std::size_t len )
 {
     do {
-        std::size_t space = dest.buffer_space();
+        const std::size_t space = dest.buffer_space();
         if (space >= len) {
             detail::copy_n(str, len, dest.buffer_ptr());
             dest.advance(len);

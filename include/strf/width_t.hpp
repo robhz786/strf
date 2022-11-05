@@ -107,14 +107,14 @@ public:
     }
     STRF_CONSTEXPR_IN_CXX14 STRF_HD width_t& operator/=(std::uint16_t d) noexcept
     {
-        std::uint64_t v64 = value_;
-        std::uint64_t tmp = (v64 << 32) / d;
+        const std::uint64_t v64 = value_;
+        const std::uint64_t tmp = (v64 << 32) / d;
         value_ = static_cast<std::uint32_t>(tmp >> 32);
         return *this;
     }
     STRF_CONSTEXPR_IN_CXX14 STRF_HD width_t& operator*=(width_t other) noexcept
     {
-        std::uint64_t tmp
+        const std::uint64_t tmp
             = static_cast<std::uint64_t>(value_)
             * static_cast<std::uint64_t>(other.value_);
 
@@ -123,8 +123,8 @@ public:
     }
     STRF_CONSTEXPR_IN_CXX14 STRF_HD width_t& operator/=(width_t other) noexcept
     {
-        std::uint64_t v = value_;
-        std::uint64_t tmp = static_cast<std::uint64_t>(v << 32) / other.value_;
+        const std::uint64_t v = value_;
+        const std::uint64_t tmp = static_cast<std::uint64_t>(v << 32) / other.value_;
 
         value_ = static_cast<std::uint32_t>(static_cast<std::uint64_t>(tmp) >> 16);
         return *this;

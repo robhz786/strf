@@ -78,8 +78,8 @@ struct traits_that_fails {
     }
 
     STRF_HD std::size_t write(const char* ptr, std::size_t count) noexcept {
-        std::size_t size = dest_end_ - dest_;
-        std::size_t c = count <= size ? count : size;
+        const std::size_t size = dest_end_ - dest_;
+        const std::size_t c = count <= size ? count : size;
         memcpy(dest_, ptr, c);
         dest_ += c;
         return c;

@@ -2220,7 +2220,7 @@ STRF_HD void single_byte_charset_to_utf32<SrcCharT, DestCharT, Impl>::transcode
     const auto *src_end = src + src_size;
     for (const auto *src_it = src; src_it < src_end; ++src_it, ++dest_it) {
         STRF_CHECK_DEST;
-        char32_t ch32 = Impl::decode(static_cast<std::uint8_t>(*src_it));
+        const char32_t ch32 = Impl::decode(static_cast<std::uint8_t>(*src_it));
         STRF_IF_LIKELY (ch32 != 0xFFFD) {
             *dest_it = static_cast<DestCharT>(ch32);
         } else  {
@@ -2395,7 +2395,7 @@ protected:
     {
         using return_type = strf::dynamic_transcoder<wchar_t, CharT>;
         if (id == strf::csid_utf32) {
-            strf::static_transcoder<wchar_t, CharT, strf::csid_utf32, Id> t;
+            const strf::static_transcoder<wchar_t, CharT, strf::csid_utf32, Id> t;
             return return_type{t};
         }
         return {};
@@ -2405,7 +2405,7 @@ protected:
     {
         using return_type = strf::dynamic_transcoder<CharT, wchar_t>;
         if (id == strf::csid_utf32) {
-            strf::static_transcoder<CharT, wchar_t, Id, strf::csid_utf32> t;
+            const strf::static_transcoder<CharT, wchar_t, Id, strf::csid_utf32> t;
             return return_type{t};
         }
         return {};
@@ -2613,7 +2613,7 @@ private:
     {
         using transcoder_type = strf::dynamic_transcoder<SrcCharT, CharT>;
         if (id == Impl::id) {
-            static_transcoder<SrcCharT, CharT, Impl::id, Impl::id> t;
+            const static_transcoder<SrcCharT, CharT, Impl::id, Impl::id> t;
             return transcoder_type{ t };
         }
         return {};
@@ -2624,7 +2624,7 @@ private:
     {
         using transcoder_type = strf::dynamic_transcoder<CharT, DestCharT>;
         if (id == Impl::id) {
-            static_transcoder<CharT, DestCharT, Impl::id, Impl::id> t;
+            const static_transcoder<CharT, DestCharT, Impl::id, Impl::id> t;
             return transcoder_type{ t };
         }
         return {};
@@ -2638,7 +2638,7 @@ STRF_HD CharT* single_byte_charset<CharT, Impl>::encode_char
     , char32_t ch )
 {
     auto ch2 = Impl::encode(ch);
-    bool valid = (ch2 < 0x100);
+    const bool valid = (ch2 < 0x100);
     *dest = static_cast<CharT>(valid * ch2 + (!valid) * '?');
     return dest + 1;
 }
@@ -2653,7 +2653,7 @@ STRF_HD void single_byte_charset<CharT, Impl>::encode_fill
     }
     auto ch3 = static_cast<CharT>(ch2);
     while(true) {
-        std::size_t available = dest.buffer_space();
+        const std::size_t available = dest.buffer_space();
         STRF_IF_LIKELY (count <= available) {
             strf::detail::str_fill_n<CharT>(dest.buffer_ptr(), count, ch3);
             dest.advance(count);

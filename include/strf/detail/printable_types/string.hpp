@@ -772,7 +772,7 @@ public:
         auto&& wcalc = use_facet_<strf::width_calculator_c>(input.facets);
         auto src_charset = use_facet_<strf::charset_c<SrcCharT>>(input.facets);
         auto dest_charset = use_facet_<strf::charset_c<DestCharT>>(input.facets);
-        strf::width_t limit =
+        const strf::width_t limit =
             ( PrePrinting::width_required && input.pre.remaining_width() > afmt_.width
             ? input.pre.remaining_width()
             : afmt_.width );
@@ -849,14 +849,14 @@ inline STRF_HD std::uint16_t aligned_string_printer<SrcCharT, DestCharT>::init_
     ( PrePrinting& pre, strf::width_t strw )
 {
     if (afmt_.width > strw) {
-        std::uint16_t fillcount = (afmt_.width - strw).round();
+        const std::uint16_t fillcount = (afmt_.width - strw).round();
         switch(afmt_.alignment) {
             case strf::text_alignment::left:
                 left_fillcount_ = 0;
                 right_fillcount_ = fillcount;
                 break;
             case strf::text_alignment::center: {
-                std::uint16_t halfcount = fillcount >> 1;
+                const std::uint16_t halfcount = fillcount >> 1;
                 left_fillcount_ = halfcount;
                 right_fillcount_ = fillcount - halfcount;
                 break;
@@ -1084,7 +1084,7 @@ public:
     {
         auto src_charset = strf::detail::get_src_charset(input);
         auto&& wcalc = use_facet_<strf::width_calculator_c, SrcCharT>(input.facets);
-        strf::width_t limit =
+        const strf::width_t limit =
             ( PrePrinting::width_required && input.pre.remaining_width() > afmt_.width
             ? input.pre.remaining_width()
             : afmt_.width );
@@ -1176,7 +1176,7 @@ void STRF_HD aligned_transcode_string_printer<SrcCharT, DestCharT>::init_
                 right_fillcount_ = fillcount;
                 break;
             case strf::text_alignment::center: {
-                std::uint16_t halfcount = fillcount / 2;
+                const std::uint16_t halfcount = fillcount / 2;
                 left_fillcount_ = halfcount;
                 right_fillcount_ = fillcount - halfcount;
                 break;

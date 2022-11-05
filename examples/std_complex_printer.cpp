@@ -311,7 +311,7 @@ void fmt_std_complex_printer<CharT, FloatT>::init_fillcount_and_do_preprinting_
     , WidthCalc wcalc
     , strf::width_t fmt_width )
 {
-    strf::width_t fillchar_width = wcalc.char_width(strf::utf_t<char32_t>{}, fillchar_);
+    const strf::width_t fillchar_width = wcalc.char_width(strf::utf_t<char32_t>{}, fillchar_);
     if (fmt_width >= pre.remaining_width() || ! static_cast<bool>(PrecalcWidth) ) {
         pre.clear_remaining_width();
         strf::preprinting<PrecalcSize, strf::precalc_width::yes> sub_pre{fmt_width};
@@ -626,7 +626,7 @@ void tests()
 int main()
 {
     strf::narrow_cfile_writer<char, 512> test_msg_dest(stdout);
-    test_utils::test_messages_destination_guard g(test_msg_dest);
+    const test_utils::test_messages_destination_guard g(test_msg_dest);
 
     tests();
 

@@ -8,7 +8,7 @@
 
 int main() {
     strf::narrow_cfile_writer<char, 1024> test_msg_dest(stdout);
-    test_utils::test_messages_destination_guard g{test_msg_dest};
+    const test_utils::test_messages_destination_guard g{test_msg_dest};
     test_utils::run_all_tests();
 
     int err_count = test_utils::test_err_count();

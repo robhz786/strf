@@ -50,7 +50,7 @@ STRF_HD void test_width_char_by_char
     *obtained_sizes_it++ = chars.end() - grapheme_begin;
 
     auto obtained_width = (initial_width - remaining_width).round();
-    span<const std::size_t> obtained_grapheme_sizes{size_buffer, obtained_sizes_it};
+    const span<const std::size_t> obtained_grapheme_sizes{size_buffer, obtained_sizes_it};
 
     if (obtained_width != expected_width) {
         test_utils::test_failure
@@ -101,7 +101,7 @@ STRF_HD void test_pos
     , std::initializer_list<char32_t> chars )
 {
     auto r = strf::detail::std_width_calc_func(chars.begin(), chars.end(), max_width, 0, true);
-    std::size_t obtained_pos = r.ptr - chars.begin();
+    const std::size_t obtained_pos = r.ptr - chars.begin();
     if (obtained_pos != expected_pos) {
         test_utils::test_failure
             ( filename, line, funcname, "Obtained pos = ", obtained_pos
@@ -119,7 +119,7 @@ STRF_HD void test_width
     , const size_array<NumSizes>& expected_grapheme_sizes_
     , simple_array<char32_t, NumChars> chars )
 {
-    span<const std::size_t> expected_grapheme_sizes{expected_grapheme_sizes_.elements, NumSizes};
+    const span<const std::size_t> expected_grapheme_sizes{expected_grapheme_sizes_.elements, NumSizes};
     test_width_one_pass( filename, linenumber, funcname, expected_width
                        , expected_grapheme_sizes
                        , chars );
@@ -1538,8 +1538,8 @@ STRF_HD void other_tests()
     }
     {
         // empty input to std_width_calc_func
-        strf::width_t initial_width = 5;
-        char32_t ch = 'X';
+        const strf::width_t initial_width = 5;
+        const char32_t ch = 'X';
         auto r = strf::detail::std_width_calc_func(&ch, &ch, initial_width, 0, true);
         TEST_TRUE(r.ptr == &ch);
         TEST_EQ(r.state, 0);

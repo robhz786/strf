@@ -193,7 +193,7 @@ void ipv6_printer<CharT>::print_to(strf::destination<CharT>& dest) const
                 break;
             default:{
                 assert(alignment_fmt_.alignment == strf::text_alignment::center);
-                std::uint16_t halfcount = fillcount_ / 2;
+                const std::uint16_t halfcount = fillcount_ / 2;
                 encode_fill_fn_(dest, halfcount, alignment_fmt_.fill);
                 print_ipv6(dest);
                 encode_fill_fn_(dest, fillcount_ - halfcount, alignment_fmt_.fill);
@@ -302,7 +302,7 @@ void tests()
 int main()
 {
     strf::narrow_cfile_writer<char, 512> msg_dest(stdout);
-    test_utils::test_messages_destination_guard g(msg_dest);
+    const test_utils::test_messages_destination_guard g(msg_dest);
 
     tests();
 

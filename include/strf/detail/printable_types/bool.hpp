@@ -120,7 +120,7 @@ public:
         , lettercase_(strf::use_facet<strf::lettercase_c, bool>(input.facets))
     {
         auto charset = strf::use_facet<charset_c<CharT>, bool>(input.facets);
-        std::uint16_t w = 5 - (int)input.arg.value();
+        const std::uint16_t w = 5 - (int)input.arg.value();
         auto fmt_width = afmt_.width.round();
         if (fmt_width > w) {
             encode_fill_ = charset.encode_fill_func();

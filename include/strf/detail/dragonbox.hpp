@@ -2937,7 +2937,7 @@ namespace dragonbox {
 					bool const approx_y_parity = ((dist ^ (small_divisor / 2)) & 1) != 0;
 
 					// Is dist divisible by 10^kappa?
-					bool divisible_by_10_to_the_kappa =
+					const bool divisible_by_10_to_the_kappa =
 						div::check_divisibility_and_divide_by_pow10<kappa>(dist);
 
 					// Add dist / 10^kappa to the significand.

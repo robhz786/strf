@@ -187,15 +187,20 @@ template <typename T>
 void output_buffer<T, 0>::do_write(const T* data, std::size_t count)
 {
     for(;;) {
-        std::size_t s = buffer_space();
-        std::size_t sub_count = (count <= s ? count : s);
+#if !defined(STRF_FREESTANDING) || defined(STRF_WITH_CSTRING)
+
+        const std::size_t s = buffer_space();
+        const std::size_t sub_count = (count <= s ? count : s);
         count -= sub_count;
 
-#if !defined(STRF_FREESTANDING) || defined(STRF_WITH_CSTRING)
         memcpy(pointer_, data, sub_count * sizeof(value_type));
         data += sub_count;
         pointer_ += sub_count;
 #else
+        const std::size_t s = buffer_space();
+        std::size_t sub_count = (count <= s ? count : s);
+        count -= sub_count;
+
         for(; sub_count != 0; ++pointer_, ++data, --sub_count) {
             *pointer_ = *data;
         }
@@ -313,7 +318,7 @@ public:
 
     STRF_HD result finish() noexcept
     {
-        bool g = this->good();
+        const bool g = this->good();
         STRF_IF_LIKELY (g) {
             it_ = this->buffer_ptr();
             this->set_good(false);
@@ -452,7 +457,7 @@ public:
 
     STRF_HD result finish() noexcept
     {
-        bool truncated = ! this->good();
+        const bool truncated = ! this->good();
         CharT* ptr = truncated ? it_ : this->buffer_ptr();
         return { ptr, truncated };
     }

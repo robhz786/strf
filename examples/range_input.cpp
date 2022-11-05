@@ -54,7 +54,7 @@ void sample4()
 
 void sample5()
 {
-    std::map<int, const char*> m = {
+    const std::map<int, const char*> m = {
         {1, "one"},
         {2, "two"},
         {1000, "a thousand"}

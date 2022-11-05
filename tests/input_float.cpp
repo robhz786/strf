@@ -36,7 +36,7 @@ inline STRF_HD FloatT make_float
     , typename helper::uint_equiv ieee_mantissa
     , bool negative = false )
 {
-    typename helper::uint_equiv sign = negative;
+    const typename helper::uint_equiv sign = negative;
     auto v = (sign << (helper::mantissa_bits_size + helper::exponent_bits_size))
            | (ieee_exponent << helper::mantissa_bits_size)
            | (ieee_mantissa & helper::mantissa_bits_mask);
@@ -97,7 +97,7 @@ STRF_TEST_FUNC void test_floating_point(FloatT value)
     {
         strf::preprinting<strf::precalc_size::yes, strf::precalc_width::yes> p{strf::width_max};
         strf::precalculate<char>(p, strf::pack(), value);
-        std::size_t content_size = res.ptr - buff;
+        const std::size_t content_size = res.ptr - buff;
         TEST_EQ(p.accumulated_size(), content_size);
         auto width = strf::width_max - p.remaining_width();
         TEST_TRUE(width == strf::width_t(static_cast<std::uint16_t>(content_size)));
@@ -137,7 +137,7 @@ STRF_TEST_FUNC void test_several_values()
     constexpr auto u1 = static_cast<typename helper::uint_equiv>(1);
     for(unsigned e = 0; e <= helper::max_normal_exp; ++e) {
         for(unsigned i = 2; i <= helper::mantissa_bits_size; ++i) {
-            unsigned s = helper::mantissa_bits_size - i;
+            const unsigned s = helper::mantissa_bits_size - i;
             test_floating_point<FloatT>(e, helper::mantissa_bits_mask << s);
             test_floating_point<FloatT>(e, u1 << s);
         }
@@ -814,7 +814,7 @@ STRF_TEST_FUNC void test_punctuation()
         TEST("1234,50,0") .with(grp(1,2,-1)) (!strf::fixed(1234500.0));
     }
     {   // variable groups and big separator
-        numpunct_maker<10> grp{0xABCD};
+        const numpunct_maker<10> grp{0xABCD};
 
         TEST(u8"1\uABCD" u8"00\uABCD" u8"00\uABCD" u8"0\uABCD" u8"00\uABCD" u8"0")
               .with(grp(1,2,1,2)) (!strf::fixed(100000000.0));

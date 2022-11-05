@@ -405,7 +405,7 @@ STRF_FUNC_IMPL STRF_HD digits_grouping::digits_grouping(const char* str) noexcep
 {
     strf::digits_grouping_creator creator;
     while(true) {
-        char ch = *str;
+        const char ch = *str;
         if (ch == '\0') {
             *this = creator.finish();
             break;

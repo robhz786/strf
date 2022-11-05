@@ -1043,7 +1043,7 @@ STRF_HD auto test_failed_recycle_call
             , "TEST_EQ (", (a), ", ", (b), ") failed. " );
 
 #define TEST_CSTR_EQ(s1, s2)                                            \
-    for ( std::size_t len1 = strf::detail::str_length(s1); 1;){         \
+    for ( const std::size_t len1 = strf::detail::str_length(s1); 1;){   \
         if ( len1 != strf::detail::str_length(s2)                       \
           || ! strf::detail::str_equal(s1, s2, len1))                   \
             test_utils::test_failure                                    \

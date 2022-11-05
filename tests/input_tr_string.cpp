@@ -222,8 +222,8 @@ auto first_char_of_tr_string(String str, Args&&...)
             <strf::precalc_size::yes, strf::precalc_width::no>;                       \
         pre_t pre;                                                                    \
         strf::precalculate<char_t>(pre, strf::pack(), strf::tr(__VA_ARGS__));         \
-        std::size_t obtained = pre.accumulated_size();                                \
-        std::size_t expected = EXPECTED_SIZE;                                         \
+        const std::size_t obtained = pre.accumulated_size();                          \
+        const std::size_t expected = EXPECTED_SIZE;                                   \
         if (obtained != expected) {                                                   \
             test_utils::test_failure                                                  \
                  ( __FILE__, __LINE__, BOOST_CURRENT_FUNCTION                         \
@@ -353,8 +353,8 @@ STRF_TEST_FUNC void test_width_precalculation()
         using pre_t = strf::full_preprinting;                                         \
         pre_t pre(strf::width_t(INITIAL_WIDTH));                                      \
         strf::precalculate<char_t>(pre, strf::pack(), strf::tr(__VA_ARGS__));         \
-        bool failed_size = pre.accumulated_size() != EXPECTED_SIZE;                   \
-        bool failed_width =                                                           \
+        const bool failed_size = pre.accumulated_size() != EXPECTED_SIZE;             \
+        const bool failed_width =                                                     \
             ( pre.remaining_width() != strf::width_t(EXPECTED_REMAINING_WIDTH) );     \
         if (failed_size || failed_width) {                                            \
             ++ test_utils::test_err_count();                                          \

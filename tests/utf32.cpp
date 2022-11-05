@@ -274,7 +274,7 @@ STRF_HD void utf32_codepoints_count()
 
         const char32_t str[] = U"a\0\u0080\u0800\uD7FF\uE000\U00010000\U0010FFFF";
         const auto str_len = sizeof(str)/4 - 1;
-        strf::utf32_t<char32_t> charset;
+        const strf::utf32_t<char32_t> charset;
         constexpr auto strict = strf::surrogate_policy::strict;
 
         {
@@ -318,7 +318,7 @@ STRF_TEST_FUNC void utf32_miscellaneous()
         TEST_TRUNCATING_AT     (3, U"  \uFFFD").tr(U"  {10}");
         TEST_TRUNCATING_AT     (2, U"  ")      .tr(U"  {10}");
     }
-    strf::utf32_t<char32_t> charset;
+    const strf::utf32_t<char32_t> charset;
     TEST_EQ(1, charset.validate(U'a'));
     TEST_EQ(1, charset.validate(0x10FFFF));
     TEST_EQ(1, charset.validate(0xFFFFFF));

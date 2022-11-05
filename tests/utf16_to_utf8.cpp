@@ -195,9 +195,9 @@ STRF_TEST_FUNC void utf16_to_utf8_find_transcoder()
     using static_transcoder_type = strf::static_transcoder
         <char16_t, char, strf::csid_utf16, strf::csid_utf8>;
 
-    strf::dynamic_charset<char16_t> dyn_utf16 = strf::utf16_t<char16_t>{}.to_dynamic();
-    strf::dynamic_charset<char>     dyn_utf8  = strf::utf8_t<char>{}.to_dynamic();
-    strf::dynamic_transcoder<char16_t, char> tr = strf::find_transcoder(dyn_utf16, dyn_utf8);
+    const strf::dynamic_charset<char16_t> dyn_utf16 = strf::utf16_t<char16_t>{}.to_dynamic();
+    const strf::dynamic_charset<char>     dyn_utf8  = strf::utf8_t<char>{}.to_dynamic();
+    const strf::dynamic_transcoder<char16_t, char> tr = strf::find_transcoder(dyn_utf16, dyn_utf8);
 
     TEST_TRUE(tr.transcode_func()      == static_transcoder_type::transcode);
     TEST_TRUE(tr.transcode_size_func() == static_transcoder_type::transcode_size);

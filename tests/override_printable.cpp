@@ -21,7 +21,7 @@ public:
 
     void STRF_HD print_to(strf::destination<CharT>& dest) const override
     {
-        int size = 2 + static_cast<int>(value_);
+        const int size = 2 + static_cast<int>(value_);
         dest.ensure(size);
         auto *p = dest.buffer_ptr();
         if (value_) {

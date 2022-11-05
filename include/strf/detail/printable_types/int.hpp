@@ -1810,7 +1810,7 @@ inline STRF_HD void init_1
     } else {
         using uvalue_type = decltype(data.uvalue);
         STRF_IF_CONSTEXPR (sizeof(IntT) < sizeof(data.uvalue)) {
-            strf::detail::make_signed_t<uvalue_type> wide_value = value;
+            const strf::detail::make_signed_t<uvalue_type> wide_value = value;
             data.uvalue = static_cast<uvalue_type>(-wide_value);
         } else {
             data.uvalue = 1 + static_cast<uvalue_type>(-(value + 1));
@@ -1875,8 +1875,8 @@ STRF_HD fmt_int_printer_data_init_result init_fmt_int_printer_data
         prefix_size = (unsigned)ifmt.showbase << 1;
     }
     unsigned content_width = data.digcount + prefix_size;
-    unsigned zeros_a = ifmt.precision > data.digcount ? ifmt.precision - data.digcount : 0;
-    unsigned zeros_b = ifmt.pad0width > content_width ? ifmt.pad0width - content_width : 0;
+    const unsigned zeros_a = ifmt.precision > data.digcount ? ifmt.precision - data.digcount : 0;
+    const unsigned zeros_b = ifmt.pad0width > content_width ? ifmt.pad0width - content_width : 0;
     data.leading_zeros = (detail::max)(zeros_a, zeros_b);
     content_width += data.leading_zeros;
     data.fillchar = ' ';
@@ -1914,15 +1914,15 @@ STRF_HD fmt_int_printer_data_init_result init_fmt_int_printer_data
         prefix_size = (unsigned)ifmt.showbase << 1;
     }
     unsigned content_width = data.digcount + prefix_size;
-    unsigned zeros_a = ifmt.precision > data.digcount ? ifmt.precision - data.digcount : 0;
-    unsigned zeros_b = ifmt.pad0width > content_width ? ifmt.pad0width - content_width : 0;
+    const unsigned zeros_a = ifmt.precision > data.digcount ? ifmt.precision - data.digcount : 0;
+    const unsigned zeros_b = ifmt.pad0width > content_width ? ifmt.pad0width - content_width : 0;
     data.leading_zeros = (detail::max)(zeros_a, zeros_b);
     content_width += data.leading_zeros;
     auto fmt_width = afmt.width.round();
     data.fillchar = afmt.fill;
-    bool fill_sign_space = Base == 10 && data.sign == ' ';
+    const bool fill_sign_space = Base == 10 && data.sign == ' ';
     if (fmt_width <= content_width) {
-        bool x = fill_sign_space && afmt.fill != ' ';
+        const bool x = fill_sign_space && afmt.fill != ' ';
         data.left_fillcount = x;
         data.right_fillcount = 0;
         data.has_prefix &= !x;
@@ -1963,7 +1963,7 @@ public:
         lettercase_ = strf::use_facet<lettercase_c, int_type>(i.facets);
         auto charset = strf::use_facet<charset_c<CharT>, int_type>(i.facets);
         encode_fill_ = charset.encode_fill_func();
-        int_format_static_base_and_punct<Base, false> ifmt = i.arg.get_int_format();
+        const int_format_static_base_and_punct<Base, false> ifmt = i.arg.get_int_format();
         auto afmt = i.arg.get_alignment_format();
         detail::init_1(data_, ifmt, ivalue);
         auto w = detail::init_fmt_int_printer_data<Base>(data_, ifmt, afmt);
@@ -2060,15 +2060,15 @@ STRF_HD fmt_int_printer_data_init_result init_punct_fmt_int_printer_data
         prefix_size = (unsigned)ifmt.showbase << 1;
     }
     unsigned content_width = data.digcount + data.sepcount + prefix_size;
-    unsigned zeros_a = ifmt.precision > data.digcount ? ifmt.precision - data.digcount : 0;
-    unsigned zeros_b = ifmt.pad0width > content_width ? ifmt.pad0width - content_width : 0;
+    const unsigned zeros_a = ifmt.precision > data.digcount ? ifmt.precision - data.digcount : 0;
+    const unsigned zeros_b = ifmt.pad0width > content_width ? ifmt.pad0width - content_width : 0;
     data.leading_zeros = (detail::max)(zeros_a, zeros_b);
     content_width += data.leading_zeros;
     auto fmt_width = afmt.width.round();
     data.fillchar = afmt.fill;
-    bool fill_sign_space = Base == 10 && data.sign == ' ';
+    const bool fill_sign_space = Base == 10 && data.sign == ' ';
     if (fmt_width <= content_width) {
-        bool x = fill_sign_space && afmt.fill != ' ';
+        const bool x = fill_sign_space && afmt.fill != ' ';
         data.left_fillcount = x;
         data.right_fillcount = 0;
         data.has_prefix &= !x;
@@ -2234,7 +2234,7 @@ public:
         char32_t thousands_sep = ',';
         switch(ifmt.base) {
             case 16: {
-                int_format_static_base_and_punct<16, true> ifmt16
+                const int_format_static_base_and_punct<16, true> ifmt16
                     { ifmt.precision, ifmt.pad0width, ifmt.sign, ifmt.showbase };
                 if (ifmt.punctuate) {
                     auto numpunct = strf::use_facet<numpunct_c<16>, int_type>(i.facets);
@@ -2246,7 +2246,7 @@ public:
                 break;
             }
             case 8: {
-                int_format_static_base_and_punct<8, true> ifmt8
+                const int_format_static_base_and_punct<8, true> ifmt8
                     { ifmt.precision, ifmt.pad0width, ifmt.sign, ifmt.showbase };
                 if (ifmt.punctuate) {
                     auto numpunct = strf::use_facet<numpunct_c<8>, int_type>(i.facets);
@@ -2258,7 +2258,7 @@ public:
                 break;
             }
             case 2: {
-                int_format_static_base_and_punct<2, true> ifmt2
+                const int_format_static_base_and_punct<2, true> ifmt2
                     { ifmt.precision, ifmt.pad0width, ifmt.sign, ifmt.showbase };
                 if (ifmt.punctuate) {
                     auto numpunct = strf::use_facet<numpunct_c<2>, int_type>(i.facets);
@@ -2270,7 +2270,7 @@ public:
                 break;
             }
             default:  {
-                int_format_static_base_and_punct<10, true> ifmt10
+                const int_format_static_base_and_punct<10, true> ifmt10
                     { ifmt.precision, ifmt.pad0width, ifmt.sign, ifmt.showbase };
                 if (ifmt.punctuate) {
                     auto numpunct = strf::use_facet<numpunct_c<10>, int_type>(i.facets);

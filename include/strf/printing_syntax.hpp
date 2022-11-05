@@ -126,7 +126,7 @@ public:
         , const preprinting_type& pre
         , const Printers& ... printers )
     {
-        std::size_t size = pre.accumulated_size() + Ln;
+        const std::size_t size = pre.accumulated_size() + Ln;
         typename DestCreator::sized_destination_type dest{dest_creator.create(size)};
         strf::detail::write_args(dest, printers...);
         STRF_IF_CONSTEXPR (Ln) {

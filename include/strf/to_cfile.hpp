@@ -97,7 +97,7 @@ public:
 
     STRF_HD ~cfile_writer_base() override {
         if (this->good()) {
-            std::size_t count = this->buffer_ptr() - buff_;
+            const std::size_t count = this->buffer_ptr() - buff_;
             traits_.write(buff_, count);
         }
     }
@@ -106,10 +106,10 @@ public:
         auto *p = this->buffer_ptr();
         this->set_buffer_ptr(buff_);
         STRF_IF_LIKELY (this->good()) {
-            std::size_t count = p - buff_;
+            const std::size_t count = p - buff_;
             auto count_inc = traits_.write(buff_, count);
             count_ += count_inc;
-            bool success = count_inc == count;
+            const bool success = count_inc == count;
             this->set_good(success);
         }
     }
@@ -120,7 +120,7 @@ public:
         bool g = this->good();
         this->set_good(false);
         STRF_IF_LIKELY (g) {
-            std::size_t count = this->buffer_ptr() - buff_;
+            const std::size_t count = this->buffer_ptr() - buff_;
             auto count_inc = traits_.write(buff_, count);
             count_ += count_inc;
             g = (count == count_inc);
@@ -134,7 +134,7 @@ private:
         auto *p = this->buffer_ptr();
         this->set_buffer_ptr(buff_);
         STRF_IF_LIKELY (this->good()) {
-            std::size_t count = p - buff_;
+            const std::size_t count = p - buff_;
             auto count_inc = traits_.write(buff_, count);
             if (count_inc == count) {
                 count_inc += traits_.write(str, str_len);

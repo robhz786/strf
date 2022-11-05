@@ -85,13 +85,13 @@ STRF_FUNC_IMPL strf::digits_grouping parse_win_grouping(const wchar_t* str)
 // NOLINTNEXTLINE(misc-definitions-in-headers)
 STRF_FUNC_IMPL char32_t decode_first_char_from_utf16(const wchar_t* src)
 {
-    char32_t ch0 = src[0];
+    const char32_t ch0 = src[0];
     if (ch0 != '\0') {
         if (strf::detail::not_surrogate(ch0)) {
             return ch0;
         }
         if (strf::detail::is_high_surrogate(ch0)) {
-            char32_t ch1 = src[1];
+            const char32_t ch1 = src[1];
             if (strf::detail::is_low_surrogate(ch1)) {
                 return 0x10000 + (((ch0 & 0x3FF) << 10) | (ch1 & 0x3FF));
             }
@@ -106,7 +106,7 @@ STRF_FUNC_IMPL char32_t decode_first_char_from_utf16(const wchar_t* src)
 STRF_FUNC_IMPL char32_t decode_first_char(strf::transcode_f<char, char32_t>& decode, const char* str)
 {
     char32_t buff32[2] = { 0xFFFD, 0 };
-    strf::u32cstr_destination dest(buff32);
+    strf::u32cstr_destination dest(buff32); // NOLINT(misc-const-correctness)
     decode(dest, str, strlen(str), {}, strf::surrogate_policy::strict);
     return buff32[0];
 }

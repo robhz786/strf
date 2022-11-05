@@ -48,7 +48,7 @@ QStringAppender::QStringAppender(QString& str, std::size_t size)
 
 void QStringAppender::recycle()
 {
-    std::size_t count = this->buffer_ptr() - buffer_;
+    const std::size_t count = this->buffer_ptr() - buffer_;
     this->set_buffer_ptr(buffer_);
     if (this->good()) {
         this->set_good(false);
@@ -105,10 +105,10 @@ inline auto append(QString& str)
 int main()
 {
     QString str = "....";
-    int initial_length = str.length();
+    const int initial_length = str.length();
 
     int x = 255;
-    std::size_t append_count = append(str) (x, u" in hexadecimal is ", *strf::hex(x));
+    const std::size_t append_count = append(str) (x, u" in hexadecimal is ", *strf::hex(x));
 
     assert(str == "....255 in hexadecimal is 0xff");
 

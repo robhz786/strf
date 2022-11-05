@@ -432,7 +432,7 @@ STRF_HD void tr_string_write
     using char_type = typename Charset::code_unit;
 
     auto it = str;
-    std::size_t str_len = str_end - str;
+    const std::size_t str_len = str_end - str;
     while (it != str_end) {
         const char_type* prev = it;
         it = strf::detail::str_find<char_type>(it, (str_end - it), '{');
@@ -529,7 +529,7 @@ public:
     {
         STRF_IF_CONSTEXPR (static_cast<bool>(SizeRequested)) {
             auto invalid_arg_size = charset.replacement_char_size();
-            std::size_t s = strf::detail::tr_string_size
+            const std::size_t s = strf::detail::tr_string_size
                 ( args_pre, printers.size(), tr_string, tr_string_end
                 , invalid_arg_size );
             pre.add_size(s);

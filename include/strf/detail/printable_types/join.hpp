@@ -180,7 +180,7 @@ public:
         if (pre.remaining_width() > diff) {
             fillcount_ = (pre.remaining_width() - diff).round();
         }
-        width_t width = fillcount_ + wmax - pre.remaining_width();
+        const width_t width = fillcount_ + wmax - pre.remaining_width();
         input.pre.subtract_width(width);
         STRF_IF_CONSTEXPR (static_cast<bool>(PrecalcSize)) {
             input.pre.add_size(pre.accumulated_size());

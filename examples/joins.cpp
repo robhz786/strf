@@ -67,7 +67,7 @@ void sample()
 
     // in your code:
     std::string host_name = "boost.org";
-    unsigned char ip_addr [4] = {146, 20, 110, 251};
+    const unsigned char ip_addr [4] = {146, 20, 110, 251};
 
     auto str = strf::to_string .tr
         ( msg_the_ip_address_of_X_is_X()
@@ -89,7 +89,7 @@ language get_current_language()
 void sample_date()
 {
     struct date{ int day, month, year; };
-    date today {1, 1, 1935};
+    const date today {1, 1, 1935};
 
     auto as_yyyymmdd = [](date d)
     {

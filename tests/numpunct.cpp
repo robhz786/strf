@@ -60,7 +60,7 @@ STRF_HD const char* result(strf::digits_distribution dist)
 STRF_TEST_FUNC void test_numpunct()
 {
     {
-        strf::numpunct<10> grouper(4);
+        const strf::numpunct<10> grouper(4);
         TEST_TRUE(grouper.thousands_sep_count(1) == 0);
         TEST_TRUE(grouper.thousands_sep_count(4) == 0);
         TEST_TRUE(grouper.thousands_sep_count(5) == 1);
@@ -85,7 +85,7 @@ STRF_TEST_FUNC void test_numpunct()
         TEST_TRUE(grouper.thousands_sep_count(99) == 0);
     }
     {
-        strf::digits_grouping grpng{1, 2, 3, -1};
+        const strf::digits_grouping grpng{1, 2, 3, -1};
         strf::numpunct<10> punct{grpng};
         TEST("10000000000000,000,00,0") .with(punct) (strf::punct(big_value));
         TEST("0") .with(punct) (0);
@@ -129,7 +129,7 @@ STRF_TEST_FUNC void test_numpunct()
         TEST_CSTR_EQ(result(grpng.distribute(7)), "x.xxx.xx.x");
     }
     {
-        strf::digits_grouping grouping{1, 2, 3};
+        const strf::digits_grouping grouping{1, 2, 3};
         strf::numpunct<10> punct{grouping};
         TEST("10,000,000,000,000,000,00,0") .with(punct) (strf::punct(big_value));
         TEST("0") .with(punct) (0);
@@ -200,18 +200,18 @@ STRF_TEST_FUNC void test_numpunct()
     //     digits_grouping from string
     //
     {
-        strf::digits_grouping result("");
-        strf::digits_grouping expected{};
+        const strf::digits_grouping result("");
+        const strf::digits_grouping expected{};
         TEST_TRUE(result == expected);
     }
     {
-        strf::digits_grouping result("\x03\x02");
-        strf::digits_grouping expected{3, 2};
+        const strf::digits_grouping result("\x03\x02");
+        const strf::digits_grouping expected{3, 2};
         TEST_TRUE(result == expected);
     }
     {
-        strf::digits_grouping result("\x03\xFF");
-        strf::digits_grouping expected{3, -1};
+        const strf::digits_grouping result("\x03\xFF");
+        const strf::digits_grouping expected{3, -1};
         TEST_TRUE(result == expected);
     }
 
@@ -220,33 +220,33 @@ STRF_TEST_FUNC void test_numpunct()
     //
     {
         strf::digits_grouping_creator creator;
-        strf::digits_grouping expected;
+        const strf::digits_grouping expected;
         TEST_TRUE(creator.finish() == expected);
         TEST_FALSE(creator.failed());
     }
     {
         strf::digits_grouping_creator creator;
-        strf::digits_grouping expected;
+        const strf::digits_grouping expected;
         TEST_TRUE(creator.finish_no_more_sep() == expected);
         TEST_FALSE(creator.failed());
     }
     {
         strf::digits_grouping_creator creator;
-        strf::digits_grouping expected{strf::digits_grouping::grp_max};
+        const strf::digits_grouping expected{strf::digits_grouping::grp_max};
         creator.push_high(strf::digits_grouping::grp_max);
         TEST_TRUE(creator.finish() == expected);
         TEST_FALSE(creator.failed());
     }
     {
         strf::digits_grouping_creator creator;
-        strf::digits_grouping expected{strf::digits_grouping::grp_max, -1};
+        const strf::digits_grouping expected{strf::digits_grouping::grp_max, -1};
         creator.push_high(strf::digits_grouping::grp_max);
         TEST_TRUE(creator.finish_no_more_sep() == expected);
         TEST_FALSE(creator.failed());
     }
     {
         strf::digits_grouping_creator creator;
-        strf::digits_grouping expected{1, 2};
+        const strf::digits_grouping expected{1, 2};
         creator.push_high(1);
         creator.push_high(2);
         TEST_TRUE(creator.finish() == expected);
@@ -254,7 +254,7 @@ STRF_TEST_FUNC void test_numpunct()
     }
     {
         strf::digits_grouping_creator creator;
-        strf::digits_grouping expected{1, 2};
+        const strf::digits_grouping expected{1, 2};
         creator.push_high(1);
         creator.push_high(2);
         creator.push_high(2);
@@ -264,7 +264,7 @@ STRF_TEST_FUNC void test_numpunct()
     }
     {
         strf::digits_grouping_creator creator;
-        strf::digits_grouping expected{1, 2, 2, 2, -1};
+        const strf::digits_grouping expected{1, 2, 2, 2, -1};
         creator.push_high(1);
         creator.push_high(2);
         creator.push_high(2);
@@ -276,7 +276,7 @@ STRF_TEST_FUNC void test_numpunct()
     {
         // too many groups
         strf::digits_grouping_creator creator;
-        strf::digits_grouping expected{};
+        const strf::digits_grouping expected{};
         for (unsigned i = 0; i <= strf::digits_grouping::grps_count_max; ++i) {
             creator.push_high(i);
         }
@@ -286,7 +286,7 @@ STRF_TEST_FUNC void test_numpunct()
     {
         // too many groups
         strf::digits_grouping_creator creator;
-        strf::digits_grouping expected{};
+        const strf::digits_grouping expected{};
         for (unsigned i = 0; i < strf::digits_grouping::grps_count_max; ++i) {
             creator.push_high(i);
         }
@@ -296,7 +296,7 @@ STRF_TEST_FUNC void test_numpunct()
     {
         // negative group
         strf::digits_grouping_creator creator;
-        strf::digits_grouping expected{};
+        const strf::digits_grouping expected{};
         creator.push_high(2);
         creator.push_high(-1);
         creator.push_high(3);
@@ -306,7 +306,7 @@ STRF_TEST_FUNC void test_numpunct()
     {
         // group too big
         strf::digits_grouping_creator creator;
-        strf::digits_grouping expected{};
+        const strf::digits_grouping expected{};
         creator.push_high(2);
         creator.push_high(strf::digits_grouping::grp_max + 1);
         creator.push_high(3);

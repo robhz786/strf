@@ -45,7 +45,7 @@ inline FloatT make_float
     , typename helper::uint_equiv ieee_mantissa
     , bool negative = false )
 {
-    typename helper::uint_equiv sign = negative;
+    const typename helper::uint_equiv sign = negative;
     auto v = (sign << (helper::mantissa_bits_size + helper::exponent_bits_size))
            | (ieee_exponent << helper::mantissa_bits_size)
            | (ieee_mantissa & helper::mantissa_bits_mask);
@@ -62,11 +62,11 @@ struct precalc_and_print_result {
 template <typename Arg>
 precalc_and_print_result precalc_and_print(char* buff, std::size_t buff_size, const Arg& arg) {
 
-    strf::width_t initial_width = (strf::width_t::max)();
+    const strf::width_t initial_width = (strf::width_t::max)();
     strf::full_preprinting pre(initial_width);
     auto printer_input = strf::make_printer_input<char>(pre, strf::pack(), arg);
     using printer_type = typename decltype(printer_input)::printer_type;
-    printer_type printer{printer_input};
+    const printer_type printer{printer_input};
     strf::cstr_destination dest{buff, buff_size};
     printer.print_to(dest);
     auto *end = dest.finish().ptr;
@@ -92,8 +92,8 @@ int strf_print_and_check
     , const Arg& arg)
 {
     auto r = precalc_and_print(buff, buff_size, arg);
-    bool t1 = r.count == r.predicted_size;
-    bool t2 = r.count == r.predicted_size;
+    const bool t1 = r.count == r.predicted_size;
+    const bool t2 = r.count == r.predicted_size;
     if (!t1 || !t2) {
         ++ test_utils::test_err_count();
         to(test_utils::test_messages_destination())('\n');
@@ -137,13 +137,13 @@ void test_vs_sprintf
     char sprintf_buff[500];
     auto strf_result = precalc_and_print(strf_buff, strf_arg);
 
-    bool t1 = strf_result.count == strf_result.predicted_size;
-    bool t2 = strf_result.count == strf_result.predicted_width;
+    const bool t1 = strf_result.count == strf_result.predicted_size;
+    const bool t2 = strf_result.count == strf_result.predicted_width;
 
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg,hicpp-vararg)
     auto sprintf_len = sprintf(sprintf_buff, sprintf_fmt, args...);
-    bool t3 = strf_result.count == sprintf_len;
-    bool t4 = t3 && strf::detail::str_equal(strf_buff, sprintf_buff, sprintf_len);
+    const bool t3 = strf_result.count == sprintf_len;
+    const bool t4 = t3 && strf::detail::str_equal(strf_buff, sprintf_buff, sprintf_len);
 
     if (!t1 || !t2 || !t3 || !t4) {
         ++ test_utils::test_err_count();
@@ -282,7 +282,7 @@ public:
 
     void test_scientic_notation () const
     {
-        int max_precision = digcount - 1;
+        const int max_precision = digcount - 1;
 
         TEST_VS_SPRINTF( strf::sci(value), "%.*e", max_precision, value);
         TEST_VS_SPRINTF(~strf::sci(value), "% .*e", max_precision, value);
@@ -323,10 +323,10 @@ public:
             //                , "%+#0*.0f", digcount + 10, value);
 
         } else {
-            int min_precision = e10 >= -digcount ? 0 : 1 - e10 - digcount;
-            int max_precision = - e10;
-            int total_digcount = e10 >= -digcount ? digcount : - e10;
-            int width = total_digcount + 5;
+            const int min_precision = e10 >= -digcount ? 0 : 1 - e10 - digcount;
+            const int max_precision = - e10;
+            const int total_digcount = e10 >= -digcount ? digcount : - e10;
+            const int width = total_digcount + 5;
 
             for (int p = min_precision; p <= max_precision; ++p) {
                 if (p == max_precision - 1 && (m10 % 10) == 5) {
@@ -363,7 +363,7 @@ private:
 inline STRF_TEST_FUNC void test_exp_and_mantissa
     ( std::uint32_t ieee_exponent, std::uint64_t ieee_mantissa )
 {
-    float64_tester tester(ieee_exponent, ieee_mantissa);
+    const float64_tester tester(ieee_exponent, ieee_mantissa);
     tester.run();
 }
 
@@ -391,7 +391,7 @@ void test_mantissa(std::uint64_t mantissa) {
 
 int main() {
     strf::narrow_cfile_writer<char, 1024> test_msg_dest(stdout);
-    test_utils::test_messages_destination_guard g(test_msg_dest);
+    const test_utils::test_messages_destination_guard g(test_msg_dest);
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_int_distribution<std::uint64_t> distrib{0, 0xFFFFFFFFFFFFF};

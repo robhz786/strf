@@ -134,8 +134,8 @@ STRF_HD void general_tests
     {   // converting individual characters to UTF-32 ( cover decode_unit )
 
         for(unsigned i = 0; i < 0x100; ++i) {
-            char ch = static_cast<char>(i);
-            char32_t ch32 = charset.decode_unit(ch);
+            const char ch = static_cast<char>(i);
+            const char32_t ch32 = charset.decode_unit(ch);
             TEST_SCOPE_DESCRIPTION("i=", *strf::hex(i));
             TEST_EQ((unsigned)ch32, (unsigned)decoded_0_to_0xff[i]);
         }
@@ -151,7 +151,7 @@ STRF_HD void general_tests
         // check each encoded character
         for(unsigned i = 0; i < 0x100; ++i) {
             auto ch32 = decoded_0_to_0xff[i];
-            char expected_ch = ch32 == 0xFFFD ? '?' : static_cast<char>(i);
+            const char expected_ch = ch32 == 0xFFFD ? '?' : static_cast<char>(i);
 
             TEST_SCOPE_DESCRIPTION( "i=", *strf::hex(i), " result[i]=", result[i]
                                   , " ch32=", *strf::hex(static_cast<unsigned>(ch32)) );
@@ -164,7 +164,7 @@ STRF_HD void general_tests
         for(unsigned i = 0; i < 0x100; ++i) {
             TEST_SCOPE_DESCRIPTION("i = ", i);
             auto ch32 = decoded_0_to_0xff[i];
-            char expected_ch = ch32 == 0xFFFD ? '?' : static_cast<char>(i);
+            const char expected_ch = ch32 == 0xFFFD ? '?' : static_cast<char>(i);
 
             char buff[20];
             auto *ptr = charset.encode_char(buff, ch32);
@@ -186,7 +186,7 @@ STRF_HD void general_tests
         // check each encoded character
         for(unsigned i = 0; i < 0x100; ++i) {
             TEST_SCOPE_DESCRIPTION("i = ", *strf::hex(i));
-            char expected_ch = decoded_0_to_0xff[i] == 0xFFFD ? '?' : static_cast<char>(i);
+            const char expected_ch = decoded_0_to_0xff[i] == 0xFFFD ? '?' : static_cast<char>(i);
             TEST_EQ(result[i], expected_ch);
         }
     }
@@ -205,7 +205,7 @@ STRF_HD void general_tests
         // check each encoded character
         for(unsigned i = 0; i < 0x100; ++i) {
             TEST_SCOPE_DESCRIPTION("i = ", i);
-            char expected_ch = decoded_0_to_0xff[i] == 0xFFFD ? '?' : static_cast<char>(i);
+            const char expected_ch = decoded_0_to_0xff[i] == 0xFFFD ? '?' : static_cast<char>(i);
             TEST_EQ(result[i], expected_ch);
         }
 
@@ -238,7 +238,7 @@ STRF_HD void general_tests
             for(unsigned i = 0; i < 0x100; ++i) {
                 TEST_SCOPE_DESCRIPTION("i = ", i);
                 auto wch = decoded_wstr[i];
-                char expected_ch = wch == 0xFFFD ? '?' : static_cast<char>(i);
+                const char expected_ch = wch == 0xFFFD ? '?' : static_cast<char>(i);
                 TEST_EQ(result[i], expected_ch);
             }
         }
@@ -301,8 +301,8 @@ inline STRF_HD void general_tests
     ( strf::static_charset<CharT, CharsetId> charset
     , strf::detail::simple_string_view<char32_t> decoded_0_to_0xff )
 {
-    strf::dynamic_charset_data<CharT> data = charset.make_data();
-    strf::dynamic_charset<CharT> dynamic_cs{data};
+    const strf::dynamic_charset_data<CharT> data = charset.make_data();
+    const strf::dynamic_charset<CharT> dynamic_cs{data};
     general_tests(dynamic_cs, decoded_0_to_0xff);
 }
 
@@ -1312,8 +1312,8 @@ STRF_HD void test_unsupported_codepoints
     ( strf::static_charset<CharT, CharsetId> charset
     , std::initializer_list<char32_t> unsupported_codepoints )
 {
-    strf::dynamic_charset_data<CharT> data = charset.make_data();
-    strf::dynamic_charset<CharT> dynamic_cs{data};
+    const strf::dynamic_charset_data<CharT> data = charset.make_data();
+    const strf::dynamic_charset<CharT> dynamic_cs{data};
     test_unsupported_codepoints(dynamic_cs, unsupported_codepoints);
 }
 

@@ -1722,7 +1722,7 @@ static_charset<CharT, strf::csid_utf16>::encode_char
         return dest + 1;
     }
     if (ch < 0x110000) {
-        char32_t sub_codepoint = ch - 0x10000;
+        const char32_t sub_codepoint = ch - 0x10000;
         dest[0] = static_cast<CharT>(0xD800 + (sub_codepoint >> 10));
         dest[1] = static_cast<CharT>(0xDC00 + (sub_codepoint &  0x3FF));
         return dest + 2;
@@ -1739,7 +1739,7 @@ static_charset<CharT, strf::csid_utf16>::encode_fill
     STRF_IF_LIKELY (ch < 0x10000) {
         strf::detail::write_fill<CharT>(dest, count, static_cast<CharT>(ch));
     } else if (ch < 0x110000) {
-        char32_t sub_codepoint = ch - 0x10000;
+        const char32_t sub_codepoint = ch - 0x10000;
         auto ch0 = static_cast<CharT>(0xD800 + (sub_codepoint >> 10));
         auto ch1 = static_cast<CharT>(0xDC00 + (sub_codepoint &  0x3FF));
         strf::detail::repeat_sequence<CharT>(dest, count, ch0, ch1);
@@ -1773,7 +1773,7 @@ STRF_HD void strf::static_transcoder
             } else goto invalid_char;
         } else if (ch < 0x110000) {
             STRF_CHECK_DEST_SIZE(2);
-            char32_t sub_codepoint = ch - 0x10000;
+            const char32_t sub_codepoint = ch - 0x10000;
             dest_it[0] = static_cast<DestCharT>(0xD800 | (sub_codepoint >> 10));
             dest_it[1] = static_cast<DestCharT>(0xDC00 | (sub_codepoint &  0x3FF));
             dest_it += 2;
@@ -2057,9 +2057,9 @@ STRF_HD void strf::static_transcoder
                && strf::detail::is_low_surrogate(*src_it) )
         {
             STRF_CHECK_DEST_SIZE(4);
-            unsigned long ch2 = *src_it;
+            const unsigned long ch2 = *src_it;
             ++src_it;
-            unsigned long codepoint = 0x10000 + (((ch & 0x3FF) << 10) | (ch2 & 0x3FF));
+            const unsigned long codepoint = 0x10000 + (((ch & 0x3FF) << 10) | (ch2 & 0x3FF));
             dest_it[0] = static_cast<DestCharT>(0xF0 | (0x07 & (codepoint >> 18)));
             dest_it[1] = static_cast<DestCharT>(0x80 | (0xBF & (codepoint >> 12)));
             dest_it[2] = static_cast<DestCharT>(0x80 | (0xBF & (codepoint >> 6)));

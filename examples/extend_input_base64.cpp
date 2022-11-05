@@ -203,7 +203,7 @@ void base64_printer<CharT>::write_identation_(strf::destination<CharT>& dest) co
     using traits = std::char_traits<CharT>;
     std::size_t count = fmt_.indentation();
     while(true) {
-        std::size_t buff_size = dest.buffer_space();
+        const std::size_t buff_size = dest.buffer_space();
         if (buff_size >= count) {
             traits::assign(dest.buffer_ptr(), count, CharT(' '));
             dest.advance(count);
@@ -248,7 +248,7 @@ template <typename CharT>
 auto base64_printer<CharT>::encode_(std::uint8_t hextet) const -> CharT
 {
     assert(hextet <= 63);
-    std::uint8_t ch =
+    const std::uint8_t ch =
         hextet < 26 ?  static_cast<std::uint8_t>('A') + hextet :
         hextet < 52 ?  static_cast<std::uint8_t>('a') + hextet - 26 :
         hextet < 62 ?  static_cast<std::uint8_t>('0') + hextet - 52 :
@@ -308,7 +308,7 @@ void base64_printer<CharT>::write_end_of_line_(strf::destination<CharT>& dest) c
 
 inline auto base64(const void* bytes, std::size_t num_bytes)
 {
-    base64_input data{ static_cast<const unsigned char*>(bytes), num_bytes };
+    const base64_input data{ static_cast<const unsigned char*>(bytes), num_bytes };
     return base64_input_with_formatters{ data };
 }
 
@@ -433,7 +433,7 @@ void tests()
         const char* msg0 = "abc";
         const char* msg1 = "abcd";
         const char* msg2 = "abcde";
-        std::vector<xxx::base64_input> vec =
+        const std::vector<xxx::base64_input> vec =
             { {msg0, strlen(msg0)}
             , {msg1, strlen(msg1)}
             , {msg2, strlen(msg2)} };
