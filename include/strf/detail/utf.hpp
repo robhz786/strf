@@ -24,15 +24,15 @@ namespace strf {
         dest_end = dest.buffer_end();           \
     }
 
-#define STRF_CHECK_DEST_SIZE(SIZE)                  \
-    STRF_IF_UNLIKELY (dest_it + SIZE > dest_end) {  \
-        dest.advance_to(dest_it);                   \
-        dest.flush();                               \
-        STRF_IF_UNLIKELY (!dest.good()) {           \
-            return;                                 \
-        }                                           \
-        dest_it = dest.buffer_ptr();                \
-        dest_end = dest.buffer_end();               \
+#define STRF_CHECK_DEST_SIZE(SIZE)                      \
+    STRF_IF_UNLIKELY (dest_it + (SIZE) > dest_end) {    \
+        dest.advance_to(dest_it);                       \
+        dest.flush();                                   \
+        STRF_IF_UNLIKELY (!dest.good()) {               \
+            return;                                     \
+        }                                               \
+        dest_it = dest.buffer_ptr();                    \
+        dest_end = dest.buffer_end();                   \
     }
 
 #endif // ! defined(STRF_CHECK_DEST)

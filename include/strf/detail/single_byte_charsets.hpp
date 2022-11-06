@@ -72,12 +72,12 @@
     using CHARSET ## _t =                                                     \
         strf::static_charset<CharT, strf::csid_ ## CHARSET>;
 
-
 #if defined(STRF_HAS_VARIABLE_TEMPLATES)
 
-#define STRF_DEF_SINGLE_BYTE_CHARSET(CHARSET)    \
-    STRF_DEF_SINGLE_BYTE_CHARSET_(CHARSET)       \
-    template <typename CharT> STRF_DEVICE constexpr CHARSET ## _t<CharT> CHARSET = {};
+#define STRF_DEF_SINGLE_BYTE_CHARSET(CHARSET)                           \
+    STRF_DEF_SINGLE_BYTE_CHARSET_(CHARSET)                              \
+    template <typename CharT>                                           \
+    STRF_DEVICE constexpr CHARSET ## _t<CharT> CHARSET = {}; // NOLINT(bugprone-macro-parentheses)
 
 #else
 
