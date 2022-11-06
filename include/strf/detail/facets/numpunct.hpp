@@ -142,8 +142,8 @@ private:
 struct digits_distribution
 {
     strf::reverse_digits_groups low_groups;
-    unsigned middle_groups_count;
-    unsigned highest_group;
+    unsigned middle_groups_count{};
+    unsigned highest_group{};
 };
 
 class digits_grouping_creator;
@@ -306,7 +306,7 @@ private:
         return ctor2_(grps...);
     }
 
-    underlying_int_t_ grps_;
+    underlying_int_t_ grps_{};
 };
 
 constexpr STRF_HD digits_grouping_iterator::digits_grouping_iterator

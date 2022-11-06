@@ -1399,10 +1399,10 @@ public:
 
 private:
 
-    const detail::double_dec value_;
-    bool sci_notation_ ;
-    const unsigned m10_digcount_;
-    strf::lettercase lettercase_;
+    const detail::double_dec value_{};
+    bool sci_notation_{} ;
+    const unsigned m10_digcount_{};
+    strf::lettercase lettercase_ = strf::lettercase::lower;
 };
 
 template <typename CharT>
@@ -2430,7 +2430,7 @@ private:
     char32_t decimal_point_ = '.';
     char32_t thousands_sep_ = ',';
     strf::lettercase lettercase_;
-    strf::detail::double_printer_data data_;
+    strf::detail::double_printer_data data_{};
 };
 
 template <typename CharT>

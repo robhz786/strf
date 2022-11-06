@@ -14,7 +14,7 @@ struct width_calculator_c;
 
 struct width_and_pos {
     strf::width_t width;
-    std::size_t pos;
+    std::size_t pos{};
 };
 
 class fast_width_t final
@@ -151,6 +151,7 @@ class width_accumulator: public strf::transcode_dest<char32_t>
 {
 public:
 
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init,hicpp-member-init)
     STRF_HD width_accumulator(strf::width_t limit, WFunc func)
         : strf::transcode_dest<char32_t>(buff_, buff_ + buff_size_)
         , limit_(limit)
@@ -163,8 +164,8 @@ public:
     struct result
     {
         strf::width_t width;
-        bool whole_string_covered;
-        std::size_t codepoints_count;
+        bool whole_string_covered{};
+        std::size_t codepoints_count{};
     };
 
     result STRF_HD get_result()
@@ -522,6 +523,8 @@ STRF_HD std_width_calc_func_return std_width_calc_func
 
 class std_width_decrementer: public strf::transcode_dest<char32_t> {
 public:
+
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init,hicpp-member-init)
     STRF_HD explicit std_width_decrementer (strf::width_t initial_width)
         : strf::transcode_dest<char32_t>(buff_, buff_size_)
         , width_{initial_width}
@@ -558,6 +561,8 @@ private:
 
 class std_width_decrementer_with_pos: public strf::transcode_dest<char32_t> {
 public:
+
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init,hicpp-member-init)
     STRF_HD explicit std_width_decrementer_with_pos (strf::width_t initial_width)
         : strf::transcode_dest<char32_t>(buff_, buff_size_)
         , width_{initial_width}
@@ -580,8 +585,8 @@ public:
 
     struct result {
         strf::width_t remaining_width;
-        bool whole_string_covered;
-        std::size_t codepoints_count;
+        bool whole_string_covered{};
+        std::size_t codepoints_count{};
     };
 
     STRF_HD result get_remaining_width_and_codepoints_count() {

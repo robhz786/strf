@@ -1430,9 +1430,9 @@ private:
         pre.add_size(digcount_);
     }
 
-    unsigned long long uvalue_;
-    unsigned digcount_;
-    bool negative_;
+    unsigned long long uvalue_{};
+    unsigned digcount_{};
+    bool negative_{};
 };
 
 template <typename CharT>
@@ -1512,12 +1512,12 @@ private:
     }
 
     strf::encode_fill_f<CharT> encode_fill_;
-    unsigned long long uvalue_;
-    unsigned digcount_;
-    unsigned fillcount_;
-    strf::text_alignment alignment_;
-    char32_t fillchar_;
-    bool negative_;
+    unsigned long long uvalue_{};
+    unsigned digcount_{};
+    unsigned fillcount_{};
+    strf::text_alignment alignment_{strf::text_alignment::right};
+    char32_t fillchar_{};
+    bool negative_{};
 };
 
 template <typename CharT>
@@ -1640,7 +1640,7 @@ public:
     }
 
 private:
-    int_printer_no_pad0_nor_punct_data data_;
+    int_printer_no_pad0_nor_punct_data data_{};
 };
 
 template <typename CharT>
@@ -1674,7 +1674,7 @@ public:
 
 private:
 
-    int_printer_no_pad0_nor_punct_data data_;
+    int_printer_no_pad0_nor_punct_data data_{};
     strf::lettercase lettercase_;
 };
 
@@ -1704,7 +1704,7 @@ public:
     }
 
 private:
-    int_printer_no_pad0_nor_punct_data data_;
+    int_printer_no_pad0_nor_punct_data data_{};
 };
 
 template <typename CharT>
@@ -1735,25 +1735,25 @@ public:
     }
 
 private:
-    int_printer_no_pad0_nor_punct_data data_;
+    int_printer_no_pad0_nor_punct_data data_{};
     strf::lettercase lettercase_;
 };
 
 struct fmt_int_printer_data {
-    unsigned long long uvalue;
-    unsigned digcount;
-    unsigned leading_zeros;
-    unsigned left_fillcount;
-    unsigned right_fillcount;
-    char32_t fillchar;
-    bool has_prefix;
-    char sign;
+    unsigned long long uvalue{};
+    unsigned digcount{};
+    unsigned leading_zeros{};
+    unsigned left_fillcount{};
+    unsigned right_fillcount{};
+    char32_t fillchar{U' '};
+    bool has_prefix{false};
+    char sign{'\0'};
 };
 
 struct punct_fmt_int_printer_data: public fmt_int_printer_data {
-    unsigned sepcount;
-    unsigned sepsize;
-    char32_t sepchar;
+    unsigned sepcount{};
+    unsigned sepsize{};
+    char32_t sepchar{};
     strf::digits_grouping grouping;
 };
 
@@ -1982,7 +1982,7 @@ public:
 private:
 
     strf::encode_fill_f<CharT> encode_fill_;
-    strf::detail::fmt_int_printer_data data_;
+    strf::detail::fmt_int_printer_data data_{};
     strf::lettercase lettercase_;
 };
 
@@ -2163,7 +2163,7 @@ private:
     strf::encode_fill_f<CharT> encode_fill_;
     strf::encode_char_f<CharT> encode_char_;
     strf::detail::punct_fmt_int_printer_data data_;
-    strf::lettercase lettercase_;
+    strf::lettercase lettercase_{strf::lettercase::lower};
 };
 
 template <typename CharT, int Base>

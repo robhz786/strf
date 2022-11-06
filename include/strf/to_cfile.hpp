@@ -194,6 +194,7 @@ class wide_cfile_writer final
         < wchar_t, strf::detail::wide_cfile_writer_traits >;
 public:
 
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init,hicpp-member-init)
     explicit STRF_HD wide_cfile_writer(std::FILE* file)
         : impl_(buf_, buf_size_, file)
     {

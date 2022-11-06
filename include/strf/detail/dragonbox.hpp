@@ -2828,7 +2828,7 @@ namespace dragonbox {
 				// Step 1: Schubfach multiplier calculation
 				//////////////////////////////////////////////////////////////////////
 
-				ReturnType ret_value;
+				ReturnType ret_value{};
 
 				// Compute k and beta.
 				int const minus_k = log::floor_log10_pow2(exponent) - kappa;
@@ -2977,7 +2977,7 @@ namespace dragonbox {
 			STRF_HD JKJ_SAFEBUFFERS static ReturnType compute_nearest_shorter(
 				int const exponent, IntervalType interval_type) noexcept
 			{
-				ReturnType ret_value;
+				ReturnType ret_value{};
 				STRF_MAYBE_UNUSED(interval_type);
 
 				// Compute k and beta.

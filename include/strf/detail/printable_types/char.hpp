@@ -189,8 +189,8 @@ private:
     strf::encode_fill_f<CharT> encode_fill_fn_;
     std::size_t count_;
     const strf::alignment_format afmt_;
-    std::uint16_t left_fillcount_;
-    std::uint16_t right_fillcount_;
+    std::uint16_t left_fillcount_{};
+    std::uint16_t right_fillcount_{};
     CharT ch_;
 
     template <typename Category, typename FPack>
@@ -342,9 +342,9 @@ private:
     strf::encode_fill_f<DestCharT> encode_fill_f_;
     std::size_t count_;
     char32_t ch_;
-    char32_t fillchar_;
-    strf::text_alignment alignment_;
-    std::uint16_t fillcount_;
+    char32_t fillchar_{};
+    strf::text_alignment alignment_{strf::text_alignment::right};
+    std::uint16_t fillcount_{};
 };
 
 template <typename DestCharT>

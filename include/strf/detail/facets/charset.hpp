@@ -905,6 +905,7 @@ class buffered_encoder: public strf::transcode_dest<char32_t>
 {
 public:
 
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init,hicpp-member-init)
     STRF_HD buffered_encoder
         ( strf::transcode_f<char32_t, DestCharT> func
         , strf::transcode_dest<DestCharT>& dest
@@ -958,6 +959,7 @@ class buffered_size_calculator: public strf::transcode_dest<char32_t>
 {
 public:
 
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init,hicpp-member-init)
     STRF_HD buffered_size_calculator
         ( strf::transcode_size_f<char32_t> func, strf::surrogate_policy surr_poli )
         : strf::transcode_dest<char32_t>(buff_, buff_size_)
