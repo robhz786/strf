@@ -198,12 +198,12 @@ constexpr STRF_HD bool valid_start_3bytes
             || (0x1B != (((ch0 & 0xF) << 1) | ((ch1 >> 5) & 1)))) );
 }
 
-inline STRF_HD unsigned utf8_decode_first_2_of_3(std::uint8_t ch0, std::uint8_t ch1)
+inline STRF_HD std::uint32_t utf8_decode_first_2_of_3(std::uint8_t ch0, std::uint8_t ch1)
 {
     return ((ch0 & 0x0F) << 6) | (ch1 & 0x3F);
 }
 
-inline STRF_HD bool first_2_of_3_are_valid(unsigned x, strf::surrogate_policy surr_poli)
+inline STRF_HD bool first_2_of_3_are_valid(std::uint32_t x, strf::surrogate_policy surr_poli)
 {
     return ( surr_poli == strf::surrogate_policy::lax
           || (x >> 5) != 0x1B );
@@ -216,17 +216,17 @@ inline STRF_HD bool first_2_of_3_are_valid
     return first_2_of_3_are_valid(utf8_decode_first_2_of_3(ch0, ch1), surr_poli);
 }
 
-inline STRF_HD unsigned utf8_decode_first_2_of_4(std::uint8_t ch0, std::uint8_t ch1)
+inline STRF_HD std::uint32_t utf8_decode_first_2_of_4(std::uint8_t ch0, std::uint8_t ch1)
 {
     return ((ch0 ^ 0xF0) << 6) | (ch1 & 0x3F);
 }
 
-inline STRF_HD unsigned utf8_decode_last_2_of_4(unsigned long x, unsigned ch2, unsigned ch3)
+inline STRF_HD std::uint32_t utf8_decode_last_2_of_4(std::uint32_t x, std::uint32_t ch2, std::uint32_t ch3)
 {
     return (x << 12) | ((ch2 & 0x3F) <<  6) | (ch3 & 0x3F);
 }
 
-inline STRF_HD bool first_2_of_4_are_valid(unsigned x)
+inline STRF_HD bool first_2_of_4_are_valid(std::uint32_t x)
 {
     return 0xF < x && x < 0x110;
 }
@@ -1030,7 +1030,7 @@ STRF_HD void strf::static_transcoder
     using strf::detail::is_utf8_continuation;
 
     std::uint8_t ch0 = 0, ch1 = 0, ch2 = 0, ch3 = 0;
-    unsigned long x = 0;
+    std::uint32_t x = 0;
     const auto *src_it = src;
     const auto *src_end = src + src_size;
     auto *dest_it = dest.buffer_ptr();
@@ -1523,7 +1523,7 @@ STRF_HD void strf::static_transcoder
     , strf::transcoding_error_notifier* err_notifier
     , strf::surrogate_policy surr_poli )
 {
-    unsigned long ch = 0, ch2 = 0;
+    std::uint32_t ch = 0, ch2 = 0;
     DestCharT ch32 = 0;
     const auto *src_end = src + src_size;
     auto *dest_it = dest.buffer_ptr();
@@ -1564,7 +1564,7 @@ STRF_HD std::size_t strf::static_transcoder
     , strf::surrogate_policy surr_poli )
 {
     (void) surr_poli;
-    unsigned long ch = 0;
+    std::uint32_t ch = 0;
     std::size_t count = 0;
     const auto *src_it = src;
     const auto *const src_end = src + src_size;
@@ -1594,7 +1594,7 @@ STRF_HD void strf::static_transcoder
     , strf::transcoding_error_notifier* err_notifier
     , strf::surrogate_policy surr_poli )
 {
-    unsigned long ch = 0, ch2 = 0;
+    std::uint32_t ch = 0, ch2 = 0;
     const auto *src_it = src;
     const auto *const src_end = src + src_size;
     auto *dest_it = dest.buffer_ptr();
@@ -1644,7 +1644,7 @@ STRF_HD std::size_t strf::static_transcoder
     std::size_t count = 0;
     const SrcCharT* src_it = src;
     const auto *const src_end = src + src_size;
-    unsigned long ch = 0;
+    std::uint32_t ch = 0;
     while (src_it != src_end) {
         ch = *src_it;
         ++ src_it;
@@ -1698,7 +1698,7 @@ static_charset<CharT, strf::csid_utf16>::count_codepoints
     std::size_t count = 0;
     const CharT* it = src;
     const auto *const end = src + src_size;
-    unsigned long ch = 0;
+    std::uint32_t ch = 0;
     while (it != end && count < max_count) {
         ch = *it;
         ++ it;
@@ -1900,7 +1900,7 @@ STRF_HD void strf::static_transcoder
     using strf::detail::first_2_of_4_are_valid;
 
     std::uint8_t ch0 = 0, ch1 = 0, ch2 = 0, ch3 = 0;
-    unsigned long x = 0;
+    std::uint32_t x = 0;
     const auto *src_it = src;
     const auto *const src_end = src + src_size;
     auto *dest_it = dest.buffer_ptr();
@@ -2057,9 +2057,9 @@ STRF_HD void strf::static_transcoder
                && strf::detail::is_low_surrogate(*src_it) )
         {
             STRF_CHECK_DEST_SIZE(4);
-            const unsigned long ch2 = *src_it;
+            const std::uint32_t ch2 = *src_it;
             ++src_it;
-            const unsigned long codepoint = 0x10000 + (((ch & 0x3FF) << 10) | (ch2 & 0x3FF));
+            const std::uint32_t codepoint = 0x10000 + (((ch & 0x3FF) << 10) | (ch2 & 0x3FF));
             dest_it[0] = static_cast<DestCharT>(0xF0 | (0x07 & (codepoint >> 18)));
             dest_it[1] = static_cast<DestCharT>(0x80 | (0xBF & (codepoint >> 12)));
             dest_it[2] = static_cast<DestCharT>(0x80 | (0xBF & (codepoint >> 6)));

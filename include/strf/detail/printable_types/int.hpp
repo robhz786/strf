@@ -1257,64 +1257,72 @@ public:
 
 template <> struct printable_traits<signed char>:
     public strf::detail::int_printing<signed char> {};
-template <> struct printable_traits<short>:
-    public strf::detail::int_printing<short> {};
+template <> struct printable_traits<short>: // NOLINT(google-runtime-int)
+    public strf::detail::int_printing<short> {}; // NOLINT(google-runtime-int)
 template <> struct printable_traits<int>:
     public strf::detail::int_printing<int> {};
-template <> struct printable_traits<long>:
-    public strf::detail::int_printing<long> {};
-template <> struct printable_traits<long long>:
-    public strf::detail::int_printing<long long> {};
+template <> struct printable_traits<long>: // NOLINT(google-runtime-int)
+    public strf::detail::int_printing<long> {}; // NOLINT(google-runtime-int)
+template <> struct printable_traits<long long>: // NOLINT(google-runtime-int)
+    public strf::detail::int_printing<long long> {}; // NOLINT(google-runtime-int)
 
 template <> struct printable_traits<unsigned char>:
     public strf::detail::int_printing<unsigned char> {};
-template <> struct printable_traits<unsigned short>:
-    public strf::detail::int_printing<unsigned short> {};
-template <> struct printable_traits<unsigned int>:
-    public strf::detail::int_printing<unsigned int> {};
-template <> struct printable_traits<unsigned long>:
-    public strf::detail::int_printing<unsigned long> {};
-template <> struct printable_traits<unsigned long long>:
-    public strf::detail::int_printing<unsigned long long> {};
+template <> struct printable_traits<unsigned short>: // NOLINT(google-runtime-int)
+    public strf::detail::int_printing<unsigned short> {}; // NOLINT(google-runtime-int)
+template <> struct printable_traits<unsigned int>: // NOLINT(google-runtime-int)
+    public strf::detail::int_printing<unsigned int> {}; // NOLINT(google-runtime-int)
+template <> struct printable_traits<unsigned long>: // NOLINT(google-runtime-int)
+    public strf::detail::int_printing<unsigned long> {}; // NOLINT(google-runtime-int)
+template <> struct printable_traits<unsigned long long>: // NOLINT(google-runtime-int)
+    public strf::detail::int_printing<unsigned long long> {}; // NOLINT(google-runtime-int)
 
 constexpr STRF_HD auto tag_invoke(strf::printable_tag, signed char) noexcept
     -> strf::detail::int_printing<signed char>
     { return {}; }
 
+// NOLINTNEXTLINE(google-runtime-int)
 constexpr STRF_HD auto tag_invoke(strf::printable_tag, short) noexcept
-    -> strf::detail::int_printing<short>
+    -> strf::detail::int_printing<short>  // NOLINT(google-runtime-int)
     { return {}; }
 
 constexpr STRF_HD auto tag_invoke(strf::printable_tag, int) noexcept
     -> strf::detail::int_printing<int>
     { return {}; }
 
+// NOLINTNEXTLINE(google-runtime-int)
 constexpr STRF_HD auto tag_invoke(strf::printable_tag, long) noexcept
-    -> strf::detail::int_printing<long>
+    -> strf::detail::int_printing<long> // NOLINT(google-runtime-int)
     { return {}; }
 
+// NOLINTNEXTLINE(google-runtime-int)
 constexpr STRF_HD auto tag_invoke(strf::printable_tag, long long) noexcept
-    -> strf::detail::int_printing<long long>
+    -> strf::detail::int_printing<long long> // NOLINT(google-runtime-int)
     { return {}; }
 
+// NOLINTNEXTLINE(google-runtime-int)
 constexpr STRF_HD auto tag_invoke(strf::printable_tag, unsigned char) noexcept
     -> strf::detail::int_printing<unsigned char>
     { return {}; }
 
+// NOLINTNEXTLINE(google-runtime-int)
 constexpr STRF_HD auto tag_invoke(strf::printable_tag, unsigned short) noexcept
-    -> strf::detail::int_printing<unsigned short>
+    -> strf::detail::int_printing<unsigned short> // NOLINT(google-runtime-int)
     { return {}; }
 
+// NOLINTNEXTLINE(google-runtime-int)
 constexpr STRF_HD auto tag_invoke(strf::printable_tag, unsigned int) noexcept
-    -> strf::detail::int_printing<unsigned int>
+    -> strf::detail::int_printing<unsigned int> // NOLINT(google-runtime-int)
     { return {}; }
 
+// NOLINTNEXTLINE(google-runtime-int)
 constexpr STRF_HD auto tag_invoke(strf::printable_tag, unsigned long) noexcept
-    -> strf::detail::int_printing<unsigned long>
+    -> strf::detail::int_printing<unsigned long> // NOLINT(google-runtime-int)
     { return {}; }
 
+// NOLINTNEXTLINE(google-runtime-int)
 constexpr STRF_HD auto tag_invoke(strf::printable_tag, unsigned long long) noexcept
-    -> strf::detail::int_printing<unsigned long long>
+    -> strf::detail::int_printing<unsigned long long> // NOLINT(google-runtime-int)
     { return {}; }
 
 namespace detail {
@@ -1430,7 +1438,7 @@ private:
         pre.add_size(digcount_);
     }
 
-    unsigned long long uvalue_{};
+    std::uint64_t uvalue_{};
     unsigned digcount_{};
     bool negative_{};
 };
@@ -1512,7 +1520,7 @@ private:
     }
 
     strf::encode_fill_f<CharT> encode_fill_;
-    unsigned long long uvalue_{};
+    std::uint64_t uvalue_{};
     unsigned digcount_{};
     unsigned fillcount_{};
     strf::text_alignment alignment_{strf::text_alignment::right};
@@ -1556,7 +1564,7 @@ STRF_HD void aligned_default_int_printer<CharT>::print_to
 
 struct int_printer_no_pad0_nor_punct_data
 {
-    unsigned long long uvalue;
+    std::uint64_t uvalue;
     unsigned digcount;
     unsigned prefix;
 };
@@ -1740,7 +1748,7 @@ private:
 };
 
 struct fmt_int_printer_data {
-    unsigned long long uvalue{};
+    std::uint64_t uvalue{};
     unsigned digcount{};
     unsigned leading_zeros{};
     unsigned left_fillcount{};
@@ -2434,13 +2442,21 @@ STRF_EXPLICIT_TEMPLATE class int_printer_static_base_and_punct<wchar_t, 16, fals
 } // namespace detail
 
 template <typename> struct is_int_number: public std::false_type {};
+// NOLINTNEXTLINE(google-runtime-int)
 template <> struct is_int_number<short>: public std::true_type {};
+// NOLINTNEXTLINE(google-runtime-int)
 template <> struct is_int_number<int>: public std::true_type {};
+// NOLINTNEXTLINE(google-runtime-int)
 template <> struct is_int_number<long>: public std::true_type {};
+// NOLINTNEXTLINE(google-runtime-int)
 template <> struct is_int_number<long long>: public std::true_type {};
+// NOLINTNEXTLINE(google-runtime-int)
 template <> struct is_int_number<unsigned short>: public std::true_type {};
+// NOLINTNEXTLINE(google-runtime-int)
 template <> struct is_int_number<unsigned int>: public std::true_type {};
+// NOLINTNEXTLINE(google-runtime-int)
 template <> struct is_int_number<unsigned long>: public std::true_type {};
+// NOLINTNEXTLINE(google-runtime-int)
 template <> struct is_int_number<unsigned long long>: public std::true_type {};
 
 } // namespace strf

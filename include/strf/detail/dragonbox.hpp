@@ -373,13 +373,17 @@ namespace dragonbox {
 				}
 #elif defined(__GNUC__) || defined(__clang__)
 #define JKJ_HAS_COUNTR_ZERO_INTRINSIC 1
+                //NOLINTNEXTLINE(google-runtime-int)
 				static_assert( std::is_same<UInt, unsigned long>::value
-					|| std::is_same<UInt, unsigned long long>::value
+                    //NOLINTNEXTLINE(google-runtime-int)
+                    || std::is_same<UInt, unsigned long long>::value
 					|| sizeof(UInt) <= sizeof(unsigned int), "" );
-				JKJ_IF_CONSTEXPR (std::is_same<UInt, unsigned long>::value) {
+				//NOLINTNEXTLINE(google-runtime-int)
+                JKJ_IF_CONSTEXPR (std::is_same<UInt, unsigned long>::value) {
 					return __builtin_ctzl(n);
 				}
-				else JKJ_IF_CONSTEXPR (std::is_same<UInt, unsigned long long>::value) {
+				//NOLINTNEXTLINE(google-runtime-int)
+                else JKJ_IF_CONSTEXPR (std::is_same<UInt, unsigned long long>::value) {
 					return __builtin_ctzll(n);
 				}
 				else {

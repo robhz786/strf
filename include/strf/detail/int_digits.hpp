@@ -27,9 +27,9 @@ constexpr bool not_digit(CharT ch)
     return ch < static_cast<CharT>('0') || static_cast<CharT>('9') < ch;
 }
 
-inline STRF_HD unsigned long long pow10(unsigned n) noexcept
+inline STRF_HD std::uint64_t pow10(unsigned n) noexcept
 {
-    static const unsigned long long p10[] =
+    static const std::uint64_t p10[] =
         { 1, 10, 100, 1000, 10000, 100000, 1000000
         , 10000000ULL
         , 100000000ULL
@@ -49,7 +49,7 @@ inline STRF_HD unsigned long long pow10(unsigned n) noexcept
     return p10[n];
 };
 
-template <typename IntT, unsigned Base> struct max_num_digits_impl;
+template <typename IntT, int Base> struct max_num_digits_impl;
 template <typename IntT> struct max_num_digits_impl<IntT, 10>
 {
     static constexpr unsigned value = (240824 * sizeof(IntT) + 99999) / 100000;
@@ -67,7 +67,7 @@ template <typename IntT> struct max_num_digits_impl<IntT, 2>
     static constexpr unsigned value = sizeof(IntT) * 8;
 };
 
-template<class IntT, unsigned Base>
+template<class IntT, int Base>
 constexpr STRF_HD unsigned max_num_digits()
 {
     return strf::detail::max_num_digits_impl<IntT, Base>::value;
@@ -131,6 +131,7 @@ template<int IntSize>
 struct digits_counter<2, IntSize>
 {
     static_assert(IntSize <= 4, "");
+    // NOLINTNEXTLINE(google-runtime-int)
     static inline STRF_HD unsigned count_digits(unsigned long value) noexcept
     {
         return sizeof(value) * 8 - strf::detail::countl_zero_l(value | 1);
@@ -139,6 +140,7 @@ struct digits_counter<2, IntSize>
 template<>
 struct digits_counter<2, 8>
 {
+    // NOLINTNEXTLINE(google-runtime-int)
     static inline STRF_HD unsigned count_digits(unsigned long long value) noexcept
     {
         return sizeof(value) * 8 - strf::detail::countl_zero_ll(value | 1);
@@ -148,6 +150,7 @@ template<int IntSize>
 struct digits_counter<8, IntSize>
 {
     static_assert(IntSize <= 4, "");
+    // NOLINTNEXTLINE(google-runtime-int)
     static STRF_HD unsigned count_digits(unsigned long value) noexcept
     {
         return (sizeof(value) * 8 + 2 - strf::detail::countl_zero_l(value | 1)) / 3;
@@ -156,6 +159,7 @@ struct digits_counter<8, IntSize>
 template<>
 struct digits_counter<8, 8>
 {
+    // NOLINTNEXTLINE(google-runtime-int)
     static STRF_HD unsigned count_digits(unsigned long long value) noexcept
     {
         return (sizeof(value) * 8 + 2 - strf::detail::countl_zero_ll(value | 1)) / 3;
@@ -165,6 +169,7 @@ template<int IntSize>
 struct digits_counter<16, IntSize>
 {
     static_assert(IntSize <= 4, "");
+    // NOLINTNEXTLINE(google-runtime-int)
     static STRF_HD unsigned count_digits(unsigned long value) noexcept
     {
         return (sizeof(value) * 8 + 3 - strf::detail::countl_zero_l(value | 1)) >> 2;
@@ -173,6 +178,7 @@ struct digits_counter<16, IntSize>
 template<>
 struct digits_counter<16, 8>
 {
+    // NOLINTNEXTLINE(google-runtime-int)
     static STRF_HD unsigned count_digits(unsigned long long value) noexcept
     {
         return (sizeof(value) * 8 + 3 - strf::detail::countl_zero_ll(value | 1)) >> 2;
@@ -561,7 +567,7 @@ struct digits_counter<10, 8>
     }
 };
 
-template <unsigned Base, typename intT>
+template <int Base, typename intT>
 STRF_CONSTEXPR_IN_CXX14 STRF_HD unsigned count_digits(intT value) noexcept
 {
     static_assert(std::is_unsigned<intT>::value, "");

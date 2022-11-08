@@ -53,18 +53,22 @@ namespace detail {
 #  define STRF_HAS_COUNTL_ZERO
 #  define STRF_HAS_COUNTR_ZERO
 
+// NOLINTNEXTLINE(google-runtime-int)
 inline STRF_HD int countl_zero_l(unsigned long x) noexcept
 {
     return std::countl_zero(x);
 }
+// NOLINTNEXTLINE(google-runtime-int)
 inline STRF_HD int countl_zero_ll(unsigned long long x) noexcept
 {
     return std::countl_zero(x);
 }
+// NOLINTNEXTLINE(google-runtime-int)
 inline STRF_HD int countr_zero_l(unsigned long x) noexcept
 {
     return std::countr_zero(x);
 }
+// NOLINTNEXTLINE(google-runtime-int)
 inline STRF_HD int countr_zero_ll(unsigned long long x) noexcept
 {
     return std::countr_zero(x);
@@ -74,10 +78,12 @@ inline STRF_HD int countr_zero_ll(unsigned long long x) noexcept
 #  if __has_builtin(__builtin_clzll)
 #    define STRF_HAS_COUNTL_ZERO
 
+// NOLINTNEXTLINE(google-runtime-int)
 inline STRF_HD int countl_zero_l(unsigned long x) noexcept
 {
     return __builtin_clzl(x);
 }
+// NOLINTNEXTLINE(google-runtime-int)
 inline STRF_HD int countl_zero_ll(unsigned long long x) noexcept
 {
     return __builtin_clzll(x);
@@ -88,10 +94,12 @@ inline STRF_HD int countl_zero_ll(unsigned long long x) noexcept
 #  if __has_builtin(__builtin_ctzll)
 #    define STRF_HAS_COUNTR_ZERO
 
+// NOLINTNEXTLINE(google-runtime-int)
 inline STRF_HD int countr_zero_l(unsigned long x) noexcept
 {
     return __builtin_ctzl(x);
 }
+// NOLINTNEXTLINE(google-runtime-int)
 inline STRF_HD int countr_zero_ll(unsigned long long x) noexcept
 {
     return __builtin_ctzll(x);

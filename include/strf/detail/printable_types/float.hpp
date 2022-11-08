@@ -833,7 +833,7 @@ inline STRF_HD void write_int_with_leading_zeros
 template <typename CharT>
 STRF_HD void print_amplified_integer_small_separator_1
     ( strf::destination<CharT>& dest
-    , unsigned long long value
+    , std::uint64_t value
     , unsigned num_digits
     , strf::digits_distribution dist
     , CharT separator )
@@ -873,7 +873,7 @@ STRF_HD void print_amplified_integer_small_separator_1
 template <typename CharT>
 STRF_HD void print_amplified_integer_small_separator_2
     ( strf::destination<CharT>& dest
-    , unsigned long long value
+    , std::uint64_t value
     , unsigned num_digits
     , strf::digits_distribution dist
     , CharT separator )
@@ -883,7 +883,7 @@ STRF_HD void print_amplified_integer_small_separator_2
     constexpr std::size_t size_after_recycle = strf::min_destination_buffer_size;
     (void) size_after_recycle;
 
-    constexpr auto max_digits = detail::max_num_digits<unsigned long long, 10>();
+    constexpr auto max_digits = detail::max_num_digits<std::uint64_t, 10>();
     char digits_buff[max_digits];
     auto *digits = strf::detail::write_int_dec_txtdigits_backwards
         (value, digits_buff + max_digits);
@@ -984,7 +984,7 @@ STRF_HD void print_amplified_integer_small_separator_2
 template <typename CharT>
 inline STRF_HD void print_amplified_integer_small_separator
     ( strf::destination<CharT>& dest
-    , unsigned long long value
+    , std::uint64_t value
     , strf::digits_grouping grouping
     , unsigned num_digits
     , unsigned num_trailing_zeros
@@ -1004,7 +1004,7 @@ template <typename CharT>
 STRF_HD void print_amplified_integer_big_separator_1
     ( strf::destination<CharT>& dest
     , strf::encode_char_f<CharT> encode_char
-    , unsigned long long value
+    , std::uint64_t value
     , unsigned num_digits
     , strf::digits_distribution dist
     , char32_t separator
@@ -1044,7 +1044,7 @@ template <typename CharT>
 STRF_HD void print_amplified_integer_big_separator_2
     ( strf::destination<CharT>& dest
     , strf::encode_char_f<CharT> encode_char
-    , unsigned long long value
+    , std::uint64_t value
     , unsigned num_digits
     , strf::digits_distribution dist
     , char32_t separator
@@ -1055,7 +1055,7 @@ STRF_HD void print_amplified_integer_big_separator_2
     constexpr std::size_t size_after_recycle = strf::min_destination_buffer_size;
     (void) size_after_recycle;
 
-    constexpr auto max_digits = detail::max_num_digits<unsigned long long, 10>();
+    constexpr auto max_digits = detail::max_num_digits<std::uint64_t, 10>();
     char digits_buff[max_digits];
     auto *digits = strf::detail::write_int_dec_txtdigits_backwards
         (value, digits_buff + max_digits);
@@ -1154,7 +1154,7 @@ template <typename CharT>
 STRF_HD void print_amplified_integer_big_separator
     ( strf::destination<CharT>& dest
     , strf::encode_char_f<CharT> encode_char
-    , unsigned long long value
+    , std::uint64_t value
     , strf::digits_grouping grouping
     , unsigned num_digits
     , unsigned num_trailing_zeros
@@ -1175,7 +1175,7 @@ template <typename CharT>
 STRF_HD void print_scientific_notation
     ( strf::destination<CharT>& dest
     , strf::encode_char_f<CharT> encode_char
-    , unsigned long long digits
+    , std::uint64_t digits
     , unsigned num_digits
     , char32_t decimal_point
     , unsigned decimal_point_size
@@ -1538,7 +1538,7 @@ STRF_HD void fast_double_printer<CharT>::print_to
     }
 }
 
-inline STRF_HD detail::chars_count_t exponent_hex_digcount(long exponent)
+inline STRF_HD detail::chars_count_t exponent_hex_digcount(std::int32_t exponent)
 {
     if (exponent < 0) {
         exponent = -exponent;
