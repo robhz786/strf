@@ -270,20 +270,20 @@ public:
     {
     }
 
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& multi(std::size_t count) && noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& multi(std::ptrdiff_t count) && noexcept
     {
         count_ = count;
         T* base_ptr = static_cast<T*>(this);
         return static_cast<T&&>(*base_ptr);
     }
-    constexpr STRF_HD std::size_t count() const noexcept
+    constexpr STRF_HD std::ptrdiff_t count() const noexcept
     {
         return count_;
     }
 
 private:
 
-    std::size_t count_ = 1;
+    std::ptrdiff_t count_ = 1;
 };
 
 struct quantity_formatter

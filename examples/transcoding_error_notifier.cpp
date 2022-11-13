@@ -20,10 +20,10 @@ public:
     }
 
     void invalid_sequence
-        ( std::size_t code_unit_size
+        ( int code_unit_size
         , const char* charset_name
         , const void* sequence_ptr
-        , std::size_t count ) override
+        , std::ptrdiff_t count ) override
     {
         if (code_unit_size != 1 && code_unit_size != 2 && code_unit_size != 4) {
             strf::to(dest_) ( "Invalid sequence and invalid code unit size ("
@@ -42,13 +42,13 @@ public:
 
 private:
 
-    static std::size_t extract_unit_and_advance(const void*& ptr, std::size_t size) {
+    static std::ptrdiff_t extract_unit_and_advance(const void*& ptr, std::ptrdiff_t size) {
         const auto *uptr = static_cast<const unsigned char*>(ptr);
         ptr = uptr + size;
         return extract_unit(uptr, size);
     }
 
-    static std::size_t extract_unit(const unsigned char* uptr, std::size_t size) {
+    static std::ptrdiff_t extract_unit(const unsigned char* uptr, std::ptrdiff_t size) {
         switch (size) {
             case 1:
                 return *uptr;

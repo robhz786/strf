@@ -8,6 +8,7 @@
 
 #include <type_traits>
 #include <cstddef>
+#include <cstdint>
 
 #if ! defined(STRF_ASSERT)
 #  if ! defined(STRF_FREESTANDING) && defined(__STDC_HOSTED__) && __STDC_HOSTED__ == 1
@@ -324,6 +325,58 @@ template <> struct is_char<char>: public std::true_type {};
 template <> struct is_char<char16_t>: public std::true_type {};
 template <> struct is_char<char32_t>: public std::true_type {};
 template <> struct is_char<wchar_t>: public std::true_type {};
+
+
+namespace detail {
+
+inline namespace cast_sugars {
+
+template <typename IntT, typename UIntT = typename std::make_unsigned<IntT>::type>
+constexpr STRF_HD UIntT cast_unsigned(IntT x)
+{
+    return static_cast<UIntT>(x);
+}
+
+template <typename T>
+STRF_HD constexpr std::uint64_t cast_u64(T x)
+{
+    return static_cast<std::uint64_t>(x);
+}
+
+template <typename T>
+STRF_HD constexpr std::int64_t  cast_i64(T x)
+{
+    return static_cast<std::int64_t>(x);
+}
+
+template <typename T>
+STRF_HD constexpr std::uint32_t cast_u32(T x)
+{
+    return static_cast<std::uint32_t>(x);
+}
+
+template <typename T>
+STRF_HD constexpr std::int32_t  cast_i32(T x)
+{
+    return static_cast<std::int32_t>(x);
+}
+
+template <typename T>
+STRF_HD constexpr std::uint16_t cast_u16(T x)
+{
+    return static_cast<std::uint16_t>(x);
+}
+
+template <typename T>
+STRF_HD constexpr std::int16_t  cast_i16(T x)
+{
+    return static_cast<std::int16_t>(x);
+}
+
+} // inline namespace cast_sugars
+
+} // namespace detail
+
 
 } // namespace strf
 

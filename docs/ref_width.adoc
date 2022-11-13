@@ -51,7 +51,7 @@ Given
 * `limit`, a value of type `{width_t}`
 * `str`, a value of type `const CharT*`
         pointing to a string encoded according to `charset`.
-* `str_len`, a value of type `std::size_t` equal to the length of string `str`.
+* `str_len`, a value of type `std::ptrdiff_t` equal to the length of string `str`.
 * `surr_poli`, a value of type `{surrogate_policy}`
 
 For a type `X` to be a _WidthCalculator_, given an object `x` of type `X`,
@@ -120,7 +120,7 @@ It doesn't have to be accurate, after all that would require to
 ----
 struct width_and_pos {
     {width_t} width;
-    std::size_t pos;
+    std::ptrdiff_t pos;
 };
 ----
 
@@ -146,7 +146,7 @@ public:
         ( Charset
         , {width_t} limit
         , const typename Charset::{code_unit}*
-        , std::size_t str_len
+        , std::ptrdiff_t str_len
         , {surrogate_policy} ) const noexcept;
 
     template <typename Charset>
@@ -154,7 +154,7 @@ public:
         ( Charset
         , {width_t} limit
         , const typename Charset::{code_unit}*
-        , std::size_t str_len
+        , std::ptrdiff_t str_len
         , {surrogate_policy} ) const noexcept;
 };
 
@@ -181,7 +181,7 @@ constexpr {width_t} str_width
     ( Charset
     , {width_t} limit
     , const typename Charset::{code_unit}*
-    , std::size_t str_len
+    , std::ptrdiff_t str_len
     , {surrogate_policy} ) const noexcept;
 ----
 [horizontal]
@@ -198,7 +198,7 @@ template <typename Charset>
     ( Charset
     , {width_t} limit
     , const typename Charset::{code_unit}*
-    , std::size_t str_len
+    , std::ptrdiff_t str_len
     , {surrogate_policy} ) const noexcept;
 ----
 [horizontal]
@@ -239,7 +239,7 @@ public:
         ( Charset cs
         , {width_t} limit
         , const typename Charset::{code_unit}* str
-        , std::size_t str_len
+        , std::ptrdiff_t str_len
         , {surrogate_policy} ) const noexcept;
 
     template <typename Charset>
@@ -247,7 +247,7 @@ public:
         ( Charset cs
         , {width_t} limit
         , const typename Charset::{code_unit}* str
-        , std::size_t str_len
+        , std::ptrdiff_t str_len
         , {surrogate_policy} ) const noexcept;
 };
 
@@ -274,7 +274,7 @@ template <typename Charset>
     ( Charset cs
     , {width_t} limit
     , const typename Charset::{code_unit}* str
-    , std::size_t str_len
+    , std::ptrdiff_t str_len
     , {surrogate_policy} ) const noexcept;
 ----
 [horizontal]
@@ -291,7 +291,7 @@ template <typename Charset>
     ( Charset cs
     , {width_t} limit
     , const typename Charset::{code_unit}* str
-    , std::size_t str_len
+    , std::ptrdiff_t str_len
     , {surrogate_policy} ) const noexcept;
 ----
 [horizontal]
@@ -327,7 +327,7 @@ public:
         ( Charset cs
         , {width_t} limit
         , const typename Charset::{code_unit}* str
-        , std::size_t str_len
+        , std::ptrdiff_t str_len
         , {surrogate_policy} ) const noexcept;
 
     template <typename Charset>
@@ -335,7 +335,7 @@ public:
         ( Charset cs
         , {width_t} limit
         , const typename Charset::{code_unit}* str
-        , std::size_t str_len
+        , std::ptrdiff_t str_len
         , {surrogate_policy} ) const noexcept;
 };
 
@@ -362,7 +362,7 @@ template <typename Charset>
     ( Charset cs
     , {width_t} limit
     , const typename Charset::{code_unit}* str
-    , std::size_t str_len
+    , std::ptrdiff_t str_len
     , {surrogate_policy} ) const noexcept;
 ----
 [horizontal]
@@ -379,7 +379,7 @@ template <typename Charset>
     ( Charset cs
     , {width_t} limit
     , const typename Charset::{code_unit}* str
-    , std::size_t str_len
+    , std::ptrdiff_t str_len
     , {surrogate_policy} ) const noexcept;
 ----
 [horizontal]
@@ -415,7 +415,7 @@ public:
         ( Charset cs
         , {width_t} limit
         , const typename Charset::{code_unit}* str
-        , std::size_t str_len
+        , std::ptrdiff_t str_len
         , {surrogate_policy} ) const;
 
     template <typename Charset>
@@ -423,7 +423,7 @@ public:
         ( Charset cs
         , {width_t} limit
         , const typename Charset::{code_unit}* str
-        , std::size_t str_len
+        , std::ptrdiff_t str_len
         , {surrogate_policy} ) const;
 
 private:
@@ -472,7 +472,7 @@ template <typename Charset>
     ( Charset cs
     , {width_t} limit
     , const typename Charset::{code_unit}* str
-    , std::size_t str_len
+    , std::ptrdiff_t str_len
     , {surrogate_policy}  surr_poli) const;
 ----
 [horizontal]
@@ -497,7 +497,7 @@ template <typename Charset>
     ( Charset cs
     , {width_t} limit
     , const typename Charset::{code_unit}* str
-    , std::size_t str_len
+    , std::ptrdiff_t str_len
     , {surrogate_policy} surr_poli) const;
 ----
 [horizontal]
@@ -548,7 +548,7 @@ public:
         ( Charset cs
         , {width_t} limit
         , const typename Charset::{code_unit}* str
-        , std::size_t str_len
+        , std::ptrdiff_t str_len
         , {surrogate_policy} ) const;
 
     template <typename Charset>
@@ -556,7 +556,7 @@ public:
         ( Charset cs
         , {width_t} limit
         , const typename Charset::{code_unit}* str
-        , std::size_t str_len
+        , std::ptrdiff_t str_len
         , {surrogate_policy} ) const;
 };
 ----
@@ -601,7 +601,7 @@ static {width_t} str_width
     ( Charset cs
     , {width_t} limit
     , const typename Charset::{code_unit}* str
-    , std::size_t str_len
+    , std::ptrdiff_t str_len
     , {surrogate_policy} surr_poli) const;
 ----
 Return value:: `std::min(limit, w)`, where `w` is the sum of the extimated widths
@@ -628,7 +628,7 @@ static {width_and_pos} str_width_and_pos
     ( Charset cs
     , {width_t} limit
     , const typename Charset::{code_unit}* str
-    , std::size_t str_len
+    , std::ptrdiff_t str_len
     , {surrogate_policy} surr_poli) const;
 ----
 Return value:: a value `r` such that
@@ -645,7 +645,7 @@ str_width(cs, strf::width_t::max(), str, r.pos, surr_poli) \<= limit
 
 === Class `width_t` [[width_t]]
 
-`width_t` is an unsigned type that implements
+`width_t` is an signed type that implements
 https://en.wikipedia.org/wiki/Q_(number_format)[Q16.16] arithmetics and
 is used to represent width of textual content when
 <<alignment_format,text alignment formatting>> is used.
@@ -659,12 +659,12 @@ class width_t {
 public:
     struct from_underlying_tag{};
     constexpr width_t() noexcept;
-    constexpr width_t(std::uint16_t) noexcept;
+    constexpr width_t(std::int16_t) noexcept;
     constexpr width_t(const width_t&) noexcept;
-    constexpr width_t(from_underlying_tag, std::uint32_t) noexcept;
+    constexpr width_t(from_underlying_tag, std::int32_t) noexcept;
 
     constexpr width_t& operator=(const width_t& other) noexcept;
-    constexpr width_t& operator=(std::uint16_t& x) noexcept;
+    constexpr width_t& operator=(std::int16_t& x) noexcept;
 
     constexpr bool operator==(const width_t& other) const noexcept;
     constexpr bool operator!=(const width_t& other) const noexcept;
@@ -674,54 +674,57 @@ public:
     constexpr bool operator>=(const width_t& other) const noexcept;
 
     constexpr bool is_integral() const noexcept;
-    constexpr unsigned floor() const noexcept;
-    constexpr unsigned ceil() const noexcept;
-    constexpr std::uint16_t round() const noexcept;
+    constexpr std::int16_t floor() const noexcept;
+    constexpr std::int16_t ceil() const noexcept;
+    constexpr std::int16_t round() const noexcept;
 
     constexpr width_t operator-() const noexcept;
     constexpr width_t operator+() const noexcept;
     constexpr width_t& operator+=(width_t other) noexcept;
     constexpr width_t& operator-=(width_t other) noexcept;
-    constexpr width_t& operator{asterisk}=(std::uint16_t m) noexcept;
-    constexpr width_t& operator/=(std::uint16_t d) noexcept;
+    constexpr width_t& operator{asterisk}=(std::int16_t m) noexcept;
+    constexpr width_t& operator/=(std::int16_t d) noexcept;
     constexpr width_t& operator{asterisk}=(width_t other) noexcept;
     constexpr width_t& operator/=(width_t other) noexcept;
 
-    constexpr std::uint32_t underlying_value() const noexcept;
-    constexpr static width_t from_underlying(std::uint32_t) noexcept;
+    constexpr std::int32_t underlying_value() const noexcept;
+    constexpr static width_t from_underlying(std::int32_t) noexcept;
 
     constexpr static width_t max() noexcept; // maximum possible value
-    constexpr static width_t min() noexcept; // return zero
+    constexpr static width_t min() noexcept; // minimum possible value
 
 private:
-    std::uint32_t _underlying_value; // exposition only
+    std::int32_t _underlying_value; // exposition only
 };
 
-constexpr bool operator==(width_t lhs, std::uint16_t rhs) noexcept;
-constexpr bool operator==(std::uint16_t lhs, width_t rhs) noexcept;
-constexpr bool operator!=(width_t lhs, std::uint16_t rhs) noexcept;
-constexpr bool operator!=(std::uint16_t lhs, width_t rhs) noexcept;
-constexpr bool operator< (width_t lhs, std::uint16_t rhs) noexcept;
-constexpr bool operator< (std::uint16_t lhs, width_t rhs) noexcept;
-constexpr bool operator\<=(width_t lhs, std::uint16_t rhs) noexcept;
-constexpr bool operator\<=(std::uint16_t lhs, width_t rhs) noexcept;
-constexpr bool operator> (width_t lhs, std::uint16_t rhs) noexcept;
-constexpr bool operator> (std::uint16_t lhs, width_t rhs) noexcept;
-constexpr bool operator>=(width_t lhs, std::uint16_t rhs) noexcept;
-constexpr bool operator>=(std::uint16_t lhs, width_t rhs) noexcept;
+constexpr width_max = width_t::max();
+constexpr width_min = width_t::min();
+
+constexpr bool operator==(width_t lhs, std::int16_t rhs) noexcept;
+constexpr bool operator==(std::int16_t lhs, width_t rhs) noexcept;
+constexpr bool operator!=(width_t lhs, std::int16_t rhs) noexcept;
+constexpr bool operator!=(std::int16_t lhs, width_t rhs) noexcept;
+constexpr bool operator< (width_t lhs, std::int16_t rhs) noexcept;
+constexpr bool operator< (std::int16_t lhs, width_t rhs) noexcept;
+constexpr bool operator\<=(width_t lhs, std::int16_t rhs) noexcept;
+constexpr bool operator\<=(std::int16_t lhs, width_t rhs) noexcept;
+constexpr bool operator> (width_t lhs, std::int16_t rhs) noexcept;
+constexpr bool operator> (std::int16_t lhs, width_t rhs) noexcept;
+constexpr bool operator>=(width_t lhs, std::int16_t rhs) noexcept;
+constexpr bool operator>=(std::int16_t lhs, width_t rhs) noexcept;
 
 constexpr width_t operator+(width_t lhs, width_t rhs) noexcept;
-constexpr width_t operator+(std::uint16_t lhs, width_t rhs) noexcept;
-constexpr width_t operator+(width_t lhs, std::uint16_t rhs) noexcept;
+constexpr width_t operator+(std::int16_t lhs, width_t rhs) noexcept;
+constexpr width_t operator+(width_t lhs, std::int16_t rhs) noexcept;
 constexpr width_t operator-(width_t lhs, width_t rhs) noexcept;
-constexpr width_t operator-(std::uint16_t lhs, width_t rhs) noexcept;
-constexpr width_t operator-(width_t lhs, std::uint16_t rhs) noexcept;
+constexpr width_t operator-(std::int16_t lhs, width_t rhs) noexcept;
+constexpr width_t operator-(width_t lhs, std::int16_t rhs) noexcept;
 constexpr width_t operator*(width_t lhs, width_t rhs) noexcept;
-constexpr width_t operator*(std::uint16_t lhs, width_t rhs) noexcept;
-constexpr width_t operator*(width_t lhs, std::uint16_t rhs) noexcept;
+constexpr width_t operator*(std::int16_t lhs, width_t rhs) noexcept;
+constexpr width_t operator*(width_t lhs, std::int16_t rhs) noexcept;
 constexpr width_t operator/(width_t lhs, width_t rhs) noexcept;
-constexpr width_t operator/(std::uint16_t lhs, width_t rhs) noexcept;
-constexpr width_t operator/(width_t lhs, std::uint16_t rhs) noexcept;
+constexpr width_t operator/(std::int16_t lhs, width_t rhs) noexcept;
+constexpr width_t operator/(width_t lhs, std::int16_t rhs) noexcept;
 
 } // namespace strf
 ----

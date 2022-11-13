@@ -87,7 +87,7 @@ Return value:: `x.grouping().<<digits_grouping_any_separator,any_separator>>(dig
 x.thousands_sep_count(digcount)
 ----
 [horizontal]
-Return type:: `unsigned`
+Return type:: `int`
 Return value:: `x.grouping().<<digits_grouping_separators_count,separators_count>>(digcount)`
 ====
 ====
@@ -170,9 +170,9 @@ public:
     constexpr numpunct&& thousands_sep(char32_t ch) && noexcept;
 
     // utilities
-    constexpr {digits_distribution} <<numpunct_thousands_distribute,distribute>>(unsiged digcount) const noexcept;
-    constexpr bool <<numpunct_any_group_separation,any_group_separation>>(unsigned digcount) const noexcept;
-    constexpr unsigned <<numpunct_thousands_sep_count,thousands_sep_count>>(unsigned digcount) const noexcept;
+    constexpr {digits_distribution} <<numpunct_thousands_distribute,distribute>>(int digcount) const noexcept;
+    constexpr bool <<numpunct_any_group_separation,any_group_separation>>(int digcount) const noexcept;
+    constexpr int <<numpunct_thousands_sep_count,thousands_sep_count>>(int digcount) const noexcept;
 
 private:
     char32_t decimal_point_ = U'.';  // exposition only
@@ -228,7 +228,7 @@ Postconditions::
 ====
 [source,cpp,subs=normal]
 ----
-unsigned thousands_sep_count(unsigned digcount) const;
+int thousands_sep_count(int digcount) const;
 ----
 [horizontal]
 Return value:: `grouping().<<digits_grouping_separators_count,separators_count>>(digcount))`
@@ -248,7 +248,7 @@ Return value:: `grouping().<<digits_grouping_distribute,distribute>>(digcount))`
 ====
 [source,cpp,subs=normal]
 ----
-bool any_group_separation(unsigned digcount) const;
+bool any_group_separation(int digcount) const;
 ----
 [horizontal]
 Return value:: `grouping().<<digits_grouping_any_separator,any_separator>>(digcount)`
@@ -322,8 +322,8 @@ public:
     constexpr {digits_grouping} grouping() const
     constexpr {digits_distribution} distribute(unsiged digcount) const
 
-    constexpr bool any_group_separation(unsigned digcount) const noexcept;
-    constexpr unsigned thousands_sep_count(unsigned digcount) const noexcept;
+    constexpr bool any_group_separation(int digcount) const noexcept;
+    constexpr int thousands_sep_count(int digcount) const noexcept;
 
     constexpr char32_t decimal_point() const noexcept;
     constexpr char32_t thousands_sep() const noexcept;
@@ -370,7 +370,7 @@ Return value::  `{digits_distribution}{{}, 0, digcount}`
 ====
 [source,cpp,subs=normal]
 ----
-constexpr bool any_group_separation(unsigned digcount) const noexcept;
+constexpr bool any_group_separation(int digcount) const noexcept;
 ----
 [horizontal]
 Return value:: `false`
@@ -379,7 +379,7 @@ Return value:: `false`
 ====
 [source,cpp,subs=normal]
 ----
-unsigned thousands_sep_count(unsigned digcount) const override;
+int thousands_sep_count(int digcount) const override;
 ----
 [horizontal]
 Return value:: 0
@@ -429,8 +429,8 @@ public:
     constexpr {digits_grouping} grouping() const
     constexpr {digits_distribution} distribute(unsiged digcount) const
 
-    constexpr bool any_group_separation(unsigned digcount) const noexcept;
-    constexpr unsigned thousands_sep_count(unsigned digcount) const noexcept;
+    constexpr bool any_group_separation(int digcount) const noexcept;
+    constexpr int thousands_sep_count(int digcount) const noexcept;
 
     constexpr char32_t   decimal_point() const noexcept;
     constexpr no_grouping&  decimal_point(char32_t ch) & noexcept;
@@ -485,7 +485,7 @@ Return value::  `{digits_distribution}{{}, 0, digcount}`
 ====
 [source,cpp,subs=normal]
 ----
-constexpr bool any_group_separation(unsigned digcount) const noexcept;
+constexpr bool any_group_separation(int digcount) const noexcept;
 ----
 [horizontal]
 Return value:: `false`
@@ -494,7 +494,7 @@ Return value:: `false`
 ====
 [source,cpp,subs=normal]
 ----
-unsigned thousands_sep_count(unsigned digcount) const override;
+int thousands_sep_count(int digcount) const override;
 ----
 [horizontal]
 Return value:: 0
@@ -504,7 +504,7 @@ Return value:: 0
 ====
 [source,cpp,subs=normal]
 ----
-unsigned thousands_sep_count(unsigned digcount) const override;
+int thousands_sep_count(int digcount) const override;
 ----
 [horizontal]
 Return value:: 0
@@ -545,7 +545,7 @@ namespace strf {
 class digits_grouping {
 public:
     constexpr static int grp_max = 31;
-    constexpr static unsigned grps_count_max = 6;
+    constexpr static int grps_count_max = 6;
 
     // constructors
     constexpr <<digits_grouping_default_ctor,digits_grouping>>() noexcept;
@@ -566,9 +566,9 @@ public:
     // observers and utilities
     constexpr bool <<digits_grouping_empty,empty>>() const noexcept;
     constexpr bool <<digits_grouping_any_separator,any_separator>>(int digcount) const noexcept;
-    constexpr unsigned <<digits_grouping_separators_count,separators_count>>(int digcount) const noexcept;
+    constexpr int <<digits_grouping_separators_count,separators_count>>(int digcount) const noexcept;
     constexpr {digits_grouping_iterator} get_iterator() const noexcept;
-    constexpr {digits_distribution} distribute(unsigned digcount) const noexcept;
+    constexpr {digits_distribution} distribute(int digcount) const noexcept;
 };
 } // namespace strf
 ----
@@ -651,7 +651,7 @@ Return value:: `separators_count(digcount) != 0`
 ====
 [source,cpp,subs=normal]
 ----
-constexpr unsigned separators_count(int digcount) const noexcept;
+constexpr int separators_count(int digcount) const noexcept;
 ----
 [horizontal]
 Return value:: The quantity of thousands separators that would appear
@@ -674,7 +674,7 @@ most significant.
 ====
 [source,cpp,subs=normal]
 ----
-constexpr {digits_distribution} distribute(unsigned digcount) const noexcept;
+constexpr {digits_distribution} distribute(int digcount) const noexcept;
 ----
 Constructs a `{digits_distribution}` from this object.
 It is supposed to be used when the digits
@@ -699,6 +699,7 @@ public:
     constexpr digits_grouping_creator() noexcept = default;
     constexpr digits_grouping_creator(const digits_grouping_creator&) noexcept = delete;
     constexpr void push_high(int grp) noexcept;
+    constexpr void push_high(int grp) noexcept;
     constexpr bool failed() const noexcept;
     constexpr {digits_grouping} finish_no_more_sep() noexcept;
     constexpr {digits_grouping} finish() noexcept;
@@ -709,7 +710,7 @@ public:
 Sometimes it is not easy instantiate to `{digits_grouping}` through
 one of its constructors, since it requires you to pass all groups at once.
 So `digits_grouping_creator` provides an alternative and iterative way:
-each groups is passed one-by-one to `push_high` function,
+each group is passed one-by-one to `push_high` function,
 from the least to the most significant.
 After all groups are passed, `finish()` or `finish_no_more_sep()`
 shall be called to create the resulting `digits_grouping` object.
@@ -758,7 +759,7 @@ public:
     constexpr bool operator!=(const digits_grouping_iterator&) const noexcept;
 
     // iteration
-    constexpr unsigned current() const noexcept;
+    constexpr int current() const noexcept;
     constexpr void advance() noexcept;
     constexpr bool is_last() const noexcept;
     constexpr bool shall_repeat_current() const noexcept;
@@ -771,7 +772,7 @@ public:
 ====
 [source,cpp,subs=normal]
 ----
-constexpr unsigned current() noexcept;
+constexpr int current() noexcept;
 ----
 Returns the current group.
 [horizontal]
@@ -872,8 +873,8 @@ from the most to the least significant.
 namespace strf {
 struct digits_distribution {
     {reverse_digits_groups} low_groups;
-    unsigned middle_groups_count;
-    unsigned highest_group;
+    int middle_groups_count;
+    int highest_group;
 };
 } // namespace strf
 ----
@@ -926,17 +927,17 @@ the most to the least significant.
 namespace strf {
 class reverse_digits_groups {
 public:
-    constexpr static unsigned grp_max = {digits_grouping}::{grp_max};
-    constexpr static unsigned grps_count_max = {digits_grouping}::{grps_count_max};
+    constexpr static int grp_max = {digits_grouping}::{grp_max};
+    constexpr static int grps_count_max = {digits_grouping}::{grps_count_max};
 
     constexpr reverse_digits_groups() noexcept;
     constexpr reverse_digits_groups(const reverse_digits_groups&) noexcept;
     constexpr bool operator==(const reverse_digits_groups& other) const noexcept;
     constexpr bool operator!=(const reverse_digits_groups& other) const noexcept;
     constexpr reverse_digits_groups& operator=(const reverse_digits_groups& other) noexcept;
-    constexpr void push_low(unsigned group) noexcept;
+    constexpr void push_low(int group) noexcept;
     constexpr void pop_high() noexcept;
-    constexpr unsigned highest_group() const noexcept;
+    constexpr int highest_group() const noexcept;
     constexpr bool empty() const noexcept;
 };
 } // namespace strf
@@ -966,7 +967,7 @@ be larger than the amount of remaining digits to print.
 ====
 [source,cpp,subs=normal]
 ----
-constexpr unsigned highest_group() const noexcept;
+constexpr int highest_group() const noexcept;
 ----
 Return the actual number of digits in the current group.
 

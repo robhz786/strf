@@ -42,14 +42,14 @@ namespace detail {
 template <typename CharT>
 inline STRF_HD void repeat_sequence
     ( strf::transcode_dest<CharT>& dest
-    , std::size_t count
+    , std::ptrdiff_t count
     , CharT ch0
     , CharT ch1 ) noexcept
 {
     auto *p = dest.buffer_ptr();
-    constexpr std::size_t seq_size = 2;
-    std::size_t space = 0;
-    std::size_t inner_count = 0;
+    constexpr std::ptrdiff_t seq_size = 2;
+    std::ptrdiff_t space = 0;
+    std::ptrdiff_t inner_count = 0;
     while (1) {
         space = (dest.buffer_end() - p) / seq_size;
         inner_count = (space < count ? space : count);
@@ -74,15 +74,15 @@ inline STRF_HD void repeat_sequence
 template <typename CharT>
 inline STRF_HD void repeat_sequence
     ( strf::transcode_dest<CharT>& dest
-    , std::size_t count
+    , std::ptrdiff_t count
     , CharT ch0
     , CharT ch1
     , CharT ch2 ) noexcept
 {
     auto *p = dest.buffer_ptr();
-    constexpr std::size_t seq_size = 3;
-    std::size_t space = 0;
-    std::size_t inner_count = 0;
+    constexpr std::ptrdiff_t seq_size = 3;
+    std::ptrdiff_t space = 0;
+    std::ptrdiff_t inner_count = 0;
     while (1) {
         space = (dest.buffer_end() - p) / seq_size;
         inner_count = (space < count ? space : count);
@@ -108,16 +108,16 @@ inline STRF_HD void repeat_sequence
 template <typename CharT>
 inline STRF_HD void repeat_sequence
     ( strf::transcode_dest<CharT>& dest
-    , std::size_t count
+    , std::ptrdiff_t count
     , CharT ch0
     , CharT ch1
     , CharT ch2
     , CharT ch3 ) noexcept
 {
     auto *p = dest.buffer_ptr();
-    constexpr std::size_t seq_size = 4;
-    std::size_t space = 0;
-    std::size_t inner_count = 0;
+    constexpr std::ptrdiff_t seq_size = 4;
+    std::ptrdiff_t space = 0;
+    std::ptrdiff_t inner_count = 0;
     while (1) {
         space = (dest.buffer_end() - p) / seq_size;
         inner_count = (space < count ? space : count);
@@ -167,14 +167,14 @@ constexpr STRF_HD  bool not_low_surrogate(std::uint32_t codepoint)
 }
 constexpr STRF_HD std::uint16_t utf8_decode(std::uint16_t ch0, std::uint16_t ch1)
 {
-    return (((ch0 & 0x1F) << 6) |
-            ((ch1 & 0x3F) << 0));
+    return static_cast<std::uint16_t>(((ch0 & 0x1F) << 6) |
+                                      ((ch1 & 0x3F) << 0));
 }
 constexpr STRF_HD std::uint16_t utf8_decode(std::uint16_t ch0, std::uint16_t ch1, std::uint16_t ch2)
 {
-    return (((ch0 & 0x0F) << 12) |
-            ((ch1 & 0x3F) <<  6) |
-            ((ch2 & 0x3F) <<  0));
+    return static_cast<std::uint16_t>(((ch0 & 0x0F) << 12) |
+                                      ((ch1 & 0x3F) <<  6) |
+                                      ((ch2 & 0x3F) <<  0));
 }
 constexpr STRF_HD std::uint32_t utf8_decode(std::uint32_t ch0, std::uint32_t ch1, std::uint32_t ch2, std::uint32_t ch3)
 {
@@ -248,13 +248,13 @@ public:
     static STRF_HD void transcode
         ( strf::transcode_dest<DestCharT>& dest
         , const SrcCharT* src
-        , std::size_t src_size
+        , std::ptrdiff_t src_size
         , strf::transcoding_error_notifier* err_notifier
         , strf::surrogate_policy surr_poli );
 
-    static STRF_HD std::size_t transcode_size
+    static STRF_HD std::ptrdiff_t transcode_size
         ( const SrcCharT* src
-        , std::size_t src_size
+        , std::ptrdiff_t src_size
         , strf::surrogate_policy surr_poli );
 
     static STRF_HD strf::transcode_f<SrcCharT, DestCharT> transcode_func() noexcept
@@ -277,13 +277,13 @@ public:
     static STRF_HD void transcode
         ( strf::transcode_dest<DestCharT>& dest
         , const SrcCharT* src
-        , std::size_t src_size
+        , std::ptrdiff_t src_size
         , strf::transcoding_error_notifier* err_notifier
         , strf::surrogate_policy surr_poli );
 
-    static STRF_HD std::size_t transcode_size
+    static STRF_HD std::ptrdiff_t transcode_size
         ( const SrcCharT* src
-        , std::size_t src_size
+        , std::ptrdiff_t src_size
         , strf::surrogate_policy surr_poli );
 
     static STRF_HD strf::transcode_f<SrcCharT, DestCharT> transcode_func() noexcept
@@ -306,13 +306,13 @@ public:
     static STRF_HD void transcode
         ( strf::transcode_dest<DestCharT>& dest
         , const SrcCharT* src
-        , std::size_t src_size
+        , std::ptrdiff_t src_size
         , strf::transcoding_error_notifier* err_notifier
         , strf::surrogate_policy surr_poli );
 
-    static STRF_HD std::size_t transcode_size
+    static STRF_HD std::ptrdiff_t transcode_size
         ( const SrcCharT* src
-        , std::size_t src_size
+        , std::ptrdiff_t src_size
         , strf::surrogate_policy surr_poli );
 
     static STRF_HD strf::transcode_f<SrcCharT, DestCharT> transcode_func() noexcept
@@ -335,13 +335,13 @@ public:
     static STRF_HD void transcode
         ( strf::transcode_dest<DestCharT>& dest
         , const SrcCharT* src
-        , std::size_t src_size
+        , std::ptrdiff_t src_size
         , strf::transcoding_error_notifier* err_notifier
         , strf::surrogate_policy surr_poli );
 
-    static STRF_HD std::size_t transcode_size
+    static STRF_HD std::ptrdiff_t transcode_size
         ( const SrcCharT* src
-        , std::size_t src_size
+        , std::ptrdiff_t src_size
         , strf::surrogate_policy surr_poli );
 
     static STRF_HD strf::transcode_f<SrcCharT, DestCharT> transcode_func() noexcept
@@ -364,13 +364,13 @@ public:
     static STRF_HD void transcode
         ( strf::transcode_dest<DestCharT>& dest
         , const SrcCharT* src
-        , std::size_t src_size
+        , std::ptrdiff_t src_size
         , strf::transcoding_error_notifier* err_notifier
         , strf::surrogate_policy surr_poli );
 
-    static STRF_HD std::size_t transcode_size
+    static STRF_HD std::ptrdiff_t transcode_size
         ( const SrcCharT* src
-        , std::size_t src_size
+        , std::ptrdiff_t src_size
         , strf::surrogate_policy surr_poli );
 
     static STRF_HD strf::transcode_f<SrcCharT, DestCharT> transcode_func() noexcept
@@ -393,13 +393,13 @@ public:
     static STRF_HD void transcode
         ( strf::transcode_dest<DestCharT>& dest
         , const SrcCharT* src
-        , std::size_t src_size
+        , std::ptrdiff_t src_size
         , strf::transcoding_error_notifier* err_notifier
         , strf::surrogate_policy surr_poli );
 
-    static STRF_HD std::size_t transcode_size
+    static STRF_HD std::ptrdiff_t transcode_size
         ( const SrcCharT* src
-        , std::size_t src_size
+        , std::ptrdiff_t src_size
         , strf::surrogate_policy surr_poli );
 
     static STRF_HD strf::transcode_f<SrcCharT, DestCharT> transcode_func() noexcept
@@ -422,13 +422,13 @@ public:
     static STRF_HD void transcode
         ( strf::transcode_dest<DestCharT>& dest
         , const SrcCharT* src
-        , std::size_t src_size
+        , std::ptrdiff_t src_size
         , strf::transcoding_error_notifier* err_notifier
         , strf::surrogate_policy surr_poli );
 
-    static STRF_HD std::size_t transcode_size
+    static STRF_HD std::ptrdiff_t transcode_size
         ( const SrcCharT* src
-        , std::size_t src_size
+        , std::ptrdiff_t src_size
         , strf::surrogate_policy surr_poli );
 
     static STRF_HD strf::transcode_f<SrcCharT, DestCharT> transcode_func() noexcept
@@ -451,13 +451,13 @@ public:
     static STRF_HD void transcode
         ( strf::transcode_dest<DestCharT>& dest
         , const SrcCharT* src
-        , std::size_t src_size
+        , std::ptrdiff_t src_size
         , strf::transcoding_error_notifier* err_notifier
         , strf::surrogate_policy surr_poli );
 
-    static STRF_HD std::size_t transcode_size
+    static STRF_HD std::ptrdiff_t transcode_size
         ( const SrcCharT* src
-        , std::size_t src_size
+        , std::ptrdiff_t src_size
         , strf::surrogate_policy surr_poli );
 
     static STRF_HD strf::transcode_f<SrcCharT, DestCharT> transcode_func() noexcept
@@ -480,13 +480,13 @@ public:
     static STRF_HD void transcode
         ( strf::transcode_dest<DestCharT>& dest
         , const SrcCharT* src
-        , std::size_t src_size
+        , std::ptrdiff_t src_size
         , strf::transcoding_error_notifier* err_notifier
         , strf::surrogate_policy surr_poli );
 
-    static STRF_HD std::size_t transcode_size
+    static STRF_HD std::ptrdiff_t transcode_size
         ( const SrcCharT* src
-        , std::size_t src_size
+        , std::ptrdiff_t src_size
         , strf::surrogate_policy )
     {
         (void) src;
@@ -556,18 +556,18 @@ public:
     {
         return 0xFFFD;
     }
-    static constexpr STRF_HD std::size_t replacement_char_size() noexcept
+    static constexpr STRF_HD int replacement_char_size() noexcept
     {
         return 3;
     }
-    static constexpr STRF_HD std::size_t validate(char32_t ch) noexcept
+    static constexpr STRF_HD int validate(char32_t ch) noexcept
     {
         return ( ch < 0x80     ? 1 :
                  ch < 0x800    ? 2 :
                  ch < 0x10000  ? 3 :
-                 ch < 0x110000 ? 4 : (std::size_t)-1 );
+                 ch < 0x110000 ? 4 : -1 );
     }
-    static constexpr STRF_HD std::size_t encoded_char_size(char32_t ch) noexcept
+    static constexpr STRF_HD int encoded_char_size(char32_t ch) noexcept
     {
         return ( ch < 0x80     ? 1 :
                  ch < 0x800    ? 2 :
@@ -578,15 +578,15 @@ public:
         ( CharT* dest, char32_t ch ) noexcept;
 
     static STRF_HD void encode_fill
-        ( strf::transcode_dest<CharT>&, std::size_t count, char32_t ch );
+        ( strf::transcode_dest<CharT>&, std::ptrdiff_t count, char32_t ch );
 
     static STRF_HD strf::count_codepoints_result count_codepoints_fast
-        ( const CharT* src, std::size_t src_size
-        , std::size_t max_count ) noexcept;
+        ( const CharT* src, std::ptrdiff_t src_size
+        , std::ptrdiff_t max_count ) noexcept;
 
     static STRF_HD strf::count_codepoints_result count_codepoints
-        ( const CharT* src, std::size_t src_size
-        , std::size_t max_count, strf::surrogate_policy surr_poli ) noexcept;
+        ( const CharT* src, std::ptrdiff_t src_size
+        , std::ptrdiff_t max_count, strf::surrogate_policy surr_poli ) noexcept;
 
     static STRF_HD void write_replacement_char
         ( strf::transcode_dest<CharT>& );
@@ -706,32 +706,32 @@ public:
     {
         return 0xFFFD;
     }
-    static constexpr STRF_HD std::size_t replacement_char_size() noexcept
+    static constexpr STRF_HD int replacement_char_size() noexcept
     {
         return 1;
     }
-    static constexpr STRF_HD std::size_t validate(char32_t ch) noexcept
+    static constexpr STRF_HD int validate(char32_t ch) noexcept
     {
-        return ch < 0x10000 ? 1 : ch < 0x110000 ? 2 : (std::size_t)-1;
+        return ch < 0x10000 ? 1 : ch < 0x110000 ? 2 : -1;
     }
-    static constexpr STRF_HD std::size_t encoded_char_size(char32_t ch) noexcept
+    static constexpr STRF_HD int encoded_char_size(char32_t ch) noexcept
     {
-        return (std::size_t)1 + (0x10000 <= ch && ch < 0x110000);
+        return 1 + (0x10000 <= ch && ch < 0x110000);
     }
 
     static STRF_HD CharT* encode_char
         (CharT* dest, char32_t ch) noexcept;
 
     static STRF_HD void encode_fill
-        ( strf::transcode_dest<CharT>&, std::size_t count, char32_t ch );
+        ( strf::transcode_dest<CharT>&, std::ptrdiff_t count, char32_t ch );
 
     static STRF_HD strf::count_codepoints_result count_codepoints_fast
-        ( const CharT* src, std::size_t src_size
-        , std::size_t max_count ) noexcept;
+        ( const CharT* src, std::ptrdiff_t src_size
+        , std::ptrdiff_t max_count ) noexcept;
 
     static STRF_HD strf::count_codepoints_result count_codepoints
-        ( const CharT* src, std::size_t src_size
-        , std::size_t max_count, strf::surrogate_policy surr_poli ) noexcept;
+        ( const CharT* src, std::ptrdiff_t src_size
+        , std::ptrdiff_t max_count, strf::surrogate_policy surr_poli ) noexcept;
 
     static STRF_HD void write_replacement_char
         ( strf::transcode_dest<CharT>& );
@@ -852,7 +852,7 @@ public:
     {
         return 0xFFFD;
     }
-    static constexpr STRF_HD std::size_t replacement_char_size() noexcept
+    static constexpr STRF_HD std::ptrdiff_t replacement_char_size() noexcept
     {
         return 1;
     }
@@ -864,11 +864,11 @@ public:
     {
         return 0x10FFFF;
     }
-    static constexpr STRF_HD std::size_t validate(char32_t) noexcept
+    static constexpr STRF_HD int validate(char32_t) noexcept
     {
         return 1;
     }
-    static constexpr STRF_HD std::size_t encoded_char_size(char32_t) noexcept
+    static constexpr STRF_HD int encoded_char_size(char32_t) noexcept
     {
         return 1;
     }
@@ -879,11 +879,11 @@ public:
         return dest + 1;
     }
     static STRF_HD void encode_fill
-        ( strf::transcode_dest<CharT>&, std::size_t count, char32_t ch );
+        ( strf::transcode_dest<CharT>&, std::ptrdiff_t count, char32_t ch );
 
     static STRF_HD strf::count_codepoints_result count_codepoints_fast
-        ( const CharT* src, std::size_t src_size
-        , std::size_t max_count ) noexcept
+        ( const CharT* src, std::ptrdiff_t src_size
+        , std::ptrdiff_t max_count ) noexcept
     {
         (void) src;
         if (max_count <= src_size) {
@@ -893,8 +893,8 @@ public:
     }
 
     static STRF_HD strf::count_codepoints_result count_codepoints
-        ( const CharT* src, std::size_t src_size
-        , std::size_t max_count, strf::surrogate_policy surr_poli ) noexcept
+        ( const CharT* src, std::ptrdiff_t src_size
+        , std::ptrdiff_t max_count, strf::surrogate_policy surr_poli ) noexcept
     {
         (void)surr_poli;
         (void) src;
@@ -1017,7 +1017,7 @@ STRF_HD void strf::static_transcoder
     <SrcCharT, DestCharT, strf::csid_utf8, strf::csid_utf32 >::transcode
     ( strf::transcode_dest<DestCharT>& dest
     , const SrcCharT* src
-    , std::size_t src_size
+    , std::ptrdiff_t src_size
     , strf::transcoding_error_notifier* err_notifier
     , strf::surrogate_policy surr_poli )
 {
@@ -1090,10 +1090,10 @@ STRF_HD void strf::static_transcoder
 }
 
 template <typename SrcCharT, typename DestCharT>
-STRF_HD std::size_t strf::static_transcoder
+STRF_HD std::ptrdiff_t strf::static_transcoder
     < SrcCharT, DestCharT, strf::csid_utf8, strf::csid_utf32 >::transcode_size
     ( const SrcCharT* src
-    , std::size_t src_size
+    , std::ptrdiff_t src_size
     , strf::surrogate_policy surr_poli )
 {
     using strf::detail::is_utf8_continuation;
@@ -1103,7 +1103,7 @@ STRF_HD std::size_t strf::static_transcoder
     std::uint8_t ch0 = 0, ch1 = 0;
     const auto *src_it = src;
     const auto *src_end = src + src_size;
-    std::size_t size = 0;
+    std::ptrdiff_t size = 0;
     while (src_it != src_end) {
         ch0 = (*src_it);
         ++src_it;
@@ -1141,7 +1141,7 @@ STRF_HD void strf::static_transcoder
     < SrcCharT, DestCharT, strf::csid_utf8, strf::csid_utf8 >::transcode
     ( strf::transcode_dest<DestCharT>& dest
     , const SrcCharT* src
-    , std::size_t src_size
+    , std::ptrdiff_t src_size
     , strf::transcoding_error_notifier* err_notifier
     , strf::surrogate_policy surr_poli )
 {
@@ -1225,10 +1225,10 @@ STRF_HD void strf::static_transcoder
 }
 
 template <typename SrcCharT, typename DestCharT>
-STRF_HD std::size_t strf::static_transcoder
+STRF_HD std::ptrdiff_t strf::static_transcoder
     < SrcCharT, DestCharT, strf::csid_utf8, strf::csid_utf8 >::transcode_size
     ( const SrcCharT* src
-    , std::size_t src_size
+    , std::ptrdiff_t src_size
     , strf::surrogate_policy surr_poli )
 {
     using strf::detail::utf8_decode;
@@ -1239,7 +1239,7 @@ STRF_HD std::size_t strf::static_transcoder
     std::uint8_t ch0 = 0, ch1 = 0;
     const SrcCharT* src_it = src;
     const auto *src_end = src + src_size;
-    std::size_t size = 0;
+    std::ptrdiff_t size = 0;
     while(src_it != src_end) {
         ch0 = *src_it;
         ++src_it;
@@ -1288,10 +1288,10 @@ template <typename CharT>
 STRF_HD strf::count_codepoints_result
 static_charset<CharT, strf::csid_utf8>::count_codepoints_fast
     ( const CharT* src
-    , std::size_t src_size
-    , std::size_t max_count ) noexcept
+    , std::ptrdiff_t src_size
+    , std::ptrdiff_t max_count ) noexcept
 {
-    std::size_t count = 0;
+    std::ptrdiff_t count = 0;
     const auto *it = src;
     const auto *end = src + src_size;
     while (it != end && count < max_count) {
@@ -1303,15 +1303,15 @@ static_charset<CharT, strf::csid_utf8>::count_codepoints_fast
     while(it != end && strf::detail::is_utf8_continuation(*it)) {
         ++it;
     }
-    return {count, static_cast<std::size_t>(it - src)};
+    return {count, (it - src)};
 }
 
 template <typename CharT>
 STRF_HD strf::count_codepoints_result
 static_charset<CharT, strf::csid_utf8>::count_codepoints
     ( const CharT* src
-    , std::size_t src_size
-    , std::size_t max_count
+    , std::ptrdiff_t src_size
+    , std::ptrdiff_t max_count
     , strf::surrogate_policy surr_poli ) noexcept
 {
     using strf::detail::utf8_decode;
@@ -1320,7 +1320,7 @@ static_charset<CharT, strf::csid_utf8>::count_codepoints
     using strf::detail::first_2_of_4_are_valid;
 
     std::uint8_t ch0 = 0, ch1 = 0;
-    std::size_t count = 0;
+    std::ptrdiff_t count = 0;
     const auto *it = src;
     const auto *end = src + src_size;
     while (it != end && count != max_count) {
@@ -1352,14 +1352,14 @@ static_charset<CharT, strf::csid_utf8>::count_codepoints
             ++it;
         }
     }
-    return {count, static_cast<std::size_t>(it - src)};
+    return {count, it - src};
 }
 
 
 template <typename CharT>
 STRF_HD void
 static_charset<CharT, strf::csid_utf8>::encode_fill
-    ( strf::transcode_dest<CharT>& dest, std::size_t count, char32_t ch )
+    ( strf::transcode_dest<CharT>& dest, std::ptrdiff_t count, char32_t ch )
 {
     STRF_IF_LIKELY (ch < 0x80) {
         strf::detail::write_fill(dest, count, static_cast<CharT>(ch));
@@ -1425,7 +1425,7 @@ STRF_HD void strf::static_transcoder
     < SrcCharT, DestCharT, strf::csid_utf32, strf::csid_utf8 >::transcode
     ( strf::transcode_dest<DestCharT>& dest
     , const SrcCharT* src
-    , std::size_t src_size
+    , std::ptrdiff_t src_size
     , strf::transcoding_error_notifier* err_notifier
     , strf::surrogate_policy surr_poli )
 {
@@ -1478,16 +1478,16 @@ STRF_HD void strf::static_transcoder
 }
 
 template <typename SrcCharT, typename DestCharT>
-STRF_HD std::size_t strf::static_transcoder
+STRF_HD std::ptrdiff_t strf::static_transcoder
     < SrcCharT, DestCharT, strf::csid_utf32, strf::csid_utf8 >::transcode_size
     ( const SrcCharT* src
-    , std::size_t src_size
+    , std::ptrdiff_t src_size
     , strf::surrogate_policy surr_poli )
 {
     (void) surr_poli;
     const auto *src_it = src;
     const auto *src_end = src + src_size;
-    std::size_t count = 0;
+    std::ptrdiff_t count = 0;
     for(;src_it != src_end; ++src_it) {
         auto ch = *src_it;
         STRF_IF_LIKELY (ch < 0x110000) {
@@ -1519,7 +1519,7 @@ STRF_HD void strf::static_transcoder
     < SrcCharT, DestCharT, strf::csid_utf16, strf::csid_utf32 >::transcode
     ( strf::transcode_dest<DestCharT>& dest
     , const SrcCharT* src
-    , std::size_t src_size
+    , std::ptrdiff_t src_size
     , strf::transcoding_error_notifier* err_notifier
     , strf::surrogate_policy surr_poli )
 {
@@ -1557,15 +1557,15 @@ STRF_HD void strf::static_transcoder
 }
 
 template <typename SrcCharT, typename DestCharT>
-STRF_HD std::size_t strf::static_transcoder
+STRF_HD std::ptrdiff_t strf::static_transcoder
     < SrcCharT, DestCharT, strf::csid_utf16, strf::csid_utf32 >::transcode_size
     ( const SrcCharT* src
-    , std::size_t src_size
+    , std::ptrdiff_t src_size
     , strf::surrogate_policy surr_poli )
 {
     (void) surr_poli;
     std::uint32_t ch = 0;
-    std::size_t count = 0;
+    std::ptrdiff_t count = 0;
     const auto *src_it = src;
     const auto *const src_end = src + src_size;
     const SrcCharT* src_it_next = nullptr;
@@ -1590,7 +1590,7 @@ STRF_HD void strf::static_transcoder
     < SrcCharT, DestCharT, strf::csid_utf16, strf::csid_utf16 >::transcode
     ( strf::transcode_dest<DestCharT>& dest
     , const SrcCharT* src
-    , std::size_t src_size
+    , std::ptrdiff_t src_size
     , strf::transcoding_error_notifier* err_notifier
     , strf::surrogate_policy surr_poli )
 {
@@ -1634,14 +1634,14 @@ STRF_HD void strf::static_transcoder
 }
 
 template <typename SrcCharT, typename DestCharT>
-STRF_HD std::size_t strf::static_transcoder
+STRF_HD std::ptrdiff_t strf::static_transcoder
     < SrcCharT, DestCharT, strf::csid_utf16, strf::csid_utf16 >::transcode_size
     ( const SrcCharT* src
-    , std::size_t src_size
+    , std::ptrdiff_t src_size
     , strf::surrogate_policy surr_poli )
 {
     (void) surr_poli;
-    std::size_t count = 0;
+    std::ptrdiff_t count = 0;
     const SrcCharT* src_it = src;
     const auto *const src_end = src + src_size;
     std::uint32_t ch = 0;
@@ -1664,13 +1664,13 @@ template <typename CharT>
 STRF_HD strf::count_codepoints_result
 static_charset<CharT, strf::csid_utf16>::count_codepoints_fast
     ( const CharT* src
-    , std::size_t src_size
-    , std::size_t max_count ) noexcept
+    , std::ptrdiff_t src_size
+    , std::ptrdiff_t max_count ) noexcept
 {
     if (src_size == 0) {
         return {0, 0};
     }
-    std::size_t count = 0;
+    std::ptrdiff_t count = 0;
     const auto *it = src;
     const auto *const end = src + src_size;
     while (count < max_count) {
@@ -1683,19 +1683,19 @@ static_charset<CharT, strf::csid_utf16>::count_codepoints_fast
             return {count, src_size};
         }
     }
-    return {count, static_cast<std::size_t>(it - src)};
+    return {count, it - src};
 }
 
 template <typename CharT>
 STRF_HD strf::count_codepoints_result
 static_charset<CharT, strf::csid_utf16>::count_codepoints
     ( const CharT* src
-    , std::size_t src_size
-    , std::size_t max_count
+    , std::ptrdiff_t src_size
+    , std::ptrdiff_t max_count
     , strf::surrogate_policy surr_poli ) noexcept
 {
     (void) surr_poli;
-    std::size_t count = 0;
+    std::ptrdiff_t count = 0;
     const CharT* it = src;
     const auto *const end = src + src_size;
     std::uint32_t ch = 0;
@@ -1708,7 +1708,7 @@ static_charset<CharT, strf::csid_utf16>::count_codepoints
             ++ it;
         }
     }
-    return {count, static_cast<std::size_t>(it - src)};
+    return {count, it - src};
 }
 
 template <typename CharT>
@@ -1734,7 +1734,7 @@ static_charset<CharT, strf::csid_utf16>::encode_char
 template <typename CharT>
 STRF_HD void
 static_charset<CharT, strf::csid_utf16>::encode_fill
-    ( strf::transcode_dest<CharT>& dest, std::size_t count, char32_t ch )
+    ( strf::transcode_dest<CharT>& dest, std::ptrdiff_t count, char32_t ch )
 {
     STRF_IF_LIKELY (ch < 0x10000) {
         strf::detail::write_fill<CharT>(dest, count, static_cast<CharT>(ch));
@@ -1753,7 +1753,7 @@ STRF_HD void strf::static_transcoder
     < SrcCharT, DestCharT, strf::csid_utf32, strf::csid_utf16 >::transcode
     ( strf::transcode_dest<DestCharT>& dest
     , const SrcCharT* src
-    , std::size_t src_size
+    , std::ptrdiff_t src_size
     , strf::transcoding_error_notifier* err_notifier
     , strf::surrogate_policy surr_poli )
 {
@@ -1792,14 +1792,14 @@ STRF_HD void strf::static_transcoder
 }
 
 template <typename SrcCharT, typename DestCharT>
-STRF_HD std::size_t strf::static_transcoder
+STRF_HD std::ptrdiff_t strf::static_transcoder
     < SrcCharT, DestCharT, strf::csid_utf32, strf::csid_utf16 >::transcode_size
     ( const SrcCharT* src
-    , std::size_t src_size
+    , std::ptrdiff_t src_size
     , strf::surrogate_policy surr_poli )
 {
     (void) surr_poli;
-    std::size_t count = 0;
+    std::ptrdiff_t count = 0;
     const SrcCharT* src_it = src;
     const auto *const src_end = src + src_size;
     for ( ; src_it != src_end; ++src_it) {
@@ -1824,7 +1824,7 @@ STRF_HD void strf::static_transcoder
     < SrcCharT, DestCharT, strf::csid_utf32, strf::csid_utf32 >::transcode
     ( strf::transcode_dest<DestCharT>& dest
     , const SrcCharT* src
-    , std::size_t src_size
+    , std::ptrdiff_t src_size
     , strf::transcoding_error_notifier* err_notifier
     , strf::surrogate_policy surr_poli )
 {
@@ -1866,7 +1866,7 @@ STRF_HD void strf::static_transcoder
 template <typename CharT>
 STRF_HD void
 static_charset<CharT, strf::csid_utf32>::encode_fill
-    ( strf::transcode_dest<CharT>& dest, std::size_t count, char32_t ch )
+    ( strf::transcode_dest<CharT>& dest, std::ptrdiff_t count, char32_t ch )
 {
     strf::detail::write_fill(dest, count, static_cast<CharT>(ch));
 }
@@ -1887,7 +1887,7 @@ STRF_HD void strf::static_transcoder
     < SrcCharT, DestCharT, strf::csid_utf8, strf::csid_utf16 >::transcode
     ( strf::transcode_dest<DestCharT>& dest
     , const SrcCharT* src
-    , std::size_t src_size
+    , std::ptrdiff_t src_size
     , strf::transcoding_error_notifier* err_notifier
     , strf::surrogate_policy surr_poli )
 {
@@ -1969,10 +1969,10 @@ STRF_HD void strf::static_transcoder
 }
 
 template <typename SrcCharT, typename DestCharT>
-STRF_HD std::size_t strf::static_transcoder
+STRF_HD std::ptrdiff_t strf::static_transcoder
     < SrcCharT, DestCharT, strf::csid_utf8, strf::csid_utf16 >::transcode_size
     ( const SrcCharT* src
-    , std::size_t src_size
+    , std::ptrdiff_t src_size
     , strf::surrogate_policy surr_poli )
 {
     using strf::detail::utf8_decode;
@@ -1981,7 +1981,7 @@ STRF_HD std::size_t strf::static_transcoder
     using strf::detail::first_2_of_3_are_valid;
     using strf::detail::first_2_of_4_are_valid;
 
-    std::size_t size = 0;
+    std::ptrdiff_t size = 0;
     std::uint8_t ch0 = 0, ch1 = 0;
     const auto *src_it = src;
     const auto *const src_end = src + src_size;
@@ -2023,7 +2023,7 @@ STRF_HD void strf::static_transcoder
     < SrcCharT, DestCharT, strf::csid_utf16, strf::csid_utf8 >::transcode
     ( strf::transcode_dest<DestCharT>& dest
     , const SrcCharT* src
-    , std::size_t src_size
+    , std::ptrdiff_t src_size
     , strf::transcoding_error_notifier* err_notifier
     , strf::surrogate_policy surr_poli )
 {
@@ -2083,15 +2083,15 @@ STRF_HD void strf::static_transcoder
 }
 
 template <typename SrcCharT, typename DestCharT>
-STRF_HD std::size_t strf::static_transcoder
+STRF_HD std::ptrdiff_t strf::static_transcoder
     < SrcCharT, DestCharT, strf::csid_utf16, strf::csid_utf8 >::transcode_size
     ( const SrcCharT* src
-    , std::size_t src_size
+    , std::ptrdiff_t src_size
     , strf::surrogate_policy surr_poli )
 {
     (void) surr_poli;
     const auto *const src_end = src + src_size;
-    std::size_t size = 0;
+    std::ptrdiff_t size = 0;
     for(const auto *it = src; it < src_end; ++it) {
         SrcCharT ch = *it;
         STRF_IF_LIKELY (ch < 0x80) {

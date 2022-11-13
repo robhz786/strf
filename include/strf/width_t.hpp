@@ -11,7 +11,6 @@
 #include <strf/detail/strf_def.hpp>
 #include <type_traits>
 #include <cstdint>
-
 namespace strf {
 
 class width_t
@@ -25,26 +24,25 @@ public:
     {
     }
 
-    constexpr STRF_HD width_t(std::uint16_t x) noexcept
-        : value_(static_cast<std::uint32_t>(x) << 16)
+    constexpr STRF_HD width_t(std::int16_t x) noexcept
+        : value_(detail::cast_i32(detail::cast_u32(detail::cast_u16(x)) << 16))
     {
     }
 
-    constexpr STRF_HD width_t(from_underlying_tag, std::uint32_t v) noexcept
+    constexpr STRF_HD width_t(from_underlying_tag, std::int32_t v) noexcept
         : value_(v)
     {
     }
 
-    constexpr static STRF_HD width_t from_underlying(std::uint32_t v) noexcept
+    constexpr static STRF_HD width_t from_underlying(std::int32_t v) noexcept
     {
         return {from_underlying_tag{}, v};
     }
-
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD width_t& operator=(std::uint16_t& x) noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD width_t& operator=(std::int16_t& x) noexcept
     {
-        value_ = static_cast<std::uint32_t>(x) << 16;
-        return *this;
+        return operator=(strf::width_t(x));
     }
+
     constexpr STRF_HD bool operator==(const width_t& other) const noexcept
     {
         return value_ == other.value_;
@@ -69,28 +67,80 @@ public:
     {
         return value_ >= other.value_;
     }
+
+    constexpr STRF_HD bool zero() const noexcept
+    {
+        return value_ == 0;
+    }
+    constexpr STRF_HD bool not_zero() const noexcept
+    {
+        return value_ != 0;
+    }
+    constexpr STRF_HD bool gt_zero() const noexcept
+    {
+        return value_ > 0;
+    }
+    constexpr STRF_HD bool ge_zero() const noexcept
+    {
+        return value_ >= 0;
+    }
+    constexpr STRF_HD bool lt_zero() const noexcept
+    {
+        return value_ < 0;
+    }
+    constexpr STRF_HD bool le_zero() const noexcept
+    {
+        return value_ <= 0;
+    }
+    constexpr STRF_HD std::int32_t underlying_value() const noexcept
+    {
+        return value_;
+    }
+    static constexpr STRF_HD width_t max() noexcept
+    {
+        return strf::width_t::from_underlying(0x7FFFFFFF);
+    }
+    static constexpr STRF_HD width_t min() noexcept
+    {
+        return strf::width_t::from_underlying(0x80000000);
+    }
     constexpr STRF_HD bool is_integral() const noexcept
     {
         return (value_ & 0xFFFF) == 0;
     }
-    constexpr STRF_HD std::uint16_t floor() const noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD std::int16_t floor() const noexcept
     {
-        return value_ >> 16;
+        // equivalent of arithmetic shift right 16:
+        const std::uint32_t leftbits = (value_ < 0 ? 0xFFFF0000U : 0);
+        auto result = leftbits | (detail::cast_u32(value_) >> 16);
+        return detail::cast_i16(detail::cast_i32(result));
     }
-    constexpr STRF_HD std::uint16_t ceil() const noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD std::int16_t ceil() const noexcept
     {
-        return (value_ + 0xFFFF) >> 16;
+        auto tmp = value_ + 0xFFFF;
+        const std::uint32_t leftbits = (tmp < 0 ? 0xFFFF0000U : 0);
+        auto result = leftbits | (detail::cast_u32(tmp) >> 16);
+        return detail::cast_i16(detail::cast_i32(result));
     }
-    constexpr STRF_HD std::uint16_t round() const noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD std::int16_t round() const noexcept
     {
-        return static_cast<std::uint16_t>((value_ >> 16) + ((value_ & 0xFFFF) > 0x8000));
+        std::int16_t i = floor();
+        const auto q = value_ & 0xFFFF;
+        STRF_IF_LIKELY (value_ >= 0) {
+            return q <= 0x8000 ? i : (i + 1);
+        }
+        return q >= 0x8000 ? i : (i - 1);
     }
     constexpr STRF_HD width_t operator+() const noexcept
     {
         return *this;
     }
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD width_t& operator+=(width_t other) noexcept
+    constexpr STRF_HD width_t operator-() const noexcept
+    {
+        return from_underlying(-value_);
+    }
 
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD width_t& operator+=(width_t other) noexcept
     {
         value_ += other.value_;
         return *this;
@@ -100,52 +150,102 @@ public:
         value_ -= other.value_;
         return *this;
     }
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD width_t& operator*=(std::uint16_t m) noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD width_t& operator*=(std::int64_t x) noexcept
     {
-        value_ *= m;
-        return *this;
-    }
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD width_t& operator/=(std::uint16_t d) noexcept
-    {
-        const std::uint64_t v64 = value_;
-        const std::uint64_t tmp = (v64 << 32) / d;
-        value_ = static_cast<std::uint32_t>(tmp >> 32);
-        return *this;
-    }
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD width_t& operator*=(width_t other) noexcept
-    {
-        const std::uint64_t tmp
-            = static_cast<std::uint64_t>(value_)
-            * static_cast<std::uint64_t>(other.value_);
-
-        value_ = static_cast<std::uint32_t>(tmp >> 16);
-        return *this;
-    }
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD width_t& operator/=(width_t other) noexcept
-    {
-        const std::uint64_t v = value_;
-        const std::uint64_t tmp = static_cast<std::uint64_t>(v << 32) / other.value_;
-
-        value_ = static_cast<std::uint32_t>(static_cast<std::uint64_t>(tmp) >> 16);
-        return *this;
-    }
-    constexpr STRF_HD std::uint32_t underlying_value() const noexcept
-    {
-        return value_;
+        if (x == 0 || value_ == 0) {
+            value_ = 0;
+            return *this;
+        }
+        constexpr std::int64_t mini = width_t::min().underlying_value();
+        constexpr std::int64_t maxi = width_t::max().underlying_value();
+        if (mini <= x && x <= maxi)
+        {
+            const auto result = x * detail::cast_i64(value_);
+            if (mini <= result && result <= maxi)
+            {
+                value_ = detail::cast_i32(result);
+                return *this;
+            }
+        }
+        const bool negative = (value_ < 0) ^ (x < 0);
+        return operator=(negative ? width_t::min() : width_t::max());
     }
 
-    static constexpr STRF_HD width_t max() noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD width_t& operator*=(std::int32_t x) noexcept
     {
-        return strf::width_t::from_underlying(0xFFFFFFFF);
+        constexpr std::int64_t min = width_t::min().underlying_value();
+        constexpr std::int64_t max = width_t::max().underlying_value();
+
+        const auto result = detail::cast_i64(x) * detail::cast_i64(value_);
+        if (min <= result && result <= max)
+        {
+            value_ = detail::cast_i32(result);
+            return *this;
+        }
+        const bool negative = (value_ < 0) ^ (x < 0);
+        return operator=(negative ? width_t::min() : width_t::max());
     }
-    static constexpr STRF_HD width_t min() noexcept
+
+
+    // STRF_CONSTEXPR_IN_CXX14 STRF_HD width_t& operator/=(std::int16_t d) noexcept
+    // {
+    //     const std::uint64_t vu64 = cast_u32(value_);
+    //     const auto tmp  = cast_i64(vu64 << 32) / d;
+    //     const auto utmp = cast_u64(tmp);
+    //     value_ = cast_i32(utmp >> 32);
+    //     return *this;
+    // }
+#ifndef __CUDACC__
+    STRF_CONSTEXPR_IN_CXX14
+#endif
+    STRF_HD width_t& operator*=(width_t other) noexcept
     {
-        return static_cast<width_t>(0);
+        const auto tmp =(detail::cast_i64(value_) * detail::cast_i64(other.value_));
+
+        if (tmp >= (1LL << 47)) {
+            value_ = 0x7FFFFFFF;
+        } else if (tmp < -(1LL << 48)) {
+            value_ = 0x80000000;
+        } else {
+            // equivalent of arithmetic shift right 16:
+            const std::uint64_t leftbits = (tmp < 0 ? 0xFFFF000000000000ULL : 0);
+            value_ = detail::cast_i32((detail::cast_u64(tmp) >> 16 | leftbits));
+        }
+        return *this;
+    }
+#ifndef __CUDACC__
+    STRF_CONSTEXPR_IN_CXX14
+#endif
+    STRF_HD width_t& operator/=(width_t other) noexcept
+    {
+
+        const std::uint64_t vu64 = detail::cast_u32(value_);
+        const std::int64_t tmp = detail::cast_i64(vu64 << 32) / other.value_;
+
+        value_ = detail::cast_i32(detail::cast_u64(tmp) >> 16);
+        return *this;
+    }
+
+    constexpr STRF_HD std::int32_t compare(std::int16_t x) const noexcept
+    {
+        using namespace strf::detail::cast_sugars;
+        return cast_i32(cast_u32(cast_u16(x)) << 16) - value_;
+    }
+    constexpr STRF_HD std::int64_t compare(std::int32_t x) const noexcept
+    {
+        using namespace strf::detail::cast_sugars;
+        return cast_i64(cast_u64(cast_u32(x)) << 16 ) - cast_i64(value_);
+    }
+    constexpr STRF_HD std::int64_t compare(std::int64_t x) const noexcept
+    {
+        return ( x >= 0x8000LL ?  1
+               : x < -0x8000LL ? -1
+               : compare(detail::cast_i32(x)) );
     }
 
 private:
 
-    std::uint32_t value_;
+    std::int32_t value_;
 };
 
 constexpr strf::width_t width_max = strf::width_t::max();
@@ -154,62 +254,169 @@ constexpr strf::width_t width_min = strf::width_t::min();
 STRF_CONSTEXPR_IN_CXX14
 STRF_HD strf::width_t checked_mul(strf::width_t w, std::size_t x) noexcept
 {
-    std::uint64_t tmp = x;
-    tmp *= w.underlying_value();
-    if (tmp <= 0xFFFFFFFFULL) {
-        return strf::width_t::from_underlying(static_cast<std::uint32_t>(tmp));
+    if (x < 0x100000000)
+    {
+        constexpr std::int64_t min = width_t::min().underlying_value();
+        constexpr std::int64_t max = width_t::max().underlying_value();
+
+        const auto signed_x = static_cast<std::int64_t>(x);
+        const std::int64_t underlying = w.underlying_value();
+        auto result = underlying * signed_x;
+        if (min <= result && result <= max)
+        {
+            return strf::width_t::from_underlying(static_cast<std::int32_t>(result));
+        }
     }
-    return strf::width_max;
+    return w.underlying_value() >= 0 ? width_t::max() : width_t::min();
 }
 
-constexpr STRF_HD bool operator==(strf::width_t lhs, std::uint16_t rhs ) noexcept
+constexpr STRF_HD bool operator==(strf::width_t lhs, std::int16_t rhs ) noexcept
 {
     return lhs == strf::width_t{rhs};
 }
-constexpr STRF_HD bool operator==(std::uint16_t lhs, strf::width_t rhs ) noexcept
+constexpr STRF_HD bool operator==(std::int16_t lhs, strf::width_t rhs ) noexcept
 {
     return strf::width_t{lhs} == rhs;
 }
-constexpr STRF_HD bool operator!=(strf::width_t lhs, std::uint16_t rhs ) noexcept
+
+constexpr STRF_HD bool operator!=(strf::width_t lhs, std::int16_t rhs ) noexcept
 {
     return lhs != strf::width_t{rhs};
 }
-constexpr STRF_HD bool operator!=(std::uint16_t lhs, strf::width_t rhs ) noexcept
+constexpr STRF_HD bool operator!=(std::int16_t lhs, strf::width_t rhs ) noexcept
 {
     return strf::width_t{lhs} != rhs;
 }
-constexpr STRF_HD bool operator<(strf::width_t lhs, std::uint16_t rhs ) noexcept
+
+constexpr STRF_HD bool operator<(strf::width_t lhs, std::int16_t rhs ) noexcept
 {
-    return lhs < strf::width_t{rhs};
+    return lhs.compare(rhs) > 0;
 }
-constexpr STRF_HD bool operator<(std::uint16_t lhs, strf::width_t rhs ) noexcept
+constexpr STRF_HD bool operator<(std::int16_t lhs, strf::width_t rhs ) noexcept
 {
-    return strf::width_t{lhs} < rhs;
+    return rhs.compare(lhs) < 0;
 }
-constexpr STRF_HD bool operator<=(strf::width_t lhs, std::uint16_t rhs ) noexcept
+constexpr STRF_HD bool operator<=(strf::width_t lhs, std::int16_t rhs ) noexcept
 {
-    return lhs <= strf::width_t{rhs};
+    return lhs.compare(rhs) >= 0;
 }
-constexpr STRF_HD bool operator<=(std::uint16_t lhs, strf::width_t rhs ) noexcept
+constexpr STRF_HD bool operator<=(std::int16_t lhs, strf::width_t rhs ) noexcept
 {
-    return strf::width_t{lhs} <= rhs;
+    return rhs.compare(lhs) <= 0;
 }
-constexpr STRF_HD bool operator>(strf::width_t lhs, std::uint16_t rhs ) noexcept
+
+constexpr STRF_HD bool operator>(strf::width_t lhs, std::int16_t rhs ) noexcept
 {
-    return lhs > strf::width_t{rhs};
+    return lhs.compare(rhs) < 0;
 }
-constexpr STRF_HD bool operator>(std::uint16_t lhs, strf::width_t rhs ) noexcept
+constexpr STRF_HD bool operator>(std::int16_t lhs, strf::width_t rhs ) noexcept
 {
-    return strf::width_t{lhs} > rhs;
+    return rhs.compare(lhs) > 0;
 }
-constexpr STRF_HD bool operator>=(strf::width_t lhs, std::uint16_t rhs ) noexcept
+constexpr STRF_HD bool operator>=(strf::width_t lhs, std::int16_t rhs ) noexcept
 {
-    return lhs >= strf::width_t{rhs};
+    return lhs.compare(rhs) <= 0;
 }
-constexpr STRF_HD bool operator>=(std::uint16_t lhs, strf::width_t rhs ) noexcept
+constexpr STRF_HD bool operator>=(std::int16_t lhs, strf::width_t rhs ) noexcept
 {
-    return strf::width_t{lhs} >= rhs;
+    return rhs.compare(lhs) >= 0;
 }
+
+/*
+constexpr STRF_HD bool operator==(strf::width_t lhs, std::int32_t rhs ) noexcept
+{
+    return lhs.compare(rhs) == 0;
+}
+constexpr STRF_HD bool operator==(std::int32_t lhs, strf::width_t rhs ) noexcept
+{
+    return rhs.compare(lhs) == 0;
+}
+constexpr STRF_HD bool operator!=(strf::width_t lhs, std::int32_t rhs ) noexcept
+{
+    return lhs.compare(rhs) != 0;
+}
+constexpr STRF_HD bool operator!=(std::int32_t lhs, strf::width_t rhs ) noexcept
+{
+    return rhs.compare(lhs) != 0;
+}
+
+constexpr STRF_HD bool operator<(strf::width_t lhs, std::int32_t rhs ) noexcept
+{
+    return lhs.compare(rhs) > 0;
+}
+constexpr STRF_HD bool operator<(std::int32_t lhs, strf::width_t rhs ) noexcept
+{
+    return rhs.compare(lhs) < 0;
+}
+constexpr STRF_HD bool operator<=(strf::width_t lhs, std::int32_t rhs ) noexcept
+{
+    return lhs.compare(rhs) >= 0;
+}
+constexpr STRF_HD bool operator<=(std::int32_t lhs, strf::width_t rhs ) noexcept
+{
+    return rhs.compare(lhs) <= 0;
+}
+
+constexpr STRF_HD bool operator>(strf::width_t lhs, std::int32_t rhs ) noexcept
+{
+    return lhs.compare(rhs) < 0;
+}
+constexpr STRF_HD bool operator>(std::int32_t lhs, strf::width_t rhs ) noexcept
+{
+    return rhs.compare(lhs) > 0;
+}
+constexpr STRF_HD bool operator>=(strf::width_t lhs, std::int32_t rhs ) noexcept
+{
+    return lhs.compare(rhs) <= 0;
+}
+constexpr STRF_HD bool operator>=(std::int32_t lhs, strf::width_t rhs ) noexcept
+{
+    return rhs.compare(lhs) >= 0;
+}
+
+constexpr STRF_HD bool operator!=(strf::width_t lhs, std::int64_t rhs ) noexcept
+{
+    return lhs.compare(rhs) == 0;
+}
+constexpr STRF_HD bool operator!=(std::int64_t lhs, strf::width_t rhs ) noexcept
+{
+    return rhs.compare(lhs) == 0;
+}
+
+constexpr STRF_HD bool operator<(strf::width_t lhs, std::int64_t rhs ) noexcept
+{
+    return lhs.compare(rhs) > 0;
+}
+constexpr STRF_HD bool operator<(std::int64_t lhs, strf::width_t rhs ) noexcept
+{
+    return rhs.compare(lhs) < 0;
+}
+constexpr STRF_HD bool operator<=(strf::width_t lhs, std::int64_t rhs ) noexcept
+{
+    return lhs.compare(rhs) >= 0;
+}
+constexpr STRF_HD bool operator<=(std::int64_t lhs, strf::width_t rhs ) noexcept
+{
+    return rhs.compare(lhs) <= 0;
+}
+
+constexpr STRF_HD bool operator>(strf::width_t lhs, std::int64_t rhs ) noexcept
+{
+    return lhs.compare(rhs) < 0;
+}
+constexpr STRF_HD bool operator>(std::int64_t lhs, strf::width_t rhs ) noexcept
+{
+    return rhs.compare(lhs) > 0;
+}
+constexpr STRF_HD bool operator>=(strf::width_t lhs, std::int64_t rhs ) noexcept
+{
+    return lhs.compare(rhs) <= 0;
+}
+constexpr STRF_HD bool operator>=(std::int64_t lhs, strf::width_t rhs ) noexcept
+{
+    return rhs.compare(lhs) >= 0;
+}
+*/
 STRF_CONSTEXPR_IN_CXX14
 STRF_HD strf::width_t operator+(strf::width_t lhs, strf::width_t rhs) noexcept
 {
@@ -217,13 +424,13 @@ STRF_HD strf::width_t operator+(strf::width_t lhs, strf::width_t rhs) noexcept
 }
 
 STRF_CONSTEXPR_IN_CXX14
-STRF_HD strf::width_t operator+(std::uint16_t lhs, strf::width_t rhs) noexcept
+STRF_HD strf::width_t operator+(std::int16_t lhs, strf::width_t rhs) noexcept
 {
     return rhs += lhs;
 }
 
 STRF_CONSTEXPR_IN_CXX14
-STRF_HD strf::width_t operator+(strf::width_t lhs, std::uint16_t rhs) noexcept
+STRF_HD strf::width_t operator+(strf::width_t lhs, std::int16_t rhs) noexcept
 {
     return lhs += rhs;
 }
@@ -235,42 +442,66 @@ STRF_HD strf::width_t operator-(strf::width_t lhs, strf::width_t rhs) noexcept
     return lhs -= rhs;
 }
 STRF_CONSTEXPR_IN_CXX14
-STRF_HD strf::width_t operator-(std::uint16_t lhs, strf::width_t rhs) noexcept
+STRF_HD strf::width_t operator-(std::int16_t lhs, strf::width_t rhs) noexcept
 {
     return strf::width_t(lhs) -= rhs;
 }
 STRF_CONSTEXPR_IN_CXX14
-STRF_HD strf::width_t operator-(strf::width_t lhs, std::uint16_t rhs) noexcept
+STRF_HD strf::width_t operator-(strf::width_t lhs, std::int16_t rhs) noexcept
 {
     return lhs -= rhs;
 }
+
+#ifndef __CUDACC__
 STRF_CONSTEXPR_IN_CXX14
+#endif
+inline
 STRF_HD strf::width_t operator*(strf::width_t lhs, strf::width_t rhs) noexcept
 {
     return lhs *= rhs;
 }
+
+#ifndef __CUDACC__
 STRF_CONSTEXPR_IN_CXX14
-STRF_HD strf::width_t operator*(std::uint16_t lhs, strf::width_t rhs) noexcept
+#endif
+inline
+STRF_HD strf::width_t operator*(std::int16_t lhs, strf::width_t rhs) noexcept
 {
     return strf::width_t(lhs) *= rhs;
 }
+
+#ifndef __CUDACC__
 STRF_CONSTEXPR_IN_CXX14
-STRF_HD strf::width_t operator*(strf::width_t lhs, std::uint16_t rhs) noexcept
+#endif
+inline
+STRF_HD strf::width_t operator*(strf::width_t lhs, std::int16_t rhs) noexcept
 {
     return lhs *= rhs;
 }
+
+#ifndef __CUDACC__
 STRF_CONSTEXPR_IN_CXX14
+#endif
+inline
 STRF_HD strf::width_t operator/(strf::width_t lhs, strf::width_t rhs) noexcept
 {
     return lhs /= rhs;
 }
+
+#ifndef __CUDACC__
 STRF_CONSTEXPR_IN_CXX14
-STRF_HD strf::width_t operator/(std::uint16_t lhs, strf::width_t rhs) noexcept
+#endif
+inline
+STRF_HD strf::width_t operator/(std::int16_t lhs, strf::width_t rhs) noexcept
 {
     return strf::width_t(lhs) /= rhs;
 }
+
+#ifndef __CUDACC__
 STRF_CONSTEXPR_IN_CXX14
-STRF_HD strf::width_t operator/(strf::width_t lhs, std::uint16_t rhs) noexcept
+#endif
+inline
+STRF_HD strf::width_t operator/(strf::width_t lhs, std::int16_t rhs) noexcept
 {
     return lhs /= rhs;
 }
@@ -294,7 +525,7 @@ constexpr STRF_HD std::uint64_t mp_pow10()
     return mp_pow10_impl<x>::value;
 }
 
-template <bool preferUp, char ... D>
+template <bool preferUp, char... D>
 struct mp_round_up;
 
 template <bool preferUp>
@@ -305,7 +536,7 @@ struct mp_round_up<preferUp>
 
 #if defined(__cpp_fold_expressions)
 
-template <bool preferUp, char D0, char ... D>
+template <bool preferUp, char D0, char... D>
 struct mp_round_up<preferUp, D0, D...>
 {
     static constexpr bool value
@@ -315,7 +546,7 @@ struct mp_round_up<preferUp, D0, D...>
 
 #else // defined(__cpp_fold_expressions)
 
-template <char ... D>
+template <char... D>
 struct mp_contains_non_zero_digit;
 
 template <>
@@ -324,14 +555,14 @@ struct mp_contains_non_zero_digit<>
     static constexpr bool value = false;
 };
 
-template <char D0, char ... D>
+template <char D0, char... D>
 struct mp_contains_non_zero_digit<D0, D...>
 {
     static constexpr bool value
     = (D0 != '0' || mp_contains_non_zero_digit<D...>::value);
 };
 
-template <bool preferUp, char D0, char ... D>
+template <bool preferUp, char D0, char... D>
 struct mp_round_up<preferUp, D0, D...>
 {
     static constexpr bool value
@@ -341,7 +572,7 @@ struct mp_round_up<preferUp, D0, D...>
 
 #endif // defined(__cpp_fold_expressions)
 
-template <unsigned N, char ... D>
+template <unsigned N, char... D>
 struct dec_frac_digits;
 
 template <unsigned N>
@@ -380,7 +611,7 @@ struct dec_frac_digits<N, D0, D...>
     = (D0 - '0') * mp_pow10<fdigcount - 1>() + r::fvalue;
 };
 
-template <unsigned P, char ... Ch>
+template <unsigned P, char... Ch>
 struct mp_fp_parser_2;
 
 template <unsigned P>
@@ -401,7 +632,7 @@ struct mp_fp_parser_2<P, '.'>
     static constexpr std::uint64_t idigcount = 0;
 };
 
-template <unsigned P, char ... F>
+template <unsigned P, char... F>
 struct mp_fp_parser_2<P, '.', F...>
 {
     static constexpr std::uint64_t fvalue = dec_frac_digits<P, F...>::fvalue;
@@ -411,18 +642,18 @@ struct mp_fp_parser_2<P, '.', F...>
     static constexpr bool negative = false;
 };
 
-template <unsigned P, char ... C>
+template <unsigned P, char... C>
 struct mp_fp_parser_2<P, '-', C...>: public mp_fp_parser_2<P, C...>
 {
     static constexpr bool negative = true;
 };
-template <unsigned P, char ... C>
+template <unsigned P, char... C>
 struct mp_fp_parser_2<P, '+', C...>: public mp_fp_parser_2<P, C...>
 {
     static constexpr bool negative = false;
 };
 
-template <unsigned P, char C0, char ... Ch>
+template <unsigned P, char C0, char... Ch>
 struct mp_fp_parser_2<P, C0, Ch...>
 {
     static constexpr std::uint64_t idigcount = mp_fp_parser_2<P, Ch...>::idigcount + 1;
@@ -433,7 +664,7 @@ struct mp_fp_parser_2<P, C0, Ch...>
     static constexpr bool negative = false;
 };
 
-template <unsigned Q, char ... C>
+template <unsigned Q, char... C>
 class mp_fixed_point_parser
 {
     using helper = detail::mp_fp_parser_2<Q, C...>;
@@ -448,30 +679,29 @@ public:
 
     static constexpr bool negative = helper::negative;
     static constexpr std::uint64_t abs_value = (helper::ivalue << Q) + frac;
-    static constexpr std::int64_t value = abs_value * (1 - (negative << 2));
 };
 
 } // namespace detail
 
 namespace width_literal {
 
-template <char ... C>
+template <char... C>
 class mp_width_parser
 {
     using helper = strf::detail::mp_fixed_point_parser<16, C...>;
     static_assert(helper::abs_value < 0x100000000, "width value too big");
-    static_assert(!helper::negative, "width can not be negative");
+    static constexpr auto abs_value = static_cast<std::int32_t>(helper::abs_value);
+    static constexpr auto negative = helper::negative;
 
 public:
 
-    constexpr static std::uint64_t value = helper::abs_value;
+    constexpr static std::int32_t value =  negative ? -abs_value : abs_value;
 };
 
-template <char ... C>
+template <char... C>
 constexpr STRF_HD strf::width_t operator "" _w()
 {
-    return strf::width_t::from_underlying
-        ( static_cast<std::uint32_t>(mp_width_parser<C...>::value) );
+    return strf::width_t::from_underlying(mp_width_parser<C...>::value);
 }
 
 } // namespace width_literal

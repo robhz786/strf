@@ -49,10 +49,6 @@ static STRF_TEST_FUNC void test_destination_too_small()
     }
 }
 
-#if defined(__GNUC__) && (__GNUC__ == 7 || __GNUC__ == 8)
-#  pragma GCC diagnostic pop
-#endif
-
 static STRF_TEST_FUNC void test_write_after_finish()
 {
     const char s1a[] = "Hello";
@@ -83,6 +79,10 @@ static STRF_TEST_FUNC void test_write_after_finish()
     TEST_EQ(*r2.ptr, '\0');
     TEST_EQ(r2.ptr, r1.ptr);
 }
+
+#if defined(__GNUC__) && (__GNUC__ == 7 || __GNUC__ == 8)
+#  pragma GCC diagnostic pop
+#endif
 
 template <typename CharT>
 STRF_TEST_FUNC void test_cstr_destination_creator()

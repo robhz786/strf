@@ -23,7 +23,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 :representative_of_printable: <<representative_of_printable,representative_of_printable>>
 :is_printable_and_overridable: <<is_printable_and_overridable,is_printable_and_overridable>>
 
-:width_decumulator: << width_decumulator, width_decumulator>>
+:width_decumulator: <<width_decumulator,width_decumulator>>
 :size_accumulator: <<size_accumulator,size_accumulator>>
 
 :constrain: <<constrain,constrain>>
@@ -230,15 +230,17 @@ such that the sequence:
 
 [source,cpp,subs=normal]
 ----
-std::size_t s = x.pre.<<size_accumulator_accumulated_size,accumulated_size>>();
+auto size_before = x.pre.<<size_accumulator_accumulated_ssize,accumulated_ssize>>();
 typename T::printer_type p{x};
-std::size_t predicted_size = x.pre.<<size_accumulator_accumulated_size,accumulated_size>>() - s;
-std::size_t dest_buff_space = dest.<<destination_hpp#output_buffer_buffer_space,buffer_space>>();
+auto size_after = x.pre.<<size_accumulator_accumulated_ssize,accumulated_ssize>>();
+auto predicted_size = size_after - size_before;
+auto dest_buff_space = dest.<<destination_hpp#output_buffer_buffer_space,buffer_space>>();
+
 static_cast<const printer<CharT>&>(p).<<printer,print_to>>(dest);
 ----
 statisfies the following postconditions when `PrePriting::<<preprinting,size_required>>` is `true`:
 
-*  if `predicted_size \<= dest_buff_space` is `true` then `dest.recycle()` is not called.
+*  if `predicted_size \<= dest_buff_space` is `true`, then `dest.recycle()` is not called in `print_to`
 ====
 
 ====
@@ -470,15 +472,17 @@ class size_accumulator
 {
 public:
     explicit constexpr size_accumulator() noexcept;
-    explicit constexpr size_accumulator(std::size_t initial_size) noexcept;
+    explicit constexpr size_accumulator(std::ptrdiff_t initial_size) noexcept;
 
     size_accumulator(const size_accumulator&) = delete;
     size_accumulator(size_accumulator&&) = delete;
     size_accumulator& operator=(const size_accumulator&) = delete;
     size_accumulator& operator=(size_accumulator&&) = delete;
 
-    constexpr void add_size(std::size_t) noexcept;
-    constexpr std::size_t accumulated_size() const noexcept;
+    constexpr void add_size(std::ptrdiff_t) noexcept;
+
+    constexpr std::ptrdiff_t accumulated_ssize() const noexcept;
+    constexpr std::size_t accumulated_usize() const noexcept;
 };
 } // namespace strf
 ----
@@ -489,36 +493,52 @@ public:
 ----
 explicit constexpr size_accumulator() noexcept;
 ----
-Postcondition:: `accumulated_size() == 0`
+Postcondition:: `accumulated_ssize() == 0`
 ====
 ====
 [source,cpp]
 ----
-explicit constexpr size_accumulator(std::size_t initial_size) noexcept;
+explicit constexpr size_accumulator(std::ptrdiff_t initial_size) noexcept;
 ----
 Compile-time requirement:: `Active` is `true`, otherwise this constructor
 does not participate in overload resolution.
-Postcondition:: `accumulated_size() == initial_size`
+Precondition:: `initital_size >= 0`
+Postcondition:: `accumulated_ssize() == initial_size`
 ====
+[[size_accumulator_add_size]]
 ====
 [source,cpp]
 ----
-constexpr void add_size(std::size_t s) noexcept;
+constexpr void add_size(std::ptrdiff_t s) noexcept;
 ----
+Precondition:: `s >= 0`
+
 Effects::
 When `Active` is `false`::: None
-When `Active` is `true` ::: The internally stored size value ( that is returned by `accumulated_size()` ) is incremented by `s`.
+When `Active` is `true` ::: The internally stored size value ( that is returned by `accumulated_ssize()` ) is incremented by `s`.
 ====
-[[size_accumulator_accumulated_size]]
+
+[[size_accumulator_accumulated_ssize]]
 ====
 [source,cpp]
 ----
-constexpr void accumulated_size() const noexcept;
+constexpr std::ptrdiff_t accumulated_ssize() const noexcept;
 ----
 Return value::
 When `Active` is `false`::: `0`
 When `Active` is `true` ::: The internally stored size value.
 ====
+
+[[size_accumulator_accumulated_usize]]
+====
+[source,cpp]
+----
+constexpr std::size_t accumulated_usize() const noexcept;
+----
+Return value:: `static_cast<std::size_t>(accumulated_ssize())`
+====
+
+
 [[width_decumulator]]
 === Class template `width_decumulator`
 
@@ -536,54 +556,78 @@ public:
     width_decumulator& operator=(const width_decumulator&) = delete;
     width_decumulator& operator=(width_decumulator&&) = delete;
 
-    explicit constexpr width_decumulator(<<width_t,width_t>> initial_width) noexcept;
+    constexpr explicit width_decumulator(<<width_t,width_t>> initial_width) noexcept;
 
     constexpr void subtract_width(<<width_t,width_t>>) noexcept;
-
-    template <typename IntT>
-    constexpr void subtract_width(IntT w) noexcept;
 
     constexpr void clear_remaining_width() noexcept;
 
     constexpr <<width_t,width_t>> remaining_width() const noexcept;
+
+private:
+    <<width_t,width_t>> width_; // exposition-only
 }
 } // namespace strf
 ----
 
 ==== Member functions
 
+
+====
+[source,cpp,subs=normal]
+----
+constexpr explicit width_decumulator(<<width_t,width_t>> initial_width) noexcept;
+----
+Compile-time requiment:: `Active` is `true`, otherwise this constructor
+does not participate in overload resolution.
+Postcondition:: `remaining_width() == initial_width > 0 ? initial_width : 0`
+====
+
 ====
 [source,cpp]
 ----
 constexpr width_decumulator() noexcept;
 ----
-Postcondition:: `remaining_width() == width_max`
+Postcondition:: `remaining_width() == (Active ? <<width_t,width_max>> : 0)`
 ====
 
 ====
 [source,cpp,subs=normal]
 ----
-constexpr width_decumulator(<<width_t,width_t>> initial_width) noexcept;
+constexpr width_t remaining_width() noexcept;
 ----
-Compile-time requirement:: `Active` is `true`, otherwise this constructor
-does not participate in overload resolution.
-Postcondition:: `remaining_width() == initial_width`
+Return value:: `width_ > 0 ? width_ : 0`
 ====
 
 ====
 [source,cpp,subs=normal]
 ----
 constexpr void subtract_width(<<width_t,width_t>> w) noexcept;
-
-template <typename IntT>
-constexpr void subtract_width(IntT w) noexcept;
 ----
-Compile-time requirement:: In the template form, `std::is_integral<IntT>::value` must be `true`, otherwise it does not participate in overload resolution.
-Effects::
+Effect::
+None if `Active` is `false`, otherwise does `width_ -= w`
+====
 
-If `(!Active ||  w \<= 0)` is `true` ::: None
-Othersize, if `w < remaining_width()` is `true`::: The return value of `remaining_width` is decremented by `w`.
-Otherwise ::: Equivalent to `clear_remaining_width()`
+====
+[source,cpp,subs=normal]
+----
+constexpr clear_negative_width() noexcept;
+----
+Effect:: Sets the internal `width_` to zero if it is negative;
+
+Calling `subtract_width(w)` has undefined behavior if `w` is greater than
+`(width_ - <<width_t,width_min>>)`.
+So calling `clear_negative_width` aims to reduce the chances of that to happen.
+====
+
+====
+[source,cpp,subs=normal]
+----
+constexpr reset_remaining_width(width_t w) noexcept;
+----
+Compile-time requiment:: `Active` is `true`, otherwise this function
+does not participate in overload resolution.
+Effect: `width_ = w`;
 ====
 
 ====
@@ -591,6 +635,7 @@ Otherwise ::: Equivalent to `clear_remaining_width()`
 ----
 constexpr clear_remaining_width() noexcept;
 ----
+Effect:: `width_ = 0`
 Postcondition:: `remaining_width() == 0`
 ====
 

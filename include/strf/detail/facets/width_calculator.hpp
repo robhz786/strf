@@ -14,7 +14,7 @@ struct width_calculator_c;
 
 struct width_and_pos {
     strf::width_t width;
-    std::size_t pos{};
+    std::ptrdiff_t pos{};
 };
 
 class fast_width_t final
@@ -35,10 +35,10 @@ public:
         ( Charset
         , strf::width_t limit
         , const typename Charset::code_unit*
-        , std::size_t str_len
+        , std::ptrdiff_t str_len
         , strf::surrogate_policy ) const noexcept
     {
-        return ( str_len <= limit.floor()
+        return ( static_cast<std::ptrdiff_t>(str_len) <= limit.floor()
                ? static_cast<std::uint16_t>(str_len)
                : limit );
     }
@@ -48,10 +48,10 @@ public:
         ( Charset
         , strf::width_t limit
         , const typename Charset::code_unit*
-        , std::size_t str_len
+        , std::ptrdiff_t str_len
         , strf::surrogate_policy ) const noexcept
     {
-        const auto limit_floor = static_cast<std::size_t>(limit.floor());
+        const auto limit_floor = limit.floor();
         if (str_len <= limit_floor) {
             return { static_cast<std::uint16_t>(str_len), str_len };
         }
@@ -77,7 +77,7 @@ public:
         ( Charset charset
         , strf::width_t limit
         , const typename Charset::code_unit* str
-        , std::size_t str_len
+        , std::ptrdiff_t str_len
         , strf::surrogate_policy ) const
     {
         auto lim = limit.floor();
@@ -91,7 +91,7 @@ public:
         ( Charset charset
         , strf::width_t limit
         , const typename Charset::code_unit* str
-        , std::size_t str_len
+        , std::ptrdiff_t str_len
         , strf::surrogate_policy ) const
     {
         auto lim = limit.floor();
@@ -120,7 +120,7 @@ public:
         ( Charset charset
         , strf::width_t limit
         , const typename Charset::code_unit* str
-        , std::size_t str_len
+        , std::ptrdiff_t str_len
         , strf::surrogate_policy surr_poli ) const
     {
         auto lim = limit.floor();
@@ -134,7 +134,7 @@ public:
         ( Charset charset
         , strf::width_t limit
         , const typename Charset::code_unit* str
-        , std::size_t str_len
+        , std::ptrdiff_t str_len
         , strf::surrogate_policy surr_poli ) const
     {
         auto lim = limit.floor();
@@ -165,7 +165,7 @@ public:
     {
         strf::width_t width;
         bool whole_string_covered{};
-        std::size_t codepoints_count{};
+        std::ptrdiff_t codepoints_count{};
     };
 
     result STRF_HD get_result()
@@ -178,11 +178,11 @@ public:
 private:
 
     bool whole_string_covered_ = true;
-    constexpr static std::size_t buff_size_ = 16;
+    constexpr static std::ptrdiff_t buff_size_ = 16;
     char32_t buff_[buff_size_];
     const strf::width_t limit_;
     strf::width_t width_ = 0;
-    std::size_t codepoints_count_ = 0;
+    std::ptrdiff_t codepoints_count_ = 0;
     WFunc func_;
 };
 
@@ -234,7 +234,7 @@ public:
         ( Charset charset
         , strf::width_t limit
         , const typename Charset::code_unit* str
-        , std::size_t str_len
+        , std::ptrdiff_t str_len
         , strf::surrogate_policy surr_poli ) const
     {
         strf::detail::width_accumulator<CharWidthFunc> acc(limit, func_);
@@ -248,7 +248,7 @@ public:
         ( Charset charset
         , strf::width_t limit
         , const typename Charset::code_unit* str
-        , std::size_t str_len
+        , std::ptrdiff_t str_len
         , strf::surrogate_policy surr_poli ) const
     {
         strf::detail::width_accumulator<CharWidthFunc> acc(limit, func_);
@@ -529,7 +529,7 @@ public:
         : strf::transcode_dest<char32_t>(buff_, buff_size_)
         , width_{initial_width}
     {
-        this->set_good(initial_width != 0);
+        this->set_good(initial_width.gt_zero());
     }
 
     STRF_HD void recycle() noexcept override {
@@ -537,7 +537,7 @@ public:
             auto res = detail::std_width_calc_func(buff_, this->buffer_ptr(), width_, state_, false);
             width_ = res.width;
             state_ = res.state;
-            if (width_ == 0) {
+            if (width_.le_zero()) {
                 this->set_good(false);
             }
         }
@@ -545,7 +545,7 @@ public:
     }
 
     STRF_HD strf::width_t get_remaining_width() {
-        if (width_ != 0 && this->buffer_ptr() != buff_) {
+        if (width_.gt_zero() && this->buffer_ptr() != buff_) {
             auto res = detail::std_width_calc_func(buff_, this->buffer_ptr(), width_, state_, false);
             return res.width;
         }
@@ -555,7 +555,7 @@ public:
 private:
     strf::width_t width_;
     unsigned state_ = 0;
-    static constexpr std::size_t buff_size_ = 16;
+    static constexpr std::ptrdiff_t buff_size_ = 16;
     char32_t buff_[buff_size_];
 };
 
@@ -567,7 +567,7 @@ public:
         : strf::transcode_dest<char32_t>(buff_, buff_size_)
         , width_{initial_width}
     {
-        this->set_good(initial_width != 0);
+        this->set_good(initial_width.gt_zero());
     }
 
     STRF_HD void recycle() noexcept override {
@@ -576,7 +576,7 @@ public:
             width_ = res.width;
             state_ = res.state;
             codepoints_count_ += (res.ptr - buff_);
-            if (width_ == 0 && res.ptr != this->buffer_ptr()) {
+            if (width_.le_zero() && res.ptr != this->buffer_ptr()) {
                 this->set_good(false);
             }
         }
@@ -586,7 +586,7 @@ public:
     struct result {
         strf::width_t remaining_width;
         bool whole_string_covered{};
-        std::size_t codepoints_count{};
+        std::ptrdiff_t codepoints_count{};
     };
 
     STRF_HD result get_remaining_width_and_codepoints_count() {
@@ -603,8 +603,8 @@ public:
 private:
     strf::width_t width_;
     unsigned state_ = 0;
-    std::size_t codepoints_count_ = 0;
-    static constexpr std::size_t buff_size_ = 16;
+    std::ptrdiff_t codepoints_count_ = 0;
+    static constexpr std::ptrdiff_t buff_size_ = 16;
     char32_t buff_[buff_size_];
 };
 
@@ -681,7 +681,7 @@ public:
         ( Charset charset
         , strf::width_t limit
         , const typename Charset::code_unit* str
-        , std::size_t str_len
+        , std::ptrdiff_t str_len
         , strf::surrogate_policy surr_poli )
     {
         strf::detail::std_width_decrementer decr{limit};
@@ -695,7 +695,7 @@ public:
         ( Charset charset
         , strf::width_t limit
         , const typename Charset::code_unit* str
-        , std::size_t str_len
+        , std::ptrdiff_t str_len
         , strf::surrogate_policy surr_poli )
     {
         strf::detail::std_width_decrementer_with_pos decr{limit};

@@ -1116,6 +1116,7 @@ public:
     STRF_HD T* end()   const { return begin_ + size_; }
 
     STRF_HD std::size_t size() const { return size_; }
+    STRF_HD std::ptrdiff_t ssize() const { return size_; }
     STRF_HD T& operator[](std::size_t i) const { return begin_[i]; }
 
 private:

@@ -618,7 +618,8 @@ template < typename CharT
          , typename Helper = strf::detail::mk_pr_in::helper<CharT, PrePrinting, FPack, Arg>
          , typename Maker = typename Helper::maker_type
          , typename ChTag = strf::tag<CharT> >
-constexpr STRF_HD auto make_printer_input(PrePrinting& p, const FPack& fp, const Arg& arg)
+constexpr STRF_HD auto make_printer_input
+    ( PrePrinting& p, const FPack& fp, const Arg& arg )
     -> decltype(((const Maker*)nullptr)->make_input(ChTag{}, p, fp, Helper::adapt_arg(arg)))
 {
     return Helper::get_maker(fp)

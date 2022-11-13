@@ -37,21 +37,21 @@ STRF_TEST_FUNC void test_miscellaneous()
         strf::preprinting<strf::precalc_size::yes, strf::precalc_width::no> p;
 
         strf::precalculate<char>(p, strf::pack());
-        TEST_EQ(p.accumulated_size(), 0);
+        TEST_EQ(p.accumulated_ssize(), 0);
 
         strf::precalculate<char>(p, strf::pack(), 1, 23, 456, 7890);
-        TEST_EQ(p.accumulated_size(), 10);
+        TEST_EQ(p.accumulated_ssize(), 10);
     }
 
     {   // precalculate size and width
         strf::preprinting<strf::precalc_size::yes, strf::precalc_width::yes>p{1000};
 
         strf::precalculate<char>(p, strf::pack());
-        TEST_EQ(p.accumulated_size(), 0);
+        TEST_EQ(p.accumulated_ssize(), 0);
         TEST_TRUE(p.remaining_width() == 1000);
 
         strf::precalculate<char>(p, strf::pack(), 1, 23, 456, 7890);
-        TEST_EQ(p.accumulated_size(), 10);
+        TEST_EQ(p.accumulated_ssize(), 10);
         TEST_TRUE(p.remaining_width() == 1000 - 10);
     }
 
@@ -87,7 +87,7 @@ STRF_TEST_FUNC void test_miscellaneous()
         strf::no_preprinting p;
         strf::precalculate<char>(p, strf::pack());
         strf::precalculate<char>(p, strf::pack(), 1, 23, 456);
-        TEST_EQ(p.accumulated_size(), 0);
+        TEST_EQ(p.accumulated_ssize(), 0);
         TEST_TRUE(p.remaining_width() == 0);
     }
     {   // make_simple_string_view

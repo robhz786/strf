@@ -60,7 +60,7 @@ struct precalc_and_print_result {
 };
 
 template <typename Arg>
-precalc_and_print_result precalc_and_print(char* buff, std::size_t buff_size, const Arg& arg) {
+precalc_and_print_result precalc_and_print(char* buff, std::ptrdiff_t buff_size, const Arg& arg) {
 
     const strf::width_t initial_width = (strf::width_t::max)();
     strf::full_preprinting pre(initial_width);
@@ -73,12 +73,12 @@ precalc_and_print_result precalc_and_print(char* buff, std::size_t buff_size, co
 
     precalc_and_print_result result;
     result.count = static_cast<int>(end - buff);
-    result.predicted_size = static_cast<int>(pre.accumulated_size());
+    result.predicted_size = static_cast<int>(pre.accumulated_ssize());
     result.predicted_width = (initial_width - pre.remaining_width()).round();
     return result;
 }
 
-template <std::size_t BuffSize, typename Arg>
+template <std::ptrdiff_t BuffSize, typename Arg>
 precalc_and_print_result precalc_and_print(char(&buff)[BuffSize], const Arg& arg) {
     return precalc_and_print(buff, BuffSize, arg);
 }
@@ -88,7 +88,7 @@ int strf_print_and_check
     ( const char* src_filename
     , int src_line
     , char* buff
-    , std::size_t buff_size
+    , std::ptrdiff_t buff_size
     , const Arg& arg)
 {
     auto r = precalc_and_print(buff, buff_size, arg);
@@ -112,7 +112,7 @@ int strf_print_and_check
     return r.count;
 }
 
-template <std::size_t BuffSize, typename Arg>
+template <std::ptrdiff_t BuffSize, typename Arg>
 int strf_print_and_check
     ( const char* src_filename
     , int src_line

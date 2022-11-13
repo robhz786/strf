@@ -318,7 +318,7 @@ void fmt_std_complex_printer<CharT, FloatT>::init_fillcount_and_do_preprinting_
         do_preprinting_without_fill_(sub_pre, wcalc);
         fillcount_ = static_cast<std::uint16_t>
             ((sub_pre.remaining_width() / fillchar_width).round());
-        pre.add_size(sub_pre.accumulated_size());
+        pre.add_size(sub_pre.accumulated_ssize());
     } else {
         auto previous_remaining_width = pre.remaining_width();
         do_preprinting_without_fill_(pre, wcalc);
@@ -373,7 +373,7 @@ template <typename CharT, typename FloatT>
 void fmt_std_complex_printer<CharT, FloatT>::print_to
     ( strf::destination<CharT>& dest ) const
 {
-    if (fillcount_ == 0) {
+    if (fillcount_ <= 0) {
         print_complex_value_(dest);
     } else {
         switch (alignment_) {
@@ -606,19 +606,19 @@ void tests()
     {
         strf::full_preprinting pp{strf::width_max};
         strf::precalculate<char>(pp, strf::pack(), *strf::fmt(x));
-        TEST_EQ(pp.accumulated_size(), 14);
+        TEST_EQ(pp.accumulated_ssize(), 14);
         TEST_TRUE(strf::width_max - pp.remaining_width() == 14);
     }
     {
         strf::full_preprinting pp{strf::width_max};
         strf::precalculate<char>(pp, strf::pack(), *strf::fmt(x).algebric());
-        TEST_EQ(pp.accumulated_size(), 17);
+        TEST_EQ(pp.accumulated_ssize(), 17);
         TEST_TRUE(strf::width_max - pp.remaining_width() == 17);
     }
     {
         strf::full_preprinting pp{strf::width_max};
         strf::precalculate<char>(pp, strf::pack(), *strf::fmt(x).polar());
-        TEST_EQ(pp.accumulated_size(), 27);
+        TEST_EQ(pp.accumulated_ssize(), 27);
         TEST_TRUE(strf::width_max - pp.remaining_width() == 25);
     }
 }

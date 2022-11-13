@@ -187,10 +187,10 @@ public:
 private:
 
     strf::encode_fill_f<CharT> encode_fill_fn_;
-    std::size_t count_;
+    std::ptrdiff_t count_;
     const strf::alignment_format afmt_;
-    std::uint16_t left_fillcount_{};
-    std::uint16_t right_fillcount_{};
+    std::int16_t left_fillcount_{};
+    std::int16_t right_fillcount_{};
     CharT ch_;
 
     template <typename Category, typename FPack>
@@ -212,9 +212,9 @@ STRF_HD void fmt_char_printer<CharT>::init_
 {
     auto ch_width = wc.char_width(charset, ch_);
     auto content_width = checked_mul(ch_width, count_);
-    std::uint16_t fillcount = 0;
+    std::int16_t fillcount = 0;
     if (content_width < afmt_.width) {
-        fillcount = static_cast<std::uint16_t>((afmt_.width - content_width).round());
+        fillcount = static_cast<std::int16_t>((afmt_.width - content_width).round());
         pre.subtract_width(content_width + fillcount);
     } else {
         fillcount = 0;
@@ -226,7 +226,7 @@ STRF_HD void fmt_char_printer<CharT>::init_
             right_fillcount_ = fillcount;
             break;
         case strf::text_alignment::center: {
-            const std::uint16_t halfcount = fillcount >> 1;
+            const std::int16_t halfcount = fillcount >> 1;
             left_fillcount_ = halfcount;
             right_fillcount_ = fillcount - halfcount;
             break;
@@ -249,7 +249,7 @@ template <typename CharT>
 STRF_HD void fmt_char_printer<CharT>::print_to
     ( strf::destination<CharT>& dest ) const
 {
-    if (left_fillcount_ != 0) {
+    if (left_fillcount_ > 0) {
         encode_fill_fn_(dest, left_fillcount_, afmt_.fill);
     }
     if (count_ == 1) {
@@ -257,9 +257,9 @@ STRF_HD void fmt_char_printer<CharT>::print_to
         * dest.buffer_ptr() = ch_;
         dest.advance();
     } else {
-        std::size_t count = count_;
+        std::ptrdiff_t count = count_;
         while(true) {
-            const std::size_t space = dest.buffer_space();
+            const auto space = dest.buffer_sspace();
             if (count <= space) {
                 strf::detail::str_fill_n(dest.buffer_ptr(), count, ch_);
                 dest.advance(count);
@@ -271,7 +271,7 @@ STRF_HD void fmt_char_printer<CharT>::print_to
             dest.flush();
         }
     }
-    if (right_fillcount_ != 0) {
+    if (right_fillcount_ > 0) {
         encode_fill_fn_(dest, right_fillcount_, afmt_.fill);
     }
 }
@@ -300,7 +300,7 @@ public:
 
 private:
     strf::encode_char_f<DestCharT> encode_char_f_;
-    std::size_t encoded_char_size_;
+    int encoded_char_size_;
     char32_t ch_;
 };
 
@@ -340,11 +340,11 @@ private:
         , strf::width_t ch_width );
 
     strf::encode_fill_f<DestCharT> encode_fill_f_;
-    std::size_t count_;
+    std::ptrdiff_t count_;
     char32_t ch_;
     char32_t fillchar_{};
     strf::text_alignment alignment_{strf::text_alignment::right};
-    std::uint16_t fillcount_{};
+    std::int16_t fillcount_{};
 };
 
 template <typename DestCharT>
@@ -360,7 +360,7 @@ void STRF_HD fmt_conv_char32_printer<DestCharT>::init_
     fillchar_ = afmt.fill;
     alignment_ = afmt.alignment;
     if (content_width < afmt.width) {
-        fillcount_ = static_cast<std::uint16_t>((afmt.width - content_width).round());
+        fillcount_ = (afmt.width - content_width).round();
         pre.subtract_width(content_width + fillcount_);
     } else {
         fillcount_ = 0;
@@ -377,7 +377,7 @@ void STRF_HD fmt_conv_char32_printer<DestCharT>::init_
 template <typename DestCharT>
 void STRF_HD fmt_conv_char32_printer<DestCharT>::print_to(strf::destination<DestCharT>& dest) const
 {
-    if(fillcount_ == 0) {
+    if(fillcount_ <= 0) {
         encode_fill_f_(dest, count_, ch_);
     } else {
         switch(alignment_) {

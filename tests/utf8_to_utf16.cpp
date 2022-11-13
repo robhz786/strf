@@ -229,10 +229,10 @@ STRF_TEST_FUNC void utf8_to_utf16_invalid_sequences()
 }
 
 struct invalid_seq_counter: strf::transcoding_error_notifier {
-    void STRF_HD invalid_sequence(std::size_t, const char*, const void*, std::size_t) override {
+    void STRF_HD invalid_sequence(int, const char*, const void*, std::ptrdiff_t) override {
         ++ notifications_count;
     }
-    std::size_t notifications_count = 0;
+    std::ptrdiff_t notifications_count = 0;
 };
 
 #if defined(__cpp_exceptions) && __cpp_exceptions  && ! defined(__CUDACC__)
@@ -240,7 +240,7 @@ struct invalid_seq_counter: strf::transcoding_error_notifier {
 struct dummy_exception: public std::exception {};
 
 struct notifier_that_throws : strf::transcoding_error_notifier {
-    void STRF_HD invalid_sequence(std::size_t, const char*, const void*, std::size_t) override {
+    void STRF_HD invalid_sequence(int, const char*, const void*, std::ptrdiff_t) override {
         throw dummy_exception{};
     }
 };

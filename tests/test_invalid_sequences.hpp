@@ -29,7 +29,7 @@ public:
     }
 
     STRF_HD ~invalid_sequences_tester() {
-        if (counter_ < expected_invalid_seqs_.size()) {
+        if (counter_ < expected_invalid_seqs_.ssize()) {
             strf::to(notifier_) ("\n   Less invalid sequences than expected");
         }
     }
@@ -44,10 +44,10 @@ public:
     }
 
     STRF_HD void invalid_sequence
-        ( std::size_t code_unit_size
+        ( int code_unit_size
         , const char* charset_name
         , const void* sequence_ptr
-        , std::size_t code_units_count ) override
+        , std::ptrdiff_t code_units_count ) override
     {
         (void) charset_name;
         ++counter_;
@@ -57,13 +57,13 @@ public:
             print("\n   code_units_count = ", code_unit_size, " (expected ", sizeof(CharT), ')');
             return;
         }
-        if (counter_ > expected_invalid_seqs_.size()) {
+        if (counter_ > expected_invalid_seqs_.ssize()) {
             print("\n   More invalid sequences than expected");
             return;
         }
         auto expected_seq = expected_invalid_seqs_[counter_ - 1];
         auto const seq_mem = reinterpret_cast<const unsigned char*>(sequence_ptr);
-        if (code_units_count == expected_seq.size()) {
+        if (code_units_count == expected_seq.ssize()) {
             auto seq_mem_it = seq_mem;
             for (CharT expected_ch : expected_seq) {
                 CharT ch;
@@ -89,7 +89,7 @@ public:
             }
             print ("\n    Obtained:");
             auto obtained_it = static_cast<const unsigned char*>(sequence_ptr);
-            for (std::size_t i = 0; i < code_units_count; ++i) {
+            for (std::ptrdiff_t i = 0; i < code_units_count; ++i) {
                 CharT ch;
                 memory_copy(&ch, obtained_it, sizeof(ch));
                 print (' ', *strf::hex((unsigned)(UCharT)ch));
@@ -99,7 +99,7 @@ public:
     }
 
 private:
-    std::size_t counter_ = 0;
+    std::ptrdiff_t counter_ = 0;
     span<const strf::detail::simple_string_view<CharT>> expected_invalid_seqs_;
     test_failure_notifier& notifier_;
 };

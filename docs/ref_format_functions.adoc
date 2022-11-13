@@ -270,13 +270,13 @@ This _Formatter_ defines the following format functions:
 | `operator!()`
 | Equivalent to `punct()`
 
-| [[int_pad0]] `pad0(unsigned w)`
+| [[int_pad0]] `pad0(int w)`
 | Inserts zeros after the sign or base indication and before the digits
   such that at least `w` characters are printed
   ( not counting the fill characters caused by alignment formatting,
    but still counting the extra fill character caused by `fill_sign()` ).
 
-| [[int_precision]] `p(unsigned precision)`
+| [[int_precision]] `p(int precision)`
 | Inserts zeros after the sign or base indication and before the digits
   such that at least `precision` digits are printed
 
@@ -316,8 +316,8 @@ The following must hold:
 |===
 | Member        | Type             | Semantics / effect
 | `f.base`      | `int`            | Numeric base ( must be euqal to `2`, `8`, `10` or `16` )
-| `f.precision` | `unsigned`       | See `<<int_precision,p>>` format function.
-| `f.pad0wdith` | `unsigned`       | See `<<int_pad0,pad0>>` format function.
+| `f.precision` | `int`            | See `<<int_precision,p>>` format function.
+| `f.pad0wdith` | `int`            | See `<<int_pad0,pad0>>` format function.
 | `f.sign`      | `showsign`       | See enumeration `{showsign}`
 | `f.showbase`  | `bool`           | Equivalent to the `'#'` format flag in printf
 | `f.punctuate` | `bool`           | Activates numeric punctuation.
@@ -331,8 +331,8 @@ namespace strf {
 
 struct int_format {
     int base = 10;
-    unsigned precision = 0;
-    unsigned pad0width = 0;
+    int precision = 0;
+    int pad0width = 0;
     showsign sign = <<showsign,showsign>>::negative_only;
     bool showbase = false;
 };
@@ -349,8 +349,8 @@ namespace strf {
 
 struct default_int_format {
     constexpr static int base = 10;
-    constexpr static unsigned precision = 0;
-    constexpr static unsigned pad0width = 0;
+    constexpr static int precision = 0;
+    constexpr static int pad0width = 0;
     constexpr static strf::showsign sign = strf::showsign::negative_only;
     constexpr static bool showbase = false;
     constexpr static bool punctuate = false;
@@ -417,7 +417,7 @@ The `float_formatter` _Formatter_ defines the following format functions:
 | `operator!()`
 | Equivalent to `punct()`
 
-|[[float_pad0]] `pad0(unsigned w)`
+|[[float_pad0]] `pad0(int w)`
 | Similar to the `'0'` format flag in `printf`:
 
 For NaN and infinity, causes the the width ( from alignment
@@ -428,7 +428,7 @@ indication and before the digits such that at least `w` characters
 are printed ( not counting the fill characters caused by alignment formatting,
 but still counting the extra fill character caused by `fill_sign()` ).
 
-|`p(unsigned precision)`
+|`p(int precision)`
 | Sets the precision. Effect varies according to the notation ( see below ).
 
 
@@ -522,13 +522,13 @@ The following must hold:
 
 [%header,cols="191,191,618"]
 |===
-| Member      | Type             | Semantics / effect
-| `f.precision` | `unsigned`       | Floating-point precision. When it is equal to `(unsigned)-1`, then precision is considered as not specified, which means that the number or significant digits is such that the value can be fully recovered by a parser. Otherwise, the effect depends on `notation`.
-| `f.pad0wdith` | `unsigned`       | Same as of format function `<<float_pad0,pad0>>`
+| Member        | Type               | Semantics / effect
+| `f.precision` | `int`              | Floating-point precision. When negative, then precision is considered as not specified, which means that the number or significant digits is such that the value can be fully recovered by a parser. Otherwise, the effect depends on `notation`.
+| `f.pad0wdith` | `int`              | Same as of format function `<<float_pad0,pad0>>`
 | `f.notation`  | `{float_notation}` | See enumeration `{float_notation}`
-| `f.sign`      | `showsign`       | See enumeration `{showsign}`
-| `f.showpoint` | `bool`           | Equivalent to the `'#'` format flag in printf
-| `f.punctuate` | `bool`           | Activates numeric punctuation.
+| `f.sign`      | `showsign`         | See enumeration `{showsign}`
+| `f.showpoint` | `bool`             | Equivalent to the `'#'` format flag in printf
+| `f.punctuate` | `bool`             | Activates numeric punctuation.
 |===
 
 ==== Struct template `float_format` [[float_format]]
@@ -541,8 +541,8 @@ enum class float_notation {fixed, scientific, general, hex};
 
 struct float_format
 {
-    unsigned precision = (unsigned)-1;
-    unsigned pad0width = 0;
+    int precision = -1;
+    int pad0width = 0;
     float_notation notation = float_notation::general
     {showsign} sign = showsign::negative_only;
     bool showpoint = false;
@@ -558,8 +558,8 @@ namespace strf {
 
 struct default_float_format
 {
-    constexpr static unsigned precision = (unsigned)-1;
-    constexpr static unsigned pad0width = 0;
+    constexpr static int precision = -1;
+    constexpr static int pad0width = 0;
     constexpr static {float_notation} notation = {float_notation}::general;
     constexpr static {showsign} sign = {showsign}::negative_only;
     constexpr static bool showpoint = false;
@@ -579,7 +579,7 @@ The `quantity_formatter` _Formatter_ defines the following format functions:
 [%header,cols="382,618",grid=rows]
 |===
 | Member function | Effect
-|`multi(std::size_t count)`
+|`multi(std::ptrdiff_t count)`
 | Causes the content to be printed `count` consecutives times
 |===
 
@@ -590,7 +590,7 @@ And the following observer:
 | Observer  | Return type
 
 | `count()`
-| `std::size_t`
+| `std::ptrdiff_t`
 |===
 
 === Callable object `fmt` [[fmt]]

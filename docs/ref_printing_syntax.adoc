@@ -35,7 +35,7 @@ in the above expression:
 ////
 
 The __target__ is an expression that is or creates a `printing_syntax` object.
-The library provides the following __target__ expressions:
+The header `<strf.hpp>` provides the following __target__ expressions:
 
 ====
 [[to_char_ptr_range]]
@@ -184,9 +184,9 @@ struct no_reserve {};
 struct reserve_calc {};
 
 struct reserve_given_space {
-    constexpr explicit reserve_given_space(std::size_t s) : space(s) {}
+    constexpr explicit reserve_given_space(std::ptrdiff_t s) : space(s) {}
 
-    std::size_t space;
+    std::ptrdiff_t space;
 };
 
 template < typename DestCreator
@@ -217,7 +217,7 @@ public:
     return_type <<printing_syntax_trln,trln>>(Args&&\... args) const;
 
     // change reserve policy
-    constexpr /{asterisk} \... {asterisk}/ <<printing_syntax_reserve,reserve>>(std::size_t capacity) /{asterisk} \... {asterisk}/;
+    constexpr /{asterisk} \... {asterisk}/ <<printing_syntax_reserve,reserve>>(std::ptrdiff_t capacity) /{asterisk} \... {asterisk}/;
     constexpr /{asterisk} \... {asterisk}/ <<printing_syntax_reserve_calc,reserve_calc>>() /{asterisk} \... {asterisk}/;
     constexpr /{asterisk} \... {asterisk}/ <<printing_syntax_no_reserve,no_reserve>>() /{asterisk} \... {asterisk}/;
 
@@ -419,7 +419,7 @@ printer_t p{ {make_printer_input}<char_type>(pre, fpack, arg) };
 [source,cpp,subs=normal]
 ----
 using dest_type = typename DestCreator::sized_destination_type;
-dest_type dest{dest&#95;creator.create(pre.<<size_accumulator_accumulated_size,accumulated_size>>())};
+dest_type dest{dest&#95;creator.create(pre.<<size_accumulator_accumulated_ssize,accumulated_ssize>>())};
 ----
 . For each `p`, do:
 +
@@ -517,7 +517,7 @@ return operator() ( (Args&&)args\..., (char_type)'\n' );
 ====
 [source,cpp,subs=normal]
 ----
-constexpr /{asterisk} \... {asterisk}/  reserve(std::size_t space) /{asterisk} \... {asterisk}/;
+constexpr /{asterisk} \... {asterisk}/  reserve(std::ptrdiff_t space) /{asterisk} \... {asterisk}/;
 ----
 
 [%header,frame=all,grid=none,cols="1"]
@@ -526,16 +526,16 @@ constexpr /{asterisk} \... {asterisk}/  reserve(std::size_t space) /{asterisk} \
 a|
 [source,cpp,subs=normal]
 ----
-constexpr       printing_syntax &  reserve(std::size_t space) &;
-constexpr       printing_syntax && reserve(std::size_t space) &&;
+constexpr       printing_syntax &  reserve(std::ptrdiff_t space) &;
+constexpr       printing_syntax && reserve(std::ptrdiff_t space) &&;
 ----
 Changes the space stored in the internal `strf::reserve_given_space` object,
 and returns `*this` or `std::move(*this)`.
 a|
 [source,cpp,subs=normal]
 ----
-constexpr printing_syntax reserve(std::size_t space) const &;
-constexpr printing_syntax reserve(std::size_t space) const &&;
+constexpr printing_syntax reserve(std::ptrdiff_t space) const &;
+constexpr printing_syntax reserve(std::ptrdiff_t space) const &&;
 ----
 Returns a new `printing_syntax` whose internal `DestCreator` and `FPE\...` objects
 are copy-constructed or move-constructed ( depedending on the overload used )
@@ -549,10 +549,10 @@ a|
 [source,cpp,subs=normal]
 ----
 constexpr printing_syntax<DestCreator, strf::reserve_calc, FPE\...>
-reserve(std::size_t space) const &;
+reserve(std::ptrdiff_t space) const &;
 
 constexpr printing_syntax<DestCreator, strf::reserve_calc, FPE\...>
-reserve(std::size_t space) &&;
+reserve(std::ptrdiff_t space) &&;
 ----
 Returns a new `printing_syntax` whose internal `DestCreator` and `FPE\...` objects
 are copy-constructed or move-constructed ( depedending on the overload used )
@@ -715,7 +715,7 @@ typename X::destination_type{x.create()}
 Given
 
 - `char_type`, a character type
-- `size`, a value of the `std::size_t`
+- `size`, a value of the `std::ptrdiff_t`
 - `X`, an  _SizedDestinationCreator_ type for `char_type`
 - `x`, an expression of type `X` or `const X`
 

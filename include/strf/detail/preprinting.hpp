@@ -32,57 +32,35 @@ public:
 
     STRF_CONSTEXPR_IN_CXX14 STRF_HD void subtract_width(strf::width_t w) noexcept
     {
-        if (w < width_) {
-            width_ -= w;
-        } else {
-            width_ = 0;
-        }
+        width_ -= w;
     }
-
-    template <typename IntT>
-    STRF_CONSTEXPR_IN_CXX14
-    strf::detail::enable_if_t<std::is_integral<IntT>::value>
-    STRF_HD subtract_width(IntT w) noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD void checked_subtract_width(strf::width_t w) noexcept
     {
-        subtract_int_(std::is_signed<IntT>{}, w);
+        w = w.ge_zero() ? w : 0;
+        width_ = (w < width_) ? (width_ - w) : 0;
     }
-
     STRF_CONSTEXPR_IN_CXX14 STRF_HD void clear_remaining_width() noexcept
     {
         width_ = 0;
     }
     constexpr STRF_HD strf::width_t remaining_width() const noexcept
     {
-        return width_;
+        return width_.gt_zero() ? width_ : 0;
     }
     STRF_CONSTEXPR_IN_CXX14 STRF_HD void reset_remaining_width(strf::width_t w) noexcept
     {
         width_ = w;
     }
+    constexpr STRF_HD bool has_remaining_width() noexcept
+    {
+        return width_.gt_zero();
+    }
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD void clear_negative_width() noexcept
+    {
+        width_ = width_.gt_zero() ? width_ : 0;
+    }
 
 private:
-
-    template <typename W>
-    void STRF_HD subtract_int_(std::true_type, W w) noexcept
-    {
-        if (w > 0) {
-            if (w <= static_cast<int>(width_.floor())) {
-                width_ -= static_cast<std::uint16_t>(w);
-            } else {
-                width_ = 0;
-            }
-        }
-    }
-
-    template <typename W>
-    void STRF_HD subtract_int_(std::false_type, W w) noexcept
-    {
-        if (w <= width_.floor()) {
-            width_ -= static_cast<std::uint16_t>(w);
-        } else {
-            width_ = 0;
-        }
-    }
 
     strf::width_t width_ = strf::width_max;
 };
@@ -95,17 +73,26 @@ public:
     constexpr width_decumulator() noexcept = default;
 
     template <typename T>
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD void subtract_width(T) const noexcept
+    constexpr STRF_HD void subtract_width(T) const noexcept
     {
     }
-
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD void clear_remaining_width() noexcept
+    template <typename T>
+    constexpr STRF_HD void checked_subtract_width(T) const noexcept
     {
     }
-
+    constexpr STRF_HD void clear_remaining_width() noexcept
+    {
+    }
     constexpr STRF_HD strf::width_t remaining_width() const noexcept
     {
         return 0;
+    }
+    constexpr STRF_HD bool has_remaining_width() noexcept
+    {
+        return false;
+    }
+    constexpr STRF_HD void clear_negative_width() const noexcept
+    {
     }
 };
 
@@ -116,7 +103,9 @@ template <>
 class size_accumulator<true>
 {
 public:
-    explicit constexpr STRF_HD size_accumulator(std::size_t initial_size = 0) noexcept
+    size_accumulator() = default;
+
+    explicit constexpr STRF_HD size_accumulator(std::ptrdiff_t initial_size) noexcept
         : size_(initial_size)
     {
     }
@@ -127,19 +116,24 @@ public:
     size_accumulator& operator=(const size_accumulator&) = delete;
     size_accumulator& operator=(size_accumulator&&) = delete;
 
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD void add_size(std::size_t s) noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD void add_size(std::ptrdiff_t s) noexcept
     {
+        STRF_ASSERT(s >= 0);
         size_ += s;
     }
 
-    constexpr STRF_HD std::size_t accumulated_size() const noexcept
+    constexpr STRF_HD std::size_t accumulated_usize() const noexcept
+    {
+        return size_;
+    }
+    constexpr STRF_HD std::ptrdiff_t accumulated_ssize() const noexcept
     {
         return size_;
     }
 
 private:
 
-    std::size_t size_;
+    std::ptrdiff_t size_ = 0;
 };
 
 template <>
@@ -149,11 +143,17 @@ public:
 
     constexpr size_accumulator() noexcept = default;
 
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD void add_size(std::size_t) noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD void add_usize(std::size_t) noexcept
     {
     }
-
-    constexpr STRF_HD std::size_t accumulated_size() const noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD void add_size(std::ptrdiff_t) noexcept
+    {
+    }
+    constexpr STRF_HD std::ptrdiff_t accumulated_ssize() const noexcept
+    {
+        return 0;
+    }
+    constexpr STRF_HD std::size_t accumulated_usize() const noexcept
     {
         return 0;
     }

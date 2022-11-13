@@ -54,16 +54,16 @@ namespace detail {
 
 template <typename CharT>
 void STRF_HD write_fill_continuation
-    ( strf::output_buffer<CharT, 0>& dest, std::size_t count, CharT ch )
+    ( strf::output_buffer<CharT, 0>& dest, std::ptrdiff_t count, CharT ch )
 {
-    std::size_t space = dest.buffer_space();
+    auto space = dest.buffer_sspace();
     STRF_ASSERT(space < count);
     strf::detail::str_fill_n<CharT>(dest.buffer_ptr(), space, ch);
     count -= space;
     dest.advance_to(dest.buffer_end());
     dest.flush();
     while (dest.good()) {
-        space = dest.buffer_space();
+        space = dest.buffer_sspace();
         if (count <= space) {
             strf::detail::str_fill_n<CharT>(dest.buffer_ptr(), count, ch);
             dest.advance(count);
@@ -78,13 +78,15 @@ void STRF_HD write_fill_continuation
 
 template <typename CharT>
 inline STRF_HD void write_fill
-    ( strf::output_buffer<CharT, 0>& dest, std::size_t count, CharT ch )
+    ( strf::output_buffer<CharT, 0>& dest, std::ptrdiff_t count, CharT ch )
 {
-    STRF_IF_LIKELY (count <= dest.buffer_space()) {
-        strf::detail::str_fill_n<CharT>(dest.buffer_ptr(), count, ch);
-        dest.advance(count);
-    } else {
-        write_fill_continuation<CharT>(dest, count, ch);
+    STRF_IF_LIKELY (count > 0) {
+        STRF_IF_LIKELY (count <= dest.buffer_sspace()) {
+            strf::detail::str_fill_n<CharT>(dest.buffer_ptr(), count, ch);
+            dest.advance(count);
+        } else {
+            write_fill_continuation<CharT>(dest, count, ch);
+        }
     }
 }
 

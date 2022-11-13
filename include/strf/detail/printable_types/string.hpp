@@ -811,8 +811,8 @@ private:
     std::size_t len_;
     strf::encode_fill_f<DestCharT> encode_fill_;
     strf::alignment_format afmt_;
-    std::uint16_t left_fillcount_{};
-    std::uint16_t right_fillcount_{};
+    std::int16_t left_fillcount_{};
+    std::int16_t right_fillcount_{};
 
     template < typename Category
              , typename FPack
@@ -825,11 +825,11 @@ private:
     }
 
     template <typename PrePrinting>
-    STRF_HD std::uint16_t init_(PrePrinting&, strf::width_t strw);
+    STRF_HD std::int16_t init_(PrePrinting&, strf::width_t strw);
 
     template <typename Charset>
     STRF_HD void precalc_size_( strf::size_accumulator<true>& pre
-                              , Charset charset, std::uint16_t fillcount )
+                              , Charset charset, std::int16_t fillcount )
     {
         pre.add_size(len_);
         if (fillcount > 0) {
@@ -838,25 +838,25 @@ private:
     }
 
     template <typename Charset>
-    STRF_HD void precalc_size_(strf::size_accumulator<false>&, Charset, std::uint16_t)
+    STRF_HD void precalc_size_(strf::size_accumulator<false>&, Charset, std::int16_t)
     {
     }
 };
 
 template<typename SrcCharT, typename DestCharT>
 template <typename PrePrinting>
-inline STRF_HD std::uint16_t aligned_string_printer<SrcCharT, DestCharT>::init_
+inline STRF_HD std::int16_t aligned_string_printer<SrcCharT, DestCharT>::init_
     ( PrePrinting& pre, strf::width_t strw )
 {
     if (afmt_.width > strw) {
-        const std::uint16_t fillcount = (afmt_.width - strw).round();
+        const std::int16_t fillcount = (afmt_.width - strw).round();
         switch(afmt_.alignment) {
             case strf::text_alignment::left:
                 left_fillcount_ = 0;
                 right_fillcount_ = fillcount;
                 break;
             case strf::text_alignment::center: {
-                const std::uint16_t halfcount = fillcount >> 1;
+                const std::int16_t halfcount = fillcount >> 1;
                 left_fillcount_ = halfcount;
                 right_fillcount_ = fillcount - halfcount;
                 break;
@@ -1134,8 +1134,8 @@ private:
     strf::encode_fill_f<DestCharT> encode_fill_ = nullptr;
     strf::transcoding_error_notifier* err_notifier_;
     const strf::surrogate_policy  surr_poli_;
-    std::uint16_t left_fillcount_ = 0;
-    std::uint16_t right_fillcount_ = 0;
+    std::int16_t left_fillcount_ = 0;
+    std::int16_t right_fillcount_ = 0;
 
     template < typename Category, typename SrcChar, typename FPack
              , typename Tag = strf::string_input_tag<SrcChar> >
@@ -1166,7 +1166,7 @@ void STRF_HD aligned_transcode_string_printer<SrcCharT, DestCharT>::init_
         src_to_u32_ = src_charset.to_u32().transcode_func();
         u32_to_dest_ = dest_charset.from_u32().transcode_func();
     }
-    std::uint16_t fillcount = 0;
+    std::int16_t fillcount = 0;
     if (afmt_.width > str_width) {
         fillcount = (afmt_.width - str_width).round();
         switch(afmt_.alignment) {
@@ -1175,7 +1175,7 @@ void STRF_HD aligned_transcode_string_printer<SrcCharT, DestCharT>::init_
                 right_fillcount_ = fillcount;
                 break;
             case strf::text_alignment::center: {
-                const std::uint16_t halfcount = fillcount / 2;
+                const std::int16_t halfcount = fillcount / 2;
                 left_fillcount_ = halfcount;
                 right_fillcount_ = fillcount - halfcount;
                 break;

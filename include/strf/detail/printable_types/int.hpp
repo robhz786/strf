@@ -21,8 +21,8 @@ struct int_format
 #if __cplusplus < 201402L
     constexpr STRF_HD int_format
         ( int base_ = 10
-        , unsigned precision_ = 0
-        , unsigned pad0width_ = 0
+        , int precision_ = 0
+        , int pad0width_ = 0
         , strf::showsign sign_ = strf::showsign::negative_only
         , bool showbase_ = false
         , bool punctuate_ = false ) noexcept
@@ -37,8 +37,8 @@ struct int_format
 #endif // __cplusplus < 201402L
 
     int base = 10;
-    unsigned precision = 0;
-    unsigned pad0width = 0;
+    int precision = 0;
+    int pad0width = 0;
     strf::showsign sign = strf::showsign::negative_only;
     bool showbase = false;
     bool punctuate = false;
@@ -52,8 +52,8 @@ struct int_format_static_base_and_punct
 
 #if __cplusplus < 201402L
     constexpr STRF_HD int_format_static_base_and_punct
-        ( unsigned precision_ = 0
-        , unsigned pad0width_ = 0
+        ( int precision_ = 0
+        , int pad0width_ = 0
         , strf::showsign sign_ = strf::showsign::negative_only
         , bool showbase_ = false ) noexcept
         : precision(precision_)
@@ -65,8 +65,8 @@ struct int_format_static_base_and_punct
 #endif // __cplusplus < 201402L
 
     constexpr static int base = Base;
-    unsigned precision = 0;
-    unsigned pad0width = 0;
+    int precision = 0;
+    int pad0width = 0;
     strf::showsign sign = strf::showsign::negative_only;
     bool showbase = false;
     constexpr static bool punctuate = Punctuate;
@@ -81,8 +81,8 @@ template <int Base>
 struct int_format_no_pad0_nor_punct
 {
     constexpr static int base = Base;
-    constexpr static unsigned precision = 0;
-    constexpr static unsigned pad0width = 0;
+    constexpr static int precision = 0;
+    constexpr static int pad0width = 0;
     strf::showsign sign = strf::showsign::negative_only;
     bool showbase = false;
     constexpr static bool punctuate = false;
@@ -107,8 +107,8 @@ constexpr STRF_HD int_format_no_pad0_nor_punct<ToBase>
 struct default_int_format
 {
     constexpr static int base = 10;
-    constexpr static unsigned precision = 0;
-    constexpr static unsigned pad0width = 0;
+    constexpr static int precision = 0;
+    constexpr static int pad0width = 0;
     constexpr static strf::showsign sign = strf::showsign::negative_only;
     constexpr static bool showbase = false;
     constexpr static bool punctuate = false;
@@ -233,7 +233,7 @@ public:
                , int_format_no_pad0_nor_punct<2>{} };
     }
     STRF_CONSTEXPR_IN_CXX14
-    STRF_HD static_base_and_punct_t_<10, false> p(unsigned _) const noexcept
+    STRF_HD static_base_and_punct_t_<10, false> p(int _) const noexcept
     {
         int_format_static_base_and_punct<10, false> data;
         data.precision = _;
@@ -241,7 +241,7 @@ public:
                , strf::tag<int_formatter_static_base_and_punct<10, false>>{}
                , data };
     }
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD static_base_and_punct_t_<10, false> pad0(unsigned w) && noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD static_base_and_punct_t_<10, false> pad0(int w) && noexcept
     {
         int_format_static_base_and_punct<10, false> data;
         data.pad0width = w;
@@ -467,7 +467,7 @@ public:
                , strf::change_base<B>(data_) };
     }
     STRF_CONSTEXPR_IN_CXX14 STRF_HD static_base_and_punct_t_<Base, false>
-    p(unsigned _) && noexcept
+    p(int _) && noexcept
     {
         int_format_static_base_and_punct<Base, false> new_data = data_;
         new_data.precision = _;
@@ -476,7 +476,7 @@ public:
                , new_data };
     }
     STRF_CONSTEXPR_IN_CXX14 STRF_HD static_base_and_punct_t_<Base, false>
-    pad0(unsigned w) const noexcept
+    pad0(int w) const noexcept
     {
         int_format_static_base_and_punct<Base, false> new_data = data_;
         new_data.pad0width = w;
@@ -699,12 +699,12 @@ public:
             , strf::tag<strf::int_formatter_static_base_and_punct<B, Punctuate>>{}
             , strf::change_static_params<B, Punctuate>(data_) };
     }
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& p(unsigned _) && noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& p(int _) && noexcept
     {
         data_.precision = _;
         return static_cast<T&&>(*this);
     }
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& pad0(unsigned w) && noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& pad0(int w) && noexcept
     {
         data_.pad0width = w;
         return static_cast<T&&>(*this);
@@ -914,22 +914,22 @@ public:
         data_.base = 2;
         return static_cast<T&>(*this);
     }
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& p(unsigned _) && noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& p(int _) && noexcept
     {
         data_.precision = _;
         return static_cast<T&&>(*this);
     }
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD T& p(unsigned _) & noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T& p(int _) & noexcept
     {
         data_.precision = _;
         return static_cast<T&>(*this);
     }
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& pad0(unsigned w) && noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& pad0(int w) && noexcept
     {
         data_.pad0width = w;
         return static_cast<T&&>(*this);
     }
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD T& pad0(unsigned w) & noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T& pad0(int w) & noexcept
     {
         data_.pad0width = w;
         return static_cast<T&>(*this);
@@ -1089,7 +1089,7 @@ constexpr STRF_HD bool negative(const T& x) noexcept
     return strf::detail::negative_impl_(x, std::is_signed<T>());
 }
 
-// template <typename FPack, typename IntT, unsigned Base>
+// template <typename FPack, typename IntT, int Base>
 // class has_intpunct_impl
 // {
 // public:
@@ -1108,7 +1108,7 @@ constexpr STRF_HD bool negative(const T& x) noexcept
 //     static constexpr bool value = has_numpunct_type::value;
 // };
 //
-// template <typename FPack, typename IntT, unsigned Base>
+// template <typename FPack, typename IntT, int Base>
 // constexpr STRF_HD bool has_intpunct()
 // {
 //     return has_intpunct_impl<FPack, IntT, Base>::value;
@@ -1439,7 +1439,7 @@ private:
     }
 
     std::uint64_t uvalue_{};
-    unsigned digcount_{};
+    int digcount_{};
     bool negative_{};
 };
 
@@ -1484,7 +1484,7 @@ private:
 
     template < typename IntT
              , strf::detail::enable_if_t<std::is_signed<IntT>::value, int> = 0 >
-    STRF_HD unsigned init_(IntT value) noexcept
+    STRF_HD int init_(IntT value) noexcept
     {
         using uint = typename std::make_unsigned<IntT>::type;
         uint uvalue;
@@ -1502,7 +1502,7 @@ private:
 
     template < typename UIntT
              , strf::detail::enable_if_t< ! std::is_signed<UIntT>::value, int> = 0 >
-    STRF_HD unsigned init_(UIntT value) noexcept
+    STRF_HD int init_(UIntT value) noexcept
     {
         uvalue_ = value;
         negative_ = false;
@@ -1516,13 +1516,13 @@ private:
         alignment_ = afmt.alignment;
         auto sub_width = digcount_ + negative_;
         auto width = afmt.width.round();
-        fillcount_ = static_cast<unsigned>(width > sub_width ? width - sub_width : 0);
+        fillcount_ = width > sub_width ? width - sub_width : 0;
     }
 
     strf::encode_fill_f<CharT> encode_fill_;
     std::uint64_t uvalue_{};
-    unsigned digcount_{};
-    unsigned fillcount_{};
+    int digcount_{};
+    int fillcount_{};
     strf::text_alignment alignment_{strf::text_alignment::right};
     char32_t fillchar_{};
     bool negative_{};
@@ -1532,9 +1532,9 @@ template <typename CharT>
 STRF_HD void aligned_default_int_printer<CharT>::print_to
     ( strf::destination<CharT>& dest ) const
 {
-    unsigned right_fillcount = 0;
-    if (fillcount_) {
-        unsigned left_fillcount = 0;
+    int right_fillcount = 0;
+    if (fillcount_ > 0) {
+        int left_fillcount = 0;
         switch(alignment_) {
             case strf::text_alignment::left:
                 right_fillcount = fillcount_;
@@ -1543,7 +1543,7 @@ STRF_HD void aligned_default_int_printer<CharT>::print_to
                 left_fillcount = fillcount_;
                 break;
             default:
-                left_fillcount = fillcount_ >> 1;
+                left_fillcount = static_cast<unsigned>(fillcount_) >> 1;
                 right_fillcount = fillcount_ - left_fillcount;
         }
         encode_fill_(dest, left_fillcount, fillchar_);
@@ -1557,7 +1557,7 @@ STRF_HD void aligned_default_int_printer<CharT>::print_to
     it += digcount_;
     write_int_dec_txtdigits_backwards(uvalue_, it);
     dest.advance_to(it);
-    if (right_fillcount) {
+    if (right_fillcount > 0) {
         encode_fill_(dest, right_fillcount, fillchar_);
     }
 }
@@ -1565,14 +1565,14 @@ STRF_HD void aligned_default_int_printer<CharT>::print_to
 struct int_printer_no_pad0_nor_punct_data
 {
     std::uint64_t uvalue;
-    unsigned digcount;
-    unsigned prefix;
+    int digcount;
+    int prefix;
 };
 
 template
     < typename UIntT
     , strf::detail::enable_if_t<std::is_unsigned<UIntT>::value, int> = 0 >
-inline STRF_HD unsigned init
+inline STRF_HD int init
     ( int_printer_no_pad0_nor_punct_data& data
     , int_format_no_pad0_nor_punct<10>
     , UIntT uvalue ) noexcept
@@ -1585,7 +1585,7 @@ inline STRF_HD unsigned init
 
 template < typename IntT
          , strf::detail::enable_if_t<std::is_signed<IntT>::value, int> = 0 >
-inline STRF_HD unsigned init
+inline STRF_HD int init
     ( int_printer_no_pad0_nor_punct_data& data
     , int_format_no_pad0_nor_punct<10> ifmt
     , IntT value ) noexcept
@@ -1594,7 +1594,7 @@ inline STRF_HD unsigned init
     unsigned_IntT uvalue;
     if (value >= 0) {
         uvalue = value;
-        data.prefix = static_cast<unsigned>(ifmt.sign);
+        data.prefix = static_cast<int>(ifmt.sign);
     } else {
         uvalue = 1 + static_cast<unsigned_IntT>(-(value + 1));
         data.prefix = '-';
@@ -1607,7 +1607,7 @@ inline STRF_HD unsigned init
 template < int Base
          , typename IntT
          , strf::detail::enable_if_t<Base != 10, int> = 0 >
-inline STRF_HD unsigned init
+inline STRF_HD int init
     ( int_printer_no_pad0_nor_punct_data& data
     , int_format_no_pad0_nor_punct<Base> ifmt
     , IntT value ) noexcept
@@ -1748,20 +1748,20 @@ private:
 };
 
 struct fmt_int_printer_data {
-    std::uint64_t uvalue{};
-    unsigned digcount{};
-    unsigned leading_zeros{};
-    unsigned left_fillcount{};
-    unsigned right_fillcount{};
+    std::uint64_t uvalue = 0;
+    int digcount = 0;
+    int leading_zeros = 0;
+    int left_fillcount = 0;
+    int right_fillcount = 0;
     char32_t fillchar{U' '};
     bool has_prefix{false};
     char sign{'\0'};
 };
 
 struct punct_fmt_int_printer_data: public fmt_int_printer_data {
-    unsigned sepcount{};
-    unsigned sepsize{};
-    char32_t sepchar{};
+    int sepcount = 0;
+    int sepsize = 0;
+    char32_t sepchar{U'\0'};
     strf::digits_grouping grouping;
 };
 
@@ -1853,8 +1853,8 @@ inline STRF_HD void init_1
 }
 
 struct fmt_int_printer_data_init_result {
-    unsigned sub_width;
-    unsigned fillcount;
+    int sub_width;
+    int fillcount;
 };
 
 template <int Base>
@@ -1864,7 +1864,7 @@ STRF_HD fmt_int_printer_data_init_result init_fmt_int_printer_data
     , strf::default_alignment_format ) noexcept
 {
     data.digcount = strf::detail::count_digits<Base>(data.uvalue);
-    unsigned prefix_size = 0;
+    int prefix_size = 0;
     STRF_IF_CONSTEXPR (Base == 10 ) {
         prefix_size = data.has_prefix;
     } else STRF_IF_CONSTEXPR (Base == 8 ) {
@@ -1880,11 +1880,11 @@ STRF_HD fmt_int_printer_data_init_result init_fmt_int_printer_data
         }
     } else {
         data.has_prefix = ifmt.showbase;
-        prefix_size = (unsigned)ifmt.showbase << 1;
+        prefix_size = (int)((unsigned)ifmt.showbase << 1);
     }
-    unsigned content_width = data.digcount + prefix_size;
-    const unsigned zeros_a = ifmt.precision > data.digcount ? ifmt.precision - data.digcount : 0;
-    const unsigned zeros_b = ifmt.pad0width > content_width ? ifmt.pad0width - content_width : 0;
+    int content_width = data.digcount + prefix_size;
+    const int zeros_a = ifmt.precision > data.digcount ? ifmt.precision - data.digcount : 0;
+    const int zeros_b = ifmt.pad0width > content_width ? ifmt.pad0width - content_width : 0;
     data.leading_zeros = (detail::max)(zeros_a, zeros_b);
     content_width += data.leading_zeros;
     data.fillchar = ' ';
@@ -1903,7 +1903,7 @@ STRF_HD fmt_int_printer_data_init_result init_fmt_int_printer_data
 #else
 {
     data.digcount = strf::detail::count_digits<Base>(data.uvalue);
-    unsigned prefix_size = 0;
+    int prefix_size = 0;
     STRF_IF_CONSTEXPR (Base == 10 ) {
         prefix_size = data.has_prefix;
     } else STRF_IF_CONSTEXPR (Base == 8 ) {
@@ -1919,11 +1919,11 @@ STRF_HD fmt_int_printer_data_init_result init_fmt_int_printer_data
         }
     } else {
         data.has_prefix = ifmt.showbase;
-        prefix_size = (unsigned)ifmt.showbase << 1;
+        prefix_size = (int)((unsigned)ifmt.showbase << 1);
     }
-    unsigned content_width = data.digcount + prefix_size;
-    const unsigned zeros_a = ifmt.precision > data.digcount ? ifmt.precision - data.digcount : 0;
-    const unsigned zeros_b = ifmt.pad0width > content_width ? ifmt.pad0width - content_width : 0;
+    int content_width = data.digcount + prefix_size;
+    const int zeros_a = ifmt.precision > data.digcount ? ifmt.precision - data.digcount : 0;
+    const int zeros_b = ifmt.pad0width > content_width ? ifmt.pad0width - content_width : 0;
     data.leading_zeros = (detail::max)(zeros_a, zeros_b);
     content_width += data.leading_zeros;
     auto fmt_width = afmt.width.round();
@@ -1934,9 +1934,9 @@ STRF_HD fmt_int_printer_data_init_result init_fmt_int_printer_data
         data.left_fillcount = x;
         data.right_fillcount = 0;
         data.has_prefix &= !x;
-        return {content_width - x, static_cast<unsigned>(x)};
+        return {content_width - x, static_cast<int>(x)};
     }
-    auto fillcount = static_cast<unsigned>(fmt_width - content_width);
+    auto fillcount = fmt_width - content_width;
     data.has_prefix &= !fill_sign_space;
     switch (afmt.alignment) {
         case strf::text_alignment::left:
@@ -1948,7 +1948,7 @@ STRF_HD fmt_int_printer_data_init_result init_fmt_int_printer_data
             data.right_fillcount = 0;
             break;
         default:
-            auto halfcount = fillcount >> 1;
+            auto halfcount = static_cast<unsigned>(fillcount) >> 1;
             data.left_fillcount = halfcount + fill_sign_space;
             data.right_fillcount = halfcount + (fillcount & 1);
     }
@@ -1979,7 +1979,7 @@ public:
         using pre_t = typename strf::usual_printer_input<T...>::preprinting_type;
         STRF_IF_CONSTEXPR (pre_t::size_required) {
             i.pre.add_size(w.sub_width);
-            if (w.fillcount) {
+            if (w.fillcount > 0) {
                 i.pre.add_size(w.fillcount * charset.encoded_char_size(afmt.fill));
             }
         }
@@ -2019,9 +2019,7 @@ STRF_HD void int_printer_static_base_and_punct<CharT, Base, false>::print_to
             dest.advance_to(it + 2);
         }
     }
-    if (data_.leading_zeros > 0) {
-        strf::detail::write_fill(dest, data_.leading_zeros, CharT('0'));
-    }
+    strf::detail::write_fill(dest, data_.leading_zeros, CharT('0'));
     detail::intdigits_writer<Base>::write(dest, data_.uvalue, data_.digcount, lettercase_);
     if (data_.right_fillcount > 0) {
         encode_fill_(dest, data_.right_fillcount, data_.fillchar);
@@ -2043,13 +2041,14 @@ STRF_HD fmt_int_printer_data_init_result init_punct_fmt_int_printer_data
     data.sepcount = data.grouping.separators_count(data.digcount);
     if (data.sepchar >= 0x80 && data.sepcount) {
         auto sepsize = validate(data.sepchar);
-        data.sepsize = static_cast<unsigned>(sepsize);
         if (sepsize == strf::invalid_char_len) {
             data.grouping = strf::digits_grouping{};
             data.sepsize = 0;
+        } else {
+            data.sepsize = static_cast<int>(sepsize);
         }
     }
-    unsigned prefix_size = 0;
+    int prefix_size = 0;
     STRF_IF_CONSTEXPR (Base == 10 ) {
         prefix_size = data.has_prefix;
     } else STRF_IF_CONSTEXPR (Base == 8 ) {
@@ -2065,14 +2064,14 @@ STRF_HD fmt_int_printer_data_init_result init_punct_fmt_int_printer_data
         }
     } else {
         data.has_prefix = ifmt.showbase;
-        prefix_size = (unsigned)ifmt.showbase << 1;
+        prefix_size = (int)ifmt.showbase << 1;
     }
-    unsigned content_width = data.digcount + data.sepcount + prefix_size;
-    const unsigned zeros_a = ifmt.precision > data.digcount ? ifmt.precision - data.digcount : 0;
-    const unsigned zeros_b = ifmt.pad0width > content_width ? ifmt.pad0width - content_width : 0;
+    int content_width = data.digcount + data.sepcount + prefix_size;
+    const int zeros_a = ifmt.precision > data.digcount ? ifmt.precision - data.digcount : 0;
+    const int zeros_b = ifmt.pad0width > content_width ? ifmt.pad0width - content_width : 0;
     data.leading_zeros = (detail::max)(zeros_a, zeros_b);
     content_width += data.leading_zeros;
-    auto fmt_width = afmt.width.round();
+    int fmt_width = afmt.width.round();
     data.fillchar = afmt.fill;
     const bool fill_sign_space = Base == 10 && data.sign == ' ';
     if (fmt_width <= content_width) {
@@ -2080,9 +2079,9 @@ STRF_HD fmt_int_printer_data_init_result init_punct_fmt_int_printer_data
         data.left_fillcount = x;
         data.right_fillcount = 0;
         data.has_prefix &= !x;
-        return {content_width - data.sepcount - x, static_cast<unsigned>(x)};
+        return {content_width - data.sepcount - x, static_cast<int>(x)};
     }
-    auto fillcount = static_cast<unsigned>(fmt_width - content_width);
+    auto fillcount = fmt_width - content_width;
     data.has_prefix &= !fill_sign_space;
     switch (afmt.alignment) {
         case strf::text_alignment::left:
@@ -2094,7 +2093,7 @@ STRF_HD fmt_int_printer_data_init_result init_punct_fmt_int_printer_data
             data.right_fillcount = 0;
             break;
         default:
-            auto halfcount = fillcount >> 1;
+            auto halfcount = static_cast<unsigned>(fillcount) >> 1;
             data.left_fillcount = halfcount + fill_sign_space;
             data.right_fillcount = halfcount + (fillcount & 1);
     }
@@ -2199,9 +2198,7 @@ STRF_HD void int_printer_static_base_and_punct<CharT, Base, true>::print_to
             dest.advance_to(it + 2);
         }
     }
-    if (data_.leading_zeros > 0) {
-        strf::detail::write_fill(dest, data_.leading_zeros, CharT('0'));
-    }
+    strf::detail::write_fill(dest, data_.leading_zeros, CharT('0'));
     using dig_writer = detail::intdigits_writer<Base>;
     if (data_.sepcount == 0) {
         dig_writer::write(dest, data_.uvalue, data_.digcount, lettercase_);

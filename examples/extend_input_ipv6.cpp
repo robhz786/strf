@@ -126,7 +126,7 @@ private:
     xxx::ipv6address_abbreviation abbrev_;
     const strf::alignment_format alignment_fmt_;
     const strf::lettercase lettercase_;
-    std::uint16_t fillcount_ = 0;
+    std::int16_t fillcount_ = 0;
     ipv6style style_;
 
     std::uint16_t count_ipv6_characters() const;
@@ -179,7 +179,7 @@ std::uint16_t ipv6_printer<CharT>::count_ipv6_characters() const
 template <typename CharT>
 void ipv6_printer<CharT>::print_to(strf::destination<CharT>& dest) const
 {
-    if (fillcount_ == 0) {
+    if (fillcount_ <= 0) {
         print_ipv6(dest);
     } else {
         switch(alignment_fmt_.alignment) {
@@ -193,7 +193,7 @@ void ipv6_printer<CharT>::print_to(strf::destination<CharT>& dest) const
                 break;
             default:{
                 assert(alignment_fmt_.alignment == strf::text_alignment::center);
-                const std::uint16_t halfcount = fillcount_ / 2;
+                const std::int16_t halfcount = fillcount_ / 2;
                 encode_fill_fn_(dest, halfcount, alignment_fmt_.fill);
                 print_ipv6(dest);
                 encode_fill_fn_(dest, fillcount_ - halfcount, alignment_fmt_.fill);

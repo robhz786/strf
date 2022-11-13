@@ -28,9 +28,12 @@ class output_buffer: public output_buffer<T, Log2BufferSpace - 1>
 public:
     static constexpr std::size_t min_space_after_recycle
         = (std::size_t)1 << Log2BufferSpace;
+    static constexpr std::ptrdiff_t min_sspace_after_recycle
+        = (std::ptrdiff_t)1 << Log2BufferSpace;
 
-    STRF_HD void ensure(std::size_t s) {
-        STRF_ASSERT(s <= min_space_after_recycle);
+    STRF_HD void ensure(std::ptrdiff_t s)
+    {
+        STRF_ASSERT(0 <= s && s <= min_sspace_after_recycle);
         STRF_IF_UNLIKELY (this->buffer_ptr() + s > this->buffer_end()) {
             this->recycle();
         }
@@ -39,10 +42,11 @@ public:
 
     STRF_HD void flush() {
         this->recycle();
-        STRF_ASSERT(this->buffer_space() >= min_space_after_recycle);
+        STRF_ASSERT(this->buffer_sspace() >= min_sspace_after_recycle);
     }
 
 protected:
+
     using output_buffer<T, Log2BufferSpace - 1>::output_buffer;
 };
 
@@ -50,7 +54,8 @@ template <typename T>
 class output_buffer<T, 0>
 {
 public:
-    static constexpr std::size_t min_space_after_recycle = 1;
+    static constexpr std::size_t    min_space_after_recycle = 1;
+    static constexpr std::ptrdiff_t min_sspace_after_recycle = 1;
     using value_type = T;
 
     STRF_HD output_buffer(const output_buffer&) = delete;
@@ -76,12 +81,20 @@ public:
     {
         return end_;
     }
-
     STRF_HD std::size_t space() const noexcept
     {
         return buffer_space();
     }
+    STRF_HD std::ptrdiff_t sspace() const noexcept
+    {
+        return buffer_sspace();
+    }
     STRF_HD std::size_t buffer_space() const noexcept
+    {
+        STRF_ASSERT(pointer_ <= end_);
+        return end_ - pointer_;
+    }
+    STRF_HD std::ptrdiff_t buffer_sspace() const noexcept
     {
         STRF_ASSERT(pointer_ <= end_);
         return end_ - pointer_;
@@ -96,9 +109,9 @@ public:
         STRF_ASSERT(p <= end_);
         pointer_ = p;
     }
-    STRF_HD void advance(std::size_t n)
+    STRF_HD void advance(std::ptrdiff_t n)
     {
-        STRF_ASSERT(buffer_ptr() + n <= buffer_end());
+        STRF_ASSERT(0 <= n && buffer_ptr() + n <= buffer_end());
         pointer_ += n;
     }
     STRF_HD void advance() noexcept
@@ -106,9 +119,8 @@ public:
         STRF_ASSERT(buffer_ptr() < buffer_end());
         ++pointer_;
     }
-    STRF_HD void ensure(std::size_t s)
+    STRF_HD void ensure(std::ptrdiff_t s)
     {
-        STRF_ASSERT(s <= 1);
         STRF_IF_UNLIKELY (buffer_ptr() + s > buffer_end()) {
             recycle();
         }
@@ -117,35 +129,37 @@ public:
     STRF_HD void flush()
     {
         recycle();
-        STRF_ASSERT(buffer_space() != 0);
+        STRF_ASSERT(buffer_sspace() > 0);
     }
 
     STRF_HD virtual void recycle() = 0;
-
-    STRF_HD void write(const value_type* data, std::size_t count)
-    {
-        STRF_IF_LIKELY (count <= buffer_space()) {
-#if !defined(STRF_FREESTANDING) || defined(STRF_WITH_CSTRING)
-            memcpy(pointer_, data, count * sizeof(value_type));
-            pointer_ += count;
-#else
-            for(; count != 0; ++pointer_, ++data, --count) {
-                *pointer_ = *data;
-            }
-#endif
-        } else {
-            do_write(data, count);
-        }
-    }
 
     // old names keeped to preserve backwards compatibiliy
     STRF_HD value_type* pointer() const noexcept
     {
         return buffer_ptr();
     }
-    STRF_HD void require(std::size_t s)
+    STRF_HD void require(std::ptrdiff_t s)
     {
         ensure(s);
+    }
+
+    STRF_HD void write(const value_type* data, std::ptrdiff_t count)
+    {
+        STRF_IF_LIKELY (count > 0) {
+            STRF_IF_LIKELY (count <= buffer_sspace()) {
+#if !defined(STRF_FREESTANDING) || defined(STRF_WITH_CSTRING)
+                memcpy(pointer_, data, detail::cast_unsigned(count) * sizeof(value_type));
+                pointer_ += count;
+#else
+                for(; count != 0; ++pointer_, ++data, --count) {
+                    *pointer_ = *data;
+                }
+#endif
+            } else {
+                do_write(data, static_cast<std::size_t>(count));
+            }
+        }
     }
 
 protected:
@@ -157,6 +171,12 @@ protected:
     STRF_HD output_buffer(value_type* p, std::size_t s) noexcept
         : pointer_(p), end_(p + s)
     { }
+
+    STRF_HD output_buffer(value_type* p, std::ptrdiff_t s) noexcept
+        : pointer_(p), end_(p + s)
+    {
+        STRF_ASSERT(s >= 0);
+    }
 
     STRF_HD void set_buffer_ptr(value_type* p) noexcept
     { pointer_ = p; };
@@ -197,7 +217,7 @@ void output_buffer<T, 0>::do_write(const T* data, std::size_t count)
         data += sub_count;
         pointer_ += sub_count;
 #else
-        const std::size_t s = buffer_space();
+        const std::size_t s = space();
         std::size_t sub_count = (count <= s ? count : s);
         count -= sub_count;
 
@@ -244,7 +264,7 @@ public:
 } // namespace detail
 
 constexpr unsigned log2_garbage_buff_size = 6;
-constexpr std::size_t garbage_buff_size = 1 << log2_garbage_buff_size;
+constexpr std::ptrdiff_t garbage_buff_size = 1 << log2_garbage_buff_size;
 
 template <typename T>
 inline STRF_HD T* garbage_buff() noexcept
@@ -281,10 +301,12 @@ public:
         STRF_ASSERT(dest < dest_end);
     }
 
-    STRF_HD basic_cstr_destination(CharT* dest, std::size_t len) noexcept
-        : dest_t_(dest, dest + len - 1)
+    template < typename IntT
+             , strf::detail::enable_if_t<std::is_integral<IntT>::value, int> = 0>
+    STRF_HD basic_cstr_destination(CharT* dest, IntT len) noexcept
+        : dest_t_(dest, dest + static_cast<std::ptrdiff_t>(len) - 1)
     {
-        STRF_ASSERT(len != 0);
+        STRF_ASSERT(static_cast<std::ptrdiff_t>(len) > 0);
     }
 
     template <std::size_t N>
@@ -359,6 +381,9 @@ constexpr unsigned log2_min_destination_buffer_size = 6;
 constexpr std::size_t min_destination_buffer_size =
     (std::size_t)1 << strf::log2_min_destination_buffer_size;
 
+constexpr std::ptrdiff_t min_destination_buffer_ssize =
+    (std::ptrdiff_t)1 << strf::log2_min_destination_buffer_size;
+
 static_assert(min_destination_buffer_size == 64, "");
 
 template <typename CharT>
@@ -420,10 +445,12 @@ public:
     {
         STRF_ASSERT(dest <= dest_end);
     }
-
-    STRF_HD array_destination(CharT* dest, std::size_t len) noexcept
-        : dest_t_(dest, dest + len)
+    template < typename IntT
+             , strf::detail::enable_if_t<std::is_integral<IntT>::value, int> = 0>
+    STRF_HD array_destination(CharT* dest, IntT len) noexcept
+        : dest_t_(dest, dest + static_cast<std::ptrdiff_t>(len))
     {
+        STRF_ASSERT(static_cast<std::ptrdiff_t>(len) >= 0);
     }
 
     template <std::size_t N>

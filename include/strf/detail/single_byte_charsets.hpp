@@ -2169,13 +2169,13 @@ struct single_byte_charset_to_utf32
     static STRF_HD void transcode
         ( strf::transcode_dest<DestCharT>& dest
         , const SrcCharT* src
-        , std::size_t src_size
+        , std::ptrdiff_t src_size
         , strf::transcoding_error_notifier* err_notifier
         , strf::surrogate_policy surr_poli );
 
-    static constexpr STRF_HD std::size_t transcode_size
+    static constexpr STRF_HD std::ptrdiff_t transcode_size
         ( const SrcCharT*
-        , std::size_t src_size
+        , std::ptrdiff_t src_size
         , strf::surrogate_policy ) noexcept
     {
         return src_size;
@@ -2195,7 +2195,7 @@ template <typename SrcCharT, typename DestCharT, class Impl>
 STRF_HD void single_byte_charset_to_utf32<SrcCharT, DestCharT, Impl>::transcode
     ( strf::transcode_dest<DestCharT>& dest
     , const SrcCharT* src
-    , std::size_t src_size
+    , std::ptrdiff_t src_size
     , strf::transcoding_error_notifier* err_notifier
     , strf::surrogate_policy surr_poli )
 {
@@ -2225,13 +2225,13 @@ struct utf32_to_single_byte_charset
     static STRF_HD void transcode
         ( strf::transcode_dest<DestCharT>& dest
         , const SrcCharT* src
-        , std::size_t src_size
+        , std::ptrdiff_t src_size
         , strf::transcoding_error_notifier* err_notifier
         , strf::surrogate_policy surr_poli );
 
-    static constexpr STRF_HD std::size_t transcode_size
+    static constexpr STRF_HD std::ptrdiff_t transcode_size
         ( const SrcCharT*
-        , std::size_t src_size
+        , std::ptrdiff_t src_size
         , strf::surrogate_policy ) noexcept
     {
         return src_size;
@@ -2250,7 +2250,7 @@ template <typename SrcCharT, typename DestCharT, class Impl>
 STRF_HD void utf32_to_single_byte_charset<SrcCharT, DestCharT, Impl>::transcode
     ( strf::transcode_dest<DestCharT>& dest
     , const SrcCharT* src
-    , std::size_t src_size
+    , std::ptrdiff_t src_size
     , strf::transcoding_error_notifier* err_notifier
     , strf::surrogate_policy surr_poli )
 {
@@ -2284,13 +2284,13 @@ struct single_byte_charset_sanitizer
     static STRF_HD void transcode
         ( strf::transcode_dest<DestCharT>& dest
         , const SrcCharT* src
-        , std::size_t src_size
+        , std::ptrdiff_t src_size
         , strf::transcoding_error_notifier* err_notifier
         , strf::surrogate_policy surr_poli );
 
-    static constexpr STRF_HD std::size_t transcode_size
+    static constexpr STRF_HD std::ptrdiff_t transcode_size
         ( const SrcCharT*
-        , std::size_t src_size
+        , std::ptrdiff_t src_size
         , strf::surrogate_policy ) noexcept
     {
         return src_size;
@@ -2310,7 +2310,7 @@ template <typename SrcCharT, typename DestCharT, class Impl>
 STRF_HD void single_byte_charset_sanitizer<SrcCharT, DestCharT, Impl>::transcode
     ( strf::transcode_dest<DestCharT>& dest
     , const SrcCharT* src
-    , std::size_t src_size
+    , std::ptrdiff_t src_size
     , strf::transcoding_error_notifier* err_notifier
     , strf::surrogate_policy surr_poli )
 {
@@ -2335,7 +2335,7 @@ STRF_HD void single_byte_charset_sanitizer<SrcCharT, DestCharT, Impl>::transcode
     dest.advance_to(dest_it);
 }
 
-template <std::size_t wchar_size, typename CharT, strf::charset_id>
+template <std::ptrdiff_t wchar_size, typename CharT, strf::charset_id>
 class single_byte_charset_tofrom_wchar
 {
 public:
@@ -2424,7 +2424,7 @@ public:
     {
         return U'?';
     }
-    static constexpr STRF_HD std::size_t replacement_char_size() noexcept
+    static constexpr STRF_HD int replacement_char_size() noexcept
     {
         return 1;
     }
@@ -2432,22 +2432,22 @@ public:
     {
         strf::put(dest, static_cast<CharT>('?'));
     }
-    static STRF_HD std::size_t validate(char32_t ch32) noexcept
+    static STRF_HD int validate(char32_t ch32) noexcept
     {
-        return Impl::encode(ch32) < 0x100 ? 1 : (std::size_t)-1;
+        return Impl::encode(ch32) < 0x100 ? 1 : -1;
     }
-    static constexpr STRF_HD std::size_t encoded_char_size(char32_t) noexcept
+    static constexpr STRF_HD int encoded_char_size(char32_t) noexcept
     {
         return 1;
     }
     static STRF_HD CharT* encode_char(CharT* dest, char32_t ch);
 
     static STRF_HD void encode_fill
-        ( strf::transcode_dest<CharT>& dest, std::size_t count, char32_t ch );
+        ( strf::transcode_dest<CharT>& dest, std::ptrdiff_t count, char32_t ch );
 
     static STRF_HD strf::count_codepoints_result count_codepoints_fast
-        ( const CharT* src, std::size_t src_size
-        , std::size_t max_count ) noexcept
+        ( const CharT* src, std::ptrdiff_t src_size
+        , std::ptrdiff_t max_count ) noexcept
     {
         (void) src;
         if (max_count < src_size) {
@@ -2456,8 +2456,8 @@ public:
         return {src_size, src_size};
     }
     static STRF_HD strf::count_codepoints_result count_codepoints
-        ( const CharT* src, std::size_t src_size
-        , std::size_t max_count, strf::surrogate_policy surr_poli ) noexcept
+        ( const CharT* src, std::ptrdiff_t src_size
+        , std::ptrdiff_t max_count, strf::surrogate_policy surr_poli ) noexcept
     {
         (void) src;
         (void) surr_poli;
@@ -2630,7 +2630,7 @@ STRF_HD CharT* single_byte_charset<CharT, Impl>::encode_char
 
 template <typename CharT, class Impl>
 STRF_HD void single_byte_charset<CharT, Impl>::encode_fill
-    ( strf::transcode_dest<CharT>& dest, std::size_t count, char32_t ch )
+    ( strf::transcode_dest<CharT>& dest, std::ptrdiff_t count, char32_t ch )
 {
     unsigned ch2 = Impl::encode(ch);
     STRF_IF_UNLIKELY (ch2 >= 0x100) {
@@ -2638,7 +2638,7 @@ STRF_HD void single_byte_charset<CharT, Impl>::encode_fill
     }
     auto ch3 = static_cast<CharT>(ch2);
     while(true) {
-        const std::size_t available = dest.buffer_space();
+        const std::ptrdiff_t available = dest.buffer_sspace();
         STRF_IF_LIKELY (count <= available) {
             strf::detail::str_fill_n<CharT>(dest.buffer_ptr(), count, ch3);
             dest.advance(count);

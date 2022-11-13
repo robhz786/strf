@@ -149,7 +149,7 @@ public:
         new (printers_ptr_()) printers_tuple_{input.arg.value().args, pre, input.facets};
         fillcount_ = pre.remaining_width().round();
         STRF_IF_CONSTEXPR (static_cast<bool>(PrecalcSize)) {
-            input.pre.add_size(pre.accumulated_size());
+            input.pre.add_size(pre.accumulated_ssize());
             if (fillcount_ > 0) {
                 auto fcharsize = charset.encoded_char_size(afmt_.fill);
                 input.pre.add_size(fillcount_ * fcharsize);
@@ -183,10 +183,10 @@ public:
         const width_t width = fillcount_ + wmax - pre.remaining_width();
         input.pre.subtract_width(width);
         STRF_IF_CONSTEXPR (static_cast<bool>(PrecalcSize)) {
-            input.pre.add_size(pre.accumulated_size());
+            input.pre.add_size(pre.accumulated_ssize());
             if (fillcount_ > 0) {
                 auto fcharsize = charset.encoded_char_size(afmt_.fill);
-                input.pre.add_size( fillcount_ * fcharsize);
+                input.pre.add_size(fillcount_ * fcharsize);
             }
         }
     }
@@ -202,24 +202,28 @@ public:
 
     STRF_HD void print_to(strf::destination<CharT>& dest) const override
     {
-        switch (afmt_.alignment) {
-            case strf::text_alignment::left: {
-                strf::detail::write(dest, printers_());
-                write_fill_(dest, fillcount_);
-                break;
-            }
-            case strf::text_alignment::right: {
-                write_fill_(dest, fillcount_);
-                strf::detail::write(dest, printers_());
-                break;
-            }
-            default: {
-                STRF_ASSERT(afmt_.alignment == strf::text_alignment::center);
-                auto half_fillcount = fillcount_ >> 1;
-                write_fill_(dest, half_fillcount);
-                strf::detail::write(dest, printers_());
-                write_fill_(dest, fillcount_ - half_fillcount);
-                break;
+        if (fillcount_ <= 0) {
+            strf::detail::write(dest, printers_());
+        } else {
+            switch (afmt_.alignment) {
+                case strf::text_alignment::left: {
+                    strf::detail::write(dest, printers_());
+                    write_fill_(dest, fillcount_);
+                    break;
+                }
+                case strf::text_alignment::right: {
+                    write_fill_(dest, fillcount_);
+                    strf::detail::write(dest, printers_());
+                    break;
+                }
+                default: {
+                    STRF_ASSERT(afmt_.alignment == strf::text_alignment::center);
+                    auto half_fillcount = static_cast<unsigned>(fillcount_) >> 1;
+                    write_fill_(dest, half_fillcount);
+                    strf::detail::write(dest, printers_());
+                    write_fill_(dest, fillcount_ - half_fillcount);
+                    break;
+                }
             }
         }
     }
@@ -237,7 +241,7 @@ private:
     strf::alignment_format afmt_;
     strf::encode_fill_f<CharT> encode_fill_func_;
     strf::width_t width_;
-    std::uint16_t fillcount_ = 0;
+    std::int16_t fillcount_ = 0;
 
 #if defined(__GNUC__) && (__GNUC__ <= 6)
 #  pragma GCC diagnostic push
@@ -268,7 +272,9 @@ private:
 
     STRF_HD void write_fill_(strf::destination<CharT>& dest, int count) const
     {
-        encode_fill_func_(dest, count, afmt_.fill);
+        if (count > 0) {
+            encode_fill_func_(dest, count, afmt_.fill);
+        }
     }
 };
 

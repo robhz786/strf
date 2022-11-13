@@ -286,6 +286,7 @@ template < typename PrePrinting
 STRF_HD void range_printer<CharT, FPack, Iterator>::do_preprinting_(PrePrinting& pre) const
 {
     for(iterator it = begin_; it != end_; ++it) {
+        pre.clear_negative_width();
         printer_type_<PrePrinting>
             ( strf::make_printer_input<CharT>(pre, fp_, *it) );
     }
@@ -360,6 +361,7 @@ STRF_HD void separated_range_printer<CharT, FPack, Iterator>::do_preprinting_(Pr
 {
     std::size_t count = 0;
     for(iterator it = begin_; it != end_; ++it) {
+        pre.clear_negative_width();
         printer_type_<PrePrinting>(strf::make_printer_input<CharT>(pre, fp_, *it));
         ++ count;
         STRF_IF_CONSTEXPR (!PrePrinting::size_required) {
@@ -378,8 +380,8 @@ STRF_HD void separated_range_printer<CharT, FPack, Iterator>::do_preprinting_(Pr
                                  , sep_begin_
                                  , sep_len_
                                  , use_facet_<strf::surrogate_policy_c>(fp_) );
-        auto acc_seps_width = checked_mul(dw, static_cast<std::uint32_t>(count - 1));
-        pre.subtract_width(acc_seps_width);
+        pre.checked_subtract_width(checked_mul(dw, count - 1));
+        pre.clear_negative_width();
     }
     if (PrePrinting::size_required) {
         pre.add_size((count - 1) * sep_len_);
@@ -463,6 +465,7 @@ STRF_HD void fmt_range_printer<CharT, FPack, Iterator, Fmts ...>::do_preprinting
 {
     auto r = fmt_.value();
     for(auto it = r.begin; it != r.end; ++it) { // NOLINTLINE(llvm-qualified-auto)
+        pre.clear_negative_width();
         printer_type_<PrePrinting>
             ( strf::make_printer_input<CharT>
                 ( pre, fp_, value_fmt_type_adapted_{{*it}, fmt_} ) );
@@ -552,6 +555,7 @@ STRF_HD void fmt_separated_range_printer<CharT, FPack, Iterator, Fmts ...>::do_p
     auto r = fmt_.value();
     std::size_t count = 0;
     for(auto it = r.begin; it != r.end; ++it) { // NOLINT(llvm-qualified-auto)
+        pre.clear_negative_width();
         printer_type_<PrePrinting>
             ( strf::make_printer_input<CharT>
                 ( pre, fp_, value_fmt_type_adapted_{{*it}, fmt_} ) );
@@ -572,7 +576,7 @@ STRF_HD void fmt_separated_range_printer<CharT, FPack, Iterator, Fmts ...>::do_p
                                  , r.sep_begin
                                  , r.sep_len
                                  , use_facet_<strf::surrogate_policy_c>(fp_) );
-        pre.subtract_width(checked_mul(dw, static_cast<std::uint32_t>(count - 1)));
+        pre.checked_subtract_width(checked_mul(dw, (count - 1)));
     }
     if (PrePrinting::size_required) {
         pre.add_size((count - 1) * r.sep_len);
@@ -655,6 +659,7 @@ STRF_HD void transformed_range_printer<CharT, FPack, Iterator, UnaryOp>
     ::do_preprinting_(PrePrinting& pre) const
 {
     for(iterator it = begin_; it != end_; ++it) {
+        pre.clear_negative_width();
         printer_type_<PrePrinting>
             ( strf::make_printer_input<CharT>(pre, fp_, op_(*it)) );
     }
@@ -734,6 +739,7 @@ STRF_HD void sep_transformed_range_printer<CharT, FPack, Iterator, UnaryOp>
 {
     std::size_t count = 0;
     for(iterator it = begin_; it != end_; ++it) {
+        pre.clear_negative_width();
         printer_type_<PrePrinting>
             ( strf::make_printer_input<CharT>(pre, fp_, op_(*it)) );
         ++ count;
@@ -753,7 +759,7 @@ STRF_HD void sep_transformed_range_printer<CharT, FPack, Iterator, UnaryOp>
                                  , sep_begin_
                                  , sep_len_
                                  , use_facet_<strf::surrogate_policy_c>(fp_) );
-        pre.subtract_width(checked_mul(dw, static_cast<std::uint32_t>(count - 1)));
+        pre.checked_subtract_width(checked_mul(dw, (count - 1)));
     }
     if (PrePrinting::size_required) {
         pre.add_size((count - 1) * sep_len_);

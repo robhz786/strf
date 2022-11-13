@@ -501,9 +501,9 @@ struct default_tr_error_notifier {
     template <typename Charset>
     void handle
         ( const typename Charset::{code_unit}* str
-        , std::size_t str_len
+        , std::ptrdiff_t str_len
         , Charset charset
-        , std::size_t err_pos ) noexcept
+        , std::ptrdiff_t err_pos ) noexcept
     {
     }
 };
@@ -520,8 +520,8 @@ Given:
 - `CharsetT`, a _<<Charset,Charset>>_ type.
 - `charset`, a value of type `CharsetT`
 - `str`, a value of type `const CharsetT::{code_unit}*` pointing to string encoded according to `charset`
-- `str_len`, a `std::size_t` value equal to the length of the string `str`
-- `err_pos`, a `std::size_t` value less than or equal to `str_len`
+- `str_len`, a `std::ptrdiff_t` value equal to the length of the string `str`
+- `err_pos`, a `std::ptrdiff_t` value less than or equal to `str_len`
 
 The following must host:
 

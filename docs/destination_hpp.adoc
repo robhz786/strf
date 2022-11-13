@@ -34,7 +34,10 @@ http://www.boost.org/LICENSE_1_0.txt)
 :buffer_end: <<output_buffer_buffer_end,buffer_end>>
 :end: <<output_buffer_buffer_end,end>>
 :buffer_space: <<output_buffer_buffer_space,buffer_space>>
+:buffer_sspace: <<output_buffer_buffer_space,buffer_sspace>>
 :space: <<output_buffer_buffer_space,space>>
+:sspace: <<output_buffer_buffer_space,sspace>>
+
 :flush: <<output_buffer_flush,flush>>
 :recycle: <<output_buffer_recycle,recycle>>
 :ensure: <<output_buffer_ensure,ensure>>
@@ -104,7 +107,8 @@ template <typename T, unsigned Log2BufferSpace>
 class output_buffer: output_buffer<T, Log2BufferSpace - 1>
 {
 public:
-    static constexpr std::size_t min_space_after_recycle = 1ull << Log2BufferSpace;
+    static constexpr std::size_t    min_space_after_recycle  = 1 << Log2BufferSpace;
+    static constexpr std::ptrdiff_t min_sspace_after_recycle = 1 << Log2BufferSpace;
 
 protected:
     using output_buffer<T, Log2BufferSpace - 1>::output_buffer;
@@ -114,7 +118,8 @@ template <typename T>
 class output_buffer<T, 0>
 {
 public:
-    static constexpr std::size_t min_space_after_recycle = 1;
+    static constexpr std::size_t    min_space_after_recycle = 1;
+    static constexpr std::ptrdiff_t min_sspace_after_recycle = 1;
     using value_type = T;
 
     output_buffer(const output_buffer&) = delete;
@@ -133,13 +138,17 @@ public:
     std::size_t {buffer_space}() const noexcept;
     std::size_t {space}() const noexcept;
 
+    std::ptrdiff_t {buffer_sspace}() const noexcept;
+    std::ptrdiff_t {sspace}() const noexcept;
+
     bool {good}() const noexcept;
     void {advance_to}(T{asterisk} p);
-    void {advance}(std::size_t n);
-    void {ensure}(std::size_t s);
+    void {advance}();
+    void {advance_count}(std::ptrdiff_t n);
+    void {ensure}(std::ptrdiff_t s);
     void {flush}();
 
-    void {write}(const T{asterisk} data, std::size_t count);
+    void {write}(const T{asterisk} data, std::ptrdiff_t count);
 
     virtual void {recycle}() = 0;
 
@@ -147,7 +156,7 @@ protected:
 
     <<output_buffer_ctor_range,output_buffer>>(T{asterisk} buff, T{asterisk} buff_end);
 
-    <<output_buffer_ctor_count,output_buffer>>(T{asterisk} buff, std::size_t buff_size);
+    <<output_buffer_ctor_count,output_buffer>>(T{asterisk} buff, std::ptrdiff_t buff_size);
 
     void {set_buffer_ptr}(T{asterisk} p) noexcept;
     void {set_ptr}(T{asterisk} p) noexcept;
@@ -207,6 +216,9 @@ Return:: The end of memory position where the content shall be written.
 ----
 std::size_t buffer_space() const noexcept;
 std::size_t space() const noexcept;
+
+std::ptrdiff_t_t buffer_sspace() const noexcept;
+std::ptrdiff_t_t sspace() const noexcept;
 ----
 [horizontal]
 Return:: `{buffer_end}() - {buffer_ptr}()`
@@ -247,11 +259,11 @@ Posconditions::
 ====
 [source,cpp]
 ----
-void ensure(std::size_t s)
+void ensure(std::ptrdiff_t s)
 ----
 [horizontal]
 Effect:: Calls `{recycle}()` if `{buffer_space}() < s`.
-Precondition:: `s \<= min_space_after_recycle`
+Precondition:: `0 \<= s && s \<= min_sspace_after_recycle`
 Postcondition:: `{buffer_space}() >= s`
 ====
 [[output_buffer_advance_to]]
@@ -265,16 +277,6 @@ Effect:: Advance the buffer's pointer to `p`.
 Precondition:: `{buffer_ptr}() \<= p && p \<= buffer_end()`
 Postcondition:: `{buffer_ptr}() == p`
 ====
-[[output_buffer_advance_count]]
-====
-[source,cpp]
-----
-void advance(std::size_t n)
-----
-[horizontal]
-Effect:: Equivalent to `{advance_to}({buffer_ptr}() + n)`
-Precondition:: `n \<= {buffer_space}()`
-====
 [[output_buffer_advance]]
 ====
 [source,cpp]
@@ -282,8 +284,18 @@ Precondition:: `n \<= {buffer_space}()`
 void advance()
 ----
 [horizontal]
-Effect:: Equivalent to `{advance_to}(1)`
+Effect:: Equivalent to `{advance}(1)`
 Precondition:: `{buffer_ptr}() != {buffer_end}()`
+====
+[[output_buffer_advance_count]]
+====
+[source,cpp]
+----
+void advance(std::ptrdiff_t n)
+----
+[horizontal]
+Effect:: Equivalent to `{advance_to}({buffer_ptr}() + n)`
+Precondition:: `0 \<= n && n \<= {buffer_space}()`
 ====
 [[output_buffer_good]]
 ====
@@ -334,10 +346,11 @@ Posconditions::
 ====
 [source,cpp]
 ----
-output_buffer(T* buff_, std::size_t buff_size_)
+output_buffer(T* buff_, std::ptrdiff_t buff_size_)
 ----
 [horizontal]
 Preconditions::
+- `buff_size_ \>= 0`
 - The range [ `buff_`, `buff_ + n ` ) must be an accessible memory area.
 Posconditions::
 - `{buffer_ptr}() == buff_`
@@ -443,7 +456,8 @@ class basic_cstr_destination final: public {output_buffer}<CharT, {log2_garbage_
 public:
     basic_cstr_destination(CharT{asterisk} dest, CharT{asterisk} dest_end) noexcept;
 
-    basic_cstr_destination(CharT{asterisk} dest, std::size_t len) noexcept;
+    template <typename IntT>
+    basic_cstr_destination(CharT{asterisk} dest, IntT len) noexcept;
 
     template <std::size_t N>
     basic_cstr_destination(CharT (&dest)[N]) noexcept;
@@ -485,10 +499,12 @@ Postconditions::
 ====
 [source,cpp]
 ----
-basic_cstr_destination(CharT* dest, std::size_t dest_size) noexcept;
+template <typename IntT>
+basic_cstr_destination(CharT* dest, IntT dest_size) noexcept;
 ----
 [horizontal]
-Precondition:: `dest_size != 0`
+Compile-time requirements:: `std::is_integral<Int>::value` is `true`
+Precondition:: `dest_size > 0`
 Postconditions::
 - `{good}() == true`
 - `{buffer_ptr}() == dest`
@@ -546,7 +562,8 @@ public:
     template <std::size_t N>
     array_destination(CharT (&dest)[N]) noexcept;
     array_destination(CharT{asterisk} dest, CharT{asterisk} dest_end) noexcept;
-    array_destination(CharT{asterisk} dest, std::size_t dest_size) noexcept;
+    template <typename IntT>
+    array_destination(CharT{asterisk} dest, IntT dest_size) noexcept;
 
     array_destination(const array_destination&) = delete;
     array_destination(array_destination&&) = delete;
@@ -595,10 +612,12 @@ Postconditions::
 ====
 [source,cpp]
 ----
-array_destination(CharT* dest, std::size_t dest_size) noexcept;
+template <typename IntT>
+array_destination(CharT* dest, IntT dest_size) noexcept;
 ----
 [horizontal]
-Precondition:: `dest_size != 0`
+Compile-time requirements:: `std::is_integral<Int>::value` is `true`
+Precondition:: `dest_size >= 0`
 Postconditions::
 - `{good}() == true`
 - `{buffer_ptr}() == dest`

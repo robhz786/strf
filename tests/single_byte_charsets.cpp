@@ -30,13 +30,13 @@ STRF_HD unsigned count_fffd( strf::detail::simple_string_view<char32_t> str)
 }
 
 struct invalid_seq_counter: strf::transcoding_error_notifier {
-    void STRF_HD invalid_sequence(std::size_t, const char*, const void*, std::size_t) override {
+    void STRF_HD invalid_sequence(int, const char*, const void*, std::ptrdiff_t) override {
         ++ notifications_count;
     }
     void STRF_HD unsupported_codepoint(const char*, unsigned) override {
         ++ notifications_count;
     }
-    std::size_t notifications_count = 0;
+    std::ptrdiff_t notifications_count = 0;
 };
 
 STRF_HD void general_tests

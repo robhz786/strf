@@ -86,6 +86,10 @@ public:
     {
         return len_;
     }
+    constexpr STRF_HD std::ptrdiff_t ssize() const
+    {
+        return len_;
+    }
     constexpr STRF_HD std::size_t length() const
     {
         return len_;

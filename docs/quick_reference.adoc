@@ -122,7 +122,7 @@ include::ref_format_functions.adoc[tag=int_format_functions]
 [%header,cols="382,618",grid=rows]
 |===
 | Member function | Effect
-|`multi(std::size_t count)`
+|`multi(std::ptrdiff_t count)`
 | Prints the argument `count` times.
 |===
 

@@ -10,17 +10,30 @@ STRF_TEST_FUNC void test_width_t()
     using namespace strf::width_literal;
 
     TEST_TRUE(1.125_w  + 10.625_w == 11.75_w);
-    TEST_TRUE(10.625_w - 1.125_w  ==  +9.5_w);
+    TEST_TRUE(10.625_w -  1.125_w  ==  +9.5_w);
+    TEST_TRUE(-1.125_w + -1.125_w  ==  -2.25_w);
 
-    TEST_TRUE(1_w   / 1._w == 1);
-    TEST_TRUE(10.5_w / 2   == 5.25_w);
-    TEST_TRUE(10_w   / 2.5_w == 4);
-    TEST_TRUE(25     / 2.5_w == 10);
-    TEST_TRUE(10.5_w / 2.5_w == 4.2_w);
+    TEST_TRUE(1_w    / 1._w == 1);
+    TEST_TRUE(10.5_w /  2  == +5.25_w);
+    TEST_TRUE(10.5_w / -2_w  == -5.25_w);
+    TEST_TRUE(10.5_w / -2  == -5.25_w);
 
-    TEST_TRUE(5.5_w *  2      == 11);
-    TEST_TRUE(2     *  2.5_w  == 5);
-    TEST_TRUE(1.5_w *  5.5_w  == 8.25_w);
+    TEST_TRUE(10_w    /  2.5_w  ==  4);
+    TEST_TRUE(25      /  2.5_w  ==  10);
+    TEST_TRUE(10.5_w  /  2.5_w  ==  4.2_w);
+    TEST_TRUE(10.5_w  /  2_w    ==  5.25_w);
+    TEST_TRUE(10.25_w / -0.5_w  == -20.5_w);
+
+    TEST_TRUE( 5.5_w *  2      ==  11);
+    TEST_TRUE(-5.5_w * +2      == -11);
+
+    TEST_TRUE(  2     *  2.5_w  ==  5);
+    TEST_TRUE(  1.5_w *  5.5_w  ==  8.25_w);
+    TEST_TRUE(- 1.5_w * -5.5_w  ==  8.25_w);
+    TEST_TRUE( 10.5_w *  0.5_w  ==  5.25_w);
+    TEST_TRUE(-10.5_w *  0.5_w  == -5.25_w);
+    TEST_TRUE( 10.5_w * -0.5_w  == -5.25_w);
+    TEST_TRUE(-10.5_w * -0.5_w  == +5.25_w);
 
     {
         strf::width_t x = 12;

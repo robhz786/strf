@@ -3,7 +3,7 @@
 [![Build Status](https://ci.appveyor.com/api/projects/status/github/robhz786/strf?branch=main&svg=true)](https://ci.appveyor.com/project/robhz786/strf/branch/main)
 [![codecov](https://codecov.io/gh/robhz786/strf/branch/main/graph/badge.svg?token=d5DIZzYv5O)](https://codecov.io/gh/robhz786/strf)
 
-Strf is a C++11 text formatting library that
+Strf is a C++14 text formatting library that
 
 * [is fast](http://robhz786.github.io/strf-benchmarks/v0.15.3/results.html)
 * [is highly extensible](http://robhz786.github.io/strf/v0.15.3/versus_fmtlib.html#_extensibility)

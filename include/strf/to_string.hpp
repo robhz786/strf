@@ -275,10 +275,12 @@ public:
     {
         return str_;
     }
-    std::basic_string<CharT, Traits, Allocator>& create(std::size_t size) const noexcept
+    std::basic_string<CharT, Traits, Allocator>& create(std::ptrdiff_t size) const noexcept
     {
-         str_.reserve(str_.size() + size);
-         return str_;
+        if (size > 0) {
+            str_.reserve(str_.size() + static_cast<std::size_t>(size));
+        }
+        return str_;
     }
 
 private:
@@ -302,9 +304,9 @@ public:
     {
         return strf::tag<void>{};
     }
-    std::size_t create(std::size_t size) const noexcept
+    std::size_t create(std::ptrdiff_t size) const noexcept
     {
-        return size;
+        return static_cast<std::size_t>(size > 0 ? size : 0);
     }
 };
 

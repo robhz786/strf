@@ -21,9 +21,9 @@ struct default_tr_error_notifier
     template <typename Charset>
     inline STRF_HD void handle
         ( const typename Charset::code_unit* str
-        , std::size_t str_len
+        , std::ptrdiff_t str_len
         , Charset charset
-        , std::size_t err_pos ) noexcept
+        , std::ptrdiff_t err_pos ) noexcept
     {
         (void) str;
         (void) str_len;
@@ -44,14 +44,14 @@ namespace detail {
 template <typename CharT>
 struct read_uint_result
 {
-    std::size_t value;
+    std::ptrdiff_t value;
     const CharT* it;
 };
 
 template <typename CharT>
-STRF_HD read_uint_result<CharT> read_uint(const CharT* it, const CharT* end, std::size_t limit) noexcept
+STRF_HD read_uint_result<CharT> read_uint(const CharT* it, const CharT* end, std::ptrdiff_t limit) noexcept
 {
-    std::size_t value = *it -  static_cast<CharT>('0');
+    std::ptrdiff_t value = *it -  static_cast<CharT>('0');
     ++it;
     while (it != end) {
         CharT ch = *it;
@@ -70,12 +70,12 @@ STRF_HD read_uint_result<CharT> read_uint(const CharT* it, const CharT* end, std
 }
 
 template <typename CharT>
-STRF_HD inline std::size_t tr_string_size
+STRF_HD inline std::ptrdiff_t tr_string_size
     ( const strf::preprinting<strf::precalc_size::no, strf::precalc_width::no>*
-    , std::size_t
+    , std::ptrdiff_t
     , const CharT*
     , const CharT*
-    , std::size_t ) noexcept
+    , std::ptrdiff_t ) noexcept
 {
     return 0;
 }
@@ -90,28 +90,28 @@ struct eval_to_false_t {
 template <typename CharT>
 class tr_pre_size
 {
-    const std::size_t* size_array_;
-    const std::size_t array_size_;
-    std::size_t replacement_char_size_;
-    std::size_t size_ = 0;
+    const std::ptrdiff_t* size_array_;
+    const std::ptrdiff_t array_size_;
+    int replacement_char_size_;
+    std::ptrdiff_t size_ = 0;
 
 public:
     constexpr STRF_HD tr_pre_size
-        ( const std::size_t* size_array
-        , std::size_t array_size
-        , std::size_t replacement_char_size )
+        ( const std::ptrdiff_t* size_array
+        , std::ptrdiff_t array_size
+        , int replacement_char_size )
         : size_array_(size_array)
         , array_size_(array_size)
         , replacement_char_size_(replacement_char_size)
     {
     }
 
-    STRF_HD std::size_t accumulated_size() const
+    STRF_HD std::ptrdiff_t accumulated_ssize() const
     {
         return size_;
     }
 
-    STRF_HD eval_to_false_t account_arg(std::size_t index)
+    STRF_HD eval_to_false_t account_arg(std::ptrdiff_t index)
     {
         if (index < array_size_) {
             size_ += size_array_[index];
@@ -126,7 +126,7 @@ public:
         size_ += (end - begin);
         return {};
     }
-    constexpr STRF_HD std::size_t num_args() const
+    constexpr STRF_HD std::ptrdiff_t num_args() const
     {
         return array_size_;
     }
@@ -136,7 +136,7 @@ template <typename CharT, typename Charset, typename WidthCalculator>
 class tr_pre_width
 {
     const strf::width_t* width_array_;
-    const std::size_t array_size_;
+    const std::ptrdiff_t array_size_;
     strf::width_t remaining_width_;
     strf::surrogate_policy surr_poli_;
     WidthCalculator wcalc_;
@@ -155,7 +155,7 @@ public:
 
     constexpr STRF_HD tr_pre_width
         ( const strf::width_t* width_array
-        , std::size_t width_array_size
+        , std::ptrdiff_t width_array_size
         , strf::width_t width
         , strf::surrogate_policy surr_poli
         , WidthCalculator wcalc
@@ -169,7 +169,7 @@ public:
     {
     }
 
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD bool account_arg(std::size_t index)
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD bool account_arg(std::ptrdiff_t index)
     {
         return subtract_(index < array_size_ ? width_array_[index] : strf::width_t(1));
     }
@@ -183,7 +183,7 @@ public:
     {
         return remaining_width_ > 0 ? remaining_width_ : strf::width_t(0);
     }
-    constexpr STRF_HD std::size_t num_args() const
+    constexpr STRF_HD std::ptrdiff_t num_args() const
     {
         return array_size_;
     }
@@ -194,10 +194,10 @@ public:
 template <typename CharT, typename Charset, typename WidthCalculator>
 class tr_pre_size_and_width
 {
-    const std::size_t* size_array_;
+    const std::ptrdiff_t* size_array_;
     const strf::width_t* width_array_;
-    const std::size_t array_size_;
-    std::size_t size_ = 0;
+    const std::ptrdiff_t array_size_;
+    std::ptrdiff_t size_ = 0;
     strf::width_t remaining_width_;
     strf::surrogate_policy surr_poli_;
     WidthCalculator wcalc_;
@@ -214,9 +214,9 @@ class tr_pre_size_and_width
 
 public:
     constexpr STRF_HD tr_pre_size_and_width
-        ( const std::size_t* size_array
+        ( const std::ptrdiff_t* size_array
         , const strf::width_t* width_array
-        , std::size_t array_size
+        , std::ptrdiff_t array_size
         , strf::width_t width
         , strf::surrogate_policy surr_poli
         , WidthCalculator wcalc
@@ -231,7 +231,7 @@ public:
     {
     }
 
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD eval_to_false_t account_arg(std::size_t index)
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD eval_to_false_t account_arg(std::ptrdiff_t index)
     {
         if (index < array_size_) {
             size_ += size_array_[index];
@@ -250,7 +250,7 @@ public:
         subtract_width_(w);
         return {};
     }
-    STRF_HD std::size_t accumulated_size() const
+    STRF_HD std::ptrdiff_t accumulated_ssize() const
     {
         return size_;
     }
@@ -258,7 +258,7 @@ public:
     {
         return remaining_width_;
     }
-    constexpr STRF_HD std::size_t num_args() const
+    constexpr STRF_HD std::ptrdiff_t num_args() const
     {
         return array_size_;
     }
@@ -271,7 +271,7 @@ STRF_HD void tr_do_preprinting
     , const CharT* it
     , const CharT* end )
 {
-    std::size_t arg_idx = 0;
+    std::ptrdiff_t arg_idx = 0;
     while (it != end) {
         const CharT* prev = it;
         it = strf::detail::str_find<CharT>(it, (end - it), '{');
@@ -337,15 +337,15 @@ STRF_HD void tr_do_preprinting
 }
 
 template <typename CharT>
-STRF_HD std::size_t tr_string_size
+STRF_HD std::ptrdiff_t tr_string_size
     ( const strf::preprinting<strf::precalc_size::yes, strf::precalc_width::no>* args_pre
-    , std::size_t num_args
+    , std::ptrdiff_t num_args
     , const CharT* it
     , const CharT* end
     , std::size_t inv_arg_size ) noexcept
 {
-    std::size_t count = 0;
-    std::size_t arg_idx = 0;
+    std::ptrdiff_t count = 0;
+    std::ptrdiff_t arg_idx = 0;
 
     while (it != end) {
         const CharT* prev = it;
@@ -360,7 +360,7 @@ STRF_HD std::size_t tr_string_size
         after_the_opening_brace:
         if (it == end) {
             if (arg_idx < num_args) {
-                count += args_pre[arg_idx].accumulated_size();
+                count += args_pre[arg_idx].accumulated_ssize();
             } else {
                 count += inv_arg_size;
             }
@@ -370,7 +370,7 @@ STRF_HD std::size_t tr_string_size
         auto ch = *it;
         if (ch == '}') {
             if (arg_idx < num_args) {
-                count += args_pre[arg_idx].accumulated_size();
+                count += args_pre[arg_idx].accumulated_ssize();
                 ++arg_idx;
             } else {
                 count += inv_arg_size;
@@ -380,7 +380,7 @@ STRF_HD std::size_t tr_string_size
             auto result = strf::detail::read_uint(it, end, num_args);
 
             if (result.value < num_args) {
-                count += args_pre[result.value].accumulated_size();
+                count += args_pre[result.value].accumulated_ssize();
             } else {
                 count += inv_arg_size;
             }
@@ -401,7 +401,7 @@ STRF_HD std::size_t tr_string_size
         } else {
             if (ch != '-') {
                 if (arg_idx < num_args) {
-                    count += args_pre[arg_idx].accumulated_size();
+                    count += args_pre[arg_idx].accumulated_ssize();
                     ++arg_idx;
                 } else {
                     count += inv_arg_size;
@@ -423,16 +423,16 @@ STRF_HD void tr_string_write
     ( const typename Charset::code_unit* str
     , const typename Charset::code_unit* str_end
     , const strf::printer<typename Charset::code_unit>* const * args
-    , std::size_t num_args
+    , std::ptrdiff_t num_args
     , strf::destination<typename Charset::code_unit>& dest
     , Charset charset
     , ErrHandler err_handler )
 {
-    std::size_t arg_idx = 0;
+    std::ptrdiff_t arg_idx = 0;
     using char_type = typename Charset::code_unit;
 
     auto it = str;
-    const std::size_t str_len = str_end - str;
+    const std::ptrdiff_t str_len = str_end - str;
     while (it != str_end) {
         const char_type* prev = it;
         it = strf::detail::str_find<char_type>(it, (str_end - it), '{');
@@ -529,7 +529,7 @@ public:
     {
         STRF_IF_CONSTEXPR (static_cast<bool>(SizeRequested)) {
             auto invalid_arg_size = charset.replacement_char_size();
-            const std::size_t s = strf::detail::tr_string_size
+            const std::ptrdiff_t s = strf::detail::tr_string_size
                 ( args_pre, printers.size(), tr_string, tr_string_end
                 , invalid_arg_size );
             pre.add_size(s);
@@ -550,7 +550,7 @@ private:
     const char_type* tr_string_;
     const char_type* tr_string_end_;
     const strf::printer<char_type>* const * printers_array_;
-    std::size_t num_printers_;
+    std::ptrdiff_t num_printers_;
     Charset charset_;
     ErrHandler err_handler_;
 };

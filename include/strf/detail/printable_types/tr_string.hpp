@@ -318,7 +318,7 @@ class tr_printer_no_args: public strf::printer<CharT>
               , strf::use_facet<strf::width_calculator_c, facet_tag_>(i.facets)
               , charset_ );
         strf::detail::tr_do_preprinting(tr_pre, tr_string_.begin(), tr_string_.end());
-        i.pre.add_size(tr_pre.accumulated_size());
+        i.pre.add_size(tr_pre.accumulated_ssize());
         i.pre.reset_remaining_width(tr_pre.remaining_width());
     }
 
@@ -332,7 +332,7 @@ class tr_printer_no_args: public strf::printer<CharT>
         strf::detail::tr_pre_size<CharT> tr_pre
             (nullptr, 0, charset_.replacement_char_size());
         strf::detail::tr_do_preprinting(tr_pre, tr_string_.begin(), tr_string_.end());
-        i.pre.add_size(tr_pre.accumulated_size());
+        i.pre.add_size(tr_pre.accumulated_ssize());
     }
 
     template <std::size_t... I, typename FPack>
@@ -409,7 +409,7 @@ class tr_printer: public strf::printer<CharT>
     //     STRF_IF_CONSTEXPR (Pre::all_required) {
     //         Pre pp_arr[num_printers];
     //         storage_.construct(i.arg.args, i.facets, pp_arr, printers_);
-    //         std::size_t size_arr[num_printers] = {pp_arr[I].accumulated_size()...};
+    //         std::ptrdiff_t size_arr[num_printers] = {pp_arr[I].accumulated_ssize()...};
     //         strf::width_t width_arr[num_printers] =
     //             {(strf::width_max - pp_arr[I].remaining_width())...};
     //         strf::detail::tr_pre_size_and_width<CharT, Charset, wcalc_t> tr_pre
@@ -418,17 +418,17 @@ class tr_printer: public strf::printer<CharT>
     //             , strf::use_facet<strf::width_calculator_c, facet_tag_>(i.facets)
     //             , charset_ );
     //         strf::detail::tr_do_preprinting(tr_pre, tr_string_.begin(), tr_string_.end());
-    //         i.pre.add_size(tr_pre.accumulated_size());
+    //         i.pre.add_size(tr_pre.accumulated_ssize());
     //         i.pre.reset_remaining_width(tr_pre.remaining_width());
 
     //     } else STRF_IF_CONSTEXPR (Pre::size_required) {
     //         Pre pp_arr[num_printers];
     //         storage_.construct(i.arg.args, i.facets, pp_arr, printers_);
-    //         std::size_t size_arr[num_printers] = {pp_arr[I].accumulated_size()...};
+    //         std::ptrdiff_t size_arr[num_printers] = {pp_arr[I].accumulated_ssize()...};
     //         strf::detail::tr_pre_size<CharT> tr_pre
     //             (size_arr, num_printers, charset_.replacement_char_size());
     //         strf::detail::tr_do_preprinting(tr_pre, tr_string_.begin, tr_string_.end());
-    //         i.pre.add_size(tr_pre.accumulated_size());
+    //         i.pre.add_size(tr_pre.accumulated_ssize());
 
     //     } else STRF_IF_CONSTEXPR (Pre::width_required) {
     //         Pre pp_arr[num_printers];
@@ -465,7 +465,7 @@ class tr_printer: public strf::printer<CharT>
              <strf::width_calculator_c, strf::tr_string_tag<CharT>, FPack>;
         strf::full_preprinting pp_arr[num_printers];
         storage_.construct(i.arg.args, i.facets, pp_arr, printers_);
-        std::size_t size_arr[num_printers] = {pp_arr[I].accumulated_size()...};
+        std::ptrdiff_t size_arr[num_printers] = {pp_arr[I].accumulated_ssize()...};
         strf::width_t width_arr[num_printers] =
             {(strf::width_max - pp_arr[I].remaining_width())...};
         strf::detail::tr_pre_size_and_width<CharT, Charset, wcalc_t> tr_pre
@@ -474,7 +474,7 @@ class tr_printer: public strf::printer<CharT>
               , strf::use_facet<strf::width_calculator_c, facet_tag_>(i.facets)
               , charset_ );
         strf::detail::tr_do_preprinting(tr_pre, tr_string_.begin(), tr_string_.end());
-        i.pre.add_size(tr_pre.accumulated_size());
+        i.pre.add_size(tr_pre.accumulated_ssize());
         i.pre.reset_remaining_width(tr_pre.remaining_width());
     }
 
@@ -490,11 +490,11 @@ class tr_printer: public strf::printer<CharT>
         constexpr std::size_t num_printers = sizeof...(I);
         strf::preprinting<strf::precalc_size::yes, strf::precalc_width::no> pp_arr[num_printers];
         storage_.construct(i.arg.args, i.facets, pp_arr, printers_);
-        std::size_t size_arr[num_printers] = {pp_arr[I].accumulated_size()...};
+        std::ptrdiff_t size_arr[num_printers] = {pp_arr[I].accumulated_ssize()...};
         strf::detail::tr_pre_size<CharT> tr_pre
             (size_arr, num_printers, charset_.replacement_char_size());
         strf::detail::tr_do_preprinting(tr_pre, tr_string_.begin(), tr_string_.end());
-        i.pre.add_size(tr_pre.accumulated_size());
+        i.pre.add_size(tr_pre.accumulated_ssize());
     }
 
     template <std::size_t... I, typename FPack, typename... Args>
@@ -633,7 +633,7 @@ struct printable_traits<detail::tr_string_arg<CharT, Args...>>
 //             Pre pre[num_printers_];
 
 //             auto invalid_arg_size = charset_.replacement_char_size();
-//             std::size_t s = strf::detail::tr_string_size
+//             std::ptrdiff_t s = strf::detail::tr_string_size
 //                 ( printer_ptrs_array_, num_printers_, tr_string_.begin(), tr_string_.end()
 //                 , invalid_arg_size );
 //             i.pre.add_size(s);

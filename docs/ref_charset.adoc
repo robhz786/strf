@@ -43,7 +43,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 :find_transcoder_f: <<charset_function_pointers,find_transcoder_f>>
 :facet_traits: <<facet_traits,facet_tratis>>
 :facet_category: <<facet_category,facet_category>>
-
+:count_codepoints_result: <<charset_function_pointers,count_codepoints_result>>
 
 :static_transcoder: <<static_transcoder,static_transcoder>>
 :static_charset: <<static_charset,static_charset>>
@@ -187,10 +187,10 @@ public:
     virtual ~transcoding_error_notifier() {}
 
     virtual void invalid_sequence
-        ( std::size_t code_unit_size
+        ( int code_unit_size
         , const char* source_charset_name
         , const void* sequence_ptr
-        , std::size_t code_units_count )
+        , std::ptrdiff_t code_units_count )
     {
     }
 
@@ -280,28 +280,28 @@ using transcode_dest = {output_buffer}<CharT, 3>;
 ----
 namespace strf {
 
-constexpr std::size_t invalid_char_len = (std::size_t)-1;
+constexpr std::ptrdiff_t invalid_char_len = -1;
 
 template <typename SrcCharT, typename DestCharT>
 using transcode_f = void ({asterisk})
     ( {transcode_dest}<DestCharT>& dest
     , const SrcCharT{asterisk} src
-    , std::size_t src_size
+    , std::ptrdiff_t src_size
     , {transcoding_error_notifier}{asterisk} err_notifier
     , {surrogate_policy} surr_poli );
 
 template <typename SrcCharT>
-using transcode_size_f = std::size_t ({asterisk})
+using transcode_size_f = std::ptrdiff_t ({asterisk})
     ( const SrcCharT{asterisk} src
-    , std::size_t src_size
+    , std::ptrdiff_t src_size
     , {surrogate_policy} surr_poli );
 
 template <typename CharT>
 using write_replacement_char_f = void({asterisk})( {transcode_dest}<CharT>& );
 
-using validate_f = std::size_t ({asterisk})(char32_t ch);
+using validate_f = int ({asterisk})(char32_t ch);
 
-using encoded_char_size_f = std::size_t ({asterisk}) (char32_t ch);
+using encoded_char_size_f = int ({asterisk}) (char32_t ch);
 
 template <typename CharT>
 using encode_char_f = CharT{asterisk}({asterisk}) (CharT{asterisk} dest, char32_t ch);
@@ -309,25 +309,25 @@ using encode_char_f = CharT{asterisk}({asterisk}) (CharT{asterisk} dest, char32_
 template <typename CharT>
 using encode_fill_f = void ({asterisk})
     ( {transcode_dest}<CharT>&
-    , std::size_t count
+    , std::ptrdiff_t count
     , char32_t ch );
 
 struct count_codepoints_result {
-    std::size_t count;
-    std::size_t pos;
+    std::ptrdiff_t count;
+    std::ptrdiff_t pos;
 };
 
 template <typename CharT>
 using count_codepoints_fast_f = count_codepoints_result ({asterisk})
     ( const CharT{asterisk} src
-    , std::size_t src_size
-    , std::size_t max_count );
+    , std::ptrdiff_t src_size
+    , std::ptrdiff_t max_count );
 
 template <typename CharT>
 using count_codepoints_f = count_codepoints_result ({asterisk})
     ( const CharT{asterisk} src
-    , std::size_t src_size
-    , std::size_t max_count
+    , std::ptrdiff_t src_size
+    , std::ptrdiff_t max_count
     , {surrogate_policy} surr_poli );
 
 template <typename CharT>
@@ -350,7 +350,7 @@ Given
 * `x`, an expression of type `X` or `const X`
 * `dest`, an lvalue reference of type `{transcode_dest}<DestCharT>`
 * `src`, a value of type `const SrcCharT*`
-* `src_size`, a value of type `std::size_t` equal to the size of
+* `src_size`, a value of type `std::ptrdiff_t` equal to the size of
               the array pointed by `src`
 * `err_notifier`, is a pointer of type `{transcoding_error_notifier}`
 * `surr_poli`, a value of type `{surrogate_policy}`
@@ -366,7 +366,7 @@ The following must hold:
 x.transcode_size(src, src_size, surr_poli)
 ----
 [horizontal]
-Return type:: `std::size_t`
+Return type:: `std::ptrdiff_t`
 Return value:: The number of character that
   `x.transcode(dest, src, src_size, nullptr, surr_poli)`
   would write into `dest`, or a value a greater than that if such exact calculation is
@@ -466,10 +466,10 @@ Given
 * `OtherCharT`, one of the folowing types : `char`, `char8_t`, `char16_t` or `wchar_t`
 * `ptr`, a value of type `CharT{asterisk}`
 * `src`, a value of type `const CharT{asterisk}`
-* `src_size`, a value of type `std::size_t` equal to the size of
+* `src_size`, a value of type `std::ptrdiff_t` equal to the size of
               the array pointed by `src`
-* `count`, a value of type `std::size_t`
-* `max_count`, a value of type `std::size_t`
+* `count`, a value of type `std::ptrdiff_t`
+* `max_count`, a value of type `std::ptrdiff_t`
 * `ch32`, a value of type `char32_t`
 * `ch`, a value of type `CharT`
 * `dest`, an lvalue reference of type `{transcode_dest}<CharT>`
@@ -528,7 +528,8 @@ Return value:: The character used to signalize an error. Usually it is the https
 x.write_replacement_char(dest)
 ----
 [horizontal]
-Return type:: Writes into `dest` the codepoint returned by `x.replacement_char()` encoded in this charset.
+Effect:: Writes into `dest` the codepoint returned by `x.replacement_char()` encoded in this charset.
+Return type:: `void`
 ====
 ====
 [source,cpp]
@@ -536,7 +537,7 @@ Return type:: Writes into `dest` the codepoint returned by `x.replacement_char()
 x.replacement_char_size()
 ----
 [horizontal]
-Return type:: `std::size_t`
+Return type:: `int`
 Return value:: The number of characters that `x.write_replacement_char(dest)` writes into `dest`.
 ====
 ====
@@ -545,7 +546,7 @@ Return value:: The number of characters that `x.write_replacement_char(dest)` wr
 x.encoded_char_size(ch32)
 ----
 [horizontal]
-Return type:: `std::size_t`
+Return type:: `int`
 Return value:: The size of the string containing the UTF-32 character `ch32`,
                if `ch32` is supported in this encoding. Otherwise,
                `x.replacement_char_size()`.
@@ -561,9 +562,9 @@ Note:: This function does not check whether `ch32` is a legal code point, only i
 x.validate(ch32)
 ----
 [horizontal]
-Return type:: `std::size_t`
+Return type:: `int`
 Return value:: The size of the string containing the UTF-32 character `ch32`,
-               if `ch32` is supported in this encoding. Otherwise, `(std::size_t)-1`.
+               if `ch32` is supported in this encoding. Otherwise, `-1`.
 Postcondition:: The return value must be greater than zero.
 ====
 ====
@@ -614,7 +615,7 @@ Return value:: `{c, pos}`, where:
   if such value is less than `max_count`.
   Otherwise, `c` is equal to `max_count`.
 * `pos` is the greatest value not greater than `src_size` such that
-   `x.count_codepoints_fast(src, pos, (std::size_t)-1).count`
+   `x.count_codepoints_fast(src, pos, std::numeric_limits<std::ptrdiff_t>::max()).count`
    is equal to `c`.
 
 Posconditions::
@@ -643,7 +644,7 @@ Return value:: `{c, pos}`, where:
    `src` from this encoding to UTF-32,
    <<surrogate_policy, according to `surr_poli`>>.
 * `pos` is the greatest value not greater than `src_size` such that
-  `x.count_codepoints(src, pos, (std::size_t)-1, surr_poli).count`
+  `x.count_codepoints(src, pos, std::numeric_limits<std::ptrdiff_t>::max(), surr_poli).count`
    is equal to `c`.
 Posconditions::
 * `c \<= max_count` is `true`
@@ -1019,13 +1020,13 @@ public:
     void transcode
         ( {transcode_dest}<DestCharT>& dest
         , const SrcCharT* src
-        , std::size_t src_size
+        , std::ptrdiff_t src_size
         , {transcoding_error_notifier}{asterisk} err_notifier
         , {surrogate_policy} surr_poli ) const;
 
-    std::size_t transcode_size
+    std::ptrdiff_t transcode_size
         ( const SrcCharT* src
-        , std::size_t src_size
+        , std::ptrdiff_t src_size
         , {surrogate_policy} surr_poli ) const;
 
     constexpr {transcode_f}<SrcCharT, DestCharT> transcode_func() const noexcept;
@@ -1079,7 +1080,7 @@ Postconditions::
 void transcode
     ( {transcode_dest}<DestCharT>& dest
     , const SrcCharT* src
-    , std::size_t src_size
+    , std::ptrdiff_t src_size
     , {transcoding_error_notifier}{asterisk} err_notifier
     , {surrogate_policy} surr_poli ) const;
 ----
@@ -1089,9 +1090,9 @@ Effect:: Calls `transcode_func()(dest, src, src_size, err_notifier, surr_poli)`
 ====
 [source,cpp,subs=normal]
 ----
-std::size_t transcode_size
+std::ptrdiff_t transcode_size
     ( const SrcCharT* src
-    , std::size_t src_size
+    , std::ptrdiff_t src_size
     , {surrogate_policy} surr_poli ) const;
 ----
 [horizontal]
@@ -1107,7 +1108,7 @@ struct dynamic_charset_data {
     const char* name;
     {charset_id} id;
     char32_t replacement_char;
-    std::size_t replacement_char_size;
+    int replacement_char_size;
     {validate_f} validate_func;
     {encoded_char_size_f} encoded_char_size_func;
     {encode_char_f}<CharT> encode_char_func;
@@ -1169,24 +1170,24 @@ public:
 
     constexpr char32_t replacement_char() const noexcept;
 
-    constexpr std::size_t replacement_char_size() const noexcept;
+    constexpr int replacement_char_size() const noexcept;
 
-    constexpr std::size_t validate(char32_t ch) const; // noexcept
+    constexpr int validate(char32_t ch) const; // noexcept
 
-    constexpr std::size_t encoded_char_size(char32_t ch) const; // noexcept
+    constexpr int encoded_char_size(char32_t ch) const; // noexcept
 
     code_unit* encode_char(code_unit* dest, char32_t ch) const; // noexcept
 
     void encode_fill
-        ( {transcode_dest}<CharT>& dest, std::size_t count, char32_t ch ) const;
+        ( {transcode_dest}<CharT>& dest, std::ptrdiff_t count, char32_t ch ) const;
 
-    std::size_t count_codepoints_fast
-        ( const code_unit* src, std::size_t src_size
-        , std::size_t max_count ) const;
+    std::ptrdiff_t count_codepoints_fast
+        ( const code_unit* src, std::ptrdiff_t src_size
+        , std::ptrdiff_t max_count ) const;
 
-    std::size_t count_codepoints
-        ( const code_unit* src, std::size_t src_size
-        , std::size_t max_count, {surrogate_policy} surr_poli ) const;
+    std::ptrdiff_t count_codepoints
+        ( const code_unit* src, std::ptrdiff_t src_size
+        , std::ptrdiff_t max_count, {surrogate_policy} surr_poli ) const;
 
     void write_replacement_char({transcode_dest}<CharT>& dest) const;
 
@@ -1312,7 +1313,7 @@ Return value:: `this\->data\->replacement_char`
 ====
 [source,cpp,subs=normal]
 ----
-constexpr std::size_t replacement_char_size() const noexcept;
+constexpr int replacement_char_size() const noexcept;
 ----
 [horizontal]
 Return value:: `this\->data\->replacement_char_size`
@@ -1320,7 +1321,7 @@ Return value:: `this\->data\->replacement_char_size`
 ====
 [source,cpp,subs=normal]
 ----
-constexpr std::size_t validate(char32_t ch) const; // noexcept
+constexpr int validate(char32_t ch) const; // noexcept
 ----
 [horizontal]
 Effect:: Calls and returns `this\->data\->validate_func(ch)`.
@@ -1328,7 +1329,7 @@ Effect:: Calls and returns `this\->data\->validate_func(ch)`.
 ====
 [source,cpp,subs=normal]
 ----
-constexpr std::size_t encoded_char_size(char32_t ch) const; // noexcept
+constexpr int encoded_char_size(char32_t ch) const; // noexcept
 ----
 [horizontal]
 Effect:: Calls and returns `this\->data\->encoded_char_size_func(ch)`.
@@ -1345,7 +1346,7 @@ Effect:: Calls and returns `this\->data\->encoded_char_func(ch)`.
 [source,cpp,subs=normal]
 ----
 void encode_fill
-    ( {transcode_dest}<CharT>& dest, std::size_t count, char32_t ch ) const;
+    ( {transcode_dest}<CharT>& dest, std::ptrdiff_t count, char32_t ch ) const;
 ----
 [horizontal]
 Effect:: Calls and returns
@@ -1354,9 +1355,9 @@ Effect:: Calls and returns
 ====
 [source,cpp,subs=normal]
 ----
-std::size_t count_codepoints_fast
-    ( const code_unit* src, std::size_t src_size
-    , std::size_t max_count ) const;
+std::ptrdiff_t count_codepoints_fast
+    ( const code_unit* src, std::ptrdiff_t src_size
+    , std::ptrdiff_t max_count ) const;
 ----
 [horizontal]
 Effect:: Calls and returns `this\->data\->count_codepoints_fast_func(src, src_size, max_count)`.
@@ -1364,9 +1365,9 @@ Effect:: Calls and returns `this\->data\->count_codepoints_fast_func(src, src_si
 ====
 [source,cpp,subs=normal]
 ----
-std::size_t count_codepoints
-    ( const code_unit* src, std::size_t src_size
-    , std::size_t max_count, {surrogate_policy} surr_poli ) const;
+std::ptrdiff_t count_codepoints
+    ( const code_unit* src, std::ptrdiff_t src_size
+    , std::ptrdiff_t max_count, {surrogate_policy} surr_poli ) const;
 ----
 [horizontal]
 Effect:: Calls and returns
@@ -1564,7 +1565,7 @@ void decode_encode
     , {transcode_f}<SrcCharT, char32_t> to_u32
     , {transcode_f}<char32_t, DestCharT> from_u32
     , const SrcCharT* src
-    , std::size_t src_size
+    , std::ptrdiff_t src_size
     , {transcoding_error_notifier}{asterisk} err_notifier
     , {surrogate_policy} surr_poli );
 
@@ -1591,11 +1592,11 @@ is equal to `to_u32`.
 namespace strf {
 
 template<class SrcCharT>
-std::size_t decode_encode_size
+std::ptrdiff_t decode_encode_size
     ( {transcode_f}<SrcCharT, char32_t> to_u32
     , {transcode_size_f}<char32_t> size_calc_func
     , const SrcCharT* src
-    , std::size_t src_size
+    , std::ptrdiff_t src_size
     , {transcoding_error_notifier}{asterisk} err_notifier
     , {surrogate_policy} surr_poli );
 

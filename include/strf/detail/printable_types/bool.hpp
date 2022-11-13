@@ -70,7 +70,7 @@ public:
         : value_(input.arg)
         , lettercase_(strf::use_facet<strf::lettercase_c, bool>(input.facets))
     {
-        input.pre.subtract_width(5U - (int)input.arg);
+        input.pre.subtract_width(5 - (int)input.arg);
         input.pre.add_size(5 - (int)input.arg);
     }
 
@@ -120,11 +120,11 @@ public:
         , lettercase_(strf::use_facet<strf::lettercase_c, bool>(input.facets))
     {
         auto charset = strf::use_facet<charset_c<CharT>, bool>(input.facets);
-        const std::uint16_t w = 5 - (int)input.arg.value();
+        const std::int16_t w = 5 - (int)input.arg.value();
         auto fmt_width = afmt_.width.round();
         if (fmt_width > w) {
             encode_fill_ = charset.encode_fill_func();
-            fillcount_ = static_cast<std::uint16_t>(fmt_width - w);
+            fillcount_ = fmt_width - w;
             input.pre.subtract_width(fmt_width);
             input.pre.add_size(w + fillcount_ * charset.encoded_char_size(afmt_.fill));
         } else {
@@ -139,7 +139,7 @@ public:
 private:
 
     strf::encode_fill_f<CharT> encode_fill_ = nullptr;
-    std::uint16_t fillcount_;
+    std::int16_t fillcount_;
     bool value_;
     strf::alignment_format afmt_;
     strf::lettercase lettercase_;
@@ -185,7 +185,7 @@ void fmt_bool_printer<CharT>::print_to
     }
     dest.advance(size);
 
-    if (right_fillcount != 0) {
+    if (right_fillcount > 0) {
         encode_fill_(dest, right_fillcount, afmt_.fill);
     }
 }

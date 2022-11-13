@@ -20,9 +20,9 @@ public:
     template <typename Charset>
     void STRF_HD handle
         ( const typename Charset::code_unit* str
-        , std::size_t str_len
+        , std::ptrdiff_t str_len
         , Charset charset
-        , std::size_t err_pos ) noexcept
+        , std::ptrdiff_t err_pos ) noexcept
     {
         strf::detail::simple_string_view<typename Charset::code_unit> s(str, str_len);
         strf::to(log_) ("\n[", strf::dec(err_pos) > 2, "] ", strf::transcode(s, charset));
@@ -222,8 +222,8 @@ auto first_char_of_tr_string(String str, Args&&...)
             <strf::precalc_size::yes, strf::precalc_width::no>;                       \
         pre_t pre;                                                                    \
         strf::precalculate<char_t>(pre, strf::pack(), strf::tr(__VA_ARGS__));         \
-        const std::size_t obtained = pre.accumulated_size();                          \
-        const std::size_t expected = EXPECTED_SIZE;                                   \
+        const std::ptrdiff_t obtained = pre.accumulated_ssize();                      \
+        const std::ptrdiff_t expected = EXPECTED_SIZE;                                \
         if (obtained != expected) {                                                   \
             test_utils::test_failure                                                  \
                  ( __FILE__, __LINE__, BOOST_CURRENT_FUNCTION                         \
@@ -353,7 +353,7 @@ STRF_TEST_FUNC void test_width_precalculation()
         using pre_t = strf::full_preprinting;                                         \
         pre_t pre(strf::width_t(INITIAL_WIDTH));                                      \
         strf::precalculate<char_t>(pre, strf::pack(), strf::tr(__VA_ARGS__));         \
-        const bool failed_size = pre.accumulated_size() != EXPECTED_SIZE;             \
+        const bool failed_size = pre.accumulated_ssize() != EXPECTED_SIZE;            \
         const bool failed_width =                                                     \
             ( pre.remaining_width() != strf::width_t(EXPECTED_REMAINING_WIDTH) );     \
         if (failed_size || failed_width) {                                            \
@@ -361,7 +361,7 @@ STRF_TEST_FUNC void test_width_precalculation()
             test_utils::print_test_message_header(__FILE__, __LINE__);                \
             auto& dst = test_utils::test_messages_destination();                      \
             if (failed_size) {                                                        \
-                strf::to(dst) ( "    Calculated size is : ", pre.accumulated_size()   \
+                strf::to(dst) ( "    Calculated size is : ", pre.accumulated_ssize()  \
                               , " (expected ", EXPECTED_SIZE, ")\n");                 \
             }                                                                         \
             if (failed_width) {                                                       \

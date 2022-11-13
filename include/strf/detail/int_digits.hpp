@@ -27,7 +27,7 @@ constexpr bool not_digit(CharT ch)
     return ch < static_cast<CharT>('0') || static_cast<CharT>('9') < ch;
 }
 
-inline STRF_HD std::uint64_t pow10(unsigned n) noexcept
+inline STRF_HD std::uint64_t pow10(int n) noexcept
 {
     static const std::uint64_t p10[] =
         { 1, 10, 100, 1000, 10000, 100000, 1000000
@@ -44,7 +44,7 @@ inline STRF_HD std::uint64_t pow10(unsigned n) noexcept
         , 100000000000000000ULL
         , 1000000000000000000ULL
         , 10000000000000000000ULL };
-    STRF_ASSERT(n <= 19);
+    STRF_ASSERT(0 <= n && n <= 19);
 
     return p10[n];
 };
@@ -132,7 +132,7 @@ struct digits_counter<2, IntSize>
 {
     static_assert(IntSize <= 4, "");
     // NOLINTNEXTLINE(google-runtime-int)
-    static inline STRF_HD unsigned count_digits(unsigned long value) noexcept
+    static inline STRF_HD int count_digits(unsigned long value) noexcept
     {
         return sizeof(value) * 8 - strf::detail::countl_zero_l(value | 1);
     }
@@ -141,7 +141,7 @@ template<>
 struct digits_counter<2, 8>
 {
     // NOLINTNEXTLINE(google-runtime-int)
-    static inline STRF_HD unsigned count_digits(unsigned long long value) noexcept
+    static inline STRF_HD int count_digits(unsigned long long value) noexcept
     {
         return sizeof(value) * 8 - strf::detail::countl_zero_ll(value | 1);
     }
@@ -151,7 +151,7 @@ struct digits_counter<8, IntSize>
 {
     static_assert(IntSize <= 4, "");
     // NOLINTNEXTLINE(google-runtime-int)
-    static STRF_HD unsigned count_digits(unsigned long value) noexcept
+    static STRF_HD int count_digits(unsigned long value) noexcept
     {
         return (sizeof(value) * 8 + 2 - strf::detail::countl_zero_l(value | 1)) / 3;
     }
@@ -160,9 +160,10 @@ template<>
 struct digits_counter<8, 8>
 {
     // NOLINTNEXTLINE(google-runtime-int)
-    static STRF_HD unsigned count_digits(unsigned long long value) noexcept
+    static STRF_HD int count_digits(unsigned long long value) noexcept
     {
-        return (sizeof(value) * 8 + 2 - strf::detail::countl_zero_ll(value | 1)) / 3;
+        return static_cast<int>
+            ((sizeof(value) * 8 + 2 - strf::detail::countl_zero_ll(value | 1)) / 3);
     }
 };
 template<int IntSize>
@@ -170,18 +171,20 @@ struct digits_counter<16, IntSize>
 {
     static_assert(IntSize <= 4, "");
     // NOLINTNEXTLINE(google-runtime-int)
-    static STRF_HD unsigned count_digits(unsigned long value) noexcept
+    static STRF_HD int count_digits(unsigned long value) noexcept
     {
-        return (sizeof(value) * 8 + 3 - strf::detail::countl_zero_l(value | 1)) >> 2;
+        return static_cast<int>
+            ((sizeof(value) * 8 + 3 - strf::detail::countl_zero_l(value | 1)) >> 2);
     }
 };
 template<>
 struct digits_counter<16, 8>
 {
     // NOLINTNEXTLINE(google-runtime-int)
-    static STRF_HD unsigned count_digits(unsigned long long value) noexcept
+    static STRF_HD int count_digits(unsigned long long value) noexcept
     {
-        return (sizeof(value) * 8 + 3 - strf::detail::countl_zero_ll(value | 1)) >> 2;
+        return static_cast<int>
+            ((sizeof(value) * 8 + 3 - strf::detail::countl_zero_ll(value | 1)) >> 2);
     }
 };
 
@@ -190,9 +193,9 @@ struct digits_counter<16, 8>
 template<>
 struct digits_counter<2, 1>
 {
-    STRF_CONSTEXPR_IN_CXX14 static STRF_HD unsigned count_digits(uint_fast8_t value) noexcept
+    STRF_CONSTEXPR_IN_CXX14 static STRF_HD int count_digits(uint_fast8_t value) noexcept
     {
-        unsigned num_digits = 1;
+        int num_digits = 1;
         if (value > 0xful) {
             value >>= 4;
             num_digits += 4 ;
@@ -211,9 +214,9 @@ struct digits_counter<2, 1>
 template<>
 struct digits_counter<2, 2>
 {
-    STRF_CONSTEXPR_IN_CXX14 static STRF_HD unsigned count_digits(uint_fast16_t value) noexcept
+    STRF_CONSTEXPR_IN_CXX14 static STRF_HD int count_digits(uint_fast16_t value) noexcept
     {
-        unsigned num_digits = 1;
+        int num_digits = 1;
         if( value > 0xfful ) {
             value >>= 8;
             num_digits += 8 ;
@@ -236,9 +239,9 @@ struct digits_counter<2, 2>
 template<>
 struct digits_counter<2, 4>
 {
-    STRF_CONSTEXPR_IN_CXX14 static STRF_HD unsigned count_digits(uint_fast32_t value) noexcept
+    STRF_CONSTEXPR_IN_CXX14 static STRF_HD int count_digits(uint_fast32_t value) noexcept
     {
-        unsigned num_digits = 1;
+        int num_digits = 1;
         if( value > 0xfffful ) {
             value >>= 16;
             num_digits += 16 ;
@@ -265,10 +268,10 @@ struct digits_counter<2, 4>
 template<>
 struct digits_counter<2, 8>
 {
-    STRF_CONSTEXPR_IN_CXX14 static STRF_HD unsigned count_digits(uint_fast64_t value) noexcept
+    STRF_CONSTEXPR_IN_CXX14 static STRF_HD int count_digits(uint_fast64_t value) noexcept
     {
 
-        unsigned num_digits = 1;
+        int num_digits = 1;
         if( value > 0xffffffffull ) {
             value >>= 32;
             num_digits += 32 ;
@@ -299,7 +302,7 @@ struct digits_counter<2, 8>
 template<>
 struct digits_counter<8, 1>
 {
-    STRF_CONSTEXPR_IN_CXX14 static STRF_HD unsigned count_digits(uint_fast8_t value) noexcept
+    STRF_CONSTEXPR_IN_CXX14 static STRF_HD int count_digits(uint_fast8_t value) noexcept
     {
         if(value > 077ul) {
             return 3;
@@ -314,9 +317,9 @@ struct digits_counter<8, 1>
 template<>
 struct digits_counter<8, 2>
 {
-    STRF_CONSTEXPR_IN_CXX14 static STRF_HD unsigned count_digits(uint_fast16_t value) noexcept
+    STRF_CONSTEXPR_IN_CXX14 static STRF_HD int count_digits(uint_fast16_t value) noexcept
     {
-        unsigned num_digits = 1;
+        int num_digits = 1;
         if(value > 07777u) {
             value >>= 12;
             num_digits += 4;
@@ -335,9 +338,9 @@ struct digits_counter<8, 2>
 template<>
 struct digits_counter<8, 4>
 {
-    STRF_CONSTEXPR_IN_CXX14 static STRF_HD unsigned count_digits(uint_fast32_t value) noexcept
+    STRF_CONSTEXPR_IN_CXX14 static STRF_HD int count_digits(uint_fast32_t value) noexcept
     {
-        unsigned num_digits = 1;
+        int num_digits = 1;
         if(value > 077777777ul) {
             value >>= 24;
             num_digits += 8;
@@ -360,9 +363,9 @@ struct digits_counter<8, 4>
 template<>
 struct digits_counter<8, 8>
 {
-    STRF_CONSTEXPR_IN_CXX14 static STRF_HD unsigned count_digits(uint_fast64_t value) noexcept
+    STRF_CONSTEXPR_IN_CXX14 static STRF_HD int count_digits(uint_fast64_t value) noexcept
     {
-        unsigned num_digits = 1;
+        int num_digits = 1;
         if(value > 07777777777777777uLL) {
             value >>= 48;
             num_digits += 16;
@@ -389,7 +392,7 @@ struct digits_counter<8, 8>
 template<>
 struct digits_counter<16, 1>
 {
-    constexpr static STRF_HD unsigned count_digits(uint_fast8_t value) noexcept
+    constexpr static STRF_HD int count_digits(uint_fast8_t value) noexcept
     {
         return value < 0x10 ? 1 : 2;
     }
@@ -398,7 +401,7 @@ struct digits_counter<16, 1>
 template<>
 struct digits_counter<16, 2>
 {
-    STRF_CONSTEXPR_IN_CXX14 static STRF_HD unsigned count_digits(uint_fast16_t value) noexcept
+    STRF_CONSTEXPR_IN_CXX14 static STRF_HD int count_digits(uint_fast16_t value) noexcept
     {
         if (value < 0x100ul){
             return value < 0x10ul ? 1 : 2;
@@ -410,7 +413,7 @@ struct digits_counter<16, 2>
 template<>
 struct digits_counter<16, 4>
 {
-    STRF_CONSTEXPR_IN_CXX14 static STRF_HD unsigned count_digits(uint_fast32_t value) noexcept
+    STRF_CONSTEXPR_IN_CXX14 static STRF_HD int count_digits(uint_fast32_t value) noexcept
     {
         if (value < 0x10000ul) {
             if (value < 0x100ul){
@@ -428,7 +431,7 @@ struct digits_counter<16, 4>
 template<>
 struct digits_counter<16, 8>
 {
-    STRF_CONSTEXPR_IN_CXX14 static STRF_HD unsigned count_digits(uint_fast64_t value) noexcept
+    STRF_CONSTEXPR_IN_CXX14 static STRF_HD int count_digits(uint_fast64_t value) noexcept
     {
         if (value < 0x100000000ull) {
             if (value < 0x10000ull) {
@@ -460,7 +463,7 @@ struct digits_counter<16, 8>
 template<>
 struct digits_counter<10, 1>
 {
-    STRF_CONSTEXPR_IN_CXX14 static STRF_HD unsigned count_digits_unsigned
+    STRF_CONSTEXPR_IN_CXX14 static STRF_HD int count_digits_unsigned
         ( uint_fast8_t value ) noexcept
     {
         if (value <= 99)
@@ -469,7 +472,7 @@ struct digits_counter<10, 1>
     }
 
     template <typename IntT>
-    constexpr static STRF_HD unsigned count_digits(IntT value) noexcept
+    constexpr static STRF_HD int count_digits(IntT value) noexcept
     {
         return count_digits_unsigned(strf::detail::unsigned_abs(value));
     }
@@ -478,7 +481,7 @@ struct digits_counter<10, 1>
 template<>
 struct digits_counter<10, 2>
 {
-    STRF_CONSTEXPR_IN_CXX14 static STRF_HD unsigned
+    STRF_CONSTEXPR_IN_CXX14 static STRF_HD int
     count_digits_unsigned(uint_fast16_t value) noexcept
     {
         if (value <= 99) {
@@ -491,7 +494,7 @@ struct digits_counter<10, 2>
     }
 
     template <typename IntT>
-    constexpr static STRF_HD unsigned count_digits(IntT value) noexcept
+    constexpr static STRF_HD int count_digits(IntT value) noexcept
     {
         return count_digits_unsigned(strf::detail::unsigned_abs(value));
     }
@@ -500,7 +503,7 @@ struct digits_counter<10, 2>
 template<>
 struct digits_counter<10, 4>
 {
-    STRF_CONSTEXPR_IN_CXX14 static STRF_HD unsigned count_digits_unsigned(uint_fast32_t value) noexcept
+    STRF_CONSTEXPR_IN_CXX14 static STRF_HD int count_digits_unsigned(uint_fast32_t value) noexcept
     {
         if (value <= 9999UL) {
             if (value <= 99UL) {
@@ -518,7 +521,7 @@ struct digits_counter<10, 4>
     }
 
     template <typename IntT>
-    constexpr static STRF_HD unsigned count_digits(IntT value) noexcept
+    constexpr static STRF_HD int count_digits(IntT value) noexcept
     {
         return count_digits_unsigned(strf::detail::unsigned_abs(value));
     }
@@ -527,7 +530,7 @@ struct digits_counter<10, 4>
 template<>
 struct digits_counter<10, 8>
 {
-    STRF_CONSTEXPR_IN_CXX14 static STRF_HD unsigned count_digits_unsigned
+    STRF_CONSTEXPR_IN_CXX14 static STRF_HD int count_digits_unsigned
         ( uint_fast64_t value ) noexcept
     {
         if (value <= 99999999ULL) {
@@ -561,14 +564,14 @@ struct digits_counter<10, 8>
     }
 
     template <typename IntT>
-    constexpr static STRF_HD unsigned count_digits(IntT value) noexcept
+    constexpr static STRF_HD int count_digits(IntT value) noexcept
     {
         return count_digits_unsigned(strf::detail::unsigned_abs(value));
     }
 };
 
 template <int Base, typename intT>
-STRF_CONSTEXPR_IN_CXX14 STRF_HD unsigned count_digits(intT value) noexcept
+STRF_CONSTEXPR_IN_CXX14 STRF_HD int count_digits(intT value) noexcept
 {
     static_assert(std::is_unsigned<intT>::value, "");
     return strf::detail::digits_counter<Base, sizeof(intT)>
@@ -753,7 +756,7 @@ public:
     {
         using uIntT = typename std::make_unsigned<IntT>::type;
         uIntT uvalue = value;
-        const char offset_digit_a = ('A' | ((lc == strf::lowercase) << 5)) - 10;
+        const unsigned offset_digit_a = ('A' | ((lc == strf::lowercase) << 5)) - 10;
         while(uvalue > 0xF) {
             auto digit = uvalue & 0xF;
             *--it = ( digit < 10
@@ -780,7 +783,7 @@ public:
         STRF_ASSERT(! git.ended());
         STRF_ASSERT(uvalue > 0xF);
 
-        const char offset_digit_a = ('A' | ((lc == strf::lowercase) << 5)) - 10;
+        const unsigned offset_digit_a = ('A' | ((lc == strf::lowercase) << 5)) - 10;
         auto digits_before_sep = git.current();
         do {
             auto digit = uvalue & 0xF;
@@ -964,7 +967,7 @@ public:
     static inline STRF_HD void write
         ( strf::destination<CharT>& dest
         , IntT value
-        , unsigned digcount
+        , int digcount
         , strf::lettercase lc )
     {
         static_assert(std::is_unsigned<IntT>::value, "expected unsigned int");
@@ -980,8 +983,8 @@ public:
         ( strf::destination<CharT>& dest
         , UIntT uvalue
         , strf::digits_grouping grouping
-        , unsigned digcount
-        , unsigned seps_count
+        , int digcount
+        , int seps_count
         , CharT sep
         , strf::lettercase lc )
     {
@@ -1001,8 +1004,8 @@ public:
         , UIntT value
         , strf::digits_grouping grouping
         , char32_t sep
-        , unsigned sep_size
-        , unsigned digcount
+        , int sep_size
+        , int digcount
         , strf::lettercase lc )
     {
         static_assert(std::is_unsigned<UIntT>::value, "expected unsigned int");
@@ -1064,7 +1067,7 @@ public:
     static STRF_HD void write
         ( strf::destination<CharT>& dest
         , UIntT value
-        , unsigned digcount
+        , int digcount
         , strf::lettercase = strf::lowercase )
     {
         static_assert(std::is_unsigned<UIntT>::value, "expected unsigned int");
@@ -1097,8 +1100,8 @@ public:
         ( strf::destination<CharT>& dest
         , UIntT value
         , strf::digits_grouping grouping
-        , unsigned digcount
-        , unsigned seps_count
+        , int digcount
+        , int seps_count
         , CharT sep
         , strf::lettercase = strf::lowercase )
     {
@@ -1168,12 +1171,12 @@ public:
         , UIntT value
         , strf::digits_grouping grouping
         , char32_t sep
-        , unsigned sep_size
-        , unsigned digcount
+        , int sep_size
+        , int digcount
         , strf::lettercase = strf::lowercase )
     {
         STRF_ASSERT(value > 1);
-        static_assert(std::is_unsigned<UIntT>::value, "expected unsigned int");
+        static_assert(std::is_unsigned<UIntT>::value, "expected int int");
 
         auto dist = grouping.distribute(digcount);
         UIntT mask = (UIntT)1 << (digcount - 1);
@@ -1236,7 +1239,7 @@ template <int Base, typename CharT, typename UIntT>
 inline STRF_HD void write_int
     ( strf::destination<CharT>& dest
     , UIntT value
-    , unsigned digcount
+    , int digcount
     , strf::lettercase lc )
 {
     intdigits_writer<Base>::write(dest, value, digcount, lc);
@@ -1247,8 +1250,8 @@ inline STRF_HD void write_int_little_sep
     ( strf::destination<CharT>& dest
     , UIntT value
     , strf::digits_grouping grouping
-    , unsigned digcount
-    , unsigned seps_count
+    , int digcount
+    , int seps_count
     , CharT sep
     , strf::lettercase lc = strf::lowercase )
 {
@@ -1263,8 +1266,8 @@ inline STRF_HD void write_int_big_sep
     , UIntT value
     , strf::digits_grouping grouping
     , char32_t sep
-    , unsigned sep_size
-    , unsigned digcount
+    , int sep_size
+    , int digcount
     , strf::lettercase lc = strf::lowercase )
 {
     intdigits_writer<Base>::write_big_sep

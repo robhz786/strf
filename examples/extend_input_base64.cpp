@@ -144,7 +144,7 @@ private:
     void encode_3bytes_
         ( CharT* dest
         , const std::uint8_t* data
-        , std::size_t data_size ) const;
+        , std::ptrdiff_t data_size ) const;
 
     CharT encode_(std::uint8_t hextet) const;
 
@@ -167,13 +167,13 @@ base64_printer<CharT>::base64_printer
 template <typename CharT>
 void base64_printer<CharT>::calc_size_(strf::size_accumulator<true>& pre) const
 {
-    std::size_t num_digits = 4 * (fmt_.value().num_bytes + 2) / 3;
+    std::ptrdiff_t num_digits = 4 * (fmt_.value().num_bytes + 2) / 3;
     pre.add_size(num_digits);
     if (facet_.line_length > 0 && facet_.eol[0] != '\0') {
-        std::size_t num_lines
+        std::ptrdiff_t num_lines
             = (num_digits + facet_.line_length - 1)
             / facet_.line_length;
-        std::size_t eol_size = 1 + (facet_.eol[1] != '\0');
+        std::ptrdiff_t eol_size = 1 + (facet_.eol[1] != '\0');
         pre.add_size(num_lines * (fmt_.indentation() + eol_size));
     }
 }
@@ -201,9 +201,9 @@ template <typename CharT>
 void base64_printer<CharT>::write_identation_(strf::destination<CharT>& dest) const
 {
     using traits = std::char_traits<CharT>;
-    std::size_t count = fmt_.indentation();
+    std::ptrdiff_t count = fmt_.indentation();
     while(true) {
-        const std::size_t buff_size = dest.buffer_space();
+        const std::ptrdiff_t buff_size = dest.buffer_sspace();
         if (buff_size >= count) {
             traits::assign(dest.buffer_ptr(), count, CharT(' '));
             dest.advance(count);
@@ -232,7 +232,7 @@ template <typename CharT>
 void base64_printer<CharT>::encode_3bytes_
     ( CharT* dest
     , const std::uint8_t* data
-    , std::size_t data_size ) const
+    , std::ptrdiff_t data_size ) const
 {
     dest[0] = encode_(data[0] >> 2U);
     dest[1] = encode_(((data[0] & 0x03U) << 4U) |

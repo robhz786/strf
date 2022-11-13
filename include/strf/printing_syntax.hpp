@@ -82,9 +82,9 @@ public:
 struct reserve_given_space
 {
 public:
-    std::size_t space = 0;
+    std::ptrdiff_t space = 0;
 
-    STRF_HD constexpr explicit reserve_given_space(std::size_t s)
+    STRF_HD constexpr explicit reserve_given_space(std::ptrdiff_t s)
         : space(s)
     {
     }
@@ -126,7 +126,7 @@ public:
         , const preprinting_type& pre
         , const Printers& ... printers )
     {
-        const std::size_t size = pre.accumulated_size() + Ln;
+        const std::ptrdiff_t size = pre.accumulated_ssize() + Ln;
         typename DestCreator::sized_destination_type dest{dest_creator.create(size)};
         strf::detail::write_args(dest, printers...);
         STRF_IF_CONSTEXPR (Ln) {
@@ -144,7 +144,7 @@ struct can_create_dest_with_size
 {
     template < typename T
              , typename Dest = typename T::sized_destination_type
-             , typename = decltype(Dest(std::declval<T&>().create((std::size_t)0))) >
+             , typename = decltype(Dest(std::declval<T&>().create((std::ptrdiff_t)0))) >
     static STRF_HD std::true_type test(const T&);
 
     template <typename>
@@ -267,7 +267,7 @@ public:
                  < std::is_copy_constructible<FP>::value
                 && std::is_copy_constructible<DC>::value
                  , int > = 0 >
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD new_pss_ reserve(std::size_t space) const &
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD new_pss_ reserve(std::ptrdiff_t space) const &
     {
         const auto& self = static_cast<const this_pss_&>(*this);
         return { self.dest_creator_
@@ -275,7 +275,7 @@ public:
                , self.fpack_ };
     }
 
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD new_pss_ reserve(std::size_t space) &&
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD new_pss_ reserve(std::ptrdiff_t space) &&
     {
         auto& self = static_cast<this_pss_&>(*this);
         return { (DestCreator&&) self.dest_creator_
@@ -403,7 +403,7 @@ public:
                  < std::is_copy_constructible<FP>::value
                 && std::is_copy_constructible<DC>::value
                  , int > = 0 >
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD this_pss_ reserve_given_space(std::size_t space) const &
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD this_pss_ reserve_given_space(std::ptrdiff_t space) const &
     {
         auto& self = static_cast<const this_pss_&>(*this);
         return {self.dest_creator_, reserve_policy_t{space}, self.fpack_};
@@ -415,18 +415,18 @@ public:
                  < std::is_copy_constructible<FP>::value
                 && std::is_copy_constructible<DC>::value
                  , int > = 0 >
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD this_pss_ reserve_given_space(std::size_t space) const &&
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD this_pss_ reserve_given_space(std::ptrdiff_t space) const &&
     {
         auto& self = static_cast<const this_pss_&>(*this);
         return {self.dest_creator_, reserve_policy_t{space}, self.fpack_};
     }
 
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD this_pss_& reserve_given_space(std::size_t space) &
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD this_pss_& reserve_given_space(std::ptrdiff_t space) &
     {
         poli_.space = space;
         return static_cast<pss_<reserve_policy_t>&>(*this);
     }
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD this_pss_&& reserve_given_space(std::size_t space) &&
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD this_pss_&& reserve_given_space(std::ptrdiff_t space) &&
     {
         poli_.space = space;
         return static_cast<pss_<reserve_policy_t>&&>(*this);
@@ -615,7 +615,7 @@ public:
 
     template < typename DC = DestCreator
              , typename Poly = ReservePolicy
-             , std::size_t NumFpes = sizeof...(FPEs)
+             , std::ptrdiff_t NumFpes = sizeof...(FPEs)
              , strf::detail::enable_if_t
                  < NumFpes == 0
                 && std::is_copy_constructible<DC>::value
@@ -628,7 +628,7 @@ public:
 
     template < typename DC = DestCreator
              , typename Poly = ReservePolicy
-             , std::size_t NumFpes = sizeof...(FPEs)
+             , std::ptrdiff_t NumFpes = sizeof...(FPEs)
              , strf::detail::enable_if_t
                  < NumFpes == 0
                 && std::is_move_constructible<DC>::value
