@@ -1366,7 +1366,7 @@ public:
         ( strf::detail::fast_double_printer_input<CharT, PrePrinting, FloatT> input) noexcept
         : fast_double_printer(input.value, input.lcase)
     {
-        STRF_IF_CONSTEXPR (PrePrinting::width_required || PrePrinting::size_required) {
+        if (input.pre.has_remaining_width() || PrePrinting::size_required) {
             const auto s = size();
             input.pre.subtract_width(s);
             input.pre.add_size(s);

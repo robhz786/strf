@@ -965,7 +965,7 @@ public:
     {
         auto src_charset  = strf::detail::get_src_charset(input);
         auto dest_charset = use_facet_<strf::charset_c<DestCharT>, SrcCharT>(input.facets);
-        STRF_IF_CONSTEXPR (PrePrinting::width_required) {
+        if (input.pre.has_remaining_width()) {
             auto&& wcalc = use_facet_<strf::width_calculator_c, SrcCharT>(input.facets);
             auto w = wcalc.str_width( src_charset, input.pre.remaining_width()
                                     , str_, len_, surr_poli_);

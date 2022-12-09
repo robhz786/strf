@@ -430,7 +430,7 @@ class tr_printer: public strf::printer<CharT>
     //         strf::detail::tr_do_preprinting(tr_pre, tr_string_.begin, tr_string_.end());
     //         i.pre.add_size(tr_pre.accumulated_ssize());
 
-    //     } else STRF_IF_CONSTEXPR (Pre::width_required) {
+    //     } else if (input.pre.has_remaining_width()) {
     //         Pre pp_arr[num_printers];
     //         storage_.construct(i.arg.args, i.facets, pp_arr, printers_);
     //         strf::width_t width_arr[num_printers] =

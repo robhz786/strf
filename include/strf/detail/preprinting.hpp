@@ -45,24 +45,27 @@ public:
     }
     constexpr STRF_HD strf::width_t remaining_width() const noexcept
     {
-        return width_.gt_zero() ? width_ : 0;
+        width_ = width_.ge_zero() ? width_ : 0;
+        return width_;
     }
     STRF_CONSTEXPR_IN_CXX14 STRF_HD void reset_remaining_width(strf::width_t w) noexcept
     {
         width_ = w;
     }
-    constexpr STRF_HD bool has_remaining_width() noexcept
-    {
-        return width_.gt_zero();
-    }
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD void clear_negative_width() noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD void zeroize_remaining_width_if_negative() noexcept
     {
         width_ = width_.gt_zero() ? width_ : 0;
+    }
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD bool has_remaining_width() const noexcept
+    {
+        const bool is_positive = width_.gt_zero();
+        width_ = is_positive ? width_ : 0;
+        return is_positive;
     }
 
 private:
 
-    strf::width_t width_ = strf::width_max;
+    mutable strf::width_t width_ = strf::width_max;
 };
 
 template <>
@@ -87,12 +90,12 @@ public:
     {
         return 0;
     }
+    constexpr STRF_HD void zeroize_remaining_width_if_negative() const noexcept
+    {
+    }
     constexpr STRF_HD bool has_remaining_width() noexcept
     {
         return false;
-    }
-    constexpr STRF_HD void clear_negative_width() const noexcept
-    {
     }
 };
 
