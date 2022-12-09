@@ -186,4 +186,4 @@ STRF_TEST_FUNC void test_facets_pack_merge()
     }
 }
 
-REGISTER_STRF_TEST(test_facets_pack_merge);
+REGISTER_STRF_TEST(test_facets_pack_merge)

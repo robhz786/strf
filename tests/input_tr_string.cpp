@@ -443,4 +443,4 @@ STRF_TEST_FUNC void test_input_tr_string()
     test_full_precalculation();
 }
 
-REGISTER_STRF_TEST(test_input_tr_string);
+REGISTER_STRF_TEST(test_input_tr_string)

@@ -409,7 +409,7 @@ inline STRF_HD void copy_n
 
 namespace detail_tag_invoke_ns {
 
-STRF_HD inline void tag_invoke(){};
+STRF_HD inline void tag_invoke(){}
 
 struct tag_invoke_fn
 {

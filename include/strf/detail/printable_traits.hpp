@@ -72,7 +72,7 @@ struct has_tag_invoke_with_printable_tag_tester
     template <typename U>
     static STRF_HD std::false_type test_(...);
 
-    using result = decltype(test_<T>((T*){}));
+    using result = decltype(test_<T>((T*)nullptr));
 };
 
 template <typename T>
@@ -90,7 +90,7 @@ struct has_printable_traits_specialization
     static STRF_HD std::false_type test(...);
 
     using T_ = strf::detail::remove_cvref_t<T>;
-    using result = decltype(test<T_>((const T_*){}));
+    using result = decltype(test<T_>((const T_*)nullptr));
 
     constexpr static bool value = result::value;
 };
@@ -305,7 +305,7 @@ struct get_is_overridable_helper {
     template <typename U>
     static STRF_HD std::false_type test_(...);
 
-    using result = decltype(test_<PrintableTraits>((PrintableTraits*){}));
+    using result = decltype(test_<PrintableTraits>((PrintableTraits*)nullptr));
 };
 
 template <typename PrintableTraits>
@@ -663,7 +663,7 @@ struct is_printable_and_overridable_helper {
     template <typename U>
     static STRF_HD std::false_type test_(...);
 
-    using result = decltype(test_<T>((T*){}));
+    using result = decltype(test_<T>((T*)nullptr));
 };
 
 } // namespace detail

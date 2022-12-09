@@ -190,5 +190,5 @@ STRF_TEST_FUNC void test_tr_string()
     }
 }
 
-REGISTER_STRF_TEST(test_tr_string);
+REGISTER_STRF_TEST(test_tr_string)
 

@@ -158,5 +158,5 @@ STRF_TEST_FUNC void test_input_string()
     }
 }
 
-REGISTER_STRF_TEST(test_input_string);
+REGISTER_STRF_TEST(test_input_string)
 

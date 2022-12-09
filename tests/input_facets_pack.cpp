@@ -71,5 +71,5 @@ STRF_TEST_FUNC void test_input_facets_pack()
         , "charset is not constrainable");
 }
 
-REGISTER_STRF_TEST(test_input_facets_pack);
+REGISTER_STRF_TEST(test_input_facets_pack)
 

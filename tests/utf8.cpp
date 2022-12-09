@@ -481,4 +481,4 @@ STRF_TEST_FUNC void test_utf8()
     utf8_miscellaneous();
 }
 
-REGISTER_STRF_TEST(test_utf8);
+REGISTER_STRF_TEST(test_utf8)

@@ -260,5 +260,5 @@ STRF_TEST_FUNC void test_width_calculator()
     }
 }
 
-REGISTER_STRF_TEST(test_width_calculator);
+REGISTER_STRF_TEST(test_width_calculator)
 

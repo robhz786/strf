@@ -209,5 +209,5 @@ STRF_TEST_FUNC void test_to_range()
 }
 
 
-REGISTER_STRF_TEST(test_to_range);
+REGISTER_STRF_TEST(test_to_range)
 

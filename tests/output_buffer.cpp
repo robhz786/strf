@@ -151,5 +151,5 @@ STRF_TEST_FUNC void test_output_buffer_functions()
         dest.finish();
     }
 }
-REGISTER_STRF_TEST(test_output_buffer_functions);
+REGISTER_STRF_TEST(test_output_buffer_functions)
 

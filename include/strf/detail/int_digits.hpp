@@ -47,7 +47,7 @@ inline STRF_HD std::uint64_t pow10(int n) noexcept
     STRF_ASSERT(0 <= n && n <= 19);
 
     return p10[n];
-};
+}
 
 template <typename IntT, int Base> struct max_num_digits_impl;
 template <typename IntT> struct max_num_digits_impl<IntT, 10>

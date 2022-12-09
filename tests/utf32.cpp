@@ -363,4 +363,4 @@ STRF_TEST_FUNC void test_utf32()
     utf32_miscellaneous();
 }
 
-REGISTER_STRF_TEST(test_utf32);
+REGISTER_STRF_TEST(test_utf32)

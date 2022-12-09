@@ -1117,5 +1117,5 @@ STRF_TEST_FUNC void test_input_int()
     test_input_int_punct();
 }
 
-REGISTER_STRF_TEST(test_input_int);
+REGISTER_STRF_TEST(test_input_int)
 

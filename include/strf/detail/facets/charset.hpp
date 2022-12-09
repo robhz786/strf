@@ -676,7 +676,7 @@ class has_static_transcoder_impl
         return {};
     }
 
-    using result_ = decltype(test_((SrcCharset*){}, (DestCharset*){}));
+    using result_ = decltype(test_((SrcCharset*)nullptr, (DestCharset*)nullptr));
 
 public:
 

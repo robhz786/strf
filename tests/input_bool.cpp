@@ -73,5 +73,5 @@ STRF_TEST_FUNC void test_input_bool()
     TEST ("__________     false") ( j(strf::right(false, 10)) );
 }
 
-REGISTER_STRF_TEST(test_input_bool);
+REGISTER_STRF_TEST(test_input_bool)
 

@@ -189,4 +189,4 @@ STRF_TEST_FUNC void test_utf32_to_utf8()
     utf32_to_utf8_find_transcoder();
 }
 
-REGISTER_STRF_TEST(test_utf32_to_utf8);
+REGISTER_STRF_TEST(test_utf32_to_utf8)

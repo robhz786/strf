@@ -221,5 +221,5 @@ STRF_TEST_FUNC void test_input_range()
     }
 }
 
-REGISTER_STRF_TEST(test_input_range);
+REGISTER_STRF_TEST(test_input_range)
 

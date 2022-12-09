@@ -216,4 +216,4 @@ STRF_TEST_FUNC void test_utf32_to_utf16()
     utf32_to_utf16_find_transcoder();
 }
 
-REGISTER_STRF_TEST(test_utf32_to_utf16);
+REGISTER_STRF_TEST(test_utf32_to_utf16)

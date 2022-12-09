@@ -452,4 +452,4 @@ STRF_TEST_FUNC void test_facets_pack()
     compilation_tests();
 }
 
-REGISTER_STRF_TEST(test_facets_pack);
+REGISTER_STRF_TEST(test_facets_pack)

@@ -106,5 +106,5 @@ STRF_TEST_FUNC void test_miscellaneous()
     }
 }
 
-REGISTER_STRF_TEST(test_miscellaneous);
+REGISTER_STRF_TEST(test_miscellaneous)
 

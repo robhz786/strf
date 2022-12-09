@@ -79,4 +79,4 @@ STRF_TEST_FUNC void test_encode_char()
     }
 }
 
-REGISTER_STRF_TEST(test_encode_char);
+REGISTER_STRF_TEST(test_encode_char)

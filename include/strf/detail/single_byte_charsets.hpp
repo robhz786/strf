@@ -77,7 +77,7 @@
 #define STRF_DEF_SINGLE_BYTE_CHARSET(CHARSET)                           \
     STRF_DEF_SINGLE_BYTE_CHARSET_(CHARSET)                              \
     template <typename CharT>                                           \
-    STRF_DEVICE constexpr CHARSET ## _t<CharT> CHARSET = {}; // NOLINT(bugprone-macro-parentheses)
+    STRF_DEVICE constexpr CHARSET ## _t<CharT> CHARSET = {} // NOLINT(bugprone-macro-parentheses)
 
 #else
 
@@ -1389,7 +1389,7 @@ STRF_FUNC_IMPL STRF_HD unsigned impl_windows_1250::encode_ext(char32_t ch)
     const auto *it = strf::detail::lower_bound
         ( char_map, char_map_end, ch32_to_char{ch, 0}, cmp_ch32_to_char{} );
     return it != char_map_end && it->key == ch ? it->value : 0x100;
-};
+}
 
 #endif // ! defined(STRF_OMIT_IMPL)
 

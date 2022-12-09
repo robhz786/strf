@@ -1449,5 +1449,5 @@ STRF_TEST_FUNC void test_single_byte_charsets()
    }
 }
 
-REGISTER_STRF_TEST(test_single_byte_charsets);
+REGISTER_STRF_TEST(test_single_byte_charsets)
 

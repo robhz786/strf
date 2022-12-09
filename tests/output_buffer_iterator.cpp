@@ -27,5 +27,5 @@ STRF_TEST_FUNC void test_output_buffer_iterator()
     }
 }
 
-REGISTER_STRF_TEST(test_output_buffer_iterator);
+REGISTER_STRF_TEST(test_output_buffer_iterator)
 

@@ -375,4 +375,4 @@ STRF_TEST_FUNC void test_utf16()
     utf16_miscellaneous();
 }
 
-REGISTER_STRF_TEST(test_utf16);
+REGISTER_STRF_TEST(test_utf16)

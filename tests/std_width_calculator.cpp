@@ -1562,4 +1562,4 @@ STRF_TEST_FUNC void test_std_width_calculator()
     test_many_sequences();
 }
 
-REGISTER_STRF_TEST(test_std_width_calculator);
+REGISTER_STRF_TEST(test_std_width_calculator)

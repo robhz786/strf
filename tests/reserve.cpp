@@ -150,5 +150,5 @@ STRF_TEST_FUNC void test_reserve()
     }
 }
 
-REGISTER_STRF_TEST(test_reserve);
+REGISTER_STRF_TEST(test_reserve)
 

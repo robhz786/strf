@@ -74,4 +74,4 @@ STRF_TEST_FUNC void test_encode_fill()
     }
 }
 
-REGISTER_STRF_TEST(test_encode_fill);
+REGISTER_STRF_TEST(test_encode_fill)

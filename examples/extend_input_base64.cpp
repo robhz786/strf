@@ -474,7 +474,7 @@ void sample()
 //]
     (void)obtained;
     (void)expected;
-};
+}
 
 int main()
 {

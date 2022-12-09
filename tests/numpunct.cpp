@@ -324,5 +324,5 @@ STRF_TEST_FUNC void test_numpunct()
     }
 }
 
-REGISTER_STRF_TEST(test_numpunct);
+REGISTER_STRF_TEST(test_numpunct)
 

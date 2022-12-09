@@ -158,4 +158,4 @@ STRF_TEST_FUNC void test_cstr_destination()
     test_cstr_destination_creator<wchar_t>();
 }
 
-REGISTER_STRF_TEST(test_cstr_destination);
+REGISTER_STRF_TEST(test_cstr_destination)
