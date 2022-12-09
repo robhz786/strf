@@ -135,6 +135,108 @@ To STRF_HD bit_cast(const From& from) noexcept
 
 #endif // defined(__cpp_lib_bit_cast)
 
+STRF_HD constexpr int slow_countl_zero_ll(std::uint64_t x)
+{
+    if (x <= 0xffffffffULL) {
+        if (x <= 0xffffULL) {
+            if (x <= 0xffULL) {
+                if (x <= 0xfULL) {
+                    if (x <= 3U) {
+                        if (x == 0) {
+                            return 64;
+                        }
+                        return x <= 1U ? 63 : 62;
+                    }
+                    return x <= 7U ? 61 : 60;
+                }
+                if (x <= 0x3fU) {
+                    return x <= 0x1fU ? 59 : 58;
+                }
+                return x <= 0x7fU ? 57 : 56;
+            }
+            if (x <= 0xfffULL) {
+                if (x <= 0x3ffULL) {
+                    return x <= 0x1ffULL ? 55 :54;
+                }
+                return x <= 0x7ffULL ? 53 : 52;
+            }
+            if (x <= 0x3fffULL) {
+                return x <= 0x1fffULL ? 51 :50;
+            }
+            return x <= 0x7fffULL ? 49 : 48;
+        }
+        if (x <= 0xffffffULL) {
+            if (x <= 0xfffffULL) {
+                if (x <= 0x3ffffULL) {
+                    return x <= 0x1ffffULL ? 47 : 46;
+                }
+                return x <= 0x7ffffULL ? 45 : 44;
+            }
+            if (x <= 0x3fffffULL) {
+                return x <= 0x1fffffULL ? 43 : 42 ;
+            }
+            return x <= 0x7fffffULL ? 41 : 40 ;
+        }
+        if (x <= 0xfffffffULL) {
+            if (x <= 0x3ffffffULL) {
+                return x <= 0x1ffffffULL ? 39 : 38 ;
+            }
+            return x <= 0x7ffffffULL ? 37 : 36;
+        }
+        if (x <= 0x3fffffffULL) {
+            return x <= 0x1fffffffULL ? 35 : 34;
+        }
+        return x <= 0x7fffffffULL ? 33 : 32;
+    }
+    if (x <= 0xffffffffffffULL) {
+        if (x <= 0xffffffffffULL) {
+            if (x <= 0xfffffffffULL) {
+                if (x <= 0x3ffffffffULL) {
+                    return x <= 0x1ffffffffULL ? 31 : 30;
+                }
+                return x <= 0x7ffffffffULL ? 29 : 28;
+            }
+            if (x <= 0x3fffffffffULL) {
+                return x <= 0x1fffffffffULL ? 27 : 26;
+            }
+            return x <= 0x7fffffffffULL ? 25 : 24;
+        }
+        if (x <= 0xfffffffffffULL) {
+            if (x <= 0x3ffffffffffULL) {
+                return x <= 0x1ffffffffffULL ? 23 : 22;
+            }
+            return x <= 0x7ffffffffffULL ? 21 : 20;
+        }
+        if (x <= 0x3fffffffffffULL) {
+            return x <= 0x1fffffffffffULL ? 19 : 18;
+        }
+        return x <= 0x7fffffffffffULL ? 17 : 16;
+    }
+    if (x <= 0xffffffffffffffULL) {
+        if (x <= 0xfffffffffffffULL) {
+            if (x <= 0x3ffffffffffffULL) {
+                return x <= 0x1ffffffffffffULL ? 15 : 14;
+            }
+            return x <= 0x7ffffffffffffULL ? 13 : 12;
+        }
+        if (x <= 0x3fffffffffffffULL) {
+            return x <= 0x1fffffffffffffULL ? 11 : 10 ;
+        }
+        return x <= 0x7fffffffffffffULL ? 9 : 8 ;
+    }
+    if (x <= 0xfffffffffffffffULL) {
+        if (x <= 0x3ffffffffffffffULL) {
+            return x <= 0x1ffffffffffffffULL ? 7 : 6 ;
+        }
+        return x <= 0x7ffffffffffffffULL ? 5 : 4;
+    }
+    if (x <= 0x3fffffffffffffffULL) {
+        return x <= 0x1fffffffffffffffULL ? 3 : 2;
+    }
+    return x <= 0x7fffffffffffffffULL ? 1 : 0;
+}
+
+
 #if ! defined(STRF_FREESTANDING)
 template <typename It>
 using iterator_value_type = typename std::iterator_traits<It>::value_type;

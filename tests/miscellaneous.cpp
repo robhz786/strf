@@ -96,6 +96,14 @@ STRF_TEST_FUNC void test_miscellaneous()
         TEST_TRUE(sv.data() == str);
         TEST_EQ(sv.size(), 5);
     }
+    {
+        // strf::detail::slow_countl_zero_ll
+        TEST_EQ(64, strf::detail::slow_countl_zero_ll(0));
+        for (int i = 0; i <= 63; ++i) {
+            TEST_SCOPE_DESCRIPTION("i: ", i);
+            TEST_EQ(63 - i, strf::detail::slow_countl_zero_ll(1ULL << i));
+        }
+    }
 }
 
 REGISTER_STRF_TEST(test_miscellaneous);
