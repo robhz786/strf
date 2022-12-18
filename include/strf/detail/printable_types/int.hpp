@@ -1617,8 +1617,8 @@ inline STRF_HD int init
     } else {
         data.prefix = ifmt.showbase << 1;
     }
-    data.uvalue = static_cast<decltype(data.uvalue)>(value);
     auto uvalue = static_cast<typename std::make_unsigned<IntT>::type>(value);
+    data.uvalue = uvalue;
     data.digcount = strf::detail::count_digits<Base>(uvalue);
     return data.digcount + data.prefix;
 }
@@ -1791,7 +1791,7 @@ inline STRF_HD void init_1
 
 template
     < typename UIntT
-    , strf::detail::enable_if_t<!std::is_signed<UIntT>::value, int> = 0 >
+    , strf::detail::enable_if_t<std::is_unsigned<UIntT>::value, int> = 0 >
 inline STRF_HD void init_1
     ( fmt_int_printer_data& data
     , strf::default_int_format
@@ -1842,14 +1842,15 @@ inline STRF_HD void init_1
     data.uvalue = uvalue;
 }
 
-template <typename IntT, bool Punctuate, int Base>
+template < typename IntT, bool Punctuate, int Base
+         , strf::detail::enable_if_t<Base != 10, int> = 0 >
 inline STRF_HD void init_1
     ( fmt_int_printer_data& data
     , strf::int_format_static_base_and_punct<Base, Punctuate>
     , IntT value ) noexcept
 {
     data.sign = '\0';
-    data.uvalue = static_cast<decltype(data.uvalue)>(value);
+    data.uvalue = static_cast<typename std::make_unsigned<IntT>::type>(value);
 }
 
 struct fmt_int_printer_data_init_result {

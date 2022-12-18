@@ -256,6 +256,8 @@ STRF_TEST_FUNC void test_input_int_no_punct() // NOLINT(google-readability-funct
     TEST("10000")                    ( strf::hex(0x10000L) );
     TEST("100000000")                ( strf::hex(0x100000000LL) );
     TEST("1000000000000000")         ( strf::hex(0x1000000000000000LL) );
+    TEST("80000000")                 ( strf::hex((std::int32_t)(0x80000000)));
+
     TEST("7")                        ( strf::oct(07) );
     TEST("77")                       ( strf::oct(077) );
     TEST("7777")                     ( strf::oct(07777) );
