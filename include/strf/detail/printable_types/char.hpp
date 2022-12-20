@@ -210,7 +210,7 @@ STRF_HD void fmt_char_printer<CharT>::init_
     ( PrePrinting& pre, const WCalc& wc, Charset charset )
 {
     auto ch_width = wc.char_width(charset, ch_);
-    auto content_width = checked_mul(ch_width, count_);
+    auto content_width = strf::sat_mul(ch_width, count_);
     std::int16_t fillcount = 0;
     if (content_width < afmt_.width) {
         fillcount = static_cast<std::int16_t>((afmt_.width - content_width).round());
@@ -354,7 +354,7 @@ void STRF_HD fmt_conv_char32_printer<DestCharT>::init_
     , strf::width_t ch_width )
 {
     encode_fill_f_ = charset.encode_fill_func();
-    auto content_width = checked_mul(ch_width, count_);
+    auto content_width = strf::sat_mul(ch_width, count_);
     fillchar_ = afmt.fill;
     alignment_ = afmt.alignment;
     if (content_width < afmt.width) {
