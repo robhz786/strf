@@ -259,7 +259,7 @@ auto str2 = strf::to_string.with(my_facets) (/{asterisk} \... {asterisk}/);
 ----
 
 The `facets_pack` class template is more similar to `std::tuple` than to `std::locale`.
-It stores all the facets objects by value, and extracting one from it ( 
+It stores all the facets objects by value, and extracting one from it (
 with the `<<strf_hpp#use_facet,strf::use_facet>>` function template ) is just as fast as
 calling a trivial getter function.
 
@@ -431,7 +431,7 @@ I know, there is actually nothing really innovative in that design -- it's it's 
 and it's how peolple already basically do with `std::basic_ostream`.
 So, you may question: if Strf can write to `std::basic_ostream` as well
 ( which it can ), why not just keep using `std::basic_ostream`
-instead of start using `strf::destination` ? 
+instead of start using `strf::destination` ?
 
 // I would say the main reason has to do in how to create a specialization
 // of `strf::destination` ( which is explained in
@@ -452,26 +452,26 @@ so that you can also write to `strf::destination` with `fmt::format_to`
 
 Ehe header
 `<<iterator_hpp#,<strf/iterator.hpp> >>` defines an output iterator adapter
-to 
+to
 
 
 so that you can write to `strf::destination`
 
 so that you can reuse code that based
-to make it easier to adapt code based on {fmt} or `std::format` 
-to integrate `strf::destination` 
+to make it easier to adapt code based on {fmt} or `std::format`
+to integrate `strf::destination`
 
 
 
-To make its applicability broader, the 
+To make its applicability broader, the
 
 
-augment the applicability 
+augment the applicability
 
 
 // I would say the main reason is that `std::basic_ostream` is not suitable
 // to be specialized from, which is a major flaw for an abstract class.
-// It's not only that it is complicated, but also 
+// It's not only that it is complicated, but also
 // but also
 
 

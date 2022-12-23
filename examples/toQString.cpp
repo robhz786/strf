@@ -22,10 +22,10 @@ public:
     {
     }
 
-    explicit QStringCreator(std::ptrdiff_t size)
+    explicit QStringCreator(std::size_t size)
         : strf::destination<char16_t>(buffer_, buffer_size_)
     {
-        Q_ASSERT(size < static_cast<std::ptrdiff_t>(INT_MAX));
+        Q_ASSERT(size <= static_cast<std::size_t>(INT_MAX));
         str_.reserve(static_cast<int>(size));
     }
 
@@ -80,7 +80,7 @@ public:
     {
         return strf::tag<>{};
     }
-    std::ptrdiff_t create(std::ptrdiff_t size) const
+    std::size_t create(std::size_t size) const
     {
         return size;
     }

@@ -85,13 +85,13 @@ STRF_FUNC_IMPL strf::digits_grouping parse_win_grouping(const wchar_t* str)
 // NOLINTNEXTLINE(misc-definitions-in-headers)
 STRF_FUNC_IMPL char32_t decode_first_char_from_utf16(const wchar_t* src)
 {
-    const char32_t ch0 = src[0];
-    if (ch0 != '\0') {
+    const auto ch0 = static_cast<char32_t>(src[0]);
+    if (ch0 != 0) {
         if (strf::detail::not_surrogate(ch0)) {
             return ch0;
         }
         if (strf::detail::is_high_surrogate(ch0)) {
-            const char32_t ch1 = src[1];
+            const auto ch1 = static_cast<char32_t>(src[1]);
             if (strf::detail::is_low_surrogate(ch1)) {
                 return 0x10000 + (((ch0 & 0x3FF) << 10) | (ch1 & 0x3FF));
             }
@@ -107,7 +107,7 @@ STRF_FUNC_IMPL char32_t decode_first_char(strf::transcode_f<char, char32_t>& dec
 {
     char32_t buff32[2] = { 0xFFFD, 0 };
     strf::u32cstr_destination dest(buff32); // NOLINT(misc-const-correctness)
-    decode(dest, str, strlen(str), {}, strf::surrogate_policy::strict);
+    decode(dest, str, detail::cast_ssize(strlen(str)), {}, strf::surrogate_policy::strict);
     return buff32[0];
 }
 
@@ -149,7 +149,7 @@ STRF_FUNC_IMPL strf::numpunct<10> make_numpunct
     if (decimal_point_str[0] == '\0') {
         punct.decimal_point(0xFFFD);
     } else if (0 == (decimal_point_str[0] & 0x80)) {
-        punct.decimal_point(decimal_point_str[0]);
+        punct.decimal_point(static_cast<char32_t>(decimal_point_str[0]));
     } else {
         decoder_func_searched = true;
         decoder_func = strf::detail::get_decoder(encoding_name);
@@ -163,7 +163,7 @@ STRF_FUNC_IMPL strf::numpunct<10> make_numpunct
         if (thousands_sep_str[0] == '\0') {
             punct.grouping(strf::digits_grouping());
         } else if (0 == (thousands_sep_str[0] & 0x80)){
-            punct.thousands_sep(thousands_sep_str[0]);
+            punct.thousands_sep(static_cast<char32_t>(thousands_sep_str[0]));
         } else {
             if (! decoder_func_searched) {
                 decoder_func = strf::detail::get_decoder(encoding_name);

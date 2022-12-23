@@ -78,7 +78,7 @@ struct traits_that_fails {
     }
 
     STRF_HD std::size_t write(const char* ptr, std::size_t count) noexcept {
-        const std::size_t size = dest_end_ - dest_;
+        const std::size_t size = strf::detail::safe_cast_size_t(dest_end_ - dest_);
         const std::size_t c = count <= size ? count : size;
         memcpy(dest_, ptr, c);
         dest_ += c;
@@ -98,7 +98,7 @@ void test_cfile_writer_base()
 
     {   // fails on flush();
         memset(result_buff, 0, sizeof(result_buff));
-        tester_t tester{buff, sizeof(buff), result_buff, 10};
+        tester_t tester{buff, sizeof(buff), result_buff, 10U};
 
         memcpy(tester.buffer_ptr(), "0123456789abcdef", 16);
         tester.advance(16);
@@ -119,7 +119,7 @@ void test_cfile_writer_base()
     }
     {   // fails on do_write(), in its first call to traits_.write
         memset(result_buff, 0, sizeof(result_buff));
-        tester_t tester{buff, sizeof(buff), result_buff, 10};
+        tester_t tester{buff, sizeof(buff), result_buff, 10U};
 
         strf::to(tester) (strf::multi('x', tester.buffer_space()));
         tester.write("0123456789abcdef", 16);
@@ -133,7 +133,7 @@ void test_cfile_writer_base()
     }
     {   // fails on do_write(), in its second call to traits_.write
         memset(result_buff, 0, sizeof(result_buff));
-        tester_t tester{buff, sizeof(buff), result_buff, sizeof(buff) + 10};
+        tester_t tester{buff, sizeof(buff), result_buff, sizeof(buff) + 10U};
 
         strf::to(tester) (strf::multi('x', sizeof(buff)));
         tester.write("0123456789abcdef", 16);
@@ -147,7 +147,7 @@ void test_cfile_writer_base()
     }
     {   // fails on finish()
         memset(result_buff, 0, sizeof(result_buff));
-        tester_t tester{buff, sizeof(buff), result_buff, 10};
+        tester_t tester{buff, sizeof(buff), result_buff, 10U};
 
         memcpy(tester.buffer_ptr(), "0123456789abcdef", 16);
         tester.advance(16);

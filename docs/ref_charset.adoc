@@ -26,7 +26,6 @@ http://www.boost.org/LICENSE_1_0.txt)
 :scid_windows_1252: <<charset_id,scid_windows_1252>>
 
 :transcode_dest: <<transcode_dest,transcode_dest>>
-:invalid_char_len: <<charset_function_pointers,invalid_char_len>>
 :transcode_f: <<charset_function_pointers,transcode_f>>
 :transcode_size_f: <<charset_function_pointers,transcode_size_f>>
 :write_replacement_char_f: <<charset_function_pointers,write_replacement_char_f>>
@@ -279,8 +278,6 @@ using transcode_dest = {output_buffer}<CharT, 3>;
 [source,cpp,subs=normal]
 ----
 namespace strf {
-
-constexpr std::ptrdiff_t invalid_char_len = -1;
 
 template <typename SrcCharT, typename DestCharT>
 using transcode_f = void ({asterisk})

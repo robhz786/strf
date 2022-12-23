@@ -39,7 +39,7 @@ public:
         , strf::surrogate_policy ) const noexcept
     {
         return ( static_cast<std::ptrdiff_t>(str_len) <= limit.floor()
-               ? static_cast<std::uint16_t>(str_len)
+                 ? static_cast<strf::width_t>(str_len)
                : limit );
     }
 
@@ -53,9 +53,9 @@ public:
     {
         const auto limit_floor = limit.floor();
         if (str_len <= limit_floor) {
-            return { static_cast<std::uint16_t>(str_len), str_len };
+            return { static_cast<strf::width_t>(str_len), str_len };
         }
-        return { static_cast<std::uint16_t>(limit_floor), limit_floor };
+        return { static_cast<strf::width_t>(limit_floor), limit_floor };
     }
 };
 
@@ -81,9 +81,9 @@ public:
         , strf::surrogate_policy ) const
     {
         auto lim = limit.floor();
-        auto ret = charset.count_codepoints_fast(str, str_len, lim);
-        STRF_ASSERT(ret.count <= strf::width_max.floor());
-        return static_cast<std::uint16_t>(ret.count);
+        auto res = charset.count_codepoints_fast(str, str_len, lim);
+        STRF_ASSERT(0 <= res.count && res.count <= strf::width_max.floor());
+        return static_cast<strf::width_t>(res.count);
     }
 
     template <typename Charset>
@@ -96,8 +96,8 @@ public:
     {
         auto lim = limit.floor();
         auto res = charset.count_codepoints_fast(str, str_len, lim);
-        STRF_ASSERT(res.count <= lim);
-        return { static_cast<std::uint16_t>(res.count), res.pos };
+        STRF_ASSERT(0 <= res.count && res.count <= lim);
+        return { static_cast<strf::width_t>(res.count), res.pos };
     }
 };
 
@@ -125,8 +125,8 @@ public:
     {
         auto lim = limit.floor();
         auto ret = charset.count_codepoints(str, str_len, lim, surr_poli);
-        STRF_ASSERT(ret.count <= strf::width_max.floor());
-        return static_cast<std::uint16_t>(ret.count);
+        STRF_ASSERT(0 <= ret.count && ret.count <= strf::width_max.floor());
+        return static_cast<strf::width_t>(ret.count);
     }
 
     template <typename Charset>
@@ -139,10 +139,9 @@ public:
     {
         auto lim = limit.floor();
         auto res = charset.count_codepoints(str, str_len, lim, surr_poli);
-        STRF_ASSERT(res.count <= lim);
-        return { static_cast<std::uint16_t>(res.count), res.pos };
+        STRF_ASSERT(0 <= res.count && res.count <= lim);
+        return { static_cast<strf::width_t>(res.count), res.pos };
     }
-
 };
 
 namespace detail {

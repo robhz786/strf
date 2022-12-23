@@ -56,7 +56,7 @@ public:
     STRF_CONSTEXPR_IN_CXX14 STRF_HD int current() const noexcept
     {
         STRF_ASSERT(! ended());
-        return grps_ & grp_bits_mask_;
+        return static_cast<std::int32_t>(grps_ & grp_bits_mask_);
     }
     STRF_CONSTEXPR_IN_CXX14 STRF_HD void advance() noexcept
     {
@@ -127,7 +127,7 @@ public:
     }
     constexpr STRF_HD int highest_group() const noexcept
     {
-        return grps_ & grp_bits_mask_;
+        return static_cast<std::int32_t>(grps_ & grp_bits_mask_);
     }
     constexpr STRF_HD bool empty() const noexcept
     {
@@ -202,7 +202,7 @@ public:
         if (it.ended()) {
             return 0;
         }
-        unsigned count = 0;
+        int count = 0;
         while(1) {
             auto grp = it.current();
             if (digcount <= grp) {
@@ -284,13 +284,13 @@ private:
         STRF_ASSERT_IN_CONSTEXPR(last_grp == -1 || (0 < last_grp && last_grp <= grp_max));
         return last_grp == -1
             ? dont_repeat_last_
-            : (( repeat_last_ << grp_bits_count_ ) | last_grp) ;
+            : (( repeat_last_ << grp_bits_count_ ) | detail::cast_unsigned(last_grp)) ;
     }
     template <typename ... IntT>
     constexpr static STRF_HD underlying_int_t_ ctor2_(grp_t_ g0, grp_t_ g1, IntT... grps) noexcept
     {
         STRF_ASSERT_IN_CONSTEXPR(0 < g0 && g0 <= grp_max);
-        return g0 | (ctor2_(g1, grps...) << grp_bits_count_);
+        return detail::cast_unsigned(g0) | (ctor2_(g1, grps...) << grp_bits_count_);
     }
     template <typename... IntT>
     constexpr static STRF_HD std::size_t groups_count_(IntT... grps) noexcept

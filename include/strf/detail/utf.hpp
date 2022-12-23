@@ -53,7 +53,7 @@ inline STRF_HD void repeat_sequence
     while (1) {
         space = (dest.buffer_end() - p) / seq_size;
         inner_count = (space < count ? space : count);
-        for (; inner_count; --inner_count) {
+        for (; inner_count > 0; --inner_count) {
             p[0] = ch0;
             p[1] = ch1;
             p += seq_size;
@@ -86,7 +86,7 @@ inline STRF_HD void repeat_sequence
     while (1) {
         space = (dest.buffer_end() - p) / seq_size;
         inner_count = (space < count ? space : count);
-        for (; inner_count; --inner_count) {
+        for (; inner_count > 0; --inner_count) {
             p[0] = ch0;
             p[1] = ch1;
             p[2] = ch2;
@@ -121,7 +121,7 @@ inline STRF_HD void repeat_sequence
     while (1) {
         space = (dest.buffer_end() - p) / seq_size;
         inner_count = (space < count ? space : count);
-        for (; inner_count; --inner_count) {
+        for (; inner_count > 0; --inner_count) {
             p[0] = ch0;
             p[1] = ch1;
             p[2] = ch2;
@@ -141,97 +141,106 @@ inline STRF_HD void repeat_sequence
     }
 }
 
-constexpr STRF_HD bool is_surrogate(std::uint32_t codepoint)
+constexpr STRF_HD bool is_surrogate(unsigned codepoint)
 {
     return codepoint >> 11 == 0x1B;
 }
-constexpr STRF_HD bool is_high_surrogate(std::uint32_t codepoint) noexcept
+constexpr STRF_HD bool is_high_surrogate(unsigned codepoint) noexcept
 {
     return codepoint >> 10 == 0x36;
 }
-constexpr STRF_HD bool is_low_surrogate(std::uint32_t codepoint) noexcept
+constexpr STRF_HD bool is_low_surrogate(unsigned codepoint) noexcept
 {
     return codepoint >> 10 == 0x37;
 }
-constexpr STRF_HD bool not_surrogate(std::uint32_t codepoint)
+constexpr STRF_HD bool not_surrogate(unsigned codepoint)
 {
     return codepoint >> 11 != 0x1B;
 }
-constexpr STRF_HD  bool not_high_surrogate(std::uint32_t codepoint)
+constexpr STRF_HD bool not_high_surrogate(unsigned codepoint)
 {
     return codepoint >> 10 != 0x36;
 }
-constexpr STRF_HD  bool not_low_surrogate(std::uint32_t codepoint)
+constexpr STRF_HD bool not_low_surrogate(unsigned codepoint)
 {
     return codepoint >> 10 != 0x37;
 }
-constexpr STRF_HD std::uint16_t utf8_decode(std::uint16_t ch0, std::uint16_t ch1)
+constexpr STRF_HD unsigned utf8_decode(unsigned ch0, unsigned ch1)
 {
-    return static_cast<std::uint16_t>(((ch0 & 0x1F) << 6) |
-                                      ((ch1 & 0x3F) << 0));
+    return (((ch0 & 0x1F) << 6) |
+            ((ch1 & 0x3F) << 0));
 }
-constexpr STRF_HD std::uint16_t utf8_decode(std::uint16_t ch0, std::uint16_t ch1, std::uint16_t ch2)
+constexpr STRF_HD unsigned utf8_decode(unsigned ch0, unsigned ch1, unsigned ch2)
 {
-    return static_cast<std::uint16_t>(((ch0 & 0x0F) << 12) |
-                                      ((ch1 & 0x3F) <<  6) |
-                                      ((ch2 & 0x3F) <<  0));
+    return (((ch0 & 0x0F) << 12) |
+            ((ch1 & 0x3F) <<  6) |
+            ((ch2 & 0x3F) <<  0));
 }
-constexpr STRF_HD std::uint32_t utf8_decode(std::uint32_t ch0, std::uint32_t ch1, std::uint32_t ch2, std::uint32_t ch3)
+constexpr STRF_HD unsigned utf8_decode(unsigned ch0, unsigned ch1, unsigned ch2, unsigned ch3)
 {
     return (((ch0 & 0x07) << 18) |
             ((ch1 & 0x3F) << 12) |
             ((ch2 & 0x3F) <<  6) |
             ((ch3 & 0x3F) <<  0));
 }
-constexpr STRF_HD bool is_utf8_continuation(std::uint8_t ch)
+
+template <typename IntT, strf::detail::enable_if_t<std::is_same<unsigned, IntT>::value, int> =0>
+constexpr STRF_HD bool is_utf8_continuation(IntT ch)
 {
     return (ch & 0xC0) == 0x80;
 }
 
-constexpr STRF_HD bool valid_start_3bytes
-    ( std::uint8_t ch0
-    , std::uint8_t ch1
-    , strf::surrogate_policy surr_poli )
+template <typename IntT, strf::detail::enable_if_t<sizeof(IntT) == 1, int> =0>
+constexpr STRF_HD bool is_utf8_continuation(IntT ch)
 {
-    return ( (ch0 != 0xE0 || ch1 != 0x80)
-          && ( surr_poli == strf::surrogate_policy::lax
-            || (0x1B != (((ch0 & 0xF) << 1) | ((ch1 >> 5) & 1)))) );
+    return is_utf8_continuation(static_cast<unsigned>(static_cast<unsigned char>(ch)));
 }
 
-inline STRF_HD std::uint32_t utf8_decode_first_2_of_3(std::uint8_t ch0, std::uint8_t ch1)
+
+// constexpr STRF_HD bool valid_start_3bytes
+//     ( std::uint8_t ch0
+//     , std::uint8_t ch1
+//     , strf::surrogate_policy surr_poli )
+// {
+//     return ( (ch0 != 0xE0 || ch1 != 0x80)
+//           && ( surr_poli == strf::surrogate_policy::lax
+//             || (0x1B != (((ch0 & 0xF) << 1) | ((ch1 >> 5) & 1)))) );
+// }
+
+inline STRF_HD unsigned utf8_decode_first_2_of_3(unsigned ch0, unsigned ch1)
 {
-    return ((ch0 & 0x0F) << 6) | (ch1 & 0x3F);
+    return static_cast<unsigned>(((ch0 & 0x0F) << 6) | (ch1 & 0x3F));
 }
 
-inline STRF_HD bool first_2_of_3_are_valid(std::uint32_t x, strf::surrogate_policy surr_poli)
+inline STRF_HD bool first_2_of_3_are_valid(unsigned x, strf::surrogate_policy surr_poli)
 {
     return ( surr_poli == strf::surrogate_policy::lax
           || (x >> 5) != 0x1B );
 }
 inline STRF_HD bool first_2_of_3_are_valid
-    ( std::uint8_t ch0
-    , std::uint8_t ch1
+    ( unsigned ch0
+    , unsigned ch1
     , strf::surrogate_policy surr_poli )
 {
     return first_2_of_3_are_valid(utf8_decode_first_2_of_3(ch0, ch1), surr_poli);
 }
 
-inline STRF_HD std::uint32_t utf8_decode_first_2_of_4(std::uint8_t ch0, std::uint8_t ch1)
+inline STRF_HD unsigned utf8_decode_first_2_of_4(unsigned ch0, unsigned ch1)
 {
     return ((ch0 ^ 0xF0) << 6) | (ch1 & 0x3F);
 }
 
-inline STRF_HD std::uint32_t utf8_decode_last_2_of_4(std::uint32_t x, std::uint32_t ch2, std::uint32_t ch3)
+inline STRF_HD unsigned utf8_decode_last_2_of_4(unsigned x, unsigned ch2, unsigned ch3)
 {
     return (x << 12) | ((ch2 & 0x3F) <<  6) | (ch3 & 0x3F);
 }
 
-inline STRF_HD bool first_2_of_4_are_valid(std::uint32_t x)
+inline STRF_HD bool first_2_of_4_are_valid(unsigned x)
 {
     return 0xF < x && x < 0x110;
 }
 
-inline STRF_HD bool first_2_of_4_are_valid(std::uint8_t ch0, std::uint8_t ch1)
+inline STRF_HD bool first_2_of_4_are_valid(unsigned ch0, unsigned ch1)
 {
     return first_2_of_4_are_valid(utf8_decode_first_2_of_4(ch0, ch1));
 }
@@ -875,7 +884,7 @@ public:
     static STRF_HD CharT* encode_char
         (CharT* dest, char32_t ch) noexcept
     {
-        *dest = ch;
+        *dest = static_cast<CharT>(ch);
         return dest + 1;
     }
     static STRF_HD void encode_fill
@@ -1029,46 +1038,53 @@ STRF_HD void strf::static_transcoder
     using strf::detail::first_2_of_4_are_valid;
     using strf::detail::is_utf8_continuation;
 
-    std::uint8_t ch0 = 0, ch1 = 0, ch2 = 0, ch3 = 0;
-    std::uint32_t x = 0;
+    unsigned ch0 = 0, ch1 = 0, ch2 = 0, ch3 = 0;
+    unsigned ch32;
+    unsigned x = 0;
     const auto *src_it = src;
     const auto *src_end = src + src_size;
     auto *dest_it = dest.buffer_ptr();
     auto *dest_end = dest.buffer_end();
-    DestCharT ch32;
 
-    while (src_it != src_end) {
-        ch0 = (*src_it);
+    while (src_it < src_end) {
+        ch0 = detail::cast_u8(*src_it);
         const SrcCharT* seq_begin = src_it;
         ++src_it;
         if (ch0 < 0x80) {
             ch32 = ch0;
         } else if (0xC0 == (ch0 & 0xE0)) {
-            if(ch0 > 0xC1 && src_it != src_end && is_utf8_continuation(ch1 = * src_it)) {
+            if( ch0 > 0xC1 && src_it != src_end
+             && is_utf8_continuation(ch1 = detail::cast_u8(*src_it)) ) {
                 ch32 = utf8_decode(ch0, ch1);
                 ++src_it;
             } else goto invalid_sequence;
         } else if (0xE0 == ch0) {
-            if (   src_it != src_end && (((ch1 = * src_it) & 0xE0) == 0xA0)
-              && ++src_it != src_end && is_utf8_continuation(ch2 = * src_it) )
+            if (   src_it != src_end
+              && (((ch1 = detail::cast_u8(*src_it)) & 0xE0) == 0xA0)
+              && ++src_it != src_end
+              && is_utf8_continuation(ch2 = detail::cast_u8(*src_it)) )
             {
                 ch32 = ((ch1 & 0x3F) << 6) | (ch2 & 0x3F);
                 ++src_it;
             } else goto invalid_sequence;
         } else if (0xE0 == (ch0 & 0xF0)) {
-            if (   src_it != src_end && is_utf8_continuation(ch1 = * src_it)
+            if (   src_it != src_end
+              && is_utf8_continuation(ch1 = detail::cast_u8(*src_it))
               && first_2_of_3_are_valid( x = utf8_decode_first_2_of_3(ch0, ch1)
                                        , surr_poli )
-              && ++src_it != src_end && is_utf8_continuation(ch2 = * src_it) )
+              && ++src_it != src_end
+              && is_utf8_continuation(ch2 = detail::cast_u8(*src_it)) )
             {
                 ch32 = (x << 6) | (ch2 & 0x3F);
                 ++src_it;
             } else goto invalid_sequence;
         } else if ( src_it != src_end
-                 && is_utf8_continuation(ch1 = * src_it)
+                 && is_utf8_continuation(ch1 = detail::cast_u8(*src_it))
                  && first_2_of_4_are_valid(x = utf8_decode_first_2_of_4(ch0, ch1))
-                 && ++src_it != src_end && is_utf8_continuation(ch2 = * src_it)
-                 && ++src_it != src_end && is_utf8_continuation(ch3 = * src_it) )
+                 && ++src_it != src_end
+                 && is_utf8_continuation(ch2 = detail::cast_u8(*src_it))
+                 && ++src_it != src_end
+                 && is_utf8_continuation(ch3 = detail::cast_u8(*src_it)) )
         {
             ch32 = utf8_decode_last_2_of_4(x, ch2, ch3);
             ++src_it;
@@ -1083,7 +1099,7 @@ STRF_HD void strf::static_transcoder
         }
 
         STRF_CHECK_DEST;
-        *dest_it = ch32;
+        *dest_it = static_cast<DestCharT>(ch32);
         ++dest_it;
     }
     dest.advance_to(dest_it);
@@ -1100,12 +1116,12 @@ STRF_HD std::ptrdiff_t strf::static_transcoder
     using strf::detail::first_2_of_3_are_valid;
     using strf::detail::first_2_of_4_are_valid;
 
-    std::uint8_t ch0 = 0, ch1 = 0;
+    unsigned ch0 = 0, ch1 = 0;
     const auto *src_it = src;
     const auto *src_end = src + src_size;
     std::ptrdiff_t size = 0;
-    while (src_it != src_end) {
-        ch0 = (*src_it);
+    while (src_it < src_end) {
+        ch0 = detail::cast_u8(*src_it);
         ++src_it;
         ++size;
         if (0xC0 == (ch0 & 0xE0)) {
@@ -1119,13 +1135,15 @@ STRF_HD std::ptrdiff_t strf::static_transcoder
                 ++src_it;
             }
         } else if (0xE0 == (ch0 & 0xF0)) {
-            if ( src_it != src_end && is_utf8_continuation(ch1 = *src_it)
-              && first_2_of_3_are_valid( ch0, ch1, surr_poli )
+            if ( src_it != src_end
+              && is_utf8_continuation(ch1 = detail::cast_u8(*src_it))
+              && first_2_of_3_are_valid(ch0, ch1, surr_poli)
               && ++src_it != src_end && is_utf8_continuation(*src_it) )
             {
                 ++src_it;
             }
-        } else if (   src_it != src_end && is_utf8_continuation(ch1 = * src_it)
+        } else if (   src_it != src_end
+                 && is_utf8_continuation(ch1 = detail::cast_u8(*src_it))
                  && first_2_of_4_are_valid(ch0, ch1)
                  && ++src_it != src_end && is_utf8_continuation(*src_it)
                  && ++src_it != src_end && is_utf8_continuation(*src_it) )
@@ -1145,67 +1163,74 @@ STRF_HD void strf::static_transcoder
     , strf::transcoding_error_notifier* err_notifier
     , strf::surrogate_policy surr_poli )
 {
-    using strf::detail::utf8_decode;
     using strf::detail::is_utf8_continuation;
     using strf::detail::first_2_of_3_are_valid;
     using strf::detail::first_2_of_4_are_valid;
 
-    std::uint8_t ch0 = 0, ch1 = 0, ch2 = 0, ch3 = 0;
+    unsigned ch0 = 0, ch1 = 0, ch2 = 0, ch3 = 0;
     const auto *src_it = src;
     const auto *src_end = src + src_size;
     auto *dest_it = dest.buffer_ptr();
     auto *dest_end = dest.buffer_end();
-    while(src_it != src_end) {
-        ch0 = (*src_it);
+    while(src_it < src_end) {
+        ch0 = detail::cast_u8(*src_it);
         const SrcCharT* seq_begin = src_it;
         ++src_it;
         if(ch0 < 0x80) {
             STRF_CHECK_DEST;
-            *dest_it = ch0;
+            *dest_it = static_cast<DestCharT>(ch0);
             ++dest_it;
         } else if(0xC0 == (ch0 & 0xE0)) {
-            if(ch0 > 0xC1 && src_it != src_end && is_utf8_continuation(ch1 = * src_it)) {
+            if ( ch0 > 0xC1
+              && src_it != src_end
+              && is_utf8_continuation(ch1 = detail::cast_u8(*src_it))) {
                 STRF_CHECK_DEST_SIZE(2);
                 ++src_it;
-                dest_it[0] = ch0;
-                dest_it[1] = ch1;
+                dest_it[0] = static_cast<DestCharT>(ch0);
+                dest_it[1] = static_cast<DestCharT>(ch1);
                 dest_it += 2;
             } else goto invalid_sequence;
         } else if (0xE0 == ch0) {
-            if (   src_it != src_end && (((ch1 = * src_it) & 0xE0) == 0xA0)
-              && ++src_it != src_end && is_utf8_continuation(ch2 = * src_it) )
+            if (   src_it != src_end
+              && (0xA0 == ((ch1 = detail::cast_u8(*src_it)) & 0xE0))
+              && ++src_it != src_end
+              && is_utf8_continuation(ch2 = detail::cast_u8(*src_it)) )
             {
                 STRF_CHECK_DEST_SIZE(3);
                 ++src_it;
-                dest_it[0] = ch0;
-                dest_it[1] = ch1;
-                dest_it[2] = ch2;
+                dest_it[0] = static_cast<DestCharT>(ch0);
+                dest_it[1] = static_cast<DestCharT>(ch1);
+                dest_it[2] = static_cast<DestCharT>(ch2);
                 dest_it += 3;
             } else goto invalid_sequence;
         } else if (0xE0 == (ch0 & 0xF0)) {
-            if (   src_it != src_end && is_utf8_continuation(ch1 = * src_it)
+            if (   src_it != src_end
+              && is_utf8_continuation(ch1 = detail::cast_u8(*src_it))
               && first_2_of_3_are_valid(ch0, ch1, surr_poli)
-              && ++src_it != src_end && is_utf8_continuation(ch2 = * src_it) )
+              && ++src_it != src_end
+              && is_utf8_continuation(ch2 = detail::cast_u8(*src_it)) )
             {
                 STRF_CHECK_DEST_SIZE(3);
                 ++src_it;
-                dest_it[0] = ch0;
-                dest_it[1] = ch1;
-                dest_it[2] = ch2;
+                dest_it[0] = static_cast<DestCharT>(ch0);
+                dest_it[1] = static_cast<DestCharT>(ch1);
+                dest_it[2] = static_cast<DestCharT>(ch2);
                 dest_it += 3;
             } else goto invalid_sequence;
         } else if ( src_it != src_end
-                 && is_utf8_continuation(ch1 = * src_it)
+                 && is_utf8_continuation(ch1 = detail::cast_u8(*src_it))
                  && first_2_of_4_are_valid(ch0, ch1)
-                 && ++src_it != src_end && is_utf8_continuation(ch2 = * src_it)
-                 && ++src_it != src_end && is_utf8_continuation(ch3 = * src_it) )
+                 && ++src_it != src_end
+                 && is_utf8_continuation(ch2 = detail::cast_u8(*src_it))
+                 && ++src_it != src_end
+                 && is_utf8_continuation(ch3 = detail::cast_u8(*src_it)) )
         {
             STRF_CHECK_DEST_SIZE(4);
             ++src_it;
-            dest_it[0] = ch0;
-            dest_it[1] = ch1;
-            dest_it[2] = ch2;
-            dest_it[3] = ch3;
+            dest_it[0] = static_cast<DestCharT>(ch0);
+            dest_it[1] = static_cast<DestCharT>(ch1);
+            dest_it[2] = static_cast<DestCharT>(ch2);
+            dest_it[3] = static_cast<DestCharT>(ch3);
             dest_it += 4;
         } else {
             invalid_sequence:
@@ -1231,17 +1256,16 @@ STRF_HD std::ptrdiff_t strf::static_transcoder
     , std::ptrdiff_t src_size
     , strf::surrogate_policy surr_poli )
 {
-    using strf::detail::utf8_decode;
     using strf::detail::is_utf8_continuation;
     using strf::detail::first_2_of_3_are_valid;
     using strf::detail::first_2_of_4_are_valid;
 
-    std::uint8_t ch0 = 0, ch1 = 0;
+    unsigned ch0 = 0, ch1 = 0;
     const SrcCharT* src_it = src;
     const auto *src_end = src + src_size;
     std::ptrdiff_t size = 0;
-    while(src_it != src_end) {
-        ch0 = *src_it;
+    while(src_it < src_end) {
+        ch0 = detail::cast_u8(*src_it);
         ++src_it;
         if(ch0 < 0x80) {
             ++size;
@@ -1253,8 +1277,10 @@ STRF_HD std::ptrdiff_t strf::static_transcoder
                 size += 3;
             }
         } else if (0xE0 == ch0) {
-            if (   src_it != src_end && (((ch1 = * src_it) & 0xE0) == 0xA0)
-              && ++src_it != src_end && is_utf8_continuation(* src_it) )
+            if (   src_it != src_end
+              && (((ch1 = detail::cast_u8(*src_it)) & 0xE0) == 0xA0)
+              && ++src_it != src_end
+              && is_utf8_continuation(* src_it) )
             {
                 size += 3;
                 ++src_it;
@@ -1263,14 +1289,16 @@ STRF_HD std::ptrdiff_t strf::static_transcoder
             }
         } else if (0xE0 == (ch0 & 0xF0)) {
             size += 3;
-            if ( src_it != src_end && is_utf8_continuation(ch1 = * src_it)
-              && first_2_of_3_are_valid( ch0, ch1, surr_poli )
-              && ++src_it != src_end && is_utf8_continuation(* src_it) )
+            if ( src_it != src_end
+              && is_utf8_continuation(ch1 = detail::cast_u8(*src_it))
+              && first_2_of_3_are_valid(ch0, ch1, surr_poli)
+              && ++src_it != src_end
+              && is_utf8_continuation(* src_it) )
             {
                 ++src_it;
             }
         } else if( src_it != src_end
-              && is_utf8_continuation(ch1 = * src_it)
+              && is_utf8_continuation(ch1 = detail::cast_u8(*src_it))
               && first_2_of_4_are_valid(ch0, ch1)
               && ++src_it != src_end && is_utf8_continuation(*src_it)
               && ++src_it != src_end && is_utf8_continuation(*src_it) )
@@ -1294,13 +1322,13 @@ static_charset<CharT, strf::csid_utf8>::count_codepoints_fast
     std::ptrdiff_t count = 0;
     const auto *it = src;
     const auto *end = src + src_size;
-    while (it != end && count < max_count) {
+    while (it < end && count < max_count) {
         if (!strf::detail::is_utf8_continuation(*it)) {
             ++ count;
         }
         ++it;
     }
-    while(it != end && strf::detail::is_utf8_continuation(*it)) {
+    while(it < end && strf::detail::is_utf8_continuation(*it)) {
         ++it;
     }
     return {count, (it - src)};
@@ -1314,17 +1342,16 @@ static_charset<CharT, strf::csid_utf8>::count_codepoints
     , std::ptrdiff_t max_count
     , strf::surrogate_policy surr_poli ) noexcept
 {
-    using strf::detail::utf8_decode;
     using strf::detail::is_utf8_continuation;
     using strf::detail::first_2_of_3_are_valid;
     using strf::detail::first_2_of_4_are_valid;
 
-    std::uint8_t ch0 = 0, ch1 = 0;
+    unsigned ch0 = 0, ch1 = 0;
     std::ptrdiff_t count = 0;
     const auto *it = src;
     const auto *end = src + src_size;
-    while (it != end && count != max_count) {
-        ch0 = (*it);
+    while (it < end && count < max_count) {
+        ch0 = detail::cast_u8(*it);
         ++it;
         ++count;
         if (0xC0 == (ch0 & 0xE0)) {
@@ -1338,13 +1365,13 @@ static_charset<CharT, strf::csid_utf8>::count_codepoints
                 ++it;
             }
         } else if (0xE0 == (ch0 & 0xF0)) {
-            if ( it != end && is_utf8_continuation(ch1 = *it)
-              && first_2_of_3_are_valid( ch0, ch1, surr_poli )
+            if ( it != end && is_utf8_continuation(ch1 = detail::cast_u8(*it))
+              && first_2_of_3_are_valid(ch0, ch1, surr_poli)
               && ++it != end && is_utf8_continuation(*it) )
             {
                 ++it;
             }
-        } else if (   it != end && is_utf8_continuation(ch1 = * it)
+        } else if (   it != end && is_utf8_continuation(ch1 = detail::cast_u8(*it))
                  && first_2_of_4_are_valid(ch0, ch1)
                  && ++it != end && is_utf8_continuation(*it)
                  && ++it != end && is_utf8_continuation(*it) )
@@ -1433,8 +1460,8 @@ STRF_HD void strf::static_transcoder
     const auto *src_end = src + src_size;
     auto *dest_it = dest.buffer_ptr();
     auto *dest_end = dest.buffer_end();
-    for(;src_it != src_end; ++src_it) {
-        auto ch = *src_it;
+    for(;src_it < src_end; ++src_it) {
+        unsigned ch = detail::cast_u32(*src_it);
         STRF_IF_LIKELY (ch < 0x80) {
             STRF_CHECK_DEST;
             *dest_it = static_cast<DestCharT>(ch);
@@ -1488,8 +1515,8 @@ STRF_HD std::ptrdiff_t strf::static_transcoder
     const auto *src_it = src;
     const auto *src_end = src + src_size;
     std::ptrdiff_t count = 0;
-    for(;src_it != src_end; ++src_it) {
-        auto ch = *src_it;
+    for(;src_it < src_end; ++src_it) {
+        auto ch = detail::cast_u32(*src_it);
         STRF_IF_LIKELY (ch < 0x110000) {
             count += 1 + (ch >= 0x80) + (ch >= 0x800) + (ch >= 0x10000);
         } else {
@@ -1523,20 +1550,19 @@ STRF_HD void strf::static_transcoder
     , strf::transcoding_error_notifier* err_notifier
     , strf::surrogate_policy surr_poli )
 {
-    std::uint32_t ch = 0, ch2 = 0;
-    DestCharT ch32 = 0;
+    unsigned ch = 0, ch2 = 0, ch32 = 0;
     const auto *src_end = src + src_size;
     auto *dest_it = dest.buffer_ptr();
     auto *dest_end = dest.buffer_end();
     const auto *src_it = src;
-    while (src_it != src_end) {
-        ch = *src_it;
+    while (src_it < src_end) {
+        ch = detail::cast_u16(*src_it);
         ++src_it;
         STRF_IF_LIKELY (strf::detail::not_surrogate(ch)) {
             ch32 = ch;
         } else if ( strf::detail::is_high_surrogate(ch)
                && src_it != src_end
-               && strf::detail::is_low_surrogate(ch2 = *src_it)) {
+               && strf::detail::is_low_surrogate(ch2 = detail::cast_u16(*src_it))) {
             ch32 = 0x10000 + (((ch & 0x3FF) << 10) | (ch2 & 0x3FF));
             ++src_it;
         } else if (surr_poli == strf::surrogate_policy::lax) {
@@ -1550,7 +1576,7 @@ STRF_HD void strf::static_transcoder
         }
 
         STRF_CHECK_DEST;
-        *dest_it = ch32;
+        *dest_it = static_cast<DestCharT>(ch32);
         ++dest_it;
     }
     dest.advance_to(dest_it);
@@ -1564,14 +1590,14 @@ STRF_HD std::ptrdiff_t strf::static_transcoder
     , strf::surrogate_policy surr_poli )
 {
     (void) surr_poli;
-    std::uint32_t ch = 0;
+    unsigned ch = 0;
     std::ptrdiff_t count = 0;
     const auto *src_it = src;
     const auto *const src_end = src + src_size;
     const SrcCharT* src_it_next = nullptr;
-    for(; src_it != src_end; src_it = src_it_next) {
+    for(; src_it < src_end; src_it = src_it_next) {
         src_it_next = src_it + 1;
-        ch = *src_it;
+        ch = detail::cast_u16(*src_it);
         src_it_next = src_it + 1;
 
         ++count;
@@ -1594,13 +1620,13 @@ STRF_HD void strf::static_transcoder
     , strf::transcoding_error_notifier* err_notifier
     , strf::surrogate_policy surr_poli )
 {
-    std::uint32_t ch = 0, ch2 = 0;
+    unsigned ch = 0, ch2 = 0;
     const auto *src_it = src;
     const auto *const src_end = src + src_size;
     auto *dest_it = dest.buffer_ptr();
     auto *dest_end = dest.buffer_end();
-    while (src_it != src_end) {
-        ch = *src_it;
+    while (src_it < src_end) {
+        ch = detail::cast_u16(*src_it);
         ++src_it;
 
         STRF_IF_LIKELY (strf::detail::not_surrogate(ch)) {
@@ -1609,7 +1635,7 @@ STRF_HD void strf::static_transcoder
             ++dest_it;
         } else if ( strf::detail::is_high_surrogate(ch)
                  && src_it != src_end
-                 && strf::detail::is_low_surrogate(ch2 = *src_it))
+                 && strf::detail::is_low_surrogate(ch2 = detail::cast_u16(*src_it)))
         {
             ++src_it;
             STRF_CHECK_DEST_SIZE(2);
@@ -1644,9 +1670,9 @@ STRF_HD std::ptrdiff_t strf::static_transcoder
     std::ptrdiff_t count = 0;
     const SrcCharT* src_it = src;
     const auto *const src_end = src + src_size;
-    std::uint32_t ch = 0;
-    while (src_it != src_end) {
-        ch = *src_it;
+    unsigned ch = 0;
+    while (src_it < src_end) {
+        ch = detail::cast_u16(*src_it);
         ++ src_it;
         ++ count;
         if ( strf::detail::is_high_surrogate(ch)
@@ -1698,9 +1724,9 @@ static_charset<CharT, strf::csid_utf16>::count_codepoints
     std::ptrdiff_t count = 0;
     const CharT* it = src;
     const auto *const end = src + src_size;
-    std::uint32_t ch = 0;
-    while (it != end && count < max_count) {
-        ch = *it;
+    unsigned ch = 0;
+    while (it < end && count < max_count) {
+        ch = detail::cast_u16(*it);
         ++ it;
         ++ count;
         if ( strf::detail::is_high_surrogate(ch) && it != end
@@ -1761,8 +1787,8 @@ STRF_HD void strf::static_transcoder
     const auto *const src_end = src + src_size;
     auto *dest_it = dest.buffer_ptr();
     auto *dest_end = dest.buffer_end();
-    for ( ; src_it != src_end; ++src_it) {
-        auto ch = *src_it;
+    for ( ; src_it < src_end; ++src_it) {
+        unsigned ch = detail::cast_u32(*src_it);
         STRF_IF_LIKELY (ch < 0x10000) {
             STRF_IF_LIKELY ( surr_poli == strf::surrogate_policy::lax
                           || strf::detail::not_surrogate(ch) )
@@ -1773,7 +1799,7 @@ STRF_HD void strf::static_transcoder
             } else goto invalid_char;
         } else if (ch < 0x110000) {
             STRF_CHECK_DEST_SIZE(2);
-            const char32_t sub_codepoint = ch - 0x10000;
+            const auto sub_codepoint = ch - 0x10000;
             dest_it[0] = static_cast<DestCharT>(0xD800 | (sub_codepoint >> 10));
             dest_it[1] = static_cast<DestCharT>(0xDC00 | (sub_codepoint &  0x3FF));
             dest_it += 2;
@@ -1802,8 +1828,8 @@ STRF_HD std::ptrdiff_t strf::static_transcoder
     std::ptrdiff_t count = 0;
     const SrcCharT* src_it = src;
     const auto *const src_end = src + src_size;
-    for ( ; src_it != src_end; ++src_it) {
-        auto ch = *src_it;
+    for ( ; src_it < src_end; ++src_it) {
+        unsigned ch = detail::cast_u32(*src_it);
         count += 1 + (0x10000 <= ch && ch < 0x110000);
     }
     return count;
@@ -1833,7 +1859,7 @@ STRF_HD void strf::static_transcoder
     auto *dest_end = dest.buffer_end();
     if (surr_poli == strf::surrogate_policy::lax) {
         for (const auto *src_it = src; src_it < src_end; ++src_it) {
-            auto ch = *src_it;
+            unsigned ch = detail::cast_u32(*src_it);
             STRF_IF_UNLIKELY (ch >= 0x110000) {
                 ch = 0xFFFD;
                 if (err_notifier) {
@@ -1842,12 +1868,12 @@ STRF_HD void strf::static_transcoder
                 }
             }
             STRF_CHECK_DEST;
-            *dest_it = ch;
+            *dest_it = static_cast<DestCharT>(ch);
             ++dest_it;
         }
     } else {
         for(const auto *src_it = src; src_it < src_end; ++src_it) {
-            char32_t ch = *src_it;
+            unsigned ch = detail::cast_u32(*src_it);
             STRF_IF_UNLIKELY (ch >= 0x110000 || strf::detail::is_surrogate(ch)) {
                 ch = 0xFFFD;
                 if (err_notifier) {
@@ -1856,7 +1882,7 @@ STRF_HD void strf::static_transcoder
                 }
             }
             STRF_CHECK_DEST;
-            *dest_it = ch;
+            *dest_it = static_cast<DestCharT>(ch);
             ++dest_it;
         }
     }
@@ -1899,55 +1925,58 @@ STRF_HD void strf::static_transcoder
     using strf::detail::first_2_of_3_are_valid;
     using strf::detail::first_2_of_4_are_valid;
 
-    std::uint8_t ch0 = 0, ch1 = 0, ch2 = 0, ch3 = 0;
-    std::uint32_t x = 0;
+    unsigned ch0 = 0, ch1 = 0, ch2 = 0, ch3 = 0;
+    unsigned x = 0;
     const auto *src_it = src;
     const auto *const src_end = src + src_size;
     auto *dest_it = dest.buffer_ptr();
     auto *dest_end = dest.buffer_end();
 
-    for (;src_it != src_end; ++dest_it) {
-        ch0 = (*src_it);
+    for (;src_it < src_end; ++dest_it) {
+        ch0 = detail::cast_u8(*src_it);
         const SrcCharT* seq_begin = src_it;
         ++src_it;
         STRF_IF_LIKELY (ch0 < 0x80) {
             STRF_CHECK_DEST;
-            *dest_it = ch0;
+            *dest_it = static_cast<DestCharT>(ch0);
         } else if (0xC0 == (ch0 & 0xE0)) {
             STRF_IF_LIKELY ( ch0 > 0xC1
                           && src_it != src_end
-                          && is_utf8_continuation(ch1 = * src_it))
+                          && is_utf8_continuation(ch1 = detail::cast_u8(*src_it)))
             {
                 STRF_CHECK_DEST;
-                *dest_it = utf8_decode(ch0, ch1);
+                *dest_it = static_cast<DestCharT>(utf8_decode(ch0, ch1));
                 ++src_it;
             } else goto invalid_sequence;
         } else if (0xE0 == ch0) {
             STRF_IF_LIKELY ( src_it != src_end
-                          && (((ch1 = * src_it) & 0xE0) == 0xA0)
+                          && (((ch1 = detail::cast_u8(*src_it)) & 0xE0) == 0xA0)
                           && ++src_it != src_end
-                          && is_utf8_continuation(ch2 = * src_it) )
+                          && is_utf8_continuation(ch2 = detail::cast_u8(*src_it)) )
             {
                 STRF_CHECK_DEST;
-                *dest_it = ((ch1 & 0x3F) << 6) | (ch2 & 0x3F);
+                *dest_it = static_cast<DestCharT>(((ch1 & 0x3F) << 6) | (ch2 & 0x3F));
                 ++src_it;
             } else goto invalid_sequence;
         } else if (0xE0 == (ch0 & 0xF0)) {
-            STRF_IF_LIKELY (( src_it != src_end && is_utf8_continuation(ch1 = * src_it)
+            STRF_IF_LIKELY (( src_it != src_end
+                          && is_utf8_continuation(ch1 = detail::cast_u8(*src_it))
                           && first_2_of_3_are_valid( x = utf8_decode_first_2_of_3(ch0, ch1)
-                                                  , surr_poli )
+                                                   , surr_poli )
                           && ++src_it != src_end
-                          && is_utf8_continuation(ch2 = * src_it) ))
+                          && is_utf8_continuation(ch2 = detail::cast_u8(*src_it)) ))
             {
                 STRF_CHECK_DEST;
                 *dest_it = static_cast<DestCharT>((x << 6) | (ch2 & 0x3F));
                 ++src_it;
             } else goto invalid_sequence;
         } else if ( src_it != src_end
-                 && is_utf8_continuation(ch1 = * src_it)
+                 && is_utf8_continuation(ch1 = detail::cast_u8(*src_it))
                  && first_2_of_4_are_valid(x = utf8_decode_first_2_of_4(ch0, ch1))
-                 && ++src_it != src_end && is_utf8_continuation(ch2 = * src_it)
-                 && ++src_it != src_end && is_utf8_continuation(ch3 = * src_it) )
+                 && ++src_it != src_end
+                 && is_utf8_continuation(ch2 = detail::cast_u8(*src_it))
+                 && ++src_it != src_end
+                 && is_utf8_continuation(ch3 = detail::cast_u8(*src_it)) )
         {
             STRF_CHECK_DEST_SIZE(2);
             x = utf8_decode_last_2_of_4(x, ch2, ch3) - 0x10000;
@@ -1982,11 +2011,11 @@ STRF_HD std::ptrdiff_t strf::static_transcoder
     using strf::detail::first_2_of_4_are_valid;
 
     std::ptrdiff_t size = 0;
-    std::uint8_t ch0 = 0, ch1 = 0;
+    unsigned ch0 = 0, ch1 = 0;
     const auto *src_it = src;
     const auto *const src_end = src + src_size;
     while(src_it < src_end) {
-        ch0 = *src_it;
+        ch0 = detail::cast_u8(*src_it);
         ++src_it;
         ++size;
         if (0xC0 == (ch0 & 0xE0)) {
@@ -1994,19 +2023,24 @@ STRF_HD std::ptrdiff_t strf::static_transcoder
                 ++src_it;
             }
         } else if (0xE0 == ch0) {
-            if (   src_it != src_end && (((ch1 = * src_it) & 0xE0) == 0xA0)
-              && ++src_it != src_end && is_utf8_continuation(* src_it) )
+            if (   src_it != src_end
+              && (((ch1 = detail::cast_u8(*src_it)) & 0xE0) == 0xA0)
+              && ++src_it != src_end
+              && is_utf8_continuation(* src_it) )
             {
                 ++src_it;
             }
         } else if (0xE0 == (ch0 & 0xF0)) {
-            if ( src_it != src_end && is_utf8_continuation(ch1 = * src_it)
-              && first_2_of_3_are_valid( ch0, ch1, surr_poli )
-              && ++src_it != src_end && is_utf8_continuation(* src_it) )
+            if ( src_it != src_end
+              && is_utf8_continuation(ch1 = detail::cast_u8(*src_it))
+              && first_2_of_3_are_valid(ch0, ch1, surr_poli)
+              && ++src_it != src_end
+              && is_utf8_continuation(* src_it) )
             {
                 ++src_it;
             }
-        } else if (   src_it != src_end && is_utf8_continuation(ch1 = * src_it)
+        } else if (   src_it != src_end
+                 && is_utf8_continuation(ch1 = detail::cast_u8(*src_it))
                  && first_2_of_4_are_valid(ch0, ch1)
                  && ++src_it != src_end && is_utf8_continuation(*src_it)
                  && ++src_it != src_end && is_utf8_continuation(*src_it) )
@@ -2034,7 +2068,7 @@ STRF_HD void strf::static_transcoder
     auto *dest_end = dest.buffer_end();
 
     while (src_it < src_end) {
-        auto ch = *src_it;
+        unsigned ch = detail::cast_u16(*src_it);
         ++src_it;
         STRF_IF_LIKELY (ch < 0x80) {
             STRF_CHECK_DEST;
@@ -2057,9 +2091,9 @@ STRF_HD void strf::static_transcoder
                && strf::detail::is_low_surrogate(*src_it) )
         {
             STRF_CHECK_DEST_SIZE(4);
-            const std::uint32_t ch2 = *src_it;
+            const unsigned ch2 = detail::cast_u16(*src_it);
             ++src_it;
-            const std::uint32_t codepoint = 0x10000 + (((ch & 0x3FF) << 10) | (ch2 & 0x3FF));
+            const unsigned codepoint = 0x10000 + (((ch & 0x3FF) << 10) | (ch2 & 0x3FF));
             dest_it[0] = static_cast<DestCharT>(0xF0 | (0x07 & (codepoint >> 18)));
             dest_it[1] = static_cast<DestCharT>(0x80 | (0xBF & (codepoint >> 12)));
             dest_it[2] = static_cast<DestCharT>(0x80 | (0xBF & (codepoint >> 6)));
@@ -2093,7 +2127,7 @@ STRF_HD std::ptrdiff_t strf::static_transcoder
     const auto *const src_end = src + src_size;
     std::ptrdiff_t size = 0;
     for(const auto *it = src; it < src_end; ++it) {
-        SrcCharT ch = *it;
+        unsigned ch = detail::cast_u16(*it);
         STRF_IF_LIKELY (ch < 0x80) {
             ++size;
         } else if (ch < 0x800) {

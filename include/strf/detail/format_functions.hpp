@@ -257,8 +257,10 @@ class quantity_formatter_fn
 {
 public:
 
-    constexpr STRF_HD explicit quantity_formatter_fn(std::size_t count) noexcept
-        : count_(count)
+    template < typename IntT
+             , strf::detail::enable_if_t<std::is_integral<IntT>::value, int> =0 >
+    constexpr STRF_HD explicit quantity_formatter_fn(IntT count) noexcept
+        : count_(detail::safe_cast_size_t(count))
     {
     }
 
@@ -270,20 +272,26 @@ public:
     {
     }
 
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& multi(std::ptrdiff_t count) && noexcept
+    template < typename IntT
+             , strf::detail::enable_if_t<std::is_integral<IntT>::value, int> =0 >
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& multi(IntT count) && noexcept
     {
-        count_ = count;
+        count_ = detail::safe_cast_size_t(count);
         T* base_ptr = static_cast<T*>(this);
         return static_cast<T&&>(*base_ptr);
     }
-    constexpr STRF_HD std::ptrdiff_t count() const noexcept
+    constexpr STRF_HD std::size_t count() const noexcept
     {
         return count_;
+    }
+    constexpr STRF_HD std::ptrdiff_t scount() const noexcept
+    {
+        return static_cast<std::ptrdiff_t>(count_);
     }
 
 private:
 
-    std::ptrdiff_t count_ = 1;
+    std::size_t count_ = 1;
 };
 
 struct quantity_formatter
@@ -337,12 +345,12 @@ constexpr STRF_HD auto fixed(T&& value)
     return strf::fmt((T&&)value).fixed();
 }
 
-template <typename T>
-    constexpr STRF_HD auto fixed(T&& value, unsigned precision)
-    noexcept(noexcept(strf::fmt((T&&)value).fixed().p(precision)))
-    -> strf::detail::remove_cvref_t<decltype(strf::fmt((T&&)value).fixed().p(precision))>
+template <typename T, typename P>
+    constexpr STRF_HD auto fixed(T&& value, P&& precision)
+    noexcept(noexcept(strf::fmt((T&&)value).fixed().p((P&&)precision)))
+    -> strf::detail::remove_cvref_t<decltype(strf::fmt((T&&)value).fixed().p((P&&)precision))>
 {
-    return strf::fmt((T&&)value).fixed().p(precision);
+    return strf::fmt((T&&)value).fixed().p((P&&)precision);
 }
 
 template <typename T>
@@ -353,12 +361,12 @@ constexpr STRF_HD auto sci(T&& value)
     return strf::fmt((T&&)value).sci();
 }
 
-template <typename T>
-constexpr STRF_HD auto sci(T&& value, unsigned precision)
-    noexcept(noexcept(strf::fmt((T&&)value).sci().p(precision)))
-    -> strf::detail::remove_cvref_t<decltype(strf::fmt((T&&)value).sci().p(precision))>
+template <typename T, typename P>
+constexpr STRF_HD auto sci(T&& value, P&& precision)
+    noexcept(noexcept(strf::fmt((T&&)value).sci().p((P&&)precision)))
+    -> strf::detail::remove_cvref_t<decltype(strf::fmt((T&&)value).sci().p((P&&)precision))>
 {
-    return strf::fmt((T&&)value).sci().p(precision);
+    return strf::fmt((T&&)value).sci().p((P&&)precision);
 }
 
 template <typename T>
@@ -369,12 +377,12 @@ constexpr STRF_HD auto gen(T&& value)
     return strf::fmt((T&&)value).gen();
 }
 
-template <typename T>
-constexpr STRF_HD auto gen(T&& value, unsigned precision)
-    noexcept(noexcept(strf::fmt((T&&)value).gen().p(precision)))
-    -> strf::detail::remove_cvref_t<decltype(strf::fmt((T&&)value).gen().p(precision))>
+template <typename T, typename P>
+constexpr STRF_HD auto gen(T&& value, P&& precision)
+    noexcept(noexcept(strf::fmt((T&&)value).gen().p((P&&)precision)))
+    -> strf::detail::remove_cvref_t<decltype(strf::fmt((T&&)value).gen().p((P&&)precision))>
 {
-    return strf::fmt((T&&)value).gen().p(precision);
+    return strf::fmt((T&&)value).gen().p((P&&)precision);
 }
 
 template <typename T, typename C>
@@ -549,12 +557,12 @@ struct fixed_fn {
     {
         return strf::fmt((T&&)value).fixed();
     }
-    template <typename T>
-        constexpr STRF_HD auto operator()(T&& value, unsigned precision) const
-        noexcept(noexcept(strf::fmt((T&&)value).fixed().p(precision)))
-        -> strf::detail::remove_cvref_t<decltype(strf::fmt((T&&)value).fixed().p(precision))>
+    template <typename T, typename P>
+        constexpr STRF_HD auto operator()(T&& value, P&& precision) const
+        noexcept(noexcept(strf::fmt((T&&)value).fixed().p((P&&)precision)))
+        -> strf::detail::remove_cvref_t<decltype(strf::fmt((T&&)value).fixed().p((P&&)precision))>
     {
-        return strf::fmt((T&&)value).fixed().p(precision);
+        return strf::fmt((T&&)value).fixed().p((P&&)precision);
     }
 };
 
@@ -566,12 +574,12 @@ struct sci_fn {
     {
         return strf::fmt((T&&)value).sci();
     }
-    template <typename T>
-    constexpr STRF_HD auto operator()(T&& value, unsigned precision) const
-        noexcept(noexcept(strf::fmt((T&&)value).sci().p(precision)))
-        -> strf::detail::remove_cvref_t<decltype(strf::fmt((T&&)value).sci().p(precision))>
+    template <typename T, typename P>
+    constexpr STRF_HD auto operator()(T&& value, P&& precision) const
+        noexcept(noexcept(strf::fmt((T&&)value).sci().p((P&&)precision)))
+        -> strf::detail::remove_cvref_t<decltype(strf::fmt((T&&)value).sci().p((P&&)precision))>
     {
-        return strf::fmt((T&&)value).sci().p(precision);
+        return strf::fmt((T&&)value).sci().p((P&&)precision);
     }
 };
 
@@ -583,12 +591,12 @@ struct gen_fn {
     {
         return strf::fmt((T&&)value).gen();
     }
-    template <typename T>
-        constexpr STRF_HD auto operator()(T&& value, unsigned precision) const
-        noexcept(noexcept(strf::fmt((T&&)value).gen().p(precision)))
-        -> strf::detail::remove_cvref_t<decltype(strf::fmt((T&&)value).gen().p(precision))>
+    template <typename T, typename P>
+        constexpr STRF_HD auto operator()(T&& value, P&& precision) const
+        noexcept(noexcept(strf::fmt((T&&)value).gen().p((P&&)precision)))
+        -> strf::detail::remove_cvref_t<decltype(strf::fmt((T&&)value).gen().p((P&&)precision))>
     {
-        return strf::fmt((T&&)value).gen().p(precision);
+        return strf::fmt((T&&)value).gen().p((P&&)precision);
     }
 };
 

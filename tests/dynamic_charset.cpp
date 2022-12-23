@@ -54,7 +54,9 @@ void test_dynamic_charset()
     }
     {
         auto custom_wcalc = strf::make_width_calculator
-            ( [](char32_t ch) -> strf::width_t { return 1 + (ch == U'\u2014'); } );
+            ( [](char32_t ch) -> strf::width_t {
+                  return static_cast<strf::width_t>(1 + (ch == U'\u2014'));
+              } );
         TEST( "   x") (custom_wcalc, dyn_ascii, strf::fmt('x') > 4);
         TEST( "   x") (custom_wcalc, dyn_utf8, strf::fmt('x') > 4);
         TEST(u"   x") (custom_wcalc, dyn_utf16, strf::fmt(u'x') > 4);

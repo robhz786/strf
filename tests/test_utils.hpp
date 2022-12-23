@@ -766,7 +766,7 @@ public:
         , notifier_{input.function, input.src_filename, input.src_line}
         , dest_end_{buffer_}
     {
-        if (input.initial_space + strf::min_destination_buffer_size > buffer_size_) {
+        if (input.initial_space + strf::min_destination_buffer_ssize > buffer_size_) {
             strf::to(notifier_) ("\nUnsupported test case: Initial space too big");
             this->set_buffer_end(buffer_);
         }
@@ -876,7 +876,7 @@ public:
         , src_line_(input.src_line)
         , dest_end_{buffer_}
     {
-        if (input.initial_space + strf::min_destination_buffer_size > buffer_size_) {
+        if (input.initial_space + strf::min_destination_buffer_ssize > buffer_size_) {
             emit_error_message_("\nUnsupported test case: Initial space too big");
             this->set_buffer_end(buffer_);
         }
@@ -1108,7 +1108,7 @@ public:
     }
     STRF_HD span(T* b, T* e)
         : begin_(b)
-        , size_(e - b)
+        , size_(strf::detail::safe_cast_size_t(e - b))
     {
     }
 
@@ -1116,7 +1116,7 @@ public:
     STRF_HD T* end()   const { return begin_ + size_; }
 
     STRF_HD std::size_t size() const { return size_; }
-    STRF_HD std::ptrdiff_t ssize() const { return size_; }
+    STRF_HD std::ptrdiff_t ssize() const { return static_cast<std::ptrdiff_t>(size_); }
     STRF_HD T& operator[](std::size_t i) const { return begin_[i]; }
 
 private:

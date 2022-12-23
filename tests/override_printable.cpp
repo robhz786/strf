@@ -15,7 +15,7 @@ public:
         ( const strf::usual_printer_input<T...>& input )
         : value_(input.arg)
     {
-        input.pre.subtract_width(2 + static_cast<int>(input.arg));
+        input.pre.subtract_width(static_cast<strf::width_t>(2 + static_cast<int>(input.arg)));
         input.pre.add_size(2 + static_cast<int>(input.arg));
     }
 

@@ -73,16 +73,25 @@ constexpr STRF_HD unsigned max_num_digits()
     return strf::detail::max_num_digits_impl<IntT, Base>::value;
 }
 
+#if defined(__GNUC__)
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wconversion"
+#endif
+
 template
     < typename IntT
     , typename unsigned_IntT = typename std::make_unsigned<IntT>::type >
 constexpr STRF_HD strf::detail::enable_if_t<std::is_signed<IntT>::value, unsigned_IntT>
 unsigned_abs(IntT value) noexcept
 {
-    return ( value > 0
+    return ( value >= 0
            ? static_cast<unsigned_IntT>(value)
            : 1 + static_cast<unsigned_IntT>(-(value + 1)));
 }
+
+#if defined(__GNUC__)
+#  pragma GCC diagnostic pop
+#endif
 
 template<typename IntT>
 constexpr STRF_HD strf::detail::enable_if_t<std::is_unsigned<IntT>::value, IntT>
@@ -105,8 +114,8 @@ template < typename ToIntT
              , int > = 0 >
 constexpr STRF_HD ToIntT cast_abs(FromIntT value)
 {
-    using SingedToInt = strf::detail::make_signed_t<ToIntT>;
-    return value >= 0 ? (SingedToInt)value : -(SingedToInt)value;
+    using SignedToIntT = strf::detail::make_signed_t<ToIntT>;
+    return value >= 0 ? (SignedToIntT)value : -(SignedToIntT)value;
 }
 template < typename ToIntT
          , typename FromIntT
@@ -134,7 +143,7 @@ struct digits_counter<2, IntSize>
     // NOLINTNEXTLINE(google-runtime-int)
     static inline STRF_HD int count_digits(unsigned long value) noexcept
     {
-        return sizeof(value) * 8 - strf::detail::countl_zero_l(value | 1);
+        return static_cast<int>(sizeof(value)) * 8 - strf::detail::countl_zero_l(value | 1);
     }
 };
 template<>
@@ -143,7 +152,7 @@ struct digits_counter<2, 8>
     // NOLINTNEXTLINE(google-runtime-int)
     static inline STRF_HD int count_digits(unsigned long long value) noexcept
     {
-        return sizeof(value) * 8 - strf::detail::countl_zero_ll(value | 1);
+        return static_cast<int>(sizeof(value)) * 8 - strf::detail::countl_zero_ll(value | 1);
     }
 };
 template<int IntSize>
@@ -153,8 +162,9 @@ struct digits_counter<8, IntSize>
     // NOLINTNEXTLINE(google-runtime-int)
     static STRF_HD int count_digits(unsigned long value) noexcept
     {
-        return (sizeof(value) * 8 + 2 - strf::detail::countl_zero_l(value | 1)) / 3;
-    }
+        return (static_cast<int>(sizeof(value)) * 8 + 2
+                - strf::detail::countl_zero_l(value | 1)) / 3;
+}
 };
 template<>
 struct digits_counter<8, 8>
@@ -162,8 +172,8 @@ struct digits_counter<8, 8>
     // NOLINTNEXTLINE(google-runtime-int)
     static STRF_HD int count_digits(unsigned long long value) noexcept
     {
-        return static_cast<int>
-            ((sizeof(value) * 8 + 2 - strf::detail::countl_zero_ll(value | 1)) / 3);
+        return (static_cast<int>(sizeof(value)) * 8 + 2
+                - strf::detail::countl_zero_ll(value | 1)) / 3;
     }
 };
 template<int IntSize>
@@ -173,8 +183,8 @@ struct digits_counter<16, IntSize>
     // NOLINTNEXTLINE(google-runtime-int)
     static STRF_HD int count_digits(unsigned long value) noexcept
     {
-        return static_cast<int>
-            ((sizeof(value) * 8 + 3 - strf::detail::countl_zero_l(value | 1)) >> 2);
+        return (static_cast<int>(sizeof(value)) * 8 + 3
+                - strf::detail::countl_zero_l(value | 1)) >> 2;
     }
 };
 template<>
@@ -183,8 +193,8 @@ struct digits_counter<16, 8>
     // NOLINTNEXTLINE(google-runtime-int)
     static STRF_HD int count_digits(unsigned long long value) noexcept
     {
-        return static_cast<int>
-            ((sizeof(value) * 8 + 3 - strf::detail::countl_zero_ll(value | 1)) >> 2);
+        return (static_cast<int>(sizeof(value)) * 8 + 3
+                - strf::detail::countl_zero_ll(value | 1)) >> 2;
     }
 };
 
@@ -193,9 +203,10 @@ struct digits_counter<16, 8>
 template<>
 struct digits_counter<2, 1>
 {
-    STRF_CONSTEXPR_IN_CXX14 static STRF_HD int count_digits(uint_fast8_t value) noexcept
+    STRF_CONSTEXPR_IN_CXX14 static STRF_HD int count_digits(uint_fast8_t value8) noexcept
     {
         int num_digits = 1;
+        unsigned value = value8;
         if (value > 0xful) {
             value >>= 4;
             num_digits += 4 ;
@@ -574,7 +585,7 @@ template <int Base, typename intT>
 STRF_CONSTEXPR_IN_CXX14 STRF_HD int count_digits(intT value) noexcept
 {
     static_assert(std::is_unsigned<intT>::value, "");
-    return strf::detail::digits_counter<Base, sizeof(intT)>
+    return strf::detail::digits_counter<Base, (int)sizeof(intT)>
         ::count_digits(value);
 }
 
@@ -614,8 +625,8 @@ public:
         const char* arr = strf::detail::chars_00_to_99();
         while(uvalue > 99) {
             auto index = (uvalue % 100) << 1;
-            it[-2] = arr[index];
-            it[-1] = arr[index + 1];
+            it[-2] = static_cast<CharT>(arr[index]);
+            it[-1] = static_cast<CharT>(arr[index + 1]);
             it -= 2;
             uvalue /= 100;
         }
@@ -624,8 +635,8 @@ public:
             return it;
         }
         auto index = uvalue << 1;
-        it[-2] = arr[index];
-        it[-1] = arr[index + 1];
+        it[-2] = static_cast<CharT>(arr[index]);
+        it[-1] = static_cast<CharT>(arr[index + 1]);
         return it - 2;
     }
     template <typename UIntT, typename CharT>
@@ -680,11 +691,11 @@ public:
                 *--it = static_cast<CharT>('0' + uvalue);
                 return;
             }
-            auto dig_index = static_cast<std::uint8_t>((uvalue % 100) << 1);
+            auto dig_index = static_cast<int>((uvalue % 100) << 1);
             uvalue /= 100;
             if (digits_before_sep >= 2) {
-                it[-1] = arr[dig_index + 1];
-                it[-2] = arr[dig_index];
+                it[-1] = static_cast<CharT>(arr[dig_index + 1]);
+                it[-2] = static_cast<CharT>(arr[dig_index]);
                 if (uvalue == 0) {
                     return;
                 }
@@ -702,9 +713,9 @@ public:
                     digits_before_sep = git.current();
                 }
             } else {
-                it[-1] = arr[dig_index + 1];
+                it[-1] = static_cast<CharT>(arr[dig_index + 1]);
                 it[-2] = sep;
-                it[-3] = arr[dig_index];
+                it[-3] = static_cast<CharT>(arr[dig_index]);
                 if (uvalue == 0) {
                     return;
                 }
@@ -731,10 +742,10 @@ public:
 
         STRF_ASSERT(uvalue != 0);
         while (uvalue > 9) {
-            auto dig_index = static_cast<std::uint8_t>((uvalue % 100) << 1);
+            auto dig_index = static_cast<int>((uvalue % 100) << 1);
             uvalue /= 100;
-            it[-2] = arr[dig_index];
-            it[-1] = arr[dig_index + 1];
+            it[-2] = static_cast<CharT>(arr[dig_index]);
+            it[-1] = static_cast<CharT>(arr[dig_index + 1]);
             it -= 2;
         }
         if (uvalue) {
@@ -754,17 +765,18 @@ public:
         , CharT* it
         , strf::lettercase lc ) noexcept
     {
+        STRF_ASSERT(detail::ge_zero(value));
         using uIntT = typename std::make_unsigned<IntT>::type;
         uIntT uvalue = value;
-        const unsigned offset_digit_a = ('A' | ((lc == strf::lowercase) << 5)) - 10;
+        const int offset_digit_a = (static_cast<int>('A') | ((lc == strf::lowercase) << 5)) - 10;
         while(uvalue > 0xF) {
-            auto digit = uvalue & 0xF;
+            int digit = uvalue & 0xF;
             *--it = ( digit < 10
                     ? static_cast<CharT>('0' + digit)
                     : static_cast<CharT>(offset_digit_a + digit) );
             uvalue >>= 4;
         }
-        auto digit = uvalue & 0xF;
+        const auto digit = static_cast<int>(uvalue & 0xF);
         *--it = ( digit < 10
                 ? static_cast<CharT>('0' + digit)
                 : static_cast<CharT>(offset_digit_a + digit) );
@@ -783,10 +795,10 @@ public:
         STRF_ASSERT(! git.ended());
         STRF_ASSERT(uvalue > 0xF);
 
-        const unsigned offset_digit_a = ('A' | ((lc == strf::lowercase) << 5)) - 10;
+        const int offset_digit_a = (static_cast<int>('A') | ((lc == strf::lowercase) << 5)) - 10;
         auto digits_before_sep = git.current();
         do {
-            auto digit = uvalue & 0xF;
+            int digit = uvalue & 0xF;
             *--it = ( digit < 10
                     ? static_cast<CharT>('0' + digit)
                     : static_cast<CharT>(offset_digit_a + digit) );
@@ -806,7 +818,7 @@ public:
         } while(uvalue > 0xF);
         STRF_ASSERT(uvalue);
         do {
-            auto digit = uvalue & 0xF;
+            const auto digit = static_cast<int>(uvalue & 0xF);
             *--it = ( digit < 10
                     ? static_cast<CharT>('0' + digit)
                     : static_cast<CharT>(offset_digit_a + digit) );
@@ -850,7 +862,7 @@ public:
         auto digits_before_sep = git.current();
         while (1) {
             STRF_ASSERT(digits_before_sep > 0);
-            *--it = '0' + (uvalue & 0x7);
+            *--it = static_cast<CharT>('0' + (uvalue & 0x7));
             uvalue = uvalue >> 3;
             if (uvalue == 0) {
                 return;
@@ -870,7 +882,7 @@ public:
         }
         STRF_ASSERT(uvalue);
         do {
-            *--it = '0' + (uvalue & 0x7);
+            *--it = static_cast<CharT>('0' + (uvalue & 0x7));
             uvalue = uvalue >> 3;
         } while(uvalue);
     }
@@ -1019,12 +1031,14 @@ public:
         dest.ensure(dist.highest_group);
         auto *oit = dest.buffer_ptr();
         auto *end = dest.buffer_end();
-        strf::detail::copy_n(digits, dist.highest_group, oit);
+        STRF_ASSERT(dist.highest_group >= 0);
+        strf::detail::copy_n(digits, detail::cast_unsigned(dist.highest_group), oit);
         oit += dist.highest_group;
         digits += dist.highest_group;
 
         if (dist.middle_groups_count) {
-            auto middle_groups = dist.low_groups.highest_group();
+            const auto middle_groups = dist.low_groups.highest_group();
+            STRF_ASSERT(middle_groups >= 0);
             do {
                 if (oit + sep_size + middle_groups > end) {
                     dest.advance_to(oit);
@@ -1033,14 +1047,15 @@ public:
                     end = dest.buffer_end();
                 }
                 oit = encode_char(oit, sep);
-                strf::detail::copy_n(digits, middle_groups, oit);
+                strf::detail::copy_n(digits, detail::cast_unsigned(middle_groups), oit);
                 oit += middle_groups;
                 digits += middle_groups;
             } while (--dist.middle_groups_count);
             dist.low_groups.pop_high();
         }
         while ( ! dist.low_groups.empty()) {
-            auto grp = dist.low_groups.highest_group();
+            const auto grp = dist.low_groups.highest_group();
+            STRF_ASSERT(grp >= 0);
             if (oit + sep_size + grp > end) {
                 dest.advance_to(oit);
                 dest.flush();
@@ -1048,7 +1063,7 @@ public:
                 end = dest.buffer_end();
             }
             oit = encode_char(oit, sep);
-            strf::detail::copy_n(digits, grp, oit);
+            strf::detail::copy_n(digits, detail::cast_unsigned(grp), oit);
             oit += grp;
             digits += grp;
             dist.low_groups.pop_high();

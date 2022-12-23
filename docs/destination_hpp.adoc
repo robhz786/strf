@@ -144,11 +144,11 @@ public:
     bool {good}() const noexcept;
     void {advance_to}(T{asterisk} p);
     void {advance}();
-    void {advance_count}(std::ptrdiff_t n);
-    void {ensure}(std::ptrdiff_t s);
+    void {advance_count}(std::integral auto n);
+    void {ensure}(std::integral auto s);
     void {flush}();
 
-    void {write}(const T{asterisk} data, std::ptrdiff_t count);
+    void {write}(const T{asterisk} data, std::integral auto count);
 
     virtual void {recycle}() = 0;
 
@@ -259,11 +259,11 @@ Posconditions::
 ====
 [source,cpp]
 ----
-void ensure(std::ptrdiff_t s)
+void ensure(std::integral auto s)
 ----
 [horizontal]
-Effect:: Calls `{recycle}()` if `{buffer_space}() < s`.
-Precondition:: `0 \<= s && s \<= min_sspace_after_recycle`
+Effect:: Calls `{recycle}()` if `{buffer_sspace}() < s`.
+Precondition:: `s \<= min_sspace_after_recycle`
 Postcondition:: `{buffer_space}() >= s`
 ====
 [[output_buffer_advance_to]]
@@ -291,7 +291,7 @@ Precondition:: `{buffer_ptr}() != {buffer_end}()`
 ====
 [source,cpp]
 ----
-void advance(std::ptrdiff_t n)
+void advance(std::integral auto n)
 ----
 [horizontal]
 Effect:: Equivalent to `{advance_to}({buffer_ptr}() + n)`
@@ -316,10 +316,11 @@ accessible memory, even when `{good}()` returns `false`.
 ====
 [source,cpp]
 ----
-void write(const T* data, std::size_t count);
+void write(const T* data, std::integral auto count);
 ----
 [horizontal]
-Effect:: If `count \<= {buffer_space}()` is `true`, copy `count` elements of
+Effect:: None if `count <= 0` is `true`.
+         Otherwise, if `count \<= {buffer_space}()` is `true`, copy `count` elements of
          of the array pointer by `data` into `{buffer_ptr}()` and calls
          `{advance}(count)`.
          Otherwise, calls `{do_write}(data, count)`.
@@ -456,8 +457,7 @@ class basic_cstr_destination final: public {output_buffer}<CharT, {log2_garbage_
 public:
     basic_cstr_destination(CharT{asterisk} dest, CharT{asterisk} dest_end) noexcept;
 
-    template <typename IntT>
-    basic_cstr_destination(CharT{asterisk} dest, IntT len) noexcept;
+    basic_cstr_destination(CharT{asterisk} dest, std::integral auto len) noexcept;
 
     template <std::size_t N>
     basic_cstr_destination(CharT (&dest)[N]) noexcept;
@@ -499,11 +499,9 @@ Postconditions::
 ====
 [source,cpp]
 ----
-template <typename IntT>
-basic_cstr_destination(CharT* dest, IntT dest_size) noexcept;
+basic_cstr_destination(CharT* dest, std::integral auto dest_size) noexcept;
 ----
 [horizontal]
-Compile-time requirements:: `std::is_integral<Int>::value` is `true`
 Precondition:: `dest_size > 0`
 Postconditions::
 - `{good}() == true`
@@ -562,8 +560,7 @@ public:
     template <std::size_t N>
     array_destination(CharT (&dest)[N]) noexcept;
     array_destination(CharT{asterisk} dest, CharT{asterisk} dest_end) noexcept;
-    template <typename IntT>
-    array_destination(CharT{asterisk} dest, IntT dest_size) noexcept;
+    array_destination(CharT{asterisk} dest, std::integral auto dest_size) noexcept;
 
     array_destination(const array_destination&) = delete;
     array_destination(array_destination&&) = delete;
@@ -612,11 +609,9 @@ Postconditions::
 ====
 [source,cpp]
 ----
-template <typename IntT>
-array_destination(CharT* dest, IntT dest_size) noexcept;
+array_destination(CharT* dest, std::integral auto dest_size) noexcept;
 ----
 [horizontal]
-Compile-time requirements:: `std::is_integral<Int>::value` is `true`
 Precondition:: `dest_size >= 0`
 Postconditions::
 - `{good}() == true`

@@ -138,7 +138,7 @@ public:
     }
     static constexpr STRF_HD width_t min() noexcept
     {
-        return strf::width_t::from_underlying(0x80000000);
+        return strf::width_t::from_underlying(static_cast<std::int32_t>(0x80000000));
     }
     STRF_CONSTEXPR_IN_CXX14 STRF_HD std::int16_t floor() const noexcept
     {
@@ -332,11 +332,11 @@ public:
         if (tmp >= (1LL << 47)) {
             value_ = 0x7FFFFFFF;
         } else if (tmp < cast_i64(cast_u64(cast_i64(min().underlying_value())) << 16)) {
-            value_ = 0x80000000;
+            value_ = static_cast<std::int32_t>(0x80000000);
         } else {
             // equivalent of arithmetic shift right 16:
             const std::uint64_t leftbits = (tmp < 0 ? 0xFFFF000000000000ULL : 0);
-            value_ = cast_i32((cast_u64(tmp) >> 16 | leftbits));
+            value_ = cast_i32((cast_u64(tmp) >> 16) | leftbits);
         }
         return *this;
     }

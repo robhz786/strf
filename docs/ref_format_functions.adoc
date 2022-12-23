@@ -579,19 +579,25 @@ The `quantity_formatter` _Formatter_ defines the following format functions:
 [%header,cols="382,618",grid=rows]
 |===
 | Member function | Effect
-|`multi(std::ptrdiff_t count)`
+|`multi(std::integral auto count)`
 | Causes the content to be printed `count` consecutives times
 |===
 
-And the following observer:
+And the following observers:
 
-[%header,cols="382,618",grid=rows]
+[%header,grid=rows]
 |===
-| Observer  | Return type
+| Observer  | Return type | Return value
 
 | `count()`
+| `std::size_t`
+|
+
+| `scount()`
 | `std::ptrdiff_t`
+| `(std::ptrdiff_t) count()`
 |===
+
 
 === Callable object `fmt` [[fmt]]
 

@@ -331,10 +331,38 @@ namespace detail {
 
 inline namespace cast_sugars {
 
+template <typename T>
+STRF_HD constexpr std::ptrdiff_t cast_ssize(T x)
+{
+    return static_cast<std::ptrdiff_t>(x);
+}
+
+template <typename T>
+STRF_HD constexpr std::size_t safe_cast_size_t_(std::true_type, T x)
+{
+    return static_cast<std::size_t>(x >= 0 ? x : 0);
+}
+template <typename T>
+STRF_HD constexpr std::size_t safe_cast_size_t_(std::false_type, T x)
+{
+    return x;
+}
+template <typename T>
+STRF_HD constexpr std::size_t safe_cast_size_t(T x)
+{
+    return safe_cast_size_t_(std::is_signed<T>(), x);
+}
+
 template <typename IntT, typename UIntT = typename std::make_unsigned<IntT>::type>
 constexpr STRF_HD UIntT cast_unsigned(IntT x)
 {
     return static_cast<UIntT>(x);
+}
+
+template <typename T>
+STRF_HD constexpr std::uint64_t cast_int(T x)
+{
+    return static_cast<int>(x);
 }
 
 template <typename T>
@@ -373,10 +401,39 @@ STRF_HD constexpr std::int16_t  cast_i16(T x)
     return static_cast<std::int16_t>(x);
 }
 
+template <typename T>
+STRF_HD constexpr std::uint8_t cast_u8(T x)
+{
+    return static_cast<std::uint8_t>(x);
+}
+
+template <typename T>
+STRF_HD constexpr std::int8_t  cast_i8(T x)
+{
+    return static_cast<std::int8_t>(x);
+}
+
 } // inline namespace cast_sugars
 
-} // namespace detail
 
+template <typename T>
+STRF_HD constexpr bool ge_zero_(std::true_type, T x)
+{
+    return x >= 0;
+}
+template <typename T>
+STRF_HD constexpr bool ge_zero_(std::false_type, T)
+{
+    return true;
+}
+
+template <typename T>
+STRF_HD constexpr bool ge_zero(T x)
+{
+    return ge_zero_(std::is_signed<T>(), x);
+}
+
+} // namespace detail
 
 } // namespace strf
 

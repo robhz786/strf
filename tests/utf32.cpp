@@ -197,7 +197,7 @@ STRF_TEST_FUNC void utf32_error_notifier()
 }
 
 template <std::size_t N>
-STRF_HD std::size_t utf32_count_codepoints_strict(const char32_t (&str)[N])
+STRF_HD std::ptrdiff_t utf32_count_codepoints_strict(const char32_t (&str)[N])
 {
     return strf::utf32_t<char32_t>::count_codepoints
         (str, N - 1, 100000, strf::surrogate_policy::strict)
@@ -205,7 +205,7 @@ STRF_HD std::size_t utf32_count_codepoints_strict(const char32_t (&str)[N])
 }
 
 template <std::size_t N>
-STRF_HD std::size_t utf32_count_codepoints_lax(const char32_t (&str)[N])
+STRF_HD std::ptrdiff_t utf32_count_codepoints_lax(const char32_t (&str)[N])
 {
     return strf::utf32_t<char32_t>::count_codepoints
         (str, N - 1, 100000, strf::surrogate_policy::lax)
@@ -213,7 +213,7 @@ STRF_HD std::size_t utf32_count_codepoints_lax(const char32_t (&str)[N])
 }
 
 template <std::size_t N>
-STRF_HD std::size_t utf32_count_codepoints_fast(const char32_t (&str)[N])
+STRF_HD std::ptrdiff_t utf32_count_codepoints_fast(const char32_t (&str)[N])
 {
     return strf::utf32_t<char32_t>::count_codepoints_fast(str, N - 1, 100000).count;
 }

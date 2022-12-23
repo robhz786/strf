@@ -141,9 +141,10 @@ void test_vs_sprintf
     const bool t2 = strf_result.count == strf_result.predicted_width;
 
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg,hicpp-vararg)
-    auto sprintf_len = sprintf(sprintf_buff, sprintf_fmt, args...);
+    int sprintf_len = sprintf(sprintf_buff, sprintf_fmt, args...);
     const bool t3 = strf_result.count == sprintf_len;
-    const bool t4 = t3 && strf::detail::str_equal(strf_buff, sprintf_buff, sprintf_len);
+    const bool t4 = t3 && strf::detail::str_equal
+        (strf_buff, sprintf_buff, strf::detail::safe_cast_size_t(sprintf_len));
 
     if (!t1 || !t2 || !t3 || !t4) {
         ++ test_utils::test_err_count();
@@ -188,7 +189,7 @@ void test_general_without_precision(const Arg& arg, const char* arg_description)
     auto len_sci   = STRF_PRINT(buff_sci,   sizeof(buff_sci),   strf::sci(clone(arg)) );
 
     strf::float_notation expected_form = strf::float_notation::fixed;
-    auto expected_size = sizeof(buff_fixed);
+    std::ptrdiff_t expected_size = sizeof(buff_fixed);
     char* expected = buff_fixed;
     auto expected_len = len_fixed;
     if (len_sci < len_fixed)  {

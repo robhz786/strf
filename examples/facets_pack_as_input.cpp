@@ -8,7 +8,6 @@
 
 void sample1()
 {
-    //[ facets_pack_input
     auto str = strf::to_string .with(strf::numpunct<10>(1))
         ( !strf::dec(10000)
         , "  "
@@ -22,13 +21,11 @@ void sample1()
             , " }" ) );
 
     assert(str == "1,0,0,0,0  10000  { 10,000  1'0000 }");
-    //]
 
 }
 
 void sample2()
 {
-    //[ facets_pack_input_2
     auto fp = strf::pack
         ( strf::numpunct<10>(3)
         , strf::numpunct<16>(4).thousands_sep('\'') );
@@ -48,12 +45,10 @@ void sample2()
             , " }" ) );
 
     assert(str == "1,0,0,0,0  10000  { 10,000  1'0000  { 1.00.00 } }");
-    //]
 }
 
 void sample3()
 {
-    //[ facets_pack_input_in_tr_string
     auto str = strf::to_string
         .tr( "{} -- {} -- {}"
            , "aaa"
@@ -61,7 +56,6 @@ void sample3()
            , "eee" );
 
     assert(str == "aaa -- bbbcccddd -- eee");
-    //]
 }
 
 

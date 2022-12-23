@@ -55,7 +55,7 @@ public:
 
     constexpr STRF_HD simple_string_view(const CharIn* begin, const CharIn* end) noexcept
         : begin_(begin)
-        , len_(end - begin)
+        , len_(detail::safe_cast_size_t(end - begin))
     {
     }
     constexpr STRF_HD simple_string_view(const CharIn* str, std::size_t len) noexcept
@@ -88,7 +88,7 @@ public:
     }
     constexpr STRF_HD std::ptrdiff_t ssize() const
     {
-        return len_;
+        return static_cast<std::ptrdiff_t>(len_);
     }
     constexpr STRF_HD std::size_t length() const
     {

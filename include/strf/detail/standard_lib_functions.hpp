@@ -263,13 +263,13 @@ using iterator_value_type = typename iterator_value_type_impl<It>::type;
 
 template<class CharT>
 STRF_CONSTEXPR_CHAR_TRAITS
-STRF_HD void str_fill_n(CharT* str, std::size_t count, CharT value)
+STRF_HD void str_fill_n(CharT* str, std::ptrdiff_t count, CharT value)
 {
 #if !defined(STRF_FREESTANDING)
-    std::char_traits<CharT>::assign(str, count, value);
+    std::char_traits<CharT>::assign(str, detail::safe_cast_size_t(count), value);
 #else
     auto p = str;
-    for (std::size_t i = 0; i != count; ++i, ++p) {
+    for (std::ptrdiff_t i = 0; i < count; ++i, ++p) {
         *p = value;
     }
 #endif
@@ -277,15 +277,15 @@ STRF_HD void str_fill_n(CharT* str, std::size_t count, CharT value)
 
 template<>
 inline
-STRF_HD void str_fill_n<char>(char* str, std::size_t count, char value)
+STRF_HD void str_fill_n<char>(char* str, std::ptrdiff_t count, char value)
 {
 #if !defined(STRF_FREESTANDING)
-    std::char_traits<char>::assign(str, count, value);
+    std::char_traits<char>::assign(str, detail::safe_cast_size_t(count), value);
 #elif defined(STRF_WITH_CSTRING)
-    memset(str, value, count);
+    memset(str, value, detail::safe_cast_size_t(count));
 #else
     auto p = str;
-    for (std::size_t i = 0; i != count; ++i, ++p) {
+    for (std::ptrdiff_t i = 0; i < count; ++i, ++p) {
         *p = value;
     }
 #endif
@@ -302,6 +302,13 @@ str_length(const CharT* str)
     while (*str != CharT{0}) { ++str, ++length; }
     return length;
 #endif
+}
+
+template <class CharT>
+STRF_CONSTEXPR_CHAR_TRAITS STRF_HD std::ptrdiff_t
+str_ssize(const CharT* str)
+{
+    return static_cast<std::ptrdiff_t>(str_length(str));
 }
 
 template <class CharT>

@@ -100,7 +100,7 @@ struct aligned_join_maker
         , CharT fillchar_ ) noexcept
         : width(width_)
         , align(align_)
-        , fillchar(fillchar_)
+        , fillchar(detail::cast_unsigned(fillchar_))
     {
         static_assert( strf::is_char<CharT>::value // issue 19
                      , "Refusing non-char argument to set the fill character, "
@@ -172,7 +172,7 @@ public:
         strf::width_t diff = 0;
         if (input.pre.remaining_width() > afmt_.width) {
             wmax = input.pre.remaining_width();
-            diff = input.pre.remaining_width() - afmt_.width;
+            diff = wmax - afmt_.width;
         }
         strf::preprinting<PrecalcSize, strf::precalc_width::yes> pre{wmax};
         // to-do: what if the line below throws ?
@@ -180,7 +180,7 @@ public:
         if (pre.remaining_width() > diff) {
             fillcount_ = (pre.remaining_width() - diff).round();
         }
-        const width_t width = fillcount_ + wmax - pre.remaining_width();
+        width_t width = strf::sat_sub(strf::sat_add(wmax, fillcount_), pre.remaining_width());
         input.pre.subtract_width(width);
         STRF_IF_CONSTEXPR (static_cast<bool>(PrecalcSize)) {
             input.pre.add_size(pre.accumulated_ssize());
@@ -218,7 +218,7 @@ public:
                 }
                 default: {
                     STRF_ASSERT(afmt_.alignment == strf::text_alignment::center);
-                    auto half_fillcount = static_cast<unsigned>(fillcount_) >> 1;
+                    auto half_fillcount = fillcount_ >> 1;
                     write_fill_(dest, half_fillcount);
                     strf::detail::write(dest, printers_());
                     write_fill_(dest, fillcount_ - half_fillcount);
@@ -241,7 +241,7 @@ private:
     strf::alignment_format afmt_;
     strf::encode_fill_f<CharT> encode_fill_func_;
     strf::width_t width_;
-    std::int16_t fillcount_ = 0;
+    int fillcount_ = 0;
 
 #if defined(__GNUC__) && (__GNUC__ <= 6)
 #  pragma GCC diagnostic push

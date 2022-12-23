@@ -177,7 +177,7 @@ class static_transcoder;
 template <typename SrcCharT, typename DestCharT>
 class dynamic_transcoder;
 
-constexpr std::ptrdiff_t invalid_char_len = (std::ptrdiff_t)-1;
+constexpr int invalid_char_len = -1;
 
 template <typename CharT>
 using transcode_dest = strf::output_buffer<CharT, 3>;

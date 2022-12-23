@@ -14,7 +14,7 @@ STRF_TEST_FUNC void test_width_calculator()
     using namespace strf::width_literal;
     {
         auto wfunc = [](char32_t ch) -> strf::width_t {
-            return ( ch == U'\u2E3A' ? 4: ch == U'\u2014' ? 2: 1 );
+            return ( ch == U'\u2E3A' ? 4_w: ch == U'\u2014' ? 2_w: 1_w );
         };
         auto wcalc = strf::make_width_calculator(wfunc);
         TEST("abcd").with(wcalc)  (strf::left("abcd", 0));

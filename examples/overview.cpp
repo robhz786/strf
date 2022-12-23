@@ -28,8 +28,6 @@ void sample()
 
 void second_example()
 {
-    //[second_example
-
     // more formatting:  operator>(int width) : align to rigth
     //                   operator*()          : show base
     //                   p(int)               : set precision
@@ -81,35 +79,28 @@ void second_example()
                                                   , "]" )
                            , "}" ));
     assert(s == "........{    [10, 20, 30]    }");
-//]
 }
 
 void format_functions()
 {
-    //[ format_functions_example
     auto s = strf::to_string
         ( "---"
         , *strf::hex(255).p(4).fill(U'.') > 10
         , "---" );
 
     assert(s == "---....0x00ff---");
-    //]
 }
 
 void reserve()
 {
-    //[ syntax_reserve
     auto str = strf::to_string.reserve(5000)("blah", "blah");
 
     assert(str == "blahblah");
     assert(str.capacity() >= 5000);
-    //]
 }
 
 void basic_facet_sample()
 {
-
-//[ basic_facet_sample
     constexpr int base = 10;
     auto punct = strf::numpunct<base>{4, 3, 2}.thousands_sep(U'.');
     auto s = strf::to_string
@@ -117,25 +108,20 @@ void basic_facet_sample()
         ("one hundred billions = ", strf::punct(100000000000LL));
 
     assert(s == "one hundred billions = 1.00.00.000.0000");
-//]
 }
-
 
 void constrained_facet()
 {
-    //[ constrained_facet_sample
     auto facet_obj = strf::constrain<std::is_signed>(strf::numpunct<10>{3});
 
     auto s = strf::to_string.with(facet_obj)(strf::punct(100000U), "  ", strf::punct(100000));
 
     assert(s == "100000  100,000");
-    //]
 }
 
 
 void overriding_sample()
 {
-    //[ facets_overriding
     auto punct_dec_1 = strf::numpunct<10>{1};
     auto punct_dec_2 = strf::numpunct<10>{2}.thousands_sep('.');
     auto punct_dec_3 = strf::numpunct<10>{3}.thousands_sep('^');
@@ -151,13 +137,11 @@ void overriding_sample()
         ( strf::punct(100000), "  ", strf::punct(100000U) ) ;
 
     assert(s == "100^000  10.00.00");
-    //]
 }
 
 
 void sample_numpunct_with_alternative_encoding()
 {
-//[ numpuct__with_alternative_encoding
     // Writting in Windows-1252
     auto s = strf::to_string
         .with(strf::windows_1252<char>)
@@ -166,31 +150,26 @@ void sample_numpunct_with_alternative_encoding()
 
     // The character U+2022 is encoded as '\225' in Windows-1252
     assert(s == "one hundred billions = 1\225""0000\225""000\225""0000");
-//]
 }
 
 
 void output_FILE()
 {
-//[ output_FILE
     // writting to a FILE*
     strf::to(stdout) ("Hello World!\n");
-//]
 }
+
 
 void input_ouput_different_char_types()
 {
-    //[input_output_different_char_types
     auto str = strf::to_string( strf::transcode(u"aaa-")
                               , strf::transcode(U"bbb-")
                               , strf::transcode(L"ccc") );
     assert(str ==  "aaa-bbb-ccc");
-    //]
 }
 
 void input_string_encoding()
 {
-    //[input_string_encoding
     // Three input string. Each one in its own character set
     auto s = strf::to_u8string( strf::transcode("\x80\xA4 -- ", strf::iso_8859_1<char>)
                               , strf::transcode("\x80\xA4 -- ", strf::iso_8859_15<char>)
@@ -198,21 +177,17 @@ void input_string_encoding()
 
     // The output by default is in UTF-8
     assert(s == u8"\u0080\u00A4 -- \u0080\u20AC -- \u20AC\u00A4");
-    //]
 }
 
 void sani()
 {
-    //[sani_utf8
     // sanitize UTF-8 input
     auto s = strf::to_u8string(strf::sani("a b c \xFF d e"));
     assert(s == u8"a b c \uFFFD d e");
-    //]
 }
 
 void numpunct()
 {
-    //[numpunct
     constexpr int base = 10;
 
     auto str = strf::to_string
@@ -220,29 +195,24 @@ void numpunct()
         (strf::punct(100000000000LL));
 
     assert(str == "100.000.000.000");
-    //]
 }
 
 void variable_grouping()
 {
-    //[variable_grouping
     constexpr int base = 10;
 
     auto punct = strf::numpunct<base>{4, 3, 2};
     auto str = strf::to_string.with(punct)(strf::punct(100000000000LL));
     assert(str == "1,00,00,000,0000");
-    //]
 }
 
 void punct_non_decimal()
 {
-    //[punct_non_decimal
     auto str = strf::to_string
         .with(strf::numpunct<16>{4}.thousands_sep(U'\''))
         (!strf::hex(0xffffffffffLL));
 
     assert(str == "ff'ffff'ffff");
-    //]
 }
 
 void fast_width()
@@ -308,7 +278,6 @@ void width_func()
     assert(result == u8".....\u2163 + \u2167 = \u216B");
 }
 
-//[avoid_repetitions
 namespace my { // my customizations
 
 const auto my_default_facets = strf::pack
@@ -351,7 +320,6 @@ void using_my_customizations()
         (!strf::dec(x), " in hexadecimal is ", *!strf::hex(x));
     assert(str == "100,000,000 in hexadecimal is 0x5f5e100");
 }
-//]
 
 int main()
 {

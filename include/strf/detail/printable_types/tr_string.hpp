@@ -40,7 +40,7 @@ struct tr_printers_container<CharT, strf::detail::index_sequence<I...>, Printers
     using printers_tuple_t_ = strf::detail::printers_tuple_impl
         <CharT, strf::detail::index_sequence<I...>, Printers...>;
 
-    static constexpr std::size_t num_printers_ = sizeof...(Printers);
+    static constexpr ptrdiff_t num_printers_= sizeof...(Printers);
     printers_tuple_t_ tuple;
     const strf::printer<CharT>* array_of_pointers[num_printers_];
 
@@ -393,7 +393,7 @@ class tr_printer: public strf::printer<CharT>
     strf::detail::simple_string_view<CharT> tr_string_;
     Charset charset_;
     err_handler_t err_handler_;
-    std::size_t num_printers_;
+    std::ptrdiff_t num_printers_;
     const strf::printer<CharT>** printers_;
     PrintersStorage storage_;
 

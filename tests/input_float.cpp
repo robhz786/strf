@@ -534,7 +534,9 @@ STRF_HD double make_normal_double(std::uint64_t digits, int exp = 0)
     auto left_zeros = strf::detail::slow_countl_zero_ll(digits);
 #endif
     digits ^= (1ULL << (63 - left_zeros)); // clear highest non-zero bit
-    return make_float<double>(1023 + exp, digits << (left_zeros - 11));
+    const auto bits_exp = 1023 + exp;
+    STRF_ASSERT(bits_exp >= 0);
+    return make_float<double>(static_cast<unsigned>(bits_exp), digits << (left_zeros - 11));
 }
 
 

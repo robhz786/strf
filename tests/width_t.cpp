@@ -9,7 +9,7 @@ STRF_TEST_FUNC void test_width_t()
 {
     using namespace strf::width_literal;
     using namespace strf::detail::cast_sugars;
-    
+
     using strf::width_t;
     constexpr strf::width_t width_max = strf::width_t::max();
     constexpr strf::width_t width_min = strf::width_t::min();
@@ -176,7 +176,7 @@ STRF_TEST_FUNC void test_width_t()
     // sat_mul(width_t, width_t)
     TEST_TRUE(sat_mul(1.5_w, 1.5_w) == 2.25_w);
     TEST_TRUE(sat_mul(1_w, width_max - epsilon) == width_max - epsilon);
-    TEST_TRUE(sat_mul(1_w, width_max) == width_max);    
+    TEST_TRUE(sat_mul(1_w, width_max) == width_max);
     TEST_TRUE(sat_mul(1_w + epsilon, width_max) == width_max);
     TEST_TRUE(sat_mul(1_w, width_min + epsilon) == width_min + epsilon);
     TEST_TRUE(sat_mul(1_w, width_min)   == width_min);
@@ -256,15 +256,15 @@ STRF_TEST_FUNC void test_width_t()
     TEST_TRUE(compare(1_w, cast_u16(2)) < 0);
     TEST_TRUE(compare(width_max, cast_u16(0xFFFF)) < 0);
     TEST_TRUE(compare(width_max, cast_u16(0x8000)) < 0);
-    TEST_TRUE(compare(width_max, cast_u16(0x7FFF)) > 0);    
+    TEST_TRUE(compare(width_max, cast_u16(0x7FFF)) > 0);
     TEST_TRUE(compare(-epsilon, cast_u16(0)) < 0);
-    
+
     // compare(width_t, int32_t)
     TEST_TRUE(compare(2_w, cast_i32(1)) > 0);
     TEST_TRUE(compare(2_w, cast_i32(2)) == 0);
     TEST_TRUE(compare(1_w, cast_i32(2)) < 0);
     TEST_TRUE(compare(width_max, cast_i32( 0x8000))  < 0);
-    TEST_TRUE(compare(width_max, cast_i32( 0x7FFF))  > 0);   
+    TEST_TRUE(compare(width_max, cast_i32( 0x7FFF))  > 0);
     TEST_TRUE(compare(width_min, cast_i32(-0x8000)) == 0);
     TEST_TRUE(compare(width_min, cast_i32(-0x8001))  > 0);
 
@@ -273,19 +273,19 @@ STRF_TEST_FUNC void test_width_t()
     TEST_TRUE(compare(2_w, cast_u32(2)) == 0);
     TEST_TRUE(compare(1_w, cast_u32(2)) < 0);
     TEST_TRUE(compare(width_max, cast_u32(0x8000)) < 0);
-    TEST_TRUE(compare(width_max, cast_u32(0x7FFF)) > 0);   
+    TEST_TRUE(compare(width_max, cast_u32(0x7FFF)) > 0);
 
     // compare(width_t, int64_t)
     TEST_TRUE(compare(2_w, cast_i64(1)) > 0);
     TEST_TRUE(compare(2_w, cast_i64(2)) == 0);
     TEST_TRUE(compare(1_w, cast_i64(2)) < 0);
     TEST_TRUE(compare(width_max, cast_i64( 0x8000))  < 0);
-    TEST_TRUE(compare(width_max, cast_i64( 0x7FFF))  > 0);   
+    TEST_TRUE(compare(width_max, cast_i64( 0x7FFF))  > 0);
     TEST_TRUE(compare(width_min, cast_i64(-0x8000)) == 0);
     TEST_TRUE(compare(width_min, cast_i64(-0x8001))  > 0);
 
     // compare(width_t, uint64_t)
-    TEST_TRUE(compare(2_w, cast_u64(1)) > 0);    
+    TEST_TRUE(compare(2_w, cast_u64(1)) > 0);
     TEST_TRUE(compare(2_w, cast_u64(2)) == 0);
     TEST_TRUE(compare(1_w, cast_u64(2)) < 0);
     TEST_TRUE(compare(width_max, cast_u64(0x8000)) < 0);
@@ -295,8 +295,6 @@ STRF_TEST_FUNC void test_width_t()
     TEST_TRUE(compare(1, 2_w)  < 0);
     TEST_TRUE(compare(2, 2_w) == 0);
     TEST_TRUE(compare(3, 2_w)  > 0);
-    
-
 }
 
 REGISTER_STRF_TEST(test_width_t)

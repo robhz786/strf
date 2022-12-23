@@ -171,7 +171,7 @@ public:
     template <typename... T>
     STRF_HD explicit fmt_char_printer
         ( const usual_printer_input<CharT, T...>& input )
-        : count_(input.arg.count())
+        : count_(input.arg.scount())
         , afmt_(input.arg.get_alignment_format())
         , ch_(static_cast<CharT>(input.arg.value()))
     {
@@ -188,8 +188,8 @@ private:
     strf::encode_fill_f<CharT> encode_fill_fn_;
     std::ptrdiff_t count_;
     const strf::alignment_format afmt_;
-    std::int16_t left_fillcount_{};
-    std::int16_t right_fillcount_{};
+    int left_fillcount_{};
+    int right_fillcount_{};
     CharT ch_;
 
     template <typename Category, typename FPack>
@@ -211,10 +211,10 @@ STRF_HD void fmt_char_printer<CharT>::init_
 {
     auto ch_width = wc.char_width(charset, ch_);
     auto content_width = strf::sat_mul(ch_width, count_);
-    std::int16_t fillcount = 0;
+    int fillcount = 0;
     if (content_width < afmt_.width) {
-        fillcount = static_cast<std::int16_t>((afmt_.width - content_width).round());
-        pre.subtract_width(content_width + fillcount);
+        fillcount = (afmt_.width - content_width).round();
+        pre.subtract_width(content_width + static_cast<strf::width_t>(fillcount));
     } else {
         fillcount = 0;
         pre.subtract_width(content_width);
@@ -225,7 +225,7 @@ STRF_HD void fmt_char_printer<CharT>::init_
             right_fillcount_ = fillcount;
             break;
         case strf::text_alignment::center: {
-            const std::int16_t halfcount = fillcount >> 1;
+            const auto halfcount = fillcount >> 1;
             left_fillcount_ = halfcount;
             right_fillcount_ = fillcount - halfcount;
             break;
@@ -317,7 +317,7 @@ public:
 
     template <typename... T>
     STRF_HD explicit fmt_conv_char32_printer(strf::usual_printer_input<T...> input)
-        : count_(input.arg.count())
+        : count_(input.arg.scount())
         , ch_(input.arg.value())
     {
         auto charset = strf::use_facet<charset_c<DestCharT>, char32_t>(input.facets);
@@ -342,7 +342,7 @@ private:
     char32_t ch_;
     char32_t fillchar_{};
     strf::text_alignment alignment_{strf::text_alignment::right};
-    std::int16_t fillcount_{};
+    int fillcount_{};
 };
 
 template <typename DestCharT>
@@ -354,12 +354,12 @@ void STRF_HD fmt_conv_char32_printer<DestCharT>::init_
     , strf::width_t ch_width )
 {
     encode_fill_f_ = charset.encode_fill_func();
-    auto content_width = strf::sat_mul(ch_width, count_);
+    const auto content_width = strf::sat_mul(ch_width, count_);
     fillchar_ = afmt.fill;
     alignment_ = afmt.alignment;
     if (content_width < afmt.width) {
         fillcount_ = (afmt.width - content_width).round();
-        pre.subtract_width(content_width + fillcount_);
+        pre.subtract_width(content_width + static_cast<strf::width_t>(fillcount_));
     } else {
         fillcount_ = 0;
         pre.subtract_width(content_width);

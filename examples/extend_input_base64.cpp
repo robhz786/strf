@@ -39,7 +39,7 @@ struct base64_facet_c
 struct base64_input
 {
     const void* bytes = nullptr;
-    std::size_t num_bytes = 0;
+    std::ptrdiff_t num_bytes = 0;
 };
 
 struct base64_formatter
@@ -146,7 +146,7 @@ private:
         , const std::uint8_t* data
         , std::ptrdiff_t data_size ) const;
 
-    CharT encode_(std::uint8_t hextet) const;
+    CharT encode_(unsigned hextet) const;
 
     const base64_facet facet_;
     const base64_input_with_formatters fmt_;
@@ -167,18 +167,16 @@ base64_printer<CharT>::base64_printer
 template <typename CharT>
 void base64_printer<CharT>::calc_size_(strf::size_accumulator<true>& pre) const
 {
-    std::ptrdiff_t num_digits = 4 * (fmt_.value().num_bytes + 2) / 3;
+    auto num_digits = 4 * (fmt_.value().num_bytes + 2) / 3;
     pre.add_size(num_digits);
     if (facet_.line_length > 0 && facet_.eol[0] != '\0') {
-        std::ptrdiff_t num_lines
+        auto num_lines
             = (num_digits + facet_.line_length - 1)
             / facet_.line_length;
-        std::ptrdiff_t eol_size = 1 + (facet_.eol[1] != '\0');
+        auto eol_size = 1 + (facet_.eol[1] != '\0');
         pre.add_size(num_lines * (fmt_.indentation() + eol_size));
     }
 }
-
-//[ base64_printer__write
 
 template <typename CharT>
 void base64_printer<CharT>::print_to(strf::destination<CharT>& dest) const
@@ -200,27 +198,14 @@ void base64_printer<CharT>::write_single_line_(strf::destination<CharT>& dest) c
 template <typename CharT>
 void base64_printer<CharT>::write_identation_(strf::destination<CharT>& dest) const
 {
-    using traits = std::char_traits<CharT>;
-    std::ptrdiff_t count = fmt_.indentation();
-    while(true) {
-        const std::ptrdiff_t buff_size = dest.buffer_sspace();
-        if (buff_size >= count) {
-            traits::assign(dest.buffer_ptr(), count, CharT(' '));
-            dest.advance(count);
-            return;
-        }
-        traits::assign(dest.buffer_ptr(), buff_size, CharT(' '));
-        count -= buff_size;
-        dest.advance_to(dest.buffer_end());
-        dest.flush();
-    };
+    strf::to(dest) (strf::multi((CharT)' ', fmt_.indentation()));
 }
 
 template <typename CharT>
 void base64_printer<CharT>::encode_all_data_in_this_line_(strf::destination<CharT>& dest) const
 {
     const auto* data_it = static_cast<const std::uint8_t*>(fmt_.value().bytes);
-    for (std::ptrdiff_t count = fmt_.value().num_bytes; count > 0; count -= 3) {
+    for (auto count = fmt_.value().num_bytes; count > 0; count -= 3) {
         dest.ensure(4);
         encode_3bytes_(dest.buffer_ptr(), data_it, count);
         dest.advance(4);
@@ -236,28 +221,27 @@ void base64_printer<CharT>::encode_3bytes_
 {
     dest[0] = encode_(data[0] >> 2U);
     dest[1] = encode_(((data[0] & 0x03U) << 4U) |
-                      (data_size < 2U ? 0U : ((data[1] & 0xF0U) >> 4U)));
-    dest[2] = (data_size < 2U)
+                      (data_size < 2 ? 0U : ((data[1] & 0xF0U) >> 4U)));
+    dest[2] = (data_size < 2)
         ? '='
         : encode_(((data[1] & 0x0FU) << 2U) |
-                 (data_size < 3U ? 0U : ((data[2] & 0xC0U) >> 6U)));
-    dest[3] = data_size < 3U ? '=' : encode_(data[2] & 0x3FU);
+                 (data_size < 3 ? 0U : ((data[2] & 0xC0U) >> 6U)));
+    dest[3] = data_size < 3 ? '=' : encode_(data[2] & 0x3FU);
 }
 
 template <typename CharT>
-auto base64_printer<CharT>::encode_(std::uint8_t hextet) const -> CharT
+auto base64_printer<CharT>::encode_(unsigned hextet) const -> CharT
 {
     assert(hextet <= 63);
-    const std::uint8_t ch =
-        hextet < 26 ?  static_cast<std::uint8_t>('A') + hextet :
-        hextet < 52 ?  static_cast<std::uint8_t>('a') + hextet - 26 :
-        hextet < 62 ?  static_cast<std::uint8_t>('0') + hextet - 52 :
-        hextet == 62 ? static_cast<std::uint8_t>(facet_.char62) :
-      /*hextet == 63*/ static_cast<std::uint8_t>(facet_.char63) ;
+    const int ch =
+        ( hextet < 26 ?  ('A' + (int)hextet)
+        : hextet < 52 ?  ('a' + (int)hextet - 26)
+        : hextet < 62 ?  ('0' + (int)hextet - 52)
+        : hextet == 62 ? facet_.char62
+        : /*hextet == 63*/ facet_.char63 );
 
-    return ch;
+    return static_cast<CharT>(ch);
 }
-//]
 
 template <typename CharT>
 void base64_printer<CharT>::write_multiline_(strf::destination<CharT>& dest) const
@@ -265,7 +249,7 @@ void base64_printer<CharT>::write_multiline_(strf::destination<CharT>& dest) con
     write_identation_(dest);
 
     const auto *data_it = static_cast<const std::uint8_t*>(fmt_.value().bytes);
-    std::ptrdiff_t remaining_bytes = fmt_.value().num_bytes;
+    auto remaining_bytes = fmt_.value().num_bytes;
     unsigned cursor_pos = 0;
 
     while (remaining_bytes > 0) {
@@ -308,7 +292,8 @@ void base64_printer<CharT>::write_end_of_line_(strf::destination<CharT>& dest) c
 
 inline auto base64(const void* bytes, std::size_t num_bytes)
 {
-    const base64_input data{ static_cast<const unsigned char*>(bytes), num_bytes };
+    const base64_input data{ static_cast<const unsigned char*>(bytes)
+                           , static_cast<std::ptrdiff_t>(num_bytes) };
     return base64_input_with_formatters{ data };
 }
 
@@ -434,9 +419,9 @@ void tests()
         const char* msg1 = "abcd";
         const char* msg2 = "abcde";
         const std::vector<xxx::base64_input> vec =
-            { {msg0, strlen(msg0)}
-            , {msg1, strlen(msg1)}
-            , {msg2, strlen(msg2)} };
+            { {msg0, (std::ptrdiff_t)strlen(msg0)}
+            , {msg1, (std::ptrdiff_t)strlen(msg1)}
+            , {msg2, (std::ptrdiff_t)strlen(msg2)} };
 
         auto result = strf::to_string
             .with(xxx::base64_facet{50, {'\n', '\0'}})
@@ -459,7 +444,6 @@ void tests()
 
 void sample()
 {
-//[base64_sample
     const char* msg  = "The quick brown fox jumps over the lazy dog.";
 
     auto obtained = strf::to_string
@@ -471,7 +455,6 @@ void sample()
         "    p5IGRvZy4=\n";
 
     assert(obtained == expected);
-//]
     (void)obtained;
     (void)expected;
 }

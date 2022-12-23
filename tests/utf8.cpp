@@ -311,7 +311,7 @@ STRF_TEST_FUNC void utf8_sani_find_transcoder()
 }
 
 template <typename CharT, std::size_t N>
-STRF_HD std::size_t utf8_count_codepoints_strict(const CharT (&str)[N])
+STRF_HD std::ptrdiff_t utf8_count_codepoints_strict(const CharT (&str)[N])
 {
     return strf::utf8_t<CharT>::count_codepoints
         (str, N - 1, 100000, strf::surrogate_policy::strict)
@@ -319,7 +319,7 @@ STRF_HD std::size_t utf8_count_codepoints_strict(const CharT (&str)[N])
 }
 
 template <typename CharT, std::size_t N>
-STRF_HD std::size_t utf8_count_codepoints_lax(const CharT (&str)[N])
+STRF_HD std::ptrdiff_t utf8_count_codepoints_lax(const CharT (&str)[N])
 {
     return strf::utf8_t<CharT>::count_codepoints
         (str, N - 1, 100000, strf::surrogate_policy::lax)
@@ -327,7 +327,7 @@ STRF_HD std::size_t utf8_count_codepoints_lax(const CharT (&str)[N])
 }
 
 template <typename CharT, std::size_t N>
-STRF_HD std::size_t utf8_count_codepoints_fast(const CharT (&str)[N])
+STRF_HD std::ptrdiff_t utf8_count_codepoints_fast(const CharT (&str)[N])
 {
     return strf::utf8_t<CharT>::count_codepoints_fast(str, N - 1, 100000).count;
 }

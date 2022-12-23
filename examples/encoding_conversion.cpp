@@ -19,7 +19,6 @@ using char8_t = char;
 
 void input_ouput_different_char_types()
 {
-    //[input_output_different_char_types
     auto str   = strf::to_string( "aaa-"
                                 , strf::transcode(u"bbb-")
                                 , strf::transcode(U"ccc-")
@@ -44,23 +43,19 @@ void input_ouput_different_char_types()
     assert(str16 == u"aaa-bbb-ccc-ddd");
     assert(str32 == U"aaa-bbb-ccc-ddd");
     assert(wstr  == L"aaa-bbb-ccc-ddd");
-    //]
 }
 
 void arg()
 {
-    //[ arg_encoding
     auto str_utf8 = strf::to_u8string
         ( strf::transcode("--\xA4--", strf::iso_8859_1<char>)
         , strf::transcode("--\xA4--", strf::iso_8859_15<char>));
 
     assert(str_utf8 == u8"--\u00A4----\u20AC--");
-    //]
 }
 
 void allow_surrogates ()
 {
-    //[ allow_surrogates
     std::u16string input_utf16 {u"-----"};
     input_utf16[1] = 0xD800; // a surrogate character alone
 
@@ -89,7 +84,6 @@ void allow_surrogates ()
 
     assert(utf16_strict == u"-\uFFFD\uFFFD\uFFFD---"); // surrogate sanitized
     assert(utf16_lax == input_utf16);                  // surrogate preserved
-    //]
 
 }
 

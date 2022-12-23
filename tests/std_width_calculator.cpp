@@ -41,13 +41,13 @@ STRF_HD void test_width_char_by_char
         if (ptr == chars.begin()) {
             remaining_width = r.width;
         } else if (r.width != remaining_width) {
-            *obtained_sizes_it++ = ptr - grapheme_begin;
+            *obtained_sizes_it++ = strf::detail::safe_cast_size_t(ptr - grapheme_begin);
             grapheme_begin = ptr;
             remaining_width = r.width;
         }
         state = r.state;
     }
-    *obtained_sizes_it++ = chars.end() - grapheme_begin;
+    *obtained_sizes_it++ = strf::detail::safe_cast_size_t(chars.end() - grapheme_begin);
 
     auto obtained_width = (initial_width - remaining_width).round();
     const span<const std::size_t> obtained_grapheme_sizes{size_buffer, obtained_sizes_it};
@@ -96,12 +96,12 @@ STRF_HD void test_pos
     ( const char* filename
     , int line
     , const char* funcname
-    , std::size_t expected_pos
+    , std::ptrdiff_t expected_pos
     , strf::width_t max_width
     , std::initializer_list<char32_t> chars )
 {
     auto r = strf::detail::std_width_calc_func(chars.begin(), chars.end(), max_width, 0, true);
-    const std::size_t obtained_pos = r.ptr - chars.begin();
+    const std::ptrdiff_t obtained_pos = r.ptr - chars.begin();
     if (obtained_pos != expected_pos) {
         test_utils::test_failure
             ( filename, line, funcname, "Obtained pos = ", obtained_pos

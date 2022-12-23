@@ -78,14 +78,16 @@ public:
 private:
 
     void do_write(const CharT* str, std::size_t str_len) override {
-        const std::streamsize count = this->buffer_ptr() - buf_;
+        auto str_slen = static_cast<std::streamsize>(str_len);
+        auto count = this->buffer_ptr() - buf_;
+        count = count >= 0 ? count : 0;
         this->set_buffer_ptr(buf_);
         STRF_IF_LIKELY (this->good()) {
             this->set_good(false);
             auto count_inc = dest_.sputn(buf_, count);
-            count_inc += dest_.sputn(str, str_len);
+            count_inc += dest_.sputn(str,  str_slen);
             count_ += count_inc;
-            this->set_good(count_inc == static_cast<std::streamsize>(count + str_len));
+            this->set_good(count_inc == count + str_slen);
         }
     }
 

@@ -26,7 +26,7 @@ public:
         , str_(str)
     {
     }
-    basic_string_appender( string_type_& str, std::size_t size )
+    basic_string_appender(string_type_& str, std::size_t size )
         : strf::destination<CharT>(buf_, buf_size_)
         , str_(str)
     {
@@ -117,7 +117,7 @@ public:
     {
         STRF_IF_LIKELY (this->good()) {
             this->set_good(false);
-            const std::size_t count = this->buffer_ptr() - buf_;
+            const std::size_t count = detail::safe_cast_size_t(this->buffer_ptr() - buf_);
             STRF_IF_LIKELY ( ! string_initialized_) {
                 return {buf_, count};
             }
@@ -152,7 +152,7 @@ private:
 template < typename CharT, typename Traits, typename Allocator >
 void basic_string_maker<CharT, Traits, Allocator>::recycle()
 {
-    const std::size_t count = this->buffer_ptr() - buf_;
+    const std::size_t count = detail::safe_cast_size_t(this->buffer_ptr() - buf_);
     this->set_buffer_ptr(buf_);
     STRF_IF_LIKELY (this->good()) {
         this->set_good(false); // in case the following code throws
@@ -170,7 +170,7 @@ template < typename CharT, typename Traits, typename Allocator >
 void basic_string_maker<CharT, Traits, Allocator>::do_write(const CharT* str, std::size_t str_len)
 {
     STRF_IF_LIKELY (this->good()) {
-        const std::size_t buf_count = this->buffer_ptr() - buf_;
+        const std::size_t buf_count = detail::safe_cast_size_t(this->buffer_ptr() - buf_);
         this->set_buffer_ptr(buf_);
         this->set_good(false); // in case the following code throws
         if ( ! string_initialized_) {
@@ -211,7 +211,7 @@ public:
 
     void recycle() override
     {
-        const std::size_t original_size = this->buffer_ptr() - str_.data();
+        const auto original_size = detail::safe_cast_size_t(this->buffer_ptr() - str_.data());
         constexpr std::size_t min_buff_size = strf::min_destination_buffer_size;
         auto append_size = strf::detail::max<std::size_t>(original_size, min_buff_size);
         str_.append(append_size, (CharT)0);
@@ -221,7 +221,7 @@ public:
 
     std::basic_string<CharT, Traits, Allocator> finish()
     {
-        str_.resize(this->buffer_ptr() - str_.data());
+        str_.resize(detail::safe_cast_size_t(this->buffer_ptr() - str_.data()));
         return std::move(str_);
     }
 
@@ -275,10 +275,10 @@ public:
     {
         return str_;
     }
-    std::basic_string<CharT, Traits, Allocator>& create(std::ptrdiff_t size) const noexcept
+    std::basic_string<CharT, Traits, Allocator>& create(std::size_t size) const noexcept
     {
         if (size > 0) {
-            str_.reserve(str_.size() + static_cast<std::size_t>(size));
+            str_.reserve(str_.size() + size);
         }
         return str_;
     }
@@ -304,9 +304,9 @@ public:
     {
         return strf::tag<void>{};
     }
-    std::size_t create(std::ptrdiff_t size) const noexcept
+    std::size_t create(std::size_t size) const noexcept
     {
-        return static_cast<std::size_t>(size > 0 ? size : 0);
+        return size;
     }
 };
 

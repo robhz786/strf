@@ -42,13 +42,15 @@ QStringAppender::QStringAppender(QString& str, std::size_t size)
     : strf::destination<char16_t>(buffer_, buffer_size_)
     , str_(str)
 {
-    Q_ASSERT(str_.size() + size < static_cast<std::size_t>(INT_MAX));
+    Q_ASSERT(str_.size() + static_cast<ptrdiff_t>(size) < INT_MAX);
     str_.reserve(str_.size() + static_cast<int>(size));
 }
 
 void QStringAppender::recycle()
 {
-    const std::size_t count = this->buffer_ptr() - buffer_;
+    const std::ptrdiff_t scount = this->buffer_ptr() - buffer_;
+    Q_ASSERT(scount >= 0);
+    const std::size_t count = static_cast<std::size_t>(scount >= 0 ? scount : 0);
     this->set_buffer_ptr(buffer_);
     if (this->good()) {
         this->set_good(false);
@@ -83,10 +85,10 @@ public:
     {
         return str_;
     }
-    QString& create(std::size_t size ) const
+    QString& create(std::size_t size) const
     {
         const auto max_size = (std::numeric_limits<int>::max)() - str_.size();
-        if (size <= static_cast<std::size_t>(max_size)) {
+        if (static_cast<std::ptrdiff_t>(size) <= max_size) {
             str_.reserve(static_cast<int>(size) + str_.size());
         }
         return str_;

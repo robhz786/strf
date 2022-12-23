@@ -839,7 +839,7 @@ namespace dragonbox {
 			}
 
 			template <class UInt>
-			STRF_HD STRF_CONSTEXPR_IN_CXX14 bool divisible_by_power_of_2(UInt x, unsigned int exp) noexcept {
+			STRF_HD STRF_CONSTEXPR_IN_CXX14 bool divisible_by_power_of_2(UInt x, int exp) noexcept {
 				STRF_ASSERT(exp >= 1);
 				STRF_ASSERT(x != 0);
 #if JKJ_HAS_COUNTR_ZERO_INTRINSIC
@@ -3219,7 +3219,8 @@ namespace dragonbox {
 				if (exponent > divisibility_check_by_5_threshold) {
 					return false;
 				}
-				return div::divisible_by_power_of_5<max_power_of_factor_of_5 + 1>(two_f, minus_k);
+				STRF_ASSERT(minus_k >= 0);
+				return div::divisible_by_power_of_5<max_power_of_factor_of_5 + 1>(two_f, static_cast<unsigned>(minus_k));
 			}
 			STRF_HD static bool is_product_integer(std::integral_constant<integer_check_case_id, integer_check_case_id::fc>,
 				carrier_uint two_f, int exponent, int minus_k) noexcept
@@ -3231,7 +3232,8 @@ namespace dragonbox {
 					return false;
 				}
 				if (exponent > case_fc_upper_threshold) {
-					return div::divisible_by_power_of_5<max_power_of_factor_of_5 + 1>(two_f, minus_k);
+					STRF_ASSERT(minus_k >= 0);
+					return div::divisible_by_power_of_5<max_power_of_factor_of_5 + 1>(two_f, static_cast<unsigned>(minus_k));
 				}
 				// Both exponents are nonnegative
 				if (exponent >= case_fc_lower_threshold) {
@@ -3257,9 +3259,9 @@ namespace dragonbox {
 
 	template <class Float>
 	STRF_HD JKJ_FORCEINLINE return_type<Float> to_decimal
-		( unsigned exponent_bits
+		( int exponent
 		, typename std::conditional
-			< sizeof(Float) == 4, std::uint32_t, std::uint64_t>
+			< sizeof(Float) == 4, std::int32_t, std::int64_t>
 			::type mantissa_bits )
 	{
 		using FloatTraits = default_float_traits<Float>;
@@ -3275,14 +3277,13 @@ namespace dragonbox {
 		using cache_poli = detail::policy_impl::cache::full;
 
 		auto two_fc = significand_bits.remove_sign_bit_and_shift();
-		auto exponent = int(exponent_bits);
 			// Is the input a normal number?
 		if (exponent != 0) {
 			exponent += format::exponent_bias - format::significand_bits;
 
 			// Shorter interval case; proceed like Schubfach.
 			// One might think this condition is wrong,
-			// since when exponent_bits == 1 and two_fc == 0,
+			// since when exponent == 1 and two_fc == 0,
 			// the interval is actullay regular.
 			// However, it turns out that this seemingly wrong condition
 			// is actually fine, because the end result is anyway the same.

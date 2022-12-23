@@ -37,7 +37,7 @@ template < typename CharT >
 inline STRF_HD void output_buffer_interchar_copy
     ( strf::output_buffer<CharT, 0>& dest, const CharT* str, std::size_t len )
 {
-    dest.write(str, len);
+    dest.write(str, static_cast<std::ptrdiff_t>(len));
 }
 
 } // namespace detail
@@ -47,7 +47,7 @@ inline STRF_HD void write
     ( strf::output_buffer<char, 0>& dest
     , const char* str )
 {
-    dest.write(str, detail::str_length(str));
+    dest.write(str, detail::str_ssize(str));
 }
 
 namespace detail {

@@ -108,8 +108,10 @@ class size_accumulator<true>
 public:
     size_accumulator() = default;
 
-    explicit constexpr STRF_HD size_accumulator(std::ptrdiff_t initial_size) noexcept
-        : size_(initial_size)
+    template < typename IntT
+             , strf::detail::enable_if_t<std::is_integral<IntT>::value, int> =0>
+    explicit constexpr STRF_HD size_accumulator(IntT initial_size) noexcept
+        : size_(detail::safe_cast_size_t(initial_size))
     {
     }
 
@@ -119,10 +121,12 @@ public:
     size_accumulator& operator=(const size_accumulator&) = delete;
     size_accumulator& operator=(size_accumulator&&) = delete;
 
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD void add_size(std::ptrdiff_t s) noexcept
+    template < typename IntT
+             , strf::detail::enable_if_t<std::is_integral<IntT>::value, int> =0>
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD void add_size(IntT s) noexcept
     {
-        STRF_ASSERT(s >= 0);
-        size_ += s;
+        STRF_ASSERT(detail::ge_zero(s));
+        size_ += detail::safe_cast_size_t(s);
     }
 
     constexpr STRF_HD std::size_t accumulated_usize() const noexcept
@@ -131,12 +135,12 @@ public:
     }
     constexpr STRF_HD std::ptrdiff_t accumulated_ssize() const noexcept
     {
-        return size_;
+        return static_cast<std::ptrdiff_t>(size_);
     }
 
 private:
 
-    std::ptrdiff_t size_ = 0;
+    std::size_t size_ = 0;
 };
 
 template <>
@@ -149,7 +153,8 @@ public:
     STRF_CONSTEXPR_IN_CXX14 STRF_HD void add_usize(std::size_t) noexcept
     {
     }
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD void add_size(std::ptrdiff_t) noexcept
+    template <typename IntT>
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD void add_size(IntT) noexcept
     {
     }
     constexpr STRF_HD std::ptrdiff_t accumulated_ssize() const noexcept

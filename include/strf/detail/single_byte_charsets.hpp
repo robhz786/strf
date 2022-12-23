@@ -2260,7 +2260,7 @@ STRF_HD void utf32_to_single_byte_charset<SrcCharT, DestCharT, Impl>::transcode
     const auto *src_end = src + src_size;
     for (const auto *src_it = src; src_it != src_end; ++src_it, ++dest_it) {
         STRF_CHECK_DEST;
-        char32_t ch2 = Impl::encode(*src_it);
+        char32_t ch2 = Impl::encode(detail::cast_u32(*src_it));
         STRF_IF_LIKELY (ch2 < 0x100) {
             * dest_it = static_cast<DestCharT>(ch2);
         } else {
@@ -2322,7 +2322,7 @@ STRF_HD void single_byte_charset_sanitizer<SrcCharT, DestCharT, Impl>::transcode
         STRF_CHECK_DEST;
         auto ch = static_cast<std::uint8_t>(*src_it);
         STRF_IF_LIKELY (Impl::is_valid(ch)) {
-            *dest_it = static_cast<SrcCharT>(ch);
+            *dest_it = static_cast<DestCharT>(ch);
         }
         else {
             STRF_IF_UNLIKELY (err_notifier) {

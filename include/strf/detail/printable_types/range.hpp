@@ -31,7 +31,7 @@ struct separated_range_p
     Iterator begin;
     Iterator end;
     const CharIn* sep_begin;
-    std::size_t sep_len;
+    std::ptrdiff_t sep_len;
 };
 
 template <typename Iterator, typename UnaryOp>
@@ -54,7 +54,7 @@ struct separated_transformed_range_p
     Iterator begin;
     Iterator end;
     const CharIn* sep_begin;
-    std::size_t sep_len;
+    std::ptrdiff_t sep_len;
     UnaryOp op;
 };
 
@@ -344,7 +344,7 @@ private:
     iterator begin_;
     iterator end_;
     const CharT* sep_begin_;
-    std::size_t sep_len_;
+    std::ptrdiff_t sep_len_;
 
     template <typename Category, typename Tag = strf::string_input_tag<CharT>>
     static STRF_HD
@@ -381,7 +381,7 @@ STRF_HD void separated_range_printer<CharT, FPack, Iterator>::do_preprinting_(Pr
         pre.checked_subtract_width(strf::sat_mul(dw, count - 1));
     }
     if (PrePrinting::size_required) {
-        pre.add_size((count - 1) * sep_len_);
+        pre.add_size((count - 1) * static_cast<std::size_t>(sep_len_));
     }
 }
 
@@ -575,7 +575,7 @@ STRF_HD void fmt_separated_range_printer<CharT, FPack, Iterator, Fmts ...>::do_p
         pre.checked_subtract_width(strf::sat_mul(dw, (count - 1)));
     }
     if (PrePrinting::size_required) {
-        pre.add_size((count - 1) * r.sep_len);
+        pre.add_size((count - 1) * static_cast<std::size_t>(r.sep_len));
     }
 }
 
@@ -717,7 +717,7 @@ private:
     iterator begin_;
     iterator end_;
     const CharT* sep_begin_;
-    std::size_t sep_len_;
+    std::ptrdiff_t sep_len_;
     UnaryOp op_;
 
     template <typename Category, typename Tag = strf::string_input_tag<CharT>>
@@ -757,7 +757,7 @@ STRF_HD void sep_transformed_range_printer<CharT, FPack, Iterator, UnaryOp>
         pre.checked_subtract_width(strf::sat_mul(dw, (count - 1)));
     }
     if (PrePrinting::size_required) {
-        pre.add_size((count - 1) * sep_len_);
+        pre.add_size((count - 1) * static_cast<std::size_t>(sep_len_));
     }
 }
 
@@ -792,8 +792,7 @@ template <typename Iterator, typename CharT>
 inline STRF_HD auto separated_range(Iterator begin, Iterator end, const CharT* sep)
     -> strf::separated_range_p<Iterator, CharT>
 {
-    const std::size_t sep_len = strf::detail::str_length<CharT>(sep);
-    return {begin, end, sep, sep_len};
+    return {begin, end, sep, strf::detail::str_ssize<CharT>(sep)};
 }
 
 template < typename Range
@@ -826,24 +825,21 @@ inline STRF_HD auto separated_range(const Range& r, const CharT* sep)
     -> strf::separated_range_p
         <typename Range::const_iterator, CharT>
 {
-    const std::size_t sep_len = strf::detail::str_length<CharT>(sep);
-    return {r.begin(), r.end(), sep, sep_len};
+    return {r.begin(), r.end(), sep, strf::detail::str_ssize<CharT>(sep)};
 }
 
 template < typename T, typename CharT >
 inline STRF_HD auto separated_range(std::initializer_list<T> r, const CharT* sep)
     -> strf::separated_range_p<const T*, CharT>
 {
-    std::size_t sep_len = strf::detail::str_length<CharT>(sep);
-    return {r.begin(), r.end(), sep, sep_len};
+    return {r.begin(), r.end(), sep, strf::detail::str_ssize<CharT>(sep)};
 }
 
 template <typename T, std::size_t N, typename CharT>
 inline STRF_HD auto separated_range(T (&array)[N], const CharT* sep)
     -> strf::separated_range_p<const T*, CharT>
 {
-    const std::size_t sep_len = strf::detail::str_length<CharT>(sep);
-    return {&array[0], &array[0] + N, sep, sep_len};
+    return {&array[0], &array[0] + N, sep, strf::detail::str_ssize<CharT>(sep)};
 }
 
 template <typename Iterator>
@@ -857,9 +853,8 @@ template <typename Iterator, typename CharT>
 inline STRF_HD auto fmt_separated_range(Iterator begin, Iterator end, const CharT* sep)
     -> strf::sep_range_with_formatters<Iterator, CharT>
 {
-    const std::size_t sep_len = strf::detail::str_length<CharT>(sep);
     return strf::sep_range_with_formatters<Iterator, CharT>
-        {{begin, end, sep, sep_len}};
+        {{begin, end, sep, strf::detail::str_ssize<CharT>(sep)}};
 }
 
 template < typename Range
@@ -896,7 +891,7 @@ template < typename Range
 inline STRF_HD auto fmt_separated_range(const Range& r, const CharT* sep)
     -> strf::sep_range_with_formatters<Iterator, CharT>
 {
-    const std::size_t sep_len = strf::detail::str_length<CharT>(sep);
+    const auto sep_len = strf::detail::str_ssize<CharT>(sep);
     const strf::separated_range_p<Iterator, CharT> rr
     { r.begin(), r.end(), sep, sep_len };
     return strf::sep_range_with_formatters<Iterator, CharT>{rr};
@@ -907,7 +902,7 @@ template <typename T, typename CharT>
 inline STRF_HD auto fmt_separated_range(std::initializer_list<T> r, const CharT* sep) noexcept
     -> strf::sep_range_with_formatters<const T*, CharT>
 {
-    std::size_t sep_len = strf::detail::str_length<CharT>(sep);
+    std::size_t sep_len = strf::detail::str_ssize<CharT>(sep);
     strf::separated_range_p<const T*, CharT> rr
     { r.begin(), r.end(), sep, sep_len };
     return strf::sep_range_with_formatters<const T*, CharT>{rr};
@@ -917,7 +912,7 @@ template <typename T, std::size_t N, typename CharT>
 inline STRF_HD auto fmt_separated_range(T (&array)[N], const CharT* sep)
     -> strf::sep_range_with_formatters<const T*, CharT>
 {
-    const std::size_t sep_len = strf::detail::str_length<CharT>(sep);
+    const auto sep_len = strf::detail::str_ssize<CharT>(sep);
     return strf::sep_range_with_formatters<const T*, CharT>
         { {&array[0], &array[0] + N, sep, sep_len} };
 }
@@ -974,7 +969,7 @@ template < typename Iterator
 inline STRF_HD auto separated_range(Iterator begin, Iterator end, const CharT* sep, UnaryOp op)
     -> strf::separated_transformed_range_p<Iterator, CharT, UnaryOp>
 {
-    const std::size_t sep_len = strf::detail::str_length(sep);
+    const auto sep_len = strf::detail::str_ssize(sep);
     return { begin, end, sep, sep_len, op };
 }
 
@@ -988,7 +983,7 @@ template < typename Range
 inline STRF_HD auto separated_range(const Range& r, const CharT* sep, UnaryOp op)
     -> strf::separated_transformed_range_p<Iterator, CharT, UnaryOp>
 {
-    const std::size_t sep_len = strf::detail::str_length(sep);
+    const auto sep_len = strf::detail::str_ssize(sep);
     return { r.begin(), r.end(), sep, sep_len, op };
 }
 
@@ -999,7 +994,7 @@ template < typename T
 inline STRF_HD auto separated_range(std::initializer_list<T> r, const CharT* sep, UnaryOp op)
     -> strf::separated_transformed_range_p<const T*, CharT, UnaryOp>
 {
-    const std::size_t sep_len = strf::detail::str_length(sep);
+    const auto sep_len = strf::detail::str_ssize(sep);
     return { r.begin(), r.end(), sep, sep_len, op };
 }
 
@@ -1011,7 +1006,7 @@ template < typename T
 inline STRF_HD auto separated_range(T (&array)[N], const CharT* sep, UnaryOp op)
     -> strf::separated_transformed_range_p<const T*, CharT, UnaryOp>
 {
-    const std::size_t sep_len = strf::detail::str_length(sep);
+    const auto sep_len = strf::detail::str_ssize(sep);
     return { &array[0], &array[0] + N, sep, sep_len, op };
 }
 

@@ -7,9 +7,9 @@
 
 namespace {
 
-STRF_HD unsigned count_digits(strf::digits_distribution dist)
+STRF_HD int count_digits(strf::digits_distribution dist)
 {
-    unsigned count = dist.highest_group;
+    auto count = dist.highest_group;
     if ( dist.middle_groups_count ) {
         count += dist.middle_groups_count * dist.low_groups.highest_group();
         dist.low_groups.pop_high();

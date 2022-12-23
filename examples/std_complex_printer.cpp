@@ -217,7 +217,7 @@ void std_complex_printer<CharT, FloatT>::preprinting_(PrePrinting& pp, const Wid
 
         default:
             assert(form_ == complex_form::polar);
-            if (pp.remaining_width() > 0) {
+            if (pp.has_remaining_width()) {
                 pp.subtract_width(wcalc.char_width(strf::utf_t<char32_t>{}, anglechar_));
                 pp.subtract_width(1);
             }
@@ -298,7 +298,7 @@ private:
     strf::float_format float_fmt_;
     complex_form form_;
     std::pair<FloatT, FloatT> coordinates_;
-    std::uint16_t fillcount_ = 0;
+    int fillcount_ = 0;
     char32_t fillchar_;
     strf::text_alignment alignment_;
 
@@ -316,18 +316,16 @@ void fmt_std_complex_printer<CharT, FloatT>::init_fillcount_and_do_preprinting_
         pre.clear_remaining_width();
         strf::preprinting<PrecalcSize, strf::precalc_width::yes> sub_pre{fmt_width};
         do_preprinting_without_fill_(sub_pre, wcalc);
-        fillcount_ = static_cast<std::uint16_t>
-            ((sub_pre.remaining_width() / fillchar_width).round());
+        fillcount_ = (sub_pre.remaining_width() / fillchar_width).round();
         pre.add_size(sub_pre.accumulated_ssize());
     } else {
         auto previous_remaining_width = pre.remaining_width();
         do_preprinting_without_fill_(pre, wcalc);
-        if (pre.remaining_width() > 0) {
+        if (pre.has_remaining_width()) {
             auto content_width = previous_remaining_width - pre.remaining_width();
             if (fmt_width > content_width) {
-                fillcount_ = static_cast<std::uint16_t>
-                    (((fmt_width - content_width) / fillchar_width).round());
-                pre.subtract_width(fillcount_);
+                fillcount_ = ((fmt_width - content_width) / fillchar_width).round();
+                pre.subtract_width(static_cast<strf::width_t>(fillcount_));
             }
         }
     }
@@ -360,7 +358,7 @@ void fmt_std_complex_printer<CharT, FloatT>::do_preprinting_without_fill_
 
         default:
             assert(form_ == complex_form::polar);
-            if (pp.remaining_width() > 0) {
+            if (pp.has_remaining_width()) {
                 pp.subtract_width(wcalc.char_width(strf::utf_t<char32_t>{}, anglechar_));
                 pp.subtract_width(1);
             }

@@ -472,14 +472,14 @@ class size_accumulator
 {
 public:
     explicit constexpr size_accumulator() noexcept;
-    explicit constexpr size_accumulator(std::ptrdiff_t initial_size) noexcept;
+    explicit constexpr size_accumulator(std::integral auto initial_size) noexcept;
 
     size_accumulator(const size_accumulator&) = delete;
     size_accumulator(size_accumulator&&) = delete;
     size_accumulator& operator=(const size_accumulator&) = delete;
     size_accumulator& operator=(size_accumulator&&) = delete;
 
-    constexpr void add_size(std::ptrdiff_t) noexcept;
+    constexpr void add_size(std::integral auto initial_size) noexcept;
 
     constexpr std::ptrdiff_t accumulated_ssize() const noexcept;
     constexpr std::size_t accumulated_usize() const noexcept;
@@ -498,35 +498,21 @@ Postcondition:: `accumulated_ssize() == 0`
 ====
 [source,cpp]
 ----
-explicit constexpr size_accumulator(std::ptrdiff_t initial_size) noexcept;
+explicit constexpr size_accumulator(std::integral auto initial_size) noexcept;
 ----
 Compile-time requirement:: `Active` is `true`, otherwise this constructor
 does not participate in overload resolution.
-Precondition:: `initital_size >= 0`
-Postcondition:: `accumulated_ssize() == initial_size`
+Postcondition:: `accumulated_ssize() == initial_size >= 0 ? initial_size : 0`
 ====
 [[size_accumulator_add_size]]
 ====
 [source,cpp]
 ----
-constexpr void add_size(std::ptrdiff_t s) noexcept;
+constexpr void add_size(std::integral auto s) noexcept;
 ----
-Precondition:: `s >= 0`
-
 Effects::
 When `Active` is `false`::: None
-When `Active` is `true` ::: The internally stored size value ( that is returned by `accumulated_ssize()` ) is incremented by `s`.
-====
-
-[[size_accumulator_accumulated_ssize]]
-====
-[source,cpp]
-----
-constexpr std::ptrdiff_t accumulated_ssize() const noexcept;
-----
-Return value::
-When `Active` is `false`::: `0`
-When `Active` is `true` ::: The internally stored size value.
+When `Active` is `true` ::: The internally stored size value ( that is returned by `accumulated_ssize()` ) is incremented by the value `(s >= 0 ? s : 0)`.
 ====
 
 [[size_accumulator_accumulated_usize]]
@@ -535,7 +521,17 @@ When `Active` is `true` ::: The internally stored size value.
 ----
 constexpr std::size_t accumulated_usize() const noexcept;
 ----
-Return value:: `static_cast<std::size_t>(accumulated_ssize())`
+When `Active` is `false`::: `0`
+When `Active` is `true` ::: The internally stored size value.
+====
+
+[[size_accumulator_accumulated_ssize]]
+====
+[source,cpp]
+----
+constexpr std::ptrdiff_t accumulated_ssize() const noexcept;
+----
+Return value:: static_cast<std::ptrdiff_t>(accumulated_usize())
 ====
 
 

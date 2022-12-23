@@ -31,9 +31,11 @@ public:
     static constexpr std::ptrdiff_t min_sspace_after_recycle
         = (std::ptrdiff_t)1 << Log2BufferSpace;
 
-    STRF_HD void ensure(std::ptrdiff_t s)
+    template < typename IntT
+             , strf::detail::enable_if_t<std::is_integral<IntT>::value, int> =0 >
+    STRF_HD void ensure(IntT s)
     {
-        STRF_ASSERT(0 <= s && s <= min_sspace_after_recycle);
+        STRF_ASSERT(static_cast<std::ptrdiff_t>(s) <= min_sspace_after_recycle);
         STRF_IF_UNLIKELY (this->buffer_ptr() + s > this->buffer_end()) {
             this->recycle();
         }
@@ -92,7 +94,7 @@ public:
     STRF_HD std::size_t buffer_space() const noexcept
     {
         STRF_ASSERT(pointer_ <= end_);
-        return end_ - pointer_;
+        return detail::safe_cast_size_t(buffer_sspace());
     }
     STRF_HD std::ptrdiff_t buffer_sspace() const noexcept
     {
@@ -109,9 +111,11 @@ public:
         STRF_ASSERT(p <= end_);
         pointer_ = p;
     }
-    STRF_HD void advance(std::ptrdiff_t n)
+    template < typename IntT
+             , strf::detail::enable_if_t<std::is_integral<IntT>::value, int> =0 >
+    STRF_HD void advance(IntT n)
     {
-        STRF_ASSERT(0 <= n && buffer_ptr() + n <= buffer_end());
+        STRF_ASSERT(detail::ge_zero(n) && buffer_ptr() + n <= buffer_end());
         pointer_ += n;
     }
     STRF_HD void advance() noexcept
@@ -119,7 +123,9 @@ public:
         STRF_ASSERT(buffer_ptr() < buffer_end());
         ++pointer_;
     }
-    STRF_HD void ensure(std::ptrdiff_t s)
+    template < typename IntT
+             , strf::detail::enable_if_t<std::is_integral<IntT>::value, int> =0 >
+    STRF_HD void ensure(IntT s)
     {
         STRF_IF_UNLIKELY (buffer_ptr() + s > buffer_end()) {
             recycle();
@@ -144,12 +150,14 @@ public:
         ensure(s);
     }
 
-    STRF_HD void write(const value_type* data, std::ptrdiff_t count)
+    template < typename IntT
+             , strf::detail::enable_if_t<std::is_integral<IntT>::value, int> =0 >
+    STRF_HD void write(const value_type* data, IntT count)
     {
         STRF_IF_LIKELY (count > 0) {
-            STRF_IF_LIKELY (count <= buffer_sspace()) {
+            STRF_IF_LIKELY (static_cast<std::ptrdiff_t>(count) <= buffer_sspace()) {
 #if !defined(STRF_FREESTANDING) || defined(STRF_WITH_CSTRING)
-                memcpy(pointer_, data, detail::cast_unsigned(count) * sizeof(value_type));
+                memcpy(pointer_, data, static_cast<std::size_t>(count) * sizeof(value_type));
                 pointer_ += count;
 #else
                 for(; count != 0; ++pointer_, ++data, --count) {

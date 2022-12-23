@@ -171,8 +171,8 @@ int main() {
     strf::narrow_cfile_writer<char, 1000> out(stdout);
     auto print = strf::to(out).with(strf::uppercase);
 
-    constexpr long max_failures_count = 500;
-    long failures_count = 0;
+    constexpr int max_failures_count = 500;
+    int failures_count = 0;
     for (std::uint32_t ch = 0; ch < 0x110000; ++ch) {
         auto obtained = props_according_to_strf(ch);
 

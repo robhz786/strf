@@ -675,7 +675,7 @@ public:
     STRF_CONSTEXPR_IN_CXX14 STRF_HD explicit string_printer
         ( const strf::detail::string_printer_input<SrcCharT, PrePrinting, FPack>& input )
         : str_(input.arg.data())
-        , len_(input.arg.length())
+        , len_(input.arg.ssize())
     {
         STRF_IF_CONSTEXPR(PrePrinting::width_required) {
             auto&& wcalc = use_facet_<strf::width_calculator_c>(input.facets);
@@ -694,7 +694,7 @@ public:
             < DestCharT, SrcCharT, false, false, CvFormat, PrePrinting, FPack >&
             input )
         : str_(input.arg.value().data())
-        , len_(input.arg.value().size())
+        , len_(input.arg.value().ssize())
     {
         STRF_IF_CONSTEXPR(PrePrinting::width_required) {
             auto&& wcalc = use_facet_<strf::width_calculator_c>(input.facets);
@@ -702,7 +702,7 @@ public:
                 ( use_facet_<strf::charset_c<SrcCharT>>(input.facets)
                 , input.pre.remaining_width()
                 , str_
-                , input.arg.value().size()
+                , input.arg.value().ssize()
                 , use_facet_<strf::surrogate_policy_c>(input.facets) );
            input.pre.subtract_width(w);
         }
@@ -733,7 +733,7 @@ public:
 private:
 
     const SrcCharT* str_;
-    std::size_t len_;
+    std::ptrdiff_t len_;
 
     template < typename Category
              , typename FPack
@@ -750,7 +750,7 @@ template<typename SrcCharT, typename DestCharT>
 STRF_HD void string_printer<SrcCharT, DestCharT>::print_to
     ( strf::destination<DestCharT>& dest ) const
 {
-    strf::detail::output_buffer_interchar_copy(dest, str_, len_);
+    strf::detail::output_buffer_interchar_copy(dest, str_, detail::safe_cast_size_t(len_));
 }
 
 template <typename SrcCharT, typename DestCharT>
@@ -765,7 +765,7 @@ public:
             < DestCharT, SrcCharT, false, true, CvFormat, PrePrinting, FPack >&
             input )
         : str_(input.arg.value().data())
-        , len_(input.arg.value().size())
+        , len_(input.arg.value().ssize())
         , afmt_(input.arg.get_alignment_format())
     {
 
@@ -796,7 +796,7 @@ public:
         auto dest_charset = use_facet_<strf::charset_c<DestCharT>>(input.facets);
         auto surr_poli = use_facet_<strf::surrogate_policy_c>(input.facets);
         auto res = wcalc.str_width_and_pos
-            ( src_charset, input.arg.precision(), str_, input.arg.value().size(), surr_poli );
+            ( src_charset, input.arg.precision(), str_, input.arg.value().ssize(), surr_poli );
         len_ = res.pos;
         encode_fill_ = dest_charset.encode_fill_func();
         auto fillcount = init_(input.pre, res.width);
@@ -808,11 +808,11 @@ public:
 private:
 
     const SrcCharT* str_;
-    std::size_t len_;
+    std::ptrdiff_t len_;
     strf::encode_fill_f<DestCharT> encode_fill_;
     strf::alignment_format afmt_;
-    std::int16_t left_fillcount_{};
-    std::int16_t right_fillcount_{};
+    int left_fillcount_{};
+    int right_fillcount_{};
 
     template < typename Category
              , typename FPack
@@ -825,11 +825,11 @@ private:
     }
 
     template <typename PrePrinting>
-    STRF_HD std::int16_t init_(PrePrinting&, strf::width_t strw);
+    STRF_HD int init_(PrePrinting&, strf::width_t strw);
 
     template <typename Charset>
-    STRF_HD void precalc_size_( strf::size_accumulator<true>& pre
-                              , Charset charset, std::int16_t fillcount )
+    STRF_HD void precalc_size_
+        ( strf::size_accumulator<true>& pre, Charset charset, int fillcount )
     {
         pre.add_size(len_);
         if (fillcount > 0) {
@@ -838,25 +838,25 @@ private:
     }
 
     template <typename Charset>
-    STRF_HD void precalc_size_(strf::size_accumulator<false>&, Charset, std::int16_t)
+    STRF_HD void precalc_size_(strf::size_accumulator<false>&, Charset, int)
     {
     }
 };
 
 template<typename SrcCharT, typename DestCharT>
 template <typename PrePrinting>
-inline STRF_HD std::int16_t aligned_string_printer<SrcCharT, DestCharT>::init_
+inline STRF_HD int aligned_string_printer<SrcCharT, DestCharT>::init_
     ( PrePrinting& pre, strf::width_t strw )
 {
     if (afmt_.width > strw) {
-        const std::int16_t fillcount = (afmt_.width - strw).round();
+        const int fillcount = (afmt_.width - strw).round();
         switch(afmt_.alignment) {
             case strf::text_alignment::left:
                 left_fillcount_ = 0;
                 right_fillcount_ = fillcount;
                 break;
             case strf::text_alignment::center: {
-                const std::int16_t halfcount = fillcount >> 1;
+                int halfcount = fillcount >> 1;
                 left_fillcount_ = halfcount;
                 right_fillcount_ = fillcount - halfcount;
                 break;
@@ -865,7 +865,8 @@ inline STRF_HD std::int16_t aligned_string_printer<SrcCharT, DestCharT>::init_
                 left_fillcount_ = fillcount;
                 right_fillcount_ = 0;
         }
-        pre.subtract_width(strw + fillcount);
+        pre.subtract_width(strw);
+        pre.subtract_width(static_cast<width_t>(fillcount));
         return fillcount;
     }
     right_fillcount_ = 0;
@@ -881,7 +882,7 @@ void STRF_HD aligned_string_printer<SrcCharT, DestCharT>::print_to
     if (left_fillcount_ > 0) {
         encode_fill_(dest, left_fillcount_, afmt_.fill);
     }
-    strf::detail::output_buffer_interchar_copy(dest, str_, len_);
+    strf::detail::output_buffer_interchar_copy(dest, str_, detail::safe_cast_size_t(len_));
     if (right_fillcount_ > 0) {
         encode_fill_(dest, right_fillcount_, afmt_.fill);
     }
@@ -958,7 +959,7 @@ public:
             < DestCharT, SrcCharT, false, false, CvFormat, PrePrinting, FPack >&
             input )
         : str_(input.arg.value().data())
-        , len_(input.arg.value().size())
+        , len_(input.arg.value().ssize())
         , err_notifier_
               ( use_facet_<strf::transcoding_error_notifier_c, SrcCharT>(input.facets).get() )
         , surr_poli_(use_facet_<strf::surrogate_policy_c, SrcCharT>(input.facets))
@@ -1013,7 +1014,7 @@ private:
         STRF_IF_CONSTEXPR (PrePrinting::size_required) {
             strf::transcode_size_f<SrcCharT>  transcode_size
                 = transcoder.transcode_size_func();
-            std::size_t s = 0;
+            std::ptrdiff_t s = 0;
             if (transcode_size != nullptr) {
                 s = transcode_size(str_, len_, surr_poli_);
             } else {
@@ -1032,7 +1033,7 @@ private:
     }
 
     const SrcCharT* const str_;
-    std::size_t len_;
+    std::ptrdiff_t len_;
     union {
         strf::transcode_f<SrcCharT, DestCharT>  transcode_;
         strf::transcode_f<SrcCharT, char32_t>  src_to_u32_;
@@ -1075,7 +1076,7 @@ public:
             < DestCharT, SrcCharT, false, true, CvFormat, PrePrinting, FPack >&
             input )
         : str_(input.arg.value().data())
-        , len_(input.arg.value().size())
+        , len_(input.arg.value().ssize())
         , afmt_(input.arg.get_alignment_format())
         , err_notifier_
             ( use_facet_<strf::transcoding_error_notifier_c, SrcCharT>(input.facets).get() )
@@ -1098,7 +1099,7 @@ public:
             < DestCharT, SrcCharT, true, true, CvFormat, PrePrinting, FPack >&
             input )
         : str_(input.arg.value().data())
-        , len_(input.arg.value().size())
+        , len_(input.arg.value().ssize())
         , afmt_(input.arg.get_alignment_format())
         , err_notifier_
             ( use_facet_<strf::transcoding_error_notifier_c, SrcCharT>(input.facets).get() )
@@ -1124,7 +1125,7 @@ private:
     }
 
     const SrcCharT* str_;
-    std::size_t len_;
+    std::ptrdiff_t len_;
     strf::alignment_format afmt_;
     union {
         strf::transcode_f<SrcCharT, DestCharT>  transcode_;
@@ -1134,8 +1135,8 @@ private:
     strf::encode_fill_f<DestCharT> encode_fill_ = nullptr;
     strf::transcoding_error_notifier* err_notifier_;
     const strf::surrogate_policy  surr_poli_;
-    std::int16_t left_fillcount_ = 0;
-    std::int16_t right_fillcount_ = 0;
+    int left_fillcount_ = 0;
+    int right_fillcount_ = 0;
 
     template < typename Category, typename SrcChar, typename FPack
              , typename Tag = strf::string_input_tag<SrcChar> >
@@ -1166,7 +1167,7 @@ void STRF_HD aligned_transcode_string_printer<SrcCharT, DestCharT>::init_
         src_to_u32_ = src_charset.to_u32().transcode_func();
         u32_to_dest_ = dest_charset.from_u32().transcode_func();
     }
-    std::int16_t fillcount = 0;
+    int fillcount = 0;
     if (afmt_.width > str_width) {
         fillcount = (afmt_.width - str_width).round();
         switch(afmt_.alignment) {
@@ -1175,7 +1176,7 @@ void STRF_HD aligned_transcode_string_printer<SrcCharT, DestCharT>::init_
                 right_fillcount_ = fillcount;
                 break;
             case strf::text_alignment::center: {
-                const std::int16_t halfcount = fillcount / 2;
+                const auto halfcount = fillcount / 2;
                 left_fillcount_ = halfcount;
                 right_fillcount_ = fillcount - halfcount;
                 break;
@@ -1184,14 +1185,15 @@ void STRF_HD aligned_transcode_string_printer<SrcCharT, DestCharT>::init_
                 left_fillcount_ = fillcount;
                 right_fillcount_ = 0;
         }
-        pre.subtract_width(str_width + fillcount);
+        pre.subtract_width(str_width);
+        pre.subtract_width(static_cast<width_t>(fillcount));
     } else {
         right_fillcount_ = 0;
         left_fillcount_ = 0;
         pre.subtract_width(str_width);
     }
     STRF_IF_CONSTEXPR (PrePrinting::size_required) {
-        std::size_t s = 0;
+        std::ptrdiff_t s = 0;
         strf::transcode_size_f<SrcCharT> transcode_size
                 = transcoder.transcode_size_func();
         if (transcode_size != nullptr) {

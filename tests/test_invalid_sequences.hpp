@@ -61,7 +61,7 @@ public:
             print("\n   More invalid sequences than expected");
             return;
         }
-        auto expected_seq = expected_invalid_seqs_[counter_ - 1];
+        auto expected_seq = expected_invalid_seqs_[strf::detail::safe_cast_size_t(counter_ - 1)];
         auto const seq_mem = reinterpret_cast<const unsigned char*>(sequence_ptr);
         if (code_units_count == expected_seq.ssize()) {
             auto seq_mem_it = seq_mem;
@@ -124,7 +124,7 @@ STRF_HD void do_test_invalid_sequences
 
     DestCharT buff[200];
     strf::array_destination<DestCharT> result_dest{buff};
-    transcode_func( result_dest, input.data(), input.size(), &inv_seq_tester, policy );
+    transcode_func( result_dest, input.data(), input.ssize(), &inv_seq_tester, policy );
     if (result_dest.finish().truncated) {
         strf::to(notifier) ("In do_test_invalid_sequences, internal buffer is to small");
     }

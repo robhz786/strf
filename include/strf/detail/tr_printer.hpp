@@ -53,7 +53,7 @@ STRF_HD read_uint_result<CharT> read_uint(const CharT* it, const CharT* end, std
 {
     std::ptrdiff_t value = *it -  static_cast<CharT>('0');
     ++it;
-    while (it != end) {
+    while (it < end) {
         CharT ch = *it;
         if (ch < static_cast<CharT>('0') || static_cast<CharT>('9') < ch) {
             break;
@@ -272,9 +272,9 @@ STRF_HD void tr_do_preprinting
     , const CharT* end )
 {
     std::ptrdiff_t arg_idx = 0;
-    while (it != end) {
+    while (it < end) {
         const CharT* prev = it;
-        it = strf::detail::str_find<CharT>(it, (end - it), '{');
+        it = strf::detail::str_find<CharT>(it, static_cast<std::size_t>(end - it), '{');
         if (it == nullptr) {
             pre.account_string(prev, end);
             return;
@@ -302,14 +302,14 @@ STRF_HD void tr_do_preprinting
             if (static_cast<bool>(pre.account_arg(result.value))) {
                 return;
             }
-            it = strf::detail::str_find<CharT>(result.it, end - result.it, '}');
+            it = strf::detail::str_find<CharT>(result.it, static_cast<std::size_t>(end - result.it), '}');
             if (it == nullptr) {
                 return;
             }
             ++it;
         } else if(ch == '{') {
             const auto *it2 = it + 1;
-            it2 = strf::detail::str_find<CharT>(it2, end - it2, '{');
+            it2 = strf::detail::str_find<CharT>(it2, static_cast<std::size_t>(end - it2), '{');
             if (it2 == nullptr) {
                 pre.account_string(it, end);
                 return;
@@ -327,7 +327,7 @@ STRF_HD void tr_do_preprinting
                 ++arg_idx;
             }
             const auto *it2 = it + 1;
-            it = strf::detail::str_find<CharT>(it2, (end - it2), '}');
+            it = strf::detail::str_find<CharT>(it2, static_cast<std::size_t>(end - it2), '}');
             if (it == nullptr) {
                 return;
             }
@@ -342,14 +342,14 @@ STRF_HD std::ptrdiff_t tr_string_size
     , std::ptrdiff_t num_args
     , const CharT* it
     , const CharT* end
-    , std::size_t inv_arg_size ) noexcept
+    , std::ptrdiff_t inv_arg_size ) noexcept
 {
     std::ptrdiff_t count = 0;
     std::ptrdiff_t arg_idx = 0;
 
-    while (it != end) {
+    while (it < end) {
         const CharT* prev = it;
-        it = strf::detail::str_find<CharT>(it, (end - it), '{');
+        it = strf::detail::str_find<CharT>(it, static_cast<std::size_t>(end - it), '{');
         if (it == nullptr) {
             count += (end - prev);
             break;
@@ -384,14 +384,14 @@ STRF_HD std::ptrdiff_t tr_string_size
             } else {
                 count += inv_arg_size;
             }
-            it = strf::detail::str_find<CharT>(result.it, end - result.it, '}');
+            it = strf::detail::str_find<CharT>(result.it, static_cast<std::size_t>(end - result.it), '}');
             if (it == nullptr) {
                 break;
             }
             ++it;
         } else if(ch == '{') {
             const auto *it2 = it + 1;
-            it2 = strf::detail::str_find<CharT>(it2, end - it2, '{');
+            it2 = strf::detail::str_find<CharT>(it2, static_cast<std::size_t>(end - it2), '{');
             if (it2 == nullptr) {
                 return count += end - it;
             }
@@ -408,7 +408,7 @@ STRF_HD std::ptrdiff_t tr_string_size
                 }
             }
             const auto *it2 = it + 1;
-            it = strf::detail::str_find<CharT>(it2, (end - it2), '}');
+            it = strf::detail::str_find<CharT>(it2, static_cast<std::size_t>(end - it2), '}');
             if (it == nullptr) {
                 break;
             }
@@ -433,9 +433,9 @@ STRF_HD void tr_string_write
 
     auto it = str;
     const std::ptrdiff_t str_len = str_end - str;
-    while (it != str_end) {
+    while (it < str_end) {
         const char_type* prev = it;
-        it = strf::detail::str_find<char_type>(it, (str_end - it), '{');
+        it = strf::detail::str_find<char_type>(it, static_cast<std::size_t>(str_end - it), '{');
         if (it == nullptr) {
             dest.write(prev, str_end - prev);
             return;
@@ -470,14 +470,14 @@ STRF_HD void tr_string_write
                 charset.write_replacement_char(dest);
                 err_handler.handle(str, str_len, charset, (it - str) - 1);
             }
-            it = strf::detail::str_find<char_type>(result.it, str_end - result.it, '}');
+            it = strf::detail::str_find<char_type>(result.it, static_cast<std::size_t>(str_end - result.it), '}');
             if (it == nullptr) {
                 break;
             }
             ++it;
         } else if(ch == '{') {
             auto it2 = it + 1;
-            it2 = strf::detail::str_find<char_type>(it2, str_end - it2, '{');
+            it2 = strf::detail::str_find<char_type>(it2, static_cast<std::size_t>(str_end - it2), '{');
             if (it2 == nullptr) {
                 dest.write(it, str_end - it);
                 return;
@@ -496,7 +496,7 @@ STRF_HD void tr_string_write
                 }
             }
             auto it2 = it + 1;
-            it = strf::detail::str_find<char_type>(it2, (str_end - it2), '}');
+            it = strf::detail::str_find<char_type>(it2, static_cast<std::size_t>(str_end - it2), '}');
             if (it == nullptr) {
                 break;
             }
@@ -523,15 +523,15 @@ public:
         : tr_string_(tr_string)
         , tr_string_end_(tr_string_end)
         , printers_array_(printers.begin())
-        , num_printers_(printers.size())
+        , num_printers_(static_cast<std::ptrdiff_t>(printers.size()))
         , charset_(charset)
         , err_handler_(err_handler)
     {
         STRF_IF_CONSTEXPR (static_cast<bool>(SizeRequested)) {
             auto invalid_arg_size = charset.replacement_char_size();
             const std::ptrdiff_t s = strf::detail::tr_string_size
-                ( args_pre, printers.size(), tr_string, tr_string_end
-                , invalid_arg_size );
+                ( args_pre, static_cast<std::ptrdiff_t>(printers.size())
+                , tr_string, tr_string_end, invalid_arg_size );
             pre.add_size(s);
         } else {
             (void) args_pre;

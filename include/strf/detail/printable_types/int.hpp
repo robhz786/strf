@@ -1422,7 +1422,7 @@ private:
         }
         uvalue_ = uvalue;
         digcount_ = strf::detail::count_digits<10>(uvalue);
-        pre.subtract_width(digcount_ + negative_);
+        pre.subtract_width(static_cast<width_t>(digcount_ + negative_));
         pre.add_size(digcount_ + negative_);
     }
 
@@ -1434,7 +1434,7 @@ private:
         uvalue_ = value;
         negative_ = false;
         digcount_ = strf::detail::count_digits<10>(value);
-        pre.subtract_width(digcount_);
+        pre.subtract_width(static_cast<width_t>(digcount_));
         pre.add_size(digcount_);
     }
 
@@ -1471,7 +1471,7 @@ public:
         auto encoding = strf::use_facet<strf::charset_c<CharT>, int>(i.facets);
         STRF_MAYBE_UNUSED(encoding);
         encode_fill_ = encoding.encode_fill_func();
-        i.pre.subtract_width(fillcount_ + digcount_ + negative_);
+        i.pre.subtract_width(static_cast<width_t>(fillcount_ + digcount_ + negative_));
         STRF_IF_CONSTEXPR(strf::usual_printer_input<T...>::preprinting_type::size_required) {
             auto fillsize = fillcount_ * encoding.encoded_char_size(fillchar_);
             i.pre.add_size(fillsize + digcount_ + negative_);
@@ -1593,7 +1593,7 @@ inline STRF_HD int init
     using unsigned_IntT = typename std::make_unsigned<IntT>::type;
     unsigned_IntT uvalue;
     if (value >= 0) {
-        uvalue = value;
+        uvalue = detail::cast_unsigned(value);
         data.prefix = static_cast<int>(ifmt.sign);
     } else {
         uvalue = 1 + static_cast<unsigned_IntT>(-(value + 1));
@@ -1631,7 +1631,7 @@ public:
     STRF_HD explicit int_printer_no_pad0_nor_punct(strf::usual_printer_input<T...> i) noexcept
     {
         auto w = strf::detail::init(data_, i.arg.get_int_format(), i.arg.value());
-        i.pre.subtract_width(w);
+        i.pre.subtract_width(static_cast<width_t>(w));
         i.pre.add_size(w);
     }
 
@@ -1662,7 +1662,7 @@ public:
         auto value = i.arg.value();
         auto w = strf::detail::init(data_, i.arg.get_int_format(), value);
         lettercase_ = strf::use_facet<strf::lettercase_c, decltype(value)>(i.facets);
-        i.pre.subtract_width(w);
+        i.pre.subtract_width(static_cast<strf::width_t>(w));
         i.pre.add_size(w);
     }
 
@@ -1812,7 +1812,7 @@ inline STRF_HD void init_1
     , IntT value ) noexcept
 {
     if (value >= 0) {
-        data.uvalue = value;
+        data.uvalue = detail::cast_unsigned(value);
         data.sign = static_cast<char>(ifmt.sign);
         data.has_prefix = ifmt.sign != strf::showsign::negative_only;
     } else {
@@ -1949,7 +1949,7 @@ STRF_HD fmt_int_printer_data_init_result init_fmt_int_printer_data
             data.right_fillcount = 0;
             break;
         default:
-            auto halfcount = static_cast<unsigned>(fillcount) >> 1;
+            auto halfcount = fillcount >> 1;
             data.left_fillcount = halfcount + fill_sign_space;
             data.right_fillcount = halfcount + (fillcount & 1);
     }
@@ -1976,7 +1976,7 @@ public:
         auto afmt = i.arg.get_alignment_format();
         detail::init_1(data_, ifmt, ivalue);
         auto w = detail::init_fmt_int_printer_data<Base>(data_, ifmt, afmt);
-        i.pre.subtract_width(w.sub_width + w.fillcount);
+        i.pre.subtract_width(static_cast<width_t>(w.sub_width + w.fillcount));
         using pre_t = typename strf::usual_printer_input<T...>::preprinting_type;
         STRF_IF_CONSTEXPR (pre_t::size_required) {
             i.pre.add_size(w.sub_width);
@@ -2012,7 +2012,7 @@ STRF_HD void int_printer_static_base_and_punct<CharT, Base, false>::print_to
             * dest.buffer_ptr() = static_cast<CharT>('0');
             dest.advance();
         } else {
-            constexpr CharT xb = Base == 16 ? 'X' : 'B';
+            constexpr int xb = Base == 16 ? 'X' : 'B';
             dest.ensure(2);
             auto *it = dest.buffer_ptr();
             it[0] = static_cast<CharT>('0');
@@ -2094,7 +2094,7 @@ STRF_HD fmt_int_printer_data_init_result init_punct_fmt_int_printer_data
             data.right_fillcount = 0;
             break;
         default:
-            auto halfcount = static_cast<unsigned>(fillcount) >> 1;
+            auto halfcount = fillcount >> 1;
             data.left_fillcount = halfcount + fill_sign_space;
             data.right_fillcount = halfcount + (fillcount & 1);
     }
@@ -2154,7 +2154,7 @@ public:
         detail::init_1(data_, ifmt, ivalue);
         const auto w = detail::init_punct_fmt_int_printer_data<Base>
             (data_, charset.validate_func(), ifmt, afmt);
-        pre.subtract_width(w.sub_width + w.fillcount + data_.sepcount);
+        pre.subtract_width(static_cast<width_t>(w.sub_width + w.fillcount + data_.sepcount));
         STRF_IF_CONSTEXPR (PrePrinting::size_required) {
             pre.add_size(w.sub_width);
             if (w.fillcount) {
@@ -2191,7 +2191,7 @@ STRF_HD void int_printer_static_base_and_punct<CharT, Base, true>::print_to
             * dest.buffer_ptr() = static_cast<CharT>('0');
             dest.advance();
         } else {
-            constexpr CharT xb = Base == 16 ? 'X' : 'B';
+            constexpr int xb = Base == 16 ? 'X' : 'B';
             dest.ensure(2);
             auto *it = dest.buffer_ptr();
             it[0] = static_cast<CharT>('0');

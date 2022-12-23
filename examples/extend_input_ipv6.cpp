@@ -34,17 +34,17 @@ public:
 
     bool operator==(ipv6address_abbreviation other) const noexcept;
 
-    constexpr  bool hextet_visible(unsigned index) const noexcept;
-    constexpr  bool colon_visible(unsigned index) const noexcept;
-    constexpr  std::uint8_t visible_hextets_count() const noexcept;
-    constexpr  std::uint8_t visible_colons_count() const noexcept;
+    constexpr  bool hextet_visible(int index) const noexcept;
+    constexpr  bool colon_visible(int index) const noexcept;
+    constexpr  int visible_hextets_count() const noexcept;
+    constexpr  int visible_colons_count() const noexcept;
 
 private:
 
-    std::uint8_t hextets_visibility_bits_;
-    std::uint8_t colons_visibility_bits_;
-    std::uint8_t visible_hextets_count_;
-    std::uint8_t visible_colons_count_;
+    unsigned hextets_visibility_bits_;
+    unsigned colons_visibility_bits_;
+    int visible_hextets_count_;
+    int visible_colons_count_;
 };
 
 } // namespace xxx
@@ -126,10 +126,10 @@ private:
     xxx::ipv6address_abbreviation abbrev_;
     const strf::alignment_format alignment_fmt_;
     const strf::lettercase lettercase_;
-    std::int16_t fillcount_ = 0;
+    int fillcount_ = 0;
     ipv6style style_;
 
-    std::uint16_t count_ipv6_characters() const;
+    int count_ipv6_characters() const;
     void print_ipv6(strf::destination<CharT>& dest) const;
 
     template <typename PrePrinting, typename Charset>
@@ -144,10 +144,10 @@ void ipv6_printer<CharT>::init_(PrePrinting& pre, Charset charset)
         abbrev_ = xxx::ipv6address_abbreviation{addr_};
     }
     auto count = count_ipv6_characters();
-    if (count > alignment_fmt_.width) {
-        pre.subtract_width(count);
+    if (strf::compare(alignment_fmt_.width, count) <= 0) {
+        pre.subtract_width(static_cast<strf::width_t>(count));
     } else {
-        fillcount_ = (alignment_fmt_.width - count).round();
+        fillcount_ = strf::sat_sub(alignment_fmt_.width, count).round();
         if (PrePrinting::size_required && fillcount_ > 0) {
             pre.add_size(fillcount_ * charset.encoded_char_size(alignment_fmt_.fill));
         }
@@ -156,18 +156,18 @@ void ipv6_printer<CharT>::init_(PrePrinting& pre, Charset charset)
     pre.add_size(count);
 }
 
-inline std::uint16_t hex_digits_count(std::uint16_t x)
+inline int hex_digits_count(std::uint16_t x)
 {
     return x > 0xFFF ? 4 : ( x > 0xFFU ? 3 : ( x > 0xF ? 2 : 1 ) );
 }
 
 template <typename CharT>
-std::uint16_t ipv6_printer<CharT>::count_ipv6_characters() const
+int ipv6_printer<CharT>::count_ipv6_characters() const
 {
     if (style_ == ipv6style::big) {
         return 39;
     }
-    std::uint16_t count = abbrev_.visible_colons_count();
+    auto count = abbrev_.visible_colons_count();
     for (int i = 0; i < 8; ++i) {
         if (abbrev_.hextet_visible(i)) {
             count += hex_digits_count(addr_.hextets[i]);
@@ -193,7 +193,7 @@ void ipv6_printer<CharT>::print_to(strf::destination<CharT>& dest) const
                 break;
             default:{
                 assert(alignment_fmt_.alignment == strf::text_alignment::center);
-                const std::int16_t halfcount = fillcount_ / 2;
+                const auto halfcount = fillcount_ / 2;
                 encode_fill_fn_(dest, halfcount, alignment_fmt_.fill);
                 print_ipv6(dest);
                 encode_fill_fn_(dest, fillcount_ - halfcount, alignment_fmt_.fill);
@@ -205,7 +205,7 @@ void ipv6_printer<CharT>::print_to(strf::destination<CharT>& dest) const
 template <typename CharT>
 void ipv6_printer<CharT>::print_ipv6(strf::destination<CharT>& dest) const
 {
-    const unsigned precision = (style_ == ipv6style::big ? 4 : 0);
+    const int precision = (style_ == ipv6style::big ? 4 : 0);
     for (int i = 0; i < 8; ++i) {
         if (abbrev_.hextet_visible(i)) {
             strf::to(dest) (lettercase_, strf::hex(addr_.hextets[i]).p(precision));
@@ -324,12 +324,12 @@ ipv6address_abbreviation::ipv6address_abbreviation(ipv6address addr)
 {
     // Don't mind the mess
 
-    unsigned middle_zeros_start = 0;
-    unsigned middle_zeros_count = 0;
-    unsigned trailing_zeros_start = 0;
+    int middle_zeros_start = 0;
+    int middle_zeros_count = 0;
+    int trailing_zeros_start = 0;
 
     if (addr.hextets[0] == 0 && addr.hextets[1] == 0) {
-        unsigned zi = 2;
+        int zi = 2;
         while(addr.hextets[zi] == 0) {
             ++zi;
             if (zi == 8) {
@@ -364,13 +364,13 @@ ipv6address_abbreviation::ipv6address_abbreviation(ipv6address addr)
                 goto hide_middle_zeros;
             }
             hide_leading_zeros:
-            visible_hextets_count_ = static_cast<std::uint8_t>(8 - leading_zeros_count);
+            visible_hextets_count_ = 8 - leading_zeros_count;
             visible_colons_count_ = visible_hextets_count_ + 1;
             hextets_visibility_bits_ = 0xFFU << leading_zeros_count;
             colons_visibility_bits_ = 0x7FU & (0x7FU << (leading_zeros_count - 2));
         }
     } else {
-        unsigned zi = 2;
+        int zi = 2;
         while(1) {
             if (addr.hextets[zi - 1] == 0 && addr.hextets[zi] == 0) {
                 break;
@@ -414,18 +414,18 @@ ipv6address_abbreviation::ipv6address_abbreviation(ipv6address addr)
     return;
 
     hide_middle_zeros:
-    visible_hextets_count_ = static_cast<std::uint8_t>(8 - middle_zeros_count);
+    visible_hextets_count_ = 8 - middle_zeros_count;
     visible_colons_count_ = visible_hextets_count_;
     hextets_visibility_bits_ = ~(~(0xFFU << middle_zeros_count) << middle_zeros_start);
     colons_visibility_bits_  = 0x7FU & ~(~(0xFFU << (middle_zeros_count - 1)) << middle_zeros_start);
     return;
 
     hide_trailing_zeros:
-    auto trailing_zeros_count = static_cast<std::uint8_t>(8 - trailing_zeros_start);
-    visible_hextets_count_ = static_cast<std::uint8_t>(trailing_zeros_start);
-    visible_colons_count_  = static_cast<std::uint8_t>(trailing_zeros_start + 1);
+    auto trailing_zeros_count = 8 - trailing_zeros_start;
+    visible_hextets_count_ = trailing_zeros_start;
+    visible_colons_count_  = trailing_zeros_start + 1;
     hextets_visibility_bits_ = 0xFFU >>  trailing_zeros_count;
-    colons_visibility_bits_  = 0xFFU >> (trailing_zeros_count - 1U);
+    colons_visibility_bits_  = 0xFFU >> (trailing_zeros_count - 1);
 }
 constexpr ipv6address_abbreviation::ipv6address_abbreviation() noexcept
     : hextets_visibility_bits_(0xFF)
@@ -441,19 +441,19 @@ bool ipv6address_abbreviation::operator==(ipv6address_abbreviation other) const 
           && visible_hextets_count_ == other.visible_hextets_count_
           && visible_colons_count_ == other.visible_colons_count_ );
 }
-constexpr  bool ipv6address_abbreviation::hextet_visible(unsigned index) const noexcept
+constexpr bool ipv6address_abbreviation::hextet_visible(int index) const noexcept
 {
-    return index < 8 && (hextets_visibility_bits_ & (1U << index));
+    return 0 <= index && index < 8 && (hextets_visibility_bits_ & (1U << index));
 }
-constexpr  bool ipv6address_abbreviation::colon_visible(unsigned index) const noexcept
+constexpr bool ipv6address_abbreviation::colon_visible(int index) const noexcept
 {
-    return index < 7 && (colons_visibility_bits_ & (1U << index));
+    return 0 <= index && index < 7 && (colons_visibility_bits_ & (1U << index));
 }
-constexpr  std::uint8_t ipv6address_abbreviation::visible_hextets_count() const noexcept
+constexpr int ipv6address_abbreviation::visible_hextets_count() const noexcept
 {
     return visible_hextets_count_;
 }
-constexpr  std::uint8_t ipv6address_abbreviation::visible_colons_count() const noexcept
+constexpr int ipv6address_abbreviation::visible_colons_count() const noexcept
 {
     return visible_colons_count_;
 }
