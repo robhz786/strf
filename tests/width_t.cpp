@@ -178,6 +178,9 @@ STRF_TEST_FUNC void test_width_t()
     TEST_TRUE(sat_mul(1_w, width_max - epsilon) == width_max - epsilon);
     TEST_TRUE(sat_mul(1_w, width_max) == width_max);
     TEST_TRUE(sat_mul(1_w + epsilon, width_max) == width_max);
+    TEST_TRUE(sat_mul(1_w, -epsilon) == -epsilon);
+    TEST_TRUE(sat_mul(0.25_w,  -epsilon) == 0_w);
+    TEST_TRUE(sat_mul(epsilon, -epsilon) == 0_w);
     TEST_TRUE(sat_mul(1_w, width_min + epsilon) == width_min + epsilon);
     TEST_TRUE(sat_mul(1_w, width_min)   == width_min);
     TEST_TRUE(sat_mul(1_w + epsilon, width_min) == width_min);

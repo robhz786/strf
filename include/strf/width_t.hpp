@@ -334,9 +334,7 @@ public:
         } else if (tmp < cast_i64(cast_u64(cast_i64(min().underlying_value())) << 16)) {
             value_ = static_cast<std::int32_t>(0x80000000);
         } else {
-            // equivalent of arithmetic shift right 16:
-            const std::uint64_t leftbits = (tmp < 0 ? 0xFFFF000000000000ULL : 0);
-            value_ = cast_i32((cast_u64(tmp) >> 16) | leftbits);
+            value_ = cast_i32(tmp / 0x10000);
         }
         return *this;
     }
@@ -350,11 +348,10 @@ public:
     STRF_CONSTEXPR_IN_CXX14
     STRF_HD width_t& operator/=(width_t other) noexcept
     {
-
-        const std::uint64_t vu64 = detail::cast_u32(value_);
-        const std::int64_t tmp = detail::cast_i64(vu64 << 32) / other.value_;
-
-        value_ = detail::cast_i32(detail::cast_u64(tmp) >> 16);
+        using namespace strf::detail::cast_sugars;
+        const std::uint64_t vu64 = cast_u32(value_);
+        const std::int64_t tmp = cast_i64(vu64 << 16) / other.value_;
+        value_ = detail::cast_i32(cast_i64(tmp));
         return *this;
     }
 
@@ -366,7 +363,7 @@ public:
     constexpr STRF_HD int compare(detail::tag_u16, std::uint16_t x) const noexcept
     {
         using namespace strf::detail::cast_sugars;
-        return x >= cast_u16(0x8000) ? -1 : (value_ - cast_i32(x << 16));
+        return x >= cast_u16(0x8000) ? -1 : (value_ - cast_i32(cast_u32(x) << 16));
     }
 
     constexpr STRF_HD std::int64_t compare(detail::tag_i32, std::int32_t x) const noexcept
