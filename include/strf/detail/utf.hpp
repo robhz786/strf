@@ -1550,31 +1550,29 @@ STRF_HD void strf::static_transcoder
     , strf::transcoding_error_notifier* err_notifier
     , strf::surrogate_policy surr_poli )
 {
-    unsigned ch = 0, ch2 = 0, ch32 = 0;
     const auto *src_end = src + src_size;
     auto *dest_it = dest.buffer_ptr();
     auto *dest_end = dest.buffer_end();
     const auto *src_it = src;
     while (src_it < src_end) {
-        ch = detail::cast_u16(*src_it);
+        const unsigned ch = detail::cast_u16(*src_it);
+        unsigned ch32 = ch;
         ++src_it;
-        STRF_IF_LIKELY (strf::detail::not_surrogate(ch)) {
-            ch32 = ch;
-        } else if ( strf::detail::is_high_surrogate(ch)
-               && src_it != src_end
-               && strf::detail::is_low_surrogate(ch2 = detail::cast_u16(*src_it))) {
-            ch32 = 0x10000 + (((ch & 0x3FF) << 10) | (ch2 & 0x3FF));
-            ++src_it;
-        } else if (surr_poli == strf::surrogate_policy::lax) {
-            ch32 = ch;
-        } else {
-            ch32 = 0xFFFD;
-            if (err_notifier) {
-                dest.advance_to(dest_it);
-                err_notifier->invalid_sequence(2, "UTF-16", src_it - 1, 1);
+        STRF_IF_UNLIKELY (strf::detail::is_surrogate(ch)) {
+            unsigned ch2 = 0;
+            if ( strf::detail::is_high_surrogate(ch)
+              && src_it != src_end
+              && strf::detail::is_low_surrogate(ch2 = detail::cast_u16(*src_it))) {
+                ch32 = 0x10000 + (((ch & 0x3FF) << 10) | (ch2 & 0x3FF));
+                ++src_it;
+            } else if (surr_poli != strf::surrogate_policy::lax) {
+                ch32 = 0xFFFD;
+                if (err_notifier) {
+                    dest.advance_to(dest_it);
+                    err_notifier->invalid_sequence(2, "UTF-16", src_it - 1, 1);
+                }
             }
         }
-
         STRF_CHECK_DEST;
         *dest_it = static_cast<DestCharT>(ch32);
         ++dest_it;
@@ -1620,41 +1618,36 @@ STRF_HD void strf::static_transcoder
     , strf::transcoding_error_notifier* err_notifier
     , strf::surrogate_policy surr_poli )
 {
-    unsigned ch = 0, ch2 = 0;
     const auto *src_it = src;
     const auto *const src_end = src + src_size;
     auto *dest_it = dest.buffer_ptr();
     auto *dest_end = dest.buffer_end();
     while (src_it < src_end) {
-        ch = detail::cast_u16(*src_it);
+        unsigned ch = detail::cast_u16(*src_it);
         ++src_it;
-
-        STRF_IF_LIKELY (strf::detail::not_surrogate(ch)) {
-            STRF_CHECK_DEST;
-            *dest_it = static_cast<DestCharT>(ch);
-            ++dest_it;
-        } else if ( strf::detail::is_high_surrogate(ch)
-                 && src_it != src_end
-                 && strf::detail::is_low_surrogate(ch2 = detail::cast_u16(*src_it)))
-        {
-            ++src_it;
-            STRF_CHECK_DEST_SIZE(2);
-            dest_it[0] = static_cast<DestCharT>(ch);
-            dest_it[1] = static_cast<DestCharT>(ch2);
-            dest_it += 2;
-        } else if (surr_poli == strf::surrogate_policy::lax) {
-            STRF_CHECK_DEST;
-            *dest_it = static_cast<DestCharT>(ch);
-            ++dest_it;
-        } else {
-            if (err_notifier) {
-                dest.advance_to(dest_it);
-                err_notifier->invalid_sequence(2, "UTF-16", src_it - 1, 1);
+        STRF_IF_UNLIKELY (strf::detail::is_surrogate(ch)) {
+            unsigned ch2 = 0;
+            if ( strf::detail::is_high_surrogate(ch)
+              && src_it != src_end
+              && strf::detail::is_low_surrogate(ch2 = detail::cast_u16(*src_it)) )
+            {
+                ++src_it;
+                STRF_CHECK_DEST_SIZE(2);
+                dest_it[0] = static_cast<DestCharT>(ch);
+                dest_it[1] = static_cast<DestCharT>(ch2);
+                dest_it += 2;
+                continue;
+            } else if (surr_poli != strf::surrogate_policy::lax) {
+                ch = 0xFFFD;
+                if (err_notifier) {
+                    dest.advance_to(dest_it);
+                    err_notifier->invalid_sequence(2, "UTF-16", src_it - 1, 1);
+                }
             }
-            STRF_CHECK_DEST;
-            *dest_it = 0xFFFD;
-            ++dest_it;
         }
+        STRF_CHECK_DEST;
+        *dest_it = static_cast<DestCharT>(ch);
+        ++dest_it;
     }
     dest.advance_to(dest_it);
 }

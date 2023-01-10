@@ -1715,9 +1715,8 @@ inline STRF_HD strf::detail::float_init_result init_hex_double_printer_data
                 auto d = 1ULL << s;
                 auto mask = d - 1;
                 auto mantissa_low = data.mantissa & mask;
-                if ( mantissa_low > (d >> 1)) {
-                    data.mantissa += d;
-                } else if (mantissa_low == (d >> 1) && (data.mantissa & d)) {
+                if ( mantissa_low > (d >> 1)
+                 || (mantissa_low == (d >> 1) && (data.mantissa & d))) {
                     data.mantissa += d;
                 }
                 data.mantissa_digcount = fdata.precision;
