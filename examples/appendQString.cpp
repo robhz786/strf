@@ -50,7 +50,7 @@ void QStringAppender::recycle()
 {
     const std::ptrdiff_t scount = this->buffer_ptr() - buffer_;
     Q_ASSERT(scount >= 0);
-    const std::size_t count = static_cast<std::size_t>(scount >= 0 ? scount : 0);
+    const auto count = static_cast<std::size_t>(scount >= 0 ? scount : 0);
     this->set_buffer_ptr(buffer_);
     if (this->good()) {
         this->set_good(false);
