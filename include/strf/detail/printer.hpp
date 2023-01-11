@@ -18,7 +18,7 @@ public:
 
     printer() = default;
     printer(const printer&) = default;
-    printer(printer&&) = default;
+    printer(printer&&) noexcept = default;
     printer& operator=(const printer&) = default;
     printer& operator=(printer&&) = default;
 
