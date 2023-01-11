@@ -384,8 +384,6 @@ private:
 
     using this_pss_ = pss_<reserve_policy_t>;
 
-protected:
-
     reserve_policy_t poli_;
 
 public:
