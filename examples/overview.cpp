@@ -280,12 +280,12 @@ void width_func()
 
 namespace my { // my customizations
 
-const auto my_default_facets = strf::pack
+constexpr auto my_default_facets = strf::pack
     ( strf::numpunct<10>(3)
     , strf::numpunct<16>(4).thousands_sep(U'\'')
     , strf::surrogate_policy::lax );
 
-const auto to_string = strf::to_string.with(my_default_facets);
+constexpr auto to_string = strf::to_string.with(my_default_facets);
 
 template <typename Str>
 inline auto append(Str& str)
