@@ -2012,7 +2012,7 @@ STRF_HD void int_printer_static_base_and_punct<CharT, Base, false>::print_to
             * dest.buffer_ptr() = static_cast<CharT>('0');
             dest.advance();
         } else {
-            constexpr int xb = Base == 16 ? 'X' : 'B';
+            constexpr int xb = static_cast<unsigned char>(Base == 16 ? 'X' : 'B');
             dest.ensure(2);
             auto *it = dest.buffer_ptr();
             it[0] = static_cast<CharT>('0');
@@ -2191,7 +2191,7 @@ STRF_HD void int_printer_static_base_and_punct<CharT, Base, true>::print_to
             * dest.buffer_ptr() = static_cast<CharT>('0');
             dest.advance();
         } else {
-            constexpr int xb = Base == 16 ? 'X' : 'B';
+            constexpr int xb = static_cast<unsigned char>(Base == 16 ? 'X' : 'B');
             dest.ensure(2);
             auto *it = dest.buffer_ptr();
             it[0] = static_cast<CharT>('0');
