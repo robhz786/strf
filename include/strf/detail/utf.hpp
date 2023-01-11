@@ -1039,7 +1039,7 @@ STRF_HD void strf::static_transcoder
     using strf::detail::is_utf8_continuation;
 
     unsigned ch0 = 0, ch1 = 0, ch2 = 0, ch3 = 0;
-    unsigned ch32;
+    unsigned ch32 = 0;
     unsigned x = 0;
     const auto *src_it = src;
     const auto *src_end = src + src_size;
