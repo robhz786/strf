@@ -76,9 +76,9 @@ public:
     }
     STRF_CONSTEXPR_IN_CXX14 STRF_HD width_t& operator=(std::int16_t& x) noexcept
     {
-        return operator=(strf::width_t(x));
+        value_ = width_t{x}.value_;
+        return *this;
     }
-
     constexpr STRF_HD bool operator==(const width_t& other) const noexcept
     {
         return value_ == other.value_;
