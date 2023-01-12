@@ -20,7 +20,7 @@ public:
     printer(const printer&) = default;
     printer(printer&&) noexcept = default;
     printer& operator=(const printer&) = default;
-    printer& operator=(printer&&) = default;
+    printer& operator=(printer&&) noexcept = default;
 
     virtual STRF_HD ~printer() STRF_DEFAULT_IMPL;
 
