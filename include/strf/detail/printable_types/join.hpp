@@ -180,7 +180,7 @@ public:
         if (pre.remaining_width() > diff) {
             fillcount_ = (pre.remaining_width() - diff).round();
         }
-        width_t width = strf::sat_sub(strf::sat_add(wmax, fillcount_), pre.remaining_width());
+        width_t const width = strf::sat_sub(strf::sat_add(wmax, fillcount_), pre.remaining_width());
         input.pre.subtract_width(width);
         STRF_IF_CONSTEXPR (static_cast<bool>(PrecalcSize)) {
             input.pre.add_size(pre.accumulated_ssize());

@@ -770,7 +770,7 @@ public:
         uIntT uvalue = value;
         const int offset_digit_a = (static_cast<int>('A') | ((lc == strf::lowercase) << 5)) - 10;
         while(uvalue > 0xF) {
-            int digit = uvalue & 0xF;
+            int const digit = uvalue & 0xF;
             *--it = ( digit < 10
                     ? static_cast<CharT>('0' + digit)
                     : static_cast<CharT>(offset_digit_a + digit) );
@@ -798,7 +798,7 @@ public:
         const int offset_digit_a = (static_cast<int>('A') | ((lc == strf::lowercase) << 5)) - 10;
         auto digits_before_sep = git.current();
         do {
-            int digit = uvalue & 0xF;
+            int const digit = uvalue & 0xF;
             *--it = ( digit < 10
                     ? static_cast<CharT>('0' + digit)
                     : static_cast<CharT>(offset_digit_a + digit) );

@@ -1461,7 +1461,7 @@ STRF_HD void strf::static_transcoder
     auto *dest_it = dest.buffer_ptr();
     auto *dest_end = dest.buffer_end();
     for(;src_it < src_end; ++src_it) {
-        unsigned ch = detail::cast_u32(*src_it);
+        unsigned const ch = detail::cast_u32(*src_it);
         STRF_IF_LIKELY (ch < 0x80) {
             STRF_CHECK_DEST;
             *dest_it = static_cast<DestCharT>(ch);
@@ -1781,7 +1781,7 @@ STRF_HD void strf::static_transcoder
     auto *dest_it = dest.buffer_ptr();
     auto *dest_end = dest.buffer_end();
     for ( ; src_it < src_end; ++src_it) {
-        unsigned ch = detail::cast_u32(*src_it);
+        unsigned const ch = detail::cast_u32(*src_it);
         STRF_IF_LIKELY (ch < 0x10000) {
             STRF_IF_LIKELY ( surr_poli == strf::surrogate_policy::lax
                           || strf::detail::not_surrogate(ch) )
@@ -1822,7 +1822,7 @@ STRF_HD std::ptrdiff_t strf::static_transcoder
     const SrcCharT* src_it = src;
     const auto *const src_end = src + src_size;
     for ( ; src_it < src_end; ++src_it) {
-        unsigned ch = detail::cast_u32(*src_it);
+        unsigned const ch = detail::cast_u32(*src_it);
         count += 1 + (0x10000 <= ch && ch < 0x110000);
     }
     return count;
@@ -2061,7 +2061,7 @@ STRF_HD void strf::static_transcoder
     auto *dest_end = dest.buffer_end();
 
     while (src_it < src_end) {
-        unsigned ch = detail::cast_u16(*src_it);
+        unsigned const ch = detail::cast_u16(*src_it);
         ++src_it;
         STRF_IF_LIKELY (ch < 0x80) {
             STRF_CHECK_DEST;
@@ -2120,7 +2120,7 @@ STRF_HD std::ptrdiff_t strf::static_transcoder
     const auto *const src_end = src + src_size;
     std::ptrdiff_t size = 0;
     for(const auto *it = src; it < src_end; ++it) {
-        unsigned ch = detail::cast_u16(*it);
+        unsigned const ch = detail::cast_u16(*it);
         STRF_IF_LIKELY (ch < 0x80) {
             ++size;
         } else if (ch < 0x800) {

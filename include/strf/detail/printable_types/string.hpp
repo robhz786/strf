@@ -856,7 +856,7 @@ inline STRF_HD int aligned_string_printer<SrcCharT, DestCharT>::init_
                 right_fillcount_ = fillcount;
                 break;
             case strf::text_alignment::center: {
-                int halfcount = fillcount >> 1;
+                int const halfcount = fillcount >> 1;
                 left_fillcount_ = halfcount;
                 right_fillcount_ = fillcount - halfcount;
                 break;

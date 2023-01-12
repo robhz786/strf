@@ -2072,7 +2072,7 @@ STRF_HD fmt_int_printer_data_init_result init_punct_fmt_int_printer_data
     const int zeros_b = ifmt.pad0width > content_width ? ifmt.pad0width - content_width : 0;
     data.leading_zeros = (detail::max)(zeros_a, zeros_b);
     content_width += data.leading_zeros;
-    int fmt_width = afmt.width.round();
+    int const fmt_width = afmt.width.round();
     data.fillchar = afmt.fill;
     const bool fill_sign_space = Base == 10 && data.sign == ' ';
     if (fmt_width <= content_width) {

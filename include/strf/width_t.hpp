@@ -150,7 +150,7 @@ public:
     }
     STRF_CONSTEXPR_IN_CXX14 STRF_HD std::int32_t round() const noexcept
     {
-        std::int32_t i = floor();
+        std::int32_t const i = floor();
         const auto q = value_ & 0xFFFF;
         STRF_IF_LIKELY (value_ >= 0) {
             return q <= 0x8000 ? i : (i + 1);
