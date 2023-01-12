@@ -25,10 +25,10 @@ void test_narrow_successfull_writing()
     writer.write(tiny_str.begin(), tiny_str.size());
     writer.write(double_str.begin(), double_str.size());
     auto status = writer.finish();
-    std::fflush(file);
+    TEST_TRUE(0 == fflush(file));
     std::rewind(file);
     auto obtained_content = test_utils::read_file<CharT>(file);
-    std::fclose(file);
+    TEST_TRUE(0 == fclose(file));
 
     TEST_TRUE(status.success);
     TEST_EQ(status.count, obtained_content.size());
@@ -53,10 +53,10 @@ void test_wide_successfull_writing()
     writer.write(tiny_str.begin(), tiny_str.size());
     writer.write(double_str.begin(), double_str.size());
     auto status = writer.finish();
-    std::fflush(file);
+    TEST_TRUE(0 == fflush(file));
     std::rewind(file);
     auto obtained_content = test_utils::read_wfile(file);
-    std::fclose(file);
+    TEST_TRUE(0 == fclose(file));
 
     TEST_TRUE(status.success);
     TEST_EQ(status.count, obtained_content.size());
@@ -207,9 +207,9 @@ void test_narrow_failing_to_flush()
     writer.write(double_str.begin(), double_str.size());
 
     auto status = writer.finish();
-    std::fclose(file);
+    TEST_TRUE(0 == fclose(file));
     auto obtained_content = test_utils::read_file<CharT>(path.c_str());
-    std::remove(path.c_str());
+    TEST_TRUE(0 == remove(path.c_str()));
 
     TEST_TRUE(! status.success);
     TEST_EQ(status.count, obtained_content.size());
@@ -234,9 +234,9 @@ void test_wide_failing_to_flush()
     writer.write(double_str.begin(), double_str.size());
 
     auto status = writer.finish();
-    std::fclose(file);
+    TEST_TRUE(0 == fclose(file));
     auto obtained_content = test_utils::read_wfile(path.c_str());
-    std::remove(path.c_str());
+    TEST_TRUE(0 == remove(path.c_str()));
 
     TEST_TRUE(! status.success);
     TEST_EQ(status.count, obtained_content.size());
@@ -263,9 +263,9 @@ void test_narrow_failing_to_finish()
     test_utils::turn_into_bad(writer);
 
     auto status = writer.finish();
-    std::fclose(file);
+    TEST_TRUE(0 == fclose(file));
     auto obtained_content = test_utils::read_file<CharT>(path.c_str());
-    std::remove(path.c_str());
+    TEST_TRUE(0 == remove(path.c_str()));
 
     TEST_TRUE(! status.success);
     TEST_EQ(status.count, obtained_content.size());
@@ -290,9 +290,9 @@ void test_wide_failing_to_finish()
     test_utils::turn_into_bad(writer);
 
     auto status = writer.finish();
-    std::fclose(file);
+    TEST_TRUE(0 == fclose(file));
     auto obtained_content = test_utils::read_file<char>(path.c_str());
-    std::remove(path.c_str());
+    TEST_TRUE(0 == remove(path.c_str()));
 
     TEST_TRUE(! status.success);
     TEST_EQ(status.count, obtained_content.size());
@@ -313,9 +313,9 @@ void test_narrow_cfile_writer_creator()
     std::FILE* file = std::fopen(path.c_str(), "we");
 
     auto status = strf::to<CharT>(file)(half_str, full_str);
-    std::fclose(file);
+    TEST_TRUE(0 == fclose(file));
     auto obtained_content = test_utils::read_file<CharT>(path.c_str());
-    std::remove(path.c_str());
+    TEST_TRUE(0 == remove(path.c_str()));
 
     TEST_TRUE(status.success);
     TEST_EQ(status.count, obtained_content.size());
@@ -339,10 +339,10 @@ void test_wide_cfile_writer_creator()
     std::FILE* file = std::fopen(path.c_str(), "we");
 
     auto status = strf::wto(file)(half_str, full_str);
-    std::fclose(file);
+    TEST_TRUE(0 == fclose(file));
 
     auto obtained_content = test_utils::read_wfile(path.c_str());
-    std::remove(path.c_str());
+    TEST_TRUE(0 == remove(path.c_str()));
 
     TEST_TRUE(status.success);
     TEST_EQ(status.count, obtained_content.size());

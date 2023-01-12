@@ -399,7 +399,7 @@ int main() {
 
     while (true) {
         test_mantissa(distrib(gen));
-        fflush(stdout);
+        (void) fflush(stdout);
     }
 
     int err_count = test_utils::test_err_count();
