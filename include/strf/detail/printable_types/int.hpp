@@ -1966,10 +1966,10 @@ public:
     template <typename... T>
     STRF_HD explicit int_printer_static_base_and_punct
         ( const strf::usual_printer_input<T...>& i )
+        : lettercase_(strf::use_facet<lettercase_c, detail::remove_cvref_t<decltype(i.arg.value())> >(i.facets))
     {
         auto ivalue = i.arg.value();
         using int_type = decltype(ivalue);
-        lettercase_ = strf::use_facet<lettercase_c, int_type>(i.facets);
         auto charset = strf::use_facet<charset_c<CharT>, int_type>(i.facets);
         encode_fill_ = charset.encode_fill_func();
         const int_format_static_base_and_punct<Base, false> ifmt = i.arg.get_int_format();
@@ -1990,7 +1990,7 @@ public:
 
 private:
 
-    strf::encode_fill_f<CharT> encode_fill_;
+    strf::encode_fill_f<CharT> encode_fill_ = nullptr;
     strf::detail::fmt_int_printer_data data_{};
     strf::lettercase lettercase_;
 };
