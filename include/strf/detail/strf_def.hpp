@@ -413,7 +413,7 @@ STRF_HD constexpr std::int8_t  cast_i8(T x)
     return static_cast<std::int8_t>(x);
 }
 
-} // inline namespace cast_sugars
+}  // namespace cast_sugars
 
 
 template <typename T>
