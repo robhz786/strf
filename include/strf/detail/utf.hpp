@@ -1637,7 +1637,8 @@ STRF_HD void strf::static_transcoder
                 dest_it[1] = static_cast<DestCharT>(ch2);
                 dest_it += 2;
                 continue;
-            } else if (surr_poli != strf::surrogate_policy::lax) {
+            }
+            if (surr_poli != strf::surrogate_policy::lax) {
                 ch = 0xFFFD;
                 if (err_notifier) {
                     dest.advance_to(dest_it);
