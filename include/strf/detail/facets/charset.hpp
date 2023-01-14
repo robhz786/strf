@@ -464,6 +464,10 @@ public:
         data_ = other.data_;
         other.data_ = tmp;
     }
+    STRF_HD dynamic_charset<CharT> to_dynamic() const noexcept
+    {
+        return *this;
+    }
     STRF_HD const char* name() const noexcept
     {
         return data_->name;

@@ -689,10 +689,6 @@ public:
         };
         return strf::dynamic_charset<CharT>{data};
     }
-    explicit operator strf::dynamic_charset<CharT> () const
-    {
-        return to_dynamic();
-    }
 };
 
 template <typename CharT>
@@ -834,10 +830,6 @@ public:
 #endif // defined (__cpp_char8_t)
         };
         return strf::dynamic_charset<CharT>{data};
-    }
-    explicit operator strf::dynamic_charset<CharT> () const
-    {
-        return to_dynamic();
     }
 };
 
@@ -1005,10 +997,6 @@ public:
 #endif // defined (__cpp_char8_t)
         };
         return strf::dynamic_charset<CharT>{data};
-    }
-    explicit operator strf::dynamic_charset<CharT> () const
-    {
-        return to_dynamic();
     }
 };
 

@@ -2585,10 +2585,6 @@ public:
 #endif // defined (__cpp_char8_t)
         };
     }
-    explicit operator strf::dynamic_charset<CharT> () const
-    {
-        return to_dynamic();
-    }
 
 private:
 

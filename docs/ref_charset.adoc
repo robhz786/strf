@@ -760,6 +760,19 @@ Return value:: A transcoder that converts the encoding corresponding to
                <<Transcoder_null,null transcoder>>.
 ====
 
+[[Charset_to_dynamic]]
+====
+[source,cpp,subs=normal]
+----
+x.to_dynamic()
+----
+[horizontal]
+Return type:: `{dynamic_transcoder}<CharT>`
+Return value:: A `{dynamic_charset}<CharT>` object equivalent to this one.
+====
+
+
+
 IMPORTANT: You shall not create an _Charset_ for `char32_t`, since `char32_t`
            is reserved for UTF-32.
            The library internaly assumes in many occasions that the encoding
@@ -1150,8 +1163,10 @@ public:
 
     explicit dynamic_charset(const dynamic_charset& other) = default;
 
-    dynamic_charset
-        ( const {dynamic_charset_data}<CharT>& d );
+    explicit dynamic_charset(const {dynamic_charset_data}<CharT>& d );
+
+    template <charset_id CharsetID>
+    explicit dynamic_charset(const {static_charset}<CharT, CharsetID>& d );
 
     dynamic_charset& operator=(const dynamic_charset& other) noexcept;
 
@@ -1160,6 +1175,8 @@ public:
     bool operator!=(const dynamic_charset& other) const noexcept;
 
     void swap(dynamic_charset& other) noexcept;
+
+    dynamic_charset to_dynamic() const noexcept;
 
     const char* name() const noexcept;
 
@@ -1254,6 +1271,14 @@ Effect:: `this\->data = d`
 ====
 [source,cpp,subs=normal]
 ----
+template <charset_id CharsetID>
+dynamic_charset(const {static_charset}<CharT, CharsetID>& cs);
+----
+Equivalent to `dynamic_charset(cs.to_dynamic())`
+====
+====
+[source,cpp,subs=normal]
+----
 dynamic_charset& operator=(const dynamic_charset& other) noexcept
 ----
 [horizontal]
@@ -1282,6 +1307,14 @@ void swap(dynamic_charset& other) noexcept;
 ----
 [horizontal]
 Effect:: Equivalent to `std::swap(this\->data, other.data)`
+====
+====
+[source,cpp]
+----
+dynamic_charset to_dynamic() const noexcept;
+----
+[horizontal]
+Return value:: `*this`
 ====
 ====
 [source,cpp,subs=normal]
