@@ -480,7 +480,7 @@ STRF_HD void fmt_range_printer<CharT, FPack, Iterator, Fmts ...>::print_to
 {
     strf::no_preprinting no_pre;
     auto r = fmt_.value();
-    for(auto it = r.begin; it != r.end; ++it) { // NOLINTLINE(llvm-qualified-auto)
+    for(Iterator it = r.begin; it != r.end; ++it) {
         printer_type_<strf::no_preprinting>
             ( strf::make_printer_input<CharT>
                 ( no_pre, fp_, value_fmt_type_adapted_{{*it}, fmt_} ) )
@@ -588,7 +588,7 @@ STRF_HD void fmt_separated_range_printer<CharT, FPack, Iterator, Fmts ...>
 {
     strf::no_preprinting no_pre;
     auto r = fmt_.value();
-    auto it = r.begin;
+    Iterator it = r.begin;
     if (it != r.end) {
         printer_type_<strf::no_preprinting>
             ( strf::make_printer_input<CharT>
