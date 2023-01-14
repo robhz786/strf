@@ -5,6 +5,7 @@
 
 #include "test_utils.hpp"
 
+// NOLINTNEXTLINE(google-readability-function-size,hicpp-function-size)
 STRF_TEST_FUNC void test_width_t()
 {
     using namespace strf::width_literal;

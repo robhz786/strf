@@ -288,6 +288,7 @@ STRF_TEST_FUNC void test_constrained_fpe()
         ctor_log log;
         const facet<0, enable_copy> f{10, &log};
 
+        // NOLINTNEXTLINE(hicpp-move-const-arg,performance-move-const-arg)
         auto c = strf::constrain<is_64>(std::move(f));
         auto c2 = strf::constrain<std::is_integral>(std::move(c));
         auto fp = pack(std::move(c2));

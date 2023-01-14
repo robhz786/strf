@@ -187,7 +187,7 @@ void numeric_punctuation()
     assert(s == "1.000.000,5  1000000.5  10.000  100000");
 
     // Extracting punctuation from locale
-    if (setlocale(LC_NUMERIC, "en_EN")) {
+    if (setlocale(LC_NUMERIC, "en_EN")) { // NOLINT(concurrency-mt-unsafe)
         auto loc_punct = strf::locale_numpunct(); // provided by header <strf/locale.hpp>
         auto s_loc = strf::to_string.with(loc_punct) (*!strf::fixed(1000000.5));
 #if !defined(_WIN32)

@@ -28,6 +28,7 @@ public:
     STRF_CONSTEXPR_IN_CXX14 STRF_HD output_buffer_iterator& operator++() noexcept {
         return *this;
     }
+    // NOLINTNEXTLINE(cert-dcl21-cpp)
     STRF_CONSTEXPR_IN_CXX14 STRF_HD output_buffer_iterator& operator++(int) noexcept {
         return *this;
     }

@@ -212,9 +212,9 @@ STRF_FUNC_IMPL strf::numpunct<10> locale_numpunct() noexcept
 
 #else // defined(_WIN32)
 
-    auto *loc = localeconv();
+    auto *loc = localeconv(); // NOLINT(concurrency-mt-unsafe)
     return strf::detail::make_numpunct
-        ( nl_langinfo(CODESET)
+        ( nl_langinfo(CODESET)  // NOLINT(concurrency-mt-unsafe)
         , loc->decimal_point
         , loc->thousands_sep
         , strf::digits_grouping(loc->grouping) );
