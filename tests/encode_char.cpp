@@ -28,6 +28,11 @@ STRF_TEST_FUNC void test_char
     auto *it = charset.encode_char(buff, ch);
 
     TEST_EQ(std::size_t(it - buff), encoded_char.size());
+    // clang-tidy says the pointer inside test_utils::test_scope::first_test_scope_()
+    // is dangling, while I think is not.
+    // Anyway, even if it is dangling, that's not a bug in the library itself,
+    // just in the test.
+    // NOLINTNEXTLINE(clang-analyzer-core.StackAddressEscape)
     TEST_TRUE(strf::detail::str_equal(encoded_char.data(), buff, encoded_char.size()));
 } // NOLINT(clang-analyzer-core.StackAddressEscape)
 
