@@ -12,8 +12,8 @@ STRF_TEST_FUNC void test_width_t()
     using namespace strf::detail::cast_sugars;
 
     using strf::width_t;
-    constexpr strf::width_t width_max = strf::width_t::max();
-    constexpr strf::width_t width_min = strf::width_t::min();
+    constexpr strf::width_t width_max = (strf::width_t::max)();
+    constexpr strf::width_t width_min = (strf::width_t::min)();
     constexpr auto max_underlying = width_max.underlying_value();
     constexpr auto min_underlying = width_min.underlying_value();
     constexpr strf::width_t epsilon = strf::width_t::from_underlying(1);
