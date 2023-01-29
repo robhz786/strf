@@ -129,7 +129,7 @@ public:
         size_ += detail::safe_cast_size_t(s);
     }
 
-    constexpr STRF_HD std::size_t accumulated_usize() const noexcept
+    constexpr STRF_HD std::size_t accumulated_size() const noexcept
     {
         return size_;
     }
@@ -150,9 +150,6 @@ public:
 
     constexpr size_accumulator() noexcept = default;
 
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD void add_usize(std::size_t) noexcept
-    {
-    }
     template <typename IntT>
     STRF_CONSTEXPR_IN_CXX14 STRF_HD void add_size(IntT) noexcept
     {
@@ -161,7 +158,7 @@ public:
     {
         return 0;
     }
-    constexpr STRF_HD std::size_t accumulated_usize() const noexcept
+    constexpr STRF_HD std::size_t accumulated_size() const noexcept
     {
         return 0;
     }

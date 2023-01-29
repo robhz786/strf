@@ -126,7 +126,7 @@ public:
         , const preprinting_type& pre
         , const Printers& ... printers )
     {
-        const auto size = pre.accumulated_usize() + Line;
+        const auto size = pre.accumulated_size() + Line;
         typename DestCreator::sized_destination_type dest{dest_creator.create(size)};
         strf::detail::write_args(dest, printers...);
         STRF_IF_CONSTEXPR (Line) {
