@@ -11,7 +11,6 @@ http://www.boost.org/LICENSE_1_0.txt)
 :fast_width: <<fast_width,fast_width>>
 :width_as_u32len: <<width_as_u32len,width_as_u32len>>
 :width_as_fast_u32len: <<width_as_fast_u32len,width_as_fast_u32len>>
-:width_by_func: <<width_by_func,width_by_func>>
 :fast_width_t: <<fast_width,fast_width>>
 :width_as_u32len_t: <<width_as_u32len,width_as_u32len>>
 :width_as_fast_u32len_t: <<width_as_fast_u32len,width_as_fast_u32len>>
@@ -101,9 +100,9 @@ Return value::: A value `ret` of type `{width_and_pos}`, such that
   that starts at the same position of `str`.
 ====
 
-NOTE: The library provides three classes and one class template that
+NOTE: The library provides three classes that
       satisfy _WidthCalculator_: `{fast_width_t}`, `{width_as_fast_u32len_t}`,
-      `{width_as_u32len_t}` and `{width_by_func}`.
+      `{width_as_u32len_t}`.
 
 ////
 What "width" of a string means is up to each _WidthCalculator_ type.
@@ -389,142 +388,6 @@ Return value::: The return value `ret` is such that
 * otherwise, `ret.width` is equal to `ret2.count` and `ret.pos` is equal to
   `cs.<<Charset_count_codepoints,count_codepoints>>(str, str_len, lim).pos`
 ====
-
-=== Class template `width_by_func` __( deprecated )__ [[width_by_func]]
-
-The instances of the `width_by_func` class template are facets
-of the category `{width_calculator_c}`.
-It calculates the width of a string by converting it to UTF-32,
-and then calling the provided function to evaluate the width
-of each UTF-32 character.
-
-[source,cpp,subs=normal]
-----
-template <typename CharWidthFunc>
-class width_by_func{
-public:
-    using category = {width_calculator_c};
-
-    template <typename Charset>
-    {width_t} <<width_by_func_char_width,char_width>>
-        ( Charset cs
-        , typename Charset::{code_unit} ) const;
-
-    template <typename Charset>
-    {width_t} <<width_by_func_str_width,str_width>>
-        ( Charset cs
-        , {width_t} limit
-        , const typename Charset::{code_unit}* str
-        , std::ptrdiff_t str_len
-        , {surrogate_policy} ) const;
-
-    template <typename Charset>
-    {width_and_pos} <<width_by_func_str_width_and_pos,str_width_and_pos>>
-        ( Charset cs
-        , {width_t} limit
-        , const typename Charset::{code_unit}* str
-        , std::ptrdiff_t str_len
-        , {surrogate_policy} ) const;
-
-private:
-
-    const CharWidthFunc func_; // exposition only
-};
-
-
-template <typename CharWidthFunc>
-width_by_func<CharWidthFunc> make_width_calculator(CharWidthFunc f)
-{
-    return width_by_func<CharWidthFunc>{f};
-}
-----
-
-==== Compile-time requirements
-====
-Given
-
-* `ch`, a value of type `char32_t`
-* `func`, a object of type `CharWidthFunc` or `const CharWidthFunc`
-
-The expression `func(ch)` must be well-formed and the return type
-must be {width_t}.
-====
-
-==== Member functions
-[[width_by_func_char_width]]
-====
-[source,cpp,subs=normal]
-----
-template <typename Charset>
-{width_t} char_width
-    ( Charset cs
-    , typename Charset::{code_unit} ch) const;
-----
-[horizontal]
-Return value:: `func_(cs.<<Charset_decode_unit,decode_unit>>(ch))`
-====
-[[width_by_func_str_width]]
-====
-[source,cpp,subs=normal]
-----
-template <typename Charset>
-{width_t} str_width
-    ( Charset cs
-    , {width_t} limit
-    , const typename Charset::{code_unit}* str
-    , std::ptrdiff_t str_len
-    , {surrogate_policy}  surr_poli) const;
-----
-[horizontal]
-Return value::: The sum of the values of `func_(ch32)`, where `ch32` is
-   each of the `char32_t` values that would be written into `dest` --
-   an arbitrary object whose type derives from `{transcode_dest}<char32_t>` -- by the call
-+
-[source,cpp,subs=normal]
-----
-cs.<<Charset_to_u32,to_u32>>().<<Transcoder_transcode,transcode>>
-    ( dest, str, str_len, nullptr, surr_poli )
-----
-, if such value is less than or equal to `limit`. Otherwise, the return value
-  can be anyone that is greater than or equal to `limit`.
-====
-[[width_by_func_str_width_and_pos]]
-====
-[source,cpp,subs=normal]
-----
-template <typename Charset>
-{width_and_pos} str_width_and_pos
-    ( Charset cs
-    , {width_t} limit
-    , const typename Charset::{code_unit}* str
-    , std::ptrdiff_t str_len
-    , {surrogate_policy} surr_poli) const;
-----
-[horizontal]
-Return value::: The return value `ret` is such that:
-* `ret.width` is the sum of the values of `func_(ch32)`, where `ch32` is
-   each of the `char32_t` values that are written into `dest` by the call
-+
-[source,cpp,subs=normal]
-----
-cs.<<Charset_to_u32,to_u32>>().<<Transcoder_transcode,transcode>>
-    ( dest, str, ret.pos, nullptr, surr_poli )
-----
-, where `dest` is any object whose type derives from `{transcode_dest}<char32_t>`.
-* `ret.pos` is the greatest value that is less than or equal to `str_len`
-  such that `str_width_and_pos(cs, limit, str, ret.pos, surr_poli).width`
-  is less than or equal to `limit`.
-====
-
-==== Function template `make_width_calculator` [[make_width_calculator]]
-[source,cpp,subs=normal]
-----
-template <typename CharWidthFunc>
-{width_by_func}<CharWidthFunc> make_width_calculator(CharWidthFunc f);
-----
-[horizontal]
-Return value::: `{width_by_func}<CharWidthFunc>{f}`
-
 
 === Class `std_width_calc` [[std_width_calc]]
 

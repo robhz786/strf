@@ -53,16 +53,6 @@ void test_dynamic_charset()
         //TEST(U"\uFFFD" U"10\uFFFD" U"5\uFFFD") (punct, dyn_utf32, input);
     }
     {
-        auto custom_wcalc = strf::make_width_calculator
-            ( [](char32_t ch) -> strf::width_t {
-                  return static_cast<strf::width_t>(1 + (ch == U'\u2014'));
-              } );
-        TEST( "   x") (custom_wcalc, dyn_ascii, strf::fmt('x') > 4);
-        TEST( "   x") (custom_wcalc, dyn_utf8, strf::fmt('x') > 4);
-        TEST(u"   x") (custom_wcalc, dyn_utf16, strf::fmt(u'x') > 4);
-        TEST(U"   x") (custom_wcalc, dyn_utf32, strf::fmt(U'x') > 4);
-    }
-    {
         const auto invalid_csid = static_cast<strf::charset_id>(0x0);
         auto transc1 = dyn_utf8.find_transcoder_to(strf::tag<wchar_t>{}, invalid_csid);
         TEST_TRUE(transc1.transcode_func() == nullptr);

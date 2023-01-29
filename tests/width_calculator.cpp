@@ -12,55 +12,6 @@
 STRF_TEST_FUNC void test_width_calculator()
 {
     using namespace strf::width_literal;
-    {
-        auto wfunc = [](char32_t ch) -> strf::width_t {
-            return ( ch == U'\u2E3A' ? 4_w: ch == U'\u2014' ? 2_w: 1_w );
-        };
-        auto wcalc = strf::make_width_calculator(wfunc);
-        TEST("abcd").with(wcalc)  (strf::left("abcd", 0));
-        TEST("abcd").with(wcalc)  (strf::left("abcd", 3));
-        TEST("abcd ").with(wcalc) (strf::left("abcd", 5));
-
-        TEST("abc  ").with(wcalc) (strf::left("abcd", 5).p(3));
-        TEST("abcd ").with(wcalc) (strf::left("abcd", 5).p(4));
-        TEST("abcd ").with(wcalc) (strf::left("abcd", 5).p(5));
-
-        TEST("123456789-123456789-123456789-   ").with(wcalc)
-            (strf::left("123456789-123456789-123456789-", 33).p(32));
-
-        TEST("123456789-123456789-123456789-   ").with(wcalc)
-            (strf::left("123456789-123456789-123456789-", 33).p(30));
-
-        TEST("123456789-123456789-123456789    ").with(wcalc)
-            (strf::left("123456789-123456789-123456789-", 33).p(29));
-
-        TEST("12345                            ").with(wcalc)
-            (strf::left("123456789-123456789-123456789-", 33).p(5));
-        TEST("12345                            ").with(wcalc)
-            (strf::left("123456789-123456789-123456789-", 33).p(5.99_w));
-
-        TEST(u8"\u2E3A\u2E3A\u2014") .with(wcalc)
-            (strf::right(u8"\u2E3A\u2E3A\u2014", 8));
-
-        TEST(u8"  \u2E3A\u2E3A\u2014") .with(wcalc)
-            (strf::right(u8"\u2E3A\u2E3A\u2014", 12));
-
-        TEST( u"  \u2E3A\u2E3A\u2014") .with(wcalc)
-            (strf::right( u"\u2E3A\u2E3A\u2014", 12));
-
-        // TEST( U"  \u2E3A\u2E3A\u2014") .with(wcalc)
-        //     (strf::right( U"\u2E3A\u2E3A\u2014", 12));
-
-        // TEST( L"  \u2E3A\u2E3A\u2014") .with(wcalc)
-        //     (strf::right( L"\u2E3A\u2E3A\u2014", 12));
-
-        // TEST(u8"  \u2E3A\u2E3A\u2014") .with(wcalc)
-        //     (strf::transcode( u"\u2E3A\u2E3A\u2014") > 12);
-
-        // TEST( u"  \u2E3A\u2E3A\u2014") .with(wcalc)
-        //     (strf::transcode(u8"\u2E3A\u2E3A\u2014") > 12);
-
-    }
     // --------------------------------------------------------------------------------
     // strf::fast_width
     // --------------------------------------------------------------------------------

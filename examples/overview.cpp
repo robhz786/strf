@@ -253,31 +253,6 @@ void width_in_transcode()
     assert(res3 == u"   15.00 \u20AC \uFFFD");  // width calculated as 9
 }
 
-
-void width_func()
-{
-    auto wfunc = [](char32_t ch) -> strf::width_t {
-        using namespace strf::width_literal;
-
-        static const strf::width_t roman_numerals_width [] = {
-            0.5642_w, 1.1193_w, 1.6789_w, 1.8807_w, 1.2982_w, 1.8853_w,
-            2.4954_w, 3.0046_w, 1.8945_w, 1.3624_w, 1.9035_w, 2.4771_w,
-            1.1789_w, 1.4495_w, 1.4128_w, 1.7294_w
-        };
-
-        if (ch < 0x2160 || ch > 0x216F) {
-            return 1;
-        }
-        return roman_numerals_width[ch - 0x2160];
-    };
-    auto my_wcalc = strf::make_width_calculator(wfunc);
-    const auto *str = u8"\u2163 + \u2167 = \u216B"; // "Ⅳ + Ⅷ = Ⅻ"
-    auto result = strf::to_u8string.with(my_wcalc) (strf::right(str, 18, '.'));
-
-    // width calculated as 13.3624, rounded to 13:
-    assert(result == u8".....\u2163 + \u2167 = \u216B");
-}
-
 namespace my { // my customizations
 
 constexpr auto my_default_facets = strf::pack
@@ -339,7 +314,6 @@ int main()
     fast_width();
     width_as_u32len();
     width_as_fast_u32len();
-    width_func();
     width_in_transcode();
     using_my_customizations();
     return 0;
