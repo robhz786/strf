@@ -37,7 +37,7 @@ private:
 
 STRF_TEST_FUNC void test_tr_string()
 {
-    // basic test
+    // basic tests
     TEST("aaa__..bbb__ 0xa")
         .tr("{}__{}__{}", "aaa", strf::right("bbb", 5, '.'), *strf::hex(10)>4);
 
@@ -47,7 +47,7 @@ STRF_TEST_FUNC void test_tr_string()
 
     TEST(u8"---_0_\uFFFD_+++") (u8"---", strf::tr(u8"_{}_{}_", 0), u8"+++");
 
-    TEST(u8"_0__1__2\n") .trln(u8"_{}__{}__{}",    0, 1, 2);
+    TEST(u8"_0__1__2\n") .trline(u8"_{}__{}__{}",    0, 1, 2);
     TEST(u8"{0_{_{1_{2") .tr(u8"{{{}_{{_{{{}_{{{}",  0, 1, 2);
     TEST(u8"0__1__2")    .tr(u8"{}__{}__{}",     0, 1, 2);
     TEST(u8"0__1__2")    .tr(u8"{}__{}__{",      0, 1, 2);
@@ -128,8 +128,8 @@ STRF_TEST_FUNC void test_tr_string()
     TEST(u8"\uFFFD")              .tr(u8"{1 aa}");
     TEST(u8"\uFFFD")              .tr(u8"{");
     TEST(u8"\uFFFD")              .tr(u8"{aaa");
-    TEST(u8"\uFFFD\n")            .trln(u8"{");
-    TEST(u8"\uFFFD\n")            .trln(u8"{aaa");
+    TEST(u8"\uFFFD\n")            .trline(u8"{");
+    TEST(u8"\uFFFD\n")            .trline(u8"{aaa");
 
     // invalid arguments - now in UTF-16
     TEST(u"0 3 \uFFFD \uFFFD 1") .tr(u"{} {3} {4} {5} {1}", 0, 1, 2, 3);

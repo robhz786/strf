@@ -8,7 +8,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 -->
 
 <svg
-   viewBox="0 -2 640 230"
+   viewBox="0 -2 660 230"
    xmlns:svg="http://www.w3.org/2000/svg"
    xmlns="http://www.w3.org/2000/svg">
 
@@ -85,9 +85,9 @@ http://www.boost.org/LICENSE_1_0.txt)
   <path d="M332 104 a16 16 0 0 0 16 16"/>
 
   <rect width="175" height="32" x="348"  y="0"   rx="16" ry="16"/>
-  <rect width="205" height="32" x="348"  y="52"  rx="16" ry="16"/>
+  <rect width="225" height="32" x="348"  y="52"  rx="16" ry="16"/>
   <rect width="270" height="32" x="348"  y="104" rx="16" ry="16"/>
-  <rect width="285" height="32" x="348"  y="156" rx="16" ry="16"/>
+  <rect width="305" height="32" x="348"  y="156" rx="16" ry="16"/>
 
   <text x="358" y="21" >
     <tspan class="code">(</tspan>
@@ -95,7 +95,7 @@ http://www.boost.org/LICENSE_1_0.txt)
     <tspan class="code">)</tspan>
   </text>
   <text x="358" y="73" >
-    <tspan class="code">.ln(</tspan>
+    <tspan class="code">.line(</tspan>
     <tspan class="repl">fargs... , pargs...</tspan>
     <tspan class="code">)</tspan>
   </text>
@@ -105,7 +105,7 @@ http://www.boost.org/LICENSE_1_0.txt)
     <tspan class="code">)</tspan>
   </text>
   <text x="358" y="177">
-    <tspan class="code">.trln(</tspan>
+    <tspan class="code">.trline(</tspan>
     <tspan class="repl">fargs... , tr-string , pargs...</tspan>
     <tspan class="code">)</tspan>
   </text>

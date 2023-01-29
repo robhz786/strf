@@ -63,7 +63,7 @@ public:
     using preprinting_type = strf::preprinting
         <strf::precalc_size::no, strf::precalc_width::no>;
 
-    template <bool Ln, typename DestCreator, typename... Printers>
+    template <bool Line, typename DestCreator, typename... Printers>
     static STRF_HD return_type<DestCreator> print
         ( const DestCreator& dest_creator
         , const preprinting_type&
@@ -71,7 +71,7 @@ public:
     {
         typename DestCreator::destination_type dest{dest_creator.create()};
         strf::detail::write_args(dest, printers...);
-        STRF_IF_CONSTEXPR (Ln) {
+        STRF_IF_CONSTEXPR (Line) {
             using char_type = typename DestCreator::char_type;
             strf::put<char_type>(dest, static_cast<char_type>('\n'));
         }
@@ -95,7 +95,7 @@ public:
     using preprinting_type = strf::preprinting
         <strf::precalc_size::yes, strf::precalc_width::no>;
 
-    template <bool Ln, typename DestCreator, typename... Printers>
+    template <bool Line, typename DestCreator, typename... Printers>
     STRF_HD return_type<DestCreator> print
         ( const DestCreator& dest_creator
         , const preprinting_type&
@@ -103,7 +103,7 @@ public:
     {
         typename DestCreator::sized_destination_type dest{dest_creator.create(space)};
         strf::detail::write_args(dest, printers...);
-        STRF_IF_CONSTEXPR (Ln) {
+        STRF_IF_CONSTEXPR (Line) {
             using char_type = typename DestCreator::char_type;
             strf::put<char_type>(dest, static_cast<char_type>('\n'));
         }
@@ -120,16 +120,16 @@ public:
     using preprinting_type = strf::preprinting
         <strf::precalc_size::yes, strf::precalc_width::no>;
 
-    template <bool Ln, typename DestCreator, typename... Printers>
+    template <bool Line, typename DestCreator, typename... Printers>
     static STRF_HD return_type<DestCreator> print
         ( const DestCreator& dest_creator
         , const preprinting_type& pre
         , const Printers& ... printers )
     {
-        const auto size = pre.accumulated_usize() + Ln;
+        const auto size = pre.accumulated_usize() + Line;
         typename DestCreator::sized_destination_type dest{dest_creator.create(size)};
         strf::detail::write_args(dest, printers...);
-        STRF_IF_CONSTEXPR (Ln) {
+        STRF_IF_CONSTEXPR (Line) {
             using char_type = typename DestCreator::char_type;
             strf::put<char_type>(dest, static_cast<char_type>('\n'));
         }
@@ -686,7 +686,7 @@ public:
 
 
     template <typename... Args>
-    inline return_type STRF_HD ln(Args&& ... args) const &
+    inline return_type STRF_HD line(Args&& ... args) const &
     {
         return strf::do_print_::do_print<true>( this->get_reserve_policy()
                                               , dest_creator_
@@ -704,7 +704,7 @@ public:
     }
 
     template <typename... Args>
-    inline return_type STRF_HD trln(Args&& ... args) const &
+    inline return_type STRF_HD trline(Args&& ... args) const &
     {
         return strf::do_tr_print_::do_tr_print<true>( this->get_reserve_policy()
                                                     , dest_creator_

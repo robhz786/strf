@@ -23,6 +23,15 @@ STRF_TEST_FUNC void test_miscellaneous()
 
         TEST_CSTR_EQ(buff, "abc 1,000,000,000");
     }
+    {
+        // write line
+        char buff[100];
+        auto res = strf::to(buff).line("abc", 1, 2, 3);
+
+        TEST_FALSE(res.truncated);
+        TEST_EQ(res.ptr, &buff[7]);
+        TEST_CSTR_EQ(buff, "abc123\n");
+    }
     {   // test discarder
         strf::discarder<char> dest;
         TEST_FALSE(dest.good());

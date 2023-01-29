@@ -212,9 +212,9 @@ public:
     using return_type = /{asterisk} \... {asterisk}/;
 
     return_type <<printing_syntax_call_operator,operator()>>(Args&& \... args) const;
-    return_type <<printing_syntax_ln,ln>>(Args&&\... args) const;
+    return_type <<printing_syntax_line,line>>(Args&&\... args) const;
     return_type <<printing_syntax_tr,tr>>(Args&&\... args) const;
-    return_type <<printing_syntax_trln,trln>>(Args&&\... args) const;
+    return_type <<printing_syntax_trline,trline>>(Args&&\... args) const;
 
     // change reserve policy
     constexpr /{asterisk} \... {asterisk}/ <<printing_syntax_reserve,reserve>>(std::integral auto capacity) /{asterisk} \... {asterisk}/;
@@ -461,11 +461,11 @@ static_cast<const {printer}<char_type>&>(p).print_to(dest);
 ====
 
 
-[[printing_syntax_ln]]
+[[printing_syntax_line]]
 ====
 [source,cpp,subs=normal]
 ----
-<<printing_syntax_return_type,return_type>> ln(Args&& \... args) const;
+<<printing_syntax_return_type,return_type>> line(Args&& \... args) const;
 ----
 Effect:: Equivalent to
 +
@@ -496,11 +496,11 @@ where:
 
 ====
 
-[[printing_syntax_trln]]
+[[printing_syntax_trline]]
 ====
 [source,cpp,subs=normal]
 ----
-<<printing_syntax_return_type,return_type>> trln(Args&& \... args) const;
+<<printing_syntax_return_type,return_type>> trline(Args&& \... args) const;
 ----
 Effect::: Equivalent to
 +
