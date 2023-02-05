@@ -7,6 +7,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <strf/detail/printable_traits.hpp>
+#include <strf/detail/facets/charset.hpp> // detail::is_charset
 
 namespace strf {
 
@@ -57,8 +58,11 @@ class alignment_formatter_fn;
 template <class T>
 class alignment_formatter_fn<T, true>
 {
-    STRF_HD T&& move_self_downcast_()
+    STRF_HD STRF_CONSTEXPR_IN_CXX14 T&& move_self_downcast_()
     {
+        // if we directly return static_cast<T&&>(*this), then
+        // ubsan of gcc emits "reference binding to misaligned address"
+
         T* d =  static_cast<T*>(this);
         return static_cast<T&&>(*d);
     }
@@ -410,6 +414,22 @@ template <typename T, typename Charset>
 }
 
 template <typename T>
+constexpr STRF_HD auto unsafe_transcode(T&& value)
+    noexcept(noexcept(strf::fmt((T&&)value).unsafe_transcode()))
+    -> strf::detail::remove_cvref_t<decltype(strf::fmt((T&&)value).unsafe_transcode())>
+{
+    return strf::fmt((T&&)value).unsafe_transcode();
+}
+
+template <typename T, typename Charset>
+    constexpr STRF_HD auto unsafe_transcode(T&& value, Charset&& charset)
+    noexcept(noexcept(strf::fmt((T&&)value).unsafe_transcode(charset)))
+    -> strf::detail::remove_cvref_t<decltype(strf::fmt((T&&)value).unsafe_transcode(charset))>
+{
+    return strf::fmt((T&&)value).unsafe_transcode(charset);
+}
+
+template <typename T>
 constexpr STRF_HD auto conv(T&& value)
     noexcept(noexcept(strf::fmt((T&&)value).transcode()))
     -> strf::detail::remove_cvref_t<decltype(strf::fmt((T&&)value).transcode())>
@@ -427,18 +447,18 @@ template <typename T, typename Charset>
 
 template <typename T>
 constexpr STRF_HD auto sani(T&& value)
-    noexcept(noexcept(strf::fmt((T&&)value).sanitize_charset()))
-    -> strf::detail::remove_cvref_t<decltype(strf::fmt((T&&)value).sanitize_charset())>
+    noexcept(noexcept(strf::fmt((T&&)value).sanitize()))
+    -> strf::detail::remove_cvref_t<decltype(strf::fmt((T&&)value).sanitize())>
 {
-    return strf::fmt((T&&)value).sanitize_charset();
+    return strf::fmt((T&&)value).sanitize();
 }
 
 template <typename T, typename Charset>
     constexpr STRF_HD auto sani(T&& value, Charset&& charset)
-    noexcept(noexcept(strf::fmt((T&&)value).sanitize_from_charset(charset)))
-    -> strf::detail::remove_cvref_t<decltype(strf::fmt((T&&)value).sanitize_from_charset(charset))>
+    noexcept(noexcept(strf::fmt((T&&)value).sanitize_from(charset)))
+    -> strf::detail::remove_cvref_t<decltype(strf::fmt((T&&)value).sanitize_from(charset))>
 {
-    return strf::fmt((T&&)value).sanitize_from_charset(charset);
+    return strf::fmt((T&&)value).sanitize_from(charset);
 }
 
 template <typename T>
@@ -627,20 +647,37 @@ struct transcode_fn {
     }
 };
 
+struct unsafe_transcode_fn {
+    template <typename T>
+    constexpr STRF_HD auto operator()(T&& value) const
+        noexcept(noexcept(strf::fmt((T&&)value).unsafe_transcode()))
+        -> strf::detail::remove_cvref_t<decltype(strf::fmt((T&&)value).unsafe_transcode())>
+    {
+        return strf::fmt((T&&)value).unsafe_transcode();
+    }
+    template <typename T, typename Charset>
+        constexpr STRF_HD auto operator()(T&& value, Charset&& charset) const
+        noexcept(noexcept(strf::fmt((T&&)value).unsafe_transcode(charset)))
+        -> strf::detail::remove_cvref_t<decltype(strf::fmt((T&&)value).unsafe_transcode(charset))>
+    {
+        return strf::fmt((T&&)value).unsafe_transcode(charset);
+    }
+};
+
 struct sani_fn {
     template <typename T>
     constexpr STRF_HD auto operator()(T&& value) const
-        noexcept(noexcept(strf::fmt((T&&)value).sanitize_charset()))
-        -> strf::detail::remove_cvref_t<decltype(strf::fmt((T&&)value).sanitize_charset())>
+        noexcept(noexcept(strf::fmt((T&&)value).sanitize()))
+        -> strf::detail::remove_cvref_t<decltype(strf::fmt((T&&)value).sanitize())>
     {
-        return strf::fmt((T&&)value).sanitize_charset();
+        return strf::fmt((T&&)value).sanitize();
     }
     template <typename T, typename Charset>
     constexpr STRF_HD auto operator()(T&& value, Charset&& charset) const
-        noexcept(noexcept(strf::fmt((T&&)value).sanitize_from_charset(charset)))
-        -> strf::detail::remove_cvref_t<decltype(strf::fmt((T&&)value).sanitize_from_charset(charset))>
+        noexcept(noexcept(strf::fmt((T&&)value).sanitize_from(charset)))
+        -> strf::detail::remove_cvref_t<decltype(strf::fmt((T&&)value).sanitize_from(charset))>
     {
-        return strf::fmt((T&&)value).sanitize_from_charset(charset);
+        return strf::fmt((T&&)value).sanitize_from(charset);
     }
 };
 
@@ -731,6 +768,7 @@ constexpr strf::detail_format_functions::left_fn   left {};
 constexpr strf::detail_format_functions::center_fn center {};
 constexpr strf::detail_format_functions::pad0_fn   pad0 {};
 constexpr strf::detail_format_functions::punct_fn  punct {};
+constexpr strf::detail_format_functions::unsafe_transcode_fn   unsafe_transcode {};
 constexpr strf::detail_format_functions::transcode_fn   transcode {};
 STRF_DEPRECATED_MSG("conv was renamed to transcode")
 constexpr strf::detail_format_functions::transcode_fn   conv {};
@@ -739,14 +777,6 @@ constexpr strf::detail_format_functions::sani_fn        sani {};
 #endif // defined (STRF_NO_GLOBAL_CONSTEXPR_VARIABLE)
 
 }  // namespace format_functions
-
-
-namespace detail {
-
-
-
-} // namespace detail
-
 } // namespace strf
 
 #endif  // STRF_DETAIL_FORMAT_FUNCTIONS_HPP

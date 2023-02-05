@@ -28,6 +28,9 @@ http://www.boost.org/LICENSE_1_0.txt)
 :transcode_dest: <<transcode_dest,transcode_dest>>
 :transcode_f: <<charset_function_pointers,transcode_f>>
 :transcode_size_f: <<charset_function_pointers,transcode_size_f>>
+:unsafe_transcode_f: <<charset_function_pointers,unsafe_transcode_f>>
+:unsafe_transcode_size_f: <<charset_function_pointers,unsafe_transcode_size_f>>
+
 :write_replacement_char_f: <<charset_function_pointers,write_replacement_char_f>>
 :validate_f: <<charset_function_pointers,validate_f>>
 :encoded_char_size_f: <<charset_function_pointers,encoded_char_size_f>>
@@ -56,9 +59,19 @@ http://www.boost.org/LICENSE_1_0.txt)
 :find_transcoder: <<find_transcoder,find_transcoder>>
 :decode_encode: <<decode_encode,decode_encode>>
 :decode_encode_size: <<decode_encode_size,decode_encode_size>>
+:unsafe_decode_encode: <<unsafe_decode_encode,unsafe_decode_encode>>
+:unsafe_decode_encode_size: <<unsafe_decode_encode_size,unsafe_decode_encode_size>>
 
 :Transcoder: <<Transcoder,Transcoder>>
+:transcode_func: <<Transcoder_transcode_func,transcode_func>>
+:transcode_size_func: <<Transcoder_transcode_size_func,transcode_size_func>>
+:unsafe_transcode_func: <<Transcoder_unsafe_transcode_func,unsafe_transcode_func>>
+:unsafe_transcode_size_func: <<Transcoder_unsafe_transcode_size_func,unsafe_transcode_size_func>>
+
 :Charset: <<Charset,Charset>>
+:to_u32: <<Charset_to_u32,to_u32>>
+:from_u32: <<Charset_from_u32,from_u32>>
+
 :code_unit: <<Charset_code_unit,code_unit>>
 :charset_c: <<charset_c,charset_c>>
 
@@ -293,6 +306,18 @@ using transcode_size_f = std::ptrdiff_t ({asterisk})
     , std::ptrdiff_t src_size
     , {surrogate_policy} surr_poli );
 
+template <typename SrcCharT, typename DestCharT>
+using unsafe_transcode_f = void ({asterisk})
+    ( {transcode_dest}<DestCharT>& dest
+    , const SrcCharT{asterisk} src
+    , std::ptrdiff_t src_size
+    , {transcoding_error_notifier}{asterisk} err_notifier );
+
+template <typename SrcCharT>
+using unsafe_transcode_size_f = std::ptrdiff_t ({asterisk})
+    ( const SrcCharT{asterisk} src
+    , std::ptrdiff_t src_size );
+
 template <typename CharT>
 using write_replacement_char_f = void({asterisk})( {transcode_dest}<CharT>& );
 
@@ -357,6 +382,7 @@ The following must hold:
 * `X` is https://en.cppreference.com/w/cpp/named_req/CopyConstructible[CopyConstructible].
 * `X` supports the following syntax and semantics:
 
+[[Transcoder_transcode_size]]
 ====
 [source,cpp]
 ----
@@ -399,8 +425,8 @@ shall be called if `err_notifer` is not null, where:
 Note that a surrogate codepoint shall not be considered invalid
 if `surr_poli` is equall to `surrogate_policy::lax`.
 +
-Each codepoint in `src` that is not supported by the destintation
-character encoding shall be translated to the replacement character ( that is returned by
+Each codepoint in `src` that is not supported by the destination
+character encoding is translated to the replacement character ( that is returned by
 `dest_sc.<<Charset_replacement_char, replacement_char()>>`,
 where `dest_sc` represents the destination encoding ).
 Each time that happens,
@@ -413,6 +439,57 @@ Precondition:: `x.transcode_func() != nullptr` is `true`
 Postconditions:: `dest.recycle()` is not called() if
         `dest.buffer_space() >= x.transcode_size(src, src_size, surr_poli)` is `true`.
 ====
+
+[[Transcoder_unsafe_transcode_size]]
+====
+[source,cpp]
+----
+x.unsafe_transcode_size(src, src_size, surr_poli)
+----
+[horizontal]
+Precondition:: The behavior is undefined if the content of `src` has any
+               invalid-sequence, __i.e.__, if it is non-conformant to the
+               source character encoding.
+
+Return type:: `std::ptrdiff_t`
+Return value:: The number of character that
+  `x.unsafe_transcode(dest, src, src_size, nullptr)`
+  would write into `dest`, or a value a greater than that if such exact calculation is
+  difficult ( but ideally not much greater ).
+Precondition:: `x.transcode_func() != nullptr` is `true`
+====
+
+
+[[Transcoder_unsafe_transcode]]
+====
+[source,cpp]
+----
+x.unsafe_transcode(dest, src, src_size, err_notifier)
+----
+Effect::
+
+Converts the content of `src` from one encoding to another writing
+the result to `dest`.
+The behavior is undefined if the contnet of `src` has any
+invalid-sequence, __i.e.__, if it is
+non-conformant to the source character encoding.
++
+As it happens in `<<Transcoder_transcode,transcode>>` function,
+each codepoint in `src` that is not supported by the destination
+character encoding is translated to the replacement character ( that is returned by
+`dest_sc.<<Charset_replacement_char, replacement_char()>>`,
+where `dest_sc` represents the destination encoding ).
+Each time that happens,
+`err_notifier\-><<transcoding_error_notifier,unsupported_codepoint>>(dest_sc.<<Charset_name,name()>>, code)`
+shall be called if `err_notifier` is not null and `code` ( which is the
+unsupported codepoint ) is not `0xFFFD`.
++
+Contrary to `<<Transcoder_transcode,transcode>>`, this function
+does not have `{surrogate_policy}` parameter, since the policy is
+assumed to be `surrogate_policy::strict`.
+====
+
+
 [[Transcoder_transcode_size_func]]
 ====
 [source,cpp]
@@ -423,7 +500,7 @@ x.transcode_size_func()
 Return type:: `{transcode_size_f}<SrcCharT>`
 Return value:: A function pointer such that
                `x.transcode_size_func() (src, src_size, surr_poli)` has the same
-               effect as `x.transcode_size(src, src_size, surr_poli)`.
+               effect as `x.<<Transcoder_transcode_size,transcode_size>>(src, src_size, surr_poli)`.
 ====
 [[Transcoder_transcode_func]]
 ====
@@ -436,8 +513,35 @@ Return type:: `{transcode_f}<SrcCharT, DestCharT>`
 Return value:: A function pointer such that
    `x.transcode_func() (dest, src, src_size, err_notifier, surr_poli)`
    has the same effect as
-   `x.transcode(dest, src, src_size, err_notifier, surr_poli)`.
+   `x.<<Transcoder_transcode,transcode>>(dest, src, src_size, err_notifier, surr_poli)`.
 ====
+
+[[Transcoder_unsafe_transcode_size_func]]
+====
+[source,cpp]
+----
+x.unsafe_transcode_size_func()
+----
+[horizontal]
+Return type:: `{unsafe_transcode_size_f}<SrcCharT>`
+Return value:: A function pointer such that
+               `x.unsafe_transcode_size_func() (src, src_size)` has the same
+               effect as `x.<<Transcoder_unsafe_transcode_size,unsafe_transcode_size>>(src, src_size)`.
+====
+[[Transcoder_unsafe_transcode_func]]
+====
+[source,cpp]
+----
+x.unsafe_transcode_func()
+----
+[horizontal]
+Return type:: `{unsafe_transcode_f}<SrcCharT, DestCharT>`
+Return value:: A function pointer such that
+   `x.unsafe_transcode_func() (dest, src, src_size, err_notifier)`
+   has the same effect as
+   `x.<<Transcoder_unsafe_transcode,unsafe_transcode>>(dest, src, src_size, err_notifier)`.
+====
+
 '''
 [[Transcoder_null]]
 ====
@@ -1585,57 +1689,1120 @@ NOTE: When `find_transcoder` returns an <<Transcoder_null,null transcoder>>
 
 === Function template `decode_encode`  [[decode_encode]]
 
+All the following overloads of `decode_encode` do the same thing:
+to transcode the input string ( the `src` parameter ) to UTF-32
+and then from UTF-32 to another enconding, writing into `dst`.
+
+They all guarantee not to call `dst.recycle()` if `dst.space()`
+is not less then the amount of character to be written.
+====
 [source,cpp,subs=normal]
 ----
 namespace strf {
 
-template<class SrcCharT, class DestCharT>
+template <typename SrcCharT, typename DstCharT>
 void decode_encode
-    ( {transcode_dest}<DestCharT>& dest
-    , {transcode_f}<SrcCharT, char32_t> to_u32
-    , {transcode_f}<char32_t, DestCharT> from_u32
+    ( {transcode_f}<SrcCharT, char32_t> to_u32
+    , {transcode_f}<char32_t, DstCharT> from_u32
     , const SrcCharT* src
     , std::ptrdiff_t src_size
-    , {transcoding_error_notifier}{asterisk} err_notifier
-    , {surrogate_policy} surr_poli );
+    , {transcode_dest}<DstCharT>& dst
+    , {transcoding_error_notifier}* notifier = nullptr
+    , {surrogate_policy} poli = surrogate_policy::strict );
 
-} // namespace strf
+}
 ----
 
-Converts the content in `src` to UTF-32 using `to_u32`,
+Effect:: Converts the content in `src` to UTF-32 using `to_u32`,
 then writes the result to `dest` using `from_u32`.
 
-[horizontal]
-Postcondition:: `dest.<<destination_hpp#output_buffer_recycle,recycle>>()` is not called if
-`dest.<<destination_hpp#output_buffer_buffer_space,buffer_space>>()` is not less then the value returned by
-`{decode_encode_size}(to_u32, size_calc_func, src, src_size, err_notifier, surr_poli)`,
-where `size_calc_func` is the return value of
-`dest_enc.<<Charset_from_u32,from_u32>>().<<Transcoder_transcode_size_func, transcode_size_func>>()`,
-where `dest_enc` is the __Charset__ object such that the return value of
-`dest_enc.<<Charset_to_u32,to_u32>>().<<Transcoder_transcode_func,transcode_func>>()`
-is equal to `to_u32`.
+Postcondition::
+`dst.recycle()` is not called  if `dst.space()` is not less then the amount of character to be written in `dst`
+====
+
+====
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template <typename SrcCharT, typename DstCharT>
+void decode_encode
+    ( {transcode_f}<SrcCharT, char32_t> to_u32
+    , {transcode_f}<char32_t, DstCharT> from_u32
+    , std::basic_string_view<SrcCharT> src
+    , {transcode_dest}<DstCharT>& dst
+    , {transcoding_error_notifier}* notifier = nullptr
+    , {surrogate_policy} poli = surrogate_policy::strict );
+
+}
+----
+Equivalent to `decode_encode(to_u32, from_32, src.data(), src.size(), dst, notifier, poli)`
+====
+
+====
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template < typename SrcCharset, typename DstCharset
+         , typename SrcCharT, typename DstCharT >
+void decode_encode
+    ( SrcCharset src_charset
+    , DstCharset dst_charset
+    , const SrcCharT* src
+    , std::ptrdiff_t src_size
+    , {transcode_dest}<DstCharT>& dst
+    , {transcoding_error_notifier}* notifier = nullptr
+    , {surrogate_policy} poli = surrogate_policy::strict );
+
+}
+----
+Effect::
+Equivalent to
+----
+decode_encode
+    ( src_charset.{to_u32}().{transcode_func}()
+    , dst_charset.{from_u32}().{transcode_func()
+    , src, src_size, dst, err_notifier, poli )
+----
+Compile-time requirements::
+- `SrcCharset` and `DstCharset` satisfy __{Charset}__
+- `SrcCharset::code_unit` is the same type as `SrcCharT`
+- `DstCharset::code_unit` is the same type as `DstCharT`
+====
+
+
+====
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template < typename SrcCharset, typename DstCharset
+         , typename SrcCharT, typename DstCharT >
+void decode_encode
+    ( SrcCharset src_charset
+    , DstCharset dst_charset
+    , std::basic_string_view<SrcCharT> src
+    , {transcode_dest}<DstCharT>& dst
+    , {transcoding_error_notifier}* notifier = nullptr
+    , {surrogate_policy} poli = surrogate_policy::strict );
+
+}
+----
+Effect and postconditions::
+Equivalent to
+----
+decode_encode
+    ( src_charset, dst_charset, src.data(), src.size()
+    , dst, err_notifier, poli )
+----
+Compile-time requirements::
+- `SrcCharset` and `DstCharset` satisfy __{Charset}__
+- `SrcCharset::code_unit` is the same type as `SrcCharT`
+- `DstCharset::code_unit` is the same type as `DstCharT`
+====
+
+====
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template < template <class> class SrcCharsetTmpl
+         , template <class> class DstCharsetTmpl
+         , typename SrcCharT
+         , typename DstCharT >
+void decode_encode
+    ( const SrcCharT* src
+    , std::ptrdiff_t src_size
+    , {transcode_dest}<DstCharT>& dst
+    , {transcoding_error_notifier}* notifier = nullptr
+    , {surrogate_policy} poli = surrogate_policy::strict );
+
+}
+----
+
+Effect and postconditions::
+Equivalent to
+----
+decode_encode
+    ( SrcCharsetTmpl<SrcCharT>(), DstCharsetTmpl<DstCharT>()
+    , src, src_size, dst, err_notifier, poli )
+----
+Compile-time requirements::
+- `SrcCharsetTmpl<SrcCharT>` is an instance of `{static_charset}`
+- `DstCharsetTmpl<DstCharT>` is an instance of `{static_charset}`
+- `SrcCharsetTmpl<SrcCharT>::code_unit` is `SrcCharT`
+- `DstCharsetTmpl<DstCharT>::code_unit` is `DstCharT`
+====
+
+
+====
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template < template <class> class SrcCharsetTmpl
+         , template <class> class DstCharsetTmpl
+         , typename SrcCharT
+         , typename DstCharT >
+void decode_encode
+    ( std::basic_string_view<SrcCharT> src
+    , {transcode_dest}<DstCharT>& dst
+    , {transcoding_error_notifier}* notifier = nullptr
+    , {surrogate_policy} poli = surrogate_policy::strict );
+
+}
+----
+Equivalent to
+----
+decode_encode<SrcCharsetTmpl, DstCharsetTmpl>
+    (src.data(), src.size(), dst, err_notifier, poli )
+----
+====
+
 
 === Function template `decode_encode_size` [[decode_encode_size]]
 
+`decode_encode_size` is used to calculate the ammount of
+characters that `decode_encode` writes.
+
+====
 [source,cpp,subs=normal]
 ----
 namespace strf {
 
-template<class SrcCharT>
+template <typename SrcCharT>
 std::ptrdiff_t decode_encode_size
     ( {transcode_f}<SrcCharT, char32_t> to_u32
     , {transcode_size_f}<char32_t> size_calc_func
     , const SrcCharT* src
     , std::ptrdiff_t src_size
-    , {transcoding_error_notifier}{asterisk} err_notifier
-    , {surrogate_policy} surr_poli );
+    , {surrogate_policy} poli = surrogate_policy::strict );
 
-} // namespace strf
+}
 ----
-[horizontal]
+Effect::
+Convert the content of `src` to UTF-32 using `to_u32`, and return the value
+returned by `size_calc_func(u32buff, u32buff_size, poli)`, where
+`u32buff` is the content written by `to_u32`, and `u32buffsize` is
+its size.
+====
+
+====
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template <typename SrcCharT>
+std::ptrdiff_t decode_encode_size
+    ( {transcode_f}<SrcCharT, char32_t> to_u32
+    , {transcode_size_f}<char32_t> size_calc_func
+    , std::basic_string_view<SrcCharT> src
+    , {surrogate_policy} poli = surrogate_policy::strict );
+
+}
+----
 Return value::
-The return of `size_calc_func` called over the UTF-32 content obtained
-by passing `src` to `to_u32`.
+Same as:
+----
+decode_encode_size(to_32, size_calc_func, src.data(), src.size(), poli)
+----
+====
+
+====
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template < typename SrcCharset, typename DstCharset, typename SrcCharT >
+std::ptrdiff_t decode_encode_size
+    ( SrcCharset src_charset
+    , DstCharset dst_charset
+    , const SrcCharT* src
+    , std::ptrdiff_t src_size
+    , {surrogate_policy} poli = surrogate_policy::strict );
+
+}
+----
+Return value::
+Same as:
+----
+decode_encode_size
+    ( src_charset.{to_u32}().{transcode_func}()
+    , dst_charset.{from_u32}().{transcode_size_func}()
+    , src, src_size, poli )
+----
+Compile-time requirements::
+- `SrcCharset` and `DstCharset` satisfy __{Charset}__
+- `SrcCharset::code_unit` is the same type as `SrcCharT`
+====
+
+====
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template < typename SrcCharset, typename DstCharset, typename SrcCharT >
+std::ptrdiff_t decode_encode_size
+    ( SrcCharset src_charset
+    , DstCharset dst_charset
+    , std::basic_string_view<SrcCharT> src
+    , {surrogate_policy} poli = surrogate_policy::strict );
+
+}
+----
+Return value::
+Same as:
+----
+decode_encode_size
+    ( src_charset, dst_charset, src.data(), src.size(), poli )
+----
+Compile-time requirements::
+- `SrcCharset` and `DstCharset` satisfy __{Charset}__
+- `SrcCharset::code_unit` is the same type as `SrcCharT`
+====
+
+====
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template < template <class> class SrcCharsetTmpl
+         , typename DstCharset
+         , typename SrcCharT >
+std::ptrdiff_t decode_encode_size
+    ( const SrcCharT* src
+    , std::ptrdiff_t src_size
+    , {surrogate_policy} poli = surrogate_policy::strict );
+
+}
+----
+
+Return value::
+Same as:
+----
+decode_encode_size
+    ( SrcCharsetTmpl<SrcCharT>(), DstCharset(), src, src_size, poli )
+----
+Compile-time requirements::
+- `SrcCharsetTmpl<SrcCharT>` is an instance of `{static_charset}`
+- `SrcCharset::code_unit` is the same type as `SrcCharT`
+- `DstCharset` satisfy __{Charset}__
+====
+
+====
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template < template <class> class SrcCharsetTmpl
+         , typename DstCharset
+         , typename SrcCharT >
+std::ptrdiff_t decode_encode_size
+    ( std::basic_string_view<SrcCharT> src
+    , {surrogate_policy} poli = surrogate_policy::strict );
+
+}
+----
+Return value::
+Same as:
+----
+decode_encode_size<SrcCharsetTmpl, DstCharset>(src.data(), src.size(), poli)
+----
+Compile-time requirements::
+- `SrcCharsetTmpl<SrcCharT>` is an instance of `{static_charset}`
+- `SrcCharset::code_unit` is the same type as `SrcCharT`
+- `DstCharset` satisfy __{Charset}__
+====
+
+=== Function template `unsafe_decode_encode`  [[unsafe_decode_encode]]
+
+====
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template <typename SrcCharT, typename DstCharT>
+void unsafe_decode_encode
+    ( {unsafe_transcode_f}<SrcCharT, char32_t> to_u32
+    , {unsafe_transcode_f}<char32_t, DstCharT> from_u32
+    , const SrcCharT* src
+    , std::ptrdiff_t src_size
+    , {transcode_dest}<DstCharT>& dst
+    , {transcoding_error_notifier}* notifier = nullptr );
+
+}
+----
+
+Effect:: Converts the content in `src` to UTF-32 using `to_u32`,
+then writes the result to `dest` using `from_u32`.
+
+Postcondition::
+`dst.recycle()` is not called  if `dst.space()` is not less then the amount of character to be written in `dst`
+====
+
+====
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template <typename SrcCharT, typename DstCharT>
+void unsafe_decode_encode
+    ( {unsafe_transcode_f}<SrcCharT, char32_t> to_u32
+    , {unsafe_transcode_f}<char32_t, DstCharT> from_u32
+    , std::basic_string_view<SrcCharT> src
+    , {transcode_dest}<DstCharT>& dst
+    , {transcoding_error_notifier}* notifier = nullptr );
+
+}
+----
+Equivalent to `unsafe_decode_encode(to_u32, from_32, src.data(), src.size(), dst, notifier)`
+====
+
+====
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template < typename SrcCharset, typename DstCharset
+         , typename SrcCharT, typename DstCharT >
+void unsafe_decode_encode
+    ( SrcCharset src_charset
+    , DstCharset dst_charset
+    , const SrcCharT* src
+    , std::ptrdiff_t src_size
+    , {transcode_dest}<DstCharT>& dst
+    , {transcoding_error_notifier}* notifier = nullptr );
+
+}
+----
+Effect::
+Equivalent to
+[source,cpp,subs=normal]
+----
+unsafe_decode_encode
+    ( src_charset.{to_u32}().{unsafe_transcode_func}()
+    , dst_charset.{from_u32}().{unsafe_transcode_func}()
+    , src, src_size, dst, err_notifier )
+----
+Compile-time requirements::
+- `SrcCharset` and `DstCharset` satisfy __{Charset}__
+- `SrcCharset::code_unit` is the same type as `SrcCharT`
+- `DstCharset::code_unit` is the same type as `DstCharT`
+====
+
+
+====
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template < typename SrcCharset, typename DstCharset
+         , typename SrcCharT, typename DstCharT >
+void unsafe_decode_encode
+    ( SrcCharset src_charset
+    , DstCharset dst_charset
+    , std::basic_string_view<SrcCharT> src
+    , {transcode_dest}<DstCharT>& dst
+    , {transcoding_error_notifier}* notifier = nullptr );
+
+}
+----
+Effect and postconditions::
+Equivalent to
+----
+unsafe_decode_encode
+    ( src_charset, dst_charset, src.data(), src.size()
+    , dst, err_notifier )
+----
+Compile-time requirements::
+- `SrcCharset` and `DstCharset` satisfy __{Charset}__
+- `SrcCharset::code_unit` is the same type as `SrcCharT`
+- `DstCharset::code_unit` is the same type as `DstCharT`
+====
+
+====
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template < template <class> class SrcCharsetTmpl
+         , template <class> class DstCharsetTmpl
+         , typename SrcCharT
+         , typename DstCharT >
+void unsafe_decode_encode
+    ( const SrcCharT* src
+    , std::ptrdiff_t src_size
+    , {transcode_dest}<DstCharT>& dst
+    , {transcoding_error_notifier}* notifier = nullptr );
+
+}
+----
+
+Effect and postconditions::
+Equivalent to
+----
+unsafe_decode_encode
+    ( SrcCharsetTmpl<SrcCharT>(), DstCharsetTmpl<DstCharT>()
+    , src, src_size, dst, err_notifier )
+----
+Compile-time requirements::
+- `SrcCharsetTmpl<SrcCharT>` is an instance of `{static_charset}`
+- `DstCharsetTmpl<DstCharT>` is an instance of `{static_charset}`
+- `SrcCharsetTmpl<SrcCharT>::code_unit` is `SrcCharT`
+- `DstCharsetTmpl<DstCharT>::code_unit` is `DstCharT`
+====
+
+
+====
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template < template <class> class SrcCharsetTmpl
+         , template <class> class DstCharsetTmpl
+         , typename SrcCharT
+         , typename DstCharT >
+void unsafe_decode_encode
+    ( std::basic_string_view<SrcCharT> src
+    , {transcode_dest}<DstCharT>& dst
+    , {transcoding_error_notifier}* notifier = nullptr );
+
+}
+----
+Equivalent to
+----
+unsafe_decode_encode<SrcCharsetTmpl, DstCharsetTmpl>
+    (src.data(), src.size(), dst, err_notifier )
+----
+====
+
+=== Function template `unsafe_decode_encode_size` [[unsafe_decode_encode_size]]
+
+`unsafe_decode_encode_size` is used to calculate the ammount of
+characters that `unsafe_decode_encode` writes.
+
+====
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template <typename SrcCharT>
+std::ptrdiff_t unsafe_decode_encode_size
+    ( {unsafe_transcode_f}<SrcCharT, char32_t> to_u32
+    , {unsafe_transcode_size_f}<char32_t> size_calc_func
+    , const SrcCharT* src
+    , std::ptrdiff_t src_size );
+
+}
+----
+Effect::
+Convert the content of `src` to UTF-32 using `to_u32`, and return the value
+returned by `size_calc_func(u32buff, u32buff_size)`, where
+`u32buff` is the content written by `to_u32`, and `u32buffsize` is
+its size.
+====
+
+====
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template <typename SrcCharT>
+std::ptrdiff_t unsafe_decode_encode_size
+    ( {unsafe_transcode_f}<SrcCharT, char32_t> to_u32
+    , {unsafe_transcode_size_f}<char32_t> size_calc_func
+    , std::basic_string_view<SrcCharT> src );
+
+}
+----
+Return value::
+Same as:
+----
+unsafe_decode_encode_size(to_32, size_calc_func, src.data(), src.size())
+----
+====
+
+====
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template < typename SrcCharset, typename DstCharset, typename SrcCharT >
+std::ptrdiff_t unsafe_decode_encode_size
+    ( SrcCharset src_charset
+    , DstCharset dst_charset
+    , const SrcCharT* src
+    , std::ptrdiff_t src_size );
+
+}
+----
+Return value::
+Same as:
+[source,cpp,subs=normal]
+----
+unsafe_decode_encode_size
+    ( src_charset.{to_u32}().{unsafe_transcode_func}()
+    , dst_charset.{from_u32}().{unsafe_transcode_size_func}()
+    , src, src_size )
+----
+Compile-time requirements::
+- `SrcCharset` and `DstCharset` satisfy __{Charset}__
+- `SrcCharset::code_unit` is the same type as `SrcCharT`
+====
+
+====
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template < typename SrcCharset, typename DstCharset, typename SrcCharT >
+std::ptrdiff_t unsafe_decode_encode_size
+    ( SrcCharset src_charset
+    , DstCharset dst_charset
+    , std::basic_string_view<SrcCharT> src );
+
+}
+----
+Return value::
+Same as:
+----
+unsafe_decode_encode_size
+    ( src_charset, dst_charset, src.data(), src.size() )
+----
+Compile-time requirements::
+- `SrcCharset` and `DstCharset` satisfy __{Charset}__
+- `SrcCharset::code_unit` is the same type as `SrcCharT`
+====
+
+====
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template < template <class> class SrcCharsetTmpl
+         , typename DstCharset
+         , typename SrcCharT >
+std::ptrdiff_t unsafe_decode_encode_size
+    ( const SrcCharT* src
+    , std::ptrdiff_t src_size );
+
+}
+----
+
+Return value::
+Same as:
+----
+unsafe_decode_encode_size
+    ( SrcCharsetTmpl<SrcCharT>(), DstCharset(), src, src_size )
+----
+Compile-time requirements::
+- `SrcCharsetTmpl<SrcCharT>` is an instance of `{static_charset}`
+- `SrcCharset::code_unit` is the same type as `SrcCharT`
+- `DstCharset` satisfy __{Charset}__
+====
+
+====
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template < template <class> class SrcCharsetTmpl
+         , typename DstCharset
+         , typename SrcCharT >
+std::ptrdiff_t unsafe_decode_encode_size
+    ( std::basic_string_view<SrcCharT> src );
+
+}
+----
+Return value::
+Same as:
+----
+unsafe_decode_encode_size<SrcCharsetTmpl, DstCharset>(src.data(), src.size())
+----
+Compile-time requirements::
+- `SrcCharsetTmpl<SrcCharT>` is an instance of `{static_charset}`
+- `SrcCharset::code_unit` is the same type as `SrcCharT`
+- `DstCharset` satisfy __{Charset}__
+====
+
+
+=== Function template `do_transcode` [[do_transcode]]
+
+====
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template < typename SrcCharset, typename DstCharset
+         , typename SrcCharT, typename DstCharT >
+void do_transcode
+    ( SrcCharset src_charset
+    , DstCharset dst_charset
+    , const SrcCharT* src
+    , std::ptrdiff_t src_size
+    , {transcode_dest}<DstCharT>& dst
+    , {transcoding_error_notifier}* err_notifier = nullptr
+    , {surrogate_policy} poli = surrogate_policy::strict );
+
+}
+----
+Effect::
+[source,cpp,subs=normal]
+----
+auto func = {find_transcoder}(src_charset, dst_charset).{transcode_func}()
+if (func != nullptr)
+    return func(dst, src, src_size, err_notifier, poli);
+else
+    return {decode_encode}
+        ( src_charset, dst_charset, src, src_size, dst, err_notifier, poli );
+----
+
+Compile-time requirements::
+- `SrcCharset` and `DstCharset` satisfy __{Charset}__
+- `SrcCharset::code_unit` is the same type as `SrcCharT`
+- `DstCharset::code_unit` is the same type as `DstCharT`
+====
+
+====
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template < typename SrcCharset, typename DstCharset
+         , typename SrcCharT, typename DstCharT >
+void do_transcode
+    ( SrcCharset src_charset
+    , DstCharset dst_charset
+    , std::basic_string_view<SrcCharT> src
+    , {transcode_dest}<DstCharT>& dst
+    , {transcoding_error_notifier}* err_notifier = nullptr
+    , {surrogate_policy} poli = surrogate_policy::strict );
+
+}
+----
+Effect::
+Same as:
+----
+do_transcode
+    ( src_charset, dst_charset, src.data(), src.size()
+    , dst, err_notifier, poli );
+----
+
+Compile-time requirements::
+- `SrcCharset` and `DstCharset` satisfy __{Charset}__
+- `SrcCharset::code_unit` is the same type as `SrcCharT`
+- `DstCharset::code_unit` is the same type as `DstCharT`
+====
+
+====
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template < template <class> class SrcCharsetTmpl
+         , template <class> class DstCharsetTmpl
+         , typename SrcCharT, typename DstCharT >
+void do_transcode
+    ( const SrcCharT* src
+    , std::ptrdiff_t src_size
+    , {transcode_dest}<DstCharT>& dst
+    , {transcoding_error_notifier}* err_notifier = nullptr
+    , {surrogate_policy} poli = surrogate_policy::strict );
+
+}
+----
+Effect::
+Same as:
+----
+do_transcode
+    ( SrcCharsetTmpl<SrcCharT>()
+    , DstCharsetTmpl<DstCharT>()
+    , src, src_size, dst, err_notifier, poli );
+----
+
+Compile-time requirements::
+- `SrcCharsetTmpl<SrcCharT>` is an instance of `{static_charset}`
+- `DstCharsetTmpl<DstCharT>` is an instance of `{static_charset}`
+- `SrcCharsetTmpl<SrcCharT>::code_unit` is `SrcCharT`
+- `DstCharsetTmpl<DstCharT>::code_unit` is `DstCharT`
+====
+
+====
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template < template <class> class SrcCharsetTmpl
+         , template <class> class DstCharsetTmpl
+         , typename SrcCharT, typename DstCharT >
+void do_transcode
+    ( std::basic_string_view<SrcCharT> src
+    , {transcode_dest}<DstCharT>& dst
+    , {transcoding_error_notifier}* err_notifier = nullptr
+    , {surrogate_policy} poli = surrogate_policy::strict );
+
+}
+----
+Same as:
+----
+do_transcode <SrcCharsetTmpl, DstCharsetTmpl>
+    ( src.data(), src.size(), dst, err_notifier, poli );
+----
+Compile-time requirements::
+- `SrcCharsetTmpl<SrcCharT>` is an instance of `{static_charset}`
+- `DstCharsetTmpl<DstCharT>` is an instance of `{static_charset}`
+- `SrcCharsetTmpl<SrcCharT>::code_unit` is `SrcCharT`
+- `DstCharsetTmpl<DstCharT>::code_unit` is `DstCharT`
+====
+
+=== Function template `transcode_size` [[transcode_size]]
+
+====
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template < typename SrcCharset, typename DstCharset, typename SrcCharT >
+std::ptrdiff_t transcode_size
+    ( SrcCharset src_charset
+    , DstCharset dst_charset
+    , const SrcCharT* src
+    , std::ptrdiff_t src_size
+    , strf::surrogate_policy poli = strf::surrogate_policy::strict );
+
+}
+----
+Effect and Return value::
+[source,cpp,subs=normal]
+----
+auto func = {find_transcoder}(src_charset, dst_charset).{transcode_size_func}()
+if (func != nullptr)
+    return func(src, src_size, poli);
+
+return {decode_encode_size} (src_charset, dst_charset, src, src_size, poli);
+----
+
+Compile-time requirements::
+- `SrcCharset` and `DstCharset` satisfy __{Charset}__
+- `SrcCharset::code_unit` is the same type as `SrcCharT`
+====
+
+====
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template < typename SrcCharset, typename DstCharset, typename SrcCharT >
+std::ptrdiff_t transcode_size
+    ( SrcCharset src_charset
+    , DstCharset dst_charset
+    , std::basic_string_view<SrcCharT> src
+    , strf::surrogate_policy poli = strf::surrogate_policy::strict );
+
+}
+----
+Effect and Return value::
+Same as
+----
+transcode_size(src_charset, dst_charset, src.data(), src.size(), poli)
+----
+
+Compile-time requirements::
+- `SrcCharset` and `DstCharset` satisfy __{Charset}__
+- `SrcCharset::code_unit` is the same type as `SrcCharT`
+====
+
+====
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template < template <class> class SrcCharsetTmpl
+         , typename DstCharset
+         , typename SrcCharT >
+std::ptrdiff_t transcode_size
+    ( const SrcCharT* src
+    , std::ptrdiff_t src_size
+    , strf::surrogate_policy poli = strf::surrogate_policy::strict );
+
+}
+----
+Effect and Return value::
+Same as
+----
+transcode_size
+    (SrcCharsetTmpl<SrcCharT>(), DstCharset(), src, src_size, poli)
+----
+
+Compile-time requirements::
+- `SrcCharsetTmpl<SrcCharT>` is an instance of `{static_charset}`
+- `DstCharset` is an instance of `{static_charset}`
+- `SrcCharsetTmpl<SrcCharT>::code_unit` is `SrcCharT`
+====
+
+
+
+====
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template < template <class> class SrcCharsetTmpl
+         , typename DstCharset
+         , typename SrcCharT >
+std::ptrdiff_t transcode_size
+    ( std::basic_string_view<SrcCharT> src
+    , strf::surrogate_policy poli = strf::surrogate_policy::strict );
+
+}
+----
+Effect and Return value::
+Same as
+----
+transcode_size <SrcCharsetTmpl, DstCharset>(src.data(), src.size(), poli)
+----
+
+Compile-time requirements::
+- `SrcCharsetTmpl<SrcCharT>` is an instance of `{static_charset}`
+- `DstCharset` is an instance of `{static_charset}`
+- `SrcCharsetTmpl<SrcCharT>::code_unit` is `SrcCharT`
+====
+
+=== Function template `do_unsafe_transcode` [[do_unsafe_transcode]]
+
+====
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template < typename SrcCharset, typename DstCharset
+         , typename SrcCharT, typename DstCharT >
+void do_unsafe_transcode
+    ( SrcCharset src_charset
+    , DstCharset dst_charset
+    , const SrcCharT* src
+    , std::ptrdiff_t src_size
+    , {transcode_dest}<DstCharT>& dst
+    , {transcoding_error_notifier}* err_notifier = nullptr );
+
+}
+----
+Effect::
+[source,cpp,subs=normal]
+----
+auto func = {find_transcoder}(src_charset, dst_charset).{unsafe_transcode_func}()
+if (func != nullptr)
+    return func(dst, src, src_size, err_notifier);
+else
+    return {unsafe_decode_encode}
+        ( src_charset, dst_charset, src, src_size, dst, err_notifier );
+----
+
+Compile-time requirements::
+- `SrcCharset` and `DstCharset` satisfy __{Charset}__
+- `SrcCharset::code_unit` is the same type as `SrcCharT`
+- `DstCharset::code_unit` is the same type as `DstCharT`
+====
+
+====
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template < typename SrcCharset, typename DstCharset
+         , typename SrcCharT, typename DstCharT >
+void do_unsafe_transcode
+    ( SrcCharset src_charset
+    , DstCharset dst_charset
+    , std::basic_string_view<SrcCharT> src
+    , {transcode_dest}<DstCharT>& dst
+    , {transcoding_error_notifier}* err_notifier = nullptr );
+
+}
+----
+Effect::
+Same as:
+----
+do_unsafe_transcode
+    ( src_charset, dst_charset, src.data(), src.size()
+    , dst, err_notifier );
+----
+
+Compile-time requirements::
+- `SrcCharset` and `DstCharset` satisfy __{Charset}__
+- `SrcCharset::code_unit` is the same type as `SrcCharT`
+- `DstCharset::code_unit` is the same type as `DstCharT`
+====
+
+====
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template < template <class> class SrcCharsetTmpl
+         , template <class> class DstCharsetTmpl
+         , typename SrcCharT, typename DstCharT >
+void do_unsafe_transcode
+    ( const SrcCharT* src
+    , std::ptrdiff_t src_size
+    , {transcode_dest}<DstCharT>& dst
+    , {transcoding_error_notifier}* err_notifier = nullptr );
+
+}
+----
+Effect::
+Same as:
+----
+do_unsafe_transcode
+    ( SrcCharsetTmpl<SrcCharT>()
+    , DstCharsetTmpl<DstCharT>()
+    , src, src_size, dst, err_notifier );
+----
+
+Compile-time requirements::
+- `SrcCharsetTmpl<SrcCharT>` is an instance of `{static_charset}`
+- `DstCharsetTmpl<DstCharT>` is an instance of `{static_charset}`
+- `SrcCharsetTmpl<SrcCharT>::code_unit` is `SrcCharT`
+- `DstCharsetTmpl<DstCharT>::code_unit` is `DstCharT`
+====
+
+====
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template < template <class> class SrcCharsetTmpl
+         , template <class> class DstCharsetTmpl
+         , typename SrcCharT, typename DstCharT >
+void do_unsafe_transcode
+    ( std::basic_string_view<SrcCharT> src
+    , {transcode_dest}<DstCharT>& dst
+    , {transcoding_error_notifier}* err_notifier = nullptr );
+
+}
+----
+Same as:
+----
+do_unsafe_transcode <SrcCharsetTmpl, DstCharsetTmpl>
+    ( src.data(), src.size(), dst, err_notifier );
+----
+Compile-time requirements::
+- `SrcCharsetTmpl<SrcCharT>` is an instance of `{static_charset}`
+- `DstCharsetTmpl<DstCharT>` is an instance of `{static_charset}`
+- `SrcCharsetTmpl<SrcCharT>::code_unit` is `SrcCharT`
+- `DstCharsetTmpl<DstCharT>::code_unit` is `DstCharT`
+====
+
+=== Function template `unsafe_transcode_size` [[unsafe_transcode_size]]
+
+====
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template < typename SrcCharset, typename DstCharset, typename SrcCharT >
+std::ptrdiff_t unsafe_transcode_size
+    ( SrcCharset src_charset
+    , DstCharset dst_charset
+    , const SrcCharT* src
+    , std::ptrdiff_t src_size );
+
+}
+----
+Effect and Return value::
+[source,cpp,subs=normal]
+----
+auto func = {find_transcoder}(src_charset, dst_charset).{unsafe_transcode_size_func}()
+if (func != nullptr)
+    return func(src, src_size);
+
+return {unsafe_decode_encode_size} (src_charset, dst_charset, src, src_size);
+----
+
+Compile-time requirements::
+- `SrcCharset` and `DstCharset` satisfy __{Charset}__
+- `SrcCharset::code_unit` is the same type as `SrcCharT`
+====
+
+====
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template < typename SrcCharset, typename DstCharset, typename SrcCharT >
+std::ptrdiff_t unsafe_transcode_size
+    ( SrcCharset src_charset
+    , DstCharset dst_charset
+    , std::basic_string_view<SrcCharT> src );
+
+}
+----
+Effect and Return value::
+Same as
+----
+unsafe_transcode_size(src_charset, dst_charset, src.data(), src.size())
+----
+
+Compile-time requirements::
+- `SrcCharset` and `DstCharset` satisfy __{Charset}__
+- `SrcCharset::code_unit` is the same type as `SrcCharT`
+====
+
+====
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template < template <class> class SrcCharsetTmpl
+         , typename DstCharset
+         , typename SrcCharT >
+std::ptrdiff_t unsafe_transcode_size
+    ( const SrcCharT* src
+    , std::ptrdiff_t src_size );
+
+}
+----
+Effect and Return value::
+Same as
+----
+unsafe_transcode_size(SrcCharsetTmpl<SrcCharT>(), DstCharset(), src, src_size)
+----
+
+Compile-time requirements::
+- `SrcCharsetTmpl<SrcCharT>` is an instance of `{static_charset}`
+- `DstCharset` is an instance of `{static_charset}`
+- `SrcCharsetTmpl<SrcCharT>::code_unit` is `SrcCharT`
+====
+
+
+
+====
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template < template <class> class SrcCharsetTmpl
+         , typename DstCharset
+         , typename SrcCharT >
+std::ptrdiff_t unsafe_transcode_size ( std::basic_string_view<SrcCharT> src );
+
+}
+----
+Effect and Return value::
+Same as
+----
+unsafe_transcode_size <SrcCharsetTmpl, DstCharset>(src.data(), src.size())
+----
+
+Compile-time requirements::
+- `SrcCharsetTmpl<SrcCharT>` is an instance of `{static_charset}`
+- `DstCharset` is an instance of `{static_charset}`
+- `SrcCharsetTmpl<SrcCharT>::code_unit` is `SrcCharT`
+====
+
 
 === Type aliases for charsets [[static_charset_aliases]]
 

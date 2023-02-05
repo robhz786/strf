@@ -7,6 +7,34 @@
 
 namespace {
 
+STRF_TEST_FUNC void utf8_to_utf16_unsafe_transcode()
+{
+    TEST_TRUNCATING_AT(4, u"abcd") (strf::unsafe_transcode("abcdef"));
+    TEST_TRUNCATING_AT(2, u"ab")   (strf::unsafe_transcode(u8"ab\u0080"));
+    TEST_TRUNCATING_AT(2, u"ab")   (strf::unsafe_transcode(u8"ab\u0800"));
+    TEST_TRUNCATING_AT(2, u"ab")   (strf::unsafe_transcode(u8"ab\uD7FF"));
+    TEST_TRUNCATING_AT(2, u"ab")   (strf::unsafe_transcode(u8"ab\U00010000"));
+    TEST_TRUNCATING_AT(3, u"ab")   (strf::unsafe_transcode(u8"ab\U00010000"));
+
+    TEST_TRUNCATING_AT(3, u"ab\u0080")     (strf::unsafe_transcode(u8"ab\u0080"));
+    TEST_TRUNCATING_AT(3, u"ab\u0800")     (strf::unsafe_transcode(u8"ab\u0800"));
+    TEST_TRUNCATING_AT(3, u"ab\uD7FF")     (strf::unsafe_transcode(u8"ab\uD7FF"));
+    TEST_TRUNCATING_AT(4, u"ab\U00010000") (strf::unsafe_transcode(u8"ab\U00010000"));
+    TEST_TRUNCATING_AT(4, u"ab\U0010FFFF") (strf::unsafe_transcode(u8"ab\U0010FFFF"));
+
+    TEST_CALLING_RECYCLE_AT(2, u"ab\u0080")     (strf::unsafe_transcode(u8"ab\u0080"));
+    TEST_TRUNCATING_AT     (3, u"ab\u0080")     (strf::unsafe_transcode(u8"ab\u0080"));
+    TEST_CALLING_RECYCLE_AT(2, u"ab\u0800")     (strf::unsafe_transcode(u8"ab\u0800"));
+    TEST_TRUNCATING_AT     (3, u"ab\u0800")     (strf::unsafe_transcode(u8"ab\u0800"));
+    TEST_CALLING_RECYCLE_AT(2, u"ab\uD7FF")     (strf::unsafe_transcode(u8"ab\uD7FF"));
+    TEST_TRUNCATING_AT     (3, u"ab\uD7FF")     (strf::unsafe_transcode(u8"ab\uD7FF"));
+    TEST_CALLING_RECYCLE_AT(2, u"ab\U00010000") (strf::unsafe_transcode(u8"ab\U00010000"));
+    TEST_TRUNCATING_AT     (4, u"ab\U00010000") (strf::unsafe_transcode(u8"ab\U00010000"));
+    TEST_CALLING_RECYCLE_AT(3, u"ab\U0010FFFF") (strf::unsafe_transcode(u8"ab\U0010FFFF"));
+    TEST_TRUNCATING_AT     (4, u"ab\U0010FFFF") (strf::unsafe_transcode(u8"ab\U0010FFFF"));
+}
+
+
 STRF_TEST_FUNC void utf8_to_utf16_valid_sequences()
 {
     TEST(u" ") (strf::sani("") > 1);
@@ -310,6 +338,7 @@ STRF_TEST_FUNC void utf8_to_utf16_find_transcoder()
 
 STRF_TEST_FUNC void test_utf8_to_utf16()
 {
+    utf8_to_utf16_unsafe_transcode();
     utf8_to_utf16_valid_sequences();
     utf8_to_utf16_invalid_sequences();
     utf8_to_utf16_error_notifier();

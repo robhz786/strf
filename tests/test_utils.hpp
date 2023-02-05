@@ -1048,8 +1048,9 @@ STRF_HD auto test_failed_recycle_call
           || ! strf::detail::str_equal(s1, s2, len1))                   \
             test_utils::test_failure                                    \
                 ( __FILE__, __LINE__, BOOST_CURRENT_FUNCTION            \
-                , "TEST_CSTR_EQ(s1, s2) failed. Where:\n    s1 is \"", (s1)  \
-                , "\"\n    s2 is \"", (s2), '\"' );                     \
+                , "TEST_CSTR_EQ(s1, s2) failed. Where:\n    s1 is \""   \
+                , strf::transcode(s1)                                   \
+                , "\"\n    s2 is \"", strf::transcode(s2), '\"' );      \
         break;                                                          \
     }                                                                   \
 

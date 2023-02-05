@@ -7,6 +7,43 @@
 
 namespace {
 
+STRF_TEST_FUNC void utf8_to_utf32_unsafe_transcode()
+{
+    TEST(U"\U00010000") (strf::unsafe_transcode(u8"\U00010000"));
+
+    TEST(U" ") (strf::unsafe_transcode("") > 1);
+    TEST(U"\U0010FFFF") (strf::unsafe_transcode("\xF4\x8F\xBF\xBF"));
+
+    TEST(U" abc") (strf::unsafe_transcode("abc") > 4);
+    TEST(U" ab\u0080\u0800\uD7FF\U00010000\U0010FFFF")
+        (strf::unsafe_transcode(u8"ab\u0080\u0800\uD7FF\U00010000\U0010FFFF") > 8);
+
+    TEST_TRUNCATING_AT(2, U"ab")     (strf::unsafe_transcode("abcdef"));
+    TEST_TRUNCATING_AT(6, U"abcdef") (strf::unsafe_transcode("abcdef"));
+
+    TEST_TRUNCATING_AT(2, U"ab") (strf::unsafe_transcode(u8"ab\u0080"));
+    TEST_TRUNCATING_AT(2, U"ab") (strf::unsafe_transcode(u8"ab\u0800"));
+    TEST_TRUNCATING_AT(2, U"ab") (strf::unsafe_transcode(u8"ab\uD7FF"));
+    TEST_TRUNCATING_AT(2, U"ab") (strf::unsafe_transcode(u8"ab\U00010000"));
+
+    TEST_TRUNCATING_AT(3, U"ab\u0080")     (strf::unsafe_transcode(u8"ab\u0080"));
+    TEST_TRUNCATING_AT(3, U"ab\u0800")     (strf::unsafe_transcode(u8"ab\u0800"));
+    TEST_TRUNCATING_AT(3, U"ab\uD7FF")     (strf::unsafe_transcode(u8"ab\uD7FF"));
+    TEST_TRUNCATING_AT(3, U"ab\U00010000") (strf::unsafe_transcode(u8"ab\U00010000"));
+    TEST_TRUNCATING_AT(3, U"ab\U0010FFFF") (strf::unsafe_transcode(u8"ab\U0010FFFF"));
+
+    TEST_CALLING_RECYCLE_AT(2, U"ab\u0080")     (strf::unsafe_transcode(u8"ab\u0080"));
+    TEST_TRUNCATING_AT     (3, U"ab\u0080")     (strf::unsafe_transcode(u8"ab\u0080"));
+    TEST_CALLING_RECYCLE_AT(2, U"ab\u0800")     (strf::unsafe_transcode(u8"ab\u0800"));
+    TEST_TRUNCATING_AT     (3, U"ab\u0800")     (strf::unsafe_transcode(u8"ab\u0800"));
+    TEST_CALLING_RECYCLE_AT(2, U"ab\uD7FF")     (strf::unsafe_transcode(u8"ab\uD7FF"));
+    TEST_TRUNCATING_AT     (3, U"ab\uD7FF")     (strf::unsafe_transcode(u8"ab\uD7FF"));
+    TEST_CALLING_RECYCLE_AT(2, U"ab\U00010000") (strf::unsafe_transcode(u8"ab\U00010000"));
+    TEST_TRUNCATING_AT     (4, U"ab\U00010000") (strf::unsafe_transcode(u8"ab\U00010000"));
+    TEST_CALLING_RECYCLE_AT(2, U"ab\U0010FFFF") (strf::unsafe_transcode(u8"ab\U0010FFFF"));
+    TEST_TRUNCATING_AT     (3, U"ab\U0010FFFF") (strf::unsafe_transcode(u8"ab\U0010FFFF"));
+}
+
 STRF_TEST_FUNC void utf8_to_utf32_valid_sequences()
 {
     TEST(U"\U00010000") (strf::sani(u8"\U00010000"));
@@ -300,6 +337,7 @@ STRF_TEST_FUNC void utf8_to_utf32_find_transcoder()
 
 STRF_TEST_FUNC void test_utf8_to_utf32()
 {
+    utf8_to_utf32_unsafe_transcode();
     utf8_to_utf32_valid_sequences();
     utf8_to_utf32_invalid_sequences();
     utf8_to_utf32_error_notifier();

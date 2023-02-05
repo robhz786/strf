@@ -7,6 +7,23 @@
 
 namespace {
 
+STRF_TEST_FUNC void utf32_to_utf16_unsafe_transcode()
+{
+    TEST(u" ab\u0080\u0800\uD7FF\U00010000\U0010FFFF")
+        (strf::unsafe_transcode(U"ab\u0080\u0800\uD7FF\U00010000\U0010FFFF") > 8);
+
+    TEST_TRUNCATING_AT(2, u"ab") (strf::unsafe_transcode(U"ab\uD7FF"));
+    TEST_TRUNCATING_AT(2, u"ab") (strf::unsafe_transcode(U"ab\U00010000"));
+
+    TEST_TRUNCATING_AT(3, u"ab\uD7FF")     (strf::unsafe_transcode(U"ab\uD7FF"));
+    TEST_TRUNCATING_AT(4, u"ab\U00010000") (strf::unsafe_transcode(U"ab\U00010000"));
+    TEST_TRUNCATING_AT(4, u"ab\U0010FFFF") (strf::unsafe_transcode(U"ab\U0010FFFF"));
+
+    TEST_CALLING_RECYCLE_AT(2, u"ab\uD7FF")     (strf::unsafe_transcode(U"ab\uD7FF"));
+    TEST_CALLING_RECYCLE_AT(2, u"ab\U00010000") (strf::unsafe_transcode(U"ab\U00010000"));
+    TEST_CALLING_RECYCLE_AT(3, u"ab\U0010FFFF") (strf::unsafe_transcode(U"ab\U0010FFFF"));
+}
+
 STRF_TEST_FUNC void utf32_to_utf16_valid_sequences()
 {
     TEST(u" ab\u0080\u0800\uD7FF\U00010000\U0010FFFF")
@@ -210,6 +227,7 @@ STRF_TEST_FUNC void utf32_to_utf16_find_transcoder()
 
 STRF_TEST_FUNC void test_utf32_to_utf16()
 {
+    utf32_to_utf16_unsafe_transcode();
     utf32_to_utf16_valid_sequences();
     utf32_to_utf16_invalid_sequences();
     utf32_to_utf16_error_notifier();

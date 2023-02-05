@@ -21,6 +21,8 @@ http://www.boost.org/LICENSE_1_0.txt)
 :numpunct:       <<strf_hpp#numpunct,numpunct>>
 :width_t:        <<strf_hpp#width_t,width_t>>
 :float_notation: <<float_notation,float_notation>>
+
+:charset_c:       <<strf_hpp.html#charset_c,charset_c>>
 :TranscodingErrorNotifierPtr: <<strf_hpp#TranscodingErrorNotifierPtr,TranscodingErrorNotifierPtr>>
 
 :transcoding_error_notifier_c:  <<strf_hpp#transcoding_error_notifier_c,transcoding_error_notifier_c>>
@@ -70,10 +72,13 @@ that work as alias to format functions:
 |`fixed(_arg_, _precision_)`   |`fmt(_arg_).fixed().p(_precision_)`
 |`gen(_arg_, _precision_)`     |`fmt(_arg_).gen().p(_precision_)`
 |`multi(_arg_, _count_)`       |`fmt(_arg_).multi(_count_)`
-|`sani(_arg_, _charset_)`      |`fmt(_arg_).sani(_charset_)`
-|`transcode(_arg_, _charset_)` |`fmt(_arg_).transcode_from(_charset_)`
-|`sani(_arg_)`                 |`fmt(_arg_).sani()`
-|`transcode(_arg_)`            |`fmt(_arg_).transcode()`
+|`sani(_arg_)`                        |`fmt(_arg_).sani()`
+|`sani(_arg_, _charset_)`             |`fmt(_arg_).sani(_charset_)`
+|`transcode(_arg_)`                   |`fmt(_arg_).transcode()`
+|`transcode(_arg_, _charset_)`        |`fmt(_arg_).transcode(_charset_)`
+|`unsafe_transcode(_arg_)`            |`fmt(_arg_).unsafe_transcode()`
+|`unsafe_transcode(_arg_, _charset_)` |`fmt(_arg_).unsafe_transcode(_charset_)`
+
 |===
 
 .Example
@@ -88,6 +93,10 @@ assert(str == "~~~+1.~~~")
 
 include::ref_format_functions.adoc[tag=alignment_format_functions]
 
+Note:: You can see there is no equivalent to `std::internal` in the above table.
+       Instead, look for the `pad0` format function if you want to pad zeros
+       when printing integers or floating-points.
+
 === Floating-point formatting
 
 include::ref_format_functions.adoc[tag=float_format_functions]
@@ -100,15 +109,15 @@ include::ref_format_functions.adoc[tag=float_notation]
 NOTE: `pad0` is independent of alignment formatting:
 [source,cpp]
 ----
-auto s = strf::to_string(strf::center(-1.25, 12, '_').pad0(8));
+auto s = strf::to_string( strf::center(-1.25, 12, '_').pad0(8) );
 assert(s == "__-0001.25__");
 
 auto nan = std::numeric_limits<double>::quiet_NaN();
 
-s = strf::to_string(strf::center(-nan, 12, '_').pad0(8));
+s = strf::to_string( strf::center(-nan, 12, '_').pad0(8) );
 assert(s == "____-nan____");
 
-s = strf::to_string(strf::center(-nan, 8, '_').pad0(12));
+s = strf::to_string( strf::center(-nan, 8, '_').pad0(12) );
 assert(s == "____-nan____");
 ----
 ====
@@ -134,29 +143,45 @@ include::ref_format_functions.adoc[tag=int_format_functions]
 |`p(<<strf_hpp#width_t,width_t>> precision)`
 | Sets string precision
 
+| `template <typename Charset> transcode(Charset cs)`
+| Transcodes the input string if `cs` is different from the
+  output charset, otherwise just copies it as in `memcpy`.
+  ( The output charset is defined by the facet value
+    of the `<<facets,charset_c>><CharOut>` facet category,
+    where `CharOut` is the destination character type )
+
+| `template <typename Charset> unsafe_transcode(Charset cs)`
+| Same as in `trancode(cs)`, except that the behaviour is
+  undefined if the input string is not fully conformant
+  to the encoding represent by `cs`,
+  but it provides a better performance.
+
 | `template <typename Charset> sani(Charset cs)`
-| Equivalent to `sanitize_from_charset(cs)`
-
-| `sani()`
-| Equivalent to `sanitize_from_charset()`
-
-| `template <typename Charset> transcode_from(Charset cs)`
-| Transcodes the input string from the charset represented by `cs`,
-  if it is not already destination charset.
-
-| `template <typename Charset> sanitize_from_charset(Charset cs)`
-| Transcodes the input string from the charset represented by `cs`,
-  or just sanitizes it, if `cs` is also the destination charset.
+| If `cs` is different from the ouput charset, transcodes the
+  input string just like in `transcode`. If they
+  are the same, sanitizes the input string.
+  That is, in both cases, any non-conformity to the input charset
+  is replaced by the replacement character ( `"\uFFFD"` or `'?'` ),
+  and causes the function
+  `{transcoding_error_notifier}::invalid_sequence`
+  to be called, if the __{TranscodingErrorNotifierPtr}__
+  facet object is not null ( see section
+  "<<transcoding_error_notifier,Transcoding error handling>>")
 
 | `transcode()`
-| Transcodes the input string from the charset that correspods
-  to its character type, if it is not already the same
-  as the destination charset.
+| Equivalent to `transcode(cs)` where `cs` is the facet value
+  for the `charset_c<CharIn>` facet category, where `CharIn`
+  is the character type of the input string.
 
-| `sanitize_charset()`
-| Transcodes the input string from the charset that corresponds
-  to its character type, or just sanitizes it, if it same
-  as the destination charset.
+| `unsafe_transcode()`
+| Equivalent to `unsafe_transcode(cs)` where `cs` is the facet value
+  for the `charset_c<CharIn>` facet category, where `CharIn`
+  is the character type of the input string.
+
+| `sani()`
+| Equivalent to `sani(cs)` where `cs` is the facet value
+  for the `charset_c<CharIn>` facet category, where `CharIn`
+  is the character type of the input string.
 
 |===
 

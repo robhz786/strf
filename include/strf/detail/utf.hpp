@@ -13,26 +13,23 @@ namespace strf {
 
 #if ! defined(STRF_CHECK_DEST)
 
+#define STRF_RECYCLE                         \
+    dest.advance_to(dest_it);               \
+    dest.flush();                           \
+    STRF_IF_UNLIKELY (!dest.good()) {       \
+        return;                             \
+    }                                       \
+    dest_it = dest.buffer_ptr();            \
+    dest_end = dest.buffer_end();           \
+
 #define STRF_CHECK_DEST                         \
-    STRF_IF_UNLIKELY (dest_it == dest_end) {    \
-        dest.advance_to(dest_it);               \
-        dest.flush();                           \
-        STRF_IF_UNLIKELY (!dest.good()) {       \
-            return;                             \
-        }                                       \
-        dest_it = dest.buffer_ptr();            \
-        dest_end = dest.buffer_end();           \
+    STRF_IF_UNLIKELY (dest_it >= dest_end) {    \
+        STRF_RECYCLE;                           \
     }
 
 #define STRF_CHECK_DEST_SIZE(SIZE)                      \
     STRF_IF_UNLIKELY (dest_it + (SIZE) > dest_end) {    \
-        dest.advance_to(dest_it);                       \
-        dest.flush();                                   \
-        STRF_IF_UNLIKELY (!dest.good()) {               \
-            return;                                     \
-        }                                               \
-        dest_it = dest.buffer_ptr();                    \
-        dest_end = dest.buffer_end();                   \
+        STRF_RECYCLE;                                   \
     }
 
 #endif // ! defined(STRF_CHECK_DEST)
@@ -196,6 +193,17 @@ constexpr STRF_HD bool is_utf8_continuation(IntT ch)
     return is_utf8_continuation(static_cast<unsigned>(static_cast<unsigned char>(ch)));
 }
 
+template <typename IntT, strf::detail::enable_if_t<std::is_same<unsigned, IntT>::value, int> =0>
+constexpr STRF_HD bool not_utf8_continuation(IntT ch)
+{
+    return (ch & 0xC0) != 0x80;
+}
+
+template <typename IntT, strf::detail::enable_if_t<sizeof(IntT) == 1, int> =0>
+constexpr STRF_HD bool not_utf8_continuation(IntT ch)
+{
+    return not_utf8_continuation(static_cast<unsigned>(static_cast<unsigned char>(ch)));
+}
 
 // constexpr STRF_HD bool valid_start_3bytes
 //     ( std::uint8_t ch0
@@ -266,6 +274,20 @@ public:
         , std::ptrdiff_t src_size
         , strf::surrogate_policy surr_poli );
 
+    static STRF_HD void unsafe_transcode
+        ( strf::transcode_dest<DestCharT>& dest
+        , const SrcCharT* src
+        , std::ptrdiff_t src_size
+        , strf::transcoding_error_notifier* err_notifier );
+
+    static STRF_HD std::ptrdiff_t unsafe_transcode_size
+        ( const SrcCharT* src
+        , std::ptrdiff_t src_size )
+    {
+        (void) src;
+        return src_size;
+    }
+
     static STRF_HD strf::transcode_f<SrcCharT, DestCharT> transcode_func() noexcept
     {
         return transcode;
@@ -273,6 +295,14 @@ public:
     static STRF_HD strf::transcode_size_f<SrcCharT> transcode_size_func() noexcept
     {
         return transcode_size;
+    }
+    static STRF_HD strf::unsafe_transcode_f<SrcCharT, DestCharT> unsafe_transcode_func() noexcept
+    {
+        return unsafe_transcode;
+    }
+    static STRF_HD strf::unsafe_transcode_size_f<SrcCharT> unsafe_transcode_size_func() noexcept
+    {
+        return unsafe_transcode_size;
     }
 };
 
@@ -295,6 +325,16 @@ public:
         , std::ptrdiff_t src_size
         , strf::surrogate_policy surr_poli );
 
+    static STRF_HD void unsafe_transcode
+        ( strf::transcode_dest<DestCharT>& dest
+        , const SrcCharT* src
+        , std::ptrdiff_t src_size
+        , strf::transcoding_error_notifier* err_notifier );
+
+    static STRF_HD std::ptrdiff_t unsafe_transcode_size
+        ( const SrcCharT* src
+        , std::ptrdiff_t src_size );
+
     static STRF_HD strf::transcode_f<SrcCharT, DestCharT> transcode_func() noexcept
     {
         return transcode;
@@ -302,6 +342,14 @@ public:
     static STRF_HD strf::transcode_size_f<SrcCharT> transcode_size_func() noexcept
     {
         return transcode_size;
+    }
+    static STRF_HD strf::unsafe_transcode_f<SrcCharT, DestCharT> unsafe_transcode_func() noexcept
+    {
+        return unsafe_transcode;
+    }
+    static STRF_HD strf::unsafe_transcode_size_f<SrcCharT> unsafe_transcode_size_func() noexcept
+    {
+        return unsafe_transcode_size;
     }
 };
 
@@ -324,6 +372,16 @@ public:
         , std::ptrdiff_t src_size
         , strf::surrogate_policy surr_poli );
 
+    static STRF_HD void unsafe_transcode
+        ( strf::transcode_dest<DestCharT>& dest
+        , const SrcCharT* src
+        , std::ptrdiff_t src_size
+        , strf::transcoding_error_notifier* err_notifier );
+
+    static STRF_HD std::ptrdiff_t unsafe_transcode_size
+        ( const SrcCharT* src
+        , std::ptrdiff_t src_size );
+
     static STRF_HD strf::transcode_f<SrcCharT, DestCharT> transcode_func() noexcept
     {
         return transcode;
@@ -331,6 +389,14 @@ public:
     static STRF_HD strf::transcode_size_f<SrcCharT> transcode_size_func() noexcept
     {
         return transcode_size;
+    }
+    static STRF_HD strf::unsafe_transcode_f<SrcCharT, DestCharT> unsafe_transcode_func() noexcept
+    {
+        return unsafe_transcode;
+    }
+    static STRF_HD strf::unsafe_transcode_size_f<SrcCharT> unsafe_transcode_size_func() noexcept
+    {
+        return unsafe_transcode_size;
     }
 };
 
@@ -353,6 +419,16 @@ public:
         , std::ptrdiff_t src_size
         , strf::surrogate_policy surr_poli );
 
+    static STRF_HD void unsafe_transcode
+        ( strf::transcode_dest<DestCharT>& dest
+        , const SrcCharT* src
+        , std::ptrdiff_t src_size
+        , strf::transcoding_error_notifier* err_notifier );
+
+    static STRF_HD std::ptrdiff_t unsafe_transcode_size
+        ( const SrcCharT* src
+        , std::ptrdiff_t src_size );
+
     static STRF_HD strf::transcode_f<SrcCharT, DestCharT> transcode_func() noexcept
     {
         return transcode;
@@ -360,6 +436,14 @@ public:
     static STRF_HD strf::transcode_size_f<SrcCharT> transcode_size_func() noexcept
     {
         return transcode_size;
+    }
+    static STRF_HD strf::unsafe_transcode_f<SrcCharT, DestCharT> unsafe_transcode_func() noexcept
+    {
+        return unsafe_transcode;
+    }
+    static STRF_HD strf::unsafe_transcode_size_f<SrcCharT> unsafe_transcode_size_func() noexcept
+    {
+        return unsafe_transcode_size;
     }
 };
 
@@ -382,6 +466,20 @@ public:
         , std::ptrdiff_t src_size
         , strf::surrogate_policy surr_poli );
 
+    static STRF_HD void unsafe_transcode
+        ( strf::transcode_dest<DestCharT>& dest
+        , const SrcCharT* src
+        , std::ptrdiff_t src_size
+        , strf::transcoding_error_notifier* err_notifier );
+
+    static STRF_HD std::ptrdiff_t unsafe_transcode_size
+        ( const SrcCharT* src
+        , std::ptrdiff_t src_size )
+    {
+        (void) src;
+        return src_size;
+    }
+
     static STRF_HD strf::transcode_f<SrcCharT, DestCharT> transcode_func() noexcept
     {
         return transcode;
@@ -389,6 +487,14 @@ public:
     static STRF_HD strf::transcode_size_f<SrcCharT> transcode_size_func() noexcept
     {
         return transcode_size;
+    }
+    static STRF_HD strf::unsafe_transcode_f<SrcCharT, DestCharT> unsafe_transcode_func() noexcept
+    {
+        return unsafe_transcode;
+    }
+    static STRF_HD strf::unsafe_transcode_size_f<SrcCharT> unsafe_transcode_size_func() noexcept
+    {
+        return unsafe_transcode_size;
     }
 };
 
@@ -411,6 +517,16 @@ public:
         , std::ptrdiff_t src_size
         , strf::surrogate_policy surr_poli );
 
+    static STRF_HD void unsafe_transcode
+        ( strf::transcode_dest<DestCharT>& dest
+        , const SrcCharT* src
+        , std::ptrdiff_t src_size
+        , strf::transcoding_error_notifier* err_notifier );
+
+    static STRF_HD std::ptrdiff_t unsafe_transcode_size
+        ( const SrcCharT* src
+        , std::ptrdiff_t src_size );
+
     static STRF_HD strf::transcode_f<SrcCharT, DestCharT> transcode_func() noexcept
     {
         return transcode;
@@ -418,6 +534,14 @@ public:
     static STRF_HD strf::transcode_size_f<SrcCharT> transcode_size_func() noexcept
     {
         return transcode_size;
+    }
+    static STRF_HD strf::unsafe_transcode_f<SrcCharT, DestCharT> unsafe_transcode_func() noexcept
+    {
+        return unsafe_transcode;
+    }
+    static STRF_HD strf::unsafe_transcode_size_f<SrcCharT> unsafe_transcode_size_func() noexcept
+    {
+        return unsafe_transcode_size;
     }
 };
 
@@ -440,6 +564,16 @@ public:
         , std::ptrdiff_t src_size
         , strf::surrogate_policy surr_poli );
 
+    static STRF_HD void unsafe_transcode
+        ( strf::transcode_dest<DestCharT>& dest
+        , const SrcCharT* src
+        , std::ptrdiff_t src_size
+        , strf::transcoding_error_notifier* err_notifier );
+
+    static STRF_HD std::ptrdiff_t unsafe_transcode_size
+        ( const SrcCharT* src
+        , std::ptrdiff_t src_size );
+
     static STRF_HD strf::transcode_f<SrcCharT, DestCharT> transcode_func() noexcept
     {
         return transcode;
@@ -447,6 +581,14 @@ public:
     static STRF_HD strf::transcode_size_f<SrcCharT> transcode_size_func() noexcept
     {
         return transcode_size;
+    }
+    static STRF_HD strf::unsafe_transcode_f<SrcCharT, DestCharT> unsafe_transcode_func() noexcept
+    {
+        return unsafe_transcode;
+    }
+    static STRF_HD strf::unsafe_transcode_size_f<SrcCharT> unsafe_transcode_size_func() noexcept
+    {
+        return unsafe_transcode_size;
     }
 };
 
@@ -469,6 +611,16 @@ public:
         , std::ptrdiff_t src_size
         , strf::surrogate_policy surr_poli );
 
+    static STRF_HD void unsafe_transcode
+        ( strf::transcode_dest<DestCharT>& dest
+        , const SrcCharT* src
+        , std::ptrdiff_t src_size
+        , strf::transcoding_error_notifier* err_notifier );
+
+    static STRF_HD std::ptrdiff_t unsafe_transcode_size
+        ( const SrcCharT* src
+        , std::ptrdiff_t src_size );
+
     static STRF_HD strf::transcode_f<SrcCharT, DestCharT> transcode_func() noexcept
     {
         return transcode;
@@ -476,6 +628,14 @@ public:
     static STRF_HD strf::transcode_size_f<SrcCharT> transcode_size_func() noexcept
     {
         return transcode_size;
+    }
+    static STRF_HD strf::unsafe_transcode_f<SrcCharT, DestCharT> unsafe_transcode_func() noexcept
+    {
+        return unsafe_transcode;
+    }
+    static STRF_HD strf::unsafe_transcode_size_f<SrcCharT> unsafe_transcode_size_func() noexcept
+    {
+        return unsafe_transcode_size;
     }
 };
 
@@ -501,6 +661,21 @@ public:
         (void) src;
         return src_size;
     }
+
+    static STRF_HD void unsafe_transcode
+        ( strf::transcode_dest<DestCharT>& dest
+        , const SrcCharT* src
+        , std::ptrdiff_t src_size
+        , strf::transcoding_error_notifier* err_notifier );
+
+    static STRF_HD std::ptrdiff_t unsafe_transcode_size
+        ( const SrcCharT* src
+        , std::ptrdiff_t src_size )
+    {
+        (void) src;
+        return src_size;
+    }
+
     static STRF_HD strf::transcode_f<SrcCharT, DestCharT> transcode_func() noexcept
     {
         return transcode;
@@ -508,6 +683,14 @@ public:
     static STRF_HD strf::transcode_size_f<SrcCharT> transcode_size_func() noexcept
     {
         return transcode_size;
+    }
+    static STRF_HD strf::unsafe_transcode_f<SrcCharT, DestCharT> unsafe_transcode_func() noexcept
+    {
+        return unsafe_transcode;
+    }
+    static STRF_HD strf::unsafe_transcode_size_f<SrcCharT> unsafe_transcode_size_func() noexcept
+    {
+        return unsafe_transcode_size;
     }
 };
 
@@ -1144,6 +1327,72 @@ STRF_HD std::ptrdiff_t strf::static_transcoder
 
 template <typename SrcCharT, typename DestCharT>
 STRF_HD void strf::static_transcoder
+    < SrcCharT, DestCharT, strf::csid_utf8, strf::csid_utf32 >::unsafe_transcode
+    ( strf::transcode_dest<DestCharT>& dest
+    , const SrcCharT* src
+    , std::ptrdiff_t src_size
+    , strf::transcoding_error_notifier* err_notifier )
+{
+    (void) err_notifier;
+    const auto *src_it = src;
+    const auto *src_end = src + src_size;
+    auto *dest_it = dest.buffer_ptr();
+    auto *dest_end = dest.buffer_end();
+
+    while (src_it < src_end) {
+        unsigned ch32 = 0;
+        const unsigned ch0 = detail::cast_u8(*src_it);
+        ++src_it;
+        if (ch0 < 0x80) {
+            ch32 = ch0;
+        } else if (ch0 < 0xE0) {
+            ch32 = strf::detail::utf8_decode(ch0, detail::cast_u8(src_it[0]));
+            ++ src_it;
+        } else if (ch0 < 0xF0) {
+            ch32 = strf::detail::utf8_decode
+                (ch0
+                , detail::cast_u8(src_it[0])
+                , detail::cast_u8(src_it[1]) );
+            src_it += 2;
+        } else {
+            ch32 = strf::detail::utf8_decode
+                ( ch0
+                , detail::cast_u8(src_it[0])
+                , detail::cast_u8(src_it[1])
+                , detail::cast_u8(src_it[2]));
+            src_it += 3;
+        }
+        STRF_CHECK_DEST;
+        *dest_it = static_cast<DestCharT>(ch32);
+        ++dest_it;
+    }
+    dest.advance_to(dest_it);
+}
+
+template <typename SrcCharT, typename DestCharT>
+STRF_HD std::ptrdiff_t strf::static_transcoder
+    < SrcCharT, DestCharT, strf::csid_utf8, strf::csid_utf32 >::unsafe_transcode_size
+    ( const SrcCharT* src
+    , std::ptrdiff_t src_size )
+{
+    const auto *src_it = src;
+    const auto *src_end = src + src_size;
+    std::ptrdiff_t size = 0;
+    for (;src_it < src_end; ++src_it) {
+        const unsigned ch = detail::cast_u8(*src_it);
+        size += detail::not_utf8_continuation(ch);
+    }
+    //     unsigned ch0 = detail::cast_u8(*src_it);
+    //     src_it += ( ch0 < 0x80 ? 1
+    //               : ch0 < 0xE0 ? 2
+    //               : ch0 < 0xF0 ? 3
+    //               :              4);
+    // }
+    return size;
+}
+
+template <typename SrcCharT, typename DestCharT>
+STRF_HD void strf::static_transcoder
     < SrcCharT, DestCharT, strf::csid_utf8, strf::csid_utf8 >::transcode
     ( strf::transcode_dest<DestCharT>& dest
     , const SrcCharT* src
@@ -1298,6 +1547,19 @@ STRF_HD std::ptrdiff_t strf::static_transcoder
         }
     }
     return size;
+}
+
+template <typename SrcCharT, typename DestCharT>
+STRF_HD void strf::static_transcoder
+    < SrcCharT, DestCharT, strf::csid_utf8, strf::csid_utf8 >::unsafe_transcode
+    ( strf::transcode_dest<DestCharT>& dest
+    , const SrcCharT* src
+    , std::ptrdiff_t src_size
+    , strf::transcoding_error_notifier* err_notifier )
+{
+    (void) err_notifier;
+    detail::output_buffer_interchar_copy<DestCharT>
+        (dest, src, detail::safe_cast_size_t(src_size));
 }
 
 template <typename CharT>
@@ -1514,6 +1776,73 @@ STRF_HD std::ptrdiff_t strf::static_transcoder
     return count;
 }
 
+
+template <typename SrcCharT, typename DestCharT>
+STRF_HD void strf::static_transcoder
+    < SrcCharT, DestCharT, strf::csid_utf32, strf::csid_utf8 >::unsafe_transcode
+    ( strf::transcode_dest<DestCharT>& dest
+    , const SrcCharT* src
+    , std::ptrdiff_t src_size
+    , strf::transcoding_error_notifier* err_notifier )
+{
+    (void) err_notifier;
+    const auto *src_it = src;
+    const auto *src_end = src + src_size;
+    auto *dest_it = dest.buffer_ptr();
+    auto *dest_end = dest.buffer_end();
+    for(;src_it < src_end; ++src_it) {
+        unsigned const ch = detail::cast_u32(*src_it);
+
+        const auto dest_space = dest_end - dest_it;
+        STRF_IF_UNLIKELY (dest_space < 4) {
+            const int required_space = ( ch < 0x80 ? 1
+                                       : ch < 0x800 ? 2
+                                       : ch < 0x10000 ? 3 : 4);
+            if (required_space > dest_space) {
+                STRF_RECYCLE;
+            }
+        }
+        STRF_IF_LIKELY (ch < 0x80) {
+            *dest_it = static_cast<DestCharT>(ch);
+            ++dest_it;
+        } else if (ch < 0x800) {
+            dest_it[0] = static_cast<DestCharT>(0xC0 | (0x1F & (ch >> 6)));
+            dest_it[1] = static_cast<DestCharT>(0x80 | (0xBF &  ch));
+            dest_it += 2;
+        } else if (ch < 0x10000) {
+            dest_it[0] = static_cast<DestCharT>(0xE0 | (0x0F & (ch >> 12)));
+            dest_it[1] = static_cast<DestCharT>(0x80 | (0xBF & (ch >> 6)));
+            dest_it[2] = static_cast<DestCharT>(0x80 | (0xBF &  ch ));
+            dest_it += 3;
+        } else if (ch < 0x110000) {
+            dest_it[0] = static_cast<DestCharT>(0xF0 | (0x07 & (ch >> 18)));
+            dest_it[1] = static_cast<DestCharT>(0x80 | (0xBF & (ch >> 12)));
+            dest_it[2] = static_cast<DestCharT>(0x80 | (0xBF & (ch >> 6)));
+            dest_it[3] = static_cast<DestCharT>(0x80 | (0xBF &  ch));
+            dest_it += 4;
+        }
+    }
+    dest.advance_to(dest_it);
+}
+
+template <typename SrcCharT, typename DestCharT>
+STRF_HD std::ptrdiff_t strf::static_transcoder
+    < SrcCharT, DestCharT, strf::csid_utf32, strf::csid_utf8 >::unsafe_transcode_size
+    ( const SrcCharT* src
+    , std::ptrdiff_t src_size )
+{
+    const auto *src_it = src;
+    const auto *src_end = src + src_size;
+    std::ptrdiff_t size = 0;
+    for(;src_it < src_end; ++src_it) {
+        auto ch = detail::cast_u32(*src_it);
+        size += ( ch < 0x80 ? 1
+                : ch < 0x800 ? 2
+                : ch < 0x10000 ? 3 : 4 );
+    }
+    return size;
+}
+
 template <typename CharT>
 STRF_HD void
 static_charset<CharT, strf::csid_utf8>::write_replacement_char
@@ -1584,7 +1913,6 @@ STRF_HD std::ptrdiff_t strf::static_transcoder
     for(; src_it < src_end; src_it = src_it_next) {
         src_it_next = src_it + 1;
         ch = detail::cast_u16(*src_it);
-        src_it_next = src_it + 1;
 
         ++count;
         if ( strf::detail::is_high_surrogate(ch)
@@ -1595,6 +1923,53 @@ STRF_HD std::ptrdiff_t strf::static_transcoder
         }
     }
     return count;
+}
+
+template <typename SrcCharT, typename DestCharT>
+STRF_HD void strf::static_transcoder
+    < SrcCharT, DestCharT, strf::csid_utf16, strf::csid_utf32 >::unsafe_transcode
+    ( strf::transcode_dest<DestCharT>& dest
+    , const SrcCharT* src
+    , std::ptrdiff_t src_size
+    , strf::transcoding_error_notifier* err_notifier )
+{
+    (void) err_notifier;
+
+    const auto *src_end = src + src_size;
+    auto *dest_it = dest.buffer_ptr();
+    auto *dest_end = dest.buffer_end();
+    const auto *src_it = src;
+    while (src_it < src_end) {
+        const unsigned ch = detail::cast_u16(*src_it);
+        unsigned ch32 = ch;
+        ++src_it;
+        STRF_IF_UNLIKELY (strf::detail::is_high_surrogate(ch)) {
+            const unsigned ch2 = detail::cast_u16(*src_it);
+            ch32 = 0x10000 + (((ch & 0x3FF) << 10) | (ch2 & 0x3FF));
+            ++src_it;
+        }
+        STRF_CHECK_DEST;
+        *dest_it = static_cast<DestCharT>(ch32);
+        ++dest_it;
+    }
+    dest.advance_to(dest_it);
+}
+
+template <typename SrcCharT, typename DestCharT>
+STRF_HD std::ptrdiff_t strf::static_transcoder
+    < SrcCharT, DestCharT, strf::csid_utf16, strf::csid_utf32 >::unsafe_transcode_size
+    ( const SrcCharT* src
+    , std::ptrdiff_t src_size )
+{
+    std::ptrdiff_t size = 0;
+    const auto *src_it = src;
+    const auto *const src_end = src + src_size;
+    while (src_it < src_end) {
+        const unsigned ch = detail::cast_u16(*src_it);
+        src_it += strf::detail::is_high_surrogate(ch) ? 2 : 1;
+        ++ size;
+    }
+    return size;
 }
 
 template <typename SrcCharT, typename DestCharT>
@@ -1666,6 +2041,19 @@ STRF_HD std::ptrdiff_t strf::static_transcoder
         }
     }
     return count;
+}
+
+template <typename SrcCharT, typename DestCharT>
+STRF_HD void strf::static_transcoder
+    < SrcCharT, DestCharT, strf::csid_utf16, strf::csid_utf16 >::unsafe_transcode
+    ( strf::transcode_dest<DestCharT>& dest
+    , const SrcCharT* src
+    , std::ptrdiff_t src_size
+    , strf::transcoding_error_notifier* err_notifier )
+{
+    (void) err_notifier;
+    detail::output_buffer_interchar_copy<DestCharT>
+        (dest, src, detail::safe_cast_size_t(src_size));
 }
 
 template <typename CharT>
@@ -1817,6 +2205,52 @@ STRF_HD std::ptrdiff_t strf::static_transcoder
     return count;
 }
 
+template <typename SrcCharT, typename DestCharT>
+STRF_HD void strf::static_transcoder
+    < SrcCharT, DestCharT, strf::csid_utf32, strf::csid_utf16 >::unsafe_transcode
+    ( strf::transcode_dest<DestCharT>& dest
+    , const SrcCharT* src
+    , std::ptrdiff_t src_size
+    , strf::transcoding_error_notifier* err_notifier )
+{
+    (void) err_notifier;
+    const auto *src_it = src;
+    const auto *const src_end = src + src_size;
+    auto *dest_it = dest.buffer_ptr();
+    auto *dest_end = dest.buffer_end();
+    for ( ; src_it < src_end; ++src_it) {
+        unsigned const ch = detail::cast_u32(*src_it);
+
+        const auto dest_size = dest_end - dest_it;
+        STRF_IF_UNLIKELY (dest_size < 2) {
+            const int required_size = ch < 0x10000 ? 1 : 2;
+            if (dest_size < required_size) {
+                STRF_RECYCLE;
+            }
+        }
+            
+        STRF_IF_LIKELY (ch < 0x10000) {
+            *dest_it = static_cast<DestCharT>(ch);
+            ++dest_it;
+        } else  {
+            const auto sub_codepoint = ch - 0x10000;
+            dest_it[0] = static_cast<DestCharT>(0xD800 | (sub_codepoint >> 10));
+            dest_it[1] = static_cast<DestCharT>(0xDC00 | (sub_codepoint &  0x3FF));
+            dest_it += 2;
+        }
+    }
+    dest.advance_to(dest_it);
+}
+
+template <typename SrcCharT, typename DestCharT>
+STRF_HD std::ptrdiff_t strf::static_transcoder
+    < SrcCharT, DestCharT, strf::csid_utf32, strf::csid_utf16 >::unsafe_transcode_size
+    ( const SrcCharT* src
+    , std::ptrdiff_t src_size )
+{
+    return transcode_size(src, src_size, strf::surrogate_policy::strict);
+}
+
 template <typename CharT>
 STRF_HD void
 static_charset<CharT, strf::csid_utf16>::write_replacement_char
@@ -1869,6 +2303,19 @@ STRF_HD void strf::static_transcoder
         }
     }
     dest.advance_to(dest_it);
+}
+
+template <typename SrcCharT, typename DestCharT>
+STRF_HD void strf::static_transcoder
+    < SrcCharT, DestCharT, strf::csid_utf32, strf::csid_utf32 >::unsafe_transcode
+    ( strf::transcode_dest<DestCharT>& dest
+    , const SrcCharT* src
+    , std::ptrdiff_t src_size
+    , strf::transcoding_error_notifier* err_notifier )
+{
+    (void) err_notifier;
+    detail::output_buffer_interchar_copy<DestCharT>
+        (dest, src, detail::safe_cast_size_t(src_size));
 }
 
 template <typename CharT>
@@ -2036,6 +2483,74 @@ STRF_HD std::ptrdiff_t strf::static_transcoder
 
 template <typename SrcCharT, typename DestCharT>
 STRF_HD void strf::static_transcoder
+    < SrcCharT, DestCharT, strf::csid_utf8, strf::csid_utf16 >::unsafe_transcode
+    ( strf::transcode_dest<DestCharT>& dest
+    , const SrcCharT* src
+    , std::ptrdiff_t src_size
+    , strf::transcoding_error_notifier* err_notifier )
+{
+    (void) err_notifier;
+    using strf::detail::utf8_decode;
+    unsigned ch0 = 0;
+    const auto *src_it = src;
+    const auto *const src_end = src + src_size;
+    auto *dest_it = dest.buffer_ptr();
+    auto *dest_end = dest.buffer_end();
+    for (;src_it < src_end; ++dest_it) {
+        ch0 = detail::cast_u8(*src_it);
+        ++src_it;
+        STRF_CHECK_DEST;
+        STRF_IF_LIKELY (ch0 < 0x80) {
+            *dest_it = static_cast<DestCharT>(ch0);
+        } else if (ch0 < 0xE0) {
+            const auto ch32 = strf::detail::utf8_decode(ch0, detail::cast_u8(src_it[0]));
+            *dest_it = static_cast<DestCharT>(ch32);
+            ++src_it;
+        } else if (ch0 < 0xF0) {
+            const auto ch32 = strf::detail::utf8_decode
+                (ch0, detail::cast_u8(src_it[0]), detail::cast_u8(src_it[1]));
+            *dest_it = static_cast<DestCharT>(ch32);
+            src_it += 2;
+        } else{
+            STRF_CHECK_DEST_SIZE(2);
+            const auto ch32 = strf::detail::utf8_decode
+                ( ch0
+                , detail::cast_u8(src_it[0])
+                , detail::cast_u8(src_it[1])
+                , detail::cast_u8(src_it[2]) );
+            const auto x = ch32 - 0x10000;
+            dest_it[0] = static_cast<DestCharT>(0xD800 +  (x >> 10));
+            dest_it[1] = static_cast<DestCharT>(0xDC00 +  (x & 0x3FF));
+            ++dest_it;
+            src_it += 3;
+        }
+    }
+    dest.advance_to(dest_it);
+}
+
+template <typename SrcCharT, typename DestCharT>
+STRF_HD std::ptrdiff_t strf::static_transcoder
+    < SrcCharT, DestCharT, strf::csid_utf8, strf::csid_utf16 >::unsafe_transcode_size
+    ( const SrcCharT* src
+    , std::ptrdiff_t src_size )
+{
+    std::ptrdiff_t size = 0;
+    const auto *src_it = src;
+    const auto *const src_end = src + src_size;
+    while(src_it < src_end) {
+        const unsigned ch0 = detail::cast_u8(*src_it);
+        const int x = ( ch0 < 0x80 ? 0x09
+                      : ch0 < 0xE0 ? 0x0A
+                      : ch0 < 0xF0 ? 0x0B
+                      :              0x14);
+        src_it += x &  7;
+        size   += x >> 3;
+    }
+    return size;
+}
+
+template <typename SrcCharT, typename DestCharT>
+STRF_HD void strf::static_transcoder
     < SrcCharT, DestCharT, strf::csid_utf16, strf::csid_utf8 >::transcode
     ( strf::transcode_dest<DestCharT>& dest
     , const SrcCharT* src
@@ -2123,6 +2638,79 @@ STRF_HD std::ptrdiff_t strf::static_transcoder
         } else {
             size += 3;
         }
+    }
+    return size;
+}
+
+template <typename SrcCharT, typename DestCharT>
+STRF_HD void strf::static_transcoder
+    < SrcCharT, DestCharT, strf::csid_utf16, strf::csid_utf8 >::unsafe_transcode
+    ( strf::transcode_dest<DestCharT>& dest
+    , const SrcCharT* src
+    , std::ptrdiff_t src_size
+    , strf::transcoding_error_notifier* err_notifier )
+{
+    (void) err_notifier;
+    const auto *src_it = src;
+    const auto *const src_end = src + src_size;
+    auto *dest_it = dest.buffer_ptr();
+    auto *dest_end = dest.buffer_end();
+
+    while (src_it < src_end) {
+        unsigned const ch = detail::cast_u16(*src_it);
+        const auto dest_space = dest_end - dest_it;
+        STRF_IF_UNLIKELY (dest_space < 4) {
+            const int required_space = ( ch < 0x80 ? 1
+                                       : ch < 0x800 ? 2
+                                       : strf::detail::not_high_surrogate(ch) ? 3 : 4);
+            if (required_space > dest_space) {
+                STRF_RECYCLE;
+            }
+        }
+        ++src_it;
+        STRF_IF_LIKELY (ch < 0x80) {
+            *dest_it = static_cast<DestCharT>(ch);
+            ++dest_it;
+        } else if (ch < 0x800) {
+            dest_it[0] = static_cast<DestCharT>(0xC0 | (0x1F & (ch >> 6)));
+            dest_it[1] = static_cast<DestCharT>(0x80 | (0xBF &  ch));
+            dest_it += 2;
+        } else if (strf::detail::not_high_surrogate(ch)) {
+            dest_it[0] = static_cast<DestCharT>(0xE0 | (0x0F & (ch >> 12)));
+            dest_it[1] = static_cast<DestCharT>(0x80 | (0xBF & (ch >> 6)));
+            dest_it[2] = static_cast<DestCharT>(0x80 | (0xBF &  ch ));
+            dest_it += 3;
+        } else {
+            const unsigned ch2 = detail::cast_u16(*src_it);
+            ++src_it;
+            const unsigned codepoint = 0x10000 + (((ch & 0x3FF) << 10) | (ch2 & 0x3FF));
+            dest_it[0] = static_cast<DestCharT>(0xF0 | (0x07 & (codepoint >> 18)));
+            dest_it[1] = static_cast<DestCharT>(0x80 | (0xBF & (codepoint >> 12)));
+            dest_it[2] = static_cast<DestCharT>(0x80 | (0xBF & (codepoint >> 6)));
+            dest_it[3] = static_cast<DestCharT>(0x80 | (0xBF &  codepoint));
+            dest_it += 4;
+        }
+    }
+    dest.advance_to(dest_it);
+}
+
+template <typename SrcCharT, typename DestCharT>
+STRF_HD std::ptrdiff_t strf::static_transcoder
+    < SrcCharT, DestCharT, strf::csid_utf16, strf::csid_utf8 >::unsafe_transcode_size
+    ( const SrcCharT* src
+    , std::ptrdiff_t src_size )
+{
+    const auto *const src_end = src + src_size;
+    std::ptrdiff_t size = 0;
+    for(const auto *it = src; it < src_end; ) {
+        unsigned const ch = detail::cast_u16(*it);
+        const bool surrogate = detail::is_high_surrogate(ch);
+        const int x = ( ch < 0x80   ? 0x9
+                      : ch < 0x800  ? 0xA
+                      : surrogate   ? 0x14
+                      :               0xB );
+        size += x & 7;
+        it   += x >> 3;
     }
     return size;
 }

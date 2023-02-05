@@ -875,7 +875,7 @@ template
     < typename FacetCategory
     , typename Tag
     , typename FPack >
-using facet_type_in_pack = strf::detail::remove_cv_t
+using facet_type_in_pack = strf::detail::remove_cvref_t
     < decltype(std::declval<FPack>(). template use_facet<FacetCategory, Tag>()) >;
 
 

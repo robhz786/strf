@@ -34,6 +34,8 @@ if (STRF_BUILD_TESTS)
   set(sources_freestanding
     cstr_destination.cpp
     dynamic_charset.cpp
+    do_transcode.cpp
+    do_unsafe_transcode.cpp
     encode_char.cpp
     encode_fill.cpp
     facets_pack.cpp
@@ -165,6 +167,8 @@ if (STRF_BUILD_TESTS)
   if (${STRF_CUDA_SUPPORT})
 
     # define_strf_cuda_test(dynamic_charset) # to-do
+    define_strf_cuda_test(do_transcode)
+    define_strf_cuda_test(do_unsafe_transcode)
     define_strf_cuda_test(cstr_destination)
     define_strf_cuda_test(encode_char)
     define_strf_cuda_test(encode_fill)
