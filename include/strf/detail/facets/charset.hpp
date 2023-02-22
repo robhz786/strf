@@ -186,17 +186,17 @@ constexpr std::ptrdiff_t transcode_dest_min_buffer_size = 8;
 
 template <typename SrcCharT, typename DestCharT>
 using transcode_f = void (*)
-    ( strf::transcode_dest<DestCharT>& dest
-    , const SrcCharT* src
+    ( const SrcCharT* src
     , std::ptrdiff_t src_size
+    , strf::transcode_dest<DestCharT>& dest
     , strf::transcoding_error_notifier* err_notifier
     , strf::surrogate_policy surr_poli );
 
 template <typename SrcCharT, typename DestCharT>
 using unsafe_transcode_f = void (*)
-    ( strf::transcode_dest<DestCharT>& dest
-    , const SrcCharT* src
+    ( const SrcCharT* src
     , std::ptrdiff_t src_size
+    , strf::transcode_dest<DestCharT>& dest
     , strf::transcoding_error_notifier* err_notifier );
 
 template <typename SrcCharT>
@@ -313,22 +313,22 @@ public:
     }
 
     STRF_HD void transcode
-        ( strf::transcode_dest<DestCharT>& dest
-        , const SrcCharT* src
+        ( const SrcCharT* src
         , std::ptrdiff_t src_size
+        , strf::transcode_dest<DestCharT>& dest
         , strf::transcoding_error_notifier* err_notifier
         , strf::surrogate_policy surr_poli ) const
     {
-        transcode_func_(dest, src, src_size, err_notifier, surr_poli);
+        transcode_func_(src, src_size, dest, err_notifier, surr_poli);
     }
 
     STRF_HD void unsafe_transcode
-        ( strf::transcode_dest<DestCharT>& dest
-        , const SrcCharT* src
+        ( const SrcCharT* src
         , std::ptrdiff_t src_size
+        , strf::transcode_dest<DestCharT>& dest
         , strf::transcoding_error_notifier* err_notifier ) const
     {
-        unsafe_transcode_func_(dest, src, src_size, err_notifier);
+        unsafe_transcode_func_(src, src_size, dest, err_notifier);
     }
 
     STRF_HD std::ptrdiff_t transcode_size
@@ -976,7 +976,7 @@ public:
     {
         auto *p = this->buffer_ptr();
         STRF_IF_LIKELY (p != buff_ && dest_.good()) {
-            transcode_( dest_, buff_, (p - buff_)
+            transcode_( buff_, (p - buff_), dest_
                       , err_notifier_, surr_poli_);
         }
         this->set_good(false);
@@ -1000,7 +1000,7 @@ STRF_HD void buffered_encoder<DestCharT>::recycle()
     this->set_buffer_ptr(buff_);
     STRF_IF_LIKELY (p != buff_ && dest_.good()) {
         this->set_good(false);
-        transcode_( dest_, buff_, (p - buff_)
+        transcode_( buff_, (p - buff_), dest_
                   , err_notifier_, surr_poli_);
         this->set_good(true);
     }
@@ -1080,21 +1080,6 @@ struct is_charset<strf::dynamic_charset<Ch>>: std::true_type
 
 template <typename SrcCharT, typename DstCharT>
 STRF_HD void decode_encode
-    ( strf::transcode_dest<DstCharT>& dst
-    , strf::transcode_f<SrcCharT, char32_t> to_u32
-    , strf::transcode_f<char32_t, DstCharT> from_u32
-    , const SrcCharT* src
-    , std::ptrdiff_t src_size
-    , strf::transcoding_error_notifier* err_notifier
-    , strf::surrogate_policy poli )
-{
-    strf::detail::buffered_encoder<DstCharT> tmp{from_u32, dst, err_notifier, poli};
-    to_u32(tmp, src, src_size, err_notifier, poli);
-    tmp.finish();
-}
-
-template <typename SrcCharT, typename DstCharT>
-STRF_HD void decode_encode
     ( strf::transcode_f<SrcCharT, char32_t> to_u32
     , strf::transcode_f<char32_t, DstCharT> from_u32
     , const SrcCharT* src
@@ -1104,7 +1089,7 @@ STRF_HD void decode_encode
     , strf::surrogate_policy poli = strf::surrogate_policy::strict )
 {
     strf::detail::buffered_encoder<DstCharT> tmp{from_u32, dst, err_notifier, poli};
-    to_u32(tmp, src, src_size, err_notifier, poli);
+    to_u32(src, src_size, tmp, err_notifier, poli);
     tmp.finish();
 }
 
@@ -1234,7 +1219,7 @@ STRF_HD std::ptrdiff_t decode_encode_size
     , strf::surrogate_policy poli = strf::surrogate_policy::strict )
 {
     strf::detail::buffered_size_calculator acc{size_calc_func, poli};
-    to_u32(acc, src, src_size, nullptr, poli);
+    to_u32(src, src_size, acc, nullptr, poli);
     return acc.get_sum();
 }
 
@@ -1365,7 +1350,7 @@ public:
     {
         auto *p = this->buffer_ptr();
         STRF_IF_LIKELY (p != buff_ && dest_.good()) {
-            transcode_( dest_, buff_, (p - buff_), err_notifier_);
+            transcode_(buff_, (p - buff_), dest_, err_notifier_);
         }
         this->set_good(false);
     }
@@ -1386,7 +1371,7 @@ STRF_HD void unsafe_buffered_encoder<DestCharT>::recycle()
     this->set_buffer_ptr(buff_);
     STRF_IF_LIKELY (p != buff_ && dest_.good()) {
         this->set_good(false);
-        transcode_(dest_, buff_, (p - buff_), err_notifier_);
+        transcode_(buff_, (p - buff_), dest_, err_notifier_);
         this->set_good(true);
     }
 }
@@ -1445,7 +1430,7 @@ STRF_HD void unsafe_decode_encode
     , strf::transcoding_error_notifier* err_notifier = nullptr )
 {
     strf::detail::unsafe_buffered_encoder<DstCharT> tmp{from_u32, dst, err_notifier};
-    to_u32(tmp, src, src_size, err_notifier);
+    to_u32(src, src_size, tmp, err_notifier);
     tmp.finish();
 }
 
@@ -1569,7 +1554,7 @@ STRF_HD std::ptrdiff_t unsafe_decode_encode_size
     , std::ptrdiff_t src_size)
 {
     strf::detail::unsafe_buffered_size_calculator acc{size_calc_func};
-    to_u32(acc, src, src_size, nullptr);
+    to_u32(src, src_size, acc, nullptr);
     return acc.get_sum();
 }
 
@@ -1689,7 +1674,7 @@ STRF_HD void do_transcode
     const auto transcoder = strf::find_transcoder(src_charset, dst_charset);
     const auto func = transcoder.transcode_func();
     if (func != nullptr) {
-        return func(dst, src, src_size, err_notifier, poli);
+        return func(src, src_size, dst, err_notifier, poli);
     }
     return strf::decode_encode
         ( src_charset, dst_charset
@@ -1870,7 +1855,7 @@ STRF_HD void do_unsafe_transcode
     const auto transcoder = strf::find_transcoder(src_charset, dst_charset);
     const auto func = transcoder.unsafe_transcode_func();
     if (func != nullptr) {
-        return func( dst, src, src_size, err_notifier);
+        return func(src, src_size, dst, err_notifier);
     }
     return strf::unsafe_decode_encode
         ( src_charset, dst_charset, src, src_size, dst, err_notifier );

@@ -619,7 +619,7 @@ public:
     {
         strf::detail::std_width_decrementer decr{limit};
         strf::transcoding_error_notifier* err_notifier = nullptr;
-        charset.to_u32().transcode(decr, str, str_len, err_notifier, surr_poli);
+        charset.to_u32().transcode(str, str_len, decr, err_notifier, surr_poli);
         return (limit - decr.get_remaining_width());
     }
 
@@ -633,7 +633,7 @@ public:
     {
         strf::detail::std_width_decrementer_with_pos decr{limit};
         strf::transcoding_error_notifier* err_notifier = nullptr;
-        charset.to_u32().transcode(decr, str, str_len, err_notifier, surr_poli);
+        charset.to_u32().transcode(str, str_len, decr, err_notifier, surr_poli);
         auto res = decr.get_remaining_width_and_codepoints_count();
 
         const strf::width_t width = limit - res.remaining_width;

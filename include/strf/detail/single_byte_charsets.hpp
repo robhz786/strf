@@ -2167,9 +2167,9 @@ template <typename SrcCharT, typename DestCharT, class Impl>
 struct single_byte_charset_to_utf32
 {
     static STRF_HD void transcode
-        ( strf::transcode_dest<DestCharT>& dest
-        , const SrcCharT* src
+        ( const SrcCharT* src
         , std::ptrdiff_t src_size
+        , strf::transcode_dest<DestCharT>& dest
         , strf::transcoding_error_notifier* err_notifier
         , strf::surrogate_policy surr_poli );
 
@@ -2182,9 +2182,9 @@ struct single_byte_charset_to_utf32
     }
 
     static STRF_HD void unsafe_transcode
-        ( strf::transcode_dest<DestCharT>& dest
-        , const SrcCharT* src
+        ( const SrcCharT* src
         , std::ptrdiff_t src_size
+        , strf::transcode_dest<DestCharT>& dest
         , strf::transcoding_error_notifier* err_notifier );
 
     static STRF_HD std::ptrdiff_t unsafe_transcode_size
@@ -2214,9 +2214,9 @@ struct single_byte_charset_to_utf32
 
 template <typename SrcCharT, typename DestCharT, class Impl>
 STRF_HD void single_byte_charset_to_utf32<SrcCharT, DestCharT, Impl>::transcode
-    ( strf::transcode_dest<DestCharT>& dest
-    , const SrcCharT* src
+    ( const SrcCharT* src
     , std::ptrdiff_t src_size
+    , strf::transcode_dest<DestCharT>& dest
     , strf::transcoding_error_notifier* err_notifier
     , strf::surrogate_policy surr_poli )
 {
@@ -2242,9 +2242,9 @@ STRF_HD void single_byte_charset_to_utf32<SrcCharT, DestCharT, Impl>::transcode
 
 template <typename SrcCharT, typename DestCharT, class Impl>
 STRF_HD void single_byte_charset_to_utf32<SrcCharT, DestCharT, Impl>::unsafe_transcode
-    ( strf::transcode_dest<DestCharT>& dest
-    , const SrcCharT* src
+    ( const SrcCharT* src
     , std::ptrdiff_t src_size
+    , strf::transcode_dest<DestCharT>& dest
     , strf::transcoding_error_notifier* )
 {
     auto *dest_it = dest.buffer_ptr();
@@ -2262,9 +2262,9 @@ template <typename SrcCharT, typename DestCharT, class Impl>
 struct utf32_to_single_byte_charset
 {
     static STRF_HD void transcode
-        ( strf::transcode_dest<DestCharT>& dest
-        , const SrcCharT* src
+        ( const SrcCharT* src
         , std::ptrdiff_t src_size
+        , strf::transcode_dest<DestCharT>& dest
         , strf::transcoding_error_notifier* err_notifier
         , strf::surrogate_policy surr_poli );
 
@@ -2277,9 +2277,9 @@ struct utf32_to_single_byte_charset
     }
 
     static STRF_HD void unsafe_transcode
-        ( strf::transcode_dest<DestCharT>& dest
-        , const SrcCharT* src
+        ( const SrcCharT* src
         , std::ptrdiff_t src_size
+        , strf::transcode_dest<DestCharT>& dest
         , strf::transcoding_error_notifier* err_notifier );
     
     static constexpr STRF_HD std::ptrdiff_t unsafe_transcode_size
@@ -2308,9 +2308,9 @@ struct utf32_to_single_byte_charset
 
 template <typename SrcCharT, typename DestCharT, class Impl>
 STRF_HD void utf32_to_single_byte_charset<SrcCharT, DestCharT, Impl>::transcode
-    ( strf::transcode_dest<DestCharT>& dest
-    , const SrcCharT* src
+    ( const SrcCharT* src
     , std::ptrdiff_t src_size
+    , strf::transcode_dest<DestCharT>& dest
     , strf::transcoding_error_notifier* err_notifier
     , strf::surrogate_policy surr_poli )
 {
@@ -2340,9 +2340,9 @@ STRF_HD void utf32_to_single_byte_charset<SrcCharT, DestCharT, Impl>::transcode
 
 template <typename SrcCharT, typename DestCharT, class Impl>
 STRF_HD void utf32_to_single_byte_charset<SrcCharT, DestCharT, Impl>::unsafe_transcode
-    ( strf::transcode_dest<DestCharT>& dest
-    , const SrcCharT* src
+    ( const SrcCharT* src
     , std::ptrdiff_t src_size
+    , strf::transcode_dest<DestCharT>& dest
     , strf::transcoding_error_notifier* err_notifier )
 {
     auto *dest_it = dest.buffer_ptr();
@@ -2368,9 +2368,9 @@ template <typename SrcCharT, typename DestCharT, class Impl>
 struct single_byte_charset_to_itself
 {
     static STRF_HD void transcode
-        ( strf::transcode_dest<DestCharT>& dest
-        , const SrcCharT* src
+        ( const SrcCharT* src
         , std::ptrdiff_t src_size
+        , strf::transcode_dest<DestCharT>& dest
         , strf::transcoding_error_notifier* err_notifier
         , strf::surrogate_policy surr_poli );
 
@@ -2383,9 +2383,9 @@ struct single_byte_charset_to_itself
     }
 
     static STRF_HD void unsafe_transcode
-        ( strf::transcode_dest<DestCharT>& dest
-        , const SrcCharT* src
+        ( const SrcCharT* src
         , std::ptrdiff_t src_size
+        , strf::transcode_dest<DestCharT>& dest
         , strf::transcoding_error_notifier* )
     {
         detail::output_buffer_interchar_copy<DestCharT>
@@ -2419,9 +2419,9 @@ struct single_byte_charset_to_itself
 
 template <typename SrcCharT, typename DestCharT, class Impl>
 STRF_HD void single_byte_charset_to_itself<SrcCharT, DestCharT, Impl>::transcode
-    ( strf::transcode_dest<DestCharT>& dest
-    , const SrcCharT* src
+    ( const SrcCharT* src
     , std::ptrdiff_t src_size
+    , strf::transcode_dest<DestCharT>& dest
     , strf::transcoding_error_notifier* err_notifier
     , strf::surrogate_policy surr_poli )
 {

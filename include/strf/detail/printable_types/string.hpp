@@ -1053,11 +1053,11 @@ STRF_HD void transcode_printer<SrcCharT, DestCharT>::print_to
     ( strf::destination<DestCharT>& dest ) const
 {
     if (can_transcode_directly()) {
-        transcode_(dest, str_, len_, err_notifier_, surr_poli_);
+        transcode_(str_, len_, dest, err_notifier_, surr_poli_);
     } else {
         strf::decode_encode<SrcCharT, DestCharT>
-            ( dest, src_to_u32_, u32_to_dest_, str_
-            , len_, err_notifier_, surr_poli_ );
+            ( src_to_u32_, u32_to_dest_, str_ , len_
+            , dest, err_notifier_, surr_poli_ );
     }
 }
 
@@ -1217,11 +1217,11 @@ void STRF_HD aligned_transcode_printer<SrcCharT, DestCharT>::print_to
         encode_fill_(dest, left_fillcount_, afmt_.fill);
     }
     if (can_transcode_directly()) {
-        transcode_(dest, str_, len_, err_notifier_, surr_poli_);
+        transcode_(str_, len_, dest, err_notifier_, surr_poli_);
     } else {
         strf::decode_encode<SrcCharT, DestCharT>
-            ( dest, src_to_u32_, u32_to_dest_, str_
-            , len_, err_notifier_, surr_poli_ );
+            ( src_to_u32_, u32_to_dest_, str_, len_
+            , dest, err_notifier_, surr_poli_ );
     }
     if (right_fillcount_ > 0) {
         encode_fill_(dest, right_fillcount_, afmt_.fill);
@@ -1337,7 +1337,7 @@ STRF_HD void unsafe_transcode_printer<SrcCharT, DestCharT>::print_to
     ( strf::destination<DestCharT>& dest ) const
 {
     if (can_transcode_directly()) {
-        transcode_(dest, str_, len_, err_notifier_);
+        transcode_(str_, len_, dest, err_notifier_);
     } else {
         strf::unsafe_decode_encode<SrcCharT, DestCharT>
             ( src_to_u32_, u32_to_dest_, str_, len_, dest, err_notifier_ );
@@ -1499,7 +1499,7 @@ void STRF_HD aligned_unsafe_transcode_printer<SrcCharT, DestCharT>::print_to
         encode_fill_(dest, left_fillcount_, afmt_.fill);
     }
     if (can_transcode_directly()) {
-        transcode_(dest, str_, len_, err_notifier_);
+        transcode_(str_, len_, dest, err_notifier_);
     } else {
         strf::unsafe_decode_encode<SrcCharT, DestCharT>
             ( src_to_u32_, u32_to_dest_, str_, len_, dest, err_notifier_ );
