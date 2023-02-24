@@ -124,7 +124,7 @@ STRF_HD void do_test_invalid_sequences
 
     DestCharT buff[200];
     strf::array_destination<DestCharT> result_dest{buff};
-    transcode_func(input.data(), input.ssize(), result_dest, &inv_seq_tester, policy);
+    transcode_func(input.data(), input.end(), result_dest, &inv_seq_tester, policy);
     if (result_dest.finish().truncated) {
         strf::to(notifier) ("In do_test_invalid_sequences, internal buffer is to small");
     }

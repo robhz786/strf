@@ -22,6 +22,11 @@ struct errors_counter: strf::transcoding_error_notifier {
     std::ptrdiff_t count = 0;
 };
 
+template <typename CharT>
+using str_view = strf::detail::simple_string_view<CharT>;
+
+using ustr_view = str_view<char16_t>;
+
 STRF_TEST_FUNC void test_unsafe_decode_encode()
 {
     // to-do
@@ -29,10 +34,11 @@ STRF_TEST_FUNC void test_unsafe_decode_encode()
     {   // Force calling unsafe_buffered_encoder<DestCharT>::recycle()
         char buff[200] = {};
         strf::cstr_destination dest(buff);
+        ustr_view input = u"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
         strf::unsafe_decode_encode
             <strf::utf_t, strf::utf_t>
-            (u"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ", 52, dest);
+            (input.begin(), input.end(), dest);
 
         auto res = dest.finish();
 
@@ -41,29 +47,31 @@ STRF_TEST_FUNC void test_unsafe_decode_encode()
         TEST_CSTR_EQ(buff, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");
     }
     {   // Force calling unsafe_buffered_size_calculator<DestCharT>::recycle()
+        ustr_view input = u"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
         auto size = strf::unsafe_decode_encode_size
             <strf::utf_t, strf::utf_t<char>>
-            (u"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ", 52);
+            (input.begin(), input.end());
 
         TEST_EQ(size, 52);
     }
     {   // When destination is too small
         char8_t buff[200] = {};
         strf::basic_cstr_destination<char8_t> dest(buff, 10);
+        ustr_view input = u"abcd\U00010000\U0010FFFF";
 
         strf::unsafe_decode_encode
             <strf::utf_t, strf::utf_t>
-            (u"abcd\U00010000\U0010FFFF", 8, dest);
+            (input.begin(), input.end(), dest);
         auto res = dest.finish();
         TEST_EQ(res.ptr - buff, 8);
         TEST_TRUE(res.truncated);
     }
-    
     {
+        ustr_view input = u"abc\uAAAAzzz\uBBBBxxx";
         auto size = strf::unsafe_decode_encode_size <strf::utf_t, strf::iso_8859_3_t<char>>
-            (u"abc\uAAAAzzz\uBBBBxxx", 11);
+            (input.begin(), input.end());
 
-        TEST_EQ(size, 11);
+        TEST_EQ(size, input.size());
     }
 
 #ifdef STRF_HAS_STD_STRING_VIEW

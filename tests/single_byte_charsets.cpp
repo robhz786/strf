@@ -70,49 +70,49 @@ STRF_HD void general_tests
 
     {
         auto x = charset.count_codepoints( str_0_to_xff.data()
-                                         , str_0_to_xff.ssize()
+                                         , str_0_to_xff.end()
                                          , str_0_to_xff.ssize()
                                          , strf::surrogate_policy::lax );
         TEST_EQ(x.count, str_0_to_xff.size());
-        TEST_EQ(x.pos, str_0_to_xff.size());
+        TEST_EQ(0, x.ptr - str_0_to_xff.end());
     }
     {
         auto x = charset.count_codepoints( str_0_to_xff.data()
-                                         , str_0_to_xff.ssize()
+                                         , str_0_to_xff.end()
                                          , str_0_to_xff.ssize()
                                          , strf::surrogate_policy::strict );
         TEST_EQ(x.count, str_0_to_xff.size());
-        TEST_EQ(x.pos, str_0_to_xff.size());
+        TEST_EQ(0, x.ptr - str_0_to_xff.end());
     }
     {
         auto x = charset.count_codepoints( str_0_to_xff.data()
-                                         , str_0_to_xff.ssize()
+                                         , str_0_to_xff.end()
                                          , str_0_to_xff.ssize() - 1
                                          , strf::surrogate_policy::lax );
         TEST_EQ(x.count, str_0_to_xff.size() - 1);
-        TEST_EQ(x.pos, str_0_to_xff.size() - 1);
+        TEST_EQ(0, x.ptr - (str_0_to_xff.end() - 1));
     }
     {
         auto x = charset.count_codepoints( str_0_to_xff.data()
-                                         , str_0_to_xff.ssize()
+                                         , str_0_to_xff.end()
                                          , str_0_to_xff.ssize() - 1
                                          , strf::surrogate_policy::strict );
         TEST_EQ(x.count, str_0_to_xff.size() - 1);
-        TEST_EQ(x.pos, str_0_to_xff.size() - 1);
+        TEST_EQ(0, x.ptr - (str_0_to_xff.end() - 1));
     }
     {
         auto x = charset.count_codepoints_fast( str_0_to_xff.data()
-                                              , str_0_to_xff.ssize()
+                                              , str_0_to_xff.end()
                                               , str_0_to_xff.ssize() );
         TEST_EQ(x.count, str_0_to_xff.size());
-        TEST_EQ(x.pos, str_0_to_xff.size());
+        TEST_EQ(0, x.ptr - str_0_to_xff.end());
     }
     {
         auto x = charset.count_codepoints_fast( str_0_to_xff.data()
-                                              , str_0_to_xff.ssize()
+                                              , str_0_to_xff.end()
                                               , str_0_to_xff.ssize() - 1 );
         TEST_EQ(x.count, str_0_to_xff.size() - 1);
-        TEST_EQ(x.pos, str_0_to_xff.size() - 1);
+        TEST_EQ(0, x.ptr - (str_0_to_xff.end() - 1));
     }
 
 

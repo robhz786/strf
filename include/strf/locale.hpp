@@ -107,7 +107,7 @@ STRF_FUNC_IMPL char32_t decode_first_char(strf::transcode_f<char, char32_t>& dec
 {
     char32_t buff32[2] = { 0xFFFD, 0 };
     strf::u32cstr_destination dest(buff32); // NOLINT(misc-const-correctness)
-    decode(str, detail::cast_ssize(strlen(str)), dest, nullptr, strf::surrogate_policy::strict);
+    decode(str, str + strlen(str), dest, nullptr, strf::surrogate_policy::strict);
     return buff32[0];
 }
 

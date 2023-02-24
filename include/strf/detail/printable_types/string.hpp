@@ -699,13 +699,13 @@ public:
     STRF_CONSTEXPR_IN_CXX14 STRF_HD explicit strcpy_printer
         ( const strf::detail::string_printer_input<SrcCharT, PrePrinting, FPack>& input )
         : str_(input.arg.data())
-        , len_(input.arg.ssize())
+        , str_end_(input.arg.end())
     {
         STRF_IF_CONSTEXPR(PrePrinting::width_required) {
             auto&& wcalc = use_facet_<strf::width_calculator_c>(input.facets);
             auto w = wcalc.str_width
                 ( use_facet_<strf::charset_c<SrcCharT>>(input.facets)
-                , input.pre.remaining_width(), str_, len_
+                , input.pre.remaining_width(), str_, str_end_
                 , use_facet_<strf::surrogate_policy_c>(input.facets) );
            input.pre.subtract_width(w);
         }
@@ -719,7 +719,7 @@ public:
             < SrcCharT, DestCharT, false, false, Charset, TranscPoli, PrePrinting, FPack >&
             input )
         : str_(input.arg.value().data())
-        , len_(input.arg.value().ssize())
+        , str_end_(input.arg.value().end())
     {
         STRF_IF_CONSTEXPR(PrePrinting::width_required) {
             auto&& wcalc = use_facet_<strf::width_calculator_c>(input.facets);
@@ -727,7 +727,7 @@ public:
                 ( use_facet_<strf::charset_c<SrcCharT>>(input.facets)
                 , input.pre.remaining_width()
                 , str_
-                , input.arg.value().ssize()
+                , str_end_
                 , use_facet_<strf::surrogate_policy_c>(input.facets) );
            input.pre.subtract_width(w);
         }
@@ -749,7 +749,7 @@ public:
             , str_
             , input.arg.value().size()
             , use_facet_<strf::surrogate_policy_c>(input.facets) );
-        len_ = res.pos;
+        str_end_ = res.ptr;
         input.pre.subtract_width(res.width);
         input.pre.add_size(res.pos);
     }
@@ -759,7 +759,7 @@ public:
 private:
 
     const SrcCharT* str_;
-    std::ptrdiff_t len_;
+    const SrcCharT* str_end_;
 
     template < typename Category
              , typename FPack
@@ -776,7 +776,7 @@ template<typename SrcCharT, typename DestCharT>
 STRF_HD void strcpy_printer<SrcCharT, DestCharT>::print_to
     ( strf::destination<DestCharT>& dest ) const
 {
-    strf::detail::output_buffer_interchar_copy(dest, str_, detail::safe_cast_size_t(len_));
+    strf::detail::output_buffer_interchar_copy(dest, str_, str_end_);
 }
 
 template <typename SrcCharT, typename DestCharT>
@@ -792,7 +792,7 @@ public:
             < SrcCharT, DestCharT, false, true, Charset, TranscPoli, PrePrinting, FPack >&
             input )
         : str_(input.arg.value().data())
-        , len_(input.arg.value().ssize())
+        , str_end_(input.arg.value().end())
         , afmt_(input.arg.get_alignment_format())
     {
 
@@ -804,7 +804,7 @@ public:
             ? input.pre.remaining_width()
             : afmt_.width );
         auto surr_poli = use_facet_<strf::surrogate_policy_c>(input.facets);
-        auto strw = wcalc.str_width(src_charset, limit, str_, len_, surr_poli);
+        auto strw = wcalc.str_width(src_charset, limit, str_, str_end_, surr_poli);
         encode_fill_ = dest_charset.encode_fill_func();
         auto fillcount = init_(input.pre, strw);
         precalc_size_(input.pre, dest_charset, fillcount);
@@ -824,8 +824,8 @@ public:
         auto dest_charset = use_facet_<strf::charset_c<DestCharT>>(input.facets);
         auto surr_poli = use_facet_<strf::surrogate_policy_c>(input.facets);
         auto res = wcalc.str_width_and_pos
-            ( src_charset, input.arg.precision(), str_, input.arg.value().ssize(), surr_poli );
-        len_ = res.pos;
+            ( src_charset, input.arg.precision(), str_, input.arg.value().end(), surr_poli );
+        str_end_ = res.ptr;
         encode_fill_ = dest_charset.encode_fill_func();
         auto fillcount = init_(input.pre, res.width);
         precalc_size_(input.pre, dest_charset, fillcount);
@@ -836,7 +836,7 @@ public:
 private:
 
     const SrcCharT* str_;
-    std::ptrdiff_t len_;
+    const SrcCharT* str_end_;
     strf::encode_fill_f<DestCharT> encode_fill_;
     strf::alignment_format afmt_;
     int left_fillcount_{};
@@ -859,7 +859,7 @@ private:
     STRF_HD void precalc_size_
         ( strf::size_accumulator<true>& pre, Charset charset, int fillcount )
     {
-        pre.add_size(len_);
+        pre.add_size(str_end_ - str_);
         if (fillcount > 0) {
             pre.add_size(fillcount * charset.encoded_char_size(afmt_.fill));
         }
@@ -910,7 +910,7 @@ void STRF_HD aligned_strcpy_printer<SrcCharT, DestCharT>::print_to
     if (left_fillcount_ > 0) {
         encode_fill_(dest, left_fillcount_, afmt_.fill);
     }
-    strf::detail::output_buffer_interchar_copy(dest, str_, detail::safe_cast_size_t(len_));
+    strf::detail::output_buffer_interchar_copy(dest, str_, str_end_);
     if (right_fillcount_ > 0) {
         encode_fill_(dest, right_fillcount_, afmt_.fill);
     }
@@ -954,7 +954,7 @@ public:
             < SrcCharT, DestCharT, false, false, Charset, TranscPoli, PrePrinting, FPack >&
             input )
         : str_(input.arg.value().data())
-        , len_(input.arg.value().ssize())
+        , str_end_(input.arg.value().end())
         , err_notifier_
               ( use_facet_<strf::transcoding_error_notifier_c, SrcCharT>(input.facets).get() )
         , surr_poli_(use_facet_<strf::surrogate_policy_c, SrcCharT>(input.facets))
@@ -964,7 +964,7 @@ public:
         if (input.pre.has_remaining_width()) {
             auto&& wcalc = use_facet_<strf::width_calculator_c, SrcCharT>(input.facets);
             auto w = wcalc.str_width( src_charset, input.pre.remaining_width()
-                                    , str_, len_, surr_poli_);
+                                    , str_, str_end_, surr_poli_);
             input.pre.subtract_width(w);
         }
         init_(input.pre, src_charset, dest_charset);
@@ -987,7 +987,7 @@ public:
         auto res = wcalc.str_width_and_pos
             ( src_charset, input.arg.precision(), str_
             , input.arg.value().size(), surr_poli_ );
-        len_ = res.pos;
+        str_end_ = res.ptr;
         input.pre.subtract_width(res.width);
         init_( input.pre, src_charset
              , use_facet_<strf::charset_c<DestCharT>, SrcCharT>(input.facets));
@@ -1012,12 +1012,12 @@ private:
                 = transcoder.transcode_size_func();
             std::ptrdiff_t s = 0;
             if (transcode_size != nullptr) {
-                s = transcode_size(str_, len_, surr_poli_);
+                s = transcode_size(str_, str_end_, surr_poli_);
             } else {
                 s = strf::decode_encode_size<SrcCharT>
                     ( src_charset.to_u32().transcode_func()
                     , dest_charset.from_u32().transcode_size_func()
-                    , str_, len_, surr_poli_ );
+                    , str_, str_end_, surr_poli_ );
             }
             pre.add_size(s);
         }
@@ -1029,7 +1029,7 @@ private:
     }
 
     const SrcCharT* const str_;
-    std::ptrdiff_t len_;
+    const SrcCharT* str_end_;
     union {
         strf::transcode_f<SrcCharT, DestCharT>  transcode_;
         strf::transcode_f<SrcCharT, char32_t>  src_to_u32_;
@@ -1053,10 +1053,10 @@ STRF_HD void transcode_printer<SrcCharT, DestCharT>::print_to
     ( strf::destination<DestCharT>& dest ) const
 {
     if (can_transcode_directly()) {
-        transcode_(str_, len_, dest, err_notifier_, surr_poli_);
+        transcode_(str_, str_end_, dest, err_notifier_, surr_poli_);
     } else {
         strf::decode_encode<SrcCharT, DestCharT>
-            ( src_to_u32_, u32_to_dest_, str_ , len_
+            ( src_to_u32_, u32_to_dest_, str_ , str_end_
             , dest, err_notifier_, surr_poli_ );
     }
 }
@@ -1073,7 +1073,7 @@ public:
             < SrcCharT, DestCharT, false, true, Charset, TranscPoli, PrePrinting, FPack >&
             input )
         : str_(input.arg.value().data())
-        , len_(input.arg.value().ssize())
+        , str_end_(input.arg.value().end())
         , afmt_(input.arg.get_alignment_format())
         , err_notifier_
             ( use_facet_<strf::transcoding_error_notifier_c, SrcCharT>(input.facets).get() )
@@ -1085,7 +1085,7 @@ public:
             ( PrePrinting::width_required && input.pre.remaining_width() > afmt_.width
             ? input.pre.remaining_width()
             : afmt_.width );
-        auto str_width = wcalc.str_width(src_charset, limit, str_, len_, surr_poli_);
+        auto str_width = wcalc.str_width(src_charset, limit, str_, str_end_, surr_poli_);
         init_( input.pre, str_width, src_charset
              , use_facet_<strf::charset_c<DestCharT>, SrcCharT>(input.facets) );
     }
@@ -1097,7 +1097,7 @@ public:
             < SrcCharT, DestCharT, true, true, Charset, TranscPoli, PrePrinting, FPack >&
             input )
         : str_(input.arg.value().data())
-        , len_(input.arg.value().ssize())
+        , str_end_(input.arg.value().end())
         , afmt_(input.arg.get_alignment_format())
         , err_notifier_
             ( use_facet_<strf::transcoding_error_notifier_c, SrcCharT>(input.facets).get() )
@@ -1108,7 +1108,7 @@ public:
         auto res = wcalc.str_width_and_pos
             ( src_charset, input.arg.precision(), str_
             , input.arg.value().size(), surr_poli_ );
-        len_ = res.pos;
+        str_end_ = res.ptr;
         init_( input.pre, res.width, src_charset
              , use_facet_<strf::charset_c<DestCharT>, SrcCharT>(input.facets) );
     }
@@ -1123,7 +1123,7 @@ private:
     }
 
     const SrcCharT* str_;
-    std::ptrdiff_t len_;
+    const SrcCharT* str_end_;
     strf::alignment_format afmt_;
     union {
         strf::transcode_f<SrcCharT, DestCharT>  transcode_;
@@ -1195,12 +1195,12 @@ void STRF_HD aligned_transcode_printer<SrcCharT, DestCharT>::init_
         strf::transcode_size_f<SrcCharT> transcode_size
                 = transcoder.transcode_size_func();
         if (transcode_size != nullptr) {
-            s = transcode_size(str_, len_, surr_poli_);
+            s = transcode_size(str_, str_end_, surr_poli_);
         } else {
             s = strf::decode_encode_size<SrcCharT>
                 ( src_charset.to_u32().transcode_func()
                 , dest_charset.from_u32().transcode_size_func()
-                , str_, len_, surr_poli_ );
+                , str_, str_end_, surr_poli_ );
         }
         if (fillcount > 0) {
             s += dest_charset.encoded_char_size(afmt_.fill) * fillcount;
@@ -1217,10 +1217,10 @@ void STRF_HD aligned_transcode_printer<SrcCharT, DestCharT>::print_to
         encode_fill_(dest, left_fillcount_, afmt_.fill);
     }
     if (can_transcode_directly()) {
-        transcode_(str_, len_, dest, err_notifier_, surr_poli_);
+        transcode_(str_, str_end_, dest, err_notifier_, surr_poli_);
     } else {
         strf::decode_encode<SrcCharT, DestCharT>
-            ( src_to_u32_, u32_to_dest_, str_, len_
+            ( src_to_u32_, u32_to_dest_, str_, str_end_
             , dest, err_notifier_, surr_poli_ );
     }
     if (right_fillcount_ > 0) {
@@ -1240,7 +1240,7 @@ public:
             < SrcCharT, DestCharT, false, false, Charset, TranscPoli, PrePrinting, FPack >&
             input )
         : str_(input.arg.value().data())
-        , len_(input.arg.value().ssize())
+        , str_end_(input.arg.value().end())
         , err_notifier_
               ( use_facet_<strf::transcoding_error_notifier_c, SrcCharT>(input.facets).get() )
     {
@@ -1249,7 +1249,7 @@ public:
         if (input.pre.has_remaining_width()) {
             auto&& wcalc = use_facet_<strf::width_calculator_c, SrcCharT>(input.facets);
             auto w = wcalc.str_width( src_charset, input.pre.remaining_width()
-                                    , str_, len_, surr_poli_);
+                                    , str_, str_end_, surr_poli_);
             input.pre.subtract_width(w);
         }
         init_(input.pre, src_charset, dest_charset);
@@ -1271,7 +1271,7 @@ public:
         auto res = wcalc.str_width_and_pos
             ( src_charset, input.arg.precision(), str_
             , input.arg.value().size(), surr_poli_ );
-        len_ = res.pos;
+        str_end_ = res.ptr;
         input.pre.subtract_width(res.width);
         init_( input.pre, src_charset
              , use_facet_<strf::charset_c<DestCharT>, SrcCharT>(input.facets));
@@ -1295,12 +1295,12 @@ private:
                 = transcoder.unsafe_transcode_size_func();
             std::ptrdiff_t s = 0;
             if (transcode_size != nullptr) {
-                s = transcode_size(str_, len_);
+                s = transcode_size(str_, str_end_);
             } else {
                 s = strf::unsafe_decode_encode_size<SrcCharT>
                     ( src_charset.to_u32().unsafe_transcode_func()
                     , dest_charset.from_u32().unsafe_transcode_size_func()
-                    , str_, len_ );
+                    , str_, str_end_ );
             }
             pre.add_size(s);
         }
@@ -1314,7 +1314,7 @@ private:
     static constexpr strf::surrogate_policy  surr_poli_ = strf::surrogate_policy::strict;
 
     const SrcCharT* const str_;
-    std::ptrdiff_t len_;
+    const SrcCharT* str_end_;
     union {
         strf::unsafe_transcode_f<SrcCharT, DestCharT>  transcode_;
         strf::unsafe_transcode_f<SrcCharT, char32_t>  src_to_u32_;
@@ -1337,10 +1337,10 @@ STRF_HD void unsafe_transcode_printer<SrcCharT, DestCharT>::print_to
     ( strf::destination<DestCharT>& dest ) const
 {
     if (can_transcode_directly()) {
-        transcode_(str_, len_, dest, err_notifier_);
+        transcode_(str_, str_end_, dest, err_notifier_);
     } else {
         strf::unsafe_decode_encode<SrcCharT, DestCharT>
-            ( src_to_u32_, u32_to_dest_, str_, len_, dest, err_notifier_ );
+            ( src_to_u32_, u32_to_dest_, str_, str_end_, dest, err_notifier_ );
     }
 }
 
@@ -1357,7 +1357,7 @@ public:
             < SrcCharT, DestCharT, false, true, Charset, TranscPoli, PrePrinting, FPack >&
             input )
         : str_(input.arg.value().data())
-        , len_(input.arg.value().ssize())
+        , str_end_(input.arg.value().end())
         , afmt_(input.arg.get_alignment_format())
         , err_notifier_
             ( use_facet_<strf::transcoding_error_notifier_c, SrcCharT>(input.facets).get() )
@@ -1368,7 +1368,7 @@ public:
             ( PrePrinting::width_required && input.pre.remaining_width() > afmt_.width
             ? input.pre.remaining_width()
             : afmt_.width );
-        auto str_width = wcalc.str_width(src_charset, limit, str_, len_, surr_poli_);
+        auto str_width = wcalc.str_width(src_charset, limit, str_, str_end_, surr_poli_);
         init_( input.pre, str_width, src_charset
              , use_facet_<strf::charset_c<DestCharT>, SrcCharT>(input.facets) );
     }
@@ -1380,7 +1380,7 @@ public:
             < SrcCharT, DestCharT, true, true, Charset, TranscPoli, PrePrinting, FPack >&
             input )
         : str_(input.arg.value().data())
-        , len_(input.arg.value().ssize())
+        , str_end_(input.arg.value().end())
         , afmt_(input.arg.get_alignment_format())
         , err_notifier_
             ( use_facet_<strf::transcoding_error_notifier_c, SrcCharT>(input.facets).get() )
@@ -1390,7 +1390,7 @@ public:
         auto res = wcalc.str_width_and_pos
             ( src_charset, input.arg.precision(), str_
             , input.arg.value().size(), surr_poli_ );
-        len_ = res.pos;
+        str_end_ = res.ptr;
         init_( input.pre, res.width, src_charset
              , use_facet_<strf::charset_c<DestCharT>, SrcCharT>(input.facets) );
     }
@@ -1405,7 +1405,7 @@ private:
     }
 
     const SrcCharT* str_;
-    std::ptrdiff_t len_;
+    const SrcCharT* str_end_;
     strf::alignment_format afmt_;
     union {
         strf::unsafe_transcode_f<SrcCharT, DestCharT>  transcode_;
@@ -1477,12 +1477,12 @@ void STRF_HD aligned_unsafe_transcode_printer<SrcCharT, DestCharT>::init_
         strf::unsafe_transcode_size_f<SrcCharT> transcode_size
                 = transcoder.unsafe_transcode_size_func();
         if (transcode_size != nullptr) {
-            s = transcode_size(str_, len_);
+            s = transcode_size(str_, str_end_);
         } else {
             s = strf::unsafe_decode_encode_size<SrcCharT>
                 ( src_charset.to_u32().unsafe_transcode_func()
                 , dest_charset.from_u32().unsafe_transcode_size_func()
-                , str_, len_ );
+                , str_, str_end_ );
         }
         if (fillcount > 0) {
             s += dest_charset.encoded_char_size(afmt_.fill) * fillcount;
@@ -1499,10 +1499,10 @@ void STRF_HD aligned_unsafe_transcode_printer<SrcCharT, DestCharT>::print_to
         encode_fill_(dest, left_fillcount_, afmt_.fill);
     }
     if (can_transcode_directly()) {
-        transcode_(str_, len_, dest, err_notifier_);
+        transcode_(str_, str_end_, dest, err_notifier_);
     } else {
         strf::unsafe_decode_encode<SrcCharT, DestCharT>
-            ( src_to_u32_, u32_to_dest_, str_, len_, dest, err_notifier_ );
+            ( src_to_u32_, u32_to_dest_, str_, str_end_, dest, err_notifier_ );
     }
     if (right_fillcount_ > 0) {
         encode_fill_(dest, right_fillcount_, afmt_.fill);

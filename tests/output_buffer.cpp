@@ -17,7 +17,7 @@ STRF_TEST_FUNC void test_output_buffer_functions()
             test_utils::recycle_call_tester<char> dest
                 { {"abcdefghij", BOOST_CURRENT_FUNCTION, __FILE__, __LINE__, 5} };
 
-            strf::detail::output_buffer_interchar_copy(dest, sample, sizeof(sample));
+            strf::detail::output_buffer_interchar_copy(dest, sample, sample + sizeof(sample));
 
             dest.finish();
         }
@@ -25,7 +25,7 @@ STRF_TEST_FUNC void test_output_buffer_functions()
             test_utils::failed_recycle_call_tester<char> dest
                 { {"abcdefghij", BOOST_CURRENT_FUNCTION, __FILE__, __LINE__, 10} };
 
-            strf::detail::output_buffer_interchar_copy(dest, sample, sizeof(sample));
+            strf::detail::output_buffer_interchar_copy(dest, sample, sample + sizeof(sample));
 
             dest.finish();
         }
@@ -33,7 +33,7 @@ STRF_TEST_FUNC void test_output_buffer_functions()
             test_utils::failed_recycle_call_tester<char> dest
                 { {"abcdefghi", BOOST_CURRENT_FUNCTION, __FILE__, __LINE__, 9} };
 
-            strf::detail::output_buffer_interchar_copy(dest, sample, sizeof(sample));
+            strf::detail::output_buffer_interchar_copy(dest, sample, sample + sizeof(sample));
 
             dest.finish();
         }
@@ -42,7 +42,7 @@ STRF_TEST_FUNC void test_output_buffer_functions()
             test_utils::recycle_call_tester<char16_t> dest
                 { {u"abcdefghij", BOOST_CURRENT_FUNCTION, __FILE__, __LINE__, 5} };
 
-            strf::detail::output_buffer_interchar_copy(dest, sample, sizeof(sample));
+            strf::detail::output_buffer_interchar_copy(dest, sample, sample + sizeof(sample));
 
             dest.finish();
         }
@@ -50,7 +50,7 @@ STRF_TEST_FUNC void test_output_buffer_functions()
             test_utils::failed_recycle_call_tester<char16_t> dest
                 { {u"abcdefghij", BOOST_CURRENT_FUNCTION, __FILE__, __LINE__, 10} };
 
-            strf::detail::output_buffer_interchar_copy(dest, sample, sizeof(sample));
+            strf::detail::output_buffer_interchar_copy(dest, sample, sample + sizeof(sample));
 
             dest.finish();
         }
@@ -58,7 +58,7 @@ STRF_TEST_FUNC void test_output_buffer_functions()
             test_utils::failed_recycle_call_tester<char16_t> dest
                 { {u"abcdefghi", BOOST_CURRENT_FUNCTION, __FILE__, __LINE__, 9} };
 
-            strf::detail::output_buffer_interchar_copy(dest, sample, sizeof(sample));
+            strf::detail::output_buffer_interchar_copy(dest, sample, sample + sizeof(sample));
 
             dest.finish();
         }

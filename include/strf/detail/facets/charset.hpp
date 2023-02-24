@@ -187,7 +187,7 @@ constexpr std::ptrdiff_t transcode_dest_min_buffer_size = 8;
 template <typename SrcCharT, typename DestCharT>
 using transcode_f = void (*)
     ( const SrcCharT* src
-    , std::ptrdiff_t src_size
+    , const SrcCharT* src_end
     , strf::transcode_dest<DestCharT>& dest
     , strf::transcoding_error_notifier* err_notifier
     , strf::surrogate_policy surr_poli );
@@ -195,20 +195,20 @@ using transcode_f = void (*)
 template <typename SrcCharT, typename DestCharT>
 using unsafe_transcode_f = void (*)
     ( const SrcCharT* src
-    , std::ptrdiff_t src_size
+    , const SrcCharT* src_end
     , strf::transcode_dest<DestCharT>& dest
     , strf::transcoding_error_notifier* err_notifier );
 
 template <typename SrcCharT>
 using transcode_size_f = std::ptrdiff_t (*)
     ( const SrcCharT* src
-    , std::ptrdiff_t src_size
+    , const SrcCharT* src_end
     , strf::surrogate_policy surr_poli );
 
 template <typename SrcCharT>
 using unsafe_transcode_size_f = std::ptrdiff_t (*)
     ( const SrcCharT* src
-    , std::ptrdiff_t src_size );
+    , const SrcCharT* src_end );
 
 template <typename CharT>
 using write_replacement_char_f = void (*)
@@ -247,28 +247,24 @@ void trivial_fill_f
 
 } // namespace detail
 
+template <typename CharT>
 struct count_codepoints_result {
     std::ptrdiff_t count;
-    std::ptrdiff_t pos;
+    const CharT* ptr;
 };
 
 template <typename CharT>
-using count_codepoints_fast_f = strf::count_codepoints_result (*)
+using count_codepoints_fast_f = strf::count_codepoints_result<CharT> (*)
     ( const CharT* src
-    , std::ptrdiff_t src_size
+    , const CharT* src_end
     , std::ptrdiff_t max_count );
 
 template <typename CharT>
-using count_codepoints_f = strf::count_codepoints_result (*)
+using count_codepoints_f = strf::count_codepoints_result<CharT> (*)
     ( const CharT* src
-    , std::ptrdiff_t src_size
+    , const CharT* src_end
     , std::ptrdiff_t max_count
     , strf::surrogate_policy surr_poli );
-
-
-using codepoints_count_result
-    STRF_DEPRECATED_MSG("codepoints_count_result was renamed to count_codepoints_result")
-     = count_codepoints_result;
 
 template <typename CharT>
 using codepoints_fast_count_f
@@ -314,36 +310,36 @@ public:
 
     STRF_HD void transcode
         ( const SrcCharT* src
-        , std::ptrdiff_t src_size
+        , const SrcCharT* src_end
         , strf::transcode_dest<DestCharT>& dest
         , strf::transcoding_error_notifier* err_notifier
         , strf::surrogate_policy surr_poli ) const
     {
-        transcode_func_(src, src_size, dest, err_notifier, surr_poli);
+        transcode_func_(src, src_end, dest, err_notifier, surr_poli);
     }
 
     STRF_HD void unsafe_transcode
         ( const SrcCharT* src
-        , std::ptrdiff_t src_size
+        , const SrcCharT* src_end
         , strf::transcode_dest<DestCharT>& dest
         , strf::transcoding_error_notifier* err_notifier ) const
     {
-        unsafe_transcode_func_(src, src_size, dest, err_notifier);
+        unsafe_transcode_func_(src, src_end, dest, err_notifier);
     }
 
     STRF_HD std::ptrdiff_t transcode_size
         ( const SrcCharT* src
-        , std::ptrdiff_t src_size
+        , const SrcCharT* src_end
         , strf::surrogate_policy surr_poli ) const
     {
-        return transcode_size_func_(src, src_size, surr_poli);
+        return transcode_size_func_(src, src_end, surr_poli);
     }
 
     STRF_HD std::ptrdiff_t unsafe_transcode_size
         ( const SrcCharT* src
-        , std::ptrdiff_t src_size ) const
+        , const SrcCharT* src_end ) const
     {
-        return unsafe_transcode_size_func_(src, src_size);
+        return unsafe_transcode_size_func_(src, src_end);
     }
 
     constexpr STRF_HD strf::transcode_f<SrcCharT, DestCharT>
@@ -547,16 +543,16 @@ public:
     {
         data_->encode_fill_func(dest, count, ch);
     }
-    STRF_HD strf::count_codepoints_result count_codepoints_fast
-        ( const code_unit* src, std::ptrdiff_t src_size, std::ptrdiff_t max_count ) const
+    STRF_HD strf::count_codepoints_result<code_unit> count_codepoints_fast
+        ( const code_unit* src, const code_unit* src_end, std::ptrdiff_t max_count ) const
     {
-        return data_->count_codepoints_fast_func(src, src_size, max_count);
+        return data_->count_codepoints_fast_func(src, src_end, max_count);
     }
-    STRF_HD strf::count_codepoints_result count_codepoints
-        ( const code_unit* src, std::ptrdiff_t src_size
+    STRF_HD strf::count_codepoints_result<code_unit> count_codepoints
+        ( const code_unit* src, const code_unit* src_end
         , std::ptrdiff_t max_count, strf::surrogate_policy surr_poli ) const
     {
-        return data_->count_codepoints_func(src, src_size, max_count, surr_poli);
+        return data_->count_codepoints_func(src, src_end, max_count, surr_poli);
     }
     STRF_HD void write_replacement_char(strf::transcode_dest<CharT>& dest) const
     {
@@ -976,8 +972,7 @@ public:
     {
         auto *p = this->buffer_ptr();
         STRF_IF_LIKELY (p != buff_ && dest_.good()) {
-            transcode_( buff_, (p - buff_), dest_
-                      , err_notifier_, surr_poli_);
+            transcode_( buff_, p, dest_, err_notifier_, surr_poli_);
         }
         this->set_good(false);
     }
@@ -1000,8 +995,7 @@ STRF_HD void buffered_encoder<DestCharT>::recycle()
     this->set_buffer_ptr(buff_);
     STRF_IF_LIKELY (p != buff_ && dest_.good()) {
         this->set_good(false);
-        transcode_( buff_, (p - buff_), dest_
-                  , err_notifier_, surr_poli_);
+        transcode_( buff_, p, dest_, err_notifier_, surr_poli_);
         this->set_good(true);
     }
 }
@@ -1044,7 +1038,7 @@ STRF_FUNC_IMPL STRF_HD void buffered_size_calculator::recycle()
     auto *p = this->buffer_ptr();
     STRF_IF_LIKELY (p != buff_) {
         this->set_buffer_ptr(buff_);
-        sum_ += size_func_(buff_, (p - buff_), surr_poli_);
+        sum_ += size_func_(buff_, p, surr_poli_);
     }
 }
 
@@ -1083,13 +1077,13 @@ STRF_HD void decode_encode
     ( strf::transcode_f<SrcCharT, char32_t> to_u32
     , strf::transcode_f<char32_t, DstCharT> from_u32
     , const SrcCharT* src
-    , std::ptrdiff_t src_size
+    , const SrcCharT* src_end
     , strf::transcode_dest<DstCharT>& dst
     , strf::transcoding_error_notifier* err_notifier = nullptr
     , strf::surrogate_policy poli = strf::surrogate_policy::strict )
 {
     strf::detail::buffered_encoder<DstCharT> tmp{from_u32, dst, err_notifier, poli};
-    to_u32(src, src_size, tmp, err_notifier, poli);
+    to_u32(src, src_end, tmp, err_notifier, poli);
     tmp.finish();
 }
 
@@ -1106,7 +1100,7 @@ STRF_HD void decode_encode
     , strf::surrogate_policy poli = strf::surrogate_policy::strict )
 {
     return strf::decode_encode
-        ( to_u32, from_u32, src.data(), static_cast<std::ptrdiff_t>(src.size()), dst, err_notifier, poli );
+        ( to_u32, from_u32, src.data(), src.data() + src.size(), dst, err_notifier, poli );
 }
 
 #endif // STRF_HAS_STD_STRING_DECLARATIO
@@ -1119,7 +1113,7 @@ inline STRF_HD void decode_encode
     ( SrcCharset src_charset
     , DstCharset dst_charset
     , const SrcCharT* src
-    , std::ptrdiff_t src_size
+    , const SrcCharT* src_end
     , strf::transcode_dest<DstCharT>& dst
     , strf::transcoding_error_notifier* err_notifier = nullptr
     , strf::surrogate_policy poli = strf::surrogate_policy::strict )
@@ -1130,7 +1124,7 @@ inline STRF_HD void decode_encode
     return strf::decode_encode
         ( src_charset.to_u32().transcode_func()
         , dst_charset.from_u32().transcode_func()
-        , src, src_size, dst, err_notifier, poli );
+        , src, src_end, dst, err_notifier, poli );
 }
 
 #ifdef STRF_HAS_STD_STRING_VIEW
@@ -1161,7 +1155,7 @@ template < template <class> class SrcCharsetTmpl
          , typename DstCharT >
 inline STRF_HD void decode_encode
     ( const SrcCharT* src
-    , std::ptrdiff_t src_size
+    , const SrcCharT* src_end
     , strf::transcode_dest<DstCharT>& dst
     , strf::transcoding_error_notifier* err_notifier = nullptr
     , strf::surrogate_policy poli = strf::surrogate_policy::strict )
@@ -1178,7 +1172,7 @@ inline STRF_HD void decode_encode
     constexpr dst_charset_t dst_charset;
 
     return strf::decode_encode
-        ( src_charset, dst_charset, src, src_size, dst, err_notifier, poli );
+        ( src_charset, dst_charset, src, src_end, dst, err_notifier, poli );
 }
 
 #ifdef STRF_HAS_STD_STRING_VIEW
@@ -1215,11 +1209,11 @@ STRF_HD std::ptrdiff_t decode_encode_size
     ( strf::transcode_f<SrcCharT, char32_t> to_u32
     , strf::transcode_size_f<char32_t> size_calc_func
     , const SrcCharT* src
-    , std::ptrdiff_t src_size
+    , const SrcCharT* src_end
     , strf::surrogate_policy poli = strf::surrogate_policy::strict )
 {
     strf::detail::buffered_size_calculator acc{size_calc_func, poli};
-    to_u32(src, src_size, acc, nullptr, poli);
+    to_u32(src, src_end, acc, nullptr, poli);
     return acc.get_sum();
 }
 
@@ -1233,7 +1227,7 @@ inline STRF_HD std::ptrdiff_t decode_encode_size
     , strf::surrogate_policy poli = strf::surrogate_policy::strict )
 {
     return strf::decode_encode_size
-        ( to_u32, size_calc_func, src.data(), static_cast<std::ptrdiff_t>(src.size()), poli );
+        ( to_u32, size_calc_func, src.data(), src.data() + src.size(), poli );
 }
 
 #endif // STRF_HAS_STD_STRING_VIEW
@@ -1247,7 +1241,7 @@ inline STRF_HD std::ptrdiff_t decode_encode_size
     ( SrcCharset src_charset
     , DstCharset dst_charset
     , const SrcCharT* src
-    , std::ptrdiff_t src_size
+    , const SrcCharT* src_end
     , strf::surrogate_policy poli = strf::surrogate_policy::strict )
 {
     static_assert(std::is_same<typename SrcCharset::code_unit, SrcCharT>::value, "");
@@ -1255,7 +1249,7 @@ inline STRF_HD std::ptrdiff_t decode_encode_size
     return strf::decode_encode_size
         ( src_charset.to_u32().transcode_func()
         , dst_charset.from_u32().transcode_size_func()
-        , src, src_size, poli );
+        , src, src_end, poli );
 }
 
 template < template <class> class SrcCharsetTmpl
@@ -1265,7 +1259,7 @@ template < template <class> class SrcCharsetTmpl
          , detail::enable_if_t<detail::is_static_charset<DstCharset>::value, int> = 0 >
 inline STRF_HD std::ptrdiff_t decode_encode_size
     ( const SrcCharT* src
-    , std::ptrdiff_t src_size
+    , const SrcCharT* src_end
     , strf::surrogate_policy poli = strf::surrogate_policy::strict )
 {
     using src_charset_t = SrcCharsetTmpl<SrcCharT>;
@@ -1278,7 +1272,7 @@ inline STRF_HD std::ptrdiff_t decode_encode_size
     constexpr dst_charset_t dst_charset;
 
     return strf::decode_encode_size
-        ( src_charset, dst_charset, src, src_size, poli );
+        ( src_charset, dst_charset, src, src_end, poli );
 }
 
 #ifdef STRF_HAS_STD_STRING_VIEW
@@ -1350,7 +1344,7 @@ public:
     {
         auto *p = this->buffer_ptr();
         STRF_IF_LIKELY (p != buff_ && dest_.good()) {
-            transcode_(buff_, (p - buff_), dest_, err_notifier_);
+            transcode_(buff_, p, dest_, err_notifier_);
         }
         this->set_good(false);
     }
@@ -1371,7 +1365,7 @@ STRF_HD void unsafe_buffered_encoder<DestCharT>::recycle()
     this->set_buffer_ptr(buff_);
     STRF_IF_LIKELY (p != buff_ && dest_.good()) {
         this->set_good(false);
-        transcode_(buff_, (p - buff_), dest_, err_notifier_);
+        transcode_(buff_, p, dest_, err_notifier_);
         this->set_good(true);
     }
 }
@@ -1412,7 +1406,7 @@ STRF_FUNC_IMPL STRF_HD void unsafe_buffered_size_calculator::recycle()
     auto *p = this->buffer_ptr();
     STRF_IF_LIKELY (p != buff_) {
         this->set_buffer_ptr(buff_);
-        sum_ += size_func_(buff_, (p - buff_));
+        sum_ += size_func_(buff_, p);
     }
 }
 
@@ -1425,12 +1419,12 @@ STRF_HD void unsafe_decode_encode
     ( strf::unsafe_transcode_f<SrcCharT, char32_t> to_u32
     , strf::unsafe_transcode_f<char32_t, DstCharT> from_u32
     , const SrcCharT* src
-    , std::ptrdiff_t src_size
+    , const SrcCharT* src_end
     , strf::transcode_dest<DstCharT>& dst
     , strf::transcoding_error_notifier* err_notifier = nullptr )
 {
     strf::detail::unsafe_buffered_encoder<DstCharT> tmp{from_u32, dst, err_notifier};
-    to_u32(src, src_size, tmp, err_notifier);
+    to_u32(src, src_end, tmp, err_notifier);
     tmp.finish();
 }
 
@@ -1445,7 +1439,7 @@ inline STRF_HD void unsafe_decode_encode
     , strf::transcoding_error_notifier* err_notifier = nullptr)
 {
     return strf::unsafe_decode_encode
-        ( to_u32, from_u32, src.data(), static_cast<std::ptrdiff_t>(src.size()), dst, err_notifier );
+        ( to_u32, from_u32, src.data(), src.data() + src.size(), dst, err_notifier );
 }
 
 #endif // STRF_HAS_STD_STRING_VIEW
@@ -1459,7 +1453,7 @@ inline STRF_HD void unsafe_decode_encode
     ( SrcCharset src_charset
     , DstCharset dst_charset
     , const SrcCharT* src
-    , std::ptrdiff_t src_size
+    , const SrcCharT* src_end
     , strf::transcode_dest<DstCharT>& dst
     , strf::transcoding_error_notifier* err_notifier = nullptr)
 {
@@ -1469,7 +1463,7 @@ inline STRF_HD void unsafe_decode_encode
     return strf::unsafe_decode_encode
         ( src_charset.to_u32().unsafe_transcode_func()
         , dst_charset.from_u32().unsafe_transcode_func()
-        , src, src_size, dst, err_notifier );
+        , src, src_end, dst, err_notifier );
 }
 
 #ifdef STRF_HAS_STD_STRING_VIEW
@@ -1499,7 +1493,7 @@ template < template <class> class SrcCharsetTmpl
          , typename DstCharT >
 inline STRF_HD void unsafe_decode_encode
     ( const SrcCharT* src
-    , std::ptrdiff_t src_size
+    , const SrcCharT* src_end
     , strf::transcode_dest<DstCharT>& dst
     , strf::transcoding_error_notifier* err_notifier = nullptr)
 {
@@ -1515,7 +1509,7 @@ inline STRF_HD void unsafe_decode_encode
     constexpr dst_charset_t dst_charset;
 
     return strf::unsafe_decode_encode
-        ( src_charset, dst_charset, src, src_size, dst, err_notifier );
+        ( src_charset, dst_charset, src, src_end, dst, err_notifier );
 }
 
 #ifdef STRF_HAS_STD_STRING_VIEW
@@ -1551,10 +1545,10 @@ STRF_HD std::ptrdiff_t unsafe_decode_encode_size
     ( strf::unsafe_transcode_f<SrcCharT, char32_t> to_u32
     , strf::unsafe_transcode_size_f<char32_t> size_calc_func
     , const SrcCharT* src
-    , std::ptrdiff_t src_size)
+    , const SrcCharT* src_end)
 {
     strf::detail::unsafe_buffered_size_calculator acc{size_calc_func};
-    to_u32(src, src_size, acc, nullptr);
+    to_u32(src, src_end, acc, nullptr);
     return acc.get_sum();
 }
 
@@ -1567,7 +1561,7 @@ inline STRF_HD std::ptrdiff_t unsafe_decode_encode_size
     , std::basic_string_view<SrcCharT> src)
 {
     return strf::unsafe_decode_encode_size
-        (to_u32, size_calc_func, src.data(), static_cast<std::ptrdiff_t>(src.size()));
+        (to_u32, size_calc_func, src.data(), src.data() + src.size());
 }
 
 #endif // STRF_HAS_STD_STRING_VIEW
@@ -1581,14 +1575,14 @@ inline STRF_HD std::ptrdiff_t unsafe_decode_encode_size
     ( SrcCharset src_charset
     , DstCharset dst_charset
     , const SrcCharT* src
-    , std::ptrdiff_t src_size )
+    , const SrcCharT* src_end )
 {
     static_assert(std::is_same<typename SrcCharset::code_unit, SrcCharT>::value, "");
 
     return strf::unsafe_decode_encode_size
         ( src_charset.to_u32().unsafe_transcode_func()
         , dst_charset.from_u32().unsafe_transcode_size_func()
-        , src, src_size );
+        , src, src_end );
 }
 
 template < template <class> class SrcCharsetTmpl
@@ -1598,7 +1592,7 @@ template < template <class> class SrcCharsetTmpl
          , detail::enable_if_t<detail::is_static_charset<DstCharset>::value, int> = 0 >
 inline STRF_HD std::ptrdiff_t unsafe_decode_encode_size
     ( const SrcCharT* src
-    , std::ptrdiff_t src_size )
+    , const SrcCharT* src_end )
 {
     using src_charset_t = SrcCharsetTmpl<SrcCharT>;
     using dst_charset_t = DstCharset;
@@ -1610,7 +1604,7 @@ inline STRF_HD std::ptrdiff_t unsafe_decode_encode_size
     constexpr dst_charset_t dst_charset;
 
     return strf::unsafe_decode_encode_size
-        ( src_charset, dst_charset, src, src_size );
+        ( src_charset, dst_charset, src, src_end );
 }
 
 #ifdef STRF_HAS_STD_STRING_VIEW
@@ -1663,7 +1657,7 @@ STRF_HD void do_transcode
     ( SrcCharset src_charset
     , DstCharset dst_charset
     , const SrcCharT* src
-    , std::ptrdiff_t src_size
+    , const SrcCharT* src_end
     , strf::transcode_dest<DstCharT>& dst
     , strf::transcoding_error_notifier* err_notifier = nullptr
     , strf::surrogate_policy poli = strf::surrogate_policy::strict )
@@ -1674,11 +1668,11 @@ STRF_HD void do_transcode
     const auto transcoder = strf::find_transcoder(src_charset, dst_charset);
     const auto func = transcoder.transcode_func();
     if (func != nullptr) {
-        return func(src, src_size, dst, err_notifier, poli);
+        return func(src, src_end, dst, err_notifier, poli);
     }
     return strf::decode_encode
         ( src_charset, dst_charset
-        , src, src_size, dst, err_notifier, poli );
+        , src, src_end, dst, err_notifier, poli );
 }
 
 template < template <class> class SrcCharsetTmpl
@@ -1687,7 +1681,7 @@ template < template <class> class SrcCharsetTmpl
          , typename DstCharT >
 STRF_HD void do_transcode
     ( const SrcCharT* src
-    , std::ptrdiff_t src_size
+    , const SrcCharT* src_end
     , strf::transcode_dest<DstCharT>& dst
     , strf::transcoding_error_notifier* err_notifier = nullptr
     , strf::surrogate_policy poli = strf::surrogate_policy::strict )
@@ -1704,7 +1698,7 @@ STRF_HD void do_transcode
     constexpr dst_charset_t dst_charset;
 
     return strf::do_transcode
-        (src_charset, dst_charset, src, src_size, dst, err_notifier, poli);
+        (src_charset, dst_charset, src, src_end, dst, err_notifier, poli);
 }
 
 #ifdef STRF_HAS_STD_STRING_VIEW
@@ -1722,7 +1716,7 @@ inline STRF_HD void do_transcode
     , strf::surrogate_policy poli = strf::surrogate_policy::strict )
 {
     return strf::do_transcode
-        (src_charset, dst_charset, src.data(), static_cast<std::ptrdiff_t>(src.size()), dst, err_notifier, poli);
+        (src_charset, dst_charset, src.data(), src.data() + src.size(), dst, err_notifier, poli);
 }
 
 template < template <class> class SrcCharsetTmpl
@@ -1761,7 +1755,7 @@ STRF_HD std::ptrdiff_t transcode_size
     ( SrcCharset src_charset
     , DstCharset dst_charset
     , const SrcCharT* src
-    , std::ptrdiff_t src_size
+    , const SrcCharT* src_end
     , strf::surrogate_policy poli = strf::surrogate_policy::strict )
 {
     static_assert(std::is_same<typename SrcCharset::code_unit, SrcCharT>::value, "");
@@ -1769,10 +1763,10 @@ STRF_HD std::ptrdiff_t transcode_size
     const auto transcoder = strf::find_transcoder(src_charset, dst_charset);
     const auto func = transcoder.transcode_size_func();
     if (func != nullptr) {
-        return func(src, src_size, poli);
+        return func(src, src_end, poli);
     }
     return strf::decode_encode_size
-        ( src_charset, dst_charset, src, src_size, poli );
+        ( src_charset, dst_charset, src, src_end, poli );
 }
 
 template < template <class> class SrcCharsetTmpl
@@ -1782,7 +1776,7 @@ template < template <class> class SrcCharsetTmpl
          , detail::enable_if_t<detail::is_static_charset<DstCharset>::value, int> = 0>
 STRF_HD std::ptrdiff_t transcode_size
     ( const SrcCharT* src
-    , std::ptrdiff_t src_size
+    , const SrcCharT* src_end
     , strf::surrogate_policy poli = strf::surrogate_policy::strict )
 {
     using src_charset_t = SrcCharsetTmpl<SrcCharT>;
@@ -1794,7 +1788,7 @@ STRF_HD std::ptrdiff_t transcode_size
     constexpr src_charset_t src_charset;
     constexpr dst_charset_t dst_charset;
 
-    return strf::transcode_size(src_charset, dst_charset, src, src_size, poli);
+    return strf::transcode_size(src_charset, dst_charset, src, src_end, poli);
 }
 
 #ifdef STRF_HAS_STD_STRING_VIEW
@@ -1811,7 +1805,7 @@ inline STRF_HD std::ptrdiff_t transcode_size
     , strf::surrogate_policy poli = strf::surrogate_policy::strict )
 {
     return strf::transcode_size
-        ( src_charset, dst_charset, src.data(), static_cast<std::ptrdiff_t>(src.size()), poli );
+        ( src_charset, dst_charset, src.data(), src.data() + src.size(), poli );
 }
 
 template < template <class> class SrcCharsetTmpl
@@ -1845,7 +1839,7 @@ STRF_HD void do_unsafe_transcode
     ( SrcCharset src_charset
     , DstCharset dst_charset
     , const SrcCharT* src
-    , std::ptrdiff_t src_size
+    , const SrcCharT* src_end
     , strf::transcode_dest<DstCharT>& dst
     , strf::transcoding_error_notifier* err_notifier = nullptr )
 {
@@ -1855,10 +1849,10 @@ STRF_HD void do_unsafe_transcode
     const auto transcoder = strf::find_transcoder(src_charset, dst_charset);
     const auto func = transcoder.unsafe_transcode_func();
     if (func != nullptr) {
-        return func(src, src_size, dst, err_notifier);
+        return func(src, src_end, dst, err_notifier);
     }
     return strf::unsafe_decode_encode
-        ( src_charset, dst_charset, src, src_size, dst, err_notifier );
+        ( src_charset, dst_charset, src, src_end, dst, err_notifier );
 }
 
 template < template <class> class SrcCharsetTmpl
@@ -1867,7 +1861,7 @@ template < template <class> class SrcCharsetTmpl
          , typename DstCharT >
 STRF_HD void do_unsafe_transcode
     ( const SrcCharT* src
-    , std::ptrdiff_t src_size
+    , const SrcCharT* src_end
     , strf::transcode_dest<DstCharT>& dst
     , strf::transcoding_error_notifier* err_notifier = nullptr )
 {
@@ -1883,7 +1877,7 @@ STRF_HD void do_unsafe_transcode
     constexpr dst_charset_t dst_charset;
 
     return strf::do_unsafe_transcode
-        (src_charset, dst_charset, src, src_size, dst, err_notifier);
+        (src_charset, dst_charset, src, src_end, dst, err_notifier);
 }
 
 #ifdef STRF_HAS_STD_STRING_VIEW
@@ -1900,7 +1894,7 @@ inline STRF_HD void do_unsafe_transcode
     , strf::transcoding_error_notifier* err_notifier = nullptr )
 {
     return strf::do_unsafe_transcode
-        ( src_charset, dst_charset, src.data(), static_cast<std::ptrdiff_t>(src.size()), dst, err_notifier );
+        ( src_charset, dst_charset, src.data(), src.data() + src.size(), dst, err_notifier );
 }
 
 template < template <class> class SrcCharsetTmpl
@@ -1938,16 +1932,16 @@ STRF_HD std::ptrdiff_t unsafe_transcode_size
     ( SrcCharset src_charset
     , DstCharset dst_charset
     , const SrcCharT* src
-    , std::ptrdiff_t src_size )
+    , const SrcCharT* src_end )
 {
     static_assert(std::is_same<typename SrcCharset::code_unit, SrcCharT>::value, "");
 
     const auto transcoder = strf::find_transcoder(src_charset, dst_charset);
     const auto func = transcoder.unsafe_transcode_size_func();
     if (func != nullptr) {
-        return func(src, src_size);
+        return func(src, src_end);
     }
-    return strf::unsafe_decode_encode_size(src_charset, dst_charset, src, src_size);
+    return strf::unsafe_decode_encode_size(src_charset, dst_charset, src, src_end);
 }
 
 template < template <class> class SrcCharsetTmpl
@@ -1957,7 +1951,7 @@ template < template <class> class SrcCharsetTmpl
          , detail::enable_if_t<detail::is_static_charset<DstCharset>::value, int> = 0 >
 STRF_HD std::ptrdiff_t unsafe_transcode_size
     ( const SrcCharT* src
-    , std::ptrdiff_t src_size )
+    , const SrcCharT* src_end )
 {
     using src_charset_t = SrcCharsetTmpl<SrcCharT>;
     using dst_charset_t = DstCharset;
@@ -1968,7 +1962,7 @@ STRF_HD std::ptrdiff_t unsafe_transcode_size
     constexpr src_charset_t src_charset;
     constexpr dst_charset_t dst_charset;
 
-    return strf::unsafe_transcode_size(src_charset, dst_charset, src, src_size);
+    return strf::unsafe_transcode_size(src_charset, dst_charset, src, src_end);
 }
 
 #ifdef STRF_HAS_STD_STRING_VIEW
@@ -1983,7 +1977,8 @@ inline STRF_HD std::ptrdiff_t unsafe_transcode_size
     , DstCharset dst_charset
     , std::basic_string_view<SrcCharT> src )
 {
-    return strf::unsafe_transcode_size(src_charset, dst_charset, src.data(), static_cast<std::ptrdiff_t>(src.size()));
+    return strf::unsafe_transcode_size
+        (src_charset, dst_charset, src.data(), src.data() + src.size());
 }
 
 template < template <class> class SrcCharsetTmpl

@@ -16,28 +16,32 @@ template < typename DestCharT
          , typename SrcCharT
          , strf::detail::enable_if_t<!std::is_same<SrcCharT, DestCharT>::value, int> = 0 >
 STRF_HD void output_buffer_interchar_copy
-    ( strf::output_buffer<DestCharT, 0>& dest, const SrcCharT* str, std::size_t len )
+    ( strf::output_buffer<DestCharT, 0>& dest, const SrcCharT* str, const SrcCharT* str_end )
 {
-    do {
-        const std::size_t space = dest.buffer_space();
-        if (space >= len) {
-            detail::copy_n(str, len, dest.buffer_ptr());
-            dest.advance(len);
-            return;
-        }
-        strf::detail::copy_n(str, space, dest.buffer_ptr());
-        str += space;
-        len -= space;
-        dest.advance_to(dest.buffer_end());
-        dest.flush();
-    } while(dest.good());
+    if (str < str_end)
+    {
+        auto len = static_cast<std::size_t>(str_end - str);
+        do {
+            const auto space = dest.buffer_space();
+            if (space >= len) {
+                detail::copy_n(str, len, dest.buffer_ptr());
+                dest.advance(len);
+                return;
+            }
+            strf::detail::copy_n(str, space, dest.buffer_ptr());
+            str += space;
+            len -= space;
+            dest.advance_to(dest.buffer_end());
+            dest.flush();
+        } while(dest.good());
+    }
 }
 
 template < typename CharT >
 inline STRF_HD void output_buffer_interchar_copy
-    ( strf::output_buffer<CharT, 0>& dest, const CharT* str, std::size_t len )
+    ( strf::output_buffer<CharT, 0>& dest, const CharT* str, const CharT* str_end )
 {
-    dest.write(str, static_cast<std::ptrdiff_t>(len));
+    dest.write(str, str_end - str);
 }
 
 } // namespace detail

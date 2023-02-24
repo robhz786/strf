@@ -314,7 +314,7 @@ template <typename CharT, std::size_t N>
 STRF_HD std::ptrdiff_t utf8_count_codepoints_strict(const CharT (&str)[N])
 {
     return strf::utf8_t<CharT>::count_codepoints
-        (str, N - 1, 100000, strf::surrogate_policy::strict)
+        (str, str + N - 1, 100000, strf::surrogate_policy::strict)
         .count;
 }
 
@@ -322,14 +322,14 @@ template <typename CharT, std::size_t N>
 STRF_HD std::ptrdiff_t utf8_count_codepoints_lax(const CharT (&str)[N])
 {
     return strf::utf8_t<CharT>::count_codepoints
-        (str, N - 1, 100000, strf::surrogate_policy::lax)
+        (str, str + N - 1, 100000, strf::surrogate_policy::lax)
         .count;
 }
 
 template <typename CharT, std::size_t N>
 STRF_HD std::ptrdiff_t utf8_count_codepoints_fast(const CharT (&str)[N])
 {
-    return strf::utf8_t<CharT>::count_codepoints_fast(str, N - 1, 100000).count;
+    return strf::utf8_t<CharT>::count_codepoints_fast(str, str + N - 1, 100000).count;
 }
 
 STRF_HD void utf8_codepoints_count()
@@ -414,37 +414,37 @@ STRF_HD void utf8_codepoints_count()
     {   // when limit is less than or equal to count
 
         const char8_t str[] = u8"a\0\u0080\u0800\uD7FF\uE000\U00010000\U0010FFFF";
-        const auto str_len = sizeof(str) - 1;
+        const auto * const str_end = str + sizeof(str) - 1;
         const strf::utf8_t<char8_t> charset;
 
         {
-            auto r = charset.count_codepoints(str, str_len, 8, strict);
-            TEST_EQ(r.pos, str_len);
+            auto r = charset.count_codepoints(str, str_end, 8, strict);
+            TEST_EQ((const void*)r.ptr, (const void*)str_end);
             TEST_EQ(r.count, 8);
         }
         {
-            auto r = charset.count_codepoints(str, str_len, 7, strict);
-            TEST_EQ(r.pos, str_len - 4);
+            auto r = charset.count_codepoints(str, str_end, 7, strict);
+            TEST_EQ((const void*)r.ptr, (const void*)(str_end - 4));
             TEST_EQ(r.count, 7);
         }
         {
-            auto r = charset.count_codepoints(str, str_len, 0, strict);
-            TEST_EQ(r.pos, 0);
+            auto r = charset.count_codepoints(str, str_end, 0, strict);
+            TEST_EQ((const void*)r.ptr, (const void*)str);
             TEST_EQ(r.count, 0);
         }
         {
-            auto r = charset.count_codepoints_fast(str, str_len, 8);
-            TEST_EQ(r.pos, str_len);
+            auto r = charset.count_codepoints_fast(str, str_end, 8);
+            TEST_EQ((const void*)r.ptr, (const void*)str_end);
             TEST_EQ(r.count, 8);
         }
         {
-            auto r = charset.count_codepoints_fast(str, str_len, 7);
-            TEST_EQ(r.pos, str_len - 4);
+            auto r = charset.count_codepoints_fast(str, str_end, 7);
+            TEST_EQ((const void*)r.ptr, (const void*)(str_end - 4));
             TEST_EQ(r.count, 7);
         }
         {
-            auto r = charset.count_codepoints_fast(str, str_len, 0);
-            TEST_EQ(r.pos, 0);
+            auto r = charset.count_codepoints_fast(str, str_end, 0);
+            TEST_EQ((const void*)r.ptr, (const void*)str);
             TEST_EQ(r.count, 0);
         }
     }

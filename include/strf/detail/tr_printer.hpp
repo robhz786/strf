@@ -176,7 +176,7 @@ public:
     STRF_CONSTEXPR_IN_CXX14 STRF_HD bool account_string(const CharT* begin, const CharT* end)
     {
         const auto str_width = wcalc_.str_width
-            (charset_, remaining_width_, begin, (end - begin), surr_poli_);
+            (charset_, remaining_width_, begin, end, surr_poli_);
         return subtract_(str_width);
     }
     constexpr STRF_HD strf::width_t remaining_width() const
@@ -246,7 +246,7 @@ public:
         ( const CharT* begin, const CharT* end )
     {
         size_ += (end - begin);
-        auto w = wcalc_.str_width(charset_, remaining_width_, begin, (end - begin), surr_poli_);
+        auto w = wcalc_.str_width(charset_, remaining_width_, begin, end, surr_poli_);
         subtract_width_(w);
         return {};
     }

@@ -7,7 +7,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 
 :WidthCalculator: <<WidthCalculator,WidthCalculator>>
 :width_calculator_c: <<width_calculator_c,width_calculator_c>>
-:width_and_pos: <<width_and_pos,width_and_pos>>
+:width_and_ptr: <<width_and_ptr,width_and_ptr>>
 :fast_width: <<fast_width,fast_width>>
 :width_as_u32len: <<width_as_u32len,width_as_u32len>>
 :width_as_fast_u32len: <<width_as_fast_u32len,width_as_fast_u32len>>
@@ -52,7 +52,8 @@ Given
 * `limit`, a value of type `{width_t}`
 * `str`, a value of type `const CharT*`
         pointing to a string encoded according to `charset`.
-* `str_len`, a value of type `std::ptrdiff_t` equal to the length of string `str`.
+* `str_end`, a value of type `const CharT*` pointing immediately after
+             the last character of the string that begin at `str`
 * `surr_poli`, a value of type `{surrogate_policy}`
 
 For a type `X` to be a _WidthCalculator_, given an object `x` of type `X`,
@@ -76,7 +77,7 @@ Return value:: The width of `ch` when encoded according to `charset`.
 ====
 [source,cpp,subs=normal]
 ----
-x.str_width(charset, limit, str, str_len, surr_poli)
+x.str_width(charset, limit, str, str_end, surr_poli)
 ----
 [horizontal]
 Return type::: `{width_t}`
@@ -87,19 +88,17 @@ Return value::: The width of the string `str` if it is less than `limit`.
 ====
 [source,cpp]
 ----
-x.str_width_and_pos(charset, limit, str, str_len, surr_poli)
+x.str_width_and_pos(charset, limit, str, str_end, surr_poli)
 ----
 [horizontal]
-Effect::: Calculates the width of `str`. If such value is less than
-         `limit`, then calculates the size of the substring of `str`
-         whose width is equal to `limit`.
-Return type::: `{width_and_pos}`
-Return value::: A value `ret` of type `{width_and_pos}`, such that
-* `ret.pos` is the greatest value that is less than or equal to `str_len`
-  such that `x.width(charset, width_max, str, ret.pos, surr_poli).width`
-  is less than or equal to `limit`.
-* `ret.width` is the width of the substring of `str` with size `ret.pos`
-  that starts at the same position of `str`.
+Effect::: Calculates the size and width of the longest substring
+          of [`str`, `str_end`) whose width is not greater than `limit`.
+Return type::: `{width_and_ptr}<CharT>`
+Return value::: A value `ret` of type `{width_and_ptr}<CharT>`, such that
+* `ret.ptr` is the greatest pointer not greater than `str_end`
+  such that the width of [`str`, `ret.ptr`)
+  is not greater than `limit`.
+* `ret.width` is the width of the substring  [`str`, `ret.ptr`).
 ====
 
 NOTE: The library provides three classes that
@@ -115,13 +114,14 @@ It doesn't have to be accurate, after all that would require to
       https://en.wikipedia.org/wiki/Monotonic_function[monotonically
       increasing function] in relation to be size
 ////
-==== Struct `width_and_pos` [[width_and_pos]]
+==== Struct `width_and_ptr` [[width_and_ptr]]
 
 [source,cpp,subs=normal]
 ----
-struct width_and_pos {
+template <typename CharT>
+struct width_and_ptr {
     {width_t} width;
-    std::ptrdiff_t pos;
+    const CharT* ptr = nullptr;
 };
 ----
 
@@ -146,17 +146,18 @@ public:
     constexpr {width_t} <<fast_width_str_width,str_width>>
         ( Charset
         , {width_t} limit
-        , const typename Charset::{code_unit}*
-        , std::ptrdiff_t str_len
+        , const typename Charset::{code_unit}{asterisk} str
+        , const typename Charset::{code_unit}{asterisk} str_end
         , {surrogate_policy} ) const noexcept;
 
     template <typename Charset>
-    {width_and_pos} <<fast_width_str_width_and_pos,str_width_and_pos>>
+    auto <<fast_width_str_width_and_pos,str_width_and_pos>>
         ( Charset
         , {width_t} limit
-        , const typename Charset::{code_unit}*
-        , std::ptrdiff_t str_len
-        , {surrogate_policy} ) const noexcept;
+        , const typename Charset::{code_unit}{asterisk} str
+        , const typename Charset::{code_unit}{asterisk} str_end
+        , {surrogate_policy} ) const noexcept
+        \-> {width_and_ptr}<typename Charset::{code_unit}>;
 };
 
 constexpr fast_width_t fast_width {};
@@ -181,13 +182,14 @@ template <typename Charset>
 constexpr {width_t} str_width
     ( Charset
     , {width_t} limit
-    , const typename Charset::{code_unit}*
-    , std::ptrdiff_t str_len
+    , const typename Charset::{code_unit}{asterisk} str
+    , const typename Charset::{code_unit}{asterisk} str_end
     , {surrogate_policy} ) const noexcept;
 ----
 [horizontal]
 Return value:::
-* `str_len`, if `str_len` is less than or equal to `limit.floor()`
+*  0, if `limit` is not positive
+*  otherwise the length of [`str`, `str_end`) , if such length is not greater than `limit`
 *  otherwise, `limit`
 ====
 [[fast_width_str_width_and_pos]]
@@ -195,20 +197,23 @@ Return value:::
 [source,cpp,subs=normal]
 ----
 template <typename Charset>
-{width_and_pos} str_width_and_pos
+auto str_width_and_pos
     ( Charset
     , {width_t} limit
-    , const typename Charset::{code_unit}*
-    , std::ptrdiff_t str_len
-    , {surrogate_policy} ) const noexcept;
+    , const typename Charset::{code_unit}{asterisk} str
+    , const typename Charset::{code_unit}{asterisk} str_end
+    , {surrogate_policy} ) const noexcept
+    \-> {width_and_ptr}<typename Charset::{code_unit}>;
 ----
 [horizontal]
 Return value::: The return value `ret` is such that
 
-* if `limit \<= 0` is `true`, then `ret.width` and `ret.pos` are `0`;
-* otherwise, if `limit.floor()` is less than `str_len`, then
-`ret.width` and `ret.pos` are equal to `limit.floor()`;
-* otherwise, `ret.width` and `ret.pos` are equal to `str_len`.
+* If `limit` is not positive, then `ret.width` is `0` and `ret.ptr` is `str`
+* otherwise, if `limit.floor()` is less than the length of [`str`, `str_end`),
+  then `ret.width` is equal to `limit.floor()`
+  and `ret.ptr` is equal to `str + limit.floor()`
+* otherwise, `ret.width` is equal to the length of [`str`, `str_end`),
+  and `ret.ptr` is equal to `str_end`
 ====
 
 
@@ -239,17 +244,18 @@ public:
     {width_t} <<width_as_fast_u32len_str_width,str_width>>
         ( Charset cs
         , {width_t} limit
-        , const typename Charset::{code_unit}* str
-        , std::ptrdiff_t str_len
+        , const typename Charset::{code_unit}{asterisk} str
+        , const typename Charset::{code_unit}{asterisk} str_end
         , {surrogate_policy} ) const noexcept;
 
     template <typename Charset>
-    {width_and_pos} <<width_as_fast_u32len_str_width_and_pos,str_width_and_pos>>
+    auto <<width_as_fast_u32len_str_width_and_pos,str_width_and_pos>>
         ( Charset cs
         , {width_t} limit
-        , const typename Charset::{code_unit}* str
-        , std::ptrdiff_t str_len
-        , {surrogate_policy} ) const noexcept;
+        , const typename Charset::{code_unit}{asterisk} str
+        , const typename Charset::{code_unit}{asterisk} str_end
+        , {surrogate_policy} ) const noexcept
+        \-> {width_and_ptr}<typename Charset::{code_unit}>;
 };
 
 constexpr width_as_fast_u32len_t width_as_fast_u32len {};
@@ -274,33 +280,38 @@ template <typename Charset>
 {width_t} str_width
     ( Charset cs
     , {width_t} limit
-    , const typename Charset::{code_unit}* str
-    , std::ptrdiff_t str_len
+    , const typename Charset::{code_unit}{asterisk} str
+    , const typename Charset::{code_unit}{asterisk} str_end
     , {surrogate_policy} ) const noexcept;
 ----
 [horizontal]
 Return value:::
-* `0`, if `limit \<= 0` is `true`
-* otherwise, `cs.<<Charset_count_codepoints_fast,count_codepoints_fast>>(str, str_len, limit.floor()).count`.
+* `0`, if `limit` is not positive
+* otherwise,
+ `cs.<<Charset_count_codepoints_fast,count_codepoints_fast>>(str, str_end, limit.ceil()).count`,
+  if such value is not greater than `width_t::max`,
+* otherwise, `width_t::max`
 ====
 [[width_as_fast_u32len_str_width_and_pos]]
 ====
 [source,cpp,subs=normal]
 ----
 template <typename Charset>
-{width_and_pos} str_width_and_pos
+auto str_width_and_pos
     ( Charset cs
     , {width_t} limit
-    , const typename Charset::{code_unit}* str
-    , std::ptrdiff_t str_len
-    , {surrogate_policy} ) const noexcept;
+    , const typename Charset::{code_unit}{asterisk} str
+    , const typename Charset::{code_unit}{asterisk} str_end
+    , {surrogate_policy} ) const noexcept
+    \-> {width_and_ptr}<typename Charset::{code_unit}>;
 ----
 [horizontal]
 Return value::: The return value `ret` is such that
 
-* If `limit \<= 0` is `true`, then then `ret.width` and `ret.pos` are `0`;
-* otherwise, `ret.width` is equal to `ret2.count` and `ret.pos` is equal
-  to `cs.<<Charset_count_codepoints_fast,count_codepoints_fast>>(str, str_len, lim).pos`
+* If `limit` is not positive, then `ret.width` is `0` and `ret.ptr` is `str`;
+* otherwise, `ret.width` is equal to `ret2.count` and `ret.ptr` is equal to `ret2.ptr`,
+  where `ret2` is the return of
+  `cs.<<Charset_count_codepoints_fast,count_codepoints_fast>>(str, str_end, lim.floor())`
 ====
 
 === Class `width_as_u32len_t` [[width_as_u32len]]
@@ -327,17 +338,18 @@ public:
     {width_t} <<width_as_u32len_str_width,str_width>>
         ( Charset cs
         , {width_t} limit
-        , const typename Charset::{code_unit}* str
-        , std::ptrdiff_t str_len
+        , const typename Charset::{code_unit}{asterisk} str
+        , const typename Charset::{code_unit}{asterisk} str_end
         , {surrogate_policy} ) const noexcept;
 
     template <typename Charset>
-    {width_and_pos} <<width_as_u32len_str_width_and_pos,str_width_and_pos>>
+    auto <<width_as_u32len_str_width_and_pos,str_width_and_pos>>
         ( Charset cs
         , {width_t} limit
-        , const typename Charset::{code_unit}* str
-        , std::ptrdiff_t str_len
-        , {surrogate_policy} ) const noexcept;
+        , const typename Charset::{code_unit}{asterisk} str
+        , const typename Charset::{code_unit}{asterisk} str_end
+        , {surrogate_policy} ) const noexcept
+        \-> {width_and_ptr}<typename Charset::{code_unit}>;
 };
 
 constexpr width_as_u32len_t width_as_u32len = {};
@@ -362,33 +374,39 @@ template <typename Charset>
 {width_t} str_width
     ( Charset cs
     , {width_t} limit
-    , const typename Charset::{code_unit}* str
-    , std::ptrdiff_t str_len
+    , const typename Charset::{code_unit}{asterisk} str
+    , const typename Charset::{code_unit}{asterisk} str_end
     , {surrogate_policy} ) const noexcept;
 ----
 [horizontal]
 Return value:::
-* `0`, if `limit \<= 0` is `true`
-* otherwise, `cs.<<Charset_count_codepoints,count_codepoints>>(str, str_len, limit.floor()).count`.
+* `0`, if `limit` is not positive
+* otherwise,
+ `cs.<<Charset_count_codepoints,count_codepoints>>(str, str_end, limit.ceil()).count`,
+  if such value is not greater than `width_t::max`,
+* otherwise, `width_t::max`
+
 ====
 [[width_as_u32len_str_width_and_pos]]
 ====
 [source,cpp,subs=normal]
 ----
 template <typename Charset>
-{width_and_pos} str_width_and_pos
+auto str_width_and_pos
     ( Charset cs
     , {width_t} limit
-    , const typename Charset::{code_unit}* str
-    , std::ptrdiff_t str_len
-    , {surrogate_policy} ) const noexcept;
+    , const typename Charset::{code_unit}{asterisk} str
+    , const typename Charset::{code_unit}{asterisk} str_end
+    , {surrogate_policy} ) const noexcept
+    \-> {width_and_ptr}<typename Charset::{code_unit}>;
 ----
 [horizontal]
 Return value::: The return value `ret` is such that
 
-* If `limit \<= 0` is `true`, then then `ret.width` and `ret.pos` are `0`;
-* otherwise, `ret.width` is equal to `ret2.count` and `ret.pos` is equal to
-  `cs.<<Charset_count_codepoints,count_codepoints>>(str, str_len, lim).pos`
+* If `limit` is not positive, then `ret.width` is `0` and `ret.ptr` is `str`;
+* otherwise, `ret.width` is equal to `ret2.count` and `ret.ptr` is equal to `ret2.ptr`,
+  where `ret2` is the return of
+  `cs.<<Charset_count_codepoints,count_codepoints>>(str, str_end, lim.floor())`
 ====
 
 === Class `std_width_calc` [[std_width_calc]]
@@ -412,17 +430,18 @@ public:
     static {width_t} <<std_width_calc_str_width,str_width>>
         ( Charset cs
         , {width_t} limit
-        , const typename Charset::{code_unit}* str
-        , std::ptrdiff_t str_len
+        , const typename Charset::{code_unit}{asterisk} str
+        , const typename Charset::{code_unit}{asterisk} str_end
         , {surrogate_policy} ) const;
 
     template <typename Charset>
-    static {width_and_pos} <<std_width_calc_str_width_and_pos,str_width_and_pos>>
+    static auto <<std_width_calc_str_width_and_pos,str_width_and_pos>>
         ( Charset cs
         , {width_t} limit
-        , const typename Charset::{code_unit}* str
-        , std::ptrdiff_t str_len
-        , {surrogate_policy} ) const;
+        , const typename Charset::{code_unit}{asterisk} str
+        , const typename Charset::{code_unit}{asterisk} str_end
+        , {surrogate_policy} ) const
+        \-> {width_and_ptr}<typename Charset::{code_unit}>;
 };
 ----
 ==== Member functions
@@ -465,17 +484,17 @@ template <typename Charset>
 static {width_t} str_width
     ( Charset cs
     , {width_t} limit
-    , const typename Charset::{code_unit}* str
-    , std::ptrdiff_t str_len
+    , const typename Charset::{code_unit}{asterisk} str
+    , const typename Charset::{code_unit}{asterisk} str_end
     , {surrogate_policy} surr_poli) const;
 ----
-Return value:: `std::min(limit, w)`, where `w` is the sum of the extimated widths
-of the grapheme clusters in the UTF-32 string obtained by converting `str`
-to UTF-32 via `cs`, __i.e.__ by calling
+Return value:: `std::min(limit, w)`, where `w` is the sum
+of the grapheme clusters widths in the UTF-32 string
+obtained by converting `str` to UTF-32 via `cs`, __i.e.__ by calling
 +
 [source,cpp,subs=normal]
 ----
-cs.<<Charset_to_u32,to_u32>>().<<Transcoder_transcode,transcode>>(..., str, str_len, nullptr, surr_poli )
+cs.<<Charset_to_u32,to_u32>>().<<Transcoder_transcode,transcode>>(str, str_end, /{asterisk} ... {asterisk}/, nullptr, surr_poli )
 ----
 +
 The width of each grapheme cluster is assumed to be equal to the width
@@ -489,21 +508,23 @@ of its first codepoints `ch32`, which is assumed to equal to
 [source,cpp,subs=normal]
 ----
 template <typename Charset>
-static {width_and_pos} str_width_and_pos
+static auto str_width_and_pos
     ( Charset cs
     , {width_t} limit
-    , const typename Charset::{code_unit}* str
-    , std::ptrdiff_t str_len
-    , {surrogate_policy} surr_poli) const;
+    , const typename Charset::{code_unit}{asterisk} str
+    , const typename Charset::{code_unit}{asterisk} str_end
+    , {surrogate_policy} surr_poli) const
+    \-> {width_and_ptr}<typename Charset::{code_unit}>;
 ----
 Return value:: a value `r` such that
 +
-* `r.width` is same value returned by `str_width(cs, limit, str, str_len, surr_poli)`
-* `r.pos` is greateast value such that the expression below evaluates to `true`:
+* `r.width` is same value returned by `str_width(cs, limit, str, str_end, surr_poli)`
+* `r.ptr` is greatest pointer not greater than `str_end` such that the expression
+below evaluates to `true`:
 +
 [source,cpp,subs=normal]
 ----
-str_width(cs, strf::width_t::max(), str, r.pos, surr_poli) \<= limit
+str_width(cs, strf::width_t::max(), str, r.ptr, surr_poli) \<= limit
 ----
 ====
 
@@ -539,6 +560,7 @@ public:
     constexpr bool operator>=(const width_t& other) const noexcept;
 
     constexpr std::int16_t floor() const noexcept;
+    constexpr std::int32_t ceil() const noexcept;
     constexpr std::int32_t round() const noexcept;
 
     constexpr width_t operator-() const noexcept;

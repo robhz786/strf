@@ -12,9 +12,10 @@ namespace strf {
 
 struct width_calculator_c;
 
-struct width_and_pos {
+template <typename CharT>
+struct width_and_ptr {
     strf::width_t width;
-    std::ptrdiff_t pos{};
+    const CharT* ptr = nullptr;
 };
 
 class fast_width_t final
@@ -31,31 +32,40 @@ public:
     }
 
     template <typename Charset>
-    constexpr STRF_HD strf::width_t str_width
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD strf::width_t str_width
         ( Charset
         , strf::width_t limit
-        , const typename Charset::code_unit*
-        , std::ptrdiff_t str_len
+        , const typename Charset::code_unit* begin
+        , const typename Charset::code_unit* end
         , strf::surrogate_policy ) const noexcept
     {
-        return ( static_cast<std::ptrdiff_t>(str_len) <= limit.floor()
-                 ? static_cast<strf::width_t>(str_len)
-               : limit );
+        STRF_ASSERT(begin <= end);
+        const auto str_len = detail::safe_cast_size_t(end - begin);
+        const auto nn_limit = limit >= 0 ? limit : 0;
+        const auto nn_limit_floor = static_cast<unsigned> (nn_limit.underlying_value() >> 16);
+
+        return ( str_len <= nn_limit_floor
+               ? static_cast<strf::width_t>(str_len)
+               : nn_limit );
     }
 
     template <typename Charset>
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD strf::width_and_pos str_width_and_pos
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD auto str_width_and_pos
         ( Charset
         , strf::width_t limit
-        , const typename Charset::code_unit*
-        , std::ptrdiff_t str_len
+        , const typename Charset::code_unit* begin
+        , const typename Charset::code_unit* end
         , strf::surrogate_policy ) const noexcept
+        -> strf::width_and_ptr<typename Charset::code_unit>
     {
-        const auto limit_floor = limit.floor();
-        if (str_len <= limit_floor) {
-            return { static_cast<strf::width_t>(str_len), str_len };
+        STRF_ASSERT(begin <= end);
+        const auto str_len = detail::safe_cast_size_t(end - begin);
+        const auto nn_limit_floor = limit.non_negative_floor();
+
+        if (str_len <= nn_limit_floor) {
+            return { static_cast<strf::width_t>(str_len), end };
         }
-        return { static_cast<strf::width_t>(limit_floor), limit_floor };
+        return { static_cast<strf::width_t>(nn_limit_floor), begin + nn_limit_floor };
     }
 };
 
@@ -77,27 +87,30 @@ public:
         ( Charset charset
         , strf::width_t limit
         , const typename Charset::code_unit* str
-        , std::ptrdiff_t str_len
+        , const typename Charset::code_unit* str_end
         , strf::surrogate_policy ) const
     {
-        auto lim = limit.floor();
-        auto res = charset.count_codepoints_fast(str, str_len, lim);
-        STRF_ASSERT(0 <= res.count && res.count <= strf::width_max.floor());
-        return static_cast<strf::width_t>(res.count);
+        STRF_ASSERT(str <= str_end);
+        auto lim = limit.non_negative_ceil();
+        auto res = charset.count_codepoints_fast(str, str_end, lim);
+        STRF_ASSERT(res.count <= strf::width_max.ceil());
+        return strf::width_t::sat_cast(res.count);
     }
 
     template <typename Charset>
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD strf::width_and_pos str_width_and_pos
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD auto str_width_and_pos
         ( Charset charset
         , strf::width_t limit
         , const typename Charset::code_unit* str
-        , std::ptrdiff_t str_len
+        , const typename Charset::code_unit* str_end
         , strf::surrogate_policy ) const
+        -> strf::width_and_ptr<typename Charset::code_unit>
     {
-        auto lim = limit.floor();
-        auto res = charset.count_codepoints_fast(str, str_len, lim);
-        STRF_ASSERT(0 <= res.count && res.count <= lim);
-        return { static_cast<strf::width_t>(res.count), res.pos };
+        STRF_ASSERT(str <= str_end);
+        auto lim = limit.non_negative_floor();
+        auto res = charset.count_codepoints_fast(str, str_end, lim);
+        STRF_ASSERT(res.count <= lim);
+        return {static_cast<width_t>(res.count), res.ptr};
     }
 };
 
@@ -120,27 +133,30 @@ public:
         ( Charset charset
         , strf::width_t limit
         , const typename Charset::code_unit* str
-        , std::ptrdiff_t str_len
+        , const typename Charset::code_unit* str_end
         , strf::surrogate_policy surr_poli ) const
     {
-        auto lim = limit.floor();
-        auto ret = charset.count_codepoints(str, str_len, lim, surr_poli);
-        STRF_ASSERT(0 <= ret.count && ret.count <= strf::width_max.floor());
-        return static_cast<strf::width_t>(ret.count);
+        STRF_ASSERT(str <= str_end);
+        auto lim = limit.non_negative_ceil();
+        auto res = charset.count_codepoints(str, str_end, lim, surr_poli);
+        STRF_ASSERT(res.count <= strf::width_max.floor());
+        return strf::width_t::sat_cast(res.count);
     }
 
     template <typename Charset>
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD strf::width_and_pos str_width_and_pos
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD auto str_width_and_pos
         ( Charset charset
         , strf::width_t limit
         , const typename Charset::code_unit* str
-        , std::ptrdiff_t str_len
+        , const typename Charset::code_unit* str_end
         , strf::surrogate_policy surr_poli ) const
+        -> strf::width_and_ptr<typename Charset::code_unit>
     {
-        auto lim = limit.floor();
-        auto res = charset.count_codepoints(str, str_len, lim, surr_poli);
-        STRF_ASSERT(0 <= res.count && res.count <= lim);
-        return { static_cast<strf::width_t>(res.count), res.pos };
+        STRF_ASSERT(str <= str_end);
+        auto lim = limit.non_negative_floor();
+        auto res = charset.count_codepoints(str, str_end, lim, surr_poli);
+        STRF_ASSERT(static_cast<std::ptrdiff_t>(res.count) <= lim);
+        return {static_cast<width_t>(res.count), res.ptr};
     }
 };
 
@@ -164,7 +180,7 @@ public:
     {
         strf::width_t width;
         bool whole_string_covered{};
-        std::ptrdiff_t codepoints_count{};
+        std::size_t codepoints_count{};
     };
 
     result STRF_HD get_result()
@@ -177,11 +193,11 @@ public:
 private:
 
     bool whole_string_covered_ = true;
-    constexpr static std::ptrdiff_t buff_size_ = 16;
+    constexpr static std::size_t buff_size_ = 16;
     char32_t buff_[buff_size_];
     const strf::width_t limit_;
     strf::width_t width_ = 0;
-    std::ptrdiff_t codepoints_count_ = 0;
+    std::size_t codepoints_count_ = 0;
     WFunc func_;
 };
 
@@ -488,7 +504,7 @@ public:
 private:
     strf::width_t width_;
     unsigned state_ = 0;
-    static constexpr std::ptrdiff_t buff_size_ = 16;
+    static constexpr std::size_t buff_size_ = 16;
     char32_t buff_[buff_size_];
 };
 
@@ -537,7 +553,7 @@ private:
     strf::width_t width_;
     unsigned state_ = 0;
     std::ptrdiff_t codepoints_count_ = 0;
-    static constexpr std::ptrdiff_t buff_size_ = 16;
+    static constexpr std::size_t buff_size_ = 16;
     char32_t buff_[buff_size_];
 };
 
@@ -614,35 +630,38 @@ public:
         ( Charset charset
         , strf::width_t limit
         , const typename Charset::code_unit* str
-        , std::ptrdiff_t str_len
+        , const typename Charset::code_unit* str_end
         , strf::surrogate_policy surr_poli )
     {
+        STRF_ASSERT(str <= str_end);
         strf::detail::std_width_decrementer decr{limit};
         strf::transcoding_error_notifier* err_notifier = nullptr;
-        charset.to_u32().transcode(str, str_len, decr, err_notifier, surr_poli);
+        charset.to_u32().transcode(str, str_end, decr, err_notifier, surr_poli);
         return (limit - decr.get_remaining_width());
     }
 
     template <typename Charset>
-    static STRF_HD strf::width_and_pos str_width_and_pos
+    static STRF_HD auto str_width_and_pos
         ( Charset charset
         , strf::width_t limit
         , const typename Charset::code_unit* str
-        , std::ptrdiff_t str_len
+        , const typename Charset::code_unit* str_end
         , strf::surrogate_policy surr_poli )
+        -> strf::width_and_ptr<typename Charset::code_unit>
     {
+        STRF_ASSERT(str <= str_end);
         strf::detail::std_width_decrementer_with_pos decr{limit};
         strf::transcoding_error_notifier* err_notifier = nullptr;
-        charset.to_u32().transcode(str, str_len, decr, err_notifier, surr_poli);
+        charset.to_u32().transcode(str, str_end, decr, err_notifier, surr_poli);
         auto res = decr.get_remaining_width_and_codepoints_count();
 
         const strf::width_t width = limit - res.remaining_width;
         if (res.whole_string_covered) {
-            return {width, str_len};
+            return {width, str_end};
         }
         auto res2 = charset.count_codepoints
-            (str, str_len, res.codepoints_count, surr_poli);
-        return {width, res2.pos};
+            (str, str_end, res.codepoints_count, surr_poli);
+        return {width, res2.ptr};
     }
 };
 
