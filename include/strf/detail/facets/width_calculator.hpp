@@ -161,70 +161,6 @@ public:
 };
 
 namespace detail {
-template <typename WFunc>
-class width_accumulator: public strf::transcode_dest<char32_t>
-{
-public:
-
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init,hicpp-member-init)
-    STRF_HD width_accumulator(strf::width_t limit, WFunc func)
-        : strf::transcode_dest<char32_t>(buff_, buff_ + buff_size_)
-        , limit_(limit)
-        , func_(func)
-    {
-    }
-
-    STRF_HD void recycle() override;
-
-    struct result
-    {
-        strf::width_t width;
-        bool whole_string_covered{};
-        std::size_t codepoints_count{};
-    };
-
-    result STRF_HD get_result()
-    {
-        flush();
-        this->set_good(false);
-        return {width_, whole_string_covered_, codepoints_count_};
-    }
-
-private:
-
-    bool whole_string_covered_ = true;
-    constexpr static std::size_t buff_size_ = 16;
-    char32_t buff_[buff_size_];
-    const strf::width_t limit_;
-    strf::width_t width_ = 0;
-    std::size_t codepoints_count_ = 0;
-    WFunc func_;
-};
-
-template <typename WFunc>
-void STRF_HD width_accumulator<WFunc>::recycle()
-{
-    auto end = this->buffer_ptr();
-    this->set_buffer_ptr(buff_);
-    if (this->good()) {
-        auto *it = buff_;
-        for (; it != end; ++it)
-        {
-            auto w = width_ + func_(*it);
-            if (w > limit_) {
-                this->set_good(false);
-                whole_string_covered_ = false;
-                break;
-            }
-            width_ = w;
-        }
-        codepoints_count_ += (it - buff_);
-    }
-}
-
-} // namespace detail
-
-namespace detail {
 
 struct std_width_calc_func_return {
     STRF_HD std_width_calc_func_return
@@ -636,7 +572,8 @@ public:
         STRF_ASSERT(str <= str_end);
         strf::detail::std_width_decrementer decr{limit};
         strf::transcoding_error_notifier* err_notifier = nullptr;
-        charset.to_u32().transcode(str, str_end, decr, err_notifier, surr_poli);
+        const auto flags = strf::to_transcode_flags(surr_poli);
+        charset.to_u32().transcode(str, str_end, decr, err_notifier, flags);
         return (limit - decr.get_remaining_width());
     }
 
@@ -652,7 +589,8 @@ public:
         STRF_ASSERT(str <= str_end);
         strf::detail::std_width_decrementer_with_pos decr{limit};
         strf::transcoding_error_notifier* err_notifier = nullptr;
-        charset.to_u32().transcode(str, str_end, decr, err_notifier, surr_poli);
+        const auto flags = strf::to_transcode_flags(surr_poli);
+        charset.to_u32().transcode(str, str_end, decr, err_notifier, flags);
         auto res = decr.get_remaining_width_and_codepoints_count();
 
         const strf::width_t width = limit - res.remaining_width;

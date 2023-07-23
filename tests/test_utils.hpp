@@ -1054,6 +1054,19 @@ STRF_HD auto test_failed_recycle_call
         break;                                                          \
     }                                                                   \
 
+#define TEST_STR_EQ(s1, s2)                                             \
+    {                                                                   \
+        auto ssv1 = strf::detail::to_simple_string_view(s1);            \
+        auto ssv2 = strf::detail::to_simple_string_view(s2);            \
+        if (ssv1 != ssv2) {                                             \
+            test_utils::test_failure                                    \
+                ( __FILE__, __LINE__, BOOST_CURRENT_FUNCTION            \
+                , "TEST_STR_EQ(s1, s2) failed. Where:\n    s1 is \""    \
+                , strf::transcode(ssv1)                                 \
+                , "\"\n    s2 is \"", strf::transcode(ssv2), '\"' );    \
+        }                                                               \
+    }
+
 #define TEST_STRVIEW_EQ(s1, s2, len)                                       \
     if (! strf::detail::str_equal(s1, s2, len))                            \
         test_utils::test_failure                                           \

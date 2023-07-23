@@ -22,6 +22,7 @@
 #    define STRF_WITH_CSTRING
 #    include <cstring>
 #    include <algorithm>   // for std::copy_n
+#    define STRF_HAS_STD_ALGORITHM
 #    if defined(__cpp_lib_string_view)
 #        define STRF_HAS_STD_STRING_VIEW
 #        define STRF_HAS_STD_STRING_DECLARATION

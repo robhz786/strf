@@ -19,6 +19,10 @@ public:
     using iterator = const CharIn*;
     using const_iterator = const CharIn*;
 
+    simple_string_view() = default;
+    simple_string_view(const simple_string_view&) = default;
+    simple_string_view(simple_string_view&&) = default;
+
 #if defined(STRF_HAS_STD_STRING_DECLARATION)
 
     template < typename CharTraits, typename Allocator >
@@ -64,6 +68,20 @@ public:
     {
     }
 
+    STRF_CONSTEXPR_IN_CXX14
+    STRF_HD simple_string_view& operator=(const simple_string_view& s) noexcept
+    {
+        begin_ = s.begin_;
+        len_ = s.len_;
+        return *this;
+    }
+
+    STRF_CONSTEXPR_IN_CXX14
+    STRF_HD simple_string_view& operator=(const simple_string_view&& s) noexcept
+    {
+        return operator=(s);
+    }
+
     STRF_CONSTEXPR_CHAR_TRAITS
     STRF_HD simple_string_view(const CharIn* str) noexcept
         : begin_(str)
@@ -101,8 +119,8 @@ public:
 
 private:
 
-    const CharIn* begin_;
-    const std::size_t len_;
+    const CharIn* begin_ = nullptr;
+    std::size_t len_ = 0;
 };
 
 template <typename CharT>
@@ -114,6 +132,45 @@ STRF_HD bool operator==
         return false;
 
     return strf::detail::str_equal(str1.data(), str2.data(), str1.size());
+}
+
+template <typename CharT>
+STRF_HD bool operator==
+    ( const CharT* str1, strf::detail::simple_string_view<CharT> str2 )
+{
+    return strf::detail::simple_string_view<CharT>(str1) == str2;
+}
+
+template <typename CharT>
+STRF_HD bool operator==
+    ( strf::detail::simple_string_view<CharT> str1, const CharT* str2 )
+{
+    return str1 == strf::detail::simple_string_view<CharT>(str2);
+}
+
+template <typename CharT>
+STRF_HD bool operator!=
+    ( strf::detail::simple_string_view<CharT> str1
+    , strf::detail::simple_string_view<CharT> str2 )
+{
+    if (str1.size() != str2.size())
+        return true;
+
+    return !strf::detail::str_equal(str1.data(), str2.data(), str1.size());
+}
+
+template <typename CharT>
+STRF_HD bool operator!=
+    ( const CharT* str1, strf::detail::simple_string_view<CharT> str2 )
+{
+    return strf::detail::simple_string_view<CharT>(str1) != str2;
+}
+
+template <typename CharT>
+STRF_HD bool operator!=
+    ( strf::detail::simple_string_view<CharT> str1, const CharT* str2 )
+{
+    return str1 != strf::detail::simple_string_view<CharT>(str2);
 }
 
 template <typename CharT>
