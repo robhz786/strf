@@ -580,7 +580,7 @@ void STRF_HD input_tester<CharOut>::recycle()
 {
     strf::to(notifier_)
         (" destination::recycle() called "
-         "( it means the calculated size too small ).\n");
+         "( it means the calculated size is smaller than it should ).\n");
 
     if ( this->buffer_ptr() + strf::min_destination_buffer_size
        > buffer_ + buffer_size_ )

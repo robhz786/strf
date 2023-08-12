@@ -264,10 +264,10 @@ struct transcoding_test_data
     {
         if (safe_) {
             return strf::transcode_size
-                ( src_charset, dst_charset, src.begin(), src_end, flags );
+                ( src_charset, dst_charset, src.begin(), src_end, dst_size, flags );
         }
         return strf::unsafe_transcode_size
-            ( src_charset, dst_charset, src.begin(), src_end, flags );
+            ( src_charset, dst_charset, src.begin(), src_end, dst_size, flags );
     }
 
 };
@@ -534,10 +534,10 @@ STRF_HD void transcode_tester<SrcCharset, DstCharset>::run()
     }
 }
 
-class trancode_tester_caller
+class transcode_tester_caller
 {
 public:
-    STRF_HD trancode_tester_caller
+    STRF_HD transcode_tester_caller
         ( const char* function_name
         , const char* filename
         , int line )
@@ -561,12 +561,12 @@ private:
 } // namespace test_utils
 
 #define TEST_UTF_TRANSCODE(SRC_CHAR_T, DST_CHAR_T)                      \
-    test_utils::trancode_tester_caller(BOOST_CURRENT_FUNCTION, __FILE__, __LINE__) \
+    test_utils::transcode_tester_caller(BOOST_CURRENT_FUNCTION, __FILE__, __LINE__) \
     << test_utils::transcoding_test_data_maker<strf::utf_t<SRC_CHAR_T>, strf::utf_t<DST_CHAR_T>> \
     (strf::utf<SRC_CHAR_T>, strf::utf<DST_CHAR_T>, true)
 
 #define TEST_UTF_UNSAFE_TRANSCODE(SRC_CHAR_T, DST_CHAR_T) \
-    test_utils::trancode_tester_caller(BOOST_CURRENT_FUNCTION, __FILE__, __LINE__) \
+    test_utils::transcode_tester_caller(BOOST_CURRENT_FUNCTION, __FILE__, __LINE__) \
     << test_utils::transcoding_test_data_maker<strf::utf_t<SRC_CHAR_T>, strf::utf_t<DST_CHAR_T>> \
     (strf::utf<SRC_CHAR_T>, strf::utf<DST_CHAR_T>, false)
 

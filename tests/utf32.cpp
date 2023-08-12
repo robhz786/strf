@@ -6,12 +6,12 @@
 #include "test_utils/transcoding.hpp"
 
 #define TEST_TRANSCODE                                                  \
-    test_utils::trancode_tester_caller(BOOST_CURRENT_FUNCTION, __FILE__, __LINE__) \
+    test_utils::transcode_tester_caller(BOOST_CURRENT_FUNCTION, __FILE__, __LINE__) \
     << test_utils::transcoding_test_data_maker<strf::utf_t<char32_t>, strf::utf_t<char32_t>> \
     (strf::utf<char32_t>, strf::utf<char32_t>, true)
 
 #define TEST_UNSAFE_TRANSCODE                                           \
-    test_utils::trancode_tester_caller(BOOST_CURRENT_FUNCTION, __FILE__, __LINE__) \
+    test_utils::transcode_tester_caller(BOOST_CURRENT_FUNCTION, __FILE__, __LINE__) \
     << test_utils::transcoding_test_data_maker<strf::utf_t<char32_t>, strf::utf_t<char32_t>> \
     (strf::utf<char32_t>, strf::utf<char32_t>, false)
 
@@ -19,6 +19,48 @@ namespace {
 
 STRF_TEST_FUNC void utf32_to_utf32_unsafe_transcode()
 {
+    TEST_UNSAFE_TRANSCODE
+        .input(U"ab")
+        .expect(U"ab")
+        .expect_stop_reason(strf::transcode_stop_reason::completed)
+        .expect_unsupported_codepoints({})
+        .expect_invalid_sequences({});
+
+    TEST_UNSAFE_TRANSCODE
+        .input(U"\u0080")
+        .expect(U"\u0080")
+        .expect_stop_reason(strf::transcode_stop_reason::completed)
+        .expect_unsupported_codepoints({})
+        .expect_invalid_sequences({});
+
+    TEST_UNSAFE_TRANSCODE
+        .input(U"\u0800")
+        .expect(U"\u0800")
+        .expect_stop_reason(strf::transcode_stop_reason::completed)
+        .expect_unsupported_codepoints({})
+        .expect_invalid_sequences({});
+
+    TEST_UNSAFE_TRANSCODE
+        .input(U"\uD7FF")
+        .expect(U"\uD7FF")
+        .expect_stop_reason(strf::transcode_stop_reason::completed)
+        .expect_unsupported_codepoints({})
+        .expect_invalid_sequences({});
+
+    TEST_UNSAFE_TRANSCODE
+        .input(U"\U00010000")
+        .expect(U"\U00010000")
+        .expect_stop_reason(strf::transcode_stop_reason::completed)
+        .expect_unsupported_codepoints({})
+        .expect_invalid_sequences({});
+
+    TEST_UNSAFE_TRANSCODE
+        .input(U"\U0010FFFF")
+        .expect(U"\U0010FFFF")
+        .expect_stop_reason(strf::transcode_stop_reason::completed)
+        .expect_unsupported_codepoints({})
+        .expect_invalid_sequences({});
+
     TEST_UNSAFE_TRANSCODE
         .input(U"ab\u0080\u0800\uD7FF\uE000\U00010000\U0010FFFF")
         .expect(U"ab\u0080\u0800\uD7FF\uE000\U00010000\U0010FFFF")
@@ -85,6 +127,48 @@ STRF_TEST_FUNC void utf32_to_utf32_unsafe_transcode()
 
 STRF_TEST_FUNC void utf32_valid_sequences()
 {
+    TEST_TRANSCODE
+        .input(U"ab")
+        .expect(U"ab")
+        .expect_stop_reason(strf::transcode_stop_reason::completed)
+        .expect_unsupported_codepoints({})
+        .expect_invalid_sequences({});
+
+    TEST_TRANSCODE
+        .input(U"\u0080")
+        .expect(U"\u0080")
+        .expect_stop_reason(strf::transcode_stop_reason::completed)
+        .expect_unsupported_codepoints({})
+        .expect_invalid_sequences({});
+
+    TEST_TRANSCODE
+        .input(U"\u0800")
+        .expect(U"\u0800")
+        .expect_stop_reason(strf::transcode_stop_reason::completed)
+        .expect_unsupported_codepoints({})
+        .expect_invalid_sequences({});
+
+    TEST_TRANSCODE
+        .input(U"\uD7FF")
+        .expect(U"\uD7FF")
+        .expect_stop_reason(strf::transcode_stop_reason::completed)
+        .expect_unsupported_codepoints({})
+        .expect_invalid_sequences({});
+
+    TEST_TRANSCODE
+        .input(U"\U00010000")
+        .expect(U"\U00010000")
+        .expect_stop_reason(strf::transcode_stop_reason::completed)
+        .expect_unsupported_codepoints({})
+        .expect_invalid_sequences({});
+
+    TEST_TRANSCODE
+        .input(U"\U0010FFFF")
+        .expect(U"\U0010FFFF")
+        .expect_stop_reason(strf::transcode_stop_reason::completed)
+        .expect_unsupported_codepoints({})
+        .expect_invalid_sequences({});
+
     TEST_TRANSCODE
         .input(U"ab\u0080\u0800\uD7FF\U00010000\U0010FFFF")
         .expect(U"ab\u0080\u0800\uD7FF\U00010000\U0010FFFF")

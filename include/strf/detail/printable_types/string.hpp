@@ -999,17 +999,17 @@ private:
             u32_to_dest_ = dest_charset.from_u32().transcode_func();
         }
         STRF_IF_CONSTEXPR (PrePrinting::size_required) {
-            strf::transcode_size_f<SrcCharT>  transcode_size
+            strf::transcode_size_f<SrcCharT> transcode_size
                 = transcoder.transcode_size_func();
             std::ptrdiff_t s = 0;
             const auto flags = strf::to_transcode_flags(surr_poli_);
             if (transcode_size != nullptr) {
-                s = transcode_size(str_, str_end_, flags).size;
+                s = transcode_size(str_, str_end_, strf::transc_size_max, flags).size;
             } else {
                 s = strf::decode_encode_size<SrcCharT>
                     ( src_charset.to_u32().transcode_func()
                     , dest_charset.from_u32().transcode_size_func()
-                    , str_, str_end_, flags )
+                    , str_, str_end_, strf::transc_size_max, flags )
                     .size;
             }
             pre.add_size(s);
@@ -1190,12 +1190,12 @@ void STRF_HD aligned_transcode_printer<SrcCharT, DestCharT>::init_
                 = transcoder.transcode_size_func();
         const auto flags = strf::to_transcode_flags(surr_poli_);
         if (transcode_size != nullptr) {
-            s = transcode_size(str_, str_end_, flags).size;
+            s = transcode_size(str_, str_end_, strf::transc_size_max, flags).size;
         } else {
             s = strf::decode_encode_size<SrcCharT>
                 ( src_charset.to_u32().transcode_func()
                 , dest_charset.from_u32().transcode_size_func()
-                , str_, str_end_, flags )
+                , str_, str_end_, strf::transc_size_max, flags )
                 .size;
         }
         if (fillcount > 0) {
@@ -1296,12 +1296,12 @@ private:
                 = transcoder.unsafe_transcode_size_func();
             std::ptrdiff_t s = 0;
             if (transcode_size != nullptr) {
-                s = transcode_size(str_, str_end_, flags).size;
+                s = transcode_size(str_, str_end_, strf::transc_size_max, flags).size;
             } else {
                 s = strf::unsafe_decode_encode_size<SrcCharT>
                     ( src_charset.to_u32().unsafe_transcode_func()
                     , dest_charset.from_u32().unsafe_transcode_size_func()
-                    , str_, str_end_, flags )
+                    , str_, str_end_, strf::transc_size_max, flags )
                     .size;
             }
             pre.add_size(s);
@@ -1483,12 +1483,12 @@ void STRF_HD aligned_unsafe_transcode_printer<SrcCharT, DestCharT>::init_
                 = transcoder.unsafe_transcode_size_func();
         const auto flags = strf::to_transcode_flags(surr_poli_);
         if (transcode_size != nullptr) {
-            s = transcode_size(str_, str_end_, flags).size;
+            s = transcode_size(str_, str_end_, strf::transc_size_max, flags).size;
         } else {
             s = strf::unsafe_decode_encode_size<SrcCharT>
                 ( src_charset.to_u32().unsafe_transcode_func()
                 , dest_charset.from_u32().unsafe_transcode_size_func()
-                , str_, str_end_, flags )
+                , str_, str_end_, strf::transc_size_max, flags )
                 .size;
         }
         if (fillcount > 0) {

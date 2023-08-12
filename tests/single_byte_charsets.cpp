@@ -17,12 +17,12 @@
 #include "test_utils/transcoding.hpp"
 
 #define TEST_TRANSCODE(SrcCharset, DstCharset)                          \
-    test_utils::trancode_tester_caller(BOOST_CURRENT_FUNCTION, __FILE__, __LINE__) \
+    test_utils::transcode_tester_caller(BOOST_CURRENT_FUNCTION, __FILE__, __LINE__) \
     << decltype(test_utils::transcoding_test_data_maker_type((SrcCharset), (DstCharset))) \
     {(SrcCharset), (DstCharset), true}
 
 #define TEST_UNSAFE_TRANSCODE(SrcCharset, DstCharset)                   \
-    test_utils::trancode_tester_caller(BOOST_CURRENT_FUNCTION, __FILE__, __LINE__) \
+    test_utils::transcode_tester_caller(BOOST_CURRENT_FUNCTION, __FILE__, __LINE__) \
     << decltype(test_utils::transcoding_test_data_maker_type((SrcCharset), (DstCharset))) \
     {(SrcCharset), (DstCharset), false}
 

@@ -26,6 +26,48 @@ const char u8str_DFFF_D800_[] = "\xED\xBF\xBF\xED\xA0\x80_";
 
 STRF_TEST_FUNC void utf32_to_utf8_unsafe_transcode()
 {
+    TEST_UTF_UNSAFE_TRANSCODE(char32_t, char8_t)
+        .input(U"ab")
+        .expect(u8"ab")
+        .expect_stop_reason(strf::transcode_stop_reason::completed)
+        .expect_unsupported_codepoints({})
+        .expect_invalid_sequences({});
+
+    TEST_UTF_UNSAFE_TRANSCODE(char32_t, char8_t)
+        .input(U"\u0080")
+        .expect(u8"\u0080")
+        .expect_stop_reason(strf::transcode_stop_reason::completed)
+        .expect_unsupported_codepoints({})
+        .expect_invalid_sequences({});
+
+    TEST_UTF_UNSAFE_TRANSCODE(char32_t, char8_t)
+        .input(U"\u0800")
+        .expect(u8"\u0800")
+        .expect_stop_reason(strf::transcode_stop_reason::completed)
+        .expect_unsupported_codepoints({})
+        .expect_invalid_sequences({});
+
+    TEST_UTF_UNSAFE_TRANSCODE(char32_t, char8_t)
+        .input(U"\uD7FF")
+        .expect(u8"\uD7FF")
+        .expect_stop_reason(strf::transcode_stop_reason::completed)
+        .expect_unsupported_codepoints({})
+        .expect_invalid_sequences({});
+
+    TEST_UTF_UNSAFE_TRANSCODE(char32_t, char8_t)
+        .input(U"\U00010000")
+        .expect(u8"\U00010000")
+        .expect_stop_reason(strf::transcode_stop_reason::completed)
+        .expect_unsupported_codepoints({})
+        .expect_invalid_sequences({});
+
+    TEST_UTF_UNSAFE_TRANSCODE(char32_t, char8_t)
+        .input(U"\U0010FFFF")
+        .expect(u8"\U0010FFFF")
+        .expect_stop_reason(strf::transcode_stop_reason::completed)
+        .expect_unsupported_codepoints({})
+        .expect_invalid_sequences({});
+
     TEST(u8" ab\u0080\u0800\uD7FF\U00010000\U0010FFFF")
         (strf::unsafe_transcode(U"ab\u0080\u0800\uD7FF\U00010000\U0010FFFF") > 8);
 
@@ -113,6 +155,48 @@ STRF_TEST_FUNC void utf32_to_utf8_unsafe_transcode()
 
 STRF_TEST_FUNC void utf32_to_utf8_valid_sequences()
 {
+    TEST_UTF_TRANSCODE(char32_t, char8_t)
+        .input(U"ab")
+        .expect(u8"ab")
+        .expect_stop_reason(strf::transcode_stop_reason::completed)
+        .expect_unsupported_codepoints({})
+        .expect_invalid_sequences({});
+
+    TEST_UTF_TRANSCODE(char32_t, char8_t)
+        .input(U"\u0080")
+        .expect(u8"\u0080")
+        .expect_stop_reason(strf::transcode_stop_reason::completed)
+        .expect_unsupported_codepoints({})
+        .expect_invalid_sequences({});
+
+    TEST_UTF_TRANSCODE(char32_t, char8_t)
+        .input(U"\u0800")
+        .expect(u8"\u0800")
+        .expect_stop_reason(strf::transcode_stop_reason::completed)
+        .expect_unsupported_codepoints({})
+        .expect_invalid_sequences({});
+
+    TEST_UTF_TRANSCODE(char32_t, char8_t)
+        .input(U"\uD7FF")
+        .expect(u8"\uD7FF")
+        .expect_stop_reason(strf::transcode_stop_reason::completed)
+        .expect_unsupported_codepoints({})
+        .expect_invalid_sequences({});
+
+    TEST_UTF_TRANSCODE(char32_t, char8_t)
+        .input(U"\U00010000")
+        .expect(u8"\U00010000")
+        .expect_stop_reason(strf::transcode_stop_reason::completed)
+        .expect_unsupported_codepoints({})
+        .expect_invalid_sequences({});
+
+    TEST_UTF_TRANSCODE(char32_t, char8_t)
+        .input(U"\U0010FFFF")
+        .expect(u8"\U0010FFFF")
+        .expect_stop_reason(strf::transcode_stop_reason::completed)
+        .expect_unsupported_codepoints({})
+        .expect_invalid_sequences({});
+
     TEST(u8" ab\u0080\u0800\uD7FF\U00010000\U0010FFFF")
         (strf::sani(U"ab\u0080\u0800\uD7FF\U00010000\U0010FFFF") > 8);
 

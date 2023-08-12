@@ -89,20 +89,27 @@ template <typename T>
 struct sbcs_find_invalid_seq_crtp
 {
     template <typename CharT>
-    static STRF_HD const CharT* find_invalid_sequence(const CharT* src, const CharT* end) noexcept
+    static STRF_HD strf::transcode_size_result<CharT> find_invalid_sequence
+        ( const CharT* src, const CharT* src_end, std::ptrdiff_t limit ) noexcept
     {
-#ifdef STRF_HAS_STD_ALGORITHM
-        return std::find_if(src, end, [](CharT ch) {
-            return ! T::is_valid(static_cast<std::uint8_t>(ch));
-        });
-#else
-        for(; src < end; ++src) {
-            if (!T::is_valid(static_cast<std::uint8_t>(*src))) {
-                return src;
+        using stop_reason = strf::transcode_stop_reason;
+        if (src_end - src <= limit) {
+            for(const auto* it = src; it < src_end; ++it) {
+                if (!T::is_valid(static_cast<std::uint8_t>(*it))) {
+                    return {it - src, it, stop_reason::invalid_sequence};;
+                }
+            }
+            return {src_end - src, src_end, stop_reason::completed};
+        }
+        const auto* const src_limit = src + limit;
+        for(const auto* it = src; ; ++it) {
+            if (!T::is_valid(static_cast<std::uint8_t>(*it))) {
+                return {it - src, it, stop_reason::invalid_sequence};
+            }
+            if (it == src_limit) {
+                return {it - src, it, stop_reason::reached_limit};
             }
         }
-        return end;
-#endif
     }
 };
 
@@ -110,10 +117,14 @@ template <typename T>
 struct sbcs_never_has_invalid_seq_crtp
 {
     template <typename CharT>
-    static STRF_HD const CharT* find_invalid_sequence
-        ( const CharT*, const CharT* end ) noexcept
+    static STRF_HD strf::transcode_size_result<CharT> find_invalid_sequence
+        ( const CharT* src, const CharT* src_end, std::ptrdiff_t limit ) noexcept
     {
-        return end;
+        using stop_reason = strf::transcode_stop_reason;
+        if (src_end - src <= limit) {
+            return {src_end - src, src_end, stop_reason::completed};
+        }
+        return {limit, src + limit, stop_reason::reached_limit};
     }
 };
 
@@ -122,89 +133,185 @@ struct sbcs_find_unsupported_codepoint_crtp
 {
     template <typename CharT>
     static STRF_HD strf::transcode_size_result<CharT> find_first_invalid_codepoint
-        ( const CharT* src, const CharT* end, bool strict_surrogates ) noexcept
+        ( const CharT* src
+        , const CharT* src_end
+        , std::ptrdiff_t limit
+        , bool strict_surrogates ) noexcept
     {
+        using stop_reason = strf::transcode_stop_reason;
         static_assert(sizeof(CharT) == 4);
 
-        if (strict_surrogates) {
-            for(auto it = src; it < end; ++it) {
-                if (*it >= 0x110000 || (0xD800 <= *it && *it <= 0xFFFF)) {
-                    return {it - src, it, strf::transcode_size_stop_reason::invalid_sequence};
+        if (src_end - src <= limit) {
+            if (strict_surrogates) {
+                for(auto it = src; it < src_end; ++it) {
+                    if (*it >= 0x110000 || (0xD800 <= *it && *it <= 0xFFFF)) {
+                        return {it - src, it, stop_reason::invalid_sequence};
+                    }
+                }
+            } else {
+                for(auto it = src; it < src_end; ++it) {
+                    if (*it >= 0x110000) {
+                        return {it - src, it, stop_reason::invalid_sequence};
+                    }
                 }
             }
-        } else {
-            for(auto it = src; it < end; ++it) {
-                if (*it >= 0x110000) {
-                    return {it - src, it, strf::transcode_size_stop_reason::invalid_sequence};
+            return {src_end - src, src_end, stop_reason::completed};
+        }
+        const auto* const src_limit = src + limit;
+        if (strict_surrogates) {
+            for(auto it = src; ; ++it) {
+                if (*it >= 0x110000 || (0xD800 <= *it && *it <= 0xFFFF)) {
+                    return {it - src, it, stop_reason::invalid_sequence};
+                }
+                if (it == src_limit) {
+                    return {it - src, it, stop_reason::reached_limit};
                 }
             }
         }
-        return {end - src, end, strf::transcode_size_stop_reason::completed};
+        for(auto it = src; ; ++it) {
+            if (*it >= 0x110000) {
+                return {it - src, it, stop_reason::invalid_sequence};
+            }
+            if (it == src_limit) {
+                return {it - src, it, stop_reason::reached_limit};
+            }
+        }
     }
 
     template <typename CharT>
     static STRF_HD strf::transcode_size_result<CharT> find_first_unsupported_or_invalid_codepoint
-        ( const CharT* src, const CharT* end, bool strict_surrogates ) noexcept
+        ( const CharT* src
+        , const CharT* src_end
+        , std::ptrdiff_t limit
+        , bool strict_surrogates ) noexcept
     {
-       if (strict_surrogates) {
-            for(auto it = src; it < end; ++it) {
-                if (*it >= 0x110000 || (0xD800 <= *it && *it <= 0xFFFF)) {
-                    return {it - src, it, strf::transcode_size_stop_reason::invalid_sequence};
+        using stop_reason = strf::transcode_stop_reason;
+        if (src_end - src <= limit) {
+            if (strict_surrogates) {
+                for(auto it = src; it < src_end; ++it) {
+                    if (*it >= 0x110000 || (0xD800 <= *it && *it <= 0xFFFF)) {
+                        return {it - src, it, stop_reason::invalid_sequence};
+                    }
+                    if (T::encode(static_cast<char32_t>(*it)) >= 0x100) {
+                        return {it - src, it, stop_reason::unsupported_codepoint};
+                    }
                 }
-                if (T::encode(static_cast<char32_t>(*it)) >= 0x100) {
-                    return {it - src, it, strf::transcode_size_stop_reason::unsupported_codepoint};
+            } else {
+                for(auto it = src; it < src_end; ++it) {
+                    if (*it >= 0x110000) {
+                        return {it - src, it, stop_reason::invalid_sequence};
+                    }
+                    if (T::encode(static_cast<char32_t>(*it)) >= 0x100) {
+                        return {it - src, it, stop_reason::unsupported_codepoint};
+                    }
                 }
             }
-        } else {
-            for(auto it = src; it < end; ++it) {
-                if (*it >= 0x110000) {
-                    return {it - src, it, strf::transcode_size_stop_reason::invalid_sequence};
+            return {src_end - src, src_end, stop_reason::completed};
+        }
+        const auto* const src_limit = src + limit;
+        if (strict_surrogates) {
+            for(auto it = src; ; ++it) {
+                if (*it >= 0x110000 || (0xD800 <= *it && *it <= 0xFFFF)) {
+                    return {it - src, it, stop_reason::invalid_sequence};
                 }
                 if (T::encode(static_cast<char32_t>(*it)) >= 0x100) {
-                    return {it - src, it, strf::transcode_size_stop_reason::unsupported_codepoint};
+                    return {it - src, it, stop_reason::unsupported_codepoint};
+                }
+                if (it == src_limit) {
+                    return {it - src, it, stop_reason::reached_limit};
                 }
             }
         }
-        return {end - src, end, strf::transcode_size_stop_reason::completed};
+        for(auto it = src; ; ++it) {
+            if (*it >= 0x110000) {
+                return {it - src, it, stop_reason::invalid_sequence};
+            }
+            if (T::encode(static_cast<char32_t>(*it)) >= 0x100) {
+                return {it - src, it, stop_reason::unsupported_codepoint};
+            }
+            if (it == src_limit) {
+                return {it - src, it, stop_reason::reached_limit};
+            }
+        }
     }
 
     template <typename CharT>
     static STRF_HD strf::transcode_size_result<CharT> find_first_valid_unsupported_codepoint
-        ( const CharT* src, const CharT* end, bool strict_surrogates ) noexcept
+        ( const CharT* src
+        , const CharT* src_end
+        , std::ptrdiff_t limit
+        , bool strict_surrogates ) noexcept
     {
         static_assert(sizeof(CharT) == 4);
-
-        if (strict_surrogates) {
-            for(auto it = src; it < end; ++it) {
-                if ( (*it <= 0xD800 || (0xFFFF <= *it && *it <= 0x10FFFF))
-                  && T::encode(static_cast<char32_t>(*it)) >= 0x100)
-                {
-                    return {it - src, it, strf::transcode_size_stop_reason::unsupported_codepoint};
+        using stop_reason = strf::transcode_stop_reason;
+        if (src_end - src <= limit) {
+            if (strict_surrogates) {
+                for(auto it = src; it < src_end; ++it) {
+                    if ( (*it <= 0xD800 || (0xFFFF <= *it && *it <= 0x10FFFF))
+                         && T::encode(static_cast<char32_t>(*it)) >= 0x100)
+                    {
+                        return {it - src, it, stop_reason::unsupported_codepoint};
+                    }
+                }
+            } else {
+                for(auto it = src; it < src_end; ++it) {
+                    if (*it <= 0x110000 && T::encode(static_cast<char32_t>(*it)) >= 0x100) {
+                        return {it - src, it, stop_reason::unsupported_codepoint};
+                    }
                 }
             }
-        } else {
-            for(auto it = src; it < end; ++it) {
-                if (*it <= 0x110000 && T::encode(static_cast<char32_t>(*it)) >= 0x100) {
-                    return {it - src, it, strf::transcode_size_stop_reason::unsupported_codepoint};
+            return {src_end - src, src_end, stop_reason::completed};
+        }
+
+        const auto* const src_limit = src + limit;
+        if (strict_surrogates) {
+            for(auto it = src; ; ++it) {
+                if ( (*it <= 0xD800 || (0xFFFF <= *it && *it <= 0x10FFFF))
+                     && T::encode(static_cast<char32_t>(*it)) >= 0x100)
+                {
+                    return {it - src, it, stop_reason::unsupported_codepoint};
+                }
+                if (it == src_limit) {
+                    return {it - src, it, stop_reason::reached_limit};
                 }
             }
         }
-        return {end - src, end, strf::transcode_size_stop_reason::completed};
+        for(auto it = src; ; ++it) {
+            if (*it <= 0x110000 && T::encode(static_cast<char32_t>(*it)) >= 0x100) {
+                return {it - src, it, stop_reason::unsupported_codepoint};
+            }
+            if (it == src_limit) {
+                return {src_end - src, src_end, stop_reason::reached_limit};
+            }
+        }
     }
 
 
    template <typename CharT>
-    static STRF_HD strf::transcode_size_result<CharT> find_first_unsupported_codepoint
-        ( const CharT* src, const CharT* end ) noexcept
+   static STRF_HD strf::transcode_size_result<CharT> find_first_unsupported_codepoint
+        ( const CharT* src
+        , const CharT* src_end
+        , std::ptrdiff_t limit ) noexcept
     {
         static_assert(sizeof(CharT) == 4);
-
-        for(auto it = src; it < end; ++it) {
+        using stop_reason = strf::transcode_stop_reason;
+        if (src_end - src <= limit) {
+            for(auto it = src; it < src_end; ++it) {
+                if (T::encode(static_cast<char32_t>(*it)) >= 0x100) {
+                    return {it - src, it, stop_reason::unsupported_codepoint};
+                }
+            }
+            return {src_end - src, src_end, stop_reason::completed};
+        }
+        const auto* const src_limit = src + limit;
+        for(auto it = src; ; ++it) {
             if (T::encode(static_cast<char32_t>(*it)) >= 0x100) {
-                return {it - src, it, strf::transcode_size_stop_reason::unsupported_codepoint};
+                return {it - src, it, stop_reason::unsupported_codepoint};
+            }
+            if (it == src_limit) {
+                return {it - src, it, stop_reason::reached_limit};
             }
         }
-        return {end - src, end, strf::transcode_size_stop_reason::completed};
     }
 
 };
@@ -2345,18 +2452,18 @@ struct single_byte_charset_to_utf32
     static constexpr STRF_HD strf::transcode_size_result<SrcCharT> transcode_size
         ( const SrcCharT* src
         , const SrcCharT* src_end
+        , std::ptrdiff_t limit
         , strf::transcode_flags flags ) noexcept
     {
         STRF_ASSERT(src <= src_end);
-        if ( ! strf::with_stop_on_invalid_sequence(flags)) {
-            return {src_end - src, src_end, strf::transcode_size_stop_reason::completed};
+        if (strf::with_stop_on_invalid_sequence(flags)) {
+            return Impl::find_invalid_sequence(src, src_end, limit);
         }
-        const auto* const it = Impl::find_invalid_sequence(src, src_end);
-        const auto reason =
-            ( it == src_end
-            ? strf::transcode_size_stop_reason::completed
-            : strf::transcode_size_stop_reason::invalid_sequence );
-        return {it - src, it, reason};
+        using stop_reason = strf::transcode_stop_reason;
+        if (src_end - src <= limit) {
+            return {src_end - src, src_end, stop_reason::completed};
+        }
+        return {limit, src + limit, stop_reason::reached_limit};
     }
 
     static STRF_HD strf::unsafe_transcode_result<SrcCharT> unsafe_transcode
@@ -2369,10 +2476,15 @@ struct single_byte_charset_to_utf32
     static STRF_HD strf::unsafe_transcode_size_result<SrcCharT> unsafe_transcode_size
         ( const SrcCharT* src
         , const SrcCharT* src_end
+        , std::ptrdiff_t limit
         , strf::transcode_flags )
     {
         STRF_ASSERT(src <= src_end);
-        return {src_end - src, src_end, strf::unsafe_transcode_size_stop_reason::completed};
+        using stop_reason = strf::transcode_stop_reason;
+        if (src_end - src <= limit) {
+            return {src_end - src, src_end, stop_reason::completed};
+        }
+        return {limit, src + limit, stop_reason::reached_limit};
     }
 
     static STRF_HD strf::transcode_f<SrcCharT, DestCharT> transcode_func() noexcept
@@ -2462,6 +2574,7 @@ struct utf32_to_single_byte_charset
     static constexpr STRF_HD strf::transcode_size_result<SrcCharT> transcode_size
         ( const SrcCharT* src
         , const SrcCharT* src_end
+        , std::ptrdiff_t limit
         , strf::transcode_flags flags) noexcept
     {
         STRF_ASSERT(src <= src_end);
@@ -2469,17 +2582,21 @@ struct utf32_to_single_byte_charset
         if ( strf::with_stop_on_unsupported_codepoint(flags) &&
              strf::with_stop_on_invalid_sequence(flags) ) {
             return Impl::find_first_unsupported_or_invalid_codepoint
-                (src, src_end, strict_surrogates);
+                (src, src_end, limit, strict_surrogates);
         }
         if (strf::with_stop_on_invalid_sequence(flags)) {
             return Impl::find_first_invalid_codepoint
-                (src, src_end, strict_surrogates);
+                (src, src_end, limit, strict_surrogates);
         }
         if (strf::with_stop_on_unsupported_codepoint(flags)) {
             return Impl::find_first_valid_unsupported_codepoint
-                (src, src_end, strict_surrogates);
+                (src, src_end, limit, strict_surrogates);
         }
-        return {src_end - src, src_end, strf::transcode_size_stop_reason::completed};
+        using stop_reason = strf::transcode_stop_reason;
+        if (src_end - src <= limit) {
+            return {src_end - src, src_end, stop_reason::completed};
+        }
+        return {limit, src + limit, stop_reason::reached_limit};
     }
 
     static STRF_HD strf::unsafe_transcode_result<SrcCharT> unsafe_transcode
@@ -2492,13 +2609,18 @@ struct utf32_to_single_byte_charset
     static constexpr STRF_HD strf::unsafe_transcode_size_result<SrcCharT> unsafe_transcode_size
         ( const SrcCharT* src
         , const SrcCharT* src_end
+        , std::ptrdiff_t limit
         , strf::transcode_flags flags) noexcept
     {
         STRF_ASSERT(src <= src_end);
+        using stop_reason = strf::transcode_stop_reason;
         if (! strf::with_stop_on_unsupported_codepoint(flags)) {
-            return {src_end - src, src_end, strf::transcode_size_stop_reason::completed};
+            if (src_end - src <= limit) {
+                return {src_end - src, src_end, stop_reason::completed};
+            }
+            return {limit, src + limit, stop_reason::reached_limit};
         }
-        return Impl::find_first_unsupported_codepoint(src, src_end);
+        return Impl::find_first_unsupported_codepoint(src, src_end, limit);
     }
     static STRF_HD strf::transcode_f<SrcCharT, DestCharT> transcode_func() noexcept
     {
@@ -2611,19 +2733,18 @@ struct single_byte_charset_to_itself
     static constexpr STRF_HD strf::transcode_size_result<SrcCharT> transcode_size
         ( const SrcCharT* src
         , const SrcCharT* src_end
+        , std::ptrdiff_t limit
         , strf::transcode_flags flags) noexcept
     {
         STRF_ASSERT(src <= src_end);
         if (strf::with_stop_on_invalid_sequence(flags)) {
-            const auto* const it = Impl::find_invalid_sequence(src, src_end);
-            const auto reason = ( it == src_end
-                                ? strf::transcode_size_stop_reason::completed
-                                : strf::transcode_size_stop_reason::invalid_sequence );
-            return {it - src, it, reason};
+            return Impl::find_invalid_sequence(src, src_end, limit);
         }
-
-        return {src_end - src, src_end,
-                strf::transcode_size_stop_reason::completed};
+        using stop_reason = strf::transcode_stop_reason;
+        if (src_end - src <= limit) {
+            return {src_end - src, src_end, stop_reason::completed};
+        }
+        return {limit, src + limit, stop_reason::reached_limit};
     }
 
     static STRF_HD strf::unsafe_transcode_result<SrcCharT> unsafe_transcode
@@ -2639,11 +2760,15 @@ struct single_byte_charset_to_itself
     static STRF_HD strf::unsafe_transcode_size_result<SrcCharT> unsafe_transcode_size
         ( const SrcCharT* src
         , const SrcCharT* src_end
+        , std::ptrdiff_t limit
         , strf::transcode_flags )
     {
         STRF_ASSERT(src <= src_end);
-        return {src_end - src, src_end,
-                strf::unsafe_transcode_size_stop_reason::completed};
+        using stop_reason = strf::transcode_stop_reason;
+        if (src_end - src <= limit) {
+            return {src_end - src, src_end, stop_reason::completed};
+        }
+        return {limit, src + limit, stop_reason::reached_limit};
     }
 
     static STRF_HD strf::transcode_f<SrcCharT, DestCharT> transcode_func() noexcept

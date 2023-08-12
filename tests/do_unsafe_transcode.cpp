@@ -45,7 +45,7 @@ STRF_TEST_FUNC void test_unsafe_transcode()
         TEST_CSTR_EQ(buff, u8"abc\uAAAAzzz\uBBBBxxx");
     }
     {
-        auto res = strf::unsafe_transcode_size <strf::utf_t, strf::utf_t<char>>(u"hello"sv);
+        auto res = strf::unsafe_transcode_size <strf::utf_t, strf::utf_t<char>>(u"hello"sv, 6);
 
         TEST_EQ(res.size, 5);
     }
@@ -62,7 +62,7 @@ STRF_TEST_FUNC void test_unsafe_transcode()
     }
     {
         auto res = strf::unsafe_transcode_size <strf::utf_t, strf::iso_8859_3_t<char>>
-            (u"abc\uAAAAzzz\uBBBBxxx"sv);
+            (u"abc\uAAAAzzz\uBBBBxxx"sv, 12);
 
         TEST_EQ(res.size, 11);
     }
