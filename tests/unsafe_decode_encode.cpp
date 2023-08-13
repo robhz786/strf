@@ -368,7 +368,7 @@ STRF_TEST_FUNC void test_unsafe_decode_encode_size_scenarios()
         TEST_TRUE(res.stop_reason == stop_reason::completed);
         TEST_EQ(0, res.u32dist);
         TEST_EQ(0, (res.stale_ptr - input.end()));
-        TEST_EQ(res.size, 6);
+        TEST_EQ(res.ssize, 6);
     }
     {   // happy scenario with limit equal to expected size
         ustr_view input = u"abcdef";
@@ -382,7 +382,7 @@ STRF_TEST_FUNC void test_unsafe_decode_encode_size_scenarios()
         TEST_TRUE(res.stop_reason == stop_reason::completed);
         TEST_EQ(0, res.u32dist);
         TEST_EQ(0, (res.stale_ptr - input.end()));
-        TEST_EQ(res.size, 6);
+        TEST_EQ(res.ssize, 6);
     }
     {
         // limit less then expected size
@@ -400,7 +400,7 @@ STRF_TEST_FUNC void test_unsafe_decode_encode_size_scenarios()
             , strf::surrogate_policy::strict );
 
         TEST_EQ(cpcount_res.count, res.u32dist);
-        TEST_EQ(res.size, 5);
+        TEST_EQ(res.ssize, 5);
     }
     {   // there is a codepoint that
         // is not supported by the destination encoding
@@ -439,7 +439,7 @@ STRF_TEST_FUNC void test_unsafe_decode_encode_size_scenarios()
             u"\u0401\u0402\u0403\u045F"
             u"\uABCD"                   // the unsupported codepoints
             u"XYZWRESF";
-        const auto expected_size = input.size();
+        const auto expected_size = input.ssize();
 
         auto res = strf::unsafe_decode_encode_size
             ( strf::utf<char16_t>, strf::iso_8859_5<char>
@@ -448,7 +448,7 @@ STRF_TEST_FUNC void test_unsafe_decode_encode_size_scenarios()
         TEST_TRUE(res.stop_reason == stop_reason::completed);
         TEST_EQ(0, res.u32dist);
         TEST_EQ(0, (res.stale_ptr - input.end()));
-        TEST_EQ(res.size, expected_size);
+        TEST_EQ(res.ssize, expected_size);
     }
 }
 
@@ -460,7 +460,7 @@ STRF_TEST_FUNC void test_unsafe_decode_encode_size_overloads()
 
     const ustr_view input = u"abcdef" u"\u0401\u0402" u"\uABCD" u"XYZ";
     const auto* const src = input.data();
-    const auto src_len = input.size();
+    const auto src_len = input.ssize();
     const auto* const src_end = src + src_len;
 
     constexpr auto expected_full_size = 12; // "abcdef\xA1\xA2?XYZ";
@@ -475,7 +475,7 @@ STRF_TEST_FUNC void test_unsafe_decode_encode_size_overloads()
     {
         const auto res = strf::unsafe_decode_encode_size
             (src_enc, dst_enc, src, src_end, expected_part_size, flags_stop);
-        TEST_EQ(res.size, expected_part_size);
+        TEST_EQ(res.ssize, expected_part_size);
         TEST_TRUE(res.stop_reason == stop_reason::unsupported_codepoint);
 
         auto cpcount_res = strf::utf_t<char16_t>::count_codepoints
@@ -488,7 +488,7 @@ STRF_TEST_FUNC void test_unsafe_decode_encode_size_overloads()
     {
         const auto res = strf::unsafe_decode_encode_size
             (src_enc, dst_enc, src, src_end, expected_full_size, flags_none);
-        TEST_EQ(res.size, expected_full_size);
+        TEST_EQ(res.ssize, expected_full_size);
         TEST_EQ(res.u32dist, 0);
         TEST_EQ(res.u32dist, 0);
     }
@@ -497,7 +497,7 @@ STRF_TEST_FUNC void test_unsafe_decode_encode_size_overloads()
     {
         const auto res = strf::unsafe_decode_encode_size
             (src_enc, dst_enc, src, src_end, expected_part_size, flags_stop);
-        TEST_EQ(res.size, expected_part_size);
+        TEST_EQ(res.ssize, expected_part_size);
         TEST_TRUE(res.stop_reason == stop_reason::unsupported_codepoint);
 
         auto cpcount_res = strf::utf_t<char16_t>::count_codepoints
@@ -514,7 +514,7 @@ STRF_TEST_FUNC void test_unsafe_decode_encode_size_overloads()
 
         const auto res = strf::unsafe_decode_encode_size
             (src_enc, dst_enc,  src, src_end, expected_full_size, flags_none);
-        TEST_EQ(res.size, expected_full_size);
+        TEST_EQ(res.ssize, expected_full_size);
     }
 
 #ifdef STRF_HAS_STD_STRING_VIEW
@@ -529,7 +529,7 @@ STRF_TEST_FUNC void test_unsafe_decode_encode_size_overloads()
 
         const auto res = strf::unsafe_decode_encode_size
             (src_enc, dst_enc, src_sv, expected_part_size, flags_stop);
-        TEST_EQ(res.size, expected_part_size);
+        TEST_EQ(res.ssize, expected_part_size);
         TEST_TRUE(res.stop_reason == stop_reason::unsupported_codepoint);
 
         auto cpcount_res = strf::utf_t<char16_t>::count_codepoints
@@ -546,7 +546,7 @@ STRF_TEST_FUNC void test_unsafe_decode_encode_size_overloads()
 
         const auto res = strf::unsafe_decode_encode_size
             (src_enc, dst_enc, src_sv, expected_full_size, flags_none);
-        TEST_EQ(res.size, expected_full_size);
+        TEST_EQ(res.ssize, expected_full_size);
     }
 
     // Overload 2
@@ -557,7 +557,7 @@ STRF_TEST_FUNC void test_unsafe_decode_encode_size_overloads()
 
         const auto res = strf::unsafe_decode_encode_size
             (src_enc, dst_enc, src_sv, expected_part_size, flags_stop);
-        TEST_EQ(res.size, expected_part_size);
+        TEST_EQ(res.ssize, expected_part_size);
         TEST_TRUE(res.stop_reason == stop_reason::unsupported_codepoint);
 
         auto cpcount_res = strf::utf_t<char16_t>::count_codepoints
@@ -574,7 +574,7 @@ STRF_TEST_FUNC void test_unsafe_decode_encode_size_overloads()
 
         const auto res = strf::unsafe_decode_encode_size
             (src_enc, dst_enc, src_sv, expected_full_size, flags_none);
-        TEST_EQ(res.size, expected_full_size);
+        TEST_EQ(res.ssize, expected_full_size);
     }
 
 #endif // defined(STRF_HAS_STD_STRING_VIEW)

@@ -260,7 +260,7 @@ using unsafe_transcode_result = transcode_result<CharT>;
 template <typename CharT>
 struct transcode_size_result
 {
-    std::ptrdiff_t size;
+    std::ptrdiff_t ssize;
     const CharT* ptr;
     transcode_size_stop_reason stop_reason;
 };
@@ -1259,7 +1259,7 @@ inline STRF_HD strf::decode_encode_result<SrcCharT> decode_encode
 template <typename CharT>
 struct decode_encode_size_result
 {
-    std::ptrdiff_t size;
+    std::ptrdiff_t ssize;
     const CharT* stale_ptr;
     std::int32_t u32dist;
     transcode_size_stop_reason stop_reason;
@@ -1288,9 +1288,9 @@ STRF_HD strf::decode_encode_size_result<SrcCharT> decode_encode_size
 
         STRF_ASSERT(src_res.stop_reason != src_stop_reason::unsupported_codepoint);
         STRF_ASSERT(size_res.stop_reason != size_stop_reason::invalid_sequence);
-        STRF_ASSERT(size_res.size <= limit);
-        limit -= size_res.size;
-        size  += size_res.size;
+        STRF_ASSERT(size_res.ssize <= limit);
+        limit -= size_res.ssize;
+        size  += size_res.ssize;
 
         if (size_res.stop_reason == size_stop_reason::completed) {
             if (src_res.stop_reason == src_stop_reason::bad_destination) {
@@ -1581,10 +1581,10 @@ STRF_HD strf::decode_encode_size_result<SrcCharT> unsafe_decode_encode_size
         const auto size_res = size_calc_func(pivot_buff, pivot_res.ptr, limit, flags);
 
         STRF_ASSERT(src_res.stop_reason != stop_reason::unsupported_codepoint);
-        STRF_ASSERT(size_res.size <= limit);
+        STRF_ASSERT(size_res.ssize <= limit);
 
-        limit -= size_res.size;
-        size  += size_res.size;
+        limit -= size_res.ssize;
+        size  += size_res.ssize;
 
         if (size_res.stop_reason == stop_reason::completed) {
             if (src_res.stop_reason == stop_reason::bad_destination) {
@@ -1823,7 +1823,7 @@ STRF_HD strf::decode_encode_size_result<SrcCharT> transcode_size
     const auto func = transcoder.transcode_size_func();
     if (func != nullptr) {
         auto res = func(src, src_end, limit, flags);
-        return {res.size, res.ptr, 0, res.stop_reason};
+        return {res.ssize, res.ptr, 0, res.stop_reason};
     }
     return strf::decode_encode_size
         ( src_charset, dst_charset, src, src_end, limit, flags );
@@ -2011,7 +2011,7 @@ STRF_HD strf::decode_encode_size_result<SrcCharT> unsafe_transcode_size
     const auto func = transcoder.unsafe_transcode_size_func();
     if (func != nullptr) {
         auto res = func(src, src_end, limit, flags);
-        return {res.size, res.ptr, 0, res.stop_reason};
+        return {res.ssize, res.ptr, 0, res.stop_reason};
     }
     return strf::unsafe_decode_encode_size(src_charset, dst_charset, src, src_end, limit, flags);
 }

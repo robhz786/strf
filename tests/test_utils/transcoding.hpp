@@ -506,10 +506,10 @@ STRF_HD void transcode_tester<SrcCharset, DstCharset>::run()
     auto transcode_size_stop_reason =
         static_cast<strf::transcode_stop_reason>(res_tr_size.stop_reason);
 
-    if (result_string.ssize() != res_tr_size.size) {
+    if (result_string.ssize() != res_tr_size.ssize) {
         err_msg_.line("Size mismatch:");
-        err_msg_.line("    `transcode_size` calulated : ", res_tr_size.size);
-        err_msg_.line("    But the output's size was  : ", result_string.size());
+        err_msg_.line("    `transcode_size` calulated : ", res_tr_size.ssize);
+        err_msg_.line("    But the output's size was  : ", result_string.ssize());
     }
     if (data_.expected_stop_reason != strf::transcode_stop_reason::bad_destination) {
         if (data_.expected_stop_reason != transcode_size_stop_reason ) {

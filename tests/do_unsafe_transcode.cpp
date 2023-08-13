@@ -47,7 +47,7 @@ STRF_TEST_FUNC void test_unsafe_transcode()
     {
         auto res = strf::unsafe_transcode_size <strf::utf_t, strf::utf_t<char>>(u"hello"sv, 6);
 
-        TEST_EQ(res.size, 5);
+        TEST_EQ(res.ssize, 5);
     }
     {
         char buff[200] = {};
@@ -64,7 +64,7 @@ STRF_TEST_FUNC void test_unsafe_transcode()
         auto res = strf::unsafe_transcode_size <strf::utf_t, strf::iso_8859_3_t<char>>
             (u"abc\uAAAAzzz\uBBBBxxx"sv, 12);
 
-        TEST_EQ(res.size, 11);
+        TEST_EQ(res.ssize, 11);
     }
 
 #endif // STRF_HAS_STD_STRING_VIEW

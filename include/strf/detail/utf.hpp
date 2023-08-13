@@ -3730,7 +3730,7 @@ STRF_HD strf::unsafe_transcode_size_result<SrcCharT> strf::static_transcoder
         return {size, src_end, strf::transcode_stop_reason::completed};
     }
     auto r = transcode_size_continue_on_inv_seq_(src, src_end, limit);
-    return {r.size, r.ptr, r.stop_reason};
+    return {r.ssize, r.ptr, r.stop_reason};
 }
 
 template <typename CharT>

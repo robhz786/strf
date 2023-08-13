@@ -364,7 +364,7 @@ void  test_decode_encode_size_scenarios()
         TEST_TRUE(res.stop_reason == stop_reason::completed);
         TEST_EQ(0, res.u32dist);
         TEST_EQ(0, (res.stale_ptr - input.end()));
-        TEST_EQ(res.size, input.size());
+        TEST_EQ(res.ssize, input.ssize());
     }
     {   // happy scenario - but with limit equal to size
         ustr_view input = u"abcdef";
@@ -377,7 +377,7 @@ void  test_decode_encode_size_scenarios()
         TEST_TRUE(res.stop_reason == stop_reason::completed);
         TEST_EQ(0, res.u32dist);
         TEST_EQ(0, (res.stale_ptr - input.end()));
-        TEST_EQ(res.size, input.size());
+        TEST_EQ(res.ssize, input.ssize());
     }
     {   // with limit less than size
         ustr_view input = u"abcdef";
@@ -394,7 +394,7 @@ void  test_decode_encode_size_scenarios()
             , strf::surrogate_policy::strict );
 
         TEST_EQ(cpcount_res.count, res.u32dist);
-        TEST_EQ(res.size, 5);
+        TEST_EQ(res.ssize, 5);
     }
     {   // all input is valid, but there is a codepoint that
         // is not supported by the destination encoding
@@ -422,7 +422,7 @@ void  test_decode_encode_size_scenarios()
         TEST_EQ(cpcount_res.count, res.u32dist);
         TEST_EQ((unsigned)*cpcount_res.ptr, 0xABCD);
         TEST_EQ(24, (cpcount_res.ptr - input.begin()));
-        TEST_EQ(res.size, expected_size);
+        TEST_EQ(res.ssize, expected_size);
     }
     {   // Same thing, but with limit equal to expected size
 
@@ -448,7 +448,7 @@ void  test_decode_encode_size_scenarios()
         TEST_EQ(cpcount_res.count, res.u32dist);
         TEST_EQ((unsigned)*cpcount_res.ptr, 0xABCD);
         TEST_EQ(24, (cpcount_res.ptr - input.begin()));
-        TEST_EQ(res.size, expected_size);
+        TEST_EQ(res.ssize, expected_size);
     }
     {   // input has invalid sequence and stop_on_invalid_sequence flag is set
 
@@ -468,7 +468,7 @@ void  test_decode_encode_size_scenarios()
         TEST_TRUE(res.stop_reason == stop_reason::invalid_sequence);
         TEST_EQ(0, res.u32dist);
         TEST_EQ(24, res.stale_ptr - input.begin());
-        TEST_EQ(res.size, expected_size);
+        TEST_EQ(res.ssize, expected_size);
     }
     {   // input has invalid sequence but stop_on_invalid_sequence flag is not set
 
@@ -487,7 +487,7 @@ void  test_decode_encode_size_scenarios()
         TEST_TRUE(res.stop_reason == stop_reason::completed);
         TEST_EQ(0, res.u32dist);
         TEST_EQ(0, input.end() - res.stale_ptr);
-        TEST_EQ(res.size, expected_size);
+        TEST_EQ(res.ssize, expected_size);
     }
     {   // The input has an invalid sequence and stop_on_invalid_sequence flag is set,
         // but it has also a codepoint that is not supported in the destinations
@@ -518,7 +518,7 @@ void  test_decode_encode_size_scenarios()
         TEST_EQ(cpcount_res.count, res.u32dist);
         TEST_EQ(20, (cpcount_res.ptr - input.begin()));
 
-        TEST_EQ(res.size, expected_size);
+        TEST_EQ(res.ssize, expected_size);
     }
 }
 
@@ -538,7 +538,7 @@ STRF_TEST_FUNC void test_decode_encode_overloads()
         "\xF0\x9F\x8E\x89" // unupported codepoint U+1F389
         "qwe";
     const auto* const src = input.data();
-    const auto src_len = input.size();
+    const auto src_len = input.ssize();
     const auto* const src_end = src + src_len;
 
     const str_view expected_non_stop = "abc\xA1xyz???tsw?qwe";
@@ -809,7 +809,7 @@ void test_decode_encode_size_overloads()
         "\xF0\x9F\x8E\x89" // unupported codepoint U+1F389
         "qwe";
     const auto* const src = input.data();
-    const auto src_len = input.size();
+    const auto src_len = input.ssize();
     const auto* const src_end = src + src_len;
 
     const std::size_t expected_non_stop_size = 17; // "abc\xA1xyz???tsw?qwe";
@@ -832,7 +832,7 @@ void test_decode_encode_size_overloads()
         TEST_EQ(0, res.u32dist);
         TEST_EQ(0, (res.stale_ptr - input.end()));
 
-        TEST_EQ(res.size, expected_non_stop_size);
+        TEST_EQ(res.ssize, expected_non_stop_size);
     }
 
     // Overload 1 with flags_stop_inv_seq
@@ -842,7 +842,7 @@ void test_decode_encode_size_overloads()
             (src_enc, dst_enc, src, src_end, expected_stop_on_inv_seq_size, flags_stop_inv_seq);
 
         TEST_TRUE(res.stop_reason == stop_reason::invalid_sequence);
-        TEST_EQ(res.size, expected_stop_on_inv_seq_size);
+        TEST_EQ(res.ssize, expected_stop_on_inv_seq_size);
     }
 
     // Overload 1 with flags_stop_unsupported_cp
@@ -853,7 +853,7 @@ void test_decode_encode_size_overloads()
             , flags_stop_unsupported_cp);
 
         TEST_TRUE(res.stop_reason == stop_reason::unsupported_codepoint);
-        TEST_EQ(res.size, expected_stop_on_unsupported_codepoint_size);
+        TEST_EQ(res.ssize, expected_stop_on_unsupported_codepoint_size);
     }
 
 
@@ -866,7 +866,7 @@ void test_decode_encode_size_overloads()
         TEST_EQ(0, res.u32dist);
         TEST_EQ(0, (res.stale_ptr - input.end()));
 
-        TEST_EQ(res.size, expected_non_stop_size);
+        TEST_EQ(res.ssize, expected_non_stop_size);
     }
 
     // Overload 2 with flags_stop_inv_seq
@@ -875,7 +875,7 @@ void test_decode_encode_size_overloads()
             (src, src_end, expected_stop_on_inv_seq_size, flags_stop_inv_seq);
 
         TEST_TRUE(res.stop_reason == stop_reason::invalid_sequence);
-        TEST_EQ(res.size, expected_stop_on_inv_seq_size);
+        TEST_EQ(res.ssize, expected_stop_on_inv_seq_size);
     }
 
     // Overload 2 with flags_stop_unsupported_cp
@@ -887,7 +887,7 @@ void test_decode_encode_size_overloads()
             , flags_stop_unsupported_cp );
 
         TEST_TRUE(res.stop_reason == stop_reason::unsupported_codepoint);
-        TEST_EQ(res.size, expected_stop_on_unsupported_codepoint_size);
+        TEST_EQ(res.ssize, expected_stop_on_unsupported_codepoint_size);
     }
 
 
@@ -905,7 +905,7 @@ void test_decode_encode_size_overloads()
         TEST_TRUE(res.stop_reason == stop_reason::completed);
         TEST_EQ(0, res.u32dist);
         TEST_EQ(0, (res.stale_ptr - input.end()));
-        TEST_EQ(res.size, expected_non_stop_size);
+        TEST_EQ(res.ssize, expected_non_stop_size);
     }
 
     // Overload 1 with flags_stop_inv_seq
@@ -916,7 +916,7 @@ void test_decode_encode_size_overloads()
             , expected_stop_on_inv_seq_size, flags_stop_inv_seq);
 
         TEST_TRUE(res.stop_reason == stop_reason::invalid_sequence);
-        TEST_EQ(res.size, expected_stop_on_inv_seq_size);
+        TEST_EQ(res.ssize, expected_stop_on_inv_seq_size);
     }
 
     // Overload 1 with flags_stop_unsupported_cp
@@ -928,7 +928,7 @@ void test_decode_encode_size_overloads()
             , flags_stop_unsupported_cp);
 
         TEST_TRUE(res.stop_reason == stop_reason::unsupported_codepoint);
-        TEST_EQ(res.size, expected_stop_on_unsupported_codepoint_size);
+        TEST_EQ(res.ssize, expected_stop_on_unsupported_codepoint_size);
     }
 
 
@@ -941,7 +941,7 @@ void test_decode_encode_size_overloads()
         TEST_EQ(0, res.u32dist);
         TEST_EQ(0, (res.stale_ptr - input.end()));
 
-        TEST_EQ(res.size, expected_non_stop_size);
+        TEST_EQ(res.ssize, expected_non_stop_size);
     }
 
     // Overload 2 with flags_stop_inv_seq
@@ -951,7 +951,7 @@ void test_decode_encode_size_overloads()
             (src_view, expected_stop_on_inv_seq_size, flags_stop_inv_seq);
 
         TEST_TRUE(res.stop_reason == stop_reason::invalid_sequence);
-        TEST_EQ(res.size, expected_stop_on_inv_seq_size);
+        TEST_EQ(res.ssize, expected_stop_on_inv_seq_size);
     }
 
     // Overload 2 with flags_stop_unsupported_cp
@@ -963,7 +963,7 @@ void test_decode_encode_size_overloads()
             , flags_stop_unsupported_cp );
 
         TEST_TRUE(res.stop_reason == stop_reason::unsupported_codepoint);
-        TEST_EQ(res.size, expected_stop_on_unsupported_codepoint_size);
+        TEST_EQ(res.ssize, expected_stop_on_unsupported_codepoint_size);
     }
 
 #endif // STRF_HAS_STD_STRING_VIEW
