@@ -104,13 +104,13 @@ private:
     test_failure_notifier& notifier_;
 };
 
-template <typename SrcCharT, typename DestCharT>
+template <typename SrcCharT, typename DstCharT>
 STRF_HD void do_test_invalid_sequences
     ( const char* funcname
     , const char* srcfile
     , int srcline
     , strf::surrogate_policy policy
-    , strf::transcode_f<SrcCharT, DestCharT> transcode_func
+    , strf::transcode_f<SrcCharT, DstCharT> transcode_func
     , strf::detail::simple_string_view<SrcCharT> input
     , std::initializer_list<strf::detail::simple_string_view<SrcCharT>>
          expected_invalid_sequences )
@@ -122,8 +122,8 @@ STRF_HD void do_test_invalid_sequences
             { expected_invalid_sequences.begin(), expected_invalid_sequences.size() }
         , notifier };
 
-    DestCharT buff[200];
-    strf::array_destination<DestCharT> result_dest{buff};
+    DstCharT buff[200];
+    strf::array_destination<DstCharT> result_dest{buff};
     const auto flags = strf::to_transcode_flags(policy);
     transcode_func(input.data(), input.end(), result_dest, &inv_seq_tester, flags);
     if (result_dest.finish().truncated) {
@@ -134,7 +134,7 @@ STRF_HD void do_test_invalid_sequences
 }
 
 template < strf::charset_id SrcId, strf::charset_id DestId
-         , typename SrcCharT, typename DestCharT, typename... T>
+         , typename SrcCharT, typename DstCharT, typename... T>
 STRF_HD void test_invalid_sequences
     ( const char* function
     , const char* src_filename
@@ -143,7 +143,7 @@ STRF_HD void test_invalid_sequences
     , const SrcCharT* input
     , T... expected_invalid_sequences )
 {
-    using transcoder_t = strf::static_transcoder<SrcCharT, DestCharT, SrcId, DestId>;
+    using transcoder_t = strf::static_transcoder<SrcCharT, DstCharT, SrcId, DestId>;
     using strview = strf::detail::simple_string_view<SrcCharT>;
     do_test_invalid_sequences<SrcCharT>
         ( function, src_filename, src_line, policy

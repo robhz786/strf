@@ -117,7 +117,7 @@ public:
         init_(input.pre, encoding);
     }
 
-    void print_to(strf::destination<CharT>& dest) const override;
+    void print_to(strf::destination<CharT>& dst) const override;
 
 private:
 
@@ -130,7 +130,7 @@ private:
     ipv6style style_;
 
     int count_ipv6_characters() const;
-    void print_ipv6(strf::destination<CharT>& dest) const;
+    void print_ipv6(strf::destination<CharT>& dst) const;
 
     template <typename PrePrinting, typename Charset>
     void init_(PrePrinting& pre, Charset charset);
@@ -177,41 +177,41 @@ int ipv6_printer<CharT>::count_ipv6_characters() const
 }
 
 template <typename CharT>
-void ipv6_printer<CharT>::print_to(strf::destination<CharT>& dest) const
+void ipv6_printer<CharT>::print_to(strf::destination<CharT>& dst) const
 {
     if (fillcount_ <= 0) {
-        print_ipv6(dest);
+        print_ipv6(dst);
     } else {
         switch(alignment_fmt_.alignment) {
             case strf::text_alignment::left:
-                print_ipv6(dest);
-                encode_fill_fn_(dest, fillcount_, alignment_fmt_.fill);
+                print_ipv6(dst);
+                encode_fill_fn_(dst, fillcount_, alignment_fmt_.fill);
                 break;
             case strf::text_alignment::right:
-                encode_fill_fn_(dest, fillcount_, alignment_fmt_.fill);
-                print_ipv6(dest);
+                encode_fill_fn_(dst, fillcount_, alignment_fmt_.fill);
+                print_ipv6(dst);
                 break;
             default:{
                 assert(alignment_fmt_.alignment == strf::text_alignment::center);
                 const auto halfcount = fillcount_ / 2;
-                encode_fill_fn_(dest, halfcount, alignment_fmt_.fill);
-                print_ipv6(dest);
-                encode_fill_fn_(dest, fillcount_ - halfcount, alignment_fmt_.fill);
+                encode_fill_fn_(dst, halfcount, alignment_fmt_.fill);
+                print_ipv6(dst);
+                encode_fill_fn_(dst, fillcount_ - halfcount, alignment_fmt_.fill);
             }
         }
     }
 }
 
 template <typename CharT>
-void ipv6_printer<CharT>::print_ipv6(strf::destination<CharT>& dest) const
+void ipv6_printer<CharT>::print_ipv6(strf::destination<CharT>& dst) const
 {
     const int precision = (style_ == ipv6style::big ? 4 : 0);
     for (int i = 0; i < 8; ++i) {
         if (abbrev_.hextet_visible(i)) {
-            strf::to(dest) (lettercase_, strf::hex(addr_.hextets[i]).p(precision));
+            strf::to(dst) (lettercase_, strf::hex(addr_.hextets[i]).p(precision));
         }
         if (abbrev_.colon_visible(i)) {
-            strf::put(dest, static_cast<CharT>(':'));
+            strf::put(dst, static_cast<CharT>(':'));
         }
     }
 }
@@ -301,16 +301,16 @@ void tests()
 
 int main()
 {
-    strf::narrow_cfile_writer<char, 512> msg_dest(stdout);
-    const test_utils::test_messages_destination_guard g(msg_dest);
+    strf::narrow_cfile_writer<char, 512> msg_dst(stdout);
+    const test_utils::test_messages_destination_guard g(msg_dst);
 
     tests();
 
     int err_count = test_utils::test_err_count();
     if (err_count == 0) {
-        strf::write(msg_dest, "All test passed!\n");
+        strf::write(msg_dst, "All test passed!\n");
     } else {
-        strf::to(msg_dest) (err_count, " tests failed!\n");
+        strf::to(msg_dst) (err_count, " tests failed!\n");
     }
     return err_count;
 }

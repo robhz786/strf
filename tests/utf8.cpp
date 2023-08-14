@@ -11,8 +11,8 @@
 // class static_charset<CharT, strf::csid_utf8>;
 //
 // // The UTF-8 sanitizer:
-// template <typename SrcCharT, typename DestCharT>
-// class static_transcoder<SrcCharT, DestCharT, strf::csid_utf8, strf::csid_utf8>;
+// template <typename SrcCharT, typename DstCharT>
+// class static_transcoder<SrcCharT, DstCharT, strf::csid_utf8, strf::csid_utf8>;
 
 
 #include "test_utils/transcoding.hpp"

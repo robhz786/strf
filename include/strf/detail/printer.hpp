@@ -24,7 +24,7 @@ public:
 
     virtual STRF_HD ~printer() STRF_DEFAULT_IMPL;
 
-    virtual STRF_HD void print_to(strf::destination<CharT>& dest) const = 0;
+    virtual STRF_HD void print_to(strf::destination<CharT>& dst) const = 0;
 };
 
 template <typename CharT>
@@ -38,10 +38,10 @@ namespace detail {
 #if defined(__cpp_fold_expressions)
 
 template <typename CharT, typename... Printers>
-inline STRF_HD void write_args( strf::destination<CharT>& dest
+inline STRF_HD void write_args( strf::destination<CharT>& dst
                               , const Printers&... printers )
 {
-    (... , printers.print_to(dest));
+    (... , printers.print_to(dst));
 }
 
 #else // defined(__cpp_fold_expressions)
@@ -53,13 +53,13 @@ inline STRF_HD void write_args(strf::destination<CharT>&)
 
 template <typename CharT, typename Printer, typename... Printers>
 inline STRF_HD void write_args
-    ( strf::destination<CharT>& dest
+    ( strf::destination<CharT>& dst
     , const Printer& printer
     , const Printers&... printers )
 {
-    printer.print_to(dest);
-    if (dest.good()) {
-        write_args<CharT>(dest, printers...);
+    printer.print_to(dst);
+    if (dst.good()) {
+        write_args<CharT>(dst, printers...);
     }
 }
 

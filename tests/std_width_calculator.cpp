@@ -1382,8 +1382,8 @@ STRF_HD void test_single_char32_width()
 #define U32_EXTEND_x8  U32_EXTEND_x4 U32_EXTEND_x4
 #define U32_EXTEND_x16 U32_EXTEND_x8 U32_EXTEND_x8
 
-// STRF_HD void puts(strf::transcode_dest<char32_t>& dest, const char32_t* str) {
-//     dest.write(str, strf::detail::str_length(str));
+// STRF_HD void puts(strf::transcode_dst<char32_t>& dst, const char32_t* str) {
+//     dst.write(str, strf::detail::str_length(str));
 // }
 
 // STRF_HD void test_std_width_decrementer()

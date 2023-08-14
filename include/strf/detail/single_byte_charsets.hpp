@@ -14,14 +14,14 @@
 // https://www.unicode.org/Public/MAPPINGS/VENDORS/MICSFT/WindowsBestFit/
 // https://www.fileformat.info/info/charset/ISO-8859-8/
 
-#define STRF_SBC_CHECK_DEST                                    \
-    STRF_IF_UNLIKELY (dest_it == dest_end) {                   \
-        return {seq_begin, dest_it, reason::insufficient_output_space};    \
+#define STRF_SBC_CHECK_DST                                    \
+    STRF_IF_UNLIKELY (dst_it == dst_end) {                   \
+        return {seq_begin, dst_it, reason::insufficient_output_space};    \
     }
 
-#define STRF_SBC_CHECK_DEST_SIZE(SIZE)                         \
-    STRF_IF_UNLIKELY (dest_it + (SIZE) > dest_end) {           \
-        return {seq_begin, dest_it, reason::insufficient_output_space};    \
+#define STRF_SBC_CHECK_DST_SIZE(SIZE)                         \
+    STRF_IF_UNLIKELY (dst_it + (SIZE) > dst_end) {           \
+        return {seq_begin, dst_it, reason::insufficient_output_space};    \
     }
 
 #define STRF_DEF_SINGLE_BYTE_CHARSET_(CHARSET)                                \
@@ -31,25 +31,25 @@
             < CharT, strf::detail::impl_ ## CHARSET >                         \
     { };                                                                      \
                                                                               \
-    template <typename SrcCharT, typename DestCharT>                          \
+    template <typename SrcCharT, typename DstCharT>                          \
     class static_transcoder                                                   \
-        < SrcCharT, DestCharT, strf::csid_ ## CHARSET, strf::csid_ ## CHARSET > \
+        < SrcCharT, DstCharT, strf::csid_ ## CHARSET, strf::csid_ ## CHARSET > \
         : public strf::detail::single_byte_charset_to_itself                  \
-            < SrcCharT, DestCharT, strf::detail::impl_ ## CHARSET >           \
+            < SrcCharT, DstCharT, strf::detail::impl_ ## CHARSET >           \
     {};                                                                       \
                                                                               \
-    template <typename SrcCharT, typename DestCharT>                          \
+    template <typename SrcCharT, typename DstCharT>                          \
     class static_transcoder                                                   \
-        < SrcCharT, DestCharT, strf::csid_utf32, strf::csid_ ## CHARSET >     \
+        < SrcCharT, DstCharT, strf::csid_utf32, strf::csid_ ## CHARSET >     \
         : public strf::detail::utf32_to_single_byte_charset                   \
-            < SrcCharT, DestCharT, strf::detail::impl_ ## CHARSET >           \
+            < SrcCharT, DstCharT, strf::detail::impl_ ## CHARSET >           \
     {};                                                                       \
                                                                               \
-    template <typename SrcCharT, typename DestCharT>                          \
+    template <typename SrcCharT, typename DstCharT>                          \
     class static_transcoder                                                   \
-        < SrcCharT, DestCharT, strf::csid_ ## CHARSET, strf::csid_utf32 >     \
+        < SrcCharT, DstCharT, strf::csid_ ## CHARSET, strf::csid_utf32 >     \
         : public strf::detail::single_byte_charset_to_utf32                   \
-            < SrcCharT, DestCharT, strf::detail::impl_ ## CHARSET >           \
+            < SrcCharT, DstCharT, strf::detail::impl_ ## CHARSET >           \
     {};                                                                       \
                                                                               \
     template <typename CharT>                                                 \
@@ -2424,17 +2424,17 @@ STRF_FUNC_IMPL STRF_HD unsigned impl_windows_1258::encode_ext(char32_t ch) noexc
 
 #endif //! defined(STRF_OMIT_IMPL)
 
-template <typename SrcCharT, typename DestCharT, class Impl>
+template <typename SrcCharT, typename DstCharT, class Impl>
 struct single_byte_charset_to_utf32
 {
     using src_char_type = SrcCharT;
-    using dst_char_type = DestCharT;
+    using dst_char_type = DstCharT;
 
-    static STRF_HD strf::transcode_result<SrcCharT, DestCharT> transcode
+    static STRF_HD strf::transcode_result<SrcCharT, DstCharT> transcode
         ( const SrcCharT* src
         , const SrcCharT* src_end
-        , DestCharT* dest
-        , DestCharT* dest_end
+        , DstCharT* dst
+        , DstCharT* dst_end
         , strf::transcoding_error_notifier* err_notifier
         , strf::transcode_flags flags );
 
@@ -2455,11 +2455,11 @@ struct single_byte_charset_to_utf32
         return {limit, src + limit, stop_reason::insufficient_output_space};
     }
 
-    static STRF_HD strf::transcode_result<SrcCharT, DestCharT> unsafe_transcode
+    static STRF_HD strf::transcode_result<SrcCharT, DstCharT> unsafe_transcode
         ( const SrcCharT* src
         , const SrcCharT* src_end
-        , DestCharT* dest
-        , DestCharT* dest_end
+        , DstCharT* dst
+        , DstCharT* dst_end
         , strf::transcoding_error_notifier* err_notifier
         , strf::transcode_flags flags );
 
@@ -2477,7 +2477,7 @@ struct single_byte_charset_to_utf32
         return {limit, src + limit, stop_reason::insufficient_output_space};
     }
 
-    static STRF_HD strf::transcode_f<SrcCharT, DestCharT> transcode_func() noexcept
+    static STRF_HD strf::transcode_f<SrcCharT, DstCharT> transcode_func() noexcept
     {
         return transcode;
     }
@@ -2485,7 +2485,7 @@ struct single_byte_charset_to_utf32
     {
         return transcode_size;
     }
-    static STRF_HD strf::unsafe_transcode_f<SrcCharT, DestCharT> unsafe_transcode_func() noexcept
+    static STRF_HD strf::unsafe_transcode_f<SrcCharT, DstCharT> unsafe_transcode_func() noexcept
     {
         return unsafe_transcode;
     }
@@ -2495,71 +2495,71 @@ struct single_byte_charset_to_utf32
     }
 };
 
-template <typename SrcCharT, typename DestCharT, class Impl>
-STRF_HD strf::transcode_result<SrcCharT, DestCharT>
-single_byte_charset_to_utf32<SrcCharT, DestCharT, Impl>::transcode
+template <typename SrcCharT, typename DstCharT, class Impl>
+STRF_HD strf::transcode_result<SrcCharT, DstCharT>
+single_byte_charset_to_utf32<SrcCharT, DstCharT, Impl>::transcode
     ( const SrcCharT* src
     , const SrcCharT* src_end
-    , DestCharT* dest
-    , DestCharT* dest_end
+    , DstCharT* dst
+    , DstCharT* dst_end
     , strf::transcoding_error_notifier* err_notifier
     , strf::transcode_flags flags )
 {
     using reason = strf::transcode_stop_reason;
     (void) flags;
-    auto *dest_it = dest;
-    for (; src < src_end; ++src, ++dest_it) {
+    auto *dst_it = dst;
+    for (; src < src_end; ++src, ++dst_it) {
         char32_t ch32 = Impl::decode(static_cast<std::uint8_t>(*src));
         STRF_IF_UNLIKELY (ch32 == 0xFFFD) {
             if (err_notifier) {
                 err_notifier->invalid_sequence(sizeof(SrcCharT), Impl::name(), src, 1);
             }
             if (strf::with_stop_on_invalid_sequence(flags)) {
-                return {src, dest_it, reason::invalid_sequence};
+                return {src, dst_it, reason::invalid_sequence};
             }
             ch32 = 0xFFFD;
         }
-        STRF_IF_UNLIKELY (dest_it == dest_end) {
-            return {src, dest_it, reason::insufficient_output_space};
+        STRF_IF_UNLIKELY (dst_it == dst_end) {
+            return {src, dst_it, reason::insufficient_output_space};
         }
-        *dest_it = static_cast<DestCharT>(ch32);
+        *dst_it = static_cast<DstCharT>(ch32);
     }
-    return {src, dest_it, reason::completed};
+    return {src, dst_it, reason::completed};
 }
 
-template <typename SrcCharT, typename DestCharT, class Impl>
-STRF_HD strf::transcode_result<SrcCharT, DestCharT>
-single_byte_charset_to_utf32<SrcCharT, DestCharT, Impl>::unsafe_transcode
+template <typename SrcCharT, typename DstCharT, class Impl>
+STRF_HD strf::transcode_result<SrcCharT, DstCharT>
+single_byte_charset_to_utf32<SrcCharT, DstCharT, Impl>::unsafe_transcode
     ( const SrcCharT* src
     , const SrcCharT* src_end
-    , DestCharT* dest
-    , DestCharT* dest_end
+    , DstCharT* dst
+    , DstCharT* dst_end
     , strf::transcoding_error_notifier*
     , strf::transcode_flags )
 {
     using reason = strf::transcode_stop_reason;
-    auto *dest_it = dest;
-    for (; src < src_end; ++src, ++dest_it) {
-        STRF_IF_UNLIKELY (dest_it == dest_end) {
-            return {src, dest_it, reason::insufficient_output_space};
+    auto *dst_it = dst;
+    for (; src < src_end; ++src, ++dst_it) {
+        STRF_IF_UNLIKELY (dst_it == dst_end) {
+            return {src, dst_it, reason::insufficient_output_space};
         }
         const char32_t ch32 = Impl::decode(static_cast<std::uint8_t>(*src));
-        *dest_it = static_cast<DestCharT>(ch32);
+        *dst_it = static_cast<DstCharT>(ch32);
     }
-    return {src, dest_it, reason::completed};
+    return {src, dst_it, reason::completed};
 }
 
-template <typename SrcCharT, typename DestCharT, class Impl>
+template <typename SrcCharT, typename DstCharT, class Impl>
 struct utf32_to_single_byte_charset
 {
     using src_char_type = SrcCharT;
-    using dst_char_type = DestCharT;
+    using dst_char_type = DstCharT;
 
-    static STRF_HD strf::transcode_result<SrcCharT, DestCharT> transcode
+    static STRF_HD strf::transcode_result<SrcCharT, DstCharT> transcode
         ( const SrcCharT* src
         , const SrcCharT* src_end
-        , DestCharT* dest
-        , DestCharT* dest_end
+        , DstCharT* dst
+        , DstCharT* dst_end
         , strf::transcoding_error_notifier* err_notifier
         , strf::transcode_flags flags );
 
@@ -2591,11 +2591,11 @@ struct utf32_to_single_byte_charset
         return {limit, src + limit, stop_reason::insufficient_output_space};
     }
 
-    static STRF_HD strf::transcode_result<SrcCharT, DestCharT> unsafe_transcode
+    static STRF_HD strf::transcode_result<SrcCharT, DstCharT> unsafe_transcode
         ( const SrcCharT* src
         , const SrcCharT* src_end
-        , DestCharT* dest
-        , DestCharT* dest_end
+        , DstCharT* dst
+        , DstCharT* dst_end
         , strf::transcoding_error_notifier* err_notifier
         , strf::transcode_flags flags );
 
@@ -2615,7 +2615,7 @@ struct utf32_to_single_byte_charset
         }
         return Impl::find_first_unsupported_codepoint(src, src_end, limit);
     }
-    static STRF_HD strf::transcode_f<SrcCharT, DestCharT> transcode_func() noexcept
+    static STRF_HD strf::transcode_f<SrcCharT, DstCharT> transcode_func() noexcept
     {
         return transcode;
     }
@@ -2623,7 +2623,7 @@ struct utf32_to_single_byte_charset
     {
         return transcode_size;
     }
-    static STRF_HD strf::unsafe_transcode_f<SrcCharT, DestCharT> unsafe_transcode_func() noexcept
+    static STRF_HD strf::unsafe_transcode_f<SrcCharT, DstCharT> unsafe_transcode_func() noexcept
     {
         return unsafe_transcode;
     }
@@ -2633,19 +2633,19 @@ struct utf32_to_single_byte_charset
     }
 };
 
-template <typename SrcCharT, typename DestCharT, class Impl>
-STRF_HD strf::transcode_result<SrcCharT, DestCharT>
-utf32_to_single_byte_charset<SrcCharT, DestCharT, Impl>::transcode
+template <typename SrcCharT, typename DstCharT, class Impl>
+STRF_HD strf::transcode_result<SrcCharT, DstCharT>
+utf32_to_single_byte_charset<SrcCharT, DstCharT, Impl>::transcode
     ( const SrcCharT* src
     , const SrcCharT* src_end
-    , DestCharT* dest
-    , DestCharT* dest_end
+    , DstCharT* dst
+    , DstCharT* dst_end
     , strf::transcoding_error_notifier* err_notifier
     , strf::transcode_flags flags)
 {
     using reason = strf::transcode_stop_reason;
-    auto *dest_it = dest;
-    for (; src != src_end; ++src, ++dest_it) {
+    auto *dst_it = dst;
+    for (; src != src_end; ++src, ++dst_it) {
         unsigned ch = Impl::encode(detail::cast_u32(*src));
         STRF_IF_UNLIKELY (ch >= 0x100) {
             const bool is_invalid =
@@ -2659,68 +2659,68 @@ utf32_to_single_byte_charset<SrcCharT, DestCharT, Impl>::transcode
                     err_notifier->unsupported_codepoint(Impl::name(), *src);
                 }
                 if (strf::with_stop_on_unsupported_codepoint(flags)) {
-                    return {src, dest_it, reason::unsupported_codepoint};
+                    return {src, dst_it, reason::unsupported_codepoint};
                 }
             } else {
                 if (err_notifier) {
                     err_notifier->invalid_sequence(4, "UTF-32", src, 1);
                 }
                 if (strf::with_stop_on_invalid_sequence(flags)) {
-                    return {src, dest_it, reason::invalid_sequence};
+                    return {src, dst_it, reason::invalid_sequence};
                 }
             }
             ch = static_cast<unsigned char>('?');
         }
-        STRF_IF_UNLIKELY (dest_it == dest_end) {
-            return {src, dest_it, reason::insufficient_output_space};
+        STRF_IF_UNLIKELY (dst_it == dst_end) {
+            return {src, dst_it, reason::insufficient_output_space};
         }
-        *dest_it = static_cast<DestCharT>(ch);
+        *dst_it = static_cast<DstCharT>(ch);
     }
-    return {src, dest_it, reason::completed};
+    return {src, dst_it, reason::completed};
 }
 
-template <typename SrcCharT, typename DestCharT, class Impl>
-STRF_HD strf::transcode_result<SrcCharT, DestCharT>
-utf32_to_single_byte_charset<SrcCharT, DestCharT, Impl>::unsafe_transcode
+template <typename SrcCharT, typename DstCharT, class Impl>
+STRF_HD strf::transcode_result<SrcCharT, DstCharT>
+utf32_to_single_byte_charset<SrcCharT, DstCharT, Impl>::unsafe_transcode
     ( const SrcCharT* src
     , const SrcCharT* src_end
-    , DestCharT* dest
-    , DestCharT* dest_end
+    , DstCharT* dst
+    , DstCharT* dst_end
     , strf::transcoding_error_notifier* err_notifier
     , strf::transcode_flags flags )
 {
     using reason = strf::transcode_stop_reason;
-    auto *dest_it = dest;
-    for (; src != src_end; ++src, ++dest_it) {
+    auto *dst_it = dst;
+    for (; src != src_end; ++src, ++dst_it) {
         unsigned ch = Impl::encode(detail::cast_u32(*src));
         STRF_IF_UNLIKELY (ch >= 0x100) {
             if (err_notifier) {
                 err_notifier->unsupported_codepoint(Impl::name(), *src);
             }
             if (strf::with_stop_on_unsupported_codepoint(flags)) {
-                return {src, dest_it, reason::unsupported_codepoint};
+                return {src, dst_it, reason::unsupported_codepoint};
             }
             ch = U'?';
         }
-        STRF_IF_UNLIKELY (dest_it == dest_end) {
-            return {src, dest_it, reason::insufficient_output_space};
+        STRF_IF_UNLIKELY (dst_it == dst_end) {
+            return {src, dst_it, reason::insufficient_output_space};
         }
-        * dest_it = static_cast<DestCharT>(ch);
+        * dst_it = static_cast<DstCharT>(ch);
     }
-    return {src, dest_it, reason::completed};
+    return {src, dst_it, reason::completed};
 }
 
-template <typename SrcCharT, typename DestCharT, class Impl>
+template <typename SrcCharT, typename DstCharT, class Impl>
 struct single_byte_charset_to_itself
 {
     using src_char_type = SrcCharT;
-    using dst_char_type = DestCharT;
+    using dst_char_type = DstCharT;
 
-    static STRF_HD strf::transcode_result<SrcCharT, DestCharT> transcode
+    static STRF_HD strf::transcode_result<SrcCharT, DstCharT> transcode
         ( const SrcCharT* src
         , const SrcCharT* src_end
-        , DestCharT* dest
-        , DestCharT* dest_end
+        , DstCharT* dst
+        , DstCharT* dst_end
         , strf::transcoding_error_notifier* err_notifier
         , strf::transcode_flags flags );
 
@@ -2741,15 +2741,15 @@ struct single_byte_charset_to_itself
         return {limit, src + limit, stop_reason::insufficient_output_space};
     }
 
-    static STRF_HD strf::transcode_result<SrcCharT, DestCharT> unsafe_transcode
+    static STRF_HD strf::transcode_result<SrcCharT, DstCharT> unsafe_transcode
         ( const SrcCharT* src
         , const SrcCharT* src_end
-        , DestCharT* dest
-        , DestCharT* dest_end
+        , DstCharT* dst
+        , DstCharT* dst_end
         , strf::transcoding_error_notifier* err_notifier
         , strf::transcode_flags flags )
     {
-        return detail::bypass_unsafe_transcode(src, src_end, dest, dest_end, err_notifier, flags);
+        return detail::bypass_unsafe_transcode(src, src_end, dst, dst_end, err_notifier, flags);
     }
 
     static STRF_HD strf::transcode_size_result<SrcCharT> unsafe_transcode_size
@@ -2766,7 +2766,7 @@ struct single_byte_charset_to_itself
         return {limit, src + limit, stop_reason::insufficient_output_space};
     }
 
-    static STRF_HD strf::transcode_f<SrcCharT, DestCharT> transcode_func() noexcept
+    static STRF_HD strf::transcode_f<SrcCharT, DstCharT> transcode_func() noexcept
     {
         return transcode;
     }
@@ -2774,7 +2774,7 @@ struct single_byte_charset_to_itself
     {
         return transcode_size;
     }
-    static STRF_HD strf::unsafe_transcode_f<SrcCharT, DestCharT> unsafe_transcode_func() noexcept
+    static STRF_HD strf::unsafe_transcode_f<SrcCharT, DstCharT> unsafe_transcode_func() noexcept
     {
         return unsafe_transcode;
     }
@@ -2784,35 +2784,35 @@ struct single_byte_charset_to_itself
     }
 };
 
-template <typename SrcCharT, typename DestCharT, class Impl>
-STRF_HD strf::transcode_result<SrcCharT, DestCharT>
-single_byte_charset_to_itself<SrcCharT, DestCharT, Impl>::transcode
+template <typename SrcCharT, typename DstCharT, class Impl>
+STRF_HD strf::transcode_result<SrcCharT, DstCharT>
+single_byte_charset_to_itself<SrcCharT, DstCharT, Impl>::transcode
     ( const SrcCharT* src
     , const SrcCharT* src_end
-    , DestCharT* dest
-    , DestCharT* dest_end
+    , DstCharT* dst
+    , DstCharT* dst_end
     , strf::transcoding_error_notifier* err_notifier
     , strf::transcode_flags flags )
 {
     using reason = strf::transcode_stop_reason;
-    auto *dest_it = dest;
-    for (; src < src_end; ++src, ++dest_it) {
+    auto *dst_it = dst;
+    for (; src < src_end; ++src, ++dst_it) {
         auto ch = static_cast<std::uint8_t>(*src);
         STRF_IF_UNLIKELY (!Impl::is_valid(ch)) {
             STRF_IF_UNLIKELY (err_notifier) {
                 err_notifier->invalid_sequence(sizeof(SrcCharT), Impl::name(), src, 1);
             }
             if (strf::with_stop_on_invalid_sequence(flags)) {
-                return {src, dest_it, reason::invalid_sequence};
+                return {src, dst_it, reason::invalid_sequence};
             }
             ch = static_cast<std::uint8_t>('?');
         }
-        STRF_IF_UNLIKELY (dest_it == dest_end) {
-            return {src, dest_it, reason::insufficient_output_space};
+        STRF_IF_UNLIKELY (dst_it == dst_end) {
+            return {src, dst_it, reason::insufficient_output_space};
         }
-        *dest_it = static_cast<DestCharT>(ch);
+        *dst_it = static_cast<DstCharT>(ch);
     }
-    return {src, dest_it, reason::completed};
+    return {src, dst_it, reason::completed};
 }
 
 template <std::ptrdiff_t wchar_size, typename CharT, strf::charset_id>
@@ -2908,9 +2908,9 @@ public:
     {
         return 1;
     }
-    static STRF_HD void write_replacement_char(strf::transcode_dest<CharT>& dest) noexcept
+    static STRF_HD void write_replacement_char(strf::transcode_dst<CharT>& dst) noexcept
     {
-        strf::put(dest, static_cast<CharT>('?'));
+        strf::put(dst, static_cast<CharT>('?'));
     }
     static STRF_HD int validate(char32_t ch32) noexcept
     {
@@ -2920,10 +2920,10 @@ public:
     {
         return 1;
     }
-    static STRF_HD CharT* encode_char(CharT* dest, char32_t ch) noexcept;
+    static STRF_HD CharT* encode_char(CharT* dst, char32_t ch) noexcept;
 
     static STRF_HD void encode_fill
-        ( strf::transcode_dest<CharT>& dest, std::ptrdiff_t count, char32_t ch );
+        ( strf::transcode_dst<CharT>& dst, std::ptrdiff_t count, char32_t ch );
 
     static STRF_HD strf::count_codepoints_result<CharT> count_codepoints_fast
         ( const CharT* src, const CharT* src_end
@@ -3081,13 +3081,13 @@ private:
         }
         return {};
     }
-    template <typename DestCharT>
-    static STRF_HD strf::dynamic_transcoder<CharT, DestCharT>
+    template <typename DstCharT>
+    static STRF_HD strf::dynamic_transcoder<CharT, DstCharT>
     find_transcoder_to_narrow(strf::charset_id id) noexcept
     {
-        using transcoder_type = strf::dynamic_transcoder<CharT, DestCharT>;
+        using transcoder_type = strf::dynamic_transcoder<CharT, DstCharT>;
         if (id == Impl::id) {
-            const static_transcoder<CharT, DestCharT, Impl::id, Impl::id> t;
+            const static_transcoder<CharT, DstCharT, Impl::id, Impl::id> t;
             return transcoder_type{ t };
         }
         return {};
@@ -3097,18 +3097,18 @@ private:
 
 template <typename CharT, class Impl>
 STRF_HD CharT* single_byte_charset<CharT, Impl>::encode_char
-    ( CharT* dest
+    ( CharT* dst
     , char32_t ch ) noexcept
 {
     auto ch2 = Impl::encode(ch);
     const bool valid = (ch2 < 0x100);
-    *dest = static_cast<CharT>(valid * ch2 + (!valid) * '?');
-    return dest + 1;
+    *dst = static_cast<CharT>(valid * ch2 + (!valid) * '?');
+    return dst + 1;
 }
 
 template <typename CharT, class Impl>
 STRF_HD void single_byte_charset<CharT, Impl>::encode_fill
-    ( strf::transcode_dest<CharT>& dest, std::ptrdiff_t count, char32_t ch )
+    ( strf::transcode_dst<CharT>& dst, std::ptrdiff_t count, char32_t ch )
 {
     unsigned ch2 = Impl::encode(ch);
     STRF_IF_UNLIKELY (ch2 >= 0x100) {
@@ -3116,16 +3116,16 @@ STRF_HD void single_byte_charset<CharT, Impl>::encode_fill
     }
     auto ch3 = static_cast<CharT>(ch2);
     while(true) {
-        const std::ptrdiff_t available = dest.buffer_sspace();
+        const std::ptrdiff_t available = dst.buffer_sspace();
         STRF_IF_LIKELY (count <= available) {
-            strf::detail::str_fill_n<CharT>(dest.buffer_ptr(), count, ch3);
-            dest.advance(count);
+            strf::detail::str_fill_n<CharT>(dst.buffer_ptr(), count, ch3);
+            dst.advance(count);
             return;
         }
-        strf::detail::str_fill_n<CharT>(dest.buffer_ptr(), available, ch3);
-        dest.advance_to(dest.buffer_end());
+        strf::detail::str_fill_n<CharT>(dst.buffer_ptr(), available, ch3);
+        dst.advance_to(dst.buffer_end());
         count -= available;
-        dest.flush();
+        dst.flush();
     }
 }
 
@@ -3159,7 +3159,7 @@ STRF_DEF_SINGLE_BYTE_CHARSET(windows_1258);
 
 } // namespace strf
 
-#undef STRF_SBC_CHECK_DEST
-#undef STRF_SBC_CHECK_DEST_SIZE
+#undef STRF_SBC_CHECK_DST
+#undef STRF_SBC_CHECK_DST_SIZE
 
 #endif  // STRF_DETAIL_SINGLE_BYTE_CHARSETS_HPP

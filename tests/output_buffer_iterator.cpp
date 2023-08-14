@@ -12,17 +12,17 @@ STRF_TEST_FUNC void test_output_buffer_iterator()
 {
     {
         const std::string sample = "small string";
-        strf::string_maker dest;
-        std::copy(sample.begin(), sample.end(), make_iterator(dest));
-        auto result = dest.finish();
+        strf::string_maker dst;
+        std::copy(sample.begin(), sample.end(), make_iterator(dst));
+        auto result = dst.finish();
         TEST_EQ(sample, result);
     }
     {
         const auto sample_ = test_utils::make_double_string<char>();
         const std::string sample(sample_.begin(), sample_.end());
-        strf::string_maker dest;
-        std::copy(sample.begin(), sample.end(), make_iterator(dest));
-        auto result = dest.finish();
+        strf::string_maker dst;
+        std::copy(sample.begin(), sample.end(), make_iterator(dst));
+        auto result = dst.finish();
         TEST_EQ(sample, result);
     }
 }

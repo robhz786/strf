@@ -56,7 +56,7 @@ STRF_TEST_FUNC void test_unsafe_decode_encode_scenarios()
         TEST_STR_EQ(output, "abcdef");
     }
     {   // happy scenario again,
-        // but forcing buffered_encoder<DestCharT>::recycle() to be called
+        // but forcing buffered_encoder<DstCharT>::recycle() to be called
         constexpr auto buff_size = 200;
         char buff[buff_size] = {};
         test_utils::simple_transcoding_err_notifier notifier;

@@ -366,12 +366,12 @@ public:
         init_(i);
     }
 
-    STRF_HD void print_to(strf::destination<CharT>& dest) const override
+    STRF_HD void print_to(strf::destination<CharT>& dst) const override
     {
-        (void)dest;
+        (void)dst;
         strf::detail::tr_string_write
             ( tr_string_.begin(), tr_string_.end(), nullptr
-            , 0, dest, charset_, err_handler_ );
+            , 0, dst, charset_, err_handler_ );
     }
 };
 
@@ -536,12 +536,12 @@ public:
         init_(strf::detail::make_index_sequence<sizeof...(Args)>{}, i);
     }
 
-    STRF_HD void print_to(strf::destination<CharT>& dest) const override
+    STRF_HD void print_to(strf::destination<CharT>& dst) const override
     {
-        (void)dest;
+        (void)dst;
         strf::detail::tr_string_write
             ( tr_string_.begin(), tr_string_.end(), printers_
-            , num_printers_, dest, charset_, err_handler_ );
+            , num_printers_, dst, charset_, err_handler_ );
     }
 
     tr_printer(const tr_printer&) = delete;
@@ -640,12 +640,12 @@ struct printable_traits<detail::tr_string_arg<CharT, Args...>>
 //         }
 //     }
 
-//     STRF_HD void print_to(strf::destination<CharT>& dest) const override
+//     STRF_HD void print_to(strf::destination<CharT>& dst) const override
 //     {
-//         (void)dest;
+//         (void)dst;
 //         // strf::detail::tr_string_write
 //         //     ( tr_string_.begin(), tr_string_.end(), printer_ptrs_array_
-//         //     , num_printers_, dest, charset_, err_handler_ );
+//         //     , num_printers_, dst, charset_, err_handler_ );
 //     }
 
 // private:

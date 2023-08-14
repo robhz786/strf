@@ -18,12 +18,12 @@ public:
 
     explicit basic_streambuf_writer(std::basic_streambuf<CharT, Traits>& d)
         : strf::destination<CharT>(buf_, buf_size_)
-        , dest_(d)
+        , dst_(d)
     {
     }
     explicit basic_streambuf_writer(std::basic_streambuf<CharT, Traits>* d)
         : strf::destination<CharT>(buf_, buf_size_)
-        , dest_(*d)
+        , dst_(*d)
     {
     }
 
@@ -39,9 +39,9 @@ public:
             const std::streamsize count = this->buffer_ptr() - buf_;
 
 #if defined __cpp_exceptions
-            try { dest_.sputn(buf_, count); } catch(...) {};
+            try { dst_.sputn(buf_, count); } catch(...) {};
 #else
-            dest_.sputn(buf_, count);
+            dst_.sputn(buf_, count);
 #endif
         }
     }
@@ -50,7 +50,7 @@ public:
         const std::streamsize count = this->buffer_ptr() - buf_;
         this->set_buffer_ptr(buf_);
         STRF_IF_LIKELY (this->good()) {
-            auto count_inc = dest_.sputn(buf_, count);
+            auto count_inc = dst_.sputn(buf_, count);
             count_ += count_inc;
             this->set_good(count_inc == count);
         }
@@ -68,7 +68,7 @@ public:
         this->set_good(false);
         STRF_IF_LIKELY (g) {
             this->set_good(false);
-            auto count_inc = dest_.sputn(buf_, count);
+            auto count_inc = dst_.sputn(buf_, count);
             count_ += count_inc;
             g = (count_inc == count);
         }
@@ -84,14 +84,14 @@ private:
         this->set_buffer_ptr(buf_);
         STRF_IF_LIKELY (this->good()) {
             this->set_good(false);
-            auto count_inc = dest_.sputn(buf_, count);
-            count_inc += dest_.sputn(str,  str_slen);
+            auto count_inc = dst_.sputn(buf_, count);
+            count_inc += dst_.sputn(str,  str_slen);
             count_ += count_inc;
             this->set_good(count_inc == count + str_slen);
         }
     }
 
-    std::basic_streambuf<CharT, Traits>& dest_;
+    std::basic_streambuf<CharT, Traits>& dst_;
     std::streamsize count_ = 0;
     static constexpr std::size_t buf_size_
         = strf::min_destination_buffer_size;
@@ -114,19 +114,19 @@ public:
     using finish_type = typename destination_type::result;
 
     explicit basic_streambuf_writer_creator
-        ( std::basic_streambuf<CharT, Traits>& dest )
-        : dest_(dest)
+        ( std::basic_streambuf<CharT, Traits>& dst )
+        : dst_(dst)
     {
     }
 
     std::basic_streambuf<CharT, Traits>& create() const noexcept
     {
-        return dest_;
+        return dst_;
     }
 
 private:
 
-    std::basic_streambuf<CharT, Traits>& dest_;
+    std::basic_streambuf<CharT, Traits>& dst_;
 };
 
 
@@ -134,21 +134,21 @@ private:
 
 
 template <typename CharT, typename Traits>
-inline auto to( std::basic_streambuf<CharT, Traits>& dest )
+inline auto to( std::basic_streambuf<CharT, Traits>& dst )
     -> strf::printing_syntax
         < strf::detail::basic_streambuf_writer_creator<CharT, Traits> >
 {
     return strf::make_printing_syntax
-        ( strf::detail::basic_streambuf_writer_creator<CharT, Traits>(dest) );
+        ( strf::detail::basic_streambuf_writer_creator<CharT, Traits>(dst) );
 }
 
 
 template<typename CharT, typename Traits>
-inline auto to( std::basic_streambuf<CharT, Traits>* dest )
+inline auto to( std::basic_streambuf<CharT, Traits>* dst )
     -> strf::printing_syntax
         < strf::detail::basic_streambuf_writer_creator<CharT, Traits> >
 {
-    return strf::to(*dest);
+    return strf::to(*dst);
 }
 
 } // namespace strf

@@ -345,67 +345,67 @@ str_equal(const CharT* str1, const CharT* str2, std::size_t count)
 #endif
 }
 
-template <bool SameCharSize, typename SrcCharT, typename DestCharT>
+template <bool SameCharSize, typename SrcCharT, typename DstCharT>
 struct interchar_copy_n_impl;
 
 template <typename CharT>
 struct interchar_copy_n_impl<true, CharT, CharT>
 {
-    static inline STRF_HD void copy(const CharT* src, std::size_t count, CharT* dest)
+    static inline STRF_HD void copy(const CharT* src, std::size_t count, CharT* dst)
     {
 #if defined(STRF_WITH_CSTRING)
-        memcpy(dest, src, count * sizeof(CharT));
+        memcpy(dst, src, count * sizeof(CharT));
 #else
-        for(;count != 0; ++dest, ++src, --count) {
-            *dest = *src;
+        for(;count != 0; ++dst, ++src, --count) {
+            *dst = *src;
         }
 #endif
     }
 };
 
-template <typename SrcCharT, typename DestCharT>
-struct interchar_copy_n_impl<true, SrcCharT, DestCharT>
+template <typename SrcCharT, typename DstCharT>
+struct interchar_copy_n_impl<true, SrcCharT, DstCharT>
 {
-    static_assert(sizeof(SrcCharT) == sizeof(DestCharT), "");
+    static_assert(sizeof(SrcCharT) == sizeof(DstCharT), "");
 
-    static inline STRF_HD void copy(const SrcCharT* src, std::size_t count, DestCharT* dest)
+    static inline STRF_HD void copy(const SrcCharT* src, std::size_t count, DstCharT* dst)
     {
 #if defined(STRF_WITH_CSTRING)
-        memcpy(dest, src, count * sizeof(SrcCharT));
+        memcpy(dst, src, count * sizeof(SrcCharT));
 #else
-        for(;count != 0; ++dest, ++src, --count) {
-            *dest = *src;
+        for(;count != 0; ++dst, ++src, --count) {
+            *dst = *src;
         }
 #endif
     }
 };
 
-template <typename SrcCharT, typename DestCharT>
-struct interchar_copy_n_impl<false, SrcCharT, DestCharT>
+template <typename SrcCharT, typename DstCharT>
+struct interchar_copy_n_impl<false, SrcCharT, DstCharT>
 {
-    static_assert(sizeof(SrcCharT) != sizeof(DestCharT), "");
+    static_assert(sizeof(SrcCharT) != sizeof(DstCharT), "");
 
-    static inline STRF_HD void copy(const SrcCharT* src, std::size_t count, DestCharT* dest)
+    static inline STRF_HD void copy(const SrcCharT* src, std::size_t count, DstCharT* dst)
     {
 #if !defined(STRF_FREESTANDING)
-        std::copy_n(src, count, dest);
+        std::copy_n(src, count, dst);
 #else
-        for(;count != 0; ++dest, ++src, --count) {
-            *dest = *src;
+        for(;count != 0; ++dst, ++src, --count) {
+            *dst = *src;
         }
 #endif
     }
 };
 
-template <typename SrcCharT, typename DestCharT>
+template <typename SrcCharT, typename DstCharT>
 inline STRF_HD void copy_n
     ( const SrcCharT* src
     , std::size_t count
-    , DestCharT* dest )
+    , DstCharT* dst )
 {
     using impl = strf::detail::interchar_copy_n_impl
-        < sizeof(SrcCharT) == sizeof(DestCharT), SrcCharT, DestCharT >;
-    impl::copy(src, count, dest);
+        < sizeof(SrcCharT) == sizeof(DstCharT), SrcCharT, DstCharT >;
+    impl::copy(src, count, dst);
 }
 
 // template< class T >

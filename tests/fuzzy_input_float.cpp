@@ -67,9 +67,9 @@ precalc_and_print_result precalc_and_print(char* buff, std::ptrdiff_t buff_size,
     auto printer_input = strf::make_printer_input<char>(pre, strf::pack(), arg);
     using printer_type = typename decltype(printer_input)::printer_type;
     const printer_type printer{printer_input};
-    strf::cstr_destination dest{buff, buff_size};
-    printer.print_to(dest);
-    auto *end = dest.finish().ptr;
+    strf::cstr_destination dst{buff, buff_size};
+    printer.print_to(dst);
+    auto *end = dst.finish().ptr;
 
     precalc_and_print_result result;
     result.count = static_cast<int>(end - buff);
@@ -391,8 +391,8 @@ void test_mantissa(std::uint64_t mantissa) {
 } // unnamed namespace
 
 int main() {
-    strf::narrow_cfile_writer<char, 1024> test_msg_dest(stdout);
-    const test_utils::test_messages_destination_guard g(test_msg_dest);
+    strf::narrow_cfile_writer<char, 1024> test_msg_dst(stdout);
+    const test_utils::test_messages_destination_guard g(test_msg_dst);
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_int_distribution<std::uint64_t> distrib{0, 0xFFFFFFFFFFFFF};
@@ -404,9 +404,9 @@ int main() {
 
     int err_count = test_utils::test_err_count();
     if (err_count == 0) {
-        strf::write(test_msg_dest, "\nAll test passed!\n");
+        strf::write(test_msg_dst, "\nAll test passed!\n");
     } else {
-        strf::to(test_msg_dest) ('\n', err_count, " tests failed!\n");
+        strf::to(test_msg_dst) ('\n', err_count, " tests failed!\n");
     }
     return err_count;
 }
