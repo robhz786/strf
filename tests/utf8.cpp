@@ -74,45 +74,45 @@ STRF_TEST_FUNC void utf8_to_utf8_unsafe_transcode()
         .input(u8"abc")
         .expect(u8"ab")
         .destination_size(2)
-        .expect_stop_reason(strf::transcode_stop_reason::bad_destination);
+        .expect_stop_reason(strf::transcode_stop_reason::reached_limit);
     TEST_UTF_UNSAFE_TRANSCODE(char8_t, char8_t)
         .input(u8"\U00010000")
         .expect(u8"")
-        .bad_destination()
-        .expect_stop_reason(strf::transcode_stop_reason::bad_destination);
+        .destination_size(0)
+        .expect_stop_reason(strf::transcode_stop_reason::reached_limit);
 
     TEST_UTF_UNSAFE_TRANSCODE(char8_t, char8_t)
         .input(u8"\U00010000")
         .expect(u8"")
         .destination_size(3)
-        .expect_stop_reason(strf::transcode_stop_reason::bad_destination);
+        .expect_stop_reason(strf::transcode_stop_reason::reached_limit);
     TEST_UTF_UNSAFE_TRANSCODE(char8_t, char8_t)
         .input(u8"\U00010000")
         .expect(u8"")
         .destination_size(2)
-        .expect_stop_reason(strf::transcode_stop_reason::bad_destination);
+        .expect_stop_reason(strf::transcode_stop_reason::reached_limit);
     TEST_UTF_UNSAFE_TRANSCODE(char8_t, char8_t)
         .input(u8"\U00010000")
         .expect(u8"")
         .destination_size(1)
-        .expect_stop_reason(strf::transcode_stop_reason::bad_destination);
+        .expect_stop_reason(strf::transcode_stop_reason::reached_limit);
 
     TEST_UTF_UNSAFE_TRANSCODE(char8_t, char8_t)
         .input(u8"\uE000")
         .expect(u8"")
         .destination_size(2)
-        .expect_stop_reason(strf::transcode_stop_reason::bad_destination);
+        .expect_stop_reason(strf::transcode_stop_reason::reached_limit);
     TEST_UTF_UNSAFE_TRANSCODE(char8_t, char8_t)
         .input(u8"\uE000")
         .expect(u8"")
         .destination_size(1)
-        .expect_stop_reason(strf::transcode_stop_reason::bad_destination);
+        .expect_stop_reason(strf::transcode_stop_reason::reached_limit);
 
     TEST_UTF_UNSAFE_TRANSCODE(char8_t, char8_t)
         .input(u8"\u0080")
         .expect(u8"")
         .destination_size(1)
-        .expect_stop_reason(strf::transcode_stop_reason::bad_destination);
+        .expect_stop_reason(strf::transcode_stop_reason::reached_limit);
 
 
     TEST_CALLING_RECYCLE_AT(7, u8"abc\U00010000_def") (strf::unsafe_transcode(u8"abc\U00010000_def"));
@@ -167,9 +167,9 @@ STRF_TEST_FUNC void utf8_to_utf8_unsafe_transcode()
 
     TEST_UTF_UNSAFE_TRANSCODE(char, char)
         .input("hello")
-        .bad_destination()
+        .destination_size(0)
         .expect("")
-        .expect_stop_reason(strf::transcode_stop_reason::bad_destination);
+        .expect_stop_reason(strf::transcode_stop_reason::reached_limit);
 }
 
 
@@ -245,15 +245,15 @@ STRF_TEST_FUNC void utf8_sani_valid_sequences()
         .input(u8"ab\U0010FFFF")
         .destination_size(3)
         .expect("ab")
-        .expect_stop_reason(strf::transcode_stop_reason::bad_destination)
+        .expect_stop_reason(strf::transcode_stop_reason::reached_limit)
         .expect_unsupported_codepoints({})
         .expect_invalid_sequences({});
 
     TEST_UTF_TRANSCODE(char8_t, char)
         .input(u8"ab\U0010FFFF")
-        .bad_destination()
+        .destination_size(0)
         .expect("")
-        .expect_stop_reason(strf::transcode_stop_reason::bad_destination)
+        .expect_stop_reason(strf::transcode_stop_reason::reached_limit)
         .expect_unsupported_codepoints({})
         .expect_invalid_sequences({});
 
@@ -1038,15 +1038,6 @@ STRF_TEST_FUNC void utf8_sani_invalid_sequences()
         .expect_stop_reason(strf::transcode_stop_reason::completed);
     TEST_UTF_TRANSCODE(char, char8_t)
         .input("\xED\xA0")
-        .bad_destination()
-        .flags(strf::transcode_flags::lax_surrogate_policy |
-               strf::transcode_flags::stop_on_invalid_sequence)
-        .expect(u8"")
-        .expect_invalid_sequences({{'\xED', '\xA0'}})
-        .expect_unsupported_codepoints({})
-        .expect_stop_reason(strf::transcode_stop_reason::invalid_sequence);
-    TEST_UTF_TRANSCODE(char, char8_t)
-        .input("\xED\xA0")
         .destination_size(0)
         .flags(strf::transcode_flags::lax_surrogate_policy |
                strf::transcode_flags::stop_on_invalid_sequence)
@@ -1062,15 +1053,6 @@ STRF_TEST_FUNC void utf8_sani_invalid_sequences()
         .expect_invalid_sequences({{'\xED', '\xBF'}})
         .expect_unsupported_codepoints({})
         .expect_stop_reason(strf::transcode_stop_reason::completed);
-    TEST_UTF_TRANSCODE(char, char8_t)
-        .input("\xED\xBF")
-        .bad_destination()
-        .flags(strf::transcode_flags::lax_surrogate_policy |
-               strf::transcode_flags::stop_on_invalid_sequence)
-        .expect(u8"")
-        .expect_invalid_sequences({{'\xED', '\xBF'}})
-        .expect_unsupported_codepoints({})
-        .expect_stop_reason(strf::transcode_stop_reason::invalid_sequence);
     TEST_UTF_TRANSCODE(char, char8_t)
         .input("\xED\xBF")
         .destination_size(0)
@@ -1097,14 +1079,6 @@ STRF_TEST_FUNC void utf8_sani_invalid_sequences()
         .expect_invalid_sequences({{'\xED', '\x9F'}})
         .expect_unsupported_codepoints({})
         .expect_stop_reason(strf::transcode_stop_reason::invalid_sequence);
-    TEST_UTF_TRANSCODE(char, char8_t)
-        .input("\xED\x9F")
-        .bad_destination()
-        .flags(strf::transcode_flags::stop_on_invalid_sequence)
-        .expect(u8"")
-        .expect_invalid_sequences({{'\xED', '\x9F'}})
-        .expect_unsupported_codepoints({})
-        .expect_stop_reason(strf::transcode_stop_reason::invalid_sequence);
 
     // cover when recycle() needs to be called
     TEST_CALLING_RECYCLE_AT(3, u8" \uFFFD\uFFFD\uFFFD")  (strf::sani("\xED\xA0\x80") > 4);
@@ -1115,7 +1089,7 @@ STRF_TEST_FUNC void utf8_sani_invalid_sequences()
     // When the destination.good() is false
     TEST_UTF_TRANSCODE(char, char8_t)
         .input("\xBF")
-        .bad_destination()
+        .destination_size(0)
         .expect(u8"")
         .flags(strf::transcode_flags::stop_on_invalid_sequence)
         .expect_invalid_sequences({{'\xBF'}})
@@ -1123,12 +1097,12 @@ STRF_TEST_FUNC void utf8_sani_invalid_sequences()
         .expect_stop_reason(strf::transcode_stop_reason::invalid_sequence);
     TEST_UTF_TRANSCODE(char, char8_t)
         .input("_\xBF")
-        .bad_destination()
+        .destination_size(0)
         .expect(u8"")
         .flags(strf::transcode_flags::stop_on_invalid_sequence)
         .expect_invalid_sequences({})
         .expect_unsupported_codepoints({})
-        .expect_stop_reason(strf::transcode_stop_reason::bad_destination);
+        .expect_stop_reason(strf::transcode_stop_reason::reached_limit);
 }
 
 struct invalid_seq_counter: strf::transcoding_error_notifier {

@@ -229,7 +229,7 @@ struct transcoding_test_data
     SrcCharset src_charset;
     DstCharset dst_charset;
     const bool safe_;
-    bool destination_good = true;
+    //bool destination_good = true;
 
     using src_char_t = typename SrcCharset::code_unit;
     using dst_char_t = typename DstCharset::code_unit;
@@ -246,18 +246,18 @@ struct transcoding_test_data
     src_char_t buff_input[80];
     dst_char_t buff_expected[80];
 
-    STRF_HD strf::decode_encode_result<src_char_t> transcode
-        ( strf::transcode_dest<dst_char_t>& dst
+    STRF_HD strf::decode_encode_result<src_char_t, dst_char_t> transcode
+        ( dst_char_t* dst, dst_char_t* dst_end
         , strf::transcoding_error_notifier* err_notifier )
     {
         if (safe_) {
             return strf::do_transcode
                 ( src_charset, dst_charset, src.begin(), src.end()
-                , dst, err_notifier, flags );
+                , dst, dst_end, err_notifier, flags );
         }
         return strf::do_unsafe_transcode
             ( src_charset, dst_charset, src.begin(), src.end()
-            , dst, err_notifier, flags );
+            , dst, dst_end, err_notifier, flags );
     }
 
     STRF_HD strf::decode_encode_size_result<src_char_t> transcode_size(const src_char_t* src_end)
@@ -317,11 +317,11 @@ struct transcoding_test_data_maker
         data.dst_size = s;
         return (transcoding_test_data_maker&&) *this;
     }
-    STRF_HD transcoding_test_data_maker&& bad_destination() &&
-    {
-        data.destination_good = false;
-        return (transcoding_test_data_maker&&) *this;
-    }
+    // STRF_HD transcoding_test_data_maker&& bad_destination() &&
+    // {
+    //     data.destination_good = false;
+    //     return (transcoding_test_data_maker&&) *this;
+    // }
 
     STRF_HD transcoding_test_data_maker&& expect_stop_reason
         ( strf::transcode_stop_reason reason) &&
@@ -352,7 +352,7 @@ inline STRF_HD const char* stringify(strf::transcode_stop_reason reason)
 {
     switch(reason) {
     case strf::transcode_stop_reason::completed: return "completed";
-    case strf::transcode_stop_reason::bad_destination: return "bad_destination";
+    case strf::transcode_stop_reason::reached_limit: return "reached_limit";
     case strf::transcode_stop_reason::unsupported_codepoint: return "unsupported_codepoint";
     case strf::transcode_stop_reason::invalid_sequence: return "invalid_sequence";
     }
@@ -379,23 +379,23 @@ public:
 
     STRF_HD void run();
 
-    STRF_HD bool adjust_stale_ptr
-        ( strf::decode_encode_result<src_char_t>& res)
+    STRF_HD bool adjust_stale_src_ptr
+        ( strf::decode_encode_result<src_char_t, dst_char_t>& res)
     {
-        return adjust_stale_ptr(res.stale_ptr, res.u32dist, "transcode");
+        return adjust_stale_src_ptr(res.stale_src_ptr, res.u32dist, "transcode");
     }
 
-    STRF_HD bool adjust_stale_ptr
+    STRF_HD bool adjust_stale_src_ptr
         ( strf::decode_encode_size_result<src_char_t>& res)
     {
-        return adjust_stale_ptr(res.stale_ptr, res.u32dist, "transcode_size");
+        return adjust_stale_src_ptr(res.stale_src_ptr, res.u32dist, "transcode_size");
     }
 
-    STRF_HD bool adjust_stale_ptr
-        ( const src_char_t*& stale_ptr, std::int32_t u32dist, const char* funcname )
+    STRF_HD bool adjust_stale_src_ptr
+        ( const src_char_t*& stale_src_ptr, std::int32_t u32dist, const char* funcname )
     {
         auto res = data_.src_charset.count_codepoints
-            (stale_ptr, data_.src.end(), u32dist, to_surrogate_policy(data_.flags));
+            (stale_src_ptr, data_.src.end(), u32dist, to_surrogate_policy(data_.flags));
 
         if (res.count != u32dist) {
             err_msg_.line("Wrong u32dist returned by ", funcname);
@@ -404,58 +404,58 @@ public:
             err_msg_.line("    ( they should be equal )", u32dist);
             return false;
         }
-        stale_ptr = res.ptr;
+        stale_src_ptr = res.ptr;
         return true;
     }
 };
 
-template <class CharT>
-class array_dst_maybe_bad
-    : public strf::output_buffer<CharT, strf::log2_garbage_buff_size>
-{
-    using dest_t_ = strf::output_buffer<CharT, strf::log2_garbage_buff_size>;
+// template <class CharT>
+// class array_dst_maybe_bad
+//     : public strf::output_buffer<CharT, strf::log2_garbage_buff_size>
+// {
+//     using dest_t_ = strf::output_buffer<CharT, strf::log2_garbage_buff_size>;
 
-public:
+// public:
 
-    array_dst_maybe_bad(bool good, CharT* dest_begin, std::size_t dest_size)
-        : dest_t_(dest_begin, dest_size)
-    {
-        this->set_good(good);
-    }
+//     array_dst_maybe_bad(bool good, CharT* dest_begin, std::size_t dest_size)
+//         : dest_t_(dest_begin, dest_size)
+//     {
+//         this->set_good(good);
+//     }
 
-    array_dst_maybe_bad(const array_dst_maybe_bad&) = delete;
-    array_dst_maybe_bad(array_dst_maybe_bad&&) = delete;
-    array_dst_maybe_bad& operator=(const array_dst_maybe_bad&) = delete;
-    array_dst_maybe_bad& operator=(array_dst_maybe_bad&&) = delete;
+//     array_dst_maybe_bad(const array_dst_maybe_bad&) = delete;
+//     array_dst_maybe_bad(array_dst_maybe_bad&&) = delete;
+//     array_dst_maybe_bad& operator=(const array_dst_maybe_bad&) = delete;
+//     array_dst_maybe_bad& operator=(array_dst_maybe_bad&&) = delete;
 
-    STRF_HD ~array_dst_maybe_bad() override STRF_DEFAULT_IMPL;
+//     STRF_HD ~array_dst_maybe_bad() override STRF_DEFAULT_IMPL;
 
-    STRF_HD void recycle() noexcept override
-    {
-        if (this->good()) {
-            it_ = this->buffer_ptr();
-            this->set_good(false);
-            this->set_buffer_end(strf::garbage_buff_end<CharT>());
-        }
-        this->set_buffer_ptr(strf::garbage_buff<CharT>());
-    }
+//     STRF_HD void recycle() noexcept override
+//     {
+//         if (this->good()) {
+//             it_ = this->buffer_ptr();
+//             this->set_good(false);
+//             this->set_buffer_end(strf::garbage_buff_end<CharT>());
+//         }
+//         this->set_buffer_ptr(strf::garbage_buff<CharT>());
+//     }
 
-    struct result
-    {
-        CharT* ptr;
-        bool truncated;
-    };
+//     struct result
+//     {
+//         CharT* ptr;
+//         bool truncated;
+//     };
 
-    STRF_HD result finish() noexcept
-    {
-        const bool truncated = ! this->good();
-        CharT* ptr = truncated ? it_ : this->buffer_ptr();
-        return { ptr, truncated };
-    }
+//     STRF_HD result finish() noexcept
+//     {
+//         const bool truncated = ! this->good();
+//         CharT* ptr = truncated ? it_ : this->buffer_ptr();
+//         return { ptr, truncated };
+//     }
 
-private:
-     CharT* it_ = nullptr;
-};
+// private:
+//      CharT* it_ = nullptr;
+// };
 
 template <typename SrcCharset, typename DstCharset>
 STRF_HD void transcode_tester<SrcCharset, DstCharset>::run()
@@ -467,23 +467,21 @@ STRF_HD void transcode_tester<SrcCharset, DstCharset>::run()
                        "internal buffer's size. SKIPPING TEST CASE");
         return;
     }
-    array_dst_maybe_bad<dst_char_t> dst(data_.destination_good, buff, data_.dst_size);
+    //array_dst_maybe_bad<dst_char_t> dst(data_.destination_good, buff, data_.dst_size);
 
     transcoding_error_tester notifier
         { err_msg_, data_.src_charset, data_.dst_charset
         , data_.expected_inv_seqs
         , data_.expected_unsupported_codepoints };
 
-    auto res_tr = data_.transcode(dst, &notifier);
+    auto res_tr = data_.transcode(buff, buff + data_.dst_size, &notifier);
     notifier.finish();
 
-    if (!adjust_stale_ptr(res_tr)) {
+    if (!adjust_stale_src_ptr(res_tr)) {
         return;
     }
 
-    const auto res_fin = dst.finish();
-
-    strf::detail::simple_string_view<dst_char_t> result_string(buff, res_fin.ptr);
+    strf::detail::simple_string_view<dst_char_t> result_string(buff, res_tr.dst_ptr);
     if (result_string != data_.expected) {
         err_msg_.line("Wrong output");
         err_msg_.line("    Expected: \"", strf::transcode(data_.expected), '\"');
@@ -495,15 +493,15 @@ STRF_HD void transcode_tester<SrcCharset, DstCharset>::run()
         err_msg_.line("    Obtained: ", stringify(res_tr.stop_reason));
     }
 
-    auto src_end = ( data_.expected_stop_reason == strf::transcode_stop_reason::bad_destination
-                   ? res_tr.stale_ptr
+    auto src_end = ( data_.expected_stop_reason == strf::transcode_stop_reason::reached_limit
+                   ? res_tr.stale_src_ptr
                    : data_.src.end() );
 
     auto res_tr_size = data_.transcode_size(src_end);
-    if (!adjust_stale_ptr(res_tr_size)) {
+    if (!adjust_stale_src_ptr(res_tr_size)) {
         return;
     }
-    auto transcode_size_stop_reason =
+    auto transcode_stop_reason =
         static_cast<strf::transcode_stop_reason>(res_tr_size.stop_reason);
 
     if (result_string.ssize() != res_tr_size.ssize) {
@@ -511,26 +509,26 @@ STRF_HD void transcode_tester<SrcCharset, DstCharset>::run()
         err_msg_.line("    `transcode_size` calulated : ", res_tr_size.ssize);
         err_msg_.line("    But the output's size was  : ", result_string.ssize());
     }
-    if (data_.expected_stop_reason != strf::transcode_stop_reason::bad_destination) {
-        if (data_.expected_stop_reason != transcode_size_stop_reason ) {
+    if (data_.expected_stop_reason != strf::transcode_stop_reason::reached_limit) {
+        if (data_.expected_stop_reason != transcode_stop_reason ) {
             err_msg_.line("`transcode_size` returned wrong stop_reason");
             err_msg_.line("    Expected: ", stringify(data_.expected_stop_reason));
-            err_msg_.line("    Obtained: ", stringify(transcode_size_stop_reason));
+            err_msg_.line("    Obtained: ", stringify(transcode_stop_reason));
         }
-        if (transcode_size_stop_reason != res_tr.stop_reason) {
+        if (transcode_stop_reason != res_tr.stop_reason) {
             err_msg_.line("`stop_reason` mismatch:");
             err_msg_.line("    `transcode`      returned `"
                           , stringify(res_tr.stop_reason), '`');
             err_msg_.line("    `transcode_size` returned `"
-                          , stringify(transcode_size_stop_reason), '`');
+                          , stringify(transcode_stop_reason), '`');
         }
     }
-    if (res_tr.stale_ptr != res_tr_size.stale_ptr) {
-        err_msg_.line("Adjusted `stale_ptr` mismatch:");
+    if (res_tr.stale_src_ptr != res_tr_size.stale_src_ptr) {
+        err_msg_.line("Adjusted `stale_src_ptr` mismatch:");
         err_msg_.line( "    `transcode`      : `input.data() + "
-                       , res_tr.stale_ptr - data_.src.begin(), '`');
+                       , res_tr.stale_src_ptr - data_.src.begin(), '`');
         err_msg_.line( "    `transcode_size` : `input.data() + "
-                       , res_tr_size.stale_ptr - data_.src.begin(), '`');
+                       , res_tr_size.stale_src_ptr - data_.src.begin(), '`');
     }
 }
 

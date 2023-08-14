@@ -31,77 +31,72 @@ using ustr_view = strf::detail::simple_string_view<char16_t>;
 
 STRF_TEST_FUNC void test_unsafe_decode_encode_scenarios()
 {
-    using stop_reason = strf::unsafe_transcode_stop_reason;
+    using stop_reason = strf::transcode_stop_reason;
 
     {   // happy scenario
-        char buff[200] = {};
-        strf::cstr_destination dest(buff);
+        constexpr auto buff_size = 200;
+        char buff[buff_size] = {};
         ustr_view input = u"abcdef";
         test_utils::simple_transcoding_err_notifier notifier;
         const auto flags = strf::transcode_flags::stop_on_unsupported_codepoint;
 
         auto deres = strf::unsafe_decode_encode
             <strf::utf_t, strf::utf_t>
-             (input.begin(), input.end(), dest, &notifier, flags);
+            (input.begin(), input.end(), buff, buff + buff_size, &notifier, flags);
 
         TEST_TRUE(deres.stop_reason == stop_reason::completed);
         TEST_EQ(0, deres.u32dist);
-        TEST_EQ(0, (deres.stale_ptr - input.end()));
+        TEST_EQ(0, (deres.stale_src_ptr - input.end()));
         TEST_EQ(0, notifier.invalid_sequence_calls_count);
         TEST_EQ(0, notifier.unsupported_codepoints_calls_count);
 
-        auto fres = dest.finish();
-        str_view output(buff, fres.ptr);
+        str_view output(buff, deres.dst_ptr);
 
-        TEST_FALSE(fres.truncated);
         TEST_EQ(output.size(), input.size());
         TEST_STR_EQ(output, "abcdef");
     }
     {   // happy scenario again,
         // but forcing buffered_encoder<DestCharT>::recycle() to be called
-        char buff[200] = {};
-        strf::cstr_destination dest(buff);
+        constexpr auto buff_size = 200;
+        char buff[buff_size] = {};
         test_utils::simple_transcoding_err_notifier notifier;
         const auto flags = strf::transcode_flags::stop_on_unsupported_codepoint;
         ustr_view input = u"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
         auto deres = strf::unsafe_decode_encode
             <strf::utf_t, strf::utf_t>
-            (input.begin(), input.end(), dest, &notifier, flags);
+            (input.begin(), input.end(), buff, buff + buff_size, &notifier, flags);
 
         TEST_TRUE(deres.stop_reason == stop_reason::completed);
-        TEST_EQ(0, (deres.stale_ptr - input.end()));
+        TEST_EQ(0, (deres.stale_src_ptr - input.end()));
         TEST_EQ(0, deres.u32dist);
         TEST_EQ(0, notifier.invalid_sequence_calls_count);
         TEST_EQ(0, notifier.unsupported_codepoints_calls_count);
 
-        auto fres = dest.finish();
-        str_view output(buff, fres.ptr);
+        str_view output(buff, deres.dst_ptr);
 
         TEST_EQ(output.size(), input.size());
-        TEST_FALSE(fres.truncated);
         TEST_STR_EQ(output, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");
     }
     {   // destination is already bad since the begining
-        strf::discarder<char> dest;
         test_utils::simple_transcoding_err_notifier notifier;
         const auto flags = strf::transcode_flags::stop_on_unsupported_codepoint;
         ustr_view input = u"abcdefghijklmnopqr";
+        char* dst = nullptr;
 
         auto deres = strf::unsafe_decode_encode
             <strf::utf_t, strf::utf_t>
-            (input.begin(), input.end(), dest, &notifier, flags);
+            (input.begin(), input.end(), dst, dst, &notifier, flags);
 
-        TEST_TRUE(deres.stop_reason == stop_reason::bad_destination);
-        TEST_EQ(0, (deres.stale_ptr - input.begin()));
+        TEST_TRUE(deres.stop_reason == stop_reason::reached_limit);
+        TEST_EQ(0, (deres.stale_src_ptr - input.begin()));
         TEST_EQ(0, deres.u32dist);
         TEST_EQ(0, notifier.invalid_sequence_calls_count);
         TEST_EQ(0, notifier.unsupported_codepoints_calls_count);
     }
-    {   // the destination turns bad during the encoding
+    {   // the destination too small
         constexpr unsigned dest_space = 20;
         char buff[dest_space] = {};
-        strf::array_destination<char> dest(buff);
         test_utils::simple_transcoding_err_notifier notifier;
         const auto flags = ( strf::transcode_flags::stop_on_invalid_sequence
                            | strf::transcode_flags::stop_on_unsupported_codepoint );
@@ -109,24 +104,21 @@ STRF_TEST_FUNC void test_unsafe_decode_encode_scenarios()
 
         auto deres = strf::unsafe_decode_encode
             <strf::utf_t, strf::utf_t>
-            (input.begin(), input.end(), dest, &notifier, flags);
+            (input.begin(), input.end(), buff, buff + dest_space, &notifier, flags);
 
-        TEST_TRUE(deres.stop_reason == stop_reason::bad_destination);
+        TEST_TRUE(deres.stop_reason == stop_reason::reached_limit);
         TEST_EQ(0, notifier.invalid_sequence_calls_count);
         TEST_EQ(0, notifier.unsupported_codepoints_calls_count);
 
         auto cpcount_res = strf::utf_t<char16_t>::count_codepoints
-            ( deres.stale_ptr, input.end(), deres.u32dist
+            ( deres.stale_src_ptr, input.end(), deres.u32dist
             , strf::surrogate_policy::strict );
 
         TEST_EQ(cpcount_res.count, deres.u32dist);
         TEST_EQ((char)*cpcount_res.ptr, 'u');
         TEST_EQ(dest_space, (cpcount_res.ptr - input.begin()));
 
-        auto fres = dest.finish();
-        TEST_TRUE(fres.truncated);
-
-        str_view output(buff, fres.ptr);
+        str_view output(buff, deres.dst_ptr);
         TEST_EQ(output.size(), dest_space);
         TEST_STR_EQ(output, "abcdefghijklmnopqrst");
     }
@@ -134,8 +126,8 @@ STRF_TEST_FUNC void test_unsafe_decode_encode_scenarios()
         // is not supported by the destination encoding
         // and stop_on_unsupported_codepoint flag is set
 
-        char buff[200] = {};
-        strf::array_destination<char> dest(buff);
+        constexpr auto buff_size = 200;
+        char buff[buff_size] = {};
         test_utils::simple_transcoding_err_notifier notifier;
         const auto flags = strf::transcode_flags::stop_on_unsupported_codepoint;
         ustr_view input =
@@ -146,32 +138,29 @@ STRF_TEST_FUNC void test_unsafe_decode_encode_scenarios()
 
         auto deres = strf::unsafe_decode_encode
             <strf::utf_t, strf::iso_8859_5_t>
-            (input.begin(), input.end(), dest, &notifier, flags);
+            (input.begin(), input.end(), buff, buff + buff_size, &notifier, flags);
 
         TEST_TRUE(deres.stop_reason == stop_reason::unsupported_codepoint);
         TEST_EQ(0, notifier.invalid_sequence_calls_count);
         TEST_EQ(1, notifier.unsupported_codepoints_calls_count);
 
         auto cpcount_res = strf::utf_t<char16_t>::count_codepoints
-            ( deres.stale_ptr, input.end(), deres.u32dist
+            ( deres.stale_src_ptr, input.end(), deres.u32dist
             , strf::surrogate_policy::strict );
 
         TEST_EQ(cpcount_res.count, deres.u32dist);
         TEST_EQ((unsigned)*cpcount_res.ptr, 0xABCD);
         TEST_EQ(30, (cpcount_res.ptr - input.begin()));
 
-        auto fres = dest.finish();
-        TEST_FALSE(fres.truncated);
-
-        str_view output(buff, fres.ptr);
+        str_view output(buff, deres.dst_ptr);
         TEST_STR_EQ(output, "abcdefghijklmnopqrstuvwxyz\xA1\xA2\xA3\xFF");
     }
     {   // there is a codepoint that
         // is not supported by the destination encoding
         // but stop_on_unsupported_codepoint flag is set
 
-        char buff[200] = {};
-        strf::array_destination<char> dest(buff);
+        constexpr auto buff_size = 200;
+        char buff[buff_size] = {};
         test_utils::simple_transcoding_err_notifier notifier;
         const auto flags = strf::transcode_flags::stop_on_invalid_sequence;
         ustr_view input =
@@ -182,18 +171,15 @@ STRF_TEST_FUNC void test_unsafe_decode_encode_scenarios()
 
         auto deres = strf::unsafe_decode_encode
             <strf::utf_t, strf::iso_8859_5_t>
-            (input.begin(), input.end(), dest, &notifier, flags);
+            (input.begin(), input.end(), buff, buff + buff_size, &notifier, flags);
 
         TEST_TRUE(deres.stop_reason == stop_reason::completed);
         TEST_EQ(0, deres.u32dist);
-        TEST_EQ(0, (deres.stale_ptr - input.end()));
+        TEST_EQ(0, (deres.stale_src_ptr - input.end()));
         TEST_EQ(0, notifier.invalid_sequence_calls_count);
         TEST_EQ(1, notifier.unsupported_codepoints_calls_count);
 
-        auto fres = dest.finish();
-        TEST_FALSE(fres.truncated);
-
-        str_view output(buff, fres.ptr);
+        str_view output(buff, deres.dst_ptr);
         TEST_STR_EQ(output, "abcdefghijklmnopqrstuvwxyz\xA1\xA2\xA3\xFF?XYZ");
     }
 }
@@ -214,70 +200,63 @@ STRF_TEST_FUNC void test_unsafe_decode_encode_overloads()
     const auto flags_stop = strf::transcode_flags::stop_on_unsupported_codepoint;
     const auto flags_none = strf::transcode_flags::none;
 
-    using stop_reason = strf::unsafe_transcode_stop_reason;
+    using stop_reason = strf::transcode_stop_reason;
 
     // Overload 1
     {
-        char buff[200] = {};
-        strf::array_destination<char> dst(buff);
+        constexpr auto buff_size = 200;
+        char buff[buff_size] = {};
         test_utils::simple_transcoding_err_notifier notifier;
 
         auto ude_res = strf::unsafe_decode_encode
-            (src_enc, dst_enc, src, src_end, dst, &notifier, flags_stop);
+            (src_enc, dst_enc, src, src_end, buff, buff + buff_size, &notifier, flags_stop);
         TEST_TRUE(ude_res.stop_reason == stop_reason::unsupported_codepoint);
         TEST_EQ(1, notifier.unsupported_codepoints_calls_count);
 
-        auto f_res = dst.finish();
-        str_view output(buff, f_res.ptr);
-
+        str_view output(buff, ude_res.dst_ptr);
         TEST_STR_EQ(output, expected_part);
     }
     {
-        char buff[200] = {};
-        strf::array_destination<char> dst(buff);
+        constexpr auto buff_size = 200;
+        char buff[buff_size] = {};
         test_utils::simple_transcoding_err_notifier notifier;
 
         auto ude_res = strf::unsafe_decode_encode
-            (src_enc, dst_enc, src, src_end, dst, &notifier, flags_none);
+            (src_enc, dst_enc, src, src_end, buff, buff + buff_size, &notifier, flags_none);
         TEST_TRUE(ude_res.stop_reason == stop_reason::completed);
         TEST_EQ(1, notifier.unsupported_codepoints_calls_count);
 
-        auto f_res = dst.finish();
-        str_view output(buff, f_res.ptr);
-
+        str_view output(buff, ude_res.dst_ptr);
         TEST_STR_EQ(output, expected_full);
     }
 
 
     // Overload 2
     {
-        char buff[200] = {};
-        strf::array_destination<char> dst(buff);
+        constexpr auto buff_size = 200;
+        char buff[buff_size] = {};
         test_utils::simple_transcoding_err_notifier notifier;
 
         auto ude_res = strf::unsafe_decode_encode<strf::utf16_t, strf::iso_8859_5_t>
-            (src, src_end, dst, &notifier, flags_stop);
+            (src, src_end, buff, buff + buff_size, &notifier, flags_stop);
         TEST_TRUE(ude_res.stop_reason == stop_reason::unsupported_codepoint);
         TEST_EQ(1, notifier.unsupported_codepoints_calls_count);
 
-        auto f_res = dst.finish();
-        str_view output(buff, f_res.ptr);
+        str_view output(buff, ude_res.dst_ptr);
 
         TEST_STR_EQ(output, expected_part);
     }
     {
-        char buff[200] = {};
-        strf::array_destination<char> dst(buff);
+        constexpr auto buff_size = 200;
+        char buff[buff_size] = {};
         test_utils::simple_transcoding_err_notifier notifier;
 
         auto ude_res = strf::unsafe_decode_encode<strf::utf16_t, strf::iso_8859_5_t>
-            (src, src_end, dst, &notifier, flags_none);
+            (src, src_end, buff, buff + buff_size, &notifier, flags_none);
         TEST_TRUE(ude_res.stop_reason == stop_reason::completed);
         TEST_EQ(1, notifier.unsupported_codepoints_calls_count);
 
-        auto f_res = dst.finish();
-        str_view output(buff, f_res.ptr);
-
+        str_view output(buff, ude_res.dst_ptr);
         TEST_STR_EQ(output, expected_full);
     }
 
@@ -287,65 +266,58 @@ STRF_TEST_FUNC void test_unsafe_decode_encode_overloads()
 
     // Overload 1
     {
-        char buff[200] = {};
-        strf::array_destination<char> dst(buff);
+        constexpr auto buff_size = 200;
+        char buff[buff_size] = {};
         test_utils::simple_transcoding_err_notifier notifier;
 
         auto ude_res = strf::unsafe_decode_encode
-            (src_enc, dst_enc, src_sv, dst, &notifier, flags_stop);
+            (src_enc, dst_enc, src_sv, buff, buff + buff_size, &notifier, flags_stop);
         TEST_TRUE(ude_res.stop_reason == stop_reason::unsupported_codepoint);
         TEST_EQ(1, notifier.unsupported_codepoints_calls_count);
 
-        auto f_res = dst.finish();
-        str_view output(buff, f_res.ptr);
-
+        str_view output(buff, ude_res.dst_ptr);
         TEST_STR_EQ(output, expected_part);
     }
     {
-        char buff[200] = {};
-        strf::array_destination<char> dst(buff);
+        constexpr auto buff_size = 200;
+        char buff[buff_size] = {};
         test_utils::simple_transcoding_err_notifier notifier;
 
         auto ude_res = strf::unsafe_decode_encode
-            (src_enc, dst_enc, src_sv, dst, &notifier, flags_none);
+            (src_enc, dst_enc, src_sv, buff, buff + buff_size, &notifier, flags_none);
         TEST_TRUE(ude_res.stop_reason == stop_reason::completed);
         TEST_EQ(1, notifier.unsupported_codepoints_calls_count);
 
-        auto f_res = dst.finish();
-        str_view output(buff, f_res.ptr);
-
+        str_view output(buff, ude_res.dst_ptr);
         TEST_STR_EQ(output, expected_full);
     }
 
     // Overload 2
     {
-        char buff[200] = {};
-        strf::array_destination<char> dst(buff);
+        constexpr auto buff_size = 200;
+        char buff[buff_size] = {};
         test_utils::simple_transcoding_err_notifier notifier;
 
         auto ude_res = strf::unsafe_decode_encode<strf::utf16_t, strf::iso_8859_5_t>
-            (src_sv, dst, &notifier, flags_stop);
+            (src_sv, buff, buff + buff_size, &notifier, flags_stop);
         TEST_TRUE(ude_res.stop_reason == stop_reason::unsupported_codepoint);
         TEST_EQ(1, notifier.unsupported_codepoints_calls_count);
 
-        auto f_res = dst.finish();
-        str_view output(buff, f_res.ptr);
+        str_view output(buff, ude_res.dst_ptr);
 
         TEST_STR_EQ(output, expected_part);
     }
     {
-        char buff[200] = {};
-        strf::array_destination<char> dst(buff);
+        constexpr auto buff_size = 200;
+        char buff[buff_size] = {};
         test_utils::simple_transcoding_err_notifier notifier;
 
         auto ude_res = strf::unsafe_decode_encode<strf::utf16_t, strf::iso_8859_5_t>
-            (src_sv, dst, &notifier, flags_none);
+            (src_sv, buff, buff + buff_size, &notifier, flags_none);
         TEST_TRUE(ude_res.stop_reason == stop_reason::completed);
         TEST_EQ(1, notifier.unsupported_codepoints_calls_count);
 
-        auto f_res = dst.finish();
-        str_view output(buff, f_res.ptr);
-
+        str_view output(buff, ude_res.dst_ptr);
         TEST_STR_EQ(output, expected_full);
     }
 
@@ -354,7 +326,7 @@ STRF_TEST_FUNC void test_unsafe_decode_encode_overloads()
 
 STRF_TEST_FUNC void test_unsafe_decode_encode_size_scenarios()
 {
-    using stop_reason = strf::unsafe_transcode_size_stop_reason;
+    using stop_reason = strf::transcode_stop_reason;
 
     {   // happy scenario
         ustr_view input = u"abcdef";
@@ -363,11 +335,11 @@ STRF_TEST_FUNC void test_unsafe_decode_encode_size_scenarios()
 
         auto res = strf::unsafe_decode_encode_size
             ( strf::utf<char16_t>, strf::utf<char>
-            , input.begin(), input.end(), strf::transc_size_max, flags );
+            , input.begin(), input.end(), strf::ssize_max, flags );
 
         TEST_TRUE(res.stop_reason == stop_reason::completed);
         TEST_EQ(0, res.u32dist);
-        TEST_EQ(0, (res.stale_ptr - input.end()));
+        TEST_EQ(0, (res.stale_src_ptr - input.end()));
         TEST_EQ(res.ssize, 6);
     }
     {   // happy scenario with limit equal to expected size
@@ -381,7 +353,7 @@ STRF_TEST_FUNC void test_unsafe_decode_encode_size_scenarios()
 
         TEST_TRUE(res.stop_reason == stop_reason::completed);
         TEST_EQ(0, res.u32dist);
-        TEST_EQ(0, (res.stale_ptr - input.end()));
+        TEST_EQ(0, (res.stale_src_ptr - input.end()));
         TEST_EQ(res.ssize, 6);
     }
     {
@@ -396,7 +368,7 @@ STRF_TEST_FUNC void test_unsafe_decode_encode_size_scenarios()
 
         TEST_TRUE(res.stop_reason == stop_reason::reached_limit);
         auto cpcount_res = strf::utf_t<char16_t>::count_codepoints
-            ( res.stale_ptr, input.end(), res.u32dist
+            ( res.stale_src_ptr, input.end(), res.u32dist
             , strf::surrogate_policy::strict );
 
         TEST_EQ(cpcount_res.count, res.u32dist);
@@ -420,7 +392,7 @@ STRF_TEST_FUNC void test_unsafe_decode_encode_size_scenarios()
 
         TEST_TRUE(res.stop_reason == stop_reason::unsupported_codepoint);
         auto cpcount_res = strf::utf_t<char16_t>::count_codepoints
-            ( res.stale_ptr, input.end(), res.u32dist
+            ( res.stale_src_ptr, input.end(), res.u32dist
             , strf::surrogate_policy::strict );
 
         TEST_EQ(cpcount_res.count, res.u32dist);
@@ -447,7 +419,7 @@ STRF_TEST_FUNC void test_unsafe_decode_encode_size_scenarios()
 
         TEST_TRUE(res.stop_reason == stop_reason::completed);
         TEST_EQ(0, res.u32dist);
-        TEST_EQ(0, (res.stale_ptr - input.end()));
+        TEST_EQ(0, (res.stale_src_ptr - input.end()));
         TEST_EQ(res.ssize, expected_size);
     }
 }
@@ -469,7 +441,7 @@ STRF_TEST_FUNC void test_unsafe_decode_encode_size_overloads()
     const auto flags_stop = strf::transcode_flags::stop_on_unsupported_codepoint;
     const auto flags_none = strf::transcode_flags::none;
 
-    using stop_reason = strf::unsafe_transcode_size_stop_reason;
+    using stop_reason = strf::transcode_stop_reason;
 
     // Overload 1
     {
@@ -479,7 +451,7 @@ STRF_TEST_FUNC void test_unsafe_decode_encode_size_overloads()
         TEST_TRUE(res.stop_reason == stop_reason::unsupported_codepoint);
 
         auto cpcount_res = strf::utf_t<char16_t>::count_codepoints
-            ( res.stale_ptr, input.end(), res.u32dist
+            ( res.stale_src_ptr, input.end(), res.u32dist
             , strf::surrogate_policy::strict );
         TEST_EQ(res.u32dist, cpcount_res.count);
         TEST_EQ(res.u32dist, (cpcount_res.ptr - input.begin()));
@@ -501,15 +473,13 @@ STRF_TEST_FUNC void test_unsafe_decode_encode_size_overloads()
         TEST_TRUE(res.stop_reason == stop_reason::unsupported_codepoint);
 
         auto cpcount_res = strf::utf_t<char16_t>::count_codepoints
-            ( res.stale_ptr, input.end(), res.u32dist
+            ( res.stale_src_ptr, input.end(), res.u32dist
             , strf::surrogate_policy::strict );
         TEST_EQ(res.u32dist, cpcount_res.count);
         TEST_EQ(res.u32dist, (cpcount_res.ptr - input.begin()));
         TEST_EQ((unsigned)*cpcount_res.ptr, 0xABCD);
     }
     {
-        char buff[200] = {};
-        strf::array_destination<char> dst(buff);
         test_utils::simple_transcoding_err_notifier notifier;
 
         const auto res = strf::unsafe_decode_encode_size
@@ -523,27 +493,19 @@ STRF_TEST_FUNC void test_unsafe_decode_encode_size_overloads()
 
     // Overload 1
     {
-        char buff[200] = {};
-        strf::array_destination<char> dst(buff);
-        test_utils::simple_transcoding_err_notifier notifier;
-
         const auto res = strf::unsafe_decode_encode_size
             (src_enc, dst_enc, src_sv, expected_part_size, flags_stop);
         TEST_EQ(res.ssize, expected_part_size);
         TEST_TRUE(res.stop_reason == stop_reason::unsupported_codepoint);
 
         auto cpcount_res = strf::utf_t<char16_t>::count_codepoints
-            ( res.stale_ptr, input.end(), res.u32dist
+            ( res.stale_src_ptr, input.end(), res.u32dist
             , strf::surrogate_policy::strict );
         TEST_EQ(res.u32dist, cpcount_res.count);
         TEST_EQ(res.u32dist, (cpcount_res.ptr - input.begin()));
         TEST_EQ((unsigned)*cpcount_res.ptr, 0xABCD);
     }
     {
-        char buff[200] = {};
-        strf::array_destination<char> dst(buff);
-        test_utils::simple_transcoding_err_notifier notifier;
-
         const auto res = strf::unsafe_decode_encode_size
             (src_enc, dst_enc, src_sv, expected_full_size, flags_none);
         TEST_EQ(res.ssize, expected_full_size);
@@ -551,27 +513,19 @@ STRF_TEST_FUNC void test_unsafe_decode_encode_size_overloads()
 
     // Overload 2
     {
-        char buff[200] = {};
-        strf::array_destination<char> dst(buff);
-        test_utils::simple_transcoding_err_notifier notifier;
-
         const auto res = strf::unsafe_decode_encode_size
             (src_enc, dst_enc, src_sv, expected_part_size, flags_stop);
         TEST_EQ(res.ssize, expected_part_size);
         TEST_TRUE(res.stop_reason == stop_reason::unsupported_codepoint);
 
         auto cpcount_res = strf::utf_t<char16_t>::count_codepoints
-            ( res.stale_ptr, input.end(), res.u32dist
+            ( res.stale_src_ptr, input.end(), res.u32dist
             , strf::surrogate_policy::strict );
         TEST_EQ(res.u32dist, cpcount_res.count);
         TEST_EQ(res.u32dist, (cpcount_res.ptr - input.begin()));
         TEST_EQ((unsigned)*cpcount_res.ptr, 0xABCD);
     }
     {
-        char buff[200] = {};
-        strf::array_destination<char> dst(buff);
-        test_utils::simple_transcoding_err_notifier notifier;
-
         const auto res = strf::unsafe_decode_encode_size
             (src_enc, dst_enc, src_sv, expected_full_size, flags_none);
         TEST_EQ(res.ssize, expected_full_size);

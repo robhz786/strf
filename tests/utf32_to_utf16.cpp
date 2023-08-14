@@ -95,22 +95,22 @@ STRF_TEST_FUNC void utf32_to_utf16_unsafe_transcode()
         .input(U"abc")
         .expect(u"ab")
         .destination_size(2)
-        .expect_stop_reason(strf::transcode_stop_reason::bad_destination);
+        .expect_stop_reason(strf::transcode_stop_reason::reached_limit);
     TEST_UNSAFE_TRANSCODE
         .input(U"\U00010000")
         .expect(u"")
         .destination_size(1)
-        .expect_stop_reason(strf::transcode_stop_reason::bad_destination);
+        .expect_stop_reason(strf::transcode_stop_reason::reached_limit);
     TEST_UNSAFE_TRANSCODE
         .input(U"\U00010000")
         .expect(u"")
-        .bad_destination()
-        .expect_stop_reason(strf::transcode_stop_reason::bad_destination);
+        .destination_size(0)
+        .expect_stop_reason(strf::transcode_stop_reason::reached_limit);
     TEST_UNSAFE_TRANSCODE
         .input(U"abc")
         .expect(u"")
-        .bad_destination()
-        .expect_stop_reason(strf::transcode_stop_reason::bad_destination);
+        .destination_size(0)
+        .expect_stop_reason(strf::transcode_stop_reason::reached_limit);
 
     // when using strf::transcode_flags::lax_surrogate_policy
     TEST_UNSAFE_TRANSCODE
@@ -292,14 +292,6 @@ STRF_TEST_FUNC void test_not_allowed_surrogate(char32_t surrogate_char)
     TEST_TRANSCODE
         .input(surrogate_char, U"_def")
         .flags(strf::transcode_flags::stop_on_invalid_sequence)
-        .bad_destination()
-        .expect(u"")
-        .expect_stop_reason(strf::transcode_stop_reason::invalid_sequence)
-        .expect_unsupported_codepoints({})
-        .expect_invalid_sequences({{surrogate_char}});
-    TEST_TRANSCODE
-        .input(surrogate_char, U"_def")
-        .flags(strf::transcode_flags::stop_on_invalid_sequence)
         .expect(u"")
         .expect_stop_reason(strf::transcode_stop_reason::invalid_sequence)
         .expect_unsupported_codepoints({})
@@ -327,14 +319,6 @@ STRF_TEST_FUNC void utf32_to_utf16_invalid_sequences()
         .input(str_110000)
         .expect(u"")
         .destination_size(0)
-        .flags(strf::transcode_flags::stop_on_invalid_sequence)
-        .expect_stop_reason(strf::transcode_stop_reason::invalid_sequence)
-        .expect_unsupported_codepoints({})
-        .expect_invalid_sequences({{static_cast<char32_t>(0x110000)}});
-    TEST_TRANSCODE
-        .input(str_110000)
-        .expect(u"")
-        .bad_destination()
         .flags(strf::transcode_flags::stop_on_invalid_sequence)
         .expect_stop_reason(strf::transcode_stop_reason::invalid_sequence)
         .expect_unsupported_codepoints({})
