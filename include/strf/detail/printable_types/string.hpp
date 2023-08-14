@@ -1055,7 +1055,7 @@ STRF_HD void transcode_printer<SrcCharT, DestCharT>::print_to
         while (1) {
             auto r = transcode_(src_it, str_end_, dst_it, dst_end, err_notifier_, flags);
             dest.advance_to(r.dst_ptr);
-            if (r.stop_reason != strf::transcode_stop_reason::reached_limit) {
+            if (r.stop_reason != strf::transcode_stop_reason::insufficient_output_space) {
                 break;
             }
             src_it = r.src_ptr;
@@ -1069,7 +1069,7 @@ STRF_HD void transcode_printer<SrcCharT, DestCharT>::print_to
                 ( src_to_u32_, u32_to_dest_, src_it , str_end_
                 , dst_it, dst_end, err_notifier_, flags );
             dest.advance_to(r.dst_ptr);
-            if (r.stop_reason != strf::transcode_stop_reason::reached_limit) {
+            if (r.stop_reason != strf::transcode_stop_reason::insufficient_output_space) {
                 break;
             }
             dest.recycle();
@@ -1251,7 +1251,7 @@ void STRF_HD aligned_transcode_printer<SrcCharT, DestCharT>::print_to
         while (1) {
             auto r = transcode_(src_it, str_end_, dst_it, dst_end, err_notifier_, flags);
             dest.advance_to(r.dst_ptr);
-            if (r.stop_reason != strf::transcode_stop_reason::reached_limit) {
+            if (r.stop_reason != strf::transcode_stop_reason::insufficient_output_space) {
                 break;
             }
             src_it = r.src_ptr;
@@ -1265,7 +1265,7 @@ void STRF_HD aligned_transcode_printer<SrcCharT, DestCharT>::print_to
                 ( src_to_u32_, u32_to_dest_, src_it , str_end_
                 , dst_it, dst_end, err_notifier_, flags );
             dest.advance_to(r.dst_ptr);
-            if (r.stop_reason != strf::transcode_stop_reason::reached_limit) {
+            if (r.stop_reason != strf::transcode_stop_reason::insufficient_output_space) {
                 break;
             }
             dest.recycle();
@@ -1407,7 +1407,7 @@ STRF_HD void unsafe_transcode_printer<SrcCharT, DestCharT>::print_to
         while (1) {
             auto r = transcode_(src_it, str_end_, dst_it, dst_end, err_notifier_, flags);
             dest.advance_to(r.dst_ptr);
-            if (r.stop_reason != strf::transcode_stop_reason::reached_limit) {
+            if (r.stop_reason != strf::transcode_stop_reason::insufficient_output_space) {
                 break;
             }
             src_it = r.src_ptr;
@@ -1421,7 +1421,7 @@ STRF_HD void unsafe_transcode_printer<SrcCharT, DestCharT>::print_to
                 ( src_to_u32_, u32_to_dest_, src_it , str_end_
                 , dst_it, dst_end, err_notifier_, flags );
             dest.advance_to(r.dst_ptr);
-            if (r.stop_reason != strf::transcode_stop_reason::reached_limit) {
+            if (r.stop_reason != strf::transcode_stop_reason::insufficient_output_space) {
                 break;
             }
             dest.recycle();
@@ -1605,7 +1605,7 @@ void STRF_HD aligned_unsafe_transcode_printer<SrcCharT, DestCharT>::print_to
         while (1) {
             auto r = transcode_(src_it, str_end_, dst_it, dst_end, err_notifier_, flags);
             dest.advance_to(r.dst_ptr);
-            if (r.stop_reason != strf::transcode_stop_reason::reached_limit) {
+            if (r.stop_reason != strf::transcode_stop_reason::insufficient_output_space) {
                 break;
             }
             src_it = r.src_ptr;
@@ -1619,7 +1619,7 @@ void STRF_HD aligned_unsafe_transcode_printer<SrcCharT, DestCharT>::print_to
                 ( src_to_u32_, u32_to_dest_, src_it , str_end_
                 , dst_it, dst_end, err_notifier_, flags );
             dest.advance_to(r.dst_ptr);
-            if (r.stop_reason != strf::transcode_stop_reason::reached_limit) {
+            if (r.stop_reason != strf::transcode_stop_reason::insufficient_output_space) {
                 break;
             }
             dest.recycle();

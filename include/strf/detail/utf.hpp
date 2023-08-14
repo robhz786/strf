@@ -13,12 +13,12 @@ namespace strf {
 
 #define STRF_UTF_CHECK_DEST                                      \
     STRF_IF_UNLIKELY (dest_it >= dest_end) {                     \
-        return {seq_begin, dest_it, reason::reached_limit};    \
+        return {seq_begin, dest_it, reason::insufficient_output_space};    \
     }
 
 #define STRF_UTF_CHECK_DEST_SIZE(SIZE)                           \
     STRF_IF_UNLIKELY (dest_it + (SIZE) > dest_end) {             \
-        return {seq_begin, dest_it, reason::reached_limit};    \
+        return {seq_begin, dest_it, reason::insufficient_output_space};    \
     }
 
 namespace detail {
@@ -276,7 +276,7 @@ public:
         while (limit > 0 && detail::is_utf8_continuation(src[limit])) {
             --limit;
         }
-        return {limit, src + limit, transcode_stop_reason::reached_limit};
+        return {limit, src + limit, transcode_stop_reason::insufficient_output_space};
     }
 
     static STRF_HD strf::transcode_f<SrcCharT, DestCharT> transcode_func() noexcept
@@ -579,7 +579,7 @@ public:
         {
             --limit;
         }
-        return {limit, src + limit, transcode_stop_reason::reached_limit};
+        return {limit, src + limit, transcode_stop_reason::insufficient_output_space};
     }
 
     static STRF_HD strf::transcode_f<SrcCharT, DestCharT> transcode_func() noexcept
@@ -849,7 +849,7 @@ public:
         if (s <= limit) {
             return {s, src_end, transcode_stop_reason::completed};
         }
-        return {limit, src + limit, transcode_stop_reason::reached_limit};
+        return {limit, src + limit, transcode_stop_reason::insufficient_output_space};
     }
 
     static STRF_HD strf::transcode_f<SrcCharT, DestCharT> transcode_func() noexcept
@@ -1532,7 +1532,7 @@ STRF_HD strf::transcode_size_result<SrcCharT> strf::static_transcoder
                 return {size, seq_begin, stop_reason::invalid_sequence};
             }
             if (size >= limit) {
-                return {size, seq_begin, stop_reason::reached_limit};
+                return {size, seq_begin, stop_reason::insufficient_output_space};
             }
             ++size;
         }
@@ -1559,7 +1559,7 @@ STRF_HD strf::transcode_size_result<SrcCharT> strf::static_transcoder
 
     while (src_it < src_end) {
         if (size >= limit){
-            return {size, src_it, strf::transcode_stop_reason::reached_limit};
+            return {size, src_it, strf::transcode_stop_reason::insufficient_output_space};
         }
         ++size;
         ch0 = detail::cast_u8(*src_it);
@@ -1609,7 +1609,7 @@ STRF_HD strf::transcode_result<SrcCharT, DestCharT> strf::static_transcoder
         return {src, dest, reason::completed};
     }
     if (dest >= dest_end) {
-        return {src, dest, reason::reached_limit};
+        return {src, dest, reason::insufficient_output_space};
     }
     const auto *src_it = src;
     auto *dest_it = dest;
@@ -1671,7 +1671,7 @@ STRF_HD strf::transcode_size_result<SrcCharT> strf::static_transcoder
     } else {
         for (;src_it < src_end; ++src_it) {
             if (size >= limit){
-                return {size, src_it, strf::transcode_stop_reason::reached_limit};
+                return {size, src_it, strf::transcode_stop_reason::insufficient_output_space};
             }
             const unsigned ch = detail::cast_u8(*src_it);
             size += detail::not_utf8_continuation(ch);
@@ -1804,7 +1804,7 @@ STRF_HD strf::transcode_result<SrcCharT, DestCharT> strf::static_transcoder
     }
     const auto count = next_src - src;
     strf::detail::copy_n(src, count, dest);
-    return {next_src, dest + count, reason::reached_limit};
+    return {next_src, dest + count, reason::insufficient_output_space};
 }
 
 template <typename SrcCharT, typename DestCharT>
@@ -1880,7 +1880,7 @@ STRF_HD strf::transcode_size_result<SrcCharT> strf::static_transcoder
             }
             if (src > src_limit) {
                 const auto size = seq_begin - src_begin;
-                return {size, seq_begin, strf::transcode_stop_reason::reached_limit};
+                return {size, seq_begin, strf::transcode_stop_reason::insufficient_output_space};
 
             }
         }
@@ -1907,7 +1907,7 @@ STRF_HD strf::transcode_size_result<SrcCharT> strf::static_transcoder
     const bool lax_surr = strf::with_lax_surrogate_policy(flags);
     while (src_it < src_end) {
         if (size >= limit){
-            return {size, src_it, strf::transcode_stop_reason::reached_limit};
+            return {size, src_it, strf::transcode_stop_reason::insufficient_output_space};
         }
         ch0 = detail::cast_u8(*src_it);
         ++src_it;
@@ -2194,7 +2194,7 @@ STRF_HD strf::transcode_size_result<SrcCharT> strf::static_transcoder
     (void) limit;
     for(;src < src_end; ++src) {
         if (StopOnLimit && !StopOnInvalidSeq && size >= limit) {
-            return {size, src, stop_reason::reached_limit};
+            return {size, src, stop_reason::insufficient_output_space};
         }
         const auto ch = detail::cast_u32(*src);
         const bool isSurrogate = StricSurrPoli && detail::is_surrogate(ch);
@@ -2205,7 +2205,7 @@ STRF_HD strf::transcode_size_result<SrcCharT> strf::static_transcoder
         const auto ch_size = invalid ? 3 : (1 + (ch >= 0x80) + (ch >= 0x800) + (ch >= 0x10000));
         size += ch_size;
         if (StopOnLimit && StopOnInvalidSeq && size > limit) {
-            return {size - ch_size, src, stop_reason::reached_limit};
+            return {size - ch_size, src, stop_reason::insufficient_output_space};
         }
     }
     return {size, src_end, stop_reason::completed};
@@ -2226,7 +2226,7 @@ STRF_HD strf::transcode_result<SrcCharT, DestCharT> strf::static_transcoder
         return {src, dest, reason::completed};
     }
     if (dest == dest_end) {
-        return {src, dest, reason::reached_limit};
+        return {src, dest, reason::insufficient_output_space};
     }
     const auto *src_it = src;
     auto *dest_it = dest;
@@ -2239,7 +2239,7 @@ STRF_HD strf::transcode_result<SrcCharT, DestCharT> strf::static_transcoder
                                        : ch < 0x800 ? 2
                                        : ch < 0x10000 ? 3 : 4);
             if (required_space > dest_space) {
-                return {src_it, dest_it, reason::reached_limit};
+                return {src_it, dest_it, reason::insufficient_output_space};
             }
         }
         STRF_IF_LIKELY (ch < 0x80) {
@@ -2286,7 +2286,7 @@ STRF_HD strf::transcode_size_result<SrcCharT> static_transcoder
     } else {
         for(;src_it < src_end; ++src_it) {
             if (size >= limit) {
-                return {size, src_it, strf::transcode_stop_reason::reached_limit};
+                return {size, src_it, strf::transcode_stop_reason::insufficient_output_space};
             }
             auto ch = detail::cast_u32(*src_it);
             const auto ch_size = ( ch < 0x80 ? 1
@@ -2380,7 +2380,7 @@ STRF_HD strf::transcode_size_result<SrcCharT> strf::static_transcoder
     const SrcCharT* src_it_next = nullptr;
     for(; src_it < src_end; src_it = src_it_next) {
         if (count >= limit) {
-            return {count, src_it, strf::transcode_stop_reason::reached_limit};
+            return {count, src_it, strf::transcode_stop_reason::insufficient_output_space};
         }
         src_it_next = src_it + 1;
         ch = detail::cast_u16(*src_it);
@@ -2418,7 +2418,7 @@ STRF_HD strf::transcode_size_result<SrcCharT> strf::static_transcoder
             }
         }
         if (count >= limit) {
-           return {count, src, strf::transcode_stop_reason::reached_limit};
+           return {count, src, strf::transcode_stop_reason::insufficient_output_space};
         }
         ++count;
     }
@@ -2488,7 +2488,7 @@ STRF_HD strf::transcode_size_result<SrcCharT> strf::static_transcoder
     if (strf::with_strict_surrogate_policy(flags)) {
         while (src < src_end) {
             if (size >= limit) {
-                goto reached_limit;
+                goto insufficient_output_space;
             }
             const unsigned ch = detail::cast_u16(*src);
             src += strf::detail::is_high_surrogate(ch) ? 2 : 1;
@@ -2497,7 +2497,7 @@ STRF_HD strf::transcode_size_result<SrcCharT> strf::static_transcoder
     } else {
         while (src < src_end) {
             if (size >= limit) {
-                goto reached_limit;
+                goto insufficient_output_space;
             }
             const unsigned ch = detail::cast_u16(*src);
             if (++src != src_end
@@ -2511,8 +2511,8 @@ STRF_HD strf::transcode_size_result<SrcCharT> strf::static_transcoder
     }
     return {size, src_end, transcode_stop_reason::completed};
 
-  reached_limit:
-    return {size, src, strf::transcode_stop_reason::reached_limit};
+  insufficient_output_space:
+    return {size, src, strf::transcode_stop_reason::insufficient_output_space};
 }
 
 template <typename SrcCharT, typename DestCharT>
@@ -2592,7 +2592,7 @@ STRF_HD strf::transcode_result<SrcCharT, DestCharT> strf::static_transcoder
             }
             strf::detail::copy_n(src, count, dest);
         }
-        return {src + count, dest + count, reason::reached_limit};
+        return {src + count, dest + count, reason::insufficient_output_space};
     }
     return {src, dest, reason::completed};
 }
@@ -2638,7 +2638,7 @@ STRF_HD strf::transcode_size_result<SrcCharT> strf::static_transcoder
     const SrcCharT* src_limit = src + limit;
     for(; src < src_end; src = src_next) {
         if (HasLimit && !StopOnInvalidSeq && src_next >= src_limit) {
-            return {src - src_begin, src, reason::reached_limit};
+            return {src - src_begin, src, reason::insufficient_output_space};
         }
         src_next = src + 1;
         ch = detail::cast_u16(*src);
@@ -2656,7 +2656,7 @@ STRF_HD strf::transcode_size_result<SrcCharT> strf::static_transcoder
         if (HasLimit && StopOnInvalidSeq && src_next > src_limit) {
             //src = src_next == src_limit ? src_next : src;
             const auto size = src - src_begin;
-            return {size, src, reason::reached_limit};
+            return {size, src, reason::insufficient_output_space};
         }
     }
     const auto size = src - src_begin;
@@ -2846,7 +2846,7 @@ template <bool StopOnLimit, bool StopOnInvalidSeq, bool StricSurrPoli>
     (void) limit;
     for ( ; src < src_end; ++src) {
         if (StopOnLimit && !StopOnInvalidSeq && size >= limit) {
-            return {size, src, reason::reached_limit};
+            return {size, src, reason::insufficient_output_space};
         }
         const auto ch = detail::cast_u32(*src);
         const bool isSurrogate = StricSurrPoli && detail::is_surrogate(ch);
@@ -2857,7 +2857,7 @@ template <bool StopOnLimit, bool StopOnInvalidSeq, bool StricSurrPoli>
         const auto ch_size = invalid ? 1 : (ch < 0x10000 ? 1 : 2);
         size += ch_size;
         if (StopOnLimit && StopOnInvalidSeq && size > limit) {
-            return {size - ch_size, src, reason::reached_limit};
+            return {size - ch_size, src, reason::insufficient_output_space};
         }
     }
     return {size, src_end, strf::transcode_stop_reason::completed};
@@ -2882,7 +2882,7 @@ STRF_HD strf::transcode_result<SrcCharT, DestCharT> strf::static_transcoder
         STRF_IF_UNLIKELY (dest_size < 2) {
             const int required_size = ch < 0x10000 ? 1 : 2;
             if (dest_size < required_size) {
-                return {src_it, dest_it, reason::reached_limit};
+                return {src_it, dest_it, reason::insufficient_output_space};
             }
         }
         STRF_IF_LIKELY (ch < 0x10000) {
@@ -3004,7 +3004,7 @@ STRF_HD strf::transcode_size_result<SrcCharT> strf::static_transcoder
         if (src_end - src <= limit) {
             return {src_end - src, src_end, reason::completed};
         } else {
-            return {src + limit - src, src_end, reason::reached_limit};
+            return {src + limit - src, src_end, reason::insufficient_output_space};
         }
     }
     const auto* const src_begin = src;
@@ -3030,7 +3030,7 @@ STRF_HD strf::transcode_size_result<SrcCharT> strf::static_transcoder
                     return {src - src_begin, src, reason::invalid_sequence};
                 }
                 if (src >= src_limit) {
-                    return {src - src_begin, src, reason::reached_limit};
+                    return {src - src_begin, src, reason::insufficient_output_space};
                 }
             }
         } else {
@@ -3039,7 +3039,7 @@ STRF_HD strf::transcode_size_result<SrcCharT> strf::static_transcoder
                     return {src - src_begin, src, reason::invalid_sequence};
                 }
                 if (src >= src_limit) {
-                    return {src - src_begin, src, reason::reached_limit};
+                    return {src - src_begin, src, reason::insufficient_output_space};
                 }
             }
         }
@@ -3238,7 +3238,7 @@ STRF_HD strf::transcode_size_result<SrcCharT> strf::static_transcoder
                 return {size - 1, seq_begin, stop_reason::invalid_sequence};
             }
             if (size > limit) {
-                return {previous_size, seq_begin, stop_reason::reached_limit};
+                return {previous_size, seq_begin, stop_reason::insufficient_output_space};
             }
         }
     }
@@ -3265,7 +3265,7 @@ STRF_HD strf::transcode_size_result<SrcCharT> strf::static_transcoder
     const bool lax_surr = strf::with_lax_surrogate_policy(flags);
     while(src < src_end) {
         if (size >= limit) {
-            return {size, src, stop_reason::reached_limit};
+            return {size, src, stop_reason::insufficient_output_space};
         }
         ch0 = detail::cast_u8(*src);
         ++src;
@@ -3365,7 +3365,7 @@ STRF_HD strf::transcode_size_result<SrcCharT> strf::static_transcoder
     std::ptrdiff_t size = 0;
     while (src < src_end) {
         if (size >= limit) {
-            return {size, src, stop_reason::reached_limit};
+            return {size, src, stop_reason::insufficient_output_space};
         }
         const unsigned ch0 = detail::cast_u8(*src);
         const int x = ( ch0 < 0x80 ? 0x09
@@ -3490,7 +3490,7 @@ STRF_HD strf::transcode_size_result<SrcCharT> strf::static_transcoder
             size += 3;
         }
         if (size > limit) {
-            return {previous_size, src, strf::transcode_stop_reason::reached_limit};
+            return {previous_size, src, strf::transcode_stop_reason::insufficient_output_space};
         }
     }
     return {size, src_end, strf::transcode_stop_reason::completed};
@@ -3506,7 +3506,7 @@ STRF_HD strf::transcode_size_result<SrcCharT> strf::static_transcoder
     std::ptrdiff_t size = 0;
     for ( ; src < src_end; ++src) {
         if (size >= limit) {
-            return {size, src, strf::transcode_stop_reason::reached_limit};
+            return {size, src, strf::transcode_stop_reason::insufficient_output_space};
         }
         unsigned const ch = detail::cast_u16(*src);
         STRF_IF_LIKELY (ch < 0x80) {
@@ -3541,7 +3541,7 @@ STRF_HD strf::transcode_result<SrcCharT, DestCharT> strf::static_transcoder
         return {src, dest, reason::completed};
     }
     if (dest == dest_end) {
-        return {src, dest, reason::reached_limit};
+        return {src, dest, reason::insufficient_output_space};
     }
     if (strf::with_strict_surrogate_policy(flags)) {
         return unsafe_transcode_strict_surr_(src, src_end, dest, dest_end);
@@ -3569,7 +3569,7 @@ STRF_HD strf::transcode_result<SrcCharT, DestCharT> strf::static_transcoder
                                        : ch < 0x800 ? 2
                                        : 3 );
             if (required_space > dest_space) {
-                return {seq_begin, dest_it, reason::reached_limit};
+                return {seq_begin, dest_it, reason::insufficient_output_space};
             }
         }
         ++src;
@@ -3621,7 +3621,7 @@ STRF_HD strf::transcode_result<SrcCharT, DestCharT> strf::static_transcoder
                                        : ch < 0x800 ? 2
                                        : strf::detail::not_high_surrogate(ch) ? 3 : 4);
             if (required_space > dest_space) {
-                return {seq_begin, dest_it, reason::reached_limit};
+                return {seq_begin, dest_it, reason::insufficient_output_space};
             }
         }
         ++src;
@@ -3663,7 +3663,7 @@ STRF_HD strf::transcode_size_result<SrcCharT> strf::static_transcoder
         std::ptrdiff_t size = 0;
         while (src < src_end) {
             if (size >= limit) {
-                return {size, src, strf::transcode_stop_reason::reached_limit};
+                return {size, src, strf::transcode_stop_reason::insufficient_output_space};
             }
             const unsigned ch = detail::cast_u16(*src);
             const bool surrogate = detail::is_high_surrogate(ch);

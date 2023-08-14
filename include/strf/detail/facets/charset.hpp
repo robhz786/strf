@@ -237,7 +237,7 @@ constexpr int invalid_char_len = -1;
 
 enum class transcode_stop_reason : std::uint32_t {
     completed,
-    reached_limit,
+    insufficient_output_space,
     unsupported_codepoint,
     invalid_sequence,
 };
@@ -773,7 +773,7 @@ STRF_HD strf::transcode_result<SrcCharT, DstCharT> bypass_unsafe_transcode
             return {src_end, dst + len, reason::completed};
         }
         strf::detail::copy_n(src, dst_space, dst);
-        return {src + dst_space, dst + dst_space, reason::reached_limit};
+        return {src + dst_space, dst + dst_space, reason::insufficient_output_space};
     }
     return {src, dst, reason::completed};
 }
@@ -1118,7 +1118,7 @@ STRF_HD strf::decode_encode_result<SrcCharT, DstCharT> decode_encode
         STRF_ASSERT(dst_res.stop_reason != stop_reason::invalid_sequence);
 
         if (dst_res.stop_reason == stop_reason::completed) {
-            if (src_res.stop_reason == stop_reason::reached_limit) {
+            if (src_res.stop_reason == stop_reason::insufficient_output_space) {
                 src = src_res.src_ptr;
                 dst = dst_res.dst_ptr;
                 continue;
@@ -1291,7 +1291,7 @@ STRF_HD strf::decode_encode_size_result<SrcCharT> decode_encode_size
         size  += size_res.ssize;
 
         if (size_res.stop_reason == size_stop_reason::completed) {
-            if (src_res.stop_reason == src_stop_reason::reached_limit) {
+            if (src_res.stop_reason == src_stop_reason::insufficient_output_space) {
                 src = src_res.src_ptr;
                 continue;
             }
@@ -1434,7 +1434,7 @@ STRF_HD strf::decode_encode_result<SrcCharT, DstCharT> unsafe_decode_encode
         STRF_ASSERT(src_res.stop_reason != stop_reason::unsupported_codepoint);
 
         if (dst_res.stop_reason == stop_reason::completed) {
-            if (src_res.stop_reason == stop_reason::reached_limit) {
+            if (src_res.stop_reason == stop_reason::insufficient_output_space) {
                 src = src_res.src_ptr;
                 dst = dst_res.dst_ptr;
                 continue;
@@ -1594,7 +1594,7 @@ STRF_HD strf::decode_encode_size_result<SrcCharT> unsafe_decode_encode_size
         size  += size_res.ssize;
 
         if (size_res.stop_reason == stop_reason::completed) {
-            if (src_res.stop_reason == stop_reason::reached_limit) {
+            if (src_res.stop_reason == stop_reason::insufficient_output_space) {
                 src = src_res.src_ptr;
                 continue;
             }

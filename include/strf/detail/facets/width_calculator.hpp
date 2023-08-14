@@ -495,7 +495,7 @@ public:
                 ( buff, res_tr.dst_ptr, res.remaining_width, res.state, false );
 
             if ( res.remaining_width <= 0 ||
-                 res_tr.stop_reason != transcode_stop_reason::reached_limit)
+                 res_tr.stop_reason != transcode_stop_reason::insufficient_output_space)
             {
                 return limit - res.remaining_width;
             }
@@ -523,7 +523,7 @@ public:
                 ( buff, res_tr.dst_ptr, resw.remaining_width, resw.state, true );
 
             if ( resw.remaining_width <= 0 ||
-                 res_tr.stop_reason != transcode_stop_reason::reached_limit)
+                 res_tr.stop_reason != transcode_stop_reason::insufficient_output_space)
             {
                 const auto width = limit - resw.remaining_width;
                 if (resw.ptr != res_tr.dst_ptr) {

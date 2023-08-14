@@ -16,12 +16,12 @@
 
 #define STRF_SBC_CHECK_DEST                                    \
     STRF_IF_UNLIKELY (dest_it == dest_end) {                   \
-        return {seq_begin, dest_it, reason::reached_limit};    \
+        return {seq_begin, dest_it, reason::insufficient_output_space};    \
     }
 
 #define STRF_SBC_CHECK_DEST_SIZE(SIZE)                         \
     STRF_IF_UNLIKELY (dest_it + (SIZE) > dest_end) {           \
-        return {seq_begin, dest_it, reason::reached_limit};    \
+        return {seq_begin, dest_it, reason::insufficient_output_space};    \
     }
 
 #define STRF_DEF_SINGLE_BYTE_CHARSET_(CHARSET)                                \
@@ -95,7 +95,7 @@ struct sbcs_find_invalid_seq_crtp
                 return {it - src, it, stop_reason::invalid_sequence};
             }
             if (it == src_limit) {
-                return {it - src, it, stop_reason::reached_limit};
+                return {it - src, it, stop_reason::insufficient_output_space};
             }
         }
     }
@@ -112,7 +112,7 @@ struct sbcs_never_has_invalid_seq_crtp
         if (src_end - src <= limit) {
             return {src_end - src, src_end, stop_reason::completed};
         }
-        return {limit, src + limit, stop_reason::reached_limit};
+        return {limit, src + limit, stop_reason::insufficient_output_space};
     }
 };
 
@@ -152,7 +152,7 @@ struct sbcs_find_unsupported_codepoint_crtp
                     return {it - src, it, stop_reason::invalid_sequence};
                 }
                 if (it == src_limit) {
-                    return {it - src, it, stop_reason::reached_limit};
+                    return {it - src, it, stop_reason::insufficient_output_space};
                 }
             }
         }
@@ -161,7 +161,7 @@ struct sbcs_find_unsupported_codepoint_crtp
                 return {it - src, it, stop_reason::invalid_sequence};
             }
             if (it == src_limit) {
-                return {it - src, it, stop_reason::reached_limit};
+                return {it - src, it, stop_reason::insufficient_output_space};
             }
         }
     }
@@ -206,7 +206,7 @@ struct sbcs_find_unsupported_codepoint_crtp
                     return {it - src, it, stop_reason::unsupported_codepoint};
                 }
                 if (it == src_limit) {
-                    return {it - src, it, stop_reason::reached_limit};
+                    return {it - src, it, stop_reason::insufficient_output_space};
                 }
             }
         }
@@ -218,7 +218,7 @@ struct sbcs_find_unsupported_codepoint_crtp
                 return {it - src, it, stop_reason::unsupported_codepoint};
             }
             if (it == src_limit) {
-                return {it - src, it, stop_reason::reached_limit};
+                return {it - src, it, stop_reason::insufficient_output_space};
             }
         }
     }
@@ -260,7 +260,7 @@ struct sbcs_find_unsupported_codepoint_crtp
                     return {it - src, it, stop_reason::unsupported_codepoint};
                 }
                 if (it == src_limit) {
-                    return {it - src, it, stop_reason::reached_limit};
+                    return {it - src, it, stop_reason::insufficient_output_space};
                 }
             }
         }
@@ -269,7 +269,7 @@ struct sbcs_find_unsupported_codepoint_crtp
                 return {it - src, it, stop_reason::unsupported_codepoint};
             }
             if (it == src_limit) {
-                return {src_end - src, src_end, stop_reason::reached_limit};
+                return {src_end - src, src_end, stop_reason::insufficient_output_space};
             }
         }
     }
@@ -297,7 +297,7 @@ struct sbcs_find_unsupported_codepoint_crtp
                 return {it - src, it, stop_reason::unsupported_codepoint};
             }
             if (it == src_limit) {
-                return {it - src, it, stop_reason::reached_limit};
+                return {it - src, it, stop_reason::insufficient_output_space};
             }
         }
     }
@@ -2452,7 +2452,7 @@ struct single_byte_charset_to_utf32
         if (src_end - src <= limit) {
             return {src_end - src, src_end, stop_reason::completed};
         }
-        return {limit, src + limit, stop_reason::reached_limit};
+        return {limit, src + limit, stop_reason::insufficient_output_space};
     }
 
     static STRF_HD strf::transcode_result<SrcCharT, DestCharT> unsafe_transcode
@@ -2474,7 +2474,7 @@ struct single_byte_charset_to_utf32
         if (src_end - src <= limit) {
             return {src_end - src, src_end, stop_reason::completed};
         }
-        return {limit, src + limit, stop_reason::reached_limit};
+        return {limit, src + limit, stop_reason::insufficient_output_space};
     }
 
     static STRF_HD strf::transcode_f<SrcCharT, DestCharT> transcode_func() noexcept
@@ -2520,7 +2520,7 @@ single_byte_charset_to_utf32<SrcCharT, DestCharT, Impl>::transcode
             ch32 = 0xFFFD;
         }
         STRF_IF_UNLIKELY (dest_it == dest_end) {
-            return {src, dest_it, reason::reached_limit};
+            return {src, dest_it, reason::insufficient_output_space};
         }
         *dest_it = static_cast<DestCharT>(ch32);
     }
@@ -2541,7 +2541,7 @@ single_byte_charset_to_utf32<SrcCharT, DestCharT, Impl>::unsafe_transcode
     auto *dest_it = dest;
     for (; src < src_end; ++src, ++dest_it) {
         STRF_IF_UNLIKELY (dest_it == dest_end) {
-            return {src, dest_it, reason::reached_limit};
+            return {src, dest_it, reason::insufficient_output_space};
         }
         const char32_t ch32 = Impl::decode(static_cast<std::uint8_t>(*src));
         *dest_it = static_cast<DestCharT>(ch32);
@@ -2588,7 +2588,7 @@ struct utf32_to_single_byte_charset
         if (src_end - src <= limit) {
             return {src_end - src, src_end, stop_reason::completed};
         }
-        return {limit, src + limit, stop_reason::reached_limit};
+        return {limit, src + limit, stop_reason::insufficient_output_space};
     }
 
     static STRF_HD strf::transcode_result<SrcCharT, DestCharT> unsafe_transcode
@@ -2611,7 +2611,7 @@ struct utf32_to_single_byte_charset
             if (src_end - src <= limit) {
                 return {src_end - src, src_end, stop_reason::completed};
             }
-            return {limit, src + limit, stop_reason::reached_limit};
+            return {limit, src + limit, stop_reason::insufficient_output_space};
         }
         return Impl::find_first_unsupported_codepoint(src, src_end, limit);
     }
@@ -2672,7 +2672,7 @@ utf32_to_single_byte_charset<SrcCharT, DestCharT, Impl>::transcode
             ch = static_cast<unsigned char>('?');
         }
         STRF_IF_UNLIKELY (dest_it == dest_end) {
-            return {src, dest_it, reason::reached_limit};
+            return {src, dest_it, reason::insufficient_output_space};
         }
         *dest_it = static_cast<DestCharT>(ch);
     }
@@ -2703,7 +2703,7 @@ utf32_to_single_byte_charset<SrcCharT, DestCharT, Impl>::unsafe_transcode
             ch = U'?';
         }
         STRF_IF_UNLIKELY (dest_it == dest_end) {
-            return {src, dest_it, reason::reached_limit};
+            return {src, dest_it, reason::insufficient_output_space};
         }
         * dest_it = static_cast<DestCharT>(ch);
     }
@@ -2738,7 +2738,7 @@ struct single_byte_charset_to_itself
         if (src_end - src <= limit) {
             return {src_end - src, src_end, stop_reason::completed};
         }
-        return {limit, src + limit, stop_reason::reached_limit};
+        return {limit, src + limit, stop_reason::insufficient_output_space};
     }
 
     static STRF_HD strf::transcode_result<SrcCharT, DestCharT> unsafe_transcode
@@ -2763,7 +2763,7 @@ struct single_byte_charset_to_itself
         if (src_end - src <= limit) {
             return {src_end - src, src_end, stop_reason::completed};
         }
-        return {limit, src + limit, stop_reason::reached_limit};
+        return {limit, src + limit, stop_reason::insufficient_output_space};
     }
 
     static STRF_HD strf::transcode_f<SrcCharT, DestCharT> transcode_func() noexcept
@@ -2808,7 +2808,7 @@ single_byte_charset_to_itself<SrcCharT, DestCharT, Impl>::transcode
             ch = static_cast<std::uint8_t>('?');
         }
         STRF_IF_UNLIKELY (dest_it == dest_end) {
-            return {src, dest_it, reason::reached_limit};
+            return {src, dest_it, reason::insufficient_output_space};
         }
         *dest_it = static_cast<DestCharT>(ch);
     }

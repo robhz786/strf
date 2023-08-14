@@ -1389,7 +1389,7 @@ STRF_HD void basic_tests_utf32_to_single_byte_charset(strf::dynamic_charset<char
         .input(U"abcd")
         .destination_size(3)
         .expect("abc")
-        .expect_stop_reason(strf::transcode_stop_reason::reached_limit)
+        .expect_stop_reason(strf::transcode_stop_reason::insufficient_output_space)
         .expect_invalid_sequences({})
         .expect_unsupported_codepoints({});
 
@@ -1399,7 +1399,7 @@ STRF_HD void basic_tests_utf32_to_single_byte_charset(strf::dynamic_charset<char
         .destination_size(3)
         .expect("abc")
         .flags(strf::transcode_flags::stop_on_unsupported_codepoint)
-        .expect_stop_reason(strf::transcode_stop_reason::reached_limit)
+        .expect_stop_reason(strf::transcode_stop_reason::insufficient_output_space)
         .expect_invalid_sequences({})
         .expect_unsupported_codepoints({});
 
@@ -1409,7 +1409,7 @@ STRF_HD void basic_tests_utf32_to_single_byte_charset(strf::dynamic_charset<char
         .destination_size(3)
         .expect("abc")
         .flags(strf::transcode_flags::stop_on_invalid_sequence)
-        .expect_stop_reason(strf::transcode_stop_reason::reached_limit)
+        .expect_stop_reason(strf::transcode_stop_reason::insufficient_output_space)
         .expect_invalid_sequences({})
         .expect_unsupported_codepoints({});
 
@@ -1421,7 +1421,7 @@ STRF_HD void basic_tests_utf32_to_single_byte_charset(strf::dynamic_charset<char
         .expect("abc")
         .flags(strf::transcode_flags::stop_on_invalid_sequence |
                strf::transcode_flags::stop_on_unsupported_codepoint )
-        .expect_stop_reason(strf::transcode_stop_reason::reached_limit)
+        .expect_stop_reason(strf::transcode_stop_reason::insufficient_output_space)
         .expect_invalid_sequences({})
         .expect_unsupported_codepoints({});
 
@@ -1469,14 +1469,14 @@ STRF_HD void basic_tests_utf32_to_single_byte_charset(strf::dynamic_charset<char
         .input(U"abc", static_cast<char32_t>(0x110000), U"def")
         .destination_size(3)
         .expect("abc")
-        .expect_stop_reason(strf::transcode_stop_reason::reached_limit)
+        .expect_stop_reason(strf::transcode_stop_reason::insufficient_output_space)
         .expect_invalid_sequences({{static_cast<char32_t>(0x110000)}})
         .expect_unsupported_codepoints({});
     TEST_TRANSCODE(strf::utf<char32_t>, cs)
         .input(static_cast<char32_t>(0x110000), U"def")
         .destination_size(0)
         .expect("")
-        .expect_stop_reason(strf::transcode_stop_reason::reached_limit)
+        .expect_stop_reason(strf::transcode_stop_reason::insufficient_output_space)
         .expect_invalid_sequences({{static_cast<char32_t>(0x110000)}})
         .expect_unsupported_codepoints({});
 
@@ -1593,7 +1593,7 @@ STRF_HD void basic_tests_utf32_to_single_byte_charset(strf::dynamic_charset<char
         .input(U"abcd")
         .destination_size(3)
         .expect("abc")
-        .expect_stop_reason(strf::transcode_stop_reason::reached_limit)
+        .expect_stop_reason(strf::transcode_stop_reason::insufficient_output_space)
         .expect_invalid_sequences({})
         .expect_unsupported_codepoints({});
 
@@ -1604,7 +1604,7 @@ STRF_HD void basic_tests_utf32_to_single_byte_charset(strf::dynamic_charset<char
         .destination_size(3)
         .expect("abc")
         .flags(strf::transcode_flags::stop_on_unsupported_codepoint)
-        .expect_stop_reason(strf::transcode_stop_reason::reached_limit)
+        .expect_stop_reason(strf::transcode_stop_reason::insufficient_output_space)
         .expect_invalid_sequences({})
         .expect_unsupported_codepoints({});
 
@@ -1660,7 +1660,7 @@ STRF_HD void test_to_utf32()
        .input("abcd")
        .destination_size(3)
        .expect(U"abc")
-       .expect_stop_reason(strf::transcode_stop_reason::reached_limit)
+       .expect_stop_reason(strf::transcode_stop_reason::insufficient_output_space)
        .expect_invalid_sequences({})
        .expect_unsupported_codepoints({});
 
@@ -1704,7 +1704,7 @@ STRF_HD void test_sanitize()
        .input("abcd")
        .destination_size(3)
        .expect("abc")
-       .expect_stop_reason(strf::transcode_stop_reason::reached_limit)
+       .expect_stop_reason(strf::transcode_stop_reason::insufficient_output_space)
        .expect_invalid_sequences({})
        .expect_unsupported_codepoints({});
 
@@ -1743,7 +1743,7 @@ STRF_TEST_FUNC void test_single_byte_charsets()
        .destination_size(3)
        .expect(U"abc")
        .flags(strf::transcode_flags::stop_on_invalid_sequence)
-       .expect_stop_reason(strf::transcode_stop_reason::reached_limit)
+       .expect_stop_reason(strf::transcode_stop_reason::insufficient_output_space)
        .expect_invalid_sequences({})
        .expect_unsupported_codepoints({});
 

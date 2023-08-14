@@ -69,17 +69,17 @@ STRF_TEST_FUNC void utf32_to_utf32_unsafe_transcode()
         .input(U"abc")
         .expect(U"ab")
         .destination_size(2)
-        .expect_stop_reason(strf::transcode_stop_reason::reached_limit);
+        .expect_stop_reason(strf::transcode_stop_reason::insufficient_output_space);
     TEST_UNSAFE_TRANSCODE
         .input(U"\U00010000")
         .expect(U"")
         .destination_size(0)
-        .expect_stop_reason(strf::transcode_stop_reason::reached_limit);
+        .expect_stop_reason(strf::transcode_stop_reason::insufficient_output_space);
     TEST_UNSAFE_TRANSCODE
         .input(U"abc\U00010000")
         .expect(U"")
         .destination_size(0)
-        .expect_stop_reason(strf::transcode_stop_reason::reached_limit);
+        .expect_stop_reason(strf::transcode_stop_reason::insufficient_output_space);
 
     const char32_t str_D800[] = {0xD800, 0};
     const char32_t str_DBFF[] = {0xDBFF, 0};
@@ -177,12 +177,12 @@ STRF_TEST_FUNC void utf32_valid_sequences()
         .input(U"abc")
         .expect(U"ab")
         .destination_size(2)
-        .expect_stop_reason(strf::transcode_stop_reason::reached_limit);
+        .expect_stop_reason(strf::transcode_stop_reason::insufficient_output_space);
     TEST_TRANSCODE
         .input(U"\U00010000")
         .expect(U"")
         .destination_size(0)
-        .expect_stop_reason(strf::transcode_stop_reason::reached_limit);
+        .expect_stop_reason(strf::transcode_stop_reason::insufficient_output_space);
 
     TEST_TRUNCATING_AT(2, U"ab") (strf::sani(U"ab\U0010FFFF"));
     TEST_TRUNCATING_AT(3, U"ab\U0010FFFF") (strf::sani(U"ab\U0010FFFF"));

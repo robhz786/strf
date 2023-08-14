@@ -71,12 +71,12 @@ STRF_TEST_FUNC void utf16_to_utf32_unsafe_transcode()
         .input(u"abc")
         .expect(U"ab")
         .destination_size(2)
-        .expect_stop_reason(strf::transcode_stop_reason::reached_limit);
+        .expect_stop_reason(strf::transcode_stop_reason::insufficient_output_space);
     TEST_UNSAFE_TRANSCODE
         .input(u"\U00010000")
         .expect(U"")
         .destination_size(0)
-        .expect_stop_reason(strf::transcode_stop_reason::reached_limit);
+        .expect_stop_reason(strf::transcode_stop_reason::insufficient_output_space);
 
     TEST_CALLING_RECYCLE_AT(2, U"ab\uD7FF")     (strf::unsafe_transcode(u"ab\uD7FF"));
     TEST_CALLING_RECYCLE_AT(2, U"ab\U00010000") (strf::unsafe_transcode(u"ab\U00010000"));
@@ -178,12 +178,12 @@ STRF_TEST_FUNC void utf16_to_utf32_valid_sequences()
         .input(u"abc")
         .expect(U"ab")
         .destination_size(2)
-        .expect_stop_reason(strf::transcode_stop_reason::reached_limit);
+        .expect_stop_reason(strf::transcode_stop_reason::insufficient_output_space);
     TEST_TRANSCODE
         .input(u"\U00010000")
         .expect(U"")
         .destination_size(0)
-        .expect_stop_reason(strf::transcode_stop_reason::reached_limit);
+        .expect_stop_reason(strf::transcode_stop_reason::insufficient_output_space);
 
     TEST_CALLING_RECYCLE_AT(2, U"ab\uD7FF")     (strf::transcode(u"ab\uD7FF"));
     TEST_CALLING_RECYCLE_AT(2, U"ab\U00010000") (strf::transcode(u"ab\U00010000"));
@@ -290,7 +290,7 @@ STRF_TEST_FUNC void utf16_to_utf32_invalid_sequences()
         .input(u"abc_", high_surrogate_sample1, u"_def")
         .destination_size(4)
         .expect(U"abc_")
-        .expect_stop_reason(strf::transcode_stop_reason::reached_limit)
+        .expect_stop_reason(strf::transcode_stop_reason::insufficient_output_space)
         .expect_unsupported_codepoints({})
         .expect_invalid_sequences({{high_surrogate_sample1}});
 

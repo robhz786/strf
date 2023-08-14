@@ -98,22 +98,22 @@ STRF_TEST_FUNC void utf32_to_utf8_unsafe_transcode()
         .input(U"abc")
         .expect(u8"ab")
         .destination_size(2)
-        .expect_stop_reason(strf::transcode_stop_reason::reached_limit);
+        .expect_stop_reason(strf::transcode_stop_reason::insufficient_output_space);
     TEST_UTF_UNSAFE_TRANSCODE(char32_t, char8_t)
         .input(U"\U00010000")
         .expect(u8"")
         .destination_size(1)
-        .expect_stop_reason(strf::transcode_stop_reason::reached_limit);
+        .expect_stop_reason(strf::transcode_stop_reason::insufficient_output_space);
     TEST_UTF_UNSAFE_TRANSCODE(char32_t, char8_t)
         .input(U"\U00010000")
         .expect(u8"")
         .destination_size(0)
-        .expect_stop_reason(strf::transcode_stop_reason::reached_limit);
+        .expect_stop_reason(strf::transcode_stop_reason::insufficient_output_space);
     TEST_UTF_UNSAFE_TRANSCODE(char32_t, char8_t)
         .input(U"abc")
         .expect(u8"")
         .destination_size(0)
-        .expect_stop_reason(strf::transcode_stop_reason::reached_limit);
+        .expect_stop_reason(strf::transcode_stop_reason::insufficient_output_space);
 
     // when using strf::transcode_flags::lax_surrogate_policy
     TEST_UTF_UNSAFE_TRANSCODE(char32_t, char)

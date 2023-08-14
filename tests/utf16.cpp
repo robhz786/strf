@@ -70,17 +70,17 @@ STRF_TEST_FUNC void utf16_to_utf16_unsafe_transcode()
         .input(u"abc")
         .expect(u"ab")
         .destination_size(2)
-        .expect_stop_reason(strf::transcode_stop_reason::reached_limit);
+        .expect_stop_reason(strf::transcode_stop_reason::insufficient_output_space);
     TEST_UNSAFE_TRANSCODE
         .input(u"\U00010000")
         .expect(u"")
         .destination_size(1)
-        .expect_stop_reason(strf::transcode_stop_reason::reached_limit);
+        .expect_stop_reason(strf::transcode_stop_reason::insufficient_output_space);
     TEST_UNSAFE_TRANSCODE
         .input(u"\U00010000")
         .expect(u"")
         .destination_size(0)
-        .expect_stop_reason(strf::transcode_stop_reason::reached_limit);
+        .expect_stop_reason(strf::transcode_stop_reason::insufficient_output_space);
 
 
     TEST_CALLING_RECYCLE_AT(2, u"ab\U00010000") (strf::unsafe_transcode(u"ab\U00010000"));
@@ -138,13 +138,13 @@ STRF_TEST_FUNC void utf16_to_utf16_unsafe_transcode()
         .flags(strf::transcode_flags::lax_surrogate_policy)
         .expect(u"ab")
         .destination_size(3)
-        .expect_stop_reason(strf::transcode_stop_reason::reached_limit);
+        .expect_stop_reason(strf::transcode_stop_reason::insufficient_output_space);
     TEST_UNSAFE_TRANSCODE
         .input(u16str_DFFF_D800_)
         .flags(strf::transcode_flags::lax_surrogate_policy)
         .expect(u16str_DFFF)
         .destination_size(1)
-        .expect_stop_reason(strf::transcode_stop_reason::reached_limit);
+        .expect_stop_reason(strf::transcode_stop_reason::insufficient_output_space);
 
 
     const char16_t many_high_surr[] =
@@ -216,17 +216,17 @@ STRF_TEST_FUNC void utf16_sani_valid_sequences()
         .input(u"abc")
         .expect(u"ab")
         .destination_size(2)
-        .expect_stop_reason(strf::transcode_stop_reason::reached_limit);
+        .expect_stop_reason(strf::transcode_stop_reason::insufficient_output_space);
     TEST_TRANSCODE
         .input(u"\U00010000")
         .expect(u"")
         .destination_size(1)
-        .expect_stop_reason(strf::transcode_stop_reason::reached_limit);
+        .expect_stop_reason(strf::transcode_stop_reason::insufficient_output_space);
     TEST_TRANSCODE
         .input(u"\U00010000")
         .expect(u"")
         .destination_size(0)
-        .expect_stop_reason(strf::transcode_stop_reason::reached_limit);
+        .expect_stop_reason(strf::transcode_stop_reason::insufficient_output_space);
 
 
 

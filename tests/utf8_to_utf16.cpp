@@ -83,7 +83,7 @@ STRF_TEST_FUNC void utf8_to_utf16_unsafe_transcode()
         .input(u8"ab\U0010FFFF")
         .destination_size(3)
         .expect(u"ab")
-        .expect_stop_reason(strf::transcode_stop_reason::reached_limit)
+        .expect_stop_reason(strf::transcode_stop_reason::insufficient_output_space)
         .expect_unsupported_codepoints({})
         .expect_invalid_sequences({});
 
@@ -91,7 +91,7 @@ STRF_TEST_FUNC void utf8_to_utf16_unsafe_transcode()
         .input(u8"ab\U0010FFFF")
         .destination_size(0)
         .expect(u"")
-        .expect_stop_reason(strf::transcode_stop_reason::reached_limit)
+        .expect_stop_reason(strf::transcode_stop_reason::insufficient_output_space)
         .expect_unsupported_codepoints({})
         .expect_invalid_sequences({});
 }
@@ -150,7 +150,7 @@ STRF_TEST_FUNC void utf8_to_utf16_valid_sequences()
         .input(u8"ab\U0010FFFF")
         .destination_size(3)
         .expect(u"ab")
-        .expect_stop_reason(strf::transcode_stop_reason::reached_limit)
+        .expect_stop_reason(strf::transcode_stop_reason::insufficient_output_space)
         .expect_unsupported_codepoints({})
         .expect_invalid_sequences({});
 
@@ -158,7 +158,7 @@ STRF_TEST_FUNC void utf8_to_utf16_valid_sequences()
         .input(u8"ab\U0010FFFF")
         .destination_size(0)
         .expect(u"")
-        .expect_stop_reason(strf::transcode_stop_reason::reached_limit)
+        .expect_stop_reason(strf::transcode_stop_reason::insufficient_output_space)
         .expect_unsupported_codepoints({})
         .expect_invalid_sequences({});
 
@@ -1004,7 +1004,7 @@ STRF_TEST_FUNC void utf8_to_utf16_invalid_sequences()
         .flags(strf::transcode_flags::stop_on_invalid_sequence)
         .expect_invalid_sequences({})
         .expect_unsupported_codepoints({})
-        .expect_stop_reason(strf::transcode_stop_reason::reached_limit);
+        .expect_stop_reason(strf::transcode_stop_reason::insufficient_output_space);
 }
 
 struct invalid_seq_counter: strf::transcoding_error_notifier {

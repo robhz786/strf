@@ -229,7 +229,6 @@ struct transcoding_test_data
     SrcCharset src_charset;
     DstCharset dst_charset;
     const bool safe_;
-    //bool destination_good = true;
 
     using src_char_t = typename SrcCharset::code_unit;
     using dst_char_t = typename DstCharset::code_unit;
@@ -317,12 +316,6 @@ struct transcoding_test_data_maker
         data.dst_size = s;
         return (transcoding_test_data_maker&&) *this;
     }
-    // STRF_HD transcoding_test_data_maker&& bad_destination() &&
-    // {
-    //     data.destination_good = false;
-    //     return (transcoding_test_data_maker&&) *this;
-    // }
-
     STRF_HD transcoding_test_data_maker&& expect_stop_reason
         ( strf::transcode_stop_reason reason) &&
     {
@@ -352,7 +345,7 @@ inline STRF_HD const char* stringify(strf::transcode_stop_reason reason)
 {
     switch(reason) {
     case strf::transcode_stop_reason::completed: return "completed";
-    case strf::transcode_stop_reason::reached_limit: return "reached_limit";
+    case strf::transcode_stop_reason::insufficient_output_space: return "insufficient_output_space";
     case strf::transcode_stop_reason::unsupported_codepoint: return "unsupported_codepoint";
     case strf::transcode_stop_reason::invalid_sequence: return "invalid_sequence";
     }
@@ -409,53 +402,6 @@ public:
     }
 };
 
-// template <class CharT>
-// class array_dst_maybe_bad
-//     : public strf::output_buffer<CharT, strf::log2_garbage_buff_size>
-// {
-//     using dest_t_ = strf::output_buffer<CharT, strf::log2_garbage_buff_size>;
-
-// public:
-
-//     array_dst_maybe_bad(bool good, CharT* dest_begin, std::size_t dest_size)
-//         : dest_t_(dest_begin, dest_size)
-//     {
-//         this->set_good(good);
-//     }
-
-//     array_dst_maybe_bad(const array_dst_maybe_bad&) = delete;
-//     array_dst_maybe_bad(array_dst_maybe_bad&&) = delete;
-//     array_dst_maybe_bad& operator=(const array_dst_maybe_bad&) = delete;
-//     array_dst_maybe_bad& operator=(array_dst_maybe_bad&&) = delete;
-
-//     STRF_HD ~array_dst_maybe_bad() override STRF_DEFAULT_IMPL;
-
-//     STRF_HD void recycle() noexcept override
-//     {
-//         if (this->good()) {
-//             it_ = this->buffer_ptr();
-//             this->set_good(false);
-//             this->set_buffer_end(strf::garbage_buff_end<CharT>());
-//         }
-//         this->set_buffer_ptr(strf::garbage_buff<CharT>());
-//     }
-
-//     struct result
-//     {
-//         CharT* ptr;
-//         bool truncated;
-//     };
-
-//     STRF_HD result finish() noexcept
-//     {
-//         const bool truncated = ! this->good();
-//         CharT* ptr = truncated ? it_ : this->buffer_ptr();
-//         return { ptr, truncated };
-//     }
-
-// private:
-//      CharT* it_ = nullptr;
-// };
 
 template <typename SrcCharset, typename DstCharset>
 STRF_HD void transcode_tester<SrcCharset, DstCharset>::run()
@@ -467,7 +413,6 @@ STRF_HD void transcode_tester<SrcCharset, DstCharset>::run()
                        "internal buffer's size. SKIPPING TEST CASE");
         return;
     }
-    //array_dst_maybe_bad<dst_char_t> dst(data_.destination_good, buff, data_.dst_size);
 
     transcoding_error_tester notifier
         { err_msg_, data_.src_charset, data_.dst_charset
@@ -493,7 +438,7 @@ STRF_HD void transcode_tester<SrcCharset, DstCharset>::run()
         err_msg_.line("    Obtained: ", stringify(res_tr.stop_reason));
     }
 
-    auto src_end = ( data_.expected_stop_reason == strf::transcode_stop_reason::reached_limit
+    auto src_end = ( data_.expected_stop_reason == strf::transcode_stop_reason::insufficient_output_space
                    ? res_tr.stale_src_ptr
                    : data_.src.end() );
 
@@ -509,7 +454,7 @@ STRF_HD void transcode_tester<SrcCharset, DstCharset>::run()
         err_msg_.line("    `transcode_size` calulated : ", res_tr_size.ssize);
         err_msg_.line("    But the output's size was  : ", result_string.ssize());
     }
-    if (data_.expected_stop_reason != strf::transcode_stop_reason::reached_limit) {
+    if (data_.expected_stop_reason != strf::transcode_stop_reason::insufficient_output_space) {
         if (data_.expected_stop_reason != transcode_stop_reason ) {
             err_msg_.line("`transcode_size` returned wrong stop_reason");
             err_msg_.line("    Expected: ", stringify(data_.expected_stop_reason));

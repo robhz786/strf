@@ -91,7 +91,7 @@ STRF_TEST_FUNC void test_decode_encode_scenarios()
             <strf::utf_t, strf::utf_t>
             (input.begin(), input.end(), dst, dst, &notifier, flags);
 
-        TEST_TRUE(deres.stop_reason == strf::transcode_stop_reason::reached_limit);
+        TEST_TRUE(deres.stop_reason == strf::transcode_stop_reason::insufficient_output_space);
         TEST_EQ(0, (deres.stale_src_ptr - input.begin()));
         TEST_EQ(0, deres.u32dist);
         TEST_EQ(0, notifier.invalid_sequence_calls_count);
@@ -111,7 +111,7 @@ STRF_TEST_FUNC void test_decode_encode_scenarios()
             <strf::utf_t, strf::utf_t>
             (input.begin(), input.end(), buff, buff + buff_size, &notifier, flags);
 
-        TEST_TRUE(deres.stop_reason == strf::transcode_stop_reason::reached_limit);
+        TEST_TRUE(deres.stop_reason == strf::transcode_stop_reason::insufficient_output_space);
         TEST_EQ(0, notifier.invalid_sequence_calls_count);
         TEST_EQ(0, notifier.unsupported_codepoints_calls_count);
 
@@ -326,7 +326,7 @@ void  test_decode_encode_size_scenarios()
         auto res = strf::decode_encode_size
             ( strf::utf<char16_t>, strf::utf<char>, input.begin(), input.end(), 5, flags);
 
-        TEST_TRUE(res.stop_reason == stop_reason::reached_limit);
+        TEST_TRUE(res.stop_reason == stop_reason::insufficient_output_space);
 
         auto cpcount_res = strf::utf_t<char16_t>::count_codepoints
             ( res.stale_src_ptr, input.end(), res.u32dist
