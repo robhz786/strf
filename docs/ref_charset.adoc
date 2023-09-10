@@ -295,7 +295,7 @@ The `transcode_flags` is a flags enum, __i.e.__ the value of a
 namespace strf {
 enum class transcode_stop_reason : std::uint32_t {
     completed,
-    bad_destination,
+    insufficient_output_space,
     unsupported_codepoint,
     invalid_sequence
 };
@@ -307,11 +307,8 @@ functions of the library with the following semantics:
 * `transcode_stop_reason::completed` implies that all input has been transcoded
   (though some parts of it might be invalid and thus been replaced by the
    replacement character U+FFFD or `'?'` )
-* `transcode_stop_reason::bad_destination` implies that the transcoding stopped
-  because the destination ( which is a `transcode_dest` object ) is in "bad"
-  state (__i.e.__ `<<destination_hpp#output_buffer_good,good>>()` returned `false`)
-  or it became in bad state after a call to
-  `<<destination_hpp#output_buffer_recycle,recycle>>()`.
+* `transcode_stop_reason::insufficient_output_space` implies that the transcoding stopped
+  because the destination is too small
 * `transcode_stop_reason::invalid_sequence` implies that both the input has an
   invalid sequence (__i.e.__ it is not conformant to its encoding ) and the flag
   `{transcode_flags}::stop_on_invalid_sequence` was set.
@@ -374,9 +371,10 @@ using transcode_dest = {output_buffer}<CharT, 3>;
 ----
 namespace strf {
 
-template <typename CharT>
+template <typename SrcCharT, typename DstCharT>
 struct transcode_result {
-    const CharT* ptr;
+    const SrcCharT* src_ptr;
+    DstCharT* dst_ptr;
     {transcode_stop_reason} stop_reason;
 };
 
@@ -391,8 +389,8 @@ namespace strf {
 
 template <typename CharT>
 struct transcode_size_result {
-    std::ptrdiff_t size;
-    const CharT* ptr;
+    std::ptrdiff_t ssize;
+    const CharT* src_ptr;
     {transcode_stop_reason} stop_reason;
 };
 
@@ -423,25 +421,27 @@ struct count_codepoints_result {
 ----
 namespace strf {
 
-template <typename SrcCharT, typename DestCharT>
+template <typename SrcCharT, typename DstCharT>
 using transcode_f = {transcode_result}<CharT> ({asterisk})
-    ( {transcode_dest}<DestCharT>& dest
-    , const SrcCharT{asterisk} src
+    ( const SrcCharT{asterisk} src
     , const SrcCharT{asterisk} src_end
+    , DstCharT* dst
+    , DstCharT* dst_end
     , {transcoding_error_notifier}{asterisk} err_notifier
     , {transcode_flags} flags );
 
-template <typename SrcCharT, typename DestCharT>
-using unsafe_transcode_f = transcode_f<SrcCharT, DestCharT>
+template <typename SrcCharT, typename DstCharT>
+using unsafe_transcode_f = transcode_f<SrcCharT, DstCharT>
 
 template <typename SrcCharT>
 using transcode_size_f = {transcode_size_result}<ScrCharT> ({asterisk})
     ( const SrcCharT{asterisk} src
     , const SrcCharT{asterisk} src_end
+    , std::ptrdiff_t limit
     , {transcode_flags} flags );
 
 template <typename SrcCharT>
-using unsafe_transcode_size_f = strf::transcode_size_f<SrcCharT, DestCharT>;
+using unsafe_transcode_size_f = strf::transcode_size_f<SrcCharT, DstCharT>;
 
 template <typename CharT>
 using write_replacement_char_f = void({asterisk})( {transcode_dest}<CharT>& );
@@ -475,8 +475,8 @@ using count_codepoints_f = count_codepoints_result<CharT> ({asterisk})
 template <typename CharT>
 using decode_unit_f = char32_t ({asterisk}) ( CharT );
 
-template <typename SrcCharT, typename DestCharT>
-using find_transcoder_f = {dynamic_transcoder}<SrcCharT, DestCharT> ({asterisk})
+template <typename SrcCharT, typename DstCharT>
+using find_transcoder_f = {dynamic_transcoder}<SrcCharT, DstCharT> ({asterisk})
     ( {charset_id} );
 
 } // namespace strf
@@ -487,13 +487,16 @@ using find_transcoder_f = {dynamic_transcoder}<SrcCharT, DestCharT> ({asterisk})
 Given
 
 * `SrcCharT`, one of the types: `char`, `char8_t`, `char16_t`, `char32_t` or `wchar_t`
-* `DestCharT`, one of the types: `char`, `char8_t`, `char16_t`, `char32_t` or `wchar_t`
-* `X`, a _Transcoder_ type from `SrcCharT` to `DestCharT`
+* `DstCharT`, one of the types: `char`, `char8_t`, `char16_t`, `char32_t` or `wchar_t`
+* `X`, a _Transcoder_ type from `SrcCharT` to `DstCharT`
 * `x`, an expression of type `X` or `const X`
-* `dest`, an lvalue reference of type `{transcode_dest}<DestCharT>`
 * `src`, a value of type `const SrcCharT*`
 * `src_end`, a value of type `const SrcCharT*` pointing immediately after
-              the last character of the string that begin at `str`
+             the last character of the string that begins at `str`
+* `dst`, a value of type `DstCharT*`
+* `dst_end`, a value of type `DstCharT*` pointing immediately after
+             the last element of the array that begins at `dst`
+* `limit` is value of type `std::ptrdiff_t`
 * `err_notifier`, is a pointer of type `{transcoding_error_notifier}`
 * `flags`, a value of type `{transcode_flags}`
 
@@ -520,125 +523,89 @@ X::dst_char_type
 A type alias to `DstCharT`
 ====
 
-[[Transcoder_transcode_size]]
-====
-[source,cpp]
-----
-x.transcode_size(src, src_end, flags)
-----
-Precondition:: `x.transcode_func() != nullptr` is `true`
-Return type:: `{transcode_size_result}`
-Return value:: A value `res` such that
-+
-* `res.**size**` is the number of character that `x.transcode(src, src_end, dest, nullptr, flags)`
-           would write into `dest`, assuming that `dest` would be in
-           `<<destination_hpp#output_buffer_good,good state>>` during all trancoding.
-* `res.**stop_reason**` is the same `{transcode_stop_reason}` value returned by
-           `x.transcode(src, src_end, dest, nullptr, flags)`,
-            assuming that `dest` would not be in
-           `<<destination_hpp#output_buffer_good,good state>>` during all trancoding.
-* `res.**ptr**` points immediately after the last character in the range `[src, src_end)`
-           that has been taken into account
-====
 [[Transcoder_transcode]]
 ====
 [source,cpp]
 ----
-x.transcode(src, src_end, dest, err_notifier, flags)
+x.transcode(src, src_end, dst, dst_end, err_notifier, flags)
 ----
 Precondition:: `x.transcode_func() != nullptr` is `true`
-Postconditions:: `dest.recycle()` is not called() if
-        `dest.buffer_space() >= x.transcode_size(src, src_end, surr_poli)` is `true`.
 Return type:: `{transcode_result}`
 Effect:: Converts the content of `src` from one encoding to another writing
-the result to `dest`.
+the result to `dst`.
 +
 --
 As this function iterates from `src` to `src_end`, if it reads a sequence that is invalid
 ( non-conformant to the source character encoding ) then it calls
-`err_notifier\-><<transcoding_error_notifier,invalid_sequence>>(ch_size, name, seq, count)`
+`err_notifier\-><<transcoding_error_notifier,invalid_sequence>>(ch_size, name, seq, count)`,
 if `err_notifer` is not null, where:
 
-* `name` is the return of `src_sc.name()`, `src_sc` represents the source character encoding.
-* `seq` points to the first character of the invalid sequence
-* `count` is number of code units in the invalid sequence
-* `ch_size` is `sizeof(SrcCharT)`
+* `ch_size` is equal to `sizeof(SrcCharT)`
+* `name` is the name of the source character encoding (__e.g.__, `"UTF-8"`)
+* `seq` points to the first character of the invalid sequence.
+* `count` is number of code units of the invalid sequence
+**  Note: The value of both following expression shall be `true`:
++
+----
+(const SrcCharT*)seq >= src
+----
++
+----
+(const SrcCharT*)seq + count <= src_end
+----
 
-After that, if `flags` has the flag `stop_on_invalid_sequence`, then the function shall
-stop and return a value with `stop_reason` equal to
+After that, if `flags` has the bit flag `stop_on_invalid_sequence`, then the function shall
+stop and return a value with `<<transcode_result,stop_reason>>` equal to
 `transcode_stop_reason::invalid_sequence`. Otherwise, the function shall write a
 replacement character (which is U+FFFD or `'?'`, depending on the destination encoding)
-and continue the iteration after the invalid sequence.
+and continue the iteration after the invalid sequence. Note: the presence of a
+surrogate codepoint ( that is considered to be and invalid sequence )
+shall not be considered an invalid sequence if the flag
+`transcode_flags::lax_surrogate_policy` is set in `flags`.
 
-A surrogate codepoint shall not be considered invalid
-if the flag `transcode_flags::lax_surrogate_policy` is set in `flags`.
-
-Similarly, when the function reads a codepoint that is both not supported by the destination
-encoding and not U+FFFD, it calls
-`err_notifier\-><<transcoding_error_notifier,unsupported_codepoint>>(dest_sc.<<Charset_name,name()>>, code)`
-if `err_notifier` is not null and `code` ( which is the
-unsupported codepoint ) is not U+FFFD.
+Similarly, when the function reads a codepoint that is not supported by the destination
+encoding but also not equal U+FFFD, it calls (if `err_notifier` is not null)
+`err_notifier\-><<transcoding_error_notifier,unsupported_codepoint>>(dst_charset_name, code)`,
+where `dst_charset_name` is the name of the destination character encoding,
+and `code` is such codepoint.
 
 After that, if `flags` has the flag `stop_on_unsupported_codepoint`, then the function shall
-stop and return a value with `stop_reason` equal to
+stop and return a value with `<<transcode_result,stop_reason>>` equal to
 `transcode_stop_reason::unsupported_codepoint`. Otherwise, the function shall write a
 replacement character (which is U+FFFD or `'?'`, depending on the destination encoding)
 and continue the iteration after the usupported codepoint.
 
 If the input contains the U+FFFD codepoint then it should not be treated as unsupported
-even if it is, __i.e.__ `err_notifier\->unsupported_codepoint`
+even if it is. This means that `err_notifier\->unsupported_codepoint`
 shall not be called in this case, nor should this cause the interation to stop.
 Instead, the function should just write `'?'` when the destination encoding
 does not support U+FFFD
 
-The function shall not write anything to `dest` if it is in bad state
-(__i.e.__ the return value of `dest.good()` is `false`).
-Instead, it should stop the iteration and return a value with `stop_reason`
-equal to `transcode_stop_reason::bad_destination`.
-
-`transcode_stop_reason::bad_destination` should only be returned when
-there is something to be written after the `dest` became in bad state.
+`transcode_stop_reason::insufficient_output_space` should only be returned if
+there is still something to be written but there is no space left
+(__i.e.__, the distance `(dst_end - dst)` is too small).
 For instance, if the input starts with an invalid sequence and
-`flags` has `stop_on_invalid_sequence` set, then the `stop_reason`
-shall be `transcode_stop_reason::invalid_sequence`, even if
-`dest.good()` return value is already `false` before the iteration starts.
+`flags` has `stop_on_invalid_sequence` set, then, even if
+`dst_end` is equal to `dst` the returned `stop_reason` shall **not** be
+`transcode_stop_reason::insufficient_space`; it should instead be
+shall be `transcode_stop_reason::invalid_sequence`.
 --
 
 Return value:: A value `res` such that
 +
 * `res.**stop_reason**` is `transcode_stop_reason::completed` unless for
    any of the cases explained above.
-* `res.**ptr**` points immediately after the last character in the range `[src, src_end)`
-           that has been taken into account
+* `res.**src_ptr**` points immediately after the last element in the range `[src, src_end)`
+           that has been transcoded.
+* `res.**dst_ptr**` points immediately after the last element in the range `[dst, dst_end)`
+           that has been written
 ====
-
-[[Transcoder_unsafe_transcode_size]]
-====
-[source,cpp]
-----
-x.unsafe_transcode_size(src, src_end, flags)
-----
-[horizontal]
-Precondition::
-* The input has no invalid sequence
-* `x.unsafe_transcode_() != nullptr` is `true`The input has no invalid sequence
-Return type:: `{transcode_size_result}`
-
-Effect:: Exactly the same as `x.transcode_size(src, src_end, flags)`,
-except that the behaviour is undefined if the input contains any
-invalid sequence.
-+
-Note that if the flag `transcode_flags::lax_surrogate_policy` is present
-in `flags`, then the transcoding of a surrogate character input
-is well defined.
-====
-
 
 [[Transcoder_unsafe_transcode]]
 ====
 [source,cpp]
 ----
-x.unsafe_transcode(src, src_end, dest, err_notifier, flags)
+x.unsafe_transcode(src, src_end, dst, dst_end, err_notifier, flags)
 ----
 Preconditions::
 
@@ -647,16 +614,88 @@ Preconditions::
 
 Return type:: `{transcode_result}`
 
-Effect:: Exactly the same as `x.transcode_(src, src_end, err_notifier, flags)`,
+Effect:: Exactly the same as `x.transcode(src, src_end, dst, dst_end, err_notifier, flags)`,
 except that the behaviour is undefined if the input contains any
 invalid sequence.
 +
-Note that if the flag `transcode_flags::lax_surrogate_policy` is present
-in `flags`, then the transcoding of a surrogate character input
-is well defined.
+Note that if the flag `transcode_flags::lax_surrogate_policy` is set
+in `flags`, then the presence of a surrogate codepoint in `[src, src_end)`
+is not to be considered as an invalid sequence, and thus shall **not** cause
+undefined behaviour.
 
 ====
+[[Transcoder_transcode_size]]
+====
+[source,cpp]
+----
+x.transcode_size(src, src_end, limit, flags)
+----
+Precondition:: `x.transcode_func() != nullptr` is `true`
+Return type:: `{transcode_size_result}`
+Return value:: A value `res` such that
++
+--
+* `res.**src_ptr**` is equal to `__tr_res__.src_ptr` ( see below )
+* `res.**stop_reason**` is equal to `__tr_res__.stop_reason`
+* `res.**ssize**` equals to `__tr_res__.dst_ptr - dst`
 
+, where `__tr_res__` is the value that
+`x.transcode(src, src_end, dst, dst + limit, nullptr, flags)`
+would return, assuming `[dst, dst + limit)` is a valid memory area.
+--
+====
+[[Transcoder_unsafe_transcode_size]]
+====
+[source,cpp]
+----
+x.unsafe_transcode_size(src, src_end, limit, flags)
+----
+[horizontal]
+Precondition::
+* The input has no invalid sequence
+* `x.unsafe_transcode_() != nullptr` is `true`
+Return type:: `{transcode_size_result}`
+
+Effect:: Exactly the same as `x.transcode_size(src, src_end, limit, flags)`,
+except that the behaviour is undefined if the input contains any
+invalid sequence.
++
+Note that if the flag `transcode_flags::lax_surrogate_policy` is set
+in `flags`, then the presence of a surrogate codepoint in `[src, src_end)`
+is not to be considered as an invalid sequence, and thus shall **not** cause
+undefined behaviour.
+====
+
+
+
+
+[[Transcoder_transcode_func]]
+====
+[source,cpp]
+----
+x.transcode_func()
+----
+[horizontal]
+Return type:: `{transcode_f}<SrcCharT, DstCharT>`
+Return value:: A function pointer such that
+   `x.transcode_func() (src, src_end, dst, dst_end, derr_notifier, flags)`
+   has the same effect as
+   `x.<<Transcoder_transcode,transcode>>(src, src_end, dst, dst_end, err_notifier, flags)`.
+====
+
+[[Transcoder_unsafe_transcode_func]]
+====
+[source,cpp]
+----
+x.unsafe_transcode_func()
+----
+[horizontal]
+Return type:: `{unsafe_transcode_f}<SrcCharT, DstCharT>`
+Return value:: A function pointer such that
+   `x.unsafe_transcode_func() (src, src_end, dst, dst_end, err_notifier, flags)`
+   has the same effect as
+   `x.<<Transcoder_unsafe_transcode,unsafe_transcode>>(src, src_end, dst, dst_end, err_notifier, flags)`.
+====
 
 [[Transcoder_transcode_size_func]]
 ====
@@ -667,23 +706,9 @@ x.transcode_size_func()
 [horizontal]
 Return type:: `{transcode_size_f}<SrcCharT>`
 Return value:: A function pointer such that
-               `x.transcode_size_func() (src, src_end, surr_poli)` has the same
-               effect as `x.<<Transcoder_transcode_size,transcode_size>>(src, src_end, surr_poli)`.
+               `x.transcode_size_func() (src, src_end, limit, flags)` has the same
+               effect as `x.<<Transcoder_transcode_size,transcode_size>>(src, src_end, limit, flags)`.
 ====
-[[Transcoder_transcode_func]]
-====
-[source,cpp]
-----
-x.transcode_func()
-----
-[horizontal]
-Return type:: `{transcode_f}<SrcCharT, DestCharT>`
-Return value:: A function pointer such that
-   `x.transcode_func() (src, src_end, dest, err_notifier, surr_poli)`
-   has the same effect as
-   `x.<<Transcoder_transcode,transcode>>(src, src_end, dest, err_notifier, surr_poli)`.
-====
-
 [[Transcoder_unsafe_transcode_size_func]]
 ====
 [source,cpp]
@@ -693,21 +718,8 @@ x.unsafe_transcode_size_func()
 [horizontal]
 Return type:: `{unsafe_transcode_size_f}<SrcCharT>`
 Return value:: A function pointer such that
-               `x.unsafe_transcode_size_func() (src, src_end)` has the same
-               effect as `x.<<Transcoder_unsafe_transcode_size,unsafe_transcode_size>>(src, src_end)`.
-====
-[[Transcoder_unsafe_transcode_func]]
-====
-[source,cpp]
-----
-x.unsafe_transcode_func()
-----
-[horizontal]
-Return type:: `{unsafe_transcode_f}<SrcCharT, DestCharT>`
-Return value:: A function pointer such that
-   `x.unsafe_transcode_func() (src, src_end, dest, err_notifier)`
-   has the same effect as
-   `x.<<Transcoder_unsafe_transcode,unsafe_transcode>>(src, src_end, dest, err_notifier)`.
+               `x.unsafe_transcode_size_func() (src, src_end, limit, flags)` has the same
+               effect as `x.<<Transcoder_unsafe_transcode_size,unsafe_transcode_size>>(src, src_end, limit, flags)`.
 ====
 
 '''
@@ -724,25 +736,26 @@ NOTE: There are two class templates that satisfy _Transcoder_:
 === Type requirement _Charset_ [[Charset]]
 
 An object whose type is a _Charset_ represents a character encoding.
-In this documentation the term _charset_ is used interchangeably with
-_encoding_ and _character encoding_.
+In this documentation the terms _charset_, _encoding_ and
+_character encoding_ are used interchangeably.
 
 Given
 
 * `CharT`, one of the follwoing types: `char`, `char8_t`, `char16_t`, `char32_t` or `wchar_t`
+* `OtherCharT`, one of the folowing types : `char`, `char8_t`, `char16_t` or `wchar_t`
 * `X`, a _Charset_ type for type `CharT`
 * `x`, an expression of type `X` or `const X`
-* `OtherCharT`, one of the folowing types : `char`, `char8_t`, `char16_t` or `wchar_t`
 * `ptr`, a value of type `CharT{asterisk}`
 * `src`, a value of type `const CharT{asterisk}`
-* `src_end`, a value of type `const CharT{asterisk}`, such that `src <= src_end` is true
+* `src_end`, a value of type `const SrcCharT*` pointing immediately after
+             the last character of the string that begins at `str`
+* `dest`, an lvalue reference of type `{transcode_dest}<CharT>`
 * `src_size`, a value of type `std::ptrdiff_t` equal to the size of
               the array pointed by `src`
 * `count`, a value of type `std::ptrdiff_t`
 * `max_count`, a value of type `std::ptrdiff_t`
 * `ch32`, a value of type `char32_t`
 * `ch`, a value of type `CharT`
-* `dest`, an lvalue reference of type `{transcode_dest}<CharT>`
 * `cs_id`, value of type `{charset_id}`
 
 The following must hold:
@@ -1059,184 +1072,184 @@ IMPORTANT: You shall not create an _Charset_ for `char32_t`, since `char32_t`
 
 [source,cpp,subs=normal]
 ----
-template <class SrcCharT, class DestCharT, {charset_id} Src, {charset_id} Dest>
+template <class SrcCharT, class DstCharT, {charset_id} Src, {charset_id} Dest>
 class static_transcoder;
 
 // sanitizers
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_ascii, scid_ascii>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_iso_8859_1, scid_iso_8859_1>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_iso_8859_2, scid_iso_8859_2>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_iso_8859_3, scid_iso_8859_3>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_iso_8859_4, scid_iso_8859_4>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_iso_8859_5, scid_iso_8859_5>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_iso_8859_6, scid_iso_8859_6>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_iso_8859_7, scid_iso_8859_7>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_iso_8859_8, scid_iso_8859_8>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_iso_8859_9, scid_iso_8859_9>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_iso_8859_10, scid_iso_8859_10>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_iso_8859_11, scid_iso_8859_11>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_iso_8859_13, scid_iso_8859_13>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_iso_8859_14, scid_iso_8859_14>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_iso_8859_15, scid_iso_8859_15>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_iso_8859_16, scid_iso_8859_16>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_windows_1250, scid_windows_1250>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_windows_1251, scid_windows_1251>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_windows_1252, scid_windows_1252>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_windows_1253, scid_windows_1253>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_windows_1254, scid_windows_1254>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_windows_1255, scid_windows_1255>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_windows_1256, scid_windows_1256>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_windows_1257, scid_windows_1257>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_windows_1258, scid_windows_1258>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_utf8, scid_utf8>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_utf16, scid_utf16>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_utf32, scid_utf32>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_ascii, scid_ascii>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_iso_8859_1, scid_iso_8859_1>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_iso_8859_2, scid_iso_8859_2>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_iso_8859_3, scid_iso_8859_3>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_iso_8859_4, scid_iso_8859_4>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_iso_8859_5, scid_iso_8859_5>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_iso_8859_6, scid_iso_8859_6>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_iso_8859_7, scid_iso_8859_7>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_iso_8859_8, scid_iso_8859_8>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_iso_8859_9, scid_iso_8859_9>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_iso_8859_10, scid_iso_8859_10>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_iso_8859_11, scid_iso_8859_11>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_iso_8859_13, scid_iso_8859_13>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_iso_8859_14, scid_iso_8859_14>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_iso_8859_15, scid_iso_8859_15>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_iso_8859_16, scid_iso_8859_16>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_windows_1250, scid_windows_1250>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_windows_1251, scid_windows_1251>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_windows_1252, scid_windows_1252>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_windows_1253, scid_windows_1253>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_windows_1254, scid_windows_1254>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_windows_1255, scid_windows_1255>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_windows_1256, scid_windows_1256>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_windows_1257, scid_windows_1257>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_windows_1258, scid_windows_1258>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_utf8, scid_utf8>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_utf16, scid_utf16>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_utf32, scid_utf32>;
 
 // to UTF-32
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_ascii, scid_utf32>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_iso_8859_1, scid_utf32>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_iso_8859_2, scid_utf32>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_iso_8859_3, scid_utf32>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_iso_8859_4, scid_utf32>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_iso_8859_5, scid_utf32>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_iso_8859_6, scid_utf32>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_iso_8859_7, scid_utf32>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_iso_8859_8, scid_utf32>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_iso_8859_9, scid_utf32>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_iso_8859_10, scid_utf32>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_iso_8859_11, scid_utf32>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_iso_8859_13, scid_utf32>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_iso_8859_14, scid_utf32>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_iso_8859_15, scid_utf32>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_iso_8859_16, scid_utf32>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_windows_1250, scid_utf32>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_windows_1251, scid_utf32>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_windows_1252, scid_utf32>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_windows_1253, scid_utf32>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_windows_1254, scid_utf32>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_windows_1255, scid_utf32>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_windows_1256, scid_utf32>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_windows_1257, scid_utf32>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_windows_1258, scid_utf32>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_utf8, scid_utf32>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_utf16, scid_utf32>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_ascii, scid_utf32>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_iso_8859_1, scid_utf32>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_iso_8859_2, scid_utf32>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_iso_8859_3, scid_utf32>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_iso_8859_4, scid_utf32>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_iso_8859_5, scid_utf32>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_iso_8859_6, scid_utf32>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_iso_8859_7, scid_utf32>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_iso_8859_8, scid_utf32>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_iso_8859_9, scid_utf32>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_iso_8859_10, scid_utf32>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_iso_8859_11, scid_utf32>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_iso_8859_13, scid_utf32>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_iso_8859_14, scid_utf32>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_iso_8859_15, scid_utf32>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_iso_8859_16, scid_utf32>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_windows_1250, scid_utf32>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_windows_1251, scid_utf32>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_windows_1252, scid_utf32>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_windows_1253, scid_utf32>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_windows_1254, scid_utf32>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_windows_1255, scid_utf32>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_windows_1256, scid_utf32>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_windows_1257, scid_utf32>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_windows_1258, scid_utf32>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_utf8, scid_utf32>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_utf16, scid_utf32>;
 
 // from UTF-32
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_utf32, scid_ascii>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_utf32, scid_iso_8859_1>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_utf32, scid_iso_8859_2>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_utf32, scid_iso_8859_3>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_utf32, scid_iso_8859_4>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_utf32, scid_iso_8859_5>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_utf32, scid_iso_8859_6>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_utf32, scid_iso_8859_7>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_utf32, scid_iso_8859_8>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_utf32, scid_iso_8859_9>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_utf32, scid_iso_8859_10>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_utf32, scid_iso_8859_11>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_utf32, scid_iso_8859_13>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_utf32, scid_iso_8859_14>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_utf32, scid_iso_8859_15>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_utf32, scid_iso_8859_16>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_utf32, scid_windows_1250>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_utf32, scid_windows_1251>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_utf32, scid_windows_1252>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_utf32, scid_windows_1253>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_utf32, scid_windows_1254>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_utf32, scid_windows_1255>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_utf32, scid_windows_1256>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_utf32, scid_windows_1257>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_utf32, scid_windows_1258>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_utf32, scid_utf8>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_utf32, scid_utf16>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_utf32, scid_ascii>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_utf32, scid_iso_8859_1>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_utf32, scid_iso_8859_2>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_utf32, scid_iso_8859_3>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_utf32, scid_iso_8859_4>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_utf32, scid_iso_8859_5>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_utf32, scid_iso_8859_6>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_utf32, scid_iso_8859_7>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_utf32, scid_iso_8859_8>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_utf32, scid_iso_8859_9>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_utf32, scid_iso_8859_10>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_utf32, scid_iso_8859_11>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_utf32, scid_iso_8859_13>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_utf32, scid_iso_8859_14>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_utf32, scid_iso_8859_15>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_utf32, scid_iso_8859_16>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_utf32, scid_windows_1250>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_utf32, scid_windows_1251>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_utf32, scid_windows_1252>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_utf32, scid_windows_1253>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_utf32, scid_windows_1254>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_utf32, scid_windows_1255>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_utf32, scid_windows_1256>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_utf32, scid_windows_1257>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_utf32, scid_windows_1258>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_utf32, scid_utf8>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_utf32, scid_utf16>;
 
 // others
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_utf8, scid_utf16>;
-template <class SrcCharT, class DestCharT>
-class static_transcoder<SrcCharT, DestCharT, scid_utf16, scid_utf8>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_utf8, scid_utf16>;
+template <class SrcCharT, class DstCharT>
+class static_transcoder<SrcCharT, DstCharT, scid_utf16, scid_utf8>;
 ----
 `static_transcoder` class template has no generic implementation.
 Instead, the library provides the template specializations listed above.
@@ -1292,7 +1305,7 @@ All of them are empty classes, and are __{Charset}__.
 ----
 namespace strf {
 
-template <class SrcCharT, class DestCharT>
+template <class SrcCharT, class DstCharT>
 class dynamic_transcoder {
 public:
     constexpr dynamic_transcoder() noexcept;
@@ -1300,23 +1313,39 @@ public:
     constexpr dynamic_transcoder
         ( const dynamic_transcoder& other) noexcept = default;
 
-    template <{charset_id} Src, {charset_id} Dest>
+    template <{charset_id} SrcCh, {charset_id} DstCh>
     constexpr explicit dynamic_transcoder
-        ( {static_transcoder}<Src, Dest> st );
+        ( {static_transcoder}<SrcCh, DestCh> st );
 
-    void transcode
-        ( {transcode_dest}<DestCharT>& dest
-        , const SrcCharT{asterisk} src
+    {transcode_result}<SrcCharT, DstCharT> transcode
+        ( const SrcCharT{asterisk} src
         , const SrcCharT{asterisk} src_end
+        , DstCharT* dst
+        , DstCharT* dst_end
         , {transcoding_error_notifier}{asterisk} err_notifier
         , {transcode_flags} flags ) const;
 
-    std::ptrdiff_t transcode_size
+    {transcode_result}<SrcCharT, DstCharT> unsafe_transcode
         ( const SrcCharT{asterisk} src
         , const SrcCharT{asterisk} src_end
+        , DstCharT* dst
+        , DstCharT* dst_end
+        , {transcoding_error_notifier}{asterisk} err_notifier
         , {transcode_flags} flags ) const;
 
-    constexpr {transcode_f}<SrcCharT, DestCharT> transcode_func() const noexcept;
+    {transcode_size_result}<SrcCharT> transcode_size
+        ( const SrcCharT{asterisk} src
+        , const SrcCharT{asterisk} src_end
+        , std::ptrdiff_t limit
+        , {transcode_flags} flags ) const;
+
+    {transcode_size_result}<SrcCharT> unsafe_transcode_size
+        ( const SrcCharT{asterisk} src
+        , const SrcCharT{asterisk} src_end
+        , std::ptrdiff_t limit
+        , {transcode_flags} flags ) const;
+
+    constexpr {transcode_f}<SrcCharT, DstCharT> transcode_func() const noexcept;
     constexpr {transcode_size_f}<SrcCharT> transcode_size_func() const noexcept;
 };
 
@@ -1364,27 +1393,59 @@ Postconditions::
 ====
 [source,cpp,subs=normal]
 ----
-void transcode
-    ( {transcode_dest}<DestCharT>& dest
-    , const SrcCharT{asterisk} src
+{transcode_result}<SrcCharT, DstCharT> transcode
+    ( const SrcCharT{asterisk} src
     , const SrcCharT{asterisk} src_end
+    , DstCharT{asterisk} dst
+    , DstCharT{asterisk} dst_end
     , {transcoding_error_notifier}{asterisk} err_notifier
     , {transcode_flags} flags ) const;
 ----
 [horizontal]
-Effect:: Calls `transcode_func()(src, src_end, dest, err_notifier, flags)`
+Effect:: Calls `transcode_func()(src, src_end, dst, dst_end, err_notifier, flags)`
+====
+
+====
+[source,cpp,subs=normal]
+----
+{transcode_result}<SrcCharT, DstCharT> unsafe_transcode
+    ( const SrcCharT{asterisk} src
+    , const SrcCharT{asterisk} src_end
+    , DstCharT{asterisk} dst
+    , DstCharT{asterisk} dst_end
+    , {transcoding_error_notifier}{asterisk} err_notifier
+    , {transcode_flags} flags ) const;
+----
+[horizontal]
+Effect:: Calls `unsafe_transcode_func()(src, src_end, dst, dst_end, err_notifier, flags)`
+====
+
+====
+[source,cpp,subs=normal]
+----
+{transcode_size_result}<SrcCharT> transcode_size
+    ( const SrcCharT{asterisk} src
+    , const SrcCharT{asterisk} src_end
+    , std::ptrdiff_t limit
+    , {transcode_flags} flags ) const;
+----
+[horizontal]
+Effect:: Calls `transcode_size_func()(src, src_end, limit, flags)`
 ====
 ====
 [source,cpp,subs=normal]
 ----
-std::ptrdiff_t transcode_size
+{transcode_size_result}<SrcCharT> unsafe_transcode_size
     ( const SrcCharT{asterisk} src
     , const SrcCharT{asterisk} src_end
+    , std::ptrdiff_t limit
     , {transcode_flags} flags ) const;
 ----
 [horizontal]
-Effect:: Calls `transcode_size_func()(src, src_end, flags)`
+Effect:: Calls `unsafe_transcode_size_func()(src, src_end, limit, flags)`
 ====
+
+
 
 === Struct template `dynamic_charset_data` [[dynamic_charset_data]]
 
@@ -1829,33 +1890,34 @@ is not null. Otherwise returns `{dynamic_transcoder}<wchar_t, CharT>{}`
 
 [source,cpp,subs=normal]
 ----
-template <class SrcCharset, class DestCharset>
-auto find_transcoder(SrcCharset src, DestCharset dest);
+template <class SrcCharset, class DstCharset>
+auto find_transcoder(SrcCharset src, DstCharset dest);
 ----
-Requirements:: `SrcCharset` and `DestCharset` are __{Charset}__ types.
+Requirements:: `SrcCharset` and `DstCharset` are __{Charset}__ types.
 Return type:: A type that is __{Transcoder}__
 //-
 Return value::
 * Returns the default value of `{static_transcoder}<SrcID, DestID>`
   if such template instantiation is defined and
   `SrcCharset` is ( or derives from ) `{static_charset}<SrcID>` and
-  `DestCharset` is ( or derives from ) `{static_charset}<DestID>`;
+  `DstCharset` is ( or derives from ) `{static_charset}<DestID>`;
 * otherwise, returns `src.<<Charset_sanitizer,sanitizer>>()` if
   `src.<<Charset_id,id>>()` is equal to `dest.<<Charset_id,id>>()`
-  and `SrcCharset::{code_unit}` is the same type as `DestCharset::{code_unit}`;
+  and `SrcCharset::{code_unit}` is the same type as `DstCharset::{code_unit}`;
 * otherwise, returns `src.<<Charset_to_u32,to_u32>>()`
-  if `DestCharset::{code_unit}` is `char32_t`;
+  if `DstCharset::{code_unit}` is `char32_t`;
 * otherwise, returns `dest.<<Charset_from_u32,from_u32>>()`
   if `SrcCharset::{code_unit}` is `char32_t`;
 * otherwise, returns
   `src.<<Charset_find_transcoder_to,find_transcoder_to>>(dest_ch, dest.id())`
   if such expression
   is well-formed and returns a <<Transcoder_null,non null transcoder>>
-  , where `dest_ch` is `{tag}<DestCharset::{code_unit}>{}`
+  , where `dest_ch` is `{tag}<DstCharset::{code_unit}>{}`
 * otherwise, returns
   `dest.<<Charset_find_transcoder_from,find_transcoder_from>>(src_ch, src.id())`
    if such expression is well-formed, where `src_sh` is `{tag}<SrcCharset::{code_unit}>{}`
-* otherwise returns `{dynamic_transcoder}<SrcCharset::{code_unit}, DestCharset::{code_unit}>{}`.
+* otherwise returns `{dynamic_transcoder}<SrcCharset::{code_unit}, DstCharset::{code_unit}>{}`,
+  __i.e.__ an <<Transcoder_null,null transcoder>>.
 
 NOTE: When `find_transcoder` returns an <<Transcoder_null,null transcoder>>
 , you still can use `{decode_encode}` and `decode_encode_size`.
@@ -1869,7 +1931,8 @@ namespace strf {
 
 template <typename CharT>
 struct decode_encode_result {
-    const CharT* stale_ptr;
+    const CharT* stale_src_ptr;
+    DstCharT* dst_ptr;
     std::int32_t u32dist;
     {transcode_stop_reason} stop_reason;
 };
@@ -1885,8 +1948,8 @@ namespace strf {
 
 template <typename CharT>
 struct decode_encode_size_result {
-    std::size_t size;
-    const CharT* stale_ptr;
+    std::ptrdiff_t ssize;
+    const CharT* stale_src_ptr;
     std::int32_t u32dist;
     {transcode_stop_reason} stop_reason;
 };
@@ -1900,9 +1963,16 @@ The purpose of the following function templates
 ( `decode_encode`, `decode_encode_size`,
   `unsafe_decode_encode`, `unsafe_decode_encode_size` ) is to
   compensate the fact that the library does not provide a
-  __{Transcoder}__ class ( a `static_transcoder` specialization)
-  for all combination of two character encodings.
+  specialization of `static_transcoder`
+  for every combination of two character encodings and that
+  ( as a consequence ) `{find_transcoder}` may return a null transcoder.
 
+`decode_encode` transcodes from one encoding to another using a pivot
+buffer; __i.e.__ it transcodes the input string to UTF-32 and then
+from UTF-32 to the destination encoding.
+The performance is naturally worse than an specialized algorithm
+that would transcode directly ( which is what an specialization of
+`static_transcoder` is expected to do ).
 
 // All the following overloads of `decode_encode` do the same thing:
 // to transcode the input string ( the `src` parameter ) to UTF-32
@@ -1927,7 +1997,8 @@ template <typename SrcCharT, typename DstCharT>
     , {transcode_f}<char32_t, DstCharT> from_u32
     , const SrcCharT{asterisk} src
     , const SrcCharT{asterisk} src_end
-    , {transcode_dest}<DstCharT>& dst
+    , DstCharT* dst
+    , DstCharT* dst_end
     , {transcoding_error_notifier}* notifier = nullptr
     , {transcode_flags} flags = transcode_flags::none );
 
@@ -1936,13 +2007,13 @@ template <typename SrcCharT, typename DstCharT>
 Preconditions::
 * `to_u32` is the value returned by
    `src_charset.<<Charset_to_u32,to_u32>>().{transcode_func}()`,
-   where `src_charset` is a __{Charset}__ object that represents some
-   character encoding __A__
+   where `src_charset` is a __{Charset}__ object that represents the
+   source character encoding.
 * `from_u32` is the value returned by
    `dst_charset.<<Charset_from_u32,from_u32>>().{transcode_func}()` or
    `dst_charset.<<Charset_from_u32,from_u32>>().{unsafe_transcode_func}()`,
-   where `dst_charset` is a __{Charset}__ object that represents some
-   a character encoding __B__
+   where `dst_charset` is a __{Charset}__ object that represents the
+   destination character encoding.
 * All the preconditions of
   `src_charset.<<Charset_to_u32,to_u32>>().{transcode_func}()`
 
@@ -1950,15 +2021,16 @@ Effect::
 +
 --
 `decode_encode` has the same effects as calling
-`__T__::<<Transcoder_transcode,transcode>>(src, src_end, dst, notifier, flags)`,
-where `__T__` would be a __{Transcoder}__ class that transcodes from __A__ to __B__.
+`__T__::<<Transcoder_transcode,transcode>>(src, src_end, dst, dst_end, notifier, flags)`,
+where `__T__` would be a __{Transcoder}__ class that transcodes from the source
+character encoding to the destination character encoding.
 --
 
 Return value:: A `{decode_encode_result}` value `res`, such that
 +
 --
 * `res.**stop_reason**` ( see `{transcode_stop_reason}`)
-* `res.**stale_ptr**` is **not** the pointer past the last read element in the input range `[src, src_end)`. Instead, it points `res.**u32dist**` codepoints before that.
+* `res.**stale_src_ptr**` is **not** the pointer past the last read element in the input range `[src, src_end)`. Instead, it points `res.**u32dist**` codepoints before that.
 +
 The pointer past the last read element would actually be:
 +
@@ -1972,9 +2044,6 @@ The pointer past the last read element would actually be:
 ** `__src_charset__` is a __{Charset}__ object that describes the source character encoding
 ** `__surr_poli__` is `<<transcode_flags,to_surrogate_policy>>(flags)`
 --
-
-Postcondition::
-`dst.recycle()` is not called  if `dst.space()` is not less then the amount of character to be written in `dst`
 ====
 
 ====
@@ -1986,8 +2055,9 @@ template <typename SrcCharT, typename DstCharT>
 {decode_encode_result}<SrcCharT> decode_encode
     ( {transcode_f}<SrcCharT, char32_t> to_u32
     , {transcode_f}<char32_t, DstCharT> from_u32
-    , std::basic_string_view<SrcCharT> src
-    , {transcode_dest}<DstCharT>& dst
+    , std::basic_string_view<SrcCharT> src3
+    , DstCharT* dst
+    , DstCharT* dst_end
     , {transcoding_error_notifier}* notifier = nullptr
     , {transcode_flags} flags = transcode_flags::none );
 
@@ -1996,7 +2066,7 @@ template <typename SrcCharT, typename DstCharT>
 Equivalent to:
 ----
 decode_encode( to_u32, from_32, src.data(), src.data() + src.size()
-             , dst, notifier, flags)
+             , dst, dst_end, notifier, flags)
 ----
 ====
 
@@ -2012,7 +2082,8 @@ template < typename SrcCharset, typename DstCharset
     , DstCharset dst_charset
     , const SrcCharT{asterisk} src
     , const SrcCharT{asterisk} src_end
-    , {transcode_dest}<DstCharT>& dst
+    , DstCharT* dst
+    , DstCharT* dst_end
     , {transcoding_error_notifier}* notifier = nullptr
     , {transcode_flags} flags = transcode_flags::none );
 
@@ -2023,8 +2094,8 @@ Equivalent to
 ----
 decode_encode
     ( src_charset.{to_u32}().{transcode_func}()
-    , dst_charset.{from_u32}().{transcode_func()
-    , src, src_end, dst, err_notifier, flags )
+    , dst_charset.{from_u32}().{transcode_func}()
+    , src, src_end, dst, dst_end, err_notifier, flags )
 ----
 Compile-time requirements::
 - `SrcCharset` and `DstCharset` satisfy __{Charset}__
@@ -2044,7 +2115,8 @@ template < typename SrcCharset, typename DstCharset
     ( SrcCharset src_charset
     , DstCharset dst_charset
     , std::basic_string_view<SrcCharT> src
-    , {transcode_dest}<DstCharT>& dst
+    , DstCharT* dst
+    , DstCharT* dst_end
     , {transcoding_error_notifier}* notifier = nullptr
     , {transcode_flags} flags = transcode_flags::none );
 
@@ -2055,7 +2127,7 @@ Equivalent to
 ----
 decode_encode
     ( src_charset, dst_charset, src.data(), src.data() + src.size()
-    , dst, err_notifier, flags )
+    , dst, dst_end, err_notifier, flags )
 ----
 Compile-time requirements::
 - `SrcCharset` and `DstCharset` satisfy __{Charset}__
@@ -2075,7 +2147,8 @@ template < template <class> class SrcCharsetTmpl
 {decode_encode_result}<SrcCharT> decode_encode
     ( const SrcCharT{asterisk} src
     , const SrcCharT{asterisk} src_end
-    , {transcode_dest}<DstCharT>& dst
+    , DstCharT* dst
+    , DstCharT* dst_end
     , {transcoding_error_notifier}* notifier = nullptr
     , {transcode_flags} flags = transcode_flags::none );
 
@@ -2087,7 +2160,7 @@ Equivalent to
 ----
 decode_encode
     ( SrcCharsetTmpl<SrcCharT>(), DstCharsetTmpl<DstCharT>()
-    , src, src_end, dst, err_notifier, flags )
+    , src, src_end, dst, dst_end, err_notifier, flags )
 ----
 Compile-time requirements::
 - `SrcCharsetTmpl<SrcCharT>` is an instance of `{static_charset}`
@@ -2108,7 +2181,8 @@ template < template <class> class SrcCharsetTmpl
          , typename DstCharT >
 {decode_encode_result}<SrcCharT> decode_encode
     ( std::basic_string_view<SrcCharT> src
-    , {transcode_dest}<DstCharT>& dst
+    , DstCharT* dst
+    , DstCharT* dst_end
     , {transcoding_error_notifier}* notifier = nullptr
     , {transcode_flags} flags = transcode_flags::none );
 
@@ -2117,7 +2191,7 @@ template < template <class> class SrcCharsetTmpl
 Equivalent to
 ----
 decode_encode<SrcCharsetTmpl, DstCharsetTmpl>
-    (src.data(), src.data() + src.size(), dst, err_notifier, flags )
+    (src.data(), src.data() + src.size(), dst, dst_end, err_notifier, flags )
 ----
 ====
 
@@ -2138,6 +2212,7 @@ template <typename SrcCharT>
     , {transcode_size_f}<char32_t> size_calc_func
     , const SrcCharT{asterisk} src
     , const SrcCharT{asterisk} src_end
+    , std::ptrdiff_t limit
     , {transcode_flags} flags = transcode_flags::none );
 
 }
@@ -2147,34 +2222,27 @@ Preconditions::
 --
 * `to_u32` is the value returned by
    `src_charset.<<Charset_to_u32,to_u32>>().{transcode_func}()`,
-   where `src_charset` is a __{Charset}__ object that represents some
-   character encoding __A__
+   where `src_charset` is a __{Charset}__ object that represents the
+   source character encoding.
 * `size_calc_func` is the value returned by
   `dst_charset.<<Charset_from_u32,from_u32>>().{transcode_size_func}()` or
   `dst_charset.<<Charset_from_u32,from_u32>>().{unsafe_transcode_size_func}()`
-   where `dst_charset` is a __{Charset}__ object that represents some
-   a character encoding __B__
+   where `dst_charset` is a __{Charset}__ object that represents the
+   destination character encoding.
 * All the preconditions of
   `src_charset.<<Charset_to_u32,to_u32>>().{transcode_func}()`
 --
-Effect::
-+
---
-
-`decode_encode_size` has the same effects as calling
-`__T__::<<Transcoder_transcode_size,transcode_size>>(src, src_end, flags)`,
-where `__T__` would be a __{Transcoder}__ class that transcodes from __A__ to __B__.
---
-
 Return value:: A `{decode_encode_result}` value `res`, such that
 +
 --
-* `res.**size**` is the number of character that
-           `{decode_encode}(src, src_end, dest, nullptr, flags)`
-           would write into `dest`, assuming that `dest` would be in
-           `<<destination_hpp#output_buffer_good,good state>>` during all trancoding.
-* `res.**stop_reason**` (see `{transcode_stop_reason}`)
-* `res.**stale_ptr**` is **not** the pointer past the last read element in the input range `[src, src_end)`. Instead, it points `res.**u32dist**` codepoints before that.
+* `res.**ssize**` is equal to `__res2__.ssize`
+* `res.**stop_reason**` is equal to `__res2__.stop_reason`
+* `res.**stale_src_ptr**` is **not** the pointer past the last read element in the input range `[src, src_end)`. Instead, it points `res.**u32dist**` codepoints before that.
+
+, where `__res2__` is the value that would be returned by
+`__T__::<<Transcoder_transcode_size,transcode_size>>(src, src_end, limit, flags)`,
+where `__T__` would be a __{Transcoder}__ class that transcodes from the
+source character encoding to the destination character encoding.
 --
 ====
 
@@ -2188,6 +2256,7 @@ template <typename SrcCharT>
     ( {transcode_f}<SrcCharT, char32_t> to_u32
     , {transcode_size_f}<char32_t> size_calc_func
     , std::basic_string_view<SrcCharT> src
+    , std::ptrdiff_t limit
     , {transcode_flags} flags = transcode_flags::none );
 
 }
@@ -2196,7 +2265,7 @@ Return value::
 Same as:
 ----
 decode_encode_size
-    ( to_32, size_calc_func, src.data(), src.data() + src.size(), flags )
+    ( to_32, size_calc_func, src.data(), src.data() + src.size(), limit, flags )
 ----
 ====
 
@@ -2211,17 +2280,20 @@ template < typename SrcCharset, typename DstCharset, typename SrcCharT >
     , DstCharset dst_charset
     , const SrcCharT{asterisk} src
     , const SrcCharT{asterisk} src_end
+    , std::ptrdiff_t limit
     , {transcode_flags} flags = transcode_flags::none );
 
 }
 ----
 Return value::
 Same as:
+
+[source,cpp,subs=normal]
 ----
 decode_encode_size
     ( src_charset.{to_u32}().{transcode_func}()
     , dst_charset.{from_u32}().{transcode_size_func}()
-    , src, src_end, flags )
+    , src, src_end, limit, flags )
 ----
 Compile-time requirements::
 - `SrcCharset` and `DstCharset` satisfy __{Charset}__
@@ -2238,6 +2310,7 @@ template < typename SrcCharset, typename DstCharset, typename SrcCharT >
     ( SrcCharset src_charset
     , DstCharset dst_charset
     , std::basic_string_view<SrcCharT> src
+    , std::ptrdiff_t limit
     , {transcode_flags} flags = transcode_flags::none );
 
 }
@@ -2246,7 +2319,7 @@ Return value::
 Same as:
 ----
 decode_encode_size
-    ( src_charset, dst_charset, src.data(), src.data() + src.size(), flags )
+    ( src_charset, dst_charset, src.data(), src.data() + src.size(), limit, flags )
 ----
 Compile-time requirements::
 - `SrcCharset` and `DstCharset` satisfy __{Charset}__
@@ -2264,6 +2337,7 @@ template < template <class> class SrcCharsetTmpl
 {decode_encode_size_result}<SrcCharT> decode_encode_size
     ( const SrcCharT{asterisk} src
     , const SrcCharT{asterisk} src_end
+    , std::ptrdiff_t limit
     , {transcode_flags} flags = transcode_flags::none );
 
 }
@@ -2273,7 +2347,7 @@ Return value::
 Same as:
 ----
 decode_encode_size
-    ( SrcCharsetTmpl<SrcCharT>(), DstCharset(), src, src_end, flags )
+    ( SrcCharsetTmpl<SrcCharT>(), DstCharset(), src, src_end, limit, flags )
 ----
 Compile-time requirements::
 - `SrcCharsetTmpl<SrcCharT>` is an instance of `{static_charset}`
@@ -2292,6 +2366,7 @@ template < template <class> class SrcCharsetTmpl
          , typename SrcCharT >
 {decode_encode_size_result}<SrcCharT> decode_encode_size
     ( std::basic_string_view<SrcCharT> src
+    , std::ptrdiff_t limit
     , {transcode_flags} flags = transcode_flags::none );
 
 }
@@ -2300,7 +2375,7 @@ Return value::
 Same as:
 ----
 decode_encode_size<SrcCharsetTmpl, DstCharset>
-    ( src.data(), src.data() + src.size(), flags )
+    ( src.data(), src.data() + src.size(), limit, flags )
 ----
 Compile-time requirements::
 - `SrcCharsetTmpl<SrcCharT>` is an instance of `{static_charset}`
@@ -2315,13 +2390,14 @@ Compile-time requirements::
 ----
 namespace strf {
 
-template <typename SrcCharT, typename DstCharT>
+1template <typename SrcCharT, typename DstCharT>
 {decode_encode_result}<SrcCharT> unsafe_decode_encode
     ( {unsafe_transcode_f}<SrcCharT, char32_t> to_u32
     , {unsafe_transcode_f}<char32_t, DstCharT> from_u32
     , const SrcCharT{asterisk} src
     , const SrcCharT{asterisk} src_end
-    , {transcode_dest}<DstCharT>& dst
+    , DstCharT* dst
+    , DstCharT* dst_end
     , {transcoding_error_notifier}* notifier = nullptr
     , {transcode_flags} flags = transcode_flags::none );
 
@@ -2331,12 +2407,12 @@ Preconditions::
 --
 * `to_u32` is the value returned by
    `src_charset.<<Charset_to_u32,to_u32>>().{unsafe_transcode_func}()`,
-   where `src_charset` is a __{Charset}__ object that represents some
-   character encoding __A__
+   where `src_charset` is a __{Charset}__ object that represents the
+   sournce character encoding.
 * `from_u32` is the value returned by
    `dst_charset.<<Charset_from_u32,from_u32>>().{unsafe_transcode_func}()`,
-   where `dst_charset` is a __{Charset}__ object that represents some
-   a character encoding __B__
+   where `dst_charset` is a __{Charset}__ object that represents the
+   destination character encoding.
 *  All the perconditions of
    `src_charset.<<Charset_to_u32,to_u32>>().{unsafe_transcode_func}()`.
 --
@@ -2344,18 +2420,23 @@ Preconditions::
 Effect::
 --
 `unsafe_decode_encode` has the same effects as calling
-`__T__::{unsafe_transcode}(src, src_end, dst, notifier, flags)`,
-where `__T__` would be a __{Transcoder}__ class that transcodes from __A__ to __B__.
+`__T__::{unsafe_transcode}(src, src_end, dst, dst_end, notifier, flags)`,
+where `__T__` would be a __{Transcoder}__ class that transcodes from
+the source character encoding to the destination character encoding.
 --
 
 Return value:: A `{decode_encode_result}` value `res`, such that
 +
 --
-* `res.**stop_reason**` ( see `{transcode_stop_reason}`)
-* `res.**stale_ptr**` is **not** the pointer past the last read element in the input range `[src, src_end)`. Instead, it points `res.**u32dist**` codepoints before that.
+* `res.**stop_reason**` is equal to `__res2__.ssize`
+* `res.**dst_ptr**` is equal to `__res2__.dst_ptr`
+* `res.**stale_src_ptr**` is **not** the pointer past the last read element in the input range `[src, src_end)`. Instead, it points `res.**u32dist**` codepoints before that.
+
+, where `__res2__` is the value that would be returned by
+`__T__::{unsafe_transcode}(src, src_end, dst, dst_end, notifier, flags)`,
+where `__T__` would be a __{Transcoder}__ class that transcodes from
+the source character encoding to the destination character encoding.
 --
-Postcondition::
-`dst.recycle()` is not called  if `dst.space()` is not less then the amount of character to be written in `dst`
 ====
 
 ====
@@ -2368,7 +2449,8 @@ template <typename SrcCharT, typename DstCharT>
     ( {unsafe_transcode_f}<SrcCharT, char32_t> to_u32
     , {unsafe_transcode_f}<char32_t, DstCharT> from_u32
     , std::basic_string_view<SrcCharT> src
-    , {transcode_dest}<DstCharT>& dst
+    , DstCharT* dst
+    , DstCharT* dst_end
     , {transcoding_error_notifier}* notifier = nullptr
     , {transcode_flags} flags = transcode_flags::none );
 
@@ -2376,7 +2458,7 @@ template <typename SrcCharT, typename DstCharT>
 ----
 Equivalent to
 ----
-unsafe_decode_encode(to_u32, from_32, src.data(), src.data() + src.size(), dst, notifier, flags)
+unsafe_decode_encode(to_u32, from_32, src.data(), src.data() + src.size(), dst, dst_end, notifier, flags)
 ----
 ====
 
@@ -2392,7 +2474,8 @@ template < typename SrcCharset, typename DstCharset
     , DstCharset dst_charset
     , const SrcCharT{asterisk} src
     , const SrcCharT{asterisk} src_end
-    , {transcode_dest}<DstCharT>& dst
+    , DstCharT* dst
+    , DstCharT* dst_end
     , {transcoding_error_notifier}* notifier = nullptr
     , {transcode_flags} flags = transcode_flags::none );
 
@@ -2405,7 +2488,7 @@ Equivalent to
 unsafe_decode_encode
     ( src_charset.{to_u32}().{unsafe_transcode_func}()
     , dst_charset.{from_u32}().{unsafe_transcode_func}()
-    , src, src_end, dst, err_notifier, flags )
+    , src, src_end, dst, dst_end, err_notifier, flags )
 ----
 Compile-time requirements::
 - `SrcCharset` and `DstCharset` satisfy __{Charset}__
@@ -2425,7 +2508,8 @@ template < typename SrcCharset, typename DstCharset
     ( SrcCharset src_charset
     , DstCharset dst_charset
     , std::basic_string_view<SrcCharT> src
-    , {transcode_dest}<DstCharT>& dst
+    , DstCharT* dst
+    , DstCharT* dst_end
     , {transcoding_error_notifier}* notifier = nullptr
     , {transcode_flags} flags = transcode_flags::none );
 
@@ -2436,7 +2520,7 @@ Equivalent to
 ----
 unsafe_decode_encode
     ( src_charset, dst_charset, src.data(), src.data() + src.size()
-    , dst, err_notifier, flags )
+    , dst, dst_end, err_notifier, flags )
 ----
 Compile-time requirements::
 - `SrcCharset` and `DstCharset` satisfy __{Charset}__
@@ -2456,7 +2540,8 @@ template < template <class> class SrcCharsetTmpl
 {decode_encode_result}<SrcCharT> unsafe_decode_encode
     ( const SrcCharT{asterisk} src
     , const SrcCharT{asterisk} src_end
-    , {transcode_dest}<DstCharT>& dst
+    , DstCharT* dst
+    , DstCharT* dst_end
     , {transcoding_error_notifier}* notifier = nullptr
     , {transcode_flags} flags = transcode_flags::none );
 
@@ -2468,7 +2553,7 @@ Equivalent to
 ----
 unsafe_decode_encode
     ( SrcCharsetTmpl<SrcCharT>(), DstCharsetTmpl<DstCharT>()
-    , src, src_end, dst, err_notifier, flags )
+    , src, src_end, dst, dst_end, err_notifier, flags )
 ----
 Compile-time requirements::
 - `SrcCharsetTmpl<SrcCharT>` is an instance of `{static_charset}`
@@ -2489,7 +2574,8 @@ template < template <class> class SrcCharsetTmpl
          , typename DstCharT >
 {decode_encode_result}<SrcCharT> unsafe_decode_encode
     ( std::basic_string_view<SrcCharT> src
-    , {transcode_dest}<DstCharT>& dst
+    , DstCharT* dst
+    , DstCharT* dst_end
     , {transcoding_error_notifier}* notifier = nullptr
     , {transcode_flags} flags = transcode_flags::none );
 
@@ -2498,7 +2584,7 @@ template < template <class> class SrcCharsetTmpl
 Equivalent to
 ----
 unsafe_decode_encode<SrcCharsetTmpl, DstCharsetTmpl>
-    (src.data(), src.data() + src.size(), dst, err_notifier, flags )
+    (src.data(), src.data() + src.size(), dst, dst_end, err_notifier, flags )
 ----
 ====
 
@@ -2518,6 +2604,7 @@ template <typename SrcCharT>
     , {unsafe_transcode_size_f}<char32_t> size_calc_func
     , const SrcCharT{asterisk} src
     , const SrcCharT{asterisk} src_end
+    , std::ptrdiff_t limit
     , {transcode_flags} flags = transcode_flags::none );
 
 }
@@ -2526,32 +2613,27 @@ Preconditions::
 --
 * `to_u32` is the value returned by
    `src_charset.<<Charset_to_u32,to_u32>>().{unsafe_transcode_func}()`,
-   where `src_charset` is a __{Charset}__ object that represents some
-   character encoding __A__
+   where `src_charset` is a __{Charset}__ object that represents the
+   source character encoding.
 * `size_calc_func` is the value returned by
   `dst_charset.<<Charset_from_u32,from_u32>>().{unsafe_transcode_size_func}()`
-   where `dst_charset` is a __{Charset}__ object that represents some
-   a character encoding __B__
+   where `dst_charset` is a __{Charset}__ object that represents the
+   destination character encoding.
 * All the preconditions of
   `src_charset.<<Charset_to_u32,to_u32>>().{unsafe_transcode_func}()`
---
-Effect::
-+
---
-`unsafe_decode_encode_size` has the same effects as calling
-`__T__::<<Transcoder_transcode_size,unsafe_transcode_size>>(src, src_end, flags)`,
-where `__T__` would be a __{Transcoder}__ class that transcodes from __A__ to __B__.
 --
 
 Return value:: A `{decode_encode_result}` value `res`, such that
 +
 --
-* `res.**size**` is the number of character that
-           `{decode_encode}(src, src_end, dest, nullptr, flags)`
-           would write into `dest`, assuming that `dest` would be in
-           `<<destination_hpp#output_buffer_good,good state>>` during all trancoding.
-* `res.**stop_reason**` (see `{transcode_stop_reason}`)
+* `res.**ssize**` is equal to `__res2__.ssize`
+* `res.**stop_reason**` is equal to `__res2__.stop_reason`
 * `res.**stale_ptr**` is **not** the pointer past the last read element in the input range `[src, src_end)`. Instead, it points `res.**u32dist**` codepoints before that.
+
+, where `__res2__` is the value that would be returned by
+`__T__::<<Transcoder_transcode_size,unsafe_transcode_size>>(src, src_end, limit, flags)`,
+where `__T__` would be a __{Transcoder}__ class that transcodes from the source
+character encoding to the destination character encoding.
 --
 ====
 
@@ -2565,6 +2647,7 @@ template <typename SrcCharT>
     ( {unsafe_transcode_f}<SrcCharT, char32_t> to_u32
     , {unsafe_transcode_size_f}<char32_t> size_calc_func
     , std::basic_string_view<SrcCharT> src
+    , std::ptrdiff_t limit
     , {transcode_flags} flags = transcode_flags::none );
 
 }
@@ -2588,6 +2671,7 @@ template < typename SrcCharset, typename DstCharset, typename SrcCharT >
     , DstCharset dst_charset
     , const SrcCharT{asterisk} src
     , const SrcCharT{asterisk} src_end
+    , std::ptrdiff_t limit
     , {transcode_flags} flags = transcode_flags::none );
 
 }
@@ -2599,7 +2683,7 @@ Same as:
 unsafe_decode_encode_size
     ( src_charset.{to_u32}().{unsafe_transcode_func}()
     , dst_charset.{from_u32}().{unsafe_transcode_size_func}()
-    , src, src_end, flags )
+    , src, src_end, limit, flags )
 ----
 Compile-time requirements::
 - `SrcCharset` and `DstCharset` satisfy __{Charset}__
@@ -2616,6 +2700,7 @@ template < typename SrcCharset, typename DstCharset, typename SrcCharT >
     ( SrcCharset src_charset
     , DstCharset dst_charset
     , std::basic_string_view<SrcCharT> src
+    , std::ptrdiff_t limit
     , {transcode_flags} flags = transcode_flags::none );
 
 }
@@ -2624,7 +2709,7 @@ Return value::
 Same as:
 ----
 unsafe_decode_encode_size
-    ( src_charset, dst_charset, src.data(), src.data() + src.size(), flags )
+    ( src_charset, dst_charset, src.data(), src.data() + src.size(), limit, flags )
 ----
 Compile-time requirements::
 - `SrcCharset` and `DstCharset` satisfy __{Charset}__
@@ -2642,6 +2727,7 @@ template < template <class> class SrcCharsetTmpl
 {decode_encode_size_result}<SrcCharT> unsafe_decode_encode_size
     ( const SrcCharT{asterisk} src
     , const SrcCharT{asterisk} src_end
+    , std::ptrdiff_t limit
     , {transcode_flags} flags = transcode_flags::none );
 
 }
@@ -2651,7 +2737,7 @@ Return value::
 Same as:
 ----
 unsafe_decode_encode_size
-    ( SrcCharsetTmpl<SrcCharT>(), DstCharset(), src, src_end, flags )
+    ( SrcCharsetTmpl<SrcCharT>(), DstCharset(), src, src_end, limit, flags )
 ----
 Compile-time requirements::
 - `SrcCharsetTmpl<SrcCharT>` is an instance of `{static_charset}`
@@ -2670,6 +2756,7 @@ template < template <class> class SrcCharsetTmpl
          , typename SrcCharT >
 {decode_encode_size_result}<SrcCharT> unsafe_decode_encode_size
     ( std::basic_string_view<SrcCharT> src
+    , std::ptrdiff_t limit
     , {transcode_flags} flags = transcode_flags::none );
 
 }
@@ -2678,7 +2765,7 @@ Return value::
 Same as:
 ----
 unsafe_decode_encode_size<SrcCharsetTmpl, DstCharset>
-    ( src.data(), src.data() + src.size(), flags )
+    ( src.data(), src.data() + src.size(), limit, flags )
 ----
 Compile-time requirements::
 - `SrcCharsetTmpl<SrcCharT>` is an instance of `{static_charset}`
@@ -2701,7 +2788,8 @@ template < typename SrcCharset, typename DstCharset
     , DstCharset dst_charset
     , const SrcCharT{asterisk} src
     , const SrcCharT{asterisk} src_end
-    , {transcode_dest}<DstCharT>& dst
+    , DstCharT* dst
+    , DstCharT* dst_end
     , {transcoding_error_notifier}* err_notifier = nullptr
     , {transcode_flags} flags = transcode_flags::none );
 
@@ -2712,11 +2800,11 @@ Effect::
 ----
 auto func = {find_transcoder}(src_charset, dst_charset).{transcode_func}()
 if (func != nullptr) {
-    auto r = func(src, src_end, dst, err_notifier, flags);
-    return {r.ptr, 0, r.stop_reason};
+    auto result = func(src, src_end, dst, dst_end, err_notifier, flags);
+    return {result.ptr, result.dst_ptr, 0, result.stop_reason};
 }
-return {decode_encode}
-        ( src_charset, dst_charset, src, src_end, dst, err_notifier, flags );
+return {decode_encode} ( src_charset, dst_charset, src, src_end
+                     , dst, dst_end, err_notifier, flags );
 
 ----
 
@@ -2737,7 +2825,8 @@ template < typename SrcCharset, typename DstCharset
     ( SrcCharset src_charset
     , DstCharset dst_charset
     , std::basic_string_view<SrcCharT> src
-    , {transcode_dest}<DstCharT>& dst
+    , DstCharT* dst
+    , DstCharT* dst_end
     , {transcoding_error_notifier}* err_notifier = nullptr
     , {transcode_flags} flags = transcode_flags::none );
 
@@ -2748,7 +2837,7 @@ Same as:
 ----
 do_transcode
     ( src_charset, dst_charset, src.data(), src.data() + src.size()
-    , dst, err_notifier, flags );
+    , dst, dst_end, err_notifier, flags );
 ----
 
 Compile-time requirements::
@@ -2768,7 +2857,8 @@ template < template <class> class SrcCharsetTmpl
 {decode_encode_result}<SrcCharT> do_transcode
     ( const SrcCharT{asterisk} src
     , const SrcCharT{asterisk} src_end
-    , {transcode_dest}<DstCharT>& dst
+    , DstCharT* dst
+    , DstCharT* dst_end
     , {transcoding_error_notifier}* err_notifier = nullptr
     , {transcode_flags} flags = transcode_flags::none );
 
@@ -2780,7 +2870,7 @@ Same as:
 do_transcode
     ( SrcCharsetTmpl<SrcCharT>()
     , DstCharsetTmpl<DstCharT>()
-    , src, src_end, dst, err_notifier, flags );
+    , src, src_end, dst, dst_end, err_notifier, flags );
 ----
 
 Compile-time requirements::
@@ -2800,7 +2890,8 @@ template < template <class> class SrcCharsetTmpl
          , typename SrcCharT, typename DstCharT >
 {decode_encode_result}<SrcCharT> do_transcode
     ( std::basic_string_view<SrcCharT> src
-    , {transcode_dest}<DstCharT>& dst
+    , DstCharT* dst
+    , DstCharT* dst_end
     , {transcoding_error_notifier}* err_notifier = nullptr
     , {transcode_flags} flags = transcode_flags::none );
 
@@ -2809,7 +2900,7 @@ template < template <class> class SrcCharsetTmpl
 Same as:
 ----
 do_transcode <SrcCharsetTmpl, DstCharsetTmpl>
-    ( src.data(), src.data() + src.size(), dst, err_notifier, flags );
+    ( src.data(), src.data() + src.size(), dst, dst_end, err_notifier, flags );
 ----
 Compile-time requirements::
 - `SrcCharsetTmpl<SrcCharT>` is an instance of `{static_charset}`
@@ -2831,6 +2922,7 @@ template < typename SrcCharset, typename DstCharset, typename SrcCharT >
     , DstCharset dst_charset
     , const SrcCharT{asterisk} src
     , const SrcCharT{asterisk} src_end
+    , std::ptrdiff_t limit
     , strf::transcode_flags flags = transcode_flags::none );
 
 }
@@ -2840,10 +2932,10 @@ Effect and Return value::
 ----
 auto func = {find_transcoder}(src_charset, dst_charset).{transcode_size_func}()
 if (func != nullptr) {
-    auto r = func(src, src_end, flags);
-    return {r.size, r.ptr, 0, r.stop_reason};
+    auto result = func(src, src_end, limit, flags);
+    return {result.ssize, result.src_ptr, 0, result.stop_reason};
 }
-return {decode_encode_size} (src_charset, dst_charset, src, src_end, flags);
+return {decode_encode_size} (src_charset, dst_charset, src, src_end, limit, flags);
 ----
 
 Compile-time requirements::
@@ -2861,6 +2953,7 @@ template < typename SrcCharset, typename DstCharset, typename SrcCharT >
     ( SrcCharset src_charset
     , DstCharset dst_charset
     , std::basic_string_view<SrcCharT> src
+    , std::ptrdiff_t limit
     , strf::transcode_flags flags = transcode_flags::none );
 
 }
@@ -2870,7 +2963,7 @@ Same as
 ----
 transcode_size
     ( src_charset, dst_charset
-    , src.data(), src.data() + src.size(), flags)
+    , src.data(), src.data() + src.size(), limit, flags)
 ----
 
 Compile-time requirements::
@@ -2889,6 +2982,7 @@ template < template <class> class SrcCharsetTmpl
 {decode_encode_size_result}<SrcCharT> transcode_size
     ( const SrcCharT{asterisk} src
     , const SrcCharT{asterisk} src_end
+    , std::ptrdiff_t limit
     , strf::transcode_flags flags = transcode_flags::none );
 
 }
@@ -2897,7 +2991,7 @@ Effect and Return value::
 Same as
 ----
 transcode_size
-    ( SrcCharsetTmpl<SrcCharT>(), DstCharset(), src, src_end, flags )
+    ( SrcCharsetTmpl<SrcCharT>(), DstCharset(), src, src_end, limit, flags )
 ----
 
 Compile-time requirements::
@@ -2918,6 +3012,7 @@ template < template <class> class SrcCharsetTmpl
          , typename SrcCharT >
 {decode_encode_size_result}<SrcCharT> transcode_size
     ( std::basic_string_view<SrcCharT> src
+    , std::ptrdiff_t limit
     , strf::transcode_flags flags = transcode_flags::none );
 
 }
@@ -2926,7 +3021,7 @@ Effect and Return value::
 Same as
 ----
 transcode_size <SrcCharsetTmpl, DstCharset>
-    ( src.data(), src.data() + src.size(), flags )
+    ( src.data(), src.data() + src.size(), limit, flags )
 ----
 
 Compile-time requirements::
@@ -2949,7 +3044,8 @@ void do_unsafe_transcode
     , DstCharset dst_charset
     , const SrcCharT{asterisk} src
     , const SrcCharT{asterisk} src_end
-    , {transcode_dest}<DstCharT>& dst
+    , DstCharT* dst
+    , DstCharT* dst_end
     , {transcoding_error_notifier}* err_notifier = nullptr
     , {transcode_flags} flags = transcode_flags::none );
 
@@ -2960,11 +3056,11 @@ Effect::
 ----
 auto func = {find_transcoder}(src_charset, dst_charset).{unsafe_transcode_func}()
 if (func != nullptr) {
-    auto r = func(src, src_end, dst, err_notifier);
-    return {r.ptr, 0, r.stop_reason};
+    auto res = func(src, src_end, dst, dst_end, err_notifier);
+    return {res.src_ptr, res.dst_ptr, 0, res.stop_reason};
 }
 return {unsafe_decode_encode}
-        ( src_charset, dst_charset, src, src_end, dst, err_notifier, flags );
+        ( src_charset, dst_charset, src, src_end, dst, dst_end, err_notifier, flags );
 ----
 
 Compile-time requirements::
@@ -2984,7 +3080,8 @@ void do_unsafe_transcode
     ( SrcCharset src_charset
     , DstCharset dst_charset
     , std::basic_string_view<SrcCharT> src
-    , {transcode_dest}<DstCharT>& dst
+    , DstCharT* dst
+    , DstCharT* dst_end
     , {transcoding_error_notifier}* err_notifier = nullptr
     , {transcode_flags} flags = transcode_flags::none );
 
@@ -2995,7 +3092,7 @@ Same as:
 ----
 do_unsafe_transcode
     ( src_charset, dst_charset, src.data(), src.data() + src.size()
-    , dst, err_notifier, flags );
+    , dst, dst_end, err_notifier, flags );
 ----
 
 Compile-time requirements::
@@ -3015,7 +3112,8 @@ template < template <class> class SrcCharsetTmpl
 void do_unsafe_transcode
     ( const SrcCharT{asterisk} src
     , const SrcCharT{asterisk} src_end
-    , {transcode_dest}<DstCharT>& dst
+    , DstCharT* dst
+    , DstCharT* dst_end
     , {transcoding_error_notifier}* err_notifier = nullptr
     , {transcode_flags} flags = transcode_flags::none );
 
@@ -3027,7 +3125,7 @@ Same as:
 do_unsafe_transcode
     ( SrcCharsetTmpl<SrcCharT>()
     , DstCharsetTmpl<DstCharT>()
-    , src, src_end, dst, err_notifier, flags );
+    , src, src_end, dst, dst_end, err_notifier, flags );
 ----
 
 Compile-time requirements::
@@ -3047,7 +3145,8 @@ template < template <class> class SrcCharsetTmpl
          , typename SrcCharT, typename DstCharT >
 void do_unsafe_transcode
     ( std::basic_string_view<SrcCharT> src
-    , {transcode_dest}<DstCharT>& dst
+    , DstCharT* dst
+    , DstCharT* dst_end
     , {transcoding_error_notifier}* err_notifier = nullptr
     , {transcode_flags} flags = transcode_flags::none );
 
@@ -3056,7 +3155,7 @@ void do_unsafe_transcode
 Same as:
 ----
 do_unsafe_transcode <SrcCharsetTmpl, DstCharsetTmpl>
-    ( src.data(), src.data() + src.size(), dst, err_notifier, flags );
+    ( src.data(), src.data() + src.size(), dst, dst_end, err_notifier, flags );
 ----
 Compile-time requirements::
 - `SrcCharsetTmpl<SrcCharT>` is an instance of `{static_charset}`
@@ -3078,6 +3177,7 @@ std::ptrdiff_t unsafe_transcode_size
     , DstCharset dst_charset
     , const SrcCharT{asterisk} src
     , const SrcCharT{asterisk} src_end
+    , std::ptrdiff_t limit
     , {transcode_flags} flags = transcode_flags::none );
 
 }
@@ -3087,10 +3187,10 @@ Effect and Return value::
 ----
 auto func = {find_transcoder}(src_charset, dst_charset).{unsafe_transcode_size_func}()
 if (func != nullptr) {
-    auto r = func(src, src_end, flags);
-    return {r.size, r.ptr, 0, r.stop_reason};
+    auto res = func(src, src_end, limit, flags);
+    return {res.ssize, res.src_ptr, 0, res.stop_reason}
 }
-return {unsafe_decode_encode_size} (src_charset, dst_charset, src, src_end, flags);
+return {unsafe_decode_encode_size} (src_charset, dst_charset, src, src_end, limit, flags);
 ----
 
 Compile-time requirements::
@@ -3108,6 +3208,7 @@ std::ptrdiff_t unsafe_transcode_size
     ( SrcCharset src_charset
     , DstCharset dst_charset
     , std::basic_string_view<SrcCharT> src
+    , std::ptrdiff_t limit
     , {transcode_flags} flags = transcode_flags::none );
 
 }
@@ -3117,7 +3218,7 @@ Same as
 ----
 unsafe_transcode_size
     ( src_charset, dst_charset
-    , src.data(), src.data() + src.size(), flags )
+    , src.data(), src.data() + src.size(), limit, flags )
 ----
 
 Compile-time requirements::
@@ -3136,6 +3237,7 @@ template < template <class> class SrcCharsetTmpl
 std::ptrdiff_t unsafe_transcode_size
     ( const SrcCharT{asterisk} src
     , const SrcCharT{asterisk} src_end
+    , std::ptrdiff_t limit
     , {transcode_flags} flags = transcode_flags::none );
 
 }
@@ -3144,7 +3246,7 @@ Effect and Return value::
 Same as
 ----
 unsafe_transcode_size
-    ( SrcCharsetTmpl<SrcCharT>(), DstCharset(), src, src_end, flags )
+    ( SrcCharsetTmpl<SrcCharT>(), DstCharset(), src, src_end, limit, flags )
 ----
 
 Compile-time requirements::
@@ -3165,6 +3267,7 @@ template < template <class> class SrcCharsetTmpl
          , typename SrcCharT >
 std::ptrdiff_t unsafe_transcode_size
     ( std::basic_string_view<SrcCharT> src
+    , std::ptrdiff_t limit
     , {transcode_flags} flags = transcode_flags::none );
 
 }
@@ -3173,7 +3276,7 @@ Effect and Return value::
 Same as
 ----
 unsafe_transcode_size <SrcCharsetTmpl, DstCharset>
-    ( src.data(), src.data() + src.size(), flags )
+    ( src.data(), src.data() + src.size(), limit, flags )
 ----
 
 Compile-time requirements::
