@@ -2427,8 +2427,8 @@ STRF_FUNC_IMPL STRF_HD unsigned impl_windows_1258::encode_ext(char32_t ch) noexc
 template <typename SrcCharT, typename DstCharT, class Impl>
 struct single_byte_charset_to_utf32
 {
-    using src_char_type = SrcCharT;
-    using dst_char_type = DstCharT;
+    using src_code_unit = SrcCharT;
+    using dst_code_unit = DstCharT;
 
     static STRF_HD strf::transcode_result<SrcCharT, DstCharT> transcode
         ( const SrcCharT* src
@@ -2552,8 +2552,8 @@ single_byte_charset_to_utf32<SrcCharT, DstCharT, Impl>::unsafe_transcode
 template <typename SrcCharT, typename DstCharT, class Impl>
 struct utf32_to_single_byte_charset
 {
-    using src_char_type = SrcCharT;
-    using dst_char_type = DstCharT;
+    using src_code_unit = SrcCharT;
+    using dst_code_unit = DstCharT;
 
     static STRF_HD strf::transcode_result<SrcCharT, DstCharT> transcode
         ( const SrcCharT* src
@@ -2713,8 +2713,8 @@ utf32_to_single_byte_charset<SrcCharT, DstCharT, Impl>::unsafe_transcode
 template <typename SrcCharT, typename DstCharT, class Impl>
 struct single_byte_charset_to_itself
 {
-    using src_char_type = SrcCharT;
-    using dst_char_type = DstCharT;
+    using src_code_unit = SrcCharT;
+    using dst_code_unit = DstCharT;
 
     static STRF_HD strf::transcode_result<SrcCharT, DstCharT> transcode
         ( const SrcCharT* src

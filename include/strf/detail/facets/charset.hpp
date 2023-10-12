@@ -333,8 +333,8 @@ template <typename SrcCharT, typename DstCharT>
 class dynamic_transcoder
 {
 public:
-    using src_char_type = SrcCharT;
-    using dst_char_type = DstCharT;
+    using src_code_unit = SrcCharT;
+    using dst_code_unit = DstCharT;
 
     template <strf::charset_id SrcId, strf::charset_id DstId>
     constexpr explicit STRF_HD dynamic_transcoder
@@ -782,16 +782,16 @@ namespace detail {
 template <typename SrcCharset, typename DstCharset>
 class has_static_transcoder_impl
 {
-    using src_char_type = typename SrcCharset::code_unit;
-    using dst_char_type = typename DstCharset::code_unit;
+    using src_code_unit = typename SrcCharset::code_unit;
+    using dst_code_unit = typename DstCharset::code_unit;
 
     template <strf::charset_id SrcId, strf::charset_id DstId>
     static
     decltype( strf::static_transcoder
-                < src_char_type, dst_char_type, SrcId, DstId >()
+                < src_code_unit, dst_code_unit, SrcId, DstId >()
             , std::true_type() )
-    test_( strf::static_charset<src_char_type, SrcId>*
-         , strf::static_charset<dst_char_type, DstId>* )
+    test_( strf::static_charset<src_code_unit, SrcId>*
+         , strf::static_charset<dst_code_unit, DstId>* )
     {
         return {};
     }

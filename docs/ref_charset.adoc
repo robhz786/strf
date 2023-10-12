@@ -474,20 +474,20 @@ The following must hold:
 * `X` is https://en.cppreference.com/w/cpp/named_req/CopyConstructible[CopyConstructible].
 * `X` supports the following syntax and semantics:
 
-[[Transcoder_src_char_type]]
+[[Transcoder_src_code_unit]]
 ====
 [source,cpp]
 ----
-X::src_char_type
+X::src_code_unit
 ----
 A type alias to `SrcCharT`
 ====
 
-[[Transcoder_dst_char_type]]
+[[Transcoder_dst_code_unit]]
 ====
 [source,cpp]
 ----
-X::dst_char_type
+X::dst_code_unit
 ----
 A type alias to `DstCharT`
 ====
@@ -961,8 +961,8 @@ x.from_u32()
 ----
 [horizontal]
 Return type:: A __{Transcoder}__ type `T`, such that
-              `T::<<Transcoder_src_char_type,src_char_type>>` is `char32_t` and
-              `T::<<Transcoder_dst_char_type,dst_char_type>>` is `CharT`
+              `T::<<Transcoder_src_code_unit,src_code_unit>>` is `char32_t` and
+              `T::<<Transcoder_dst_code_unit,dst_code_unit>>` is `CharT`
 Return value:: A transcoder that converts UTF-32 to this encoding.
 ====
 [[Charset_to_u32]]
@@ -973,8 +973,8 @@ x.to_u32()
 ----
 [horizontal]
 Return type:: A __{Transcoder}__ type `T`, such that
-              `T::<<Transcoder_src_char_type,src_char_type>>` is `CharT` and
-              `T::<<Transcoder_dst_char_type,dst_char_type>>` is `char32_t`
+              `T::<<Transcoder_src_code_unit,src_code_unit>>` is `CharT` and
+              `T::<<Transcoder_dst_code_unit,dst_code_unit>>` is `char32_t`
 Return value:: A transcoder that converts this encoding to UTF-32.
 ====
 [[Charset_sanitizer]]

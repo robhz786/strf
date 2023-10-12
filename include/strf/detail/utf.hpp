@@ -238,8 +238,8 @@ public:
     static_assert(sizeof(SrcCharT) == 1, "Incompatible character type for UTF-8");
     static_assert(sizeof(DstCharT) == 1, "Incompatible character type for UTF-8");
 
-    using src_char_type = SrcCharT;
-    using dst_char_type = DstCharT;
+    using src_code_unit = SrcCharT;
+    using dst_code_unit = DstCharT;
 
     static STRF_HD strf::transcode_result<SrcCharT, DstCharT> transcode
         ( const SrcCharT* src
@@ -318,8 +318,8 @@ public:
     static_assert(sizeof(SrcCharT) == 1, "Incompatible character type for UTF-8");
     static_assert(sizeof(DstCharT) == 2, "Incompatible character type for UTF-16");
 
-    using src_char_type = SrcCharT;
-    using dst_char_type = DstCharT;
+    using src_code_unit = SrcCharT;
+    using dst_code_unit = DstCharT;
 
     static STRF_HD strf::transcode_result<SrcCharT, DstCharT> transcode
         ( const SrcCharT* src
@@ -388,8 +388,8 @@ public:
     static_assert(sizeof(SrcCharT) == 1, "Incompatible character type for UTF-8");
     static_assert(sizeof(DstCharT) == 4, "Incompatible character type for UTF-32");
 
-    using src_char_type = SrcCharT;
-    using dst_char_type = DstCharT;
+    using src_code_unit = SrcCharT;
+    using dst_code_unit = DstCharT;
 
     static STRF_HD strf::transcode_result<SrcCharT, DstCharT> transcode
         ( const SrcCharT* src
@@ -458,8 +458,8 @@ public:
     static_assert(sizeof(SrcCharT) == 2, "Incompatible character type for UTF-16");
     static_assert(sizeof(DstCharT) == 1, "Incompatible character type for UTF-8");
 
-    using src_char_type = SrcCharT;
-    using dst_char_type = DstCharT;
+    using src_code_unit = SrcCharT;
+    using dst_code_unit = DstCharT;
 
     static STRF_HD strf::transcode_result<SrcCharT, DstCharT> transcode
         ( const SrcCharT* src
@@ -538,8 +538,8 @@ public:
     static_assert(sizeof(SrcCharT) == 2, "Incompatible character type for UTF-16");
     static_assert(sizeof(DstCharT) == 2, "Incompatible character type for UTF-16");
 
-    using src_char_type = SrcCharT;
-    using dst_char_type = DstCharT;
+    using src_code_unit = SrcCharT;
+    using dst_code_unit = DstCharT;
 
     static STRF_HD strf::transcode_result<SrcCharT, DstCharT> transcode
         ( const SrcCharT* src
@@ -615,8 +615,8 @@ public:
     static_assert(sizeof(SrcCharT) == 2, "Incompatible character type for UTF-16");
     static_assert(sizeof(DstCharT) == 4, "Incompatible character type for UTF-32");
 
-    using src_char_type = SrcCharT;
-    using dst_char_type = DstCharT;
+    using src_code_unit = SrcCharT;
+    using dst_code_unit = DstCharT;
 
     static STRF_HD strf::transcode_result<SrcCharT, DstCharT> transcode
         ( const SrcCharT* src
@@ -683,8 +683,8 @@ public:
     static_assert(sizeof(SrcCharT) == 4, "Incompatible character type for UTF-32");
     static_assert(sizeof(DstCharT) == 1, "Incompatible character type for UTF-1");
 
-    using src_char_type = SrcCharT;
-    using dst_char_type = DstCharT;
+    using src_code_unit = SrcCharT;
+    using dst_code_unit = DstCharT;
 
     static STRF_HD strf::transcode_result<SrcCharT, DstCharT> transcode
         ( const SrcCharT* src
@@ -747,8 +747,8 @@ public:
     static_assert(sizeof(SrcCharT) == 4, "Incompatible character type for UTF-32");
     static_assert(sizeof(DstCharT) == 2, "Incompatible character type for UTF-16");
 
-    using src_char_type = SrcCharT;
-    using dst_char_type = DstCharT;
+    using src_code_unit = SrcCharT;
+    using dst_code_unit = DstCharT;
 
     static STRF_HD strf::transcode_result<SrcCharT, DstCharT> transcode
         ( const SrcCharT* src
@@ -811,8 +811,8 @@ public:
     static_assert(sizeof(SrcCharT) == 4, "Incompatible character type for UTF-32");
     static_assert(sizeof(DstCharT) == 4, "Incompatible character type for UTF-32");
 
-    using src_char_type = SrcCharT;
-    using dst_char_type = DstCharT;
+    using src_code_unit = SrcCharT;
+    using dst_code_unit = DstCharT;
 
     static STRF_HD strf::transcode_result<SrcCharT, DstCharT> transcode
         ( const SrcCharT* src
