@@ -696,8 +696,7 @@ public:
             auto&& wcalc = use_facet_<strf::width_calculator_c>(input.facets);
             auto w = wcalc.str_width
                 ( use_facet_<strf::charset_c<SrcCharT>>(input.facets)
-                , input.pre.remaining_width(), str_, str_end_
-                , use_facet_<strf::surrogate_policy_c>(input.facets) );
+                , input.pre.remaining_width(), str_, str_end_ );
            input.pre.subtract_width(w);
         }
         input.pre.add_size(input.arg.length());
@@ -718,8 +717,7 @@ public:
                 ( use_facet_<strf::charset_c<SrcCharT>>(input.facets)
                 , input.pre.remaining_width()
                 , str_
-                , str_end_
-                , use_facet_<strf::surrogate_policy_c>(input.facets) );
+                , str_end_ );
            input.pre.subtract_width(w);
         }
         input.pre.add_size(input.arg.value().size());
@@ -738,8 +736,7 @@ public:
             ( use_facet_<strf::charset_c<SrcCharT>>(input.facets)
             , input.arg.precision()
             , str_
-            , input.arg.value().size()
-            , use_facet_<strf::surrogate_policy_c>(input.facets) );
+            , input.arg.value().size() );
         str_end_ = res.ptr;
         input.pre.subtract_width(res.width);
         input.pre.add_size(res.pos);
@@ -794,8 +791,7 @@ public:
             ( PrePrinting::width_required && input.pre.remaining_width() > afmt_.width
             ? input.pre.remaining_width()
             : afmt_.width );
-        auto surr_poli = use_facet_<strf::surrogate_policy_c>(input.facets);
-        auto strw = wcalc.str_width(src_charset, limit, str_, str_end_, surr_poli);
+        auto strw = wcalc.str_width(src_charset, limit, str_, str_end_);
         encode_fill_ = dst_charset.encode_fill_func();
         auto fillcount = init_(input.pre, strw);
         precalc_size_(input.pre, dst_charset, fillcount);
@@ -813,9 +809,8 @@ public:
         auto&& wcalc = use_facet_<strf::width_calculator_c>(input.facets);
         auto src_charset = use_facet_<strf::charset_c<SrcCharT>>(input.facets);
         auto dst_charset = use_facet_<strf::charset_c<DstCharT>>(input.facets);
-        auto surr_poli = use_facet_<strf::surrogate_policy_c>(input.facets);
         auto res = wcalc.str_width_and_pos
-            ( src_charset, input.arg.precision(), str_, input.arg.value().end(), surr_poli );
+            ( src_charset, input.arg.precision(), str_, input.arg.value().end() );
         str_end_ = res.ptr;
         encode_fill_ = dst_charset.encode_fill_func();
         auto fillcount = init_(input.pre, res.width);
@@ -948,14 +943,12 @@ public:
         , str_end_(input.arg.value().end())
         , err_notifier_
               ( use_facet_<strf::transcoding_error_notifier_c, SrcCharT>(input.facets).get() )
-        , surr_poli_(use_facet_<strf::surrogate_policy_c, SrcCharT>(input.facets))
     {
         auto src_charset  = strf::detail::get_src_charset(input);
         auto dst_charset = use_facet_<strf::charset_c<DstCharT>, SrcCharT>(input.facets);
         if (input.pre.has_remaining_width()) {
             auto&& wcalc = use_facet_<strf::width_calculator_c, SrcCharT>(input.facets);
-            auto w = wcalc.str_width( src_charset, input.pre.remaining_width()
-                                    , str_, str_end_, surr_poli_);
+            auto w = wcalc.str_width( src_charset, input.pre.remaining_width(), str_, str_end_);
             input.pre.subtract_width(w);
         }
         init_(input.pre, src_charset, dst_charset);
@@ -970,14 +963,12 @@ public:
         : str_(input.arg.value().data())
         , err_notifier_
             ( use_facet_<strf::transcoding_error_notifier_c, SrcCharT>(input.facets).get() )
-        , surr_poli_(use_facet_<strf::surrogate_policy_c, SrcCharT>(input.facets))
     {
         auto src_charset  = strf::detail::get_src_charset(input);
         auto dst_charset = use_facet_<strf::charset_c<DstCharT>, SrcCharT>(input.facets);
         auto&& wcalc = use_facet_<strf::width_calculator_c, SrcCharT>(input.facets);
         auto res = wcalc.str_width_and_pos
-            ( src_charset, input.arg.precision(), str_
-            , input.arg.value().size(), surr_poli_ );
+            ( src_charset, input.arg.precision(), str_, input.arg.value().size() );
         str_end_ = res.ptr;
         input.pre.subtract_width(res.width);
         init_( input.pre, src_charset
@@ -1003,7 +994,7 @@ private:
             strf::transcode_size_f<SrcCharT> transcode_size
                 = transcoder.transcode_size_func();
             std::ptrdiff_t s = 0;
-            const auto flags = strf::to_transcode_flags(surr_poli_);
+            constexpr auto flags = strf::transcode_flags::none;
             if (transcode_size != nullptr) {
                 s = transcode_size(str_, str_end_, strf::ssize_max, flags).ssize;
             } else {
@@ -1031,7 +1022,6 @@ private:
     strf::transcode_size_f<SrcCharT> u32size_ = nullptr;
     strf::transcode_f<char32_t, DstCharT> u32_to_dst_ = nullptr;
     strf::transcoding_error_notifier* err_notifier_;
-    const strf::surrogate_policy surr_poli_;
 
     template < typename Category, typename SrcChar, typename FPack
              , typename Tag = strf::string_input_tag<SrcChar> >
@@ -1047,7 +1037,7 @@ template<typename SrcCharT, typename DstCharT>
 STRF_HD void transcode_printer<SrcCharT, DstCharT>::print_to
     ( strf::destination<DstCharT>& dst ) const
 {
-    const auto flags = strf::to_transcode_flags(surr_poli_);
+    const auto flags = strf::transcode_flags::none;
     auto src_it = str_;
     auto dst_it = dst.buffer_ptr();
     auto dst_end = dst.buffer_end();
@@ -1100,7 +1090,6 @@ public:
         , afmt_(input.arg.get_alignment_format())
         , err_notifier_
             ( use_facet_<strf::transcoding_error_notifier_c, SrcCharT>(input.facets).get() )
-        , surr_poli_(use_facet_<strf::surrogate_policy_c, SrcCharT>(input.facets))
     {
         auto src_charset = strf::detail::get_src_charset(input);
         auto&& wcalc = use_facet_<strf::width_calculator_c, SrcCharT>(input.facets);
@@ -1108,7 +1097,7 @@ public:
             ( PrePrinting::width_required && input.pre.remaining_width() > afmt_.width
             ? input.pre.remaining_width()
             : afmt_.width );
-        auto str_width = wcalc.str_width(src_charset, limit, str_, str_end_, surr_poli_);
+        auto str_width = wcalc.str_width(src_charset, limit, str_, str_end_);
         init_( input.pre, str_width, src_charset
              , use_facet_<strf::charset_c<DstCharT>, SrcCharT>(input.facets) );
     }
@@ -1124,13 +1113,12 @@ public:
         , afmt_(input.arg.get_alignment_format())
         , err_notifier_
             ( use_facet_<strf::transcoding_error_notifier_c, SrcCharT>(input.facets).get() )
-        , surr_poli_(use_facet_<strf::surrogate_policy_c, SrcCharT>(input.facets))
     {
         auto src_charset = strf::detail::get_src_charset(input);
         auto&& wcalc = use_facet_<strf::width_calculator_c, SrcCharT>(input.facets);
         auto res = wcalc.str_width_and_pos
             ( src_charset, input.arg.precision(), str_
-            , input.arg.value().size(), surr_poli_ );
+            , input.arg.value().size() );
         str_end_ = res.ptr;
         init_( input.pre, res.width, src_charset
              , use_facet_<strf::charset_c<DstCharT>, SrcCharT>(input.facets) );
@@ -1156,7 +1144,6 @@ private:
     strf::transcode_f<char32_t, DstCharT> u32_to_dst_ = nullptr;
     strf::encode_fill_f<DstCharT> encode_fill_ = nullptr;
     strf::transcoding_error_notifier* err_notifier_;
-    const strf::surrogate_policy  surr_poli_;
     int left_fillcount_ = 0;
     int right_fillcount_ = 0;
 
@@ -1219,7 +1206,7 @@ void STRF_HD aligned_transcode_printer<SrcCharT, DstCharT>::init_
         std::ptrdiff_t s = 0;
         strf::transcode_size_f<SrcCharT> transcode_size
                 = transcoder.transcode_size_func();
-        const auto flags = strf::to_transcode_flags(surr_poli_);
+        constexpr auto flags = strf::transcode_flags::none;
         if (transcode_size != nullptr) {
             s = transcode_size(str_, str_end_, strf::ssize_max, flags).ssize;
         } else {
@@ -1243,7 +1230,7 @@ void STRF_HD aligned_transcode_printer<SrcCharT, DstCharT>::print_to
     if (left_fillcount_ > 0) {
         encode_fill_(dst, left_fillcount_, afmt_.fill);
     }
-    const auto flags = strf::to_transcode_flags(surr_poli_);
+    constexpr auto flags = strf::transcode_flags::none;
     auto src_it = str_;
     auto dst_it = dst.buffer_ptr();
     auto dst_end = dst.buffer_end();
@@ -1298,15 +1285,13 @@ public:
         , str_end_(input.arg.value().end())
         , err_notifier_
               ( use_facet_<strf::transcoding_error_notifier_c, SrcCharT>(input.facets).get() )
-        , surr_poli_(use_facet_<strf::surrogate_policy_c, SrcCharT>(input.facets))
-
     {
         auto src_charset  = strf::detail::get_src_charset(input);
         auto dst_charset = use_facet_<strf::charset_c<DstCharT>, SrcCharT>(input.facets);
         if (input.pre.has_remaining_width()) {
             auto&& wcalc = use_facet_<strf::width_calculator_c, SrcCharT>(input.facets);
             auto w = wcalc.str_width( src_charset, input.pre.remaining_width()
-                                    , str_, str_end_, surr_poli_);
+                                    , str_, str_end_);
             input.pre.subtract_width(w);
         }
         init_(input.pre, src_charset, dst_charset);
@@ -1321,14 +1306,13 @@ public:
         : str_(input.arg.value().data())
         , err_notifier_
             ( use_facet_<strf::transcoding_error_notifier_c, SrcCharT>(input.facets).get() )
-        , surr_poli_(use_facet_<strf::surrogate_policy_c, SrcCharT>(input.facets))
     {
         auto src_charset  = strf::detail::get_src_charset(input);
         auto dst_charset = use_facet_<strf::charset_c<DstCharT>, SrcCharT>(input.facets);
         auto&& wcalc = use_facet_<strf::width_calculator_c, SrcCharT>(input.facets);
         auto res = wcalc.str_width_and_pos
             ( src_charset, input.arg.precision(), str_
-            , input.arg.value().size(), surr_poli_ );
+            , input.arg.value().size() );
         str_end_ = res.ptr;
         input.pre.subtract_width(res.width);
         init_( input.pre, src_charset
@@ -1350,7 +1334,7 @@ private:
             u32_to_dst_ = dst_charset.from_u32().unsafe_transcode_func();
         }
         STRF_IF_CONSTEXPR (PrePrinting::size_required) {
-            const auto flags = strf::to_transcode_flags(surr_poli_);
+            const auto flags = strf::transcode_flags::none;
             strf::unsafe_transcode_size_f<SrcCharT>  transcode_size
                 = transcoder.unsafe_transcode_size_func();
             std::ptrdiff_t s = 0;
@@ -1360,7 +1344,7 @@ private:
                 s = strf::unsafe_decode_encode_size<SrcCharT>
                     ( src_charset.to_u32().unsafe_transcode_func()
                     , dst_charset.from_u32().unsafe_transcode_size_func()
-                    , str_, str_end_, strf::ssize_max, flags )
+                    , str_, str_end_, strf::ssize_max )
                     .ssize;
             }
             pre.add_size(s);
@@ -1382,7 +1366,6 @@ private:
     strf::transcode_size_f<SrcCharT> u32size_ = nullptr;
     strf::unsafe_transcode_f<char32_t, DstCharT> u32_to_dst_ = nullptr;
     strf::transcoding_error_notifier* err_notifier_;
-    strf::surrogate_policy  surr_poli_;
 
     template < typename Category, typename SrcChar, typename FPack
              , typename Tag = strf::string_input_tag<SrcChar> >
@@ -1398,7 +1381,7 @@ template<typename SrcCharT, typename DstCharT>
 STRF_HD void unsafe_transcode_printer<SrcCharT, DstCharT>::print_to
     ( strf::destination<DstCharT>& dst ) const
 {
-    const auto flags = strf::to_transcode_flags(surr_poli_);
+    constexpr auto flags = strf::transcode_flags::none;
 
     auto src_it = str_;
     auto dst_it = dst.buffer_ptr();
@@ -1453,7 +1436,6 @@ public:
         , afmt_(input.arg.get_alignment_format())
         , err_notifier_
             ( use_facet_<strf::transcoding_error_notifier_c, SrcCharT>(input.facets).get() )
-        , surr_poli_(use_facet_<strf::surrogate_policy_c, SrcCharT>(input.facets))
     {
         auto src_charset = strf::detail::get_src_charset(input);
         auto&& wcalc = use_facet_<strf::width_calculator_c, SrcCharT>(input.facets);
@@ -1461,7 +1443,7 @@ public:
             ( PrePrinting::width_required && input.pre.remaining_width() > afmt_.width
             ? input.pre.remaining_width()
             : afmt_.width );
-        auto str_width = wcalc.str_width(src_charset, limit, str_, str_end_, surr_poli_);
+        auto str_width = wcalc.str_width(src_charset, limit, str_, str_end_);
         init_( input.pre, str_width, src_charset
              , use_facet_<strf::charset_c<DstCharT>, SrcCharT>(input.facets) );
     }
@@ -1477,13 +1459,12 @@ public:
         , afmt_(input.arg.get_alignment_format())
         , err_notifier_
             ( use_facet_<strf::transcoding_error_notifier_c, SrcCharT>(input.facets).get() )
-        , surr_poli_(use_facet_<strf::surrogate_policy_c, SrcCharT>(input.facets))
     {
         auto src_charset = strf::detail::get_src_charset(input);
         auto&& wcalc = use_facet_<strf::width_calculator_c, SrcCharT>(input.facets);
         auto res = wcalc.str_width_and_pos
             ( src_charset, input.arg.precision(), str_
-            , input.arg.value().size(), surr_poli_ );
+            , input.arg.value().size() );
         str_end_ = res.ptr;
         init_( input.pre, res.width, src_charset
              , use_facet_<strf::charset_c<DstCharT>, SrcCharT>(input.facets) );
@@ -1509,7 +1490,6 @@ private:
     strf::unsafe_transcode_f<char32_t, DstCharT> u32_to_dst_ = nullptr;
     strf::encode_fill_f<DstCharT> encode_fill_ = nullptr;
     strf::transcoding_error_notifier* err_notifier_;
-    strf::surrogate_policy  surr_poli_;
     int left_fillcount_ = 0;
     int right_fillcount_ = 0;
 
@@ -1572,7 +1552,7 @@ void STRF_HD aligned_unsafe_transcode_printer<SrcCharT, DstCharT>::init_
         std::ptrdiff_t s = 0;
         strf::unsafe_transcode_size_f<SrcCharT> transcode_size
                 = transcoder.unsafe_transcode_size_func();
-        const auto flags = strf::to_transcode_flags(surr_poli_);
+        constexpr auto flags = strf::transcode_flags::none;
         if (transcode_size != nullptr) {
             s = transcode_size(str_, str_end_, strf::ssize_max, flags).ssize;
         } else {
@@ -1596,7 +1576,7 @@ void STRF_HD aligned_unsafe_transcode_printer<SrcCharT, DstCharT>::print_to
     if (left_fillcount_ > 0) {
         encode_fill_(dst, left_fillcount_, afmt_.fill);
     }
-    const auto flags = strf::to_transcode_flags(surr_poli_);
+    constexpr auto flags = strf::transcode_flags::none;
 
     auto src_it = str_;
     auto dst_it = dst.buffer_ptr();

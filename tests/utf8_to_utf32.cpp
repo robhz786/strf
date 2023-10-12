@@ -207,18 +207,6 @@ STRF_TEST_FUNC void utf8_to_utf32_valid_sequences()
         const char32_t u32str_DC00[] = {U' ', 0xDC00, 0};
         const char32_t u32str_DFFF[] = {U' ', 0xDFFF, 0};
 
-        TEST(u32str_D800) .with(strf::surrogate_policy::lax) (strf::sani("\xED\xA0\x80") > 2);
-        TEST(u32str_DBFF) .with(strf::surrogate_policy::lax) (strf::sani("\xED\xAF\xBF") > 2);
-        TEST(u32str_DC00) .with(strf::surrogate_policy::lax) (strf::sani("\xED\xB0\x80") > 2);
-        TEST(u32str_DFFF) .with(strf::surrogate_policy::lax) (strf::sani("\xED\xBF\xBF") > 2);
-
-        TEST_CALLING_RECYCLE_AT(1, u32str_D800)
-            .with(strf::surrogate_policy::lax) (strf::sani("\xED\xA0\x80") > 2);
-        TEST_TRUNCATING_AT     (2, u32str_D800)
-            .with(strf::surrogate_policy::lax) (strf::sani("\xED\xA0\x80") > 2);
-        TEST_TRUNCATING_AT     (1, U" ")
-            .with(strf::surrogate_policy::lax) (strf::sani("\xED\xA0\x80") > 2);
-
         TEST_UTF_TRANSCODE(char, char32_t)
             .input(" \xED\xA0\x80")
             .expect(u32str_D800)
@@ -241,16 +229,6 @@ STRF_TEST_FUNC void utf8_to_utf32_valid_sequences()
             .expect_stop_reason(strf::transcode_stop_reason::completed);
     }
 }
-
-#define TEST_INVALID_SEQS(INPUT, ...) \
-    test_utils::test_invalid_sequences<strf::csid_utf8, strf::csid_utf32, char, char32_t> \
-        ( BOOST_CURRENT_FUNCTION, __FILE__, __LINE__                                      \
-        , strf::surrogate_policy::strict, (INPUT), __VA_ARGS__ );
-
-#define TEST_INVALID_SEQS_LAX(INPUT, ...) \
-    test_utils::test_invalid_sequences<strf::csid_utf8, strf::csid_utf32, char, char32_t> \
-        ( BOOST_CURRENT_FUNCTION, __FILE__, __LINE__                                      \
-        , strf::surrogate_policy::lax, (INPUT), __VA_ARGS__ );
 
 STRF_TEST_FUNC void utf8_to_utf32_invalid_sequences()
 {

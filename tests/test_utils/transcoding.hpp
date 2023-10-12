@@ -387,17 +387,18 @@ public:
     STRF_HD bool adjust_stale_src_ptr
         ( const src_char_t*& stale_src_ptr, std::int32_t u32dist, const char* funcname )
     {
-        auto res = data_.src_charset.count_codepoints
-            (stale_src_ptr, data_.src.end(), u32dist, to_surrogate_policy(data_.flags));
+        const auto flags = data_.flags & strf::transcode_flags::surrogate_policy;
+        auto res = data_.src_charset.to_u32().transcode_size
+            ( stale_src_ptr, data_.src.end(), u32dist, flags);
 
-        if (res.count != u32dist) {
+        if (res.ssize != u32dist) {
             err_msg_.line("Wrong u32dist returned by ", funcname);
-            err_msg_.line("    count_codepoints(...).count == ", res.count);
+            err_msg_.line("    src_charset.to_u32().transcode_size(...).ssize == ", res.ssize);
             err_msg_.line("    while u32dist == ", u32dist);
             err_msg_.line("    ( they should be equal )", u32dist);
             return false;
         }
-        stale_src_ptr = res.ptr;
+        stale_src_ptr = res.src_ptr;
         return true;
     }
 };

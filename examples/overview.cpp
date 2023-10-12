@@ -257,8 +257,7 @@ namespace my { // my customizations
 
 constexpr auto my_default_facets = strf::pack
     ( strf::numpunct<10>(3)
-    , strf::numpunct<16>(4).thousands_sep(U'\'')
-    , strf::surrogate_policy::lax );
+    , strf::numpunct<16>(4).thousands_sep(U'\'') );
 
 constexpr auto to_string = strf::to_string.with(my_default_facets);
 

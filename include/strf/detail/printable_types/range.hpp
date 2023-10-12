@@ -376,8 +376,7 @@ STRF_HD void separated_range_printer<CharT, FPack, Iterator>::do_preprinting_(Pr
         auto dw = wcalc.str_width( use_facet_<strf::charset_c<CharT>>(fp_)
                                  , pre.remaining_width()
                                  , sep_begin_
-                                 , sep_begin_ + sep_len_
-                                 , use_facet_<strf::surrogate_policy_c>(fp_) );
+                                 , sep_begin_ + sep_len_ );
         pre.checked_subtract_width(strf::sat_mul(dw, count - 1));
     }
     if (PrePrinting::size_required) {
@@ -570,8 +569,7 @@ STRF_HD void fmt_separated_range_printer<CharT, FPack, Iterator, Fmts ...>::do_p
         auto dw = wcalc.str_width( use_facet_<strf::charset_c<CharT>>(fp_)
                                  , pre.remaining_width()
                                  , r.sep_begin
-                                 , r.sep_begin + r.sep_len
-                                 , use_facet_<strf::surrogate_policy_c>(fp_) );
+                                 , r.sep_begin + r.sep_len );
         pre.checked_subtract_width(strf::sat_mul(dw, (count - 1)));
     }
     if (PrePrinting::size_required) {
@@ -752,8 +750,7 @@ STRF_HD void sep_transformed_range_printer<CharT, FPack, Iterator, UnaryOp>
         auto dw = wcalc.str_width( use_facet_<strf::charset_c<CharT>>(fp_)
                                  , pre.remaining_width()
                                  , sep_begin_
-                                 , sep_begin_ + sep_len_
-                                 , use_facet_<strf::surrogate_policy_c>(fp_) );
+                                 , sep_begin_ + sep_len_ );
         pre.checked_subtract_width(strf::sat_mul(dw, (count - 1)));
     }
     if (PrePrinting::size_required) {

@@ -138,7 +138,6 @@ class tr_pre_width
     const strf::width_t* width_array_;
     const std::ptrdiff_t array_size_;
     strf::width_t remaining_width_;
-    strf::surrogate_policy surr_poli_;
     WidthCalculator wcalc_;
     Charset charset_;
 
@@ -157,13 +156,11 @@ public:
         ( const strf::width_t* width_array
         , std::ptrdiff_t width_array_size
         , strf::width_t width
-        , strf::surrogate_policy surr_poli
         , WidthCalculator wcalc
         , Charset charset )
         : width_array_(width_array)
         , array_size_(width_array_size)
         , remaining_width_(width)
-        , surr_poli_(surr_poli)
         , wcalc_(wcalc)
         , charset_(charset)
     {
@@ -176,7 +173,7 @@ public:
     STRF_CONSTEXPR_IN_CXX14 STRF_HD bool account_string(const CharT* begin, const CharT* end)
     {
         const auto str_width = wcalc_.str_width
-            (charset_, remaining_width_, begin, end, surr_poli_);
+            (charset_, remaining_width_, begin, end);
         return subtract_(str_width);
     }
     constexpr STRF_HD strf::width_t remaining_width() const
@@ -199,7 +196,6 @@ class tr_pre_size_and_width
     const std::ptrdiff_t array_size_;
     std::ptrdiff_t size_ = 0;
     strf::width_t remaining_width_;
-    strf::surrogate_policy surr_poli_;
     WidthCalculator wcalc_;
     Charset charset_;
 
@@ -218,14 +214,12 @@ public:
         , const strf::width_t* width_array
         , std::ptrdiff_t array_size
         , strf::width_t width
-        , strf::surrogate_policy surr_poli
         , WidthCalculator wcalc
         , Charset charset )
         : size_array_(size_array)
         , width_array_(width_array)
         , array_size_(array_size)
         , remaining_width_(width)
-        , surr_poli_(surr_poli)
         , wcalc_(wcalc)
         , charset_(charset)
     {
@@ -246,7 +240,7 @@ public:
         ( const CharT* begin, const CharT* end )
     {
         size_ += (end - begin);
-        auto w = wcalc_.str_width(charset_, remaining_width_, begin, end, surr_poli_);
+        auto w = wcalc_.str_width(charset_, remaining_width_, begin, end);
         subtract_width_(w);
         return {};
     }

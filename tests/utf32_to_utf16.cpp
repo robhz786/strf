@@ -250,11 +250,6 @@ STRF_TEST_FUNC void utf32_to_utf16_valid_sequences()
             .expect_stop_reason(strf::transcode_stop_reason::completed)
             .expect_unsupported_codepoints({})
             .expect_invalid_sequences({});
-
-        const char16_t u16str_spc_D800[] = {' ', 0xD800, 0};
-        const char32_t u32str_spc_D800[] = {' ', 0xD800, 0};
-        TEST_CALLING_RECYCLE_AT(1, u16str_spc_D800)
-            .with(strf::surrogate_policy::lax) (strf::sani(u32str_spc_D800));
     }
 }
 
@@ -358,18 +353,6 @@ STRF_TEST_FUNC void utf32_to_utf16_error_notifier()
         notifier.notifications_count = 0;
         TEST_TRUNCATING_AT(1, u"\uFFFD").with(notifier_ptr) (strf::sani(invalid_input));
         TEST_TRUE(notifier.notifications_count > 0);
-
-        notifier.notifications_count = 0;
-        TEST(u"\uFFFD\uFFFD")
-            .with(notifier_ptr, strf::surrogate_policy::lax)
-            (strf::sani(invalid_input));
-        TEST_EQ(notifier.notifications_count, 2);
-
-        notifier.notifications_count = 0;
-        TEST_TRUNCATING_AT(1, u"\uFFFD")
-            .with(notifier_ptr, strf::surrogate_policy::lax)
-            (strf::sani(invalid_input));
-        TEST_TRUE(notifier.notifications_count > 0);
     }
 
 #if defined(__cpp_exceptions) && __cpp_exceptions  && ! defined(__CUDACC__)
@@ -394,9 +377,7 @@ STRF_TEST_FUNC void utf32_to_utf16_error_notifier()
             bool thrown = false;
             try {
                 char16_t buff[10];
-                strf::to(buff)
-                    .with(notifier_ptr, strf::surrogate_policy::lax)
-                    (strf::sani(invalid_input));
+                strf::to(buff) .with(notifier_ptr) (strf::sani(invalid_input));
             } catch (dummy_exception&) {
                 thrown = true;
             } catch(...) {

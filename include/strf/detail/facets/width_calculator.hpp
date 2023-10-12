@@ -36,8 +36,7 @@ public:
         ( Charset
         , strf::width_t limit
         , const typename Charset::code_unit* begin
-        , const typename Charset::code_unit* end
-        , strf::surrogate_policy ) const noexcept
+        , const typename Charset::code_unit* end ) const noexcept
     {
         STRF_ASSERT(begin <= end);
         const auto str_len = detail::safe_cast_size_t(end - begin);
@@ -54,8 +53,7 @@ public:
         ( Charset
         , strf::width_t limit
         , const typename Charset::code_unit* begin
-        , const typename Charset::code_unit* end
-        , strf::surrogate_policy ) const noexcept
+        , const typename Charset::code_unit* end ) const noexcept
         -> strf::width_and_ptr<typename Charset::code_unit>
     {
         STRF_ASSERT(begin <= end);
@@ -87,8 +85,7 @@ public:
         ( Charset charset
         , strf::width_t limit
         , const typename Charset::code_unit* str
-        , const typename Charset::code_unit* str_end
-        , strf::surrogate_policy ) const
+        , const typename Charset::code_unit* str_end ) const
     {
         STRF_ASSERT(str <= str_end);
         auto lim = limit.non_negative_ceil();
@@ -102,8 +99,7 @@ public:
         ( Charset charset
         , strf::width_t limit
         , const typename Charset::code_unit* str
-        , const typename Charset::code_unit* str_end
-        , strf::surrogate_policy ) const
+        , const typename Charset::code_unit* str_end ) const
         -> strf::width_and_ptr<typename Charset::code_unit>
     {
         STRF_ASSERT(str <= str_end);
@@ -133,12 +129,11 @@ public:
         ( Charset charset
         , strf::width_t limit
         , const typename Charset::code_unit* str
-        , const typename Charset::code_unit* str_end
-        , strf::surrogate_policy surr_poli ) const
+        , const typename Charset::code_unit* str_end ) const
     {
         STRF_ASSERT(str <= str_end);
         auto lim = limit.non_negative_ceil();
-        auto res = charset.count_codepoints(str, str_end, lim, surr_poli);
+        auto res = charset.count_codepoints(str, str_end, lim);
         STRF_ASSERT(res.count <= strf::width_max.floor());
         return strf::width_t::sat_cast(res.count);
     }
@@ -148,13 +143,12 @@ public:
         ( Charset charset
         , strf::width_t limit
         , const typename Charset::code_unit* str
-        , const typename Charset::code_unit* str_end
-        , strf::surrogate_policy surr_poli ) const
+        , const typename Charset::code_unit* str_end ) const
         -> strf::width_and_ptr<typename Charset::code_unit>
     {
         STRF_ASSERT(str <= str_end);
         auto lim = limit.non_negative_floor();
-        auto res = charset.count_codepoints(str, str_end, lim, surr_poli);
+        auto res = charset.count_codepoints(str, str_end, lim);
         STRF_ASSERT(static_cast<std::ptrdiff_t>(res.count) <= lim);
         return {static_cast<width_t>(res.count), res.ptr};
     }
@@ -479,13 +473,12 @@ public:
         ( Charset charset
         , strf::width_t limit
         , const typename Charset::code_unit* str
-        , const typename Charset::code_unit* str_end
-        , strf::surrogate_policy surr_poli )
+        , const typename Charset::code_unit* str_end )
     {
         str_end = str <= str_end ? str_end : str;
         const auto buff_size = 32;
         char32_t buff[buff_size];
-        const auto flags = strf::to_transcode_flags(surr_poli);
+        constexpr auto flags = strf::transcode_flags::none;
         const auto to_u32 = charset.to_u32();
         detail::std_width_calc_func_return res{limit, 0, nullptr};
         while(1) {
@@ -507,14 +500,13 @@ public:
         ( Charset charset
         , strf::width_t limit
         , const typename Charset::code_unit* str
-        , const typename Charset::code_unit* str_end
-        , strf::surrogate_policy surr_poli )
+        , const typename Charset::code_unit* str_end )
         -> strf::width_and_ptr<typename Charset::code_unit>
     {
         str_end = str <= str_end ? str_end : str;
         const auto buff_size = 32;
         char32_t buff[buff_size];
-        const auto flags = strf::to_transcode_flags(surr_poli);
+        constexpr auto flags = strf::transcode_flags::none;
         const auto to_u32 = charset.to_u32();
         detail::std_width_calc_func_return resw{limit, 0, nullptr};
         while(1) {

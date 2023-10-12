@@ -954,7 +954,7 @@ public:
 
     static STRF_HD strf::count_codepoints_result<CharT> count_codepoints
         ( const CharT* src, const CharT* src_end
-        , std::ptrdiff_t max_count, strf::surrogate_policy surr_poli ) noexcept;
+        , std::ptrdiff_t max_count ) noexcept;
 
     static STRF_HD void write_replacement_char
         ( strf::transcode_dst<CharT>& );
@@ -1095,7 +1095,7 @@ public:
 
     static STRF_HD strf::count_codepoints_result<CharT> count_codepoints
         ( const CharT* src, const CharT* src_end
-        , std::ptrdiff_t max_count, strf::surrogate_policy surr_poli ) noexcept;
+        , std::ptrdiff_t max_count ) noexcept;
 
     static STRF_HD void write_replacement_char
         ( strf::transcode_dst<CharT>& );
@@ -1256,9 +1256,8 @@ public:
 
     static STRF_HD strf::count_codepoints_result<CharT> count_codepoints
         ( const CharT* src, const CharT* src_end
-        , std::ptrdiff_t max_count, strf::surrogate_policy surr_poli ) noexcept
+        , std::ptrdiff_t max_count ) noexcept
     {
-        (void)surr_poli;
         STRF_ASSERT(src <= src_end);
         auto src_size = src_end - src;
         if (max_count <= src_size) {
@@ -1981,8 +1980,7 @@ STRF_HD strf::count_codepoints_result<CharT>
 static_charset<CharT, strf::csid_utf8>::count_codepoints
     ( const CharT* src
     , const CharT* src_end
-    , std::ptrdiff_t max_count
-    , strf::surrogate_policy surr_poli ) noexcept
+    , std::ptrdiff_t max_count ) noexcept
 {
     using strf::detail::is_utf8_continuation;
     using strf::detail::first_2_of_3_are_valid;
@@ -1991,7 +1989,7 @@ static_charset<CharT, strf::csid_utf8>::count_codepoints
     unsigned ch0 = 0, ch1 = 0;
     std::ptrdiff_t count = 0;
     const auto *it = src;
-    const bool lax_surr = surr_poli == strf::surrogate_policy::lax;
+    constexpr bool lax_surr = false;
     while (it < src_end && count < max_count) {
         ch0 = detail::cast_u8(*it);
         ++it;
@@ -2274,27 +2272,36 @@ STRF_HD strf::transcode_size_result<SrcCharT> static_transcoder
     , strf::transcode_flags ) noexcept
 {
     limit = limit <= 0 ? 0 : limit;
-    const auto *src_it = src;
     std::ptrdiff_t size = 0;
-    if ((src_end - src) * 4 <= limit) {
-        for(;src_it < src_end; ++src_it) {
-            auto ch = detail::cast_u32(*src_it);
-            size += ( ch < 0x80 ? 1
-                      : ch < 0x800 ? 2
-                      : ch < 0x10000 ? 3 : 4 );
+    const std::ptrdiff_t pre_limit = limit - 4;
+    
+    while (size < pre_limit) {
+        if (src == src_end) {
+            goto completed;
         }
-    } else {
-        for(;src_it < src_end; ++src_it) {
-            if (size >= limit) {
-                return {size, src_it, strf::transcode_stop_reason::insufficient_output_space};
-            }
-            auto ch = detail::cast_u32(*src_it);
-            const auto ch_size = ( ch < 0x80 ? 1
-                                 : ch < 0x800 ? 2
-                                 : ch < 0x10000 ? 3 : 4 );
-            size += ch_size;
-        }
+        auto ch = detail::cast_u32(*src);
+        const auto ch_size = ( ch < 0x80 ? 1
+                             : ch < 0x800 ? 2
+                             : ch < 0x10000 ? 3 : 4 );
+        size += ch_size;
+        ++src;
     }
+    for(;src < src_end; ++src) {
+        if (size >= limit) {
+            return {size, src, strf::transcode_stop_reason::insufficient_output_space};
+        }
+        auto ch = detail::cast_u32(*src);
+        const auto ch_size = ( ch < 0x80 ? 1
+                               : ch < 0x800 ? 2
+                               : ch < 0x10000 ? 3 : 4 );
+        const auto new_size = size + ch_size;
+        if (new_size > limit) {
+            return {size, src, strf::transcode_stop_reason::insufficient_output_space};
+        }
+        size = new_size;
+    }
+
+  completed:
     return {size, src_end, strf::transcode_stop_reason::completed};
 }
 
@@ -2695,10 +2702,8 @@ STRF_HD strf::count_codepoints_result<CharT>
 static_charset<CharT, strf::csid_utf16>::count_codepoints
     ( const CharT* src
     , const CharT* src_end
-    , std::ptrdiff_t max_count
-    , strf::surrogate_policy surr_poli ) noexcept
+    , std::ptrdiff_t max_count ) noexcept
 {
-    (void) surr_poli;
     std::ptrdiff_t count = 0;
     const CharT* it = src;
     unsigned ch = 0;

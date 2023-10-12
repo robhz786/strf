@@ -3,7 +3,6 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include "test_invalid_sequences.hpp"
 #include "test_utils/transcoding.hpp"
 
 #define TEST_TRANSCODE                                                  \
@@ -237,27 +236,8 @@ STRF_TEST_FUNC void utf16_to_utf32_valid_sequences()
             .expect_stop_reason(strf::transcode_stop_reason::completed)
             .expect_unsupported_codepoints({})
             .expect_invalid_sequences({});
-
-        TEST(U" \U00010000") .with(strf::surrogate_policy::lax) (strf::sani(u"\U00010000") > 2);
-
-        const char32_t u32str_D800[] = {U' ', 0xD800, 0};
-        TEST_CALLING_RECYCLE_AT(1, u32str_D800)
-            .with(strf::surrogate_policy::lax) (strf::sani(u16str_D800) > 2);
     }
 }
-
-#define TEST_INVALID_SEQS(INPUT, ...)                                   \
-    test_utils::test_invalid_sequences                                  \
-        <strf::csid_utf16, strf::csid_utf32, char16_t, char32_t>        \
-        ( BOOST_CURRENT_FUNCTION, __FILE__, __LINE__                    \
-        , strf::surrogate_policy::strict, (INPUT), __VA_ARGS__ );
-
-#define TEST_INVALID_SEQS_LAX(INPUT, ...)                               \
-    test_utils::test_invalid_sequences                                  \
-        <strf::csid_utf16, strf::csid_utf32, char16_t, char32_t>        \
-        ( BOOST_CURRENT_FUNCTION, __FILE__, __LINE__                    \
-        , strf::surrogate_policy::lax, (INPUT), __VA_ARGS__ );
-
 
 STRF_TEST_FUNC void utf16_to_utf32_invalid_sequences()
 {

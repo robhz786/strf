@@ -10,31 +10,9 @@
 
 namespace strf {
 
-template <typename> struct facet_traits;
-
-enum class surrogate_policy : bool
-{
-    strict = false, lax = true
-};
-
-struct surrogate_policy_c
-{
-    static constexpr bool constrainable = false;
-
-    static constexpr STRF_HD strf::surrogate_policy get_default() noexcept
-    {
-        return strf::surrogate_policy::strict;
-    }
-};
-
-template <>
-struct facet_traits<strf::surrogate_policy>
-{
-    using category = strf::surrogate_policy_c;
-};
-
 enum class transcode_flags {
     none = 0,
+    surrogate_policy = 1,
     lax_surrogate_policy = 1,
     stop_on_invalid_sequence = 1 << 1,
     stop_on_unsupported_codepoint = 1 << 2
@@ -77,16 +55,6 @@ STRF_HD constexpr bool with_stop_on_invalid_sequence(transcode_flags f)
 STRF_HD constexpr bool with_stop_on_unsupported_codepoint(transcode_flags f)
 {
     return transcode_flags::none != (f & transcode_flags::stop_on_unsupported_codepoint);
-}
-
-STRF_HD constexpr surrogate_policy to_surrogate_policy(transcode_flags f)
-{
-    return static_cast<surrogate_policy>(strf::with_lax_surrogate_policy(f));
-}
-
-STRF_HD constexpr transcode_flags  to_transcode_flags(surrogate_policy sp)
-{
-    return static_cast<transcode_flags>(sp);
 }
 
 struct transcoding_error_notifier_c;
@@ -340,8 +308,7 @@ template <typename CharT>
 using count_codepoints_f = strf::count_codepoints_result<CharT> (*)
     ( const CharT* src
     , const CharT* src_end
-    , std::ptrdiff_t max_count
-    , strf::surrogate_policy lax_surrogate );
+    , std::ptrdiff_t max_count );
 
 template <typename CharT>
 using codepoints_fast_count_f
@@ -633,9 +600,9 @@ public:
     }
     STRF_HD strf::count_codepoints_result<code_unit> count_codepoints
         ( const code_unit* src, const code_unit* src_end
-        , std::ptrdiff_t max_count, strf::surrogate_policy surr_poli ) const
+        , std::ptrdiff_t max_count ) const
     {
-        return data_->count_codepoints_func(src, src_end, max_count, surr_poli);
+        return data_->count_codepoints_func(src, src_end, max_count);
     }
     STRF_HD void write_replacement_char(strf::transcode_dst<CharT>& dst) const
     {

@@ -281,15 +281,7 @@ STRF_TEST_FUNC void utf16_to_utf8_valid_sequences()
             .expect_stop_reason(strf::transcode_stop_reason::completed)
             .expect_unsupported_codepoints({})
             .expect_invalid_sequences({});
-
-        TEST(u8" \U00010000") .with(strf::surrogate_policy::lax) (strf::sani(u"\U00010000") > 2);
-
-        TEST_TRUNCATING_AT(4, " \xED\xA0\x80")
-            .with(strf::surrogate_policy::lax) (strf::sani(u16str_D800) > 2);
-        TEST_TRUNCATING_AT(3, u8" ")
-            .with(strf::surrogate_policy::lax) (strf::sani(u16str_D800) > 2);
     }
-
 }
 
 STRF_TEST_FUNC void utf16_to_utf8_invalid_sequences()

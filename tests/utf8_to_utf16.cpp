@@ -196,18 +196,6 @@ STRF_TEST_FUNC void utf8_to_utf16_valid_sequences()
         const char16_t u16str_DC00[] = {u' ', 0xDC00, 0};
         const char16_t u16str_DFFF[] = {u' ', 0xDFFF, 0};
 
-        TEST(u16str_D800) .with(strf::surrogate_policy::lax) (strf::sani("\xED\xA0\x80") > 2);
-        TEST(u16str_DBFF) .with(strf::surrogate_policy::lax) (strf::sani("\xED\xAF\xBF") > 2);
-        TEST(u16str_DC00) .with(strf::surrogate_policy::lax) (strf::sani("\xED\xB0\x80") > 2);
-        TEST(u16str_DFFF) .with(strf::surrogate_policy::lax) (strf::sani("\xED\xBF\xBF") > 2);
-
-        TEST_CALLING_RECYCLE_AT(1, u16str_D800)
-            .with(strf::surrogate_policy::lax) (strf::sani("\xED\xA0\x80") > 2);
-        TEST_TRUNCATING_AT     (2, u16str_D800)
-            .with(strf::surrogate_policy::lax) (strf::sani("\xED\xA0\x80") > 2);
-        TEST_TRUNCATING_AT     (1, u" ")
-            .with(strf::surrogate_policy::lax) (strf::sani("\xED\xA0\x80") > 2);
-
         TEST_UTF_TRANSCODE(char, char16_t)
             .input(" \xED\xA0\x80")
             .expect(u16str_D800)

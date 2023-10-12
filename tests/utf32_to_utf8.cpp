@@ -260,11 +260,6 @@ STRF_TEST_FUNC void utf32_to_utf8_valid_sequences()
             .expect_stop_reason(strf::transcode_stop_reason::completed)
             .expect_unsupported_codepoints({})
             .expect_invalid_sequences({});
-
-        TEST_CALLING_RECYCLE_AT(1, u8str_D800)
-            .with(strf::surrogate_policy::lax) (strf::sani(u32str_D800));
-        TEST_CALLING_RECYCLE_AT(2, u8str_D800)
-            .with(strf::surrogate_policy::lax) (strf::sani(u32str_D800));
     }
 }
 

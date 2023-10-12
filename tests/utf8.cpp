@@ -303,11 +303,6 @@ STRF_TEST_FUNC void utf8_sani_valid_sequences()
         //     .expect_stop_reason(strf::transcode_stop_reason::completed)
         //     .expect_unsupported_codepoints({})
         //     .expect_invalid_sequences({});
-
-        TEST_TRUNCATING_AT(4, " \xED\xA0\x80")
-            .with(strf::surrogate_policy::lax) (strf::sani("\xED\xA0\x80") > 2);
-        TEST_TRUNCATING_AT(3, u8" ")
-            .with(strf::surrogate_policy::lax) (strf::sani("\xED\xA0\x80") > 2);
     }
 }
 
@@ -1183,19 +1178,9 @@ STRF_TEST_FUNC void utf8_sani_find_transcoder()
 }
 
 template <typename CharT, std::size_t N>
-STRF_HD std::ptrdiff_t utf8_count_codepoints_strict(const CharT (&str)[N])
+STRF_HD std::ptrdiff_t utf8_count_codepoints(const CharT (&str)[N])
 {
-    return strf::utf8_t<CharT>::count_codepoints
-        (str, str + N - 1, 100000, strf::surrogate_policy::strict)
-        .count;
-}
-
-template <typename CharT, std::size_t N>
-STRF_HD std::ptrdiff_t utf8_count_codepoints_lax(const CharT (&str)[N])
-{
-    return strf::utf8_t<CharT>::count_codepoints
-        (str, str + N - 1, 100000, strf::surrogate_policy::lax)
-        .count;
+    return strf::utf8_t<CharT>::count_codepoints(str, str + N - 1, 100000).count;
 }
 
 template <typename CharT, std::size_t N>
@@ -1207,21 +1192,13 @@ STRF_HD std::ptrdiff_t utf8_count_codepoints_fast(const CharT (&str)[N])
 STRF_HD void utf8_codepoints_count()
 {
     {   // test valid input
-        TEST_EQ(0, utf8_count_codepoints_strict(""));
-        TEST_EQ(3, utf8_count_codepoints_strict(u8"ab\u0080"));
-        TEST_EQ(3, utf8_count_codepoints_strict(u8"ab\u0800"));
-        TEST_EQ(3, utf8_count_codepoints_strict(u8"ab\uD7FF"));
-        TEST_EQ(3, utf8_count_codepoints_strict(u8"ab\uE000"));
-        TEST_EQ(3, utf8_count_codepoints_strict(u8"ab\U00010000"));
-        TEST_EQ(3, utf8_count_codepoints_strict(u8"ab\U0010FFFF"));
-
-        TEST_EQ(0, utf8_count_codepoints_lax(u8""));
-        TEST_EQ(3, utf8_count_codepoints_lax(u8"ab\u0080"));
-        TEST_EQ(3, utf8_count_codepoints_lax(u8"ab\u0800"));
-        TEST_EQ(3, utf8_count_codepoints_lax(u8"ab\uD7FF"));
-        TEST_EQ(3, utf8_count_codepoints_lax(u8"ab\uE000"));
-        TEST_EQ(3, utf8_count_codepoints_lax(u8"ab\U00010000"));
-        TEST_EQ(3, utf8_count_codepoints_lax(u8"ab\U0010FFFF"));
+        TEST_EQ(0, utf8_count_codepoints(""));
+        TEST_EQ(3, utf8_count_codepoints(u8"ab\u0080"));
+        TEST_EQ(3, utf8_count_codepoints(u8"ab\u0800"));
+        TEST_EQ(3, utf8_count_codepoints(u8"ab\uD7FF"));
+        TEST_EQ(3, utf8_count_codepoints(u8"ab\uE000"));
+        TEST_EQ(3, utf8_count_codepoints(u8"ab\U00010000"));
+        TEST_EQ(3, utf8_count_codepoints(u8"ab\U0010FFFF"));
 
         TEST_EQ(0, utf8_count_codepoints_fast(u8""));
         TEST_EQ(3, utf8_count_codepoints_fast(u8"ab\u0080"));
@@ -1231,57 +1208,48 @@ STRF_HD void utf8_codepoints_count()
         TEST_EQ(3, utf8_count_codepoints_fast(u8"ab\U00010000"));
         TEST_EQ(3, utf8_count_codepoints_fast(u8"ab\U0010FFFF"));
     }
-    {   // when surrogates are allowed
-        TEST_EQ(1, utf8_count_codepoints_lax("\xED\xA0\x80"));
-        TEST_EQ(1, utf8_count_codepoints_lax("\xED\xAF\xBF"));
-        TEST_EQ(1, utf8_count_codepoints_lax("\xED\xB0\x80"));
-        TEST_EQ(1, utf8_count_codepoints_lax("\xED\xBF\xBF"));
-    }
     {   // test invalid sequences
-        TEST_EQ(3, utf8_count_codepoints_strict("\xF1\x80\x80\xE1\x80\xC0"));
-        TEST_EQ(1, utf8_count_codepoints_strict("\xBF"));
-        TEST_EQ(2, utf8_count_codepoints_strict("\x80\x80"));
-        TEST_EQ(2, utf8_count_codepoints_strict("\xC1\xBF"));
-        TEST_EQ(3, utf8_count_codepoints_strict("\xE0\x9F\x80"));
-        TEST_EQ(3, utf8_count_codepoints_strict("\xC1\xBF\x80"));
-        TEST_EQ(4, utf8_count_codepoints_strict("\xE0\x9F\x80\x80"));
-        TEST_EQ(4, utf8_count_codepoints_strict("\xF0\x8F\xBF\xBF"));
-        TEST_EQ(5, utf8_count_codepoints_strict("\xF0\x8F\xBF\xBF\x80"));
-        TEST_EQ(1, utf8_count_codepoints_strict("\xF0\x90\xBF"));
-        TEST_EQ(4, utf8_count_codepoints_strict("\xF4\xBF\xBF\xBF"));
-        TEST_EQ(6, utf8_count_codepoints_strict("\xF5\x90\x80\x80\x80\x80"));
-        TEST_EQ(1, utf8_count_codepoints_strict("\xC2"));
-        TEST_EQ(1, utf8_count_codepoints_strict("\xE0"));
-        TEST_EQ(1, utf8_count_codepoints_strict("\xE0\xA0"));
-        TEST_EQ(1, utf8_count_codepoints_strict("\xF"));
-        TEST_EQ(1, utf8_count_codepoints_strict("\xF1\x81"));
-        TEST_EQ(1, utf8_count_codepoints_strict("\xF1\x81\x81"));
-        TEST_EQ(3, utf8_count_codepoints_strict("\xED\xA0\x80"));
-        TEST_EQ(3, utf8_count_codepoints_strict("\xED\xAF\xBF"));
-        TEST_EQ(3, utf8_count_codepoints_strict("\xED\xB0\x80"));
-        TEST_EQ(3, utf8_count_codepoints_strict("\xED\xBF\xBF"));
-        TEST_EQ(2, utf8_count_codepoints_strict("\xED\xA0"));
-        TEST_EQ(1, utf8_count_codepoints_lax("\xED\xA0"));
-        TEST_EQ(1, utf8_count_codepoints_strict("\xED\x9F"));
+        TEST_EQ(3, utf8_count_codepoints("\xF1\x80\x80\xE1\x80\xC0"));
+        TEST_EQ(1, utf8_count_codepoints("\xBF"));
+        TEST_EQ(2, utf8_count_codepoints("\x80\x80"));
+        TEST_EQ(2, utf8_count_codepoints("\xC1\xBF"));
+        TEST_EQ(3, utf8_count_codepoints("\xE0\x9F\x80"));
+        TEST_EQ(3, utf8_count_codepoints("\xC1\xBF\x80"));
+        TEST_EQ(4, utf8_count_codepoints("\xE0\x9F\x80\x80"));
+        TEST_EQ(4, utf8_count_codepoints("\xF0\x8F\xBF\xBF"));
+        TEST_EQ(5, utf8_count_codepoints("\xF0\x8F\xBF\xBF\x80"));
+        TEST_EQ(1, utf8_count_codepoints("\xF0\x90\xBF"));
+        TEST_EQ(4, utf8_count_codepoints("\xF4\xBF\xBF\xBF"));
+        TEST_EQ(6, utf8_count_codepoints("\xF5\x90\x80\x80\x80\x80"));
+        TEST_EQ(1, utf8_count_codepoints("\xC2"));
+        TEST_EQ(1, utf8_count_codepoints("\xE0"));
+        TEST_EQ(1, utf8_count_codepoints("\xE0\xA0"));
+        TEST_EQ(1, utf8_count_codepoints("\xF"));
+        TEST_EQ(1, utf8_count_codepoints("\xF1\x81"));
+        TEST_EQ(1, utf8_count_codepoints("\xF1\x81\x81"));
+        TEST_EQ(3, utf8_count_codepoints("\xED\xA0\x80"));
+        TEST_EQ(3, utf8_count_codepoints("\xED\xAF\xBF"));
+        TEST_EQ(3, utf8_count_codepoints("\xED\xB0\x80"));
+        TEST_EQ(3, utf8_count_codepoints("\xED\xBF\xBF"));
+        TEST_EQ(2, utf8_count_codepoints("\xED\xA0"));
+        TEST_EQ(1, utf8_count_codepoints("\xED\x9F"));
 
-        TEST_EQ(4, utf8_count_codepoints_strict("\xF4\x90\x80\x80"));
-        TEST_EQ(4, utf8_count_codepoints_strict("\xF5\x80\x80\x80"));
-        TEST_EQ(4, utf8_count_codepoints_strict("\xF6\x80\x80\x80"));
-        TEST_EQ(4, utf8_count_codepoints_strict("\xF7\x80\x80\x80"));
-        TEST_EQ(4, utf8_count_codepoints_strict("\xF8\x80\x80\x80"));
-        TEST_EQ(4, utf8_count_codepoints_strict("\xF9\x80\x80\x80"));
-        TEST_EQ(4, utf8_count_codepoints_strict("\xFA\x80\x80\x80"));
-        TEST_EQ(4, utf8_count_codepoints_strict("\xFB\x80\x80\x80"));
-        TEST_EQ(4, utf8_count_codepoints_strict("\xFC\x80\x80\x80"));
-        TEST_EQ(4, utf8_count_codepoints_strict("\xFD\x80\x80\x80"));
-        TEST_EQ(4, utf8_count_codepoints_strict("\xFE\x80\x80\x80"));
-        TEST_EQ(4, utf8_count_codepoints_strict("\xFF\x80\x80\x80"));
-        TEST_EQ(3, utf8_count_codepoints_strict("\xF9\x80\x80"));
-        TEST_EQ(2, utf8_count_codepoints_strict("\xF9\x80"));
-        TEST_EQ(1, utf8_count_codepoints_strict("\xF9"));
+        TEST_EQ(4, utf8_count_codepoints("\xF4\x90\x80\x80"));
+        TEST_EQ(4, utf8_count_codepoints("\xF5\x80\x80\x80"));
+        TEST_EQ(4, utf8_count_codepoints("\xF6\x80\x80\x80"));
+        TEST_EQ(4, utf8_count_codepoints("\xF7\x80\x80\x80"));
+        TEST_EQ(4, utf8_count_codepoints("\xF8\x80\x80\x80"));
+        TEST_EQ(4, utf8_count_codepoints("\xF9\x80\x80\x80"));
+        TEST_EQ(4, utf8_count_codepoints("\xFA\x80\x80\x80"));
+        TEST_EQ(4, utf8_count_codepoints("\xFB\x80\x80\x80"));
+        TEST_EQ(4, utf8_count_codepoints("\xFC\x80\x80\x80"));
+        TEST_EQ(4, utf8_count_codepoints("\xFD\x80\x80\x80"));
+        TEST_EQ(4, utf8_count_codepoints("\xFE\x80\x80\x80"));
+        TEST_EQ(4, utf8_count_codepoints("\xFF\x80\x80\x80"));
+        TEST_EQ(3, utf8_count_codepoints("\xF9\x80\x80"));
+        TEST_EQ(2, utf8_count_codepoints("\xF9\x80"));
+        TEST_EQ(1, utf8_count_codepoints("\xF9"));
     }
-
-    constexpr auto strict = strf::surrogate_policy::strict;
 
     {   // when limit is less than or equal to count
 
@@ -1290,17 +1258,17 @@ STRF_HD void utf8_codepoints_count()
         const strf::utf8_t<char8_t> charset;
 
         {
-            auto r = charset.count_codepoints(str, str_end, 8, strict);
+            auto r = charset.count_codepoints(str, str_end, 8);
             TEST_EQ((const void*)r.ptr, (const void*)str_end);
             TEST_EQ(r.count, 8);
         }
         {
-            auto r = charset.count_codepoints(str, str_end, 7, strict);
+            auto r = charset.count_codepoints(str, str_end, 7);
             TEST_EQ((const void*)r.ptr, (const void*)(str_end - 4));
             TEST_EQ(r.count, 7);
         }
         {
-            auto r = charset.count_codepoints(str, str_end, 0, strict);
+            auto r = charset.count_codepoints(str, str_end, 0);
             TEST_EQ((const void*)r.ptr, (const void*)str);
             TEST_EQ(r.count, 0);
         }

@@ -2939,7 +2939,7 @@ public:
     }
     static STRF_HD strf::count_codepoints_result<CharT> count_codepoints
         ( const CharT* src, const CharT* src_end
-        , std::ptrdiff_t max_count, strf::surrogate_policy ) noexcept
+        , std::ptrdiff_t max_count ) noexcept
     {
         STRF_ASSERT(src <= src_end);
         const auto src_size = src_end - src;

@@ -709,7 +709,6 @@ When the argument associated with a `"{"` does not exist, the library does two t
 |`<<charset,charset_c>><CharT>`   |No  |The character encoding correponding to character type `CharT`
 |`<<transcoding_error_notifier,transcoding_error_notifier_c>>`
                                        |Yes | Notifies nonconformities to the character encoding.
-|`<<surrogate_policy,surrogate_policy_c>>`  |Yes | Wheter surrogates are treated as errors
 |`<<tr_string_error,tr_error_notifier_c>>`  |No  | Notifies errors on the tr-string
 |`<<width_calculator,width_calculator_c>>`  |Yes |Defines how the width is calculated
 |`<<howto_override_printable_types#,printable_overrider_c>>`     |Yes   | Overrides printable types
@@ -930,13 +929,12 @@ auto str = strf::to_string
 assert(str == "--\xff----\xff----?----?----?--");
 ----
 
-The library replaces the invalid sequences by the
+The library replaces invalid sequences by the
 https://en.wikipedia.org/wiki/Specials_(Unicode_block)#Replacement_character[replacement character &#xFFFD;],
 if the destination charset supports it ( and by `'?'` otherwise ).
 
-An "invalid sequence" is any input that is non-conformant to the source charset,
-or that is impossible translate to the destination charset.
-But there is an optional exception for surrogates characters.
+An "invalid sequence" is any input that is non-conformant to the source character encoding,
+or that cannot be to encoded into the destination encoding.
 
 NOTE: When the input is UTF-8, the library follows the practice recommended by the
 Unicode Standard regarding to calculate how many replacement characters to print
@@ -951,54 +949,6 @@ For example, if you use `(char32_t)0xFFFFFFF` as the <<numpunct,decimal point>>,
 then it will printed as "\uFFFD" if the destination is UTF-8 or UTF-16, but
 if the destination is UTF-32, then the library just writes `(char32_t)0xFFFFFFF`
 verbatim.
-
-[[surrogate_policy]]
-=== Surrogates tolerance
-
-There is one particular kind of nonconformity that you may sometimes want to
-permit, which is the invalid presence of
-https://en.wikipedia.org/wiki/Universal_Character_Set_characters#Surrogates[surrogate]
-characters.
-That is particular common on Windows, where you may have an old file names, created
-at the time of Windows 95 ( where wide strings were UCS-2 ) and that contains
-some unpaired surrogates. If you then treat it as UTF-16 and convert it to UTF-8
-and back to UTF-16, you get a different name.
-
-So the library provides the `surrogate_policy` enumeration, which is a facet that
-enables you to turn off the surrogate sanitization.
-
-[source,cpp]
-----
-namespace strf {
-enum class surrogate_policy : bool { strict = false, lax = true };
-}
-----
-When the value is `surrogate_policy::strict`, which is the default,
-if an UTF-16 input contains a high surrogate not followed by a low surrogate,
-or a low surrogate not following a high surrogate, that is considered
-invalid and is thus sanitized.
-When the value is `surrogate_policy::lax`, those situations are allowed.
-
-[source,cpp]
-----
-std::u16string original {u'-', 0xD800 ,u'-', u'-', u'-'};
-
-// convert to UTF-8
-auto str_strict = strf::to_u8string(strf::transcode(original));
-auto str_lax =
-    strf::to_u8string .with(strf::surrogate_policy::lax) (strf::transcode(original));
-
-assert(str_strict == u8"-\uFFFD---");                  // surrogate sanitized
-assert(str_lax == (const char8_t*)"-\xED\xA0\x80---"); // surrogate allowed
-
-// convert back to UTF-16
-auto utf16_strict = strf::to_u16string(strf::transcode(str_lax));
-auto utf16_lax =
-    strf::to_u16string .with(strf::surrogate_policy::lax) (strf::transcode(str_lax));
-
-assert(utf16_strict == u"-\uFFFD\uFFFD\uFFFD---");     // surrogate sanitized
-assert(utf16_lax == original);                         // surrogate preserved
-----
 
 [[transcoding_error_notifier]]
 === Transcoding error handling

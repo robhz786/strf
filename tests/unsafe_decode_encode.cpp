@@ -111,8 +111,7 @@ STRF_TEST_FUNC void test_unsafe_decode_encode_scenarios()
         TEST_EQ(0, notifier.unsupported_codepoints_calls_count);
 
         auto cpcount_res = strf::utf_t<char16_t>::count_codepoints
-            ( deres.stale_src_ptr, input.end(), deres.u32dist
-            , strf::surrogate_policy::strict );
+            ( deres.stale_src_ptr, input.end(), deres.u32dist );
 
         TEST_EQ(cpcount_res.count, deres.u32dist);
         TEST_EQ((char)*cpcount_res.ptr, 'u');
@@ -145,8 +144,7 @@ STRF_TEST_FUNC void test_unsafe_decode_encode_scenarios()
         TEST_EQ(1, notifier.unsupported_codepoints_calls_count);
 
         auto cpcount_res = strf::utf_t<char16_t>::count_codepoints
-            ( deres.stale_src_ptr, input.end(), deres.u32dist
-            , strf::surrogate_policy::strict );
+            ( deres.stale_src_ptr, input.end(), deres.u32dist );
 
         TEST_EQ(cpcount_res.count, deres.u32dist);
         TEST_EQ((unsigned)*cpcount_res.ptr, 0xABCD);
@@ -368,8 +366,7 @@ STRF_TEST_FUNC void test_unsafe_decode_encode_size_scenarios()
 
         TEST_TRUE(res.stop_reason == stop_reason::insufficient_output_space);
         auto cpcount_res = strf::utf_t<char16_t>::count_codepoints
-            ( res.stale_src_ptr, input.end(), res.u32dist
-            , strf::surrogate_policy::strict );
+            ( res.stale_src_ptr, input.end(), res.u32dist );
 
         TEST_EQ(cpcount_res.count, res.u32dist);
         TEST_EQ(res.ssize, 5);
@@ -392,8 +389,7 @@ STRF_TEST_FUNC void test_unsafe_decode_encode_size_scenarios()
 
         TEST_TRUE(res.stop_reason == stop_reason::unsupported_codepoint);
         auto cpcount_res = strf::utf_t<char16_t>::count_codepoints
-            ( res.stale_src_ptr, input.end(), res.u32dist
-            , strf::surrogate_policy::strict );
+            ( res.stale_src_ptr, input.end(), res.u32dist );
 
         TEST_EQ(cpcount_res.count, res.u32dist);
         TEST_EQ((unsigned)*cpcount_res.ptr, 0xABCD);
@@ -451,8 +447,7 @@ STRF_TEST_FUNC void test_unsafe_decode_encode_size_overloads()
         TEST_TRUE(res.stop_reason == stop_reason::unsupported_codepoint);
 
         auto cpcount_res = strf::utf_t<char16_t>::count_codepoints
-            ( res.stale_src_ptr, input.end(), res.u32dist
-            , strf::surrogate_policy::strict );
+            ( res.stale_src_ptr, input.end(), res.u32dist );
         TEST_EQ(res.u32dist, cpcount_res.count);
         TEST_EQ(res.u32dist, (cpcount_res.ptr - input.begin()));
         TEST_EQ((unsigned)*cpcount_res.ptr, 0xABCD);
@@ -473,8 +468,7 @@ STRF_TEST_FUNC void test_unsafe_decode_encode_size_overloads()
         TEST_TRUE(res.stop_reason == stop_reason::unsupported_codepoint);
 
         auto cpcount_res = strf::utf_t<char16_t>::count_codepoints
-            ( res.stale_src_ptr, input.end(), res.u32dist
-            , strf::surrogate_policy::strict );
+            ( res.stale_src_ptr, input.end(), res.u32dist );
         TEST_EQ(res.u32dist, cpcount_res.count);
         TEST_EQ(res.u32dist, (cpcount_res.ptr - input.begin()));
         TEST_EQ((unsigned)*cpcount_res.ptr, 0xABCD);
@@ -499,8 +493,7 @@ STRF_TEST_FUNC void test_unsafe_decode_encode_size_overloads()
         TEST_TRUE(res.stop_reason == stop_reason::unsupported_codepoint);
 
         auto cpcount_res = strf::utf_t<char16_t>::count_codepoints
-            ( res.stale_src_ptr, input.end(), res.u32dist
-            , strf::surrogate_policy::strict );
+            ( res.stale_src_ptr, input.end(), res.u32dist );
         TEST_EQ(res.u32dist, cpcount_res.count);
         TEST_EQ(res.u32dist, (cpcount_res.ptr - input.begin()));
         TEST_EQ((unsigned)*cpcount_res.ptr, 0xABCD);
@@ -519,8 +512,7 @@ STRF_TEST_FUNC void test_unsafe_decode_encode_size_overloads()
         TEST_TRUE(res.stop_reason == stop_reason::unsupported_codepoint);
 
         auto cpcount_res = strf::utf_t<char16_t>::count_codepoints
-            ( res.stale_src_ptr, input.end(), res.u32dist
-            , strf::surrogate_policy::strict );
+            ( res.stale_src_ptr, input.end(), res.u32dist );
         TEST_EQ(res.u32dist, cpcount_res.count);
         TEST_EQ(res.u32dist, (cpcount_res.ptr - input.begin()));
         TEST_EQ((unsigned)*cpcount_res.ptr, 0xABCD);
