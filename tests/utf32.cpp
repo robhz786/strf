@@ -449,7 +449,11 @@ STRF_TEST_FUNC void utf32_miscellaneous()
     const strf::utf32_t<char32_t> charset;
     TEST_EQ(1, charset.validate(U'a'));
     TEST_EQ(1, charset.validate(0x10FFFF));
-    TEST_EQ(1, charset.validate(0xFFFFFF));
+    TEST_EQ(-1, charset.validate(0x110000));
+    TEST_EQ( 1, charset.validate(0xD7FF));
+    TEST_EQ(-1, charset.validate(0xD800)); // surrogate
+    TEST_EQ(-1, charset.validate(0xDFFF)); // surrogate
+    TEST_EQ( 1, charset.validate(0xE000));
 
     {
         using utf32_to_utf32 = strf::static_transcoder

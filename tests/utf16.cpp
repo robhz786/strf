@@ -588,11 +588,15 @@ STRF_TEST_FUNC void utf16_miscellaneous()
         TEST_TRUNCATING_AT     (2, u"  ")      .tr(u"  {10}");
     }
 
-    TEST_EQ(1, charset.validate('a'));
+    TEST_EQ(1, charset.validate(U'a'));
     TEST_EQ(1, charset.validate(0xFFFF));
     TEST_EQ(2, charset.validate(0x10000));
     TEST_EQ(2, charset.validate(0x10FFFF));
-    TEST_EQ((std::size_t)-1, charset.validate(0x110000));
+    TEST_EQ(-1, charset.validate(0x110000));
+    TEST_EQ( 1, charset.validate(0xD7FF));
+    TEST_EQ(-1, charset.validate(0xD800)); // surrogate
+    TEST_EQ(-1, charset.validate(0xDFFF)); // surrogate
+    TEST_EQ( 1, charset.validate(0xE000));
 
     {
         using utf16_to_utf16 = strf::static_transcoder

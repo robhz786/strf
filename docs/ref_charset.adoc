@@ -815,9 +815,8 @@ x.validate(ch32)
 ----
 [horizontal]
 Return type:: `int`
-Return value:: The size of the string containing the UTF-32 character `ch32`,
-               if `ch32` is supported in this encoding. Otherwise, `-1`.
-Postcondition:: The return value must be greater than zero.
+Return value:: The size of the string encoding `ch32`,
+               if `ch32` is a valid codepoint and supported in this encoding. Otherwise, `-1`.
 ====
 ====
 [source,cpp]

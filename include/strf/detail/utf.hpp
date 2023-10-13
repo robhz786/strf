@@ -930,10 +930,12 @@ public:
     }
     static constexpr STRF_HD int validate(char32_t ch) noexcept
     {
-        return ( ch < 0x80     ? 1 :
-                 ch < 0x800    ? 2 :
-                 ch < 0x10000  ? 3 :
-                 ch < 0x110000 ? 4 : -1 );
+        using detail::is_surrogate;
+        return ( ch < 0x80        ?  1 :
+                 ch < 0x800       ?  2 :
+                 is_surrogate(ch) ? -1 :
+                 ch < 0x10000     ?  3 :
+                 ch < 0x110000    ?  4 : -1 );
     }
     static constexpr STRF_HD int encoded_char_size(char32_t ch) noexcept
     {
@@ -1076,7 +1078,10 @@ public:
     }
     static constexpr STRF_HD int validate(char32_t ch) noexcept
     {
-        return ch < 0x10000 ? 1 : ch < 0x110000 ? 2 : -1;
+        using detail::is_surrogate;
+        return ( is_surrogate(ch) ? -1
+               : ch < 0x10000     ?  1
+               : ch < 0x110000    ?  2 : -1 );
     }
     static constexpr STRF_HD int encoded_char_size(char32_t ch) noexcept
     {
@@ -1224,9 +1229,9 @@ public:
     {
         return 0x10FFFF;
     }
-    static constexpr STRF_HD int validate(char32_t) noexcept
+    static constexpr STRF_HD int validate(char32_t ch) noexcept
     {
-        return 1;
+        return detail::not_surrogate(ch) && ch < 0x110000 ? 1 : -1;
     }
     static constexpr STRF_HD int encoded_char_size(char32_t) noexcept
     {
@@ -2274,7 +2279,7 @@ STRF_HD strf::transcode_size_result<SrcCharT> static_transcoder
     limit = limit <= 0 ? 0 : limit;
     std::ptrdiff_t size = 0;
     const std::ptrdiff_t pre_limit = limit - 4;
-    
+
     while (size < pre_limit) {
         if (src == src_end) {
             goto completed;

@@ -1307,6 +1307,21 @@ STRF_TEST_FUNC void utf8_miscellaneous()
         TEST_TRUE(tr.transcode_func()      == utf16_to_utf8::transcode);
         TEST_TRUE(tr.transcode_size_func() == utf16_to_utf8::transcode_size);
     }
+
+    TEST_EQ(1, charset.validate(U'a'));
+    TEST_EQ(2, charset.validate(0x80));
+    TEST_EQ(2, charset.validate(0x7FF));
+    TEST_EQ(3, charset.validate(0x800));
+    TEST_EQ(3, charset.validate(0xFFFF));
+    TEST_EQ(4, charset.validate(0x10000));
+    TEST_EQ( 4, charset.validate(0x10FFFF));
+
+    TEST_EQ(-1, charset.validate(0x110000));
+    TEST_EQ( 3, charset.validate(0xD7FF));
+    TEST_EQ(-1, charset.validate(0xD800)); // surrogate
+    TEST_EQ(-1, charset.validate(0xDFFF)); // surrogate
+    TEST_EQ( 3, charset.validate(0xE000));
+
 }
 
 } // unnamed namespace
