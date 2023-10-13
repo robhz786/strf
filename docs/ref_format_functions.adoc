@@ -47,8 +47,19 @@ constexpr /{asterisk}...{asterisk}/ fixed {};
 constexpr /{asterisk}...{asterisk}/ sci {};
 constexpr /{asterisk}...{asterisk}/ gen {};
 constexpr /{asterisk}...{asterisk}/ multi {};
-constexpr /{asterisk}...{asterisk}/ transcode {};
 constexpr /{asterisk}...{asterisk}/ sani {};
+
+template <typename T>
+constexpr /{asterisk}...{asterisk}/ transcode(T&& value);
+
+template <typename T, typename Charset>
+constexpr /{asterisk}...{asterisk}/ transcode(T&& value, Charset&& charset);
+
+template <typename T>
+constexpr /{asterisk}...{asterisk}/ unsafe_transcode(T&& value);
+
+template <typename T, typename Charset>
+constexpr /{asterisk}...{asterisk}/ unsafe_transcode(T&& value, Charset&& charset);
 
 } // inline namespace format_functions
 } // namespace strf

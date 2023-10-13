@@ -250,11 +250,11 @@ struct transcoding_test_data
         , strf::transcoding_error_notifier* err_notifier )
     {
         if (safe_) {
-            return strf::do_transcode
+            return strf::transcode
                 ( src_charset, dst_charset, src.begin(), src.end()
                 , dst, dst_end, err_notifier, flags );
         }
-        return strf::do_unsafe_transcode
+        return strf::unsafe_transcode
             ( src_charset, dst_charset, src.begin(), src.end()
             , dst, dst_end, err_notifier, flags );
     }

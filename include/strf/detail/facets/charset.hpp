@@ -1684,7 +1684,7 @@ template < typename SrcCharset, typename DstCharset
          , typename SrcCharT, typename DstCharT
          , detail::enable_if_t<detail::is_charset<SrcCharset>::value, int> = 0
          , detail::enable_if_t<detail::is_charset<DstCharset>::value, int> = 0 >
-STRF_HD strf::decode_encode_result<SrcCharT, DstCharT> do_transcode
+STRF_HD strf::decode_encode_result<SrcCharT, DstCharT> transcode
     ( SrcCharset src_charset
     , DstCharset dst_charset
     , const SrcCharT* src
@@ -1712,7 +1712,7 @@ template < template <class> class SrcCharsetTmpl
          , template <class> class DstCharsetTmpl
          , typename SrcCharT
          , typename DstCharT >
-STRF_HD strf::decode_encode_result<SrcCharT, DstCharT> do_transcode
+STRF_HD strf::decode_encode_result<SrcCharT, DstCharT> transcode
     ( const SrcCharT* src
     , const SrcCharT* src_end
     , DstCharT* dst
@@ -1731,7 +1731,7 @@ STRF_HD strf::decode_encode_result<SrcCharT, DstCharT> do_transcode
     constexpr src_charset_t src_charset;
     constexpr dst_charset_t dst_charset;
 
-    return strf::do_transcode
+    return strf::transcode
         (src_charset, dst_charset, src, src_end, dst, dst_end, err_notifier, flags);
 }
 
@@ -1741,7 +1741,7 @@ template < typename SrcCharset, typename DstCharset
          , typename SrcCharT, typename DstCharT
          , detail::enable_if_t<detail::is_charset<SrcCharset>::value, int> = 0
          , detail::enable_if_t<detail::is_charset<DstCharset>::value, int> = 0 >
-inline STRF_HD strf::decode_encode_result<SrcCharT, DstCharT> do_transcode
+inline STRF_HD strf::decode_encode_result<SrcCharT, DstCharT> transcode
     ( SrcCharset src_charset
     , DstCharset dst_charset
     , std::basic_string_view<SrcCharT> src
@@ -1750,7 +1750,7 @@ inline STRF_HD strf::decode_encode_result<SrcCharT, DstCharT> do_transcode
     , strf::transcoding_error_notifier* err_notifier = nullptr
     , strf::transcode_flags flags = strf::transcode_flags::none )
 {
-    return strf::do_transcode
+    return strf::transcode
         ( src_charset, dst_charset, src.data(), src.data() + src.size()
         , dst, dst_end, err_notifier, flags );
 }
@@ -1759,7 +1759,7 @@ template < template <class> class SrcCharsetTmpl
          , template <class> class DstCharsetTmpl
          , typename SrcCharT
          , typename DstCharT >
-inline STRF_HD strf::decode_encode_result<SrcCharT, DstCharT> do_transcode
+inline STRF_HD strf::decode_encode_result<SrcCharT, DstCharT> transcode
     ( std::basic_string_view<SrcCharT> src
     , DstCharT* dst
     , DstCharT* dst_end
@@ -1777,7 +1777,7 @@ inline STRF_HD strf::decode_encode_result<SrcCharT, DstCharT> do_transcode
     constexpr src_charset_t src_charset;
     constexpr dst_charset_t dst_charset;
 
-    return strf::do_transcode
+    return strf::transcode
         (src_charset, dst_charset, src, dst, dst_end, err_notifier, flags);
 }
 
@@ -1877,7 +1877,7 @@ template < typename SrcCharset, typename DstCharset
          , typename SrcCharT, typename DstCharT
          , detail::enable_if_t<detail::is_charset<SrcCharset>::value, int> = 0
          , detail::enable_if_t<detail::is_charset<DstCharset>::value, int> = 0 >
-STRF_HD strf::decode_encode_result<SrcCharT, DstCharT> do_unsafe_transcode
+STRF_HD strf::decode_encode_result<SrcCharT, DstCharT> unsafe_transcode
     ( SrcCharset src_charset
     , DstCharset dst_charset
     , const SrcCharT* src
@@ -1904,7 +1904,7 @@ template < template <class> class SrcCharsetTmpl
          , template <class> class DstCharsetTmpl
          , typename SrcCharT
          , typename DstCharT >
-STRF_HD strf::decode_encode_result<SrcCharT, DstCharT> do_unsafe_transcode
+STRF_HD strf::decode_encode_result<SrcCharT, DstCharT> unsafe_transcode
     ( const SrcCharT* src
     , const SrcCharT* src_end
     , DstCharT* dst
@@ -1923,7 +1923,7 @@ STRF_HD strf::decode_encode_result<SrcCharT, DstCharT> do_unsafe_transcode
     constexpr src_charset_t src_charset;
     constexpr dst_charset_t dst_charset;
 
-    return strf::do_unsafe_transcode
+    return strf::unsafe_transcode
         (src_charset, dst_charset, src, src_end, dst, dst_end, err_notifier, flags);
 }
 
@@ -1933,7 +1933,7 @@ template < typename SrcCharset, typename DstCharset
          , typename SrcCharT, typename DstCharT
          , detail::enable_if_t<detail::is_charset<SrcCharset>::value, int> = 0
          , detail::enable_if_t<detail::is_charset<DstCharset>::value, int> = 0 >
-inline STRF_HD strf::decode_encode_result<SrcCharT, DstCharT> do_unsafe_transcode
+inline STRF_HD strf::decode_encode_result<SrcCharT, DstCharT> unsafe_transcode
     ( SrcCharset src_charset
     , DstCharset dst_charset
     , std::basic_string_view<SrcCharT> src
@@ -1942,7 +1942,7 @@ inline STRF_HD strf::decode_encode_result<SrcCharT, DstCharT> do_unsafe_transcod
     , strf::transcoding_error_notifier* err_notifier = nullptr
     , strf::transcode_flags flags = strf::transcode_flags::none )
 {
-    return strf::do_unsafe_transcode
+    return strf::unsafe_transcode
         ( src_charset, dst_charset, src.data()
         , src.data() + src.size(), dst, dst_end, err_notifier, flags );
 }
@@ -1951,7 +1951,7 @@ template < template <class> class SrcCharsetTmpl
          , template <class> class DstCharsetTmpl
          , typename SrcCharT
          , typename DstCharT >
-inline STRF_HD strf::decode_encode_result<SrcCharT, DstCharT> do_unsafe_transcode
+inline STRF_HD strf::decode_encode_result<SrcCharT, DstCharT> unsafe_transcode
     ( std::basic_string_view<SrcCharT> src
     , DstCharT* dst
     , DstCharT* dst_end
@@ -1969,7 +1969,7 @@ inline STRF_HD strf::decode_encode_result<SrcCharT, DstCharT> do_unsafe_transcod
     constexpr src_charset_t src_charset;
     constexpr dst_charset_t dst_charset;
 
-    return strf::do_unsafe_transcode
+    return strf::unsafe_transcode
         (src_charset, dst_charset, src, dst, dst_end, err_notifier, flags);
 }
 
@@ -2090,6 +2090,7 @@ using dynamic_char_encoding STRF_CHAR_ENCODING_DEPRECATED =
 template <typename CharT>
 using char_encoding_c STRF_CHAR_ENCODING_DEPRECATED =
     strf::charset_c<CharT>;
+
 } // namespace strf
 
 #endif // STRF_DETAIL_FACETS_CHARSET_HPP

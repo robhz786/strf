@@ -39,7 +39,7 @@ STRF_TEST_FUNC void test_unsafe_transcode()
         constexpr auto buff_size = 200;
         char8_t buff[200] = {};
 
-        strf::do_unsafe_transcode<strf::utf_t, strf::utf_t>
+        strf::unsafe_transcode<strf::utf_t, strf::utf_t>
             (u"abc\uAAAAzzz\uBBBBxxx"sv, buff, buff + buff_size);
 
         TEST_CSTR_EQ(buff, u8"abc\uAAAAzzz\uBBBBxxx");
@@ -54,7 +54,7 @@ STRF_TEST_FUNC void test_unsafe_transcode()
         char buff[buff_size] = {};
         errors_counter counter;
 
-        strf::do_unsafe_transcode<strf::utf_t, strf::iso_8859_3_t>
+        strf::unsafe_transcode<strf::utf_t, strf::iso_8859_3_t>
             (u"abc\uAAAAzzz\uBBBBxxx"sv, buff, buff + buff_size, &counter);
 
         TEST_CSTR_EQ(buff, "abc?zzz?xxx");

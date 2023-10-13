@@ -33,7 +33,7 @@ using ustr_view = str_view<char16_t>;
 
 
 
-STRF_TEST_FUNC void test_do_transcode()
+STRF_TEST_FUNC void test_transcode()
 {
 #ifdef STRF_HAS_STD_STRING_VIEW
 
@@ -41,7 +41,7 @@ STRF_TEST_FUNC void test_do_transcode()
         constexpr auto buff_size = 200;
         char8_t buff[buff_size] = {};
 
-        strf::do_transcode<strf::utf_t, strf::utf_t>
+        strf::transcode<strf::utf_t, strf::utf_t>
             (u"abc\uAAAAzzz\uBBBBxxx"sv, buff, buff + buff_size);
 
         TEST_CSTR_EQ(buff, u8"abc\uAAAAzzz\uBBBBxxx");
@@ -56,7 +56,7 @@ STRF_TEST_FUNC void test_do_transcode()
         char buff[buff_size] = {};
         errors_counter counter;
 
-        strf::do_transcode<strf::utf_t, strf::iso_8859_3_t>
+        strf::transcode<strf::utf_t, strf::iso_8859_3_t>
             (u"abc\uAAAAzzz\uBBBBxxx"sv, buff, buff + buff_size, &counter);
 
         TEST_CSTR_EQ(buff, "abc?zzz?xxx");
@@ -74,4 +74,4 @@ STRF_TEST_FUNC void test_do_transcode()
 
 } // namespace
 
-REGISTER_STRF_TEST(test_do_transcode)
+REGISTER_STRF_TEST(test_transcode)
