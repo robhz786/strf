@@ -17,20 +17,21 @@
 
 namespace {
 
-const char32_t u32str_D800[] = {0xD800, 0};
-const char32_t u32str_DBFF[] = {0xDBFF, 0};
-const char32_t u32str_DC00[] = {0xDC00, 0};
-const char32_t u32str_DFFF[] = {0xDFFF, 0};
-const char32_t u32str_DFFF_D800_[] = {0xDFFF, 0xD800, u'_', 0};
-
-const char16_t u16str_D800[] = {0xD800, 0};
-const char16_t u16str_DBFF[] = {0xDBFF, 0};
-const char16_t u16str_DC00[] = {0xDC00, 0};
-const char16_t u16str_DFFF[] = {0xDFFF, 0};
-const char16_t u16str_DFFF_D800_[] = {0xDFFF, 0xD800, u'_', 0};
 
 STRF_TEST_FUNC void utf32_to_utf16_unsafe_transcode()
 {
+    const char32_t u32str_D800[] = {0xD800, 0};
+    const char32_t u32str_DBFF[] = {0xDBFF, 0};
+    const char32_t u32str_DC00[] = {0xDC00, 0};
+    const char32_t u32str_DFFF[] = {0xDFFF, 0};
+    const char32_t u32str_DFFF_D800_[] = {0xDFFF, 0xD800, u'_', 0};
+
+    const char16_t u16str_D800[] = {0xD800, 0};
+    const char16_t u16str_DBFF[] = {0xDBFF, 0};
+    const char16_t u16str_DC00[] = {0xDC00, 0};
+    const char16_t u16str_DFFF[] = {0xDFFF, 0};
+    const char16_t u16str_DFFF_D800_[] = {0xDFFF, 0xD800, u'_', 0};
+
     TEST_UNSAFE_TRANSCODE
         .input(U"ab")
         .expect(u"ab")
@@ -214,6 +215,18 @@ STRF_TEST_FUNC void utf32_to_utf16_valid_sequences()
         const auto flags = ( strf::transcode_flags::lax_surrogate_policy |
                              strf::transcode_flags::stop_on_invalid_sequence |
                              strf::transcode_flags::stop_on_unsupported_codepoint );
+
+        const char32_t u32str_D800[] = {0xD800, 0};
+        const char32_t u32str_DBFF[] = {0xDBFF, 0};
+        const char32_t u32str_DC00[] = {0xDC00, 0};
+        const char32_t u32str_DFFF[] = {0xDFFF, 0};
+        const char32_t u32str_DFFF_D800_[] = {0xDFFF, 0xD800, u'_', 0};
+
+        const char16_t u16str_D800[] = {0xD800, 0};
+        const char16_t u16str_DBFF[] = {0xDBFF, 0};
+        const char16_t u16str_DC00[] = {0xDC00, 0};
+        const char16_t u16str_DFFF[] = {0xDFFF, 0};
+        const char16_t u16str_DFFF_D800_[] = {0xDFFF, 0xD800, u'_', 0};
 
         TEST_TRANSCODE
             .input(u32str_D800)

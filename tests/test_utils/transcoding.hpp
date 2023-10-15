@@ -13,12 +13,12 @@ public:
     test_transcode_err_messenger(const test_transcode_err_messenger&) = delete;
     test_transcode_err_messenger& operator=(const test_transcode_err_messenger&) = delete;
 
-    test_transcode_err_messenger(test_transcode_err_messenger&& other)
+    STRF_HD test_transcode_err_messenger(test_transcode_err_messenger&& other)
     {
         *this = (test_transcode_err_messenger&&) other;
     }
 
-    test_transcode_err_messenger& operator=(test_transcode_err_messenger&& other)
+    STRF_HD test_transcode_err_messenger& operator=(test_transcode_err_messenger&& other)
     {
         function_name_ = other.function_name_;
         filename_ = other.filename_;
@@ -33,7 +33,7 @@ public:
         return *this;
     }
 
-    ~test_transcode_err_messenger()
+    STRF_HD ~test_transcode_err_messenger()
     {
         if (function_name_ != nullptr && failed_) {
             test_utils::print_test_message_end(function_name_);
@@ -203,7 +203,7 @@ public:
 
 private:
 
-    void print_sequence(strf::detail::simple_string_view<SrcCharT> seq)
+    STRF_HD void print_sequence(strf::detail::simple_string_view<SrcCharT> seq)
     {
         using src_uchar_t = typename std::make_unsigned<SrcCharT>::type;
         err_msg_.continue_line( "[");
@@ -219,7 +219,10 @@ private:
 template <typename SrcCharset, typename DstCharset>
 struct transcoding_test_data
 {
-    transcoding_test_data(SrcCharset src_charset_, DstCharset dst_charset_, bool safe)
+    STRF_HD transcoding_test_data
+        ( SrcCharset src_charset_
+        , DstCharset dst_charset_
+        , bool safe )
         : src_charset{src_charset_}
         , dst_charset{dst_charset_}
         , safe_{safe}
@@ -415,7 +418,7 @@ STRF_HD void transcode_tester<SrcCharset, DstCharset>::run()
         return;
     }
 
-    transcoding_error_tester notifier
+    transcoding_error_tester<src_char_t> notifier
         { err_msg_, data_.src_charset, data_.dst_charset
         , data_.expected_inv_seqs
         , data_.expected_unsupported_codepoints };

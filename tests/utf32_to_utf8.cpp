@@ -11,21 +11,20 @@ using char8_t = char;
 
 namespace {
 
-const char32_t u32str_D800[] = {0xD800, 0};
-const char32_t u32str_DBFF[] = {0xDBFF, 0};
-const char32_t u32str_DC00[] = {0xDC00, 0};
-const char32_t u32str_DFFF[] = {0xDFFF, 0};
-const char32_t u32str_DFFF_D800_[] = {0xDFFF, 0xD800, u'_', 0};
-
-const char u8str_D800[] = "\xED\xA0\x80";
-const char u8str_DBFF[] = "\xED\xAF\xBF";
-const char u8str_DC00[] = "\xED\xB0\x80";
-const char u8str_DFFF[] = "\xED\xBF\xBF";
-const char u8str_DFFF_D800_[] = "\xED\xBF\xBF\xED\xA0\x80_";
-
-
 STRF_TEST_FUNC void utf32_to_utf8_unsafe_transcode()
 {
+    const char32_t u32str_D800[] = {0xD800, 0};
+    const char32_t u32str_DBFF[] = {0xDBFF, 0};
+    const char32_t u32str_DC00[] = {0xDC00, 0};
+    const char32_t u32str_DFFF[] = {0xDFFF, 0};
+    const char32_t u32str_DFFF_D800_[] = {0xDFFF, 0xD800, u'_', 0};
+
+    const char u8str_D800[] = "\xED\xA0\x80";
+    const char u8str_DBFF[] = "\xED\xAF\xBF";
+    const char u8str_DC00[] = "\xED\xB0\x80";
+    const char u8str_DFFF[] = "\xED\xBF\xBF";
+    const char u8str_DFFF_D800_[] = "\xED\xBF\xBF\xED\xA0\x80_";
+
     TEST_UTF_UNSAFE_TRANSCODE(char32_t, char8_t)
         .input(U"ab")
         .expect(u8"ab")
@@ -224,6 +223,18 @@ STRF_TEST_FUNC void utf32_to_utf8_valid_sequences()
         const auto flags = ( strf::transcode_flags::lax_surrogate_policy |
                              strf::transcode_flags::stop_on_invalid_sequence |
                              strf::transcode_flags::stop_on_unsupported_codepoint );
+
+        const char32_t u32str_D800[] = {0xD800, 0};
+        const char32_t u32str_DBFF[] = {0xDBFF, 0};
+        const char32_t u32str_DC00[] = {0xDC00, 0};
+        const char32_t u32str_DFFF[] = {0xDFFF, 0};
+        const char32_t u32str_DFFF_D800_[] = {0xDFFF, 0xD800, u'_', 0};
+
+        const char u8str_D800[] = "\xED\xA0\x80";
+        const char u8str_DBFF[] = "\xED\xAF\xBF";
+        const char u8str_DC00[] = "\xED\xB0\x80";
+        const char u8str_DFFF[] = "\xED\xBF\xBF";
+        const char u8str_DFFF_D800_[] = "\xED\xBF\xBF\xED\xA0\x80_";
 
         TEST_UTF_TRANSCODE(char32_t, char)
             .input(u32str_D800)

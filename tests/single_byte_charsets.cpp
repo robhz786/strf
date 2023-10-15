@@ -1355,7 +1355,8 @@ inline STRF_HD void test_undefined_bytes
     }
 }
 
-STRF_HD void basic_tests_utf32_to_single_byte_charset(strf::dynamic_charset<char> cs)
+template <typename Charset>
+STRF_HD void basic_tests_utf32_to_single_byte_charset(Charset cs)
 {
     // happy scenario case
     TEST_TRANSCODE(strf::utf<char32_t>, cs)
@@ -1715,8 +1716,8 @@ STRF_HD void test_sanitize()
 
 STRF_TEST_FUNC void test_single_byte_charsets()
 {
-    basic_tests_utf32_to_single_byte_charset(strf::iso_8859_1<char>.to_dynamic());
-    basic_tests_utf32_to_single_byte_charset(strf::iso_8859_7<char>.to_dynamic());
+    basic_tests_utf32_to_single_byte_charset(strf::iso_8859_1<char>);
+    basic_tests_utf32_to_single_byte_charset(strf::iso_8859_7<char>);
     test_to_utf32();
     test_sanitize();
 
