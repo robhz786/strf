@@ -43,10 +43,10 @@ public:
     STRF_HD test_transcode_err_messenger
         ( const char* function_name
         , const char* filename
-        , int line )
+        , int sourceline )
         : function_name_(function_name)
         , filename_(filename)
-        , line_(line)
+        , line_(sourceline)
     {
         STRF_ASSERT((function_name == nullptr) == (filename == nullptr));
     }
@@ -190,7 +190,7 @@ public:
 
         auto obtained_seq =strf::detail::simple_string_view<SrcCharT>
             ( reinterpret_cast<const SrcCharT*>(sequence_ptr)
-            , code_units_count );
+            , strf::detail::safe_cast_size_t(code_units_count) );
 
         if (expected_seq != obtained_seq) {
             err_msg_.line("Mismatch invalid_sequence at index ", inv_seqs_count_ - 1);
@@ -240,7 +240,7 @@ struct transcoding_test_data
 
     strf::detail::simple_string_view<src_char_t> src;
     strf::detail::simple_string_view<dst_char_t> expected;
-    std::size_t dst_size = 200;
+    std::ptrdiff_t dst_size = 200;
     inv_seq_list_t expected_inv_seqs;
     unsupported_codepoints_list_t expected_unsupported_codepoints;
     strf::transcode_stop_reason expected_stop_reason = strf::transcode_stop_reason::completed;
@@ -314,7 +314,7 @@ struct transcoding_test_data_maker
         data.flags = f;
         return (transcoding_test_data_maker&&) *this;
     }
-    STRF_HD transcoding_test_data_maker&& destination_size(std::size_t s) &&
+    STRF_HD transcoding_test_data_maker&& destination_size(std::ptrdiff_t s) &&
     {
         data.dst_size = s;
         return (transcoding_test_data_maker&&) *this;
@@ -410,7 +410,7 @@ public:
 template <typename SrcCharset, typename DstCharset>
 STRF_HD void transcode_tester<SrcCharset, DstCharset>::run()
 {
-    const std::size_t buff_size = 200;
+    const std::ptrdiff_t buff_size = 200;
     dst_char_t buff[buff_size];
     if (data_.dst_size > buff_size) {
         err_msg_.line( "WARNING, requested destination_size is larget than "

@@ -733,13 +733,13 @@ STRF_HD strf::transcode_result<SrcCharT, DstCharT> bypass_unsafe_transcode
     using reason = strf::transcode_stop_reason;
     if (src < src_end) {
         auto len = src_end - src;
-        const auto dst_space = dst_end - dst;
+        const auto dst_space = detail::zero_if_negative(dst_end - dst);
         if (len <= dst_space) {
-            detail::copy_n(src, len, dst);
+            detail::copy_n(src, detail::cast_unsigned(len), dst);
             STRF_ASSERT(src_end == src + len);
             return {src_end, dst + len, reason::completed};
         }
-        strf::detail::copy_n(src, dst_space, dst);
+        strf::detail::copy_n(src, detail::cast_unsigned(dst_space), dst);
         return {src + dst_space, dst + dst_space, reason::insufficient_output_space};
     }
     return {src, dst, reason::completed};

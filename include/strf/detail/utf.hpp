@@ -836,7 +836,7 @@ public:
         , strf::transcoding_error_notifier* err_notifier
         , strf::transcode_flags flags )
     {
-        return detail::bypass_unsafe_transcode(src, src_end, dst, err_notifier, flags);
+        return detail::bypass_unsafe_transcode(src, src_end, dst, dst_end, err_notifier, flags);
     }
 
     static STRF_HD strf::transcode_size_result<SrcCharT> unsafe_transcode_size
@@ -1795,8 +1795,8 @@ STRF_HD strf::transcode_result<SrcCharT, DstCharT> strf::static_transcoder
     using reason = strf::transcode_stop_reason;
     static_assert(sizeof(SrcCharT) == sizeof(DstCharT), "");
 
-    auto len = src_end - src;
-    const auto dst_space = dst_end - dst;
+    auto len = detail::safe_cast_size_t(src_end - src);
+    const auto dst_space = detail::safe_cast_size_t(dst_end - dst);
     if (len <= dst_space) {
         detail::copy_n(src, len, dst);
         STRF_ASSERT(src_end == src + len);
@@ -1806,7 +1806,7 @@ STRF_HD strf::transcode_result<SrcCharT, DstCharT> strf::static_transcoder
     while (detail::is_utf8_continuation(*next_src) && next_src > src) {
         --next_src;
     }
-    const auto count = next_src - src;
+    const auto count = detail::cast_unsigned(next_src - src);
     strf::detail::copy_n(src, count, dst);
     return {next_src, dst + count, reason::insufficient_output_space};
 }
@@ -2588,15 +2588,15 @@ STRF_HD strf::transcode_result<SrcCharT, DstCharT> strf::static_transcoder
     static_assert(sizeof(SrcCharT) == sizeof(DstCharT), "");
 
     if (src < src_end) {
-        auto len = src_end - src;
+        auto len = detail::zero_if_negative(src_end - src);
         STRF_ASSERT(src < src_end);
         const auto dst_space = dst_end - dst;
         if (len <= dst_space) {
-            detail::copy_n(src, len, dst);
+            detail::copy_n(src, detail::cast_unsigned(len), dst);
             STRF_ASSERT(src_end == src + len);
             return {src_end, dst + len, reason::completed};
         }
-        auto count = dst_space;
+        auto count = detail::safe_cast_size_t(dst_space);
         if (dst_space != 0) {
             if (detail::is_low_surrogate(src[count]) &&
                 detail::is_high_surrogate(src[count - 1])) {
@@ -3021,7 +3021,7 @@ STRF_HD strf::transcode_size_result<SrcCharT> strf::static_transcoder
     if (src_end - src <= limit) {
         if (strf::with_strict_surrogate_policy(flags)) {
             for ( ; src < src_end; ++src) {
-                if (*src >= 0x110000 || detail::is_surrogate(*src)) {
+                if (*src >= 0x110000 || detail::is_surrogate(detail::cast_unsigned(*src))) {
                     return {src - src_begin, src, reason::invalid_sequence};
                 }
             }
@@ -3036,7 +3036,7 @@ STRF_HD strf::transcode_size_result<SrcCharT> strf::static_transcoder
         const auto* src_limit = src_begin + limit;
         if (strf::with_strict_surrogate_policy(flags)) {
             for ( ; src < src_end; ++src) {
-                if (*src >= 0x110000 || detail::is_surrogate(*src)) {
+                if (*src >= 0x110000 || detail::is_surrogate(detail::cast_unsigned(*src))) {
                     return {src - src_begin, src, reason::invalid_sequence};
                 }
                 if (src >= src_limit) {

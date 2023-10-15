@@ -127,7 +127,7 @@ struct sbcs_find_unsupported_codepoint_crtp
         , bool strict_surrogates ) noexcept
     {
         using stop_reason = strf::transcode_stop_reason;
-        static_assert(sizeof(CharT) == 4);
+        static_assert(sizeof(CharT) == 4, "");
 
         if (src_end - src <= limit) {
             if (strict_surrogates) {
@@ -230,7 +230,7 @@ struct sbcs_find_unsupported_codepoint_crtp
         , std::ptrdiff_t limit
         , bool strict_surrogates ) noexcept
     {
-        static_assert(sizeof(CharT) == 4);
+        static_assert(sizeof(CharT) == 4, "");
         using stop_reason = strf::transcode_stop_reason;
         if (src_end - src <= limit) {
             if (strict_surrogates) {
@@ -281,7 +281,7 @@ struct sbcs_find_unsupported_codepoint_crtp
         , const CharT* src_end
         , std::ptrdiff_t limit ) noexcept
     {
-        static_assert(sizeof(CharT) == 4);
+        static_assert(sizeof(CharT) == 4, "");
         using stop_reason = strf::transcode_stop_reason;
         if (src_end - src <= limit) {
             for(auto it = src; it < src_end; ++it) {
@@ -2656,7 +2656,8 @@ utf32_to_single_byte_charset<SrcCharT, DstCharT, Impl>::transcode
 
             if (!is_invalid) {
                 if (err_notifier) {
-                    err_notifier->unsupported_codepoint(Impl::name(), *src);
+                    auto codepoint = detail::cast_unsigned(*src);
+                    err_notifier->unsupported_codepoint(Impl::name(), codepoint);
                 }
                 if (strf::with_stop_on_unsupported_codepoint(flags)) {
                     return {src, dst_it, reason::unsupported_codepoint};
@@ -2695,7 +2696,8 @@ utf32_to_single_byte_charset<SrcCharT, DstCharT, Impl>::unsafe_transcode
         unsigned ch = Impl::encode(detail::cast_u32(*src));
         STRF_IF_UNLIKELY (ch >= 0x100) {
             if (err_notifier) {
-                err_notifier->unsupported_codepoint(Impl::name(), *src);
+                auto codepoint = detail::cast_unsigned(*src);
+                err_notifier->unsupported_codepoint(Impl::name(), codepoint);
             }
             if (strf::with_stop_on_unsupported_codepoint(flags)) {
                 return {src, dst_it, reason::unsupported_codepoint};
