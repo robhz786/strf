@@ -71,22 +71,22 @@ void test_wide_successfull_writing()
 }
 
 struct traits_that_fails {
-    STRF_HD traits_that_fails(char* dest, std::size_t dest_size)
-        : dest_(dest)
-        , dest_end_(dest + dest_size)
+    STRF_HD traits_that_fails(char* dst, std::size_t dst_size)
+        : dst_(dst)
+        , dst_end_(dst + dst_size)
     {
     }
 
     STRF_HD std::size_t write(const char* ptr, std::size_t count) noexcept {
-        const std::size_t size = strf::detail::safe_cast_size_t(dest_end_ - dest_);
+        const std::size_t size = strf::detail::safe_cast_size_t(dst_end_ - dst_);
         const std::size_t c = count <= size ? count : size;
-        memcpy(dest_, ptr, c);
-        dest_ += c;
+        memcpy(dst_, ptr, c);
+        dst_ += c;
         return c;
     }
 
-    char* dest_;
-    char* dest_end_;
+    char* dst_;
+    char* dst_end_;
 };
 
 void test_cfile_writer_base()

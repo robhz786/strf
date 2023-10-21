@@ -14,31 +14,15 @@
 // https://www.unicode.org/Public/MAPPINGS/VENDORS/MICSFT/WindowsBestFit/
 // https://www.fileformat.info/info/charset/ISO-8859-8/
 
-#if ! defined(STRF_CHECK_DEST)
-
-#define STRF_CHECK_DEST                          \
-    STRF_IF_UNLIKELY (dest_it == dest_end) {     \
-        dest.advance_to(dest_it);                \
-        dest.flush();                            \
-        STRF_IF_UNLIKELY (!dest.good()) {        \
-            return;                              \
-        }                                        \
-        dest_it = dest.buffer_ptr();             \
-        dest_end = dest.buffer_end();            \
+#define STRF_SBC_CHECK_DST                                    \
+    STRF_IF_UNLIKELY (dst_it == dst_end) {                   \
+        return {seq_begin, dst_it, reason::insufficient_output_space};    \
     }
 
-#define STRF_CHECK_DEST_SIZE(SIZE)                  \
-    STRF_IF_UNLIKELY (dest_it + SIZE > dest_end) {  \
-        dest.advance_to(dest_it);                   \
-        dest.flush();                               \
-        STRF_IF_UNLIKELY (!dest.good()) {           \
-            return;                                 \
-        }                                           \
-        dest_it = dest.buffer_ptr();                \
-        dest_end = dest.buffer_end();               \
+#define STRF_SBC_CHECK_DST_SIZE(SIZE)                         \
+    STRF_IF_UNLIKELY (dst_it + (SIZE) > dst_end) {           \
+        return {seq_begin, dst_it, reason::insufficient_output_space};    \
     }
-
-#endif // ! defined(STRF_CHECK_DEST)
 
 #define STRF_DEF_SINGLE_BYTE_CHARSET_(CHARSET)                                \
     template <typename CharT>                                                 \
@@ -47,25 +31,25 @@
             < CharT, strf::detail::impl_ ## CHARSET >                         \
     { };                                                                      \
                                                                               \
-    template <typename SrcCharT, typename DestCharT>                          \
+    template <typename SrcCharT, typename DstCharT>                          \
     class static_transcoder                                                   \
-        < SrcCharT, DestCharT, strf::csid_ ## CHARSET, strf::csid_ ## CHARSET > \
-        : public strf::detail::single_byte_charset_sanitizer                  \
-            < SrcCharT, DestCharT, strf::detail::impl_ ## CHARSET >           \
+        < SrcCharT, DstCharT, strf::csid_ ## CHARSET, strf::csid_ ## CHARSET > \
+        : public strf::detail::single_byte_charset_to_itself                  \
+            < SrcCharT, DstCharT, strf::detail::impl_ ## CHARSET >           \
     {};                                                                       \
                                                                               \
-    template <typename SrcCharT, typename DestCharT>                          \
+    template <typename SrcCharT, typename DstCharT>                          \
     class static_transcoder                                                   \
-        < SrcCharT, DestCharT, strf::csid_utf32, strf::csid_ ## CHARSET >     \
+        < SrcCharT, DstCharT, strf::csid_utf32, strf::csid_ ## CHARSET >     \
         : public strf::detail::utf32_to_single_byte_charset                   \
-            < SrcCharT, DestCharT, strf::detail::impl_ ## CHARSET >           \
+            < SrcCharT, DstCharT, strf::detail::impl_ ## CHARSET >           \
     {};                                                                       \
                                                                               \
-    template <typename SrcCharT, typename DestCharT>                          \
+    template <typename SrcCharT, typename DstCharT>                          \
     class static_transcoder                                                   \
-        < SrcCharT, DestCharT, strf::csid_ ## CHARSET, strf::csid_utf32 >     \
+        < SrcCharT, DstCharT, strf::csid_ ## CHARSET, strf::csid_utf32 >     \
         : public strf::detail::single_byte_charset_to_utf32                   \
-            < SrcCharT, DestCharT, strf::detail::impl_ ## CHARSET >           \
+            < SrcCharT, DstCharT, strf::detail::impl_ ## CHARSET >           \
     {};                                                                       \
                                                                               \
     template <typename CharT>                                                 \
@@ -89,6 +73,237 @@ namespace strf {
 
 namespace detail {
 
+template <typename T>
+struct sbcs_find_invalid_seq_crtp
+{
+    template <typename CharT>
+    static STRF_HD strf::transcode_size_result<CharT> find_invalid_sequence
+        ( const CharT* src, const CharT* src_end, std::ptrdiff_t limit ) noexcept
+    {
+        using stop_reason = strf::transcode_stop_reason;
+        if (src_end - src <= limit) {
+            for(const auto* it = src; it < src_end; ++it) {
+                if (!T::is_valid(static_cast<std::uint8_t>(*it))) {
+                    return {it - src, it, stop_reason::invalid_sequence};;
+                }
+            }
+            return {src_end - src, src_end, stop_reason::completed};
+        }
+        const auto* const src_limit = src + limit;
+        for(const auto* it = src; ; ++it) {
+            if (!T::is_valid(static_cast<std::uint8_t>(*it))) {
+                return {it - src, it, stop_reason::invalid_sequence};
+            }
+            if (it == src_limit) {
+                return {it - src, it, stop_reason::insufficient_output_space};
+            }
+        }
+    }
+};
+
+template <typename T>
+struct sbcs_never_has_invalid_seq_crtp
+{
+    template <typename CharT>
+    static STRF_HD strf::transcode_size_result<CharT> find_invalid_sequence
+        ( const CharT* src, const CharT* src_end, std::ptrdiff_t limit ) noexcept
+    {
+        using stop_reason = strf::transcode_stop_reason;
+        if (src_end - src <= limit) {
+            return {src_end - src, src_end, stop_reason::completed};
+        }
+        return {limit, src + limit, stop_reason::insufficient_output_space};
+    }
+};
+
+template <typename T>
+struct sbcs_find_unsupported_codepoint_crtp
+{
+    template <typename CharT>
+    static STRF_HD strf::transcode_size_result<CharT> find_first_invalid_codepoint
+        ( const CharT* src
+        , const CharT* src_end
+        , std::ptrdiff_t limit
+        , bool strict_surrogates ) noexcept
+    {
+        using stop_reason = strf::transcode_stop_reason;
+        static_assert(sizeof(CharT) == 4, "");
+
+        if (src_end - src <= limit) {
+            if (strict_surrogates) {
+                for(auto it = src; it < src_end; ++it) {
+                    if (*it >= 0x110000 || (0xD800 <= *it && *it <= 0xFFFF)) {
+                        return {it - src, it, stop_reason::invalid_sequence};
+                    }
+                }
+            } else {
+                for(auto it = src; it < src_end; ++it) {
+                    if (*it >= 0x110000) {
+                        return {it - src, it, stop_reason::invalid_sequence};
+                    }
+                }
+            }
+            return {src_end - src, src_end, stop_reason::completed};
+        }
+        const auto* const src_limit = src + limit;
+        if (strict_surrogates) {
+            for(auto it = src; ; ++it) {
+                if (*it >= 0x110000 || (0xD800 <= *it && *it <= 0xFFFF)) {
+                    return {it - src, it, stop_reason::invalid_sequence};
+                }
+                if (it == src_limit) {
+                    return {it - src, it, stop_reason::insufficient_output_space};
+                }
+            }
+        }
+        for(auto it = src; ; ++it) {
+            if (*it >= 0x110000) {
+                return {it - src, it, stop_reason::invalid_sequence};
+            }
+            if (it == src_limit) {
+                return {it - src, it, stop_reason::insufficient_output_space};
+            }
+        }
+    }
+
+    template <typename CharT>
+    static STRF_HD strf::transcode_size_result<CharT> find_first_unsupported_or_invalid_codepoint
+        ( const CharT* src
+        , const CharT* src_end
+        , std::ptrdiff_t limit
+        , bool strict_surrogates ) noexcept
+    {
+        using stop_reason = strf::transcode_stop_reason;
+        if (src_end - src <= limit) {
+            if (strict_surrogates) {
+                for(auto it = src; it < src_end; ++it) {
+                    if (*it >= 0x110000 || (0xD800 <= *it && *it <= 0xFFFF)) {
+                        return {it - src, it, stop_reason::invalid_sequence};
+                    }
+                    if (T::encode(static_cast<char32_t>(*it)) >= 0x100) {
+                        return {it - src, it, stop_reason::unsupported_codepoint};
+                    }
+                }
+            } else {
+                for(auto it = src; it < src_end; ++it) {
+                    if (*it >= 0x110000) {
+                        return {it - src, it, stop_reason::invalid_sequence};
+                    }
+                    if (T::encode(static_cast<char32_t>(*it)) >= 0x100) {
+                        return {it - src, it, stop_reason::unsupported_codepoint};
+                    }
+                }
+            }
+            return {src_end - src, src_end, stop_reason::completed};
+        }
+        const auto* const src_limit = src + limit;
+        if (strict_surrogates) {
+            for(auto it = src; ; ++it) {
+                if (*it >= 0x110000 || (0xD800 <= *it && *it <= 0xFFFF)) {
+                    return {it - src, it, stop_reason::invalid_sequence};
+                }
+                if (T::encode(static_cast<char32_t>(*it)) >= 0x100) {
+                    return {it - src, it, stop_reason::unsupported_codepoint};
+                }
+                if (it == src_limit) {
+                    return {it - src, it, stop_reason::insufficient_output_space};
+                }
+            }
+        }
+        for(auto it = src; ; ++it) {
+            if (*it >= 0x110000) {
+                return {it - src, it, stop_reason::invalid_sequence};
+            }
+            if (T::encode(static_cast<char32_t>(*it)) >= 0x100) {
+                return {it - src, it, stop_reason::unsupported_codepoint};
+            }
+            if (it == src_limit) {
+                return {it - src, it, stop_reason::insufficient_output_space};
+            }
+        }
+    }
+
+    template <typename CharT>
+    static STRF_HD strf::transcode_size_result<CharT> find_first_valid_unsupported_codepoint
+        ( const CharT* src
+        , const CharT* src_end
+        , std::ptrdiff_t limit
+        , bool strict_surrogates ) noexcept
+    {
+        static_assert(sizeof(CharT) == 4, "");
+        using stop_reason = strf::transcode_stop_reason;
+        if (src_end - src <= limit) {
+            if (strict_surrogates) {
+                for(auto it = src; it < src_end; ++it) {
+                    if ( (*it <= 0xD800 || (0xFFFF <= *it && *it <= 0x10FFFF))
+                         && T::encode(static_cast<char32_t>(*it)) >= 0x100)
+                    {
+                        return {it - src, it, stop_reason::unsupported_codepoint};
+                    }
+                }
+            } else {
+                for(auto it = src; it < src_end; ++it) {
+                    if (*it <= 0x110000 && T::encode(static_cast<char32_t>(*it)) >= 0x100) {
+                        return {it - src, it, stop_reason::unsupported_codepoint};
+                    }
+                }
+            }
+            return {src_end - src, src_end, stop_reason::completed};
+        }
+
+        const auto* const src_limit = src + limit;
+        if (strict_surrogates) {
+            for(auto it = src; ; ++it) {
+                if ( (*it <= 0xD800 || (0xFFFF <= *it && *it <= 0x10FFFF))
+                     && T::encode(static_cast<char32_t>(*it)) >= 0x100)
+                {
+                    return {it - src, it, stop_reason::unsupported_codepoint};
+                }
+                if (it == src_limit) {
+                    return {it - src, it, stop_reason::insufficient_output_space};
+                }
+            }
+        }
+        for(auto it = src; ; ++it) {
+            if (*it <= 0x110000 && T::encode(static_cast<char32_t>(*it)) >= 0x100) {
+                return {it - src, it, stop_reason::unsupported_codepoint};
+            }
+            if (it == src_limit) {
+                return {src_end - src, src_end, stop_reason::insufficient_output_space};
+            }
+        }
+    }
+
+
+   template <typename CharT>
+   static STRF_HD strf::transcode_size_result<CharT> find_first_unsupported_codepoint
+        ( const CharT* src
+        , const CharT* src_end
+        , std::ptrdiff_t limit ) noexcept
+    {
+        static_assert(sizeof(CharT) == 4, "");
+        using stop_reason = strf::transcode_stop_reason;
+        if (src_end - src <= limit) {
+            for(auto it = src; it < src_end; ++it) {
+                if (T::encode(static_cast<char32_t>(*it)) >= 0x100) {
+                    return {it - src, it, stop_reason::unsupported_codepoint};
+                }
+            }
+            return {src_end - src, src_end, stop_reason::completed};
+        }
+        const auto* const src_limit = src + limit;
+        for(auto it = src; ; ++it) {
+            if (T::encode(static_cast<char32_t>(*it)) >= 0x100) {
+                return {it - src, it, stop_reason::unsupported_codepoint};
+            }
+            if (it == src_limit) {
+                return {it - src, it, stop_reason::insufficient_output_space};
+            }
+        }
+    }
+
+};
+
 template<size_t SIZE, class T>
 constexpr STRF_HD size_t array_size(T (&)[SIZE]) {
     return SIZE;
@@ -109,6 +324,8 @@ struct cmp_ch32_to_char
 };
 
 struct impl_ascii
+    : sbcs_find_invalid_seq_crtp<impl_ascii>
+    , sbcs_find_unsupported_codepoint_crtp<impl_ascii>
 {
     static STRF_HD const char* name() noexcept
     {
@@ -116,23 +333,25 @@ struct impl_ascii
     };
     static constexpr strf::charset_id id = strf::csid_ascii;
 
-    static STRF_HD bool is_valid(std::uint8_t ch)
+    static STRF_HD bool is_valid(std::uint8_t ch) noexcept
     {
         return ch < 0x80;
     }
-    static STRF_HD char32_t decode(std::uint8_t ch)
+    static STRF_HD char32_t decode(std::uint8_t ch) noexcept
     {
         if (ch < 0x80)
             return ch;
         return 0xFFFD;
     }
-    static STRF_HD unsigned encode(char32_t ch)
+    static STRF_HD unsigned encode(char32_t ch) noexcept
     {
         return ch < 0x80 ? ch : (ch == 0xFFFD ? '?' : 0x100);
     }
 };
 
 struct impl_iso_8859_1
+    : sbcs_never_has_invalid_seq_crtp<impl_iso_8859_1>
+    , sbcs_find_unsupported_codepoint_crtp<impl_iso_8859_1>
 {
     static STRF_HD const char* name() noexcept
     {
@@ -144,17 +363,19 @@ struct impl_iso_8859_1
     {
         return true;
     }
-    static STRF_HD char32_t decode(std::uint8_t ch)
+    static STRF_HD char32_t decode(std::uint8_t ch) noexcept
     {
         return ch;
     }
-    static STRF_HD unsigned encode(char32_t ch)
+    static STRF_HD unsigned encode(char32_t ch) noexcept
     {
         return ch == 0xFFFD ? '?' : ch;
     }
 };
 
 struct impl_iso_8859_2
+    : sbcs_never_has_invalid_seq_crtp<impl_iso_8859_2>
+    , sbcs_find_unsupported_codepoint_crtp<impl_iso_8859_2>
 {
     static STRF_HD const char* name() noexcept
     {
@@ -162,12 +383,12 @@ struct impl_iso_8859_2
     };
     static constexpr strf::charset_id id = strf::csid_iso_8859_2;
 
-    static STRF_HD bool is_valid(std::uint8_t)
+    static STRF_HD bool is_valid(std::uint8_t) noexcept
     {
         return true;
     }
 
-    static STRF_HD unsigned encode(char32_t ch)
+    static STRF_HD unsigned encode(char32_t ch) noexcept
     {
         if (ch <= 0xA0) {
             return ch;
@@ -175,7 +396,7 @@ struct impl_iso_8859_2
         return encode_ext(ch);
     }
 
-    static STRF_HD char32_t decode(std::uint8_t ch)
+    static STRF_HD char32_t decode(std::uint8_t ch) noexcept
     {
         STRF_IF_LIKELY (ch <= 0xA0) {
             return ch;
@@ -198,13 +419,13 @@ struct impl_iso_8859_2
 
 private:
 
-    static STRF_HD unsigned encode_ext(char32_t ch);
+    static STRF_HD unsigned encode_ext(char32_t ch) noexcept;
 };
 
 #if ! defined(STRF_OMIT_IMPL)
 
 // NOLINTNEXTLINE(misc-definitions-in-headers)
-STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_2::encode_ext(char32_t ch)
+STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_2::encode_ext(char32_t ch) noexcept
 {
     static const ch32_to_char char_map[] =
         { {0x00A4, 0xA4}, {0x00A7, 0xA7}, {0x00A8, 0xA8}, {0x00AD, 0xAD}
@@ -241,6 +462,8 @@ STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_2::encode_ext(char32_t ch)
 #endif // ! defined(STRF_OMIT_IMPL)
 
 struct impl_iso_8859_3
+    : sbcs_find_invalid_seq_crtp<impl_iso_8859_3>
+    , sbcs_find_unsupported_codepoint_crtp<impl_iso_8859_3>
 {
     static STRF_HD const char* name() noexcept
     {
@@ -248,18 +471,13 @@ struct impl_iso_8859_3
     };
     static constexpr strf::charset_id id = strf::csid_iso_8859_3;
 
-    static STRF_HD bool is_valid(std::uint8_t ch)
+    static STRF_HD bool is_valid(std::uint8_t ch) noexcept
     {
-        return ch != 0xA5
-            && ch != 0xAE
-            && ch != 0xBE
-            && ch != 0xC3
-            && ch != 0xD0
-            && ch != 0xE3
-            && ch != 0xF0;
+        return ch < 0xA5 || ( ch != 0xA5 && ch != 0xAE && ch != 0xBE && ch != 0xC3 &&
+                              ch != 0xD0 && ch != 0xE3 && ch != 0xF0 );
     }
 
-    static STRF_HD unsigned encode(char32_t ch)
+    static STRF_HD unsigned encode(char32_t ch) noexcept
     {
         if (ch <= 0xA0) {
             return ch;
@@ -267,7 +485,7 @@ struct impl_iso_8859_3
         return encode_ext(ch);
     }
 
-    static STRF_HD char32_t decode(std::uint8_t ch)
+    static STRF_HD char32_t decode(std::uint8_t ch) noexcept
     {
         if (ch <= 0xA0) {
             return ch;
@@ -292,13 +510,13 @@ struct impl_iso_8859_3
 
 private:
 
-    static STRF_HD unsigned encode_ext(char32_t ch);
+    static STRF_HD unsigned encode_ext(char32_t ch) noexcept;
 };
 
 #if ! defined(STRF_OMIT_IMPL)
 
 // NOLINTNEXTLINE(misc-definitions-in-headers)
-STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_3::encode_ext(char32_t ch)
+STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_3::encode_ext(char32_t ch) noexcept
 {
     static const ch32_to_char char_map[] =
         { {0x00A3, 0xA3}, {0x00A4, 0xA4}, {0x00A7, 0xA7}, {0x00A8, 0xA8}
@@ -334,6 +552,8 @@ STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_3::encode_ext(char32_t ch)
 #endif // ! defined(STRF_OMIT_IMPL)
 
 struct impl_iso_8859_4
+    : sbcs_never_has_invalid_seq_crtp<impl_iso_8859_4>
+    , sbcs_find_unsupported_codepoint_crtp<impl_iso_8859_4>
 {
     static STRF_HD const char* name() noexcept
     {
@@ -341,12 +561,12 @@ struct impl_iso_8859_4
     };
     static constexpr strf::charset_id id = strf::csid_iso_8859_4;
 
-    static STRF_HD bool is_valid(std::uint8_t)
+    static STRF_HD bool is_valid(std::uint8_t) noexcept
     {
         return true;
     }
 
-    static STRF_HD unsigned encode(char32_t ch)
+    static STRF_HD unsigned encode(char32_t ch) noexcept
     {
         if (ch <= 0xA0) {
             return ch;
@@ -354,7 +574,7 @@ struct impl_iso_8859_4
         return encode_ext(ch);
     }
 
-    static STRF_HD char32_t decode(std::uint8_t ch)
+    static STRF_HD char32_t decode(std::uint8_t ch) noexcept
     {
         if (ch <= 0xA0) {
             return ch;
@@ -377,13 +597,13 @@ struct impl_iso_8859_4
 
 private:
 
-    static STRF_HD unsigned encode_ext(char32_t ch);
+    static STRF_HD unsigned encode_ext(char32_t ch) noexcept;
 };
 
 #if ! defined(STRF_OMIT_IMPL)
 
 // NOLINTNEXTLINE(misc-definitions-in-headers)
-STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_4::encode_ext(char32_t ch)
+STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_4::encode_ext(char32_t ch) noexcept
 {
     static const ch32_to_char char_map[] =
         { {0x00A4, 0xA4}, {0x00A7, 0xA7}, {0x00A8, 0xA8}, {0x00AD, 0xAD}
@@ -420,6 +640,8 @@ STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_4::encode_ext(char32_t ch)
 #endif // ! defined(STRF_OMIT_IMPL)
 
 struct impl_iso_8859_5
+    : sbcs_never_has_invalid_seq_crtp<impl_iso_8859_5>
+    , sbcs_find_unsupported_codepoint_crtp<impl_iso_8859_5>
 {
     static STRF_HD const char* name() noexcept
     {
@@ -427,12 +649,12 @@ struct impl_iso_8859_5
     };
     static constexpr strf::charset_id id = strf::csid_iso_8859_5;
 
-    static STRF_HD bool is_valid(std::uint8_t)
+    static STRF_HD bool is_valid(std::uint8_t) noexcept
     {
         return true;
     }
 
-    static STRF_HD unsigned encode(char32_t ch)
+    static STRF_HD unsigned encode(char32_t ch) noexcept
     {
         if (ch <= 0xA0) {
             return ch;
@@ -440,7 +662,7 @@ struct impl_iso_8859_5
         return encode_ext(ch);
     }
 
-    static STRF_HD char32_t decode(std::uint8_t ch)
+    static STRF_HD char32_t decode(std::uint8_t ch) noexcept
     {
         if (ch <= 0xA0) {
             return ch;
@@ -463,13 +685,13 @@ struct impl_iso_8859_5
 
 private:
 
-    static STRF_HD unsigned encode_ext(char32_t ch);
+    static STRF_HD unsigned encode_ext(char32_t ch) noexcept;
 };
 
 #if ! defined(STRF_OMIT_IMPL)
 
 // NOLINTNEXTLINE(misc-definitions-in-headers)
-STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_5::encode_ext(char32_t ch)
+STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_5::encode_ext(char32_t ch) noexcept
 {
     static const ch32_to_char char_map[] =
         { {0x00A7, 0xFD}, {0x00AD, 0xAD}, {0x0401, 0xA1}, {0x0402, 0xA2}
@@ -506,6 +728,8 @@ STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_5::encode_ext(char32_t ch)
 #endif // ! defined(STRF_OMIT_IMPL)
 
 struct impl_iso_8859_6
+    : sbcs_find_invalid_seq_crtp<impl_iso_8859_6>
+    , sbcs_find_unsupported_codepoint_crtp<impl_iso_8859_6>
 {
     static STRF_HD const char* name() noexcept
     {
@@ -513,14 +737,14 @@ struct impl_iso_8859_6
     };
     static constexpr strf::charset_id id = strf::csid_iso_8859_6;
 
-    static STRF_HD bool is_valid(std::uint8_t ch)
+    static STRF_HD bool is_valid(std::uint8_t ch) noexcept
     {
         return ch <= 0xA0 || ch == 0xA4 || ch == 0xAC || ch == 0xAD
             || ch == 0xBB || ch == 0xBF || (0xC1 <= ch && ch <= 0xDA)
             || (0xE0 <= ch && ch <= 0xF2);
     }
 
-    static STRF_HD unsigned encode(char32_t ch)
+    static STRF_HD unsigned encode(char32_t ch) noexcept
     {
         if (ch <= 0xA0) {
             return ch;
@@ -528,7 +752,7 @@ struct impl_iso_8859_6
         return encode_ext(ch);
     }
 
-    static STRF_HD char32_t decode(std::uint8_t ch)
+    static STRF_HD char32_t decode(std::uint8_t ch) noexcept
     {
         if (ch <= 0xA0) {
             return ch;
@@ -551,13 +775,13 @@ struct impl_iso_8859_6
 
 private:
 
-    static STRF_HD unsigned encode_ext(char32_t ch);
+    static STRF_HD unsigned encode_ext(char32_t ch) noexcept;
 };
 
 #if ! defined(STRF_OMIT_IMPL)
 
 // NOLINTNEXTLINE(misc-definitions-in-headers)
-STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_6::encode_ext(char32_t ch)
+STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_6::encode_ext(char32_t ch) noexcept
 {
     static const ch32_to_char char_map[] =
         { {0x00A4, 0xA4}, {0x00AD, 0xAD}, {0x060C, 0xAC}, {0x061B, 0xBB}
@@ -583,6 +807,8 @@ STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_6::encode_ext(char32_t ch)
 #endif // ! defined(STRF_OMIT_IMPL)
 
 struct impl_iso_8859_7
+    : sbcs_find_invalid_seq_crtp<impl_iso_8859_7>
+    , sbcs_find_unsupported_codepoint_crtp<impl_iso_8859_7>
 {
     static STRF_HD const char* name() noexcept
     {
@@ -590,12 +816,12 @@ struct impl_iso_8859_7
     };
     static constexpr strf::charset_id id = strf::csid_iso_8859_7;
 
-    static STRF_HD bool is_valid(std::uint8_t ch)
+    static STRF_HD bool is_valid(std::uint8_t ch) noexcept
     {
-        return ch != 0xAE && ch != 0xD2 && ch != 0xFF;
+        return ch < 0xAE || (ch != 0xAE && ch != 0xD2 && ch != 0xFF);
     }
 
-    static STRF_HD unsigned encode(char32_t ch)
+    static STRF_HD unsigned encode(char32_t ch) noexcept
     {
         if (ch <= 0xA0) {
             return ch;
@@ -603,7 +829,7 @@ struct impl_iso_8859_7
         return encode_ext(ch);
     }
 
-    static STRF_HD char32_t decode(std::uint8_t ch)
+    static STRF_HD char32_t decode(std::uint8_t ch) noexcept
     {
         if (ch <= 0xA0) {
             return ch;
@@ -626,13 +852,13 @@ struct impl_iso_8859_7
 
 private:
 
-    static STRF_HD unsigned encode_ext(char32_t ch);
+    static STRF_HD unsigned encode_ext(char32_t ch) noexcept;
 };
 
 #if ! defined(STRF_OMIT_IMPL)
 
 // NOLINTNEXTLINE(misc-definitions-in-headers)
-STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_7::encode_ext(char32_t ch)
+STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_7::encode_ext(char32_t ch) noexcept
 {
     static const ch32_to_char char_map[] =
         { {0x00A3, 0xA3}, {0x00A6, 0xA6}, {0x00A7, 0xA7}, {0x00A8, 0xA8}
@@ -669,6 +895,8 @@ STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_7::encode_ext(char32_t ch)
 #endif // ! defined(STRF_OMIT_IMPL)
 
 struct impl_iso_8859_8
+    : sbcs_find_invalid_seq_crtp<impl_iso_8859_8>
+    , sbcs_find_unsupported_codepoint_crtp<impl_iso_8859_8>
 {
     static STRF_HD const char* name() noexcept
     {
@@ -676,13 +904,13 @@ struct impl_iso_8859_8
     };
     static constexpr strf::charset_id id = strf::csid_iso_8859_8;
 
-    static STRF_HD bool is_valid(std::uint8_t ch)
+    static STRF_HD bool is_valid(std::uint8_t ch) noexcept
     {
         return (ch <= 0xBE && ch != 0xA1) || (0xDF <= ch && ch <= 0xFA)
             || ch == 0xFD || ch == 0xFE;
     }
 
-    static STRF_HD unsigned encode(char32_t ch)
+    static STRF_HD unsigned encode(char32_t ch) noexcept
     {
         if (ch <= 0xA0) {
             return ch;
@@ -690,7 +918,7 @@ struct impl_iso_8859_8
         return encode_ext(ch);
     }
 
-    static STRF_HD char32_t decode(std::uint8_t ch)
+    static STRF_HD char32_t decode(std::uint8_t ch) noexcept
     {
         if (ch <= 0xA0) {
             return ch;
@@ -713,13 +941,13 @@ struct impl_iso_8859_8
 
 private:
 
-    static STRF_HD unsigned encode_ext(char32_t ch);
+    static STRF_HD unsigned encode_ext(char32_t ch) noexcept;
 };
 
 #if ! defined(STRF_OMIT_IMPL)
 
 // NOLINTNEXTLINE(misc-definitions-in-headers)
-STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_8::encode_ext(char32_t ch)
+STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_8::encode_ext(char32_t ch) noexcept
 {
     static const ch32_to_char char_map[] =
         { {0x00A2, 0xA2}, {0x00A3, 0xA3}, {0x00A4, 0xA4}, {0x00A5, 0xA5}
@@ -747,6 +975,8 @@ STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_8::encode_ext(char32_t ch)
 #endif // ! defined(STRF_OMIT_IMPL)
 
 struct impl_iso_8859_9
+    : sbcs_never_has_invalid_seq_crtp<impl_iso_8859_9>
+    , sbcs_find_unsupported_codepoint_crtp<impl_iso_8859_9>
 {
     static STRF_HD const char* name() noexcept
     {
@@ -754,12 +984,12 @@ struct impl_iso_8859_9
     };
     static constexpr strf::charset_id id = strf::csid_iso_8859_9;
 
-    static STRF_HD bool is_valid(std::uint8_t)
+    static STRF_HD bool is_valid(std::uint8_t) noexcept
     {
         return true;
     }
 
-    static STRF_HD unsigned encode(char32_t ch)
+    static STRF_HD unsigned encode(char32_t ch) noexcept
     {
         STRF_IF_LIKELY (ch <= 0xCF) {
             return ch;
@@ -782,7 +1012,7 @@ struct impl_iso_8859_9
         return ch;
     }
 
-    static STRF_HD char32_t decode(std::uint8_t ch)
+    static STRF_HD char32_t decode(std::uint8_t ch) noexcept
     {
         STRF_IF_LIKELY (ch <= 0xCF) {
             return ch;
@@ -800,6 +1030,8 @@ struct impl_iso_8859_9
 };
 
 struct impl_iso_8859_10
+    : sbcs_never_has_invalid_seq_crtp<impl_iso_8859_10>
+    , sbcs_find_unsupported_codepoint_crtp<impl_iso_8859_10>
 {
     static STRF_HD const char* name() noexcept
     {
@@ -807,12 +1039,12 @@ struct impl_iso_8859_10
     };
     static constexpr strf::charset_id id = strf::csid_iso_8859_10;
 
-    static STRF_HD bool is_valid(std::uint8_t)
+    static STRF_HD bool is_valid(std::uint8_t) noexcept
     {
         return true;
     }
 
-    static STRF_HD unsigned encode(char32_t ch)
+    static STRF_HD unsigned encode(char32_t ch) noexcept
     {
         if (ch <= 0xA0) {
             return ch;
@@ -820,7 +1052,7 @@ struct impl_iso_8859_10
         return encode_ext(ch);
     }
 
-    static STRF_HD char32_t decode(std::uint8_t ch)
+    static STRF_HD char32_t decode(std::uint8_t ch) noexcept
     {
         if (ch <= 0xA0) {
             return ch;
@@ -843,13 +1075,13 @@ struct impl_iso_8859_10
 
 private:
 
-    static STRF_HD unsigned encode_ext(char32_t ch);
+    static STRF_HD unsigned encode_ext(char32_t ch) noexcept;
 };
 
 #if ! defined(STRF_OMIT_IMPL)
 
 // NOLINTNEXTLINE(misc-definitions-in-headers)
-STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_10::encode_ext(char32_t ch)
+STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_10::encode_ext(char32_t ch) noexcept
 {
     static const ch32_to_char char_map[] =
         { {0x00A7, 0xA7}, {0x00AD, 0xAD}, {0x00B0, 0xB0}, {0x00B7, 0xB7}
@@ -886,6 +1118,8 @@ STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_10::encode_ext(char32_t ch)
 #endif // ! defined(STRF_OMIT_IMPL)
 
 struct impl_iso_8859_11
+    : sbcs_find_invalid_seq_crtp<impl_iso_8859_11>
+    , sbcs_find_unsupported_codepoint_crtp<impl_iso_8859_11>
 {
     static STRF_HD const char* name() noexcept
     {
@@ -893,12 +1127,12 @@ struct impl_iso_8859_11
     };
     static constexpr strf::charset_id id = strf::csid_iso_8859_11;
 
-    static STRF_HD bool is_valid(std::uint8_t ch)
+    static STRF_HD bool is_valid(std::uint8_t ch) noexcept
     {
         return ch <= 0xDA || (ch >= 0xDF && ch <= 0xFB);
     }
 
-    static STRF_HD unsigned encode(char32_t ch)
+    static STRF_HD unsigned encode(char32_t ch) noexcept
     {
         if (ch <= 0xA0) {
             return ch;
@@ -906,7 +1140,7 @@ struct impl_iso_8859_11
         return encode_ext(ch);
     }
 
-    static STRF_HD char32_t decode(std::uint8_t ch)
+    static STRF_HD char32_t decode(std::uint8_t ch) noexcept
     {
         if (ch <= 0xA0) {
             return ch;
@@ -929,13 +1163,13 @@ struct impl_iso_8859_11
 
 private:
 
-    static STRF_HD unsigned encode_ext(char32_t ch);
+    static STRF_HD unsigned encode_ext(char32_t ch) noexcept;
 };
 
 #if ! defined(STRF_OMIT_IMPL)
 
 // NOLINTNEXTLINE(misc-definitions-in-headers)
-STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_11::encode_ext(char32_t ch)
+STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_11::encode_ext(char32_t ch) noexcept
 {
     static const ch32_to_char char_map[] =
         { {0x0E01, 0xA1}, {0x0E02, 0xA2}, {0x0E03, 0xA3}, {0x0E04, 0xA4}
@@ -970,6 +1204,8 @@ STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_11::encode_ext(char32_t ch)
 #endif // ! defined(STRF_OMIT_IMPL)
 
 struct impl_iso_8859_13
+    : sbcs_never_has_invalid_seq_crtp<impl_iso_8859_13>
+    , sbcs_find_unsupported_codepoint_crtp<impl_iso_8859_13>
 {
     static STRF_HD const char* name() noexcept
     {
@@ -977,12 +1213,12 @@ struct impl_iso_8859_13
     };
     static constexpr strf::charset_id id = strf::csid_iso_8859_13;
 
-    static STRF_HD bool is_valid(std::uint8_t)
+    static STRF_HD bool is_valid(std::uint8_t) noexcept
     {
         return true;
     }
 
-    static STRF_HD unsigned encode(char32_t ch)
+    static STRF_HD unsigned encode(char32_t ch) noexcept
     {
         if (ch <= 0xA0) {
             return ch;
@@ -990,7 +1226,7 @@ struct impl_iso_8859_13
         return encode_ext(ch);
     }
 
-    static STRF_HD char32_t decode(std::uint8_t ch)
+    static STRF_HD char32_t decode(std::uint8_t ch) noexcept
     {
         if (ch <= 0xA0) {
             return ch;
@@ -1013,13 +1249,13 @@ struct impl_iso_8859_13
 
 private:
 
-    static STRF_HD unsigned encode_ext(char32_t ch);
+    static STRF_HD unsigned encode_ext(char32_t ch) noexcept;
 };
 
 #if ! defined(STRF_OMIT_IMPL)
 
 // NOLINTNEXTLINE(misc-definitions-in-headers)
-STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_13::encode_ext(char32_t ch)
+STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_13::encode_ext(char32_t ch) noexcept
 {
     static const ch32_to_char char_map[] =
         { {0x00A2, 0xA2}, {0x00A3, 0xA3}, {0x00A4, 0xA4}, {0x00A6, 0xA6}
@@ -1056,6 +1292,8 @@ STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_13::encode_ext(char32_t ch)
 #endif // ! defined(STRF_OMIT_IMPL)
 
 struct impl_iso_8859_14
+    : sbcs_never_has_invalid_seq_crtp<impl_iso_8859_14>
+    , sbcs_find_unsupported_codepoint_crtp<impl_iso_8859_14>
 {
     static STRF_HD const char* name() noexcept
     {
@@ -1063,12 +1301,12 @@ struct impl_iso_8859_14
     };
     static constexpr strf::charset_id id = strf::csid_iso_8859_14;
 
-    static STRF_HD bool is_valid(std::uint8_t)
+    static STRF_HD bool is_valid(std::uint8_t) noexcept
     {
         return true;
     }
 
-    static STRF_HD unsigned encode(char32_t ch)
+    static STRF_HD unsigned encode(char32_t ch) noexcept
     {
         if (ch <= 0xA0) {
             return ch;
@@ -1076,7 +1314,7 @@ struct impl_iso_8859_14
         return encode_ext(ch);
     }
 
-    static STRF_HD char32_t decode(std::uint8_t ch)
+    static STRF_HD char32_t decode(std::uint8_t ch) noexcept
     {
         if (ch <= 0xA0) {
             return ch;
@@ -1099,13 +1337,13 @@ struct impl_iso_8859_14
 
 private:
 
-    static STRF_HD unsigned encode_ext(char32_t ch);
+    static STRF_HD unsigned encode_ext(char32_t ch) noexcept;
 };
 
 #if ! defined(STRF_OMIT_IMPL)
 
 // NOLINTNEXTLINE(misc-definitions-in-headers)
-STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_14::encode_ext(char32_t ch)
+STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_14::encode_ext(char32_t ch) noexcept
 {
     static const ch32_to_char char_map[] =
         { {0x00A3, 0xA3}, {0x00A7, 0xA7}, {0x00A9, 0xA9}, {0x00AD, 0xAD}
@@ -1143,6 +1381,8 @@ STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_14::encode_ext(char32_t ch)
 
 
 class impl_iso_8859_15
+    : public sbcs_never_has_invalid_seq_crtp<impl_iso_8859_15>
+    , public sbcs_find_unsupported_codepoint_crtp<impl_iso_8859_15>
 {
 public:
 
@@ -1152,11 +1392,11 @@ public:
     };
     static constexpr strf::charset_id id = strf::csid_iso_8859_15;
 
-    static STRF_HD bool is_valid(std::uint8_t)
+    static STRF_HD bool is_valid(std::uint8_t) noexcept
     {
         return true;
     }
-    static STRF_HD char32_t decode(std::uint8_t ch)
+    static STRF_HD char32_t decode(std::uint8_t ch) noexcept
     {
         static const std::uint16_t ext[] = {
             /*                           */ 0x20AC, 0x00A5, 0x0160, 0x00A7,
@@ -1171,20 +1411,20 @@ public:
         return ext[ch - 0xA4];
     }
 
-    static STRF_HD unsigned encode(char32_t ch)
+    static STRF_HD unsigned encode(char32_t ch) noexcept
     {
         return (ch < 0xA0 || (0xBE < ch && ch < 0x100)) ? ch : encode_ext(ch);
     }
 
 private:
 
-    static STRF_HD unsigned encode_ext(char32_t ch);
+    static STRF_HD unsigned encode_ext(char32_t ch) noexcept;
 };
 
 #if ! defined(STRF_OMIT_IMPL)
 
 // NOLINTNEXTLINE(misc-definitions-in-headers)
-STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_15::encode_ext(char32_t ch)
+STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_15::encode_ext(char32_t ch) noexcept
 {
     switch(ch) {
         case 0x20AC: return 0xA4;
@@ -1212,6 +1452,8 @@ STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_15::encode_ext(char32_t ch)
 #endif // ! defined(STRF_OMIT_IMPL)
 
 struct impl_iso_8859_16
+    : sbcs_never_has_invalid_seq_crtp<impl_iso_8859_16>
+    , sbcs_find_unsupported_codepoint_crtp<impl_iso_8859_16>
 {
     static STRF_HD const char* name() noexcept
     {
@@ -1219,12 +1461,12 @@ struct impl_iso_8859_16
     };
     static constexpr strf::charset_id id = strf::csid_iso_8859_16;
 
-    static STRF_HD bool is_valid(std::uint8_t)
+    static STRF_HD bool is_valid(std::uint8_t) noexcept
     {
         return true;
     }
 
-    static STRF_HD unsigned encode(char32_t ch)
+    static STRF_HD unsigned encode(char32_t ch) noexcept
     {
         if (ch <= 0xA0) {
             return ch;
@@ -1232,7 +1474,7 @@ struct impl_iso_8859_16
         return encode_ext(ch);
     }
 
-    static STRF_HD char32_t decode(std::uint8_t ch)
+    static STRF_HD char32_t decode(std::uint8_t ch) noexcept
     {
         if (ch <= 0xA0) {
             return ch;
@@ -1255,13 +1497,13 @@ struct impl_iso_8859_16
 
 private:
 
-    static STRF_HD unsigned encode_ext(char32_t ch);
+    static STRF_HD unsigned encode_ext(char32_t ch) noexcept;
 };
 
 #if ! defined(STRF_OMIT_IMPL)
 
 // NOLINTNEXTLINE(misc-definitions-in-headers)
-STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_16::encode_ext(char32_t ch)
+STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_16::encode_ext(char32_t ch) noexcept
 {
     static const ch32_to_char char_map[] =
         { {0x00A7, 0xA7}, {0x00A9, 0xA9}, {0x00AB, 0xAB}, {0x00AD, 0xAD}
@@ -1298,6 +1540,8 @@ STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_16::encode_ext(char32_t ch)
 #endif // ! defined(STRF_OMIT_IMPL)
 
 class impl_windows_1250
+    : public sbcs_never_has_invalid_seq_crtp<impl_windows_1250>
+    , public sbcs_find_unsupported_codepoint_crtp<impl_windows_1250>
 {
 public:
 
@@ -1307,11 +1551,11 @@ public:
     };
     static constexpr strf::charset_id id = strf::csid_windows_1250;
 
-    static STRF_HD bool is_valid(std::uint8_t)
+    static STRF_HD bool is_valid(std::uint8_t) noexcept
     {
         return true;
     }
-    static STRF_HD char32_t decode(std::uint8_t ch)
+    static STRF_HD char32_t decode(std::uint8_t ch) noexcept
     {
         STRF_IF_LIKELY (ch < 0x80) {
             return ch;
@@ -1335,20 +1579,20 @@ public:
             , 0x0159, 0x016F, 0x00FA, 0x0171, 0x00FC, 0x00FD, 0x0163, 0x02D9 };
         return ext[ch - 0x80];
     }
-    static STRF_HD unsigned encode(char32_t ch)
+    static STRF_HD unsigned encode(char32_t ch) noexcept
     {
         return ch < 0x80 ? ch : encode_ext(ch);
     }
 
 private:
 
-    static STRF_HD unsigned encode_ext(char32_t ch);
+    static STRF_HD unsigned encode_ext(char32_t ch) noexcept;
 };
 
 #if ! defined(STRF_OMIT_IMPL)
 
 // NOLINTNEXTLINE(misc-definitions-in-headers)
-STRF_FUNC_IMPL STRF_HD unsigned impl_windows_1250::encode_ext(char32_t ch)
+STRF_FUNC_IMPL STRF_HD unsigned impl_windows_1250::encode_ext(char32_t ch) noexcept
 {
     static const ch32_to_char char_map[] =
         { {0x0081, 0x81}, {0x0083, 0x83}, {0x0088, 0x88}, {0x0090, 0x90}
@@ -1394,6 +1638,8 @@ STRF_FUNC_IMPL STRF_HD unsigned impl_windows_1250::encode_ext(char32_t ch)
 #endif // ! defined(STRF_OMIT_IMPL)
 
 class impl_windows_1251
+    : public sbcs_never_has_invalid_seq_crtp<impl_windows_1251>
+    , public sbcs_find_unsupported_codepoint_crtp<impl_windows_1251>
 {
 public:
 
@@ -1403,12 +1649,12 @@ public:
     };
     static constexpr strf::charset_id id = strf::csid_windows_1251;
 
-    static STRF_HD bool is_valid(std::uint8_t)
+    static STRF_HD bool is_valid(std::uint8_t) noexcept
     {
         return true;
     }
 
-    static STRF_HD char32_t decode(std::uint8_t ch)
+    static STRF_HD char32_t decode(std::uint8_t ch) noexcept
     {
         STRF_IF_LIKELY (ch < 0x80) {
             return ch;
@@ -1433,20 +1679,20 @@ public:
         return ext[ch - 0x80];
     }
 
-    static STRF_HD unsigned encode(char32_t ch)
+    static STRF_HD unsigned encode(char32_t ch) noexcept
     {
         return ch < 0x80 ? ch : encode_ext(ch);
     }
 
 private:
 
-    static STRF_HD unsigned encode_ext(char32_t ch);
+    static STRF_HD unsigned encode_ext(char32_t ch) noexcept;
 };
 
 #if ! defined(STRF_OMIT_IMPL)
 
 // NOLINTNEXTLINE(misc-definitions-in-headers)
-STRF_FUNC_IMPL STRF_HD unsigned impl_windows_1251::encode_ext(char32_t ch)
+STRF_FUNC_IMPL STRF_HD unsigned impl_windows_1251::encode_ext(char32_t ch) noexcept
 {
     static const ch32_to_char char_map[] =
         { {0x0098, 0x98}, {0x00A0, 0xA0}, {0x00A4, 0xA4}, {0x00A6, 0xA6}
@@ -1492,6 +1738,8 @@ STRF_FUNC_IMPL STRF_HD unsigned impl_windows_1251::encode_ext(char32_t ch)
 #endif //! defined(STRF_OMIT_IMPL)
 
 class impl_windows_1252
+    : public sbcs_never_has_invalid_seq_crtp<impl_windows_1252>
+    , public sbcs_find_unsupported_codepoint_crtp<impl_windows_1252>
 {
 public:
 
@@ -1501,12 +1749,12 @@ public:
     };
     static constexpr strf::charset_id id = strf::csid_windows_1252;
 
-    static STRF_HD bool is_valid(std::uint8_t)
+    static STRF_HD bool is_valid(std::uint8_t) noexcept
     {
         return true;
     }
 
-    static STRF_HD char32_t decode(std::uint8_t ch)
+    static STRF_HD char32_t decode(std::uint8_t ch) noexcept
     {
         STRF_IF_LIKELY (ch < 0x80 || 0x9F < ch) {
             return ch;
@@ -1520,20 +1768,20 @@ public:
         return ext[ch - 0x80];
     }
 
-    static STRF_HD unsigned encode(char32_t ch)
+    static STRF_HD unsigned encode(char32_t ch) noexcept
     {
         return (ch < 0x80 || (0x9F < ch && ch < 0x100)) ? ch : encode_ext(ch);
     }
 
 private:
 
-    static STRF_HD unsigned encode_ext(char32_t ch);
+    static STRF_HD unsigned encode_ext(char32_t ch) noexcept;
 };
 
 #if ! defined(STRF_OMIT_IMPL)
 
 // NOLINTNEXTLINE(misc-definitions-in-headers)
-STRF_FUNC_IMPL STRF_HD unsigned impl_windows_1252::encode_ext(char32_t ch)
+STRF_FUNC_IMPL STRF_HD unsigned impl_windows_1252::encode_ext(char32_t ch) noexcept
 {
     switch(ch) {
         case 0x81: return 0x81;
@@ -1576,6 +1824,8 @@ STRF_FUNC_IMPL STRF_HD unsigned impl_windows_1252::encode_ext(char32_t ch)
 #endif // ! defined(STRF_OMIT_IMPL)
 
 class impl_windows_1253
+    : public sbcs_find_invalid_seq_crtp<impl_windows_1253>
+    , public sbcs_find_unsupported_codepoint_crtp<impl_windows_1253>
 {
 public:
 
@@ -1585,12 +1835,12 @@ public:
     };
     static constexpr strf::charset_id id = strf::csid_windows_1253;
 
-    static STRF_HD bool is_valid(std::uint8_t ch)
+    static STRF_HD bool is_valid(std::uint8_t ch) noexcept
     {
-        return ch != 0xAA && ch != 0xD2 && ch != 0xFF ;
+        return ch < 0xAA || (ch != 0xAA && ch != 0xD2 && ch != 0xFF);
     }
 
-    static STRF_HD char32_t decode(std::uint8_t ch)
+    static STRF_HD char32_t decode(std::uint8_t ch) noexcept
     {
         STRF_IF_LIKELY (ch < 0x80) {
             return ch;
@@ -1615,20 +1865,20 @@ public:
         return ext[ch - 0x80];
     }
 
-    static STRF_HD unsigned encode(char32_t ch)
+    static STRF_HD unsigned encode(char32_t ch) noexcept
     {
         return (ch < 0x80) ? ch : encode_ext(ch);
     }
 
 private:
 
-    static STRF_HD unsigned encode_ext(char32_t ch);
+    static STRF_HD unsigned encode_ext(char32_t ch) noexcept;
 };
 
 #if ! defined(STRF_OMIT_IMPL)
 
 // NOLINTNEXTLINE(misc-definitions-in-headers)
-STRF_FUNC_IMPL STRF_HD unsigned impl_windows_1253::encode_ext(char32_t ch)
+STRF_FUNC_IMPL STRF_HD unsigned impl_windows_1253::encode_ext(char32_t ch) noexcept
 {
     static const ch32_to_char char_map[] =
         { {0x0081, 0x81}, {0x0088, 0x88}, {0x008A, 0x8A}, {0x008C, 0x8C}
@@ -1673,6 +1923,8 @@ STRF_FUNC_IMPL STRF_HD unsigned impl_windows_1253::encode_ext(char32_t ch)
 #endif //! defined(STRF_OMIT_IMPL)
 
 class impl_windows_1254
+    : public sbcs_never_has_invalid_seq_crtp<impl_windows_1254>
+    , public sbcs_find_unsupported_codepoint_crtp<impl_windows_1254>
 {
 public:
 
@@ -1682,12 +1934,12 @@ public:
     };
     static constexpr strf::charset_id id = strf::csid_windows_1254;
 
-    static STRF_HD bool is_valid(std::uint8_t)
+    static STRF_HD bool is_valid(std::uint8_t) noexcept
     {
         return true;
     }
 
-    static STRF_HD char32_t decode(std::uint8_t ch)
+    static STRF_HD char32_t decode(std::uint8_t ch) noexcept
     {
         if (ch <= 0x7F) {
             return ch;
@@ -1711,20 +1963,20 @@ public:
         return ch;
     }
 
-    static STRF_HD unsigned encode(char32_t ch)
+    static STRF_HD unsigned encode(char32_t ch) noexcept
     {
         return ch < 0x80 ? ch : encode_ext(ch);
     }
 
 private:
 
-    static STRF_HD unsigned encode_ext(char32_t ch);
+    static STRF_HD unsigned encode_ext(char32_t ch) noexcept;
 };
 
 #if ! defined(STRF_OMIT_IMPL)
 
 // NOLINTNEXTLINE(misc-definitions-in-headers)
-STRF_FUNC_IMPL STRF_HD unsigned impl_windows_1254::encode_ext(char32_t ch)
+STRF_FUNC_IMPL STRF_HD unsigned impl_windows_1254::encode_ext(char32_t ch) noexcept
 {
     switch(ch) {
         case 0x81: return 0x81;
@@ -1773,6 +2025,8 @@ STRF_FUNC_IMPL STRF_HD unsigned impl_windows_1254::encode_ext(char32_t ch)
 #endif //! defined(STRF_OMIT_IMPL)
 
 class impl_windows_1255
+    : public sbcs_find_invalid_seq_crtp<impl_windows_1255>
+    , public sbcs_find_unsupported_codepoint_crtp<impl_windows_1255>
 {
 public:
 
@@ -1782,14 +2036,15 @@ public:
     };
     static constexpr strf::charset_id id = strf::csid_windows_1255;
 
-    static STRF_HD bool is_valid(std::uint8_t ch)
+    static STRF_HD bool is_valid(std::uint8_t ch) noexcept
     {
-        return ch != 0xD9 && ch != 0xDA && ch != 0xDB && ch != 0xDC
-            && ch != 0xDD && ch != 0xDE && ch != 0xDF && ch != 0xFB
-            && ch != 0xFC && ch != 0xFF;
+        return ch < 0xD9 || (ch != 0xD9 && ch != 0xDA && ch != 0xDB &&
+                             ch != 0xDC && ch != 0xDD && ch != 0xDE &&
+                             ch != 0xDF && ch != 0xFB && ch != 0xFC &&
+                             ch != 0xFF);
     }
 
-    static STRF_HD char32_t decode(std::uint8_t ch)
+    static STRF_HD char32_t decode(std::uint8_t ch) noexcept
     {
         STRF_IF_LIKELY (ch < 0x80) {
             return ch;
@@ -1815,20 +2070,20 @@ public:
         return ext[ch - 0x80];
     }
 
-    static STRF_HD unsigned encode(char32_t ch)
+    static STRF_HD unsigned encode(char32_t ch) noexcept
     {
         return (ch < 0x80) ? ch : encode_ext(ch);
     }
 
 private:
 
-    static STRF_HD unsigned encode_ext(char32_t ch);
+    static STRF_HD unsigned encode_ext(char32_t ch) noexcept;
 };
 
 #if ! defined(STRF_OMIT_IMPL)
 
 // NOLINTNEXTLINE(misc-definitions-in-headers)
-STRF_FUNC_IMPL STRF_HD unsigned impl_windows_1255::encode_ext(char32_t ch)
+STRF_FUNC_IMPL STRF_HD unsigned impl_windows_1255::encode_ext(char32_t ch) noexcept
 {
     static const ch32_to_char char_map[] =
         { {0x0081, 0x81}, {0x008A, 0x8A}, {0x008C, 0x8C}, {0x008D, 0x8D}
@@ -1871,6 +2126,8 @@ STRF_FUNC_IMPL STRF_HD unsigned impl_windows_1255::encode_ext(char32_t ch)
 #endif //! defined(STRF_OMIT_IMPL)
 
 class impl_windows_1256
+    : public sbcs_never_has_invalid_seq_crtp<impl_windows_1256>
+    , public sbcs_find_unsupported_codepoint_crtp<impl_windows_1256>
 {
 public:
 
@@ -1880,12 +2137,12 @@ public:
     };
     static constexpr strf::charset_id id = strf::csid_windows_1256;
 
-    static STRF_HD bool is_valid(std::uint8_t)
+    static STRF_HD bool is_valid(std::uint8_t) noexcept
     {
         return true;
     }
 
-    static STRF_HD char32_t decode(std::uint8_t ch)
+    static STRF_HD char32_t decode(std::uint8_t ch) noexcept
     {
         STRF_IF_LIKELY (ch < 0x80) {
             return ch;
@@ -1910,20 +2167,20 @@ public:
         return ext[ch - 0x80];
     }
 
-    static STRF_HD unsigned encode(char32_t ch)
+    static STRF_HD unsigned encode(char32_t ch) noexcept
     {
         return (ch < 0x80) ? ch : encode_ext(ch);
     }
 
 private:
 
-    static STRF_HD unsigned encode_ext(char32_t ch);
+    static STRF_HD unsigned encode_ext(char32_t ch) noexcept;
 };
 
 #if ! defined(STRF_OMIT_IMPL)
 
 // NOLINTNEXTLINE(misc-definitions-in-headers)
-STRF_FUNC_IMPL STRF_HD unsigned impl_windows_1256::encode_ext(char32_t ch)
+STRF_FUNC_IMPL STRF_HD unsigned impl_windows_1256::encode_ext(char32_t ch) noexcept
 {
     static const ch32_to_char char_map[] =
         { {0x00A0, 0xA0}, {0x00A2, 0xA2}, {0x00A3, 0xA3}, {0x00A4, 0xA4}
@@ -1969,6 +2226,8 @@ STRF_FUNC_IMPL STRF_HD unsigned impl_windows_1256::encode_ext(char32_t ch)
 #endif //! defined(STRF_OMIT_IMPL)
 
 class impl_windows_1257
+    : public sbcs_find_invalid_seq_crtp<impl_windows_1257>
+    , public sbcs_find_unsupported_codepoint_crtp<impl_windows_1257>
 {
 public:
 
@@ -1978,12 +2237,12 @@ public:
     };
     static constexpr strf::charset_id id = strf::csid_windows_1257;
 
-    static STRF_HD bool is_valid(std::uint8_t ch)
+    static STRF_HD bool is_valid(std::uint8_t ch) noexcept
     {
         return ch != 0xA1 && ch != 0xA5;
     }
 
-    static STRF_HD char32_t decode(std::uint8_t ch)
+    static STRF_HD char32_t decode(std::uint8_t ch) noexcept
     {
         STRF_IF_LIKELY (ch < 0x80) {
             return ch;
@@ -2008,20 +2267,20 @@ public:
         return ext[ch - 0x80];
     }
 
-    static STRF_HD unsigned encode(char32_t ch)
+    static STRF_HD unsigned encode(char32_t ch) noexcept
     {
         return (ch < 0x80) ? ch : encode_ext(ch);
     }
 
 private:
 
-    static STRF_HD unsigned encode_ext(char32_t ch);
+    static STRF_HD unsigned encode_ext(char32_t ch) noexcept;
 };
 
 #if ! defined(STRF_OMIT_IMPL)
 
 // NOLINTNEXTLINE(misc-definitions-in-headers)
-STRF_FUNC_IMPL STRF_HD unsigned impl_windows_1257::encode_ext(char32_t ch)
+STRF_FUNC_IMPL STRF_HD unsigned impl_windows_1257::encode_ext(char32_t ch) noexcept
 {
     static const ch32_to_char char_map[] =
         { {0x0081, 0x81}, {0x0083, 0x83}, {0x0088, 0x88}, {0x008A, 0x8A}
@@ -2066,6 +2325,8 @@ STRF_FUNC_IMPL STRF_HD unsigned impl_windows_1257::encode_ext(char32_t ch)
 #endif //! defined(STRF_OMIT_IMPL)
 
 class impl_windows_1258
+    : public sbcs_never_has_invalid_seq_crtp<impl_windows_1258>
+    , public sbcs_find_unsupported_codepoint_crtp<impl_windows_1258>
 {
 public:
 
@@ -2075,12 +2336,12 @@ public:
     };
     static constexpr strf::charset_id id = strf::csid_windows_1258;
 
-    static STRF_HD bool is_valid(std::uint8_t)
+    static STRF_HD bool is_valid(std::uint8_t) noexcept
     {
         return true;
     }
 
-    static STRF_HD char32_t decode(std::uint8_t ch)
+    static STRF_HD char32_t decode(std::uint8_t ch) noexcept
     {
         STRF_IF_LIKELY (ch < 0x80) {
             return ch;
@@ -2105,20 +2366,20 @@ public:
         return ext[ch - 0x80];
     }
 
-    static STRF_HD unsigned encode(char32_t ch)
+    static STRF_HD unsigned encode(char32_t ch) noexcept
     {
         return (ch < 0x80) ? ch : encode_ext(ch);
     }
 
 private:
 
-    static STRF_HD unsigned encode_ext(char32_t ch);
+    static STRF_HD unsigned encode_ext(char32_t ch) noexcept;
 };
 
 #if ! defined(STRF_OMIT_IMPL)
 
 // NOLINTNEXTLINE(misc-definitions-in-headers)
-STRF_FUNC_IMPL STRF_HD unsigned impl_windows_1258::encode_ext(char32_t ch)
+STRF_FUNC_IMPL STRF_HD unsigned impl_windows_1258::encode_ext(char32_t ch) noexcept
 {
     static const ch32_to_char char_map[] =
         { {0x0081, 0x81}, {0x008A, 0x8A}, {0x008D, 0x8D}, {0x008E, 0x8E}
@@ -2163,25 +2424,60 @@ STRF_FUNC_IMPL STRF_HD unsigned impl_windows_1258::encode_ext(char32_t ch)
 
 #endif //! defined(STRF_OMIT_IMPL)
 
-template <typename SrcCharT, typename DestCharT, class Impl>
+template <typename SrcCharT, typename DstCharT, class Impl>
 struct single_byte_charset_to_utf32
 {
-    static STRF_HD void transcode
-        ( strf::transcode_dest<DestCharT>& dest
-        , const SrcCharT* src
-        , std::ptrdiff_t src_size
-        , strf::transcoding_error_notifier* err_notifier
-        , strf::surrogate_policy surr_poli );
+    using src_code_unit = SrcCharT;
+    using dst_code_unit = DstCharT;
 
-    static constexpr STRF_HD std::ptrdiff_t transcode_size
-        ( const SrcCharT*
-        , std::ptrdiff_t src_size
-        , strf::surrogate_policy ) noexcept
+    static STRF_HD strf::transcode_result<SrcCharT, DstCharT> transcode
+        ( const SrcCharT* src
+        , const SrcCharT* src_end
+        , DstCharT* dst
+        , DstCharT* dst_end
+        , strf::transcoding_error_notifier* err_notifier
+        , strf::transcode_flags flags );
+
+    static constexpr STRF_HD strf::transcode_size_result<SrcCharT> transcode_size
+        ( const SrcCharT* src
+        , const SrcCharT* src_end
+        , std::ptrdiff_t limit
+        , strf::transcode_flags flags ) noexcept
     {
-        return src_size;
+        STRF_ASSERT(src <= src_end);
+        if (strf::with_stop_on_invalid_sequence(flags)) {
+            return Impl::find_invalid_sequence(src, src_end, limit);
+        }
+        using stop_reason = strf::transcode_stop_reason;
+        if (src_end - src <= limit) {
+            return {src_end - src, src_end, stop_reason::completed};
+        }
+        return {limit, src + limit, stop_reason::insufficient_output_space};
     }
 
-    static STRF_HD strf::transcode_f<SrcCharT, DestCharT> transcode_func() noexcept
+    static STRF_HD strf::transcode_result<SrcCharT, DstCharT> unsafe_transcode
+        ( const SrcCharT* src
+        , const SrcCharT* src_end
+        , DstCharT* dst
+        , DstCharT* dst_end
+        , strf::transcoding_error_notifier* err_notifier
+        , strf::transcode_flags flags );
+
+    static STRF_HD strf::transcode_size_result<SrcCharT> unsafe_transcode_size
+        ( const SrcCharT* src
+        , const SrcCharT* src_end
+        , std::ptrdiff_t limit
+        , strf::transcode_flags )
+    {
+        STRF_ASSERT(src <= src_end);
+        using stop_reason = strf::transcode_stop_reason;
+        if (src_end - src <= limit) {
+            return {src_end - src, src_end, stop_reason::completed};
+        }
+        return {limit, src + limit, stop_reason::insufficient_output_space};
+    }
+
+    static STRF_HD strf::transcode_f<SrcCharT, DstCharT> transcode_func() noexcept
     {
         return transcode;
     }
@@ -2189,54 +2485,137 @@ struct single_byte_charset_to_utf32
     {
         return transcode_size;
     }
+    static STRF_HD strf::unsafe_transcode_f<SrcCharT, DstCharT> unsafe_transcode_func() noexcept
+    {
+        return unsafe_transcode;
+    }
+    static STRF_HD strf::unsafe_transcode_size_f<SrcCharT> unsafe_transcode_size_func() noexcept
+    {
+        return unsafe_transcode_size;
+    }
 };
 
-template <typename SrcCharT, typename DestCharT, class Impl>
-STRF_HD void single_byte_charset_to_utf32<SrcCharT, DestCharT, Impl>::transcode
-    ( strf::transcode_dest<DestCharT>& dest
-    , const SrcCharT* src
-    , std::ptrdiff_t src_size
+template <typename SrcCharT, typename DstCharT, class Impl>
+STRF_HD strf::transcode_result<SrcCharT, DstCharT>
+single_byte_charset_to_utf32<SrcCharT, DstCharT, Impl>::transcode
+    ( const SrcCharT* src
+    , const SrcCharT* src_end
+    , DstCharT* dst
+    , DstCharT* dst_end
     , strf::transcoding_error_notifier* err_notifier
-    , strf::surrogate_policy surr_poli )
+    , strf::transcode_flags flags )
 {
-    (void) surr_poli;
-    auto *dest_it = dest.buffer_ptr();
-    auto *dest_end = dest.buffer_end();
-    const auto *src_end = src + src_size;
-    for (const auto *src_it = src; src_it < src_end; ++src_it, ++dest_it) {
-        STRF_CHECK_DEST;
-        const char32_t ch32 = Impl::decode(static_cast<std::uint8_t>(*src_it));
-        STRF_IF_LIKELY (ch32 != 0xFFFD) {
-            *dest_it = static_cast<DestCharT>(ch32);
-        } else  {
+    using reason = strf::transcode_stop_reason;
+    (void) flags;
+    auto *dst_it = dst;
+    for (; src < src_end; ++src, ++dst_it) {
+        char32_t ch32 = Impl::decode(static_cast<std::uint8_t>(*src));
+        STRF_IF_UNLIKELY (ch32 == 0xFFFD) {
             if (err_notifier) {
-                dest.advance_to(dest_it);
-                err_notifier->invalid_sequence(sizeof(SrcCharT), Impl::name(), src_it, 1);
+                err_notifier->invalid_sequence(sizeof(SrcCharT), Impl::name(), src, 1);
             }
-            *dest_it = 0xFFFD;
+            if (strf::with_stop_on_invalid_sequence(flags)) {
+                return {src, dst_it, reason::invalid_sequence};
+            }
+            ch32 = 0xFFFD;
         }
+        STRF_IF_UNLIKELY (dst_it == dst_end) {
+            return {src, dst_it, reason::insufficient_output_space};
+        }
+        *dst_it = static_cast<DstCharT>(ch32);
     }
-    dest.advance_to(dest_it);
+    return {src, dst_it, reason::completed};
 }
 
-template <typename SrcCharT, typename DestCharT, class Impl>
+template <typename SrcCharT, typename DstCharT, class Impl>
+STRF_HD strf::transcode_result<SrcCharT, DstCharT>
+single_byte_charset_to_utf32<SrcCharT, DstCharT, Impl>::unsafe_transcode
+    ( const SrcCharT* src
+    , const SrcCharT* src_end
+    , DstCharT* dst
+    , DstCharT* dst_end
+    , strf::transcoding_error_notifier*
+    , strf::transcode_flags )
+{
+    using reason = strf::transcode_stop_reason;
+    auto *dst_it = dst;
+    for (; src < src_end; ++src, ++dst_it) {
+        STRF_IF_UNLIKELY (dst_it == dst_end) {
+            return {src, dst_it, reason::insufficient_output_space};
+        }
+        const char32_t ch32 = Impl::decode(static_cast<std::uint8_t>(*src));
+        *dst_it = static_cast<DstCharT>(ch32);
+    }
+    return {src, dst_it, reason::completed};
+}
+
+template <typename SrcCharT, typename DstCharT, class Impl>
 struct utf32_to_single_byte_charset
 {
-    static STRF_HD void transcode
-        ( strf::transcode_dest<DestCharT>& dest
-        , const SrcCharT* src
-        , std::ptrdiff_t src_size
-        , strf::transcoding_error_notifier* err_notifier
-        , strf::surrogate_policy surr_poli );
+    using src_code_unit = SrcCharT;
+    using dst_code_unit = DstCharT;
 
-    static constexpr STRF_HD std::ptrdiff_t transcode_size
-        ( const SrcCharT*
-        , std::ptrdiff_t src_size
-        , strf::surrogate_policy ) noexcept
+    static STRF_HD strf::transcode_result<SrcCharT, DstCharT> transcode
+        ( const SrcCharT* src
+        , const SrcCharT* src_end
+        , DstCharT* dst
+        , DstCharT* dst_end
+        , strf::transcoding_error_notifier* err_notifier
+        , strf::transcode_flags flags );
+
+    static constexpr STRF_HD strf::transcode_size_result<SrcCharT> transcode_size
+        ( const SrcCharT* src
+        , const SrcCharT* src_end
+        , std::ptrdiff_t limit
+        , strf::transcode_flags flags) noexcept
     {
-        return src_size;
+        STRF_ASSERT(src <= src_end);
+        const bool strict_surrogates = strf::with_strict_surrogate_policy(flags);
+        if ( strf::with_stop_on_unsupported_codepoint(flags) &&
+             strf::with_stop_on_invalid_sequence(flags) ) {
+            return Impl::find_first_unsupported_or_invalid_codepoint
+                (src, src_end, limit, strict_surrogates);
+        }
+        if (strf::with_stop_on_invalid_sequence(flags)) {
+            return Impl::find_first_invalid_codepoint
+                (src, src_end, limit, strict_surrogates);
+        }
+        if (strf::with_stop_on_unsupported_codepoint(flags)) {
+            return Impl::find_first_valid_unsupported_codepoint
+                (src, src_end, limit, strict_surrogates);
+        }
+        using stop_reason = strf::transcode_stop_reason;
+        if (src_end - src <= limit) {
+            return {src_end - src, src_end, stop_reason::completed};
+        }
+        return {limit, src + limit, stop_reason::insufficient_output_space};
     }
-    static STRF_HD strf::transcode_f<SrcCharT, DestCharT> transcode_func() noexcept
+
+    static STRF_HD strf::transcode_result<SrcCharT, DstCharT> unsafe_transcode
+        ( const SrcCharT* src
+        , const SrcCharT* src_end
+        , DstCharT* dst
+        , DstCharT* dst_end
+        , strf::transcoding_error_notifier* err_notifier
+        , strf::transcode_flags flags );
+
+    static constexpr STRF_HD strf::transcode_size_result<SrcCharT> unsafe_transcode_size
+        ( const SrcCharT* src
+        , const SrcCharT* src_end
+        , std::ptrdiff_t limit
+        , strf::transcode_flags flags) noexcept
+    {
+        STRF_ASSERT(src <= src_end);
+        using stop_reason = strf::transcode_stop_reason;
+        if (! strf::with_stop_on_unsupported_codepoint(flags)) {
+            if (src_end - src <= limit) {
+                return {src_end - src, src_end, stop_reason::completed};
+            }
+            return {limit, src + limit, stop_reason::insufficient_output_space};
+        }
+        return Impl::find_first_unsupported_codepoint(src, src_end, limit);
+    }
+    static STRF_HD strf::transcode_f<SrcCharT, DstCharT> transcode_func() noexcept
     {
         return transcode;
     }
@@ -2244,59 +2623,152 @@ struct utf32_to_single_byte_charset
     {
         return transcode_size;
     }
+    static STRF_HD strf::unsafe_transcode_f<SrcCharT, DstCharT> unsafe_transcode_func() noexcept
+    {
+        return unsafe_transcode;
+    }
+    static STRF_HD strf::unsafe_transcode_size_f<SrcCharT> unsafe_transcode_size_func() noexcept
+    {
+        return unsafe_transcode_size;
+    }
 };
 
-template <typename SrcCharT, typename DestCharT, class Impl>
-STRF_HD void utf32_to_single_byte_charset<SrcCharT, DestCharT, Impl>::transcode
-    ( strf::transcode_dest<DestCharT>& dest
-    , const SrcCharT* src
-    , std::ptrdiff_t src_size
+template <typename SrcCharT, typename DstCharT, class Impl>
+STRF_HD strf::transcode_result<SrcCharT, DstCharT>
+utf32_to_single_byte_charset<SrcCharT, DstCharT, Impl>::transcode
+    ( const SrcCharT* src
+    , const SrcCharT* src_end
+    , DstCharT* dst
+    , DstCharT* dst_end
     , strf::transcoding_error_notifier* err_notifier
-    , strf::surrogate_policy surr_poli )
+    , strf::transcode_flags flags)
 {
-    (void)surr_poli;
-    auto *dest_it = dest.buffer_ptr();
-    auto *dest_end = dest.buffer_end();
-    const auto *src_end = src + src_size;
-    for (const auto *src_it = src; src_it != src_end; ++src_it, ++dest_it) {
-        STRF_CHECK_DEST;
-        char32_t ch2 = Impl::encode(detail::cast_u32(*src_it));
-        STRF_IF_LIKELY (ch2 < 0x100) {
-            * dest_it = static_cast<DestCharT>(ch2);
-        } else {
-            if (err_notifier) {
-                dest.advance_to(dest_it);
-                if (ch2 <= 0x10FFFF) {
-                    err_notifier->unsupported_codepoint(Impl::name(), ch2);
-                } else {
-                    err_notifier->invalid_sequence(4, "UTF-32", &ch2, 1);
+    using reason = strf::transcode_stop_reason;
+    auto *dst_it = dst;
+    for (; src != src_end; ++src, ++dst_it) {
+        unsigned ch = Impl::encode(detail::cast_u32(*src));
+        STRF_IF_UNLIKELY (ch >= 0x100) {
+            const bool is_invalid =
+                ( *src >= 0x110000
+               || ( strf::with_strict_surrogate_policy(flags)
+                 && 0xD800 <= *src
+                 && *src <= 0xFFFF));
+
+            if (!is_invalid) {
+                if (err_notifier) {
+                    auto codepoint = detail::cast_unsigned(*src);
+                    err_notifier->unsupported_codepoint(Impl::name(), codepoint);
+                }
+                if (strf::with_stop_on_unsupported_codepoint(flags)) {
+                    return {src, dst_it, reason::unsupported_codepoint};
+                }
+            } else {
+                if (err_notifier) {
+                    err_notifier->invalid_sequence(4, "UTF-32", src, 1);
+                }
+                if (strf::with_stop_on_invalid_sequence(flags)) {
+                    return {src, dst_it, reason::invalid_sequence};
                 }
             }
-            * dest_it = '?';
+            ch = static_cast<unsigned char>('?');
         }
+        STRF_IF_UNLIKELY (dst_it == dst_end) {
+            return {src, dst_it, reason::insufficient_output_space};
+        }
+        *dst_it = static_cast<DstCharT>(ch);
     }
-    dest.advance_to(dest_it);
+    return {src, dst_it, reason::completed};
 }
 
-template <typename SrcCharT, typename DestCharT, class Impl>
-struct single_byte_charset_sanitizer
+template <typename SrcCharT, typename DstCharT, class Impl>
+STRF_HD strf::transcode_result<SrcCharT, DstCharT>
+utf32_to_single_byte_charset<SrcCharT, DstCharT, Impl>::unsafe_transcode
+    ( const SrcCharT* src
+    , const SrcCharT* src_end
+    , DstCharT* dst
+    , DstCharT* dst_end
+    , strf::transcoding_error_notifier* err_notifier
+    , strf::transcode_flags flags )
 {
-    static STRF_HD void transcode
-        ( strf::transcode_dest<DestCharT>& dest
-        , const SrcCharT* src
-        , std::ptrdiff_t src_size
-        , strf::transcoding_error_notifier* err_notifier
-        , strf::surrogate_policy surr_poli );
+    using reason = strf::transcode_stop_reason;
+    auto *dst_it = dst;
+    for (; src != src_end; ++src, ++dst_it) {
+        unsigned ch = Impl::encode(detail::cast_u32(*src));
+        STRF_IF_UNLIKELY (ch >= 0x100) {
+            if (err_notifier) {
+                auto codepoint = detail::cast_unsigned(*src);
+                err_notifier->unsupported_codepoint(Impl::name(), codepoint);
+            }
+            if (strf::with_stop_on_unsupported_codepoint(flags)) {
+                return {src, dst_it, reason::unsupported_codepoint};
+            }
+            ch = U'?';
+        }
+        STRF_IF_UNLIKELY (dst_it == dst_end) {
+            return {src, dst_it, reason::insufficient_output_space};
+        }
+        * dst_it = static_cast<DstCharT>(ch);
+    }
+    return {src, dst_it, reason::completed};
+}
 
-    static constexpr STRF_HD std::ptrdiff_t transcode_size
-        ( const SrcCharT*
-        , std::ptrdiff_t src_size
-        , strf::surrogate_policy ) noexcept
+template <typename SrcCharT, typename DstCharT, class Impl>
+struct single_byte_charset_to_itself
+{
+    using src_code_unit = SrcCharT;
+    using dst_code_unit = DstCharT;
+
+    static STRF_HD strf::transcode_result<SrcCharT, DstCharT> transcode
+        ( const SrcCharT* src
+        , const SrcCharT* src_end
+        , DstCharT* dst
+        , DstCharT* dst_end
+        , strf::transcoding_error_notifier* err_notifier
+        , strf::transcode_flags flags );
+
+    static constexpr STRF_HD strf::transcode_size_result<SrcCharT> transcode_size
+        ( const SrcCharT* src
+        , const SrcCharT* src_end
+        , std::ptrdiff_t limit
+        , strf::transcode_flags flags) noexcept
     {
-        return src_size;
+        STRF_ASSERT(src <= src_end);
+        if (strf::with_stop_on_invalid_sequence(flags)) {
+            return Impl::find_invalid_sequence(src, src_end, limit);
+        }
+        using stop_reason = strf::transcode_stop_reason;
+        if (src_end - src <= limit) {
+            return {src_end - src, src_end, stop_reason::completed};
+        }
+        return {limit, src + limit, stop_reason::insufficient_output_space};
     }
 
-    static STRF_HD strf::transcode_f<SrcCharT, DestCharT> transcode_func() noexcept
+    static STRF_HD strf::transcode_result<SrcCharT, DstCharT> unsafe_transcode
+        ( const SrcCharT* src
+        , const SrcCharT* src_end
+        , DstCharT* dst
+        , DstCharT* dst_end
+        , strf::transcoding_error_notifier* err_notifier
+        , strf::transcode_flags flags )
+    {
+        return detail::bypass_unsafe_transcode(src, src_end, dst, dst_end, err_notifier, flags);
+    }
+
+    static STRF_HD strf::transcode_size_result<SrcCharT> unsafe_transcode_size
+        ( const SrcCharT* src
+        , const SrcCharT* src_end
+        , std::ptrdiff_t limit
+        , strf::transcode_flags )
+    {
+        STRF_ASSERT(src <= src_end);
+        using stop_reason = strf::transcode_stop_reason;
+        if (src_end - src <= limit) {
+            return {src_end - src, src_end, stop_reason::completed};
+        }
+        return {limit, src + limit, stop_reason::insufficient_output_space};
+    }
+
+    static STRF_HD strf::transcode_f<SrcCharT, DstCharT> transcode_func() noexcept
     {
         return transcode;
     }
@@ -2304,35 +2776,45 @@ struct single_byte_charset_sanitizer
     {
         return transcode_size;
     }
+    static STRF_HD strf::unsafe_transcode_f<SrcCharT, DstCharT> unsafe_transcode_func() noexcept
+    {
+        return unsafe_transcode;
+    }
+    static STRF_HD strf::unsafe_transcode_size_f<SrcCharT> unsafe_transcode_size_func() noexcept
+    {
+        return unsafe_transcode_size;
+    }
 };
 
-template <typename SrcCharT, typename DestCharT, class Impl>
-STRF_HD void single_byte_charset_sanitizer<SrcCharT, DestCharT, Impl>::transcode
-    ( strf::transcode_dest<DestCharT>& dest
-    , const SrcCharT* src
-    , std::ptrdiff_t src_size
+template <typename SrcCharT, typename DstCharT, class Impl>
+STRF_HD strf::transcode_result<SrcCharT, DstCharT>
+single_byte_charset_to_itself<SrcCharT, DstCharT, Impl>::transcode
+    ( const SrcCharT* src
+    , const SrcCharT* src_end
+    , DstCharT* dst
+    , DstCharT* dst_end
     , strf::transcoding_error_notifier* err_notifier
-    , strf::surrogate_policy surr_poli )
+    , strf::transcode_flags flags )
 {
-    (void) surr_poli;
-    auto *dest_it = dest.buffer_ptr();
-    auto *dest_end = dest.buffer_end();
-    const auto *src_end = src + src_size;
-    for (const auto *src_it = src; src_it < src_end; ++src_it, ++dest_it) {
-        STRF_CHECK_DEST;
-        auto ch = static_cast<std::uint8_t>(*src_it);
-        STRF_IF_LIKELY (Impl::is_valid(ch)) {
-            *dest_it = static_cast<DestCharT>(ch);
-        }
-        else {
+    using reason = strf::transcode_stop_reason;
+    auto *dst_it = dst;
+    for (; src < src_end; ++src, ++dst_it) {
+        auto ch = static_cast<std::uint8_t>(*src);
+        STRF_IF_UNLIKELY (!Impl::is_valid(ch)) {
             STRF_IF_UNLIKELY (err_notifier) {
-                dest.advance_to(dest_it);
-                err_notifier->invalid_sequence(sizeof(SrcCharT), Impl::name(), src_it, 1);
+                err_notifier->invalid_sequence(sizeof(SrcCharT), Impl::name(), src, 1);
             }
-            *dest_it = '?';
+            if (strf::with_stop_on_invalid_sequence(flags)) {
+                return {src, dst_it, reason::invalid_sequence};
+            }
+            ch = static_cast<std::uint8_t>('?');
         }
+        STRF_IF_UNLIKELY (dst_it == dst_end) {
+            return {src, dst_it, reason::insufficient_output_space};
+        }
+        *dst_it = static_cast<DstCharT>(ch);
     }
-    dest.advance_to(dest_it);
+    return {src, dst_it, reason::completed};
 }
 
 template <std::ptrdiff_t wchar_size, typename CharT, strf::charset_id>
@@ -2428,9 +2910,9 @@ public:
     {
         return 1;
     }
-    static STRF_HD void write_replacement_char(strf::transcode_dest<CharT>& dest)
+    static STRF_HD void write_replacement_char(strf::transcode_dst<CharT>& dst) noexcept
     {
-        strf::put(dest, static_cast<CharT>('?'));
+        strf::put(dst, static_cast<CharT>('?'));
     }
     static STRF_HD int validate(char32_t ch32) noexcept
     {
@@ -2440,33 +2922,35 @@ public:
     {
         return 1;
     }
-    static STRF_HD CharT* encode_char(CharT* dest, char32_t ch);
+    static STRF_HD CharT* encode_char(CharT* dst, char32_t ch) noexcept;
 
     static STRF_HD void encode_fill
-        ( strf::transcode_dest<CharT>& dest, std::ptrdiff_t count, char32_t ch );
+        ( strf::transcode_dst<CharT>& dst, std::ptrdiff_t count, char32_t ch );
 
-    static STRF_HD strf::count_codepoints_result count_codepoints_fast
-        ( const CharT* src, std::ptrdiff_t src_size
+    static STRF_HD strf::count_codepoints_result<CharT> count_codepoints_fast
+        ( const CharT* src, const CharT* src_end
         , std::ptrdiff_t max_count ) noexcept
     {
         (void) src;
+        STRF_ASSERT(src <= src_end);
+        const auto src_size = src_end - src;
         if (max_count < src_size) {
-            return {max_count, max_count};
+            return {max_count, src + max_count};
         }
-        return {src_size, src_size};
+        return {src_size, src_end};
     }
-    static STRF_HD strf::count_codepoints_result count_codepoints
-        ( const CharT* src, std::ptrdiff_t src_size
-        , std::ptrdiff_t max_count, strf::surrogate_policy surr_poli ) noexcept
+    static STRF_HD strf::count_codepoints_result<CharT> count_codepoints
+        ( const CharT* src, const CharT* src_end
+        , std::ptrdiff_t max_count ) noexcept
     {
-        (void) src;
-        (void) surr_poli;
+        STRF_ASSERT(src <= src_end);
+        const auto src_size = src_end - src;
         if (max_count < src_size) {
-            return {max_count, max_count};
+            return {max_count, src + max_count};
         }
-        return {src_size, src_size};
+        return {src_size, src_end};
     }
-    static STRF_HD char32_t decode_unit(CharT ch)
+    static STRF_HD char32_t decode_unit(CharT ch) noexcept
     {
         return Impl::decode(static_cast<std::uint8_t>(ch));
     }
@@ -2599,13 +3083,13 @@ private:
         }
         return {};
     }
-    template <typename DestCharT>
-    static STRF_HD strf::dynamic_transcoder<CharT, DestCharT>
+    template <typename DstCharT>
+    static STRF_HD strf::dynamic_transcoder<CharT, DstCharT>
     find_transcoder_to_narrow(strf::charset_id id) noexcept
     {
-        using transcoder_type = strf::dynamic_transcoder<CharT, DestCharT>;
+        using transcoder_type = strf::dynamic_transcoder<CharT, DstCharT>;
         if (id == Impl::id) {
-            const static_transcoder<CharT, DestCharT, Impl::id, Impl::id> t;
+            const static_transcoder<CharT, DstCharT, Impl::id, Impl::id> t;
             return transcoder_type{ t };
         }
         return {};
@@ -2615,18 +3099,18 @@ private:
 
 template <typename CharT, class Impl>
 STRF_HD CharT* single_byte_charset<CharT, Impl>::encode_char
-    ( CharT* dest
-    , char32_t ch )
+    ( CharT* dst
+    , char32_t ch ) noexcept
 {
     auto ch2 = Impl::encode(ch);
     const bool valid = (ch2 < 0x100);
-    *dest = static_cast<CharT>(valid * ch2 + (!valid) * '?');
-    return dest + 1;
+    *dst = static_cast<CharT>(valid * ch2 + (!valid) * '?');
+    return dst + 1;
 }
 
 template <typename CharT, class Impl>
 STRF_HD void single_byte_charset<CharT, Impl>::encode_fill
-    ( strf::transcode_dest<CharT>& dest, std::ptrdiff_t count, char32_t ch )
+    ( strf::transcode_dst<CharT>& dst, std::ptrdiff_t count, char32_t ch )
 {
     unsigned ch2 = Impl::encode(ch);
     STRF_IF_UNLIKELY (ch2 >= 0x100) {
@@ -2634,16 +3118,16 @@ STRF_HD void single_byte_charset<CharT, Impl>::encode_fill
     }
     auto ch3 = static_cast<CharT>(ch2);
     while(true) {
-        const std::ptrdiff_t available = dest.buffer_sspace();
+        const std::ptrdiff_t available = dst.buffer_sspace();
         STRF_IF_LIKELY (count <= available) {
-            strf::detail::str_fill_n<CharT>(dest.buffer_ptr(), count, ch3);
-            dest.advance(count);
+            strf::detail::str_fill_n<CharT>(dst.buffer_ptr(), count, ch3);
+            dst.advance(count);
             return;
         }
-        strf::detail::str_fill_n<CharT>(dest.buffer_ptr(), available, ch3);
-        dest.advance_to(dest.buffer_end());
+        strf::detail::str_fill_n<CharT>(dst.buffer_ptr(), available, ch3);
+        dst.advance_to(dst.buffer_end());
         count -= available;
-        dest.flush();
+        dst.flush();
     }
 }
 
@@ -2676,5 +3160,8 @@ STRF_DEF_SINGLE_BYTE_CHARSET(windows_1257);
 STRF_DEF_SINGLE_BYTE_CHARSET(windows_1258);
 
 } // namespace strf
+
+#undef STRF_SBC_CHECK_DST
+#undef STRF_SBC_CHECK_DST_SIZE
 
 #endif  // STRF_DETAIL_SINGLE_BYTE_CHARSETS_HPP

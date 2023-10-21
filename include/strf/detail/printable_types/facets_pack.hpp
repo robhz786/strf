@@ -95,9 +95,9 @@ public:
     facets_pack_printer& operator=(const facets_pack_printer&) = delete;
     facets_pack_printer& operator=(facets_pack_printer&&) = delete;
 
-    STRF_HD void print_to(strf::destination<CharT>& dest) const override
+    STRF_HD void print_to(strf::destination<CharT>& dst) const override
     {
-        strf::detail::write(dest, printers_);
+        strf::detail::write(dst, printers_);
     }
 
 private:

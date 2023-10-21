@@ -87,3 +87,5 @@ void test_dynamic_charset()
         TEST_TRUE(transc10.transcode_func() == nullptr);
     }
 }
+
+REGISTER_STRF_TEST(test_dynamic_charset)

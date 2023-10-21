@@ -14,6 +14,18 @@
 #  pragma GCC diagnostic pop
 #endif
 
+#include "test_utils/transcoding.hpp"
+
+#define TEST_TRANSCODE(SrcCharset, DstCharset)                          \
+    test_utils::transcode_tester_caller(BOOST_CURRENT_FUNCTION, __FILE__, __LINE__) \
+    << decltype(test_utils::transcoding_test_data_maker_type((SrcCharset), (DstCharset))) \
+    {(SrcCharset), (DstCharset), true}
+
+#define TEST_UNSAFE_TRANSCODE(SrcCharset, DstCharset)                   \
+    test_utils::transcode_tester_caller(BOOST_CURRENT_FUNCTION, __FILE__, __LINE__) \
+    << decltype(test_utils::transcoding_test_data_maker_type((SrcCharset), (DstCharset))) \
+    {(SrcCharset), (DstCharset), false}
+
 namespace {
 
 constexpr strf::charset_id invalid_csid = static_cast<strf::charset_id>(0xf3b2a6b2);
@@ -70,49 +82,31 @@ STRF_HD void general_tests
 
     {
         auto x = charset.count_codepoints( str_0_to_xff.data()
-                                         , str_0_to_xff.ssize()
-                                         , str_0_to_xff.ssize()
-                                         , strf::surrogate_policy::lax );
+                                         , str_0_to_xff.end()
+                                         , str_0_to_xff.ssize() );
         TEST_EQ(x.count, str_0_to_xff.size());
-        TEST_EQ(x.pos, str_0_to_xff.size());
+        TEST_EQ(0, x.ptr - str_0_to_xff.end());
     }
     {
         auto x = charset.count_codepoints( str_0_to_xff.data()
-                                         , str_0_to_xff.ssize()
-                                         , str_0_to_xff.ssize()
-                                         , strf::surrogate_policy::strict );
-        TEST_EQ(x.count, str_0_to_xff.size());
-        TEST_EQ(x.pos, str_0_to_xff.size());
-    }
-    {
-        auto x = charset.count_codepoints( str_0_to_xff.data()
-                                         , str_0_to_xff.ssize()
-                                         , str_0_to_xff.ssize() - 1
-                                         , strf::surrogate_policy::lax );
+                                         , str_0_to_xff.end()
+                                         , str_0_to_xff.ssize() - 1 );
         TEST_EQ(x.count, str_0_to_xff.size() - 1);
-        TEST_EQ(x.pos, str_0_to_xff.size() - 1);
-    }
-    {
-        auto x = charset.count_codepoints( str_0_to_xff.data()
-                                         , str_0_to_xff.ssize()
-                                         , str_0_to_xff.ssize() - 1
-                                         , strf::surrogate_policy::strict );
-        TEST_EQ(x.count, str_0_to_xff.size() - 1);
-        TEST_EQ(x.pos, str_0_to_xff.size() - 1);
+        TEST_EQ(0, x.ptr - (str_0_to_xff.end() - 1));
     }
     {
         auto x = charset.count_codepoints_fast( str_0_to_xff.data()
-                                              , str_0_to_xff.ssize()
+                                              , str_0_to_xff.end()
                                               , str_0_to_xff.ssize() );
         TEST_EQ(x.count, str_0_to_xff.size());
-        TEST_EQ(x.pos, str_0_to_xff.size());
+        TEST_EQ(0, x.ptr - str_0_to_xff.end());
     }
     {
         auto x = charset.count_codepoints_fast( str_0_to_xff.data()
-                                              , str_0_to_xff.ssize()
+                                              , str_0_to_xff.end()
                                               , str_0_to_xff.ssize() - 1 );
         TEST_EQ(x.count, str_0_to_xff.size() - 1);
-        TEST_EQ(x.pos, str_0_to_xff.size() - 1);
+        TEST_EQ(0, x.ptr - (str_0_to_xff.end() - 1));
     }
 
 
@@ -1294,26 +1288,43 @@ STRF_HD strf::detail::simple_string_view<CharT> questions_marks(std::size_t coun
     return {array, count};
 }
 
-template <typename CharT>
 STRF_HD void test_unsupported_codepoints
-    ( strf::dynamic_charset<CharT> charset
+    ( strf::dynamic_charset<char> dstCharset
     , std::initializer_list<char32_t> unsupported_codepoints )
 {
-    TEST_SCOPE_DESCRIPTION(charset.name());
 
-    strf::detail::simple_string_view<char32_t> input
+    auto print_codepoint = [](char32_t c)
+                           { return strf::join(' ', strf::hex(static_cast<unsigned>(c)).p(4)); };
+    TEST_SCOPE_DESCRIPTION
+        ( dstCharset.name(), strf::range( unsupported_codepoints, print_codepoint));
+
+    strf::detail::simple_string_view<char32_t> unsupported_codepoints_str
         { unsupported_codepoints.begin(), unsupported_codepoints.size() };
 
-    TEST(questions_marks<CharT>(input.size())) .with(charset) (strf::sani(input));
+    auto expected_questions_marks = questions_marks<char>(unsupported_codepoints.size());
+
+    TEST(expected_questions_marks) .with(dstCharset) (strf::sani(unsupported_codepoints_str));
+
+    TEST_TRANSCODE(strf::utf<char32_t>, dstCharset)
+        .input(U"abc", unsupported_codepoints_str)
+        .expect("abc", expected_questions_marks)
+        .expect_unsupported_codepoints(unsupported_codepoints)
+        .expect_stop_reason(strf::transcode_stop_reason::completed);
+
+    TEST_UNSAFE_TRANSCODE(strf::utf<char32_t>, dstCharset)
+        .input(U"abc", unsupported_codepoints_str)
+        .expect("abc", expected_questions_marks)
+        .expect_unsupported_codepoints(unsupported_codepoints)
+        .expect_stop_reason(strf::transcode_stop_reason::completed);
 }
 
-template <typename CharT, strf::charset_id CharsetId>
+template <strf::charset_id CharsetId>
 STRF_HD void test_unsupported_codepoints
-    ( strf::static_charset<CharT, CharsetId> charset
+    ( strf::static_charset<char, CharsetId> charset
     , std::initializer_list<char32_t> unsupported_codepoints )
 {
-    const strf::dynamic_charset_data<CharT> data = charset.make_data();
-    const strf::dynamic_charset<CharT> dynamic_cs{data};
+    const strf::dynamic_charset_data<char> data = charset.make_data();
+    const strf::dynamic_charset<char> dynamic_cs{data};
     test_unsupported_codepoints(dynamic_cs, unsupported_codepoints);
 }
 
@@ -1325,12 +1336,418 @@ inline STRF_HD void test_undefined_bytes
     TEST_SCOPE_DESCRIPTION(charset.name());
     TEST(questions_marks<CharT>(undefined_bytes.size())) .with(charset)
         (strf::sani(undefined_bytes, charset));
+
+    if (undefined_bytes.size() > 0) {
+
+        TEST_TRANSCODE(charset, charset)
+            .input(undefined_bytes)
+            .expect(strf::detail::simple_string_view<CharT>())
+            .flags(strf::transcode_flags::stop_on_invalid_sequence)
+            .expect_invalid_sequences({{*undefined_bytes.begin()}})
+            .expect_stop_reason(strf::transcode_stop_reason::invalid_sequence);
+
+        TEST_TRANSCODE(charset, strf::utf32_t<char32_t>())
+            .input(undefined_bytes)
+            .expect(strf::detail::simple_string_view<char32_t>())
+            .flags(strf::transcode_flags::stop_on_invalid_sequence)
+            .expect_invalid_sequences({{*undefined_bytes.begin()}})
+            .expect_stop_reason(strf::transcode_stop_reason::invalid_sequence);
+    }
+}
+
+template <typename Charset>
+STRF_HD void basic_tests_utf32_to_single_byte_charset(Charset cs)
+{
+    // happy scenario case
+    TEST_TRANSCODE(strf::utf<char32_t>, cs)
+        .input(U"abcd")
+        .expect("abcd")
+        .flags(strf::transcode_flags::stop_on_unsupported_codepoint)
+        .expect_stop_reason(strf::transcode_stop_reason::completed)
+        .expect_invalid_sequences({})
+        .expect_unsupported_codepoints({});
+
+    // short destination ; flags == none
+    TEST_TRANSCODE(strf::utf<char32_t>, cs)
+        .input(U"abcd")
+        .destination_size(3)
+        .expect("abc")
+        .expect_stop_reason(strf::transcode_stop_reason::insufficient_output_space)
+        .expect_invalid_sequences({})
+        .expect_unsupported_codepoints({});
+
+    // short destination ; flags == stop_on_unsupported_codepoint
+    TEST_TRANSCODE(strf::utf<char32_t>, cs)
+        .input(U"abcd")
+        .destination_size(3)
+        .expect("abc")
+        .flags(strf::transcode_flags::stop_on_unsupported_codepoint)
+        .expect_stop_reason(strf::transcode_stop_reason::insufficient_output_space)
+        .expect_invalid_sequences({})
+        .expect_unsupported_codepoints({});
+
+    // short destination ; flags == stop_on_invalid_sequence
+    TEST_TRANSCODE(strf::utf<char32_t>, cs)
+        .input(U"abcd")
+        .destination_size(3)
+        .expect("abc")
+        .flags(strf::transcode_flags::stop_on_invalid_sequence)
+        .expect_stop_reason(strf::transcode_stop_reason::insufficient_output_space)
+        .expect_invalid_sequences({})
+        .expect_unsupported_codepoints({});
+
+    // short destination ;
+    // flags == stop_on_invalid_sequence | stop_on_unsupported_codepoint
+    TEST_TRANSCODE(strf::utf<char32_t>, cs)
+        .input(U"abcd")
+        .destination_size(3)
+        .expect("abc")
+        .flags(strf::transcode_flags::stop_on_invalid_sequence |
+               strf::transcode_flags::stop_on_unsupported_codepoint )
+        .expect_stop_reason(strf::transcode_stop_reason::insufficient_output_space)
+        .expect_invalid_sequences({})
+        .expect_unsupported_codepoints({});
+
+    // stop on unsupported codepoint
+    TEST_TRANSCODE(strf::utf<char32_t>, cs)
+        .input(U"abcd\uABCD--")
+        .expect("abcd")
+        .flags(strf::transcode_flags::stop_on_unsupported_codepoint)
+        .expect_stop_reason(strf::transcode_stop_reason::unsupported_codepoint)
+        .expect_invalid_sequences({})
+        .expect_unsupported_codepoints({0xABCD});
+
+    // stop reason is unsupported_codepoint, even though it wouldn't be
+    // possible to write nothing more anyway
+    TEST_TRANSCODE(strf::utf<char32_t>, cs)
+        .input(U"abc\uABCD ")
+        .destination_size(3)
+        .expect("abc")
+        .flags(strf::transcode_flags::stop_on_unsupported_codepoint)
+        .expect_stop_reason(strf::transcode_stop_reason::unsupported_codepoint)
+        .expect_invalid_sequences({})
+        .expect_unsupported_codepoints({0xABCD});
+    TEST_TRANSCODE(strf::utf<char32_t>, cs)
+        .input(U"\uABCD ")
+        .destination_size(0)
+        .expect("")
+        .flags(strf::transcode_flags::stop_on_unsupported_codepoint)
+        .expect_stop_reason(strf::transcode_stop_reason::unsupported_codepoint)
+        .expect_invalid_sequences({})
+        .expect_unsupported_codepoints({0xABCD});
+
+    // stop reason is invalid_sequence
+    TEST_TRANSCODE(strf::utf<char32_t>, cs)
+        .input(U"abc", static_cast<char32_t>(0x110000), U"def")
+        .destination_size(3)
+        .expect("abc")
+        .flags(strf::transcode_flags::stop_on_invalid_sequence)
+        .expect_stop_reason(strf::transcode_stop_reason::invalid_sequence)
+        .expect_invalid_sequences({{static_cast<char32_t>(0x110000)}})
+        .expect_unsupported_codepoints({});
+
+    // stop reason invalid sequence, even though it wouldn't be
+    // possible to write nothing more anyway
+    TEST_TRANSCODE(strf::utf<char32_t>, cs)
+        .input(U"abc", static_cast<char32_t>(0x110000), U"def")
+        .destination_size(3)
+        .expect("abc")
+        .expect_stop_reason(strf::transcode_stop_reason::insufficient_output_space)
+        .expect_invalid_sequences({{static_cast<char32_t>(0x110000)}})
+        .expect_unsupported_codepoints({});
+    TEST_TRANSCODE(strf::utf<char32_t>, cs)
+        .input(static_cast<char32_t>(0x110000), U"def")
+        .destination_size(0)
+        .expect("")
+        .expect_stop_reason(strf::transcode_stop_reason::insufficient_output_space)
+        .expect_invalid_sequences({{static_cast<char32_t>(0x110000)}})
+        .expect_unsupported_codepoints({});
+
+    // Has invalid sequence, but that's not a reason for stopping
+    TEST_TRANSCODE(strf::utf<char32_t>, cs)
+        .input(U"abc", static_cast<char32_t>(0x110000), U"def")
+        .destination_size(7)
+        .expect("abc?def")
+        .flags(strf::transcode_flags::stop_on_unsupported_codepoint)
+        .expect_stop_reason(strf::transcode_stop_reason::completed)
+        .expect_invalid_sequences({{static_cast<char32_t>(0x110000)}})
+        .expect_unsupported_codepoints({});
+
+    // A surrogate is treated as a valid (but unsupported codepoint)
+    // when using the flag lax_surrogate
+    TEST_TRANSCODE(strf::utf<char32_t>, cs)
+        .input(U"abc", static_cast<char32_t>(0xFFFF), U"def")
+        .expect("abc")
+        .flags(strf::transcode_flags::stop_on_invalid_sequence |
+               strf::transcode_flags::stop_on_unsupported_codepoint |
+               strf::transcode_flags::lax_surrogate_policy )
+        .expect_stop_reason(strf::transcode_stop_reason::unsupported_codepoint)
+        .expect_invalid_sequences({})
+        .expect_unsupported_codepoints({0xFFFF});
+
+    // A surrogate is treated as an invalid sequence
+    // if using the flag lax_surrogate is not used
+    TEST_TRANSCODE(strf::utf<char32_t>, cs)
+        .input(U"abc", static_cast<char32_t>(0xFFFF), U"def")
+        .expect("abc")
+        .flags(strf::transcode_flags::stop_on_invalid_sequence |
+               strf::transcode_flags::stop_on_unsupported_codepoint )
+        .expect_stop_reason(strf::transcode_stop_reason::invalid_sequence)
+        .expect_invalid_sequences({{static_cast<char32_t>(0xFFFF)}})
+        .expect_unsupported_codepoints({});
+
+    // when we have both and invalid sequence and an unsupported codepoint
+    TEST_TRANSCODE(strf::utf<char32_t>, cs)
+        .input(U"abc", static_cast<char32_t>(0x110000), U"__\uABCD==")
+        .expect("abc?__?==")
+        .expect_stop_reason(strf::transcode_stop_reason::completed)
+        .expect_invalid_sequences({{static_cast<char32_t>(0x110000)}})
+        .expect_unsupported_codepoints({0xABCD});
+
+    // when we have both and invalid sequence and an unsupported codepoint,
+    // and we are stopping on the invalid sequence
+    // but not in the unsupported codepoint
+    TEST_TRANSCODE(strf::utf<char32_t>, cs)
+        .input(U"abc\uABCD__", static_cast<char32_t>(0x110000), U"==")
+        .expect("abc?__")
+        .flags(strf::transcode_flags::stop_on_invalid_sequence)
+        .expect_stop_reason(strf::transcode_stop_reason::invalid_sequence)
+        .expect_invalid_sequences({{static_cast<char32_t>(0x110000)}})
+        .expect_unsupported_codepoints({0xABCD});
+
+    // when we have both and invalid sequence and an unsupported codepoint,
+    // and we are stopping on the invalid sequence
+    // but not in the unsupported codepoint
+    TEST_TRANSCODE(strf::utf<char32_t>, cs)
+        .input(U"abc", static_cast<char32_t>(0x110000), U"__\uABCD==")
+        .expect("abc")
+        .flags(strf::transcode_flags::stop_on_invalid_sequence)
+        .expect_stop_reason(strf::transcode_stop_reason::invalid_sequence)
+        .expect_invalid_sequences({{static_cast<char32_t>(0x110000)}})
+        .expect_unsupported_codepoints({});
+
+    // when we have both and invalid sequence and an unsupported codepoint,
+    // and we are stopping on the unsupported codepoint
+    // but not in the invalid sequence
+    TEST_TRANSCODE(strf::utf<char32_t>, cs)
+        .input(U"abc", static_cast<char32_t>(0x110000), U"__\uABCD==")
+        .expect("abc?__")
+        .flags(strf::transcode_flags::stop_on_unsupported_codepoint)
+        .expect_stop_reason(strf::transcode_stop_reason::unsupported_codepoint)
+        .expect_invalid_sequences({{static_cast<char32_t>(0x110000)}})
+        .expect_unsupported_codepoints({0xABCD});
+
+    // when we have both and invalid sequence and an unsupported codepoint,
+    // and we are stopping on the invalid sequence because it cames before
+    // the unsupported codepoint
+    TEST_TRANSCODE(strf::utf<char32_t>, cs)
+        .input(U"abc", static_cast<char32_t>(0x110000), U"__\uABCD==")
+        .expect("abc")
+        .flags(strf::transcode_flags::stop_on_invalid_sequence |
+               strf::transcode_flags::stop_on_unsupported_codepoint )
+        .expect_stop_reason(strf::transcode_stop_reason::invalid_sequence)
+        .expect_invalid_sequences({{static_cast<char32_t>(0x110000)}})
+        .expect_unsupported_codepoints({});
+
+    // when we have both and invalid sequence and an unsupported codepoint,
+    // and we are stopping on the unsupported codepoint because it cames before
+    // the invalid sequence
+    TEST_TRANSCODE(strf::utf<char32_t>, cs)
+        .input(U"abc\uABCD__", static_cast<char32_t>(0x110000), U"==")
+        .expect("abc")
+        .flags(strf::transcode_flags::stop_on_unsupported_codepoint |
+               strf::transcode_flags::stop_on_invalid_sequence )
+        .expect_stop_reason(strf::transcode_stop_reason::unsupported_codepoint)
+        .expect_invalid_sequences({})
+        .expect_unsupported_codepoints({0xABCD});
+
+    // TEST_UNSAFE_TRANSCODE cases
+
+    // happy scenario case
+    TEST_UNSAFE_TRANSCODE(strf::utf<char32_t>, cs)
+        .input(U"abcd")
+        .expect("abcd")
+        .flags(strf::transcode_flags::stop_on_unsupported_codepoint)
+        .expect_stop_reason(strf::transcode_stop_reason::completed)
+        .expect_invalid_sequences({})
+        .expect_unsupported_codepoints({});
+    // shot destination ; flags == none
+    TEST_UNSAFE_TRANSCODE(strf::utf<char32_t>, cs)
+        .input(U"abcd")
+        .destination_size(3)
+        .expect("abc")
+        .expect_stop_reason(strf::transcode_stop_reason::insufficient_output_space)
+        .expect_invalid_sequences({})
+        .expect_unsupported_codepoints({});
+
+
+    // shot destination ; flags == stop_on_unsupported_codepoint
+    TEST_UNSAFE_TRANSCODE(strf::utf<char32_t>, cs)
+        .input(U"abcd\uABCD ")
+        .destination_size(3)
+        .expect("abc")
+        .flags(strf::transcode_flags::stop_on_unsupported_codepoint)
+        .expect_stop_reason(strf::transcode_stop_reason::insufficient_output_space)
+        .expect_invalid_sequences({})
+        .expect_unsupported_codepoints({});
+
+    // stop on unsupported codepoint
+    TEST_UNSAFE_TRANSCODE(strf::utf<char32_t>, cs)
+        .input(U"abcd\uABCD--")
+        .expect("abcd")
+        .flags(strf::transcode_flags::stop_on_unsupported_codepoint)
+        .expect_stop_reason(strf::transcode_stop_reason::unsupported_codepoint)
+        .expect_invalid_sequences({})
+        .expect_unsupported_codepoints({0xABCD});
+
+    // stop reason is unsupported_codepoint, even though it wouldn't be
+    // possible to write nothing more anyway
+    TEST_UNSAFE_TRANSCODE(strf::utf<char32_t>, cs)
+        .input(U"abc\uABCD ")
+        .destination_size(3)
+        .expect("abc")
+        .flags(strf::transcode_flags::stop_on_unsupported_codepoint)
+        .expect_stop_reason(strf::transcode_stop_reason::unsupported_codepoint)
+        .expect_invalid_sequences({})
+        .expect_unsupported_codepoints({0xABCD});
+
+    // A surrogate is treated as a valid (unsupported codepoint)
+    // when using the flag lax_surrogate
+    TEST_TRANSCODE(strf::utf<char32_t>, cs)
+        .input(U"abc", static_cast<char32_t>(0xFFFF), U"def")
+        .expect("abc")
+        .flags(strf::transcode_flags::stop_on_invalid_sequence |
+               strf::transcode_flags::stop_on_unsupported_codepoint |
+               strf::transcode_flags::lax_surrogate_policy )
+        .expect_stop_reason(strf::transcode_stop_reason::unsupported_codepoint)
+        .expect_invalid_sequences({})
+        .expect_unsupported_codepoints({0xFFFF});
+}
+
+STRF_HD void test_to_utf32()
+{
+    strf::iso_8859_7_t<char> cs;
+    const char invalid_byte = '\xAE';
+
+    // happy scenario case
+    TEST_TRANSCODE(cs, strf::utf<char32_t>)
+       .input("abcd")
+       .expect(U"abcd")
+       .flags(strf::transcode_flags::stop_on_invalid_sequence)
+       .expect_stop_reason(strf::transcode_stop_reason::completed)
+       .expect_invalid_sequences({})
+       .expect_unsupported_codepoints({});
+
+    // short destination
+    TEST_TRANSCODE(cs, strf::utf<char32_t>)
+       .input("abcd")
+       .destination_size(3)
+       .expect(U"abc")
+       .expect_stop_reason(strf::transcode_stop_reason::insufficient_output_space)
+       .expect_invalid_sequences({})
+       .expect_unsupported_codepoints({});
+
+    // stop on invalid sequence
+    TEST_TRANSCODE(cs, strf::utf<char32_t>)
+        .input("abcd", invalid_byte, "efgh")
+        .destination_size(4)
+        .expect(U"abcd")
+        .flags(strf::transcode_flags::stop_on_invalid_sequence)
+        .expect_stop_reason(strf::transcode_stop_reason::invalid_sequence)
+        .expect_invalid_sequences({{invalid_byte}})
+        .expect_unsupported_codepoints({});
+
+    // not stopping on invalid sequence
+    TEST_TRANSCODE(cs, strf::utf<char32_t>)
+        .input("abcd", invalid_byte, "efgh")
+        .destination_size(9)
+        .expect(U"abcd\uFFFD" U"efgh")
+        .flags(strf::transcode_flags::stop_on_unsupported_codepoint)
+        .expect_stop_reason(strf::transcode_stop_reason::completed)
+        .expect_invalid_sequences({{invalid_byte}})
+        .expect_unsupported_codepoints({});
+}
+
+STRF_HD void test_sanitize()
+{
+    strf::iso_8859_7_t<char> cs;
+    const char invalid_byte = '\xAE';
+
+    // happy scenario case
+    TEST_TRANSCODE(cs, cs)
+       .input("abcd")
+       .expect("abcd")
+       .flags(strf::transcode_flags::stop_on_invalid_sequence)
+       .expect_stop_reason(strf::transcode_stop_reason::completed)
+       .expect_invalid_sequences({})
+       .expect_unsupported_codepoints({});
+
+    // short destination
+    TEST_TRANSCODE(cs, cs)
+       .input("abcd")
+       .destination_size(3)
+       .expect("abc")
+       .expect_stop_reason(strf::transcode_stop_reason::insufficient_output_space)
+       .expect_invalid_sequences({})
+       .expect_unsupported_codepoints({});
+
+    // stop on invalid sequence
+    TEST_TRANSCODE(cs, cs)
+        .input("abcd", invalid_byte, "efgh")
+        .destination_size(4)
+        .expect("abcd")
+        .flags(strf::transcode_flags::stop_on_invalid_sequence)
+        .expect_stop_reason(strf::transcode_stop_reason::invalid_sequence)
+        .expect_invalid_sequences({{invalid_byte}})
+        .expect_unsupported_codepoints({});
+
+    // not stopping on invalid sequence
+    TEST_TRANSCODE(cs, cs)
+        .input("abcd", invalid_byte, "efgh")
+        .destination_size(9)
+        .expect("abcd?efgh")
+        .flags(strf::transcode_flags::stop_on_unsupported_codepoint)
+        .expect_stop_reason(strf::transcode_stop_reason::completed)
+        .expect_invalid_sequences({{invalid_byte}})
+        .expect_unsupported_codepoints({});
 }
 
 } // unnamed namespace
 
 STRF_TEST_FUNC void test_single_byte_charsets()
 {
+    basic_tests_utf32_to_single_byte_charset(strf::iso_8859_1<char>);
+    basic_tests_utf32_to_single_byte_charset(strf::iso_8859_7<char>);
+    test_to_utf32();
+    test_sanitize();
+
+    TEST_TRANSCODE(strf::iso_8859_1<char>, strf::utf<char32_t>)
+       .input("abcd\xd2 ")
+       .destination_size(3)
+       .expect(U"abc")
+       .flags(strf::transcode_flags::stop_on_invalid_sequence)
+       .expect_stop_reason(strf::transcode_stop_reason::insufficient_output_space)
+       .expect_invalid_sequences({})
+       .expect_unsupported_codepoints({});
+
+   TEST_TRANSCODE(strf::iso_8859_7<char>, strf::utf<char32_t>)
+       .input("abcd\xd2 ")
+       .destination_size(4)
+       .expect(U"abcd")
+       .flags(strf::transcode_flags::stop_on_invalid_sequence)
+       .expect_stop_reason(strf::transcode_stop_reason::invalid_sequence)
+       .expect_invalid_sequences({{'\xD2'}})
+       .expect_unsupported_codepoints({});
+
+   TEST_TRANSCODE(strf::iso_8859_7<char>, strf::iso_8859_7<char>)
+       .input("abcd\xd2 ")
+       .destination_size(4)
+       .expect("abcd")
+       .flags(strf::transcode_flags::stop_on_invalid_sequence)
+       .expect_stop_reason(strf::transcode_stop_reason::invalid_sequence)
+       .expect_invalid_sequences({{'\xD2'}})
+       .expect_unsupported_codepoints({});
+
     general_tests(strf::ascii_t<char>{}, decoded_0_to_xff_ascii());
     general_tests(strf::iso_8859_1_t<char>{}, decoded_0_to_xff_iso_8859_1());
     general_tests(strf::iso_8859_2_t<char>{}, decoded_0_to_xff_iso_8859_2());
@@ -1378,7 +1795,7 @@ STRF_TEST_FUNC void test_single_byte_charsets()
     test_undefined_bytes<char>( strf::windows_1257_t<char>{}, "\xA1\xA5");
 
 
-    test_unsupported_codepoints(strf::iso_8859_1_t<char>{}, {0x100, 0xFFFF});
+    test_unsupported_codepoints(strf::iso_8859_1_t<char>{}, {0x100, 0x10000});
     test_unsupported_codepoints(strf::iso_8859_2_t<char>{}, {0xA1, 0x02DC, 0x02DE});
     test_unsupported_codepoints
         ( strf::iso_8859_3_t<char>{}

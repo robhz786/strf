@@ -43,50 +43,12 @@ struct string_input_tag: string_input_tag_base{}
 Influenced by facet categories::
 - `<<width_calculator_c,width_calculator_c>>`
 - `<<charset_c,charset_c>><__CharType__>`
-- `<<surrogate_policy,surrogate_policy_c>>`
 - `<<transcoding_error_notifier_c,transcoding_error_notifier_c>>`
 
-
 Format functions::
-( in addition to <<alignment_formatter, alignment functions>> )
-
-`p(<<strf_hpp#width_t,width_t>> limit)`:::
-   Does not print the whole string if its width is greater than `limit`,
-   but the greatest possible amount of its leading Unicode code points
-   such that the width is not greater than `limit`.
-+
-////
-   but prints the maxixum leading sub-string such that its width
-   is not greater than `limit`.
-   Prints the maximum amount of Unicode code points such that
-   the width is not greater than `limit`.
-   __To-to__
-////
-+
-`template <typename Charset> sanitize_from_charset(Charset cs)`:::
-   Convert the input string from `cs` to the output charset.
-   If the charsets are the same then sanitizes the input string.
-`sanitize_charset()`::: Translates input string from the charset associated to `CharT` to
-            the output charset. If these charsets are the same
-            then sanitizes the input string.
-`template <typename Charset> transcode_from(Charset cs)`:::
-   Convert the input string from `cs` to the
-   output charset, if these charsets are not the same.
-   Otherwise, copies input string as it is.
-`transcode()` ::: Translates input string from the charset associated to `CharT` to
-          the output charset, if these charsets are not the same.
-          Otherwise, copies the input string as it is.
-`template <typename Charset>  sani(Charset cs)`::: Equivanlent to `sanitize_charset(cs)`
-`sani()`::: Equivalent to `sanitize_charset()`
-+
-.Example
-[source,cpp]
-----
-auto str = strf::to_string(strf::center(u" Hello! ", 16, '*').transcode());
-assert(str == "**** Hello! ****");
-----
-
-
+ - <<alignment_formatter, alignment format functions>>
+ - <<strf_hpp#string_precision_format_function, string precision format function>>
+ - <<strf_hpp#transcoding_format_functions, transcoding format functions>>
 
 === Single characters
 Type:: The same as the output character type or `char32_t`. In the later case,

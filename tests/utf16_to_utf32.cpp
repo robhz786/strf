@@ -3,133 +3,351 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include "test_invalid_sequences.hpp"
+#include "test_utils/transcoding.hpp"
+
+#define TEST_TRANSCODE                                                  \
+    test_utils::transcode_tester_caller(BOOST_CURRENT_FUNCTION, __FILE__, __LINE__) \
+    << test_utils::transcoding_test_data_maker<strf::utf_t<char16_t>, strf::utf_t<char32_t>> \
+    (strf::utf<char16_t>, strf::utf<char32_t>, true)
+
+#define TEST_UNSAFE_TRANSCODE                                           \
+    test_utils::transcode_tester_caller(BOOST_CURRENT_FUNCTION, __FILE__, __LINE__) \
+    << test_utils::transcoding_test_data_maker<strf::utf_t<char16_t>, strf::utf_t<char32_t>> \
+    (strf::utf<char16_t>, strf::utf<char32_t>, false)
+
 
 namespace {
 
+STRF_TEST_FUNC void utf16_to_utf32_unsafe_transcode()
+{
+    TEST_UNSAFE_TRANSCODE
+        .input(u"ab")
+        .expect(U"ab")
+        .expect_stop_reason(strf::transcode_stop_reason::completed)
+        .expect_unsupported_codepoints({})
+        .expect_invalid_sequences({});
+
+    TEST_UNSAFE_TRANSCODE
+        .input(u"\u0080")
+        .expect(U"\u0080")
+        .expect_stop_reason(strf::transcode_stop_reason::completed)
+        .expect_unsupported_codepoints({})
+        .expect_invalid_sequences({});
+
+    TEST_UNSAFE_TRANSCODE
+        .input(u"\u0800")
+        .expect(U"\u0800")
+        .expect_stop_reason(strf::transcode_stop_reason::completed)
+        .expect_unsupported_codepoints({})
+        .expect_invalid_sequences({});
+
+    TEST_UNSAFE_TRANSCODE
+        .input(u"\uD7FF")
+        .expect(U"\uD7FF")
+        .expect_stop_reason(strf::transcode_stop_reason::completed)
+        .expect_unsupported_codepoints({})
+        .expect_invalid_sequences({});
+
+    TEST_UNSAFE_TRANSCODE
+        .input(u"\U00010000")
+        .expect(U"\U00010000")
+        .expect_stop_reason(strf::transcode_stop_reason::completed)
+        .expect_unsupported_codepoints({})
+        .expect_invalid_sequences({});
+
+    TEST_UNSAFE_TRANSCODE
+        .input(u"\U0010FFFF")
+        .expect(U"\U0010FFFF")
+        .expect_stop_reason(strf::transcode_stop_reason::completed)
+        .expect_unsupported_codepoints({})
+        .expect_invalid_sequences({});
+
+    TEST_UNSAFE_TRANSCODE
+        .input(u"ab\u0080\u0800\uD7FF\U00010000\U0010FFFF")
+        .expect(U"ab\u0080\u0800\uD7FF\U00010000\U0010FFFF")
+        .expect_stop_reason(strf::transcode_stop_reason::completed);
+    TEST_UNSAFE_TRANSCODE
+        .input(u"abc")
+        .expect(U"ab")
+        .destination_size(2)
+        .expect_stop_reason(strf::transcode_stop_reason::insufficient_output_space);
+    TEST_UNSAFE_TRANSCODE
+        .input(u"\U00010000")
+        .expect(U"")
+        .destination_size(0)
+        .expect_stop_reason(strf::transcode_stop_reason::insufficient_output_space);
+
+    TEST_CALLING_RECYCLE_AT(2, U"ab\uD7FF")     (strf::unsafe_transcode(u"ab\uD7FF"));
+    TEST_CALLING_RECYCLE_AT(2, U"ab\U00010000") (strf::unsafe_transcode(u"ab\U00010000"));
+    TEST_CALLING_RECYCLE_AT(2, U"ab\U0010FFFF") (strf::unsafe_transcode(u"ab\U0010FFFF"));
+
+    // when using strf::transcode_flags::lax_surrogate_policy
+    const char16_t u16str_D800[] = {0xD800, 0};
+    const char16_t u16str_DBFF[] = {0xDBFF, 0};
+    const char16_t u16str_DC00[] = {0xDC00, 0};
+    const char16_t u16str_DFFF[] = {0xDFFF, 0};
+    const char16_t u16str_DFFF_D800_[] = {0xDFFF, 0xD800, u'_', 0};
+
+    TEST_UNSAFE_TRANSCODE
+        .input(u16str_D800)
+        .flags(strf::transcode_flags::lax_surrogate_policy)
+        .expect(static_cast<char32_t>(0xD800))
+        .expect_stop_reason(strf::transcode_stop_reason::completed)
+        .expect_unsupported_codepoints({})
+        .expect_invalid_sequences({});
+    TEST_UNSAFE_TRANSCODE
+        .input(u16str_DBFF)
+        .flags(strf::transcode_flags::lax_surrogate_policy)
+        .expect(static_cast<char32_t>(0xDBFF))
+        .expect_stop_reason(strf::transcode_stop_reason::completed)
+        .expect_unsupported_codepoints({})
+        .expect_invalid_sequences({});
+    TEST_UNSAFE_TRANSCODE
+        .input(u16str_DC00)
+        .flags(strf::transcode_flags::lax_surrogate_policy)
+        .expect(static_cast<char32_t>(0xDC00))
+        .expect_stop_reason(strf::transcode_stop_reason::completed)
+        .expect_unsupported_codepoints({})
+        .expect_invalid_sequences({});
+    TEST_UNSAFE_TRANSCODE
+        .input(u16str_DFFF)
+        .flags(strf::transcode_flags::lax_surrogate_policy)
+        .expect(static_cast<char32_t>(0xDFFF))
+        .expect_stop_reason(strf::transcode_stop_reason::completed)
+        .expect_unsupported_codepoints({})
+        .expect_invalid_sequences({});
+    TEST_UNSAFE_TRANSCODE
+        .input(u16str_DFFF_D800_)
+        .flags(strf::transcode_flags::lax_surrogate_policy)
+        .expect(static_cast<char32_t>(0xDFFF), static_cast<char32_t>(0xD800), U'_')
+        .expect_stop_reason(strf::transcode_stop_reason::completed)
+        .expect_unsupported_codepoints({})
+        .expect_invalid_sequences({});
+}
+
 STRF_TEST_FUNC void utf16_to_utf32_valid_sequences()
 {
-    TEST(U" ab\u0080\u0800\uD7FF\U00010000\U0010FFFF")
-        (strf::sani(u"ab\u0080\u0800\uD7FF\U00010000\U0010FFFF") > 8);
+    TEST_TRANSCODE
+        .input(u"ab")
+        .expect(U"ab")
+        .expect_stop_reason(strf::transcode_stop_reason::completed)
+        .expect_unsupported_codepoints({})
+        .expect_invalid_sequences({});
 
-    TEST_TRUNCATING_AT(2, U"ab") (strf::sani(u"ab\uD7FF"));
-    TEST_TRUNCATING_AT(2, U"ab") (strf::sani(u"ab\U00010000"));
+    TEST_TRANSCODE
+        .input(u"\u0080")
+        .expect(U"\u0080")
+        .expect_stop_reason(strf::transcode_stop_reason::completed)
+        .expect_unsupported_codepoints({})
+        .expect_invalid_sequences({});
 
-    TEST_TRUNCATING_AT(3, U"ab\uD7FF")     (strf::sani(u"ab\uD7FF"));
-    TEST_TRUNCATING_AT(3, U"ab\U00010000") (strf::sani(u"ab\U00010000"));
-    TEST_TRUNCATING_AT(3, U"ab\U0010FFFF") (strf::sani(u"ab\U0010FFFF"));
+    TEST_TRANSCODE
+        .input(u"\u0800")
+        .expect(U"\u0800")
+        .expect_stop_reason(strf::transcode_stop_reason::completed)
+        .expect_unsupported_codepoints({})
+        .expect_invalid_sequences({});
 
-    TEST_CALLING_RECYCLE_AT(2, U"ab\uD7FF")     (strf::sani(u"ab\uD7FF"));
-    TEST_CALLING_RECYCLE_AT(2, U"ab\U00010000") (strf::sani(u"ab\U00010000"));
-    TEST_CALLING_RECYCLE_AT(2, U"ab\U0010FFFF") (strf::sani(u"ab\U0010FFFF"));
-{
+    TEST_TRANSCODE
+        .input(u"\uD7FF")
+        .expect(U"\uD7FF")
+        .expect_stop_reason(strf::transcode_stop_reason::completed)
+        .expect_unsupported_codepoints({})
+        .expect_invalid_sequences({});
+
+    TEST_TRANSCODE
+        .input(u"\U00010000")
+        .expect(U"\U00010000")
+        .expect_stop_reason(strf::transcode_stop_reason::completed)
+        .expect_unsupported_codepoints({})
+        .expect_invalid_sequences({});
+
+    TEST_TRANSCODE
+        .input(u"\U0010FFFF")
+        .expect(U"\U0010FFFF")
+        .expect_stop_reason(strf::transcode_stop_reason::completed)
+        .expect_unsupported_codepoints({})
+        .expect_invalid_sequences({});
+
+    TEST_TRANSCODE
+        .input(u"ab\u0080\u0800\uD7FF\U00010000\U0010FFFF")
+        .expect(U"ab\u0080\u0800\uD7FF\U00010000\U0010FFFF")
+        .expect_stop_reason(strf::transcode_stop_reason::completed);
+    TEST_TRANSCODE
+        .input(u"abc")
+        .expect(U"ab")
+        .destination_size(2)
+        .expect_stop_reason(strf::transcode_stop_reason::insufficient_output_space);
+    TEST_TRANSCODE
+        .input(u"\U00010000")
+        .expect(U"")
+        .destination_size(0)
+        .expect_stop_reason(strf::transcode_stop_reason::insufficient_output_space);
+
+    TEST_CALLING_RECYCLE_AT(2, U"ab\uD7FF")     (strf::transcode(u"ab\uD7FF"));
+    TEST_CALLING_RECYCLE_AT(2, U"ab\U00010000") (strf::transcode(u"ab\U00010000"));
+    TEST_CALLING_RECYCLE_AT(2, U"ab\U0010FFFF") (strf::transcode(u"ab\U0010FFFF"));
+
+    {
         // when surrogates are allowed
-        const char32_t u32str_D800[] = {U' ', 0xD800, 0};
-        const char32_t u32str_DBFF[] = {U' ', 0xDBFF, 0};
-        const char32_t u32str_DC00[] = {U' ', 0xDC00, 0};
-        const char32_t u32str_DFFF[] = {U' ', 0xDFFF, 0};
-
-        const char32_t u32str_D800_[] = {U' ', 0xD800, U'_', 0};
-        const char32_t u32str_DBFF_[] = {U' ', 0xDBFF, U'_', 0};
-        const char32_t u32str_DC00_[] = {U' ', 0xDC00, U'_', 0};
-        const char32_t u32str_DFFF_[] = {U' ', 0xDFFF, U'_', 0};
-
-        const char32_t u32str_DFFF_D800_[] = {U' ', 0xDFFF, 0xD800, U'_', 0};
-
         const char16_t u16str_D800[] = {0xD800, 0};
         const char16_t u16str_DBFF[] = {0xDBFF, 0};
         const char16_t u16str_DC00[] = {0xDC00, 0};
         const char16_t u16str_DFFF[] = {0xDFFF, 0};
 
-        const char16_t u16str_D800_[] = {0xD800, u'_', 0};
-        const char16_t u16str_DBFF_[] = {0xDBFF, u'_', 0};
-        const char16_t u16str_DC00_[] = {0xDC00, u'_', 0};
-        const char16_t u16str_DFFF_[] = {0xDFFF, u'_', 0};
-
         const char16_t u16str_DFFF_D800_[] = {0xDFFF, 0xD800, u'_', 0};
 
-        TEST(u32str_D800) .with(strf::surrogate_policy::lax) (strf::sani(u16str_D800) > 2);
-        TEST(u32str_DBFF) .with(strf::surrogate_policy::lax) (strf::sani(u16str_DBFF) > 2);
-        TEST(u32str_DC00) .with(strf::surrogate_policy::lax) (strf::sani(u16str_DC00) > 2);
-        TEST(u32str_DFFF) .with(strf::surrogate_policy::lax) (strf::sani(u16str_DFFF) > 2);
+        const auto flags = ( strf::transcode_flags::lax_surrogate_policy |
+                             strf::transcode_flags::stop_on_invalid_sequence |
+                             strf::transcode_flags::stop_on_unsupported_codepoint );
 
-        TEST(u32str_D800_) .with(strf::surrogate_policy::lax) (strf::sani(u16str_D800_) > 3);
-        TEST(u32str_DBFF_) .with(strf::surrogate_policy::lax) (strf::sani(u16str_DBFF_) > 3);
-        TEST(u32str_DC00_) .with(strf::surrogate_policy::lax) (strf::sani(u16str_DC00_) > 3);
-        TEST(u32str_DFFF_) .with(strf::surrogate_policy::lax) (strf::sani(u16str_DFFF_) > 3);
-
-        TEST(u32str_DFFF_D800_) .with(strf::surrogate_policy::lax)
-            (strf::sani(u16str_DFFF_D800_) > 4);
-
-        TEST(U" \U00010000") .with(strf::surrogate_policy::lax) (strf::sani(u"\U00010000") > 2);
-
-        TEST_CALLING_RECYCLE_AT(1, u32str_D800)
-            .with(strf::surrogate_policy::lax) (strf::sani(u16str_D800) > 2);
-        TEST_TRUNCATING_AT     (2, u32str_D800)
-            .with(strf::surrogate_policy::lax) (strf::sani(u16str_D800) > 2);
-        TEST_TRUNCATING_AT     (1, U" ")
-            .with(strf::surrogate_policy::lax) (strf::sani(u16str_D800) > 2);
+        TEST_TRANSCODE
+            .input(u16str_D800)
+            .flags(flags)
+            .expect(static_cast<char32_t>(0xD800))
+            .expect_stop_reason(strf::transcode_stop_reason::completed)
+            .expect_unsupported_codepoints({})
+            .expect_invalid_sequences({});
+        TEST_TRANSCODE
+            .input(u16str_DBFF)
+            .flags(flags)
+            .expect(static_cast<char32_t>(0xDBFF))
+            .expect_stop_reason(strf::transcode_stop_reason::completed)
+            .expect_unsupported_codepoints({})
+            .expect_invalid_sequences({});
+        TEST_TRANSCODE
+            .input(u16str_DC00)
+            .flags(flags)
+            .expect(static_cast<char32_t>(0xDC00))
+            .expect_stop_reason(strf::transcode_stop_reason::completed)
+            .expect_unsupported_codepoints({})
+            .expect_invalid_sequences({});
+        TEST_TRANSCODE
+            .input(u16str_DFFF)
+            .flags(flags)
+            .expect(static_cast<char32_t>(0xDFFF))
+            .expect_stop_reason(strf::transcode_stop_reason::completed)
+            .expect_unsupported_codepoints({})
+            .expect_invalid_sequences({});
+        TEST_TRANSCODE
+            .input(u16str_DFFF_D800_)
+            .flags(flags)
+            .expect(static_cast<char32_t>(0xDFFF), static_cast<char32_t>(0xD800), U'_')
+            .expect_stop_reason(strf::transcode_stop_reason::completed)
+            .expect_unsupported_codepoints({})
+            .expect_invalid_sequences({});
     }
-
 }
-
-#define TEST_INVALID_SEQS(INPUT, ...)                                   \
-    test_utils::test_invalid_sequences                                  \
-        <strf::csid_utf16, strf::csid_utf32, char16_t, char32_t>        \
-        ( BOOST_CURRENT_FUNCTION, __FILE__, __LINE__                    \
-        , strf::surrogate_policy::strict, (INPUT), __VA_ARGS__ );
-
-#define TEST_INVALID_SEQS_LAX(INPUT, ...)                               \
-    test_utils::test_invalid_sequences                                  \
-        <strf::csid_utf16, strf::csid_utf32, char16_t, char32_t>        \
-        ( BOOST_CURRENT_FUNCTION, __FILE__, __LINE__                    \
-        , strf::surrogate_policy::lax, (INPUT), __VA_ARGS__ );
-
 
 STRF_TEST_FUNC void utf16_to_utf32_invalid_sequences()
 {
-    const char16_t str_dfff[] = {0xDFFF, 0};
-    const char16_t str_d800[] = {0xD800, 0};
-    {
-        // high surrogate followed by another high surrogate
-        const char16_t str[] = {0xD800, 0xD800, 0};
-        TEST(U" \uFFFD\uFFFD") (strf::sani(str) > 3);
-        TEST_INVALID_SEQS(str, str_d800, str_d800);
-    }
-    {
-        // low surrogate followed by a high surrogate
-        const char16_t str[] = {0xDFFF, 0xD800, 0};
-        TEST(U" \uFFFD\uFFFD") (strf::sani(str) > 3);
-        TEST_INVALID_SEQS(str, str_dfff, str_d800);
-    }
-    {
-        // a low surrogate
-        const char16_t str[] = {0xDFFF, 0};
-        TEST(U" \uFFFD") (strf::sani(str) > 2);
-        TEST_INVALID_SEQS(str, str_dfff);
-    }
-    {
-        // a high surrogate
-        const char16_t str[] = {0xD800, 0};
-        TEST(U" \uFFFD") (strf::sani(str) > 2);
-        TEST_INVALID_SEQS(str, str_d800);
-    }
-    {
-        // low surrogate followed by a high surrogate
-        const char16_t str[] = {'_', 0xDFFF, 0xD800, '_', 0};
-        TEST(U" _\uFFFD\uFFFD_") (strf::sani(str) > 5);
-        TEST_INVALID_SEQS(str, str_dfff, str_d800);
-    }
-    {
-        const char16_t str[] = {'_', 0xDFFF, '_', 0};
-        TEST(U" _\uFFFD_") (strf::sani(str) > 4);
-        TEST_INVALID_SEQS(str, str_dfff);
-    }
-    {
-        const char16_t str[] = {'_', 0xD800, '_', 0};
-        TEST(U" _\uFFFD_") (strf::sani(str) > 4);
-        TEST_INVALID_SEQS(str, str_d800);
-    }
+    constexpr auto high_surrogate_sample1 = static_cast<char16_t>(0xD800);
+    constexpr auto high_surrogate_sample2 = static_cast<char16_t>(0xDBFF);
+    constexpr auto low_surrogate_sample1  = static_cast<char16_t>(0xDC00);
+    constexpr auto low_surrogate_sample2  = static_cast<char16_t>(0xDFFF);
+
+    // high surrogate not followed by low surrogate
+    TEST_TRANSCODE
+        .input(u"abc_", high_surrogate_sample1, u"_def")
+        .expect(U"abc_\uFFFD_def")
+        .expect_stop_reason(strf::transcode_stop_reason::completed)
+        .expect_unsupported_codepoints({})
+        .expect_invalid_sequences({{high_surrogate_sample1}});
+    TEST_TRANSCODE
+        .input(u"abc_", high_surrogate_sample2, u"_def")
+        .expect(U"abc_\uFFFD_def")
+        .expect_stop_reason(strf::transcode_stop_reason::completed)
+        .expect_unsupported_codepoints({})
+        .expect_invalid_sequences({{high_surrogate_sample2}});
+    TEST_TRANSCODE
+        .input(u"abc_", high_surrogate_sample1, u"_def")
+        .expect(U"abc_")
+        .flags(strf::transcode_flags::stop_on_invalid_sequence)
+        .expect_stop_reason(strf::transcode_stop_reason::invalid_sequence)
+        .expect_unsupported_codepoints({})
+        .expect_invalid_sequences({{high_surrogate_sample1}});
+    TEST_TRANSCODE
+        .input(u"abc_", high_surrogate_sample1, u"_def")
+        .destination_size(4)
+        .expect(U"abc_")
+        .expect_stop_reason(strf::transcode_stop_reason::insufficient_output_space)
+        .expect_unsupported_codepoints({})
+        .expect_invalid_sequences({{high_surrogate_sample1}});
+
+    // low surrogate not preceded by high surrogate
+    TEST_TRANSCODE
+        .input(u"abc_", low_surrogate_sample1, u"_def")
+        .expect(U"abc_\uFFFD_def")
+        .expect_stop_reason(strf::transcode_stop_reason::completed)
+        .expect_unsupported_codepoints({})
+        .expect_invalid_sequences({{low_surrogate_sample1}});
+    TEST_TRANSCODE
+        .input(u"abc_", low_surrogate_sample2, u"_def")
+        .expect(U"abc_\uFFFD_def")
+        .expect_stop_reason(strf::transcode_stop_reason::completed)
+        .expect_unsupported_codepoints({})
+        .expect_invalid_sequences({{low_surrogate_sample2}});
+    TEST_TRANSCODE
+        .input(u"abc_", low_surrogate_sample1, u"_def")
+        .expect(U"abc_")
+        .flags(strf::transcode_flags::stop_on_invalid_sequence)
+        .expect_stop_reason(strf::transcode_stop_reason::invalid_sequence)
+        .expect_unsupported_codepoints({})
+        .expect_invalid_sequences({{low_surrogate_sample1}});
+
+    // high surrogate followed by another high surrogate
+    TEST_TRANSCODE
+        .input(u"abc_", high_surrogate_sample1, high_surrogate_sample2, u"_def")
+        .expect(U"abc_\uFFFD\uFFFD_def")
+        .expect_stop_reason(strf::transcode_stop_reason::completed)
+        .expect_unsupported_codepoints({})
+        .expect_invalid_sequences({{high_surrogate_sample1},
+                                  {high_surrogate_sample2}});
+    TEST_TRANSCODE
+        .input(u"abc_", high_surrogate_sample1, high_surrogate_sample2, u"_def")
+        .flags(strf::transcode_flags::stop_on_invalid_sequence)
+        .expect(U"abc_")
+        .expect_stop_reason(strf::transcode_stop_reason::invalid_sequence)
+        .expect_unsupported_codepoints({})
+        .expect_invalid_sequences({{high_surrogate_sample1}});
+
+    // low surrogate followed by a high surrogate
+    TEST_TRANSCODE
+        .input(u"abc_", low_surrogate_sample1, high_surrogate_sample1, u"_def")
+        .expect(U"abc_\uFFFD\uFFFD_def")
+        .expect_stop_reason(strf::transcode_stop_reason::completed)
+        .expect_unsupported_codepoints({})
+        .expect_invalid_sequences({{low_surrogate_sample1},
+                                  {high_surrogate_sample1}});
+    TEST_TRANSCODE
+        .input(u"abc_", low_surrogate_sample1, high_surrogate_sample1, u"_def")
+        .flags(strf::transcode_flags::stop_on_invalid_sequence)
+        .expect(U"abc_")
+        .expect_stop_reason(strf::transcode_stop_reason::invalid_sequence)
+        .expect_unsupported_codepoints({})
+        .expect_invalid_sequences({{low_surrogate_sample1}});
+
+    // just a low surrogate
+    TEST_TRANSCODE
+        .input(u"abc_", low_surrogate_sample1, u"_def")
+        .expect(U"abc_\uFFFD_def")
+        .expect_stop_reason(strf::transcode_stop_reason::completed)
+        .expect_unsupported_codepoints({})
+        .expect_invalid_sequences({{low_surrogate_sample1}});
+    TEST_TRANSCODE
+        .input(u"abc_", low_surrogate_sample2, u"_def")
+        .expect(U"abc_\uFFFD_def")
+        .expect_stop_reason(strf::transcode_stop_reason::completed)
+        .expect_unsupported_codepoints({})
+        .expect_invalid_sequences({{low_surrogate_sample2}});
+
+    TEST_TRANSCODE
+        .input(u"abc_", low_surrogate_sample1, u"_def")
+        .flags(strf::transcode_flags::stop_on_invalid_sequence)
+        .expect(U"abc_")
+        .expect_stop_reason(strf::transcode_stop_reason::invalid_sequence)
+        .expect_unsupported_codepoints({})
+        .expect_invalid_sequences({{low_surrogate_sample1}});
 }
 
 struct invalid_seq_counter: strf::transcoding_error_notifier {
@@ -206,6 +424,7 @@ STRF_TEST_FUNC void utf16_to_utf32_find_transcoder()
 
 STRF_TEST_FUNC void test_utf16_to_utf32()
 {
+    utf16_to_utf32_unsafe_transcode();
     utf16_to_utf32_valid_sequences();
     utf16_to_utf32_invalid_sequences();
     utf16_to_utf32_error_notifier();

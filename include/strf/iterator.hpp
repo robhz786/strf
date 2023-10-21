@@ -22,7 +22,7 @@ public:
 
     constexpr STRF_HD output_buffer_iterator() = delete;
     constexpr STRF_HD explicit output_buffer_iterator(strf::output_buffer<T, 0>& d) noexcept
-        : dest_(&d)
+        : dst_(&d)
     {
     }
     STRF_CONSTEXPR_IN_CXX14 STRF_HD output_buffer_iterator& operator++() noexcept {
@@ -36,20 +36,20 @@ public:
         return *this;
     }
     STRF_CONSTEXPR_IN_CXX14 STRF_HD output_buffer_iterator& operator=(T value) {
-        strf::put(*dest_, value);
+        strf::put(*dst_, value);
         return *this;
     }
     constexpr STRF_HD bool failed() const noexcept {
-        return !dest_->good();
+        return !dst_->good();
     }
 
 private:
-    strf::output_buffer<T, 0>* dest_;
+    strf::output_buffer<T, 0>* dst_;
 };
 
 template <typename T>
-constexpr STRF_HD output_buffer_iterator<T> make_iterator(strf::output_buffer<T, 0>& dest) noexcept {
-    return output_buffer_iterator<T>{dest};
+constexpr STRF_HD output_buffer_iterator<T> make_iterator(strf::output_buffer<T, 0>& dst) noexcept {
+    return output_buffer_iterator<T>{dst};
 }
 
 } // namespace strf

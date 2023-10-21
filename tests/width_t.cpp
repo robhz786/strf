@@ -75,6 +75,22 @@ STRF_TEST_FUNC void test_width_t()
     TEST_EQ( 0x7FFF, width_max.floor());
     TEST_EQ(-0x8000, width_min.floor());
 
+    TEST_EQ(1,  (1.725_w).non_negative_floor());
+    TEST_EQ(0, (-1.725_w).non_negative_floor());
+    TEST_EQ(0x7FFF, width_max.non_negative_floor());
+    TEST_EQ(0, width_min.non_negative_floor());
+
+    TEST_EQ(2,  (1.725_w).ceil());
+    TEST_EQ(-1, (-1.725_w).ceil());
+    TEST_EQ(0,  (-0.725_w).ceil());
+    TEST_EQ( 0x8000, width_max.ceil());
+    TEST_EQ(-0x8000, width_min.ceil());
+
+    TEST_EQ(2,  (1.725_w).non_negative_ceil());
+    TEST_EQ(0, (-1.725_w).non_negative_ceil());
+    TEST_EQ(0, (-0.725_w).non_negative_ceil());
+    TEST_EQ( 0x8000, width_max.non_negative_ceil());
+    TEST_EQ(      0, width_min.non_negative_ceil());
 
     TEST_EQ(0, (0_w).round());
     TEST_EQ(0, (0.001_w).round());

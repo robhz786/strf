@@ -1402,7 +1402,7 @@ public:
         init_(i.pre, i.value);
     }
 
-    STRF_HD void print_to(strf::destination<CharT>& dest) const override;
+    STRF_HD void print_to(strf::destination<CharT>& dst) const override;
 
 private:
 
@@ -1445,16 +1445,16 @@ private:
 
 template <typename CharT>
 STRF_HD void default_int_printer<CharT>::print_to
-    ( strf::destination<CharT>& dest ) const
+    ( strf::destination<CharT>& dst ) const
 {
-    dest.ensure(digcount_ + negative_);
-    auto* it = dest.buffer_ptr();
+    dst.ensure(digcount_ + negative_);
+    auto* it = dst.buffer_ptr();
     if (negative_) {
         *it++ = '-';
     }
     it += digcount_;
     write_int_dec_txtdigits_backwards(uvalue_, it);
-    dest.advance_to(it);
+    dst.advance_to(it);
 }
 
 template <typename CharT>
@@ -1478,7 +1478,7 @@ public:
         }
     }
 
-    STRF_HD void print_to(strf::destination<CharT>& dest) const override;
+    STRF_HD void print_to(strf::destination<CharT>& dst) const override;
 
 private:
 
@@ -1530,7 +1530,7 @@ private:
 
 template <typename CharT>
 STRF_HD void aligned_default_int_printer<CharT>::print_to
-    ( strf::destination<CharT>& dest ) const
+    ( strf::destination<CharT>& dst ) const
 {
     int right_fillcount = 0;
     if (fillcount_ > 0) {
@@ -1546,19 +1546,19 @@ STRF_HD void aligned_default_int_printer<CharT>::print_to
                 left_fillcount = static_cast<unsigned>(fillcount_) >> 1;
                 right_fillcount = fillcount_ - left_fillcount;
         }
-        encode_fill_(dest, left_fillcount, fillchar_);
+        encode_fill_(dst, left_fillcount, fillchar_);
     }
     print_number:
-    dest.ensure(digcount_ + negative_);
-    auto* it = dest.buffer_ptr();
+    dst.ensure(digcount_ + negative_);
+    auto* it = dst.buffer_ptr();
     if (negative_) {
         *it++ = '-';
     }
     it += digcount_;
     write_int_dec_txtdigits_backwards(uvalue_, it);
-    dest.advance_to(it);
+    dst.advance_to(it);
     if (right_fillcount > 0) {
-        encode_fill_(dest, right_fillcount, fillchar_);
+        encode_fill_(dst, right_fillcount, fillchar_);
     }
 }
 
@@ -1635,16 +1635,16 @@ public:
         i.pre.add_size(w);
     }
 
-    STRF_HD void print_to(strf::destination<CharT>& dest) const override
+    STRF_HD void print_to(strf::destination<CharT>& dst) const override
     {
-        dest.ensure(data_.digcount + data_.prefix != 0);
-        auto *it = dest.buffer_ptr();
+        dst.ensure(data_.digcount + data_.prefix != 0);
+        auto *it = dst.buffer_ptr();
         if (data_.prefix != 0) {
             *it++ = static_cast<CharT>(data_.prefix);
         }
         it += data_.digcount;
         strf::detail::write_int_dec_txtdigits_backwards(data_.uvalue, it);
-        dest.advance_to(it);
+        dst.advance_to(it);
     }
 
 private:
@@ -1666,10 +1666,10 @@ public:
         i.pre.add_size(w);
     }
 
-    STRF_HD void print_to(strf::destination<CharT>& dest) const override
+    STRF_HD void print_to(strf::destination<CharT>& dst) const override
     {
-        dest.ensure(data_.digcount + data_.prefix);
-        auto *it = dest.buffer_ptr();
+        dst.ensure(data_.digcount + data_.prefix);
+        auto *it = dst.buffer_ptr();
         if (data_.prefix != 0) {
             it[0] = static_cast<CharT>('0');
             it[1] = static_cast<CharT>('X' | ((lettercase_ != strf::uppercase) << 5));
@@ -1677,7 +1677,7 @@ public:
         }
         it += data_.digcount;
         strf::detail::write_int_hex_txtdigits_backwards(data_.uvalue, it, lettercase_);
-        dest.advance_to(it);
+        dst.advance_to(it);
     }
 
 private:
@@ -1699,16 +1699,16 @@ public:
         i.pre.add_size(w);
     }
 
-    STRF_HD void print_to(strf::destination<CharT>& dest) const override
+    STRF_HD void print_to(strf::destination<CharT>& dst) const override
     {
-        dest.ensure(data_.digcount + data_.prefix);
-        auto *it = dest.buffer_ptr();
+        dst.ensure(data_.digcount + data_.prefix);
+        auto *it = dst.buffer_ptr();
         if (data_.prefix != 0) {
             *it++ = '0';
         }
         it += data_.digcount;
         strf::detail::write_int_oct_txtdigits_backwards(data_.uvalue, it);
-        dest.advance_to(it);
+        dst.advance_to(it);
     }
 
 private:
@@ -1730,16 +1730,16 @@ public:
         i.pre.add_size(w);
     }
 
-    STRF_HD void print_to(strf::destination<CharT>& dest) const override
+    STRF_HD void print_to(strf::destination<CharT>& dst) const override
     {
         if (data_.prefix != 0) {
-            dest.ensure(2);
-            auto *it = dest.buffer_ptr();
+            dst.ensure(2);
+            auto *it = dst.buffer_ptr();
             it[0] = static_cast<CharT>('0');
             it[1] = static_cast<CharT>('B' | ((lettercase_ != strf::uppercase) << 5));
-            dest.advance_to(it + 2);
+            dst.advance_to(it + 2);
         }
-        strf::detail::intdigits_writer<2>::write(dest, data_.uvalue, data_.digcount);
+        strf::detail::intdigits_writer<2>::write(dst, data_.uvalue, data_.digcount);
     }
 
 private:
@@ -1986,7 +1986,7 @@ public:
         }
     }
 
-    STRF_HD void print_to(strf::destination<CharT>& dest) const override;
+    STRF_HD void print_to(strf::destination<CharT>& dst) const override;
 
 private:
 
@@ -1997,33 +1997,33 @@ private:
 
 template <typename CharT, int Base>
 STRF_HD void int_printer_static_base_and_punct<CharT, Base, false>::print_to
-    ( strf::destination<CharT>& dest ) const
+    ( strf::destination<CharT>& dst ) const
 {
     if (data_.left_fillcount > 0) {
-        encode_fill_(dest, data_.left_fillcount, data_.fillchar);
+        encode_fill_(dst, data_.left_fillcount, data_.fillchar);
     }
     if (data_.has_prefix) {
         STRF_IF_CONSTEXPR (Base == 10) {
-            dest.ensure(1);
-            * dest.buffer_ptr() = static_cast<CharT>(data_.sign);
-            dest.advance();
+            dst.ensure(1);
+            * dst.buffer_ptr() = static_cast<CharT>(data_.sign);
+            dst.advance();
         } else STRF_IF_CONSTEXPR (Base == 8) {
-            dest.ensure(1);
-            * dest.buffer_ptr() = static_cast<CharT>('0');
-            dest.advance();
+            dst.ensure(1);
+            * dst.buffer_ptr() = static_cast<CharT>('0');
+            dst.advance();
         } else {
             constexpr int xb = static_cast<unsigned char>(Base == 16 ? 'X' : 'B');
-            dest.ensure(2);
-            auto *it = dest.buffer_ptr();
+            dst.ensure(2);
+            auto *it = dst.buffer_ptr();
             it[0] = static_cast<CharT>('0');
             it[1] = static_cast<CharT>(xb | ((lettercase_ != strf::uppercase) << 5));
-            dest.advance_to(it + 2);
+            dst.advance_to(it + 2);
         }
     }
-    strf::detail::write_fill(dest, data_.leading_zeros, CharT('0'));
-    detail::intdigits_writer<Base>::write(dest, data_.uvalue, data_.digcount, lettercase_);
+    strf::detail::write_fill(dst, data_.leading_zeros, CharT('0'));
+    detail::intdigits_writer<Base>::write(dst, data_.uvalue, data_.digcount, lettercase_);
     if (data_.right_fillcount > 0) {
-        encode_fill_(dest, data_.right_fillcount, data_.fillchar);
+        encode_fill_(dst, data_.right_fillcount, data_.fillchar);
     }
 }
 
@@ -2164,7 +2164,7 @@ public:
         }
     }
 
-    STRF_HD void print_to( strf::destination<CharT>& dest ) const override;
+    STRF_HD void print_to( strf::destination<CharT>& dst ) const override;
 
 private:
 
@@ -2176,48 +2176,48 @@ private:
 
 template <typename CharT, int Base>
 STRF_HD void int_printer_static_base_and_punct<CharT, Base, true>::print_to
-        ( strf::destination<CharT>& dest ) const
+        ( strf::destination<CharT>& dst ) const
 {
     if (data_.left_fillcount > 0) {
-        encode_fill_(dest, data_.left_fillcount, data_.fillchar);
+        encode_fill_(dst, data_.left_fillcount, data_.fillchar);
     }
     if (data_.has_prefix) {
         STRF_IF_CONSTEXPR (Base == 10) {
-            dest.ensure(1);
-            * dest.buffer_ptr() = static_cast<CharT>(data_.sign);
-            dest.advance();
+            dst.ensure(1);
+            * dst.buffer_ptr() = static_cast<CharT>(data_.sign);
+            dst.advance();
         } else STRF_IF_CONSTEXPR (Base == 8) {
-            dest.ensure(1);
-            * dest.buffer_ptr() = static_cast<CharT>('0');
-            dest.advance();
+            dst.ensure(1);
+            * dst.buffer_ptr() = static_cast<CharT>('0');
+            dst.advance();
         } else {
             constexpr int xb = static_cast<unsigned char>(Base == 16 ? 'X' : 'B');
-            dest.ensure(2);
-            auto *it = dest.buffer_ptr();
+            dst.ensure(2);
+            auto *it = dst.buffer_ptr();
             it[0] = static_cast<CharT>('0');
             it[1] = static_cast<CharT>(xb | ((lettercase_ != strf::uppercase) << 5));
-            dest.advance_to(it + 2);
+            dst.advance_to(it + 2);
         }
     }
-    strf::detail::write_fill(dest, data_.leading_zeros, CharT('0'));
+    strf::detail::write_fill(dst, data_.leading_zeros, CharT('0'));
     using dig_writer = detail::intdigits_writer<Base>;
     if (data_.sepcount == 0) {
-        dig_writer::write(dest, data_.uvalue, data_.digcount, lettercase_);
+        dig_writer::write(dst, data_.uvalue, data_.digcount, lettercase_);
     } else if (data_.sepsize == 1) {
         auto sepchar = static_cast<CharT>(data_.sepchar);
         if (data_.sepchar >= 0x80) {
             encode_char_(&sepchar, data_.sepchar);
         }
         dig_writer::write_little_sep
-            ( dest, data_.uvalue, data_.grouping, data_.digcount, data_.sepcount
+            ( dst, data_.uvalue, data_.grouping, data_.digcount, data_.sepcount
             , sepchar, lettercase_ );
     } else {
         dig_writer::write_big_sep
-            ( dest, encode_char_, data_.uvalue, data_.grouping
+            ( dst, encode_char_, data_.uvalue, data_.grouping
             , data_.sepchar, data_.sepsize, data_.digcount, lettercase_ );
     }
     if (data_.right_fillcount > 0) {
-        encode_fill_(dest, data_.right_fillcount, data_.fillchar);
+        encode_fill_(dst, data_.right_fillcount, data_.fillchar);
     }
 }
 

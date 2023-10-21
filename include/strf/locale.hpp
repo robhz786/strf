@@ -103,11 +103,10 @@ STRF_FUNC_IMPL char32_t decode_first_char_from_utf16(const wchar_t* src)
 #if ! defined (_WIN32)
 
 // NOLINTNEXTLINE(misc-definitions-in-headers)
-STRF_FUNC_IMPL char32_t decode_first_char(strf::transcode_f<char, char32_t>& decode, const char* str)
+STRF_FUNC_IMPL char32_t decode_first_char(strf::transcode_f<char, char32_t> decode, const char* str)
 {
     char32_t buff32[2] = { 0xFFFD, 0 };
-    strf::u32cstr_destination dest(buff32); // NOLINT(misc-const-correctness)
-    decode(dest, str, detail::cast_ssize(strlen(str)), {}, strf::surrogate_policy::strict);
+    decode(str, str + strlen(str), buff32, buff32 + 1, nullptr, strf::transcode_flags::none);
     return buff32[0];
 }
 

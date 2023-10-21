@@ -16,15 +16,15 @@ class printing_syntax;
 
 namespace detail {
 
-template <typename Dest>
-inline STRF_HD decltype(std::declval<Dest&>().finish())
-    finish(strf::rank<2>, Dest& dest)
+template <typename Dst>
+inline STRF_HD decltype(std::declval<Dst&>().finish())
+    finish(strf::rank<2>, Dst& dst)
 {
-    return dest.finish();
+    return dst.finish();
 }
 
-template <typename Dest>
-inline STRF_HD void finish(strf::rank<1>, Dest&)
+template <typename Dst>
+inline STRF_HD void finish(strf::rank<1>, Dst&)
 {
 }
 
@@ -69,13 +69,13 @@ public:
         , const preprinting_type&
         , const Printers& ... printers )
     {
-        typename DestCreator::destination_type dest{dest_creator.create()};
-        strf::detail::write_args(dest, printers...);
+        typename DestCreator::destination_type dst{dest_creator.create()};
+        strf::detail::write_args(dst, printers...);
         STRF_IF_CONSTEXPR (Line) {
             using char_type = typename DestCreator::char_type;
-            strf::put<char_type>(dest, static_cast<char_type>('\n'));
+            strf::put<char_type>(dst, static_cast<char_type>('\n'));
         }
-        return strf::detail::finish(strf::rank<2>(), dest);
+        return strf::detail::finish(strf::rank<2>(), dst);
     }
 };
 
@@ -101,13 +101,13 @@ public:
         , const preprinting_type&
         , const Printers& ... printers ) const
     {
-        typename DestCreator::sized_destination_type dest{dest_creator.create(space)};
-        strf::detail::write_args(dest, printers...);
+        typename DestCreator::sized_destination_type dst{dest_creator.create(space)};
+        strf::detail::write_args(dst, printers...);
         STRF_IF_CONSTEXPR (Line) {
             using char_type = typename DestCreator::char_type;
-            strf::put<char_type>(dest, static_cast<char_type>('\n'));
+            strf::put<char_type>(dst, static_cast<char_type>('\n'));
         }
-        return strf::detail::finish(strf::rank<2>(), dest);
+        return strf::detail::finish(strf::rank<2>(), dst);
     }
 };
 
@@ -127,24 +127,24 @@ public:
         , const Printers& ... printers )
     {
         const auto size = pre.accumulated_size() + Line;
-        typename DestCreator::sized_destination_type dest{dest_creator.create(size)};
-        strf::detail::write_args(dest, printers...);
+        typename DestCreator::sized_destination_type dst{dest_creator.create(size)};
+        strf::detail::write_args(dst, printers...);
         STRF_IF_CONSTEXPR (Line) {
             using char_type = typename DestCreator::char_type;
-            strf::put<char_type>(dest, static_cast<char_type>('\n'));
+            strf::put<char_type>(dst, static_cast<char_type>('\n'));
         }
-        return strf::detail::finish(strf::rank<2>(), dest);
+        return strf::detail::finish(strf::rank<2>(), dst);
     }
 };
 
 namespace detail {
 
 template <typename DestCreator>
-struct can_create_dest_with_size
+struct can_create_dst_with_size
 {
     template < typename T
-             , typename Dest = typename T::sized_destination_type
-             , typename = decltype(Dest(std::declval<T&>().create((std::size_t)0))) >
+             , typename Dst = typename T::sized_destination_type
+             , typename = decltype(Dst(std::declval<T&>().create((std::size_t)0))) >
     static STRF_HD std::true_type test(const T&);
 
     template <typename>
@@ -157,11 +157,11 @@ struct can_create_dest_with_size
 
 
 template <typename DestCreator>
-struct can_create_dest_without_size
+struct can_create_dst_without_size
 {
     template < typename T
-             , typename Dest = typename T::destination_type
-             , typename = decltype(Dest(std::declval<T>().create())) >
+             , typename Dst = typename T::destination_type
+             , typename = decltype(Dst(std::declval<T>().create())) >
     static STRF_HD std::true_type test(const T&);
 
     template <typename>
@@ -296,7 +296,7 @@ class reserve_funcs<DestCreator, strf::no_reserve, FPEs...>
 {
     using this_pss_ = printing_syntax<DestCreator, strf::no_reserve, FPEs...>;
 
-    static_assert( can_create_dest_without_size<DestCreator>::value
+    static_assert( can_create_dst_without_size<DestCreator>::value
                  , "no_reserve policy not applicable to this DestinationCreator" );
 
 public:
@@ -336,7 +336,7 @@ class reserve_funcs<DestCreator, strf::reserve_calc, FPEs...>
     using this_pss_ = printing_syntax
         <DestCreator, strf::reserve_calc, FPEs...>;
 
-    static_assert( can_create_dest_with_size<DestCreator>::value
+    static_assert( can_create_dst_with_size<DestCreator>::value
                  , "reserve_calc policy not applicable to this DestinationCreator" );
 
 public:
@@ -373,7 +373,7 @@ class reserve_funcs<DestCreator, strf::reserve_given_space, FPEs...>
     : public no_reserve_return_new_pss  <DestCreator, strf::reserve_given_space, FPEs...>
     , public reserve_calc_return_new_pss<DestCreator, strf::reserve_given_space, FPEs...>
 {
-    static_assert( can_create_dest_with_size<DestCreator>::value
+    static_assert( can_create_dst_with_size<DestCreator>::value
                  , "reserve_given_space policy not applicable to this DestinationCreator" );
 public:
     using reserve_policy_t = strf::reserve_given_space;
@@ -742,18 +742,18 @@ public:
     using char_type = CharT;
     using destination_type = strf::destination<CharT>&;
 
-    explicit STRF_HD destination_reference(strf::destination<CharT>& dest) noexcept
-        : dest_(dest)
+    explicit STRF_HD destination_reference(strf::destination<CharT>& dst) noexcept
+        : dst_(dst)
     {
     }
 
     STRF_HD strf::destination<CharT>& create() const noexcept
     {
-        return dest_;
+        return dst_;
     }
 
 private:
-    strf::destination<CharT>& dest_;
+    strf::destination<CharT>& dst_;
 };
 
 
@@ -761,10 +761,10 @@ private:
 
 template <typename CharT>
 strf::printing_syntax<strf::detail::destination_reference<CharT>>
-STRF_HD to(strf::destination<CharT>& dest) noexcept
+STRF_HD to(strf::destination<CharT>& dst) noexcept
 {
     return strf::make_printing_syntax
-        (strf::detail::destination_reference<CharT>{dest});
+        (strf::detail::destination_reference<CharT>{dst});
 }
 
 namespace detail {
@@ -779,22 +779,22 @@ public:
     using destination_type = basic_cstr_destination<CharT>;
 
     STRF_CONSTEXPR_IN_CXX14 STRF_HD
-    basic_cstr_destination_creator(CharT* dest, CharT* dest_end) noexcept
-        : dest_(dest)
-        , dest_end_(dest_end)
+    basic_cstr_destination_creator(CharT* dst, CharT* dst_end) noexcept
+        : dst_(dst)
+        , dst_end_(dst_end)
     {
-        STRF_ASSERT(dest < dest_end);
+        STRF_ASSERT(dst < dst_end);
     }
 
     STRF_HD typename basic_cstr_destination<CharT>::range create() const noexcept
     {
-        return typename basic_cstr_destination<CharT>::range{dest_, dest_end_};
+        return typename basic_cstr_destination<CharT>::range{dst_, dst_end_};
     }
 
 private:
 
-    CharT* dest_;
-    CharT* dest_end_;
+    CharT* dst_;
+    CharT* dst_end_;
 };
 
 template <typename CharT>
@@ -807,22 +807,22 @@ public:
     using destination_type = array_destination<CharT>;
 
     constexpr STRF_HD
-    array_destination_creator(CharT* dest, CharT* dest_end) noexcept
-        : dest_(dest)
-        , dest_end_(dest_end)
+    array_destination_creator(CharT* dst, CharT* dst_end) noexcept
+        : dst_(dst)
+        , dst_end_(dst_end)
     {
-        STRF_ASSERT_IN_CONSTEXPR(dest < dest_end);
+        STRF_ASSERT_IN_CONSTEXPR(dst < dst_end);
     }
 
     STRF_HD typename array_destination<CharT>::range create() const noexcept
     {
-        return typename array_destination<CharT>::range{dest_, dest_end_};
+        return typename array_destination<CharT>::range{dst_, dst_end_};
     }
 
 private:
 
-    CharT* dest_;
-    CharT* dest_end_;
+    CharT* dst_;
+    CharT* dst_end_;
 };
 
 }  // namespace detail
@@ -830,169 +830,169 @@ private:
 #if defined(__cpp_char8_t)
 
 template<std::size_t N>
-inline STRF_HD auto to(char8_t (&dest)[N]) noexcept
+inline STRF_HD auto to(char8_t (&dst)[N]) noexcept
 {
     return strf::printing_syntax
         < strf::detail::basic_cstr_destination_creator<char8_t> >
-        ({dest, dest + N});
+        ({dst, dst + N});
 }
 
-inline STRF_HD auto to(char8_t* dest, char8_t* end) noexcept
+inline STRF_HD auto to(char8_t* dst, char8_t* end) noexcept
 {
     return strf::printing_syntax
         < strf::detail::basic_cstr_destination_creator<char8_t> >
-        ({dest, end});
+        ({dst, end});
 }
 
-inline STRF_HD auto to(char8_t* dest, std::size_t count) noexcept
+inline STRF_HD auto to(char8_t* dst, std::size_t count) noexcept
 {
     return strf::printing_syntax
         < strf::detail::basic_cstr_destination_creator<char8_t> >
-        ({dest, dest + count});
+        ({dst, dst + count});
 }
 
 #endif
 
 template<std::size_t N>
-inline STRF_HD auto to(char (&dest)[N]) noexcept
+inline STRF_HD auto to(char (&dst)[N]) noexcept
     -> strf::printing_syntax
         < strf::detail::basic_cstr_destination_creator<char> >
 {
     return strf::printing_syntax
         < strf::detail::basic_cstr_destination_creator<char> >
-        ({dest, dest + N});
+        ({dst, dst + N});
 }
 
-inline STRF_HD auto to(char* dest, char* end) noexcept
+inline STRF_HD auto to(char* dst, char* end) noexcept
     -> strf::printing_syntax
         < strf::detail::basic_cstr_destination_creator<char> >
 {
     return strf::printing_syntax
         < strf::detail::basic_cstr_destination_creator<char> >
-        ({dest, end});
+        ({dst, end});
 }
 
-inline STRF_HD auto to(char* dest, std::size_t count) noexcept
+inline STRF_HD auto to(char* dst, std::size_t count) noexcept
     -> strf::printing_syntax
         < strf::detail::basic_cstr_destination_creator<char> >
 {
     return strf::printing_syntax
         < strf::detail::basic_cstr_destination_creator<char> >
-        ({dest, dest + count});
+        ({dst, dst + count});
 }
 
 template<std::size_t N>
-inline STRF_HD auto to(char16_t (&dest)[N]) noexcept
+inline STRF_HD auto to(char16_t (&dst)[N]) noexcept
     -> strf::printing_syntax
         < strf::detail::basic_cstr_destination_creator<char16_t> >
 {
     return strf::printing_syntax
         < strf::detail::basic_cstr_destination_creator<char16_t> >
-        ({dest, dest + N});
+        ({dst, dst + N});
 }
 
-inline STRF_HD auto to(char16_t* dest, char16_t* end) noexcept
+inline STRF_HD auto to(char16_t* dst, char16_t* end) noexcept
     -> strf::printing_syntax
         < strf::detail::basic_cstr_destination_creator<char16_t> >
 {
     return strf::printing_syntax
         < strf::detail::basic_cstr_destination_creator<char16_t> >
-        ({dest, end});
+        ({dst, end});
 }
 
-inline STRF_HD auto to(char16_t* dest, std::size_t count) noexcept
+inline STRF_HD auto to(char16_t* dst, std::size_t count) noexcept
     -> strf::printing_syntax
         < strf::detail::basic_cstr_destination_creator<char16_t> >
 {
     return strf::printing_syntax
         < strf::detail::basic_cstr_destination_creator<char16_t> >
-        ({dest, dest + count});
+        ({dst, dst + count});
 }
 
 template<std::size_t N>
-inline STRF_HD auto to(char32_t (&dest)[N]) noexcept
+inline STRF_HD auto to(char32_t (&dst)[N]) noexcept
     -> strf::printing_syntax
         < strf::detail::basic_cstr_destination_creator<char32_t> >
 {
     return strf::printing_syntax
         < strf::detail::basic_cstr_destination_creator<char32_t> >
-        ({dest, dest + N});
+        ({dst, dst + N});
 }
 
-inline STRF_HD auto to(char32_t* dest, char32_t* end) noexcept
+inline STRF_HD auto to(char32_t* dst, char32_t* end) noexcept
     -> strf::printing_syntax
         < strf::detail::basic_cstr_destination_creator<char32_t> >
 {
     return strf::printing_syntax
         < strf::detail::basic_cstr_destination_creator<char32_t> >
-        ({dest, end});
+        ({dst, end});
 }
 
-inline STRF_HD auto to(char32_t* dest, std::size_t count) noexcept
+inline STRF_HD auto to(char32_t* dst, std::size_t count) noexcept
     -> strf::printing_syntax
         < strf::detail::basic_cstr_destination_creator<char32_t> >
 {
     return strf::printing_syntax
         < strf::detail::basic_cstr_destination_creator<char32_t> >
-        ({dest, dest + count});
+        ({dst, dst + count});
 }
 
 template<std::size_t N>
-inline STRF_HD auto to(wchar_t (&dest)[N]) noexcept
+inline STRF_HD auto to(wchar_t (&dst)[N]) noexcept
     -> strf::printing_syntax
         < strf::detail::basic_cstr_destination_creator<wchar_t> >
 {
     return strf::printing_syntax
         < strf::detail::basic_cstr_destination_creator<wchar_t> >
-        ({dest, dest + N});
+        ({dst, dst + N});
 }
 
-inline STRF_HD auto to(wchar_t* dest, wchar_t* end) noexcept
+inline STRF_HD auto to(wchar_t* dst, wchar_t* end) noexcept
     -> strf::printing_syntax
         < strf::detail::basic_cstr_destination_creator<wchar_t> >
 {
     return strf::printing_syntax
         < strf::detail::basic_cstr_destination_creator<wchar_t> >
-        ({dest, end});
+        ({dst, end});
 }
 
-inline STRF_HD auto to(wchar_t* dest, std::size_t count) noexcept
+inline STRF_HD auto to(wchar_t* dst, std::size_t count) noexcept
     -> strf::printing_syntax
         < strf::detail::basic_cstr_destination_creator<wchar_t> >
 {
     return strf::printing_syntax
         < strf::detail::basic_cstr_destination_creator<wchar_t> >
-        ({dest, dest + count});
+        ({dst, dst + count});
 }
 
 template<typename CharT, std::size_t N>
-inline STRF_HD auto to_range(CharT (&dest)[N]) noexcept
+inline STRF_HD auto to_range(CharT (&dst)[N]) noexcept
     -> strf::printing_syntax
         < strf::detail::array_destination_creator<CharT> >
 {
     return strf::printing_syntax
         < strf::detail::array_destination_creator<CharT> >
-        ({dest, dest + N});
+        ({dst, dst + N});
 }
 
 template<typename CharT>
-inline STRF_HD auto to_range(CharT* dest, CharT* end) noexcept
+inline STRF_HD auto to_range(CharT* dst, CharT* end) noexcept
     -> strf::printing_syntax
         < strf::detail::array_destination_creator<CharT> >
 {
     return strf::printing_syntax
         < strf::detail::array_destination_creator<CharT> >
-        ({dest, end});
+        ({dst, end});
 }
 
 template<typename CharT>
-inline STRF_HD auto to_range(CharT* dest, std::size_t count) noexcept
+inline STRF_HD auto to_range(CharT* dst, std::size_t count) noexcept
     -> strf::printing_syntax
         < strf::detail::array_destination_creator<CharT> >
 {
     return strf::printing_syntax
         < strf::detail::array_destination_creator<CharT> >
-        ({dest, dest + count});
+        ({dst, dst + count});
 }
 
 } // namespace strf

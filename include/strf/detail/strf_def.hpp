@@ -332,6 +332,12 @@ namespace detail {
 inline namespace cast_sugars {
 
 template <typename T>
+STRF_HD constexpr T zero_if_negative(T x)
+{
+    return x >= 0 ? x : 0;
+}
+
+template <typename T>
 STRF_HD constexpr std::ptrdiff_t cast_ssize(T x)
 {
     return static_cast<std::ptrdiff_t>(x);

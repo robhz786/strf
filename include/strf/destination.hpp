@@ -244,16 +244,16 @@ void output_buffer<T, 0>::do_write(const T* data, std::size_t count)
 }
 
 template <typename T>
-inline STRF_HD void put(strf::output_buffer<T, 0>& dest, T c)
+inline STRF_HD void put(strf::output_buffer<T, 0>& dst, T c)
 {
-    auto *p = dest.buffer_ptr();
-    STRF_IF_LIKELY (p != dest.buffer_end()) {
+    auto *p = dst.buffer_ptr();
+    STRF_IF_LIKELY (p != dst.buffer_end()) {
         *p = c;
-        dest.advance_to(p + 1);
+        dst.advance_to(p + 1);
     } else {
-        dest.flush();
-        *dest.buffer_ptr() = c;
-        dest.advance();
+        dst.flush();
+        *dst.buffer_ptr() = c;
+        dst.advance();
     }
 }
 
@@ -263,9 +263,9 @@ class output_buffer_test_tool
 {
 public:
     template<typename T>
-    static STRF_HD void turn_into_bad(output_buffer<T, 0>& dest)
+    static STRF_HD void turn_into_bad(output_buffer<T, 0>& dst)
     {
-        dest.set_good(false);
+        dst.set_good(false);
     }
 };
 
@@ -291,35 +291,35 @@ template <typename CharT>
 class basic_cstr_destination final
     : public strf::output_buffer<CharT, strf::log2_garbage_buff_size>
 {
-    using dest_t_ = strf::output_buffer<CharT, strf::log2_garbage_buff_size>;
+    using dst_t_ = strf::output_buffer<CharT, strf::log2_garbage_buff_size>;
 
 public:
 
-    struct range{ CharT* dest; CharT* dest_end; };
+    struct range{ CharT* dst; CharT* dst_end; };
 
     STRF_HD explicit basic_cstr_destination(range r) noexcept
-        : dest_t_(r.dest, r.dest_end - 1)
+        : dst_t_(r.dst, r.dst_end - 1)
     {
-        STRF_ASSERT(r.dest < r.dest_end);
+        STRF_ASSERT(r.dst < r.dst_end);
     }
 
-    STRF_HD basic_cstr_destination(CharT* dest, CharT* dest_end) noexcept
-        : dest_t_(dest, dest_end - 1)
+    STRF_HD basic_cstr_destination(CharT* dst, CharT* dst_end) noexcept
+        : dst_t_(dst, dst_end - 1)
     {
-        STRF_ASSERT(dest < dest_end);
+        STRF_ASSERT(dst < dst_end);
     }
 
     template < typename IntT
              , strf::detail::enable_if_t<std::is_integral<IntT>::value, int> = 0>
-    STRF_HD basic_cstr_destination(CharT* dest, IntT len) noexcept
-        : dest_t_(dest, dest + static_cast<std::ptrdiff_t>(len) - 1)
+    STRF_HD basic_cstr_destination(CharT* dst, IntT len) noexcept
+        : dst_t_(dst, dst + static_cast<std::ptrdiff_t>(len) - 1)
     {
         STRF_ASSERT(static_cast<std::ptrdiff_t>(len) > 0);
     }
 
     template <std::size_t N>
-    STRF_HD explicit basic_cstr_destination(CharT (&dest)[N]) noexcept
-        : dest_t_(dest, dest + N - 1)
+    STRF_HD explicit basic_cstr_destination(CharT (&dst)[N]) noexcept
+        : dst_t_(dst, dst + N - 1)
     {
     }
 
@@ -436,34 +436,34 @@ template <typename CharT>
 class array_destination final
     : public strf::output_buffer<CharT, strf::log2_garbage_buff_size>
 {
-    using dest_t_ = strf::output_buffer<CharT, strf::log2_garbage_buff_size>;
+    using dst_t_ = strf::output_buffer<CharT, strf::log2_garbage_buff_size>;
 
 public:
 
-    struct range{ CharT* dest; CharT* dest_end; };
+    struct range{ CharT* dst; CharT* dst_end; };
 
     STRF_HD explicit array_destination(range r) noexcept
-        : dest_t_(r.dest, r.dest_end)
+        : dst_t_(r.dst, r.dst_end)
     {
-        STRF_ASSERT(r.dest <= r.dest_end);
+        STRF_ASSERT(r.dst <= r.dst_end);
     }
 
-    STRF_HD array_destination(CharT* dest, CharT* dest_end) noexcept
-        : dest_t_(dest, dest_end)
+    STRF_HD array_destination(CharT* dst, CharT* dst_end) noexcept
+        : dst_t_(dst, dst_end)
     {
-        STRF_ASSERT(dest <= dest_end);
+        STRF_ASSERT(dst <= dst_end);
     }
     template < typename IntT
              , strf::detail::enable_if_t<std::is_integral<IntT>::value, int> = 0>
-    STRF_HD array_destination(CharT* dest, IntT len) noexcept
-        : dest_t_(dest, dest + static_cast<std::ptrdiff_t>(len))
+    STRF_HD array_destination(CharT* dst, IntT len) noexcept
+        : dst_t_(dst, dst + static_cast<std::ptrdiff_t>(len))
     {
         STRF_ASSERT(static_cast<std::ptrdiff_t>(len) >= 0);
     }
 
     template <std::size_t N>
-    STRF_HD explicit array_destination(CharT (&dest)[N]) noexcept
-        : dest_t_(dest, dest + N)
+    STRF_HD explicit array_destination(CharT (&dst)[N]) noexcept
+        : dst_t_(dst, dst + N)
     {
     }
 
@@ -536,12 +536,12 @@ template <typename T>
 class discarder final
     : public strf::output_buffer<T, strf::log2_garbage_buff_size>
 {
-    using dest_t_ = strf::output_buffer<T, strf::log2_garbage_buff_size>;
+    using dst_t_ = strf::output_buffer<T, strf::log2_garbage_buff_size>;
 
 public:
 
     STRF_HD discarder() noexcept
-        : dest_t_{strf::garbage_buff<T>(), strf::garbage_buff_end<T>()}
+        : dst_t_{strf::garbage_buff<T>(), strf::garbage_buff_end<T>()}
     {
         this->set_good(false);
     }

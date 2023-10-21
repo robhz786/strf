@@ -20,6 +20,9 @@ http://www.boost.org/LICENSE_1_0.txt)
 :float_notation: <<float_notation,float_notation>>
 :PrintingTraits: <<PrintingTraits,PrintingTraits>>
 
+:transcoding_error_notifier: <<strf_hpp#transcoding_error_notifier,transcoding_error_notifier>>
+:TranscodingErrorNotifierPtr: <<strf_hpp#TranscodingErrorNotifierPtr,TranscodingErrorNotifierPtr>>
+
 :tag: <<tag,tag>>
 
 == Format functions
@@ -44,8 +47,19 @@ constexpr /{asterisk}...{asterisk}/ fixed {};
 constexpr /{asterisk}...{asterisk}/ sci {};
 constexpr /{asterisk}...{asterisk}/ gen {};
 constexpr /{asterisk}...{asterisk}/ multi {};
-constexpr /{asterisk}...{asterisk}/ transcode {};
 constexpr /{asterisk}...{asterisk}/ sani {};
+
+template <typename T>
+constexpr /{asterisk}...{asterisk}/ transcode(T&& value);
+
+template <typename T, typename Charset>
+constexpr /{asterisk}...{asterisk}/ transcode(T&& value, Charset&& charset);
+
+template <typename T>
+constexpr /{asterisk}...{asterisk}/ unsafe_transcode(T&& value);
+
+template <typename T, typename Charset>
+constexpr /{asterisk}...{asterisk}/ unsafe_transcode(T&& value, Charset&& charset);
 
 } // inline namespace format_functions
 } // namespace strf
@@ -76,10 +90,12 @@ that work as alias to format functions
 |`fixed(_arg_, _precision_)`   |`{fmt}(_arg_).fixed().p(_precision_)`
 |`gen(_arg_, _precision_)`     |`{fmt}(_arg_).gen().p(_precision_)`
 |`multi(_arg_, _count_)`       |`{fmt}(_arg_).multi(_count_)`
-|`sani(_arg_, _charset_)`      |`{fmt}(_arg_).sani(_charset_)`
-|`transcode(_arg_, _charset_)` |`{fmt}(_arg_).transcode_from(_charset_)`
-|`sani(_arg_)`                 |`{fmt}(_arg_).sani()`
-|`transcode(_arg_)`            |`{fmt}(_arg_).transcode()`
+|`transcode(_arg_, _charset_)`        |`{fmt}(_arg_).transcode(_charset_)`
+|`transcode(_arg_)`                   |`{fmt}(_arg_).transcode()`
+|`unsafe_transcode(_arg_, _charset_)` |`{fmt}(_arg_).unsafe_transcode(_charset_)`
+|`unsafe_transcode(_arg_)`            |`{fmt}(_arg_).unsafe_transcode()`
+|`sani(_arg_, _charset_)`             |`{fmt}(_arg_).sani(_charset_)`
+|`sani(_arg_)`                        |`{fmt}(_arg_).sani()`
 |===
 
 [[Formatter]]
@@ -598,6 +614,103 @@ And the following observers:
 | `(std::ptrdiff_t) count()`
 |===
 
+[[string_precision_format_function]]
+=== String precision
+
+( The _Formatter_ that defines the function below is implementation-defined )
+
+`p(<<strf_hpp#width_t,width_t>> limit)`:::
+   Prints the whole string only if its width is not greater than `limit`.
+   Otherwise, prints its longest leading sub-string whose width
+   is not greater than `limit`.
+////
+   +
+   Note: the way the width of the string is calculated can be customized
+   with the {width_calculation_c} facet category.
+   The default method is {std_width_calc}, which takes into account
+   grapheme clustering
+////
+
+
+[[transcoding_format_functions]]
+=== Transcoding format functions
+
+( The _Formatter_ that defines the functions below is implementation-defined )
+
+====
+----
+template <typename Charset>
+transcode(Charset cs)
+----
+Transcodes the input string if `cs` is different from the
+output charset, otherwise just copies it as in `memcpy`.
+( The output charset is defined by the facet value
+of the `{charset_c}<CharOut>` facet category,
+where `CharOut` is the destination character type )
+====
+
+====
+----
+template <typename Charset>
+unsafe_transcode(Charset cs)
+----
+Same as in `trancode(cs)`, except that the behaviour is
+undefined if the input string is not fully conformant
+to the encoding represent by `cs`,
+but it provides a better performance.
+====
+
+====
+----
+template <typename Charset>
+sani(Charset cs)
+----
+If `cs` is different from the ouput charset, transcodes the
+input string just like in `transcode`. If they
+are the same, sanitizes the input string.
+That is, in both cases, any non-conformity to the input charset
+is replaced by the replacement character ( `"\uFFFD"` or `'?'` ),
+and causes the function
+`{transcoding_error_notifier}::invalid_sequence`
+to be called, if the __{TranscodingErrorNotifierPtr}__
+facet object is not null.
+====
+
+====
+----
+transcode()
+----
+Equivalent to `transcode(cs)` where `cs` is the facet value
+for the `charset_c<CharIn>` facet category, where `CharIn`
+is the character type of the input string.
+====
+
+====
+----
+unsafe_transcode()
+----
+Equivalent to `unsafe_transcode(cs)` where `cs` is the facet value
+for the `charset_c<CharIn>` facet category, where `CharIn`
+is the character type of the input string.
+====
+
+====
+----
+sani()
+----
+Equivalent to `sani(cs)` where `cs` is the facet value
+for the `charset_c<CharIn>` facet category, where `CharIn`
+is the character type of the input string.
+====
+
+
+.Example
+[source,cpp]
+----
+auto str = strf::to_string(strf::center(u" Hello! ", 16, '*').transcode());
+assert(str == "**** Hello! ****");
+----
+
 
 === Callable object `fmt` [[fmt]]
 
@@ -846,5 +959,5 @@ Effects::
 constexpr const value_type& value() const;
 constexpr value_type& value();
 ----
-Return `value_`
+Returns `value_`
 ====

@@ -74,6 +74,31 @@ public:
     {
         return {from_underlying_tag{}, v};
     }
+    template < typename UIntT
+             , strf::detail::enable_if_t
+                   < (2 < sizeof(UIntT))
+                  && std::is_integral<UIntT>::value
+                  && std::is_unsigned<UIntT>::value
+                   , int > = 0 >
+    constexpr static STRF_HD width_t sat_cast(UIntT x)
+    {
+        return from_underlying(x < 0x8000 ? (x << 16) : underlying_max_);
+    }
+    template < typename IntT
+             , strf::detail::enable_if_t
+                   < (2 < sizeof(IntT))
+                  && std::is_integral<IntT>::value
+                  && std::is_signed<IntT>::value
+                   , int > = 0 >
+    constexpr static STRF_HD width_t sat_cast(IntT x)
+    {
+        using namespace strf::detail::cast_sugars;
+        return from_underlying
+            ( x >=  0x8000 ? underlying_max_
+            : x <= -0x8000 ? underlying_min_
+            : cast_i32(cast_u32(cast_i32(x)) << 16) );
+    }
+
     STRF_CONSTEXPR_IN_CXX14 STRF_HD width_t& operator=(std::int16_t& x) noexcept
     {
         value_ = width_t{x}.value_;
@@ -134,11 +159,11 @@ public:
     }
     static constexpr STRF_HD width_t max() noexcept
     {
-        return strf::width_t::from_underlying(0x7FFFFFFF);
+        return strf::width_t::from_underlying(underlying_max_);
     }
     static constexpr STRF_HD width_t min() noexcept
     {
-        return strf::width_t::from_underlying(static_cast<std::int32_t>(0x80000000));
+        return strf::width_t::from_underlying(underlying_min_);
     }
     STRF_CONSTEXPR_IN_CXX14 STRF_HD std::int16_t floor() const noexcept
     {
@@ -148,14 +173,32 @@ public:
         auto result = leftbits | (cast_u32(value_) >> 16);
         return cast_i16(cast_i32(result));
     }
+    constexpr STRF_HD std::uint16_t non_negative_floor() const noexcept
+    {
+        using namespace strf::detail::cast_sugars;
+        return cast_u16(value_ >= 0 ? (value_ >> 16) : 0);
+    }
+    constexpr STRF_HD std::uint32_t non_negative_ceil() const noexcept
+    {
+        const auto nn_value = detail::cast_u32(value_ >= 0 ? value_ : 0);
+        return (nn_value + 0xFFFF) >> 16;
+    }
+    constexpr STRF_HD std::int32_t ceil() const noexcept
+    {
+        using namespace strf::detail::cast_sugars;
+        return ( value_ >=  0 ? cast_i32((cast_u32(value_) + 0xFFFF) >> 16)
+               : value_ == underlying_min_ ? -0x8000
+               : -(-value_ >> 16) );
+    }
     STRF_CONSTEXPR_IN_CXX14 STRF_HD std::int32_t round() const noexcept
     {
-        std::int32_t const i = floor();
         const auto q = value_ & 0xFFFF;
         STRF_IF_LIKELY (value_ >= 0) {
-            return q <= 0x8000 ? i : (i + 1);
+            const auto f = value_ >> 16;
+            return q <= 0x8000 ? f : (f + 1);
         }
-        return q >= 0x8000 ? (i + 1) : i;
+        const auto f = floor();
+        return q >= 0x8000 ? (f + 1) : f;
     }
     constexpr STRF_HD width_t operator+() const noexcept
     {
@@ -332,7 +375,7 @@ public:
         if (tmp >= (1LL << 47)) {
             value_ = 0x7FFFFFFF;
         } else if (tmp < cast_i64(cast_u64(cast_i64(min().underlying_value())) << 16)) {
-            value_ = static_cast<std::int32_t>(0x80000000);
+            value_ = underlying_min_;
         } else {
             value_ = cast_i32(tmp / 0x10000);
         }
@@ -392,6 +435,8 @@ public:
 private:
 
     std::int32_t value_;
+    static constexpr std::int32_t underlying_max_ = 0x7FFFFFFF;
+    static constexpr std::int32_t underlying_min_ = static_cast<std::int32_t>(0x80000000);
 };
 
 constexpr strf::width_t width_max = strf::width_t::max();

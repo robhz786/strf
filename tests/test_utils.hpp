@@ -29,7 +29,7 @@
 namespace test_utils {
 
 template <typename CharT>
-void STRF_HD write_random_ascii_chars(CharT* dest, std::size_t count)
+void STRF_HD write_random_ascii_chars(CharT* dst, std::size_t count)
 {
 #ifdef STRF_FREESTANDING
     int r = 10;
@@ -38,7 +38,7 @@ void STRF_HD write_random_ascii_chars(CharT* dest, std::size_t count)
 #endif
     CharT ch = static_cast<CharT>(0x20 + r);
     for (std::size_t i = 0; i < count; ++i) {
-        dest[i] = ch;
+        dst[i] = ch;
         if (++ch == 0x7F) {
             ch = 0x20;
         }
@@ -217,9 +217,9 @@ inline strf::detail::simple_string_view<CharT> STRF_HD make_tiny_string()
 }
 
 template <typename CharT>
-inline void STRF_HD turn_into_bad(strf::output_buffer<CharT, 0>& dest)
+inline void STRF_HD turn_into_bad(strf::output_buffer<CharT, 0>& dst)
 {
-    strf::detail::output_buffer_test_tool::turn_into_bad(dest);
+    strf::detail::output_buffer_test_tool::turn_into_bad(dst);
 }
 
 inline STRF_HD int& test_err_count()
@@ -415,9 +415,9 @@ public:
         ( const char* funcname
         , const char* srcfile
         , int srcline
-        , strf::destination<char>& dest = test_utils::test_messages_destination() )
+        , strf::destination<char>& dst = test_utils::test_messages_destination() )
         : strf::destination<char>{buff_, buffsize_}
-        , dest_(dest)
+        , dst_(dst)
         , funcname_(funcname)
         , srcfile_(srcfile)
         , srcline_(srcline)
@@ -452,7 +452,7 @@ private:
     STRF_HD void do_recycle() {
         if (this->buffer_ptr() != buff_) {
             ensure_notification_init_();
-            dest_.write(buff_, this->buffer_ptr() - buff_);
+            dst_.write(buff_, this->buffer_ptr() - buff_);
             this->set_buffer_ptr(buff_);
         }
     }
@@ -468,7 +468,7 @@ private:
     bool has_error_ = false;
     bool finished_ = false;
 
-    strf::destination<char>& dest_;
+    strf::destination<char>& dst_;
     const char* funcname_;
     const char* srcfile_;
     int srcline_;
@@ -580,7 +580,7 @@ void STRF_HD input_tester<CharOut>::recycle()
 {
     strf::to(notifier_)
         (" destination::recycle() called "
-         "( it means the calculated size too small ).\n");
+         "( it means the calculated size is smaller than it should ).\n");
 
     if ( this->buffer_ptr() + strf::min_destination_buffer_size
        > buffer_ + buffer_size_ )
@@ -764,7 +764,7 @@ public:
         : strf::destination<CharT>{buffer_, input.initial_space}
         , expected_(input.expected)
         , notifier_{input.function, input.src_filename, input.src_line}
-        , dest_end_{buffer_}
+        , dst_end_{buffer_}
     {
         if (input.initial_space + strf::min_destination_buffer_ssize > buffer_size_) {
             strf::to(notifier_) ("\nUnsupported test case: Initial space too big");
@@ -781,7 +781,7 @@ private:
     bool recycle_not_called_yet = true;
     strf::detail::simple_string_view<CharT> expected_;
     test_failure_notifier notifier_;
-    CharT* dest_end_;
+    CharT* dst_end_;
 
     enum {buffer_size_ = 320};
     CharT buffer_[buffer_size_];
@@ -811,12 +811,12 @@ STRF_HD void recycle_call_tester<CharT>::finish()
         strf::to(notifier_) ( "\nrecycle() was not called.");
     }
     if (this->good()) {
-        dest_end_ = this->buffer_ptr();
+        dst_end_ = this->buffer_ptr();
         this->set_good(false);
         this->set_buffer_ptr(strf::garbage_buff<CharT>());
         this->set_buffer_end(strf::garbage_buff_end<CharT>());
     }
-    strf::detail::simple_string_view<CharT> result{buffer_, dest_end_};
+    strf::detail::simple_string_view<CharT> result{buffer_, dst_end_};
     bool as_expected =
         ( result.size() == expected_.size()
        && strf::detail::str_equal<CharT>(expected_.begin(), buffer_, expected_.size()) );
@@ -874,7 +874,7 @@ public:
         , function_(input.function)
         , src_filename_(input.src_filename)
         , src_line_(input.src_line)
-        , dest_end_{buffer_}
+        , dst_end_{buffer_}
     {
         if (input.initial_space + strf::min_destination_buffer_ssize > buffer_size_) {
             emit_error_message_("\nUnsupported test case: Initial space too big");
@@ -910,7 +910,7 @@ private:
     const char* function_;
     const char* src_filename_;
     int src_line_;
-    CharT* dest_end_;
+    CharT* dst_end_;
 
     enum {buffer_size_ = 320};
     CharT buffer_[buffer_size_];
@@ -923,7 +923,7 @@ STRF_HD void failed_recycle_call_tester<CharT>::recycle()
         if (this->buffer_ptr() > this->buffer_end()) {
             emit_error_message_( "\nContent written after buffer_end()." );
         }
-        dest_end_ = this->buffer_ptr();
+        dst_end_ = this->buffer_ptr();
         recycle_not_called_yet = false;
     } else {
         emit_error_message_( "\nrecycle() called more than once here.");
@@ -937,13 +937,13 @@ template <typename CharT>
 STRF_HD void failed_recycle_call_tester<CharT>::finish()
 {
     if (recycle_not_called_yet) {
-        dest_end_ = this->buffer_ptr();
+        dst_end_ = this->buffer_ptr();
     }
     this->set_good(false);
     this->set_buffer_ptr(strf::garbage_buff<CharT>());
     this->set_buffer_end(strf::garbage_buff_end<CharT>());
 
-    strf::detail::simple_string_view<CharT> result{buffer_, dest_end_};
+    strf::detail::simple_string_view<CharT> result{buffer_, dst_end_};
     bool as_expected =
         ( result.size() == expected_.size()
        && strf::detail::str_equal<CharT>(expected_.begin(), buffer_, expected_.size()) );
@@ -1048,10 +1048,24 @@ STRF_HD auto test_failed_recycle_call
           || ! strf::detail::str_equal(s1, s2, len1))                   \
             test_utils::test_failure                                    \
                 ( __FILE__, __LINE__, BOOST_CURRENT_FUNCTION            \
-                , "TEST_CSTR_EQ(s1, s2) failed. Where:\n    s1 is \"", (s1)  \
-                , "\"\n    s2 is \"", (s2), '\"' );                     \
+                , "TEST_CSTR_EQ(s1, s2) failed. Where:\n    s1 is \""   \
+                , strf::transcode(s1)                                   \
+                , "\"\n    s2 is \"", strf::transcode(s2), '\"' );      \
         break;                                                          \
     }                                                                   \
+
+#define TEST_STR_EQ(s1, s2)                                             \
+    {                                                                   \
+        auto ssv1 = strf::detail::to_simple_string_view(s1);            \
+        auto ssv2 = strf::detail::to_simple_string_view(s2);            \
+        if (ssv1 != ssv2) {                                             \
+            test_utils::test_failure                                    \
+                ( __FILE__, __LINE__, BOOST_CURRENT_FUNCTION            \
+                , "TEST_STR_EQ(s1, s2) failed. Where:\n    s1 is \""    \
+                , strf::transcode(ssv1)                                 \
+                , "\"\n    s2 is \"", strf::transcode(ssv2), '\"' );    \
+        }                                                               \
+    }
 
 #define TEST_STRVIEW_EQ(s1, s2, len)                                       \
     if (! strf::detail::str_equal(s1, s2, len))                            \

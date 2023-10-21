@@ -314,7 +314,6 @@ class tr_printer_no_args: public strf::printer<CharT>
 
         strf::detail::tr_pre_size_and_width<CharT, Charset, wcalc_t> tr_pre
               ( nullptr, nullptr, 0, i.pre.remaining_width()
-              , strf::use_facet<strf::surrogate_policy_c, facet_tag_>(i.facets)
               , strf::use_facet<strf::width_calculator_c, facet_tag_>(i.facets)
               , charset_ );
         strf::detail::tr_do_preprinting(tr_pre, tr_string_.begin(), tr_string_.end());
@@ -346,7 +345,6 @@ class tr_printer_no_args: public strf::printer<CharT>
              <strf::width_calculator_c, strf::tr_string_tag<CharT>, FPack>;
         strf::detail::tr_pre_width<CharT, Charset, wcalc_t> tr_pre
               ( nullptr, 0, i.pre.remaining_width()
-              , strf::use_facet<strf::surrogate_policy_c, facet_tag_>(i.facets)
               , strf::use_facet<strf::width_calculator_c, facet_tag_>(i.facets)
               , charset_ );
         strf::detail::tr_do_preprinting(tr_pre, tr_string_.begin(), tr_string_.end());
@@ -366,12 +364,12 @@ public:
         init_(i);
     }
 
-    STRF_HD void print_to(strf::destination<CharT>& dest) const override
+    STRF_HD void print_to(strf::destination<CharT>& dst) const override
     {
-        (void)dest;
+        (void)dst;
         strf::detail::tr_string_write
             ( tr_string_.begin(), tr_string_.end(), nullptr
-            , 0, dest, charset_, err_handler_ );
+            , 0, dst, charset_, err_handler_ );
     }
 };
 
@@ -414,7 +412,6 @@ class tr_printer: public strf::printer<CharT>
     //             {(strf::width_max - pp_arr[I].remaining_width())...};
     //         strf::detail::tr_pre_size_and_width<CharT, Charset, wcalc_t> tr_pre
     //             ( size_arr, width_arr, num_printers, i.pre.remaining_width()
-    //             , strf::use_facet<strf::surrogate_policy_c, facet_tag_>(i.facets)
     //             , strf::use_facet<strf::width_calculator_c, facet_tag_>(i.facets)
     //             , charset_ );
     //         strf::detail::tr_do_preprinting(tr_pre, tr_string_.begin(), tr_string_.end());
@@ -470,7 +467,6 @@ class tr_printer: public strf::printer<CharT>
             {(strf::width_max - pp_arr[I].remaining_width())...};
         strf::detail::tr_pre_size_and_width<CharT, Charset, wcalc_t> tr_pre
             ( size_arr, width_arr, num_printers, i.pre.remaining_width()
-              , strf::use_facet<strf::surrogate_policy_c, facet_tag_>(i.facets)
               , strf::use_facet<strf::width_calculator_c, facet_tag_>(i.facets)
               , charset_ );
         strf::detail::tr_do_preprinting(tr_pre, tr_string_.begin(), tr_string_.end());
@@ -515,7 +511,6 @@ class tr_printer: public strf::printer<CharT>
             {(strf::width_max - pp_arr[I].remaining_width())...};
         strf::detail::tr_pre_width<CharT, Charset, wcalc_t> tr_pre
             ( width_arr, num_printers, i.pre.remaining_width()
-            , strf::use_facet<strf::surrogate_policy_c, facet_tag_>(i.facets)
             , strf::use_facet<strf::width_calculator_c, facet_tag_>(i.facets)
             , charset_ );
         strf::detail::tr_do_preprinting(tr_pre, tr_string_.begin(), tr_string_.end());
@@ -536,12 +531,12 @@ public:
         init_(strf::detail::make_index_sequence<sizeof...(Args)>{}, i);
     }
 
-    STRF_HD void print_to(strf::destination<CharT>& dest) const override
+    STRF_HD void print_to(strf::destination<CharT>& dst) const override
     {
-        (void)dest;
+        (void)dst;
         strf::detail::tr_string_write
             ( tr_string_.begin(), tr_string_.end(), printers_
-            , num_printers_, dest, charset_, err_handler_ );
+            , num_printers_, dst, charset_, err_handler_ );
     }
 
     tr_printer(const tr_printer&) = delete;
@@ -640,12 +635,12 @@ struct printable_traits<detail::tr_string_arg<CharT, Args...>>
 //         }
 //     }
 
-//     STRF_HD void print_to(strf::destination<CharT>& dest) const override
+//     STRF_HD void print_to(strf::destination<CharT>& dst) const override
 //     {
-//         (void)dest;
+//         (void)dst;
 //         // strf::detail::tr_string_write
 //         //     ( tr_string_.begin(), tr_string_.end(), printer_ptrs_array_
-//         //     , num_printers_, dest, charset_, err_handler_ );
+//         //     , num_printers_, dst, charset_, err_handler_ );
 //     }
 
 // private:

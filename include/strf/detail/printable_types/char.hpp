@@ -26,31 +26,31 @@ struct char_printing
     using formatters = strf::tag<strf::quantity_formatter, strf::alignment_formatter>;
     using is_overridable = std::false_type;
 
-    template <typename DestCharT, typename PrePrinting, typename FPack>
+    template <typename DstCharT, typename PrePrinting, typename FPack>
     constexpr STRF_HD static auto make_input
-        ( strf::tag<DestCharT>
+        ( strf::tag<DstCharT>
         , PrePrinting& pre
         , const FPack& fp
         , SrcCharT x ) noexcept
         -> strf::usual_printer_input
-            < DestCharT, PrePrinting, FPack, SrcCharT, strf::detail::char_printer<DestCharT> >
+            < DstCharT, PrePrinting, FPack, SrcCharT, strf::detail::char_printer<DstCharT> >
     {
-        static_assert( std::is_same<SrcCharT, DestCharT>::value, "Character type mismatch.");
+        static_assert( std::is_same<SrcCharT, DstCharT>::value, "Character type mismatch.");
         return {pre, fp, x};
     }
 
-    template <typename DestCharT, typename PrePrinting, typename FPack, typename... T>
+    template <typename DstCharT, typename PrePrinting, typename FPack, typename... T>
     constexpr STRF_HD static auto make_input
-        ( strf::tag<DestCharT>
+        ( strf::tag<DstCharT>
         , PrePrinting& pre
         , const FPack& fp
         , strf::printable_with_fmt<T...> x ) noexcept
         -> strf::usual_printer_input
-            < DestCharT, PrePrinting, FPack
+            < DstCharT, PrePrinting, FPack
             , strf::printable_with_fmt<T...>
-            , strf::detail::fmt_char_printer<DestCharT> >
+            , strf::detail::fmt_char_printer<DstCharT> >
     {
-        static_assert( std::is_same<SrcCharT, DestCharT>::value, "Character type mismatch.");
+        static_assert( std::is_same<SrcCharT, DstCharT>::value, "Character type mismatch.");
         return {pre, fp, x};
     }
 };
@@ -70,34 +70,34 @@ struct printable_traits<char32_t>
     using formatters = strf::tag<strf::quantity_formatter, strf::alignment_formatter>;
     using is_overridable = std::false_type;
 
-    template <typename DestCharT, typename PrePrinting, typename FPack>
+    template <typename DstCharT, typename PrePrinting, typename FPack>
     constexpr STRF_HD static auto make_input
-        ( strf::tag<DestCharT>
+        ( strf::tag<DstCharT>
         , PrePrinting& pre
         , const FPack& fp
         , char32_t x ) noexcept
         -> strf::usual_printer_input
-            < DestCharT, PrePrinting, FPack, char32_t
+            < DstCharT, PrePrinting, FPack, char32_t
             , strf::detail::conditional_t
-                < std::is_same<DestCharT, char32_t>::value
-                , strf::detail::char_printer<DestCharT>
-                , strf::detail::conv_char32_printer<DestCharT> > >
+                < std::is_same<DstCharT, char32_t>::value
+                , strf::detail::char_printer<DstCharT>
+                , strf::detail::conv_char32_printer<DstCharT> > >
     {
         return {pre, fp, x};
     }
 
-    template <typename DestCharT, typename PrePrinting, typename FPack, typename... F>
+    template <typename DstCharT, typename PrePrinting, typename FPack, typename... F>
     constexpr STRF_HD static auto make_input
-        ( strf::tag<DestCharT>
+        ( strf::tag<DstCharT>
         , PrePrinting& pre
         , const FPack& fp
         , strf::printable_with_fmt<F...> x ) noexcept
         -> strf::usual_printer_input
-            < DestCharT, PrePrinting, FPack, strf::printable_with_fmt<F...>
+            < DstCharT, PrePrinting, FPack, strf::printable_with_fmt<F...>
             , strf::detail::conditional_t
-                < std::is_same<DestCharT, char32_t>::value
-                , strf::detail::fmt_char_printer<DestCharT>
-                , strf::detail::fmt_conv_char32_printer<DestCharT> > >
+                < std::is_same<DstCharT, char32_t>::value
+                , strf::detail::fmt_char_printer<DstCharT>
+                , strf::detail::fmt_conv_char32_printer<DstCharT> > >
     {
         return {pre, fp, x};
     }
@@ -147,7 +147,7 @@ public:
         }
     }
 
-    STRF_HD void print_to(strf::destination<CharT>& dest) const override;
+    STRF_HD void print_to(strf::destination<CharT>& dst) const override;
 
 private:
 
@@ -156,11 +156,11 @@ private:
 
 template <typename CharT>
 STRF_HD void char_printer<CharT>::print_to
-    ( strf::destination<CharT>& dest ) const
+    ( strf::destination<CharT>& dst ) const
 {
-    dest.ensure(1);
-    *dest.buffer_ptr() = ch_;
-    dest.advance();
+    dst.ensure(1);
+    *dst.buffer_ptr() = ch_;
+    dst.advance();
 }
 
 
@@ -181,7 +181,7 @@ public:
         init_(input.pre, wcalc, charset);
     }
 
-    STRF_HD void print_to(strf::destination<CharT>& dest) const override;
+    STRF_HD void print_to(strf::destination<CharT>& dst) const override;
 
 private:
 
@@ -246,44 +246,44 @@ STRF_HD void fmt_char_printer<CharT>::init_
 
 template <typename CharT>
 STRF_HD void fmt_char_printer<CharT>::print_to
-    ( strf::destination<CharT>& dest ) const
+    ( strf::destination<CharT>& dst ) const
 {
     if (left_fillcount_ > 0) {
-        encode_fill_fn_(dest, left_fillcount_, afmt_.fill);
+        encode_fill_fn_(dst, left_fillcount_, afmt_.fill);
     }
     if (count_ == 1) {
-        dest.ensure(1);
-        * dest.buffer_ptr() = ch_;
-        dest.advance();
+        dst.ensure(1);
+        * dst.buffer_ptr() = ch_;
+        dst.advance();
     } else {
         std::ptrdiff_t count = count_;
         while(true) {
-            const auto space = dest.buffer_sspace();
+            const auto space = dst.buffer_sspace();
             if (count <= space) {
-                strf::detail::str_fill_n(dest.buffer_ptr(), count, ch_);
-                dest.advance(count);
+                strf::detail::str_fill_n(dst.buffer_ptr(), count, ch_);
+                dst.advance(count);
                 break;
             }
-            strf::detail::str_fill_n(dest.buffer_ptr(), space, ch_);
+            strf::detail::str_fill_n(dst.buffer_ptr(), space, ch_);
             count -= space;
-            dest.advance_to(dest.buffer_end());
-            dest.flush();
+            dst.advance_to(dst.buffer_end());
+            dst.flush();
         }
     }
     if (right_fillcount_ > 0) {
-        encode_fill_fn_(dest, right_fillcount_, afmt_.fill);
+        encode_fill_fn_(dst, right_fillcount_, afmt_.fill);
     }
 }
 
-template <typename DestCharT>
-class conv_char32_printer: public strf::printer<DestCharT>
+template <typename DstCharT>
+class conv_char32_printer: public strf::printer<DstCharT>
 {
 public:
     template <typename... T>
     STRF_HD explicit conv_char32_printer(strf::usual_printer_input<T...> input)
         : ch_(input.arg)
     {
-        auto encoding = strf::use_facet<charset_c<DestCharT>, char32_t>(input.facets);
+        auto encoding = strf::use_facet<charset_c<DstCharT>, char32_t>(input.facets);
         STRF_MAYBE_UNUSED(encoding);
         encode_char_f_ = encoding.encode_char_func();
         encoded_char_size_ = encoding.encoded_char_size(input.arg);
@@ -294,24 +294,24 @@ public:
         }
     }
 
-    void STRF_HD print_to(strf::destination<DestCharT>& dest) const override;
+    void STRF_HD print_to(strf::destination<DstCharT>& dst) const override;
 
 private:
-    strf::encode_char_f<DestCharT> encode_char_f_;
+    strf::encode_char_f<DstCharT> encode_char_f_;
     int encoded_char_size_;
     char32_t ch_;
 };
 
-template <typename DestCharT>
-void STRF_HD conv_char32_printer<DestCharT>::print_to(strf::destination<DestCharT>& dest) const
+template <typename DstCharT>
+void STRF_HD conv_char32_printer<DstCharT>::print_to(strf::destination<DstCharT>& dst) const
 {
-    dest.ensure(encoded_char_size_);
-    encode_char_f_(dest.buffer_ptr(), ch_);
-    dest.advance(encoded_char_size_);
+    dst.ensure(encoded_char_size_);
+    encode_char_f_(dst.buffer_ptr(), ch_);
+    dst.advance(encoded_char_size_);
 }
 
-template <typename DestCharT>
-class fmt_conv_char32_printer: public strf::printer<DestCharT>
+template <typename DstCharT>
+class fmt_conv_char32_printer: public strf::printer<DstCharT>
 {
 public:
 
@@ -320,13 +320,13 @@ public:
         : count_(input.arg.scount())
         , ch_(input.arg.value())
     {
-        auto charset = strf::use_facet<charset_c<DestCharT>, char32_t>(input.facets);
+        auto charset = strf::use_facet<charset_c<DstCharT>, char32_t>(input.facets);
         auto&& wcalc = use_facet<strf::width_calculator_c, char32_t>(input.facets);
         auto char_width = wcalc.char_width(strf::utf_t<char32_t>{}, ch_);
         init_(input.pre, charset, input.arg.get_alignment_format(), char_width);
     }
 
-    void STRF_HD print_to(strf::destination<DestCharT>& dest) const override;
+    void STRF_HD print_to(strf::destination<DstCharT>& dst) const override;
 
 private:
 
@@ -337,7 +337,7 @@ private:
         , strf::alignment_format afmt
         , strf::width_t ch_width );
 
-    strf::encode_fill_f<DestCharT> encode_fill_f_;
+    strf::encode_fill_f<DstCharT> encode_fill_f_;
     std::ptrdiff_t count_;
     char32_t ch_;
     char32_t fillchar_{};
@@ -345,9 +345,9 @@ private:
     int fillcount_{};
 };
 
-template <typename DestCharT>
+template <typename DstCharT>
 template <typename PrePrinting, typename Charset>
-void STRF_HD fmt_conv_char32_printer<DestCharT>::init_
+void STRF_HD fmt_conv_char32_printer<DstCharT>::init_
     ( PrePrinting& pre
     , Charset charset
     , strf::alignment_format afmt
@@ -372,27 +372,27 @@ void STRF_HD fmt_conv_char32_printer<DestCharT>::init_
     }
 }
 
-template <typename DestCharT>
-void STRF_HD fmt_conv_char32_printer<DestCharT>::print_to(strf::destination<DestCharT>& dest) const
+template <typename DstCharT>
+void STRF_HD fmt_conv_char32_printer<DstCharT>::print_to(strf::destination<DstCharT>& dst) const
 {
     if(fillcount_ <= 0) {
-        encode_fill_f_(dest, count_, ch_);
+        encode_fill_f_(dst, count_, ch_);
     } else {
         switch(alignment_) {
             case strf::text_alignment::left:
-                encode_fill_f_(dest, count_, ch_);
-                encode_fill_f_(dest, fillcount_, fillchar_);
+                encode_fill_f_(dst, count_, ch_);
+                encode_fill_f_(dst, fillcount_, fillchar_);
                 break;
             case strf::text_alignment::center: {
                 auto left_fillcount = fillcount_ >> 1;
-                encode_fill_f_(dest, left_fillcount, fillchar_);
-                encode_fill_f_(dest, count_, ch_);
-                encode_fill_f_(dest, fillcount_ - left_fillcount, fillchar_);
+                encode_fill_f_(dst, left_fillcount, fillchar_);
+                encode_fill_f_(dst, count_, ch_);
+                encode_fill_f_(dst, fillcount_ - left_fillcount, fillchar_);
                 break;
             }
             default:
-                encode_fill_f_(dest, fillcount_, fillchar_);
-                encode_fill_f_(dest, count_, ch_);
+                encode_fill_f_(dst, fillcount_, fillchar_);
+                encode_fill_f_(dst, count_, ch_);
         }
     }
 }

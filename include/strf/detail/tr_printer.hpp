@@ -138,7 +138,6 @@ class tr_pre_width
     const strf::width_t* width_array_;
     const std::ptrdiff_t array_size_;
     strf::width_t remaining_width_;
-    strf::surrogate_policy surr_poli_;
     WidthCalculator wcalc_;
     Charset charset_;
 
@@ -157,13 +156,11 @@ public:
         ( const strf::width_t* width_array
         , std::ptrdiff_t width_array_size
         , strf::width_t width
-        , strf::surrogate_policy surr_poli
         , WidthCalculator wcalc
         , Charset charset )
         : width_array_(width_array)
         , array_size_(width_array_size)
         , remaining_width_(width)
-        , surr_poli_(surr_poli)
         , wcalc_(wcalc)
         , charset_(charset)
     {
@@ -176,7 +173,7 @@ public:
     STRF_CONSTEXPR_IN_CXX14 STRF_HD bool account_string(const CharT* begin, const CharT* end)
     {
         const auto str_width = wcalc_.str_width
-            (charset_, remaining_width_, begin, (end - begin), surr_poli_);
+            (charset_, remaining_width_, begin, end);
         return subtract_(str_width);
     }
     constexpr STRF_HD strf::width_t remaining_width() const
@@ -199,7 +196,6 @@ class tr_pre_size_and_width
     const std::ptrdiff_t array_size_;
     std::ptrdiff_t size_ = 0;
     strf::width_t remaining_width_;
-    strf::surrogate_policy surr_poli_;
     WidthCalculator wcalc_;
     Charset charset_;
 
@@ -218,14 +214,12 @@ public:
         , const strf::width_t* width_array
         , std::ptrdiff_t array_size
         , strf::width_t width
-        , strf::surrogate_policy surr_poli
         , WidthCalculator wcalc
         , Charset charset )
         : size_array_(size_array)
         , width_array_(width_array)
         , array_size_(array_size)
         , remaining_width_(width)
-        , surr_poli_(surr_poli)
         , wcalc_(wcalc)
         , charset_(charset)
     {
@@ -246,7 +240,7 @@ public:
         ( const CharT* begin, const CharT* end )
     {
         size_ += (end - begin);
-        auto w = wcalc_.str_width(charset_, remaining_width_, begin, (end - begin), surr_poli_);
+        auto w = wcalc_.str_width(charset_, remaining_width_, begin, end);
         subtract_width_(w);
         return {};
     }
@@ -424,7 +418,7 @@ STRF_HD void tr_string_write
     , const typename Charset::code_unit* str_end
     , const strf::printer<typename Charset::code_unit>* const * args
     , std::ptrdiff_t num_args
-    , strf::destination<typename Charset::code_unit>& dest
+    , strf::destination<typename Charset::code_unit>& dst
     , Charset charset
     , ErrHandler err_handler )
 {
@@ -437,17 +431,17 @@ STRF_HD void tr_string_write
         const char_type* prev = it;
         it = strf::detail::str_find<char_type>(it, static_cast<std::size_t>(str_end - it), '{');
         if (it == nullptr) {
-            dest.write(prev, str_end - prev);
+            dst.write(prev, str_end - prev);
             return;
         }
-        dest.write(prev, it - prev);
+        dst.write(prev, it - prev);
         ++it;
         after_the_opening_brace:
         if (it == str_end) {
             if (arg_idx < num_args) {
-                args[arg_idx]->print_to(dest);
+                args[arg_idx]->print_to(dst);
             } else {
-                charset.write_replacement_char(dest);
+                charset.write_replacement_char(dst);
                 err_handler.handle(str, str_len, charset, (it - str) - 1);
             }
             break;
@@ -455,19 +449,19 @@ STRF_HD void tr_string_write
         auto ch = *it;
         if (ch == '}') {
             if (arg_idx < num_args) {
-                args[arg_idx]->print_to(dest);
+                args[arg_idx]->print_to(dst);
                 ++arg_idx;
             } else {
-                charset.write_replacement_char(dest);
+                charset.write_replacement_char(dst);
                 err_handler.handle(str, str_len, charset, (it - str) - 1);
             }
             ++it;
         } else if (char_type('0') <= ch && ch <= char_type('9')) {
             auto result = strf::detail::read_uint(it, str_end, num_args);
             if (result.value < num_args) {
-                args[result.value]->print_to(dest);
+                args[result.value]->print_to(dst);
             } else {
-                charset.write_replacement_char(dest);
+                charset.write_replacement_char(dst);
                 err_handler.handle(str, str_len, charset, (it - str) - 1);
             }
             it = strf::detail::str_find<char_type>(result.it, static_cast<std::size_t>(str_end - result.it), '}');
@@ -479,19 +473,19 @@ STRF_HD void tr_string_write
             auto it2 = it + 1;
             it2 = strf::detail::str_find<char_type>(it2, static_cast<std::size_t>(str_end - it2), '{');
             if (it2 == nullptr) {
-                dest.write(it, str_end - it);
+                dst.write(it, str_end - it);
                 return;
             }
-            dest.write(it, (it2 - it));
+            dst.write(it, (it2 - it));
             it = it2 + 1;
             goto after_the_opening_brace;
         } else {
             if (ch != '-') {
                 if (arg_idx < num_args) {
-                    args[arg_idx]->print_to(dest);
+                    args[arg_idx]->print_to(dst);
                     ++arg_idx;
                 } else {
-                    charset.write_replacement_char(dest);
+                    charset.write_replacement_char(dst);
                     err_handler.handle(str, str_len, charset, (it - str) - 1);
                 }
             }
@@ -538,11 +532,11 @@ public:
         }
     }
 
-    STRF_HD void print_to(strf::destination<char_type>& dest) const
+    STRF_HD void print_to(strf::destination<char_type>& dst) const
     {
         strf::detail::tr_string_write
             ( tr_string_, tr_string_end_, printers_array_, num_printers_
-            , dest, charset_, err_handler_ );
+            , dst, charset_, err_handler_ );
     }
 
 private:

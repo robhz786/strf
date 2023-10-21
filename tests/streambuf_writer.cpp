@@ -15,15 +15,15 @@ void test_successfull_writing()
     auto tiny_str = test_utils::make_tiny_string<CharT>();
     auto double_str = test_utils::make_double_string<CharT>();
 
-    const std::basic_ostringstream<CharT> dest;
-    strf::basic_streambuf_writer<CharT> writer(*dest.rdbuf());
+    const std::basic_ostringstream<CharT> dst;
+    strf::basic_streambuf_writer<CharT> writer(*dst.rdbuf());
 
     writer.write(tiny_str.begin(), tiny_str.size());
     writer.write(double_str.begin(), double_str.size());
     auto status = writer.finish();
-    dest.rdbuf()->pubsync();
+    dst.rdbuf()->pubsync();
 
-    auto obtained_content = dest.str();
+    auto obtained_content = dst.str();
 
     TEST_TRUE(status.success);
     TEST_EQ(status.count, obtained_content.size());
@@ -73,8 +73,8 @@ void test_failing_to_recycle()
 {
     auto half_str = test_utils::make_half_string<CharT>();
 
-    const std::basic_ostringstream<CharT> dest;
-    strf::basic_streambuf_writer<CharT> writer(*dest.rdbuf());
+    const std::basic_ostringstream<CharT> dst;
+    strf::basic_streambuf_writer<CharT> writer(*dst.rdbuf());
 
     writer.write(half_str.begin(), half_str.size());
     writer.flush(); // first flush() works
@@ -84,9 +84,9 @@ void test_failing_to_recycle()
     writer.flush(); // this fails
 
     auto status = writer.finish();
-    dest.rdbuf()->pubsync();
+    dst.rdbuf()->pubsync();
 
-    auto obtained_content = dest.str();
+    auto obtained_content = dst.str();
 
     TEST_TRUE(! status.success);
     TEST_EQ(status.count, obtained_content.size());
@@ -102,16 +102,16 @@ void test_failing_to_call_do_write()
     auto half_str = test_utils::make_half_string<CharT>();
     auto double_str = test_utils::make_double_string<CharT>();
 
-    std::basic_ostringstream<CharT> dest;
-    strf::basic_streambuf_writer<CharT> writer(*dest.rdbuf());
+    std::basic_ostringstream<CharT> dst;
+    strf::basic_streambuf_writer<CharT> writer(*dst.rdbuf());
 
     writer.write(half_str.begin(), half_str.size());
     writer.flush(); // first flush() works
     writer.write(double_str.begin(), double_str.size());
     auto status = writer.finish();
-    dest.rdbuf()->pubsync();
+    dst.rdbuf()->pubsync();
 
-    auto obtained_content = dest.str();
+    auto obtained_content = dst.str();
 
     TEST_TRUE(! status.success);
     TEST_EQ(status.count, obtained_content.size());
@@ -129,8 +129,8 @@ void test_failing_to_finish()
     auto double_str = test_utils::make_double_string<CharT>();
     auto half_str = test_utils::make_half_string<CharT>();
 
-    const std::basic_ostringstream<CharT> dest;
-    strf::basic_streambuf_writer<CharT> writer(*dest.rdbuf());
+    const std::basic_ostringstream<CharT> dst;
+    strf::basic_streambuf_writer<CharT> writer(*dst.rdbuf());
 
     writer.write(double_str.begin(), double_str.size());
     writer.flush();
@@ -138,9 +138,9 @@ void test_failing_to_finish()
     test_utils::turn_into_bad(writer);
 
     auto status = writer.finish();
-    dest.rdbuf()->pubsync();
+    dst.rdbuf()->pubsync();
 
-    auto obtained_content = dest.str();
+    auto obtained_content = dst.str();
 
     TEST_TRUE(! status.success);
     TEST_EQ(status.count, obtained_content.size());
@@ -157,9 +157,9 @@ void basic_tests()
     auto full_str = test_utils::make_full_string<CharT>();
 
     {
-        const std::basic_ostringstream<CharT> dest;
-        strf::to(dest.rdbuf()) (half_str, full_str);
-        auto obtained_content = dest.str();
+        const std::basic_ostringstream<CharT> dst;
+        strf::to(dst.rdbuf()) (half_str, full_str);
+        auto obtained_content = dst.str();
         TEST_EQ(obtained_content.size(), half_str.size() + full_str.size());
         TEST_TRUE(0 == obtained_content.compare( 0, half_str.size()
                                                , half_str.begin()
@@ -170,9 +170,9 @@ void basic_tests()
                                                , full_str.size() ));
     }
     {
-        const std::basic_ostringstream<CharT> dest;
-        strf::to(*dest.rdbuf()) (half_str, full_str);
-        auto obtained_content = dest.str();
+        const std::basic_ostringstream<CharT> dst;
+        strf::to(*dst.rdbuf()) (half_str, full_str);
+        auto obtained_content = dst.str();
         TEST_EQ(obtained_content.size(), half_str.size() + full_str.size());
         TEST_TRUE(0 == obtained_content.compare( 0, half_str.size()
                                                , half_str.begin()

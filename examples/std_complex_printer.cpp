@@ -169,7 +169,7 @@ public:
     template <typename... T>
     explicit std_complex_printer(strf::usual_printer_input<T...> x);
 
-    void print_to(strf::destination<CharT>& dest) const override;
+    void print_to(strf::destination<CharT>& dst) const override;
 
 private:
 
@@ -230,9 +230,9 @@ void std_complex_printer<CharT, FloatT>::preprinting_(PrePrinting& pp, const Wid
 }
 
 template <typename CharT, typename FloatT>
-void std_complex_printer<CharT, FloatT>::print_to(strf::destination<CharT>& dest) const
+void std_complex_printer<CharT, FloatT>::print_to(strf::destination<CharT>& dst) const
 {
-    auto print = strf::to(dest).with(lettercase_, numpunct_, encoding_);
+    auto print = strf::to(dst).with(lettercase_, numpunct_, encoding_);
     if (form_ == complex_form::polar) {
         print(coordinates_.first, U'\u2220', static_cast<CharT>(' ') );
         print(coordinates_.second );
@@ -274,7 +274,7 @@ public:
             , x.arg.width() );
     }
 
-    void print_to(strf::destination<CharT>& dest) const override;
+    void print_to(strf::destination<CharT>& dst) const override;
 
 private:
 
@@ -286,7 +286,7 @@ private:
         , WidthCalc wcalc
         , strf::width_t fmt_width );
 
-    void print_complex_value_( strf::destination<CharT>& dest ) const;
+    void print_complex_value_( strf::destination<CharT>& dst ) const;
 
     template <typename PrePrinting, typename WidthCalc>
     void do_preprinting_without_fill_(PrePrinting& pre, WidthCalc wcalc) const;
@@ -369,26 +369,26 @@ void fmt_std_complex_printer<CharT, FloatT>::do_preprinting_without_fill_
 
 template <typename CharT, typename FloatT>
 void fmt_std_complex_printer<CharT, FloatT>::print_to
-    ( strf::destination<CharT>& dest ) const
+    ( strf::destination<CharT>& dst ) const
 {
     if (fillcount_ <= 0) {
-        print_complex_value_(dest);
+        print_complex_value_(dst);
     } else {
         switch (alignment_) {
             case strf::text_alignment::left:
-                print_complex_value_(dest);
-                encoding_.encode_fill(dest, fillcount_, fillchar_);
+                print_complex_value_(dst);
+                encoding_.encode_fill(dst, fillcount_, fillchar_);
                 break;
             case strf::text_alignment::right:
-                encoding_.encode_fill(dest, fillcount_, fillchar_);
-                print_complex_value_(dest);
+                encoding_.encode_fill(dst, fillcount_, fillchar_);
+                print_complex_value_(dst);
                 break;
             default: {
                 assert(alignment_ == strf::text_alignment::center);
                 auto halfcount = fillcount_ / 2;
-                encoding_.encode_fill(dest, halfcount, fillchar_);
-                print_complex_value_(dest);
-                encoding_.encode_fill(dest, fillcount_ - halfcount, fillchar_);
+                encoding_.encode_fill(dst, halfcount, fillchar_);
+                print_complex_value_(dst);
+                encoding_.encode_fill(dst, fillcount_ - halfcount, fillchar_);
             }
         }
     }
@@ -396,19 +396,19 @@ void fmt_std_complex_printer<CharT, FloatT>::print_to
 
 template <typename CharT, typename FloatT>
 void fmt_std_complex_printer<CharT, FloatT>::print_complex_value_
-    ( strf::destination<CharT>& dest ) const
+    ( strf::destination<CharT>& dst ) const
 {
     auto facets = strf::pack(lettercase_, numpunct10_, numpunct16_, encoding_);
     auto first_val = strf::fmt(coordinates_.first).set_float_format(float_fmt_);
     auto second_val = strf::fmt(coordinates_.second).set_float_format(float_fmt_);
     if (form_ == complex_form::polar) {
-        strf::to(dest).with(facets)
+        strf::to(dst).with(facets)
             ( first_val, U'\u2220', static_cast<CharT>(' '), second_val);
     } else {
         const char* middle_str = ( form_ == complex_form::algebric
                                  ? " + i*"
                                  : ", " );
-        strf::to(dest).with(facets)
+        strf::to(dst).with(facets)
             ( static_cast<CharT>('(')
             , first_val, strf::transcode(middle_str), second_val
             , static_cast<CharT>(')') );
@@ -623,16 +623,16 @@ void tests()
 
 int main()
 {
-    strf::narrow_cfile_writer<char, 512> test_msg_dest(stdout);
-    const test_utils::test_messages_destination_guard g(test_msg_dest);
+    strf::narrow_cfile_writer<char, 512> test_msg_dst(stdout);
+    const test_utils::test_messages_destination_guard g(test_msg_dst);
 
     tests();
 
     int err_count = test_utils::test_err_count();
     if (err_count == 0) {
-        strf::write(test_msg_dest, "All test passed!\n");
+        strf::write(test_msg_dst, "All test passed!\n");
     } else {
-        strf::to(test_msg_dest) (err_count, " tests failed!\n");
+        strf::to(test_msg_dst) (err_count, " tests failed!\n");
     }
     return err_count;
 }

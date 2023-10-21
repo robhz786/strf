@@ -13,9 +13,9 @@ STRF_TEST_FUNC void test_miscellaneous()
         // write into an destination reference
         char buff[100];
         strf::cstr_destination str_writer{buff};
-        strf::destination<char>& dest = str_writer;
+        strf::destination<char>& dst = str_writer;
 
-        strf::to(dest)
+        strf::to(dst)
             .with(strf::numpunct<10>(3))
             ("abc", ' ', strf::punct(1000000000LL));
 
@@ -33,14 +33,14 @@ STRF_TEST_FUNC void test_miscellaneous()
         TEST_CSTR_EQ(buff, "abc123\n");
     }
     {   // test discarder
-        strf::discarder<char> dest;
-        TEST_FALSE(dest.good());
-        dest.recycle();
-        TEST_TRUE(dest.buffer_space() >= strf::min_destination_buffer_size);
-        TEST_FALSE(dest.good());
+        strf::discarder<char> dst;
+        TEST_FALSE(dst.good());
+        dst.recycle();
+        TEST_TRUE(dst.buffer_space() >= strf::min_destination_buffer_size);
+        TEST_FALSE(dst.good());
         char buff[200];
-        dest.write(buff, sizeof(buff)/sizeof(buff[0]));
-        TEST_FALSE(dest.good());
+        dst.write(buff, sizeof(buff)/sizeof(buff[0]));
+        TEST_FALSE(dst.good());
     }
     {   // precalculate size
         strf::preprinting<strf::precalc_size::yes, strf::precalc_width::no> p;

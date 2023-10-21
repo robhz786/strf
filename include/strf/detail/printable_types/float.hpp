@@ -823,13 +823,13 @@ namespace detail {
 
 template <int Base, typename CharT, typename IntT>
 inline STRF_HD void write_int_with_leading_zeros
-    ( strf::destination<CharT>& dest
+    ( strf::destination<CharT>& dst
     , IntT value
     , int digcount
     , strf::lettercase lc )
 {
-    dest.ensure(digcount);
-    auto *p = dest.buffer_ptr();
+    dst.ensure(digcount);
+    auto *p = dst.buffer_ptr();
     auto *end = p + digcount;
     using writer = detail::intdigits_backwards_writer<Base>;
     auto *p2 = writer::write_txtdigits_backwards(value, end, lc);
@@ -837,12 +837,12 @@ inline STRF_HD void write_int_with_leading_zeros
     if (p != p2) {
         strf::detail::str_fill_n<CharT>(p, (p2 - p), '0');
     }
-    dest.advance_to(end);
+    dst.advance_to(end);
 }
 
 template <typename CharT>
 STRF_HD void print_amplified_integer_small_separator_1
-    ( strf::destination<CharT>& dest
+    ( strf::destination<CharT>& dst
     , std::uint64_t value
     , int num_digits
     , strf::digits_distribution dist
@@ -850,39 +850,39 @@ STRF_HD void print_amplified_integer_small_separator_1
 {
     STRF_ASSERT(num_digits <= dist.highest_group);
 
-    dest.ensure(num_digits);
-    auto *ptr = dest.buffer_ptr() + num_digits;
+    dst.ensure(num_digits);
+    auto *ptr = dst.buffer_ptr() + num_digits;
     strf::detail::write_int_dec_txtdigits_backwards(value, ptr);
-    dest.advance_to(ptr);
+    dst.advance_to(ptr);
     dist.highest_group -= num_digits;
-    strf::detail::write_fill(dest, dist.highest_group, (CharT)'0');
+    strf::detail::write_fill(dst, dist.highest_group, (CharT)'0');
     if (dist.middle_groups_count) {
         auto middle_groups = dist.low_groups.highest_group();
         STRF_ASSERT(middle_groups >= 0);
         dist.low_groups.pop_high();
         do {
-            dest.ensure(middle_groups + 1);
-            auto *oit = dest.buffer_ptr();
+            dst.ensure(middle_groups + 1);
+            auto *oit = dst.buffer_ptr();
             *oit = separator;
             strf::detail::str_fill_n<CharT>(++oit, detail::cast_unsigned(middle_groups), '0');
-            dest.advance_to(oit + middle_groups);
+            dst.advance_to(oit + middle_groups);
         } while (--dist.middle_groups_count);
     }
     while ( ! dist.low_groups.empty()) {
         auto grp = dist.low_groups.highest_group();
         STRF_ASSERT(grp >= 0);
-        dest.ensure(grp + 1);
-        auto *oit = dest.buffer_ptr();
+        dst.ensure(grp + 1);
+        auto *oit = dst.buffer_ptr();
         *oit = separator;
         strf::detail::str_fill_n<CharT>(++oit, detail::cast_unsigned(grp), '0');
-        dest.advance_to(oit + grp);
+        dst.advance_to(oit + grp);
         dist.low_groups.pop_high();
     }
 }
 
 template <typename CharT>
 STRF_HD void print_amplified_integer_small_separator_2
-    ( strf::destination<CharT>& dest
+    ( strf::destination<CharT>& dst
     , std::uint64_t value
     , int num_digits
     , strf::digits_distribution dist
@@ -900,22 +900,22 @@ STRF_HD void print_amplified_integer_small_separator_2
 
     int grp_size = 0;
 
-    dest.ensure(dist.highest_group);
-    strf::detail::copy_n(digits, detail::cast_unsigned(dist.highest_group), dest.buffer_ptr());
+    dst.ensure(dist.highest_group);
+    strf::detail::copy_n(digits, detail::cast_unsigned(dist.highest_group), dst.buffer_ptr());
     num_digits -= dist.highest_group;
     digits += dist.highest_group;
-    dest.advance(dist.highest_group);
+    dst.advance(dist.highest_group);
 
     if (dist.middle_groups_count) {
         const auto middle_groups = dist.low_groups.highest_group();
         STRF_ASSERT(middle_groups >= 0);
         dist.low_groups.pop_high();
         while (num_digits >= middle_groups) {
-            dest.ensure(1 + middle_groups);
-            auto *oit = dest.buffer_ptr();
+            dst.ensure(1 + middle_groups);
+            auto *oit = dst.buffer_ptr();
             *oit = separator;
             strf::detail::copy_n(digits, detail::cast_unsigned(middle_groups), oit + 1);
-            dest.advance(1 + middle_groups);
+            dst.advance(1 + middle_groups);
             num_digits -= middle_groups;
             digits += middle_groups;
             if (--dist.middle_groups_count == 0) {
@@ -925,20 +925,20 @@ STRF_HD void print_amplified_integer_small_separator_2
         STRF_ASSERT(dist.middle_groups_count != 0);
         STRF_ASSERT(num_digits < middle_groups);
         if (num_digits > 0) {
-            dest.ensure(1 + num_digits);
-            auto *oit = dest.buffer_ptr();
+            dst.ensure(1 + num_digits);
+            auto *oit = dst.buffer_ptr();
             *oit = separator;
             strf::detail::copy_n(digits, detail::cast_unsigned(num_digits), oit + 1);
-            dest.advance(1 + num_digits);
+            dst.advance(1 + num_digits);
             auto remaining = middle_groups - num_digits;
             num_digits = 0;
-            strf::detail::write_fill(dest, remaining, (CharT)'0');
+            strf::detail::write_fill(dst, remaining, (CharT)'0');
             -- dist.middle_groups_count;
         }
         STRF_ASSERT(num_digits == 0);
         while (dist.middle_groups_count) {
-            strf::put(dest, separator);
-            strf::detail::write_fill(dest, middle_groups, (CharT)'0');
+            strf::put(dst, separator);
+            strf::detail::write_fill(dst, middle_groups, (CharT)'0');
             -- dist.middle_groups_count;
         }
         STRF_ASSERT(dist.middle_groups_count == 0);
@@ -953,30 +953,30 @@ STRF_HD void print_amplified_integer_small_separator_2
         while (num_digits > grp_size) {
             STRF_ASSERT(! dist.low_groups.empty());
             STRF_ASSERT(grp_size + 1 <= size_after_recycle);
-            dest.ensure(grp_size + 1);
-            auto *oit = dest.buffer_ptr();
+            dst.ensure(grp_size + 1);
+            auto *oit = dst.buffer_ptr();
             *oit = separator;
             strf::detail::copy_n(digits, detail::cast_unsigned(grp_size), oit + 1);
             digits += grp_size;
-            dest.advance(grp_size + 1);
+            dst.advance(grp_size + 1);
             num_digits -= grp_size;
             grp_size = dist.low_groups.highest_group();
             dist.low_groups.pop_high();
         }
         STRF_ASSERT(num_digits != 0);
         STRF_ASSERT(num_digits + 1 <= size_after_recycle);
-        dest.ensure(num_digits + 1);
-        auto *oit = dest.buffer_ptr();
+        dst.ensure(num_digits + 1);
+        auto *oit = dst.buffer_ptr();
         *oit = separator;
         strf::detail::copy_n(digits, detail::cast_unsigned(num_digits), oit + 1);
-        dest.advance(num_digits + 1);
+        dst.advance(num_digits + 1);
         if (grp_size > num_digits) {
             grp_size -= num_digits;
             STRF_ASSERT(grp_size <= size_after_recycle);
-            dest.ensure(grp_size + (num_digits == 0));
-            oit = dest.buffer_ptr();
+            dst.ensure(grp_size + (num_digits == 0));
+            oit = dst.buffer_ptr();
             strf::detail::str_fill_n<CharT>(oit, detail::cast_unsigned(grp_size), '0');
-            dest.advance_to(oit + grp_size);
+            dst.advance_to(oit + grp_size);
         }
     }
     lower_groups_in_trailing_zeros:
@@ -984,18 +984,18 @@ STRF_HD void print_amplified_integer_small_separator_2
         grp_size = dist.low_groups.highest_group();
         dist.low_groups.pop_high();
         STRF_ASSERT(grp_size + 1 <= size_after_recycle);
-        dest.ensure(grp_size + 1);
-        auto *it = dest.buffer_ptr();
+        dst.ensure(grp_size + 1);
+        auto *it = dst.buffer_ptr();
         *it = separator;
         strf::detail::str_fill_n<CharT>(it + 1, detail::cast_unsigned(grp_size), '0');
-        dest.advance(grp_size + 1);
+        dst.advance(grp_size + 1);
     }
 }
 
 
 template <typename CharT>
 inline STRF_HD void print_amplified_integer_small_separator
-    ( strf::destination<CharT>& dest
+    ( strf::destination<CharT>& dst
     , std::uint64_t value
     , strf::digits_grouping grouping
     , int num_digits
@@ -1005,16 +1005,16 @@ inline STRF_HD void print_amplified_integer_small_separator
     auto dist = grouping.distribute(num_digits + num_trailing_zeros);
     if (num_digits <= dist.highest_group) {
         print_amplified_integer_small_separator_1
-            ( dest, value, num_digits, dist, separator );
+            ( dst, value, num_digits, dist, separator );
     } else {
         print_amplified_integer_small_separator_2
-            ( dest, value, num_digits, dist, separator );
+            ( dst, value, num_digits, dist, separator );
     }
 }
 
 template <typename CharT>
 STRF_HD void print_amplified_integer_big_separator_1
-    ( strf::destination<CharT>& dest
+    ( strf::destination<CharT>& dst
     , strf::encode_char_f<CharT> encode_char
     , std::uint64_t value
     , int num_digits
@@ -1024,35 +1024,35 @@ STRF_HD void print_amplified_integer_big_separator_1
 {
     STRF_ASSERT(num_digits <= dist.highest_group);
 
-    dest.ensure(num_digits);
-    auto *ptr = dest.buffer_ptr() + num_digits;
+    dst.ensure(num_digits);
+    auto *ptr = dst.buffer_ptr() + num_digits;
     strf::detail::write_int_dec_txtdigits_backwards(value, ptr);
-    dest.advance_to(ptr);
+    dst.advance_to(ptr);
     dist.highest_group -= num_digits;
-    strf::detail::write_fill(dest, dist.highest_group, (CharT)'0');
+    strf::detail::write_fill(dst, dist.highest_group, (CharT)'0');
     if (dist.middle_groups_count) {
         auto middle_groups = dist.low_groups.highest_group();
         dist.low_groups.pop_high();
         do {
-            dest.ensure(separator_size + middle_groups);
-            auto *oit = encode_char(dest.buffer_ptr(), separator);
+            dst.ensure(separator_size + middle_groups);
+            auto *oit = encode_char(dst.buffer_ptr(), separator);
             strf::detail::str_fill_n<CharT>(oit, detail::cast_unsigned(middle_groups), '0');
-            dest.advance_to(oit + middle_groups);
+            dst.advance_to(oit + middle_groups);
         } while (--dist.middle_groups_count);
     }
     while ( ! dist.low_groups.empty()) {
         auto grp = dist.low_groups.highest_group();
         dist.low_groups.pop_high();
-        dest.ensure(separator_size + grp);
-        auto *oit = encode_char(dest.buffer_ptr(), separator);
+        dst.ensure(separator_size + grp);
+        auto *oit = encode_char(dst.buffer_ptr(), separator);
         strf::detail::str_fill_n<CharT>(oit, detail::cast_unsigned(grp), '0');
-        dest.advance(separator_size + grp);
+        dst.advance(separator_size + grp);
     }
 }
 
 template <typename CharT>
 STRF_HD void print_amplified_integer_big_separator_2
-    ( strf::destination<CharT>& dest
+    ( strf::destination<CharT>& dst
     , strf::encode_char_f<CharT> encode_char
     , std::uint64_t value
     , int num_digits
@@ -1072,20 +1072,20 @@ STRF_HD void print_amplified_integer_big_separator_2
 
     int grp_size = 0;
 
-    dest.ensure(dist.highest_group);
-    strf::detail::copy_n(digits, detail::cast_unsigned(dist.highest_group), dest.buffer_ptr());
+    dst.ensure(dist.highest_group);
+    strf::detail::copy_n(digits, detail::cast_unsigned(dist.highest_group), dst.buffer_ptr());
     num_digits -= dist.highest_group;
     digits += dist.highest_group;
-    dest.advance(dist.highest_group);
+    dst.advance(dist.highest_group);
 
     if (dist.middle_groups_count) {
         auto middle_groups = dist.low_groups.highest_group();
         dist.low_groups.pop_high();
         while (num_digits >= middle_groups) {
-            dest.ensure(separator_size + middle_groups);
-            auto *oit = encode_char(dest.buffer_ptr(), separator);
+            dst.ensure(separator_size + middle_groups);
+            auto *oit = encode_char(dst.buffer_ptr(), separator);
             strf::detail::copy_n(digits, detail::cast_unsigned(middle_groups), oit);
-            dest.advance_to(oit + middle_groups);
+            dst.advance_to(oit + middle_groups);
             num_digits -= middle_groups;
             digits += middle_groups;
             if (--dist.middle_groups_count == 0) {
@@ -1095,21 +1095,21 @@ STRF_HD void print_amplified_integer_big_separator_2
         STRF_ASSERT(dist.middle_groups_count != 0);
         STRF_ASSERT(num_digits < middle_groups);
         if (num_digits > 0) {
-            dest.ensure(separator_size + middle_groups);
+            dst.ensure(separator_size + middle_groups);
             const auto remaining = middle_groups - num_digits;
-            auto *oit = encode_char(dest.buffer_ptr(), separator);
+            auto *oit = encode_char(dst.buffer_ptr(), separator);
             strf::detail::copy_n(digits, detail::cast_unsigned(num_digits), oit);
             strf::detail::str_fill_n<CharT>(oit + num_digits, detail::cast_unsigned(remaining), '0');
-            dest.advance_to(oit + middle_groups);
+            dst.advance_to(oit + middle_groups);
             num_digits = 0;
             --dist.middle_groups_count;
         }
         STRF_ASSERT(num_digits == 0);
         while (dist.middle_groups_count) {
-            dest.ensure(separator_size + middle_groups);
-            auto *oit = encode_char(dest.buffer_ptr(), separator);
+            dst.ensure(separator_size + middle_groups);
+            auto *oit = encode_char(dst.buffer_ptr(), separator);
             strf::detail::str_fill_n<CharT>(oit, detail::cast_unsigned(middle_groups), '0');
-            dest.advance_to(oit + middle_groups);
+            dst.advance_to(oit + middle_groups);
             -- dist.middle_groups_count;
         }
         STRF_ASSERT(dist.middle_groups_count == 0);
@@ -1125,27 +1125,27 @@ STRF_HD void print_amplified_integer_big_separator_2
             STRF_ASSERT(! dist.low_groups.empty());
             // `-> otherwise (num_digits > grp_size) should be false
             STRF_ASSERT(grp_size + separator_size <= size_after_recycle);
-            dest.ensure(separator_size + grp_size);
-            auto *oit = encode_char(dest.buffer_ptr(), separator);
+            dst.ensure(separator_size + grp_size);
+            auto *oit = encode_char(dst.buffer_ptr(), separator);
             strf::detail::copy_n(digits, detail::cast_unsigned(grp_size), oit);
-            dest.advance_to(oit + grp_size);
+            dst.advance_to(oit + grp_size);
             digits += grp_size;
             num_digits -= grp_size;
             grp_size = dist.low_groups.highest_group();
             dist.low_groups.pop_high();
         }
         STRF_ASSERT(num_digits + separator_size <= size_after_recycle);
-        dest.ensure(separator_size + num_digits);
-        auto *oit = encode_char(dest.buffer_ptr(), separator);
+        dst.ensure(separator_size + num_digits);
+        auto *oit = encode_char(dst.buffer_ptr(), separator);
         strf::detail::copy_n(digits, detail::cast_unsigned(num_digits), oit);
-        dest.advance_to(oit + num_digits);
+        dst.advance_to(oit + num_digits);
         if (grp_size > num_digits) {
             grp_size -= num_digits;
             STRF_ASSERT(grp_size <= size_after_recycle);
-            dest.ensure(grp_size);
-            oit = dest.buffer_ptr();
+            dst.ensure(grp_size);
+            oit = dst.buffer_ptr();
             strf::detail::str_fill_n<CharT>(oit, detail::cast_unsigned(grp_size), '0');
-            dest.advance_to(oit + grp_size);
+            dst.advance_to(oit + grp_size);
         }
     }
     lower_groups_in_trailing_zeros:
@@ -1153,16 +1153,16 @@ STRF_HD void print_amplified_integer_big_separator_2
         grp_size = dist.low_groups.highest_group();
         dist.low_groups.pop_high();
         STRF_ASSERT(separator_size + grp_size <= size_after_recycle);
-        dest.ensure(separator_size + grp_size);
-        auto *oit = encode_char(dest.buffer_ptr(), separator);
+        dst.ensure(separator_size + grp_size);
+        auto *oit = encode_char(dst.buffer_ptr(), separator);
         strf::detail::str_fill_n<CharT>(oit, detail::cast_unsigned(grp_size), '0');
-        dest.advance_to(oit + grp_size);
+        dst.advance_to(oit + grp_size);
     }
 }
 
 template <typename CharT>
 STRF_HD void print_amplified_integer_big_separator
-    ( strf::destination<CharT>& dest
+    ( strf::destination<CharT>& dst
     , strf::encode_char_f<CharT> encode_char
     , std::uint64_t value
     , strf::digits_grouping grouping
@@ -1174,16 +1174,16 @@ STRF_HD void print_amplified_integer_big_separator
     auto dist = grouping.distribute(num_digits + num_trailing_zeros);
     if (num_digits <= dist.highest_group) {
         print_amplified_integer_big_separator_1
-            ( dest, encode_char, value, num_digits, dist, separator, separator_size );
+            ( dst, encode_char, value, num_digits, dist, separator, separator_size );
     } else {
         print_amplified_integer_big_separator_2
-            ( dest, encode_char, value, num_digits, dist, separator, separator_size );
+            ( dst, encode_char, value, num_digits, dist, separator, separator_size );
     }
 }
 
 template <typename CharT>
 STRF_HD void print_scientific_notation
-    ( strf::destination<CharT>& dest
+    ( strf::destination<CharT>& dst
     , strf::encode_char_f<CharT> encode_char
     , std::uint64_t digits
     , int num_digits
@@ -1196,9 +1196,9 @@ STRF_HD void print_scientific_notation
 {
     // digits
     print_point |= num_digits != 1;
-    dest.ensure(num_digits + print_point * decimal_point_size);
+    dst.ensure(num_digits + print_point * decimal_point_size);
     if (num_digits == 1) {
-        auto *it = dest.buffer_ptr();
+        auto *it = dst.buffer_ptr();
         *it = static_cast<CharT>('0' + digits);
         ++it;
         if (print_point) {
@@ -1208,9 +1208,9 @@ STRF_HD void print_scientific_notation
                 it = encode_char(it, decimal_point);
             }
         }
-        dest.advance_to(it);
+        dst.advance_to(it);
     } else {
-       auto *it = dest.buffer_ptr();
+       auto *it = dst.buffer_ptr();
        auto *end = it + num_digits + decimal_point_size;
        *it = *write_int_dec_txtdigits_backwards(digits, end);
        ++it;
@@ -1219,11 +1219,11 @@ STRF_HD void print_scientific_notation
        } else {
            encode_char(it, decimal_point);
        }
-       dest.advance_to(end);
+       dst.advance_to(end);
     }
 
     // extra trailing zeros
-    strf::detail::write_fill(dest, trailing_zeros, CharT('0'));
+    strf::detail::write_fill(dst, trailing_zeros, CharT('0'));
 
     // exponent
 
@@ -1233,34 +1233,34 @@ STRF_HD void print_scientific_notation
     STRF_ASSERT(abs_e10 < 1000);
 
     if (abs_e10 >= 100) {
-        dest.ensure(5);
-        it = dest.buffer_ptr();
+        dst.ensure(5);
+        it = dst.buffer_ptr();
         it[4] = static_cast<CharT>('0' + abs_e10 % 10);
         abs_e10 /= 10;
         it[3] = static_cast<CharT>('0' + abs_e10 % 10);
         it[2] = static_cast<CharT>('0' + abs_e10 / 10);
         adv = 5;
     } else if (abs_e10 >= 10) {
-        dest.ensure(4);
-        it = dest.buffer_ptr();
+        dst.ensure(4);
+        it = dst.buffer_ptr();
         it[3] = static_cast<CharT>('0' + abs_e10 % 10);
         it[2] = static_cast<CharT>('0' + abs_e10 / 10);
     } else {
-        dest.ensure(4);
-        it = dest.buffer_ptr();
+        dst.ensure(4);
+        it = dst.buffer_ptr();
         it[3] = static_cast<CharT>('0' + abs_e10);
         it[2] = '0';
     }
     it[0] = static_cast<CharT>('E' | ((lc != strf::uppercase) << 5));
     it[1] = static_cast<CharT>('+' + ((exponent < 0) << 1));
-    dest.advance(adv);
+    dst.advance(adv);
 }
 
 template <typename CharT>
-STRF_HD void print_nan(strf::destination<CharT>& dest, strf::lettercase lc)
+STRF_HD void print_nan(strf::destination<CharT>& dst, strf::lettercase lc)
 {
-    dest.ensure(3);
-    auto *p = dest.buffer_ptr();
+    dst.ensure(3);
+    auto *p = dst.buffer_ptr();
     switch (lc) {
         case strf::mixedcase:
             p[0] = 'N';
@@ -1277,15 +1277,15 @@ STRF_HD void print_nan(strf::destination<CharT>& dest, strf::lettercase lc)
             p[1] = 'a';
             p[2] = 'n';
     }
-    dest.advance(3);
+    dst.advance(3);
 
 }
 template <typename CharT>
-STRF_HD void print_nan(strf::destination<CharT>& dest, strf::lettercase lc
+STRF_HD void print_nan(strf::destination<CharT>& dst, strf::lettercase lc
                       , bool negative )
 {
-    dest.ensure(3 + negative);
-    auto *p = dest.buffer_ptr();
+    dst.ensure(3 + negative);
+    auto *p = dst.buffer_ptr();
     if (negative) {
         *p ++ = '-';
     }
@@ -1305,14 +1305,14 @@ STRF_HD void print_nan(strf::destination<CharT>& dest, strf::lettercase lc
             *p++ = 'a';
             *p++ = 'n';
     }
-    dest.advance_to(p);
+    dst.advance_to(p);
 }
 
 template <typename CharT>
-STRF_HD void print_inf(strf::destination<CharT>& dest, strf::lettercase lc)
+STRF_HD void print_inf(strf::destination<CharT>& dst, strf::lettercase lc)
 {
-    dest.ensure(3);
-    auto *p = dest.buffer_ptr();
+    dst.ensure(3);
+    auto *p = dst.buffer_ptr();
     switch (lc) {
         case strf::mixedcase:
             p[0] = 'I';
@@ -1329,16 +1329,16 @@ STRF_HD void print_inf(strf::destination<CharT>& dest, strf::lettercase lc)
             p[1] = 'n';
             p[2] = 'f';
     }
-    dest.advance(3);
+    dst.advance(3);
 }
 
 template <typename CharT>
-STRF_HD void print_inf( strf::destination<CharT>& dest
+STRF_HD void print_inf( strf::destination<CharT>& dst
                       , strf::lettercase lc
                       , bool negative )
 {
-    dest.ensure(3 + negative);
-    auto *p = dest.buffer_ptr();
+    dst.ensure(3 + negative);
+    auto *p = dst.buffer_ptr();
     if (negative) {
         *p ++ = '-';
     }
@@ -1358,7 +1358,7 @@ STRF_HD void print_inf( strf::destination<CharT>& dest
             *p++ = 'n';
             *p++ = 'f';
     }
-    dest.advance_to(p);
+    dst.advance_to(p);
 }
 
 template <typename CharT>
@@ -1434,17 +1434,17 @@ STRF_HD int fast_double_printer<CharT>::size() const
 
 template <typename CharT>
 STRF_HD void fast_double_printer<CharT>::print_to
-    ( strf::destination<CharT>& dest ) const
+    ( strf::destination<CharT>& dst ) const
 {
     if (value_.nan) {
-        strf::detail::print_nan(dest, lettercase_, value_.negative);
+        strf::detail::print_nan(dst, lettercase_, value_.negative);
     } else if (value_.infinity) {
-        strf::detail::print_inf(dest, lettercase_, value_.negative);
+        strf::detail::print_inf(dst, lettercase_, value_.negative);
     } else if (sci_notation_) {
         auto e10 = value_.e10 - 1 + (int)m10_digcount_;
-        dest.ensure( value_.negative + m10_digcount_ + (m10_digcount_ != 1) + 4
+        dst.ensure( value_.negative + m10_digcount_ + (m10_digcount_ != 1) + 4
                  + (e10 > 99 || e10 < -99) );
-        CharT* it = dest.buffer_ptr();
+        CharT* it = dst.buffer_ptr();
         if (value_.negative) {
             * it = '-';
             ++it;
@@ -1477,13 +1477,13 @@ STRF_HD void fast_double_printer<CharT>::print_to
             it[2] = '0';
             it += 4;
         }
-        dest.advance_to(it);
+        dst.advance_to(it);
     } else {
-        dest.ensure( value_.negative
+        dst.ensure( value_.negative
                  + m10_digcount_ * (value_.e10 > - (int)m10_digcount_)
                  + (value_.e10 < - (int)m10_digcount_)
                  + (value_.e10 < 0) );
-        auto *it = dest.buffer_ptr();
+        auto *it = dst.buffer_ptr();
         if (value_.negative) {
             *it = '-';
             ++it;
@@ -1491,20 +1491,20 @@ STRF_HD void fast_double_printer<CharT>::print_to
         if (value_.e10 >= 0) {
             it += m10_digcount_;
             write_int_dec_txtdigits_backwards(value_.m10, it);
-            dest.advance_to(it);
-            detail::write_fill(dest, value_.e10, (CharT)'0');
+            dst.advance_to(it);
+            detail::write_fill(dst, value_.e10, (CharT)'0');
         } else {
             int abs_e10 = - value_.e10;
             if (abs_e10 >= m10_digcount_) {
                 it[0] = '0';
                 it[1] = '.';
-                dest.advance_to(it + 2);
-                detail::write_fill(dest, abs_e10 - m10_digcount_, (CharT)'0');
+                dst.advance_to(it + 2);
+                detail::write_fill(dst, abs_e10 - m10_digcount_, (CharT)'0');
 
-                dest.ensure(m10_digcount_);
-                auto *end = dest.buffer_ptr() + m10_digcount_;
+                dst.ensure(m10_digcount_);
+                auto *end = dst.buffer_ptr() + m10_digcount_;
                 write_int_dec_txtdigits_backwards(value_.m10, end);
-                dest.advance_to(end);
+                dst.advance_to(end);
             } else {
                 const char* const arr = strf::detail::chars_00_to_99();
                 auto m = value_.m10;
@@ -1537,7 +1537,7 @@ STRF_HD void fast_double_printer<CharT>::print_to
                 } else {
                     *--it = static_cast<CharT>('0' + m);
                 }
-                dest.advance_to(end);
+                dst.advance_to(end);
             }
         }
     }
@@ -2410,16 +2410,16 @@ public:
 private:
 
     STRF_HD void print_fixed_
-        ( strf::destination<CharT>& dest ) const noexcept;
+        ( strf::destination<CharT>& dst ) const noexcept;
 
     STRF_HD void print_scientific_
-        ( strf::destination<CharT>& dest ) const noexcept;
+        ( strf::destination<CharT>& dst ) const noexcept;
 
     STRF_HD void print_hexadecimal_
-        ( strf::destination<CharT>& dest ) const noexcept;
+        ( strf::destination<CharT>& dst ) const noexcept;
 
     STRF_HD void print_inf_or_nan_
-        ( strf::destination<CharT>& dest ) const noexcept;
+        ( strf::destination<CharT>& dst ) const noexcept;
 
     strf::encode_char_f<CharT> encode_char_ = nullptr;
     strf::encode_fill_f<CharT> encode_fill_;
@@ -2434,71 +2434,71 @@ private:
 
 template <typename CharT>
 STRF_HD void punct_double_printer<CharT>::print_to
-    (strf::destination<CharT>& dest) const
+    (strf::destination<CharT>& dst) const
 {
     if (data_.left_fillcount > 0) {
-        encode_fill_(dest, data_.left_fillcount, data_.fillchar);
+        encode_fill_(dst, data_.left_fillcount, data_.fillchar);
     }
     switch (data_.form) {
         case detail::float_form::fixed:
-            print_fixed_(dest);
+            print_fixed_(dst);
             break;
         case detail::float_form::sci:
-            print_scientific_(dest);
+            print_scientific_(dst);
             break;
         case detail::float_form::hex:
-            print_hexadecimal_(dest);
+            print_hexadecimal_(dst);
             break;
         default:
-            print_inf_or_nan_(dest);
+            print_inf_or_nan_(dst);
     }
     if (data_.right_fillcount > 0) {
-        encode_fill_(dest, data_.right_fillcount, data_.fillchar);
+        encode_fill_(dst, data_.right_fillcount, data_.fillchar);
     }
 }
 
 template <typename CharT>
 STRF_HD void punct_double_printer<CharT>::print_fixed_
-    ( strf::destination<CharT>& dest ) const noexcept
+    ( strf::destination<CharT>& dst ) const noexcept
 {
     if (data_.showsign) {
-        put(dest, static_cast<CharT>(data_.sign));
+        put(dst, static_cast<CharT>(data_.sign));
     }
     if (data_.pad0width > data_.sub_chars_count) {
         auto count = data_.pad0width - data_.sub_chars_count;
-        strf::detail::write_fill(dest, count, (CharT)'0');
+        strf::detail::write_fill(dst, count, (CharT)'0');
     }
     if (data_.e10 >= 0) {
         if (data_.sep_count == 0) {
-            strf::detail::write_int<10>( dest, data_.m10, data_.m10_digcount
+            strf::detail::write_int<10>( dst, data_.m10, data_.m10_digcount
                                        , strf::lowercase );
-            strf::detail::write_fill(dest, data_.e10, (CharT)'0');
+            strf::detail::write_fill(dst, data_.e10, (CharT)'0');
         } else if (sep_size_ == 1) {
             strf::detail::print_amplified_integer_small_separator
-                ( dest, data_.m10, grouping_, data_.m10_digcount, data_.e10
+                ( dst, data_.m10, grouping_, data_.m10_digcount, data_.e10
                 , static_cast<CharT>(thousands_sep_) );
         } else {
             strf::detail::print_amplified_integer_big_separator
-                ( dest, encode_char_, data_.m10, grouping_, data_.m10_digcount
+                ( dst, encode_char_, data_.m10, grouping_, data_.m10_digcount
                 , data_.e10, sep_size_, thousands_sep_ );
         }
         if (data_.showpoint) {
-            dest.ensure(decimal_point_size_);
+            dst.ensure(decimal_point_size_);
             if (decimal_point_ < 0x80) {
-                *dest.buffer_ptr() = static_cast<CharT>(decimal_point_);
-                dest.advance();
+                *dst.buffer_ptr() = static_cast<CharT>(decimal_point_);
+                dst.advance();
             } else {
-                dest.advance_to(encode_char_(dest.buffer_ptr(), decimal_point_));
+                dst.advance_to(encode_char_(dst.buffer_ptr(), decimal_point_));
             }
         }
-        detail::write_fill(dest, data_.extra_zeros,  (CharT)'0');
+        detail::write_fill(dst, data_.extra_zeros,  (CharT)'0');
     } else {
         STRF_ASSERT(data_.e10 < 0);
 
         const detail::chars_count_t abs_e10 = - data_.e10;
         if (abs_e10 >= data_.m10_digcount) {
-            dest.ensure(1 + decimal_point_size_);
-            auto *it = dest.buffer_ptr();
+            dst.ensure(1 + decimal_point_size_);
+            auto *it = dst.buffer_ptr();
             *it++ = static_cast<CharT>('0');
             if (decimal_point_ < 0x80) {
                 *it++ = static_cast<CharT>(decimal_point_);
@@ -2506,12 +2506,12 @@ STRF_HD void punct_double_printer<CharT>::print_fixed_
                 STRF_ASSERT(decimal_point_size_ != 0);
                 it = encode_char_(it, decimal_point_);
             }
-            dest.advance_to(it);
+            dst.advance_to(it);
 
-            strf::detail::write_fill(dest, abs_e10 - data_.m10_digcount, (CharT)'0');
-            strf::detail::write_int<10>( dest, data_.m10, data_.m10_digcount
+            strf::detail::write_fill(dst, abs_e10 - data_.m10_digcount, (CharT)'0');
+            strf::detail::write_int<10>( dst, data_.m10, data_.m10_digcount
                                        , strf::lowercase);
-            strf::detail::write_fill(dest, data_.extra_zeros,  (CharT)'0');
+            strf::detail::write_fill(dst, data_.extra_zeros,  (CharT)'0');
         } else {
             //auto v = std::lldiv(data_.m10, detail::pow10(abs_e10)); // todo test this
             auto p10 = strf::detail::pow10(abs_e10);
@@ -2522,7 +2522,7 @@ STRF_HD void punct_double_printer<CharT>::print_fixed_
             STRF_ASSERT(idigcount == detail::count_digits<10>(integral_part));
 
             if (data_.sep_count == 0) {
-                strf::detail::write_int<10>(dest, integral_part, idigcount, strf::lowercase);
+                strf::detail::write_int<10>(dst, integral_part, idigcount, strf::lowercase);
             } else if (sep_size_ == 1) {
                 CharT sep;
                 if (thousands_sep_ < 0x80) {
@@ -2531,41 +2531,41 @@ STRF_HD void punct_double_printer<CharT>::print_fixed_
                     encode_char_(&sep, thousands_sep_);
                 }
                 strf::detail::write_int_little_sep<10>
-                    ( dest, integral_part, grouping_, idigcount, data_.sep_count, sep );
+                    ( dst, integral_part, grouping_, idigcount, data_.sep_count, sep );
             } else {
                 strf::detail::write_int_big_sep<10>
-                    ( dest, encode_char_, integral_part, grouping_, thousands_sep_
+                    ( dst, encode_char_, integral_part, grouping_, thousands_sep_
                     , sep_size_, idigcount );
             }
 
-            dest.ensure(decimal_point_size_);
-            auto *it = dest.buffer_ptr();
+            dst.ensure(decimal_point_size_);
+            auto *it = dst.buffer_ptr();
             if (decimal_point_ < 0x80) {
                 *it++ = static_cast<CharT>(decimal_point_);
             } else {
                 STRF_ASSERT(decimal_point_size_ != 0);
                 it = encode_char_(it, decimal_point_);
             }
-            dest.advance_to(it);
+            dst.advance_to(it);
 
             strf::detail::write_int_with_leading_zeros<10>
-                (dest, fractional_part, abs_e10, strf::lowercase);
-            detail::write_fill(dest, data_.extra_zeros,  (CharT)'0');
+                (dst, fractional_part, abs_e10, strf::lowercase);
+            detail::write_fill(dst, data_.extra_zeros,  (CharT)'0');
         }
     }
 }
 
 template <typename CharT>
 STRF_HD void punct_double_printer<CharT>::print_scientific_
-    ( strf::destination<CharT>& dest ) const noexcept
+    ( strf::destination<CharT>& dst ) const noexcept
 {
     if (data_.showsign) {
-        put(dest, static_cast<CharT>(data_.sign));
+        put(dst, static_cast<CharT>(data_.sign));
     }
     auto zeros_count = data_.pad0width - data_.sub_chars_count;
-    strf::detail::write_fill(dest, zeros_count, (CharT)'0');
+    strf::detail::write_fill(dst, zeros_count, (CharT)'0');
     strf::detail::print_scientific_notation
-        ( dest, encode_char_, data_.m10, data_.m10_digcount
+        ( dst, encode_char_, data_.m10, data_.m10_digcount
         , decimal_point_, decimal_point_size_
         , data_.e10 + data_.m10_digcount - 1
         , data_.showpoint, data_.extra_zeros, lettercase_ );
@@ -2573,11 +2573,11 @@ STRF_HD void punct_double_printer<CharT>::print_scientific_
 
 template <typename CharT>
 STRF_HD void punct_double_printer<CharT>::print_hexadecimal_
-    ( strf::destination<CharT>& dest ) const noexcept
+    ( strf::destination<CharT>& dst ) const noexcept
 {
     const auto sub_size = data_.sub_chars_count + decimal_point_size_ - data_.showpoint;
-    dest.ensure(data_.sub_chars_count);
-    auto *it = dest.buffer_ptr();
+    dst.ensure(data_.sub_chars_count);
+    auto *it = dst.buffer_ptr();
     if (data_.showsign)  {
         *it++ = static_cast<CharT>(data_.sign);
     }
@@ -2585,10 +2585,10 @@ STRF_HD void punct_double_printer<CharT>::print_hexadecimal_
     *it++ = static_cast<CharT>('X' | ((lettercase_ != strf::uppercase) << 5));
     auto content_width = data_.sub_chars_count + data_.extra_zeros;
     if (data_.pad0width > content_width) {
-        dest.advance_to(it);
-        strf::detail::write_fill(dest, data_.pad0width - content_width, (CharT)'0');
-        dest.ensure(sub_size - 2 - data_.showsign);
-        it = dest.buffer_ptr();
+        dst.advance_to(it);
+        strf::detail::write_fill(dst, data_.pad0width - content_width, (CharT)'0');
+        dst.ensure(sub_size - 2 - data_.showsign);
+        it = dst.buffer_ptr();
     }
     *it ++ = static_cast<CharT>(0x30 | int(!data_.subnormal)); // '0' or  '1'
     if (data_.showpoint) {
@@ -2623,30 +2623,30 @@ STRF_HD void punct_double_printer<CharT>::print_hexadecimal_
         }
     }
     if (data_.extra_zeros) {
-        dest.advance_to(it);
-        detail::write_fill(dest, data_.extra_zeros,  (CharT)'0');
-        dest.ensure(2 + data_.exponent_digcount);
-        it = dest.buffer_ptr();
+        dst.advance_to(it);
+        detail::write_fill(dst, data_.extra_zeros,  (CharT)'0');
+        dst.ensure(2 + data_.exponent_digcount);
+        it = dst.buffer_ptr();
     }
     it[0] = static_cast<CharT>('P' | ((lettercase_ != strf::uppercase) << 5));
     it[1] = static_cast<CharT>('+' + ((data_.exponent < 0) << 1));
     it += 2 + data_.exponent_digcount;
     strf::detail::write_int_dec_txtdigits_backwards
         ( strf::detail::unsigned_abs(data_.exponent), it );
-    dest.advance_to(it);
+    dst.advance_to(it);
 }
 
 template <typename CharT>
 STRF_HD void punct_double_printer<CharT>::print_inf_or_nan_
-    ( strf::destination<CharT>& dest ) const noexcept
+    ( strf::destination<CharT>& dst ) const noexcept
 {
     if (data_.showsign) {
-        put(dest, static_cast<CharT>(data_.sign));
+        put(dst, static_cast<CharT>(data_.sign));
     }
     if (data_.form == detail::float_form::nan) {
-        strf::detail::print_nan(dest, lettercase_);
+        strf::detail::print_nan(dst, lettercase_);
     } else {
-        strf::detail::print_inf(dest, lettercase_);
+        strf::detail::print_inf(dst, lettercase_);
     }
 }
 
