@@ -168,8 +168,9 @@ template < typename Cat
          , typename Tag
          , typename FPE
          , typename FPETraits = strf::detail::fpe_traits<FPE> >
-constexpr STRF_HD auto do_get_facet(const FPE& elm)
-    -> decltype(FPETraits::template get_facet<Cat, Tag>(elm))
+constexpr STRF_HD STRF_DECLTYPE_AUTO
+    (( FPETraits::template get_facet<Cat, Tag>(std::declval<const FPE&>()) ))
+do_get_facet(const FPE& elm)
 {
     return FPETraits::template get_facet<Cat, Tag>(elm);
 }
@@ -188,8 +189,9 @@ public:
     }
 
     template <typename Cat, typename Tag>
-    constexpr STRF_HD static auto get_facet(const fp_& fp)
-        -> decltype(std::declval<fp_>().template get_facet<Cat, Tag>())
+    constexpr STRF_HD static STRF_DECLTYPE_AUTO
+        (( std::declval<const fp_&>().template get_facet<Cat.Tag>() ))
+    get_facet(const fp_& fp)
     {
         return fp.template get_facet<Cat, Tag>();
     }
@@ -211,8 +213,9 @@ public:
     }
 
     template <typename Cat, typename Tag>
-    constexpr STRF_HD static auto get_facet(const FPE& r)
-        -> decltype(fpe_traits_::template get_facet<Cat, Tag>(std::declval<const FPE&>()))
+    constexpr STRF_HD static
+    STRF_DECLTYPE_AUTO((fpe_traits_::template get_facet<Cat, Tag>(std::declval<const FPE&>())))
+    get_facet(const FPE& r)
     {
         return fpe_traits_::template get_facet<Cat, Tag>(r);
     }
@@ -235,9 +238,11 @@ public:
     }
 
     template <typename Cat, typename Tag>
-    constexpr STRF_HD static auto
+    constexpr STRF_HD static
+    STRF_DECLTYPE_AUTO
+        (( unfiltered_traits_::template get_facet<Cat, Tag>
+           ( std::declval<const strf::constrained_fpe<Filter, FPE>&>().get() ) ))
     get_facet( const strf::constrained_fpe<Filter, FPE>& cf )
-        -> decltype(unfiltered_traits_::template get_facet<Cat, Tag>(cf.get()))
     {
         return unfiltered_traits_::template get_facet<Cat, Tag>(cf.get());
     }
@@ -395,7 +400,7 @@ public:
 
     template <typename Tag, typename Category>
     constexpr STRF_HD
-    STRF_DECLTYPE_AUTO((strf::detail::do_get_facet<Category, Tag>(*(const FPE*)0)))
+    STRF_DECLTYPE_AUTO(( strf::detail::do_get_facet<Category, Tag>(*(const FPE*)0) ))
     do_get_facet
         ( const Rank&
         , strf::tag<Category>
@@ -458,7 +463,7 @@ public:
 
     template <typename Tag, typename Category>
     constexpr STRF_HD
-    STRF_DECLTYPE_AUTO((((const fp_type_*)0)->template get_facet<Category, Tag>()))
+    STRF_DECLTYPE_AUTO(( ((const fp_type_*)0)->template get_facet<Category, Tag>() ))
     do_get_facet
         ( const Rank&
         , strf::tag<Category>
@@ -733,11 +738,13 @@ public:
     }
 
     template <typename Category, typename Tag>
-    constexpr STRF_HD auto get_facet() const
-        -> decltype( this->template do_get_facet<Tag>
-                      ( strf::rank<sizeof...(FPE)>()
-                      , strf::tag<Category>()
-                      , std::true_type() ) )
+    constexpr STRF_HD
+        STRF_DECLTYPE_AUTO
+            (( std::declval<const facets_pack&>().template do_get_facet<Tag>
+                ( strf::rank<sizeof...(FPE)>()
+                , strf::tag<Category>()
+                , std::true_type() ) ))
+         get_facet() const
     {
         return this->template do_get_facet<Tag>
             ( strf::rank<sizeof...(FPE)>()
@@ -745,11 +752,13 @@ public:
             , std::true_type() );
     }
     template <typename Category, typename Tag>
-    constexpr STRF_HD auto use_facet() const
-        -> decltype( this->template do_get_facet<Tag>
-                       ( strf::rank<sizeof...(FPE)>()
-                       , strf::tag<Category>()
-                       , std::true_type() ) )
+    constexpr STRF_HD
+        STRF_DECLTYPE_AUTO
+            (( std::declval<const facets_pack&>().template do_get_facet<Tag>
+                ( strf::rank<sizeof...(FPE)>()
+                , strf::tag<Category>()
+                , std::true_type() ) ))
+        use_facet() const
     {
         return this->template do_get_facet<Tag>
             ( strf::rank<sizeof...(FPE)>()
@@ -758,15 +767,21 @@ public:
     }
 
     template <std::size_t Index>
-    constexpr STRF_HD auto get_element() const
-        -> decltype(this->do_get_element(std::integral_constant<std::size_t, Index>{}))
+    constexpr STRF_HD
+    STRF_DECLTYPE_AUTO
+        (( std::declval<const facets_pack&>().do_get_element
+            (std::integral_constant<std::size_t, Index>{}) ))
+    get_element() const
     {
         return this->do_get_element(std::integral_constant<std::size_t, Index>{});
     }
 
     template <std::size_t Index>
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD auto get_element()
-        -> decltype(this->do_get_element(std::integral_constant<std::size_t, Index>{}))
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD
+    STRF_DECLTYPE_AUTO
+        (( std::declval<facets_pack&>().do_get_element
+            (std::integral_constant<std::size_t, Index>{}) ))
+    get_element()
     {
         return this->do_get_element(std::integral_constant<std::size_t, Index>{});
     }
@@ -854,8 +869,11 @@ template
     < typename FacetCategory
     , typename Tag
     , typename ... FPE >
-constexpr STRF_HD auto use_facet(const strf::facets_pack<FPE...>& fp)
-    -> decltype(fp.template use_facet<FacetCategory, Tag>())
+constexpr STRF_HD
+STRF_DECLTYPE_AUTO
+    (( std::declval<const strf::facets_pack<FPE...> >()
+        .template use_facet<FacetCategory, Tag>() ))
+use_facet(const strf::facets_pack<FPE...>& fp)
 {
     return fp.template use_facet<FacetCategory, Tag>();
 }
@@ -865,8 +883,11 @@ template
     , typename Tag
     , typename ... FPE >
 STRF_DEPRECATED_MSG("Use strf::use_facet instead")
-constexpr STRF_HD auto get_facet(const strf::facets_pack<FPE...>& fp)
-    -> decltype(fp.template use_facet<FacetCategory, Tag>())
+constexpr STRF_HD
+STRF_DECLTYPE_AUTO
+    (( std::declval<const strf::facets_pack<FPE...> >()
+        .template use_facet<FacetCategory, Tag>() ))
+    get_facet(const strf::facets_pack<FPE...>& fp)
 {
     return fp.template use_facet<FacetCategory, Tag>();
 }
