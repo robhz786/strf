@@ -1,6 +1,15 @@
 #ifndef TEST_UTILS_TRANSCODING_HPP
 #define TEST_UTILS_TRANSCODING_HPP
 
+#if defined(__GNUC__)
+#  pragma GCC diagnostic ignored "-Warray-bounds"
+#  if __GNUC__ >= 11
+#    pragma GCC diagnostic ignored "-Wstringop-overread"
+#  elif __GNUC__ >= 9
+#    pragma GCC diagnostic ignored "-Wstringop-overflow"
+#  endif
+#endif
+
 #include "../test_utils.hpp"
 
 namespace test_utils {

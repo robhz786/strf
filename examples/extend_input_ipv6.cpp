@@ -10,7 +10,7 @@
 
 #include "../tests/test_utils.hpp" // my own test framework
 
-#if defined(__GNUC__)
+#if defined(__GNUC__) && (__GNUC__ == 7)
 #  pragma GCC diagnostic ignored "-Warray-bounds"
 #endif
 

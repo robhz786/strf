@@ -5,7 +5,7 @@
 
 #include "test_utils.hpp"
 
-#if defined(__GNUC__) && (__GNUC__ == 7 || __GNUC__ == 8)
+#if defined(__GNUC__) && (__GNUC__ == 8)
 #  pragma GCC diagnostic push
 #  pragma GCC diagnostic ignored "-Warray-bounds"
 #endif
@@ -80,7 +80,7 @@ static STRF_TEST_FUNC void test_write_after_finish()
     TEST_EQ(r2.ptr, r1.ptr);
 }
 
-#if defined(__GNUC__) && (__GNUC__ == 7 || __GNUC__ == 8)
+#if defined(__GNUC__) && ( __GNUC__ == 8)
 #  pragma GCC diagnostic pop
 #endif
 

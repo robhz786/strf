@@ -104,7 +104,7 @@ STRF_TEST_FUNC void test_floating_point(FloatT value)
     }
 }
 
-#if defined(__GNUC__) && (__GNUC__ == 7 || __GNUC__ == 8)
+#if defined(__GNUC__) && (__GNUC__ == 8)
 #  define IGNORING_GCC_WARNING_ARRAY_BOUNDS
 #  pragma GCC diagnostic push
 #  pragma GCC diagnostic ignored "-Warray-bounds"
@@ -965,7 +965,7 @@ STRF_TEST_FUNC void round_up_999()
 
 STRF_TEST_FUNC void test_input_float()
 {
-#if defined(__GNUC__) && (__GNUC__ == 7 || __GNUC__ == 8)
+#if defined(__GNUC__) && (__GNUC__ == 8)
 #  pragma GCC diagnostic push
 #  pragma GCC diagnostic ignored "-Warray-bounds"
 #endif
@@ -997,7 +997,7 @@ STRF_TEST_FUNC void test_input_float()
     test_float32();
     round_up_999();
 
-#if defined(__GNUC__) && (__GNUC__ == 7 || __GNUC__ == 8)
+#if defined(__GNUC__) && (__GNUC__ == 8)
 #  pragma GCC diagnostic pop
 #endif
 

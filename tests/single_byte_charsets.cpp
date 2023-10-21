@@ -3,17 +3,6 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#if defined(__GNUC__) && (__GNUC__ == 7 || __GNUC__ == 8)
-#  pragma GCC diagnostic push
-#  pragma GCC diagnostic ignored "-Warray-bounds"
-#endif
-
-#include "test_utils.hpp"
-
-#if defined(__GNUC__) && (__GNUC__ == 7 || __GNUC__ == 8)
-#  pragma GCC diagnostic pop
-#endif
-
 #include "test_utils/transcoding.hpp"
 
 #define TEST_TRANSCODE(SrcCharset, DstCharset)                          \

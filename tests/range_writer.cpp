@@ -5,7 +5,7 @@
 
 #include "test_utils.hpp"
 
-#if defined(__GNUC__) && (__GNUC__ == 7 || __GNUC__ == 8)
+#if defined(__GNUC__) && (__GNUC__ == 8)
 #  pragma GCC diagnostic ignored "-Warray-bounds"
 #endif
 

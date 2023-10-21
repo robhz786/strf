@@ -6,15 +6,21 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
+#if defined(__GNUC__)
+#  pragma GCC diagnostic push
+#  if __GNUC__ >= 11
+#    pragma GCC diagnostic ignored "-Wstringop-overread"
+#  elif _GNUCC >= 9
+#    pragma GCC diagnostic ignored "-Wstringop-overflow"
+#  else
+#    pragma GCC diagnostic ignored "-Warray-bounds"
+#  endif
+#endif
+
 #include <strf/detail/strf_def.hpp>
 #include <cstdint>
 #if ! defined(STRF_FREESTANDING) || defined(STRF_WITH_CSTRING)
 #    include <cstring>
-#endif
-
-#if defined(__GNUC__)
-#  pragma GCC diagnostic push
-#  pragma GCC diagnostic ignored "-Warray-bounds"
 #endif
 
 namespace strf {
