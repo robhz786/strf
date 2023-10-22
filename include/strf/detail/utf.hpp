@@ -1839,7 +1839,7 @@ STRF_HD strf::transcode_size_result<SrcCharT> strf::static_transcoder
     using strf::detail::not_utf8_continuation;
 
     const SrcCharT* const src_begin = src;
-    const SrcCharT* const src_limit = src + limit;
+    const SrcCharT* const src_limit = src_end - src >= limit ? src + limit : src_end;
     unsigned ch0 = 0, ch1 = 0;
     const bool lax_surr = strf::with_lax_surrogate_policy(flags);
     while (src < src_end) {
@@ -2646,8 +2646,8 @@ STRF_HD strf::transcode_size_result<SrcCharT> strf::static_transcoder
     (void) limit;
     unsigned ch = 0;
     const auto* const src_begin = src;
-    const SrcCharT* src_next = nullptr;
-    const SrcCharT* src_limit = src + limit;
+    const SrcCharT* src_next = src;
+    const SrcCharT* src_limit = (src_end - src >= limit) ? src + limit : src_end;
     for(; src < src_end; src = src_next) {
         if (HasLimit && !StopOnInvalidSeq && src_next >= src_limit) {
             return {src - src_begin, src, reason::insufficient_output_space};
