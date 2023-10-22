@@ -6,6 +6,11 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
+#if defined(__GNUC__) && (__GNUC__ >= 11)
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Warray-bounds"
+#endif
+
 #if defined(_MSC_VER)
 #pragma warning ( push )
 
@@ -50,5 +55,10 @@
 #if defined(_MSC_VER)
 #pragma warning ( pop )
 #endif // defined(_MSC_VER)
+
+
+#if defined(__GNUC__) && (__GNUC__ >= 11)
+#  pragma GCC diagnostic pop
+#endif
 
 #endif

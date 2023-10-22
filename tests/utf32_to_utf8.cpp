@@ -6,6 +6,9 @@
 #include "test_utils/transcoding.hpp"
 
 #ifndef __cpp_char8_t
+#   if __GNUC__ >= 11
+#       pragma GCC diagnostic ignored "-Wc++20-compat"
+#   endif
 using char8_t = char;
 #endif
 

@@ -283,12 +283,21 @@ public:
         : parent_(current_test_scope_())
         , id_(generate_new_id_())
     {
+#if defined(__GNUC__) && (__GNUC__ >= 11)
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wdangling-pointer"
+#endif
+
         if (parent_) {
             parent_->child_ = this;
         } else {
             first_test_scope_() = this;
         }
         current_test_scope_() = this;
+
+#if defined(__GNUC__) && (__GNUC__ >= 11)
+#  pragma GCC diagnostic pop
+#endif
         description_[0] = '\0';
     }
 

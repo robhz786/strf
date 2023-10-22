@@ -8,6 +8,9 @@
 #include <iostream>
 
 #if ! defined(__cpp_char8_t)
+#   if __GNUC__ >= 11
+#       pragma GCC diagnostic ignored "-Wc++20-compat"
+#   endif
 
 namespace strf {
 constexpr auto to_u8string = to_string;

@@ -3,12 +3,11 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include "test_utils.hpp"
-
-#if defined(__GNUC__) && (__GNUC__ == 8)
-#  pragma GCC diagnostic push
+#if defined(__GNUC__)
 #  pragma GCC diagnostic ignored "-Warray-bounds"
 #endif
+
+#include "test_utils.hpp"
 
 namespace {
 
