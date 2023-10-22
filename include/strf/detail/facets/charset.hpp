@@ -1074,7 +1074,7 @@ STRF_HD strf::decode_encode_result<SrcCharT, DstCharT> decode_encode
     , strf::transcode_flags flags = strf::transcode_flags::none )
 {
     using stop_reason = strf::transcode_stop_reason;
-    char32_t pivot_buff[16];
+    char32_t pivot_buff[16] = {};
     while (true) {
         char32_t* pivot = pivot_buff;
         char32_t* pivot_end = pivot_buff + sizeof(pivot_buff) / sizeof(pivot_buff[0]);
@@ -1245,7 +1245,7 @@ STRF_HD strf::decode_encode_size_result<SrcCharT> decode_encode_size
     using size_stop_reason = strf::transcode_stop_reason;
 
     constexpr auto pivot_buff_size = 16;
-    char32_t pivot_buff[pivot_buff_size];
+    char32_t pivot_buff[pivot_buff_size] = {};
     std::ptrdiff_t size = 0;
     while (true) {
         const auto src_res = to_u32
@@ -1391,7 +1391,7 @@ STRF_HD strf::decode_encode_result<SrcCharT, DstCharT> unsafe_decode_encode
     , strf::transcode_flags flags = strf::transcode_flags::none )
 {
     using stop_reason = strf::transcode_stop_reason;
-    char32_t pivot_buff[16];
+    char32_t pivot_buff[16] = {};
     while (true) {
         char32_t* pivot = pivot_buff;
         char32_t* pivot_end = pivot_buff + sizeof(pivot_buff) / sizeof(pivot_buff[0]);
@@ -1548,7 +1548,7 @@ STRF_HD strf::decode_encode_size_result<SrcCharT> unsafe_decode_encode_size
 {
     using stop_reason = strf::transcode_stop_reason;
     constexpr auto pivot_buff_size = 32;
-    char32_t pivot_buff[pivot_buff_size];
+    char32_t pivot_buff[pivot_buff_size] = {};
     std::ptrdiff_t size = 0;
     while (true) {
         const auto src_res = to_u32

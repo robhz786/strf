@@ -283,7 +283,7 @@ public:
         : parent_(current_test_scope_())
         , id_(generate_new_id_())
     {
-#if defined(__GNUC__) && (__GNUC__ >= 11)
+#if defined(__GNUC__) && (__GNUC__ >= 13)
 #  pragma GCC diagnostic push
 #  pragma GCC diagnostic ignored "-Wdangling-pointer"
 #endif
@@ -295,7 +295,7 @@ public:
         }
         current_test_scope_() = this;
 
-#if defined(__GNUC__) && (__GNUC__ >= 11)
+#if defined(__GNUC__) && (__GNUC__ >= 13)
 #  pragma GCC diagnostic pop
 #endif
         description_[0] = '\0';
