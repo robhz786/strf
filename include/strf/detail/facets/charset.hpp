@@ -817,10 +817,12 @@ constexpr STRF_HD bool has_static_transcoder()
 template <typename SrcCharT, typename DstCharset>
 class has_find_transcoder_from_impl
 {
-    template <typename S, typename D>
-    static auto test(strf::tag<S> stag, const D* d)
-        -> decltype( d->find_transcoder_from(stag, strf::csid_utf8)
-                   , std::true_type() );
+    template < typename S
+             , typename D
+             , typename = decltype
+                 ( std::declval<const D&>().find_transcoder_from
+                   (strf::tag<S>{}, strf::csid_utf8) ) >
+    static std::true_type test(strf::tag<S> stag, const D* d);
 
     template <typename S, typename D>
     static std::false_type test(...);
@@ -834,10 +836,12 @@ public:
 template <typename DstCharT, typename SrcCharset>
 class has_find_transcoder_to_impl
 {
-    template <typename D, typename S>
-    static auto test(strf::tag<D> dtag, const S* s)
-    -> decltype( s->find_transcoder_from(dtag, strf::csid_utf8)
-               , std::true_type() );
+    template < typename D
+             , typename S
+             , typename = decltype
+                 ( std::declval<const S&>().find_transcoder_from
+                   (strf::tag<D>(), strf::csid_utf8) ) >
+    static std::true_type test(strf::tag<D> dtag, const S* s);
 
     template <typename D, typename S>
     static std::false_type test(...);
@@ -956,8 +960,7 @@ template <typename SrcCharT>
 struct transcoder_finder<false, SrcCharT, char32_t>
 {
     template <typename SrcCharset, typename DstCharset>
-    constexpr static STRF_HD auto find(SrcCharset src_cs, DstCharset)
-        -> decltype(src_cs.to_u32())
+    constexpr static STRF_HD decltype(auto) find(SrcCharset src_cs, DstCharset)
     {
         return src_cs.to_u32();
     }
@@ -967,8 +970,7 @@ template <typename DstCharT>
 struct transcoder_finder<false, char32_t, DstCharT>
 {
     template <typename SrcCharset, typename DstCharset>
-    constexpr static STRF_HD auto find(SrcCharset, DstCharset dst_cs) noexcept
-        -> decltype(dst_cs.from_u32())
+    constexpr static STRF_HD decltype(auto) find(SrcCharset, DstCharset dst_cs) noexcept
     {
         return dst_cs.from_u32();
     }
@@ -1017,8 +1019,7 @@ template < typename SrcCharset
                  < strf::detail::has_static_transcoder<SrcCharset, DstCharset>()
                  , typename SrcCharset::code_unit
                  , typename DstCharset::code_unit > >
-constexpr STRF_HD auto find_transcoder(SrcCharset src_cs, DstCharset dst_cs)
-    -> decltype(Finder::find(src_cs, dst_cs))
+constexpr STRF_HD decltype(auto) find_transcoder(SrcCharset src_cs, DstCharset dst_cs)
 {
     return Finder::find(src_cs, dst_cs);
 }

@@ -321,12 +321,14 @@ template < typename UnadaptedMaker
          , typename Arg >
 struct can_make_printer_input_impl
 {
-    template <typename P>
-    static STRF_HD auto test_(PrePrinting& pre, const FPack& facets, const Arg& arg)
-        -> decltype( std::declval<const P&>()
-                         .make_input
-                             ( strf::tag<CharT>{}, pre, facets, arg )
-                   , std::true_type{} );
+    template < typename P
+             , typename = decltype
+                 ( std::declval<const P&>().make_input
+                     ( strf::tag<CharT>{}
+                     , std::declval<PrePrinting&>()
+                     , std::declval<const FPack&>()
+                     , std::declval<const Arg&>() ) ) >
+    static STRF_HD std::true_type test_(PrePrinting& pre, const FPack& facets, const Arg& arg);
 
     template <typename P>
     static STRF_HD std::false_type test_(...);
@@ -574,9 +576,9 @@ template < typename CharT
          , typename Maker = typename Helper::maker_type
          , typename ChTag = strf::tag<CharT> >
 STRF_DEPRECATED_MSG("make_default_arg_printer_input was renamed to make_default_printer_input")
-constexpr STRF_HD auto make_default_arg_printer_input(PrePrinting& p, const FPack& fp, const Arg& arg)
+constexpr STRF_HD decltype(auto) make_default_arg_printer_input
+    ( PrePrinting& p, const FPack& fp, const Arg& arg )
     noexcept(noexcept(Maker::make_input(ChTag{}, p, fp, Helper::adapt_arg(arg))))
-    -> decltype(Maker::make_input(ChTag{}, p, fp, Helper::adapt_arg(arg)))
 {
     return Maker::make_input(ChTag{}, p, fp, Helper::adapt_arg(arg));
 }
@@ -589,8 +591,8 @@ template < typename CharT
          , typename Maker = typename Helper::maker_type
          , typename ChTag = strf::tag<CharT> >
 STRF_DEPRECATED_MSG("make_arg_printer_input was renamed to make_printer_input")
-constexpr STRF_HD auto make_arg_printer_input(PrePrinting& p, const FPack& fp, const Arg& arg)
-    -> decltype(((const Maker*)0)->make_input(ChTag{}, p, fp, Helper::adapt_arg(arg)))
+constexpr STRF_HD decltype(auto) make_arg_printer_input
+    ( PrePrinting& p, const FPack& fp, const Arg& arg )
 {
     return Helper::get_maker(fp)
         .make_input(strf::tag<CharT>{}, p, fp, Helper::adapt_arg(arg));
@@ -604,9 +606,9 @@ template < typename CharT
              = strf::detail::mk_pr_in::helper_no_override<CharT, PrePrinting, FPack, Arg>
          , typename Maker = typename Helper::maker_type
          , typename ChTag = strf::tag<CharT> >
-constexpr STRF_HD auto make_default_printer_input(PrePrinting& p, const FPack& fp, const Arg& arg)
+constexpr STRF_HD decltype(auto) make_default_printer_input
+    ( PrePrinting& p, const FPack& fp, const Arg& arg )
     noexcept(noexcept(Maker::make_input(ChTag{}, p, fp, Helper::adapt_arg(arg))))
-    -> decltype(Maker::make_input(ChTag{}, p, fp, Helper::adapt_arg(arg)))
 {
     return Maker::make_input(ChTag{}, p, fp, Helper::adapt_arg(arg));
 }
@@ -618,9 +620,8 @@ template < typename CharT
          , typename Helper = strf::detail::mk_pr_in::helper<CharT, PrePrinting, FPack, Arg>
          , typename Maker = typename Helper::maker_type
          , typename ChTag = strf::tag<CharT> >
-constexpr STRF_HD auto make_printer_input
+constexpr STRF_HD decltype(auto) make_printer_input
     ( PrePrinting& p, const FPack& fp, const Arg& arg )
-    -> decltype(((const Maker*)nullptr)->make_input(ChTag{}, p, fp, Helper::adapt_arg(arg)))
 {
     return Helper::get_maker(fp)
         .make_input(strf::tag<CharT>{}, p, fp, Helper::adapt_arg(arg));
@@ -630,13 +631,12 @@ struct dont_override
 {
     using category = printable_overrider_c;
     template <typename CharT, typename PrePrinting, typename FPack, typename Arg>
-    constexpr static STRF_HD auto make_input
+    constexpr static STRF_HD decltype(auto) make_input
         ( strf::tag<CharT>
         , PrePrinting& pre
         , const FPack& facets
         , Arg&& arg )
         noexcept(noexcept(strf::make_default_printer_input<CharT>(pre, facets, arg)))
-        -> decltype(strf::make_default_printer_input<CharT>(pre, facets, arg))
     {
         return strf::make_default_printer_input<CharT>(pre, facets, arg);
     }
