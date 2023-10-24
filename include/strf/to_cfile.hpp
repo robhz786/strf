@@ -95,11 +95,7 @@ public:
     {
     }
 
-    STRF_HD ~cfile_writer_base() override {
-        if (this->good()) {
-            traits_.write(buff_, detail::safe_cast_size_t(this->buffer_ptr() - buff_));
-        }
-    }
+    ~cfile_writer_base() override = default;
 
     STRF_HD void recycle() noexcept override {
         auto *p = this->buffer_ptr();
@@ -125,6 +121,15 @@ public:
             g = (count == count_inc);
         }
         return {count_, g};
+    }
+
+protected:
+
+    STRF_HD void destroy() // must be called in the destructor of derivate class
+    {
+        if (this->good()) {
+            traits_.write(buff_, detail::safe_cast_size_t(this->buffer_ptr() - buff_));
+        }
     }
 
 private:
@@ -169,7 +174,11 @@ public:
     }
 
     narrow_cfile_writer() = delete;
-    ~narrow_cfile_writer() override = default;
+
+    STRF_HD ~narrow_cfile_writer() override
+    {
+        impl_::destroy();
+    }
 
     narrow_cfile_writer(const narrow_cfile_writer&) = delete;
     narrow_cfile_writer(narrow_cfile_writer&&) = delete;
@@ -201,7 +210,11 @@ public:
     }
 
     wide_cfile_writer() = delete;
-    ~wide_cfile_writer() override = default;
+
+    STRF_HD ~wide_cfile_writer() override
+    {
+        impl_::destroy();
+    }
 
     wide_cfile_writer(const wide_cfile_writer&) = delete;
     wide_cfile_writer(wide_cfile_writer&&) = delete;
