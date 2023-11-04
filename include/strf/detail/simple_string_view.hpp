@@ -20,6 +20,7 @@ public:
     using const_iterator = const CharIn*;
 
     simple_string_view() = default;
+    ~simple_string_view() = default;
     simple_string_view(const simple_string_view&) = default;
     simple_string_view(simple_string_view&&) = default;
 
@@ -69,18 +70,10 @@ public:
     }
 
     STRF_CONSTEXPR_IN_CXX14
-    STRF_HD simple_string_view& operator=(const simple_string_view& s) noexcept
-    {
-        begin_ = s.begin_;
-        len_ = s.len_;
-        return *this;
-    }
+    simple_string_view& operator=(const simple_string_view& s) noexcept = default;
 
     STRF_CONSTEXPR_IN_CXX14
-    STRF_HD simple_string_view& operator=(const simple_string_view&& s) noexcept
-    {
-        return operator=(s);
-    }
+    simple_string_view& operator=(simple_string_view&& s) noexcept = default;
 
     STRF_CONSTEXPR_CHAR_TRAITS
     STRF_HD simple_string_view(const CharIn* str) noexcept
