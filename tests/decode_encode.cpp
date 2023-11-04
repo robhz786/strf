@@ -185,7 +185,7 @@ STRF_TEST_FUNC void test_decode_encode_scenarios()
         TEST_EQ(1, notifier.invalid_sequence_calls_count);
         TEST_EQ(0, notifier.unsupported_codepoints_calls_count);
         TEST_EQ(0, deres.u32dist);
-        TEST_EQ(30, (char*)notifier.invalid_seq - input.begin());
+        TEST_EQ(30, reinterpret_cast<const char*>(notifier.invalid_seq) - input.begin());
         TEST_EQ(30, deres.stale_src_ptr - input.begin());
 
 
@@ -212,7 +212,7 @@ STRF_TEST_FUNC void test_decode_encode_scenarios()
         TEST_EQ(1, notifier.invalid_sequence_calls_count);
         TEST_EQ(0, notifier.unsupported_codepoints_calls_count);
         TEST_EQ(0, deres.u32dist);
-        TEST_EQ(30, (char*)notifier.invalid_seq - input.begin());
+        TEST_EQ(30, reinterpret_cast<const char*>(notifier.invalid_seq) - input.begin());
         TEST_EQ(0, input.end() - deres.stale_src_ptr);
 
 
@@ -244,7 +244,7 @@ STRF_TEST_FUNC void test_decode_encode_scenarios()
         TEST_TRUE(deres.stop_reason == strf::transcode_stop_reason::unsupported_codepoint);
         TEST_EQ(1, notifier.invalid_sequence_calls_count);
         TEST_EQ(1, notifier.unsupported_codepoints_calls_count);
-        TEST_EQ(30, (char*)notifier.invalid_seq - input.begin());
+        TEST_EQ(30, reinterpret_cast<const char*>(notifier.invalid_seq) - input.begin());
         TEST_EQ(0xA1, notifier.unsupported_ch32);
 
         auto cpcount_res = strf::utf8_t<char>::count_codepoints
