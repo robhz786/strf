@@ -3013,9 +3013,8 @@ STRF_HD strf::transcode_size_result<SrcCharT> strf::static_transcoder
     if ( ! strf::with_stop_on_invalid_sequence(flags)) {
         if (src_end - src <= limit) {
             return {src_end - src, src_end, reason::completed};
-        } else {
-            return {src + limit - src, src_end, reason::insufficient_output_space};
         }
+        return {src + limit - src, src_end, reason::insufficient_output_space};
     }
     const auto* const src_begin = src;
     if (src_end - src <= limit) {
