@@ -6,8 +6,10 @@
 #include "test_utils.hpp"
 #include <strf/to_string.hpp>
 
+namespace {
+
 template <typename CharT>
-static void test_string_appender()
+void test_string_appender()
 {
     const auto tiny_str   = test_utils::make_random_std_string<CharT>(5);
     const auto tiny_str2  = test_utils::make_random_std_string<CharT>(6);
@@ -82,7 +84,7 @@ static void test_string_appender()
 }
 
 template <typename CharT>
-static void test_string_maker()
+void test_string_maker()
 {
     const auto tiny_str   = test_utils::make_random_std_string<CharT>(5);
     const auto tiny_str2  = test_utils::make_random_std_string<CharT>(6);
@@ -146,7 +148,7 @@ static void test_string_maker()
 }
 
 template <typename CharT>
-static void test_sized_string_maker()
+void test_sized_string_maker()
 {
     const auto tiny_str   = test_utils::make_random_std_string<CharT>(5);
     const auto tiny_str2  = test_utils::make_random_std_string<CharT>(6);
@@ -209,6 +211,8 @@ static void test_sized_string_maker()
 #endif // defined(STRF_HAS_VARIABLE_TEMPLATES)
     }
 }
+
+} // namespace
 
 void test_string_writer()
 {

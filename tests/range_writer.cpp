@@ -9,6 +9,8 @@
 #  pragma GCC diagnostic ignored "-Warray-bounds"
 #endif
 
+namespace {
+
 template <typename CharT>
 STRF_TEST_FUNC void char_range_basic_operations()
 {
@@ -208,6 +210,7 @@ STRF_TEST_FUNC void test_to_range()
     char_range_destination_too_small();
 }
 
+} // namespace
 
 REGISTER_STRF_TEST(test_to_range)
 
