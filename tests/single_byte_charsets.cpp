@@ -1615,7 +1615,7 @@ STRF_HD void basic_tests_utf32_to_single_byte_charset(Charset cs)
 
 STRF_HD void test_to_utf32()
 {
-    strf::iso_8859_7_t<char> cs;
+    const strf::iso_8859_7_t<char> cs;
     const char invalid_byte = '\xAE';
 
     // happy scenario case
@@ -1659,7 +1659,7 @@ STRF_HD void test_to_utf32()
 
 STRF_HD void test_sanitize()
 {
-    strf::iso_8859_7_t<char> cs;
+    const strf::iso_8859_7_t<char> cs;
     const char invalid_byte = '\xAE';
 
     // happy scenario case

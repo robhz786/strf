@@ -38,7 +38,7 @@ STRF_TEST_FUNC void test_decode_encode_scenarios()
     {   // happy scenario
         constexpr auto buff_size = 200;
         char buff[buff_size] = {};
-        ustr_view input = u"abcdef";
+        const ustr_view input = u"abcdef";
         test_utils::simple_transcoding_err_notifier notifier;
         const auto flags = ( strf::transcode_flags::stop_on_invalid_sequence
                            | strf::transcode_flags::stop_on_unsupported_codepoint );
@@ -53,7 +53,7 @@ STRF_TEST_FUNC void test_decode_encode_scenarios()
         TEST_EQ(0, notifier.invalid_sequence_calls_count);
         TEST_EQ(0, notifier.unsupported_codepoints_calls_count);
 
-        str_view output(buff, deres.dst_ptr);
+        const str_view output(buff, deres.dst_ptr);
 
         TEST_EQ(output.size(), input.size());
         TEST_STR_EQ(output, "abcdef");
@@ -66,7 +66,7 @@ STRF_TEST_FUNC void test_decode_encode_scenarios()
         test_utils::simple_transcoding_err_notifier notifier;
         const auto flags = ( strf::transcode_flags::stop_on_invalid_sequence
                            | strf::transcode_flags::stop_on_unsupported_codepoint );
-        ustr_view input = u"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        const ustr_view input = u"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
         auto deres = strf::decode_encode
             <strf::utf_t, strf::utf_t>
@@ -78,7 +78,7 @@ STRF_TEST_FUNC void test_decode_encode_scenarios()
         TEST_EQ(0, notifier.invalid_sequence_calls_count);
         TEST_EQ(0, notifier.unsupported_codepoints_calls_count);
 
-        str_view output(buff, deres.dst_ptr);
+        const str_view output(buff, deres.dst_ptr);
 
         TEST_EQ(output.size(), input.size());
         TEST_STR_EQ(output, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");
@@ -89,7 +89,7 @@ STRF_TEST_FUNC void test_decode_encode_scenarios()
         test_utils::simple_transcoding_err_notifier notifier;
         const auto flags = ( strf::transcode_flags::stop_on_invalid_sequence
                            | strf::transcode_flags::stop_on_unsupported_codepoint );
-        ustr_view input = u"abcdefghijklmnopqr";
+        const ustr_view input = u"abcdefghijklmnopqr";
 
         auto deres = strf::decode_encode
             <strf::utf_t, strf::utf_t>
@@ -109,7 +109,7 @@ STRF_TEST_FUNC void test_decode_encode_scenarios()
         test_utils::simple_transcoding_err_notifier notifier;
         const auto flags = ( strf::transcode_flags::stop_on_invalid_sequence
                            | strf::transcode_flags::stop_on_unsupported_codepoint );
-        ustr_view input = u"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        const ustr_view input = u"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
         auto deres = strf::decode_encode
             <strf::utf_t, strf::utf_t>
@@ -126,7 +126,7 @@ STRF_TEST_FUNC void test_decode_encode_scenarios()
         TEST_EQ((char)*cpcount_res.ptr, 'u');
         TEST_EQ(buff_size, (cpcount_res.ptr - input.begin()));
 
-        str_view output(buff, deres.dst_ptr);
+        const str_view output(buff, deres.dst_ptr);
         TEST_EQ(output.size(), buff_size);
         TEST_STR_EQ(output, "abcdefghijklmnopqrst");
     }
@@ -139,7 +139,7 @@ STRF_TEST_FUNC void test_decode_encode_scenarios()
         test_utils::simple_transcoding_err_notifier notifier;
         const auto flags = ( strf::transcode_flags::stop_on_invalid_sequence
                            | strf::transcode_flags::stop_on_unsupported_codepoint );
-        ustr_view input =
+        const ustr_view input =
             u"abcdefghijklmnopqrstuvwxyz"
             u"\u0401\u0402\u0403\u045F"
             u"\uABCD"                   // the unsupported codepoints
@@ -161,7 +161,7 @@ STRF_TEST_FUNC void test_decode_encode_scenarios()
         TEST_EQ(30, (cpcount_res.ptr - input.begin()));
 
 
-        str_view output(buff, deres.dst_ptr);
+        const str_view output(buff, deres.dst_ptr);
         TEST_STR_EQ(output, "abcdefghijklmnopqrstuvwxyz\xA1\xA2\xA3\xFF");
 
     }
@@ -171,7 +171,7 @@ STRF_TEST_FUNC void test_decode_encode_scenarios()
         test_utils::simple_transcoding_err_notifier notifier;
         const auto flags = ( strf::transcode_flags::stop_on_invalid_sequence
                            | strf::transcode_flags::stop_on_unsupported_codepoint );
-        str_view input =
+        const str_view input =
             "abcdefghijklmnopqrstuvwxyz"
             "\xA0\xA1\xA2\xFF"
             "\xA5"                  // the invalid sequence
@@ -189,7 +189,7 @@ STRF_TEST_FUNC void test_decode_encode_scenarios()
         TEST_EQ(30, deres.stale_src_ptr - input.begin());
 
 
-        ustr_view output(buff, deres.dst_ptr);
+        const ustr_view output(buff, deres.dst_ptr);
         TEST_STR_EQ(output, u"abcdefghijklmnopqrstuvwxyz\u00A0\u0126\u02D8\u02D9");
     }
     {   // input has invalid sequence but stop_on_invalid_sequence flag is not set
@@ -198,7 +198,7 @@ STRF_TEST_FUNC void test_decode_encode_scenarios()
         char16_t buff[buff_size] = {};
         test_utils::simple_transcoding_err_notifier notifier;
         const auto flags = strf::transcode_flags::none;
-        str_view input =
+        const str_view input =
             "abcdefghijklmnopqrstuvwxyz"
             "\xA0\xA1\xA2\xFF"
             "\xA5"                  // the invalid sequence
@@ -216,7 +216,7 @@ STRF_TEST_FUNC void test_decode_encode_scenarios()
         TEST_EQ(0, input.end() - deres.stale_src_ptr);
 
 
-        ustr_view output(buff, deres.dst_ptr);
+        const ustr_view output(buff, deres.dst_ptr);
         TEST_STR_EQ(output, u"abcdefghijklmnopqrstuvwxyz\u00A0\u0126\u02D8\u02D9\uFFFDXYZ");
     }
     {   // The input has an invalid sequence and stop_on_invalid_sequence flag is set,
@@ -230,7 +230,7 @@ STRF_TEST_FUNC void test_decode_encode_scenarios()
         test_utils::simple_transcoding_err_notifier notifier;
         const auto flags = ( strf::transcode_flags::stop_on_invalid_sequence
                            | strf::transcode_flags::stop_on_unsupported_codepoint );
-        str_view input =
+        const str_view input =
             "abcdefghijklmnopqrstuvwxyz"
             "\xC2\xA1" // unsupported codepoint U+A1
             "AB"
@@ -254,7 +254,7 @@ STRF_TEST_FUNC void test_decode_encode_scenarios()
         TEST_EQ(26, (cpcount_res.ptr - input.begin()));
 
 
-        str_view output(buff, deres.dst_ptr);
+        const str_view output(buff, deres.dst_ptr);
         TEST_STR_EQ(output, "abcdefghijklmnopqrstuvwxyz");
 
     }
@@ -267,7 +267,7 @@ STRF_TEST_FUNC void test_decode_encode_scenarios()
         test_utils::simple_transcoding_err_notifier notifier;
         const auto flags = ( strf::transcode_flags::stop_on_invalid_sequence
                            | strf::transcode_flags::stop_on_unsupported_codepoint );
-        str_view input =
+        const str_view input =
             "abcdefghijklmnopqrstuvwxyzABCD"
             "\xE0\xA0" // the invalid sequence (missing continuation byte)
             "XYZWRESF";
@@ -282,7 +282,7 @@ STRF_TEST_FUNC void test_decode_encode_scenarios()
         TEST_EQ(0, deres.u32dist);
 
 
-        ustr_view output(buff, deres.dst_ptr);
+        const ustr_view output(buff, deres.dst_ptr);
         TEST_STR_EQ(output, u"abcdefghijklmnopqrstuvwxyzABCD");
     }
 }
@@ -293,7 +293,7 @@ void  test_decode_encode_size_scenarios()
     using stop_reason = strf::transcode_stop_reason;
 
     {   // happy scenario
-        ustr_view input = u"abcdef";
+        const ustr_view input = u"abcdef";
         const auto flags = ( strf::transcode_flags::stop_on_invalid_sequence
                            | strf::transcode_flags::stop_on_unsupported_codepoint );
 
@@ -307,7 +307,7 @@ void  test_decode_encode_size_scenarios()
         TEST_EQ(res.ssize, input.ssize());
     }
     {   // happy scenario - but with limit equal to size
-        ustr_view input = u"abcdef";
+        const ustr_view input = u"abcdef";
         const auto flags = ( strf::transcode_flags::stop_on_invalid_sequence
                            | strf::transcode_flags::stop_on_unsupported_codepoint );
 
@@ -320,7 +320,7 @@ void  test_decode_encode_size_scenarios()
         TEST_EQ(res.ssize, input.ssize());
     }
     {   // with limit less than size
-        ustr_view input = u"abcdef";
+        const ustr_view input = u"abcdef";
         const auto flags = ( strf::transcode_flags::stop_on_invalid_sequence
                            | strf::transcode_flags::stop_on_unsupported_codepoint );
 
@@ -341,7 +341,7 @@ void  test_decode_encode_size_scenarios()
 
         const auto flags = ( strf::transcode_flags::stop_on_invalid_sequence
                            | strf::transcode_flags::stop_on_unsupported_codepoint );
-        ustr_view input =
+        const ustr_view input =
             u"12345678901234567890"
             u"\u0401\u0402\u0403\u045F"
             u"\uABCD"                   // the unsupported codepoints
@@ -366,7 +366,7 @@ void  test_decode_encode_size_scenarios()
 
         const auto flags = ( strf::transcode_flags::stop_on_invalid_sequence
                            | strf::transcode_flags::stop_on_unsupported_codepoint );
-        ustr_view input =
+        const ustr_view input =
             u"12345678901234567890"
             u"\u0401\u0402\u0403\u045F"
             u"\uABCD"                   // the unsupported codepoints
@@ -391,7 +391,7 @@ void  test_decode_encode_size_scenarios()
 
         const auto flags = ( strf::transcode_flags::stop_on_invalid_sequence
                            | strf::transcode_flags::stop_on_unsupported_codepoint );
-        str_view input =
+        const str_view input =
             "12345678901234567890"
             "\xA0\xA1\xA2\xFF"
             "\xA5"                  // the invalid sequence
@@ -410,7 +410,7 @@ void  test_decode_encode_size_scenarios()
     {   // input has invalid sequence but stop_on_invalid_sequence flag is not set
 
         const auto flags = strf::transcode_flags::none;
-        str_view input =
+        const str_view input =
             "12345678901234567890"
             "\xA0\xA1\xA2\xFF"
             "\xA5"                  // the invalid sequence
@@ -434,7 +434,7 @@ void  test_decode_encode_size_scenarios()
 
         const auto flags = ( strf::transcode_flags::stop_on_invalid_sequence
                            | strf::transcode_flags::stop_on_unsupported_codepoint );
-        str_view input =
+        const str_view input =
             "12345678901234567890"
             "\xC2\xA1" // unsupported codepoint U+A1
             "AB"
@@ -504,7 +504,7 @@ STRF_TEST_FUNC void test_decode_encode_overloads()
         TEST_EQ(0, res.u32dist);
         TEST_EQ(0, (res.stale_src_ptr - input.end()));
 
-        str_view output(buff, res.dst_ptr);
+        const str_view output(buff, res.dst_ptr);
 
         TEST_STR_EQ(output, expected_non_stop);
     }
@@ -523,7 +523,7 @@ STRF_TEST_FUNC void test_decode_encode_overloads()
         TEST_EQ(1, notifier.invalid_sequence_calls_count);
         TEST_EQ(0, notifier.unsupported_codepoints_calls_count);
 
-        str_view output(buff, res.dst_ptr);
+        const str_view output(buff, res.dst_ptr);
 
         TEST_STR_EQ(output, expected_stop_on_inv_seq);
     }
@@ -541,7 +541,7 @@ STRF_TEST_FUNC void test_decode_encode_overloads()
         TEST_TRUE(res.stop_reason == stop_reason::unsupported_codepoint);
         TEST_EQ(1, notifier.unsupported_codepoints_calls_count);
 
-        str_view output(buff, res.dst_ptr);
+        const str_view output(buff, res.dst_ptr);
 
         TEST_STR_EQ(output, expected_stop_on_unsupported_codepoint);
     }
@@ -562,7 +562,7 @@ STRF_TEST_FUNC void test_decode_encode_overloads()
         TEST_EQ(0, res.u32dist);
         TEST_EQ(0, (res.stale_src_ptr - input.end()));
 
-        str_view output(buff, res.dst_ptr);
+        const str_view output(buff, res.dst_ptr);
 
         TEST_STR_EQ(output, expected_non_stop);
     }
@@ -580,7 +580,7 @@ STRF_TEST_FUNC void test_decode_encode_overloads()
         TEST_EQ(1, notifier.invalid_sequence_calls_count);
         TEST_EQ(0, notifier.unsupported_codepoints_calls_count);
 
-        str_view output(buff, res.dst_ptr);
+        const str_view output(buff, res.dst_ptr);
 
         TEST_STR_EQ(output, expected_stop_on_inv_seq);
     }
@@ -597,7 +597,7 @@ STRF_TEST_FUNC void test_decode_encode_overloads()
         TEST_TRUE(res.stop_reason == stop_reason::unsupported_codepoint);
         TEST_EQ(1, notifier.unsupported_codepoints_calls_count);
 
-        str_view output(buff, res.dst_ptr);
+        const str_view output(buff, res.dst_ptr);
 
         TEST_STR_EQ(output, expected_stop_on_unsupported_codepoint);
     }
@@ -606,7 +606,7 @@ STRF_TEST_FUNC void test_decode_encode_overloads()
 
 #ifdef STRF_HAS_STD_STRING_VIEW
 
-    std::string_view src_view{src, static_cast<std::size_t>(src_end - src)};
+    const std::string_view src_view{src, static_cast<std::size_t>(src_end - src)};
 
     // Overload 1 with flags_none
     {
@@ -623,7 +623,7 @@ STRF_TEST_FUNC void test_decode_encode_overloads()
         TEST_EQ(0, res.u32dist);
         TEST_EQ(0, (res.stale_src_ptr - input.end()));
 
-        str_view output(buff, res.dst_ptr);
+        const str_view output(buff, res.dst_ptr);
 
         TEST_STR_EQ(output, expected_non_stop);
     }
@@ -642,7 +642,7 @@ STRF_TEST_FUNC void test_decode_encode_overloads()
         TEST_EQ(1, notifier.invalid_sequence_calls_count);
         TEST_EQ(0, notifier.unsupported_codepoints_calls_count);
 
-        str_view output(buff, res.dst_ptr);
+        const str_view output(buff, res.dst_ptr);
 
         TEST_STR_EQ(output, expected_stop_on_inv_seq);
     }
@@ -659,7 +659,7 @@ STRF_TEST_FUNC void test_decode_encode_overloads()
         TEST_TRUE(res.stop_reason == stop_reason::unsupported_codepoint);
         TEST_EQ(1, notifier.unsupported_codepoints_calls_count);
 
-        str_view output(buff, res.dst_ptr);
+        const str_view output(buff, res.dst_ptr);
 
         TEST_STR_EQ(output, expected_stop_on_unsupported_codepoint);
     }
@@ -680,7 +680,7 @@ STRF_TEST_FUNC void test_decode_encode_overloads()
         TEST_EQ(0, res.u32dist);
         TEST_EQ(0, (res.stale_src_ptr - input.end()));
 
-        str_view output(buff, res.dst_ptr);
+        const str_view output(buff, res.dst_ptr);
 
         TEST_STR_EQ(output, expected_non_stop);
     }
@@ -698,7 +698,7 @@ STRF_TEST_FUNC void test_decode_encode_overloads()
         TEST_EQ(1, notifier.invalid_sequence_calls_count);
         TEST_EQ(0, notifier.unsupported_codepoints_calls_count);
 
-        str_view output(buff, res.dst_ptr);
+        const str_view output(buff, res.dst_ptr);
 
         TEST_STR_EQ(output, expected_stop_on_inv_seq);
     }
@@ -715,7 +715,7 @@ STRF_TEST_FUNC void test_decode_encode_overloads()
         TEST_TRUE(res.stop_reason == stop_reason::unsupported_codepoint);
         TEST_EQ(1, notifier.unsupported_codepoints_calls_count);
 
-        str_view output(buff, res.dst_ptr);
+        const str_view output(buff, res.dst_ptr);
 
         TEST_STR_EQ(output, expected_stop_on_unsupported_codepoint);
     }
@@ -823,7 +823,7 @@ void test_decode_encode_size_overloads()
 
 #ifdef STRF_HAS_STD_STRING_VIEW
 
-    std::string_view src_view{src, static_cast<std::size_t>(src_end - src)};
+    const std::string_view src_view{src, static_cast<std::size_t>(src_end - src)};
 
     // Overload 1 with flags_none
     {
