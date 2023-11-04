@@ -24,7 +24,11 @@ void test_narrow_successfull_writing()
     writer.write(double_str.begin(), double_str.size());
     auto status = writer.finish();
     TEST_TRUE(0 == fflush(file));
-    std::rewind(file);
+    if (0 != std::fseek(file, 0, SEEK_SET)) {
+        TEST_ERROR("std::fseek error");
+        return;
+    }
+
     auto obtained_content = test_utils::read_file<CharT>(file);
     TEST_TRUE(0 == fclose(file));
 
@@ -52,7 +56,11 @@ void test_wide_successfull_writing()
     writer.write(double_str.begin(), double_str.size());
     auto status = writer.finish();
     TEST_TRUE(0 == fflush(file));
-    std::rewind(file);
+    if (0 != std::fseek(file, 0, SEEK_SET)) {
+        TEST_ERROR("std::fseek error");
+        return;
+    }
+
     auto obtained_content = test_utils::read_wfile(file);
     TEST_TRUE(0 == fclose(file));
 
