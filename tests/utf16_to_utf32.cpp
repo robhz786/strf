@@ -396,7 +396,6 @@ STRF_TEST_FUNC void utf16_to_utf32_error_notifier()
             strf::to(buff) .with(notifier_ptr) (strf::sani(invalid_input));
         } catch (dummy_exception&) {
             thrown = true;
-        } catch(...) {
         }
         TEST_TRUE(thrown);
     }

@@ -39,6 +39,7 @@ public:
             const std::streamsize count = this->buffer_ptr() - buf_;
 
 #if defined __cpp_exceptions
+            // NOLINTNEXTLINE(bugprone-empty-catch)
             try { dst_.sputn(buf_, count); } catch(...) {};
 #else
             dst_.sputn(buf_, count);

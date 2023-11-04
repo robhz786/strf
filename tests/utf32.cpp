@@ -361,7 +361,6 @@ STRF_TEST_FUNC void utf32_error_notifier()
                     (strf::sani(invalid_input));
             } catch (dummy_exception&) {
                 thrown = true;
-            } catch(...) {
             }
             TEST_TRUE(thrown);
         }

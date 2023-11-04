@@ -1149,7 +1149,6 @@ STRF_TEST_FUNC void utf8_sani_error_notifier()
             strf::to(buff) .with(notifier_ptr) (strf::sani("\xED\xA0\x80"));
         } catch (dummy_exception&) {
             thrown = true;
-        } catch(...) {
         }
         TEST_TRUE(thrown);
     }
