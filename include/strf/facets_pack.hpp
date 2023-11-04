@@ -354,7 +354,7 @@ public:
     constexpr STRF_HD explicit fpe_wrapper
         ( strf::constrained_fpe<Filter, FPE>&& cfpe )
         noexcept(noexcept(F(std::declval<F>())))
-        : fpe_(std::move(cfpe.get()))
+        : fpe_(std::move(cfpe).get())
     {
     }
 
@@ -395,8 +395,6 @@ public:
         : fpe_(fpe)
     {
     }
-
-    constexpr STRF_HD fpe_wrapper(FPE&& fpe) = delete;
 
     template <typename Tag, typename Category>
     constexpr STRF_HD
@@ -666,14 +664,23 @@ public:
     {
     }
 
-    constexpr STRF_HD const FPE& get() const
+    constexpr STRF_HD const FPE& get() const &
     {
         return fpe_;
     }
 
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD FPE& get()
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD FPE& get() &
     {
         return fpe_;
+    }
+    constexpr STRF_HD const FPE&& get() const &&
+    {
+        return std::move(fpe_);
+    }
+
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD FPE&& get() &&
+    {
+        return std::move(fpe_);
     }
 
 private:
@@ -806,6 +813,7 @@ private:
              , strf::detail::enable_if_t<sizeof...(I) != 0, int> = 0 >
     constexpr STRF_HD facets_pack
         ( strf::detail::index_sequence<I...>
+          // NOLINTNEXTLINE(cppcoreguidelines-rvalue-reference-param-not-moved)
         , facets_pack<PackedFpes...>&& fp
         , OtherFpes&&... fpes )
         : facets_pack(std::move(fp.template get_element<I>())..., (OtherFpes&&)fpes...)

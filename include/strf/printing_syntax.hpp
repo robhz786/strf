@@ -668,7 +668,7 @@ public:
         , ReservePolicy poli
         , otherFPEs&&... fpes )
         : reserve_funcs_t_(poli)
-        , dest_creator_(destCreator)
+        , dest_creator_(std::move(destCreator))
         , fpack_((otherFPEs&&)fpes...)
     {
     }

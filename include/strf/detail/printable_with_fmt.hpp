@@ -54,7 +54,7 @@ struct fmt_forward_switcher
     static STRF_HD typename FmtB::template fn<ValueWithFormat>&&
     f(const FmtAInit&, ValueWithFormat&& v)
     {
-        return v;
+        return std::move(v);
     }
 };
 
@@ -72,7 +72,7 @@ struct fmt_forward_switcher<FmtA, FmtA, ValueWithFormat>
     static constexpr STRF_HD FmtAInit&&
     f(strf::detail::remove_reference_t<FmtAInit>&& fa, const ValueWithFormat&)
     {
-        return static_cast<FmtAInit&&>(fa);
+        return std::move(fa);
     }
 };
 
@@ -155,7 +155,7 @@ public:
         : Fmts::template fn<printable_with_fmt<PrintingTraits, Fmts...>>
             ( static_cast
               < typename Fmts
-             :: template fn<printable_with_fmt<OtherPrintingTraits, Fmts...>> &&>(f) )
+             :: template fn<printable_with_fmt<OtherPrintingTraits, Fmts...>> &&>(std::move(f)) )
         ...
         , value_(static_cast<value_type&&>(v))
     {
@@ -191,7 +191,7 @@ public:
         : Fmts::template fn<printable_with_fmt<PrintingTraits, Fmts...>>
             ( static_cast
               < typename OtherFmts
-             :: template fn<printable_with_fmt<PrintingTraits, OtherFmts ...>>&& >(f) )
+              :: template fn<printable_with_fmt<PrintingTraits, OtherFmts ...>>&& >(std::move(f)) )
         ...
         , value_(static_cast<value_type&&>(f.value()))
     {
