@@ -1008,8 +1008,9 @@ struct impl_iso_8859_9
             case 0xFD:
             case 0xFE:
                 return 0x100;
+            default:
+                return ch;
         }
-        return ch;
     }
 
     static STRF_HD char32_t decode(std::uint8_t ch) noexcept
@@ -1024,8 +1025,9 @@ struct impl_iso_8859_9
             case 0xF0: return 0x011F;
             case 0xFD: return 0x0131;
             case 0xFE: return 0x015F;
+            default:
+                return ch;
         }
-        return ch;
     }
 };
 
@@ -1445,8 +1447,9 @@ STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_15::encode_ext(char32_t ch) noexce
         case 0xBD:
         case 0xBE:
             return 0x100;
+        default:
+            return ch;
     }
-    return ch;
 }
 
 #endif // ! defined(STRF_OMIT_IMPL)
@@ -1817,8 +1820,8 @@ STRF_FUNC_IMPL STRF_HD unsigned impl_windows_1252::encode_ext(char32_t ch) noexc
         case 0x017E: return 0x9E;
         case 0x0178: return 0x9F;
         case 0xFFFD: return '?';
+        default: return 0x100;
     }
-    return 0x100;
 }
 
 #endif // ! defined(STRF_OMIT_IMPL)
@@ -1959,8 +1962,8 @@ public:
             case 0xF0: return 0x011F;
             case 0xFD: return 0x0131;
             case 0xFE: return 0x015F;
+            default: return ch;
         }
-        return ch;
     }
 
     static STRF_HD unsigned encode(char32_t ch) noexcept
@@ -2018,8 +2021,8 @@ STRF_FUNC_IMPL STRF_HD unsigned impl_windows_1254::encode_ext(char32_t ch) noexc
         case 0x20AC: return 0x80;
         case 0x2122: return 0x99;
         case 0xFFFD: return '?';
+        default: return 0xA0 <= ch && ch <= 0xFF ? ch : 0x100;
     }
-    return 0xA0 <= ch && ch <= 0xFF ? ch : 0x100;
 }
 
 #endif //! defined(STRF_OMIT_IMPL)
