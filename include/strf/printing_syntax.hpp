@@ -66,7 +66,7 @@ public:
     template <bool Line, typename DestCreator, typename... Printers>
     static STRF_HD return_type<DestCreator> print
         ( const DestCreator& dest_creator
-        , const preprinting_type&
+        , const preprinting_type*
         , const Printers& ... printers )
     {
         typename DestCreator::destination_type dst{dest_creator.create()};
@@ -98,7 +98,7 @@ public:
     template <bool Line, typename DestCreator, typename... Printers>
     STRF_HD return_type<DestCreator> print
         ( const DestCreator& dest_creator
-        , const preprinting_type&
+        , const preprinting_type*
         , const Printers& ... printers ) const
     {
         typename DestCreator::sized_destination_type dst{dest_creator.create(space)};
@@ -123,10 +123,10 @@ public:
     template <bool Line, typename DestCreator, typename... Printers>
     static STRF_HD return_type<DestCreator> print
         ( const DestCreator& dest_creator
-        , const preprinting_type& pre
+        , const preprinting_type* pre
         , const Printers& ... printers )
     {
-        const auto size = pre.accumulated_size() + Line;
+        const auto size = pre->accumulated_size() + Line;
         typename DestCreator::sized_destination_type dst{dest_creator.create(size)};
         strf::detail::write_args(dst, printers...);
         STRF_IF_CONSTEXPR (Line) {

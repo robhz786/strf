@@ -133,27 +133,27 @@ private:
     void print_ipv6(strf::destination<CharT>& dst) const;
 
     template <typename PrePrinting, typename Charset>
-    void init_(PrePrinting& pre, Charset charset);
+    void init_(PrePrinting* pre, Charset charset);
 };
 
 template <typename CharT>
 template <typename PrePrinting, typename Charset>
-void ipv6_printer<CharT>::init_(PrePrinting& pre, Charset charset)
+void ipv6_printer<CharT>::init_(PrePrinting* pre, Charset charset)
 {
     if (style_ == ipv6style::little) {
         abbrev_ = xxx::ipv6address_abbreviation{addr_};
     }
     auto count = count_ipv6_characters();
     if (strf::compare(alignment_fmt_.width, count) <= 0) {
-        pre.subtract_width(static_cast<strf::width_t>(count));
+        pre->subtract_width(static_cast<strf::width_t>(count));
     } else {
         fillcount_ = strf::sat_sub(alignment_fmt_.width, count).round();
         if (PrePrinting::size_required && fillcount_ > 0) {
-            pre.add_size(fillcount_ * charset.encoded_char_size(alignment_fmt_.fill));
+            pre->add_size(fillcount_ * charset.encoded_char_size(alignment_fmt_.fill));
         }
-        pre.subtract_width(alignment_fmt_.width);
+        pre->subtract_width(alignment_fmt_.width);
     }
-    pre.add_size(count);
+    pre->add_size(count);
 }
 
 inline int hex_digits_count(std::uint16_t x)
@@ -229,7 +229,7 @@ struct printable_traits<xxx::ipv6address> {
     template <typename CharT, typename PrePrinting, typename FPack, typename... T>
     static auto make_input
         ( strf::tag<CharT>
-        , PrePrinting& pre
+        , PrePrinting* pre
         , const FPack& fp
         , strf::printable_with_fmt<T...> arg )
         -> strf::usual_printer_input

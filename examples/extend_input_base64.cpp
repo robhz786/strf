@@ -90,7 +90,7 @@ struct base64_printing
     template <typename CharT, typename PrePrinting, typename FPack>
     static auto make_input
         ( strf::tag<CharT>
-        , PrePrinting& pre
+        , PrePrinting* pre
         , const FPack& fp
         , base64_input_with_formatters x )
         -> strf::usual_printer_input
@@ -118,18 +118,18 @@ public:
     template <strf::precalc_size PrecalcSize>
     base64_printer
         ( base64_facet facet
-        , strf::preprinting<PrecalcSize, strf::precalc_width::no>& pre
+        , strf::preprinting<PrecalcSize, strf::precalc_width::no>* pre
         , const base64_input_with_formatters& fmt );
 
     void print_to(strf::destination<CharT>& dst) const override;
 
 private:
 
-    void calc_size_(strf::size_accumulator<false>&) const
+    void calc_size_(strf::size_accumulator<false>*) const
     {
     }
 
-    void calc_size_(strf::size_accumulator<true>&) const;
+    void calc_size_(strf::size_accumulator<true>*) const;
 
     void write_single_line_(strf::destination<CharT>& dst) const;
 
@@ -156,7 +156,7 @@ template <typename CharT>
 template <strf::precalc_size PrecalcSize>
 base64_printer<CharT>::base64_printer
     ( base64_facet facet
-    , strf::preprinting<PrecalcSize, strf::precalc_width::no>& pre
+    , strf::preprinting<PrecalcSize, strf::precalc_width::no>* pre
     , const base64_input_with_formatters& fmt )
     : facet_(facet)
     , fmt_(fmt)
@@ -165,16 +165,16 @@ base64_printer<CharT>::base64_printer
 }
 
 template <typename CharT>
-void base64_printer<CharT>::calc_size_(strf::size_accumulator<true>& pre) const
+void base64_printer<CharT>::calc_size_(strf::size_accumulator<true>* pre) const
 {
     auto num_digits = 4 * (fmt_.value().num_bytes + 2) / 3;
-    pre.add_size(num_digits);
+    pre->add_size(num_digits);
     if (facet_.line_length > 0 && facet_.eol[0] != '\0') {
         auto num_lines
             = (num_digits + facet_.line_length - 1)
             / facet_.line_length;
         auto eol_size = 1 + (facet_.eol[1] != '\0');
-        pre.add_size(num_lines * (fmt_.indentation() + eol_size));
+        pre->add_size(num_lines * (fmt_.indentation() + eol_size));
     }
 }
 

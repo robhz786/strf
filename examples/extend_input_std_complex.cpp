@@ -158,7 +158,7 @@ struct printable_traits<std::complex<FloatT>>
     // template <typename CharT, typename PrePrinting, typename FPack>
     // static auto make_input
     //     ( strf::tag<CharT>
-    //     , PrePrinting& pre
+    //     , PrePrinting* pre
     //     , const FPack& fp
     //     , std::complex<FloatT> arg)
     // {
@@ -178,7 +178,7 @@ struct printable_traits<std::complex<FloatT>>
     template <typename CharT, typename PrePrinting, typename FPack, typename... T>
     static auto make_input
         ( strf::tag<CharT>
-        , PrePrinting& pre
+        , PrePrinting* pre
         , const FPack& fp
         , strf::printable_with_fmt<T...> arg )
     {

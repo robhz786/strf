@@ -30,7 +30,7 @@ struct printable_traits<bool>
     template <typename CharT, typename PrePrinting, typename FPack>
     constexpr STRF_HD static auto make_input
         ( strf::tag<CharT>
-        , PrePrinting& pre
+        , PrePrinting* pre
         , const FPack& fp
         , bool x ) noexcept
         -> strf::usual_printer_input
@@ -42,7 +42,7 @@ struct printable_traits<bool>
     template <typename CharT, typename PrePrinting, typename FPack, typename... T>
     constexpr STRF_HD static auto make_input
         ( strf::tag<CharT>
-        , PrePrinting& pre
+        , PrePrinting* pre
         , const FPack& fp
         , strf::printable_with_fmt<T...> x ) noexcept
         -> strf::usual_printer_input
@@ -70,8 +70,8 @@ public:
         : value_(input.arg)
         , lettercase_(strf::use_facet<strf::lettercase_c, bool>(input.facets))
     {
-        input.pre.subtract_width(static_cast<strf::width_t>(5 - (int)input.arg));
-        input.pre.add_size(5 - (int)input.arg);
+        input.pre->subtract_width(static_cast<strf::width_t>(5 - (int)input.arg));
+        input.pre->add_size(5 - (int)input.arg);
     }
 
     void STRF_HD print_to(strf::destination<CharT>& dst) const override;
@@ -125,12 +125,12 @@ public:
         if (fmt_width > w) {
             encode_fill_ = charset.encode_fill_func();
             fillcount_ = fmt_width - w;
-            input.pre.subtract_width(static_cast<strf::width_t>(fmt_width));
-            input.pre.add_size(w + fillcount_ * charset.encoded_char_size(afmt_.fill));
+            input.pre->subtract_width(static_cast<strf::width_t>(fmt_width));
+            input.pre->add_size(w + fillcount_ * charset.encoded_char_size(afmt_.fill));
         } else {
             fillcount_ = 0;
-            input.pre.subtract_width(static_cast<strf::width_t>(w));
-            input.pre.add_size(w);
+            input.pre->subtract_width(static_cast<strf::width_t>(w));
+            input.pre->add_size(w);
         }
     }
 

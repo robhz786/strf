@@ -70,7 +70,7 @@ struct italian_bool_facet
 
     template <typename CharT, typename Pre, typename FPack>
     constexpr static auto make_input
-        ( strf::tag<CharT>, Pre& pre, const FPack&, bool x ) noexcept
+        ( strf::tag<CharT>, Pre* pre, const FPack&, bool x ) noexcept
     {
         return strf::{make_printer_input}<CharT>
             ( pre
@@ -81,7 +81,7 @@ struct italian_bool_facet
     template <typename CharT, typename Pre, typename FPack, typename... T>
     constexpr static auto make_input
         ( strf::tag<CharT>
-        , Pre& pre
+        , Pre* pre
         , const FPack& fp
         , strf::{printable_with_fmt}<T\...> x ) noexcept
     {

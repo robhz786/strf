@@ -12,7 +12,7 @@ struct my_bool_overrider
     template <typename CharT, typename PrePrinting, typename FPack, typename... T>
     constexpr auto make_input
         ( strf::tag<CharT>
-        , PrePrinting& pre
+        , PrePrinting* pre
         , const FPack& fp
         , strf::printable_with_fmt<T...> x ) const noexcept
     {

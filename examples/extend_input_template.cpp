@@ -24,7 +24,7 @@ struct base_printing {
     template <typename CharT, typename PrePrinting, typename FPack>
     static auto make_input
         ( strf::tag<CharT>
-        , PrePrinting& pre
+        , PrePrinting* pre
         , const FPack& fp
         , forwarded_type x ) noexcept
     {

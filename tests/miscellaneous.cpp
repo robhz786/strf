@@ -45,21 +45,21 @@ STRF_TEST_FUNC void test_miscellaneous()
     {   // precalculate size
         strf::preprinting<strf::precalc_size::yes, strf::precalc_width::no> p;
 
-        strf::precalculate<char>(p, strf::pack());
+        strf::precalculate<char>(&p, strf::pack());
         TEST_EQ(p.accumulated_ssize(), 0);
 
-        strf::precalculate<char>(p, strf::pack(), 1, 23, 456, 7890);
+        strf::precalculate<char>(&p, strf::pack(), 1, 23, 456, 7890);
         TEST_EQ(p.accumulated_ssize(), 10);
     }
 
     {   // precalculate size and width
         strf::preprinting<strf::precalc_size::yes, strf::precalc_width::yes>p{1000};
 
-        strf::precalculate<char>(p, strf::pack());
+        strf::precalculate<char>(&p, strf::pack());
         TEST_EQ(p.accumulated_ssize(), 0);
         TEST_TRUE(p.remaining_width() == 1000);
 
-        strf::precalculate<char>(p, strf::pack(), 1, 23, 456, 7890);
+        strf::precalculate<char>(&p, strf::pack(), 1, 23, 456, 7890);
         TEST_EQ(p.accumulated_ssize(), 10);
         TEST_TRUE(p.remaining_width() == 1000 - 10);
     }
@@ -67,14 +67,14 @@ STRF_TEST_FUNC void test_miscellaneous()
     {   // precalculate width
         strf::preprinting<strf::precalc_size::no, strf::precalc_width::yes>p{8_w};
 
-        strf::precalculate<char>(p, strf::pack());
+        strf::precalculate<char>(&p, strf::pack());
         TEST_TRUE(p.remaining_width() == 8_w);
 
-        strf::precalculate<char>(p, strf::pack(), 1, 23, 456);
+        strf::precalculate<char>(&p, strf::pack(), 1, 23, 456);
         TEST_TRUE(p.remaining_width() == 2_w);
-        strf::precalculate<char>(p, strf::pack(), 1, 23, 456);
+        strf::precalculate<char>(&p, strf::pack(), 1, 23, 456);
         TEST_TRUE(p.remaining_width() == 0);
-        strf::precalculate<char>(p, strf::pack(), 1);
+        strf::precalculate<char>(&p, strf::pack(), 1);
         TEST_TRUE(p.remaining_width() == 0);
     }
     {   // precalculate width
@@ -94,8 +94,8 @@ STRF_TEST_FUNC void test_miscellaneous()
     }
     {   // don't precalculate anything
         strf::no_preprinting p;
-        strf::precalculate<char>(p, strf::pack());
-        strf::precalculate<char>(p, strf::pack(), 1, 23, 456);
+        strf::precalculate<char>(&p, strf::pack());
+        strf::precalculate<char>(&p, strf::pack(), 1, 23, 456);
         TEST_EQ(p.accumulated_ssize(), 0);
         TEST_TRUE(p.remaining_width() == 0);
     }

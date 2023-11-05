@@ -29,7 +29,7 @@ struct char_printing
     template <typename DstCharT, typename PrePrinting, typename FPack>
     constexpr STRF_HD static auto make_input
         ( strf::tag<DstCharT>
-        , PrePrinting& pre
+        , PrePrinting* pre
         , const FPack& fp
         , SrcCharT x ) noexcept
         -> strf::usual_printer_input
@@ -42,7 +42,7 @@ struct char_printing
     template <typename DstCharT, typename PrePrinting, typename FPack, typename... T>
     constexpr STRF_HD static auto make_input
         ( strf::tag<DstCharT>
-        , PrePrinting& pre
+        , PrePrinting* pre
         , const FPack& fp
         , strf::printable_with_fmt<T...> x ) noexcept
         -> strf::usual_printer_input
@@ -73,7 +73,7 @@ struct printable_traits<char32_t>
     template <typename DstCharT, typename PrePrinting, typename FPack>
     constexpr STRF_HD static auto make_input
         ( strf::tag<DstCharT>
-        , PrePrinting& pre
+        , PrePrinting* pre
         , const FPack& fp
         , char32_t x ) noexcept
         -> strf::usual_printer_input
@@ -89,7 +89,7 @@ struct printable_traits<char32_t>
     template <typename DstCharT, typename PrePrinting, typename FPack, typename... F>
     constexpr STRF_HD static auto make_input
         ( strf::tag<DstCharT>
-        , PrePrinting& pre
+        , PrePrinting* pre
         , const FPack& fp
         , strf::printable_with_fmt<F...> x ) noexcept
         -> strf::usual_printer_input
@@ -138,12 +138,12 @@ public:
         ( const strf::usual_printer_input<CharT, T...>& input )
         : ch_(static_cast<CharT>(input.arg))
     {
-        input.pre.add_size(1);
-        if (input.pre.has_remaining_width()) {
+        input.pre->add_size(1);
+        if (input.pre->has_remaining_width()) {
             auto&& wcalc = use_facet<strf::width_calculator_c, CharT>(input.facets);
             auto charset = use_facet<strf::charset_c<CharT>, CharT>(input.facets);
             auto w = wcalc.char_width(charset, static_cast<CharT>(ch_));
-            input.pre.subtract_width(w);
+            input.pre->subtract_width(w);
         }
     }
 
@@ -201,23 +201,23 @@ private:
     }
 
     template <typename PrePrinting, typename WCalc, typename Charset>
-    STRF_HD void init_(PrePrinting& pre, const WCalc& wc, Charset charset);
+    STRF_HD void init_(PrePrinting* pre, const WCalc& wc, Charset charset);
 };
 
 template <typename CharT>
 template <typename PrePrinting, typename WCalc, typename Charset>
 STRF_HD void fmt_char_printer<CharT>::init_
-    ( PrePrinting& pre, const WCalc& wc, Charset charset )
+    ( PrePrinting* pre, const WCalc& wc, Charset charset )
 {
     auto ch_width = wc.char_width(charset, ch_);
     auto content_width = strf::sat_mul(ch_width, count_);
     int fillcount = 0;
     if (content_width < afmt_.width) {
         fillcount = (afmt_.width - content_width).round();
-        pre.subtract_width(content_width + static_cast<strf::width_t>(fillcount));
+        pre->subtract_width(content_width + static_cast<strf::width_t>(fillcount));
     } else {
         fillcount = 0;
-        pre.subtract_width(content_width);
+        pre->subtract_width(content_width);
     }
     switch(afmt_.alignment) {
         case strf::text_alignment::left:
@@ -236,9 +236,9 @@ STRF_HD void fmt_char_printer<CharT>::init_
     }
     STRF_IF_CONSTEXPR (PrePrinting::size_required) {
         if (fillcount > 0) {
-            pre.add_size(count_ + fillcount * charset.encoded_char_size(afmt_.fill));
+            pre->add_size(count_ + fillcount * charset.encoded_char_size(afmt_.fill));
         } else {
-            pre.add_size(count_);
+            pre->add_size(count_);
         }
     }
 }
@@ -287,10 +287,10 @@ public:
         STRF_MAYBE_UNUSED(encoding);
         encode_char_f_ = encoding.encode_char_func();
         encoded_char_size_ = encoding.encoded_char_size(input.arg);
-        input.pre.add_size(encoded_char_size_);
-        if (input.pre.has_remaining_width()) {
+        input.pre->add_size(encoded_char_size_);
+        if (input.pre->has_remaining_width()) {
             auto&& wcalc = use_facet<strf::width_calculator_c, char32_t>(input.facets);
-            input.pre.subtract_width(wcalc.char_width(strf::utf_t<char32_t>{}, ch_));
+            input.pre->subtract_width(wcalc.char_width(strf::utf_t<char32_t>{}, ch_));
         }
     }
 
@@ -332,7 +332,7 @@ private:
 
     template <typename PrePrinting, typename Charset>
     void STRF_HD init_
-        ( PrePrinting& pre
+        ( PrePrinting* pre
         , Charset charset
         , strf::alignment_format afmt
         , strf::width_t ch_width );
@@ -348,7 +348,7 @@ private:
 template <typename DstCharT>
 template <typename PrePrinting, typename Charset>
 void STRF_HD fmt_conv_char32_printer<DstCharT>::init_
-    ( PrePrinting& pre
+    ( PrePrinting* pre
     , Charset charset
     , strf::alignment_format afmt
     , strf::width_t ch_width )
@@ -359,15 +359,15 @@ void STRF_HD fmt_conv_char32_printer<DstCharT>::init_
     alignment_ = afmt.alignment;
     if (content_width < afmt.width) {
         fillcount_ = (afmt.width - content_width).round();
-        pre.subtract_width(content_width + static_cast<strf::width_t>(fillcount_));
+        pre->subtract_width(content_width + static_cast<strf::width_t>(fillcount_));
     } else {
         fillcount_ = 0;
-        pre.subtract_width(content_width);
+        pre->subtract_width(content_width);
     }
     STRF_IF_CONSTEXPR (PrePrinting::size_required) {
-        pre.add_size(count_ * charset.encoded_char_size(ch_));
+        pre->add_size(count_ * charset.encoded_char_size(ch_));
         if (fillcount_ > 0) {
-            pre.add_size(fillcount_ * charset.encoded_char_size(afmt.fill));
+            pre->add_size(fillcount_ * charset.encoded_char_size(afmt.fill));
         }
     }
 }

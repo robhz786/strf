@@ -57,7 +57,7 @@ struct printable_traits<strf::inner_pack_with_args<ChildFPack, Args...>>
     template < typename CharT, typename PrePrinting, typename FPack>
     STRF_HD constexpr static auto make_input
         ( strf::tag<CharT>
-        , PrePrinting& pre
+        , PrePrinting* pre
         , const FPack& fp
         , const forwarded_type& x )
         -> strf::usual_printer_input

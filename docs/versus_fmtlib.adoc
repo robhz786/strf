@@ -383,7 +383,7 @@ struct strf::printable_traits<point<FloatT>> {
     template <typename CharT, typename Pre, typename FPack, typename... T>
     constexpr static auto make_input
         ( strf::tag<CharT>
-        , Pre& pre
+        , Pre* pre
         , const FPack& fp
         , strf::printable_with_fmt<T...> arg ) noexcept
     {

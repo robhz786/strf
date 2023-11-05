@@ -351,7 +351,7 @@ struct dont_override {
 namespace strf {
 
 template <typename CharT, typename Pre, typename FPack, typename Arg>
-constexpr /{asterisk}\...{asterisk}/ make_printer_input(Pre& pre, const FPack& facets, const Arg& arg);
+constexpr /{asterisk}\...{asterisk}/ make_printer_input(Pre* pre, const FPack& facets, const Arg& arg);
 
 } // namespace strf
 ----
@@ -381,7 +381,7 @@ namespace strf {
 template <typename CharT, typename Pre, typename FPack, typename Arg>
 using printer_input_type = decltype
     ( {make_printer_input}<CharT>
-        ( std::declval<Pre&>()
+        ( std::declval<Pre*>()
         , std::declval<const FPack&>()
         , std::declval<Arg>() ) );
 
@@ -654,7 +654,7 @@ template < typename CharT
          , typename\... FPE
          , typename\... Args >
 void precalculate
-    ( {preprinting}<PrecalcSize, PrecalcWidth>& pp
+    ( {preprinting}<PrecalcSize, PrecalcWidth>* pp
     , const {facets_pack}<FPE\...>& facets
     , const Args&\... args );
 ----
@@ -682,7 +682,7 @@ Effects::
 * When `PrecalcSize` is `precalc_size::no` and `PrecalcWidth` is `precalc_width::yes`,
   for each argument `arg` in `args\...` instantiates the correponding `printer`
   type with `pp`, `facets`, and `arg` ( again, using `{printer_type}`  and
-  `{make_printer_input}` ), while `pp.<<width_decumulator,remaining_width>>() > 0`
+  `{make_printer_input}` ), while `pp-><<width_decumulator,remaining_width>>() > 0`
   is `true`.
   This implies that not necessarily all argument in `arg\...` are used.
 * When `PrecalcSize` is `precalc_size::no` and `PrecalcWidth` is `precalc_width::no`,

@@ -110,7 +110,7 @@ struct printable_traits<std::complex<FloatT>> {
     template <typename CharT, typename Pre, typename FPack>
     static auto make_input
         ( strf::tag<CharT>           // <3>
-        , Pre& pre                   // <4>
+        , Pre* pre                   // <4>
         , const FPack& fp            // <5>
         , std::complex<FloatT> arg ) // <6>
     {
@@ -178,7 +178,7 @@ Remember that `make_printer_input` function does not actually
 print the value, it just creates and returns an object.
 
 Anyway, sometimes it is not possible to just return
-`strf::make_stringified_input(__something__...)`,
+`strf::make_printer_input(__something__...)`,
 __i.e.__ to simply convert the value to another type that is already printable.
 A <<creating_printer,further section>> explains how to deal with such cases.
 
@@ -243,7 +243,7 @@ struct printable_traits<std::complex<FloatT>> {
     template <typename CharT, typename Pre, typename FPack>
     static auto make_input
         ( strf::tag<CharT>
-        , Pre& pre
+        , Pre* pre
         , const FPack& fp
         , std::complex<FloatT> arg)
     {
@@ -426,7 +426,7 @@ struct printable_traits<std::complex<FloatT>> {
     template <typename CharT, typename Pre, typename FPack>
     static auto make_input
         ( strf::tag<CharT>
-        , Pre& pre
+        , Pre* pre
         , const FPack& fp
         , std::complex<FloatT> arg)
     {
@@ -437,7 +437,7 @@ struct printable_traits<std::complex<FloatT>> {
     template < typename CharT, typename Pre, typename FPack, typename\... T>
     static auto make_input
         ( strf::tag<CharT>
-        , Pre& pre
+        , Pre* pre
         , const FPack& fp
         , strf::{printable_with_fmt}<T\...> arg )
     {
@@ -635,7 +635,7 @@ struct printable_traits<std::complex<FloatT>> {
     template <typename CharT, typename Pre, typename FPack>
     static auto make_input
         ( strf::tag<CharT>
-        , Pre& pre
+        , Pre* pre
         , const FPack& fp
         , std::complex<FloatT> arg)
     {
@@ -646,7 +646,7 @@ struct printable_traits<std::complex<FloatT>> {
     template < typename CharT, typename Pre, typename FPack, typename\... T>
     static auto make_input
         ( strf::tag<CharT>
-        , Pre& pre
+        , Pre* pre
         , const FPack& fp
         , strf::{printable_with_fmt}<T\...> arg )
     {
@@ -769,7 +769,7 @@ struct printable_traits<std::complex<FloatT>>
     template <typename CharT, typename Pre, typename FPack>
     static auto make_input
         ( strf::tag<CharT>
-        , Pre& pre
+        , Pre* pre
         , const FPack& fp
         , std::complex<FloatT> arg )
         \-> strf::{usual_printer_input}
@@ -810,7 +810,7 @@ public:
 private:
 
     template <typename Pre, typename WCalc>
-    void pre_(Pre& pre, const WCalc& wcalc) const;
+    void pre_(Pre* pre, const WCalc& wcalc) const;
 
     strf::{dynamic_charset}<CharT> charset_;
     strf::{numpunct}<10> numpunct_;
@@ -877,7 +877,7 @@ no difference since charset facets are not constrainable.
 
 Now, in addition to initialize the object, the constructor *must*
 do another thing. `{usual_printer_input}` contains a `{preprinting}`
-reference, named `pre`. When the first template argument of this
+pointer, named `pre`. When the first template argument of this
 `preprinting` is `precalc_size::yes`, then
 we must inform the size of the content that `print_to` writes.
 Actually, let me rephare that, because it's a little bit tricky:
@@ -915,7 +915,7 @@ So if you don't care about supporting that situation, you can just do:
 
 [source,cpp,subs=normal]
 ----
-using pre_t = typename strf::usual_printer_input<T...>::preprinting_type;
+using pre_t = typename strf::usual_printer_input<T\...>::preprinting_type;
 static_assert(! pre_t::<<strf_hpp#preprinting,width_required>>);
 
 // or, if you don't want to calculate the size either:
@@ -924,11 +924,11 @@ static_assert(pre_t::<<strf_hpp#preprinting,nothing_required>>);
 
 Fortunately, in our case, calculating the size and width is not that difficult.
 For the floating point values, we can use the global function template
-`{pre}`. The rest of the content we can easily calculate manually:
+`{precalculate}`. The rest of the content we can easily calculate manually:
 
 ////
 For the floating point values, we can use the global function template
-`{pre}`, which we actually could use for the whole content . I mean, I could
+`{precalculate}`, which we actually could use for the whole content . I mean, I could
 implement the `pre_` member function very similiarly to `print_to`,
 basically just replacing every `print(__args__...)` by
 `strf::precalculate(pp, facets, __args__...)`. But there is a more efficient
@@ -939,32 +939,32 @@ implementation:
 ----
 template <typename CharT, typename FloatT>
 template <typename Pre, typename WidthCalc>
-void std_complex_printer<CharT, FloatT>::pre_(Pre& pp, const WidthCalc& wcalc) const
+void std_complex_printer<CharT, FloatT>::pre_(Pre* pp, const WidthCalc& wcalc) const
 {
     // calculate the size and/or width of the floating-point values:
     auto facets = strf::pack(lettercase_, numpunct_, charset_);
-    strf::precalculate<CharT>(pp, facets, coordinates_.first, coordinates_.second);
+    strf::{precalculate}<CharT>(pp, facets, coordinates_.first, coordinates_.second);
 
     // calculate the size and/or width of the other characters:
     switch (form_) {
         case complex_form::algebric:
-            pp.subtract_width(7);
-            pp.add_size(7);
+            pp\->subtract_width(7);
+            pp\->add_size(7);
             break;
 
         case complex_form::vector:
-            pp.subtract_width(4);
-            pp.add_size(4);
+            pp\->subtract_width(4);
+            pp\->add_size(4);
             break;
 
         default:
             assert(form_ == complex_form::polar);
-            if (pp.remaining_width() > 0) {
-                pp.subtract_width(wcalc.char_width(strf::utf32<char32_t>, anglechar_));
-                pp.subtract_width(1);
+            if (pp\->remaining_width() > 0) {
+                pp\->subtract_width(wcalc.char_width(strf::utf32<char32_t>, anglechar_));
+                pp\->subtract_width(1);
             }
-            pp.add_size(charset_.encoded_char_size(anglechar_));
-            pp.add_size(1);
+            pp\->add_size(charset_.encoded_char_size(anglechar_));
+            pp\->add_size(1);
     }
 }
 ----
@@ -979,7 +979,7 @@ When calculating the width is potentially expensive, it may worth to
 check the return of `remaining_width` &#x2014; if its not greater than zero,
 there is no further need to call `subract_width`.
 
-With this, are ready with our `std_complex_printer` class template.
+With this, we are ready with our `std_complex_printer` class template.
 But, of course, we are not done yet, since it only handles
 `std::complex` values without formatting. We need to create
 another printer &#x2014; you could name `fmt_std_complex_printer`

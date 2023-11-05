@@ -116,12 +116,12 @@ public:
         preprinting_t pre;
         auto fp = strf::pack((Fpes&&)fpes...);
         return reserve_policy.template print<Ln>
-            ( dest_creator, pre
+            ( dest_creator, &pre
             , static_cast<const strf::printer<char_type>&>
                 ( strf::printer_type
                   < char_type, preprinting_t, decltype(fp), Printables >
                     ( strf::make_printer_input<char_type>
-                        ( pre, fp, (Printables&&)printables ) ) )... );
+                        ( &pre, fp, (Printables&&)printables ) ) )... );
     }
 };
 

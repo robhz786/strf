@@ -1124,7 +1124,7 @@ struct default_int_printer_input
 
     template<typename FPack>
     constexpr STRF_HD default_int_printer_input
-        ( Pre& pre_, const FPack&, IntT arg_) noexcept
+        ( Pre* pre_, const FPack&, IntT arg_) noexcept
         : pre(pre_)
         , value(arg_)
     {
@@ -1132,7 +1132,7 @@ struct default_int_printer_input
 
     template<typename FPack, typename PTraits>
     constexpr STRF_HD default_int_printer_input
-        ( Pre& pre_
+        ( Pre* pre_
         , const FPack&
         , strf::printable_with_fmt
             < PTraits
@@ -1143,7 +1143,7 @@ struct default_int_printer_input
     {
     }
 
-    Pre& pre;
+    Pre* pre;
     IntT value;
 };
 
@@ -1182,7 +1182,7 @@ public:
     template <typename CharT, typename PrePrinting, typename FPack>
     constexpr STRF_HD static auto make_input
         ( strf::tag<CharT>
-        , PrePrinting& pre
+        , PrePrinting* pre
         , const FPack& facets
         , IntT x ) noexcept
         -> strf::detail::default_int_printer_input<CharT, PrePrinting, IntT>
@@ -1194,7 +1194,7 @@ public:
              , typename PTraits, int Base, bool HasAlignment >
     constexpr STRF_HD static auto make_input
         ( strf::tag<CharT>
-        , PrePrinting& pre
+        , PrePrinting* pre
         , const FPack& facets
         , vwf_nopp_<PTraits, Base, HasAlignment> x ) noexcept
         -> strf::usual_printer_input
@@ -1211,7 +1211,7 @@ public:
              , typename PTraits, int Base, bool Punctuate, bool HasAlignment >
     constexpr STRF_HD static auto make_input
         ( strf::tag<CharT>
-        , PrePrinting& pre
+        , PrePrinting* pre
         , const FPack& facets
         , vwf_bp_<PTraits, Base, Punctuate, HasAlignment> x )
         -> strf::usual_printer_input
@@ -1225,7 +1225,7 @@ public:
              , typename PTraits, bool HasAlignment>
     constexpr STRF_HD static auto make_input
         ( strf::tag<CharT>
-        , PrePrinting& pre
+        , PrePrinting* pre
         , const FPack& facets
         , vwf_<PTraits, HasAlignment> x )
         -> strf::detail::conditional_t
@@ -1242,7 +1242,7 @@ public:
              , typename PTraits, bool HasAlignment>
     constexpr STRF_HD static auto make_input
         ( strf::tag<CharT>
-        , PrePrinting& pre
+        , PrePrinting* pre
         , const FPack& facets
         , vwf_full_dynamic_<PTraits, HasAlignment> x )
         -> strf::usual_printer_input
@@ -1337,7 +1337,7 @@ struct voidptr_printing
     template <typename CharT, typename PrePrinting, typename FPack>
     constexpr STRF_HD static auto make_input
         ( strf::tag<CharT>
-        , PrePrinting& pre
+        , PrePrinting* pre
         , const FPack& facets
         , const void* x ) noexcept
     -> decltype( strf::make_default_printer_input<CharT>
@@ -1360,7 +1360,7 @@ struct voidptr_printing
     template <typename CharT, typename PrePrinting, typename FPack, typename... T>
     constexpr STRF_HD static auto make_input
         ( strf::tag<CharT>
-        , PrePrinting& pre
+        , PrePrinting* pre
         , const FPack& facets
         , strf::printable_with_fmt<T...> x ) noexcept
     -> decltype( strf::make_default_printer_input<CharT>
@@ -1409,7 +1409,7 @@ private:
     template < typename PrePrinting
              , typename IntT
              , strf::detail::enable_if_t<std::is_signed<IntT>::value, int> = 0 >
-    STRF_HD void init_(PrePrinting& pre, IntT value)
+    STRF_HD void init_(PrePrinting* pre, IntT value)
     {
         using uint = typename std::make_unsigned<IntT>::type;
         uint uvalue;
@@ -1422,20 +1422,20 @@ private:
         }
         uvalue_ = uvalue;
         digcount_ = strf::detail::count_digits<10>(uvalue);
-        pre.subtract_width(static_cast<width_t>(digcount_ + negative_));
-        pre.add_size(digcount_ + negative_);
+        pre->subtract_width(static_cast<width_t>(digcount_ + negative_));
+        pre->add_size(digcount_ + negative_);
     }
 
    template < typename PrePrinting
             , typename UIntT
             , strf::detail::enable_if_t< ! std::is_signed<UIntT>::value, int> = 0 >
-    STRF_HD void init_(PrePrinting& pre, UIntT value)
+    STRF_HD void init_(PrePrinting* pre, UIntT value)
     {
         uvalue_ = value;
         negative_ = false;
         digcount_ = strf::detail::count_digits<10>(value);
-        pre.subtract_width(static_cast<width_t>(digcount_));
-        pre.add_size(digcount_);
+        pre->subtract_width(static_cast<width_t>(digcount_));
+        pre->add_size(digcount_);
     }
 
     std::uint64_t uvalue_{};
@@ -1471,10 +1471,10 @@ public:
         auto encoding = strf::use_facet<strf::charset_c<CharT>, int>(i.facets);
         STRF_MAYBE_UNUSED(encoding);
         encode_fill_ = encoding.encode_fill_func();
-        i.pre.subtract_width(static_cast<width_t>(fillcount_ + digcount_ + negative_));
+        i.pre->subtract_width(static_cast<width_t>(fillcount_ + digcount_ + negative_));
         STRF_IF_CONSTEXPR(strf::usual_printer_input<T...>::preprinting_type::size_required) {
             auto fillsize = fillcount_ * encoding.encoded_char_size(fillchar_);
-            i.pre.add_size(fillsize + digcount_ + negative_);
+            i.pre->add_size(fillsize + digcount_ + negative_);
         }
     }
 
@@ -1631,8 +1631,8 @@ public:
     STRF_HD explicit int_printer_no_pad0_nor_punct(strf::usual_printer_input<T...> i) noexcept
     {
         auto w = strf::detail::init(data_, i.arg.get_int_format(), i.arg.value());
-        i.pre.subtract_width(static_cast<width_t>(w));
-        i.pre.add_size(w);
+        i.pre->subtract_width(static_cast<width_t>(w));
+        i.pre->add_size(w);
     }
 
     STRF_HD void print_to(strf::destination<CharT>& dst) const override
@@ -1662,8 +1662,8 @@ public:
         auto value = i.arg.value();
         auto w = strf::detail::init(data_, i.arg.get_int_format(), value);
         lettercase_ = strf::use_facet<strf::lettercase_c, decltype(value)>(i.facets);
-        i.pre.subtract_width(static_cast<strf::width_t>(w));
-        i.pre.add_size(w);
+        i.pre->subtract_width(static_cast<strf::width_t>(w));
+        i.pre->add_size(w);
     }
 
     STRF_HD void print_to(strf::destination<CharT>& dst) const override
@@ -1695,8 +1695,8 @@ public:
     STRF_HD explicit int_printer_no_pad0_nor_punct(strf::usual_printer_input<T...> i) noexcept
     {
         auto w = strf::detail::init(data_, i.arg.get_int_format(), i.arg.value());
-        i.pre.subtract_width(w);
-        i.pre.add_size(w);
+        i.pre->subtract_width(w);
+        i.pre->add_size(w);
     }
 
     STRF_HD void print_to(strf::destination<CharT>& dst) const override
@@ -1726,8 +1726,8 @@ public:
         auto value = i.arg.value();
         auto w = strf::detail::init(data_, i.arg.get_int_format(), value);
         lettercase_ = strf::use_facet<strf::lettercase_c, decltype(value)>(i.facets);
-        i.pre.subtract_width(w);
-        i.pre.add_size(w);
+        i.pre->subtract_width(w);
+        i.pre->add_size(w);
     }
 
     STRF_HD void print_to(strf::destination<CharT>& dst) const override
@@ -1976,12 +1976,12 @@ public:
         auto afmt = i.arg.get_alignment_format();
         detail::init_1(data_, ifmt, ivalue);
         auto w = detail::init_fmt_int_printer_data<Base>(data_, ifmt, afmt);
-        i.pre.subtract_width(static_cast<width_t>(w.sub_width + w.fillcount));
+        i.pre->subtract_width(static_cast<width_t>(w.sub_width + w.fillcount));
         using pre_t = typename strf::usual_printer_input<T...>::preprinting_type;
         STRF_IF_CONSTEXPR (pre_t::size_required) {
-            i.pre.add_size(w.sub_width);
+            i.pre->add_size(w.sub_width);
             if (w.fillcount > 0) {
-                i.pre.add_size(w.fillcount * charset.encoded_char_size(afmt.fill));
+                i.pre->add_size(w.fillcount * charset.encoded_char_size(afmt.fill));
             }
         }
     }
@@ -2124,7 +2124,7 @@ public:
         ( IntT ivalue
         , int_format_static_base_and_punct<Base, true> ifmt
         , alignment_format afmt
-        , PrePrinting& pre
+        , PrePrinting* pre
         , const FPack& facets )
         : int_printer_static_base_and_punct
             ( ivalue, ifmt, afmt, pre
@@ -2140,7 +2140,7 @@ public:
         ( IntT ivalue
         , int_format_static_base_and_punct<Base, true> ifmt
         , alignment_format afmt
-        , PrePrinting& pre
+        , PrePrinting* pre
         , strf::lettercase lc
         , strf::digits_grouping grp
         , char32_t thousands_sep
@@ -2154,13 +2154,13 @@ public:
         detail::init_1(data_, ifmt, ivalue);
         const auto w = detail::init_punct_fmt_int_printer_data<Base>
             (data_, charset.validate_func(), ifmt, afmt);
-        pre.subtract_width(static_cast<width_t>(w.sub_width + w.fillcount + data_.sepcount));
+        pre->subtract_width(static_cast<width_t>(w.sub_width + w.fillcount + data_.sepcount));
         STRF_IF_CONSTEXPR (PrePrinting::size_required) {
-            pre.add_size(w.sub_width);
+            pre->add_size(w.sub_width);
             if (w.fillcount) {
-                pre.add_size(w.fillcount * charset.encoded_char_size(afmt.fill));
+                pre->add_size(w.fillcount * charset.encoded_char_size(afmt.fill));
             }
-            pre.add_size(data_.sepcount * data_.sepsize);
+            pre->add_size(data_.sepcount * data_.sepsize);
         }
     }
 

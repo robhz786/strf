@@ -507,7 +507,7 @@ public:
 
     template <strf::precalc_size SizeRequested>
     STRF_HD tr_string_printer
-        ( strf::preprinting<SizeRequested, strf::precalc_width::no>& pre
+        ( strf::preprinting<SizeRequested, strf::precalc_width::no>* pre
         , const strf::preprinting<SizeRequested, strf::precalc_width::no>* args_pre
         , std::initializer_list<const strf::printer<char_type>*> printers
         , const char_type* tr_string
@@ -526,7 +526,7 @@ public:
             const std::ptrdiff_t s = strf::detail::tr_string_size
                 ( args_pre, static_cast<std::ptrdiff_t>(printers.size())
                 , tr_string, tr_string_end, invalid_arg_size );
-            pre.add_size(s);
+            pre->add_size(s);
         } else {
             (void) args_pre;
         }

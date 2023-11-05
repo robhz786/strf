@@ -142,10 +142,10 @@ private:
     {
         typename ReservePolicy::preprinting_type pre;
         const strf::detail::tr_string_printer<Charset, ErrHandler> tr_printer
-            ( pre, preprinting_arr, printers
+            ( &pre, preprinting_arr, printers
             , tr_string.begin(), tr_string.end()
             , charset, err_handler );
-        return reserve_policy.template print<Ln>(dest_creator, pre, tr_printer);
+        return reserve_policy.template print<Ln>(dest_creator, &pre, tr_printer);
     }
 
     template < bool Ln
@@ -196,7 +196,7 @@ public:
                 ( strf::printer_type
                   < char_type, preprinting_t, decltype(fp), Printables >
                     ( strf::make_printer_input<char_type>
-                      ( preprinting_arr[I], fp, (Printables&&)printables ) ) )... );
+                      ( &preprinting_arr[I], fp, (Printables&&)printables ) ) )... );
     }
 };
 

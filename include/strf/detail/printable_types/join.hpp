@@ -43,7 +43,7 @@ public:
         , strf::detail::aligned_join_printer<CharT, PrePrinting, FPack, FwdArgs...>
         , strf::detail::join_printer<CharT, PrePrinting, FPack, FwdArgs...> >;
 
-    PrePrinting& pre;
+    PrePrinting* pre;
     FPack facets;
     strf::printable_with_fmt
         < strf::detail::join_printing<FwdArgs...>
@@ -65,7 +65,7 @@ struct join_printing
     template< typename CharT, typename PrePrinting, typename FPack, bool HasAlignment >
     STRF_HD constexpr static auto make_input
         ( strf::tag<CharT>
-        , PrePrinting& pre
+        , PrePrinting* pre
         , const FPack& facets
         , fmt_tmpl<HasAlignment> x )
         -> join_printer_input
@@ -146,13 +146,13 @@ public:
         auto charset = use_facet_<strf::charset_c<CharT>>(input.facets);
         encode_fill_func_ = charset.encode_fill_func();
         strf::preprinting<PrecalcSize, strf::precalc_width::yes> pre { afmt_.width };
-        new (printers_ptr_()) printers_tuple_{input.arg.value().args, pre, input.facets};
+        new (printers_ptr_()) printers_tuple_{input.arg.value().args, &pre, input.facets};
         fillcount_ = pre.remaining_width().round();
         STRF_IF_CONSTEXPR (static_cast<bool>(PrecalcSize)) {
-            input.pre.add_size(pre.accumulated_ssize());
+            input.pre->add_size(pre.accumulated_ssize());
             if (fillcount_ > 0) {
                 auto fcharsize = charset.encoded_char_size(afmt_.fill);
-                input.pre.add_size(fillcount_ * fcharsize);
+                input.pre->add_size(fillcount_ * fcharsize);
             }
         }
     }
@@ -170,23 +170,23 @@ public:
         encode_fill_func_ = charset.encode_fill_func();
         strf::width_t wmax = afmt_.width;
         strf::width_t diff = 0;
-        if (input.pre.remaining_width() > afmt_.width) {
-            wmax = input.pre.remaining_width();
+        if (input.pre->remaining_width() > afmt_.width) {
+            wmax = input.pre->remaining_width();
             diff = wmax - afmt_.width;
         }
         strf::preprinting<PrecalcSize, strf::precalc_width::yes> pre{wmax};
         // to-do: what if the line below throws ?
-        new (printers_ptr_()) printers_tuple_{input.arg.value().args, pre, input.facets};
+        new (printers_ptr_()) printers_tuple_{input.arg.value().args, &pre, input.facets};
         if (pre.remaining_width() > diff) {
             fillcount_ = (pre.remaining_width() - diff).round();
         }
         width_t const width = strf::sat_sub(strf::sat_add(wmax, fillcount_), pre.remaining_width());
-        input.pre.subtract_width(width);
+        input.pre->subtract_width(width);
         STRF_IF_CONSTEXPR (static_cast<bool>(PrecalcSize)) {
-            input.pre.add_size(pre.accumulated_ssize());
+            input.pre->add_size(pre.accumulated_ssize());
             if (fillcount_ > 0) {
                 auto fcharsize = charset.encoded_char_size(afmt_.fill);
-                input.pre.add_size(fillcount_ * fcharsize);
+                input.pre->add_size(fillcount_ * fcharsize);
             }
         }
     }
@@ -318,7 +318,7 @@ public:
     template<typename PrePrinting, typename FPack, typename... FwdArgs>
     STRF_HD join_printer_impl
         ( const strf::detail::simple_tuple<FwdArgs...>& args
-        , PrePrinting& pre
+        , PrePrinting* pre
         , const FPack& facets )
         : printers_{args, pre, facets}
     {

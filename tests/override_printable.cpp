@@ -15,8 +15,8 @@ public:
         ( const strf::usual_printer_input<T...>& input )
         : value_(input.arg)
     {
-        input.pre.subtract_width(static_cast<strf::width_t>(2 + static_cast<int>(input.arg)));
-        input.pre.add_size(2 + static_cast<int>(input.arg));
+        input.pre->subtract_width(static_cast<strf::width_t>(2 + static_cast<int>(input.arg)));
+        input.pre->add_size(2 + static_cast<int>(input.arg));
     }
 
     void STRF_HD print_to(strf::destination<CharT>& dst) const override
@@ -47,7 +47,7 @@ struct my_bool_printing_overrider
     template <typename CharT, typename PrePrinting, typename FPack>
     constexpr static STRF_HD auto make_input
         ( strf::tag<CharT>
-        , PrePrinting& pre
+        , PrePrinting* pre
         , const FPack& fp
         , bool x ) noexcept
         -> strf::usual_printer_input
@@ -59,7 +59,7 @@ struct my_bool_printing_overrider
     template <typename CharT, typename PrePrinting, typename FPack, typename... T>
     constexpr static STRF_HD auto make_input
         ( strf::tag<CharT>
-        , PrePrinting& pre
+        , PrePrinting* pre
         , const FPack& fp
         , strf::printable_with_fmt<T...> x ) noexcept
         -> decltype( strf::make_printer_input<CharT>
@@ -83,7 +83,7 @@ struct my_int_printing_overrider
     template <typename CharT, typename PrePrinting, typename FPack, typename... T>
     constexpr static STRF_HD auto make_input
         ( strf::tag<CharT>
-        , PrePrinting& pre
+        , PrePrinting* pre
         , const FPack&
         , strf::printable_with_fmt<T...> x ) noexcept
         -> decltype( strf::make_printer_input<CharT>
@@ -128,7 +128,7 @@ struct printable_traits<bool_wrapper> {
     template <typename CharT, typename PrePrinting, typename FPack>
     STRF_HD static auto make_input
         ( strf::tag<CharT>
-        , PrePrinting& pre
+        , PrePrinting* pre
         , const FPack& fp
         , bool_wrapper f )
         -> decltype( strf::make_printer_input<CharT>

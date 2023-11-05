@@ -388,7 +388,7 @@ using pre_t = {preprinting}<precalc_size::no, precalc_width::no>;
 pre_t pre;
 using parg_t = strf::remove_cvref_t<decltype(parg)>;
 using printer_t = {printer_type}<char_type, pre_t, FPack, parg_t>;
-printer_t p{ {make_printer_input}<char_type>(pre, fpack, parg) };
+printer_t p{ {make_printer_input}<char_type>(&pre, fpack, parg) };
 static_cast<const {printer}<char_type>&>(p).print_to(dest);
 ----
 . Returns `dest.finish()` if such expression is valid
@@ -412,7 +412,7 @@ pre_type pre;
 [source,cpp,subs=normal]
 ----
 using printer_t = {printer_type}<char_type, pre_type, FPack, Arg>;
-printer_t p{ {make_printer_input}<char_type>(pre, fpack, arg) };
+printer_t p{ {make_printer_input}<char_type>(&pre, fpack, arg) };
 ----
 . Let `dest_creator` be the internal `DestCreator` object. Do:
 +
@@ -451,7 +451,7 @@ using pre_t = {preprinting}<precalc_size::no, precalc_width::no>;
 pre_t pre;
 using parg_t = strf::remove_cvref_t<decltype(parg)>;
 using printer_t = {printer_type}<char_type, pre_t, FPack, parg_t>;
-printer_t p{ {make_printer_input}<char_type>(pre, fpack, parg) };
+printer_t p{ {make_printer_input}<char_type>(&pre, fpack, parg) };
 static_cast<const {printer}<char_type>&>(p).print_to(dest);
 ----
 . Return `dest.finish()` if such expression is valid.

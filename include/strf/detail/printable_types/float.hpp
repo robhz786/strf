@@ -733,7 +733,7 @@ struct fast_double_printer_input
     using printer_type = strf::detail::fast_double_printer<CharT>;
 
     template <typename FPack>
-    STRF_HD fast_double_printer_input(PrePrinting& pre_, const FPack& fp_, FloatT arg_)
+    STRF_HD fast_double_printer_input(PrePrinting* pre_, const FPack& fp_, FloatT arg_)
         : pre(pre_)
         , value(arg_)
         , lcase(strf::use_facet<strf::lettercase_c, float>(fp_))
@@ -742,7 +742,7 @@ struct fast_double_printer_input
 
     template <typename FPack>
     STRF_HD fast_double_printer_input
-        ( PrePrinting& pre_
+        ( PrePrinting* pre_
         , const FPack& fp_
         , strf::detail::float_with_default_formatters<FloatT> input )
         : pre(pre_)
@@ -751,7 +751,7 @@ struct fast_double_printer_input
     {
     }
 
-    PrePrinting& pre;
+    PrePrinting* pre;
     FloatT value;
     strf::lettercase lcase;
 };
@@ -780,7 +780,7 @@ struct float_printing
 
     template <typename CharT, typename PrePrinting, typename FPack>
     STRF_HD constexpr static auto make_input
-        ( strf::tag<CharT>, PrePrinting& pre, const FPack& fp, FloatT x ) noexcept
+        ( strf::tag<CharT>, PrePrinting* pre, const FPack& fp, FloatT x ) noexcept
         -> strf::detail::fast_double_printer_input<CharT, PrePrinting, FloatT>
     {
         return {pre, fp, x};
@@ -790,7 +790,7 @@ struct float_printing
              , typename FloatFormatter, bool HasAlignment >
     STRF_HD constexpr static auto make_input
         ( strf::tag<CharT>
-        , PrePrinting& pre
+        , PrePrinting* pre
         , const FPack& fp
         , strf::detail::float_with_formatters
             < FloatT, FloatFormatter, HasAlignment > x ) noexcept
@@ -1371,10 +1371,10 @@ public:
         ( strf::detail::fast_double_printer_input<CharT, PrePrinting, FloatT> input) noexcept
         : fast_double_printer(input.value, input.lcase)
     {
-        if (input.pre.has_remaining_width() || PrePrinting::size_required) {
+        if (input.pre->has_remaining_width() || PrePrinting::size_required) {
             const auto s = size();
-            input.pre.subtract_width(static_cast<std::int16_t>(s));
-            input.pre.add_size(s);
+            input.pre->subtract_width(static_cast<std::int16_t>(s));
+            input.pre->add_size(s);
         }
     }
 
@@ -2365,18 +2365,18 @@ public:
         } else {
             decimal_point_size_ = 0;
         }
-        input.pre.subtract_width(static_cast<width_t>(r.fillcount + r.content_width));
+        input.pre->subtract_width(static_cast<width_t>(r.fillcount + r.content_width));
         STRF_IF_CONSTEXPR (PrePrinting::size_required) {
-            input.pre.add_size(r.content_width);
+            input.pre->add_size(r.content_width);
             if (r.fillcount > 0) {
                 const auto fillchar_size = charset.encoded_char_size(data_.fillchar);
-                input.pre.add_size(fillchar_size * r.fillcount);
+                input.pre->add_size(fillchar_size * r.fillcount);
             }
             if (notation != strf::float_notation::hex && data_.sep_count){
-                input.pre.add_size(data_.sep_count * (sep_size_ - 1));
+                input.pre->add_size(data_.sep_count * (sep_size_ - 1));
             }
             if (data_.showpoint) {
-                input.pre.add_size(decimal_point_size_ - 1);
+                input.pre->add_size(decimal_point_size_ - 1);
             }
         }
     }
@@ -2395,12 +2395,12 @@ public:
             ( data_, input.arg.value(), grouping_, input.arg.get_float_format()
             , input.arg.get_alignment_format() );
         decimal_point_size_ = data_.showpoint;
-        input.pre.subtract_width(static_cast<width_t>(r.fillcount + r.content_width));
+        input.pre->subtract_width(static_cast<width_t>(r.fillcount + r.content_width));
         STRF_IF_CONSTEXPR (PrePrinting::size_required) {
-            input.pre.add_size(r.content_width);
+            input.pre->add_size(r.content_width);
             if (r.fillcount > 0) {
                 const auto fillchar_size = charset.encoded_char_size(data_.fillchar);
-                input.pre.add_size(fillchar_size * r.fillcount);
+                input.pre->add_size(fillchar_size * r.fillcount);
             }
         }
     }
