@@ -267,25 +267,25 @@ public:
 
     explicit basic_string_appender_creator
         ( std::basic_string<CharT, Traits, Allocator>& str )
-        : str_(str)
+        : str_(&str)
     {
     }
 
     std::basic_string<CharT, Traits, Allocator>& create() const noexcept
     {
-        return str_;
+        return *str_;
     }
     std::basic_string<CharT, Traits, Allocator>& create(std::size_t size) const noexcept
     {
         if (size > 0) {
-            str_.reserve(str_.size() + size);
+            str_->reserve(str_->size() + size);
         }
-        return str_;
+        return *str_;
     }
 
 private:
 
-    std::basic_string<CharT, Traits, Allocator>& str_;
+    std::basic_string<CharT, Traits, Allocator>* str_;
 };
 
 template < typename CharT

@@ -13,7 +13,7 @@ public:
     using category = strf::tr_error_notifier_c;
 
     STRF_HD explicit err_handler(strf::destination<char>& log)
-        : log_(log)
+        : log_(&log)
     {
     }
 
@@ -26,11 +26,11 @@ public:
     {
         strf::detail::simple_string_view<typename Charset::code_unit> s
             (str, strf::detail::safe_cast_size_t(str_len));
-        strf::to(log_) ("\n[", strf::dec(err_pos) > 2, "] ", strf::transcode(s, charset));
+        strf::to(*log_) ("\n[", strf::dec(err_pos) > 2, "] ", strf::transcode(s, charset));
     }
 
 private:
-    strf::destination<char>& log_;
+    strf::destination<char>* log_;
 };
 
 STRF_TEST_FUNC void test_printing()

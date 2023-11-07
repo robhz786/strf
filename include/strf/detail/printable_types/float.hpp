@@ -1406,9 +1406,9 @@ public:
 
 private:
 
-    const detail::double_dec value_{};
+    detail::double_dec value_{};
     bool sci_notation_{} ;
-    const int m10_digcount_{};
+    int m10_digcount_{};
     strf::lettercase lettercase_ = strf::lettercase::lower;
 };
 

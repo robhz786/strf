@@ -743,17 +743,17 @@ public:
     using destination_type = strf::destination<CharT>&;
 
     explicit STRF_HD destination_reference(strf::destination<CharT>& dst) noexcept
-        : dst_(dst)
+        : dst_(&dst)
     {
     }
 
     STRF_HD strf::destination<CharT>& create() const noexcept
     {
-        return dst_;
+        return *dst_;
     }
 
 private:
-    strf::destination<CharT>& dst_;
+    strf::destination<CharT>* dst_;
 };
 
 

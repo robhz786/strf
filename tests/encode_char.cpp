@@ -10,9 +10,9 @@ struct fixture
 {
     static constexpr std::size_t buff_size = 100;
     CharT buff[buff_size];
-    CharT* const dest_begin = buff;
+    CharT* dest_begin = buff;
     CharT* dest_it = buff;
-    CharT* const dest_end = buff + buff_size;
+    CharT* dest_end = buff + buff_size;
 };
 
 template <typename CharT, typename Charset>

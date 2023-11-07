@@ -116,18 +116,18 @@ public:
 
     explicit basic_streambuf_writer_creator
         ( std::basic_streambuf<CharT, Traits>& dst )
-        : dst_(dst)
+        : dst_(&dst)
     {
     }
 
     std::basic_streambuf<CharT, Traits>& create() const noexcept
     {
-        return dst_;
+        return *dst_;
     }
 
 private:
 
-    std::basic_streambuf<CharT, Traits>& dst_;
+    std::basic_streambuf<CharT, Traits>* dst_;
 };
 
 

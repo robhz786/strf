@@ -225,7 +225,7 @@ public:
 
 private:
 
-    value_type value_;
+    value_type value_; // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
 };
 
 } // namespace strf

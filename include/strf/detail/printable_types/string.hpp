@@ -984,6 +984,7 @@ private:
     {
         auto transcoder = find_transcoder(src_charset, dst_charset);
         STRF_MAYBE_UNUSED(transcoder);
+        STRF_MAYBE_UNUSED(pre);
         transcode_ = transcoder.transcode_func();
         if (transcode_ == nullptr) {
             src_to_u32_ = src_charset.to_u32().transcode_func();
@@ -1013,7 +1014,7 @@ private:
         return u32_to_dst_ == nullptr;
     }
 
-    const SrcCharT* const str_;
+    const SrcCharT* str_;
     const SrcCharT* str_end_;
     union {
         strf::transcode_f<SrcCharT, DstCharT>  transcode_;
@@ -1327,6 +1328,7 @@ private:
     {
         auto transcoder = find_transcoder(src_charset, dst_charset);
         STRF_MAYBE_UNUSED(transcoder);
+        STRF_MAYBE_UNUSED(pre);
         transcode_ = transcoder.unsafe_transcode_func();
         if (transcode_ == nullptr) {
             src_to_u32_ = src_charset.to_u32().unsafe_transcode_func();
@@ -1357,7 +1359,7 @@ private:
     }
 
 
-    const SrcCharT* const str_;
+    const SrcCharT* str_;
     const SrcCharT* str_end_;
     union {
         strf::unsafe_transcode_f<SrcCharT, DstCharT>  transcode_;

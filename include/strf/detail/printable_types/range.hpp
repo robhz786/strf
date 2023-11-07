@@ -275,7 +275,7 @@ private:
              , strf::detail::enable_if_t<PrePrinting::something_required, int> = 0 >
     STRF_HD void do_preprinting_(PrePrinting* pre) const;
 
-    const FPack& fp_;
+    FPack fp_;
     iterator begin_;
     iterator end_;
 };
@@ -340,7 +340,7 @@ private:
              , strf::detail::enable_if_t<PrePrinting::something_required, int> = 0 >
     STRF_HD void do_preprinting_(PrePrinting* pre) const;
 
-    const FPack& fp_;
+    FPack fp_;
     iterator begin_;
     iterator end_;
     const CharT* sep_begin_;
@@ -445,7 +445,7 @@ private:
              , strf::detail::enable_if_t<PrePrinting::something_required, int> = 0 >
     STRF_HD void do_preprinting_(PrePrinting* pre) const;
 
-    const FPack& fp_;
+    FPack fp_;
     fmt_type_adapted_ fmt_;
 };
 
@@ -529,7 +529,7 @@ private:
              , strf::detail::enable_if_t<PrePrinting::something_required, int> = 0 >
     STRF_HD void do_preprinting_(PrePrinting* pre) const;
 
-    const FPack& fp_;
+    FPack fp_;
     fmt_type_adapted_ fmt_;
 
     template <typename Category, typename Tag = strf::string_input_tag<CharT>>
@@ -640,7 +640,7 @@ private:
              , strf::detail::enable_if_t<PrePrinting::something_required, int> = 0 >
     STRF_HD void do_preprinting_(PrePrinting* pre) const;
 
-    const FPack& fp_;
+    FPack fp_;
     iterator begin_;
     iterator end_;
     UnaryOp op_;
@@ -711,7 +711,7 @@ private:
     template <typename PrePrinting, strf::detail::enable_if_t<PrePrinting::something_required, int> = 0>
     STRF_HD void do_preprinting_(PrePrinting* pre) const;
 
-    const FPack& fp_;
+    FPack fp_;
     iterator begin_;
     iterator end_;
     const CharT* sep_begin_;

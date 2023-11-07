@@ -8,13 +8,13 @@
 class my_notifier: public strf::transcoding_error_notifier {
 public:
     explicit my_notifier(strf::destination<char>& dst)
-        : dst_(dst)
+        : dst_(&dst)
     {
     }
 
     void unsupported_codepoint(const char* charset, unsigned codepoint) override
     {
-        strf::to(dst_).with(strf::uppercase)
+        strf::to(*dst_).with(strf::uppercase)
             ( "The codepoint U+", strf::hex(codepoint).pad0(4)
             , " can not be encoded in ", charset, ".\n");
     }
@@ -26,18 +26,18 @@ public:
         , std::ptrdiff_t count ) override
     {
         if (code_unit_size != 1 && code_unit_size != 2 && code_unit_size != 4) {
-            strf::to(dst_) ( "Invalid sequence and invalid code unit size ("
+            strf::to(*dst_) ( "Invalid sequence and invalid code unit size ("
                             , code_unit_size, ").\n" );
             return;
         }
-        strf::to(dst_) ( "The sequence ");
+        strf::to(*dst_) ( "The sequence ");
         while (count--) {
             auto unit = extract_unit_and_advance(sequence_ptr, code_unit_size);
-            strf::to(dst_)
+            strf::to(*dst_)
                 .with(strf::mixedcase)
                 (*strf::hex(unit).pad0(code_unit_size * 2), ' ');
         }
-        strf::to(dst_) ( "is not valid in ", charset_name, ".\n");
+        strf::to(*dst_) ( "is not valid in ", charset_name, ".\n");
     }
 
 private:
@@ -66,7 +66,7 @@ private:
         }
     }
 
-    strf::destination<char>& dst_;
+    strf::destination<char>* dst_;
 };
 
 #if ! defined(__cpp_char8_t)

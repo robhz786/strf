@@ -124,8 +124,8 @@ private:
     strf::encode_fill_f<CharT> encode_fill_fn_;
     xxx::ipv6address addr_;
     xxx::ipv6address_abbreviation abbrev_;
-    const strf::alignment_format alignment_fmt_;
-    const strf::lettercase lettercase_;
+    strf::alignment_format alignment_fmt_;
+    strf::lettercase lettercase_;
     int fillcount_ = 0;
     ipv6style style_;
 

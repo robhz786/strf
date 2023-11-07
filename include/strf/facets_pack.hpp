@@ -383,7 +383,7 @@ public:
 
 private:
 
-    FPE fpe_;
+    FPE fpe_; // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
 };
 
 template <typename Rank, typename FPE>
@@ -423,7 +423,7 @@ public:
 
 private:
 
-    const FPE& fpe_;
+    const FPE& fpe_; // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
 };
 
 template <typename Rank, typename ... FPE>
@@ -685,7 +685,7 @@ public:
 
 private:
 
-    FPE fpe_;
+    FPE fpe_; // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
 };
 
 template <>

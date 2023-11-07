@@ -148,8 +148,8 @@ private:
 
     CharT encode_(unsigned hextet) const;
 
-    const base64_facet facet_;
-    const base64_input_with_formatters fmt_;
+    base64_facet facet_;
+    base64_input_with_formatters fmt_;
 };
 
 template <typename CharT>

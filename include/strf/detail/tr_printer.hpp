@@ -91,7 +91,7 @@ template <typename CharT>
 class tr_pre_size
 {
     const std::ptrdiff_t* size_array_;
-    const std::ptrdiff_t array_size_;
+    std::ptrdiff_t array_size_;
     int replacement_char_size_;
     std::ptrdiff_t size_ = 0;
 
@@ -136,7 +136,7 @@ template <typename CharT, typename Charset, typename WidthCalculator>
 class tr_pre_width
 {
     const strf::width_t* width_array_;
-    const std::ptrdiff_t array_size_;
+    std::ptrdiff_t array_size_;
     strf::width_t remaining_width_;
     WidthCalculator wcalc_;
     Charset charset_;
@@ -193,7 +193,7 @@ class tr_pre_size_and_width
 {
     const std::ptrdiff_t* size_array_;
     const strf::width_t* width_array_;
-    const std::ptrdiff_t array_size_;
+    std::ptrdiff_t array_size_;
     std::ptrdiff_t size_ = 0;
     strf::width_t remaining_width_;
     WidthCalculator wcalc_;
@@ -521,6 +521,7 @@ public:
         , charset_(charset)
         , err_handler_(err_handler)
     {
+        STRF_MAYBE_UNUSED(pre);
         STRF_IF_CONSTEXPR (static_cast<bool>(SizeRequested)) {
             auto invalid_arg_size = charset.replacement_char_size();
             const std::ptrdiff_t s = strf::detail::tr_string_size

@@ -187,7 +187,7 @@ private:
 
     strf::encode_fill_f<CharT> encode_fill_fn_;
     std::ptrdiff_t count_;
-    const strf::alignment_format afmt_;
+    strf::alignment_format afmt_;
     int left_fillcount_{};
     int right_fillcount_{};
     CharT ch_;
