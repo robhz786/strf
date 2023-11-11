@@ -2196,19 +2196,25 @@ STRF_HD strf::transcode_size_result<SrcCharT> strf::static_transcoder
     using stop_reason = strf::transcode_stop_reason;
     (void) limit;
     for(;src < src_end; ++src) {
-        if (StopOnLimit && !StopOnInvalidSeq && size >= limit) {
-            return {size, src, stop_reason::insufficient_output_space};
+        STRF_IF_CONSTEXPR(StopOnLimit && !StopOnInvalidSeq) {
+            if (size >= limit) {
+                return { size, src, stop_reason::insufficient_output_space };
+            }
         }
         const auto ch = detail::cast_u32(*src);
         const bool isSurrogate = StricSurrPoli && detail::is_surrogate(ch);
         const bool invalid =  isSurrogate || ch >= 0x110000;
-        if (StopOnInvalidSeq && invalid) {
-            return {size, src, stop_reason::invalid_sequence};
+        STRF_IF_CONSTEXPR(StopOnInvalidSeq) {
+            if (invalid) {
+                return { size, src, stop_reason::invalid_sequence };
+            }
         }
         const auto ch_size = invalid ? 3 : (1 + (ch >= 0x80) + (ch >= 0x800) + (ch >= 0x10000));
         size += ch_size;
-        if (StopOnLimit && StopOnInvalidSeq && size > limit) {
-            return {size - ch_size, src, stop_reason::insufficient_output_space};
+        STRF_IF_CONSTEXPR(StopOnLimit&& StopOnInvalidSeq) {
+            if (size > limit) {
+                return { size - ch_size, src, stop_reason::insufficient_output_space };
+            }
         }
     }
     return {size, src_end, stop_reason::completed};
@@ -2648,9 +2654,12 @@ STRF_HD strf::transcode_size_result<SrcCharT> strf::static_transcoder
     const auto* const src_begin = src;
     const SrcCharT* src_next = src;
     const SrcCharT* src_limit = (src_end - src >= limit) ? src + limit : src_end;
+    STRF_MAYBE_UNUSED(src_limit);
     for(; src < src_end; src = src_next) {
-        if (HasLimit && !StopOnInvalidSeq && src_next >= src_limit) {
-            return {src - src_begin, src, reason::insufficient_output_space};
+        STRF_IF_CONSTEXPR (HasLimit && !StopOnInvalidSeq) {
+            if (src_next >= src_limit) {
+                return { src - src_begin, src, reason::insufficient_output_space };
+            }
         }
         src_next = src + 1;
         ch = detail::cast_u16(*src);
@@ -2665,10 +2674,12 @@ STRF_HD strf::transcode_size_result<SrcCharT> strf::static_transcoder
                 return {size, src, reason::invalid_sequence};
             }
         }
-        if (HasLimit && StopOnInvalidSeq && src_next > src_limit) {
-            //src = src_next == src_limit ? src_next : src;
-            const auto size = src - src_begin;
-            return {size, src, reason::insufficient_output_space};
+        STRF_IF_CONSTEXPR (HasLimit&& StopOnInvalidSeq) {
+            if (src_next > src_limit) {
+                //src = src_next == src_limit ? src_next : src;
+                const auto size = src - src_begin;
+                return { size, src, reason::insufficient_output_space };
+            }
         }
     }
     const auto size = src - src_begin;
@@ -2855,19 +2866,25 @@ template <bool StopOnLimit, bool StopOnInvalidSeq, bool StricSurrPoli>
     using reason = strf::transcode_stop_reason;
     (void) limit;
     for ( ; src < src_end; ++src) {
-        if (StopOnLimit && !StopOnInvalidSeq && size >= limit) {
-            return {size, src, reason::insufficient_output_space};
+        STRF_IF_CONSTEXPR (StopOnLimit && !StopOnInvalidSeq) {
+            if (size >= limit) {
+                return { size, src, reason::insufficient_output_space };
+            }
         }
         const auto ch = detail::cast_u32(*src);
         const bool isSurrogate = StricSurrPoli && detail::is_surrogate(ch);
         const bool invalid =  isSurrogate || ch >= 0x110000;
-        if (StopOnInvalidSeq && invalid) {
-            return {size, src, reason::invalid_sequence};
+        STRF_IF_CONSTEXPR(StopOnInvalidSeq) {
+            if (invalid) {
+                return { size, src, reason::invalid_sequence };
+            }
         }
         const auto ch_size = invalid ? 1 : (ch < 0x10000 ? 1 : 2);
         size += ch_size;
-        if (StopOnLimit && StopOnInvalidSeq && size > limit) {
-            return {size - ch_size, src, reason::insufficient_output_space};
+        STRF_IF_CONSTEXPR (StopOnLimit&& StopOnInvalidSeq) {
+            if (size > limit) {
+                return { size - ch_size, src, reason::insufficient_output_space };
+            }
         }
     }
     return {size, src_end, strf::transcode_stop_reason::completed};
