@@ -58,10 +58,21 @@
 
 #if defined(STRF_HAS_VARIABLE_TEMPLATES)
 
+#if defined(__CUDACC__)
+
+#define STRF_DEF_SINGLE_BYTE_CHARSET(CHARSET)                           \
+    STRF_DEF_SINGLE_BYTE_CHARSET_(CHARSET)                              \
+    template <typename CharT>                                           \
+    STRF_DEVICE CHARSET ## _t<CharT> CHARSET = {} // NOLINT(bugprone-macro-parentheses)
+
+#else
+
 #define STRF_DEF_SINGLE_BYTE_CHARSET(CHARSET)                           \
     STRF_DEF_SINGLE_BYTE_CHARSET_(CHARSET)                              \
     template <typename CharT>                                           \
     STRF_DEVICE constexpr CHARSET ## _t<CharT> CHARSET = {} // NOLINT(bugprone-macro-parentheses)
+
+#endif // defined(__CUDACC__)
 
 #else
 

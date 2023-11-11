@@ -3719,19 +3719,21 @@ template <typename CharT>
 using utf_t = strf::static_charset<CharT, strf::detail::csid_utf_impl<sizeof(CharT)>::csid>;
 
 #if defined(STRF_HAS_VARIABLE_TEMPLATES)
+#if defined(__CUDACC__)
 
-template <typename CharT>
-STRF_DEVICE constexpr utf8_t<CharT> utf8 {};
+template <typename CharT> STRF_DEVICE utf8_t<CharT>  utf8 {};
+template <typename CharT> STRF_DEVICE utf16_t<CharT> utf16 {};
+template <typename CharT> STRF_DEVICE utf32_t<CharT> utf32 {};
+template <typename CharT> STRF_DEVICE utf_t<CharT>   utf {};
 
-template <typename CharT>
-STRF_DEVICE constexpr utf16_t<CharT> utf16 {};
+#else
 
-template <typename CharT>
-STRF_DEVICE constexpr utf32_t<CharT> utf32 {};
+template <typename CharT> STRF_DEVICE constexpr utf8_t<CharT>  utf8{};
+template <typename CharT> STRF_DEVICE constexpr utf16_t<CharT> utf16{};
+template <typename CharT> STRF_DEVICE constexpr utf32_t<CharT> utf32{};
+template <typename CharT> STRF_DEVICE constexpr utf_t<CharT>   utf{};
 
-template <typename CharT>
-STRF_DEVICE constexpr utf_t<CharT> utf {};
-
+#endif // defined(__CUDACC__)
 #endif // defined(STRF_HAS_VARIABLE_TEMPLATES)
 
 } // namespace strf
