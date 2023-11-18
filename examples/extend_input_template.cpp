@@ -21,10 +21,10 @@ struct base_printing {
     using representative_type = const xxx::base<T>&;
     using forwarded_type = const xxx::base<T>&;
 
-    template <typename CharT, typename PrePrinting, typename FPack>
+    template <typename CharT, typename PreMeasurements, typename FPack>
     static auto make_input
         ( strf::tag<CharT>
-        , PrePrinting* pre
+        , PreMeasurements* pre
         , const FPack& fp
         , forwarded_type x ) noexcept
     {

@@ -9,7 +9,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 :printer_type: <<printer_type,printer_type>>
 :printable_traits:  <<printable_traits,printable_traits>>
 
-:preprinting: <<preprinting, preprinting>>
+:premeasurements: <<premeasurements, premeasurements>>
 :facets_pack: <<facets_pack, facets_pack>>
 :printable_with_fmt: <<printable_with_fmt, printable_with_fmt>>
 
@@ -136,7 +136,7 @@ Given
 * `T`, a _PrintableTraits_ type.
 * `CharT`, a character type
 * `fpack`, a value of type `{facets_pack}</{asterisk}\... {asterisk}/>`
-* `pre`, an lvalue of type `{preprinting}</{asterisk}\... {asterisk}/>`
+* `pre`, an lvalue of type `{premeasurements}</{asterisk}\... {asterisk}/>`
 * `v`, a value of type `T::forwarded_type` or `{printable_with_fmt}<T, F\...>`,
    where `F\...` is such that `T::formatters` is an alias to `{tag}<F\...>`.
 
@@ -200,8 +200,8 @@ using forwarded_printable_type = typename {printable_traits_of}<T>::<<PrintableT
 Given
 
 * `CharT`, a character type
-* `PrePriting`, an instance of the `{preprinting}` class template
-* `X`, a _PrinterInput_ type for types `CharT` and `PrePriting`
+* `PreMeasurements`, an instance of the `{premeasurements}` class template
+* `X`, a _PrinterInput_ type for types `CharT` and `PreMeasurements`
 * `x`, a value of type `X`
 
 ====
@@ -215,9 +215,9 @@ A type alias to `CharT`.
 ====
 [source,cpp,subs=normal]
 ----
-T::preprinting_type
+T::premeasurements_type
 ----
-A type alias to `PrePriting`.
+A type alias to `PreMeasurements`.
 ====
 
 ====
@@ -238,7 +238,8 @@ auto dest_buff_space = dest.<<destination_hpp#output_buffer_buffer_space,buffer_
 
 static_cast<const printer<CharT>&>(p).<<printer,print_to>>(dest);
 ----
-statisfies the following postconditions when `PrePriting::<<preprinting,size_required>>` is `true`:
+satisfies the following postconditions when
+`PreMeasurements::<<premeasurements,size_required>>` is `true`:
 
 *  if `predicted_size \<= dest_buff_space` is `true`, then `dest.recycle()` is not called in `print_to`
 ====
@@ -248,7 +249,7 @@ statisfies the following postconditions when `PrePriting::<<preprinting,size_req
 ----
 x.pre
 ----
-A lvalue reference of type `PrePriting`.
+A lvalue reference of type `PreMeasurements`.
 ====
 
 === Class template `usual_printer_input` [[usual_printer_input]]
@@ -257,23 +258,24 @@ A lvalue reference of type `PrePriting`.
 
 [source,cpp,subs=normal]
 ----
-template <typename CharT, typename PrePriting, typename FPack, typename Arg, typename Printer>
+template < typename CharT, typename PreMeasurements
+         , typename FPack, typename Arg, typename Printer>
 struct usual_printer_input
 {
     using char_type = CharT;
     using arg_type = Arg;
-    using preprinting_type = PrePriting;
+    using premeasurements_type = PreMeasurements;
     using fpack_type = FPack;
     using printer_type = Printer;
 
-    preprinting_type& pre;
+    premeasurements_type& pre;
     FPack facets;
     Arg arg;
 };
 ----
 ////
 Compile-time requirements::
-* `PrePriting` is an instance of the `{preprinting}` class template.
+* `PreMeasurements` is an instance of the `{premeasurements}` class template.
 ////
 
 === Function template `make_default_printer_input` [[make_default_printer_input]]
@@ -409,7 +411,7 @@ public:
 } // namespace strf
 ----
 
-=== Class template `preprinting` [[preprinting]]
+=== Class template `premeasurements` [[premeasurements]]
 
 [source,cpp,subs=normal]
 ----
@@ -419,7 +421,7 @@ enum class precalc_width: bool { no = false, yes = true };
 enum class precalc_size : bool { no = false, yes = true };
 
 template <precalc_size PrecalcSize, precalc_width PrecalcWidth>
-class preprinting
+class premeasurements
     : public {size_accumulator}<static_cast<bool>(PrecalcSize)>
     , public {width_decumulator}<static_cast<bool>(PrecalcWidth)>
 {
@@ -430,15 +432,15 @@ public:
     static constexpr bool nothing_required = ! size_required && ! width_required;
     static constexpr bool something_required = size_required || width_required;
 
-    constexpr preprinting() noexcept = default;
-    constexpr explicit preprinting(<<width_t,width_t>> initial_width) noexcept;
+    constexpr premeasurements() noexcept = default;
+    constexpr explicit premeasurements(<<width_t,width_t>> initial_width) noexcept;
 
-    preprinting(const preprinting&) = delete;
-    preprinting(preprinting&&) = delete;
-    preprinting& operator=(const preprinting&) = delete;
-    preprinting& operator=(preprinting&&) = delete;
+    premeasurements(const premeasurements&) = delete;
+    premeasurements(premeasurements&&) = delete;
+    premeasurements& operator=(const premeasurements&) = delete;
+    premeasurements& operator=(premeasurements&&) = delete;
 
-    ~preprinting() = default;
+    ~premeasurements() = default;
 };
 
 } // namespace strf
@@ -447,7 +449,7 @@ public:
 ====
 [source,cpp,subs=normal]
 ----
-constexpr preprinting() noexcept;
+constexpr premeasurements() noexcept;
 ----
 [horizontal]
 Effect:: Default-construct each of the base classes.
@@ -455,7 +457,7 @@ Effect:: Default-construct each of the base classes.
 ====
 [source,cpp,subs=normal]
 ----
-constexpr explicit preprinting(<<width_t,width_t>> initial_width) noexcept;
+constexpr explicit premeasurements(<<width_t,width_t>> initial_width) noexcept;
 ----
 Compile-time requirement:: `PrecalcWidth` is `precalc_width::yes`, otherwise this constructor
 does not participate in overload resolution.
@@ -649,12 +651,12 @@ So calling `zeroize_remaining_width_if_negative` aims to reduce the chances of t
 [source,cpp,subs=normal]
 ----
 template < typename CharT
-         , <<preprinting,precalc_size>> PrecalcSize
-         , <<preprinting,precalc_width>> PrecalcWidth
+         , <<premeasurements,precalc_size>> PrecalcSize
+         , <<premeasurements,precalc_width>> PrecalcWidth
          , typename\... FPE
          , typename\... Args >
 void precalculate
-    ( {preprinting}<PrecalcSize, PrecalcWidth>* pp
+    ( {premeasurements}<PrecalcSize, PrecalcWidth>* pp
     , const {facets_pack}<FPE\...>& facets
     , const Args&\... args );
 ----
@@ -675,7 +677,7 @@ Effects::
 [source,cpp,subs=normal]
 ----
 (\..., {printer_type}< CharT
-                  , {preprinting}<PrecalcSize, PrecalcWidth>
+                  , {premeasurements}<PrecalcSize, PrecalcWidth>
                   , facets_pack<FPE\...>
                   , Args >  {{make_printer_input}<CharT>(pp, facets, args)} );
 ----

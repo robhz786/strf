@@ -27,26 +27,26 @@ struct printable_traits<bool>
     using formatters = strf::tag<strf::alignment_formatter>;
     using is_overridable = std::true_type;
 
-    template <typename CharT, typename PrePrinting, typename FPack>
+    template <typename CharT, typename PreMeasurements, typename FPack>
     constexpr STRF_HD static auto make_input
         ( strf::tag<CharT>
-        , PrePrinting* pre
+        , PreMeasurements* pre
         , const FPack& fp
         , bool x ) noexcept
         -> strf::usual_printer_input
-            < CharT, PrePrinting, FPack, bool, strf::detail::bool_printer<CharT> >
+            < CharT, PreMeasurements, FPack, bool, strf::detail::bool_printer<CharT> >
     {
         return {pre, fp, x};
     }
 
-    template <typename CharT, typename PrePrinting, typename FPack, typename... T>
+    template <typename CharT, typename PreMeasurements, typename FPack, typename... T>
     constexpr STRF_HD static auto make_input
         ( strf::tag<CharT>
-        , PrePrinting* pre
+        , PreMeasurements* pre
         , const FPack& fp
         , strf::printable_with_fmt<T...> x ) noexcept
         -> strf::usual_printer_input
-            < CharT, PrePrinting, FPack
+            < CharT, PreMeasurements, FPack
             , strf::printable_with_fmt<T...>
             , strf::detail::fmt_bool_printer<CharT> >
     {

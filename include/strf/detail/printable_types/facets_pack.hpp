@@ -54,16 +54,16 @@ struct printable_traits<strf::inner_pack_with_args<ChildFPack, Args...>>
     using representative_type = strf::facets_pack<>;
     using is_overridable = std::false_type;
 
-    template < typename CharT, typename PrePrinting, typename FPack>
+    template < typename CharT, typename PreMeasurements, typename FPack>
     STRF_HD constexpr static auto make_input
         ( strf::tag<CharT>
-        , PrePrinting* pre
+        , PreMeasurements* pre
         , const FPack& fp
         , const forwarded_type& x )
         -> strf::usual_printer_input
-            < CharT, PrePrinting, FPack, forwarded_type
+            < CharT, PreMeasurements, FPack, forwarded_type
             , strf::detail::facets_pack_printer
-                < CharT, PrePrinting, FPack, ChildFPack, Args... > >
+                < CharT, PreMeasurements, FPack, ChildFPack, Args... > >
     {
         return {pre, fp, x};
     }
@@ -72,7 +72,7 @@ struct printable_traits<strf::inner_pack_with_args<ChildFPack, Args...>>
 namespace detail {
 
 template < typename CharT
-         , typename PrePrinting
+         , typename PreMeasurements
          , typename ParentFPack
          , typename ChildFPack
          , typename ... Args >
@@ -106,7 +106,7 @@ private:
 
     strf::detail::printers_tuple_from_args
         < CharT
-        , PrePrinting
+        , PreMeasurements
         , strf::facets_pack<ParentFPack, ChildFPack>
         , Args... >
     printers_;

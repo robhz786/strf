@@ -7,7 +7,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <strf/detail/printer.hpp>
-#include <strf/detail/preprinting.hpp>
+#include <strf/detail/premeasurements.hpp>
 #include <strf/detail/standard_lib_functions.hpp>
 
 namespace strf {
@@ -71,7 +71,7 @@ STRF_HD read_uint_result<CharT> read_uint(const CharT* it, const CharT* end, std
 
 template <typename CharT>
 STRF_HD inline std::ptrdiff_t tr_string_size
-    ( const strf::preprinting<strf::precalc_size::no, strf::precalc_width::no>*
+    ( const strf::premeasurements<strf::precalc_size::no, strf::precalc_width::no>*
     , std::ptrdiff_t
     , const CharT*
     , const CharT*
@@ -81,7 +81,7 @@ STRF_HD inline std::ptrdiff_t tr_string_size
 }
 
 template <typename CharT, strf::precalc_size PreSize, strf::precalc_width PreWidth>
-struct tr_preprinting;
+struct tr_premeasurements;
 
 struct eval_to_false_t {
     constexpr STRF_HD operator bool() const { return false; };
@@ -260,7 +260,7 @@ public:
 
 
 template <typename CharT, typename TrPre>
-STRF_HD void tr_do_preprinting
+STRF_HD void tr_do_premeasurements
     ( TrPre & pre
     , const CharT* it
     , const CharT* end )
@@ -332,7 +332,7 @@ STRF_HD void tr_do_preprinting
 
 template <typename CharT>
 STRF_HD std::ptrdiff_t tr_string_size
-    ( const strf::preprinting<strf::precalc_size::yes, strf::precalc_width::no>* args_pre
+    ( const strf::premeasurements<strf::precalc_size::yes, strf::precalc_width::no>* args_pre
     , std::ptrdiff_t num_args
     , const CharT* it
     , const CharT* end
@@ -507,8 +507,8 @@ public:
 
     template <strf::precalc_size SizeRequested>
     STRF_HD tr_string_printer
-        ( strf::preprinting<SizeRequested, strf::precalc_width::no>* pre
-        , const strf::preprinting<SizeRequested, strf::precalc_width::no>* args_pre
+        ( strf::premeasurements<SizeRequested, strf::precalc_width::no>* pre
+        , const strf::premeasurements<SizeRequested, strf::precalc_width::no>* args_pre
         , std::initializer_list<const strf::printer<char_type>*> printers
         , const char_type* tr_string
         , const char_type* tr_string_end

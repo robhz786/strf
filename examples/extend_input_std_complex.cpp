@@ -155,10 +155,10 @@ struct printable_traits<std::complex<FloatT>>
         , strf::alignment_formatter
         , strf::float_formatter >;
 
-    // template <typename CharT, typename PrePrinting, typename FPack>
+    // template <typename CharT, typename PreMeasurements, typename FPack>
     // static auto make_input
     //     ( strf::tag<CharT>
-    //     , PrePrinting* pre
+    //     , PreMeasurements* pre
     //     , const FPack& fp
     //     , std::complex<FloatT> arg)
     // {
@@ -175,10 +175,10 @@ struct printable_traits<std::complex<FloatT>>
     //     return strf::make_default_printer_input<CharT>(pre, fp, arg2);
     // }
 
-    template <typename CharT, typename PrePrinting, typename FPack, typename... T>
+    template <typename CharT, typename PreMeasurements, typename FPack, typename... T>
     static auto make_input
         ( strf::tag<CharT>
-        , PrePrinting* pre
+        , PreMeasurements* pre
         , const FPack& fp
         , strf::printable_with_fmt<T...> arg )
     {

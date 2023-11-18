@@ -1179,26 +1179,26 @@ public:
                                 , strf::alignment_formatter >;
     using is_overridable = std::true_type;
 
-    template <typename CharT, typename PrePrinting, typename FPack>
+    template <typename CharT, typename PreMeasurements, typename FPack>
     constexpr STRF_HD static auto make_input
         ( strf::tag<CharT>
-        , PrePrinting* pre
+        , PreMeasurements* pre
         , const FPack& facets
         , IntT x ) noexcept
-        -> strf::detail::default_int_printer_input<CharT, PrePrinting, IntT>
+        -> strf::detail::default_int_printer_input<CharT, PreMeasurements, IntT>
     {
         return {pre, facets, x};
     }
 
-    template < typename CharT, typename PrePrinting, typename FPack
+    template < typename CharT, typename PreMeasurements, typename FPack
              , typename PTraits, int Base, bool HasAlignment >
     constexpr STRF_HD static auto make_input
         ( strf::tag<CharT>
-        , PrePrinting* pre
+        , PreMeasurements* pre
         , const FPack& facets
         , vwf_nopp_<PTraits, Base, HasAlignment> x ) noexcept
         -> strf::usual_printer_input
-            < CharT, PrePrinting, FPack, vwf_nopp_<PTraits, Base, HasAlignment>
+            < CharT, PreMeasurements, FPack, vwf_nopp_<PTraits, Base, HasAlignment>
             , strf::detail::conditional_t
                 < HasAlignment
                 , strf::detail::int_printer_static_base_and_punct<CharT, Base, false>
@@ -1207,46 +1207,46 @@ public:
         return {pre, facets, x};
     }
 
-    template < typename CharT, typename PrePrinting, typename FPack
+    template < typename CharT, typename PreMeasurements, typename FPack
              , typename PTraits, int Base, bool Punctuate, bool HasAlignment >
     constexpr STRF_HD static auto make_input
         ( strf::tag<CharT>
-        , PrePrinting* pre
+        , PreMeasurements* pre
         , const FPack& facets
         , vwf_bp_<PTraits, Base, Punctuate, HasAlignment> x )
         -> strf::usual_printer_input
-            < CharT, PrePrinting, FPack, vwf_bp_<PTraits, Base, Punctuate, HasAlignment>
+            < CharT, PreMeasurements, FPack, vwf_bp_<PTraits, Base, Punctuate, HasAlignment>
             , strf::detail::int_printer_static_base_and_punct<CharT, Base, Punctuate> >
     {
         return {pre, facets, x};
     }
 
-    template < typename CharT, typename PrePrinting, typename FPack
+    template < typename CharT, typename PreMeasurements, typename FPack
              , typename PTraits, bool HasAlignment>
     constexpr STRF_HD static auto make_input
         ( strf::tag<CharT>
-        , PrePrinting* pre
+        , PreMeasurements* pre
         , const FPack& facets
         , vwf_<PTraits, HasAlignment> x )
         -> strf::detail::conditional_t
             < ! HasAlignment
-            , strf::detail::default_int_printer_input<CharT, PrePrinting, IntT>
+            , strf::detail::default_int_printer_input<CharT, PreMeasurements, IntT>
             , strf::usual_printer_input
-                < CharT, PrePrinting, FPack, vwf_<PTraits, HasAlignment>
+                < CharT, PreMeasurements, FPack, vwf_<PTraits, HasAlignment>
                 , strf::detail::aligned_default_int_printer<CharT> > >
     {
         return {pre, facets, x};
     }
 
-    template < typename CharT, typename PrePrinting, typename FPack
+    template < typename CharT, typename PreMeasurements, typename FPack
              , typename PTraits, bool HasAlignment>
     constexpr STRF_HD static auto make_input
         ( strf::tag<CharT>
-        , PrePrinting* pre
+        , PreMeasurements* pre
         , const FPack& facets
         , vwf_full_dynamic_<PTraits, HasAlignment> x )
         -> strf::usual_printer_input
-                < CharT, PrePrinting, FPack, vwf_full_dynamic_<PTraits, HasAlignment>
+                < CharT, PreMeasurements, FPack, vwf_full_dynamic_<PTraits, HasAlignment>
                 , strf::detail::int_printer_full_dynamic<CharT> >
     {
         return {pre, facets, x};
@@ -1334,10 +1334,10 @@ struct voidptr_printing
     using formatters = strf::tag<strf::alignment_formatter>;
     using is_overridable = std::true_type;
 
-    template <typename CharT, typename PrePrinting, typename FPack>
+    template <typename CharT, typename PreMeasurements, typename FPack>
     constexpr STRF_HD static auto make_input
         ( strf::tag<CharT>
-        , PrePrinting* pre
+        , PreMeasurements* pre
         , const FPack& facets
         , const void* x ) noexcept
     -> decltype( strf::make_default_printer_input<CharT>
@@ -1357,10 +1357,10 @@ struct voidptr_printing
             , *strf::hex(strf::detail::bit_cast<std::size_t>(x)) );
     }
 
-    template <typename CharT, typename PrePrinting, typename FPack, typename... T>
+    template <typename CharT, typename PreMeasurements, typename FPack, typename... T>
     constexpr STRF_HD static auto make_input
         ( strf::tag<CharT>
-        , PrePrinting* pre
+        , PreMeasurements* pre
         , const FPack& facets
         , strf::printable_with_fmt<T...> x ) noexcept
     -> decltype( strf::make_default_printer_input<CharT>
@@ -1406,10 +1406,10 @@ public:
 
 private:
 
-    template < typename PrePrinting
+    template < typename PreMeasurements
              , typename IntT
              , strf::detail::enable_if_t<std::is_signed<IntT>::value, int> = 0 >
-    STRF_HD void init_(PrePrinting* pre, IntT value)
+    STRF_HD void init_(PreMeasurements* pre, IntT value)
     {
         using uint = typename std::make_unsigned<IntT>::type;
         uint uvalue;
@@ -1426,10 +1426,10 @@ private:
         pre->add_size(digcount_ + negative_);
     }
 
-   template < typename PrePrinting
+   template < typename PreMeasurements
             , typename UIntT
             , strf::detail::enable_if_t< ! std::is_signed<UIntT>::value, int> = 0 >
-    STRF_HD void init_(PrePrinting* pre, UIntT value)
+    STRF_HD void init_(PreMeasurements* pre, UIntT value)
     {
         uvalue_ = value;
         negative_ = false;
@@ -1472,7 +1472,7 @@ public:
         STRF_MAYBE_UNUSED(encoding);
         encode_fill_ = encoding.encode_fill_func();
         i.pre->subtract_width(static_cast<width_t>(fillcount_ + digcount_ + negative_));
-        STRF_IF_CONSTEXPR(strf::usual_printer_input<T...>::preprinting_type::size_required) {
+        STRF_IF_CONSTEXPR(strf::usual_printer_input<T...>::premeasurements_type::size_required) {
             auto fillsize = fillcount_ * encoding.encoded_char_size(fillchar_);
             i.pre->add_size(fillsize + digcount_ + negative_);
         }
@@ -1977,7 +1977,7 @@ public:
         detail::init_1(data_, ifmt, ivalue);
         auto w = detail::init_fmt_int_printer_data<Base>(data_, ifmt, afmt);
         i.pre->subtract_width(static_cast<width_t>(w.sub_width + w.fillcount));
-        using pre_t = typename strf::usual_printer_input<T...>::preprinting_type;
+        using pre_t = typename strf::usual_printer_input<T...>::premeasurements_type;
         STRF_IF_CONSTEXPR (pre_t::size_required) {
             i.pre->add_size(w.sub_width);
             if (w.fillcount > 0) {
@@ -2119,12 +2119,12 @@ public:
     {
     }
 
-    template <typename IntT, typename PrePrinting, typename FPack>
+    template <typename IntT, typename PreMeasurements, typename FPack>
     STRF_HD int_printer_static_base_and_punct
         ( IntT ivalue
         , int_format_static_base_and_punct<Base, true> ifmt
         , alignment_format afmt
-        , PrePrinting* pre
+        , PreMeasurements* pre
         , const FPack& facets )
         : int_printer_static_base_and_punct
             ( ivalue, ifmt, afmt, pre
@@ -2135,12 +2135,12 @@ public:
     {
     }
 
-    template <typename IntT, typename PrePrinting, typename Charset>
+    template <typename IntT, typename PreMeasurements, typename Charset>
     STRF_HD int_printer_static_base_and_punct
         ( IntT ivalue
         , int_format_static_base_and_punct<Base, true> ifmt
         , alignment_format afmt
-        , PrePrinting* pre
+        , PreMeasurements* pre
         , strf::lettercase lc
         , strf::digits_grouping grp
         , char32_t thousands_sep
@@ -2155,7 +2155,7 @@ public:
         const auto w = detail::init_punct_fmt_int_printer_data<Base>
             (data_, charset.validate_func(), ifmt, afmt);
         pre->subtract_width(static_cast<width_t>(w.sub_width + w.fillcount + data_.sepcount));
-        STRF_IF_CONSTEXPR (PrePrinting::size_required) {
+        STRF_IF_CONSTEXPR (PreMeasurements::size_required) {
             pre->add_size(w.sub_width);
             if (w.fillcount) {
                 pre->add_size(w.fillcount * charset.encoded_char_size(afmt.fill));

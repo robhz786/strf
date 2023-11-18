@@ -12,7 +12,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 :printer:      <<printer,printer>>
 :destination: <<destination_hpp#destination,destination>>
 :tag: <<tag,tag>>
-:preprinting: <<preprinting,preprinting>>
+:premeasurements: <<premeasurements,premeasurements>>
 :make_printer_input: <<make_printer_input,make_printer_input>>
 :basic_cstr_destination: <<destination_hpp#basic_cstr_destination,basic_cstr_destination>>
 :basic_char_array_writer: <<destination_hpp#basic_char_array_writer,basic_char_array_writer>>
@@ -384,7 +384,7 @@ dest_type dest{dest&#95;creator.create(poli.space)};
 +
 [source,cpp,subs=normal]
 ----
-using pre_t = {preprinting}<precalc_size::no, precalc_width::no>;
+using pre_t = {premeasurements}<precalc_size::no, precalc_width::no>;
 pre_t pre;
 using parg_t = strf::remove_cvref_t<decltype(parg)>;
 using printer_t = {printer_type}<char_type, pre_t, FPack, parg_t>;
@@ -404,7 +404,7 @@ a|
 +
 [source,cpp,subs=normal]
 ----
-using pre_type = {preprinting}<precalc_size::yes, precalc_width::no>;
+using pre_type = {premeasurements}<precalc_size::yes, precalc_width::no>;
 pre_type pre;
 ----
 . For each `parg` in `pargs\...`, do:
@@ -447,7 +447,7 @@ typename DestCreator::destination_type dest{dest&#95;creator.create()};
 +
 [source,cpp,subs=normal]
 ----
-using pre_t = {preprinting}<precalc_size::no, precalc_width::no>;
+using pre_t = {premeasurements}<precalc_size::no, precalc_width::no>;
 pre_t pre;
 using parg_t = strf::remove_cvref_t<decltype(parg)>;
 using printer_t = {printer_type}<char_type, pre_t, FPack, parg_t>;

@@ -60,13 +60,13 @@ public:
     template <typename DestCreator>
     using return_type = strf::detail::destination_finish_return_type<DestCreator, false>;
 
-    using preprinting_type = strf::preprinting
+    using premeasurements_type = strf::premeasurements
         <strf::precalc_size::no, strf::precalc_width::no>;
 
     template <bool Line, typename DestCreator, typename... Printers>
     static STRF_HD return_type<DestCreator> print
         ( const DestCreator& dest_creator
-        , const preprinting_type*
+        , const premeasurements_type*
         , const Printers& ... printers )
     {
         typename DestCreator::destination_type dst{dest_creator.create()};
@@ -92,13 +92,13 @@ public:
     template <typename DestCreator>
     using return_type = strf::detail::destination_finish_return_type<DestCreator, true>;
 
-    using preprinting_type = strf::preprinting
+    using premeasurements_type = strf::premeasurements
         <strf::precalc_size::yes, strf::precalc_width::no>;
 
     template <bool Line, typename DestCreator, typename... Printers>
     STRF_HD return_type<DestCreator> print
         ( const DestCreator& dest_creator
-        , const preprinting_type*
+        , const premeasurements_type*
         , const Printers& ... printers ) const
     {
         typename DestCreator::sized_destination_type dst{dest_creator.create(space)};
@@ -117,13 +117,13 @@ public:
     template <typename DestCreator>
     using return_type = strf::detail::destination_finish_return_type<DestCreator, true>;
 
-    using preprinting_type = strf::preprinting
+    using premeasurements_type = strf::premeasurements
         <strf::precalc_size::yes, strf::precalc_width::no>;
 
     template <bool Line, typename DestCreator, typename... Printers>
     static STRF_HD return_type<DestCreator> print
         ( const DestCreator& dest_creator
-        , const preprinting_type* pre
+        , const premeasurements_type* pre
         , const Printers& ... printers )
     {
         const auto size = pre->accumulated_size() + Line;

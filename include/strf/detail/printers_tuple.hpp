@@ -132,7 +132,7 @@ public:
              , strf::precalc_width WidthRequired >
     STRF_HD printers_tuple_impl
         ( const strf::detail::simple_tuple<Args...>& args
-        , strf::preprinting<SizeRequired, WidthRequired>* pre
+        , strf::premeasurements<SizeRequired, WidthRequired>* pre
         , const strf::facets_pack<FPElems...>& fp )
         : indexed_printer<I, Printers>
             ( strf::make_printer_input<CharT>
@@ -148,7 +148,7 @@ public:
     STRF_HD printers_tuple_impl
         ( const strf::detail::simple_tuple<Args...>& args
         , const strf::facets_pack<FPElems...>& fp
-        , strf::preprinting<SizeRequired, WidthRequired>* pp_array )
+        , strf::premeasurements<SizeRequired, WidthRequired>* pp_array )
         : indexed_printer<I, Printers>
             ( strf::make_printer_input<CharT>
               ( &pp_array[I], fp, args.template get<I>() ) ) ...
@@ -180,19 +180,19 @@ using printers_tuple = printers_tuple_impl
         , strf::detail::make_index_sequence<sizeof...(Printers)>
         , Printers... >;
 
-template < typename CharT, typename PrePrinting, typename FPack
+template < typename CharT, typename PreMeasurements, typename FPack
          , typename ISeq, typename... Args >
 class printers_tuple_alias
 {
 public:
     using type = printers_tuple_impl
-        <CharT, ISeq, strf::printer_type<CharT, PrePrinting, FPack, Args> ...>;
+        <CharT, ISeq, strf::printer_type<CharT, PreMeasurements, FPack, Args> ...>;
 };
 
-template < typename CharT, typename PrePrinting, typename FPack, typename ... Args >
+template < typename CharT, typename PreMeasurements, typename FPack, typename ... Args >
 using printers_tuple_from_args
 = typename printers_tuple_alias
-    < CharT, PrePrinting, FPack, strf::detail::make_index_sequence<sizeof...(Args)>, Args ...>
+    < CharT, PreMeasurements, FPack, strf::detail::make_index_sequence<sizeof...(Args)>, Args ...>
     :: type;
 
 } // namespace detail

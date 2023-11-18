@@ -136,13 +136,13 @@ private:
         , const DestCreator& dest_creator
         , Charset charset
         , const ErrHandler& err_handler
-        , const typename ReservePolicy::preprinting_type* preprinting_arr
+        , const typename ReservePolicy::premeasurements_type* premeasurements_arr
         , strf::detail::simple_string_view<typename DestCreator::char_type> tr_string
         , strf_inilist_<typename DestCreator::char_type> printers )
     {
-        typename ReservePolicy::preprinting_type pre;
+        typename ReservePolicy::premeasurements_type pre;
         const strf::detail::tr_string_printer<Charset, ErrHandler> tr_printer
-            ( &pre, preprinting_arr, printers
+            ( &pre, premeasurements_arr, printers
             , tr_string.begin(), tr_string.end()
             , charset, err_handler );
         return reserve_policy.template print<Ln>(dest_creator, &pre, tr_printer);
@@ -159,12 +159,12 @@ private:
         , const DestCreator& dest_creator
         , Charset charset
         , const ErrHandler& err_handler
-        , const typename ReservePolicy::preprinting_type* preprinting_arr
+        , const typename ReservePolicy::premeasurements_type* premeasurements_arr
         , strf::detail::simple_string_view<typename DestCreator::char_type> tr_string
         , const Printers&... printers )
     {
         return print_3_<Ln>( reserve_policy, dest_creator, charset, err_handler
-                           , preprinting_arr, tr_string, {&printers...} );
+                           , premeasurements_arr, tr_string, {&printers...} );
     }
 
 public:
@@ -177,7 +177,7 @@ public:
         , strf::detail::simple_string_view<typename DestCreator::char_type> tr_string
         , Printables... printables )
     {
-        using preprinting_t = typename ReservePolicy::preprinting_type;
+        using premeasurements_t = typename ReservePolicy::premeasurements_type;
         using char_type = typename DestCreator::char_type;
         auto fp = strf::pack((Fpes&&)fpes...);
 
@@ -188,15 +188,15 @@ public:
         auto&& err_handler = strf::use_facet<err_handler_cat, void>(fp);
 
         constexpr std::size_t printables_count = sizeof...(printables);
-        preprinting_t preprinting_arr[printables_count ? printables_count : 1];
+        premeasurements_t premeasurements_arr[printables_count ? printables_count : 1];
 
         return print_2_<Ln>
-            ( reserve_policy, dest_creator, charset, err_handler, preprinting_arr, tr_string
+            ( reserve_policy, dest_creator, charset, err_handler, premeasurements_arr, tr_string
             , as_printer_cref_<char_type>
                 ( strf::printer_type
-                  < char_type, preprinting_t, decltype(fp), Printables >
+                  < char_type, premeasurements_t, decltype(fp), Printables >
                     ( strf::make_printer_input<char_type>
-                      ( &preprinting_arr[I], fp, (Printables&&)printables ) ) )... );
+                      ( &premeasurements_arr[I], fp, (Printables&&)printables ) ) )... );
     }
 };
 

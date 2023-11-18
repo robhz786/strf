@@ -173,8 +173,8 @@ public:
 
 private:
 
-    template <typename PrePrinting, typename WidthCalc>
-    void preprinting_(PrePrinting* pre, const WidthCalc& wcalc) const;
+    template <typename PreMeasurements, typename WidthCalc>
+    void premeasurements_(PreMeasurements* pre, const WidthCalc& wcalc) const;
 
     strf::dynamic_charset<CharT> encoding_;
     strf::numpunct<10> numpunct_;
@@ -196,37 +196,38 @@ inline std_complex_printer<CharT, FloatT>::std_complex_printer
     , form_(strf::use_facet<complex_form_c, std::complex<FloatT>>(x.facets))
     , coordinates_(::complex_coordinates(form_, x.arg))
 {
-    preprinting_( x.pre
+    premeasurements_( x.pre
             , strf::use_facet<strf::width_calculator_c, std::complex<FloatT>>(x.facets) );
 }
 
 template <typename CharT, typename FloatT>
-template <typename PrePrinting, typename WidthCalc>
-void std_complex_printer<CharT, FloatT>::preprinting_(PrePrinting* pp, const WidthCalc& wcalc) const
+template <typename PreMeasurements, typename WidthCalc>
+void std_complex_printer<CharT, FloatT>::premeasurements_
+    ( PreMeasurements* pre, const WidthCalc& wcalc ) const
 {
     switch (form_) {
         case complex_form::algebric:
-            pp->subtract_width(7);
-            pp->add_size(7);
+            pre->subtract_width(7);
+            pre->add_size(7);
             break;
 
         case complex_form::vector:
-            pp->subtract_width(4);
-            pp->add_size(4);
+            pre->subtract_width(4);
+            pre->add_size(4);
             break;
 
         default:
             assert(form_ == complex_form::polar);
-            if (pp->has_remaining_width()) {
-                pp->subtract_width(wcalc.char_width(strf::utf_t<char32_t>{}, anglechar_));
-                pp->subtract_width(1);
+            if (pre->has_remaining_width()) {
+                pre->subtract_width(wcalc.char_width(strf::utf_t<char32_t>{}, anglechar_));
+                pre->subtract_width(1);
             }
-            pp->add_size(encoding_.encoded_char_size(anglechar_));
-            pp->add_size(1);
+            pre->add_size(encoding_.encoded_char_size(anglechar_));
+            pre->add_size(1);
     }
 
     auto facets = strf::pack(lettercase_, numpunct_, encoding_);
-    strf::precalculate<CharT>(pp, facets, coordinates_.first, coordinates_.second);
+    strf::precalculate<CharT>(pre, facets, coordinates_.first, coordinates_.second);
 }
 
 template <typename CharT, typename FloatT>
@@ -268,7 +269,7 @@ public:
         , fillchar_(x.arg.get_alignment_format().fill)
         , alignment_(x.arg.get_alignment_format().alignment)
     {
-        init_fillcount_and_do_preprinting_
+        init_fillcount_and_do_premeasurements_
             ( x.pre
             , strf::use_facet<strf::width_calculator_c, complex_type_>(x.facets)
             , x.arg.width() );
@@ -281,15 +282,15 @@ private:
     template < strf::precalc_size PrecalcSize
              , strf::precalc_width PrecalcWidth
              , typename WidthCalc >
-    void init_fillcount_and_do_preprinting_
-        ( strf::preprinting<PrecalcSize, PrecalcWidth>* pre
+    void init_fillcount_and_do_premeasurements_
+        ( strf::premeasurements<PrecalcSize, PrecalcWidth>* pre
         , WidthCalc wcalc
         , strf::width_t fmt_width );
 
     void print_complex_value_( strf::destination<CharT>& dst ) const;
 
-    template <typename PrePrinting, typename WidthCalc>
-    void do_preprinting_without_fill_(PrePrinting* pre, WidthCalc wcalc) const;
+    template <typename PreMeasurements, typename WidthCalc>
+    void do_premeasurements_without_fill_(PreMeasurements* pre, WidthCalc wcalc) const;
 
     strf::dynamic_charset<CharT> encoding_;
     strf::numpunct<10> numpunct10_;
@@ -306,21 +307,21 @@ private:
 
 template <typename CharT, typename FloatT>
 template <strf::precalc_size PrecalcSize, strf::precalc_width PrecalcWidth, typename WidthCalc>
-void fmt_std_complex_printer<CharT, FloatT>::init_fillcount_and_do_preprinting_
-    ( strf::preprinting<PrecalcSize, PrecalcWidth>* pre
+void fmt_std_complex_printer<CharT, FloatT>::init_fillcount_and_do_premeasurements_
+    ( strf::premeasurements<PrecalcSize, PrecalcWidth>* pre
     , WidthCalc wcalc
     , strf::width_t fmt_width )
 {
     const strf::width_t fillchar_width = wcalc.char_width(strf::utf_t<char32_t>{}, fillchar_);
     if (fmt_width >= pre->remaining_width() || ! static_cast<bool>(PrecalcWidth) ) {
         pre->clear_remaining_width();
-        strf::preprinting<PrecalcSize, strf::precalc_width::yes> sub_pre{fmt_width};
-        do_preprinting_without_fill_(&sub_pre, wcalc);
+        strf::premeasurements<PrecalcSize, strf::precalc_width::yes> sub_pre{fmt_width};
+        do_premeasurements_without_fill_(&sub_pre, wcalc);
         fillcount_ = (sub_pre.remaining_width() / fillchar_width).round();
         pre->add_size(sub_pre.accumulated_ssize());
     } else {
         auto previous_remaining_width = pre->remaining_width();
-        do_preprinting_without_fill_(pre, wcalc);
+        do_premeasurements_without_fill_(pre, wcalc);
         if (pre->has_remaining_width()) {
             auto content_width = previous_remaining_width - pre->remaining_width();
             if (fmt_width > content_width) {
@@ -335,35 +336,35 @@ void fmt_std_complex_printer<CharT, FloatT>::init_fillcount_and_do_preprinting_
 }
 
 template <typename CharT, typename FloatT>
-template <typename PrePrinting, typename WidthCalc>
-void fmt_std_complex_printer<CharT, FloatT>::do_preprinting_without_fill_
-    ( PrePrinting* pp, WidthCalc wcalc) const
+template <typename PreMeasurements, typename WidthCalc>
+void fmt_std_complex_printer<CharT, FloatT>::do_premeasurements_without_fill_
+    ( PreMeasurements* pre, WidthCalc wcalc) const
 {
     auto facets = strf::pack(wcalc, lettercase_, numpunct10_, numpunct16_, encoding_);
     strf::precalculate<CharT>
-        ( pp, facets
+        ( pre, facets
         , strf::fmt(coordinates_.first).set_float_format(float_fmt_)
         , strf::fmt(coordinates_.second).set_float_format(float_fmt_) ) ;
 
     switch (form_) {
         case complex_form::algebric:
-            pp->subtract_width(7);
-            pp->add_size(7);
+            pre->subtract_width(7);
+            pre->add_size(7);
             break;
 
         case complex_form::vector:
-            pp->subtract_width(4);
-            pp->add_size(4);
+            pre->subtract_width(4);
+            pre->add_size(4);
             break;
 
         default:
             assert(form_ == complex_form::polar);
-            if (pp->has_remaining_width()) {
-                pp->subtract_width(wcalc.char_width(strf::utf_t<char32_t>{}, anglechar_));
-                pp->subtract_width(1);
+            if (pre->has_remaining_width()) {
+                pre->subtract_width(wcalc.char_width(strf::utf_t<char32_t>{}, anglechar_));
+                pre->subtract_width(1);
             }
-            pp->add_size(encoding_.encoded_char_size(anglechar_));
-            pp->add_size(1);
+            pre->add_size(encoding_.encoded_char_size(anglechar_));
+            pre->add_size(1);
     }
 }
 
@@ -431,27 +432,27 @@ struct printable_traits<std::complex<FloatT>>
         , strf::float_formatter
         , strf::alignment_formatter >;
 
-    template <typename CharT, typename PrePrinting, typename FPack>
+    template <typename CharT, typename PreMeasurements, typename FPack>
     static auto make_input
         ( strf::tag<CharT>
-        , PrePrinting* pre
+        , PreMeasurements* pre
         , const FPack& fp
         , std::complex<FloatT> arg)
         -> strf::usual_printer_input
-            < CharT, PrePrinting, FPack, std::complex<FloatT>
+            < CharT, PreMeasurements, FPack, std::complex<FloatT>
             , std_complex_printer<CharT, FloatT> >
     {
         return {pre, fp, arg};
     }
 
-    template < typename CharT, typename PrePrinting, typename FPack, typename... T >
+    template < typename CharT, typename PreMeasurements, typename FPack, typename... T >
     static auto make_input
         ( strf::tag<CharT>
-        , PrePrinting* pre
+        , PreMeasurements* pre
         , const FPack& fp
         , strf::printable_with_fmt<T...> arg )
         -> strf::usual_printer_input
-            < CharT, PrePrinting, FPack, strf::printable_with_fmt<T...>
+            < CharT, PreMeasurements, FPack, strf::printable_with_fmt<T...>
             , fmt_std_complex_printer<CharT, FloatT> >
     {
         return {pre, fp, arg};
@@ -602,22 +603,22 @@ void tests()
 
     // size and width pre-calculation
     {
-        strf::full_preprinting pp{strf::width_max};
-        strf::precalculate<char>(&pp, strf::pack(), *strf::fmt(x));
-        TEST_EQ(pp.accumulated_ssize(), 14);
-        TEST_TRUE(strf::width_max - pp.remaining_width() == 14);
+        strf::full_premeasurements pre{strf::width_max};
+        strf::precalculate<char>(&pre, strf::pack(), *strf::fmt(x));
+        TEST_EQ(pre.accumulated_ssize(), 14);
+        TEST_TRUE(strf::width_max - pre.remaining_width() == 14);
     }
     {
-        strf::full_preprinting pp{strf::width_max};
-        strf::precalculate<char>(&pp, strf::pack(), *strf::fmt(x).algebric());
-        TEST_EQ(pp.accumulated_ssize(), 17);
-        TEST_TRUE(strf::width_max - pp.remaining_width() == 17);
+        strf::full_premeasurements pre{strf::width_max};
+        strf::precalculate<char>(&pre, strf::pack(), *strf::fmt(x).algebric());
+        TEST_EQ(pre.accumulated_ssize(), 17);
+        TEST_TRUE(strf::width_max - pre.remaining_width() == 17);
     }
     {
-        strf::full_preprinting pp{strf::width_max};
-        strf::precalculate<char>(&pp, strf::pack(), *strf::fmt(x).polar());
-        TEST_EQ(pp.accumulated_ssize(), 27);
-        TEST_TRUE(strf::width_max - pp.remaining_width() == 25);
+        strf::full_premeasurements pre{strf::width_max};
+        strf::precalculate<char>(&pre, strf::pack(), *strf::fmt(x).polar());
+        TEST_EQ(pre.accumulated_ssize(), 27);
+        TEST_TRUE(strf::width_max - pre.remaining_width() == 25);
     }
 }
 

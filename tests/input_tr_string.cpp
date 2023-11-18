@@ -185,7 +185,7 @@ STRF_TEST_FUNC void test_printing()
 }
 
 
-STRF_TEST_FUNC void test_without_preprinting()
+STRF_TEST_FUNC void test_without_premeasurements()
 {
     char buff[200];
 
@@ -219,10 +219,10 @@ auto first_char_of_tr_string(String str, Args&&...)
 #define TEST_SIZE_PRECALC(EXPECTED_SIZE, ...) \
     {                                                                                 \
         using char_t = decltype(first_char_of_tr_string(__VA_ARGS__));                \
-        using pre_t = strf::preprinting                                               \
+        using pre_t = strf::premeasurements                                           \
             <strf::precalc_size::yes, strf::precalc_width::no>;                       \
         pre_t pre;                                                                    \
-        strf::precalculate<char_t>(&pre, strf::pack(), strf::tr(__VA_ARGS__));         \
+        strf::precalculate<char_t>(&pre, strf::pack(), strf::tr(__VA_ARGS__));        \
         const std::ptrdiff_t obtained = pre.accumulated_ssize();                      \
         const std::ptrdiff_t expected = EXPECTED_SIZE;                                \
         if (obtained != expected) {                                                   \
@@ -270,7 +270,7 @@ STRF_TEST_FUNC void test_size_precalculation()
 #define TEST_WIDTH_PRECALC(INITIAL_WIDTH, EXPECTED_REMAINING_WIDTH, ...)              \
     {                                                                                 \
         using char_t = decltype(first_char_of_tr_string(__VA_ARGS__));                \
-        using pre_t = strf::preprinting                                               \
+        using pre_t = strf::premeasurements                                           \
             <strf::precalc_size::no, strf::precalc_width::yes>;                       \
         pre_t pre(strf::width_t(INITIAL_WIDTH));                                      \
         strf::precalculate<char_t>(&pre, strf::pack(), strf::tr(__VA_ARGS__));        \
@@ -351,7 +351,7 @@ STRF_TEST_FUNC void test_width_precalculation()
 #define TEST_FULL_PRECALC(EXPECTED_SIZE, INITIAL_WIDTH, EXPECTED_REMAINING_WIDTH, ...)\
     {                                                                                 \
         using char_t = decltype(first_char_of_tr_string(__VA_ARGS__));                \
-        using pre_t = strf::full_preprinting;                                         \
+        using pre_t = strf::full_premeasurements;                                     \
         pre_t pre(strf::width_t(INITIAL_WIDTH));                                      \
         strf::precalculate<char_t>(&pre, strf::pack(), strf::tr(__VA_ARGS__));        \
         const bool failed_size = pre.accumulated_ssize() != EXPECTED_SIZE;            \
@@ -438,7 +438,7 @@ STRF_TEST_FUNC void test_full_precalculation() // size and width
 STRF_TEST_FUNC void test_input_tr_string()
 {
     test_printing();
-    test_without_preprinting();
+    test_without_premeasurements();
     test_size_precalculation();
     test_width_precalculation();
     test_full_precalculation();

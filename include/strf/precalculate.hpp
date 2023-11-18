@@ -15,7 +15,7 @@ template < typename CharT
          , strf::precalc_width WidthRequired
          , typename... FPE >
 STRF_HD void precalculate
-    ( strf::preprinting<SizeRequired, WidthRequired>*
+    ( strf::premeasurements<SizeRequired, WidthRequired>*
     , const strf::facets_pack<FPE...> &)
 {
 }
@@ -25,7 +25,7 @@ template < typename CharT
          , typename Arg
          , typename... Args >
 STRF_HD STRF_CONSTEXPR_IN_CXX14 void precalculate
-    ( strf::preprinting<strf::precalc_size::no, strf::precalc_width::no>*
+    ( strf::premeasurements<strf::precalc_size::no, strf::precalc_width::no>*
     , const strf::facets_pack<FPE...>&
     , const Arg&
     , const Args&... ) noexcept
@@ -36,7 +36,7 @@ namespace detail {
 
 template < typename CharT, typename... FPE >
 STRF_HD STRF_CONSTEXPR_IN_CXX14 void precalculate_only_width
-    ( strf::preprinting<strf::precalc_size::no, strf::precalc_width::yes>*
+    ( strf::premeasurements<strf::precalc_size::no, strf::precalc_width::yes>*
     , const strf::facets_pack<FPE...>& ) noexcept
 {
 }
@@ -46,18 +46,18 @@ template < typename CharT
          , typename Arg
          , typename... OtherArgs >
 STRF_HD void precalculate_only_width
-    ( strf::preprinting<strf::precalc_size::no, strf::precalc_width::yes>* pp
+    ( strf::premeasurements<strf::precalc_size::no, strf::precalc_width::yes>* pre
     , const strf::facets_pack<FPE...>& facets
     , const Arg& arg
     , const OtherArgs&... other_args )
 {
-    using pp_type = strf::preprinting<strf::precalc_size::no, strf::precalc_width::yes>;
+    using pre_type = strf::premeasurements<strf::precalc_size::no, strf::precalc_width::yes>;
 
-    (void) strf::printer_type<CharT, pp_type, strf::facets_pack<FPE...>, Arg>
-        ( strf::make_printer_input<CharT>(pp, facets, arg) );
+    (void) strf::printer_type<CharT, pre_type, strf::facets_pack<FPE...>, Arg>
+        ( strf::make_printer_input<CharT>(pre, facets, arg) );
 
-    if (pp->remaining_width() > 0) {
-        strf::detail::precalculate_only_width<CharT>(pp, facets, other_args...);
+    if (pre->remaining_width() > 0) {
+        strf::detail::precalculate_only_width<CharT>(pre, facets, other_args...);
     }
 }
 
@@ -65,12 +65,12 @@ STRF_HD void precalculate_only_width
 
 template <typename CharT, typename... FPE, typename... Args>
 STRF_HD void precalculate
-    ( strf::preprinting<strf::precalc_size::no, strf::precalc_width::yes>* pp
+    ( strf::premeasurements<strf::precalc_size::no, strf::precalc_width::yes>* pre
     , const strf::facets_pack<FPE...>& facets
     , const Args&... args )
 {
-    if (pp->remaining_width() > 0) {
-        strf::detail::precalculate_only_width<CharT>(pp, facets, args...);
+    if (pre->remaining_width() > 0) {
+        strf::detail::precalculate_only_width<CharT>(pre, facets, args...);
     }
 }
 
@@ -89,15 +89,15 @@ template < typename CharT
          , typename... FPE
          , typename... Args >
 STRF_HD void precalculate
-    ( strf::preprinting<strf::precalc_size::yes, WidthRequired>* pp
+    ( strf::premeasurements<strf::precalc_size::yes, WidthRequired>* pre
     , const strf::facets_pack<FPE...>& facets
     , const Args&... args )
 {
-    STRF_MAYBE_UNUSED(pp);
-    using pp_type = strf::preprinting<strf::precalc_size::yes, WidthRequired>;
+    STRF_MAYBE_UNUSED(pre);
+    using pre_type = strf::premeasurements<strf::precalc_size::yes, WidthRequired>;
     strf::detail::do_nothing_with
-        ( strf::printer_type<CharT, pp_type, strf::facets_pack<FPE...>, Args>
-          ( strf::make_printer_input<CharT>(pp, facets, args) ) ... );
+        ( strf::printer_type<CharT, pre_type, strf::facets_pack<FPE...>, Args>
+          ( strf::make_printer_input<CharT>(pre, facets, args) ) ... );
 }
 
 

@@ -9,10 +9,10 @@ struct my_bool_overrider
 {
     using category = strf::printable_overrider_c;
 
-    template <typename CharT, typename PrePrinting, typename FPack, typename... T>
+    template <typename CharT, typename PreMeasurements, typename FPack, typename... T>
     constexpr auto make_input
         ( strf::tag<CharT>
-        , PrePrinting* pre
+        , PreMeasurements* pre
         , const FPack& fp
         , strf::printable_with_fmt<T...> x ) const noexcept
     {

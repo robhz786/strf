@@ -44,22 +44,22 @@ struct my_bool_printing_overrider
 {
     using category = strf::printable_overrider_c;
 
-    template <typename CharT, typename PrePrinting, typename FPack>
+    template <typename CharT, typename PreMeasurements, typename FPack>
     constexpr static STRF_HD auto make_input
         ( strf::tag<CharT>
-        , PrePrinting* pre
+        , PreMeasurements* pre
         , const FPack& fp
         , bool x ) noexcept
         -> strf::usual_printer_input
-            <CharT, PrePrinting, FPack, bool, my_bool_printer<CharT>>
+            <CharT, PreMeasurements, FPack, bool, my_bool_printer<CharT>>
     {
         return {pre, fp, x};
     }
 
-    template <typename CharT, typename PrePrinting, typename FPack, typename... T>
+    template <typename CharT, typename PreMeasurements, typename FPack, typename... T>
     constexpr static STRF_HD auto make_input
         ( strf::tag<CharT>
-        , PrePrinting* pre
+        , PreMeasurements* pre
         , const FPack& fp
         , strf::printable_with_fmt<T...> x ) noexcept
         -> decltype( strf::make_printer_input<CharT>
@@ -80,10 +80,10 @@ struct my_int_printing_overrider
 {
     using category = strf::printable_overrider_c;
 
-    template <typename CharT, typename PrePrinting, typename FPack, typename... T>
+    template <typename CharT, typename PreMeasurements, typename FPack, typename... T>
     constexpr static STRF_HD auto make_input
         ( strf::tag<CharT>
-        , PrePrinting* pre
+        , PreMeasurements* pre
         , const FPack&
         , strf::printable_with_fmt<T...> x ) noexcept
         -> decltype( strf::make_printer_input<CharT>
@@ -125,10 +125,10 @@ struct printable_traits<bool_wrapper> {
     using override_tag = bool_wrapper;
     using is_overridable = std::true_type;
 
-    template <typename CharT, typename PrePrinting, typename FPack>
+    template <typename CharT, typename PreMeasurements, typename FPack>
     STRF_HD static auto make_input
         ( strf::tag<CharT>
-        , PrePrinting* pre
+        , PreMeasurements* pre
         , const FPack& fp
         , bool_wrapper f )
         -> decltype( strf::make_printer_input<CharT>

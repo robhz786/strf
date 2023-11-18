@@ -727,13 +727,13 @@ using float_with_default_formatters = strf::printable_with_fmt
     , strf::float_formatter
     , strf::alignment_formatter >;
 
-template <typename CharT, typename PrePrinting, typename FloatT>
+template <typename CharT, typename PreMeasurements, typename FloatT>
 struct fast_double_printer_input
 {
     using printer_type = strf::detail::fast_double_printer<CharT>;
 
     template <typename FPack>
-    STRF_HD fast_double_printer_input(PrePrinting* pre_, const FPack& fp_, FloatT arg_)
+    STRF_HD fast_double_printer_input(PreMeasurements* pre_, const FPack& fp_, FloatT arg_)
         : pre(pre_)
         , value(arg_)
         , lcase(strf::use_facet<strf::lettercase_c, float>(fp_))
@@ -742,7 +742,7 @@ struct fast_double_printer_input
 
     template <typename FPack>
     STRF_HD fast_double_printer_input
-        ( PrePrinting* pre_
+        ( PreMeasurements* pre_
         , const FPack& fp_
         , strf::detail::float_with_default_formatters<FloatT> input )
         : pre(pre_)
@@ -751,22 +751,22 @@ struct fast_double_printer_input
     {
     }
 
-    PrePrinting* pre;
+    PreMeasurements* pre;
     FloatT value;
     strf::lettercase lcase;
 };
 
 
-// template <typename CharT, typename PrePrinting, typename FPack, typename FloatT>
+// template <typename CharT, typename PreMeasurements, typename FPack, typename FloatT>
 // using fast_punct_double_printer_input =
-//     strf::usual_printer_input< CharT, PrePrinting, FPack, FloatT
+//     strf::usual_printer_input< CharT, PreMeasurements, FPack, FloatT
 //                              , strf::detail::fast_punct_double_printer<CharT> >;
 
-template < typename CharT, typename PrePrinting, typename FPack
+template < typename CharT, typename PreMeasurements, typename FPack
          , typename FloatT, typename FloatFormatter, bool HasAlignment >
 using fmt_double_printer_input =
     strf::usual_printer_input
-        < CharT, PrePrinting, FPack
+        < CharT, PreMeasurements, FPack
         , strf::detail::float_with_formatters<FloatT, FloatFormatter, HasAlignment>
         , strf::detail::punct_double_printer<CharT> >;
 
@@ -778,27 +778,27 @@ struct float_printing
     using formatters = strf::tag<strf::float_formatter, strf::alignment_formatter>;
     using is_overridable = std::true_type;
 
-    template <typename CharT, typename PrePrinting, typename FPack>
+    template <typename CharT, typename PreMeasurements, typename FPack>
     STRF_HD constexpr static auto make_input
-        ( strf::tag<CharT>, PrePrinting* pre, const FPack& fp, FloatT x ) noexcept
-        -> strf::detail::fast_double_printer_input<CharT, PrePrinting, FloatT>
+        ( strf::tag<CharT>, PreMeasurements* pre, const FPack& fp, FloatT x ) noexcept
+        -> strf::detail::fast_double_printer_input<CharT, PreMeasurements, FloatT>
     {
         return {pre, fp, x};
     }
 
-    template < typename CharT, typename PrePrinting, typename FPack
+    template < typename CharT, typename PreMeasurements, typename FPack
              , typename FloatFormatter, bool HasAlignment >
     STRF_HD constexpr static auto make_input
         ( strf::tag<CharT>
-        , PrePrinting* pre
+        , PreMeasurements* pre
         , const FPack& fp
         , strf::detail::float_with_formatters
             < FloatT, FloatFormatter, HasAlignment > x ) noexcept
         -> strf::detail::conditional_t
             < HasAlignment || FloatFormatter::has_float_formatting
             , strf::detail::fmt_double_printer_input
-                < CharT, PrePrinting, FPack, FloatT, FloatFormatter, HasAlignment >
-            , fast_double_printer_input<CharT, PrePrinting, FloatT> >
+                < CharT, PreMeasurements, FPack, FloatT, FloatFormatter, HasAlignment >
+            , fast_double_printer_input<CharT, PreMeasurements, FloatT> >
     {
         return {pre, fp, x};
     }
@@ -1366,12 +1366,12 @@ class fast_double_printer: public strf::printer<CharT>
 {
 public:
 
-    template <typename FloatT, typename PrePrinting>
+    template <typename FloatT, typename PreMeasurements>
     STRF_HD explicit fast_double_printer
-        ( strf::detail::fast_double_printer_input<CharT, PrePrinting, FloatT> input) noexcept
+        ( strf::detail::fast_double_printer_input<CharT, PreMeasurements, FloatT> input) noexcept
         : fast_double_printer(input.value, input.lcase)
     {
-        if (input.pre->has_remaining_width() || PrePrinting::size_required) {
+        if (input.pre->has_remaining_width() || PreMeasurements::size_required) {
             const auto s = size();
             input.pre->subtract_width(static_cast<std::int16_t>(s));
             input.pre->add_size(s);
@@ -2329,10 +2329,10 @@ class punct_double_printer: public strf::printer<CharT>
 {
 public:
 
-    template < typename PrePrinting, typename FPack, typename FloatT, bool HasAlignment>
+    template < typename PreMeasurements, typename FPack, typename FloatT, bool HasAlignment>
     STRF_HD explicit punct_double_printer
         ( const strf::detail::fmt_double_printer_input
-            < CharT, PrePrinting, FPack, FloatT
+            < CharT, PreMeasurements, FPack, FloatT
             , strf::float_formatter_full_dynamic, HasAlignment >& input )
         : lettercase_(strf::use_facet<strf::lettercase_c, FloatT>(input.facets))
     {
@@ -2366,7 +2366,7 @@ public:
             decimal_point_size_ = 0;
         }
         input.pre->subtract_width(static_cast<width_t>(r.fillcount + r.content_width));
-        STRF_IF_CONSTEXPR (PrePrinting::size_required) {
+        STRF_IF_CONSTEXPR (PreMeasurements::size_required) {
             input.pre->add_size(r.content_width);
             if (r.fillcount > 0) {
                 const auto fillchar_size = charset.encoded_char_size(data_.fillchar);
@@ -2381,12 +2381,12 @@ public:
         }
     }
 
-    template < typename PrePrinting, typename FPack, typename FloatT
+    template < typename PreMeasurements, typename FPack, typename FloatT
              , typename FloatFormatter, bool HasAlignment
              , strf::detail::enable_if_t<!FloatFormatter::has_punct, int> = 0 >
     STRF_HD explicit punct_double_printer
         ( const strf::detail::fmt_double_printer_input
-            < CharT, PrePrinting, FPack, FloatT, FloatFormatter, HasAlignment >& input )
+            < CharT, PreMeasurements, FPack, FloatT, FloatFormatter, HasAlignment >& input )
         : lettercase_(strf::use_facet<strf::lettercase_c, FloatT>(input.facets))
     {
         auto charset = use_facet<strf::charset_c<CharT>, FloatT>(input.facets);
@@ -2396,7 +2396,7 @@ public:
             , input.arg.get_alignment_format() );
         decimal_point_size_ = data_.showpoint;
         input.pre->subtract_width(static_cast<width_t>(r.fillcount + r.content_width));
-        STRF_IF_CONSTEXPR (PrePrinting::size_required) {
+        STRF_IF_CONSTEXPR (PreMeasurements::size_required) {
             input.pre->add_size(r.content_width);
             if (r.fillcount > 0) {
                 const auto fillchar_size = charset.encoded_char_size(data_.fillchar);

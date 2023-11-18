@@ -18,10 +18,10 @@ namespace strf {
 
 namespace detail {
 
-template <typename CharT, typename PrePrinting, typename FPack, typename... FwdArgs>
+template <typename CharT, typename PreMeasurements, typename FPack, typename... FwdArgs>
 class join_printer;
 
-template <typename CharT, typename PrePrinting, typename FPack, typename... FwdArgs>
+template <typename CharT, typename PreMeasurements, typename FPack, typename... FwdArgs>
 class aligned_join_printer;
 
 template <typename... FwdArgs>
@@ -33,17 +33,17 @@ struct join_t
     strf::detail::simple_tuple<FwdArgs...> args;
 };
 
-template< typename CharT, typename PrePrinting, typename FPack
+template< typename CharT, typename PreMeasurements, typename FPack
         , bool HasAlignment, typename... FwdArgs>
 class join_printer_input
 {
 public:
     using printer_type = strf::detail::conditional_t
         < HasAlignment
-        , strf::detail::aligned_join_printer<CharT, PrePrinting, FPack, FwdArgs...>
-        , strf::detail::join_printer<CharT, PrePrinting, FPack, FwdArgs...> >;
+        , strf::detail::aligned_join_printer<CharT, PreMeasurements, FPack, FwdArgs...>
+        , strf::detail::join_printer<CharT, PreMeasurements, FPack, FwdArgs...> >;
 
-    PrePrinting* pre;
+    PreMeasurements* pre;
     FPack facets;
     strf::printable_with_fmt
         < strf::detail::join_printing<FwdArgs...>
@@ -62,14 +62,14 @@ struct join_printing
 
     using formatters = strf::tag<strf::alignment_formatter>;
 
-    template< typename CharT, typename PrePrinting, typename FPack, bool HasAlignment >
+    template< typename CharT, typename PreMeasurements, typename FPack, bool HasAlignment >
     STRF_HD constexpr static auto make_input
         ( strf::tag<CharT>
-        , PrePrinting* pre
+        , PreMeasurements* pre
         , const FPack& facets
         , fmt_tmpl<HasAlignment> x )
         -> join_printer_input
-            < CharT, PrePrinting, FPack, HasAlignment, FwdArgs... >
+            < CharT, PreMeasurements, FPack, HasAlignment, FwdArgs... >
     {
         return {pre, facets, x};
     }
@@ -138,14 +138,14 @@ public:
     STRF_HD explicit aligned_join_printer_impl
         ( const strf::detail::join_printer_input
               < CharT
-              , strf::preprinting<PrecalcSize, strf::precalc_width::no>
+              , strf::premeasurements<PrecalcSize, strf::precalc_width::no>
               , FPack
               , true, FwdArgs...>& input )
         : afmt_(input.arg.get_alignment_format())
     {
         auto charset = use_facet_<strf::charset_c<CharT>>(input.facets);
         encode_fill_func_ = charset.encode_fill_func();
-        strf::preprinting<PrecalcSize, strf::precalc_width::yes> pre { afmt_.width };
+        strf::premeasurements<PrecalcSize, strf::precalc_width::yes> pre { afmt_.width };
         new (printers_ptr_()) printers_tuple_{input.arg.value().args, &pre, input.facets};
         fillcount_ = pre.remaining_width().round();
         STRF_IF_CONSTEXPR (static_cast<bool>(PrecalcSize)) {
@@ -161,7 +161,7 @@ public:
     STRF_HD explicit aligned_join_printer_impl
         ( const strf::detail::join_printer_input
               < CharT
-              , strf::preprinting<PrecalcSize, strf::precalc_width::yes>
+              , strf::premeasurements<PrecalcSize, strf::precalc_width::yes>
               , FPack
               , true, FwdArgs...>& input )
         : afmt_(input.arg.get_alignment_format())
@@ -174,7 +174,7 @@ public:
             wmax = input.pre->remaining_width();
             diff = wmax - afmt_.width;
         }
-        strf::preprinting<PrecalcSize, strf::precalc_width::yes> pre{wmax};
+        strf::premeasurements<PrecalcSize, strf::precalc_width::yes> pre{wmax};
         // to-do: what if the line below throws ?
         new (printers_ptr_()) printers_tuple_{input.arg.value().args, &pre, input.facets};
         if (pre.remaining_width() > diff) {
@@ -278,35 +278,35 @@ private:
     }
 };
 
-template <typename CharT, typename PrePrinting, typename FPack, typename Arg>
+template <typename CharT, typename PreMeasurements, typename FPack, typename Arg>
 struct print_impl_with_width_precalc_;
 
 template < typename CharT, strf::precalc_size PrecalcSize, strf::precalc_width PrecalcWidth
          , typename FPack, typename Arg >
-struct print_impl_with_width_precalc_<CharT, preprinting<PrecalcSize, PrecalcWidth>, FPack, Arg>
+struct print_impl_with_width_precalc_<CharT, premeasurements<PrecalcSize, PrecalcWidth>, FPack, Arg>
 {
     using type = strf::printer_type
-        < CharT, strf::preprinting<PrecalcSize, strf::precalc_width::yes>, FPack, Arg >;
+        < CharT, strf::premeasurements<PrecalcSize, strf::precalc_width::yes>, FPack, Arg >;
 };
 
-template<typename CharT, typename PrePrinting, typename FPack, typename... Args>
+template<typename CharT, typename PreMeasurements, typename FPack, typename... Args>
 using aligned_join_printer_impl_of = strf::detail::aligned_join_printer_impl
     < CharT
-    , typename print_impl_with_width_precalc_<CharT, PrePrinting, FPack, Args>::type... >;
+    , typename print_impl_with_width_precalc_<CharT, PreMeasurements, FPack, Args>::type... >;
 
-template<typename CharT, typename PrePrinting, typename FPack, typename... FwdArgs>
+template<typename CharT, typename PreMeasurements, typename FPack, typename... FwdArgs>
 class aligned_join_printer
     : public strf::detail::aligned_join_printer_impl_of
-        < CharT, PrePrinting, FPack, FwdArgs... >
+        < CharT, PreMeasurements, FPack, FwdArgs... >
 {
 public:
 
     template <typename FPack2>
     constexpr STRF_HD explicit aligned_join_printer
         ( const strf::detail::join_printer_input
-            < CharT, PrePrinting, FPack2, true, FwdArgs... >& input )
+            < CharT, PreMeasurements, FPack2, true, FwdArgs... >& input )
         : strf::detail::aligned_join_printer_impl_of
-            < CharT, PrePrinting, FPack, FwdArgs... > (input)
+            < CharT, PreMeasurements, FPack, FwdArgs... > (input)
     {
     }
 };
@@ -315,10 +315,10 @@ template<typename CharT, typename... Printers>
 class join_printer_impl: public printer<CharT> {
 public:
 
-    template<typename PrePrinting, typename FPack, typename... FwdArgs>
+    template<typename PreMeasurements, typename FPack, typename... FwdArgs>
     STRF_HD join_printer_impl
         ( const strf::detail::simple_tuple<FwdArgs...>& args
-        , PrePrinting* pre
+        , PreMeasurements* pre
         , const FPack& facets )
         : printers_{args, pre, facets}
     {
@@ -334,19 +334,19 @@ private:
     strf::detail::printers_tuple<CharT, Printers...> printers_;
 };
 
-template <typename CharT, typename PrePrinting, typename FPack, typename... FwdArgs>
+template <typename CharT, typename PreMeasurements, typename FPack, typename... FwdArgs>
 class join_printer
     : public strf::detail::join_printer_impl
-        < CharT, strf::printer_type<CharT, PrePrinting, FPack, FwdArgs>... >
+        < CharT, strf::printer_type<CharT, PreMeasurements, FPack, FwdArgs>... >
 {
 public:
 
     template <typename FPack2>
     STRF_HD explicit join_printer
         ( const strf::detail::join_printer_input
-              < CharT, PrePrinting, FPack2, false, FwdArgs... >& input )
+              < CharT, PreMeasurements, FPack2, false, FwdArgs... >& input )
         : strf::detail::join_printer_impl
-            < CharT, strf::printer_type<CharT, PrePrinting, FPack, FwdArgs>... >
+            < CharT, strf::printer_type<CharT, PreMeasurements, FPack, FwdArgs>... >
             ( input.arg.value().args, input.pre, input.facets )
     {
     }

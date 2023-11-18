@@ -1,5 +1,5 @@
-#ifndef STRF_DETAIL_PREPRINTING_HPP
-#define STRF_DETAIL_PREPRINTING_HPP
+#ifndef STRF_DETAIL_PREMEASUREMENTS_HPP
+#define STRF_DETAIL_PREMEASUREMENTS_HPP
 
 //  Copyright (C) (See commit logs on github.com/robhz786/strf)
 //  Distributed under the Boost Software License, Version 1.0.
@@ -177,7 +177,7 @@ using preview_width STRF_DEPRECATED_MSG("preview_width was renamed to precalc_wi
     = precalc_width;
 
 template <strf::precalc_size SizeRequired, strf::precalc_width WidthRequired>
-class preprinting
+class premeasurements
     : public strf::size_accumulator<static_cast<bool>(SizeRequired)>
     , public strf::width_decumulator<static_cast<bool>(WidthRequired)>
 {
@@ -190,41 +190,41 @@ public:
     static constexpr bool all_required =       size_required && width_required;
 
     template <strf::precalc_width W = WidthRequired>
-    STRF_HD constexpr explicit preprinting
+    STRF_HD constexpr explicit premeasurements
         ( strf::detail::enable_if_t<static_cast<bool>(W), strf::width_t> initial_width ) noexcept
         : strf::width_decumulator<true>{initial_width}
     {
     }
 
-    constexpr preprinting() noexcept = default;
+    constexpr premeasurements() noexcept = default;
 
-    preprinting(const preprinting&) = delete;
-    preprinting(preprinting&&) = delete;
-    preprinting& operator=(const preprinting&) = delete;
-    preprinting& operator=(preprinting&&) = delete;
+    premeasurements(const premeasurements&) = delete;
+    premeasurements(premeasurements&&) = delete;
+    premeasurements& operator=(const premeasurements&) = delete;
+    premeasurements& operator=(premeasurements&&) = delete;
 
-    ~preprinting() = default;
+    ~premeasurements() = default;
 };
 
 
-using no_preprinting
-    = strf::preprinting<strf::precalc_size::no, strf::precalc_width::no>;
-using full_preprinting
-    = strf::preprinting<strf::precalc_size::yes, strf::precalc_width::yes>;
+using no_premeasurements
+    = strf::premeasurements<strf::precalc_size::no, strf::precalc_width::no>;
+using full_premeasurements
+    = strf::premeasurements<strf::precalc_size::yes, strf::precalc_width::yes>;
 
 template <strf::precalc_size SizeRequired, strf::precalc_width WidthRequired>
-using print_preview STRF_DEPRECATED_MSG("print_preview renamed to preprinting")
-    = strf::preprinting<SizeRequired, WidthRequired>;
+using print_preview STRF_DEPRECATED_MSG("print_preview renamed to premeasurements")
+    = strf::premeasurements<SizeRequired, WidthRequired>;
 
 using no_print_preview
-    STRF_DEPRECATED_MSG("no_print_preview renamed to no_preprinting")
-    = strf::no_preprinting;
+    STRF_DEPRECATED_MSG("no_print_preview renamed to no_premeasurements")
+    = strf::no_premeasurements;
 
 using print_size_and_width_preview
-    STRF_DEPRECATED_MSG("print_size_and_width_preview to fulll_preprinting")
-    = strf::full_preprinting;
+    STRF_DEPRECATED_MSG("print_size_and_width_preview to fulll_premeasurements")
+    = strf::full_premeasurements;
 
 } // namespace strf
 
-#endif  // STRF_DETAIL_PREPRINTING_HPP
+#endif  // STRF_DETAIL_PREMEASUREMENTS_HPP
 

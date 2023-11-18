@@ -132,13 +132,13 @@ private:
     int count_ipv6_characters() const;
     void print_ipv6(strf::destination<CharT>& dst) const;
 
-    template <typename PrePrinting, typename Charset>
-    void init_(PrePrinting* pre, Charset charset);
+    template <typename PreMeasurements, typename Charset>
+    void init_(PreMeasurements* pre, Charset charset);
 };
 
 template <typename CharT>
-template <typename PrePrinting, typename Charset>
-void ipv6_printer<CharT>::init_(PrePrinting* pre, Charset charset)
+template <typename PreMeasurements, typename Charset>
+void ipv6_printer<CharT>::init_(PreMeasurements* pre, Charset charset)
 {
     if (style_ == ipv6style::little) {
         abbrev_ = xxx::ipv6address_abbreviation{addr_};
@@ -148,7 +148,7 @@ void ipv6_printer<CharT>::init_(PrePrinting* pre, Charset charset)
         pre->subtract_width(static_cast<strf::width_t>(count));
     } else {
         fillcount_ = strf::sat_sub(alignment_fmt_.width, count).round();
-        if (PrePrinting::size_required && fillcount_ > 0) {
+        if (PreMeasurements::size_required && fillcount_ > 0) {
             pre->add_size(fillcount_ * charset.encoded_char_size(alignment_fmt_.fill));
         }
         pre->subtract_width(alignment_fmt_.width);
@@ -226,15 +226,15 @@ struct printable_traits<xxx::ipv6address> {
     using forwarded_type = xxx::ipv6address;
     using formatters = strf::tag<ipv6_formatter, strf::alignment_formatter>;
 
-    template <typename CharT, typename PrePrinting, typename FPack, typename... T>
+    template <typename CharT, typename PreMeasurements, typename FPack, typename... T>
     static auto make_input
         ( strf::tag<CharT>
-        , PrePrinting* pre
+        , PreMeasurements* pre
         , const FPack& fp
         , strf::printable_with_fmt<T...> arg )
         -> strf::usual_printer_input
             < CharT
-            , PrePrinting
+            , PreMeasurements
             , FPack
             , strf::printable_with_fmt<T...>
             , ipv6_printer<CharT> >

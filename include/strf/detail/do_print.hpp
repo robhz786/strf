@@ -111,15 +111,15 @@ public:
         , Fpes... fpes
         , Printables... printables )
     {
-        using preprinting_t = typename ReservePolicy::preprinting_type;
+        using premeasurements_t = typename ReservePolicy::premeasurements_type;
         using char_type = typename DestCreator::char_type;
-        preprinting_t pre;
+        premeasurements_t pre;
         auto fp = strf::pack((Fpes&&)fpes...);
         return reserve_policy.template print<Ln>
             ( dest_creator, &pre
             , static_cast<const strf::printer<char_type>&>
                 ( strf::printer_type
-                  < char_type, preprinting_t, decltype(fp), Printables >
+                  < char_type, premeasurements_t, decltype(fp), Printables >
                     ( strf::make_printer_input<char_type>
                         ( &pre, fp, (Printables&&)printables ) ) )... );
     }

@@ -51,7 +51,7 @@ struct tr_printers_container<CharT, strf::detail::index_sequence<I...>, Printers
     STRF_HD tr_printers_container
         ( const strf::detail::simple_tuple<Args...>& args
         , const strf::facets_pack<FPElems...>& fp
-        , strf::preprinting<SizeRequired, WidthRequired>* pp_array
+        , strf::premeasurements<SizeRequired, WidthRequired>* pp_array
         , const strf::printer<CharT>**& array_of_pointers_ref )
         : tuple{args, fp, pp_array}
         , array_of_pointers{ & tuple.template get<I>()...}
@@ -62,10 +62,10 @@ struct tr_printers_container<CharT, strf::detail::index_sequence<I...>, Printers
     template < typename... Args, typename... FPElems >
     STRF_HD tr_printers_container
         ( const strf::detail::simple_tuple<Args...>& args
-        , strf::no_preprinting* pp
+        , strf::no_premeasurements* pre
         , const strf::facets_pack<FPElems...>& fp
         , const strf::printer<CharT>**& array_of_pointers_ref )
-        : tuple{args, pp, fp}
+        : tuple{args, pre, fp}
         , array_of_pointers{ & tuple.template get<I>()...}
     {
         array_of_pointers_ref = array_of_pointers;
@@ -82,20 +82,20 @@ struct tr_printers_container<CharT, strf::detail::index_sequence<I...>, Printers
 //     void construct
 //         ( strf::detail::simple_tuple<> args
 //         , const strf::facets_pack<FPElems...>&
-//         , strf::preprinting<SizeRequired, WidthRequired>*
+//         , strf::premeasurements<SizeRequired, WidthRequired>*
 //         , const strf::printer<CharT>**& array_of_pointers_ref )
 //     {
-//         using pp_t = strf::preprinting<SizeRequired, WidthRequired>;
+//         using pre_t = strf::premeasurements<SizeRequired, WidthRequired>;
 //         using fp_t = strf::facets_pack<FPElems...>;
 
 //         using printer_tuple_t =
-//             strf::detail::printers_tuple_from_args<CharT, pp_t, fp_t, Args...>;
+//             strf::detail::printers_tuple_from_args<CharT, pre_t, fp_t, Args...>;
 
 //         static_assert(sizeof(printer_tuple_t) <= MemSize, "");
 //         static_assert(alignof(printer_tuple_t) <= Alignment, "");
 
 //         new (&storage_) tr_printers_container<printer_tuple_t>
-//             (args, fp, pp_array, array_of_pointers_ref);
+//             (args, fp, pre_array, array_of_pointers_ref);
 //     }
 // };
 
@@ -113,7 +113,7 @@ class printers_array_deferred_init_impl
     //          , strf::precalc_width WidthRequired >
     // using printer_tuple_t_ = strf::detail::printers_tuple_from_args
     //     < CharT
-    //     , strf::preprinting<SizeRequired, WidthRequired>
+    //     , strf::premeasurements<SizeRequired, WidthRequired>
     //     , strf::facets_pack<FPElems...>
     //     , Args...>;
 
@@ -140,42 +140,42 @@ public:
     STRF_HD void construct
         ( const strf::detail::simple_tuple<Args...>& args
         , const strf::facets_pack<FPElems...>& fp
-        , strf::preprinting<SizeRequired, WidthRequired>* pp_array
+        , strf::premeasurements<SizeRequired, WidthRequired>* pre_array
         , const strf::printer<CharT>**& array_of_pointers_ref )
     {
-        using pp_t = strf::preprinting<SizeRequired, WidthRequired>;
+        using pre_t = strf::premeasurements<SizeRequired, WidthRequired>;
         using fp_t = strf::facets_pack<FPElems...>;
 
         using printers_container = strf::detail::tr_printers_container
 			< CharT
 			, strf::detail::make_index_sequence<sizeof...(Args)>
-			, strf::printer_type<CharT, pp_t, fp_t, Args>... >;
+			, strf::printer_type<CharT, pre_t, fp_t, Args>... >;
 
         static_assert(sizeof(printers_container) <= MemSize, "");
         static_assert(alignof(printers_container) <= Alignment, "");
 
-        new (&storage_) printers_container(args, fp, pp_array, array_of_pointers_ref);
+        new (&storage_) printers_container(args, fp, pre_array, array_of_pointers_ref);
     }
 
     template <typename... Args, typename... FPElems>
     STRF_HD void construct
         ( const strf::detail::simple_tuple<Args...>& args
         , const strf::facets_pack<FPElems...>& fp
-        , strf::no_preprinting* pp
+        , strf::no_premeasurements* pre
         , const strf::printer<CharT>**& array_of_pointers_ref )
     {
-        using pp_t = strf::no_preprinting;
+        using pre_t = strf::no_premeasurements;
         using fp_t = strf::facets_pack<FPElems...>;
 
         using printers_container = strf::detail::tr_printers_container
 			< CharT
 			, strf::detail::make_index_sequence<sizeof...(Args)>
-			, strf::printer_type<CharT, pp_t, fp_t, Args>... >;
+			, strf::printer_type<CharT, pre_t, fp_t, Args>... >;
 
         static_assert(sizeof(printers_container) <= MemSize, "");
         static_assert(alignof(printers_container) <= Alignment, "");
 
-        new (&storage_) printers_container(args, pp, fp, array_of_pointers_ref);
+        new (&storage_) printers_container(args, pre, fp, array_of_pointers_ref);
     }
 
 
@@ -301,13 +301,13 @@ class tr_printer_no_args: public strf::printer<CharT>
 
     template <typename FPack>
     void STRF_HD init_
-        ( const tr_printer_input<CharT, strf::no_preprinting, FPack>& )
+        ( const tr_printer_input<CharT, strf::no_premeasurements, FPack>& )
     {
     }
 
     template <typename FPack>
     void STRF_HD init_
-        ( const tr_printer_input<CharT, strf::full_preprinting, FPack>& i)
+        ( const tr_printer_input<CharT, strf::full_premeasurements, FPack>& i)
     {
         using wcalc_t = strf::facet_type_in_pack
              <strf::width_calculator_c, strf::tr_string_tag<CharT>, FPack>;
@@ -316,7 +316,7 @@ class tr_printer_no_args: public strf::printer<CharT>
               ( nullptr, nullptr, 0, i.pre->remaining_width()
               , strf::use_facet<strf::width_calculator_c, facet_tag_>(i.facets)
               , charset_ );
-        strf::detail::tr_do_preprinting(tr_pre, tr_string_.begin(), tr_string_.end());
+        strf::detail::tr_do_premeasurements(tr_pre, tr_string_.begin(), tr_string_.end());
         i.pre->add_size(tr_pre.accumulated_ssize());
         i.pre->reset_remaining_width(tr_pre.remaining_width());
     }
@@ -325,12 +325,12 @@ class tr_printer_no_args: public strf::printer<CharT>
     void STRF_HD init_
         ( const tr_printer_input
             < CharT
-            , strf::preprinting<strf::precalc_size::yes, strf::precalc_width::no>
+            , strf::premeasurements<strf::precalc_size::yes, strf::precalc_width::no>
             , FPack >& i )
     {
         strf::detail::tr_pre_size<CharT> tr_pre
             (nullptr, 0, charset_.replacement_char_size());
-        strf::detail::tr_do_preprinting(tr_pre, tr_string_.begin(), tr_string_.end());
+        strf::detail::tr_do_premeasurements(tr_pre, tr_string_.begin(), tr_string_.end());
         i.pre->add_size(tr_pre.accumulated_ssize());
     }
 
@@ -338,7 +338,7 @@ class tr_printer_no_args: public strf::printer<CharT>
     void STRF_HD init_
         ( const tr_printer_input
             < CharT
-            , strf::preprinting<strf::precalc_size::no, strf::precalc_width::yes>
+            , strf::premeasurements<strf::precalc_size::no, strf::precalc_width::yes>
             , FPack >& i )
     {
         using wcalc_t = strf::facet_type_in_pack
@@ -347,7 +347,7 @@ class tr_printer_no_args: public strf::printer<CharT>
               ( nullptr, 0, i.pre->remaining_width()
               , strf::use_facet<strf::width_calculator_c, facet_tag_>(i.facets)
               , charset_ );
-        strf::detail::tr_do_preprinting(tr_pre, tr_string_.begin(), tr_string_.end());
+        strf::detail::tr_do_premeasurements(tr_pre, tr_string_.begin(), tr_string_.end());
         i.pre->reset_remaining_width(tr_pre.remaining_width());
     }
 
@@ -405,38 +405,38 @@ class tr_printer: public strf::printer<CharT>
 
     //     constexpr std::size_t num_printers = sizeof...(I);
     //     STRF_IF_CONSTEXPR (Pre::all_required) {
-    //         Pre pp_arr[num_printers];
-    //         storage_.construct(i.arg.args, i.facets, pp_arr, printers_);
-    //         std::ptrdiff_t size_arr[num_printers] = {pp_arr[I].accumulated_ssize()...};
+    //         Pre pre_arr[num_printers];
+    //         storage_.construct(i.arg.args, i.facets, pre_arr, printers_);
+    //         std::ptrdiff_t size_arr[num_printers] = {pre_arr[I].accumulated_ssize()...};
     //         strf::width_t width_arr[num_printers] =
-    //             {(strf::width_max - pp_arr[I].remaining_width())...};
+    //             {(strf::width_max - pre_arr[I].remaining_width())...};
     //         strf::detail::tr_pre_size_and_width<CharT, Charset, wcalc_t> tr_pre
     //             ( size_arr, width_arr, num_printers, i.pre->remaining_width()
     //             , strf::use_facet<strf::width_calculator_c, facet_tag_>(i.facets)
     //             , charset_ );
-    //         strf::detail::tr_do_preprinting(tr_pre, tr_string_.begin(), tr_string_.end());
+    //         strf::detail::tr_do_premeasurements(tr_pre, tr_string_.begin(), tr_string_.end());
     //         i.pre->add_size(tr_pre.accumulated_ssize());
     //         i.pre->reset_remaining_width(tr_pre.remaining_width());
 
     //     } else STRF_IF_CONSTEXPR (Pre::size_required) {
-    //         Pre pp_arr[num_printers];
-    //         storage_.construct(i.arg.args, i.facets, pp_arr, printers_);
-    //         std::ptrdiff_t size_arr[num_printers] = {pp_arr[I].accumulated_ssize()...};
+    //         Pre pre_arr[num_printers];
+    //         storage_.construct(i.arg.args, i.facets, pre_arr, printers_);
+    //         std::ptrdiff_t size_arr[num_printers] = {pre_arr[I].accumulated_ssize()...};
     //         strf::detail::tr_pre_size<CharT> tr_pre
     //             (size_arr, num_printers, charset_.replacement_char_size());
-    //         strf::detail::tr_do_preprinting(tr_pre, tr_string_.begin, tr_string_.end());
+    //         strf::detail::tr_do_premeasurements(tr_pre, tr_string_.begin, tr_string_.end());
     //         i.pre->add_size(tr_pre.accumulated_ssize());
 
     //     } else if (input.pre->has_remaining_width()) {
-    //         Pre pp_arr[num_printers];
-    //         storage_.construct(i.arg.args, i.facets, pp_arr, printers_);
+    //         Pre pre_arr[num_printers];
+    //         storage_.construct(i.arg.args, i.facets, pre_arr, printers_);
     //         strf::width_t width_arr[num_printers] =
-    //             {(strf::width_max - pp_arr[I].remaining_width())...};
+    //             {(strf::width_max - pre_arr[I].remaining_width())...};
     //         strf::detail::tr_pre_width<CharT, Charset, wcalc_t> tr_pre
     //             ( width_arr, num_printers, i.pre->remaining_width()
     //             , strf::use_facet<strf::width_calculator_c, facet_tag_>(i.facets)
     //             , charset_ );
-    //         strf::detail::tr_do_preprinting(tr_pre, tr_string_.begin(), tr_string_.end());
+    //         strf::detail::tr_do_premeasurements(tr_pre, tr_string_.begin(), tr_string_.end());
     //         i.pre->reset_remaining_width(tr_pre.remaining_width());
 
     //     } else {
@@ -447,7 +447,7 @@ class tr_printer: public strf::printer<CharT>
     template <std::size_t... I, typename FPack, typename... Args>
     void STRF_HD init_
         ( strf::detail::index_sequence<I...>
-        , const tr_printer_input<CharT, strf::no_preprinting, FPack, Args...>& i)
+        , const tr_printer_input<CharT, strf::no_premeasurements, FPack, Args...>& i)
     {
         storage_.construct(i.arg.args, i.facets, i.pre, printers_);
     }
@@ -455,21 +455,21 @@ class tr_printer: public strf::printer<CharT>
     template <std::size_t... I, typename FPack, typename... Args>
     void STRF_HD init_
         ( strf::detail::index_sequence<I...>
-        , const tr_printer_input<CharT, strf::full_preprinting, FPack, Args...>& i)
+        , const tr_printer_input<CharT, strf::full_premeasurements, FPack, Args...>& i)
     {
         constexpr std::size_t num_printers = sizeof...(I);
         using wcalc_t = strf::facet_type_in_pack
              <strf::width_calculator_c, strf::tr_string_tag<CharT>, FPack>;
-        strf::full_preprinting pp_arr[num_printers];
-        storage_.construct(i.arg.args, i.facets, pp_arr, printers_);
-        std::ptrdiff_t size_arr[num_printers] = {pp_arr[I].accumulated_ssize()...};
+        strf::full_premeasurements pre_arr[num_printers];
+        storage_.construct(i.arg.args, i.facets, pre_arr, printers_);
+        std::ptrdiff_t size_arr[num_printers] = {pre_arr[I].accumulated_ssize()...};
         strf::width_t width_arr[num_printers] =
-            {(strf::width_max - pp_arr[I].remaining_width())...};
+            {(strf::width_max - pre_arr[I].remaining_width())...};
         strf::detail::tr_pre_size_and_width<CharT, Charset, wcalc_t> tr_pre
             ( size_arr, width_arr, num_printers, i.pre->remaining_width()
               , strf::use_facet<strf::width_calculator_c, facet_tag_>(i.facets)
               , charset_ );
-        strf::detail::tr_do_preprinting(tr_pre, tr_string_.begin(), tr_string_.end());
+        strf::detail::tr_do_premeasurements(tr_pre, tr_string_.begin(), tr_string_.end());
         i.pre->add_size(tr_pre.accumulated_ssize());
         i.pre->reset_remaining_width(tr_pre.remaining_width());
     }
@@ -479,17 +479,17 @@ class tr_printer: public strf::printer<CharT>
         ( strf::detail::index_sequence<I...>
         , const tr_printer_input
             < CharT
-            , strf::preprinting<strf::precalc_size::yes, strf::precalc_width::no>
+            , strf::premeasurements<strf::precalc_size::yes, strf::precalc_width::no>
             , FPack
             , Args...>& i )
     {
         constexpr std::size_t num_printers = sizeof...(I);
-        strf::preprinting<strf::precalc_size::yes, strf::precalc_width::no> pp_arr[num_printers];
-        storage_.construct(i.arg.args, i.facets, pp_arr, printers_);
-        std::ptrdiff_t size_arr[num_printers] = {pp_arr[I].accumulated_ssize()...};
+        strf::premeasurements<strf::precalc_size::yes, strf::precalc_width::no> pre_arr[num_printers];
+        storage_.construct(i.arg.args, i.facets, pre_arr, printers_);
+        std::ptrdiff_t size_arr[num_printers] = {pre_arr[I].accumulated_ssize()...};
         strf::detail::tr_pre_size<CharT> tr_pre
             (size_arr, num_printers, charset_.replacement_char_size());
-        strf::detail::tr_do_preprinting(tr_pre, tr_string_.begin(), tr_string_.end());
+        strf::detail::tr_do_premeasurements(tr_pre, tr_string_.begin(), tr_string_.end());
         i.pre->add_size(tr_pre.accumulated_ssize());
     }
 
@@ -498,22 +498,23 @@ class tr_printer: public strf::printer<CharT>
         ( strf::detail::index_sequence<I...>
         , const tr_printer_input
             < CharT
-            , strf::preprinting<strf::precalc_size::no, strf::precalc_width::yes>
+            , strf::premeasurements<strf::precalc_size::no, strf::precalc_width::yes>
             , FPack
             , Args...>& i )
     {
         constexpr std::size_t num_printers = sizeof...(I);
         using wcalc_t = strf::facet_type_in_pack
              <strf::width_calculator_c, strf::tr_string_tag<CharT>, FPack>;
-        strf::preprinting<strf::precalc_size::no, strf::precalc_width::yes> pp_arr[num_printers];
-        storage_.construct(i.arg.args, i.facets, pp_arr, printers_);
+        strf::premeasurements<strf::precalc_size::no, strf::precalc_width::yes>
+            pre_arr[num_printers];
+        storage_.construct(i.arg.args, i.facets, pre_arr, printers_);
         strf::width_t width_arr[num_printers] =
-            {(strf::width_max - pp_arr[I].remaining_width())...};
+            {(strf::width_max - pre_arr[I].remaining_width())...};
         strf::detail::tr_pre_width<CharT, Charset, wcalc_t> tr_pre
             ( width_arr, num_printers, i.pre->remaining_width()
             , strf::use_facet<strf::width_calculator_c, facet_tag_>(i.facets)
             , charset_ );
-        strf::detail::tr_do_preprinting(tr_pre, tr_string_.begin(), tr_string_.end());
+        strf::detail::tr_do_premeasurements(tr_pre, tr_string_.begin(), tr_string_.end());
         i.pre->reset_remaining_width(tr_pre.remaining_width());
     }
 
