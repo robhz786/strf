@@ -13,6 +13,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 :destination:   <<destination_hpp#destination,destination>>
 
 :PrintableTraits:   <<strf_hpp#PrintableTraits,PrintableTraits>>
+:printable_traits:  <<strf_hpp#printable_traits_of,printable_traits>>
 :PrinterInput: <<strf_hpp#PrinterInput,PrinterInput>>
 :representative_type:    <<strf_hpp#PrintableTraits_representative_type,representative_type>>
 :forwarded_type:  <<strf_hpp#PrintableTraits_forwarded_type,forwarded_type>>
@@ -52,12 +53,13 @@ http://www.boost.org/LICENSE_1_0.txt)
 
 :multi:           <<quick_reference#multi,multi>>
 :transcode:       <<quick_reference#string_formatting,transcode>>
+:unsafe_transcode:       <<quick_reference#string_formatting,unsafe_transcode>>
 :utf:             <<quick_reference#static_char_constexpr,utf>>
 
 :middle_dots:     &#183;&#183;&#183;
 :four_dots:       &#x2025; &#2025;
 
-= How to add printable types
+= Extending Strf to print other types
 :source-highlighter: prettify
 :icons: font
 :toc: left
@@ -65,36 +67,42 @@ http://www.boost.org/LICENSE_1_0.txt)
 
 == The customization point
 
-Strf adopts the tag_invoke pattern to define printable types.
-To make a type named `your_type` become printable,
-you overload `tag_invoke` function, like this:
+For every printable type, there must be a class or struct satisfying the
+__{PrintableTraits}__ type requirements.
+
+It can be defined as a specialization of the `{printable_traits}` struct
+template, which is enough to make the library associate it to your
+printable type:
+
+[source,cpp,subs=normal]
+----
+template <>
+struct strf::printable_traits<your_type>
+{ /{asterisk} \... {asterisk}/ };
+----
+
+However, if you also want to match the types that derive from
+or are implicitly convertible to `your_type`, then you need
+overload the `tag_invoke` function like this:
 
 [source,cpp,subs=normal]
 ----
 namespace strf {
 
-struct your_printable_type_traits { /{asterisk}\...{asterisk}/ }; // a __{PrintableTraits}__ type
+struct your_printable_type_traits { /{asterisk}\...{asterisk}/ };
 
 your_printable_type_traits tag_invoke(strf::printable_tag, const your_type&);
 
 }
 ----
-In most compilers, it's enough to just declate this overload
-without any implementing, since the library just need to know
+
+In all modern compilers, it's enough to just declate this overload
+without any implementation, since the library actually only cares about
 the return type, which it obtains with `decltype`.
-Actually, even the declaration
-is only necessary if you want to match types that derive from
-or are implicitly convertible to `your_type`. Otherwise, you can
-just define the template specialization `printable_traits<your_type>`,
-since this is the fallback the library uses when there is not
-matching overload.
 
-Whatever approach you use, `printable_traits<your_type>`
-or the return type of `tag_invoke` must satisfy __{PrintableTraits}__.
+== How to implement a __{PrintableTraits}__ type [[CreatePrintableTraits]]
 
-== Creating a __{PrintableTraits}__ class [[CreatePrintableTraits]]
-
-As an example, let's see how we can make
+Here is an example for how to make
 https://en.cppreference.com/w/cpp/numeric/complex[`std::complex`]
 printable:
 
@@ -128,24 +136,24 @@ struct printable_traits<std::complex<FloatT>> {
 <1> This is the type that is tested by the __{UnaryTypeTrait}__s that
     parameterize <<tutorial#constrained_facets,constrained facets>>.
     It is usually the printable type itself.
-<2> This is usually the printable type itself or a const reference to it.
-    The library uses it in some situations for argument forwarding.
-    {join} objects store values of this type, instead of the printable type.
+<2> This is the type the library uses in some situations for argument forwarding.
+    Also, {join} objects store values of this type, instead of the printable type.
     The printable type must be implicitly convertible to its
     `representative_type`.
+    This is usually the printable type itself or a const reference to it.
 <3> This parameter is solely there to make `CharT` deducible.
     If you just need or want to support only one character type, like `char`,
     then use instead `strf::tag<char>`, and remove `CharT`
     from the template parameters list.
-<4> The library will always use an instance of the `{preprinting}` class template
-    as the `Pre` argument
-<5> The library will always use an instance of the `{facets_pack}` class template
-    as the `FPack` argument. `fp` contains the facet objects.
+<4> `Pre` will always be an instance of the `{preprinting}` class template.
+    `pre` will never be null.
+<5> `FPack` will always be an instance of the `{facets_pack}` class template.
+     `fp` contains the facet objects.
 <6> The last parameter is the value to be printed.
 
 What the above code basically does is to tell the library to handle
-`std::complex` values in the same way that it would handle the `{join}`
-object created above ( `arg2` ). That's because the expression:
+`std::complex` values in the same way that it would handle the `arg2`
+object created above. That's because the expression:
 
 [source,cpp,subs=normal]
 ----
@@ -164,18 +172,19 @@ is equivalent to
 ----
 __foo_type_traits__::make_input({tag}<CharT>{}, __pre__, __fp__, __foo__)
 ----
-where `__foo_type_traits__` is the return type of
-`tag_invoke(strf::printable_tag{}, __foo__)`.
+, where `__foo_type_traits__` would be the __{PrintableTraits}__ types
+corresponding to `__foo__`
 
 ( Actually, `{strf_make_printer_input}` may call something else
 if there is a <<howto_override_printable_types#,overriding>>
 facet in `__fp__`. But you don't have to thing about this now. )
 
 WARNING: Pay attention to not create dangling references.
-This would happen, for instance, if the `join` in the snippet above
+This would happen, for instance, if the `join` of the snippet above
 contained a pointer to any local variable.
-Remember that `make_printer_input` function does not actually
-print the value, it just creates and returns an object.
+Note that `make_printer_input` function does not actually print the value,
+it just creates and returns an object that is further used to actually
+print the value.
 
 Anyway, sometimes it is not possible to just return
 `strf::make_printer_input(__something__...)`,
@@ -190,25 +199,17 @@ value that is an already printable.
 == Creating and using facets [[creating_facet]]
 
 In some cases you may want to create a new facet category
-for the new printable type. For example, suppose
-we want to turn the following enumeration into a facet
-that enables the user to select which form the complex numbers
-shall be printed in:
+for the new printable type.
+For instance, let's say
+we want to turn the following enumeration into a facet:
 
 [source,cpp,subs=normal]
 ----
 enum class complex_form { vector, algebric, polar };
 ----
 
-[caption=,cols="50,50"]
-|===
-|`complex_form::vector`   | `(3, 4)`
-|`complex_form::algebric` | `(3 + i*4)`
-|`complex_form::polar`    | `5∠ 0.9272952180016122`
-|===
-
-Too turn `complex_form` into a facet, __i.e.__ to make it satisfy the
-_{Facet}_ requirement, we do the following:
+To do this, we need to make it satisfy the _{Facet}_ requirements,
+which is achieved by defining the following structs:
 
 [source,cpp,subs=normal]
 ----
@@ -223,8 +224,17 @@ template <> struct strf::facet_traits<complex_form> {
 };
 ----
 
-Now let's reimplement `make_input` to take
-into account this new facet:
+Now let's suppose we want this facet to have the following
+effect on how the numbers are printed:
+
+[caption=,cols="50,50"]
+|===
+|`complex_form::vector`   | `(3, 4)`
+|`complex_form::algebric` | `(3 + i*4)`
+|`complex_form::polar`    | `5∠ 0.9272952180016122`
+|===
+
+To achieve this, we can reimplement `make_input` as follows:
 
 [source,cpp,subs=normal]
 ----
@@ -253,7 +263,7 @@ struct printable_traits<std::complex<FloatT>> {
         auto arg2 = strf::join
             ( strf::{multi}(static_cast<CharT>('('), has_brackets)
             , v.first
-            , strf::{transcode}(middle_string(form), strf::{utf}<char16_t>)
+            , strf::{unsafe_transcode}(middle_string(form), strf::{utf}<char16_t>)
             , v.second
             , strf::{multi}(static_cast<CharT>(')'), has_brackets) );
 
@@ -275,7 +285,7 @@ private:
 } // namespace strf
 ----
 
-Its first line gives us the `complex_form` value:
+The first line gets the `complex_form` value:
 
 [source,cpp,subs=normal]
 ----
@@ -326,24 +336,25 @@ if (form != complex_form::polar) {
     auto j1 = strf::join
             ( static_cast<CharT>('(')
             , v.first
-            , strf::{transcode}(middle_string(form), strf::{utf}<char16_t>)
+            , strf::{unsafe_transcode}(middle_string(form), strf::{utf}<char16_t>)
             , v.second
             , static_cast<CharT>(')') );
     return strf::make_printer_input<CharT>(pre, fp, j1);
 }
 auto j2 = strf::join
     ( v.first
-    , strf::{transcode}(middle_string(form), strf::{utf}<char16_t>)
+    , strf::{unsafe_transcode}(middle_string(form), strf::{utf}<char16_t>)
     , v.second );
 return strf::make_printer_input<CharT>(pre, fp, j2); // different return type !
 ----
 
-That wouldn't compile since `j1` and `j2` have different types.
+That wouldn't compile the two return types above would be different.
 
 At last, we need to select a different middle string for each form.
 No big deal here, we just created a fuction `middle_string` to handle that.
 But what may have caught your eye is that the string is passed to
-the `{transcode}` function. The code wouldn't compile without it, unless
+the `{unsafe_transcode}` function. The code wouldn't compile
+without using `{unsafe_transcode}` or `{transcode}`, unless
 when `CharT` is the same as the string's character type, and even
 in this case, there is the risk of the destination encoding differing
 from the one used in the string ( especially if we were using a `char`
@@ -354,7 +365,7 @@ string, instead of a `char16_t` string as we did above ).
 auto arg2 = strf::{join}
     ( /{asterisk} \... {asterisk}/
     , /{asterisk} \... {asterisk}/
-    , strf::{transcode}(middle_string(form), strf::{utf}<char16_t>)
+    , strf::{unsafe_transcode}(middle_string(form), strf::{utf}<char16_t>)
     , /{asterisk} \... {asterisk}/
     , /{asterisk} \... {asterisk}/ );
 ----
@@ -931,7 +942,7 @@ For the floating point values, we can use the global function template
 `{precalculate}`, which we actually could use for the whole content . I mean, I could
 implement the `pre_` member function very similiarly to `print_to`,
 basically just replacing every `print(__args__...)` by
-`strf::precalculate(pp, facets, __args__...)`. But there is a more efficient
+`strf::precalculate(pre, facets, __args__...)`. But there is a more efficient
 implementation:
 ////
 
@@ -939,32 +950,32 @@ implementation:
 ----
 template <typename CharT, typename FloatT>
 template <typename Pre, typename WidthCalc>
-void std_complex_printer<CharT, FloatT>::pre_(Pre* pp, const WidthCalc& wcalc) const
+void std_complex_printer<CharT, FloatT>::pre_(Pre* pre, const WidthCalc& wcalc) const
 {
     // calculate the size and/or width of the floating-point values:
     auto facets = strf::pack(lettercase_, numpunct_, charset_);
-    strf::{precalculate}<CharT>(pp, facets, coordinates_.first, coordinates_.second);
+    strf::{precalculate}<CharT>(pre, facets, coordinates_.first, coordinates_.second);
 
     // calculate the size and/or width of the other characters:
     switch (form_) {
         case complex_form::algebric:
-            pp\->subtract_width(7);
-            pp\->add_size(7);
+            pre\->subtract_width(7);
+            pre\->add_size(7);
             break;
 
         case complex_form::vector:
-            pp\->subtract_width(4);
-            pp\->add_size(4);
+            pre\->subtract_width(4);
+            pre\->add_size(4);
             break;
 
         default:
             assert(form_ == complex_form::polar);
-            if (pp\->remaining_width() > 0) {
-                pp\->subtract_width(wcalc.char_width(strf::utf32<char32_t>, anglechar_));
-                pp\->subtract_width(1);
+            if (pre\->remaining_width() > 0) {
+                pre\->subtract_width(wcalc.char_width(strf::utf32<char32_t>, anglechar_));
+                pre\->subtract_width(1);
             }
-            pp\->add_size(charset_.encoded_char_size(anglechar_));
-            pp\->add_size(1);
+            pre\->add_size(charset_.encoded_char_size(anglechar_));
+            pre\->add_size(1);
     }
 }
 ----

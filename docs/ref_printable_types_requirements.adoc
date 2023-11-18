@@ -55,7 +55,7 @@ namespace strf {
 
 struct printable_tag;
 
-template <typename T> printable_traits;
+template <typename T> struct printable_traits;
 
 template <typename T> using printable_traits_of = /{asterisk} see below\... {asterisk}/;
 
