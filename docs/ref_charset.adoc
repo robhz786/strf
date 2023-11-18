@@ -2740,7 +2740,7 @@ Compile-time requirements::
 ====
 
 
-=== Function template `do_transcode` [[do_transcode]]
+=== Function template `transcode` [[transcode]]
 
 ====
 [source,cpp,subs=normal]
@@ -2749,7 +2749,7 @@ namespace strf {
 
 template < typename SrcCharset, typename DstCharset
          , typename SrcCharT, typename DstCharT >
-{decode_encode_result}<SrcCharT> do_transcode
+{decode_encode_result}<SrcCharT> transcode
     ( SrcCharset src_charset
     , DstCharset dst_charset
     , const SrcCharT{asterisk} src
@@ -2787,7 +2787,7 @@ namespace strf {
 
 template < typename SrcCharset, typename DstCharset
          , typename SrcCharT, typename DstCharT >
-{decode_encode_result}<SrcCharT> do_transcode
+{decode_encode_result}<SrcCharT> transcode
     ( SrcCharset src_charset
     , DstCharset dst_charset
     , std::basic_string_view<SrcCharT> src
@@ -2801,7 +2801,7 @@ template < typename SrcCharset, typename DstCharset
 Effect::
 Same as:
 ----
-do_transcode
+transcode
     ( src_charset, dst_charset, src.data(), src.data() + src.size()
     , dst, dst_end, err_notifier, flags );
 ----
@@ -2820,7 +2820,7 @@ namespace strf {
 template < template <class> class SrcCharsetTmpl
          , template <class> class DstCharsetTmpl
          , typename SrcCharT, typename DstCharT >
-{decode_encode_result}<SrcCharT> do_transcode
+{decode_encode_result}<SrcCharT> transcode
     ( const SrcCharT{asterisk} src
     , const SrcCharT{asterisk} src_end
     , DstCharT* dst
@@ -2833,7 +2833,7 @@ template < template <class> class SrcCharsetTmpl
 Effect::
 Same as:
 ----
-do_transcode
+transcode
     ( SrcCharsetTmpl<SrcCharT>()
     , DstCharsetTmpl<DstCharT>()
     , src, src_end, dst, dst_end, err_notifier, flags );
@@ -2854,7 +2854,7 @@ namespace strf {
 template < template <class> class SrcCharsetTmpl
          , template <class> class DstCharsetTmpl
          , typename SrcCharT, typename DstCharT >
-{decode_encode_result}<SrcCharT> do_transcode
+{decode_encode_result}<SrcCharT> transcode
     ( std::basic_string_view<SrcCharT> src
     , DstCharT* dst
     , DstCharT* dst_end
@@ -2865,7 +2865,7 @@ template < template <class> class SrcCharsetTmpl
 ----
 Same as:
 ----
-do_transcode <SrcCharsetTmpl, DstCharsetTmpl>
+transcode <SrcCharsetTmpl, DstCharsetTmpl>
     ( src.data(), src.data() + src.size(), dst, dst_end, err_notifier, flags );
 ----
 Compile-time requirements::
@@ -2996,7 +2996,7 @@ Compile-time requirements::
 - `SrcCharsetTmpl<SrcCharT>::code_unit` is `SrcCharT`
 ====
 
-=== Function template `do_unsafe_transcode` [[do_unsafe_transcode]]
+=== Function template `unsafe_transcode` [[unsafe_transcode]]
 
 ====
 [source,cpp,subs=normal]
@@ -3005,7 +3005,7 @@ namespace strf {
 
 template < typename SrcCharset, typename DstCharset
          , typename SrcCharT, typename DstCharT >
-void do_unsafe_transcode
+void unsafe_transcode
     ( SrcCharset src_charset
     , DstCharset dst_charset
     , const SrcCharT{asterisk} src
@@ -3042,7 +3042,7 @@ namespace strf {
 
 template < typename SrcCharset, typename DstCharset
          , typename SrcCharT, typename DstCharT >
-void do_unsafe_transcode
+void unsafe_transcode
     ( SrcCharset src_charset
     , DstCharset dst_charset
     , std::basic_string_view<SrcCharT> src
@@ -3056,7 +3056,7 @@ void do_unsafe_transcode
 Effect::
 Same as:
 ----
-do_unsafe_transcode
+unsafe_transcode
     ( src_charset, dst_charset, src.data(), src.data() + src.size()
     , dst, dst_end, err_notifier, flags );
 ----
@@ -3075,7 +3075,7 @@ namespace strf {
 template < template <class> class SrcCharsetTmpl
          , template <class> class DstCharsetTmpl
          , typename SrcCharT, typename DstCharT >
-void do_unsafe_transcode
+void unsafe_transcode
     ( const SrcCharT{asterisk} src
     , const SrcCharT{asterisk} src_end
     , DstCharT* dst
@@ -3088,7 +3088,7 @@ void do_unsafe_transcode
 Effect::
 Same as:
 ----
-do_unsafe_transcode
+unsafe_transcode
     ( SrcCharsetTmpl<SrcCharT>()
     , DstCharsetTmpl<DstCharT>()
     , src, src_end, dst, dst_end, err_notifier, flags );
@@ -3109,7 +3109,7 @@ namespace strf {
 template < template <class> class SrcCharsetTmpl
          , template <class> class DstCharsetTmpl
          , typename SrcCharT, typename DstCharT >
-void do_unsafe_transcode
+void unsafe_transcode
     ( std::basic_string_view<SrcCharT> src
     , DstCharT* dst
     , DstCharT* dst_end
@@ -3120,7 +3120,7 @@ void do_unsafe_transcode
 ----
 Same as:
 ----
-do_unsafe_transcode <SrcCharsetTmpl, DstCharsetTmpl>
+unsafe_transcode <SrcCharsetTmpl, DstCharsetTmpl>
     ( src.data(), src.data() + src.size(), dst, dst_end, err_notifier, flags );
 ----
 Compile-time requirements::
