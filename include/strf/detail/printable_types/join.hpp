@@ -134,21 +134,21 @@ class aligned_join_printer_impl: public printer<CharT>
 
 public:
 
-    template <strf::precalc_size PrecalcSize, typename FPack, typename... FwdArgs>
+    template <strf::precalc_size SizeRequired, typename FPack, typename... FwdArgs>
     STRF_HD explicit aligned_join_printer_impl
         ( const strf::detail::join_printer_input
               < CharT
-              , strf::premeasurements<PrecalcSize, strf::precalc_width::no>
+              , strf::premeasurements<SizeRequired, strf::precalc_width::no>
               , FPack
               , true, FwdArgs...>& input )
         : afmt_(input.arg.get_alignment_format())
     {
         auto charset = use_facet_<strf::charset_c<CharT>>(input.facets);
         encode_fill_func_ = charset.encode_fill_func();
-        strf::premeasurements<PrecalcSize, strf::precalc_width::yes> pre { afmt_.width };
+        strf::premeasurements<SizeRequired, strf::precalc_width::yes> pre { afmt_.width };
         new (printers_ptr_()) printers_tuple_{input.arg.value().args, &pre, input.facets};
         fillcount_ = pre.remaining_width().round();
-        STRF_IF_CONSTEXPR (static_cast<bool>(PrecalcSize)) {
+        STRF_IF_CONSTEXPR (static_cast<bool>(SizeRequired)) {
             input.pre->add_size(pre.accumulated_ssize());
             if (fillcount_ > 0) {
                 auto fcharsize = charset.encoded_char_size(afmt_.fill);
@@ -157,11 +157,11 @@ public:
         }
     }
 
-    template <strf::precalc_size PrecalcSize, typename FPack, typename... FwdArgs>
+    template <strf::precalc_size SizeRequired, typename FPack, typename... FwdArgs>
     STRF_HD explicit aligned_join_printer_impl
         ( const strf::detail::join_printer_input
               < CharT
-              , strf::premeasurements<PrecalcSize, strf::precalc_width::yes>
+              , strf::premeasurements<SizeRequired, strf::precalc_width::yes>
               , FPack
               , true, FwdArgs...>& input )
         : afmt_(input.arg.get_alignment_format())
@@ -174,7 +174,7 @@ public:
             wmax = input.pre->remaining_width();
             diff = wmax - afmt_.width;
         }
-        strf::premeasurements<PrecalcSize, strf::precalc_width::yes> pre{wmax};
+        strf::premeasurements<SizeRequired, strf::precalc_width::yes> pre{wmax};
         // to-do: what if the line below throws ?
         new (printers_ptr_()) printers_tuple_{input.arg.value().args, &pre, input.facets};
         if (pre.remaining_width() > diff) {
@@ -182,7 +182,7 @@ public:
         }
         width_t const width = strf::sat_sub(strf::sat_add(wmax, fillcount_), pre.remaining_width());
         input.pre->subtract_width(width);
-        STRF_IF_CONSTEXPR (static_cast<bool>(PrecalcSize)) {
+        STRF_IF_CONSTEXPR (static_cast<bool>(SizeRequired)) {
             input.pre->add_size(pre.accumulated_ssize());
             if (fillcount_ > 0) {
                 auto fcharsize = charset.encoded_char_size(afmt_.fill);
@@ -279,20 +279,20 @@ private:
 };
 
 template <typename CharT, typename PreMeasurements, typename FPack, typename Arg>
-struct print_impl_with_width_precalc_;
+struct print_impl_with_width_measure_;
 
-template < typename CharT, strf::precalc_size PrecalcSize, strf::precalc_width PrecalcWidth
+template < typename CharT, strf::precalc_size SizeRequired, strf::precalc_width WidthRequired
          , typename FPack, typename Arg >
-struct print_impl_with_width_precalc_<CharT, premeasurements<PrecalcSize, PrecalcWidth>, FPack, Arg>
+struct print_impl_with_width_measure_<CharT, premeasurements<SizeRequired, WidthRequired>, FPack, Arg>
 {
     using type = strf::printer_type
-        < CharT, strf::premeasurements<PrecalcSize, strf::precalc_width::yes>, FPack, Arg >;
+        < CharT, strf::premeasurements<SizeRequired, strf::precalc_width::yes>, FPack, Arg >;
 };
 
 template<typename CharT, typename PreMeasurements, typename FPack, typename... Args>
 using aligned_join_printer_impl_of = strf::detail::aligned_join_printer_impl
     < CharT
-    , typename print_impl_with_width_precalc_<CharT, PreMeasurements, FPack, Args>::type... >;
+    , typename print_impl_with_width_measure_<CharT, PreMeasurements, FPack, Args>::type... >;
 
 template<typename CharT, typename PreMeasurements, typename FPack, typename... FwdArgs>
 class aligned_join_printer

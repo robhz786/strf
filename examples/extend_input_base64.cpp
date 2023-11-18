@@ -115,10 +115,10 @@ public:
     {
     }
 
-    template <strf::precalc_size PrecalcSize>
+    template <strf::precalc_size SizeRequired>
     base64_printer
         ( base64_facet facet
-        , strf::premeasurements<PrecalcSize, strf::precalc_width::no>* pre
+        , strf::premeasurements<SizeRequired, strf::precalc_width::no>* pre
         , const base64_input_with_formatters& fmt );
 
     void print_to(strf::destination<CharT>& dst) const override;
@@ -153,10 +153,10 @@ private:
 };
 
 template <typename CharT>
-template <strf::precalc_size PrecalcSize>
+template <strf::precalc_size SizeRequired>
 base64_printer<CharT>::base64_printer
     ( base64_facet facet
-    , strf::premeasurements<PrecalcSize, strf::precalc_width::no>* pre
+    , strf::premeasurements<SizeRequired, strf::precalc_width::no>* pre
     , const base64_input_with_formatters& fmt )
     : facet_(facet)
     , fmt_(fmt)

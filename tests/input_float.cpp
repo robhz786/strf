@@ -97,7 +97,7 @@ STRF_TEST_FUNC void test_floating_point(FloatT value)
     {
         strf::premeasurements<strf::precalc_size::yes, strf::precalc_width::yes>
             pre{strf::width_max};
-        strf::precalculate<char>(&pre, strf::pack(), value);
+        strf::measure<char>(&pre, strf::pack(), value);
         const std::ptrdiff_t content_size = res.ptr - buff;
         TEST_EQ(pre.accumulated_ssize(), content_size);
         auto width = strf::width_max - pre.remaining_width();

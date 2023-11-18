@@ -53,14 +53,14 @@ inline FloatT make_float
     return strf::detail::bit_cast<FloatT>(v);
 }
 
-struct precalc_and_print_result {
+struct measure_and_print_result {
     int count = 0;
     int predicted_size = 0;
     int predicted_width = 0;
 };
 
 template <typename Arg>
-precalc_and_print_result precalc_and_print(char* buff, std::ptrdiff_t buff_size, const Arg& arg) {
+measure_and_print_result measure_and_print(char* buff, std::ptrdiff_t buff_size, const Arg& arg) {
 
     const strf::width_t initial_width = (strf::width_t::max)();
     strf::full_premeasurements pre(initial_width);
@@ -71,7 +71,7 @@ precalc_and_print_result precalc_and_print(char* buff, std::ptrdiff_t buff_size,
     printer.print_to(dst);
     auto *end = dst.finish().ptr;
 
-    precalc_and_print_result result;
+    measure_and_print_result result;
     result.count = static_cast<int>(end - buff);
     result.predicted_size = static_cast<int>(pre.accumulated_ssize());
     result.predicted_width = (initial_width - pre.remaining_width()).round();
@@ -79,8 +79,8 @@ precalc_and_print_result precalc_and_print(char* buff, std::ptrdiff_t buff_size,
 }
 
 template <std::ptrdiff_t BuffSize, typename Arg>
-precalc_and_print_result precalc_and_print(char(&buff)[BuffSize], const Arg& arg) {
-    return precalc_and_print(buff, BuffSize, arg);
+measure_and_print_result measure_and_print(char(&buff)[BuffSize], const Arg& arg) {
+    return measure_and_print(buff, BuffSize, arg);
 }
 
 template <typename Arg>
@@ -91,7 +91,7 @@ int strf_print_and_check
     , std::ptrdiff_t buff_size
     , const Arg& arg)
 {
-    auto r = precalc_and_print(buff, buff_size, arg);
+    auto r = measure_and_print(buff, buff_size, arg);
     const bool t1 = r.count == r.predicted_size;
     const bool t2 = r.count == r.predicted_size;
     if (!t1 || !t2) {
@@ -135,7 +135,7 @@ void test_vs_sprintf
 {
     char strf_buff[500];
     char sprintf_buff[500];
-    auto strf_result = precalc_and_print(strf_buff, strf_arg);
+    auto strf_result = measure_and_print(strf_buff, strf_arg);
 
     const bool t1 = strf_result.count == strf_result.predicted_size;
     const bool t2 = strf_result.count == strf_result.predicted_width;

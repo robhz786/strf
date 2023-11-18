@@ -23,7 +23,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 :dont_override:          <<strf_hpp#dont_override,dont_override>>
 :printer:                <<strf_hpp#printer,printer>>
 :premeasurements:        <<strf_hpp#premeasurements,premeasurements>>
-:precalculate:           <<strf_hpp#precalculate,precalculate>>
+:measure:           <<strf_hpp#measure,measure>>
 :printable_with_fmt:     <<strf_hpp#printable_with_fmt,printable_with_fmt>>
 :make_printer_input:         <<strf_hpp#make_printer_input,make_printer_input>>
 :strf_make_printer_input:    <<strf_hpp#make_printer_input,strf::make_printer_input>>
@@ -935,14 +935,14 @@ static_assert(pre_t::<<strf_hpp#premeasurements,nothing_required>>);
 
 Fortunately, in our case, calculating the size and width is not that difficult.
 For the floating point values, we can use the global function template
-`{precalculate}`. The rest of the content we can easily calculate manually:
+`{measure}`. The rest of the content we can easily calculate manually:
 
 ////
 For the floating point values, we can use the global function template
-`{precalculate}`, which we actually could use for the whole content . I mean, I could
+`{measure}`, which we actually could use for the whole content . I mean, I could
 implement the `pre_` member function very similiarly to `print_to`,
 basically just replacing every `print(__args__...)` by
-`strf::precalculate(pre, facets, __args__...)`. But there is a more efficient
+`strf::measure(pre, facets, __args__...)`. But there is a more efficient
 implementation:
 ////
 
@@ -954,7 +954,7 @@ void std_complex_printer<CharT, FloatT>::pre_(Pre* pre, const WidthCalc& wcalc) 
 {
     // calculate the size and/or width of the floating-point values:
     auto facets = strf::pack(lettercase_, numpunct_, charset_);
-    strf::{precalculate}<CharT>(pre, facets, coordinates_.first, coordinates_.second);
+    strf::{measure}<CharT>(pre, facets, coordinates_.first, coordinates_.second);
 
     // calculate the size and/or width of the other characters:
     switch (form_) {
@@ -996,7 +996,7 @@ But, of course, we are not done yet, since it only handles
 another printer &#x2014; you could name `fmt_std_complex_printer`
 &#x2014; to print formatted values, which is naturally a little
 bit more complex. However, it's basically the same idea:
-`print_to` prints the content and the constructor precalculates its size and/or width.
+`print_to` prints the content and the constructor measures its size and/or width.
 You can see a full implementation in
 {strf-src-root}/examples/std_complex_printer.cpp[examples/std_complex_printer.cpp].
 

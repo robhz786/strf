@@ -222,7 +222,7 @@ auto first_char_of_tr_string(String str, Args&&...)
         using pre_t = strf::premeasurements                                           \
             <strf::precalc_size::yes, strf::precalc_width::no>;                       \
         pre_t pre;                                                                    \
-        strf::precalculate<char_t>(&pre, strf::pack(), strf::tr(__VA_ARGS__));        \
+        strf::measure<char_t>(&pre, strf::pack(), strf::tr(__VA_ARGS__));             \
         const std::ptrdiff_t obtained = pre.accumulated_ssize();                      \
         const std::ptrdiff_t expected = EXPECTED_SIZE;                                \
         if (obtained != expected) {                                                   \
@@ -273,7 +273,7 @@ STRF_TEST_FUNC void test_size_precalculation()
         using pre_t = strf::premeasurements                                           \
             <strf::precalc_size::no, strf::precalc_width::yes>;                       \
         pre_t pre(strf::width_t(INITIAL_WIDTH));                                      \
-        strf::precalculate<char_t>(&pre, strf::pack(), strf::tr(__VA_ARGS__));        \
+        strf::measure<char_t>(&pre, strf::pack(), strf::tr(__VA_ARGS__));             \
         auto obtained = pre.remaining_width();                                        \
         auto expected = strf::width_t(EXPECTED_REMAINING_WIDTH);                      \
         if (obtained != expected) {                                                   \
@@ -353,7 +353,7 @@ STRF_TEST_FUNC void test_width_precalculation()
         using char_t = decltype(first_char_of_tr_string(__VA_ARGS__));                \
         using pre_t = strf::full_premeasurements;                                     \
         pre_t pre(strf::width_t(INITIAL_WIDTH));                                      \
-        strf::precalculate<char_t>(&pre, strf::pack(), strf::tr(__VA_ARGS__));        \
+        strf::measure<char_t>(&pre, strf::pack(), strf::tr(__VA_ARGS__));             \
         const bool failed_size = pre.accumulated_ssize() != EXPECTED_SIZE;            \
         const bool failed_width =                                                     \
             ( pre.remaining_width() != strf::width_t(EXPECTED_REMAINING_WIDTH) );     \

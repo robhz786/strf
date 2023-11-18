@@ -714,17 +714,17 @@ STRF_DEPRECATED_MSG("usual_arg_printer_input was renamed to usual_printer_input"
 = usual_printer_input<CharT, PreMeasurements, FPack, Arg, Printer>;
 
 template< typename CharT
-        , strf::precalc_size PrecalcSize
-        , strf::precalc_width PrecalcWidth
+        , strf::precalc_size SizeRequired
+        , strf::precalc_width WidthRequired
         , typename FPack
         , typename Arg
         , typename Printer >
 struct usual_printer_input
-    < CharT, strf::premeasurements<PrecalcSize, PrecalcWidth>, FPack, Arg, Printer >
+    < CharT, strf::premeasurements<SizeRequired, WidthRequired>, FPack, Arg, Printer >
 {
     using char_type = CharT;
     using arg_type = Arg;
-    using premeasurements_type = strf::premeasurements<PrecalcSize, PrecalcWidth>;
+    using premeasurements_type = strf::premeasurements<SizeRequired, WidthRequired>;
     using fpack_type = FPack;
     using printer_type = Printer;
 

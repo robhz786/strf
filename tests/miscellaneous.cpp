@@ -42,47 +42,47 @@ STRF_TEST_FUNC void test_miscellaneous()
         dst.write(buff, sizeof(buff)/sizeof(buff[0]));
         TEST_FALSE(dst.good());
     }
-    {   // precalculate size
+    {   // measure size
         strf::premeasurements<strf::precalc_size::yes, strf::precalc_width::no> p;
 
-        strf::precalculate<char>(&p, strf::pack());
+        strf::measure<char>(&p, strf::pack());
         TEST_EQ(p.accumulated_ssize(), 0);
 
-        strf::precalculate<char>(&p, strf::pack(), 1, 23, 456, 7890);
+        strf::measure<char>(&p, strf::pack(), 1, 23, 456, 7890);
         TEST_EQ(p.accumulated_ssize(), 10);
     }
 
-    {   // precalculate size and width
+    {   // measure size and width
         strf::premeasurements<strf::precalc_size::yes, strf::precalc_width::yes>p{1000};
 
-        strf::precalculate<char>(&p, strf::pack());
+        strf::measure<char>(&p, strf::pack());
         TEST_EQ(p.accumulated_ssize(), 0);
         TEST_TRUE(p.remaining_width() == 1000);
 
-        strf::precalculate<char>(&p, strf::pack(), 1, 23, 456, 7890);
+        strf::measure<char>(&p, strf::pack(), 1, 23, 456, 7890);
         TEST_EQ(p.accumulated_ssize(), 10);
         TEST_TRUE(p.remaining_width() == 1000 - 10);
     }
 
-    {   // precalculate width
+    {   // measure width
         strf::premeasurements<strf::precalc_size::no, strf::precalc_width::yes>p{8_w};
 
-        strf::precalculate<char>(&p, strf::pack());
+        strf::measure<char>(&p, strf::pack());
         TEST_TRUE(p.remaining_width() == 8_w);
 
-        strf::precalculate<char>(&p, strf::pack(), 1, 23, 456);
+        strf::measure<char>(&p, strf::pack(), 1, 23, 456);
         TEST_TRUE(p.remaining_width() == 2_w);
-        strf::precalculate<char>(&p, strf::pack(), 1, 23, 456);
+        strf::measure<char>(&p, strf::pack(), 1, 23, 456);
         TEST_TRUE(p.remaining_width() == 0);
-        strf::precalculate<char>(&p, strf::pack(), 1);
+        strf::measure<char>(&p, strf::pack(), 1);
         TEST_TRUE(p.remaining_width() == 0);
     }
-    {   // precalculate width
+    {   // measure width
         strf::premeasurements<strf::precalc_size::no, strf::precalc_width::yes>p{8_w};
         p.subtract_width(8);
         TEST_TRUE(p.remaining_width() == 0);
     }
-    {   // precalculate width
+    {   // measure width
         strf::premeasurements<strf::precalc_size::no, strf::precalc_width::yes>p{8_w};
         p.subtract_width(9);
         TEST_TRUE(p.remaining_width() == 0);
@@ -92,10 +92,10 @@ STRF_TEST_FUNC void test_miscellaneous()
         p.clear_remaining_width();
         TEST_TRUE(p.remaining_width() == 0);
     }
-    {   // don't precalculate anything
+    {   // don't measure anything
         strf::no_premeasurements p;
-        strf::precalculate<char>(&p, strf::pack());
-        strf::precalculate<char>(&p, strf::pack(), 1, 23, 456);
+        strf::measure<char>(&p, strf::pack());
+        strf::measure<char>(&p, strf::pack(), 1, 23, 456);
         TEST_EQ(p.accumulated_ssize(), 0);
         TEST_TRUE(p.remaining_width() == 0);
     }

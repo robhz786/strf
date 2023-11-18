@@ -420,15 +420,15 @@ namespace strf {
 enum class precalc_width: bool { no = false, yes = true };
 enum class precalc_size : bool { no = false, yes = true };
 
-template <precalc_size PrecalcSize, precalc_width PrecalcWidth>
+template <precalc_size SizeRequired, precalc_width WidthRequired>
 class premeasurements
-    : public {size_accumulator}<static_cast<bool>(PrecalcSize)>
-    , public {width_decumulator}<static_cast<bool>(PrecalcWidth)>
+    : public {size_accumulator}<static_cast<bool>(SizeRequired)>
+    , public {width_decumulator}<static_cast<bool>(WidthRequired)>
 {
 public:
 
-    static constexpr bool size_required = static_cast<bool>(PrecalcSize);
-    static constexpr bool width_required = static_cast<bool>(PrecalcWidth);
+    static constexpr bool size_required = static_cast<bool>(SizeRequired);
+    static constexpr bool width_required = static_cast<bool>(WidthRequired);
     static constexpr bool nothing_required = ! size_required && ! width_required;
     static constexpr bool something_required = size_required || width_required;
 
@@ -459,7 +459,7 @@ Effect:: Default-construct each of the base classes.
 ----
 constexpr explicit premeasurements(<<width_t,width_t>> initial_width) noexcept;
 ----
-Compile-time requirement:: `PrecalcWidth` is `precalc_width::yes`, otherwise this constructor
+Compile-time requirement:: `WidthRequired` is `precalc_width::yes`, otherwise this constructor
 does not participate in overload resolution.
 Effect:: Initializes `{width_decumulator}` base
 with `initial_width`.
@@ -481,7 +481,7 @@ public:
     size_accumulator& operator=(const size_accumulator&) = delete;
     size_accumulator& operator=(size_accumulator&&) = delete;
 
-    constexpr void add_size(std::integral auto initial_size) noexcept;
+    constexpr void add_size(std::integral auto s) noexcept;
 
     constexpr std::ptrdiff_t accumulated_ssize() const noexcept;
     constexpr std::size_t accumulated_usize() const noexcept;
@@ -646,17 +646,17 @@ So calling `zeroize_remaining_width_if_negative` aims to reduce the chances of t
 ====
 
 
-=== Function template `precalculate` [[precalculate]]
+=== Function template `measure` [[measure]]
 
 [source,cpp,subs=normal]
 ----
 template < typename CharT
-         , <<premeasurements,precalc_size>> PrecalcSize
-         , <<premeasurements,precalc_width>> PrecalcWidth
+         , <<premeasurements,precalc_size>> SizeRequired
+         , <<premeasurements,precalc_width>> WidthRequired
          , typename\... FPE
          , typename\... Args >
-void precalculate
-    ( {premeasurements}<PrecalcSize, PrecalcWidth>* pp
+void measure
+    ( {premeasurements}<SizeRequired, WidthRequired>* pp
     , const {facets_pack}<FPE\...>& facets
     , const Args&\... args );
 ----
@@ -669,7 +669,7 @@ Compile-time requirements::
   ( since this is a requirement of `{facets_pack}` ).
 
 Effects::
-* When `PrecalcSize` is `precalc_size::yes`, for each argument `arg` in `args\...`
+* When `SizeRequired` is `precalc_size::yes`, for each argument `arg` in `args\...`
   instantiates the correponding `printer` type with `pp`, `facets`, and `arg`.
   This translates into the following
   https://en.cppreference.com/w/cpp/language/fold[fold expression]:
@@ -677,16 +677,16 @@ Effects::
 [source,cpp,subs=normal]
 ----
 (\..., {printer_type}< CharT
-                  , {premeasurements}<PrecalcSize, PrecalcWidth>
+                  , {premeasurements}<SizeRequired, WidthRequired>
                   , facets_pack<FPE\...>
                   , Args >  {{make_printer_input}<CharT>(pp, facets, args)} );
 ----
-* When `PrecalcSize` is `precalc_size::no` and `PrecalcWidth` is `precalc_width::yes`,
+* When `SizeRequired` is `precalc_size::no` and `WidthRequired` is `precalc_width::yes`,
   for each argument `arg` in `args\...` instantiates the correponding `printer`
   type with `pp`, `facets`, and `arg` ( again, using `{printer_type}`  and
   `{make_printer_input}` ), while `pp-><<width_decumulator,remaining_width>>() > 0`
   is `true`.
   This implies that not necessarily all argument in `arg\...` are used.
-* When `PrecalcSize` is `precalc_size::no` and `PrecalcWidth` is `precalc_width::no`,
+* When `SizeRequired` is `precalc_size::no` and `WidthRequired` is `precalc_width::no`,
   does nothing
 

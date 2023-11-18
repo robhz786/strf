@@ -505,10 +505,10 @@ class tr_string_printer
     using char_type = typename Charset::code_unit;
 public:
 
-    template <strf::precalc_size SizeRequested>
+    template <strf::precalc_size SizeRequired>
     STRF_HD tr_string_printer
-        ( strf::premeasurements<SizeRequested, strf::precalc_width::no>* pre
-        , const strf::premeasurements<SizeRequested, strf::precalc_width::no>* args_pre
+        ( strf::premeasurements<SizeRequired, strf::precalc_width::no>* pre
+        , const strf::premeasurements<SizeRequired, strf::precalc_width::no>* args_pre
         , std::initializer_list<const strf::printer<char_type>*> printers
         , const char_type* tr_string
         , const char_type* tr_string_end
@@ -522,7 +522,7 @@ public:
         , err_handler_(err_handler)
     {
         STRF_MAYBE_UNUSED(pre);
-        STRF_IF_CONSTEXPR (static_cast<bool>(SizeRequested)) {
+        STRF_IF_CONSTEXPR (static_cast<bool>(SizeRequired)) {
             auto invalid_arg_size = charset.replacement_char_size();
             const std::ptrdiff_t s = strf::detail::tr_string_size
                 ( args_pre, static_cast<std::ptrdiff_t>(printers.size())
