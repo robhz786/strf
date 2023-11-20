@@ -27,7 +27,7 @@ foreach(x
     override_bool
     std_complex_printer
     extend_input_template
-    transcoding_error_notifier
+    transcoding_notifier
     )
 
   Add_executable(example-${x} ${x}.cpp)
