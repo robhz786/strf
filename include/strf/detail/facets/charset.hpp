@@ -1109,25 +1109,6 @@ STRF_HD strf::decode_encode_result<SrcCharT, DstCharT> decode_encode
     }
 }
 
-#ifdef STRF_HAS_STD_STRING_VIEW
-
-template <typename SrcCharT, typename DstCharT>
-STRF_HD strf::decode_encode_result<SrcCharT, DstCharT> decode_encode
-    ( strf::transcode_f<SrcCharT, char32_t> to_u32
-    , strf::transcode_f<char32_t, DstCharT> from_u32
-    , std::basic_string_view<SrcCharT> src
-    , DstCharT* dst
-    , DstCharT* dst_end
-    , strf::transcoding_error_notifier* err_notifier = nullptr
-    , strf::transcode_flags flags = strf::transcode_flags::none )
-{
-    return strf::decode_encode
-        ( to_u32, from_u32, src.data(), src.data() + src.size()
-        , dst, dst_end, err_notifier, flags );
-}
-
-#endif // STRF_HAS_STD_STRING_VIEW
-
 template < typename SrcCharset, typename DstCharset
          , typename SrcCharT, typename DstCharT
          , detail::enable_if_t<detail::is_charset<SrcCharset>::value, int> = 0
@@ -1150,29 +1131,6 @@ inline STRF_HD strf::decode_encode_result<SrcCharT, DstCharT> decode_encode
         , dst_charset.from_u32().transcode_func()
         , src, src_end, dst, dst_end, err_notifier, flags );
 }
-
-#ifdef STRF_HAS_STD_STRING_VIEW
-
-template < typename SrcCharset, typename DstCharset
-         , typename SrcCharT, typename DstCharT
-         , detail::enable_if_t<detail::is_charset<SrcCharset>::value, int> = 0
-         , detail::enable_if_t<detail::is_charset<DstCharset>::value, int> = 0 >
-inline STRF_HD strf::decode_encode_result<SrcCharT, DstCharT> decode_encode
-    ( SrcCharset src_charset
-    , DstCharset dst_charset
-    , std::basic_string_view<SrcCharT> src
-    , DstCharT* dst
-    , DstCharT* dst_end
-    , strf::transcoding_error_notifier* err_notifier = nullptr
-    , strf::transcode_flags flags = strf::transcode_flags::none )
-{
-    return strf::decode_encode
-        ( src_charset.to_u32().transcode_func()
-        , dst_charset.from_u32().transcode_func()
-        , src, dst, dst_end, err_notifier, flags );
-}
-
-#endif // STRF_HAS_STD_STRING_VIEW
 
 template < template <class> class SrcCharsetTmpl
          , template <class> class DstCharsetTmpl
@@ -1200,36 +1158,6 @@ inline STRF_HD strf::decode_encode_result<SrcCharT, DstCharT> decode_encode
     return strf::decode_encode
         ( src_charset, dst_charset, src, src_end, dst, dst_end, err_notifier, flags );
 }
-
-#ifdef STRF_HAS_STD_STRING_VIEW
-
-template < template <class> class SrcCharsetTmpl
-         , template <class> class DstCharsetTmpl
-         , typename SrcCharT
-         , typename DstCharT >
-inline STRF_HD strf::decode_encode_result<SrcCharT, DstCharT> decode_encode
-    ( std::basic_string_view<SrcCharT> src
-    , DstCharT* dst
-    , DstCharT* dst_end
-    , strf::transcoding_error_notifier* err_notifier = nullptr
-    , strf::transcode_flags flags = strf::transcode_flags::none )
-{
-    using src_charset_t = SrcCharsetTmpl<SrcCharT>;
-    using dst_charset_t = DstCharsetTmpl<DstCharT>;
-
-    static_assert(detail::is_static_charset<src_charset_t>::value, "");
-    static_assert(detail::is_static_charset<dst_charset_t>::value, "");
-    static_assert(std::is_same<typename src_charset_t::code_unit, SrcCharT>::value, "");
-    static_assert(std::is_same<typename dst_charset_t::code_unit, DstCharT>::value, "");
-
-    constexpr src_charset_t src_charset;
-    constexpr dst_charset_t dst_charset;
-
-    return strf::decode_encode
-        ( src_charset, dst_charset, src, dst, dst_end, err_notifier, flags );
-}
-
-#endif // STRF_HAS_STD_STRING_VIEW
 
 template <typename SrcCharT, typename DstCharT>
 STRF_HD strf::decode_encode_size_result<SrcCharT> decode_encode
@@ -1378,22 +1306,6 @@ STRF_HD strf::decode_encode_size_result<SrcCharT> decode_encode_size
     }
 }
 
-#ifdef STRF_HAS_STD_STRING_VIEW
-
-template <typename SrcCharT>
-inline STRF_HD strf::decode_encode_size_result<SrcCharT> decode_encode_size
-    ( strf::transcode_f<SrcCharT, char32_t> to_u32
-    , strf::transcode_size_f<char32_t> size_calc_func
-    , std::basic_string_view<SrcCharT> src
-    , std::ptrdiff_t limit
-    , strf::transcode_flags flags = strf::transcode_flags::none )
-{
-    return strf::decode_encode_size
-        ( to_u32, size_calc_func, src.data(), src.data() + src.size(), limit, flags );
-}
-
-#endif // STRF_HAS_STD_STRING_VIEW
-
 template < typename SrcCharset
          , typename DstCharset
          , typename SrcCharT
@@ -1439,52 +1351,6 @@ inline STRF_HD strf::decode_encode_size_result<SrcCharT> decode_encode_size
         ( src_charset, dst_charset, src, src_end, limit, flags );
 }
 
-#ifdef STRF_HAS_STD_STRING_VIEW
-
-template < typename SrcCharset
-         , typename DstCharset
-         , typename SrcCharT
-         , detail::enable_if_t<detail::is_charset<SrcCharset>::value, int> = 0
-         , detail::enable_if_t<detail::is_charset<DstCharset>::value, int> = 0 >
-inline STRF_HD strf::decode_encode_size_result<SrcCharT> decode_encode_size
-    ( SrcCharset src_charset
-    , DstCharset dst_charset
-    , std::basic_string_view<SrcCharT> src
-    , std::ptrdiff_t limit
-    , strf::transcode_flags flags = strf::transcode_flags::none )
-{
-    static_assert(std::is_same<typename SrcCharset::code_unit, SrcCharT>::value, "");
-
-    return strf::decode_encode_size
-        ( src_charset.to_u32().transcode_func()
-        , dst_charset.from_u32().transcode_size_func()
-        , src, limit, flags );
-}
-
-template < template <class> class SrcCharsetTmpl
-         , typename DstCharset
-         , typename SrcCharT
-         , typename DstCharT = typename DstCharset::code_unit
-         , detail::enable_if_t<detail::is_static_charset<DstCharset>::value, int> = 0>
-inline STRF_HD strf::decode_encode_size_result<SrcCharT> decode_encode_size
-    ( std::basic_string_view<SrcCharT> src
-    , std::ptrdiff_t limit
-    , strf::transcode_flags flags = strf::transcode_flags::none )
-{
-    using src_charset_t = SrcCharsetTmpl<SrcCharT>;
-    using dst_charset_t = DstCharset;
-
-    static_assert(detail::is_static_charset<src_charset_t>::value, "");
-    static_assert(std::is_same<typename src_charset_t::code_unit, SrcCharT>::value, "");
-
-    constexpr src_charset_t src_charset;
-    constexpr dst_charset_t dst_charset;
-
-    return strf::decode_encode_size(src_charset, dst_charset, src, limit, flags);
-}
-
-#endif // STRF_HAS_STD_STRING_VIEW
-
 template<typename SrcCharT, typename DstCharT>
 STRF_HD strf::decode_encode_result<SrcCharT, DstCharT> unsafe_decode_encode
     ( strf::unsafe_transcode_f<SrcCharT, char32_t> to_u32
@@ -1499,26 +1365,6 @@ STRF_HD strf::decode_encode_result<SrcCharT, DstCharT> unsafe_decode_encode
     return strf::decode_encode
         (to_u32, from_u32, src, src_end, dst, dst_end, err_notifier, flags);
 }
-
-#ifdef STRF_HAS_STD_STRING_VIEW
-
-template<typename SrcCharT, typename DstCharT>
-inline STRF_HD strf::decode_encode_result<SrcCharT, DstCharT> unsafe_decode_encode
-    ( strf::unsafe_transcode_f<SrcCharT, char32_t> to_u32
-    , strf::unsafe_transcode_f<char32_t, DstCharT> from_u32
-    , std::basic_string_view<SrcCharT> src
-    , DstCharT* dst
-    , DstCharT* dst_end
-    , strf::transcoding_error_notifier* err_notifier = nullptr
-    , strf::transcode_flags flags = strf::transcode_flags::none )
-{
-    return strf::unsafe_decode_encode
-        ( to_u32, from_u32, src.data(), src.data() + src.size()
-        , dst, dst_end, err_notifier, flags );
-}
-
-#endif // STRF_HAS_STD_STRING_VIEW
-
 
 template < typename SrcCharset, typename DstCharset
          , typename SrcCharT, typename DstCharT
@@ -1542,29 +1388,6 @@ inline STRF_HD strf::decode_encode_result<SrcCharT, DstCharT> unsafe_decode_enco
         , dst_charset.from_u32().unsafe_transcode_func()
         , src, src_end, dst, dst_end, err_notifier, flags );
 }
-
-#ifdef STRF_HAS_STD_STRING_VIEW
-
-template < typename SrcCharset, typename DstCharset
-         , typename SrcCharT, typename DstCharT
-         , detail::enable_if_t<detail::is_charset<SrcCharset>::value, int> = 0
-         , detail::enable_if_t<detail::is_charset<DstCharset>::value, int> = 0 >
-inline STRF_HD strf::decode_encode_result<SrcCharT, DstCharT> unsafe_decode_encode
-    ( SrcCharset src_charset
-    , DstCharset dst_charset
-    , std::basic_string_view<SrcCharT> src
-    , DstCharT* dst
-    , DstCharT* dst_end
-    , strf::transcoding_error_notifier* err_notifier = nullptr
-    , strf::transcode_flags flags = strf::transcode_flags::none )
-{
-    return strf::unsafe_decode_encode
-        ( src_charset.to_u32().unsafe_transcode_func()
-        , dst_charset.from_u32().unsafe_transcode_func()
-        , src, dst, dst_end, err_notifier, flags );
-}
-
-#endif // STRF_HAS_STD_STRING_VIEW
 
 template < template <class> class SrcCharsetTmpl
          , template <class> class DstCharsetTmpl
@@ -1592,36 +1415,6 @@ inline STRF_HD strf::decode_encode_result<SrcCharT, DstCharT> unsafe_decode_enco
     return strf::unsafe_decode_encode
         ( src_charset, dst_charset, src, src_end, dst, dst_end, err_notifier, flags );
 }
-
-#ifdef STRF_HAS_STD_STRING_VIEW
-
-template < template <class> class SrcCharsetTmpl
-         , template <class> class DstCharsetTmpl
-         , typename SrcCharT
-         , typename DstCharT >
-inline STRF_HD strf::decode_encode_result<SrcCharT, DstCharT> unsafe_decode_encode
-    ( std::basic_string_view<SrcCharT> src
-    , DstCharT* dst
-    , DstCharT* dst_end
-    , strf::transcoding_error_notifier* err_notifier = nullptr
-    , strf::transcode_flags flags = strf::transcode_flags::none )
-{
-    using src_charset_t = SrcCharsetTmpl<SrcCharT>;
-    using dst_charset_t = DstCharsetTmpl<DstCharT>;
-
-    static_assert(detail::is_static_charset<src_charset_t>::value, "");
-    static_assert(detail::is_static_charset<dst_charset_t>::value, "");
-    static_assert(std::is_same<typename src_charset_t::code_unit, SrcCharT>::value, "");
-    static_assert(std::is_same<typename dst_charset_t::code_unit, DstCharT>::value, "");
-
-    constexpr src_charset_t src_charset;
-    constexpr dst_charset_t dst_charset;
-
-    return strf::unsafe_decode_encode
-        ( src_charset, dst_charset, src, dst, dst_end, err_notifier, flags );
-}
-
-#endif // STRF_HAS_STD_STRING_VIEW
 
 template <typename SrcCharT>
 STRF_HD strf::decode_encode_size_result<SrcCharT> unsafe_decode_encode_size
@@ -1660,22 +1453,6 @@ STRF_HD strf::decode_encode_size_result<SrcCharT> unsafe_decode_encode_size
     }
 }
 
-#ifdef STRF_HAS_STD_STRING_VIEW
-
-template <typename SrcCharT>
-inline STRF_HD strf::decode_encode_size_result<SrcCharT> unsafe_decode_encode_size
-    ( strf::unsafe_transcode_f<SrcCharT, char32_t> to_u32
-    , strf::unsafe_transcode_size_f<char32_t> size_calc_func
-    , std::basic_string_view<SrcCharT> src
-    , std::ptrdiff_t limit
-    , strf::transcode_flags flags = strf::transcode_flags::none )
-{
-    return strf::unsafe_decode_encode_size
-        (to_u32, size_calc_func, src.data(), src.data() + src.size(), limit, flags);
-}
-
-#endif // STRF_HAS_STD_STRING_VIEW
-
 template < typename SrcCharset
          , typename DstCharset
          , typename SrcCharT
@@ -1720,52 +1497,6 @@ inline STRF_HD strf::decode_encode_size_result<SrcCharT> unsafe_decode_encode_si
     return strf::unsafe_decode_encode_size
         ( src_charset, dst_charset, src, src_end, limit, flags );
 }
-
-#ifdef STRF_HAS_STD_STRING_VIEW
-
-template < typename SrcCharset
-         , typename DstCharset
-         , typename SrcCharT
-         , detail::enable_if_t<detail::is_charset<SrcCharset>::value, int> = 0
-         , detail::enable_if_t<detail::is_charset<DstCharset>::value, int> = 0 >
-inline STRF_HD strf::decode_encode_size_result<SrcCharT> unsafe_decode_encode_size
-    ( SrcCharset src_charset
-    , DstCharset dst_charset
-    , std::basic_string_view<SrcCharT> src
-    , std::ptrdiff_t limit
-    , strf::transcode_flags flags = strf::transcode_flags::none )
-{
-    static_assert(std::is_same<typename SrcCharset::code_unit, SrcCharT>::value, "");
-
-    return strf::unsafe_decode_encode_size
-        ( src_charset.to_u32().unsafe_transcode_func()
-        , dst_charset.from_u32().unsafe_transcode_size_func()
-        , src, limit, flags );
-}
-
-template < template <class> class SrcCharsetTmpl
-         , typename DstCharset
-         , typename SrcCharT
-         , typename DstCharT = typename DstCharset::code_unit
-         , detail::enable_if_t<detail::is_static_charset<DstCharset>::value, int> = 0>
-inline STRF_HD strf::decode_encode_size_result<SrcCharT> unsafe_decode_encode_size
-    ( std::basic_string_view<SrcCharT> src
-    , std::ptrdiff_t limit
-    , strf::transcode_flags flags = strf::transcode_flags::none )
-{
-    using src_charset_t = SrcCharsetTmpl<SrcCharT>;
-    using dst_charset_t = DstCharset;
-
-    static_assert(detail::is_static_charset<src_charset_t>::value, "");
-    static_assert(std::is_same<typename src_charset_t::code_unit, SrcCharT>::value, "");
-
-    constexpr src_charset_t src_charset;
-    constexpr dst_charset_t dst_charset;
-
-    return strf::unsafe_decode_encode_size(src_charset, dst_charset, src, limit, flags);
-}
-
-#endif // STRF_HAS_STD_STRING_VIEW
 
 template < typename SrcCharset, typename DstCharset
          , typename SrcCharT, typename DstCharT
@@ -1821,54 +1552,6 @@ STRF_HD strf::decode_encode_result<SrcCharT, DstCharT> transcode
     return strf::transcode
         (src_charset, dst_charset, src, src_end, dst, dst_end, err_notifier, flags);
 }
-
-#ifdef STRF_HAS_STD_STRING_VIEW
-
-template < typename SrcCharset, typename DstCharset
-         , typename SrcCharT, typename DstCharT
-         , detail::enable_if_t<detail::is_charset<SrcCharset>::value, int> = 0
-         , detail::enable_if_t<detail::is_charset<DstCharset>::value, int> = 0 >
-inline STRF_HD strf::decode_encode_result<SrcCharT, DstCharT> transcode
-    ( SrcCharset src_charset
-    , DstCharset dst_charset
-    , std::basic_string_view<SrcCharT> src
-    , DstCharT* dst
-    , DstCharT* dst_end
-    , strf::transcoding_error_notifier* err_notifier = nullptr
-    , strf::transcode_flags flags = strf::transcode_flags::none )
-{
-    return strf::transcode
-        ( src_charset, dst_charset, src.data(), src.data() + src.size()
-        , dst, dst_end, err_notifier, flags );
-}
-
-template < template <class> class SrcCharsetTmpl
-         , template <class> class DstCharsetTmpl
-         , typename SrcCharT
-         , typename DstCharT >
-inline STRF_HD strf::decode_encode_result<SrcCharT, DstCharT> transcode
-    ( std::basic_string_view<SrcCharT> src
-    , DstCharT* dst
-    , DstCharT* dst_end
-    , strf::transcoding_error_notifier* err_notifier = nullptr
-    , strf::transcode_flags flags = strf::transcode_flags::none )
-{
-    using src_charset_t = SrcCharsetTmpl<SrcCharT>;
-    using dst_charset_t = DstCharsetTmpl<DstCharT>;
-
-    static_assert(detail::is_static_charset<src_charset_t>::value, "");
-    static_assert(detail::is_static_charset<dst_charset_t>::value, "");
-    static_assert(std::is_same<typename src_charset_t::code_unit, SrcCharT>::value, "");
-    static_assert(std::is_same<typename dst_charset_t::code_unit, DstCharT>::value, "");
-
-    constexpr src_charset_t src_charset;
-    constexpr dst_charset_t dst_charset;
-
-    return strf::transcode
-        (src_charset, dst_charset, src, dst, dst_end, err_notifier, flags);
-}
-
-#endif // STRF_HAS_STD_STRING_VIEW
 
 template <typename SrcCharT, typename DstCharT>
 STRF_HD strf::transcode_size_result<SrcCharT> transcode
@@ -2004,48 +1687,6 @@ STRF_HD strf::decode_encode_size_result<SrcCharT> transcode_size
     return strf::transcode_size(src_charset, dst_charset, src, src_end, limit, flags);
 }
 
-#ifdef STRF_HAS_STD_STRING_VIEW
-
-template < typename SrcCharset
-         , typename DstCharset
-         , typename SrcCharT
-         , detail::enable_if_t<detail::is_charset<SrcCharset>::value, int> = 0
-         , detail::enable_if_t<detail::is_charset<DstCharset>::value, int> = 0 >
-inline STRF_HD strf::decode_encode_size_result<SrcCharT> transcode_size
-    ( SrcCharset src_charset
-    , DstCharset dst_charset
-    , std::basic_string_view<SrcCharT> src
-    , std::ptrdiff_t limit
-    , strf::transcode_flags flags = strf::transcode_flags::none )
-{
-    return strf::transcode_size
-        ( src_charset, dst_charset, src.data(), src.data() + src.size(), limit, flags );
-}
-
-template < template <class> class SrcCharsetTmpl
-         , typename DstCharset
-         , typename SrcCharT
-         , typename DstCharT = typename DstCharset::code_unit
-         , detail::enable_if_t<detail::is_static_charset<DstCharset>::value, int> = 0 >
-STRF_HD strf::decode_encode_size_result<SrcCharT> transcode_size
-    ( std::basic_string_view<SrcCharT> src
-    , std::ptrdiff_t limit
-    , strf::transcode_flags flags = strf::transcode_flags::none )
-{
-    using src_charset_t = SrcCharsetTmpl<SrcCharT>;
-    using dst_charset_t = DstCharset;
-
-    static_assert(detail::is_static_charset<src_charset_t>::value, "");
-    static_assert(std::is_same<typename src_charset_t::code_unit, SrcCharT>::value, "");
-
-    constexpr src_charset_t src_charset;
-    constexpr dst_charset_t dst_charset;
-
-    return strf::transcode_size(src_charset, dst_charset, src, limit, flags);
-}
-
-#endif // STRF_HAS_STD_STRING_VIEW
-
 template < typename SrcCharset, typename DstCharset
          , typename SrcCharT, typename DstCharT
          , detail::enable_if_t<detail::is_charset<SrcCharset>::value, int> = 0
@@ -2099,55 +1740,6 @@ STRF_HD strf::decode_encode_result<SrcCharT, DstCharT> unsafe_transcode
     return strf::unsafe_transcode
         (src_charset, dst_charset, src, src_end, dst, dst_end, err_notifier, flags);
 }
-
-#ifdef STRF_HAS_STD_STRING_VIEW
-
-template < typename SrcCharset, typename DstCharset
-         , typename SrcCharT, typename DstCharT
-         , detail::enable_if_t<detail::is_charset<SrcCharset>::value, int> = 0
-         , detail::enable_if_t<detail::is_charset<DstCharset>::value, int> = 0 >
-inline STRF_HD strf::decode_encode_result<SrcCharT, DstCharT> unsafe_transcode
-    ( SrcCharset src_charset
-    , DstCharset dst_charset
-    , std::basic_string_view<SrcCharT> src
-    , DstCharT* dst
-    , DstCharT* dst_end
-    , strf::transcoding_error_notifier* err_notifier = nullptr
-    , strf::transcode_flags flags = strf::transcode_flags::none )
-{
-    return strf::unsafe_transcode
-        ( src_charset, dst_charset, src.data()
-        , src.data() + src.size(), dst, dst_end, err_notifier, flags );
-}
-
-template < template <class> class SrcCharsetTmpl
-         , template <class> class DstCharsetTmpl
-         , typename SrcCharT
-         , typename DstCharT >
-inline STRF_HD strf::decode_encode_result<SrcCharT, DstCharT> unsafe_transcode
-    ( std::basic_string_view<SrcCharT> src
-    , DstCharT* dst
-    , DstCharT* dst_end
-    , strf::transcoding_error_notifier* err_notifier = nullptr
-    , strf::transcode_flags flags = strf::transcode_flags::none )
-{
-    using src_charset_t = SrcCharsetTmpl<SrcCharT>;
-    using dst_charset_t = DstCharsetTmpl<DstCharT>;
-
-    static_assert(detail::is_static_charset<src_charset_t>::value, "");
-    static_assert(detail::is_static_charset<dst_charset_t>::value, "");
-    static_assert(std::is_same<typename src_charset_t::code_unit, SrcCharT>::value, "");
-    static_assert(std::is_same<typename dst_charset_t::code_unit, DstCharT>::value, "");
-
-    constexpr src_charset_t src_charset;
-    constexpr dst_charset_t dst_charset;
-
-    return strf::unsafe_transcode
-        (src_charset, dst_charset, src, dst, dst_end, err_notifier, flags);
-}
-
-#endif // STRF_HAS_STD_STRING_VIEW
-
 
 template < typename SrcCharset, typename DstCharset
          , typename SrcCharT, typename DstCharT
@@ -2248,48 +1840,6 @@ STRF_HD strf::decode_encode_size_result<SrcCharT> unsafe_transcode_size
 
     return strf::unsafe_transcode_size(src_charset, dst_charset, src, src_end, limit, flags);
 }
-
-#ifdef STRF_HAS_STD_STRING_VIEW
-
-template < typename SrcCharset
-         , typename DstCharset
-         , typename SrcCharT
-         , detail::enable_if_t<detail::is_charset<SrcCharset>::value, int> = 0
-         , detail::enable_if_t<detail::is_charset<DstCharset>::value, int> = 0 >
-inline STRF_HD strf::decode_encode_size_result<SrcCharT> unsafe_transcode_size
-    ( SrcCharset src_charset
-    , DstCharset dst_charset
-    , std::basic_string_view<SrcCharT> src
-    , std::ptrdiff_t limit
-    , strf::transcode_flags flags = strf::transcode_flags::none )
-{
-    return strf::unsafe_transcode_size
-        (src_charset, dst_charset, src.data(), src.data() + src.size(), limit, flags);
-}
-
-template < template <class> class SrcCharsetTmpl
-         , typename DstCharset
-         , typename SrcCharT
-         , typename DstCharT = typename DstCharset::code_unit
-         , detail::enable_if_t<detail::is_static_charset<DstCharset>::value, int> = 0 >
-STRF_HD strf::decode_encode_size_result<SrcCharT> unsafe_transcode_size
-    ( std::basic_string_view<SrcCharT> src
-    , std::ptrdiff_t limit
-    , strf::transcode_flags flags = strf::transcode_flags::none )
-{
-    using src_charset_t = SrcCharsetTmpl<SrcCharT>;
-    using dst_charset_t = DstCharset;
-
-    static_assert(detail::is_static_charset<src_charset_t>::value, "");
-    static_assert(std::is_same<typename src_charset_t::code_unit, SrcCharT>::value, "");
-
-    constexpr src_charset_t src_charset;
-    constexpr dst_charset_t dst_charset;
-
-    return strf::unsafe_transcode_size(src_charset, dst_charset, src, limit, flags);
-}
-
-#endif // STRF_HAS_STD_STRING_VIEW
 
 // backwards compatibility:
 

@@ -13,10 +13,6 @@
 using char8_t = char;
 #endif
 
-#ifdef STRF_HAS_STD_STRING_VIEW
-using namespace std::literals::string_view_literals;
-#endif
-
 namespace {
 
 struct errors_counter: strf::transcoding_error_notifier {
@@ -261,69 +257,6 @@ STRF_TEST_FUNC void test_unsafe_decode_encode_overloads()
         const str_view output(buff, ude_res.dst_ptr);
         TEST_STR_EQ(output, expected_full);
     }
-
-#ifdef STRF_HAS_STD_STRING_VIEW
-
-    const std::basic_string_view<char16_t> src_sv(src, src_len);
-
-    // Overload 1
-    {
-        constexpr auto buff_size = 200;
-        char buff[buff_size] = {};
-        test_utils::simple_transcoding_err_notifier notifier;
-
-        auto ude_res = strf::unsafe_decode_encode
-            (src_enc, dst_enc, src_sv, buff, buff + buff_size, &notifier, flags_stop);
-        TEST_TRUE(ude_res.stop_reason == stop_reason::unsupported_codepoint);
-        TEST_EQ(1, notifier.unsupported_codepoints_calls_count);
-
-        const str_view output(buff, ude_res.dst_ptr);
-        TEST_STR_EQ(output, expected_part);
-    }
-    {
-        constexpr auto buff_size = 200;
-        char buff[buff_size] = {};
-        test_utils::simple_transcoding_err_notifier notifier;
-
-        auto ude_res = strf::unsafe_decode_encode
-            (src_enc, dst_enc, src_sv, buff, buff + buff_size, &notifier, flags_none);
-        TEST_TRUE(ude_res.stop_reason == stop_reason::completed);
-        TEST_EQ(1, notifier.unsupported_codepoints_calls_count);
-
-        const str_view output(buff, ude_res.dst_ptr);
-        TEST_STR_EQ(output, expected_full);
-    }
-
-    // Overload 2
-    {
-        constexpr auto buff_size = 200;
-        char buff[buff_size] = {};
-        test_utils::simple_transcoding_err_notifier notifier;
-
-        auto ude_res = strf::unsafe_decode_encode<strf::utf16_t, strf::iso_8859_5_t>
-            (src_sv, buff, buff + buff_size, &notifier, flags_stop);
-        TEST_TRUE(ude_res.stop_reason == stop_reason::unsupported_codepoint);
-        TEST_EQ(1, notifier.unsupported_codepoints_calls_count);
-
-        const str_view output(buff, ude_res.dst_ptr);
-
-        TEST_STR_EQ(output, expected_part);
-    }
-    {
-        constexpr auto buff_size = 200;
-        char buff[buff_size] = {};
-        test_utils::simple_transcoding_err_notifier notifier;
-
-        auto ude_res = strf::unsafe_decode_encode<strf::utf16_t, strf::iso_8859_5_t>
-            (src_sv, buff, buff + buff_size, &notifier, flags_none);
-        TEST_TRUE(ude_res.stop_reason == stop_reason::completed);
-        TEST_EQ(1, notifier.unsupported_codepoints_calls_count);
-
-        const str_view output(buff, ude_res.dst_ptr);
-        TEST_STR_EQ(output, expected_full);
-    }
-
-#endif // STRF_HAS_STD_STRING_VIEW
 }
 
 STRF_TEST_FUNC void test_unsafe_decode_encode_size_scenarios()
@@ -482,50 +415,6 @@ STRF_TEST_FUNC void test_unsafe_decode_encode_size_overloads()
             (src_enc, dst_enc, src, src_end, expected_full_size, flags_none);
         TEST_EQ(res.ssize, expected_full_size);
     }
-
-#ifdef STRF_HAS_STD_STRING_VIEW
-
-    const std::basic_string_view<char16_t> src_sv(src, src_len);
-
-    // Overload 1
-    {
-        const auto res = strf::unsafe_decode_encode_size
-            (src_enc, dst_enc, src_sv, expected_part_size, flags_stop);
-        TEST_EQ(res.ssize, expected_part_size);
-        TEST_TRUE(res.stop_reason == stop_reason::unsupported_codepoint);
-
-        auto cpcount_res = strf::utf_t<char16_t>::count_codepoints
-            ( res.stale_src_ptr, input.end(), res.u32dist );
-        TEST_EQ(res.u32dist, cpcount_res.count);
-        TEST_EQ(res.u32dist, (cpcount_res.ptr - input.begin()));
-        TEST_EQ((unsigned)*cpcount_res.ptr, 0xABCD);
-    }
-    {
-        const auto res = strf::unsafe_decode_encode_size
-            (src_enc, dst_enc, src_sv, expected_full_size, flags_none);
-        TEST_EQ(res.ssize, expected_full_size);
-    }
-
-    // Overload 2
-    {
-        const auto res = strf::unsafe_decode_encode_size
-            (src_enc, dst_enc, src_sv, expected_part_size, flags_stop);
-        TEST_EQ(res.ssize, expected_part_size);
-        TEST_TRUE(res.stop_reason == stop_reason::unsupported_codepoint);
-
-        auto cpcount_res = strf::utf_t<char16_t>::count_codepoints
-            ( res.stale_src_ptr, input.end(), res.u32dist );
-        TEST_EQ(res.u32dist, cpcount_res.count);
-        TEST_EQ(res.u32dist, (cpcount_res.ptr - input.begin()));
-        TEST_EQ((unsigned)*cpcount_res.ptr, 0xABCD);
-    }
-    {
-        const auto res = strf::unsafe_decode_encode_size
-            (src_enc, dst_enc, src_sv, expected_full_size, flags_none);
-        TEST_EQ(res.ssize, expected_full_size);
-    }
-
-#endif // defined(STRF_HAS_STD_STRING_VIEW)
 }
 
 STRF_TEST_FUNC void test_all()

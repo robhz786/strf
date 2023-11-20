@@ -14,10 +14,6 @@
 using char8_t = char;
 #endif
 
-#ifdef STRF_HAS_STD_STRING_VIEW
-using namespace std::literals::string_view_literals;
-#endif
-
 namespace {
 
 struct errors_counter: strf::transcoding_error_notifier {

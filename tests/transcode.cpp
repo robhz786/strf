@@ -13,10 +13,6 @@
 using char8_t = char;
 #endif
 
-#ifdef STRF_HAS_STD_STRING_VIEW
-using namespace std::literals::string_view_literals;
-#endif
-
 namespace {
 
 struct errors_counter: strf::transcoding_error_notifier {
@@ -37,41 +33,42 @@ using ustr_view = str_view<char16_t>;
 
 STRF_TEST_FUNC void transcode_to_ptr()
 {
-#ifdef STRF_HAS_STD_STRING_VIEW
-
     {
         constexpr auto buff_size = 200;
         char8_t buff[buff_size] = {};
+        ustr_view input = u"abc\uAAAAzzz\uBBBBxxx";
 
         strf::transcode<strf::utf_t, strf::utf_t>
-            (u"abc\uAAAAzzz\uBBBBxxx"sv, buff, buff + buff_size);
+            (input.begin(), input.end(), buff, buff + buff_size);
 
         TEST_CSTR_EQ(buff, u8"abc\uAAAAzzz\uBBBBxxx");
     }
     {
-        auto res = strf::transcode_size<strf::utf_t, strf::utf_t<char>>(u"hello"sv, 6);
+        ustr_view input = u"hello";
+        auto res = strf::transcode_size<strf::utf_t, strf::utf_t<char>>
+            (input.begin(), input.end(), 6);
 
         TEST_EQ(res.ssize, 5);
     }
     {
+        ustr_view input = u"abc\uAAAAzzz\uBBBBxxx";
         constexpr auto buff_size = 200;
         char buff[buff_size] = {};
         errors_counter counter;
 
         strf::transcode<strf::utf_t, strf::iso_8859_3_t>
-            (u"abc\uAAAAzzz\uBBBBxxx"sv, buff, buff + buff_size, &counter);
+            (input.begin(), input.end(), buff, buff + buff_size, &counter);
 
         TEST_CSTR_EQ(buff, "abc?zzz?xxx");
         TEST_EQ(counter.count, 2);
     }
     {
+        ustr_view input = u"abc\uAAAAzzz\uBBBBxxx";
         auto res = strf::transcode_size <strf::utf_t, strf::iso_8859_3_t<char>>
-            (u"abc\uAAAAzzz\uBBBBxxx"sv, 12);
+            (input.begin(), input.end(), 12);
 
         TEST_EQ(res.ssize, 11);
     }
-
-#endif // STRF_HAS_STD_STRING_VIEW
 }
 
 STRF_TEST_FUNC void transcode_to_dest()
