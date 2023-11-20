@@ -1039,39 +1039,12 @@ STRF_HD void transcode_printer<SrcCharT, DstCharT>::print_to
     ( strf::destination<DstCharT>& dst ) const
 {
     const auto flags = strf::transcode_flags::none;
-    auto src_it = str_;
-    auto dst_it = dst.buffer_ptr();
-    auto dst_end = dst.buffer_end();
     if (can_transcode_directly()) {
-        while (1) {
-            auto r = transcode_(src_it, str_end_, dst_it, dst_end, err_notifier_, flags);
-            dst.advance_to(r.dst_ptr);
-            if (r.stop_reason != strf::transcode_stop_reason::insufficient_output_space) {
-                break;
-            }
-            src_it = r.src_ptr;
-            dst.recycle();
-            dst_it = dst.buffer_ptr();
-            dst_end = dst.buffer_end();
-        }
+        strf::transcode<SrcCharT, DstCharT>
+            (transcode_, str_, str_end_, dst, err_notifier_, flags);
     } else {
-        while (1) {
-            auto r = strf::decode_encode<SrcCharT, DstCharT>
-                ( src_to_u32_, u32_to_dst_, src_it , str_end_
-                , dst_it, dst_end, err_notifier_, flags );
-            dst.advance_to(r.dst_ptr);
-            if (r.stop_reason != strf::transcode_stop_reason::insufficient_output_space) {
-                break;
-            }
-            dst.recycle();
-            dst_it = dst.buffer_ptr();
-            dst_end = dst.buffer_end();
-            if (r.u32dist == 0) {
-                src_it = r.stale_src_ptr;
-            } else {
-                src_it = u32size_(src_it, str_end_, r.u32dist, flags).src_ptr;
-            }
-        }
+        strf::decode_encode<SrcCharT, DstCharT>
+            ( src_to_u32_, u32_to_dst_, str_ , str_end_, dst, err_notifier_, flags);
     }
 }
 
@@ -1232,39 +1205,12 @@ void STRF_HD aligned_transcode_printer<SrcCharT, DstCharT>::print_to
         encode_fill_(dst, left_fillcount_, afmt_.fill);
     }
     constexpr auto flags = strf::transcode_flags::none;
-    auto src_it = str_;
-    auto dst_it = dst.buffer_ptr();
-    auto dst_end = dst.buffer_end();
     if (can_transcode_directly()) {
-        while (1) {
-            auto r = transcode_(src_it, str_end_, dst_it, dst_end, err_notifier_, flags);
-            dst.advance_to(r.dst_ptr);
-            if (r.stop_reason != strf::transcode_stop_reason::insufficient_output_space) {
-                break;
-            }
-            src_it = r.src_ptr;
-            dst.recycle();
-            dst_it = dst.buffer_ptr();
-            dst_end = dst.buffer_end();
-        }
+        strf::transcode<SrcCharT, DstCharT>
+            (transcode_, str_, str_end_, dst, err_notifier_, flags);
     } else {
-        while (1) {
-            auto r = strf::decode_encode<SrcCharT, DstCharT>
-                ( src_to_u32_, u32_to_dst_, src_it , str_end_
-                , dst_it, dst_end, err_notifier_, flags );
-            dst.advance_to(r.dst_ptr);
-            if (r.stop_reason != strf::transcode_stop_reason::insufficient_output_space) {
-                break;
-            }
-            dst.recycle();
-            dst_it = dst.buffer_ptr();
-            dst_end = dst.buffer_end();
-            if (r.u32dist == 0) {
-                src_it = r.stale_src_ptr;
-            } else {
-                src_it = u32size_(src_it, str_end_, r.u32dist, flags).src_ptr;
-            }
-        }
+        strf::decode_encode<SrcCharT, DstCharT>
+            ( src_to_u32_, u32_to_dst_, str_ , str_end_,  dst, err_notifier_, flags);
     }
     if (right_fillcount_ > 0) {
         encode_fill_(dst, right_fillcount_, afmt_.fill);
@@ -1384,40 +1330,12 @@ STRF_HD void unsafe_transcode_printer<SrcCharT, DstCharT>::print_to
     ( strf::destination<DstCharT>& dst ) const
 {
     constexpr auto flags = strf::transcode_flags::none;
-
-    auto src_it = str_;
-    auto dst_it = dst.buffer_ptr();
-    auto dst_end = dst.buffer_end();
     if (can_transcode_directly()) {
-        while (1) {
-            auto r = transcode_(src_it, str_end_, dst_it, dst_end, err_notifier_, flags);
-            dst.advance_to(r.dst_ptr);
-            if (r.stop_reason != strf::transcode_stop_reason::insufficient_output_space) {
-                break;
-            }
-            src_it = r.src_ptr;
-            dst.recycle();
-            dst_it = dst.buffer_ptr();
-            dst_end = dst.buffer_end();
-        }
+        strf::transcode<SrcCharT, DstCharT>
+            (transcode_, str_, str_end_, dst, err_notifier_, flags);
     } else {
-        while (1) {
-            auto r = strf::unsafe_decode_encode<SrcCharT, DstCharT>
-                ( src_to_u32_, u32_to_dst_, src_it , str_end_
-                , dst_it, dst_end, err_notifier_, flags );
-            dst.advance_to(r.dst_ptr);
-            if (r.stop_reason != strf::transcode_stop_reason::insufficient_output_space) {
-                break;
-            }
-            dst.recycle();
-            dst_it = dst.buffer_ptr();
-            dst_end = dst.buffer_end();
-            if (r.u32dist == 0) {
-                src_it = r.stale_src_ptr;
-            } else {
-                src_it = u32size_(src_it, str_end_, r.u32dist, flags).src_ptr;
-            }
-        }
+        strf::decode_encode<SrcCharT, DstCharT>
+            ( src_to_u32_, u32_to_dst_, str_ , str_end_, dst, err_notifier_, flags);
     }
 }
 
@@ -1579,40 +1497,12 @@ void STRF_HD aligned_unsafe_transcode_printer<SrcCharT, DstCharT>::print_to
         encode_fill_(dst, left_fillcount_, afmt_.fill);
     }
     constexpr auto flags = strf::transcode_flags::none;
-
-    auto src_it = str_;
-    auto dst_it = dst.buffer_ptr();
-    auto dst_end = dst.buffer_end();
     if (can_transcode_directly()) {
-        while (1) {
-            auto r = transcode_(src_it, str_end_, dst_it, dst_end, err_notifier_, flags);
-            dst.advance_to(r.dst_ptr);
-            if (r.stop_reason != strf::transcode_stop_reason::insufficient_output_space) {
-                break;
-            }
-            src_it = r.src_ptr;
-            dst.recycle();
-            dst_it = dst.buffer_ptr();
-            dst_end = dst.buffer_end();
-        }
+        strf::transcode<SrcCharT, DstCharT>
+            (transcode_, str_, str_end_, dst, err_notifier_, flags);
     } else {
-        while (1) {
-            auto r = strf::unsafe_decode_encode<SrcCharT, DstCharT>
-                ( src_to_u32_, u32_to_dst_, src_it , str_end_
-                , dst_it, dst_end, err_notifier_, flags );
-            dst.advance_to(r.dst_ptr);
-            if (r.stop_reason != strf::transcode_stop_reason::insufficient_output_space) {
-                break;
-            }
-            dst.recycle();
-            dst_it = dst.buffer_ptr();
-            dst_end = dst.buffer_end();
-            if (r.u32dist == 0) {
-                src_it = r.stale_src_ptr;
-            } else {
-                src_it = u32size_(src_it, str_end_, r.u32dist, flags).src_ptr;
-            }
-        }
+        strf::decode_encode<SrcCharT, DstCharT>
+            ( src_to_u32_, u32_to_dst_, str_ , str_end_, dst, err_notifier_, flags);
     }
     if (right_fillcount_ > 0) {
         encode_fill_(dst, right_fillcount_, afmt_.fill);

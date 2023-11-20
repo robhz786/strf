@@ -1062,6 +1062,15 @@ struct decode_encode_result
     transcode_stop_reason stop_reason;
 };
 
+template <typename SrcCharT>
+struct decode_encode_size_result
+{
+    std::ptrdiff_t ssize;
+    const SrcCharT* stale_src_ptr;
+    std::int32_t u32dist;
+    transcode_stop_reason stop_reason;
+};
+
 template <typename SrcCharT, typename DstCharT>
 STRF_HD strf::decode_encode_result<SrcCharT, DstCharT> decode_encode
     ( strf::transcode_f<SrcCharT, char32_t> to_u32
@@ -1099,7 +1108,6 @@ STRF_HD strf::decode_encode_result<SrcCharT, DstCharT> decode_encode
         return {src, dst_res.dst_ptr, distance, dst_res.stop_reason};
     }
 }
-
 
 #ifdef STRF_HAS_STD_STRING_VIEW
 
@@ -1223,14 +1231,112 @@ inline STRF_HD strf::decode_encode_result<SrcCharT, DstCharT> decode_encode
 
 #endif // STRF_HAS_STD_STRING_VIEW
 
-template <typename SrcCharT>
-struct decode_encode_size_result
+template <typename SrcCharT, typename DstCharT>
+STRF_HD strf::decode_encode_size_result<SrcCharT> decode_encode
+    ( strf::transcode_f<SrcCharT, char32_t> to_u32
+    , strf::transcode_f<char32_t, DstCharT> from_u32
+    , const SrcCharT* src
+    , const SrcCharT* src_end
+    , strf::destination<DstCharT>& dst
+    , strf::transcoding_error_notifier* err_notifier = nullptr
+    , strf::transcode_flags flags = strf::transcode_flags::none )
 {
-    std::ptrdiff_t ssize;
-    const SrcCharT* stale_src_ptr;
-    std::int32_t u32dist;
-    transcode_stop_reason stop_reason;
-};
+    using stop_reason = strf::transcode_stop_reason;
+    if (!dst.good()) {
+        return {0, src, 0, stop_reason::insufficient_output_space};
+    }
+    char32_t pivot_buff[16] = {};
+    char32_t* const pivot_end = pivot_buff + sizeof(pivot_buff) / sizeof(pivot_buff[0]);
+    std::ptrdiff_t count = 0;
+    auto* dst_it = dst.buffer_ptr();
+    auto* dst_end = dst.buffer_end();
+    while (true) {
+        const auto src_res = to_u32(src, src_end, pivot_buff, pivot_end, err_notifier, flags);
+
+        char32_t* pivot_it = pivot_buff;
+        while (true) {
+            const auto dst_res = from_u32
+                (pivot_it, src_res.dst_ptr, dst_it, dst_end, err_notifier, flags);
+
+            count += dst_res.dst_ptr - dst_it;
+            if (dst_res.stop_reason == stop_reason::completed) {
+                if (src_res.stop_reason == stop_reason::insufficient_output_space) {
+                    src = src_res.src_ptr;
+                    dst_it = dst_res.dst_ptr;
+                    break; // i.e. go back to to_u23(...) line
+                }
+                STRF_ASSERT(src_res.stop_reason == stop_reason::completed ||
+                            src_res.stop_reason == stop_reason::invalid_sequence);
+                dst.advance_to(dst_res.dst_ptr);
+                return {count, src_res.src_ptr, 0, src_res.stop_reason};
+            }
+            dst.advance_to(dst_res.dst_ptr);
+            if (dst_res.stop_reason == stop_reason::insufficient_output_space) {
+                dst.recycle();
+                if (!dst.good()) {
+                    const auto u32dist = static_cast<int32_t>(dst_res.src_ptr - pivot_buff);
+                    return {count, src, u32dist, stop_reason::insufficient_output_space};
+                }
+                // there is still something remaining in the pivot buffer to be encoded
+                dst_it = dst.buffer_ptr();
+                dst_end = dst.buffer_end();
+                pivot_it = const_cast<char32_t*>(dst_res.src_ptr);
+            } else {
+                STRF_ASSERT(dst_res.stop_reason == stop_reason::unsupported_codepoint);
+                const auto u32dist = static_cast<int32_t>(dst_res.src_ptr - pivot_buff);
+                return {count, src, u32dist, stop_reason::unsupported_codepoint};
+            }
+        }
+    }
+}
+
+template < typename SrcCharset, typename DstCharset
+         , typename SrcCharT, typename DstCharT
+         , detail::enable_if_t<detail::is_charset<SrcCharset>::value, int> = 0
+         , detail::enable_if_t<detail::is_charset<DstCharset>::value, int> = 0 >
+inline STRF_HD strf::decode_encode_size_result<SrcCharT> decode_encode
+    ( SrcCharset src_charset
+    , DstCharset dst_charset
+    , const SrcCharT* src
+    , const SrcCharT* src_end
+    , strf::destination<DstCharT>& dst
+    , strf::transcoding_error_notifier* err_notifier = nullptr
+    , strf::transcode_flags flags = strf::transcode_flags::none )
+{
+    static_assert(std::is_same<typename SrcCharset::code_unit, SrcCharT>::value, "");
+    static_assert(std::is_same<typename DstCharset::code_unit, DstCharT>::value, "");
+
+    return strf::decode_encode
+        ( src_charset.to_u32().transcode_func()
+        , dst_charset.from_u32().transcode_func()
+        , src, src_end, dst, err_notifier, flags );
+}
+
+template < template <class> class SrcCharsetTmpl
+         , template <class> class DstCharsetTmpl
+         , typename SrcCharT
+         , typename DstCharT >
+inline STRF_HD strf::decode_encode_size_result<SrcCharT> decode_encode
+    ( const SrcCharT* src
+    , const SrcCharT* src_end
+    , strf::destination<DstCharT>& dst
+    , strf::transcoding_error_notifier* err_notifier = nullptr
+    , strf::transcode_flags flags = strf::transcode_flags::none )
+{
+    using src_charset_t = SrcCharsetTmpl<SrcCharT>;
+    using dst_charset_t = DstCharsetTmpl<DstCharT>;
+
+    static_assert(detail::is_static_charset<src_charset_t>::value, "");
+    static_assert(detail::is_static_charset<dst_charset_t>::value, "");
+    static_assert(std::is_same<typename src_charset_t::code_unit, SrcCharT>::value, "");
+    static_assert(std::is_same<typename dst_charset_t::code_unit, DstCharT>::value, "");
+
+    constexpr src_charset_t src_charset;
+    constexpr dst_charset_t dst_charset;
+
+    return strf::decode_encode
+        ( src_charset, dst_charset, src, src_end, dst, err_notifier, flags );
+}
 
 template <typename SrcCharT>
 STRF_HD strf::decode_encode_size_result<SrcCharT> decode_encode_size
@@ -1390,28 +1496,8 @@ STRF_HD strf::decode_encode_result<SrcCharT, DstCharT> unsafe_decode_encode
     , strf::transcoding_error_notifier* err_notifier = nullptr
     , strf::transcode_flags flags = strf::transcode_flags::none )
 {
-    using stop_reason = strf::transcode_stop_reason;
-    char32_t pivot_buff[16] = {};
-    while (true) {
-        char32_t* pivot = pivot_buff;
-        char32_t* pivot_end = pivot_buff + sizeof(pivot_buff) / sizeof(pivot_buff[0]);
-        const auto src_res = to_u32(src, src_end, pivot, pivot_end, err_notifier, flags);
-        const auto dst_res = from_u32
-            ( pivot_buff, src_res.dst_ptr, dst, dst_end, err_notifier, flags );
-
-        STRF_ASSERT(src_res.stop_reason != stop_reason::unsupported_codepoint);
-
-        if (dst_res.stop_reason == stop_reason::completed) {
-            if (src_res.stop_reason == stop_reason::insufficient_output_space) {
-                src = src_res.src_ptr;
-                dst = dst_res.dst_ptr;
-                continue;
-            }
-            return {src_res.src_ptr, dst_res.dst_ptr, 0, src_res.stop_reason};
-        }
-        const auto src_u32len_dist = static_cast<std::int32_t>(dst_res.src_ptr - pivot_buff);
-        return {src, dst_res.dst_ptr, src_u32len_dist, dst_res.stop_reason};
-    }
+    return strf::decode_encode
+        (to_u32, from_u32, src, src_end, dst, dst_end, err_notifier, flags);
 }
 
 #ifdef STRF_HAS_STD_STRING_VIEW
@@ -1784,6 +1870,92 @@ inline STRF_HD strf::decode_encode_result<SrcCharT, DstCharT> transcode
 
 #endif // STRF_HAS_STD_STRING_VIEW
 
+template <typename SrcCharT, typename DstCharT>
+STRF_HD strf::transcode_size_result<SrcCharT> transcode
+    ( transcode_f<SrcCharT, DstCharT> func
+    , const SrcCharT* src
+    , const SrcCharT* src_end
+    , strf::destination<DstCharT>& dst
+    , strf::transcoding_error_notifier* err_notifier = nullptr
+    , strf::transcode_flags flags = strf::transcode_flags::none )
+{
+    using stop_reason = strf::transcode_stop_reason;
+    auto dst_it = dst.buffer_ptr();
+    auto dst_end = dst.buffer_end();
+    if (!dst.good()) {
+        return {0, src, stop_reason::insufficient_output_space};
+    }
+    std::ptrdiff_t count = 0;
+    while (1) {
+        const auto res = func(src, src_end, dst_it, dst_end, err_notifier, flags);
+        count += res.dst_ptr - dst_it;
+        dst.advance_to(res.dst_ptr);
+        if (res.stop_reason != stop_reason::insufficient_output_space) {
+            return {count, res.src_ptr, res.stop_reason};
+        }
+        dst.recycle();
+        if (!dst.good()) {
+            return {count, res.src_ptr, stop_reason::insufficient_output_space};
+        }
+        dst_it = dst.buffer_ptr();
+        dst_end = dst.buffer_end();
+        src = res.src_ptr;
+    }
+}
+
+template < typename SrcCharset, typename DstCharset
+         , typename SrcCharT, typename DstCharT
+         , detail::enable_if_t<detail::is_charset<SrcCharset>::value, int> = 0
+         , detail::enable_if_t<detail::is_charset<DstCharset>::value, int> = 0 >
+STRF_HD strf::decode_encode_size_result<SrcCharT> transcode
+    ( SrcCharset src_charset
+    , DstCharset dst_charset
+    , const SrcCharT* src
+    , const SrcCharT* src_end
+    , strf::destination<DstCharT>& dst
+    , strf::transcoding_error_notifier* err_notifier = nullptr
+    , strf::transcode_flags flags = strf::transcode_flags::none )
+{
+    static_assert(std::is_same<typename SrcCharset::code_unit, SrcCharT>::value, "");
+    static_assert(std::is_same<typename DstCharset::code_unit, DstCharT>::value, "");
+
+    const auto transcoder = strf::find_transcoder(src_charset, dst_charset);
+    const auto func = transcoder.transcode_func();
+    if (func != nullptr) {
+        auto res = transcode(func, src, src_end, dst, err_notifier, flags);
+        return {res.ssize, res.src_ptr, 0, res.stop_reason};
+    }
+    const auto src_to_u32 = src_charset.to_u32().transcode_func();
+    const auto u32_to_dst = dst_charset.from_u32().transcode_func();
+    return decode_encode(src_to_u32, u32_to_dst, src, src_end, dst, err_notifier, flags);
+}
+
+template < template <class> class SrcCharsetTmpl
+         , template <class> class DstCharsetTmpl
+         , typename SrcCharT
+         , typename DstCharT >
+inline STRF_HD strf::decode_encode_size_result<SrcCharT> transcode
+    ( const SrcCharT* src
+    , const SrcCharT* src_end
+    , strf::destination<DstCharT>& dst
+    , strf::transcoding_error_notifier* err_notifier = nullptr
+    , strf::transcode_flags flags = strf::transcode_flags::none )
+{
+    using src_charset_t = SrcCharsetTmpl<SrcCharT>;
+    using dst_charset_t = DstCharsetTmpl<DstCharT>;
+
+    static_assert(detail::is_static_charset<src_charset_t>::value, "");
+    static_assert(detail::is_static_charset<dst_charset_t>::value, "");
+    static_assert(std::is_same<typename src_charset_t::code_unit, SrcCharT>::value, "");
+    static_assert(std::is_same<typename dst_charset_t::code_unit, DstCharT>::value, "");
+
+    constexpr src_charset_t src_charset;
+    constexpr dst_charset_t dst_charset;
+
+    return strf::transcode
+        (src_charset, dst_charset, src, src_end, dst, err_notifier, flags);
+}
+
 template < typename SrcCharset
          , typename DstCharset
          , typename SrcCharT
@@ -1975,6 +2147,60 @@ inline STRF_HD strf::decode_encode_result<SrcCharT, DstCharT> unsafe_transcode
 }
 
 #endif // STRF_HAS_STD_STRING_VIEW
+
+
+template < typename SrcCharset, typename DstCharset
+         , typename SrcCharT, typename DstCharT
+         , detail::enable_if_t<detail::is_charset<SrcCharset>::value, int> = 0
+         , detail::enable_if_t<detail::is_charset<DstCharset>::value, int> = 0 >
+STRF_HD strf::decode_encode_size_result<SrcCharT> unsafe_transcode
+    ( SrcCharset src_charset
+    , DstCharset dst_charset
+    , const SrcCharT* src
+    , const SrcCharT* src_end
+    , strf::destination<DstCharT>& dst
+    , strf::transcoding_error_notifier* err_notifier = nullptr
+    , strf::transcode_flags flags = strf::transcode_flags::none )
+{
+    static_assert(std::is_same<typename SrcCharset::code_unit, SrcCharT>::value, "");
+    static_assert(std::is_same<typename DstCharset::code_unit, DstCharT>::value, "");
+
+    const auto transcoder = strf::find_transcoder(src_charset, dst_charset);
+    const auto func = transcoder.unsafe_transcode_func();
+    if (func != nullptr) {
+        auto res = strf::transcode(func, src, src_end, dst, err_notifier, flags);
+        return {res.ssize, res.src_ptr, 0, res.stop_reason};
+    }
+    const auto src_to_u32 = src_charset.to_u32().unsafe_transcode_func();
+    const auto u32_to_dst = dst_charset.from_u32().unsafe_transcode_func();
+    return strf::decode_encode(src_to_u32, u32_to_dst, src, src_end, dst, err_notifier, flags);
+}
+
+template < template <class> class SrcCharsetTmpl
+         , template <class> class DstCharsetTmpl
+         , typename SrcCharT
+         , typename DstCharT >
+inline STRF_HD strf::decode_encode_size_result<SrcCharT> unsafe_transcode
+    ( const SrcCharT* src
+    , const SrcCharT* src_end
+    , strf::destination<DstCharT>& dst
+    , strf::transcoding_error_notifier* err_notifier = nullptr
+    , strf::transcode_flags flags = strf::transcode_flags::none )
+{
+    using src_charset_t = SrcCharsetTmpl<SrcCharT>;
+    using dst_charset_t = DstCharsetTmpl<DstCharT>;
+
+    static_assert(detail::is_static_charset<src_charset_t>::value, "");
+    static_assert(detail::is_static_charset<dst_charset_t>::value, "");
+    static_assert(std::is_same<typename src_charset_t::code_unit, SrcCharT>::value, "");
+    static_assert(std::is_same<typename dst_charset_t::code_unit, DstCharT>::value, "");
+
+    constexpr src_charset_t src_charset;
+    constexpr dst_charset_t dst_charset;
+
+    return strf::unsafe_transcode
+        (src_charset, dst_charset, src, src_end, dst, err_notifier, flags);
+}
 
 template < typename SrcCharset
          , typename DstCharset

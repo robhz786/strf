@@ -102,8 +102,7 @@ STRF_TEST_FUNC void test_decode_encode_scenarios()
         TEST_EQ(0, notifier.unsupported_codepoints_calls_count);
     }
 
-    {   // all input is valid, but the destination turns bad
-        // during the encoding
+    {   // all input is valid, but the destination is too small
         constexpr auto buff_size = 20;
         char buff[buff_size] = {};
         test_utils::simple_transcoding_err_notifier notifier;
@@ -258,7 +257,8 @@ STRF_TEST_FUNC void test_decode_encode_scenarios()
         TEST_STR_EQ(output, "abcdefghijklmnopqrstuvwxyz");
 
     }
-    {   // similar as before, but now the destination has just enougth space to
+    {   // There is an invalid sequence, and stop_on_invalid_sequence flag is set,
+        // but now the destination has just enougth space to
         // transcode all valid sequences
         // In this case, stop_reason is invalid_sequence
 

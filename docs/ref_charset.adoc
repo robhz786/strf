@@ -68,18 +68,19 @@ http://www.boost.org/LICENSE_1_0.txt)
 :decode_encode_size: <<decode_encode_size,decode_encode_size>>
 :unsafe_decode_encode: <<unsafe_decode_encode,unsafe_decode_encode>>
 :unsafe_decode_encode_size: <<unsafe_decode_encode_size,unsafe_decode_encode_size>>
+:transcode: <<transcode,transcode>>
+:transcode_size: <<transcode_size,transcode_size>>
 
 :Transcoder: <<Transcoder,Transcoder>>
-:transcode: <<Transcoder_transcode,transcode>>
-:unsafe_transcode: <<Transcoder_unsafe_transcode,unsafe_transcode>>
-:transcode_func: <<Transcoder_transcode_func,transcode_func>>
-:unsafe_transcode_func: <<Transcoder_unsafe_transcode_func,unsafe_transcode_func>>
+:Transcoder_transcode: <<Transcoder_transcode,transcode>>
+:Transcoder_unsafe_transcode: <<Transcoder_unsafe_transcode,unsafe_transcode>>
+:Transcoder_transcode_func: <<Transcoder_transcode_func,transcode_func>>
+:Transcoder_unsafe_transcode_func: <<Transcoder_unsafe_transcode_func,unsafe_transcode_func>>
 
-:transcode_size: <<Transcoder_transcode_size,transcode_size>>
-:unsafe_transcode_size: <<Transcoder_unsafe_transcode_size,unsafe_transcode_size>>
-:transcode_size_func: <<Transcoder_transcode_size_func,transcode_size_func>>
-:unsafe_transcode_func: <<Transcoder_unsafe_transcode_func,unsafe_transcode_func>>
-:unsafe_transcode_size_func: <<Transcoder_unsafe_transcode_size_func,unsafe_transcode_size_func>>
+:Transcoder_transcode_size: <<Transcoder_transcode_size,transcode_size>>
+:Transcoder_unsafe_transcode_size: <<Transcoder_unsafe_transcode_size,unsafe_transcode_size>>
+:Transcoder_transcode_size_func: <<Transcoder_transcode_size_func,transcode_size_func>>
+:Transcoder_unsafe_transcode_size_func: <<Transcoder_unsafe_transcode_size_func,unsafe_transcode_size_func>>
 
 :Charset: <<Charset,Charset>>
 :to_u32: <<Charset_to_u32,to_u32>>
@@ -278,7 +279,9 @@ functions of the library with the following semantics:
   (though some parts of it might be invalid and thus been replaced by the
    replacement character U+FFFD or `'?'` )
 * `transcode_stop_reason::insufficient_output_space` implies that the transcoding stopped
-  because the destination is too small
+  because the destination is too small ( in case the destination is range
+  of character pointers ), or that the state of the `{destination}<__DstCharT__>` object is
+  (or became) <<destination_hpp#output_buffer_good,bad>>.
 * `transcode_stop_reason::invalid_sequence` implies that both the input has an
   invalid sequence (__i.e.__ it is not conformant to its encoding ) and the flag
   `{transcode_flags}::stop_on_invalid_sequence` was set.
@@ -1929,27 +1932,28 @@ The purpose of the following function templates
   `unsafe_decode_encode`, `unsafe_decode_encode_size` ) is to
   compensate the fact that the library does not provide a
   specialization of `static_transcoder`
-  for every combination of two character encodings and that
-  ( as a consequence ) `{find_transcoder}` may return a null transcoder.
+  for every possible combination of two character encodings.
+  In other words, while `{find_transcoder}` may fail
+  ( __i.e.__, return a <<Transcoder_null,null transcoder>> ),
+  `decode_encode` works with any
+  combinations of two __{Charset}__ objects.
 
 `decode_encode` transcodes from one encoding to another using a pivot
 buffer; __i.e.__ it transcodes the input string to UTF-32 and then
 from UTF-32 to the destination encoding.
-The performance is naturally worse than an specialized algorithm
-that would transcode directly ( which is what an specialization of
-`static_transcoder` is expected to do ).
 
-// All the following overloads of `decode_encode` do the same thing:
-// to transcode the input string ( the `src` parameter ) to UTF-32
-// and then from UTF-32 to another enconding, writing into `dst`.
-//
-// They all guarantee to not call `dst.recycle()` if `dst.space()`
-// is not less then the amount of character to be written.
-//
-// However, it better to use the functions of `static_transcoder`
-// if this is possible, since they provide better performance.
+The perfomance is naturally expected to be lower than of the `trancode`
+function of a __{Transcoder}__ object with the same source and destination
+encodings ( assuming there is one ).
+That's why it's usually better to use the
+`{transcode}` global function template instead, which delegates to
+`decode_encode` only when `{find_transcoder}` fails.
 
+There is two main sets of overloads:
 
+- <<decode_encode_pointers, Overload group 1>>: whose destination is a range of pointers
+- <<decode_encode_dest, Overload group 2>>: whose destination is a `{destination}` object reference
+==== `decode_encode` overloads that write to a range of pointers [[decode_encode_pointers]]
 
 ====
 [source,cpp,subs=normal]
@@ -1971,16 +1975,14 @@ template <typename SrcCharT, typename DstCharT>
 ----
 Preconditions::
 * `to_u32` is the value returned by
-   `src_charset.<<Charset_to_u32,to_u32>>().{transcode_func}()`,
+   `src_charset.<<Charset_to_u32,to_u32>>().{Transcoder_transcode_func}()`,
    where `src_charset` is a __{Charset}__ object that represents the
    source character encoding.
 * `from_u32` is the value returned by
-   `dst_charset.<<Charset_from_u32,from_u32>>().{transcode_func}()` or
-   `dst_charset.<<Charset_from_u32,from_u32>>().{unsafe_transcode_func}()`,
+   `dst_charset.<<Charset_from_u32,from_u32>>().{Transcoder_transcode_func}()` or
+   `dst_charset.<<Charset_from_u32,from_u32>>().{Transcoder_unsafe_transcode_func}()`,
    where `dst_charset` is a __{Charset}__ object that represents the
    destination character encoding.
-* All the preconditions of
-  `src_charset.<<Charset_to_u32,to_u32>>().{transcode_func}()`
 
 Effect::
 +
@@ -2001,7 +2003,7 @@ The pointer past the last read element would actually be:
 +
 [source,subs=normal]
 ----
- __src_charset__ .<<Charset_to_u32,to_u32>>() .{transcode_size}
+ __src_charset__ .<<Charset_to_u32,to_u32>>() .{Transcoder_transcode_size}
      (res.**stale_ptr**, src_end, res.**u32dist**, flags)
      .<<transcode_size_result, src_ptr>>
 ----
@@ -2059,8 +2061,8 @@ Effect::
 Equivalent to
 ----
 decode_encode
-    ( src_charset.{to_u32}().{transcode_func}()
-    , dst_charset.{from_u32}().{transcode_func}()
+    ( src_charset.{to_u32}().{Transcoder_transcode_func}()
+    , dst_charset.{from_u32}().{Transcoder_transcode_func}()
     , src, src_end, dst, dst_end, err_notifier, flags )
 ----
 Compile-time requirements::
@@ -2161,11 +2163,93 @@ decode_encode<SrcCharsetTmpl, DstCharsetTmpl>
 ----
 ====
 
+==== `decode_encode` overloads that write to a `destination<DestCharT>&` [[decode_encode_dest]]
+
+====
+[source,cpp,subs=normal]
+----
+namespace strf {
+template <typename SrcCharT, typename DstCharT>
+{decode_encode_size_result}<SrcCharT> decode_encode
+    ( {transcode_f}<SrcCharT, char32_t> to_u32
+    , {transcode_f}<char32_t, DstCharT> from_u32
+    , const SrcCharT* src
+    , const SrcCharT* src_end
+    , {destination}<DstCharT>& dst
+    , {transcoding_error_notifier}* err_notifier = nullptr
+    , {transcode_flags} flags = transcode_flags::none );
+}
+----
+Equivalent to the `decode_encode` overload that writes to a range of pointers
+( see <<decode_encode_pointers, here>> ), but writes instead to a
+`{destination}<DstCharT>&`.
+====
+
+
+====
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template < typename SrcCharset, typename DstCharset
+         , typename SrcCharT, typename DstCharT >
+inline STRF_HD {decode_encode_size_result}<SrcCharT> decode_encode
+    ( SrcCharset src_charset
+    , DstCharset dst_charset
+    , const SrcCharT* src
+    , const SrcCharT* src_end
+    , {destination}<DstCharT>& dst
+    , {transcoding_error_notifier}* err_notifier = nullptr
+    , {transcode_flags} flags = transcode_flags::none )
+
+}
+----
+Equivalent to:
+----
+decode_encode
+    ( src_charset.{to_u32}().{Transcoder_transcode_func}()
+    , dst_charset.{from_u32}().{Transcoder_transcode_func}()
+    , src, src_end, dst, err_notifier, flags )
+----
+====
+
+
+====
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template < template <class> class SrcCharsetTmpl
+         , template <class> class DstCharsetTmpl
+         , typename SrcCharT
+         , typename DstCharT >
+{decode_encode_size_result}<SrcCharT> decode_encode
+    ( std::basic_string_view<SrcCharT> src
+    , {destination}<DstCharT>& dst
+    , DstCharT* dst_end
+    , {transcoding_error_notifier}* notifier = nullptr
+    , {transcode_flags} flags = transcode_flags::none );
+
+}
+----
+Equivalent to
+----
+decode_encode
+    ( SrcCharsetTmpl<SrcCharT>(), DstCharsetTmpl<DstCharT>()
+    , src, src_end, dst, err_notifier, flags )
+----
+====
+
+
+
+
 
 === Function template `decode_encode_size` [[decode_encode_size]]
 
 `decode_encode_size` is used to calculate the ammount of
-characters that `decode_encode` writes.
+characters that `{decode_encode}` writes. It also uses a pivot
+buffer, which is why it's usually better to use `{transcode_size}`
+instead.
 
 ====
 [source,cpp,subs=normal]
@@ -2187,16 +2271,16 @@ Preconditions::
 +
 --
 * `to_u32` is the value returned by
-   `src_charset.<<Charset_to_u32,to_u32>>().{transcode_func}()`,
+   `src_charset.<<Charset_to_u32,to_u32>>().{Transcoder_transcode_func}()`,
    where `src_charset` is a __{Charset}__ object that represents the
    source character encoding.
 * `size_calc_func` is the value returned by
-  `dst_charset.<<Charset_from_u32,from_u32>>().{transcode_size_func}()` or
-  `dst_charset.<<Charset_from_u32,from_u32>>().{unsafe_transcode_size_func}()`
+  `dst_charset.<<Charset_from_u32,from_u32>>().{Transcoder_transcode_size_func}()` or
+  `dst_charset.<<Charset_from_u32,from_u32>>().{Transcoder_unsafe_transcode_size_func}()`
    where `dst_charset` is a __{Charset}__ object that represents the
    destination character encoding.
 * All the preconditions of
-  `src_charset.<<Charset_to_u32,to_u32>>().{transcode_func}()`
+  `src_charset.<<Charset_to_u32,to_u32>>().{Transcoder_transcode_func}()`
 --
 Return value:: A `{decode_encode_result}` value `res`, such that
 +
@@ -2257,8 +2341,8 @@ Same as:
 [source,cpp,subs=normal]
 ----
 decode_encode_size
-    ( src_charset.{to_u32}().{transcode_func}()
-    , dst_charset.{from_u32}().{transcode_size_func}()
+    ( src_charset.{to_u32}().{Transcoder_transcode_func}()
+    , dst_charset.{from_u32}().{Transcoder_transcode_size_func}()
     , src, src_end, limit, flags )
 ----
 Compile-time requirements::
@@ -2372,21 +2456,21 @@ namespace strf {
 Preconditions::
 --
 * `to_u32` is the value returned by
-   `src_charset.<<Charset_to_u32,to_u32>>().{unsafe_transcode_func}()`,
+   `src_charset.<<Charset_to_u32,to_u32>>().{Transcoder_unsafe_transcode_func}()`,
    where `src_charset` is a __{Charset}__ object that represents the
    sournce character encoding.
 * `from_u32` is the value returned by
-   `dst_charset.<<Charset_from_u32,from_u32>>().{unsafe_transcode_func}()`,
+   `dst_charset.<<Charset_from_u32,from_u32>>().{Transcoder_unsafe_transcode_func}()`,
    where `dst_charset` is a __{Charset}__ object that represents the
    destination character encoding.
 *  All the perconditions of
-   `src_charset.<<Charset_to_u32,to_u32>>().{unsafe_transcode_func}()`.
+   `src_charset.<<Charset_to_u32,to_u32>>().{Transcoder_unsafe_transcode_func}()`.
 --
 
 Effect::
 --
 `unsafe_decode_encode` has the same effects as calling
-`__T__::{unsafe_transcode}(src, src_end, dst, dst_end, notifier, flags)`,
+`__T__::{Transcoder_unsafe_transcode}(src, src_end, dst, dst_end, notifier, flags)`,
 if `__T__` were a __{Transcoder}__ class that transcodes from
 the source character encoding to the destination character encoding.
 --
@@ -2399,7 +2483,7 @@ Return value:: A `{decode_encode_result}` value `res`, such that
 * `res.**stale_src_ptr**` is **not** the pointer past the last read element in the input range `[src, src_end)`. Instead, it points `res.**u32dist**` codepoints before that.
 
 , where `__res2__` is the value that would be returned by
-`__T__::{unsafe_transcode}(src, src_end, dst, dst_end, notifier, flags)`,
+`__T__::{Transcoder_unsafe_transcode}(src, src_end, dst, dst_end, notifier, flags)`,
 if `__T__` were a __{Transcoder}__ class that transcodes from
 the source character encoding to the destination character encoding.
 --
@@ -2452,8 +2536,8 @@ Equivalent to
 [source,cpp,subs=normal]
 ----
 unsafe_decode_encode
-    ( src_charset.{to_u32}().{unsafe_transcode_func}()
-    , dst_charset.{from_u32}().{unsafe_transcode_func}()
+    ( src_charset.{to_u32}().{Transcoder_unsafe_transcode_func}()
+    , dst_charset.{from_u32}().{Transcoder_unsafe_transcode_func}()
     , src, src_end, dst, dst_end, err_notifier, flags )
 ----
 Compile-time requirements::
@@ -2578,15 +2662,15 @@ template <typename SrcCharT>
 Preconditions::
 --
 * `to_u32` is the value returned by
-   `src_charset.<<Charset_to_u32,to_u32>>().{unsafe_transcode_func}()`,
+   `src_charset.<<Charset_to_u32,to_u32>>().{Transcoder_unsafe_transcode_func}()`,
    where `src_charset` is a __{Charset}__ object that represents the
    source character encoding.
 * `size_calc_func` is the value returned by
-  `dst_charset.<<Charset_from_u32,from_u32>>().{unsafe_transcode_size_func}()`
+  `dst_charset.<<Charset_from_u32,from_u32>>().{Transcoder_unsafe_transcode_size_func}()`
    where `dst_charset` is a __{Charset}__ object that represents the
    destination character encoding.
 * All the preconditions of
-  `src_charset.<<Charset_to_u32,to_u32>>().{unsafe_transcode_func}()`
+  `src_charset.<<Charset_to_u32,to_u32>>().{Transcoder_unsafe_transcode_func}()`
 --
 
 Return value:: A `{decode_encode_result}` value `res`, such that
@@ -2647,8 +2731,8 @@ Same as:
 [source,cpp,subs=normal]
 ----
 unsafe_decode_encode_size
-    ( src_charset.{to_u32}().{unsafe_transcode_func}()
-    , dst_charset.{from_u32}().{unsafe_transcode_size_func}()
+    ( src_charset.{to_u32}().{Transcoder_unsafe_transcode_func}()
+    , dst_charset.{from_u32}().{Transcoder_unsafe_transcode_size_func}()
     , src, src_end, limit, flags )
 ----
 Compile-time requirements::
@@ -2742,6 +2826,13 @@ Compile-time requirements::
 
 === Function template `transcode` [[transcode]]
 
+There is two main sets of overloads:
+
+- <<transcode_pointers, Overload group 1>>: whose destination is a range of pointers
+- <<transcode_to_dest, Overload group 2>>: whose destination is a `{destination}` object reference
+
+==== `transcode` overloads that write to a range of pointers [[transcode_pointers]]
+
 ====
 [source,cpp,subs=normal]
 ----
@@ -2764,7 +2855,7 @@ template < typename SrcCharset, typename DstCharset
 Effect::
 [source,cpp,subs=normal]
 ----
-auto func = {find_transcoder}(src_charset, dst_charset).{transcode_func}()
+auto func = {find_transcoder}(src_charset, dst_charset).{Transcoder_transcode_func}()
 if (func != nullptr) {
     auto result = func(src, src_end, dst, dst_end, err_notifier, flags);
     return {result.ptr, result.dst_ptr, 0, result.stop_reason};
@@ -2875,6 +2966,112 @@ Compile-time requirements::
 - `DstCharsetTmpl<DstCharT>::code_unit` is `DstCharT`
 ====
 
+==== `transcode` overloads that write to `destination<DestCharT>&` [[transcode_to_dest]]
+
+[[transcode_1]]
+====
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template <typename SrcCharT, typename DstCharT>
+{ {transcode_size_result}<SrcCharT> transcode
+    ( {transcode_f}<SrcCharT, DstCharT> func
+    , const SrcCharT* src
+    , const SrcCharT* src_end
+    , {destination}<DstCharT>& dst
+    , {transcoding_error_notifier}* err_notifier = nullptr
+    , {transcode_flags} flags = transcode_flags::none );
+
+}
+----
+Contrary to the other overloads of `transcode` global function template,
+this one never calls any overload of `decode_encode`.
+
+Effect::
+Uses `func` to transcode the input range (`src, src_end`), writting the
+result to `dst`
+
+Return value:: A `{transcode_size_result}` value `res`, such that:
+* `res.**stop_reason**` ( see `{transcode_stop_reason}`)
+* `res.**src_ptr**` points immediately after the last element in the range `[src, src_end)`
+                    that has been transcoded.
+* `res.**ssize**` is the amount of code units written to `dst`
+====
+
+====
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template < typename SrcCharset, typename DstCharset
+         , typename SrcCharT, typename DstCharT >
+{decode_encode_size_result}<SrcCharT> transcode
+    ( SrcCharset src_charset
+    , DstCharset dst_charset
+    , const SrcCharT* src
+    , const SrcCharT* src_end
+    , {destination}<DstCharT>& dst
+    , {transcoding_error_notifier}* err_notifier = nullptr
+    , {transcode_flags} flags = transcode_flags::none );
+}
+----
+Effect::
+[source,cpp,subs=normal]
+----
+auto func = {find_transcoder}(src_charset, dst_charset).{Transcoder_transcode_func}();
+if (func != nullptr) {
+    auto result = <<transcode_1,trancode>>(src, src_end, dst, err_notifier, flags);
+    return {result.ssize, result.src_ptr, 0, result.stop_reason};
+}
+const auto src_to_u32 = src_charset.to_u32().transcode_func();
+const auto u32_to_dst = dst_charset.from_u32().transcode_func();
+return <<decode_encode_dest,decode_encode>>
+    ( src_to_u32, u32_to_dst
+    , src, src_end, dst, err_notifier, flags );
+----
+
+Compile-time requirements::
+- `SrcCharset` and `DstCharset` satisfy __{Charset}__
+- `SrcCharset::code_unit` is the same type as `SrcCharT`
+- `DstCharset::code_unit` is the same type as `DstCharT`
+====
+
+
+====
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template < template <class> class SrcCharsetTmpl
+         , template <class> class DstCharsetTmpl
+         , typename SrcCharT, typename DstCharT >
+{decode_encode_result}<SrcCharT> transcode
+    ( const SrcCharT{asterisk} src
+    , const SrcCharT{asterisk} src_end
+    , {destination}<DstCharT>& dst
+    , {transcoding_error_notifier}* err_notifier = nullptr
+    , {transcode_flags} flags = transcode_flags::none );
+
+}
+----
+Effect::
+Same as:
+----
+transcode
+    ( SrcCharsetTmpl<SrcCharT>()
+    , DstCharsetTmpl<DstCharT>()
+    , src, src_end, dst, err_notifier, flags );
+----
+
+Compile-time requirements::
+- `SrcCharsetTmpl<SrcCharT>` is an instance of `{static_charset}`
+- `DstCharsetTmpl<DstCharT>` is an instance of `{static_charset}`
+- `SrcCharsetTmpl<SrcCharT>::code_unit` is `SrcCharT`
+- `DstCharsetTmpl<DstCharT>::code_unit` is `DstCharT`
+====
+
+
 === Function template `transcode_size` [[transcode_size]]
 
 ====
@@ -2896,7 +3093,7 @@ template < typename SrcCharset, typename DstCharset, typename SrcCharT >
 Effect and Return value::
 [source,cpp,subs=normal]
 ----
-auto func = {find_transcoder}(src_charset, dst_charset).{transcode_size_func}()
+auto func = {find_transcoder}(src_charset, dst_charset).{Transcoder_transcode_size_func}()
 if (func != nullptr) {
     auto result = func(src, src_end, limit, flags);
     return {result.ssize, result.src_ptr, 0, result.stop_reason};
@@ -2998,6 +3195,13 @@ Compile-time requirements::
 
 === Function template `unsafe_transcode` [[unsafe_transcode]]
 
+There is two main sets of overloads:
+
+- <<unsafe_transcode_pointers, Overload group 1>>: whose destination is a range of pointers
+- <<unsafe_transcode_to_dest, Overload group 2>>: whose destination is a `{destination}` object reference
+
+==== `unsafe_transcode` overloads that write to a range of pointers [[unsafe_transcode_pointers]]
+
 ====
 [source,cpp,subs=normal]
 ----
@@ -3020,7 +3224,7 @@ void unsafe_transcode
 Effect::
 [source,cpp,subs=normal]
 ----
-auto func = {find_transcoder}(src_charset, dst_charset).{unsafe_transcode_func}()
+auto func = {find_transcoder}(src_charset, dst_charset).{Transcoder_unsafe_transcode_func}()
 if (func != nullptr) {
     auto res = func(src, src_end, dst, dst_end, err_notifier);
     return {res.src_ptr, res.dst_ptr, 0, res.stop_reason};
@@ -3130,6 +3334,80 @@ Compile-time requirements::
 - `DstCharsetTmpl<DstCharT>::code_unit` is `DstCharT`
 ====
 
+==== `unsafe_transcode` overloads that write to `destination<DestCharT>&` [[unsafe_transcode_to_dest]]
+
+====
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template < typename SrcCharset, typename DstCharset
+         , typename SrcCharT, typename DstCharT >
+{decode_encode_size_result}<SrcCharT> unsafe_transcode
+    ( SrcCharset src_charset
+    , DstCharset dst_charset
+    , const SrcCharT* src
+    , const SrcCharT* src_end
+    , {destination}<DstCharT>& dst
+    , {transcoding_error_notifier}* err_notifier = nullptr
+    , {transcode_flags} flags = transcode_flags::none );
+}
+----
+Effect::
+[source,cpp,subs=normal]
+----
+auto func = {find_transcoder}(src_charset, dst_charset).{Transcoder_unsafe_transcode_func}();
+if (func != nullptr) {
+    auto result = <<transcode_1,trancode>>(src, src_end, dst, err_notifier, flags);
+    return {result.ssize, result.src_ptr, 0, result.stop_reason};
+}
+const auto src_to_u32 = src_charset.to_u32().unsafe_transcode_func();
+const auto u32_to_dst = dst_charset.from_u32().unsafe_transcode_func();
+return <<decode_encode_dest,decode_encode>>
+    ( src_to_u32, u32_to_dst
+    , src, src_end, dst, err_notifier, flags );
+----
+
+Compile-time requirements::
+- `SrcCharset` and `DstCharset` satisfy __{Charset}__
+- `SrcCharset::code_unit` is the same type as `SrcCharT`
+- `DstCharset::code_unit` is the same type as `DstCharT`
+====
+
+====
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template < template <class> class SrcCharsetTmpl
+         , template <class> class DstCharsetTmpl
+         , typename SrcCharT, typename DstCharT >
+{decode_encode_result}<SrcCharT> unsafe_transcode
+    ( const SrcCharT{asterisk} src
+    , const SrcCharT{asterisk} src_end
+    , {destination}<DstCharT>& dst
+    , {transcoding_error_notifier}* err_notifier = nullptr
+    , {transcode_flags} flags = transcode_flags::none );
+
+}
+----
+Effect::
+Same as:
+----
+unsafe_transcode
+    ( SrcCharsetTmpl<SrcCharT>()
+    , DstCharsetTmpl<DstCharT>()
+    , src, src_end, dst, err_notifier, flags );
+----
+
+Compile-time requirements::
+- `SrcCharsetTmpl<SrcCharT>` is an instance of `{static_charset}`
+- `DstCharsetTmpl<DstCharT>` is an instance of `{static_charset}`
+- `SrcCharsetTmpl<SrcCharT>::code_unit` is `SrcCharT`
+- `DstCharsetTmpl<DstCharT>::code_unit` is `DstCharT`
+====
+
+
 === Function template `unsafe_transcode_size` [[unsafe_transcode_size]]
 
 ====
@@ -3151,7 +3429,7 @@ std::ptrdiff_t unsafe_transcode_size
 Effect and Return value::
 [source,cpp,subs=normal]
 ----
-auto func = {find_transcoder}(src_charset, dst_charset).{unsafe_transcode_size_func}()
+auto func = {find_transcoder}(src_charset, dst_charset).{Transcoder_unsafe_transcode_size_func}()
 if (func != nullptr) {
     auto res = func(src, src_end, limit, flags);
     return {res.ssize, res.src_ptr, 0, res.stop_reason}

@@ -74,10 +74,14 @@
 #if defined(__CUDACC__)
 #  if (__CUDACC_VER_MAJOR__ >= 11)
 #    define STRF_HAS_ATTR_DEPRECATED
+#    define STRF_HAS_ATTR_FALLTHROUGH
 #  endif
 #elif defined(__has_cpp_attribute)
 #  if __has_cpp_attribute(deprecated) && __cplusplus >= 201402L
 #    define STRF_HAS_ATTR_DEPRECATED
+#  endif
+#  if __has_cpp_attribute(fallthrough) && __cplusplus >= 201703L
+#    define STRF_HAS_ATTR_FALLTHROUGH
 #  endif
 #endif
 
@@ -88,6 +92,14 @@
 #  define STRF_DEPRECATED
 #  define STRF_DEPRECATED_MSG(msg)
 #endif
+
+#if defined(STRF_HAS_ATTR_FALLTHROUGH)
+#  define STRF_FALLTHROUGH [[fallthrough]]
+#else
+#  define STRF_FALLTHROUGH
+#endif
+
+
 
 #if defined(__GNUC__) || defined (__clang__)
 #  define STRF_IF_LIKELY(x)   if(__builtin_expect(!!(x), 1))

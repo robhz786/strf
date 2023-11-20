@@ -34,7 +34,8 @@ if (STRF_BUILD_TESTS)
   set(sources_freestanding
     cstr_destination.cpp
     dynamic_charset.cpp
-    decode_encode.cpp
+    decode_encode_to_ptr.cpp
+    decode_encode_to_dst.cpp
     unsafe_decode_encode.cpp
     transcode.cpp
     unsafe_transcode.cpp

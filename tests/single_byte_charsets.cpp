@@ -1294,13 +1294,13 @@ STRF_HD void test_unsupported_codepoints
 
     TEST(expected_questions_marks) .with(dstCharset) (strf::sani(unsupported_codepoints_str));
 
-    TEST_TRANSCODE(strf::utf<char32_t>, dstCharset)
+    TEST_TRANSCODE(strf::utf_t<char32_t>(), dstCharset)
         .input(U"abc", unsupported_codepoints_str)
         .expect("abc", expected_questions_marks)
         .expect_unsupported_codepoints(unsupported_codepoints)
         .expect_stop_reason(strf::transcode_stop_reason::completed);
 
-    TEST_UNSAFE_TRANSCODE(strf::utf<char32_t>, dstCharset)
+    TEST_UNSAFE_TRANSCODE(strf::utf_t<char32_t>(), dstCharset)
         .input(U"abc", unsupported_codepoints_str)
         .expect("abc", expected_questions_marks)
         .expect_unsupported_codepoints(unsupported_codepoints)
@@ -1348,7 +1348,7 @@ template <typename Charset>
 STRF_HD void basic_tests_utf32_to_single_byte_charset(Charset cs)
 {
     // happy scenario case
-    TEST_TRANSCODE(strf::utf<char32_t>, cs)
+    TEST_TRANSCODE(strf::utf_t<char32_t>(), cs)
         .input(U"abcd")
         .expect("abcd")
         .flags(strf::transcode_flags::stop_on_unsupported_codepoint)
@@ -1357,7 +1357,7 @@ STRF_HD void basic_tests_utf32_to_single_byte_charset(Charset cs)
         .expect_unsupported_codepoints({});
 
     // short destination ; flags == none
-    TEST_TRANSCODE(strf::utf<char32_t>, cs)
+    TEST_TRANSCODE(strf::utf_t<char32_t>(), cs)
         .input(U"abcd")
         .destination_size(3)
         .expect("abc")
@@ -1619,7 +1619,7 @@ STRF_HD void test_to_utf32()
     const char invalid_byte = '\xAE';
 
     // happy scenario case
-    TEST_TRANSCODE(cs, strf::utf<char32_t>)
+    TEST_TRANSCODE(cs, strf::utf_t<char32_t>())
        .input("abcd")
        .expect(U"abcd")
        .flags(strf::transcode_flags::stop_on_invalid_sequence)
@@ -1628,7 +1628,7 @@ STRF_HD void test_to_utf32()
        .expect_unsupported_codepoints({});
 
     // short destination
-    TEST_TRANSCODE(cs, strf::utf<char32_t>)
+    TEST_TRANSCODE(cs, strf::utf_t<char32_t>())
        .input("abcd")
        .destination_size(3)
        .expect(U"abc")
@@ -1647,7 +1647,7 @@ STRF_HD void test_to_utf32()
         .expect_unsupported_codepoints({});
 
     // not stopping on invalid sequence
-    TEST_TRANSCODE(cs, strf::utf<char32_t>)
+    TEST_TRANSCODE(cs, strf::utf_t<char32_t>())
         .input("abcd", invalid_byte, "efgh")
         .destination_size(9)
         .expect(U"abcd\uFFFD" U"efgh")
