@@ -2576,7 +2576,8 @@ STRF_HD void punct_double_printer<CharT>::print_hexadecimal_
     ( strf::destination<CharT>& dst ) const noexcept
 {
     const auto sub_size = data_.sub_chars_count + decimal_point_size_ - data_.showpoint;
-    dst.ensure(data_.sub_chars_count);
+    STRF_ASSERT(data_.showpoint == (decimal_point_size_ != 0));
+    dst.ensure(sub_size);
     auto *it = dst.buffer_ptr();
     if (data_.showsign)  {
         *it++ = static_cast<CharT>(data_.sign);
