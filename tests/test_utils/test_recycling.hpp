@@ -14,13 +14,14 @@ STRF_HD void test_printers_recycling
 {
     const auto print_fail = to(failure_notifier);
 
-    constexpr std::size_t buff_size = 200;
+    constexpr std::size_t buff_size = 500;
     if (expected_output.size() + strf::min_destination_buffer_size > buff_size) {
-        print_fail("Sorry, tester buffer too small for this test case");
+        print_fail("\nSorry, tester buffer too small for this test case\n"
+                   "expected output is \"", strf::transcode(expected_output), "\")");
         return;
     }
     if (expected_size != expected_output.size()) {
-        print_fail("Calculated size is different than expected");
+        print_fail("\nCalculated size is different than expected");
     }
 
     CharT buff[buff_size];
@@ -31,16 +32,16 @@ STRF_HD void test_printers_recycling
         strf::detail::write_args(dst, printers...);
         auto result = dst.finish();
         if (result != expected_output) {
-            print_fail("output different from expected");
+            print_fail("\noutput different from expected");
         }
         if (expected_size > space && dst.recycle_calls_count() == 0) {
-            print_fail("recycle should have been called, but it hasn't");
+            print_fail("\nrecycle should have been called, but it hasn't");
         }
         if (expected_size <= space && dst.recycle_calls_count() > 0) {
-            print_fail("recycle should not have been called, but it has");
+            print_fail("\nrecycle should not have been called, but it has");
         }
         if (!dst.good()) {
-            print_fail("recycle was called more than once. This shouln'd have happened here");
+            print_fail("\nrecycle was called more than once. This shouln'd have happened here");
         }
     }
 }

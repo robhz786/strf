@@ -5,7 +5,7 @@
 
 #include "test_utils/test_recycling.hpp"
 
-#define TESTF(X) TEST_RECYCLING(X)
+#define TESTF(X) TEST(X)
 
 namespace {
 
@@ -963,7 +963,18 @@ STRF_TEST_FUNC void round_up_999()
     TESTF("1.e+01")    (*strf::gen(9.6).p(1));
 }
 
-} // unnamed namespace
+STRF_TEST_FUNC void other_tests()
+{
+    TEST_RECYCLING("0.13326196335449228") (0.13326196335449228);
+
+    {
+        auto px = strf::numpunct<16>{3}.decimal_point(0x10FFFF);        
+        constexpr auto j = strf::join_right(20, '_');
+
+        TEST_RECYCLING(u8"________0x1\U0010FFFF" u8"12345p+0")
+            (px, j(!strf::hex(make_normal_double(0x112345ULL))));
+    }
+}
 
 STRF_TEST_FUNC void test_input_float()
 {
@@ -1007,7 +1018,11 @@ STRF_TEST_FUNC void test_input_float()
     test_several_values<float>();
     test_several_values<double>();
     test_punctuation();
+
+    other_tests();
 }
+
+} // unnamed namespace
 
 REGISTER_STRF_TEST(test_input_float)
 

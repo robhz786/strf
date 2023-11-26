@@ -3,15 +3,37 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#define _CRT_SECURE_NO_WARNINGS // NOLINT(bugprone-reserved-identifier,cert-dcl37-c,cert-dcl51-cpp)
+#include "boost/current_function.hpp"
 
+void on_strf_assert_failed(const char* file, int line, const char* func, const char* expr);
+#define STRF_ASSERT(EXPR)                 \
+    do {                                  \
+        if (!(EXPR)) {                    \
+            on_strf_assert_failed(__FILE__, __LINE__, BOOST_CURRENT_FUNCTION, #EXPR); \
+        } \
+    } while(false);
+
+
+#define _CRT_SECURE_NO_WARNINGS // NOLINT(bugprone-reserved-identifier,cert-dcl37-c,cert-dcl51-cpp)
 #include <strf/to_cfile.hpp>
 #include <ryu/ryu.h>
-#include "test_utils.hpp"
+#include "test_utils/test_recycling.hpp"
 #include <random>
 #include <ctime>
 
+#if defined(_WIN32)
+#define LOCALE_NAME(lang, region) #lang "-" #region
+#else
+#define LOCALE_NAME(lang, region) #lang "_" #region
+#endif
+
 namespace {
+
+class StrAssertionFailed: public std::exception
+{
+public:
+    StrAssertionFailed() = default;
+};
 
 template <typename T>
 T clone(const T& x) {
@@ -168,6 +190,7 @@ void test_vs_sprintf
                 , "\" (", sprintf_len, " characters)" );
         }
     }
+    TEST_RECYCLING(sprintf_buff) (strf_arg);
 }
 
 #define TEST_VS_SPRINTF(STRF_ARG, SPRINTF_FMT, ...) \
@@ -202,6 +225,10 @@ void test_general_without_precision(const Arg& arg, const char* arg_description)
     TEST_EQ(len_gen, expected_len);
     TEST_CSTR_EQ(buff_gen, expected);
 
+    TEST_RECYCLING(buff_gen)   (strf::gen(clone(arg)));
+    TEST_RECYCLING(buff_fixed) (strf::fixed(clone(arg)));
+    TEST_RECYCLING(buff_sci)   (strf::sci(clone(arg)));
+
     {
         len_gen = STRF_PRINT(buff_gen, sizeof(buff_gen), strf::gen(clone(arg)).pad0(50));
 
@@ -211,6 +238,7 @@ void test_general_without_precision(const Arg& arg, const char* arg_description)
 
         TEST_EQ(len_gen, expected_len);
         TEST_CSTR_EQ(buff_gen, expected);
+        TEST_RECYCLING(buff_gen) (strf::gen(clone(arg)).pad0(50));
     }
     {
         len_gen   = STRF_PRINT(buff_gen, sizeof(buff_gen), strf::gen(clone(arg)) > 50);
@@ -221,6 +249,7 @@ void test_general_without_precision(const Arg& arg, const char* arg_description)
 
         TEST_EQ(len_gen, expected_len);
         TEST_CSTR_EQ(buff_gen, expected);
+        TEST_RECYCLING(buff_gen) (strf::gen(clone(arg)) > 50);
     }
 }
 
@@ -309,6 +338,9 @@ public:
     void test_fixed_notation() const
     {
         if (e10 >= 0) {
+            // In many cases Strf's output is different from of sprintf even if it correct
+            // They are different, but lead to the same value when parsed
+
             // TEST_VS_SPRINTF(  strf::fixed(value, 0),   "%.0f", value);
             // TEST_VS_SPRINTF(  strf::fixed(value, 5),   "%.5f", value);
             // TEST_VS_SPRINTF(  strf::fixed(value),   "%.0f", value);
@@ -323,6 +355,7 @@ public:
             // TEST_VS_SPRINTF( +*strf::fixed(value).pad0(digcount + 10)
             //                , "%+#0*.0f", digcount + 10, value);
 
+                
         } else {
             const int min_precision = e10 >= -digcount ? 0 : 1 - e10 - digcount;
             const int max_precision = - e10;
@@ -347,7 +380,10 @@ public:
                                , "% #0*.*f", width, p, value);
             }
         }
-     }
+        // todo test with punctuation;
+
+
+    }
 
 private:
 
@@ -364,8 +400,11 @@ private:
 inline STRF_TEST_FUNC void test_exp_and_mantissa
     ( std::uint32_t ieee_exponent, std::uint64_t ieee_mantissa )
 {
-    const float64_tester tester(ieee_exponent, ieee_mantissa);
-    tester.run();
+    try {
+        const float64_tester tester(ieee_exponent, ieee_mantissa);
+        tester.run();
+    } catch (StrAssertionFailed&) {
+    }
 }
 
 // inline STRF_TEST_FUNC void test_value(double x) {
@@ -382,13 +421,25 @@ void test_mantissa(std::uint64_t mantissa) {
         .with(strf::lettercase::mixed)
         ( "\ntesting mantissa = ", *strf::hex(mantissa).pad0(15));
     test_utils::test_messages_destination() .recycle();
-
+    fflush(stdout);
+    
     for (std::uint32_t exponent = 0; exponent < 0x7FF; ++exponent) {
         test_exp_and_mantissa(exponent, mantissa);
     }
 }
 
 } // unnamed namespace
+
+void on_strf_assert_failed(const char* file, int line, const char* func, const char* expr)
+{
+    strf::to(test_utils::test_messages_destination())
+        ( file, ':', line, ": ", func, ":\n Assertion `", expr, "` failed!\n");
+    test_utils::test_scope::print_stack(test_utils::test_messages_destination());
+    test_utils::test_messages_destination().recycle();
+    (void) fflush(stdout);
+    ++test_utils::test_err_count();
+    throw StrAssertionFailed();
+}
 
 int main() {
     strf::narrow_cfile_writer<char, 1024> test_msg_dst(stdout);
@@ -401,7 +452,7 @@ int main() {
         test_mantissa(distrib(gen));
         (void) fflush(stdout);
     }
-
+    
     int err_count = test_utils::test_err_count();
     if (err_count == 0) {
         strf::write(test_msg_dst, "\nAll test passed!\n");
