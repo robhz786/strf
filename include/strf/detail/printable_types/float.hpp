@@ -1481,7 +1481,7 @@ STRF_HD void fast_double_printer<CharT>::print_to
     } else {
         dst.ensure( value_.negative
                  + m10_digcount_ * (value_.e10 > - (int)m10_digcount_)
-                 + (value_.e10 < - (int)m10_digcount_)
+                 + (value_.e10 <= - (int)m10_digcount_)
                  + (value_.e10 < 0) );
         auto *it = dst.buffer_ptr();
         if (value_.negative) {
