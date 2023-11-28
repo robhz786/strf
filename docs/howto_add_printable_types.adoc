@@ -912,7 +912,7 @@ define your constructor with this:
 [source,cpp,subs=normal]
 ----
 using pre_t = typename strf::usual_printer_input<T\...>::premeasurements_type;
-static_assert(! pre_t::<<strf_hpp#premeasurements,size_required>>);
+static_assert(! pre_t::<<strf_hpp#premeasurements,size_demanded>>);
 ----
 That prevents your printable type to compile when the feature
 `<<tutorial#syntax,reserve_calc>>` is used,
@@ -927,10 +927,10 @@ So if you don't care about supporting that situation, you can just do:
 [source,cpp,subs=normal]
 ----
 using pre_t = typename strf::usual_printer_input<T\...>::premeasurements_type;
-static_assert(! pre_t::<<strf_hpp#premeasurements,width_required>>);
+static_assert(! pre_t::<<strf_hpp#premeasurements,width_demanded>>);
 
 // or, if you don't want to calculate the size either:
-static_assert(pre_t::<<strf_hpp#premeasurements,nothing_required>>);
+static_assert(pre_t::<<strf_hpp#premeasurements,no_demands>>);
 ----
 
 Fortunately, in our case, calculating the size and width is not that difficult.

@@ -272,7 +272,7 @@ private:
     }
 
     template < typename PreMeasurements
-             , strf::detail::enable_if_t<PreMeasurements::something_required, int> = 0 >
+             , strf::detail::enable_if_t<PreMeasurements::something_demanded, int> = 0 >
     STRF_HD void do_premeasurements_(PreMeasurements* pre) const;
 
     FPack fp_;
@@ -282,12 +282,12 @@ private:
 
 template <typename CharT, typename FPack, typename Iterator>
 template < typename PreMeasurements
-         , strf::detail::enable_if_t<PreMeasurements::something_required, int> >
+         , strf::detail::enable_if_t<PreMeasurements::something_demanded, int> >
 STRF_HD void range_printer<CharT, FPack, Iterator>::do_premeasurements_
     ( PreMeasurements* pre ) const
 {
     for( iterator it = begin_
-       ; it != end_ && (pre->has_remaining_width() || PreMeasurements::size_required)
+       ; it != end_ && (pre->has_remaining_width() || PreMeasurements::size_demanded)
        ; ++it)
     {
         printer_type_<PreMeasurements>( strf::make_printer_input<CharT>(pre, fp_, *it) );
@@ -338,7 +338,7 @@ private:
     }
 
     template < typename PreMeasurements
-             , strf::detail::enable_if_t<PreMeasurements::something_required, int> = 0 >
+             , strf::detail::enable_if_t<PreMeasurements::something_demanded, int> = 0 >
     STRF_HD void do_premeasurements_(PreMeasurements* pre) const;
 
     FPack fp_;
@@ -358,19 +358,19 @@ private:
 
 template <typename CharT, typename FPack, typename Iterator>
 template < typename PreMeasurements
-         , strf::detail::enable_if_t<PreMeasurements::something_required, int> >
+         , strf::detail::enable_if_t<PreMeasurements::something_demanded, int> >
 STRF_HD void separated_range_printer<CharT, FPack, Iterator>::do_premeasurements_
     ( PreMeasurements* pre ) const
 {
     std::size_t count = 0;
     for( iterator it = begin_
-       ; it != end_ && (pre->has_remaining_width() || PreMeasurements::size_required)
+       ; it != end_ && (pre->has_remaining_width() || PreMeasurements::size_demanded)
        ; ++it)
     {
         printer_type_<PreMeasurements>(strf::make_printer_input<CharT>(pre, fp_, *it));
         ++ count;
     }
-    if (count < 2 || (! PreMeasurements::size_required && ! pre->has_remaining_width())) {
+    if (count < 2 || (! PreMeasurements::size_demanded && ! pre->has_remaining_width())) {
         return;
     }
     {
@@ -381,7 +381,7 @@ STRF_HD void separated_range_printer<CharT, FPack, Iterator>::do_premeasurements
                                  , sep_begin_ + sep_len_ );
         pre->checked_subtract_width(strf::sat_mul(dw, count - 1));
     }
-    if (PreMeasurements::size_required) {
+    if (PreMeasurements::size_demanded) {
         pre->add_size((count - 1) * static_cast<std::size_t>(sep_len_));
     }
 }
@@ -444,7 +444,7 @@ private:
     }
 
     template < typename PreMeasurements
-             , strf::detail::enable_if_t<PreMeasurements::something_required, int> = 0 >
+             , strf::detail::enable_if_t<PreMeasurements::something_demanded, int> = 0 >
     STRF_HD void do_premeasurements_(PreMeasurements* pre) const;
 
     FPack fp_;
@@ -457,13 +457,13 @@ template < typename CharT
          , typename Iterator
          , typename ... Fmts >
 template < typename PreMeasurements
-         , strf::detail::enable_if_t<PreMeasurements::something_required, int> >
+         , strf::detail::enable_if_t<PreMeasurements::something_demanded, int> >
 STRF_HD void fmt_range_printer<CharT, FPack, Iterator, Fmts ...>::do_premeasurements_
     ( PreMeasurements* pre ) const
 {
     auto r = fmt_.value();
     for( Iterator it = r.begin
-       ; it != r.end && (pre->has_remaining_width() || PreMeasurements::size_required)
+       ; it != r.end && (pre->has_remaining_width() || PreMeasurements::size_demanded)
        ; ++it)
     {
         printer_type_<PreMeasurements>
@@ -528,7 +528,7 @@ private:
     }
 
     template < typename PreMeasurements
-             , strf::detail::enable_if_t<PreMeasurements::something_required, int> = 0 >
+             , strf::detail::enable_if_t<PreMeasurements::something_demanded, int> = 0 >
     STRF_HD void do_premeasurements_(PreMeasurements* pre) const;
 
     FPack fp_;
@@ -548,14 +548,14 @@ template< typename CharT
         , typename Iterator
         , typename ... Fmts >
 template < typename PreMeasurements
-         , strf::detail::enable_if_t<PreMeasurements::something_required, int> >
+         , strf::detail::enable_if_t<PreMeasurements::something_demanded, int> >
 STRF_HD void fmt_separated_range_printer<CharT, FPack, Iterator, Fmts ...>::do_premeasurements_
     ( PreMeasurements* pre ) const
 {
     auto r = fmt_.value();
     std::size_t count = 0;
     for ( Iterator it = r.begin  // NOLINT(llvm-qualified-auto)
-        ; it != r.end && (pre->has_remaining_width() || PreMeasurements::size_required)
+        ; it != r.end && (pre->has_remaining_width() || PreMeasurements::size_demanded)
         ; ++it)
     {
         printer_type_<PreMeasurements>
@@ -574,7 +574,7 @@ STRF_HD void fmt_separated_range_printer<CharT, FPack, Iterator, Fmts ...>::do_p
                                  , r.sep_begin + r.sep_len );
         pre->checked_subtract_width(strf::sat_mul(dw, (count - 1)));
     }
-    if (PreMeasurements::size_required) {
+    if (PreMeasurements::size_demanded) {
         pre->add_size((count - 1) * static_cast<std::size_t>(r.sep_len));
     }
 }
@@ -639,7 +639,7 @@ private:
     }
 
     template < typename PreMeasurements
-             , strf::detail::enable_if_t<PreMeasurements::something_required, int> = 0 >
+             , strf::detail::enable_if_t<PreMeasurements::something_demanded, int> = 0 >
     STRF_HD void do_premeasurements_(PreMeasurements* pre) const;
 
     FPack fp_;
@@ -650,13 +650,13 @@ private:
 
 template <typename CharT, typename FPack, typename Iterator, typename UnaryOp>
 template < typename PreMeasurements
-         , strf::detail::enable_if_t<PreMeasurements::something_required, int> >
+         , strf::detail::enable_if_t<PreMeasurements::something_demanded, int> >
 STRF_HD void transformed_range_printer<CharT, FPack, Iterator, UnaryOp>
     ::do_premeasurements_(PreMeasurements* pre) const
 {
 
     for( iterator it = begin_
-       ; it != end_ && (pre->has_remaining_width() || PreMeasurements::size_required)
+       ; it != end_ && (pre->has_remaining_width() || PreMeasurements::size_demanded)
        ; ++it)
     {
         printer_type_<PreMeasurements>(strf::make_printer_input<CharT>(pre, fp_, op_(*it)));
@@ -711,7 +711,7 @@ private:
     }
 
     template < typename PreMeasurements
-             , strf::detail::enable_if_t<PreMeasurements::something_required, int> = 0 >
+             , strf::detail::enable_if_t<PreMeasurements::something_demanded, int> = 0 >
     STRF_HD void do_premeasurements_(PreMeasurements* pre) const;
 
     FPack fp_;
@@ -732,13 +732,13 @@ private:
 
 template <typename CharT, typename FPack, typename Iterator, typename UnaryOp>
 template < typename PreMeasurements
-         , strf::detail::enable_if_t<PreMeasurements::something_required, int> >
+         , strf::detail::enable_if_t<PreMeasurements::something_demanded, int> >
 STRF_HD void sep_transformed_range_printer<CharT, FPack, Iterator, UnaryOp>
     ::do_premeasurements_(PreMeasurements* pre) const
 {
     std::size_t count = 0;
     for( iterator it = begin_
-       ; it != end_ && (pre->has_remaining_width() || PreMeasurements::size_required)
+       ; it != end_ && (pre->has_remaining_width() || PreMeasurements::size_demanded)
        ; ++it)
     {
         printer_type_<PreMeasurements>
@@ -756,7 +756,7 @@ STRF_HD void sep_transformed_range_printer<CharT, FPack, Iterator, UnaryOp>
                                  , sep_begin_ + sep_len_ );
         pre->checked_subtract_width(strf::sat_mul(dw, (count - 1)));
     }
-    if (PreMeasurements::size_required) {
+    if (PreMeasurements::size_demanded) {
         pre->add_size((count - 1) * static_cast<std::size_t>(sep_len_));
     }
 }

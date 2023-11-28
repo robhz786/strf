@@ -692,7 +692,7 @@ public:
         : str_(input.arg.data())
         , str_end_(input.arg.end())
     {
-        STRF_IF_CONSTEXPR(PreMeasurements::width_required) {
+        STRF_IF_CONSTEXPR(PreMeasurements::width_demanded) {
             auto&& wcalc = use_facet_<strf::width_calculator_c>(input.facets);
             auto w = wcalc.str_width
                 ( use_facet_<strf::charset_c<SrcCharT>>(input.facets)
@@ -711,7 +711,7 @@ public:
         : str_(input.arg.value().data())
         , str_end_(input.arg.value().end())
     {
-        STRF_IF_CONSTEXPR(PreMeasurements::width_required) {
+        STRF_IF_CONSTEXPR(PreMeasurements::width_demanded) {
             auto&& wcalc = use_facet_<strf::width_calculator_c>(input.facets);
             auto w = wcalc.str_width
                 ( use_facet_<strf::charset_c<SrcCharT>>(input.facets)
@@ -788,7 +788,7 @@ public:
         auto src_charset = use_facet_<strf::charset_c<SrcCharT>>(input.facets);
         auto dst_charset = use_facet_<strf::charset_c<DstCharT>>(input.facets);
         const strf::width_t limit =
-            ( PreMeasurements::width_required && input.pre->remaining_width() > afmt_.width
+            ( PreMeasurements::width_demanded && input.pre->remaining_width() > afmt_.width
             ? input.pre->remaining_width()
             : afmt_.width );
         auto strw = wcalc.str_width(src_charset, limit, str_, str_end_);
@@ -991,7 +991,7 @@ private:
             u32size_ = src_charset.to_u32().transcode_size_func();
             u32_to_dst_ = dst_charset.from_u32().transcode_func();
         }
-        STRF_IF_CONSTEXPR (PreMeasurements::size_required) {
+        STRF_IF_CONSTEXPR (PreMeasurements::size_demanded) {
             strf::transcode_size_f<SrcCharT> transcode_size
                 = transcoder.transcode_size_func();
             std::ptrdiff_t s = 0;
@@ -1068,7 +1068,7 @@ public:
         auto src_charset = strf::detail::get_src_charset(input);
         auto&& wcalc = use_facet_<strf::width_calculator_c, SrcCharT>(input.facets);
         const strf::width_t limit =
-            ( PreMeasurements::width_required && input.pre->remaining_width() > afmt_.width
+            ( PreMeasurements::width_demanded && input.pre->remaining_width() > afmt_.width
             ? input.pre->remaining_width()
             : afmt_.width );
         auto str_width = wcalc.str_width(src_charset, limit, str_, str_end_);
@@ -1176,7 +1176,7 @@ void STRF_HD aligned_transcode_printer<SrcCharT, DstCharT>::init_
         left_fillcount_ = 0;
         pre->subtract_width(str_width);
     }
-    STRF_IF_CONSTEXPR (PreMeasurements::size_required) {
+    STRF_IF_CONSTEXPR (PreMeasurements::size_demanded) {
         std::ptrdiff_t s = 0;
         strf::transcode_size_f<SrcCharT> transcode_size
                 = transcoder.transcode_size_func();
@@ -1281,7 +1281,7 @@ private:
             u32size_ = src_charset.to_u32().transcode_size_func();
             u32_to_dst_ = dst_charset.from_u32().unsafe_transcode_func();
         }
-        STRF_IF_CONSTEXPR (PreMeasurements::size_required) {
+        STRF_IF_CONSTEXPR (PreMeasurements::size_demanded) {
             const auto flags = strf::transcode_flags::none;
             strf::unsafe_transcode_size_f<SrcCharT>  transcode_size
                 = transcoder.unsafe_transcode_size_func();
@@ -1360,7 +1360,7 @@ public:
         auto src_charset = strf::detail::get_src_charset(input);
         auto&& wcalc = use_facet_<strf::width_calculator_c, SrcCharT>(input.facets);
         const strf::width_t limit =
-            ( PreMeasurements::width_required && input.pre->remaining_width() > afmt_.width
+            ( PreMeasurements::width_demanded && input.pre->remaining_width() > afmt_.width
             ? input.pre->remaining_width()
             : afmt_.width );
         auto str_width = wcalc.str_width(src_charset, limit, str_, str_end_);
@@ -1468,7 +1468,7 @@ void STRF_HD aligned_unsafe_transcode_printer<SrcCharT, DstCharT>::init_
         left_fillcount_ = 0;
         pre->subtract_width(str_width);
     }
-    STRF_IF_CONSTEXPR (PreMeasurements::size_required) {
+    STRF_IF_CONSTEXPR (PreMeasurements::size_demanded) {
         std::ptrdiff_t s = 0;
         strf::unsafe_transcode_size_f<SrcCharT> transcode_size
                 = transcoder.unsafe_transcode_size_func();

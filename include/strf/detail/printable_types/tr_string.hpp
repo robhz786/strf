@@ -404,7 +404,7 @@ class tr_printer: public strf::printer<CharT>
     //         <strf::width_calculator_c, strf::tr_string_tag<CharT>, FPack>;
 
     //     constexpr std::size_t num_printers = sizeof...(I);
-    //     STRF_IF_CONSTEXPR (Pre::all_required) {
+    //     STRF_IF_CONSTEXPR (Pre::size_and_width_demanded) {
     //         Pre pre_arr[num_printers];
     //         storage_.construct(i.arg.args, i.facets, pre_arr, printers_);
     //         std::ptrdiff_t size_arr[num_printers] = {pre_arr[I].accumulated_ssize()...};
@@ -418,7 +418,7 @@ class tr_printer: public strf::printer<CharT>
     //         i.pre->add_size(tr_pre.accumulated_ssize());
     //         i.pre->reset_remaining_width(tr_pre.remaining_width());
 
-    //     } else STRF_IF_CONSTEXPR (Pre::size_required) {
+    //     } else STRF_IF_CONSTEXPR (Pre::size_demanded) {
     //         Pre pre_arr[num_printers];
     //         storage_.construct(i.arg.args, i.facets, pre_arr, printers_);
     //         std::ptrdiff_t size_arr[num_printers] = {pre_arr[I].accumulated_ssize()...};
@@ -625,7 +625,7 @@ struct printable_traits<detail::tr_string_arg<CharT, Args...>>
 //         , err_handler_{strf::use_facet<err_handler_cat_, facet_tag_>(i.facets)}
 
 //     {
-//         STRF_IF_CONSTEXPR (Pre::something_required) {
+//         STRF_IF_CONSTEXPR (Pre::something_demanded) {
 //             Pre pre[num_printers_];
 
 //             auto invalid_arg_size = charset_.replacement_char_size();

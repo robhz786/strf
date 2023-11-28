@@ -1472,7 +1472,7 @@ public:
         STRF_MAYBE_UNUSED(encoding);
         encode_fill_ = encoding.encode_fill_func();
         i.pre->subtract_width(static_cast<width_t>(fillcount_ + digcount_ + negative_));
-        STRF_IF_CONSTEXPR(strf::usual_printer_input<T...>::premeasurements_type::size_required) {
+        STRF_IF_CONSTEXPR(strf::usual_printer_input<T...>::premeasurements_type::size_demanded) {
             auto fillsize = fillcount_ * encoding.encoded_char_size(fillchar_);
             i.pre->add_size(fillsize + digcount_ + negative_);
         }
@@ -1978,7 +1978,7 @@ public:
         auto w = detail::init_fmt_int_printer_data<Base>(data_, ifmt, afmt);
         i.pre->subtract_width(static_cast<width_t>(w.sub_width + w.fillcount));
         using pre_t = typename strf::usual_printer_input<T...>::premeasurements_type;
-        STRF_IF_CONSTEXPR (pre_t::size_required) {
+        STRF_IF_CONSTEXPR (pre_t::size_demanded) {
             i.pre->add_size(w.sub_width);
             if (w.fillcount > 0) {
                 i.pre->add_size(w.fillcount * charset.encoded_char_size(afmt.fill));
@@ -2155,7 +2155,7 @@ public:
         const auto w = detail::init_punct_fmt_int_printer_data<Base>
             (data_, charset.validate_func(), ifmt, afmt);
         pre->subtract_width(static_cast<width_t>(w.sub_width + w.fillcount + data_.sepcount));
-        STRF_IF_CONSTEXPR (PreMeasurements::size_required) {
+        STRF_IF_CONSTEXPR (PreMeasurements::size_demanded) {
             pre->add_size(w.sub_width);
             if (w.fillcount) {
                 pre->add_size(w.fillcount * charset.encoded_char_size(afmt.fill));

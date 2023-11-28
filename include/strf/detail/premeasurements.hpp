@@ -183,12 +183,19 @@ class premeasurements
 {
 public:
 
-    static constexpr bool size_required = static_cast<bool>(SizeDemand);
-    static constexpr bool width_required = static_cast<bool>(WidthDemand);
-    static constexpr bool nothing_required = ! size_required && ! width_required;
-    static constexpr bool something_required = size_required || width_required;
-    static constexpr bool all_required =       size_required && width_required;
+    static constexpr bool size_demanded = static_cast<bool>(SizeDemand);
+    static constexpr bool width_demanded = static_cast<bool>(WidthDemand);
+    static constexpr bool no_demands = ! size_demanded && ! width_demanded;
+    static constexpr bool something_demanded = size_demanded || width_demanded;
+    static constexpr bool size_and_width_demanded = size_demanded && width_demanded;
 
+    // for backwards compatibility:
+    static constexpr bool size_required = size_demanded;
+    static constexpr bool width_required = width_demanded;
+    static constexpr bool nothing_required = no_demands;
+    static constexpr bool something_required = something_demanded;
+    static constexpr bool all_required = size_and_width_demanded;
+    
     template <strf::width_demand W = WidthDemand>
     STRF_HD constexpr explicit premeasurements
         ( strf::detail::enable_if_t<static_cast<bool>(W), strf::width_t> initial_width ) noexcept

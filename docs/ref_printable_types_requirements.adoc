@@ -239,7 +239,7 @@ auto dest_buff_space = dest.<<destination_hpp#output_buffer_buffer_space,buffer_
 static_cast<const printer<CharT>&>(p).<<printer,print_to>>(dest);
 ----
 satisfies the following postconditions when
-`PreMeasurements::<<premeasurements,size_required>>` is `true`:
+`PreMeasurements::<<premeasurements,size_demanded>>` is `true`:
 
 *  if `predicted_size \<= dest_buff_space` is `true`, then `dest.recycle()` is not called in `print_to`
 ====
@@ -427,10 +427,11 @@ class premeasurements
 {
 public:
 
-    static constexpr bool size_required = static_cast<bool>(SizeDemand);
-    static constexpr bool width_required = static_cast<bool>(WidthDemand);
-    static constexpr bool nothing_required = ! size_required && ! width_required;
-    static constexpr bool something_required = size_required || width_required;
+    static constexpr bool size_demanded = static_cast<bool>(SizeDemand);
+    static constexpr bool width_demanded = static_cast<bool>(WidthDemand);
+    static constexpr bool no_demands  = ! size_demanded && ! width_demanded;    
+    static constexpr bool something_demanded = size_demanded || width_demanded;
+    static constexpr bool size_and_width_demanded = size_demanded && width_demanded;
 
     constexpr premeasurements() noexcept = default;
     constexpr explicit premeasurements(<<width_t,width_t>> initial_width) noexcept;

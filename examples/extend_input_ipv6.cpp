@@ -148,7 +148,7 @@ void ipv6_printer<CharT>::init_(PreMeasurements* pre, Charset charset)
         pre->subtract_width(static_cast<strf::width_t>(count));
     } else {
         fillcount_ = strf::sat_sub(alignment_fmt_.width, count).round();
-        if (PreMeasurements::size_required && fillcount_ > 0) {
+        if (PreMeasurements::size_demanded && fillcount_ > 0) {
             pre->add_size(fillcount_ * charset.encoded_char_size(alignment_fmt_.fill));
         }
         pre->subtract_width(alignment_fmt_.width);

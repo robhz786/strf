@@ -234,7 +234,7 @@ STRF_HD void fmt_char_printer<CharT>::init_
             left_fillcount_ = fillcount;
             right_fillcount_ = 0;
     }
-    STRF_IF_CONSTEXPR (PreMeasurements::size_required) {
+    STRF_IF_CONSTEXPR (PreMeasurements::size_demanded) {
         if (fillcount > 0) {
             pre->add_size(count_ + fillcount * charset.encoded_char_size(afmt_.fill));
         } else {
@@ -364,7 +364,7 @@ void STRF_HD fmt_conv_char32_printer<DstCharT>::init_
         fillcount_ = 0;
         pre->subtract_width(content_width);
     }
-    STRF_IF_CONSTEXPR (PreMeasurements::size_required) {
+    STRF_IF_CONSTEXPR (PreMeasurements::size_demanded) {
         pre->add_size(count_ * charset.encoded_char_size(ch_));
         if (fillcount_ > 0) {
             pre->add_size(fillcount_ * charset.encoded_char_size(afmt.fill));

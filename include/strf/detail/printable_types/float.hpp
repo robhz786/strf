@@ -1371,7 +1371,7 @@ public:
         ( strf::detail::fast_double_printer_input<CharT, PreMeasurements, FloatT> input) noexcept
         : fast_double_printer(input.value, input.lcase)
     {
-        if (input.pre->has_remaining_width() || PreMeasurements::size_required) {
+        if (input.pre->has_remaining_width() || PreMeasurements::size_demanded) {
             const auto s = size();
             input.pre->subtract_width(static_cast<std::int16_t>(s));
             input.pre->add_size(s);
@@ -2366,7 +2366,7 @@ public:
             decimal_point_size_ = 0;
         }
         input.pre->subtract_width(static_cast<width_t>(r.fillcount + r.content_width));
-        STRF_IF_CONSTEXPR (PreMeasurements::size_required) {
+        STRF_IF_CONSTEXPR (PreMeasurements::size_demanded) {
             input.pre->add_size(r.content_width);
             if (r.fillcount > 0) {
                 const auto fillchar_size = charset.encoded_char_size(data_.fillchar);
@@ -2396,7 +2396,7 @@ public:
             , input.arg.get_alignment_format() );
         decimal_point_size_ = data_.showpoint;
         input.pre->subtract_width(static_cast<width_t>(r.fillcount + r.content_width));
-        STRF_IF_CONSTEXPR (PreMeasurements::size_required) {
+        STRF_IF_CONSTEXPR (PreMeasurements::size_demanded) {
             input.pre->add_size(r.content_width);
             if (r.fillcount > 0) {
                 const auto fillchar_size = charset.encoded_char_size(data_.fillchar);
