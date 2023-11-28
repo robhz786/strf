@@ -11,11 +11,11 @@
 namespace strf {
 
 template < typename CharT
-         , strf::precalc_size SizeRequired
-         , strf::precalc_width WidthRequired
+         , strf::size_demand SizeDemand
+         , strf::width_demand WidthDemand
          , typename... FPE >
 STRF_HD void measure
-    ( strf::premeasurements<SizeRequired, WidthRequired>*
+    ( strf::premeasurements<SizeDemand, WidthDemand>*
     , const strf::facets_pack<FPE...> &)
 {
 }
@@ -25,7 +25,7 @@ template < typename CharT
          , typename Arg
          , typename... Args >
 STRF_HD STRF_CONSTEXPR_IN_CXX14 void measure
-    ( strf::premeasurements<strf::precalc_size::no, strf::precalc_width::no>*
+    ( strf::premeasurements<strf::size_demand::no, strf::width_demand::no>*
     , const strf::facets_pack<FPE...>&
     , const Arg&
     , const Args&... ) noexcept
@@ -36,7 +36,7 @@ namespace detail {
 
 template < typename CharT, typename... FPE >
 STRF_HD STRF_CONSTEXPR_IN_CXX14 void measure_only_width
-    ( strf::premeasurements<strf::precalc_size::no, strf::precalc_width::yes>*
+    ( strf::premeasurements<strf::size_demand::no, strf::width_demand::yes>*
     , const strf::facets_pack<FPE...>& ) noexcept
 {
 }
@@ -46,12 +46,12 @@ template < typename CharT
          , typename Arg
          , typename... OtherArgs >
 STRF_HD void measure_only_width
-    ( strf::premeasurements<strf::precalc_size::no, strf::precalc_width::yes>* pre
+    ( strf::premeasurements<strf::size_demand::no, strf::width_demand::yes>* pre
     , const strf::facets_pack<FPE...>& facets
     , const Arg& arg
     , const OtherArgs&... other_args )
 {
-    using pre_type = strf::premeasurements<strf::precalc_size::no, strf::precalc_width::yes>;
+    using pre_type = strf::premeasurements<strf::size_demand::no, strf::width_demand::yes>;
 
     (void) strf::printer_type<CharT, pre_type, strf::facets_pack<FPE...>, Arg>
         ( strf::make_printer_input<CharT>(pre, facets, arg) );
@@ -65,7 +65,7 @@ STRF_HD void measure_only_width
 
 template <typename CharT, typename... FPE, typename... Args>
 STRF_HD void measure
-    ( strf::premeasurements<strf::precalc_size::no, strf::precalc_width::yes>* pre
+    ( strf::premeasurements<strf::size_demand::no, strf::width_demand::yes>* pre
     , const strf::facets_pack<FPE...>& facets
     , const Args&... args )
 {
@@ -85,16 +85,16 @@ STRF_HD STRF_CONSTEXPR_IN_CXX14 void do_nothing_with(const Args&...) noexcept
 } // namespace detail
 
 template < typename CharT
-         , strf::precalc_width WidthRequired
+         , strf::width_demand WidthDemand
          , typename... FPE
          , typename... Args >
 STRF_HD void measure
-    ( strf::premeasurements<strf::precalc_size::yes, WidthRequired>* pre
+    ( strf::premeasurements<strf::size_demand::yes, WidthDemand>* pre
     , const strf::facets_pack<FPE...>& facets
     , const Args&... args )
 {
     STRF_MAYBE_UNUSED(pre);
-    using pre_type = strf::premeasurements<strf::precalc_size::yes, WidthRequired>;
+    using pre_type = strf::premeasurements<strf::size_demand::yes, WidthDemand>;
     strf::detail::do_nothing_with
         ( strf::printer_type<CharT, pre_type, strf::facets_pack<FPE...>, Args>
           ( strf::make_printer_input<CharT>(pre, facets, args) ) ... );

@@ -128,11 +128,11 @@ public:
 
     template < typename... Args
              , typename... FPElems
-             , strf::precalc_size SizeRequired
-             , strf::precalc_width WidthRequired >
+             , strf::size_demand SizeDemand
+             , strf::width_demand WidthDemand >
     STRF_HD printers_tuple_impl
         ( const strf::detail::simple_tuple<Args...>& args
-        , strf::premeasurements<SizeRequired, WidthRequired>* pre
+        , strf::premeasurements<SizeDemand, WidthDemand>* pre
         , const strf::facets_pack<FPElems...>& fp )
         : indexed_printer<I, Printers>
             ( strf::make_printer_input<CharT>
@@ -143,12 +143,12 @@ public:
 
     template < typename... Args
              , typename... FPElems
-             , strf::precalc_size SizeRequired
-             , strf::precalc_width WidthRequired >
+             , strf::size_demand SizeDemand
+             , strf::width_demand WidthDemand >
     STRF_HD printers_tuple_impl
         ( const strf::detail::simple_tuple<Args...>& args
         , const strf::facets_pack<FPElems...>& fp
-        , strf::premeasurements<SizeRequired, WidthRequired>* pp_array )
+        , strf::premeasurements<SizeDemand, WidthDemand>* pp_array )
         : indexed_printer<I, Printers>
             ( strf::make_printer_input<CharT>
               ( &pp_array[I], fp, args.template get<I>() ) ) ...

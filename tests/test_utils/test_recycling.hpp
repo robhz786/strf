@@ -49,7 +49,7 @@ STRF_HD void test_printers_recycling
 template <typename CharT, typename... Printers>
 inline STRF_HD void test_printers_recycling
     ( strf::destination<char>& failure_notifier
-    , const strf::premeasurements<strf::precalc_size::yes, strf::precalc_width::no>& pre
+    , const strf::premeasurements<strf::size_demand::yes, strf::width_demand::no>& pre
     , strf::detail::simple_string_view<CharT> expected_output
     , const Printers&... printers )
 {
@@ -64,7 +64,7 @@ STRF_HD void test_printables_recycling
     , Printables&&... printables)
 {
     // todo
-    using pre_t = strf::premeasurements<strf::precalc_size::yes, strf::precalc_width::no>;
+    using pre_t = strf::premeasurements<strf::size_demand::yes, strf::width_demand::no>;
     pre_t pre;
     test_printers_recycling
         ( failure_notifier

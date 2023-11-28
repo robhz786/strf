@@ -384,7 +384,7 @@ dest_type dest{dest&#95;creator.create(poli.space)};
 +
 [source,cpp,subs=normal]
 ----
-using pre_t = {premeasurements}<precalc_size::no, precalc_width::no>;
+using pre_t = {premeasurements}<size_demand::no, width_demand::no>;
 pre_t pre;
 using parg_t = strf::remove_cvref_t<decltype(parg)>;
 using printer_t = {printer_type}<char_type, pre_t, FPack, parg_t>;
@@ -404,7 +404,7 @@ a|
 +
 [source,cpp,subs=normal]
 ----
-using pre_type = {premeasurements}<precalc_size::yes, precalc_width::no>;
+using pre_type = {premeasurements}<size_demand::yes, width_demand::no>;
 pre_type pre;
 ----
 . For each `parg` in `pargs\...`, do:
@@ -447,7 +447,7 @@ typename DestCreator::destination_type dest{dest&#95;creator.create()};
 +
 [source,cpp,subs=normal]
 ----
-using pre_t = {premeasurements}<precalc_size::no, precalc_width::no>;
+using pre_t = {premeasurements}<size_demand::no, width_demand::no>;
 pre_t pre;
 using parg_t = strf::remove_cvref_t<decltype(parg)>;
 using printer_t = {printer_type}<char_type, pre_t, FPack, parg_t>;

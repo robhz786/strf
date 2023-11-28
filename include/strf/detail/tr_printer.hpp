@@ -71,7 +71,7 @@ STRF_HD read_uint_result<CharT> read_uint(const CharT* it, const CharT* end, std
 
 template <typename CharT>
 STRF_HD inline std::ptrdiff_t tr_string_size
-    ( const strf::premeasurements<strf::precalc_size::no, strf::precalc_width::no>*
+    ( const strf::premeasurements<strf::size_demand::no, strf::width_demand::no>*
     , std::ptrdiff_t
     , const CharT*
     , const CharT*
@@ -80,7 +80,7 @@ STRF_HD inline std::ptrdiff_t tr_string_size
     return 0;
 }
 
-template <typename CharT, strf::precalc_size PreSize, strf::precalc_width PreWidth>
+template <typename CharT, strf::size_demand PreSize, strf::width_demand PreWidth>
 struct tr_premeasurements;
 
 struct eval_to_false_t {
@@ -332,7 +332,7 @@ STRF_HD void tr_do_premeasurements
 
 template <typename CharT>
 STRF_HD std::ptrdiff_t tr_string_size
-    ( const strf::premeasurements<strf::precalc_size::yes, strf::precalc_width::no>* args_pre
+    ( const strf::premeasurements<strf::size_demand::yes, strf::width_demand::no>* args_pre
     , std::ptrdiff_t num_args
     , const CharT* it
     , const CharT* end
@@ -505,10 +505,10 @@ class tr_string_printer
     using char_type = typename Charset::code_unit;
 public:
 
-    template <strf::precalc_size SizeRequired>
+    template <strf::size_demand SizeDemand>
     STRF_HD tr_string_printer
-        ( strf::premeasurements<SizeRequired, strf::precalc_width::no>* pre
-        , const strf::premeasurements<SizeRequired, strf::precalc_width::no>* args_pre
+        ( strf::premeasurements<SizeDemand, strf::width_demand::no>* pre
+        , const strf::premeasurements<SizeDemand, strf::width_demand::no>* args_pre
         , std::initializer_list<const strf::printer<char_type>*> printers
         , const char_type* tr_string
         , const char_type* tr_string_end
@@ -522,7 +522,7 @@ public:
         , err_handler_(err_handler)
     {
         STRF_MAYBE_UNUSED(pre);
-        STRF_IF_CONSTEXPR (static_cast<bool>(SizeRequired)) {
+        STRF_IF_CONSTEXPR (static_cast<bool>(SizeDemand)) {
             auto invalid_arg_size = charset.replacement_char_size();
             const std::ptrdiff_t s = strf::detail::tr_string_size
                 ( args_pre, static_cast<std::ptrdiff_t>(printers.size())
