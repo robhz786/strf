@@ -97,7 +97,7 @@ STRF_TEST_FUNC void test_floating_point(FloatT value)
     }
 #endif
     {
-        strf::premeasurements<strf::size_demand::yes, strf::width_demand::yes>
+        strf::premeasurements<strf::size_presence::yes, strf::width_presence::yes>
             pre{strf::width_max};
         strf::measure<char>(&pre, strf::pack(), value);
         const std::ptrdiff_t content_size = res.ptr - buff;

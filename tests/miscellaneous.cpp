@@ -43,7 +43,7 @@ STRF_TEST_FUNC void test_miscellaneous()
         TEST_FALSE(dst.good());
     }
     {   // measure size
-        strf::premeasurements<strf::size_demand::yes, strf::width_demand::no> p;
+        strf::premeasurements<strf::size_presence::yes, strf::width_presence::no> p;
 
         strf::measure<char>(&p, strf::pack());
         TEST_EQ(p.accumulated_ssize(), 0);
@@ -53,7 +53,7 @@ STRF_TEST_FUNC void test_miscellaneous()
     }
 
     {   // measure size and width
-        strf::premeasurements<strf::size_demand::yes, strf::width_demand::yes>p{1000};
+        strf::premeasurements<strf::size_presence::yes, strf::width_presence::yes>p{1000};
 
         strf::measure<char>(&p, strf::pack());
         TEST_EQ(p.accumulated_ssize(), 0);
@@ -65,7 +65,7 @@ STRF_TEST_FUNC void test_miscellaneous()
     }
 
     {   // measure width
-        strf::premeasurements<strf::size_demand::no, strf::width_demand::yes>p{8_w};
+        strf::premeasurements<strf::size_presence::no, strf::width_presence::yes>p{8_w};
 
         strf::measure<char>(&p, strf::pack());
         TEST_TRUE(p.remaining_width() == 8_w);
@@ -78,17 +78,17 @@ STRF_TEST_FUNC void test_miscellaneous()
         TEST_TRUE(p.remaining_width() == 0);
     }
     {   // measure width
-        strf::premeasurements<strf::size_demand::no, strf::width_demand::yes>p{8_w};
+        strf::premeasurements<strf::size_presence::no, strf::width_presence::yes>p{8_w};
         p.subtract_width(8);
         TEST_TRUE(p.remaining_width() == 0);
     }
     {   // measure width
-        strf::premeasurements<strf::size_demand::no, strf::width_demand::yes>p{8_w};
+        strf::premeasurements<strf::size_presence::no, strf::width_presence::yes>p{8_w};
         p.subtract_width(9);
         TEST_TRUE(p.remaining_width() == 0);
     }
     {   // clear_remaining_width
-        strf::premeasurements<strf::size_demand::no, strf::width_demand::yes> p{8_w};
+        strf::premeasurements<strf::size_presence::no, strf::width_presence::yes> p{8_w};
         p.clear_remaining_width();
         TEST_TRUE(p.remaining_width() == 0);
     }

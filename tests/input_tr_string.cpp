@@ -220,7 +220,7 @@ auto first_char_of_tr_string(String str, Args&&...)
     {                                                                                 \
         using char_t = decltype(first_char_of_tr_string(__VA_ARGS__));                \
         using pre_t = strf::premeasurements                                           \
-            <strf::size_demand::yes, strf::width_demand::no>;                         \
+            <strf::size_presence::yes, strf::width_presence::no>;                         \
         pre_t pre;                                                                    \
         strf::measure<char_t>(&pre, strf::pack(), strf::tr(__VA_ARGS__));             \
         const std::ptrdiff_t obtained = pre.accumulated_ssize();                      \
@@ -271,7 +271,7 @@ STRF_TEST_FUNC void test_size_precalculation()
     {                                                                                 \
         using char_t = decltype(first_char_of_tr_string(__VA_ARGS__));                \
         using pre_t = strf::premeasurements                                           \
-            <strf::size_demand::no, strf::width_demand::yes>;                         \
+            <strf::size_presence::no, strf::width_presence::yes>;                         \
         pre_t pre(strf::width_t(INITIAL_WIDTH));                                      \
         strf::measure<char_t>(&pre, strf::pack(), strf::tr(__VA_ARGS__));             \
         auto obtained = pre.remaining_width();                                        \

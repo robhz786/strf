@@ -46,12 +46,12 @@ struct tr_printers_container<CharT, strf::detail::index_sequence<I...>, Printers
 
     template < typename... Args
              , typename... FPElems
-             , strf::size_demand SizeDemand
-             , strf::width_demand WidthDemand >
+             , strf::size_presence SizePresence
+             , strf::width_presence WidthPresence >
     STRF_HD tr_printers_container
         ( const strf::detail::simple_tuple<Args...>& args
         , const strf::facets_pack<FPElems...>& fp
-        , strf::premeasurements<SizeDemand, WidthDemand>* pp_array
+        , strf::premeasurements<SizePresence, WidthPresence>* pp_array
         , const strf::printer<CharT>**& array_of_pointers_ref )
         : tuple{args, fp, pp_array}
         , array_of_pointers{ & tuple.template get<I>()...}
@@ -77,15 +77,15 @@ struct tr_printers_container<CharT, strf::detail::index_sequence<I...>, Printers
 // {
 // public:
 //     template < typename... FPElems
-//              , strf::size_demand SizeDemand
-//              , strf::width_demand WidthDemand >
+//              , strf::size_presence SizePresence
+//              , strf::width_presence WidthPresence >
 //     void construct
 //         ( strf::detail::simple_tuple<> args
 //         , const strf::facets_pack<FPElems...>&
-//         , strf::premeasurements<SizeDemand, WidthDemand>*
+//         , strf::premeasurements<SizePresence, WidthPresence>*
 //         , const strf::printer<CharT>**& array_of_pointers_ref )
 //     {
-//         using pre_t = strf::premeasurements<SizeDemand, WidthDemand>;
+//         using pre_t = strf::premeasurements<SizePresence, WidthPresence>;
 //         using fp_t = strf::facets_pack<FPElems...>;
 
 //         using printer_tuple_t =
@@ -109,11 +109,11 @@ class printers_array_deferred_init_impl
 
     // template < typename... Args
     //          , typename... FPElems
-    //          , strf::size_demand SizeDemand
-    //          , strf::width_demand WidthDemand >
+    //          , strf::size_presence SizePresence
+    //          , strf::width_presence WidthPresence >
     // using printer_tuple_t_ = strf::detail::printers_tuple_from_args
     //     < CharT
-    //     , strf::premeasurements<SizeDemand, WidthDemand>
+    //     , strf::premeasurements<SizePresence, WidthPresence>
     //     , strf::facets_pack<FPElems...>
     //     , Args...>;
 
@@ -135,15 +135,15 @@ public:
 
     template < typename... Args
              , typename... FPElems
-             , strf::size_demand SizeDemand
-             , strf::width_demand WidthDemand >
+             , strf::size_presence SizePresence
+             , strf::width_presence WidthPresence >
     STRF_HD void construct
         ( const strf::detail::simple_tuple<Args...>& args
         , const strf::facets_pack<FPElems...>& fp
-        , strf::premeasurements<SizeDemand, WidthDemand>* pre_array
+        , strf::premeasurements<SizePresence, WidthPresence>* pre_array
         , const strf::printer<CharT>**& array_of_pointers_ref )
     {
-        using pre_t = strf::premeasurements<SizeDemand, WidthDemand>;
+        using pre_t = strf::premeasurements<SizePresence, WidthPresence>;
         using fp_t = strf::facets_pack<FPElems...>;
 
         using printers_container = strf::detail::tr_printers_container
@@ -325,7 +325,7 @@ class tr_printer_no_args: public strf::printer<CharT>
     void STRF_HD init_
         ( const tr_printer_input
             < CharT
-            , strf::premeasurements<strf::size_demand::yes, strf::width_demand::no>
+            , strf::premeasurements<strf::size_presence::yes, strf::width_presence::no>
             , FPack >& i )
     {
         strf::detail::tr_pre_size<CharT> tr_pre
@@ -338,7 +338,7 @@ class tr_printer_no_args: public strf::printer<CharT>
     void STRF_HD init_
         ( const tr_printer_input
             < CharT
-            , strf::premeasurements<strf::size_demand::no, strf::width_demand::yes>
+            , strf::premeasurements<strf::size_presence::no, strf::width_presence::yes>
             , FPack >& i )
     {
         using wcalc_t = strf::facet_type_in_pack
@@ -479,12 +479,12 @@ class tr_printer: public strf::printer<CharT>
         ( strf::detail::index_sequence<I...>
         , const tr_printer_input
             < CharT
-            , strf::premeasurements<strf::size_demand::yes, strf::width_demand::no>
+            , strf::premeasurements<strf::size_presence::yes, strf::width_presence::no>
             , FPack
             , Args...>& i )
     {
         constexpr std::size_t num_printers = sizeof...(I);
-        strf::premeasurements<strf::size_demand::yes, strf::width_demand::no> pre_arr[num_printers];
+        strf::premeasurements<strf::size_presence::yes, strf::width_presence::no> pre_arr[num_printers];
         storage_.construct(i.arg.args, i.facets, pre_arr, printers_);
         std::ptrdiff_t size_arr[num_printers] = {pre_arr[I].accumulated_ssize()...};
         strf::detail::tr_pre_size<CharT> tr_pre
@@ -498,14 +498,14 @@ class tr_printer: public strf::printer<CharT>
         ( strf::detail::index_sequence<I...>
         , const tr_printer_input
             < CharT
-            , strf::premeasurements<strf::size_demand::no, strf::width_demand::yes>
+            , strf::premeasurements<strf::size_presence::no, strf::width_presence::yes>
             , FPack
             , Args...>& i )
     {
         constexpr std::size_t num_printers = sizeof...(I);
         using wcalc_t = strf::facet_type_in_pack
              <strf::width_calculator_c, strf::tr_string_tag<CharT>, FPack>;
-        strf::premeasurements<strf::size_demand::no, strf::width_demand::yes>
+        strf::premeasurements<strf::size_presence::no, strf::width_presence::yes>
             pre_arr[num_printers];
         storage_.construct(i.arg.args, i.facets, pre_arr, printers_);
         strf::width_t width_arr[num_printers] =

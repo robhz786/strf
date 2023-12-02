@@ -134,21 +134,21 @@ class aligned_join_printer_impl: public printer<CharT>
 
 public:
 
-    template <strf::size_demand SizeDemand, typename FPack, typename... FwdArgs>
+    template <strf::size_presence SizePresence, typename FPack, typename... FwdArgs>
     STRF_HD explicit aligned_join_printer_impl
         ( const strf::detail::join_printer_input
               < CharT
-              , strf::premeasurements<SizeDemand, strf::width_demand::no>
+              , strf::premeasurements<SizePresence, strf::width_presence::no>
               , FPack
               , true, FwdArgs...>& input )
         : afmt_(input.arg.get_alignment_format())
     {
         auto charset = use_facet_<strf::charset_c<CharT>>(input.facets);
         encode_fill_func_ = charset.encode_fill_func();
-        strf::premeasurements<SizeDemand, strf::width_demand::yes> pre { afmt_.width };
+        strf::premeasurements<SizePresence, strf::width_presence::yes> pre { afmt_.width };
         new (printers_ptr_()) printers_tuple_{input.arg.value().args, &pre, input.facets};
         fillcount_ = pre.remaining_width().round();
-        STRF_IF_CONSTEXPR (static_cast<bool>(SizeDemand)) {
+        STRF_IF_CONSTEXPR (static_cast<bool>(SizePresence)) {
             input.pre->add_size(pre.accumulated_ssize());
             if (fillcount_ > 0) {
                 auto fcharsize = charset.encoded_char_size(afmt_.fill);
@@ -157,11 +157,11 @@ public:
         }
     }
 
-    template <strf::size_demand SizeDemand, typename FPack, typename... FwdArgs>
+    template <strf::size_presence SizePresence, typename FPack, typename... FwdArgs>
     STRF_HD explicit aligned_join_printer_impl
         ( const strf::detail::join_printer_input
               < CharT
-              , strf::premeasurements<SizeDemand, strf::width_demand::yes>
+              , strf::premeasurements<SizePresence, strf::width_presence::yes>
               , FPack
               , true, FwdArgs...>& input )
         : afmt_(input.arg.get_alignment_format())
@@ -174,7 +174,7 @@ public:
             wmax = input.pre->remaining_width();
             diff = wmax - afmt_.width;
         }
-        strf::premeasurements<SizeDemand, strf::width_demand::yes> pre{wmax};
+        strf::premeasurements<SizePresence, strf::width_presence::yes> pre{wmax};
         // to-do: what if the line below throws ?
         new (printers_ptr_()) printers_tuple_{input.arg.value().args, &pre, input.facets};
         if (pre.remaining_width() > diff) {
@@ -182,7 +182,7 @@ public:
         }
         width_t const width = strf::sat_sub(strf::sat_add(wmax, fillcount_), pre.remaining_width());
         input.pre->subtract_width(width);
-        STRF_IF_CONSTEXPR (static_cast<bool>(SizeDemand)) {
+        STRF_IF_CONSTEXPR (static_cast<bool>(SizePresence)) {
             input.pre->add_size(pre.accumulated_ssize());
             if (fillcount_ > 0) {
                 auto fcharsize = charset.encoded_char_size(afmt_.fill);
@@ -281,12 +281,12 @@ private:
 template <typename CharT, typename PreMeasurements, typename FPack, typename Arg>
 struct print_impl_with_width_measure_;
 
-template < typename CharT, strf::size_demand SizeDemand, strf::width_demand WidthDemand
+template < typename CharT, strf::size_presence SizePresence, strf::width_presence WidthPresence
          , typename FPack, typename Arg >
-struct print_impl_with_width_measure_<CharT, premeasurements<SizeDemand, WidthDemand>, FPack, Arg>
+struct print_impl_with_width_measure_<CharT, premeasurements<SizePresence, WidthPresence>, FPack, Arg>
 {
     using type = strf::printer_type
-        < CharT, strf::premeasurements<SizeDemand, strf::width_demand::yes>, FPack, Arg >;
+        < CharT, strf::premeasurements<SizePresence, strf::width_presence::yes>, FPack, Arg >;
 };
 
 template<typename CharT, typename PreMeasurements, typename FPack, typename... Args>

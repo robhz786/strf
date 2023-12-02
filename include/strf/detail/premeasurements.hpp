@@ -168,23 +168,23 @@ template <bool Active>
 using size_preview STRF_DEPRECATED_MSG("size_preview was renamed to size_accumulator")
     = size_accumulator<Active>;
 
-enum class width_demand: bool { no = false, yes = true };
-enum class size_demand : bool { no = false, yes = true };
+enum class width_presence: bool { no = false, yes = true };
+enum class size_presence : bool { no = false, yes = true };
 
-using preview_size STRF_DEPRECATED_MSG("preview_size was renamed to size_demand")
-    = size_demand;
-using preview_width STRF_DEPRECATED_MSG("preview_width was renamed to width_demand")
-    = width_demand;
+using preview_size STRF_DEPRECATED_MSG("preview_size was renamed to size_presence")
+    = size_presence;
+using preview_width STRF_DEPRECATED_MSG("preview_width was renamed to width_presence")
+    = width_presence;
 
-template <strf::size_demand SizeDemand, strf::width_demand WidthDemand>
+template <strf::size_presence SizePresence, strf::width_presence WidthPresence>
 class premeasurements
-    : public strf::size_accumulator<static_cast<bool>(SizeDemand)>
-    , public strf::width_decumulator<static_cast<bool>(WidthDemand)>
+    : public strf::size_accumulator<static_cast<bool>(SizePresence)>
+    , public strf::width_decumulator<static_cast<bool>(WidthPresence)>
 {
 public:
 
-    static constexpr bool size_demanded = static_cast<bool>(SizeDemand);
-    static constexpr bool width_demanded = static_cast<bool>(WidthDemand);
+    static constexpr bool size_demanded = static_cast<bool>(SizePresence);
+    static constexpr bool width_demanded = static_cast<bool>(WidthPresence);
     static constexpr bool no_demands = ! size_demanded && ! width_demanded;
     static constexpr bool something_demanded = size_demanded || width_demanded;
     static constexpr bool size_and_width_demanded = size_demanded && width_demanded;
@@ -196,7 +196,7 @@ public:
     static constexpr bool something_required = something_demanded;
     static constexpr bool all_required = size_and_width_demanded;
     
-    template <strf::width_demand W = WidthDemand>
+    template <strf::width_presence W = WidthPresence>
     STRF_HD constexpr explicit premeasurements
         ( strf::detail::enable_if_t<static_cast<bool>(W), strf::width_t> initial_width ) noexcept
         : strf::width_decumulator<true>{initial_width}
@@ -215,13 +215,13 @@ public:
 
 
 using no_premeasurements
-    = strf::premeasurements<strf::size_demand::no, strf::width_demand::no>;
+    = strf::premeasurements<strf::size_presence::no, strf::width_presence::no>;
 using full_premeasurements
-    = strf::premeasurements<strf::size_demand::yes, strf::width_demand::yes>;
+    = strf::premeasurements<strf::size_presence::yes, strf::width_presence::yes>;
 
-template <strf::size_demand SizeDemand, strf::width_demand WidthDemand>
+template <strf::size_presence SizePresence, strf::width_presence WidthPresence>
 using print_preview STRF_DEPRECATED_MSG("print_preview renamed to premeasurements")
-    = strf::premeasurements<SizeDemand, WidthDemand>;
+    = strf::premeasurements<SizePresence, WidthPresence>;
 
 using no_print_preview
     STRF_DEPRECATED_MSG("no_print_preview renamed to no_premeasurements")

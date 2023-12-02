@@ -417,18 +417,18 @@ public:
 ----
 namespace strf {
 
-enum class width_demand: bool { no = false, yes = true };
-enum class size_demand : bool { no = false, yes = true };
+enum class width_presence: bool { no = false, yes = true };
+enum class size_presence : bool { no = false, yes = true };
 
-template <size_demand SizeDemand, width_demand WidthDemand>
+template <size_presence SizePresence, width_presence WidthPresence>
 class premeasurements
-    : public {size_accumulator}<static_cast<bool>(SizeDemand)>
-    , public {width_decumulator}<static_cast<bool>(WidthDemand)>
+    : public {size_accumulator}<static_cast<bool>(SizePresence)>
+    , public {width_decumulator}<static_cast<bool>(WidthPresence)>
 {
 public:
 
-    static constexpr bool size_demanded = static_cast<bool>(SizeDemand);
-    static constexpr bool width_demanded = static_cast<bool>(WidthDemand);
+    static constexpr bool size_demanded = static_cast<bool>(SizePresence);
+    static constexpr bool width_demanded = static_cast<bool>(WidthPresence);
     static constexpr bool no_demands  = ! size_demanded && ! width_demanded;    
     static constexpr bool something_demanded = size_demanded || width_demanded;
     static constexpr bool size_and_width_demanded = size_demanded && width_demanded;
@@ -460,7 +460,7 @@ Effect:: Default-construct each of the base classes.
 ----
 constexpr explicit premeasurements(<<width_t,width_t>> initial_width) noexcept;
 ----
-Compile-time requirement:: `WidthDemand` is `width_demand::yes`, otherwise this constructor
+Compile-time requirement:: `WidthPresence` is `width_presence::yes`, otherwise this constructor
 does not participate in overload resolution.
 Effect:: Initializes `{width_decumulator}` base
 with `initial_width`.
@@ -652,12 +652,12 @@ So calling `zeroize_remaining_width_if_negative` aims to reduce the chances of t
 [source,cpp,subs=normal]
 ----
 template < typename CharT
-         , <<premeasurements,size_demand>> SizeDemand
-         , <<premeasurements,width_demand>> WidthDemand
+         , <<premeasurements,size_presence>> SizePresence
+         , <<premeasurements,width_presence>> WidthPresence
          , typename\... FPE
          , typename\... Args >
 void measure
-    ( {premeasurements}<SizeDemand, WidthDemand>* pp
+    ( {premeasurements}<SizePresence, WidthPresence>* pp
     , const {facets_pack}<FPE\...>& facets
     , const Args&\... args );
 ----
@@ -670,7 +670,7 @@ Compile-time requirements::
   ( since this is a requirement of `{facets_pack}` ).
 
 Effects::
-* When `SizeDemand` is `size_demand::yes`, for each argument `arg` in `args\...`
+* When `SizePresence` is `size_presence::yes`, for each argument `arg` in `args\...`
   instantiates the correponding `printer` type with `pp`, `facets`, and `arg`.
   This translates into the following
   https://en.cppreference.com/w/cpp/language/fold[fold expression]:
@@ -678,16 +678,16 @@ Effects::
 [source,cpp,subs=normal]
 ----
 (\..., {printer_type}< CharT
-                  , {premeasurements}<SizeDemand, WidthDemand>
+                  , {premeasurements}<SizePresence, WidthPresence>
                   , facets_pack<FPE\...>
                   , Args >  {{make_printer_input}<CharT>(pp, facets, args)} );
 ----
-* When `SizeDemand` is `size_demand::no` and `WidthDemand` is `width_demand::yes`,
+* When `SizePresence` is `size_presence::no` and `WidthPresence` is `width_presence::yes`,
   for each argument `arg` in `args\...` instantiates the correponding `printer`
   type with `pp`, `facets`, and `arg` ( again, using `{printer_type}`  and
   `{make_printer_input}` ), while `pp-><<width_decumulator,remaining_width>>() > 0`
   is `true`.
   This implies that not necessarily all argument in `arg\...` are used.
-* When `SizeDemand` is `size_demand::no` and `WidthDemand` is `width_demand::no`,
+* When `SizePresence` is `size_presence::no` and `WidthPresence` is `width_presence::no`,
   does nothing
 

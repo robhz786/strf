@@ -61,7 +61,7 @@ public:
     using return_type = strf::detail::destination_finish_return_type<DestCreator, false>;
 
     using premeasurements_type = strf::premeasurements
-        <strf::size_demand::no, strf::width_demand::no>;
+        <strf::size_presence::no, strf::width_presence::no>;
 
     template <bool Line, typename DestCreator, typename... Printers>
     static STRF_HD return_type<DestCreator> print
@@ -93,7 +93,7 @@ public:
     using return_type = strf::detail::destination_finish_return_type<DestCreator, true>;
 
     using premeasurements_type = strf::premeasurements
-        <strf::size_demand::yes, strf::width_demand::no>;
+        <strf::size_presence::yes, strf::width_presence::no>;
 
     template <bool Line, typename DestCreator, typename... Printers>
     STRF_HD return_type<DestCreator> print
@@ -118,7 +118,7 @@ public:
     using return_type = strf::detail::destination_finish_return_type<DestCreator, true>;
 
     using premeasurements_type = strf::premeasurements
-        <strf::size_demand::yes, strf::width_demand::no>;
+        <strf::size_presence::yes, strf::width_presence::no>;
 
     template <bool Line, typename DestCreator, typename... Printers>
     static STRF_HD return_type<DestCreator> print

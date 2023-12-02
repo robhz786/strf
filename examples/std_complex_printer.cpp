@@ -279,11 +279,11 @@ public:
 
 private:
 
-    template < strf::size_demand SizeDemand
-             , strf::width_demand WidthDemand
+    template < strf::size_presence SizePresence
+             , strf::width_presence WidthPresence
              , typename WidthCalc >
     void init_fillcount_and_do_premeasurements_
-        ( strf::premeasurements<SizeDemand, WidthDemand>* pre
+        ( strf::premeasurements<SizePresence, WidthPresence>* pre
         , WidthCalc wcalc
         , strf::width_t fmt_width );
 
@@ -306,16 +306,16 @@ private:
 };
 
 template <typename CharT, typename FloatT>
-template <strf::size_demand SizeDemand, strf::width_demand WidthDemand, typename WidthCalc>
+template <strf::size_presence SizePresence, strf::width_presence WidthPresence, typename WidthCalc>
 void fmt_std_complex_printer<CharT, FloatT>::init_fillcount_and_do_premeasurements_
-    ( strf::premeasurements<SizeDemand, WidthDemand>* pre
+    ( strf::premeasurements<SizePresence, WidthPresence>* pre
     , WidthCalc wcalc
     , strf::width_t fmt_width )
 {
     const strf::width_t fillchar_width = wcalc.char_width(strf::utf_t<char32_t>{}, fillchar_);
-    if (fmt_width >= pre->remaining_width() || ! static_cast<bool>(WidthDemand) ) {
+    if (fmt_width >= pre->remaining_width() || ! static_cast<bool>(WidthPresence) ) {
         pre->clear_remaining_width();
-        strf::premeasurements<SizeDemand, strf::width_demand::yes> sub_pre{fmt_width};
+        strf::premeasurements<SizePresence, strf::width_presence::yes> sub_pre{fmt_width};
         do_premeasurements_without_fill_(&sub_pre, wcalc);
         fillcount_ = (sub_pre.remaining_width() / fillchar_width).round();
         pre->add_size(sub_pre.accumulated_ssize());
@@ -330,7 +330,7 @@ void fmt_std_complex_printer<CharT, FloatT>::init_fillcount_and_do_premeasuremen
             }
         }
     }
-    if (fillcount_ && static_cast<bool>(SizeDemand)) {
+    if (fillcount_ && static_cast<bool>(SizePresence)) {
         pre->add_size(fillcount_ * encoding_.encoded_char_size(fillchar_));
     }
 }

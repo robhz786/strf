@@ -115,10 +115,10 @@ public:
     {
     }
 
-    template <strf::size_demand SizeDemand>
+    template <strf::size_presence SizePresence>
     base64_printer
         ( base64_facet facet
-        , strf::premeasurements<SizeDemand, strf::width_demand::no>* pre
+        , strf::premeasurements<SizePresence, strf::width_presence::no>* pre
         , const base64_input_with_formatters& fmt );
 
     void print_to(strf::destination<CharT>& dst) const override;
@@ -153,10 +153,10 @@ private:
 };
 
 template <typename CharT>
-template <strf::size_demand SizeDemand>
+template <strf::size_presence SizePresence>
 base64_printer<CharT>::base64_printer
     ( base64_facet facet
-    , strf::premeasurements<SizeDemand, strf::width_demand::no>* pre
+    , strf::premeasurements<SizePresence, strf::width_presence::no>* pre
     , const base64_input_with_formatters& fmt )
     : facet_(facet)
     , fmt_(fmt)
