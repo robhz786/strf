@@ -534,7 +534,7 @@ When `Active` is `true` ::: The internally stored size value.
 ----
 constexpr std::ptrdiff_t accumulated_ssize() const noexcept;
 ----
-Return value:: static_cast<std::ptrdiff_t>(accumulated_usize())
+Return value:: `static_cast<std::ptrdiff_t>(accumulated_usize())`
 ====
 
 
