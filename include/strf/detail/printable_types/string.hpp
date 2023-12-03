@@ -989,7 +989,7 @@ private:
         if (transcode_ == nullptr) {
             src_to_u32_ = src_charset.to_u32().transcode_func();
             u32size_ = src_charset.to_u32().transcode_size_func();
-            u32_to_dst_ = dst_charset.from_u32().transcode_func();
+            u32_to_dst_ = dst_charset.from_u32().unsafe_transcode_func();
         }
         STRF_IF_CONSTEXPR (PreMeasurements::size_demanded) {
             strf::transcode_size_f<SrcCharT> transcode_size
@@ -1001,7 +1001,7 @@ private:
             } else {
                 s = strf::decode_encode_size<SrcCharT>
                     ( src_charset.to_u32().transcode_func()
-                    , dst_charset.from_u32().transcode_size_func()
+                    , dst_charset.from_u32().unsafe_transcode_size_func()
                     , str_, str_end_, strf::ssize_max, flags )
                     .ssize;
             }
@@ -1149,7 +1149,7 @@ void STRF_HD aligned_transcode_printer<SrcCharT, DstCharT>::init_
     if (transcode_ == nullptr) {
         src_to_u32_ = src_charset.to_u32().transcode_func();
         u32size_ = src_charset.to_u32().transcode_size_func();
-        u32_to_dst_ = dst_charset.from_u32().transcode_func();
+        u32_to_dst_ = dst_charset.from_u32().unsafe_transcode_func();
     }
     int fillcount = 0;
     if (afmt_.width > str_width) {
@@ -1186,7 +1186,7 @@ void STRF_HD aligned_transcode_printer<SrcCharT, DstCharT>::init_
         } else {
             s = strf::decode_encode_size<SrcCharT>
                 ( src_charset.to_u32().transcode_func()
-                , dst_charset.from_u32().transcode_size_func()
+                , dst_charset.from_u32().unsafe_transcode_size_func()
                 , str_, str_end_, strf::ssize_max, flags )
                 .ssize;
         }
