@@ -1127,7 +1127,7 @@ inline STRF_HD strf::decode_encode_result<SrcCharT, DstCharT> decode_encode
 
     return strf::decode_encode
         ( src_charset.to_u32().transcode_func()
-        , dst_charset.from_u32().transcode_func()
+        , dst_charset.from_u32().unsafe_transcode_func()
         , src, src_end, dst, dst_end, err_notifier, flags );
 }
 
@@ -1235,7 +1235,7 @@ inline STRF_HD strf::decode_encode_size_result<SrcCharT> decode_encode
 
     return strf::decode_encode
         ( src_charset.to_u32().transcode_func()
-        , dst_charset.from_u32().transcode_func()
+        , dst_charset.from_u32().unsafe_transcode_func()
         , src, src_end, dst, err_notifier, flags );
 }
 
@@ -1322,7 +1322,7 @@ inline STRF_HD strf::decode_encode_size_result<SrcCharT> decode_encode_size
 
     return strf::decode_encode_size
         ( src_charset.to_u32().transcode_func()
-        , dst_charset.from_u32().transcode_size_func()
+        , dst_charset.from_u32().unsafe_transcode_size_func()
         , src, src_end, limit, flags );
 }
 
@@ -1608,7 +1608,7 @@ STRF_HD strf::decode_encode_size_result<SrcCharT> transcode
         return {res.ssize, res.src_ptr, 0, res.stop_reason};
     }
     const auto src_to_u32 = src_charset.to_u32().transcode_func();
-    const auto u32_to_dst = dst_charset.from_u32().transcode_func();
+    const auto u32_to_dst = dst_charset.from_u32().unsafe_transcode_func();
     return decode_encode(src_to_u32, u32_to_dst, src, src_end, dst, err_notifier, flags);
 }
 

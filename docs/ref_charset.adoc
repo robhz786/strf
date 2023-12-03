@@ -2126,7 +2126,7 @@ Equivalent to:
 ----
 decode_encode
     ( src_charset.{to_u32}().{Transcoder_transcode_func}()
-    , dst_charset.{from_u32}().{Transcoder_transcode_func}()
+    , dst_charset.{from_u32}().{Transcoder_unsafe_transcode_func}()
     , src, src_end, dst, err_notifier, flags )
 ----
 ====
@@ -2235,7 +2235,7 @@ Same as:
 ----
 decode_encode_size
     ( src_charset.{to_u32}().{Transcoder_transcode_func}()
-    , dst_charset.{from_u32}().{Transcoder_transcode_size_func}()
+    , dst_charset.{from_u32}().{Transcoder_unsafe_transcode_size_func}()
     , src, src_end, limit, flags )
 ----
 Compile-time requirements::
@@ -2645,7 +2645,7 @@ if (func != nullptr) {
     return {result.ssize, result.src_ptr, 0, result.stop_reason};
 }
 const auto src_to_u32 = src_charset.to_u32().transcode_func();
-const auto u32_to_dst = dst_charset.from_u32().transcode_func();
+const auto u32_to_dst = dst_charset.from_u32().unsafe_transcode_func();
 return <<decode_encode_dest,decode_encode>>
     ( src_to_u32, u32_to_dst
     , src, src_end, dst, err_notifier, flags );
