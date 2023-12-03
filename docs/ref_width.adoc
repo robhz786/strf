@@ -528,7 +528,7 @@ class width_t {
 public:
     struct from_underlying_tag{};
     constexpr width_t() noexcept;
-    constexpr width_t(std::int16_t) noexcept;
+    constexpr width_t(std::integral auto) noexcept;
     constexpr width_t(const width_t&) noexcept;
     constexpr width_t(from_underlying_tag, std::int32_t) noexcept;
 

@@ -880,7 +880,7 @@ inline STRF_HD int aligned_strcpy_printer<SrcCharT, DstCharT>::init_
                 right_fillcount_ = 0;
         }
         pre->subtract_width(strw);
-        pre->subtract_width(static_cast<width_t>(fillcount));
+        pre->subtract_width(fillcount);
         return fillcount;
     }
     right_fillcount_ = 0;
@@ -1170,7 +1170,7 @@ void STRF_HD aligned_transcode_printer<SrcCharT, DstCharT>::init_
                 right_fillcount_ = 0;
         }
         pre->subtract_width(str_width);
-        pre->subtract_width(static_cast<width_t>(fillcount));
+        pre->subtract_width(fillcount);
     } else {
         right_fillcount_ = 0;
         left_fillcount_ = 0;
@@ -1462,7 +1462,7 @@ void STRF_HD aligned_unsafe_transcode_printer<SrcCharT, DstCharT>::init_
                 right_fillcount_ = 0;
         }
         pre->subtract_width(str_width);
-        pre->subtract_width(static_cast<width_t>(fillcount));
+        pre->subtract_width(fillcount);
     } else {
         right_fillcount_ = 0;
         left_fillcount_ = 0;

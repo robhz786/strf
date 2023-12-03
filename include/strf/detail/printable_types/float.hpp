@@ -2365,7 +2365,7 @@ public:
         } else {
             decimal_point_size_ = 0;
         }
-        input.pre->subtract_width(static_cast<width_t>(r.fillcount + r.content_width));
+        input.pre->subtract_width(r.fillcount + r.content_width);
         STRF_IF_CONSTEXPR (PreMeasurements::size_demanded) {
             input.pre->add_size(r.content_width);
             if (r.fillcount > 0) {

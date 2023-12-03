@@ -52,16 +52,31 @@ public:
     {
     }
 
-    constexpr explicit STRF_HD width_t(std::uint16_t x) noexcept
-        : width_t(static_cast<std::int16_t>(x))
+    template < typename IntT
+             , strf::detail::enable_if_t
+                   < (2 < sizeof(IntT))
+                  && std::is_integral<IntT>::value
+                  && std::is_signed<IntT>::value
+                   , int > = 0 >
+    constexpr STRF_HD width_t(IntT x) noexcept
+        :  value_( x < -0x8000
+                 ? underlying_min_
+                 : x > 0x7FFF
+                 ? underlying_max_
+                 : detail::cast_i32(detail::cast_u32(detail::cast_u16(x)) << 16) )
     {
     }
 
-    template < typename IntT
+    template < typename UIntT
              , strf::detail::enable_if_t
-                   < (2 < sizeof(IntT)) && std::is_integral<IntT>::value, int > = 0 >
-    constexpr explicit STRF_HD width_t(IntT x) noexcept
-        : width_t(static_cast<std::int16_t>(x))
+                   < (2 <= sizeof(UIntT))
+                  && std::is_integral<UIntT>::value
+                  && std::is_unsigned<UIntT>::value
+                   , int > = 0 >
+    constexpr STRF_HD width_t(UIntT x) noexcept
+        :  value_( x <= 0x7FFF
+                 ? detail::cast_i32(x << 16)
+                 : underlying_max_ )
     {
     }
 

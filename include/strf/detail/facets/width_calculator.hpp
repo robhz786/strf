@@ -106,7 +106,7 @@ public:
         auto lim = limit.non_negative_floor();
         auto res = charset.count_codepoints_fast(str, str_end, lim);
         STRF_ASSERT(res.count <= lim);
-        return {static_cast<width_t>(res.count), res.ptr};
+        return {res.count, res.ptr};
     }
 };
 
@@ -150,7 +150,7 @@ public:
         auto lim = limit.non_negative_floor();
         auto res = charset.count_codepoints(str, str_end, lim);
         STRF_ASSERT(static_cast<std::ptrdiff_t>(res.count) <= lim);
-        return {static_cast<width_t>(res.count), res.ptr};
+        return {res.count, res.ptr};
     }
 };
 

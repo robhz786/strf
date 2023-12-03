@@ -1434,7 +1434,7 @@ private:
         uvalue_ = value;
         negative_ = false;
         digcount_ = strf::detail::count_digits<10>(value);
-        pre->subtract_width(static_cast<width_t>(digcount_));
+        pre->subtract_width(digcount_);
         pre->add_size(digcount_);
     }
 
@@ -1471,7 +1471,7 @@ public:
         auto encoding = strf::use_facet<strf::charset_c<CharT>, int>(i.facets);
         STRF_MAYBE_UNUSED(encoding);
         encode_fill_ = encoding.encode_fill_func();
-        i.pre->subtract_width(static_cast<width_t>(fillcount_ + digcount_ + negative_));
+        i.pre->subtract_width(fillcount_ + digcount_ + negative_);
         STRF_IF_CONSTEXPR(strf::usual_printer_input<T...>::premeasurements_type::size_demanded) {
             auto fillsize = fillcount_ * encoding.encoded_char_size(fillchar_);
             i.pre->add_size(fillsize + digcount_ + negative_);
@@ -1631,7 +1631,7 @@ public:
     STRF_HD explicit int_printer_no_pad0_nor_punct(strf::usual_printer_input<T...> i) noexcept
     {
         auto w = strf::detail::init(data_, i.arg.get_int_format(), i.arg.value());
-        i.pre->subtract_width(static_cast<width_t>(w));
+        i.pre->subtract_width(w);
         i.pre->add_size(w);
     }
 
@@ -1976,7 +1976,7 @@ public:
         auto afmt = i.arg.get_alignment_format();
         detail::init_1(data_, ifmt, ivalue);
         auto w = detail::init_fmt_int_printer_data<Base>(data_, ifmt, afmt);
-        i.pre->subtract_width(static_cast<width_t>(w.sub_width + w.fillcount));
+        i.pre->subtract_width(w.sub_width + w.fillcount);
         using pre_t = typename strf::usual_printer_input<T...>::premeasurements_type;
         STRF_IF_CONSTEXPR (pre_t::size_demanded) {
             i.pre->add_size(w.sub_width);
@@ -2154,7 +2154,7 @@ public:
         detail::init_1(data_, ifmt, ivalue);
         const auto w = detail::init_punct_fmt_int_printer_data<Base>
             (data_, charset.validate_func(), ifmt, afmt);
-        pre->subtract_width(static_cast<width_t>(w.sub_width + w.fillcount + data_.sepcount));
+        pre->subtract_width(w.sub_width + w.fillcount + data_.sepcount);
         STRF_IF_CONSTEXPR (PreMeasurements::size_demanded) {
             pre->add_size(w.sub_width);
             if (w.fillcount) {

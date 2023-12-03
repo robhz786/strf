@@ -315,6 +315,28 @@ STRF_TEST_FUNC void test_width_t()
     TEST_TRUE(compare(1, 2_w)  < 0);
     TEST_TRUE(compare(2, 2_w) == 0);
     TEST_TRUE(compare(3, 2_w)  > 0);
+
+    // casting ints
+    {
+        int above_max = 0x8000;
+        width_t w = above_max;
+        TEST_TRUE(w == width_max);
+    }
+    {
+        int below_min = -0x8001;
+        width_t w = below_min;
+        TEST_TRUE(w == width_min);
+    }
+    {
+        std::uint16_t above_max = 0x8000;
+        width_t w = above_max;
+        TEST_TRUE(w == width_max);
+    }
+    {
+        int within = 1;
+        width_t w = within;
+        TEST_TRUE(w == 1_w);
+    }
 }
 
 REGISTER_STRF_TEST(test_width_t)
