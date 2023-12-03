@@ -2906,7 +2906,6 @@ class single_byte_charset
 public:
 
     using code_unit = CharT;
-    using char_type STRF_DEPRECATED = CharT;
 
     static STRF_HD const char* name() noexcept
     {

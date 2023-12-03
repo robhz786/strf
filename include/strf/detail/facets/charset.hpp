@@ -527,7 +527,6 @@ class dynamic_charset
 public:
 
     using code_unit = CharT;
-    using char_type STRF_DEPRECATED = CharT;
 
     STRF_HD explicit dynamic_charset
         ( const strf::dynamic_charset_data<CharT>& data )
@@ -1848,25 +1847,6 @@ STRF_HD strf::decode_encode_size_result<SrcCharT> unsafe_transcode_size
 #else
 #  define STRF_CHAR_ENCODING_DEPRECATED STRF_DEPRECATED
 #endif
-
-using char_encoding_id STRF_CHAR_ENCODING_DEPRECATED =
-    strf::charset_id;
-
-template <typename CharT, strf::charset_id Id>
-using static_char_encoding STRF_CHAR_ENCODING_DEPRECATED =
-    strf::static_charset<CharT, Id>;
-
-template <typename CharT>
-using dynamic_char_encoding_data STRF_CHAR_ENCODING_DEPRECATED =
-    strf::dynamic_charset_data<CharT>;
-
-template <typename CharT>
-using dynamic_char_encoding STRF_CHAR_ENCODING_DEPRECATED =
-    strf::dynamic_charset<CharT>;
-
-template <typename CharT>
-using char_encoding_c STRF_CHAR_ENCODING_DEPRECATED =
-    strf::charset_c<CharT>;
 
 } // namespace strf
 
