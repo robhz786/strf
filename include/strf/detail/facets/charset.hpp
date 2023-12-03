@@ -242,18 +242,12 @@ using transcode_f = strf::transcode_result<SrcCharT, DstCharT> (*)
     , strf::transcoding_error_notifier* err_notifier
     , strf::transcode_flags flags );
 
-template <typename SrcCharT, typename DstCharT>
-using unsafe_transcode_f = strf::transcode_f<SrcCharT, DstCharT>;
-
 template <typename SrcCharT>
 using transcode_size_f = transcode_size_result<SrcCharT> (*)
     ( const SrcCharT* src
     , const SrcCharT* src_end
     , std::ptrdiff_t limit
     , strf::transcode_flags flags );
-
-template <typename SrcCharT>
-using unsafe_transcode_size_f = transcode_size_f<SrcCharT>;
 
 template <typename CharT>
 using write_replacement_char_f = void (*)
@@ -404,13 +398,13 @@ public:
         return transcode_size_func_;
     }
 
-    constexpr STRF_HD strf::unsafe_transcode_f<SrcCharT, DstCharT>
+    constexpr STRF_HD strf::transcode_f<SrcCharT, DstCharT>
     unsafe_transcode_func() const noexcept
     {
         return unsafe_transcode_func_;
     }
 
-    constexpr STRF_HD strf::unsafe_transcode_size_f<SrcCharT>
+    constexpr STRF_HD strf::transcode_size_f<SrcCharT>
     unsafe_transcode_size_func() const noexcept
     {
         return unsafe_transcode_size_func_;
@@ -420,8 +414,8 @@ private:
 
     strf::transcode_f<SrcCharT, DstCharT> transcode_func_;
     strf::transcode_size_f<SrcCharT> transcode_size_func_;
-    strf::unsafe_transcode_f<SrcCharT, DstCharT> unsafe_transcode_func_;
-    strf::unsafe_transcode_size_f<SrcCharT> unsafe_transcode_size_func_;
+    strf::transcode_f<SrcCharT, DstCharT> unsafe_transcode_func_;
+    strf::transcode_size_f<SrcCharT> unsafe_transcode_size_func_;
 };
 
 template <typename CharT>
@@ -1352,8 +1346,8 @@ inline STRF_HD strf::decode_encode_size_result<SrcCharT> decode_encode_size
 
 template<typename SrcCharT, typename DstCharT>
 STRF_HD strf::decode_encode_result<SrcCharT, DstCharT> unsafe_decode_encode
-    ( strf::unsafe_transcode_f<SrcCharT, char32_t> to_u32
-    , strf::unsafe_transcode_f<char32_t, DstCharT> from_u32
+    ( strf::transcode_f<SrcCharT, char32_t> to_u32
+    , strf::transcode_f<char32_t, DstCharT> from_u32
     , const SrcCharT* src
     , const SrcCharT* src_end
     , DstCharT* dst
@@ -1417,8 +1411,8 @@ inline STRF_HD strf::decode_encode_result<SrcCharT, DstCharT> unsafe_decode_enco
 
 template <typename SrcCharT>
 STRF_HD strf::decode_encode_size_result<SrcCharT> unsafe_decode_encode_size
-    ( strf::unsafe_transcode_f<SrcCharT, char32_t> to_u32
-    , strf::unsafe_transcode_size_f<char32_t> size_calc_func
+    ( strf::transcode_f<SrcCharT, char32_t> to_u32
+    , strf::transcode_size_f<char32_t> size_calc_func
     , const SrcCharT* src
     , const SrcCharT* src_end
     , std::ptrdiff_t limit

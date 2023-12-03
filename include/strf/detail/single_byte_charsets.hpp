@@ -2499,11 +2499,11 @@ struct single_byte_charset_to_utf32
     {
         return transcode_size;
     }
-    static STRF_HD strf::unsafe_transcode_f<SrcCharT, DstCharT> unsafe_transcode_func() noexcept
+    static STRF_HD strf::transcode_f<SrcCharT, DstCharT> unsafe_transcode_func() noexcept
     {
         return unsafe_transcode;
     }
-    static STRF_HD strf::unsafe_transcode_size_f<SrcCharT> unsafe_transcode_size_func() noexcept
+    static STRF_HD strf::transcode_size_f<SrcCharT> unsafe_transcode_size_func() noexcept
     {
         return unsafe_transcode_size;
     }
@@ -2637,11 +2637,11 @@ struct utf32_to_single_byte_charset
     {
         return transcode_size;
     }
-    static STRF_HD strf::unsafe_transcode_f<SrcCharT, DstCharT> unsafe_transcode_func() noexcept
+    static STRF_HD strf::transcode_f<SrcCharT, DstCharT> unsafe_transcode_func() noexcept
     {
         return unsafe_transcode;
     }
-    static STRF_HD strf::unsafe_transcode_size_f<SrcCharT> unsafe_transcode_size_func() noexcept
+    static STRF_HD strf::transcode_size_f<SrcCharT> unsafe_transcode_size_func() noexcept
     {
         return unsafe_transcode_size;
     }
@@ -2790,11 +2790,11 @@ struct single_byte_charset_to_itself
     {
         return transcode_size;
     }
-    static STRF_HD strf::unsafe_transcode_f<SrcCharT, DstCharT> unsafe_transcode_func() noexcept
+    static STRF_HD strf::transcode_f<SrcCharT, DstCharT> unsafe_transcode_func() noexcept
     {
         return unsafe_transcode;
     }
-    static STRF_HD strf::unsafe_transcode_size_f<SrcCharT> unsafe_transcode_size_func() noexcept
+    static STRF_HD strf::transcode_size_f<SrcCharT> unsafe_transcode_size_func() noexcept
     {
         return unsafe_transcode_size;
     }

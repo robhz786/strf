@@ -287,11 +287,11 @@ public:
     {
         return transcode_size;
     }
-    static STRF_HD strf::unsafe_transcode_f<SrcCharT, DstCharT> unsafe_transcode_func() noexcept
+    static STRF_HD strf::transcode_f<SrcCharT, DstCharT> unsafe_transcode_func() noexcept
     {
         return unsafe_transcode;
     }
-    static STRF_HD strf::unsafe_transcode_size_f<SrcCharT> unsafe_transcode_size_func() noexcept
+    static STRF_HD strf::transcode_size_f<SrcCharT> unsafe_transcode_size_func() noexcept
     {
         return unsafe_transcode_size;
     }
@@ -357,11 +357,11 @@ public:
     {
         return transcode_size;
     }
-    static STRF_HD strf::unsafe_transcode_f<SrcCharT, DstCharT> unsafe_transcode_func() noexcept
+    static STRF_HD strf::transcode_f<SrcCharT, DstCharT> unsafe_transcode_func() noexcept
     {
         return unsafe_transcode;
     }
-    static STRF_HD strf::unsafe_transcode_size_f<SrcCharT> unsafe_transcode_size_func() noexcept
+    static STRF_HD strf::transcode_size_f<SrcCharT> unsafe_transcode_size_func() noexcept
     {
         return unsafe_transcode_size;
     }
@@ -427,11 +427,11 @@ public:
     {
         return transcode_size;
     }
-    static STRF_HD strf::unsafe_transcode_f<SrcCharT, DstCharT> unsafe_transcode_func() noexcept
+    static STRF_HD strf::transcode_f<SrcCharT, DstCharT> unsafe_transcode_func() noexcept
     {
         return unsafe_transcode;
     }
-    static STRF_HD strf::unsafe_transcode_size_f<SrcCharT> unsafe_transcode_size_func() noexcept
+    static STRF_HD strf::transcode_size_f<SrcCharT> unsafe_transcode_size_func() noexcept
     {
         return unsafe_transcode_size;
     }
@@ -497,11 +497,11 @@ public:
     {
         return transcode_size;
     }
-    static STRF_HD strf::unsafe_transcode_f<SrcCharT, DstCharT> unsafe_transcode_func() noexcept
+    static STRF_HD strf::transcode_f<SrcCharT, DstCharT> unsafe_transcode_func() noexcept
     {
         return unsafe_transcode;
     }
-    static STRF_HD strf::unsafe_transcode_size_f<SrcCharT> unsafe_transcode_size_func() noexcept
+    static STRF_HD strf::transcode_size_f<SrcCharT> unsafe_transcode_size_func() noexcept
     {
         return unsafe_transcode_size;
     }
@@ -590,11 +590,11 @@ public:
     {
         return transcode_size;
     }
-    static STRF_HD strf::unsafe_transcode_f<SrcCharT, DstCharT> unsafe_transcode_func() noexcept
+    static STRF_HD strf::transcode_f<SrcCharT, DstCharT> unsafe_transcode_func() noexcept
     {
         return unsafe_transcode;
     }
-    static STRF_HD strf::unsafe_transcode_size_f<SrcCharT> unsafe_transcode_size_func() noexcept
+    static STRF_HD strf::transcode_size_f<SrcCharT> unsafe_transcode_size_func() noexcept
     {
         return unsafe_transcode_size;
     }
@@ -654,11 +654,11 @@ public:
     {
         return transcode_size;
     }
-    static STRF_HD strf::unsafe_transcode_f<SrcCharT, DstCharT> unsafe_transcode_func() noexcept
+    static STRF_HD strf::transcode_f<SrcCharT, DstCharT> unsafe_transcode_func() noexcept
     {
         return unsafe_transcode;
     }
-    static STRF_HD strf::unsafe_transcode_size_f<SrcCharT> unsafe_transcode_size_func() noexcept
+    static STRF_HD strf::transcode_size_f<SrcCharT> unsafe_transcode_size_func() noexcept
     {
         return unsafe_transcode_size;
     }
@@ -722,11 +722,11 @@ public:
     {
         return transcode_size;
     }
-    static STRF_HD strf::unsafe_transcode_f<SrcCharT, DstCharT> unsafe_transcode_func() noexcept
+    static STRF_HD strf::transcode_f<SrcCharT, DstCharT> unsafe_transcode_func() noexcept
     {
         return unsafe_transcode;
     }
-    static STRF_HD strf::unsafe_transcode_size_f<SrcCharT> unsafe_transcode_size_func() noexcept
+    static STRF_HD strf::transcode_size_f<SrcCharT> unsafe_transcode_size_func() noexcept
     {
         return unsafe_transcode_size;
     }
@@ -786,11 +786,11 @@ public:
     {
         return transcode_size;
     }
-    static STRF_HD strf::unsafe_transcode_f<SrcCharT, DstCharT> unsafe_transcode_func() noexcept
+    static STRF_HD strf::transcode_f<SrcCharT, DstCharT> unsafe_transcode_func() noexcept
     {
         return unsafe_transcode;
     }
-    static STRF_HD strf::unsafe_transcode_size_f<SrcCharT> unsafe_transcode_size_func() noexcept
+    static STRF_HD strf::transcode_size_f<SrcCharT> unsafe_transcode_size_func() noexcept
     {
         return unsafe_transcode_size;
     }
@@ -860,11 +860,11 @@ public:
     {
         return transcode_size;
     }
-    static STRF_HD strf::unsafe_transcode_f<SrcCharT, DstCharT> unsafe_transcode_func() noexcept
+    static STRF_HD strf::transcode_f<SrcCharT, DstCharT> unsafe_transcode_func() noexcept
     {
         return detail::bypass_unsafe_transcode<SrcCharT, DstCharT>;
     }
-    static STRF_HD strf::unsafe_transcode_size_f<SrcCharT> unsafe_transcode_size_func() noexcept
+    static STRF_HD strf::transcode_size_f<SrcCharT> unsafe_transcode_size_func() noexcept
     {
         return unsafe_transcode_size;
     }

@@ -1283,7 +1283,7 @@ private:
         }
         STRF_IF_CONSTEXPR (PreMeasurements::size_demanded) {
             const auto flags = strf::transcode_flags::none;
-            strf::unsafe_transcode_size_f<SrcCharT>  transcode_size
+            strf::transcode_size_f<SrcCharT>  transcode_size
                 = transcoder.unsafe_transcode_size_func();
             std::ptrdiff_t s = 0;
             if (transcode_size != nullptr) {
@@ -1308,11 +1308,11 @@ private:
     const SrcCharT* str_;
     const SrcCharT* str_end_;
     union {
-        strf::unsafe_transcode_f<SrcCharT, DstCharT>  transcode_;
-        strf::unsafe_transcode_f<SrcCharT, char32_t>  src_to_u32_;
+        strf::transcode_f<SrcCharT, DstCharT>  transcode_;
+        strf::transcode_f<SrcCharT, char32_t>  src_to_u32_;
     };
     strf::transcode_size_f<SrcCharT> u32size_ = nullptr;
-    strf::unsafe_transcode_f<char32_t, DstCharT> u32_to_dst_ = nullptr;
+    strf::transcode_f<char32_t, DstCharT> u32_to_dst_ = nullptr;
     strf::transcoding_error_notifier* err_notifier_;
 
     template < typename Category, typename SrcChar, typename FPack
@@ -1403,11 +1403,11 @@ private:
     const SrcCharT* str_end_;
     strf::alignment_format afmt_;
     union {
-        strf::unsafe_transcode_f<SrcCharT, DstCharT>  transcode_;
-        strf::unsafe_transcode_f<SrcCharT, char32_t>  src_to_u32_;
+        strf::transcode_f<SrcCharT, DstCharT>  transcode_;
+        strf::transcode_f<SrcCharT, char32_t>  src_to_u32_;
     };
     strf::transcode_size_f<SrcCharT> u32size_ = nullptr;
-    strf::unsafe_transcode_f<char32_t, DstCharT> u32_to_dst_ = nullptr;
+    strf::transcode_f<char32_t, DstCharT> u32_to_dst_ = nullptr;
     strf::encode_fill_f<DstCharT> encode_fill_ = nullptr;
     strf::transcoding_error_notifier* err_notifier_;
     int left_fillcount_ = 0;
@@ -1470,7 +1470,7 @@ void STRF_HD aligned_unsafe_transcode_printer<SrcCharT, DstCharT>::init_
     }
     STRF_IF_CONSTEXPR (PreMeasurements::size_demanded) {
         std::ptrdiff_t s = 0;
-        strf::unsafe_transcode_size_f<SrcCharT> transcode_size
+        strf::transcode_size_f<SrcCharT> transcode_size
                 = transcoder.unsafe_transcode_size_func();
         constexpr auto flags = strf::transcode_flags::none;
         if (transcode_size != nullptr) {

@@ -29,8 +29,6 @@ http://www.boost.org/LICENSE_1_0.txt)
 :transcode_dest: <<transcode_dest,transcode_dest>>
 :transcode_f: <<charset_function_pointers,transcode_f>>
 :transcode_size_f: <<charset_function_pointers,transcode_size_f>>
-:unsafe_transcode_f: <<charset_function_pointers,unsafe_transcode_f>>
-:unsafe_transcode_size_f: <<charset_function_pointers,unsafe_transcode_size_f>>
 
 :transcode_result: <<transcode_result,transcode_result>>
 :transcode_size_result: <<transcode_size_result,transcode_size_result>>
@@ -403,18 +401,12 @@ using transcode_f = {transcode_result}<CharT> ({asterisk})
     , {transcoding_error_notifier}{asterisk} err_notifier
     , {transcode_flags} flags );
 
-template <typename SrcCharT, typename DstCharT>
-using unsafe_transcode_f = transcode_f<SrcCharT, DstCharT>
-
 template <typename SrcCharT>
 using transcode_size_f = {transcode_size_result}<ScrCharT> ({asterisk})
     ( const SrcCharT{asterisk} src
     , const SrcCharT{asterisk} src_end
     , std::ptrdiff_t limit
     , {transcode_flags} flags );
-
-template <typename SrcCharT>
-using unsafe_transcode_size_f = strf::transcode_size_f<SrcCharT, DstCharT>;
 
 template <typename CharT>
 using write_replacement_char_f = void({asterisk})( {transcode_dest}<CharT>& );
@@ -662,7 +654,7 @@ Return value:: A function pointer such that
 x.unsafe_transcode_func()
 ----
 [horizontal]
-Return type:: `{unsafe_transcode_f}<SrcCharT, DstCharT>`
+Return type:: `{transcode_f}<SrcCharT, DstCharT>`
 Return value:: A function pointer such that
    `x.unsafe_transcode_func() (src, src_end, dst, dst_end, err_notifier, flags)`
    has the same effect as
@@ -688,7 +680,7 @@ Return value:: A function pointer such that
 x.unsafe_transcode_size_func()
 ----
 [horizontal]
-Return type:: `{unsafe_transcode_size_f}<SrcCharT>`
+Return type:: `{transcode_size_f}<SrcCharT>`
 Return value:: A function pointer such that
                `x.unsafe_transcode_size_func() (src, src_end, limit, flags)` has the same
                effect as `x.<<Transcoder_unsafe_transcode_size,unsafe_transcode_size>>(src, src_end, limit, flags)`.
@@ -2281,8 +2273,8 @@ namespace strf {
 
 1template <typename SrcCharT, typename DstCharT>
 {decode_encode_result}<SrcCharT> unsafe_decode_encode
-    ( {unsafe_transcode_f}<SrcCharT, char32_t> to_u32
-    , {unsafe_transcode_f}<char32_t, DstCharT> from_u32
+    ( {transcode_f}<SrcCharT, char32_t> to_u32
+    , {transcode_f}<char32_t, DstCharT> from_u32
     , const SrcCharT{asterisk} src
     , const SrcCharT{asterisk} src_end
     , DstCharT* dst
@@ -2409,8 +2401,8 @@ characters that `unsafe_decode_encode` writes.
 namespace strf {
 template <typename SrcCharT>
 {decode_encode_size_result}<SrcCharT> unsafe_decode_encode_size
-    ( {unsafe_transcode_f}<SrcCharT, char32_t> to_u32
-    , {unsafe_transcode_size_f}<char32_t> size_calc_func
+    ( {transcode_f}<SrcCharT, char32_t> to_u32
+    , {transcode_size_f}<char32_t> size_calc_func
     , const SrcCharT{asterisk} src
     , const SrcCharT{asterisk} src_end
     , std::ptrdiff_t limit
