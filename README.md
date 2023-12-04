@@ -3,20 +3,13 @@
 [![Build Status](https://ci.appveyor.com/api/projects/status/github/robhz786/strf?branch=main&svg=true)](https://ci.appveyor.com/project/robhz786/strf/branch/main)
 [![codecov](https://codecov.io/gh/robhz786/strf/branch/main/graph/badge.svg?token=d5DIZzYv5O)](https://codecov.io/gh/robhz786/strf)
 
-Strf is a C++14 text formatting library that
-
-* [is fast](http://robhz786.github.io/strf-benchmarks/v0.15.3/results.html)
-* [is highly extensible](http://robhz786.github.io/strf/v0.15.3/versus_fmtlib.html#_extensibility)
-* [can do some things that others can't](https://robhz786.github.io/strf/v0.15.3/versus_fmtlib.html#_strf)
-
-__Attention__ : Branch `master` was renamed to `main` at the time of release 0.15.0.
+Just another C++ text formatting library.
 
 ## Documentation
 
 * Overview
   * [Tutorial](http://robhz786.github.io/strf/v0.15.3/tutorial.html)
   * [Quick reference](http://robhz786.github.io/strf/v0.15.3/quick_reference.html)
-  * [Strf versus {fmt}](http://robhz786.github.io/strf/v0.15.3/versus_fmtlib.html)
 * How to extend strf:
   * [Adding destination](http://robhz786.github.io/strf/v0.15.3/howto_add_destination.html)
   * [Adding printable types](http://robhz786.github.io/strf/v0.15.3/howto_add_printable_types.html)
@@ -34,12 +27,14 @@ __Attention__ : Branch `master` was renamed to `main` at the time of release 0.1
 
 ## Requirements
 
+From version 0.16 onwards, C++11 is no longer supported. The compiler must support C++14 or above.
+
 Strf has been tested in the following compilers:
 
-* Clang 3.8.1
-* GCC 6.3.0
+* Clang 6.0
+* GCC 6.5.0
 * Visual Studio 2019 16
-* NVCC 11.0
+* NVCC 11.8
 
 ## Examples
 
