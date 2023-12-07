@@ -29,11 +29,13 @@ void on_strf_assert_failed(const char* file, int line, const char* func, const c
 
 namespace {
 
+#if __cpp_exceptions
 class StrAssertionFailed: public std::exception
 {
 public:
     StrAssertionFailed() = default;
 };
+#endif
 
 template <typename T>
 T clone(const T& x) {
@@ -400,11 +402,16 @@ private:
 inline STRF_TEST_FUNC void test_exp_and_mantissa
     ( std::uint32_t ieee_exponent, std::uint64_t ieee_mantissa )
 {
+#if __cpp_exceptions
     try {
         const float64_tester tester(ieee_exponent, ieee_mantissa);
         tester.run();
     } catch (StrAssertionFailed&) {
     }
+#else
+    const float64_tester tester(ieee_exponent, ieee_mantissa);
+    tester.run();
+#endif
 }
 
 // inline STRF_TEST_FUNC void test_value(double x) {
@@ -438,7 +445,11 @@ void on_strf_assert_failed(const char* file, int line, const char* func, const c
     test_utils::test_messages_destination().recycle();
     (void) fflush(stdout);
     ++test_utils::test_err_count();
+#if __cpp_exceptions
     throw StrAssertionFailed();
+#else
+    std::abort();
+#endif
 }
 
 int main() {
