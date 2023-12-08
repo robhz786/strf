@@ -35,7 +35,7 @@ STRF_TEST_FUNC void test_unsafe_transcode_to_ptr()
     {
         constexpr auto buff_size = 200;
         char8_t buff[200] = {};
-        ustr_view input = u"abc\uAAAAzzz\uBBBBxxx";
+        const ustr_view input = u"abc\uAAAAzzz\uBBBBxxx";
 
         strf::unsafe_transcode<strf::utf_t, strf::utf_t>
             (input.begin(), input.end(), buff, buff + buff_size);
@@ -43,14 +43,14 @@ STRF_TEST_FUNC void test_unsafe_transcode_to_ptr()
         TEST_CSTR_EQ(buff, u8"abc\uAAAAzzz\uBBBBxxx");
     }
     {
-        ustr_view input = u"hello";
+        const ustr_view input = u"hello";
         auto res = strf::unsafe_transcode_size <strf::utf_t, strf::utf_t<char>>
             (input.begin(), input.end(), 6);
 
         TEST_EQ(res.ssize, 5);
     }
     {
-        ustr_view input = u"abc\uAAAAzzz\uBBBBxxx";
+        const ustr_view input = u"abc\uAAAAzzz\uBBBBxxx";
         constexpr auto buff_size = 200;
         char buff[buff_size] = {};
         errors_counter counter;
@@ -62,7 +62,7 @@ STRF_TEST_FUNC void test_unsafe_transcode_to_ptr()
         TEST_EQ(counter.count, 2);
     }
     {
-        ustr_view input = u"abc\uAAAAzzz\uBBBBxxx";;
+        const ustr_view input = u"abc\uAAAAzzz\uBBBBxxx";;
         auto res = strf::unsafe_transcode_size <strf::utf_t, strf::iso_8859_3_t<char>>
             (input.begin(), input.end(), 12);
 
@@ -81,7 +81,7 @@ STRF_TEST_FUNC void test_unsafe_transcode_to_dest()
     using stop_reason = strf::transcode_stop_reason;
 
     {   // when there is a direct transcoder
-        str_view<char> input("abcde"); // input with invalid sequence
+        const str_view<char> input("abcde"); // input with invalid sequence
         char16_t buff[50] = {};
         strf::array_destination<char16_t> dst(buff);
 
@@ -90,13 +90,13 @@ STRF_TEST_FUNC void test_unsafe_transcode_to_dest()
         TEST_TRUE(tr_res.stop_reason == stop_reason::completed);
 
         auto dst_res = dst.finish();
-        ustr_view output(buff, dst_res.ptr);
+        const ustr_view output(buff, dst_res.ptr);
         TEST_STR_EQ(output, u"abcde");
         TEST_EQ(output.ssize(), tr_res.ssize);
     }
 
     {   // when there isn't a direct transcoder, so that decode_encode is called
-        ustr_view input =
+        const ustr_view input =
             u"abcde"
             u"\u0401\u0402\u0403\u045F"
             u"\uABCD"   // an unsupported codepoints
@@ -116,7 +116,7 @@ STRF_TEST_FUNC void test_unsafe_transcode_to_dest()
         TEST_EQ(1, notifier.unsupported_codepoints_calls_count);
 
         auto dst_res = dst.finish();
-        str_view<char> output(buff, dst_res.ptr);
+        const str_view<char> output(buff, dst_res.ptr);
         TEST_STR_EQ(output, "abcde\xA1\xA2\xA3\xFF");
         TEST_EQ(output.ssize(), tr_res.ssize);
     }

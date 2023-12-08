@@ -318,23 +318,23 @@ STRF_TEST_FUNC void test_width_t()
 
     // casting ints
     {
-        int above_max = 0x8000;
-        width_t w = above_max;
+        const int above_max = 0x8000;
+        const width_t w = above_max;
         TEST_TRUE(w == width_max);
     }
     {
-        int below_min = -0x8001;
-        width_t w = below_min;
+        const int below_min = -0x8001;
+        const width_t w = below_min;
         TEST_TRUE(w == width_min);
     }
     {
-        std::uint16_t above_max = 0x8000;
-        width_t w = above_max;
+        const std::uint16_t above_max = 0x8000;
+        const width_t w = above_max;
         TEST_TRUE(w == width_max);
     }
     {
-        int within = 1;
-        width_t w = within;
+        const int within = 1;
+        const width_t w = within;
         TEST_TRUE(w == 1_w);
     }
 }
