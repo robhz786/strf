@@ -125,7 +125,7 @@ public:
 
 protected:
 
-    STRF_HD void destroy() // must be called in the destructor of derivate class
+    STRF_HD void destroy() // must be called in the destructor of derived class
     {
         if (this->good()) {
             traits_.write(buff_, detail::safe_cast_size_t(this->buffer_ptr() - buff_));
@@ -148,37 +148,70 @@ private:
         }
     }
 
-
     std::size_t count_ = 0;
     CharT* const buff_;
     Traits traits_;
 };
 
+template <typename CharT, std::size_t BuffSize, typename Traits>
+class cfile_writer_direct_member_buffer: public strf::detail::cfile_writer_base<CharT, Traits>
+{
+    static_assert(BuffSize >= strf::min_destination_buffer_size, "BuffSize too small");
+
+    using impl_ = strf::detail::cfile_writer_base<CharT, Traits>;
+
+public:
+
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init,hicpp-member-init)
+    template <typename... Args>
+    explicit STRF_HD cfile_writer_direct_member_buffer(Args&&... args)
+        : impl_(buf_, BuffSize, std::forward<Args>(args)...)
+    {
+    }
+
+    cfile_writer_direct_member_buffer() = delete;
+
+    STRF_HD ~cfile_writer_direct_member_buffer() override
+    {
+        impl_::destroy();
+    }
+
+    cfile_writer_direct_member_buffer(const cfile_writer_direct_member_buffer&) = delete;
+    cfile_writer_direct_member_buffer(cfile_writer_direct_member_buffer&&) = delete;
+    cfile_writer_direct_member_buffer& operator=(const cfile_writer_direct_member_buffer&) = delete;
+    cfile_writer_direct_member_buffer& operator=(cfile_writer_direct_member_buffer&&) = delete;
+
+    using result = typename impl_::result;
+    using impl_::recycle;
+    using impl_::finish;
+
+private:
+    CharT buf_[BuffSize];
+};
+
+
 } // namespace detail
 
 template <typename CharT, std::size_t BuffSize>
 class narrow_cfile_writer final
-    : public strf::detail::cfile_writer_base
-        < CharT, strf::detail::narrow_cfile_writer_traits<CharT> >
+    : public strf::detail::cfile_writer_direct_member_buffer
+        < CharT, BuffSize, strf::detail::narrow_cfile_writer_traits<CharT> >
 {
     static_assert(BuffSize >= strf::min_destination_buffer_size, "BuffSize too small");
 
-    using impl_ = strf::detail::cfile_writer_base
-        < CharT, strf::detail::narrow_cfile_writer_traits<CharT> >;
+    using impl_ = strf::detail::cfile_writer_direct_member_buffer
+        < CharT, BuffSize, strf::detail::narrow_cfile_writer_traits<CharT> >;
+
 public:
 
     explicit STRF_HD narrow_cfile_writer(std::FILE* file)
-        : impl_(buf_, BuffSize, file)
+        : impl_(file)
     {
         STRF_ASSERT(file != nullptr);
     }
 
     narrow_cfile_writer() = delete;
-
-    STRF_HD ~narrow_cfile_writer() override
-    {
-        impl_::destroy();
-    }
+    ~narrow_cfile_writer() override = default;
 
     narrow_cfile_writer(const narrow_cfile_writer&) = delete;
     narrow_cfile_writer(narrow_cfile_writer&&) = delete;
@@ -188,34 +221,25 @@ public:
     using result = typename impl_::result;
     using impl_::recycle;
     using impl_::finish;
-
-private:
-
-    CharT buf_[BuffSize];
 };
 
+
 class wide_cfile_writer final
-    : public strf::detail::cfile_writer_base
-        < wchar_t, strf::detail::wide_cfile_writer_traits >
+    : public strf::detail::cfile_writer_direct_member_buffer
+        < wchar_t, strf::min_destination_buffer_size, strf::detail::wide_cfile_writer_traits >
 {
-    using impl_ = strf::detail::cfile_writer_base
-        < wchar_t, strf::detail::wide_cfile_writer_traits >;
+    using impl_ = strf::detail::cfile_writer_direct_member_buffer
+        < wchar_t, strf::min_destination_buffer_size, strf::detail::wide_cfile_writer_traits >;
 public:
 
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init,hicpp-member-init)
     explicit STRF_HD wide_cfile_writer(std::FILE* file)
-        : impl_(buf_, buf_size_, file)
+        : impl_(file)
     {
         STRF_ASSERT(file != nullptr);
     }
 
     wide_cfile_writer() = delete;
-
-    STRF_HD ~wide_cfile_writer() override
-    {
-        impl_::destroy();
-    }
-
+    ~wide_cfile_writer() override = default;
     wide_cfile_writer(const wide_cfile_writer&) = delete;
     wide_cfile_writer(wide_cfile_writer&&) = delete;
     wide_cfile_writer& operator=(const wide_cfile_writer&) = delete;
@@ -224,10 +248,6 @@ public:
     using result = typename impl_::result;
     using impl_::recycle;
     using impl_::finish;
-
-private:
-    static constexpr std::size_t buf_size_ = strf::min_destination_buffer_size;
-    wchar_t buf_[buf_size_];
 };
 
 namespace detail {

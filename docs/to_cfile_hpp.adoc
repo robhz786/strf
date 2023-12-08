@@ -136,6 +136,9 @@ public:
     };
 
     result finish();
+
+private:
+    CharT buffer[{min_destination_buffer_size}]; // exposition only
 };
 
 } // namespace strf

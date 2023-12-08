@@ -212,7 +212,6 @@ void test_sized_string_maker()
     }
 }
 
-} // namespace
 
 void test_string_writer()
 {
@@ -225,3 +224,8 @@ void test_string_writer()
     test_sized_string_maker<char>();
     test_sized_string_maker<char16_t>();
 }
+
+} // namespace
+
+REGISTER_STRF_TEST(test_string_writer)
+

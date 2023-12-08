@@ -14,6 +14,8 @@
 #define LOCALE_NAME(lang, region) #lang "_" #region
 #endif
 
+namespace {
+
 void test_locale()
 {
     if (setlocale(LC_NUMERIC, LOCALE_NAME(en, US))) { // NOLINT(concurrency-mt-unsafe)
@@ -151,3 +153,7 @@ void test_locale()
         TEST_TRUE(parse_win_grouping(L"9;32;2;0")  == digits_grouping());
     }
 }
+
+} // namespace
+
+REGISTER_STRF_TEST(test_locale)

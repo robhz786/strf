@@ -480,7 +480,7 @@ The table below lists the concrete types that derivate from the `{destination}<_
 | `<<to_streambuf_hpp#basic_streambuf_writer,basic_streambuf_writer>><__CharT__, _Traits_~_opt_~>`
 | Writes to `std::basic_streambuf` object
 
-| `<<to_cfile_hpp#narrow_cfile_writer,narrow_cfile_writer>><__CharT__>`
+| `<<to_cfile_hpp#narrow_cfile_writer,narrow_cfile_writer>><__CharT__, __BufferSize__>`
 | Writes to `FILE*` using narrow-oriented functions.
 
 | `<<to_cfile_hpp#wide_cfile_writer,wide_cfile_writer>>`
@@ -492,6 +492,7 @@ where:
 * `__CharT__` is a charater type.
 * `__Traits__` is a https://en.cppreference.com/w/cpp/named_req/CharTraits[_CharTraits_] type.
 * `__A__` is an https://en.cppreference.com/w/cpp/named_req/Allocator[_Allocator_] type
+* `__BufferSize__` is a `std::size_t` constexpr value;
 
 ////
 

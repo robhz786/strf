@@ -184,8 +184,6 @@ void basic_tests()
     }
 }
 
-} // unnamed namespace
-
 void test_streambuf_writer()
 {
     basic_tests<char>();
@@ -218,3 +216,8 @@ void test_streambuf_writer()
     test_failing_to_finish<char32_t>();
     test_failing_to_finish<wchar_t>();
 }
+
+
+} // namespace
+
+REGISTER_STRF_TEST(test_streambuf_writer)
