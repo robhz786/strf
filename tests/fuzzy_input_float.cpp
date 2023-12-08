@@ -406,7 +406,7 @@ inline STRF_TEST_FUNC void test_exp_and_mantissa
     try {
         const float64_tester tester(ieee_exponent, ieee_mantissa);
         tester.run();
-    } catch (StrAssertionFailed&) {
+    } catch (StrAssertionFailed&) { // NOLINT(bugprone-empty-catch)
     }
 #else
     const float64_tester tester(ieee_exponent, ieee_mantissa);
@@ -428,7 +428,7 @@ void test_mantissa(std::uint64_t mantissa) {
         .with(strf::lettercase::mixed)
         ( "\ntesting mantissa = ", *strf::hex(mantissa).pad0(15));
     test_utils::test_messages_destination() .recycle();
-    fflush(stdout);
+    (void) fflush(stdout);
     
     for (std::uint32_t exponent = 0; exponent < 0x7FF; ++exponent) {
         test_exp_and_mantissa(exponent, mantissa);

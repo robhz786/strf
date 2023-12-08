@@ -1201,6 +1201,7 @@ STRF_HD strf::decode_encode_size_result<SrcCharT> decode_encode
                 // there is still something remaining in the pivot buffer to be encoded
                 dst_it = dst.buffer_ptr();
                 dst_end = dst.buffer_end();
+                // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
                 pivot_it = const_cast<char32_t*>(dst_res.src_ptr);
             } else {
                 STRF_ASSERT(dst_res.stop_reason == stop_reason::unsupported_codepoint);
