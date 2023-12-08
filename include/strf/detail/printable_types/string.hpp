@@ -501,14 +501,14 @@ struct string_printer_type
     < true, charsets_comparison::statically_equal, transcoding_policy::sani_only_if_different>
 {
     template <typename SrcCharT, typename DstCharT>
-    using type = aligned_unsafe_transcode_printer<SrcCharT, DstCharT>;
+    using type = aligned_strcpy_printer<SrcCharT, DstCharT>;
 };
 template <>
 struct string_printer_type
     < false, charsets_comparison::statically_equal, transcoding_policy::sani_only_if_different>
 {
     template <typename SrcCharT, typename DstCharT>
-    using type = unsafe_transcode_printer<SrcCharT, DstCharT>;
+    using type = strcpy_printer<SrcCharT, DstCharT>;
 };
 
 template <>

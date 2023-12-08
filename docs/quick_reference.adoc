@@ -151,10 +151,10 @@ include::ref_format_functions.adoc[tag=int_format_functions]
     where `CharOut` is the destination character type )
 
 | `template <typename Charset> unsafe_transcode(Charset cs)`
-| Same as in `trancode(cs)`, except that the behaviour is
-  undefined if the input string is not fully conformant
-  to the encoding represent by `cs`,
-  but it provides a better performance.
+| Same as in `trancode(cs)`, except that the transcoding has
+  undefined behaviour if the input string is not fully conformant
+  to the encoding represent by `cs`.
+  It is expected to have better performace than `trancode`.
 
 | `template <typename Charset> sani(Charset cs)`
 | If `cs` is different from the ouput charset, transcodes the
