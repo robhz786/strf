@@ -147,11 +147,11 @@ struct sbcs_find_unsupported_codepoint_crtp
                         return {it - src, it, stop_reason::invalid_sequence};
                     }
                 }
-            } else {
-                for(auto it = src; it < src_end; ++it) {
-                    if (*it >= 0x110000) {
-                        return {it - src, it, stop_reason::invalid_sequence};
-                    }
+                return {src_end - src, src_end, stop_reason::completed};
+            }
+            for(auto it = src; it < src_end; ++it) {
+                if (*it >= 0x110000) {
+                    return {it - src, it, stop_reason::invalid_sequence};
                 }
             }
             return {src_end - src, src_end, stop_reason::completed};
@@ -195,14 +195,14 @@ struct sbcs_find_unsupported_codepoint_crtp
                         return {it - src, it, stop_reason::unsupported_codepoint};
                     }
                 }
-            } else {
-                for(auto it = src; it < src_end; ++it) {
-                    if (*it >= 0x110000) {
-                        return {it - src, it, stop_reason::invalid_sequence};
-                    }
-                    if (T::encode(static_cast<char32_t>(*it)) >= 0x100) {
-                        return {it - src, it, stop_reason::unsupported_codepoint};
-                    }
+                return {src_end - src, src_end, stop_reason::completed};
+            }
+            for(auto it = src; it < src_end; ++it) {
+                if (*it >= 0x110000) {
+                    return {it - src, it, stop_reason::invalid_sequence};
+                }
+                if (T::encode(static_cast<char32_t>(*it)) >= 0x100) {
+                    return {it - src, it, stop_reason::unsupported_codepoint};
                 }
             }
             return {src_end - src, src_end, stop_reason::completed};
@@ -235,7 +235,7 @@ struct sbcs_find_unsupported_codepoint_crtp
     }
 
     template <typename CharT>
-    static STRF_HD strf::transcode_size_result<CharT> find_first_valid_unsupported_codepoint
+    static STRF_HD strf::transcode_size_result<CharT> find_first_valid_but_unsupported_codepoint
         ( const CharT* src
         , const CharT* src_end
         , std::ptrdiff_t limit
@@ -252,11 +252,11 @@ struct sbcs_find_unsupported_codepoint_crtp
                         return {it - src, it, stop_reason::unsupported_codepoint};
                     }
                 }
-            } else {
-                for(auto it = src; it < src_end; ++it) {
-                    if (*it <= 0x110000 && T::encode(static_cast<char32_t>(*it)) >= 0x100) {
-                        return {it - src, it, stop_reason::unsupported_codepoint};
-                    }
+                return {src_end - src, src_end, stop_reason::completed};
+            }
+            for(auto it = src; it < src_end; ++it) {
+                if (*it <= 0x110000 && T::encode(static_cast<char32_t>(*it)) >= 0x100) {
+                    return {it - src, it, stop_reason::unsupported_codepoint};
                 }
             }
             return {src_end - src, src_end, stop_reason::completed};
@@ -280,7 +280,7 @@ struct sbcs_find_unsupported_codepoint_crtp
                 return {it - src, it, stop_reason::unsupported_codepoint};
             }
             if (it == src_limit) {
-                return {src_end - src, src_end, stop_reason::insufficient_output_space};
+                return {it - src, it, stop_reason::insufficient_output_space};
             }
         }
     }
@@ -1019,6 +1019,7 @@ struct impl_iso_8859_9
             case 0xFD:
             case 0xFE:
                 return 0x100;
+            case 0xFFFD: return '?';
             default:
                 return ch;
         }
@@ -2595,7 +2596,7 @@ struct utf32_to_single_byte_charset
                 (src, src_end, limit, strict_surrogates);
         }
         if (strf::with_stop_on_unsupported_codepoint(flags)) {
-            return Impl::find_first_valid_unsupported_codepoint
+            return Impl::find_first_valid_but_unsupported_codepoint
                 (src, src_end, limit, strict_surrogates);
         }
         using stop_reason = strf::transcode_stop_reason;

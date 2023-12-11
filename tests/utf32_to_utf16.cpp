@@ -17,8 +17,7 @@
 
 namespace {
 
-
-STRF_TEST_FUNC void utf32_to_utf16_unsafe_transcode()
+STRF_TEST_FUNC void unsafe_transcode()
 {
     const char32_t u32str_D800[] = {0xD800, 0};
     const char32_t u32str_DBFF[] = {0xDBFF, 0};
@@ -151,11 +150,19 @@ STRF_TEST_FUNC void utf32_to_utf16_unsafe_transcode()
         .expect_invalid_sequences({});
 }
 
-STRF_TEST_FUNC void utf32_to_utf16_valid_sequences()
+STRF_TEST_FUNC void valid_sequences()
 {
     TEST_TRANSCODE
         .input(U"ab")
         .expect(u"ab")
+        .expect_stop_reason(strf::transcode_stop_reason::completed)
+        .expect_unsupported_codepoints({})
+        .expect_invalid_sequences({});
+
+    TEST_TRANSCODE
+        .input(U"ab")
+        .expect(u"ab")
+        .destination_size(2)
         .expect_stop_reason(strf::transcode_stop_reason::completed)
         .expect_unsupported_codepoints({})
         .expect_invalid_sequences({});
@@ -266,6 +273,127 @@ STRF_TEST_FUNC void utf32_to_utf16_valid_sequences()
     }
 }
 
+
+STRF_TEST_FUNC void valid_input_but_output_size_too_small()
+{
+    TEST_TRANSCODE
+        .input(U"abc")
+        .expect(u"ab")
+        .destination_size(2)
+        .expect_stop_reason(strf::transcode_stop_reason::insufficient_output_space)
+        .expect_unsupported_codepoints({})
+        .expect_invalid_sequences({});
+
+    TEST_TRANSCODE
+        .input(U"\u0800")
+        .expect(u"")
+        .destination_size(0)
+        .expect_stop_reason(strf::transcode_stop_reason::insufficient_output_space)
+        .expect_unsupported_codepoints({})
+        .expect_invalid_sequences({});
+
+    TEST_TRANSCODE
+        .input(U"\uD7FF")
+        .expect(u"")
+        .destination_size(0)
+        .expect_stop_reason(strf::transcode_stop_reason::insufficient_output_space)
+        .expect_unsupported_codepoints({})
+        .expect_invalid_sequences({});
+
+    TEST_TRANSCODE
+        .input(U"\U00010000")
+        .expect(u"")
+        .destination_size(1)
+        .expect_stop_reason(strf::transcode_stop_reason::insufficient_output_space)
+        .expect_unsupported_codepoints({})
+        .expect_invalid_sequences({});
+
+    TEST_TRANSCODE
+        .input(U"\U0010FFFF")
+        .expect(u"")
+        .destination_size(1)
+        .expect_stop_reason(strf::transcode_stop_reason::insufficient_output_space)
+        .expect_unsupported_codepoints({})
+        .expect_invalid_sequences({});
+
+
+    {
+        // with stop_on_invalid_sequence flag, even though input is all valid
+        TEST_TRANSCODE
+            .input(U"abc")
+            .expect(u"ab")
+            .destination_size(2)
+            .flags(strf::transcode_flags::stop_on_invalid_sequence)
+            .expect_stop_reason(strf::transcode_stop_reason::insufficient_output_space)
+            .expect_unsupported_codepoints({})
+            .expect_invalid_sequences({});
+    }
+
+    {
+        // when surrogates are allowed
+        const char32_t u32str_D800[]  = {U'_', 0xD800, 0};
+        const char32_t u32str_DBFF[]  = {U'_', 0xDBFF, 0};
+        const char32_t u32str_DC00[]  = {U'_', 0xDC00, 0};
+        const char32_t u32str_DFFF[]  = {U'_', 0xDFFF, 0};
+        const char32_t u32str_DFFF_D800_[]  = {U'_', 0xDFFF, 0xD800, U'_', 0};
+
+        TEST_TRANSCODE
+            .input(u32str_D800)
+            .flags(strf::transcode_flags::lax_surrogate_policy)
+            .expect(u'_')
+            .destination_size(1)
+            .expect_stop_reason(strf::transcode_stop_reason::insufficient_output_space)
+            .expect_unsupported_codepoints({})
+            .expect_invalid_sequences({});
+
+        // with stop_on_invalid_sequence flag, even though input is all valid
+        const auto flags = ( strf::transcode_flags::lax_surrogate_policy |
+                             strf::transcode_flags::stop_on_invalid_sequence |
+                             strf::transcode_flags::stop_on_unsupported_codepoint );
+
+        TEST_TRANSCODE
+            .input(u32str_D800)
+            .flags(flags)
+            .expect(u'_')
+            .destination_size(1)
+            .expect_stop_reason(strf::transcode_stop_reason::insufficient_output_space)
+            .expect_unsupported_codepoints({})
+            .expect_invalid_sequences({});
+        TEST_TRANSCODE
+            .input(u32str_DBFF)
+            .flags(flags)
+            .expect(u'_')
+            .destination_size(1)
+            .expect_stop_reason(strf::transcode_stop_reason::insufficient_output_space)
+            .expect_unsupported_codepoints({})
+            .expect_invalid_sequences({});
+        TEST_TRANSCODE
+            .input(u32str_DC00)
+            .flags(flags)
+            .expect(u'_')
+            .destination_size(1)
+            .expect_stop_reason(strf::transcode_stop_reason::insufficient_output_space)
+            .expect_unsupported_codepoints({})
+            .expect_invalid_sequences({});
+        TEST_TRANSCODE
+            .input(u32str_DFFF)
+            .flags(flags)
+            .expect(u'_')
+            .destination_size(1)
+            .expect_stop_reason(strf::transcode_stop_reason::insufficient_output_space)
+            .expect_unsupported_codepoints({})
+            .expect_invalid_sequences({});
+        TEST_TRANSCODE
+            .input(u32str_DFFF_D800_)
+            .flags(flags)
+            .expect(u'_')
+            .destination_size(1)
+            .expect_stop_reason(strf::transcode_stop_reason::insufficient_output_space)
+            .expect_unsupported_codepoints({})
+            .expect_invalid_sequences({});
+    }
+}
+
 STRF_TEST_FUNC void test_not_allowed_surrogate(char32_t surrogate_char)
 {
     TEST_TRANSCODE
@@ -306,8 +434,7 @@ STRF_TEST_FUNC void test_not_allowed_surrogate(char32_t surrogate_char)
         .expect_invalid_sequences({{surrogate_char}});
 }
 
-
-STRF_TEST_FUNC void utf32_to_utf16_invalid_sequences()
+STRF_TEST_FUNC void invalid_sequences()
 {
     test_not_allowed_surrogate(static_cast<char32_t>(0xD800)) ;
     test_not_allowed_surrogate(static_cast<char32_t>(0xDBFF)) ;
@@ -353,7 +480,7 @@ struct notifier_that_throws : strf::transcoding_error_notifier {
 
 #endif // __cpp_exceptions
 
-STRF_TEST_FUNC void utf32_to_utf16_error_notifier()
+STRF_TEST_FUNC void error_notifier()
 {
     const char32_t invalid_input[] = {0x110000, 0xFFFFFF, 0};
     {
@@ -400,7 +527,7 @@ STRF_TEST_FUNC void utf32_to_utf16_error_notifier()
 #endif // __cpp_exceptions
 }
 
-STRF_TEST_FUNC void utf32_to_utf16_find_transcoder()
+STRF_TEST_FUNC void find_transcoder()
 {
 #if ! defined(__CUDACC__)
 
@@ -417,15 +544,17 @@ STRF_TEST_FUNC void utf32_to_utf16_find_transcoder()
 #endif // defined(__CUDACC__)
 }
 
-} // unnamed namespace
 
 STRF_TEST_FUNC void test_utf32_to_utf16()
 {
-    utf32_to_utf16_unsafe_transcode();
-    utf32_to_utf16_valid_sequences();
-    utf32_to_utf16_invalid_sequences();
-    utf32_to_utf16_error_notifier();
-    utf32_to_utf16_find_transcoder();
+    unsafe_transcode();
+    valid_sequences();
+    valid_input_but_output_size_too_small();
+    invalid_sequences();
+    error_notifier();
+    find_transcoder();
 }
+
+} // unnamed namespace
 
 REGISTER_STRF_TEST(test_utf32_to_utf16)

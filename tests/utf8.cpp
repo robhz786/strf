@@ -261,11 +261,85 @@ STRF_TEST_FUNC void utf8_sani_valid_sequences()
         .expect_invalid_sequences({});
 
     {
+        // with flags stop_on_invalid_sequence (though sequences are still valid)
+
+        TEST_UTF_TRANSCODE(char8_t, char8_t)
+            .input(u8"\u0080")
+            .expect(u8"\u0080")
+            .flags(strf::transcode_flags::stop_on_invalid_sequence)
+            .expect_stop_reason(strf::transcode_stop_reason::completed)
+            .expect_unsupported_codepoints({})
+            .expect_invalid_sequences({});
+
+        TEST_UTF_TRANSCODE(char8_t, char8_t)
+            .input(u8"\u0800")
+            .expect(u8"\u0800")
+            .flags(strf::transcode_flags::stop_on_invalid_sequence)
+            .expect_stop_reason(strf::transcode_stop_reason::completed)
+            .expect_unsupported_codepoints({})
+            .expect_invalid_sequences({});
+
+        TEST_UTF_TRANSCODE(char8_t, char8_t)
+            .input(u8"\uD7FF")
+            .expect(u8"\uD7FF")
+            .flags(strf::transcode_flags::stop_on_invalid_sequence)
+            .expect_stop_reason(strf::transcode_stop_reason::completed)
+            .expect_unsupported_codepoints({})
+            .expect_invalid_sequences({});
+
+        TEST_UTF_TRANSCODE(char8_t, char8_t)
+            .input(u8"\U00010000")
+            .expect(u8"\U00010000")
+            .flags(strf::transcode_flags::stop_on_invalid_sequence)
+            .expect_stop_reason(strf::transcode_stop_reason::completed)
+            .expect_unsupported_codepoints({})
+            .expect_invalid_sequences({});
+
+        TEST_UTF_TRANSCODE(char8_t, char8_t)
+            .input(u8"\U0010FFFF")
+            .expect(u8"\U0010FFFF")
+            .flags(strf::transcode_flags::stop_on_invalid_sequence)
+            .flags(strf::transcode_flags::stop_on_invalid_sequence)
+            .expect_stop_reason(strf::transcode_stop_reason::completed)
+            .expect_unsupported_codepoints({})
+            .expect_invalid_sequences({});
+    }
+
+    {
         // when surrogates are allowed
         const char str_D800[] = "\xED\xA0\x80";
         const char str_DBFF[] = "\xED\xAF\xBF";
         const char str_DC00[] = "\xED\xB0\x80";
         const char str_DFFF[] = "\xED\xBF\xBF";
+
+        TEST_UTF_TRANSCODE(char, char)
+            .input(str_D800)
+            .flags(strf::transcode_flags::lax_surrogate_policy)
+            .expect(str_D800)
+            .expect_stop_reason(strf::transcode_stop_reason::completed)
+            .expect_unsupported_codepoints({})
+            .expect_invalid_sequences({});
+        TEST_UTF_TRANSCODE(char, char)
+            .input(str_DBFF)
+            .flags(strf::transcode_flags::lax_surrogate_policy)
+            .expect(str_DBFF)
+            .expect_stop_reason(strf::transcode_stop_reason::completed)
+            .expect_unsupported_codepoints({})
+            .expect_invalid_sequences({});
+        TEST_UTF_TRANSCODE(char, char)
+            .input(str_DC00)
+            .flags(strf::transcode_flags::lax_surrogate_policy)
+            .expect(str_DC00)
+            .expect_stop_reason(strf::transcode_stop_reason::completed)
+            .expect_unsupported_codepoints({})
+            .expect_invalid_sequences({});
+        TEST_UTF_TRANSCODE(char, char)
+            .input(str_DFFF)
+            .flags(strf::transcode_flags::lax_surrogate_policy)
+            .expect(str_DFFF)
+            .expect_stop_reason(strf::transcode_stop_reason::completed)
+            .expect_unsupported_codepoints({})
+            .expect_invalid_sequences({});
 
         const auto flags = ( strf::transcode_flags::lax_surrogate_policy |
                              strf::transcode_flags::stop_on_invalid_sequence |

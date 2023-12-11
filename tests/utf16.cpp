@@ -21,6 +21,13 @@ namespace {
 STRF_TEST_FUNC void utf16_to_utf16_unsafe_transcode()
 {
     TEST_UNSAFE_TRANSCODE
+        .input(u"")
+        .expect(u"")
+        .expect_stop_reason(strf::transcode_stop_reason::completed)
+        .expect_unsupported_codepoints({})
+        .expect_invalid_sequences({});
+
+    TEST_UNSAFE_TRANSCODE
         .input(u"ab")
         .expect(u"ab")
         .expect_stop_reason(strf::transcode_stop_reason::completed)

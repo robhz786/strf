@@ -14,7 +14,7 @@ using char8_t = char;
 
 namespace {
 
-STRF_TEST_FUNC void utf8_to_utf16_unsafe_transcode()
+STRF_TEST_FUNC void unsafe_transcode()
 {
     TEST_UTF_UNSAFE_TRANSCODE(char8_t, char16_t)
         .input(u8"ab")
@@ -100,7 +100,7 @@ STRF_TEST_FUNC void utf8_to_utf16_unsafe_transcode()
 }
 
 
-STRF_TEST_FUNC void utf8_to_utf16_valid_sequences()
+STRF_TEST_FUNC void valid_sequences()
 {
     TEST_UTF_TRANSCODE(char8_t, char16_t)
         .input(u8"ab")
@@ -219,10 +219,85 @@ STRF_TEST_FUNC void utf8_to_utf16_valid_sequences()
             .expect(u16str_DFFF)
             .flags(strf::transcode_flags::lax_surrogate_policy)
             .expect_stop_reason(strf::transcode_stop_reason::completed);
+
+        TEST_UTF_TRANSCODE(char, char16_t)
+            .input(" \xED\xA0\x80")
+            .expect(u16str_D800)
+            .flags(strf::transcode_flags::lax_surrogate_policy |
+                   strf::transcode_flags::stop_on_invalid_sequence)
+            .expect_stop_reason(strf::transcode_stop_reason::completed);
+        TEST_UTF_TRANSCODE(char, char16_t)
+            .input(" \xED\xAF\xBF")
+            .expect(u16str_DBFF)
+            .flags(strf::transcode_flags::lax_surrogate_policy |
+                   strf::transcode_flags::stop_on_invalid_sequence)
+            .expect_stop_reason(strf::transcode_stop_reason::completed);
+        TEST_UTF_TRANSCODE(char, char16_t)
+            .input(" \xED\xB0\x80")
+            .expect(u16str_DC00)
+            .flags(strf::transcode_flags::lax_surrogate_policy |
+                   strf::transcode_flags::stop_on_invalid_sequence)
+            .expect_stop_reason(strf::transcode_stop_reason::completed);
+        TEST_UTF_TRANSCODE(char, char16_t)
+            .input(" \xED\xBF\xBF")
+            .expect(u16str_DFFF)
+            .flags(strf::transcode_flags::lax_surrogate_policy |
+                   strf::transcode_flags::stop_on_invalid_sequence)
+            .expect_stop_reason(strf::transcode_stop_reason::completed);
+
     }
+
+    // with flag stop_on_invalid_sequence, even though input is all valid
+
+    TEST_UTF_TRANSCODE(char8_t, char16_t)
+        .input(u8"ab")
+        .expect(u"ab")
+        .flags(strf::transcode_flags::stop_on_invalid_sequence)
+        .expect_stop_reason(strf::transcode_stop_reason::completed)
+        .expect_unsupported_codepoints({})
+        .expect_invalid_sequences({});
+
+    TEST_UTF_TRANSCODE(char8_t, char16_t)
+        .input(u8"\u0080")
+        .expect(u"\u0080")
+        .flags(strf::transcode_flags::stop_on_invalid_sequence)
+        .expect_stop_reason(strf::transcode_stop_reason::completed)
+        .expect_unsupported_codepoints({})
+        .expect_invalid_sequences({});
+
+    TEST_UTF_TRANSCODE(char8_t, char16_t)
+        .input(u8"\u0800")
+        .expect(u"\u0800")
+        .flags(strf::transcode_flags::stop_on_invalid_sequence)
+        .expect_stop_reason(strf::transcode_stop_reason::completed)
+        .expect_unsupported_codepoints({})
+        .expect_invalid_sequences({});
+
+    TEST_UTF_TRANSCODE(char8_t, char16_t)
+        .input(u8"\uD7FF")
+        .expect(u"\uD7FF")
+        .expect_stop_reason(strf::transcode_stop_reason::completed)
+        .expect_unsupported_codepoints({})
+        .expect_invalid_sequences({});
+
+    TEST_UTF_TRANSCODE(char8_t, char16_t)
+        .input(u8"\U00010000")
+        .expect(u"\U00010000")
+        .flags(strf::transcode_flags::stop_on_invalid_sequence)
+        .expect_stop_reason(strf::transcode_stop_reason::completed)
+        .expect_unsupported_codepoints({})
+        .expect_invalid_sequences({});
+
+    TEST_UTF_TRANSCODE(char8_t, char16_t)
+        .input(u8"\U0010FFFF")
+        .expect(u"\U0010FFFF")
+        .flags(strf::transcode_flags::stop_on_invalid_sequence)
+        .expect_stop_reason(strf::transcode_stop_reason::completed)
+        .expect_unsupported_codepoints({})
+        .expect_invalid_sequences({});
 }
 
-STRF_TEST_FUNC void utf8_to_utf16_invalid_sequences()
+STRF_TEST_FUNC void invalid_sequences()
 {
     TEST_UTF_TRANSCODE(char, char16_t)
         .input("\xBF")
@@ -1017,7 +1092,7 @@ struct notifier_that_throws : strf::transcoding_error_notifier {
 
 #endif // __cpp_exceptions
 
-STRF_TEST_FUNC void utf8_to_utf16_error_notifier()
+STRF_TEST_FUNC void error_notifier()
 {
     {
         invalid_seq_counter notifier;
@@ -1049,7 +1124,7 @@ STRF_TEST_FUNC void utf8_to_utf16_error_notifier()
 #endif // defined(__cpp_exceptions)
 }
 
-STRF_TEST_FUNC void utf8_to_utf16_find_transcoder()
+STRF_TEST_FUNC void find_transcoder()
 {
 #if ! defined(__CUDACC__)
 
@@ -1079,11 +1154,11 @@ STRF_TEST_FUNC void utf8_to_utf16_find_transcoder()
 
 STRF_TEST_FUNC void test_utf8_to_utf16()
 {
-    utf8_to_utf16_unsafe_transcode();
-    utf8_to_utf16_valid_sequences();
-    utf8_to_utf16_invalid_sequences();
-    utf8_to_utf16_error_notifier();
-    utf8_to_utf16_find_transcoder();
+    unsafe_transcode();
+    valid_sequences();
+    invalid_sequences();
+    error_notifier();
+    find_transcoder();
 }
 
 REGISTER_STRF_TEST(test_utf8_to_utf16)

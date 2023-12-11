@@ -399,18 +399,20 @@ public:
     STRF_HD bool adjust_stale_src_ptr
         ( const src_char_t*& stale_src_ptr, std::int32_t u32dist, const char* funcname )
     {
-        const auto flags = data_.flags & strf::transcode_flags::surrogate_policy;
-        auto res = data_.src_charset.to_u32().transcode_size
-            ( stale_src_ptr, data_.src.end(), u32dist, flags);
+        // if (u32dist > 0) {
+            const auto flags = data_.flags & strf::transcode_flags::surrogate_policy;
+            auto res = data_.src_charset.to_u32().transcode_size
+                ( stale_src_ptr, data_.src.end(), u32dist, flags);
 
-        if (res.ssize != u32dist) {
-            err_msg_.line("Wrong u32dist returned by ", funcname);
-            err_msg_.line("    src_charset.to_u32().transcode_size(...).ssize == ", res.ssize);
-            err_msg_.line("    while u32dist == ", u32dist);
-            err_msg_.line("    ( they should be equal )", u32dist);
-            return false;
-        }
-        stale_src_ptr = res.src_ptr;
+            if (res.ssize != u32dist) {
+                err_msg_.line("Wrong u32dist returned by ", funcname);
+                err_msg_.line("    src_charset.to_u32().transcode_size(...).ssize == ", res.ssize);
+                err_msg_.line("    while u32dist == ", u32dist);
+                err_msg_.line("    ( they should be equal )", u32dist);
+                return false;
+            }
+            stale_src_ptr = res.src_ptr;
+        // }
         return true;
     }
 };
@@ -451,11 +453,7 @@ STRF_HD void transcode_tester<SrcCharset, DstCharset>::run()
         err_msg_.line("    Obtained: ", stringify(res_tr.stop_reason));
     }
 
-    auto src_end = ( data_.expected_stop_reason == strf::transcode_stop_reason::insufficient_output_space
-                   ? res_tr.stale_src_ptr
-                   : data_.src.end() );
-
-    auto res_tr_size = data_.transcode_size(src_end);
+    auto res_tr_size = data_.transcode_size(data_.src.end());
     if (!adjust_stale_src_ptr(res_tr_size)) {
         return;
     }
@@ -467,19 +465,17 @@ STRF_HD void transcode_tester<SrcCharset, DstCharset>::run()
         err_msg_.line("    `transcode_size` calulated : ", res_tr_size.ssize);
         err_msg_.line("    But the output's size was  : ", result_string.ssize());
     }
-    if (data_.expected_stop_reason != strf::transcode_stop_reason::insufficient_output_space) {
-        if (data_.expected_stop_reason != transcode_stop_reason ) {
-            err_msg_.line("`transcode_size` returned wrong stop_reason");
-            err_msg_.line("    Expected: ", stringify(data_.expected_stop_reason));
-            err_msg_.line("    Obtained: ", stringify(transcode_stop_reason));
-        }
-        if (transcode_stop_reason != res_tr.stop_reason) {
-            err_msg_.line("`stop_reason` mismatch:");
-            err_msg_.line("    `transcode`      returned `"
-                          , stringify(res_tr.stop_reason), '`');
-            err_msg_.line("    `transcode_size` returned `"
-                          , stringify(transcode_stop_reason), '`');
-        }
+    if (data_.expected_stop_reason != transcode_stop_reason ) {
+        err_msg_.line("`transcode_size` returned wrong stop_reason");
+        err_msg_.line("    Expected: ", stringify(data_.expected_stop_reason));
+        err_msg_.line("    Obtained: ", stringify(transcode_stop_reason));
+    }
+    if (transcode_stop_reason != res_tr.stop_reason) {
+        err_msg_.line("`stop_reason` mismatch:");
+        err_msg_.line("    `transcode`      returned `"
+                        , stringify(res_tr.stop_reason), '`');
+        err_msg_.line("    `transcode_size` returned `"
+                        , stringify(transcode_stop_reason), '`');
     }
     if (res_tr.stale_src_ptr != res_tr_size.stale_src_ptr) {
         err_msg_.line("Adjusted `stale_src_ptr` mismatch:");

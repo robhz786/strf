@@ -17,7 +17,7 @@
 
 namespace {
 
-STRF_TEST_FUNC void utf32_to_utf32_unsafe_transcode()
+STRF_TEST_FUNC void unsafe_transcode()
 {
     TEST_UNSAFE_TRANSCODE
         .input(U"ab")
@@ -125,7 +125,7 @@ STRF_TEST_FUNC void utf32_to_utf32_unsafe_transcode()
 }
 
 
-STRF_TEST_FUNC void utf32_valid_sequences()
+STRF_TEST_FUNC void valid_sequences()
 {
     TEST_TRANSCODE
         .input(U"ab")
@@ -238,6 +238,55 @@ STRF_TEST_FUNC void utf32_valid_sequences()
     }
 }
 
+STRF_TEST_FUNC void valid_input_but_output_size_too_small()
+{
+    TEST_TRANSCODE
+        .input(U"abc")
+        .expect(U"ab")
+        .destination_size(2)
+        .expect_stop_reason(strf::transcode_stop_reason::insufficient_output_space)
+        .expect_unsupported_codepoints({})
+        .expect_invalid_sequences({});
+
+    TEST_TRANSCODE
+        .input(U"abc")
+        .expect(U"ab")
+        .destination_size(2)
+        .expect_stop_reason(strf::transcode_stop_reason::insufficient_output_space)
+        .expect_unsupported_codepoints({})
+        .expect_invalid_sequences({});
+
+    TEST_TRANSCODE
+        .input(U"abc")
+        .expect(U"ab")
+        .flags(strf::transcode_flags::lax_surrogate_policy)
+        .destination_size(2)
+        .expect_stop_reason(strf::transcode_stop_reason::insufficient_output_space)
+        .expect_unsupported_codepoints({})
+        .expect_invalid_sequences({});
+
+    TEST_TRANSCODE
+        .input(U"abc")
+        .expect(U"ab")
+        .flags(strf::transcode_flags::lax_surrogate_policy |
+               strf::transcode_flags::stop_on_invalid_sequence |
+               strf::transcode_flags::stop_on_unsupported_codepoint)
+        .destination_size(2)
+        .expect_stop_reason(strf::transcode_stop_reason::insufficient_output_space)
+        .expect_unsupported_codepoints({})
+        .expect_invalid_sequences({});
+
+    TEST_TRANSCODE
+        .input(U"abc")
+        .expect(U"ab")
+        .flags(strf::transcode_flags::stop_on_invalid_sequence |
+               strf::transcode_flags::stop_on_unsupported_codepoint)
+        .destination_size(2)
+        .expect_stop_reason(strf::transcode_stop_reason::insufficient_output_space)
+        .expect_unsupported_codepoints({})
+        .expect_invalid_sequences({});
+}
+
 STRF_TEST_FUNC void test_not_allowed_surrogate(char32_t surrogate_char)
 {
     TEST_TRANSCODE
@@ -278,25 +327,49 @@ STRF_TEST_FUNC void test_not_allowed_surrogate(char32_t surrogate_char)
         .expect_invalid_sequences({{surrogate_char}});
 }
 
-STRF_TEST_FUNC void utf32_invalid_sequences()
+STRF_TEST_FUNC void invalid_sequences()
 {
     // codepoint too big
     const char32_t str_110000[] = {0x110000, 0};
-    TEST_TRANSCODE
-        .input(str_110000)
-        .expect(U"\uFFFD")
-        .flags(strf::transcode_flags::lax_surrogate_policy ) // should have no effect
-        .expect_stop_reason(strf::transcode_stop_reason::completed)
-        .expect_unsupported_codepoints({})
-        .expect_invalid_sequences({{static_cast<char32_t>(0x110000)}});
-    TEST_TRANSCODE
-        .input(str_110000)
-        .expect(U"")
-        .destination_size(0)
-        .flags(strf::transcode_flags::stop_on_invalid_sequence)
-        .expect_stop_reason(strf::transcode_stop_reason::invalid_sequence)
-        .expect_unsupported_codepoints({})
-        .expect_invalid_sequences({{static_cast<char32_t>(0x110000)}});
+    {
+        // big destination size
+        TEST_TRANSCODE
+            .input(str_110000)
+            .expect(U"\uFFFD")
+            .flags(strf::transcode_flags::lax_surrogate_policy ) // should have no effect
+            .expect_stop_reason(strf::transcode_stop_reason::completed)
+            .expect_unsupported_codepoints({})
+            .expect_invalid_sequences({{static_cast<char32_t>(0x110000)}});
+        TEST_TRANSCODE
+            .input(str_110000)
+            .expect(U"")
+            .flags(strf::transcode_flags::lax_surrogate_policy |
+                   strf::transcode_flags::stop_on_invalid_sequence)
+            .expect_stop_reason(strf::transcode_stop_reason::invalid_sequence)
+            .expect_unsupported_codepoints({})
+            .expect_invalid_sequences({{static_cast<char32_t>(0x110000)}});
+    }
+    {
+        // destination size just as needed
+        TEST_TRANSCODE
+            .input(str_110000)
+            .expect(U"")
+            .destination_size(0)
+            .flags(strf::transcode_flags::stop_on_invalid_sequence)
+            .expect_stop_reason(strf::transcode_stop_reason::invalid_sequence)
+            .expect_unsupported_codepoints({})
+            .expect_invalid_sequences({{static_cast<char32_t>(0x110000)}});
+        TEST_TRANSCODE
+            .input(str_110000)
+            .expect(U"")
+            .destination_size(0)
+            .flags(strf::transcode_flags::lax_surrogate_policy |
+                   strf::transcode_flags::stop_on_invalid_sequence)
+            .expect_stop_reason(strf::transcode_stop_reason::invalid_sequence)
+            .expect_unsupported_codepoints({})
+            .expect_invalid_sequences({{static_cast<char32_t>(0x110000)}});
+    }
+
 
     test_not_allowed_surrogate(static_cast<char32_t>(0xD800)) ;
     test_not_allowed_surrogate(static_cast<char32_t>(0xDBFF)) ;
@@ -322,7 +395,7 @@ struct notifier_that_throws : strf::transcoding_error_notifier {
 };
 #endif // __cpp_exceptions
 
-STRF_TEST_FUNC void utf32_error_notifier()
+STRF_TEST_FUNC void error_notifier()
 {
     {
         invalid_seq_counter notifier;
@@ -371,31 +444,31 @@ STRF_TEST_FUNC void utf32_error_notifier()
 }
 
 template <std::size_t N>
-STRF_HD std::ptrdiff_t utf32_count_codepoints(const char32_t (&str)[N])
+STRF_HD std::ptrdiff_t count_codepoints(const char32_t (&str)[N])
 {
     return strf::utf32_t<char32_t>::count_codepoints(str, str + N - 1, 100000).count;
 }
 
 template <std::size_t N>
-STRF_HD std::ptrdiff_t utf32_count_codepoints_fast(const char32_t (&str)[N])
+STRF_HD std::ptrdiff_t count_codepoints_fast(const char32_t (&str)[N])
 {
     return strf::utf32_t<char32_t>::count_codepoints_fast(str, str + N - 1, 100000).count;
 }
 
-STRF_HD void utf32_codepoints_count()
+STRF_HD void codepoints_count()
 {
     {   // test valid input
-        TEST_EQ(0, utf32_count_codepoints(U""));
-        TEST_EQ(3, utf32_count_codepoints(U"abc"));
-        TEST_EQ(1, utf32_count_codepoints(U"\uD7FF"));
-        TEST_EQ(1, utf32_count_codepoints(U"\uE000"));
-        TEST_EQ(1, utf32_count_codepoints(U"\U0010FFFF"));
+        TEST_EQ(0, count_codepoints(U""));
+        TEST_EQ(3, count_codepoints(U"abc"));
+        TEST_EQ(1, count_codepoints(U"\uD7FF"));
+        TEST_EQ(1, count_codepoints(U"\uE000"));
+        TEST_EQ(1, count_codepoints(U"\U0010FFFF"));
 
-        TEST_EQ(0, utf32_count_codepoints_fast(U""));
-        TEST_EQ(3, utf32_count_codepoints_fast(U"abc"));
-        TEST_EQ(1, utf32_count_codepoints_fast(U"\uD7FF"));
-        TEST_EQ(1, utf32_count_codepoints_fast(U"\uE000"));
-        TEST_EQ(1, utf32_count_codepoints_fast(U"\U0010FFFF"));
+        TEST_EQ(0, count_codepoints_fast(U""));
+        TEST_EQ(3, count_codepoints_fast(U"abc"));
+        TEST_EQ(1, count_codepoints_fast(U"\uD7FF"));
+        TEST_EQ(1, count_codepoints_fast(U"\uE000"));
+        TEST_EQ(1, count_codepoints_fast(U"\U0010FFFF"));
     }
     {   // when limit is less than or equal to count
 
@@ -437,7 +510,7 @@ STRF_HD void utf32_codepoints_count()
     }
 }
 
-STRF_TEST_FUNC void utf32_miscellaneous()
+STRF_TEST_FUNC void miscellaneous()
 {
     {   // cover write_replacement_char(x);
         TEST(U"\uFFFD")                         .tr(U"{10}");
@@ -487,12 +560,13 @@ STRF_TEST_FUNC void utf32_miscellaneous()
 
 STRF_TEST_FUNC void test_utf32()
 {
-    utf32_to_utf32_unsafe_transcode();
-    utf32_valid_sequences();
-    utf32_invalid_sequences();
-    utf32_error_notifier();
-    utf32_codepoints_count();
-    utf32_miscellaneous();
+    unsafe_transcode();
+    valid_sequences();
+    valid_input_but_output_size_too_small();
+    invalid_sequences();
+    error_notifier();
+    codepoints_count();
+    miscellaneous();
 }
 
 REGISTER_STRF_TEST(test_utf32)

@@ -231,6 +231,55 @@ STRF_TEST_FUNC void utf8_to_utf32_valid_sequences()
             .flags(strf::transcode_flags::lax_surrogate_policy)
             .expect_stop_reason(strf::transcode_stop_reason::completed);
     }
+
+    // with flag stop_on_invalid_sequence
+    TEST_UTF_TRANSCODE(char8_t, char32_t)
+        .input(u8"ab")
+        .expect(U"ab")
+        .flags(strf::transcode_flags::stop_on_invalid_sequence)
+        .expect_stop_reason(strf::transcode_stop_reason::completed)
+        .expect_unsupported_codepoints({})
+        .expect_invalid_sequences({});
+
+    TEST_UTF_TRANSCODE(char8_t, char32_t)
+        .input(u8"\u0080")
+        .expect(U"\u0080")
+        .flags(strf::transcode_flags::stop_on_invalid_sequence)
+        .expect_stop_reason(strf::transcode_stop_reason::completed)
+        .expect_unsupported_codepoints({})
+        .expect_invalid_sequences({});
+
+    TEST_UTF_TRANSCODE(char8_t, char32_t)
+        .input(u8"\u0800")
+        .expect(U"\u0800")
+        .flags(strf::transcode_flags::stop_on_invalid_sequence)
+        .expect_stop_reason(strf::transcode_stop_reason::completed)
+        .expect_unsupported_codepoints({})
+        .expect_invalid_sequences({});
+
+    TEST_UTF_TRANSCODE(char8_t, char32_t)
+        .input(u8"\uD7FF")
+        .expect(U"\uD7FF")
+        .flags(strf::transcode_flags::stop_on_invalid_sequence)
+        .expect_stop_reason(strf::transcode_stop_reason::completed)
+        .expect_unsupported_codepoints({})
+        .expect_invalid_sequences({});
+
+    TEST_UTF_TRANSCODE(char8_t, char32_t)
+        .input(u8"\U00010000")
+        .expect(U"\U00010000")
+        .flags(strf::transcode_flags::stop_on_invalid_sequence)
+        .expect_stop_reason(strf::transcode_stop_reason::completed)
+        .expect_unsupported_codepoints({})
+        .expect_invalid_sequences({});
+
+    TEST_UTF_TRANSCODE(char8_t, char32_t)
+        .input(u8"\U0010FFFF")
+        .expect(U"\U0010FFFF")
+        .flags(strf::transcode_flags::stop_on_invalid_sequence)
+        .expect_stop_reason(strf::transcode_stop_reason::completed)
+        .expect_unsupported_codepoints({})
+        .expect_invalid_sequences({});
 }
 
 STRF_TEST_FUNC void utf8_to_utf32_invalid_sequences()
