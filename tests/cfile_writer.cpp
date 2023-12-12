@@ -13,6 +13,12 @@
 
 namespace {
 
+#if defined(__GLIBC__) && (__GLIBC__ >= 2) && (__GLIBC_MINOR__ >= 7)
+const char* const wflag = "we"; // because of clang-tidy check "android-cloexec-fopen"
+#else
+const char* const wflag = "w";
+#endif
+
 template <typename CharT>
 void test_narrow_successfull_writing()
 {
@@ -206,7 +212,7 @@ void test_narrow_failing_to_flush()
     auto double_str = test_utils::make_double_string<CharT>();
 
     auto path = test_utils::unique_tmp_file_name();
-    std::FILE* file = std::fopen(path.c_str(), "we");
+    std::FILE* file = std::fopen(path.c_str(), wflag);
     strf::narrow_cfile_writer<CharT, strf::min_destination_buffer_size> writer(file);
 
     writer.write(half_str.begin(), half_str.size());
@@ -233,7 +239,7 @@ void test_wide_failing_to_flush()
     auto double_str = test_utils::make_double_string<wchar_t>();
 
     auto path = test_utils::unique_tmp_file_name();
-    std::FILE* file = std::fopen(path.c_str(), "we");
+    std::FILE* file = std::fopen(path.c_str(), wflag);
     strf::wide_cfile_writer writer(file);
 
     writer.write(half_str.begin(), half_str.size());
@@ -262,7 +268,7 @@ void test_narrow_failing_to_finish()
     auto half_str = test_utils::make_half_string<CharT>();
 
     auto path = test_utils::unique_tmp_file_name();
-    std::FILE* file = std::fopen(path.c_str(), "we");
+    std::FILE* file = std::fopen(path.c_str(), wflag);
     strf::narrow_cfile_writer<CharT, strf::min_destination_buffer_size> writer(file);
 
     writer.write(double_str.begin(), double_str.size());
@@ -289,7 +295,7 @@ void test_wide_failing_to_finish()
     auto half_str = test_utils::make_half_string<wchar_t>();
 
     auto path = test_utils::unique_tmp_file_name();
-    std::FILE* file = std::fopen(path.c_str(), "we");
+    std::FILE* file = std::fopen(path.c_str(), wflag);
     strf::wide_cfile_writer writer(file);
 
     writer.write(double_str.begin(), double_str.size());
@@ -318,7 +324,7 @@ void test_narrow_cfile_writer_creator()
     auto full_str = test_utils::make_full_string<CharT>();
 
     auto path = test_utils::unique_tmp_file_name();
-    std::FILE* file = std::fopen(path.c_str(), "we");
+    std::FILE* file = std::fopen(path.c_str(), wflag);
 
     auto status = strf::to<CharT>(file)(half_str, full_str);
     TEST_TRUE(0 == fclose(file));
@@ -344,7 +350,7 @@ void test_wide_cfile_writer_creator()
     auto full_str = test_utils::make_full_string<wchar_t>();
 
     auto path = test_utils::unique_tmp_file_name();
-    std::FILE* file = std::fopen(path.c_str(), "we");
+    std::FILE* file = std::fopen(path.c_str(), wflag);
 
     auto status = strf::wto(file)(half_str, full_str);
     TEST_TRUE(0 == fclose(file));
