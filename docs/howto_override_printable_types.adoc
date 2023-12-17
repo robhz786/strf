@@ -11,7 +11,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 :pack: <<strf_hpp#pack,pack>>
 :set_alignment_format: <<strf_hpp#alignment_formatter,set_alignment_format>>
 :get_alignment_format: <<strf_hpp#alignment_formatter,get_alignment_format>>
-:constrain: <<strf_hpp#constrain,constrain>>
+:constrain: <<tutorial#constrained_facets,constrain>>
 :printable_with_fmt: <<strf_hpp#printable_with_fmt,printable_with_fmt>>
 :PrintableTraits: <<strf_hpp#PrintableTraits,PrintableTraits>>
 :PrinterInput: <<strf_hpp#PrinterInput,PrinterInput>>
@@ -129,7 +129,6 @@ Even if you don't want to support formatting,
 it still makes sense to overload `make_input`
 taking the `{printable_with_fmt}` argument and add
 a `static_assert` with an explanatory message.
-
 ////
 
 
@@ -138,42 +137,48 @@ you can completely ignore the facet categories that
 influence the original printable type, as well as consider others
 or <<howto_add_printable_types#creating_facet,new>> ones.
 You can see that although `bool` type is influenced
-by `{lettercase}` facet our override just ignores it.
-
-////
-Now, let's see how to use our implementation.
-One important thing you *must* remember when using a facet object
-of the `printable_overrider_c` category is to constrain
-it so that it only affects the types it aims to override.
-////
-
+by `{lettercase}` facet, our override just ignores it.
 
 Now we are almost ready to use our implementation.
 There is just a detail you *must*
 remember before using a facet object
-of the `printable_overrider_c` category &#x2014; you must constrain
-it to the types it aims to override.
-If you don't that, __i.e.__ if you use the facet directly,
-then Strf will apply it to all overridables types:
+of the `printable_overrider_c` category &#x2014; you must __{constrain}__
+it to the types it aims to override:
+
+[source,cpp]
+----
+template <typename T>
+struct is_bool: std::is_same<T, strf::representative_of_printable<bool>> {}; // <1>
+
+constexpr auto italian_bool = strf::constrain<is_bool>(italian_bool_facet{});
+----
+
+<1> `strf::{representative_of_printable}<__X__>`
+    commonly aliases to `__X__`, and it does so for `bool`.
+    However, is a good practice to use it (instead `__X__`), because it is
+    what the library uses (__i.e.__ parameterizes `<<strf_hpp#use_facet,use_facet>>`
+    with ) when "deciding" whether to apply a facet or not.
+
+Now we are ready:
+
+[source,cpp,subs=normal]
+----
+auto str = strf::to_string (italian_bool, true, '/', false);
+assert(str == "vero/falso");
+
+// and with formatting:
+str = strf::to_string
+    ( italian_bool
+    , strf::center(true, 10, '.'), '/'
+    , strf::center(false, 10, '.') );
+assert(str == "\...vero\.../..falso\...");
+----
 
 
-////
-this is what happens:
-
-then it will override all types that are overridables,
-
-
-
-If you use the value `italian_bool_facet{}` directly, __i.e.__
-without `strf::constrain`,
-then all arguments to be printed would be passed to
-`italian_bool_facet::make_input` &#x2014; raw strings,
-integers, float points values, everything
-would be and printed as "vero" or "falso"
-( unless when it fails to compile for not being
-convertible ).
-////
-
+[WARNING]
+====
+When a `printable_overrider_c` facet is not constrained, it affects all
+overridable printable types, which is certainly not what we want:
 
 [source,cpp,subs=normal]
 ----
@@ -181,58 +186,26 @@ auto str = strf::to_string.with(italian_bool_facet{})
     (true, '/', false, '/', 1, '/', 0, '/', 1.0, '/', 0.0, '/', (void*)0);
 assert(str == "vero/falso/vero/falso/vero/falso/falso");
 ----
-That's certainly not what we want. What we we want is to apply
-`italian_bool_facet` to `bool` arguments only,
-and we do do the following to achieve this:
+====
 
-[source,cpp,subs=normal]
-----
-template <typename T>
-struct is_bool: std::is_same<T, strf::{representative_of_printable}<bool>> {};
-
-constexpr auto italian_bool = strf::{constrain}<is_bool>(italian_bool_facet{});
-----
-
-// `strf::{representative_of_printable}<X>` is a type alias to
-// `strf::{printable_traits_of}<X>::<<strf_hpp#PrintableTraits_representative_type,representative_type>>`,
-// which is usually the same as
-// `strf::{printable_traits_of}<X>::<<strf_hpp#PrintableTraits_forwarded_type,forwarded_type>>`,
-// which is usually the same as
-// `std::{remove_cvref_t}<X>`.
-// In fact, `strf::{representative_of_printable}<bool>` is an alias to `bool`,
-// but it is a better practice to use `strf::{representative_of_printable}` instead.
-
-When `strf::{printable_traits_of}<X>` ( the __{PrintableTraits}__ class of `X` )
-does not have the member type alias `<<strf_hpp#PrintableTraits_is_overridable,is_overridable>>`,
-or it is an alias to `std::false_type`, then `X` is not overridable.
-An example of an non-overridable type is `char`
-( that's why `'\'` was printed as "\" and not as "vero" in the previous snippet ).
+[NOTE]
+====
+Some printable types are not overridable.
+A type `__X__` is only overridable if
+`strf::{printable_traits_of}<X>::<<strf_hpp#PrintableTraits_is_overridable,is_overridable>>`
+is `std::true_type`.
+An example of an non-overridable type is `char`.
 You can use `strf::{is_printable_and_overridable}<X>` to check at compile-time
 whether a type `X` is overridable.
-
-Ok, now thinks should work:
-
-[source,cpp,subs=normal]
-----
-auto str = strf::to_string.with(italian_bool)
-    (true, '/', false, '/', 1, '/', 0, '/', 1.0, '/', 0.0, '/', (void*)0);
-assert(str == "vero/falso/1/0/1/0/0x0");
-
-// and with formatting:
-
-str = strf::to_string.with(italian_bool)
-    ( strf::center(true, 10, '.'), '/'
-    , strf::center(false, 10, '.') );
-assert(str == "\...vero\.../..falso\...");
-----
+====
 
 You may be wondering why printable types are overriden this way,
 __i.e.__ through facets.
-Couldn't this library have adoped another method,
-like the __tag_invoke__ pattern ? The problem of using __tag_invoke__
-for this purpose or any other customization point technique
-is that the customization point is activated by the inclusion
-of a header, and headers may be included unintentionally.
-You definitely don't want to accidentally change how a value is printed.
+Couldn't this library have adoped any of the usual customization
+point techniques available in C++?
+Well, the reason it is to avoid the situation where the overriding of
+a type could be activated by the mere inclusion of a header.
+After all, headers can be included unintentionally, and
+you don't want to accidentaly change how a value is printed.
 
 

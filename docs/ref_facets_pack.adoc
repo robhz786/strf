@@ -105,7 +105,7 @@ template <typename FCat, typename Tag, typename ... T>
 constexpr decltype(auto) use_facet(const facets_pack<T...>& fp);
 ----
 Effects:: If <<has_facet, `has_facet<FCat, Tag>(fp)`>> returns `true` then
-          returns <<do_get_facet,`do_get_facet<FCat, Tag>(fp)`, otherwise
+          returns `<<do_get_facet,do_get_facet>><FCat, Tag>(fp)`, otherwise
           return `FCat::get_default()`.
 Compile-time requirements::  `FCat` is a _{FacetCategory}_ type.
 ====

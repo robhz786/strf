@@ -8,6 +8,8 @@ http://www.boost.org/LICENSE_1_0.txt)
 :numpunct:      <<quick_reference#numpunct,numpunct>>
 :destination:    <<destination_hpp#destination,destination>>
 :UnaryTypeTrait: link:https://en.cppreference.com/w/cpp/named_req/UnaryTypeTrait[UnaryTypeTrait]
+:constrain: <<strf_hpp#constrain,constrain>>
+
 
 = Tutorial of the Strf library
 :source-highlighter: prettify
@@ -183,10 +185,10 @@ You can see a list of the current facets categories <<quick_reference#facets,her
 === Constrained facets
 
 You can constrain a facet object to a specific group of input types:
-[source,cpp]
+[source,cpp,subs=normal]
 ----
 auto str = strf::to_string
-    .with(strf::constrain<std::is_floating_point>(strf::uppercase))
+    .with(strf::{constrain}<std::is_floating_point>(strf::uppercase))
     ( true, ' '*strf::hex(0xab), ' ', 1.0e+50 );
 
 assert(str == "true 0xab 1E+50");
@@ -220,7 +222,7 @@ assert(str_ab == "True 0xAB 1E+9");
 assert(str_ba == "True 0xAB 1e+9");
 ----
 
-You can see that the template argument passed to `constrain` is a
+You can see that the template argument passed to `{constrain}` is a
 __{UnaryTypeTrait}__, __i.e.__, a type template with a static
 constexpr boolean member variable named `value`. The type the library
 passes to this __UnaryTypeTrait__ is called the
