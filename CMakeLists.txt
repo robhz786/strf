@@ -51,8 +51,8 @@ include(GNUInstallDirs)
 add_library(StrfHeaderOnly INTERFACE)
 add_library(StrfStatic  STATIC src/strf.cpp)
 
-target_compile_features(StrfHeaderOnly INTERFACE cxx_std_11)
-target_compile_features(StrfStatic  PUBLIC    cxx_std_11)
+target_compile_features(StrfHeaderOnly INTERFACE cxx_std_14)
+target_compile_features(StrfStatic  PUBLIC    cxx_std_14)
 
 add_library(Strf::StrfStatic  ALIAS StrfStatic)
 add_library(Strf::StrfHeaderOnly ALIAS StrfHeaderOnly)
@@ -100,7 +100,7 @@ if (${STRF_CUDA_SUPPORT})
   target_include_directories(
     StrfCuda
     PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include> )
-  #target_compile_features(StrfCuda PUBLIC cxx_std_11)
+  #target_compile_features(StrfCuda PUBLIC cxx_std_14)
   set_target_properties(
     StrfCuda
     PROPERTIES
