@@ -252,7 +252,7 @@ public:
     static STRF_HD strf::transcode_size_result<SrcCharT> transcode_size
         ( const SrcCharT* src
         , const SrcCharT* src_end
-        , std::ptrdiff_t size
+        , std::ptrdiff_t limit
         , strf::transcode_flags flags ) noexcept;
 
     static STRF_HD strf::transcode_result<SrcCharT, DstCharT> unsafe_transcode
@@ -1273,7 +1273,7 @@ public:
 
     static STRF_HD char32_t decode_unit(CharT ch) noexcept
     {
-        return ch;
+        return static_cast<char32_t>(ch);
     }
     static STRF_HD strf::encode_char_f<CharT> encode_char_func() noexcept
     {

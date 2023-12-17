@@ -2013,7 +2013,7 @@ STRF_HD void test_to_utf32()
     }
     {
         // from a charset that has no invalid byte
-        strf::iso_8859_1_t<char> cs;
+        const strf::iso_8859_1_t<char> cs;
         TEST_TRANSCODE(cs, strf::utf_t<char32_t>())
             .input("abcd")
             .expect(U"abcd")

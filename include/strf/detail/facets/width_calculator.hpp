@@ -504,22 +504,22 @@ public:
         -> strf::width_and_ptr<typename Charset::code_unit>
     {
         str_end = str <= str_end ? str_end : str;
-        const auto buff_size = 32;
-        char32_t buff[buff_size];
+        const auto buff32_size = 32;
+        char32_t buff32[buff32_size];
         constexpr auto flags = strf::transcode_flags::none;
         const auto to_u32 = charset.to_u32();
         detail::std_width_calc_func_return resw{limit, 0, nullptr};
         while(1) {
-            auto res_tr = to_u32.transcode(str, str_end, buff, buff + buff_size, nullptr, flags);
+            auto res_tr = to_u32.transcode(str, str_end, buff32, buff32 + buff32_size, nullptr, flags);
             resw = detail::std_width_calc_func
-                ( buff, res_tr.dst_ptr, resw.remaining_width, resw.state, true );
+                ( buff32, res_tr.dst_ptr, resw.remaining_width, resw.state, true );
 
             if ( resw.remaining_width <= 0 ||
                  res_tr.stop_reason != transcode_stop_reason::insufficient_output_space)
             {
                 const auto width = limit - resw.remaining_width;
                 if (resw.ptr != res_tr.dst_ptr) {
-                    const auto u32dist = resw.ptr - buff;
+                    const auto u32dist = resw.ptr - buff32;
                     auto res_sz = to_u32.transcode_size(str, str_end, u32dist, flags);
                     return {width, res_sz.src_ptr};
                 }

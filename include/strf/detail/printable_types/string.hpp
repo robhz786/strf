@@ -734,12 +734,10 @@ public:
         auto&& wcalc = use_facet_<strf::width_calculator_c>(input.facets);
         auto res = wcalc.str_width_and_pos
             ( use_facet_<strf::charset_c<SrcCharT>>(input.facets)
-            , input.arg.precision()
-            , str_
-            , input.arg.value().size() );
+            , input.arg.precision(), str_, input.arg.value().end() );
         str_end_ = res.ptr;
         input.pre->subtract_width(res.width);
-        input.pre->add_size(res.pos);
+        input.pre->add_size(str_end_ - str_);
     }
 
     STRF_HD void print_to(strf::destination<DstCharT>& dst) const override;
@@ -968,11 +966,10 @@ public:
         auto dst_charset = use_facet_<strf::charset_c<DstCharT>, SrcCharT>(input.facets);
         auto&& wcalc = use_facet_<strf::width_calculator_c, SrcCharT>(input.facets);
         auto res = wcalc.str_width_and_pos
-            ( src_charset, input.arg.precision(), str_, input.arg.value().size() );
+            ( src_charset, input.arg.precision(), str_, input.arg.value().end() );
         str_end_ = res.ptr;
         input.pre->subtract_width(res.width);
-        init_( input.pre, src_charset
-             , use_facet_<strf::charset_c<DstCharT>, SrcCharT>(input.facets));
+        init_( input.pre, src_charset, dst_charset);
     }
 
     STRF_HD void print_to(strf::destination<DstCharT>& dst) const override;
@@ -1091,8 +1088,7 @@ public:
         auto src_charset = strf::detail::get_src_charset(input);
         auto&& wcalc = use_facet_<strf::width_calculator_c, SrcCharT>(input.facets);
         auto res = wcalc.str_width_and_pos
-            ( src_charset, input.arg.precision(), str_
-            , input.arg.value().size() );
+            ( src_charset, input.arg.precision(), str_, input.arg.value().end() );
         str_end_ = res.ptr;
         init_( input.pre, res.width, src_charset
              , use_facet_<strf::charset_c<DstCharT>, SrcCharT>(input.facets) );
@@ -1258,12 +1254,10 @@ public:
         auto dst_charset = use_facet_<strf::charset_c<DstCharT>, SrcCharT>(input.facets);
         auto&& wcalc = use_facet_<strf::width_calculator_c, SrcCharT>(input.facets);
         auto res = wcalc.str_width_and_pos
-            ( src_charset, input.arg.precision(), str_
-            , input.arg.value().size() );
+            ( src_charset, input.arg.precision(), str_, input.arg.value().end() );
         str_end_ = res.ptr;
         input.pre->subtract_width(res.width);
-        init_( input.pre, src_charset
-             , use_facet_<strf::charset_c<DstCharT>, SrcCharT>(input.facets));
+        init_( input.pre, src_charset, dst_charset);
     }
     STRF_HD void print_to(strf::destination<DstCharT>& dst) const override;
 
@@ -1383,8 +1377,7 @@ public:
         auto src_charset = strf::detail::get_src_charset(input);
         auto&& wcalc = use_facet_<strf::width_calculator_c, SrcCharT>(input.facets);
         auto res = wcalc.str_width_and_pos
-            ( src_charset, input.arg.precision(), str_
-            , input.arg.value().size() );
+            ( src_charset, input.arg.precision(), str_, input.arg.value().end() );
         str_end_ = res.ptr;
         init_( input.pre, res.width, src_charset
              , use_facet_<strf::charset_c<DstCharT>, SrcCharT>(input.facets) );

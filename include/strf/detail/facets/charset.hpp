@@ -373,17 +373,19 @@ public:
     STRF_HD strf::transcode_size_result<SrcCharT> transcode_size
         ( const SrcCharT* src
         , const SrcCharT* src_end
+        , std::ptrdiff_t limit
         , strf::transcode_flags flags ) const
     {
-        return transcode_size_func_(src, src_end, flags);
+        return transcode_size_func_(src, src_end, limit, flags);
     }
 
     STRF_HD strf::transcode_size_result<SrcCharT> unsafe_transcode_size
         ( const SrcCharT* src
         , const SrcCharT* src_end
+        , std::ptrdiff_t limit
         , strf::transcode_flags flags ) const
     {
-        return unsafe_transcode_size_func_(src, src_end, flags);
+        return unsafe_transcode_size_func_(src, src_end, limit, flags);
     }
 
     constexpr STRF_HD strf::transcode_f<SrcCharT, DstCharT>
