@@ -26,4 +26,6 @@ strf::numpunct<10> locale_numpunct() noexcept;
 strf::numpunct<10> locale_numpunct() noexcept;
 ----
 Return value::: A numpunct object that reflects the current locale.
+Note::: On MS-Windows this functions is implemented using function `GetLocaleInfoEx`.
+On other systems, it uses `localeconv`.
 ====

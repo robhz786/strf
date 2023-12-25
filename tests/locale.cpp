@@ -7,29 +7,63 @@
 
 #include <strf/locale.hpp>
 #include "test_utils.hpp"
-
-#if defined(_WIN32)
-#define LOCALE_NAME(lang, region) #lang "-" #region
-#else
-#define LOCALE_NAME(lang, region) #lang "_" #region
-#endif
+#include <cstdio>
+#include <locale>
+#include <sstream>
+#include <iomanip>
+#include <iostream>
+#include <locale.h>
 
 namespace {
 
+void test_locale_numpunct(const char* locale_name)
+{
+#if defined __cpp_exceptions
+    try{
+        constexpr double sample = 1.0e+10;
+
+        std::locale loc(locale_name);
+
+        std::wostringstream tmp;
+        tmp.imbue(loc);
+        tmp << std::setprecision(0) << std::showpoint << std::fixed
+            << sample;
+        const auto expected_result = tmp.str();
+
+        auto previous_loc = std::locale::global(loc);
+        auto punct = strf::locale_numpunct();
+
+        TEST_SCOPE_DESCRIPTION(locale_name);
+        TEST(expected_result.c_str()) .with(punct) (*!strf::fixed(sample));
+
+        std::locale::global(previous_loc);
+    }
+    catch (std::runtime_error&) {
+        std::cerr << "skipped `test_locale_numpunct(\"" << locale_name
+                  << "\")` from file " << __FILE__
+                  << ", because the locale is not supported\n";
+
+    }
+#else
+    std::cerr << "skipped `test_locale_numpunct(\"" << locale_name
+              << "\")` from file " << __FILE__
+              << ", because exceptions are disabled\n";
+#endif
+}
+
 void test_locale()
 {
-    if (setlocale(LC_NUMERIC, LOCALE_NAME(en, US))) { // NOLINT(concurrency-mt-unsafe)
-        auto punct = strf::locale_numpunct();
-        TEST("10,000,000,000,000,000.") .with(punct) (*!strf::fixed(1e+16));
-    }
-    if (setlocale(LC_NUMERIC, LOCALE_NAME(de, DE))) { // NOLINT(concurrency-mt-unsafe)
-        auto punct = strf::locale_numpunct();
-        TEST("10.000.000.000.000.000,") .with(punct) (*!strf::fixed(1e+16));
-    }
-    if (setlocale(LC_NUMERIC, LOCALE_NAME(as, IN))) { // NOLINT(concurrency-mt-unsafe)
-        auto punct = strf::locale_numpunct();
-        TEST("10,00,00,00,00,00,00,000.") .with(punct) (*!strf::fixed(1e+16));
-    }
+
+#if defined(_WIN32)
+    test_locale_numpunct("en-US");
+    test_locale_numpunct("de-DE");
+    test_locale_numpunct("as-IN");
+#else
+    test_locale_numpunct("en_US.UTF8");
+    test_locale_numpunct("de_DE.UTF8");
+    test_locale_numpunct("as_IN.UTF8");
+#endif
+
 #if ! defined(_WIN32)
     {
         using strf::detail::make_numpunct;
