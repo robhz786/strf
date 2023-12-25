@@ -55,13 +55,15 @@ inline std::string unique_tmp_file_name()
     char dirname[MAX_PATH];
     GetTempPathA(MAX_PATH, dirname);
     char fullname[MAX_PATH];
-    sprintf_s(fullname, MAX_PATH, "%s\\test_strf_%x.txt", dirname, std::rand());
+    auto res =  strf::to(fullname) (dirname, "\\test_strf_", strf::hex(std::rand()), ".txt");
+    STRF_MAYBE_UNUSED(res);
     return fullname;
 
 #else // defined(_WIN32)
 
    char fullname[200];
-   sprintf(fullname, "/tmp/test_strf_%x.txt", std::rand());
+   auto res =  strf::to(fullname) ("/tmp/test_strf_", strf::hex(std::rand()), ".txt");
+   STRF_MAYBE_UNUSED(res);
    return fullname;
 
 #endif  // defined(_WIN32)
