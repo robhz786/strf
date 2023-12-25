@@ -22,6 +22,10 @@ option(
   "Build unit tests"
   ${STRF_BUILD_TESTS} )
 option(
+  STRF_BUILD_FUZZY_TESTS
+  "Build fuzzy tests"
+  ${STRF_BUILD_FUZZY_TESTS} )
+option(
   STRF_BUILD_CH32_WIDTH_AND_GCB_PROP
   "Enable specifically test of file include/strf/detail/ch32_width_and_gcb_prop"
   ${STRF_BUILD_CH32_WIDTH_AND_GCB_PROP})

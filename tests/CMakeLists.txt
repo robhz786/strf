@@ -6,21 +6,7 @@
 
 cmake_minimum_required (VERSION 3.0)
 
-if (STRF_BUILD_TEST_CH32_WIDTH_AND_GCB_PROP)
-
-  add_executable(test_ch32_width_and_gcb_prop ch32_width_and_gcb_prop.cpp)
-  target_link_libraries(test_ch32_width_and_gcb_prop Strf::StrfHeaderOnly icudata icuuc)
-  add_test(
-    NAME ch32_width_and_gcb_prop COMMAND
-    ${CMAKE_COMMAND} -E env LD_LIBRARY_PATH=${icu_lib_dir}
-    ${CMAKE_CURRENT_BINARY_DIR}/test_ch32_width_and_gcb_prop )
-
-endif ()
-
-
-if (STRF_BUILD_TESTS)
-
-  if (NOT STRF_FREESTANDING)
+if (STRF_BUILD_FUZZY_TESTS)
     enable_language(C)
     add_library(Ryu STATIC
       "externals/ryu/ryu/f2s.c"
@@ -29,8 +15,18 @@ if (STRF_BUILD_TESTS)
     target_include_directories(Ryu PUBLIC externals/ryu)
     add_executable(test_fuzzy_input_float fuzzy_input_float.cpp)
     target_link_libraries(test_fuzzy_input_float Ryu Strf::StrfHeaderOnly)
-  endif (NOT STRF_FREESTANDING)
+endif (STRF_BUILD_FUZZY_TESTS)
 
+if (STRF_BUILD_TEST_CH32_WIDTH_AND_GCB_PROP)
+  add_executable(test_ch32_width_and_gcb_prop ch32_width_and_gcb_prop.cpp)
+  target_link_libraries(test_ch32_width_and_gcb_prop Strf::StrfHeaderOnly icudata icuuc)
+  add_test(
+    NAME ch32_width_and_gcb_prop COMMAND
+    ${CMAKE_COMMAND} -E env LD_LIBRARY_PATH=${icu_lib_dir}
+    ${CMAKE_CURRENT_BINARY_DIR}/test_ch32_width_and_gcb_prop )
+endif (STRF_BUILD_TEST_CH32_WIDTH_AND_GCB_PROP)
+
+if (STRF_BUILD_TESTS)
   set(sources_freestanding
     cstr_destination.cpp
     dynamic_charset.cpp
