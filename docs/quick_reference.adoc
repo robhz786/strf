@@ -1048,7 +1048,7 @@ assert(result == "***15.00 \xE2\x82\xAC \x80"); // width calculated as 9
 +
 * `<<strf_hpp#std_width_calc,std_width_calc>>` is the default.
 It calculates the width just
-as http://eel.is/c++draft/format.string.std#11[specified] to `std::format`,
+as https://timsong-cpp.github.io/cppwp/n4868/format#string.std-11[specified] to `std::format`,
 which means it is aware of https://unicode.org/reports/tr29/[grapheme clustering]
 and also that the width of some codepoints is equal to `2`.
 It doesn't require however the string

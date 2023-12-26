@@ -24,7 +24,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 image::syntax.svg[width=660,align=center]
 
 The __target__ expression is a customization point and it determinates
-where the content goes to as well as the return type of the above whole expression.
+where the content goes to as well as the return type of the whole above expression.
 The library provides <<quick_reference#targets,many options>> to be used
 as the __target__, and you can
 <<howto_add_destination#create_target,create your own>>.
@@ -41,7 +41,7 @@ void sample() {
 ----
 
 ////
-You can see that there is not format string, as in `printf`.
+You can see that there is not format string, as in `printf` or `std::format`.
 Instead, __format functions_ ( as the `hex` above ) specify formatting.
 So in order to use translation tool like
 https://en.wikipedia.org/wiki/Gettext[gettext] you need to use an alternative
@@ -55,7 +55,7 @@ The return of `strf::fmt(x)` is an object containing the value of `x` in additio
 format information which can be edited with member ( format ) functions
 following the
 https://en.wikibooks.org/wiki/More_C%2B%2B_Idioms/Named_Parameter[named parameter idiom]
-, like this: `strf::fmt(255).hex().p(4).fill(U'.') > 10`
+, like this, for example: `strf::fmt(255).hex().p(4).fill(U'.') > 10`
 
 To use a translation tools like
 https://en.wikipedia.org/wiki/Gettext[gettext],
@@ -83,9 +83,11 @@ except that it calculates the number of characters for you.
 [[facets]]
 == Facets
 
-The `with` function receives __facet objects__, which complement
-format functions, since they also influence how things are stringified.
-We are *not* talking here about the facets used in `std::ostream`.
+The `with` function receives __facet objects__, which can also be passed
+together with ( but always before of ) the arguments to be printed.
+Facets complement format functions, in the sense that they also change how things are stringified.
+
+Note, we are *not* talking here about the facets used in `std::ostream`.
 In Strf, facets have a different design ( more based on static rather
 than dynamic polymorphism ),
 and are not necessarily related to localization.
@@ -116,10 +118,10 @@ assert(str_mixedcase == "True 0xAB 1e+50");
 ----
 
 [[facet_categories]]
-=== Facet categories
+=== The conceptualization of facets
 
-In this library, the term _facet_ always refers to types. So the type
-`strf::lettercase` is a facet, while `strf::uppercase` is a __facet value__
+In this library, the term _facet_ always refers to types. Hence, for example,
+the type `strf::lettercase` is a facet, whereas `strf::uppercase` is a __facet value__
 ( or you could call it a __facet object__, which make more sense when the facet is a class or struct ).
 In addition, a facet is always associated to one ( and only one ) __facet category__,
 and several facets can belong to the same category.
@@ -134,7 +136,6 @@ and several facets can belong to the same category.
 // The <<strf_hpp#facet_traits,`facet_traits`>>
 // struct template provides way to programmatically obtain the category
 // a given facet.
-
 
 For each facet category there is class or struct that defines it.
 By convention, its name has the "`_c`" suffix.
@@ -260,8 +261,8 @@ auto str2 = strf::to_string.with(my_facets) (/{asterisk} \... {asterisk}/);
 // \...
 ----
 
-The `facets_pack` class template is more similar to `std::tuple` than to `std::locale`.
-It stores all the facets objects by value, and extracting one from it (
+The `facets_pack` class template is designed more similarly to `std::tuple` than to `std::locale`.
+It stores all the facets objects by value, and accessing one them (
 with the `<<strf_hpp#use_facet,strf::use_facet>>` function template ) is just as fast as
 calling a trivial getter function.
 
@@ -291,7 +292,7 @@ object, everything is printed as in the "C" locale.
 However, the header `<strf/locale.hpp>` provides the function `locale_numpunct`
 that returns a `{numpunct}<10>` object that reflects the numeric punctuation of
 the current locale ( decimal point, thousands separator and digits grouping ).
-`locale_numpunct()` is not thread safe -- it shall be called while another
+`locale_numpunct()` is not thread safe -- it should not be called while another
 thread is modifing the gloabl locale -- but once the returned value
 is stored into a `{numpunct}<10>` object, that object is not affected anymore when
 the locale changes.
@@ -308,7 +309,6 @@ void sample() {
         assert(str == "10.000,5");
 
         // Changing locale does not affect punct_de
-        // So using it is thread safe
         setlocale(LC_NUMERIC, "C");
         auto str2 = strf::to_string.with(punct_de) (*strf::fixed(20000.5));
         assert(str2 == "20.000,5");

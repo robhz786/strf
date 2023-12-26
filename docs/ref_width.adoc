@@ -399,7 +399,7 @@ Return value::: The return value `ret` is such that
 === Class `std_width_calc` [[std_width_calc]]
 
 The facet `std_width_calc` calculates the width just as
-http://eel.is/c++draft/format.string.std#11[specified] to `std::format`.
+https://timsong-cpp.github.io/cppwp/n4868/format#string.std-11[specified] to `std::format`.
 
 
 [source,cpp,subs=normal]

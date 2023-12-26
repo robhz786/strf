@@ -3,27 +3,32 @@
 [![Build Status](https://ci.appveyor.com/api/projects/status/github/robhz786/strf?branch=main&svg=true)](https://ci.appveyor.com/project/robhz786/strf/branch/main)
 [![codecov](https://codecov.io/gh/robhz786/strf/branch/main/graph/badge.svg?token=d5DIZzYv5O)](https://codecov.io/gh/robhz786/strf)
 
-Just another C++ text formatting library.
+A C++ text formatting and transcoding library.
+
+Header-only by default, but can be used as a static library as well ( see [details](http://robhz786.github.io/strf/v0.15.3/install.html) ).
 
 ## Documentation
 
-* Overview
-  * [Tutorial](http://robhz786.github.io/strf/v0.15.3/tutorial.html)
-  * [Quick reference](http://robhz786.github.io/strf/v0.15.3/quick_reference.html)
-* How to extend strf:
-  * [Adding destination](http://robhz786.github.io/strf/v0.15.3/howto_add_destination.html)
-  * [Adding printable types](http://robhz786.github.io/strf/v0.15.3/howto_add_printable_types.html)
-  * [Overriding printable types](http://robhz786.github.io/strf/v0.15.3/howto_override_printable_types.html)
-* Header references:
-  * [`<strf.hpp>`](http://robhz786.github.io/strf/v0.15.3/strf_hpp.html) is the main header. This document is big and covers many details you will probably never need to know. So it's not the best starting point.
+
+* [Learn by examples](#code-samples) ( if you just wanna have an glance )
+* [Tutorial](http://robhz786.github.io/strf/v0.15.3/tutorial.html) ( good starting point, if you actually want learn about it )
+* [Quick reference](http://robhz786.github.io/strf/v0.15.3/quick_reference.html) ( if you are already using it )
+* Full Header references ( if you need to get into the details )
+  * [`<strf.hpp>`](http://robhz786.github.io/strf/v0.15.3/strf_hpp.html) is the main header.
   * [`<strf/destination.hpp>`](http://robhz786.github.io/strf/v0.15.3/destination_hpp.html) is a lightweight and freestanding header that defines the `destination` class template. All other headers depend on this one.
   * [`<strf/iterator.hpp>`](http://robhz786.github.io/strf/v0.15.3/iterator_hpp.html) defines an output iterator adapter for the `destination` class template.
   * [`<strf/to_string.hpp>`](http://robhz786.github.io/strf/v0.15.3/to_string_hpp.html) adds support for writting to `std::basic_string`. It includes `<strf.hpp>`.
-  * [`<strf/to_cfile.hpp>`](http://robhz786.github.io/strf/v0.15.3/to_cfile_hpp.html)  adds support for writting to `FILE*`. It includes `<strf.hpp>`.
+  * [`<strf/to_cfile.hpp>`](http://robhz786.github.io/strf/v0.15.3/to_cfile_hpp.html) adds support for writting to `FILE*`. It includes `<strf.hpp>`.
   * [`<strf/to_streambuf.hpp>`](http://robhz786.github.io/strf/v0.15.3/to_streambuf_hpp.html) adds support for writting to `std::basic_streambuf`. It includes `<strf.hpp>`.
-* Miscellaneous
-  * [How to use strf on CUDA devices](http://robhz786.github.io/strf/v0.15.3/cuda.html)
-  * [Benchmarks](http://robhz786.github.io/strf-benchmarks/v0.15.3/results.html)
+* HOWTOs
+  * [Integrate strf in your environment](http://robhz786.github.io/strf/v0.15.3/install.html)
+  * Extending:
+    * [Adding a destination](http://robhz786.github.io/strf/v0.15.3/howto_add_destination.html)
+    * [Adding a printable type](http://robhz786.github.io/strf/v0.15.3/howto_add_printable_types.html)
+    * [Overriding a printable type](http://robhz786.github.io/strf/v0.15.3/howto_override_printable_types.html)
+  * [Using strf on CUDA devices](http://robhz786.github.io/strf/v0.15.3/cuda.html)
+
+* [Benchmarks](http://robhz786.github.io/strf-benchmarks/v0.15.3/results.html) ( versus {fmt} )
 
 ## Requirements
 
@@ -36,7 +41,7 @@ Strf has been tested in the following compilers:
 * Visual Studio 2019 16
 * NVCC 11.8
 
-## Examples
+## Code samples
 
 - [Basic examples](#basic-examples)
 - [Alignment formatting](#alignment-formatting)
@@ -107,10 +112,8 @@ void alignment_formatting()
     assert(strf::to_u8string(right(123, 8, U'‥')) == u8"‥‥‥‥‥123");
 }
 ```
-**Note**: Strf calculates string width the same way it is
-[specified to `std::format`](http://eel.is/c++draft/format.string.std#11),
-which takes [grapheme clustering](http://eel.is/c++draft/format.string.std#11)
-into account.
+**Note**: Strf calculates string width the same way as
+[specified to `std::format` in C++20](https://timsong-cpp.github.io/cppwp/n4868/format#string.std-11), which takes into account grapheme clustering.
 
 ### Single character argument
 
@@ -302,7 +305,8 @@ void transcoding()
     //   character type, the charset must be specified inside strf::transcode() )
     auto str_narrow_4 = strf::to_string.with(strf::iso_8859_6<char>)
         ( "He was born in "
-        , strf::transcode("\xd8\xae\xd9\x86\xd9\x8a\xd9\x81\xd8\xb1\xd8\xa9", strf::utf8<char>)
+        , strf::transcode( "\xd8\xae\xd9\x86\xd9\x8a\xd9\x81\xd8\xb1\xd8\xa9"
+                         , strf::utf8<char> )
         , '.' );
     assert(str_narrow_4 == str_narrow_2);
 
@@ -326,7 +330,7 @@ void transcoding()
     auto str = strf::to_u8string( strf::transcode(u"aaa--")
                                 , strf::transcode(U"bbb--")
                                 , strf::transcode( "\x80\xA4"
-                                            , strf::windows_1252<char> ) );
+                                                 , strf::windows_1252<char> ) );
     assert(str == u8"aaa--bbb--\u20AC\u00A4");
 }
 ```
@@ -343,15 +347,14 @@ void joins()
     const char* filename = "tmp1234";
     auto s = strf::to_string.tr( "Could not open file {}"
                                , strf::join(dirname, '/', filename) );
-
     assert(s == "Could not open file /tmp/tmp1234");
-
 
     // join_left, join_center and join_right align several arguments as one
     const int value = 255;
-    s = strf::to_string( strf::join_center(40, U'.')( value
-                                                    , " in hexadecimal is "
-                                                    , strf::hex(value) ) );
+    s = strf::to_string
+        ( strf::join_center(40, U'.')
+            ( value, " in hexadecimal is ", strf::hex(value) ) );
+
     assert(s == "........255 in hexadecimal is ff........");
 
 
