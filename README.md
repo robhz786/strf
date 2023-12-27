@@ -14,12 +14,13 @@ Header-only by default, but can be used as a static library as well ( see [detai
 * [Tutorial](http://robhz786.github.io/strf/v0.15.3/tutorial.html) ( good starting point, if you actually want learn about it )
 * [Quick reference](http://robhz786.github.io/strf/v0.15.3/quick_reference.html) ( if you are already using it )
 * Full Header references ( if you need to get into the details )
-  * [`<strf.hpp>`](http://robhz786.github.io/strf/v0.15.3/strf_hpp.html) is the main header.
   * [`<strf/destination.hpp>`](http://robhz786.github.io/strf/v0.15.3/destination_hpp.html) is a lightweight and freestanding header that defines the `destination` class template. All other headers depend on this one.
+  * [`<strf.hpp>`](http://robhz786.github.io/strf/v0.15.3/strf_hpp.html) is the main header. It can be used in a freestanding environment, whereas the headers bellow can not.
   * [`<strf/iterator.hpp>`](http://robhz786.github.io/strf/v0.15.3/iterator_hpp.html) defines an output iterator adapter for the `destination` class template.
   * [`<strf/to_string.hpp>`](http://robhz786.github.io/strf/v0.15.3/to_string_hpp.html) adds support for writting to `std::basic_string`. It includes `<strf.hpp>`.
   * [`<strf/to_cfile.hpp>`](http://robhz786.github.io/strf/v0.15.3/to_cfile_hpp.html) adds support for writting to `FILE*`. It includes `<strf.hpp>`.
   * [`<strf/to_streambuf.hpp>`](http://robhz786.github.io/strf/v0.15.3/to_streambuf_hpp.html) adds support for writting to `std::basic_streambuf`. It includes `<strf.hpp>`.
+  * `strf/all.hpp` include all of the headers above.
 * HOWTOs
   * [Integrate strf in your environment](http://robhz786.github.io/strf/v0.15.3/install.html)
   * Extending:

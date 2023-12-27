@@ -5,14 +5,13 @@
 
 #define _CRT_SECURE_NO_WARNINGS // NOLINT(bugprone-reserved-identifier,cert-dcl37-c,cert-dcl51-cpp)
 
-#include <strf/locale.hpp>
+#include <strf/all.hpp>
 #include "test_utils.hpp"
 #include <cstdio>
 #include <locale>
 #include <sstream>
 #include <iomanip>
 #include <iostream>
-#include <locale.h>
 
 namespace {
 
