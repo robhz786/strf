@@ -1,0 +1,113 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!--
+Copyright (C) (See commit logs on github.com/robhz786/strf)
+Distributed under the Boost Software License, Version 1.0.
+(See accompanying file LICENSE_1_0.txt or copy at
+http://www.boost.org/LICENSE_1_0.txt)
+-->
+
+<svg
+   viewBox="0 -2 660 230"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg">
+
+  <style>
+    /* <![CDATA[ */
+    .code {
+    font-style:normal;
+    font-weight: bold;
+    font-family:"Courier New";
+    font-size:100%;
+    }
+    .repl {
+    font-style:italic;
+    font-family:Arial;
+    font-size:100%;
+    }
+    rect{
+    fill:#d7e3f4;
+    stroke:black;
+    stroke-width:1.4;
+    }
+    path{
+    stroke:black;
+    stroke-width:1.6;
+    fill:transparent;
+    }
+    path.arrow{
+    fill:black;
+    stroke-width:0;
+    }
+    a:hover {
+    outline: dotted 1px blue;
+    /*stroke:blue;*/
+    }
+    /* ]]> */
+  </style>
+
+  <path d="M80 16 H348"/>
+  <rect width="78" height="32" x="2" y="0"/>
+  <text x="20" y="21" >
+    <tspan class="repl">target</tspan>
+  </text>
+
+  <path d="M116  16 a16 16 0 0 0 -16 16 V191 a16 16 0 0 0 16 16"/>
+  <path d="M100  35 a16 16 0 0 0  16 16"/>
+  <path d="M100  87 a16 16 0 0 0  16 16"/>
+  <path d="M100 139 a16 16 0 0 0  16 16"/>
+
+  <path d="M284  16 a16 16 0 0 1  16 16 V191 a16 16 0 0 1 -16 16"/>
+  <path d="M300  35 a16 16 0 0 1 -16 16"/>
+  <path d="M300  87 a16 16 0 0 1 -16 16"/>
+  <path d="M300 139 a16 16 0 0 1 -16 16"/>
+
+  <rect width="170" height="32" x="116"  y= "35" rx="16" ry="16"/>
+  <rect width="170" height="32" x="116"  y=" 87" rx="16" ry="16"/>
+  <rect width="170" height="32" x="116 " y="139" rx="16" ry="16"/>
+  <rect width="170" height="32" x="116"  y="191" rx="16" ry="16"/>
+
+  <text x="126" y="56" >
+    <tspan class="code">.with(</tspan>
+    <tspan class="repl">fargs...</tspan>
+    <tspan class="code">)</tspan>
+  </text>
+  <text x="126" y="108">
+    <tspan class="code">.reserve(</tspan>
+    <tspan class="repl">space</tspan>
+    <tspan class="code">)</tspan>
+  </text>
+  <text x="126" y="160" class="code"> .reserve_calc() </text>
+  <text x="126" y="212" class="code"> .no_reserve() </text>
+
+  <path d="M316  16 a16 16 0 0 1 16 16 V156 a16 16 0 0 0 16 16"/>
+  <path d="M332  51 a16 16 0 0 0 16 16"/>
+  <path d="M332 104 a16 16 0 0 0 16 16"/>
+
+  <rect width="175" height="32" x="348"  y="0"   rx="16" ry="16"/>
+  <rect width="225" height="32" x="348"  y="52"  rx="16" ry="16"/>
+  <rect width="270" height="32" x="348"  y="104" rx="16" ry="16"/>
+  <rect width="305" height="32" x="348"  y="156" rx="16" ry="16"/>
+
+  <text x="358" y="21" >
+    <tspan class="code">(</tspan>
+    <tspan class="repl">fargs... , pargs...</tspan>
+    <tspan class="code">)</tspan>
+  </text>
+  <text x="358" y="73" >
+    <tspan class="code">.line(</tspan>
+    <tspan class="repl">fargs... , pargs...</tspan>
+    <tspan class="code">)</tspan>
+  </text>
+  <text x="358" y="125">
+    <tspan class="code">.tr(</tspan>
+    <tspan class="repl">fargs... , tr-string , pargs...</tspan>
+    <tspan class="code">)</tspan>
+  </text>
+  <text x="358" y="177">
+    <tspan class="code">.trline(</tspan>
+    <tspan class="repl">fargs... , tr-string , pargs...</tspan>
+    <tspan class="code">)</tspan>
+  </text>
+
+</svg>
