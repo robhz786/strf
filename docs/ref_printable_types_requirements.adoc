@@ -13,6 +13,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 :facets_pack: <<facets_pack, facets_pack>>
 :printable_with_fmt: <<printable_with_fmt, printable_with_fmt>>
 
+:Printer:      <<Printer,Printer>>
 :PrintableTraits: <<PrintableTraits,PrintableTraits>>
 :Printable: <<Printable,Printable>>
 :PrinterInput: <<PrinterInput,PrinterInput>>
@@ -137,18 +138,38 @@ Given
 * `CharT`, a character type
 * `fpack`, a value of type `{facets_pack}</{asterisk}\... {asterisk}/>`
 * `pre`, an lvalue of type `{premeasurements}</{asterisk}\... {asterisk}/>`
+* `dst`, an lvalue of type `{destination}<CharT>&`
 * `v`, a value of type `T::forwarded_type` or `{printable_with_fmt}<T, F\...>`,
    where `F\...` is such that `T::formatters` is an alias to `{tag}<F\...>`.
+* `R`, the return type of `T::make_input({tag}<CharT>{}, pre, fpack, v)`
+* `PrinterT`, the same type as `R`, if `R` is _{Printer}_, or `R::printer_type` otherwise
 
-The following syntax is satisfied:
+The following must be satisfied:
+
+* `R` is either _{Printer}_ or _{PrinterInput}_.
+
+
 ====
 [source,cpp,subs=normal]
 ----
-T::make_input({tag}<CharT>{}, pre, fpack, v)
+PrinterT p{ T::make_input({tag}<CharT>{}, pre, fpack, v) };
 ----
-[horizontal]
-Return type:: A _{PrinterInput}_ type.
-Return value:: A value `r` such that `&r.pre == &pre`
+The `make_input` function has two purposes: to create (or enable the creation of) a
+__{Printer}__ object `p`, and, before that, to measure the size and/or width
+(if required) of the content to be written by `p.write_to(dst)`.
+
+`pre` acts as an output variable:
+If `pre.<<premeasurements,width_demanded>>` is `true`, then the width of such content
+`v` shall be subtracted from the <<width_decumulator,remaining_width>> of `pre`.
+
+If `pre.<<premeasurements,size_demanded>>` is `true`, then the size of such content
+( or a value greater than that ) shall be added into the
+<<size_accumulator,accumulated_size>> of `pre`.
+
+The calculated size must be such that to ensure that
+`p.write_to(dst)` does not call `dst.recycle()`,
+if the value of `dst.space()` ( immediately before calling `p.write_to(dst)` )
+is greater than or equal to such calculated size.
 ====
 
 === Type alias template `representative_of_printable` [[representative_of_printable]]
@@ -194,6 +215,20 @@ using forwarded_printable_type = typename {printable_traits_of}<T>::<<PrintableT
 } // namespace strf
 ----
 
+=== Type requirements _Printer_ [[Printer]]
+
+Given
+
+* `CharT`, a character type
+* `X`, a _Printer_ type for types `CharT`
+* `x`, a value of type `X`
+
+The following expression must be well-formed:
+
+[source,cpp,subs=normal]
+----
+static_cast< const {printer}<CharT>& >(x);
+----
 
 === Type requirements _PrinterInput_ [[PrinterInput]]
 
@@ -207,7 +242,7 @@ Given
 ====
 [source,cpp,subs=normal]
 ----
-T::char_type
+X::char_type
 ----
 A type alias to `CharT`.
 ====
@@ -215,7 +250,7 @@ A type alias to `CharT`.
 ====
 [source,cpp,subs=normal]
 ----
-T::premeasurements_type
+X::premeasurements_type
 ----
 A type alias to `PreMeasurements`.
 ====
@@ -223,25 +258,9 @@ A type alias to `PreMeasurements`.
 ====
 [source,cpp,subs=normal]
 ----
-T::printer_type
+X::printer_type
 ----
-A type that is constructible from `X` and convertible to `const {printer}<CharT>&`,
-such that the sequence:
-
-[source,cpp,subs=normal]
-----
-auto size_before = x.pre.<<size_accumulator_accumulated_ssize,accumulated_ssize>>();
-typename T::printer_type p{x};
-auto size_after = x.pre.<<size_accumulator_accumulated_ssize,accumulated_ssize>>();
-auto predicted_size = size_after - size_before;
-auto dest_buff_space = dest.<<destination_hpp#output_buffer_buffer_space,buffer_space>>();
-
-static_cast<const printer<CharT>&>(p).<<printer,print_to>>(dest);
-----
-satisfies the following postconditions when
-`PreMeasurements::<<premeasurements,size_demanded>>` is `true`:
-
-*  if `predicted_size \<= dest_buff_space` is `true`, then `dest.recycle()` is not called in `print_to`
+A __{Printer}__ type that is constructible from `X`
 ====
 
 ====
@@ -301,10 +320,17 @@ The expression `make_default_printer_input<CharT>(pre, facets, arg)` is equivale
 
 === Facet category `printable_overrider_c` [[printable_overrider_c]]
 
-This facet category affects the return type and value of `strf::{make_printer_input}`
-function template.
-It enables the user change how a printable type is printed,
-by making the library use an the alternative __{PrinterInput}__ object.
+A facet of this category must have a `make_input` member function template
+that satisfy the same syntax and semantics as of
+`<<PrintableTraits_functions,__PrintableTraits__::make_printer>>`, except that
+it doesn't need to static (though it must then be const ).
+
+The purpose of this facet is to cause `strf::{make_printer_input}`
+to forward the call to its `make_input`, instead of the `make_input`
+defined in the __PrintableTraits__ ( which is the default ).
+In order words, it enables the user to override the implementation
+that prints a printable type.
+
 A facet of this category should **aways** be <<constrain,constrained>> to the
 printable type intended to be overriden.
 

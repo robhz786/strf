@@ -686,15 +686,35 @@ template <typename T>
 using representative_of_printable = typename
     strf::printable_traits_of<T>::representative_type;
 
-template <typename CharT, typename PreMeasurements, typename FPack, typename Arg>
-using printer_input_type = decltype
-    ( strf::make_printer_input<CharT>
-        ( std::declval<PreMeasurements*>()
-        , std::declval<const FPack&>()
-        , std::declval<Arg>() ) );
+
+namespace detail {
 
 template <typename CharT, typename PreMeasurements, typename FPack, typename Arg>
-using printer_type = typename printer_input_type
+struct printer_type_getter
+{
+private:
+    template
+        < typename Printer
+        , typename = decltype(static_cast<const strf::printer<CharT>&>(std::declval<Printer>())) >
+    static STRF_HD strf::tag<Printer> test_(const Printer&);
+
+    template
+        < typename PrinterInputT
+        , typename Printer = typename PrinterInputT::printer_type >
+    static STRF_HD strf::tag<Printer> test_(const PrinterInputT&);
+
+    using tag_type_ = decltype(test_(strf::make_printer_input<CharT>
+                                         ( std::declval<PreMeasurements*>()
+                                         , std::declval<const FPack&>()
+                                         , std::declval<Arg>() )));
+public:
+    using printer_type = typename tag_type_::type;
+};
+
+} // namespace detail
+
+template <typename CharT, typename PreMeasurements, typename FPack, typename Arg>
+using printer_type = typename detail::printer_type_getter
     < CharT, PreMeasurements, FPack, Arg >
     ::printer_type;
 
