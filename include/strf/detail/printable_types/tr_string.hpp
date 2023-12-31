@@ -38,7 +38,7 @@ struct tr_printers_container<CharT, strf::detail::index_sequence<I...>, Printers
     : destroyable_base
 {
     using printers_tuple_t_ = strf::detail::printers_tuple_impl
-        <CharT, strf::detail::index_sequence<I...>, Printers...>;
+        <CharT, detail::index_sequence<I...>, detail::printer_wrapper<CharT, Printers>...>;
 
     static constexpr ptrdiff_t num_printers_= sizeof...(Printers);
     printers_tuple_t_ tuple;
@@ -285,7 +285,7 @@ struct tr_printer_input
 
 
 template <typename CharT, typename Charset, typename ErrHandler>
-class tr_printer_no_args: public strf::printer<CharT>
+class tr_printer_no_args
 {
     using charset_cat_ = strf::charset_c<CharT>;
     using err_handler_cat_ = strf::tr_error_notifier_c;
@@ -364,7 +364,7 @@ public:
         init_(i);
     }
 
-    STRF_HD void print_to(strf::destination<CharT>& dst) const override
+    STRF_HD void print_to(strf::destination<CharT>& dst) const
     {
         (void)dst;
         strf::detail::tr_string_write
@@ -375,7 +375,7 @@ public:
 
 
 template <typename CharT, typename Charset, typename ErrHandler, typename PrintersStorage>
-class tr_printer: public strf::printer<CharT>
+class tr_printer
 {
     static_assert(std::is_same<CharT, typename Charset::code_unit>::value, "");
 
@@ -532,7 +532,7 @@ public:
         init_(strf::detail::make_index_sequence<sizeof...(Args)>{}, i);
     }
 
-    STRF_HD void print_to(strf::destination<CharT>& dst) const override
+    STRF_HD void print_to(strf::destination<CharT>& dst) const
     {
         (void)dst;
         strf::detail::tr_string_write
@@ -545,7 +545,7 @@ public:
     tr_printer& operator=(const tr_printer&) = delete;
     tr_printer& operator=(tr_printer&&) = delete;
 
-    STRF_HD ~tr_printer() override
+    STRF_HD ~tr_printer()
     {
         storage_.destroy();
     }
@@ -602,8 +602,6 @@ struct printable_traits<detail::tr_string_arg<CharT, Args...>>
 //     < CharT, Charset, ErrHandler
 //     , strf::detail::printers_tuple_impl
 //         <CharT, strf::detail::index_sequence<I...>, Printers...> >
-
-//     : public strf::printer<typename Charset::code_unit>
 // {
 //     static_assert(std::is_same<CharT, typename Charset::code_unit>::value, "");
 //     using charset_cat_ = strf::charset_c<CharT>;
@@ -636,7 +634,7 @@ struct printable_traits<detail::tr_string_arg<CharT, Args...>>
 //         }
 //     }
 
-//     STRF_HD void print_to(strf::destination<CharT>& dst) const override
+//     STRF_HD void print_to(strf::destination<CharT>& dst) const
 //     {
 //         (void)dst;
 //         // strf::detail::tr_string_write

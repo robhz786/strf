@@ -15,21 +15,12 @@ namespace strf {
 namespace detail {
 
 template <typename CharT>
-class bool_printer: public printer<CharT>
+struct bool_printer
 {
-public:
-
-    template <typename... T>
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD explicit bool_printer(bool value, strf::lettercase lc)
-        : value_(value)
-        , lettercase_(lc)
-    {
-    }
-
-    void STRF_HD print_to(strf::destination<CharT>& dst) const override;
-
     bool value_;
     strf::lettercase lettercase_;
+
+    void STRF_HD print_to(strf::destination<CharT>& dst) const;
 };
 
 template <typename CharT>
@@ -56,29 +47,9 @@ void STRF_HD bool_printer<CharT>::print_to(strf::destination<CharT>& dst) const
 }
 
 template <typename CharT>
-class fmt_bool_printer: public printer<CharT>
+struct fmt_bool_printer
 {
-    using this_type_ = fmt_bool_printer<CharT>;
-
-public:
-
-    STRF_HD fmt_bool_printer
-        ( strf::encode_fill_f<CharT> encode_fill
-        , int fillcount
-        , bool value
-        , strf::alignment_format afmt
-        , strf::lettercase lettercase )
-        : encode_fill_(encode_fill)
-        , fillcount_(fillcount)
-        , value_(value)
-        , afmt_(afmt)
-        , lettercase_(lettercase)
-    {
-    }
-
-    void STRF_HD print_to(strf::destination<CharT>& dst) const override;
-
-private:
+    void STRF_HD print_to(strf::destination<CharT>& dst) const;
 
     strf::encode_fill_f<CharT> encode_fill_ = nullptr;
     int fillcount_;
@@ -135,19 +106,19 @@ void fmt_bool_printer<CharT>::print_to
 #if defined(STRF_SEPARATE_COMPILATION)
 
 #if defined(__cpp_char8_t)
-STRF_EXPLICIT_TEMPLATE class bool_printer<char8_t>;
-STRF_EXPLICIT_TEMPLATE class fmt_bool_printer<char8_t>;
+STRF_EXPLICIT_TEMPLATE struct bool_printer<char8_t>;
+STRF_EXPLICIT_TEMPLATE struct fmt_bool_printer<char8_t>;
 #endif
 
-STRF_EXPLICIT_TEMPLATE class bool_printer<char>;
-STRF_EXPLICIT_TEMPLATE class bool_printer<char16_t>;
-STRF_EXPLICIT_TEMPLATE class bool_printer<char32_t>;
-STRF_EXPLICIT_TEMPLATE class bool_printer<wchar_t>;
+STRF_EXPLICIT_TEMPLATE struct bool_printer<char>;
+STRF_EXPLICIT_TEMPLATE struct bool_printer<char16_t>;
+STRF_EXPLICIT_TEMPLATE struct bool_printer<char32_t>;
+STRF_EXPLICIT_TEMPLATE struct bool_printer<wchar_t>;
 
-STRF_EXPLICIT_TEMPLATE class fmt_bool_printer<char>;
-STRF_EXPLICIT_TEMPLATE class fmt_bool_printer<char16_t>;
-STRF_EXPLICIT_TEMPLATE class fmt_bool_printer<char32_t>;
-STRF_EXPLICIT_TEMPLATE class fmt_bool_printer<wchar_t>;
+STRF_EXPLICIT_TEMPLATE struct fmt_bool_printer<char>;
+STRF_EXPLICIT_TEMPLATE struct fmt_bool_printer<char16_t>;
+STRF_EXPLICIT_TEMPLATE struct fmt_bool_printer<char32_t>;
+STRF_EXPLICIT_TEMPLATE struct fmt_bool_printer<wchar_t>;
 
 #endif // defined(STRF_SEPARATE_COMPILATION)
 
@@ -171,7 +142,7 @@ struct printable_traits<bool>
     {
         pre->subtract_width(static_cast<strf::width_t>(5 - x));
         pre->add_size(5 - (int)x);
-        return detail::bool_printer<CharT>(x, strf::use_facet<strf::lettercase_c, bool>(fp));
+        return detail::bool_printer<CharT>{x, strf::use_facet<strf::lettercase_c, bool>(fp)};
     }
 
     template <typename CharT, typename PreMeasurements, typename FPack, typename... T>
@@ -195,7 +166,7 @@ struct printable_traits<bool>
             pre->subtract_width(static_cast<strf::width_t>(fmt_width));
             pre->add_size(w + fillcount * charset.encoded_char_size(afmt.fill));
 
-            return { charset.encode_fill_func(), fmt_width - w, value, afmt, lcase };
+            return {charset.encode_fill_func(), fmt_width - w, value, afmt, lcase};
         }
         pre->subtract_width(static_cast<strf::width_t>(w));
         pre->add_size(w);

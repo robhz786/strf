@@ -2297,16 +2297,22 @@ public:
 
     STRF_HD ~int_printer_full_dynamic()
     {
-        const auto& p = static_cast<const strf::printer<CharT>&>(*this);
-        p.~printer();
+        underlying_printer_().~printer();
     }
+
+    STRF_HD void print_to(strf::destination<CharT>& dst) const
+    {
+        underlying_printer_(). print_to(dst);
+    }
+
+private:
 
 #if defined(__GNUC__) && (__GNUC__ <= 6)
 #  pragma GCC diagnostic push
 #  pragma GCC diagnostic ignored "-Wstrict-aliasing"
 #endif
 
-    STRF_HD explicit operator const strf::printer<CharT>& () const
+    STRF_HD const strf::printer<CharT>& underlying_printer_() const
     {
         return * reinterpret_cast<const strf::printer<CharT>*>(&storage_);
     }
@@ -2314,8 +2320,6 @@ public:
 #if defined(__GNUC__) && (__GNUC__ <= 6)
 #  pragma GCC diagnostic pop
 #endif
-
-private:
 
     static constexpr std::size_t pool_size_ =
         sizeof(strf::detail::int_printer_static_base_and_punct<CharT, 10, true>);

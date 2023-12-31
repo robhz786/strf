@@ -137,8 +137,8 @@ Given
 * `T`, a _PrintableTraits_ type.
 * `CharT`, a character type
 * `fpack`, a value of type `{facets_pack}</{asterisk}\... {asterisk}/>`
-* `pre`, an lvalue of type `{premeasurements}</{asterisk}\... {asterisk}/>`
-* `dst`, an lvalue of type `{destination}<CharT>&`
+* `pre`, a value of type `{premeasurements}</{asterisk}\... {asterisk}/>`
+* `dst`, an non-const lvalue of type `{destination}<CharT>&`
 * `v`, a value of type `T::forwarded_type` or `{printable_with_fmt}<T, F\...>`,
    where `F\...` is such that `T::formatters` is an alias to `{tag}<F\...>`.
 * `R`, the return type of `T::make_printer({tag}<CharT>{}, pre, fpack, v)`
@@ -220,14 +220,15 @@ using forwarded_printable_type = typename {printable_traits_of}<T>::<<PrintableT
 Given
 
 * `CharT`, a character type
-* `X`, a _Printer_ type for types `CharT`
-* `x`, a value of type `X`
+* `X`, a _Printer_ type for type `CharT`
+* `x`, a const lvalue of type `X`
+* `dst`, an non-const lvalue of type `{destination}<CharT>`
 
 The following expression must be well-formed:
 
 [source,cpp,subs=normal]
 ----
-static_cast< const {printer}<CharT>& >(x);
+x.print_to(dst);
 ----
 
 === Type requirements _PrinterInput_ [[PrinterInput]]

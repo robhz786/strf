@@ -1690,16 +1690,22 @@ public:
 
     STRF_HD ~transcode_printer_variant()
     {
-        const auto& p = static_cast<const strf::printer<DstCharT>&>(*this) ;
-        p.~printer();
+        underlying_printer_().~printer();
     }
+
+    STRF_HD void print_to(strf::destination<char>& dst) const
+    {
+        underlying_printer_().print_to(dst);
+    }
+
+private:
 
 #if defined(__GNUC__) && (__GNUC__ <= 6)
 #  pragma GCC diagnostic push
 #  pragma GCC diagnostic ignored "-Wstrict-aliasing"
 #endif
 
-    STRF_HD explicit operator const strf::printer<DstCharT>& () const
+    STRF_HD const strf::printer<DstCharT>& underlying_printer_ () const
     {
         return * reinterpret_cast<const strf::printer<DstCharT>*>(&pool_);
     }
@@ -1708,7 +1714,6 @@ public:
 #  pragma GCC diagnostic pop
 #endif
 
-private:
 
     static constexpr std::size_t pool_size_ =
         sizeof(strf::detail::transcode_printer<DstCharT, DstCharT>);
@@ -1764,16 +1769,22 @@ public:
 
     STRF_HD ~aligned_transcode_printer_variant()
     {
-        const auto& p = static_cast<const strf::printer<DstCharT>&>(*this);
-        p.~printer();
+        underlying_printer_().~printer();
     }
+
+    STRF_HD void print_to(strf::destination<char>& dst) const
+    {
+        underlying_printer_().print_to(dst);
+    }
+
+private:
 
 #if defined(__GNUC__) && (__GNUC__ <= 6)
 #  pragma GCC diagnostic push
 #  pragma GCC diagnostic ignored "-Wstrict-aliasing"
 #endif
 
-    STRF_HD explicit operator const strf::printer<DstCharT>& () const
+    STRF_HD const strf::printer<DstCharT>& underlying_printer_ () const
     {
         return * reinterpret_cast<const strf::printer<DstCharT>*>(&pool_);
     }
@@ -1781,8 +1792,6 @@ public:
 #if defined(__GNUC__) && (__GNUC__ <= 6)
 #  pragma GCC diagnostic pop
 #endif
-
-private:
 
     static constexpr std::size_t pool_size_ =
         sizeof(strf::detail::aligned_transcode_printer<DstCharT, DstCharT>);

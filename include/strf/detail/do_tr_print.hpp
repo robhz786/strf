@@ -193,10 +193,11 @@ public:
         return print_2_<Ln>
             ( reserve_policy, dest_creator, charset, err_handler, premeasurements_arr, tr_string
             , as_printer_cref_<char_type>
-                ( strf::printer_type
-                  < char_type, premeasurements_t, decltype(fp), Printables >
-                    ( strf::make_printer<char_type>
-                      ( &premeasurements_arr[I], fp, (Printables&&)printables ) ) )... );
+              ( detail::printer_wrapper
+                   < char_type
+                   , strf::printer_type<char_type, premeasurements_t, decltype(fp), Printables> >
+                        ( strf::make_printer<char_type>
+                            ( &premeasurements_arr[I], fp, (Printables&&)printables ) ) )... );
     }
 };
 

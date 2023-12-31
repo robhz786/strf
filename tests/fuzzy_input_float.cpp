@@ -88,9 +88,8 @@ measure_and_print_result measure_and_print(char* buff, std::ptrdiff_t buff_size,
 
     const strf::width_t initial_width = (strf::width_t::max)();
     strf::full_premeasurements pre(initial_width);
-    auto printer_input = strf::make_printer<char>(&pre, strf::pack(), arg);
-    using printer_type = typename decltype(printer_input)::printer_type;
-    const printer_type printer{printer_input};
+    using printer_t = strf::printer_type<char, strf::full_premeasurements, strf::facets_pack<>, Arg>;
+    const printer_t printer{strf::make_printer<char>(&pre, strf::pack(), arg)};
     strf::cstr_destination dst{buff, buff_size};
     printer.print_to(dst);
     auto *end = dst.finish().ptr;

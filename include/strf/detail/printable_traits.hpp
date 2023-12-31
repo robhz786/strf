@@ -695,7 +695,8 @@ struct printer_type_getter
 private:
     template
         < typename Printer
-        , typename = decltype(static_cast<const strf::printer<CharT>&>(std::declval<Printer>())) >
+        , typename Dst = strf::destination<CharT>
+        , typename = decltype(std::declval<Printer>().print_to(std::declval<Dst&>())) >
     static STRF_HD strf::tag<Printer> test_(const Printer&);
 
     template
