@@ -100,7 +100,7 @@ struct ipv6_formatter
 // 2. Create the printer class
 // -----------------------------------------------------------------------------
 template <typename CharT>
-class ipv6_printer: public strf::printer<CharT>
+class ipv6_printer
 {
 public:
 
@@ -117,7 +117,7 @@ public:
         init_(input.pre, encoding);
     }
 
-    void print_to(strf::destination<CharT>& dst) const override;
+    void print_to(strf::destination<CharT>& dst) const;
 
 private:
 

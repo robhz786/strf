@@ -242,7 +242,7 @@ struct printable_traits<strf::separated_transformed_range_p<Iterator, SepCharT, 
 namespace detail {
 
 template <typename CharT, typename FPack, typename Iterator>
-class range_printer: public strf::printer<CharT>
+class range_printer
 {
 public:
 
@@ -259,7 +259,7 @@ public:
         do_premeasurements_(input.pre);
     }
 
-    STRF_HD void print_to(strf::destination<CharT>& dst) const override;
+    STRF_HD void print_to(strf::destination<CharT>& dst) const;
 
 private:
 
@@ -306,7 +306,7 @@ STRF_HD void range_printer<CharT, FPack, Iterator>::print_to
 }
 
 template <typename CharT, typename FPack, typename Iterator>
-class separated_range_printer: public strf::printer<CharT>
+class separated_range_printer
 {
 public:
 
@@ -325,7 +325,7 @@ public:
         do_premeasurements_(input.pre);
     }
 
-    STRF_HD void print_to(strf::destination<CharT>& dst) const override;
+    STRF_HD void print_to(strf::destination<CharT>& dst) const;
 
 private:
 
@@ -409,7 +409,7 @@ template < typename CharT
          , typename FPack
          , typename Iterator
          , typename ... Fmts >
-class fmt_range_printer: public strf::printer<CharT>
+class fmt_range_printer
 {
     using value_type_ = strf::detail::iterator_value_type<Iterator>;
     using value_fmt_type_ = strf::fmt_type<value_type_>;
@@ -431,7 +431,7 @@ public:
         do_premeasurements_(input.pre);
     }
 
-    STRF_HD void print_to(strf::destination<CharT>& des) const override;
+    STRF_HD void print_to(strf::destination<CharT>& des) const;
 
 private:
 
@@ -493,7 +493,7 @@ template< typename CharT
         , typename FPack
         , typename Iterator
         , typename ... Fmts >
-class fmt_separated_range_printer: public strf::printer<CharT>
+class fmt_separated_range_printer
 {
     using value_type_ = strf::detail::iterator_value_type<Iterator>;
     using value_fmt_type_ = strf::fmt_type<value_type_>;
@@ -515,7 +515,7 @@ public:
         do_premeasurements_(input.pre);
     }
 
-    STRF_HD void print_to(strf::destination<CharT>& dst) const override;
+    STRF_HD void print_to(strf::destination<CharT>& dst) const;
 
 private:
 
@@ -605,7 +605,7 @@ STRF_HD void fmt_separated_range_printer<CharT, FPack, Iterator, Fmts ...>
 }
 
 template <typename CharT, typename FPack, typename Iterator, typename UnaryOp>
-class transformed_range_printer: public strf::printer<CharT>
+class transformed_range_printer
 {
 public:
 
@@ -623,7 +623,7 @@ public:
         do_premeasurements_(input.pre);
     }
 
-    STRF_HD void print_to(strf::destination<CharT>& dst) const override;
+    STRF_HD void print_to(strf::destination<CharT>& dst) const;
 
 private:
 
@@ -676,7 +676,7 @@ STRF_HD void transformed_range_printer<CharT, FPack, Iterator, UnaryOp>::print_t
 }
 
 template <typename CharT, typename FPack, typename Iterator, typename UnaryOp>
-class sep_transformed_range_printer: public strf::printer<CharT>
+class sep_transformed_range_printer
 {
 public:
     using iterator = Iterator;
@@ -695,7 +695,7 @@ public:
         do_premeasurements_(input.pre);
     }
 
-    STRF_HD void print_to(strf::destination<CharT>& dst) const override;
+    STRF_HD void print_to(strf::destination<CharT>& dst) const;
 
 private:
 

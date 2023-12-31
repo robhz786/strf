@@ -101,7 +101,7 @@ struct base64_printing
 };
 
 template <typename CharT>
-class base64_printer: public strf::printer<CharT>
+class base64_printer
 {
 public:
 
@@ -121,7 +121,7 @@ public:
         , strf::premeasurements<SizePresence, strf::width_presence::no>* pre
         , const base64_input_with_formatters& fmt );
 
-    void print_to(strf::destination<CharT>& dst) const override;
+    void print_to(strf::destination<CharT>& dst) const;
 
 private:
 

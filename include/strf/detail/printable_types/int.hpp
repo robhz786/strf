@@ -1392,7 +1392,7 @@ constexpr STRF_HD auto tag_invoke(strf::printable_tag, const void*) noexcept
 namespace detail {
 
 template <typename CharT>
-class default_int_printer: public strf::printer<CharT>
+class default_int_printer
 {
 public:
 
@@ -1402,7 +1402,7 @@ public:
         init_(i.pre, i.value);
     }
 
-    STRF_HD void print_to(strf::destination<CharT>& dst) const override;
+    STRF_HD void print_to(strf::destination<CharT>& dst) const;
 
 private:
 
@@ -1458,7 +1458,7 @@ STRF_HD void default_int_printer<CharT>::print_to
 }
 
 template <typename CharT>
-class aligned_default_int_printer: public strf::printer<CharT>
+class aligned_default_int_printer
 {
 public:
 
@@ -1478,7 +1478,7 @@ public:
         }
     }
 
-    STRF_HD void print_to(strf::destination<CharT>& dst) const override;
+    STRF_HD void print_to(strf::destination<CharT>& dst) const;
 
 private:
 
@@ -1624,7 +1624,7 @@ inline STRF_HD int init
 }
 
 template <typename CharT>
-class int_printer_no_pad0_nor_punct<CharT, 10>: public strf::printer<CharT>
+class int_printer_no_pad0_nor_punct<CharT, 10>
 {
 public:
     template <typename... T>
@@ -1635,7 +1635,7 @@ public:
         i.pre->add_size(w);
     }
 
-    STRF_HD void print_to(strf::destination<CharT>& dst) const override
+    STRF_HD void print_to(strf::destination<CharT>& dst) const
     {
         dst.ensure(data_.digcount + data_.prefix != 0);
         auto *it = dst.buffer_ptr();
@@ -1652,7 +1652,7 @@ private:
 };
 
 template <typename CharT>
-class int_printer_no_pad0_nor_punct<CharT, 16>: public strf::printer<CharT>
+class int_printer_no_pad0_nor_punct<CharT, 16>
 {
 public:
 
@@ -1666,7 +1666,7 @@ public:
         i.pre->add_size(w);
     }
 
-    STRF_HD void print_to(strf::destination<CharT>& dst) const override
+    STRF_HD void print_to(strf::destination<CharT>& dst) const
     {
         dst.ensure(data_.digcount + data_.prefix);
         auto *it = dst.buffer_ptr();
@@ -1688,7 +1688,7 @@ private:
 
 
 template <typename CharT>
-class int_printer_no_pad0_nor_punct<CharT, 8>: public strf::printer<CharT>
+class int_printer_no_pad0_nor_punct<CharT, 8>
 {
 public:
     template <typename... T>
@@ -1699,7 +1699,7 @@ public:
         i.pre->add_size(w);
     }
 
-    STRF_HD void print_to(strf::destination<CharT>& dst) const override
+    STRF_HD void print_to(strf::destination<CharT>& dst) const
     {
         dst.ensure(data_.digcount + data_.prefix);
         auto *it = dst.buffer_ptr();
@@ -1716,7 +1716,7 @@ private:
 };
 
 template <typename CharT>
-class int_printer_no_pad0_nor_punct<CharT, 2>: public strf::printer<CharT>
+class int_printer_no_pad0_nor_punct<CharT, 2>
 {
 public:
 
@@ -1730,7 +1730,7 @@ public:
         i.pre->add_size(w);
     }
 
-    STRF_HD void print_to(strf::destination<CharT>& dst) const override
+    STRF_HD void print_to(strf::destination<CharT>& dst) const
     {
         if (data_.prefix != 0) {
             dst.ensure(2);
@@ -1959,7 +1959,7 @@ STRF_HD fmt_int_printer_data_init_result init_fmt_int_printer_data
 #endif // defined(STRF_OMIT_IMPL)
 
 template <typename CharT, int Base>
-class int_printer_static_base_and_punct<CharT, Base, false>: public printer<CharT>
+class int_printer_static_base_and_punct<CharT, Base, false>
 {
 public:
 
@@ -1986,7 +1986,7 @@ public:
         }
     }
 
-    STRF_HD void print_to(strf::destination<CharT>& dst) const override;
+    STRF_HD void print_to(strf::destination<CharT>& dst) const;
 
 private:
 
@@ -2103,7 +2103,7 @@ STRF_HD fmt_int_printer_data_init_result init_punct_fmt_int_printer_data
 #endif // defined(STRF_OMIT_IMPL)
 
 template <typename CharT, int Base>
-class int_printer_static_base_and_punct<CharT, Base, true>: public printer<CharT>
+class int_printer_static_base_and_punct<CharT, Base, true>
 {
 public:
 
@@ -2164,7 +2164,7 @@ public:
         }
     }
 
-    STRF_HD void print_to( strf::destination<CharT>& dst ) const override;
+    STRF_HD void print_to( strf::destination<CharT>& dst ) const;
 
 private:
 
@@ -2247,7 +2247,8 @@ public:
                     grp = numpunct.grouping();
                     thousands_sep = numpunct.thousands_sep();
                 }
-                new ((void*)&storage_) int_printer_static_base_and_punct<CharT, 16, true>
+                new ((void*)&storage_)
+                    detail::printer_wrapper<CharT, int_printer_static_base_and_punct<CharT, 16, true> >
                     ( ivalue, ifmt16, afmt, i.pre, lc, grp, thousands_sep, charset );
                 break;
             }
@@ -2259,7 +2260,8 @@ public:
                     grp = numpunct.grouping();
                     thousands_sep = numpunct.thousands_sep();
                 }
-                new ((void*)&storage_) int_printer_static_base_and_punct<CharT, 8, true>
+                new ((void*)&storage_)
+                    detail::printer_wrapper<CharT, int_printer_static_base_and_punct<CharT, 8, true> >
                     ( ivalue, ifmt8, afmt, i.pre, lc, grp, thousands_sep, charset );
                 break;
             }
@@ -2271,7 +2273,8 @@ public:
                     grp = numpunct.grouping();
                     thousands_sep = numpunct.thousands_sep();
                 }
-                new ((void*)&storage_) int_printer_static_base_and_punct<CharT, 2, true>
+                new ((void*)&storage_)
+                    detail::printer_wrapper<CharT, int_printer_static_base_and_punct<CharT, 2, true> >
                     ( ivalue, ifmt2, afmt, i.pre, lc, grp, thousands_sep, charset );
                 break;
             }
@@ -2283,7 +2286,8 @@ public:
                     grp = numpunct.grouping();
                     thousands_sep = numpunct.thousands_sep();
                 }
-                new ((void*)&storage_) int_printer_static_base_and_punct<CharT, 10, true>
+                new ((void*)&storage_)
+                    detail::printer_wrapper<CharT, int_printer_static_base_and_punct<CharT, 10, true> >
                     ( ivalue, ifmt10, afmt, i.pre, lc, grp, thousands_sep, charset );
                 break;
             }
@@ -2321,8 +2325,9 @@ private:
 #  pragma GCC diagnostic pop
 #endif
 
+    using biggest_printer_type = detail::int_printer_static_base_and_punct<CharT, 10, true>;
     static constexpr std::size_t pool_size_ =
-        sizeof(strf::detail::int_printer_static_base_and_punct<CharT, 10, true>);
+        sizeof(detail::printer_wrapper<CharT, biggest_printer_type>);
 
     using storage_type_ = typename std::aligned_storage
         < pool_size_, alignof(strf::printer<CharT>)>

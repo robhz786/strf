@@ -128,7 +128,7 @@ struct aligned_join_maker
 namespace detail {
 
 template<typename CharT, typename... Printers>
-class aligned_join_printer_impl: public printer<CharT>
+class aligned_join_printer_impl
 {
     using printers_tuple_ = strf::detail::printers_tuple<CharT, Printers...>;
 
@@ -195,12 +195,12 @@ public:
     aligned_join_printer_impl& operator=(const aligned_join_printer_impl&) = delete;
     aligned_join_printer_impl& operator=(aligned_join_printer_impl&&) = delete;
 
-    STRF_HD ~aligned_join_printer_impl() override
+    STRF_HD ~aligned_join_printer_impl()
     {
         printers_ptr_()->~printers_tuple_();
     }
 
-    STRF_HD void print_to(strf::destination<CharT>& dst) const override
+    STRF_HD void print_to(strf::destination<CharT>& dst) const
     {
         if (fillcount_ <= 0) {
             strf::detail::write(dst, printers_());
@@ -232,7 +232,7 @@ private:
 
     using printers_tuple_storage_ = typename std::aligned_storage
 #if defined(_MSC_VER)
-        <sizeof(std::tuple<Printers...>), alignof(strf::printer<CharT>)>
+        <sizeof(std::tuple<Printers...>), alignof(alignof(std::max_align_t))>
 #else
         <sizeof(printers_tuple_), alignof(printers_tuple_)>
 #endif
@@ -324,7 +324,7 @@ public:
     {
     }
 
-    STRF_HD void print_to(strf::destination<CharT>& dst) const override
+    STRF_HD void print_to(strf::destination<CharT>& dst) const
     {
         strf::detail::write(dst, printers_);
     }

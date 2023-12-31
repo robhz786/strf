@@ -6,7 +6,7 @@
 #include "test_utils.hpp"
 
 template <typename CharT>
-class my_bool_printer: public strf::printer<CharT>
+class my_bool_printer
 {
 public:
 
@@ -19,7 +19,7 @@ public:
         input.pre->add_size(2 + static_cast<int>(input.arg));
     }
 
-    void STRF_HD print_to(strf::destination<CharT>& dst) const override
+    void STRF_HD print_to(strf::destination<CharT>& dst) const
     {
         const int size = 2 + static_cast<int>(value_);
         dst.ensure(size);

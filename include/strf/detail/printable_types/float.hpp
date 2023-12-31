@@ -1362,7 +1362,7 @@ STRF_HD void print_inf( strf::destination<CharT>& dst
 }
 
 template <typename CharT>
-class fast_double_printer: public strf::printer<CharT>
+class fast_double_printer
 {
 public:
 
@@ -1400,7 +1400,7 @@ public:
             || (value_.e10 < -(int)m10_digcount_ - 2 - (m10_digcount_ != 1));
     }
 
-    STRF_HD void print_to(strf::destination<CharT>&) const override;
+    STRF_HD void print_to(strf::destination<CharT>&) const;
 
     STRF_HD int size() const;
 
@@ -2325,7 +2325,7 @@ STRF_HD strf::detail::float_init_result init_float_printer_data
 
 
 template <typename CharT>
-class punct_double_printer: public strf::printer<CharT>
+class punct_double_printer
 {
 public:
 
@@ -2405,7 +2405,7 @@ public:
         }
     }
 
-    STRF_HD void print_to(strf::destination<CharT>&) const override;
+    STRF_HD void print_to(strf::destination<CharT>&) const;
 
 private:
 

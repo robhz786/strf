@@ -130,7 +130,7 @@ constexpr STRF_HD auto tag_invoke(strf::printable_tag, wchar_t) noexcept
 namespace detail {
 
 template <typename CharT>
-class char_printer: public strf::printer<CharT>
+class char_printer
 {
 public:
     template <typename... T>
@@ -147,7 +147,7 @@ public:
         }
     }
 
-    STRF_HD void print_to(strf::destination<CharT>& dst) const override;
+    STRF_HD void print_to(strf::destination<CharT>& dst) const;
 
 private:
 
@@ -165,7 +165,7 @@ STRF_HD void char_printer<CharT>::print_to
 
 
 template <typename CharT>
-class fmt_char_printer: public strf::printer<CharT>
+class fmt_char_printer
 {
 public:
     template <typename... T>
@@ -181,7 +181,7 @@ public:
         init_(input.pre, wcalc, charset);
     }
 
-    STRF_HD void print_to(strf::destination<CharT>& dst) const override;
+    STRF_HD void print_to(strf::destination<CharT>& dst) const;
 
 private:
 
@@ -276,7 +276,7 @@ STRF_HD void fmt_char_printer<CharT>::print_to
 }
 
 template <typename DstCharT>
-class conv_char32_printer: public strf::printer<DstCharT>
+class conv_char32_printer
 {
 public:
     template <typename... T>
@@ -294,7 +294,7 @@ public:
         }
     }
 
-    void STRF_HD print_to(strf::destination<DstCharT>& dst) const override;
+    void STRF_HD print_to(strf::destination<DstCharT>& dst) const;
 
 private:
     strf::encode_char_f<DstCharT> encode_char_f_;
@@ -311,7 +311,7 @@ void STRF_HD conv_char32_printer<DstCharT>::print_to(strf::destination<DstCharT>
 }
 
 template <typename DstCharT>
-class fmt_conv_char32_printer: public strf::printer<DstCharT>
+class fmt_conv_char32_printer
 {
 public:
 
@@ -326,7 +326,7 @@ public:
         init_(input.pre, charset, input.arg.get_alignment_format(), char_width);
     }
 
-    void STRF_HD print_to(strf::destination<DstCharT>& dst) const override;
+    void STRF_HD print_to(strf::destination<DstCharT>& dst) const;
 
 private:
 

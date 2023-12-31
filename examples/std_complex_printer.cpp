@@ -162,14 +162,14 @@ std::pair<FloatT, FloatT> complex_coordinates
 //--------------------------------------------------------------------------------
 
 template <typename CharT, typename FloatT>
-class std_complex_printer: public strf::printer<CharT>
+class std_complex_printer
 {
 public:
 
     template <typename... T>
     explicit std_complex_printer(strf::usual_printer_input<T...> x);
 
-    void print_to(strf::destination<CharT>& dst) const override;
+    void print_to(strf::destination<CharT>& dst) const;
 
 private:
 
@@ -249,7 +249,7 @@ void std_complex_printer<CharT, FloatT>::print_to(strf::destination<CharT>& dst)
 //--------------------------------------------------------------------------------
 
 template <typename CharT, typename FloatT>
-class fmt_std_complex_printer: public strf::printer<CharT>
+class fmt_std_complex_printer
 {
     using complex_type_ = std::complex<FloatT>;
     static constexpr char32_t anglechar_ = 0x2220;
@@ -275,7 +275,7 @@ public:
             , x.arg.width() );
     }
 
-    void print_to(strf::destination<CharT>& dst) const override;
+    void print_to(strf::destination<CharT>& dst) const;
 
 private:
 

@@ -681,7 +681,7 @@ constexpr STRF_HD auto tag_invoke(strf::printable_tag, const wchar_t*) noexcept
 namespace detail {
 
 template <typename SrcCharT, typename DstCharT>
-class strcpy_printer: public strf::printer<DstCharT>
+class strcpy_printer
 {
 public:
     static_assert(sizeof(SrcCharT) == sizeof(DstCharT), "");
@@ -740,7 +740,7 @@ public:
         input.pre->add_size(str_end_ - str_);
     }
 
-    STRF_HD void print_to(strf::destination<DstCharT>& dst) const override;
+    STRF_HD void print_to(strf::destination<DstCharT>& dst) const;
 
 private:
 
@@ -766,7 +766,7 @@ STRF_HD void strcpy_printer<SrcCharT, DstCharT>::print_to
 }
 
 template <typename SrcCharT, typename DstCharT>
-class aligned_strcpy_printer: public strf::printer<DstCharT>
+class aligned_strcpy_printer
 {
 public:
     static_assert(sizeof(SrcCharT) == sizeof(DstCharT), "");
@@ -815,7 +815,7 @@ public:
         precalc_size_(input.pre, dst_charset, fillcount);
     }
 
-    STRF_HD void print_to(strf::destination<DstCharT>& dst) const override;
+    STRF_HD void print_to(strf::destination<DstCharT>& dst) const;
 
 private:
 
@@ -927,7 +927,7 @@ constexpr STRF_HD auto get_src_charset
 }
 
 template <typename SrcCharT, typename DstCharT>
-class transcode_printer: public strf::printer<DstCharT>
+class transcode_printer
 {
 public:
 
@@ -972,7 +972,7 @@ public:
         init_( input.pre, src_charset, dst_charset);
     }
 
-    STRF_HD void print_to(strf::destination<DstCharT>& dst) const override;
+    STRF_HD void print_to(strf::destination<DstCharT>& dst) const;
 
 private:
 
@@ -1046,7 +1046,7 @@ STRF_HD void transcode_printer<SrcCharT, DstCharT>::print_to
 }
 
 template<typename SrcCharT, typename DstCharT>
-class aligned_transcode_printer: public printer<DstCharT>
+class aligned_transcode_printer
 {
 public:
 
@@ -1094,7 +1094,7 @@ public:
              , use_facet_<strf::charset_c<DstCharT>, SrcCharT>(input.facets) );
     }
 
-    STRF_HD void print_to(strf::destination<DstCharT>& dst) const override;
+    STRF_HD void print_to(strf::destination<DstCharT>& dst) const;
 
 private:
 
@@ -1214,7 +1214,7 @@ void STRF_HD aligned_transcode_printer<SrcCharT, DstCharT>::print_to
 }
 
 template<typename SrcCharT, typename DstCharT>
-class unsafe_transcode_printer: public strf::printer<DstCharT>
+class unsafe_transcode_printer
 {
 public:
 
@@ -1259,7 +1259,7 @@ public:
         input.pre->subtract_width(res.width);
         init_( input.pre, src_charset, dst_charset);
     }
-    STRF_HD void print_to(strf::destination<DstCharT>& dst) const override;
+    STRF_HD void print_to(strf::destination<DstCharT>& dst) const;
 
 private:
 
@@ -1335,7 +1335,7 @@ STRF_HD void unsafe_transcode_printer<SrcCharT, DstCharT>::print_to
 
 
 template<typename SrcCharT, typename DstCharT>
-class aligned_unsafe_transcode_printer: public printer<DstCharT>
+class aligned_unsafe_transcode_printer
 {
 public:
 
@@ -1383,7 +1383,7 @@ public:
              , use_facet_<strf::charset_c<DstCharT>, SrcCharT>(input.facets) );
     }
 
-    STRF_HD void print_to(strf::destination<DstCharT>& dst) const override;
+    STRF_HD void print_to(strf::destination<DstCharT>& dst) const;
 
 private:
 
@@ -1672,14 +1672,14 @@ public:
             using printer_type = strcpy_printer<SrcCharT, DstCharT>;
             static_assert(sizeof(printer_type) <= pool_size_, "");
 
-            new ((void*)&pool_) printer_type(input);
+            new ((void*)&pool_) printer_wrapper<DstCharT, printer_type>(input);
         } else {
             constexpr auto different = charsets_comparison::statically_different;
             using printer_type = typename string_printer_type<false, different, TranscPoli>
                 :: template type<SrcCharT, DstCharT>;
             static_assert(sizeof(printer_type) <= pool_size_, "");
 
-            new ((void*)&pool_) printer_type(input);
+            new ((void*)&pool_) printer_wrapper<DstCharT, printer_type>(input);
         }
     }
 
@@ -1716,7 +1716,7 @@ private:
 
 
     static constexpr std::size_t pool_size_ =
-        sizeof(strf::detail::transcode_printer<DstCharT, DstCharT>);
+        sizeof(detail::printer_wrapper<DstCharT, detail::transcode_printer<DstCharT, DstCharT>>);
     using storage_type_ = typename std::aligned_storage
         < pool_size_, alignof(strf::printer<DstCharT>)>
         :: type;
@@ -1746,7 +1746,7 @@ public:
             using printer_type = aligned_strcpy_printer<SrcCharT, DstCharT>;
             static_assert(sizeof(printer_type) <= pool_size_, "");
 
-            new ((void*)&pool_) printer_type(input);
+            new ((void*)&pool_) printer_wrapper<DstCharT, printer_type>(input);
 
         } else {
             constexpr auto different = charsets_comparison::statically_different;
@@ -1754,7 +1754,7 @@ public:
                 :: template type<SrcCharT, DstCharT>;
             static_assert(sizeof(printer_type) <= pool_size_, "");
 
-            new ((void*)&pool_) printer_type(input);
+            new ((void*)&pool_) printer_wrapper<DstCharT, printer_type>(input);
         }
     }
 
@@ -1793,8 +1793,9 @@ private:
 #  pragma GCC diagnostic pop
 #endif
 
+    using biggest_printer_t = strf::detail::aligned_transcode_printer<DstCharT, DstCharT>;
     static constexpr std::size_t pool_size_ =
-        sizeof(strf::detail::aligned_transcode_printer<DstCharT, DstCharT>);
+        sizeof(detail::printer_wrapper<DstCharT, biggest_printer_t>);
     using storage_type_ = typename std::aligned_storage
         < pool_size_, alignof(strf::printer<DstCharT>)>
         :: type;

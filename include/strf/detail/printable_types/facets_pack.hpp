@@ -76,7 +76,7 @@ template < typename CharT
          , typename ParentFPack
          , typename ChildFPack
          , typename ... Args >
-class facets_pack_printer: public strf::printer<CharT>
+class facets_pack_printer
 {
 public:
 
@@ -89,13 +89,13 @@ public:
     }
 
     facets_pack_printer() = delete;
-    ~facets_pack_printer() override = default;
+    ~facets_pack_printer() = default;
     facets_pack_printer(const facets_pack_printer&) = delete;
     facets_pack_printer(facets_pack_printer&&) = delete;
     facets_pack_printer& operator=(const facets_pack_printer&) = delete;
     facets_pack_printer& operator=(facets_pack_printer&&) = delete;
 
-    STRF_HD void print_to(strf::destination<CharT>& dst) const override
+    STRF_HD void print_to(strf::destination<CharT>& dst) const
     {
         strf::detail::write(dst, printers_);
     }
