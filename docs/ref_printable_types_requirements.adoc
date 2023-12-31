@@ -19,7 +19,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 :PrinterInput: <<PrinterInput,PrinterInput>>
 :printable_traits_of: <<printable_traits_of,printable_traits_of>>
 :printable_overrider_c: <<printable_overrider_c,printable_overrider_c>>
-:make_default_printer_input: <<make_default_printer_input,make_default_printer_input>>
+:make_default_printer: <<make_default_printer,make_default_printer>>
 :make_printer: <<make_printer,make_printer>>
 :representative_of_printable: <<representative_of_printable,representative_of_printable>>
 :is_printable_and_overridable: <<is_printable_and_overridable,is_printable_and_overridable>>
@@ -297,14 +297,14 @@ Compile-time requirements::
 * `PreMeasurements` is an instance of the `{premeasurements}` class template.
 ////
 
-=== Function template `make_default_printer_input` [[make_default_printer_input]]
+=== Function template `make_default_printer` [[make_default_printer]]
 
 [source,cpp,subs=normal]
 ----
 namespace strf {
 
 template <typename CharT, typename Pre, typename FPack, typename Arg>
-constexpr auto make_default_printer_input
+constexpr auto make_default_printer
     ( Pre& pre, const FPack& facets, const Arg& arg)
     noexcept(/{asterisk} see below\... {asterisk}/)
     \-> /{asterisk} see below\... {asterisk}/
@@ -312,7 +312,7 @@ constexpr auto make_default_printer_input
 } // namespace strf
 ----
 
-The expression `make_default_printer_input<CharT>(pre, facets, arg)` is equivalent to
+The expression `make_default_printer<CharT>(pre, facets, arg)` is equivalent to
 [source,cpp,subs=normal]
 ----
 {printable_traits_of}<Arg>::<<PrintableTraits_functions,make_printer>>({tag}<CharT>{}, pre, facets, arg);
@@ -363,9 +363,9 @@ struct dont_override {
     template <typename CharT, typename Pre, typename FPack, typename Arg>
     constexpr static auto make_printer
         ( {tag}<CharT>{}, Pre& pre, const FPack& facets, Arg&& arg )
-        noexcept(noexcept({make_default_printer_input}<CharT>(pre, facets, arg)))
+        noexcept(noexcept({make_default_printer}<CharT>(pre, facets, arg)))
     {
-        return {make_default_printer_input}<CharT>(pre, facets, arg);
+        return {make_default_printer}<CharT>(pre, facets, arg);
     }
 };
 

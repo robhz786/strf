@@ -1340,7 +1340,7 @@ struct voidptr_printing
         , PreMeasurements* pre
         , const FPack& facets
         , const void* x ) noexcept
-    -> decltype( strf::make_default_printer_input<CharT>
+    -> decltype( strf::make_default_printer<CharT>
                    ( pre
                    , strf::pack
                        ( strf::use_facet<strf::numpunct_c<16>, const void*>(facets)
@@ -1348,7 +1348,7 @@ struct voidptr_printing
                        , strf::use_facet<strf::charset_c<CharT>, const void*>(facets) )
                    , *strf::hex(strf::detail::bit_cast<std::size_t>(x)) ) )
     {
-        return strf::make_default_printer_input<CharT>
+        return strf::make_default_printer<CharT>
             ( pre
             , strf::pack
                 ( strf::use_facet<strf::numpunct_c<16>, const void*>(facets)
@@ -1363,7 +1363,7 @@ struct voidptr_printing
         , PreMeasurements* pre
         , const FPack& facets
         , strf::printable_with_fmt<T...> x ) noexcept
-    -> decltype( strf::make_default_printer_input<CharT>
+    -> decltype( strf::make_default_printer<CharT>
                    ( pre
                    , strf::pack
                        ( strf::use_facet<strf::numpunct_c<16>, const void*>(facets)
@@ -1372,7 +1372,7 @@ struct voidptr_printing
                    , *strf::hex(strf::detail::bit_cast<std::size_t>(x.value()))
                                    .set_alignment_format(x.get_alignment_format()) ) )
     {
-        return strf::make_default_printer_input<CharT>
+        return strf::make_default_printer<CharT>
             ( pre
             , strf::pack
                 ( strf::use_facet<strf::numpunct_c<16>, const void*>(facets)

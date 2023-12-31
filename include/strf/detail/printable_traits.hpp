@@ -578,7 +578,7 @@ template < typename CharT
              = strf::detail::mk_pr_in::helper_no_override<CharT, PreMeasurements, FPack, Arg>
          , typename Maker = typename Helper::maker_type
          , typename ChTag = strf::tag<CharT> >
-STRF_DEPRECATED_MSG("make_default_arg_printer_input was renamed to make_default_printer_input")
+STRF_DEPRECATED_MSG("make_default_arg_printer_input was renamed to make_default_printer")
 constexpr STRF_HD decltype(auto) make_default_arg_printer_input
     ( PreMeasurements* p, const FPack& fp, const Arg& arg )
     noexcept(noexcept(Maker::make_printer(ChTag{}, p, fp, Helper::adapt_arg(arg))))
@@ -609,7 +609,7 @@ template < typename CharT
              = strf::detail::mk_pr_in::helper_no_override<CharT, PreMeasurements, FPack, Arg>
          , typename Maker = typename Helper::maker_type
          , typename ChTag = strf::tag<CharT> >
-constexpr STRF_HD decltype(auto) make_default_printer_input
+constexpr STRF_HD decltype(auto) make_default_printer
     ( PreMeasurements* p, const FPack& fp, const Arg& arg )
     noexcept(noexcept(Maker::make_printer(ChTag{}, p, fp, Helper::adapt_arg(arg))))
 {
@@ -639,9 +639,9 @@ struct dont_override
         , PreMeasurements* pre
         , const FPack& facets
         , Arg&& arg )
-        noexcept(noexcept(strf::make_default_printer_input<CharT>(pre, facets, arg)))
+        noexcept(noexcept(strf::make_default_printer<CharT>(pre, facets, arg)))
     {
-        return strf::make_default_printer_input<CharT>(pre, facets, arg);
+        return strf::make_default_printer<CharT>(pre, facets, arg);
     }
 };
 

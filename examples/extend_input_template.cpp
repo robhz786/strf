@@ -28,7 +28,7 @@ struct base_printing {
         , const FPack& fp
         , forwarded_type x ) noexcept
     {
-        return strf::make_default_printer_input<CharT>(pre, fp, x.value);
+        return strf::make_default_printer<CharT>(pre, fp, x.value);
     }
 };
 
