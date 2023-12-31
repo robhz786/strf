@@ -6,7 +6,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <strf/detail/printer.hpp>
+#include <strf/detail/polymorphic_printer.hpp>
 #include <strf/detail/premeasurements.hpp>
 #include <strf/detail/standard_lib_functions.hpp>
 
@@ -416,7 +416,7 @@ template <typename Charset, typename ErrHandler>
 STRF_HD void tr_string_write
     ( const typename Charset::code_unit* str
     , const typename Charset::code_unit* str_end
-    , const strf::printer<typename Charset::code_unit>* const * args
+    , const detail::polymorphic_printer<typename Charset::code_unit>* const * args
     , std::ptrdiff_t num_args
     , strf::destination<typename Charset::code_unit>& dst
     , Charset charset
@@ -509,7 +509,7 @@ public:
     STRF_HD tr_string_printer
         ( strf::premeasurements<SizePresence, strf::width_presence::no>* pre
         , const strf::premeasurements<SizePresence, strf::width_presence::no>* args_pre
-        , std::initializer_list<const strf::printer<char_type>*> printers
+        , std::initializer_list<const detail::polymorphic_printer<char_type>*> printers
         , const char_type* tr_string
         , const char_type* tr_string_end
         , Charset charset
@@ -544,7 +544,7 @@ private:
 
     const char_type* tr_string_;
     const char_type* tr_string_end_;
-    const strf::printer<char_type>* const * printers_array_;
+    const detail::polymorphic_printer<char_type>* const * printers_array_;
     std::ptrdiff_t num_printers_;
     Charset charset_;
     ErrHandler err_handler_;

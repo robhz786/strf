@@ -7,7 +7,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <strf/detail/printable_traits.hpp>
-#include <strf/detail/printer.hpp>
+#include <strf/detail/polymorphic_printer.hpp>
 
 namespace strf {
 namespace detail {

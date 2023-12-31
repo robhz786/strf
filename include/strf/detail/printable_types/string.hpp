@@ -9,7 +9,7 @@
 #include <strf/detail/facets/width_calculator.hpp>
 #include <strf/detail/facets/charset.hpp>
 #include <strf/detail/format_functions.hpp>
-#include <strf/detail/printer.hpp>
+#include <strf/detail/polymorphic_printer.hpp>
 #include <strf/detail/simple_string_view.hpp>
 
 namespace strf {
@@ -1690,7 +1690,7 @@ public:
 
     STRF_HD ~transcode_printer_variant()
     {
-        underlying_printer_().~printer();
+        underlying_printer_().~polymorphic_printer();
     }
 
     STRF_HD void print_to(strf::destination<char>& dst) const
@@ -1705,9 +1705,9 @@ private:
 #  pragma GCC diagnostic ignored "-Wstrict-aliasing"
 #endif
 
-    STRF_HD const strf::printer<DstCharT>& underlying_printer_ () const
+    STRF_HD const detail::polymorphic_printer<DstCharT>& underlying_printer_ () const
     {
-        return * reinterpret_cast<const strf::printer<DstCharT>*>(&pool_);
+        return * reinterpret_cast<const detail::polymorphic_printer<DstCharT>*>(&pool_);
     }
 
 #if defined(__GNUC__) && (__GNUC__ <= 6)
@@ -1718,7 +1718,7 @@ private:
     static constexpr std::size_t pool_size_ =
         sizeof(detail::printer_wrapper<DstCharT, detail::transcode_printer<DstCharT, DstCharT>>);
     using storage_type_ = typename std::aligned_storage
-        < pool_size_, alignof(strf::printer<DstCharT>)>
+        < pool_size_, alignof(detail::polymorphic_printer<DstCharT>)>
         :: type;
 
     storage_type_ pool_;
@@ -1769,7 +1769,7 @@ public:
 
     STRF_HD ~aligned_transcode_printer_variant()
     {
-        underlying_printer_().~printer();
+        underlying_printer_().~polymorphic_printer();
     }
 
     STRF_HD void print_to(strf::destination<char>& dst) const
@@ -1784,9 +1784,9 @@ private:
 #  pragma GCC diagnostic ignored "-Wstrict-aliasing"
 #endif
 
-    STRF_HD const strf::printer<DstCharT>& underlying_printer_ () const
+    STRF_HD const detail::polymorphic_printer<DstCharT>& underlying_printer_ () const
     {
-        return * reinterpret_cast<const strf::printer<DstCharT>*>(&pool_);
+        return * reinterpret_cast<const detail::polymorphic_printer<DstCharT>*>(&pool_);
     }
 
 #if defined(__GNUC__) && (__GNUC__ <= 6)
@@ -1797,7 +1797,7 @@ private:
     static constexpr std::size_t pool_size_ =
         sizeof(detail::printer_wrapper<DstCharT, biggest_printer_t>);
     using storage_type_ = typename std::aligned_storage
-        < pool_size_, alignof(strf::printer<DstCharT>)>
+        < pool_size_, alignof(detail::polymorphic_printer<DstCharT>)>
         :: type;
 
     storage_type_ pool_;

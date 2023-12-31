@@ -42,7 +42,7 @@ struct tr_printers_container<CharT, strf::detail::index_sequence<I...>, Printers
 
     static constexpr ptrdiff_t num_printers_= sizeof...(Printers);
     printers_tuple_t_ tuple;
-    const strf::printer<CharT>* array_of_pointers[num_printers_];
+    const detail::polymorphic_printer<CharT>* array_of_pointers[num_printers_];
 
     template < typename... Args
              , typename... FPElems
@@ -52,7 +52,7 @@ struct tr_printers_container<CharT, strf::detail::index_sequence<I...>, Printers
         ( const strf::detail::simple_tuple<Args...>& args
         , const strf::facets_pack<FPElems...>& fp
         , strf::premeasurements<SizePresence, WidthPresence>* pp_array
-        , const strf::printer<CharT>**& array_of_pointers_ref )
+        , const detail::polymorphic_printer<CharT>**& array_of_pointers_ref )
         : tuple{args, fp, pp_array}
         , array_of_pointers{ & tuple.template get<I>()...}
     {
@@ -64,7 +64,7 @@ struct tr_printers_container<CharT, strf::detail::index_sequence<I...>, Printers
         ( const strf::detail::simple_tuple<Args...>& args
         , strf::no_premeasurements* pre
         , const strf::facets_pack<FPElems...>& fp
-        , const strf::printer<CharT>**& array_of_pointers_ref )
+        , const detail::polymorphic_printer<CharT>**& array_of_pointers_ref )
         : tuple{args, pre, fp}
         , array_of_pointers{ & tuple.template get<I>()...}
     {
@@ -83,7 +83,7 @@ struct tr_printers_container<CharT, strf::detail::index_sequence<I...>, Printers
 //         ( strf::detail::simple_tuple<> args
 //         , const strf::facets_pack<FPElems...>&
 //         , strf::premeasurements<SizePresence, WidthPresence>*
-//         , const strf::printer<CharT>**& array_of_pointers_ref )
+//         , const detail::polymorphic_printer<CharT>**& array_of_pointers_ref )
 //     {
 //         using pre_t = strf::premeasurements<SizePresence, WidthPresence>;
 //         using fp_t = strf::facets_pack<FPElems...>;
@@ -141,7 +141,7 @@ public:
         ( const strf::detail::simple_tuple<Args...>& args
         , const strf::facets_pack<FPElems...>& fp
         , strf::premeasurements<SizePresence, WidthPresence>* pre_array
-        , const strf::printer<CharT>**& array_of_pointers_ref )
+        , const detail::polymorphic_printer<CharT>**& array_of_pointers_ref )
     {
         using pre_t = strf::premeasurements<SizePresence, WidthPresence>;
         using fp_t = strf::facets_pack<FPElems...>;
@@ -162,7 +162,7 @@ public:
         ( const strf::detail::simple_tuple<Args...>& args
         , const strf::facets_pack<FPElems...>& fp
         , strf::no_premeasurements* pre
-        , const strf::printer<CharT>**& array_of_pointers_ref )
+        , const detail::polymorphic_printer<CharT>**& array_of_pointers_ref )
     {
         using pre_t = strf::no_premeasurements;
         using fp_t = strf::facets_pack<FPElems...>;
@@ -392,7 +392,7 @@ class tr_printer
     Charset charset_;
     err_handler_t err_handler_;
     std::ptrdiff_t num_printers_;
-    const strf::printer<CharT>** printers_;
+    const detail::polymorphic_printer<CharT>** printers_;
     PrintersStorage storage_;
 
     // template <std::size_t... I, typename Pre, typename FPack, typename... Args>
@@ -645,7 +645,7 @@ struct printable_traits<detail::tr_string_arg<CharT, Args...>>
 // private:
 
 //     printers_tuple_t_ printers_tuple_;
-//     const strf::printer<CharT>* printer_ptrs_array_[num_printers_];
+//     const detail::polymorphic_printer<CharT>* printer_ptrs_array_[num_printers_];
 //     strf::detail::simple_string_view<CharT> tr_string_;
 //     Charset charset_;
 

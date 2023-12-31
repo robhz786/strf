@@ -312,7 +312,7 @@ public:
 };
 
 template<typename CharT, typename... Printers>
-class join_printer_impl: public printer<CharT> {
+class join_printer_impl: public detail::polymorphic_printer<CharT> {
 public:
 
     template<typename PreMeasurements, typename FPack, typename... FwdArgs>

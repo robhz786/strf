@@ -2301,7 +2301,7 @@ public:
 
     STRF_HD ~int_printer_full_dynamic()
     {
-        underlying_printer_().~printer();
+        underlying_printer_().~polymorphic_printer();
     }
 
     STRF_HD void print_to(strf::destination<CharT>& dst) const
@@ -2316,9 +2316,9 @@ private:
 #  pragma GCC diagnostic ignored "-Wstrict-aliasing"
 #endif
 
-    STRF_HD const strf::printer<CharT>& underlying_printer_() const
+    STRF_HD const detail::polymorphic_printer<CharT>& underlying_printer_() const
     {
-        return * reinterpret_cast<const strf::printer<CharT>*>(&storage_);
+        return * reinterpret_cast<const detail::polymorphic_printer<CharT>*>(&storage_);
     }
 
 #if defined(__GNUC__) && (__GNUC__ <= 6)
@@ -2330,7 +2330,7 @@ private:
         sizeof(detail::printer_wrapper<CharT, biggest_printer_type>);
 
     using storage_type_ = typename std::aligned_storage
-        < pool_size_, alignof(strf::printer<CharT>)>
+        < pool_size_, alignof(detail::polymorphic_printer<CharT>)>
         :: type;
 
     storage_type_ storage_;

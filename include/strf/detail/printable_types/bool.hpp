@@ -6,7 +6,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <strf/detail/printer.hpp>
+#include <strf/detail/polymorphic_printer.hpp>
 #include <strf/detail/format_functions.hpp>
 #include <strf/detail/facets/lettercase.hpp>
 #include <strf/detail/facets/charset.hpp>

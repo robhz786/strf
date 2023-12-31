@@ -12,22 +12,22 @@ http://www.boost.org/LICENSE_1_0.txt)
 :output_buffer:   <<destination_hpp#output_buffer,output_buffer>>
 :destination:   <<destination_hpp#destination,destination>>
 
-:PrintableTraits:   <<strf_hpp#PrintableTraits,PrintableTraits>>
-:printable_traits:  <<strf_hpp#printable_traits_of,printable_traits>>
-:PrinterInput: <<strf_hpp#PrinterInput,PrinterInput>>
-:representative_type:    <<strf_hpp#PrintableTraits_representative_type,representative_type>>
-:forwarded_type:  <<strf_hpp#PrintableTraits_forwarded_type,forwarded_type>>
-:formatters:      <<strf_hpp#PrintableTraits_formatters,formatters>>
-:Formatter:              <<strf_hpp#Formatter,Formatter>>
-:printable_overrider_c:  <<strf_hpp#printable_overrider_c,printable_overrider_c>>
-:dont_override:          <<strf_hpp#dont_override,dont_override>>
-:printer:                <<strf_hpp#printer,printer>>
-:premeasurements:        <<strf_hpp#premeasurements,premeasurements>>
-:measure:           <<strf_hpp#measure,measure>>
-:printable_with_fmt:     <<strf_hpp#printable_with_fmt,printable_with_fmt>>
-:make_printer:         <<strf_hpp#make_printer,make_printer>>
-:strf_make_printer:    <<strf_hpp#make_printer,strf::make_printer>>
-:usual_printer_input:        <<strf_hpp#usual_printer_input,usual_printer_input>>
+:PrintableTraits:       <<strf_hpp#PrintableTraits,PrintableTraits>>
+:printable_traits:      <<strf_hpp#printable_traits_of,printable_traits>>
+:PrinterInput:          <<strf_hpp#PrinterInput,PrinterInput>>
+:Printer:               <<strf_hpp#Printer,Printer>>
+:representative_type:   <<strf_hpp#PrintableTraits_representative_type,representative_type>>
+:forwarded_type:        <<strf_hpp#PrintableTraits_forwarded_type,forwarded_type>>
+:formatters:            <<strf_hpp#PrintableTraits_formatters,formatters>>
+:Formatter:             <<strf_hpp#Formatter,Formatter>>
+:printable_overrider_c: <<strf_hpp#printable_overrider_c,printable_overrider_c>>
+:dont_override:         <<strf_hpp#dont_override,dont_override>>
+:premeasurements:       <<strf_hpp#premeasurements,premeasurements>>
+:measure:               <<strf_hpp#measure,measure>>
+:printable_with_fmt:    <<strf_hpp#printable_with_fmt,printable_with_fmt>>
+:make_printer:          <<strf_hpp#make_printer,make_printer>>
+:strf_make_printer:     <<strf_hpp#make_printer,strf::make_printer>>
+:usual_printer_input:   <<strf_hpp#usual_printer_input,usual_printer_input>>
 
 :alignment_formatter:   <<strf_hpp#alignment_formatter,alignment_formatter>>
 :alignment_formatter_q: <<strf_hpp#alignment_formatter,alignment_formatter_q>>
@@ -795,28 +795,16 @@ struct printable_traits<std::complex<FloatT>>
 } // namespace strf
 ----
 
-The return type of `make_printer` must aways be a __{PrinterInput}__
-type, and the `{usual_printer_input}` class template is syntatic sugar to
-achieve that.
-Most of the work lies in creating the class &#x2014;
- or, more likely, the class template &#x2014;
-used in its fifth template parameter, named here as `std_complex_printer`.
-It must be a concrete
-class that derives from `{printer}<CharT>`, or that is
-https://en.cppreference.com/w/cpp/language/cast_operator[convertible]
-to `const {printer}<CharT>&`. It must also be constructible from the
-return type of our `make_printer` member function:
-
 [source,cpp,subs=normal]
 ----
 template <typename CharT, typename FloatT>
-class std_complex_printer: public strf::printer<CharT> {
+class std_complex_printer {
 public:
 
     template <typename\... T>
     explicit std_complex_printer(strf::usual_printer_input<T\...>);
 
-    void print_to(strf::{destination}<CharT>& dest) const override;
+    void print_to(strf::{destination}<CharT>& dest) const;
 
 private:
 

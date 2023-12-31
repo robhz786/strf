@@ -9,7 +9,6 @@ http://www.boost.org/LICENSE_1_0.txt)
 :Printable: <<Printable,Printable>>
 :tr: <<tr_string,tr>>
 :printer_type: <<printer_type,printer_type>>
-:printer:      <<printer,printer>>
 :destination: <<destination_hpp#destination,destination>>
 :tag: <<tag,tag>>
 :premeasurements: <<premeasurements,premeasurements>>
@@ -388,8 +387,8 @@ using pre_t = {premeasurements}<size_presence::no, width_presence::no>;
 pre_t pre;
 using parg_t = strf::remove_cvref_t<decltype(parg)>;
 using printer_t = {printer_type}<char_type, pre_t, FPack, parg_t>;
-printer_t p{ {make_printer}<char_type>(&pre, fpack, parg) };
-static_cast<const {printer}<char_type>&>(p).print_to(dest);
+const printer_t p{ {make_printer}<char_type>(&pre, fpack, parg) };
+p.print_to(dest);
 ----
 . Returns `dest.finish()` if such expression is valid
 
@@ -421,12 +420,7 @@ printer_t p{ {make_printer}<char_type>(&pre, fpack, arg) };
 using dest_type = typename DestCreator::sized_destination_type;
 dest_type dest{dest&#95;creator.create(pre.<<size_accumulator_accumulated_ssize,accumulated_ssize>>())};
 ----
-. For each `p`, do:
-+
-[source,cpp,subs=normal]
-----
-static_cast<const {printer}<char_type>&>(p).print_to(dest);
-----
+. For each `p`, do `p.print_to(dest)`
 . Return `dest.finish()` if such expression is valid.
 
 
@@ -451,8 +445,8 @@ using pre_t = {premeasurements}<size_presence::no, width_presence::no>;
 pre_t pre;
 using parg_t = strf::remove_cvref_t<decltype(parg)>;
 using printer_t = {printer_type}<char_type, pre_t, FPack, parg_t>;
-printer_t p{ {make_printer}<char_type>(&pre, fpack, parg) };
-static_cast<const {printer}<char_type>&>(p).print_to(dest);
+const printer_t p{ {make_printer}<char_type>(&pre, fpack, parg) };
+p.print_to(dest);
 ----
 . Return `dest.finish()` if such expression is valid.
 

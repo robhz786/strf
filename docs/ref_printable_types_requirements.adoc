@@ -5,7 +5,6 @@ Distributed under the Boost Software License, Version 1.0.
 http://www.boost.org/LICENSE_1_0.txt)
 ////
 
-:printer:      <<printer,printer>>
 :printer_type: <<printer_type,printer_type>>
 :printable_traits:  <<printable_traits,printable_traits>>
 
@@ -420,24 +419,6 @@ using printer_type = typename printer_input_type<CharT, Pre, FPack, Arg>::printe
 } // namespace strf
 ----
 
-[[printer]]
-=== Class template `printer`
-
-[source,cpp,subs=normal]
-----
-namespace strf {
-
-template <typename CharT>
-class printer {
-public:
-    using char_type = CharT;
-    virtual ~printer() {}
-    virtual void print_to({destination}<CharT>&) const = 0;
-};
-
-} // namespace strf
-----
-
 === Class template `premeasurements` [[premeasurements]]
 
 [source,cpp,subs=normal]
@@ -698,7 +679,7 @@ Compile-time requirements::
 
 Effects::
 * When `SizePresence` is `size_presence::yes`, for each argument `arg` in `args\...`
-  instantiates the correponding `printer` type with `pp`, `facets`, and `arg`.
+  instantiates the correponding _{Printer}_ type with `pp`, `facets`, and `arg`.
   This translates into the following
   https://en.cppreference.com/w/cpp/language/fold[fold expression]:
 +
@@ -710,7 +691,7 @@ Effects::
                   , Args >  {{make_printer}<CharT>(pp, facets, args)} );
 ----
 * When `SizePresence` is `size_presence::no` and `WidthPresence` is `width_presence::yes`,
-  for each argument `arg` in `args\...` instantiates the correponding `printer`
+  for each argument `arg` in `args\...` instantiates the correponding _{Printer}_
   type with `pp`, `facets`, and `arg` ( again, using `{printer_type}`  and
   `{make_printer}` ), while `pp-><<width_decumulator,remaining_width>>() > 0`
   is `true`.

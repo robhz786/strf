@@ -117,14 +117,14 @@ public:
 private:
 
     template <typename CharT>
-    static inline STRF_HD const strf::printer<CharT>&
-    as_printer_cref_(const strf::printer<CharT>& p) noexcept
+    static inline STRF_HD const detail::polymorphic_printer<CharT>&
+    as_printer_cref_(const detail::polymorphic_printer<CharT>& p) noexcept
     {
         return p;
     }
 
     template <typename CharT>
-    using strf_inilist_ = std::initializer_list<const strf::printer<CharT>*>;
+    using strf_inilist_ = std::initializer_list<const detail::polymorphic_printer<CharT>*>;
 
     template < bool Ln
              , typename ReservePolicy

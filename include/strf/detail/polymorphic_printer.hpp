@@ -1,5 +1,5 @@
-#ifndef STRF_DETAIL_PRINTER_HPP
-#define STRF_DETAIL_PRINTER_HPP
+#ifndef STRF_DETAIL_POLYMORPHIC_PRINTER_HPP
+#define STRF_DETAIL_POLYMORPHIC_PRINTER_HPP
 
 //  Copyright (C) (See commit logs on github.com/robhz786/strf)
 //  Distributed under the Boost Software License, Version 1.0.
@@ -9,66 +9,27 @@
 #include <strf/destination.hpp>
 
 namespace strf {
+namespace detail {
 
 template <typename CharT>
-class printer
+class polymorphic_printer
 {
 public:
     using char_type = CharT;
 
-    printer() = default;
-    printer(const printer&) = default;
-    printer(printer&&) noexcept = default;
-    printer& operator=(const printer&) = default;
-    printer& operator=(printer&&) noexcept = default;
+    polymorphic_printer() = default;
+    polymorphic_printer(const polymorphic_printer&) = default;
+    polymorphic_printer(polymorphic_printer&&) noexcept = default;
+    polymorphic_printer& operator=(const polymorphic_printer&) = default;
+    polymorphic_printer& operator=(polymorphic_printer&&) noexcept = default;
 
-    virtual STRF_HD ~printer() STRF_DEFAULT_IMPL;
+    virtual STRF_HD ~polymorphic_printer() STRF_DEFAULT_IMPL;
 
     virtual STRF_HD void print_to(strf::destination<CharT>& dst) const = 0;
 };
 
-template <typename CharT>
-using arg_printer
-STRF_DEPRECATED_MSG("arg_printer was renamed to printer")
-= printer<CharT>;
-
-namespace detail {
-
-// template <typename CharT>
-// class printer_wrapper
-// {
-//     template <typename Printer>
-//     static STRF_HD void invoke(void* printer_ptr, strf::destination<CharT>& dst)
-//     {
-//         std::move(*reinterpret_cast<Printer*>(printer_ptr)).print_to(dst);
-//     }
-
-//     typename void (*invoke_fptr) (void* printer_ptr, strf::destination<CharT>& dst);
-
-// public:
-
-//     template <typename Printer>
-//     STRF_HD printer_wrapper(Printer&& p)
-//         : invoker_(invoke<strf::remove_cv_ref_t<Printer>>)
-//         , printer_ptr_(&p)
-//     {
-//     }
-
-//     STRF_HD void print_to(strf::destination<CharT>& dst) &&
-//     {
-//         invoker_(printer_ptr_, dst);
-//     }
-
-//     invoke_fptr invoker_;
-//     void* printer_ptr_
-// };
-
-
-
-
-
 template <typename CharT, typename Printer>
-class printer_wrapper: public printer<CharT>
+class printer_wrapper: public detail::polymorphic_printer<CharT>
 {
 public:
     template < typename... IniArgs
