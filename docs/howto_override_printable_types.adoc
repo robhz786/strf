@@ -6,7 +6,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 ////
 
 :printable_overrider_c: <<strf_hpp#printable_overrider_c,printable_overrider_c>>
-:make_printer_input: <<strf_hpp#make_printer_input,make_printer_input>>
+:make_printer: <<strf_hpp#make_printer,make_printer>>
 :use_facet: <<strf_hpp#use_facet,use_facet>>
 :pack: <<strf_hpp#pack,pack>>
 :set_alignment_format: <<strf_hpp#alignment_formatter,set_alignment_format>>
@@ -42,7 +42,7 @@ to get some explanation.
 
 
 The facet shall contain the
-`make_input` member function templates that will
+`make_printer` member function templates that will
 replace those defined in the _{PrintableTraits}_ class of the
 overrided type.
 For example, one could define a facet to override the `bool` like this:
@@ -53,7 +53,7 @@ For example, one could define a facet to override the `bool` like this:
 In the following example, we override the `bool` type,
 causing its values to be printed in a another language:
 
-which also has a `make_input` function template
+which also has a `make_printer` function template
 that returns a _{PrinterInput}_ object.
 
 As an example, let's to override the `bool` type,
@@ -69,23 +69,23 @@ struct italian_bool_facet
     using category = strf::{printable_overrider_c};
 
     template <typename CharT, typename Pre, typename FPack>
-    constexpr static auto make_input
+    constexpr static auto make_printer
         ( strf::tag<CharT>, Pre* pre, const FPack&, bool x ) noexcept
     {
-        return strf::{make_printer_input}<CharT>
+        return strf::{make_printer}<CharT>
             ( pre
             , strf::{pack}()
             , strf::transcode(x ? "vero" : "falso") );
     }
 
     template <typename CharT, typename Pre, typename FPack, typename... T>
-    constexpr static auto make_input
+    constexpr static auto make_printer
         ( strf::tag<CharT>
         , Pre* pre
         , const FPack& fp
         , strf::{printable_with_fmt}<T\...> x ) noexcept
     {
-        return strf::{make_printer_input}<CharT>
+        return strf::{make_printer}<CharT>
             ( pre
             , fp
             , strf::transcode(x.value() ? "vero" : "falso")
@@ -93,7 +93,7 @@ struct italian_bool_facet
     }
 };
 ----
-Everything in `make_input`
+Everything in `make_printer`
 ( semantics, return type, arguments, etc )
 is just like as in the __PrintableTraits__ requirements, except that here it is
 allowed to be non-static, though it must be then const (
@@ -101,7 +101,7 @@ so instead of hardcoded strings like `"vero"`, and `"falso"`
 , we could use member variables, which would probably make more sense ).
 
 Just as it is usual in __PrintableTraits__ classes,
-you can see that we have two `make_input` fuctions
+you can see that we have two `make_printer` fuctions
 ( though the first one is unnecessary ).
 The second one handles `bool` values with formatting.
 Even if we don't define it, an expression like
@@ -109,7 +109,7 @@ Even if we don't define it, an expression like
 is still well-formed, because the format functions
 that are applicable to a printable type keep being the same
 when we override it. We can't change them.
-So it makes sense to overload `make_input`
+So it makes sense to overload `make_printer`
 with `{printable_with_fmt}` argument even
 if you don't want to support formatting, just to
 add a `static_assert` to emit a clear error message.
@@ -126,7 +126,7 @@ And that's what we did in the implementation above.
 
 ////
 Even if you don't want to support formatting,
-it still makes sense to overload `make_input`
+it still makes sense to overload `make_printer`
 taking the `{printable_with_fmt}` argument and add
 a `static_assert` with an explanatory message.
 ////

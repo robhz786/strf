@@ -319,11 +319,11 @@ template < typename UnadaptedMaker
          , typename PreMeasurements
          , typename FPack
          , typename Arg >
-struct can_make_printer_input_impl
+struct can_make_printer_impl
 {
     template < typename P
              , typename = decltype
-                 ( std::declval<const P&>().make_input
+                 ( std::declval<const P&>().make_printer
                      ( strf::tag<CharT>{}
                      , std::declval<PreMeasurements*>()
                      , std::declval<const FPack&>()
@@ -346,8 +346,8 @@ template < typename UnadaptedMaker
          , typename PreMeasurements
          , typename FPack
          , typename Arg >
-using can_make_printer_input = typename
-    can_make_printer_input_impl<UnadaptedMaker, CharT, PreMeasurements, FPack, Arg>
+using can_make_printer = typename
+    can_make_printer_impl<UnadaptedMaker, CharT, PreMeasurements, FPack, Arg>
     ::result;
 
 struct arg_adapter_rm_fmt
@@ -393,7 +393,7 @@ struct adapter_selector_3
     < PrintingTraits, Maker, CharT, PreMeasurements, FPack, DefaultVwf, DefaultVwf >
 {
     static constexpr bool can_pass_directly =
-        can_make_printer_input<Maker, CharT, PreMeasurements, FPack, DefaultVwf>
+        can_make_printer<Maker, CharT, PreMeasurements, FPack, DefaultVwf>
         ::value;
 
     using adapter_type = typename std::conditional
@@ -413,10 +413,10 @@ template < typename PrintingTraits
 struct adapter_selector_2
 {
     static constexpr bool can_pass_directly =
-        can_make_printer_input<Maker, CharT, PreMeasurements, FPack, Arg>
+        can_make_printer<Maker, CharT, PreMeasurements, FPack, Arg>
         ::value;
     static constexpr bool can_pass_as_fmt =
-        can_make_printer_input<Maker, CharT, PreMeasurements, FPack, DefaultVwf>
+        can_make_printer<Maker, CharT, PreMeasurements, FPack, DefaultVwf>
         ::value;
     static constexpr bool shall_adapt = !can_pass_directly && can_pass_as_fmt;
 
@@ -581,9 +581,9 @@ template < typename CharT
 STRF_DEPRECATED_MSG("make_default_arg_printer_input was renamed to make_default_printer_input")
 constexpr STRF_HD decltype(auto) make_default_arg_printer_input
     ( PreMeasurements* p, const FPack& fp, const Arg& arg )
-    noexcept(noexcept(Maker::make_input(ChTag{}, p, fp, Helper::adapt_arg(arg))))
+    noexcept(noexcept(Maker::make_printer(ChTag{}, p, fp, Helper::adapt_arg(arg))))
 {
-    return Maker::make_input(ChTag{}, p, fp, Helper::adapt_arg(arg));
+    return Maker::make_printer(ChTag{}, p, fp, Helper::adapt_arg(arg));
 }
 
 template < typename CharT
@@ -593,12 +593,12 @@ template < typename CharT
          , typename Helper = strf::detail::mk_pr_in::helper<CharT, PreMeasurements, FPack, Arg>
          , typename Maker = typename Helper::maker_type
          , typename ChTag = strf::tag<CharT> >
-STRF_DEPRECATED_MSG("make_arg_printer_input was renamed to make_printer_input")
+STRF_DEPRECATED_MSG("make_arg_printer_input was renamed to make_printer")
 constexpr STRF_HD decltype(auto) make_arg_printer_input
     ( PreMeasurements* p, const FPack& fp, const Arg& arg )
 {
     return Helper::get_maker(fp)
-        .make_input(strf::tag<CharT>{}, p, fp, Helper::adapt_arg(arg));
+        .make_printer(strf::tag<CharT>{}, p, fp, Helper::adapt_arg(arg));
 }
 
 template < typename CharT
@@ -611,9 +611,9 @@ template < typename CharT
          , typename ChTag = strf::tag<CharT> >
 constexpr STRF_HD decltype(auto) make_default_printer_input
     ( PreMeasurements* p, const FPack& fp, const Arg& arg )
-    noexcept(noexcept(Maker::make_input(ChTag{}, p, fp, Helper::adapt_arg(arg))))
+    noexcept(noexcept(Maker::make_printer(ChTag{}, p, fp, Helper::adapt_arg(arg))))
 {
-    return Maker::make_input(ChTag{}, p, fp, Helper::adapt_arg(arg));
+    return Maker::make_printer(ChTag{}, p, fp, Helper::adapt_arg(arg));
 }
 
 template < typename CharT
@@ -623,18 +623,18 @@ template < typename CharT
          , typename Helper = strf::detail::mk_pr_in::helper<CharT, PreMeasurements, FPack, Arg>
          , typename Maker = typename Helper::maker_type
          , typename ChTag = strf::tag<CharT> >
-constexpr STRF_HD decltype(auto) make_printer_input
+constexpr STRF_HD decltype(auto) make_printer
     ( PreMeasurements* p, const FPack& fp, const Arg& arg )
 {
     return Helper::get_maker(fp)
-        .make_input(strf::tag<CharT>{}, p, fp, Helper::adapt_arg(arg));
+        .make_printer(strf::tag<CharT>{}, p, fp, Helper::adapt_arg(arg));
 }
 
 struct dont_override
 {
     using category = printable_overrider_c;
     template <typename CharT, typename PreMeasurements, typename FPack, typename Arg>
-    constexpr static STRF_HD decltype(auto) make_input
+    constexpr static STRF_HD decltype(auto) make_printer
         ( strf::tag<CharT>
         , PreMeasurements* pre
         , const FPack& facets
@@ -703,7 +703,7 @@ private:
         , typename Printer = typename PrinterInputT::printer_type >
     static STRF_HD strf::tag<Printer> test_(const PrinterInputT&);
 
-    using tag_type_ = decltype(test_(strf::make_printer_input<CharT>
+    using tag_type_ = decltype(test_(strf::make_printer<CharT>
                                          ( std::declval<PreMeasurements*>()
                                          , std::declval<const FPack&>()
                                          , std::declval<Arg>() )));

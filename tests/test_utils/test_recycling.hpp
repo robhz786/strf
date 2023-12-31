@@ -71,7 +71,7 @@ STRF_HD void test_printables_recycling
         , pre
         , expected_output
         , strf::printer_type<CharT, pre_t, FPack, Printables>
-            ( strf::make_printer_input<CharT>
+            ( strf::make_printer<CharT>
                 ( &pre, fp, (Printables&&)printables ) ) ...);
 }
 

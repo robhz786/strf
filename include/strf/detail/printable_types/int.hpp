@@ -1180,7 +1180,7 @@ public:
     using is_overridable = std::true_type;
 
     template <typename CharT, typename PreMeasurements, typename FPack>
-    constexpr STRF_HD static auto make_input
+    constexpr STRF_HD static auto make_printer
         ( strf::tag<CharT>
         , PreMeasurements* pre
         , const FPack& facets
@@ -1192,7 +1192,7 @@ public:
 
     template < typename CharT, typename PreMeasurements, typename FPack
              , typename PTraits, int Base, bool HasAlignment >
-    constexpr STRF_HD static auto make_input
+    constexpr STRF_HD static auto make_printer
         ( strf::tag<CharT>
         , PreMeasurements* pre
         , const FPack& facets
@@ -1209,7 +1209,7 @@ public:
 
     template < typename CharT, typename PreMeasurements, typename FPack
              , typename PTraits, int Base, bool Punctuate, bool HasAlignment >
-    constexpr STRF_HD static auto make_input
+    constexpr STRF_HD static auto make_printer
         ( strf::tag<CharT>
         , PreMeasurements* pre
         , const FPack& facets
@@ -1223,7 +1223,7 @@ public:
 
     template < typename CharT, typename PreMeasurements, typename FPack
              , typename PTraits, bool HasAlignment>
-    constexpr STRF_HD static auto make_input
+    constexpr STRF_HD static auto make_printer
         ( strf::tag<CharT>
         , PreMeasurements* pre
         , const FPack& facets
@@ -1240,7 +1240,7 @@ public:
 
     template < typename CharT, typename PreMeasurements, typename FPack
              , typename PTraits, bool HasAlignment>
-    constexpr STRF_HD static auto make_input
+    constexpr STRF_HD static auto make_printer
         ( strf::tag<CharT>
         , PreMeasurements* pre
         , const FPack& facets
@@ -1335,7 +1335,7 @@ struct voidptr_printing
     using is_overridable = std::true_type;
 
     template <typename CharT, typename PreMeasurements, typename FPack>
-    constexpr STRF_HD static auto make_input
+    constexpr STRF_HD static auto make_printer
         ( strf::tag<CharT>
         , PreMeasurements* pre
         , const FPack& facets
@@ -1358,7 +1358,7 @@ struct voidptr_printing
     }
 
     template <typename CharT, typename PreMeasurements, typename FPack, typename... T>
-    constexpr STRF_HD static auto make_input
+    constexpr STRF_HD static auto make_printer
         ( strf::tag<CharT>
         , PreMeasurements* pre
         , const FPack& facets

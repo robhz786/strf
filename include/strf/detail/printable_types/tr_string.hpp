@@ -575,7 +575,7 @@ struct printable_traits<detail::tr_string_arg<CharT, Args...>>
     using forwarded_type = detail::tr_string_arg<CharT, Args...>;
 
     template <typename CharIn, typename Pre, typename FPack>
-    static STRF_HD auto make_input
+    static STRF_HD auto make_printer
         ( strf::tag<CharIn>
         , Pre* pre
         , const FPack& facets

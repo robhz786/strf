@@ -88,7 +88,7 @@ struct base64_printing
     using formatters = strf::tag<base64_formatter>;
 
     template <typename CharT, typename PreMeasurements, typename FPack>
-    static auto make_input
+    static auto make_printer
         ( strf::tag<CharT>
         , PreMeasurements* pre
         , const FPack& fp

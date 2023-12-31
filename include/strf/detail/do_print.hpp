@@ -120,7 +120,7 @@ public:
             , static_cast<const strf::printer<char_type>&>
                 ( strf::printer_type
                   < char_type, premeasurements_t, decltype(fp), Printables >
-                    ( strf::make_printer_input<char_type>
+                    ( strf::make_printer<char_type>
                         ( &pre, fp, (Printables&&)printables ) ) )... );
     }
 };

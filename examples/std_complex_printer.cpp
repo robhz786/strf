@@ -433,7 +433,7 @@ struct printable_traits<std::complex<FloatT>>
         , strf::alignment_formatter >;
 
     template <typename CharT, typename PreMeasurements, typename FPack>
-    static auto make_input
+    static auto make_printer
         ( strf::tag<CharT>
         , PreMeasurements* pre
         , const FPack& fp
@@ -446,7 +446,7 @@ struct printable_traits<std::complex<FloatT>>
     }
 
     template < typename CharT, typename PreMeasurements, typename FPack, typename... T >
-    static auto make_input
+    static auto make_printer
         ( strf::tag<CharT>
         , PreMeasurements* pre
         , const FPack& fp

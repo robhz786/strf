@@ -27,7 +27,7 @@ struct char_printing
     using is_overridable = std::false_type;
 
     template <typename DstCharT, typename PreMeasurements, typename FPack>
-    constexpr STRF_HD static auto make_input
+    constexpr STRF_HD static auto make_printer
         ( strf::tag<DstCharT>
         , PreMeasurements* pre
         , const FPack& fp
@@ -40,7 +40,7 @@ struct char_printing
     }
 
     template <typename DstCharT, typename PreMeasurements, typename FPack, typename... T>
-    constexpr STRF_HD static auto make_input
+    constexpr STRF_HD static auto make_printer
         ( strf::tag<DstCharT>
         , PreMeasurements* pre
         , const FPack& fp
@@ -71,7 +71,7 @@ struct printable_traits<char32_t>
     using is_overridable = std::false_type;
 
     template <typename DstCharT, typename PreMeasurements, typename FPack>
-    constexpr STRF_HD static auto make_input
+    constexpr STRF_HD static auto make_printer
         ( strf::tag<DstCharT>
         , PreMeasurements* pre
         , const FPack& fp
@@ -87,7 +87,7 @@ struct printable_traits<char32_t>
     }
 
     template <typename DstCharT, typename PreMeasurements, typename FPack, typename... F>
-    constexpr STRF_HD static auto make_input
+    constexpr STRF_HD static auto make_printer
         ( strf::tag<DstCharT>
         , PreMeasurements* pre
         , const FPack& fp

@@ -162,7 +162,7 @@ struct printable_traits<bool>
     using is_overridable = std::true_type;
 
     template <typename CharT, typename PreMeasurements, typename FPack>
-    STRF_HD static auto make_input
+    STRF_HD static auto make_printer
         ( strf::tag<CharT>
         , PreMeasurements* pre
         , const FPack& fp
@@ -175,7 +175,7 @@ struct printable_traits<bool>
     }
 
     template <typename CharT, typename PreMeasurements, typename FPack, typename... T>
-    STRF_HD static auto make_input
+    STRF_HD static auto make_printer
         ( strf::tag<CharT>
         , PreMeasurements* pre
         , const FPack& fp

@@ -54,7 +54,7 @@ STRF_HD void measure_only_width
     using pre_type = strf::premeasurements<strf::size_presence::no, strf::width_presence::yes>;
 
     (void) strf::printer_type<CharT, pre_type, strf::facets_pack<FPE...>, Arg>
-        ( strf::make_printer_input<CharT>(pre, facets, arg) );
+        ( strf::make_printer<CharT>(pre, facets, arg) );
 
     if (pre->remaining_width() > 0) {
         strf::detail::measure_only_width<CharT>(pre, facets, other_args...);
@@ -97,7 +97,7 @@ STRF_HD void measure
     using pre_type = strf::premeasurements<strf::size_presence::yes, WidthPresence>;
     strf::detail::do_nothing_with
         ( strf::printer_type<CharT, pre_type, strf::facets_pack<FPE...>, Args>
-          ( strf::make_printer_input<CharT>(pre, facets, args) ) ... );
+          ( strf::make_printer<CharT>(pre, facets, args) ) ... );
 }
 
 

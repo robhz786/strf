@@ -10,14 +10,14 @@ struct my_bool_overrider
     using category = strf::printable_overrider_c;
 
     template <typename CharT, typename PreMeasurements, typename FPack, typename... T>
-    constexpr auto make_input
+    constexpr auto make_printer
         ( strf::tag<CharT>
         , PreMeasurements* pre
         , const FPack& fp
         , strf::printable_with_fmt<T...> x ) const noexcept
     {
         const bool value = static_cast<bool>(x.value());
-        return strf::make_printer_input<CharT>
+        return strf::make_printer<CharT>
             ( pre
             , fp
             , strf::transcode(false_true_strings[value], strf::utf_t<char>{})

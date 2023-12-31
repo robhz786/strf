@@ -195,7 +195,7 @@ public:
             , as_printer_cref_<char_type>
                 ( strf::printer_type
                   < char_type, premeasurements_t, decltype(fp), Printables >
-                    ( strf::make_printer_input<char_type>
+                    ( strf::make_printer<char_type>
                       ( &premeasurements_arr[I], fp, (Printables&&)printables ) ) )... );
     }
 };

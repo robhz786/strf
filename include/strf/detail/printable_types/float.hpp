@@ -779,7 +779,7 @@ struct float_printing
     using is_overridable = std::true_type;
 
     template <typename CharT, typename PreMeasurements, typename FPack>
-    STRF_HD constexpr static auto make_input
+    STRF_HD constexpr static auto make_printer
         ( strf::tag<CharT>, PreMeasurements* pre, const FPack& fp, FloatT x ) noexcept
         -> strf::detail::fast_double_printer_input<CharT, PreMeasurements, FloatT>
     {
@@ -788,7 +788,7 @@ struct float_printing
 
     template < typename CharT, typename PreMeasurements, typename FPack
              , typename FloatFormatter, bool HasAlignment >
-    STRF_HD constexpr static auto make_input
+    STRF_HD constexpr static auto make_printer
         ( strf::tag<CharT>
         , PreMeasurements* pre
         , const FPack& fp

@@ -367,7 +367,7 @@ is too small.
 //         using formatters = strf::tag<strf::alignment_formatter, strf::float_formatter>; // <1>
 //     
 //         template <typename CharT, typename Pre, typename FPack, typename... T>
-//         constexpr static auto make_input
+//         constexpr static auto make_printer
 //             ( strf::tag<CharT>
 //             , Pre* pre
 //             , const FPack& fp
@@ -381,7 +381,7 @@ is too small.
 //                 , strf::fmt(p.y).set_float_format(arg.get_float_format()) // <4>
 //                 , (CharT)')' )
 //                 .set_alignment_format(arg.get_alignment_format());        // <5>
-//             return strf::make_printer_input<CharT>(pre, fp, arg2);
+//             return strf::make_printer<CharT>(pre, fp, arg2);
 //         }
 //     };
 //     ----

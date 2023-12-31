@@ -55,7 +55,7 @@ struct printable_traits<strf::inner_pack_with_args<ChildFPack, Args...>>
     using is_overridable = std::false_type;
 
     template < typename CharT, typename PreMeasurements, typename FPack>
-    STRF_HD constexpr static auto make_input
+    STRF_HD constexpr static auto make_printer
         ( strf::tag<CharT>
         , PreMeasurements* pre
         , const FPack& fp

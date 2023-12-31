@@ -45,7 +45,7 @@ struct my_bool_printing_overrider
     using category = strf::printable_overrider_c;
 
     template <typename CharT, typename PreMeasurements, typename FPack>
-    constexpr static STRF_HD auto make_input
+    constexpr static STRF_HD auto make_printer
         ( strf::tag<CharT>
         , PreMeasurements* pre
         , const FPack& fp
@@ -57,18 +57,18 @@ struct my_bool_printing_overrider
     }
 
     template <typename CharT, typename PreMeasurements, typename FPack, typename... T>
-    constexpr static STRF_HD auto make_input
+    constexpr static STRF_HD auto make_printer
         ( strf::tag<CharT>
         , PreMeasurements* pre
         , const FPack& fp
         , strf::printable_with_fmt<T...> x ) noexcept
-        -> decltype( strf::make_printer_input<CharT>
+        -> decltype( strf::make_printer<CharT>
                        ( pre
                        , fp
                        , strf::join(x.value())
                            .set_alignment_format(x.get_alignment_format()) ) )
     {
-        return strf::make_printer_input<CharT>
+        return strf::make_printer<CharT>
             ( pre
             , fp
             , strf::join(x.value())
@@ -81,12 +81,12 @@ struct my_int_printing_overrider
     using category = strf::printable_overrider_c;
 
     template <typename CharT, typename PreMeasurements, typename FPack, typename... T>
-    constexpr static STRF_HD auto make_input
+    constexpr static STRF_HD auto make_printer
         ( strf::tag<CharT>
         , PreMeasurements* pre
         , const FPack&
         , strf::printable_with_fmt<T...> x ) noexcept
-        -> decltype( strf::make_printer_input<CharT>
+        -> decltype( strf::make_printer<CharT>
                        ( pre
                        , strf::pack()
                        , strf::join
@@ -95,7 +95,7 @@ struct my_int_printing_overrider
                            , static_cast<CharT>(')') )
                            .set_alignment_format(x.get_alignment_format()) ) )
     {
-        return strf::make_printer_input<CharT>
+        return strf::make_printer<CharT>
             ( pre
             , strf::pack()
             , strf::join
@@ -126,17 +126,17 @@ struct printable_traits<bool_wrapper> {
     using is_overridable = std::true_type;
 
     template <typename CharT, typename PreMeasurements, typename FPack>
-    STRF_HD static auto make_input
+    STRF_HD static auto make_printer
         ( strf::tag<CharT>
         , PreMeasurements* pre
         , const FPack& fp
         , bool_wrapper f )
-        -> decltype( strf::make_printer_input<CharT>
+        -> decltype( strf::make_printer<CharT>
                      ( pre
                      , strf::pack(fp, strf::constrain<strf::is_char>(strf::dont_override{}))
                      , strf::join(static_cast<CharT>('['), f.x, static_cast<CharT>(']')) ) )
     {
-        return strf::make_printer_input<CharT>
+        return strf::make_printer<CharT>
             ( pre
             , strf::pack(fp, strf::constrain<strf::is_char>(strf::dont_override{}))
             , strf::join(static_cast<CharT>('['), f.x, static_cast<CharT>(']')) );

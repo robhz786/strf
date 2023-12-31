@@ -33,7 +33,7 @@ struct printable_traits<xxx::ipv4address> {
     }
 
     template <typename CharT, typename PreMeasurements, typename FPack>
-    static auto make_input
+    static auto make_printer
         ( strf::tag<CharT>
         , PreMeasurements* pre
         , const FPack& fp
@@ -44,7 +44,7 @@ struct printable_traits<xxx::ipv4address> {
     }
 
     template <typename CharT, typename PreMeasurements, typename FPack, typename... T>
-    static auto make_input
+    static auto make_printer
         ( strf::tag<CharT>
         , PreMeasurements* pre
         , const FPack& fp

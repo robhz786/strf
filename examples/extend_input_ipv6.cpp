@@ -227,7 +227,7 @@ struct printable_traits<xxx::ipv6address> {
     using formatters = strf::tag<ipv6_formatter, strf::alignment_formatter>;
 
     template <typename CharT, typename PreMeasurements, typename FPack, typename... T>
-    static auto make_input
+    static auto make_printer
         ( strf::tag<CharT>
         , PreMeasurements* pre
         , const FPack& fp

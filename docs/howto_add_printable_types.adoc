@@ -25,8 +25,8 @@ http://www.boost.org/LICENSE_1_0.txt)
 :premeasurements:        <<strf_hpp#premeasurements,premeasurements>>
 :measure:           <<strf_hpp#measure,measure>>
 :printable_with_fmt:     <<strf_hpp#printable_with_fmt,printable_with_fmt>>
-:make_printer_input:         <<strf_hpp#make_printer_input,make_printer_input>>
-:strf_make_printer_input:    <<strf_hpp#make_printer_input,strf::make_printer_input>>
+:make_printer:         <<strf_hpp#make_printer,make_printer>>
+:strf_make_printer:    <<strf_hpp#make_printer,strf::make_printer>>
 :usual_printer_input:        <<strf_hpp#usual_printer_input,usual_printer_input>>
 
 :alignment_formatter:   <<strf_hpp#alignment_formatter,alignment_formatter>>
@@ -116,7 +116,7 @@ struct printable_traits<std::complex<FloatT>> {
     using forwarded_type = std::complex<FloatT>;       // <2>
 
     template <typename CharT, typename Pre, typename FPack>
-    static auto make_input
+    static auto make_printer
         ( strf::tag<CharT>           // <3>
         , Pre* pre                   // <4>
         , const FPack& fp            // <5>
@@ -127,7 +127,7 @@ struct printable_traits<std::complex<FloatT>> {
             , static_cast<CharT>(','), arg.imag()
             , static_cast<CharT>(')') );
 
-        return strf::make_printer_input<CharT>(pre, fp, arg2);
+        return strf::make_printer<CharT>(pre, fp, arg2);
     }
 };
 
@@ -157,37 +157,37 @@ object created above. That's because the expression:
 
 [source,cpp,subs=normal]
 ----
-{strf_make_printer_input}<CharT>(__pre__, __fp__, __foo__)
+{strf_make_printer}<CharT>(__pre__, __fp__, __foo__)
 ----
 is equivalent to
 
 // [source,cpp,subs=normal]
 // ----
-// __overrider__.make_input({tag}<CharT>{}, __pre__, __fp__, __foo__)
+// __overrider__.make_printer({tag}<CharT>{}, __pre__, __fp__, __foo__)
 // ----
 // , where `__overrider__` is a facet object of the `{printable_overrider_c}` category.
 // If it is the default facet, then such expression is equivalent to:
 
 [source,cpp,subs=normal]
 ----
-__foo_type_traits__::make_input({tag}<CharT>{}, __pre__, __fp__, __foo__)
+__foo_type_traits__::make_printer({tag}<CharT>{}, __pre__, __fp__, __foo__)
 ----
 , where `__foo_type_traits__` would be the __{PrintableTraits}__ types
 corresponding to `__foo__`
 
-( Actually, `{strf_make_printer_input}` may call something else
+( Actually, `{strf_make_printer}` may call something else
 if there is a <<howto_override_printable_types#,overriding>>
 facet in `__fp__`. But you don't have to thing about this now. )
 
 WARNING: Pay attention to not create dangling references.
 This would happen, for instance, if the `join` of the snippet above
 contained a pointer to any local variable.
-Note that `make_printer_input` function does not actually print the value,
+Note that `make_printer` function does not actually print the value,
 it just creates and returns an object that is further used to actually
 print the value.
 
 Anyway, sometimes it is not possible to just return
-`strf::make_printer_input(__something__...)`,
+`strf::make_printer(__something__...)`,
 __i.e.__ to simply convert the value to another type that is already printable.
 A <<creating_printer,further section>> explains how to deal with such cases.
 
@@ -234,7 +234,7 @@ effect on how the numbers are printed:
 |`complex_form::polar`    | `5∠ 0.9272952180016122`
 |===
 
-To achieve this, we can reimplement `make_input` as follows:
+To achieve this, we can reimplement `make_printer` as follows:
 
 [source,cpp,subs=normal]
 ----
@@ -251,7 +251,7 @@ struct printable_traits<std::complex<FloatT>> {
     using forwarded_type = std::complex<FloatT>;
 
     template <typename CharT, typename Pre, typename FPack>
-    static auto make_input
+    static auto make_printer
         ( strf::tag<CharT>
         , Pre* pre
         , const FPack& fp
@@ -267,7 +267,7 @@ struct printable_traits<std::complex<FloatT>> {
             , v.second
             , strf::{multi}(static_cast<CharT>(')'), has_brackets) );
 
-        return strf::make_printer_input<CharT>(pre, fp, arg2);
+        return strf::make_printer<CharT>(pre, fp, arg2);
     }
 
 private:
@@ -339,13 +339,13 @@ if (form != complex_form::polar) {
             , strf::{unsafe_transcode}(middle_string(form), strf::{utf}<char16_t>)
             , v.second
             , static_cast<CharT>(')') );
-    return strf::make_printer_input<CharT>(pre, fp, j1);
+    return strf::make_printer<CharT>(pre, fp, j1);
 }
 auto j2 = strf::join
     ( v.first
     , strf::{unsafe_transcode}(middle_string(form), strf::{utf}<char16_t>)
     , v.second );
-return strf::make_printer_input<CharT>(pre, fp, j2); // different return type !
+return strf::make_printer<CharT>(pre, fp, j2); // different return type !
 ----
 
 That wouldn't compile the two return types above would be different.
@@ -422,7 +422,7 @@ are all well-formed, and the type of `strf::fmt(x)` is
 are the types you used in to define the `formatters` type alias.
 
 Though well-formed, they are still not printable.
-To make them printable,  we need to overload `make_input`
+To make them printable,  we need to overload `make_printer`
 member function template:
 
 [source,cpp,subs=normal]
@@ -435,7 +435,7 @@ struct printable_traits<std::complex<FloatT>> {
     // \...
 
     template <typename CharT, typename Pre, typename FPack>
-    static auto make_input
+    static auto make_printer
         ( strf::tag<CharT>
         , Pre* pre
         , const FPack& fp
@@ -446,7 +446,7 @@ struct printable_traits<std::complex<FloatT>> {
     }
 
     template < typename CharT, typename Pre, typename FPack, typename\... T>
-    static auto make_input
+    static auto make_printer
         ( strf::tag<CharT>
         , Pre* pre
         , const FPack& fp
@@ -464,7 +464,7 @@ struct printable_traits<std::complex<FloatT>> {
             , strf::fmt(v.second).{set_float_format}(arg.{get_float_format}())
             , strf::{multi}(static_cast<CharT>(')'), has_brackets) );
         auto arg3 = arg2.{set_alignment_format}(arg.{get_alignment_format}());
-        return strf::make_printer_input<CharT>(pre, fp, arg3);
+        return strf::make_printer<CharT>(pre, fp, arg3);
     }
 };
 
@@ -488,18 +488,18 @@ static_assert(! std::is_same_v(decltype(arg1), decltype(arg2)));
 static_assert(! std::is_same_v(decltype(arg2), decltype(arg3)));
 ----
 
-We can keep the old `make_input` ( the one that takes `std::complex`
+We can keep the old `make_printer` ( the one that takes `std::complex`
 without formatting ), but we could also remove it. Because when the expression
 below is not well-formed:
 [source,cpp,subs=normal]
 ----
-__PrintableTraits__::make_input({tag}<CharT>{}, pre, fp, x)
+__PrintableTraits__::make_printer({tag}<CharT>{}, pre, fp, x)
 ----
 , and the type of `x` is not an instance `{printable_with_fmt}`, then
 the library invokes the following instead:
 [source,cpp,subs=normal]
 ----
-__PrintableTraits__::make_input({tag}<CharT>{}, pre, fp, strf::fmt(x))
+__PrintableTraits__::make_printer({tag}<CharT>{}, pre, fp, strf::fmt(x))
 ----
 
 Anyway, let's examine the new function. You can see there are few changes from
@@ -627,7 +627,7 @@ that has `std_complex_formatter` as one of its template arguments.
 
 In our __PrintableTraits__ class, there are only two small
 modifications: `formatters` and the first line
-of `make_input`:
+of `make_printer`:
 
 [source,cpp,subs=normal]
 ----
@@ -644,7 +644,7 @@ struct printable_traits<std::complex<FloatT>> {
         , strf::float_formatter >;
 
     template <typename CharT, typename Pre, typename FPack>
-    static auto make_input
+    static auto make_printer
         ( strf::tag<CharT>
         , Pre* pre
         , const FPack& fp
@@ -655,7 +655,7 @@ struct printable_traits<std::complex<FloatT>> {
     }
 
     template < typename CharT, typename Pre, typename FPack, typename\... T>
-    static auto make_input
+    static auto make_printer
         ( strf::tag<CharT>
         , Pre* pre
         , const FPack& fp
@@ -757,8 +757,8 @@ And its done! I think is a pretty complete example of how to make
 == The low-level way [[creating_printer]]
 
 Sometimes, when creating a __PrintableTraits__ class,
-it is not possible possible to make its `make_input`
-member function just return `strf::make_printer_input(__something__..)`
+it is not possible possible to make its `make_printer`
+member function just return `strf::make_printer(__something__..)`
 as we did in the previous sections.
 
 So let's see another approach to make `std::complex`
@@ -776,9 +776,9 @@ struct printable_traits<std::complex<FloatT>>
     using forwarded_type = std::complex<FloatT>;
     using formatters = strf::tag< ... /{asterisk}same as before{asterisk}/>;
 
-    // make_input that handles unformatted values
+    // make_printer that handles unformatted values
     template <typename CharT, typename Pre, typename FPack>
-    static auto make_input
+    static auto make_printer
         ( strf::tag<CharT>
         , Pre* pre
         , const FPack& fp
@@ -790,12 +790,12 @@ struct printable_traits<std::complex<FloatT>>
         return {pre, fp, arg};
     }
 
-    ... /{asterisk} omitting the make_input overload that handles formatted values {asterisk}/ ...
+    ... /{asterisk} omitting the make_printer overload that handles formatted values {asterisk}/ ...
 };
 } // namespace strf
 ----
 
-The return type of `make_input` must aways be a __{PrinterInput}__
+The return type of `make_printer` must aways be a __{PrinterInput}__
 type, and the `{usual_printer_input}` class template is syntatic sugar to
 achieve that.
 Most of the work lies in creating the class &#x2014;
@@ -805,7 +805,7 @@ It must be a concrete
 class that derives from `{printer}<CharT>`, or that is
 https://en.cppreference.com/w/cpp/language/cast_operator[convertible]
 to `const {printer}<CharT>&`. It must also be constructible from the
-return type of our `make_input` member function:
+return type of our `make_printer` member function:
 
 [source,cpp,subs=normal]
 ----

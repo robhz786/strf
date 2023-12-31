@@ -563,7 +563,7 @@ struct string_printing
     using is_overridable = std::false_type;
 
     template <typename DstCharT, typename PreMeasurements, typename FPack>
-    constexpr STRF_HD static auto make_input
+    constexpr STRF_HD static auto make_printer
         ( strf::tag<DstCharT>
         , PreMeasurements* pre
         , const FPack& facets
@@ -580,7 +580,7 @@ struct string_printing
     template < typename DstCharT, typename PreMeasurements, typename FPack
              , bool HasPrecision, bool HasAlignment
              , typename Charset, transcoding_policy TranscPoli >
-    constexpr STRF_HD static auto make_input
+    constexpr STRF_HD static auto make_printer
         ( strf::tag<DstCharT>
         , PreMeasurements* pre
         , const FPack& facets

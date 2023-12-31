@@ -135,7 +135,7 @@ public:
         , strf::premeasurements<SizePresence, WidthPresence>* pre
         , const strf::facets_pack<FPElems...>& fp )
         : indexed_printer<I, Printers>
-            ( strf::make_printer_input<CharT>
+            ( strf::make_printer<CharT>
               ( pre, fp, args.template get<I>() ) ) ...
     {
         STRF_MAYBE_UNUSED(pre);
@@ -150,7 +150,7 @@ public:
         , const strf::facets_pack<FPElems...>& fp
         , strf::premeasurements<SizePresence, WidthPresence>* pp_array )
         : indexed_printer<I, Printers>
-            ( strf::make_printer_input<CharT>
+            ( strf::make_printer<CharT>
               ( &pp_array[I], fp, args.template get<I>() ) ) ...
     {
     }

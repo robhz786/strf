@@ -26,7 +26,7 @@ struct printable_traits<xxx::point2D<FloatT>> {
     using is_overridable = std::true_type;
 
     template <typename CharT, typename PreMeasurements, typename FPack, typename... T>
-    constexpr static auto make_input
+    constexpr static auto make_printer
         ( strf::tag<CharT>
         , PreMeasurements* pre
         , const FPack& fp
@@ -40,7 +40,7 @@ struct printable_traits<xxx::point2D<FloatT>> {
             , strf::fmt(p.y).set_float_format(arg.get_float_format())
             , static_cast<CharT>(')') )
             .set_alignment_format(arg.get_alignment_format());
-        return strf::make_printer_input<CharT>(pre, fp, arg2);
+        return strf::make_printer<CharT>(pre, fp, arg2);
     }
 };
 

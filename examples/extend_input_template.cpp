@@ -22,7 +22,7 @@ struct base_printing {
     using forwarded_type = const xxx::base<T>&;
 
     template <typename CharT, typename PreMeasurements, typename FPack>
-    static auto make_input
+    static auto make_printer
         ( strf::tag<CharT>
         , PreMeasurements* pre
         , const FPack& fp

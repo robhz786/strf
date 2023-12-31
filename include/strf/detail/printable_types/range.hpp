@@ -124,7 +124,7 @@ struct printable_traits<strf::range_p<Iterator>>
     using is_overridable = std::false_type;
 
     template <typename CharT, typename PreMeasurements, typename FPack>
-    STRF_HD constexpr static auto make_input
+    STRF_HD constexpr static auto make_printer
         ( strf::tag<CharT>
         , PreMeasurements* pre
         , const FPack& fp
@@ -137,7 +137,7 @@ struct printable_traits<strf::range_p<Iterator>>
     }
 
     template <typename CharT, typename PreMeasurements, typename FPack, typename... Fmts>
-    STRF_HD constexpr static auto make_input
+    STRF_HD constexpr static auto make_printer
         ( strf::tag<CharT>
         , PreMeasurements* pre
         , const FPack& fp
@@ -161,7 +161,7 @@ struct printable_traits<strf::separated_range_p<Iterator, SepCharT>>
     using is_overridable = std::false_type;
 
     template <typename DstCharT, typename PreMeasurements, typename FPack>
-    STRF_HD constexpr static auto make_input
+    STRF_HD constexpr static auto make_printer
         ( strf::tag<DstCharT>
         , PreMeasurements* pre
         , const FPack& fp
@@ -176,7 +176,7 @@ struct printable_traits<strf::separated_range_p<Iterator, SepCharT>>
     }
 
     template <typename DstCharT, typename PreMeasurements, typename FPack, typename... Fmts>
-    STRF_HD constexpr static auto make_input
+    STRF_HD constexpr static auto make_printer
         ( strf::tag<DstCharT>
         , PreMeasurements* pre
         , const FPack& fp
@@ -203,7 +203,7 @@ struct printable_traits<strf::transformed_range_p<Iterator, UnaryOp>>
     using is_overridable = std::false_type;
 
     template <typename CharT, typename PreMeasurements, typename FPack>
-    STRF_HD constexpr static auto make_input
+    STRF_HD constexpr static auto make_printer
         ( strf::tag<CharT>
         , PreMeasurements* pre
         , const FPack& fp
@@ -224,7 +224,7 @@ struct printable_traits<strf::separated_transformed_range_p<Iterator, SepCharT, 
     using is_overridable = std::false_type;
 
     template <typename DstCharT, typename PreMeasurements, typename FPack>
-    STRF_HD constexpr static auto make_input
+    STRF_HD constexpr static auto make_printer
         ( strf::tag<DstCharT>
         , PreMeasurements* pre
         , const FPack& fp
@@ -290,7 +290,7 @@ STRF_HD void range_printer<CharT, FPack, Iterator>::do_premeasurements_
        ; it != end_ && (pre->has_remaining_width() || PreMeasurements::size_demanded)
        ; ++it)
     {
-        printer_type_<PreMeasurements>( strf::make_printer_input<CharT>(pre, fp_, *it) );
+        printer_type_<PreMeasurements>( strf::make_printer<CharT>(pre, fp_, *it) );
     }
 }
 
@@ -301,7 +301,7 @@ STRF_HD void range_printer<CharT, FPack, Iterator>::print_to
     strf::no_premeasurements no_pre;
     for(iterator it = begin_; it != end_; ++it) {
         printer_type_<strf::no_premeasurements>
-            ( strf::make_printer_input<CharT>(&no_pre, fp_, *it) ).print_to(dst);
+            ( strf::make_printer<CharT>(&no_pre, fp_, *it) ).print_to(dst);
     }
 }
 
@@ -367,7 +367,7 @@ STRF_HD void separated_range_printer<CharT, FPack, Iterator>::do_premeasurements
        ; it != end_ && (pre->has_remaining_width() || PreMeasurements::size_demanded)
        ; ++it)
     {
-        printer_type_<PreMeasurements>(strf::make_printer_input<CharT>(pre, fp_, *it));
+        printer_type_<PreMeasurements>(strf::make_printer<CharT>(pre, fp_, *it));
         ++ count;
     }
     if (count < 2 || (! PreMeasurements::size_demanded && ! pre->has_remaining_width())) {
@@ -394,12 +394,12 @@ STRF_HD void separated_range_printer<CharT, FPack, Iterator>::print_to
     auto it = begin_; // NOLINT (llvm-qualified-auto)
     if (it != end_) {
         printer_type_<strf::no_premeasurements>
-            ( strf::make_printer_input<CharT>(&no_pre, fp_, *it) )
+            ( strf::make_printer<CharT>(&no_pre, fp_, *it) )
             .print_to(dst);
         while (++it != end_) {
             dst.write(sep_begin_, sep_len_);
             printer_type_<strf::no_premeasurements>
-                ( strf::make_printer_input<CharT>(&no_pre, fp_, *it) )
+                ( strf::make_printer<CharT>(&no_pre, fp_, *it) )
                 .print_to(dst);
         }
     }
@@ -467,7 +467,7 @@ STRF_HD void fmt_range_printer<CharT, FPack, Iterator, Fmts ...>::do_premeasurem
        ; ++it)
     {
         printer_type_<PreMeasurements>
-            ( strf::make_printer_input<CharT>
+            ( strf::make_printer<CharT>
                 ( pre, fp_, value_fmt_type_adapted_{{*it}, fmt_} ) );
     }
 }
@@ -483,7 +483,7 @@ STRF_HD void fmt_range_printer<CharT, FPack, Iterator, Fmts ...>::print_to
     auto r = fmt_.value();
     for(Iterator it = r.begin; it != r.end; ++it) {
         printer_type_<strf::no_premeasurements>
-            ( strf::make_printer_input<CharT>
+            ( strf::make_printer<CharT>
                 ( &no_pre, fp_, value_fmt_type_adapted_{{*it}, fmt_} ) )
             .print_to(dst);
     }
@@ -559,7 +559,7 @@ STRF_HD void fmt_separated_range_printer<CharT, FPack, Iterator, Fmts ...>::do_p
         ; ++it)
     {
         printer_type_<PreMeasurements>
-            ( strf::make_printer_input<CharT>
+            ( strf::make_printer<CharT>
                 ( pre, fp_, value_fmt_type_adapted_{{*it}, fmt_} ) );
         ++ count;
     }
@@ -591,13 +591,13 @@ STRF_HD void fmt_separated_range_printer<CharT, FPack, Iterator, Fmts ...>
     Iterator it = r.begin;
     if (it != r.end) {
         printer_type_<strf::no_premeasurements>
-            ( strf::make_printer_input<CharT>
+            ( strf::make_printer<CharT>
                 ( &no_pre, fp_, value_fmt_type_adapted_{{*it}, fmt_} ) )
             .print_to(dst);
         while(++it != r.end) {
             dst.write(r.sep_begin, r.sep_len);
             printer_type_<strf::no_premeasurements>
-                ( strf::make_printer_input<CharT>
+                ( strf::make_printer<CharT>
                     ( &no_pre, fp_, value_fmt_type_adapted_{{*it}, fmt_} ) )
                 .print_to(dst);
         }
@@ -659,7 +659,7 @@ STRF_HD void transformed_range_printer<CharT, FPack, Iterator, UnaryOp>
        ; it != end_ && (pre->has_remaining_width() || PreMeasurements::size_demanded)
        ; ++it)
     {
-        printer_type_<PreMeasurements>(strf::make_printer_input<CharT>(pre, fp_, op_(*it)));
+        printer_type_<PreMeasurements>(strf::make_printer<CharT>(pre, fp_, op_(*it)));
     }
 }
 
@@ -670,7 +670,7 @@ STRF_HD void transformed_range_printer<CharT, FPack, Iterator, UnaryOp>::print_t
     strf::no_premeasurements no_pre;
     for(iterator it = begin_; it != end_; ++it) {
         printer_type_<strf::no_premeasurements>
-            ( strf::make_printer_input<CharT>(&no_pre, fp_, op_(*it)) )
+            ( strf::make_printer<CharT>(&no_pre, fp_, op_(*it)) )
             .print_to(dst);
     }
 }
@@ -742,7 +742,7 @@ STRF_HD void sep_transformed_range_printer<CharT, FPack, Iterator, UnaryOp>
        ; ++it)
     {
         printer_type_<PreMeasurements>
-            ( strf::make_printer_input<CharT>(pre, fp_, op_(*it)) );
+            ( strf::make_printer<CharT>(pre, fp_, op_(*it)) );
         ++ count;
     }
     if (count < 2) {
@@ -769,12 +769,12 @@ STRF_HD void sep_transformed_range_printer<CharT, FPack, Iterator, UnaryOp>::pri
     auto it = begin_;
     if (it != end_) {
         printer_type_<strf::no_premeasurements>
-            ( strf::make_printer_input<CharT>(&no_pre, fp_, op_(*it)) )
+            ( strf::make_printer<CharT>(&no_pre, fp_, op_(*it)) )
             .print_to(dst);
         while (++it != end_) {
             dst.write(sep_begin_, sep_len_);
             printer_type_<strf::no_premeasurements>
-                ( strf::make_printer_input<CharT>(&no_pre, fp_, op_(*it)) )
+                ( strf::make_printer<CharT>(&no_pre, fp_, op_(*it)) )
                 .print_to(dst);
         }
     }
