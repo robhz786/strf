@@ -314,12 +314,12 @@ using get_is_overridable = typename
 
 namespace mk_pr_in {
 
-template < typename UnadaptedMaker
+template < typename PTraits
          , typename CharT
          , typename PreMeasurements
          , typename FPack
          , typename Arg >
-struct can_make_printer_impl
+struct can_call_make_printer_L0
 {
     template < typename P
              , typename = decltype
@@ -335,270 +335,319 @@ struct can_make_printer_impl
     static STRF_HD std::false_type test_(...);
 
     using result = decltype
-        ( test_<UnadaptedMaker>
+        ( test_<PTraits>
             ( std::declval<PreMeasurements*>()
             , std::declval<FPack>()
             , std::declval<Arg>() ));
 };
 
-template < typename UnadaptedMaker
+template < typename PTraits
          , typename CharT
          , typename PreMeasurements
          , typename FPack
          , typename Arg >
-using can_make_printer = typename
-    can_make_printer_impl<UnadaptedMaker, CharT, PreMeasurements, FPack, Arg>
+using can_call_make_printer = typename
+    can_call_make_printer_L0<PTraits, CharT, PreMeasurements, FPack, Arg>
     ::result;
 
-struct arg_adapter_rm_fmt
+struct printable_arg_fmt_remover
 {
     template <typename PrintingTraits, typename... Fmts>
     static constexpr STRF_HD const typename PrintingTraits::forwarded_type&
-    adapt_arg(const strf::printable_with_fmt<PrintingTraits, Fmts...>& x)
+    convert_printable_arg(const strf::printable_with_fmt<PrintingTraits, Fmts...>& x)
     {
         return x.value();
     }
 };
 
 template <typename To>
-struct arg_adapter_cast
+struct printable_arg_caster
 {
     template <typename From>
-    static constexpr STRF_HD To adapt_arg(const From& x)
+    static constexpr STRF_HD To convert_printable_arg(const From& x)
     {
         return static_cast<To>(x);
     }
 };
 
 template < typename PrintingTraits
-         , typename Maker
+         , typename TraitsOrFacet
          , typename CharT
          , typename PreMeasurements
          , typename FPack
          , typename Vwf
          , typename DefaultVwf >
-struct adapter_selector_3
+struct printable_arg_converter_selector_3
 {
     static_assert( ! std::is_same<Vwf, DefaultVwf>::value, "");
-    using adapter_type = arg_adapter_cast<const Vwf&>;
+    using type = printable_arg_caster<const Vwf&>;
 };
 
 template < typename PrintingTraits
-         , typename Maker
+         , typename TraitsOrFacet
          , typename CharT
          , typename PreMeasurements
          , typename FPack
          , typename DefaultVwf >
-struct adapter_selector_3
-    < PrintingTraits, Maker, CharT, PreMeasurements, FPack, DefaultVwf, DefaultVwf >
+struct printable_arg_converter_selector_3
+    < PrintingTraits, TraitsOrFacet, CharT, PreMeasurements, FPack, DefaultVwf, DefaultVwf >
 {
     static constexpr bool can_pass_directly =
-        can_make_printer<Maker, CharT, PreMeasurements, FPack, DefaultVwf>
+        can_call_make_printer<TraitsOrFacet, CharT, PreMeasurements, FPack, DefaultVwf>
         ::value;
 
-    using adapter_type = typename std::conditional
+    using type = typename std::conditional
         < can_pass_directly
-        , arg_adapter_cast<const DefaultVwf&>
-        , arg_adapter_rm_fmt >
+        , printable_arg_caster<const DefaultVwf&>
+        , printable_arg_fmt_remover >
         ::type;
 };
 
 template < typename PrintingTraits
-         , typename Maker
+         , typename TraitsOrFacet
          , typename CharT
          , typename PreMeasurements
          , typename FPack
          , typename Arg
          , typename DefaultVwf >
-struct adapter_selector_2
+struct printable_arg_converter_selector_2
 {
     static constexpr bool can_pass_directly =
-        can_make_printer<Maker, CharT, PreMeasurements, FPack, Arg>
+        can_call_make_printer<TraitsOrFacet, CharT, PreMeasurements, FPack, Arg>
         ::value;
     static constexpr bool can_pass_as_fmt =
-        can_make_printer<Maker, CharT, PreMeasurements, FPack, DefaultVwf>
+        can_call_make_printer<TraitsOrFacet, CharT, PreMeasurements, FPack, DefaultVwf>
         ::value;
     static constexpr bool shall_adapt = !can_pass_directly && can_pass_as_fmt;
 
     using destination_type = typename std::conditional
         < shall_adapt, DefaultVwf, typename PrintingTraits::forwarded_type>
         :: type;
-    using adapter_type = arg_adapter_cast<destination_type>;
+    using type = printable_arg_caster<destination_type>;
 };
 
 template < typename PrintingTraits
-         , typename Maker
+         , typename TraitsOrFacet
          , typename CharT
          , typename PreMeasurements
          , typename FPack
          , typename DefaultVwf
          , typename... Fmts >
-struct adapter_selector_2
-    < PrintingTraits, Maker, CharT, PreMeasurements, FPack
+struct printable_arg_converter_selector_2
+    < PrintingTraits, TraitsOrFacet, CharT, PreMeasurements, FPack
     , strf::printable_with_fmt<PrintingTraits, Fmts...>, DefaultVwf >
 {
     using vwf = strf::printable_with_fmt<PrintingTraits, Fmts...>;
-    using other = adapter_selector_3
-        < PrintingTraits, Maker, CharT, PreMeasurements, FPack, vwf, DefaultVwf >;
-    using adapter_type = typename other::adapter_type;
+    using other = printable_arg_converter_selector_3
+        < PrintingTraits, TraitsOrFacet, CharT, PreMeasurements, FPack, vwf, DefaultVwf >;
+    using type = typename other::type;
 };
 
 template < typename PrintingTraits
-         , typename Maker
+         , typename TraitsOrFacet
          , typename CharT
          , typename PreMeasurements
          , typename FPack
          , typename Arg >
-struct adapter_selector
+struct printable_arg_converter_selector
 {
     using vwf = default_value_with_formatter_of_printable_traits<PrintingTraits>;
-    using other = adapter_selector_2
-        < PrintingTraits, Maker, CharT, PreMeasurements, FPack, Arg, vwf >;
-    using adapter_type = typename other::adapter_type;
+    using other = printable_arg_converter_selector_2
+        < PrintingTraits, TraitsOrFacet, CharT, PreMeasurements, FPack, Arg, vwf >;
+    using type = typename other::type;
 };
 
-template < typename PrintingTraits, typename Maker, typename CharT
+template < typename PrintingTraits, typename TraitsOrFacet, typename CharT
          , typename PreMeasurements, typename FPack, typename Arg >
-using select_adapter = typename
-    adapter_selector<PrintingTraits, Maker, CharT, PreMeasurements, FPack, Arg>
-    ::adapter_type;
+using select_printable_arg_converter = typename
+    printable_arg_converter_selector<PrintingTraits, TraitsOrFacet, CharT, PreMeasurements, FPack, Arg>
+    ::type;
 
 template <typename Overrider, typename OverrideTag>
-struct maker_getter_overrider
+struct overrider_getter
 {
-    using return_maker_type = const Overrider&;
-    using maker_type = Overrider;
+    using traits_of_facet_type = Overrider;
 
     template <typename FPack>
-    static constexpr STRF_HD return_maker_type get_maker(const FPack& fp)
+    static constexpr STRF_HD const Overrider& get_traits_or_facet(const FPack& fp)
     {
         return strf::use_facet<strf::printable_overrider_c, OverrideTag>(fp);
     }
 };
 
 template <typename PrintingTraits>
-struct maker_getter_printable_traits
+struct printable_traits_getter
 {
-    using return_maker_type = PrintingTraits;
-    using maker_type = PrintingTraits;
+    using traits_of_facet_type = PrintingTraits;
+    using traits_type = PrintingTraits;
 
     template <typename FPack>
-    static constexpr STRF_HD maker_type get_maker(const FPack&)
+    static constexpr STRF_HD traits_of_facet_type get_traits_or_facet(const FPack&)
     {
-        return maker_type{};
+        return traits_of_facet_type{};
     }
 };
 
 template < typename PrintingTraits
          , typename CharT
-         , typename PreMeasurements
          , typename FPack
          , typename Arg
          , bool Overridable >
-struct maker_getter_selector_2
+struct traits_or_facet_getter_selector_2
 {
     static_assert(Overridable, "");
     using representative_type = typename PrintingTraits::representative_type;
     using overrider_ = decltype
-        ( strf::use_facet<strf::printable_overrider_c, representative_type>(std::declval<FPack>()) );
+        ( strf::use_facet<strf::printable_overrider_c, representative_type>
+          (std::declval<FPack>()) );
+
     using overrider = strf::detail::remove_cvref_t<overrider_>;
-    using maker_getter_type = typename std::conditional
+    using traits_or_facet_getter_type = typename std::conditional
         < std::is_same<overrider, strf::dont_override>::value
-        , maker_getter_printable_traits<PrintingTraits>
-        , maker_getter_overrider<overrider, representative_type> >
+        , printable_traits_getter<PrintingTraits>
+        , overrider_getter<overrider, representative_type> >
         ::type;
 };
 
 template < typename PrintingTraits
          , typename CharT
-         , typename PreMeasurements
          , typename FPack
          , typename Arg >
-struct maker_getter_selector_2<PrintingTraits, CharT, PreMeasurements, FPack, Arg, false>
+struct traits_or_facet_getter_selector_2<PrintingTraits, CharT, FPack, Arg, false>
 {
-    using maker_getter_type = maker_getter_printable_traits<PrintingTraits>;
+    using traits_or_facet_getter_type = printable_traits_getter<PrintingTraits>;
 };
 
 template < typename PrintingTraits
          , typename CharT
-         , typename PreMeasurements
          , typename FPack
          , typename Arg >
-struct maker_getter_selector
+struct traits_or_facet_getter_selector
 {
-    using other = maker_getter_selector_2
-        < PrintingTraits, CharT, PreMeasurements, FPack, Arg
+    using other = traits_or_facet_getter_selector_2
+        < PrintingTraits, CharT, FPack, Arg
         , get_is_overridable<PrintingTraits>::value >;
-    using maker_getter_type = typename other::maker_getter_type;
+    using traits_or_facet_getter_type = typename other::traits_or_facet_getter_type;
 };
 
-template < typename PrintingTraits, typename CharT, typename PreMeasurements
-         , typename FPack, typename Arg >
-using select_maker_getter = typename maker_getter_selector
-    <PrintingTraits, CharT, PreMeasurements, FPack, Arg>
-    :: maker_getter_type;
+template < typename PrintingTraits, typename CharT, typename FPack, typename Arg >
+using select_traits_or_facet_getter = typename traits_or_facet_getter_selector
+    <PrintingTraits, CharT, FPack, Arg>
+    :: traits_or_facet_getter_type;
 
 template <typename CharT, typename PreMeasurements, typename FPack, typename Arg>
-struct selector
+struct selector_override_allowed
 {
     using traits = strf::printable_traits_of<Arg>;
-    using maker_getter_type = select_maker_getter<traits, CharT, PreMeasurements, FPack, Arg>;
-    using maker_type = typename maker_getter_type::maker_type;
-    using adapter_type = select_adapter<traits, maker_type, CharT, PreMeasurements, FPack, Arg>;
+    using traits_or_facet_getter =
+        select_traits_or_facet_getter< traits, CharT, FPack, Arg >;
+    using traits_of_facet_type = typename traits_or_facet_getter::traits_of_facet_type;
+    using printable_arg_converter =
+        select_printable_arg_converter
+        <traits, traits_of_facet_type, CharT, PreMeasurements, FPack, Arg>;
 };
 
 template <typename CharT, typename PreMeasurements, typename FPack, typename Arg>
-struct selector_no_override
+struct selector_override_forbidden
 {
     using traits = strf::printable_traits_of<Arg>;
-    using maker_getter_type = maker_getter_printable_traits<traits>;
-    using adapter_type = select_adapter<traits, traits, CharT, PreMeasurements, FPack, Arg>;
+    using traits_or_facet_getter = printable_traits_getter<traits>;
+    using printable_arg_converter =
+        select_printable_arg_converter<traits, traits, CharT, PreMeasurements, FPack, Arg>;
 };
 
 template < typename CharT, typename PreMeasurements, typename FPack, typename Arg
-         , typename Selector = selector<CharT, PreMeasurements, FPack, Arg> >
-struct helper: Selector::maker_getter_type, Selector::adapter_type
+         , typename TraitsOrFacetGetter, typename PrintableArgConverter >
+class printer_type_finder
 {
+    template
+        < typename Printer
+        , typename Dst = strf::destination<CharT>
+        , typename = decltype(std::declval<Printer>().print_to(std::declval<Dst&>())) >
+    static STRF_HD strf::tag<Printer> test_(const Printer&);
+
+    template
+        < typename PrinterInputT
+        , typename Printer = typename PrinterInputT::printer_type >
+    static STRF_HD strf::tag<Printer> test_(const PrinterInputT&);
+
+    using tag_type_ = decltype
+        (test_(TraitsOrFacetGetter::get_traits_or_facet(std::declval<const FPack&>()).make_printer
+                  ( strf::tag<CharT>{}
+                  , std::declval<PreMeasurements*>()
+                  , std::declval<const FPack&>()
+                  , PrintableArgConverter::convert_printable_arg(std::declval<const Arg&>()))));
+public:
+    using printer_type = typename tag_type_::type;
 };
 
 template < typename CharT, typename PreMeasurements, typename FPack, typename Arg
-         , typename Selector = selector_no_override<CharT, PreMeasurements, FPack, Arg> >
-struct helper_no_override: Selector::maker_getter_type, Selector::adapter_type
+         , typename Selector >
+struct info_base
+    : Selector::traits_or_facet_getter
+    , Selector::printable_arg_converter
+    , printer_type_finder< CharT, PreMeasurements, FPack, Arg
+                         , typename Selector::traits_or_facet_getter
+                         , typename Selector::printable_arg_converter>
+{
+};
+
+template <typename CharT, typename PreMeasurements, typename FPack, typename Arg >
+struct info_override_allowed:
+    info_base< CharT, PreMeasurements, FPack, Arg
+              , selector_override_allowed<CharT, PreMeasurements, FPack, Arg> >
+{
+};
+
+template < typename CharT, typename PreMeasurements, typename FPack, typename Arg>
+struct info_override_forbidden:
+    info_base< CharT, PreMeasurements, FPack, Arg
+             , selector_override_forbidden<CharT, PreMeasurements, FPack, Arg> >
 {
 };
 
 } // namespace mk_pr_in
+
+template <typename CharT, typename PreMeasurements, typename FPack, typename Arg>
+using printing_info_override_allowed = mk_pr_in::info_override_allowed
+    <CharT, PreMeasurements, FPack, detail::remove_cvref_t<Arg> >;
+
+template <typename CharT, typename PreMeasurements, typename FPack, typename Arg>
+using printing_info_override_forbidden = mk_pr_in::info_override_forbidden
+    <CharT, PreMeasurements, FPack, detail::remove_cvref_t<Arg> >;
+
 } // namespace detail
 
 template < typename CharT
          , typename PreMeasurements
          , typename FPack
          , typename Arg
-         , typename Helper
-             = strf::detail::mk_pr_in::helper_no_override<CharT, PreMeasurements, FPack, Arg>
-         , typename Maker = typename Helper::maker_type
+         , typename Helper =
+             detail::printing_info_override_forbidden<CharT, PreMeasurements, FPack, Arg>
+         , typename PTraits = typename Helper::traits_type
          , typename ChTag = strf::tag<CharT> >
 STRF_DEPRECATED_MSG("make_default_arg_printer_input was renamed to make_default_printer")
 constexpr STRF_HD decltype(auto) make_default_arg_printer_input
     ( PreMeasurements* p, const FPack& fp, const Arg& arg )
-    noexcept(noexcept(Maker::make_printer(ChTag{}, p, fp, Helper::adapt_arg(arg))))
+    noexcept(noexcept(PTraits::make_printer(ChTag{}, p, fp, Helper::convert_printable_arg(arg))))
 {
-    return Maker::make_printer(ChTag{}, p, fp, Helper::adapt_arg(arg));
+    return PTraits::make_printer(ChTag{}, p, fp, Helper::convert_printable_arg(arg));
 }
 
 template < typename CharT
          , typename PreMeasurements
          , typename FPack
          , typename Arg
-         , typename Helper = strf::detail::mk_pr_in::helper<CharT, PreMeasurements, FPack, Arg>
-         , typename Maker = typename Helper::maker_type
+         , typename Helper
+             = detail::printing_info_override_allowed<CharT, PreMeasurements, FPack, Arg>
+         , typename TraitsOrFacet = typename Helper::traits_of_facet_type
          , typename ChTag = strf::tag<CharT> >
 STRF_DEPRECATED_MSG("make_arg_printer_input was renamed to make_printer")
 constexpr STRF_HD decltype(auto) make_arg_printer_input
     ( PreMeasurements* p, const FPack& fp, const Arg& arg )
 {
-    return Helper::get_maker(fp)
-        .make_printer(strf::tag<CharT>{}, p, fp, Helper::adapt_arg(arg));
+    return Helper::get_traits_or_facet(fp)
+        .make_printer(strf::tag<CharT>{}, p, fp, Helper::convert_printable_arg(arg));
 }
 
 template < typename CharT
@@ -606,28 +655,28 @@ template < typename CharT
          , typename FPack
          , typename Arg
          , typename Helper
-             = strf::detail::mk_pr_in::helper_no_override<CharT, PreMeasurements, FPack, Arg>
-         , typename Maker = typename Helper::maker_type
+             = strf::detail::printing_info_override_forbidden<CharT, PreMeasurements, FPack, Arg>
+         , typename PTraits = typename Helper::traits_type
          , typename ChTag = strf::tag<CharT> >
 constexpr STRF_HD decltype(auto) make_default_printer
     ( PreMeasurements* p, const FPack& fp, const Arg& arg )
-    noexcept(noexcept(Maker::make_printer(ChTag{}, p, fp, Helper::adapt_arg(arg))))
+    noexcept(noexcept(PTraits::make_printer(ChTag{}, p, fp, Helper::convert_printable_arg(arg))))
 {
-    return Maker::make_printer(ChTag{}, p, fp, Helper::adapt_arg(arg));
+    return PTraits::make_printer(ChTag{}, p, fp, Helper::convert_printable_arg(arg));
 }
 
 template < typename CharT
          , typename PreMeasurements
          , typename FPack
          , typename Arg
-         , typename Helper = strf::detail::mk_pr_in::helper<CharT, PreMeasurements, FPack, Arg>
-         , typename Maker = typename Helper::maker_type
+         , typename Helper
+             = detail::printing_info_override_allowed<CharT, PreMeasurements, FPack, Arg>
          , typename ChTag = strf::tag<CharT> >
 constexpr STRF_HD decltype(auto) make_printer
     ( PreMeasurements* p, const FPack& fp, const Arg& arg )
 {
-    return Helper::get_maker(fp)
-        .make_printer(strf::tag<CharT>{}, p, fp, Helper::adapt_arg(arg));
+    return Helper::get_traits_or_facet(fp)
+        .make_printer(ChTag{}, p, fp, Helper::convert_printable_arg(arg));
 }
 
 struct dont_override
@@ -686,36 +735,9 @@ template <typename T>
 using representative_of_printable = typename
     strf::printable_traits_of<T>::representative_type;
 
-
-namespace detail {
-
 template <typename CharT, typename PreMeasurements, typename FPack, typename Arg>
-struct printer_type_getter
-{
-private:
-    template
-        < typename Printer
-        , typename Dst = strf::destination<CharT>
-        , typename = decltype(std::declval<Printer>().print_to(std::declval<Dst&>())) >
-    static STRF_HD strf::tag<Printer> test_(const Printer&);
-
-    template
-        < typename PrinterInputT
-        , typename Printer = typename PrinterInputT::printer_type >
-    static STRF_HD strf::tag<Printer> test_(const PrinterInputT&);
-
-    using tag_type_ = decltype(test_(strf::make_printer<CharT>
-                                         ( std::declval<PreMeasurements*>()
-                                         , std::declval<const FPack&>()
-                                         , std::declval<Arg>() )));
-public:
-    using printer_type = typename tag_type_::type;
-};
-
-} // namespace detail
-
-template <typename CharT, typename PreMeasurements, typename FPack, typename Arg>
-using printer_type = typename detail::printer_type_getter
+using printer_type = typename
+    detail::printing_info_override_allowed
     < CharT, PreMeasurements, FPack, Arg >
     ::printer_type;
 
