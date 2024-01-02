@@ -92,14 +92,24 @@ struct separate_args<Arg0, OtherArgs...>
     using printables = typename helper::printables;
 };
 
-template <typename FpesList, typename PrintablesList>
-class print_impl;
+template
+    < typename CharT, typename PreMeasurements
+    , typename FpesList, typename PrintablesList, typename PrintingHelperList>
+struct print_impl_base;
 
-template <typename... Fpes, typename... Printables>
-class print_impl<mp_type_list<Fpes...>, mp_type_list<Printables...>>
+template
+    < typename CharT
+    , typename PreMeasurements
+    , typename... Fpes
+    , typename... Printables
+    , typename... Helper >
+struct print_impl_base
+    < CharT
+    , PreMeasurements
+    , mp_type_list<Fpes...>
+    , mp_type_list<Printables...>
+    , mp_type_list<Helper...> >
 {
-public:
-
     template <typename ReservePolicy, typename DestCreator>
     using return_type =
         typename ReservePolicy::template return_type<DestCreator>;
@@ -111,15 +121,35 @@ public:
         , Fpes... fpes
         , Printables... printables )
     {
-        using premeasurements_t = typename ReservePolicy::premeasurements_type;
-        using char_type = typename DestCreator::char_type;
-        premeasurements_t pre;
+        PreMeasurements pre;
         auto fp = strf::pack((Fpes&&)fpes...);
         return reserve_policy.template print<Ln>
-            ( dest_creator, &pre
-            , strf::printer_type<char_type, premeasurements_t, decltype(fp), Printables>
-                  (strf::make_printer<char_type>(&pre, fp, (Printables&&)printables ))... );
+            ( dest_creator
+            , &pre
+            , typename Helper::printer_type
+                  ( Helper::get_traits_or_facet(fp).make_printer
+                      ( strf::tag<CharT>{}, &pre, fp
+                      , Helper::convert_printable_arg((Printables&&)printables)))... );
     }
+};
+
+template <typename CharT, typename PreMeasurements, typename FpesList, typename PrintablesList>
+struct print_impl;
+
+template <typename CharT, typename PreMeasurements, typename... Fpes, typename... Printables>
+struct print_impl< CharT, PreMeasurements, mp_type_list<Fpes...>, mp_type_list<Printables...> >
+    : print_impl_base
+        < CharT
+        , PreMeasurements
+        , mp_type_list<Fpes...>
+        , mp_type_list<Printables...>
+        , mp_type_list
+            < detail::printing_info_override_allowed
+                < CharT
+                , PreMeasurements
+                , decltype(strf::pack(std::declval<Fpes>()...))
+                , Printables >... > >
+{
 };
 
 template <bool Ln, typename ReservePolicy, typename DestCreator, typename... Args>
@@ -128,10 +158,16 @@ inline STRF_HD typename ReservePolicy::template return_type<DestCreator> do_prin
     , const DestCreator& dest_creator
     , Args&&... args )
 {
+    using char_type = typename DestCreator::char_type;
+    using premeasurements_t = typename ReservePolicy::premeasurements_type;
+
     using separated_arg_types = strf::do_print_::separate_args<Args...>;
     using fpes_type_list = typename separated_arg_types::fpes;
     using printables_type_list = typename separated_arg_types::printables;
-    using impl = strf::do_print_::print_impl<fpes_type_list, printables_type_list>;
+
+    using impl = strf::do_print_::print_impl
+        <char_type, premeasurements_t, fpes_type_list, printables_type_list>;
+
     return impl::template print<Ln>(reserve_policy, dest_creator, (Args&&)args...);
 }
 
