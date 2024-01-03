@@ -44,7 +44,7 @@ public:
     {
     }
 
-    STRF_HD void print_to(strf::destination<CharT>& dst) const
+    STRF_HD void print_to(strf::destination<CharT>& dst) const override
     {
         printer_.print_to(dst);
     }
@@ -52,36 +52,6 @@ public:
 private:
     Printer printer_;
 };
-
-#if defined(__cpp_fold_expressions)
-
-template <typename CharT, typename... Printers>
-inline STRF_HD void write_args( strf::destination<CharT>& dst
-                              , const Printers&... printers )
-{
-    (... , printers.print_to(dst));
-}
-
-#else // defined(__cpp_fold_expressions)
-
-template <typename CharT>
-inline STRF_HD void write_args(strf::destination<CharT>&)
-{
-}
-
-template <typename CharT, typename Printer, typename... Printers>
-inline STRF_HD void write_args
-    ( strf::destination<CharT>& dst
-    , const Printer& printer0
-    , const Printers&... printers )
-{
-    printer0.print_to(dst);
-    if (dst.good()) {
-        write_args<CharT>(dst, printers...);
-    }
-}
-
-#endif // defined(__cpp_fold_expressions)
 
 } // namespace detail
 

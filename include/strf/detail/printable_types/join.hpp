@@ -62,7 +62,7 @@ struct join_printing
 
     using formatters = strf::tag<strf::alignment_formatter>;
 
-    template< typename CharT, typename PreMeasurements, typename FPack, bool HasAlignment >
+    template <typename CharT, typename PreMeasurements, typename FPack, bool HasAlignment>
     STRF_HD constexpr static auto make_printer
         ( strf::tag<CharT>
         , PreMeasurements* pre
@@ -72,6 +72,27 @@ struct join_printing
             < CharT, PreMeasurements, FPack, HasAlignment, FwdArgs... >
     {
         return {pre, facets, x};
+    }
+
+    template <typename FPack, typename CharT>
+    STRF_HD static void print
+        ( strf::destination<CharT>& dst
+        , const FPack& fp
+        , const strf::detail::join_t<FwdArgs...>& j )
+    {
+        do_print_(dst, fp, j.args);
+    }
+
+private:
+
+    template<typename CharT, typename FPack, std::size_t... I>
+    STRF_HD static void do_print_
+        ( strf::destination<CharT>& dst
+        , const FPack& fp
+        , const strf::detail::simple_tuple_impl
+            < strf::detail::index_sequence<I...>, FwdArgs... >& args_tuple )
+    {
+        detail::print_printables(dst, fp, args_tuple.template get<I>()...);
     }
 };
 
@@ -311,16 +332,48 @@ public:
     }
 };
 
-template<typename CharT, typename... Printers>
-class join_printer_impl: public detail::polymorphic_printer<CharT> {
+template <typename CharT, typename FPack, typename... FwdArgs>
+class join_printer<CharT, strf::no_premeasurements, FPack, FwdArgs...>
+{
+public:
+    STRF_HD explicit join_printer
+        ( const strf::detail::join_printer_input
+              < CharT, strf::no_premeasurements, FPack, false, FwdArgs... >& input )
+        : printables_{input.arg.value().args}
+        , facets_(input.facets)
+    {
+    }
+
+    STRF_HD void print_to(strf::destination<CharT>& dst) const
+    {
+        do_print_(printables_, dst);
+    }
+
+private:
+
+    template <std::size_t... I>
+    STRF_HD void do_print_
+        ( const strf::detail::simple_tuple_impl
+              < strf::detail::index_sequence<I...>, FwdArgs... >& args_tuple
+        , strf::destination<CharT>& dst ) const
+    {
+        detail::print_printables(dst, facets_, args_tuple.template get<I>()...);
+    }
+
+    strf::detail::simple_tuple<FwdArgs...> printables_;
+    FPack facets_;
+};
+
+
+template <typename CharT, typename PreMeasurements, typename FPack, typename... FwdArgs>
+class join_printer
+{
 public:
 
-    template<typename PreMeasurements, typename FPack, typename... FwdArgs>
-    STRF_HD join_printer_impl
-        ( const strf::detail::simple_tuple<FwdArgs...>& args
-        , PreMeasurements* pre
-        , const FPack& facets )
-        : printers_{args, pre, facets}
+    STRF_HD explicit join_printer
+        ( const strf::detail::join_printer_input
+              < CharT, PreMeasurements, FPack, false, FwdArgs... >& input )
+        : printers_{input.arg.value().args, input.pre, input.facets}
     {
     }
 
@@ -329,27 +382,9 @@ public:
         strf::detail::write(dst, printers_);
     }
 
-private:
-
-    strf::detail::printers_tuple<CharT, Printers...> printers_;
-};
-
-template <typename CharT, typename PreMeasurements, typename FPack, typename... FwdArgs>
-class join_printer
-    : public strf::detail::join_printer_impl
-        < CharT, strf::printer_type<CharT, PreMeasurements, FPack, FwdArgs>... >
-{
-public:
-
-    template <typename FPack2>
-    STRF_HD explicit join_printer
-        ( const strf::detail::join_printer_input
-              < CharT, PreMeasurements, FPack2, false, FwdArgs... >& input )
-        : strf::detail::join_printer_impl
-            < CharT, strf::printer_type<CharT, PreMeasurements, FPack, FwdArgs>... >
-            ( input.arg.value().args, input.pre, input.facets )
-    {
-    }
+    strf::detail::printers_tuple
+        <CharT, strf::printer_type<CharT, PreMeasurements, FPack, FwdArgs>...>
+        printers_;
 };
 
 } // namespace detail

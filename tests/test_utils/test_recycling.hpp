@@ -29,7 +29,7 @@ STRF_HD void test_printers_recycling
 
     for (std::size_t space=0; space <= expected_size; ++space) {
         dst.reset_with_initial_space(space);
-        strf::detail::write_args(dst, printers...);
+        strf::detail::call_printers(dst, printers...);
         auto result = dst.finish();
         if (result != expected_output) {
             print_fail("\noutput different from expected");
@@ -113,7 +113,7 @@ public:
     template <typename... Args>
     STRF_HD void operator()(Args&&... args) &&
     {
-        using separated_arg_types = strf::do_print_::separate_args<Args...>;
+        using separated_arg_types = strf::detail::args_without_tr::separate_args<Args...>;
         using fpes_type_list = typename separated_arg_types::fpes;
         using printables_type_list = typename separated_arg_types::printables;
         using impl = deep_arg_tester<fpes_type_list, printables_type_list>;

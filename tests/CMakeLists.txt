@@ -28,6 +28,7 @@ endif (STRF_BUILD_TEST_CH32_WIDTH_AND_GCB_PROP)
 
 if (STRF_BUILD_TESTS)
   set(sources_freestanding
+    add_and_override_printable_types.cpp
     cstr_destination.cpp
     dynamic_charset.cpp
     decode_encode_to_ptr.cpp
@@ -168,6 +169,7 @@ if (STRF_BUILD_TESTS)
     # define_strf_cuda_test(dynamic_charset) # to-do
     define_strf_cuda_test(transcode)
     define_strf_cuda_test(unsafe_transcode)
+    define_strf_cuda_test(add_and_override_printable_types)
     define_strf_cuda_test(cstr_destination)
     define_strf_cuda_test(encode_char)
     define_strf_cuda_test(encode_fill)

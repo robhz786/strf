@@ -170,7 +170,7 @@ STRF_HD void write
     , const strf::detail::printers_tuple_impl
         < CharT, strf::detail::index_sequence<I...>, Printers... >& printers )
 {
-    strf::detail::write_args<CharT>(dst, printers.template get<I>()...);
+    strf::detail::call_printers<CharT>(dst, printers.template get<I>()...);
 }
 
 template <typename CharT, typename ... Printers>

@@ -493,23 +493,7 @@ template <typename CharOut>
 class input_tester : public strf::destination<CharOut>{
 public:
 
-    struct input{
-        STRF_HD input
-            ( strf::detail::simple_string_view<CharOut> expected_
-            , const char* src_filename_
-            , int src_line_
-            , const char* function_
-            , double reserve_factor_
-            , std::size_t size_ = 0 )
-            : expected(expected_)
-            , src_filename(src_filename_)
-            , src_line(src_line_)
-            , function(function_)
-            , reserve_factor(reserve_factor_)
-            , size(size_)
-        {
-        }
-
+    struct input_reserve{
         strf::detail::simple_string_view<CharOut> expected;
         const char* src_filename;
         int src_line;
@@ -518,9 +502,34 @@ public:
         std::size_t size = 0;
     };
 
-    STRF_HD input_tester(input i)
-        : input_tester{ i.expected, i.src_filename, i.src_line, i.function
-                      , i.reserve_factor, i.size }
+    struct input_no_reserve{
+        strf::detail::simple_string_view<CharOut> expected;
+        const char* src_filename;
+        int src_line;
+        const char* function;
+    };
+
+    STRF_HD input_tester(const input_reserve& i)
+        : strf::destination<CharOut>{buffer_, i.size}
+        , notifier_{i.function, i.src_filename, i.src_line}
+        , expected_(i.expected)
+        , reserved_size_(i.size)
+        , has_reserved_size_(true)
+        , reserve_factor_(i.reserve_factor)
+    {
+        if (i.size > buffer_size_) {
+            strf::to(notifier_)
+                ( "Warning: reserved more characters (", i.size
+                  , ") then the tester buffer size (", buffer_size_, ")." );
+            this->set_buffer_end(buffer_ + buffer_size_);
+        }
+    }
+
+    STRF_HD input_tester(const input_no_reserve& i)
+        : strf::destination<CharOut>{buffer_, buffer_ + buffer_size_}
+        , notifier_{i.function, i.src_filename, i.src_line}
+        , expected_(i.expected)
+        , has_reserved_size_(false)
     {
     }
 
@@ -550,36 +559,14 @@ private:
 
     test_failure_notifier notifier_;
     strf::detail::simple_string_view<CharOut> expected_;
-    std::size_t reserved_size_;
-    double reserve_factor_;
+    std::size_t reserved_size_ = 0;
+    bool has_reserved_size_;
+    double reserve_factor_ = 1.0;
 
     CharOut* pointer_before_overflow_ = nullptr;
     enum {buffer_size_ = 280};
     CharOut buffer_[buffer_size_];
 };
-
-
-template <typename CharOut>
-STRF_HD input_tester<CharOut>::input_tester
-    ( strf::detail::simple_string_view<CharOut> expected
-    , const char* src_filename
-    , int src_line
-    , const char* function
-    , double reserve_factor
-    , std::size_t size )
-    : strf::destination<CharOut>{buffer_, size}
-    , notifier_{function, src_filename, src_line}
-    , expected_(expected)
-    , reserved_size_(size)
-    , reserve_factor_(reserve_factor)
-{
-    if (size > buffer_size_) {
-        strf::to(notifier_)
-            ( "Warning: reserved more characters (", size
-            , ") then the tester buffer size (", buffer_size_, ")." );
-        this->set_buffer_end(buffer_ + buffer_size_);
-    }
-}
 
 template <typename CharOut>
 STRF_HD input_tester<CharOut>::~input_tester()
@@ -636,9 +623,10 @@ bool STRF_HD input_tester<CharOut>::wrong_content_
 template <typename CharOut>
 bool STRF_HD input_tester<CharOut>::wrong_size_(std::size_t result_size) const
 {
-    return ( reserved_size_ < result_size
-          || ( static_cast<double>(reserved_size_) * reserve_factor_
-             > static_cast<double>(result_size) ) );
+    return has_reserved_size_
+        && ( reserved_size_ < result_size
+             || ( static_cast<double>(reserved_size_) * reserve_factor_
+                  > static_cast<double>(result_size) ) );
 }
 
 template <typename CharT>
@@ -647,6 +635,7 @@ class input_tester_creator
 public:
 
     using char_type = CharT;
+    using destination_type = test_utils::input_tester<CharT>;
     using sized_destination_type = test_utils::input_tester<CharT>;
 
     STRF_HD input_tester_creator
@@ -663,9 +652,16 @@ public:
     {
     }
 
-    typename test_utils::input_tester<CharT>::input STRF_HD create(std::size_t size) const
+    STRF_HD auto create(std::size_t size) const
     {
-        return { expected_, filename_, line_, function_, reserve_factor_, size };
+        return typename test_utils::input_tester<CharT>::input_reserve
+        { expected_, filename_, line_, function_, reserve_factor_, size };
+    }
+
+    STRF_HD auto create() const
+    {
+        return typename test_utils::input_tester<CharT>::input_no_reserve
+        { expected_, filename_, line_, function_};
     }
 
 private:

@@ -499,6 +499,23 @@ STRF_HD void tr_string_write
     }
 }
 
+template <typename CharT, typename Charset, typename ErrHandler>
+STRF_HD void tr_string_write
+    ( strf::destination<CharT>& dst
+    , Charset charset
+    , ErrHandler err_handler
+    , const CharT* str
+    , const CharT* str_end
+    , std::initializer_list<const detail::polymorphic_printer<CharT>*> printers)
+{
+    tr_string_write
+        ( str, str_end
+        , printers.begin()
+        , static_cast<std::ptrdiff_t>(printers.size())
+        , dst, charset, err_handler );
+}
+
+
 template <typename Charset, typename ErrHandler>
 class tr_string_printer
 {
@@ -549,6 +566,46 @@ private:
     Charset charset_;
     ErrHandler err_handler_;
 };
+
+template <typename Charset, typename ErrHandler>
+class tr_string_printer_without_premeasurements
+{
+    using char_type = typename Charset::code_unit;
+public:
+
+    STRF_HD tr_string_printer_without_premeasurements
+        ( std::initializer_list<const detail::polymorphic_printer<char_type>*> printers
+        , const char_type* tr_string
+        , const char_type* tr_string_end
+        , Charset charset
+        , ErrHandler err_handler ) noexcept
+        : tr_string_(tr_string)
+        , tr_string_end_(tr_string_end)
+        , printers_array_(printers.begin())
+        , num_printers_(static_cast<std::ptrdiff_t>(printers.size()))
+        , charset_(charset)
+        , err_handler_(err_handler)
+    {
+    }
+
+    STRF_HD void print_to(strf::destination<char_type>& dst) const
+    {
+        strf::detail::tr_string_write
+            ( tr_string_, tr_string_end_, printers_array_, num_printers_
+            , dst, charset_, err_handler_ );
+    }
+
+private:
+
+    const char_type* tr_string_;
+    const char_type* tr_string_end_;
+    const detail::polymorphic_printer<char_type>* const * printers_array_;
+    std::ptrdiff_t num_printers_;
+    Charset charset_;
+    ErrHandler err_handler_;
+};
+
+
 
 } // namespace detail
 } // namespace strf

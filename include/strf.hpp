@@ -50,7 +50,7 @@
 
 #include <strf/measure.hpp>
 #include <strf/printing_syntax.hpp>
-
+#include <strf/detail/printing_helpers.hpp>
 
 #if defined(_MSC_VER)
 #pragma warning ( pop )
