@@ -50,7 +50,7 @@ inline STRF_HD void call_printers
     , const Printer& printer0
     , const Printers&... printers )
 {
-    printer0.print_to(dst);
+    printer0(dst);
     if (dst.good()) {
         call_printers<CharT>(dst, printers...);
     }

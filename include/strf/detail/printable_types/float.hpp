@@ -1400,7 +1400,7 @@ public:
             || (value_.e10 < -(int)m10_digcount_ - 2 - (m10_digcount_ != 1));
     }
 
-    STRF_HD void print_to(strf::destination<CharT>&) const;
+    STRF_HD void operator()(strf::destination<CharT>&) const;
 
     STRF_HD int size() const;
 
@@ -1433,7 +1433,7 @@ STRF_HD int fast_double_printer<CharT>::size() const
 }
 
 template <typename CharT>
-STRF_HD void fast_double_printer<CharT>::print_to
+STRF_HD void fast_double_printer<CharT>::operator()
     ( strf::destination<CharT>& dst ) const
 {
     if (value_.nan) {
@@ -2405,7 +2405,7 @@ public:
         }
     }
 
-    STRF_HD void print_to(strf::destination<CharT>&) const;
+    STRF_HD void operator()(strf::destination<CharT>&) const;
 
 private:
 
@@ -2433,7 +2433,7 @@ private:
 };
 
 template <typename CharT>
-STRF_HD void punct_double_printer<CharT>::print_to
+STRF_HD void punct_double_printer<CharT>::operator()
     (strf::destination<CharT>& dst) const
 {
     if (data_.left_fillcount > 0) {

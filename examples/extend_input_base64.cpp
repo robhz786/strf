@@ -121,7 +121,7 @@ public:
         , strf::premeasurements<SizePresence, strf::width_presence::no>* pre
         , const base64_input_with_formatters& fmt );
 
-    void print_to(strf::destination<CharT>& dst) const;
+    void operator()(strf::destination<CharT>& dst) const;
 
 private:
 
@@ -179,7 +179,7 @@ void base64_printer<CharT>::calc_size_(strf::size_accumulator<true>* pre) const
 }
 
 template <typename CharT>
-void base64_printer<CharT>::print_to(strf::destination<CharT>& dst) const
+void base64_printer<CharT>::operator()(strf::destination<CharT>& dst) const
 {
     if (facet_.single_line()) {
         write_single_line_(dst);

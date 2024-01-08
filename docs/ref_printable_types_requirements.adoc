@@ -146,9 +146,21 @@ Given
 The following must be satisfied:
 
 * `R` is either _{Printer}_ or _{PrinterInput}_.
-
+* At least one of the function templates below must be defined:
 
 ====
+.( Optional )
+[source,cpp,subs=normal]
+----
+T::print(dst, fpack, v);
+----
+[horizontal]
+Return Type:: void
+Effect:: Prints the content to `dst`
+====
+
+====
+.( Optional )
 [source,cpp,subs=normal]
 ----
 PrinterT p{ T::make_printer({tag}<CharT>{}, pre, fpack, v) };
@@ -227,7 +239,7 @@ The following expression must be well-formed:
 
 [source,cpp,subs=normal]
 ----
-x.print_to(dst);
+x(dst);
 ----
 
 === Type requirements _PrinterInput_ [[PrinterInput]]

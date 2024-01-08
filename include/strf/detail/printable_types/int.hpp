@@ -1402,7 +1402,7 @@ public:
         init_(i.pre, i.value);
     }
 
-    STRF_HD void print_to(strf::destination<CharT>& dst) const;
+    STRF_HD void operator()(strf::destination<CharT>& dst) const;
 
 private:
 
@@ -1444,7 +1444,7 @@ private:
 };
 
 template <typename CharT>
-STRF_HD void default_int_printer<CharT>::print_to
+STRF_HD void default_int_printer<CharT>::operator()
     ( strf::destination<CharT>& dst ) const
 {
     dst.ensure(digcount_ + negative_);
@@ -1478,7 +1478,7 @@ public:
         }
     }
 
-    STRF_HD void print_to(strf::destination<CharT>& dst) const;
+    STRF_HD void operator()(strf::destination<CharT>& dst) const;
 
 private:
 
@@ -1529,7 +1529,7 @@ private:
 };
 
 template <typename CharT>
-STRF_HD void aligned_default_int_printer<CharT>::print_to
+STRF_HD void aligned_default_int_printer<CharT>::operator()
     ( strf::destination<CharT>& dst ) const
 {
     int right_fillcount = 0;
@@ -1635,7 +1635,7 @@ public:
         i.pre->add_size(w);
     }
 
-    STRF_HD void print_to(strf::destination<CharT>& dst) const
+    STRF_HD void operator()(strf::destination<CharT>& dst) const
     {
         dst.ensure(data_.digcount + data_.prefix != 0);
         auto *it = dst.buffer_ptr();
@@ -1666,7 +1666,7 @@ public:
         i.pre->add_size(w);
     }
 
-    STRF_HD void print_to(strf::destination<CharT>& dst) const
+    STRF_HD void operator()(strf::destination<CharT>& dst) const
     {
         dst.ensure(data_.digcount + data_.prefix);
         auto *it = dst.buffer_ptr();
@@ -1699,7 +1699,7 @@ public:
         i.pre->add_size(w);
     }
 
-    STRF_HD void print_to(strf::destination<CharT>& dst) const
+    STRF_HD void operator()(strf::destination<CharT>& dst) const
     {
         dst.ensure(data_.digcount + data_.prefix);
         auto *it = dst.buffer_ptr();
@@ -1730,7 +1730,7 @@ public:
         i.pre->add_size(w);
     }
 
-    STRF_HD void print_to(strf::destination<CharT>& dst) const
+    STRF_HD void operator()(strf::destination<CharT>& dst) const
     {
         if (data_.prefix != 0) {
             dst.ensure(2);
@@ -1986,7 +1986,7 @@ public:
         }
     }
 
-    STRF_HD void print_to(strf::destination<CharT>& dst) const;
+    STRF_HD void operator()(strf::destination<CharT>& dst) const;
 
 private:
 
@@ -1996,7 +1996,7 @@ private:
 };
 
 template <typename CharT, int Base>
-STRF_HD void int_printer_static_base_and_punct<CharT, Base, false>::print_to
+STRF_HD void int_printer_static_base_and_punct<CharT, Base, false>::operator()
     ( strf::destination<CharT>& dst ) const
 {
     if (data_.left_fillcount > 0) {
@@ -2164,7 +2164,7 @@ public:
         }
     }
 
-    STRF_HD void print_to( strf::destination<CharT>& dst ) const;
+    STRF_HD void operator()( strf::destination<CharT>& dst ) const;
 
 private:
 
@@ -2175,7 +2175,7 @@ private:
 };
 
 template <typename CharT, int Base>
-STRF_HD void int_printer_static_base_and_punct<CharT, Base, true>::print_to
+STRF_HD void int_printer_static_base_and_punct<CharT, Base, true>::operator()
         ( strf::destination<CharT>& dst ) const
 {
     if (data_.left_fillcount > 0) {
@@ -2304,7 +2304,7 @@ public:
         underlying_printer_().~polymorphic_printer();
     }
 
-    STRF_HD void print_to(strf::destination<CharT>& dst) const
+    STRF_HD void operator()(strf::destination<CharT>& dst) const
     {
         underlying_printer_(). print_to(dst);
     }

@@ -46,7 +46,7 @@ public:
 
     STRF_HD void print_to(strf::destination<CharT>& dst) const override
     {
-        printer_.print_to(dst);
+        printer_(dst);
     }
 
 private:

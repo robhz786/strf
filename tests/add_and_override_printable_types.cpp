@@ -4,6 +4,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include "test_utils.hpp"
+#include <functional> // reference_wrapper
 
 #define TEST_NO_RESERVE(EXPECTED)                                           \
     strf::make_printing_syntax                                              \
@@ -28,7 +29,7 @@ STRF_HD const char16_t* stringify(mytype e)
         case mytype::aa: return u"aa";
         case mytype::bb: return u"bb";
         case mytype::cc: return u"cc";
-        default:            return u"\uFFFD";
+        default:         return u"\uFFFD";
     }
 }
 
@@ -42,6 +43,7 @@ struct printable_traits<mytype>
     using representative_type = mytype;
     using forwarded_type = mytype;
     using formatters = strf::tag<strf::alignment_formatter>;
+    using is_overridable = std::true_type;
 
     template <typename CharT, typename FPack>
     STRF_HD static void print
@@ -165,75 +167,80 @@ struct is_mytype : std::false_type {};
 template <>
 struct is_mytype<mytype> : std::true_type {};
 
-constexpr auto mytype_overrider = strf::constrain<is_mytype>(mytype_overrider_impl());
 
 STRF_TEST_FUNC void test_overrider_without_make_printer()
 {
+    constexpr auto mytype_overrider = strf::constrain<is_mytype>(mytype_overrider_impl());
+
     {   // test using strf::no_reserve policy
-        TEST_NO_RESERVE("bb").with(mytype_overrider) (mytype::bb);
-        TEST_NO_RESERVE("bb").with(mytype_overrider) (strf::fmt(mytype::bb));
-        TEST_NO_RESERVE("...aa...").with(mytype_overrider) (strf::center(mytype::aa, 8, U'.'));
+        TEST_NO_RESERVE("[bb]").with(mytype_overrider) (mytype::bb);
+        TEST_NO_RESERVE("[bb]").with(mytype_overrider) (strf::fmt(mytype::bb));
+        TEST_NO_RESERVE("..[aa]..").with(mytype_overrider) (strf::center(mytype::aa, 8, U'.'));
 
         // in joins
-        TEST_NO_RESERVE("--bb--").with(mytype_overrider) (strf::join("--", mytype::bb, "--"));
-        TEST_NO_RESERVE("==...cc...==")
+        TEST_NO_RESERVE("--[bb]--").with(mytype_overrider) (strf::join("--", mytype::bb, "--"));
+        TEST_NO_RESERVE("==..[cc]..==").with(mytype_overrider)
             (strf::join("==", strf::center(mytype::cc, 8, U'.'), "=="));
 
         // in ranges
         const mytype arr[] = {mytype::aa, mytype::bb, mytype::cc};
 
-        TEST_NO_RESERVE("aabbcc").with(mytype_overrider) (strf::range(arr));
-        TEST_NO_RESERVE("  aa  bb  cc").with(mytype_overrider) (strf::fmt_range(arr)>4);
-        TEST_NO_RESERVE("aa/bb/cc").with(mytype_overrider) (strf::separated_range(arr, "/"));
+        TEST_NO_RESERVE("[aa][bb][cc]").with(mytype_overrider) (strf::range(arr));
+        TEST_NO_RESERVE("  [aa]  [bb]  [cc]").with(mytype_overrider) (strf::fmt_range(arr)>6);
+        TEST_NO_RESERVE("[aa]/[bb]/[cc]").with(mytype_overrider) (strf::separated_range(arr, "/"));
 
         // in tr-strings
-        TEST_NO_RESERVE("::aa::").with(mytype_overrider) .tr("::{}::", mytype::aa);
-        TEST_NO_RESERVE("::aa:aa:").with(mytype_overrider) .tr("::{0}:{0}:", mytype::aa);
-        TEST_NO_RESERVE("::__aa__:__aa__:")
-            .tr("::{0}:{0}:", strf::center(mytype::aa, 6, '_'));
-        TEST_NO_RESERVE("::aa:aa:").with(mytype_overrider) .tr("::{0}:{0}:", strf::join(mytype::aa));
-        TEST_NO_RESERVE("::-__aa__-:-__aa__-:").with(mytype_overrider)
-            .tr( "::{0}:{0}:", strf::join('-', strf::center(mytype::aa, 6, '_'), '-' ));
+        TEST_NO_RESERVE("::[aa]::").with(mytype_overrider) .tr("::{}::", mytype::aa);
+        TEST_NO_RESERVE("::[aa]:[aa]:").with(mytype_overrider) .tr("::{0}:{0}:", mytype::aa);
+        TEST_NO_RESERVE("::__[aa]__:__[aa]__:").with(mytype_overrider)
+            .tr("::{0}:{0}:", strf::center(mytype::aa, 8, '_'));
+        TEST_NO_RESERVE("::[aa]:[aa]:").with(mytype_overrider) .tr("::{0}:{0}:", strf::join(mytype::aa));
+        TEST_NO_RESERVE("::-__[aa]__-:-__[aa]__-:").with(mytype_overrider)
+            .tr( "::{0}:{0}:", strf::join('-', strf::center(mytype::aa, 8, '_'), '-' ));
     }
     {
         // test using strf::reserve_given_space policy
-        TEST_RESERVE_GIVEN_SPACE("bb").with(mytype_overrider) (mytype::bb);
-        TEST_RESERVE_GIVEN_SPACE("bb").with(mytype_overrider) (strf::fmt(mytype::bb));
-        TEST_RESERVE_GIVEN_SPACE("...aa...").with(mytype_overrider) (strf::center(mytype::aa, 8, U'.'));
+        TEST_RESERVE_GIVEN_SPACE("[bb]").with(mytype_overrider) (mytype::bb);
+        TEST_RESERVE_GIVEN_SPACE("[bb]").with(mytype_overrider) (strf::fmt(mytype::bb));
+        TEST_RESERVE_GIVEN_SPACE("...[aa]...").with(mytype_overrider) (strf::center(mytype::aa, 10, U'.'));
 
         // in joins
-        TEST_RESERVE_GIVEN_SPACE("--bb--").with(mytype_overrider) (strf::join("--", mytype::bb, "--"));
-        TEST_RESERVE_GIVEN_SPACE("==...cc...==").with(mytype_overrider)
-            (strf::join("==", strf::center(mytype::cc, 8, U'.'), "=="));
+        TEST_RESERVE_GIVEN_SPACE("--[bb]--").with(mytype_overrider) (strf::join("--", mytype::bb, "--"));
+        TEST_RESERVE_GIVEN_SPACE("==...[cc]...==").with(mytype_overrider)
+            (strf::join("==", strf::center(mytype::cc, 10, U'.'), "=="));
 
         // in ranges
         const mytype arr[] = {mytype::aa, mytype::bb, mytype::cc};
 
-        TEST_RESERVE_GIVEN_SPACE("aabbcc").with(mytype_overrider) (strf::range(arr));
-        TEST_RESERVE_GIVEN_SPACE("  aa  bb  cc").with(mytype_overrider) (strf::fmt_range(arr)>4);
-        TEST_RESERVE_GIVEN_SPACE("aa/bb/cc").with(mytype_overrider) (strf::separated_range(arr, "/"));
+        TEST_RESERVE_GIVEN_SPACE("[aa][bb][cc]").with(mytype_overrider) (strf::range(arr));
+        TEST_RESERVE_GIVEN_SPACE("  [aa]  [bb]  [cc]").with(mytype_overrider) (strf::fmt_range(arr)>6);
+        TEST_RESERVE_GIVEN_SPACE("[aa]/[bb]/[cc]").with(mytype_overrider) (strf::separated_range(arr, "/"));
 
         // in tr-strings
-        TEST_RESERVE_GIVEN_SPACE("::aa::").with(mytype_overrider) .tr("::{}::", mytype::aa);
-        TEST_RESERVE_GIVEN_SPACE("::aa:aa:").with(mytype_overrider) .tr("::{0}:{0}:", mytype::aa);
-        TEST_RESERVE_GIVEN_SPACE("::__aa__:__aa__:").with(mytype_overrider)
-            .tr("::{0}:{0}:", strf::center(mytype::aa, 6, '_'));
-        TEST_RESERVE_GIVEN_SPACE("::aa:aa:").with(mytype_overrider)
+        TEST_RESERVE_GIVEN_SPACE("::[aa]::").with(mytype_overrider) .tr("::{}::", mytype::aa);
+        TEST_RESERVE_GIVEN_SPACE("::[aa]:[aa]:").with(mytype_overrider) .tr("::{0}:{0}:", mytype::aa);
+        TEST_RESERVE_GIVEN_SPACE("::__[aa]__:__[aa]__:").with(mytype_overrider)
+            .tr("::{0}:{0}:", strf::center(mytype::aa, 8, '_'));
+        TEST_RESERVE_GIVEN_SPACE("::[aa]:[aa]:").with(mytype_overrider)
             .tr("::{0}:{0}:", strf::join(mytype::aa));
-        TEST_RESERVE_GIVEN_SPACE("::-__aa__-:-__aa__-:").with(mytype_overrider)
-            .tr("::{0}:{0}:", strf::join('-', strf::center(mytype::aa, 6, '_'), '-' ));
+        TEST_RESERVE_GIVEN_SPACE("::-__[aa]__-:-__[aa]__-:").with(mytype_overrider)
+            .tr("::{0}:{0}:", strf::join('-', strf::center(mytype::aa, 8, '_'), '-' ));
     }
 }
 
 class my_abstract_type
 {
 public:
+    my_abstract_type() = default;
     STRF_HD virtual ~my_abstract_type() {}
     STRF_HD virtual const char* msg() const = 0;
 };
 
 class my_derived_type_a: public my_abstract_type
 {
+public:
+    my_derived_type_a() = default;
+
     STRF_HD virtual const char* msg() const override
     {
         return "aa";
@@ -242,6 +249,9 @@ class my_derived_type_a: public my_abstract_type
 
 class my_derived_type_b: public my_abstract_type
 {
+public:
+    my_derived_type_b() = default;
+
     STRF_HD virtual const char* msg() const override
     {
         return "bb";
@@ -250,6 +260,9 @@ class my_derived_type_b: public my_abstract_type
 
 class my_derived_type_c: public my_abstract_type
 {
+public:
+    my_derived_type_c() = default;
+
     STRF_HD virtual const char* msg() const override
     {
         return "cc";
@@ -259,6 +272,10 @@ class my_derived_type_c: public my_abstract_type
 
 
 } // namespace
+
+#if !defined(__CUDACC__)
+
+// std::reference_wrapper does not work in  __CUDACC__
 
 namespace strf {
 template <>
@@ -289,7 +306,11 @@ struct printable_traits<my_abstract_type>
     }
 };
 
-printable_traits<my_abstract_type> tag_invoke(strf::printable_tag, const my_abstract_type&);
+STRF_HD printable_traits<my_abstract_type>
+tag_invoke(strf::printable_tag, const my_abstract_type&)
+{
+    return {};
+}
 
 } // namespace strf
 
@@ -300,6 +321,9 @@ STRF_TEST_FUNC void test_abstract_printable_without_make_printer()
     const my_derived_type_a a;
     const my_derived_type_b b;
     const my_derived_type_c c;
+
+    // to silent a warning from clang 6 that tag_invoke is not needed
+    (void) tag_invoke(strf::printable_tag(), a);
 
     const std::reference_wrapper<const my_abstract_type> arr[] = {a, b, c};
 
@@ -354,11 +378,240 @@ STRF_TEST_FUNC void test_abstract_printable_without_make_printer()
     }
 }
 
+} // namespace
+
+#else // !defined(__CUDACC__)
+
+STRF_HD void test_abstract_printable_without_make_printer()
+{
+}
+
+#endif // !defined(__CUDACC__)
+
+namespace {
+
+enum class mytype2{aa, bb, cc};
+
+STRF_HD const char16_t* stringify(mytype2 e)
+{
+    switch(e) {
+        case mytype2::aa: return u"aa";
+        case mytype2::bb: return u"bb";
+        case mytype2::cc: return u"cc";
+        default:          return u"\uFFFD";
+    }
+}
+
+} // namespace
+
+namespace strf {
+
+template <>
+struct printable_traits<mytype2>
+{
+    using representative_type = mytype2;
+    using forwarded_type = mytype2;
+    using is_overridable = std::true_type;
+
+    template <typename CharT, typename Pre, typename FPack>
+    STRF_HD static auto make_printer
+        ( strf::tag<CharT>
+        , Pre* pre
+        , const FPack& fp
+        , mytype2 e )
+    {
+        pre->subtract_width(static_cast<strf::width_t>(2));
+        pre->add_size(2);
+
+        auto charset = strf::use_facet<strf::charset_c<CharT>, void> (fp);
+        return [e, charset] (strf::destination<CharT>& dst)
+               {
+                   to(dst) (charset, strf::unsafe_transcode(stringify(e)));
+               };
+    }
+};
+
+} // namespace strf
+
+namespace {
+
+STRF_TEST_FUNC void test_make_printer_that_returns_lambda()
+{
+    {   // test using strf::no_reserve policy
+        TEST_NO_RESERVE("bb") (mytype2::bb);
+        TEST_NO_RESERVE("bb") (strf::fmt(mytype2::bb));
+
+        // in joins
+        TEST_NO_RESERVE("--bb--") (strf::join("--", mytype2::bb, "--"));
+
+        // in ranges
+        const mytype2 arr[] = {mytype2::aa, mytype2::bb, mytype2::cc};
+
+        TEST_NO_RESERVE("aabbcc") (strf::range(arr));
+        TEST_NO_RESERVE("aa/bb/cc") (strf::separated_range(arr, "/"));
+
+        // in tr-strings
+        TEST_NO_RESERVE("::aa::") .tr("::{}::", mytype2::aa);
+        TEST_NO_RESERVE("::aa:aa:") .tr("::{0}:{0}:", mytype2::aa);
+        TEST_NO_RESERVE("::aa:aa:") .tr("::{0}:{0}:", strf::join(mytype2::aa));
+    }
+    {
+        // test using strf::reserve_given_space policy
+        TEST_RESERVE_GIVEN_SPACE("bb") (mytype2::bb);
+        TEST_RESERVE_GIVEN_SPACE("bb") (strf::fmt(mytype2::bb));
+
+        // in joins
+        TEST_RESERVE_GIVEN_SPACE("--bb--") (strf::join("--", mytype2::bb, "--"));
+
+        // in ranges
+        const mytype2 arr[] = {mytype2::aa, mytype2::bb, mytype2::cc};
+
+        TEST_RESERVE_GIVEN_SPACE("aabbcc") (strf::range(arr));
+        TEST_RESERVE_GIVEN_SPACE("aa/bb/cc") (strf::separated_range(arr, "/"));
+
+        // in tr-strings
+        TEST_RESERVE_GIVEN_SPACE("::aa::") .tr("::{}::", mytype2::aa);
+        TEST_RESERVE_GIVEN_SPACE("::aa:aa:") .tr("::{0}:{0}:", mytype2::aa);
+        TEST_RESERVE_GIVEN_SPACE("::aa:aa:")
+            .tr("::{0}:{0}:", strf::join(mytype2::aa));
+    }
+    {
+        // test using strf::reserve_calc policy
+        TEST("bb").with() (mytype2::bb);
+        TEST("bb") (strf::fmt(mytype2::bb));
+
+        // in joins
+        TEST("--bb--") (strf::join("--", mytype2::bb, "--"));
+
+        // in ranges
+        const mytype2 arr[] = {mytype2::aa, mytype2::bb, mytype2::cc};
+
+        TEST("aabbcc") (strf::range(arr));
+        TEST("aa/bb/cc") (strf::separated_range(arr, "/"));
+
+        // in tr-strings
+        TEST("::aa::") .tr("::{}::", mytype2::aa);
+        TEST("::aa:aa:") .tr("::{0}:{0}:", mytype2::aa);
+        TEST("::aa:aa:") .tr("::{0}:{0}:", strf::join(mytype2::aa));
+        TEST(":: aa : aa :")
+            .tr("::{0}:{0}:", strf::join_center(4)(mytype2::aa));
+    }
+}
+
+
+struct mytype2_overrider_impl
+{
+    using category = strf::printable_overrider_c;
+
+    template <typename CharT, typename Pre, typename FPack>
+    STRF_HD static auto make_printer
+        ( strf::tag<CharT>
+        , Pre* pre
+        , const FPack& fp
+        , mytype2 e )
+    {
+        pre->subtract_width(static_cast<strf::width_t>(4));
+        pre->add_size(4);
+
+        auto charset = strf::use_facet<strf::charset_c<CharT>, void> (fp);
+        return [e, charset] (strf::destination<CharT>& dst)
+               {
+                   to(dst).with(charset)
+                       ( static_cast<CharT>('[')
+                       , strf::unsafe_transcode(stringify(e))
+                       , static_cast<CharT>(']') );
+               };
+    }
+};
+
+template <typename T>
+struct is_mytype2 : std::false_type {};
+
+template <>
+struct is_mytype2<mytype2> : std::true_type {};
+
+
+
+STRF_TEST_FUNC void test_overrider_with_make_printer()
+{
+    constexpr auto mytype2_overrider = strf::constrain<is_mytype2>(mytype2_overrider_impl());
+
+    {   // test using strf::no_reserve policy
+        TEST_NO_RESERVE("[bb]").with(mytype2_overrider) (mytype2::bb);
+        TEST_NO_RESERVE("[bb]").with(mytype2_overrider) (strf::fmt(mytype2::bb));
+
+        // in joins
+        TEST_NO_RESERVE("..--[bb]--..").with(mytype2_overrider)
+            (strf::join_center(12, '.')("--", mytype2::bb, "--"));
+
+        // in ranges
+        const mytype2 arr[] = {mytype2::aa, mytype2::bb, mytype2::cc};
+
+        TEST_NO_RESERVE("[aa][bb][cc]").with(mytype2_overrider)
+            (strf::range(arr));
+        TEST_NO_RESERVE("[aa]/[bb]/[cc]").with(mytype2_overrider)
+            (strf::separated_range(arr, "/"));
+
+        // in tr-strings
+        TEST_NO_RESERVE("::[aa]::").with(mytype2_overrider)
+            .tr("::{}::", mytype2::aa);
+        TEST_NO_RESERVE("::[aa]:[aa]:").with(mytype2_overrider)
+            .tr("::{0}:{0}:", mytype2::aa);
+        TEST_NO_RESERVE("::[aa]:[aa]:").with(mytype2_overrider)
+            .tr("::{0}:{0}:", strf::join(mytype2::aa));
+    }
+    {   // test using strf::reserve_given_space policy
+        TEST_RESERVE_GIVEN_SPACE("[bb]").with(mytype2_overrider) (mytype2::bb);
+        TEST_RESERVE_GIVEN_SPACE("[bb]").with(mytype2_overrider) (strf::fmt(mytype2::bb));
+
+        // in joins
+        TEST_RESERVE_GIVEN_SPACE("..--[bb]--..").with(mytype2_overrider)
+            (strf::join_center(12, '.')("--", mytype2::bb, "--"));
+
+        // in ranges
+        const mytype2 arr[] = {mytype2::aa, mytype2::bb, mytype2::cc};
+
+        TEST_RESERVE_GIVEN_SPACE("[aa][bb][cc]").with(mytype2_overrider)
+            (strf::range(arr));
+        TEST_RESERVE_GIVEN_SPACE("[aa]/[bb]/[cc]").with(mytype2_overrider)
+            (strf::separated_range(arr, "/"));
+
+        // in tr-strings
+        TEST_RESERVE_GIVEN_SPACE("::[aa]::").with(mytype2_overrider)
+            .tr("::{}::", mytype2::aa);
+        TEST_RESERVE_GIVEN_SPACE("::[aa]:[aa]:").with(mytype2_overrider)
+            .tr("::{0}:{0}:", mytype2::aa);
+        TEST_RESERVE_GIVEN_SPACE("::[aa]:[aa]:").with(mytype2_overrider)
+            .tr("::{0}:{0}:", strf::join(mytype2::aa));
+    }
+    {   // test using strf::reserve_calc policy
+        TEST("[bb]").with(mytype2_overrider) (mytype2::bb);
+        TEST("[bb]").with(mytype2_overrider) (strf::fmt(mytype2::bb));
+
+        // in joins
+        TEST("..--[bb]--..").with(mytype2_overrider)
+            (strf::join_center(12, '.')("--", mytype2::bb, "--"));
+
+        // in ranges
+        const mytype2 arr[] = {mytype2::aa, mytype2::bb, mytype2::cc};
+
+        TEST("[aa][bb][cc]").with(mytype2_overrider) (strf::range(arr));
+        TEST("[aa]/[bb]/[cc]").with(mytype2_overrider) (strf::separated_range(arr, "/"));
+
+        // in tr-strings
+        TEST("::[aa]::").with(mytype2_overrider) .tr("::{}::", mytype2::aa);
+        TEST("::[aa]:[aa]:").with(mytype2_overrider) .tr("::{0}:{0}:", mytype2::aa);
+        TEST("::[aa]:[aa]:").with(mytype2_overrider) .tr("::{0}:{0}:", strf::join(mytype2::aa));
+    }
+}
+
 STRF_TEST_FUNC void test_all()
 {
     test_printable_traits_without_make_printer();
     test_overrider_without_make_printer();
     test_abstract_printable_without_make_printer();
+    test_make_printer_that_returns_lambda();
+    test_overrider_with_make_printer();
 }
 
 } // namespace

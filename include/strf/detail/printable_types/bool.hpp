@@ -20,11 +20,11 @@ struct bool_printer
     bool value_;
     strf::lettercase lettercase_;
 
-    void STRF_HD print_to(strf::destination<CharT>& dst) const;
+    void STRF_HD operator()(strf::destination<CharT>& dst) const;
 };
 
 template <typename CharT>
-void STRF_HD bool_printer<CharT>::print_to(strf::destination<CharT>& dst) const
+void STRF_HD bool_printer<CharT>::operator()(strf::destination<CharT>& dst) const
 {
     auto size = 5 - (int)value_;
     dst.ensure(size);
@@ -49,7 +49,7 @@ void STRF_HD bool_printer<CharT>::print_to(strf::destination<CharT>& dst) const
 template <typename CharT>
 struct fmt_bool_printer
 {
-    void STRF_HD print_to(strf::destination<CharT>& dst) const;
+    void STRF_HD operator()(strf::destination<CharT>& dst) const;
 
     strf::encode_fill_f<CharT> encode_fill_ = nullptr;
     int fillcount_;
@@ -59,7 +59,7 @@ struct fmt_bool_printer
 };
 
 template <typename CharT>
-void fmt_bool_printer<CharT>::print_to
+void fmt_bool_printer<CharT>::operator()
     ( strf::destination<CharT>& dst ) const
 {
     decltype(fillcount_) right_fillcount = 0;

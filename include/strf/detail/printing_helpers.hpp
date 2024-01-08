@@ -233,7 +233,7 @@ class printer_type_from_return_type_of_make_printer
     template
         < typename Printer
         , typename Dst = strf::destination<CharT>
-        , typename = decltype(std::declval<Printer>().print_to(std::declval<Dst&>())) >
+        , typename = decltype(std::declval<Printer>()(std::declval<Dst&>())) >
     static STRF_HD strf::tag<Printer> test_(const Printer&);
 
     template
@@ -260,7 +260,7 @@ class printer_type_finder
     template
         < typename Printer
         , typename Dst = strf::destination<CharT>
-        , typename = decltype(std::declval<Printer>().print_to(std::declval<Dst&>())) >
+        , typename = decltype(std::declval<Printer>()(std::declval<Dst&>())) >
     static STRF_HD strf::tag<Printer> test_(const Printer&);
 
     template
@@ -346,7 +346,8 @@ struct print_using_make_printer
         printer_type
             ( tof.make_printer
                 ( strf::tag<CharT>{}, &pre, fp
-                  , PrintableArgConverter::convert_printable_arg(arg) ) ) .print_to(dst);
+                  , PrintableArgConverter::convert_printable_arg(arg) ) )
+            (dst);
     }
 };
 

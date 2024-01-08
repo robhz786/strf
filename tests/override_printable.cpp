@@ -19,7 +19,7 @@ public:
         input.pre->add_size(2 + static_cast<int>(input.arg));
     }
 
-    void STRF_HD print_to(strf::destination<CharT>& dst) const
+    void STRF_HD operator()(strf::destination<CharT>& dst) const
     {
         const int size = 2 + static_cast<int>(value_);
         dst.ensure(size);

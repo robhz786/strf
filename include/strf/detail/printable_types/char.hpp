@@ -147,7 +147,7 @@ public:
         }
     }
 
-    STRF_HD void print_to(strf::destination<CharT>& dst) const;
+    STRF_HD void operator()(strf::destination<CharT>& dst) const;
 
 private:
 
@@ -155,7 +155,7 @@ private:
 };
 
 template <typename CharT>
-STRF_HD void char_printer<CharT>::print_to
+STRF_HD void char_printer<CharT>::operator()
     ( strf::destination<CharT>& dst ) const
 {
     dst.ensure(1);
@@ -181,7 +181,7 @@ public:
         init_(input.pre, wcalc, charset);
     }
 
-    STRF_HD void print_to(strf::destination<CharT>& dst) const;
+    STRF_HD void operator()(strf::destination<CharT>& dst) const;
 
 private:
 
@@ -245,7 +245,7 @@ STRF_HD void fmt_char_printer<CharT>::init_
 
 
 template <typename CharT>
-STRF_HD void fmt_char_printer<CharT>::print_to
+STRF_HD void fmt_char_printer<CharT>::operator()
     ( strf::destination<CharT>& dst ) const
 {
     if (left_fillcount_ > 0) {
@@ -294,7 +294,7 @@ public:
         }
     }
 
-    void STRF_HD print_to(strf::destination<DstCharT>& dst) const;
+    void STRF_HD operator()(strf::destination<DstCharT>& dst) const;
 
 private:
     strf::encode_char_f<DstCharT> encode_char_f_;
@@ -303,7 +303,7 @@ private:
 };
 
 template <typename DstCharT>
-void STRF_HD conv_char32_printer<DstCharT>::print_to(strf::destination<DstCharT>& dst) const
+void STRF_HD conv_char32_printer<DstCharT>::operator()(strf::destination<DstCharT>& dst) const
 {
     dst.ensure(encoded_char_size_);
     encode_char_f_(dst.buffer_ptr(), ch_);
@@ -326,7 +326,7 @@ public:
         init_(input.pre, charset, input.arg.get_alignment_format(), char_width);
     }
 
-    void STRF_HD print_to(strf::destination<DstCharT>& dst) const;
+    void STRF_HD operator()(strf::destination<DstCharT>& dst) const;
 
 private:
 
@@ -373,7 +373,7 @@ void STRF_HD fmt_conv_char32_printer<DstCharT>::init_
 }
 
 template <typename DstCharT>
-void STRF_HD fmt_conv_char32_printer<DstCharT>::print_to(strf::destination<DstCharT>& dst) const
+void STRF_HD fmt_conv_char32_printer<DstCharT>::operator()(strf::destination<DstCharT>& dst) const
 {
     if(fillcount_ <= 0) {
         encode_fill_f_(dst, count_, ch_);

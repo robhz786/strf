@@ -95,7 +95,7 @@ public:
     facets_pack_printer& operator=(const facets_pack_printer&) = delete;
     facets_pack_printer& operator=(facets_pack_printer&&) = delete;
 
-    STRF_HD void print_to(strf::destination<CharT>& dst) const
+    STRF_HD void operator()(strf::destination<CharT>& dst) const
     {
         strf::detail::write(dst, printers_);
     }

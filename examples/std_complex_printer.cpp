@@ -169,7 +169,7 @@ public:
     template <typename... T>
     explicit std_complex_printer(strf::usual_printer_input<T...> x);
 
-    void print_to(strf::destination<CharT>& dst) const;
+    void operator()(strf::destination<CharT>& dst) const;
 
 private:
 
@@ -231,7 +231,7 @@ void std_complex_printer<CharT, FloatT>::premeasurements_
 }
 
 template <typename CharT, typename FloatT>
-void std_complex_printer<CharT, FloatT>::print_to(strf::destination<CharT>& dst) const
+void std_complex_printer<CharT, FloatT>::operator()(strf::destination<CharT>& dst) const
 {
     auto print = strf::to(dst).with(lettercase_, numpunct_, encoding_);
     if (form_ == complex_form::polar) {
@@ -275,7 +275,7 @@ public:
             , x.arg.width() );
     }
 
-    void print_to(strf::destination<CharT>& dst) const;
+    void operator()(strf::destination<CharT>& dst) const;
 
 private:
 
@@ -369,7 +369,7 @@ void fmt_std_complex_printer<CharT, FloatT>::do_premeasurements_without_fill_
 }
 
 template <typename CharT, typename FloatT>
-void fmt_std_complex_printer<CharT, FloatT>::print_to
+void fmt_std_complex_printer<CharT, FloatT>::operator()
     ( strf::destination<CharT>& dst ) const
 {
     if (fillcount_ <= 0) {

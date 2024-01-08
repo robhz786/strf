@@ -379,17 +379,7 @@ a|
 using dest_type = typename DestCreator::sized_destination_type;
 dest_type dest{dest&#95;creator.create(poli.space)};
 ----
-. For each `parg` in `pargs\...`, do:
-+
-[source,cpp,subs=normal]
-----
-using pre_t = {premeasurements}<size_presence::no, width_presence::no>;
-pre_t pre;
-using parg_t = strf::remove_cvref_t<decltype(parg)>;
-using printer_t = {printer_type}<char_type, pre_t, FPack, parg_t>;
-const printer_t p{ {make_printer}<char_type>(&pre, fpack, parg) };
-p.print_to(dest);
-----
+. Print all arguments `pargs\...` into `dest`
 . Returns `dest.finish()` if such expression is valid
 
 |===
@@ -420,7 +410,7 @@ printer_t p{ {make_printer}<char_type>(&pre, fpack, arg) };
 using dest_type = typename DestCreator::sized_destination_type;
 dest_type dest{dest&#95;creator.create(pre.<<size_accumulator_accumulated_ssize,accumulated_ssize>>())};
 ----
-. For each `p`, do `p.print_to(dest)`
+. For each `p`, do `p(dest)`
 . Return `dest.finish()` if such expression is valid.
 
 
@@ -437,17 +427,7 @@ a|
 ----
 typename DestCreator::destination_type dest{dest&#95;creator.create()};
 ----
-. For each `parg` in `pargs\...`, do:
-+
-[source,cpp,subs=normal]
-----
-using pre_t = {premeasurements}<size_presence::no, width_presence::no>;
-pre_t pre;
-using parg_t = strf::remove_cvref_t<decltype(parg)>;
-using printer_t = {printer_type}<char_type, pre_t, FPack, parg_t>;
-const printer_t p{ {make_printer}<char_type>(&pre, fpack, parg) };
-p.print_to(dest);
-----
+. `Print all arguments `pargs\...` into `dest`
 . Return `dest.finish()` if such expression is valid.
 
 |===
@@ -463,6 +443,7 @@ p.print_to(dest);
 ----
 Effect:: Equivalent to
 +
+[source,cpp,subs=normal]
 ----
 return operator() ((Args&&)args\..., (char_type)'\n');
 ----

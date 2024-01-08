@@ -91,7 +91,7 @@ measure_and_print_result measure_and_print(char* buff, std::ptrdiff_t buff_size,
     using printer_t = strf::printer_type<char, strf::full_premeasurements, strf::facets_pack<>, Arg>;
     const printer_t printer{strf::make_printer<char>(&pre, strf::pack(), arg)};
     strf::cstr_destination dst{buff, buff_size};
-    printer.print_to(dst);
+    printer(dst);
     auto *end = dst.finish().ptr;
 
     measure_and_print_result result;
@@ -356,7 +356,7 @@ public:
             // TEST_VS_SPRINTF( +*strf::fixed(value).pad0(digcount + 10)
             //                , "%+#0*.0f", digcount + 10, value);
 
-                
+
         } else {
             const int min_precision = e10 >= -digcount ? 0 : 1 - e10 - digcount;
             const int max_precision = - e10;
@@ -428,7 +428,7 @@ void test_mantissa(std::uint64_t mantissa) {
         ( "\ntesting mantissa = ", *strf::hex(mantissa).pad0(15));
     test_utils::test_messages_destination() .recycle();
     (void) fflush(stdout);
-    
+
     for (std::uint32_t exponent = 0; exponent < 0x7FF; ++exponent) {
         test_exp_and_mantissa(exponent, mantissa);
     }
@@ -462,7 +462,7 @@ int main() {
         test_mantissa(distrib(gen));
         (void) fflush(stdout);
     }
-    
+
     int err_count = test_utils::test_err_count();
     if (err_count == 0) {
         strf::write(test_msg_dst, "\nAll test passed!\n");

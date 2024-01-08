@@ -550,7 +550,7 @@ public:
         }
     }
 
-    STRF_HD void print_to(strf::destination<char_type>& dst) const
+    STRF_HD void operator()(strf::destination<char_type>& dst) const
     {
         strf::detail::tr_string_write
             ( tr_string_, tr_string_end_, printers_array_, num_printers_
@@ -588,7 +588,7 @@ public:
     {
     }
 
-    STRF_HD void print_to(strf::destination<char_type>& dst) const
+    STRF_HD void operator()(strf::destination<char_type>& dst) const
     {
         strf::detail::tr_string_write
             ( tr_string_, tr_string_end_, printers_array_, num_printers_

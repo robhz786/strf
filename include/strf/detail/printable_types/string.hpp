@@ -740,7 +740,7 @@ public:
         input.pre->add_size(str_end_ - str_);
     }
 
-    STRF_HD void print_to(strf::destination<DstCharT>& dst) const;
+    STRF_HD void operator()(strf::destination<DstCharT>& dst) const;
 
 private:
 
@@ -759,7 +759,7 @@ private:
 };
 
 template<typename SrcCharT, typename DstCharT>
-STRF_HD void strcpy_printer<SrcCharT, DstCharT>::print_to
+STRF_HD void strcpy_printer<SrcCharT, DstCharT>::operator()
     ( strf::destination<DstCharT>& dst ) const
 {
     strf::detail::output_buffer_interchar_copy(dst, str_, str_end_);
@@ -815,7 +815,7 @@ public:
         precalc_size_(input.pre, dst_charset, fillcount);
     }
 
-    STRF_HD void print_to(strf::destination<DstCharT>& dst) const;
+    STRF_HD void operator()(strf::destination<DstCharT>& dst) const;
 
 private:
 
@@ -888,7 +888,7 @@ inline STRF_HD int aligned_strcpy_printer<SrcCharT, DstCharT>::init_
 }
 
 template<typename SrcCharT, typename DstCharT>
-void STRF_HD aligned_strcpy_printer<SrcCharT, DstCharT>::print_to
+void STRF_HD aligned_strcpy_printer<SrcCharT, DstCharT>::operator()
     ( strf::destination<DstCharT>& dst ) const
 {
     if (left_fillcount_ > 0) {
@@ -972,7 +972,7 @@ public:
         init_( input.pre, src_charset, dst_charset);
     }
 
-    STRF_HD void print_to(strf::destination<DstCharT>& dst) const;
+    STRF_HD void operator()(strf::destination<DstCharT>& dst) const;
 
 private:
 
@@ -1032,7 +1032,7 @@ private:
 };
 
 template<typename SrcCharT, typename DstCharT>
-STRF_HD void transcode_printer<SrcCharT, DstCharT>::print_to
+STRF_HD void transcode_printer<SrcCharT, DstCharT>::operator()
     ( strf::destination<DstCharT>& dst ) const
 {
     const auto flags = strf::transcode_flags::none;
@@ -1094,7 +1094,7 @@ public:
              , use_facet_<strf::charset_c<DstCharT>, SrcCharT>(input.facets) );
     }
 
-    STRF_HD void print_to(strf::destination<DstCharT>& dst) const;
+    STRF_HD void operator()(strf::destination<DstCharT>& dst) const;
 
 private:
 
@@ -1194,7 +1194,7 @@ void STRF_HD aligned_transcode_printer<SrcCharT, DstCharT>::init_
 }
 
 template<typename SrcCharT, typename DstCharT>
-void STRF_HD aligned_transcode_printer<SrcCharT, DstCharT>::print_to
+void STRF_HD aligned_transcode_printer<SrcCharT, DstCharT>::operator()
     ( strf::destination<DstCharT>& dst ) const
 {
     if (left_fillcount_ > 0) {
@@ -1259,7 +1259,7 @@ public:
         input.pre->subtract_width(res.width);
         init_( input.pre, src_charset, dst_charset);
     }
-    STRF_HD void print_to(strf::destination<DstCharT>& dst) const;
+    STRF_HD void operator()(strf::destination<DstCharT>& dst) const;
 
 private:
 
@@ -1320,7 +1320,7 @@ private:
 };
 
 template<typename SrcCharT, typename DstCharT>
-STRF_HD void unsafe_transcode_printer<SrcCharT, DstCharT>::print_to
+STRF_HD void unsafe_transcode_printer<SrcCharT, DstCharT>::operator()
     ( strf::destination<DstCharT>& dst ) const
 {
     constexpr auto flags = strf::transcode_flags::none;
@@ -1383,7 +1383,7 @@ public:
              , use_facet_<strf::charset_c<DstCharT>, SrcCharT>(input.facets) );
     }
 
-    STRF_HD void print_to(strf::destination<DstCharT>& dst) const;
+    STRF_HD void operator()(strf::destination<DstCharT>& dst) const;
 
 private:
 
@@ -1483,7 +1483,7 @@ void STRF_HD aligned_unsafe_transcode_printer<SrcCharT, DstCharT>::init_
 }
 
 template<typename SrcCharT, typename DstCharT>
-void STRF_HD aligned_unsafe_transcode_printer<SrcCharT, DstCharT>::print_to
+void STRF_HD aligned_unsafe_transcode_printer<SrcCharT, DstCharT>::operator()
     ( strf::destination<DstCharT>& dst ) const
 {
     if (left_fillcount_ > 0) {
@@ -1693,7 +1693,7 @@ public:
         underlying_printer_().~polymorphic_printer();
     }
 
-    STRF_HD void print_to(strf::destination<char>& dst) const
+    STRF_HD void operator()(strf::destination<char>& dst) const
     {
         underlying_printer_().print_to(dst);
     }
@@ -1772,7 +1772,7 @@ public:
         underlying_printer_().~polymorphic_printer();
     }
 
-    STRF_HD void print_to(strf::destination<char>& dst) const
+    STRF_HD void operator()(strf::destination<char>& dst) const
     {
         underlying_printer_().print_to(dst);
     }

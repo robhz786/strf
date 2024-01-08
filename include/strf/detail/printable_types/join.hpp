@@ -221,7 +221,7 @@ public:
         printers_ptr_()->~printers_tuple_();
     }
 
-    STRF_HD void print_to(strf::destination<CharT>& dst) const
+    STRF_HD void operator()(strf::destination<CharT>& dst) const
     {
         if (fillcount_ <= 0) {
             strf::detail::write(dst, printers_());
@@ -344,7 +344,7 @@ public:
     {
     }
 
-    STRF_HD void print_to(strf::destination<CharT>& dst) const
+    STRF_HD void operator()(strf::destination<CharT>& dst) const
     {
         do_print_(printables_, dst);
     }
@@ -377,7 +377,7 @@ public:
     {
     }
 
-    STRF_HD void print_to(strf::destination<CharT>& dst) const
+    STRF_HD void operator()(strf::destination<CharT>& dst) const
     {
         strf::detail::write(dst, printers_);
     }

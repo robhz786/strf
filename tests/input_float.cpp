@@ -968,7 +968,7 @@ STRF_TEST_FUNC void other_tests()
     TEST_RECYCLING("0.13326196335449228") (0.13326196335449228);
 
     {
-        auto px = strf::numpunct<16>{3}.decimal_point(0x10FFFF);        
+        auto px = strf::numpunct<16>{3}.decimal_point(0x10FFFF);
         constexpr auto j = strf::join_right(20, '_');
 
         TEST_RECYCLING(u8"________0x1\U0010FFFF" u8"12345p+0")

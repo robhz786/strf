@@ -117,7 +117,7 @@ public:
         init_(input.pre, encoding);
     }
 
-    void print_to(strf::destination<CharT>& dst) const;
+    void operator()(strf::destination<CharT>& dst) const;
 
 private:
 
@@ -177,7 +177,7 @@ int ipv6_printer<CharT>::count_ipv6_characters() const
 }
 
 template <typename CharT>
-void ipv6_printer<CharT>::print_to(strf::destination<CharT>& dst) const
+void ipv6_printer<CharT>::operator()(strf::destination<CharT>& dst) const
 {
     if (fillcount_ <= 0) {
         print_ipv6(dst);

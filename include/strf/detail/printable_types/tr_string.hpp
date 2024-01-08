@@ -364,7 +364,7 @@ public:
         init_(i);
     }
 
-    STRF_HD void print_to(strf::destination<CharT>& dst) const
+    STRF_HD void operator()(strf::destination<CharT>& dst) const
     {
         (void)dst;
         strf::detail::tr_string_write
@@ -532,7 +532,7 @@ public:
         init_(strf::detail::make_index_sequence<sizeof...(Args)>{}, i);
     }
 
-    STRF_HD void print_to(strf::destination<CharT>& dst) const
+    STRF_HD void operator()(strf::destination<CharT>& dst) const
     {
         (void)dst;
         strf::detail::tr_string_write
@@ -634,7 +634,7 @@ struct printable_traits<detail::tr_string_arg<CharT, Args...>>
 //         }
 //     }
 
-//     STRF_HD void print_to(strf::destination<CharT>& dst) const
+//     STRF_HD void operator()(strf::destination<CharT>& dst) const
 //     {
 //         (void)dst;
 //         // strf::detail::tr_string_write

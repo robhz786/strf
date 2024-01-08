@@ -195,7 +195,7 @@ public:
     static constexpr bool nothing_required = no_demands;
     static constexpr bool something_required = something_demanded;
     static constexpr bool all_required = size_and_width_demanded;
-    
+
     template <strf::width_presence W = WidthPresence>
     STRF_HD constexpr explicit premeasurements
         ( strf::detail::enable_if_t<static_cast<bool>(W), strf::width_t> initial_width ) noexcept
