@@ -273,16 +273,12 @@ public:
 
 } // namespace
 
-#if !defined(__CUDACC__)
-
-// std::reference_wrapper does not work in  __CUDACC__
-
 namespace strf {
 template <>
 struct printable_traits<my_abstract_type>
 {
-    using representative_type = std::reference_wrapper<const my_abstract_type>;
-    using forwarded_type = std::reference_wrapper<const my_abstract_type>;
+    using representative_type = strf::reference_wrapper<const my_abstract_type>;
+    using forwarded_type = strf::reference_wrapper<const my_abstract_type>;
     using formatters = strf::tag<strf::alignment_formatter>;
 
     template <typename CharT, typename FPack>
@@ -325,7 +321,7 @@ STRF_TEST_FUNC void test_abstract_printable_without_make_printer()
     // to silent a warning from clang 6 that tag_invoke is not needed
     (void) tag_invoke(strf::printable_tag(), a);
 
-    const std::reference_wrapper<const my_abstract_type> arr[] = {a, b, c};
+    const strf::reference_wrapper<const my_abstract_type> arr[] = {a, b, c};
 
     {   // test using strf::no_reserve policy
         TEST_NO_RESERVE("bb") (b);
@@ -379,14 +375,6 @@ STRF_TEST_FUNC void test_abstract_printable_without_make_printer()
 }
 
 } // namespace
-
-#else // !defined(__CUDACC__)
-
-STRF_HD void test_abstract_printable_without_make_printer()
-{
-}
-
-#endif // !defined(__CUDACC__)
 
 namespace {
 
