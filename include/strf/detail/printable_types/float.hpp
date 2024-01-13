@@ -1386,7 +1386,7 @@ public:
     {
         STRF_ASSERT(!value_.nan || !value_.infinity);
         sci_notation_ = (value_.e10 > 4 + (m10_digcount_ != 1))
-            || (value_.e10 < -(int)m10_digcount_ - 2 - (m10_digcount_ != 1));
+            || (-value_.e10 > (int)m10_digcount_ + 2 + (m10_digcount_ != 1));
     }
 
     STRF_HD fast_double_printer(double d, strf::lettercase lc) noexcept
@@ -1397,7 +1397,7 @@ public:
     {
         STRF_ASSERT(!value_.nan || !value_.infinity);
         sci_notation_ = (value_.e10 > 4 + (m10_digcount_ != 1))
-            || (value_.e10 < -(int)m10_digcount_ - 2 - (m10_digcount_ != 1));
+            || (-value_.e10 > (int)m10_digcount_ + 2 + (m10_digcount_ != 1));
     }
 
     STRF_HD void operator()(strf::destination<CharT>&) const;
