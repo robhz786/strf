@@ -433,6 +433,36 @@ STRF_TEST_FUNC void test_full_precalculation() // size and width
     TEST_FULL_PRECALC(3, 10, 7, "...{- a comment here"     , 123);
 }
 
+void STRF_HD  test_copy_and_move_tr_print_printer()
+{
+    char buff0[80] = {};
+    char buff1[80] = {};
+    char buff2[80] = {};
+    strf::cstr_destination dst0(buff0);
+    strf::cstr_destination dst1(buff1);
+    strf::cstr_destination dst2(buff2);
+
+    strf::no_premeasurements pre;
+    auto printer0 = strf::make_printer<char>
+       ( &pre
+       , strf::pack()
+       , strf::tr( "{}__{}__{}", "aaa", strf::right("bbb", 5, '.'), *strf::hex(10)>4) );
+
+    auto copy_of_printer = printer0;
+    printer0(dst0);
+    copy_of_printer(dst1);
+    decltype(printer0) printer_from_mv(std::move(printer0));
+    printer_from_mv(dst2);
+
+    dst0.finish();
+    dst1.finish();
+    dst2.finish();
+
+    TEST_CSTR_EQ(buff0, "aaa__..bbb__ 0xa");
+    TEST_CSTR_EQ(buff1, "aaa__..bbb__ 0xa");
+    TEST_CSTR_EQ(buff2, "aaa__..bbb__ 0xa");
+}
+
 }  // unnamed namespace
 
 STRF_TEST_FUNC void test_input_tr_string()
@@ -442,6 +472,7 @@ STRF_TEST_FUNC void test_input_tr_string()
     test_size_precalculation();
     test_width_precalculation();
     test_full_precalculation();
+    test_copy_and_move_tr_print_printer();
 }
 
 REGISTER_STRF_TEST(test_input_tr_string)

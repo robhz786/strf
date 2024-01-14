@@ -90,6 +90,10 @@ public:
     {
         return 0;
     }
+    template <typename T>
+    constexpr STRF_HD void reset_remaining_width(T) noexcept
+    {
+    }
     constexpr STRF_HD void zeroize_remaining_width_if_negative() const noexcept
     {
     }
