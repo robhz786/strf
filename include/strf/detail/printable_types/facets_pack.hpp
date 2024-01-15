@@ -90,10 +90,6 @@ public:
 
     facets_pack_printer() = delete;
     ~facets_pack_printer() = default;
-    facets_pack_printer(const facets_pack_printer&) = delete;
-    facets_pack_printer(facets_pack_printer&&) = delete;
-    facets_pack_printer& operator=(const facets_pack_printer&) = delete;
-    facets_pack_printer& operator=(facets_pack_printer&&) = delete;
 
     STRF_HD void operator()(strf::destination<CharT>& dst) const
     {

@@ -18,10 +18,6 @@ public:
     using char_type = CharT;
 
     polymorphic_printer() = default;
-    polymorphic_printer(const polymorphic_printer&) = default;
-    polymorphic_printer(polymorphic_printer&&) noexcept = default;
-    polymorphic_printer& operator=(const polymorphic_printer&) = default;
-    polymorphic_printer& operator=(polymorphic_printer&&) noexcept = default;
 
     virtual STRF_HD ~polymorphic_printer() STRF_DEFAULT_IMPL;
 
@@ -42,6 +38,54 @@ public:
     STRF_HD explicit printer_wrapper(IniArgs&&... ini_args)
         : printer_((IniArgs&&)ini_args...)
     {
+    }
+
+    STRF_HD void print_to(strf::destination<CharT>& dst) const override
+    {
+        printer_(dst);
+    }
+
+private:
+    Printer printer_;
+};
+
+
+template <typename CharT>
+struct clonable_polymorphic_printer: polymorphic_printer<CharT>
+{
+    virtual STRF_HD ~clonable_polymorphic_printer() STRF_DEFAULT_IMPL;
+
+    virtual STRF_HD clonable_polymorphic_printer*
+    copy_to(void* dst) const = 0;
+
+    virtual STRF_HD clonable_polymorphic_printer*
+    move_to(void* dst) && = 0;
+};
+
+template <typename CharT, typename Printer>
+class clonable_printer_wrapper: public detail::clonable_polymorphic_printer<CharT>
+{
+public:
+    template < typename... IniArgs
+             , strf::detail::enable_if_t
+                   < ! std::is_same
+                       < strf::tag<clonable_printer_wrapper>
+                       , strf::tag<detail::remove_cvref_t<IniArgs>...> >
+                       :: value
+                  , int > = 0 >
+    STRF_HD explicit clonable_printer_wrapper(IniArgs&&... ini_args)
+        : printer_((IniArgs&&)ini_args...)
+    {
+    }
+
+    STRF_HD clonable_printer_wrapper* copy_to(void* dst) const override
+    {
+        return new (dst) clonable_printer_wrapper(printer_);
+    }
+
+    STRF_HD clonable_printer_wrapper* move_to(void* dst) && override
+    {
+        return new (dst) clonable_printer_wrapper(std::move(printer_));
     }
 
     STRF_HD void print_to(strf::destination<CharT>& dst) const override

@@ -1670,27 +1670,35 @@ public:
         auto dst_charset = strf::use_facet<dst_charset_cat, facet_tag>(input.facets);
         if (src_charset.id() == dst_charset.id()) {
             using printer_type = strcpy_printer<SrcCharT, DstCharT>;
-            static_assert(sizeof(printer_type) <= pool_size_, "");
+            static_assert(sizeof(printer_type) <= storage_size_, "");
 
-            new ((void*)&pool_) printer_wrapper<DstCharT, printer_type>(input);
+            new ((void*)&storage_) clonable_printer_wrapper<DstCharT, printer_type>(input);
         } else {
             constexpr auto different = charsets_comparison::statically_different;
             using printer_type = typename string_printer_type<false, different, TranscPoli>
                 :: template type<SrcCharT, DstCharT>;
-            static_assert(sizeof(printer_type) <= pool_size_, "");
+            static_assert(sizeof(printer_type) <= storage_size_, "");
 
-            new ((void*)&pool_) printer_wrapper<DstCharT, printer_type>(input);
+            new ((void*)&storage_) clonable_printer_wrapper<DstCharT, printer_type>(input);
         }
     }
 
-    transcode_printer_variant(const transcode_printer_variant &) = delete;
-    transcode_printer_variant(transcode_printer_variant&&) = delete;
+    transcode_printer_variant(const transcode_printer_variant& other)
+    {
+        other.underlying_printer_().copy_to(&storage_);
+    }
+
+    transcode_printer_variant(transcode_printer_variant&& other)
+    {
+        std::move(other.underlying_printer_()).move_to(&storage_);
+    }
+
     transcode_printer_variant& operator=(const transcode_printer_variant&) = delete;
     transcode_printer_variant& operator=(transcode_printer_variant&&) = delete;
 
     STRF_HD ~transcode_printer_variant()
     {
-        underlying_printer_().~polymorphic_printer();
+        underlying_printer_().~clonable_polymorphic_printer();
     }
 
     STRF_HD void operator()(strf::destination<char>& dst) const
@@ -1705,9 +1713,13 @@ private:
 #  pragma GCC diagnostic ignored "-Wstrict-aliasing"
 #endif
 
-    STRF_HD const detail::polymorphic_printer<DstCharT>& underlying_printer_ () const
+    STRF_HD const detail::clonable_polymorphic_printer<DstCharT>& underlying_printer_() const
     {
-        return * reinterpret_cast<const detail::polymorphic_printer<DstCharT>*>(&pool_);
+        return * reinterpret_cast<const detail::clonable_polymorphic_printer<DstCharT>*>(&storage_);
+    }
+    STRF_HD detail::clonable_polymorphic_printer<DstCharT>& underlying_printer_()
+    {
+        return * reinterpret_cast<detail::clonable_polymorphic_printer<DstCharT>*>(&storage_);
     }
 
 #if defined(__GNUC__) && (__GNUC__ <= 6)
@@ -1715,13 +1727,13 @@ private:
 #endif
 
 
-    static constexpr std::size_t pool_size_ =
-        sizeof(detail::printer_wrapper<DstCharT, detail::transcode_printer<DstCharT, DstCharT>>);
+    static constexpr std::size_t storage_size_ =
+        sizeof(detail::clonable_printer_wrapper<DstCharT, detail::transcode_printer<DstCharT, DstCharT>>);
     using storage_type_ = typename std::aligned_storage
-        < pool_size_, alignof(detail::polymorphic_printer<DstCharT>)>
+        < storage_size_, alignof(detail::clonable_polymorphic_printer<DstCharT>)>
         :: type;
 
-    storage_type_ pool_;
+    storage_type_ storage_;
 };
 
 template <typename DstCharT>
@@ -1744,22 +1756,28 @@ public:
 
         if (src_charset.id() == dst_charset.id()) {
             using printer_type = aligned_strcpy_printer<SrcCharT, DstCharT>;
-            static_assert(sizeof(printer_type) <= pool_size_, "");
+            static_assert(sizeof(printer_type) <= storage_size_, "");
 
-            new ((void*)&pool_) printer_wrapper<DstCharT, printer_type>(input);
+            new ((void*)&storage_) clonable_printer_wrapper<DstCharT, printer_type>(input);
 
         } else {
             constexpr auto different = charsets_comparison::statically_different;
             using printer_type = typename string_printer_type<true, different, TranscPoli>
                 :: template type<SrcCharT, DstCharT>;
-            static_assert(sizeof(printer_type) <= pool_size_, "");
+            static_assert(sizeof(printer_type) <= storage_size_, "");
 
-            new ((void*)&pool_) printer_wrapper<DstCharT, printer_type>(input);
+            new ((void*)&storage_) clonable_printer_wrapper<DstCharT, printer_type>(input);
         }
     }
 
-    aligned_transcode_printer_variant(const aligned_transcode_printer_variant&) = delete;
-    aligned_transcode_printer_variant(aligned_transcode_printer_variant&&) = delete;
+    aligned_transcode_printer_variant(const aligned_transcode_printer_variant& other)
+    {
+        other.underlying_printer_().copy_to(&storage_);
+    }
+    aligned_transcode_printer_variant(aligned_transcode_printer_variant&& other)
+    {
+        std::move(other.underlying_printer_()).move_to(&storage_);
+    }
 
     aligned_transcode_printer_variant&
     operator=(const aligned_transcode_printer_variant&) = delete;
@@ -1769,7 +1787,7 @@ public:
 
     STRF_HD ~aligned_transcode_printer_variant()
     {
-        underlying_printer_().~polymorphic_printer();
+        underlying_printer_().~clonable_polymorphic_printer();
     }
 
     STRF_HD void operator()(strf::destination<char>& dst) const
@@ -1784,9 +1802,13 @@ private:
 #  pragma GCC diagnostic ignored "-Wstrict-aliasing"
 #endif
 
-    STRF_HD const detail::polymorphic_printer<DstCharT>& underlying_printer_ () const
+    STRF_HD const detail::clonable_polymorphic_printer<DstCharT>& underlying_printer_() const
     {
-        return * reinterpret_cast<const detail::polymorphic_printer<DstCharT>*>(&pool_);
+        return * reinterpret_cast<const detail::clonable_polymorphic_printer<DstCharT>*>(&storage_);
+    }
+    STRF_HD detail::clonable_polymorphic_printer<DstCharT>& underlying_printer_()
+    {
+        return * reinterpret_cast<detail::clonable_polymorphic_printer<DstCharT>*>(&storage_);
     }
 
 #if defined(__GNUC__) && (__GNUC__ <= 6)
@@ -1794,13 +1816,13 @@ private:
 #endif
 
     using biggest_printer_t = strf::detail::aligned_transcode_printer<DstCharT, DstCharT>;
-    static constexpr std::size_t pool_size_ =
-        sizeof(detail::printer_wrapper<DstCharT, biggest_printer_t>);
+    static constexpr std::size_t storage_size_ =
+        sizeof(detail::clonable_printer_wrapper<DstCharT, biggest_printer_t>);
     using storage_type_ = typename std::aligned_storage
-        < pool_size_, alignof(detail::polymorphic_printer<DstCharT>)>
+        < storage_size_, alignof(detail::clonable_polymorphic_printer<DstCharT>)>
         :: type;
 
-    storage_type_ pool_;
+    storage_type_ storage_;
 };
 
 } // namespace detail

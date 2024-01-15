@@ -2248,7 +2248,8 @@ public:
                     thousands_sep = numpunct.thousands_sep();
                 }
                 new ((void*)&storage_)
-                    detail::printer_wrapper<CharT, int_printer_static_base_and_punct<CharT, 16, true> >
+                    detail::clonable_printer_wrapper
+                    < CharT, int_printer_static_base_and_punct<CharT, 16, true> >
                     ( ivalue, ifmt16, afmt, i.pre, lc, grp, thousands_sep, charset );
                 break;
             }
@@ -2261,7 +2262,8 @@ public:
                     thousands_sep = numpunct.thousands_sep();
                 }
                 new ((void*)&storage_)
-                    detail::printer_wrapper<CharT, int_printer_static_base_and_punct<CharT, 8, true> >
+                    detail::clonable_printer_wrapper
+                    < CharT, int_printer_static_base_and_punct<CharT, 8, true> >
                     ( ivalue, ifmt8, afmt, i.pre, lc, grp, thousands_sep, charset );
                 break;
             }
@@ -2274,7 +2276,8 @@ public:
                     thousands_sep = numpunct.thousands_sep();
                 }
                 new ((void*)&storage_)
-                    detail::printer_wrapper<CharT, int_printer_static_base_and_punct<CharT, 2, true> >
+                    detail::clonable_printer_wrapper
+                    < CharT, int_printer_static_base_and_punct<CharT, 2, true> >
                     ( ivalue, ifmt2, afmt, i.pre, lc, grp, thousands_sep, charset );
                 break;
             }
@@ -2287,21 +2290,30 @@ public:
                     thousands_sep = numpunct.thousands_sep();
                 }
                 new ((void*)&storage_)
-                    detail::printer_wrapper<CharT, int_printer_static_base_and_punct<CharT, 10, true> >
+                    detail::clonable_printer_wrapper
+                    < CharT, int_printer_static_base_and_punct<CharT, 10, true> >
                     ( ivalue, ifmt10, afmt, i.pre, lc, grp, thousands_sep, charset );
                 break;
             }
         }
     }
 
-    int_printer_full_dynamic(const int_printer_full_dynamic&) = delete;
-    int_printer_full_dynamic(int_printer_full_dynamic&&) = delete;
+    int_printer_full_dynamic(const int_printer_full_dynamic& other)
+    {
+        other.underlying_printer_().copy_to(&storage_);
+    }
+
+    int_printer_full_dynamic(int_printer_full_dynamic&& other)
+    {
+        std::move(other.underlying_printer_()).move_to(&storage_);
+    }
+
     int_printer_full_dynamic& operator=(const int_printer_full_dynamic&) = delete;
     int_printer_full_dynamic& operator=(int_printer_full_dynamic&&) = delete;
 
     STRF_HD ~int_printer_full_dynamic()
     {
-        underlying_printer_().~polymorphic_printer();
+        underlying_printer_().~clonable_polymorphic_printer();
     }
 
     STRF_HD void operator()(strf::destination<CharT>& dst) const
@@ -2316,9 +2328,13 @@ private:
 #  pragma GCC diagnostic ignored "-Wstrict-aliasing"
 #endif
 
-    STRF_HD const detail::polymorphic_printer<CharT>& underlying_printer_() const
+    STRF_HD const detail::clonable_polymorphic_printer<CharT>& underlying_printer_() const
     {
-        return * reinterpret_cast<const detail::polymorphic_printer<CharT>*>(&storage_);
+        return * reinterpret_cast<const detail::clonable_polymorphic_printer<CharT>*>(&storage_);
+    }
+    STRF_HD detail::clonable_polymorphic_printer<CharT>& underlying_printer_()
+    {
+        return * reinterpret_cast<detail::clonable_polymorphic_printer<CharT>*>(&storage_);
     }
 
 #if defined(__GNUC__) && (__GNUC__ <= 6)
@@ -2330,7 +2346,7 @@ private:
         sizeof(detail::printer_wrapper<CharT, biggest_printer_type>);
 
     using storage_type_ = typename std::aligned_storage
-        < pool_size_, alignof(detail::polymorphic_printer<CharT>)>
+        < pool_size_, alignof(detail::clonable_polymorphic_printer<CharT>)>
         :: type;
 
     storage_type_ storage_;
