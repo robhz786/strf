@@ -6,19 +6,8 @@
 #include "test_utils.hpp"
 
 template <typename CharT>
-class my_bool_printer
+struct my_bool_printer
 {
-public:
-
-    template <typename... T>
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD explicit my_bool_printer
-        ( const strf::usual_printer_input<T...>& input )
-        : value_(input.arg)
-    {
-        input.pre->subtract_width(static_cast<strf::width_t>(2 + static_cast<int>(input.arg)));
-        input.pre->add_size(2 + static_cast<int>(input.arg));
-    }
-
     void STRF_HD operator()(strf::destination<CharT>& dst) const
     {
         const int size = 2 + static_cast<int>(value_);
@@ -35,12 +24,10 @@ public:
         dst.advance(size);
     }
 
-private:
-
     bool value_;
 };
 
-struct my_bool_printing_overrider
+struct my_bool_printing_overrider_base
 {
     using category = strf::printable_overrider_c;
 
@@ -48,31 +35,31 @@ struct my_bool_printing_overrider
     constexpr static STRF_HD auto make_printer
         ( strf::tag<CharT>
         , PreMeasurements* pre
-        , const FPack& fp
-        , bool x ) noexcept
-        -> strf::usual_printer_input
-            <CharT, PreMeasurements, FPack, bool, my_bool_printer<CharT>>
+        , const FPack&
+        , bool value ) noexcept
     {
-        return {pre, fp, x};
+        pre->subtract_width(static_cast<strf::width_t>(2 + static_cast<int>(value)));
+        pre->add_size(2 + static_cast<int>(value));
+        return my_bool_printer<CharT>{value};
     }
+};
 
+template <typename T>
+struct is_bool: std::is_same<T, bool> {};
+
+struct my_bool_printing_overrider: my_bool_printing_overrider_base
+{
     template <typename CharT, typename PreMeasurements, typename FPack, typename... T>
-    constexpr static STRF_HD auto make_printer
+    static STRF_HD auto make_printer
         ( strf::tag<CharT>
         , PreMeasurements* pre
         , const FPack& fp
         , strf::printable_with_fmt<T...> x ) noexcept
-        -> decltype( strf::make_printer<CharT>
-                       ( pre
-                       , fp
-                       , strf::join(x.value())
-                           .set_alignment_format(x.get_alignment_format()) ) )
     {
         return strf::make_printer<CharT>
             ( pre
-            , fp
-            , strf::join(x.value())
-                .set_alignment_format(x.get_alignment_format()) );
+            , strf::pack(fp, strf::constrain<is_bool>(my_bool_printing_overrider_base{}))
+            , strf::join(x.value()) .set_alignment_format(x.get_alignment_format()) );
     }
 };
 
@@ -84,20 +71,12 @@ struct my_int_printing_overrider
     constexpr static STRF_HD auto make_printer
         ( strf::tag<CharT>
         , PreMeasurements* pre
-        , const FPack&
+        , const FPack& fp
         , strf::printable_with_fmt<T...> x ) noexcept
-        -> decltype( strf::make_printer<CharT>
-                       ( pre
-                       , strf::pack()
-                       , strf::join
-                           ( static_cast<CharT>('(')
-                           , strf::fmt(x.value()).set_int_format(x.get_int_format())
-                           , static_cast<CharT>(')') )
-                           .set_alignment_format(x.get_alignment_format()) ) )
     {
         return strf::make_printer<CharT>
             ( pre
-            , strf::pack()
+            , strf::pack(fp, strf::dont_override{})
             , strf::join
                 ( static_cast<CharT>('(')
                 , strf::fmt(x.value()).set_int_format(x.get_int_format())
@@ -106,15 +85,9 @@ struct my_int_printing_overrider
     }
 };
 
-
-template <typename T>
-struct is_bool: std::is_same<T, bool> {};
-
-
 struct bool_wrapper {
     bool x;
 };
-
 
 namespace strf {
 
@@ -131,10 +104,6 @@ struct printable_traits<bool_wrapper> {
         , PreMeasurements* pre
         , const FPack& fp
         , bool_wrapper f )
-        -> decltype( strf::make_printer<CharT>
-                     ( pre
-                     , strf::pack(fp, strf::constrain<strf::is_char>(strf::dont_override{}))
-                     , strf::join(static_cast<CharT>('['), f.x, static_cast<CharT>(']')) ) )
     {
         return strf::make_printer<CharT>
             ( pre
