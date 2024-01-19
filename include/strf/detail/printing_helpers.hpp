@@ -92,6 +92,7 @@ class printable_arg_converter_selector_for_printing_with_premeasurements
     template < typename P, typename A
              , detail::enable_if_t
                  < std::is_same<A, default_printable_with_fmt>::value
+                && detail::all_base_fmtfn_classes_are_empty<A>::value
                  , int > = 0
              , typename = decltype
                  ( std::declval<const P&>().make_printer
@@ -387,6 +388,7 @@ class printer_selector_for_printing_without_premeasurements
     template < typename P, typename A
              , detail::enable_if_t
                  < std::is_same<A, default_printable_with_fmt>::value
+                && detail::all_base_fmtfn_classes_are_empty<A>::value
                  , int > = 0
              , typename = decltype
                  ( std::declval<const P&>().print
@@ -433,6 +435,7 @@ class printer_selector_for_printing_without_premeasurements
     template < typename P, typename A
              , detail::enable_if_t
                  < std::is_same<A, default_printable_with_fmt>::value
+                && detail::all_base_fmtfn_classes_are_empty<A>::value
                  , int > = 0
              , typename = decltype
                  ( std::declval<const P&>().make_printer
@@ -651,6 +654,7 @@ class polymorphic_printer_maker_selector_for_printing_without_premeasurements
     template < typename P, typename A
              , detail::enable_if_t
                  < std::is_same<A, default_printable_with_fmt>::value
+                && detail::all_base_fmtfn_classes_are_empty<A>::value
                  , int > = 0
              , typename MakePrinterReturnType = decltype
                  ( std::declval<const P&>().make_printer
@@ -694,6 +698,7 @@ class polymorphic_printer_maker_selector_for_printing_without_premeasurements
     template < typename P, typename A
              , detail::enable_if_t
                  < std::is_same<A, default_printable_with_fmt>::value
+                && detail::all_base_fmtfn_classes_are_empty<A>::value
                  , int > = 0
              , typename = decltype
                  ( std::declval<const P&>().print

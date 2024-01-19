@@ -117,6 +117,31 @@ template <typename T>
 struct is_printable_with_fmt<T&&> : is_printable_with_fmt<T>
 { };
 
+
+template <typename... T>
+struct are_empty;
+
+template <>
+struct are_empty<> : std::true_type {};
+
+template <typename First, typename... Others>
+struct are_empty<First, Others...>
+    : std::integral_constant
+        < bool
+        , std::is_empty<First>::value
+       && are_empty<Others...>::value >
+{
+};
+
+template <typename PrintableWithFmt>
+struct all_base_fmtfn_classes_are_empty;
+
+template <typename PrintingTraits, typename... Fmts>
+struct all_base_fmtfn_classes_are_empty< printable_with_fmt<PrintingTraits, Fmts...> >
+    : are_empty<typename Fmts::template fn<printable_with_fmt<PrintingTraits, Fmts...>> ...>
+{
+};
+
 } // namespace detail
 
 template <typename PrintingTraits, class... Fmts>

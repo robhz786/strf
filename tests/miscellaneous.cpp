@@ -113,6 +113,14 @@ STRF_TEST_FUNC void test_miscellaneous()
             TEST_EQ(63 - i, strf::detail::slow_countl_zero_ll(1ULL << i));
         }
     }
+
+    {   // strf::detail::all_base_fmtfn_classes_are_empty
+
+        using strf::detail::all_base_fmtfn_classes_are_empty;
+
+        static_assert( all_base_fmtfn_classes_are_empty<decltype(strf::fmt(0))>::value, "");
+        static_assert(!all_base_fmtfn_classes_are_empty<decltype(strf::fmt(0).p(5))>::value, "");
+    }
 }
 
 REGISTER_STRF_TEST(test_miscellaneous)
