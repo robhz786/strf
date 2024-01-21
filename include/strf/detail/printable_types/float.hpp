@@ -727,99 +727,10 @@ using float_with_default_formatters = strf::printable_with_fmt
     , strf::float_formatter
     , strf::alignment_formatter >;
 
-template <typename CharT, typename PreMeasurements, typename FloatT>
-struct fast_double_printer_input
-{
-    using printer_type = strf::detail::fast_double_printer<CharT>;
-
-    template <typename FPack>
-    STRF_HD fast_double_printer_input(PreMeasurements* pre_, const FPack& fp_, FloatT arg_)
-        : pre(pre_)
-        , value(arg_)
-        , lcase(strf::use_facet<strf::lettercase_c, float>(fp_))
-    {
-    }
-
-    template <typename FPack>
-    STRF_HD fast_double_printer_input
-        ( PreMeasurements* pre_
-        , const FPack& fp_
-        , strf::detail::float_with_default_formatters<FloatT> input )
-        : pre(pre_)
-        , value(input.value())
-        , lcase(strf::use_facet<strf::lettercase_c, float>(fp_))
-    {
-    }
-
-    PreMeasurements* pre;
-    FloatT value;
-    strf::lettercase lcase;
-};
-
-
 // template <typename CharT, typename PreMeasurements, typename FPack, typename FloatT>
 // using fast_punct_double_printer_input =
 //     strf::usual_printer_input< CharT, PreMeasurements, FPack, FloatT
 //                              , strf::detail::fast_punct_double_printer<CharT> >;
-
-template < typename CharT, typename PreMeasurements, typename FPack
-         , typename FloatT, typename FloatFormatter, bool HasAlignment >
-using fmt_double_printer_input =
-    strf::usual_printer_input
-        < CharT, PreMeasurements, FPack
-        , strf::detail::float_with_formatters<FloatT, FloatFormatter, HasAlignment>
-        , strf::detail::punct_double_printer<CharT> >;
-
-template <typename FloatT>
-struct float_printing
-{
-    using representative_type = FloatT;
-    using forwarded_type = FloatT;
-    using formatters = strf::tag<strf::float_formatter, strf::alignment_formatter>;
-    using is_overridable = std::true_type;
-
-    template <typename CharT, typename PreMeasurements, typename FPack>
-    STRF_HD constexpr static auto make_printer
-        ( strf::tag<CharT>, PreMeasurements* pre, const FPack& fp, FloatT x ) noexcept
-        -> strf::detail::fast_double_printer_input<CharT, PreMeasurements, FloatT>
-    {
-        return {pre, fp, x};
-    }
-
-    template < typename CharT, typename PreMeasurements, typename FPack
-             , typename FloatFormatter, bool HasAlignment >
-    STRF_HD constexpr static auto make_printer
-        ( strf::tag<CharT>
-        , PreMeasurements* pre
-        , const FPack& fp
-        , strf::detail::float_with_formatters
-            < FloatT, FloatFormatter, HasAlignment > x ) noexcept
-        -> strf::detail::conditional_t
-            < HasAlignment || FloatFormatter::has_float_formatting
-            , strf::detail::fmt_double_printer_input
-                < CharT, PreMeasurements, FPack, FloatT, FloatFormatter, HasAlignment >
-            , fast_double_printer_input<CharT, PreMeasurements, FloatT> >
-    {
-        return {pre, fp, x};
-    }
-};
-
-} // namespace detail
-
-template <> struct printable_traits<float>:  public strf::detail::float_printing<float> {};
-template <> struct printable_traits<double>: public strf::detail::float_printing<double> {};
-
-STRF_HD constexpr auto tag_invoke(strf::printable_tag, float)
-    -> strf::printable_traits<float>
-    { return {}; }
-
-STRF_HD constexpr auto tag_invoke(strf::printable_tag, double)
-    -> strf::printable_traits<double>
-    { return {}; }
-
-void tag_invoke(strf::printable_tag, long double) = delete;
-
-namespace detail {
 
 template <int Base, typename CharT, typename IntT>
 inline STRF_HD void write_int_with_leading_zeros
@@ -1366,18 +1277,6 @@ class fast_double_printer
 {
 public:
 
-    template <typename FloatT, typename PreMeasurements>
-    STRF_HD explicit fast_double_printer
-        ( strf::detail::fast_double_printer_input<CharT, PreMeasurements, FloatT> input) noexcept
-        : fast_double_printer(input.value, input.lcase)
-    {
-        if (input.pre->has_remaining_width() || PreMeasurements::size_demanded) {
-            const auto s = size();
-            input.pre->subtract_width(static_cast<std::int16_t>(s));
-            input.pre->add_size(s);
-        }
-    }
-
     STRF_HD fast_double_printer(float f, strf::lettercase lc) noexcept
         : value_(decode(f))
         , m10_digcount_(strf::detail::count_digits<10>(value_.m10))
@@ -1406,10 +1305,10 @@ public:
 
 private:
 
-    detail::double_dec value_{};
-    bool sci_notation_{} ;
+    detail::double_dec value_ {};
     int m10_digcount_{};
     strf::lettercase lettercase_ = strf::lettercase::lower;
+    bool sci_notation_{} ;
 };
 
 template <typename CharT>
@@ -2330,20 +2229,21 @@ class punct_double_printer
 public:
 
     template < typename PreMeasurements, typename FPack, typename FloatT, bool HasAlignment>
-    STRF_HD explicit punct_double_printer
-        ( const strf::detail::fmt_double_printer_input
-            < CharT, PreMeasurements, FPack, FloatT
-            , strf::float_formatter_full_dynamic, HasAlignment >& input )
-        : lettercase_(strf::use_facet<strf::lettercase_c, FloatT>(input.facets))
+    STRF_HD punct_double_printer
+        ( PreMeasurements* pre
+        , const FPack& facets
+        , const detail::float_with_formatters
+            < FloatT, strf::float_formatter_full_dynamic, HasAlignment >& arg )
+        : lettercase_(strf::use_facet<strf::lettercase_c, FloatT>(facets))
     {
-        auto charset = use_facet<strf::charset_c<CharT>, FloatT>(input.facets);
+        auto charset = use_facet<strf::charset_c<CharT>, FloatT>(facets);
         encode_fill_ = charset.encode_fill_func();
         encode_char_ = charset.encode_char_func();
 
-        auto notation = input.arg.float_notation();
-        if (input.arg.get_float_format().punctuate) {
-            auto punct_dec = strf::use_facet<strf::numpunct_c<10>, FloatT>(input.facets);
-            auto punct_hex = strf::use_facet<strf::numpunct_c<16>, FloatT>(input.facets);
+        auto notation = arg.float_notation();
+        if (arg.get_float_format().punctuate) {
+            auto punct_dec = strf::use_facet<strf::numpunct_c<10>, FloatT>(facets);
+            auto punct_hex = strf::use_facet<strf::numpunct_c<16>, FloatT>(facets);
             grouping_ = punct_dec.grouping();
             thousands_sep_ = punct_dec.thousands_sep();
             decimal_point_ = ( notation != strf::float_notation::hex
@@ -2357,26 +2257,26 @@ public:
             }
         }
         auto r = strf::detail::init_float_printer_data
-            ( data_, input.arg.value(), grouping_, input.arg.get_float_format()
-            , input.arg.get_alignment_format() );
+            ( data_, arg.value(), grouping_, arg.get_float_format()
+            , arg.get_alignment_format() );
         if (data_.showpoint) {
             auto size = charset.encoded_char_size(decimal_point_);
             decimal_point_size_ = static_cast<detail::chars_count_t>(size);
         } else {
             decimal_point_size_ = 0;
         }
-        input.pre->subtract_width(r.fillcount + r.content_width);
+        pre->subtract_width(r.fillcount + r.content_width);
         STRF_IF_CONSTEXPR (PreMeasurements::size_demanded) {
-            input.pre->add_size(r.content_width);
+            pre->add_size(r.content_width);
             if (r.fillcount > 0) {
                 const auto fillchar_size = charset.encoded_char_size(data_.fillchar);
-                input.pre->add_size(fillchar_size * r.fillcount);
+                pre->add_size(fillchar_size * r.fillcount);
             }
             if (notation != strf::float_notation::hex && data_.sep_count){
-                input.pre->add_size(data_.sep_count * (sep_size_ - 1));
+                pre->add_size(data_.sep_count * (sep_size_ - 1));
             }
             if (data_.showpoint) {
-                input.pre->add_size(decimal_point_size_ - 1);
+                pre->add_size(decimal_point_size_ - 1);
             }
         }
     }
@@ -2384,23 +2284,24 @@ public:
     template < typename PreMeasurements, typename FPack, typename FloatT
              , typename FloatFormatter, bool HasAlignment
              , strf::detail::enable_if_t<!FloatFormatter::has_punct, int> = 0 >
-    STRF_HD explicit punct_double_printer
-        ( const strf::detail::fmt_double_printer_input
-            < CharT, PreMeasurements, FPack, FloatT, FloatFormatter, HasAlignment >& input )
-        : lettercase_(strf::use_facet<strf::lettercase_c, FloatT>(input.facets))
+    STRF_HD punct_double_printer
+        ( PreMeasurements* pre
+        , const FPack& facets
+        , const detail::float_with_formatters<FloatT, FloatFormatter, HasAlignment>& arg )
+        : lettercase_(strf::use_facet<strf::lettercase_c, FloatT>(facets))
     {
-        auto charset = use_facet<strf::charset_c<CharT>, FloatT>(input.facets);
+        auto charset = use_facet<strf::charset_c<CharT>, FloatT>(facets);
         encode_fill_ = charset.encode_fill_func();
         auto r = strf::detail::init_float_printer_data
-            ( data_, input.arg.value(), grouping_, input.arg.get_float_format()
-            , input.arg.get_alignment_format() );
+            ( data_, arg.value(), grouping_, arg.get_float_format()
+            , arg.get_alignment_format() );
         decimal_point_size_ = data_.showpoint;
-        input.pre->subtract_width(static_cast<width_t>(r.fillcount + r.content_width));
+        pre->subtract_width(static_cast<width_t>(r.fillcount + r.content_width));
         STRF_IF_CONSTEXPR (PreMeasurements::size_demanded) {
-            input.pre->add_size(r.content_width);
+            pre->add_size(r.content_width);
             if (r.fillcount > 0) {
                 const auto fillchar_size = charset.encoded_char_size(data_.fillchar);
-                input.pre->add_size(fillchar_size * r.fillcount);
+                pre->add_size(fillchar_size * r.fillcount);
             }
         }
     }
@@ -2676,7 +2577,68 @@ STRF_EXPLICIT_TEMPLATE class fast_double_printer<wchar_t>;
 
 #endif // defined(STRF_SEPARATE_COMPILATION)
 
+
+template <typename FloatT>
+struct float_printing
+{
+    using representative_type = FloatT;
+    using forwarded_type = FloatT;
+    using formatters = strf::tag<strf::float_formatter, strf::alignment_formatter>;
+    using is_overridable = std::true_type;
+
+    template <typename CharT, typename PreMeasurements, typename FPack>
+    STRF_HD constexpr static auto make_printer
+        ( strf::tag<CharT>, PreMeasurements* pre, const FPack& fp, FloatT x ) noexcept
+        -> strf::detail::fast_double_printer<CharT>
+    {
+        const fast_double_printer<CharT> p(x, strf::use_facet<strf::lettercase_c, float>(fp));
+        if (pre->has_remaining_width() || PreMeasurements::size_demanded) {
+            const auto s = p.size();
+            pre->subtract_width(static_cast<std::int16_t>(s));
+            pre->add_size(s);
+        }
+        return p;
+    }
+
+    template <typename CharT, typename PreMeasurements, typename FPack>
+    STRF_HD constexpr static auto make_printer
+        ( strf::tag<CharT> chtag, PreMeasurements* pre, const FPack& fp
+        , const strf::detail::float_with_formatters<FloatT, float_formatter, false>& x) noexcept
+    {
+        return make_printer(chtag, pre, fp, x.value());
+    }
+
+    template < typename CharT, typename PreMeasurements, typename FPack
+             , typename FloatFormatter, bool HasAlignment
+             , typename = detail::enable_if_t
+                 < HasAlignment || FloatFormatter::has_float_formatting
+                 , void > >
+    STRF_HD constexpr static auto make_printer
+        ( strf::tag<CharT>
+        , PreMeasurements* pre
+        , const FPack& fp
+        , strf::detail::float_with_formatters
+            < FloatT, FloatFormatter, HasAlignment > x ) noexcept
+        -> strf::detail::punct_double_printer<CharT>
+    {
+        return {pre, fp, x};
+    }
+};
+
 } // namespace detail
+
+template <> struct printable_traits<float>:  public strf::detail::float_printing<float> {};
+template <> struct printable_traits<double>: public strf::detail::float_printing<double> {};
+
+STRF_HD constexpr auto tag_invoke(strf::printable_tag, float)
+    -> strf::printable_traits<float>
+    { return {}; }
+
+STRF_HD constexpr auto tag_invoke(strf::printable_tag, double)
+    -> strf::printable_traits<double>
+    { return {}; }
+
+void tag_invoke(strf::printable_tag, long double) = delete;
 
 } // namespace strf
 

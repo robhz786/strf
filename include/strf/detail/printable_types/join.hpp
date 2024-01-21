@@ -81,24 +81,24 @@ struct aligned_join_printer
     STRF_HD void operator()(strf::destination<CharT>& dst) const
     {
         if (fillcount_ <= 0) {
-            strf::detail::write(dst, printers_tuple_);
+            printers_tuple_(dst);
         } else {
             switch (afmt_.alignment) {
                 case strf::text_alignment::left: {
-                    strf::detail::write(dst, printers_tuple_);
+                    printers_tuple_(dst);
                     encode_fill_func_(dst, fillcount_, afmt_.fill);
                     break;
                 }
                 case strf::text_alignment::right: {
                     encode_fill_func_(dst, fillcount_, afmt_.fill);
-                    strf::detail::write(dst, printers_tuple_);
+                    printers_tuple_(dst);
                     break;
                 }
                 default: {
                     STRF_ASSERT(afmt_.alignment == strf::text_alignment::center);
                     auto half_fillcount = fillcount_ >> 1;
                     encode_fill_func_(dst, half_fillcount, afmt_.fill);
-                    strf::detail::write(dst, printers_tuple_);
+                    printers_tuple_(dst);
                     encode_fill_func_(dst, fillcount_ - half_fillcount, afmt_.fill);
                     break;
                 }
@@ -170,7 +170,7 @@ public:
 
     STRF_HD void operator()(strf::destination<CharT>& dst) const
     {
-        strf::detail::write(dst, printers_);
+        printers_(dst);
     }
 
     strf::detail::printers_tuple

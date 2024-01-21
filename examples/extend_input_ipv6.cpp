@@ -104,17 +104,20 @@ class ipv6_printer
 {
 public:
 
-    template <typename... T>
-    explicit ipv6_printer(strf::usual_printer_input<CharT, T...> input)
-        : addr_(input.arg.value())
-        , alignment_fmt_(input.arg.get_alignment_format())
-        , lettercase_(strf::use_facet<strf::lettercase_c, xxx::ipv6address>(input.facets))
-        , style_(input.arg.get_ipv6style())
+    template <typename PreMeasurements, typename FPack, typename... T>
+    explicit ipv6_printer
+        ( PreMeasurements* pre
+        , const FPack& facets
+        , const strf::printable_with_fmt<T...>& arg )
+        : addr_(arg.value())
+        , alignment_fmt_(arg.get_alignment_format())
+        , lettercase_(strf::use_facet<strf::lettercase_c, xxx::ipv6address>(facets))
+        , style_(arg.get_ipv6style())
     {
-        auto encoding = use_facet<strf::charset_c<CharT>, xxx::ipv6address>(input.facets);
+        auto encoding = use_facet<strf::charset_c<CharT>, xxx::ipv6address>(facets);
 
         encode_fill_fn_ = encoding.encode_fill_func();
-        init_(input.pre, encoding);
+        init_and_premeasure_(pre, encoding);
     }
 
     void operator()(strf::destination<CharT>& dst) const;
@@ -133,12 +136,12 @@ private:
     void print_ipv6(strf::destination<CharT>& dst) const;
 
     template <typename PreMeasurements, typename Charset>
-    void init_(PreMeasurements* pre, Charset charset);
+    void init_and_premeasure_(PreMeasurements* pre, Charset charset);
 };
 
 template <typename CharT>
 template <typename PreMeasurements, typename Charset>
-void ipv6_printer<CharT>::init_(PreMeasurements* pre, Charset charset)
+void ipv6_printer<CharT>::init_and_premeasure_(PreMeasurements* pre, Charset charset)
 {
     if (style_ == ipv6style::little) {
         abbrev_ = xxx::ipv6address_abbreviation{addr_};
@@ -226,20 +229,14 @@ struct printable_traits<xxx::ipv6address> {
     using forwarded_type = xxx::ipv6address;
     using formatters = strf::tag<ipv6_formatter, strf::alignment_formatter>;
 
-    template <typename CharT, typename PreMeasurements, typename FPack, typename... T>
+    template <typename CharT, typename PreMeasurements, typename FPack, typename... Fmts>
     static auto make_printer
         ( strf::tag<CharT>
         , PreMeasurements* pre
         , const FPack& fp
-        , strf::printable_with_fmt<T...> arg )
-        -> strf::usual_printer_input
-            < CharT
-            , PreMeasurements
-            , FPack
-            , strf::printable_with_fmt<T...>
-            , ipv6_printer<CharT> >
+        , const strf::printable_with_fmt<printable_traits, Fmts...>& arg )
     {
-        return {pre, fp, arg};
+        return ipv6_printer<CharT>{pre, fp, arg};
     }
 };
 

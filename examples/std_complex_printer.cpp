@@ -165,9 +165,8 @@ template <typename CharT, typename FloatT>
 class std_complex_printer
 {
 public:
-
-    template <typename... T>
-    explicit std_complex_printer(strf::usual_printer_input<T...> x);
+    template <typename PreMeasurements, typename FPack>
+    std_complex_printer(PreMeasurements* pre, const FPack& fp, std::complex<FloatT> arg);
 
     void operator()(strf::destination<CharT>& dst) const;
 
@@ -187,17 +186,19 @@ private:
 };
 
 template <typename CharT, typename FloatT>
-template <typename... T>
-inline std_complex_printer<CharT, FloatT>::std_complex_printer
-    ( strf::usual_printer_input<T...> x )
-    : encoding_(strf::use_facet<strf::charset_c<CharT>, FloatT>(x.facets))
-    , numpunct_(strf::use_facet<strf::numpunct_c<10>, FloatT>(x.facets))
-    , lettercase_(strf::use_facet<strf::lettercase_c, FloatT>(x.facets))
-    , form_(strf::use_facet<complex_form_c, std::complex<FloatT>>(x.facets))
-    , coordinates_(::complex_coordinates(form_, x.arg))
+template <typename PreMeasurements, typename FPack>
+std_complex_printer<CharT, FloatT>::std_complex_printer
+    ( PreMeasurements* pre
+    , const FPack& facets
+    , std::complex<FloatT> arg)
+    : encoding_(strf::use_facet<strf::charset_c<CharT>, FloatT>(facets))
+    , numpunct_(strf::use_facet<strf::numpunct_c<10>, FloatT>(facets))
+    , lettercase_(strf::use_facet<strf::lettercase_c, FloatT>(facets))
+    , form_(strf::use_facet<complex_form_c, std::complex<FloatT>>(facets))
+    , coordinates_(::complex_coordinates(form_, arg))
 {
-    premeasurements_( x.pre
-            , strf::use_facet<strf::width_calculator_c, std::complex<FloatT>>(x.facets) );
+    premeasurements_
+        (pre, strf::use_facet<strf::width_calculator_c, std::complex<FloatT>>(facets));
 }
 
 template <typename CharT, typename FloatT>
@@ -256,23 +257,26 @@ class fmt_std_complex_printer
 
 public:
 
-    template <typename... T>
-    explicit fmt_std_complex_printer(strf::usual_printer_input<T...> x)
-        : encoding_(strf::use_facet<strf::charset_c<CharT>, complex_type_>(x.facets))
-        , numpunct10_(strf::use_facet<strf::numpunct_c<10>, FloatT>(x.facets))
-        , numpunct16_(strf::use_facet<strf::numpunct_c<16>, FloatT>(x.facets))
-        , lettercase_(strf::use_facet<strf::lettercase_c, FloatT>(x.facets))
-        , float_fmt_(x.arg.get_float_format())
-        , form_(x.arg.form(
-                    (strf::use_facet<complex_form_c, std::complex<FloatT>>(x.facets))))
-        , coordinates_{::complex_coordinates(form_, x.arg.value())}
-        , fillchar_(x.arg.get_alignment_format().fill)
-        , alignment_(x.arg.get_alignment_format().alignment)
+    template <typename PreMeasurements, typename FPack, typename... T>
+    fmt_std_complex_printer
+        ( PreMeasurements* pre
+        , const FPack& facets
+        , strf::printable_with_fmt<T...> arg )
+        : encoding_(strf::use_facet<strf::charset_c<CharT>, complex_type_>(facets))
+        , numpunct10_(strf::use_facet<strf::numpunct_c<10>, FloatT>(facets))
+        , numpunct16_(strf::use_facet<strf::numpunct_c<16>, FloatT>(facets))
+        , lettercase_(strf::use_facet<strf::lettercase_c, FloatT>(facets))
+        , float_fmt_(arg.get_float_format())
+        , form_(arg.form(
+                    (strf::use_facet<complex_form_c, std::complex<FloatT>>(facets))))
+        , coordinates_{::complex_coordinates(form_, arg.value())}
+        , fillchar_(arg.get_alignment_format().fill)
+        , alignment_(arg.get_alignment_format().alignment)
     {
         init_fillcount_and_do_premeasurements_
-            ( x.pre
-            , strf::use_facet<strf::width_calculator_c, complex_type_>(x.facets)
-            , x.arg.width() );
+            ( pre
+            , strf::use_facet<strf::width_calculator_c, complex_type_>(facets)
+            , arg.width() );
     }
 
     void operator()(strf::destination<CharT>& dst) const;
@@ -438,9 +442,7 @@ struct printable_traits<std::complex<FloatT>>
         , PreMeasurements* pre
         , const FPack& fp
         , std::complex<FloatT> arg)
-        -> strf::usual_printer_input
-            < CharT, PreMeasurements, FPack, std::complex<FloatT>
-            , std_complex_printer<CharT, FloatT> >
+        -> std_complex_printer<CharT, FloatT>
     {
         return {pre, fp, arg};
     }
@@ -451,9 +453,7 @@ struct printable_traits<std::complex<FloatT>>
         , PreMeasurements* pre
         , const FPack& fp
         , strf::printable_with_fmt<T...> arg )
-        -> strf::usual_printer_input
-            < CharT, PreMeasurements, FPack, strf::printable_with_fmt<T...>
-            , fmt_std_complex_printer<CharT, FloatT> >
+        -> fmt_std_complex_printer<CharT, FloatT>
     {
         return {pre, fp, arg};
     }

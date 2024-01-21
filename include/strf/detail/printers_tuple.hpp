@@ -161,17 +161,12 @@ public:
     {
         return get_<J>(this).printer;
     }
+
+    STRF_HD void operator() (strf::destination<CharT>& dst) const
+    {
+        strf::detail::call_printers<CharT>(dst, get_<I>(this).printer...);
+    }
 };
-
-
-template<typename CharT, std::size_t ... I, typename ... Printers>
-STRF_HD void write
-    ( strf::destination<CharT>& dst
-    , const strf::detail::printers_tuple_impl
-        < CharT, strf::detail::index_sequence<I...>, Printers... >& printers )
-{
-    strf::detail::call_printers<CharT>(dst, printers.template get<I>()...);
-}
 
 template <typename CharT, typename ... Printers>
 using printers_tuple = printers_tuple_impl

@@ -73,63 +73,27 @@ struct base64_formatter
     };
 };
 
-struct base64_printing;
-
-template <typename CharT>
-class base64_printer;
-
-using base64_input_with_formatters =
-    strf::printable_with_fmt<base64_printing, base64_formatter>;
-
-struct base64_printing
-{
-    using representative_type = base64_input;
-    using forwarded_type = base64_input;
-    using formatters = strf::tag<base64_formatter>;
-
-    template <typename CharT, typename PreMeasurements, typename FPack>
-    static auto make_printer
-        ( strf::tag<CharT>
-        , PreMeasurements* pre
-        , const FPack& fp
-        , base64_input_with_formatters x )
-        -> strf::usual_printer_input
-            < CharT, PreMeasurements, FPack, base64_input_with_formatters, base64_printer<CharT> >
-    {
-        return {pre, fp, x};
-    }
-};
-
 template <typename CharT>
 class base64_printer
 {
 public:
 
-    template <typename ... T>
-    explicit base64_printer
-        ( const strf::usual_printer_input<T...>& input)
-        : base64_printer
-            ( strf::use_facet<base64_facet_c, base64_facet_c>(input.facets)
-            , input.pre
-            , input.arg )
+    base64_printer
+        ( base64_facet facet
+        , base64_input input
+        , unsigned indentation_size )
+        : facet_(facet)
+        , input_(input)
+        , indentation_size_(indentation_size)
     {
     }
 
-    template <strf::size_presence SizePresence>
-    base64_printer
-        ( base64_facet facet
-        , strf::premeasurements<SizePresence, strf::width_presence::no>* pre
-        , const base64_input_with_formatters& fmt );
+    std::ptrdiff_t calculate_size() const;
 
     void operator()(strf::destination<CharT>& dst) const;
 
 private:
 
-    void calc_size_(strf::size_accumulator<false>*) const
-    {
-    }
-
-    void calc_size_(strf::size_accumulator<true>*) const;
 
     void write_single_line_(strf::destination<CharT>& dst) const;
 
@@ -137,7 +101,7 @@ private:
 
     void write_multiline_(strf::destination<CharT>& dst) const;
 
-    void write_identation_(strf::destination<CharT>& dst) const;
+    void write_indentation_(strf::destination<CharT>& dst) const;
 
     void write_end_of_line_(strf::destination<CharT>& dst) const;
 
@@ -148,34 +112,26 @@ private:
 
     CharT encode_(unsigned hextet) const;
 
-    base64_facet facet_;
-    base64_input_with_formatters fmt_;
+    base64_facet facet_ {};
+    base64_input input_ {} ;
+    unsigned indentation_size_ = 0;
 };
 
 template <typename CharT>
-template <strf::size_presence SizePresence>
-base64_printer<CharT>::base64_printer
-    ( base64_facet facet
-    , strf::premeasurements<SizePresence, strf::width_presence::no>* pre
-    , const base64_input_with_formatters& fmt )
-    : facet_(facet)
-    , fmt_(fmt)
+std::ptrdiff_t base64_printer<CharT>::calculate_size() const
 {
-    calc_size_(pre);
-}
+    std::ptrdiff_t size = 0;
 
-template <typename CharT>
-void base64_printer<CharT>::calc_size_(strf::size_accumulator<true>* pre) const
-{
-    auto num_digits = 4 * (fmt_.value().num_bytes + 2) / 3;
-    pre->add_size(num_digits);
+    auto num_digits = 4 * (input_.num_bytes + 2) / 3;
+    size += num_digits;
     if (facet_.line_length > 0 && facet_.eol[0] != '\0') {
         auto num_lines
             = (num_digits + facet_.line_length - 1)
             / facet_.line_length;
         auto eol_size = 1 + (facet_.eol[1] != '\0');
-        pre->add_size(num_lines * (fmt_.indentation() + eol_size));
+        size += num_lines * (indentation_size_ + eol_size);
     }
+    return size;
 }
 
 template <typename CharT>
@@ -191,21 +147,21 @@ void base64_printer<CharT>::operator()(strf::destination<CharT>& dst) const
 template <typename CharT>
 void base64_printer<CharT>::write_single_line_(strf::destination<CharT>& dst) const
 {
-    write_identation_(dst);
+    write_indentation_(dst);
     encode_all_data_in_this_line_(dst);
 }
 
 template <typename CharT>
-void base64_printer<CharT>::write_identation_(strf::destination<CharT>& dst) const
+void base64_printer<CharT>::write_indentation_(strf::destination<CharT>& dst) const
 {
-    strf::to(dst) (strf::multi((CharT)' ', fmt_.indentation()));
+    strf::to(dst) (strf::multi((CharT)' ', indentation_size_));
 }
 
 template <typename CharT>
 void base64_printer<CharT>::encode_all_data_in_this_line_(strf::destination<CharT>& dst) const
 {
-    const auto* data_it = static_cast<const std::uint8_t*>(fmt_.value().bytes);
-    for (auto count = fmt_.value().num_bytes; count > 0; count -= 3) {
+    const auto* data_it = static_cast<const std::uint8_t*>(input_.bytes);
+    for (auto count = input_.num_bytes; count > 0; count -= 3) {
         dst.ensure(4);
         encode_3bytes_(dst.buffer_ptr(), data_it, count);
         dst.advance(4);
@@ -246,10 +202,10 @@ auto base64_printer<CharT>::encode_(unsigned hextet) const -> CharT
 template <typename CharT>
 void base64_printer<CharT>::write_multiline_(strf::destination<CharT>& dst) const
 {
-    write_identation_(dst);
+    write_indentation_(dst);
 
-    const auto *data_it = static_cast<const std::uint8_t*>(fmt_.value().bytes);
-    auto remaining_bytes = fmt_.value().num_bytes;
+    const auto *data_it = static_cast<const std::uint8_t*>(input_.bytes);
+    auto remaining_bytes = input_.num_bytes;
     unsigned cursor_pos = 0;
 
     while (remaining_bytes > 0) {
@@ -265,7 +221,7 @@ void base64_printer<CharT>::write_multiline_(strf::destination<CharT>& dst) cons
                 if (cursor_pos == facet_.line_length) {
                     cursor_pos = 0;
                     write_end_of_line_(dst);
-                    write_identation_(dst);
+                    write_indentation_(dst);
                 }
                 dst.ensure(1);
                 * dst.buffer_ptr() = tmp[i];
@@ -290,23 +246,60 @@ void base64_printer<CharT>::write_end_of_line_(strf::destination<CharT>& dst) co
     dst.advance(facet_.eol[1] == '\0' ? 1 : 2);
 }
 
-inline auto base64(const void* bytes, std::size_t num_bytes)
-{
-    const base64_input data{ static_cast<const unsigned char*>(bytes)
-                           , static_cast<std::ptrdiff_t>(num_bytes) };
-    return base64_input_with_formatters{ data };
-}
-
 } // namespace xxx
 
 namespace strf {
 
-xxx::base64_printing tag_invoke(strf::printable_tag, xxx::base64_input)
+template <>
+struct printable_traits<xxx::base64_input>
 {
-    return {};
-}
+    using representative_type = xxx::base64_input;
+    using forwarded_type = xxx::base64_input;
+    using formatters = strf::tag<xxx::base64_formatter>;
+
+    using input_with_formatters =
+        strf::printable_with_fmt<printable_traits<xxx::base64_input>, xxx::base64_formatter>;
+    
+    template <typename CharT, typename FPack>
+    static auto make_printer
+        ( strf::tag<CharT>
+        , strf::no_premeasurements*
+        , const FPack& facets
+        , const input_with_formatters& arg )
+    {
+        auto f = strf::use_facet<xxx::base64_facet_c, representative_type>(facets);
+        return xxx::base64_printer<CharT>{f, arg.value(), arg.indentation()};
+    }
+
+    template <typename CharT, typename FPack>
+    static auto make_printer
+        ( strf::tag<CharT>
+        , strf::premeasurements<strf::size_presence::yes, strf::width_presence::no>* pre
+        , const FPack& facets
+        , const input_with_formatters& arg )
+    {
+        auto f = strf::use_facet<xxx::base64_facet_c, representative_type>(facets);
+        xxx::base64_printer<CharT> printer{f, arg.value(), arg.indentation()};
+        pre->add_size(printer.calculate_size());
+        return printer;
+    }
+};
 
 } // namespace strf
+
+namespace xxx {
+
+inline auto base64(const void* bytes, std::size_t num_bytes)
+{
+    const base64_input data{ static_cast<const unsigned char*>(bytes)
+                           , static_cast<std::ptrdiff_t>(num_bytes) };
+    
+    return strf::fmt(data);
+}
+
+} // namespace xxx
+
+
 
 void tests()
 {
@@ -319,7 +312,7 @@ void tests()
     }
 
     {
-        // customizing line length, end of line and identation
+        // customizing line length, end of line and indentation
         auto result = strf::to_string
             .with(xxx::base64_facet{50, {'\n', '\0'}})
             (xxx::base64(data, data_size).indentation(4));

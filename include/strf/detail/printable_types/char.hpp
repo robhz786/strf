@@ -10,175 +10,39 @@
 #include <strf/detail/facets/width_calculator.hpp>
 
 namespace strf {
-
-namespace detail {
-template <typename> class char_printer;
-template <typename> class fmt_char_printer;
-template <typename> class conv_char32_printer;
-template <typename> class fmt_conv_char32_printer;
-} // namespace detail
-
-template <typename SrcCharT>
-struct char_printing
-{
-    using representative_type = SrcCharT;
-    using forwarded_type = SrcCharT;
-    using formatters = strf::tag<strf::quantity_formatter, strf::alignment_formatter>;
-    using is_overridable = std::false_type;
-
-    template <typename DstCharT, typename PreMeasurements, typename FPack>
-    constexpr STRF_HD static auto make_printer
-        ( strf::tag<DstCharT>
-        , PreMeasurements* pre
-        , const FPack& fp
-        , SrcCharT x ) noexcept
-        -> strf::usual_printer_input
-            < DstCharT, PreMeasurements, FPack, SrcCharT, strf::detail::char_printer<DstCharT> >
-    {
-        static_assert( std::is_same<SrcCharT, DstCharT>::value, "Character type mismatch.");
-        return {pre, fp, x};
-    }
-
-    template <typename DstCharT, typename PreMeasurements, typename FPack, typename... T>
-    constexpr STRF_HD static auto make_printer
-        ( strf::tag<DstCharT>
-        , PreMeasurements* pre
-        , const FPack& fp
-        , strf::printable_with_fmt<T...> x ) noexcept
-        -> strf::usual_printer_input
-            < DstCharT, PreMeasurements, FPack
-            , strf::printable_with_fmt<T...>
-            , strf::detail::fmt_char_printer<DstCharT> >
-    {
-        static_assert( std::is_same<SrcCharT, DstCharT>::value, "Character type mismatch.");
-        return {pre, fp, x};
-    }
-};
-
-#if defined(__cpp_char8_t)
-template <> struct printable_traits<char8_t> : public char_printing <char8_t> {};
-#endif // defined(__cpp_char8_t)
-template <> struct printable_traits<char>     : public char_printing <char> {};
-template <> struct printable_traits<char16_t> : public char_printing <char16_t> {};
-template <> struct printable_traits<wchar_t>  : public char_printing <wchar_t> {};
-
-template <>
-struct printable_traits<char32_t>
-{
-    using representative_type = char32_t;
-    using forwarded_type = char32_t;
-    using formatters = strf::tag<strf::quantity_formatter, strf::alignment_formatter>;
-    using is_overridable = std::false_type;
-
-    template <typename DstCharT, typename PreMeasurements, typename FPack>
-    constexpr STRF_HD static auto make_printer
-        ( strf::tag<DstCharT>
-        , PreMeasurements* pre
-        , const FPack& fp
-        , char32_t x ) noexcept
-        -> strf::usual_printer_input
-            < DstCharT, PreMeasurements, FPack, char32_t
-            , strf::detail::conditional_t
-                < std::is_same<DstCharT, char32_t>::value
-                , strf::detail::char_printer<DstCharT>
-                , strf::detail::conv_char32_printer<DstCharT> > >
-    {
-        return {pre, fp, x};
-    }
-
-    template <typename DstCharT, typename PreMeasurements, typename FPack, typename... F>
-    constexpr STRF_HD static auto make_printer
-        ( strf::tag<DstCharT>
-        , PreMeasurements* pre
-        , const FPack& fp
-        , strf::printable_with_fmt<F...> x ) noexcept
-        -> strf::usual_printer_input
-            < DstCharT, PreMeasurements, FPack, strf::printable_with_fmt<F...>
-            , strf::detail::conditional_t
-                < std::is_same<DstCharT, char32_t>::value
-                , strf::detail::fmt_char_printer<DstCharT>
-                , strf::detail::fmt_conv_char32_printer<DstCharT> > >
-    {
-        return {pre, fp, x};
-    }
-};
-
-#if defined(__cpp_char8_t)
-
-constexpr STRF_HD auto tag_invoke(strf::printable_tag, char8_t) noexcept
-    -> strf::char_printing<char8_t>
-    { return {}; }
-
-#endif // defined(__cpp_char8_t)
-
-constexpr STRF_HD auto tag_invoke(strf::printable_tag, char) noexcept
-    -> strf::char_printing<char>
-    { return {}; }
-
-constexpr STRF_HD auto tag_invoke(strf::printable_tag, char16_t) noexcept
-    -> strf::char_printing<char16_t>
-    { return {}; }
-
-constexpr STRF_HD auto tag_invoke(strf::printable_tag, char32_t) noexcept
-    -> strf::printable_traits<char32_t>
-    { return {}; }
-
-constexpr STRF_HD auto tag_invoke(strf::printable_tag, wchar_t) noexcept
-    -> strf::char_printing<wchar_t>
-    { return {}; }
-
 namespace detail {
 
 template <typename CharT>
-class char_printer
+struct char_printer
 {
-public:
-    template <typename... T>
-    STRF_HD explicit char_printer
-        ( const strf::usual_printer_input<CharT, T...>& input )
-        : ch_(static_cast<CharT>(input.arg))
+    STRF_HD void operator()(strf::destination<CharT>& dst) const
     {
-        input.pre->add_size(1);
-        if (input.pre->has_remaining_width()) {
-            auto&& wcalc = use_facet<strf::width_calculator_c, CharT>(input.facets);
-            auto charset = use_facet<strf::charset_c<CharT>, CharT>(input.facets);
-            auto w = wcalc.char_width(charset, static_cast<CharT>(ch_));
-            input.pre->subtract_width(w);
-        }
+        dst.ensure(1);
+        *dst.buffer_ptr() = ch_;
+        dst.advance();
     }
-
-    STRF_HD void operator()(strf::destination<CharT>& dst) const;
-
-private:
 
     CharT ch_;
 };
 
 template <typename CharT>
-STRF_HD void char_printer<CharT>::operator()
-    ( strf::destination<CharT>& dst ) const
-{
-    dst.ensure(1);
-    *dst.buffer_ptr() = ch_;
-    dst.advance();
-}
-
-
-template <typename CharT>
 class fmt_char_printer
 {
 public:
-    template <typename... T>
-    STRF_HD explicit fmt_char_printer
-        ( const usual_printer_input<CharT, T...>& input )
-        : count_(input.arg.scount())
-        , afmt_(input.arg.get_alignment_format())
-        , ch_(static_cast<CharT>(input.arg.value()))
+
+    template <typename PreMeasurements, typename FPack, typename... T>
+    STRF_HD fmt_char_printer
+        ( PreMeasurements* pre
+        , const FPack& facets
+        , strf::printable_with_fmt<T...> arg )
+        : count_(arg.scount())
+        , afmt_(arg.get_alignment_format())
+        , ch_(static_cast<CharT>(arg.value()))
     {
-        auto charset = use_facet_<strf::charset_c<CharT>>(input.facets);
-        auto&& wcalc = use_facet_<strf::width_calculator_c>(input.facets);
+        auto charset = use_facet_<strf::charset_c<CharT>>(facets);
+        auto&& wcalc = use_facet_<strf::width_calculator_c>(facets);
         encode_fill_fn_ = charset.encode_fill_func();
-        init_(input.pre, wcalc, charset);
+        init_(pre, wcalc, charset);
     }
 
     STRF_HD void operator()(strf::destination<CharT>& dst) const;
@@ -276,27 +140,10 @@ STRF_HD void fmt_char_printer<CharT>::operator()
 }
 
 template <typename DstCharT>
-class conv_char32_printer
+struct conv_char32_printer
 {
-public:
-    template <typename... T>
-    STRF_HD explicit conv_char32_printer(strf::usual_printer_input<T...> input)
-        : ch_(input.arg)
-    {
-        auto encoding = strf::use_facet<charset_c<DstCharT>, char32_t>(input.facets);
-        STRF_MAYBE_UNUSED(encoding);
-        encode_char_f_ = encoding.encode_char_func();
-        encoded_char_size_ = encoding.encoded_char_size(input.arg);
-        input.pre->add_size(encoded_char_size_);
-        if (input.pre->has_remaining_width()) {
-            auto&& wcalc = use_facet<strf::width_calculator_c, char32_t>(input.facets);
-            input.pre->subtract_width(wcalc.char_width(strf::utf_t<char32_t>{}, ch_));
-        }
-    }
-
     void STRF_HD operator()(strf::destination<DstCharT>& dst) const;
 
-private:
     strf::encode_char_f<DstCharT> encode_char_f_;
     int encoded_char_size_;
     char32_t ch_;
@@ -315,15 +162,18 @@ class fmt_conv_char32_printer
 {
 public:
 
-    template <typename... T>
-    STRF_HD explicit fmt_conv_char32_printer(strf::usual_printer_input<T...> input)
-        : count_(input.arg.scount())
-        , ch_(input.arg.value())
+    template <typename PreMeasurements, typename FPack, typename... F>
+    STRF_HD fmt_conv_char32_printer
+        ( PreMeasurements* pre
+        , const FPack& facets
+        , strf::printable_with_fmt<F...> arg )
+        : count_(arg.scount())
+        , ch_(arg.value())
     {
-        auto charset = strf::use_facet<charset_c<DstCharT>, char32_t>(input.facets);
-        auto&& wcalc = use_facet<strf::width_calculator_c, char32_t>(input.facets);
+        auto charset = strf::use_facet<charset_c<DstCharT>, char32_t>(facets);
+        auto&& wcalc = use_facet<strf::width_calculator_c, char32_t>(facets);
         auto char_width = wcalc.char_width(strf::utf_t<char32_t>{}, ch_);
-        init_(input.pre, charset, input.arg.get_alignment_format(), char_width);
+        init_(pre, charset, arg.get_alignment_format(), char_width);
     }
 
     void STRF_HD operator()(strf::destination<DstCharT>& dst) const;
@@ -401,24 +251,24 @@ void STRF_HD fmt_conv_char32_printer<DstCharT>::operator()(strf::destination<Dst
 
 #if defined(__cpp_char8_t)
 STRF_EXPLICIT_TEMPLATE class fmt_char_printer<char8_t>;
-STRF_EXPLICIT_TEMPLATE class char_printer<char8_t>;
+STRF_EXPLICIT_TEMPLATE struct char_printer<char8_t>;
 STRF_EXPLICIT_TEMPLATE class fmt_conv_char32_printer<char8_t>;
-STRF_EXPLICIT_TEMPLATE class conv_char32_printer<char8_t>;
+STRF_EXPLICIT_TEMPLATE struct conv_char32_printer<char8_t>;
 #endif
 
-STRF_EXPLICIT_TEMPLATE class char_printer<char>;
-STRF_EXPLICIT_TEMPLATE class char_printer<char16_t>;
-STRF_EXPLICIT_TEMPLATE class char_printer<char32_t>;
-STRF_EXPLICIT_TEMPLATE class char_printer<wchar_t>;
+STRF_EXPLICIT_TEMPLATE struct char_printer<char>;
+STRF_EXPLICIT_TEMPLATE struct char_printer<char16_t>;
+STRF_EXPLICIT_TEMPLATE struct char_printer<char32_t>;
+STRF_EXPLICIT_TEMPLATE struct char_printer<wchar_t>;
 
 STRF_EXPLICIT_TEMPLATE class fmt_char_printer<char>;
 STRF_EXPLICIT_TEMPLATE class fmt_char_printer<char16_t>;
 STRF_EXPLICIT_TEMPLATE class fmt_char_printer<char32_t>;
 STRF_EXPLICIT_TEMPLATE class fmt_char_printer<wchar_t>;
 
-STRF_EXPLICIT_TEMPLATE class conv_char32_printer<char>;
-STRF_EXPLICIT_TEMPLATE class conv_char32_printer<char16_t>;
-STRF_EXPLICIT_TEMPLATE class conv_char32_printer<wchar_t>;
+STRF_EXPLICIT_TEMPLATE struct conv_char32_printer<char>;
+STRF_EXPLICIT_TEMPLATE struct conv_char32_printer<char16_t>;
+STRF_EXPLICIT_TEMPLATE struct conv_char32_printer<wchar_t>;
 
 STRF_EXPLICIT_TEMPLATE class fmt_conv_char32_printer<char>;
 STRF_EXPLICIT_TEMPLATE class fmt_conv_char32_printer<char16_t>;
@@ -426,7 +276,136 @@ STRF_EXPLICIT_TEMPLATE class fmt_conv_char32_printer<wchar_t>;
 
 #endif // defined(STRF_SEPARATE_COMPILATION)
 
+template <typename SrcCharT>
+struct char_printing
+{
+    using representative_type = SrcCharT;
+    using forwarded_type = SrcCharT;
+    using formatters = strf::tag<strf::quantity_formatter, strf::alignment_formatter>;
+    using is_overridable = std::false_type;
+
+    template <typename DstCharT, typename PreMeasurements, typename FPack>
+    constexpr STRF_HD static auto make_printer
+        ( strf::tag<DstCharT>
+        , PreMeasurements* pre
+        , const FPack& facets
+        , SrcCharT x ) noexcept
+        -> strf::detail::char_printer<DstCharT>
+    {
+        static_assert( std::is_same<SrcCharT, DstCharT>::value, "Character type mismatch.");
+
+        pre->add_size(1);
+        if (pre->has_remaining_width()) {
+            auto&& wcalc = use_facet<strf::width_calculator_c, DstCharT>(facets);
+            auto charset = use_facet<strf::charset_c<DstCharT>, SrcCharT>(facets);
+            auto w = wcalc.char_width(charset, static_cast<DstCharT>(x));
+            pre->subtract_width(w);
+        }
+
+        return strf::detail::char_printer<DstCharT>{x};
+    }
+
+    template <typename DstCharT, typename PreMeasurements, typename FPack, typename... T>
+    constexpr STRF_HD static auto make_printer
+        ( strf::tag<DstCharT>
+        , PreMeasurements* pre
+        , const FPack& facets
+        , strf::printable_with_fmt<T...> arg ) noexcept
+        -> strf::detail::fmt_char_printer<DstCharT>
+    {
+        return {pre, facets, arg};
+    }
+};
+
 } // namespace detail
+
+#if defined(__cpp_char8_t)
+template <> struct printable_traits<char8_t> : public detail::char_printing <char8_t> {};
+#endif // defined(__cpp_char8_t)
+template <> struct printable_traits<char>     : public detail::char_printing <char> {};
+template <> struct printable_traits<char16_t> : public detail::char_printing <char16_t> {};
+template <> struct printable_traits<wchar_t>  : public detail::char_printing <wchar_t> {};
+
+template <>
+struct printable_traits<char32_t>
+{
+    using representative_type = char32_t;
+    using forwarded_type = char32_t;
+    using formatters = strf::tag<strf::quantity_formatter, strf::alignment_formatter>;
+    using is_overridable = std::false_type;
+
+    template < typename DstCharT, typename PreMeasurements, typename FPack
+             , detail::enable_if_t<std::is_same<DstCharT, char32_t>::value, int> = 0 >
+    constexpr STRF_HD static auto make_printer
+        ( strf::tag<DstCharT>
+        , PreMeasurements* pre
+        , const FPack& facets
+        , char32_t x ) noexcept
+    {
+        return detail::char_printing<char32_t>::make_printer
+            ( strf::tag<char32_t>(), pre, facets, x );
+    }
+
+    template < typename DstCharT, typename PreMeasurements, typename FPack
+             , detail::enable_if_t< ! std::is_same<DstCharT, char32_t>::value, int> = 0 >
+    constexpr STRF_HD static auto make_printer
+        ( strf::tag<DstCharT>
+        , PreMeasurements* pre
+        , const FPack& facets
+        , char32_t x ) noexcept
+        -> strf::detail::conv_char32_printer<DstCharT>
+    {
+        auto encoding = strf::use_facet<charset_c<DstCharT>, char32_t>(facets);
+        STRF_MAYBE_UNUSED(encoding);
+        auto encoded_char_size = encoding.encoded_char_size(x);
+        pre->add_size(encoded_char_size);
+        if (pre->has_remaining_width()) {
+            auto&& wcalc = use_facet<strf::width_calculator_c, char32_t>(facets);
+            pre->subtract_width(wcalc.char_width(strf::utf_t<char32_t>{}, x));
+        }
+        return strf::detail::conv_char32_printer<DstCharT>
+            { encoding.encode_char_func(), encoded_char_size, x };
+    }
+
+    template <typename DstCharT, typename PreMeasurements, typename FPack, typename... F>
+    constexpr STRF_HD static auto make_printer
+        ( strf::tag<DstCharT>
+        , PreMeasurements* pre
+        , const FPack& fp
+        , strf::printable_with_fmt<F...> x ) noexcept
+        -> detail::conditional_t
+            < std::is_same<DstCharT, char32_t>::value
+            , strf::detail::fmt_char_printer<DstCharT>
+            , strf::detail::fmt_conv_char32_printer<DstCharT> >
+    {
+        return {pre, fp, x};
+    }
+};
+
+#if defined(__cpp_char8_t)
+
+constexpr STRF_HD auto tag_invoke(strf::printable_tag, char8_t) noexcept
+    -> strf::detail::char_printing<char8_t>
+    { return {}; }
+
+#endif // defined(__cpp_char8_t)
+
+constexpr STRF_HD auto tag_invoke(strf::printable_tag, char) noexcept
+    -> strf::detail::char_printing<char>
+    { return {}; }
+
+constexpr STRF_HD auto tag_invoke(strf::printable_tag, char16_t) noexcept
+    -> strf::detail::char_printing<char16_t>
+    { return {}; }
+
+constexpr STRF_HD auto tag_invoke(strf::printable_tag, char32_t) noexcept
+    -> strf::printable_traits<char32_t>
+    { return {}; }
+
+constexpr STRF_HD auto tag_invoke(strf::printable_tag, wchar_t) noexcept
+    -> strf::detail::char_printing<wchar_t>
+    { return {}; }
+
 
 } // namespace strf
 

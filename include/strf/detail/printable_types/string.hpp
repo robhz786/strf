@@ -13,7 +13,6 @@
 #include <strf/detail/simple_string_view.hpp>
 
 namespace strf {
-
 namespace detail {
 
 struct no_charset_tag {};
@@ -334,17 +333,6 @@ template <typename SrcCharT, typename DstCharT> class aligned_unsafe_transcode_p
 template <typename DstCharT> class transcode_printer_variant;
 template <typename DstCharT> class aligned_transcode_printer_variant;
 
-template <typename SrcCharT, typename PreMeasurements, typename FPack>
-struct string_printer_input
-{
-    using DstCharT = SrcCharT;
-    using printer_type = strcpy_printer<SrcCharT, DstCharT>;
-
-    strf::detail::simple_string_view<SrcCharT> arg;
-    PreMeasurements* pre;
-    FPack facets;
-};
-
 enum class charsets_comparison { statically_equal, statically_different, dynamic };
 
 template <typename CharsetA, typename CharsetB>
@@ -410,13 +398,17 @@ struct compare_charsets <SrcCharT, DstCharT, Facets, strf::dynamic_charset<SrcCh
 template <typename SrcCharT, typename DstCharT>
 struct get_no_transcode_printer
 {
+#if ! defined(__GNUC__) || (__GNUC__ >= 8)
     static_assert( std::is_same<SrcCharT, DstCharT>::value, "Character types mismatch");
+#endif
     using type = strcpy_printer<SrcCharT, DstCharT>;
 };
 template <typename SrcCharT, typename DstCharT>
 struct get_no_transcode_aligned_printer
 {
+#if ! defined(__GNUC__) || (__GNUC__ >= 8)
     static_assert( std::is_same<SrcCharT, DstCharT>::value, "Character types mismatch");
+#endif
     using type = aligned_strcpy_printer<SrcCharT, DstCharT>;
 };
 
@@ -529,156 +521,6 @@ struct string_printer_type
 template <typename SrcCharT>
 struct string_printing;
 
-template < typename SrcCharT, typename DstCharT
-         , bool HasPrecision, bool HasAlignment
-         , typename Charset, transcoding_policy TranscPoli
-         , typename PreMeasurements, typename FPack >
-struct fmt_string_printer_input
-{
-    static constexpr auto charset_cmp_ =
-        compare_charsets<SrcCharT, DstCharT, FPack, Charset>::value;
-
-    using printer_type = typename string_printer_type
-        < HasAlignment, charset_cmp_, TranscPoli >
-        :: template type <SrcCharT, DstCharT>;
-
-    strf::printable_with_fmt
-        < string_printing<SrcCharT>
-        , strf::detail::string_precision_formatter<HasPrecision>
-        , strf::alignment_formatter_q<HasAlignment>
-        , transcoding_formatter_q<SrcCharT, Charset, TranscPoli> > arg;
-    PreMeasurements* pre;
-    FPack facets;
-};
-
-template <typename SrcCharT>
-struct string_printing
-{
-    using representative_type = strf::string_input_tag<SrcCharT>;
-    using forwarded_type = strf::detail::simple_string_view<SrcCharT>;
-    using formatters = strf::tag
-        < strf::detail::string_precision_formatter<false>
-        , strf::alignment_formatter
-        , strf::detail::transcoding_formatter<SrcCharT> >;
-    using is_overridable = std::false_type;
-
-    template <typename DstCharT, typename PreMeasurements, typename FPack>
-    constexpr STRF_HD static auto make_printer
-        ( strf::tag<DstCharT>
-        , PreMeasurements* pre
-        , const FPack& facets
-        , forwarded_type x ) noexcept
-        -> strf::detail::string_printer_input<SrcCharT, PreMeasurements, FPack>
-    {
-        static_assert
-            ( std::is_same<SrcCharT, DstCharT>::value
-            , "Character type mismatch. Use `transcode` or `sani` format function." );
-
-        return {x, pre, facets};
-    }
-
-    template < typename DstCharT, typename PreMeasurements, typename FPack
-             , bool HasPrecision, bool HasAlignment
-             , typename Charset, transcoding_policy TranscPoli >
-    constexpr STRF_HD static auto make_printer
-        ( strf::tag<DstCharT>
-        , PreMeasurements* pre
-        , const FPack& facets
-        , const strf::printable_with_fmt
-            < string_printing<SrcCharT>
-            , string_precision_formatter<HasPrecision>
-            , strf::alignment_formatter_q<HasAlignment>
-            , transcoding_formatter_q<SrcCharT, Charset, TranscPoli> >& x ) noexcept
-        -> strf::detail::fmt_string_printer_input
-            < SrcCharT, DstCharT, HasPrecision, HasAlignment
-            , Charset, TranscPoli, PreMeasurements, FPack >
-    {
-        return {x, pre, facets};
-    }
-};
-
-} // namespace detail
-
-template <typename CharIn>
-constexpr STRF_HD auto tag_invoke
-    (strf::printable_tag, strf::detail::simple_string_view<CharIn>) noexcept
-    -> strf::detail::string_printing<CharIn>
-    { return {}; }
-
-#if defined(STRF_HAS_STD_STRING_DECLARATION)
-
-template <typename CharIn, typename Traits, typename Allocator>
-constexpr STRF_HD auto tag_invoke
-    (strf::printable_tag, const std::basic_string<CharIn, Traits, Allocator>&) noexcept
-    -> strf::detail::string_printing<CharIn>
-    { return {}; }
-
-#endif // defined(STRF_HAS_STD_STRING_DECLARATION)
-
-#if defined(STRF_HAS_STD_STRING_VIEW)
-
-template <typename CharIn, typename Traits>
-constexpr STRF_HD auto tag_invoke
-    (strf::printable_tag, std::basic_string_view<CharIn, Traits>) noexcept
-    -> strf::detail::string_printing<CharIn>
-    { return {}; }
-
-#if defined(__cpp_char8_t)
-
-constexpr STRF_HD auto tag_invoke
-    (strf::printable_tag, std::basic_string_view<char8_t>) noexcept
-    -> strf::detail::string_printing<char8_t>
-    { return {}; }
-
-#endif // defined(__cpp_char8_t)
-
-constexpr STRF_HD auto tag_invoke(strf::printable_tag, std::basic_string_view<char>) noexcept
-    -> strf::detail::string_printing<char>
-    { return {}; }
-
-
-constexpr STRF_HD auto tag_invoke(strf::printable_tag, std::basic_string_view<char16_t>) noexcept
-    -> strf::detail::string_printing<char16_t>
-    { return {}; }
-
-
-constexpr STRF_HD auto tag_invoke(strf::printable_tag, std::basic_string_view<char32_t>) noexcept
-    -> strf::detail::string_printing<char32_t>
-    { return {}; }
-
-
-constexpr STRF_HD auto tag_invoke(strf::printable_tag, std::basic_string_view<wchar_t>) noexcept
-    -> strf::detail::string_printing<wchar_t>
-    { return {}; }
-
-#endif // defined(STRF_HAS_STD_STRING_VIEW)
-
-#if defined(__cpp_char8_t)
-
-
-constexpr STRF_HD auto tag_invoke(strf::printable_tag, const char8_t*) noexcept
-    -> strf::detail::string_printing<char8_t>
-    { return {}; }
-
-#endif
-
-constexpr STRF_HD auto tag_invoke(strf::printable_tag, const char*) noexcept
-    -> strf::detail::string_printing<char>
-    { return {}; }
-
-constexpr STRF_HD auto tag_invoke(strf::printable_tag, const char16_t*) noexcept
-    -> strf::detail::string_printing<char16_t>
-    { return {}; }
-
-constexpr STRF_HD auto tag_invoke(strf::printable_tag, const char32_t*) noexcept
-    -> strf::detail::string_printing<char32_t>
-    { return {}; }
-
-constexpr STRF_HD auto tag_invoke(strf::printable_tag, const wchar_t*) noexcept
-    -> strf::detail::string_printing<wchar_t>
-    { return {}; }
-
-namespace detail {
 
 template <typename SrcCharT, typename DstCharT>
 class strcpy_printer
@@ -687,57 +529,67 @@ public:
     static_assert(sizeof(SrcCharT) == sizeof(DstCharT), "");
 
     template <typename PreMeasurements, typename FPack>
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD explicit strcpy_printer
-        ( const strf::detail::string_printer_input<SrcCharT, PreMeasurements, FPack>& input )
-        : str_(input.arg.data())
-        , str_end_(input.arg.end())
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD strcpy_printer
+          ( PreMeasurements* pre
+          , const FPack& facets
+          , detail::simple_string_view<SrcCharT> arg )
+        : str_(arg.data())
+        , str_end_(arg.end())
     {
         STRF_IF_CONSTEXPR(PreMeasurements::width_demanded) {
-            auto&& wcalc = use_facet_<strf::width_calculator_c>(input.facets);
+            auto&& wcalc = use_facet_<strf::width_calculator_c>(facets);
             auto w = wcalc.str_width
-                ( use_facet_<strf::charset_c<SrcCharT>>(input.facets)
-                , input.pre->remaining_width(), str_, str_end_ );
-           input.pre->subtract_width(w);
+                ( use_facet_<strf::charset_c<SrcCharT>>(facets)
+                , pre->remaining_width(), str_, str_end_ );
+           pre->subtract_width(w);
         }
-        input.pre->add_size(input.arg.length());
+        pre->add_size(arg.length());
     }
 
     template < typename PreMeasurements, typename FPack
              , typename Charset, transcoding_policy TranscPoli >
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD explicit strcpy_printer
-        ( const strf::detail::fmt_string_printer_input
-            < SrcCharT, DstCharT, false, false, Charset, TranscPoli, PreMeasurements, FPack >&
-            input )
-        : str_(input.arg.value().data())
-        , str_end_(input.arg.value().end())
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD strcpy_printer
+        ( PreMeasurements* pre
+        , const FPack& facets
+        , const strf::printable_with_fmt
+            < string_printing<SrcCharT>
+            , strf::detail::string_precision_formatter<false>
+            , strf::alignment_formatter_q<false>
+            , transcoding_formatter_q<SrcCharT, Charset, TranscPoli> >& arg )
+        : str_(arg.value().data())
+        , str_end_(arg.value().end())
     {
         STRF_IF_CONSTEXPR(PreMeasurements::width_demanded) {
-            auto&& wcalc = use_facet_<strf::width_calculator_c>(input.facets);
+            auto&& wcalc = use_facet_<strf::width_calculator_c>(facets);
             auto w = wcalc.str_width
-                ( use_facet_<strf::charset_c<SrcCharT>>(input.facets)
-                , input.pre->remaining_width()
+                ( use_facet_<strf::charset_c<SrcCharT>>(facets)
+                , pre->remaining_width()
                 , str_
                 , str_end_ );
-           input.pre->subtract_width(w);
+           pre->subtract_width(w);
         }
-        input.pre->add_size(input.arg.value().size());
+        pre->add_size(arg.value().size());
     }
 
     template < typename PreMeasurements, typename FPack
              , typename Charset, transcoding_policy TranscPoli >
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD explicit strcpy_printer
-        ( const strf::detail::fmt_string_printer_input
-            < SrcCharT, DstCharT, true, false, Charset, TranscPoli, PreMeasurements, FPack >&
-            input )
-        : str_(input.arg.value().data())
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD strcpy_printer
+        ( PreMeasurements* pre
+        , const FPack& facets
+        , const strf::printable_with_fmt
+            < string_printing<SrcCharT>
+            , strf::detail::string_precision_formatter<true>
+            , strf::alignment_formatter_q<false>
+            , transcoding_formatter_q<SrcCharT, Charset, TranscPoli> >& arg )
+        : str_(arg.value().data())
     {
-        auto&& wcalc = use_facet_<strf::width_calculator_c>(input.facets);
+        auto&& wcalc = use_facet_<strf::width_calculator_c>(facets);
         auto res = wcalc.str_width_and_pos
-            ( use_facet_<strf::charset_c<SrcCharT>>(input.facets)
-            , input.arg.precision(), str_, input.arg.value().end() );
+            ( use_facet_<strf::charset_c<SrcCharT>>(facets)
+            , arg.precision(), str_, arg.value().end() );
         str_end_ = res.ptr;
-        input.pre->subtract_width(res.width);
-        input.pre->add_size(str_end_ - str_);
+        pre->subtract_width(res.width);
+        pre->add_size(str_end_ - str_);
     }
 
     STRF_HD void operator()(strf::destination<DstCharT>& dst) const;
@@ -773,46 +625,54 @@ public:
 
     template < typename PreMeasurements, typename FPack
              , typename Charset, transcoding_policy TranscPoli >
-    STRF_HD explicit aligned_strcpy_printer
-        ( const strf::detail::fmt_string_printer_input
-            < SrcCharT, DstCharT, false, true, Charset, TranscPoli, PreMeasurements, FPack >&
-            input )
-        : str_(input.arg.value().data())
-        , str_end_(input.arg.value().end())
-        , afmt_(input.arg.get_alignment_format())
+    STRF_HD aligned_strcpy_printer
+        ( PreMeasurements* pre
+        , const FPack& facets
+        , const strf::printable_with_fmt
+            < string_printing<SrcCharT>
+            , strf::detail::string_precision_formatter<false>
+            , strf::alignment_formatter_q<true>
+            , transcoding_formatter_q<SrcCharT, Charset, TranscPoli> >& arg )
+        : str_(arg.value().data())
+        , str_end_(arg.value().end())
+        , afmt_(arg.get_alignment_format())
     {
 
-        auto&& wcalc = use_facet_<strf::width_calculator_c>(input.facets);
-        auto src_charset = use_facet_<strf::charset_c<SrcCharT>>(input.facets);
-        auto dst_charset = use_facet_<strf::charset_c<DstCharT>>(input.facets);
+        auto&& wcalc = use_facet_<strf::width_calculator_c>(facets);
+        auto src_charset = use_facet_<strf::charset_c<SrcCharT>>(facets);
+        auto dst_charset = use_facet_<strf::charset_c<DstCharT>>(facets);
         const strf::width_t limit =
-            ( PreMeasurements::width_demanded && input.pre->remaining_width() > afmt_.width
-            ? input.pre->remaining_width()
+            ( PreMeasurements::width_demanded && pre->remaining_width() > afmt_.width
+            ? pre->remaining_width()
             : afmt_.width );
         auto strw = wcalc.str_width(src_charset, limit, str_, str_end_);
         encode_fill_ = dst_charset.encode_fill_func();
-        auto fillcount = init_(input.pre, strw);
-        precalc_size_(input.pre, dst_charset, fillcount);
+        auto fillcount = init_(pre, strw);
+        precalc_size_(pre, dst_charset, fillcount);
     }
 
     template < typename PreMeasurements, typename FPack
              , typename Charset, transcoding_policy TranscPoli >
-    STRF_HD explicit aligned_strcpy_printer
-        ( const strf::detail::fmt_string_printer_input
-            < SrcCharT, DstCharT, true, true, Charset, TranscPoli, PreMeasurements, FPack >&
-            input )
-        : str_(input.arg.value().begin())
-        , afmt_(input.arg.get_alignment_format())
+    STRF_HD aligned_strcpy_printer
+        ( PreMeasurements* pre
+        , const FPack& facets
+        , const strf::printable_with_fmt
+            < string_printing<SrcCharT>
+            , strf::detail::string_precision_formatter<true>
+            , strf::alignment_formatter_q<true>
+            , transcoding_formatter_q<SrcCharT, Charset, TranscPoli> >& arg )
+        : str_(arg.value().begin())
+        , afmt_(arg.get_alignment_format())
     {
-        auto&& wcalc = use_facet_<strf::width_calculator_c>(input.facets);
-        auto src_charset = use_facet_<strf::charset_c<SrcCharT>>(input.facets);
-        auto dst_charset = use_facet_<strf::charset_c<DstCharT>>(input.facets);
+        auto&& wcalc = use_facet_<strf::width_calculator_c>(facets);
+        auto src_charset = use_facet_<strf::charset_c<SrcCharT>>(facets);
+        auto dst_charset = use_facet_<strf::charset_c<DstCharT>>(facets);
         auto res = wcalc.str_width_and_pos
-            ( src_charset, input.arg.precision(), str_, input.arg.value().end() );
+            ( src_charset, arg.precision(), str_, arg.value().end() );
         str_end_ = res.ptr;
         encode_fill_ = dst_charset.encode_fill_func();
-        auto fillcount = init_(input.pre, res.width);
-        precalc_size_(input.pre, dst_charset, fillcount);
+        auto fillcount = init_(pre, res.width);
+        precalc_size_(pre, dst_charset, fillcount);
     }
 
     STRF_HD void operator()(strf::destination<DstCharT>& dst) const;
@@ -901,29 +761,31 @@ void STRF_HD aligned_strcpy_printer<SrcCharT, DstCharT>::operator()
 }
 
 
-template <typename SrcCharT, typename InputT>
-constexpr STRF_HD auto do_get_src_charset(std::false_type, const InputT& input)
+template <typename SrcCharT, typename Facets, typename FmtArg>
+constexpr STRF_HD auto do_get_src_charset(std::false_type, const Facets& facets, const FmtArg&)
 {
     return strf::use_facet
         <strf::charset_c<SrcCharT>, strf::string_input_tag<SrcCharT>>
-        ( input.facets );
+        ( facets );
 }
 
-template <typename SrcCharT, typename InputT>
-constexpr STRF_HD auto do_get_src_charset(std::true_type, const InputT& input)
+template <typename SrcCharT, typename Facets, typename FmtArg>
+constexpr STRF_HD auto do_get_src_charset(std::true_type, const Facets&, const FmtArg& arg)
 {
-    return input.arg.get_charset();
+    return arg.get_charset();
 }
 
-template < typename SrcCharT, typename DstCharT, bool HasP, bool HasA
-         , typename Charset, transcoding_policy TranscPoli
-         , typename PreMeasurements, typename FPack >
+template < typename FPack, typename SrcCharT, bool HasPrecision, bool HasAlignment
+         , typename Charset, transcoding_policy TranscPoli >
 constexpr STRF_HD auto get_src_charset
-    ( const strf::detail::fmt_string_printer_input
-        < SrcCharT, DstCharT, HasP, HasA, Charset, TranscPoli, PreMeasurements, FPack>&
-      input )
+    ( const FPack& facets
+    , const strf::printable_with_fmt
+        < string_printing<SrcCharT>
+        , strf::detail::string_precision_formatter<HasPrecision>
+        , strf::alignment_formatter_q<HasAlignment>
+        , transcoding_formatter_q<SrcCharT, Charset, TranscPoli> >& arg )
 {
-    return strf::detail::do_get_src_charset<SrcCharT>(is_charset<Charset>(), input);
+    return strf::detail::do_get_src_charset<SrcCharT>(is_charset<Charset>(), facets, arg);
 }
 
 template <typename SrcCharT, typename DstCharT>
@@ -933,43 +795,51 @@ public:
 
     template < typename PreMeasurements, typename FPack
              , typename Charset, transcoding_policy TranscPoli >
-    STRF_HD explicit transcode_printer
-        ( const strf::detail::fmt_string_printer_input
-            < SrcCharT, DstCharT, false, false, Charset, TranscPoli, PreMeasurements, FPack >&
-            input )
-        : str_(input.arg.value().data())
-        , str_end_(input.arg.value().end())
+    STRF_HD transcode_printer
+        ( PreMeasurements* pre
+        , const FPack& facets
+        , const strf::printable_with_fmt
+            < string_printing<SrcCharT>
+            , strf::detail::string_precision_formatter<false>
+            , strf::alignment_formatter_q<false>
+            , transcoding_formatter_q<SrcCharT, Charset, TranscPoli> >& arg )
+        : str_(arg.value().data())
+        , str_end_(arg.value().end())
         , err_notifier_
-              ( use_facet_<strf::transcoding_error_notifier_c, SrcCharT>(input.facets).get() )
+              ( use_facet_<strf::transcoding_error_notifier_c, SrcCharT>(facets).get() )
     {
-        auto src_charset  = strf::detail::get_src_charset(input);
-        auto dst_charset = use_facet_<strf::charset_c<DstCharT>, SrcCharT>(input.facets);
-        if (input.pre->has_remaining_width()) {
-            auto&& wcalc = use_facet_<strf::width_calculator_c, SrcCharT>(input.facets);
-            auto w = wcalc.str_width( src_charset, input.pre->remaining_width(), str_, str_end_);
-            input.pre->subtract_width(w);
+        auto src_charset  = strf::detail::get_src_charset(facets, arg);
+        auto dst_charset = use_facet_<strf::charset_c<DstCharT>, SrcCharT>(facets);
+        if (pre->has_remaining_width()) {
+            auto&& wcalc = use_facet_<strf::width_calculator_c, SrcCharT>(facets);
+            auto w = wcalc.str_width( src_charset, pre->remaining_width(), str_, str_end_);
+            pre->subtract_width(w);
         }
-        init_(input.pre, src_charset, dst_charset);
+        init_(pre, src_charset, dst_charset);
     }
 
     template < typename PreMeasurements, typename FPack
              , typename Charset, transcoding_policy TranscPoli >
-    STRF_HD explicit transcode_printer
-        ( const strf::detail::fmt_string_printer_input
-            < SrcCharT, DstCharT, true, false, Charset, TranscPoli, PreMeasurements, FPack >&
-            input )
-        : str_(input.arg.value().data())
+    STRF_HD transcode_printer
+        ( PreMeasurements* pre
+        , const FPack& facets
+        , const strf::printable_with_fmt
+            < string_printing<SrcCharT>
+            , strf::detail::string_precision_formatter<true>
+            , strf::alignment_formatter_q<false>
+            , transcoding_formatter_q<SrcCharT, Charset, TranscPoli> >& arg )
+        : str_(arg.value().data())
         , err_notifier_
-            ( use_facet_<strf::transcoding_error_notifier_c, SrcCharT>(input.facets).get() )
+            ( use_facet_<strf::transcoding_error_notifier_c, SrcCharT>(facets).get() )
     {
-        auto src_charset  = strf::detail::get_src_charset(input);
-        auto dst_charset = use_facet_<strf::charset_c<DstCharT>, SrcCharT>(input.facets);
-        auto&& wcalc = use_facet_<strf::width_calculator_c, SrcCharT>(input.facets);
+        auto src_charset  = strf::detail::get_src_charset(facets, arg);
+        auto dst_charset = use_facet_<strf::charset_c<DstCharT>, SrcCharT>(facets);
+        auto&& wcalc = use_facet_<strf::width_calculator_c, SrcCharT>(facets);
         auto res = wcalc.str_width_and_pos
-            ( src_charset, input.arg.precision(), str_, input.arg.value().end() );
+            ( src_charset, arg.precision(), str_, arg.value().end() );
         str_end_ = res.ptr;
-        input.pre->subtract_width(res.width);
-        init_( input.pre, src_charset, dst_charset);
+        pre->subtract_width(res.width);
+        init_( pre, src_charset, dst_charset);
     }
 
     STRF_HD void operator()(strf::destination<DstCharT>& dst) const;
@@ -1052,46 +922,52 @@ public:
 
     template < typename PreMeasurements, typename FPack
              , typename Charset, transcoding_policy TranscPoli >
-    STRF_HD explicit aligned_transcode_printer
-        ( const strf::detail::fmt_string_printer_input
-            < SrcCharT, DstCharT, false, true, Charset, TranscPoli, PreMeasurements, FPack >&
-            input )
-        : str_(input.arg.value().data())
-        , str_end_(input.arg.value().end())
-        , afmt_(input.arg.get_alignment_format())
-        , err_notifier_
-            ( use_facet_<strf::transcoding_error_notifier_c, SrcCharT>(input.facets).get() )
+    STRF_HD aligned_transcode_printer
+        ( PreMeasurements* pre
+        , const FPack& facets
+        , const strf::printable_with_fmt
+            < string_printing<SrcCharT>
+            , strf::detail::string_precision_formatter<false>
+            , strf::alignment_formatter_q<true>
+            , transcoding_formatter_q<SrcCharT, Charset, TranscPoli> >& arg )
+        : str_(arg.value().data())
+        , str_end_(arg.value().end())
+        , afmt_(arg.get_alignment_format())
+        , err_notifier_(use_facet_<strf::transcoding_error_notifier_c, SrcCharT>(facets).get())
     {
-        auto src_charset = strf::detail::get_src_charset(input);
-        auto&& wcalc = use_facet_<strf::width_calculator_c, SrcCharT>(input.facets);
+        auto src_charset = strf::detail::get_src_charset(facets, arg);
+        auto&& wcalc = use_facet_<strf::width_calculator_c, SrcCharT>(facets);
         const strf::width_t limit =
-            ( PreMeasurements::width_demanded && input.pre->remaining_width() > afmt_.width
-            ? input.pre->remaining_width()
+            ( PreMeasurements::width_demanded && pre->remaining_width() > afmt_.width
+            ? pre->remaining_width()
             : afmt_.width );
         auto str_width = wcalc.str_width(src_charset, limit, str_, str_end_);
-        init_( input.pre, str_width, src_charset
-             , use_facet_<strf::charset_c<DstCharT>, SrcCharT>(input.facets) );
+        init_( pre, str_width, src_charset
+             , use_facet_<strf::charset_c<DstCharT>, SrcCharT>(facets) );
     }
 
     template < typename PreMeasurements, typename FPack
              , typename Charset, transcoding_policy TranscPoli>
-    STRF_HD explicit aligned_transcode_printer
-        ( const strf::detail::fmt_string_printer_input
-            < SrcCharT, DstCharT, true, true, Charset, TranscPoli, PreMeasurements, FPack >&
-            input )
-        : str_(input.arg.value().data())
-        , str_end_(input.arg.value().end())
-        , afmt_(input.arg.get_alignment_format())
-        , err_notifier_
-            ( use_facet_<strf::transcoding_error_notifier_c, SrcCharT>(input.facets).get() )
+    STRF_HD aligned_transcode_printer
+        ( PreMeasurements* pre
+        , const FPack& facets
+        , const strf::printable_with_fmt
+            < string_printing<SrcCharT>
+            , strf::detail::string_precision_formatter<true>
+            , strf::alignment_formatter_q<true>
+            , transcoding_formatter_q<SrcCharT, Charset, TranscPoli> >& arg )
+        : str_(arg.value().data())
+        , str_end_(arg.value().end())
+        , afmt_(arg.get_alignment_format())
+        , err_notifier_(use_facet_<strf::transcoding_error_notifier_c, SrcCharT>(facets).get())
     {
-        auto src_charset = strf::detail::get_src_charset(input);
-        auto&& wcalc = use_facet_<strf::width_calculator_c, SrcCharT>(input.facets);
+        auto src_charset = strf::detail::get_src_charset(facets, arg);
+        auto&& wcalc = use_facet_<strf::width_calculator_c, SrcCharT>(facets);
         auto res = wcalc.str_width_and_pos
-            ( src_charset, input.arg.precision(), str_, input.arg.value().end() );
+            ( src_charset, arg.precision(), str_, arg.value().end() );
         str_end_ = res.ptr;
-        init_( input.pre, res.width, src_charset
-             , use_facet_<strf::charset_c<DstCharT>, SrcCharT>(input.facets) );
+        init_( pre, res.width, src_charset
+             , use_facet_<strf::charset_c<DstCharT>, SrcCharT>(facets) );
     }
 
     STRF_HD void operator()(strf::destination<DstCharT>& dst) const;
@@ -1220,45 +1096,52 @@ public:
 
     template < typename PreMeasurements, typename FPack
              , typename Charset, transcoding_policy TranscPoli>
-    STRF_HD explicit unsafe_transcode_printer
-        ( const strf::detail::fmt_string_printer_input
-            < SrcCharT, DstCharT, false, false, Charset, TranscPoli, PreMeasurements, FPack >&
-            input )
-        : str_(input.arg.value().data())
-        , str_end_(input.arg.value().end())
-        , err_notifier_
-              ( use_facet_<strf::transcoding_error_notifier_c, SrcCharT>(input.facets).get() )
+    STRF_HD unsafe_transcode_printer
+        ( PreMeasurements* pre
+        , const FPack& facets
+        , const strf::printable_with_fmt
+            < string_printing<SrcCharT>
+            , strf::detail::string_precision_formatter<false>
+            , strf::alignment_formatter_q<false>
+            , transcoding_formatter_q<SrcCharT, Charset, TranscPoli> >& arg )
+        : str_(arg.value().data())
+        , str_end_(arg.value().end())
+        , err_notifier_(use_facet_<strf::transcoding_error_notifier_c, SrcCharT>(facets).get())
     {
-        auto src_charset  = strf::detail::get_src_charset(input);
-        auto dst_charset = use_facet_<strf::charset_c<DstCharT>, SrcCharT>(input.facets);
-        if (input.pre->has_remaining_width()) {
-            auto&& wcalc = use_facet_<strf::width_calculator_c, SrcCharT>(input.facets);
-            auto w = wcalc.str_width( src_charset, input.pre->remaining_width()
+        auto src_charset  = strf::detail::get_src_charset(facets, arg);
+        auto dst_charset = use_facet_<strf::charset_c<DstCharT>, SrcCharT>(facets);
+        if (pre->has_remaining_width()) {
+            auto&& wcalc = use_facet_<strf::width_calculator_c, SrcCharT>(facets);
+            auto w = wcalc.str_width( src_charset, pre->remaining_width()
                                     , str_, str_end_);
-            input.pre->subtract_width(w);
+            pre->subtract_width(w);
         }
-        init_(input.pre, src_charset, dst_charset);
+        init_(pre, src_charset, dst_charset);
     }
 
     template < typename PreMeasurements, typename FPack
              , typename Charset, transcoding_policy TranscPoli>
-    STRF_HD explicit unsafe_transcode_printer
-        ( const strf::detail::fmt_string_printer_input
-            < SrcCharT, DstCharT, true, false, Charset, TranscPoli, PreMeasurements, FPack >&
-            input )
-        : str_(input.arg.value().data())
-        , err_notifier_
-            ( use_facet_<strf::transcoding_error_notifier_c, SrcCharT>(input.facets).get() )
+    STRF_HD unsafe_transcode_printer
+        ( PreMeasurements* pre
+        , const FPack& facets
+        , const strf::printable_with_fmt
+            < string_printing<SrcCharT>
+            , strf::detail::string_precision_formatter<true>
+            , strf::alignment_formatter_q<false>
+            , transcoding_formatter_q<SrcCharT, Charset, TranscPoli> >& arg )
+        : str_(arg.value().data())
+        , err_notifier_(use_facet_<strf::transcoding_error_notifier_c, SrcCharT>(facets).get())
     {
-        auto src_charset  = strf::detail::get_src_charset(input);
-        auto dst_charset = use_facet_<strf::charset_c<DstCharT>, SrcCharT>(input.facets);
-        auto&& wcalc = use_facet_<strf::width_calculator_c, SrcCharT>(input.facets);
+        auto src_charset  = strf::detail::get_src_charset(facets, arg);
+        auto dst_charset = use_facet_<strf::charset_c<DstCharT>, SrcCharT>(facets);
+        auto&& wcalc = use_facet_<strf::width_calculator_c, SrcCharT>(facets);
         auto res = wcalc.str_width_and_pos
-            ( src_charset, input.arg.precision(), str_, input.arg.value().end() );
+            ( src_charset, arg.precision(), str_, arg.value().end() );
         str_end_ = res.ptr;
-        input.pre->subtract_width(res.width);
-        init_( input.pre, src_charset, dst_charset);
+        pre->subtract_width(res.width);
+        init_( pre, src_charset, dst_charset);
     }
+
     STRF_HD void operator()(strf::destination<DstCharT>& dst) const;
 
 private:
@@ -1341,46 +1224,52 @@ public:
 
     template < typename PreMeasurements, typename FPack
              , typename Charset, transcoding_policy TranscPoli >
-    STRF_HD explicit aligned_unsafe_transcode_printer
-        ( const strf::detail::fmt_string_printer_input
-            < SrcCharT, DstCharT, false, true, Charset, TranscPoli, PreMeasurements, FPack >&
-            input )
-        : str_(input.arg.value().data())
-        , str_end_(input.arg.value().end())
-        , afmt_(input.arg.get_alignment_format())
-        , err_notifier_
-            ( use_facet_<strf::transcoding_error_notifier_c, SrcCharT>(input.facets).get() )
+    STRF_HD aligned_unsafe_transcode_printer
+        ( PreMeasurements* pre
+        , const FPack& facets
+        , const strf::printable_with_fmt
+            < string_printing<SrcCharT>
+            , strf::detail::string_precision_formatter<false>
+            , strf::alignment_formatter_q<true>
+            , transcoding_formatter_q<SrcCharT, Charset, TranscPoli> >& arg )
+        : str_(arg.value().data())
+        , str_end_(arg.value().end())
+        , afmt_(arg.get_alignment_format())
+        , err_notifier_(use_facet_<strf::transcoding_error_notifier_c, SrcCharT>(facets).get())
     {
-        auto src_charset = strf::detail::get_src_charset(input);
-        auto&& wcalc = use_facet_<strf::width_calculator_c, SrcCharT>(input.facets);
+        auto src_charset = strf::detail::get_src_charset(facets, arg);
+        auto&& wcalc = use_facet_<strf::width_calculator_c, SrcCharT>(facets);
         const strf::width_t limit =
-            ( PreMeasurements::width_demanded && input.pre->remaining_width() > afmt_.width
-            ? input.pre->remaining_width()
+            ( PreMeasurements::width_demanded && pre->remaining_width() > afmt_.width
+            ? pre->remaining_width()
             : afmt_.width );
         auto str_width = wcalc.str_width(src_charset, limit, str_, str_end_);
-        init_( input.pre, str_width, src_charset
-             , use_facet_<strf::charset_c<DstCharT>, SrcCharT>(input.facets) );
+        init_( pre, str_width, src_charset
+             , use_facet_<strf::charset_c<DstCharT>, SrcCharT>(facets) );
     }
 
     template < typename PreMeasurements, typename FPack
              , typename Charset, transcoding_policy TranscPoli>
-    STRF_HD explicit aligned_unsafe_transcode_printer
-        ( const strf::detail::fmt_string_printer_input
-            < SrcCharT, DstCharT, true, true, Charset, TranscPoli, PreMeasurements, FPack >&
-            input )
-        : str_(input.arg.value().data())
-        , str_end_(input.arg.value().end())
-        , afmt_(input.arg.get_alignment_format())
-        , err_notifier_
-            ( use_facet_<strf::transcoding_error_notifier_c, SrcCharT>(input.facets).get() )
+    STRF_HD aligned_unsafe_transcode_printer
+        ( PreMeasurements* pre
+        , const FPack& facets
+        , const strf::printable_with_fmt
+            < string_printing<SrcCharT>
+            , strf::detail::string_precision_formatter<true>
+            , strf::alignment_formatter_q<true>
+            , transcoding_formatter_q<SrcCharT, Charset, TranscPoli> >& arg )
+        : str_(arg.value().data())
+        , str_end_(arg.value().end())
+        , afmt_(arg.get_alignment_format())
+        , err_notifier_(use_facet_<strf::transcoding_error_notifier_c, SrcCharT>(facets).get())
     {
-        auto src_charset = strf::detail::get_src_charset(input);
-        auto&& wcalc = use_facet_<strf::width_calculator_c, SrcCharT>(input.facets);
+        auto src_charset = strf::detail::get_src_charset(facets, arg);
+        auto&& wcalc = use_facet_<strf::width_calculator_c, SrcCharT>(facets);
         auto res = wcalc.str_width_and_pos
-            ( src_charset, input.arg.precision(), str_, input.arg.value().end() );
+            ( src_charset, arg.precision(), str_, arg.value().end() );
         str_end_ = res.ptr;
-        init_( input.pre, res.width, src_charset
-             , use_facet_<strf::charset_c<DstCharT>, SrcCharT>(input.facets) );
+        init_( pre, res.width, src_charset
+             , use_facet_<strf::charset_c<DstCharT>, SrcCharT>(facets) );
     }
 
     STRF_HD void operator()(strf::destination<DstCharT>& dst) const;
@@ -1659,27 +1548,33 @@ public:
 
     template < typename PreMeasurements, typename FPack, typename SrcCharT
              , bool HasPrecision, typename Charset, transcoding_policy TranscPoli >
-    STRF_HD explicit transcode_printer_variant
-        ( const strf::detail::fmt_string_printer_input
-            < SrcCharT, DstCharT, HasPrecision, false, Charset, TranscPoli, PreMeasurements, FPack >&
-            input )
+    STRF_HD transcode_printer_variant
+        ( PreMeasurements* pre
+        , const FPack& facets
+        , const strf::printable_with_fmt
+            < string_printing<SrcCharT>
+            , strf::detail::string_precision_formatter<HasPrecision>
+            , strf::alignment_formatter_q<false>
+            , transcoding_formatter_q<SrcCharT, Charset, TranscPoli> >& arg )
     {
-        auto src_charset  = strf::detail::get_src_charset(input);
+        auto src_charset  = strf::detail::get_src_charset(facets, arg);
         using facet_tag = strf::string_input_tag<SrcCharT>;
         using dst_charset_cat = strf::charset_c<DstCharT>;
-        auto dst_charset = strf::use_facet<dst_charset_cat, facet_tag>(input.facets);
+        auto dst_charset = strf::use_facet<dst_charset_cat, facet_tag>(facets);
         if (src_charset.id() == dst_charset.id()) {
             using printer_type = strcpy_printer<SrcCharT, DstCharT>;
             static_assert(sizeof(printer_type) <= storage_size_, "");
 
-            new ((void*)&storage_) clonable_printer_wrapper<DstCharT, printer_type>(input);
+            new ((void*)&storage_) clonable_printer_wrapper<DstCharT, printer_type>
+                (pre, facets, arg);
         } else {
             constexpr auto different = charsets_comparison::statically_different;
             using printer_type = typename string_printer_type<false, different, TranscPoli>
                 :: template type<SrcCharT, DstCharT>;
             static_assert(sizeof(printer_type) <= storage_size_, "");
 
-            new ((void*)&storage_) clonable_printer_wrapper<DstCharT, printer_type>(input);
+            new ((void*)&storage_) clonable_printer_wrapper<DstCharT, printer_type>
+                (pre, facets, arg);
         }
     }
 
@@ -1726,7 +1621,6 @@ private:
 #  pragma GCC diagnostic pop
 #endif
 
-
     static constexpr std::size_t storage_size_ =
         sizeof(detail::clonable_printer_wrapper<DstCharT, detail::transcode_printer<DstCharT, DstCharT>>);
     using storage_type_ = typename std::aligned_storage
@@ -1743,22 +1637,26 @@ public:
 
     template < typename PreMeasurements, typename FPack, typename SrcCharT
              , bool HasPrecision, typename Charset, transcoding_policy TranscPoli >
-    STRF_HD explicit aligned_transcode_printer_variant
-        ( const strf::detail::fmt_string_printer_input
-            < SrcCharT, DstCharT, HasPrecision, true, Charset
-            , TranscPoli, PreMeasurements, FPack >&
-            input )
+    STRF_HD aligned_transcode_printer_variant
+        ( PreMeasurements* pre
+        , const FPack& facets
+        , const strf::printable_with_fmt
+            < string_printing<SrcCharT>
+            , strf::detail::string_precision_formatter<HasPrecision>
+            , strf::alignment_formatter_q<true>
+            , transcoding_formatter_q<SrcCharT, Charset, TranscPoli> >& arg )
     {
-        auto src_charset  = strf::detail::get_src_charset(input);
+        auto src_charset  = strf::detail::get_src_charset(facets, arg);
         using facet_tag = strf::string_input_tag<SrcCharT>;
         using dst_charset_cat = strf::charset_c<DstCharT>;
-        auto dst_charset = strf::use_facet<dst_charset_cat, facet_tag>(input.facets);
+        auto dst_charset = strf::use_facet<dst_charset_cat, facet_tag>(facets);
 
         if (src_charset.id() == dst_charset.id()) {
             using printer_type = aligned_strcpy_printer<SrcCharT, DstCharT>;
             static_assert(sizeof(printer_type) <= storage_size_, "");
 
-            new ((void*)&storage_) clonable_printer_wrapper<DstCharT, printer_type>(input);
+            new ((void*)&storage_) clonable_printer_wrapper<DstCharT, printer_type>
+                (pre, facets, arg);
 
         } else {
             constexpr auto different = charsets_comparison::statically_different;
@@ -1766,7 +1664,8 @@ public:
                 :: template type<SrcCharT, DstCharT>;
             static_assert(sizeof(printer_type) <= storage_size_, "");
 
-            new ((void*)&storage_) clonable_printer_wrapper<DstCharT, printer_type>(input);
+            new ((void*)&storage_) clonable_printer_wrapper<DstCharT, printer_type>
+                (pre, facets, arg);
         }
     }
 
@@ -1825,7 +1724,137 @@ private:
     storage_type_ storage_;
 };
 
+
+template <typename SrcCharT>
+struct string_printing
+{
+    using representative_type = strf::string_input_tag<SrcCharT>;
+    using forwarded_type = strf::detail::simple_string_view<SrcCharT>;
+    using formatters = strf::tag
+        < strf::detail::string_precision_formatter<false>
+        , strf::alignment_formatter
+        , strf::detail::transcoding_formatter<SrcCharT> >;
+    using is_overridable = std::false_type;
+
+    template <typename DstCharT, typename PreMeasurements, typename FPack>
+    constexpr STRF_HD static auto make_printer
+        ( strf::tag<DstCharT>
+        , PreMeasurements* pre
+        , const FPack& facets
+        , forwarded_type arg ) noexcept
+        -> detail::strcpy_printer<SrcCharT, DstCharT>
+    {
+        static_assert
+            ( std::is_same<SrcCharT, DstCharT>::value
+            , "Character type mismatch. Use `transcode` or `sani` format function." );
+
+        return {pre, facets, arg};
+    }
+
+    template < typename DstCharT, typename PreMeasurements, typename FPack
+             , bool HasPrecision, bool HasAlignment
+             , typename Charset, transcoding_policy TranscPoli >
+    constexpr STRF_HD static auto make_printer
+        ( strf::tag<DstCharT>
+        , PreMeasurements* pre
+        , const FPack& facets
+        , const strf::printable_with_fmt
+            < string_printing<SrcCharT>
+            , string_precision_formatter<HasPrecision>
+            , strf::alignment_formatter_q<HasAlignment>
+            , transcoding_formatter_q<SrcCharT, Charset, TranscPoli> >& arg ) noexcept
+
+        -> typename string_printer_type
+            < HasAlignment
+            , compare_charsets<SrcCharT, DstCharT, FPack, Charset>::value
+            , TranscPoli >
+            :: template type <SrcCharT, DstCharT>
+    {
+        return {pre, facets, arg};
+    }
+};
+
 } // namespace detail
+
+template <typename CharIn>
+constexpr STRF_HD auto tag_invoke
+    (strf::printable_tag, strf::detail::simple_string_view<CharIn>) noexcept
+    -> strf::detail::string_printing<CharIn>
+    { return {}; }
+
+#if defined(STRF_HAS_STD_STRING_DECLARATION)
+
+template <typename CharIn, typename Traits, typename Allocator>
+constexpr STRF_HD auto tag_invoke
+    (strf::printable_tag, const std::basic_string<CharIn, Traits, Allocator>&) noexcept
+    -> strf::detail::string_printing<CharIn>
+    { return {}; }
+
+#endif // defined(STRF_HAS_STD_STRING_DECLARATION)
+
+#if defined(STRF_HAS_STD_STRING_VIEW)
+
+template <typename CharIn, typename Traits>
+constexpr STRF_HD auto tag_invoke
+    (strf::printable_tag, std::basic_string_view<CharIn, Traits>) noexcept
+    -> strf::detail::string_printing<CharIn>
+    { return {}; }
+
+#if defined(__cpp_char8_t)
+
+constexpr STRF_HD auto tag_invoke
+    (strf::printable_tag, std::basic_string_view<char8_t>) noexcept
+    -> strf::detail::string_printing<char8_t>
+    { return {}; }
+
+#endif // defined(__cpp_char8_t)
+
+constexpr STRF_HD auto tag_invoke(strf::printable_tag, std::basic_string_view<char>) noexcept
+    -> strf::detail::string_printing<char>
+    { return {}; }
+
+
+constexpr STRF_HD auto tag_invoke(strf::printable_tag, std::basic_string_view<char16_t>) noexcept
+    -> strf::detail::string_printing<char16_t>
+    { return {}; }
+
+
+constexpr STRF_HD auto tag_invoke(strf::printable_tag, std::basic_string_view<char32_t>) noexcept
+    -> strf::detail::string_printing<char32_t>
+    { return {}; }
+
+
+constexpr STRF_HD auto tag_invoke(strf::printable_tag, std::basic_string_view<wchar_t>) noexcept
+    -> strf::detail::string_printing<wchar_t>
+    { return {}; }
+
+#endif // defined(STRF_HAS_STD_STRING_VIEW)
+
+#if defined(__cpp_char8_t)
+
+
+constexpr STRF_HD auto tag_invoke(strf::printable_tag, const char8_t*) noexcept
+    -> strf::detail::string_printing<char8_t>
+    { return {}; }
+
+#endif
+
+constexpr STRF_HD auto tag_invoke(strf::printable_tag, const char*) noexcept
+    -> strf::detail::string_printing<char>
+    { return {}; }
+
+constexpr STRF_HD auto tag_invoke(strf::printable_tag, const char16_t*) noexcept
+    -> strf::detail::string_printing<char16_t>
+    { return {}; }
+
+constexpr STRF_HD auto tag_invoke(strf::printable_tag, const char32_t*) noexcept
+    -> strf::detail::string_printing<char32_t>
+    { return {}; }
+
+constexpr STRF_HD auto tag_invoke(strf::printable_tag, const wchar_t*) noexcept
+    -> strf::detail::string_printing<wchar_t>
+    { return {}; }
+
 } // namespace strf
 
 #endif // STRF_DETAIL_PRINTABLE_TYPES_STRING_HPP

@@ -150,6 +150,8 @@ struct default_int_formatter
 {
     template <typename T>
     using fn = strf::default_int_formatter_fn<T>;
+
+    static constexpr bool punctuate = false;
 };
 
 template <int Base>
@@ -157,6 +159,8 @@ struct int_formatter_no_pad0_nor_punct
 {
     template <typename T>
     using fn = int_formatter_no_pad0_nor_punct_fn<T, Base>;
+
+    static constexpr bool punctuate = false;
 };
 
 template <int Base, bool Punctuate>
@@ -164,6 +168,8 @@ struct int_formatter_static_base_and_punct
 {
     template <typename T>
     using fn = int_formatter_static_base_and_punct_fn<T, Base, Punctuate>;
+
+    static constexpr bool punctuate = Punctuate;
 };
 
 struct int_formatter_full_dynamic
@@ -1068,7 +1074,6 @@ private:
 namespace detail {
 
 template <typename> class default_int_printer;
-template <typename> class aligned_default_int_printer;
 template <typename, int Base> class int_printer_no_pad0_nor_punct;
 template <typename, int Base, bool Punctuate> class int_printer_static_base_and_punct;
 template <typename> class int_printer_full_dynamic;
@@ -1089,327 +1094,25 @@ constexpr STRF_HD bool negative(const T& x) noexcept
     return strf::detail::negative_impl_(x, std::is_signed<T>());
 }
 
-// template <typename FPack, typename IntT, int Base>
-// class has_intpunct_impl
-// {
-// public:
-//
-//     static STRF_HD std::true_type  test_numpunct(strf::numpunct<Base>);
-//     static STRF_HD std::false_type test_numpunct(strf::default_numpunct<Base>);
-//     static STRF_HD std::false_type test_numpunct(strf::no_grouping<Base>);
-//
-//     static STRF_HD const FPack& fp();
-//
-//     using has_numpunct_type = decltype
-//         ( test_numpunct
-//             ( use_facet< strf::numpunct_c<Base>, IntT >(fp())) );
-// public:
-//
-//     static constexpr bool value = has_numpunct_type::value;
-// };
-//
-// template <typename FPack, typename IntT, int Base>
-// constexpr STRF_HD bool has_intpunct()
-// {
-//     return has_intpunct_impl<FPack, IntT, Base>::value;
-// }
-
-template <typename IntT>
-struct int_printing;
-
-template <typename CharT, typename Pre, typename IntT>
-struct default_int_printer_input
-{
-    using printer_type = strf::detail::default_int_printer<CharT>;
-
-    template<typename FPack>
-    constexpr STRF_HD default_int_printer_input
-        ( Pre* pre_, const FPack&, IntT arg_) noexcept
-        : pre(pre_)
-        , value(arg_)
-    {
-    }
-
-    template<typename FPack, typename PTraits>
-    constexpr STRF_HD default_int_printer_input
-        ( Pre* pre_
-        , const FPack&
-        , strf::printable_with_fmt
-            < PTraits
-            , strf::int_formatter
-            , strf::alignment_formatter > arg_ ) noexcept
-        : pre(pre_)
-        , value(arg_.value())
-    {
-    }
-
-    Pre* pre;
-    IntT value;
-};
-
-template <typename IntT>
-struct int_printing
-{
-private:
-
-    template <typename P, bool HasAlignment>
-    using vwf_ = printable_with_fmt
-              < P, int_formatter
-              , alignment_formatter_q<HasAlignment> >;
-
-    template <typename P, int Base, bool HasAlignment>
-    using vwf_nopp_ = printable_with_fmt
-              < P, int_formatter_no_pad0_nor_punct<Base>
-              , alignment_formatter_q<HasAlignment> >;
-
-    template <typename P, int Base, bool Punctuate, bool HasAlignment>
-    using vwf_bp_ = printable_with_fmt
-              < P, int_formatter_static_base_and_punct<Base, Punctuate>
-              , alignment_formatter_q<HasAlignment> >;
-
-    template <typename P, bool HasAlignment>
-    using vwf_full_dynamic_ = printable_with_fmt
-              < P, int_formatter_full_dynamic
-              , alignment_formatter_q<HasAlignment> >;
-public:
-
-    using representative_type = IntT;
-    using forwarded_type = IntT;
-    using formatters = strf::tag< strf::int_formatter
-                                , strf::alignment_formatter >;
-    using is_overridable = std::true_type;
-
-    template <typename CharT, typename PreMeasurements, typename FPack>
-    constexpr STRF_HD static auto make_printer
-        ( strf::tag<CharT>
-        , PreMeasurements* pre
-        , const FPack& facets
-        , IntT x ) noexcept
-        -> strf::detail::default_int_printer_input<CharT, PreMeasurements, IntT>
-    {
-        return {pre, facets, x};
-    }
-
-    template < typename CharT, typename PreMeasurements, typename FPack
-             , typename PTraits, int Base, bool HasAlignment >
-    constexpr STRF_HD static auto make_printer
-        ( strf::tag<CharT>
-        , PreMeasurements* pre
-        , const FPack& facets
-        , vwf_nopp_<PTraits, Base, HasAlignment> x ) noexcept
-        -> strf::usual_printer_input
-            < CharT, PreMeasurements, FPack, vwf_nopp_<PTraits, Base, HasAlignment>
-            , strf::detail::conditional_t
-                < HasAlignment
-                , strf::detail::int_printer_static_base_and_punct<CharT, Base, false>
-                , strf::detail::int_printer_no_pad0_nor_punct<CharT, Base> > >
-    {
-        return {pre, facets, x};
-    }
-
-    template < typename CharT, typename PreMeasurements, typename FPack
-             , typename PTraits, int Base, bool Punctuate, bool HasAlignment >
-    constexpr STRF_HD static auto make_printer
-        ( strf::tag<CharT>
-        , PreMeasurements* pre
-        , const FPack& facets
-        , vwf_bp_<PTraits, Base, Punctuate, HasAlignment> x )
-        -> strf::usual_printer_input
-            < CharT, PreMeasurements, FPack, vwf_bp_<PTraits, Base, Punctuate, HasAlignment>
-            , strf::detail::int_printer_static_base_and_punct<CharT, Base, Punctuate> >
-    {
-        return {pre, facets, x};
-    }
-
-    template < typename CharT, typename PreMeasurements, typename FPack
-             , typename PTraits, bool HasAlignment>
-    constexpr STRF_HD static auto make_printer
-        ( strf::tag<CharT>
-        , PreMeasurements* pre
-        , const FPack& facets
-        , vwf_<PTraits, HasAlignment> x )
-        -> strf::detail::conditional_t
-            < ! HasAlignment
-            , strf::detail::default_int_printer_input<CharT, PreMeasurements, IntT>
-            , strf::usual_printer_input
-                < CharT, PreMeasurements, FPack, vwf_<PTraits, HasAlignment>
-                , strf::detail::aligned_default_int_printer<CharT> > >
-    {
-        return {pre, facets, x};
-    }
-
-    template < typename CharT, typename PreMeasurements, typename FPack
-             , typename PTraits, bool HasAlignment>
-    constexpr STRF_HD static auto make_printer
-        ( strf::tag<CharT>
-        , PreMeasurements* pre
-        , const FPack& facets
-        , vwf_full_dynamic_<PTraits, HasAlignment> x )
-        -> strf::usual_printer_input
-                < CharT, PreMeasurements, FPack, vwf_full_dynamic_<PTraits, HasAlignment>
-                , strf::detail::int_printer_full_dynamic<CharT> >
-    {
-        return {pre, facets, x};
-    }
-};
-
-} // namespace detail
-
-template <> struct printable_traits<signed char>:
-    public strf::detail::int_printing<signed char> {};
-template <> struct printable_traits<short>: // NOLINT(google-runtime-int)
-    public strf::detail::int_printing<short> {}; // NOLINT(google-runtime-int)
-template <> struct printable_traits<int>:
-    public strf::detail::int_printing<int> {};
-template <> struct printable_traits<long>: // NOLINT(google-runtime-int)
-    public strf::detail::int_printing<long> {}; // NOLINT(google-runtime-int)
-template <> struct printable_traits<long long>: // NOLINT(google-runtime-int)
-    public strf::detail::int_printing<long long> {}; // NOLINT(google-runtime-int)
-
-template <> struct printable_traits<unsigned char>:
-    public strf::detail::int_printing<unsigned char> {};
-template <> struct printable_traits<unsigned short>: // NOLINT(google-runtime-int)
-    public strf::detail::int_printing<unsigned short> {}; // NOLINT(google-runtime-int)
-template <> struct printable_traits<unsigned int>: // NOLINT(google-runtime-int)
-    public strf::detail::int_printing<unsigned int> {}; // NOLINT(google-runtime-int)
-template <> struct printable_traits<unsigned long>: // NOLINT(google-runtime-int)
-    public strf::detail::int_printing<unsigned long> {}; // NOLINT(google-runtime-int)
-template <> struct printable_traits<unsigned long long>: // NOLINT(google-runtime-int)
-    public strf::detail::int_printing<unsigned long long> {}; // NOLINT(google-runtime-int)
-
-constexpr STRF_HD auto tag_invoke(strf::printable_tag, signed char) noexcept
-    -> strf::detail::int_printing<signed char>
-    { return {}; }
-
-// NOLINTNEXTLINE(google-runtime-int)
-constexpr STRF_HD auto tag_invoke(strf::printable_tag, short) noexcept
-    -> strf::detail::int_printing<short>  // NOLINT(google-runtime-int)
-    { return {}; }
-
-constexpr STRF_HD auto tag_invoke(strf::printable_tag, int) noexcept
-    -> strf::detail::int_printing<int>
-    { return {}; }
-
-// NOLINTNEXTLINE(google-runtime-int)
-constexpr STRF_HD auto tag_invoke(strf::printable_tag, long) noexcept
-    -> strf::detail::int_printing<long> // NOLINT(google-runtime-int)
-    { return {}; }
-
-// NOLINTNEXTLINE(google-runtime-int)
-constexpr STRF_HD auto tag_invoke(strf::printable_tag, long long) noexcept
-    -> strf::detail::int_printing<long long> // NOLINT(google-runtime-int)
-    { return {}; }
-
-// NOLINTNEXTLINE(google-runtime-int)
-constexpr STRF_HD auto tag_invoke(strf::printable_tag, unsigned char) noexcept
-    -> strf::detail::int_printing<unsigned char>
-    { return {}; }
-
-// NOLINTNEXTLINE(google-runtime-int)
-constexpr STRF_HD auto tag_invoke(strf::printable_tag, unsigned short) noexcept
-    -> strf::detail::int_printing<unsigned short> // NOLINT(google-runtime-int)
-    { return {}; }
-
-// NOLINTNEXTLINE(google-runtime-int)
-constexpr STRF_HD auto tag_invoke(strf::printable_tag, unsigned int) noexcept
-    -> strf::detail::int_printing<unsigned int> // NOLINT(google-runtime-int)
-    { return {}; }
-
-// NOLINTNEXTLINE(google-runtime-int)
-constexpr STRF_HD auto tag_invoke(strf::printable_tag, unsigned long) noexcept
-    -> strf::detail::int_printing<unsigned long> // NOLINT(google-runtime-int)
-    { return {}; }
-
-// NOLINTNEXTLINE(google-runtime-int)
-constexpr STRF_HD auto tag_invoke(strf::printable_tag, unsigned long long) noexcept
-    -> strf::detail::int_printing<unsigned long long> // NOLINT(google-runtime-int)
-    { return {}; }
-
-namespace detail {
-
-struct voidptr_printing
-{
-    using representative_type = const void*;
-    using forwarded_type = const void*;
-    using formatters = strf::tag<strf::alignment_formatter>;
-    using is_overridable = std::true_type;
-
-    template <typename CharT, typename PreMeasurements, typename FPack>
-    constexpr STRF_HD static auto make_printer
-        ( strf::tag<CharT>
-        , PreMeasurements* pre
-        , const FPack& facets
-        , const void* x ) noexcept
-    -> decltype( strf::make_default_printer<CharT>
-                   ( pre
-                   , strf::pack
-                       ( strf::use_facet<strf::numpunct_c<16>, const void*>(facets)
-                       , strf::lettercase::lower
-                       , strf::use_facet<strf::charset_c<CharT>, const void*>(facets) )
-                   , *strf::hex(strf::detail::bit_cast<std::size_t>(x)) ) )
-    {
-        return strf::make_default_printer<CharT>
-            ( pre
-            , strf::pack
-                ( strf::use_facet<strf::numpunct_c<16>, const void*>(facets)
-                , strf::use_facet<strf::lettercase_c, const void*>(facets)
-                , strf::use_facet<strf::charset_c<CharT>, const void*>(facets) )
-            , *strf::hex(strf::detail::bit_cast<std::size_t>(x)) );
-    }
-
-    template <typename CharT, typename PreMeasurements, typename FPack, typename... T>
-    constexpr STRF_HD static auto make_printer
-        ( strf::tag<CharT>
-        , PreMeasurements* pre
-        , const FPack& facets
-        , strf::printable_with_fmt<T...> x ) noexcept
-    -> decltype( strf::make_default_printer<CharT>
-                   ( pre
-                   , strf::pack
-                       ( strf::use_facet<strf::numpunct_c<16>, const void*>(facets)
-                       , strf::use_facet<strf::lettercase_c, const void*>(facets)
-                       , strf::use_facet<strf::charset_c<CharT>, const void*>(facets) )
-                   , *strf::hex(strf::detail::bit_cast<std::size_t>(x.value()))
-                                   .set_alignment_format(x.get_alignment_format()) ) )
-    {
-        return strf::make_default_printer<CharT>
-            ( pre
-            , strf::pack
-                ( strf::use_facet<strf::numpunct_c<16>, const void*>(facets)
-                , strf::use_facet<strf::lettercase_c, const void*>(facets)
-                , strf::use_facet<strf::charset_c<CharT>, const void*>(facets) )
-            , *strf::hex(strf::detail::bit_cast<std::size_t>(x.value()))
-                            .set_alignment_format(x.get_alignment_format()) );
-    }
-};
-
-} // namespace detail
-
-constexpr STRF_HD auto tag_invoke(strf::printable_tag, const void*) noexcept
-    -> strf::detail::voidptr_printing
-    { return {}; }
-
-namespace detail {
-
 template <typename CharT>
 class default_int_printer
 {
 public:
 
-    template <typename... T>
-    STRF_HD explicit default_int_printer(strf::detail::default_int_printer_input<T...> i)
-    {
-        init_(i.pre, i.value);
-    }
-
     STRF_HD void operator()(strf::destination<CharT>& dst) const;
 
-private:
+    template < typename Pre, typename FPack, typename IntT
+             , strf::detail::enable_if_t<std::is_integral<IntT>::value, int> = 0>
+    STRF_HD default_int_printer(Pre* pre, const FPack&, IntT arg)
+        : default_int_printer(pre, arg)
+    {
+    }
 
-    template < typename PreMeasurements
-             , typename IntT
-             , strf::detail::enable_if_t<std::is_signed<IntT>::value, int> = 0 >
-    STRF_HD void init_(PreMeasurements* pre, IntT value)
+    template < typename Pre, typename IntT
+             , strf::detail::enable_if_t
+                 < std::is_integral<IntT>::value && std::is_signed<IntT>::value
+                 , int> = 0 >
+    STRF_HD default_int_printer(Pre* pre, IntT value)
     {
         using uint = typename std::make_unsigned<IntT>::type;
         uint uvalue;
@@ -1426,14 +1129,15 @@ private:
         pre->add_size(digcount_ + negative_);
     }
 
-   template < typename PreMeasurements
-            , typename UIntT
-            , strf::detail::enable_if_t< ! std::is_signed<UIntT>::value, int> = 0 >
-    STRF_HD void init_(PreMeasurements* pre, UIntT value)
+   template < typename Pre, typename UIntT
+            , strf::detail::enable_if_t
+                 < std::is_unsigned<UIntT>::value && std::is_unsigned<UIntT>::value
+                 , int> = 0 >
+    STRF_HD default_int_printer(Pre* pre, UIntT value)
+        : uvalue_{value}
+        , digcount_{strf::detail::count_digits<10>(value)}
+        , negative_{false}
     {
-        uvalue_ = value;
-        negative_ = false;
-        digcount_ = strf::detail::count_digits<10>(value);
         pre->subtract_width(digcount_);
         pre->add_size(digcount_);
     }
@@ -1462,19 +1166,22 @@ class aligned_default_int_printer
 {
 public:
 
-    template <typename... T>
-    STRF_HD explicit aligned_default_int_printer(strf::usual_printer_input<T...> i)
+    template <typename Pre, typename FPack, typename P>
+    STRF_HD aligned_default_int_printer
+          ( Pre* pre
+          , const FPack& facets
+          , const printable_with_fmt<P, int_formatter, alignment_formatter_q<true>>& arg )
     {
-        init_(i.arg.value());
-        init_fill_(i.arg.get_alignment_format());
+        init_(arg.value());
+        init_fill_(arg.get_alignment_format());
 
-        auto encoding = strf::use_facet<strf::charset_c<CharT>, int>(i.facets);
+        auto encoding = strf::use_facet<strf::charset_c<CharT>, int>(facets);
         STRF_MAYBE_UNUSED(encoding);
         encode_fill_ = encoding.encode_fill_func();
-        i.pre->subtract_width(fillcount_ + digcount_ + negative_);
-        STRF_IF_CONSTEXPR(strf::usual_printer_input<T...>::premeasurements_type::size_demanded) {
+        pre->subtract_width(fillcount_ + digcount_ + negative_);
+        STRF_IF_CONSTEXPR(Pre::size_demanded) {
             auto fillsize = fillcount_ * encoding.encoded_char_size(fillchar_);
-            i.pre->add_size(fillsize + digcount_ + negative_);
+            pre->add_size(fillsize + digcount_ + negative_);
         }
     }
 
@@ -1627,13 +1334,21 @@ template <typename CharT>
 class int_printer_no_pad0_nor_punct<CharT, 10>
 {
 public:
-    template <typename... T>
-    STRF_HD explicit int_printer_no_pad0_nor_punct(strf::usual_printer_input<T...> i) noexcept
+
+    template <typename PreMeasurements, typename FPack, typename P>
+    STRF_HD int_printer_no_pad0_nor_punct
+        ( PreMeasurements* pre
+        , const FPack&
+        , const printable_with_fmt
+              < P
+              , int_formatter_no_pad0_nor_punct<10>
+              , alignment_formatter_q<false> >& arg ) noexcept
     {
-        auto w = strf::detail::init(data_, i.arg.get_int_format(), i.arg.value());
-        i.pre->subtract_width(w);
-        i.pre->add_size(w);
+        auto w = strf::detail::init(data_, arg.get_int_format(), arg.value());
+        pre->subtract_width(w);
+        pre->add_size(w);
     }
+
 
     STRF_HD void operator()(strf::destination<CharT>& dst) const
     {
@@ -1656,14 +1371,20 @@ class int_printer_no_pad0_nor_punct<CharT, 16>
 {
 public:
 
-    template <typename... T>
-    STRF_HD explicit int_printer_no_pad0_nor_punct(strf::usual_printer_input<T...> i) noexcept
+    template <typename PreMeasurements, typename FPack, typename P >
+    STRF_HD int_printer_no_pad0_nor_punct
+        ( PreMeasurements* pre
+        , const FPack& facets
+        , const printable_with_fmt
+              < P
+              , int_formatter_no_pad0_nor_punct<16>
+              , alignment_formatter_q<false> >& arg ) noexcept
     {
-        auto value = i.arg.value();
-        auto w = strf::detail::init(data_, i.arg.get_int_format(), value);
-        lettercase_ = strf::use_facet<strf::lettercase_c, decltype(value)>(i.facets);
-        i.pre->subtract_width(static_cast<strf::width_t>(w));
-        i.pre->add_size(w);
+        auto value = arg.value();
+        auto w = strf::detail::init(data_, arg.get_int_format(), value);
+        lettercase_ = strf::use_facet<strf::lettercase_c, decltype(value)>(facets);
+        pre->subtract_width(static_cast<strf::width_t>(w));
+        pre->add_size(w);
     }
 
     STRF_HD void operator()(strf::destination<CharT>& dst) const
@@ -1691,12 +1412,19 @@ template <typename CharT>
 class int_printer_no_pad0_nor_punct<CharT, 8>
 {
 public:
-    template <typename... T>
-    STRF_HD explicit int_printer_no_pad0_nor_punct(strf::usual_printer_input<T...> i) noexcept
+
+    template <typename PreMeasurements, typename FPack, typename P >
+    STRF_HD int_printer_no_pad0_nor_punct
+        ( PreMeasurements* pre
+        , const FPack&
+        , printable_with_fmt
+              < P
+              , int_formatter_no_pad0_nor_punct<8>
+              , alignment_formatter_q<false> > arg ) noexcept
     {
-        auto w = strf::detail::init(data_, i.arg.get_int_format(), i.arg.value());
-        i.pre->subtract_width(w);
-        i.pre->add_size(w);
+        auto w = strf::detail::init(data_, arg.get_int_format(), arg.value());
+        pre->subtract_width(w);
+        pre->add_size(w);
     }
 
     STRF_HD void operator()(strf::destination<CharT>& dst) const
@@ -1720,14 +1448,20 @@ class int_printer_no_pad0_nor_punct<CharT, 2>
 {
 public:
 
-    template <typename... T>
-    STRF_HD explicit int_printer_no_pad0_nor_punct(strf::usual_printer_input<T...> i) noexcept
+    template <typename PreMeasurements, typename FPack, typename P>
+    STRF_HD int_printer_no_pad0_nor_punct
+        ( PreMeasurements* pre
+        , const FPack& facets
+        , printable_with_fmt
+              < P
+              , int_formatter_no_pad0_nor_punct<2>
+              , alignment_formatter_q<false> > arg ) noexcept
     {
-        auto value = i.arg.value();
-        auto w = strf::detail::init(data_, i.arg.get_int_format(), value);
-        lettercase_ = strf::use_facet<strf::lettercase_c, decltype(value)>(i.facets);
-        i.pre->subtract_width(w);
-        i.pre->add_size(w);
+        auto value = arg.value();
+        auto w = strf::detail::init(data_, arg.get_int_format(), value);
+        lettercase_ = strf::use_facet<strf::lettercase_c, decltype(value)>(facets);
+        pre->subtract_width(w);
+        pre->add_size(w);
     }
 
     STRF_HD void operator()(strf::destination<CharT>& dst) const
@@ -1963,25 +1697,31 @@ class int_printer_static_base_and_punct<CharT, Base, false>
 {
 public:
 
-    template <typename... T>
-    STRF_HD explicit int_printer_static_base_and_punct
-        ( const strf::usual_printer_input<T...>& i )
-        : lettercase_(strf::use_facet<lettercase_c, detail::remove_cvref_t<decltype(i.arg.value())> >(i.facets))
+    template < typename PreMeasurements, typename FPack
+             , typename P, typename IntFormat, bool HasAlignment
+             , detail::enable_if_t<!IntFormat::punctuate, int> = 0 >
+    STRF_HD int_printer_static_base_and_punct
+        ( PreMeasurements* pre
+        , const FPack& facets
+        , printable_with_fmt
+              < P
+              , IntFormat
+              , alignment_formatter_q<HasAlignment> > arg ) noexcept
+        : lettercase_(strf::use_facet<lettercase_c, detail::remove_cvref_t<decltype(arg.value())> >(facets))
     {
-        auto ivalue = i.arg.value();
+        auto ivalue = arg.value();
         using int_type = decltype(ivalue);
-        auto charset = strf::use_facet<charset_c<CharT>, int_type>(i.facets);
+        auto charset = strf::use_facet<charset_c<CharT>, int_type>(facets);
         encode_fill_ = charset.encode_fill_func();
-        const int_format_static_base_and_punct<Base, false> ifmt = i.arg.get_int_format();
-        auto afmt = i.arg.get_alignment_format();
+        const int_format_static_base_and_punct<Base, false> ifmt = arg.get_int_format();
+        auto afmt = arg.get_alignment_format();
         detail::init_1(data_, ifmt, ivalue);
         auto w = detail::init_fmt_int_printer_data<Base>(data_, ifmt, afmt);
-        i.pre->subtract_width(w.sub_width + w.fillcount);
-        using pre_t = typename strf::usual_printer_input<T...>::premeasurements_type;
-        STRF_IF_CONSTEXPR (pre_t::size_demanded) {
-            i.pre->add_size(w.sub_width);
+        pre->subtract_width(w.sub_width + w.fillcount);
+        STRF_IF_CONSTEXPR (PreMeasurements::size_demanded) {
+            pre->add_size(w.sub_width);
             if (w.fillcount > 0) {
-                i.pre->add_size(w.fillcount * charset.encoded_char_size(afmt.fill));
+                pre->add_size(w.fillcount * charset.encoded_char_size(afmt.fill));
             }
         }
     }
@@ -2107,15 +1847,21 @@ class int_printer_static_base_and_punct<CharT, Base, true>
 {
 public:
 
-    template <typename... T>
-    STRF_HD explicit int_printer_static_base_and_punct
-        ( const strf::usual_printer_input<T...>& i)
+    template < typename PreMeasurements, typename FPack
+             , typename P, bool HasAlignment >
+    STRF_HD int_printer_static_base_and_punct
+        ( PreMeasurements* pre
+        , const FPack& facets
+        , printable_with_fmt
+              < P
+              , int_formatter_static_base_and_punct<Base, true>
+              , alignment_formatter_q<HasAlignment> > arg ) noexcept
         : int_printer_static_base_and_punct
-            ( i.arg.value()
-            , i.arg.get_int_format()
-            , i.arg.get_alignment_format()
-            , i.pre
-            , i.facets )
+            ( arg.value()
+            , arg.get_int_format()
+            , arg.get_alignment_format()
+            , pre
+            , facets )
     {
     }
 
@@ -2226,16 +1972,20 @@ template <typename CharT>
 class int_printer_full_dynamic
 {
 public:
-    template <typename... T>
-    STRF_HD explicit int_printer_full_dynamic
-        ( const strf::usual_printer_input<T...>& i )
+
+    template < typename PreMeasurements, typename FPack
+             , typename AlignmentFormat, typename IntT
+             , detail::enable_if_t<std::is_integral<IntT>::value, int> = 0 >
+    STRF_HD int_printer_full_dynamic
+        ( PreMeasurements* pre
+        , const FPack& facets
+        , int_format_full_dynamic ifmt
+        , AlignmentFormat afmt
+        , IntT ivalue )
     {
-        auto ifmt = i.arg.get_int_format();
-        auto afmt = i.arg.get_alignment_format();
-        auto ivalue = i.arg.value();
         using int_type = decltype(ivalue);
-        auto lc = strf::use_facet<lettercase_c, int_type>(i.facets);
-        auto charset = strf::use_facet<charset_c<CharT>, int_type>(i.facets);
+        auto lc = strf::use_facet<lettercase_c, int_type>(facets);
+        auto charset = strf::use_facet<charset_c<CharT>, int_type>(facets);
         strf::digits_grouping grp;
         char32_t thousands_sep = ',';
         switch(ifmt.base) {
@@ -2243,56 +1993,56 @@ public:
                 const int_format_static_base_and_punct<16, true> ifmt16
                     { ifmt.precision, ifmt.pad0width, ifmt.sign, ifmt.showbase };
                 if (ifmt.punctuate) {
-                    auto numpunct = strf::use_facet<numpunct_c<16>, int_type>(i.facets);
+                    auto numpunct = strf::use_facet<numpunct_c<16>, int_type>(facets);
                     grp = numpunct.grouping();
                     thousands_sep = numpunct.thousands_sep();
                 }
                 new ((void*)&storage_)
                     detail::clonable_printer_wrapper
                     < CharT, int_printer_static_base_and_punct<CharT, 16, true> >
-                    ( ivalue, ifmt16, afmt, i.pre, lc, grp, thousands_sep, charset );
+                    ( ivalue, ifmt16, afmt, pre, lc, grp, thousands_sep, charset );
                 break;
             }
             case 8: {
                 const int_format_static_base_and_punct<8, true> ifmt8
                     { ifmt.precision, ifmt.pad0width, ifmt.sign, ifmt.showbase };
                 if (ifmt.punctuate) {
-                    auto numpunct = strf::use_facet<numpunct_c<8>, int_type>(i.facets);
+                    auto numpunct = strf::use_facet<numpunct_c<8>, int_type>(facets);
                     grp = numpunct.grouping();
                     thousands_sep = numpunct.thousands_sep();
                 }
                 new ((void*)&storage_)
                     detail::clonable_printer_wrapper
                     < CharT, int_printer_static_base_and_punct<CharT, 8, true> >
-                    ( ivalue, ifmt8, afmt, i.pre, lc, grp, thousands_sep, charset );
+                    ( ivalue, ifmt8, afmt, pre, lc, grp, thousands_sep, charset );
                 break;
             }
             case 2: {
                 const int_format_static_base_and_punct<2, true> ifmt2
                     { ifmt.precision, ifmt.pad0width, ifmt.sign, ifmt.showbase };
                 if (ifmt.punctuate) {
-                    auto numpunct = strf::use_facet<numpunct_c<2>, int_type>(i.facets);
+                    auto numpunct = strf::use_facet<numpunct_c<2>, int_type>(facets);
                     grp = numpunct.grouping();
                     thousands_sep = numpunct.thousands_sep();
                 }
                 new ((void*)&storage_)
                     detail::clonable_printer_wrapper
                     < CharT, int_printer_static_base_and_punct<CharT, 2, true> >
-                    ( ivalue, ifmt2, afmt, i.pre, lc, grp, thousands_sep, charset );
+                    ( ivalue, ifmt2, afmt, pre, lc, grp, thousands_sep, charset );
                 break;
             }
             default:  {
                 const int_format_static_base_and_punct<10, true> ifmt10
                     { ifmt.precision, ifmt.pad0width, ifmt.sign, ifmt.showbase };
                 if (ifmt.punctuate) {
-                    auto numpunct = strf::use_facet<numpunct_c<10>, int_type>(i.facets);
+                    auto numpunct = strf::use_facet<numpunct_c<10>, int_type>(facets);
                     grp = numpunct.grouping();
                     thousands_sep = numpunct.thousands_sep();
                 }
                 new ((void*)&storage_)
                     detail::clonable_printer_wrapper
                     < CharT, int_printer_static_base_and_punct<CharT, 10, true> >
-                    ( ivalue, ifmt10, afmt, i.pre, lc, grp, thousands_sep, charset );
+                    ( ivalue, ifmt10, afmt, pre, lc, grp, thousands_sep, charset );
                 break;
             }
         }
@@ -2462,7 +2212,220 @@ STRF_EXPLICIT_TEMPLATE class int_printer_static_base_and_punct<wchar_t, 16, fals
 
 #endif // defined(STRF_SEPARATE_COMPILATION)
 
+template <typename IntT>
+struct int_printing
+{
+private:
+
+    template <typename P, bool HasAlignment>
+    using vwf_ = printable_with_fmt
+              < P, int_formatter
+              , alignment_formatter_q<HasAlignment> >;
+
+    template <typename P, int Base, bool HasAlignment>
+    using vwf_nopp_ = printable_with_fmt
+              < P, int_formatter_no_pad0_nor_punct<Base>
+              , alignment_formatter_q<HasAlignment> >;
+
+    template <typename P, int Base, bool Punctuate, bool HasAlignment>
+    using vwf_bp_ = printable_with_fmt
+              < P, int_formatter_static_base_and_punct<Base, Punctuate>
+              , alignment_formatter_q<HasAlignment> >;
+
+    template <typename P, bool HasAlignment>
+    using vwf_full_dynamic_ = printable_with_fmt
+              < P, int_formatter_full_dynamic
+              , alignment_formatter_q<HasAlignment> >;
+public:
+
+    using representative_type = IntT;
+    using forwarded_type = IntT;
+    using formatters = strf::tag< strf::int_formatter
+                                , strf::alignment_formatter >;
+    using is_overridable = std::true_type;
+
+    template <typename CharT, typename PreMeasurements, typename FPack>
+    constexpr STRF_HD static auto make_printer
+        ( strf::tag<CharT>
+        , PreMeasurements* pre
+        , const FPack&
+        , IntT x ) noexcept
+        -> detail::default_int_printer<CharT>
+    {
+        return {pre, x};
+    }
+
+    template < typename CharT, typename PreMeasurements, typename FPack
+             , typename PTraits, int Base, bool HasAlignment >
+    constexpr STRF_HD static auto make_printer
+        ( strf::tag<CharT>
+        , PreMeasurements* pre
+        , const FPack& facets
+        , vwf_nopp_<PTraits, Base, HasAlignment> x ) noexcept
+        -> strf::detail::conditional_t
+            < HasAlignment
+            , strf::detail::int_printer_static_base_and_punct<CharT, Base, false>
+            , strf::detail::int_printer_no_pad0_nor_punct<CharT, Base> >
+    {
+        return {pre, facets, x};
+    }
+
+    template < typename CharT, typename PreMeasurements, typename FPack
+             , typename PTraits, int Base, bool Punctuate, bool HasAlignment >
+    constexpr STRF_HD static auto make_printer
+        ( strf::tag<CharT>
+        , PreMeasurements* pre
+        , const FPack& facets
+        , vwf_bp_<PTraits, Base, Punctuate, HasAlignment> x )
+        -> strf::detail::int_printer_static_base_and_punct<CharT, Base, Punctuate>
+    {
+        return {pre, facets, x};
+    }
+
+    template < typename CharT, typename PreMeasurements, typename FPack, typename PTraits>
+    constexpr STRF_HD static auto make_printer
+        ( strf::tag<CharT>
+        , PreMeasurements* pre
+        , const FPack& facets
+        , vwf_<PTraits, true> x )
+        -> detail::aligned_default_int_printer<CharT>
+    {
+        return {pre, facets, x};
+    }
+
+    template < typename CharT, typename PreMeasurements, typename FPack
+             , typename PTraits, bool HasAlignment>
+    constexpr STRF_HD static auto make_printer
+        ( strf::tag<CharT>
+        , PreMeasurements* pre
+        , const FPack& facets
+        , vwf_full_dynamic_<PTraits, HasAlignment> x )
+        -> strf::detail::int_printer_full_dynamic<CharT>
+    {
+        return {pre, facets, x.get_int_format(), x.get_alignment_format(), x.value()};
+    }
+};
+
 } // namespace detail
+
+template <> struct printable_traits<signed char>:
+    public strf::detail::int_printing<signed char> {};
+template <> struct printable_traits<short>: // NOLINT(google-runtime-int)
+    public strf::detail::int_printing<short> {}; // NOLINT(google-runtime-int)
+template <> struct printable_traits<int>:
+    public strf::detail::int_printing<int> {};
+template <> struct printable_traits<long>: // NOLINT(google-runtime-int)
+    public strf::detail::int_printing<long> {}; // NOLINT(google-runtime-int)
+template <> struct printable_traits<long long>: // NOLINT(google-runtime-int)
+    public strf::detail::int_printing<long long> {}; // NOLINT(google-runtime-int)
+
+template <> struct printable_traits<unsigned char>:
+    public strf::detail::int_printing<unsigned char> {};
+template <> struct printable_traits<unsigned short>: // NOLINT(google-runtime-int)
+    public strf::detail::int_printing<unsigned short> {}; // NOLINT(google-runtime-int)
+template <> struct printable_traits<unsigned int>: // NOLINT(google-runtime-int)
+    public strf::detail::int_printing<unsigned int> {}; // NOLINT(google-runtime-int)
+template <> struct printable_traits<unsigned long>: // NOLINT(google-runtime-int)
+    public strf::detail::int_printing<unsigned long> {}; // NOLINT(google-runtime-int)
+template <> struct printable_traits<unsigned long long>: // NOLINT(google-runtime-int)
+    public strf::detail::int_printing<unsigned long long> {}; // NOLINT(google-runtime-int)
+
+constexpr STRF_HD auto tag_invoke(strf::printable_tag, signed char) noexcept
+    -> strf::detail::int_printing<signed char>
+    { return {}; }
+
+// NOLINTNEXTLINE(google-runtime-int)
+constexpr STRF_HD auto tag_invoke(strf::printable_tag, short) noexcept
+    -> strf::detail::int_printing<short>  // NOLINT(google-runtime-int)
+    { return {}; }
+
+constexpr STRF_HD auto tag_invoke(strf::printable_tag, int) noexcept
+    -> strf::detail::int_printing<int>
+    { return {}; }
+
+// NOLINTNEXTLINE(google-runtime-int)
+constexpr STRF_HD auto tag_invoke(strf::printable_tag, long) noexcept
+    -> strf::detail::int_printing<long> // NOLINT(google-runtime-int)
+    { return {}; }
+
+// NOLINTNEXTLINE(google-runtime-int)
+constexpr STRF_HD auto tag_invoke(strf::printable_tag, long long) noexcept
+    -> strf::detail::int_printing<long long> // NOLINT(google-runtime-int)
+    { return {}; }
+
+// NOLINTNEXTLINE(google-runtime-int)
+constexpr STRF_HD auto tag_invoke(strf::printable_tag, unsigned char) noexcept
+    -> strf::detail::int_printing<unsigned char>
+    { return {}; }
+
+// NOLINTNEXTLINE(google-runtime-int)
+constexpr STRF_HD auto tag_invoke(strf::printable_tag, unsigned short) noexcept
+    -> strf::detail::int_printing<unsigned short> // NOLINT(google-runtime-int)
+    { return {}; }
+
+// NOLINTNEXTLINE(google-runtime-int)
+constexpr STRF_HD auto tag_invoke(strf::printable_tag, unsigned int) noexcept
+    -> strf::detail::int_printing<unsigned int> // NOLINT(google-runtime-int)
+    { return {}; }
+
+// NOLINTNEXTLINE(google-runtime-int)
+constexpr STRF_HD auto tag_invoke(strf::printable_tag, unsigned long) noexcept
+    -> strf::detail::int_printing<unsigned long> // NOLINT(google-runtime-int)
+    { return {}; }
+
+// NOLINTNEXTLINE(google-runtime-int)
+constexpr STRF_HD auto tag_invoke(strf::printable_tag, unsigned long long) noexcept
+    -> strf::detail::int_printing<unsigned long long> // NOLINT(google-runtime-int)
+    { return {}; }
+
+namespace detail {
+
+struct voidptr_printing
+{
+    using representative_type = const void*;
+    using forwarded_type = const void*;
+    using formatters = strf::tag<strf::alignment_formatter>;
+    using is_overridable = std::true_type;
+
+    template <typename CharT, typename PreMeasurements, typename FPack>
+    constexpr STRF_HD static auto make_printer
+        ( strf::tag<CharT>
+        , PreMeasurements* pre
+        , const FPack& facets
+        , const void* x ) noexcept
+    {
+        return strf::make_default_printer<CharT>
+            ( pre
+            , strf::pack
+                ( strf::use_facet<strf::numpunct_c<16>, const void*>(facets)
+                , strf::use_facet<strf::lettercase_c, const void*>(facets)
+                , strf::use_facet<strf::charset_c<CharT>, const void*>(facets) )
+            , *strf::hex(strf::detail::bit_cast<std::size_t>(x)) );
+    }
+
+    template <typename CharT, typename PreMeasurements, typename FPack, typename... T>
+    constexpr STRF_HD static auto make_printer
+        ( strf::tag<CharT>
+        , PreMeasurements* pre
+        , const FPack& facets
+        , strf::printable_with_fmt<T...> x ) noexcept
+    {
+        return strf::make_default_printer<CharT>
+            ( pre
+            , strf::pack
+                ( strf::use_facet<strf::numpunct_c<16>, const void*>(facets)
+                , strf::use_facet<strf::lettercase_c, const void*>(facets)
+                , strf::use_facet<strf::charset_c<CharT>, const void*>(facets) )
+            , *strf::hex(strf::detail::bit_cast<std::size_t>(x.value()))
+                            .set_alignment_format(x.get_alignment_format()) );
+    }
+};
+
+} // namespace detail
+
+constexpr STRF_HD auto tag_invoke(strf::printable_tag, const void*) noexcept
+    -> strf::detail::voidptr_printing
+    { return {}; }
 
 template <typename> struct is_int_number: public std::false_type {};
 // NOLINTNEXTLINE(google-runtime-int)
