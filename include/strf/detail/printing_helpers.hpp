@@ -115,13 +115,7 @@ class printable_arg_converter_selector_for_printing_with_premeasurements
     static STRF_HD auto test_(strf::rank<1>*, const A& arg)
         -> printable_arg_fmt_adder<default_printable_with_fmt>;
 
-
-    template <typename P, typename A>
-    static STRF_HD auto test_(strf::rank<0>*, ...)
-        -> printable_arg_caster<const A&>;
-
 public:
-
     using type =
         decltype(test_<TraitsOrFacet, Arg>( std::declval<strf::rank<4>*>()
                                           , std::declval<const Arg&>() ));
@@ -458,12 +452,7 @@ class printer_selector_for_printing_without_premeasurements
     static STRF_HD auto test_(strf::rank<1>*, const A& arg)
         -> print_using_make_printer<1, printable_arg_fmt_adder<default_printable_with_fmt> >;
 
-    template <typename P, typename A>
-    static STRF_HD auto test_(strf::rank<0>*, ...)
-        -> directly_call_print<0, printable_arg_caster<const A&> >;
-
 public:
-
     using type =
         decltype(test_<TraitsOrFacet, Arg>( std::declval<strf::rank<8>*>()
                                           , std::declval<const Arg&>() ));
@@ -737,16 +726,7 @@ class polymorphic_printer_maker_selector_for_printing_without_premeasurements
             < CharT, PrintingTraits, TraitsOrFacet, FPack, Arg
             , printable_arg_fmt_adder<default_printable_with_fmt> >;
 
-    // fallback
-
-    template <typename P, typename A>
-    static STRF_HD auto test_(strf::rank<0>*, ...)
-        -> print_caller_adapter_maker
-            < CharT, PrintingTraits, TraitsOrFacet, FPack, Arg
-            , printable_arg_caster<const A&> >;
-
 public:
-
     using type =
         decltype(test_<TraitsOrFacet, Arg>( std::declval<strf::rank<8>*>()
                                           , std::declval<const Arg&>() ));
