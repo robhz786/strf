@@ -208,20 +208,20 @@ void std_complex_printer<CharT, FloatT>::premeasurements_
 {
     switch (form_) {
         case complex_form::algebric:
-            pre->subtract_width(7);
+            pre->add_width(7);
             pre->add_size(7);
             break;
 
         case complex_form::vector:
-            pre->subtract_width(4);
+            pre->add_width(4);
             pre->add_size(4);
             break;
 
         default:
             assert(form_ == complex_form::polar);
             if (pre->has_remaining_width()) {
-                pre->subtract_width(wcalc.char_width(strf::utf_t<char32_t>{}, anglechar_));
-                pre->subtract_width(1);
+                pre->add_width(wcalc.char_width(strf::utf_t<char32_t>{}, anglechar_));
+                pre->add_width(1);
             }
             pre->add_size(encoding_.encoded_char_size(anglechar_));
             pre->add_size(1);
@@ -318,19 +318,19 @@ void fmt_std_complex_printer<CharT, FloatT>::init_fillcount_and_do_premeasuremen
 {
     const strf::width_t fillchar_width = wcalc.char_width(strf::utf_t<char32_t>{}, fillchar_);
     if (fmt_width >= pre->remaining_width() || ! static_cast<bool>(WidthPresence) ) {
-        pre->clear_remaining_width();
+        pre->saturate_width();
         strf::premeasurements<SizePresence, strf::width_presence::yes> sub_pre{fmt_width};
         do_premeasurements_without_fill_(&sub_pre, wcalc);
         fillcount_ = (sub_pre.remaining_width() / fillchar_width).round();
         pre->add_size(sub_pre.accumulated_ssize());
     } else {
-        auto previous_remaining_width = pre->remaining_width();
+        auto previous_width = pre->accumulated_width();
         do_premeasurements_without_fill_(pre, wcalc);
         if (pre->has_remaining_width()) {
-            auto content_width = previous_remaining_width - pre->remaining_width();
+            auto content_width = pre->accumulated_width() - previous_width;
             if (fmt_width > content_width) {
                 fillcount_ = ((fmt_width - content_width) / fillchar_width).round();
-                pre->subtract_width(static_cast<strf::width_t>(fillcount_));
+                pre->add_width(static_cast<strf::width_t>(fillcount_));
             }
         }
     }
@@ -352,20 +352,20 @@ void fmt_std_complex_printer<CharT, FloatT>::do_premeasurements_without_fill_
 
     switch (form_) {
         case complex_form::algebric:
-            pre->subtract_width(7);
+            pre->add_width(7);
             pre->add_size(7);
             break;
 
         case complex_form::vector:
-            pre->subtract_width(4);
+            pre->add_width(4);
             pre->add_size(4);
             break;
 
         default:
             assert(form_ == complex_form::polar);
             if (pre->has_remaining_width()) {
-                pre->subtract_width(wcalc.char_width(strf::utf_t<char32_t>{}, anglechar_));
-                pre->subtract_width(1);
+                pre->add_width(wcalc.char_width(strf::utf_t<char32_t>{}, anglechar_));
+                pre->add_width(1);
             }
             pre->add_size(encoding_.encoded_char_size(anglechar_));
             pre->add_size(1);
@@ -603,22 +603,22 @@ void tests()
 
     // size and width pre-calculation
     {
-        strf::full_premeasurements pre{strf::width_max};
+        strf::full_premeasurements pre;
         strf::measure<char>(&pre, strf::pack(), *strf::fmt(x));
         TEST_EQ(pre.accumulated_ssize(), 14);
-        TEST_TRUE(strf::width_max - pre.remaining_width() == 14);
+        TEST_TRUE(pre.accumulated_width() == 14);
     }
     {
-        strf::full_premeasurements pre{strf::width_max};
+        strf::full_premeasurements pre;
         strf::measure<char>(&pre, strf::pack(), *strf::fmt(x).algebric());
         TEST_EQ(pre.accumulated_ssize(), 17);
-        TEST_TRUE(strf::width_max - pre.remaining_width() == 17);
+        TEST_TRUE(pre.accumulated_width() == 17);
     }
     {
-        strf::full_premeasurements pre{strf::width_max};
+        strf::full_premeasurements pre;
         strf::measure<char>(&pre, strf::pack(), *strf::fmt(x).polar());
         TEST_EQ(pre.accumulated_ssize(), 27);
-        TEST_TRUE(strf::width_max - pre.remaining_width() == 25);
+        TEST_TRUE(pre.accumulated_width() == 25);
     }
 }
 

@@ -140,7 +140,7 @@ struct printable_traits<bool>
         , bool x ) noexcept
         -> strf::detail::bool_printer<CharT>
     {
-        pre->subtract_width(static_cast<strf::width_t>(5 - x));
+        pre->add_width(static_cast<strf::width_t>(5 - x));
         pre->add_size(5 - (int)x);
         return detail::bool_printer<CharT>{x, strf::use_facet<strf::lettercase_c, bool>(fp)};
     }
@@ -163,12 +163,12 @@ struct printable_traits<bool>
             const int fillcount = fmt_width - w;
             auto charset = strf::use_facet<charset_c<CharT>, bool>(fp);
 
-            pre->subtract_width(static_cast<strf::width_t>(fmt_width));
+            pre->add_width(static_cast<strf::width_t>(fmt_width));
             pre->add_size(w + fillcount * charset.encoded_char_size(afmt.fill));
 
             return {charset.encode_fill_func(), fmt_width - w, value, afmt, lcase};
         }
-        pre->subtract_width(static_cast<strf::width_t>(w));
+        pre->add_width(static_cast<strf::width_t>(w));
         pre->add_size(w);
         return {nullptr, 0, value, afmt, lcase};
     }

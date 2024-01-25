@@ -56,7 +56,7 @@ STRF_HD void measure_only_width
     (void) strf::printer_type<CharT, pre_type, strf::facets_pack<FPE...>, Arg>
         ( strf::make_printer<CharT>(pre, facets, arg) );
 
-    if (pre->remaining_width() > 0) {
+    if (pre->has_remaining_width()) {
         strf::detail::measure_only_width<CharT>(pre, facets, other_args...);
     }
 }
@@ -69,7 +69,7 @@ STRF_HD void measure
     , const strf::facets_pack<FPE...>& facets
     , const Args&... args )
 {
-    if (pre->remaining_width() > 0) {
+    if (pre->has_remaining_width()) {
         strf::detail::measure_only_width<CharT>(pre, facets, args...);
     }
 }

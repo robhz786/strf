@@ -23,7 +23,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 :representative_of_printable: <<representative_of_printable,representative_of_printable>>
 :is_printable_and_overridable: <<is_printable_and_overridable,is_printable_and_overridable>>
 
-:width_decumulator: <<width_decumulator,width_decumulator>>
+:width_accumulator: <<width_accumulator,width_accumulator>>
 :size_accumulator: <<size_accumulator,size_accumulator>>
 
 :constrain: <<constrain,constrain>>
@@ -171,7 +171,7 @@ __{Printer}__ object `p`, and, before that, to measure the size and/or width
 
 `pre` acts as an output variable:
 If `pre.<<premeasurements,width_demanded>>` is `true`, then the width of such content
-`v` shall be subtracted from the <<width_decumulator,remaining_width>> of `pre`.
+`v` shall be added to the <<width_accumulator,remaining_width>> of `pre`.
 
 If `pre.<<premeasurements,size_demanded>>` is `true`, then the size of such content
 ( or a value greater than that ) shall be added into the
@@ -443,7 +443,7 @@ enum class size_presence : bool { no = false, yes = true };
 template <size_presence SizePresence, width_presence WidthPresence>
 class premeasurements
     : public {size_accumulator}<static_cast<bool>(SizePresence)>
-    , public {width_decumulator}<static_cast<bool>(WidthPresence)>
+    , public {width_accumulator}<static_cast<bool>(WidthPresence)>
 {
 public:
 
@@ -478,12 +478,12 @@ Effect:: Default-construct each of the base classes.
 ====
 [source,cpp,subs=normal]
 ----
-constexpr explicit premeasurements(<<width_t,width_t>> initial_width) noexcept;
+constexpr explicit premeasurements(<<width_t,width_t>> width_limit) noexcept;
 ----
 Compile-time requirement:: `WidthPresence` is `width_presence::yes`, otherwise this constructor
 does not participate in overload resolution.
-Effect:: Initializes `{width_decumulator}` base
-with `initial_width`.
+Effect:: Initializes `{width_accumulator}` base
+with `width_limit`.
 ====
 [[size_accumulator]]
 === Class template `size_accumulator`
@@ -558,37 +558,42 @@ Return value:: `static_cast<std::ptrdiff_t>(accumulated_usize())`
 ====
 
 
-[[width_decumulator]]
-=== Class template `width_decumulator`
+[[width_accumulator]]
+=== Class template `width_accumulator`
 
 [source,cpp,subs=normal]
 ----
 namespace strf {
 template <bool Active>
-class width_decumulator
+class width_accumulator
 {
 public:
-    constexpr width_decumulator() noexcept;
+    constexpr width_accumulator() noexcept;
 
-    width_decumulator(const width_decumulator&) = delete;
-    width_decumulator(width_decumulator&&) = delete;
-    width_decumulator& operator=(const width_decumulator&) = delete;
-    width_decumulator& operator=(width_decumulator&&) = delete;
+    width_accumulator(const width_accumulator&) = delete;
+    width_accumulator(width_accumulator&&) = delete;
+    width_accumulator& operator=(const width_accumulator&) = delete;
+    width_accumulator& operator=(width_accumulator&&) = delete;
 
-    constexpr explicit width_decumulator(<<width_t,width_t>> initial_width) noexcept;
+    constexpr explicit width_accumulator(<<width_t,width_t>> width_limit) noexcept;
 
-    constexpr void subtract_width(<<width_t,width_t>>) noexcept;
+    constexpr void add_width(<<width_t,width_t>>) noexcept;
 
-    constexpr reset_remaining_width(width_t w) noexcept;
+    constexpr void checked_add_width(<<width_t,width_t>>) noexcept;
+
+    constexpr <<width_t,width_t>> accumlated_width() const noexcept;
 
     constexpr <<width_t,width_t>> remaining_width() const noexcept;
 
     constexpr bool has_remaining_width() const noexcept;
 
-    constexpr void zeroize_remaining_width_if_negative() noexcept;
+    constexpr bool remaining_width_greater_than(width_t w) const noexcept
+
+    constexpr saturate_width(width_t w) noexcept;
 
 private:
-    <<width_t,width_t>> width_; // exposition-only
+    width_t limit_ = width_max; // exposition-only
+    width_t width_ = 0;         // exposition-only
 }
 } // namespace strf
 ----
@@ -599,17 +604,18 @@ private:
 ====
 [source,cpp,subs=normal]
 ----
-constexpr explicit width_decumulator(<<width_t,width_t>> initial_width) noexcept;
+constexpr explicit width_accumulator(<<width_t,width_t>> width_limit) noexcept;
 ----
 Compile-time requiment:: `Active` is `true`, otherwise this constructor
 does not participate in overload resolution.
-Postcondition:: `remaining_width() == initial_width > 0 ? initial_width : 0`
+Postcondition:: `remaining_width() == width_limit > 0 ? width_limit : 0`
 ====
+
 
 ====
 [source,cpp]
 ----
-constexpr width_decumulator() noexcept;
+constexpr width_accumulator() noexcept;
 ----
 Postcondition:: `remaining_width() == (Active ? <<width_t,width_max>> : 0)`
 ====
@@ -617,10 +623,46 @@ Postcondition:: `remaining_width() == (Active ? <<width_t,width_max>> : 0)`
 ====
 [source,cpp,subs=normal]
 ----
+constexpr void  checked_add_width(<<width_t,width_t>> w) noexcept;
+----
+Effect::
+None if `Active` is `false`, otherwise does
++
+[source,cpp]
+----
+if (w > 0 && width_ < limit_) {
+    width_ = ( w >= limit_ - width_
+             ? limit_
+             : width_ + w );
+}
+----
+
+====
+
+====
+[source,cpp,subs=normal]
+----
+constexpr void add_width(<<width_t,width_t>> w) noexcept;
+----
+Effect::
+None if `Active` is `false`, otherwise does `width_ += w`
+====
+
+
+====
+[source,cpp,subs=normal]
+----
+constexpr width_t accumulated_width() noexcept;
+----
+Return value:: `Active ? (width_ <= limit_ ? width_ : limit_) : 0`
+====
+
+====
+[source,cpp,subs=normal]
+----
 constexpr width_t remaining_width() noexcept;
 ----
-Effect:: calls `zeroize_remaining_width_if_negative()`
-Return value:: `width_ > 0 ? width_ : 0`
+Return value:: `Active ? (width_ < limit_ ? limit_ - width_ : 0) : 0`
 ====
 
 ====
@@ -628,42 +670,25 @@ Return value:: `width_ > 0 ? width_ : 0`
 ----
 constexpr bool has_remaining_width() noexcept;
 ----
-Effect:: calls `zeroize_remaining_width_if_negative()`
-Return value:: `width_ > 0`
+Return value:: `Active && width_ < limit_`
+====
+
+====
+[source,cpp,subs=normal]
+----
+constexpr bool remaining_width_greater_than(strf::width_t w) const noexcept
+----
+Return value:: `Active && width_ + w < limit_`
 ====
 
 
 ====
 [source,cpp,subs=normal]
 ----
-constexpr void subtract_width(<<width_t,width_t>> w) noexcept;
+constexpr saturate_width(width_t w) noexcept;
 ----
-Effect::
-None if `Active` is `false`, otherwise does `width_ -= w`
-====
-
-====
-[source,cpp,subs=normal]
-----
-constexpr reset_remaining_width(width_t w) noexcept;
-----
-Compile-time requiment:: `Active` is `true`, otherwise this function
-does not participate in overload resolution.
-Effect: `width_ = w`;
-====
-
-====
-[source,cpp,subs=normal]
-----
-constexpr zeroize_remaining_width_if_negative() noexcept;
-----
-Effect:: `width_ = 0`
-Postcondition:: `remaining_width() == 0`
-Note:: Calling `subtract_width(w)` has undefined behavior if `w` is greater than
-`(width_ - <<width_t,width_min>>)`.
-So calling `zeroize_remaining_width_if_negative` aims to reduce the chances of that to happen.
-
-
+Effect: None if `Active` is `false`, otherwise do `width_ = limit_`
+Postcondition:: `remaining_width() == 0` 
 ====
 
 
@@ -705,7 +730,7 @@ Effects::
 * When `SizePresence` is `size_presence::no` and `WidthPresence` is `width_presence::yes`,
   for each argument `arg` in `args\...` instantiates the correponding _{Printer}_
   type with `pp`, `facets`, and `arg` ( again, using `{printer_type}`  and
-  `{make_printer}` ), while `pp-><<width_decumulator,remaining_width>>() > 0`
+  `{make_printer}` ), while `pp-><<width_accumulator,remaining_width>>() > 0`
   is `true`.
   This implies that not necessarily all argument in `arg\...` are used.
 * When `SizePresence` is `size_presence::no` and `WidthPresence` is `width_presence::no`,

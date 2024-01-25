@@ -78,10 +78,10 @@ STRF_HD void fmt_char_printer<CharT>::init_
     int fillcount = 0;
     if (content_width < afmt_.width) {
         fillcount = (afmt_.width - content_width).round();
-        pre->subtract_width(content_width + static_cast<strf::width_t>(fillcount));
+        pre->add_width(content_width + static_cast<strf::width_t>(fillcount));
     } else {
         fillcount = 0;
-        pre->subtract_width(content_width);
+        pre->add_width(content_width);
     }
     switch(afmt_.alignment) {
         case strf::text_alignment::left:
@@ -209,10 +209,10 @@ void STRF_HD fmt_conv_char32_printer<DstCharT>::init_
     alignment_ = afmt.alignment;
     if (content_width < afmt.width) {
         fillcount_ = (afmt.width - content_width).round();
-        pre->subtract_width(content_width + static_cast<strf::width_t>(fillcount_));
+        pre->add_width(content_width + static_cast<strf::width_t>(fillcount_));
     } else {
         fillcount_ = 0;
-        pre->subtract_width(content_width);
+        pre->add_width(content_width);
     }
     STRF_IF_CONSTEXPR (PreMeasurements::size_demanded) {
         pre->add_size(count_ * charset.encoded_char_size(ch_));
@@ -299,7 +299,7 @@ struct char_printing
             auto&& wcalc = use_facet<strf::width_calculator_c, DstCharT>(facets);
             auto charset = use_facet<strf::charset_c<DstCharT>, SrcCharT>(facets);
             auto w = wcalc.char_width(charset, static_cast<DstCharT>(x));
-            pre->subtract_width(w);
+            pre->add_width(w);
         }
 
         return strf::detail::char_printer<DstCharT>{x};
@@ -361,7 +361,7 @@ struct printable_traits<char32_t>
         pre->add_size(encoded_char_size);
         if (pre->has_remaining_width()) {
             auto&& wcalc = use_facet<strf::width_calculator_c, char32_t>(facets);
-            pre->subtract_width(wcalc.char_width(strf::utf_t<char32_t>{}, x));
+            pre->add_width(wcalc.char_width(strf::utf_t<char32_t>{}, x));
         }
         return strf::detail::conv_char32_printer<DstCharT>
             { encoding.encode_char_func(), encoded_char_size, x };

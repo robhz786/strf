@@ -1125,7 +1125,7 @@ public:
         }
         uvalue_ = uvalue;
         digcount_ = strf::detail::count_digits<10>(uvalue);
-        pre->subtract_width(static_cast<width_t>(digcount_ + negative_));
+        pre->add_width(static_cast<width_t>(digcount_ + negative_));
         pre->add_size(digcount_ + negative_);
     }
 
@@ -1138,7 +1138,7 @@ public:
         , digcount_{strf::detail::count_digits<10>(value)}
         , negative_{false}
     {
-        pre->subtract_width(digcount_);
+        pre->add_width(digcount_);
         pre->add_size(digcount_);
     }
 
@@ -1178,7 +1178,7 @@ public:
         auto encoding = strf::use_facet<strf::charset_c<CharT>, int>(facets);
         STRF_MAYBE_UNUSED(encoding);
         encode_fill_ = encoding.encode_fill_func();
-        pre->subtract_width(fillcount_ + digcount_ + negative_);
+        pre->add_width(fillcount_ + digcount_ + negative_);
         STRF_IF_CONSTEXPR(Pre::size_demanded) {
             auto fillsize = fillcount_ * encoding.encoded_char_size(fillchar_);
             pre->add_size(fillsize + digcount_ + negative_);
@@ -1345,7 +1345,7 @@ public:
               , alignment_formatter_q<false> >& arg ) noexcept
     {
         auto w = strf::detail::init(data_, arg.get_int_format(), arg.value());
-        pre->subtract_width(w);
+        pre->add_width(w);
         pre->add_size(w);
     }
 
@@ -1383,7 +1383,7 @@ public:
         auto value = arg.value();
         auto w = strf::detail::init(data_, arg.get_int_format(), value);
         lettercase_ = strf::use_facet<strf::lettercase_c, decltype(value)>(facets);
-        pre->subtract_width(static_cast<strf::width_t>(w));
+        pre->add_width(static_cast<strf::width_t>(w));
         pre->add_size(w);
     }
 
@@ -1423,7 +1423,7 @@ public:
               , alignment_formatter_q<false> > arg ) noexcept
     {
         auto w = strf::detail::init(data_, arg.get_int_format(), arg.value());
-        pre->subtract_width(w);
+        pre->add_width(w);
         pre->add_size(w);
     }
 
@@ -1460,7 +1460,7 @@ public:
         auto value = arg.value();
         auto w = strf::detail::init(data_, arg.get_int_format(), value);
         lettercase_ = strf::use_facet<strf::lettercase_c, decltype(value)>(facets);
-        pre->subtract_width(w);
+        pre->add_width(w);
         pre->add_size(w);
     }
 
@@ -1717,7 +1717,7 @@ public:
         auto afmt = arg.get_alignment_format();
         detail::init_1(data_, ifmt, ivalue);
         auto w = detail::init_fmt_int_printer_data<Base>(data_, ifmt, afmt);
-        pre->subtract_width(w.sub_width + w.fillcount);
+        pre->add_width(w.sub_width + w.fillcount);
         STRF_IF_CONSTEXPR (PreMeasurements::size_demanded) {
             pre->add_size(w.sub_width);
             if (w.fillcount > 0) {
@@ -1900,7 +1900,7 @@ public:
         detail::init_1(data_, ifmt, ivalue);
         const auto w = detail::init_punct_fmt_int_printer_data<Base>
             (data_, charset.validate_func(), ifmt, afmt);
-        pre->subtract_width(w.sub_width + w.fillcount + data_.sepcount);
+        pre->add_width(w.sub_width + w.fillcount + data_.sepcount);
         STRF_IF_CONSTEXPR (PreMeasurements::size_demanded) {
             pre->add_size(w.sub_width);
             if (w.fillcount) {

@@ -244,7 +244,7 @@ struct join_printing
         const auto afmt = arg.get_alignment_format();
         strf::width_t wmax = afmt.width;
         strf::width_t wdiff = 0;
-        if (pre->remaining_width() > afmt.width) {
+        if (pre->remaining_width_greater_than(afmt.width)) {
             wmax = pre->remaining_width();
             wdiff = wmax - afmt.width;
         }
@@ -254,10 +254,10 @@ struct join_printing
             , afmt
             , charset.encode_fill_func() };
         pf.fillcount_ =
-            ( sub_pre.remaining_width() > wdiff
+            ( sub_pre.remaining_width_greater_than(wdiff)
             ? (sub_pre.remaining_width() - wdiff).round()
             : 0 );
-        pre->subtract_width
+        pre->add_width
             ( strf::sat_sub(strf::sat_add(wmax, pf.fillcount_), sub_pre.remaining_width()) );
         STRF_IF_CONSTEXPR (static_cast<bool>(SizePresence)) {
             pre->add_size(sub_pre.accumulated_ssize());

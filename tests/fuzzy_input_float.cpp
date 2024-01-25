@@ -86,8 +86,7 @@ struct measure_and_print_result {
 template <typename Arg>
 measure_and_print_result measure_and_print(char* buff, std::ptrdiff_t buff_size, const Arg& arg) {
 
-    const strf::width_t initial_width = (strf::width_t::max)();
-    strf::full_premeasurements pre(initial_width);
+    strf::full_premeasurements pre();
     using printer_t = strf::printer_type<char, strf::full_premeasurements, strf::facets_pack<>, Arg>;
     const printer_t printer{strf::make_printer<char>(&pre, strf::pack(), arg)};
     strf::cstr_destination dst{buff, buff_size};
@@ -97,7 +96,7 @@ measure_and_print_result measure_and_print(char* buff, std::ptrdiff_t buff_size,
     measure_and_print_result result;
     result.count = static_cast<int>(end - buff);
     result.predicted_size = static_cast<int>(pre.accumulated_ssize());
-    result.predicted_width = (initial_width - pre.remaining_width()).round();
+    result.predicted_width = pre.accumulated_width().round();
     return result;
 }
 

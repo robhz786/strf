@@ -38,7 +38,7 @@ struct my_bool_printing_overrider_base
         , const FPack&
         , bool value ) noexcept
     {
-        pre->subtract_width(static_cast<strf::width_t>(2 + static_cast<int>(value)));
+        pre->add_width(static_cast<strf::width_t>(2 + static_cast<int>(value)));
         pre->add_size(2 + static_cast<int>(value));
         return my_bool_printer<CharT>{value};
     }

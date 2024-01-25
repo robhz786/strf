@@ -137,30 +137,22 @@ class tr_pre_width
 {
     const strf::width_t* width_array_;
     std::ptrdiff_t array_size_;
-    strf::width_t remaining_width_;
+    strf::width_t width_;
+    strf::width_t limit_;
     WidthCalculator wcalc_;
     Charset charset_;
 
-    STRF_HD STRF_CONSTEXPR_IN_CXX14 bool subtract_(strf::width_t w)
-    {
-        if (w < remaining_width_) {
-            remaining_width_ -= w;
-            return false;
-        }
-        remaining_width_ = 0;
-        return true;
-    }
 public:
 
     constexpr STRF_HD tr_pre_width
         ( const strf::width_t* width_array
         , std::ptrdiff_t width_array_size
-        , strf::width_t width
+        , strf::width_t limit
         , WidthCalculator wcalc
         , Charset charset )
         : width_array_(width_array)
         , array_size_(width_array_size)
-        , remaining_width_(width)
+        , limit_(limit)
         , wcalc_(wcalc)
         , charset_(charset)
     {
@@ -168,17 +160,23 @@ public:
 
     STRF_CONSTEXPR_IN_CXX14 STRF_HD bool account_arg(std::ptrdiff_t index)
     {
-        return subtract_(index < array_size_ ? width_array_[index] : strf::width_t(1));
+        if (width_ < limit_) {
+            width_ += (index < array_size_ ? width_array_[index] : strf::width_t(1));
+            return width_ >= limit_;
+        }
+        return false;
     }
     STRF_CONSTEXPR_IN_CXX14 STRF_HD bool account_string(const CharT* begin, const CharT* end)
     {
-        const auto str_width = wcalc_.str_width
-            (charset_, remaining_width_, begin, end);
-        return subtract_(str_width);
+        if (width_ < limit_) {
+            width_ += wcalc_.str_width(charset_, limit_ - width_, begin, end);
+            return width_ >= limit_;
+        }
+        return false;
     }
-    constexpr STRF_HD strf::width_t remaining_width() const
+    constexpr STRF_HD strf::width_t accumulated_width() const
     {
-        return remaining_width_ > 0 ? remaining_width_ : strf::width_t(0);
+        return width_;
     }
     constexpr STRF_HD std::ptrdiff_t num_args() const
     {
@@ -195,31 +193,23 @@ class tr_pre_size_and_width
     const strf::width_t* width_array_;
     std::ptrdiff_t array_size_;
     std::ptrdiff_t size_ = 0;
-    strf::width_t remaining_width_;
+    strf::width_t width_ = 0;
+    strf::width_t limit_ = 0;
     WidthCalculator wcalc_;
     Charset charset_;
-
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD void subtract_width_(strf::width_t w)
-    {
-        if (w <= remaining_width_) {
-            remaining_width_ -= w;
-        } else {
-            remaining_width_ = 0;
-        }
-    }
 
 public:
     constexpr STRF_HD tr_pre_size_and_width
         ( const std::ptrdiff_t* size_array
         , const strf::width_t* width_array
         , std::ptrdiff_t array_size
-        , strf::width_t width
+        , strf::width_t limit
         , WidthCalculator wcalc
         , Charset charset )
         : size_array_(size_array)
         , width_array_(width_array)
         , array_size_(array_size)
-        , remaining_width_(width)
+        , limit_(limit)
         , wcalc_(wcalc)
         , charset_(charset)
     {
@@ -229,10 +219,10 @@ public:
     {
         if (index < array_size_) {
             size_ += size_array_[index];
-            subtract_width_(width_array_[index]);
+            width_ += width_array_[index];
         } else {
             size_ += charset_.replacement_char_size();
-            subtract_width_(1);
+            width_ += 1;
         }
         return {};
     }
@@ -240,17 +230,16 @@ public:
         ( const CharT* begin, const CharT* end )
     {
         size_ += (end - begin);
-        auto w = wcalc_.str_width(charset_, remaining_width_, begin, end);
-        subtract_width_(w);
+        width_ += wcalc_.str_width(charset_, limit_ - width_, begin, end);
         return {};
     }
     STRF_HD std::ptrdiff_t accumulated_ssize() const
     {
         return size_;
     }
-    constexpr STRF_HD strf::width_t remaining_width() const
+    constexpr STRF_HD strf::width_t accumulated_width() const
     {
-        return remaining_width_;
+        return width_;
     }
     constexpr STRF_HD std::ptrdiff_t num_args() const
     {

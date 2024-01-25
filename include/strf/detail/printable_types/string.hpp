@@ -541,7 +541,7 @@ public:
             auto w = wcalc.str_width
                 ( use_facet_<strf::charset_c<SrcCharT>>(facets)
                 , pre->remaining_width(), str_, str_end_ );
-           pre->subtract_width(w);
+           pre->add_width(w);
         }
         pre->add_size(arg.length());
     }
@@ -566,7 +566,7 @@ public:
                 , pre->remaining_width()
                 , str_
                 , str_end_ );
-           pre->subtract_width(w);
+           pre->add_width(w);
         }
         pre->add_size(arg.value().size());
     }
@@ -588,7 +588,7 @@ public:
             ( use_facet_<strf::charset_c<SrcCharT>>(facets)
             , arg.precision(), str_, arg.value().end() );
         str_end_ = res.ptr;
-        pre->subtract_width(res.width);
+        pre->add_width(res.width);
         pre->add_size(str_end_ - str_);
     }
 
@@ -642,7 +642,7 @@ public:
         auto src_charset = use_facet_<strf::charset_c<SrcCharT>>(facets);
         auto dst_charset = use_facet_<strf::charset_c<DstCharT>>(facets);
         const strf::width_t limit =
-            ( PreMeasurements::width_demanded && pre->remaining_width() > afmt_.width
+            ( pre->remaining_width_greater_than(afmt_.width)
             ? pre->remaining_width()
             : afmt_.width );
         auto strw = wcalc.str_width(src_charset, limit, str_, str_end_);
@@ -737,13 +737,13 @@ inline STRF_HD int aligned_strcpy_printer<SrcCharT, DstCharT>::init_
                 left_fillcount_ = fillcount;
                 right_fillcount_ = 0;
         }
-        pre->subtract_width(strw);
-        pre->subtract_width(fillcount);
+        pre->add_width(strw);
+        pre->add_width(fillcount);
         return fillcount;
     }
     right_fillcount_ = 0;
     left_fillcount_ = 0;
-    pre->subtract_width(strw);
+    pre->add_width(strw);
     return 0;
 }
 
@@ -813,7 +813,7 @@ public:
         if (pre->has_remaining_width()) {
             auto&& wcalc = use_facet_<strf::width_calculator_c, SrcCharT>(facets);
             auto w = wcalc.str_width( src_charset, pre->remaining_width(), str_, str_end_);
-            pre->subtract_width(w);
+            pre->add_width(w);
         }
         init_(pre, src_charset, dst_charset);
     }
@@ -838,7 +838,7 @@ public:
         auto res = wcalc.str_width_and_pos
             ( src_charset, arg.precision(), str_, arg.value().end() );
         str_end_ = res.ptr;
-        pre->subtract_width(res.width);
+        pre->add_width(res.width);
         init_( pre, src_charset, dst_charset);
     }
 
@@ -938,7 +938,7 @@ public:
         auto src_charset = strf::detail::get_src_charset(facets, arg);
         auto&& wcalc = use_facet_<strf::width_calculator_c, SrcCharT>(facets);
         const strf::width_t limit =
-            ( PreMeasurements::width_demanded && pre->remaining_width() > afmt_.width
+            ( pre->remaining_width_greater_than(afmt_.width)
             ? pre->remaining_width()
             : afmt_.width );
         auto str_width = wcalc.str_width(src_charset, limit, str_, str_end_);
@@ -1041,12 +1041,12 @@ void STRF_HD aligned_transcode_printer<SrcCharT, DstCharT>::init_
                 left_fillcount_ = fillcount;
                 right_fillcount_ = 0;
         }
-        pre->subtract_width(str_width);
-        pre->subtract_width(fillcount);
+        pre->add_width(str_width);
+        pre->add_width(fillcount);
     } else {
         right_fillcount_ = 0;
         left_fillcount_ = 0;
-        pre->subtract_width(str_width);
+        pre->add_width(str_width);
     }
     STRF_IF_CONSTEXPR (PreMeasurements::size_demanded) {
         std::ptrdiff_t s = 0;
@@ -1112,9 +1112,8 @@ public:
         auto dst_charset = use_facet_<strf::charset_c<DstCharT>, SrcCharT>(facets);
         if (pre->has_remaining_width()) {
             auto&& wcalc = use_facet_<strf::width_calculator_c, SrcCharT>(facets);
-            auto w = wcalc.str_width( src_charset, pre->remaining_width()
-                                    , str_, str_end_);
-            pre->subtract_width(w);
+            auto w = wcalc.str_width( src_charset, pre->remaining_width(), str_, str_end_);
+            pre->add_width(w);
         }
         init_(pre, src_charset, dst_charset);
     }
@@ -1138,7 +1137,7 @@ public:
         auto res = wcalc.str_width_and_pos
             ( src_charset, arg.precision(), str_, arg.value().end() );
         str_end_ = res.ptr;
-        pre->subtract_width(res.width);
+        pre->add_width(res.width);
         init_( pre, src_charset, dst_charset);
     }
 
@@ -1240,7 +1239,7 @@ public:
         auto src_charset = strf::detail::get_src_charset(facets, arg);
         auto&& wcalc = use_facet_<strf::width_calculator_c, SrcCharT>(facets);
         const strf::width_t limit =
-            ( PreMeasurements::width_demanded && pre->remaining_width() > afmt_.width
+            ( pre->remaining_width_greater_than(afmt_.width)
             ? pre->remaining_width()
             : afmt_.width );
         auto str_width = wcalc.str_width(src_charset, limit, str_, str_end_);
@@ -1343,12 +1342,12 @@ void STRF_HD aligned_unsafe_transcode_printer<SrcCharT, DstCharT>::init_
                 left_fillcount_ = fillcount;
                 right_fillcount_ = 0;
         }
-        pre->subtract_width(str_width);
-        pre->subtract_width(fillcount);
+        pre->add_width(str_width);
+        pre->add_width(fillcount);
     } else {
         right_fillcount_ = 0;
         left_fillcount_ = 0;
-        pre->subtract_width(str_width);
+        pre->add_width(str_width);
     }
     STRF_IF_CONSTEXPR (PreMeasurements::size_demanded) {
         std::ptrdiff_t s = 0;

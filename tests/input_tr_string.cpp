@@ -267,12 +267,12 @@ STRF_TEST_FUNC void test_size_precalculation()
     TEST_SIZE_PRECALC(3, "...{- a comment here"     , 123);
 }
 
-#define TEST_WIDTH_PRECALC(INITIAL_WIDTH, EXPECTED_REMAINING_WIDTH, ...)              \
+#define TEST_WIDTH_PRECALC(LIMIT, EXPECTED_REMAINING_WIDTH, ...)                      \
     {                                                                                 \
         using char_t = decltype(first_char_of_tr_string(__VA_ARGS__));                \
         using pre_t = strf::premeasurements                                           \
-            <strf::size_presence::no, strf::width_presence::yes>;                         \
-        pre_t pre(strf::width_t(INITIAL_WIDTH));                                      \
+            <strf::size_presence::no, strf::width_presence::yes>;                     \
+        pre_t pre(strf::width_t(LIMIT));                                              \
         strf::measure<char_t>(&pre, strf::pack(), strf::tr(__VA_ARGS__));             \
         auto obtained = pre.remaining_width();                                        \
         auto expected = strf::width_t(EXPECTED_REMAINING_WIDTH);                      \
@@ -348,11 +348,11 @@ STRF_TEST_FUNC void test_width_precalculation()
 }
 
 
-#define TEST_FULL_PRECALC(EXPECTED_SIZE, INITIAL_WIDTH, EXPECTED_REMAINING_WIDTH, ...)\
+#define TEST_FULL_PRECALC(EXPECTED_SIZE, WIDTH_LIMIT, EXPECTED_REMAINING_WIDTH, ...)  \
     {                                                                                 \
         using char_t = decltype(first_char_of_tr_string(__VA_ARGS__));                \
         using pre_t = strf::full_premeasurements;                                     \
-        pre_t pre(strf::width_t(INITIAL_WIDTH));                                      \
+        pre_t pre(strf::width_t(WIDTH_LIMIT));                                        \
         strf::measure<char_t>(&pre, strf::pack(), strf::tr(__VA_ARGS__));             \
         const bool failed_size = pre.accumulated_ssize() != EXPECTED_SIZE;            \
         const bool failed_width =                                                     \

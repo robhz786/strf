@@ -236,7 +236,7 @@ STRF_HD void separated_range_printer<CharT, FPack, Iterator>::do_premeasurements
                                  , pre->remaining_width()
                                  , sep_begin_
                                  , sep_begin_ + sep_len_ );
-        pre->checked_subtract_width(strf::sat_mul(dw, count - 1));
+        pre->checked_add_width(strf::sat_mul(dw, count - 1));
     }
     if (PreMeasurements::size_demanded) {
         pre->add_size((count - 1) * static_cast<std::size_t>(sep_len_));
@@ -427,7 +427,7 @@ STRF_HD void fmt_separated_range_printer<CharT, FPack, Iterator, Fmts ...>::do_p
                                  , pre->remaining_width()
                                  , r.sep_begin
                                  , r.sep_begin + r.sep_len );
-        pre->checked_subtract_width(strf::sat_mul(dw, (count - 1)));
+        pre->checked_add_width(strf::sat_mul(dw, (count - 1)));
     }
     if (PreMeasurements::size_demanded) {
         pre->add_size((count - 1) * static_cast<std::size_t>(r.sep_len));
@@ -602,7 +602,7 @@ STRF_HD void sep_transformed_range_printer<CharT, FPack, Iterator, UnaryOp>
                                  , pre->remaining_width()
                                  , sep_begin_
                                  , sep_begin_ + sep_len_ );
-        pre->checked_subtract_width(strf::sat_mul(dw, (count - 1)));
+        pre->checked_add_width(strf::sat_mul(dw, (count - 1)));
     }
     if (PreMeasurements::size_demanded) {
         pre->add_size((count - 1) * static_cast<std::size_t>(sep_len_));

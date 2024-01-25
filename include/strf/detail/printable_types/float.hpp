@@ -2265,7 +2265,7 @@ public:
         } else {
             decimal_point_size_ = 0;
         }
-        pre->subtract_width(r.fillcount + r.content_width);
+        pre->add_width(r.fillcount + r.content_width);
         STRF_IF_CONSTEXPR (PreMeasurements::size_demanded) {
             pre->add_size(r.content_width);
             if (r.fillcount > 0) {
@@ -2296,7 +2296,7 @@ public:
             ( data_, arg.value(), grouping_, arg.get_float_format()
             , arg.get_alignment_format() );
         decimal_point_size_ = data_.showpoint;
-        pre->subtract_width(static_cast<width_t>(r.fillcount + r.content_width));
+        pre->add_width(static_cast<width_t>(r.fillcount + r.content_width));
         STRF_IF_CONSTEXPR (PreMeasurements::size_demanded) {
             pre->add_size(r.content_width);
             if (r.fillcount > 0) {
@@ -2594,7 +2594,7 @@ struct float_printing
         const fast_double_printer<CharT> p(x, strf::use_facet<strf::lettercase_c, float>(fp));
         if (pre->has_remaining_width() || PreMeasurements::size_demanded) {
             const auto s = p.size();
-            pre->subtract_width(static_cast<std::int16_t>(s));
+            pre->add_width(static_cast<std::int16_t>(s));
             pre->add_size(s);
         }
         return p;
