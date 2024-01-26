@@ -25,11 +25,6 @@ public:
         : limit_(limit)
     {}
 
-    width_accumulator(const width_accumulator&) = delete;
-    width_accumulator(width_accumulator&&) = delete;
-    width_accumulator& operator=(const width_accumulator&) = delete;
-    width_accumulator& operator=(width_accumulator&&) = delete;
-
     STRF_CONSTEXPR_IN_CXX14 STRF_HD void add_width(strf::width_t w) noexcept
     {
         width_ += w;
@@ -122,10 +117,6 @@ public:
     }
 
     ~size_accumulator() = default;
-    size_accumulator(const size_accumulator&) = delete;
-    size_accumulator(size_accumulator&&) = delete;
-    size_accumulator& operator=(const size_accumulator&) = delete;
-    size_accumulator& operator=(size_accumulator&&) = delete;
 
     template < typename IntT
              , strf::detail::enable_if_t<std::is_integral<IntT>::value, int> =0>
@@ -212,11 +203,6 @@ public:
     }
 
     constexpr premeasurements() noexcept = default;
-
-    premeasurements(const premeasurements&) = delete;
-    premeasurements(premeasurements&&) = delete;
-    premeasurements& operator=(const premeasurements&) = delete;
-    premeasurements& operator=(premeasurements&&) = delete;
 
     ~premeasurements() = default;
 };

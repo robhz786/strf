@@ -456,11 +456,6 @@ public:
     constexpr premeasurements() noexcept = default;
     constexpr explicit premeasurements(<<width_t,width_t>> initial_width) noexcept;
 
-    premeasurements(const premeasurements&) = delete;
-    premeasurements(premeasurements&&) = delete;
-    premeasurements& operator=(const premeasurements&) = delete;
-    premeasurements& operator=(premeasurements&&) = delete;
-
     ~premeasurements() = default;
 };
 
@@ -496,11 +491,6 @@ class size_accumulator
 public:
     explicit constexpr size_accumulator() noexcept;
     explicit constexpr size_accumulator(std::integral auto initial_size) noexcept;
-
-    size_accumulator(const size_accumulator&) = delete;
-    size_accumulator(size_accumulator&&) = delete;
-    size_accumulator& operator=(const size_accumulator&) = delete;
-    size_accumulator& operator=(size_accumulator&&) = delete;
 
     constexpr void add_size(std::integral auto s) noexcept;
 
@@ -569,11 +559,6 @@ class width_accumulator
 {
 public:
     constexpr width_accumulator() noexcept;
-
-    width_accumulator(const width_accumulator&) = delete;
-    width_accumulator(width_accumulator&&) = delete;
-    width_accumulator& operator=(const width_accumulator&) = delete;
-    width_accumulator& operator=(width_accumulator&&) = delete;
 
     constexpr explicit width_accumulator(<<width_t,width_t>> width_limit) noexcept;
 
