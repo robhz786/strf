@@ -822,11 +822,15 @@ public:
         , {tag}<F\...>
         , FInit&&\... finit );
 
-    template <typename Fmt, typename FmtInit, typename\... OtherFmts>
+    template
+        < typename OtherPrintingTraits
+        , typename\... OtherFmts
+        , typename Fmt
+        , typename\... FmtInitArgs >
     constexpr <<printable_with_fmt_vwf2_t_i,printable_with_fmt>>
-        ( const printable_with_fmt<PrintableTraits, OtherFmts\...>& f
+        ( const printable_with_fmt<PrintableTraits, OtherFmts\...>& other
         , {tag}<Fmt>
-        , FmtInit&& fmt_init );
+        , FmtInitArgs&&\... fmt_init );
 
     constexpr const value_type& value() const;
 
@@ -934,21 +938,34 @@ Effects::
 ====
 [source,cpp,subs=normal]
 ----
+template
+    < typename OtherPrintingTraits
+    , typename\... OtherFmts
+    , typename Fmt
+    , typename\... FmtInitArgs >
 template <typename Fmt, typename FmtInit, typename\... OtherFmts>
 constexpr printable_with_fmt
-    ( const printable_with_fmt<PrintableTraits, OtherFmts\...>& f
+    ( const printable_with_fmt<PrintableTraits, OtherFmts\...>& other
     , {tag}<Fmt>
-    , FmtInit&& fmt_init );
+    , FmtInitArgs&&\... args );
+
 ----
 Compile-time requirements::
 * `Fmt` is one the types in `Fmts\...`
+* `sizeof\...(OtherFmts) == sizeof\...(Fmts)` is true
+* `value_type` must be constructible from `object.value()`
+* Each public base class of this type, except the one that corresponds to `Fmt`,
+  must be constructible from a const lvalue reference of the corresponding
+  base sub-object of `other` ( the type first in `Fmts...` corresponds to the first
+  in `OtherFmt..., the second to the second and so on ).
+* `Fmt` must be contructible from `FmtInitArgs&&\...`
 
 Effects::
-* Initializes `value_` with `f.value()`
+* Initializes `value_` with `other.value()`
 * Initializes the public base class subobject that corresponds to `Fmt`
-  with `std::forward<FmtInit>(fmt_init)`
+  with `std::forward<FmtInitArgs>(args)\...`
 * Initializes the other public base class subobjects with the corresponding
-  base class subobject of `f`
+  base class subobject of `other`
 ====
 
 
