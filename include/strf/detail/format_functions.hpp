@@ -67,6 +67,12 @@ class alignment_formatter_fn<T, true>
         return static_cast<T&&>(*d);
     }
 
+    STRF_HD STRF_CONSTEXPR_IN_CXX14 const T& self_downcast_() const
+    {
+        const T* base_ptr = static_cast<const T*>(this);
+        return *base_ptr;
+    }
+
 public:
 
     constexpr alignment_formatter_fn() noexcept = default;
@@ -111,11 +117,30 @@ public:
         data_.fill = ch;
         return move_self_downcast_();
     }
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& set_alignment_format(strf::alignment_format data) && noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&&
+    set_alignment_format(strf::alignment_format data) && noexcept
     {
         data_ = data;
         return move_self_downcast_();
     }
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD
+    auto set_alignment_format(strf::default_alignment_format) const &
+        -> strf::fmt_replace
+            < T
+            , strf::alignment_formatter_q<true>
+            , strf::alignment_formatter_q<false> >
+    {
+        return { self_downcast_(), strf::tag<strf::alignment_formatter_q<false>>{} };
+    }
+    constexpr STRF_HD auto clear_alignment_format() const
+        -> strf::fmt_replace
+            < T
+            , strf::alignment_formatter_q<true>
+            , strf::alignment_formatter_q<false> >
+    {
+        return { self_downcast_(), strf::tag<strf::alignment_formatter_q<false>>{} };
+    }
+
     constexpr STRF_HD strf::width_t width() const noexcept
     {
         return data_.width;

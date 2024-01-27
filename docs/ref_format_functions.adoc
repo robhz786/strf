@@ -178,6 +178,9 @@ The _Formatter_ defines the following format functions:
 |`set_alignment_format(<<strf_hpp#default_alignment_format,default_alignment_format>>)`
 | Set all alignment formatting options to default.
 
+|`clear_alignment_format()`
+| Set all alignment formatting options to default.
+
 //  It accepts only one argument, whose type can be any of those
 //  that can be returned by `get_alignment_format()`
 |===
