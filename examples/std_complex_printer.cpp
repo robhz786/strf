@@ -10,38 +10,13 @@
 #include <complex>
 #include <cmath>
 
-#include "../tests/test_utils.hpp"
-
 //--------------------------------------------------------------------------------
-// 1 //  Define complex_form facet
+// Define format functions
 //--------------------------------------------------------------------------------
 
 enum class complex_form { vector, algebric, polar };
 
-struct complex_form_c {
-    static constexpr complex_form get_default() noexcept {
-        return complex_form::vector;
-    }
-};
-
-namespace strf {
-template <> struct facet_traits<complex_form> {
-    using category = complex_form_c;
-};
-} // namespace strf
-
-//--------------------------------------------------------------------------------
-// 2 //  Define format functions
-//--------------------------------------------------------------------------------
-
 struct std_complex_formatter {
-
-    enum class complex_form_fmt {
-        vector   = static_cast<int>(complex_form::vector),
-        algebric = static_cast<int>(complex_form::algebric),
-        polar    = static_cast<int>(complex_form::polar),
-        use_facet = 1 + (std::max)({vector, algebric, polar})
-    };
 
     template <class T>
     class fn
@@ -50,14 +25,14 @@ struct std_complex_formatter {
 
         constexpr fn() noexcept = default;
 
-        constexpr explicit fn(complex_form_fmt f) noexcept
+        constexpr explicit fn(complex_form f) noexcept
             : form_(f)
         {
         }
 
         template <class U>
         constexpr explicit fn(const fn<U>& u) noexcept
-            : form_(u.form())
+            : form_(u.get_complex_form())
         {
         }
 
@@ -65,74 +40,70 @@ struct std_complex_formatter {
 
         constexpr T&& vector() && noexcept
         {
-            form_ = complex_form_fmt::vector;
+            form_ = complex_form::vector;
             return static_cast<T&&>(*this);
         }
         constexpr T& vector() & noexcept
         {
-            form_ = complex_form_fmt::vector;
+            form_ = complex_form::vector;
             return static_cast<T&>(*this);
         }
         constexpr T vector() const & noexcept
         {
             return T{ static_cast<const T&>(*this)
                     , strf::tag<std_complex_formatter> {}
-                    , complex_form_fmt::vector };
+                    , complex_form::vector };
         }
 
         constexpr T&& algebric() && noexcept
         {
-            form_ = complex_form_fmt::algebric;
+            form_ = complex_form::algebric;
             return static_cast<T&&>(*this);
         }
         constexpr T& algebric() & noexcept
         {
-            form_ = complex_form_fmt::algebric;
+            form_ = complex_form::algebric;
             return static_cast<T&>(*this);
         }
         constexpr T algebric() const & noexcept
         {
             return T{ static_cast<const T&>(*this)
                     , strf::tag<std_complex_formatter> {}
-                    , complex_form_fmt::algebric };
+                    , complex_form::algebric };
         }
 
         constexpr T&& polar() && noexcept
         {
-            form_ = complex_form_fmt::polar;
+            form_ = complex_form::polar;
             return static_cast<T&&>(*this);
         }
         constexpr T& polar() & noexcept
         {
-            form_ = complex_form_fmt::polar;
+            form_ = complex_form::polar;
             return static_cast<T&>(*this);
         }
         constexpr T polar() const & noexcept
         {
             return T{ static_cast<const T&>(*this)
                     , strf::tag<std_complex_formatter> {}
-                    , complex_form_fmt::polar };
+                    , complex_form::polar };
         }
 
         // observers
 
-        constexpr complex_form form(complex_form f) const
-        {
-            return form_ == complex_form_fmt::use_facet ? f : static_cast<complex_form>(form_);
-        }
-        constexpr complex_form_fmt form() const
+        constexpr complex_form get_complex_form() const
         {
             return form_;
         }
 
     private:
 
-        complex_form_fmt form_ = complex_form_fmt::use_facet;
+        complex_form form_ = complex_form::vector;
     };
 };
 
 //--------------------------------------------------------------------------------
-// 3 // Define printer classes
+// Auxiliar function
 //--------------------------------------------------------------------------------
 
 template <typename FloatT>
@@ -158,277 +129,14 @@ std::pair<FloatT, FloatT> complex_coordinates
 }
 
 //--------------------------------------------------------------------------------
-// 3.1 // std_complex_printer to handle values without formatting
+// Define the PrintingTraits class
 //--------------------------------------------------------------------------------
-
-template <typename CharT, typename FloatT>
-class std_complex_printer
-{
-public:
-    template <typename PreMeasurements, typename FPack>
-    std_complex_printer(PreMeasurements* pre, const FPack& fp, std::complex<FloatT> arg);
-
-    void operator()(strf::destination<CharT>& dst) const;
-
-private:
-
-    template <typename PreMeasurements, typename WidthCalc>
-    void premeasurements_(PreMeasurements* pre, const WidthCalc& wcalc) const;
-
-    strf::dynamic_charset<CharT> encoding_;
-    strf::numpunct<10> numpunct_;
-    strf::lettercase lettercase_;
-    complex_form form_;
-    std::pair<FloatT, FloatT> coordinates_;
-
-    static constexpr char32_t anglechar_ = 0x2220;
-
-};
-
-template <typename CharT, typename FloatT>
-template <typename PreMeasurements, typename FPack>
-std_complex_printer<CharT, FloatT>::std_complex_printer
-    ( PreMeasurements* pre
-    , const FPack& facets
-    , std::complex<FloatT> arg)
-    : encoding_(strf::use_facet<strf::charset_c<CharT>, FloatT>(facets))
-    , numpunct_(strf::use_facet<strf::numpunct_c<10>, FloatT>(facets))
-    , lettercase_(strf::use_facet<strf::lettercase_c, FloatT>(facets))
-    , form_(strf::use_facet<complex_form_c, std::complex<FloatT>>(facets))
-    , coordinates_(::complex_coordinates(form_, arg))
-{
-    premeasurements_
-        (pre, strf::use_facet<strf::width_calculator_c, std::complex<FloatT>>(facets));
-}
-
-template <typename CharT, typename FloatT>
-template <typename PreMeasurements, typename WidthCalc>
-void std_complex_printer<CharT, FloatT>::premeasurements_
-    ( PreMeasurements* pre, const WidthCalc& wcalc ) const
-{
-    switch (form_) {
-        case complex_form::algebric:
-            pre->add_width(7);
-            pre->add_size(7);
-            break;
-
-        case complex_form::vector:
-            pre->add_width(4);
-            pre->add_size(4);
-            break;
-
-        default:
-            assert(form_ == complex_form::polar);
-            if (pre->has_remaining_width()) {
-                pre->add_width(wcalc.char_width(strf::utf_t<char32_t>{}, anglechar_));
-                pre->add_width(1);
-            }
-            pre->add_size(encoding_.encoded_char_size(anglechar_));
-            pre->add_size(1);
-    }
-
-    auto facets = strf::pack(lettercase_, numpunct_, encoding_);
-    strf::measure<CharT>(pre, facets, coordinates_.first, coordinates_.second);
-}
-
-template <typename CharT, typename FloatT>
-void std_complex_printer<CharT, FloatT>::operator()(strf::destination<CharT>& dst) const
-{
-    auto print = strf::to(dst).with(lettercase_, numpunct_, encoding_);
-    if (form_ == complex_form::polar) {
-        print(coordinates_.first, U'\u2220', static_cast<CharT>(' ') );
-        print(coordinates_.second );
-    } else {
-        print(static_cast<CharT>('('), coordinates_.first);
-        print(strf::transcode(form_ == complex_form::algebric ? " + i*" : ", ") );
-        print(coordinates_.second, static_cast<CharT>(')'));
-    }
-}
-
-//--------------------------------------------------------------------------------
-// 3.2 // fmt_std_complex_printer to handle formatted values
-//--------------------------------------------------------------------------------
-
-template <typename CharT, typename FloatT>
-class fmt_std_complex_printer
-{
-    using complex_type_ = std::complex<FloatT>;
-    static constexpr char32_t anglechar_ = 0x2220;
-
-public:
-
-    template <typename PreMeasurements, typename FPack, typename... T>
-    fmt_std_complex_printer
-        ( PreMeasurements* pre
-        , const FPack& facets
-        , strf::printable_with_fmt<T...> arg )
-        : encoding_(strf::use_facet<strf::charset_c<CharT>, complex_type_>(facets))
-        , numpunct10_(strf::use_facet<strf::numpunct_c<10>, FloatT>(facets))
-        , numpunct16_(strf::use_facet<strf::numpunct_c<16>, FloatT>(facets))
-        , lettercase_(strf::use_facet<strf::lettercase_c, FloatT>(facets))
-        , float_fmt_(arg.get_float_format())
-        , form_(arg.form(
-                    (strf::use_facet<complex_form_c, std::complex<FloatT>>(facets))))
-        , coordinates_{::complex_coordinates(form_, arg.value())}
-        , fillchar_(arg.get_alignment_format().fill)
-        , alignment_(arg.get_alignment_format().alignment)
-    {
-        init_fillcount_and_do_premeasurements_
-            ( pre
-            , strf::use_facet<strf::width_calculator_c, complex_type_>(facets)
-            , arg.width() );
-    }
-
-    void operator()(strf::destination<CharT>& dst) const;
-
-private:
-
-    template < strf::size_presence SizePresence
-             , strf::width_presence WidthPresence
-             , typename WidthCalc >
-    void init_fillcount_and_do_premeasurements_
-        ( strf::premeasurements<SizePresence, WidthPresence>* pre
-        , WidthCalc wcalc
-        , strf::width_t fmt_width );
-
-    void print_complex_value_( strf::destination<CharT>& dst ) const;
-
-    template <typename PreMeasurements, typename WidthCalc>
-    void do_premeasurements_without_fill_(PreMeasurements* pre, WidthCalc wcalc) const;
-
-    strf::dynamic_charset<CharT> encoding_;
-    strf::numpunct<10> numpunct10_;
-    strf::numpunct<16> numpunct16_;
-    strf::lettercase lettercase_;
-    strf::float_format float_fmt_;
-    complex_form form_;
-    std::pair<FloatT, FloatT> coordinates_;
-    int fillcount_ = 0;
-    char32_t fillchar_;
-    strf::text_alignment alignment_;
-
-};
-
-template <typename CharT, typename FloatT>
-template <strf::size_presence SizePresence, strf::width_presence WidthPresence, typename WidthCalc>
-void fmt_std_complex_printer<CharT, FloatT>::init_fillcount_and_do_premeasurements_
-    ( strf::premeasurements<SizePresence, WidthPresence>* pre
-    , WidthCalc wcalc
-    , strf::width_t fmt_width )
-{
-    const strf::width_t fillchar_width = wcalc.char_width(strf::utf_t<char32_t>{}, fillchar_);
-    if (fmt_width >= pre->remaining_width() || ! static_cast<bool>(WidthPresence) ) {
-        pre->saturate_width();
-        strf::premeasurements<SizePresence, strf::width_presence::yes> sub_pre{fmt_width};
-        do_premeasurements_without_fill_(&sub_pre, wcalc);
-        fillcount_ = (sub_pre.remaining_width() / fillchar_width).round();
-        pre->add_size(sub_pre.accumulated_ssize());
-    } else {
-        auto previous_width = pre->accumulated_width();
-        do_premeasurements_without_fill_(pre, wcalc);
-        if (pre->has_remaining_width()) {
-            auto content_width = pre->accumulated_width() - previous_width;
-            if (fmt_width > content_width) {
-                fillcount_ = ((fmt_width - content_width) / fillchar_width).round();
-                pre->add_width(static_cast<strf::width_t>(fillcount_));
-            }
-        }
-    }
-    if (fillcount_ && static_cast<bool>(SizePresence)) {
-        pre->add_size(fillcount_ * encoding_.encoded_char_size(fillchar_));
-    }
-}
-
-template <typename CharT, typename FloatT>
-template <typename PreMeasurements, typename WidthCalc>
-void fmt_std_complex_printer<CharT, FloatT>::do_premeasurements_without_fill_
-    ( PreMeasurements* pre, WidthCalc wcalc) const
-{
-    auto facets = strf::pack(wcalc, lettercase_, numpunct10_, numpunct16_, encoding_);
-    strf::measure<CharT>
-        ( pre, facets
-        , strf::fmt(coordinates_.first).set_float_format(float_fmt_)
-        , strf::fmt(coordinates_.second).set_float_format(float_fmt_) ) ;
-
-    switch (form_) {
-        case complex_form::algebric:
-            pre->add_width(7);
-            pre->add_size(7);
-            break;
-
-        case complex_form::vector:
-            pre->add_width(4);
-            pre->add_size(4);
-            break;
-
-        default:
-            assert(form_ == complex_form::polar);
-            if (pre->has_remaining_width()) {
-                pre->add_width(wcalc.char_width(strf::utf_t<char32_t>{}, anglechar_));
-                pre->add_width(1);
-            }
-            pre->add_size(encoding_.encoded_char_size(anglechar_));
-            pre->add_size(1);
-    }
-}
-
-template <typename CharT, typename FloatT>
-void fmt_std_complex_printer<CharT, FloatT>::operator()
-    ( strf::destination<CharT>& dst ) const
-{
-    if (fillcount_ <= 0) {
-        print_complex_value_(dst);
-    } else {
-        switch (alignment_) {
-            case strf::text_alignment::left:
-                print_complex_value_(dst);
-                encoding_.encode_fill(dst, fillcount_, fillchar_);
-                break;
-            case strf::text_alignment::right:
-                encoding_.encode_fill(dst, fillcount_, fillchar_);
-                print_complex_value_(dst);
-                break;
-            default: {
-                assert(alignment_ == strf::text_alignment::center);
-                auto halfcount = fillcount_ / 2;
-                encoding_.encode_fill(dst, halfcount, fillchar_);
-                print_complex_value_(dst);
-                encoding_.encode_fill(dst, fillcount_ - halfcount, fillchar_);
-            }
-        }
-    }
-}
-
-template <typename CharT, typename FloatT>
-void fmt_std_complex_printer<CharT, FloatT>::print_complex_value_
-    ( strf::destination<CharT>& dst ) const
-{
-    auto facets = strf::pack(lettercase_, numpunct10_, numpunct16_, encoding_);
-    auto first_val = strf::fmt(coordinates_.first).set_float_format(float_fmt_);
-    auto second_val = strf::fmt(coordinates_.second).set_float_format(float_fmt_);
-    if (form_ == complex_form::polar) {
-        strf::to(dst).with(facets)
-            ( first_val, U'\u2220', static_cast<CharT>(' '), second_val);
-    } else {
-        const char* middle_str = ( form_ == complex_form::algebric
-                                 ? " + i*"
-                                 : ", " );
-        strf::to(dst).with(facets)
-            ( static_cast<CharT>('(')
-            , first_val, strf::transcode(middle_str), second_val
-            , static_cast<CharT>(')') );
-    }
-}
-
-//--------------------------------------------------------------------------------
-// 4 // Define the PrintingTraits class
-//--------------------------------------------------------------------------------
-
-namespace strf {
 
 template <typename FloatT>
-struct printable_traits<std::complex<FloatT>>
+struct complex_printer_base
 {
+    using category = strf::printable_overrider_c;
+
     using representative_type = std::complex<FloatT>;
     using forwarded_type = std::complex<FloatT>;
     using formatters = strf::tag
@@ -440,30 +148,151 @@ struct printable_traits<std::complex<FloatT>>
     static auto make_printer
         ( strf::tag<CharT>
         , PreMeasurements* pre
-        , const FPack& fp
+        , const FPack& facets
         , std::complex<FloatT> arg)
-        -> std_complex_printer<CharT, FloatT>
     {
-        return {pre, fp, arg};
+        pre->add_width(4);
+        pre->add_size(4);
+
+        const auto write_real_coord = strf::make_printer<CharT>(pre, facets, arg.real());
+        const auto write_imag_coord = strf::make_printer<CharT>(pre, facets, arg.imag());
+
+        return [write_real_coord, write_imag_coord] (strf::destination<CharT>& dst)
+               {
+                   strf::to(dst) ((CharT)'(');
+                   write_real_coord(dst);
+                   strf::to(dst) ((CharT)',', (CharT)' ');
+                   write_imag_coord(dst);
+                   strf::to(dst) ((CharT)')');
+               };
     }
 
-    template < typename CharT, typename PreMeasurements, typename FPack, typename... T >
+    static constexpr char32_t anglechar_ = 0x2220;
+
+    template < typename CharT, typename PreMeasurements, typename FPack
+             , typename PrintableTraits, typename FloatFmt >
     static auto make_printer
         ( strf::tag<CharT>
         , PreMeasurements* pre
-        , const FPack& fp
-        , strf::printable_with_fmt<T...> arg )
-        -> fmt_std_complex_printer<CharT, FloatT>
+        , const FPack& facets
+        , const strf::printable_with_fmt
+            < PrintableTraits
+            , std_complex_formatter
+            , FloatFmt
+            , strf::alignment_formatter_q<false> >& arg )
     {
-        return {pre, fp, arg};
+        const auto form = arg.get_complex_form();
+        measure_without_coordinates<CharT>(pre, facets, form);
+
+        const auto coordinates = complex_coordinates(form, arg.value());
+        const auto float_fmt = arg.get_float_format();
+        const auto coord1 = strf::fmt(coordinates.first).set_float_format(float_fmt);
+        const auto coord2 = strf::fmt(coordinates.second).set_float_format(float_fmt);
+        const auto write_coord1 = strf::make_printer<CharT>(pre, facets, coord1);
+        const auto write_coord2 = strf::make_printer<CharT>(pre, facets, coord2);
+        const auto charset = strf::use_facet<strf::charset_c<CharT>, representative_type>(facets);
+
+        return [charset, form, write_coord1, write_coord2] (strf::destination<CharT>& dst)
+            {
+                switch (form) {
+                case complex_form::polar:
+                    write_coord1(dst);
+                    to(dst) (charset, anglechar_, static_cast<CharT>(' '));
+                    write_coord2(dst);
+                    break;
+
+                case complex_form::algebric:
+                    to(dst) (static_cast<CharT>('('));
+                    write_coord1(dst);
+                    to(dst) (charset, strf::unsafe_transcode(" + i*"));
+                    write_coord2(dst);
+                    to(dst) (static_cast<CharT>(')'));
+                    break;
+
+                default:
+                    assert(form == complex_form::vector);
+                    to(dst) (static_cast<CharT>('('));
+                    write_coord1(dst);
+                    to(dst) (charset, strf::unsafe_transcode(", "));
+                    write_coord2(dst);
+                    to(dst) (static_cast<CharT>(')'));
+                }
+            };
+    }
+
+
+    template < typename CharT, typename PreMeasurements, typename FPack>
+    static void measure_without_coordinates
+        ( PreMeasurements* pre
+        , const FPack& facets
+        , complex_form form )
+    {
+        switch (form) {
+            case complex_form::algebric:
+                pre->add_width(7);
+                pre->add_size(7);
+                break;
+            case complex_form::vector:
+                pre->add_width(4);
+                pre->add_size(4);
+                break;
+            default:
+                assert(form == complex_form::polar);
+                using rt = representative_type;
+                if (pre->has_remaining_width()) {
+                    auto wcalc = strf::use_facet<strf::width_calculator_c, rt>(facets);
+                    pre->add_width(wcalc.char_width(strf::utf_t<char32_t>{}, anglechar_));
+                    pre->add_width(1);
+                }
+                if (PreMeasurements::size_demanded) {
+                    auto encoding = strf::use_facet<strf::charset_c<CharT>, rt>(facets);
+                    pre->add_size(encoding.encoded_char_size(anglechar_));
+                    pre->add_size(1);
+                }
+        }
+    }
+};
+
+
+namespace strf {
+
+template <typename FloatT>
+struct printable_traits<std::complex<FloatT>> : complex_printer_base<FloatT>
+{
+    template <typename T>
+    using is_complex = std::is_same<T, std::complex<FloatT>>;
+
+    using complex_printer_base<FloatT>::make_printer;
+
+    template < typename CharT, typename PreMeasurements, typename FPack, typename FloatFmt >
+    static auto make_printer
+        ( strf::tag<CharT>
+        , PreMeasurements* pre
+        , const FPack& facets
+        , const strf::printable_with_fmt
+            < printable_traits
+            , std_complex_formatter
+            , FloatFmt
+            , strf::alignment_formatter_q<true> >& arg )
+    {
+        using base = complex_printer_base<FloatT>;
+        const auto overrider = strf::constrain<is_complex>(base());
+
+        return strf::make_printer<CharT>
+            ( pre
+            , strf::pack(facets, overrider)
+            , strf::join(arg.clear_alignment_format())
+                .set_alignment_format(arg.get_alignment_format()) );
     }
 };
 
 } // namespace strf
 
 //--------------------------------------------------------------------------------
-// 5 // Test
+//  Test
 //--------------------------------------------------------------------------------
+
+#include "../tests/test_utils.hpp"
 
 template <typename T> struct is_float32: std::false_type {};
 template <> struct is_float32<float>: std::true_type {};
@@ -477,35 +306,6 @@ void tests()
     auto punct = strf::numpunct<10>(3).thousands_sep(0x2D9).decimal_point(0x130);
 
     TEST(u"(3000, 4000)") (x);
-
-    // using facets
-
-    TEST(u"(3000 + i*4000)") .with(complex_form::algebric) (x);
-
-    TEST(u"5000\u2220 0.9272952180016122") .with(complex_form::polar) (x);
-
-    TEST(u"(3\u02D9" u"000 + i*4\u02D9" u"000)") .with(complex_form::algebric, punct)
-        (strf::punct(x));
-
-    TEST("(1\xA9""5E+10, 2\xA9""5E+10)")
-        .with( punct, strf::uppercase, strf::iso_8859_3<char> )
-        (strf::punct(std::complex<double>{1.5e+10, 2.5e+10}));
-
-    TEST("(1\xA9""5E+10 + i*2\xA9""5E+10)")
-        .with( complex_form::algebric, punct, strf::uppercase, strf::iso_8859_3<char> )
-        (strf::punct(std::complex<double>{1.5e+10, 2.5e+10}));
-
-    TEST("1\xA9""5E+10? 1\xA9""6666666666666666E-10")
-        .with(complex_form::polar, punct, strf::uppercase, strf::iso_8859_3<char> )
-        (strf::punct(std::complex<double>{1.5e+10, 2.5}));
-
-    TEST("(1.5e+10 + i*2.5e+10)") .with( complex_form::algebric
-                              , strf::constrain<is_float32>(punct)
-                              , strf::constrain<is_float32>(strf::uppercase)
-                              , strf::iso_8859_3<char> )
-        (std::complex<double>{1.5e+10, 2.5e+10});
-
-    // using format functions
 
     TEST("________________(3000., 4000.)") (*strf::right(x, 30, '_'));
 
@@ -527,11 +327,11 @@ void tests()
 
     TEST(u"__5000.\u2220 0.9272952180016122___") (*strf::center(x, 30, '_').polar());
 
-    // using format functions and facets
-
     TEST("________________________(3\251E+03, 4\251E+03)")
-        .with(strf::iso_8859_3<char>, punct, strf::uppercase)
-        (* !strf::right(x, 40, '_').sci());
+        ( strf::iso_8859_3<char>
+        , punct
+        , strf::uppercase
+        , * !strf::right(x, 40, '_').sci() );
 
     TEST("_____________________(3\251E+03 + i*4\251E+03)")
         .with(strf::iso_8859_3<char>, punct, strf::uppercase)
@@ -600,6 +400,31 @@ void tests()
     TEST("_____5\251E+03? 9\251""272952180016122E-01______")
         .with(strf::iso_8859_3<char>, punct, strf::uppercase)
         (* !strf::center(x, 40, '_').sci().polar());
+
+    // with punctuation
+
+    TEST("(1\xA9""5E+10, 2\xA9""5E+10)")
+        ( punct
+        , strf::uppercase, strf::iso_8859_3<char>
+        , strf::punct(std::complex<double>{1.5e+10, 2.5e+10}) );
+
+    TEST("(1\xA9""5E+10 + i*2\xA9""5E+10)")
+        ( punct
+        , strf::uppercase
+        , strf::iso_8859_3<char>
+        , strf::punct(std::complex<double>{1.5e+10, 2.5e+10}).algebric() );
+
+    TEST("1\xA9""5E+10? 1\xA9""6666666666666666E-10")
+        ( punct
+        , strf::uppercase
+        , strf::iso_8859_3<char>
+        , strf::punct(std::complex<double>{1.5e+10, 2.5}).polar() );
+
+    TEST("(1.5E+10 + i*2.5E+10)")
+        ( strf::constrain<is_float32>(punct)
+        , strf::constrain<is_float32>(strf::uppercase)
+        , strf::iso_8859_3<char>
+        , strf::fmt(std::complex<double>{1.5e+10, 2.5e+10}).algebric() );
 
     // size and width pre-calculation
     {

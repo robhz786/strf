@@ -12,26 +12,7 @@
 
 enum class complex_form { vector, algebric, polar };
 
-struct complex_form_c {
-    static constexpr complex_form get_default() noexcept {
-        return complex_form::vector;
-    }
-};
-
-namespace strf {
-template <> struct facet_traits<complex_form> {
-    using category = complex_form_c;
-};
-} // namespace strf
-
 struct std_complex_formatter {
-
-    enum class complex_form_fmt {
-        vector   = static_cast<int>(complex_form::vector),
-        algebric = static_cast<int>(complex_form::algebric),
-        polar    = static_cast<int>(complex_form::polar),
-        use_facet = 1 + std::max({vector, algebric, polar})
-    };
 
     template <class T>
     class fn
@@ -40,14 +21,14 @@ struct std_complex_formatter {
 
         constexpr fn() noexcept = default;
 
-        constexpr explicit fn(complex_form_fmt f) noexcept
+        constexpr explicit fn(complex_form f) noexcept
             : form_(f)
         {
         }
 
         template <class U>
         constexpr explicit fn(const fn<U>& u) noexcept
-            : form_(u.form())
+            : form_(u.get_complex_form())
         {
         }
 
@@ -55,69 +36,65 @@ struct std_complex_formatter {
 
         constexpr T&& vector() && noexcept
         {
-            form_ = complex_form_fmt::vector;
+            form_ = complex_form::vector;
             return static_cast<T&&>(*this);
         }
         constexpr T& vector() & noexcept
         {
-            form_ = complex_form_fmt::vector;
+            form_ = complex_form::vector;
             return static_cast<T&>(*this);
         }
         constexpr T vector() const & noexcept
         {
             return T{ static_cast<const T&>(*this)
                     , strf::tag<std_complex_formatter> {}
-                    , complex_form_fmt::vector };
+                    , complex_form::vector };
         }
 
         constexpr T&& algebric() && noexcept
         {
-            form_ = complex_form_fmt::algebric;
+            form_ = complex_form::algebric;
             return static_cast<T&&>(*this);
         }
         constexpr T& algebric() & noexcept
         {
-            form_ = complex_form_fmt::algebric;
+            form_ = complex_form::algebric;
             return static_cast<T&>(*this);
         }
         constexpr T algebric() const & noexcept
         {
             return T{ static_cast<const T&>(*this)
                     , strf::tag<std_complex_formatter> {}
-                    , complex_form_fmt::algebric };
+                    , complex_form::algebric };
         }
 
         constexpr T&& polar() && noexcept
         {
-            form_ = complex_form_fmt::polar;
+            form_ = complex_form::polar;
             return static_cast<T&&>(*this);
         }
         constexpr T& polar() & noexcept
         {
-            form_ = complex_form_fmt::polar;
+            form_ = complex_form::polar;
             return static_cast<T&>(*this);
         }
         constexpr T polar() const & noexcept
         {
             return T{ static_cast<const T&>(*this)
                     , strf::tag<std_complex_formatter> {}
-                    , complex_form_fmt::polar };
+                    , complex_form::polar };
         }
 
         // observers
 
-        constexpr complex_form form(complex_form f) const
-        {
-            return form_ == complex_form_fmt::use_facet ? f : static_cast<complex_form>(form_);
-        }
-        constexpr complex_form_fmt form() const
+        constexpr complex_form get_complex_form() const
         {
             return form_;
         }
 
     private:
 
-        complex_form_fmt form_ = complex_form_fmt::use_facet;
+        complex_form form_ = complex_form::vector;
     };
 };
 
@@ -155,25 +132,22 @@ struct printable_traits<std::complex<FloatT>>
         , strf::alignment_formatter
         , strf::float_formatter >;
 
-    // template <typename CharT, typename PreMeasurements, typename FPack>
-    // static auto make_printer
-    //     ( strf::tag<CharT>
-    //     , PreMeasurements* pre
-    //     , const FPack& fp
-    //     , std::complex<FloatT> arg)
-    // {
-    //     auto form = strf::use_facet<complex_form_c, std::complex<FloatT>>(fp);
-    //     auto v = ::complex_coordinates(arg, form);
-    //     unsigned has_brackets = form != complex_form::polar;
-    //     auto arg2 = strf::join
-    //         ( strf::multi(static_cast<CharT>('('), has_brackets)
-    //         , v.first
-    //         , strf::transcode(middle_string(form), strf::utf_t<char16_t>())
-    //         , v.second
-    //         , strf::multi(static_cast<CharT>(')'), has_brackets) );
+    template <typename CharT, typename PreMeasurements, typename FPack>
+    static auto make_printer
+        ( strf::tag<CharT>
+        , PreMeasurements* pre
+        , const FPack& fp
+        , std::complex<FloatT> arg)
+    {
+        auto arg2 = strf::join
+            ( static_cast<CharT>('(')
+            , arg.real()
+            , strf::transcode(u", ", strf::utf_t<char16_t>())
+            , arg.imag()
+            , static_cast<CharT>(')') );
 
-    //     return strf::make_default_printer<CharT>(pre, fp, arg2);
-    // }
+        return strf::make_default_printer<CharT>(pre, fp, arg2);
+    }
 
     template <typename CharT, typename PreMeasurements, typename FPack, typename... T>
     static auto make_printer
@@ -182,7 +156,7 @@ struct printable_traits<std::complex<FloatT>>
         , const FPack& fp
         , strf::printable_with_fmt<T...> arg )
     {
-        auto form = arg.form(strf::use_facet<complex_form_c, std::complex<FloatT>>(fp));
+        auto form = arg.get_complex_form();
         auto v = ::complex_coordinates(arg.value(), form);
         const unsigned has_brackets = form != complex_form::polar;
         auto arg2 = strf::join
@@ -209,30 +183,177 @@ private:
 };
 } // namespace strf
 
+//--------------------------------------------------------------------------------
+//  Test
+//--------------------------------------------------------------------------------
+
+#include "../tests/test_utils.hpp"
+
+template <typename T> struct is_float32: std::false_type {};
+template <> struct is_float32<float>: std::true_type {};
+
+void tests()
+{
+    // Using strf internal test framework ( defined in tests/test_utils.hpp )
+
+    std::complex<double> x{3000, 4000};
+
+    auto punct = strf::numpunct<10>(3).thousands_sep(0x2D9).decimal_point(0x130);
+
+    TEST(u"(3000, 4000)") (x);
+
+    TEST("________________(3000., 4000.)") (*strf::right(x, 30, '_'));
+
+    TEST("_____________(3000. + i*4000.)") (*strf::right(x, 30, '_').algebric());
+
+    TEST(u"_____5000.\u2220 0.9272952180016122") (*strf::right(x, 30, '_').polar());
+
+
+    TEST("(3000., 4000.)________________") (*strf::left(x, 30, '_'));
+
+    TEST("(3000. + i*4000.)_____________") (*strf::left(x, 30, '_').algebric());
+
+    TEST(u"5000.\u2220 0.9272952180016122_____") (*strf::left(x, 30, '_').polar());
+
+
+    TEST("________(3000., 4000.)________") (*strf::center(x, 30, '_'));
+
+    TEST("______(3000. + i*4000.)_______") (*strf::center(x, 30, '_').algebric());
+
+    TEST(u"__5000.\u2220 0.9272952180016122___") (*strf::center(x, 30, '_').polar());
+
+    TEST("________________________(3\251E+03, 4\251E+03)")
+        ( strf::iso_8859_3<char>
+        , punct
+        , strf::uppercase
+        , * !strf::right(x, 40, '_').sci() );
+
+    TEST("_____________________(3\251E+03 + i*4\251E+03)")
+        .with(strf::iso_8859_3<char>, punct, strf::uppercase)
+        (* !strf::right(x, 40, '_').sci().algebric());
+
+    TEST("___________5\251E+03? 9\251""272952180016122E-01")
+        .with(strf::iso_8859_3<char>, punct, strf::uppercase)
+        (* !strf::right(x, 40, '_').sci().polar());
+
+    TEST("(3\251E+03, 4\251E+03)________________________")
+        .with(strf::iso_8859_3<char>, punct, strf::uppercase)
+        (* !strf::left(x, 40, '_').sci());
+
+    TEST("(3\251E+03 + i*4\251E+03)_____________________")
+        .with(strf::iso_8859_3<char>, punct, strf::uppercase)
+        (* !strf::left(x, 40, '_').sci().algebric());
+
+    TEST("5\251E+03? 9\251""272952180016122E-01___________")
+        .with(strf::iso_8859_3<char>, punct, strf::uppercase)
+        (* !strf::left(x, 40, '_').sci().polar());
+
+    TEST("____________(3\251E+03, 4\251E+03)____________")
+        .with(strf::iso_8859_3<char>, punct, strf::uppercase)
+        (* !strf::center(x, 40, '_').sci());
+
+    TEST("__________(3\251E+03 + i*4\251E+03)___________")
+        .with(strf::iso_8859_3<char>, punct, strf::uppercase)
+        (* !strf::center(x, 40, '_').sci().algebric());
+
+    TEST("_____5\251E+03? 9\251""272952180016122E-01______")
+        .with(strf::iso_8859_3<char>, punct, strf::uppercase)
+        (* !strf::center(x, 40, '_').sci().polar());
+
+    TEST("________________________(3\251E+03, 4\251E+03)")
+        .with(strf::iso_8859_3<char>, punct, strf::uppercase)
+        (* !strf::right(x, 40, '_').sci());
+
+    TEST("_____________________(3\251E+03 + i*4\251E+03)")
+        .with(strf::iso_8859_3<char>, punct, strf::uppercase)
+        (* !strf::right(x, 40, '_').sci().algebric());
+
+    TEST("___________5\251E+03? 9\251""272952180016122E-01")
+        .with(strf::iso_8859_3<char>, punct, strf::uppercase)
+        (* !strf::right(x, 40, '_').sci().polar());
+
+    TEST("(3\251E+03, 4\251E+03)________________________")
+        .with(strf::iso_8859_3<char>, punct, strf::uppercase)
+        (* !strf::left(x, 40, '_').sci());
+
+    TEST("(3\251E+03 + i*4\251E+03)_____________________")
+        .with(strf::iso_8859_3<char>, punct, strf::uppercase)
+        (* !strf::left(x, 40, '_').sci().algebric());
+
+    TEST("5\251E+03? 9\251""272952180016122E-01___________")
+        .with(strf::iso_8859_3<char>, punct, strf::uppercase)
+        (* !strf::left(x, 40, '_').sci().polar());
+
+    TEST("____________(3\251E+03, 4\251E+03)____________")
+        .with(strf::iso_8859_3<char>, punct, strf::uppercase)
+        (* !strf::center(x, 40, '_').sci());
+
+    TEST("__________(3\251E+03 + i*4\251E+03)___________")
+        .with(strf::iso_8859_3<char>, punct, strf::uppercase)
+        (* !strf::center(x, 40, '_').sci().algebric());
+
+    TEST("_____5\251E+03? 9\251""272952180016122E-01______")
+        .with(strf::iso_8859_3<char>, punct, strf::uppercase)
+        (* !strf::center(x, 40, '_').sci().polar());
+
+    // with punctuation
+
+    TEST("(1\xA9""5E+10, 2\xA9""5E+10)")
+        ( punct
+        , strf::uppercase, strf::iso_8859_3<char>
+        , strf::punct(std::complex<double>{1.5e+10, 2.5e+10}) );
+
+    TEST("(1\xA9""5E+10 + i*2\xA9""5E+10)")
+        ( punct
+        , strf::uppercase
+        , strf::iso_8859_3<char>
+        , strf::punct(std::complex<double>{1.5e+10, 2.5e+10}).algebric() );
+
+    TEST("1\xA9""5E+10? 1\xA9""6666666666666666E-10")
+        ( punct
+        , strf::uppercase
+        , strf::iso_8859_3<char>
+        , strf::punct(std::complex<double>{1.5e+10, 2.5}).polar() );
+
+    TEST("(1.5E+10 + i*2.5E+10)")
+        ( strf::constrain<is_float32>(punct)
+        , strf::constrain<is_float32>(strf::uppercase)
+        , strf::iso_8859_3<char>
+        , strf::fmt(std::complex<double>{1.5e+10, 2.5e+10}).algebric() );
+
+    // size and width pre-calculation
+    {
+        strf::full_premeasurements pre;
+        strf::measure<char>(&pre, strf::pack(), *strf::fmt(x));
+        TEST_EQ(pre.accumulated_ssize(), 14);
+        TEST_TRUE(pre.accumulated_width() == 14);
+    }
+    {
+        strf::full_premeasurements pre;
+        strf::measure<char>(&pre, strf::pack(), *strf::fmt(x).algebric());
+        TEST_EQ(pre.accumulated_ssize(), 17);
+        TEST_TRUE(pre.accumulated_width() == 17);
+    }
+    {
+        strf::full_premeasurements pre;
+        strf::measure<char>(&pre, strf::pack(), *strf::fmt(x).polar());
+        TEST_EQ(pre.accumulated_ssize(), 27);
+        TEST_TRUE(pre.accumulated_width() == 25);
+    }
+}
+
 int main()
 {
-    std::complex<double> x{3, 4};
+    strf::narrow_cfile_writer<char, 512> test_msg_dst(stdout);
+    const test_utils::test_messages_destination_guard g(test_msg_dst);
 
-    auto str = strf::to_string(x);
-    assert(str == "(3, 4)");
+    tests();
 
-    // using facets
-    str = strf::to_string.with(complex_form::algebric) (x);
-    assert(str == "(3 + i*4)");
-
-    // using format function
-    auto u16str = strf::to_u16string.with(complex_form::algebric)
-        ( x, u" == ", strf::sci(x).p(5).polar() );
-    assert(u16str == u"(3 + i*4) == 5.00000e+00\u2220 9.27295e-01");
-
-    // format functions on const
-    const auto f1 = strf::fmt(std::complex<double>(x));
-    auto f2 = f1.algebric();
-    assert(f2.form() == std_complex_formatter::complex_form_fmt::algebric);
-    str = strf::to_string(f2);
-    assert(str == "(3 + i*4)");
-
-    (void)str;
-    (void)u16str;
-    return 0;
+    int err_count = test_utils::test_err_count();
+    if (err_count == 0) {
+        strf::write(test_msg_dst, "All test passed!\n");
+    } else {
+        strf::to(test_msg_dst) (err_count, " tests failed!\n");
+    }
+    return err_count;
 }
