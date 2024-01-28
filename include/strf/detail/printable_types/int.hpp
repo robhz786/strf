@@ -2242,7 +2242,7 @@ public:
     using forwarded_type = IntT;
     using formatters = strf::tag< strf::int_formatter
                                 , strf::alignment_formatter >;
-    using is_overridable = std::true_type;
+    using is_overridable = std::false_type;
 
     template <typename CharT, typename PreMeasurements, typename FPack>
     constexpr STRF_HD static auto make_printer

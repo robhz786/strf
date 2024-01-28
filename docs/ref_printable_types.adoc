@@ -114,7 +114,7 @@ Representative type:: The same as the input type ( `short`,
 `unsigned long int` or
 `unsigned long long int` )
 
-Overridable:: Yes
+Overridable:: No
 
 Formatters::
 * `<<alignment_formatter,alignment_formatter>>`

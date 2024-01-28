@@ -48,8 +48,8 @@ int main()
 
     // what happens when you don't constrain an overrider facet:
     str = strf::to_string.with(my_bool_overrider{{"falso", "vero"}})
-        (true, '/', false, '/', 1, '/', 0, '/', 1.0, '/', 0.0, '/', static_cast<void*>(nullptr));
-    assert(str == "vero/falso/vero/falso/vero/falso/falso");
+        (true, '/', false, '/', 1.0, '/', 0.0, '/', static_cast<void*>(nullptr));
+    assert(str == "vero/falso/vero/falso/falso");
 
     return 0;
 }

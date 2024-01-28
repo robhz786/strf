@@ -183,8 +183,8 @@ overridable printable types, which is certainly not what we want:
 [source,cpp,subs=normal]
 ----
 auto str = strf::to_string.with(italian_bool_facet{})
-    (true, '/', false, '/', 1, '/', 0, '/', 1.0, '/', 0.0, '/', (void*)0);
-assert(str == "vero/falso/vero/falso/vero/falso/falso");
+    (true, '/', false, '/', 1.0, '/', 0.0, '/', (void*)0);
+assert(str == "vero/falso/vero/falso/falso");
 ----
 ====
 

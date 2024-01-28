@@ -63,28 +63,6 @@ struct my_bool_printing_overrider: my_bool_printing_overrider_base
     }
 };
 
-struct my_int_printing_overrider
-{
-    using category = strf::printable_overrider_c;
-
-    template <typename CharT, typename PreMeasurements, typename FPack, typename... T>
-    constexpr static STRF_HD auto make_printer
-        ( strf::tag<CharT>
-        , PreMeasurements* pre
-        , const FPack& fp
-        , strf::printable_with_fmt<T...> x ) noexcept
-    {
-        return strf::make_printer<CharT>
-            ( pre
-            , strf::pack(fp, strf::dont_override{})
-            , strf::join
-                ( static_cast<CharT>('(')
-                , strf::fmt(x.value()).set_int_format(x.get_int_format())
-                , static_cast<CharT>(')') )
-                .set_alignment_format(x.get_alignment_format()) );
-    }
-};
-
 struct bool_wrapper {
     bool x;
 };
@@ -117,18 +95,12 @@ struct printable_traits<bool_wrapper> {
 STRF_TEST_FUNC void test_printable_overriding()
 {
     auto alt_bool = strf::constrain<is_bool>(my_bool_printing_overrider{});
-    auto alt_int = strf::constrain<strf::is_int_number>(my_int_printing_overrider{});
 
     TEST("yes/no").with(alt_bool) (true, '/', false);
     TEST("..yes../..no..").with(alt_bool) (strf::center(true, 7, '.'), '/', strf::center(false, 6, '.'));
     TEST("no").with(my_bool_printing_overrider{}) (false);
     TEST("123").with(alt_bool) (123);
     TEST("[yes]/[no]").with(alt_bool) (bool_wrapper{true}, '/', bool_wrapper{false});
-
-    TEST("(5)").with(alt_int) (5);
-    TEST("__(abcd)").with(alt_int) (strf::right(0xabcd, 8, '_').hex());
-    TEST("[yes](0)[no]").with(alt_bool, alt_int)
-        (bool_wrapper{true}, 0, bool_wrapper{false});
 
 }
 
