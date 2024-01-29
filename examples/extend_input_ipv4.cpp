@@ -22,7 +22,7 @@ struct printable_traits<xxx::ipv4address> {
 
     using representative_type = xxx::ipv4address;
     using forwarded_type = xxx::ipv4address;
-    using formatters = strf::tag<strf::alignment_formatter>;
+    using format_specifiers = strf::tag<strf::alignment_format_specifier>;
 
     template <typename CharT>
     static auto transform_arg(forwarded_type arg)

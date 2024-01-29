@@ -9,8 +9,8 @@ http://www.boost.org/LICENSE_1_0.txt)
 :make_printer: <<strf_hpp#make_printer,make_printer>>
 :use_facet: <<strf_hpp#use_facet,use_facet>>
 :pack: <<strf_hpp#pack,pack>>
-:set_alignment_format: <<strf_hpp#alignment_formatter,set_alignment_format>>
-:get_alignment_format: <<strf_hpp#alignment_formatter,get_alignment_format>>
+:set_alignment_format: <<strf_hpp#alignment_format_specifier,set_alignment_format>>
+:get_alignment_format: <<strf_hpp#alignment_format_specifier,get_alignment_format>>
 :constrain: <<tutorial#constrained_facets,constrain>>
 :printable_with_fmt: <<strf_hpp#printable_with_fmt,printable_with_fmt>>
 :PrintableTraits: <<strf_hpp#PrintableTraits,PrintableTraits>>
@@ -116,12 +116,12 @@ add a `static_assert` to emit a clear error message.
 
 But if do you want support formatting then
 check in the <<strf_hpp#printable_types_list,documentation>> what
-are the format functions ( or the __Formatters__ )
+are the format functions ( or the __FormatSpecifiers__ )
 applicable to the printable type you are overriding.
 If you take a look at the part the covers
 `<<strf_hpp#printable_bool,bool>>`,
 you can see that we only need to handle
-<<strf_hpp#alignment_formatter, alignment formatting>>.
+<<strf_hpp#alignment_format_specifier, alignment formatting>>.
 And that's what we did in the implementation above.
 
 ////

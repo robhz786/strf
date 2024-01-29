@@ -115,14 +115,15 @@ It influences the behavior of `{make_printer}`.
 Assumed to be `std::false_type` if not defined.
 ====
 
-[[PrintableTraits_formatters]]
+[[PrintableTraits_format_specifiers]]
 ====
 .( Optional )
 [source,cpp]
 ----
-T::formatters
+T::format_specifiers
 ----
-A type alias to `{tag}<F\...>`, where all types in `F\...` satisfy __<<Formatter,Formatter>>__.
+A type alias to `{tag}<F\...>`, where all types in `F\...` satisfy
+__<<FormatSpecifier,FormatSpecifier>>__.
 It affects the return type of `<<fmt,fmt>>`.
 Assumed to be `{tag}<>` if not defined.
 ====
@@ -138,7 +139,7 @@ Given
 * `pre`, a value of type `{premeasurements}</{asterisk}\... {asterisk}/>`
 * `dst`, an non-const lvalue of type `{destination}<CharT>&`
 * `v`, a value of type `T::forwarded_type` or `{printable_with_fmt}<T, F\...>`,
-   where `F\...` is such that `T::formatters` is an alias to `{tag}<F\...>`.
+   where `F\...` is such that `T::format_specifiers` is an alias to `{tag}<F\...>`.
 * `R`, the return type of `T::make_printer({tag}<CharT>{}, pre, fpack, v)`
 * `PrinterT`, the same type as `R`, if `R` is _{Printer}_, or `R::printer_type` otherwise
 

@@ -42,7 +42,7 @@ struct printable_traits<mytype>
 {
     using representative_type = mytype;
     using forwarded_type = mytype;
-    using formatters = strf::tag<strf::alignment_formatter>;
+    using format_specifiers = strf::tag<strf::alignment_format_specifier>;
     using is_overridable = std::true_type;
 
     template <typename CharT, typename FPack>
@@ -279,7 +279,7 @@ struct printable_traits<my_abstract_type>
 {
     using representative_type = strf::reference_wrapper<const my_abstract_type>;
     using forwarded_type = strf::reference_wrapper<const my_abstract_type>;
-    using formatters = strf::tag<strf::alignment_formatter>;
+    using format_specifiers = strf::tag<strf::alignment_format_specifier>;
 
     template <typename CharT, typename FPack>
     STRF_HD static void print

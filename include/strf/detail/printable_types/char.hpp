@@ -281,7 +281,9 @@ struct char_printing
 {
     using representative_type = SrcCharT;
     using forwarded_type = SrcCharT;
-    using formatters = strf::tag<strf::quantity_formatter, strf::alignment_formatter>;
+    using format_specifiers = strf::tag
+        < strf::quantity_format_specifier
+        , strf::alignment_format_specifier >;
     using is_overridable = std::false_type;
 
     template <typename DstCharT, typename PreMeasurements, typename FPack>
@@ -331,7 +333,9 @@ struct printable_traits<char32_t>
 {
     using representative_type = char32_t;
     using forwarded_type = char32_t;
-    using formatters = strf::tag<strf::quantity_formatter, strf::alignment_formatter>;
+    using format_specifiers = strf::tag
+        < strf::quantity_format_specifier
+        , strf::alignment_format_specifier >;
     using is_overridable = std::false_type;
 
     template < typename DstCharT, typename PreMeasurements, typename FPack

@@ -42,7 +42,7 @@ struct base64_input
     std::ptrdiff_t num_bytes = 0;
 };
 
-struct base64_formatter
+struct base64_format_specifier
 {
     template <typename T>
     class fn
@@ -255,17 +255,17 @@ struct printable_traits<xxx::base64_input>
 {
     using representative_type = xxx::base64_input;
     using forwarded_type = xxx::base64_input;
-    using formatters = strf::tag<xxx::base64_formatter>;
+    using format_specifiers = strf::tag<xxx::base64_format_specifier>;
 
-    using input_with_formatters =
-        strf::printable_with_fmt<printable_traits<xxx::base64_input>, xxx::base64_formatter>;
+    using input_with_fmt =
+        strf::printable_with_fmt<printable_traits<xxx::base64_input>, xxx::base64_format_specifier>;
     
     template <typename CharT, typename FPack>
     static auto make_printer
         ( strf::tag<CharT>
         , strf::no_premeasurements*
         , const FPack& facets
-        , const input_with_formatters& arg )
+        , const input_with_fmt& arg )
     {
         auto f = strf::use_facet<xxx::base64_facet_c, representative_type>(facets);
         return xxx::base64_printer<CharT>{f, arg.value(), arg.indentation()};
@@ -276,7 +276,7 @@ struct printable_traits<xxx::base64_input>
         ( strf::tag<CharT>
         , strf::premeasurements<strf::size_presence::yes, strf::width_presence::no>* pre
         , const FPack& facets
-        , const input_with_formatters& arg )
+        , const input_with_fmt& arg )
     {
         auto f = strf::use_facet<xxx::base64_facet_c, representative_type>(facets);
         xxx::base64_printer<CharT> printer{f, arg.value(), arg.indentation()};

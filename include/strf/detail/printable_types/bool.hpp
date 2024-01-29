@@ -129,7 +129,7 @@ struct printable_traits<bool>
 {
     using representative_type = bool;
     using forwarded_type = bool;
-    using formatters = strf::tag<strf::alignment_formatter>;
+    using format_specifiers = strf::tag<strf::alignment_format_specifier>;
     using is_overridable = std::true_type;
 
     template <typename CharT, typename PreMeasurements, typename FPack>

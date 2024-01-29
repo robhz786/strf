@@ -16,7 +16,7 @@
 
 enum class complex_form { vector, algebric, polar };
 
-struct std_complex_formatter {
+struct std_complex_format_specifier {
 
     template <class T>
     class fn
@@ -51,7 +51,7 @@ struct std_complex_formatter {
         constexpr T vector() const & noexcept
         {
             return T{ static_cast<const T&>(*this)
-                    , strf::tag<std_complex_formatter> {}
+                    , strf::tag<std_complex_format_specifier> {}
                     , complex_form::vector };
         }
 
@@ -68,7 +68,7 @@ struct std_complex_formatter {
         constexpr T algebric() const & noexcept
         {
             return T{ static_cast<const T&>(*this)
-                    , strf::tag<std_complex_formatter> {}
+                    , strf::tag<std_complex_format_specifier> {}
                     , complex_form::algebric };
         }
 
@@ -85,7 +85,7 @@ struct std_complex_formatter {
         constexpr T polar() const & noexcept
         {
             return T{ static_cast<const T&>(*this)
-                    , strf::tag<std_complex_formatter> {}
+                    , strf::tag<std_complex_format_specifier> {}
                     , complex_form::polar };
         }
 
@@ -139,10 +139,10 @@ struct complex_printer_base
 
     using representative_type = std::complex<FloatT>;
     using forwarded_type = std::complex<FloatT>;
-    using formatters = strf::tag
-        < std_complex_formatter
-        , strf::float_formatter
-        , strf::alignment_formatter >;
+    using format_specifiers = strf::tag
+        < std_complex_format_specifier
+        , strf::float_format_specifier
+        , strf::alignment_format_specifier >;
 
     template <typename CharT, typename PreMeasurements, typename FPack>
     static auto make_printer
@@ -177,9 +177,9 @@ struct complex_printer_base
         , const FPack& facets
         , const strf::printable_with_fmt
             < PrintableTraits
-            , std_complex_formatter
+            , std_complex_format_specifier
             , FloatFmt
-            , strf::alignment_formatter_q<false> >& arg )
+            , strf::alignment_format_specifier_q<false> >& arg )
     {
         const auto form = arg.get_complex_form();
         measure_without_coordinates<CharT>(pre, facets, form);
@@ -271,9 +271,9 @@ struct printable_traits<std::complex<FloatT>> : complex_printer_base<FloatT>
         , const FPack& facets
         , const strf::printable_with_fmt
             < printable_traits
-            , std_complex_formatter
+            , std_complex_format_specifier
             , FloatFmt
-            , strf::alignment_formatter_q<true> >& arg )
+            , strf::alignment_format_specifier_q<true> >& arg )
     {
         using base = complex_printer_base<FloatT>;
         const auto overrider = strf::constrain<is_complex>(base());

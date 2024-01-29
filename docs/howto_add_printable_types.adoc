@@ -18,8 +18,8 @@ http://www.boost.org/LICENSE_1_0.txt)
 :Printer:               <<strf_hpp#Printer,Printer>>
 :representative_type:   <<strf_hpp#PrintableTraits_representative_type,representative_type>>
 :forwarded_type:        <<strf_hpp#PrintableTraits_forwarded_type,forwarded_type>>
-:formatters:            <<strf_hpp#PrintableTraits_formatters,formatters>>
-:Formatter:             <<strf_hpp#Formatter,Formatter>>
+:format_specifiers:     <<strf_hpp#PrintableTraits_format_specifiers,format_specifiers>>
+:FormatSpecifier:       <<strf_hpp#FormatSpecifier,FormatSpecifier>>
 :printable_overrider_c: <<strf_hpp#printable_overrider_c,printable_overrider_c>>
 :dont_override:         <<strf_hpp#dont_override,dont_override>>
 :premeasurements:       <<strf_hpp#premeasurements,premeasurements>>
@@ -29,13 +29,13 @@ http://www.boost.org/LICENSE_1_0.txt)
 :strf_make_printer:     <<strf_hpp#make_printer,strf::make_printer>>
 :usual_printer_input:   <<strf_hpp#usual_printer_input,usual_printer_input>>
 
-:alignment_formatter:   <<strf_hpp#alignment_formatter,alignment_formatter>>
-:alignment_formatter_q: <<strf_hpp#alignment_formatter,alignment_formatter_q>>
-:float_formatter:       <<strf_hpp#float_formatter,float_formatter>>
-:get_float_format:      <<strf_hpp#float_formatter,get_float_format>>
-:set_float_format:      <<strf_hpp#float_formatter,set_float_format>>
-:get_alignment_format:  <<strf_hpp#alignment_formatter_fn_false,get_alignment_format>>
-:set_alignment_format:  <<strf_hpp#alignment_formatter_fn_false,set_alignment_format>>
+:alignment_format_specifier:   <<strf_hpp#alignment_format_specifier,alignment_format_specifier>>
+:alignment_format_specifier_q: <<strf_hpp#alignment_format_specifier,alignment_format_specifier_q>>
+:float_format_specifier:       <<strf_hpp#float_format_specifier,float_format_specifier>>
+:get_float_format:      <<strf_hpp#float_format_specifier,get_float_format>>
+:set_float_format:      <<strf_hpp#float_format_specifier,set_float_format>>
+:get_alignment_format:  <<strf_hpp#alignment_format_specifier_fn_false,get_alignment_format>>
+:set_alignment_format:  <<strf_hpp#alignment_format_specifier_fn_false,set_alignment_format>>
 
 :join:            <<quick_reference#join,join>>
 :Facet:           <<strf_hpp#Facet,Facet>>
@@ -266,19 +266,19 @@ void sample()
 == Adding format functions
 
 Format functions are defined in classes that
-comply with the __{Formatter}__ requirements.
+comply with the __{FormatSpecifier}__ requirements.
 If you want to add format functions
-you need to create a formatter class and/or
+you need to create one and/or
 select one or some of those provided by the library.
 Then, in your __PrintableTraits__ class, you need
-to define a member `{formatters}` as a type alias
+to define a member `{format_specifiers}` as a type alias
 to `{tag}<Fmts\...>`,
-where `Fmts\...` are the __{Formatter}__ types you want
+where `Fmts\...` are the __{FormatSpecifier}__ types you want
 to enable.
 
-There are formatters that make sense for `std::complex`:
-the `{alignment_formatter}` and the `{float_formatter}`. So let's
-select them:
+The `{alignment_format_specifier}` and the `{float_format_specifier}`
+are two _FormatSpecifier_ types that make sense for `std::complex`:
+so let's select them:
 
 [source,cpp,subs=normal]
 ----
@@ -287,7 +287,7 @@ namespace strf {
 template <typename FloatT>
 struct printable_traits<std::complex<FloatT>> {
     // ...
-    using {formatters} = strf::{tag}<{alignment_formatter}, {float_formatter}>;
+    using {format_specifiers} = strf::{tag}<{alignment_format_specifier}, {float_format_specifier}>;
     // ...
 };
 
@@ -298,7 +298,7 @@ After that, whenever a value `x` is a `std::complex`,
 expressions like `+strf::fmt(x)` and `*strf::sci(x) > 20` and `right(x, 20, '_').sci()`
 are all well-formed, and the type of `strf::fmt(x)` is
 `{printable_with_fmt}<printable_traits<std::complex<...>>, Fmts\...>`, where `Fmts\...`
-are the types you used in to define the `formatters` type alias.
+are the types you used in to define the `format_specifiers` type alias.
 
 Though well-formed, they are still not printable.
 To make them printable,  we need to overload `make_printer`
@@ -352,7 +352,7 @@ struct printable_traits<std::complex<FloatT>> {
 
 Instead of taking a raw `std::complex<Float>`, the new overload takes a
 `{printable_with_fmt}<T\...>` which matches the return type of the format functions.
-Note that we need to add that template parameter pack because the __Formatters__ types
+Note that we need to add that template parameter pack because the __FormatSpecifiers__ types
 in `{printable_with_fmt}` may change as some format functions are used. For example:
 [source,cpp,subs=normal]
 ----
@@ -414,8 +414,8 @@ Third, we apply the alignment format to the join:
 But what if you don't want just to enable existing format functions
 to your printable type, but also create new ones ?
 
-This means we need to create a __{Formatter}__ class, which we will name
-here as `std_complex_formatter`.
+This means we need to create a __{FormatSpecifier}__ class, which we will name
+here as `std_complex_format_specifier`.
 It is required to have a member type template named `fn` where
 the format functions are defined. The template parameter is
 used in the return type of the format functions:
@@ -424,7 +424,7 @@ used in the return type of the format functions:
 So that when the user doesn't specify the form with format function,
 the facet is used.
 
-This means we will create a __{Formatter}__ class,
+This means we will create a __{FormatSpecifier}__ class,
 which in turns is required to have
 a member template type named `fn` where the format functions are
 defined. A template argument `T` is expected to derive from `fn<T>`
@@ -437,7 +437,7 @@ used to define the return type of the format function.
 ----
 enum class complex_form { vector, algebric, polar };
 
-struct std_complex_formatter {
+struct std_complex_format_specifier {
 
     template <class T>
     class fn
@@ -490,7 +490,7 @@ The `static_cast` expressions above work because
 `fn<T>` is supposed to be a base class of `T`
 ( yes, it's the https://en.wikipedia.org/wiki/Curiously_recurring_template_pattern[CRTP] ).
 Not only that, `T` is expected to be an instance of `{printable_with_fmt}`
-that has `std_complex_formatter` as one of its template arguments.
+that has `std_complex_format_specifier` as one of its template arguments.
 
 Now let's suppose we want the `complex_form` value to
 have the following effect on how the numbers are printed:
@@ -503,44 +503,37 @@ have the following effect on how the numbers are printed:
 |===
 
 
-In our __PrintableTraits__ class, there are only two small
-modifications: `formatters` and the first line
-of `make_printer`:
+In our __PrintableTraits__ class, there are only two modifications:
+First, the `format_specifiers` definition:
 
-[source,cpp]
+[source,cpp,subs=normal]
+----
+template <typename FloatT>
+struct printable_traits<std::complex<FloatT>> {
+    // \...
+    using format_specifiers = strf::tag
+        < **std_complex_format_specifier**
+        , strf::alignment_format_specifier
+        , strf::float_format_specifier >;
+    // \...
 ----
 
-// auxiliar functions
-
+And second, the `make_printer` that has the `printable_with_fmt` param:
+[source,cpp]
+----
 namespace strf {
 
 template <typename FloatT>
 struct printable_traits<std::complex<FloatT>> {
 
-    // \...
+    // ...
 
-    using formatters = strf::tag
-        < **std_complex_formatter**
-        , strf::alignment_formatter
-        , strf::float_formatter >;
-
-    template <typename CharT, typename Pre, typename FPack>
+    template < typename CharT, typename Pre, typename FPack, typename... T>
     static auto make_printer
         ( strf::tag<CharT>
         , Pre* pre
         , const FPack& fp
-        , std::complex<FloatT> arg)
-    {
-        // same as before
-        //\...
-    }
-
-    template < typename CharT, typename Pre, typename FPack, typename\... T>
-    static auto make_printer
-        ( strf::tag<CharT>
-        , Pre* pre
-        , const FPack& fp
-        , strf::printable_with_fmt<T\...> arg )
+        , strf::printable_with_fmt<T...> arg )
     {
         auto form = arg.get_complex_form();
         auto v = complex_coordinates(arg.value(), form);
@@ -554,14 +547,9 @@ struct printable_traits<std::complex<FloatT>> {
              , strf::multi(static_cast<CharT>(')'), has_brackets) );
          auto arg3 = arg2.set_alignment_format(arg.get_alignment_format());
          return strf::make_printer<CharT>(pre, fp, arg3);
-
-        // same as before
-        //\...
     }
 
-    private:
-
-    // some auxiliar functions:
+    private:  // ( some auxiliar functions )
 
     static std::pair<FloatT, FloatT> complex_coordinates
         ( std::complex<FloatT> x, complex_form form );
@@ -595,7 +583,7 @@ void sample()
 }
 ----
 
-However, you may find that `std_complex_formatter::fn` is incomplete
+However, you may find that `std_complex_format_specifier::fn` is incomplete
 because we only create format functions that are non-const
 and use the `&&` ref-qualifier. Shouldn't we overload them
 for the other cases as well ? They would be necessary
@@ -613,7 +601,7 @@ for both rvalues and lvalues:
 
 [source,cpp,subs=normal]
 ----
-struct std_complex_formatter {
+struct std_complex_format_specifier {
     // \...
 
     template <class T>
@@ -639,7 +627,7 @@ struct std_complex_formatter {
         constexpr T polar() const & noexcept
         {
             return T{ static_cast<const T&>(*this)
-                    , strf::tag<std_complex_formatter> {}
+                    , strf::tag<std_complex_format_specifier> {}
                     , complex_form_fmt::polar };
         }
         // ( vector and algebric are analogous )
@@ -652,7 +640,7 @@ struct std_complex_formatter {
 Since the const version of `polar()` can't modify the current object,
 it instead returns a new one where each base class subobject is initialized
 with (copied from) the correponding base class subobject of this object,
-except the `std_complex_formatter::fn<T>` one,
+except the `std_complex_format_specifier::fn<T>` one,
 which is initialized instead with `complex_form_fmt::polar`.
 This is why we also need to add that constructor that has
 a `complex_form_fmt` parameter. The `printable_with_fmt` constructor

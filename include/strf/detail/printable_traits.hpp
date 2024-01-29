@@ -242,45 +242,45 @@ struct mp_define_printable_with_fmt<PrintingTraits, List<Fmts...>>
 };
 
 template <typename PrintingTraits>
-struct extract_formatters_from_printable_traits_impl
+struct extract_format_specifiers_from_printable_traits_impl
 {
 private:
-    template <typename U, typename Fmts = typename U::formatters>
-    static Fmts get_formatters_(U*);
+    template <typename U, typename Fmts = typename U::format_specifiers>
+    static Fmts get_format_specifiers_(U*);
 
     template <typename U>
-    static strf::tag<> get_formatters_(...);
+    static strf::tag<> get_format_specifiers_(...);
 
 public:
 
-    using type = decltype(get_formatters_<PrintingTraits>(nullptr));
+    using type = decltype(get_format_specifiers_<PrintingTraits>(nullptr));
 };
 
 template <typename PrintingTraits>
-using extract_formatters_from_printable_traits =
-    typename extract_formatters_from_printable_traits_impl<PrintingTraits>::type;
+using extract_format_specifiers_from_printable_traits =
+    typename extract_format_specifiers_from_printable_traits_impl<PrintingTraits>::type;
 
 template <typename PrintingTraits>
-using default_value_with_formatter_of_printable_traits = typename
+using default_printable_with_fmt_of_printable_traits = typename
     strf::detail::mp_define_printable_with_fmt
         < PrintingTraits
-        , extract_formatters_from_printable_traits<PrintingTraits> >
+        , extract_format_specifiers_from_printable_traits<PrintingTraits> >
     :: type;
 
 template <typename T>
-struct formatters_finder
+struct format_specifiers_finder
 {
     using traits = typename printable_traits_finder<T>::traits;
-    using formatters = extract_formatters_from_printable_traits<traits>;
+    using format_specifiers = extract_format_specifiers_from_printable_traits<traits>;
     using fmt_type = typename
-        strf::detail::mp_define_printable_with_fmt<traits, formatters>::type;
+        strf::detail::mp_define_printable_with_fmt<traits, format_specifiers>::type;
 };
 
 template <typename PrintingTraits, typename... Fmts>
-struct formatters_finder<strf::printable_with_fmt<PrintingTraits, Fmts...>>
+struct format_specifiers_finder<strf::printable_with_fmt<PrintingTraits, Fmts...>>
 {
     using traits = PrintingTraits;
-    using formatters = strf::tag<Fmts...>;
+    using format_specifiers = strf::tag<Fmts...>;
     using fmt_type = strf::printable_with_fmt<PrintingTraits, Fmts...>;
 };
 
@@ -293,14 +293,14 @@ using forwarded_printable_type = typename
 
 template <typename T>
 using fmt_type = typename
-    detail::formatters_finder<strf::detail::remove_cvref_t<T>>
+    detail::format_specifiers_finder<strf::detail::remove_cvref_t<T>>
     ::fmt_type;
 
 template <typename T>
 using fmt_value_type = typename fmt_type<T>::value_type;
 
 template <typename T>
-using formatters_of = typename strf::detail::formatters_finder<T>::formatters;
+using format_specifiers_of = typename strf::detail::format_specifiers_finder<T>::format_specifiers;
 
 inline namespace format_functions {
 

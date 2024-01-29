@@ -98,12 +98,12 @@ that work as alias to format functions
 |`sani(_arg_)`                        |`{fmt}(_arg_).sani()`
 |===
 
-[[Formatter]]
-=== Type requirement _Formatter_
+[[FormatSpecifier]]
+=== Type requirement _FormatSpecifier_
 
 // This is the requirement for a type to be a paramenter of the `printable_with_fmt`
 // template.
-A type `Fmt` is a _Formatter_ if it has a member `fn` that is a type template
+A type `Fmt` is a _FormatSpecifier_ if it has a member `fn` that is a type template
 with one template type parameter such that, given any types `T` and `U`:
 
 - `Fmt::template fn<T>` is well-formed if `T` is `printable_with_fmt<ValueType, Fmts\...>`.
@@ -149,10 +149,10 @@ with one template type parameter such that, given any types `T` and `U`:
 // };
 // ----
 
-[[alignment_formatter]]
-=== _Formatter_ `alignment_formatter`
+[[alignment_format_specifier]]
+=== _FormatSpecifier_ `alignment_format_specifier`
 
-The _Formatter_ defines the following format functions:
+The _FormatSpecifier_ defines the following format functions:
 
 // tag::alignment_format_functions[]
 
@@ -248,10 +248,10 @@ struct default_alignment_format {
 } // namespace strf
 ----
 
-[[int_formatter]]
-=== _Formatter_ `int_formatter`
+[[int_format_specifier]]
+=== _FormatSpecifier_ `int_format_specifier`
 
-This _Formatter_ defines the following format functions:
+This _FormatSpecifier_ defines the following format functions:
 
 // tag::int_format_functions[]
 [%header,cols="382,618",grid=rows]
@@ -406,10 +406,10 @@ enum class showsign {
            ( from alignment formatting ).
 
 
-[[float_formatter]]
-=== _Formatter_ `float_formatter`
+[[float_format_specifier]]
+=== _FormatSpecifier_ `float_format_specifier`
 
-The `float_formatter` _Formatter_ defines the following format functions:
+The `float_format_specifier` _FormatSpecifier_ defines the following format functions:
 
 // tag::float_format_functions[]
 
@@ -590,10 +590,10 @@ struct default_float_format
 
 ----
 
-[[quantity_formatter]]
-=== _Formatter_ `quantity_formatter`
+[[quantity_format_specifier]]
+=== _FormatSpecifier_ `quantity_format_specifier`
 
-The `quantity_formatter` _Formatter_ defines the following format functions:
+The `quantity_format_specifier` _FormatSpecifier_ defines the following format functions:
 
 [%header,cols="382,618",grid=rows]
 |===
@@ -620,7 +620,7 @@ And the following observers:
 [[string_precision_format_function]]
 === String precision
 
-( The _Formatter_ that defines the function below is implementation-defined )
+( The _FormatSpecifier_ that defines the function below is implementation-defined )
 
 `p(<<strf_hpp#width_t,width_t>> limit)`:::
    Prints the whole string only if its width is not greater than `limit`.
@@ -638,7 +638,7 @@ And the following observers:
 [[transcoding_format_functions]]
 === Transcoding format functions
 
-( The _Formatter_ that defines the functions below is implementation-defined )
+( The _FormatSpecifier_ that defines the functions below is implementation-defined )
 
 ====
 ----
@@ -766,9 +766,9 @@ using fmt_type = /{asterisk}...{asterisk}/;
 * otherwise, it is `{printable_with_fmt}<PTraits, Fmts\...>`, where:
 ** `PTraits` is `{printable_traits_of}<T>`
 ** `Fmts\...` is template paramenter pack used to define
-   `PTraits::<<PrintableTraits_formatters,formatters>>` (
+   `PTraits::<<PrintableTraits_format_specifiers,format_specifiers>>` (
     as a type alias to `{tag}<Fmt\...>` ).
-***  If `PTraits::formatters` is not defined, `T` is `{printable_with_fmt}<PTraits>`.
+***  If `PTraits::format_specifiers` is not defined, `T` is `{printable_with_fmt}<PTraits>`.
 
 [[printable_with_fmt]]
 === Class template `printable_with_fmt`
@@ -783,7 +783,7 @@ class printable_with_fmt;
 ----
 Compile-time requirements::
 - `PrintableTraits` satisfies __{PrintableTraits}__.
-- All types in `Fmt\...` satisfy __<<Formatter,Formatter>>__.
+- All types in `Fmt\...` satisfy __<<FormatSpecifier,FormatSpecifier>>__.
 - All types in `Fmt\...` are different.
 
 ==== Synopsis

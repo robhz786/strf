@@ -60,13 +60,13 @@ struct aligned_join_maker
     template<typename... Args>
     constexpr STRF_HD strf::printable_with_fmt
         < strf::detail::join_printing<strf::forwarded_printable_type<Args>...>
-        , strf::alignment_formatter_q<true> >
+        , strf::alignment_format_specifier_q<true> >
     operator()(const Args&... args) const
     {
         return { { strf::detail::simple_tuple<strf::forwarded_printable_type<Args>...>
                      { strf::detail::simple_tuple_from_args{}
                      , static_cast<strf::forwarded_printable_type<Args>>(args)... } }
-               , strf::tag< strf::alignment_formatter_q<true> > {}
+               , strf::tag< strf::alignment_format_specifier_q<true> > {}
                , strf::alignment_format {fillchar, width, align}};
     }
 };
@@ -186,9 +186,9 @@ struct join_printing
     template <bool HasAlignment>
     using fmt_tmpl = strf::printable_with_fmt
         < join_printing<FwdArgs...>
-        , strf::alignment_formatter_q<HasAlignment> >;
+        , strf::alignment_format_specifier_q<HasAlignment> >;
 
-    using formatters = strf::tag<strf::alignment_formatter>;
+    using format_specifiers = strf::tag<strf::alignment_format_specifier>;
 
     template <typename CharT, typename PreMeasurements, typename FPack>
     STRF_HD constexpr static auto make_printer
@@ -303,12 +303,12 @@ struct printable_traits<strf::detail::join_t<FwdArgs...>>
 template<typename... Args>
 constexpr STRF_HD strf::printable_with_fmt
     < strf::detail::join_printing<strf::forwarded_printable_type<Args>...>
-    , strf::alignment_formatter_q<false> >
+    , strf::alignment_format_specifier_q<false> >
 join(const Args&... args)
 {
     return strf::printable_with_fmt
         < strf::detail::join_printing<strf::forwarded_printable_type<Args>...>
-        , strf::alignment_formatter_q<false> >
+        , strf::alignment_format_specifier_q<false> >
         { strf::detail::join_t<strf::forwarded_printable_type<Args>...>
             { strf::detail::simple_tuple<strf::forwarded_printable_type<Args>...>
                 { strf::detail::simple_tuple_from_args{}

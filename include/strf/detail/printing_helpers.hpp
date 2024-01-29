@@ -63,7 +63,7 @@ template < typename PrintingTraits
 class printable_arg_converter_selector_for_printing_with_premeasurements
 {
     using default_printable_with_fmt =
-        default_value_with_formatter_of_printable_traits<PrintingTraits>;
+        default_printable_with_fmt_of_printable_traits<PrintingTraits>;
     using fmt_value_type = typename default_printable_with_fmt::value_type;
     using fwd_type = typename PrintingTraits::forwarded_type;
 
@@ -335,7 +335,7 @@ template < typename PrintingTraits
 class printer_selector_for_printing_without_premeasurements
 {
     using default_printable_with_fmt =
-        default_value_with_formatter_of_printable_traits<PrintingTraits>;
+        default_printable_with_fmt_of_printable_traits<PrintingTraits>;
     using fmt_value_type = typename default_printable_with_fmt::value_type;
     using fwd_type = typename PrintingTraits::forwarded_type;
     using premeasurements_type = strf::no_premeasurements;
@@ -590,7 +590,7 @@ template < typename PrintingTraits
 class polymorphic_printer_maker_selector_for_printing_without_premeasurements
 {
     using default_printable_with_fmt =
-        default_value_with_formatter_of_printable_traits<PrintingTraits>;
+        default_printable_with_fmt_of_printable_traits<PrintingTraits>;
     using fmt_value_type = typename default_printable_with_fmt::value_type;
     using fwd_type = typename PrintingTraits::forwarded_type;
     using premeasurements_type = strf::no_premeasurements;

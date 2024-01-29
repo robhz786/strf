@@ -22,7 +22,7 @@ struct printable_traits<xxx::point2D<FloatT>> {
 
     using representative_type = xxx::point2D<FloatT>;
     using forwarded_type = xxx::point2D<FloatT>;
-    using formatters = strf::tag<strf::alignment_formatter, strf::float_formatter>;
+    using format_specifiers = strf::tag<strf::alignment_format_specifier, strf::float_format_specifier>;
     using is_overridable = std::true_type;
 
     template <typename CharT, typename PreMeasurements, typename FPack, typename... T>

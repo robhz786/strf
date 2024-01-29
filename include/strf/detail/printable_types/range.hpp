@@ -81,7 +81,7 @@ using mp_replace_front
 template < typename Iterator
          , typename V  = strf::detail::iterator_value_type<Iterator>
          , typename VF = strf::fmt_type<V> >
-using range_with_formatters
+using range_with_fmt
     = strf::detail::mp_replace_front
         < VF, strf::printable_traits<strf::range_p<Iterator>> >;
 
@@ -89,7 +89,7 @@ template < typename Iterator
          , typename CharT
          , typename V  = strf::detail::iterator_value_type<Iterator>
          , typename VF = strf::fmt_type<V> >
-using sep_range_with_formatters
+using sep_range_with_fmt
     = strf::detail::mp_replace_front
         < VF, strf::printable_traits<strf::separated_range_p<Iterator, CharT>> >;
 
@@ -630,7 +630,7 @@ struct printable_traits<strf::range_p<Iterator>>
 {
     using representative_type = strf::range_p<Iterator>;
     using forwarded_type = strf::range_p<Iterator>;
-    using formatters = strf::formatters_of<decltype(*std::declval<Iterator>())>;
+    using format_specifiers = strf::format_specifiers_of<decltype(*std::declval<Iterator>())>;
     using is_overridable = std::false_type;
 
     template <typename CharT, typename PreMeasurements, typename FPack>
@@ -661,7 +661,7 @@ struct printable_traits<strf::separated_range_p<Iterator, SepCharT>>
 {
     using representative_type = strf::separated_range_p<Iterator, SepCharT>;
     using forwarded_type = strf::separated_range_p<Iterator, SepCharT>;
-    using formatters = strf::formatters_of<decltype(*std::declval<Iterator>())>;
+    using format_specifiers = strf::format_specifiers_of<decltype(*std::declval<Iterator>())>;
     using is_overridable = std::false_type;
 
     template <typename DstCharT, typename PreMeasurements, typename FPack>
@@ -795,16 +795,16 @@ inline STRF_HD auto separated_range(T (&array)[N], const CharT* sep)
 
 template <typename Iterator>
 inline STRF_HD auto fmt_range(Iterator begin, Iterator end)
-    -> strf::range_with_formatters<Iterator>
+    -> strf::range_with_fmt<Iterator>
 {
-    return strf::range_with_formatters<Iterator>{{begin, end}};
+    return strf::range_with_fmt<Iterator>{{begin, end}};
 }
 
 template <typename Iterator, typename CharT>
 inline STRF_HD auto fmt_separated_range(Iterator begin, Iterator end, const CharT* sep)
-    -> strf::sep_range_with_formatters<Iterator, CharT>
+    -> strf::sep_range_with_fmt<Iterator, CharT>
 {
-    return strf::sep_range_with_formatters<Iterator, CharT>
+    return strf::sep_range_with_fmt<Iterator, CharT>
         {{begin, end, sep, strf::detail::str_ssize<CharT>(sep)}};
 }
 
@@ -813,25 +813,25 @@ template < typename Range
          , typename = decltype(std::declval<const Range&>().begin())
          , typename = decltype(std::declval<const Range&>().end()) >
 inline STRF_HD
-strf::range_with_formatters<Iterator> fmt_range(const Range& r)
+strf::range_with_fmt<Iterator> fmt_range(const Range& r)
 {
     const strf::range_p<Iterator> rr{r.begin(), r.end()};
-    return strf::range_with_formatters<Iterator>{rr};
+    return strf::range_with_fmt<Iterator>{rr};
 }
 
 template <typename T>
-constexpr STRF_HD strf::range_with_formatters<const T*>
+constexpr STRF_HD strf::range_with_fmt<const T*>
 fmt_range(std::initializer_list<T> r) noexcept
 {
-    return strf::range_with_formatters<const T*>
+    return strf::range_with_fmt<const T*>
         { strf::range_p<const T*>{r.begin(), r.end()} };
 }
 
 template <typename T, std::size_t N>
 inline STRF_HD auto fmt_range(T (&array)[N])
-    -> strf::range_with_formatters<const T*>
+    -> strf::range_with_fmt<const T*>
 {
-    return strf::range_with_formatters<const T*>{{&array[0], &array[0] + N}};
+    return strf::range_with_fmt<const T*>{{&array[0], &array[0] + N}};
 }
 
 template < typename Range
@@ -840,31 +840,31 @@ template < typename Range
          , typename = decltype(std::declval<const Range&>().begin())
          , typename = decltype(std::declval<const Range&>().end()) >
 inline STRF_HD auto fmt_separated_range(const Range& r, const CharT* sep)
-    -> strf::sep_range_with_formatters<Iterator, CharT>
+    -> strf::sep_range_with_fmt<Iterator, CharT>
 {
     const auto sep_len = strf::detail::str_ssize<CharT>(sep);
     const strf::separated_range_p<Iterator, CharT> rr
     { r.begin(), r.end(), sep, sep_len };
-    return strf::sep_range_with_formatters<Iterator, CharT>{rr};
+    return strf::sep_range_with_fmt<Iterator, CharT>{rr};
 }
 
 
 template <typename T, typename CharT>
 inline STRF_HD auto fmt_separated_range(std::initializer_list<T> r, const CharT* sep) noexcept
-    -> strf::sep_range_with_formatters<const T*, CharT>
+    -> strf::sep_range_with_fmt<const T*, CharT>
 {
     std::size_t sep_len = strf::detail::str_ssize<CharT>(sep);
     strf::separated_range_p<const T*, CharT> rr
     { r.begin(), r.end(), sep, sep_len };
-    return strf::sep_range_with_formatters<const T*, CharT>{rr};
+    return strf::sep_range_with_fmt<const T*, CharT>{rr};
 }
 
 template <typename T, std::size_t N, typename CharT>
 inline STRF_HD auto fmt_separated_range(T (&array)[N], const CharT* sep)
-    -> strf::sep_range_with_formatters<const T*, CharT>
+    -> strf::sep_range_with_fmt<const T*, CharT>
 {
     const auto sep_len = strf::detail::str_ssize<CharT>(sep);
-    return strf::sep_range_with_formatters<const T*, CharT>
+    return strf::sep_range_with_fmt<const T*, CharT>
         { {&array[0], &array[0] + N, sep, sep_len} };
 }
 

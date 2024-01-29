@@ -25,26 +25,27 @@ enum class transcoding_policy {
 } ;
 
 template <typename T, typename CharT, typename Charset, transcoding_policy>
-class transcoding_formatter_fn;
+class transcoding_format_specifier_fn;
 
 template < typename CharT
          , typename Charset = no_charset_tag
          , transcoding_policy TranscPoli = transcoding_policy::no_transcode >
-struct transcoding_formatter_q
+struct transcoding_format_specifier_q
 {
     template <typename T>
-    using fn = transcoding_formatter_fn<T, CharT, Charset, TranscPoli>;
+    using fn = transcoding_format_specifier_fn<T, CharT, Charset, TranscPoli>;
 
     constexpr static auto transcoding_policy = TranscPoli;
     constexpr static bool has_charset = detail::is_charset<Charset>::value;
 };
 
 template <typename CharT>
-using transcoding_formatter =
-    transcoding_formatter_q<CharT, detail::no_charset_tag, transcoding_policy::no_transcode>;
+using transcoding_format_specifier =
+    transcoding_format_specifier_q
+        < CharT, detail::no_charset_tag, transcoding_policy::no_transcode >;
 
 template <typename T, typename CharT, typename Charset, transcoding_policy TranscPoli>
-class transcoding_formatter_fn
+class transcoding_format_specifier_fn
 {
     STRF_HD STRF_CONSTEXPR_IN_CXX14 const T& self_downcast_() const
     {
@@ -59,8 +60,8 @@ class transcoding_formatter_fn
     template <typename OtherCharset, transcoding_policy NewPoli>
     using return_type_ = strf::fmt_replace
         < T
-        , transcoding_formatter_q<CharT, Charset, TranscPoli>
-        , transcoding_formatter_q<CharT, OtherCharset, NewPoli> >;
+        , transcoding_format_specifier_q<CharT, Charset, TranscPoli>
+        , transcoding_format_specifier_q<CharT, OtherCharset, NewPoli> >;
 
     template <typename OtherCharset>
     using return_type_unsafe_ =
@@ -85,29 +86,29 @@ class transcoding_formatter_fn
 
         return return_type_<NewCharset, NewPoli>
             { self_downcast_()
-            , strf::tag<transcoding_formatter_q<CharT, NewCharset, NewPoli>>()
+            , strf::tag<transcoding_format_specifier_q<CharT, NewCharset, NewPoli>>()
             , charset };
     }
 
   public:
 
-    constexpr transcoding_formatter_fn() noexcept = default;
+    constexpr transcoding_format_specifier_fn() noexcept = default;
 
     template <typename U, transcoding_policy OtherPoli, typename ThisCharset = Charset>
-    constexpr STRF_HD explicit transcoding_formatter_fn
-        ( const transcoding_formatter_fn<U, CharT, detail::no_charset_tag, OtherPoli>& ) noexcept
+    constexpr STRF_HD explicit transcoding_format_specifier_fn
+        ( const transcoding_format_specifier_fn<U, CharT, detail::no_charset_tag, OtherPoli>& ) noexcept
     {
     }
 
     template < typename U, transcoding_policy OtherPoli, typename OtherCharset
              , strf::detail::enable_if_t<is_charset<OtherCharset>::value, int> = 0 >
-    constexpr STRF_HD explicit transcoding_formatter_fn
-        ( const transcoding_formatter_fn<U, CharT, OtherCharset, OtherPoli>& other ) noexcept
+    constexpr STRF_HD explicit transcoding_format_specifier_fn
+        ( const transcoding_format_specifier_fn<U, CharT, OtherCharset, OtherPoli>& other ) noexcept
         : charset_(other.get_charset())
     {
     }
 
-    constexpr STRF_HD transcoding_formatter_fn(Charset cs) noexcept
+    constexpr STRF_HD transcoding_format_specifier_fn(Charset cs) noexcept
         : charset_(cs)
     {
     }
@@ -227,13 +228,13 @@ class transcoding_formatter_fn
 };
 
 template <typename T, bool Active>
-class string_precision_formatter_fn;
+class string_precision_format_specifier_fn;
 
 template <bool Active>
-struct string_precision_formatter
+struct string_precision_format_specifier
 {
     template <typename T>
-    using fn = strf::detail::string_precision_formatter_fn<T, Active>;
+    using fn = strf::detail::string_precision_format_specifier_fn<T, Active>;
 };
 
 template <bool Active>
@@ -248,16 +249,16 @@ struct string_precision<true>
 };
 
 template <typename T>
-class string_precision_formatter_fn<T, true>
+class string_precision_format_specifier_fn<T, true>
 {
 public:
-    constexpr STRF_HD explicit string_precision_formatter_fn(strf::width_t p) noexcept
+    constexpr STRF_HD explicit string_precision_format_specifier_fn(strf::width_t p) noexcept
         : precision_(p)
     {
     }
     template <typename U>
-    constexpr STRF_HD explicit string_precision_formatter_fn
-        ( strf::detail::string_precision_formatter_fn<U, true> other ) noexcept
+    constexpr STRF_HD explicit string_precision_format_specifier_fn
+        ( strf::detail::string_precision_format_specifier_fn<U, true> other ) noexcept
         : precision_(other.precision())
     {
     }
@@ -286,12 +287,12 @@ private:
 
 
 template <typename T>
-class string_precision_formatter_fn<T, false>
+class string_precision_format_specifier_fn<T, false>
 {
     using adapted_derived_type_
         = strf::fmt_replace< T
-                           , strf::detail::string_precision_formatter<false>
-                           , strf::detail::string_precision_formatter<true> >;
+                           , strf::detail::string_precision_format_specifier<false>
+                           , strf::detail::string_precision_format_specifier<true> >;
 
     STRF_HD constexpr const T& self_downcast_() const
     {
@@ -300,16 +301,16 @@ class string_precision_formatter_fn<T, false>
 
 public:
 
-    constexpr string_precision_formatter_fn() noexcept = default;
+    constexpr string_precision_format_specifier_fn() noexcept = default;
     template <typename U>
-    constexpr STRF_HD explicit string_precision_formatter_fn
-        ( string_precision_formatter_fn<U, false> ) noexcept
+    constexpr STRF_HD explicit string_precision_format_specifier_fn
+        ( string_precision_format_specifier_fn<U, false> ) noexcept
     {
     }
     constexpr STRF_HD adapted_derived_type_ p(strf::width_t precision) const noexcept
     {
         return { self_downcast_()
-               , strf::tag<strf::detail::string_precision_formatter<true> >{}
+               , strf::tag<strf::detail::string_precision_format_specifier<true> >{}
                , precision };
     }
     constexpr STRF_HD strf::detail::string_precision<false> get_string_precision() const noexcept
@@ -553,9 +554,9 @@ public:
         , const FPack& facets
         , const strf::printable_with_fmt
             < string_printing<SrcCharT>
-            , strf::detail::string_precision_formatter<false>
-            , strf::alignment_formatter_q<false>
-            , transcoding_formatter_q<SrcCharT, Charset, TranscPoli> >& arg )
+            , strf::detail::string_precision_format_specifier<false>
+            , strf::alignment_format_specifier_q<false>
+            , transcoding_format_specifier_q<SrcCharT, Charset, TranscPoli> >& arg )
         : str_(arg.value().data())
         , str_end_(arg.value().end())
     {
@@ -578,9 +579,9 @@ public:
         , const FPack& facets
         , const strf::printable_with_fmt
             < string_printing<SrcCharT>
-            , strf::detail::string_precision_formatter<true>
-            , strf::alignment_formatter_q<false>
-            , transcoding_formatter_q<SrcCharT, Charset, TranscPoli> >& arg )
+            , strf::detail::string_precision_format_specifier<true>
+            , strf::alignment_format_specifier_q<false>
+            , transcoding_format_specifier_q<SrcCharT, Charset, TranscPoli> >& arg )
         : str_(arg.value().data())
     {
         auto&& wcalc = use_facet_<strf::width_calculator_c>(facets);
@@ -630,9 +631,9 @@ public:
         , const FPack& facets
         , const strf::printable_with_fmt
             < string_printing<SrcCharT>
-            , strf::detail::string_precision_formatter<false>
-            , strf::alignment_formatter_q<true>
-            , transcoding_formatter_q<SrcCharT, Charset, TranscPoli> >& arg )
+            , strf::detail::string_precision_format_specifier<false>
+            , strf::alignment_format_specifier_q<true>
+            , transcoding_format_specifier_q<SrcCharT, Charset, TranscPoli> >& arg )
         : str_(arg.value().data())
         , str_end_(arg.value().end())
         , afmt_(arg.get_alignment_format())
@@ -658,9 +659,9 @@ public:
         , const FPack& facets
         , const strf::printable_with_fmt
             < string_printing<SrcCharT>
-            , strf::detail::string_precision_formatter<true>
-            , strf::alignment_formatter_q<true>
-            , transcoding_formatter_q<SrcCharT, Charset, TranscPoli> >& arg )
+            , strf::detail::string_precision_format_specifier<true>
+            , strf::alignment_format_specifier_q<true>
+            , transcoding_format_specifier_q<SrcCharT, Charset, TranscPoli> >& arg )
         : str_(arg.value().begin())
         , afmt_(arg.get_alignment_format())
     {
@@ -781,9 +782,9 @@ constexpr STRF_HD auto get_src_charset
     ( const FPack& facets
     , const strf::printable_with_fmt
         < string_printing<SrcCharT>
-        , strf::detail::string_precision_formatter<HasPrecision>
-        , strf::alignment_formatter_q<HasAlignment>
-        , transcoding_formatter_q<SrcCharT, Charset, TranscPoli> >& arg )
+        , strf::detail::string_precision_format_specifier<HasPrecision>
+        , strf::alignment_format_specifier_q<HasAlignment>
+        , transcoding_format_specifier_q<SrcCharT, Charset, TranscPoli> >& arg )
 {
     return strf::detail::do_get_src_charset<SrcCharT>(is_charset<Charset>(), facets, arg);
 }
@@ -800,9 +801,9 @@ public:
         , const FPack& facets
         , const strf::printable_with_fmt
             < string_printing<SrcCharT>
-            , strf::detail::string_precision_formatter<false>
-            , strf::alignment_formatter_q<false>
-            , transcoding_formatter_q<SrcCharT, Charset, TranscPoli> >& arg )
+            , strf::detail::string_precision_format_specifier<false>
+            , strf::alignment_format_specifier_q<false>
+            , transcoding_format_specifier_q<SrcCharT, Charset, TranscPoli> >& arg )
         : str_(arg.value().data())
         , str_end_(arg.value().end())
         , err_notifier_
@@ -825,9 +826,9 @@ public:
         , const FPack& facets
         , const strf::printable_with_fmt
             < string_printing<SrcCharT>
-            , strf::detail::string_precision_formatter<true>
-            , strf::alignment_formatter_q<false>
-            , transcoding_formatter_q<SrcCharT, Charset, TranscPoli> >& arg )
+            , strf::detail::string_precision_format_specifier<true>
+            , strf::alignment_format_specifier_q<false>
+            , transcoding_format_specifier_q<SrcCharT, Charset, TranscPoli> >& arg )
         : str_(arg.value().data())
         , err_notifier_
             ( use_facet_<strf::transcoding_error_notifier_c, SrcCharT>(facets).get() )
@@ -927,9 +928,9 @@ public:
         , const FPack& facets
         , const strf::printable_with_fmt
             < string_printing<SrcCharT>
-            , strf::detail::string_precision_formatter<false>
-            , strf::alignment_formatter_q<true>
-            , transcoding_formatter_q<SrcCharT, Charset, TranscPoli> >& arg )
+            , strf::detail::string_precision_format_specifier<false>
+            , strf::alignment_format_specifier_q<true>
+            , transcoding_format_specifier_q<SrcCharT, Charset, TranscPoli> >& arg )
         : str_(arg.value().data())
         , str_end_(arg.value().end())
         , afmt_(arg.get_alignment_format())
@@ -953,9 +954,9 @@ public:
         , const FPack& facets
         , const strf::printable_with_fmt
             < string_printing<SrcCharT>
-            , strf::detail::string_precision_formatter<true>
-            , strf::alignment_formatter_q<true>
-            , transcoding_formatter_q<SrcCharT, Charset, TranscPoli> >& arg )
+            , strf::detail::string_precision_format_specifier<true>
+            , strf::alignment_format_specifier_q<true>
+            , transcoding_format_specifier_q<SrcCharT, Charset, TranscPoli> >& arg )
         : str_(arg.value().data())
         , str_end_(arg.value().end())
         , afmt_(arg.get_alignment_format())
@@ -1101,9 +1102,9 @@ public:
         , const FPack& facets
         , const strf::printable_with_fmt
             < string_printing<SrcCharT>
-            , strf::detail::string_precision_formatter<false>
-            , strf::alignment_formatter_q<false>
-            , transcoding_formatter_q<SrcCharT, Charset, TranscPoli> >& arg )
+            , strf::detail::string_precision_format_specifier<false>
+            , strf::alignment_format_specifier_q<false>
+            , transcoding_format_specifier_q<SrcCharT, Charset, TranscPoli> >& arg )
         : str_(arg.value().data())
         , str_end_(arg.value().end())
         , err_notifier_(use_facet_<strf::transcoding_error_notifier_c, SrcCharT>(facets).get())
@@ -1125,9 +1126,9 @@ public:
         , const FPack& facets
         , const strf::printable_with_fmt
             < string_printing<SrcCharT>
-            , strf::detail::string_precision_formatter<true>
-            , strf::alignment_formatter_q<false>
-            , transcoding_formatter_q<SrcCharT, Charset, TranscPoli> >& arg )
+            , strf::detail::string_precision_format_specifier<true>
+            , strf::alignment_format_specifier_q<false>
+            , transcoding_format_specifier_q<SrcCharT, Charset, TranscPoli> >& arg )
         : str_(arg.value().data())
         , err_notifier_(use_facet_<strf::transcoding_error_notifier_c, SrcCharT>(facets).get())
     {
@@ -1228,9 +1229,9 @@ public:
         , const FPack& facets
         , const strf::printable_with_fmt
             < string_printing<SrcCharT>
-            , strf::detail::string_precision_formatter<false>
-            , strf::alignment_formatter_q<true>
-            , transcoding_formatter_q<SrcCharT, Charset, TranscPoli> >& arg )
+            , strf::detail::string_precision_format_specifier<false>
+            , strf::alignment_format_specifier_q<true>
+            , transcoding_format_specifier_q<SrcCharT, Charset, TranscPoli> >& arg )
         : str_(arg.value().data())
         , str_end_(arg.value().end())
         , afmt_(arg.get_alignment_format())
@@ -1254,9 +1255,9 @@ public:
         , const FPack& facets
         , const strf::printable_with_fmt
             < string_printing<SrcCharT>
-            , strf::detail::string_precision_formatter<true>
-            , strf::alignment_formatter_q<true>
-            , transcoding_formatter_q<SrcCharT, Charset, TranscPoli> >& arg )
+            , strf::detail::string_precision_format_specifier<true>
+            , strf::alignment_format_specifier_q<true>
+            , transcoding_format_specifier_q<SrcCharT, Charset, TranscPoli> >& arg )
         : str_(arg.value().data())
         , str_end_(arg.value().end())
         , afmt_(arg.get_alignment_format())
@@ -1552,9 +1553,9 @@ public:
         , const FPack& facets
         , const strf::printable_with_fmt
             < string_printing<SrcCharT>
-            , strf::detail::string_precision_formatter<HasPrecision>
-            , strf::alignment_formatter_q<false>
-            , transcoding_formatter_q<SrcCharT, Charset, TranscPoli> >& arg )
+            , strf::detail::string_precision_format_specifier<HasPrecision>
+            , strf::alignment_format_specifier_q<false>
+            , transcoding_format_specifier_q<SrcCharT, Charset, TranscPoli> >& arg )
     {
         auto src_charset  = strf::detail::get_src_charset(facets, arg);
         using facet_tag = strf::string_input_tag<SrcCharT>;
@@ -1641,9 +1642,9 @@ public:
         , const FPack& facets
         , const strf::printable_with_fmt
             < string_printing<SrcCharT>
-            , strf::detail::string_precision_formatter<HasPrecision>
-            , strf::alignment_formatter_q<true>
-            , transcoding_formatter_q<SrcCharT, Charset, TranscPoli> >& arg )
+            , strf::detail::string_precision_format_specifier<HasPrecision>
+            , strf::alignment_format_specifier_q<true>
+            , transcoding_format_specifier_q<SrcCharT, Charset, TranscPoli> >& arg )
     {
         auto src_charset  = strf::detail::get_src_charset(facets, arg);
         using facet_tag = strf::string_input_tag<SrcCharT>;
@@ -1729,10 +1730,10 @@ struct string_printing
 {
     using representative_type = strf::string_input_tag<SrcCharT>;
     using forwarded_type = strf::detail::simple_string_view<SrcCharT>;
-    using formatters = strf::tag
-        < strf::detail::string_precision_formatter<false>
-        , strf::alignment_formatter
-        , strf::detail::transcoding_formatter<SrcCharT> >;
+    using format_specifiers = strf::tag
+        < strf::detail::string_precision_format_specifier<false>
+        , strf::alignment_format_specifier
+        , strf::detail::transcoding_format_specifier<SrcCharT> >;
     using is_overridable = std::false_type;
 
     template <typename DstCharT, typename PreMeasurements, typename FPack>
@@ -1759,9 +1760,9 @@ struct string_printing
         , const FPack& facets
         , const strf::printable_with_fmt
             < string_printing<SrcCharT>
-            , string_precision_formatter<HasPrecision>
-            , strf::alignment_formatter_q<HasAlignment>
-            , transcoding_formatter_q<SrcCharT, Charset, TranscPoli> >& arg ) noexcept
+            , string_precision_format_specifier<HasPrecision>
+            , strf::alignment_format_specifier_q<HasAlignment>
+            , transcoding_format_specifier_q<SrcCharT, Charset, TranscPoli> >& arg ) noexcept
 
         -> typename string_printer_type
             < HasAlignment

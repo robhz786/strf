@@ -12,7 +12,7 @@
 
 enum class complex_form { vector, algebric, polar };
 
-struct std_complex_formatter {
+struct std_complex_format_specifier {
 
     template <class T>
     class fn
@@ -47,7 +47,7 @@ struct std_complex_formatter {
         constexpr T vector() const & noexcept
         {
             return T{ static_cast<const T&>(*this)
-                    , strf::tag<std_complex_formatter> {}
+                    , strf::tag<std_complex_format_specifier> {}
                     , complex_form::vector };
         }
 
@@ -64,7 +64,7 @@ struct std_complex_formatter {
         constexpr T algebric() const & noexcept
         {
             return T{ static_cast<const T&>(*this)
-                    , strf::tag<std_complex_formatter> {}
+                    , strf::tag<std_complex_format_specifier> {}
                     , complex_form::algebric };
         }
 
@@ -81,7 +81,7 @@ struct std_complex_formatter {
         constexpr T polar() const & noexcept
         {
             return T{ static_cast<const T&>(*this)
-                    , strf::tag<std_complex_formatter> {}
+                    , strf::tag<std_complex_format_specifier> {}
                     , complex_form::polar };
         }
 
@@ -127,10 +127,10 @@ struct printable_traits<std::complex<FloatT>>
     using representative_type = std::complex<FloatT>;
     using forwarded_type = std::complex<FloatT>;
     using is_overridable = std::true_type;
-    using formatters = strf::tag
-        < std_complex_formatter
-        , strf::alignment_formatter
-        , strf::float_formatter >;
+    using format_specifiers = strf::tag
+        < std_complex_format_specifier
+        , strf::alignment_format_specifier
+        , strf::float_format_specifier >;
 
     template <typename CharT, typename PreMeasurements, typename FPack>
     static auto make_printer

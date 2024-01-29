@@ -364,7 +364,7 @@ is too small.
 //     template <typename FloatT>
 //     struct strf::printable_traits<point<FloatT>> {
 //         using forwarded_type = point<FloatT>;
-//         using formatters = strf::tag<strf::alignment_formatter, strf::float_formatter>; // <1>
+//         using format_specifiers = strf::tag<strf::alignment_format_specifier, strf::float_format_specifier>; // <1>
 //     
 //         template <typename CharT, typename Pre, typename FPack, typename... T>
 //         constexpr static auto make_printer
@@ -387,9 +387,6 @@ is too small.
 //     ----
 //     <1> specifies the formatting options applicable to `point<FloatT>`:
 //          alignment and floating-point formatting.
-//          ( In Strf the term _formatter_ has a different meaning than in {fmt}.
-//            Here, a formatter class defines a set of formatting options,
-//            not how something is printed )       
 //     <2> forwards the floating-point formatting options to `point::x`.
 //     <3> converts the string `", "` to destination character encoding, whatever it is.
 //     <4> forwards floating-point formatting options to `point::y`.
@@ -399,8 +396,8 @@ is too small.
 //     it requires more specific knowledge about the library.
 //     However, notice that it supports all the formatting options that are
 //     expected in a real case scenario:
-//     all the <<strf_hpp#float_formatter,floating-point formatting options>>,
-//     as well the <<strf_hpp#alignment_formatter,alignment formatting options>>,
+//     all the <<strf_hpp#float_format_specifier,floating-point formatting options>>,
+//     as well the <<strf_hpp#alignment_format_specifier,alignment formatting options>>,
 //     while the {fmt} sample handles only the `'f'` or `'g'` format flags.
 //     
 //     In {fmt}, to support a alignment, you usually need

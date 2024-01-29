@@ -63,7 +63,7 @@ namespace strf {
 
 enum class ipv6style{ little, medium, big };
 
-struct ipv6_formatter
+struct ipv6_format_specifier
 {
     template <class T>
     class fn
@@ -227,7 +227,7 @@ template <>
 struct printable_traits<xxx::ipv6address> {
     using representative_type = xxx::ipv6address;
     using forwarded_type = xxx::ipv6address;
-    using formatters = strf::tag<ipv6_formatter, strf::alignment_formatter>;
+    using format_specifiers = strf::tag<ipv6_format_specifier, strf::alignment_format_specifier>;
 
     template <typename CharT, typename PreMeasurements, typename FPack, typename... Fmts>
     static auto make_printer
