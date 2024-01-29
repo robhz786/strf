@@ -146,7 +146,7 @@ struct printable_traits<std::complex<FloatT>>
             , arg.imag()
             , static_cast<CharT>(')') );
 
-        return strf::make_default_printer<CharT>(pre, fp, arg2);
+        return strf::make_printer<CharT>(pre, fp, arg2);
     }
 
     template <typename CharT, typename PreMeasurements, typename FPack, typename... T>
@@ -166,7 +166,7 @@ struct printable_traits<std::complex<FloatT>>
             , strf::fmt(v.second).set_float_format(arg.get_float_format())
             , strf::multi(static_cast<CharT>(')'), has_brackets) );
         auto arg3 = arg2.set_alignment_format(arg.get_alignment_format());
-        return strf::make_default_printer<CharT>(pre, fp, arg3);
+        return strf::make_printer<CharT>(pre, fp, arg3);
     }
 
 private:

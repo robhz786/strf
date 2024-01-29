@@ -2394,7 +2394,7 @@ struct voidptr_printing
         , const FPack& facets
         , const void* x ) noexcept
     {
-        return strf::make_default_printer<CharT>
+        return strf::make_printer<CharT>
             ( pre
             , strf::pack
                 ( strf::use_facet<strf::numpunct_c<16>, const void*>(facets)
@@ -2410,7 +2410,7 @@ struct voidptr_printing
         , const FPack& facets
         , strf::printable_with_fmt<T...> x ) noexcept
     {
-        return strf::make_default_printer<CharT>
+        return strf::make_printer<CharT>
             ( pre
             , strf::pack
                 ( strf::use_facet<strf::numpunct_c<16>, const void*>(facets)

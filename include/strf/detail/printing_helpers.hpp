@@ -201,7 +201,7 @@ using select_traits_or_facet_getter = typename traits_or_facet_getter_selector
     :: traits_or_facet_getter_type;
 
 template <typename CharT, typename PreMeasurements, typename FPack, typename Arg>
-struct selector_for_printing_with_premeasurements_with_override_allowed
+struct selector_for_printing_with_premeasurements
 {
     using traits = strf::printable_traits_of<Arg>;
     using traits_or_facet_getter =
@@ -210,16 +210,6 @@ struct selector_for_printing_with_premeasurements_with_override_allowed
     using printable_arg_converter =
         select_printable_arg_converter_for_printing_with_premeasurements
         <traits, traits_or_facet_type, CharT, PreMeasurements, FPack, Arg>;
-};
-
-template <typename CharT, typename PreMeasurements, typename FPack, typename Arg>
-struct selector_for_printing_with_premeasurements_with_override_forbidden
-{
-    using traits = strf::printable_traits_of<Arg>;
-    using traits_or_facet_getter = printable_traits_getter<traits>;
-    using printable_arg_converter =
-        select_printable_arg_converter_for_printing_with_premeasurements
-        <traits, traits, CharT, PreMeasurements, FPack, Arg>;
 };
 
 template <typename CharT, typename MakePrinterReturnType>
@@ -281,7 +271,7 @@ using find_printer_type = typename printer_type_finder
 
 template < typename CharT, typename PreMeasurements, typename FPack, typename Arg
          , typename Selector >
-struct helper_for_printing_with_premeasurements
+struct helper_for_printing_with_premeasurements_impl
     : Selector::traits_or_facet_getter
     , Selector::printable_arg_converter
 {
@@ -292,19 +282,10 @@ struct helper_for_printing_with_premeasurements
 };
 
 template <typename CharT, typename PreMeasurements, typename FPack, typename Arg >
-struct helper_for_printing_with_premeasurements_with_override_allowed
-    : helper_for_printing_with_premeasurements
+struct helper_for_printing_with_premeasurements
+    : helper_for_printing_with_premeasurements_impl
         < CharT, PreMeasurements, FPack, Arg
-        , selector_for_printing_with_premeasurements_with_override_allowed
-            < CharT, PreMeasurements, FPack, Arg > >
-{
-};
-
-template < typename CharT, typename PreMeasurements, typename FPack, typename Arg>
-struct helper_for_printing_with_premeasurements_with_override_forbidden
-    : helper_for_printing_with_premeasurements
-        < CharT, PreMeasurements, FPack, Arg
-        , selector_for_printing_with_premeasurements_with_override_forbidden
+        , selector_for_printing_with_premeasurements
             < CharT, PreMeasurements, FPack, Arg > >
 {
 };
@@ -460,7 +441,7 @@ public:
 
 
 template <typename CharT, typename FPack, typename Arg >
-struct selector_for_printing_without_premeasurements_with_override_allowed
+struct selector_for_printing_without_premeasurements
 {
     using traits = strf::printable_traits_of<Arg>;
     using traits_or_facet_getter =
@@ -475,9 +456,9 @@ struct selector_for_printing_without_premeasurements_with_override_allowed
 
 template < typename CharT, typename FPack, typename Arg
          , typename Selector =
-               selector_for_printing_without_premeasurements_with_override_allowed
+               selector_for_printing_without_premeasurements
                <CharT, FPack, Arg> >
-struct helper_for_printing_without_premeasurements_with_override_allowed
+struct helper_for_printing_without_premeasurements
     : Selector::traits_or_facet_getter
     , Selector::print_caller
 {
@@ -733,7 +714,7 @@ public:
 };
 
 template <typename CharT, typename FPack, typename Arg >
-struct selector_for_tr_printing_without_premeasurements_with_override_allowed
+struct selector_for_tr_printing_without_premeasurements
 {
     using traits = strf::printable_traits_of<Arg>;
     using traits_or_facet_getter =
@@ -747,9 +728,9 @@ struct selector_for_tr_printing_without_premeasurements_with_override_allowed
 
 template < typename CharT, typename FPack, typename Arg
          , typename Selector =
-               selector_for_tr_printing_without_premeasurements_with_override_allowed
+               selector_for_tr_printing_without_premeasurements
                < CharT, FPack, Arg > >
-struct helper_for_tr_printing_without_premeasurements_with_override_allowed
+struct helper_for_tr_printing_without_premeasurements
     : Selector::polymorphic_printer_maker
     , Selector::traits_or_facet_getter
 {
@@ -758,29 +739,22 @@ struct helper_for_tr_printing_without_premeasurements_with_override_allowed
 } // namespace printing_helpers
 
 template <typename CharT, typename PreMeasurements, typename FPack, typename Arg>
-struct helper_for_printing_with_premeasurements_with_override_allowed
-    : printing_helpers::helper_for_printing_with_premeasurements_with_override_allowed
-        <CharT, PreMeasurements, FPack, detail::remove_cvref_t<Arg> >
-{
-};
-
-template <typename CharT, typename PreMeasurements, typename FPack, typename Arg>
-struct helper_for_printing_with_premeasurements_with_override_forbidden
-    : printing_helpers::helper_for_printing_with_premeasurements_with_override_forbidden
+struct helper_for_printing_with_premeasurements
+    : printing_helpers::helper_for_printing_with_premeasurements
         <CharT, PreMeasurements, FPack, detail::remove_cvref_t<Arg> >
 {
 };
 
 template <typename CharT, typename FPack, typename Arg>
-struct helper_for_printing_without_premeasurements_with_override_allowed
-    : printing_helpers::helper_for_printing_without_premeasurements_with_override_allowed
+struct helper_for_printing_without_premeasurements
+    : printing_helpers::helper_for_printing_without_premeasurements
         <CharT, FPack, detail::remove_cvref_t<Arg> >
 {
 };
 
 template <typename CharT, typename FPack, typename Arg>
-struct helper_for_tr_printing_without_premeasurements_with_override_allowed
-    : printing_helpers::helper_for_tr_printing_without_premeasurements_with_override_allowed
+struct helper_for_tr_printing_without_premeasurements
+    : printing_helpers::helper_for_tr_printing_without_premeasurements
         <CharT, FPack, detail::remove_cvref_t<Arg> >
 {
 };

@@ -17,16 +17,13 @@ namespace detail {
 // forward declarations of things defined in <strf/detail/printing_helpers.hpp>
 
 template <typename CharT, typename PreMeasurements, typename FPack, typename Arg>
-struct helper_for_printing_with_premeasurements_with_override_allowed;
-
-template <typename CharT, typename PreMeasurements, typename FPack, typename Arg>
-struct helper_for_printing_with_premeasurements_with_override_forbidden;
+struct helper_for_printing_with_premeasurements;
 
 template <typename CharT, typename FPack, typename Arg>
-struct helper_for_printing_without_premeasurements_with_override_allowed;
+struct helper_for_printing_without_premeasurements;
 
 template <typename CharT, typename FPack, typename Arg>
-struct helper_for_tr_printing_without_premeasurements_with_override_allowed;
+struct helper_for_tr_printing_without_premeasurements;
 
 template <typename CharT, typename FPack, typename Printable, typename... Printables>
 inline STRF_HD void print_one_printable
@@ -34,7 +31,7 @@ inline STRF_HD void print_one_printable
     , const FPack& fp
     , const Printable& printable )
 {
-    using helper = helper_for_printing_without_premeasurements_with_override_allowed
+    using helper = helper_for_printing_without_premeasurements
         <CharT, FPack, Printable>;
     helper::print(helper::get_traits_or_facet(fp), dst, fp, printable);
 }
@@ -384,43 +381,9 @@ template < typename CharT
          , typename PreMeasurements
          , typename FPack
          , typename Arg
-         , typename Helper =
-             detail::helper_for_printing_with_premeasurements_with_override_forbidden
-                 <CharT, PreMeasurements, FPack, Arg>
-         , typename PTraits = typename Helper::traits_type
-         , typename ChTag = strf::tag<CharT> >
-STRF_DEPRECATED_MSG("make_default_arg_printer_input was renamed to make_default_printer")
-constexpr STRF_HD decltype(auto) make_default_arg_printer_input
-    ( PreMeasurements* p, const FPack& fp, const Arg& arg )
-    noexcept(noexcept(PTraits::make_printer(ChTag{}, p, fp, Helper::convert_printable_arg(arg))))
-{
-    return PTraits::make_printer(ChTag{}, p, fp, Helper::convert_printable_arg(arg));
-}
-
-template < typename CharT
-         , typename PreMeasurements
-         , typename FPack
-         , typename Arg
          , typename Helper
-             = strf::detail::helper_for_printing_with_premeasurements_with_override_forbidden
+             = detail::helper_for_printing_with_premeasurements
                  < CharT, PreMeasurements, FPack, Arg >
-         , typename PTraits = typename Helper::traits_type
-         , typename ChTag = strf::tag<CharT> >
-constexpr STRF_HD decltype(auto) make_default_printer
-    ( PreMeasurements* p, const FPack& fp, const Arg& arg )
-    noexcept(noexcept(PTraits::make_printer(ChTag{}, p, fp, Helper::convert_printable_arg(arg))))
-{
-    return PTraits::make_printer(ChTag{}, p, fp, Helper::convert_printable_arg(arg));
-}
-
-template < typename CharT
-         , typename PreMeasurements
-         , typename FPack
-         , typename Arg
-         , typename Helper
-             = detail::helper_for_printing_with_premeasurements_with_override_allowed
-                 < CharT, PreMeasurements, FPack, Arg >
-         , typename TraitsOrFacet = typename Helper::traits_or_facet_type
          , typename ChTag = strf::tag<CharT> >
 STRF_DEPRECATED_MSG("make_arg_printer_input was renamed to make_printer")
 constexpr STRF_HD decltype(auto) make_arg_printer_input
@@ -435,7 +398,7 @@ template < typename CharT
          , typename FPack
          , typename Arg
          , typename Helper
-             = detail::helper_for_printing_with_premeasurements_with_override_allowed
+             = detail::helper_for_printing_with_premeasurements
                  < CharT, PreMeasurements, FPack, Arg >
          , typename ChTag = strf::tag<CharT> >
 constexpr STRF_HD decltype(auto) make_printer
@@ -448,16 +411,6 @@ constexpr STRF_HD decltype(auto) make_printer
 struct dont_override
 {
     using category = printable_overrider_c;
-    template <typename CharT, typename PreMeasurements, typename FPack, typename Arg>
-    constexpr static STRF_HD decltype(auto) make_printer
-        ( strf::tag<CharT>
-        , PreMeasurements* pre
-        , const FPack& facets
-        , Arg&& arg )
-        noexcept(noexcept(strf::make_default_printer<CharT>(pre, facets, arg)))
-    {
-        return strf::make_default_printer<CharT>(pre, facets, arg);
-    }
 };
 
 struct printable_overrider_c
@@ -503,7 +456,7 @@ using representative_of_printable = typename
 
 template <typename CharT, typename PreMeasurements, typename FPack, typename Arg>
 using printer_type = typename
-    detail::helper_for_printing_with_premeasurements_with_override_allowed
+    detail::helper_for_printing_with_premeasurements
     < CharT, PreMeasurements, FPack, Arg >
     ::printer_type;
 

@@ -218,7 +218,7 @@ struct printing_without_tr_string
         , mp_type_list<Fpes...>
         , mp_type_list<Printables...>
         , mp_type_list
-            < detail::helper_for_printing_with_premeasurements_with_override_allowed
+            < detail::helper_for_printing_with_premeasurements
                 < CharT
                 , strf::premeasurements<strf::size_presence::yes, strf::width_presence::no>
                 , decltype(strf::pack(std::declval<Fpes>()...))
@@ -397,7 +397,7 @@ struct printing_with_tr_string
         , mp_type_list<Fpes...>
         , mp_type_list<Printables...>
         , mp_type_list
-            < detail::helper_for_tr_printing_without_premeasurements_with_override_allowed
+            < detail::helper_for_tr_printing_without_premeasurements
                 < CharT
                 , decltype(strf::pack(std::declval<Fpes>()...))
                 , Printables >... > >
@@ -415,7 +415,7 @@ struct printing_with_tr_string
         , mp_type_list<Fpes...>
         , mp_type_list<Printables...>
         , mp_type_list
-            < detail::helper_for_printing_with_premeasurements_with_override_allowed
+            < detail::helper_for_printing_with_premeasurements
                 < CharT
                 , strf::premeasurements<strf::size_presence::yes, strf::width_presence::no>
                 , decltype(strf::pack(std::declval<Fpes>()...))
