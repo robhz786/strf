@@ -14,7 +14,6 @@ http://www.boost.org/LICENSE_1_0.txt)
 :constrain: <<tutorial#constrained_facets,constrain>>
 :printable_with_fmt: <<strf_hpp#printable_with_fmt,printable_with_fmt>>
 :PrintableTraits: <<strf_hpp#PrintableTraits,PrintableTraits>>
-:PrinterInput: <<strf_hpp#PrinterInput,PrinterInput>>
 :printable_traits_of: <<strf_hpp#printable_traits_of,printable_traits_of>>
 :lettercase: <<strf_hpp#lettercase,lettercase>>
 :representative_of_printable: <<strf_hpp#representative_of_printable,representative_of_printable>>
@@ -46,21 +45,6 @@ The facet shall contain the
 replace those defined in the _{PrintableTraits}_ class of the
 overrided type.
 For example, one could define a facet to override the `bool` like this:
-
-
-////
-
-In the following example, we override the `bool` type,
-causing its values to be printed in a another language:
-
-which also has a `make_printer` function template
-that returns a _{PrinterInput}_ object.
-
-As an example, let's to override the `bool` type,
-so that its values will be printed in italian (as "vero" and "falso" )
-instead of english.
-////
-
 
 [source,cpp,subs=normal]
 ----

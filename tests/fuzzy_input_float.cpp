@@ -87,8 +87,7 @@ template <typename Arg>
 measure_and_print_result measure_and_print(char* buff, std::ptrdiff_t buff_size, const Arg& arg) {
 
     strf::full_premeasurements pre();
-    using printer_t = strf::printer_type<char, strf::full_premeasurements, strf::facets_pack<>, Arg>;
-    const printer_t printer{strf::make_printer<char>(&pre, strf::pack(), arg)};
+    const auto printer = strf::make_printer<char>(&pre, strf::pack(), arg);
     strf::cstr_destination dst{buff, buff_size};
     printer(dst);
     auto *end = dst.finish().ptr;

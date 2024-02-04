@@ -460,41 +460,6 @@ using printer_type = typename
     < CharT, PreMeasurements, FPack, Arg >
     ::printer_type;
 
-template <typename CharT, typename PreMeasurements, typename FPack, typename Arg>
-using arg_printer_type
-STRF_DEPRECATED_MSG("arg_printer_type was renamed to printer_type")
-= printer_type<CharT, PreMeasurements, FPack, Arg>;
-
-template < typename CharT, typename PreMeasurements, typename FPack
-         , typename Arg, typename Printer >
-struct usual_printer_input;
-
-template < typename CharT, typename PreMeasurements, typename FPack
-         , typename Arg, typename Printer >
-using usual_arg_printer_input
-STRF_DEPRECATED_MSG("usual_arg_printer_input was renamed to usual_printer_input")
-= usual_printer_input<CharT, PreMeasurements, FPack, Arg, Printer>;
-
-template< typename CharT
-        , strf::size_presence SizePresence
-        , strf::width_presence WidthPresence
-        , typename FPack
-        , typename Arg
-        , typename Printer >
-struct usual_printer_input
-    < CharT, strf::premeasurements<SizePresence, WidthPresence>, FPack, Arg, Printer >
-{
-    using char_type = CharT;
-    using arg_type = Arg;
-    using premeasurements_type = strf::premeasurements<SizePresence, WidthPresence>;
-    using fpack_type = FPack;
-    using printer_type = Printer;
-
-    premeasurements_type* pre;
-    FPack facets;
-    Arg arg;
-};
-
 } // namespace strf
 
 #endif  // STRF_DETAIL_PRINTABLE_TRAITS_HPP

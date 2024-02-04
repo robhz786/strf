@@ -70,9 +70,7 @@ STRF_HD void test_printables_recycling
         ( failure_notifier
         , pre
         , expected_output
-        , strf::printer_type<CharT, pre_t, FPack, Printables>
-            ( strf::make_printer<CharT>
-                ( &pre, fp, (Printables&&)printables ) ) ...);
+        , strf::make_printer<CharT>(&pre, fp, (Printables&&)printables)... );
 }
 
 template <typename FpesList, typename PrintablesList>

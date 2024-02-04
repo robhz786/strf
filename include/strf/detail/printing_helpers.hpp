@@ -212,62 +212,14 @@ struct selector_for_printing_with_premeasurements
         <traits, traits_or_facet_type, CharT, PreMeasurements, FPack, Arg>;
 };
 
-template <typename CharT, typename MakePrinterReturnType>
-class printer_type_from_return_type_of_make_printer
-{
-    template
-        < typename Printer
-        , typename Dst = strf::destination<CharT>
-        , typename = decltype(std::declval<Printer>()(std::declval<Dst&>())) >
-    static STRF_HD strf::tag<Printer> test_(const Printer&);
-
-    template
-        < typename PrinterInputT
-        , typename Printer = typename PrinterInputT::printer_type >
-    static STRF_HD strf::tag<Printer> test_(const PrinterInputT&);
-
-    using tag_type_ = decltype(test_(std::declval<MakePrinterReturnType>()));
-
-public:
-
-    using printer_type = typename tag_type_::type;
-};
-
-template <typename CharT, typename MakePrinterReturnType>
-using to_printer_type = typename
-    printer_type_from_return_type_of_make_printer<CharT, MakePrinterReturnType>
-    ::printer_type;
-
 template < typename CharT, typename PreMeasurements, typename FPack, typename Arg
          , typename TraitsOrFacet, typename PrintableArgConverter >
-class printer_type_finder
-{
-    template
-        < typename Printer
-        , typename Dst = strf::destination<CharT>
-        , typename = decltype(std::declval<Printer>()(std::declval<Dst&>())) >
-    static STRF_HD strf::tag<Printer> test_(const Printer&);
-
-    template
-        < typename PrinterInputT
-        , typename Printer = typename PrinterInputT::printer_type >
-    static STRF_HD strf::tag<Printer> test_(const PrinterInputT&);
-
-    using tag_type_ = decltype
-        (test_(std::declval<TraitsOrFacet>().make_printer
-                  ( strf::tag<CharT>{}
-                  , std::declval<PreMeasurements*>()
-                  , std::declval<const FPack&>()
-                  , PrintableArgConverter::convert_printable_arg(std::declval<const Arg&>()))));
-public:
-    using printer_type = typename tag_type_::type;
-};
-
-template < typename CharT, typename PreMeasurements, typename FPack, typename Arg
-         , typename TraitsOrFacet, typename PrintableArgConverter >
-using find_printer_type = typename printer_type_finder
-    < CharT, PreMeasurements, FPack, Arg, TraitsOrFacet, PrintableArgConverter>
-    ::printer_type;
+using find_printer_type =
+    decltype( std::declval<TraitsOrFacet>().make_printer
+                ( strf::tag<CharT>{}
+                , std::declval<PreMeasurements*>()
+                , std::declval<const FPack&>()
+                , PrintableArgConverter::convert_printable_arg(std::declval<const Arg&>())));
 
 template < typename CharT, typename PreMeasurements, typename FPack, typename Arg
          , typename Selector >
@@ -469,7 +421,7 @@ struct helper_for_printing_without_premeasurements
 template <typename CharT, typename MakePrinterReturnType, typename PrintableArgConverter>
 struct printer_wrapper_maker_without_premeasurements
 {
-    using wrapped_type = to_printer_type<CharT, MakePrinterReturnType>;
+    using wrapped_type = MakePrinterReturnType;
 
     using polymorphic_printer_type = detail::printer_wrapper<CharT, wrapped_type>;
 

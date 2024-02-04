@@ -199,10 +199,9 @@ struct reserve_calc_printer_base
         return detail::reserve_calculated_size_and_call_printables<AddEndOfLine, ReturnType>
             ( dest_creator
             , &pre
-            , typename Helpers::printer_type
-                  ( Helpers::get_traits_or_facet(fp).make_printer
-                      ( strf::tag<CharT>{}, &pre, fp
-                      , Helpers::convert_printable_arg((Printables&&)printables)))... );
+            , Helpers::get_traits_or_facet(fp).make_printer
+                ( strf::tag<CharT>{}, &pre, fp
+                , Helpers::convert_printable_arg((Printables&&)printables))... );
     }
 };
 

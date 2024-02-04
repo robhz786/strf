@@ -412,7 +412,7 @@ is too small.
 //     However, it must be acknowledged that this example is facilitated by the fact that
 //     it is possible to convert a `point` into something else ( a `join` object )
 //     that the library already knows how to print. If that were not case,
-//     we needed to implement a _printer_ class that do things in a more low-level way.
+//     we needed to do a lower-level implementation.
 //     This is explained in the <<howto_add_printable_types#,documentation>>.
 //     It starts with a simple case, and gradually moves towards more challenging
 //     examples.

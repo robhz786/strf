@@ -727,11 +727,6 @@ using float_with_default_format_specifiers = strf::printable_with_fmt
     , strf::float_format_specifier
     , strf::alignment_format_specifier >;
 
-// template <typename CharT, typename PreMeasurements, typename FPack, typename FloatT>
-// using fast_punct_double_printer_input =
-//     strf::usual_printer_input< CharT, PreMeasurements, FPack, FloatT
-//                              , strf::detail::fast_punct_double_printer<CharT> >;
-
 template <int Base, typename CharT, typename IntT>
 inline STRF_HD void write_int_with_leading_zeros
     ( strf::destination<CharT>& dst

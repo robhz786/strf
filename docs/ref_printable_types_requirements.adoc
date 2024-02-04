@@ -5,17 +5,14 @@ Distributed under the Boost Software License, Version 1.0.
 http://www.boost.org/LICENSE_1_0.txt)
 ////
 
-:printer_type: <<printer_type,printer_type>>
 :printable_traits:  <<printable_traits,printable_traits>>
 
 :premeasurements: <<premeasurements, premeasurements>>
 :facets_pack: <<facets_pack, facets_pack>>
 :printable_with_fmt: <<printable_with_fmt, printable_with_fmt>>
 
-:Printer:      <<Printer,Printer>>
 :PrintableTraits: <<PrintableTraits,PrintableTraits>>
 :Printable: <<Printable,Printable>>
-:PrinterInput: <<PrinterInput,PrinterInput>>
 :printable_traits_of: <<printable_traits_of,printable_traits_of>>
 :printable_overrider_c: <<printable_overrider_c,printable_overrider_c>>
 :make_printer: <<make_printer,make_printer>>
@@ -137,16 +134,11 @@ Given
 * `CharT`, a character type
 * `fpack`, a value of type `{facets_pack}</{asterisk}\... {asterisk}/>`
 * `pre`, a value of type `{premeasurements}</{asterisk}\... {asterisk}/>`
-* `dst`, an non-const lvalue of type `{destination}<CharT>&`
+* `dst`, an non-const lvalue reference of type `{destination}<CharT>`
 * `v`, a value of type `T::forwarded_type` or `{printable_with_fmt}<T, F\...>`,
    where `F\...` is such that `T::format_specifiers` is an alias to `{tag}<F\...>`.
-* `R`, the return type of `T::make_printer({tag}<CharT>{}, pre, fpack, v)`
-* `PrinterT`, the same type as `R`, if `R` is _{Printer}_, or `R::printer_type` otherwise
 
-The following must be satisfied:
-
-* `R` is either _{Printer}_ or _{PrinterInput}_.
-* At least one of the function templates below must be defined:
+At least one of the function templates below must be defined:
 
 ====
 .( Optional )
@@ -156,30 +148,32 @@ T::print(dst, fpack, v);
 ----
 [horizontal]
 Return Type:: void
-Effect:: Prints the content to `dst`
+Effect:: Prints `v` into `dst` taking into account the facets in `fpack`
 ====
 
 ====
 .( Optional )
 [source,cpp,subs=normal]
 ----
-PrinterT p{ T::make_printer({tag}<CharT>{}, pre, fpack, v) };
+auto c = T::make_printer({tag}<CharT>{}, pre, fpack, v);
 ----
-The `make_printer` function has two purposes: to create (or enable the creation of) a
-__{Printer}__ object `p`, and, before that, to measure the size and/or width
-(if required) of the content to be written by `p.write_to(dst)`.
+The `make_printer` function has two purposes:
+
+. to return a callable object `c` such that `c(dst)` prints `v` into `dst`
+  taking into account the facets in `fpack`
+. To measure the size and/or width (or none, depeding on the type `pre` )
+  of the content that `c` prints when invoked.
 
 `pre` acts as an output variable:
-If `pre.<<premeasurements,width_demanded>>` is `true`, then the width of such content
-`v` shall be added to the <<width_accumulator,remaining_width>> of `pre`.
+If `pre\-><<premeasurements,width_demanded>>` is `true`, then the width of content
+that `c` prints shall be added to the <<width_accumulator,accumulated_size>> of `pre`.
 
-If `pre.<<premeasurements,size_demanded>>` is `true`, then the size of such content
-( or a value greater than that ) shall be added into the
+If `pre\-><<premeasurements,size_demanded>>` is `true`, then the size of content that
+`c` prints ( or a value greater than that ) shall be added into the
 <<size_accumulator,accumulated_size>> of `pre`.
 
-The calculated size must be such that to ensure that
-`p.write_to(dst)` does not call `dst.recycle()`,
-if the value of `dst.space()` ( immediately before calling `p.write_to(dst)` )
+`c(dst)` must not call `dst.recycle()`
+if the value of `dst.space()` immediately before calling `c(dst)`
 is greater than or equal to such calculated size.
 ====
 
@@ -225,89 +219,6 @@ using forwarded_printable_type = typename {printable_traits_of}<T>::<<PrintableT
 
 } // namespace strf
 ----
-
-=== Type requirements _Printer_ [[Printer]]
-
-Given
-
-* `CharT`, a character type
-* `X`, a _Printer_ type for type `CharT`
-* `x`, a const lvalue of type `X`
-* `dst`, an non-const lvalue of type `{destination}<CharT>`
-
-The following expression must be well-formed:
-
-[source,cpp,subs=normal]
-----
-x(dst);
-----
-
-=== Type requirements _PrinterInput_ [[PrinterInput]]
-
-Given
-
-* `CharT`, a character type
-* `PreMeasurements`, an instance of the `{premeasurements}` class template
-* `X`, a _PrinterInput_ type for types `CharT` and `PreMeasurements`
-* `x`, a value of type `X`
-
-====
-[source,cpp,subs=normal]
-----
-X::char_type
-----
-A type alias to `CharT`.
-====
-
-====
-[source,cpp,subs=normal]
-----
-X::premeasurements_type
-----
-A type alias to `PreMeasurements`.
-====
-
-====
-[source,cpp,subs=normal]
-----
-X::printer_type
-----
-A __{Printer}__ type that is constructible from `X`
-====
-
-====
-[source,cpp,subs=normal]
-----
-x.pre
-----
-A lvalue reference of type `PreMeasurements`.
-====
-
-=== Class template `usual_printer_input` [[usual_printer_input]]
-
-`usual_printer_input` is a syntactic sugar to create `PrinterInput` types.
-
-[source,cpp,subs=normal]
-----
-template < typename CharT, typename PreMeasurements
-         , typename FPack, typename Arg, typename Printer>
-struct usual_printer_input
-{
-    using char_type = CharT;
-    using arg_type = Arg;
-    using premeasurements_type = PreMeasurements;
-    using fpack_type = FPack;
-    using printer_type = Printer;
-
-    premeasurements_type& pre;
-    FPack facets;
-    Arg arg;
-};
-----
-////
-Compile-time requirements::
-* `PreMeasurements` is an instance of the `{premeasurements}` class template.
-////
 
 === Facet category `printable_overrider_c` [[printable_overrider_c]]
 
@@ -371,26 +282,6 @@ Otherwise, it returns
 [source,cpp,subs=normal]
 ----
 {printable_traits_of}<Arg>::make_printer({tag}<CharT>{}, pre, facets, arg)
-----
-
-
-=== Type alias template `printer_type` [[printer_type]]
-
-[source,cpp,subs=normal]
-----
-namespace strf {
-
-template <typename CharT, typename Pre, typename FPack, typename Arg>
-using printer_input_type = decltype
-    ( {make_printer}<CharT>
-        ( std::declval<Pre*>()
-        , std::declval<const FPack&>()
-        , std::declval<Arg>() ) );
-
-template <typename CharT, typename Pre, typename FPack, typename Arg>
-using printer_type = typename printer_input_type<CharT, Pre, FPack, Arg>::printer_type;
-
-} // namespace strf
 ----
 
 === Class template `premeasurements` [[premeasurements]]
@@ -649,7 +540,7 @@ template < typename CharT
          , typename\... FPE
          , typename\... Args >
 void measure
-    ( {premeasurements}<SizePresence, WidthPresence>* pp
+    ( {premeasurements}<SizePresence, WidthPresence>* pre
     , const {facets_pack}<FPE\...>& facets
     , const Args&\... args );
 ----
@@ -662,24 +553,17 @@ Compile-time requirements::
   ( since this is a requirement of `{facets_pack}` ).
 
 Effects::
-* When `SizePresence` is `size_presence::yes`, for each argument `arg` in `args\...`
-  instantiates the correponding _{Printer}_ type with `pp`, `facets`, and `arg`.
-  This translates into the following
+* When `SizePresence` is `size_presence::yes`, do the equivalent to the following
   https://en.cppreference.com/w/cpp/language/fold[fold expression]:
 +
 [source,cpp,subs=normal]
 ----
-(\..., {printer_type}< CharT
-                  , {premeasurements}<SizePresence, WidthPresence>
-                  , facets_pack<FPE\...>
-                  , Args >  {{make_printer}<CharT>(pp, facets, args)} );
+(\..., {make_printer}<CharT>(pre, facets, args) );
 ----
-* When `SizePresence` is `size_presence::no` and `WidthPresence` is `width_presence::yes`,
-  for each argument `arg` in `args\...` instantiates the correponding _{Printer}_
-  type with `pp`, `facets`, and `arg` ( again, using `{printer_type}`  and
-  `{make_printer}` ), while `pp-><<width_accumulator,remaining_width>>() > 0`
-  is `true`.
-  This implies that not necessarily all argument in `arg\...` are used.
-* When `SizePresence` is `size_presence::no` and `WidthPresence` is `width_presence::no`,
-  does nothing
+* When `WidthPresence` is `width_presence::yes` but `SizePresence` is `size_presence::no`,
+  do  `{make_printer}<CharT>(pre, facets, a)` for each argument  `a` in `args`
+  `pre\-><<width_accumulator,has_remaining_width>>()` returns `false`.
+  This implies that not necessarily all arguments in `args\...` are used.
+* Does nothing if `SizePresence` is `size_presence::no` and `WidthPresence` is `width_presence::no`
+  
 

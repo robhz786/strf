@@ -8,7 +8,6 @@ http://www.boost.org/LICENSE_1_0.txt)
 :FacetsPackElement: <<FacetsPackElement, FacetsPackElement>>
 :Printable: <<Printable,Printable>>
 :tr: <<tr_string,tr>>
-:printer_type: <<printer_type,printer_type>>
 :destination: <<destination_hpp#destination,destination>>
 :tag: <<tag,tag>>
 :premeasurements: <<premeasurements,premeasurements>>
@@ -400,8 +399,7 @@ pre_type pre;
 +
 [source,cpp,subs=normal]
 ----
-using printer_t = {printer_type}<char_type, pre_type, FPack, Arg>;
-printer_t p{ {make_printer}<char_type>(&pre, fpack, arg) };
+auto printer = {make_printer}<char_type>(&pre, fpack, arg);
 ----
 . Let `dest_creator` be the internal `DestCreator` object. Do:
 +
@@ -410,7 +408,7 @@ printer_t p{ {make_printer}<char_type>(&pre, fpack, arg) };
 using dest_type = typename DestCreator::sized_destination_type;
 dest_type dest{dest&#95;creator.create(pre.<<size_accumulator_accumulated_ssize,accumulated_ssize>>())};
 ----
-. For each `p`, do `p(dest)`
+. For each `printer`, do `printer(dest)`
 . Return `dest.finish()` if such expression is valid.
 
 

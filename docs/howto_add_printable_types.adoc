@@ -14,8 +14,6 @@ http://www.boost.org/LICENSE_1_0.txt)
 
 :PrintableTraits:       <<strf_hpp#PrintableTraits,PrintableTraits>>
 :printable_traits:      <<strf_hpp#printable_traits_of,printable_traits>>
-:PrinterInput:          <<strf_hpp#PrinterInput,PrinterInput>>
-:Printer:               <<strf_hpp#Printer,Printer>>
 :representative_type:   <<strf_hpp#PrintableTraits_representative_type,representative_type>>
 :forwarded_type:        <<strf_hpp#PrintableTraits_forwarded_type,forwarded_type>>
 :format_specifiers:     <<strf_hpp#PrintableTraits_format_specifiers,format_specifiers>>
@@ -27,7 +25,6 @@ http://www.boost.org/LICENSE_1_0.txt)
 :printable_with_fmt:    <<strf_hpp#printable_with_fmt,printable_with_fmt>>
 :make_printer:          <<strf_hpp#make_printer,make_printer>>
 :strf_make_printer:     <<strf_hpp#make_printer,strf::make_printer>>
-:usual_printer_input:   <<strf_hpp#usual_printer_input,usual_printer_input>>
 
 :alignment_format_specifier:   <<strf_hpp#alignment_format_specifier,alignment_format_specifier>>
 :alignment_format_specifier_q: <<strf_hpp#alignment_format_specifier,alignment_format_specifier_q>>
