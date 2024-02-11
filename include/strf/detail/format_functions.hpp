@@ -6,7 +6,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <strf/detail/printable_traits.hpp>
+#include <strf/detail/printable_def.hpp>
 #include <strf/detail/facets/charset.hpp> // detail::is_charset
 
 namespace strf {

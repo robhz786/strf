@@ -362,7 +362,7 @@ is too small.
 //     struct point{ FloatT x, y; };
 //     
 //     template <typename FloatT>
-//     struct strf::printable_traits<point<FloatT>> {
+//     struct strf::printable_def<point<FloatT>> {
 //         using forwarded_type = point<FloatT>;
 //         using format_specifiers = strf::tag<strf::alignment_format_specifier, strf::float_format_specifier>; // <1>
 //     

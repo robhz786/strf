@@ -251,14 +251,14 @@ void base64_printer<CharT>::write_end_of_line_(strf::destination<CharT>& dst) co
 namespace strf {
 
 template <>
-struct printable_traits<xxx::base64_input>
+struct printable_def<xxx::base64_input>
 {
     using representative_type = xxx::base64_input;
     using forwarded_type = xxx::base64_input;
     using format_specifiers = strf::tag<xxx::base64_format_specifier>;
 
     using input_with_fmt =
-        strf::printable_with_fmt<printable_traits<xxx::base64_input>, xxx::base64_format_specifier>;
+        strf::printable_with_fmt<printable_def<xxx::base64_input>, xxx::base64_format_specifier>;
     
     template <typename CharT, typename FPack>
     static auto make_printer

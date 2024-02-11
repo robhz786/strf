@@ -13,8 +13,8 @@ http://www.boost.org/LICENSE_1_0.txt)
 :get_alignment_format: <<strf_hpp#alignment_format_specifier,get_alignment_format>>
 :constrain: <<tutorial#constrained_facets,constrain>>
 :printable_with_fmt: <<strf_hpp#printable_with_fmt,printable_with_fmt>>
-:PrintableTraits: <<strf_hpp#PrintableTraits,PrintableTraits>>
-:printable_traits_of: <<strf_hpp#printable_traits_of,printable_traits_of>>
+:PrintableDef: <<strf_hpp#PrintableDef,PrintableDef>>
+:printable_def_of: <<strf_hpp#printable_def_of,printable_def_of>>
 :lettercase: <<strf_hpp#lettercase,lettercase>>
 :representative_of_printable: <<strf_hpp#representative_of_printable,representative_of_printable>>
 
@@ -31,18 +31,18 @@ http://www.boost.org/LICENSE_1_0.txt)
 
 Strf allows you not only to <<howto_add_printable_types#,add printable types>>,
 but also to override existing ones. The procedure is similar; the
-main difference is that instead of defining a _{PrintableTraits}_ type,
+main difference is that instead of defining a _{PrintableDef}_ type,
 you create a facet of the `{printable_overrider_c}` category,
 which is almost the same thing.
 So this document presumes you already know how to do that.
 If you don't,
-<<howto_add_printable_types#CreatePrintableTraits,click here>>
+<<howto_add_printable_types#CreatePrintableDef,click here>>
 to get some explanation.
 
 
 The facet shall contain the
 `make_printer` member function templates that will
-replace those defined in the _{PrintableTraits}_ class of the
+replace those defined in the _{PrintableDef}_ class of the
 overrided type.
 For example, one could define a facet to override the `bool` like this:
 
@@ -79,12 +79,12 @@ struct italian_bool_facet
 ----
 Everything in `make_printer`
 ( semantics, return type, arguments, etc )
-is just like as in the __PrintableTraits__ requirements, except that here it is
+is just like as in the __PrintableDef__ requirements, except that here it is
 allowed to be non-static, though it must be then const (
 so instead of hardcoded strings like `"vero"`, and `"falso"`
 , we could use member variables, which would probably make more sense ).
 
-Just as it is usual in __PrintableTraits__ classes,
+Just as it is usual in __PrintableDef__ classes,
 you can see that we have two `make_printer` fuctions
 ( though the first one is unnecessary ).
 The second one handles `bool` values with formatting.
@@ -176,7 +176,7 @@ assert(str == "vero/falso/vero/falso/falso");
 ====
 Some printable types are not overridable.
 A type `__X__` is only overridable if
-`strf::{printable_traits_of}<X>::<<strf_hpp#PrintableTraits_is_overridable,is_overridable>>`
+`strf::{printable_def_of}<X>::<<strf_hpp#PrintableDef_is_overridable,is_overridable>>`
 is `std::true_type`.
 An example of an non-overridable type is `char`.
 You can use `strf::{is_printable_and_overridable}<X>` to check at compile-time

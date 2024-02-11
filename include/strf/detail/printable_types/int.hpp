@@ -2260,12 +2260,12 @@ public:
     }
 
     template < typename CharT, typename PreMeasurements, typename FPack
-             , typename PTraits, int Base, bool HasAlignment >
+             , typename PrintableDef, int Base, bool HasAlignment >
     constexpr STRF_HD static auto make_printer
         ( strf::tag<CharT>
         , PreMeasurements* pre
         , const FPack& facets
-        , vwf_nopp_<PTraits, Base, HasAlignment> x ) noexcept
+        , vwf_nopp_<PrintableDef, Base, HasAlignment> x ) noexcept
         -> strf::detail::conditional_t
             < HasAlignment
             , strf::detail::int_printer_static_base_and_punct<CharT, Base, false>
@@ -2275,35 +2275,35 @@ public:
     }
 
     template < typename CharT, typename PreMeasurements, typename FPack
-             , typename PTraits, int Base, bool Punctuate, bool HasAlignment >
+             , typename PrintableDef, int Base, bool Punctuate, bool HasAlignment >
     constexpr STRF_HD static auto make_printer
         ( strf::tag<CharT>
         , PreMeasurements* pre
         , const FPack& facets
-        , vwf_bp_<PTraits, Base, Punctuate, HasAlignment> x )
+        , vwf_bp_<PrintableDef, Base, Punctuate, HasAlignment> x )
         -> strf::detail::int_printer_static_base_and_punct<CharT, Base, Punctuate>
     {
         return {pre, facets, x};
     }
 
-    template < typename CharT, typename PreMeasurements, typename FPack, typename PTraits>
+    template < typename CharT, typename PreMeasurements, typename FPack, typename PrintableDef>
     constexpr STRF_HD static auto make_printer
         ( strf::tag<CharT>
         , PreMeasurements* pre
         , const FPack& facets
-        , vwf_<PTraits, true> x )
+        , vwf_<PrintableDef, true> x )
         -> detail::aligned_default_int_printer<CharT>
     {
         return {pre, facets, x};
     }
 
     template < typename CharT, typename PreMeasurements, typename FPack
-             , typename PTraits, bool HasAlignment>
+             , typename PrintableDef, bool HasAlignment>
     constexpr STRF_HD static auto make_printer
         ( strf::tag<CharT>
         , PreMeasurements* pre
         , const FPack& facets
-        , vwf_full_dynamic_<PTraits, HasAlignment> x )
+        , vwf_full_dynamic_<PrintableDef, HasAlignment> x )
         -> strf::detail::int_printer_full_dynamic<CharT>
     {
         return {pre, facets, x.get_int_format(), x.get_alignment_format(), x.value()};
@@ -2312,26 +2312,26 @@ public:
 
 } // namespace detail
 
-template <> struct printable_traits<signed char>:
+template <> struct printable_def<signed char>:
     public strf::detail::int_printing<signed char> {};
-template <> struct printable_traits<short>: // NOLINT(google-runtime-int)
+template <> struct printable_def<short>: // NOLINT(google-runtime-int)
     public strf::detail::int_printing<short> {}; // NOLINT(google-runtime-int)
-template <> struct printable_traits<int>:
+template <> struct printable_def<int>:
     public strf::detail::int_printing<int> {};
-template <> struct printable_traits<long>: // NOLINT(google-runtime-int)
+template <> struct printable_def<long>: // NOLINT(google-runtime-int)
     public strf::detail::int_printing<long> {}; // NOLINT(google-runtime-int)
-template <> struct printable_traits<long long>: // NOLINT(google-runtime-int)
+template <> struct printable_def<long long>: // NOLINT(google-runtime-int)
     public strf::detail::int_printing<long long> {}; // NOLINT(google-runtime-int)
 
-template <> struct printable_traits<unsigned char>:
+template <> struct printable_def<unsigned char>:
     public strf::detail::int_printing<unsigned char> {};
-template <> struct printable_traits<unsigned short>: // NOLINT(google-runtime-int)
+template <> struct printable_def<unsigned short>: // NOLINT(google-runtime-int)
     public strf::detail::int_printing<unsigned short> {}; // NOLINT(google-runtime-int)
-template <> struct printable_traits<unsigned int>: // NOLINT(google-runtime-int)
+template <> struct printable_def<unsigned int>: // NOLINT(google-runtime-int)
     public strf::detail::int_printing<unsigned int> {}; // NOLINT(google-runtime-int)
-template <> struct printable_traits<unsigned long>: // NOLINT(google-runtime-int)
+template <> struct printable_def<unsigned long>: // NOLINT(google-runtime-int)
     public strf::detail::int_printing<unsigned long> {}; // NOLINT(google-runtime-int)
-template <> struct printable_traits<unsigned long long>: // NOLINT(google-runtime-int)
+template <> struct printable_def<unsigned long long>: // NOLINT(google-runtime-int)
     public strf::detail::int_printing<unsigned long long> {}; // NOLINT(google-runtime-int)
 
 constexpr STRF_HD auto tag_invoke(strf::printable_tag, signed char) noexcept

@@ -1,5 +1,5 @@
-#ifndef STRF_DETAIL_PRINTABLE_TRAITS_HPP
-#define STRF_DETAIL_PRINTABLE_TRAITS_HPP
+#ifndef STRF_DETAIL_PRINTABLE_DEF_HPP
+#define STRF_DETAIL_PRINTABLE_DEF_HPP
 
 //  Copyright (C) (See commit logs on github.com/robhz786/strf)
 //  Distributed under the Boost Software License, Version 1.0.
@@ -74,23 +74,23 @@ inline STRF_HD void print_printables
 } // namespace detail
 
 template<typename T>
-struct printable_traits;
+struct printable_def;
 
-template<typename PrintingTraits, typename... Fmts>
-struct printable_traits<strf::printable_with_fmt<PrintingTraits, Fmts...>> : PrintingTraits
+template<typename PrintableDef, typename... Fmts>
+struct printable_def<strf::printable_with_fmt<PrintableDef, Fmts...>> : PrintableDef
 {
 };
 
 namespace detail {
 
 template <typename T>
-struct printable_traits_finder;
+struct printable_def_finder;
 
 } // namespace detail
 
 template <typename T>
-using printable_traits_of = typename
-    detail::printable_traits_finder<strf::detail::remove_cvref_t<T>>
+using printable_def_of = typename
+    detail::printable_def_finder<strf::detail::remove_cvref_t<T>>
     ::traits;
 
 struct printable_tag
@@ -101,7 +101,7 @@ private:
 public:
 
     template < typename Arg >
-    constexpr STRF_HD auto operator()(Arg&&) const -> strf::printable_traits_of<Arg>
+    constexpr STRF_HD auto operator()(Arg&&) const -> strf::printable_def_of<Arg>
     {
         return {};
     }
@@ -113,13 +113,13 @@ STRF_DEPRECATED_MSG("print_traits_tag type renamed to printable_tag")
 
 template <typename T>
 using print_traits
-STRF_DEPRECATED_MSG("print_traits renamed to printable_traits")
-= printable_traits<T>;
+STRF_DEPRECATED_MSG("print_traits renamed to printable_def")
+= printable_def<T>;
 
 template <typename T>
 using print_traits_of
-STRF_DEPRECATED_MSG("print_traits_of renamed to printable_traits_of")
-= printable_traits_of<T>;
+STRF_DEPRECATED_MSG("print_traits_of renamed to printable_def_of")
+= printable_def_of<T>;
 
 namespace detail {
 
@@ -142,9 +142,9 @@ using  has_tag_invoke_with_printable_tag =
 
 
 template <typename T>
-struct has_printable_traits_specialization
+struct has_printable_def_specialization
 {
-    template <typename U, typename = typename strf::printable_traits<U>::forwarded_type>
+    template <typename U, typename = typename strf::printable_def<U>::forwarded_type>
     static STRF_HD std::true_type test(const U*);
 
     template <typename U>
@@ -156,7 +156,7 @@ struct has_printable_traits_specialization
     constexpr static bool value = result::value;
 };
 
-template <bool HasPrintableTraits, typename T>
+template <bool HasPrintableDef, typename T>
 struct is_printable_tester_2;
 
 template <typename T>
@@ -171,20 +171,20 @@ struct is_printable_tester_2<false, T>: has_tag_invoke_with_printable_tag<T>
 
 template <typename T>
 struct is_printable_tester
-    : is_printable_tester_2<strf::detail::has_printable_traits_specialization<T>::value, T>
+    : is_printable_tester_2<strf::detail::has_printable_def_specialization<T>::value, T>
 {
 };
 
 template <typename T>
 using is_printable = is_printable_tester< strf::detail::remove_cvref_t<T> >;
 
-struct select_printable_traits_specialization
+struct select_printable_def_specialization
 {
     template <typename T>
-    using select = strf::printable_traits<T>;
+    using select = strf::printable_def<T>;
 };
 
-struct select_printable_traits_from_tag_invoke
+struct select_printable_def_from_tag_invoke
 {
     template <typename T>
     using select = decltype
@@ -192,57 +192,57 @@ struct select_printable_traits_from_tag_invoke
 };
 
 template <typename T>
-struct printable_traits_finder
+struct printable_def_finder
 {
     using selector_ = strf::detail::conditional_t
-        < strf::detail::has_printable_traits_specialization<T>::value
-        , strf::detail::select_printable_traits_specialization
-        , strf::detail::select_printable_traits_from_tag_invoke >;
+        < strf::detail::has_printable_def_specialization<T>::value
+        , strf::detail::select_printable_def_specialization
+        , strf::detail::select_printable_def_from_tag_invoke >;
 
     using traits = typename selector_::template select<T>;
     using forwarded_type = typename traits::forwarded_type;
 };
 
-template <typename Traits, typename... F>
-struct printable_traits_finder<strf::printable_with_fmt<Traits, F...>>
+template <typename PrintableDef, typename... F>
+struct printable_def_finder<strf::printable_with_fmt<PrintableDef, F...>>
 {
-    using traits = Traits;
-    using forwarded_type = strf::printable_with_fmt<Traits, F...>;
+    using traits = PrintableDef;
+    using forwarded_type = strf::printable_with_fmt<PrintableDef, F...>;
 };
 
 template <typename T>
-struct printable_traits_finder<T&> : printable_traits_finder<T>
-{
-};
-
-template <typename T>
-struct printable_traits_finder<T&&> : printable_traits_finder<T>
+struct printable_def_finder<T&> : printable_def_finder<T>
 {
 };
 
 template <typename T>
-struct printable_traits_finder<const T> : printable_traits_finder<T>
+struct printable_def_finder<T&&> : printable_def_finder<T>
 {
 };
 
 template <typename T>
-struct printable_traits_finder<volatile T> : printable_traits_finder<T>
+struct printable_def_finder<const T> : printable_def_finder<T>
 {
 };
 
-template <typename PrintingTraits, typename Formatters>
+template <typename T>
+struct printable_def_finder<volatile T> : printable_def_finder<T>
+{
+};
+
+template <typename PrintableDef, typename Formatters>
 struct mp_define_printable_with_fmt;
 
-template < typename PrintingTraits
+template < typename PrintableDef
          , template <class...> class List
          , typename... Fmts >
-struct mp_define_printable_with_fmt<PrintingTraits, List<Fmts...>>
+struct mp_define_printable_with_fmt<PrintableDef, List<Fmts...>>
 {
-    using type = strf::printable_with_fmt<PrintingTraits, Fmts...>;
+    using type = strf::printable_with_fmt<PrintableDef, Fmts...>;
 };
 
-template <typename PrintingTraits>
-struct extract_format_specifiers_from_printable_traits_impl
+template <typename PrintableDef>
+struct extract_format_specifiers_from_printable_def_impl
 {
 private:
     template <typename U, typename Fmts = typename U::format_specifiers>
@@ -253,42 +253,42 @@ private:
 
 public:
 
-    using type = decltype(get_format_specifiers_<PrintingTraits>(nullptr));
+    using type = decltype(get_format_specifiers_<PrintableDef>(nullptr));
 };
 
-template <typename PrintingTraits>
-using extract_format_specifiers_from_printable_traits =
-    typename extract_format_specifiers_from_printable_traits_impl<PrintingTraits>::type;
+template <typename PrintableDef>
+using extract_format_specifiers_from_printable_def =
+    typename extract_format_specifiers_from_printable_def_impl<PrintableDef>::type;
 
-template <typename PrintingTraits>
-using default_printable_with_fmt_of_printable_traits = typename
+template <typename PrintableDef>
+using default_printable_with_fmt_of_printable_def = typename
     strf::detail::mp_define_printable_with_fmt
-        < PrintingTraits
-        , extract_format_specifiers_from_printable_traits<PrintingTraits> >
+        < PrintableDef
+        , extract_format_specifiers_from_printable_def<PrintableDef> >
     :: type;
 
 template <typename T>
 struct format_specifiers_finder
 {
-    using traits = typename printable_traits_finder<T>::traits;
-    using format_specifiers = extract_format_specifiers_from_printable_traits<traits>;
+    using traits = typename printable_def_finder<T>::traits;
+    using format_specifiers = extract_format_specifiers_from_printable_def<traits>;
     using fmt_type = typename
         strf::detail::mp_define_printable_with_fmt<traits, format_specifiers>::type;
 };
 
-template <typename PrintingTraits, typename... Fmts>
-struct format_specifiers_finder<strf::printable_with_fmt<PrintingTraits, Fmts...>>
+template <typename PrintableDef, typename... Fmts>
+struct format_specifiers_finder<strf::printable_with_fmt<PrintableDef, Fmts...>>
 {
-    using traits = PrintingTraits;
+    using traits = PrintableDef;
     using format_specifiers = strf::tag<Fmts...>;
-    using fmt_type = strf::printable_with_fmt<PrintingTraits, Fmts...>;
+    using fmt_type = strf::printable_with_fmt<PrintableDef, Fmts...>;
 };
 
 } // namespace detail
 
 template <typename T>
 using forwarded_printable_type = typename
-    detail::printable_traits_finder<strf::detail::remove_cvref_t<T>>
+    detail::printable_def_finder<strf::detail::remove_cvref_t<T>>
     ::forwarded_type;
 
 template <typename T>
@@ -360,7 +360,7 @@ STRF_DEPRECATED_MSG("no_print_override was renamed dont_override")
 
 namespace detail {
 
-template <typename PrintableTraits>
+template <typename PrintableDef>
 struct get_is_overridable_helper {
     template <typename U>
     static STRF_HD typename U::is_overridable test_(const U*);
@@ -368,12 +368,12 @@ struct get_is_overridable_helper {
     template <typename U>
     static STRF_HD std::false_type test_(...);
 
-    using result = decltype(test_<PrintableTraits>((PrintableTraits*)nullptr));
+    using result = decltype(test_<PrintableDef>((PrintableDef*)nullptr));
 };
 
-template <typename PrintableTraits>
+template <typename PrintableDef>
 using get_is_overridable = typename
-    get_is_overridable_helper<PrintableTraits>::result;
+    get_is_overridable_helper<PrintableDef>::result;
 
 } // namespace detail
 
@@ -429,7 +429,7 @@ template <typename T>
 struct is_printable_and_overridable_helper {
 
     template <typename U>
-    static STRF_HD typename printable_traits_of<U>::is_overridable test_(const U*);
+    static STRF_HD typename printable_def_of<U>::is_overridable test_(const U*);
 
     template <typename U>
     static STRF_HD std::false_type test_(...);
@@ -452,7 +452,7 @@ constexpr bool is_printable_and_overridable_v = is_printable_and_overridable<T>:
 
 template <typename T>
 using representative_of_printable = typename
-    strf::printable_traits_of<T>::representative_type;
+    strf::printable_def_of<T>::representative_type;
 
 template <typename CharT, typename PreMeasurements, typename FPack, typename Arg>
 using printer_type = typename
@@ -462,5 +462,5 @@ using printer_type = typename
 
 } // namespace strf
 
-#endif  // STRF_DETAIL_PRINTABLE_TRAITS_HPP
+#endif  // STRF_DETAIL_PRINTABLE_DEF_HPP
 

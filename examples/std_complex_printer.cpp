@@ -129,7 +129,7 @@ std::pair<FloatT, FloatT> complex_coordinates
 }
 
 //--------------------------------------------------------------------------------
-// Define the PrintingTraits class
+// Define the printable_traits class
 //--------------------------------------------------------------------------------
 
 template <typename FloatT>
@@ -170,13 +170,13 @@ struct complex_printer_base
     static constexpr char32_t anglechar_ = 0x2220;
 
     template < typename CharT, typename PreMeasurements, typename FPack
-             , typename PrintableTraits, typename FloatFmt >
+             , typename PrintableDef, typename FloatFmt >
     static auto make_printer
         ( strf::tag<CharT>
         , PreMeasurements* pre
         , const FPack& facets
         , const strf::printable_with_fmt
-            < PrintableTraits
+            < PrintableDef
             , std_complex_format_specifier
             , FloatFmt
             , strf::alignment_format_specifier_q<false> >& arg )
@@ -257,7 +257,7 @@ struct complex_printer_base
 namespace strf {
 
 template <typename FloatT>
-struct printable_traits<std::complex<FloatT>> : complex_printer_base<FloatT>
+struct printable_def<std::complex<FloatT>> : complex_printer_base<FloatT>
 {
     template <typename T>
     using is_complex = std::is_same<T, std::complex<FloatT>>;
@@ -270,7 +270,7 @@ struct printable_traits<std::complex<FloatT>> : complex_printer_base<FloatT>
         , PreMeasurements* pre
         , const FPack& facets
         , const strf::printable_with_fmt
-            < printable_traits
+            < printable_def
             , std_complex_format_specifier
             , FloatFmt
             , strf::alignment_format_specifier_q<true> >& arg )

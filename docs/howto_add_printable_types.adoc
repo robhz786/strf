@@ -12,11 +12,11 @@ http://www.boost.org/LICENSE_1_0.txt)
 :output_buffer:   <<destination_hpp#output_buffer,output_buffer>>
 :destination:   <<destination_hpp#destination,destination>>
 
-:PrintableTraits:       <<strf_hpp#PrintableTraits,PrintableTraits>>
-:printable_traits:      <<strf_hpp#printable_traits_of,printable_traits>>
-:representative_type:   <<strf_hpp#PrintableTraits_representative_type,representative_type>>
-:forwarded_type:        <<strf_hpp#PrintableTraits_forwarded_type,forwarded_type>>
-:format_specifiers:     <<strf_hpp#PrintableTraits_format_specifiers,format_specifiers>>
+:PrintableDef:       <<strf_hpp#PrintableDef,PrintableDef>>
+:printable_def:      <<strf_hpp#printable_def_of,printable_def>>
+:representative_type:   <<strf_hpp#PrintableDef_representative_type,representative_type>>
+:forwarded_type:        <<strf_hpp#PrintableDef_forwarded_type,forwarded_type>>
+:format_specifiers:     <<strf_hpp#PrintableDef_format_specifiers,format_specifiers>>
 :FormatSpecifier:       <<strf_hpp#FormatSpecifier,FormatSpecifier>>
 :printable_overrider_c: <<strf_hpp#printable_overrider_c,printable_overrider_c>>
 :dont_override:         <<strf_hpp#dont_override,dont_override>>
@@ -65,16 +65,16 @@ http://www.boost.org/LICENSE_1_0.txt)
 == The customization point
 
 For every printable type, there must be a class or struct satisfying the
-__{PrintableTraits}__ type requirements.
+__{PrintableDef}__ type requirements.
 
-It can be defined as a specialization of the `{printable_traits}` struct
+It can be defined as a specialization of the `{printable_def}` struct
 template, which is enough to make the library associate it to your
 printable type:
 
 [source,cpp,subs=normal]
 ----
 template <>
-struct strf::printable_traits<your_type>
+struct strf::printable_def<your_type>
 { /{asterisk} \... {asterisk}/ };
 ----
 
@@ -86,7 +86,7 @@ overload the `tag_invoke` function like this:
 ----
 namespace strf {
 
-strf::printable_traits<your_type> tag_invoke(strf::printable_tag, const your_type&);
+strf::printable_def<your_type> tag_invoke(strf::printable_tag, const your_type&);
 
 }
 ----
@@ -95,7 +95,7 @@ In all modern compilers, it's enough to just declate this overload
 without any implementation, since the library actually only cares about
 the return type, which it obtains with `decltype`.
 
-== How to implement a __{PrintableTraits}__ type [[CreatePrintableTraits]]
+== How to implement a __{PrintableDef}__ type [[CreatePrintableDef]]
 
 Here is an example for how to make
 https://en.cppreference.com/w/cpp/numeric/complex[`std::complex`]
@@ -106,7 +106,7 @@ printable:
 namespace strf {
 
 template <typename FloatT>
-struct printable_traits<std::complex<FloatT>> {
+struct printable_def<std::complex<FloatT>> {
     using representative_type = std::complex<FloatT>;  // <1>
     using forwarded_type = std::complex<FloatT>;       // <2>
 
@@ -169,7 +169,7 @@ is equivalent to
 ----
 __foo_type_traits__::make_printer({tag}<CharT>{}, __pre__, __fp__, __foo__)
 ----
-, where `__foo_type_traits__` would be the __{PrintableTraits}__ types
+, where `__foo_type_traits__` would be the __{PrintableDef}__ types
 corresponding to `__foo__`
 
 ( Actually, `{strf_make_printer}` may call something else
@@ -267,7 +267,7 @@ comply with the __{FormatSpecifier}__ requirements.
 If you want to add format functions
 you need to create one and/or
 select one or some of those provided by the library.
-Then, in your __PrintableTraits__ class, you need
+Then, in your __PrintableDef__ class, you need
 to define a member `{format_specifiers}` as a type alias
 to `{tag}<Fmts\...>`,
 where `Fmts\...` are the __{FormatSpecifier}__ types you want
@@ -282,7 +282,7 @@ so let's select them:
 namespace strf {
 
 template <typename FloatT>
-struct printable_traits<std::complex<FloatT>> {
+struct printable_def<std::complex<FloatT>> {
     // ...
     using {format_specifiers} = strf::{tag}<{alignment_format_specifier}, {float_format_specifier}>;
     // ...
@@ -294,7 +294,7 @@ struct printable_traits<std::complex<FloatT>> {
 After that, whenever a value `x` is a `std::complex`,
 expressions like `+strf::fmt(x)` and `*strf::sci(x) > 20` and `right(x, 20, '_').sci()`
 are all well-formed, and the type of `strf::fmt(x)` is
-`{printable_with_fmt}<printable_traits<std::complex<...>>, Fmts\...>`, where `Fmts\...`
+`{printable_with_fmt}<printable_def<std::complex<...>>, Fmts\...>`, where `Fmts\...`
 are the types you used in to define the `format_specifiers` type alias.
 
 Though well-formed, they are still not printable.
@@ -306,7 +306,7 @@ member function template:
 namespace strf {
 
 template <typename FloatT>
-struct printable_traits<std::complex<FloatT>> {
+struct printable_def<std::complex<FloatT>> {
 
     // \...
 
@@ -369,13 +369,13 @@ without formatting ), but we could also remove it. Because when the expression
 below is not well-formed:
 [source,cpp,subs=normal]
 ----
-__PrintableTraits__::make_printer({tag}<CharT>{}, pre, fp, x)
+__PrintableDef__::make_printer({tag}<CharT>{}, pre, fp, x)
 ----
 , and the type of `x` is not an instance `{printable_with_fmt}`, then
 the library invokes the following instead:
 [source,cpp,subs=normal]
 ----
-__PrintableTraits__::make_printer({tag}<CharT>{}, pre, fp, strf::fmt(x))
+__PrintableDef__::make_printer({tag}<CharT>{}, pre, fp, strf::fmt(x))
 ----
 
 Anyway, let's examine the new function. You can see there are few changes from
@@ -500,13 +500,13 @@ have the following effect on how the numbers are printed:
 |===
 
 
-In our __PrintableTraits__ class, there are only two modifications:
+In our __PrintableDef__ class, there are only two modifications:
 First, the `format_specifiers` definition:
 
 [source,cpp,subs=normal]
 ----
 template <typename FloatT>
-struct printable_traits<std::complex<FloatT>> {
+struct printable_def<std::complex<FloatT>> {
     // \...
     using format_specifiers = strf::tag
         < **std_complex_format_specifier**
@@ -521,7 +521,7 @@ And second, the `make_printer` that has the `printable_with_fmt` param:
 namespace strf {
 
 template <typename FloatT>
-struct printable_traits<std::complex<FloatT>> {
+struct printable_def<std::complex<FloatT>> {
 
     // ...
 

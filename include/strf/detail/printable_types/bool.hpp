@@ -125,7 +125,7 @@ STRF_EXPLICIT_TEMPLATE struct fmt_bool_printer<wchar_t>;
 } // namespace detail
 
 template <>
-struct printable_traits<bool>
+struct printable_def<bool>
 {
     using representative_type = bool;
     using forwarded_type = bool;
@@ -174,7 +174,7 @@ struct printable_traits<bool>
     }
 };
 
-constexpr STRF_HD strf::printable_traits<bool>
+constexpr STRF_HD strf::printable_def<bool>
 tag_invoke(strf::printable_tag, bool) noexcept { return {}; }
 
 } // namespace strf

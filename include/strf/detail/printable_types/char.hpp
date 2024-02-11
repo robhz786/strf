@@ -322,14 +322,14 @@ struct char_printing
 } // namespace detail
 
 #if defined(__cpp_char8_t)
-template <> struct printable_traits<char8_t> : public detail::char_printing <char8_t> {};
+template <> struct printable_def<char8_t> : public detail::char_printing <char8_t> {};
 #endif // defined(__cpp_char8_t)
-template <> struct printable_traits<char>     : public detail::char_printing <char> {};
-template <> struct printable_traits<char16_t> : public detail::char_printing <char16_t> {};
-template <> struct printable_traits<wchar_t>  : public detail::char_printing <wchar_t> {};
+template <> struct printable_def<char>     : public detail::char_printing <char> {};
+template <> struct printable_def<char16_t> : public detail::char_printing <char16_t> {};
+template <> struct printable_def<wchar_t>  : public detail::char_printing <wchar_t> {};
 
 template <>
-struct printable_traits<char32_t>
+struct printable_def<char32_t>
 {
     using representative_type = char32_t;
     using forwarded_type = char32_t;
@@ -403,7 +403,7 @@ constexpr STRF_HD auto tag_invoke(strf::printable_tag, char16_t) noexcept
     { return {}; }
 
 constexpr STRF_HD auto tag_invoke(strf::printable_tag, char32_t) noexcept
-    -> strf::printable_traits<char32_t>
+    -> strf::printable_def<char32_t>
     { return {}; }
 
 constexpr STRF_HD auto tag_invoke(strf::printable_tag, wchar_t) noexcept

@@ -45,7 +45,7 @@ struct inner_pack
 } // namespace detail
 
 template <typename ChildFPack, typename... Args>
-struct printable_traits<strf::detail::inner_pack_with_args<ChildFPack, Args...>>
+struct printable_def<strf::detail::inner_pack_with_args<ChildFPack, Args...>>
 {
     using forwarded_type = strf::detail::inner_pack_with_args<ChildFPack, Args...>;
     using representative_type = strf::facets_pack<>;

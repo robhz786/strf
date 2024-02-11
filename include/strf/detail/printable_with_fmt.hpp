@@ -10,7 +10,7 @@
 
 namespace strf {
 
-template <typename PrintingTraits, class... Fmts>
+template <typename PrintableDef, class... Fmts>
 class printable_with_fmt;
 
 namespace detail {
@@ -150,15 +150,15 @@ struct separate_fmts_of_two_printable_with_fmt;
 
 template
     < typename SeparatorDstFmt
-    , typename SrcPrintableTraits
+    , typename SrcPrintableDef
     , typename... SrcFmts
-    , typename DstPrintableTraits
+    , typename DstPrintableDef
     , typename... DstFmts >
 struct separate_fmts_of_two_printable_with_fmt
     < true
     , SeparatorDstFmt
-    , printable_with_fmt<SrcPrintableTraits, SrcFmts...>
-    , printable_with_fmt<DstPrintableTraits, DstFmts...> >
+    , printable_with_fmt<SrcPrintableDef, SrcFmts...>
+    , printable_with_fmt<DstPrintableDef, DstFmts...> >
 {
     static_assert(sizeof...(SrcFmts) == sizeof...(DstFmts), "");
 
@@ -176,8 +176,8 @@ struct separate_fmts_of_two_printable_with_fmt
 
     constexpr static bool found_selected_fmt_in_dst_list = impl::found;
 
-    using src_printable_with_fmt = printable_with_fmt<SrcPrintableTraits, SrcFmts...>;
-    using dst_printable_with_fmt = printable_with_fmt<DstPrintableTraits, DstFmts...>;
+    using src_printable_with_fmt = printable_with_fmt<SrcPrintableDef, SrcFmts...>;
+    using dst_printable_with_fmt = printable_with_fmt<DstPrintableDef, DstFmts...>;
 
     using src_fmtfn_bases_before = get_list_of_fmtfn_bases
         < src_printable_with_fmt, src_fmts_before >;
@@ -230,10 +230,10 @@ using fmt_replace
     = typename strf::detail::fmt_replace_impl<From, List>
     ::template type_tmpl<To>;
 
-template <typename PrintingTraits, class... Fmts>
+template <typename PrintableDef, class... Fmts>
 using value_with_formatters
 STRF_DEPRECATED_MSG("value_with_formatters renamed to printable_with_fmt")
-= printable_with_fmt<PrintingTraits, Fmts...>;
+= printable_with_fmt<PrintableDef, Fmts...>;
 
 namespace detail {
 
@@ -280,51 +280,51 @@ struct are_empty<First, Others...>
 template <typename PrintableWithFmt>
 struct all_base_fmtfn_classes_are_empty;
 
-template <typename PrintingTraits, typename... Fmts>
-struct all_base_fmtfn_classes_are_empty< printable_with_fmt<PrintingTraits, Fmts...> >
-    : are_empty<typename Fmts::template fn<printable_with_fmt<PrintingTraits, Fmts...>> ...>
+template <typename PrintableDef, typename... Fmts>
+struct all_base_fmtfn_classes_are_empty< printable_with_fmt<PrintableDef, Fmts...> >
+    : are_empty<typename Fmts::template fn<printable_with_fmt<PrintableDef, Fmts...>> ...>
 {
 };
 
 } // namespace detail
 
-template <typename PrintingTraits, class... Fmts>
+template <typename PrintableDef, class... Fmts>
 class printable_with_fmt
-    : public Fmts::template fn<printable_with_fmt<PrintingTraits, Fmts...>> ...
+    : public Fmts::template fn<printable_with_fmt<PrintableDef, Fmts...>> ...
 {
 public:
-    using traits = PrintingTraits;
-    using value_type = typename PrintingTraits::forwarded_type;
+    using traits = PrintableDef;
+    using value_type = typename PrintableDef::forwarded_type;
 
     template <typename... OtherFmts>
-    using replace_fmts = strf::printable_with_fmt<PrintingTraits, OtherFmts ...>;
+    using replace_fmts = strf::printable_with_fmt<PrintableDef, OtherFmts ...>;
 
     explicit constexpr STRF_HD printable_with_fmt(const value_type& v)
         : value_(v)
     {
     }
 
-    template <typename OtherPrintingTraits>
+    template <typename OtherPrintableDef>
     constexpr STRF_HD printable_with_fmt
         ( const value_type& v
-        , const strf::printable_with_fmt<OtherPrintingTraits, Fmts...>& f )
-        : Fmts::template fn<printable_with_fmt<PrintingTraits, Fmts...>>
+        , const strf::printable_with_fmt<OtherPrintableDef, Fmts...>& f )
+        : Fmts::template fn<printable_with_fmt<PrintableDef, Fmts...>>
             ( static_cast
               < const typename Fmts
-             :: template fn<printable_with_fmt<OtherPrintingTraits, Fmts...>>& >(f) )
+             :: template fn<printable_with_fmt<OtherPrintableDef, Fmts...>>& >(f) )
         ...
         , value_(v)
     {
     }
 
-    template <typename OtherPrintingTraits>
+    template <typename OtherPrintableDef>
     constexpr STRF_HD printable_with_fmt
         ( const value_type& v
-        , strf::printable_with_fmt<OtherPrintingTraits, Fmts...>&& f )
-        : Fmts::template fn<printable_with_fmt<PrintingTraits, Fmts...>>
+        , strf::printable_with_fmt<OtherPrintableDef, Fmts...>&& f )
+        : Fmts::template fn<printable_with_fmt<PrintableDef, Fmts...>>
             ( static_cast
               < typename Fmts
-             :: template fn<printable_with_fmt<OtherPrintingTraits, Fmts...>> &&>(std::move(f)) )
+             :: template fn<printable_with_fmt<OtherPrintableDef, Fmts...>> &&>(std::move(f)) )
         ...
         , value_(static_cast<value_type&&>(v))
     {
@@ -335,7 +335,7 @@ public:
         ( const value_type& v
         , strf::tag<F...>
         , FInit&&... finit )
-        : F::template fn<printable_with_fmt<PrintingTraits, Fmts...>>
+        : F::template fn<printable_with_fmt<PrintableDef, Fmts...>>
             (std::forward<FInit>(finit))
         ...
         , value_(v)
@@ -344,11 +344,11 @@ public:
 
     template <typename... OtherFmts>
     constexpr STRF_HD explicit printable_with_fmt
-        ( const strf::printable_with_fmt<PrintingTraits, OtherFmts...>& f )
-        : Fmts::template fn<printable_with_fmt<PrintingTraits, Fmts...>>
+        ( const strf::printable_with_fmt<PrintableDef, OtherFmts...>& f )
+        : Fmts::template fn<printable_with_fmt<PrintableDef, Fmts...>>
             ( static_cast
               < const typename OtherFmts
-             :: template fn<printable_with_fmt<PrintingTraits, OtherFmts ...>>& >(f) )
+             :: template fn<printable_with_fmt<PrintableDef, OtherFmts ...>>& >(f) )
         ...
         , value_(f.value())
     {
@@ -356,32 +356,32 @@ public:
 
     template <typename ... OtherFmts>
     constexpr STRF_HD explicit printable_with_fmt
-        ( strf::printable_with_fmt<PrintingTraits, OtherFmts...>&& f )
-        : Fmts::template fn<printable_with_fmt<PrintingTraits, Fmts...>>
+        ( strf::printable_with_fmt<PrintableDef, OtherFmts...>&& f )
+        : Fmts::template fn<printable_with_fmt<PrintableDef, Fmts...>>
             ( static_cast
               < typename OtherFmts
-              :: template fn<printable_with_fmt<PrintingTraits, OtherFmts ...>>&& >(std::move(f)) )
+              :: template fn<printable_with_fmt<PrintableDef, OtherFmts ...>>&& >(std::move(f)) )
         ...
         , value_(static_cast<value_type&&>(f.value()))
     {
     }
 
     template
-        < typename SrcPrintingTraits
+        < typename SrcPrintableDef
         , typename... SrcFmts
         , typename SelectedFmt
         , typename... SelectedFmtInitArgs
         , typename Helper = detail::separate_fmts_of_two_printable_with_fmt
              < sizeof...(SrcFmts) == sizeof...(Fmts)
              , SelectedFmt
-             , printable_with_fmt<SrcPrintingTraits, SrcFmts...>
-             , printable_with_fmt<PrintingTraits, Fmts...> >
+             , printable_with_fmt<SrcPrintableDef, SrcFmts...>
+             , printable_with_fmt<PrintableDef, Fmts...> >
 
         , detail::enable_if_t<Helper::found_selected_fmt_in_dst_list, int> = 0
 
         , detail::enable_if_t
             < std::is_constructible
-                < value_type, const typename SrcPrintingTraits::forwarded_type&>::value
+                < value_type, const typename SrcPrintableDef::forwarded_type&>::value
             , int > = 0
 
         , detail::enable_if_t
@@ -403,7 +403,7 @@ public:
             , int > = 0 >
 
     constexpr STRF_HD printable_with_fmt
-        ( const strf::printable_with_fmt<SrcPrintingTraits, SrcFmts...>& src
+        ( const strf::printable_with_fmt<SrcPrintableDef, SrcFmts...>& src
         , strf::tag<SelectedFmt>
         , SelectedFmtInitArgs&&... args )
         : printable_with_fmt

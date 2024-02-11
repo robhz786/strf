@@ -70,7 +70,7 @@ struct bool_wrapper {
 namespace strf {
 
 template <>
-struct printable_traits<bool_wrapper> {
+struct printable_def<bool_wrapper> {
     using representative_type = bool_wrapper;
     using forwarded_type = bool_wrapper;
     using override_tag = bool_wrapper;

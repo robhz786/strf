@@ -18,7 +18,8 @@ http://www.boost.org/LICENSE_1_0.txt)
 :text_alignment: <<alignment_format,text_alignment>>
 :showsign: <<showsign,showsign>>
 :float_notation: <<float_notation,float_notation>>
-:PrintingTraits: <<PrintingTraits,PrintingTraits>>
+:PrintableDef: <<strf_hpp#PrintableDef,PrintableDef>>
+:printable_def_of: <<strf_hpp#printable_def_of,printable_def_of>>
 
 :transcoding_error_notifier: <<strf_hpp#transcoding_error_notifier,transcoding_error_notifier>>
 :TranscodingErrorNotifierPtr: <<strf_hpp#TranscodingErrorNotifierPtr,TranscodingErrorNotifierPtr>>
@@ -763,12 +764,12 @@ using fmt_type = /{asterisk}...{asterisk}/;
 
 * `fmt_type<T>`, if `T` is a reference or has any cv-qualifier
 * otherwise, it is `T`, if `T` is an instance of `{printable_with_fmt}`
-* otherwise, it is `{printable_with_fmt}<PTraits, Fmts\...>`, where:
-** `PTraits` is `{printable_traits_of}<T>`
+* otherwise, it is `{printable_with_fmt}<PrintableDef, Fmts\...>`, where:
+** `PDef` is `{printable_def_of}<T>`
 ** `Fmts\...` is template paramenter pack used to define
-   `PTraits::<<PrintableTraits_format_specifiers,format_specifiers>>` (
+   `PrintableDef::<<PrintableDef_format_specifiers,format_specifiers>>` (
     as a type alias to `{tag}<Fmt\...>` ).
-***  If `PTraits::format_specifiers` is not defined, `T` is `{printable_with_fmt}<PTraits>`.
+***  If `PrintableDef::format_specifiers` is not defined, `T` is `{printable_with_fmt}<PrintableDef>`.
 
 [[printable_with_fmt]]
 === Class template `printable_with_fmt`
@@ -776,13 +777,13 @@ using fmt_type = /{asterisk}...{asterisk}/;
 ----
 namespace strf {
 
-template <typename PrintableTraits, class... Fmts>
+template <typename PrintableDef, class... Fmts>
 class printable_with_fmt;
 
 } // namespace strf
 ----
 Compile-time requirements::
-- `PrintableTraits` satisfies __{PrintableTraits}__.
+- `PrintableDef` satisfies __{PrintableDef}__.
 - All types in `Fmt\...` satisfy __<<FormatSpecifier,FormatSpecifier>>__.
 - All types in `Fmt\...` are different.
 
@@ -791,33 +792,33 @@ Compile-time requirements::
 ----
 namespace strf {
 
-template <typename PrintableTraits, class\... Fmts>
+template <typename PrintableDef, class\... Fmts>
 class printable_with_fmt
     : public Fmts::template fn<printable_with_fmt<ValueType, Fmts\...>>\...
 {
 public:
-    using traits = PrintableTraits;
-    using value_type = typename PrintableTraits::forwarded_type;
+    using traits = PrintableDef;
+    using value_type = typename PrintableDef::forwarded_type;
 
     constexpr explicit <<printable_with_fmt_v,printable_with_fmt>>(const value_type& v);
 
     template <typename\... OtherFmts>
     constexpr explicit <<printable_with_fmt_vwf2,printable_with_fmt>>
-        ( const printable_with_fmt<PrintableTraits, OtherFmts\...>& f );
+        ( const printable_with_fmt<PrintableDef, OtherFmts\...>& f );
 
     template <typename\... OtherFmts>
     constexpr explicit <<printable_with_fmt_vwf2_rr,printable_with_fmt>>
-        ( printable_with_fmt<PrintableTraits, OtherFmts\...>&& f );
+        ( printable_with_fmt<PrintableDef, OtherFmts\...>&& f );
 
-    template <typename OtherPrintableTraits>
+    template <typename OtherPrintableDef>
     constexpr <<printable_with_fmt_v_v2wf,printable_with_fmt>>
         ( const value_type& v
-        , const printable_with_fmt<OtherPrintableTraits, Fmts\...>& f );
+        , const printable_with_fmt<OtherPrintableDef, Fmts\...>& f );
 
-    template <typename OtherPrintableTraits>
+    template <typename OtherPrintableDef>
     constexpr <<printable_with_fmt_v_v2wf_rr,printable_with_fmt>>
         ( const value_type& v
-        , printable_with_fmt<OtherPrintableTraits, Fmts\...>&& f );
+        , printable_with_fmt<OtherPrintableDef, Fmts\...>&& f );
 
     template <typename\... F, typename\... FInit>
     constexpr <<printable_with_fmt_v_t_i,printable_with_fmt>>
@@ -826,12 +827,12 @@ public:
         , FInit&&\... finit );
 
     template
-        < typename OtherPrintingTraits
+        < typename OtherPrintableDef
         , typename\... OtherFmts
         , typename Fmt
         , typename\... FmtInitArgs >
     constexpr <<printable_with_fmt_vwf2_t_i,printable_with_fmt>>
-        ( const printable_with_fmt<PrintableTraits, OtherFmts\...>& other
+        ( const printable_with_fmt<PrintableDef, OtherFmts\...>& other
         , {tag}<Fmt>
         , FmtInitArgs&&\... fmt_init );
 
@@ -864,7 +865,7 @@ Effects::
 ----
 template <typename\... OtherFmts>
 constexpr explicit printable_with_fmt
-    ( const printable_with_fmt<PrintableTraits, OtherFmts\...>& f );
+    ( const printable_with_fmt<PrintableDef, OtherFmts\...>& f );
 ----
 Effects::
 * Initializes `value_` with `f.value()`
@@ -877,7 +878,7 @@ Effects::
 ----
 template <typename\... OtherFmts>
 constexpr explicit printable_with_fmt
-    ( printable_with_fmt<PrintableTraits, OtherFmts\...>&& f );
+    ( printable_with_fmt<PrintableDef, OtherFmts\...>&& f );
 ----
 Effects::
 * Initializes `value_` with `static_cast<value_type&&>(f.value())`
@@ -889,10 +890,10 @@ Effects::
 ====
 [source,cpp,subs=normal]
 ----
-template <typename OtherPrintableTraits>
+template <typename OtherPrintableDef>
 constexpr printable_with_fmt
     ( const value_type& v
-    , const printable_with_fmt<OtherPrintableTraits, Fmts\...>& f );
+    , const printable_with_fmt<OtherPrintableDef, Fmts\...>& f );
 ----
 Effects::
 * Initializes `value_` with `v`
@@ -903,10 +904,10 @@ Effects::
 ====
 [source,cpp,subs=normal]
 ----
-template <typename OtherPrintableTraits>
+template <typename OtherPrintableDef>
 constexpr printable_with_fmt
     ( const value_type& v
-    , printable_with_fmt<OtherPrintableTraits, Fmts\...>&& f );
+    , printable_with_fmt<OtherPrintableDef, Fmts\...>&& f );
 ----
 Effects::
 * Initializes `value_` with `v`
@@ -942,13 +943,13 @@ Effects::
 [source,cpp,subs=normal]
 ----
 template
-    < typename OtherPrintingTraits
+    < typename OtherPrintableDef
     , typename\... OtherFmts
     , typename Fmt
     , typename\... FmtInitArgs >
 template <typename Fmt, typename FmtInit, typename\... OtherFmts>
 constexpr printable_with_fmt
-    ( const printable_with_fmt<PrintableTraits, OtherFmts\...>& other
+    ( const printable_with_fmt<PrintableDef, OtherFmts\...>& other
     , {tag}<Fmt>
     , FmtInitArgs&&\... args );
 

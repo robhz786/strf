@@ -18,7 +18,7 @@ struct ipv4address
 namespace strf {
 
 template <>
-struct printable_traits<xxx::ipv4address> {
+struct printable_def<xxx::ipv4address> {
 
     using representative_type = xxx::ipv4address;
     using forwarded_type = xxx::ipv4address;

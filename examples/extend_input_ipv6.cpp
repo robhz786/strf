@@ -220,11 +220,11 @@ void ipv6_printer<CharT>::print_ipv6(strf::destination<CharT>& dst) const
 }
 
 // -----------------------------------------------------------------------------
-// 3. Specialize printable_traits template
+// 3. Specialize printable_def template
 // -----------------------------------------------------------------------------
 
 template <>
-struct printable_traits<xxx::ipv6address> {
+struct printable_def<xxx::ipv6address> {
     using representative_type = xxx::ipv6address;
     using forwarded_type = xxx::ipv6address;
     using format_specifiers = strf::tag<ipv6_format_specifier, strf::alignment_format_specifier>;
@@ -234,7 +234,7 @@ struct printable_traits<xxx::ipv6address> {
         ( strf::tag<CharT>
         , PreMeasurements* pre
         , const FPack& fp
-        , const strf::printable_with_fmt<printable_traits, Fmts...>& arg )
+        , const strf::printable_with_fmt<printable_def, Fmts...>& arg )
     {
         return ipv6_printer<CharT>{pre, fp, arg};
     }

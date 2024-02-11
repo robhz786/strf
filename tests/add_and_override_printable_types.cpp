@@ -38,7 +38,7 @@ STRF_HD const char16_t* stringify(mytype e)
 namespace strf {
 
 template<>
-struct printable_traits<mytype>
+struct printable_def<mytype>
 {
     using representative_type = mytype;
     using forwarded_type = mytype;
@@ -71,7 +71,7 @@ struct printable_traits<mytype>
 
 namespace {
 
-STRF_TEST_FUNC void test_printable_traits_without_make_printer()
+STRF_TEST_FUNC void test_printable_def_without_make_printer()
 {
     {   // test using strf::no_reserve policy
         TEST_NO_RESERVE("bb") (mytype::bb);
@@ -275,7 +275,7 @@ public:
 
 namespace strf {
 template <>
-struct printable_traits<my_abstract_type>
+struct printable_def<my_abstract_type>
 {
     using representative_type = strf::reference_wrapper<const my_abstract_type>;
     using forwarded_type = strf::reference_wrapper<const my_abstract_type>;
@@ -302,7 +302,7 @@ struct printable_traits<my_abstract_type>
     }
 };
 
-STRF_HD printable_traits<my_abstract_type>
+STRF_HD printable_def<my_abstract_type>
 tag_invoke(strf::printable_tag, const my_abstract_type&)
 {
     return {};
@@ -395,7 +395,7 @@ STRF_HD const char16_t* stringify(mytype2 e)
 namespace strf {
 
 template <>
-struct printable_traits<mytype2>
+struct printable_def<mytype2>
 {
     using representative_type = mytype2;
     using forwarded_type = mytype2;
@@ -595,7 +595,7 @@ STRF_TEST_FUNC void test_overrider_with_make_printer()
 
 STRF_TEST_FUNC void test_all()
 {
-    test_printable_traits_without_make_printer();
+    test_printable_def_without_make_printer();
     test_overrider_without_make_printer();
     test_abstract_printable_without_make_printer();
     test_make_printer_that_returns_lambda();

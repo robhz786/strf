@@ -83,7 +83,7 @@ template < typename Iterator
          , typename VF = strf::fmt_type<V> >
 using range_with_fmt
     = strf::detail::mp_replace_front
-        < VF, strf::printable_traits<strf::range_p<Iterator>> >;
+        < VF, strf::printable_def<strf::range_p<Iterator>> >;
 
 template < typename Iterator
          , typename CharT
@@ -91,7 +91,7 @@ template < typename Iterator
          , typename VF = strf::fmt_type<V> >
 using sep_range_with_fmt
     = strf::detail::mp_replace_front
-        < VF, strf::printable_traits<strf::separated_range_p<Iterator, CharT>> >;
+        < VF, strf::printable_def<strf::separated_range_p<Iterator, CharT>> >;
 
 
 namespace detail {
@@ -262,7 +262,7 @@ class fmt_range_printer
 
     using fmt_type_adapted_ = detail::mp_replace_front
         < value_fmt_type_adapted_
-        , strf::printable_traits<strf::range_p<Iterator>> >;
+        , strf::printable_def<strf::range_p<Iterator>> >;
 
 public:
 
@@ -271,7 +271,7 @@ public:
         ( PreMeasurements* pre
         , const FPack& facets
         , const strf::printable_with_fmt
-            <strf::printable_traits<strf::range_p<Iterator>>, Fmts...>& arg )
+            <strf::printable_def<strf::range_p<Iterator>>, Fmts...>& arg )
         : fp_(facets)
         , fmt_(arg)
     {
@@ -339,7 +339,7 @@ class fmt_separated_range_printer
 
     using fmt_type_adapted_ = detail::mp_replace_front
         < value_fmt_type_adapted_
-        , strf::printable_traits<strf::separated_range_p<Iterator, CharT>> >;
+        , strf::printable_def<strf::separated_range_p<Iterator, CharT>> >;
 
 public:
 
@@ -348,7 +348,7 @@ public:
         ( PreMeasurements* pre
         , const FPack& facets
         , const strf::printable_with_fmt
-            < strf::printable_traits<strf::separated_range_p<Iterator, CharT>>
+            < strf::printable_def<strf::separated_range_p<Iterator, CharT>>
             , Fmts... >& arg )
         : fp_(facets)
         , fmt_(arg)
@@ -591,7 +591,7 @@ STRF_HD void sep_transformed_range_printer<CharT, FPack, Iterator, UnaryOp>::ope
 } // namespace detail
 
 template <typename Iterator>
-struct printable_traits<strf::range_p<Iterator>>
+struct printable_def<strf::range_p<Iterator>>
 {
     using representative_type = strf::range_p<Iterator>;
     using forwarded_type = strf::range_p<Iterator>;
@@ -614,7 +614,7 @@ struct printable_traits<strf::range_p<Iterator>>
         ( strf::tag<CharT>
         , PreMeasurements* pre
         , const FPack& fp
-        , strf::printable_with_fmt<strf::printable_traits<strf::range_p<Iterator>>, Fmts...> x )
+        , strf::printable_with_fmt<strf::printable_def<strf::range_p<Iterator>>, Fmts...> x )
         -> strf::detail::fmt_range_printer<CharT, FPack, Iterator, Fmts...>
     {
         return {pre, fp, x};
@@ -622,7 +622,7 @@ struct printable_traits<strf::range_p<Iterator>>
 };
 
 template <typename Iterator, typename SepCharT>
-struct printable_traits<strf::separated_range_p<Iterator, SepCharT>>
+struct printable_def<strf::separated_range_p<Iterator, SepCharT>>
 {
     using representative_type = strf::separated_range_p<Iterator, SepCharT>;
     using forwarded_type = strf::separated_range_p<Iterator, SepCharT>;
@@ -648,7 +648,7 @@ struct printable_traits<strf::separated_range_p<Iterator, SepCharT>>
         , PreMeasurements* pre
         , const FPack& fp
         , strf::printable_with_fmt
-            < strf::printable_traits<strf::separated_range_p<Iterator, SepCharT>>, Fmts... > x )
+            < strf::printable_def<strf::separated_range_p<Iterator, SepCharT>>, Fmts... > x )
         -> detail::fmt_separated_range_printer<DstCharT, FPack, Iterator, Fmts...>
     {
         static_assert( std::is_same<SepCharT, DstCharT>::value
@@ -658,7 +658,7 @@ struct printable_traits<strf::separated_range_p<Iterator, SepCharT>>
 };
 
 template <typename Iterator, typename UnaryOp>
-struct printable_traits<strf::transformed_range_p<Iterator, UnaryOp>>
+struct printable_def<strf::transformed_range_p<Iterator, UnaryOp>>
 {
     using representative_type = strf::transformed_range_p<Iterator, UnaryOp>;
     using forwarded_type = strf::transformed_range_p<Iterator, UnaryOp>;
@@ -677,7 +677,7 @@ struct printable_traits<strf::transformed_range_p<Iterator, UnaryOp>>
 };
 
 template <typename Iterator, typename SepCharT, typename UnaryOp>
-struct printable_traits<strf::separated_transformed_range_p<Iterator, SepCharT, UnaryOp>>
+struct printable_def<strf::separated_transformed_range_p<Iterator, SepCharT, UnaryOp>>
 {
     using representative_type = strf::separated_transformed_range_p<Iterator, SepCharT, UnaryOp>;
     using forwarded_type = strf::separated_transformed_range_p<Iterator, SepCharT, UnaryOp>;

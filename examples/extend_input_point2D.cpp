@@ -18,7 +18,7 @@ struct point2D
 namespace strf {
 
 template <typename FloatT>
-struct printable_traits<xxx::point2D<FloatT>> {
+struct printable_def<xxx::point2D<FloatT>> {
 
     using representative_type = xxx::point2D<FloatT>;
     using forwarded_type = xxx::point2D<FloatT>;

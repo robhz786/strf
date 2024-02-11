@@ -122,7 +122,7 @@ std::pair<FloatT, FloatT> complex_coordinates
 namespace strf {
 
 template <typename FloatT>
-struct printable_traits<std::complex<FloatT>>
+struct printable_def<std::complex<FloatT>>
 {
     using representative_type = std::complex<FloatT>;
     using forwarded_type = std::complex<FloatT>;

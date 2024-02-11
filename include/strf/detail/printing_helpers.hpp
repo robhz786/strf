@@ -6,7 +6,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <strf/detail/printable_traits.hpp>
+#include <strf/detail/printable_def.hpp>
 
 namespace strf {
 namespace detail {
@@ -54,8 +54,8 @@ struct printable_arg_invalid
 };
 
 
-template < typename PrintingTraits
-         , typename TraitsOrFacet
+template < typename PrintableDef
+         , typename DefOrFacet
          , typename CharT
          , typename PreMeasurements
          , typename FPack
@@ -63,9 +63,9 @@ template < typename PrintingTraits
 class printable_arg_converter_selector_for_printing_with_premeasurements
 {
     using default_printable_with_fmt =
-        default_printable_with_fmt_of_printable_traits<PrintingTraits>;
+        default_printable_with_fmt_of_printable_def<PrintableDef>;
     using fmt_value_type = typename default_printable_with_fmt::value_type;
-    using fwd_type = typename PrintingTraits::forwarded_type;
+    using fwd_type = typename PrintableDef::forwarded_type;
 
     template < typename P, typename A
              , detail::enable_if_t
@@ -117,15 +117,15 @@ class printable_arg_converter_selector_for_printing_with_premeasurements
 
 public:
     using type =
-        decltype(test_<TraitsOrFacet, Arg>( std::declval<strf::rank<4>*>()
+        decltype(test_<DefOrFacet, Arg>( std::declval<strf::rank<4>*>()
                                           , std::declval<const Arg&>() ));
 };
 
-template < typename PrintingTraits, typename TraitsOrFacet, typename CharT
+template < typename PrintableDef, typename DefOrFacet, typename CharT
          , typename PreMeasurements, typename FPack, typename Arg >
 using select_printable_arg_converter_for_printing_with_premeasurements = typename
     printable_arg_converter_selector_for_printing_with_premeasurements
-    <PrintingTraits, TraitsOrFacet, CharT, PreMeasurements, FPack, Arg>
+    <PrintableDef, DefOrFacet, CharT, PreMeasurements, FPack, Arg>
     ::type;
 
 template <typename Overrider, typename OverrideTag>
@@ -140,11 +140,11 @@ struct overrider_getter
     }
 };
 
-template <typename PrintingTraits>
-struct printable_traits_getter
+template <typename PrintableDef>
+struct printable_def_getter
 {
-    using traits_or_facet_type = PrintingTraits;
-    using traits_type = PrintingTraits;
+    using traits_or_facet_type = PrintableDef;
+    using traits_type = PrintableDef;
 
     template <typename FPack>
     static constexpr STRF_HD traits_or_facet_type get_traits_or_facet(const FPack&)
@@ -153,7 +153,7 @@ struct printable_traits_getter
     }
 };
 
-template < typename PrintingTraits
+template < typename PrintableDef
          , typename CharT
          , typename FPack
          , typename Arg
@@ -161,7 +161,7 @@ template < typename PrintingTraits
 struct traits_or_facet_getter_selector_2
 {
     static_assert(Overridable, "");
-    using representative_type = typename PrintingTraits::representative_type;
+    using representative_type = typename PrintableDef::representative_type;
     using overrider_ = decltype
         ( strf::use_facet<strf::printable_overrider_c, representative_type>
           (std::declval<FPack>()) );
@@ -169,41 +169,41 @@ struct traits_or_facet_getter_selector_2
     using overrider = strf::detail::remove_cvref_t<overrider_>;
     using traits_or_facet_getter_type = typename std::conditional
         < std::is_same<overrider, strf::dont_override>::value
-        , printable_traits_getter<PrintingTraits>
+        , printable_def_getter<PrintableDef>
         , overrider_getter<overrider, representative_type> >
         ::type;
 };
 
-template < typename PrintingTraits
+template < typename PrintableDef
          , typename CharT
          , typename FPack
          , typename Arg >
-struct traits_or_facet_getter_selector_2<PrintingTraits, CharT, FPack, Arg, false>
+struct traits_or_facet_getter_selector_2<PrintableDef, CharT, FPack, Arg, false>
 {
-    using traits_or_facet_getter_type = printable_traits_getter<PrintingTraits>;
+    using traits_or_facet_getter_type = printable_def_getter<PrintableDef>;
 };
 
-template < typename PrintingTraits
+template < typename PrintableDef
          , typename CharT
          , typename FPack
          , typename Arg >
 struct traits_or_facet_getter_selector
 {
     using other = traits_or_facet_getter_selector_2
-        < PrintingTraits, CharT, FPack, Arg
-        , get_is_overridable<PrintingTraits>::value >;
+        < PrintableDef, CharT, FPack, Arg
+        , get_is_overridable<PrintableDef>::value >;
     using traits_or_facet_getter_type = typename other::traits_or_facet_getter_type;
 };
 
-template < typename PrintingTraits, typename CharT, typename FPack, typename Arg >
+template < typename PrintableDef, typename CharT, typename FPack, typename Arg >
 using select_traits_or_facet_getter = typename traits_or_facet_getter_selector
-    <PrintingTraits, CharT, FPack, Arg>
+    <PrintableDef, CharT, FPack, Arg>
     :: traits_or_facet_getter_type;
 
 template <typename CharT, typename PreMeasurements, typename FPack, typename Arg>
 struct selector_for_printing_with_premeasurements
 {
-    using traits = strf::printable_traits_of<Arg>;
+    using traits = strf::printable_def_of<Arg>;
     using traits_or_facet_getter =
         select_traits_or_facet_getter< traits, CharT, FPack, Arg >;
     using traits_or_facet_type = typename traits_or_facet_getter::traits_or_facet_type;
@@ -213,9 +213,9 @@ struct selector_for_printing_with_premeasurements
 };
 
 template < typename CharT, typename PreMeasurements, typename FPack, typename Arg
-         , typename TraitsOrFacet, typename PrintableArgConverter >
+         , typename DefOrFacet, typename PrintableArgConverter >
 using find_printer_type =
-    decltype( std::declval<TraitsOrFacet>().make_printer
+    decltype( std::declval<DefOrFacet>().make_printer
                 ( strf::tag<CharT>{}
                 , std::declval<PreMeasurements*>()
                 , std::declval<const FPack&>()
@@ -245,9 +245,9 @@ struct helper_for_printing_with_premeasurements
 template <int R, typename PrintableArgConverter>
 struct directly_call_print
 {
-    template <typename TraitsOrFacet, typename CharT, typename FPack, typename Arg>
+    template <typename DefOrFacet, typename CharT, typename FPack, typename Arg>
     STRF_HD static void print
-        ( const TraitsOrFacet& tof
+        ( const DefOrFacet& tof
         , strf::destination<CharT>& dst
         , const FPack& fp
         , const Arg& arg )
@@ -259,16 +259,16 @@ struct directly_call_print
 template <int R, typename PrintableArgConverter>
 struct print_using_make_printer
 {
-    template <typename TraitsOrFacet, typename CharT, typename FPack, typename Arg >
+    template <typename DefOrFacet, typename CharT, typename FPack, typename Arg >
     STRF_HD static void print
-        ( const TraitsOrFacet& tof
+        ( const DefOrFacet& tof
         , strf::destination<CharT>& dst
         , const FPack& fp
         , const Arg& arg )
     {
         using premeasurements_type = strf::no_premeasurements;
         using printer_type = find_printer_type
-            < CharT, premeasurements_type, FPack, Arg, TraitsOrFacet, PrintableArgConverter>;
+            < CharT, premeasurements_type, FPack, Arg, DefOrFacet, PrintableArgConverter>;
 
         premeasurements_type pre;
         printer_type
@@ -279,17 +279,17 @@ struct print_using_make_printer
     }
 };
 
-template < typename PrintingTraits
-         , typename TraitsOrFacet
+template < typename PrintableDef
+         , typename DefOrFacet
          , typename CharT
          , typename FPack
          , typename Arg >
 class printer_selector_for_printing_without_premeasurements
 {
     using default_printable_with_fmt =
-        default_printable_with_fmt_of_printable_traits<PrintingTraits>;
+        default_printable_with_fmt_of_printable_def<PrintableDef>;
     using fmt_value_type = typename default_printable_with_fmt::value_type;
-    using fwd_type = typename PrintingTraits::forwarded_type;
+    using fwd_type = typename PrintableDef::forwarded_type;
     using premeasurements_type = strf::no_premeasurements;
 
     template < typename P, typename A
@@ -387,7 +387,7 @@ class printer_selector_for_printing_without_premeasurements
 
 public:
     using type =
-        decltype(test_<TraitsOrFacet, Arg>( std::declval<strf::rank<8>*>()
+        decltype(test_<DefOrFacet, Arg>( std::declval<strf::rank<8>*>()
                                           , std::declval<const Arg&>() ));
 };
 
@@ -395,7 +395,7 @@ public:
 template <typename CharT, typename FPack, typename Arg >
 struct selector_for_printing_without_premeasurements
 {
-    using traits = strf::printable_traits_of<Arg>;
+    using traits = strf::printable_def_of<Arg>;
     using traits_or_facet_getter =
         select_traits_or_facet_getter< traits, CharT, FPack, Arg >;
     using traits_or_facet_type = typename traits_or_facet_getter::traits_or_facet_type;
@@ -425,9 +425,9 @@ struct printer_wrapper_maker_without_premeasurements
 
     using polymorphic_printer_type = detail::printer_wrapper<CharT, wrapped_type>;
 
-    template <typename FPack, typename Arg, typename TraitsOrFacet>
+    template <typename FPack, typename Arg, typename DefOrFacet>
     static STRF_HD auto make_polymorphic_printer
-        ( const TraitsOrFacet& tof
+        ( const DefOrFacet& tof
         , const FPack& fp
         , const Arg& arg )
    {
@@ -444,7 +444,7 @@ struct printer_adapter_input
     Printable printable;
 };
 
-template <typename CharT, typename FPack, typename PrintingTraits, typename Printable>
+template <typename CharT, typename FPack, typename PrintableDef, typename Printable>
 class polymorphic_printer_that_calls_print_from_facet
     : public detail::polymorphic_printer<CharT>
     , private FPack
@@ -462,7 +462,7 @@ public:
     {
         strf::use_facet
             < strf::printable_overrider_c
-            , typename PrintingTraits::representative_type > (facets_())
+            , typename PrintableDef::representative_type > (facets_())
             .print(dst, facets_(), printable_);
     }
 
@@ -476,7 +476,7 @@ private:
     Printable printable_;
 };
 
-template <typename CharT, typename FPack, typename PrintingTraits, typename Printable>
+template <typename CharT, typename FPack, typename PrintableDef, typename Printable>
 class polymorphic_printer_that_calls_print_from_traits
     : public detail::polymorphic_printer<CharT>
     , private FPack
@@ -492,7 +492,7 @@ public:
 
     STRF_HD void print_to(strf::destination<CharT>& dst) const override
     {
-        PrintingTraits::print(dst, facets_(), printable_);
+        PrintableDef::print(dst, facets_(), printable_);
     }
 
 private:
@@ -506,8 +506,8 @@ private:
 };
 
 template < typename CharT
-         , typename PrintingTraits
-         , typename TraitsOrFacet
+         , typename PrintableDef
+         , typename DefOrFacet
          , typename FPack
          , typename Arg
          , typename PrintableArgConverter >
@@ -518,14 +518,14 @@ struct print_caller_adapter_maker
 
     using polymorphic_printer_type =
         detail::conditional_t
-            < std::is_same<PrintingTraits, TraitsOrFacet>::value
+            < std::is_same<PrintableDef, DefOrFacet>::value
             , polymorphic_printer_that_calls_print_from_traits
-                < CharT, FPack, PrintingTraits, converted_printable_type>
+                < CharT, FPack, PrintableDef, converted_printable_type>
             , polymorphic_printer_that_calls_print_from_facet
-                < CharT, FPack, PrintingTraits, converted_printable_type> >;
+                < CharT, FPack, PrintableDef, converted_printable_type> >;
 
     static STRF_HD auto make_polymorphic_printer
-        ( const TraitsOrFacet&
+        ( const DefOrFacet&
         , const FPack& fp
         , const Arg& arg )
         -> printer_adapter_input<FPack, converted_printable_type>
@@ -534,17 +534,17 @@ struct print_caller_adapter_maker
     }
 };
 
-template < typename PrintingTraits
-         , typename TraitsOrFacet
+template < typename PrintableDef
+         , typename DefOrFacet
          , typename CharT
          , typename FPack
          , typename Arg >
 class polymorphic_printer_maker_selector_for_printing_without_premeasurements
 {
     using default_printable_with_fmt =
-        default_printable_with_fmt_of_printable_traits<PrintingTraits>;
+        default_printable_with_fmt_of_printable_def<PrintableDef>;
     using fmt_value_type = typename default_printable_with_fmt::value_type;
-    using fwd_type = typename PrintingTraits::forwarded_type;
+    using fwd_type = typename PrintableDef::forwarded_type;
     using premeasurements_type = strf::no_premeasurements;
 
     // printer_wrapper_maker_without_premeasurements
@@ -618,7 +618,7 @@ class polymorphic_printer_maker_selector_for_printing_without_premeasurements
                      , std::declval<const A&>().value() ) ) >
     static STRF_HD auto test_(strf::rank<4>*, const A& arg)
         -> print_caller_adapter_maker
-            < CharT, PrintingTraits, TraitsOrFacet, FPack, Arg
+            < CharT, PrintableDef, DefOrFacet, FPack, Arg
             , printable_arg_fmt_remover<default_printable_with_fmt> >;
 
 
@@ -631,7 +631,7 @@ class polymorphic_printer_maker_selector_for_printing_without_premeasurements
                      , std::declval<const A&>() ) ) >
     static STRF_HD auto test_(strf::rank<3>*, const A& arg)
         -> print_caller_adapter_maker
-            < CharT, PrintingTraits, TraitsOrFacet, FPack, Arg
+            < CharT, PrintableDef, DefOrFacet, FPack, Arg
             , printable_arg_caster<const A&> >;
 
 
@@ -643,7 +643,7 @@ class polymorphic_printer_maker_selector_for_printing_without_premeasurements
                      , static_cast<fwd_type>(std::declval<const A&>()) ) ) >
     static STRF_HD auto test_(strf::rank<2>*, const A& arg)
         -> print_caller_adapter_maker
-            < CharT, PrintingTraits, TraitsOrFacet, FPack, Arg
+            < CharT, PrintableDef, DefOrFacet, FPack, Arg
             , printable_arg_caster<fwd_type> >;
 
 
@@ -656,19 +656,19 @@ class polymorphic_printer_maker_selector_for_printing_without_premeasurements
                      , default_printable_with_fmt{std::declval<fwd_type>()} ) ) >
     static STRF_HD auto test_(strf::rank<1>*, const A& arg)
         -> print_caller_adapter_maker
-            < CharT, PrintingTraits, TraitsOrFacet, FPack, Arg
+            < CharT, PrintableDef, DefOrFacet, FPack, Arg
             , printable_arg_fmt_adder<default_printable_with_fmt> >;
 
 public:
     using type =
-        decltype(test_<TraitsOrFacet, Arg>( std::declval<strf::rank<8>*>()
+        decltype(test_<DefOrFacet, Arg>( std::declval<strf::rank<8>*>()
                                           , std::declval<const Arg&>() ));
 };
 
 template <typename CharT, typename FPack, typename Arg >
 struct selector_for_tr_printing_without_premeasurements
 {
-    using traits = strf::printable_traits_of<Arg>;
+    using traits = strf::printable_def_of<Arg>;
     using traits_or_facet_getter =
         select_traits_or_facet_getter< traits, CharT, FPack, Arg >;
     using traits_or_facet_type = typename traits_or_facet_getter::traits_or_facet_type;
