@@ -127,7 +127,7 @@ template <typename T>
 struct has_get_printable_def_tester
 {
     template < typename U
-             , typename = decltype(strf::detail::get_printable_def(strf::printable_tag{}, std::declval<U>())) >
+             , typename = decltype(get_printable_def(strf::printable_tag{}, std::declval<U>())) >
     static STRF_HD std::true_type test_(const U*);
 
     template <typename U>
@@ -187,8 +187,7 @@ struct select_printable_def_specialization
 struct select_printable_def_from_get_printable_def
 {
     template <typename T>
-    using select = decltype
-        ( strf::detail::get_printable_def(strf::printable_tag{}, std::declval<T>() ));
+    using select = decltype(get_printable_def(strf::printable_tag{}, std::declval<T>()));
 };
 
 template <typename T>

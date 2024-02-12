@@ -410,46 +410,6 @@ inline STRF_HD void copy_n
     impl::copy(src, count, dst);
 }
 
-// template< class T >
-// constexpr T&& forward( strf::detail::remove_reference_t<T>&& t ) noexcept
-// {
-//     return static_cast<T&&>(t);
-// }
-
-
-namespace detail_get_printable_def_ns {
-
-STRF_HD inline void get_printable_def(){}
-
-struct get_printable_def_fn
-{
-    template <typename Cpo, typename ... Args>
-    constexpr STRF_HD auto operator()(Cpo cpo, Args&&... args) const
-        noexcept(noexcept(get_printable_def(cpo, (Args&&)(args)...)))
-        -> decltype(get_printable_def(cpo, (Args&&)(args)...))
-    {
-        return get_printable_def(cpo, (Args&&)(args)...);
-    }
-};
-
-} // namespace detail_get_printable_def_ns
-
-#if defined (STRF_NO_GLOBAL_CONSTEXPR_VARIABLE)
-
-template <typename Cpo, typename ... Args>
-constexpr STRF_HD auto get_printable_def(Cpo cpo, Args&&... args)
-    noexcept(noexcept(get_printable_def(cpo, (Args&&)(args)...)))
-    -> decltype(get_printable_def(cpo, (Args&&)(args)...))
-{
-    return get_printable_def(cpo, (Args&&)(args)...);
-}
-
-#else
-
-constexpr strf::detail::detail_get_printable_def_ns::get_printable_def_fn get_printable_def {};
-
-#endif // defined (STRF_NO_GLOBAL_CONSTEXPR_VARIABLE)
-
 // Not using generic iterators because std::distance
 // is not freestanding and can't be used in CUDA devices
 template <class T, class Compare>
