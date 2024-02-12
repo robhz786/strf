@@ -2334,51 +2334,51 @@ template <> struct printable_def<unsigned long>: // NOLINT(google-runtime-int)
 template <> struct printable_def<unsigned long long>: // NOLINT(google-runtime-int)
     public strf::detail::int_printing<unsigned long long> {}; // NOLINT(google-runtime-int)
 
-constexpr STRF_HD auto tag_invoke(strf::printable_tag, signed char) noexcept
+constexpr STRF_HD auto get_printable_def(strf::printable_tag, signed char) noexcept
     -> strf::detail::int_printing<signed char>
     { return {}; }
 
 // NOLINTNEXTLINE(google-runtime-int)
-constexpr STRF_HD auto tag_invoke(strf::printable_tag, short) noexcept
+constexpr STRF_HD auto get_printable_def(strf::printable_tag, short) noexcept
     -> strf::detail::int_printing<short>  // NOLINT(google-runtime-int)
     { return {}; }
 
-constexpr STRF_HD auto tag_invoke(strf::printable_tag, int) noexcept
+constexpr STRF_HD auto get_printable_def(strf::printable_tag, int) noexcept
     -> strf::detail::int_printing<int>
     { return {}; }
 
 // NOLINTNEXTLINE(google-runtime-int)
-constexpr STRF_HD auto tag_invoke(strf::printable_tag, long) noexcept
+constexpr STRF_HD auto get_printable_def(strf::printable_tag, long) noexcept
     -> strf::detail::int_printing<long> // NOLINT(google-runtime-int)
     { return {}; }
 
 // NOLINTNEXTLINE(google-runtime-int)
-constexpr STRF_HD auto tag_invoke(strf::printable_tag, long long) noexcept
+constexpr STRF_HD auto get_printable_def(strf::printable_tag, long long) noexcept
     -> strf::detail::int_printing<long long> // NOLINT(google-runtime-int)
     { return {}; }
 
 // NOLINTNEXTLINE(google-runtime-int)
-constexpr STRF_HD auto tag_invoke(strf::printable_tag, unsigned char) noexcept
+constexpr STRF_HD auto get_printable_def(strf::printable_tag, unsigned char) noexcept
     -> strf::detail::int_printing<unsigned char>
     { return {}; }
 
 // NOLINTNEXTLINE(google-runtime-int)
-constexpr STRF_HD auto tag_invoke(strf::printable_tag, unsigned short) noexcept
+constexpr STRF_HD auto get_printable_def(strf::printable_tag, unsigned short) noexcept
     -> strf::detail::int_printing<unsigned short> // NOLINT(google-runtime-int)
     { return {}; }
 
 // NOLINTNEXTLINE(google-runtime-int)
-constexpr STRF_HD auto tag_invoke(strf::printable_tag, unsigned int) noexcept
+constexpr STRF_HD auto get_printable_def(strf::printable_tag, unsigned int) noexcept
     -> strf::detail::int_printing<unsigned int> // NOLINT(google-runtime-int)
     { return {}; }
 
 // NOLINTNEXTLINE(google-runtime-int)
-constexpr STRF_HD auto tag_invoke(strf::printable_tag, unsigned long) noexcept
+constexpr STRF_HD auto get_printable_def(strf::printable_tag, unsigned long) noexcept
     -> strf::detail::int_printing<unsigned long> // NOLINT(google-runtime-int)
     { return {}; }
 
 // NOLINTNEXTLINE(google-runtime-int)
-constexpr STRF_HD auto tag_invoke(strf::printable_tag, unsigned long long) noexcept
+constexpr STRF_HD auto get_printable_def(strf::printable_tag, unsigned long long) noexcept
     -> strf::detail::int_printing<unsigned long long> // NOLINT(google-runtime-int)
     { return {}; }
 
@@ -2427,7 +2427,7 @@ struct voidptr_printing
 
 } // namespace detail
 
-constexpr STRF_HD auto tag_invoke(strf::printable_tag, const void*) noexcept
+constexpr STRF_HD auto get_printable_def(strf::printable_tag, const void*) noexcept
     -> strf::detail::voidptr_printing
     { return {}; }
 

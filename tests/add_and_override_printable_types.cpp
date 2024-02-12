@@ -303,7 +303,7 @@ struct printable_def<my_abstract_type>
 };
 
 STRF_HD printable_def<my_abstract_type>
-tag_invoke(strf::printable_tag, const my_abstract_type&)
+get_printable_def(strf::printable_tag, const my_abstract_type&)
 {
     return {};
 }
@@ -318,8 +318,8 @@ STRF_TEST_FUNC void test_abstract_printable_without_make_printer()
     const my_derived_type_b b;
     const my_derived_type_c c;
 
-    // to silent a warning from clang 6 that tag_invoke is not needed
-    (void) tag_invoke(strf::printable_tag(), a);
+    // to silent a warning from clang 6 that get_printable_def is not needed
+    (void) get_printable_def(strf::printable_tag(), a);
 
     const strf::reference_wrapper<const my_abstract_type> arr[] = {a, b, c};
 

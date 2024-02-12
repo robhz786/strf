@@ -417,36 +417,36 @@ inline STRF_HD void copy_n
 // }
 
 
-namespace detail_tag_invoke_ns {
+namespace detail_get_printable_def_ns {
 
-STRF_HD inline void tag_invoke(){}
+STRF_HD inline void get_printable_def(){}
 
-struct tag_invoke_fn
+struct get_printable_def_fn
 {
     template <typename Cpo, typename ... Args>
     constexpr STRF_HD auto operator()(Cpo cpo, Args&&... args) const
-        noexcept(noexcept(tag_invoke(cpo, (Args&&)(args)...)))
-        -> decltype(tag_invoke(cpo, (Args&&)(args)...))
+        noexcept(noexcept(get_printable_def(cpo, (Args&&)(args)...)))
+        -> decltype(get_printable_def(cpo, (Args&&)(args)...))
     {
-        return tag_invoke(cpo, (Args&&)(args)...);
+        return get_printable_def(cpo, (Args&&)(args)...);
     }
 };
 
-} // namespace detail_tag_invoke_ns
+} // namespace detail_get_printable_def_ns
 
 #if defined (STRF_NO_GLOBAL_CONSTEXPR_VARIABLE)
 
 template <typename Cpo, typename ... Args>
-constexpr STRF_HD auto tag_invoke(Cpo cpo, Args&&... args)
-    noexcept(noexcept(tag_invoke(cpo, (Args&&)(args)...)))
-    -> decltype(tag_invoke(cpo, (Args&&)(args)...))
+constexpr STRF_HD auto get_printable_def(Cpo cpo, Args&&... args)
+    noexcept(noexcept(get_printable_def(cpo, (Args&&)(args)...)))
+    -> decltype(get_printable_def(cpo, (Args&&)(args)...))
 {
-    return tag_invoke(cpo, (Args&&)(args)...);
+    return get_printable_def(cpo, (Args&&)(args)...);
 }
 
 #else
 
-constexpr strf::detail::detail_tag_invoke_ns::tag_invoke_fn tag_invoke {};
+constexpr strf::detail::detail_get_printable_def_ns::get_printable_def_fn get_printable_def {};
 
 #endif // defined (STRF_NO_GLOBAL_CONSTEXPR_VARIABLE)
 

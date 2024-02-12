@@ -80,13 +80,13 @@ struct strf::printable_def<your_type>
 
 However, if you also want to match the types that derive from
 or are implicitly convertible to `your_type`, then you need
-overload the `tag_invoke` function like this:
+overload the `get_printable_def` function like this:
 
 [source,cpp,subs=normal]
 ----
 namespace strf {
 
-strf::printable_def<your_type> tag_invoke(strf::printable_tag, const your_type&);
+strf::printable_def<your_type> get_printable_def(strf::printable_tag, const your_type&);
 
 }
 ----

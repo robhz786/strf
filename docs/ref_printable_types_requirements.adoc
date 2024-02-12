@@ -63,7 +63,7 @@ template <typename T> using printable_def_of = /{asterisk} see below\... {asteri
 *  `printable_def_of<std::remove_cvref<T>>`, if `T` is a reference type or has any cv-qualifier
 *  otherwise, it is `PrintableDef`, when `T` is `{printable_with_fmt}<PrintableDef, /{asterisk}\... {asterisk}/>`
 *  otherwise, it is `printable_def<T>` if such template specialization is defined
-*  otherwise, it is `decltype(tag_invoke(printable_tag{}, std::declval<T>()))`
+*  otherwise, it is `decltype(get_printable_def(printable_tag{}, std::declval<T>()))`
 
 [[PrintableDef]]
 === Type requirement _PrintableDef_

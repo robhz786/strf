@@ -2625,15 +2625,15 @@ struct float_printing
 template <> struct printable_def<float>:  public strf::detail::float_printing<float> {};
 template <> struct printable_def<double>: public strf::detail::float_printing<double> {};
 
-STRF_HD constexpr auto tag_invoke(strf::printable_tag, float)
+STRF_HD constexpr auto get_printable_def(strf::printable_tag, float)
     -> strf::printable_def<float>
     { return {}; }
 
-STRF_HD constexpr auto tag_invoke(strf::printable_tag, double)
+STRF_HD constexpr auto get_printable_def(strf::printable_tag, double)
     -> strf::printable_def<double>
     { return {}; }
 
-void tag_invoke(strf::printable_tag, long double) = delete;
+void get_printable_def(strf::printable_tag, long double) = delete;
 
 } // namespace strf
 

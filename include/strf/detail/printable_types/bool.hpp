@@ -175,7 +175,7 @@ struct printable_def<bool>
 };
 
 constexpr STRF_HD strf::printable_def<bool>
-tag_invoke(strf::printable_tag, bool) noexcept { return {}; }
+get_printable_def(strf::printable_tag, bool) noexcept { return {}; }
 
 } // namespace strf
 

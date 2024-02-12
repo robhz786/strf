@@ -124,10 +124,10 @@ STRF_DEPRECATED_MSG("print_traits_of renamed to printable_def_of")
 namespace detail {
 
 template <typename T>
-struct has_tag_invoke_with_printable_tag_tester
+struct has_get_printable_def_tester
 {
     template < typename U
-             , typename = decltype(strf::detail::tag_invoke(strf::printable_tag{}, std::declval<U>())) >
+             , typename = decltype(strf::detail::get_printable_def(strf::printable_tag{}, std::declval<U>())) >
     static STRF_HD std::true_type test_(const U*);
 
     template <typename U>
@@ -137,8 +137,8 @@ struct has_tag_invoke_with_printable_tag_tester
 };
 
 template <typename T>
-using  has_tag_invoke_with_printable_tag =
-    typename has_tag_invoke_with_printable_tag_tester<strf::detail::remove_cvref_t<T>>::result;
+using  has_get_printable_def =
+    typename has_get_printable_def_tester<strf::detail::remove_cvref_t<T>>::result;
 
 
 template <typename T>
@@ -165,7 +165,7 @@ struct is_printable_tester_2<true, T> : std::true_type
 };
 
 template <typename T>
-struct is_printable_tester_2<false, T>: has_tag_invoke_with_printable_tag<T>
+struct is_printable_tester_2<false, T>: has_get_printable_def<T>
 {
 };
 
@@ -184,11 +184,11 @@ struct select_printable_def_specialization
     using select = strf::printable_def<T>;
 };
 
-struct select_printable_def_from_tag_invoke
+struct select_printable_def_from_get_printable_def
 {
     template <typename T>
     using select = decltype
-        ( strf::detail::tag_invoke(strf::printable_tag{}, std::declval<T>() ));
+        ( strf::detail::get_printable_def(strf::printable_tag{}, std::declval<T>() ));
 };
 
 template <typename T>
@@ -197,7 +197,7 @@ struct printable_def_finder
     using selector_ = strf::detail::conditional_t
         < strf::detail::has_printable_def_specialization<T>::value
         , strf::detail::select_printable_def_specialization
-        , strf::detail::select_printable_def_from_tag_invoke >;
+        , strf::detail::select_printable_def_from_get_printable_def >;
 
     using traits = typename selector_::template select<T>;
     using forwarded_type = typename traits::forwarded_type;
