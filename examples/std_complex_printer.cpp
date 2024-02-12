@@ -131,6 +131,7 @@ std::pair<FloatT, FloatT> complex_coordinates
 //--------------------------------------------------------------------------------
 // Define the printable_traits class
 //--------------------------------------------------------------------------------
+static constexpr char32_t anglechar = 0x2220;
 
 template <typename FloatT>
 struct complex_printer_base
@@ -167,8 +168,6 @@ struct complex_printer_base
                };
     }
 
-    static constexpr char32_t anglechar_ = 0x2220;
-
     template < typename CharT, typename PreMeasurements, typename FPack
              , typename PrintableDef, typename FloatFmt >
     static auto make_printer
@@ -197,7 +196,7 @@ struct complex_printer_base
                 switch (form) {
                 case complex_form::polar:
                     write_coord1(dst);
-                    to(dst) (charset, anglechar_, static_cast<CharT>(' '));
+                    to(dst) (charset, anglechar, static_cast<CharT>(' '));
                     write_coord2(dst);
                     break;
 
@@ -241,12 +240,12 @@ struct complex_printer_base
                 using rt = representative_type;
                 if (pre->has_remaining_width()) {
                     auto wcalc = strf::use_facet<strf::width_calculator_c, rt>(facets);
-                    pre->add_width(wcalc.char_width(strf::utf_t<char32_t>{}, anglechar_));
+                    pre->add_width(wcalc.char_width(strf::utf_t<char32_t>{}, anglechar));
                     pre->add_width(1);
                 }
                 if (PreMeasurements::size_demanded) {
                     auto encoding = strf::use_facet<strf::charset_c<CharT>, rt>(facets);
-                    pre->add_size(encoding.encoded_char_size(anglechar_));
+                    pre->add_size(encoding.encoded_char_size(anglechar));
                     pre->add_size(1);
                 }
         }
