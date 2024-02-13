@@ -225,7 +225,7 @@ void ipv6_printer<CharT>::print_ipv6(strf::destination<CharT>& dst) const
 
 template <>
 struct printable_def<xxx::ipv6address> {
-    using representative_type = xxx::ipv6address;
+    using representative = xxx::ipv6address;
     using forwarded_type = xxx::ipv6address;
     using format_specifiers = strf::tag<ipv6_format_specifier, strf::alignment_format_specifier>;
 

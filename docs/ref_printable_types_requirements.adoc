@@ -88,11 +88,11 @@ and must be copy-constructible. And its copy-constructor should be fast.
 situations ( for example, the objects created by `fmt` and `{join}` ).
 ====
 
-[[PrintableDef_representative_type]]
+[[PrintableDef_representative]]
 ====
 [source,cpp]
 ----
-T::representative_type
+T::representative
 ----
 The type used as the template argument in `{use_facet}`.
 This means it is the type that is tested by the
@@ -184,7 +184,7 @@ is greater than or equal to such calculated size.
 namespace strf {
 
 template <typename T>
-using representative_of_printable = typename {printable_def_of}<T>::<<PrintableDef_representative_type,representative_type>>;
+using representative_of_printable = typename {printable_def_of}<T>::<<PrintableDef_representative,representative>>;
 
 } // namespace strf
 ----

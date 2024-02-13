@@ -20,7 +20,7 @@ namespace strf {
 template <typename FloatT>
 struct printable_def<xxx::point2D<FloatT>> {
 
-    using representative_type = xxx::point2D<FloatT>;
+    using representative = xxx::point2D<FloatT>;
     using forwarded_type = xxx::point2D<FloatT>;
     using format_specifiers = strf::tag<strf::alignment_format_specifier, strf::float_format_specifier>;
     using is_overridable = std::true_type;

@@ -127,7 +127,7 @@ STRF_EXPLICIT_TEMPLATE struct fmt_bool_printer<wchar_t>;
 template <>
 struct printable_def<bool>
 {
-    using representative_type = bool;
+    using representative = bool;
     using forwarded_type = bool;
     using format_specifiers = strf::tag<strf::alignment_format_specifier>;
     using is_overridable = std::true_type;

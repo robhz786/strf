@@ -451,7 +451,7 @@ constexpr bool is_printable_and_overridable_v = is_printable_and_overridable<T>:
 
 template <typename T>
 using representative_of_printable = typename
-    strf::printable_def_of<T>::representative_type;
+    strf::printable_def_of<T>::representative;
 
 template <typename CharT, typename PreMeasurements, typename FPack, typename Arg>
 using printer_type = typename

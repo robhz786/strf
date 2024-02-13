@@ -593,7 +593,7 @@ STRF_HD void sep_transformed_range_printer<CharT, FPack, Iterator, UnaryOp>::ope
 template <typename Iterator>
 struct printable_def<strf::range_p<Iterator>>
 {
-    using representative_type = strf::range_p<Iterator>;
+    using representative = strf::range_p<Iterator>;
     using forwarded_type = strf::range_p<Iterator>;
     using format_specifiers = strf::format_specifiers_of<decltype(*std::declval<Iterator>())>;
     using is_overridable = std::false_type;
@@ -624,7 +624,7 @@ struct printable_def<strf::range_p<Iterator>>
 template <typename Iterator, typename SepCharT>
 struct printable_def<strf::separated_range_p<Iterator, SepCharT>>
 {
-    using representative_type = strf::separated_range_p<Iterator, SepCharT>;
+    using representative = strf::separated_range_p<Iterator, SepCharT>;
     using forwarded_type = strf::separated_range_p<Iterator, SepCharT>;
     using format_specifiers = strf::format_specifiers_of<decltype(*std::declval<Iterator>())>;
     using is_overridable = std::false_type;
@@ -660,7 +660,7 @@ struct printable_def<strf::separated_range_p<Iterator, SepCharT>>
 template <typename Iterator, typename UnaryOp>
 struct printable_def<strf::transformed_range_p<Iterator, UnaryOp>>
 {
-    using representative_type = strf::transformed_range_p<Iterator, UnaryOp>;
+    using representative = strf::transformed_range_p<Iterator, UnaryOp>;
     using forwarded_type = strf::transformed_range_p<Iterator, UnaryOp>;
     using is_overridable = std::false_type;
 
@@ -679,7 +679,7 @@ struct printable_def<strf::transformed_range_p<Iterator, UnaryOp>>
 template <typename Iterator, typename SepCharT, typename UnaryOp>
 struct printable_def<strf::separated_transformed_range_p<Iterator, SepCharT, UnaryOp>>
 {
-    using representative_type = strf::separated_transformed_range_p<Iterator, SepCharT, UnaryOp>;
+    using representative = strf::separated_transformed_range_p<Iterator, SepCharT, UnaryOp>;
     using forwarded_type = strf::separated_transformed_range_p<Iterator, SepCharT, UnaryOp>;
     using is_overridable = std::false_type;
 

@@ -253,7 +253,7 @@ namespace strf {
 template <>
 struct printable_def<xxx::base64_input>
 {
-    using representative_type = xxx::base64_input;
+    using representative = xxx::base64_input;
     using forwarded_type = xxx::base64_input;
     using format_specifiers = strf::tag<xxx::base64_format_specifier>;
 
@@ -267,7 +267,7 @@ struct printable_def<xxx::base64_input>
         , const FPack& facets
         , const input_with_fmt& arg )
     {
-        auto f = strf::use_facet<xxx::base64_facet_c, representative_type>(facets);
+        auto f = strf::use_facet<xxx::base64_facet_c, representative>(facets);
         return xxx::base64_printer<CharT>{f, arg.value(), arg.indentation()};
     }
 
@@ -278,7 +278,7 @@ struct printable_def<xxx::base64_input>
         , const FPack& facets
         , const input_with_fmt& arg )
     {
-        auto f = strf::use_facet<xxx::base64_facet_c, representative_type>(facets);
+        auto f = strf::use_facet<xxx::base64_facet_c, representative>(facets);
         xxx::base64_printer<CharT> printer{f, arg.value(), arg.indentation()};
         pre->add_size(printer.calculate_size());
         return printer;

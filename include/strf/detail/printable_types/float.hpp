@@ -2576,7 +2576,7 @@ STRF_EXPLICIT_TEMPLATE class fast_double_printer<wchar_t>;
 template <typename FloatT>
 struct float_printing
 {
-    using representative_type = FloatT;
+    using representative = FloatT;
     using forwarded_type = FloatT;
     using format_specifiers = strf::tag<strf::float_format_specifier, strf::alignment_format_specifier>;
     using is_overridable = std::true_type;

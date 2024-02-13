@@ -48,7 +48,7 @@ template <typename ChildFPack, typename... Args>
 struct printable_def<strf::detail::inner_pack_with_args<ChildFPack, Args...>>
 {
     using forwarded_type = strf::detail::inner_pack_with_args<ChildFPack, Args...>;
-    using representative_type = strf::facets_pack<>;
+    using representative = strf::facets_pack<>;
     using is_overridable = std::false_type;
 
     template < typename CharT, typename PreMeasurements, typename FPack>

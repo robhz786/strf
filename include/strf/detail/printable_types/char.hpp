@@ -279,7 +279,7 @@ STRF_EXPLICIT_TEMPLATE class fmt_conv_char32_printer<wchar_t>;
 template <typename SrcCharT>
 struct char_printing
 {
-    using representative_type = SrcCharT;
+    using representative = SrcCharT;
     using forwarded_type = SrcCharT;
     using format_specifiers = strf::tag
         < strf::quantity_format_specifier
@@ -331,7 +331,7 @@ template <> struct printable_def<wchar_t>  : public detail::char_printing <wchar
 template <>
 struct printable_def<char32_t>
 {
-    using representative_type = char32_t;
+    using representative = char32_t;
     using forwarded_type = char32_t;
     using format_specifiers = strf::tag
         < strf::quantity_format_specifier

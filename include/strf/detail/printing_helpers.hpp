@@ -161,16 +161,16 @@ template < typename PrintableDef
 struct traits_or_facet_getter_selector_2
 {
     static_assert(Overridable, "");
-    using representative_type = typename PrintableDef::representative_type;
+    using representative = typename PrintableDef::representative;
     using overrider_ = decltype
-        ( strf::use_facet<strf::printable_overrider_c, representative_type>
+        ( strf::use_facet<strf::printable_overrider_c, representative>
           (std::declval<FPack>()) );
 
     using overrider = strf::detail::remove_cvref_t<overrider_>;
     using traits_or_facet_getter_type = typename std::conditional
         < std::is_same<overrider, strf::dont_override>::value
         , printable_def_getter<PrintableDef>
-        , overrider_getter<overrider, representative_type> >
+        , overrider_getter<overrider, representative> >
         ::type;
 };
 
@@ -462,7 +462,7 @@ public:
     {
         strf::use_facet
             < strf::printable_overrider_c
-            , typename PrintableDef::representative_type > (facets_())
+            , typename PrintableDef::representative > (facets_())
             .print(dst, facets_(), printable_);
     }
 

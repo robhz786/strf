@@ -1728,7 +1728,7 @@ private:
 template <typename SrcCharT>
 struct string_printing
 {
-    using representative_type = strf::string_input_tag<SrcCharT>;
+    using representative = strf::string_input_tag<SrcCharT>;
     using forwarded_type = strf::detail::simple_string_view<SrcCharT>;
     using format_specifiers = strf::tag
         < strf::detail::string_precision_format_specifier<false>

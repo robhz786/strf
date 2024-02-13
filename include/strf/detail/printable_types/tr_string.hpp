@@ -227,7 +227,7 @@ constexpr STRF_HD auto tr(const StringT& tr_string, Args&&... args)
 template <typename CharT>
 struct printable_def<detail::tr_string_arg<CharT, detail::index_sequence<>>>
 {
-    using representative_type = void;
+    using representative = void;
     using forwarded_type = detail::tr_string_arg<CharT, detail::index_sequence<>>;
 
     template <typename CharIn, typename Pre, typename FPack>
@@ -283,7 +283,7 @@ struct printable_def<detail::tr_string_arg<CharT, detail::index_sequence<>>>
 template <typename CharT, std::size_t... I, typename... Args>
 struct printable_def<detail::tr_string_arg<CharT, detail::index_sequence<I...>, Args...>>
 {
-    using representative_type = void;
+    using representative = void;
     using forwarded_type = detail::tr_string_arg<CharT, detail::index_sequence<I...>, Args...>;
 
     template < typename CharIn, typename FPack >

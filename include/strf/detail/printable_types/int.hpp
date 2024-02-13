@@ -2242,7 +2242,7 @@ private:
               , alignment_format_specifier_q<HasAlignment> >;
 public:
 
-    using representative_type = IntT;
+    using representative = IntT;
     using forwarded_type = IntT;
     using format_specifiers = strf::tag< strf::int_format_specifier
                                 , strf::alignment_format_specifier >;
@@ -2386,7 +2386,7 @@ namespace detail {
 
 struct voidptr_printing
 {
-    using representative_type = const void*;
+    using representative = const void*;
     using forwarded_type = const void*;
     using format_specifiers = strf::tag<strf::alignment_format_specifier>;
     using is_overridable = std::true_type;

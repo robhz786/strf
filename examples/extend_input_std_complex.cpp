@@ -124,7 +124,7 @@ namespace strf {
 template <typename FloatT>
 struct printable_def<std::complex<FloatT>>
 {
-    using representative_type = std::complex<FloatT>;
+    using representative = std::complex<FloatT>;
     using forwarded_type = std::complex<FloatT>;
     using is_overridable = std::true_type;
     using format_specifiers = strf::tag

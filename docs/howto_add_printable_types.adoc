@@ -14,7 +14,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 
 :PrintableDef:       <<strf_hpp#PrintableDef,PrintableDef>>
 :printable_def:      <<strf_hpp#printable_def_of,printable_def>>
-:representative_type:   <<strf_hpp#PrintableDef_representative_type,representative_type>>
+:representative:        <<strf_hpp#PrintableDef_representative,representative>>
 :forwarded_type:        <<strf_hpp#PrintableDef_forwarded_type,forwarded_type>>
 :format_specifiers:     <<strf_hpp#PrintableDef_format_specifiers,format_specifiers>>
 :FormatSpecifier:       <<strf_hpp#FormatSpecifier,FormatSpecifier>>
@@ -107,8 +107,8 @@ namespace strf {
 
 template <typename FloatT>
 struct printable_def<std::complex<FloatT>> {
-    using representative_type = std::complex<FloatT>;  // <1>
-    using forwarded_type = std::complex<FloatT>;       // <2>
+    using representative = std::complex<FloatT>;   // <1>
+    using forwarded_type = std::complex<FloatT>;   // <2>
 
     template <typename CharT, typename Pre, typename FPack>
     static auto make_printer
@@ -136,7 +136,7 @@ struct printable_def<std::complex<FloatT>> {
 <2> This is the type the library uses in some situations for argument forwarding.
     Also, {join} objects store values of this type, instead of the printable type.
     The printable type must be implicitly convertible to its
-    `representative_type`.
+    `representative`.
     This is usually the printable type itself or a const reference to it.
 <3> This parameter is solely there to make `CharT` deducible.
     If you just need or want to support only one character type, like `char`,

@@ -138,7 +138,7 @@ struct complex_printer_base
 {
     using category = strf::printable_overrider_c;
 
-    using representative_type = std::complex<FloatT>;
+    using representative = std::complex<FloatT>;
     using forwarded_type = std::complex<FloatT>;
     using format_specifiers = strf::tag
         < std_complex_format_specifier
@@ -189,7 +189,7 @@ struct complex_printer_base
         const auto coord2 = strf::fmt(coordinates.second).set_float_format(float_fmt);
         const auto write_coord1 = strf::make_printer<CharT>(pre, facets, coord1);
         const auto write_coord2 = strf::make_printer<CharT>(pre, facets, coord2);
-        const auto charset = strf::use_facet<strf::charset_c<CharT>, representative_type>(facets);
+        const auto charset = strf::use_facet<strf::charset_c<CharT>, representative>(facets);
 
         return [charset, form, write_coord1, write_coord2] (strf::destination<CharT>& dst)
             {
@@ -237,7 +237,7 @@ struct complex_printer_base
                 break;
             default:
                 assert(form == complex_form::polar);
-                using rt = representative_type;
+                using rt = representative;
                 if (pre->has_remaining_width()) {
                     auto wcalc = strf::use_facet<strf::width_calculator_c, rt>(facets);
                     pre->add_width(wcalc.char_width(strf::utf_t<char32_t>{}, anglechar));

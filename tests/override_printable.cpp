@@ -71,7 +71,7 @@ namespace strf {
 
 template <>
 struct printable_def<bool_wrapper> {
-    using representative_type = bool_wrapper;
+    using representative = bool_wrapper;
     using forwarded_type = bool_wrapper;
     using override_tag = bool_wrapper;
     using is_overridable = std::true_type;

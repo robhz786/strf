@@ -20,7 +20,7 @@ namespace strf {
 template <>
 struct printable_def<xxx::ipv4address> {
 
-    using representative_type = xxx::ipv4address;
+    using representative = xxx::ipv4address;
     using forwarded_type = xxx::ipv4address;
     using format_specifiers = strf::tag<strf::alignment_format_specifier>;
 

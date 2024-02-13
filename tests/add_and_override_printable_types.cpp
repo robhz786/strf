@@ -40,7 +40,7 @@ namespace strf {
 template<>
 struct printable_def<mytype>
 {
-    using representative_type = mytype;
+    using representative = mytype;
     using forwarded_type = mytype;
     using format_specifiers = strf::tag<strf::alignment_format_specifier>;
     using is_overridable = std::true_type;
@@ -277,7 +277,7 @@ namespace strf {
 template <>
 struct printable_def<my_abstract_type>
 {
-    using representative_type = strf::reference_wrapper<const my_abstract_type>;
+    using representative = strf::reference_wrapper<const my_abstract_type>;
     using forwarded_type = strf::reference_wrapper<const my_abstract_type>;
     using format_specifiers = strf::tag<strf::alignment_format_specifier>;
 
@@ -397,7 +397,7 @@ namespace strf {
 template <>
 struct printable_def<mytype2>
 {
-    using representative_type = mytype2;
+    using representative = mytype2;
     using forwarded_type = mytype2;
     using is_overridable = std::true_type;
 
