@@ -108,7 +108,7 @@ public:
     explicit ipv6_printer
         ( PreMeasurements* pre
         , const FPack& facets
-        , const strf::printable_with_fmt<T...>& arg )
+        , const strf::value_and_format<T...>& arg )
         : addr_(arg.value())
         , alignment_fmt_(arg.get_alignment_format())
         , lettercase_(strf::use_facet<strf::lettercase_c, xxx::ipv6address>(facets))
@@ -234,7 +234,7 @@ struct printable_def<xxx::ipv6address> {
         ( strf::tag<CharT>
         , PreMeasurements* pre
         , const FPack& fp
-        , const strf::printable_with_fmt<printable_def, Fmts...>& arg )
+        , const strf::value_and_format<printable_def, Fmts...>& arg )
     {
         return ipv6_printer<CharT>{pre, fp, arg};
     }

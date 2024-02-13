@@ -58,7 +58,7 @@ struct printable_def<mytype>
     STRF_HD static void print
         ( strf::destination<CharT>& dst
         , const FPack& fp
-        , const strf::printable_with_fmt<T...>& x )
+        , const strf::value_and_format<T...>& x )
     {
         const auto e = x.value();
         const auto afmt = x.get_alignment_format();
@@ -148,7 +148,7 @@ struct mytype_overrider_impl
     STRF_HD static void print
         ( strf::destination<CharT>& dst
         , const FPack& fp
-        , const strf::printable_with_fmt<T...>& x )
+        , const strf::value_and_format<T...>& x )
     {
         const auto e = x.value();
         const auto afmt = x.get_alignment_format();
@@ -294,7 +294,7 @@ struct printable_def<my_abstract_type>
     STRF_HD static void print
         ( strf::destination<CharT>& dst
         , const FPack& fp
-        , const strf::printable_with_fmt<T...>& x )
+        , const strf::value_and_format<T...>& x )
     {
         to(dst) .with(fp)
             ( strf::transcode(x.value().get().msg())

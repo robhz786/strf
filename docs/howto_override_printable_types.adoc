@@ -12,7 +12,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 :set_alignment_format: <<strf_hpp#alignment_format_specifier,set_alignment_format>>
 :get_alignment_format: <<strf_hpp#alignment_format_specifier,get_alignment_format>>
 :constrain: <<tutorial#constrained_facets,constrain>>
-:printable_with_fmt: <<strf_hpp#printable_with_fmt,printable_with_fmt>>
+:value_and_format: <<strf_hpp#value_and_format,value_and_format>>
 :PrintableDef: <<strf_hpp#PrintableDef,PrintableDef>>
 :printable_def_of: <<strf_hpp#printable_def_of,printable_def_of>>
 :lettercase: <<strf_hpp#lettercase,lettercase>>
@@ -67,7 +67,7 @@ struct italian_bool_facet
         ( strf::tag<CharT>
         , Pre* pre
         , const FPack& fp
-        , strf::{printable_with_fmt}<T\...> x ) noexcept
+        , strf::{value_and_format}<T\...> x ) noexcept
     {
         return strf::{make_printer}<CharT>
             ( pre
@@ -94,7 +94,7 @@ is still well-formed, because the format functions
 that are applicable to a printable type keep being the same
 when we override it. We can't change them.
 So it makes sense to overload `make_printer`
-with `{printable_with_fmt}` argument even
+with `{value_and_format}` argument even
 if you don't want to support formatting, just to
 add a `static_assert` to emit a clear error message.
 
@@ -111,7 +111,7 @@ And that's what we did in the implementation above.
 ////
 Even if you don't want to support formatting,
 it still makes sense to overload `make_printer`
-taking the `{printable_with_fmt}` argument and add
+taking the `{value_and_format}` argument and add
 a `static_assert` with an explanatory message.
 ////
 

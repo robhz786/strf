@@ -552,7 +552,7 @@ public:
     STRF_CONSTEXPR_IN_CXX14 STRF_HD strcpy_printer
         ( PreMeasurements* pre
         , const FPack& facets
-        , const strf::printable_with_fmt
+        , const strf::value_and_format
             < string_printing<SrcCharT>
             , strf::detail::string_precision_format_specifier<false>
             , strf::alignment_format_specifier_q<false>
@@ -577,7 +577,7 @@ public:
     STRF_CONSTEXPR_IN_CXX14 STRF_HD strcpy_printer
         ( PreMeasurements* pre
         , const FPack& facets
-        , const strf::printable_with_fmt
+        , const strf::value_and_format
             < string_printing<SrcCharT>
             , strf::detail::string_precision_format_specifier<true>
             , strf::alignment_format_specifier_q<false>
@@ -629,7 +629,7 @@ public:
     STRF_HD aligned_strcpy_printer
         ( PreMeasurements* pre
         , const FPack& facets
-        , const strf::printable_with_fmt
+        , const strf::value_and_format
             < string_printing<SrcCharT>
             , strf::detail::string_precision_format_specifier<false>
             , strf::alignment_format_specifier_q<true>
@@ -657,7 +657,7 @@ public:
     STRF_HD aligned_strcpy_printer
         ( PreMeasurements* pre
         , const FPack& facets
-        , const strf::printable_with_fmt
+        , const strf::value_and_format
             < string_printing<SrcCharT>
             , strf::detail::string_precision_format_specifier<true>
             , strf::alignment_format_specifier_q<true>
@@ -780,7 +780,7 @@ template < typename FPack, typename SrcCharT, bool HasPrecision, bool HasAlignme
          , typename Charset, transcoding_policy TranscPoli >
 constexpr STRF_HD auto get_src_charset
     ( const FPack& facets
-    , const strf::printable_with_fmt
+    , const strf::value_and_format
         < string_printing<SrcCharT>
         , strf::detail::string_precision_format_specifier<HasPrecision>
         , strf::alignment_format_specifier_q<HasAlignment>
@@ -799,7 +799,7 @@ public:
     STRF_HD transcode_printer
         ( PreMeasurements* pre
         , const FPack& facets
-        , const strf::printable_with_fmt
+        , const strf::value_and_format
             < string_printing<SrcCharT>
             , strf::detail::string_precision_format_specifier<false>
             , strf::alignment_format_specifier_q<false>
@@ -824,7 +824,7 @@ public:
     STRF_HD transcode_printer
         ( PreMeasurements* pre
         , const FPack& facets
-        , const strf::printable_with_fmt
+        , const strf::value_and_format
             < string_printing<SrcCharT>
             , strf::detail::string_precision_format_specifier<true>
             , strf::alignment_format_specifier_q<false>
@@ -926,7 +926,7 @@ public:
     STRF_HD aligned_transcode_printer
         ( PreMeasurements* pre
         , const FPack& facets
-        , const strf::printable_with_fmt
+        , const strf::value_and_format
             < string_printing<SrcCharT>
             , strf::detail::string_precision_format_specifier<false>
             , strf::alignment_format_specifier_q<true>
@@ -952,7 +952,7 @@ public:
     STRF_HD aligned_transcode_printer
         ( PreMeasurements* pre
         , const FPack& facets
-        , const strf::printable_with_fmt
+        , const strf::value_and_format
             < string_printing<SrcCharT>
             , strf::detail::string_precision_format_specifier<true>
             , strf::alignment_format_specifier_q<true>
@@ -1100,7 +1100,7 @@ public:
     STRF_HD unsafe_transcode_printer
         ( PreMeasurements* pre
         , const FPack& facets
-        , const strf::printable_with_fmt
+        , const strf::value_and_format
             < string_printing<SrcCharT>
             , strf::detail::string_precision_format_specifier<false>
             , strf::alignment_format_specifier_q<false>
@@ -1124,7 +1124,7 @@ public:
     STRF_HD unsafe_transcode_printer
         ( PreMeasurements* pre
         , const FPack& facets
-        , const strf::printable_with_fmt
+        , const strf::value_and_format
             < string_printing<SrcCharT>
             , strf::detail::string_precision_format_specifier<true>
             , strf::alignment_format_specifier_q<false>
@@ -1227,7 +1227,7 @@ public:
     STRF_HD aligned_unsafe_transcode_printer
         ( PreMeasurements* pre
         , const FPack& facets
-        , const strf::printable_with_fmt
+        , const strf::value_and_format
             < string_printing<SrcCharT>
             , strf::detail::string_precision_format_specifier<false>
             , strf::alignment_format_specifier_q<true>
@@ -1253,7 +1253,7 @@ public:
     STRF_HD aligned_unsafe_transcode_printer
         ( PreMeasurements* pre
         , const FPack& facets
-        , const strf::printable_with_fmt
+        , const strf::value_and_format
             < string_printing<SrcCharT>
             , strf::detail::string_precision_format_specifier<true>
             , strf::alignment_format_specifier_q<true>
@@ -1551,7 +1551,7 @@ public:
     STRF_HD transcode_printer_variant
         ( PreMeasurements* pre
         , const FPack& facets
-        , const strf::printable_with_fmt
+        , const strf::value_and_format
             < string_printing<SrcCharT>
             , strf::detail::string_precision_format_specifier<HasPrecision>
             , strf::alignment_format_specifier_q<false>
@@ -1640,7 +1640,7 @@ public:
     STRF_HD aligned_transcode_printer_variant
         ( PreMeasurements* pre
         , const FPack& facets
-        , const strf::printable_with_fmt
+        , const strf::value_and_format
             < string_printing<SrcCharT>
             , strf::detail::string_precision_format_specifier<HasPrecision>
             , strf::alignment_format_specifier_q<true>
@@ -1758,7 +1758,7 @@ struct string_printing
         ( strf::tag<DstCharT>
         , PreMeasurements* pre
         , const FPack& facets
-        , const strf::printable_with_fmt
+        , const strf::value_and_format
             < string_printing<SrcCharT>
             , string_precision_format_specifier<HasPrecision>
             , strf::alignment_format_specifier_q<HasAlignment>

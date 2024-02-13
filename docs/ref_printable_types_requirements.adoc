@@ -9,7 +9,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 
 :premeasurements: <<premeasurements, premeasurements>>
 :facets_pack: <<facets_pack, facets_pack>>
-:printable_with_fmt: <<printable_with_fmt, printable_with_fmt>>
+:value_and_format: <<value_and_format, value_and_format>>
 
 :PrintableDef: <<PrintableDef,PrintableDef>>
 :Printable: <<Printable,Printable>>
@@ -61,7 +61,7 @@ template <typename T> using printable_def_of = /{asterisk} see below\... {asteri
 `printable_def_of<T>` is:
 
 *  `printable_def_of<std::remove_cvref<T>>`, if `T` is a reference type or has any cv-qualifier
-*  otherwise, it is `PrintableDef`, when `T` is `{printable_with_fmt}<PrintableDef, /{asterisk}\... {asterisk}/>`
+*  otherwise, it is `PrintableDef`, when `T` is `{value_and_format}<PrintableDef, /{asterisk}\... {asterisk}/>`
 *  otherwise, it is `printable_def<T>` if such template specialization is defined
 *  otherwise, it is `decltype(get_printable_def(printable_tag{}, std::declval<T>()))`
 
@@ -135,7 +135,7 @@ Given
 * `fpack`, a value of type `{facets_pack}</{asterisk}\... {asterisk}/>`
 * `pre`, a value of type `{premeasurements}</{asterisk}\... {asterisk}/>`
 * `dst`, an non-const lvalue reference of type `{destination}<CharT>`
-* `v`, a value of type `T::forwarded_type` or `{printable_with_fmt}<T, F\...>`,
+* `v`, a value of type `T::forwarded_type` or `{value_and_format}<T, F\...>`,
    where `F\...` is such that `T::format_specifiers` is an alias to `{tag}<F\...>`.
 
 At least one of the function templates below must be defined:

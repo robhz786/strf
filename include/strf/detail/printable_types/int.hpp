@@ -1173,7 +1173,7 @@ public:
     STRF_HD aligned_default_int_printer
           ( Pre* pre
           , const FPack& facets
-          , const printable_with_fmt
+          , const value_and_format
               <P, int_format_specifier, alignment_format_specifier_q<true>>& arg )
     {
         init_(arg.value());
@@ -1343,7 +1343,7 @@ public:
     STRF_HD int_printer_no_pad0_nor_punct
         ( PreMeasurements* pre
         , const FPack&
-        , const printable_with_fmt
+        , const value_and_format
               < P
               , int_format_specifier_no_pad0_nor_punct<10>
               , alignment_format_specifier_q<false> >& arg ) noexcept
@@ -1379,7 +1379,7 @@ public:
     STRF_HD int_printer_no_pad0_nor_punct
         ( PreMeasurements* pre
         , const FPack& facets
-        , const printable_with_fmt
+        , const value_and_format
               < P
               , int_format_specifier_no_pad0_nor_punct<16>
               , alignment_format_specifier_q<false> >& arg ) noexcept
@@ -1421,7 +1421,7 @@ public:
     STRF_HD int_printer_no_pad0_nor_punct
         ( PreMeasurements* pre
         , const FPack&
-        , printable_with_fmt
+        , value_and_format
               < P
               , int_format_specifier_no_pad0_nor_punct<8>
               , alignment_format_specifier_q<false> > arg ) noexcept
@@ -1456,7 +1456,7 @@ public:
     STRF_HD int_printer_no_pad0_nor_punct
         ( PreMeasurements* pre
         , const FPack& facets
-        , printable_with_fmt
+        , value_and_format
               < P
               , int_format_specifier_no_pad0_nor_punct<2>
               , alignment_format_specifier_q<false> > arg ) noexcept
@@ -1707,7 +1707,7 @@ public:
     STRF_HD int_printer_static_base_and_punct
         ( PreMeasurements* pre
         , const FPack& facets
-        , printable_with_fmt
+        , value_and_format
               < P
               , IntFormat
               , alignment_format_specifier_q<HasAlignment> > arg ) noexcept
@@ -1856,7 +1856,7 @@ public:
     STRF_HD int_printer_static_base_and_punct
         ( PreMeasurements* pre
         , const FPack& facets
-        , printable_with_fmt
+        , value_and_format
               < P
               , int_format_specifier_static_base_and_punct<Base, true>
               , alignment_format_specifier_q<HasAlignment> > arg ) noexcept
@@ -2222,22 +2222,22 @@ struct int_printing
 private:
 
     template <typename P, bool HasAlignment>
-    using vwf_ = printable_with_fmt
+    using vaf_ = value_and_format
               < P, int_format_specifier
               , alignment_format_specifier_q<HasAlignment> >;
 
     template <typename P, int Base, bool HasAlignment>
-    using vwf_nopp_ = printable_with_fmt
+    using vaf_nopp_ = value_and_format
               < P, int_format_specifier_no_pad0_nor_punct<Base>
               , alignment_format_specifier_q<HasAlignment> >;
 
     template <typename P, int Base, bool Punctuate, bool HasAlignment>
-    using vwf_bp_ = printable_with_fmt
+    using vaf_bp_ = value_and_format
               < P, int_format_specifier_static_base_and_punct<Base, Punctuate>
               , alignment_format_specifier_q<HasAlignment> >;
 
     template <typename P, bool HasAlignment>
-    using vwf_full_dynamic_ = printable_with_fmt
+    using vaf_full_dynamic_ = value_and_format
               < P, int_format_specifier_full_dynamic
               , alignment_format_specifier_q<HasAlignment> >;
 public:
@@ -2265,7 +2265,7 @@ public:
         ( strf::tag<CharT>
         , PreMeasurements* pre
         , const FPack& facets
-        , vwf_nopp_<PrintableDef, Base, HasAlignment> x ) noexcept
+        , vaf_nopp_<PrintableDef, Base, HasAlignment> x ) noexcept
         -> strf::detail::conditional_t
             < HasAlignment
             , strf::detail::int_printer_static_base_and_punct<CharT, Base, false>
@@ -2280,7 +2280,7 @@ public:
         ( strf::tag<CharT>
         , PreMeasurements* pre
         , const FPack& facets
-        , vwf_bp_<PrintableDef, Base, Punctuate, HasAlignment> x )
+        , vaf_bp_<PrintableDef, Base, Punctuate, HasAlignment> x )
         -> strf::detail::int_printer_static_base_and_punct<CharT, Base, Punctuate>
     {
         return {pre, facets, x};
@@ -2291,7 +2291,7 @@ public:
         ( strf::tag<CharT>
         , PreMeasurements* pre
         , const FPack& facets
-        , vwf_<PrintableDef, true> x )
+        , vaf_<PrintableDef, true> x )
         -> detail::aligned_default_int_printer<CharT>
     {
         return {pre, facets, x};
@@ -2303,7 +2303,7 @@ public:
         ( strf::tag<CharT>
         , PreMeasurements* pre
         , const FPack& facets
-        , vwf_full_dynamic_<PrintableDef, HasAlignment> x )
+        , vaf_full_dynamic_<PrintableDef, HasAlignment> x )
         -> strf::detail::int_printer_full_dynamic<CharT>
     {
         return {pre, facets, x.get_int_format(), x.get_alignment_format(), x.value()};
@@ -2412,7 +2412,7 @@ struct voidptr_printing
         ( strf::tag<CharT>
         , PreMeasurements* pre
         , const FPack& facets
-        , strf::printable_with_fmt<T...> x ) noexcept
+        , strf::value_and_format<T...> x ) noexcept
     {
         return strf::make_printer<CharT>
             ( pre

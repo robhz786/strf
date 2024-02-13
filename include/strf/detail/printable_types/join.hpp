@@ -58,7 +58,7 @@ struct aligned_join_maker
     char32_t fillchar = U' ';
 
     template<typename... Args>
-    constexpr STRF_HD strf::printable_with_fmt
+    constexpr STRF_HD strf::value_and_format
         < strf::detail::join_printing<strf::forwarded_printable_type<Args>...>
         , strf::alignment_format_specifier_q<true> >
     operator()(const Args&... args) const
@@ -184,7 +184,7 @@ struct join_printing
     using forwarded_type = strf::detail::join_t<FwdArgs...>;
 
     template <bool HasAlignment>
-    using fmt_tmpl = strf::printable_with_fmt
+    using fmt_tmpl = strf::value_and_format
         < join_printing<FwdArgs...>
         , strf::alignment_format_specifier_q<HasAlignment> >;
 
@@ -301,12 +301,12 @@ struct printable_def<strf::detail::join_t<FwdArgs...>>
 
 
 template<typename... Args>
-constexpr STRF_HD strf::printable_with_fmt
+constexpr STRF_HD strf::value_and_format
     < strf::detail::join_printing<strf::forwarded_printable_type<Args>...>
     , strf::alignment_format_specifier_q<false> >
 join(const Args&... args)
 {
-    return strf::printable_with_fmt
+    return strf::value_and_format
         < strf::detail::join_printing<strf::forwarded_printable_type<Args>...>
         , strf::alignment_format_specifier_q<false> >
         { strf::detail::join_t<strf::forwarded_printable_type<Args>...>

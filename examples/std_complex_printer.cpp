@@ -174,7 +174,7 @@ struct complex_printer_base
         ( strf::tag<CharT>
         , PreMeasurements* pre
         , const FPack& facets
-        , const strf::printable_with_fmt
+        , const strf::value_and_format
             < PrintableDef
             , std_complex_format_specifier
             , FloatFmt
@@ -268,7 +268,7 @@ struct printable_def<std::complex<FloatT>> : complex_printer_base<FloatT>
         ( strf::tag<CharT>
         , PreMeasurements* pre
         , const FPack& facets
-        , const strf::printable_with_fmt
+        , const strf::value_and_format
             < printable_def
             , std_complex_format_specifier
             , FloatFmt

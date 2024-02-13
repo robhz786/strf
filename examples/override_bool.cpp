@@ -14,7 +14,7 @@ struct my_bool_overrider
         ( strf::tag<CharT>
         , PreMeasurements* pre
         , const FPack& fp
-        , strf::printable_with_fmt<T...> x ) const noexcept
+        , strf::value_and_format<T...> x ) const noexcept
     {
         const bool value = static_cast<bool>(x.value());
         return strf::make_printer<CharT>

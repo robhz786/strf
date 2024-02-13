@@ -258,7 +258,7 @@ struct printable_def<xxx::base64_input>
     using format_specifiers = strf::tag<xxx::base64_format_specifier>;
 
     using input_with_fmt =
-        strf::printable_with_fmt<printable_def<xxx::base64_input>, xxx::base64_format_specifier>;
+        strf::value_and_format<printable_def<xxx::base64_input>, xxx::base64_format_specifier>;
     
     template <typename CharT, typename FPack>
     static auto make_printer

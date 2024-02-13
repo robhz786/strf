@@ -154,7 +154,7 @@ struct printable_def<std::complex<FloatT>>
         ( strf::tag<CharT>
         , PreMeasurements* pre
         , const FPack& fp
-        , strf::printable_with_fmt<T...> arg )
+        , strf::value_and_format<T...> arg )
     {
         auto form = arg.get_complex_form();
         auto v = ::complex_coordinates(arg.value(), form);

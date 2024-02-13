@@ -150,7 +150,7 @@ struct printable_def<bool>
         ( strf::tag<CharT>
         , PreMeasurements* pre
         , const FPack& fp
-        , strf::printable_with_fmt<T...> x ) noexcept
+        , strf::value_and_format<T...> x ) noexcept
         -> strf::detail::fmt_bool_printer<CharT>
     {
         const bool value = x.value();

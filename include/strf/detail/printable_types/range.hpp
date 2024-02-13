@@ -270,7 +270,7 @@ public:
     STRF_HD fmt_range_printer
         ( PreMeasurements* pre
         , const FPack& facets
-        , const strf::printable_with_fmt
+        , const strf::value_and_format
             <strf::printable_def<strf::range_p<Iterator>>, Fmts...>& arg )
         : fp_(facets)
         , fmt_(arg)
@@ -347,7 +347,7 @@ public:
     STRF_HD fmt_separated_range_printer
         ( PreMeasurements* pre
         , const FPack& facets
-        , const strf::printable_with_fmt
+        , const strf::value_and_format
             < strf::printable_def<strf::separated_range_p<Iterator, CharT>>
             , Fmts... >& arg )
         : fp_(facets)
@@ -614,7 +614,7 @@ struct printable_def<strf::range_p<Iterator>>
         ( strf::tag<CharT>
         , PreMeasurements* pre
         , const FPack& fp
-        , strf::printable_with_fmt<strf::printable_def<strf::range_p<Iterator>>, Fmts...> x )
+        , strf::value_and_format<strf::printable_def<strf::range_p<Iterator>>, Fmts...> x )
         -> strf::detail::fmt_range_printer<CharT, FPack, Iterator, Fmts...>
     {
         return {pre, fp, x};
@@ -647,7 +647,7 @@ struct printable_def<strf::separated_range_p<Iterator, SepCharT>>
         ( strf::tag<DstCharT>
         , PreMeasurements* pre
         , const FPack& fp
-        , strf::printable_with_fmt
+        , strf::value_and_format
             < strf::printable_def<strf::separated_range_p<Iterator, SepCharT>>, Fmts... > x )
         -> detail::fmt_separated_range_printer<DstCharT, FPack, Iterator, Fmts...>
     {

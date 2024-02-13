@@ -371,7 +371,7 @@ is too small.
 //             ( strf::tag<CharT>
 //             , Pre* pre
 //             , const FPack& fp
-//             , strf::printable_with_fmt<T...> arg ) noexcept
+//             , strf::value_and_format<T...> arg ) noexcept
 //         {
 //             point<FloatT> p = arg.value();
 //             auto arg2 = strf::join

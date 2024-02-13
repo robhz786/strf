@@ -102,19 +102,19 @@ that work as alias to format functions
 [[FormatSpecifier]]
 === Type requirement _FormatSpecifier_
 
-// This is the requirement for a type to be a paramenter of the `printable_with_fmt`
+// This is the requirement for a type to be a paramenter of the `value_and_format`
 // template.
 A type `Fmt` is a _FormatSpecifier_ if it has a member `fn` that is a type template
 with one template type parameter such that, given any types `T` and `U`:
 
-- `Fmt::template fn<T>` is well-formed if `T` is `printable_with_fmt<ValueType, Fmts\...>`.
+- `Fmt::template fn<T>` is well-formed if `T` is `value_and_format<ValueType, Fmts\...>`.
   In this case, note that `Fmt` is in `Fmts\...` and `T` derives from `Fmt::template fn<T>`.
 - `Fmt::template fn<T>` is default constructible, assuming it is well-formed.
 - `Fmt::template fn<T>` can be constructed from `const Fmt::template fn<U>&`,
   if both are well-formed.
 
 // Although it is not a compile-time requirement, it only makes sense to use a type `Fmt`
-// in `printable_with_fmt` if `Fmt::template fn<T>` contains any __format function__.
+// in `value_and_format` if `Fmt::template fn<T>` contains any __format function__.
 // These are member functions and they are of two kinds. In the first one, the return type
 // is `T`, `T&` or `T&&` depending of
 //
@@ -741,11 +741,11 @@ constexpr /* see below...*/ operator()(T&& value) const;
 ----
 
 Return value::
-* `value`, if `std::remove_cvref_t<T>` is an instance of `{printable_with_fmt}`
+* `value`, if `std::remove_cvref_t<T>` is an instance of `{value_and_format}`
 * `{fmt_type}<T>{ fmt_value_type<T>{ (T&&)value } }`, otherwise
 
 Return type::
-* `T&&`, if `std::remove_cvref<T>` is an instance of `printable_with_fmt`
+* `T&&`, if `std::remove_cvref<T>` is an instance of `value_and_format`
 * `{fmt_type}<T>`, otherwise
 ====
 
@@ -763,22 +763,22 @@ using fmt_type = /{asterisk}...{asterisk}/;
 `fmt_type<T>` is:
 
 * `fmt_type<T>`, if `T` is a reference or has any cv-qualifier
-* otherwise, it is `T`, if `T` is an instance of `{printable_with_fmt}`
-* otherwise, it is `{printable_with_fmt}<PrintableDef, Fmts\...>`, where:
+* otherwise, it is `T`, if `T` is an instance of `{value_and_format}`
+* otherwise, it is `{value_and_format}<PrintableDef, Fmts\...>`, where:
 ** `PDef` is `{printable_def_of}<T>`
 ** `Fmts\...` is template paramenter pack used to define
    `PrintableDef::<<PrintableDef_format_specifiers,format_specifiers>>` (
     as a type alias to `{tag}<Fmt\...>` ).
-***  If `PrintableDef::format_specifiers` is not defined, `T` is `{printable_with_fmt}<PrintableDef>`.
+***  If `PrintableDef::format_specifiers` is not defined, `T` is `{value_and_format}<PrintableDef>`.
 
-[[printable_with_fmt]]
-=== Class template `printable_with_fmt`
+[[value_and_format]]
+=== Class template `value_and_format`
 [source,cpp]
 ----
 namespace strf {
 
 template <typename PrintableDef, class... Fmts>
-class printable_with_fmt;
+class value_and_format;
 
 } // namespace strf
 ----
@@ -793,35 +793,35 @@ Compile-time requirements::
 namespace strf {
 
 template <typename PrintableDef, class\... Fmts>
-class printable_with_fmt
-    : public Fmts::template fn<printable_with_fmt<ValueType, Fmts\...>>\...
+class value_and_format
+    : public Fmts::template fn<value_and_format<ValueType, Fmts\...>>\...
 {
 public:
     using traits = PrintableDef;
     using value_type = typename PrintableDef::forwarded_type;
 
-    constexpr explicit <<printable_with_fmt_v,printable_with_fmt>>(const value_type& v);
+    constexpr explicit <<value_and_format_v,value_and_format>>(const value_type& v);
 
     template <typename\... OtherFmts>
-    constexpr explicit <<printable_with_fmt_vwf2,printable_with_fmt>>
-        ( const printable_with_fmt<PrintableDef, OtherFmts\...>& f );
+    constexpr explicit <<value_and_format_vaf2,value_and_format>>
+        ( const value_and_format<PrintableDef, OtherFmts\...>& f );
 
     template <typename\... OtherFmts>
-    constexpr explicit <<printable_with_fmt_vwf2_rr,printable_with_fmt>>
-        ( printable_with_fmt<PrintableDef, OtherFmts\...>&& f );
+    constexpr explicit <<value_and_format_vaf2_rr,value_and_format>>
+        ( value_and_format<PrintableDef, OtherFmts\...>&& f );
 
     template <typename OtherPrintableDef>
-    constexpr <<printable_with_fmt_v_v2wf,printable_with_fmt>>
+    constexpr <<value_and_format_v_v2wf,value_and_format>>
         ( const value_type& v
-        , const printable_with_fmt<OtherPrintableDef, Fmts\...>& f );
+        , const value_and_format<OtherPrintableDef, Fmts\...>& f );
 
     template <typename OtherPrintableDef>
-    constexpr <<printable_with_fmt_v_v2wf_rr,printable_with_fmt>>
+    constexpr <<value_and_format_v_v2wf_rr,value_and_format>>
         ( const value_type& v
-        , printable_with_fmt<OtherPrintableDef, Fmts\...>&& f );
+        , value_and_format<OtherPrintableDef, Fmts\...>&& f );
 
     template <typename\... F, typename\... FInit>
-    constexpr <<printable_with_fmt_v_t_i,printable_with_fmt>>
+    constexpr <<value_and_format_v_t_i,value_and_format>>
         ( const value_type& v
         , {tag}<F\...>
         , FInit&&\... finit );
@@ -831,8 +831,8 @@ public:
         , typename\... OtherFmts
         , typename Fmt
         , typename\... FmtInitArgs >
-    constexpr <<printable_with_fmt_vwf2_t_i,printable_with_fmt>>
-        ( const printable_with_fmt<PrintableDef, OtherFmts\...>& other
+    constexpr <<value_and_format_vaf2_t_i,value_and_format>>
+        ( const value_and_format<PrintableDef, OtherFmts\...>& other
         , {tag}<Fmt>
         , FmtInitArgs&&\... fmt_init );
 
@@ -848,37 +848,37 @@ private:
 } // namespace strf
 ----
 
-[[printable_with_fmt_v]]
+[[value_and_format_v]]
 ====
 [source,cpp,subs=normal]
 ----
-constexpr printable_with_fmt(const value_type& v);
+constexpr value_and_format(const value_type& v);
 ----
 Effects::
 * Initializes `value_` with `v`
 * Default initializes all public base class subobjects
 ====
 
-[[printable_with_fmt_vwf2]]
+[[value_and_format_vaf2]]
 ====
 [source,cpp,subs=normal]
 ----
 template <typename\... OtherFmts>
-constexpr explicit printable_with_fmt
-    ( const printable_with_fmt<PrintableDef, OtherFmts\...>& f );
+constexpr explicit value_and_format
+    ( const value_and_format<PrintableDef, OtherFmts\...>& f );
 ----
 Effects::
 * Initializes `value_` with `f.value()`
 * Initializes each public base class subobjects with the corresponding base class subobject of `f`
 ====
 
-[[printable_with_fmt_vwf2_rr]]
+[[value_and_format_vaf2_rr]]
 ====
 [source,cpp,subs=normal]
 ----
 template <typename\... OtherFmts>
-constexpr explicit printable_with_fmt
-    ( printable_with_fmt<PrintableDef, OtherFmts\...>&& f );
+constexpr explicit value_and_format
+    ( value_and_format<PrintableDef, OtherFmts\...>&& f );
 ----
 Effects::
 * Initializes `value_` with `static_cast<value_type&&>(f.value())`
@@ -886,28 +886,28 @@ Effects::
   is the base class subobjects in `f` that corresponds to `b`
 ====
 
-[[printable_with_fmt_v_v2wf]]
+[[value_and_format_v_v2wf]]
 ====
 [source,cpp,subs=normal]
 ----
 template <typename OtherPrintableDef>
-constexpr printable_with_fmt
+constexpr value_and_format
     ( const value_type& v
-    , const printable_with_fmt<OtherPrintableDef, Fmts\...>& f );
+    , const value_and_format<OtherPrintableDef, Fmts\...>& f );
 ----
 Effects::
 * Initializes `value_` with `v`
 * Initializes each public base class subobjects with the corresponding base class subobject of `f`
 ====
 
-[[printable_with_fmt_v_v2wf_rr]]
+[[value_and_format_v_v2wf_rr]]
 ====
 [source,cpp,subs=normal]
 ----
 template <typename OtherPrintableDef>
-constexpr printable_with_fmt
+constexpr value_and_format
     ( const value_type& v
-    , printable_with_fmt<OtherPrintableDef, Fmts\...>&& f );
+    , value_and_format<OtherPrintableDef, Fmts\...>&& f );
 ----
 Effects::
 * Initializes `value_` with `v`
@@ -915,12 +915,12 @@ Effects::
   is the base class subobjects in `f` that corresponds to `b`
 ====
 
-[[printable_with_fmt_v_t_i]]
+[[value_and_format_v_t_i]]
 ====
 [source,cpp,subs=normal]
 ----
 template <typename\... F, typename\... FInit>
-constexpr printable_with_fmt
+constexpr value_and_format
     ( const value_type& v
     , {tag}<F\...>
     , FInit&&\... finit );
@@ -938,7 +938,7 @@ Effects::
 
 ====
 
-[[printable_with_fmt_vwf2_t_i]]
+[[value_and_format_vaf2_t_i]]
 ====
 [source,cpp,subs=normal]
 ----
@@ -948,8 +948,8 @@ template
     , typename Fmt
     , typename\... FmtInitArgs >
 template <typename Fmt, typename FmtInit, typename\... OtherFmts>
-constexpr printable_with_fmt
-    ( const printable_with_fmt<PrintableDef, OtherFmts\...>& other
+constexpr value_and_format
+    ( const value_and_format<PrintableDef, OtherFmts\...>& other
     , {tag}<Fmt>
     , FmtInitArgs&&\... args );
 
@@ -973,7 +973,7 @@ Effects::
 ====
 
 
-[[printable_with_fmt_value]]
+[[value_and_format_value]]
 ====
 [source,cpp,subs=normal]
 ----

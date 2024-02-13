@@ -54,7 +54,7 @@ struct my_bool_printing_overrider: my_bool_printing_overrider_base
         ( strf::tag<CharT>
         , PreMeasurements* pre
         , const FPack& fp
-        , strf::printable_with_fmt<T...> x ) noexcept
+        , strf::value_and_format<T...> x ) noexcept
     {
         return strf::make_printer<CharT>
             ( pre

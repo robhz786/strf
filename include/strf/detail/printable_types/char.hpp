@@ -34,7 +34,7 @@ public:
     STRF_HD fmt_char_printer
         ( PreMeasurements* pre
         , const FPack& facets
-        , strf::printable_with_fmt<T...> arg )
+        , strf::value_and_format<T...> arg )
         : count_(arg.scount())
         , afmt_(arg.get_alignment_format())
         , ch_(static_cast<CharT>(arg.value()))
@@ -166,7 +166,7 @@ public:
     STRF_HD fmt_conv_char32_printer
         ( PreMeasurements* pre
         , const FPack& facets
-        , strf::printable_with_fmt<F...> arg )
+        , strf::value_and_format<F...> arg )
         : count_(arg.scount())
         , ch_(arg.value())
     {
@@ -312,7 +312,7 @@ struct char_printing
         ( strf::tag<DstCharT>
         , PreMeasurements* pre
         , const FPack& facets
-        , strf::printable_with_fmt<T...> arg ) noexcept
+        , strf::value_and_format<T...> arg ) noexcept
         -> strf::detail::fmt_char_printer<DstCharT>
     {
         return {pre, facets, arg};
@@ -376,7 +376,7 @@ struct printable_def<char32_t>
         ( strf::tag<DstCharT>
         , PreMeasurements* pre
         , const FPack& fp
-        , strf::printable_with_fmt<F...> x ) noexcept
+        , strf::value_and_format<F...> x ) noexcept
         -> detail::conditional_t
             < std::is_same<DstCharT, char32_t>::value
             , strf::detail::fmt_char_printer<DstCharT>

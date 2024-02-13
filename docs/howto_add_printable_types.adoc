@@ -22,7 +22,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 :dont_override:         <<strf_hpp#dont_override,dont_override>>
 :premeasurements:       <<strf_hpp#premeasurements,premeasurements>>
 :measure:               <<strf_hpp#measure,measure>>
-:printable_with_fmt:    <<strf_hpp#printable_with_fmt,printable_with_fmt>>
+:value_and_format:      <<strf_hpp#value_and_format,value_and_format>>
 :make_printer:          <<strf_hpp#make_printer,make_printer>>
 :strf_make_printer:     <<strf_hpp#make_printer,strf::make_printer>>
 
@@ -294,7 +294,7 @@ struct printable_def<std::complex<FloatT>> {
 After that, whenever a value `x` is a `std::complex`,
 expressions like `+strf::fmt(x)` and `*strf::sci(x) > 20` and `right(x, 20, '_').sci()`
 are all well-formed, and the type of `strf::fmt(x)` is
-`{printable_with_fmt}<printable_def<std::complex<...>>, Fmts\...>`, where `Fmts\...`
+`{value_and_format}<printable_def<std::complex<...>>, Fmts\...>`, where `Fmts\...`
 are the types you used in to define the `format_specifiers` type alias.
 
 Though well-formed, they are still not printable.
@@ -326,7 +326,7 @@ struct printable_def<std::complex<FloatT>> {
         ( strf::tag<CharT>
         , Pre* pre
         , const FPack& fp
-        , strf::{printable_with_fmt}<T\...> arg )
+        , strf::{value_and_format}<T\...> arg )
     {
         // handles value with formatting
 
@@ -348,9 +348,9 @@ struct printable_def<std::complex<FloatT>> {
 
 
 Instead of taking a raw `std::complex<Float>`, the new overload takes a
-`{printable_with_fmt}<T\...>` which matches the return type of the format functions.
+`{value_and_format}<T\...>` which matches the return type of the format functions.
 Note that we need to add that template parameter pack because the __FormatSpecifiers__ types
-in `{printable_with_fmt}` may change as some format functions are used. For example:
+in `{value_and_format}` may change as some format functions are used. For example:
 [source,cpp,subs=normal]
 ----
 std::complex<double> x;
@@ -371,7 +371,7 @@ below is not well-formed:
 ----
 __PrintableDef__::make_printer({tag}<CharT>{}, pre, fp, x)
 ----
-, and the type of `x` is not an instance `{printable_with_fmt}`, then
+, and the type of `x` is not an instance `{value_and_format}`, then
 the library invokes the following instead:
 [source,cpp,subs=normal]
 ----
@@ -486,7 +486,7 @@ struct std_complex_format_specifier {
 The `static_cast` expressions above work because
 `fn<T>` is supposed to be a base class of `T`
 ( yes, it's the https://en.wikipedia.org/wiki/Curiously_recurring_template_pattern[CRTP] ).
-Not only that, `T` is expected to be an instance of `{printable_with_fmt}`
+Not only that, `T` is expected to be an instance of `{value_and_format}`
 that has `std_complex_format_specifier` as one of its template arguments.
 
 Now let's suppose we want the `complex_form` value to
@@ -515,7 +515,7 @@ struct printable_def<std::complex<FloatT>> {
     // \...
 ----
 
-And second, the `make_printer` that has the `printable_with_fmt` param:
+And second, the `make_printer` that has the `value_and_format` param:
 [source,cpp]
 ----
 namespace strf {
@@ -530,7 +530,7 @@ struct printable_def<std::complex<FloatT>> {
         ( strf::tag<CharT>
         , Pre* pre
         , const FPack& fp
-        , strf::printable_with_fmt<T...> arg )
+        , strf::value_and_format<T...> arg )
     {
         auto form = arg.get_complex_form();
         auto v = complex_coordinates(arg.value(), form);
@@ -640,8 +640,8 @@ with (copied from) the correponding base class subobject of this object,
 except the `std_complex_format_specifier::fn<T>` one,
 which is initialized instead with `complex_form_fmt::polar`.
 This is why we also need to add that constructor that has
-a `complex_form_fmt` parameter. The `printable_with_fmt` constructor
-used above is documented <<strf_hpp#printable_with_fmt_vwf2_t_i,here>>.
+a `complex_form_fmt` parameter. The `value_and_format` constructor
+used above is documented <<strf_hpp#value_and_format_vaf2_t_i,here>>.
 
 And its done! I think is a pretty complete example of how to make
 `std::complex` printable. You can see the complete implementation

@@ -30,7 +30,7 @@ struct printable_def<xxx::point2D<FloatT>> {
         ( strf::tag<CharT>
         , PreMeasurements* pre
         , const FPack& fp
-        , strf::printable_with_fmt<T...> arg ) noexcept
+        , strf::value_and_format<T...> arg ) noexcept
     {
         auto p = arg.value(); // the Point2D<FloatT> value
         auto arg2 = strf::join

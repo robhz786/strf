@@ -6,7 +6,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <strf/detail/printable_with_fmt.hpp>
+#include <strf/detail/value_and_format.hpp>
 #include <strf/detail/premeasurements.hpp>
 #include <strf/facets_pack.hpp>
 
@@ -77,7 +77,7 @@ template<typename T>
 struct printable_def;
 
 template<typename PrintableDef, typename... Fmts>
-struct printable_def<strf::printable_with_fmt<PrintableDef, Fmts...>> : PrintableDef
+struct printable_def<strf::value_and_format<PrintableDef, Fmts...>> : PrintableDef
 {
 };
 
@@ -203,10 +203,10 @@ struct printable_def_finder
 };
 
 template <typename PrintableDef, typename... F>
-struct printable_def_finder<strf::printable_with_fmt<PrintableDef, F...>>
+struct printable_def_finder<strf::value_and_format<PrintableDef, F...>>
 {
     using traits = PrintableDef;
-    using forwarded_type = strf::printable_with_fmt<PrintableDef, F...>;
+    using forwarded_type = strf::value_and_format<PrintableDef, F...>;
 };
 
 template <typename T>
@@ -230,14 +230,14 @@ struct printable_def_finder<volatile T> : printable_def_finder<T>
 };
 
 template <typename PrintableDef, typename Formatters>
-struct mp_define_printable_with_fmt;
+struct mp_define_value_and_format;
 
 template < typename PrintableDef
          , template <class...> class List
          , typename... Fmts >
-struct mp_define_printable_with_fmt<PrintableDef, List<Fmts...>>
+struct mp_define_value_and_format<PrintableDef, List<Fmts...>>
 {
-    using type = strf::printable_with_fmt<PrintableDef, Fmts...>;
+    using type = strf::value_and_format<PrintableDef, Fmts...>;
 };
 
 template <typename PrintableDef>
@@ -260,8 +260,8 @@ using extract_format_specifiers_from_printable_def =
     typename extract_format_specifiers_from_printable_def_impl<PrintableDef>::type;
 
 template <typename PrintableDef>
-using default_printable_with_fmt_of_printable_def = typename
-    strf::detail::mp_define_printable_with_fmt
+using default_value_and_format_of_printable_def = typename
+    strf::detail::mp_define_value_and_format
         < PrintableDef
         , extract_format_specifiers_from_printable_def<PrintableDef> >
     :: type;
@@ -272,15 +272,15 @@ struct format_specifiers_finder
     using traits = typename printable_def_finder<T>::traits;
     using format_specifiers = extract_format_specifiers_from_printable_def<traits>;
     using fmt_type = typename
-        strf::detail::mp_define_printable_with_fmt<traits, format_specifiers>::type;
+        strf::detail::mp_define_value_and_format<traits, format_specifiers>::type;
 };
 
 template <typename PrintableDef, typename... Fmts>
-struct format_specifiers_finder<strf::printable_with_fmt<PrintableDef, Fmts...>>
+struct format_specifiers_finder<strf::value_and_format<PrintableDef, Fmts...>>
 {
     using traits = PrintableDef;
     using format_specifiers = strf::tag<Fmts...>;
-    using fmt_type = strf::printable_with_fmt<PrintableDef, Fmts...>;
+    using fmt_type = strf::value_and_format<PrintableDef, Fmts...>;
 };
 
 } // namespace detail
@@ -319,7 +319,7 @@ namespace detail_format_functions {
 struct fmt_fn
 {
     template < typename T
-             , bool IsVWF = detail::is_printable_with_fmt<T>::value
+             , bool IsVWF = detail::is_value_and_format<T>::value
              , strf::detail::enable_if_t<!IsVWF, int> = 0
              , typename FmtType = fmt_type<T>
              , typename FmtValueType = typename FmtType::value_type >
@@ -330,7 +330,7 @@ struct fmt_fn
     }
 
     template < typename T
-             , bool IsVWF = detail::is_printable_with_fmt<T>::value
+             , bool IsVWF = detail::is_value_and_format<T>::value
              , strf::detail::enable_if_t<IsVWF, int> = 0 >
     constexpr STRF_HD T&& operator()(T&& value) const
     {
