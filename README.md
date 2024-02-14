@@ -47,7 +47,7 @@ Strf has been tested in the following compilers:
 - [Basic examples](#basic-examples)
 - [Alignment formatting](#alignment-formatting)
 - [Single character argument](#single-character-argument)
-- [Numeric Formmating](#numeric-formmating)
+- [Numeric Formatting](#numeric-formatting)
 - [Numeric Punctuation](#numeric-punctuation)
 - [Transcoding](#transcoding)
 - [Joining arguments](#joining-arguments)
@@ -141,7 +141,7 @@ void single_character_argument()
 }
 ```
 
-### Numeric Formmating
+### Numeric Formatting
 
 ```c++
 #include <strf/to_string.hpp>

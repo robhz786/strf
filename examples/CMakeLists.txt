@@ -24,8 +24,9 @@ foreach(x
     extend_input_ipv6
     extend_input_base64
     extend_input_std_complex
+    extend_input_std_complex_v2
+    extend_input_std_complex_simple
     override_bool
-    std_complex_printer
     extend_input_template
     transcoding_notifier
     )

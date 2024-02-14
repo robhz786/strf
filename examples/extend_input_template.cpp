@@ -18,15 +18,15 @@ namespace strf {
 
 template <typename T>
 struct base_printing {
-    using representative = const xxx::base<T>&;
-    using forwarded_type = const xxx::base<T>&;
+    using representative = xxx::base<T>;
+    using forwarded_type = strf::reference_wrapper<const xxx::base<T>>;
 
     template <typename CharT, typename PreMeasurements, typename FPack>
     static auto make_printer
         ( strf::tag<CharT>
         , PreMeasurements* pre
         , const FPack& fp
-        , forwarded_type x ) noexcept
+        , const xxx::base<T>& x ) noexcept
     {
         return strf::make_printer<CharT>(pre, fp, x.value);
     }

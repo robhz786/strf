@@ -133,11 +133,11 @@ std::pair<FloatT, FloatT> complex_coordinates
 //--------------------------------------------------------------------------------
 static constexpr char32_t anglechar = 0x2220;
 
-template <typename FloatT>
-struct complex_printer_base
-{
-    using category = strf::printable_overrider_c;
+namespace strf {
 
+template <typename FloatT>
+struct printable_def<std::complex<FloatT>>
+{
     using representative = std::complex<FloatT>;
     using forwarded_type = std::complex<FloatT>;
     using format_specifiers = strf::tag
@@ -168,14 +168,13 @@ struct complex_printer_base
                };
     }
 
-    template < typename CharT, typename PreMeasurements, typename FPack
-             , typename PrintableDef, typename FloatFmt >
+    template <typename CharT, typename PreMeasurements, typename FPack, typename FloatFmt>
     static auto make_printer
         ( strf::tag<CharT>
         , PreMeasurements* pre
         , const FPack& facets
         , const strf::value_and_format
-            < PrintableDef
+            < printable_def
             , std_complex_format_specifier
             , FloatFmt
             , strf::alignment_format_specifier_q<false> >& arg )
@@ -250,18 +249,6 @@ struct complex_printer_base
                 }
         }
     }
-};
-
-
-namespace strf {
-
-template <typename FloatT>
-struct printable_def<std::complex<FloatT>> : complex_printer_base<FloatT>
-{
-    template <typename T>
-    using is_complex = std::is_same<T, std::complex<FloatT>>;
-
-    using complex_printer_base<FloatT>::make_printer;
 
     template < typename CharT, typename PreMeasurements, typename FPack, typename FloatFmt >
     static auto make_printer
@@ -274,12 +261,9 @@ struct printable_def<std::complex<FloatT>> : complex_printer_base<FloatT>
             , FloatFmt
             , strf::alignment_format_specifier_q<true> >& arg )
     {
-        using base = complex_printer_base<FloatT>;
-        const auto overrider = strf::constrain<is_complex>(base());
-
         return strf::make_printer<CharT>
             ( pre
-            , strf::pack(facets, overrider)
+            , facets
             , strf::join(arg.clear_alignment_format())
                 .set_alignment_format(arg.get_alignment_format()) );
     }

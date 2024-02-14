@@ -129,44 +129,39 @@ struct printable_def<std::complex<FloatT>>
     using is_overridable = std::true_type;
     using format_specifiers = strf::tag
         < std_complex_format_specifier
-        , strf::alignment_format_specifier
         , strf::float_format_specifier >;
 
-    template <typename CharT, typename PreMeasurements, typename FPack>
-    static auto make_printer
-        ( strf::tag<CharT>
-        , PreMeasurements* pre
-        , const FPack& fp
+    template <typename CharT, typename FPack>
+    static void print
+        ( strf::destination<CharT>& dst
+        , const FPack& facets
         , std::complex<FloatT> arg)
     {
-        auto arg2 = strf::join
-            ( static_cast<CharT>('(')
-            , arg.real()
-            , strf::transcode(u", ", strf::utf_t<char16_t>())
-            , arg.imag()
-            , static_cast<CharT>(')') );
-
-        return strf::make_printer<CharT>(pre, fp, arg2);
+        to(dst).with(facets)
+            ( (CharT)'(', arg.real()
+            , strf::unsafe_transcode(", ")
+            , arg.imag(), (CharT)')');
     }
 
-    template <typename CharT, typename PreMeasurements, typename FPack, typename... T>
-    static auto make_printer
-        ( strf::tag<CharT>
-        , PreMeasurements* pre
-        , const FPack& fp
+    template <typename CharT, typename FPack, typename... T>
+    static void print
+        ( strf::destination<CharT>& dst
+        , const FPack& facets
         , strf::value_and_format<printable_def, T...> arg )
     {
         auto form = arg.get_complex_form();
         auto v = ::complex_coordinates(arg.value(), form);
-        const unsigned has_brackets = form != complex_form::polar;
-        auto arg2 = strf::join
-            ( strf::multi(static_cast<CharT>('('), has_brackets)
-            , strf::fmt(v.first).set_float_format(arg.get_float_format())
+        const bool has_brackets = form != complex_form::polar;
+        if (has_brackets) {
+            to(dst) (static_cast<CharT>('('));            
+        }
+        to(dst).with(facets)
+            ( strf::fmt(v.first).set_float_format(arg.get_float_format())
             , strf::transcode(middle_string(form), strf::utf_t<char16_t>())
-            , strf::fmt(v.second).set_float_format(arg.get_float_format())
-            , strf::multi(static_cast<CharT>(')'), has_brackets) );
-        auto arg3 = arg2.set_alignment_format(arg.get_alignment_format());
-        return strf::make_printer<CharT>(pre, fp, arg3);
+            , strf::fmt(v.second).set_float_format(arg.get_float_format()) );
+        if (has_brackets) {
+            to(dst) (static_cast<CharT>(')'));
+        }
     }
 
 private:
@@ -189,6 +184,20 @@ private:
 
 #include "../tests/test_utils.hpp"
 
+template <typename CharT>
+constexpr STRF_HD CharT char_type_of(const CharT*) { return CharT{}; }
+
+template <typename CharT>
+constexpr STRF_HD CharT char_type_of(strf::detail::simple_string_view<CharT>)
+{ return CharT{}; }
+
+
+#define TEST_NO_RESERVE(EXPECTED)                                           \
+    strf::make_printing_syntax                                              \
+    ( test_utils::input_tester_creator<decltype(char_type_of(EXPECTED))>    \
+            { (EXPECTED), __FILE__, __LINE__, BOOST_CURRENT_FUNCTION, 1.0}  \
+        , strf::no_reserve() )
+
 template <typename T> struct is_float32: std::false_type {};
 template <> struct is_float32<float>: std::true_type {};
 
@@ -200,146 +209,57 @@ void tests()
 
     auto punct = strf::numpunct<10>(3).thousands_sep(0x2D9).decimal_point(0x130);
 
-    TEST(u"(3000, 4000)") (x);
+    TEST_NO_RESERVE(u"(3000, 4000)") (x);
 
-    TEST("________________(3000., 4000.)") (*strf::right(x, 30, '_'));
+    TEST_NO_RESERVE("(3000. + i*4000.)") (*strf::fmt(x).algebric());
 
-    TEST("_____________(3000. + i*4000.)") (*strf::right(x, 30, '_').algebric());
-
-    TEST(u"_____5000.\u2220 0.9272952180016122") (*strf::right(x, 30, '_').polar());
+    TEST_NO_RESERVE(u"5000.\u2220 0.9272952180016122") (*strf::fmt(x).polar());
 
 
-    TEST("(3000., 4000.)________________") (*strf::left(x, 30, '_'));
 
-    TEST("(3000. + i*4000.)_____________") (*strf::left(x, 30, '_').algebric());
-
-    TEST(u"5000.\u2220 0.9272952180016122_____") (*strf::left(x, 30, '_').polar());
-
-
-    TEST("________(3000., 4000.)________") (*strf::center(x, 30, '_'));
-
-    TEST("______(3000. + i*4000.)_______") (*strf::center(x, 30, '_').algebric());
-
-    TEST(u"__5000.\u2220 0.9272952180016122___") (*strf::center(x, 30, '_').polar());
-
-    TEST("________________________(3\251E+03, 4\251E+03)")
+    TEST_NO_RESERVE("(3\251E+03, 4\251E+03)")
         ( strf::iso_8859_3<char>
         , punct
         , strf::uppercase
-        , * !strf::right(x, 40, '_').sci() );
+        , * !strf::sci(x) );
 
-    TEST("_____________________(3\251E+03 + i*4\251E+03)")
+    TEST_NO_RESERVE("(3\251E+03 + i*4\251E+03)")
         .with(strf::iso_8859_3<char>, punct, strf::uppercase)
-        (* !strf::right(x, 40, '_').sci().algebric());
+        (* !strf::sci(x).algebric());
 
-    TEST("___________5\251E+03? 9\251""272952180016122E-01")
+    TEST_NO_RESERVE("5\251E+03? 9\251""272952180016122E-01")
         .with(strf::iso_8859_3<char>, punct, strf::uppercase)
-        (* !strf::right(x, 40, '_').sci().polar());
+        (* !strf::sci(x).polar());
 
-    TEST("(3\251E+03, 4\251E+03)________________________")
+    TEST_NO_RESERVE("(3\251E+03, 4\251E+03)")
         .with(strf::iso_8859_3<char>, punct, strf::uppercase)
-        (* !strf::left(x, 40, '_').sci());
+        (* !strf::sci(x).vector());
 
-    TEST("(3\251E+03 + i*4\251E+03)_____________________")
-        .with(strf::iso_8859_3<char>, punct, strf::uppercase)
-        (* !strf::left(x, 40, '_').sci().algebric());
-
-    TEST("5\251E+03? 9\251""272952180016122E-01___________")
-        .with(strf::iso_8859_3<char>, punct, strf::uppercase)
-        (* !strf::left(x, 40, '_').sci().polar());
-
-    TEST("____________(3\251E+03, 4\251E+03)____________")
-        .with(strf::iso_8859_3<char>, punct, strf::uppercase)
-        (* !strf::center(x, 40, '_').sci());
-
-    TEST("__________(3\251E+03 + i*4\251E+03)___________")
-        .with(strf::iso_8859_3<char>, punct, strf::uppercase)
-        (* !strf::center(x, 40, '_').sci().algebric());
-
-    TEST("_____5\251E+03? 9\251""272952180016122E-01______")
-        .with(strf::iso_8859_3<char>, punct, strf::uppercase)
-        (* !strf::center(x, 40, '_').sci().polar());
-
-    TEST("________________________(3\251E+03, 4\251E+03)")
-        .with(strf::iso_8859_3<char>, punct, strf::uppercase)
-        (* !strf::right(x, 40, '_').sci());
-
-    TEST("_____________________(3\251E+03 + i*4\251E+03)")
-        .with(strf::iso_8859_3<char>, punct, strf::uppercase)
-        (* !strf::right(x, 40, '_').sci().algebric());
-
-    TEST("___________5\251E+03? 9\251""272952180016122E-01")
-        .with(strf::iso_8859_3<char>, punct, strf::uppercase)
-        (* !strf::right(x, 40, '_').sci().polar());
-
-    TEST("(3\251E+03, 4\251E+03)________________________")
-        .with(strf::iso_8859_3<char>, punct, strf::uppercase)
-        (* !strf::left(x, 40, '_').sci());
-
-    TEST("(3\251E+03 + i*4\251E+03)_____________________")
-        .with(strf::iso_8859_3<char>, punct, strf::uppercase)
-        (* !strf::left(x, 40, '_').sci().algebric());
-
-    TEST("5\251E+03? 9\251""272952180016122E-01___________")
-        .with(strf::iso_8859_3<char>, punct, strf::uppercase)
-        (* !strf::left(x, 40, '_').sci().polar());
-
-    TEST("____________(3\251E+03, 4\251E+03)____________")
-        .with(strf::iso_8859_3<char>, punct, strf::uppercase)
-        (* !strf::center(x, 40, '_').sci());
-
-    TEST("__________(3\251E+03 + i*4\251E+03)___________")
-        .with(strf::iso_8859_3<char>, punct, strf::uppercase)
-        (* !strf::center(x, 40, '_').sci().algebric());
-
-    TEST("_____5\251E+03? 9\251""272952180016122E-01______")
-        .with(strf::iso_8859_3<char>, punct, strf::uppercase)
-        (* !strf::center(x, 40, '_').sci().polar());
 
     // with punctuation
 
-    TEST("(1\xA9""5E+10, 2\xA9""5E+10)")
+    TEST_NO_RESERVE("(1\xA9""5E+10, 2\xA9""5E+10)")
         ( punct
         , strf::uppercase, strf::iso_8859_3<char>
         , strf::punct(std::complex<double>{1.5e+10, 2.5e+10}) );
 
-    TEST("(1\xA9""5E+10 + i*2\xA9""5E+10)")
+    TEST_NO_RESERVE("(1\xA9""5E+10 + i*2\xA9""5E+10)")
         ( punct
         , strf::uppercase
         , strf::iso_8859_3<char>
         , strf::punct(std::complex<double>{1.5e+10, 2.5e+10}).algebric() );
 
-    TEST("1\xA9""5E+10? 1\xA9""6666666666666666E-10")
+    TEST_NO_RESERVE("1\xA9""5E+10? 1\xA9""6666666666666666E-10")
         ( punct
         , strf::uppercase
         , strf::iso_8859_3<char>
         , strf::punct(std::complex<double>{1.5e+10, 2.5}).polar() );
 
-    TEST("(1.5E+10 + i*2.5E+10)")
+    TEST_NO_RESERVE("(1.5E+10 + i*2.5E+10)")
         ( strf::constrain<is_float32>(punct)
         , strf::constrain<is_float32>(strf::uppercase)
         , strf::iso_8859_3<char>
         , strf::fmt(std::complex<double>{1.5e+10, 2.5e+10}).algebric() );
-
-    // size and width pre-calculation
-    {
-        strf::full_premeasurements pre;
-        strf::measure<char>(&pre, strf::pack(), *strf::fmt(x));
-        TEST_EQ(pre.accumulated_ssize(), 14);
-        TEST_TRUE(pre.accumulated_width() == 14);
-    }
-    {
-        strf::full_premeasurements pre;
-        strf::measure<char>(&pre, strf::pack(), *strf::fmt(x).algebric());
-        TEST_EQ(pre.accumulated_ssize(), 17);
-        TEST_TRUE(pre.accumulated_width() == 17);
-    }
-    {
-        strf::full_premeasurements pre;
-        strf::measure<char>(&pre, strf::pack(), *strf::fmt(x).polar());
-        TEST_EQ(pre.accumulated_ssize(), 27);
-        TEST_TRUE(pre.accumulated_width() == 25);
-    }
 }
 
 int main()
