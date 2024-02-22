@@ -14,13 +14,26 @@ struct my_bool_overrider
         ( strf::tag<CharT>
         , PreMeasurements* pre
         , const FPack& fp
+        , bool value ) const noexcept
+    {
+        return strf::make_printer<CharT>
+            ( pre
+            , fp
+            , strf::unsafe_transcode(false_true_strings[value]) );
+    }
+
+    template <typename CharT, typename PreMeasurements, typename FPack, typename... T>
+    constexpr auto make_printer
+        ( strf::tag<CharT>
+        , PreMeasurements* pre
+        , const FPack& fp
         , strf::value_and_format<T...> x ) const noexcept
     {
         const bool value = static_cast<bool>(x.value());
         return strf::make_printer<CharT>
             ( pre
             , fp
-            , strf::transcode(false_true_strings[value], strf::utf_t<char>{})
+            , strf::unsafe_transcode(false_true_strings[value])
                 .set_alignment_format(x.get_alignment_format()) );
     }
 

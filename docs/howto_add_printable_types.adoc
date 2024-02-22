@@ -312,23 +312,6 @@ Third, we apply the alignment format to the join:
         auto arg3 = arg2.{set_alignment_format}(arg.{get_alignment_format}());
 ----
 
-[NOTE]
-====
-We can keep the old `make_printer` ( the one that takes `std::complex`
-without formatting ), but we could also remove it. Because when the expression
-below is not well-formed:
-[source,cpp,subs=normal]
-----
-__PrintableDef__::make_printer({tag}<CharT>{}, pre, facets, x)
-----
-, and the type of `x` is not an instance `{value_and_format}`, then
-the library tries the following instead:
-[source,cpp,subs=normal]
-----
-__PrintableDef__::make_printer({tag}<CharT>{}, pre, facets, strf::fmt(x))
-----
-====
-
 [[NoteFormatSpecifierMayDiffer]]
 [NOTE]
 ====
@@ -669,7 +652,7 @@ struct strf::printable_def<std::complex<FloatT>> {
     {
         to(dst) .with(facets)
             ( (CharT)'(', arg.real()
-            , strf::unsafe_transcode(", ", strf::ascii<char>)
+            , strf::unsafe_transcode(", ")
             , arg.imag(), (CharT)')');
     }
     // \...

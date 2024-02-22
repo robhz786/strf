@@ -234,6 +234,16 @@ struct printable_def<xxx::ipv6address> {
         ( strf::tag<CharT>
         , PreMeasurements* pre
         , const FPack& fp
+        , forwarded_type arg )
+    {
+        return ipv6_printer<CharT>{pre, fp, strf::fmt(arg)};
+    }
+
+    template <typename CharT, typename PreMeasurements, typename FPack, typename... Fmts>
+    static auto make_printer
+        ( strf::tag<CharT>
+        , PreMeasurements* pre
+        , const FPack& fp
         , const strf::value_and_format<printable_def, Fmts...>& arg )
     {
         return ipv6_printer<CharT>{pre, fp, arg};

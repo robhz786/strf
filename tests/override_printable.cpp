@@ -27,7 +27,10 @@ struct my_bool_printer
     bool value_;
 };
 
-struct my_bool_printing_overrider_base
+template <typename T>
+struct is_bool: std::is_same<T, bool> {};
+
+struct my_bool_printing_overrider
 {
     using category = strf::printable_overrider_c;
 
@@ -42,13 +45,7 @@ struct my_bool_printing_overrider_base
         pre->add_size(2 + static_cast<int>(value));
         return my_bool_printer<CharT>{value};
     }
-};
 
-template <typename T>
-struct is_bool: std::is_same<T, bool> {};
-
-struct my_bool_printing_overrider: my_bool_printing_overrider_base
-{
     template <typename CharT, typename PreMeasurements, typename FPack, typename... T>
     static STRF_HD auto make_printer
         ( strf::tag<CharT>
@@ -58,7 +55,7 @@ struct my_bool_printing_overrider: my_bool_printing_overrider_base
     {
         return strf::make_printer<CharT>
             ( pre
-            , strf::pack(fp, strf::constrain<is_bool>(my_bool_printing_overrider_base{}))
+            , strf::pack(fp, strf::constrain<is_bool>(my_bool_printing_overrider{}))
             , strf::join(x.value()) .set_alignment_format(x.get_alignment_format()) );
     }
 };

@@ -22,16 +22,6 @@ struct printable_arg_fmt_remover
     }
 };
 
-template <typename DefaultValueAndFormat>
-struct printable_arg_fmt_adder
-{
-    template <typename Printable>
-    static constexpr STRF_HD DefaultValueAndFormat convert_printable_arg(const Printable& x)
-    {
-        return DefaultValueAndFormat{typename DefaultValueAndFormat::value_type{x}};
-    }
-};
-
 template <typename To>
 struct printable_arg_caster
 {
@@ -103,22 +93,10 @@ class printable_arg_converter_selector_for_printing_with_premeasurements
     static STRF_HD auto test_(strf::rank<2>*, const A& arg)
         -> printable_arg_caster<fwd_type>;
 
-
-    template < typename P, typename A
-             , detail::enable_if_t< !detail::is_value_and_format<A>::value, int > = 0
-             , typename = decltype
-                 ( std::declval<const P&>().make_printer
-                     ( strf::tag<CharT>{}
-                     , std::declval<PreMeasurements*>()
-                     , std::declval<const FPack&>()
-                     , default_value_and_format{std::declval<const A&>()} ))  >
-    static STRF_HD auto test_(strf::rank<1>*, const A& arg)
-        -> printable_arg_fmt_adder<default_value_and_format>;
-
 public:
     using type =
         decltype(test_<DefOrFacet, Arg>( std::declval<strf::rank<4>*>()
-                                          , std::declval<const Arg&>() ));
+                                       , std::declval<const Arg&>() ));
 };
 
 template < typename PrintableDef, typename DefOrFacet, typename CharT
@@ -327,17 +305,6 @@ class printer_selector_for_printing_without_premeasurements
 
 
     template < typename P, typename A
-             , detail::enable_if_t< !detail::is_value_and_format<A>::value, int > = 0
-             , typename = decltype
-                 ( std::declval<const P&>().print
-                     ( std::declval<strf::destination<CharT>&>()
-                     , std::declval<const FPack&>()
-                     , default_value_and_format{std::declval<const A&>()} ) ) >
-    static STRF_HD auto test_(strf::rank<5>*, const A& arg)
-        -> directly_call_print<5, printable_arg_fmt_adder<default_value_and_format> >;
-
-
-    template < typename P, typename A
              , detail::enable_if_t
                  < std::is_same<A, default_value_and_format>::value
                 && detail::all_base_fmtfn_classes_are_empty<A>::value
@@ -373,17 +340,6 @@ class printer_selector_for_printing_without_premeasurements
     static STRF_HD auto test_(strf::rank<2>*, const A& arg)
         -> print_using_make_printer<2, printable_arg_caster<fwd_type> >;
 
-
-    template < typename P, typename A
-             , detail::enable_if_t< !detail::is_value_and_format<A>::value, int > = 0
-             , typename = decltype
-                 ( std::declval<const P&>().make_printer
-                     ( strf::tag<CharT>{}
-                     , std::declval<premeasurements_type*>()
-                     , std::declval<const FPack&>()
-                     , default_value_and_format{std::declval<const A&>()} ))  >
-    static STRF_HD auto test_(strf::rank<1>*, const A& arg)
-        -> print_using_make_printer<1, printable_arg_fmt_adder<default_value_and_format> >;
 
 public:
     using type =
@@ -590,20 +546,6 @@ class polymorphic_printer_maker_selector_for_printing_without_premeasurements
         -> printer_wrapper_maker_without_premeasurements
             < CharT, MakePrinterReturnType, printable_arg_caster<fwd_type> >;
 
-
-    template < typename P, typename A
-             , detail::enable_if_t< !detail::is_value_and_format<A>::value, int > = 0
-             , typename MakePrinterReturnType = decltype
-                 ( std::declval<const P&>().make_printer
-                     ( strf::tag<CharT>{}
-                     , std::declval<premeasurements_type*>()
-                     , std::declval<const FPack&>()
-                     , default_value_and_format{std::declval<const A&>()} ))  >
-    static STRF_HD auto test_(strf::rank<5>*, const A& arg)
-        -> printer_wrapper_maker_without_premeasurements
-            < CharT, MakePrinterReturnType, printable_arg_fmt_adder<default_value_and_format> >;
-
-
     // print_caller_adapter_maker
 
     template < typename P, typename A
@@ -645,19 +587,6 @@ class polymorphic_printer_maker_selector_for_printing_without_premeasurements
         -> print_caller_adapter_maker
             < CharT, PrintableDef, DefOrFacet, FPack, Arg
             , printable_arg_caster<fwd_type> >;
-
-
-    template < typename P, typename A
-             , typename = detail::enable_if_t<std::is_convertible<A, fwd_type>::value>
-             , typename = decltype
-                 ( std::declval<const P&>().print
-                     ( std::declval<strf::destination<CharT>&>()
-                     , std::declval<const FPack&>()
-                     , default_value_and_format{std::declval<fwd_type>()} ) ) >
-    static STRF_HD auto test_(strf::rank<1>*, const A& arg)
-        -> print_caller_adapter_maker
-            < CharT, PrintableDef, DefOrFacet, FPack, Arg
-            , printable_arg_fmt_adder<default_value_and_format> >;
 
 public:
     using type =

@@ -30,6 +30,22 @@ struct printable_def<xxx::point2D<FloatT>> {
         ( strf::tag<CharT>
         , PreMeasurements* pre
         , const FPack& fp
+        , forwarded_type arg ) noexcept
+    {
+        auto arg2 = strf::join
+            ( static_cast<CharT>('(')
+            , arg.x
+            , strf::unsafe_transcode(", ")
+            , arg.y
+            , static_cast<CharT>(')') );
+        return strf::make_printer<CharT>(pre, fp, arg2);
+    }
+
+    template <typename CharT, typename PreMeasurements, typename FPack, typename... T>
+    constexpr static auto make_printer
+        ( strf::tag<CharT>
+        , PreMeasurements* pre
+        , const FPack& fp
         , strf::value_and_format<T...> arg ) noexcept
     {
         auto p = arg.value(); // the Point2D<FloatT> value
