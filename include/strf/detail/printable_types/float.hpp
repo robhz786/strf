@@ -1823,6 +1823,10 @@ inline STRF_HD strf::detail::float_init_result init_double_data_with_precision_s
     } else {
         data.extra_zeros = 0;
         data.m10_digcount += xz;
+#if defined(__GNUC__) && __GNUC__ <= 10
+        // silent a false warning of GCC
+        data.m10_digcount = std::abs(data.m10_digcount);
+#endif
         data.e10 -= xz;
         auto p10 = strf::detail::pow10(-xz);
         auto remainer = data.m10 % p10;
