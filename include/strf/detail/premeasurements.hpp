@@ -18,8 +18,12 @@ template <>
 class width_accumulator<true>
 {
 public:
-    width_accumulator() = default;
+    constexpr width_accumulator() = default;
     ~width_accumulator() = default;
+    constexpr width_accumulator(const width_accumulator&) = default;
+    constexpr width_accumulator(width_accumulator&&) = default;
+    constexpr width_accumulator& operator=(const width_accumulator&) = default;
+    constexpr width_accumulator& operator=(width_accumulator&&) = default;
 
     explicit constexpr STRF_HD width_accumulator(strf::width_t limit) noexcept
         : limit_(limit)
@@ -68,8 +72,12 @@ template <>
 class width_accumulator<false>
 {
 public:
-
     constexpr width_accumulator() noexcept = default;
+    ~width_accumulator() noexcept = default;
+    constexpr width_accumulator(const width_accumulator&) = default;
+    constexpr width_accumulator(width_accumulator&&) = default;
+    constexpr width_accumulator& operator=(const width_accumulator&) = default;
+    constexpr width_accumulator& operator=(width_accumulator&&) = default;
 
     template <typename T>
     constexpr STRF_HD void add_width(T) const noexcept
@@ -107,7 +115,12 @@ template <>
 class size_accumulator<true>
 {
 public:
-    size_accumulator() = default;
+    constexpr size_accumulator() = default;
+    ~size_accumulator() = default;
+    constexpr size_accumulator(const size_accumulator&) = default;
+    constexpr size_accumulator(size_accumulator&&) = default;
+    constexpr size_accumulator& operator=(const size_accumulator&) = default;
+    constexpr size_accumulator& operator=(size_accumulator&&) = default;
 
     template < typename IntT
              , strf::detail::enable_if_t<std::is_integral<IntT>::value, int> =0>
@@ -115,8 +128,6 @@ public:
         : size_(detail::safe_cast_size_t(initial_size))
     {
     }
-
-    ~size_accumulator() = default;
 
     template < typename IntT
              , strf::detail::enable_if_t<std::is_integral<IntT>::value, int> =0>
@@ -144,8 +155,12 @@ template <>
 class size_accumulator<false>
 {
 public:
-
     constexpr size_accumulator() noexcept = default;
+    ~size_accumulator() noexcept = default;
+    constexpr size_accumulator(const size_accumulator&) = default;
+    constexpr size_accumulator(size_accumulator&&) = default;
+    constexpr size_accumulator& operator=(const size_accumulator&) = default;
+    constexpr size_accumulator& operator=(size_accumulator&&) = default;
 
     template <typename IntT>
     STRF_CONSTEXPR_IN_CXX14 STRF_HD void add_size(IntT) noexcept
@@ -203,8 +218,11 @@ public:
     }
 
     constexpr premeasurements() noexcept = default;
-
-    ~premeasurements() = default;
+    ~premeasurements() noexcept = default;
+    constexpr premeasurements(const premeasurements&) = default;
+    constexpr premeasurements(premeasurements&&) = default;
+    constexpr premeasurements& operator=(const premeasurements&) = default;
+    constexpr premeasurements& operator=(premeasurements&&) = default;
 };
 
 

@@ -232,7 +232,12 @@ class my_abstract_type
 {
 public:
     my_abstract_type() = default;
-    STRF_HD virtual ~my_abstract_type() {}
+    my_abstract_type(const my_abstract_type&) = default;
+    my_abstract_type(my_abstract_type&&) = default;
+    my_abstract_type& operator=(const my_abstract_type&) = default;
+    my_abstract_type& operator=(my_abstract_type&&) = default;
+    virtual ~my_abstract_type() = default;
+
     STRF_HD virtual const char* msg() const = 0;
 };
 
@@ -241,7 +246,7 @@ class my_derived_type_a: public my_abstract_type
 public:
     my_derived_type_a() = default;
 
-    STRF_HD virtual const char* msg() const override
+    STRF_HD const char* msg() const override
     {
         return "aa";
     };
@@ -252,7 +257,7 @@ class my_derived_type_b: public my_abstract_type
 public:
     my_derived_type_b() = default;
 
-    STRF_HD virtual const char* msg() const override
+    STRF_HD const char* msg() const override
     {
         return "bb";
     };
@@ -263,7 +268,7 @@ class my_derived_type_c: public my_abstract_type
 public:
     my_derived_type_c() = default;
 
-    STRF_HD virtual const char* msg() const override
+    STRF_HD const char* msg() const override
     {
         return "cc";
     };

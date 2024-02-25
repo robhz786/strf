@@ -1583,7 +1583,7 @@ public:
         other.underlying_printer_().copy_to(&storage_);
     }
 
-    transcode_printer_variant(transcode_printer_variant&& other)
+    transcode_printer_variant(transcode_printer_variant&& other) noexcept
     {
         std::move(other.underlying_printer_()).move_to(&storage_);
     }
@@ -1673,7 +1673,7 @@ public:
     {
         other.underlying_printer_().copy_to(&storage_);
     }
-    aligned_transcode_printer_variant(aligned_transcode_printer_variant&& other)
+    aligned_transcode_printer_variant(aligned_transcode_printer_variant&& other) noexcept
     {
         std::move(other.underlying_printer_()).move_to(&storage_);
     }

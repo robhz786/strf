@@ -17,7 +17,11 @@ class polymorphic_printer
 public:
     using char_type = CharT;
 
-    polymorphic_printer() = default;
+    constexpr polymorphic_printer() noexcept = default;
+    constexpr polymorphic_printer(const polymorphic_printer&) = default;
+    constexpr polymorphic_printer(polymorphic_printer&&) = default;
+    constexpr polymorphic_printer& operator=(const polymorphic_printer&) = default;
+    constexpr polymorphic_printer& operator=(polymorphic_printer&&) = default;
 
     virtual STRF_HD ~polymorphic_printer() STRF_DEFAULT_IMPL;
 
@@ -53,8 +57,6 @@ private:
 template <typename CharT>
 struct clonable_polymorphic_printer: polymorphic_printer<CharT>
 {
-    virtual STRF_HD ~clonable_polymorphic_printer() STRF_DEFAULT_IMPL;
-
     virtual STRF_HD clonable_polymorphic_printer*
     copy_to(void* dst) const = 0;
 
@@ -142,5 +144,5 @@ using is_string = std::is_base_of<string_input_tag_base, T>;
 
 } // namespace strf
 
-#endif  // STRF_DETAIL_PRINTER_HPP
+#endif  // STRF_DETAIL_POLYMORPHIC_PRINTER_HPP
 

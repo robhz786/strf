@@ -1139,7 +1139,6 @@ public:
     STRF_HD default_int_printer(Pre* pre, UIntT value)
         : uvalue_{value}
         , digcount_{strf::detail::count_digits<10>(value)}
-        , negative_{false}
     {
         pre->add_width(digcount_);
         pre->add_size(digcount_);
@@ -1147,7 +1146,7 @@ public:
 
     std::uint64_t uvalue_{};
     int digcount_{};
-    bool negative_{};
+    bool negative_{false};
 };
 
 template <typename CharT>
@@ -2057,7 +2056,7 @@ public:
         other.underlying_printer_().copy_to(&storage_);
     }
 
-    int_printer_full_dynamic(int_printer_full_dynamic&& other)
+    int_printer_full_dynamic(int_printer_full_dynamic&& other) noexcept
     {
         std::move(other.underlying_printer_()).move_to(&storage_);
     }

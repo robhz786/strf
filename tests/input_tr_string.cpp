@@ -451,7 +451,7 @@ void STRF_HD  test_copy_and_move_tr_print_printer()
     auto copy_of_printer = printer0;
     printer0(dst0);
     copy_of_printer(dst1);
-    decltype(printer0) printer_from_mv(std::move(printer0));
+    const decltype(printer0) printer_from_mv(std::move(printer0));
     printer_from_mv(dst2);
 
     dst0.finish();

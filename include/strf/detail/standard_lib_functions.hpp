@@ -497,7 +497,7 @@ STRF_HD auto addressof(T& arg) noexcept
     -> detail::enable_if_t< std::is_object<detail::remove_reference_t<T>>::value, T* >
 {
     return reinterpret_cast<T*>
-        ( &const_cast<char&>
+        ( &const_cast<char&> // NOLINT(cppcoreguidelines-pro-type-const-cast)
             ( reinterpret_cast<const volatile char&>(arg) ) );
 }
 

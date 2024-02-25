@@ -52,10 +52,10 @@ struct fmt_bool_printer
     void STRF_HD operator()(strf::destination<CharT>& dst) const;
 
     strf::encode_fill_f<CharT> encode_fill_ = nullptr;
-    int fillcount_;
-    bool value_;
+    int fillcount_ {};
+    bool value_ {};
     strf::alignment_format afmt_;
-    strf::lettercase lettercase_;
+    strf::lettercase lettercase_ = strf::lettercase::lower;
 };
 
 template <typename CharT>

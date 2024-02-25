@@ -21,7 +21,7 @@ void test_locale_numpunct(const char* locale_name)
     try{
         constexpr double sample = 1.0e+10;
 
-        std::locale loc(locale_name);
+        const std::locale loc(locale_name);
 
         std::wostringstream tmp;
         tmp.imbue(loc);
