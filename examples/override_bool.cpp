@@ -3,6 +3,10 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
+#ifdef __clang__
+#pragma clang diagnostic ignored "-Wfloat-conversion"
+#endif
+
 #include "strf/to_string.hpp"
 
 struct my_bool_overrider
