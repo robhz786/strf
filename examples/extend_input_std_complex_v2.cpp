@@ -129,7 +129,7 @@ std::pair<FloatT, FloatT> complex_coordinates
 }
 
 //--------------------------------------------------------------------------------
-// Define the printable_traits class
+// Define the printable_def class
 //--------------------------------------------------------------------------------
 static constexpr char32_t anglechar = 0x2220;
 

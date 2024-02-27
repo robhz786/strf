@@ -33,7 +33,7 @@ inline STRF_HD void print_one_printable
 {
     using helper = helper_for_printing_without_premeasurements
         <CharT, FPack, Printable>;
-    helper::print(helper::get_traits_or_facet(fp), dst, fp, printable);
+    helper::print(helper::get_printable_def_or_facet(fp), dst, fp, printable);
 }
 
 template <typename CharT>
@@ -91,7 +91,7 @@ struct printable_def_finder;
 template <typename T>
 using printable_def_of = typename
     detail::printable_def_finder<strf::detail::remove_cvref_t<T>>
-    ::traits;
+    ::printable_def;
 
 struct printable_tag
 {
@@ -198,14 +198,14 @@ struct printable_def_finder
         , strf::detail::select_printable_def_specialization
         , strf::detail::select_printable_def_from_get_printable_def >;
 
-    using traits = typename selector_::template select<T>;
-    using forwarded_type = typename traits::forwarded_type;
+    using printable_def = typename selector_::template select<T>;
+    using forwarded_type = typename printable_def::forwarded_type;
 };
 
 template <typename PrintableDef, typename... F>
 struct printable_def_finder<strf::value_and_format<PrintableDef, F...>>
 {
-    using traits = PrintableDef;
+    using printable_def = PrintableDef;
     using forwarded_type = strf::value_and_format<PrintableDef, F...>;
 };
 
@@ -269,16 +269,16 @@ using default_value_and_format_of_printable_def = typename
 template <typename T>
 struct format_specifiers_finder
 {
-    using traits = typename printable_def_finder<T>::traits;
-    using format_specifiers = extract_format_specifiers_from_printable_def<traits>;
+    using printable_def = typename printable_def_finder<T>::printable_def;
+    using format_specifiers = extract_format_specifiers_from_printable_def<printable_def>;
     using fmt_type = typename
-        strf::detail::mp_define_value_and_format<traits, format_specifiers>::type;
+        strf::detail::mp_define_value_and_format<printable_def, format_specifiers>::type;
 };
 
 template <typename PrintableDef, typename... Fmts>
 struct format_specifiers_finder<strf::value_and_format<PrintableDef, Fmts...>>
 {
-    using traits = PrintableDef;
+    using printable_def = PrintableDef;
     using format_specifiers = strf::tag<Fmts...>;
     using fmt_type = strf::value_and_format<PrintableDef, Fmts...>;
 };
@@ -388,7 +388,7 @@ STRF_DEPRECATED_MSG("make_arg_printer_input was renamed to make_printer")
 constexpr STRF_HD decltype(auto) make_arg_printer_input
     ( PreMeasurements* p, const FPack& fp, const Arg& arg )
 {
-    return Helper::get_traits_or_facet(fp)
+    return Helper::get_printable_def_or_facet(fp)
         .make_printer(strf::tag<CharT>{}, p, fp, Helper::convert_printable_arg(arg));
 }
 
@@ -403,7 +403,7 @@ template < typename CharT
 constexpr STRF_HD decltype(auto) make_printer
     ( PreMeasurements* p, const FPack& fp, const Arg& arg )
 {
-    return Helper::get_traits_or_facet(fp)
+    return Helper::get_printable_def_or_facet(fp)
         .make_printer(ChTag{}, p, fp, Helper::convert_printable_arg(arg));
 }
 

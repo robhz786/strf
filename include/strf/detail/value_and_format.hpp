@@ -293,7 +293,7 @@ class value_and_format
     : public Fmts::template fn<value_and_format<PrintableDef, Fmts...>> ...
 {
 public:
-    using traits = PrintableDef;
+    using printable_def = PrintableDef;
     using value_type = typename PrintableDef::forwarded_type;
 
     template <typename... OtherFmts>

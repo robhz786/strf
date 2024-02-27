@@ -114,10 +114,10 @@ using select_printable_arg_converter_for_printing_with_premeasurements = typenam
 template <typename Overrider, typename OverrideTag>
 struct overrider_getter
 {
-    using traits_or_facet_type = Overrider;
+    using printable_def_or_facet_type = Overrider;
 
     template <typename FPack>
-    static constexpr STRF_HD const Overrider& get_traits_or_facet(const FPack& fp)
+    static constexpr STRF_HD const Overrider& get_printable_def_or_facet(const FPack& fp)
     {
         return strf::get_facet<strf::printable_overrider_c, OverrideTag>(fp);
     }
@@ -126,13 +126,13 @@ struct overrider_getter
 template <typename PrintableDef>
 struct printable_def_getter
 {
-    using traits_or_facet_type = PrintableDef;
-    using traits_type = PrintableDef;
+    using printable_def_or_facet_type = PrintableDef;
+    using printable_def_type = PrintableDef;
 
     template <typename FPack>
-    static constexpr STRF_HD traits_or_facet_type get_traits_or_facet(const FPack&)
+    static constexpr STRF_HD printable_def_or_facet_type get_printable_def_or_facet(const FPack&)
     {
-        return traits_or_facet_type{};
+        return printable_def_or_facet_type{};
     }
 };
 
@@ -141,7 +141,7 @@ template < typename PrintableDef
          , typename FPack
          , typename Arg
          , bool Overridable >
-struct traits_or_facet_getter_selector_2
+struct printable_def_or_facet_getter_selector_2
 {
     static_assert(Overridable, "");
     using representative = typename PrintableDef::representative;
@@ -150,7 +150,7 @@ struct traits_or_facet_getter_selector_2
           (std::declval<FPack>()) );
 
     using overrider = strf::detail::remove_cvref_t<overrider_>;
-    using traits_or_facet_getter_type = typename std::conditional
+    using printable_def_or_facet_getter_type = typename std::conditional
         < std::is_same<overrider, strf::dont_override>::value
         , printable_def_getter<PrintableDef>
         , overrider_getter<overrider, representative> >
@@ -161,38 +161,38 @@ template < typename PrintableDef
          , typename CharT
          , typename FPack
          , typename Arg >
-struct traits_or_facet_getter_selector_2<PrintableDef, CharT, FPack, Arg, false>
+struct printable_def_or_facet_getter_selector_2<PrintableDef, CharT, FPack, Arg, false>
 {
-    using traits_or_facet_getter_type = printable_def_getter<PrintableDef>;
+    using printable_def_or_facet_getter_type = printable_def_getter<PrintableDef>;
 };
 
 template < typename PrintableDef
          , typename CharT
          , typename FPack
          , typename Arg >
-struct traits_or_facet_getter_selector
+struct printable_def_or_facet_getter_selector
 {
-    using other = traits_or_facet_getter_selector_2
+    using other = printable_def_or_facet_getter_selector_2
         < PrintableDef, CharT, FPack, Arg
         , get_is_overridable<PrintableDef>::value >;
-    using traits_or_facet_getter_type = typename other::traits_or_facet_getter_type;
+    using printable_def_or_facet_getter_type = typename other::printable_def_or_facet_getter_type;
 };
 
 template < typename PrintableDef, typename CharT, typename FPack, typename Arg >
-using select_traits_or_facet_getter = typename traits_or_facet_getter_selector
+using select_printable_def_or_facet_getter = typename printable_def_or_facet_getter_selector
     <PrintableDef, CharT, FPack, Arg>
-    :: traits_or_facet_getter_type;
+    :: printable_def_or_facet_getter_type;
 
 template <typename CharT, typename PreMeasurements, typename FPack, typename Arg>
 struct selector_for_printing_with_premeasurements
 {
-    using traits = strf::printable_def_of<Arg>;
-    using traits_or_facet_getter =
-        select_traits_or_facet_getter< traits, CharT, FPack, Arg >;
-    using traits_or_facet_type = typename traits_or_facet_getter::traits_or_facet_type;
+    using printable_def = strf::printable_def_of<Arg>;
+    using printable_def_or_facet_getter =
+        select_printable_def_or_facet_getter< printable_def, CharT, FPack, Arg >;
+    using printable_def_or_facet_type = typename printable_def_or_facet_getter::printable_def_or_facet_type;
     using printable_arg_converter =
         select_printable_arg_converter_for_printing_with_premeasurements
-        <traits, traits_or_facet_type, CharT, PreMeasurements, FPack, Arg>;
+        <printable_def, printable_def_or_facet_type, CharT, PreMeasurements, FPack, Arg>;
 };
 
 template < typename CharT, typename PreMeasurements, typename FPack, typename Arg
@@ -207,13 +207,13 @@ using find_printer_type =
 template < typename CharT, typename PreMeasurements, typename FPack, typename Arg
          , typename Selector >
 struct helper_for_printing_with_premeasurements_impl
-    : Selector::traits_or_facet_getter
+    : Selector::printable_def_or_facet_getter
     , Selector::printable_arg_converter
 {
-    using traits_or_facet_type = typename Selector::traits_or_facet_getter::traits_or_facet_type;
+    using printable_def_or_facet_type = typename Selector::printable_def_or_facet_getter::printable_def_or_facet_type;
     using printer_type = find_printer_type
         < CharT, PreMeasurements, FPack, Arg
-        , traits_or_facet_type, typename Selector::printable_arg_converter>;
+        , printable_def_or_facet_type, typename Selector::printable_arg_converter>;
 };
 
 template <typename CharT, typename PreMeasurements, typename FPack, typename Arg >
@@ -334,14 +334,14 @@ public:
 template <typename CharT, typename FPack, typename Arg >
 struct selector_for_printing_without_premeasurements
 {
-    using traits = strf::printable_def_of<Arg>;
-    using traits_or_facet_getter =
-        select_traits_or_facet_getter<traits, CharT, FPack, Arg>;
-    using traits_or_facet_type = typename traits_or_facet_getter::traits_or_facet_type;
+    using printable_def = strf::printable_def_of<Arg>;
+    using printable_def_or_facet_getter =
+        select_printable_def_or_facet_getter<printable_def, CharT, FPack, Arg>;
+    using printable_def_or_facet_type = typename printable_def_or_facet_getter::printable_def_or_facet_type;
 
     using print_caller = typename
         printer_selector_for_printing_without_premeasurements
-        < traits, traits_or_facet_type, CharT, FPack, Arg >
+        < printable_def, printable_def_or_facet_type, CharT, FPack, Arg >
         ::type;
 };
 
@@ -350,7 +350,7 @@ template < typename CharT, typename FPack, typename Arg
                selector_for_printing_without_premeasurements
                <CharT, FPack, Arg> >
 struct helper_for_printing_without_premeasurements
-    : Selector::traits_or_facet_getter
+    : Selector::printable_def_or_facet_getter
     , Selector::print_caller
 {
 };
@@ -554,13 +554,13 @@ public:
 template <typename CharT, typename FPack, typename Arg >
 struct selector_for_tr_printing_without_premeasurements
 {
-    using traits = strf::printable_def_of<Arg>;
-    using traits_or_facet_getter =
-        select_traits_or_facet_getter< traits, CharT, FPack, Arg >;
-    using traits_or_facet_type = typename traits_or_facet_getter::traits_or_facet_type;
+    using printable_def = strf::printable_def_of<Arg>;
+    using printable_def_or_facet_getter =
+        select_printable_def_or_facet_getter< printable_def, CharT, FPack, Arg >;
+    using printable_def_or_facet_type = typename printable_def_or_facet_getter::printable_def_or_facet_type;
     using polymorphic_printer_maker = typename
         polymorphic_printer_maker_selector_for_printing_without_premeasurements
-        < traits, traits_or_facet_type, CharT, FPack, Arg >
+        < printable_def, printable_def_or_facet_type, CharT, FPack, Arg >
         ::type;
 };
 
@@ -570,7 +570,7 @@ template < typename CharT, typename FPack, typename Arg
                < CharT, FPack, Arg > >
 struct helper_for_tr_printing_without_premeasurements
     : Selector::polymorphic_printer_maker
-    , Selector::traits_or_facet_getter
+    , Selector::printable_def_or_facet_getter
 {
 };
 

@@ -797,7 +797,7 @@ class value_and_format
     : public Fmts::template fn<value_and_format<ValueType, Fmts\...>>\...
 {
 public:
-    using traits = PrintableDef;
+    using printable_def = PrintableDef;
     using value_type = typename PrintableDef::forwarded_type;
 
     constexpr explicit <<value_and_format_v,value_and_format>>(const value_type& v);

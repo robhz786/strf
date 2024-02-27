@@ -175,9 +175,9 @@ is equivalent to
 
 [source,cpp,subs=normal]
 ----
-__foo_type_traits__::make_printer({tag}<CharT>{}, __pre__, __facets__, __foo__)
+__foo_type_def__::make_printer({tag}<CharT>{}, __pre__, __facets__, __foo__)
 ----
-, where `__foo_type_traits__` would be the __{PrintableDef}__ types
+, where `__foo_type_def__` would be the __{PrintableDef}__ types
 corresponding to `__foo__`
 
 ( Actually, `{strf_make_printer}` may call something else

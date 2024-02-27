@@ -199,7 +199,7 @@ struct reserve_calc_printer_base
         return detail::reserve_calculated_size_and_call_printables<AddEndOfLine, ReturnType>
             ( dest_creator
             , &pre
-            , Helpers::get_traits_or_facet(fp).make_printer
+            , Helpers::get_printable_def_or_facet(fp).make_printer
                 ( strf::tag<CharT>{}, &pre, fp
                 , Helpers::convert_printable_arg((Printables&&)printables))... );
     }
@@ -291,7 +291,7 @@ private:
             , { & static_cast< const detail::polymorphic_printer<CharT>& >
                   ( typename Helpers::polymorphic_printer_type
                       ( Helpers::make_polymorphic_printer
-                          ( Helpers::get_traits_or_facet(fp), fp, printables) ) )... } );
+                          ( Helpers::get_printable_def_or_facet(fp), fp, printables) ) )... } );
 
         STRF_IF_CONSTEXPR (AddEndOfLine) {
             strf::put<CharT>(dst, static_cast<CharT>('\n'));
@@ -337,7 +337,7 @@ struct printing_with_tr_string_reserve_calc
             , pre_array
             , { & static_cast< const detail::polymorphic_printer<CharT>& >
                   ( detail::printer_wrapper<CharT, typename Helpers::printer_type>
-                      ( Helpers::get_traits_or_facet(fp).make_printer
+                      ( Helpers::get_printable_def_or_facet(fp).make_printer
                           ( strf::tag<CharT>{}
                           , &pre_array[I]
                           , fp
