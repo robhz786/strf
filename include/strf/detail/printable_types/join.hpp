@@ -211,7 +211,7 @@ struct join_printing
         using sub_pre_t = strf::premeasurements<SizePresence, strf::width_presence::yes>;
         using pf_type = detail::aligned_join_printer_of<CharT, SizePresence, FPack, FwdArgs...>;
 
-        auto charset = use_facet<strf::charset_c<CharT>, void>(facets);
+        auto charset = get_facet<strf::charset_c<CharT>, void>(facets);
         const auto afmt = arg.get_alignment_format();
         sub_pre_t sub_pre{afmt.width};
         pf_type pf
@@ -240,7 +240,7 @@ struct join_printing
         using sub_pre_t = strf::premeasurements<SizePresence, strf::width_presence::yes>;
         using pf_type = detail::aligned_join_printer_of<CharT, SizePresence, FPack, FwdArgs...>;
 
-        const auto charset = use_facet<strf::charset_c<CharT>, void>(facets);
+        const auto charset = get_facet<strf::charset_c<CharT>, void>(facets);
         const auto afmt = arg.get_alignment_format();
         strf::width_t wmax = afmt.width;
         strf::width_t wdiff = 0;

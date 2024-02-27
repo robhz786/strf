@@ -651,7 +651,7 @@ public:
 
     using has_numpunct_type = decltype
         ( test_numpunct
-            ( use_facet< strf::numpunct_c<Base>, InputT >(fp())) );
+            ( get_facet< strf::numpunct_c<Base>, InputT >(fp())) );
 
 public:
 

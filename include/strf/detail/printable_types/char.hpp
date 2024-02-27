@@ -39,8 +39,8 @@ public:
         , afmt_(arg.get_alignment_format())
         , ch_(static_cast<CharT>(arg.value()))
     {
-        auto charset = use_facet_<strf::charset_c<CharT>>(facets);
-        auto&& wcalc = use_facet_<strf::width_calculator_c>(facets);
+        auto charset = get_facet_<strf::charset_c<CharT>>(facets);
+        auto&& wcalc = get_facet_<strf::width_calculator_c>(facets);
         encode_fill_fn_ = charset.encode_fill_func();
         init_(pre, wcalc, charset);
     }
@@ -58,10 +58,10 @@ private:
 
     template <typename Category, typename FPack>
     static STRF_HD
-    STRF_DECLTYPE_AUTO((strf::use_facet<Category, CharT>(std::declval<FPack>())))
-    use_facet_(const FPack& fp)
+    STRF_DECLTYPE_AUTO((strf::get_facet<Category, CharT>(std::declval<FPack>())))
+    get_facet_(const FPack& fp)
     {
-        return fp.template use_facet<Category, CharT>();
+        return fp.template get_facet<Category, CharT>();
     }
 
     template <typename PreMeasurements, typename WCalc, typename Charset>
@@ -170,8 +170,8 @@ public:
         : count_(arg.scount())
         , ch_(arg.value())
     {
-        auto charset = strf::use_facet<charset_c<DstCharT>, char32_t>(facets);
-        auto&& wcalc = use_facet<strf::width_calculator_c, char32_t>(facets);
+        auto charset = strf::get_facet<charset_c<DstCharT>, char32_t>(facets);
+        auto&& wcalc = get_facet<strf::width_calculator_c, char32_t>(facets);
         auto char_width = wcalc.char_width(strf::utf_t<char32_t>{}, ch_);
         init_(pre, charset, arg.get_alignment_format(), char_width);
     }
@@ -298,8 +298,8 @@ struct char_printing
 
         pre->add_size(1);
         if (pre->has_remaining_width()) {
-            auto&& wcalc = use_facet<strf::width_calculator_c, DstCharT>(facets);
-            auto charset = use_facet<strf::charset_c<DstCharT>, SrcCharT>(facets);
+            auto&& wcalc = get_facet<strf::width_calculator_c, DstCharT>(facets);
+            auto charset = get_facet<strf::charset_c<DstCharT>, SrcCharT>(facets);
             auto w = wcalc.char_width(charset, static_cast<DstCharT>(x));
             pre->add_width(w);
         }
@@ -359,12 +359,12 @@ struct printable_def<char32_t>
         , char32_t x ) noexcept
         -> strf::detail::conv_char32_printer<DstCharT>
     {
-        auto encoding = strf::use_facet<charset_c<DstCharT>, char32_t>(facets);
+        auto encoding = strf::get_facet<charset_c<DstCharT>, char32_t>(facets);
         STRF_MAYBE_UNUSED(encoding);
         auto encoded_char_size = encoding.encoded_char_size(x);
         pre->add_size(encoded_char_size);
         if (pre->has_remaining_width()) {
-            auto&& wcalc = use_facet<strf::width_calculator_c, char32_t>(facets);
+            auto&& wcalc = get_facet<strf::width_calculator_c, char32_t>(facets);
             pre->add_width(wcalc.char_width(strf::utf_t<char32_t>{}, x));
         }
         return strf::detail::conv_char32_printer<DstCharT>

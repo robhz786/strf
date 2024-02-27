@@ -111,10 +111,10 @@ public:
         , const strf::value_and_format<T...>& arg )
         : addr_(arg.value())
         , alignment_fmt_(arg.get_alignment_format())
-        , lettercase_(strf::use_facet<strf::lettercase_c, xxx::ipv6address>(facets))
+        , lettercase_(strf::get_facet<strf::lettercase_c, xxx::ipv6address>(facets))
         , style_(arg.get_ipv6style())
     {
-        auto encoding = use_facet<strf::charset_c<CharT>, xxx::ipv6address>(facets);
+        auto encoding = get_facet<strf::charset_c<CharT>, xxx::ipv6address>(facets);
 
         encode_fill_fn_ = encoding.encode_fill_func();
         init_and_premeasure_(pre, encoding);

@@ -281,10 +281,10 @@ private:
         auto fp = strf::pack((Fpes&&)fpes...);
 
         using charset_cat = strf::charset_c<CharT>;
-        auto charset = strf::use_facet<charset_cat, void>(fp);
+        auto charset = strf::get_facet<charset_cat, void>(fp);
 
         using err_handler_cat = strf::tr_error_notifier_c;
-        auto&& err_handler = strf::use_facet<err_handler_cat, void>(fp);
+        auto&& err_handler = strf::get_facet<err_handler_cat, void>(fp);
 
         detail::tr_string_write
             ( dst, charset, err_handler, tr_string.begin(), tr_string.end()
@@ -359,10 +359,10 @@ private:
         using dest_type = typename dest_creator_t::destination_type;
 
         using charset_cat = strf::charset_c<CharT>;
-        auto charset = strf::use_facet<charset_cat, void>(fp);
+        auto charset = strf::get_facet<charset_cat, void>(fp);
 
         using err_handler_cat = strf::tr_error_notifier_c;
-        auto&& err_handler = strf::use_facet<err_handler_cat, void>(fp);
+        auto&& err_handler = strf::get_facet<err_handler_cat, void>(fp);
 
         auto invalid_arg_size = charset.replacement_char_size();
         const std::ptrdiff_t size = strf::detail::tr_string_size

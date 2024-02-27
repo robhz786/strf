@@ -7,7 +7,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 
 :printable_overrider_c: <<strf_hpp#printable_overrider_c,printable_overrider_c>>
 :make_printer: <<strf_hpp#make_printer,make_printer>>
-:use_facet: <<strf_hpp#use_facet,use_facet>>
+:get_facet: <<strf_hpp#get_facet,get_facet>>
 :pack: <<strf_hpp#pack,pack>>
 :set_alignment_format: <<strf_hpp#alignment_format_specifier,set_alignment_format>>
 :get_alignment_format: <<strf_hpp#alignment_format_specifier,get_alignment_format>>
@@ -140,7 +140,7 @@ constexpr auto italian_bool = strf::constrain<is_bool>(italian_bool_facet{});
 <1> `strf::{representative_of_printable}<__X__>`
     commonly aliases to `__X__`, and it does so for `bool`.
     However, is a good practice to use it (instead `__X__`), because it is
-    what the library uses (__i.e.__ parameterizes `<<strf_hpp#use_facet,use_facet>>`
+    what the library uses (__i.e.__ parameterizes `<<strf_hpp#get_facet,get_facet>>`
     with ) when "deciding" whether to apply a facet or not.
 
 Now we are ready:

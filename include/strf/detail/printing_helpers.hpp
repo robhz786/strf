@@ -119,7 +119,7 @@ struct overrider_getter
     template <typename FPack>
     static constexpr STRF_HD const Overrider& get_traits_or_facet(const FPack& fp)
     {
-        return strf::use_facet<strf::printable_overrider_c, OverrideTag>(fp);
+        return strf::get_facet<strf::printable_overrider_c, OverrideTag>(fp);
     }
 };
 
@@ -146,7 +146,7 @@ struct traits_or_facet_getter_selector_2
     static_assert(Overridable, "");
     using representative = typename PrintableDef::representative;
     using overrider_ = decltype
-        ( strf::use_facet<strf::printable_overrider_c, representative>
+        ( strf::get_facet<strf::printable_overrider_c, representative>
           (std::declval<FPack>()) );
 
     using overrider = strf::detail::remove_cvref_t<overrider_>;
@@ -399,7 +399,7 @@ public:
 
     STRF_HD void print_to(strf::destination<CharT>& dst) const override
     {
-        strf::use_facet
+        strf::get_facet
             < strf::printable_overrider_c
             , typename PrintableDef::representative > (facets_())
             .print(dst, facets_(), printable_);

@@ -142,7 +142,7 @@ struct printable_def<bool>
     {
         pre->add_width(static_cast<strf::width_t>(5 - x));
         pre->add_size(5 - (int)x);
-        return detail::bool_printer<CharT>{x, strf::use_facet<strf::lettercase_c, bool>(fp)};
+        return detail::bool_printer<CharT>{x, strf::get_facet<strf::lettercase_c, bool>(fp)};
     }
 
     template <typename CharT, typename PreMeasurements, typename FPack, typename... T>
@@ -157,11 +157,11 @@ struct printable_def<bool>
         const int w = 5 - (int) value;
         const auto afmt = x.get_alignment_format();
         const auto fmt_width = afmt.width.round();
-        const auto lcase = strf::use_facet<strf::lettercase_c, bool>(fp);
+        const auto lcase = strf::get_facet<strf::lettercase_c, bool>(fp);
 
         if (fmt_width > w) {
             const int fillcount = fmt_width - w;
-            auto charset = strf::use_facet<charset_c<CharT>, bool>(fp);
+            auto charset = strf::get_facet<charset_c<CharT>, bool>(fp);
 
             pre->add_width(static_cast<strf::width_t>(fmt_width));
             pre->add_size(w + fillcount * charset.encoded_char_size(afmt.fill));

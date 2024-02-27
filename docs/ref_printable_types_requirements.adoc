@@ -24,7 +24,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 
 :constrain: <<constrain,constrain>>
 :constrained_fpe: <<constrained_fpe,constrained_fpe>>
-:use_facet: <<use_facet,use_facet>>
+:get_facet: <<get_facet,get_facet>>
 :tag: <<tag,tag>>
 :rank: <<rank,rank>>
 :join: <<join,join>>
@@ -94,7 +94,7 @@ situations ( for example, the objects created by `fmt` and `{join}` ).
 ----
 T::representative
 ----
-The type used as the template argument in `{use_facet}`.
+The type used as the template argument in `{get_facet}`.
 This means it is the type that is tested by the
 the __UnaryTypeTrait__ template argument passed to
 `{constrain}` or `{constrained_fpe}`.
@@ -273,7 +273,7 @@ If `{printable_def_of}<Arg>::<<PrintableDef_is_overridable,is_overridable>>::val
 `make_printer` returns
 [source,cpp,subs=normal]
 ----
-{use_facet}< {printable_overrider_c}, {representative_of_printable}<Arg> > (facets)
+{get_facet}< {printable_overrider_c}, {representative_of_printable}<Arg> > (facets)
     .make_printer({tag}<CharT>{}, pre, facets, arg);
 ----
 

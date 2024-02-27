@@ -126,8 +126,8 @@ public:
         , const FPack& facets
         , const detail::tr_string_arg<CharT, IdxSeq, Args...>& arg )
         : tr_string_{arg.tr_string}
-        , charset_{strf::use_facet<charset_cat_, facet_tag_>(facets)}
-        , err_handler_{strf::use_facet<err_handler_cat_, facet_tag_>(facets)}
+        , charset_{strf::get_facet<charset_cat_, facet_tag_>(facets)}
+        , err_handler_{strf::get_facet<err_handler_cat_, facet_tag_>(facets)}
         , printers_container_(arg.args, facets, pre_arr)
     {
     }
@@ -138,8 +138,8 @@ public:
         , const FPack& facets
         , const detail::tr_string_arg<CharT, IdxSeq, Args...>& arg )
         : tr_string_{arg.tr_string}
-        , charset_{strf::use_facet<charset_cat_, facet_tag_>(facets)}
-        , err_handler_{strf::use_facet<err_handler_cat_, facet_tag_>(facets)}
+        , charset_{strf::get_facet<charset_cat_, facet_tag_>(facets)}
+        , err_handler_{strf::get_facet<err_handler_cat_, facet_tag_>(facets)}
         , printers_container_(arg.args, facets, pre)
     {
     }
@@ -247,11 +247,11 @@ struct printable_def<detail::tr_string_arg<CharT, detail::index_sequence<>>>
         using tr_error_notifier_t = strf::facet_type_in_pack
             < strf::tr_error_notifier_c, facet_tag, FPack >;
 
-        const auto charset = strf::use_facet<charset_cat, facet_tag>(facets);
+        const auto charset = strf::get_facet<charset_cat, facet_tag>(facets);
         STRF_IF_CONSTEXPR (Pre::size_and_width_demanded) {
             detail::tr_pre_size_and_width<CharT, charset_t, wcalc_t> tr_pre
                 ( nullptr, nullptr, 0, pre->remaining_width()
-                , strf::use_facet<strf::width_calculator_c, facet_tag>(facets)
+                , strf::get_facet<strf::width_calculator_c, facet_tag>(facets)
                 , charset );
             detail::tr_do_premeasurements(tr_pre, arg.tr_string.begin(), arg.tr_string.end());
             pre->add_size(tr_pre.accumulated_ssize());
@@ -266,7 +266,7 @@ struct printable_def<detail::tr_string_arg<CharT, detail::index_sequence<>>>
         else STRF_IF_CONSTEXPR (Pre::width_demanded) {
             detail::tr_pre_width<CharT, charset_t, wcalc_t> tr_pre
                 ( nullptr, 0, pre->remaining_width()
-                , strf::use_facet<strf::width_calculator_c, facet_tag>(facets)
+                , strf::get_facet<strf::width_calculator_c, facet_tag>(facets)
                 , charset );
             detail::tr_do_premeasurements(tr_pre, arg.tr_string.begin(), arg.tr_string.end());
             pre->add_width(tr_pre.accumulated_width());
@@ -274,7 +274,7 @@ struct printable_def<detail::tr_string_arg<CharT, detail::index_sequence<>>>
 
         return detail::tr_printer_no_args<CharT, charset_t, tr_error_notifier_t>
             { arg.tr_string
-            , strf::use_facet<err_handler_cat, facet_tag>(facets)
+            , strf::get_facet<err_handler_cat, facet_tag>(facets)
             , charset };
     }
 };
@@ -318,7 +318,7 @@ struct printable_def<detail::tr_string_arg<CharT, detail::index_sequence<I...>, 
         detail::tr_printer_alias<CharT, Pre, FPack, Args...> printer{pre_arr, facets, arg};
 
         constexpr auto num_printers = sizeof...(Args);
-        const auto charset = strf::use_facet<charset_cat, facet_tag>(facets);
+        const auto charset = strf::get_facet<charset_cat, facet_tag>(facets);
         STRF_MAYBE_UNUSED(charset);
         STRF_MAYBE_UNUSED(num_printers);
 
@@ -327,7 +327,7 @@ struct printable_def<detail::tr_string_arg<CharT, detail::index_sequence<I...>, 
             strf::width_t width_arr[num_printers] = {pre_arr[I].accumulated_width()...};
             detail::tr_pre_size_and_width<CharT, charset_t, wcalc_t> tr_pre
                 ( size_arr, width_arr, num_printers, pre->remaining_width()
-                , strf::use_facet<strf::width_calculator_c, facet_tag>(facets)
+                , strf::get_facet<strf::width_calculator_c, facet_tag>(facets)
                 , charset );
             detail::tr_do_premeasurements(tr_pre, arg.tr_string.begin(), arg.tr_string.end());
             pre->add_size(tr_pre.accumulated_ssize());
@@ -344,7 +344,7 @@ struct printable_def<detail::tr_string_arg<CharT, detail::index_sequence<I...>, 
             strf::width_t width_arr[num_printers] = {pre_arr[I].accumulated_width()...};
             detail::tr_pre_width<CharT, charset_t, wcalc_t> tr_pre
                 ( width_arr, num_printers, pre->remaining_width()
-                , strf::use_facet<strf::width_calculator_c, facet_tag>(facets)
+                , strf::get_facet<strf::width_calculator_c, facet_tag>(facets)
                 , charset );
             detail::tr_do_premeasurements(tr_pre, arg.tr_string.begin(), arg.tr_string.end());
             pre->add_width(tr_pre.accumulated_width());

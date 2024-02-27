@@ -2233,16 +2233,16 @@ public:
         , const FPack& facets
         , const detail::float_with_fmt
             < FloatT, strf::float_format_specifier_full_dynamic, HasAlignment >& arg )
-        : lettercase_(strf::use_facet<strf::lettercase_c, FloatT>(facets))
+        : lettercase_(strf::get_facet<strf::lettercase_c, FloatT>(facets))
     {
-        auto charset = use_facet<strf::charset_c<CharT>, FloatT>(facets);
+        auto charset = get_facet<strf::charset_c<CharT>, FloatT>(facets);
         encode_fill_ = charset.encode_fill_func();
         encode_char_ = charset.encode_char_func();
 
         auto notation = arg.float_notation();
         if (arg.get_float_format().punctuate) {
-            auto punct_dec = strf::use_facet<strf::numpunct_c<10>, FloatT>(facets);
-            auto punct_hex = strf::use_facet<strf::numpunct_c<16>, FloatT>(facets);
+            auto punct_dec = strf::get_facet<strf::numpunct_c<10>, FloatT>(facets);
+            auto punct_hex = strf::get_facet<strf::numpunct_c<16>, FloatT>(facets);
             grouping_ = punct_dec.grouping();
             thousands_sep_ = punct_dec.thousands_sep();
             decimal_point_ = ( notation != strf::float_notation::hex
@@ -2287,9 +2287,9 @@ public:
         ( PreMeasurements* pre
         , const FPack& facets
         , const detail::float_with_fmt<FloatT, FloatFormatter, HasAlignment>& arg )
-        : lettercase_(strf::use_facet<strf::lettercase_c, FloatT>(facets))
+        : lettercase_(strf::get_facet<strf::lettercase_c, FloatT>(facets))
     {
-        auto charset = use_facet<strf::charset_c<CharT>, FloatT>(facets);
+        auto charset = get_facet<strf::charset_c<CharT>, FloatT>(facets);
         encode_fill_ = charset.encode_fill_func();
         auto r = strf::detail::init_float_printer_data
             ( data_, arg.value(), grouping_, arg.get_float_format()
@@ -2590,7 +2590,7 @@ struct float_printing
         ( strf::tag<CharT>, PreMeasurements* pre, const FPack& fp, FloatT x ) noexcept
         -> strf::detail::fast_double_printer<CharT>
     {
-        const fast_double_printer<CharT> p(x, strf::use_facet<strf::lettercase_c, float>(fp));
+        const fast_double_printer<CharT> p(x, strf::get_facet<strf::lettercase_c, float>(fp));
         if (pre->has_remaining_width() || PreMeasurements::size_demanded) {
             const auto s = p.size();
             pre->add_width(static_cast<std::int16_t>(s));

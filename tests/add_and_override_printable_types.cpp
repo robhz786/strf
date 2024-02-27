@@ -416,7 +416,7 @@ struct printable_def<mytype2>
         pre->add_width(static_cast<strf::width_t>(2));
         pre->add_size(2);
 
-        auto charset = strf::use_facet<strf::charset_c<CharT>, void> (fp);
+        auto charset = strf::get_facet<strf::charset_c<CharT>, void> (fp);
         return [e, charset] (strf::destination<CharT>& dst)
                {
                    to(dst) (charset, strf::unsafe_transcode(stringify(e)));
@@ -506,7 +506,7 @@ struct mytype2_overrider_impl
         pre->add_width(static_cast<strf::width_t>(4));
         pre->add_size(4);
 
-        auto charset = strf::use_facet<strf::charset_c<CharT>, void> (fp);
+        auto charset = strf::get_facet<strf::charset_c<CharT>, void> (fp);
         return [e, charset] (strf::destination<CharT>& dst)
                {
                    to(dst).with(charset)

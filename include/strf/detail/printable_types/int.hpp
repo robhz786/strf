@@ -1178,7 +1178,7 @@ public:
         init_(arg.value());
         init_fill_(arg.get_alignment_format());
 
-        auto encoding = strf::use_facet<strf::charset_c<CharT>, int>(facets);
+        auto encoding = strf::get_facet<strf::charset_c<CharT>, int>(facets);
         STRF_MAYBE_UNUSED(encoding);
         encode_fill_ = encoding.encode_fill_func();
         pre->add_width(fillcount_ + digcount_ + negative_);
@@ -1385,7 +1385,7 @@ public:
     {
         auto value = arg.value();
         auto w = strf::detail::init(data_, arg.get_int_format(), value);
-        lettercase_ = strf::use_facet<strf::lettercase_c, decltype(value)>(facets);
+        lettercase_ = strf::get_facet<strf::lettercase_c, decltype(value)>(facets);
         pre->add_width(static_cast<strf::width_t>(w));
         pre->add_size(w);
     }
@@ -1462,7 +1462,7 @@ public:
     {
         auto value = arg.value();
         auto w = strf::detail::init(data_, arg.get_int_format(), value);
-        lettercase_ = strf::use_facet<strf::lettercase_c, decltype(value)>(facets);
+        lettercase_ = strf::get_facet<strf::lettercase_c, decltype(value)>(facets);
         pre->add_width(w);
         pre->add_size(w);
     }
@@ -1710,11 +1710,11 @@ public:
               < P
               , IntFormat
               , alignment_format_specifier_q<HasAlignment> > arg ) noexcept
-        : lettercase_(strf::use_facet<lettercase_c, detail::remove_cvref_t<decltype(arg.value())> >(facets))
+        : lettercase_(strf::get_facet<lettercase_c, detail::remove_cvref_t<decltype(arg.value())> >(facets))
     {
         auto ivalue = arg.value();
         using int_type = decltype(ivalue);
-        auto charset = strf::use_facet<charset_c<CharT>, int_type>(facets);
+        auto charset = strf::get_facet<charset_c<CharT>, int_type>(facets);
         encode_fill_ = charset.encode_fill_func();
         const int_format_static_base_and_punct<Base, false> ifmt = arg.get_int_format();
         auto afmt = arg.get_alignment_format();
@@ -1877,10 +1877,10 @@ public:
         , const FPack& facets )
         : int_printer_static_base_and_punct
             ( ivalue, ifmt, afmt, pre
-            , strf::use_facet<lettercase_c, IntT>(facets)
-            , strf::use_facet<numpunct_c<Base>, IntT>(facets).grouping()
-            , strf::use_facet<numpunct_c<Base>, IntT>(facets).thousands_sep()
-            , strf::use_facet<charset_c<CharT>, IntT>(facets) )
+            , strf::get_facet<lettercase_c, IntT>(facets)
+            , strf::get_facet<numpunct_c<Base>, IntT>(facets).grouping()
+            , strf::get_facet<numpunct_c<Base>, IntT>(facets).thousands_sep()
+            , strf::get_facet<charset_c<CharT>, IntT>(facets) )
     {
     }
 
@@ -1987,8 +1987,8 @@ public:
         , IntT ivalue )
     {
         using int_type = decltype(ivalue);
-        auto lc = strf::use_facet<lettercase_c, int_type>(facets);
-        auto charset = strf::use_facet<charset_c<CharT>, int_type>(facets);
+        auto lc = strf::get_facet<lettercase_c, int_type>(facets);
+        auto charset = strf::get_facet<charset_c<CharT>, int_type>(facets);
         strf::digits_grouping grp;
         char32_t thousands_sep = ',';
         switch(ifmt.base) {
@@ -1996,7 +1996,7 @@ public:
                 const int_format_static_base_and_punct<16, true> ifmt16
                     { ifmt.precision, ifmt.pad0width, ifmt.sign, ifmt.showbase };
                 if (ifmt.punctuate) {
-                    auto numpunct = strf::use_facet<numpunct_c<16>, int_type>(facets);
+                    auto numpunct = strf::get_facet<numpunct_c<16>, int_type>(facets);
                     grp = numpunct.grouping();
                     thousands_sep = numpunct.thousands_sep();
                 }
@@ -2010,7 +2010,7 @@ public:
                 const int_format_static_base_and_punct<8, true> ifmt8
                     { ifmt.precision, ifmt.pad0width, ifmt.sign, ifmt.showbase };
                 if (ifmt.punctuate) {
-                    auto numpunct = strf::use_facet<numpunct_c<8>, int_type>(facets);
+                    auto numpunct = strf::get_facet<numpunct_c<8>, int_type>(facets);
                     grp = numpunct.grouping();
                     thousands_sep = numpunct.thousands_sep();
                 }
@@ -2024,7 +2024,7 @@ public:
                 const int_format_static_base_and_punct<2, true> ifmt2
                     { ifmt.precision, ifmt.pad0width, ifmt.sign, ifmt.showbase };
                 if (ifmt.punctuate) {
-                    auto numpunct = strf::use_facet<numpunct_c<2>, int_type>(facets);
+                    auto numpunct = strf::get_facet<numpunct_c<2>, int_type>(facets);
                     grp = numpunct.grouping();
                     thousands_sep = numpunct.thousands_sep();
                 }
@@ -2038,7 +2038,7 @@ public:
                 const int_format_static_base_and_punct<10, true> ifmt10
                     { ifmt.precision, ifmt.pad0width, ifmt.sign, ifmt.showbase };
                 if (ifmt.punctuate) {
-                    auto numpunct = strf::use_facet<numpunct_c<10>, int_type>(facets);
+                    auto numpunct = strf::get_facet<numpunct_c<10>, int_type>(facets);
                     grp = numpunct.grouping();
                     thousands_sep = numpunct.thousands_sep();
                 }
@@ -2400,9 +2400,9 @@ struct voidptr_printing
         return strf::make_printer<CharT>
             ( pre
             , strf::pack
-                ( strf::use_facet<strf::numpunct_c<16>, const void*>(facets)
-                , strf::use_facet<strf::lettercase_c, const void*>(facets)
-                , strf::use_facet<strf::charset_c<CharT>, const void*>(facets) )
+                ( strf::get_facet<strf::numpunct_c<16>, const void*>(facets)
+                , strf::get_facet<strf::lettercase_c, const void*>(facets)
+                , strf::get_facet<strf::charset_c<CharT>, const void*>(facets) )
             , *strf::hex(strf::detail::bit_cast<std::size_t>(x)) );
     }
 
@@ -2416,9 +2416,9 @@ struct voidptr_printing
         return strf::make_printer<CharT>
             ( pre
             , strf::pack
-                ( strf::use_facet<strf::numpunct_c<16>, const void*>(facets)
-                , strf::use_facet<strf::lettercase_c, const void*>(facets)
-                , strf::use_facet<strf::charset_c<CharT>, const void*>(facets) )
+                ( strf::get_facet<strf::numpunct_c<16>, const void*>(facets)
+                , strf::get_facet<strf::lettercase_c, const void*>(facets)
+                , strf::get_facet<strf::charset_c<CharT>, const void*>(facets) )
             , *strf::hex(strf::detail::bit_cast<std::size_t>(x.value()))
                             .set_alignment_format(x.get_alignment_format()) );
     }

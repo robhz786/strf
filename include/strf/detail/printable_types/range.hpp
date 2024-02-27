@@ -198,10 +198,10 @@ private:
 
     template <typename Category, typename Tag = strf::string_input_tag<CharT>>
     static STRF_HD
-    STRF_DECLTYPE_AUTO((strf::use_facet<Category, Tag>(std::declval<FPack>())))
-    use_facet_(const FPack& fp)
+    STRF_DECLTYPE_AUTO((strf::get_facet<Category, Tag>(std::declval<FPack>())))
+    get_facet_(const FPack& fp)
     {
-        return fp.template use_facet<Category, Tag>();
+        return fp.template get_facet<Category, Tag>();
     }
 };
 
@@ -223,8 +223,8 @@ STRF_HD void separated_range_printer<CharT, FPack, Iterator>::do_premeasurements
         return;
     }
     {
-        auto&& wcalc = use_facet_<strf::width_calculator_c>(fp_);
-        auto dw = wcalc.str_width( use_facet_<strf::charset_c<CharT>>(fp_)
+        auto&& wcalc = get_facet_<strf::width_calculator_c>(fp_);
+        auto dw = wcalc.str_width( get_facet_<strf::charset_c<CharT>>(fp_)
                                  , pre->remaining_width()
                                  , sep_begin_
                                  , sep_begin_ + sep_len_ );
@@ -373,10 +373,10 @@ private:
 
     template <typename Category, typename Tag = strf::string_input_tag<CharT>>
     static inline STRF_HD
-    STRF_DECLTYPE_AUTO((strf::use_facet<Category, Tag>(*(const FPack*)0)))
-    use_facet_(const FPack& fp)
+    STRF_DECLTYPE_AUTO((strf::get_facet<Category, Tag>(*(const FPack*)0)))
+    get_facet_(const FPack& fp)
     {
-        return fp.template use_facet<Category, Tag>();
+        return fp.template get_facet<Category, Tag>();
     }
 };
 
@@ -402,8 +402,8 @@ STRF_HD void fmt_separated_range_printer<CharT, FPack, Iterator, Fmts ...>::do_p
         return;
     }
     if (pre->has_remaining_width()) {
-        auto&& wcalc = use_facet_<strf::width_calculator_c>(fp_);
-        auto dw = wcalc.str_width( use_facet_<strf::charset_c<CharT>>(fp_)
+        auto&& wcalc = get_facet_<strf::width_calculator_c>(fp_);
+        auto dw = wcalc.str_width( get_facet_<strf::charset_c<CharT>>(fp_)
                                  , pre->remaining_width()
                                  , r.sep_begin
                                  , r.sep_begin + r.sep_len );
@@ -537,10 +537,10 @@ private:
 
     template <typename Category, typename Tag = strf::string_input_tag<CharT>>
     static STRF_HD
-    STRF_DECLTYPE_AUTO((strf::use_facet<Category, Tag>(std::declval<FPack>())))
-    use_facet_(const FPack& fp)
+    STRF_DECLTYPE_AUTO((strf::get_facet<Category, Tag>(std::declval<FPack>())))
+    get_facet_(const FPack& fp)
     {
-        return fp.template use_facet<Category, Tag>();
+        return fp.template get_facet<Category, Tag>();
     }
 };
 
@@ -562,8 +562,8 @@ STRF_HD void sep_transformed_range_printer<CharT, FPack, Iterator, UnaryOp>
         return;
     }
     if (pre->has_remaining_width()) {
-        auto&& wcalc = use_facet_<strf::width_calculator_c>(fp_);
-        auto dw = wcalc.str_width( use_facet_<strf::charset_c<CharT>>(fp_)
+        auto&& wcalc = get_facet_<strf::width_calculator_c>(fp_);
+        auto dw = wcalc.str_width( get_facet_<strf::charset_c<CharT>>(fp_)
                                  , pre->remaining_width()
                                  , sep_begin_
                                  , sep_begin_ + sep_len_ );

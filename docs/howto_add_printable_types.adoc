@@ -36,7 +36,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 
 :join:            <<quick_reference#join,join>>
 :Facet:           <<strf_hpp#Facet,Facet>>
-:use_facet:       <<strf_hpp#use_facet,use_facet>>
+:get_facet:       <<strf_hpp#get_facet,get_facet>>
 :facets_pack:     <<strf_hpp#facets_pack,facets_pack>>
 :tag:             <<strf_hpp#tag,tag>>
 
@@ -602,18 +602,18 @@ Then, instead of calling `get_complex_form()`,
 
 [source,cpp,subs=normal]
 ----
-complex_form form = strf::{use_facet}<complex_form_c, std::complex<FloatT>>(facets);
+complex_form form = strf::{get_facet}<complex_form_c, std::complex<FloatT>>(facets);
 ----
 
-`use_facet` is used to extract a facet object from a `{facets_pack}` object.
+`get_facet` is used to extract a facet object from a `{facets_pack}` object.
 The first template parameter is the facet category.
 The second is the usually printable type and it only has effect when there is
 any <<tutorial#constrained_facets,constrained facets>> of the given category
 in the the `{facets_pack}` object. The effect is that
-`{use_facet}` only returns the value inside a constrained facet when
+`{get_facet}` only returns the value inside a constrained facet when
 `Filter<Tag>::value` is `true` ,
 where `Filter` is the template parameter of the constrained facet, and `Tag`
-is the second template parameter used in `{use_facet}`
+is the second template parameter used in `{get_facet}`
 ( which is `std::complex<FloatT>` in this case ).
 
 This way, the complex form would be specified by passing `complex_form`
@@ -778,7 +778,7 @@ First, the one that doesn't:
         const auto coord2 = strf::fmt(coordinates.second).set_float_format(float_fmt);
         const auto write_coord1 = strf::make_printer<CharT>(pre, facets, coord1);
         const auto write_coord2 = strf::make_printer<CharT>(pre, facets, coord2);
-        const auto charset = strf::use_facet<strf::charset_c<CharT>, representative>(facets);
+        const auto charset = strf::get_facet<strf::charset_c<CharT>, representative>(facets);
 
         return [charset, form, write_coord1, write_coord2] (strf::destination<CharT>& dst)
             {

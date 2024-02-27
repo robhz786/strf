@@ -263,7 +263,7 @@ auto str2 = strf::to_string.with(my_facets) (/{asterisk} \... {asterisk}/);
 
 The `facets_pack` class template is designed more similarly to `std::tuple` than to `std::locale`.
 It stores all the facets objects by value, and accessing one them (
-with the `<<strf_hpp#use_facet,strf::use_facet>>` function template ) is just as fast as
+with the `<<strf_hpp#get_facet,strf::get_facet>>` function template ) is just as fast as
 calling a trivial getter function.
 
 Any value that can be passed to the `with` function, can also be passed to `pack`,

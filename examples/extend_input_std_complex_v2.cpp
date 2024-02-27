@@ -188,7 +188,7 @@ struct printable_def<std::complex<FloatT>>
         const auto coord2 = strf::fmt(coordinates.second).set_float_format(float_fmt);
         const auto write_coord1 = strf::make_printer<CharT>(pre, facets, coord1);
         const auto write_coord2 = strf::make_printer<CharT>(pre, facets, coord2);
-        const auto charset = strf::use_facet<strf::charset_c<CharT>, representative>(facets);
+        const auto charset = strf::get_facet<strf::charset_c<CharT>, representative>(facets);
 
         return [charset, form, write_coord1, write_coord2] (strf::destination<CharT>& dst)
             {
@@ -238,12 +238,12 @@ struct printable_def<std::complex<FloatT>>
                 assert(form == complex_form::polar);
                 using rt = representative;
                 if (pre->has_remaining_width()) {
-                    auto wcalc = strf::use_facet<strf::width_calculator_c, rt>(facets);
+                    auto wcalc = strf::get_facet<strf::width_calculator_c, rt>(facets);
                     pre->add_width(wcalc.char_width(strf::utf_t<char32_t>{}, anglechar));
                     pre->add_width(1);
                 }
                 if (PreMeasurements::size_demanded) {
-                    auto encoding = strf::use_facet<strf::charset_c<CharT>, rt>(facets);
+                    auto encoding = strf::get_facet<strf::charset_c<CharT>, rt>(facets);
                     pre->add_size(encoding.encoded_char_size(anglechar));
                     pre->add_size(1);
                 }
