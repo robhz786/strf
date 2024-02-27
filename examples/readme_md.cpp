@@ -187,16 +187,24 @@ void numeric_punctuation()
     assert(s == "1.000.000,5  1000000.5  10.000  100000");
 
     // Extracting punctuation from locale
+    // Use strf::locale_numpunct to get the
+    // punctuation of current global locale
+    try {
 #ifdef _MSC_VER
-    const char* en_US_name = "en-US";
+        const std::locale loc("en-US");
 #else
-    const char* en_US_name = "en_US";
+        const std::locale loc("en_US.UTF-8");
 #endif
-    if (setlocale(LC_NUMERIC, en_US_name)) { // NOLINT(concurrency-mt-unsafe)
-        auto loc_punct = strf::locale_numpunct(); // provided by header <strf/locale.hpp>
-        auto s_loc = strf::to_string.with(loc_punct) (*!strf::fixed(1000000.5));
-        assert(s_loc == "1,000,000.5");
-     }
+        const auto previous_loc = std::locale::global(loc);
+        const auto loc_punct = strf::locale_numpunct(); // from <strf/locale.hpp>
+        std::locale::global(previous_loc); // this does not affect loc_punt
+
+        const auto result = strf::to_string.with(loc_punct) (*!strf::fixed(1000000.5));
+        assert(result == "1,000,000.5");
+    } catch (std::runtime_error&) {
+        // locale not supported
+    }
+
 
 #if defined(__cpp_char8_t)
     // Manually specifing a punctuation

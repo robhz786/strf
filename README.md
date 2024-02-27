@@ -27,7 +27,7 @@ Header-only by default, but can be used as a static library as well ( see [detai
     * [Adding a destination](http://robhz786.github.io/strf/v0.15.3/howto_add_destination.html)
     * [Adding a printable type](http://robhz786.github.io/strf/v0.15.3/howto_add_printable_types.html)
     * [Overriding a printable type](http://robhz786.github.io/strf/v0.15.3/howto_override_printable_types.html)
-  * [Using strf on CUDA devices](http://robhz786.github.io/strf/v0.15.3/cuda.html)
+  * [Using strf on CUDA devices (experimental) ](http://robhz786.github.io/strf/v0.15.3/cuda.html)
 
 * [Benchmarks](http://robhz786.github.io/strf-benchmarks/v0.15.3/results.html) ( versus {fmt} )
 
@@ -240,11 +240,18 @@ void numeric_punctuation()
         , "  ", strf::punct(10000), "  ", 100000 );
     assert(s == "1.000.000,5  1000000.5  10.000  100000");
 
-    // Extracting punctuation from locale
-    if (setlocale(LC_NUMERIC, "en_EN")) {
-        auto loc_punct = strf::locale_numpunct(); // from <strf/locale.hpp>
-        auto result = strf::to_string.with(loc_punct) (*!strf::fixed(1000000.5));
+    // Use strf::locale_numpunct to get the
+    // punctuation of current global locale
+    try {
+        const std::locale loc("en_US.UTF-8");
+        const auto previous_loc = std::locale::global(loc);
+        const auto loc_punct = strf::locale_numpunct(); // from <strf/locale.hpp>
+        std::locale::global(previous_loc); // this does not affect loc_punt
+
+        const auto result = strf::to_string.with(loc_punct) (*!strf::fixed(1000000.5));
         assert(result == "1,000,000.5");
+    } catch (std::runtime_error&) {
+        // locale not supported
     }
 
     // Manually specifing a punctuation
