@@ -131,6 +131,8 @@ struct printable_def<std::complex<FloatT>> {
 <1> This is the type that is tested by the __{UnaryTypeTrait}__s that
     parameterize <<tutorial#constrained_facets,constrained facets>>.
     It is usually the printable type itself.
+    When not defined, it is assumed to the same as template paramenter of
+    `printable_def`.
 <2> This defines the type the library internally uses to forward the value to be
     printed. It must be implicitly convertible to `representative`.    
     This is usually the same as `representative` or

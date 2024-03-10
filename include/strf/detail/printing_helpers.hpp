@@ -144,7 +144,7 @@ template < typename PrintableDef
 struct printable_def_or_facet_getter_selector_2
 {
     static_assert(Overridable, "");
-    using representative = typename PrintableDef::representative;
+    using representative = detail::extract_representative<PrintableDef>;
     using overrider_ = decltype
         ( strf::get_facet<strf::printable_overrider_c, representative>
           (std::declval<FPack>()) );
@@ -401,7 +401,7 @@ public:
     {
         strf::get_facet
             < strf::printable_overrider_c
-            , typename PrintableDef::representative > (facets_())
+            , detail::extract_representative<PrintableDef> > (facets_())
             .print(dst, facets_(), printable_);
     }
 

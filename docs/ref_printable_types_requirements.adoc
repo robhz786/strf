@@ -74,6 +74,24 @@ Given
 * `P`, a _{Printable}_ type such that `{printable_def_of}<P>` is `T`.
 
 ==== Member types
+
+[[PrintableDef_representative]]
+====
+[source,cpp]
+----
+T::representative
+----
+The type used as the template argument in `{get_facet}`.
+This means it is the type that is tested by the
+the __UnaryTypeTrait__ template argument passed to
+`{constrain}` or `{constrained_fpe}`.
+
+`T::representative` is optional if `T` is an intance of `prinatable_def`.
+When `prinatable_def<R>` does not define `representative`,
+it assumed to be `R`.
+
+====
+
 [[PrintableDef_forwarded_type]]
 ====
 [source,cpp]
@@ -86,18 +104,6 @@ and must be copy-constructible. And its copy-constructor should be fast.
 
 `forwarded_type` is used intead of `P` as the storage type in some
 situations ( for example, the objects created by `fmt` and `{join}` ).
-====
-
-[[PrintableDef_representative]]
-====
-[source,cpp]
-----
-T::representative
-----
-The type used as the template argument in `{get_facet}`.
-This means it is the type that is tested by the
-the __UnaryTypeTrait__ template argument passed to
-`{constrain}` or `{constrained_fpe}`.
 ====
 
 [[PrintableDef_is_overridable]]
@@ -184,10 +190,15 @@ is greater than or equal to such calculated size.
 namespace strf {
 
 template <typename T>
-using representative_of_printable = typename {printable_def_of}<T>::<<PrintableDef_representative,representative>>;
+using representative_of_printable = /{asterisk} see bellow {asterisk}/ ;
 
 } // namespace strf
 ----
+
+Given `__PDef__`, the type `{printable_def_of}<T>`, `representative_of_printable<T>` is an alias to
+`PDef::<<PrintableDef_representative,representative>>`, assuming such
+type member alias is defined.
+Otherwise, it is `__R__`, if `PDef` is `printable_def<R>`.
 
 === Variable template `is_printable_and_overridable` [[is_printable_and_overridable]]
 

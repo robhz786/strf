@@ -449,9 +449,35 @@ constexpr bool is_printable_and_overridable_v = is_printable_and_overridable<T>:
 
 #endif // defined(STRF_HAS_VARIABLE_TEMPLATES)
 
+namespace detail {
+
+template <typename PrintableDef>
+struct representative_from_printable_def
+{
+    using type = PrintableDef;
+};
+
+template <typename P>
+struct representative_from_printable_def<printable_def<P>>
+{
+    template <typename U>
+    static STRF_HD strf::tag<typename U::representative> test_(const U&);
+
+    template <typename U>
+    static STRF_HD strf::tag<P> test_(...);
+
+    using pdef = printable_def<P>;
+    using tag_type = decltype(test_<pdef>(std::declval<pdef>()));
+    using type = typename tag_type::type;
+};
+
+template <typename PrintableDef>
+using extract_representative = typename representative_from_printable_def<PrintableDef>::type;
+
+} // detail
+
 template <typename T>
-using representative_of_printable = typename
-    strf::printable_def_of<T>::representative;
+using representative_of_printable = detail::extract_representative<strf::printable_def_of<T>>;
 
 template <typename CharT, typename PreMeasurements, typename FPack, typename Arg>
 using printer_type = typename
