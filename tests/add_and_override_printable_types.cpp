@@ -130,7 +130,7 @@ STRF_TEST_FUNC void test_printable_def_without_make_printer()
 
 struct mytype_overrider_impl
 {
-    using category = strf::printable_overrider_c;
+    using category = strf::printable_overrider_c_of<mytype>;
 
     template <typename CharT, typename FPack>
     STRF_HD static void print
@@ -494,7 +494,7 @@ STRF_TEST_FUNC void test_make_printer_that_returns_lambda()
 
 struct mytype2_overrider_impl
 {
-    using category = strf::printable_overrider_c;
+    using category = strf::printable_overrider_c_of<mytype2>;
 
     template <typename CharT, typename Pre, typename FPack>
     STRF_HD static auto make_printer

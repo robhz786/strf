@@ -231,23 +231,17 @@ using forwarded_printable_type = typename {printable_def_of}<T>::<<PrintableDef_
 } // namespace strf
 ----
 
-=== Facet category `printable_overrider_c` [[printable_overrider_c]]
-
-////
-to-do
-////
-
-A facet of this category should **aways** be <<constrain,constrained>> to the
-printable type intended to be overriden.
+=== Template facet category `printable_overrider_c` [[printable_overrider_c]]
 
 [source,cpp,subs=normal]
 ----
 namespace strf {
 
+template <typename R>
 struct printable_overrider_c {
     static constexpr bool constrainable = true;
 
-    constexpr static <<dont_override,dont_override>> get_default() noexcept {
+    constexpr static <<dont_override,dont_override>><R> get_default() noexcept {
         return {};
     }
 };
@@ -255,16 +249,32 @@ struct printable_overrider_c {
 } // namespace strf
 ----
 
-==== Struct `dont_override` [[dont_override]]
+The template parameter `R` shall be the same as the `{representative_of_printable}<P>`,
+where `P` the printable type to be overriden.
 
-`dont_override` is the default facet of `printable_overrider_c` category.
+=== Type alias `printable_overrider_c_of` [[printable_overrider_c_of]]
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+template <typename Printable>
+using printable_overrider_c_of =
+    printable_overrider_c< representative_of_printable<Printable> >;
+}
+----
+
+=== Struct template `dont_override` [[dont_override]]
+
+
+`dont_override<_T_>` is the default facet of `printable_overrider_c<_T>` category.
 
 [source,cpp,subs=normal]
 ----
 namespace strf {
 
+template <typename T>
 struct dont_override {
-    using category = printable_overrider_c;
+    using category = printable_overrider_c<R>;
 };
 
 } // namespace strf
@@ -286,7 +296,10 @@ If `{printable_def_of}<Arg>::<<PrintableDef_is_overridable,is_overridable>>::val
 `make_printer` returns
 [source,cpp,subs=normal]
 ----
-{get_facet}< {printable_overrider_c}, {representative_of_printable}<Arg> > (facets)
+{get_facet}
+    < {printable_overrider_c}<{representative_of_printable}<Arg>>
+    , {representative_of_printable}<Arg> >
+    (facets)
     .make_printer({tag}<CharT>{}, pre, facets, arg);
 ----
 

@@ -346,16 +346,11 @@ constexpr detail_format_functions::fmt_fn fmt {};
 
 }  // namespace format_functions
 
+template <typename Representative>
 struct printable_overrider_c;
+
+template <typename Representative>
 struct dont_override;
-
-using print_override_c
-STRF_DEPRECATED_MSG("print_override_c was renamed printable_overrider_c")
-= printable_overrider_c;
-
-using no_print_override
-STRF_DEPRECATED_MSG("no_print_override was renamed dont_override")
-= dont_override;
 
 namespace detail {
 
@@ -407,16 +402,18 @@ constexpr STRF_HD decltype(auto) make_printer
         .make_printer(ChTag{}, p, fp, Helper::convert_printable_arg(arg));
 }
 
+template <typename Representative>
 struct dont_override
 {
-    using category = printable_overrider_c;
+    using category = printable_overrider_c<Representative>;
 };
 
+template <typename Representative>
 struct printable_overrider_c
 {
     static constexpr bool constrainable = true;
 
-    constexpr static STRF_HD dont_override get_default() noexcept
+    constexpr static STRF_HD dont_override<Representative> get_default() noexcept
     {
         return {};
     }
@@ -478,6 +475,10 @@ using extract_representative = typename representative_from_printable_def<Printa
 
 template <typename T>
 using representative_of_printable = detail::extract_representative<strf::printable_def_of<T>>;
+
+template <typename Printable>
+using printable_overrider_c_of =
+    printable_overrider_c< representative_of_printable<Printable> >;
 
 template <typename CharT, typename PreMeasurements, typename FPack, typename Arg>
 using printer_type = typename

@@ -111,7 +111,7 @@ using select_printable_arg_converter_for_printing_with_premeasurements = typenam
     <PrintableDef, DefOrFacet, CharT, PreMeasurements, FPack, Arg>
     ::type;
 
-template <typename Overrider, typename OverrideTag>
+template <typename Overrider, typename Representative>
 struct overrider_getter
 {
     using printable_def_or_facet_type = Overrider;
@@ -119,7 +119,7 @@ struct overrider_getter
     template <typename FPack>
     static constexpr STRF_HD const Overrider& get_printable_def_or_facet(const FPack& fp)
     {
-        return strf::get_facet<strf::printable_overrider_c, OverrideTag>(fp);
+        return strf::get_facet<strf::printable_overrider_c<Representative>, Representative>(fp);
     }
 };
 
@@ -146,12 +146,12 @@ struct printable_def_or_facet_getter_selector_2
     static_assert(Overridable, "");
     using representative = detail::extract_representative<PrintableDef>;
     using overrider_ = decltype
-        ( strf::get_facet<strf::printable_overrider_c, representative>
+        ( strf::get_facet<strf::printable_overrider_c<representative>, representative>
           (std::declval<FPack>()) );
 
     using overrider = strf::detail::remove_cvref_t<overrider_>;
     using printable_def_or_facet_getter_type = typename std::conditional
-        < std::is_same<overrider, strf::dont_override>::value
+        < std::is_same<overrider, strf::dont_override<representative>>::value
         , printable_def_getter<PrintableDef>
         , overrider_getter<overrider, representative> >
         ::type;
@@ -399,9 +399,9 @@ public:
 
     STRF_HD void print_to(strf::destination<CharT>& dst) const override
     {
+        using representative = detail::extract_representative<PrintableDef>;
         strf::get_facet
-            < strf::printable_overrider_c
-            , detail::extract_representative<PrintableDef> > (facets_())
+            < strf::printable_overrider_c<representative>, representative > (facets_())
             .print(dst, facets_(), printable_);
     }
 

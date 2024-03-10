@@ -19,7 +19,6 @@ http://www.boost.org/LICENSE_1_0.txt)
 :format_specifiers:     <<strf_hpp#PrintableDef_format_specifiers,format_specifiers>>
 :FormatSpecifier:       <<strf_hpp#FormatSpecifier,FormatSpecifier>>
 :printable_overrider_c: <<strf_hpp#printable_overrider_c,printable_overrider_c>>
-:dont_override:         <<strf_hpp#dont_override,dont_override>>
 :premeasurements:       <<strf_hpp#premeasurements,premeasurements>>
 :measure:               <<strf_hpp#measure,measure>>
 :value_and_format:      <<strf_hpp#value_and_format,value_and_format>>

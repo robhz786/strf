@@ -32,7 +32,7 @@ struct is_bool: std::is_same<T, bool> {};
 
 struct my_bool_printing_overrider
 {
-    using category = strf::printable_overrider_c;
+    using category = strf::printable_overrider_c_of<bool>;
 
     template <typename CharT, typename PreMeasurements, typename FPack>
     constexpr static STRF_HD auto make_printer
@@ -82,7 +82,7 @@ struct printable_def<bool_wrapper> {
     {
         return strf::make_printer<CharT>
             ( pre
-            , strf::pack(fp, strf::constrain<strf::is_char>(strf::dont_override{}))
+            , fp
             , strf::join(static_cast<CharT>('['), f.x, static_cast<CharT>(']')) );
     }
 };
@@ -91,7 +91,7 @@ struct printable_def<bool_wrapper> {
 
 STRF_TEST_FUNC void test_printable_overriding()
 {
-    auto alt_bool = strf::constrain<is_bool>(my_bool_printing_overrider{});
+    auto alt_bool = my_bool_printing_overrider{};
 
     TEST("yes/no").with(alt_bool) (true, '/', false);
     TEST("..yes../..no..").with(alt_bool) (strf::center(true, 7, '.'), '/', strf::center(false, 6, '.'));

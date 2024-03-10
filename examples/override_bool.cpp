@@ -11,7 +11,7 @@
 
 struct my_bool_overrider
 {
-    using category = strf::printable_overrider_c;
+    using category = strf::printable_overrider_c_of<bool>;
 
     template <typename CharT, typename PreMeasurements, typename FPack, typename... T>
     constexpr auto make_printer
@@ -46,10 +46,7 @@ struct my_bool_overrider
 
 static_assert(strf::is_printable_and_overridable_v<bool>, "bool not overridable");
 
-template <typename T>
-struct is_bool: std::is_same<T, strf::representative_of_printable<bool>> {};
-
-constexpr auto italian_bool = strf::constrain<is_bool>(my_bool_overrider{{"falso", "vero"}});
+constexpr auto italian_bool = my_bool_overrider{{"falso", "vero"}};
 
 int main()
 {
@@ -62,11 +59,6 @@ int main()
         ( strf::center(true, 10, '.'), '/'
         , strf::center(false, 10, '.') );
     assert(str == "...vero.../..falso...");
-
-    // what happens when you don't constrain an overrider facet:
-    str = strf::to_string.with(my_bool_overrider{{"falso", "vero"}})
-        (true, '/', false, '/', 1.0, '/', 0.0, '/', static_cast<void*>(nullptr));
-    assert(str == "vero/falso/vero/falso/falso");
 
     return 0;
 }

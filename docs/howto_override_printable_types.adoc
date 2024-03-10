@@ -6,6 +6,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 ////
 
 :printable_overrider_c: <<strf_hpp#printable_overrider_c,printable_overrider_c>>
+:printable_overrider_c_of: <<strf_hpp#printable_overrider_c_of,printable_overrider_c_of>>
 :make_printer: <<strf_hpp#make_printer,make_printer>>
 :get_facet: <<strf_hpp#get_facet,get_facet>>
 :pack: <<strf_hpp#pack,pack>>
@@ -32,25 +33,20 @@ http://www.boost.org/LICENSE_1_0.txt)
 Strf allows you not only to <<howto_add_printable_types#,add printable types>>,
 but also to override existing ones. The procedure is similar; the
 main difference is that instead of defining a _{PrintableDef}_ type,
-you create a facet of the `{printable_overrider_c}` category,
+you create a facet of the `{printable_overrider_c}<...>` category,
 which is almost the same thing.
-So this document presumes you already know how to do that.
+So this document presumes you already know how to do add printables types.
 If you don't,
 <<howto_add_printable_types#CreatePrintableDef,click here>>
 to get some explanation.
 
-
-The facet shall contain the
-`make_printer` member function templates that will
-replace those defined in the _{PrintableDef}_ class of the
-overrided type.
 For example, one could define a facet to override the `bool` like this:
 
 [source,cpp,subs=normal]
 ----
 struct italian_bool_facet
 {
-    using category = strf::{printable_overrider_c};
+    using category = strf::{printable_overrider_c_of}<bool>;
 
     template <typename CharT, typename Pre, typename FPack>
     constexpr static auto make_printer
@@ -85,21 +81,15 @@ so instead of hardcoded strings like `"vero"`, and `"falso"`
 , we could use member variables, which would probably make more sense ).
 
 Just as it is usual in __PrintableDef__ classes,
-you can see that we have two `make_printer` fuctions
-( though the first one is unnecessary ).
+you can see that we have two `make_printer` fuctions.
 The second one handles `bool` values with formatting.
-Even if we don't define it, an expression like
-`strf::right(true, 10, '.')`
-is still well-formed, because the format functions
-that are applicable to a printable type keep being the same
-when we override it. We can't change them.
-So it makes sense to overload `make_printer`
-with `{value_and_format}` argument even
-if you don't want to support formatting, just to
-add a `static_assert` to emit a clear error message.
 
-But if do you want support formatting then
-check in the <<strf_hpp#printable_types_list,documentation>> what
+The format functions that are applicable to a printable
+type keep being the same when we override it. We can't change them.
+Defining the  `format_specifiers` type alias in the overrider facet
+has not effect.
+
+Check in the <<strf_hpp#printable_types_list,documentation>> what
 are the format functions ( or the __FormatSpecifiers__ )
 applicable to the printable type you are overriding.
 If you take a look at the part the covers
@@ -115,7 +105,6 @@ taking the `{value_and_format}` argument and add
 a `static_assert` with an explanatory message.
 ////
 
-
 Things are more lenient regarding facets:
 you can completely ignore the facet categories that
 influence the original printable type, as well as consider others
@@ -123,27 +112,7 @@ or <<howto_add_printable_types#creating_facet,new>> ones.
 You can see that although `bool` type is influenced
 by `{lettercase}` facet, our override just ignores it.
 
-Now we are almost ready to use our implementation.
-There is just a detail you *must*
-remember before using a facet object
-of the `printable_overrider_c` category &#x2014; you must __{constrain}__
-it to the types it aims to override:
-
-[source,cpp]
-----
-template <typename T>
-struct is_bool: std::is_same<T, strf::representative_of_printable<bool>> {}; // <1>
-
-constexpr auto italian_bool = strf::constrain<is_bool>(italian_bool_facet{});
-----
-
-<1> `strf::{representative_of_printable}<__X__>`
-    commonly aliases to `__X__`, and it does so for `bool`.
-    However, is a good practice to use it (instead `__X__`), because it is
-    what the library uses (__i.e.__ parameterizes `<<strf_hpp#get_facet,get_facet>>`
-    with ) when "deciding" whether to apply a facet or not.
-
-Now we are ready:
+Anyway, let's see the result:
 
 [source,cpp,subs=normal]
 ----
@@ -157,20 +126,6 @@ str = strf::to_string
     , strf::center(false, 10, '.') );
 assert(str == "\...vero\.../..falso\...");
 ----
-
-
-[WARNING]
-====
-When a `printable_overrider_c` facet is not constrained, it affects all
-overridable printable types, which is certainly not what we want:
-
-[source,cpp,subs=normal]
-----
-auto str = strf::to_string.with(italian_bool_facet{})
-    (true, '/', false, '/', 1.0, '/', 0.0, '/', (void*)0);
-assert(str == "vero/falso/vero/falso/falso");
-----
-====
 
 [NOTE]
 ====
