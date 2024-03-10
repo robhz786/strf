@@ -233,7 +233,9 @@ using forwarded_printable_type = typename {printable_def_of}<T>::<<PrintableDef_
 
 === Facet category `printable_overrider_c` [[printable_overrider_c]]
 
-//// to-do
+////
+to-do
+////
 
 A facet of this category should **aways** be <<constrain,constrained>> to the
 printable type intended to be overriden.

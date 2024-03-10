@@ -57,7 +57,7 @@ Representative type:: The same as the input type
 
 Overridable:: No
 
-FormatSpecifier types
+FormatSpecifier types::
 * `<<alignment_format_specifier,alignment_format_specifier>>`
 * `<<quantity_format_specifier,quantity_format_specifier>>`
 
@@ -74,7 +74,7 @@ Type:: `bool`
 
 Representative type:: `bool`
 Overridable:: Yes
-FormatSpecifier types
+FormatSpecifier types::
 * `<<alignment_format_specifier,alignment_format_specifier>>`
 
 Influenced by facet categories::
@@ -86,7 +86,7 @@ Types:: `const void*`
 Representative type:: `const void*`
 Overridable:: Yes
 
-FormatSpecifier types
+FormatSpecifier types::
 * `<<alignment_format_specifier,alignment_format_specifier>>`
 
 Influenced by facet categories::
@@ -116,7 +116,7 @@ Representative type:: The same as the input type ( `short`,
 
 Overridable:: No
 
-FormatSpecifier types
+FormatSpecifier types::
 * `<<alignment_format_specifier,alignment_format_specifier>>`
 * `<<int_format_specifier,int_format_specifier>>`
 
@@ -132,7 +132,7 @@ Types:: `float`, `double`
 Representative type:: The same as the input type ( `float` or `double` )
 Overridable:: Yes
 
-FormatSpecifier types
+FormatSpecifier types::
 * `<<alignment_format_specifier,alignment_format_specifier>>`
 * `<<float_format_specifier,float_format_specifier>>`
 
