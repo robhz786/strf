@@ -201,7 +201,7 @@ void numeric_punctuation()
 
         const auto result = strf::to_string.with(loc_punct) (*!strf::fixed(1000000.5));
         assert(result == "1,000,000.5");
-    } catch (std::runtime_error&) {
+    } catch (std::runtime_error&) { // NOLINT(bugprone-empty-catch)
         // locale not supported
     }
 

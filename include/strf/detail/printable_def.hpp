@@ -471,7 +471,7 @@ struct representative_from_printable_def<printable_def<P>>
 template <typename PrintableDef>
 using extract_representative = typename representative_from_printable_def<PrintableDef>::type;
 
-} // detail
+} // namespace detail
 
 template <typename T>
 using representative_of_printable = detail::extract_representative<strf::printable_def_of<T>>;
