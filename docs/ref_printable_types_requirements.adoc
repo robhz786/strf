@@ -5,30 +5,26 @@ Distributed under the Boost Software License, Version 1.0.
 http://www.boost.org/LICENSE_1_0.txt)
 ////
 
-:printer:      <<printer,printer>>
-:printer_type: <<printer_type,printer_type>>
-:printable_traits:  <<printable_traits,printable_traits>>
+:printable_def:  <<printable_def,printable_def>>
 
 :premeasurements: <<premeasurements, premeasurements>>
 :facets_pack: <<facets_pack, facets_pack>>
-:printable_with_fmt: <<printable_with_fmt, printable_with_fmt>>
+:value_and_format: <<value_and_format, value_and_format>>
 
-:PrintableTraits: <<PrintableTraits,PrintableTraits>>
+:PrintableDef: <<PrintableDef,PrintableDef>>
 :Printable: <<Printable,Printable>>
-:PrinterInput: <<PrinterInput,PrinterInput>>
-:printable_traits_of: <<printable_traits_of,printable_traits_of>>
+:printable_def_of: <<printable_def_of,printable_def_of>>
 :printable_overrider_c: <<printable_overrider_c,printable_overrider_c>>
-:make_default_printer_input: <<make_default_printer_input,make_default_printer_input>>
-:make_printer_input: <<make_printer_input,make_printer_input>>
+:make_printer: <<make_printer,make_printer>>
 :representative_of_printable: <<representative_of_printable,representative_of_printable>>
 :is_printable_and_overridable: <<is_printable_and_overridable,is_printable_and_overridable>>
 
-:width_decumulator: <<width_decumulator,width_decumulator>>
+:width_accumulator: <<width_accumulator,width_accumulator>>
 :size_accumulator: <<size_accumulator,size_accumulator>>
 
 :constrain: <<constrain,constrain>>
 :constrained_fpe: <<constrained_fpe,constrained_fpe>>
-:use_facet: <<use_facet,use_facet>>
+:get_facet: <<get_facet,get_facet>>
 :tag: <<tag,tag>>
 :rank: <<rank,rank>>
 :join: <<join,join>>
@@ -43,11 +39,11 @@ or override an existing one.
 
 A type `T` is _Printable_ if:
 
-* `printable_traits_of<T>` is defined and is a  _{PrintableTraits}_ type
-* `printable_traits_of<T>::<<PrintableTraits_forwarded_type,forwarded_type>>` is implicitly convertible from `T`
+* `printable_def_of<T>` is defined and is a  _{PrintableDef}_ type
+* `printable_def_of<T>::<<PrintableDef_forwarded_type,forwarded_type>>` is implicitly convertible from `T`
 
-[[printable_traits_of]]
-=== Type alias template `printable_traits_of`
+[[printable_def_of]]
+=== Type alias template `printable_def_of`
 
 [source,cpp,subs=normal]
 ----
@@ -55,30 +51,48 @@ namespace strf {
 
 struct printable_tag;
 
-template <typename T> struct printable_traits;
+template <typename T> struct printable_def;
 
-template <typename T> using printable_traits_of = /{asterisk} see below\... {asterisk}/;
+template <typename T> using printable_def_of = /{asterisk} see below\... {asterisk}/;
 
 } // namespace strf
 ----
 
-`printable_traits_of<T>` is:
+`printable_def_of<T>` is:
 
-*  `printable_traits_of<std::remove_cvref<T>>`, if `T` is a reference type or has any cv-qualifier
-*  otherwise, it is `Traits`, when `T` is `{printable_with_fmt}<Traits, /{asterisk}\... {asterisk}/>`
-*  otherwise, it is `printable_traits<T>` if such template specialization is defined
-*  otherwise, it is `decltype(tag_invoke(printable_tag{}, std::declval<T>()))`
+*  `printable_def_of<std::remove_cvref<T>>`, if `T` is a reference type or has any cv-qualifier
+*  otherwise, it is `PrintableDef`, when `T` is `{value_and_format}<PrintableDef, /{asterisk}\... {asterisk}/>`
+*  otherwise, it is `printable_def<T>` if such template specialization is defined
+*  otherwise, it is `decltype(get_printable_def(printable_tag{}, std::declval<T>()))`
 
-[[PrintableTraits]]
-=== Type requirement _PrintableTraits_
+[[PrintableDef]]
+=== Type requirement _PrintableDef_
 
 Given
 
-* `T`, a _PrintableTraits_ type.
-* `P`, a _{Printable}_ type such that `{printable_traits_of}<P>` is `T`.
+* `T`, a _PrintableDef_ type.
+* `P`, a _{Printable}_ type such that `{printable_def_of}<P>` is `T`.
 
 ==== Member types
-[[PrintableTraits_forwarded_type]]
+
+[[PrintableDef_representative]]
+====
+[source,cpp]
+----
+T::representative
+----
+The type used as the template argument in `{get_facet}`.
+This means it is the type that is tested by the
+the __UnaryTypeTrait__ template argument passed to
+`{constrain}` or `{constrained_fpe}`.
+
+`T::representative` is optional if `T` is an intance of `prinatable_def`.
+When `prinatable_def<R>` does not define `representative`,
+it assumed to be `R`.
+
+====
+
+[[PrintableDef_forwarded_type]]
 ====
 [source,cpp]
 ----
@@ -92,19 +106,7 @@ and must be copy-constructible. And its copy-constructor should be fast.
 situations ( for example, the objects created by `fmt` and `{join}` ).
 ====
 
-[[PrintableTraits_representative_type]]
-====
-[source,cpp]
-----
-T::representative_type
-----
-The type used as the template argument in `{use_facet}`.
-This means it is the type that is tested by the
-the __UnaryTypeTrait__ template argument passed to
-`{constrain}` or `{constrained_fpe}`.
-====
-
-[[PrintableTraits_is_overridable]]
+[[PrintableDef_is_overridable]]
 ====
 .( Optional )
 [source,cpp]
@@ -112,43 +114,73 @@ the __UnaryTypeTrait__ template argument passed to
 T::is_overridable
 ----
 A type alias to either `std::true_type` or `std::false_type`.
-It influences the behavior of `{make_printer_input}`.
+It influences the behavior of `{make_printer}`.
 Assumed to be `std::false_type` if not defined.
 ====
 
-[[PrintableTraits_formatters]]
+[[PrintableDef_format_specifiers]]
 ====
 .( Optional )
 [source,cpp]
 ----
-T::formatters
+T::format_specifiers
 ----
-A type alias to `{tag}<F\...>`, where all types in `F\...` satisfy __<<Formatter,Formatter>>__.
+A type alias to `{tag}<F\...>`, where all types in `F\...` satisfy
+__<<FormatSpecifier,FormatSpecifier>>__.
 It affects the return type of `<<fmt,fmt>>`.
 Assumed to be `{tag}<>` if not defined.
 ====
 
-[[PrintableTraits_functions]]
+[[PrintableDef_functions]]
 ==== Member static function templates
 
 Given
 
-* `T`, a _PrintableTraits_ type.
+* `T`, a _PrintableDef_ type.
 * `CharT`, a character type
 * `fpack`, a value of type `{facets_pack}</{asterisk}\... {asterisk}/>`
-* `pre`, an lvalue of type `{premeasurements}</{asterisk}\... {asterisk}/>`
-* `v`, a value of type `T::forwarded_type` or `{printable_with_fmt}<T, F\...>`,
-   where `F\...` is such that `T::formatters` is an alias to `{tag}<F\...>`.
+* `pre`, a value of type `{premeasurements}</{asterisk}\... {asterisk}/>`
+* `dst`, an non-const lvalue reference of type `{destination}<CharT>`
+* `v`, a value of type `T::forwarded_type` or `{value_and_format}<T, F\...>`,
+   where `F\...` is such that `T::format_specifiers` is an alias to `{tag}<F\...>`.
 
-The following syntax is satisfied:
+At least one of the function templates below must be defined:
+
 ====
+.( Optional )
 [source,cpp,subs=normal]
 ----
-T::make_input({tag}<CharT>{}, pre, fpack, v)
+T::print(dst, fpack, v);
 ----
 [horizontal]
-Return type:: A _{PrinterInput}_ type.
-Return value:: A value `r` such that `&r.pre == &pre`
+Return Type:: void
+Effect:: Prints `v` into `dst` taking into account the facets in `fpack`
+====
+
+====
+.( Optional )
+[source,cpp,subs=normal]
+----
+auto c = T::make_printer({tag}<CharT>{}, pre, fpack, v);
+----
+The `make_printer` function has two purposes:
+
+. to return a callable object `c` such that `c(dst)` prints `v` into `dst`
+  taking into account the facets in `fpack`
+. To measure the size and/or width (or none, depeding on the type `pre` )
+  of the content that `c` prints when invoked.
+
+`pre` acts as an output variable:
+If `pre\-><<premeasurements,width_demanded>>` is `true`, then the width of content
+that `c` prints shall be added to the <<width_accumulator,accumulated_size>> of `pre`.
+
+If `pre\-><<premeasurements,size_demanded>>` is `true`, then the size of content that
+`c` prints ( or a value greater than that ) shall be added into the
+<<size_accumulator,accumulated_size>> of `pre`.
+
+`c(dst)` must not call `dst.recycle()`
+if the value of `dst.space()` immediately before calling `c(dst)`
+is greater than or equal to such calculated size.
 ====
 
 === Type alias template `representative_of_printable` [[representative_of_printable]]
@@ -158,10 +190,15 @@ Return value:: A value `r` such that `&r.pre == &pre`
 namespace strf {
 
 template <typename T>
-using representative_of_printable = typename {printable_traits_of}<T>::<<PrintableTraits_representative_type,representative_type>>;
+using representative_of_printable = /{asterisk} see bellow {asterisk}/ ;
 
 } // namespace strf
 ----
+
+Given `__PDef__`, the type `{printable_def_of}<T>`, `representative_of_printable<T>` is an alias to
+`PDef::<<PrintableDef_representative,representative>>`, assuming such
+type member alias is defined.
+Otherwise, it is `__R__`, if `PDef` is `printable_def<R>`.
 
 === Variable template `is_printable_and_overridable` [[is_printable_and_overridable]]
 
@@ -179,7 +216,7 @@ constexpr bool is_printable_and_overridable_v = is_printable_and_overridable<T>:
 ----
 
 `is_printable_and_overridable<T>` is an alias to
-`{printable_traits_of}<T>::<<PrintableTraits_is_overridable,is_overridable>>`
+`{printable_def_of}<T>::<<PrintableDef_is_overridable,is_overridable>>`
 if such type is defined, otherwise it is an alias to `std::false_type`.
 
 === Type alias template `forwarded_printable_type` [[forwarded_printable_type]]
@@ -189,133 +226,22 @@ if such type is defined, otherwise it is an alias to `std::false_type`.
 namespace strf {
 
 template <typename T>
-using forwarded_printable_type = typename {printable_traits_of}<T>::<<PrintableTraits_forwarded_type,forwarded_type>>;
+using forwarded_printable_type = typename {printable_def_of}<T>::<<PrintableDef_forwarded_type,forwarded_type>>;
 
 } // namespace strf
 ----
 
-
-=== Type requirements _PrinterInput_ [[PrinterInput]]
-
-Given
-
-* `CharT`, a character type
-* `PreMeasurements`, an instance of the `{premeasurements}` class template
-* `X`, a _PrinterInput_ type for types `CharT` and `PreMeasurements`
-* `x`, a value of type `X`
-
-====
-[source,cpp,subs=normal]
-----
-T::char_type
-----
-A type alias to `CharT`.
-====
-
-====
-[source,cpp,subs=normal]
-----
-T::premeasurements_type
-----
-A type alias to `PreMeasurements`.
-====
-
-====
-[source,cpp,subs=normal]
-----
-T::printer_type
-----
-A type that is constructible from `X` and convertible to `const {printer}<CharT>&`,
-such that the sequence:
-
-[source,cpp,subs=normal]
-----
-auto size_before = x.pre.<<size_accumulator_accumulated_ssize,accumulated_ssize>>();
-typename T::printer_type p{x};
-auto size_after = x.pre.<<size_accumulator_accumulated_ssize,accumulated_ssize>>();
-auto predicted_size = size_after - size_before;
-auto dest_buff_space = dest.<<destination_hpp#output_buffer_buffer_space,buffer_space>>();
-
-static_cast<const printer<CharT>&>(p).<<printer,print_to>>(dest);
-----
-satisfies the following postconditions when
-`PreMeasurements::<<premeasurements,size_demanded>>` is `true`:
-
-*  if `predicted_size \<= dest_buff_space` is `true`, then `dest.recycle()` is not called in `print_to`
-====
-
-====
-[source,cpp,subs=normal]
-----
-x.pre
-----
-A lvalue reference of type `PreMeasurements`.
-====
-
-=== Class template `usual_printer_input` [[usual_printer_input]]
-
-`usual_printer_input` is a syntactic sugar to create `PrinterInput` types.
-
-[source,cpp,subs=normal]
-----
-template < typename CharT, typename PreMeasurements
-         , typename FPack, typename Arg, typename Printer>
-struct usual_printer_input
-{
-    using char_type = CharT;
-    using arg_type = Arg;
-    using premeasurements_type = PreMeasurements;
-    using fpack_type = FPack;
-    using printer_type = Printer;
-
-    premeasurements_type& pre;
-    FPack facets;
-    Arg arg;
-};
-----
-////
-Compile-time requirements::
-* `PreMeasurements` is an instance of the `{premeasurements}` class template.
-////
-
-=== Function template `make_default_printer_input` [[make_default_printer_input]]
+=== Template facet category `printable_overrider_c` [[printable_overrider_c]]
 
 [source,cpp,subs=normal]
 ----
 namespace strf {
 
-template <typename CharT, typename Pre, typename FPack, typename Arg>
-constexpr auto make_default_printer_input
-    ( Pre& pre, const FPack& facets, const Arg& arg)
-    noexcept(/{asterisk} see below\... {asterisk}/)
-    \-> /{asterisk} see below\... {asterisk}/
-
-} // namespace strf
-----
-
-The expression `make_default_printer_input<CharT>(pre, facets, arg)` is equivalent to
-[source,cpp,subs=normal]
-----
-{printable_traits_of}<Arg>::<<PrintableTraits_functions,make_input>>({tag}<CharT>{}, pre, facets, arg);
-----
-
-=== Facet category `printable_overrider_c` [[printable_overrider_c]]
-
-This facet category affects the return type and value of `strf::{make_printer_input}`
-function template.
-It enables the user change how a printable type is printed,
-by making the library use an the alternative __{PrinterInput}__ object.
-A facet of this category should **aways** be <<constrain,constrained>> to the
-printable type intended to be overriden.
-
-[source,cpp,subs=normal]
-----
-namespace strf {
-
+template <typename R>
 struct printable_overrider_c {
     static constexpr bool constrainable = true;
 
-    constexpr static <<dont_override,dont_override>> get_default() noexcept {
+    constexpr static <<dont_override,dont_override>><R> get_default() noexcept {
         return {};
     }
 };
@@ -323,92 +249,65 @@ struct printable_overrider_c {
 } // namespace strf
 ----
 
-==== Struct `dont_override` [[dont_override]]
+The template parameter `R` shall be the same as the `{representative_of_printable}<P>`,
+where `P` the printable type to be overriden.
 
-`dont_override` is the default facet of `printable_overrider_c` category.
+=== Type alias `printable_overrider_c_of` [[printable_overrider_c_of]]
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+template <typename Printable>
+using printable_overrider_c_of =
+    printable_overrider_c< representative_of_printable<Printable> >;
+}
+----
+
+=== Struct template `dont_override` [[dont_override]]
+
+
+`dont_override<_T_>` is the default facet of `printable_overrider_c<_T>` category.
 
 [source,cpp,subs=normal]
 ----
 namespace strf {
 
+template <typename T>
 struct dont_override {
-    using category = printable_overrider_c;
-
-    template <typename CharT, typename Pre, typename FPack, typename Arg>
-    constexpr static auto make_input
-        ( {tag}<CharT>{}, Pre& pre, const FPack& facets, Arg&& arg )
-        noexcept(noexcept({make_default_printer_input}<CharT>(pre, facets, arg)))
-    {
-        return {make_default_printer_input}<CharT>(pre, facets, arg);
-    }
+    using category = printable_overrider_c<R>;
 };
 
 } // namespace strf
 ----
 
-=== Function template `make_printer_input` [[make_printer_input]]
+=== Function template `make_printer` [[make_printer]]
 
 [source,cpp,subs=normal]
 ----
 namespace strf {
 
 template <typename CharT, typename Pre, typename FPack, typename Arg>
-constexpr /{asterisk}\...{asterisk}/ make_printer_input(Pre* pre, const FPack& facets, const Arg& arg);
+constexpr /{asterisk}\...{asterisk}/ make_printer(Pre* pre, const FPack& facets, const Arg& arg);
 
 } // namespace strf
 ----
 
-If `{printable_traits_of}<Arg>::<<PrintableTraits_is_overridable,is_overridable>>::value` is `true`,
-`make_printer_input` returns
+If `{printable_def_of}<Arg>::<<PrintableDef_is_overridable,is_overridable>>::value` is `true`,
+`make_printer` returns
 [source,cpp,subs=normal]
 ----
-{use_facet}< {printable_overrider_c}, {representative_of_printable}<Arg> > (facets)
-    .make_input({tag}<CharT>{}, pre, facets, arg);
+{get_facet}
+    < {printable_overrider_c}<{representative_of_printable}<Arg>>
+    , {representative_of_printable}<Arg> >
+    (facets)
+    .make_printer({tag}<CharT>{}, pre, facets, arg);
 ----
 
 Otherwise, it returns
 
 [source,cpp,subs=normal]
 ----
-{printable_traits_of}<Arg>::make_input({tag}<CharT>{}, pre, facets, arg)
-----
-
-
-=== Type alias template `printer_type` [[printer_type]]
-
-[source,cpp,subs=normal]
-----
-namespace strf {
-
-template <typename CharT, typename Pre, typename FPack, typename Arg>
-using printer_input_type = decltype
-    ( {make_printer_input}<CharT>
-        ( std::declval<Pre*>()
-        , std::declval<const FPack&>()
-        , std::declval<Arg>() ) );
-
-template <typename CharT, typename Pre, typename FPack, typename Arg>
-using printer_type = typename printer_input_type<CharT, Pre, FPack, Arg>::printer_type;
-
-} // namespace strf
-----
-
-[[printer]]
-=== Class template `printer`
-
-[source,cpp,subs=normal]
-----
-namespace strf {
-
-template <typename CharT>
-class printer {
-public:
-    using char_type = CharT;
-    virtual ~printer() {}
-    virtual void print_to({destination}<CharT>&) const = 0;
-};
-
-} // namespace strf
+{printable_def  _of}<Arg>::make_printer({tag}<CharT>{}, pre, facets, arg)
 ----
 
 === Class template `premeasurements` [[premeasurements]]
@@ -423,7 +322,7 @@ enum class size_presence : bool { no = false, yes = true };
 template <size_presence SizePresence, width_presence WidthPresence>
 class premeasurements
     : public {size_accumulator}<static_cast<bool>(SizePresence)>
-    , public {width_decumulator}<static_cast<bool>(WidthPresence)>
+    , public {width_accumulator}<static_cast<bool>(WidthPresence)>
 {
 public:
 
@@ -435,11 +334,6 @@ public:
 
     constexpr premeasurements() noexcept = default;
     constexpr explicit premeasurements(<<width_t,width_t>> initial_width) noexcept;
-
-    premeasurements(const premeasurements&) = delete;
-    premeasurements(premeasurements&&) = delete;
-    premeasurements& operator=(const premeasurements&) = delete;
-    premeasurements& operator=(premeasurements&&) = delete;
 
     ~premeasurements() = default;
 };
@@ -458,12 +352,12 @@ Effect:: Default-construct each of the base classes.
 ====
 [source,cpp,subs=normal]
 ----
-constexpr explicit premeasurements(<<width_t,width_t>> initial_width) noexcept;
+constexpr explicit premeasurements(<<width_t,width_t>> width_limit) noexcept;
 ----
 Compile-time requirement:: `WidthPresence` is `width_presence::yes`, otherwise this constructor
 does not participate in overload resolution.
-Effect:: Initializes `{width_decumulator}` base
-with `initial_width`.
+Effect:: Initializes `{width_accumulator}` base
+with `width_limit`.
 ====
 [[size_accumulator]]
 === Class template `size_accumulator`
@@ -476,11 +370,6 @@ class size_accumulator
 public:
     explicit constexpr size_accumulator() noexcept;
     explicit constexpr size_accumulator(std::integral auto initial_size) noexcept;
-
-    size_accumulator(const size_accumulator&) = delete;
-    size_accumulator(size_accumulator&&) = delete;
-    size_accumulator& operator=(const size_accumulator&) = delete;
-    size_accumulator& operator=(size_accumulator&&) = delete;
 
     constexpr void add_size(std::integral auto s) noexcept;
 
@@ -538,37 +427,37 @@ Return value:: `static_cast<std::ptrdiff_t>(accumulated_usize())`
 ====
 
 
-[[width_decumulator]]
-=== Class template `width_decumulator`
+[[width_accumulator]]
+=== Class template `width_accumulator`
 
 [source,cpp,subs=normal]
 ----
 namespace strf {
 template <bool Active>
-class width_decumulator
+class width_accumulator
 {
 public:
-    constexpr width_decumulator() noexcept;
+    constexpr width_accumulator() noexcept;
 
-    width_decumulator(const width_decumulator&) = delete;
-    width_decumulator(width_decumulator&&) = delete;
-    width_decumulator& operator=(const width_decumulator&) = delete;
-    width_decumulator& operator=(width_decumulator&&) = delete;
+    constexpr explicit width_accumulator(<<width_t,width_t>> width_limit) noexcept;
 
-    constexpr explicit width_decumulator(<<width_t,width_t>> initial_width) noexcept;
+    constexpr void add_width(<<width_t,width_t>>) noexcept;
 
-    constexpr void subtract_width(<<width_t,width_t>>) noexcept;
+    constexpr void checked_add_width(<<width_t,width_t>>) noexcept;
 
-    constexpr reset_remaining_width(width_t w) noexcept;
+    constexpr <<width_t,width_t>> accumlated_width() const noexcept;
 
     constexpr <<width_t,width_t>> remaining_width() const noexcept;
 
     constexpr bool has_remaining_width() const noexcept;
 
-    constexpr void zeroize_remaining_width_if_negative() noexcept;
+    constexpr bool remaining_width_greater_than(width_t w) const noexcept
+
+    constexpr saturate_width(width_t w) noexcept;
 
 private:
-    <<width_t,width_t>> width_; // exposition-only
+    width_t limit_ = width_max; // exposition-only
+    width_t width_ = 0;         // exposition-only
 }
 } // namespace strf
 ----
@@ -579,17 +468,18 @@ private:
 ====
 [source,cpp,subs=normal]
 ----
-constexpr explicit width_decumulator(<<width_t,width_t>> initial_width) noexcept;
+constexpr explicit width_accumulator(<<width_t,width_t>> width_limit) noexcept;
 ----
 Compile-time requiment:: `Active` is `true`, otherwise this constructor
 does not participate in overload resolution.
-Postcondition:: `remaining_width() == initial_width > 0 ? initial_width : 0`
+Postcondition:: `remaining_width() == width_limit > 0 ? width_limit : 0`
 ====
+
 
 ====
 [source,cpp]
 ----
-constexpr width_decumulator() noexcept;
+constexpr width_accumulator() noexcept;
 ----
 Postcondition:: `remaining_width() == (Active ? <<width_t,width_max>> : 0)`
 ====
@@ -597,10 +487,46 @@ Postcondition:: `remaining_width() == (Active ? <<width_t,width_max>> : 0)`
 ====
 [source,cpp,subs=normal]
 ----
+constexpr void  checked_add_width(<<width_t,width_t>> w) noexcept;
+----
+Effect::
+None if `Active` is `false`, otherwise does
++
+[source,cpp]
+----
+if (w > 0 && width_ < limit_) {
+    width_ = ( w >= limit_ - width_
+             ? limit_
+             : width_ + w );
+}
+----
+
+====
+
+====
+[source,cpp,subs=normal]
+----
+constexpr void add_width(<<width_t,width_t>> w) noexcept;
+----
+Effect::
+None if `Active` is `false`, otherwise does `width_ += w`
+====
+
+
+====
+[source,cpp,subs=normal]
+----
+constexpr width_t accumulated_width() noexcept;
+----
+Return value:: `Active ? (width_ <= limit_ ? width_ : limit_) : 0`
+====
+
+====
+[source,cpp,subs=normal]
+----
 constexpr width_t remaining_width() noexcept;
 ----
-Effect:: calls `zeroize_remaining_width_if_negative()`
-Return value:: `width_ > 0 ? width_ : 0`
+Return value:: `Active ? (width_ < limit_ ? limit_ - width_ : 0) : 0`
 ====
 
 ====
@@ -608,42 +534,25 @@ Return value:: `width_ > 0 ? width_ : 0`
 ----
 constexpr bool has_remaining_width() noexcept;
 ----
-Effect:: calls `zeroize_remaining_width_if_negative()`
-Return value:: `width_ > 0`
+Return value:: `Active && width_ < limit_`
+====
+
+====
+[source,cpp,subs=normal]
+----
+constexpr bool remaining_width_greater_than(strf::width_t w) const noexcept
+----
+Return value:: `Active && width_ + w < limit_`
 ====
 
 
 ====
 [source,cpp,subs=normal]
 ----
-constexpr void subtract_width(<<width_t,width_t>> w) noexcept;
+constexpr saturate_width(width_t w) noexcept;
 ----
-Effect::
-None if `Active` is `false`, otherwise does `width_ -= w`
-====
-
-====
-[source,cpp,subs=normal]
-----
-constexpr reset_remaining_width(width_t w) noexcept;
-----
-Compile-time requiment:: `Active` is `true`, otherwise this function
-does not participate in overload resolution.
-Effect: `width_ = w`;
-====
-
-====
-[source,cpp,subs=normal]
-----
-constexpr zeroize_remaining_width_if_negative() noexcept;
-----
-Effect:: `width_ = 0`
-Postcondition:: `remaining_width() == 0`
-Note:: Calling `subtract_width(w)` has undefined behavior if `w` is greater than
-`(width_ - <<width_t,width_min>>)`.
-So calling `zeroize_remaining_width_if_negative` aims to reduce the chances of that to happen.
-
-
+Effect: None if `Active` is `false`, otherwise do `width_ = limit_`
+Postcondition:: `remaining_width() == 0` 
 ====
 
 
@@ -657,7 +566,7 @@ template < typename CharT
          , typename\... FPE
          , typename\... Args >
 void measure
-    ( {premeasurements}<SizePresence, WidthPresence>* pp
+    ( {premeasurements}<SizePresence, WidthPresence>* pre
     , const {facets_pack}<FPE\...>& facets
     , const Args&\... args );
 ----
@@ -670,24 +579,17 @@ Compile-time requirements::
   ( since this is a requirement of `{facets_pack}` ).
 
 Effects::
-* When `SizePresence` is `size_presence::yes`, for each argument `arg` in `args\...`
-  instantiates the correponding `printer` type with `pp`, `facets`, and `arg`.
-  This translates into the following
+* When `SizePresence` is `size_presence::yes`, do the equivalent to the following
   https://en.cppreference.com/w/cpp/language/fold[fold expression]:
 +
 [source,cpp,subs=normal]
 ----
-(\..., {printer_type}< CharT
-                  , {premeasurements}<SizePresence, WidthPresence>
-                  , facets_pack<FPE\...>
-                  , Args >  {{make_printer_input}<CharT>(pp, facets, args)} );
+(\..., {make_printer}<CharT>(pre, facets, args) );
 ----
-* When `SizePresence` is `size_presence::no` and `WidthPresence` is `width_presence::yes`,
-  for each argument `arg` in `args\...` instantiates the correponding `printer`
-  type with `pp`, `facets`, and `arg` ( again, using `{printer_type}`  and
-  `{make_printer_input}` ), while `pp-><<width_decumulator,remaining_width>>() > 0`
-  is `true`.
-  This implies that not necessarily all argument in `arg\...` are used.
-* When `SizePresence` is `size_presence::no` and `WidthPresence` is `width_presence::no`,
-  does nothing
+* When `WidthPresence` is `width_presence::yes` but `SizePresence` is `size_presence::no`,
+  do  `{make_printer}<CharT>(pre, facets, a)` for each argument  `a` in `args`
+  `pre\-><<width_accumulator,has_remaining_width>>()` returns `false`.
+  This implies that not necessarily all arguments in `args\...` are used.
+* Does nothing if `SizePresence` is `size_presence::no` and `WidthPresence` is `width_presence::no`
+  
 

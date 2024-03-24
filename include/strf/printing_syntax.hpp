@@ -6,136 +6,12 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <strf/detail/do_print.hpp>
-#include <strf/detail/do_tr_print.hpp>
+#include <strf/detail/separate_args_and_print.hpp>
 
 namespace strf {
 
 template <typename DestCreator, typename Policy, typename... Facets>
 class printing_syntax;
-
-namespace detail {
-
-template <typename Dst>
-inline STRF_HD decltype(std::declval<Dst&>().finish())
-    finish(strf::rank<2>, Dst& dst)
-{
-    return dst.finish();
-}
-
-template <typename Dst>
-inline STRF_HD void finish(strf::rank<1>, Dst&)
-{
-}
-
-template <typename DestinationCreator, bool Sized>
-struct destination_creator_traits;
-
-template <typename DestinationCreator>
-struct destination_creator_traits<DestinationCreator, false>
-{
-    using destination_type = typename DestinationCreator::destination_type;
-    using finish_return_type =
-        decltype(strf::detail::finish(strf::rank<2>(), std::declval<destination_type&>()));
-};
-
-template <typename DestinationCreator>
-struct destination_creator_traits<DestinationCreator, true>
-{
-    using destination_type = typename DestinationCreator::sized_destination_type;
-    using finish_return_type =
-        decltype(strf::detail::finish(strf::rank<2>(), std::declval<destination_type&>()));
-};
-
-template <typename DestinationCreator, bool Sized>
-using destination_finish_return_type = typename
-    destination_creator_traits<DestinationCreator, Sized>::finish_return_type;
-
-} // namespace detail
-
-struct no_reserve
-{
-public:
-
-    template <typename DestCreator>
-    using return_type = strf::detail::destination_finish_return_type<DestCreator, false>;
-
-    using premeasurements_type = strf::premeasurements
-        <strf::size_presence::no, strf::width_presence::no>;
-
-    template <bool Line, typename DestCreator, typename... Printers>
-    static STRF_HD return_type<DestCreator> print
-        ( const DestCreator& dest_creator
-        , const premeasurements_type*
-        , const Printers& ... printers )
-    {
-        typename DestCreator::destination_type dst{dest_creator.create()};
-        strf::detail::write_args(dst, printers...);
-        STRF_IF_CONSTEXPR (Line) {
-            using char_type = typename DestCreator::char_type;
-            strf::put<char_type>(dst, static_cast<char_type>('\n'));
-        }
-        return strf::detail::finish(strf::rank<2>(), dst);
-    }
-};
-
-struct reserve_given_space
-{
-public:
-    std::size_t space = 0;
-
-    STRF_HD constexpr explicit reserve_given_space(std::size_t s)
-        : space(s)
-    {
-    }
-
-    template <typename DestCreator>
-    using return_type = strf::detail::destination_finish_return_type<DestCreator, true>;
-
-    using premeasurements_type = strf::premeasurements
-        <strf::size_presence::yes, strf::width_presence::no>;
-
-    template <bool Line, typename DestCreator, typename... Printers>
-    STRF_HD return_type<DestCreator> print
-        ( const DestCreator& dest_creator
-        , const premeasurements_type*
-        , const Printers& ... printers ) const
-    {
-        typename DestCreator::sized_destination_type dst{dest_creator.create(space)};
-        strf::detail::write_args(dst, printers...);
-        STRF_IF_CONSTEXPR (Line) {
-            using char_type = typename DestCreator::char_type;
-            strf::put<char_type>(dst, static_cast<char_type>('\n'));
-        }
-        return strf::detail::finish(strf::rank<2>(), dst);
-    }
-};
-
-struct reserve_calc
-{
-public:
-    template <typename DestCreator>
-    using return_type = strf::detail::destination_finish_return_type<DestCreator, true>;
-
-    using premeasurements_type = strf::premeasurements
-        <strf::size_presence::yes, strf::width_presence::no>;
-
-    template <bool Line, typename DestCreator, typename... Printers>
-    static STRF_HD return_type<DestCreator> print
-        ( const DestCreator& dest_creator
-        , const premeasurements_type* pre
-        , const Printers& ... printers )
-    {
-        const auto size = pre->accumulated_size() + Line;
-        typename DestCreator::sized_destination_type dst{dest_creator.create(size)};
-        strf::detail::write_args(dst, printers...);
-        STRF_IF_CONSTEXPR (Line) {
-            using char_type = typename DestCreator::char_type;
-            strf::put<char_type>(dst, static_cast<char_type>('\n'));
-        }
-        return strf::detail::finish(strf::rank<2>(), dst);
-    }
-};
 
 namespace detail {
 
@@ -613,6 +489,8 @@ private:
 
 public:
 
+    using char_type = typename DestCreator::char_type;
+
     constexpr printing_syntax() = default;
 
     template < typename DC = DestCreator
@@ -678,40 +556,30 @@ public:
     template <typename... Args>
     inline return_type STRF_HD operator()(Args&& ... args) const &
     {
-        return strf::do_print_::do_print<false>( this->get_reserve_policy()
-                                               , dest_creator_
-                                               , fpack_
-                                               , (Args&&)args... );
+        return detail::separate_args_and_print<false>
+            ( this->get_reserve_policy(), dest_creator_, fpack_, (Args&&)args...);
     }
-
 
     template <typename... Args>
     inline return_type STRF_HD line(Args&& ... args) const &
     {
-        return strf::do_print_::do_print<true>( this->get_reserve_policy()
-                                              , dest_creator_
-                                              , fpack_
-                                              , (Args&&)args... );
+        return detail::separate_args_and_print<true>
+            ( this->get_reserve_policy(), dest_creator_, fpack_, (Args&&)args...);
     }
 
     template <typename... Args>
     inline return_type STRF_HD tr(Args&& ... args) const &
     {
-        return strf::do_tr_print_::do_tr_print<false>( this->get_reserve_policy()
-                                                     , dest_creator_
-                                                     , fpack_
-                                                     , (Args&&)args... );
+        return detail::separate_tr_args_and_print<false>
+            ( this->get_reserve_policy(), dest_creator_, fpack_, (Args&&)args...);
     }
 
     template <typename... Args>
     inline return_type STRF_HD trline(Args&& ... args) const &
     {
-        return strf::do_tr_print_::do_tr_print<true>( this->get_reserve_policy()
-                                                    , dest_creator_
-                                                    , fpack_
-                                                    , (Args&&)args... );
+        return detail::separate_tr_args_and_print<true>
+            ( this->get_reserve_policy(), dest_creator_, fpack_, (Args&&)args...);
     }
-
 };
 
 template <typename DestCreator>

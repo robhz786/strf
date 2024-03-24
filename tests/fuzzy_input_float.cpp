@@ -86,19 +86,16 @@ struct measure_and_print_result {
 template <typename Arg>
 measure_and_print_result measure_and_print(char* buff, std::ptrdiff_t buff_size, const Arg& arg) {
 
-    const strf::width_t initial_width = (strf::width_t::max)();
-    strf::full_premeasurements pre(initial_width);
-    auto printer_input = strf::make_printer_input<char>(&pre, strf::pack(), arg);
-    using printer_type = typename decltype(printer_input)::printer_type;
-    const printer_type printer{printer_input};
+    strf::full_premeasurements pre();
+    const auto printer = strf::make_printer<char>(&pre, strf::pack(), arg);
     strf::cstr_destination dst{buff, buff_size};
-    printer.print_to(dst);
+    printer(dst);
     auto *end = dst.finish().ptr;
 
     measure_and_print_result result;
     result.count = static_cast<int>(end - buff);
     result.predicted_size = static_cast<int>(pre.accumulated_ssize());
-    result.predicted_width = (initial_width - pre.remaining_width()).round();
+    result.predicted_width = pre.accumulated_width().round();
     return result;
 }
 
@@ -357,7 +354,7 @@ public:
             // TEST_VS_SPRINTF( +*strf::fixed(value).pad0(digcount + 10)
             //                , "%+#0*.0f", digcount + 10, value);
 
-                
+
         } else {
             const int min_precision = e10 >= -digcount ? 0 : 1 - e10 - digcount;
             const int max_precision = - e10;
@@ -429,7 +426,7 @@ void test_mantissa(std::uint64_t mantissa) {
         ( "\ntesting mantissa = ", *strf::hex(mantissa).pad0(15));
     test_utils::test_messages_destination() .recycle();
     (void) fflush(stdout);
-    
+
     for (std::uint32_t exponent = 0; exponent < 0x7FF; ++exponent) {
         test_exp_and_mantissa(exponent, mantissa);
     }
@@ -463,7 +460,7 @@ int main() {
         test_mantissa(distrib(gen));
         (void) fflush(stdout);
     }
-    
+
     int err_count = test_utils::test_err_count();
     if (err_count == 0) {
         strf::write(test_msg_dst, "\nAll test passed!\n");

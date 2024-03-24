@@ -22,6 +22,8 @@
 #    define STRF_WITH_CSTRING
 #    include <cstring>
 #    include <algorithm>   // for std::copy_n
+#    define STRF_WITH_STD_FUNCTIONAL_HEADER 1
+#    include <functional>
 #    define STRF_HAS_STD_ALGORITHM
 #    if defined(__cpp_lib_string_view)
 #        define STRF_HAS_STD_STRING_VIEW
@@ -408,46 +410,6 @@ inline STRF_HD void copy_n
     impl::copy(src, count, dst);
 }
 
-// template< class T >
-// constexpr T&& forward( strf::detail::remove_reference_t<T>&& t ) noexcept
-// {
-//     return static_cast<T&&>(t);
-// }
-
-
-namespace detail_tag_invoke_ns {
-
-STRF_HD inline void tag_invoke(){}
-
-struct tag_invoke_fn
-{
-    template <typename Cpo, typename ... Args>
-    constexpr STRF_HD auto operator()(Cpo cpo, Args&&... args) const
-        noexcept(noexcept(tag_invoke(cpo, (Args&&)(args)...)))
-        -> decltype(tag_invoke(cpo, (Args&&)(args)...))
-    {
-        return tag_invoke(cpo, (Args&&)(args)...);
-    }
-};
-
-} // namespace detail_tag_invoke_ns
-
-#if defined (STRF_NO_GLOBAL_CONSTEXPR_VARIABLE)
-
-template <typename Cpo, typename ... Args>
-constexpr STRF_HD auto tag_invoke(Cpo cpo, Args&&... args)
-    noexcept(noexcept(tag_invoke(cpo, (Args&&)(args)...)))
-    -> decltype(tag_invoke(cpo, (Args&&)(args)...))
-{
-    return tag_invoke(cpo, (Args&&)(args)...);
-}
-
-#else
-
-constexpr strf::detail::detail_tag_invoke_ns::tag_invoke_fn tag_invoke {};
-
-#endif // defined (STRF_NO_GLOBAL_CONSTEXPR_VARIABLE)
-
 // Not using generic iterators because std::distance
 // is not freestanding and can't be used in CUDA devices
 template <class T, class Compare>
@@ -526,6 +488,110 @@ constexpr STRF_HD IntT int_min()
 }
 
 } // namespace detail
+
+
+namespace detail {
+
+template<class T>
+STRF_HD auto addressof(T& arg) noexcept
+    -> detail::enable_if_t< std::is_object<detail::remove_reference_t<T>>::value, T* >
+{
+    return reinterpret_cast<T*>
+        ( &const_cast<char&> // NOLINT(cppcoreguidelines-pro-type-const-cast)
+            ( reinterpret_cast<const volatile char&>(arg) ) );
+}
+
+template<class T>
+STRF_HD auto addressof(T& arg) noexcept
+    -> detail::enable_if_t< !std::is_object<detail::remove_reference_t<T>>::value, T* >
+{
+    return &arg;
+}
+
+} // namespace detail
+
+
+#if STRF_WITH_STD_FUNCTIONAL_HEADER
+
+using std::reference_wrapper;
+using std::ref;
+using std::cref;
+
+#else // STRF_WITH_STD_FUNCTIONAL_HEADER
+
+namespace detail {
+
+template<typename T>
+constexpr STRF_HD T& pass_lval_ref(T& t) noexcept { return t; }
+
+template<typename T>
+void pass_lval_ref(T&&) = delete;
+
+} // namespace detail
+
+template<typename T>
+class reference_wrapper
+{
+public:
+    using type = T;
+
+    template
+        < typename U
+        , typename = detail::enable_if_t
+              < ! std::is_same<reference_wrapper, detail::remove_cvref_t<U>>::value
+              , decltype(detail::pass_lval_ref<T>(std::declval<U>())) > >
+    constexpr STRF_HD reference_wrapper(U&& u)
+        noexcept(noexcept(detail::pass_lval_ref<T>((U&&)(u))))
+        : ptr_(detail::addressof(detail::pass_lval_ref<T>((U&&)(u))))
+    {
+    }
+
+    reference_wrapper(const reference_wrapper&) noexcept = default;
+    reference_wrapper& operator=(const reference_wrapper& x) noexcept = default;
+
+    constexpr STRF_HD operator T& () const noexcept { return *ptr_; }
+    constexpr STRF_HD T& get() const noexcept { return *ptr_; }
+
+private:
+    T* ptr_;
+};
+
+template <class T>
+constexpr STRF_HD reference_wrapper<T> ref(T& r) noexcept
+{
+    return reference_wrapper<T>{r};
+}
+template <class T>
+constexpr STRF_HD reference_wrapper<const T> cref(const T& r) noexcept
+{
+    return r;
+}
+
+template <class T>
+constexpr STRF_HD reference_wrapper<T> ref(reference_wrapper<T> r) noexcept
+{
+    return r;
+}
+template <class T>
+constexpr STRF_HD reference_wrapper<const T> cref(reference_wrapper<T> r) noexcept
+{
+    return r;
+}
+
+template <class T>
+void ref(const T&&) = delete;
+
+template <class T>
+void cref(const T&&) = delete;
+
+#if __cpp_deduction_guides
+
+template<typename T>
+reference_wrapper(T&) -> reference_wrapper<T>;
+
+#endif //  __cpp_deduction_guides
+#endif // STRF_WITH_STD_FUNCTIONAL_HEADER
+
 } // namespace strf
 
 #endif // STRF_DETAIL_STANDARD_LIB_FUNCTIONS_HPP

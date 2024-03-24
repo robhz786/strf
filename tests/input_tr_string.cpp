@@ -267,12 +267,12 @@ STRF_TEST_FUNC void test_size_precalculation()
     TEST_SIZE_PRECALC(3, "...{- a comment here"     , 123);
 }
 
-#define TEST_WIDTH_PRECALC(INITIAL_WIDTH, EXPECTED_REMAINING_WIDTH, ...)              \
+#define TEST_WIDTH_PRECALC(LIMIT, EXPECTED_REMAINING_WIDTH, ...)                      \
     {                                                                                 \
         using char_t = decltype(first_char_of_tr_string(__VA_ARGS__));                \
         using pre_t = strf::premeasurements                                           \
-            <strf::size_presence::no, strf::width_presence::yes>;                         \
-        pre_t pre(strf::width_t(INITIAL_WIDTH));                                      \
+            <strf::size_presence::no, strf::width_presence::yes>;                     \
+        pre_t pre(strf::width_t(LIMIT));                                              \
         strf::measure<char_t>(&pre, strf::pack(), strf::tr(__VA_ARGS__));             \
         auto obtained = pre.remaining_width();                                        \
         auto expected = strf::width_t(EXPECTED_REMAINING_WIDTH);                      \
@@ -348,11 +348,11 @@ STRF_TEST_FUNC void test_width_precalculation()
 }
 
 
-#define TEST_FULL_PRECALC(EXPECTED_SIZE, INITIAL_WIDTH, EXPECTED_REMAINING_WIDTH, ...)\
+#define TEST_FULL_PRECALC(EXPECTED_SIZE, WIDTH_LIMIT, EXPECTED_REMAINING_WIDTH, ...)  \
     {                                                                                 \
         using char_t = decltype(first_char_of_tr_string(__VA_ARGS__));                \
         using pre_t = strf::full_premeasurements;                                     \
-        pre_t pre(strf::width_t(INITIAL_WIDTH));                                      \
+        pre_t pre(strf::width_t(WIDTH_LIMIT));                                        \
         strf::measure<char_t>(&pre, strf::pack(), strf::tr(__VA_ARGS__));             \
         const bool failed_size = pre.accumulated_ssize() != EXPECTED_SIZE;            \
         const bool failed_width =                                                     \
@@ -433,6 +433,36 @@ STRF_TEST_FUNC void test_full_precalculation() // size and width
     TEST_FULL_PRECALC(3, 10, 7, "...{- a comment here"     , 123);
 }
 
+void STRF_HD  test_copy_and_move_tr_print_printer()
+{
+    char buff0[80] = {};
+    char buff1[80] = {};
+    char buff2[80] = {};
+    strf::cstr_destination dst0(buff0);
+    strf::cstr_destination dst1(buff1);
+    strf::cstr_destination dst2(buff2);
+
+    strf::no_premeasurements pre;
+    auto printer0 = strf::make_printer<char>
+       ( &pre
+       , strf::pack()
+       , strf::tr( "{}__{}__{}", "aaa", strf::right("bbb", 5, '.'), *strf::hex(10)>4) );
+
+    auto copy_of_printer = printer0;
+    printer0(dst0);
+    copy_of_printer(dst1);
+    const decltype(printer0) printer_from_mv(std::move(printer0));
+    printer_from_mv(dst2);
+
+    dst0.finish();
+    dst1.finish();
+    dst2.finish();
+
+    TEST_CSTR_EQ(buff0, "aaa__..bbb__ 0xa");
+    TEST_CSTR_EQ(buff1, "aaa__..bbb__ 0xa");
+    TEST_CSTR_EQ(buff2, "aaa__..bbb__ 0xa");
+}
+
 }  // unnamed namespace
 
 STRF_TEST_FUNC void test_input_tr_string()
@@ -442,6 +472,7 @@ STRF_TEST_FUNC void test_input_tr_string()
     test_size_precalculation();
     test_width_precalculation();
     test_full_precalculation();
+    test_copy_and_move_tr_print_printer();
 }
 
 REGISTER_STRF_TEST(test_input_tr_string)

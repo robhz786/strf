@@ -18,11 +18,11 @@ struct ipv4address
 namespace strf {
 
 template <>
-struct printable_traits<xxx::ipv4address> {
+struct printable_def<xxx::ipv4address> {
 
-    using representative_type = xxx::ipv4address;
+    using representative = xxx::ipv4address;
     using forwarded_type = xxx::ipv4address;
-    using formatters = strf::tag<strf::alignment_formatter>;
+    using format_specifiers = strf::tag<strf::alignment_format_specifier>;
 
     template <typename CharT>
     static auto transform_arg(forwarded_type arg)
@@ -33,26 +33,26 @@ struct printable_traits<xxx::ipv4address> {
     }
 
     template <typename CharT, typename PreMeasurements, typename FPack>
-    static auto make_input
+    static auto make_printer
         ( strf::tag<CharT>
         , PreMeasurements* pre
         , const FPack& fp
         , forwarded_type arg )
     {
         auto arg2 = transform_arg<CharT>(arg);
-        return strf::make_default_printer_input<CharT>(pre, fp, arg2);
+        return strf::make_printer<CharT>(pre, fp, arg2);
     }
 
     template <typename CharT, typename PreMeasurements, typename FPack, typename... T>
-    static auto make_input
+    static auto make_printer
         ( strf::tag<CharT>
         , PreMeasurements* pre
         , const FPack& fp
-        , strf::printable_with_fmt<T...> arg )
+        , strf::value_and_format<T...> arg )
     {
         auto arg2 = transform_arg<CharT>(arg.value());
         auto arg3 = arg2.set_alignment_format(arg.get_alignment_format());
-        return strf::make_default_printer_input<CharT>(pre, fp, arg3);
+        return strf::make_printer<CharT>(pre, fp, arg3);
     }
 };
 

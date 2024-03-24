@@ -480,6 +480,7 @@ public:
         char32_t buff[buff_size];
         constexpr auto flags = strf::transcode_flags::none;
         const auto to_u32 = charset.to_u32();
+        limit = limit <= 0 ? 0 : limit;
         detail::std_width_calc_func_return res{limit, 0, nullptr};
         while(1) {
             auto res_tr = to_u32.transcode(str, str_end, buff, buff + buff_size, nullptr, flags);

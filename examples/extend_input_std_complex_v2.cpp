@@ -1,4 +1,4 @@
-//  Copyright (C) (See commit logs on github.com/robhz786/strf)
+﻿//  Copyright (C) (See commit logs on github.com/robhz786/strf)
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -9,6 +9,10 @@
 #include <utility>
 #include <complex>
 #include <cmath>
+
+//--------------------------------------------------------------------------------
+// Define format functions
+//--------------------------------------------------------------------------------
 
 enum class complex_form { vector, algebric, polar };
 
@@ -98,26 +102,36 @@ struct std_complex_format_specifier {
     };
 };
 
+//--------------------------------------------------------------------------------
+// Auxiliar function
+//--------------------------------------------------------------------------------
+
 template <typename FloatT>
 std::pair<FloatT, FloatT> complex_coordinates
-    ( std::complex<FloatT> x, complex_form form ) noexcept
+    ( complex_form form, std::complex<FloatT> x ) noexcept
 {
-    FloatT first = 0.0;
-    FloatT second = 0.0;
+    std::pair<FloatT, FloatT> coordinates{0, 0};
     if (form == complex_form::polar) {
         if (x.real() != 0.0) {
-            first = std::sqrt(x.real() * x.real() + x.imag() * x.imag());
-            second = std::atan(x.imag() / x.real());
+            coordinates.first = std::sqrt(x.real() * x.real() + x.imag() * x.imag());
+            coordinates.second = std::atan(x.imag() / x.real());
         } else if (x.imag() != 0.0) {
-            first = std::fabs(x.imag());
-            second = x.imag() > 0 ? M_PI_2 : -M_PI_2;
+            coordinates.first = std::fabs(x.imag());
+            coordinates.second = x.imag() > 0 ? M_PI_2 : -M_PI_2;
+        } else {
+            return {0, 0};
         }
     } else {
-        first = x.real();
-        second = x.imag();
+        coordinates.first = x.real();
+        coordinates.second = x.imag();
     }
-    return {first, second};
+    return coordinates;
 }
+
+//--------------------------------------------------------------------------------
+// Define the printable_def class
+//--------------------------------------------------------------------------------
+static constexpr char32_t anglechar = 0x2220;
 
 namespace strf {
 
@@ -126,61 +140,135 @@ struct printable_def<std::complex<FloatT>>
 {
     using representative = std::complex<FloatT>;
     using forwarded_type = std::complex<FloatT>;
-    using is_overridable = std::true_type;
     using format_specifiers = strf::tag
         < std_complex_format_specifier
-        , strf::alignment_format_specifier
-        , strf::float_format_specifier >;
+        , strf::float_format_specifier
+        , strf::alignment_format_specifier >;
 
     template <typename CharT, typename PreMeasurements, typename FPack>
     static auto make_printer
         ( strf::tag<CharT>
         , PreMeasurements* pre
-        , const FPack& fp
+        , const FPack& facets
         , std::complex<FloatT> arg)
     {
-        auto arg2 = strf::join
-            ( static_cast<CharT>('(')
-            , arg.real()
-            , strf::transcode(u", ", strf::utf_t<char16_t>())
-            , arg.imag()
-            , static_cast<CharT>(')') );
+        pre->add_width(4);
+        pre->add_size(4);
 
-        return strf::make_printer<CharT>(pre, fp, arg2);
+        const auto write_real_coord = strf::make_printer<CharT>(pre, facets, arg.real());
+        const auto write_imag_coord = strf::make_printer<CharT>(pre, facets, arg.imag());
+
+        return [write_real_coord, write_imag_coord] (strf::destination<CharT>& dst)
+               {
+                   strf::to(dst) ((CharT)'(');
+                   write_real_coord(dst);
+                   strf::to(dst) ((CharT)',', (CharT)' ');
+                   write_imag_coord(dst);
+                   strf::to(dst) ((CharT)')');
+               };
     }
 
-    template <typename CharT, typename PreMeasurements, typename FPack, typename... T>
+    template <typename CharT, typename PreMeasurements, typename FPack, typename FloatFmt>
     static auto make_printer
         ( strf::tag<CharT>
         , PreMeasurements* pre
-        , const FPack& fp
-        , strf::value_and_format<printable_def, T...> arg )
+        , const FPack& facets
+        , const strf::value_and_format
+            < printable_def
+            , std_complex_format_specifier
+            , FloatFmt
+            , strf::alignment_format_specifier_q<false> >& arg )
     {
-        auto form = arg.get_complex_form();
-        auto v = ::complex_coordinates(arg.value(), form);
-        const unsigned has_brackets = form != complex_form::polar;
-        auto arg2 = strf::join
-            ( strf::multi(static_cast<CharT>('('), has_brackets)
-            , strf::fmt(v.first).set_float_format(arg.get_float_format())
-            , strf::transcode(middle_string(form), strf::utf_t<char16_t>())
-            , strf::fmt(v.second).set_float_format(arg.get_float_format())
-            , strf::multi(static_cast<CharT>(')'), has_brackets) );
-        auto arg3 = arg2.set_alignment_format(arg.get_alignment_format());
-        return strf::make_printer<CharT>(pre, fp, arg3);
+        const auto form = arg.get_complex_form();
+        measure_without_coordinates<CharT>(pre, facets, form);
+
+        const auto coordinates = complex_coordinates(form, arg.value());
+        const auto float_fmt = arg.get_float_format();
+        const auto coord1 = strf::fmt(coordinates.first).set_float_format(float_fmt);
+        const auto coord2 = strf::fmt(coordinates.second).set_float_format(float_fmt);
+        const auto write_coord1 = strf::make_printer<CharT>(pre, facets, coord1);
+        const auto write_coord2 = strf::make_printer<CharT>(pre, facets, coord2);
+        const auto charset = strf::get_facet<strf::charset_c<CharT>, representative>(facets);
+
+        return [charset, form, write_coord1, write_coord2] (strf::destination<CharT>& dst)
+            {
+                switch (form) {
+                case complex_form::polar:
+                    write_coord1(dst);
+                    to(dst) (charset, anglechar, static_cast<CharT>(' '));
+                    write_coord2(dst);
+                    break;
+
+                case complex_form::algebric:
+                    to(dst) (static_cast<CharT>('('));
+                    write_coord1(dst);
+                    to(dst) (charset, strf::unsafe_transcode(" + i*"));
+                    write_coord2(dst);
+                    to(dst) (static_cast<CharT>(')'));
+                    break;
+
+                default:
+                    assert(form == complex_form::vector);
+                    to(dst) (static_cast<CharT>('('));
+                    write_coord1(dst);
+                    to(dst) (charset, strf::unsafe_transcode(", "));
+                    write_coord2(dst);
+                    to(dst) (static_cast<CharT>(')'));
+                }
+            };
     }
 
-private:
 
-    static const char16_t* middle_string(complex_form form)
+    template < typename CharT, typename PreMeasurements, typename FPack>
+    static void measure_without_coordinates
+        ( PreMeasurements* pre
+        , const FPack& facets
+        , complex_form form )
     {
-        switch(form) {
-            case complex_form::algebric: return u" + i*";
-            case complex_form::polar: return u"\u2220 "; // the angle character ∠
-            default: return u", ";
+        switch (form) {
+            case complex_form::algebric:
+                pre->add_width(7);
+                pre->add_size(7);
+                break;
+            case complex_form::vector:
+                pre->add_width(4);
+                pre->add_size(4);
+                break;
+            default:
+                assert(form == complex_form::polar);
+                using rt = representative;
+                if (pre->has_remaining_width()) {
+                    auto wcalc = strf::get_facet<strf::width_calculator_c, rt>(facets);
+                    pre->add_width(wcalc.char_width(strf::utf_t<char32_t>{}, anglechar));
+                    pre->add_width(1);
+                }
+                if (PreMeasurements::size_demanded) {
+                    auto encoding = strf::get_facet<strf::charset_c<CharT>, rt>(facets);
+                    pre->add_size(encoding.encoded_char_size(anglechar));
+                    pre->add_size(1);
+                }
         }
     }
 
+    template < typename CharT, typename PreMeasurements, typename FPack, typename FloatFmt >
+    static auto make_printer
+        ( strf::tag<CharT>
+        , PreMeasurements* pre
+        , const FPack& facets
+        , const strf::value_and_format
+            < printable_def
+            , std_complex_format_specifier
+            , FloatFmt
+            , strf::alignment_format_specifier_q<true> >& arg )
+    {
+        return strf::make_printer<CharT>
+            ( pre
+            , facets
+            , strf::join(arg.clear_alignment_format())
+                .set_alignment_format(arg.get_alignment_format()) );
+    }
 };
+
 } // namespace strf
 
 //--------------------------------------------------------------------------------
@@ -201,6 +289,8 @@ void tests()
     auto punct = strf::numpunct<10>(3).thousands_sep(0x2D9).decimal_point(0x130);
 
     TEST(u"(3000, 4000)") (x);
+
+    TEST(u"(3000, 4000)") (strf::fmt(x));
 
     TEST("________________(3000., 4000.)") (*strf::right(x, 30, '_'));
 

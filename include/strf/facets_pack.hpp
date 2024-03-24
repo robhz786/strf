@@ -890,7 +890,6 @@ template
     < typename FacetCategory
     , typename Tag
     , typename ... FPE >
-STRF_DEPRECATED_MSG("Use strf::use_facet instead")
 constexpr STRF_HD
 STRF_DECLTYPE_AUTO
     (( std::declval<const strf::facets_pack<FPE...> >()

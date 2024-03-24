@@ -288,10 +288,20 @@ using wchar_equiv = typename wchar_equiv_impl<sizeof(wchar_t)>::type;
 
 template <typename... T> struct mp_type_list
 {
-    template <typename FT>
-    using add_front = mp_type_list<FT, T...>;
+    template <typename F>
+    using add_front = mp_type_list<F, T...>;
+
+    template <typename B>
+    using add_back = mp_type_list<T..., B>;
 
     static constexpr std::size_t size = sizeof...(T);
+};
+
+template <typename A, typename B>
+struct mp_type_pair
+{
+    using first = A;
+    using second = B;
 };
 
 } // namespace detail

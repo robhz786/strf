@@ -6,7 +6,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <strf/detail/printable_traits.hpp>
+#include <strf/detail/printable_def.hpp>
 
 namespace strf {
 
@@ -51,12 +51,9 @@ STRF_HD void measure_only_width
     , const Arg& arg
     , const OtherArgs&... other_args )
 {
-    using pre_type = strf::premeasurements<strf::size_presence::no, strf::width_presence::yes>;
+    (void) strf::make_printer<CharT>(pre, facets, arg);
 
-    (void) strf::printer_type<CharT, pre_type, strf::facets_pack<FPE...>, Arg>
-        ( strf::make_printer_input<CharT>(pre, facets, arg) );
-
-    if (pre->remaining_width() > 0) {
+    if (pre->has_remaining_width()) {
         strf::detail::measure_only_width<CharT>(pre, facets, other_args...);
     }
 }
@@ -69,7 +66,7 @@ STRF_HD void measure
     , const strf::facets_pack<FPE...>& facets
     , const Args&... args )
 {
-    if (pre->remaining_width() > 0) {
+    if (pre->has_remaining_width()) {
         strf::detail::measure_only_width<CharT>(pre, facets, args...);
     }
 }
@@ -94,10 +91,7 @@ STRF_HD void measure
     , const Args&... args )
 {
     STRF_MAYBE_UNUSED(pre);
-    using pre_type = strf::premeasurements<strf::size_presence::yes, WidthPresence>;
-    strf::detail::do_nothing_with
-        ( strf::printer_type<CharT, pre_type, strf::facets_pack<FPE...>, Args>
-          ( strf::make_printer_input<CharT>(pre, facets, args) ) ... );
+    strf::detail::do_nothing_with(strf::make_printer<CharT>(pre, facets, args)...);
 }
 
 

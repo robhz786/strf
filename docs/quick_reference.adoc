@@ -712,7 +712,7 @@ When the argument associated with a `"{"` does not exist, the library does two t
                                        |Yes | Notifies nonconformities to the character encoding.
 |`<<tr_string_error,tr_error_notifier_c>>`  |No  | Notifies errors on the tr-string
 |`<<width_calculator,width_calculator_c>>`  |Yes |Defines how the width is calculated
-|`<<howto_override_printable_types#,printable_overrider_c>>`     |Yes   | Overrides printable types
+|`<<howto_override_printable_types#,printable_overrider_c<_R_>>>`     |Yes   | Overrides printable types
 |===
 
 [[numpunct]]

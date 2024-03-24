@@ -362,16 +362,16 @@ is too small.
 //     struct point{ FloatT x, y; };
 //     
 //     template <typename FloatT>
-//     struct strf::printable_traits<point<FloatT>> {
+//     struct strf::printable_def<point<FloatT>> {
 //         using forwarded_type = point<FloatT>;
-//         using formatters = strf::tag<strf::alignment_formatter, strf::float_formatter>; // <1>
+//         using format_specifiers = strf::tag<strf::alignment_format_specifier, strf::float_format_specifier>; // <1>
 //     
 //         template <typename CharT, typename Pre, typename FPack, typename... T>
-//         constexpr static auto make_input
+//         constexpr static auto make_printer
 //             ( strf::tag<CharT>
 //             , Pre* pre
 //             , const FPack& fp
-//             , strf::printable_with_fmt<T...> arg ) noexcept
+//             , strf::value_and_format<T...> arg ) noexcept
 //         {
 //             point<FloatT> p = arg.value();
 //             auto arg2 = strf::join
@@ -381,15 +381,12 @@ is too small.
 //                 , strf::fmt(p.y).set_float_format(arg.get_float_format()) // <4>
 //                 , (CharT)')' )
 //                 .set_alignment_format(arg.get_alignment_format());        // <5>
-//             return strf::make_printer_input<CharT>(pre, fp, arg2);
+//             return strf::make_printer<CharT>(pre, fp, arg2);
 //         }
 //     };
 //     ----
 //     <1> specifies the formatting options applicable to `point<FloatT>`:
 //          alignment and floating-point formatting.
-//          ( In Strf the term _formatter_ has a different meaning than in {fmt}.
-//            Here, a formatter class defines a set of formatting options,
-//            not how something is printed )       
 //     <2> forwards the floating-point formatting options to `point::x`.
 //     <3> converts the string `", "` to destination character encoding, whatever it is.
 //     <4> forwards floating-point formatting options to `point::y`.
@@ -399,8 +396,8 @@ is too small.
 //     it requires more specific knowledge about the library.
 //     However, notice that it supports all the formatting options that are
 //     expected in a real case scenario:
-//     all the <<strf_hpp#float_formatter,floating-point formatting options>>,
-//     as well the <<strf_hpp#alignment_formatter,alignment formatting options>>,
+//     all the <<strf_hpp#float_format_specifier,floating-point formatting options>>,
+//     as well the <<strf_hpp#alignment_format_specifier,alignment formatting options>>,
 //     while the {fmt} sample handles only the `'f'` or `'g'` format flags.
 //     
 //     In {fmt}, to support a alignment, you usually need
@@ -415,7 +412,7 @@ is too small.
 //     However, it must be acknowledged that this example is facilitated by the fact that
 //     it is possible to convert a `point` into something else ( a `join` object )
 //     that the library already knows how to print. If that were not case,
-//     we needed to implement a _printer_ class that do things in a more low-level way.
+//     we needed to do a lower-level implementation.
 //     This is explained in the <<howto_add_printable_types#,documentation>>.
 //     It starts with a simple case, and gradually moves towards more challenging
 //     examples.

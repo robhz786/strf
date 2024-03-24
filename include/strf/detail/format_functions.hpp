@@ -6,7 +6,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <strf/detail/printable_traits.hpp>
+#include <strf/detail/printable_def.hpp>
 #include <strf/detail/facets/charset.hpp> // detail::is_charset
 
 namespace strf {
@@ -14,7 +14,7 @@ namespace strf {
 enum class showsign {negative_only = 0, positive_also = '+', fill_instead_of_positive = ' '};
 
 template <bool HasAlignment>
-struct alignment_formatter_q;
+struct alignment_format_specifier_q;
 
 enum class text_alignment {left, right, center};
 
@@ -53,10 +53,10 @@ struct default_alignment_format
 };
 
 template <class T, bool HasAlignment>
-class alignment_formatter_fn;
+class alignment_format_specifier_fn;
 
 template <class T>
-class alignment_formatter_fn<T, true>
+class alignment_format_specifier_fn<T, true>
 {
     STRF_HD STRF_CONSTEXPR_IN_CXX14 T&& move_self_downcast_()
     {
@@ -67,19 +67,25 @@ class alignment_formatter_fn<T, true>
         return static_cast<T&&>(*d);
     }
 
+    STRF_HD STRF_CONSTEXPR_IN_CXX14 const T& self_downcast_() const
+    {
+        const T* base_ptr = static_cast<const T*>(this);
+        return *base_ptr;
+    }
+
 public:
 
-    constexpr alignment_formatter_fn() noexcept = default;
+    constexpr alignment_format_specifier_fn() noexcept = default;
 
-    constexpr STRF_HD explicit alignment_formatter_fn
+    constexpr STRF_HD explicit alignment_format_specifier_fn
         ( strf::alignment_format data) noexcept
         : data_(data)
     {
     }
 
     template <typename U, bool B>
-    constexpr STRF_HD explicit alignment_formatter_fn
-        ( const strf::alignment_formatter_fn<U, B>& u ) noexcept
+    constexpr STRF_HD explicit alignment_format_specifier_fn
+        ( const strf::alignment_format_specifier_fn<U, B>& u ) noexcept
         : data_(u.get_alignment_format())
     {
     }
@@ -111,11 +117,30 @@ public:
         data_.fill = ch;
         return move_self_downcast_();
     }
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&& set_alignment_format(strf::alignment_format data) && noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD T&&
+    set_alignment_format(strf::alignment_format data) && noexcept
     {
         data_ = data;
         return move_self_downcast_();
     }
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD
+    auto set_alignment_format(strf::default_alignment_format) const &
+        -> strf::fmt_replace
+            < T
+            , strf::alignment_format_specifier_q<true>
+            , strf::alignment_format_specifier_q<false> >
+    {
+        return { self_downcast_(), strf::tag<strf::alignment_format_specifier_q<false>>{} };
+    }
+    constexpr STRF_HD auto clear_alignment_format() const
+        -> strf::fmt_replace
+            < T
+            , strf::alignment_format_specifier_q<true>
+            , strf::alignment_format_specifier_q<false> >
+    {
+        return { self_downcast_(), strf::tag<strf::alignment_format_specifier_q<false>>{} };
+    }
+
     constexpr STRF_HD strf::width_t width() const noexcept
     {
         return data_.width;
@@ -140,20 +165,21 @@ private:
 };
 
 template <class T>
-class alignment_formatter_fn<T, false>
+class alignment_format_specifier_fn<T, false>
 {
     using derived_type = T;
     using adapted_derived_type = strf::fmt_replace
             < T
-            , strf::alignment_formatter_q<false>
-            , strf::alignment_formatter_q<true> >;
+            , strf::alignment_format_specifier_q<false>
+            , strf::alignment_format_specifier_q<true> >;
 
 public:
 
-    constexpr alignment_formatter_fn() noexcept = default;
+    constexpr alignment_format_specifier_fn() noexcept = default;
 
     template <typename U>
-    constexpr STRF_HD explicit alignment_formatter_fn(const alignment_formatter_fn<U, false>&) noexcept
+    constexpr STRF_HD explicit alignment_format_specifier_fn
+        ( const alignment_format_specifier_fn<U, false>& ) noexcept
     {
     }
 
@@ -161,21 +187,21 @@ public:
     {
         return adapted_derived_type
             { self_downcast_()
-            , strf::tag<alignment_formatter_q<true>>{}
+            , strf::tag<alignment_format_specifier_q<true>>{}
             , strf::alignment_format{U' ', width, strf::text_alignment::left} };
     }
     constexpr STRF_HD adapted_derived_type operator>(strf::width_t width) const noexcept
     {
         return adapted_derived_type
             { self_downcast_()
-            , strf::tag<alignment_formatter_q<true>>{}
+            , strf::tag<alignment_format_specifier_q<true>>{}
             , strf::alignment_format{U' ', width, strf::text_alignment::right} };
     }
     constexpr STRF_HD adapted_derived_type operator^(strf::width_t width) const noexcept
     {
         return adapted_derived_type
             { self_downcast_()
-            , strf::tag<alignment_formatter_q<true>>{}
+            , strf::tag<alignment_format_specifier_q<true>>{}
             , strf::alignment_format{U' ', width, strf::text_alignment::center} };
     }
     template <typename CharT>
@@ -186,7 +212,7 @@ public:
                        "since one may pass 0 instead of '0' by accident." );
         return adapted_derived_type
             { self_downcast_()
-            , strf::tag<alignment_formatter_q<true>>{}
+            , strf::tag<alignment_format_specifier_q<true>>{}
             , strf::alignment_format{static_cast<char32_t>(ch)} };
     }
     STRF_CONSTEXPR_IN_CXX14 STRF_HD
@@ -206,7 +232,7 @@ public:
     {
         return adapted_derived_type
             { self_downcast_()
-            , strf::tag<strf::alignment_formatter_q<true>>{}
+            , strf::tag<strf::alignment_format_specifier_q<true>>{}
             , data };
     }
     constexpr static STRF_HD strf::default_alignment_format get_alignment_format() noexcept
@@ -246,32 +272,33 @@ private:
 };
 
 template <bool HasAlignment>
-struct alignment_formatter_q
+struct alignment_format_specifier_q
 {
     template <class T>
-    using fn = strf::alignment_formatter_fn<T, HasAlignment>;
+    using fn = strf::alignment_format_specifier_fn<T, HasAlignment>;
 };
 
-using dynamic_alignment_formatter = strf::alignment_formatter_q<true>;
-using alignment_formatter = strf::alignment_formatter_q<false>;
+using dynamic_alignment_format_specifier = strf::alignment_format_specifier_q<true>;
+using alignment_format_specifier = strf::alignment_format_specifier_q<false>;
 
 
 template <class T>
-class quantity_formatter_fn
+class quantity_format_specifier_fn
 {
 public:
 
     template < typename IntT
              , strf::detail::enable_if_t<std::is_integral<IntT>::value, int> =0 >
-    constexpr STRF_HD explicit quantity_formatter_fn(IntT count) noexcept
+    constexpr STRF_HD explicit quantity_format_specifier_fn(IntT count) noexcept
         : count_(detail::safe_cast_size_t(count))
     {
     }
 
-    constexpr quantity_formatter_fn() noexcept = default;
+    constexpr quantity_format_specifier_fn() noexcept = default;
 
     template <typename U>
-    constexpr STRF_HD explicit quantity_formatter_fn(const quantity_formatter_fn<U>& u) noexcept
+    constexpr STRF_HD explicit quantity_format_specifier_fn
+        ( const quantity_format_specifier_fn<U>& u ) noexcept
         : count_(u.count())
     {
     }
@@ -298,10 +325,10 @@ private:
     std::size_t count_ = 1;
 };
 
-struct quantity_formatter
+struct quantity_format_specifier
 {
     template <class T>
-    using fn = strf::quantity_formatter_fn<T>;
+    using fn = strf::quantity_format_specifier_fn<T>;
 };
 
 

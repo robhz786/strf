@@ -6,8 +6,8 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <strf/detail/printable_traits.hpp>
-#include <strf/detail/printer.hpp>
+#include <strf/detail/printable_def.hpp>
+#include <strf/detail/polymorphic_printer.hpp>
 
 namespace strf {
 namespace detail {
@@ -135,7 +135,7 @@ public:
         , strf::premeasurements<SizePresence, WidthPresence>* pre
         , const strf::facets_pack<FPElems...>& fp )
         : indexed_printer<I, Printers>
-            ( strf::make_printer_input<CharT>
+            ( strf::make_printer<CharT>
               ( pre, fp, args.template get<I>() ) ) ...
     {
         STRF_MAYBE_UNUSED(pre);
@@ -150,7 +150,7 @@ public:
         , const strf::facets_pack<FPElems...>& fp
         , strf::premeasurements<SizePresence, WidthPresence>* pp_array )
         : indexed_printer<I, Printers>
-            ( strf::make_printer_input<CharT>
+            ( strf::make_printer<CharT>
               ( &pp_array[I], fp, args.template get<I>() ) ) ...
     {
     }
@@ -161,18 +161,12 @@ public:
     {
         return get_<J>(this).printer;
     }
+
+    STRF_HD void operator() (strf::destination<CharT>& dst) const
+    {
+        strf::detail::call_printers<CharT>(dst, get_<I>(this).printer...);
+    }
 };
-
-
-template<typename CharT, std::size_t ... I, typename ... Printers>
-STRF_HD void write
-    ( strf::destination<CharT>& dst
-    , const strf::detail::printers_tuple_impl
-        < CharT, strf::detail::index_sequence<I...>, Printers... >& printers )
-{
-    strf::detail::write_args<CharT>
-        (dst, static_cast<const strf::printer<CharT>&>(printers.template get<I>())...);
-}
 
 template <typename CharT, typename ... Printers>
 using printers_tuple = printers_tuple_impl

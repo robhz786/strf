@@ -18,7 +18,8 @@ http://www.boost.org/LICENSE_1_0.txt)
 :text_alignment: <<alignment_format,text_alignment>>
 :showsign: <<showsign,showsign>>
 :float_notation: <<float_notation,float_notation>>
-:PrintingTraits: <<PrintingTraits,PrintingTraits>>
+:PrintableDef: <<strf_hpp#PrintableDef,PrintableDef>>
+:printable_def_of: <<strf_hpp#printable_def_of,printable_def_of>>
 
 :transcoding_error_notifier: <<strf_hpp#transcoding_error_notifier,transcoding_error_notifier>>
 :TranscodingErrorNotifierPtr: <<strf_hpp#TranscodingErrorNotifierPtr,TranscodingErrorNotifierPtr>>
@@ -98,22 +99,22 @@ that work as alias to format functions
 |`sani(_arg_)`                        |`{fmt}(_arg_).sani()`
 |===
 
-[[Formatter]]
-=== Type requirement _Formatter_
+[[FormatSpecifier]]
+=== Type requirement _FormatSpecifier_
 
-// This is the requirement for a type to be a paramenter of the `printable_with_fmt`
+// This is the requirement for a type to be a paramenter of the `value_and_format`
 // template.
-A type `Fmt` is a _Formatter_ if it has a member `fn` that is a type template
+A type `Fmt` is a _FormatSpecifier_ if it has a member `fn` that is a type template
 with one template type parameter such that, given any types `T` and `U`:
 
-- `Fmt::template fn<T>` is well-formed if `T` is `printable_with_fmt<ValueType, Fmts\...>`.
+- `Fmt::template fn<T>` is well-formed if `T` is `value_and_format<ValueType, Fmts\...>`.
   In this case, note that `Fmt` is in `Fmts\...` and `T` derives from `Fmt::template fn<T>`.
 - `Fmt::template fn<T>` is default constructible, assuming it is well-formed.
 - `Fmt::template fn<T>` can be constructed from `const Fmt::template fn<U>&`,
   if both are well-formed.
 
 // Although it is not a compile-time requirement, it only makes sense to use a type `Fmt`
-// in `printable_with_fmt` if `Fmt::template fn<T>` contains any __format function__.
+// in `value_and_format` if `Fmt::template fn<T>` contains any __format function__.
 // These are member functions and they are of two kinds. In the first one, the return type
 // is `T`, `T&` or `T&&` depending of
 //
@@ -149,10 +150,10 @@ with one template type parameter such that, given any types `T` and `U`:
 // };
 // ----
 
-[[alignment_formatter]]
-=== _Formatter_ `alignment_formatter`
+[[alignment_format_specifier]]
+=== _FormatSpecifier_ `alignment_format_specifier`
 
-The _Formatter_ defines the following format functions:
+The _FormatSpecifier_ defines the following format functions:
 
 // tag::alignment_format_functions[]
 
@@ -176,6 +177,9 @@ The _Formatter_ defines the following format functions:
 | Set all alignment formatting options simultaneously.
 
 |`set_alignment_format(<<strf_hpp#default_alignment_format,default_alignment_format>>)`
+| Set all alignment formatting options to default.
+
+|`clear_alignment_format()`
 | Set all alignment formatting options to default.
 
 //  It accepts only one argument, whose type can be any of those
@@ -245,10 +249,10 @@ struct default_alignment_format {
 } // namespace strf
 ----
 
-[[int_formatter]]
-=== _Formatter_ `int_formatter`
+[[int_format_specifier]]
+=== _FormatSpecifier_ `int_format_specifier`
 
-This _Formatter_ defines the following format functions:
+This _FormatSpecifier_ defines the following format functions:
 
 // tag::int_format_functions[]
 [%header,cols="382,618",grid=rows]
@@ -403,10 +407,10 @@ enum class showsign {
            ( from alignment formatting ).
 
 
-[[float_formatter]]
-=== _Formatter_ `float_formatter`
+[[float_format_specifier]]
+=== _FormatSpecifier_ `float_format_specifier`
 
-The `float_formatter` _Formatter_ defines the following format functions:
+The `float_format_specifier` _FormatSpecifier_ defines the following format functions:
 
 // tag::float_format_functions[]
 
@@ -587,10 +591,10 @@ struct default_float_format
 
 ----
 
-[[quantity_formatter]]
-=== _Formatter_ `quantity_formatter`
+[[quantity_format_specifier]]
+=== _FormatSpecifier_ `quantity_format_specifier`
 
-The `quantity_formatter` _Formatter_ defines the following format functions:
+The `quantity_format_specifier` _FormatSpecifier_ defines the following format functions:
 
 [%header,cols="382,618",grid=rows]
 |===
@@ -617,7 +621,7 @@ And the following observers:
 [[string_precision_format_function]]
 === String precision
 
-( The _Formatter_ that defines the function below is implementation-defined )
+( The _FormatSpecifier_ that defines the function below is implementation-defined )
 
 `p(<<strf_hpp#width_t,width_t>> limit)`:::
    Prints the whole string only if its width is not greater than `limit`.
@@ -635,7 +639,7 @@ And the following observers:
 [[transcoding_format_functions]]
 === Transcoding format functions
 
-( The _Formatter_ that defines the functions below is implementation-defined )
+( The _FormatSpecifier_ that defines the functions below is implementation-defined )
 
 ====
 ----
@@ -737,11 +741,11 @@ constexpr /* see below...*/ operator()(T&& value) const;
 ----
 
 Return value::
-* `value`, if `std::remove_cvref_t<T>` is an instance of `{printable_with_fmt}`
+* `value`, if `std::remove_cvref_t<T>` is an instance of `{value_and_format}`
 * `{fmt_type}<T>{ fmt_value_type<T>{ (T&&)value } }`, otherwise
 
 Return type::
-* `T&&`, if `std::remove_cvref<T>` is an instance of `printable_with_fmt`
+* `T&&`, if `std::remove_cvref<T>` is an instance of `value_and_format`
 * `{fmt_type}<T>`, otherwise
 ====
 
@@ -759,28 +763,28 @@ using fmt_type = /{asterisk}...{asterisk}/;
 `fmt_type<T>` is:
 
 * `fmt_type<T>`, if `T` is a reference or has any cv-qualifier
-* otherwise, it is `T`, if `T` is an instance of `{printable_with_fmt}`
-* otherwise, it is `{printable_with_fmt}<PTraits, Fmts\...>`, where:
-** `PTraits` is `{printable_traits_of}<T>`
+* otherwise, it is `T`, if `T` is an instance of `{value_and_format}`
+* otherwise, it is `{value_and_format}<PrintableDef, Fmts\...>`, where:
+** `PDef` is `{printable_def_of}<T>`
 ** `Fmts\...` is template paramenter pack used to define
-   `PTraits::<<PrintableTraits_formatters,formatters>>` (
+   `PrintableDef::<<PrintableDef_format_specifiers,format_specifiers>>` (
     as a type alias to `{tag}<Fmt\...>` ).
-***  If `PTraits::formatters` is not defined, `T` is `{printable_with_fmt}<PTraits>`.
+***  If `PrintableDef::format_specifiers` is not defined, `T` is `{value_and_format}<PrintableDef>`.
 
-[[printable_with_fmt]]
-=== Class template `printable_with_fmt`
+[[value_and_format]]
+=== Class template `value_and_format`
 [source,cpp]
 ----
 namespace strf {
 
-template <typename PrintableTraits, class... Fmts>
-class printable_with_fmt;
+template <typename PrintableDef, class... Fmts>
+class value_and_format;
 
 } // namespace strf
 ----
 Compile-time requirements::
-- `PrintableTraits` satisfies __{PrintableTraits}__.
-- All types in `Fmt\...` satisfy __<<Formatter,Formatter>>__.
+- `PrintableDef` satisfies __{PrintableDef}__.
+- All types in `Fmt\...` satisfy __<<FormatSpecifier,FormatSpecifier>>__.
 - All types in `Fmt\...` are different.
 
 ==== Synopsis
@@ -788,45 +792,49 @@ Compile-time requirements::
 ----
 namespace strf {
 
-template <typename PrintableTraits, class\... Fmts>
-class printable_with_fmt
-    : public Fmts::template fn<printable_with_fmt<ValueType, Fmts\...>>\...
+template <typename PrintableDef, class\... Fmts>
+class value_and_format
+    : public Fmts::template fn<value_and_format<ValueType, Fmts\...>>\...
 {
 public:
-    using traits = PrintableTraits;
-    using value_type = typename PrintableTraits::forwarded_type;
+    using printable_def = PrintableDef;
+    using value_type = typename PrintableDef::forwarded_type;
 
-    constexpr explicit <<printable_with_fmt_v,printable_with_fmt>>(const value_type& v);
-
-    template <typename\... OtherFmts>
-    constexpr explicit <<printable_with_fmt_vwf2,printable_with_fmt>>
-        ( const printable_with_fmt<PrintableTraits, OtherFmts\...>& f );
+    constexpr explicit <<value_and_format_v,value_and_format>>(const value_type& v);
 
     template <typename\... OtherFmts>
-    constexpr explicit <<printable_with_fmt_vwf2_rr,printable_with_fmt>>
-        ( printable_with_fmt<PrintableTraits, OtherFmts\...>&& f );
+    constexpr explicit <<value_and_format_vaf2,value_and_format>>
+        ( const value_and_format<PrintableDef, OtherFmts\...>& f );
 
-    template <typename OtherPrintableTraits>
-    constexpr <<printable_with_fmt_v_v2wf,printable_with_fmt>>
-        ( const value_type& v
-        , const printable_with_fmt<OtherPrintableTraits, Fmts\...>& f );
+    template <typename\... OtherFmts>
+    constexpr explicit <<value_and_format_vaf2_rr,value_and_format>>
+        ( value_and_format<PrintableDef, OtherFmts\...>&& f );
 
-    template <typename OtherPrintableTraits>
-    constexpr <<printable_with_fmt_v_v2wf_rr,printable_with_fmt>>
+    template <typename OtherPrintableDef>
+    constexpr <<value_and_format_v_v2wf,value_and_format>>
         ( const value_type& v
-        , printable_with_fmt<OtherPrintableTraits, Fmts\...>&& f );
+        , const value_and_format<OtherPrintableDef, Fmts\...>& f );
+
+    template <typename OtherPrintableDef>
+    constexpr <<value_and_format_v_v2wf_rr,value_and_format>>
+        ( const value_type& v
+        , value_and_format<OtherPrintableDef, Fmts\...>&& f );
 
     template <typename\... F, typename\... FInit>
-    constexpr <<printable_with_fmt_v_t_i,printable_with_fmt>>
+    constexpr <<value_and_format_v_t_i,value_and_format>>
         ( const value_type& v
         , {tag}<F\...>
         , FInit&&\... finit );
 
-    template <typename Fmt, typename FmtInit, typename\... OtherFmts>
-    constexpr <<printable_with_fmt_vwf2_t_i,printable_with_fmt>>
-        ( const printable_with_fmt<PrintableTraits, OtherFmts\...>& f
+    template
+        < typename OtherPrintableDef
+        , typename\... OtherFmts
+        , typename Fmt
+        , typename\... FmtInitArgs >
+    constexpr <<value_and_format_vaf2_t_i,value_and_format>>
+        ( const value_and_format<PrintableDef, OtherFmts\...>& other
         , {tag}<Fmt>
-        , FmtInit&& fmt_init );
+        , FmtInitArgs&&\... fmt_init );
 
     constexpr const value_type& value() const;
 
@@ -840,37 +848,37 @@ private:
 } // namespace strf
 ----
 
-[[printable_with_fmt_v]]
+[[value_and_format_v]]
 ====
 [source,cpp,subs=normal]
 ----
-constexpr printable_with_fmt(const value_type& v);
+constexpr value_and_format(const value_type& v);
 ----
 Effects::
 * Initializes `value_` with `v`
 * Default initializes all public base class subobjects
 ====
 
-[[printable_with_fmt_vwf2]]
+[[value_and_format_vaf2]]
 ====
 [source,cpp,subs=normal]
 ----
 template <typename\... OtherFmts>
-constexpr explicit printable_with_fmt
-    ( const printable_with_fmt<PrintableTraits, OtherFmts\...>& f );
+constexpr explicit value_and_format
+    ( const value_and_format<PrintableDef, OtherFmts\...>& f );
 ----
 Effects::
 * Initializes `value_` with `f.value()`
 * Initializes each public base class subobjects with the corresponding base class subobject of `f`
 ====
 
-[[printable_with_fmt_vwf2_rr]]
+[[value_and_format_vaf2_rr]]
 ====
 [source,cpp,subs=normal]
 ----
 template <typename\... OtherFmts>
-constexpr explicit printable_with_fmt
-    ( printable_with_fmt<PrintableTraits, OtherFmts\...>&& f );
+constexpr explicit value_and_format
+    ( value_and_format<PrintableDef, OtherFmts\...>&& f );
 ----
 Effects::
 * Initializes `value_` with `static_cast<value_type&&>(f.value())`
@@ -878,28 +886,28 @@ Effects::
   is the base class subobjects in `f` that corresponds to `b`
 ====
 
-[[printable_with_fmt_v_v2wf]]
+[[value_and_format_v_v2wf]]
 ====
 [source,cpp,subs=normal]
 ----
-template <typename OtherPrintableTraits>
-constexpr printable_with_fmt
+template <typename OtherPrintableDef>
+constexpr value_and_format
     ( const value_type& v
-    , const printable_with_fmt<OtherPrintableTraits, Fmts\...>& f );
+    , const value_and_format<OtherPrintableDef, Fmts\...>& f );
 ----
 Effects::
 * Initializes `value_` with `v`
 * Initializes each public base class subobjects with the corresponding base class subobject of `f`
 ====
 
-[[printable_with_fmt_v_v2wf_rr]]
+[[value_and_format_v_v2wf_rr]]
 ====
 [source,cpp,subs=normal]
 ----
-template <typename OtherPrintableTraits>
-constexpr printable_with_fmt
+template <typename OtherPrintableDef>
+constexpr value_and_format
     ( const value_type& v
-    , printable_with_fmt<OtherPrintableTraits, Fmts\...>&& f );
+    , value_and_format<OtherPrintableDef, Fmts\...>&& f );
 ----
 Effects::
 * Initializes `value_` with `v`
@@ -907,12 +915,12 @@ Effects::
   is the base class subobjects in `f` that corresponds to `b`
 ====
 
-[[printable_with_fmt_v_t_i]]
+[[value_and_format_v_t_i]]
 ====
 [source,cpp,subs=normal]
 ----
 template <typename\... F, typename\... FInit>
-constexpr printable_with_fmt
+constexpr value_and_format
     ( const value_type& v
     , {tag}<F\...>
     , FInit&&\... finit );
@@ -930,29 +938,42 @@ Effects::
 
 ====
 
-[[printable_with_fmt_vwf2_t_i]]
+[[value_and_format_vaf2_t_i]]
 ====
 [source,cpp,subs=normal]
 ----
+template
+    < typename OtherPrintableDef
+    , typename\... OtherFmts
+    , typename Fmt
+    , typename\... FmtInitArgs >
 template <typename Fmt, typename FmtInit, typename\... OtherFmts>
-constexpr printable_with_fmt
-    ( const printable_with_fmt<PrintableTraits, OtherFmts\...>& f
+constexpr value_and_format
+    ( const value_and_format<PrintableDef, OtherFmts\...>& other
     , {tag}<Fmt>
-    , FmtInit&& fmt_init );
+    , FmtInitArgs&&\... args );
+
 ----
 Compile-time requirements::
 * `Fmt` is one the types in `Fmts\...`
+* `sizeof\...(OtherFmts) == sizeof\...(Fmts)` is true
+* `value_type` must be constructible from `object.value()`
+* Each public base class of this type, except the one that corresponds to `Fmt`,
+  must be constructible from a const lvalue reference of the corresponding
+  base sub-object of `other` ( the type first in `Fmts...` corresponds to the first
+  in `OtherFmt..., the second to the second and so on ).
+* `Fmt` must be contructible from `FmtInitArgs&&\...`
 
 Effects::
-* Initializes `value_` with `f.value()`
+* Initializes `value_` with `other.value()`
 * Initializes the public base class subobject that corresponds to `Fmt`
-  with `std::forward<FmtInit>(fmt_init)`
+  with `std::forward<FmtInitArgs>(args)\...`
 * Initializes the other public base class subobjects with the corresponding
-  base class subobject of `f`
+  base class subobject of `other`
 ====
 
 
-[[printable_with_fmt_value]]
+[[value_and_format_value]]
 ====
 [source,cpp,subs=normal]
 ----

@@ -18,13 +18,13 @@ http://www.boost.org/LICENSE_1_0.txt)
 
 :output_buffer: <<destination_hpp#output_buffer,output_buffer>>
 :destination: <<destination_hpp#destination,destination>>
-:printable_with_fmt: <<printable_with_fmt,printable_with_fmt>>
-:alignment_formatter: <<alignment_formatter,alignment_formatter>>
-:alignment_formatter_q: <<alignment_formatter,alignment_formatter_q>>
+:value_and_format: <<value_and_format,value_and_format>>
+:alignment_format_specifier: <<alignment_format_specifier,alignment_format_specifier>>
+:alignment_format_specifier_q: <<alignment_format_specifier,alignment_format_specifier_q>>
 :alignment_format: <<alignment_format,alignment_format>>
-:int_formatter: <<int_formatter,int_formatter>>
+:int_format_specifier: <<int_format_specifier,int_format_specifier>>
 :int_format: <<int_format_fn,int_format>>
-:float_formatter: <<float_formatter,float_formatter>>
+:float_format_specifier: <<float_format_specifier,float_format_specifier>>
 :float_format: <<float_format,float_format>>
 :pack: <<pack,pack>>
 :facets_pack: <<facets_pack,facets_pack>>

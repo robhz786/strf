@@ -172,10 +172,10 @@ STRF_TEST_FUNC void basic_tests()
             f3_30
         );
 
-        auto&& f1i = strf::use_facet<fcategory<1>, int>(fp);
-        auto&& f2d = strf::use_facet<fcategory<2>, double>(fp);
-        auto&& f2i = strf::use_facet<fcategory<2>, int>(fp);
-        auto&& f3i = strf::use_facet<fcategory<3>, int>(fp);
+        auto&& f1i = strf::get_facet<fcategory<1>, int>(fp);
+        auto&& f2d = strf::get_facet<fcategory<2>, double>(fp);
+        auto&& f2i = strf::get_facet<fcategory<2>, int>(fp);
+        auto&& f3i = strf::get_facet<fcategory<3>, int>(fp);
 
         static_assert(std::is_same<decltype(f1i), const facet<1>&>::value, "wrong type");
         static_assert(std::is_same<decltype(f2d), const facet<2>&>::value, "wrong type");
@@ -201,9 +201,9 @@ STRF_TEST_FUNC void basic_tests()
                 f2_20_empty_and_derives_from_x
             );
 
-        auto&& xf2_20 = strf::use_facet<fcategory<2>, class_xa>(fp);
-        auto&& xf2_22 = strf::use_facet<fcategory<2>, class_xb>(fp);
-        auto&& xf2_21 = strf::use_facet<fcategory<2>, class_c>(fp);
+        auto&& xf2_20 = strf::get_facet<fcategory<2>, class_xa>(fp);
+        auto&& xf2_22 = strf::get_facet<fcategory<2>, class_xb>(fp);
+        auto&& xf2_21 = strf::get_facet<fcategory<2>, class_c>(fp);
         static_assert(std::is_same<decltype(xf2_20), const facet<2>&>::value, "wrong type");
         static_assert(std::is_same<decltype(xf2_21), const facet<2>&>::value, "wrong type");
         static_assert(std::is_same<decltype(xf2_22), const facet<2>&>::value, "wrong type");
@@ -232,8 +232,8 @@ STRF_TEST_FUNC void test_constrained_fpe()
         // NOLINTNEXTLINE(hicpp-move-const-arg,performance-move-const-arg)
         constexpr decltype(fp) fp3{std::move(fp2)};
 
-        static_assert(strf::use_facet<fcategory<0>, double>(fp3).value() == 10, " ");
-        static_assert(strf::use_facet<fcategory<0>, float>(fp3).value() == -1, " ");
+        static_assert(strf::get_facet<fcategory<0>, double>(fp3).value() == 10, " ");
+        static_assert(strf::get_facet<fcategory<0>, float>(fp3).value() == -1, " ");
 #endif // __cpp_constexpr >= 201304
     }
     {   // constrain a facet copy
@@ -248,10 +248,10 @@ STRF_TEST_FUNC void test_constrained_fpe()
 
         TEST_EQ(log.cp_count, 6);
         TEST_EQ(log.mv_count, 0);
-        TEST_EQ(10, (strf::use_facet<fcategory<0>, std::int64_t>(fp3).value()));
-        TEST_EQ(-1, (strf::use_facet<fcategory<0>, std::int32_t>(fp3).value()));
-        TEST_EQ(-1, (strf::use_facet<fcategory<0>, std::uint64_t>(fp3).value()));
-        TEST_EQ(-1, (strf::use_facet<fcategory<0>, double>(fp3).value()));
+        TEST_EQ(10, (strf::get_facet<fcategory<0>, std::int64_t>(fp3).value()));
+        TEST_EQ(-1, (strf::get_facet<fcategory<0>, std::int32_t>(fp3).value()));
+        TEST_EQ(-1, (strf::get_facet<fcategory<0>, std::uint64_t>(fp3).value()));
+        TEST_EQ(-1, (strf::get_facet<fcategory<0>, double>(fp3).value()));
     }
     {   // construct the constrained facet from rvalue reference;
 
@@ -276,10 +276,10 @@ STRF_TEST_FUNC void test_constrained_fpe()
         auto fp3 = pack(std::move(fp2));
         TEST_EQ(log.cp_count, 0);
 
-        TEST_EQ(10, (strf::use_facet<fcategory<0>, std::int64_t>(fp3).value()));
-        TEST_EQ(-1, (strf::use_facet<fcategory<0>, std::int32_t>(fp3).value()));
-        TEST_EQ(-1, (strf::use_facet<fcategory<0>, double>(fp3).value()));
-        TEST_EQ(-1, (strf::use_facet<fcategory<0>, std::uint64_t>(fp3).value()));
+        TEST_EQ(10, (strf::get_facet<fcategory<0>, std::int64_t>(fp3).value()));
+        TEST_EQ(-1, (strf::get_facet<fcategory<0>, std::int32_t>(fp3).value()));
+        TEST_EQ(-1, (strf::get_facet<fcategory<0>, double>(fp3).value()));
+        TEST_EQ(-1, (strf::get_facet<fcategory<0>, std::uint64_t>(fp3).value()));
     }
 
     {   // construct the constrained facet from rvalue reference;
@@ -297,10 +297,10 @@ STRF_TEST_FUNC void test_constrained_fpe()
         auto fp3 = pack(std::move(fp2));
         TEST_EQ(log.cp_count, 6);
 
-        TEST_EQ(10, (strf::use_facet<fcategory<0>, std::int64_t>(fp3).value()));
-        TEST_EQ(-1, (strf::use_facet<fcategory<0>, std::int32_t>(fp3).value()));
-        TEST_EQ(-1, (strf::use_facet<fcategory<0>, double>(fp3).value()));
-        TEST_EQ(-1, (strf::use_facet<fcategory<0>, std::uint64_t>(fp3).value()));
+        TEST_EQ(10, (strf::get_facet<fcategory<0>, std::int64_t>(fp3).value()));
+        TEST_EQ(-1, (strf::get_facet<fcategory<0>, std::int32_t>(fp3).value()));
+        TEST_EQ(-1, (strf::get_facet<fcategory<0>, double>(fp3).value()));
+        TEST_EQ(-1, (strf::get_facet<fcategory<0>, std::uint64_t>(fp3).value()));
     }
     {   // constrain a facets_pack
 
@@ -314,9 +314,9 @@ STRF_TEST_FUNC void test_constrained_fpe()
             , strf::constrain<std::is_integral>(facet<1>(301)) );
 
 
-        TEST_EQ(101, (strf::use_facet<fcategory<1>, float>(fp2).value()));
-        TEST_EQ(201, (strf::use_facet<fcategory<1>, double>(fp2).value()));
-        TEST_EQ(301, (strf::use_facet<fcategory<1>, int>(fp2).value()));
+        TEST_EQ(101, (strf::get_facet<fcategory<1>, float>(fp2).value()));
+        TEST_EQ(201, (strf::get_facet<fcategory<1>, double>(fp2).value()));
+        TEST_EQ(301, (strf::get_facet<fcategory<1>, int>(fp2).value()));
     }
 
     {

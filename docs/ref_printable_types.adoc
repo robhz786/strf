@@ -46,7 +46,7 @@ Influenced by facet categories::
 - `<<transcoding_error_notifier_c,transcoding_error_notifier_c>>`
 
 Format functions::
- - <<alignment_formatter, alignment format functions>>
+ - <<alignment_format_specifier, alignment format functions>>
  - <<strf_hpp#string_precision_format_function, string precision format function>>
  - <<strf_hpp#transcoding_format_functions, transcoding format functions>>
 
@@ -57,15 +57,15 @@ Representative type:: The same as the input type
 
 Overridable:: No
 
-Formatters::
-* `<<alignment_formatter,alignment_formatter>>`
-* `<<quantity_formatter,quantity_formatter>>`
+FormatSpecifier types::
+* `<<alignment_format_specifier,alignment_format_specifier>>`
+* `<<quantity_format_specifier,quantity_format_specifier>>`
 
 //-
 Influenced by facet categories::
 * `<<width_calculator_c,width_calculator_c>>`
 * `<<charset_c,charset_c>><__CharType__>`: in two situations:
-**  when using <<alignment_formatter,alignment formatting>>
+**  when using <<alignment_format_specifier,alignment formatting>>
 **  when the character type is `char32_t` and the destination character type
     is not `char32_t`.
 
@@ -74,24 +74,24 @@ Type:: `bool`
 
 Representative type:: `bool`
 Overridable:: Yes
-Formatters::
-* `<<alignment_formatter,alignment_formatter>>`
+FormatSpecifier types::
+* `<<alignment_format_specifier,alignment_format_specifier>>`
 
 Influenced by facet categories::
 - `<<lettercase,lettercase_c>>`
-- `<<charset_c,charset_c>><__CharType__>`: Used to encode the <<alignment_formatter,fill character>>.
+- `<<charset_c,charset_c>><__CharType__>`: Used to encode the <<alignment_format_specifier,fill character>>.
 
 === `const void*`
 Types:: `const void*`
 Representative type:: `const void*`
 Overridable:: Yes
 
-Formatters::
-* `<<alignment_formatter,alignment_formatter>>`
+FormatSpecifier types::
+* `<<alignment_format_specifier,alignment_format_specifier>>`
 
 Influenced by facet categories::
 - `<<lettercase,lettercase_c>>`
-- `<<charset_c,charset_c>><__CharType__>`: Used to encode the <<alignment_formatter,fill character>>.
+- `<<charset_c,charset_c>><__CharType__>`: Used to encode the <<alignment_format_specifier,fill character>>.
 
 === Integers
 
@@ -114,17 +114,17 @@ Representative type:: The same as the input type ( `short`,
 `unsigned long int` or
 `unsigned long long int` )
 
-Overridable:: Yes
+Overridable:: No
 
-Formatters::
-* `<<alignment_formatter,alignment_formatter>>`
-* `<<int_formatter,int_formatter>>`
+FormatSpecifier types::
+* `<<alignment_format_specifier,alignment_format_specifier>>`
+* `<<int_format_specifier,int_format_specifier>>`
 
 //-
 Influenced by facet categories::
 - `<<lettercase,lettercase_c>>`
 - `<<numpunct, numpunct_c>><__Base__>`
-- `<<charset_c,charset_c>><__CharType__>`: Used to encode the <<alignment_formatter,fill character>> and the <<numpunct,punctuation characters>>.
+- `<<charset_c,charset_c>><__CharType__>`: Used to encode the <<alignment_format_specifier,fill character>> and the <<numpunct,punctuation characters>>.
 
 
 === Floating Points
@@ -132,16 +132,16 @@ Types:: `float`, `double`
 Representative type:: The same as the input type ( `float` or `double` )
 Overridable:: Yes
 
-Formatters::
-* `<<alignment_formatter,alignment_formatter>>`
-* `<<float_formatter,float_formatter>>`
+FormatSpecifier types::
+* `<<alignment_format_specifier,alignment_format_specifier>>`
+* `<<float_format_specifier,float_format_specifier>>`
 
 //-
 Influenced by facet categories::
 - `<<lettercase,lettercase_c>>`
 - `<<numpunct,numpunct_c>><10>`
 - `<<numpunct,numpunct_c>><16>`
-- `<<charset_c,charset_c>><__CharType__>`: Used to encode the <<alignment_formatter,fill character>> and the <<numpunct,punctuation characters>>.
+- `<<charset_c,charset_c>><__CharType__>`: Used to encode the <<alignment_format_specifier,fill character>> and the <<numpunct,punctuation characters>>.
 
 === Ranges
 
@@ -295,7 +295,7 @@ template <typename ... Args>
 
 ==== With alignment
 
-You can apply the <<alignment_formatter,alignment format functions>>
+You can apply the <<alignment_format_specifier,alignment format functions>>
 one the return type of `join(args\...)`
 
 [source,cpp]

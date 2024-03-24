@@ -210,7 +210,7 @@ public:
             }
             if (it.is_last()) {
                 return it.shall_repeat_current()
-                    ? (count + (digcount - 1) / grp)
+                    ? (count + (digcount - 1) / grp) // NOLINT(clang-analyzer-core.DivideZero)
                     : count + (digcount > grp);
             }
             ++count;
@@ -651,7 +651,7 @@ public:
 
     using has_numpunct_type = decltype
         ( test_numpunct
-            ( use_facet< strf::numpunct_c<Base>, InputT >(fp())) );
+            ( get_facet< strf::numpunct_c<Base>, InputT >(fp())) );
 
 public:
 

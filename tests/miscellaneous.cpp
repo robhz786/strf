@@ -79,18 +79,21 @@ STRF_TEST_FUNC void test_miscellaneous()
     }
     {   // measure width
         strf::premeasurements<strf::size_presence::no, strf::width_presence::yes>p{8_w};
-        p.subtract_width(8);
+        p.add_width(8);
         TEST_TRUE(p.remaining_width() == 0);
     }
     {   // measure width
         strf::premeasurements<strf::size_presence::no, strf::width_presence::yes>p{8_w};
-        p.subtract_width(9);
+        p.add_width(9);
         TEST_TRUE(p.remaining_width() == 0);
     }
-    {   // clear_remaining_width
-        strf::premeasurements<strf::size_presence::no, strf::width_presence::yes> p{8_w};
-        p.clear_remaining_width();
+    {   // saturate_width
+        const auto limit = 20.25_w;
+        strf::premeasurements<strf::size_presence::no, strf::width_presence::yes> p{limit};
+        p.saturate_width();
+        p.add_width(10_w);
         TEST_TRUE(p.remaining_width() == 0);
+        TEST_TRUE(p.accumulated_width() == limit);
     }
     {   // don't measure anything
         strf::no_premeasurements p;
@@ -112,6 +115,14 @@ STRF_TEST_FUNC void test_miscellaneous()
             TEST_SCOPE_DESCRIPTION("i: ", i);
             TEST_EQ(63 - i, strf::detail::slow_countl_zero_ll(1ULL << i));
         }
+    }
+
+    {   // strf::detail::all_base_fmtfn_classes_are_empty
+
+        using strf::detail::all_base_fmtfn_classes_are_empty;
+
+        static_assert( all_base_fmtfn_classes_are_empty<decltype(strf::fmt(0))>::value, "");
+        static_assert(!all_base_fmtfn_classes_are_empty<decltype(strf::fmt(0).p(5))>::value, "");
     }
 }
 

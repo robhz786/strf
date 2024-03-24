@@ -12,86 +12,95 @@
 namespace strf {
 
 template <bool Active>
-class width_decumulator;
+class width_accumulator;
 
 template <>
-class width_decumulator<true>
+class width_accumulator<true>
 {
 public:
-    width_decumulator() = default;
-    ~width_decumulator() = default;
+    constexpr width_accumulator() = default;
+    ~width_accumulator() = default;
+    constexpr width_accumulator(const width_accumulator&) = default;
+    constexpr width_accumulator(width_accumulator&&) = default;
+    constexpr width_accumulator& operator=(const width_accumulator&) = default;
+    constexpr width_accumulator& operator=(width_accumulator&&) = default;
 
-    explicit constexpr STRF_HD width_decumulator(strf::width_t initial_width) noexcept
-        : width_(initial_width)
+    explicit constexpr STRF_HD width_accumulator(strf::width_t limit) noexcept
+        : limit_(limit)
     {}
 
-    width_decumulator(const width_decumulator&) = delete;
-    width_decumulator(width_decumulator&&) = delete;
-    width_decumulator& operator=(const width_decumulator&) = delete;
-    width_decumulator& operator=(width_decumulator&&) = delete;
-
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD void subtract_width(strf::width_t w) noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD void add_width(strf::width_t w) noexcept
     {
-        width_ -= w;
+        width_ += w;
     }
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD void checked_subtract_width(strf::width_t w) noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD void checked_add_width(strf::width_t w) noexcept
     {
-        w = w.ge_zero() ? w : 0;
-        width_ = (w < width_) ? (width_ - w) : 0;
+        if (w > 0 && width_ < limit_) {
+            width_ = ( w >= limit_ - width_
+                     ? limit_
+                     : width_ + w );
+        }
     }
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD void clear_remaining_width() noexcept
+    STRF_CONSTEXPR_IN_CXX14 STRF_HD void saturate_width() noexcept
     {
-        width_ = 0;
+        width_ = limit_;
+    }
+    constexpr STRF_HD strf::width_t accumulated_width() const noexcept
+    {
+        return width_ <= limit_ ? width_ : limit_;
     }
     constexpr STRF_HD strf::width_t remaining_width() const noexcept
     {
-        width_ = width_.ge_zero() ? width_ : 0;
-        return width_;
+        return width_ <= limit_ ? limit_ - width_ : 0;
     }
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD void reset_remaining_width(strf::width_t w) noexcept
+    constexpr STRF_HD bool remaining_width_greater_than(strf::width_t w) const noexcept
     {
-        width_ = w;
-    }
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD void zeroize_remaining_width_if_negative() noexcept
-    {
-        width_ = width_.gt_zero() ? width_ : 0;
+        return width_ + w < limit_;
     }
     STRF_CONSTEXPR_IN_CXX14 STRF_HD bool has_remaining_width() const noexcept
     {
-        const bool is_positive = width_.gt_zero();
-        width_ = is_positive ? width_ : 0;
-        return is_positive;
+        return width_ < limit_;
     }
 
 private:
 
-    mutable strf::width_t width_ = strf::width_max;
+    strf::width_t limit_ = strf::width_max;
+    strf::width_t width_ = 0;
 };
 
 template <>
-class width_decumulator<false>
+class width_accumulator<false>
 {
 public:
-
-    constexpr width_decumulator() noexcept = default;
+    constexpr width_accumulator() noexcept = default;
+    ~width_accumulator() noexcept = default;
+    constexpr width_accumulator(const width_accumulator&) = default;
+    constexpr width_accumulator(width_accumulator&&) = default;
+    constexpr width_accumulator& operator=(const width_accumulator&) = default;
+    constexpr width_accumulator& operator=(width_accumulator&&) = default;
 
     template <typename T>
-    constexpr STRF_HD void subtract_width(T) const noexcept
+    constexpr STRF_HD void add_width(T) const noexcept
     {
     }
     template <typename T>
-    constexpr STRF_HD void checked_subtract_width(T) const noexcept
+    constexpr STRF_HD void checked_add_width(T) const noexcept
     {
     }
-    constexpr STRF_HD void clear_remaining_width() noexcept
+    constexpr STRF_HD void saturate_width() noexcept
     {
+    }
+    constexpr STRF_HD strf::width_t accumulated_width() const noexcept
+    {
+        return 0;
     }
     constexpr STRF_HD strf::width_t remaining_width() const noexcept
     {
         return 0;
     }
-    constexpr STRF_HD void zeroize_remaining_width_if_negative() const noexcept
+    constexpr STRF_HD bool remaining_width_greater_than(strf::width_t) const noexcept
     {
+        return false;
     }
     constexpr STRF_HD bool has_remaining_width() noexcept
     {
@@ -106,7 +115,12 @@ template <>
 class size_accumulator<true>
 {
 public:
-    size_accumulator() = default;
+    constexpr size_accumulator() = default;
+    ~size_accumulator() = default;
+    constexpr size_accumulator(const size_accumulator&) = default;
+    constexpr size_accumulator(size_accumulator&&) = default;
+    constexpr size_accumulator& operator=(const size_accumulator&) = default;
+    constexpr size_accumulator& operator=(size_accumulator&&) = default;
 
     template < typename IntT
              , strf::detail::enable_if_t<std::is_integral<IntT>::value, int> =0>
@@ -114,12 +128,6 @@ public:
         : size_(detail::safe_cast_size_t(initial_size))
     {
     }
-
-    ~size_accumulator() = default;
-    size_accumulator(const size_accumulator&) = delete;
-    size_accumulator(size_accumulator&&) = delete;
-    size_accumulator& operator=(const size_accumulator&) = delete;
-    size_accumulator& operator=(size_accumulator&&) = delete;
 
     template < typename IntT
              , strf::detail::enable_if_t<std::is_integral<IntT>::value, int> =0>
@@ -147,8 +155,12 @@ template <>
 class size_accumulator<false>
 {
 public:
-
     constexpr size_accumulator() noexcept = default;
+    ~size_accumulator() noexcept = default;
+    constexpr size_accumulator(const size_accumulator&) = default;
+    constexpr size_accumulator(size_accumulator&&) = default;
+    constexpr size_accumulator& operator=(const size_accumulator&) = default;
+    constexpr size_accumulator& operator=(size_accumulator&&) = default;
 
     template <typename IntT>
     STRF_CONSTEXPR_IN_CXX14 STRF_HD void add_size(IntT) noexcept
@@ -179,9 +191,11 @@ using preview_width STRF_DEPRECATED_MSG("preview_width was renamed to width_pres
 template <strf::size_presence SizePresence, strf::width_presence WidthPresence>
 class premeasurements
     : public strf::size_accumulator<static_cast<bool>(SizePresence)>
-    , public strf::width_decumulator<static_cast<bool>(WidthPresence)>
+    , public strf::width_accumulator<static_cast<bool>(WidthPresence)>
 {
 public:
+    static constexpr strf::size_presence size_presence_v = SizePresence;
+    static constexpr strf::width_presence width_presence_v = WidthPresence;
 
     static constexpr bool size_demanded = static_cast<bool>(SizePresence);
     static constexpr bool width_demanded = static_cast<bool>(WidthPresence);
@@ -195,22 +209,20 @@ public:
     static constexpr bool nothing_required = no_demands;
     static constexpr bool something_required = something_demanded;
     static constexpr bool all_required = size_and_width_demanded;
-    
-    template <strf::width_presence W = WidthPresence>
+
+    template <bool W = width_demanded>
     STRF_HD constexpr explicit premeasurements
-        ( strf::detail::enable_if_t<static_cast<bool>(W), strf::width_t> initial_width ) noexcept
-        : strf::width_decumulator<true>{initial_width}
+        ( strf::detail::enable_if_t<W, strf::width_t> width_limit ) noexcept
+        : strf::width_accumulator<W>{width_limit}
     {
     }
 
     constexpr premeasurements() noexcept = default;
-
-    premeasurements(const premeasurements&) = delete;
-    premeasurements(premeasurements&&) = delete;
-    premeasurements& operator=(const premeasurements&) = delete;
-    premeasurements& operator=(premeasurements&&) = delete;
-
-    ~premeasurements() = default;
+    ~premeasurements() noexcept = default;
+    constexpr premeasurements(const premeasurements&) = default;
+    constexpr premeasurements(premeasurements&&) = default;
+    constexpr premeasurements& operator=(const premeasurements&) = default;
+    constexpr premeasurements& operator=(premeasurements&&) = default;
 };
 
 
