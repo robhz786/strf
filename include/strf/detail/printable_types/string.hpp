@@ -537,6 +537,7 @@ public:
         : str_(arg.data())
         , str_end_(arg.end())
     {
+        STRF_MAYBE_UNUSED(facets);
         STRF_IF_CONSTEXPR(PreMeasurements::width_demanded) {
             auto&& wcalc = get_facet_<strf::width_calculator_c>(facets);
             auto w = wcalc.str_width
@@ -560,6 +561,7 @@ public:
         : str_(arg.value().data())
         , str_end_(arg.value().end())
     {
+        STRF_MAYBE_UNUSED(facets);
         STRF_IF_CONSTEXPR(PreMeasurements::width_demanded) {
             auto&& wcalc = get_facet_<strf::width_calculator_c>(facets);
             auto w = wcalc.str_width

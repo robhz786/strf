@@ -217,7 +217,7 @@ environment:
        CONFIG: Release
        CXX_STANDARD: 14
 
-     - FLAVOR: Visual Studio 2017 C++14
+     - FLAVOR: Visual Studio 2017 C++17
        APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
        GENERATOR: Visual Studio 15 2017
        ARCH: x64
