@@ -1,5 +1,5 @@
-#ifndef STRF_DETAIL_OUTPUT_TYPES_FILE_HPP
-#define STRF_DETAIL_OUTPUT_TYPES_FILE_HPP
+#ifndef STRF_TO_CFILE_HPP
+#define STRF_TO_CFILE_HPP
 
 //  Copyright (C) (See commit logs on github.com/robhz786/strf)
 //  Distributed under the Boost Software License, Version 1.0.
@@ -25,7 +25,7 @@ class narrow_cfile_writer_traits {
 public:
     narrow_cfile_writer_traits() = delete;
 
-    STRF_HD narrow_cfile_writer_traits(FILE* file)
+    STRF_HD explicit narrow_cfile_writer_traits(FILE* file)
         : file_(file)
     {
     }
@@ -42,7 +42,7 @@ class wide_cfile_writer_traits {
 public:
     wide_cfile_writer_traits() = delete;
 
-    STRF_HD wide_cfile_writer_traits(FILE* file)
+    STRF_HD explicit wide_cfile_writer_traits(FILE* file)
         : file_(file)
     {
     }
@@ -79,6 +79,10 @@ class cfile_writer_base
     static_assert(noexcept(std::declval<Traits>().write(nullptr, 0)), "");
 
 public:
+    cfile_writer_base(const cfile_writer_base&) = delete;
+    cfile_writer_base(cfile_writer_base&&) = delete;
+    cfile_writer_base& operator=(const cfile_writer_base&) = delete;
+    cfile_writer_base& operator=(cfile_writer_base&&) = delete;
 
     template <typename... TraitsInitArgs>
     STRF_HD cfile_writer_base
@@ -91,21 +95,16 @@ public:
     {
     }
 
-    STRF_HD ~cfile_writer_base() {
-        if (this->good()) {
-            std::size_t count = this->buffer_ptr() - buff_;
-            traits_.write(buff_, count);
-        }
-    }
+    ~cfile_writer_base() override = default;
 
     STRF_HD void recycle() noexcept override {
-        auto p = this->buffer_ptr();
+        auto *p = this->buffer_ptr();
         this->set_buffer_ptr(buff_);
         STRF_IF_LIKELY (this->good()) {
-            std::size_t count = p - buff_;
+            const std::size_t count = detail::safe_cast_size_t(p - buff_);
             auto count_inc = traits_.write(buff_, count);
             count_ += count_inc;
-            bool success = count_inc == count;
+            const bool success = count_inc == count;
             this->set_good(success);
         }
     }
@@ -116,7 +115,7 @@ public:
         bool g = this->good();
         this->set_good(false);
         STRF_IF_LIKELY (g) {
-            std::size_t count = this->buffer_ptr() - buff_;
+            const auto count = detail::safe_cast_size_t(this->buffer_ptr() - buff_);
             auto count_inc = traits_.write(buff_, count);
             count_ += count_inc;
             g = (count == count_inc);
@@ -124,13 +123,22 @@ public:
         return {count_, g};
     }
 
+protected:
+
+    STRF_HD void destroy() // must be called in the destructor of derived class
+    {
+        if (this->good()) {
+            traits_.write(buff_, detail::safe_cast_size_t(this->buffer_ptr() - buff_));
+        }
+    }
+
 private:
 
     STRF_HD void do_write(const CharT* str, std::size_t str_len) noexcept override {
-        auto p = this->buffer_ptr();
+        auto *p = this->buffer_ptr();
         this->set_buffer_ptr(buff_);
         STRF_IF_LIKELY (this->good()) {
-            std::size_t count = p - buff_;
+            const std::size_t count = detail::safe_cast_size_t(p - buff_);
             auto count_inc = traits_.write(buff_, count);
             if (count_inc == count) {
                 count_inc += traits_.write(str, str_len);
@@ -140,75 +148,106 @@ private:
         }
     }
 
-
     std::size_t count_ = 0;
     CharT* const buff_;
     Traits traits_;
 };
 
+template <typename CharT, std::size_t BuffSize, typename Traits>
+class cfile_writer_direct_member_buffer: public strf::detail::cfile_writer_base<CharT, Traits>
+{
+    static_assert(BuffSize >= strf::min_destination_buffer_size, "BuffSize too small");
+
+    using impl_ = strf::detail::cfile_writer_base<CharT, Traits>;
+
+public:
+
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init,hicpp-member-init)
+    template <typename... Args>
+    explicit STRF_HD cfile_writer_direct_member_buffer(Args&&... args)
+        : impl_(buf_, BuffSize, std::forward<Args>(args)...)
+    {
+    }
+
+    cfile_writer_direct_member_buffer() = delete;
+
+    STRF_HD ~cfile_writer_direct_member_buffer() override
+    {
+        impl_::destroy();
+    }
+
+    cfile_writer_direct_member_buffer(const cfile_writer_direct_member_buffer&) = delete;
+    cfile_writer_direct_member_buffer(cfile_writer_direct_member_buffer&&) = delete;
+    cfile_writer_direct_member_buffer& operator=(const cfile_writer_direct_member_buffer&) = delete;
+    cfile_writer_direct_member_buffer& operator=(cfile_writer_direct_member_buffer&&) = delete;
+
+    using result = typename impl_::result;
+    using impl_::recycle;
+    using impl_::finish;
+
+private:
+    CharT buf_[BuffSize];
+};
+
+
 } // namespace detail
 
 template <typename CharT, std::size_t BuffSize>
 class narrow_cfile_writer final
-    : public strf::detail::cfile_writer_base
-        < CharT, strf::detail::narrow_cfile_writer_traits<CharT> >
+    : public strf::detail::cfile_writer_direct_member_buffer
+        < CharT, BuffSize, strf::detail::narrow_cfile_writer_traits<CharT> >
 {
-    static_assert(BuffSize >= strf::min_space_after_recycle<CharT>(), "BuffSize too small");
+    static_assert(BuffSize >= strf::min_destination_buffer_size, "BuffSize too small");
 
-    using impl_ = strf::detail::cfile_writer_base
-        < CharT, strf::detail::narrow_cfile_writer_traits<CharT> >;
+    using impl_ = strf::detail::cfile_writer_direct_member_buffer
+        < CharT, BuffSize, strf::detail::narrow_cfile_writer_traits<CharT> >;
+
 public:
 
     explicit STRF_HD narrow_cfile_writer(std::FILE* file)
-        : impl_(buf_, BuffSize, file)
+        : impl_(file)
     {
         STRF_ASSERT(file != nullptr);
     }
 
-    STRF_HD narrow_cfile_writer() = delete;
+    narrow_cfile_writer() = delete;
+    ~narrow_cfile_writer() override = default;
 
     narrow_cfile_writer(const narrow_cfile_writer&) = delete;
     narrow_cfile_writer(narrow_cfile_writer&&) = delete;
-
-    ~narrow_cfile_writer() = default;
+    narrow_cfile_writer& operator=(const narrow_cfile_writer&) = delete;
+    narrow_cfile_writer& operator=(narrow_cfile_writer&&) = delete;
 
     using result = typename impl_::result;
     using impl_::recycle;
     using impl_::finish;
-
-private:
-
-    CharT buf_[BuffSize];
 };
 
+
 class wide_cfile_writer final
-    : public strf::detail::cfile_writer_base
-        < wchar_t, strf::detail::wide_cfile_writer_traits >
+    : public strf::detail::cfile_writer_direct_member_buffer
+        < wchar_t, strf::min_destination_buffer_size, strf::detail::wide_cfile_writer_traits >
 {
-    using impl_ = strf::detail::cfile_writer_base
-        < wchar_t, strf::detail::wide_cfile_writer_traits >;
+    using impl_ = strf::detail::cfile_writer_direct_member_buffer
+        < wchar_t, strf::min_destination_buffer_size, strf::detail::wide_cfile_writer_traits >;
 public:
 
     explicit STRF_HD wide_cfile_writer(std::FILE* file)
-        : impl_(buf_, buf_size_, file)
+        : impl_(file)
     {
         STRF_ASSERT(file != nullptr);
     }
 
-    STRF_HD wide_cfile_writer() = delete;
-
+    wide_cfile_writer() = delete;
+    ~wide_cfile_writer() override = default;
     wide_cfile_writer(const wide_cfile_writer&) = delete;
     wide_cfile_writer(wide_cfile_writer&&) = delete;
-
-    ~wide_cfile_writer() = default;
+    wide_cfile_writer& operator=(const wide_cfile_writer&) = delete;
+    wide_cfile_writer& operator=(wide_cfile_writer&&) = delete;
 
     using result = typename impl_::result;
     using impl_::recycle;
     using impl_::finish;
-
-private:
-    static constexpr std::size_t buf_size_ = strf::min_space_after_recycle<wchar_t>();
-    wchar_t buf_[buf_size_];
 };
 
 namespace detail {
@@ -219,10 +258,10 @@ class narrow_cfile_writer_creator
 public:
 
     using char_type = CharT;
-    using destination_type = strf::narrow_cfile_writer<CharT, strf::min_space_after_recycle<CharT>()>;
+    using destination_type = strf::narrow_cfile_writer<CharT, strf::min_destination_buffer_size>;
     using finish_type = typename destination_type::result;
 
-    constexpr STRF_HD narrow_cfile_writer_creator(FILE* file) noexcept
+    constexpr STRF_HD explicit narrow_cfile_writer_creator(FILE* file) noexcept
         : file_(file)
     {}
 
@@ -243,7 +282,7 @@ public:
     using destination_type = strf::wide_cfile_writer;
     using finish_type = typename destination_type::result;
 
-    constexpr STRF_HD wide_cfile_writer_creator(FILE* file) noexcept
+    constexpr STRF_HD explicit wide_cfile_writer_creator(FILE* file) noexcept
         : file_(file)
     {}
 
@@ -262,19 +301,17 @@ private:
 
 template <typename CharT = char>
 STRF_HD inline auto to(std::FILE* destfile)
-    -> strf::destination_no_reserve<strf::detail::narrow_cfile_writer_creator<CharT>>
+    -> strf::printing_syntax<strf::detail::narrow_cfile_writer_creator<CharT>>
 {
-    return strf::destination_no_reserve
-        < strf::detail::narrow_cfile_writer_creator<CharT> >
-        (destfile);
+    return strf::make_printing_syntax
+        ( strf::detail::narrow_cfile_writer_creator<CharT>(destfile) );
 }
 
 STRF_HD inline auto wto(std::FILE* destfile)
-    -> strf::destination_no_reserve<strf::detail::wide_cfile_writer_creator>
+    -> strf::printing_syntax<strf::detail::wide_cfile_writer_creator>
 {
-    return strf::destination_no_reserve
-        < strf::detail::wide_cfile_writer_creator >
-        (destfile);
+    return strf::make_printing_syntax
+        ( strf::detail::wide_cfile_writer_creator(destfile) );
 }
 
 } // namespace strf
@@ -283,5 +320,5 @@ STRF_HD inline auto wto(std::FILE* destfile)
 #  pragma GCC diagnostic pop
 #endif
 
-#endif  // STRF_DETAIL_OUTPUT_TYPES_FILE_HPP
+#endif // STRF_TO_CFILE_HPP
 

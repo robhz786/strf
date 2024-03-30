@@ -38,7 +38,6 @@ branches:
 #    - /redesign-.*/
 #    - /task-.*/
 
-
 build: off
 
 matrix:
@@ -49,108 +48,238 @@ matrix:
 environment:
 
   matrix:
-     - FLAVOR: G++9 Release C++20
-       APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
+
+#################################
+#      XCode
+#################################
+
+     - FLAVOR: XCode macos-monterey
+       APPVEYOR_BUILD_WORKER_IMAGE: macos-monterey
+       CONFIG: Release
+       BUILD_SCRIPT: ci/appveyor/build-xcode.sh
+
+     - FLAVOR: XCode macos-bigsur
+       APPVEYOR_BUILD_WORKER_IMAGE: macos-bigsur
+       CONFIG: Release
+       BUILD_SCRIPT: ci/appveyor/build-xcode.sh
+
+     - FLAVOR: XCode macos-catalina
+       APPVEYOR_BUILD_WORKER_IMAGE: macos-catalina
+       CONFIG: Release
+       BUILD_SCRIPT: ci/appveyor/build-xcode.sh
+
+#################################
+#      GCC / Ubuntu
+#################################
+
+     - FLAVOR: G++7 Release
+       APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1604
        ARCH: x64
        CONFIG: Release
-       CXX_STANDARD: 20
-       CXX: g++-9
-       CC: gcc-9
-       BUILD_SCRIPT: ci/appveyor/build.sh
- 
-     - FLAVOR: G++ 7 Release C++20
-       APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
-       ARCH: x64
-       CONFIG: Release
-       CXX_STANDARD: 20
        CXX: g++-7
        CC: gcc-7
        BUILD_SCRIPT: ci/appveyor/build.sh
-#      
-#     - FLAVOR: Codecov
-#       APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2004
-#       ARCH: x64
-#       CXX_STANDARD: 20
-#       BUILD_SCRIPT: ci/appveyor/codecov_build.sh
+
+     - FLAVOR: G++8 Release
+       APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1604
+       ARCH: x64
+       CONFIG: Release
+       CXX: g++-8
+       CC: gcc-8
+       BUILD_SCRIPT: ci/appveyor/build.sh
+
+     - FLAVOR: G++9 Release
+       APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2204
+       ARCH: x64
+       CONFIG: Release
+       CXX: g++-9
+       CC: gcc-9
+       BUILD_SCRIPT: ci/appveyor/build.sh
+
+     - FLAVOR: G++10 Release
+       APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2204
+       ARCH: x64
+       CONFIG: Release
+       CXX: g++-10
+       CC: gcc-10
+       BUILD_SCRIPT: ci/appveyor/build.sh
+
+     - FLAVOR: G++11 Release
+       APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2204
+       ARCH: x64
+       CONFIG: Release
+       CXX: g++-11
+       CC: gcc-11
+       BUILD_SCRIPT: ci/appveyor/build.sh
 
      - FLAVOR: Ubsan
        APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
        ARCH: x64
        CXX_STANDARD: 20
        BUILD_SCRIPT: ci/appveyor/ubsan_build.sh
- 
-     - FLAVOR: Visual Studio 2019 C++2a
-       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
-       GENERATOR: Visual Studio 16 2019
-       ARCH: x64
-       CONFIG: Debug
-       CXX_STANDARD: 20
 
-     - FLAVOR: Visual Studio 2019 C++2a
-       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
-       GENERATOR: Visual Studio 16 2019
+#################################
+#      Clang on Ubuntu
+#################################
+
+     - FLAVOR: Clang 9
+       APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2004
        ARCH: x64
        CONFIG: Release
-       CXX_STANDARD: 20
- 
-     - FLAVOR: Visual Studio 2017 C++2a
-       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
-       GENERATOR: Visual Studio 15 2017
-       ARCH: x64
-       CONFIG: Debug
-       CXX_STANDARD: 20
- 
-     - FLAVOR: Visual Studio 2017 C++2a
-       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
-       GENERATOR: Visual Studio 15 2017
+       CXX: clang-9
+       CC: clang-9
+       LDFLAGS: "-lstdc++ -lm"
+       BUILD_SCRIPT: ci/appveyor/build-clang.sh
+
+     - FLAVOR: Clang 10
+       APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2004
        ARCH: x64
        CONFIG: Release
-       CXX_STANDARD: 20
- 
- #    - FLAVOR: Visual Studio 2017 C++2a
- #      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
- #      GENERATOR: Visual Studio 15 2017
- #      ARCH: Win32
- #      platform: x86
- #      CONFIG: Debug
- #      CXX_STANDARD: 20
- #
- #    - FLAVOR: Visual Studio 2017 C++2a
- #      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
- #      GENERATOR: Visual Studio 15 2017
- #      ARCH: Win32
- #      platform: x86
- #      CONFIG: Release
- #      CXX_STANDARD: 20
- 
-     - FLAVOR: Visual Studio 2017 C++17
-       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
-       GENERATOR: Visual Studio 15 2017
+       CXX: clang-10
+       CC: clang-10
+       LDFLAGS: "-lstdc++ -lm"
+       BUILD_SCRIPT: ci/appveyor/build-clang.sh
+
+     - FLAVOR: Clang 11
+       APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2004
        ARCH: x64
        CONFIG: Release
-       CXX_STANDARD: 17
- 
+       CXX: clang-11
+       CC: clang-11
+       LDFLAGS: "-lstdc++ -lm"
+       BUILD_SCRIPT: ci/appveyor/build-clang.sh
+
+     - FLAVOR: Clang 12
+       APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2004
+       ARCH: x64
+       CONFIG: Release
+       CXX: clang-12
+       CC: clang-12
+       LDFLAGS: "-lstdc++ -lm"
+       BUILD_SCRIPT: ci/appveyor/build-clang.sh
+
+     - FLAVOR: Clang 13
+       APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2004
+       ARCH: x64
+       CONFIG: Release
+       CXX: clang-13
+       CC: clang-13
+       LDFLAGS: "-lstdc++ -lm"
+       BUILD_SCRIPT: ci/appveyor/build-clang.sh
+
+     - FLAVOR: Clang 14
+       APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2004
+       ARCH: x64
+       CONFIG: Release
+       CXX: clang-14
+       CC: clang-14
+       LDFLAGS: "-lstdc++ -lm"
+       BUILD_SCRIPT: ci/appveyor/build-clang.sh
+
+#     - FLAVOR: Clang 15
+#       APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2204
+#       ARCH: x64
+#       CONFIG: Release
+#       CXX: clang-15
+#       CC: clang-15
+#       CXXFLAGS: "-I/usr/include/c++/11 -I/usr/include/x86_64-linux-gnu/c++/11/"
+#       LDFLAGS: "-L/usr/lib/x86_64-linux-gnu/ -lstdc++ -lm"
+#       BUILD_SCRIPT: ci/appveyor/build-clang.sh
+#
+#     - FLAVOR: Clang 16
+#       APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2204
+#       ARCH: x64
+#       CONFIG: Release
+#       CXX: clang-16
+#       CC: clang-16
+#       CXXFLAGS: "-I/usr/include/c++/11"
+#       LDFLAGS: "-stdlib=libstdc++ -I/usr/include/x86_64-linux-gnu/c++/11/"
+#       BUILD_SCRIPT: ci/appveyor/build-clang.sh
+#
+#     - FLAVOR: Clang 17
+#       APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2204
+#       ARCH: x64
+#       CONFIG: Release
+#       CXX: clang-17
+#       CC: clang-17
+#       CXXFLAGS: "-stdlib=libstdc++ -I/usr/include/c++/11 -I/usr/include/x86_64-linux-gnu/c++/11/"
+#       LDFLAGS: "-L/usr/lib/x86_64-linux-gnu/ -lstdc++ -lm"
+#       BUILD_SCRIPT: ci/appveyor/build-clang.sh
+
+#################################
+#      VISUAL STUDIO
+#################################
+
      - FLAVOR: Visual Studio 2017 C++14 (Default)
        APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
        GENERATOR: Visual Studio 15 2017
        ARCH: x64
        CONFIG: Release
        CXX_STANDARD: 14
- 
-     - FLAVOR: Visual Studio 2017 C++11 (Default)
-       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
-       GENERATOR: Visual Studio 15 2017
-       ARCH: x64
-       CONFIG: Debug
-       CXX_STANDARD: 11
- 
-     - FLAVOR: Visual Studio 2017 C++11 (Default)
+
+     - FLAVOR: Visual Studio 2017 C++17
        APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
        GENERATOR: Visual Studio 15 2017
        ARCH: x64
        CONFIG: Release
-       CXX_STANDARD: 11
+       CXX_STANDARD: 17
 
+     - FLAVOR: Visual Studio 2017 C++2a
+       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+       GENERATOR: Visual Studio 15 2017
+       ARCH: x64
+       CONFIG: Debug
+       CXX_STANDARD: 20
+
+     - FLAVOR: Visual Studio 2017 C++2a
+       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+       GENERATOR: Visual Studio 15 2017
+       ARCH: x64
+       CONFIG: Release
+       CXX_STANDARD: 20
+
+
+     - FLAVOR: Visual Studio 2019 C++14
+       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+       GENERATOR: Visual Studio 16 2019
+       ARCH: x64
+       CONFIG: Debug
+       CXX_STANDARD: 14
+
+     - FLAVOR: Visual Studio 2019 C++17
+       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+       GENERATOR: Visual Studio 16 2019
+       ARCH: x64
+       CONFIG: Debug
+       CXX_STANDARD: 17
+
+     - FLAVOR: Visual Studio 2019 C++2a
+       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+       GENERATOR: Visual Studio 16 2019
+       ARCH: x64
+       CONFIG: Debug
+       CXX_STANDARD: 20
+
+     - FLAVOR: Visual Studio 2019 C++2a
+       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+       GENERATOR: Visual Studio 16 2019
+       ARCH: x64
+       CONFIG: Release
+       CXX_STANDARD: 20
+
+     - FLAVOR: Visual Studio 2022 C++17
+       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2022
+       GENERATOR: Visual Studio 17 2022
+       ARCH: x64
+       CONFIG: Debug
+       CXX_STANDARD: 17
+
+     - FLAVOR: Visual Studio 2022 C++20
+       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2022
+       GENERATOR: Visual Studio 17 2022
+       ARCH: x64
+       CONFIG: Debug
+       CXX_STANDARD: 20
 
 build_script:
   - cmd: ci\appveyor\build.bat

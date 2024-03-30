@@ -8,7 +8,6 @@
 
 void samples()
 {
-    //[joins_example
     auto str = strf::to_string
         ("---", strf::join_right(15) ("abc", "def", 123), "---");
 
@@ -26,10 +25,7 @@ void samples()
         , "---" );
 
     assert(str == "---abc  def123....---");
-    //]
 }
-
-//[ join_with_tr_string_part1
 
 // in some header file
 
@@ -38,10 +34,6 @@ enum class language { English, Spanish, French };
 language get_current_language();
 
 const char* msg_the_ip_address_of_X_is_X();
-
-//]
-
-//[ join_with_tr_string_part2
 
 // in some source file you shall not edit
 
@@ -58,16 +50,12 @@ const char* msg_the_ip_address_of_X_is_X()
             return "The IP address of {} is {}";
     }
 }
-//]
-
 
 void sample()
 {
-//[ join_with_tr_string_part3
-
     // in your code:
     std::string host_name = "boost.org";
-    unsigned char ip_addr [4] = {146, 20, 110, 251};
+    const unsigned char ip_addr [4] = {146, 20, 110, 251};
 
     auto str = strf::to_string .tr
         ( msg_the_ip_address_of_X_is_X()
@@ -77,8 +65,6 @@ void sample()
     if (get_current_language() == language::English) {
         assert(str == "The IP address of boost.org is 146.20.110.251");
     }
-
-//]
 }
 
 language get_current_language()
@@ -89,7 +75,7 @@ language get_current_language()
 void sample_date()
 {
     struct date{ int day, month, year; };
-    date today {1, 1, 1935};
+    const date today {1, 1, 1935};
 
     auto as_yyyymmdd = [](date d)
     {

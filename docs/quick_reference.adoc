@@ -13,12 +13,23 @@ http://www.boost.org/LICENSE_1_0.txt)
 :toclevels: 2
 :icons: font
 
+:strf-revision: develop
+:strf-src-root: https://github.com/robhz786/strf/blob/{strf-revision}
 
+:destination:     <<destination_hpp#destination,destination>>
 :numpunct_c:     <<strf_hpp#numpunct_c,numpunct_c>>
 :numpunct:       <<strf_hpp#numpunct,numpunct>>
 :width_t:        <<strf_hpp#width_t,width_t>>
 :float_notation: <<float_notation,float_notation>>
 
+:charset_c:       <<strf_hpp.html#charset_c,charset_c>>
+:TranscodingErrorNotifierPtr: <<strf_hpp#TranscodingErrorNotifierPtr,TranscodingErrorNotifierPtr>>
+
+:transcoding_error_notifier_c:  <<strf_hpp#transcoding_error_notifier_c,transcoding_error_notifier_c>>
+:transcoding_error_notifier:    <<strf_hpp#transcoding_error_notifier,transcoding_error_notifier>>
+:transcoding_error_notifier_ptr:  <<strf_hpp#transcoding_error_notifier_ptr,transcoding_error_notifier_ptr>>
+
+:narrow_cfile_writer: <<to_cfile_hpp#narrow_cfile_writer,narrow_cfile_writer>>
 
 [[format_functions]]
 == Format Functions
@@ -61,10 +72,13 @@ that work as alias to format functions:
 |`fixed(_arg_, _precision_)`   |`fmt(_arg_).fixed().p(_precision_)`
 |`gen(_arg_, _precision_)`     |`fmt(_arg_).gen().p(_precision_)`
 |`multi(_arg_, _count_)`       |`fmt(_arg_).multi(_count_)`
-|`sani(_arg_, _charset_)`      |`fmt(_arg_).sani(_charset_)`
-|`conv(_arg_, _charset_)`      |`fmt(_arg_).conv(_charset_)`
-|`sani(_arg_)`                 |`fmt(_arg_).sani()`
-|`conv(_arg_)`                 |`fmt(_arg_).cont()`
+|`sani(_arg_)`                        |`fmt(_arg_).sani()`
+|`sani(_arg_, _charset_)`             |`fmt(_arg_).sani(_charset_)`
+|`transcode(_arg_)`                   |`fmt(_arg_).transcode()`
+|`transcode(_arg_, _charset_)`        |`fmt(_arg_).transcode(_charset_)`
+|`unsafe_transcode(_arg_)`            |`fmt(_arg_).unsafe_transcode()`
+|`unsafe_transcode(_arg_, _charset_)` |`fmt(_arg_).unsafe_transcode(_charset_)`
+
 |===
 
 .Example
@@ -79,6 +93,10 @@ assert(str == "~~~+1.~~~")
 
 include::ref_format_functions.adoc[tag=alignment_format_functions]
 
+Note:: You can see there is no equivalent to `std::internal` in the above table.
+       Instead, look for the `pad0` format function if you want to pad zeros
+       when printing integers or floating-points.
+
 === Floating-point formatting
 
 include::ref_format_functions.adoc[tag=float_format_functions]
@@ -91,15 +109,15 @@ include::ref_format_functions.adoc[tag=float_notation]
 NOTE: `pad0` is independent of alignment formatting:
 [source,cpp]
 ----
-auto s = strf::to_string(strf::center(-1.25, 12, '_').pad0(8));
+auto s = strf::to_string( strf::center(-1.25, 12, '_').pad0(8) );
 assert(s == "__-0001.25__");
 
 auto nan = std::numeric_limits<double>::quiet_NaN();
 
-s = strf::to_string(strf::center(-nan, 12, '_').pad0(8));
+s = strf::to_string( strf::center(-nan, 12, '_').pad0(8) );
 assert(s == "____-nan____");
 
-s = strf::to_string(strf::center(-nan, 8, '_').pad0(12));
+s = strf::to_string( strf::center(-nan, 8, '_').pad0(12) );
 assert(s == "____-nan____");
 ----
 ====
@@ -113,7 +131,7 @@ include::ref_format_functions.adoc[tag=int_format_functions]
 [%header,cols="382,618",grid=rows]
 |===
 | Member function | Effect
-|`multi(std::size_t count)`
+|`multi(std::ptrdiff_t count)`
 | Prints the argument `count` times.
 |===
 
@@ -125,40 +143,50 @@ include::ref_format_functions.adoc[tag=int_format_functions]
 |`p(<<strf_hpp#width_t,width_t>> precision)`
 | Sets string precision
 
+| `template <typename Charset> transcode(Charset cs)`
+| Transcodes the input string if `cs` is different from the
+  output charset, otherwise just copies it as in `memcpy`.
+  ( The output charset is defined by the facet value
+    of the `<<facets,charset_c>><CharOut>` facet category,
+    where `CharOut` is the destination character type )
+
+| `template <typename Charset> unsafe_transcode(Charset cs)`
+| Same as in `trancode(cs)`, except that the transcoding has
+  undefined behaviour if the input string is not fully conformant
+  to the encoding represent by `cs`.
+  It is expected to have better performace than `trancode`.
+
 | `template <typename Charset> sani(Charset cs)`
-| Equivalent to `sanitize_from_charset(cs)`
+| If `cs` is different from the ouput charset, transcodes the
+  input string just like in `transcode`. If they
+  are the same, sanitizes the input string.
+  That is, in both cases, any non-conformity to the input charset
+  is replaced by the replacement character ( `"\uFFFD"` or `'?'` ),
+  and causes the function
+  `{transcoding_error_notifier}::invalid_sequence`
+  to be called, if the __{TranscodingErrorNotifierPtr}__
+  facet object is not null ( see section
+  "<<transcoding_error_notifier,Transcoding error handling>>")
 
-| `template <typename Charset> conv(Charset cs)`
-| Equivalent to `convert_from_charset(cs)`
+| `transcode()`
+| Equivalent to `transcode(cs)` where `cs` is the facet value
+  for the `charset_c<CharIn>` facet category, where `CharIn`
+  is the character type of the input string.
 
-| `conv()`
-| Equivalent to `convert_from_charset()`
+| `unsafe_transcode()`
+| Equivalent to `unsafe_transcode(cs)` where `cs` is the facet value
+  for the `charset_c<CharIn>` facet category, where `CharIn`
+  is the character type of the input string.
 
 | `sani()`
-| Equivalent to `sanitize_from_charset()`
-
-| `template <typename Charset> convert_from_charset(Charset cs)`
-| Transcodes the input string from the charset represented by `cs`,
-  if it is not already destination charset.
-
-| `template <typename Charset> sanitize_from_charset(Charset cs)`
-| Transcodes the input string from the charset represented by `cs`,
-  or just sanitizes it, if `cs` is also the destination charset.
-
-| `convert_charset()`
-| Transcodes the input string from the charset that correspods
-  to its character type, if it is not already the same
-  as the destination charset.
-
-| `sanitize_charset()`
-| Transcodes the input string from the charset that corresponds
-  to its character type, or just sanitizes it, if it same
-  as the destination charset.
+| Equivalent to `sani(cs)` where `cs` is the facet value
+  for the `charset_c<CharIn>` facet category, where `CharIn`
+  is the character type of the input string.
 
 |===
 
 
-== Destinations [[destinations]]
+== Printing __target__ expressions [[targets]]
 
 [%header,cols="10,4"]
 |===
@@ -226,7 +254,7 @@ where:
 * `__streambuf_ptr__` is a `std::streambuf<__CharT__, _Traits_>*`
 * `__streambuf_ref__` is a `std::streambuf<__CharT__, _Traits_>&`
 * `__cfile__` is a `FILE*`
-* `__destination_ref__` is a `destination<__CharT__>&`,  where `__CharT__` is a character type.
+* `__destination_ref__` is a `{destination}<__CharT__>&`,  where `__CharT__` is a character type.
 * `__args\...__` is an argument list of printable values.
 
 [[to_destination_ref]]
@@ -236,11 +264,10 @@ where:
 strf::to(__destination_ref__) (__args\...__)
 ----
 [horizontal]
-Return type:: `destination<__CharT__>&`
-Return value:: `__destination_ref__`
+Return type:: `void`
 Supports reserve:: No
 
-See the <<destination_types,list of types>> that derive from `destination<__CharT__>&`.
+See the <<destination_types,list of types>> that derive from `{destination}<__CharT__>&`.
 ====
 
 [[dest_raw_string]]
@@ -257,7 +284,7 @@ Preconditions::
 * `__count__ > 0`
 * `__end__ > __char_ptr__`
 //-
-Return type:: `<<destination_hpp#basic_cstr_writer,basic_cstr_writer<__CharT__>::result`>>
+Return type:: `<<destination_hpp#basic_cstr_destination,basic_cstr_destination<__CharT__>::result`>>
 Return value:: a value `r`, such that:
 * `r.ptr` points to last written character which is always `'\0'`.
 * `r.truncated` is `true` when the destination string is too small. In this case, the number of
@@ -305,7 +332,7 @@ Header file:: `<<strf_hpp#,<strf.hpp> >>`
 Preconditions::
 * `__end__ >= __char_ptr__`
 //-
-Return type:: `<<destination_hpp#basic_char_array_writer,basic_char_array_writer<__CharT__>::result`>>
+Return type:: `<<destination_hpp#array_destination,array_destination<__CharT__>::result`>>
 Return value:: a value `r`, such that:
 * `r.ptr` is the one-past-the-end pointer of the characters written.
 * `r.truncated` is `true` when the destination is too small. In this case, the number of
@@ -426,20 +453,20 @@ Return type:: `<<to_cfile_hpp#wide_cfile_writer,wide_cfile_writer<__CharT__>::re
 [[destination_types]]
 === `destination` classes
 
-The table below lists the concrete types that derivate from the `destination<__CharT__>` abstract class.
+The table below lists the concrete types that derivate from the `{destination}<__CharT__>` abstract class.
 
 [%header,cols="47,53"]
 |===
 | Type | Description
 
-| `<<destination_hpp#basic_cstr_writer, basic_cstr_writer>><__CharT__>`
+| `<<destination_hpp#basic_cstr_destination, basic_cstr_destination>><__CharT__>`
 | Writes C strings. Always writes the termination character `'\0'`.
 
-| `<<destination_hpp#basic_char_array_writer, basic_char_array_writer>><__CharT__>`
+| `<<destination_hpp#array_destination, array_destination>><__CharT__>`
 | Writes to also `char*`, but does not append the termination character `'\0'`
 
-| `<<destination_hpp#discarded_destination,discarded_destination>><__CharT__>`
-| Discards content. The equivalent of writing to '/dev/null'.
+| `<<destination_hpp#discarder,discarder>><__CharT__>`
+| Discards the content. The analogous of `/dev/null`.
 
 | `<<to_string_hpp#basic_string_appender,basic_string_appender>><__CharT__, _Traits_~_opt_~, _A_~_opt_~>`
 | Appends to `std::basic_string` objects.
@@ -453,7 +480,7 @@ The table below lists the concrete types that derivate from the `destination<__C
 | `<<to_streambuf_hpp#basic_streambuf_writer,basic_streambuf_writer>><__CharT__, _Traits_~_opt_~>`
 | Writes to `std::basic_streambuf` object
 
-| `<<to_cfile_hpp#narrow_cfile_writer,narrow_cfile_writer>><__CharT__~_opt_~>`
+| `<<to_cfile_hpp#narrow_cfile_writer,narrow_cfile_writer>><__CharT__, __BufferSize__>`
 | Writes to `FILE*` using narrow-oriented functions.
 
 | `<<to_cfile_hpp#wide_cfile_writer,wide_cfile_writer>>`
@@ -465,6 +492,7 @@ where:
 * `__CharT__` is a charater type.
 * `__Traits__` is a https://en.cppreference.com/w/cpp/named_req/CharTraits[_CharTraits_] type.
 * `__A__` is an https://en.cppreference.com/w/cpp/named_req/Allocator[_Allocator_] type
+* `__BufferSize__` is a `std::size_t` constexpr value;
 
 ////
 
@@ -473,13 +501,13 @@ where:
 ----
 namespace strf {
 
-template <typename CharT> class basic_cstr_writer;
+template <typename CharT> class basic_cstr_destination;
 
-using u8cstr_writer  = basic_cstr_writer<char8_t>;
-using cstr_writer    = basic_cstr_writer<char>;
-using u16cstr_writer = basic_cstr_writer<char16_t>;
-using u32cstr_writer = basic_cstr_writer<char32_t>;
-using wcstr_writer   = basic_cstr_writer<wchar_t>;
+using u8cstr_destination  = basic_cstr_destination<char8_t>;
+using cstr_destination    = basic_cstr_destination<char>;
+using u16cstr_destination = basic_cstr_destination<char16_t>;
+using u32cstr_destination = basic_cstr_destination<char32_t>;
+using wcstr_destination   = basic_cstr_destination<wchar_t>;
 
 } // namespace strf
 ----
@@ -490,7 +518,7 @@ using wcstr_writer   = basic_cstr_writer<wchar_t>;
 ----
 namespace strf {
 
-template <typename CharT> class discarded_destination;
+template <typename CharT> class discarder;
 
 } // namespace strf
 ----
@@ -672,19 +700,19 @@ When the argument associated with a `"{"` does not exist, the library does two t
 |===
 |Category |Constrainable | Description
 
-|`<<numpunct, numpunct_c>><10>`      |Yes |Numeric punctuation for decimal base
-|`<<numpunct, numpunct_c>><16>`      |Yes |Numeric punctuation for hexadecimal base
-|`<<numpunct, numpunct_c>><8>`       |Yes |Numeric punctuation for octal base
-|`<<numpunct, numpunct_c>><2>`       |Yes |Numeric punctuation for binary base
+|`<<numpunct, numpunct_c>><10>`   |Yes |Numeric punctuation for decimal base
+|`<<numpunct, numpunct_c>><16>`   |Yes |Numeric punctuation for hexadecimal base
+|`<<numpunct, numpunct_c>><8>`    |Yes |Numeric punctuation for octal base
+|`<<numpunct, numpunct_c>><2>`    |Yes |Numeric punctuation for binary base
 
-|`<<lettercase,lettercase_c>>`        |Yes |Letter case for printing numeric and booleans values
+|`<<lettercase,lettercase_c>>`    |Yes |Letter case for printing numeric and booleans values
 
 |`<<charset,charset_c>><CharT>`   |No  |The character encoding correponding to character type `CharT`
-|`<<invalid_seq_notifier,invalid_seq_notifier_c>>`  |Yes | Callback to notify nonconformities to the character encoding.
-|`<<surrogate_policy,surrogate_policy_c>>` |Yes |Wheter surrogates are treated as errors
-|`<<tr_string_error,tr_error_notifier_c>>`   |No  |  Callback to notify errors on the tr-string
-|`<<width_calculator,width_calculator_c>>` |Yes |Defines how the width is calculated
-|`<<howto_override_printable_types#,print_override_c>>`     |Yes   | Overrides printable types
+|`<<transcoding_error_notifier,transcoding_error_notifier_c>>`
+                                       |Yes | Notifies nonconformities to the character encoding.
+|`<<tr_string_error,tr_error_notifier_c>>`  |No  | Notifies errors on the tr-string
+|`<<width_calculator,width_calculator_c>>`  |Yes |Defines how the width is calculated
+|`<<howto_override_printable_types#,printable_overrider_c<_R_>>>`     |Yes   | Overrides printable types
 |===
 
 [[numpunct]]
@@ -855,60 +883,59 @@ assert(s == "one hundred billions = 1\2250000\225000\2250000");
 Since the library knows the encoding corresponding to each
 character type, and knows how to convert from one to another,
 it is possible to mix input string of difference characters
-types, though you need to use the function `conv`:
+types, though you need to use the function `transcode`:
 
 [source,cpp]
 ----
 auto str   = strf::to_string( "aaa-"
-                            , strf::conv(u"bbb-")
-                            , strf::conv(U"ccc-")
-                            , strf::conv(L"ddd") );
+                            , strf::transcode(u"bbb-")
+                            , strf::transcode(U"ccc-")
+                            , strf::transcode(L"ddd") );
 
-auto str16 = strf::to_u16string( strf::conv("aaa-")
+auto str16 = strf::to_u16string( strf::transcode("aaa-")
                                , u"bbb-"
-                               , strf::conv(U"ccc-")
-                               , strf::conv(L"ddd") );
+                               , strf::transcode(U"ccc-")
+                               , strf::transcode(L"ddd") );
 
 assert(str   ==  "aaa-bbb-ccc-ddd");
 assert(str16 == u"aaa-bbb-ccc-ddd");
 ----
 
-The `conv` function can also specify an alternative encoding
+The `transcode` function can also specify an alternative encoding
 for a specific input string argument:
 
 [source,cpp]
 ----
 auto str_utf8 = strf::to_u8string
-    ( strf::conv("--\xA4--", strf::iso_8859_1<char>)
-    , strf::conv("--\xA4--", strf::iso_8859_15<char>));
+    ( strf::transcode("--\xA4--", strf::iso_8859_1<char>)
+    , strf::transcode("--\xA4--", strf::iso_8859_15<char>));
 
 assert(str_utf8 == u8"--\u00A4----\u20AC--");
 ----
 
-The `sani` function has the same effect as `conv`,
+The `sani` function has the same effect as `transcode`,
 except when the input encoding is same as the output.
-In this case `sani` causes the input to be sanitized, whereas `conv` does not:
+In this case `sani` causes the input to be sanitized, whereas `transcode` does not:
 
 [source, cpp]
 ----
 auto str = strf::to_string
     .with(strf::iso_8859_3<char>)    // the output charset
-    ( strf::conv("--\xff--")                           // not sanitized
-    , strf::conv("--\xff--", strf::iso_8859_3<char>)   // not sanitized ( same charset )
-    , strf::conv("--\xff--", strf::utf8<char>)         // sanitized ( different charset )
-    , strf::sani("--\xff--")                           // sanitized
-    , strf::sani("--\xff--", strf::iso_8859_3<char>) ) // sanitized
+    ( strf::transcode("--\xff--")                          // not sanitized
+    , strf::transcode("--\xff--", strf::iso_8859_3<char>)  // not sanitized ( same charset )
+    , strf::transcode("--\xff--", strf::utf8<char>)        // sanitized ( different charset )
+    , strf::sani("--\xff--")                               // sanitized
+    , strf::sani("--\xff--", strf::iso_8859_3<char>) )     // sanitized
 
 assert(str == "--\xff----\xff----?----?----?--");
 ----
 
-The library replaces the invalid sequences by the
+The library replaces invalid sequences by the
 https://en.wikipedia.org/wiki/Specials_(Unicode_block)#Replacement_character[replacement character &#xFFFD;],
 if the destination charset supports it ( and by `'?'` otherwise ).
 
-An "invalid sequence" is any input that is non-conformant to the source charset,
-or that is impossible translate to the destination charset.
-But there is an optional exception for surrogates characters.
+An "invalid sequence" is any input that is non-conformant to the source character encoding,
+or that cannot be to encoded into the destination encoding.
 
 NOTE: When the input is UTF-8, the library follows the practice recommended by the
 Unicode Standard regarding to calculate how many replacement characters to print
@@ -924,71 +951,45 @@ then it will printed as "\uFFFD" if the destination is UTF-8 or UTF-16, but
 if the destination is UTF-32, then the library just writes `(char32_t)0xFFFFFFF`
 verbatim.
 
-[[surrogate_policy]]
-=== Surrogates tolerance
+[[transcoding_error_notifier]]
+=== Transcoding error handling
 
-There is one particular kind of nonconformity that you may sometimes want to
-permit, which is the invalid presence of
-https://en.wikipedia.org/wiki/Universal_Character_Set_characters#Surrogates[surrogate]
-characters.
-That is particular common on Windows, where you may have an old file names, created
-at the time of Windows 95 ( where wide strings were UCS-2 ) and that contains
-some unpaired surrogates. If you then treat it as UTF-16 and convert it to UTF-8
-and back to UTF-16, you get a different name.
+Sometimes just printing a replacement character to signalize an encoding conversion
+errors may not be enough. In this case, you can create a class deriving from
+`{transcoding_error_notifier}` to do something more, like throwing an
+exception or logging the failure.
 
-So the library provides the `surrogate_policy` enumeration, which is a facet that
-enables you to turn off the surrogate sanitization.
+`transcoding_error_notifier::invalid_sequence` virtual function is to be
+called when the source has any invalid sequence, while
+`transcoding_error_notifier::unsupported_codepoint` is for when the
+destination encoding is not able to represent a codepoint.
+You can see an example
+{strf-src-root}/examples/transcoding_error_notifier.cpp[here]
 
-[source,cpp]
+But pay attention: this type is not a facet. The actual facet
+must be a __{TranscodingErrorNotifierPtr}__ type, which is
+supposed to hold a pointer ( raw or smart ) to your
+`transcoding_error_notifier` object.
+
+[source,cpp,subs=normal]
 ----
-namespace strf {
-enum class surrogate_policy : bool { strict = false, lax = true };
-}
-----
-When the value is `surrogate_policy::strict`, which is the default,
-if an UTF-16 input contains a high surrogate not followed by a low surrogate,
-or a low surrogate not following a high surrogate, that is considered
-invalid and is thus sanitized.
-When the value is `surrogate_policy::lax`, those situations are allowed.
+#include <strf/to_cfile.hpp>
+#include <strf/to_string.hpp>
 
-[source,cpp]
-----
-std::u16string original {u'-', 0xD800 ,u'-', u'-', u'-'};
-
-// convert to UTF-8
-auto str_strict = strf::to_u8string(strf::conv(original));
-auto str_lax =
-    strf::to_u8string .with(strf::surrogate_policy::lax) (strf::conv(original));
-
-assert(str_strict == u8"-\uFFFD---");                  // surrogate sanitized
-assert(str_lax == (const char8_t*)"-\xED\xA0\x80---"); // surrogate allowed
-
-// convert back to UTF-16
-auto utf16_strict = strf::to_u16string(strf::conv(str_lax));
-auto utf16_lax =
-    strf::to_u16string .with(strf::surrogate_policy::lax) (strf::conv(str_lax));
-
-assert(utf16_strict == u"-\uFFFD\uFFFD\uFFFD---");     // surrogate sanitized
-assert(utf16_lax == original);                         // surrogate preserved
-----
-
-[[invalid_seq_notifier]]
-=== Encoding error notifier function
-
-The facet `<<strf_hpp#invalid_seq_notifier,invalid_seq_notifier>>` contains
-a function pointer that is called every time an ivalid sequence is sanitized,
-unless it is null, which is the default.
-
-The code below throws an exception if `u16str` contains any invalid sequence:
-[source,cpp]
-----
-std::u16string u16str = /* ... */;
-notifier_func =  [](){
-    throw std::sytem_error(std::make_error_code(std::errc::illegal_byte_sequence));
+class my_notifier: public strf::transcodint_error_notifier {
+    //\...
+    // {strf-src-root}/examples/transcoding_error_notifier.cpp[(click here to see an implementation example)]
+    //\...
 };
-strf::invalid_seq_notifier notifier{ notifier_func };
 
-auto str = strf::to_string.width(notifier)(strf::conv(u16str));
+void sample() {
+    strf::{narrow_cfile_writer}<char> err_dest{stderr};
+    my_notifier notifer{err_dest};
+    strf::{transcoding_error_notifier_ptr} notifier_ptr{&notifer};
+
+    auto str = strf::to_string.with(notifier_ptr) ( /{asterisk} \... {asterisk}/ );
+    // \...
+}
 ----
 
 
@@ -1047,7 +1048,7 @@ assert(result == "***15.00 \xE2\x82\xAC \x80"); // width calculated as 9
 +
 * `<<strf_hpp#std_width_calc,std_width_calc>>` is the default.
 It calculates the width just
-as http://eel.is/c++draft/format.string.std#11[specified] to `std::format`,
+as https://timsong-cpp.github.io/cppwp/n4868/format#string.std-11[specified] to `std::format`,
 which means it is aware of https://unicode.org/reports/tr29/[grapheme clustering]
 and also that the width of some codepoints is equal to `2`.
 It doesn't require however the string
@@ -1079,7 +1080,7 @@ to be encoded in UTF ( internally, it is converted to UTF-32 ).
 The width calculation algorithm is applied
 on the input, not the output string. Keep that in mind when
 converting from one charset to another using
-`<<charset_conversion,conv>>` or `<<charset_conversion,sani`>>.
+`<<charset_conversion,transcode>>` or `<<charset_conversion,sani`>>.
 For example, when converting from UTF-8 to UTF-16 and using
 the `fast_width` facet, the
 width of the string is its size in UTF-8, not in UTF-16.
@@ -1088,11 +1089,11 @@ width of the string is its size in UTF-8, not in UTF-16.
 auto str = "15.00 \xE2\x82\xAC \x80"; // "15.00 € \x80"
 
 auto res1 = strf::to_u16string.with(strf::fast_width)
-            (strf::conv(str) > 12);
+            (strf::transcode(str) > 12);
 auto res2 = strf::to_u16string.with(strf::width_as_fast_u32len)
-            (strf::conv(str) > 12);
+            (strf::transcode(str) > 12);
 auto res3 = strf::to_u16string.with(strf::width_as_u32len)
-            (strf::conv(str) > 12);
+            (strf::transcode(str) > 12);
 
 assert(res1 == u" 15.00 \u20AC \uFFFD");  // width calculated as strlen(str)
 assert(res2 == u"    15.00 \u20AC \uFFFD"); // width calculated as 8

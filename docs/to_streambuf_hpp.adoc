@@ -14,17 +14,13 @@ http://www.boost.org/LICENSE_1_0.txt)
 :toclevels: 1
 :icons: font
 
-:min_space_after_recycle: <<destination_hpp#min_space_after_recycle,min_space_after_recycle>>
 :destination: <<destination_hpp#destination,destination>>
+:min_destination_buffer_size: <<destination_hpp#min_destination_buffer_size,min_destination_buffer_size>>
 :basic_streambuf_writer: <<basic_streambuf_writer,basic_streambuf_writer>>
-
-:destination_no_reserve: <<strf_hpp#destinators,destination_no_reserve>>
+:printing_syntax: <<strf_hpp#printing_syntax,printing_syntax>>
 :DestinationCreator: <<strf_hpp#DestinationCreator,DestinationCreator>>
 
-
-NOTE: This document is still a work in progress.
-
-NOTE: This header files includes `<strf.hpp>`
+NOTE: This header file includes `<<strf_hpp#,<strf.hpp>>>`
 
 [source,cpp,subs=normal]
 ----
@@ -36,8 +32,6 @@ class basic_streambuf_writer final: public destination<CharT>
 
 using streambuf_writer  = basic_streambuf_writer<char>;
 using wstreambuf_writer = basic_streambuf_writer<wchar_t>;
-
-// Destination makers:
 
 template <typename CharT, typename Traits>
 /{asterisk} \... {asterisk}/ to(std::basic_streambuf<CharT, Traits>& dest);
@@ -103,7 +97,7 @@ Effects::
 - If `good()` is `true` then calls `dest.sputn(p0, buffer_ptr() - p0)`, where `dest` is the reference this object was initialized with, and `p0` is the return value of `buffer_ptr()` before any call to `advance` and `advance_to` since the last call to `recycle()`, or since this object's contruction, whatever happened last.
 - If the returned value of `dest.sputn` is less then `buffer_ptr() - p0`, calls `set_good(false)`.
 - Calls `set_buffer_ptr` and/or `set_buffer_end`.
-Postconditions:: `buffer_space() >= min_space_after_recycle<CharT>()`
+Postconditions:: `buffer_space() >= {min_destination_buffer_size}`
 ====
 ====
 [source,cpp]
@@ -135,7 +129,7 @@ __/{asterisk} see below {asterisk}/__ to(std::basic_streambuf<CharT, Traits>* de
 } // namespace strf
 ----
 [horizontal]
-Return type:: `{destination_no_reserve}<DestCreator>`, where `DestCreator`
+Return type:: `{printing_syntax}<DestCreator>`, where `DestCreator`
          is an implementation-defined type that satifies __{DestinationCreator}__.
 Return value:: An object whose `DestCreator` object  `&#95;dest&#95;creator`
 is such that `&#95;dest&#95;creator.create()` returns

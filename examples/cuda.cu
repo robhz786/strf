@@ -1,19 +1,19 @@
 #include <strf/to_cfile.hpp>
 
 
-void __device__ device_sample1(strf::outbuff& out)
+void __device__ device_sample1(strf::destination<char>& out)
 {
     strf::to(out) ("At device_sample1.\n");
 }
 
-void __device__ device_sample2(strf::outbuff& out)
+void __device__ device_sample2(strf::destination<char>& out)
 {
     strf::to(out) ("At device_sample2.\n");
 }
 
 void __global__ kernel_sample(char* dest, std::size_t dest_size, std::size_t* dest_len)
 {
-    strf::cstr_writer out(dest, dest_size);
+    strf::cstr_destination out(dest, dest_size);
 
     strf::to(out) ("At kernel_sample.\n");
     device_sample1(out);

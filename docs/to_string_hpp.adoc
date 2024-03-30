@@ -14,10 +14,11 @@ http://www.boost.org/LICENSE_1_0.txt
 :toclevels: 1
 :icons: font
 
-:min_space_after_recycle: <<destination_hpp#min_space_after_recycle,min_space_after_recycle>>
+:min_destination_buffer_size: <<destination_hpp#min_destination_buffer_size,min_destination_buffer_size>>
+:output_buffer: <<destination_hpp#output_buffer,output_buffer>>
 :destination: <<destination_hpp#destination,destination>>
 
-:destination_no_reserve: <<strf_hpp#destination_no_reserve,destination_no_reserve>>
+:printing_syntax: <<strf_hpp#printing_syntax,printing_syntax>>
 :DestinationCreator: <<strf_hpp#DestinationCreator,DestinationCreator>>
 :SizedDestinationCreator: <<strf_hpp#SizedDestinationCreator,SizedDestinationCreator>>
 
@@ -25,7 +26,7 @@ http://www.boost.org/LICENSE_1_0.txt
 :basic_sized_string_maker: <<basic_sized_string_maker,basic_sized_string_maker>>
 :basic_string_appender: <<basic_string_appender,basic_string_appender>>
 
-NOTE: This header files includes `<strf.hpp>`
+NOTE: This header file includes `<<strf_hpp#,<strf.hpp>>>`
 
 [source,cpp,subs=normal]
 ----
@@ -66,8 +67,6 @@ using pre_sized_u8string_maker  = basic_sized_string_maker<char8_t>;
 using pre_sized_u16string_maker = basic_sized_string_maker<char16_t>;
 using pre_sized_u32string_maker = basic_sized_string_maker<char32_t>;
 using pre_sized_wstring_maker   = basic_sized_string_maker<wchar_t>;
-
-// Destination makers:
 
 template <typename CharT, typename Traits, typename Allocator>
 /{asterisk}\...{asterisk}/ append(std::basic_string<CharT, Traits, Allocator>& str);
@@ -132,7 +131,7 @@ void recycle() override;
 Effects::
 - If `good()` is `true` then calls `str.append(p0, buffer_ptr())`, where `str` is the private string object that is later returned by `finish()`, and `p0` is the value that `buffer_ptr()` would return before any call to `advance` and `advance_to` since the last call to `recycle()`, or since this object's contruction, whatever happened last.
 - Calls `set_buffer_ptr` and/or `set_buffer_end`.
-Postconditions:: `buffer_space() >= min_space_after_recycle<CharT>()`
+Postconditions:: `buffer_space() >= {min_destination_buffer_size}`
 ====
 ====
 [source,cpp]
@@ -231,7 +230,7 @@ void recycle() override;
 Effects::
 - If `good()` is `true` then calls `str.append(p0, buffer_ptr())`, where `str` is the reference that this object was initialized with, and `p0` is the return value of `buffer_ptr()` before any call to `advance` and `advance_to` since the last call to `recycle()` ( all in this object ), or since this object's contruction, whatever happened last.
 - Calls `set_buffer_ptr` and/or `set_buffer_end`.
-Postconditions:: `buffer_space() >= min_space_after_recycle<CharT>()`
+Postconditions:: `buffer_space() >= {min_destination_buffer_size}`
 ====
 ====
 [source,cpp]
@@ -243,7 +242,7 @@ Effects:: Calls `recycle()` and `set_good(false)`.
 Postcondition:: `good() == false`
 ====
 
-[[destinator_string_append]]
+[[std_string_append]]
 == Function template `append`
 
 [source,cpp,subs=normal]
@@ -255,7 +254,7 @@ __/{asterisk} see below {asterisk}/__ append(std::basic_string<CharT, Traits, Al
 
 } // namespace strf
 ----
-Return type:: `{destination_no_reserve}<DestCreator>`, where `DestCreator`
+Return type:: `{printing_syntax}<DestCreator>`, where `DestCreator`
 is an implementation-defined type that satisfies  __{DestinationCreator}__ and
 __{SizedDestinationCreator}__
 Return value:: An object whose `DestCreator` object
@@ -278,7 +277,7 @@ __/{asterisk} see below {asterisk}/__ assign(std::basic_string<CharT, Traits, Al
 } // namespace strf
 ----
 [horizontal]
-Effects:: Calls `str.clear()` and returns `<<destinator_string_append,append>>(str)`.
+Effects:: Calls `str.clear()` and returns `<<std_string_append,append>>(str)`.
 
 [[to_basic_string]]
 == Variable template `to_basic_string`
@@ -294,7 +293,7 @@ constexpr <__/{asterisk} see below {asterisk}/__>  to_basic_string {};
 } // namespace strf
 ----
 
-Type:: `{destination_no_reserve}<DestCreator>`, where `DestCreator` is
+Type:: `{printing_syntax}<DestCreator>`, where `DestCreator` is
         an implementation-defined type that satisfies
         __{DestinationCreator}__ and __{SizedDestinationCreator}__.
 Value:: An object whose `DestCreator` object

@@ -12,55 +12,6 @@
 STRF_TEST_FUNC void test_width_calculator()
 {
     using namespace strf::width_literal;
-    {
-        auto wfunc = [](char32_t ch) -> strf::width_t {
-            return ( ch == U'\u2E3A' ? 4: ch == U'\u2014' ? 2: 1 );
-        };
-        auto wcalc = strf::make_width_calculator(wfunc);
-        TEST("abcd").with(wcalc)  (strf::left("abcd", 0));
-        TEST("abcd").with(wcalc)  (strf::left("abcd", 3));
-        TEST("abcd ").with(wcalc) (strf::left("abcd", 5));
-
-        TEST("abc  ").with(wcalc) (strf::left("abcd", 5).p(3));
-        TEST("abcd ").with(wcalc) (strf::left("abcd", 5).p(4));
-        TEST("abcd ").with(wcalc) (strf::left("abcd", 5).p(5));
-
-        TEST("123456789-123456789-123456789-   ").with(wcalc)
-            (strf::left("123456789-123456789-123456789-", 33).p(32));
-
-        TEST("123456789-123456789-123456789-   ").with(wcalc)
-            (strf::left("123456789-123456789-123456789-", 33).p(30));
-
-        TEST("123456789-123456789-123456789    ").with(wcalc)
-            (strf::left("123456789-123456789-123456789-", 33).p(29));
-
-        TEST("12345                            ").with(wcalc)
-            (strf::left("123456789-123456789-123456789-", 33).p(5));
-        TEST("12345                            ").with(wcalc)
-            (strf::left("123456789-123456789-123456789-", 33).p(5.99_w));
-
-        TEST(u8"\u2E3A\u2E3A\u2014") .with(wcalc)
-            (strf::right(u8"\u2E3A\u2E3A\u2014", 8));
-
-        TEST(u8"  \u2E3A\u2E3A\u2014") .with(wcalc)
-            (strf::right(u8"\u2E3A\u2E3A\u2014", 12));
-
-        TEST( u"  \u2E3A\u2E3A\u2014") .with(wcalc)
-            (strf::right( u"\u2E3A\u2E3A\u2014", 12));
-
-        // TEST( U"  \u2E3A\u2E3A\u2014") .with(wcalc)
-        //     (strf::right( U"\u2E3A\u2E3A\u2014", 12));
-
-        // TEST( L"  \u2E3A\u2E3A\u2014") .with(wcalc)
-        //     (strf::right( L"\u2E3A\u2E3A\u2014", 12));
-
-        // TEST(u8"  \u2E3A\u2E3A\u2014") .with(wcalc)
-        //     (strf::conv( u"\u2E3A\u2E3A\u2014") > 12);
-
-        // TEST( u"  \u2E3A\u2E3A\u2014") .with(wcalc)
-        //     (strf::conv(u8"\u2E3A\u2E3A\u2014") > 12);
-
-    }
     // --------------------------------------------------------------------------------
     // strf::fast_width
     // --------------------------------------------------------------------------------
@@ -82,16 +33,16 @@ STRF_TEST_FUNC void test_width_calculator()
         (strf::fmt( U"\u2E3A\u2E3A\u2014") > 12);
 
     TEST_FAST_WIDTH( u"   \u2E3A\u2E3A\u2014")
-        (strf::conv(u8"\u2E3A\u2E3A\u2014") > 12);
+        (strf::transcode(u8"\u2E3A\u2E3A\u2014") > 12);
 
     TEST_FAST_WIDTH(u8"         \u2E3A\u2E3A\u2014")
-        (strf::conv( u"\u2E3A\u2E3A\u2014") > 12);
+        (strf::transcode( u"\u2E3A\u2E3A\u2014") > 12);
 
     TEST_FAST_WIDTH(u8"         \u2E3A\u2E3A\u2014")
-        (strf::conv( U"\u2E3A\u2E3A\u2014") > 12);
+        (strf::transcode( U"\u2E3A\u2E3A\u2014") > 12);
 
     TEST_FAST_WIDTH( u"         \u2E3A\u2E3A\u2014")
-        (strf::conv( U"\u2E3A\u2E3A\u2014") > 12);
+        (strf::transcode( U"\u2E3A\u2E3A\u2014") > 12);
 
     // --------------------------------------------------------------------------------
     // strf::width_as_u32len{}
@@ -124,10 +75,10 @@ STRF_TEST_FUNC void test_width_calculator()
         (strf::right( L"\u2E3A\u2E3A\u2014", 12));
 
     TEST_W_AS_FAST_U32LEN(u8"         \u2E3A\u2E3A\u2014")
-        (strf::conv(u8"\u2E3A\u2E3A\u2014") > 12);
+        (strf::transcode(u8"\u2E3A\u2E3A\u2014") > 12);
 
     TEST_W_AS_FAST_U32LEN( u"         \u2E3A\u2E3A\u2014")
-        (strf::conv(u"\u2E3A\u2E3A\u2014") > 12);
+        (strf::transcode(u"\u2E3A\u2E3A\u2014") > 12);
 
     // --------------------------------------------------------------------------------
     // strf::width_u32len{}
@@ -168,26 +119,6 @@ STRF_TEST_FUNC void test_width_calculator()
     TEST_W_AS_U32LEN(u"   \uFFFD\uFFFD\uFFFD") (strf::sani("\xED\xB0\x80") > 6);
     TEST_W_AS_U32LEN(u"   \uFFFD\uFFFD\uFFFD") (strf::sani("\xED\xBF\xBF") > 6);
 
-    {
-        const char16_t str_0xD800[] = {u' ', 0xD800, u'\0'};
-        const char16_t str_0xDBFF[] = {u' ', 0xDBFF, u'\0'};
-        const char16_t str_0xDC00[] = {u' ', 0xDC00, u'\0'};
-        const char16_t str_0xDFFF[] = {u' ', 0xDFFF, u'\0'};
-
-        char16_t buff[10];
-        strf::to(buff)
-            .with(strf::width_as_u32len_t{}, strf::surrogate_policy::lax )
-            (strf::sani("\xED\xA0\x80") > 2);
-
-        TEST_W_AS_U32LEN(str_0xD800).with(strf::surrogate_policy::lax )
-            (strf::sani("\xED\xA0\x80") > 2);
-        TEST_W_AS_U32LEN(str_0xDBFF).with(strf::surrogate_policy::lax )
-            (strf::sani("\xED\xAF\xBF") > 2);
-        TEST_W_AS_U32LEN(str_0xDC00).with(strf::surrogate_policy::lax )
-            (strf::sani("\xED\xB0\x80") > 2);
-        TEST_W_AS_U32LEN(str_0xDFFF).with(strf::surrogate_policy::lax )
-            (strf::sani("\xED\xBF\xBF") > 2);
-    }
     // --------------------------------------------------------------------------------
     // Invalid UTF-8 input, not sanitizing
 
@@ -216,14 +147,6 @@ STRF_TEST_FUNC void test_width_calculator()
     TEST_W_AS_U32LEN("   \xED\xAF\xBF") (strf::right("\xED\xAF\xBF", 6));
     TEST_W_AS_U32LEN("   \xED\xB0\x80") (strf::right("\xED\xB0\x80", 6));
     TEST_W_AS_U32LEN("   \xED\xBF\xBF") (strf::right("\xED\xBF\xBF", 6));
-    TEST_W_AS_U32LEN("   \xED\xA0\x80").with(strf::surrogate_policy::lax )
-        (strf::right("\xED\xA0\x80", 4));
-    TEST_W_AS_U32LEN("   \xED\xAF\xBF").with(strf::surrogate_policy::lax )
-        (strf::right("\xED\xAF\xBF", 4));
-    TEST_W_AS_U32LEN("   \xED\xB0\x80").with(strf::surrogate_policy::lax )
-        (strf::right("\xED\xB0\x80", 4));
-    TEST_W_AS_U32LEN("   \xED\xBF\xBF").with(strf::surrogate_policy::lax )
-        (strf::right("\xED\xBF\xBF", 4));
 
     {
         // --------------------------------------------------------------------------------
@@ -240,17 +163,6 @@ STRF_TEST_FUNC void test_width_calculator()
         TEST_W_AS_U32LEN(u" \uFFFD-\uFFFD")             (strf::sani(str_0xDFFF + 1) > 4);
         TEST_W_AS_U32LEN(u" \uFFFD\uFFFD-\uFFFD\uFFFD") (strf::sani(str_0xDFFF_0xD800 + 1) > 6);
 
-        TEST_W_AS_U32LEN(str_0xD800).with(strf::surrogate_policy::lax)
-            (strf::right(str_0xD800 + 1, 4));
-        TEST_W_AS_U32LEN(str_0xDBFF).with(strf::surrogate_policy::lax)
-            (strf::right(str_0xDBFF + 1, 4));
-        TEST_W_AS_U32LEN(str_0xDC00).with(strf::surrogate_policy::lax)
-            (strf::right(str_0xDC00 + 1, 4));
-        TEST_W_AS_U32LEN(str_0xDFFF).with(strf::surrogate_policy::lax)
-            (strf::right(str_0xDFFF + 1, 4));
-        TEST_W_AS_U32LEN(str_0xDFFF_0xD800) .with(strf::surrogate_policy::lax)
-            (strf::right(str_0xDFFF_0xD800 + 1, 6));
-
         TEST_W_AS_U32LEN(str_0xD800)        (strf::right(str_0xD800 + 1, 4));
         TEST_W_AS_U32LEN(str_0xDBFF)        (strf::right(str_0xDBFF + 1, 4));
         TEST_W_AS_U32LEN(str_0xDC00)        (strf::right(str_0xDC00 + 1, 4));
@@ -260,5 +172,5 @@ STRF_TEST_FUNC void test_width_calculator()
     }
 }
 
-REGISTER_STRF_TEST(test_width_calculator);
+REGISTER_STRF_TEST(test_width_calculator)
 

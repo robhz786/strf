@@ -22,6 +22,9 @@
 #    define STRF_WITH_CSTRING
 #    include <cstring>
 #    include <algorithm>   // for std::copy_n
+#    define STRF_WITH_STD_FUNCTIONAL_HEADER 1
+#    include <functional>
+#    define STRF_HAS_STD_ALGORITHM
 #    if defined(__cpp_lib_string_view)
 #        define STRF_HAS_STD_STRING_VIEW
 #        define STRF_HAS_STD_STRING_DECLARATION
@@ -53,18 +56,22 @@ namespace detail {
 #  define STRF_HAS_COUNTL_ZERO
 #  define STRF_HAS_COUNTR_ZERO
 
+// NOLINTNEXTLINE(google-runtime-int)
 inline STRF_HD int countl_zero_l(unsigned long x) noexcept
 {
     return std::countl_zero(x);
 }
+// NOLINTNEXTLINE(google-runtime-int)
 inline STRF_HD int countl_zero_ll(unsigned long long x) noexcept
 {
     return std::countl_zero(x);
 }
+// NOLINTNEXTLINE(google-runtime-int)
 inline STRF_HD int countr_zero_l(unsigned long x) noexcept
 {
     return std::countr_zero(x);
 }
+// NOLINTNEXTLINE(google-runtime-int)
 inline STRF_HD int countr_zero_ll(unsigned long long x) noexcept
 {
     return std::countr_zero(x);
@@ -74,10 +81,12 @@ inline STRF_HD int countr_zero_ll(unsigned long long x) noexcept
 #  if __has_builtin(__builtin_clzll)
 #    define STRF_HAS_COUNTL_ZERO
 
+// NOLINTNEXTLINE(google-runtime-int)
 inline STRF_HD int countl_zero_l(unsigned long x) noexcept
 {
     return __builtin_clzl(x);
 }
+// NOLINTNEXTLINE(google-runtime-int)
 inline STRF_HD int countl_zero_ll(unsigned long long x) noexcept
 {
     return __builtin_clzll(x);
@@ -88,10 +97,12 @@ inline STRF_HD int countl_zero_ll(unsigned long long x) noexcept
 #  if __has_builtin(__builtin_ctzll)
 #    define STRF_HAS_COUNTR_ZERO
 
+// NOLINTNEXTLINE(google-runtime-int)
 inline STRF_HD int countr_zero_l(unsigned long x) noexcept
 {
     return __builtin_ctzl(x);
 }
+// NOLINTNEXTLINE(google-runtime-int)
 inline STRF_HD int countr_zero_ll(unsigned long long x) noexcept
 {
     return __builtin_ctzll(x);
@@ -127,6 +138,108 @@ To STRF_HD bit_cast(const From& from) noexcept
 
 #endif // defined(__cpp_lib_bit_cast)
 
+STRF_HD constexpr int slow_countl_zero_ll(std::uint64_t x)
+{
+    if (x <= 0xffffffffULL) {
+        if (x <= 0xffffULL) {
+            if (x <= 0xffULL) {
+                if (x <= 0xfULL) {
+                    if (x <= 3U) {
+                        if (x == 0) {
+                            return 64;
+                        }
+                        return x <= 1U ? 63 : 62;
+                    }
+                    return x <= 7U ? 61 : 60;
+                }
+                if (x <= 0x3fU) {
+                    return x <= 0x1fU ? 59 : 58;
+                }
+                return x <= 0x7fU ? 57 : 56;
+            }
+            if (x <= 0xfffULL) {
+                if (x <= 0x3ffULL) {
+                    return x <= 0x1ffULL ? 55 :54;
+                }
+                return x <= 0x7ffULL ? 53 : 52;
+            }
+            if (x <= 0x3fffULL) {
+                return x <= 0x1fffULL ? 51 :50;
+            }
+            return x <= 0x7fffULL ? 49 : 48;
+        }
+        if (x <= 0xffffffULL) {
+            if (x <= 0xfffffULL) {
+                if (x <= 0x3ffffULL) {
+                    return x <= 0x1ffffULL ? 47 : 46;
+                }
+                return x <= 0x7ffffULL ? 45 : 44;
+            }
+            if (x <= 0x3fffffULL) {
+                return x <= 0x1fffffULL ? 43 : 42 ;
+            }
+            return x <= 0x7fffffULL ? 41 : 40 ;
+        }
+        if (x <= 0xfffffffULL) {
+            if (x <= 0x3ffffffULL) {
+                return x <= 0x1ffffffULL ? 39 : 38 ;
+            }
+            return x <= 0x7ffffffULL ? 37 : 36;
+        }
+        if (x <= 0x3fffffffULL) {
+            return x <= 0x1fffffffULL ? 35 : 34;
+        }
+        return x <= 0x7fffffffULL ? 33 : 32;
+    }
+    if (x <= 0xffffffffffffULL) {
+        if (x <= 0xffffffffffULL) {
+            if (x <= 0xfffffffffULL) {
+                if (x <= 0x3ffffffffULL) {
+                    return x <= 0x1ffffffffULL ? 31 : 30;
+                }
+                return x <= 0x7ffffffffULL ? 29 : 28;
+            }
+            if (x <= 0x3fffffffffULL) {
+                return x <= 0x1fffffffffULL ? 27 : 26;
+            }
+            return x <= 0x7fffffffffULL ? 25 : 24;
+        }
+        if (x <= 0xfffffffffffULL) {
+            if (x <= 0x3ffffffffffULL) {
+                return x <= 0x1ffffffffffULL ? 23 : 22;
+            }
+            return x <= 0x7ffffffffffULL ? 21 : 20;
+        }
+        if (x <= 0x3fffffffffffULL) {
+            return x <= 0x1fffffffffffULL ? 19 : 18;
+        }
+        return x <= 0x7fffffffffffULL ? 17 : 16;
+    }
+    if (x <= 0xffffffffffffffULL) {
+        if (x <= 0xfffffffffffffULL) {
+            if (x <= 0x3ffffffffffffULL) {
+                return x <= 0x1ffffffffffffULL ? 15 : 14;
+            }
+            return x <= 0x7ffffffffffffULL ? 13 : 12;
+        }
+        if (x <= 0x3fffffffffffffULL) {
+            return x <= 0x1fffffffffffffULL ? 11 : 10 ;
+        }
+        return x <= 0x7fffffffffffffULL ? 9 : 8 ;
+    }
+    if (x <= 0xfffffffffffffffULL) {
+        if (x <= 0x3ffffffffffffffULL) {
+            return x <= 0x1ffffffffffffffULL ? 7 : 6 ;
+        }
+        return x <= 0x7ffffffffffffffULL ? 5 : 4;
+    }
+    if (x <= 0x3fffffffffffffffULL) {
+        return x <= 0x1fffffffffffffffULL ? 3 : 2;
+    }
+    return x <= 0x7fffffffffffffffULL ? 1 : 0;
+}
+
+
 #if ! defined(STRF_FREESTANDING)
 template <typename It>
 using iterator_value_type = typename std::iterator_traits<It>::value_type;
@@ -153,13 +266,13 @@ using iterator_value_type = typename iterator_value_type_impl<It>::type;
 
 template<class CharT>
 STRF_CONSTEXPR_CHAR_TRAITS
-STRF_HD void str_fill_n(CharT* str, std::size_t count, CharT value)
+STRF_HD void str_fill_n(CharT* str, std::ptrdiff_t count, CharT value)
 {
 #if !defined(STRF_FREESTANDING)
-    std::char_traits<CharT>::assign(str, count, value);
+    std::char_traits<CharT>::assign(str, detail::safe_cast_size_t(count), value);
 #else
     auto p = str;
-    for (std::size_t i = 0; i != count; ++i, ++p) {
+    for (std::ptrdiff_t i = 0; i < count; ++i, ++p) {
         *p = value;
     }
 #endif
@@ -167,15 +280,15 @@ STRF_HD void str_fill_n(CharT* str, std::size_t count, CharT value)
 
 template<>
 inline
-STRF_HD void str_fill_n<char>(char* str, std::size_t count, char value)
+STRF_HD void str_fill_n<char>(char* str, std::ptrdiff_t count, char value)
 {
 #if !defined(STRF_FREESTANDING)
-    std::char_traits<char>::assign(str, count, value);
+    std::char_traits<char>::assign(str, detail::safe_cast_size_t(count), value);
 #elif defined(STRF_WITH_CSTRING)
-    memset(str, value, count);
+    memset(str, value, detail::safe_cast_size_t(count));
 #else
     auto p = str;
-    for (std::size_t i = 0; i != count; ++i, ++p) {
+    for (std::ptrdiff_t i = 0; i < count; ++i, ++p) {
         *p = value;
     }
 #endif
@@ -192,6 +305,13 @@ str_length(const CharT* str)
     while (*str != CharT{0}) { ++str, ++length; }
     return length;
 #endif
+}
+
+template <class CharT>
+STRF_CONSTEXPR_CHAR_TRAITS STRF_HD std::ptrdiff_t
+str_ssize(const CharT* str)
+{
+    return static_cast<std::ptrdiff_t>(str_length(str));
 }
 
 template <class CharT>
@@ -227,108 +347,68 @@ str_equal(const CharT* str1, const CharT* str2, std::size_t count)
 #endif
 }
 
-template <bool SameCharSize, typename SrcCharT, typename DestCharT>
+template <bool SameCharSize, typename SrcCharT, typename DstCharT>
 struct interchar_copy_n_impl;
 
 template <typename CharT>
 struct interchar_copy_n_impl<true, CharT, CharT>
 {
-    static inline STRF_HD void copy(const CharT* src, std::size_t count, CharT* dest)
+    static inline STRF_HD void copy(const CharT* src, std::size_t count, CharT* dst)
     {
 #if defined(STRF_WITH_CSTRING)
-        memcpy(dest, src, count * sizeof(CharT));
+        memcpy(dst, src, count * sizeof(CharT));
 #else
-        for(;count != 0; ++dest, ++src, --count) {
-            *dest = *src;
+        for(;count != 0; ++dst, ++src, --count) {
+            *dst = *src;
         }
 #endif
     }
 };
 
-template <typename SrcCharT, typename DestCharT>
-struct interchar_copy_n_impl<true, SrcCharT, DestCharT>
+template <typename SrcCharT, typename DstCharT>
+struct interchar_copy_n_impl<true, SrcCharT, DstCharT>
 {
-    static_assert(sizeof(SrcCharT) == sizeof(DestCharT), "");
+    static_assert(sizeof(SrcCharT) == sizeof(DstCharT), "");
 
-    static inline STRF_HD void copy(const SrcCharT* src, std::size_t count, DestCharT* dest)
+    static inline STRF_HD void copy(const SrcCharT* src, std::size_t count, DstCharT* dst)
     {
 #if defined(STRF_WITH_CSTRING)
-        memcpy(dest, src, count * sizeof(SrcCharT));
+        memcpy(dst, src, count * sizeof(SrcCharT));
 #else
-        for(;count != 0; ++dest, ++src, --count) {
-            *dest = *src;
+        for(;count != 0; ++dst, ++src, --count) {
+            *dst = *src;
         }
 #endif
     }
 };
 
-template <typename SrcCharT, typename DestCharT>
-struct interchar_copy_n_impl<false, SrcCharT, DestCharT>
+template <typename SrcCharT, typename DstCharT>
+struct interchar_copy_n_impl<false, SrcCharT, DstCharT>
 {
-    static_assert(sizeof(SrcCharT) != sizeof(DestCharT), "");
+    static_assert(sizeof(SrcCharT) != sizeof(DstCharT), "");
 
-    static inline STRF_HD void copy(const SrcCharT* src, std::size_t count, DestCharT* dest)
+    static inline STRF_HD void copy(const SrcCharT* src, std::size_t count, DstCharT* dst)
     {
 #if !defined(STRF_FREESTANDING)
-        std::copy_n(src, count, dest);
+        std::copy_n(src, count, dst);
 #else
-        for(;count != 0; ++dest, ++src, --count) {
-            *dest = *src;
+        for(;count != 0; ++dst, ++src, --count) {
+            *dst = *src;
         }
 #endif
     }
 };
 
-template <typename SrcCharT, typename DestCharT>
+template <typename SrcCharT, typename DstCharT>
 inline STRF_HD void copy_n
     ( const SrcCharT* src
     , std::size_t count
-    , DestCharT* dest )
+    , DstCharT* dst )
 {
     using impl = strf::detail::interchar_copy_n_impl
-        < sizeof(SrcCharT) == sizeof(DestCharT), SrcCharT, DestCharT >;
-    impl::copy(src, count, dest);
+        < sizeof(SrcCharT) == sizeof(DstCharT), SrcCharT, DstCharT >;
+    impl::copy(src, count, dst);
 }
-
-// template< class T >
-// constexpr T&& forward( strf::detail::remove_reference_t<T>&& t ) noexcept
-// {
-//     return static_cast<T&&>(t);
-// }
-
-
-namespace detail_tag_invoke_ns {
-
-STRF_HD inline void tag_invoke(){};
-
-struct tag_invoke_fn
-{
-    template <typename Cpo, typename ... Args>
-    constexpr STRF_HD auto operator()(Cpo cpo, Args&&... args) const
-        noexcept(noexcept(tag_invoke(cpo, (Args&&)(args)...)))
-        -> decltype(tag_invoke(cpo, (Args&&)(args)...))
-    {
-        return tag_invoke(cpo, (Args&&)(args)...);
-    }
-};
-
-} // namespace detail_tag_invoke_ns
-
-#if defined (STRF_NO_GLOBAL_CONSTEXPR_VARIABLE)
-
-template <typename Cpo, typename ... Args>
-constexpr STRF_HD auto tag_invoke(Cpo cpo, Args&&... args)
-    noexcept(noexcept(tag_invoke(cpo, (Args&&)(args)...)))
-    -> decltype(tag_invoke(cpo, (Args&&)(args)...))
-{
-    return tag_invoke(cpo, (Args&&)(args)...);
-}
-
-#else
-
-constexpr strf::detail::detail_tag_invoke_ns::tag_invoke_fn tag_invoke {};
-
-#endif // defined (STRF_NO_GLOBAL_CONSTEXPR_VARIABLE)
 
 // Not using generic iterators because std::distance
 // is not freestanding and can't be used in CUDA devices
@@ -341,7 +421,7 @@ STRF_HD const T* lower_bound
 {
     std::ptrdiff_t search_range_length { last - first };
 
-    const T* iter;
+    const T* iter = nullptr;
     while (search_range_length > 0) {
         auto half_range_length = search_range_length/2;
         iter = first;
@@ -408,6 +488,110 @@ constexpr STRF_HD IntT int_min()
 }
 
 } // namespace detail
+
+
+namespace detail {
+
+template<class T>
+STRF_HD auto addressof(T& arg) noexcept
+    -> detail::enable_if_t< std::is_object<detail::remove_reference_t<T>>::value, T* >
+{
+    return reinterpret_cast<T*>
+        ( &const_cast<char&> // NOLINT(cppcoreguidelines-pro-type-const-cast)
+            ( reinterpret_cast<const volatile char&>(arg) ) );
+}
+
+template<class T>
+STRF_HD auto addressof(T& arg) noexcept
+    -> detail::enable_if_t< !std::is_object<detail::remove_reference_t<T>>::value, T* >
+{
+    return &arg;
+}
+
+} // namespace detail
+
+
+#if STRF_WITH_STD_FUNCTIONAL_HEADER
+
+using std::reference_wrapper;
+using std::ref;
+using std::cref;
+
+#else // STRF_WITH_STD_FUNCTIONAL_HEADER
+
+namespace detail {
+
+template<typename T>
+constexpr STRF_HD T& pass_lval_ref(T& t) noexcept { return t; }
+
+template<typename T>
+void pass_lval_ref(T&&) = delete;
+
+} // namespace detail
+
+template<typename T>
+class reference_wrapper
+{
+public:
+    using type = T;
+
+    template
+        < typename U
+        , typename = detail::enable_if_t
+              < ! std::is_same<reference_wrapper, detail::remove_cvref_t<U>>::value
+              , decltype(detail::pass_lval_ref<T>(std::declval<U>())) > >
+    constexpr STRF_HD reference_wrapper(U&& u)
+        noexcept(noexcept(detail::pass_lval_ref<T>((U&&)(u))))
+        : ptr_(detail::addressof(detail::pass_lval_ref<T>((U&&)(u))))
+    {
+    }
+
+    reference_wrapper(const reference_wrapper&) noexcept = default;
+    reference_wrapper& operator=(const reference_wrapper& x) noexcept = default;
+
+    constexpr STRF_HD operator T& () const noexcept { return *ptr_; }
+    constexpr STRF_HD T& get() const noexcept { return *ptr_; }
+
+private:
+    T* ptr_;
+};
+
+template <class T>
+constexpr STRF_HD reference_wrapper<T> ref(T& r) noexcept
+{
+    return reference_wrapper<T>{r};
+}
+template <class T>
+constexpr STRF_HD reference_wrapper<const T> cref(const T& r) noexcept
+{
+    return r;
+}
+
+template <class T>
+constexpr STRF_HD reference_wrapper<T> ref(reference_wrapper<T> r) noexcept
+{
+    return r;
+}
+template <class T>
+constexpr STRF_HD reference_wrapper<const T> cref(reference_wrapper<T> r) noexcept
+{
+    return r;
+}
+
+template <class T>
+void ref(const T&&) = delete;
+
+template <class T>
+void cref(const T&&) = delete;
+
+#if __cpp_deduction_guides
+
+template<typename T>
+reference_wrapper(T&) -> reference_wrapper<T>;
+
+#endif //  __cpp_deduction_guides
+#endif // STRF_WITH_STD_FUNCTIONAL_HEADER
+
 } // namespace strf
 
 #endif // STRF_DETAIL_STANDARD_LIB_FUNCTIONS_HPP

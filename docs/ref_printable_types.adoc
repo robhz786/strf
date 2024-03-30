@@ -5,110 +5,93 @@ Distributed under the Boost Software License, Version 1.0.
 http://www.boost.org/LICENSE_1_0.txt)
 ////
 
+:Printable: <<Printable,Printable>>
+:tr_error_notifier_c: <<tr_error_notifier_c,tr_error_notifier_c>>
+:default_tr_error_notifier: <<default_tr_error_notifier,default_tr_error_notifier>>
+
+:code_unit: <<Charset_code_unit,code_unit>>
+
 == List of printable types [[printable_types_list]]
 
 === Strings
 Types::
-`const CharT*`, `std::string_view<CharT, Traits>`
+`const CharT*`, `std::basic_string_view<CharT, Traits>`
 and `std::basic_string<CharT, Traits, Alloc>`
-::
++
 where:
-::
-- `CharT` is the character type. If it is not the same as the output character type, then it is necessary to use the `conv` or `sani` format function.
++
+- `CharT` is the character type. If it is not the same as the output character type, then it is necessary to use the `transcode` or `sani` format function.
 - `Traits` can be any type that satisfies https://en.cppreference.com/w/cpp/named_req/CharTraits[CharTraits]
 - `Alloc` can be any type that satisfies https://en.cppreference.com/w/cpp/named_req/Allocator[Allocator]
 
 Overridable:: No
 
-Format functions::
-( in addition to <<alignment_formatter, alignment functions>> )
-
-`p(<<strf_hpp#width_t,width_t>> limit)`:::
-   Does not print the whole string if its width is greater than `limit`,
-   but the greatest possible amount of its leading Unicode code points
-   such that the width is not greater than `limit`.
+Representative type:: `string_input_tag<CharT>`,  where `string_input_tag` is defined as below:
 +
-////
-   but prints the maxixum leading sub-string such that its width
-   is not greater than `limit`.
-   Prints the maximum amount of Unicode code points such that
-   the width is not greater than `limit`.
-   __To-to__
-////
-+
-`template <typename Charset> sanitize_from_charset(Charset cs)`:::
-   Convert the input string from `cs` to the output charset.
-   If the charsets are the same then sanitizes the input string.
-`sanitize_charset()`::: Translates input string from the charset associated to `CharT` to
-            the output charset. If these charsets are the same
-            then sanitizes the input string.
-`template <typename Charset> convert_from_charset(Charset cs)`:::
-   Convert the input string from `cs` to the
-   output charset, if these charsets are not the same.
-   Otherwise, copies input string as it is.
-`convert_charset()` ::: Translates input string from the charset associated to `CharT` to
-          the output charset, if these charsets are not the same.
-          Otherwise, copies the input string as it is.
-`template <typename Charset>  sani(Charset cs)`::: Equivanlent to `sanitize_charset(cs)`
-`template <typename Charset>  conv(Charset cs)`::: Equivanlent to `convert_charset(cs)`
-`sani()`::: Equivalent to `sanitize_charset()`
-`conv()`::: Equivalent to `convert_charset()`
-+
-.Example
 [source,cpp]
 ----
-auto str = strf::to_string(strf::center(u" Hello! ", 16, '*').conv());
-assert(str == "**** Hello! ****");
+namespace strf {
+
+struct string_input_tag_base {};
+
+template <typename CharT>
+struct string_input_tag: string_input_tag_base{}
+
+} // namespace strf
 ----
 
-//-
-Influential facet categories::
+Influenced by facet categories::
 - `<<width_calculator_c,width_calculator_c>>`
 - `<<charset_c,charset_c>><__CharType__>`
-- `<<surrogate_policy,surrogate_policy_c>>`
-- `<<invalid_seq_notifier_c,invalid_seq_notifier_c>>`
+- `<<transcoding_error_notifier_c,transcoding_error_notifier_c>>`
+
+Format functions::
+ - <<alignment_format_specifier, alignment format functions>>
+ - <<strf_hpp#string_precision_format_function, string precision format function>>
+ - <<strf_hpp#transcoding_format_functions, transcoding format functions>>
 
 === Single characters
 Type:: The same as the output character type or `char32_t`. In the later case,
        the UTF-32 character is encoded to the destination charset.
+Representative type:: The same as the input type
 
 Overridable:: No
 
-Formatters::
-* `<<alignment_formatter,alignment_formatter>>`
-* `<<quantity_formatter,quantity_formatter>>`
+FormatSpecifier types::
+* `<<alignment_format_specifier,alignment_format_specifier>>`
+* `<<quantity_format_specifier,quantity_format_specifier>>`
 
 //-
-Influential facet categories::
+Influenced by facet categories::
 * `<<width_calculator_c,width_calculator_c>>`
 * `<<charset_c,charset_c>><__CharType__>`: in two situations:
-**  when using <<alignment_formatter,alignment formatting>>
+**  when using <<alignment_format_specifier,alignment formatting>>
 **  when the character type is `char32_t` and the destination character type
     is not `char32_t`.
 
 === `bool` [[printable_bool]]
 Type:: `bool`
 
-Overridable:: Yes, `<<PrintTraits_override_tag,override_tag>>` is `bool`.
+Representative type:: `bool`
+Overridable:: Yes
+FormatSpecifier types::
+* `<<alignment_format_specifier,alignment_format_specifier>>`
 
-Formatters::
-* `<<alignment_formatter,alignment_formatter>>`
-
-Influential facet categories::
+Influenced by facet categories::
 - `<<lettercase,lettercase_c>>`
-- `<<charset_c,charset_c>><__CharType__>`: Used to encode the <<alignment_formatter,fill character>>.
+- `<<charset_c,charset_c>><__CharType__>`: Used to encode the <<alignment_format_specifier,fill character>>.
 
 === `const void*`
 Types:: `const void*`
+Representative type:: `const void*`
+Overridable:: Yes
 
-Overridable:: Yes, `<<PrintTraits_override_tag,override_tag>>` is `const void*`
+FormatSpecifier types::
+* `<<alignment_format_specifier,alignment_format_specifier>>`
 
-Formatters::
-* `<<alignment_formatter,alignment_formatter>>`
-
-Influential facet categories::
+Influenced by facet categories::
 - `<<lettercase,lettercase_c>>`
-- `<<charset_c,charset_c>><__CharType__>`: Used to encode the <<alignment_formatter,fill character>>.
+- `<<charset_c,charset_c>><__CharType__>`: Used to encode the <<alignment_format_specifier,fill character>>.
 
 === Integers
 
@@ -122,7 +105,7 @@ Types::
 `unsigned long int` and
 `unsigned long long int`
 
-Overridable:: Yes, `<<PrintTraits_override_tag,override_tag>>` is the same as the input type ( `short`,
+Representative type:: The same as the input type ( `short`,
 `int`,
 `long int`,
 `long long int`,
@@ -131,32 +114,34 @@ Overridable:: Yes, `<<PrintTraits_override_tag,override_tag>>` is the same as th
 `unsigned long int` or
 `unsigned long long int` )
 
-Formatters::
-* `<<alignment_formatter,alignment_formatter>>`
-* `<<int_formatter,int_formatter>>`
+Overridable:: No
+
+FormatSpecifier types::
+* `<<alignment_format_specifier,alignment_format_specifier>>`
+* `<<int_format_specifier,int_format_specifier>>`
 
 //-
-Influential facet categories::
+Influenced by facet categories::
 - `<<lettercase,lettercase_c>>`
 - `<<numpunct, numpunct_c>><__Base__>`
-- `<<charset_c,charset_c>><__CharType__>`: Used to encode the <<alignment_formatter,fill character>> and the <<numpunct,punctuation characters>>.
+- `<<charset_c,charset_c>><__CharType__>`: Used to encode the <<alignment_format_specifier,fill character>> and the <<numpunct,punctuation characters>>.
 
 
 === Floating Points
 Types:: `float`, `double`
+Representative type:: The same as the input type ( `float` or `double` )
+Overridable:: Yes
 
-Overridable:: Yes, `<<PrintTraits_override_tag,override_tag>>` is the same as the input type ( `float` or `double` )
-
-Formatters::
-* `<<alignment_formatter,alignment_formatter>>`
-* `<<float_formatter,float_formatter>>`
+FormatSpecifier types::
+* `<<alignment_format_specifier,alignment_format_specifier>>`
+* `<<float_format_specifier,float_format_specifier>>`
 
 //-
-Influential facet categories::
+Influenced by facet categories::
 - `<<lettercase,lettercase_c>>`
 - `<<numpunct,numpunct_c>><10>`
 - `<<numpunct,numpunct_c>><16>`
-- `<<charset_c,charset_c>><__CharType__>`: Used to encode the <<alignment_formatter,fill character>> and the <<numpunct,punctuation characters>>.
+- `<<charset_c,charset_c>><__CharType__>`: Used to encode the <<alignment_format_specifier,fill character>> and the <<numpunct,punctuation characters>>.
 
 === Ranges
 
@@ -310,7 +295,7 @@ template <typename ... Args>
 
 ==== With alignment
 
-You can apply the <<alignment_formatter,alignment format functions>>
+You can apply the <<alignment_format_specifier,alignment format functions>>
 one the return type of `join(args\...)`
 
 [source,cpp]
@@ -357,6 +342,165 @@ str = strf::to_string
     , "---" );
 assert(str == "---abc  def123....---");
 ----
+
+=== Tr-string [[tr_string]]
+
+Type:: The return type of the `tr` function template which is described further
+Overridable:: No
+Influenced by facets category:: `{tr_error_notifier_c}`
+
+==== The `tr` function template
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template <typename StringType, typename... Args>
+/{asterisk}\...{asterisk}/ tr(const StringType& str, Args&&\... args);
+
+}
+----
+
+Compile-time requirements::
+
+* `StringType` must be either:
+
+** an instance of `std::basic_string` or `std::basic_string_view` whose first
+    template paramenter ( the character type ) is the same as the output
+    character type; or
+** implicitly convertible to `std::basic_string_view<CharT>`, where `CharT`
+     is the output character type
+* All types in `std::remove_cv_t<Args>\...` must be __{Printable}__
+
+Effect:: Returns a value that is printable.
+  The content to be printed is the result of parsing `str` against the __Tr-string syntax__, as explained below.
+
+==== Tr-string Syntax
+
+[%header,cols=3*]
+|===
+|A `'{'` followed by  |until                           |means
+|`'-'`                |the next `'}'` or end of string |a comment
+|a digit              |the next `'}'` or end of string |a positional argument reference
+|another `'{'`        |the second `'{'`                |an escaped `'{'`
+|any other character  |the next `'}'` or end of string |a non positional argument reference
+|===
+
+==== Examples:
+
+.Comments
+[source,cpp]
+----
+const char* tr_string =
+"You can learn more about python{-the programming language, not the reptile} at {}";
+
+auto str = strf::to_string( strf::tr(tr_string, "www.python.org" ) );
+
+assert(str == "You can learn more about python at www.python.org");
+----
+
+.Positional arguments
+[source,cpp]
+----
+const char* tr_string = "{1 a person} likes {0 a food type}";
+auto str = strf::to_string(strf::tr(tr_string, "sandwich", "Paul"), '.');
+assert(str == "Paul likes sandwich.");
+----
+
+.Non positional arguments
+[source,cpp]
+----
+const char* tr_string = "{a person} likes {a food type}"
+auto str = strf::to_string(strf::tr(tr_string, "Paul", "sandwich"), '.');
+assert(str == "Paul likes sandwich.");
+----
+
+.Escapes
+[source,cpp]
+----
+auto str = strf::to_string(strf::tr("} {{x} {{{} {{{}}", "aaa", "bbb"));
+assert(str == "} {x} {aaa {bbb}");
+----
+
+==== Syntax error handling
+
+When the argument associated with a `"{"` does not exist, the library does two things:
+
+- It prints a https://en.wikipedia.org/wiki/Specials_(Unicode_block)#Replacement_character[replacement character `"\uFFFD"` (&#65533;) ]
+ ( or `"?"` when the charset can't represent it ) where the missing argument would be printed.
+- It calls the `<<TrErrorHandling,handle>>` function on the facet object correspoding to the `tr_error_notifier_c` category.
+
+==== Facet category `tr_error_notifier_c` [[tr_error_notifier_c]]
+
+For a type to be a facet of the `tr_error_notifier_c`, it must satisfy the
+requirements of __<<TrErrorHandling,TrErrorHandling>>__
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+struct tr_error_notifier_c {
+    static constexpr {default_tr_error_notifier} get_default() noexcept
+    {
+        return {default_tr_error_notifier}{};
+    }
+};
+
+} // namespace strf
+----
+
+==== Struct `default_tr_error_notifier` [[default_tr_error_notifier]]
+
+`default_tr_error_notifier` is the default facet of the `tr_error_notifier_c` category.
+It's a dummy error handler.
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+struct default_tr_error_notifier {
+    using category = tr_error_notifier_c;
+
+    template <typename Charset>
+    void handle
+        ( const typename Charset::{code_unit}* str
+        , std::ptrdiff_t str_len
+        , Charset charset
+        , std::ptrdiff_t err_pos ) noexcept
+    {
+    }
+};
+
+} // namespace strf
+----
+
+==== Type requirement _TrErrorHandling_ [[TrErrorHandling]]
+
+Given:
+
+- `X`, a _TrErrorHandling_ type
+- `x`, a value of type `X`
+- `CharsetT`, a _<<Charset,Charset>>_ type.
+- `charset`, a value of type `CharsetT`
+- `str`, a value of type `const CharsetT::{code_unit}*` pointing to string encoded according to `charset`
+- `str_len`, a `std::ptrdiff_t` value equal to the length of the string `str`
+- `err_pos`, a `std::ptrdiff_t` value less than or equal to `str_len`
+
+The following must host:
+
+- `X` is https://en.cppreference.com/w/cpp/named_req/CopyConstructible[__CopyConstructible__].
+- `X::category` is a type alias to `tr_error_notifier_c`
+- The following expression is supported:
+
+====
+[source,cpp]
+----
+x.handle(str, str_len, charset, err_pos)
+----
+[horizontal]
+Semantics:: `str` is a tr-string that contains an error. `err_pos` is the
+position of the `'{'` character in `str` that starts the invalid argument reference.
+====
+
 
 
 === Facets [[global_function_with]]

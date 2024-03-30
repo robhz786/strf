@@ -1,6 +1,12 @@
 
-StrfVersion = 0.15.3
+StrfVersion = 0.16.0
 StrfRev = v$(StrfVersion)
+ifdef STRF_LOCAL_DOCS
+	StrfRootLink = link:../..
+else
+	StrfRootLink = https://github.com/robhz786/strf/blob/$(StrfRev)
+endif
+
 
 all: \
     out/syntax.svg \
@@ -18,7 +24,8 @@ all: \
     out/destination_hpp.html \
     out/to_cfile_hpp.html \
     out/to_streambuf_hpp.html \
-    out/to_string_hpp.html
+    out/to_string_hpp.html \
+    out/iterator_hpp.html
 
 clean:
 	rm -rf out/
@@ -26,62 +33,70 @@ clean:
 out/ :
 	mkdir -p out
 
-out/syntax.svg : syntax.svg out/
-	cp $< $@
+out/asciidoctor-default.css : asciidoctor-default.css out/
+	cp -f $< $@
 
-out/install.html : install.adoc out/
-	asciidoctor -v --attribute=strf-version=$(StrfVersion) --attribute=strf-revision=$(StrfRev) $< -o $@
+out/my-style.css : my-style.css out/asciidoctor-default.css
+	cp -f $< $@
 
-out/tutorial.html : tutorial.adoc out/
+out/syntax.svg : syntax.svg out/my-style.css
+	cp -f $< $@
+
+out/install.html : install.adoc out/my-style.css
+	asciidoctor -v --attribute=strf-version=$(StrfVersion) --attribute=strf-src-root=$(StrfRootLink) $< -o $@
+
+out/tutorial.html : tutorial.adoc out/my-style.css
 	asciidoctor -v $< -o $@
 
-out/quick_reference.html : quick_reference.adoc ref_format_functions.adoc out/
+out/quick_reference.html : quick_reference.adoc ref_format_functions.adoc out/my-style.css
+	asciidoctor -v --attribute=strf-src-root=$(StrfRootLink) $< -o $@
+
+out/locale_hpp.html : locale_hpp.adoc out/my-style.css
 	asciidoctor -v $< -o $@
 
-out/locale_hpp.html : locale_hpp.adoc out/
-	asciidoctor -v $< -o $@
+out/howto_add_destination.html : howto_add_destination.adoc out/my-style.css
+	asciidoctor -v --attribute=strf-version=$(StrfVersion) --attribute=strf-src-root=$(StrfRootLink) $< -o $@
 
-out/howto_add_destination.html : howto_add_destination.adoc out/
-	asciidoctor -v --attribute=strf-version=$(StrfVersion) --attribute=strf-revision=$(StrfRev) $< -o $@
+out/howto_add_printable_types.html : howto_add_printable_types.adoc out/my-style.css
+	asciidoctor -v --attribute=strf-version=$(StrfVersion) --attribute=strf-src-root=$(StrfRootLink) $< -o $@
 
-out/howto_add_printable_types.html : howto_add_printable_types.adoc out/
-	asciidoctor -v --attribute=strf-version=$(StrfVersion) --attribute=strf-revision=$(StrfRev) $< -o $@
+out/howto_override_printable_types.html : howto_override_printable_types.adoc out/my-style.css
+	asciidoctor -v --attribute=strf-version=$(StrfVersion) --attribute=strf-src-root=$(StrfRootLink) $< -o $@
 
-out/howto_override_printable_types.html : howto_override_printable_types.adoc out/
-	asciidoctor -v --attribute=strf-version=$(StrfVersion) --attribute=strf-revision=$(StrfRev) $< -o $@
+out/cuda.html : cuda.adoc out/my-style.css
+	asciidoctor -v --attribute=strf-version=$(StrfVersion) --attribute=strf-src-root=$(StrfRootLink) $< -o $@
 
-out/cuda.html : cuda.adoc out/
-	asciidoctor -v --attribute=strf-version=$(StrfVersion) --attribute=strf-revision=$(StrfRev) $< -o $@
+out/versus_fmtlib.html : versus_fmtlib.adoc out/my-style.css
+	asciidoctor -v --attribute=strf-version=$(StrfVersion) --attribute=strf-src-root=$(StrfRootLink) $< -o $@
 
-out/versus_fmtlib.html : versus_fmtlib.adoc out/
-	asciidoctor -v --attribute=strf-version=$(StrfVersion) --attribute=strf-revision=$(StrfRev) $< -o $@
-
-out/why_not_std_locale.html : why_not_std_locale.adoc out/
-	asciidoctor -v $< -o $@
+out/why_not_std_locale.html : why_not_std_locale.adoc out/my-style.css
+	asciidoctor -v -a stylesheet=my-style.css $< -o $@
 
 out/strf_hpp.html : strf_hpp.adoc \
                     ref_facets_pack.adoc \
-                    ref_printer.adoc \
+                    ref_printing_syntax.adoc \
                     ref_format_functions.adoc \
                     ref_printable_types.adoc \
-                    ref_destinators.adoc \
-                    ref_tr-string.adoc \
+                    ref_printable_types_requirements.adoc \
                     ref_charset.adoc \
                     ref_width.adoc \
                     ref_numpunct.adoc \
                     ref_misc.adoc \
-                    out /
-	asciidoctor -v $< -o - | sed 's/20em/34em/g' | sed 's/td.hdlist1{/td.hdlist1{min-width:9em;/g' > $@
+                    out/my-style.css /
+	asciidoctor -v -a stylesheet=my-style.css $< -o $@
 
-out/destination_hpp.html : destination_hpp.adoc out/
-	asciidoctor -v $< -o - | sed 's/20em/34em/g' | sed 's/td.hdlist1{/td.hdlist1{min-width:9em;/g' > $@
+out/destination_hpp.html : destination_hpp.adoc out/my-style.css
+	asciidoctor -v -a stylesheet=my-style.css $< -o  $@
 
-out/to_cfile_hpp.html : to_cfile_hpp.adoc out/
-	asciidoctor -v $< -o - | sed 's/20em/34em/g' | sed 's/td.hdlist1{/td.hdlist1{min-width:9em;/g' > $@
+out/to_cfile_hpp.html : to_cfile_hpp.adoc out/my-style.css
+	asciidoctor -v -a stylesheet=my-style.css $< -o  $@
 
-out/to_streambuf_hpp.html : to_streambuf_hpp.adoc out/
-	asciidoctor -v $< -o - | sed 's/20em/34em/g' | sed 's/td.hdlist1{/td.hdlist1{min-width:9em;/g' > $@
+out/to_streambuf_hpp.html : to_streambuf_hpp.adoc out/my-style.css
+	asciidoctor -v -a stylesheet=my-style.css $< -o  $@
 
-out/to_string_hpp.html : to_string_hpp.adoc out/
-	asciidoctor -v $< -o - | sed 's/20em/34em/g' | sed 's/td.hdlist1{/td.hdlist1{min-width:9em;/g' > $@
+out/to_string_hpp.html : to_string_hpp.adoc out/my-style.css
+	asciidoctor -v -a stylesheet=my-style.css $< -o  $@
+
+out/iterator_hpp.html : iterator_hpp.adoc out/my-style.css
+	asciidoctor -v -a stylesheet=my-style.css $< -o  $@
 

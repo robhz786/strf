@@ -18,6 +18,11 @@ http://www.boost.org/LICENSE_1_0.txt)
 :text_alignment: <<alignment_format,text_alignment>>
 :showsign: <<showsign,showsign>>
 :float_notation: <<float_notation,float_notation>>
+:PrintableDef: <<strf_hpp#PrintableDef,PrintableDef>>
+:printable_def_of: <<strf_hpp#printable_def_of,printable_def_of>>
+
+:transcoding_error_notifier: <<strf_hpp#transcoding_error_notifier,transcoding_error_notifier>>
+:TranscodingErrorNotifierPtr: <<strf_hpp#TranscodingErrorNotifierPtr,TranscodingErrorNotifierPtr>>
 
 :tag: <<tag,tag>>
 
@@ -43,8 +48,19 @@ constexpr /{asterisk}...{asterisk}/ fixed {};
 constexpr /{asterisk}...{asterisk}/ sci {};
 constexpr /{asterisk}...{asterisk}/ gen {};
 constexpr /{asterisk}...{asterisk}/ multi {};
-constexpr /{asterisk}...{asterisk}/ conv {};
 constexpr /{asterisk}...{asterisk}/ sani {};
+
+template <typename T>
+constexpr /{asterisk}...{asterisk}/ transcode(T&& value);
+
+template <typename T, typename Charset>
+constexpr /{asterisk}...{asterisk}/ transcode(T&& value, Charset&& charset);
+
+template <typename T>
+constexpr /{asterisk}...{asterisk}/ unsafe_transcode(T&& value);
+
+template <typename T, typename Charset>
+constexpr /{asterisk}...{asterisk}/ unsafe_transcode(T&& value, Charset&& charset);
 
 } // inline namespace format_functions
 } // namespace strf
@@ -75,278 +91,30 @@ that work as alias to format functions
 |`fixed(_arg_, _precision_)`   |`{fmt}(_arg_).fixed().p(_precision_)`
 |`gen(_arg_, _precision_)`     |`{fmt}(_arg_).gen().p(_precision_)`
 |`multi(_arg_, _count_)`       |`{fmt}(_arg_).multi(_count_)`
-|`sani(_arg_, _charset_)`      |`{fmt}(_arg_).sani(_charset_)`
-|`conv(_arg_, _charset_)`      |`{fmt}(_arg_).conv(_charset_)`
-|`sani(_arg_)`                 |`{fmt}(_arg_).sani()`
-|`conv(_arg_)`                 |`{fmt}(_arg_).conv()`
+|`transcode(_arg_, _charset_)`        |`{fmt}(_arg_).transcode(_charset_)`
+|`transcode(_arg_)`                   |`{fmt}(_arg_).transcode()`
+|`unsafe_transcode(_arg_, _charset_)` |`{fmt}(_arg_).unsafe_transcode(_charset_)`
+|`unsafe_transcode(_arg_)`            |`{fmt}(_arg_).unsafe_transcode()`
+|`sani(_arg_, _charset_)`             |`{fmt}(_arg_).sani(_charset_)`
+|`sani(_arg_)`                        |`{fmt}(_arg_).sani()`
 |===
 
-=== Callable object `fmt` [[fmt]]
+[[FormatSpecifier]]
+=== Type requirement _FormatSpecifier_
 
-[source,cpp,subs=normal]
-----
-namespace strf {
-
-template <typename T>
-using fmt_value_type = typename {fmt_type}<T>::value_type;
-
-constexpr struct /{asterisk}...{asterisk}/ {
-    template <typename T>
-    constexpr /{asterisk}...{asterisk}/  operator()(T&& value) const;
-} fmt;
-
-} // namespace strf
-----
-
-==== Member function
-====
-[source,cpp]
-----
-constexpr /* see below...*/ operator()(T&& value) const;
-----
-
-Return value::
-* `value`, if `std::remove_cvref_t<T>` is an instance of `{value_with_formatters}`
-* `{fmt_type}<T>{ fmt_value_type<T>{ (T&&)value } }`, otherwise
-
-Return type::
-* `T&&`, if `std::remove_cvref<T>` is an instance of `value_with_formatters`
-* `{fmt_type}<T>`, otherwise
-====
-
-=== Type alias template `fmt_type` [[fmt_type]]
-
-[source,cpp,subs=normal]
-----
-namespace strf {
-
-template <typename T>
-using fmt_type = /{asterisk}...{asterisk}/;
-
-} // namespace strf
-----
-`fmt_type<T>` is:
-
-* `fmt_type<T>`, if `T` is a reference or has any cv-qualifier
-* otherwise, it is `T`, if `T` is an instance of `{value_with_formatters}`
-* otherwise, it is `{value_with_formatters}<PTraits, Fmts\...>`, where:
-** `PTraits` is `{print_traits_of}<T>`
-** `Fmts\...` is template paramenter pack used to define
-   `PTraits::<<PrintTraits_formatters,formatters>>` (
-    as a type alias to `{tag}<Fmt\...>` ).
-***  If `PTraits::formatters` is not defined, `T` is `{value_with_formatters}<PTraits>`.
-
-[[value_with_formatters]]
-=== Class template `value_with_formatters`
-[source,cpp]
-----
-namespace strf {
-
-template <typename ValueType, class... Fmts>
-class value_with_formatters;
-
-} // namespace strf
-----
-Compile-time requirements::
-- All types in `Fmt\...` satisfy <<Formatter,Formatter>>.
-- All types in `Fmt\...` are different.
-
-==== Synopsis
-[source,cpp,subs=normal]
-----
-namespace strf {
-
-template <typename PrintTraits, class\... Fmts>
-class value_with_formatters
-    : public Fmts::template fn<value_with_formatters<ValueType, Fmts\...>>\...
-{
-public:
-    using traits = PrintTraits;
-    using value_type = typename PrintTraits::forwarded_type;
-
-    constexpr explicit <<value_with_formatters_v,value_with_formatters>>(const value_type& v);
-
-    template <typename\... OtherFmts>
-    constexpr explicit <<value_with_formatters_vwf2,value_with_formatters>>
-        ( const value_with_formatters<PrintTraits, OtherFmts\...>& f );
-
-    template <typename\... OtherFmts>
-    constexpr explicit <<value_with_formatters_vwf2_rr,value_with_formatters>>
-        ( value_with_formatters<PrintTraits, OtherFmts\...>&& f );
-
-    template <typename OtherPrintTraits>
-    constexpr <<value_with_formatters_v_v2wf,value_with_formatters>>
-        ( const value_type& v
-        , const value_with_formatters<OtherPrintTraits, Fmts\...>& f );
-
-    template <typename OtherPrintTraits>
-    constexpr <<value_with_formatters_v_v2wf_rr,value_with_formatters>>
-        ( const value_type& v
-        , value_with_formatters<OtherPrintTraits, Fmts\...>&& f );
-
-    template <typename\... F, typename\... FInit>
-    constexpr <<value_with_formatters_v_t_i,value_with_formatters>>
-        ( const value_type& v
-        , {tag}<F\...>
-        , FInit&&\... finit );
-
-    template <typename Fmt, typename FmtInit, typename\... OtherFmts>
-    constexpr <<value_with_formatters_vwf2_t_i,value_with_formatters>>
-        ( const value_with_formatters<PrintTraits, OtherFmts\...>& f
-        , {tag}<Fmt>
-        , FmtInit&& fmt_init );
-
-    constexpr const value_type& value() const;
-
-    constexpr value_type& value();
-
-private:
-
-    value_type value_; // exposition only
-};
-
-} // namespace strf
-----
-
-[[value_with_formatters_v]]
-====
-[source,cpp,subs=normal]
-----
-constexpr value_with_formatters(const value_type& v);
-----
-Effects::
-* Initializes `value_` with `v`
-* Default initializes all public base class subobjects
-====
-
-[[value_with_formatters_vwf2]]
-====
-[source,cpp,subs=normal]
-----
-template <typename\... OtherFmts>
-constexpr explicit value_with_formatters
-    ( const value_with_formatters<PrintTraits, OtherFmts\...>& f );
-----
-Effects::
-* Initializes `value_` with `f.value()`
-* Initializes each public base class subobjects with the corresponding base class subobject of `f`
-====
-
-[[value_with_formatters_vwf2_rr]]
-====
-[source,cpp,subs=normal]
-----
-template <typename\... OtherFmts>
-constexpr explicit value_with_formatters
-    ( value_with_formatters<PrintTraits, OtherFmts\...>&& f );
-----
-Effects::
-* Initializes `value_` with `static_cast<value_type&&>(f.value())`
-* Initializes each public base class subobjects `b` with `std::move(bf)`, where `bf`
-  is the base class subobjects in `f` that corresponds to `b`
-====
-
-[[value_with_formatters_v_v2wf]]
-====
-[source,cpp,subs=normal]
-----
-template <typename OtherPrintTraits>
-constexpr value_with_formatters
-    ( const value_type& v
-    , const value_with_formatters<OtherPrintTraits, Fmts\...>& f );
-----
-Effects::
-* Initializes `value_` with `v`
-* Initializes each public base class subobjects with the corresponding base class subobject of `f`
-====
-
-[[value_with_formatters_v_v2wf_rr]]
-====
-[source,cpp,subs=normal]
-----
-template <typename OtherPrintTraits>
-constexpr value_with_formatters
-    ( const value_type& v
-    , value_with_formatters<OtherPrintTraits, Fmts\...>&& f );
-----
-Effects::
-* Initializes `value_` with `v`
-* Initializes each public base class subobjects `b` with `std::move(bf)`, where `bf`
-  is the base class subobjects in `f` that corresponds to `b`
-====
-
-[[value_with_formatters_v_t_i]]
-====
-[source,cpp,subs=normal]
-----
-template <typename\... F, typename\... FInit>
-constexpr value_with_formatters
-    ( const value_type& v
-    , {tag}<F\...>
-    , FInit&&\... finit );
-----
-Compile-time requirements::
-* `sizeof\...(F) == sizeof\...(FInit)`
-* There is no repeated type in `F\...`
-* All types in `F\...` are also in `Fmts\...`
-
-Effects::
-* Initializes `value_` with `v`
-* For each type in `F\...`, initializes the corresponding public base class subobjects
-  with the corresponging value in `std::forward<FInit>(finit)\...`
-* Default initializes the remaining public base class subobjects
-
-====
-
-[[value_with_formatters_vwf2_t_i]]
-====
-[source,cpp,subs=normal]
-----
-template <typename Fmt, typename FmtInit, typename\... OtherFmts>
-constexpr value_with_formatters
-    ( const value_with_formatters<PrintTraits, OtherFmts\...>& f
-    , {tag}<Fmt>
-    , FmtInit&& fmt_init );
-----
-Compile-time requirements::
-* `Fmt` is one the types in `Fmts\...`
-
-Effects::
-* Initializes `value_` with `f.value()`
-* Initializes the public base class subobject that corresponds to `Fmt`
-  with `std::forward<FmtInit>(fmt_init)`
-* Initializes the other public base class subobjects with the corresponding
-  base class subobject of `f`
-====
-
-
-[[value_with_formatters_value]]
-====
-[source,cpp,subs=normal]
-----
-constexpr const value_type& value() const;
-constexpr value_type& value();
-----
-Return `value_`
-====
-
-
-[[Formatter]]
-=== Type requirement _Formatter_
-
-// This is the requirement for a type to be a paramenter of the `value_with_formatters`
+// This is the requirement for a type to be a paramenter of the `value_and_format`
 // template.
-A type `Fmt` is a _Formatter_ if it has a member `fn` that is a type template
+A type `Fmt` is a _FormatSpecifier_ if it has a member `fn` that is a type template
 with one template type parameter such that, given any types `T` and `U`:
 
-- `Fmt::template fn<T>` is well-formed if `T` is `value_with_formatters<ValueType, Fmts\...>`.
+- `Fmt::template fn<T>` is well-formed if `T` is `value_and_format<ValueType, Fmts\...>`.
   In this case, note that `Fmt` is in `Fmts\...` and `T` derives from `Fmt::template fn<T>`.
 - `Fmt::template fn<T>` is default constructible, assuming it is well-formed.
 - `Fmt::template fn<T>` can be constructed from `const Fmt::template fn<U>&`,
   if both are well-formed.
 
 // Although it is not a compile-time requirement, it only makes sense to use a type `Fmt`
-// in `value_with_formatters` if `Fmt::template fn<T>` contains any __format function__.
+// in `value_and_format` if `Fmt::template fn<T>` contains any __format function__.
 // These are member functions and they are of two kinds. In the first one, the return type
 // is `T`, `T&` or `T&&` depending of
 //
@@ -382,10 +150,10 @@ with one template type parameter such that, given any types `T` and `U`:
 // };
 // ----
 
-[[alignment_formatter]]
-=== _Formatter_ `alignment_formatter`
+[[alignment_format_specifier]]
+=== _FormatSpecifier_ `alignment_format_specifier`
 
-The _Formatter_ defines the following format functions:
+The _FormatSpecifier_ defines the following format functions:
 
 // tag::alignment_format_functions[]
 
@@ -409,6 +177,9 @@ The _Formatter_ defines the following format functions:
 | Set all alignment formatting options simultaneously.
 
 |`set_alignment_format(<<strf_hpp#default_alignment_format,default_alignment_format>>)`
+| Set all alignment formatting options to default.
+
+|`clear_alignment_format()`
 | Set all alignment formatting options to default.
 
 //  It accepts only one argument, whose type can be any of those
@@ -478,10 +249,10 @@ struct default_alignment_format {
 } // namespace strf
 ----
 
-[[int_formatter]]
-=== _Formatter_ `int_formatter`
+[[int_format_specifier]]
+=== _FormatSpecifier_ `int_format_specifier`
 
-This _Formatter_ defines the following format functions:
+This _FormatSpecifier_ defines the following format functions:
 
 // tag::int_format_functions[]
 [%header,cols="382,618",grid=rows]
@@ -519,13 +290,13 @@ This _Formatter_ defines the following format functions:
 | `operator!()`
 | Equivalent to `punct()`
 
-| [[int_pad0]] `pad0(unsigned w)`
+| [[int_pad0]] `pad0(int w)`
 | Inserts zeros after the sign or base indication and before the digits
   such that at least `w` characters are printed
   ( not counting the fill characters caused by alignment formatting,
    but still counting the extra fill character caused by `fill_sign()` ).
 
-| [[int_precision]] `p(unsigned precision)`
+| [[int_precision]] `p(int precision)`
 | Inserts zeros after the sign or base indication and before the digits
   such that at least `precision` digits are printed
 
@@ -565,8 +336,8 @@ The following must hold:
 |===
 | Member        | Type             | Semantics / effect
 | `f.base`      | `int`            | Numeric base ( must be euqal to `2`, `8`, `10` or `16` )
-| `f.precision` | `unsigned`       | See `<<int_precision,p>>` format function.
-| `f.pad0wdith` | `unsigned`       | See `<<int_pad0,pad0>>` format function.
+| `f.precision` | `int`            | See `<<int_precision,p>>` format function.
+| `f.pad0wdith` | `int`            | See `<<int_pad0,pad0>>` format function.
 | `f.sign`      | `showsign`       | See enumeration `{showsign}`
 | `f.showbase`  | `bool`           | Equivalent to the `'#'` format flag in printf
 | `f.punctuate` | `bool`           | Activates numeric punctuation.
@@ -580,8 +351,8 @@ namespace strf {
 
 struct int_format {
     int base = 10;
-    unsigned precision = 0;
-    unsigned pad0width = 0;
+    int precision = 0;
+    int pad0width = 0;
     showsign sign = <<showsign,showsign>>::negative_only;
     bool showbase = false;
 };
@@ -598,13 +369,13 @@ namespace strf {
 
 struct default_int_format {
     constexpr static int base = 10;
-    constexpr static unsigned precision = 0;
-    constexpr static unsigned pad0width = 0;
+    constexpr static int precision = 0;
+    constexpr static int pad0width = 0;
     constexpr static strf::showsign sign = strf::showsign::negative_only;
     constexpr static bool showbase = false;
     constexpr static bool punctuate = false;
 
-    constexpr STRF_HD operator <<int_format,int_format>> () const
+    constexpr operator <<int_format,int_format>> () const
     {
         return {};
     }
@@ -636,10 +407,10 @@ enum class showsign {
            ( from alignment formatting ).
 
 
-[[float_formatter]]
-=== _Formatter_ `float_formatter`
+[[float_format_specifier]]
+=== _FormatSpecifier_ `float_format_specifier`
 
-The `float_formatter` _Formatter_ defines the following format functions:
+The `float_format_specifier` _FormatSpecifier_ defines the following format functions:
 
 // tag::float_format_functions[]
 
@@ -666,7 +437,7 @@ The `float_formatter` _Formatter_ defines the following format functions:
 | `operator!()`
 | Equivalent to `punct()`
 
-|[[float_pad0]] `pad0(unsigned w)`
+|[[float_pad0]] `pad0(int w)`
 | Similar to the `'0'` format flag in `printf`:
 
 For NaN and infinity, causes the the width ( from alignment
@@ -677,7 +448,7 @@ indication and before the digits such that at least `w` characters
 are printed ( not counting the fill characters caused by alignment formatting,
 but still counting the extra fill character caused by `fill_sign()` ).
 
-|`p(unsigned precision)`
+|`p(int precision)`
 | Sets the precision. Effect varies according to the notation ( see below ).
 
 
@@ -771,13 +542,13 @@ The following must hold:
 
 [%header,cols="191,191,618"]
 |===
-| Member      | Type             | Semantics / effect
-| `f.precision` | `unsigned`       | Floating-point precision. When it is equal to `(unsigned)-1`, then precision is considered as not specified, which means that the number or significant digits is such that the value can be fully recovered by a parser. Otherwise, the effect depends on `notation`.
-| `f.pad0wdith` | `unsigned`       | Same as of format function `<<float_pad0,pad0>>`
+| Member        | Type               | Semantics / effect
+| `f.precision` | `int`              | Floating-point precision. When negative, then precision is considered as not specified, which means that the number or significant digits is such that the value can be fully recovered by a parser. Otherwise, the effect depends on `notation`.
+| `f.pad0wdith` | `int`              | Same as of format function `<<float_pad0,pad0>>`
 | `f.notation`  | `{float_notation}` | See enumeration `{float_notation}`
-| `f.sign`      | `showsign`       | See enumeration `{showsign}`
-| `f.showpoint` | `bool`           | Equivalent to the `'#'` format flag in printf
-| `f.punctuate` | `bool`           | Activates numeric punctuation.
+| `f.sign`      | `showsign`         | See enumeration `{showsign}`
+| `f.showpoint` | `bool`             | Equivalent to the `'#'` format flag in printf
+| `f.punctuate` | `bool`             | Activates numeric punctuation.
 |===
 
 ==== Struct template `float_format` [[float_format]]
@@ -790,8 +561,8 @@ enum class float_notation {fixed, scientific, general, hex};
 
 struct float_format
 {
-    unsigned precision = (unsigned)-1;
-    unsigned pad0width = 0;
+    int precision = -1;
+    int pad0width = 0;
     float_notation notation = float_notation::general
     {showsign} sign = showsign::negative_only;
     bool showpoint = false;
@@ -807,8 +578,8 @@ namespace strf {
 
 struct default_float_format
 {
-    constexpr static unsigned precision = (unsigned)-1;
-    constexpr static unsigned pad0width = 0;
+    constexpr static int precision = -1;
+    constexpr static int pad0width = 0;
     constexpr static {float_notation} notation = {float_notation}::general;
     constexpr static {showsign} sign = {showsign}::negative_only;
     constexpr static bool showpoint = false;
@@ -820,25 +591,394 @@ struct default_float_format
 
 ----
 
-[[quantity_formatter]]
-=== _Formatter_ `quantity_formatter`
+[[quantity_format_specifier]]
+=== _FormatSpecifier_ `quantity_format_specifier`
 
-The `quantity_formatter` _Formatter_ defines the following format functions:
+The `quantity_format_specifier` _FormatSpecifier_ defines the following format functions:
 
 [%header,cols="382,618",grid=rows]
 |===
 | Member function | Effect
-|`multi(std::size_t count)`
+|`multi(std::integral auto count)`
 | Causes the content to be printed `count` consecutives times
 |===
 
-And the following observer:
+And the following observers:
 
-[%header,cols="382,618",grid=rows]
+[%header,grid=rows]
 |===
-| Observer  | Return type
+| Observer  | Return type | Return value
 
 | `count()`
 | `std::size_t`
+|
+
+| `scount()`
+| `std::ptrdiff_t`
+| `(std::ptrdiff_t) count()`
 |===
 
+[[string_precision_format_function]]
+=== String precision
+
+( The _FormatSpecifier_ that defines the function below is implementation-defined )
+
+`p(<<strf_hpp#width_t,width_t>> limit)`:::
+   Prints the whole string only if its width is not greater than `limit`.
+   Otherwise, prints its longest leading sub-string whose width
+   is not greater than `limit`.
+////
+   +
+   Note: the way the width of the string is calculated can be customized
+   with the {width_calculation_c} facet category.
+   The default method is {std_width_calc}, which takes into account
+   grapheme clustering
+////
+
+
+[[transcoding_format_functions]]
+=== Transcoding format functions
+
+( The _FormatSpecifier_ that defines the functions below is implementation-defined )
+
+====
+----
+template <typename Charset>
+transcode(Charset cs)
+----
+Transcodes the input string if `cs` is different from the
+output charset, otherwise just copies it as in `memcpy`.
+( The output charset is defined by the facet value
+of the `{charset_c}<CharOut>` facet category,
+where `CharOut` is the destination character type )
+====
+
+====
+----
+template <typename Charset>
+unsafe_transcode(Charset cs)
+----
+Same as in `trancode(cs)`, except that the behaviour is
+undefined if the input string is not fully conformant
+to the encoding represent by `cs`,
+but it provides a better performance.
+====
+
+====
+----
+template <typename Charset>
+sani(Charset cs)
+----
+If `cs` is different from the ouput charset, transcodes the
+input string just like in `transcode`. If they
+are the same, sanitizes the input string.
+That is, in both cases, any non-conformity to the input charset
+is replaced by the replacement character ( `"\uFFFD"` or `'?'` ),
+and causes the function
+`{transcoding_error_notifier}::invalid_sequence`
+to be called, if the __{TranscodingErrorNotifierPtr}__
+facet object is not null.
+====
+
+====
+----
+transcode()
+----
+Equivalent to `transcode(cs)` where `cs` is the facet value
+for the `charset_c<CharIn>` facet category, where `CharIn`
+is the character type of the input string.
+====
+
+====
+----
+unsafe_transcode()
+----
+Equivalent to `unsafe_transcode(cs)` where `cs` is the facet value
+for the `charset_c<CharIn>` facet category, where `CharIn`
+is the character type of the input string.
+====
+
+====
+----
+sani()
+----
+Equivalent to `sani(cs)` where `cs` is the facet value
+for the `charset_c<CharIn>` facet category, where `CharIn`
+is the character type of the input string.
+====
+
+
+.Example
+[source,cpp]
+----
+auto str = strf::to_string(strf::center(u" Hello! ", 16, '*').transcode());
+assert(str == "**** Hello! ****");
+----
+
+
+=== Callable object `fmt` [[fmt]]
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template <typename T>
+using fmt_value_type = typename {fmt_type}<T>::value_type;
+
+constexpr struct /{asterisk}...{asterisk}/ {
+    template <typename T>
+    constexpr /{asterisk}...{asterisk}/  operator()(T&& value) const;
+} fmt;
+
+} // namespace strf
+----
+
+==== Member function
+====
+[source,cpp]
+----
+constexpr /* see below...*/ operator()(T&& value) const;
+----
+
+Return value::
+* `value`, if `std::remove_cvref_t<T>` is an instance of `{value_and_format}`
+* `{fmt_type}<T>{ fmt_value_type<T>{ (T&&)value } }`, otherwise
+
+Return type::
+* `T&&`, if `std::remove_cvref<T>` is an instance of `value_and_format`
+* `{fmt_type}<T>`, otherwise
+====
+
+=== Type alias template `fmt_type` [[fmt_type]]
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template <typename T>
+using fmt_type = /{asterisk}...{asterisk}/;
+
+} // namespace strf
+----
+`fmt_type<T>` is:
+
+* `fmt_type<T>`, if `T` is a reference or has any cv-qualifier
+* otherwise, it is `T`, if `T` is an instance of `{value_and_format}`
+* otherwise, it is `{value_and_format}<PrintableDef, Fmts\...>`, where:
+** `PDef` is `{printable_def_of}<T>`
+** `Fmts\...` is template paramenter pack used to define
+   `PrintableDef::<<PrintableDef_format_specifiers,format_specifiers>>` (
+    as a type alias to `{tag}<Fmt\...>` ).
+***  If `PrintableDef::format_specifiers` is not defined, `T` is `{value_and_format}<PrintableDef>`.
+
+[[value_and_format]]
+=== Class template `value_and_format`
+[source,cpp]
+----
+namespace strf {
+
+template <typename PrintableDef, class... Fmts>
+class value_and_format;
+
+} // namespace strf
+----
+Compile-time requirements::
+- `PrintableDef` satisfies __{PrintableDef}__.
+- All types in `Fmt\...` satisfy __<<FormatSpecifier,FormatSpecifier>>__.
+- All types in `Fmt\...` are different.
+
+==== Synopsis
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template <typename PrintableDef, class\... Fmts>
+class value_and_format
+    : public Fmts::template fn<value_and_format<ValueType, Fmts\...>>\...
+{
+public:
+    using printable_def = PrintableDef;
+    using value_type = typename PrintableDef::forwarded_type;
+
+    constexpr explicit <<value_and_format_v,value_and_format>>(const value_type& v);
+
+    template <typename\... OtherFmts>
+    constexpr explicit <<value_and_format_vaf2,value_and_format>>
+        ( const value_and_format<PrintableDef, OtherFmts\...>& f );
+
+    template <typename\... OtherFmts>
+    constexpr explicit <<value_and_format_vaf2_rr,value_and_format>>
+        ( value_and_format<PrintableDef, OtherFmts\...>&& f );
+
+    template <typename OtherPrintableDef>
+    constexpr <<value_and_format_v_v2wf,value_and_format>>
+        ( const value_type& v
+        , const value_and_format<OtherPrintableDef, Fmts\...>& f );
+
+    template <typename OtherPrintableDef>
+    constexpr <<value_and_format_v_v2wf_rr,value_and_format>>
+        ( const value_type& v
+        , value_and_format<OtherPrintableDef, Fmts\...>&& f );
+
+    template <typename\... F, typename\... FInit>
+    constexpr <<value_and_format_v_t_i,value_and_format>>
+        ( const value_type& v
+        , {tag}<F\...>
+        , FInit&&\... finit );
+
+    template
+        < typename OtherPrintableDef
+        , typename\... OtherFmts
+        , typename Fmt
+        , typename\... FmtInitArgs >
+    constexpr <<value_and_format_vaf2_t_i,value_and_format>>
+        ( const value_and_format<PrintableDef, OtherFmts\...>& other
+        , {tag}<Fmt>
+        , FmtInitArgs&&\... fmt_init );
+
+    constexpr const value_type& value() const;
+
+    constexpr value_type& value();
+
+private:
+
+    value_type value_; // exposition only
+};
+
+} // namespace strf
+----
+
+[[value_and_format_v]]
+====
+[source,cpp,subs=normal]
+----
+constexpr value_and_format(const value_type& v);
+----
+Effects::
+* Initializes `value_` with `v`
+* Default initializes all public base class subobjects
+====
+
+[[value_and_format_vaf2]]
+====
+[source,cpp,subs=normal]
+----
+template <typename\... OtherFmts>
+constexpr explicit value_and_format
+    ( const value_and_format<PrintableDef, OtherFmts\...>& f );
+----
+Effects::
+* Initializes `value_` with `f.value()`
+* Initializes each public base class subobjects with the corresponding base class subobject of `f`
+====
+
+[[value_and_format_vaf2_rr]]
+====
+[source,cpp,subs=normal]
+----
+template <typename\... OtherFmts>
+constexpr explicit value_and_format
+    ( value_and_format<PrintableDef, OtherFmts\...>&& f );
+----
+Effects::
+* Initializes `value_` with `static_cast<value_type&&>(f.value())`
+* Initializes each public base class subobjects `b` with `std::move(bf)`, where `bf`
+  is the base class subobjects in `f` that corresponds to `b`
+====
+
+[[value_and_format_v_v2wf]]
+====
+[source,cpp,subs=normal]
+----
+template <typename OtherPrintableDef>
+constexpr value_and_format
+    ( const value_type& v
+    , const value_and_format<OtherPrintableDef, Fmts\...>& f );
+----
+Effects::
+* Initializes `value_` with `v`
+* Initializes each public base class subobjects with the corresponding base class subobject of `f`
+====
+
+[[value_and_format_v_v2wf_rr]]
+====
+[source,cpp,subs=normal]
+----
+template <typename OtherPrintableDef>
+constexpr value_and_format
+    ( const value_type& v
+    , value_and_format<OtherPrintableDef, Fmts\...>&& f );
+----
+Effects::
+* Initializes `value_` with `v`
+* Initializes each public base class subobjects `b` with `std::move(bf)`, where `bf`
+  is the base class subobjects in `f` that corresponds to `b`
+====
+
+[[value_and_format_v_t_i]]
+====
+[source,cpp,subs=normal]
+----
+template <typename\... F, typename\... FInit>
+constexpr value_and_format
+    ( const value_type& v
+    , {tag}<F\...>
+    , FInit&&\... finit );
+----
+Compile-time requirements::
+* `sizeof\...(F) == sizeof\...(FInit)`
+* There is no repeated type in `F\...`
+* All types in `F\...` are also in `Fmts\...`
+
+Effects::
+* Initializes `value_` with `v`
+* For each type in `F\...`, initializes the corresponding public base class subobjects
+  with the corresponging value in `std::forward<FInit>(finit)\...`
+* Default initializes the remaining public base class subobjects
+
+====
+
+[[value_and_format_vaf2_t_i]]
+====
+[source,cpp,subs=normal]
+----
+template
+    < typename OtherPrintableDef
+    , typename\... OtherFmts
+    , typename Fmt
+    , typename\... FmtInitArgs >
+template <typename Fmt, typename FmtInit, typename\... OtherFmts>
+constexpr value_and_format
+    ( const value_and_format<PrintableDef, OtherFmts\...>& other
+    , {tag}<Fmt>
+    , FmtInitArgs&&\... args );
+
+----
+Compile-time requirements::
+* `Fmt` is one the types in `Fmts\...`
+* `sizeof\...(OtherFmts) == sizeof\...(Fmts)` is true
+* `value_type` must be constructible from `object.value()`
+* Each public base class of this type, except the one that corresponds to `Fmt`,
+  must be constructible from a const lvalue reference of the corresponding
+  base sub-object of `other` ( the type first in `Fmts...` corresponds to the first
+  in `OtherFmt..., the second to the second and so on ).
+* `Fmt` must be contructible from `FmtInitArgs&&\...`
+
+Effects::
+* Initializes `value_` with `other.value()`
+* Initializes the public base class subobject that corresponds to `Fmt`
+  with `std::forward<FmtInitArgs>(args)\...`
+* Initializes the other public base class subobjects with the corresponding
+  base class subobject of `other`
+====
+
+
+[[value_and_format_value]]
+====
+[source,cpp,subs=normal]
+----
+constexpr const value_type& value() const;
+constexpr value_type& value();
+----
+Returns `value_`
+====

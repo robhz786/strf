@@ -1,3 +1,6 @@
+#ifndef STRF_DETAIL_DRAGONBOX_HPP
+#define STRF_DETAIL_DRAGONBOX_HPP
+
 // Copyright 2020-2021 Junekey Jeon
 //
 // The contents of this file may be used under the terms of
@@ -15,9 +18,6 @@
 // is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
 // KIND, either express or implied.
 
-
-#ifndef JKJ_DRAGONBOX
-#define JKJ_DRAGONBOX
 
 #include <strf/detail/standard_lib_functions.hpp>
 
@@ -65,7 +65,7 @@ namespace dragonbox {
 			static_assert(std::is_unsigned<T>::value, "");
 			return std::numeric_limits<T>::digits;
 		}
-	}
+	}  // namespace detail
 
 	// These classes expose encoding specs of IEEE-754-like floating-point formats.
 	// Currently available formats are IEEE754-binary32 & IEEE754-binary64.
@@ -214,7 +214,7 @@ namespace dragonbox {
 		// }
 		STRF_HD static constexpr bool is_finite(unsigned int exponent_bits) noexcept {
 			//constexpr unsigned int exponent_bits_all_set = (1u << format::exponent_bits) - 1;
-			return exponent_bits != ((1u << format::exponent_bits) - 1);
+			return exponent_bits != ((1U << format::exponent_bits) - 1);
 		}
 		// STRF_HD static constexpr bool has_all_zero_significand_bits(signed_significand s) noexcept {
 		// 	return (s << 1) == 0;
@@ -373,13 +373,17 @@ namespace dragonbox {
 				}
 #elif defined(__GNUC__) || defined(__clang__)
 #define JKJ_HAS_COUNTR_ZERO_INTRINSIC 1
+                //NOLINTNEXTLINE(google-runtime-int)
 				static_assert( std::is_same<UInt, unsigned long>::value
-					|| std::is_same<UInt, unsigned long long>::value
+                    //NOLINTNEXTLINE(google-runtime-int)
+                    || std::is_same<UInt, unsigned long long>::value
 					|| sizeof(UInt) <= sizeof(unsigned int), "" );
-				JKJ_IF_CONSTEXPR (std::is_same<UInt, unsigned long>::value) {
+				//NOLINTNEXTLINE(google-runtime-int)
+                JKJ_IF_CONSTEXPR (std::is_same<UInt, unsigned long>::value) {
 					return __builtin_ctzl(n);
 				}
-				else JKJ_IF_CONSTEXPR (std::is_same<UInt, unsigned long long>::value) {
+				//NOLINTNEXTLINE(google-runtime-int)
+                else JKJ_IF_CONSTEXPR (std::is_same<UInt, unsigned long long>::value) {
 					return __builtin_ctzll(n);
 				}
 				else {
@@ -453,7 +457,7 @@ namespace dragonbox {
 				return count;
 #endif
 			}
-		}
+		}  // namespace bits
 
 		////////////////////////////////////////////////////////////////////////////////////////
 		// Utilities for wide unsigned integer arithmetic.
@@ -614,7 +618,7 @@ namespace dragonbox {
 			STRF_HD inline std::uint64_t umul96_lower64(std::uint32_t x, std::uint64_t y) noexcept {
 				return x * y;
 			}
-		}
+		}  // namespace wuint
 
 		////////////////////////////////////////////////////////////////////////////////////////
 		// Some simple utilities for constexpr computation.
@@ -759,7 +763,7 @@ namespace dragonbox {
 					floor_log10_pow2_minus_log10_4_over_3_input_limit,
 					0, log10_4_over_3_fractional_digits>(e);
 			}
-		}
+		}  // namespace log
 
 		////////////////////////////////////////////////////////////////////////////////////////
 		// Utilities for fast divisibility tests.
@@ -775,9 +779,9 @@ namespace dragonbox {
 				STRF_HD static inline std::uint32_t mod_inv(std::size_t x) noexcept {
 					STRF_ASSERT(x < table_size);
 					static constexpr std::uint32_t table[table_size] = {
-						0x1ul, 0xcccccccdul, 0xc28f5c29ul, 0x26e978d5ul, 0x3afb7e91ul,
-						0xbcbe61dul, 0x68c26139ul, 0xae8d46a5ul,
-						0x22e90e21ul, 0x3a2e9c6dul, 0x3ed61f49ul
+						0x1UL, 0xcccccccdUL, 0xc28f5c29UL, 0x26e978d5UL, 0x3afb7e91UL,
+						0xbcbe61dUL, 0x68c26139UL, 0xae8d46a5UL,
+						0x22e90e21UL, 0x3a2e9c6dUL, 0x3ed61f49UL
 					};
 					return table[x];
 				}
@@ -785,8 +789,8 @@ namespace dragonbox {
 				STRF_HD static inline std::uint32_t max_quotients(std::size_t x) noexcept {
 					STRF_ASSERT(x < table_size);
 					static constexpr std::uint32_t  table[table_size] = {
-						0xfffffffful, 0x33333333ul, 0xa3d70a3ul, 0x20c49baul, 0x68db8bul,
-						0x14f8b5ul, 0x431bdul, 0xd6bful, 0x2af3ul, 0x897ul, 0x1b7ul
+						0xffffffffUL, 0x33333333UL, 0xa3d70a3UL, 0x20c49baUL, 0x68db8bUL,
+						0x14f8b5UL, 0x431bdUL, 0xd6bfUL, 0x2af3UL, 0x897UL, 0x1b7UL
 					};
 					return table[x];
 				}
@@ -799,14 +803,14 @@ namespace dragonbox {
 				STRF_HD static inline std::uint64_t mod_inv(std::size_t x) noexcept {
 					STRF_ASSERT(x < table_size);
 					static constexpr std::uint64_t table[table_size] = {
-						0x1ull, 0xcccccccccccccccdull, 0x8f5c28f5c28f5c29ull,
-						0x1cac083126e978d5ull, 0xd288ce703afb7e91ull, 0x5d4e8fb00bcbe61dull,
-						0x790fb65668c26139ull, 0xe5032477ae8d46a5ull, 0xc767074b22e90e21ull,
-						0x8e47ce423a2e9c6dull, 0x4fa7f60d3ed61f49ull, 0xfee64690c913975ull,
-						0x3662e0e1cf503eb1ull, 0xa47a2cf9f6433fbdull, 0x54186f653140a659ull,
-						0x7738164770402145ull, 0xe4a4d1417cd9a041ull, 0xc75429d9e5c5200dull,
-						0xc1773b91fac10669ull, 0x26b172506559ce15ull, 0xd489e3a9addec2d1ull,
-						0x90e860bb892c8d5dull, 0x502e79bf1b6f4f79ull, 0xdcd618596be30fe5ull
+						0x1ULL, 0xcccccccccccccccdULL, 0x8f5c28f5c28f5c29ULL,
+						0x1cac083126e978d5ULL, 0xd288ce703afb7e91ULL, 0x5d4e8fb00bcbe61dULL,
+						0x790fb65668c26139ULL, 0xe5032477ae8d46a5ULL, 0xc767074b22e90e21ULL,
+						0x8e47ce423a2e9c6dULL, 0x4fa7f60d3ed61f49ULL, 0xfee64690c913975ULL,
+						0x3662e0e1cf503eb1ULL, 0xa47a2cf9f6433fbdULL, 0x54186f653140a659ULL,
+						0x7738164770402145ULL, 0xe4a4d1417cd9a041ULL, 0xc75429d9e5c5200dULL,
+						0xc1773b91fac10669ULL, 0x26b172506559ce15ULL, 0xd489e3a9addec2d1ULL,
+						0x90e860bb892c8d5dULL, 0x502e79bf1b6f4f79ULL, 0xdcd618596be30fe5ULL
 					};
 					return table[x];
 				}
@@ -814,12 +818,12 @@ namespace dragonbox {
 				STRF_HD static inline std::uint64_t max_quotients(std::size_t x) noexcept {
 					STRF_ASSERT(x < table_size);
 					static constexpr std::uint64_t table[table_size] = {
-						0xffffffffffffffffull, 0x3333333333333333ull, 0xa3d70a3d70a3d70ull,
-						0x20c49ba5e353f7cull, 0x68db8bac710cb2ull, 0x14f8b588e368f0ull,
-						0x431bde82d7b63ull, 0xd6bf94d5e57aull, 0x2af31dc46118ull,
-						0x89705f4136bull, 0x1b7cdfd9d7bull, 0x57f5ff85e5ull, 0x119799812dull,
-						0x384b84d09ull, 0xb424dc35ull, 0x24075f3dull, 0x734aca5ull, 0x170ef54ull,
-						0x49c977ull, 0xec1e4ull, 0x2f394ull, 0x971dull, 0x1e39ull, 0x60bull
+						0xffffffffffffffffULL, 0x3333333333333333ULL, 0xa3d70a3d70a3d70ULL,
+						0x20c49ba5e353f7cULL, 0x68db8bac710cb2ULL, 0x14f8b588e368f0ULL,
+						0x431bde82d7b63ULL, 0xd6bf94d5e57aULL, 0x2af31dc46118ULL,
+						0x89705f4136bULL, 0x1b7cdfd9d7bULL, 0x57f5ff85e5ULL, 0x119799812dULL,
+						0x384b84d09ULL, 0xb424dc35ULL, 0x24075f3dULL, 0x734aca5ULL, 0x170ef54ULL,
+						0x49c977ULL, 0xec1e4ULL, 0x2f394ULL, 0x971dULL, 0x1e39ULL, 0x60bULL
 					};
 					return table[x];
 				}
@@ -835,7 +839,7 @@ namespace dragonbox {
 			}
 
 			template <class UInt>
-			STRF_HD STRF_CONSTEXPR_IN_CXX14 bool divisible_by_power_of_2(UInt x, unsigned int exp) noexcept {
+			STRF_HD STRF_CONSTEXPR_IN_CXX14 bool divisible_by_power_of_2(UInt x, int exp) noexcept {
 				STRF_ASSERT(exp >= 1);
 				STRF_ASSERT(x != 0);
 #if JKJ_HAS_COUNTR_ZERO_INTRINSIC
@@ -945,8 +949,8 @@ namespace dragonbox {
 					max_pow2 + (log::floor_log2_pow10(N + max_pow5) - (N + max_pow5)) < 70) >;
 				return divide_by_pow10_<N>(c{}, n);
 			}
-		}
-	}
+		}  // namespace div
+	}  // namespace detail
 
 	////////////////////////////////////////////////////////////////////////////////////////
 	// Return types for the main interface function.
@@ -1767,12 +1771,12 @@ namespace dragonbox {
 
 			STRF_HD static inline std::uint64_t pow5(std::size_t idx) noexcept {
 				static const std::uint64_t table[compression_ratio] = {
-					1ull, 5ull, 25ull, 125ull, 625ull, 3125ull, 15625ull, 78125ull,
-					390625ull, 1953125ull, 9765625ull, 48828125ull, 244140625ull,
-					1220703125ull, 6103515625ull, 30517578125ull, 152587890625ull,
-					762939453125ull, 3814697265625ull, 19073486328125ull, 95367431640625ull,
-					476837158203125ull, 2384185791015625ull, 11920928955078125ull,
-					59604644775390625ull, 298023223876953125ull, 1490116119384765625ull };
+					1ULL, 5ULL, 25ULL, 125ULL, 625ULL, 3125ULL, 15625ULL, 78125ULL,
+					390625ULL, 1953125ULL, 9765625ULL, 48828125ULL, 244140625ULL,
+					1220703125ULL, 6103515625ULL, 30517578125ULL, 152587890625ULL,
+					762939453125ULL, 3814697265625ULL, 19073486328125ULL, 95367431640625ULL,
+					476837158203125ULL, 2384185791015625ULL, 11920928955078125ULL,
+					59604644775390625ULL, 298023223876953125ULL, 1490116119384765625ULL };
 				return table[idx];
 			}
 
@@ -1803,7 +1807,7 @@ namespace dragonbox {
 		STRF_HD constexpr static int calculate_max_power_of_10() noexcept {
 			return do_calculate_max_power_of_10<UInt, kappa>(0, 1, max_possible_significand / 10);
 		}
-	}
+	}  // namespace detail
 
 
 	////////////////////////////////////////////////////////////////////////////////////////
@@ -1837,7 +1841,7 @@ namespace dragonbox {
 						r.is_negative = s.is_negative();
 					}
 				};
-			}
+			}  // namespace sign
 
 			// Trailing zero policies.
 			namespace trailing_zero {
@@ -1881,7 +1885,7 @@ namespace dragonbox {
 						r.may_have_trailing_zeros = false;
 					}
 				};
-			}
+			}  // namespace trailing_zero
 
 			// Decimal-to-binary rounding mode policies.
 			namespace decimal_to_binary_rounding {
@@ -1953,7 +1957,7 @@ namespace dragonbox {
 							return true;
 						}
 					};
-				}
+				}  // namespace interval_type
 
 				struct nearest_to_even : base {
 					using decimal_to_binary_rounding_policy = nearest_to_even;
@@ -2158,7 +2162,7 @@ namespace dragonbox {
 						// 	return f();
 						// }
 					};
-				}
+				}  // namespace detail
 
 				// struct nearest_to_even_static_boundary : base {
 				// 	using decimal_to_binary_rounding_policy = nearest_to_even_static_boundary;
@@ -2256,7 +2260,7 @@ namespace dragonbox {
 				// 		return f(detail::right_closed_directed{});
 				// 	}
 				// };
-			}
+			}  // namespace decimal_to_binary_rounding
 
 			// Binary-to-decimal rounding policies.
 			// (Always assumes nearest rounding modes.)
@@ -2321,7 +2325,7 @@ namespace dragonbox {
 				// 		--r.significand;
 				// 	}
 				// };
-			}
+			}  // namespace binary_to_decimal_rounding
 
 			// Cache policies.
 			namespace cache {
@@ -2412,21 +2416,21 @@ namespace dragonbox {
 				// 		}
 				// 	}
 				// };
-			}
-		}
-	}
+			}  // namespace cache
+		}  // namespace policy_impl
+	}  // namespace detail
 
 	namespace policy {
 		namespace sign {
 			constexpr auto ignore = detail::policy_impl::sign::ignore{};
 		// constexpr auto return_sign = detail::policy_impl::sign::return_sign{};
-		}
+		} // namespace sign
 
 		namespace trailing_zero {
 			constexpr auto ignore = detail::policy_impl::trailing_zero::ignore{};
 			constexpr auto remove = detail::policy_impl::trailing_zero::remove{};
 			constexpr auto report = detail::policy_impl::trailing_zero::report{};
-		}
+		} // namespace trailing_zero
 
 		namespace decimal_to_binary_rounding {
 			constexpr auto nearest_to_even =
@@ -2459,7 +2463,7 @@ namespace dragonbox {
 			// 	detail::policy_impl::decimal_to_binary_rounding::toward_zero{};
 			// constexpr auto away_from_zero =
 			// 	detail::policy_impl::decimal_to_binary_rounding::away_from_zero{};
-		}
+		}  // namespace decimal_to_binary_rounding
 
 		namespace binary_to_decimal_rounding {
 			// constexpr auto do_not_care =
@@ -2472,13 +2476,13 @@ namespace dragonbox {
 			// 	detail::policy_impl::binary_to_decimal_rounding::away_from_zero{};
 			// constexpr auto toward_zero =
 			// 	detail::policy_impl::binary_to_decimal_rounding::toward_zero{};
-		}
+		}  // namespace binary_to_decimal_rounding
 
 		namespace cache {
 			constexpr auto full = detail::policy_impl::cache::full{};
 			// constexpr auto compact = detail::policy_impl::cache::compact{};
-		}
-	}
+		} // namespace cache
+	}  // namespace policy
 
 	namespace detail {
 		////////////////////////////////////////////////////////////////////////////////////////
@@ -2655,7 +2659,7 @@ namespace dragonbox {
 
 				if (remainder == 0) {
 					auto n32 = quotient_by_pow10_8;
-					std::uint32_t quotient32;
+					std::uint32_t quotient32 = 0;
 
 					// Is n divisible by 10^8?
 					// This branch is extremely unlikely.
@@ -2705,7 +2709,7 @@ namespace dragonbox {
 				// If the number is not divisible by 1'0000'0000, work with the remainder.
 
 				// Perform a binary search.
-				std::uint32_t quotient32;
+				std::uint32_t quotient32 = 0;
 				std::uint32_t multiplier = 100000000;
 				int s = 0;
 
@@ -2828,7 +2832,7 @@ namespace dragonbox {
 				// Step 1: Schubfach multiplier calculation
 				//////////////////////////////////////////////////////////////////////
 
-				ReturnType ret_value;
+				ReturnType ret_value{};
 
 				// Compute k and beta.
 				int const minus_k = log::floor_log10_pow2(exponent) - kappa;
@@ -2937,7 +2941,7 @@ namespace dragonbox {
 					bool const approx_y_parity = ((dist ^ (small_divisor / 2)) & 1) != 0;
 
 					// Is dist divisible by 10^kappa?
-					bool divisible_by_10_to_the_kappa =
+					const bool divisible_by_10_to_the_kappa =
 						div::check_divisibility_and_divide_by_pow10<kappa>(dist);
 
 					// Add dist / 10^kappa to the significand.
@@ -2977,7 +2981,7 @@ namespace dragonbox {
 			STRF_HD JKJ_SAFEBUFFERS static ReturnType compute_nearest_shorter(
 				int const exponent, IntervalType interval_type) noexcept
 			{
-				ReturnType ret_value;
+				ReturnType ret_value{};
 				STRF_MAYBE_UNUSED(interval_type);
 
 				// Compute k and beta.
@@ -3208,14 +3212,15 @@ namespace dragonbox {
 					return false;
 				}
 				// For k >= 0
-				else if (exponent <= case_fc_pm_half_upper_threshold) {
+				if (exponent <= case_fc_pm_half_upper_threshold) {
 					return true;
 				}
 				// For k < 0
-				else if (exponent > divisibility_check_by_5_threshold) {
+				if (exponent > divisibility_check_by_5_threshold) {
 					return false;
 				}
-				return div::divisible_by_power_of_5<max_power_of_factor_of_5 + 1>(two_f, minus_k);
+				STRF_ASSERT(minus_k >= 0);
+				return div::divisible_by_power_of_5<max_power_of_factor_of_5 + 1>(two_f, static_cast<unsigned>(minus_k));
 			}
 			STRF_HD static bool is_product_integer(std::integral_constant<integer_check_case_id, integer_check_case_id::fc>,
 				carrier_uint two_f, int exponent, int minus_k) noexcept
@@ -3226,11 +3231,12 @@ namespace dragonbox {
 				if (exponent > divisibility_check_by_5_threshold) {
 					return false;
 				}
-				else if (exponent > case_fc_upper_threshold) {
-					return div::divisible_by_power_of_5<max_power_of_factor_of_5 + 1>(two_f, minus_k);
+				if (exponent > case_fc_upper_threshold) {
+					STRF_ASSERT(minus_k >= 0);
+					return div::divisible_by_power_of_5<max_power_of_factor_of_5 + 1>(two_f, static_cast<unsigned>(minus_k));
 				}
 				// Both exponents are nonnegative
-				else if (exponent >= case_fc_lower_threshold) {
+				if (exponent >= case_fc_lower_threshold) {
 					return true;
 				}
 				// Exponent for 2 is negative
@@ -3243,7 +3249,7 @@ namespace dragonbox {
 				return is_product_integer(std::integral_constant<integer_check_case_id, case_id>(), two_f, exponent, minus_k);
 			}
 		};
-	}
+	}  // namespace detail
 
 	template <typename Float>
 	using return_type = decimal_fp<
@@ -3253,9 +3259,9 @@ namespace dragonbox {
 
 	template <class Float>
 	STRF_HD JKJ_FORCEINLINE return_type<Float> to_decimal
-		( unsigned exponent_bits
+		( int exponent
 		, typename std::conditional
-			< sizeof(Float) == 4, std::uint32_t, std::uint64_t>
+			< sizeof(Float) == 4, std::int32_t, std::int64_t>
 			::type mantissa_bits )
 	{
 		using FloatTraits = default_float_traits<Float>;
@@ -3271,14 +3277,13 @@ namespace dragonbox {
 		using cache_poli = detail::policy_impl::cache::full;
 
 		auto two_fc = significand_bits.remove_sign_bit_and_shift();
-		auto exponent = int(exponent_bits);
 			// Is the input a normal number?
 		if (exponent != 0) {
 			exponent += format::exponent_bias - format::significand_bits;
 
 			// Shorter interval case; proceed like Schubfach.
 			// One might think this condition is wrong,
-			// since when exponent_bits == 1 and two_fc == 0,
+			// since when exponent == 1 and two_fc == 0,
 			// the interval is actullay regular.
 			// However, it turns out that this seemingly wrong condition
 			// is actually fine, because the end result is anyway the same.

@@ -1,5 +1,5 @@
-#ifndef STRF_DETAIL_OUTPUT_TYPES_STD_STREAMBUF_HPP
-#define STRF_DETAIL_OUTPUT_TYPES_STD_STREAMBUF_HPP
+#ifndef STRF_TO_STREAMBUF_HPP
+#define STRF_TO_STREAMBUF_HPP
 
 //  Copyright (C) (See commit logs on github.com/robhz786/strf)
 //  Distributed under the Boost Software License, Version 1.0.
@@ -18,12 +18,12 @@ public:
 
     explicit basic_streambuf_writer(std::basic_streambuf<CharT, Traits>& d)
         : strf::destination<CharT>(buf_, buf_size_)
-        , dest_(d)
+        , dst_(d)
     {
     }
     explicit basic_streambuf_writer(std::basic_streambuf<CharT, Traits>* d)
         : strf::destination<CharT>(buf_, buf_size_)
-        , dest_(*d)
+        , dst_(*d)
     {
     }
 
@@ -31,24 +31,27 @@ public:
 
     basic_streambuf_writer(const basic_streambuf_writer&) = delete;
     basic_streambuf_writer(basic_streambuf_writer&&) = delete;
+    basic_streambuf_writer& operator=(const basic_streambuf_writer&) = delete;
+    basic_streambuf_writer& operator=(basic_streambuf_writer&&) = delete;
 
-    ~basic_streambuf_writer() {
+    ~basic_streambuf_writer() override {
         if (this->good()) {
-            std::streamsize count = this->buffer_ptr() - buf_;
+            const std::streamsize count = this->buffer_ptr() - buf_;
 
 #if defined __cpp_exceptions
-            try { dest_.sputn(buf_, count); } catch(...) {};
+            // NOLINTNEXTLINE(bugprone-empty-catch)
+            try { dst_.sputn(buf_, count); } catch(...) {};
 #else
-            dest_.sputn(buf_, count);
+            dst_.sputn(buf_, count);
 #endif
         }
     }
 
     void recycle() override {
-        std::streamsize count = this->buffer_ptr() - buf_;
+        const std::streamsize count = this->buffer_ptr() - buf_;
         this->set_buffer_ptr(buf_);
         STRF_IF_LIKELY (this->good()) {
-            auto count_inc = dest_.sputn(buf_, count);
+            auto count_inc = dst_.sputn(buf_, count);
             count_ += count_inc;
             this->set_good(count_inc == count);
         }
@@ -60,13 +63,13 @@ public:
     };
 
     result finish() {
-        std::streamsize count = this->buffer_ptr() - buf_;
+        const std::streamsize count = this->buffer_ptr() - buf_;
         auto g = this->good();
         this->set_buffer_ptr(buf_);
         this->set_good(false);
         STRF_IF_LIKELY (g) {
             this->set_good(false);
-            auto count_inc = dest_.sputn(buf_, count);
+            auto count_inc = dst_.sputn(buf_, count);
             count_ += count_inc;
             g = (count_inc == count);
         }
@@ -76,21 +79,23 @@ public:
 private:
 
     void do_write(const CharT* str, std::size_t str_len) override {
-        std::streamsize count = this->buffer_ptr() - buf_;
+        auto str_slen = static_cast<std::streamsize>(str_len);
+        auto count = this->buffer_ptr() - buf_;
+        count = count >= 0 ? count : 0;
         this->set_buffer_ptr(buf_);
         STRF_IF_LIKELY (this->good()) {
             this->set_good(false);
-            auto count_inc = dest_.sputn(buf_, count);
-            count_inc += dest_.sputn(str, str_len);
+            auto count_inc = dst_.sputn(buf_, count);
+            count_inc += dst_.sputn(str,  str_slen);
             count_ += count_inc;
-            this->set_good(count_inc == static_cast<std::streamsize>(count + str_len));
+            this->set_good(count_inc == count + str_slen);
         }
     }
 
-    std::basic_streambuf<CharT, Traits>& dest_;
+    std::basic_streambuf<CharT, Traits>& dst_;
     std::streamsize count_ = 0;
     static constexpr std::size_t buf_size_
-        = strf::min_space_after_recycle<CharT>();
+        = strf::min_destination_buffer_size;
     CharT buf_[buf_size_];
 };
 
@@ -110,19 +115,19 @@ public:
     using finish_type = typename destination_type::result;
 
     explicit basic_streambuf_writer_creator
-        ( std::basic_streambuf<CharT, Traits>& dest )
-        : dest_(dest)
+        ( std::basic_streambuf<CharT, Traits>& dst )
+        : dst_(&dst)
     {
     }
 
     std::basic_streambuf<CharT, Traits>& create() const noexcept
     {
-        return dest_;
+        return *dst_;
     }
 
 private:
 
-    std::basic_streambuf<CharT, Traits>& dest_;
+    std::basic_streambuf<CharT, Traits>* dst_;
 };
 
 
@@ -130,25 +135,24 @@ private:
 
 
 template <typename CharT, typename Traits>
-inline auto to( std::basic_streambuf<CharT, Traits>& dest )
-    -> strf::destination_no_reserve
+inline auto to( std::basic_streambuf<CharT, Traits>& dst )
+    -> strf::printing_syntax
         < strf::detail::basic_streambuf_writer_creator<CharT, Traits> >
 {
-    return strf::destination_no_reserve
-        < strf::detail::basic_streambuf_writer_creator<CharT, Traits> >
-        (dest);
+    return strf::make_printing_syntax
+        ( strf::detail::basic_streambuf_writer_creator<CharT, Traits>(dst) );
 }
 
 
 template<typename CharT, typename Traits>
-inline auto to( std::basic_streambuf<CharT, Traits>* dest )
-    -> strf::destination_no_reserve
+inline auto to( std::basic_streambuf<CharT, Traits>* dst )
+    -> strf::printing_syntax
         < strf::detail::basic_streambuf_writer_creator<CharT, Traits> >
 {
-    return strf::to(*dest);
+    return strf::to(*dst);
 }
 
 } // namespace strf
 
-#endif  // STRF_DETAIL_OUTPUT_TYPES_STD_STREAMBUF_HPP
+#endif // STRF_TO_STREAMBUF_HPP
 

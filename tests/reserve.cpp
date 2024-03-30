@@ -3,24 +3,24 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#define  _CRT_SECURE_NO_WARNINGS
+#define  _CRT_SECURE_NO_WARNINGS // NOLINT(bugprone-reserved-identifier,cert-dcl37-c,cert-dcl51-cpp)
 
 #include "test_utils.hpp"
 
 class reservation_tester : public strf::destination<char>
 {
-    constexpr static std::size_t buff_size_ = strf::min_space_after_recycle<char>();
+    constexpr static std::size_t buff_size_ = strf::min_destination_buffer_size;
     char buff_[buff_size_];
 
 public:
 
-    STRF_HD reservation_tester(strf::tag<void>)
+    STRF_HD explicit reservation_tester(strf::tag<void>)
         : strf::destination<char>{ buff_, buff_ + buff_size_ }
         , buff_{0}
     {
     }
 
-    STRF_HD reservation_tester(std::size_t size)
+    STRF_HD explicit reservation_tester(std::size_t size)
         : strf::destination<char>{ buff_, buff_ + buff_size_ }
         , buff_{0}
         , reserved_size_{size}
@@ -29,6 +29,9 @@ public:
 
     reservation_tester(const reservation_tester&) = delete;
     reservation_tester(reservation_tester&&) = delete;
+    reservation_tester& operator=(const reservation_tester&) = delete;
+    reservation_tester& operator=(reservation_tester&&) = delete;
+    ~reservation_tester() override = default;
 
     void STRF_HD recycle() override
     {
@@ -65,7 +68,7 @@ public:
 };
 
 constexpr auto STRF_HD reservation_test()
-    -> strf::destination_no_reserve<reservation_tester_creator>
+    -> strf::printing_syntax<reservation_tester_creator>
 {
     return {};
 }
@@ -129,20 +132,23 @@ STRF_TEST_FUNC void test_reserve()
 
     {
         const auto tester = reservation_test();
+        // NOLINTNEXTLINE(hicpp-move-const-arg,performance-move-const-arg)
         auto size = std::move(tester) ("abcd");
         TEST_EQ(size, not_reserved);
     }
     {
         const auto tester = reservation_test();
+        // NOLINTNEXTLINE(hicpp-move-const-arg,performance-move-const-arg)
         auto size = std::move(tester).reserve(5555) ("abcd");
         TEST_EQ(size, 5555);
     }
     {
         const auto tester = reservation_test() .reserve(5555);
+        // NOLINTNEXTLINE(hicpp-move-const-arg,performance-move-const-arg)
         auto size = std::move(tester).reserve_calc() ("abcd");
         TEST_EQ(size, 4);
     }
 }
 
-REGISTER_STRF_TEST(test_reserve);
+REGISTER_STRF_TEST(test_reserve)
 

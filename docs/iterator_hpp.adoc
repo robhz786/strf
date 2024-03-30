@@ -1,0 +1,133 @@
+////
+Copyright (C) (See commit logs on github.com/robhz786/strf)
+Distributed under the Boost Software License, Version 1.0.
+(See accompanying file LICENSE_1_0.txt or copy at
+http://www.boost.org/LICENSE_1_0.txt)
+////
+
+[[main]]
+= `<strf/iterator.hpp>` Header file reference
+:source-highlighter: prettify
+:sectnums:
+:toc: left
+:toc-title: <strf/to_streambuf.hpp>
+:toclevels: 1
+:icons: font
+
+:output_buffer: <<destination_hpp#output_buffer,output_buffer>>
+:destination:   <<destination_hpp#destination,destination>>
+:put:           <<destination_hpp#output_buffer_put,put>>
+
+NOTE: This header file includes `<<destination_hpp#,<strf/destination.hpp>>>`
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template <typename T>
+class output_buffer_iterator;
+
+template <typename T>
+constexpr output_buffer_iterator<T> make_iterator(strf::{output_buffer}<T, 0>& dest) noexcept;
+
+} // namespace strf
+----
+
+== Class template `output_buffer_iterator`
+
+`output_buffer_iterator` is a single-pass
+__https://en.cppreference.com/w/cpp/named_req/OutputIterator[OutputIterator]__
+that writes into the `std::{output_buffer}` object that it references to.
+
+=== Synopsis
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template <typename T>
+class output_buffer_iterator {
+public:
+    using iterator_category = std::output_iterator_tag;
+    using value_type = void;
+    using difference_type = std::ptrdiff_t;
+    using pointer = void;
+    using reference = void;
+
+    constexpr explicit output_buffer_iterator(strf::{output_buffer}<T, 0>& dest) noexcept;
+    constexpr output_buffer_iterator(const output_buffer_iterator&) noexcept = default;
+    constexpr output_buffer_iterator() = delete;
+
+    constexpr output_buffer_iterator& operator++() noexcept;    // no-op
+    constexpr output_buffer_iterator& operator++(int) noexcept; // no-op
+    constexpr output_buffer_iterator& operator*() noexcept;     // no-op
+
+    constexpr output_buffer_iterator& operator=(T value);
+    constexpr bool failed() const noexcept;
+
+private:
+    strf::{output_buffer}<T, 0>* dest_ptr; // exposition-only
+};
+
+} // namespace strf
+----
+
+=== Member functions
+
+====
+[source,cpp]
+----
+constexpr explicit output_buffer_iterator(strf::output_buffer<T, 0>& dest) noexcept;
+----
+Initializes `dest_ptr` with `&dest`
+====
+
+====
+[source,cpp]
+----
+constexpr output_buffer_iterator& operator=(T value);
+----
+[horizontal]
+Effect::
+`strf::{put}(*dest_ptr, value)`
+Return value::
+`*this`
+====
+
+====
+[source,cpp]
+----
+constexpr bool failed() const noexcept;
+----
+[horizontal]
+Return value::
+`! dest_ptr->good()`
+====
+
+
+====
+[source,cpp]
+----
+constexpr output_buffer_iterator& operator++() noexcept;
+constexpr output_buffer_iterator& operator++(int) noexcept;
+constexpr output_buffer_iterator& operator*() noexcept;
+----
+[horizontal]
+Effect:: none
+Return value:: `*this`
+====
+
+[[make_iterator]]
+== Function template `make_iterator`
+
+[source,cpp]
+----
+namespace strf {
+
+template <typename T>
+constexpr output_buffer_iterator<T> make_iterator(strf::output_buffer<T, 0>& dest) noexcept;
+
+} // namespace strf
+----
+
+

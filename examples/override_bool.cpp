@@ -3,41 +3,55 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
+#ifdef __clang__
+#pragma clang diagnostic ignored "-Wfloat-conversion"
+#endif
+
 #include "strf/to_string.hpp"
 
-struct my_bool_override
+struct my_bool_overrider
 {
-    using category = strf::print_override_c;
+    using category = strf::printable_overrider_c_of<bool>;
 
-    template <typename CharT, typename Preview, typename FPack, typename... T>
-    constexpr auto make_printer_input
+    template <typename CharT, typename PreMeasurements, typename FPack, typename... T>
+    constexpr auto make_printer
         ( strf::tag<CharT>
-        , Preview& preview
+        , PreMeasurements* pre
         , const FPack& fp
-        , strf::value_with_formatters<T...> x ) const noexcept
+        , bool value ) const noexcept
     {
-        bool value = x.value();
-        return strf::make_printer_input<CharT>
-            ( preview
+        return strf::make_printer<CharT>
+            ( pre
             , fp
-            , strf::conv(false_true_strings[value], strf::utf_t<char>{})
+            , strf::unsafe_transcode(false_true_strings[value]) );
+    }
+
+    template <typename CharT, typename PreMeasurements, typename FPack, typename... T>
+    constexpr auto make_printer
+        ( strf::tag<CharT>
+        , PreMeasurements* pre
+        , const FPack& fp
+        , strf::value_and_format<T...> x ) const noexcept
+    {
+        const bool value = static_cast<bool>(x.value());
+        return strf::make_printer<CharT>
+            ( pre
+            , fp
+            , strf::unsafe_transcode(false_true_strings[value])
                 .set_alignment_format(x.get_alignment_format()) );
     }
 
     const char* false_true_strings[2] = {"false", "true"};
 };
 
-static_assert(strf::is_overridable<bool>, "bool not overridable");
+static_assert(strf::is_printable_and_overridable_v<bool>, "bool not overridable");
 
-template <typename T>
-struct is_bool: std::is_same<T, strf::override_tag<bool>> {};
-
-constexpr auto italian_bool = strf::constrain<is_bool>(my_bool_override{{"falso", "vero"}});
+constexpr auto italian_bool = my_bool_overrider{{"falso", "vero"}};
 
 int main()
 {
     auto str = strf::to_string.with(italian_bool)
-        (true, '/', false, '/', 1, '/', 0, '/', 1.0, '/', 0.0, '/', (void*)0);
+        (true, '/', false, '/', 1, '/', 0, '/', 1.0, '/', 0.0, '/', static_cast<void*>(nullptr));
     assert(str == "vero/falso/1/0/1/0/0x0");
 
     // with formatting
@@ -45,11 +59,6 @@ int main()
         ( strf::center(true, 10, '.'), '/'
         , strf::center(false, 10, '.') );
     assert(str == "...vero.../..falso...");
-
-    // what happens when you don't constrain an overrider facet:
-    str = strf::to_string.with(my_bool_override{{"falso", "vero"}})
-        (true, '/', false, '/', 1, '/', 0, '/', 1.0, '/', 0.0, '/', (void*)0);
-    assert(str == "vero/falso/vero/falso/vero/falso/falso");
 
     return 0;
 }

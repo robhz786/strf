@@ -5,9 +5,11 @@
 
 #include "test_utils.hpp"
 
-#if defined(__GNUC__) && (__GNUC__ == 7 || __GNUC__ == 8)
+#if defined(__GNUC__) && (__GNUC__ == 8)
 #  pragma GCC diagnostic ignored "-Warray-bounds"
 #endif
+
+namespace {
 
 template <typename CharT>
 STRF_TEST_FUNC void char_range_basic_operations()
@@ -18,153 +20,157 @@ STRF_TEST_FUNC void char_range_basic_operations()
         constexpr std::size_t expected_size = 8;
         const CharT expected[expected_size] = { '1', '2', '3', '4', '5', 'a', 'b', 'c' };
         {
-            auto res = strf::to_range(buff)(12345, (CharT)'a', (CharT)'b', (CharT)'c');
+            auto res = strf::to_range(buff)
+                ( 12345, static_cast<CharT>('a')
+                , static_cast<CharT>('b'), static_cast<CharT>('c'));
             TEST_EQ(res.ptr - buff, 8);
             TEST_FALSE(res.truncated);
             TEST_TRUE(strf::detail::str_equal(buff, expected, expected_size));
         }
         {
-            auto res = strf::to_range(buff)(12345, (CharT)'a', (CharT)'b', (CharT)'c', (CharT)'d');
+            auto res = strf::to_range(buff)
+                ( 12345, static_cast<CharT>('a'), static_cast<CharT>('b')
+                , static_cast<CharT>('c'), static_cast<CharT>('d') );
             TEST_EQ(res.ptr - buff, 8);
             TEST_TRUE(res.truncated);
             TEST_TRUE(strf::detail::str_equal(buff, expected, expected_size));
         }
     }
     {   // construct from array
-        strf::basic_char_array_writer<CharT> sw(buff);
+        const strf::array_destination<CharT> sw(buff);
         TEST_TRUE(sw.buffer_ptr() == &buff[0]);
         TEST_EQ(sw.buffer_space(), buff_size);
         TEST_TRUE(sw.good());
     }
     {   // construct from pointer and size
-        strf::basic_char_array_writer<CharT> sw(buff, 4);
+        const strf::array_destination<CharT> sw(buff, 4);
         TEST_TRUE(sw.buffer_ptr() == &buff[0]);
         TEST_EQ(sw.buffer_space(), 4);
         TEST_TRUE(sw.good());
     }
     {   // construct from range
-        strf::basic_char_array_writer<CharT> sw(buff, buff + 4);
+        const strf::array_destination<CharT> sw(buff, buff + 4);
         TEST_TRUE(sw.buffer_ptr() == &buff[0]);
         TEST_EQ(sw.buffer_space(), 4);
         TEST_TRUE(sw.good());
     }
-    {   // Calling recycle always fails
-        strf::basic_char_array_writer<CharT> sw(buff);
-        sw.recycle();
+    {   // Calling flush() always fails
+        strf::array_destination<CharT> sw(buff);
+        sw.flush();
         TEST_TRUE(sw.buffer_ptr() != &buff[0]);
-        TEST_TRUE(sw.buffer_space() >= strf::min_space_after_recycle<CharT>())
+        TEST_TRUE(sw.buffer_space() >= strf::min_destination_buffer_size)
         TEST_FALSE(sw.good());
 
         // and causes buffer_ptr() to point to somewhere else than
         // anywhere inside the initial range
         TEST_FALSE(&buff[0] <= sw.buffer_ptr() && sw.buffer_ptr() < buff + buff_size);
     }
-    {   // When calling finish() after recycle(),
+    {   // When calling finish() after flush(),
         // the returned pointer is equal to the value buffer_ptr()
-        // would have returned just before recycle()
+        // would have returned just before flush()
 
-        strf::basic_char_array_writer<CharT> sw(buff);
-        strf::put(sw, (CharT)'a');
-        strf::put(sw, (CharT)'b');
-        strf::put(sw, (CharT)'c');
-        sw.recycle();
+        strf::array_destination<CharT> sw(buff);
+        strf::put(sw, static_cast<CharT>('a'));
+        strf::put(sw, static_cast<CharT>('b'));
+        strf::put(sw, static_cast<CharT>('c'));
+        sw.flush();
         auto r = sw.finish();
         TEST_TRUE(r.truncated);
         TEST_TRUE(r.ptr == buff + 3);
     }
-    {   // Copy constructor
-        strf::basic_char_array_writer<CharT> sw1(buff);
-        strf::basic_char_array_writer<CharT> sw2{sw1};
-        TEST_TRUE(sw1 == sw2);
-        TEST_TRUE(sw1.buffer_ptr() == sw2.buffer_ptr());
-        TEST_TRUE(sw1.buffer_end() == sw2.buffer_end());
-        TEST_EQ(sw1.good(), sw2.good());
-        auto r1 = sw1.finish();
-        auto r2 = sw2.finish();
-        TEST_TRUE(r1.ptr == r2.ptr);
-        TEST_EQ(r1.truncated, r2.truncated);
-    }
-    {   // Copy constructor
-        // copy "bad" object
+    // {   // Copy constructor
+    //     strf::array_destination<CharT> sw1(buff);
+    //     strf::array_destination<CharT> sw2{sw1};
+    //     TEST_TRUE(sw1 == sw2);
+    //     TEST_TRUE(sw1.buffer_ptr() == sw2.buffer_ptr());
+    //     TEST_TRUE(sw1.buffer_end() == sw2.buffer_end());
+    //     TEST_EQ(sw1.good(), sw2.good());
+    //     auto r1 = sw1.finish();
+    //     auto r2 = sw2.finish();
+    //     TEST_TRUE(r1.ptr == r2.ptr);
+    //     TEST_EQ(r1.truncated, r2.truncated);
+    // }
+    // {   // Copy constructor
+    //     // copy "bad" object
 
-        strf::basic_char_array_writer<CharT> sw1(buff);
-        strf::put(sw1, (CharT)'a');
-        strf::put(sw1, (CharT)'b');
-        strf::put(sw1, (CharT)'c');
+    //     strf::array_destination<CharT> sw1(buff);
+    //     strf::put(sw1, static_cast<CharT>('a'));
+    //     strf::put(sw1, static_cast<CharT>('b'));
+    //     strf::put(sw1, static_cast<CharT>('c'));
 
-        sw1.recycle();
+    //     sw1.flush();
 
-        strf::basic_char_array_writer<CharT> sw2{sw1};
-        TEST_TRUE(sw1 == sw2);
-        TEST_TRUE(sw1.buffer_ptr() == sw2.buffer_ptr());
-        TEST_TRUE(sw1.buffer_end() == sw2.buffer_end());
-        TEST_EQ(sw1.good(), sw2.good());
-        auto r1 = sw1.finish();
-        auto r2 = sw2.finish();
-        TEST_TRUE(r1.ptr == r2.ptr);
-        TEST_EQ(r1.truncated, r2.truncated);
-    }
-    {   // Copy assignment
+    //     strf::array_destination<CharT> sw2{sw1};
+    //     TEST_TRUE(sw1 == sw2);
+    //     TEST_TRUE(sw1.buffer_ptr() == sw2.buffer_ptr());
+    //     TEST_TRUE(sw1.buffer_end() == sw2.buffer_end());
+    //     TEST_EQ(sw1.good(), sw2.good());
+    //     auto r1 = sw1.finish();
+    //     auto r2 = sw2.finish();
+    //     TEST_TRUE(r1.ptr == r2.ptr);
+    //     TEST_EQ(r1.truncated, r2.truncated);
+    // }
+    // {   // Copy assignment
 
-        CharT buff2[10];
-        strf::basic_char_array_writer<CharT> sw1(buff);
-        strf::basic_char_array_writer<CharT> sw2(buff2);
+    //     CharT buff2[10];
+    //     strf::array_destination<CharT> sw1(buff);
+    //     strf::array_destination<CharT> sw2(buff2);
 
-        TEST_FALSE(sw1 == sw2);
+    //     TEST_FALSE(sw1 == sw2);
 
-        strf::put(sw1, (CharT)'a');
-        strf::put(sw1, (CharT)'b');
-        strf::put(sw1, (CharT)'c');
+    //     strf::put(sw1, static_cast<CharT>('a'));
+    //     strf::put(sw1, static_cast<CharT>('b'));
+    //     strf::put(sw1, static_cast<CharT>('c'));
 
-        strf::put(sw2, (CharT)'a');
-        strf::put(sw2, (CharT)'b');
-        strf::put(sw2, (CharT)'c');
+    //     strf::put(sw2, static_cast<CharT>('a'));
+    //     strf::put(sw2, static_cast<CharT>('b'));
+    //     strf::put(sw2, static_cast<CharT>('c'));
 
-        sw1 = sw2;
-        TEST_TRUE(sw1 == sw2);
-        TEST_TRUE(sw1.buffer_ptr() == sw2.buffer_ptr());
-        TEST_TRUE(sw1.buffer_end() == sw2.buffer_end());
-        TEST_EQ(sw1.good(), sw2.good());
-        auto r1 = sw1.finish();
-        auto r2 = sw2.finish();
-        TEST_TRUE(r1.ptr == r2.ptr);
-        TEST_EQ(r1.truncated, r2.truncated);
-    }
-    {   // Copy assignment
-        // copy a "bad" object
+    //     sw1 = sw2;
+    //     TEST_TRUE(sw1 == sw2);
+    //     TEST_TRUE(sw1.buffer_ptr() == sw2.buffer_ptr());
+    //     TEST_TRUE(sw1.buffer_end() == sw2.buffer_end());
+    //     TEST_EQ(sw1.good(), sw2.good());
+    //     auto r1 = sw1.finish();
+    //     auto r2 = sw2.finish();
+    //     TEST_TRUE(r1.ptr == r2.ptr);
+    //     TEST_EQ(r1.truncated, r2.truncated);
+    // }
+    // {   // Copy assignment
+    //     // copy a "bad" object
 
-        CharT buff2[10];
-        strf::basic_char_array_writer<CharT> sw1(buff);
-        strf::basic_char_array_writer<CharT> sw2(buff2);
+    //     CharT buff2[10];
+    //     strf::array_destination<CharT> sw1(buff);
+    //     strf::array_destination<CharT> sw2(buff2);
 
-        TEST_FALSE(sw1 == sw2);
+    //     TEST_FALSE(sw1 == sw2);
 
-        strf::put(sw1, (CharT)'a');
-        strf::put(sw1, (CharT)'b');
-        strf::put(sw1, (CharT)'c');
+    //     strf::put(sw1, static_cast<CharT>('a'));
+    //     strf::put(sw1, static_cast<CharT>('b'));
+    //     strf::put(sw1, static_cast<CharT>('c'));
 
-        strf::put(sw2, (CharT)'a');
-        strf::put(sw2, (CharT)'b');
-        strf::put(sw2, (CharT)'c');
-        sw2.recycle();
+    //     strf::put(sw2, static_cast<CharT>('a'));
+    //     strf::put(sw2, static_cast<CharT>('b'));
+    //     strf::put(sw2, static_cast<CharT>('c'));
+    //     sw2.flush();
 
-        sw1 = sw2;
-        TEST_TRUE(sw1 == sw2);
-        TEST_TRUE(sw1.buffer_ptr() == sw2.buffer_ptr());
-        TEST_TRUE(sw1.buffer_end() == sw2.buffer_end());
-        TEST_EQ(sw1.good(), sw2.good());
-        auto r1 = sw1.finish();
-        auto r2 = sw2.finish();
-        TEST_TRUE(r1.ptr == r2.ptr);
-        TEST_EQ(r1.truncated, r2.truncated);
-    }
+    //     sw1 = sw2;
+    //     TEST_TRUE(sw1 == sw2);
+    //     TEST_TRUE(sw1.buffer_ptr() == sw2.buffer_ptr());
+    //     TEST_TRUE(sw1.buffer_end() == sw2.buffer_end());
+    //     TEST_EQ(sw1.good(), sw2.good());
+    //     auto r1 = sw1.finish();
+    //     auto r2 = sw2.finish();
+    //     TEST_TRUE(r1.ptr == r2.ptr);
+    //     TEST_EQ(r1.truncated, r2.truncated);
+    // }
 }
 
 static STRF_TEST_FUNC void char_range_destination_too_small()
 {
     {
         char buff[4];
-        strf::basic_char_array_writer<char> sw(buff);
+        strf::array_destination<char> sw(buff);
         TEST_EQ(sw.buffer_space(), 4);
         strf::put(sw, 'a');
         TEST_EQ(sw.buffer_space(), 3);
@@ -185,7 +191,7 @@ static STRF_TEST_FUNC void char_range_destination_too_small()
     }
     {
         char buff[8];
-        strf::basic_char_array_writer<char> sw(buff);
+        strf::array_destination<char> sw(buff);
         write(sw, "Hello");
         write(sw, " World");
         write(sw, "blah blah blah");
@@ -204,6 +210,7 @@ STRF_TEST_FUNC void test_to_range()
     char_range_destination_too_small();
 }
 
+} // namespace
 
-REGISTER_STRF_TEST(test_to_range);
+REGISTER_STRF_TEST(test_to_range)
 

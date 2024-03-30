@@ -6,6 +6,9 @@
 #include "test_utils.hpp"
 
 #if ! defined (__cpp_char8_t)
+#   if __GNUC__ >= 11
+#       pragma GCC diagnostic ignored "-Wc++20-compat"
+#   endif
 using char8_t = char;
 #endif //! defined (__cpp_char8_t)
 
@@ -24,44 +27,36 @@ void test_dynamic_charset()
         TEST_TRUE(a != b);
     }
 
-    TEST("abc ? def").with(dyn_ascii) (strf::conv("abc \xC4\x80 def", dyn_utf8));
-    TEST("abc ? def").with(dyn_ascii) (strf::conv("abc \xC4\x80 def", strf::utf_t<char>{}));
-    TEST("abc ? def").with(strf::ascii_t<char>{}) (strf::conv("abc \xC4\x80 def", dyn_utf8));
-    TEST("abc \xC4\x80 def").with(dyn_utf8) (strf::conv(u"abc \u0100 def"  , dyn_utf16));
-    TEST("abc \xC4\x80 def").with(dyn_utf8) (strf::conv(U"abc \u0100 def"  , dyn_utf32));
-    TEST(u"abcdef").with(dyn_utf16)         (strf::conv( "abcdef", dyn_ascii));
-    TEST( "abcdef").with(dyn_ascii)         (strf::conv(u"abcdef", dyn_utf16));
-    TEST(u"abc \u0100 def").with(dyn_utf16) (strf::conv( "abc \xC4\x80 def", dyn_utf8));
-    TEST(u"abc \u0100 def").with(dyn_utf16) (strf::conv(U"abc \u0100 def"  , dyn_utf32));
-    TEST(U"abc \u0100 def").with(dyn_utf32) (strf::conv( "abc \xC4\x80 def", dyn_utf8));
-    TEST(U"abc \u0100 def").with(dyn_utf32) (strf::conv(u"abc \u0100 def"  , dyn_utf16));
+    TEST("abc ? def") (dyn_ascii, strf::transcode("abc \xC4\x80 def", dyn_utf8));
+    TEST("abc ? def") (dyn_ascii, strf::transcode("abc \xC4\x80 def", strf::utf_t<char>{}));
+    TEST("abc ? def") (strf::ascii_t<char>{}, strf::transcode("abc \xC4\x80 def", dyn_utf8));
+    TEST("abc \xC4\x80 def") (dyn_utf8, strf::transcode(u"abc \u0100 def"  , dyn_utf16));
+    TEST("abc \xC4\x80 def") (dyn_utf8, strf::transcode(U"abc \u0100 def"  , dyn_utf32));
+    TEST(u"abcdef") (dyn_utf16, strf::transcode( "abcdef", dyn_ascii));
+    TEST( "abcdef") (dyn_ascii, strf::transcode(u"abcdef", dyn_utf16));
+    TEST(u"abc \u0100 def") (dyn_utf16, strf::transcode( "abc \xC4\x80 def", dyn_utf8));
+    TEST(u"abc \u0100 def") (dyn_utf16, strf::transcode(U"abc \u0100 def"  , dyn_utf32));
+    TEST(U"abc \u0100 def") (dyn_utf32, strf::transcode( "abc \xC4\x80 def", dyn_utf8));
+    TEST(U"abc \u0100 def") (dyn_utf32, strf::transcode(u"abc \u0100 def"  , dyn_utf16));
 
-    TEST("abc \xC4\x80 def").with(dyn_utf8) (strf::sani("abc \xC4\x80 def"));
-    TEST(u"abc \u0100 def").with(dyn_utf16) (strf::sani(u"abc \u0100 def"));
-    TEST(U"abc \u0100 def").with(dyn_utf32) (strf::sani(U"abc \u0100 def"));
+    TEST("abc \xC4\x80 def") (dyn_utf8, strf::sani("abc \xC4\x80 def"));
+    TEST(u"abc \u0100 def") (dyn_utf16, strf::sani(u"abc \u0100 def"));
+    TEST(U"abc \u0100 def") (dyn_utf32, strf::sani(U"abc \u0100 def"));
 
     {
         auto punct = strf::numpunct<10>(1)
             .thousands_sep(0xFFFFFFFF)
             .decimal_point(0xFFFFFFFF);
 
-        auto input = !strf::fixed(10.5).fill((char32_t)0xFFFFFF) ^ 6;
+        auto input = !strf::fixed(10.5).fill(static_cast<char32_t>(0xFFFFFF)) ^ 6;
 
-        TEST("?10?5?").with(punct, dyn_ascii) (input);
-        TEST("\xEF\xBF\xBD" "10\xEF\xBF\xBD" "5\xEF\xBF\xBD").with(punct, dyn_utf8) (input);
-        TEST(u"\uFFFD" u"10\uFFFD" u"5\uFFFD").with(punct, dyn_utf16) (input);
-        //TEST(U"\uFFFD" U"10\uFFFD" U"5\uFFFD").with(punct, dyn_utf32) (input);
+        TEST("?10?5?") (punct, dyn_ascii, input);
+        TEST("\xEF\xBF\xBD" "10\xEF\xBF\xBD" "5\xEF\xBF\xBD") (punct, dyn_utf8, input);
+        TEST(u"\uFFFD" u"10\uFFFD" u"5\uFFFD") (punct, dyn_utf16, input);
+        //TEST(U"\uFFFD" U"10\uFFFD" U"5\uFFFD") (punct, dyn_utf32, input);
     }
     {
-        auto custom_wcalc = strf::make_width_calculator
-            ( [](char32_t ch) -> strf::width_t { return 1 + (ch == U'\u2014'); } );
-        TEST( "   x").with(custom_wcalc, dyn_ascii)(strf::fmt('x') > 4);
-        TEST( "   x").with(custom_wcalc, dyn_utf8) (strf::fmt('x') > 4);
-        TEST(u"   x").with(custom_wcalc, dyn_utf16)(strf::fmt(u'x') > 4);
-        TEST(U"   x").with(custom_wcalc, dyn_utf32)(strf::fmt(U'x') > 4);
-    }
-    {
-        const auto invalid_csid = (strf::charset_id) 0x0;
+        const auto invalid_csid = static_cast<strf::charset_id>(0x0);
         auto transc1 = dyn_utf8.find_transcoder_to(strf::tag<wchar_t>{}, invalid_csid);
         TEST_TRUE(transc1.transcode_func() == nullptr);
 
@@ -74,11 +69,11 @@ void test_dynamic_charset()
         auto transc4 = dyn_utf8.find_transcoder_from(strf::tag<wchar_t>{}, invalid_csid);
         TEST_TRUE(transc4.transcode_func() == nullptr);
 
-        strf::dynamic_charset_data<char> invalid_data = {
+        const strf::dynamic_charset_data<char> invalid_data = {
             "invalid", invalid_csid, '?', 1, nullptr, nullptr, nullptr, nullptr,
             nullptr, nullptr, nullptr, nullptr, {}, {}, {} };
 
-        strf::dynamic_charset<char> invalid_encoding{invalid_data};
+        const strf::dynamic_charset<char> invalid_encoding{invalid_data};
 
         auto transc5 = invalid_encoding.find_transcoder_from(strf::tag<char>{}, invalid_csid);
         auto transc6 = invalid_encoding.find_transcoder_from(strf::tag<char16_t>{}, invalid_csid);
@@ -95,3 +90,5 @@ void test_dynamic_charset()
         TEST_TRUE(transc10.transcode_func() == nullptr);
     }
 }
+
+REGISTER_STRF_TEST(test_dynamic_charset)

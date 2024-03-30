@@ -16,9 +16,11 @@ struct simple_array
 template <typename T, std::size_t N>
 static STRF_HD bool operator==(const simple_array<T, N>& a, const simple_array<T, N>& b)
 {
-    for (std::size_t i = 0; i < N; ++i)
-        if(a.array[i] != b.array[i])
+    for (std::size_t i = 0; i < N; ++i) {
+        if(a.array[i] != b.array[i]) {
             return false;
+        }
+    }
     return true;
 }
 
@@ -26,7 +28,7 @@ struct fcategory;
 
 struct facet_type
 {
-    STRF_HD facet_type(int v = 0)
+    STRF_HD explicit facet_type(int v = 0)
         : value(v)
     {
     }
@@ -58,13 +60,13 @@ template <typename FPack>
 STRF_TEST_FUNC simple_array<int, 7> digest(const FPack& fp)
 {
     return {{
-        strf::use_facet< fcategory, input_type<1> >(fp).value,
-        strf::use_facet< fcategory, input_type<2> >(fp).value,
-        strf::use_facet< fcategory, input_type<3> >(fp).value,
-        strf::use_facet< fcategory, input_type<4> >(fp).value,
-        strf::use_facet< fcategory, input_type<5> >(fp).value,
-        strf::use_facet< fcategory, input_type<6> >(fp).value,
-        strf::use_facet< fcategory, input_type<7> >(fp).value
+        strf::get_facet< fcategory, input_type<1> >(fp).value,
+        strf::get_facet< fcategory, input_type<2> >(fp).value,
+        strf::get_facet< fcategory, input_type<3> >(fp).value,
+        strf::get_facet< fcategory, input_type<4> >(fp).value,
+        strf::get_facet< fcategory, input_type<5> >(fp).value,
+        strf::get_facet< fcategory, input_type<6> >(fp).value,
+        strf::get_facet< fcategory, input_type<7> >(fp).value
     }};
 }
 
@@ -80,13 +82,13 @@ template<typename T> using filter_le7 = filter_le<T, 7>;
 
 STRF_TEST_FUNC void test_facets_pack_merge()
 {
-    facet_type f1 = {1};
-    facet_type f2 = {2};
-    facet_type f3 = {3};
-    facet_type f4 = {4};
-    facet_type f5 = {5};
-    facet_type f6 = {6};
-    facet_type f7 = {7};
+    const facet_type f1{1};
+    const facet_type f2{2};
+    const facet_type f3{3};
+    const facet_type f4{4};
+    const facet_type f5{5};
+    const facet_type f6{6};
+    const facet_type f7{7};
 
     auto x1 = strf::constrain<filter_le1>(f1);
     auto x2 = strf::constrain<filter_le2>(f2);
@@ -96,7 +98,7 @@ STRF_TEST_FUNC void test_facets_pack_merge()
     auto x6 = strf::constrain<filter_le6>(f6);
     auto x7 = strf::constrain<filter_le7>(f7);
 
-    simple_array<int, 7> expected = {{1, 2, 3, 4, 5, 6, 7}};
+    const simple_array<int, 7> expected = {{1, 2, 3, 4, 5, 6, 7}};
 
     {
         auto fp = strf::pack(x7, x6, x5, x4, x3, x2, x1);
@@ -184,4 +186,4 @@ STRF_TEST_FUNC void test_facets_pack_merge()
     }
 }
 
-REGISTER_STRF_TEST(test_facets_pack_merge);
+REGISTER_STRF_TEST(test_facets_pack_merge)

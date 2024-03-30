@@ -6,29 +6,30 @@
 #include "test_utils.hpp"
 
 #if ! defined(__cpp_char8_t)
+#   if __GNUC__ >= 11
+#       pragma GCC diagnostic ignored "-Wc++20-compat"
+#   endif
 using char8_t = char;
 #endif
 
-#define LEN(STR) (sizeof(STR) / sizeof(STR[0]) - 1)
+#define LEN(STR) (sizeof(STR) / sizeof((STR)[0]) - 1)
 
-#define TEST_FILL(ENC, CODEPOINT, STR)                          \
-    TEST(STR STR STR STR STR STR STR STR) .with(ENC)            \
-    (strf::multi(static_cast<char32_t>(CODEPOINT), 8));         \
-                                                                \
-    TEST_CALLING_RECYCLE_AT<4 * LEN(STR), 4 * LEN(STR)>         \
-    (STR STR STR STR STR STR STR STR) .with(ENC)                \
-    (strf::multi(static_cast<char32_t>(CODEPOINT), 8));         \
-                                                                \
-    TEST_CALLING_RECYCLE_AT<4 * LEN(STR)>                       \
-    (STR STR STR STR) .with(ENC)                                \
-    (strf::multi(static_cast<char32_t>(CODEPOINT), 8));         \
-                                                                \
+#define TEST_FILL(ENC, CODEPOINT, STR)                                     \
+    TEST(STR STR STR STR STR STR STR STR) .with(ENC)                       \
+        (strf::multi(static_cast<char32_t>(CODEPOINT), 8));                \
+                                                                           \
+    TEST_CALLING_RECYCLE_AT(4 * LEN(STR), STR STR STR STR STR STR STR STR) \
+        .with(ENC)                                                         \
+        (strf::multi(static_cast<char32_t>(CODEPOINT), 8));                \
+                                                                           \
+    TEST_TRUNCATING_AT(4 * LEN(STR), STR STR STR STR)                      \
+        .with(ENC)                                                         \
+        (strf::multi(static_cast<char32_t>(CODEPOINT), 8));                \
 
 STRF_TEST_FUNC void test_encode_fill()
 {
     {
         // UTF-8
-        TEST_FILL(strf::utf_t<char>{}, 0x7F, "\x7F");
         TEST_FILL(strf::utf_t<char>{}, 0x7F, "\x7F");
         TEST_FILL(strf::utf_t<char>{}, 0x80, "\xC2\x80");
         TEST_FILL(strf::utf_t<char>{}, 0x800, "\xE0\xA0\x80");
@@ -76,4 +77,4 @@ STRF_TEST_FUNC void test_encode_fill()
     }
 }
 
-REGISTER_STRF_TEST(test_encode_fill);
+REGISTER_STRF_TEST(test_encode_fill)

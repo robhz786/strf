@@ -18,11 +18,11 @@ struct ipv4address
 namespace strf {
 
 template <>
-struct print_traits<xxx::ipv4address> {
+struct printable_def<xxx::ipv4address> {
 
-    using override_tag = xxx::ipv4address;
+    using representative = xxx::ipv4address;
     using forwarded_type = xxx::ipv4address;
-    using formatters = strf::tag<strf::alignment_formatter>;
+    using format_specifiers = strf::tag<strf::alignment_format_specifier>;
 
     template <typename CharT>
     static auto transform_arg(forwarded_type arg)
@@ -32,27 +32,27 @@ struct print_traits<xxx::ipv4address> {
         return strf::join(bytes[0], dot, bytes[1], dot, bytes[2], dot, bytes[3]);
     }
 
-    template <typename CharT, typename Preview, typename FPack>
-    static auto make_printer_input
+    template <typename CharT, typename PreMeasurements, typename FPack>
+    static auto make_printer
         ( strf::tag<CharT>
-        , Preview& preview
+        , PreMeasurements* pre
         , const FPack& fp
         , forwarded_type arg )
     {
         auto arg2 = transform_arg<CharT>(arg);
-        return strf::make_default_printer_input<CharT>(preview, fp, arg2);
+        return strf::make_printer<CharT>(pre, fp, arg2);
     }
 
-    template <typename CharT, typename Preview, typename FPack, typename... T>
-    static auto make_printer_input
+    template <typename CharT, typename PreMeasurements, typename FPack, typename... T>
+    static auto make_printer
         ( strf::tag<CharT>
-        , Preview& preview
+        , PreMeasurements* pre
         , const FPack& fp
-        , strf::value_with_formatters<T...> arg )
+        , strf::value_and_format<T...> arg )
     {
         auto arg2 = transform_arg<CharT>(arg.value());
         auto arg3 = arg2.set_alignment_format(arg.get_alignment_format());
-        return strf::make_default_printer_input<CharT>(preview, fp, arg3);
+        return strf::make_printer<CharT>(pre, fp, arg3);
     }
 };
 
@@ -71,9 +71,9 @@ int main()
     assert(str == "isocpp.org: .....198.199.109.141");
 
     // ipv4address in ranges
-    std::vector<xxx::ipv4address> vec = { {{127, 0, 0, 1}}
-                                        , {{146, 20, 110, 251}}
-                                        , {{110, 110, 110, 110}} };
+    const std::vector<xxx::ipv4address> vec = { {{127, 0, 0, 1}}
+                                              , {{146, 20, 110, 251}}
+                                              , {{110, 110, 110, 110}} };
     str = strf::to_string("[", strf::separated_range(vec, " ; "), "]");
     assert(str == "[127.0.0.1 ; 146.20.110.251 ; 110.110.110.110]");
 

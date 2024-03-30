@@ -9,7 +9,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 :source-highlighter: prettify
 :icons: font
 
-NOTE: This header files includes `<strf.hpp>`
+NOTE: This header file includes `<<strf_hpp#,<strf.hpp>>>`
 
 [source,cpp,subs=normal]
 ----
@@ -26,4 +26,6 @@ strf::numpunct<10> locale_numpunct() noexcept;
 strf::numpunct<10> locale_numpunct() noexcept;
 ----
 Return value::: A numpunct object that reflects the current locale.
+Note::: On MS-Windows this functions is implemented using function `GetLocaleInfoEx`.
+On other systems, it uses `localeconv`.
 ====

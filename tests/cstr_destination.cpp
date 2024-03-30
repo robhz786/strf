@@ -3,20 +3,19 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include "test_utils.hpp"
-
-#if defined(__GNUC__) && (__GNUC__ == 7 || __GNUC__ == 8)
-#  pragma GCC diagnostic push
+#if defined(__GNUC__)
 #  pragma GCC diagnostic ignored "-Warray-bounds"
 #endif
 
+#include "test_utils.hpp"
+
 namespace {
 
-static STRF_TEST_FUNC void test_cstr_writer_destination_too_small()
+static STRF_TEST_FUNC void test_destination_too_small()
 {
     {
         char buff[4];
-        strf::basic_cstr_writer<char> sw(buff);
+        strf::basic_cstr_destination<char> sw(buff);
         TEST_EQ(sw.buffer_space(), 3);
         strf::put(sw, 'a');
         TEST_EQ(sw.buffer_space(), 2);
@@ -36,7 +35,7 @@ static STRF_TEST_FUNC void test_cstr_writer_destination_too_small()
     }
     {
         char buff[8];
-        strf::basic_cstr_writer<char> sw(buff);
+        strf::basic_cstr_destination<char> sw(buff);
         write(sw, "Hello");
         write(sw, " World");
         write(sw, "blah blah blah");
@@ -49,11 +48,7 @@ static STRF_TEST_FUNC void test_cstr_writer_destination_too_small()
     }
 }
 
-#if defined(__GNUC__) && (__GNUC__ == 7 || __GNUC__ == 8)
-#  pragma GCC diagnostic pop
-#endif
-
-static STRF_TEST_FUNC void test_write_into_cstr_writer_after_finish()
+static STRF_TEST_FUNC void test_write_after_finish()
 {
     const char s1a[] = "Hello";
     const char s1b[] = " World";
@@ -61,7 +56,7 @@ static STRF_TEST_FUNC void test_write_into_cstr_writer_after_finish()
 
     char buff[80];
 
-    strf::basic_cstr_writer<char> sw(buff);
+    strf::basic_cstr_destination<char> sw(buff);
     strf::write(sw, s1a);
     strf::write(sw, s1b);
     auto r1 = sw.finish();
@@ -84,8 +79,12 @@ static STRF_TEST_FUNC void test_write_into_cstr_writer_after_finish()
     TEST_EQ(r2.ptr, r1.ptr);
 }
 
+#if defined(__GNUC__) && ( __GNUC__ == 8)
+#  pragma GCC diagnostic pop
+#endif
+
 template <typename CharT>
-STRF_TEST_FUNC void test_cstr_writer_creator()
+STRF_TEST_FUNC void test_cstr_destination_creator()
 {
 
     const auto half_str = test_utils::make_half_string<CharT>();
@@ -147,15 +146,15 @@ STRF_TEST_FUNC void test_cstr_writer_creator()
 
 } // unnamed namespace
 
-STRF_TEST_FUNC void test_cstr_writer()
+STRF_TEST_FUNC void test_cstr_destination()
 {
-    test_cstr_writer_destination_too_small();
-    test_write_into_cstr_writer_after_finish();
+    test_destination_too_small();
+    test_write_after_finish();
 
-    test_cstr_writer_creator<char>();
-    test_cstr_writer_creator<char16_t>();
-    test_cstr_writer_creator<char32_t>();
-    test_cstr_writer_creator<wchar_t>();
+    test_cstr_destination_creator<char>();
+    test_cstr_destination_creator<char16_t>();
+    test_cstr_destination_creator<char32_t>();
+    test_cstr_destination_creator<wchar_t>();
 }
 
-REGISTER_STRF_TEST(test_cstr_writer);
+REGISTER_STRF_TEST(test_cstr_destination)

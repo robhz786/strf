@@ -14,18 +14,15 @@ http://www.boost.org/LICENSE_1_0.txt)
 :toclevels: 1
 :icons: font
 
-:min_space_after_recycle: <<destination_hpp#min_space_after_recycle,min_space_after_recycle>>
 :destination: <<destination_hpp#destination,destination>>
+:min_destination_buffer_size: <<destination_hpp#min_destination_buffer_size,min_destination_buffer_size>>
 :narrow_cfile_writer: <<narrow_cfile_writer,narrow_cfile_writer>>
 :wide_cfile_writer: <<wide_cfile_writer,wide_cfile_writer>>
 
-:destination_no_reserve: <<strf_hpp#destinators,destination_no_reserve>>
+:printing_syntax: <<strf_hpp#printing_syntax,printing_syntax>>
 :DestinationCreator: <<strf_hpp#DestinationCreator,DestinationCreator>>
 
-
-NOTE: This document is still a work in progress.
-
-NOTE: This header files includes `<strf.hpp>`
+NOTE: This header file includes `<<strf_hpp#,<strf.hpp>>>`
 
 [source,cpp,subs=normal]
 ----
@@ -37,8 +34,6 @@ class narrow_cfile_writer final: public destination<CharT>
 
 class wide_cfile_writer final: public destination<wchar_t>
 { /{asterisk}\...{asterisk}/ };
-
-// Destination makers:
 
 template <typename CharT = char>
 /{asterisk} \... {asterisk}/  to(std::FILE{asterisk});
@@ -102,7 +97,7 @@ Effects::
     whatever happened last.
 -  If the returned value of `std::fwrite` is less than `(buffer_ptr() - p0)`, calls `set_good(false)`.
 -  Calls `set_buffer_ptr` and/or `set_buffer_end`.
-Postconditions:: `<<destination_hpp#destination_buffer_space,buffer_space>>() >= BuffSize`
+Postconditions:: `<<destination_hpp#output_buffer_buffer_space,buffer_space>>() >= BuffSize`
 ====
 ====
 [source,cpp]
@@ -141,6 +136,9 @@ public:
     };
 
     result finish();
+
+private:
+    CharT buffer[{min_destination_buffer_size}]; // exposition only
 };
 
 } // namespace strf
@@ -191,14 +189,14 @@ __/{asterisk} see below {asterisk}/__ to(std::FILE{asterisk} dest);
 } // namespace strf
 ----
 [horizontal]
-Return type:: `{destination_no_reserve}<DestCreator>`, where `DestCreator` is an
+Return type:: `{printing_syntax}<DestCreator>`, where `DestCreator` is an
            implementation-defined type that satifies __{DestinationCreator}__.
 Return value:: An object whose `DestCreator` object `&#95;dest&#95;creator`
 is such that `&#95;dest&#95;creator.create()` returns
 +
 [source,cpp,subs=normal]
 ----
-{narrow_cfile_writer}< CharT, {min_space_after_recycle}<CharT>() >{dest}
+{narrow_cfile_writer}< CharT, {min_destination_buffer_size} >{dest}
 ----
 
 [[wto]]
@@ -213,7 +211,7 @@ __/{asterisk} see below {asterisk}/__ wto(std::FILE{asterisk} dest);
 } // namespace strf
 ----
 [horizontal]
-Return type:: `{destination_no_reserve}<DestCreator>`, where `DestCreator`
+Return type:: `{printing_syntax}<DestCreator>`, where `DestCreator`
        is an implementation-defined type that satifies __{DestinationCreator}__.
 Return value:: An object whose `DestCreator` object `&#95;dest&#95;creator`
        is such that `&#95;dest&#95;creator.create()` returns

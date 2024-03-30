@@ -7,7 +7,6 @@ http://www.boost.org/LICENSE_1_0.txt)
 
 :rank: <<rank,rank>>
 :tag: <<tag,tag>>
-:destination: <<destination_hpp#destination,destination>>
 :facet_traits: <<facet_traits,facet_traits>>
 
 == Miscellaneous
@@ -75,7 +74,7 @@ struct tag
 template <typename T>
 struct tag<T>
 {
-    explicit constexpr STRF_HD tag() noexcept { }
+    explicit constexpr tag() noexcept { }
     using type = T;
 };
 
@@ -104,73 +103,3 @@ struct rank<0>
 } // namespace strf
 ----
 ////
-
-// === `destination` writing functions
-// 
-// [source,cpp,subs=normal]
-// ----
-// namespace strf {
-// 
-// template <typename CharT>
-// void write( {destination}<CharT>& ob
-//           , const CharT{asterisk} data
-//           , std::size_t count );
-// 
-// template <typename CharT>
-// void write( {destination}<CharT>& ob
-//           , const CharT{asterisk} data
-//           , const CharT{asterisk} data_end );
-// 
-// void write({destination}<char>& ob, const char{asterisk} cstr);
-// 
-// void write({destination}<wchar_t>& ob, const wchar_t{asterisk} cstr);
-// 
-// } // namespace strf
-// ----
-// 
-// 
-// [[destination_write_range]]
-// ====
-// [source,cpp,subs=normal]
-// ----
-// template <typename CharT>
-// void write( {destination}<CharT>& ob
-//           , const CharT{asterisk} data
-//           , const CharT{asterisk} data_end );
-// ----
-// [horizontal]
-// Effect:: Writes the the range [ `data`, `data_end` ) into `ob`, calling `ob.recycle()`
-//          as many times as necessary.
-// ====
-// [[destination_write_size]]
-// ====
-// [source,cpp,subs=normal]
-// ----
-// template <typename CharT>
-// void write( {destination}<CharT>& ob
-//           , const CharT{asterisk} data
-//           , std::size_t data_size );
-// ----
-// [horizontal]
-// Effect:: Equivalent to `write(ob, data, data + data_size)`
-// ====
-// [[destination_write_cstr]]
-// ====
-// [source,cpp,subs=normal]
-// ----
-// void write({destination}<char>& ob, const char* cstr);
-// ----
-// [horizontal]
-// Effect:: Equivalent to `write(ob, cstr, std::strlen(cstr))`
-// ====
-// 
-// [[destination_write_wcstr]]
-// ====
-// [source,cpp,subs=normal]
-// ----
-// void write({destination}<wchar_t>& ob, const wchar_t{asterisk} wcstr);
-// ----
-// [horizontal]
-// Effect:: Equivalent to `write(ob, wcstr, std::wstrlen(wcstr))`
-// ====
-

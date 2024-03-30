@@ -12,82 +12,94 @@ STRF_TEST_FUNC void test_miscellaneous()
     {
         // write into an destination reference
         char buff[100];
-        strf::cstr_writer str_writer{buff};
-        strf::destination<char>& dest = str_writer;
+        strf::cstr_destination str_writer{buff};
+        strf::destination<char>& dst = str_writer;
 
-        strf::to(dest)
+        strf::to(dst)
             .with(strf::numpunct<10>(3))
-            ("abc", ' ', strf::punct(1000000000ll));
+            ("abc", ' ', strf::punct(1000000000LL));
 
         str_writer.finish();
 
         TEST_CSTR_EQ(buff, "abc 1,000,000,000");
     }
-    {   // test discarded_destination
-        strf::discarded_destination<char> dest;
-        TEST_FALSE(dest.good());
-        dest.recycle();
-        TEST_TRUE(dest.buffer_space() >= strf::min_space_after_recycle<char>());
-        TEST_FALSE(dest.good());
+    {
+        // write line
+        char buff[100];
+        auto res = strf::to(buff).line("abc", 1, 2, 3);
+
+        TEST_FALSE(res.truncated);
+        TEST_EQ(res.ptr, &buff[7]);
+        TEST_CSTR_EQ(buff, "abc123\n");
+    }
+    {   // test discarder
+        strf::discarder<char> dst;
+        TEST_FALSE(dst.good());
+        dst.recycle();
+        TEST_TRUE(dst.buffer_space() >= strf::min_destination_buffer_size);
+        TEST_FALSE(dst.good());
         char buff[200];
-        dest.write(buff, sizeof(buff)/sizeof(buff[0]));
-        TEST_FALSE(dest.good());
+        dst.write(buff, sizeof(buff)/sizeof(buff[0]));
+        TEST_FALSE(dst.good());
     }
-    {   // preview size
-        strf::print_preview<strf::preview_size::yes, strf::preview_width::no> p;
+    {   // measure size
+        strf::premeasurements<strf::size_presence::yes, strf::width_presence::no> p;
 
-        strf::preview<char>(p, strf::pack());
-        TEST_EQ(p.accumulated_size(), 0);
+        strf::measure<char>(&p, strf::pack());
+        TEST_EQ(p.accumulated_ssize(), 0);
 
-        strf::preview<char>(p, strf::pack(), 1, 23, 456, 7890);
-        TEST_EQ(p.accumulated_size(), 10);
+        strf::measure<char>(&p, strf::pack(), 1, 23, 456, 7890);
+        TEST_EQ(p.accumulated_ssize(), 10);
     }
 
-    {   // preview size and width
-        strf::print_preview<strf::preview_size::yes, strf::preview_width::yes>p{1000};
+    {   // measure size and width
+        strf::premeasurements<strf::size_presence::yes, strf::width_presence::yes>p{1000};
 
-        strf::preview<char>(p, strf::pack());
-        TEST_EQ(p.accumulated_size(), 0);
+        strf::measure<char>(&p, strf::pack());
+        TEST_EQ(p.accumulated_ssize(), 0);
         TEST_TRUE(p.remaining_width() == 1000);
 
-        strf::preview<char>(p, strf::pack(), 1, 23, 456, 7890);
-        TEST_EQ(p.accumulated_size(), 10);
+        strf::measure<char>(&p, strf::pack(), 1, 23, 456, 7890);
+        TEST_EQ(p.accumulated_ssize(), 10);
         TEST_TRUE(p.remaining_width() == 1000 - 10);
     }
 
-    {   // preview width
-        strf::print_preview<strf::preview_size::no, strf::preview_width::yes>p{8_w};
+    {   // measure width
+        strf::premeasurements<strf::size_presence::no, strf::width_presence::yes>p{8_w};
 
-        strf::preview<char>(p, strf::pack());
+        strf::measure<char>(&p, strf::pack());
         TEST_TRUE(p.remaining_width() == 8_w);
 
-        strf::preview<char>(p, strf::pack(), 1, 23, 456);
+        strf::measure<char>(&p, strf::pack(), 1, 23, 456);
         TEST_TRUE(p.remaining_width() == 2_w);
-        strf::preview<char>(p, strf::pack(), 1, 23, 456);
+        strf::measure<char>(&p, strf::pack(), 1, 23, 456);
         TEST_TRUE(p.remaining_width() == 0);
-        strf::preview<char>(p, strf::pack(), 1);
-        TEST_TRUE(p.remaining_width() == 0);
-    }
-    {   // preview width
-        strf::print_preview<strf::preview_size::no, strf::preview_width::yes>p{8_w};
-        p.subtract_width(8);
+        strf::measure<char>(&p, strf::pack(), 1);
         TEST_TRUE(p.remaining_width() == 0);
     }
-    {   // preview width
-        strf::print_preview<strf::preview_size::no, strf::preview_width::yes>p{8_w};
-        p.subtract_width(9);
+    {   // measure width
+        strf::premeasurements<strf::size_presence::no, strf::width_presence::yes>p{8_w};
+        p.add_width(8);
         TEST_TRUE(p.remaining_width() == 0);
     }
-    {   // clear_remaining_width
-        strf::print_preview<strf::preview_size::no, strf::preview_width::yes> p{8_w};
-        p.clear_remaining_width();
+    {   // measure width
+        strf::premeasurements<strf::size_presence::no, strf::width_presence::yes>p{8_w};
+        p.add_width(9);
         TEST_TRUE(p.remaining_width() == 0);
     }
-    {   // no preview
-        strf::no_print_preview p;
-        strf::preview<char>(p, strf::pack());
-        strf::preview<char>(p, strf::pack(), 1, 23, 456);
-        TEST_EQ(p.accumulated_size(), 0);
+    {   // saturate_width
+        const auto limit = 20.25_w;
+        strf::premeasurements<strf::size_presence::no, strf::width_presence::yes> p{limit};
+        p.saturate_width();
+        p.add_width(10_w);
+        TEST_TRUE(p.remaining_width() == 0);
+        TEST_TRUE(p.accumulated_width() == limit);
+    }
+    {   // don't measure anything
+        strf::no_premeasurements p;
+        strf::measure<char>(&p, strf::pack());
+        strf::measure<char>(&p, strf::pack(), 1, 23, 456);
+        TEST_EQ(p.accumulated_ssize(), 0);
         TEST_TRUE(p.remaining_width() == 0);
     }
     {   // make_simple_string_view
@@ -96,7 +108,23 @@ STRF_TEST_FUNC void test_miscellaneous()
         TEST_TRUE(sv.data() == str);
         TEST_EQ(sv.size(), 5);
     }
+    {
+        // strf::detail::slow_countl_zero_ll
+        TEST_EQ(64, strf::detail::slow_countl_zero_ll(0));
+        for (int i = 0; i <= 63; ++i) {
+            TEST_SCOPE_DESCRIPTION("i: ", i);
+            TEST_EQ(63 - i, strf::detail::slow_countl_zero_ll(1ULL << i));
+        }
+    }
+
+    {   // strf::detail::all_base_fmtfn_classes_are_empty
+
+        using strf::detail::all_base_fmtfn_classes_are_empty;
+
+        static_assert( all_base_fmtfn_classes_are_empty<decltype(strf::fmt(0))>::value, "");
+        static_assert(!all_base_fmtfn_classes_are_empty<decltype(strf::fmt(0).p(5))>::value, "");
+    }
 }
 
-REGISTER_STRF_TEST(test_miscellaneous);
+REGISTER_STRF_TEST(test_miscellaneous)
 

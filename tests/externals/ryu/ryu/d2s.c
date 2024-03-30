@@ -382,7 +382,7 @@ static inline int to_chars(const floating_decimal_64 v, const bool sign, char* c
   if (output2 >= 10) {
     const uint32_t c = output2 << 1;
     // We can't use memcpy here: the decimal dot goes between these two digits.
-    result[index + olength - i] = DIGIT_TABLE[c + 1];
+    result[index + (int)(olength - i)] = DIGIT_TABLE[c + 1];
     result[index] = DIGIT_TABLE[c];
   } else {
     result[index] = (char) ('0' + output2);

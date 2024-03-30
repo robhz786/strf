@@ -22,15 +22,20 @@ public:
     {
     }
 
-    QStringCreator(QStringCreator&&) = delete;
-    QStringCreator(const QStringCreator&) = delete;
-
     explicit QStringCreator(std::size_t size)
         : strf::destination<char16_t>(buffer_, buffer_size_)
     {
-        Q_ASSERT(size < static_cast<std::size_t>(INT_MAX));
+        Q_ASSERT(size <= static_cast<std::size_t>(INT_MAX));
         str_.reserve(static_cast<int>(size));
     }
+
+    QStringCreator(QStringCreator&&) = delete;
+    QStringCreator(const QStringCreator&) = delete;
+
+    QStringCreator& operator=(QStringCreator&&) = delete;
+    QStringCreator& operator=(const QStringCreator&) = delete;
+
+    ~QStringCreator() override = default;
 
     void recycle() override;
 
@@ -39,13 +44,13 @@ public:
 private:
 
     QString str_;
-    constexpr static std::size_t buffer_size_ = strf::min_space_after_recycle<char16_t>();
-    char16_t buffer_[buffer_size_];
+    constexpr static std::size_t buffer_size_ = strf::min_destination_buffer_size;
+    char16_t buffer_[buffer_size_] = {0};
 };
 
 void QStringCreator::recycle()
 {
-    std::size_t count = this->buffer_ptr() - buffer_;
+    auto count = static_cast<int>(this->buffer_ptr() - buffer_);
     this->set_buffer_ptr(buffer_);
     if (this->good()) {
         this->set_good(false);
@@ -58,7 +63,7 @@ void QStringCreator::recycle()
 
 QString QStringCreator::finish()
 {
-    recycle();
+    flush();
     this->set_good(false);
     return std::move(str_);
 }
@@ -81,12 +86,12 @@ public:
     }
 };
 
-constexpr strf::destination_no_reserve<QStringCreatorFactory> toQString{};
+constexpr strf::printing_syntax<QStringCreatorFactory> toQString{};
 
 int main()
 {
     int x = 255;
-    QString str = toQString(x, u" in hexadecimal is ", *strf::hex(x));
+    const QString str = toQString(x, u" in hexadecimal is ", *strf::hex(x));
     assert(str == "255 in hexadecimal is 0xff");
 
     return 0;

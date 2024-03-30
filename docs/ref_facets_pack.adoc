@@ -6,7 +6,9 @@ http://www.boost.org/LICENSE_1_0.txt)
 ////
 
 :facets_pack: <<facets_pack,facets_pack>>
-:use_facet: <<use_facet,use_facet>>
+:constrained_fpe: <<constrained_fpe,constrained_fpe>>
+
+:get_facet: <<get_facet,get_facet>>
 :facet_category: <<facet_category,facet_category>>
 :facet_traits: <<facet_traits,facet_traits>>
 :FacetCategory: <<FacetCategory, FacetCategory>>
@@ -95,15 +97,15 @@ Return type:: `{facets_pack}<std::remove_cvref_t<T>>\...>`
 Return value:: A `{facets_pack}` object initialized with `std::forward<T>(args)\...`
 ====
 
-=== Function template `use_facet` [[use_facet]]
+=== Function template `get_facet` [[get_facet]]
 ====
 [source,cpp]
 ----
 template <typename FCat, typename Tag, typename ... T>
-constexpr decltype(auto) use_facet(const facets_pack<T...>& fp);
+constexpr decltype(auto) get_facet(const facets_pack<T...>& fp);
 ----
 Effects:: If <<has_facet, `has_facet<FCat, Tag>(fp)`>> returns `true` then
-          returns <<do_get_facet,`do_get_facet<FCat, Tag>(fp)`, otherwise
+          returns `<<do_get_facet,do_get_facet>><FCat, Tag>(fp)`, otherwise
           return `FCat::get_default()`.
 Compile-time requirements::  `FCat` is a _{FacetCategory}_ type.
 ====
@@ -112,7 +114,7 @@ Compile-time requirements::  `FCat` is a _{FacetCategory}_ type.
 === Hypothetical function template `has_facet`
 NOTE: This function template does not exist in this library.
        It is only documented to help to explain the
-       <<use_facet, `use_facet`>> function template.
+      `{get_facet}` function template.
 ====
 [source,cpp]
 ----
@@ -120,10 +122,10 @@ template <typename FCat, typename Tag, typename FPE>
 constexpr bool has_facet(const FPE& fpe)
 ----
 Effects::
-- If `FPE` is an instance of <<facets_pack, `facets_pack`>>, then returns wheter there
+- If `FPE` is an instance of `{facets_pack}`, then returns wheter there
   is any elemente `elm` in `fpe` such that `has_facet<FCat, Tag>(elm)`
   is `true`.
-- If `FPE` is an instance of <<constrained_fpe, `constrained_fpe<FPE, Filter>`>>,
+- If `FPE` is an instance of `{constrained_fpe}<FPE, Filter>`,
   then returns `Filter<Tag>::value && has_facet<FCat, Tag>(fpe.get())`.
 - If `FPE` is a  <<Facet,_Facet_>> type, returns `std::is_same_v<FCat, {facet_category}<FPE>>`
 
@@ -137,7 +139,7 @@ Compile-time requirements::
 === Hypothetical function template `do_get_facet`
 NOTE: This function template is not part of the library.
       It is only documented to help to explain the
-      <<use_facet,`use_facet`>> function template
+      `{get_facet}` function template
 ====
 [source,cpp]
 ----
@@ -160,10 +162,9 @@ template <template <class> class Filter, typename FPE>
 class constrained_fpe;
 ----
 The class template `constrained_fpe` is designed to be used in
-<<facets_pack,`facets_pack`>>. `constrained_fpe<Filter, FPE>`
+`{facets_pack}`. `constrained_fpe<Filter, FPE>`
 holds a value of `FPE` that will only be returned by
-<<use_facet, ``use_facet<Category, Tag>``>> if
-`Filter<Tag>::value` is `true`.
+`{get_facet}<Category, Tag>` if `Filter<Tag>::value` is `true`.
 
 Compile-time requirements::
 - `Filter` is a __{UnaryTypeTrait}__. For any type `T`, the expression
@@ -261,7 +262,7 @@ Effect:: Return the stored element;
 template <template <class> class Filter, typename T>
 constexpr constrained_fpe<Filter, U> constrain(const T& arg);
 ----
-`constrain` is just a syntatic sugar to create a <<constrained_fpe, `constrained_fpe`>> object.
+`constrain` is just a syntatic sugar to create a `{constrained_fpe}` object.
 
 Return type:: `constrained_fpe<Filter, U>`, where `U` is
                 `std::remove_cv_t<std::remove_reference_t<T>>`.
@@ -275,8 +276,8 @@ Compile-time requirements::
 A given type `F` satisfies _FacetsPackElement_ if, and only if, one of the following conditions is true:
 
 - `F` is a <<Facet,_Facet_>> type.
-- `F` is an instance of <<facets_pack,`facets_pack`>>.
-- `F` is an instance of <<constrained_fpe,`constrained_fpe`>>.
+- `F` is an instance of `{facets_pack}`.
+- `F` is an instance of `{constrained_fpe}`.
 
 ////
 - `F` is `const `F2&`, where `F2` satisfies one of the previous requirements.
@@ -290,8 +291,8 @@ A given a type `F` is a _ConstrainableFacetsPackElement_ if, and only if,
 one of the following conditions is true:
 
 - `F` is a  <<Facet,_Facet_>> type and  `{facet_category}<F>::constrainable` is `true`.
-- `F` is `facets_pack<F2\...>` and all types in `F2\...` are _ConstrainableFacetsPackElement_.
-- `F` is an instance of <<constrained_fpe,`constrained_fpe`>>.
+- `F` is `{facets_pack}<F2\...>` and all types in `F2\...` are _ConstrainableFacetsPackElement_.
+- `F` is an instance of `{constrained_fpe}`.
 
 ////
 - If `F` is `const F2&`, then `F2` satifies the _ConstrainableFacetsPackElement_

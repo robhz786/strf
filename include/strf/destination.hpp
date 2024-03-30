@@ -1,10 +1,21 @@
-#ifndef STRF_DESTINATION_HPP_INCLUDED
-#define STRF_DESTINATION_HPP_INCLUDED
+#ifndef STRF_DESTINATION_HPP
+#define STRF_DESTINATION_HPP
 
 //  Copyright (C) (See commit logs on github.com/robhz786/strf)
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
+
+#if defined(__GNUC__)
+#  pragma GCC diagnostic push
+#  if __GNUC__ >= 11
+#    pragma GCC diagnostic ignored "-Wstringop-overread"
+#  elif _GNUCC >= 9
+#    pragma GCC diagnostic ignored "-Wstringop-overflow"
+#  else
+#    pragma GCC diagnostic ignored "-Warray-bounds"
+#  endif
+#endif
 
 #include <strf/detail/strf_def.hpp>
 #include <cstdint>
@@ -12,61 +23,86 @@
 #    include <cstring>
 #endif
 
-#if defined(__GNUC__)
-#  pragma GCC diagnostic push
-#  pragma GCC diagnostic ignored "-Warray-bounds"
-#endif
-
 namespace strf {
 namespace detail {
-class destination_test_tool;
+class output_buffer_test_tool;
 } // namespace detail
 
-#define STRF_MIN_SPACE_AFTER_RECYCLE 64
-
-template <typename CharT>
-STRF_DEPRECATED
-constexpr STRF_HD std::size_t min_size_after_recycle()
-{
-    return STRF_MIN_SPACE_AFTER_RECYCLE;
-}
-
-template <typename CharT>
-constexpr STRF_HD std::size_t min_space_after_recycle()
-{
-    return STRF_MIN_SPACE_AFTER_RECYCLE;
-}
-
-
-template <typename CharT>
-class destination
+template <typename T, unsigned Log2BufferSpace>
+class output_buffer: public output_buffer<T, Log2BufferSpace - 1>
 {
 public:
+    static constexpr std::size_t min_space_after_recycle
+        = (std::size_t)1 << Log2BufferSpace;
+    static constexpr std::ptrdiff_t min_sspace_after_recycle
+        = (std::ptrdiff_t)1 << Log2BufferSpace;
 
-    using char_type = CharT;
+    template < typename IntT
+             , strf::detail::enable_if_t<std::is_integral<IntT>::value, int> =0 >
+    STRF_HD void ensure(IntT s)
+    {
+        STRF_ASSERT(static_cast<std::ptrdiff_t>(s) <= min_sspace_after_recycle);
+        STRF_IF_UNLIKELY (this->buffer_ptr() + s > this->buffer_end()) {
+            this->recycle();
+        }
+        STRF_ASSERT(this->buffer_ptr() + s <= this->buffer_end());
+    }
 
-    STRF_HD destination(const destination&) = delete;
-    STRF_HD destination(destination&&) = delete;
-    destination& operator=(const destination&) = delete;
-    destination& operator=(destination&&) = delete;
+    STRF_HD void flush() {
+        this->recycle();
+        STRF_ASSERT(this->buffer_sspace() >= min_sspace_after_recycle);
+    }
 
-    virtual STRF_HD ~destination() { };
+protected:
 
-    STRF_HD char_type* buffer_ptr() const noexcept
+    using output_buffer<T, Log2BufferSpace - 1>::output_buffer;
+};
+
+template <typename T>
+class output_buffer<T, 0>
+{
+public:
+    static constexpr std::size_t    min_space_after_recycle = 1;
+    static constexpr std::ptrdiff_t min_sspace_after_recycle = 1;
+    using value_type = T;
+
+    STRF_HD output_buffer(const output_buffer&) = delete;
+    STRF_HD output_buffer(output_buffer&&) = delete;
+    output_buffer& operator=(const output_buffer&) = delete;
+    output_buffer& operator=(output_buffer&&) = delete;
+
+    virtual STRF_HD ~output_buffer() STRF_DEFAULT_IMPL;
+
+    STRF_HD value_type* buffer_ptr() const noexcept
     {
         return pointer_;
     }
-    STRF_HD char_type* buffer_end() const noexcept
+    STRF_HD value_type* ptr() const noexcept
+    {
+        return pointer_;
+    }
+    STRF_HD value_type* buffer_end() const noexcept
     {
         return end_;
     }
-    STRF_DEPRECATED
-    STRF_HD std::size_t size() const noexcept
+    STRF_HD value_type* end() const noexcept
     {
-        STRF_ASSERT(pointer_ <= end_);
-        return end_ - pointer_;
+        return end_;
+    }
+    STRF_HD std::size_t space() const noexcept
+    {
+        return buffer_space();
+    }
+    STRF_HD std::ptrdiff_t sspace() const noexcept
+    {
+        return buffer_sspace();
     }
     STRF_HD std::size_t buffer_space() const noexcept
+    {
+        STRF_ASSERT(pointer_ <= end_);
+        return detail::safe_cast_size_t(buffer_sspace());
+    }
+    STRF_HD std::ptrdiff_t buffer_sspace() const noexcept
     {
         STRF_ASSERT(pointer_ <= end_);
         return end_ - pointer_;
@@ -75,15 +111,17 @@ public:
     {
         return good_;
     }
-    STRF_HD void advance_to(char_type* p)
+    STRF_HD void advance_to(value_type* p)
     {
         STRF_ASSERT(pointer_ <= p);
         STRF_ASSERT(p <= end_);
         pointer_ = p;
     }
-    STRF_HD void advance(std::size_t n)
+    template < typename IntT
+             , strf::detail::enable_if_t<std::is_integral<IntT>::value, int> =0 >
+    STRF_HD void advance(IntT n)
     {
-        STRF_ASSERT(buffer_ptr() + n <= buffer_end());
+        STRF_ASSERT(detail::ge_zero(n) && buffer_ptr() + n <= buffer_end());
         pointer_ += n;
     }
     STRF_HD void advance() noexcept
@@ -91,202 +129,212 @@ public:
         STRF_ASSERT(buffer_ptr() < buffer_end());
         ++pointer_;
     }
-    STRF_HD void ensure(std::size_t s)
+    template < typename IntT
+             , strf::detail::enable_if_t<std::is_integral<IntT>::value, int> =0 >
+    STRF_HD void ensure(IntT s)
     {
-        STRF_ASSERT(s <= strf::min_space_after_recycle<CharT>());
         STRF_IF_UNLIKELY (buffer_ptr() + s > buffer_end()) {
             recycle();
         }
         STRF_ASSERT(buffer_ptr() + s <= buffer_end());
     }
+    STRF_HD void flush()
+    {
+        recycle();
+        STRF_ASSERT(buffer_sspace() > 0);
+    }
 
     STRF_HD virtual void recycle() = 0;
 
-    STRF_HD void write(const char_type* str, std::size_t str_len)
-    {
-        STRF_IF_LIKELY (str_len <= buffer_space()) {
-#if !defined(STRF_FREESTANDING) || defined(STRF_WITH_CSTRING)
-            memcpy(pointer_, str, str_len * sizeof(char_type));
-            pointer_ += str_len;
-#else
-            for(; str_len != 0; ++pointer_, ++str, --str_len) {
-                *pointer_ = *str;
-            }
-#endif
-        } else {
-            do_write(str, str_len);
-        }
-    }
-
     // old names keeped to preserve backwards compatibiliy
-    STRF_HD char_type* pointer() const noexcept
+    STRF_HD value_type* pointer() const noexcept
     {
         return buffer_ptr();
     }
-    STRF_HD char_type* end() const noexcept
-    {
-        return buffer_end();
-    }
-    STRF_HD std::size_t space() const noexcept
-    {
-        return buffer_space();
-    }
-    STRF_HD void require(std::size_t s)
+    STRF_HD void require(std::ptrdiff_t s)
     {
         ensure(s);
     }
 
+    template < typename IntT
+             , strf::detail::enable_if_t<std::is_integral<IntT>::value, int> =0 >
+    STRF_HD void write(const value_type* data, IntT count)
+    {
+        STRF_IF_LIKELY (count > 0) {
+            STRF_IF_LIKELY (static_cast<std::ptrdiff_t>(count) <= buffer_sspace()) {
+#if !defined(STRF_FREESTANDING) || defined(STRF_WITH_CSTRING)
+                memcpy(pointer_, data, static_cast<std::size_t>(count) * sizeof(value_type));
+                pointer_ += count;
+#else
+                for(; count != 0; ++pointer_, ++data, --count) {
+                    *pointer_ = *data;
+                }
+#endif
+            } else {
+                do_write(data, static_cast<std::size_t>(count));
+            }
+        }
+    }
+
 protected:
 
-    STRF_HD destination(char_type* p, char_type* e) noexcept
+    STRF_HD output_buffer(value_type* p, value_type* e) noexcept
         : pointer_(p), end_(e)
     { }
 
-    STRF_HD destination(char_type* p, std::size_t s) noexcept
+    STRF_HD output_buffer(value_type* p, std::size_t s) noexcept
         : pointer_(p), end_(p + s)
     { }
 
-    STRF_HD void set_buffer_ptr(char_type* p) noexcept
+    STRF_HD output_buffer(value_type* p, std::ptrdiff_t s) noexcept
+        : pointer_(p), end_(p + s)
+    {
+        STRF_ASSERT(s >= 0);
+    }
+
+    STRF_HD void set_buffer_ptr(value_type* p) noexcept
     { pointer_ = p; };
-    STRF_HD void set_buffer_end(char_type* e) noexcept
+    STRF_HD void set_ptr(value_type* p) noexcept
+    { pointer_ = p; };
+    STRF_HD void set_buffer_end(value_type* e) noexcept
+    { end_ = e; };
+    STRF_HD void set_end(value_type* e) noexcept
     { end_ = e; };
     STRF_HD void set_good(bool g) noexcept
     { good_ = g; };
 
-    STRF_HD virtual void do_write(const char_type* src, std::size_t src_size);
+    STRF_HD virtual void do_write(const value_type* src, std::size_t src_size);
 
     // old names for backwards compatibility
-    STRF_HD void set_pointer(char_type* p) noexcept
+    STRF_HD void set_pointer(value_type* p) noexcept
     { pointer_ = p; };
-    STRF_HD void set_end(char_type* e) noexcept
-    { end_ = e; };
 
 private:
 
-    char_type* pointer_;
-    char_type* end_;
+    value_type* pointer_;
+    value_type* end_;
     bool good_ = true;
-    friend class strf::detail::destination_test_tool;
+    friend class strf::detail::output_buffer_test_tool;
 };
 
-template <typename CharT>
-void destination<CharT>::do_write(const CharT* str, std::size_t str_len)
+template <typename T>
+void output_buffer<T, 0>::do_write(const T* data, std::size_t count)
 {
     for(;;) {
-        std::size_t s = buffer_space();
-        std::size_t sub_count = (str_len <= s ? str_len : s);
-        str_len -= sub_count;
-
 #if !defined(STRF_FREESTANDING) || defined(STRF_WITH_CSTRING)
-        memcpy(pointer_, str, sub_count * sizeof(char_type));
-        str += sub_count;
+
+        const std::size_t s = buffer_space();
+        const std::size_t sub_count = (count <= s ? count : s);
+        count -= sub_count;
+
+        memcpy(pointer_, data, sub_count * sizeof(value_type));
+        data += sub_count;
         pointer_ += sub_count;
 #else
-        for(; sub_count != 0; ++pointer_, ++str, --sub_count) {
-            *pointer_ = *str;
+        const std::size_t s = space();
+        std::size_t sub_count = (count <= s ? count : s);
+        count -= sub_count;
+
+        for(; sub_count != 0; ++pointer_, ++data, --sub_count) {
+            *pointer_ = *data;
         }
 #endif
-        if (str_len == 0) {
+        if (count == 0) {
             break;
         }
-        recycle();
+        flush();
         if (!good_) {
             break;
         }
     }
 }
 
-template <typename CharT>
-inline STRF_HD void put(strf::destination<CharT>& dest, CharT c)
+template <typename T>
+inline STRF_HD void put(strf::output_buffer<T, 0>& dst, T c)
 {
-    auto p = dest.buffer_ptr();
-    STRF_IF_LIKELY (p != dest.buffer_end()) {
+    auto *p = dst.buffer_ptr();
+    STRF_IF_LIKELY (p != dst.buffer_end()) {
         *p = c;
-        dest.advance_to(p + 1);
+        dst.advance_to(p + 1);
     } else {
-        dest.recycle();
-        *dest.buffer_ptr() = c;
-        dest.advance();
+        dst.flush();
+        *dst.buffer_ptr() = c;
+        dst.advance();
     }
 }
 
-// type aliases for backwards compatibility
-
-template <typename CharT>
-using basic_outbuff = destination<CharT>;
-
-#if defined(__cpp_lib_byte)
-using bin_outbuff           = basic_outbuff<std::byte>;
-#endif
-
-#if defined(__cpp_char8_t)
-using u8outbuff           = basic_outbuff<char8_t>;
-#endif
-
-using outbuff             = basic_outbuff<char>;
-using u16outbuff          = basic_outbuff<char16_t>;
-using u32outbuff          = basic_outbuff<char32_t>;
-using woutbuff            = basic_outbuff<wchar_t>;
-
 namespace detail {
 
-class destination_test_tool
+class output_buffer_test_tool
 {
 public:
-    template<typename CharT>
-    static STRF_HD void turn_into_bad(destination<CharT>& dest)
+    template<typename T>
+    static STRF_HD void turn_into_bad(output_buffer<T, 0>& dst)
     {
-        dest.set_good(false);
+        dst.set_good(false);
     }
 };
 
 } // namespace detail
 
-template <typename CharT>
-inline STRF_HD CharT* garbage_buff() noexcept
+constexpr unsigned log2_garbage_buff_size = 6;
+constexpr std::ptrdiff_t garbage_buff_size = 1 << log2_garbage_buff_size;
+
+template <typename T>
+inline STRF_HD T* garbage_buff() noexcept
 {
-    static CharT arr[ STRF_MIN_SPACE_AFTER_RECYCLE ];
+    static T arr[ garbage_buff_size ];
     return arr;
 }
 
-template <typename CharT>
-inline STRF_HD CharT* garbage_buff_end() noexcept
+template <typename T>
+inline STRF_HD T* garbage_buff_end() noexcept
 {
-    return strf::garbage_buff<CharT>() + strf::min_space_after_recycle<CharT>();
+    return strf::garbage_buff<T>() + garbage_buff_size;
 }
 
 template <typename CharT>
-class basic_cstr_writer final: public strf::destination<CharT>
+class basic_cstr_destination final
+    : public strf::output_buffer<CharT, strf::log2_garbage_buff_size>
 {
+    using dst_t_ = strf::output_buffer<CharT, strf::log2_garbage_buff_size>;
+
 public:
 
-    struct range{ CharT* dest; CharT* dest_end; };
+    struct range{ CharT* dst; CharT* dst_end; };
 
-    STRF_HD basic_cstr_writer(range r) noexcept
-        : destination<CharT>(r.dest, r.dest_end - 1)
+    STRF_HD explicit basic_cstr_destination(range r) noexcept
+        : dst_t_(r.dst, r.dst_end - 1)
     {
-        STRF_ASSERT(r.dest < r.dest_end);
+        STRF_ASSERT(r.dst < r.dst_end);
     }
 
-    STRF_HD basic_cstr_writer(CharT* dest, CharT* dest_end) noexcept
-        : destination<CharT>(dest, dest_end - 1)
+    STRF_HD basic_cstr_destination(CharT* dst, CharT* dst_end) noexcept
+        : dst_t_(dst, dst_end - 1)
     {
-        STRF_ASSERT(dest < dest_end);
+        STRF_ASSERT(dst < dst_end);
     }
 
-    STRF_HD basic_cstr_writer(CharT* dest, std::size_t len) noexcept
-        : destination<CharT>(dest, dest + len - 1)
+    template < typename IntT
+             , strf::detail::enable_if_t<std::is_integral<IntT>::value, int> = 0>
+    STRF_HD basic_cstr_destination(CharT* dst, IntT len) noexcept
+        : dst_t_(dst, dst + static_cast<std::ptrdiff_t>(len) - 1)
     {
-        STRF_ASSERT(len != 0);
+        STRF_ASSERT(static_cast<std::ptrdiff_t>(len) > 0);
     }
 
     template <std::size_t N>
-    STRF_HD basic_cstr_writer(CharT (&dest)[N]) noexcept
-        : destination<CharT>(dest, dest + N - 1)
+    STRF_HD explicit basic_cstr_destination(CharT (&dst)[N]) noexcept
+        : dst_t_(dst, dst + N - 1)
     {
     }
 
-    basic_cstr_writer(const basic_cstr_writer& r) = delete;
+    basic_cstr_destination(const basic_cstr_destination&) = delete;
+    basic_cstr_destination(basic_cstr_destination&&) = delete;
+    basic_cstr_destination& operator=(const basic_cstr_destination&) = delete;
+    basic_cstr_destination& operator=(basic_cstr_destination&&) = delete;
+
+    STRF_HD ~basic_cstr_destination() override STRF_DEFAULT_IMPL;
 
     STRF_HD void recycle() noexcept override
     {
@@ -306,7 +354,7 @@ public:
 
     STRF_HD result finish() noexcept
     {
-        bool g = this->good();
+        const bool g = this->good();
         STRF_IF_LIKELY (g) {
             it_ = this->buffer_ptr();
             this->set_good(false);
@@ -322,15 +370,15 @@ public:
 private:
 
 
-    STRF_HD void do_write(const CharT* str, std::size_t) noexcept override
+    STRF_HD void do_write(const CharT* data, std::size_t) noexcept override
     {
         auto sub_count = this->buffer_space();
-        auto ptr = this->buffer_ptr();
+        auto *ptr = this->buffer_ptr();
 #if !defined(STRF_FREESTANDING) || defined(STRF_WITH_CSTRING)
-        memcpy(ptr, str, sub_count * sizeof(CharT));
+        memcpy(ptr, data, sub_count * sizeof(CharT));
 #else
-        for(; sub_count != 0; ++ptr, ++str, --sub_count) {
-            *ptr = *str;
+        for(; sub_count != 0; ++ptr, ++data, --sub_count) {
+            *ptr = *data;
         }
 #endif
         it_ = this->buffer_end();
@@ -342,68 +390,96 @@ private:
     CharT* it_ = nullptr;
 };
 
-#if defined(__cpp_char8_t)
-using u8cstr_writer = basic_cstr_writer<char8_t>;
-#endif
-using cstr_writer = basic_cstr_writer<char>;
-using u16cstr_writer = basic_cstr_writer<char16_t>;
-using u32cstr_writer = basic_cstr_writer<char32_t>;
-using wcstr_writer = basic_cstr_writer<wchar_t>;
+constexpr unsigned log2_min_destination_buffer_size = 6;
+
+constexpr std::size_t min_destination_buffer_size =
+    (std::size_t)1 << strf::log2_min_destination_buffer_size;
+
+constexpr std::ptrdiff_t min_destination_buffer_ssize =
+    (std::ptrdiff_t)1 << strf::log2_min_destination_buffer_size;
+
+static_assert(min_destination_buffer_size == 64, "");
 
 template <typename CharT>
-class basic_char_array_writer final: public strf::destination<CharT>
+using destination = strf::output_buffer<CharT, log2_min_destination_buffer_size>;
+
+#if defined(__cpp_char8_t)
+using u8cstr_destination  = basic_cstr_destination<char8_t>;
+#endif
+using cstr_destination    = basic_cstr_destination<char>;
+using u16cstr_destination = basic_cstr_destination<char16_t>;
+using u32cstr_destination = basic_cstr_destination<char32_t>;
+using wcstr_destination   = basic_cstr_destination<wchar_t>;
+
+template <typename CharT>
+using basic_cstr_writer
+STRF_DEPRECATED_MSG("basic_cstr_writer renamed to basic_cstr_destination")
+= basic_cstr_destination<CharT>;
+
+#if defined(__cpp_char8_t)
+using u8cstr_writer
+STRF_DEPRECATED_MSG("u8cstr_writer renamed to u8cstr_destination")
+= basic_cstr_destination<char8_t>;
+#endif
+
+using cstr_writer
+STRF_DEPRECATED_MSG("cstr_writer renamed to cstr_destination")
+= basic_cstr_destination<char>;
+
+using u16cstr_writer
+STRF_DEPRECATED_MSG("u16cstr_writer renamed to u16cstr_destination")
+= basic_cstr_destination<char16_t>;
+
+using u32cstr_writer
+STRF_DEPRECATED_MSG("u32cstr_writer renamed to u32cstr_destination")
+= basic_cstr_destination<char32_t>;
+
+using wcstr_writer
+STRF_DEPRECATED_MSG("wcstr_writer renamed to wcstr_destination")
+= basic_cstr_destination<wchar_t>;
+
+template <typename CharT>
+class array_destination final
+    : public strf::output_buffer<CharT, strf::log2_garbage_buff_size>
 {
+    using dst_t_ = strf::output_buffer<CharT, strf::log2_garbage_buff_size>;
+
 public:
 
-    struct range{ CharT* dest; CharT* dest_end; };
+    struct range{ CharT* dst; CharT* dst_end; };
 
-    STRF_HD basic_char_array_writer(range r) noexcept
-        : destination<CharT>(r.dest, r.dest_end)
+    STRF_HD explicit array_destination(range r) noexcept
+        : dst_t_(r.dst, r.dst_end)
     {
-        STRF_ASSERT(r.dest <= r.dest_end);
+        STRF_ASSERT(r.dst <= r.dst_end);
     }
 
-    STRF_HD basic_char_array_writer(CharT* dest, CharT* dest_end) noexcept
-        : destination<CharT>(dest, dest_end)
+    STRF_HD array_destination(CharT* dst, CharT* dst_end) noexcept
+        : dst_t_(dst, dst_end)
     {
-        STRF_ASSERT(dest <= dest_end);
+        STRF_ASSERT(dst <= dst_end);
     }
-
-    STRF_HD basic_char_array_writer(CharT* dest, std::size_t len) noexcept
-        : destination<CharT>(dest, dest + len)
+    template < typename IntT
+             , strf::detail::enable_if_t<std::is_integral<IntT>::value, int> = 0>
+    STRF_HD array_destination(CharT* dst, IntT len) noexcept
+        : dst_t_(dst, dst + static_cast<std::ptrdiff_t>(len))
     {
+        STRF_ASSERT(static_cast<std::ptrdiff_t>(len) >= 0);
     }
 
     template <std::size_t N>
-    STRF_HD basic_char_array_writer(CharT (&dest)[N]) noexcept
-        : destination<CharT>(dest, dest + N)
+    STRF_HD explicit array_destination(CharT (&dst)[N]) noexcept
+        : dst_t_(dst, dst + N)
     {
     }
 
-    STRF_HD basic_char_array_writer(const basic_char_array_writer& r) noexcept
-        : destination<CharT>(r.buffer_ptr(), r.buffer_end())
-        , it_(r.it_)
-    {
-        this->set_good(r.good());
-    }
+    array_destination(const array_destination&) = delete;
+    array_destination(array_destination&&) = delete;
+    array_destination& operator=(const array_destination&) = delete;
+    array_destination& operator=(array_destination&&) = delete;
 
-    STRF_HD basic_char_array_writer& operator=(const basic_char_array_writer& r) noexcept
-    {
-        this->set_good(r.good());
-        this->set_buffer_ptr(r.buffer_ptr());
-        this->set_buffer_end(r.buffer_end());
-        it_ = r.it_;
-        return *this;
-    }
-    STRF_HD bool operator==(const basic_char_array_writer& r) const noexcept
-    {
-        if (this->good()) {
-            return ( r.good()
-                  && this->buffer_ptr() == r.buffer_ptr()
-                  && this->buffer_end() == r.buffer_end() );
-        }
-        return ! r.good() && it_ == r.it_;
-    }
+    STRF_HD ~array_destination() override STRF_DEFAULT_IMPL;
+
     STRF_HD void recycle() noexcept override
     {
         if (this->good()) {
@@ -422,22 +498,22 @@ public:
 
     STRF_HD result finish() noexcept
     {
-        bool truncated = ! this->good();
+        const bool truncated = ! this->good();
         CharT* ptr = truncated ? it_ : this->buffer_ptr();
         return { ptr, truncated };
     }
 
 private:
 
-    STRF_HD void do_write(const CharT* str, std::size_t) noexcept override
+    STRF_HD void do_write(const CharT* data, std::size_t) noexcept override
     {
         auto sub_count = this->buffer_space();
-        auto ptr = this->buffer_ptr();
+        auto *ptr = this->buffer_ptr();
 #if !defined(STRF_FREESTANDING) || defined(STRF_WITH_CHAR_ARRAYING)
-        memcpy(ptr, str, sub_count * sizeof(CharT));
+        memcpy(ptr, data, sub_count * sizeof(CharT));
 #else
-        for(; sub_count != 0; ++ptr, ++str, --sub_count) {
-            *ptr = *str;
+        for(; sub_count != 0; ++ptr, ++data, --sub_count) {
+            *ptr = *data;
         }
 #endif
         it_ = this->buffer_end();
@@ -449,49 +525,45 @@ private:
     CharT* it_ = nullptr;
 };
 
+template <typename CharT>
+using basic_char_array_writer
+STRF_DEPRECATED_MSG("basic_char_array_writer renamed to array_destination")
+= array_destination<CharT>;
 
 #if defined(__cpp_char8_t)
-using u8char_array_writer = basic_char_array_writer<char8_t>;
+using u8char_array_writer  STRF_DEPRECATED = array_destination<char8_t>;
 #endif
-using char_array_writer = basic_char_array_writer<char>;
-using u16char_array_writer = basic_char_array_writer<char16_t>;
-using u32char_array_writer = basic_char_array_writer<char32_t>;
-using wchar_array_writer = basic_char_array_writer<wchar_t>;
+using char_array_writer    STRF_DEPRECATED = array_destination<char>;
+using u16char_array_writer STRF_DEPRECATED = array_destination<char16_t>;
+using u32char_array_writer STRF_DEPRECATED = array_destination<char32_t>;
+using wchar_array_writer   STRF_DEPRECATED = array_destination<wchar_t>;
 
-template <typename CharT>
-class discarded_destination final
-    : public strf::destination<CharT>
+template <typename T>
+class discarder final
+    : public strf::output_buffer<T, strf::log2_garbage_buff_size>
 {
+    using dst_t_ = strf::output_buffer<T, strf::log2_garbage_buff_size>;
+
 public:
 
-    STRF_HD discarded_destination() noexcept
-        : destination<CharT>
-            { strf::garbage_buff<CharT>()
-            , strf::garbage_buff_end<CharT>() }
+    STRF_HD discarder() noexcept
+        : dst_t_{strf::garbage_buff<T>(), strf::garbage_buff_end<T>()}
     {
         this->set_good(false);
     }
 
-    STRF_HD ~discarded_destination()
-    {
-    }
-
     STRF_HD void recycle() noexcept override
     {
-        this->set_buffer_ptr(strf::garbage_buff<CharT>());
+        this->set_buffer_ptr(strf::garbage_buff<T>());
     }
 
 private:
 
-    STRF_HD void do_write(const CharT*, std::size_t) noexcept override
+    STRF_HD void do_write(const T*, std::size_t) noexcept override
     {
-        this->set_buffer_ptr(strf::garbage_buff<CharT>());
+        this->set_buffer_ptr(strf::garbage_buff<T>());
     }
 };
-
-
-template <typename CharT>
-using discarded_outbuff = discarded_destination<CharT>;
 
 } // namespace strf
 
@@ -499,5 +571,5 @@ using discarded_outbuff = discarded_destination<CharT>;
 #  pragma GCC diagnostic pop
 #endif
 
-#endif  // STRF_DESTINATION_HPP_INCLUDED
+#endif // STRF_DESTINATION_HPP
 

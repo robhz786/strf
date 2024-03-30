@@ -29,7 +29,7 @@
 namespace test_utils {
 
 template <typename CharT>
-void STRF_HD write_random_ascii_chars(CharT* dest, std::size_t count)
+void STRF_HD write_random_ascii_chars(CharT* dst, std::size_t count)
 {
 #ifdef STRF_FREESTANDING
     int r = 10;
@@ -38,7 +38,7 @@ void STRF_HD write_random_ascii_chars(CharT* dest, std::size_t count)
 #endif
     CharT ch = static_cast<CharT>(0x20 + r);
     for (std::size_t i = 0; i < count; ++i) {
-        dest[i] = ch;
+        dst[i] = ch;
         if (++ch == 0x7F) {
             ch = 0x20;
         }
@@ -55,13 +55,15 @@ inline std::string unique_tmp_file_name()
     char dirname[MAX_PATH];
     GetTempPathA(MAX_PATH, dirname);
     char fullname[MAX_PATH];
-    sprintf_s(fullname, MAX_PATH, "%s\\test_strf_%x.txt", dirname, std::rand());
+    auto res =  strf::to(fullname) (dirname, "\\test_strf_", strf::hex(std::rand()), ".txt");
+    STRF_MAYBE_UNUSED(res);
     return fullname;
 
 #else // defined(_WIN32)
 
    char fullname[200];
-   sprintf(fullname, "/tmp/test_strf_%x.txt", std::rand());
+   auto res =  strf::to(fullname) ("/tmp/test_strf_", strf::hex(std::rand()), ".txt");
+   STRF_MAYBE_UNUSED(res);
    return fullname;
 
 #endif  // defined(_WIN32)
@@ -157,7 +159,7 @@ std::basic_string<CharT> make_random_std_string(std::size_t size)
 template <typename CharT>
 constexpr STRF_HD  std::size_t full_string_size()
 {
-    return strf::min_space_after_recycle<CharT>();
+    return strf::min_destination_buffer_size;
 }
 template <typename CharT>
 constexpr STRF_HD  std::size_t half_string_size()
@@ -217,9 +219,9 @@ inline strf::detail::simple_string_view<CharT> STRF_HD make_tiny_string()
 }
 
 template <typename CharT>
-inline void STRF_HD turn_into_bad(strf::destination<CharT>& dest)
+inline void STRF_HD turn_into_bad(strf::output_buffer<CharT, 0>& dst)
 {
-    strf::detail::destination_test_tool::turn_into_bad(dest);
+    strf::detail::output_buffer_test_tool::turn_into_bad(dst);
 }
 
 inline STRF_HD int& test_err_count()
@@ -228,9 +230,50 @@ inline STRF_HD int& test_err_count()
     return count;
 }
 
-// function test_messages_destination() is a customization point
-// it needs to be defined by the test program
-STRF_HD strf::destination<char>& test_messages_destination();
+#if defined(__CUDACC__)
+
+STRF_HD strf::destination<char>&  test_messages_destination();
+STRF_HD strf::destination<char>*& test_messages_destination_ptr();
+
+#else
+
+inline STRF_HD strf::destination<char>*& test_messages_destination_ptr()
+{
+    static strf::destination<char>* ptr = nullptr;
+    return ptr;
+}
+
+inline STRF_HD strf::destination<char>& test_messages_destination()
+{
+    auto * ptr = test_messages_destination_ptr();
+    if (ptr == nullptr) {
+        static strf::discarder<char> discarder;
+        return discarder;
+    }
+    return *ptr;
+}
+
+#endif
+
+class test_messages_destination_guard
+{
+public:
+    test_messages_destination_guard(strf::destination<char>& dst)
+    {
+        previous_dst_ = test_messages_destination_ptr();
+        test_messages_destination_ptr() = &dst;
+    }
+
+    test_messages_destination_guard(const test_messages_destination_guard&) = delete;
+
+    ~test_messages_destination_guard()
+    {
+        test_messages_destination_ptr() = previous_dst_;
+    }
+
+private:
+    strf::destination<char>* previous_dst_ = nullptr;
+};
 
 class test_scope
 {
@@ -242,12 +285,21 @@ public:
         : parent_(current_test_scope_())
         , id_(generate_new_id_())
     {
+#if defined(__GNUC__) && (__GNUC__ >= 13)
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wdangling-pointer"
+#endif
+
         if (parent_) {
             parent_->child_ = this;
         } else {
             first_test_scope_() = this;
         }
         current_test_scope_() = this;
+
+#if defined(__GNUC__) && (__GNUC__ >= 13)
+#  pragma GCC diagnostic pop
+#endif
         description_[0] = '\0';
     }
 
@@ -368,30 +420,80 @@ void STRF_HD test_failure
     test_message(filename, line, funcname, args...);
 }
 
-template <typename CharOut>
-class input_tester
-    : public strf::destination<CharOut>
-{
+class test_failure_notifier: public strf::destination<char> {
+public:
+    STRF_HD test_failure_notifier
+        ( const char* funcname
+        , const char* srcfile
+        , int srcline
+        , strf::destination<char>& dst = test_utils::test_messages_destination() )
+        : strf::destination<char>{buff_, buffsize_}
+        , dst_(dst)
+        , funcname_(funcname)
+        , srcfile_(srcfile)
+        , srcline_(srcline)
+    {
+    }
 
+    STRF_HD ~test_failure_notifier()
+    {
+#if __cpp_exceptions  && ! defined(__CUDACC__)
+        try {
+            finish();
+        } catch(...) {
+        }
+#endif
+    }
+
+    STRF_HD void recycle() override {
+        do_recycle();
+    }
+
+    STRF_HD void finish() {
+        if (!finished_) {
+            do_recycle();
+            if (has_error_) {
+                test_utils::print_test_message_end(funcname_);
+            }
+            finished_ = true;
+        }
+    }
+
+private:
+    STRF_HD void do_recycle() {
+        if (this->buffer_ptr() != buff_) {
+            ensure_notification_init_();
+            dst_.write(buff_, this->buffer_ptr() - buff_);
+            this->set_buffer_ptr(buff_);
+        }
+    }
+
+    STRF_HD void ensure_notification_init_() {
+        if (!has_error_) {
+            has_error_ = true;
+            ++ test_utils::test_err_count();
+            test_utils::print_test_message_header(srcfile_, srcline_);
+        }
+    }
+
+    bool has_error_ = false;
+    bool finished_ = false;
+
+    strf::destination<char>& dst_;
+    const char* funcname_;
+    const char* srcfile_;
+    int srcline_;
+    constexpr static std::size_t buffsize_ =
+        strf::destination<char>::min_space_after_recycle;
+    char buff_[buffsize_];
+};
+
+
+template <typename CharOut>
+class input_tester : public strf::destination<CharOut>{
 public:
 
-    struct input{
-        STRF_HD input
-            ( strf::detail::simple_string_view<CharOut> expected_
-            , const char* src_filename_
-            , int src_line_
-            , const char* function_
-            , double reserve_factor_
-            , std::size_t size_ = 0 )
-            : expected(expected_)
-            , src_filename(src_filename_)
-            , src_line(src_line_)
-            , function(function_)
-            , reserve_factor(reserve_factor_)
-            , size(size_)
-        {
-        }
-
+    struct input_reserve{
         strf::detail::simple_string_view<CharOut> expected;
         const char* src_filename;
         int src_line;
@@ -400,9 +502,34 @@ public:
         std::size_t size = 0;
     };
 
-    STRF_HD input_tester(input i)
-        : input_tester{ i.expected, i.src_filename, i.src_line, i.function
-                      , i.reserve_factor, i.size }
+    struct input_no_reserve{
+        strf::detail::simple_string_view<CharOut> expected;
+        const char* src_filename;
+        int src_line;
+        const char* function;
+    };
+
+    STRF_HD input_tester(const input_reserve& i)
+        : strf::destination<CharOut>{buffer_, i.size}
+        , notifier_{i.function, i.src_filename, i.src_line}
+        , expected_(i.expected)
+        , reserved_size_(i.size)
+        , has_reserved_size_(true)
+        , reserve_factor_(i.reserve_factor)
+    {
+        if (i.size > buffer_size_) {
+            strf::to(notifier_)
+                ( "Warning: reserved more characters (", i.size
+                  , ") then the tester buffer size (", buffer_size_, ")." );
+            this->set_buffer_end(buffer_ + buffer_size_);
+        }
+    }
+
+    STRF_HD input_tester(const input_no_reserve& i)
+        : strf::destination<CharOut>{buffer_, buffer_ + buffer_size_}
+        , notifier_{i.function, i.src_filename, i.src_line}
+        , expected_(i.expected)
+        , has_reserved_size_(false)
     {
     }
 
@@ -427,63 +554,19 @@ public:
 
 private:
 
-    STRF_HD void before_emitting_error_message_()
-    {
-        if (!error_message_emitted_) {
-            ++ test_err_count();
-            print_test_message_header(src_filename_, src_line_);
-            error_message_emitted_ = true;
-        }
-    }
-
-    template <typename ... MsgArgs>
-    void STRF_HD test_failure_(const MsgArgs&... msg_args)
-    {
-        before_emitting_error_message_();
-        strf::to(test_utils::test_messages_destination()) (msg_args...);
-    }
-
     bool STRF_HD wrong_size_(std::size_t result_size) const;
     bool STRF_HD wrong_content_( strf::detail::simple_string_view<CharOut> result ) const;
 
+    test_failure_notifier notifier_;
     strf::detail::simple_string_view<CharOut> expected_;
-    std::size_t reserved_size_;
-    const char* src_filename_;
-    const char* function_;
-    int src_line_;
-    double reserve_factor_;
-    bool error_message_emitted_ = false;
+    std::size_t reserved_size_ = 0;
+    bool has_reserved_size_;
+    double reserve_factor_ = 1.0;
 
     CharOut* pointer_before_overflow_ = nullptr;
     enum {buffer_size_ = 280};
     CharOut buffer_[buffer_size_];
 };
-
-
-template <typename CharOut>
-STRF_HD input_tester<CharOut>::input_tester
-    ( strf::detail::simple_string_view<CharOut> expected
-    , const char* src_filename
-    , int src_line
-    , const char* function
-    , double reserve_factor
-    , std::size_t size )
-    : strf::destination<CharOut>{buffer_, size}
-    , expected_(expected)
-    , reserved_size_(size)
-    , src_filename_(src_filename)
-    , function_(function)
-    , src_line_(src_line)
-    , reserve_factor_(reserve_factor)
-{
-    if (size > buffer_size_) {
-        test_utils::test_message
-            ( src_filename_, src_line_, function_
-            , "Warning: reserved more characters (", size
-            , ") then the tester buffer size (", buffer_size_, ")." );
-        this->set_buffer_end(buffer_ + buffer_size_);
-    }
-}
 
 template <typename CharOut>
 STRF_HD input_tester<CharOut>::~input_tester()
@@ -493,10 +576,11 @@ STRF_HD input_tester<CharOut>::~input_tester()
 template <typename CharOut>
 void STRF_HD input_tester<CharOut>::recycle()
 {
-    test_failure_(" destination::recycle() called "
-                  "( it means the calculated size too small ).\n");
+    strf::to(notifier_)
+        (" destination::recycle() called "
+         "( it means the calculated size is smaller than it should ).\n");
 
-    if ( this->buffer_ptr() + strf::min_space_after_recycle<CharOut>()
+    if ( this->buffer_ptr() + strf::min_destination_buffer_size
        > buffer_ + buffer_size_ )
     {
         pointer_before_overflow_ = this->buffer_ptr();
@@ -515,19 +599,16 @@ void STRF_HD input_tester<CharOut>::finish()
     bool failed_content = wrong_content_(result);
     bool failed_size = wrong_size_(result.size());
     if (failed_size || failed_content){
-        ++ test_err_count();
-        print_test_message_header(src_filename_, src_line_);
-        auto& tout = test_utils::test_messages_destination();
         if (failed_content) {
-            strf::to(tout) ("\n  expected: \"", strf::conv(expected_));
-            strf::to(tout) ("\"\n  obtained: \"", strf::conv(result), '\"');
+            strf::to(notifier_) ("\n  expected: \"", strf::transcode(expected_));
+            strf::to(notifier_) ("\"\n  obtained: \"", strf::transcode(result), '\"');
         }
         if (failed_size) {
-            strf::to(tout) ("\n  reserved size  : ", reserved_size_);
-            strf::to(tout) ("\n  necessary size : ", result.size());
+            strf::to(notifier_) ("\n  reserved size  : ", reserved_size_);
+            strf::to(notifier_) ("\n  necessary size : ", result.size());
         }
-        print_test_message_end(function_);
     }
+    notifier_.finish();
 }
 
 template <typename CharOut>
@@ -542,9 +623,10 @@ bool STRF_HD input_tester<CharOut>::wrong_content_
 template <typename CharOut>
 bool STRF_HD input_tester<CharOut>::wrong_size_(std::size_t result_size) const
 {
-    return ( reserved_size_ < result_size
-          || ( static_cast<double>(reserved_size_) * reserve_factor_
-             > static_cast<double>(result_size) ) );
+    return has_reserved_size_
+        && ( reserved_size_ < result_size
+             || ( static_cast<double>(reserved_size_) * reserve_factor_
+                  > static_cast<double>(result_size) ) );
 }
 
 template <typename CharT>
@@ -553,6 +635,7 @@ class input_tester_creator
 public:
 
     using char_type = CharT;
+    using destination_type = test_utils::input_tester<CharT>;
     using sized_destination_type = test_utils::input_tester<CharT>;
 
     STRF_HD input_tester_creator
@@ -569,9 +652,16 @@ public:
     {
     }
 
-    typename test_utils::input_tester<CharT>::input STRF_HD create(std::size_t size) const
+    STRF_HD auto create(std::size_t size) const
     {
-        return { expected_, filename_, line_, function_, reserve_factor_, size };
+        return typename test_utils::input_tester<CharT>::input_reserve
+        { expected_, filename_, line_, function_, reserve_factor_, size };
+    }
+
+    STRF_HD auto create() const
+    {
+        return typename test_utils::input_tester<CharT>::input_no_reserve
+        { expected_, filename_, line_, function_};
     }
 
 private:
@@ -590,9 +680,14 @@ auto STRF_HD make_tester
     , int line
     , const char* function
     , double reserve_factor = 1.0 )
-    -> strf::destination_calc_size<test_utils::input_tester_creator<CharT>>
+    -> strf::printing_syntax
+        < test_utils::input_tester_creator<CharT>
+        , strf::reserve_calc >
 {
-    return {expected, filename, line, function, reserve_factor};
+    return strf::make_printing_syntax
+        ( test_utils::input_tester_creator<CharT>
+            {expected, filename, line, function, reserve_factor}
+        , strf::reserve_calc{} );
 }
 
 template<typename CharT>
@@ -602,9 +697,14 @@ auto STRF_HD make_tester
    , int line
    , const char* function
    , double reserve_factor = 1.0 )
-   -> strf::destination_calc_size<test_utils::input_tester_creator<CharT>>
+    -> strf::printing_syntax
+        < test_utils::input_tester_creator<CharT>
+        , strf::reserve_calc >
 {
-    return {expected, filename, line, function, reserve_factor};
+    return strf::make_printing_syntax
+        ( test_utils::input_tester_creator<CharT>
+            {expected, filename, line, function, reserve_factor}
+        , strf::reserve_calc{} );
 }
 
 #if defined(_MSC_VER)
@@ -655,43 +755,145 @@ struct reduce<X, Others...>{
 } // namespace detail
 
 template <typename CharT>
-class input_tester_with_fixed_spaces_base: public strf::destination<CharT>
-{
+struct recycle_call_tester_input {
+    strf::detail::simple_string_view<CharT> expected;
+    const char* function;
+    const char* src_filename;
+    int src_line;
+    std::size_t initial_space;
+};
+
+template <typename CharT>
+class recycle_call_tester: public strf::destination<CharT> {
 public:
 
-    STRF_HD input_tester_with_fixed_spaces_base
-        ( strf::detail::simple_string_view<CharT> expected
-        , const char* src_filename
-        , int src_line
-        , const char* function
-        , CharT* buff
-        , std::size_t buff_total_size
-        , const unsigned* spaces_array
-        , std::size_t num_spaces
-        , unsigned first_space );
-
-    STRF_HD ~input_tester_with_fixed_spaces_base()
+    STRF_HD recycle_call_tester(recycle_call_tester_input<CharT> input)
+        : strf::destination<CharT>{buffer_, input.initial_space}
+        , expected_(input.expected)
+        , notifier_{input.function, input.src_filename, input.src_line}
+        , dst_end_{buffer_}
     {
-         if (error_message_emitted_) {
-             print_test_message_end(function_);
-         }
+        if (input.initial_space + strf::min_destination_buffer_ssize > buffer_size_) {
+            strf::to(notifier_) ("\nUnsupported test case: Initial space too big");
+            this->set_buffer_end(buffer_);
+        }
     }
+
     STRF_HD void recycle() override;
 
     STRF_HD void finish();
 
 private:
 
-    bool error_message_emitted_ = false;
+    bool recycle_not_called_yet = true;
     strf::detail::simple_string_view<CharT> expected_;
-    const char* src_filename_;
-    int src_line_;
-    const char* function_;
-    CharT* const dest_;
-    CharT* dest_end_;
-    const unsigned* spaces_;
-    const std::size_t num_spaces_;
-    unsigned spaces_index_ = 0;
+    test_failure_notifier notifier_;
+    CharT* dst_end_;
+
+    enum {buffer_size_ = 320};
+    CharT buffer_[buffer_size_];
+};
+
+template <typename CharT>
+STRF_HD void recycle_call_tester<CharT>::recycle()
+{
+    if (recycle_not_called_yet) {
+        if (this->buffer_ptr() > this->buffer_end()) {
+            strf::to(notifier_) ( "\nContent written after buffer_end()." );
+        }
+        this->set_buffer_end(buffer_ + buffer_size_);
+        recycle_not_called_yet = false;
+    } else {
+        strf::to(notifier_) ( "\nrecycle() called more than once here.");
+        this->set_good(false);
+        this->set_buffer_ptr(strf::garbage_buff<CharT>());
+        this->set_buffer_end(strf::garbage_buff_end<CharT>());
+    }
+}
+
+template <typename CharT>
+STRF_HD void recycle_call_tester<CharT>::finish()
+{
+    if (recycle_not_called_yet) {
+        strf::to(notifier_) ( "\nrecycle() was not called.");
+    }
+    if (this->good()) {
+        dst_end_ = this->buffer_ptr();
+        this->set_good(false);
+        this->set_buffer_ptr(strf::garbage_buff<CharT>());
+        this->set_buffer_end(strf::garbage_buff_end<CharT>());
+    }
+    strf::detail::simple_string_view<CharT> result{buffer_, dst_end_};
+    bool as_expected =
+        ( result.size() == expected_.size()
+       && strf::detail::str_equal<CharT>(expected_.begin(), buffer_, expected_.size()) );
+
+    if ( ! as_expected ) {
+        strf::to(notifier_)
+            ( "\n  expected: \"", strf::transcode(expected_)
+            , "\"\n  obtained: \"", strf::transcode(result), '\"');
+    }
+    notifier_.finish();
+}
+
+template <typename CharT>
+class recycle_call_tester_creator {
+public:
+    using destination_type = recycle_call_tester<CharT>;
+    using char_type = CharT;
+
+    STRF_HD recycle_call_tester_creator
+        ( strf::detail::simple_string_view<CharT> expected
+        , const char* function
+        , const char* src_filename
+        , int src_line
+        , std::size_t initial_space )
+        : input_{expected, function, src_filename, src_line, initial_space}
+    {}
+
+    STRF_HD recycle_call_tester_input<CharT> create() const { return input_; }
+
+public:
+    recycle_call_tester_input<CharT> input_;
+};
+
+template <typename CharT>
+STRF_HD auto test_recycle_call
+    ( const CharT* expected
+    , const char* function
+    , const char* src_filename
+    , int src_line
+    , std::size_t initial_space )
+    -> strf::printing_syntax<test_utils::recycle_call_tester_creator<CharT>>
+{
+    return strf::make_printing_syntax
+        ( test_utils::recycle_call_tester_creator<CharT>
+            {expected, function, src_filename, src_line, initial_space} );
+}
+
+template <typename CharT>
+class failed_recycle_call_tester: public strf::destination<CharT> {
+public:
+
+    STRF_HD failed_recycle_call_tester(recycle_call_tester_input<CharT> input)
+        : strf::destination<CharT>{buffer_, input.initial_space}
+        , expected_(input.expected)
+        , function_(input.function)
+        , src_filename_(input.src_filename)
+        , src_line_(input.src_line)
+        , dst_end_{buffer_}
+    {
+        if (input.initial_space + strf::min_destination_buffer_ssize > buffer_size_) {
+            emit_error_message_("\nUnsupported test case: Initial space too big");
+            this->set_buffer_end(buffer_);
+        }
+    }
+
+    STRF_HD void recycle() override;
+
+    STRF_HD void finish();
+
+private:
 
     STRF_HD void before_emitting_error_message_()
     {
@@ -708,83 +910,55 @@ private:
         before_emitting_error_message_();
         strf::to(test_utils::test_messages_destination()) (args...);
     }
+
+    bool recycle_not_called_yet = true;
+    bool error_message_emitted_ = false;
+    strf::detail::simple_string_view<CharT> expected_;
+    const char* function_;
+    const char* src_filename_;
+    int src_line_;
+    CharT* dst_end_;
+
+    enum {buffer_size_ = 320};
+    CharT buffer_[buffer_size_];
 };
 
-
 template <typename CharT>
-STRF_HD input_tester_with_fixed_spaces_base<CharT>::input_tester_with_fixed_spaces_base
-    ( strf::detail::simple_string_view<CharT> expected
-    , const char* src_filename
-    , int src_line
-    , const char* function
-    , CharT* buff
-    , std::size_t buff_total_size
-    , const unsigned* spaces_array
-    , std::size_t num_spaces
-    , unsigned first_space )
-    : strf::destination<CharT>{buff, first_space}
-    , expected_{expected}
-    , src_filename_{src_filename}
-    , src_line_{src_line}
-    , function_{function}
-    , dest_{buff}
-    , dest_end_{buff + buff_total_size}
-    , spaces_{spaces_array}
-    , num_spaces_{num_spaces}
-    , spaces_index_{0}
+STRF_HD void failed_recycle_call_tester<CharT>::recycle()
 {
-    if (expected.size() > buff_total_size) {
-        emit_error_message_("\nBuffer smaller than expected content size");
-        this->set_good(false);
-        this->set_buffer_ptr(strf::garbage_buff<CharT>());
-        this->set_buffer_end(strf::garbage_buff_end<CharT>());
-    }
-}
-
-template <typename CharT>
-STRF_HD void input_tester_with_fixed_spaces_base<CharT>::recycle()
-{
-    if (this->good()) {
+    if (recycle_not_called_yet) {
         if (this->buffer_ptr() > this->buffer_end()) {
-            emit_error_message_("\nContent inserted after end()");
-            if (this->buffer_ptr() < dest_end_) {
-                dest_end_ = this->buffer_ptr();
-            }
-            goto set_bad;
+            emit_error_message_( "\nContent written after buffer_end()." );
         }
-        if (++spaces_index_ < num_spaces_) {
-            this->set_buffer_end(this->buffer_end() + spaces_[spaces_index_]);
-        } else {
-            dest_end_ = this->buffer_ptr();
-            goto set_bad;
-        }
+        dst_end_ = this->buffer_ptr();
+        recycle_not_called_yet = false;
     } else {
-        set_bad:
-        this->set_good(false);
-        this->set_buffer_ptr(strf::garbage_buff<CharT>());
-        this->set_buffer_end(strf::garbage_buff_end<CharT>());
+        emit_error_message_( "\nrecycle() called more than once here.");
     }
+    this->set_good(false);
+    this->set_buffer_ptr(strf::garbage_buff<CharT>());
+    this->set_buffer_end(strf::garbage_buff_end<CharT>());
 }
 
-
 template <typename CharT>
-STRF_HD void input_tester_with_fixed_spaces_base<CharT>::finish()
+STRF_HD void failed_recycle_call_tester<CharT>::finish()
 {
-    if (this->good()) {
-        dest_end_ = this->buffer_ptr();
-        this->set_good(false);
-        this->set_buffer_ptr(strf::garbage_buff<CharT>());
-        this->set_buffer_end(strf::garbage_buff_end<CharT>());
+    if (recycle_not_called_yet) {
+        dst_end_ = this->buffer_ptr();
     }
-    strf::detail::simple_string_view<CharT> result{dest_, dest_end_};
+    this->set_good(false);
+    this->set_buffer_ptr(strf::garbage_buff<CharT>());
+    this->set_buffer_end(strf::garbage_buff_end<CharT>());
+
+    strf::detail::simple_string_view<CharT> result{buffer_, dst_end_};
     bool as_expected =
         ( result.size() == expected_.size()
-       && strf::detail::str_equal<CharT>(expected_.begin(), dest_, expected_.size()) );
+       && strf::detail::str_equal<CharT>(expected_.begin(), buffer_, expected_.size()) );
 
     if ( ! as_expected ) {
         emit_error_message_
-            ( "\n  expected: \"", strf::conv(expected_)
-            , "\"\n  obtained: \"", strf::conv(result), '\"');
+            ( "\n  expected: \"", strf::transcode(expected_)
+            , "\"\n  obtained: \"", strf::transcode(result), '\"');
     }
 
     if (error_message_emitted_) {
@@ -794,122 +968,49 @@ STRF_HD void input_tester_with_fixed_spaces_base<CharT>::finish()
 }
 
 template <typename CharT>
-struct input_tester_with_fixed_spaces_input
-{
-    strf::detail::simple_string_view<CharT> expected;
-    const char* src_filename;
-    int src_line;
-    const char* funcname;
-};
-
-
-template <unsigned...>
-struct array_of_uint_filler;
-
-template <>
-struct array_of_uint_filler<>
-{
-    static STRF_HD void fill(unsigned*)
-    {
-    }
-};
-
-template <unsigned FirstValue, unsigned... OtherValues>
-struct array_of_uint_filler<FirstValue, OtherValues...>
-{
-    static STRF_HD void fill(unsigned* array)
-    {
-        array[0] = FirstValue;
-        array_of_uint_filler<OtherValues...>::fill(array + 1);
-    }
-};
-
-template <std::size_t Size>
-struct array_of_uint
-{
-    template <unsigned... Values>
-    STRF_HD array_of_uint(array_of_uint_filler<Values...>)
-    {
-        array_of_uint_filler<Values...>::fill(array);
-    }
-    unsigned array[Size];
-};
-
-
-template <typename CharT, unsigned FirstSpace, unsigned... Spaces>
-class input_tester_with_fixed_spaces
-    : public input_tester_with_fixed_spaces_base<CharT>
-{
-    static constexpr std::size_t num_spaces_ = 1 + sizeof...(Spaces);
-
+class failed_recycle_call_tester_creator {
 public:
-    template <unsigned... Values>
-    STRF_HD input_tester_with_fixed_spaces
-        ( input_tester_with_fixed_spaces_input<CharT> i )
-        : input_tester_with_fixed_spaces_base<CharT>
-            { i.expected, i.src_filename, i.src_line, i.funcname
-            , buff_, buff_size_, spaces_.array, num_spaces_, FirstSpace}
-        , spaces_{array_of_uint_filler<FirstSpace, Spaces...>{}}
-    {
-    }
-
-private:
-
-    array_of_uint<num_spaces_> spaces_;
-    static constexpr std::size_t buff_size_ = detail::reduce<FirstSpace, Spaces...>::value;
-    CharT buff_[buff_size_ + 80];
-};
-
-
-template <typename CharT, unsigned... Spaces>
-class input_tester_with_fixed_spaces_creator
-{
-public:
-
+    using destination_type = failed_recycle_call_tester<CharT>;
     using char_type = CharT;
-    using destination_type = test_utils::input_tester_with_fixed_spaces<CharT, Spaces...>;
 
-    STRF_HD input_tester_with_fixed_spaces_creator
+    STRF_HD failed_recycle_call_tester_creator
         ( strf::detail::simple_string_view<CharT> expected
+        , const char* function
         , const char* src_filename
         , int src_line
-        , const char* funcname )
-        : input {expected, src_filename, src_line, funcname}
-    {
-    }
+        , std::size_t initial_space )
+        : input_{expected, function, src_filename, src_line, initial_space}
+    {}
 
-    STRF_HD input_tester_with_fixed_spaces_input<CharT> create() const noexcept
-    {
-        return input;
-    }
+    STRF_HD recycle_call_tester_input<CharT> create() const { return input_; }
 
-private:
-
-    input_tester_with_fixed_spaces_input<CharT> input;
+public:
+    recycle_call_tester_input<CharT> input_;
 };
 
-
-struct input_tester_with_fixed_spaces_creator_creator
+template <typename CharT>
+STRF_HD auto test_failed_recycle_call
+    ( const CharT* expected
+    , const char* function
+    , const char* src_filename
+    , int src_line
+    , std::size_t initial_space )
+    -> strf::printing_syntax<test_utils::failed_recycle_call_tester_creator<CharT>>
 {
-    const char* filename;
-    int line;
-    const char* function;
-
-    template <unsigned... Spaces, typename CharT>
-    STRF_HD auto create(const CharT* expected) const noexcept
-        -> strf::destination_no_reserve
-            < input_tester_with_fixed_spaces_creator<CharT, Spaces...> >
-    {
-        return {expected, filename, line, function};
-    }
-};
+    return strf::make_printing_syntax
+        ( test_utils::failed_recycle_call_tester_creator<CharT>
+          {expected, function, src_filename, src_line, initial_space} );
+}
 
 } // namespace test_utils
 
-#define TEST_CALLING_RECYCLE_AT                                         \
-    test_utils::input_tester_with_fixed_spaces_creator_creator          \
-        {__FILE__, __LINE__, BOOST_CURRENT_FUNCTION}                    \
-        . template create
+#define TEST_CALLING_RECYCLE_AT(SPACE, EXPECTED)                       \
+    test_utils::test_recycle_call                                      \
+        (EXPECTED, BOOST_CURRENT_FUNCTION, __FILE__, __LINE__, SPACE)
+
+#define TEST_TRUNCATING_AT(SPACE, EXPECTED)                             \
+    test_utils::test_failed_recycle_call                                \
+        (EXPECTED, BOOST_CURRENT_FUNCTION, __FILE__, __LINE__, SPACE)
 
 #define TEST(EXPECTED)                                                  \
     test_utils::make_tester( (EXPECTED), __FILE__, __LINE__             \
@@ -949,15 +1050,29 @@ struct input_tester_with_fixed_spaces_creator_creator
             , "TEST_EQ (", (a), ", ", (b), ") failed. " );
 
 #define TEST_CSTR_EQ(s1, s2)                                            \
-    for ( std::size_t len1 = strf::detail::str_length(s1); 1;){         \
+    for ( const std::size_t len1 = strf::detail::str_length(s1); 1;){   \
         if ( len1 != strf::detail::str_length(s2)                       \
           || ! strf::detail::str_equal(s1, s2, len1))                   \
             test_utils::test_failure                                    \
                 ( __FILE__, __LINE__, BOOST_CURRENT_FUNCTION            \
-                , "TEST_CSTR_EQ(s1, s2) failed. Where:\n    s1 is \"", (s1)  \
-                , "\"\n    s2 is \"", (s2), '\"' );                     \
+                , "TEST_CSTR_EQ(s1, s2) failed. Where:\n    s1 is \""   \
+                , strf::transcode(s1)                                   \
+                , "\"\n    s2 is \"", strf::transcode(s2), '\"' );      \
         break;                                                          \
     }                                                                   \
+
+#define TEST_STR_EQ(s1, s2)                                             \
+    {                                                                   \
+        auto ssv1 = strf::detail::to_simple_string_view(s1);            \
+        auto ssv2 = strf::detail::to_simple_string_view(s2);            \
+        if (ssv1 != ssv2) {                                             \
+            test_utils::test_failure                                    \
+                ( __FILE__, __LINE__, BOOST_CURRENT_FUNCTION            \
+                , "TEST_STR_EQ(s1, s2) failed. Where:\n    s1 is \""    \
+                , strf::transcode(ssv1)                                 \
+                , "\"\n    s2 is \"", strf::transcode(ssv2), '\"' );    \
+        }                                                               \
+    }
 
 #define TEST_STRVIEW_EQ(s1, s2, len)                                       \
     if (! strf::detail::str_equal(s1, s2, len))                            \
@@ -978,10 +1093,145 @@ struct input_tester_with_fixed_spaces_creator_creator
               , "exception " #EXCEP " not thrown as expected" );        \
   }
 
+
+namespace test_utils {
+
+template <typename T, std::size_t N>
+struct simple_array {
+    T elements[N];
+};
+
+template <typename T, typename... Args>
+STRF_HD simple_array<T, sizeof... (Args)> make_simple_array(const Args&... args)
+{
+    return simple_array<T, sizeof... (Args)>{{ static_cast<T>(args)... }};
+}
+
+template <typename T>
+class span {
+public:
+
+    using const_iterator = T*;
+    using iterator = T*;
+
+    span() = default;
+
+    template <typename U, std::size_t N>
+    STRF_HD span(simple_array<U, N>& arr)
+        : begin_(&arr.elements[0])
+        , size_(N)
+    {
+    }
+    STRF_HD span(T* ptr, std::size_t s)
+        : begin_(ptr)
+        , size_(s)
+    {
+    }
+    STRF_HD span(T* b, T* e)
+        : begin_(b)
+        , size_(strf::detail::safe_cast_size_t(e - b))
+    {
+    }
+
+    STRF_HD T* begin() const { return begin_; }
+    STRF_HD T* end()   const { return begin_ + size_; }
+
+    STRF_HD std::size_t size() const { return size_; }
+    STRF_HD std::ptrdiff_t ssize() const { return static_cast<std::ptrdiff_t>(size_); }
+    STRF_HD T& operator[](std::size_t i) const { return begin_[i]; }
+
+private:
+    T* begin_ = nullptr;
+    std::size_t size_ = 0;
+};
+
+template <typename T, typename U>
+STRF_HD bool operator==(const span<T>& l, const span<U>& r) noexcept
+{
+    if (l.size() != r.size())
+        return false;
+
+    for (std::size_t i = 0; i < l.size(); ++i) {
+        if (l.begin()[i] != r.begin()[i]) {
+            return false;
+        }
+    }
+    return true;
+}
+
+template <typename T, typename U>
+STRF_HD bool operator!=(const span<T>& l, const span<U>& r) noexcept
+{
+    return ! (l == r);
+}
+
+namespace detail {
+
+struct testfunc_node {
+    typedef void (*func_ptr_t)(void);
+
+    func_ptr_t testfunc = nullptr;
+    testfunc_node* next = nullptr;
+};
+
+struct testfunc_list_t {
+    testfunc_node* first = nullptr;
+    testfunc_node* last = nullptr;
+};
+
+inline testfunc_list_t& testfunc_list() noexcept {
+    static testfunc_list_t lst;
+    return lst;
+}
+
+inline void add_testfunc(testfunc_node* node) noexcept {
+    node->next = nullptr;
+    auto& list = testfunc_list();
+    if (list.last) {
+        list.last->next = node;
+        list.last = node;
+    } else {
+        list.first = node;
+        list.last = node;
+    }
+}
+
+class testfunc_node_registration {
+public:
+    testfunc_node_registration(testfunc_node::func_ptr_t func) noexcept {
+        node_.testfunc = func;
+        add_testfunc(&node_);
+    }
+
+private:
+    testfunc_node node_;
+};
+
+
+} // namespace detail
+
+inline void run_all_tests() {
+    for ( auto* node = detail::testfunc_list().first
+        ; node != nullptr
+        ; node = node->next)
+    {
+        if (node->testfunc)
+            node->testfunc();
+    }
+}
+
+} // namespace test_utils
+
+
 #if defined(__CUDACC__)
-#define REGISTER_STRF_TEST(FUNC) STRF_TEST_FUNC void run_all_tests() { FUNC(); }
+#  define REGISTER_STRF_TEST(FUNC) STRF_TEST_FUNC void run_all_tests() { FUNC(); }
 #else
-#define REGISTER_STRF_TEST(FUNC)
-#endif
+#  define REGISTER_STRF_TEST(FUNC)                                    \
+       namespace {                                                    \
+           const test_utils::detail::testfunc_node_registration       \
+               TEST_STR_CONCAT(testfunc_reg_, __LINE__) {FUNC};       \
+       }
+
+#endif // defined(__CUDACC__)
 
 #endif // defined(STRF_TEST_TEST_UTILS_HPP_INCLUDED)

@@ -12,80 +12,98 @@ http://www.boost.org/LICENSE_1_0.txt)
 :source-highlighter: prettify
 :icons: font
 
-:min_space_after_recycle: <<destination_hpp#min_space_after_recycle,min_space_after_recycle>>
+:output_buffer: <<destination_hpp#output_buffer,output_buffer>>
 :destination: <<destination_hpp#destination,destination>>
-:recycle: <<destination_hpp#destination_recycle,recycle>>
-:good: <<destination_hpp#destination_good,good>>
-:buffer_ptr: <<destination_hpp#destination_buffer_ptr,buffer_ptr>>
-:set_good: <<destination_hpp#destination_set_good,set_good>>
-:set_buffer_ptr: <<destination_hpp#destination_set_buffer_ptr,set_buffer_ptr>>
+:recycle: <<destination_hpp#output_buffer_recycle,recycle>>
+:flush: <<destination_hpp#output_buffer_flush,flush>>
+:good: <<destination_hpp#output_buffer_good,good>>
+:buffer_ptr: <<destination_hpp#output_buffer_buffer_ptr,buffer_ptr>>
+:buffer_space: <<destination_hpp#output_buffer_buffer_space,buffer_space>>
+:set_good: <<destination_hpp#output_buffer_set_good,set_good>>
+:set_buffer_ptr: <<destination_hpp#output_buffer_set_buffer_ptr,set_buffer_ptr>>
 :to: <<quick_reference#to_destination_ref,to>>
 
-:destination_no_reserve: <<strf_hpp#destination_no_reserve,destination_no_reserve>>
-:destination_calc_size: <<strf_hpp#destination_calc_size,destination_calc_size>>
-:destination_with_given_size: <<strf_hpp#destination_with_given_size,destination_with_given_size>>
+:printing_syntax: <<strf_hpp#printing_syntax,printing_syntax>>
 :DestinationCreator: <<strf_hpp#DestinationCreator,DestinationCreator>>
 :SizedDestinationCreator: <<strf_hpp#SizedDestinationCreator,SizedDestinationCreator>>
+:min_destination_buffer_size: <<destination_hpp#destination,min_destination_buffer_size>>
 
 == The `destination` class template
 
 Creating a new output type involves defining a concrete class
-that derives from {destination}.
-Once this is done, one can write things to objects
+that derives from `{destination}`.
+Having done that, one can write things to objects
 of such type with the `{to}` function template,
 using the basic usage `<<tutorial#,syntax>>` of the library:
 
 [source,cpp,subs=normal]
 ----
-strf::destination</{asterisk}char type{asterisk}/>& dest = /{asterisk}\...{asterisk}/;
-strf::<<quick_reference#to_destination_ref,to>>(dest) (/{asterisk} arguments to be printed {asterisk}/);
+strf::destination</{asterisk}char type{asterisk}/>& dst = /{asterisk}\...{asterisk}/;
+strf::<<quick_reference#to_destination_ref,to>>(dst) (/{asterisk} arguments to be printed {asterisk}/);
 ----
 
-So the first to learn is how {destination} works.
-It is a simple class template that
+But before learning how to implement such class,
+it makes sense to first undestand how one uses the
+`{destination}` interface, __i.e.__, how to write things
+to it.
+`destination` is a simple class template: it
 contains a boolean &#x2014; which indicates whether
-the state is "good" or "bad" &#x2014; and two pointers. One of them points
+the state is "good" or "bad" &#x2014; and two pointers; one of them points
 to the end of buffer, and the other to the position where the
 next character shall be written. They are returned by the
-`<<destination_hpp#destination_buffer_end,buffer_end>>` and
-`<<destination_hpp#destination_buffer_ptr,buffer_ptr>>` functions respectively.
+`<<destination_hpp#output_buffer_buffer_end,buffer_end>>` and
+`<<destination_hpp#output_buffer_buffer_ptr,buffer_ptr>>` functions respectively.
 Contrary to what is common in output streams abstractions,
-where you need to use high-lever functions to insert content ( like
+where you need to use high-level functions to insert content ( like
 https://en.cppreference.com/w/cpp/io/basic_streambuf/sputc[`sputc`]
 in `std::basic_streambuf`, or
 https://en.cppreference.com/w/cpp/io/basic_ostream/write[`write`]
-in `std::basic_ostream` ), in `destination` you can write things directly to
-`buffer_ptr()`. After that, you shall call the `<<destination_hpp#destination_advance,advance>>`
-or the `<<destination_hpp#destination_advance_to,advance_to>>` function to update
-the buffer pointer. For instance:
+in `std::basic_ostream` ), in `{destination}`, one can write things directly to
+its buffer.
 
 [source,cpp,subs=normal]
 ----
-if (dest.buffer_space() < 5) {
-    dest.recycle();
+if (dst.{buffer_space}() < 5) {
+    dst.recycle();
 }
-memcpy(dest.buffer_ptr(), "hello", 5);
-dest.advance(5);
+memcpy(dst.buffer_ptr(), "hello", 5);
+dst.advance(5);
 ----
 
-As done above, before writting anything to `buffer_ptr()`, one
+As demonstrated above, before writting anything to `buffer_ptr()`, one
 must check whether there is enough space,
-and if not, one must call the `{recycle}` function.
-This is the only pure virtual function in `{destination}`,
+and if not, one must call the `{recycle}` function
+( or `{flush}`, which calls `recycle` ).
+This is the only pure virtual function in `{destination}`;
 its job is to flush the content written so far and reset the position of
-`buffer_ptr()` and `buffer_end()` so that the space ( `buffer_end() - buffer_ptr()` )
-becames greater than or equal to `{min_space_after_recycle}</{asterisk}char type{asterisk}/>()`.
-This is a postcondition
-even when the state is "bad". The "bad" state implies that writting
-anything in the range [`buffer_ptr(), buffer_end()`) doesn't have any relevent
-side effect, though the behaviour is still defined, __i.e.__
-the range [`buffer_ptr(), buffer_end()`) must be valid accessible memory area
-( sometimes `<<destination_hpp#garbage_buff,garbage_buff>>`
-is used to handle the bad state ).
-The state can change from "good" to "bad" in `{recycle}`,
+`buffer_ptr()` and `buffer_end()`. After `{recycle}` is called,
+the buffer's space ( `buffer_end() - buffer_ptr()` ) is
+guaranteed to be at least `{min_destination_buffer_size}`
+( which is currently `64` but may be greater in future versions ).
+This is a postcondition even when the state is "bad".
+The state may change from "good" to "bad" in `{recycle}`,
 but never from "bad" to "good".
+The "bad" state implies that writting
+anything in the range [`buffer_ptr(), buffer_end()`) has no relevent
+side effect, though the behaviour is still defined, __i.e.__
+the range must be a valid accessible memory area.
+Sometimes, `<<destination_hpp#garbage_buff,garbage_buff>>`
+is used to handle the bad state.
 
-A typical implementation would look like this:
+// This means it's not necessary to always check the state before
+// writting anything to `buffer_ptr()`. At worse, it is waste
+// of CPU resource.
+
+
+After writing to `buffer_ptr()`, it is necessary to advance
+the buffer pointer, otherwise the content will be overwritten
+next time something is written in `buffer_ptr()`.
+This is can be done with the
+`<<destination_hpp#output_buffer_advance,advance>>`
+or the `<<destination_hpp#output_buffer_advance_to,advance_to>>`
+member function, as shown above.
+
+Now, we can see how a typical implementation would look like:
 
 [source,cpp,subs=normal]
 ----
@@ -101,18 +119,18 @@ public:
     my_destination(const my_destination&) = delete;
     ~my_destination();
 
-    void recyle() override;
+    void recycle() override;
     void finish();
 
 private:
     bool print(const char* str_begin, const char* str_end)
     { /{asterisk}\...{asterisk}/ }
 
-    char buff[strf::{min_space_after_recycle}()];
+    char buff[strf::{min_destination_buffer_size}];
 };
 ----
 
-Where the `print` member function represents the code
+The `print` member function above represents the code
 that would send the content to the actual destination,
 whatever it is. If `print` never throws, then
 `recycle` could be implemented like below:
@@ -183,19 +201,19 @@ void my_destination::finish()
 
 [source,cpp,subs=normal]
 ----
-my_destination dest{ /{asterisk}\...{asterisk}/ };
+my_destination dst{ /{asterisk}\...{asterisk}/ };
 
-strf::{to}(dest) (/{asterisk}\...{asterisk}/);
-strf::{to}(dest) (/{asterisk}\...{asterisk}/);
-some_function(dest);
-strf::{to}(dest) (/{asterisk}\...{asterisk}/);
+strf::{to}(dst) (/{asterisk}\...{asterisk}/);
+strf::{to}(dst) (/{asterisk}\...{asterisk}/);
+some_function(dst);
+strf::{to}(dst) (/{asterisk}\...{asterisk}/);
 
-dest.finish();
+dst.finish();
 ----
 Almost
-<<quick_reference#destination_types,all classes of this library that derive from `destination`>>
+<<quick_reference#destination_types,all destination classes of this library>>
 have a `finish` function ( the only exception is
-<<destination_hpp#discarded_destination,discarded_destination>>.
+<<destination_hpp#discarder,discarder>>.
 So you may want to follow the convention.
 Another reason for creating `finish` is that may return a value,
 which is something that destructors can't do.
@@ -205,21 +223,21 @@ which is something that destructors can't do.
 `{set_good}` and `{set_buffer_ptr}` are protected member functions.
 ////
 
-== How to create destination expression
+== How to create a __target__ expression [[create_target]]
 
-There are <<quick_reference#destinations,several expressions>> that can be used as
+There are <<quick_reference#targets,several expressions>> that can be used as
 the prefix in the `<<tutorial#,basic usage syntax>>`.
 Each of them causes the content to be printed into a different destination.
 Perhaps you want to create your own. For example, if you use Qt,
 you may want to create a `toQString` "destination",
 intended to create a `QString` object ( in the same way as
-`<<quick_reference#destinations,to_string>>` creates
+`<<quick_reference#targets,to_string>>` creates
 `std::string` objects ).
-This section explain how you can do that.
+This section explains how you can do that.
 
 The first step, which involves most of the work, is
-to create a class that derives from `{destination}`.
-The previous section provides some assistance on that.
+to create a class that derives from `{destination}`,
+which is covered in previous section.
 Sometimes it makes sense to actually create two of them;
 one having a constructor that receives the size
 while the other does not, as explained soon.
@@ -233,48 +251,9 @@ of your destination class requires the number of characters to be printed
 ( because it needs to allocate memory or something ).
 _DestinationCreator_ is for when it does not need that information.
 
-
-The third and final step is to define the "destination expression".
+The third and final step is to define the "target expression".
 It must be an expression ( a function call or a constexpr value )
-whose type is an instance of one the class templates below,
-having the class created in step 2 as the template parameter.
-
-* `{destination_no_reserve}`: Its template argument must
-be _{DestinationCreator}_, and it has the following effect when
-writing the arguments ( when its member function `operator()`
-or `tr` is called ):
-+
-[source,cpp,subs=normal]
-----
-typename your_destination_creator::destination_type dest{creator.create()};
-// \... write content in dest \...
-return dest.finish();
-----
-, where:
-+
-** `your_destination_creator` is the template argument ( and the
-type defined in step 2). It must be be _{DestinationCreator}_.
-** `creator` is an object of type `your_destination_creator`.
-
-* `{destination_calc_size}`: Its template argument must
-be _{SizedDestinationCreator}_, and it has the following effect when
-writing the arguments:
-+
-[source,cpp,subs=normal]
-----
-std::size_t size = /{asterisk} calculate size \... {asterisk}/;
-typename you_destination_creator::sized_destination_type dest{creator.create(**size**)};
-// \... write content in dest \...
-return dest.finish();
-----
-
-* `{destination_with_given_size}`: the factory must be _{SizedDestinationCreator}_,
-and it has the same effect as of `destination_calc_size`, except that the
-size is not calculated but is instead passed to its
-<<strf_hpp#destination_with_given_size_ctor,the constructor>>.
-In most cases, it does't make sense to opt for `destination_with_given_size`.
-The reason why it was created is to define the return type
-the `<<tutorial#,reserve>>` function.
+whose type is an instance of one the `{printing_syntax}` class template.
 
 The sample below illustrates the above steps:
 
@@ -283,11 +262,14 @@ The sample below illustrates the above steps:
 // some type that is able to receive text
 class foo { /{asterisk} \... {asterisk}/ };
 
-// step 1: define your destination class
-class foo_writer: strf::{destination}<char> {
+// step 1: define your {destination} class
+class foo_writer: strf::destination<char> {
 public:
     explicit foo_writer(foo&);
+    foo_writer(const foo_writer&) = delete;
+
     void recycle() override;
+
     auto finish() \-> /{asterisk} \... {asterisk}/;
     //\...
 };
@@ -307,11 +289,11 @@ private:
     foo& f_;
 }
 
-// step3: define the destination expression
-auto to(foo& dest) {
-    strf::{destination_no_reserve}<foo_writer_creator> x{dest};
+// step3: define the expression that creates a printing_syntax object
+auto to(foo& dst) {
+    strf::{printing_syntax}<foo_writer_creator> x{dst};
     // x contains a member object of type foo_writer_creator
-    // initialized with dest
+    // initialized with dst
     return x;
 }
 ----
@@ -320,7 +302,7 @@ auto to(foo& dest) {
 
 * {strf-src-root}/examples/toQString.cpp[examples/toQString.cpp] defines a
   constexpr value named `toQSting`
-  that is analogous to `<<quick_reference#destinations,strf::to_string>>`, except that
+  that is analogous to `<<quick_reference#targets,strf::to_string>>`, except that
   it creates a `QString` ( from Qt framework ) instead of a `std::string`.
 * {strf-src-root}/examples/appendQString.cpp[examples/appendQString.cpp] defines
   a function `append` used to append content into a `QString` object

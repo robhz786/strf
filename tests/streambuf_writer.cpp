@@ -15,15 +15,15 @@ void test_successfull_writing()
     auto tiny_str = test_utils::make_tiny_string<CharT>();
     auto double_str = test_utils::make_double_string<CharT>();
 
-    std::basic_ostringstream<CharT> dest;
-    strf::basic_streambuf_writer<CharT> writer(*dest.rdbuf());
+    const std::basic_ostringstream<CharT> dst;
+    strf::basic_streambuf_writer<CharT> writer(*dst.rdbuf());
 
     writer.write(tiny_str.begin(), tiny_str.size());
     writer.write(double_str.begin(), double_str.size());
     auto status = writer.finish();
-    dest.rdbuf()->pubsync();
+    dst.rdbuf()->pubsync();
 
-    auto obtained_content = dest.str();
+    auto obtained_content = dst.str();
 
     TEST_TRUE(status.success);
     TEST_EQ(status.count, obtained_content.size());
@@ -41,7 +41,7 @@ void when_finish_is_not_called()
 {
     auto tiny_str = test_utils::make_tiny_string<CharT>();
 
-    std::basic_ostringstream<CharT> oss;
+    const std::basic_ostringstream<CharT> oss;
     {
         strf::basic_streambuf_writer<CharT> writer(oss.rdbuf());
         strf::detail::copy_n<CharT>(tiny_str.begin(), tiny_str.size(), writer.buffer_ptr());
@@ -58,7 +58,7 @@ void when_finish_is_not_called_but_state_is_bad_anyway()
 {
     auto tiny_str = test_utils::make_tiny_string<CharT>();
 
-    std::basic_ostringstream<CharT> oss;
+    const std::basic_ostringstream<CharT> oss;
     {
         strf::basic_streambuf_writer<CharT> writer(*oss.rdbuf());
         strf::detail::copy_n(tiny_str.begin(), tiny_str.size(), writer.buffer_ptr());
@@ -73,20 +73,20 @@ void test_failing_to_recycle()
 {
     auto half_str = test_utils::make_half_string<CharT>();
 
-    std::basic_ostringstream<CharT> dest;
-    strf::basic_streambuf_writer<CharT> writer(*dest.rdbuf());
+    const std::basic_ostringstream<CharT> dst;
+    strf::basic_streambuf_writer<CharT> writer(*dst.rdbuf());
 
     writer.write(half_str.begin(), half_str.size());
-    writer.recycle(); // first recycle works
+    writer.flush(); // first flush() works
     test_utils::turn_into_bad(writer);
 
-    strf::to(writer)(strf::multi((CharT)'x', 10));
-    writer.recycle(); // this fails
+    strf::to(writer)(strf::multi(static_cast<CharT>('x'), 10));
+    writer.flush(); // this fails
 
     auto status = writer.finish();
-    dest.rdbuf()->pubsync();
+    dst.rdbuf()->pubsync();
 
-    auto obtained_content = dest.str();
+    auto obtained_content = dst.str();
 
     TEST_TRUE(! status.success);
     TEST_EQ(status.count, obtained_content.size());
@@ -102,16 +102,16 @@ void test_failing_to_call_do_write()
     auto half_str = test_utils::make_half_string<CharT>();
     auto double_str = test_utils::make_double_string<CharT>();
 
-    std::basic_ostringstream<CharT> dest;
-    strf::basic_streambuf_writer<CharT> writer(*dest.rdbuf());
+    std::basic_ostringstream<CharT> dst;
+    strf::basic_streambuf_writer<CharT> writer(*dst.rdbuf());
 
     writer.write(half_str.begin(), half_str.size());
-    writer.recycle(); // first recycle works
+    writer.flush(); // first flush() works
     writer.write(double_str.begin(), double_str.size());
     auto status = writer.finish();
-    dest.rdbuf()->pubsync();
+    dst.rdbuf()->pubsync();
 
-    auto obtained_content = dest.str();
+    auto obtained_content = dst.str();
 
     TEST_TRUE(! status.success);
     TEST_EQ(status.count, obtained_content.size());
@@ -129,18 +129,18 @@ void test_failing_to_finish()
     auto double_str = test_utils::make_double_string<CharT>();
     auto half_str = test_utils::make_half_string<CharT>();
 
-    std::basic_ostringstream<CharT> dest;
-    strf::basic_streambuf_writer<CharT> writer(*dest.rdbuf());
+    const std::basic_ostringstream<CharT> dst;
+    strf::basic_streambuf_writer<CharT> writer(*dst.rdbuf());
 
     writer.write(double_str.begin(), double_str.size());
-    writer.recycle();
+    writer.flush();
     writer.write(half_str.begin(), half_str.size());
     test_utils::turn_into_bad(writer);
 
     auto status = writer.finish();
-    dest.rdbuf()->pubsync();
+    dst.rdbuf()->pubsync();
 
-    auto obtained_content = dest.str();
+    auto obtained_content = dst.str();
 
     TEST_TRUE(! status.success);
     TEST_EQ(status.count, obtained_content.size());
@@ -157,9 +157,9 @@ void basic_tests()
     auto full_str = test_utils::make_full_string<CharT>();
 
     {
-        std::basic_ostringstream<CharT> dest;
-        strf::to(dest.rdbuf()) (half_str, full_str);
-        auto obtained_content = dest.str();
+        const std::basic_ostringstream<CharT> dst;
+        strf::to(dst.rdbuf()) (half_str, full_str);
+        auto obtained_content = dst.str();
         TEST_EQ(obtained_content.size(), half_str.size() + full_str.size());
         TEST_TRUE(0 == obtained_content.compare( 0, half_str.size()
                                                , half_str.begin()
@@ -170,9 +170,9 @@ void basic_tests()
                                                , full_str.size() ));
     }
     {
-        std::basic_ostringstream<CharT> dest;
-        strf::to(*dest.rdbuf()) (half_str, full_str);
-        auto obtained_content = dest.str();
+        const std::basic_ostringstream<CharT> dst;
+        strf::to(*dst.rdbuf()) (half_str, full_str);
+        auto obtained_content = dst.str();
         TEST_EQ(obtained_content.size(), half_str.size() + full_str.size());
         TEST_TRUE(0 == obtained_content.compare( 0, half_str.size()
                                                , half_str.begin()
@@ -183,8 +183,6 @@ void basic_tests()
                                                , full_str.size() ));
     }
 }
-
-} // unnamed namespace
 
 void test_streambuf_writer()
 {
@@ -198,7 +196,7 @@ void test_streambuf_writer()
     test_successfull_writing<char32_t>();
     test_successfull_writing<wchar_t>();
 
-    when_finish_is_not_called<char>();;
+    when_finish_is_not_called<char>();
     when_finish_is_not_called<char16_t>();
     when_finish_is_not_called<char32_t>();
     when_finish_is_not_called<wchar_t>();
@@ -218,3 +216,8 @@ void test_streambuf_writer()
     test_failing_to_finish<char32_t>();
     test_failing_to_finish<wchar_t>();
 }
+
+
+} // namespace
+
+REGISTER_STRF_TEST(test_streambuf_writer)

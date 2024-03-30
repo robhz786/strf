@@ -24,7 +24,7 @@ void basic_samples()
     // Creating a std::string
     int x = 255;
     auto str = strf::to_string(x, " in hexadecimal is ", *strf::hex(x), '.');
-    assert("255 in hexadecimal is 0xff.");
+    assert(str == "255 in hexadecimal is 0xff.");
 
     // Alternative syntax
     auto str_tr = strf::to_string.tr("{} in hexadecimal is {}.", x, *strf::hex(x));
@@ -187,11 +187,24 @@ void numeric_punctuation()
     assert(s == "1.000.000,5  1000000.5  10.000  100000");
 
     // Extracting punctuation from locale
-    if (setlocale(LC_NUMERIC, "de_DE")) {
-        auto loc_punct = strf::locale_numpunct(); // provided by header <strf/locale.hpp>
-        auto s_loc = strf::to_string.with(loc_punct) (*!strf::fixed(1000000.5));
-        assert(s_loc == "1.000.000,5");
+    // Use strf::locale_numpunct to get the
+    // punctuation of current global locale
+    try {
+#ifdef _MSC_VER
+        const std::locale loc("en-US");
+#else
+        const std::locale loc("en_US.UTF-8");
+#endif
+        const auto previous_loc = std::locale::global(loc);
+        const auto loc_punct = strf::locale_numpunct(); // from <strf/locale.hpp>
+        std::locale::global(previous_loc); // this does not affect loc_punt
+
+        const auto result = strf::to_string.with(loc_punct) (*!strf::fixed(1000000.5));
+        assert(result == "1,000,000.5");
+    } catch (std::runtime_error&) { // NOLINT(bugprone-empty-catch)
+        // locale not supported
     }
+
 
 #if defined(__cpp_char8_t)
     // Manually specifing a punctuation
@@ -220,11 +233,11 @@ void numeric_punctuation()
 void transcoding()
 {
     // Converting UTF-16 to UTF-8
-    auto str_narrow = strf::to_string("He was born in ", strf::conv(u"خنيفرة"), '.');
+    auto str_narrow = strf::to_string("He was born in ", strf::transcode(u"خنيفرة"), '.');
     assert(str_narrow == "He was born in \xd8\xae\xd9\x86\xd9\x8a\xd9\x81\xd8\xb1\xd8\xa9.");
 
 #if defined(__cpp_char8_t)
-    auto str_u8 = strf::to_u8string(u8"He was born in ", strf::conv(u"خنيفرة"), u8'.');
+    auto str_u8 = strf::to_u8string(u8"He was born in ", strf::transcode(u"خنيفرة"), u8'.');
     assert(str_u8 == u8"He was born in خنيفرة.");
 
     (void) str_u8;
@@ -232,21 +245,21 @@ void transcoding()
 
 
     // Converting UTF-8 to UTF-16
-    assert(strf::to_u16string(strf::conv(str_narrow)) == u"He was born in خنيفرة.");
+    assert(strf::to_u16string(strf::transcode(str_narrow)) == u"He was born in خنيفرة.");
 #if defined(__cpp_char8_t)
-    assert(strf::to_u16string(strf::conv(str_u8)) == u"He was born in خنيفرة.");
+    assert(strf::to_u16string(strf::transcode(str_u8)) == u"He was born in خنيفرة.");
 #endif
 
 
     // Converting UTF-16 to ISO-8859-6
     auto str_narrow_2 = strf::to_string.with(strf::iso_8859_6<char>)
-        ( "He was born in ", strf::conv(u"خنيفرة"), '.');
+        ( "He was born in ", strf::transcode(u"خنيفرة"), '.');
     assert(str_narrow_2 == "He was born in \xce\xe6\xea\xe1\xd1\xc9.");
 
 #if defined(__cpp_char8_t)
     // Converting char8_t string to ISO-8859-6
     auto str_narrow_3 = strf::to_string.with(strf::iso_8859_6<char>)
-        ( "He was born in ", strf::conv(u8"خنيفرة"), '.');
+        ( "He was born in ", strf::transcode(u8"خنيفرة"), '.');
     assert(str_narrow_3 == str_narrow_2);
 
     (void) str_narrow_3;
@@ -254,10 +267,10 @@ void transcoding()
 
     // Converting UTF-8 to ISO-8859-6
     // ( if the source character type is the same as the destination
-    //   character type, the charset must be specified inside strf::conv() )
+    //   character type, the charset must be specified inside strf::transcode() )
     auto str_narrow_4 = strf::to_string.with(strf::iso_8859_6<char>)
         ( "He was born in "
-        , strf::conv("\xd8\xae\xd9\x86\xd9\x8a\xd9\x81\xd8\xb1\xd8\xa9", strf::utf8<char>)
+        , strf::transcode("\xd8\xae\xd9\x86\xd9\x8a\xd9\x81\xd8\xb1\xd8\xa9", strf::utf8<char>)
         , '.' );
     assert(str_narrow_4 == str_narrow_2);
 
@@ -265,7 +278,7 @@ void transcoding()
     // Converting ISO-8859-6 to UTF-16
     auto str_u16 = strf::to_u16string
         ( u"He was born in "
-        , strf::conv("\xce\xe6\xea\xe1\xd1\xc9", strf::iso_8859_6<char>)
+        , strf::transcode("\xce\xe6\xea\xe1\xd1\xc9", strf::iso_8859_6<char>)
         , u'.' );
 
     assert(str_u16 == u"He was born in خنيفرة.");
@@ -273,15 +286,15 @@ void transcoding()
     // or
     str_u16 = strf::to_u16string.with(strf::iso_8859_6<char>)
         ( u"He was born in "
-        , strf::conv("\xce\xe6\xea\xe1\xd1\xc9")
+        , strf::transcode("\xce\xe6\xea\xe1\xd1\xc9")
         , u'.' );
     assert(str_u16 == u"He was born in خنيفرة.");
 
 
     // Several transcodings in a single statemet
-    auto str = strf::to_u8string( strf::conv(u"aaa--")
-                                , strf::conv(U"bbb--")
-                                , strf::conv( "\x80\xA4"
+    auto str = strf::to_u8string( strf::transcode(u"aaa--")
+                                , strf::transcode(U"bbb--")
+                                , strf::transcode( "\x80\xA4"
                                             , strf::windows_1252<char> ) );
     assert(str == u8"aaa--bbb--\u20AC\u00A4");
 
@@ -338,7 +351,7 @@ void ranges()
 
     // With separator and formatting
     str = strf::to_string( "--["
-                         , *strf::hex(strf::separated_range(array, " / ")).p(4)
+                         , *strf::fmt_separated_range(array, " / ").hex().p(4)
                          , "]--");
     assert(str == "--[0x000a / 0x0014 / 0x001e / 0x0028]--");
 

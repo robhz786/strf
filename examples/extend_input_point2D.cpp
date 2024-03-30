@@ -18,28 +18,45 @@ struct point2D
 namespace strf {
 
 template <typename FloatT>
-struct print_traits<xxx::point2D<FloatT>> {
+struct printable_def<xxx::point2D<FloatT>> {
 
+    using representative = xxx::point2D<FloatT>;
     using forwarded_type = xxx::point2D<FloatT>;
+    using format_specifiers = strf::tag<strf::alignment_format_specifier, strf::float_format_specifier>;
+    using is_overridable = std::true_type;
 
-    using formatters = strf::tag<strf::alignment_formatter, strf::float_formatter>;
-
-    template <typename CharT, typename Preview, typename FPack, typename... T>
-    constexpr static auto make_printer_input
+    template <typename CharT, typename PreMeasurements, typename FPack, typename... T>
+    constexpr static auto make_printer
         ( strf::tag<CharT>
-        , Preview& preview
+        , PreMeasurements* pre
         , const FPack& fp
-        , strf::value_with_formatters<T...> arg ) noexcept
+        , forwarded_type arg ) noexcept
+    {
+        auto arg2 = strf::join
+            ( static_cast<CharT>('(')
+            , arg.x
+            , strf::unsafe_transcode(", ")
+            , arg.y
+            , static_cast<CharT>(')') );
+        return strf::make_printer<CharT>(pre, fp, arg2);
+    }
+
+    template <typename CharT, typename PreMeasurements, typename FPack, typename... T>
+    constexpr static auto make_printer
+        ( strf::tag<CharT>
+        , PreMeasurements* pre
+        , const FPack& fp
+        , strf::value_and_format<T...> arg ) noexcept
     {
         auto p = arg.value(); // the Point2D<FloatT> value
         auto arg2 = strf::join
-            ( (CharT)'('
+            ( static_cast<CharT>('(')
             , strf::fmt(p.x).set_float_format(arg.get_float_format())
-            , strf::conv(u", ")
+            , strf::transcode(u", ")
             , strf::fmt(p.y).set_float_format(arg.get_float_format())
-            , (CharT)')' )
+            , static_cast<CharT>(')') )
             .set_alignment_format(arg.get_alignment_format());
-        return strf::make_printer_input<CharT>(preview, fp, arg2);
+        return strf::make_printer<CharT>(pre, fp, arg2);
     }
 };
 

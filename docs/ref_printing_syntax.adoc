@@ -1,0 +1,713 @@
+////
+Copyright (C) (See commit logs on github.com/robhz786/strf)
+Distributed under the Boost Software License, Version 1.0.
+(See accompanying file LICENSE_1_0.txt or copy at
+http://www.boost.org/LICENSE_1_0.txt)
+////
+
+:FacetsPackElement: <<FacetsPackElement, FacetsPackElement>>
+:Printable: <<Printable,Printable>>
+:tr: <<tr_string,tr>>
+:destination: <<destination_hpp#destination,destination>>
+:tag: <<tag,tag>>
+:premeasurements: <<premeasurements,premeasurements>>
+:make_printer: <<make_printer,make_printer>>
+:basic_cstr_destination: <<destination_hpp#basic_cstr_destination,basic_cstr_destination>>
+:basic_char_array_writer: <<destination_hpp#basic_char_array_writer,basic_char_array_writer>>
+:printing_syntax: <<printing_syntax,printing_syntax>>
+:DestinationCreator: <<DestinationCreator,DestinationCreator>>
+:SizedDestinationCreator: <<SizedDestinationCreator,SizedDestinationCreator>>
+
+[[destinators]]
+== Printing syntax
+
+The `{printing_syntax}` class template implement the
+functions availabe in the basic usage syntax of the library:
+
+image::syntax.svg[width=660,align=center]
+
+////
+All of them contain a {facets_pack} member object in addition to
+__{DestinationCreator}__ or __{SizeDestinationCreator}__ member object and
+in the above expression:
+////
+
+The __target__ is an expression that is or creates a `printing_syntax` object.
+The header `<strf.hpp>` provides the following __target__ expressions:
+
+====
+[[to_char_ptr_range]]
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+__/{asterisk} see below {asterisk}/__ to(char8_t{asterisk}  begin,  char8_t{asterisk}  end);
+__/{asterisk} see below {asterisk}/__ to(char{asterisk}     begin,  char{asterisk}     end);
+__/{asterisk} see below {asterisk}/__ to(char16_t{asterisk} begin,  char16_t{asterisk} end);
+__/{asterisk} see below {asterisk}/__ to(char32_t{asterisk} begin,  char32_t{asterisk} end);
+__/{asterisk} see below {asterisk}/__ to(wchar_t{asterisk}  begin,  wchar_t{asterisk}  end);
+
+} // namespace strf
+----
+Return type:: `{printing_syntax}<DestCreator>`, where `DestCreator`
+         is an implementation-defined type that satifies __{DestinationCreator}__.
+Return value:: An object whose `DestCreator` object  `&#95;dest&#95;creator`
+is such that `&#95;dest&#95;creator.create()` returns
++
+[source,cpp,subs=normal]
+----
+{basic_cstr_destination}<__char_type__>{begin, end}
+----
+====
+
+[[to_char_ptr_count]]
+====
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+__/{asterisk} see below {asterisk}/__ to(char8_t{asterisk}  dest, std::size_t count);
+__/{asterisk} see below {asterisk}/__ to(char{asterisk}     dest, std::size_t count);
+__/{asterisk} see below {asterisk}/__ to(char16_t{asterisk} dest, std::size_t count);
+__/{asterisk} see below {asterisk}/__ to(char32_t{asterisk} dest, std::size_t count);
+__/{asterisk} see below {asterisk}/__ to(wchar_t{asterisk}  dest, std::size_t count);
+
+} // namespace strf
+----
+[horizontal]
+Return type and value:: Same as of `to(dest, dest + count)`;
+====
+
+====
+[[to_char_array]]
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template<std::size_t N> __/{asterisk} see below {asterisk}/__ to(char8_t  (&dest)[N]);
+template<std::size_t N> __/{asterisk} see below {asterisk}/__ to(char     (&dest)[N]);
+template<std::size_t N> __/{asterisk} see below {asterisk}/__ to(char16_t (&dest)[N]);
+template<std::size_t N> __/{asterisk} see below {asterisk}/__ to(char32_t (&dest)[N]);
+template<std::size_t N> __/{asterisk} see below {asterisk}/__ to(wchar_t  (&dest)[N]);
+
+} // namespace strf
+----
+[horizontal]
+Return type and value:: Same as of `to(dest, dest + N)`;
+====
+
+
+[[to_range]]
+====
+[source,cpp,subs=normal]
+----
+namespace strf {
+template <typename CharT>
+__/{asterisk} see below {asterisk}/__ to_range(CharT* begin, CharT* end);
+
+} // namespace strf
+----
+Return type:: `{printing_syntax}<DestCreator>`, where `DestCreator`
+         is an implementation-defined type that satifies __{DestinationCreator}__.
+Return value:: An object whose `DestCreator` object  `&#95;dest&#95;creator`
+is such that `&#95;dest&#95;creator.create()` returns
++
+[source,cpp,subs=normal]
+----
+{basic_char_array_writer}<__char_type__>{begin, end}
+----
+====
+
+
+[[to_range_array]]
+====
+[source,cpp,subs=normal]
+----
+namespace strf {
+template <typename CharT, std::size_t N>
+__/{asterisk} see below {asterisk}/__ to_range(CharT (&dest)[N]);
+
+} // namespace strf
+----
+[horizontal]
+Return type and value:: Same as of `to_range(dest, dest + N)`;
+====
+
+
+[[to_range_count]]
+====
+[source,cpp,subs=normal]
+----
+namespace strf {
+template <typename CharT>
+__/{asterisk} see below {asterisk}/__ to_range(CharT* dest, std::size_t count);
+
+} // namespace strf
+----
+[horizontal]
+Return type and value:: Same as of `to_range(dest, dest + count)`;
+====
+
+
+[[printing_syntax]]
+=== Class template `printing_syntax`
+
+====
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template < typename DestCreator
+         , typename ReservePolicy = no_reserve
+         , typename\... FPE>
+class printing_syntax;
+
+}
+----
+Compile-time requirements::
+- `DestCreator` satisfy either {DestinationCreator} or {SizedDestinationCreator}.
+- `ReservePolicy` is `no_reserve`, `reserve_given_space` or `reserve_calc`
+- All types in `FPE\...` satisfy <<FacetsPackElement, _FacetsPackElement_>>.
+====
+
+
+==== Synopsis
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+struct no_reserve {};
+
+struct reserve_calc {};
+
+struct reserve_given_space {
+    constexpr explicit reserve_given_space(std::size_t s) : space(s) {}
+
+    std::size_t space;
+};
+
+template < typename DestCreator
+         , typename ReservePolicy = no_reserve
+         , typename\... FPE>
+class printing_syntax
+{
+public:
+    // constructors
+    constexpr printing_syntax();
+    constexpr explicit printing_syntax(const DestCreator& dest_creator);
+    constexpr explicit printing_syntax(DestCreator&& dest_creator);
+
+    template <typename\... U>
+    constexpr printing_syntax
+    ( const DestCreator& dest_creator, ReservePolicy poli, U&&\... fpes );
+
+    template <typename\... U>
+    constexpr printing_syntax
+    ( DestCreator&& dest_creator, ReservePolicy poli, U&&\... fpes );
+
+    // printing
+    using return_type = /{asterisk} \... {asterisk}/;
+
+    return_type <<printing_syntax_call_operator,operator()>>(Args&& \... args) const;
+    return_type <<printing_syntax_line,line>>(Args&&\... args) const;
+    return_type <<printing_syntax_tr,tr>>(Args&&\... args) const;
+    return_type <<printing_syntax_trline,trline>>(Args&&\... args) const;
+
+    // change reserve policy
+    constexpr /{asterisk} \... {asterisk}/ <<printing_syntax_reserve,reserve>>(std::integral auto capacity) /{asterisk} \... {asterisk}/;
+    constexpr /{asterisk} \... {asterisk}/ <<printing_syntax_reserve_calc,reserve_calc>>() /{asterisk} \... {asterisk}/;
+    constexpr /{asterisk} \... {asterisk}/ <<printing_syntax_no_reserve,no_reserve>>() /{asterisk} \... {asterisk}/;
+
+
+    // add facets
+    template <typename\... U>
+    constexpr /{asterisk} \... {asterisk}/ <<printing_syntax_with,with>>(U&&\...) const &;
+
+    constexpr const printing_syntax& with() const &;
+    constexpr const printing_syntax& with() const && ;
+    constexpr printing_syntax& with() &;
+    constexpr printing_syntax&& with() &&;
+
+
+};
+----
+
+==== Member types
+
+
+////
+ [cols="1,10"]
+ |===
+ |`return_type`
+ |`decltype(std::declval<const typename DestCreator::destination_type&>().finish())`,
+ if such type is well-formed, otherwise `void`
+
+ |`char_type`
+ |`DestCreator::char_type`
+ |===
+////
+
+[[printing_syntax_return_type]]
+====
+[source,cpp,subs=normal]
+----
+return_type
+----
+`decltype(std::declval<const typename DestCreator::destination_type&>().finish()`,
+if such type is well-formed, otherwise `void`
+====
+
+====
+[source,cpp,subs=normal]
+----
+char_type
+----
+A type alias to `DestCreator::char_type`
+====
+
+==== Constructors
+
+[[printing_syntax_default_ctor]]
+====
+[source,cpp,subs=normal]
+----
+constexpr printing_syntax() = default;
+----
+Only participates in overload resolution if `DestCreator` and all types
+in `FPE\...` are default-constructible and `ReservePolicy` is not
+`reserve_given_space`.
+====
+
+====
+[source,cpp,subs=normal]
+----
+constexpr printing_syntax(const DestCreator& dest_creator)
+----
+Effects::
+Initializes the inther `DestCreator` object with `dest_creator`
+
+Compile time requirements::
+Only participates in overload resolution if `DestCreator`
+is copy-constructible and all types in `FPE\...` are
+default-constructible and `ReservePolicy` is not
+`reserve_given_space`.
+====
+
+====
+[source,cpp,subs=normal]
+----
+constexpr printing_syntax(DestCreator&& dest_creator)
+----
+Effects::
+Initializes the inther `DestCreator` object with `dest_creator`
+
+Compile time requirements::
+Only participates in overload resolution if `DestCreator`
+is move-constructible and all types in `FPE\...` are
+default-constructible and `ReservePolicy` is not
+`reserve_given_space`.
+====
+
+====
+[source,cpp,subs=normal]
+----
+constexpr printing_syntax(const DestCreator& dest_creator, ReservePolicy poli, U&&\... fpes)
+----
+Effects::
+
+- Initializes the internal `DestCreator` object with `dest_creator`,
+- Initializes the internal `ReservePolicy` object  with `poli`,
+- Initializes the of the internal `FPE\...` object with the correspoding value in `(U&&)fpes\...`
+
+Compile time requirements::
+Only participates in overload resolution if:
++
+- `DestCreator` is copy-constructible
+-  Each type in `FPE\...` is constructible from the corresponding type in `U\...`
+====
+
+====
+[source,cpp,subs=normal]
+----
+constexpr printing_syntax(DestCreator&& dest_creator, ReservePolicy poli, U&&\... fpes
+----
+Effects::
+
+- Initializes the internal `DestCreator` object with `dest_creator`,
+- Initializes the internal `ReservePolicy` object  with `poli`,
+- Initializes the of the internal `FPE\...` object with the correspoding value in `(U&&)fpes\...`
+
+Compile time requirements::
+Only participates in overload resolution if:
++
+ - `DestCreator` is move-constructible
+ -  Each type in `FPE\...` is constructible from the corresponding type in `U\...`
+====
+
+==== Member functions for printing
+
+[[printing_syntax_call_operator]]
+====
+[source,cpp,subs=normal]
+----
+<<printing_syntax_return_type,return_type>> operator()(Args&&\... args) const;
+----
+
+.**Effect**
+[%collapsible]
+=====
+Executes the following steps:
+
+. Distinguish the leading arguments in `args\...` that specify facets,
+  from the remaining ones that specify values to be printed. Let the
+  first sub-list be here called `fargs\...` and the second `pargs\...`
+. Create a {facets_pack} object from the the internal `FPE\...` objects
+  and `fargs\...`. Let it be here called `fpack`, an let its type be
+  `FPack` ( which is `facets_pack<FPE\..., std::remove_cvref_t<decltype(fargs)>\...>`
+
+[%header,frame=all,grid=all,cols="1"]
+|===
+^|When `ReservePolicy` is `strf::reserve_given_space`
+a|
+[start=3]
+. Let `dest_creator` be the internal `DestCreator` object, and `poli` be the internal `reserve_given_space` object. Do:
++
+[source,cpp,subs=normal]
+----
+using dest_type = typename DestCreator::sized_destination_type;
+dest_type dest{dest&#95;creator.create(poli.space)};
+----
+. Print all arguments `pargs\...` into `dest`
+. Returns `dest.finish()` if such expression is valid
+
+|===
+
+[%header,frame=all,grid=none,cols="1"]
+|===
+|When `ReservePolicy` is `strf::reserve_calc`
+a|
+[start=3]
+. Do:
++
+[source,cpp,subs=normal]
+----
+using pre_type = {premeasurements}<size_presence::yes, width_presence::no>;
+pre_type pre;
+----
+. For each `parg` in `pargs\...`, do:
++
+[source,cpp,subs=normal]
+----
+auto printer = {make_printer}<char_type>(&pre, fpack, arg);
+----
+. Let `dest_creator` be the internal `DestCreator` object. Do:
++
+[source,cpp,subs=normal]
+----
+using dest_type = typename DestCreator::sized_destination_type;
+dest_type dest{dest&#95;creator.create(pre.<<size_accumulator_accumulated_ssize,accumulated_ssize>>())};
+----
+. For each `printer`, do `printer(dest)`
+. Return `dest.finish()` if such expression is valid.
+
+
+|===
+
+[%header,frame=all,grid=none,cols="1"]
+|===
+|When `ReservePolicy` is `strf::no_reserve`
+a|
+[start=3]
+. Let `dest_creator` be the internal `DestCreator` object. Do:
++
+[source,cpp,subs=normal]
+----
+typename DestCreator::destination_type dest{dest&#95;creator.create()};
+----
+. `Print all arguments `pargs\...` into `dest`
+. Return `dest.finish()` if such expression is valid.
+
+|===
+=====
+====
+
+
+[[printing_syntax_line]]
+====
+[source,cpp,subs=normal]
+----
+<<printing_syntax_return_type,return_type>> line(Args&& \... args) const;
+----
+Effect:: Equivalent to
++
+[source,cpp,subs=normal]
+----
+return operator() ((Args&&)args\..., (char_type)'\n');
+----
+====
+
+[[printing_syntax_tr]]
+====
+[source,cpp,subs=normal]
+----
+<<printing_syntax_return_type,return_type>> tr(Args&&\... args) const;
+----
+Effect:: Equivalent to
++
+[source,cpp,subs=normal]
+----
+return operator() ( (Facets&&)facets\..., strf::{tr}( (PArgs&&)pargs\... ) );
+----
++
+where:
++
+** `Facets\...` are the leading types in `Args\...` are __{FacetsPackElement}__s.
+** `PArgs\...` are the remaining types in `Args\...`, and they are expected to be _{Printable}_.
+** `facets\...` are the arguments in `args\...` that correspond to `Facets\...`
+** `pargs\...` are the remaining arguments in `args\...` .
+
+====
+
+[[printing_syntax_trline]]
+====
+[source,cpp,subs=normal]
+----
+<<printing_syntax_return_type,return_type>> trline(Args&& \... args) const;
+----
+Effect::: Equivalent to
++
+[source,cpp,subs=normal]
+----
+return operator() ( (Args&&)args\..., (char_type)'\n' );
+----
+
+====
+
+==== Member functions to change Reserve Policy
+
+[[printing_syntax_reserve]]
+====
+[source,cpp,subs=normal]
+----
+constexpr /{asterisk} \... {asterisk}/  reserve(std::integral auto space) /{asterisk} \... {asterisk}/;
+----
+
+[%header,frame=all,grid=rows,cols="1"]
+|===
+^|When `ReservePolicy` is `strf::reserve_given_space`
+
+a|
+[source,cpp,subs=normal]
+----
+constexpr       printing_syntax &  reserve(std::integral auto space) &;
+constexpr       printing_syntax && reserve(std::integral auto space) &&;
+----
+Changes the space stored in the internal `strf::reserve_given_space` object,
+and returns `*this` or `std::move(*this)`.
+
+a|
+[source,cpp,subs=normal]
+----
+constexpr printing_syntax reserve(std::integral auto space) const &;
+constexpr printing_syntax reserve(std::integral auto space) const &&;
+----
+Returns a new `printing_syntax` whose internal `DestCreator` and `FPE\...` objects
+are copy-constructed or move-constructed ( depedending on the overload used )
+from the internal `DestCreator` and `FPE\...` objects of this object.
+|===
+
+[%header,frame=all,grid=none,cols="1"]
+|===
+^|When `ReservePolicy` is not `strf::reserve_calc`
+a|
+[source,cpp,subs=normal]
+----
+constexpr printing_syntax<DestCreator, strf::reserve_calc, FPE\...>
+reserve(std::integral auto space) const &;
+
+constexpr printing_syntax<DestCreator, strf::reserve_calc, FPE\...>
+reserve(std::integral auto space) &&;
+----
+Returns a new `printing_syntax` whose internal `DestCreator` and `FPE\...` objects
+are copy-constructed or move-constructed ( depedending on the overload used )
+from the internal `DestCreator` and `FPE\...` objects of this object,
+and the the internal `strf::reserve_calc` object is initialized with `space`
+|===
+====
+
+[[printing_syntax_reserve_calc]]
+====
+[source,cpp,subs=normal]
+----
+constexpr /{asterisk} \... {asterisk}/  reserve_calc() /{asterisk} \... {asterisk}/;
+----
+
+[%header,frame=all,grid=none,cols="1"]
+|===
+^|When `ReservePolicy` is `strf::reserve_calc`
+a|
+[source,cpp,subs=normal]
+----
+constexpr       printing_syntax &  reserve_calc() &;
+constexpr const printing_syntax &  reserve_calc() const &;
+constexpr       printing_syntax && reserve_calc() &&;
+constexpr const printing_syntax && reserve_calc() const &&;
+----
+Just returns `*this` or `std::move(*this)`
+|===
+
+[%header,frame=all,grid=none,cols="1"]
+|===
+^|When `ReservePolicy` is not `strf::reserve_calc`
+a|
+[source,cpp,subs=normal]
+----
+constexpr printing_syntax<DestCreator, strf::reserve_calc, FPE\...>
+reserve_calc() const &;
+
+constexpr printing_syntax<DestCreator, strf::reserve_calc, FPE\...>
+reserve_calc() &&;
+----
+Returns a new `printing_syntax` whose internal `DestCreator` and `FPE\...` objects
+are copy-constructed or move-constructed ( depedending on the overload used )
+from the internal `DestCreator` and `FPE\...` objects of this object.
+|===
+
+====
+
+
+
+[[printing_syntax_no_reserve]]
+====
+[source,cpp,subs=normal]
+----
+constexpr /{asterisk} \... {asterisk}/  no_reserve() /{asterisk} \... {asterisk}/;
+----
+
+[%header,frame=all,grid=none,cols="1"]
+|===
+^|When `ReservePolicy` is `strf::no_reserve`
+a|
+[source,cpp,subs=normal]
+----
+constexpr       printing_syntax &  no_reserve() &;
+constexpr const printing_syntax &  no_reserve() const &;
+constexpr       printing_syntax && no_reserve() &&;
+constexpr const printing_syntax && no_reserve() const &&;
+----
+Just returns `*this` or `std::move(*this)`.
+|===
+
+[%header,frame=all,grid=none,cols="1"]
+|===
+^|When `ReservePolicy` is not `strf::no_reserve`
+a|
+[source,cpp,subs=normal]
+----
+constexpr printing_syntax<DestCreator, strf::no_reserve, FPE\...> no_reserve() const &;
+constexpr printing_syntax<DestCreator, strf::no_reserve, FPE\...> no_reserve() &&;
+----
+Returns a new `printing_syntax` whose internal `DestCreator` and `FPE\...` objects
+are copy-constructed or move-constructed ( depedending on the overload used )
+from the internal `DestCreator` and `FPE\...` objects of this object.
+|===
+
+====
+
+==== Member functions to add facet values
+
+[[printing_syntax_with]]
+====
+[source,cpp]
+----
+template <typename... U>
+constexpr /* ... */ with(U&&... fpes) const &;
+
+template <typename... U>
+constexpr /* ... */ with(U&&... fpes) &&;
+
+----
+Compile-time requirements::
+
+- `sizeof\...(U)` is not zero, otherwise this overload does not participate in overload resolution.
+- All types in `std::remove_cvref_t<U>\...` are _{FacetsPackElement}_
+- ( In the `const &&` overload ) `DestCreator` and all types in `FPE\...` are copy-constructible.
+- ( In the `&&` overload ) `DestCreator` and all types in `FPE\...` are move-constructible.
+
+Return type::
+`printing_syntax<DestCreator, ReservePolicy, FPE\..., std::remove_cvref_t<U>\...>`
+
+Effect::
+Returns a new `printing_syntax` whose internal `DestCreator` and `FPE\...` objects
+are copy-constructed or move-constructed ( depedending on the overload used )
+from the internal `DestCreator` and `FPE\...` objects of this object.
+and each the internal `std::remove_cvref_t<U>\...` object is initialized with the
+correspoding value in `(U&&)fpes\...`.
+====
+
+
+====
+[source,cpp,subs=normal]
+----
+constexpr const printing_syntax& with() const &;
+constexpr const printing_syntax& with() const && ;
+constexpr printing_syntax& with() &;
+constexpr printing_syntax&& with() &&;
+----
+Just returns `*this` or `std::move(*this)`
+====
+
+
+
+[[DestinationCreator]]
+=== Type requirement _DestinationCreator_
+Given
+
+- `char_type`, a character type
+- `X`, an  _DestinationCreator_ type for `char_type`
+- `x`, an expression of type `X` or `const X`
+
+The following must hold:
+
+- `X` is https://en.cppreference.com/w/cpp/named_req/CopyConstructible[CopyConstructible]
+- `X` has a member type alias `X::char_type` defined as `char_type`
+- `X` has the `X::destination_type` that is a type alias to a concrete type that is derives
+   from `{destination}<X::char_type>`
+
+And the following expression must be well-formed:
+
+[[DestinationCreator_create]]
+====
+[source,cpp]
+----
+typename X::destination_type{x.create()}
+----
+====
+
+[[SizedDestinationCreator]]
+=== Type requirement _SizedDestinationCreator_
+Given
+
+- `char_type`, a character type
+- `size`, a value of the `std::size_t`
+- `X`, an  _SizedDestinationCreator_ type for `char_type`
+- `x`, an expression of type `X` or `const X`
+
+The following must hold:
+
+- `X` is https://en.cppreference.com/w/cpp/named_req/CopyConstructible[CopyConstructible]
+- `X` has a member type alias `T::char_type` defined as `char_type`
+- `X` has the `X::sized_destination_type` that is a type alias to a concrete type that derives
+   from `destination<X::char_type>`
+
+And the following expression must be well-formed:
+
+[[SizedDestinationCreator_create]]
+====
+[source,cpp]
+----
+typename X::sized_destination_type{x.create(size)}
+----
+====
+

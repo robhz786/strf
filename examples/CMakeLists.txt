@@ -24,13 +24,15 @@ foreach(x
     extend_input_ipv6
     extend_input_base64
     extend_input_std_complex
+    extend_input_std_complex_v2
+    extend_input_std_complex_simple
     override_bool
-    std_complex_printer
     extend_input_template
+    transcoding_notifier
     )
 
   Add_executable(example-${x} ${x}.cpp)
-  target_link_libraries(example-${x} strf-static-lib)
+  target_link_libraries(example-${x} Strf::StrfStatic)
   add_test(NAME run_example-${x} COMMAND ${x})
   set_target_properties(example-${x} PROPERTIES OUTPUT_NAME ${x})
   target_compile_features(example-${x} PUBLIC    cxx_std_14)
@@ -38,7 +40,7 @@ endforeach(x)
 
 if (${STRF_CUDA_SUPPORT})
   add_executable(example-cuda cuda.cu)
-  target_link_libraries(example-cuda strf-header-only)
+  target_link_libraries(example-cuda Strf::StrfHeaderOnly)
   add_test(NAME run_example-cuda COMMAND cuda)
   set_target_properties(example-cuda PROPERTIES OUTPUT_NAME cuda)
 endif (${STRF_CUDA_SUPPORT})
@@ -48,12 +50,12 @@ find_package(Qt5Core QUIET)
 if (Qt5Core_FOUND)
 
   add_executable(example-toQString toQString.cpp)
-  target_link_libraries(example-toQString Qt5::Core strf-static-lib)
+  target_link_libraries(example-toQString Qt5::Core Strf::StrfStatic)
   target_compile_features(example-toQString PUBLIC    cxx_std_14)
   add_test(NAME run_example-toQString COMMAND toQString)
 
   add_executable(example-appendQString appendQString.cpp)
-  target_link_libraries(example-appendQString Qt5::Core strf-static-lib)
+  target_link_libraries(example-appendQString Qt5::Core Strf::StrfStatic)
   target_compile_features(example-appendQString PUBLIC    cxx_std_14)
   add_test(NAME run_example-appendQString COMMAND appendQString)
 

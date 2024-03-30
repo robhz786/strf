@@ -6,7 +6,8 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <strf/printer.hpp>
+#include <strf/detail/printable_def.hpp>
+#include <strf/detail/polymorphic_printer.hpp>
 
 namespace strf {
 namespace detail {
@@ -14,7 +15,7 @@ namespace detail {
 template <std::size_t I, typename T>
 struct indexed_obj
 {
-    constexpr STRF_HD indexed_obj(const T& cp)
+    constexpr STRF_HD explicit indexed_obj(const T& cp)
         : obj(cp)
     {
     }
@@ -90,7 +91,7 @@ template <std::size_t I, typename Printer>
 struct indexed_printer
 {
     template <typename Arg>
-    STRF_HD indexed_printer(const Arg& arg)
+    STRF_HD explicit indexed_printer(const Arg& arg)
         : printer(arg)
     {
     }
@@ -125,14 +126,32 @@ public:
 
     static constexpr std::size_t size = sizeof...(Printers);
 
-    template < typename Preview, typename FPack, typename ... Args >
+    template < typename... Args
+             , typename... FPElems
+             , strf::size_presence SizePresence
+             , strf::width_presence WidthPresence >
     STRF_HD printers_tuple_impl
         ( const strf::detail::simple_tuple<Args...>& args
-        , Preview& preview
-        , const FPack& fp )
+        , strf::premeasurements<SizePresence, WidthPresence>* pre
+        , const strf::facets_pack<FPElems...>& fp )
         : indexed_printer<I, Printers>
-            ( strf::make_printer_input<CharT>
-              ( preview, fp, args.template get<I>() ) ) ...
+            ( strf::make_printer<CharT>
+              ( pre, fp, args.template get<I>() ) ) ...
+    {
+        STRF_MAYBE_UNUSED(pre);
+    }
+
+    template < typename... Args
+             , typename... FPElems
+             , strf::size_presence SizePresence
+             , strf::width_presence WidthPresence >
+    STRF_HD printers_tuple_impl
+        ( const strf::detail::simple_tuple<Args...>& args
+        , const strf::facets_pack<FPElems...>& fp
+        , strf::premeasurements<SizePresence, WidthPresence>* pp_array )
+        : indexed_printer<I, Printers>
+            ( strf::make_printer<CharT>
+              ( &pp_array[I], fp, args.template get<I>() ) ) ...
     {
     }
 
@@ -142,18 +161,12 @@ public:
     {
         return get_<J>(this).printer;
     }
+
+    STRF_HD void operator() (strf::destination<CharT>& dst) const
+    {
+        strf::detail::call_printers<CharT>(dst, get_<I>(this).printer...);
+    }
 };
-
-
-template<typename CharT, std::size_t ... I, typename ... Printers>
-STRF_HD void write
-    ( strf::destination<CharT>& dest
-    , const strf::detail::printers_tuple_impl
-        < CharT, strf::detail::index_sequence<I...>, Printers... >& printers )
-{
-    strf::detail::write_args<CharT>
-        (dest, static_cast<const strf::printer<CharT>&>(printers.template get<I>())...);
-}
 
 template <typename CharT, typename ... Printers>
 using printers_tuple = printers_tuple_impl
@@ -161,19 +174,19 @@ using printers_tuple = printers_tuple_impl
         , strf::detail::make_index_sequence<sizeof...(Printers)>
         , Printers... >;
 
-template < typename CharT, typename Preview, typename FPack
+template < typename CharT, typename PreMeasurements, typename FPack
          , typename ISeq, typename... Args >
 class printers_tuple_alias
 {
 public:
     using type = printers_tuple_impl
-        <CharT, ISeq, strf::printer_type<CharT, Preview, FPack, Args> ...>;
+        <CharT, ISeq, strf::printer_type<CharT, PreMeasurements, FPack, Args> ...>;
 };
 
-template < typename CharT, typename Preview, typename FPack, typename ... Args >
+template < typename CharT, typename PreMeasurements, typename FPack, typename ... Args >
 using printers_tuple_from_args
 = typename printers_tuple_alias
-    < CharT, Preview, FPack, strf::detail::make_index_sequence<sizeof...(Args)>, Args ...>
+    < CharT, PreMeasurements, FPack, strf::detail::make_index_sequence<sizeof...(Args)>, Args ...>
     :: type;
 
 } // namespace detail

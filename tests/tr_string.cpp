@@ -5,38 +5,49 @@
 
 #include "test_utils.hpp"
 
+namespace {
+
 class err_handler {
 
 public:
     using category = strf::tr_error_notifier_c;
 
-    STRF_HD err_handler(strf::destination<char>& log)
-        : log_(log)
+    STRF_HD explicit err_handler(strf::destination<char>& log)
+        : log_(&log)
     {
     }
 
     template <typename Charset>
     void STRF_HD handle
         ( const typename Charset::code_unit* str
-        , std::size_t str_len
-        , std::size_t err_pos
-        , Charset charset ) noexcept
+        , std::ptrdiff_t str_len
+        , Charset charset
+        , std::ptrdiff_t err_pos ) noexcept
     {
-        strf::detail::simple_string_view<typename Charset::code_unit> s(str, str_len);
-        strf::to(log_) ("\n[", strf::dec(err_pos) > 2, "] ", strf::conv(s, charset));
+        strf::detail::simple_string_view<typename Charset::code_unit> s
+            (str, strf::detail::safe_cast_size_t(str_len));
+        strf::to(*log_) ("\n[", strf::dec(err_pos) > 2, "] ", strf::transcode(s, charset));
     }
 
 private:
-    strf::destination<char>& log_;
+    strf::destination<char>* log_;
 };
+
+}  // unnamed namespace
 
 STRF_TEST_FUNC void test_tr_string()
 {
-    // basic test
+    // basic tests
     TEST("aaa__..bbb__ 0xa")
         .tr("{}__{}__{}", "aaa", strf::right("bbb", 5, '.'), *strf::hex(10)>4);
 
     TEST(u8"_0__1__2")   .tr(u8"_{}__{}__{}",    0, 1, 2);
+
+    TEST(u8"---_\uFFFD_+++") (u8"---", strf::tr(u8"_{}_"), u8"+++");
+
+    TEST(u8"---_0_\uFFFD_+++") (u8"---", strf::tr(u8"_{}_{}_", 0), u8"+++");
+
+    TEST(u8"_0__1__2\n") .trline(u8"_{}__{}__{}",    0, 1, 2);
     TEST(u8"{0_{_{1_{2") .tr(u8"{{{}_{{_{{{}_{{{}",  0, 1, 2);
     TEST(u8"0__1__2")    .tr(u8"{}__{}__{}",     0, 1, 2);
     TEST(u8"0__1__2")    .tr(u8"{}__{}__{",      0, 1, 2);
@@ -117,6 +128,8 @@ STRF_TEST_FUNC void test_tr_string()
     TEST(u8"\uFFFD")              .tr(u8"{1 aa}");
     TEST(u8"\uFFFD")              .tr(u8"{");
     TEST(u8"\uFFFD")              .tr(u8"{aaa");
+    TEST(u8"\uFFFD\n")            .trline(u8"{");
+    TEST(u8"\uFFFD\n")            .trline(u8"{aaa");
 
     // invalid arguments - now in UTF-16
     TEST(u"0 3 \uFFFD \uFFFD 1") .tr(u"{} {3} {4} {5} {1}", 0, 1, 2, 3);
@@ -146,7 +159,7 @@ STRF_TEST_FUNC void test_tr_string()
     // Customizing error handling
     {
         char buff[200];
-        strf::cstr_writer log(buff);
+        strf::cstr_destination log(buff);
         TEST(u8"0__\uFFFD--1==2..3::\uFFFD~~")
             .with(err_handler{log})
             .tr(u8"{ }__{10}--{}=={}..{}::{}~~", 0, 1, 2, 3);
@@ -157,7 +170,7 @@ STRF_TEST_FUNC void test_tr_string()
     }
     {
         char buff[200];
-        strf::cstr_writer log(buff);
+        strf::cstr_destination log(buff);
         TEST(u8"0__\uFFFD--1==2..3::\uFFFD~~")
             .with(err_handler{log})
             .tr(u8"{ }__{10}--{}=={}..{}::{blah}~~", 0, 1, 2, 3);
@@ -168,7 +181,7 @@ STRF_TEST_FUNC void test_tr_string()
     }
     {
         char buff[200];
-        strf::cstr_writer log(buff);
+        strf::cstr_destination log(buff);
         TEST(u"0__2--1==2..3::\uFFFD")
             .with(err_handler{log})
             .tr(u"{ }__{2}--{}=={}..{}::{", 0, 1, 2, 3);
@@ -178,5 +191,5 @@ STRF_TEST_FUNC void test_tr_string()
     }
 }
 
-REGISTER_STRF_TEST(test_tr_string);
+REGISTER_STRF_TEST(test_tr_string)
 

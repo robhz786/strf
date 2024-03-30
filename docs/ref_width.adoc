@@ -7,11 +7,10 @@ http://www.boost.org/LICENSE_1_0.txt)
 
 :WidthCalculator: <<WidthCalculator,WidthCalculator>>
 :width_calculator_c: <<width_calculator_c,width_calculator_c>>
-:width_and_pos: <<width_and_pos,width_and_pos>>
+:width_and_ptr: <<width_and_ptr,width_and_ptr>>
 :fast_width: <<fast_width,fast_width>>
 :width_as_u32len: <<width_as_u32len,width_as_u32len>>
 :width_as_fast_u32len: <<width_as_fast_u32len,width_as_fast_u32len>>
-:width_by_func: <<width_by_func,width_by_func>>
 :fast_width_t: <<fast_width,fast_width>>
 :width_as_u32len_t: <<width_as_u32len,width_as_u32len>>
 :width_as_fast_u32len_t: <<width_as_fast_u32len,width_as_fast_u32len>>
@@ -19,6 +18,8 @@ http://www.boost.org/LICENSE_1_0.txt)
 :width_t: <<width_t,width_t>>
 :code_unit: <<Charset_code_unit,code_unit>>
 
+
+[[width_calculation]]
 == Width Calculation
 
 === Facet category `width_calculator_c` [[width_calculator_c]]
@@ -51,8 +52,8 @@ Given
 * `limit`, a value of type `{width_t}`
 * `str`, a value of type `const CharT*`
         pointing to a string encoded according to `charset`.
-* `str_len`, a value of type `std::size_t` equal to the length of string `str`.
-* `surr_poli`, a value of type `{surrogate_policy}`
+* `str_end`, a value of type `const CharT*` pointing immediately after
+             the last character of the string that begin at `str`
 
 For a type `X` to be a _WidthCalculator_, given an object `x` of type `X`,
 the following syntax and requirements have to be satisfied:
@@ -75,7 +76,7 @@ Return value:: The width of `ch` when encoded according to `charset`.
 ====
 [source,cpp,subs=normal]
 ----
-x.str_width(charset, limit, str, str_len, surr_poli)
+x.str_width(charset, limit, str, str_end)
 ----
 [horizontal]
 Return type::: `{width_t}`
@@ -86,24 +87,22 @@ Return value::: The width of the string `str` if it is less than `limit`.
 ====
 [source,cpp]
 ----
-x.str_width_and_pos(charset, limit, str, str_len, surr_poli)
+x.str_width_and_pos(charset, limit, str, str_end)
 ----
 [horizontal]
-Effect::: Calculates the width of `str`. If such value is less than
-         `limit`, then calculates the size of the substring of `str`
-         whose width is equal to `limit`.
-Return type::: `{width_and_pos}`
-Return value::: A value `ret` of type `{width_and_pos}`, such that
-* `ret.pos` is the greatest value that is less than or equal to `str_len`
-  such that `x.width(charset, width_max, str, ret.pos, surr_poli).width`
-  is less than or equal to `limit`.
-* `ret.width` is the width of the substring of `str` with size `ret.pos`
-  that starts at the same position of `str`.
+Effect::: Calculates the size and width of the longest substring
+          of [`str`, `str_end`) whose width is not greater than `limit`.
+Return type::: `{width_and_ptr}<CharT>`
+Return value::: A value `ret` of type `{width_and_ptr}<CharT>`, such that
+* `ret.ptr` is the greatest pointer not greater than `str_end`
+  such that the width of [`str`, `ret.ptr`)
+  is not greater than `limit`.
+* `ret.width` is the width of the substring  [`str`, `ret.ptr`).
 ====
 
-NOTE: The library provides three classes and one class template that
+NOTE: The library provides three classes that
       satisfy _WidthCalculator_: `{fast_width_t}`, `{width_as_fast_u32len_t}`,
-      `{width_as_u32len_t}` and `{width_by_func}`.
+      `{width_as_u32len_t}`.
 
 ////
 What "width" of a string means is up to each _WidthCalculator_ type.
@@ -114,13 +113,14 @@ It doesn't have to be accurate, after all that would require to
       https://en.wikipedia.org/wiki/Monotonic_function[monotonically
       increasing function] in relation to be size
 ////
-==== Struct `width_and_pos` [[width_and_pos]]
+==== Struct `width_and_ptr` [[width_and_ptr]]
 
 [source,cpp,subs=normal]
 ----
-struct width_and_pos {
+template <typename CharT>
+struct width_and_ptr {
     {width_t} width;
-    std::size_t pos;
+    const CharT* ptr = nullptr;
 };
 ----
 
@@ -145,17 +145,16 @@ public:
     constexpr {width_t} <<fast_width_str_width,str_width>>
         ( Charset
         , {width_t} limit
-        , const typename Charset::{code_unit}*
-        , std::size_t str_len
-        , {surrogate_policy} ) const noexcept;
+        , const typename Charset::{code_unit}{asterisk} str
+        , const typename Charset::{code_unit}{asterisk} str_end ) const noexcept;
 
     template <typename Charset>
-    {width_and_pos} <<fast_width_str_width_and_pos,str_width_and_pos>>
+    auto <<fast_width_str_width_and_pos,str_width_and_pos>>
         ( Charset
         , {width_t} limit
-        , const typename Charset::{code_unit}*
-        , std::size_t str_len
-        , {surrogate_policy} ) const noexcept;
+        , const typename Charset::{code_unit}{asterisk} str
+        , const typename Charset::{code_unit}{asterisk} str_end ) const noexcept
+        \-> {width_and_ptr}<typename Charset::{code_unit}>;
 };
 
 constexpr fast_width_t fast_width {};
@@ -180,13 +179,13 @@ template <typename Charset>
 constexpr {width_t} str_width
     ( Charset
     , {width_t} limit
-    , const typename Charset::{code_unit}*
-    , std::size_t str_len
-    , {surrogate_policy} ) const noexcept;
+    , const typename Charset::{code_unit}{asterisk} str
+    , const typename Charset::{code_unit}{asterisk} str_end ) const noexcept;
 ----
 [horizontal]
 Return value:::
-* `str_len`, if `str_len` is less than or equal to `limit.floor()`
+*  0, if `limit` is not positive
+*  otherwise the length of [`str`, `str_end`) , if such length is not greater than `limit`
 *  otherwise, `limit`
 ====
 [[fast_width_str_width_and_pos]]
@@ -194,20 +193,22 @@ Return value:::
 [source,cpp,subs=normal]
 ----
 template <typename Charset>
-{width_and_pos} str_width_and_pos
+auto str_width_and_pos
     ( Charset
     , {width_t} limit
-    , const typename Charset::{code_unit}*
-    , std::size_t str_len
-    , {surrogate_policy} ) const noexcept;
+    , const typename Charset::{code_unit}{asterisk} str
+    , const typename Charset::{code_unit}{asterisk} str_end ) const noexcept
+    \-> {width_and_ptr}<typename Charset::{code_unit}>;
 ----
 [horizontal]
 Return value::: The return value `ret` is such that
 
-* if `limit \<= 0` is `true`, then `ret.width` and `ret.pos` are `0`;
-* otherwise, if `limit.floor()` is less than `str_len`, then
-`ret.width` and `ret.pos` are equal to `limit.floor()`;
-* otherwise, `ret.width` and `ret.pos` are equal to `str_len`.
+* If `limit` is not positive, then `ret.width` is `0` and `ret.ptr` is `str`
+* otherwise, if `limit.floor()` is less than the length of [`str`, `str_end`),
+  then `ret.width` is equal to `limit.floor()`
+  and `ret.ptr` is equal to `str + limit.floor()`
+* otherwise, `ret.width` is equal to the length of [`str`, `str_end`),
+  and `ret.ptr` is equal to `str_end`
 ====
 
 
@@ -238,17 +239,16 @@ public:
     {width_t} <<width_as_fast_u32len_str_width,str_width>>
         ( Charset cs
         , {width_t} limit
-        , const typename Charset::{code_unit}* str
-        , std::size_t str_len
-        , {surrogate_policy} ) const noexcept;
+        , const typename Charset::{code_unit}{asterisk} str
+        , const typename Charset::{code_unit}{asterisk} str_end ) const noexcept;
 
     template <typename Charset>
-    {width_and_pos} <<width_as_fast_u32len_str_width_and_pos,str_width_and_pos>>
+    auto <<width_as_fast_u32len_str_width_and_pos,str_width_and_pos>>
         ( Charset cs
         , {width_t} limit
-        , const typename Charset::{code_unit}* str
-        , std::size_t str_len
-        , {surrogate_policy} ) const noexcept;
+        , const typename Charset::{code_unit}{asterisk} str
+        , const typename Charset::{code_unit}{asterisk} str_end ) const noexcept
+        \-> {width_and_ptr}<typename Charset::{code_unit}>;
 };
 
 constexpr width_as_fast_u32len_t width_as_fast_u32len {};
@@ -273,33 +273,36 @@ template <typename Charset>
 {width_t} str_width
     ( Charset cs
     , {width_t} limit
-    , const typename Charset::{code_unit}* str
-    , std::size_t str_len
-    , {surrogate_policy} ) const noexcept;
+    , const typename Charset::{code_unit}{asterisk} str
+    , const typename Charset::{code_unit}{asterisk} str_end ) const noexcept;
 ----
 [horizontal]
 Return value:::
-* `0`, if `limit \<= 0` is `true`
-* otherwise, `cs.<<Charset_codepoints_fast_count,codepoints_fast_count>>(str, str_len, limit.floor()).count`.
+* `0`, if `limit` is not positive
+* otherwise,
+ `cs.<<Charset_count_codepoints_fast,count_codepoints_fast>>(str, str_end, limit.ceil()).count`,
+  if such value is not greater than `width_t::max`,
+* otherwise, `width_t::max`
 ====
 [[width_as_fast_u32len_str_width_and_pos]]
 ====
 [source,cpp,subs=normal]
 ----
 template <typename Charset>
-{width_and_pos} str_width_and_pos
+auto str_width_and_pos
     ( Charset cs
     , {width_t} limit
-    , const typename Charset::{code_unit}* str
-    , std::size_t str_len
-    , {surrogate_policy} ) const noexcept;
+    , const typename Charset::{code_unit}{asterisk} str
+    , const typename Charset::{code_unit}{asterisk} str_end ) const noexcept
+    \-> {width_and_ptr}<typename Charset::{code_unit}>;
 ----
 [horizontal]
 Return value::: The return value `ret` is such that
 
-* If `limit \<= 0` is `true`, then then `ret.width` and `ret.pos` are `0`;
-* otherwise, `ret.width` is equal to `ret2.count` and `ret.pos` is equal
-  to `cs.<<Charset_codepoints_fast_count,codepoints_fast_count>>(str, str_len, lim).pos`
+* If `limit` is not positive, then `ret.width` is `0` and `ret.ptr` is `str`;
+* otherwise, `ret.width` is equal to `ret2.count` and `ret.ptr` is equal to `ret2.ptr`,
+  where `ret2` is the return of
+  `cs.<<Charset_count_codepoints_fast,count_codepoints_fast>>(str, str_end, lim.floor())`
 ====
 
 === Class `width_as_u32len_t` [[width_as_u32len]]
@@ -326,17 +329,16 @@ public:
     {width_t} <<width_as_u32len_str_width,str_width>>
         ( Charset cs
         , {width_t} limit
-        , const typename Charset::{code_unit}* str
-        , std::size_t str_len
-        , {surrogate_policy} ) const noexcept;
+        , const typename Charset::{code_unit}{asterisk} str
+        , const typename Charset::{code_unit}{asterisk} str_end ) const noexcept;
 
     template <typename Charset>
-    {width_and_pos} <<width_as_u32len_str_width_and_pos,str_width_and_pos>>
+    auto <<width_as_u32len_str_width_and_pos,str_width_and_pos>>
         ( Charset cs
         , {width_t} limit
-        , const typename Charset::{code_unit}* str
-        , std::size_t str_len
-        , {surrogate_policy} ) const noexcept;
+        , const typename Charset::{code_unit}{asterisk} str
+        , const typename Charset::{code_unit}{asterisk} str_end ) const noexcept
+        \-> {width_and_ptr}<typename Charset::{code_unit}>;
 };
 
 constexpr width_as_u32len_t width_as_u32len = {};
@@ -361,175 +363,43 @@ template <typename Charset>
 {width_t} str_width
     ( Charset cs
     , {width_t} limit
-    , const typename Charset::{code_unit}* str
-    , std::size_t str_len
-    , {surrogate_policy} ) const noexcept;
+    , const typename Charset::{code_unit}{asterisk} str
+    , const typename Charset::{code_unit}{asterisk} str_end ) const noexcept;
 ----
 [horizontal]
 Return value:::
-* `0`, if `limit \<= 0` is `true`
-* otherwise, `cs.<<Charset_codepoints_robust_count,codepoints_robust_count>>(str, str_len, limit.floor()).count`.
+* `0`, if `limit` is not positive
+* otherwise,
+ `cs.<<Charset_count_codepoints,count_codepoints>>(str, str_end, limit.ceil()).count`,
+  if such value is not greater than `width_t::max`,
+* otherwise, `width_t::max`
+
 ====
 [[width_as_u32len_str_width_and_pos]]
 ====
 [source,cpp,subs=normal]
 ----
 template <typename Charset>
-{width_and_pos} str_width_and_pos
+auto str_width_and_pos
     ( Charset cs
     , {width_t} limit
-    , const typename Charset::{code_unit}* str
-    , std::size_t str_len
-    , {surrogate_policy} ) const noexcept;
+    , const typename Charset::{code_unit}{asterisk} str
+    , const typename Charset::{code_unit}{asterisk} str_end ) const noexcept
+    \-> {width_and_ptr}<typename Charset::{code_unit}>;
 ----
 [horizontal]
 Return value::: The return value `ret` is such that
 
-* If `limit \<= 0` is `true`, then then `ret.width` and `ret.pos` are `0`;
-* otherwise, `ret.width` is equal to `ret2.count` and `ret.pos` is equal to
-  `cs.<<Charset_codepoints_robust_count,codepoints_robust_count>>(str, str_len, lim).pos`
+* If `limit` is not positive, then `ret.width` is `0` and `ret.ptr` is `str`;
+* otherwise, `ret.width` is equal to `ret2.count` and `ret.ptr` is equal to `ret2.ptr`,
+  where `ret2` is the return of
+  `cs.<<Charset_count_codepoints,count_codepoints>>(str, str_end, lim.floor())`
 ====
-
-=== Class template `width_by_func` __( deprecated )__ [[width_by_func]]
-
-The instances of the `width_by_func` class template are facets
-of the category `{width_calculator_c}`.
-It calculates the width of a string by converting it to UTF-32,
-and then calling the provided function to evaluate the width
-of each UTF-32 character.
-
-[source,cpp,subs=normal]
-----
-template <typename CharWidthFunc>
-class width_by_func{
-public:
-    using category = {width_calculator_c};
-
-    template <typename Charset>
-    {width_t} <<width_by_func_char_width,char_width>>
-        ( Charset cs
-        , typename Charset::{code_unit} ) const;
-
-    template <typename Charset>
-    {width_t} <<width_by_func_str_width,str_width>>
-        ( Charset cs
-        , {width_t} limit
-        , const typename Charset::{code_unit}* str
-        , std::size_t str_len
-        , {surrogate_policy} ) const;
-
-    template <typename Charset>
-    {width_and_pos} <<width_by_func_str_width_and_pos,str_width_and_pos>>
-        ( Charset cs
-        , {width_t} limit
-        , const typename Charset::{code_unit}* str
-        , std::size_t str_len
-        , {surrogate_policy} ) const;
-
-private:
-
-    const CharWidthFunc func_; // exposition only
-};
-
-
-template <typename CharWidthFunc>
-width_by_func<CharWidthFunc> make_width_calculator(CharWidthFunc f)
-{
-    return width_by_func<CharWidthFunc>{f};
-}
-----
-
-==== Compile-time requirements
-====
-Given
-
-* `ch`, a value of type `char32_t`
-* `func`, a object of type `CharWidthFunc` or `const CharWidthFunc`
-
-The expression `func(ch)` must be well-formed and the return type
-must be {width_t}.
-====
-
-==== Member functions
-[[width_by_func_char_width]]
-====
-[source,cpp,subs=normal]
-----
-template <typename Charset>
-{width_t} char_width
-    ( Charset cs
-    , typename Charset::{code_unit} ch) const;
-----
-[horizontal]
-Return value:: `func_(cs.<<Charset_decode_unit,decode_unit>>(ch))`
-====
-[[width_by_func_str_width]]
-====
-[source,cpp,subs=normal]
-----
-template <typename Charset>
-{width_t} str_width
-    ( Charset cs
-    , {width_t} limit
-    , const typename Charset::{code_unit}* str
-    , std::size_t str_len
-    , {surrogate_policy}  surr_poli) const;
-----
-[horizontal]
-Return value::: The sum of the values of `func_(ch32)`, where `ch32` is
-   each of the `char32_t` values that would be written into `ob` --
-   an arbitrary object whose type derives from `{destination}<char32_t>` -- by the call
-+
-[source,cpp,subs=normal]
-----
-cs.<<Charset_to_u32,to_u32>>().<<Transcoder_transcode,transcode>>
-    ( ob, str, str_len, {invalid_seq_notifier}{}, surr_poli )
-----
-, if such value is less than or equal to `limit`. Otherwise, the return value
-  can be anyone that is greater than or equal to `limit`.
-====
-[[width_by_func_str_width_and_pos]]
-====
-[source,cpp,subs=normal]
-----
-template <typename Charset>
-{width_and_pos} str_width_and_pos
-    ( Charset cs
-    , {width_t} limit
-    , const typename Charset::{code_unit}* str
-    , std::size_t str_len
-    , {surrogate_policy} surr_poli) const;
-----
-[horizontal]
-Return value::: The return value `ret` is such that:
-* `ret.width` is the sum of the values of `func_(ch32)`, where `ch32` is
-   each of the `char32_t` values that are written into `ob` by the call
-+
-[source,cpp,subs=normal]
-----
-cs.<<Charset_to_u32,to_u32>>().<<Transcoder_transcode,transcode>>
-    ( ob, str, ret.pos, {invalid_seq_notifier}{}, surr_poli )
-----
-, where `ob` is any object whose type derives from `{destination}<char32_t>`.
-* `ret.pos` is the greatest value that is less than or equal to `str_len`
-  such that `str_width_and_pos(cs, limit, str, ret.pos, surr_poli).width`
-  is less than or equal to `limit`.
-====
-
-==== Function template `make_width_calculator` [[make_width_calculator]]
-[source,cpp,subs=normal]
-----
-template <typename CharWidthFunc>
-{width_by_func}<CharWidthFunc> make_width_calculator(CharWidthFunc f);
-----
-[horizontal]
-Return value::: `{width_by_func}<CharWidthFunc>{f}`
-
 
 === Class `std_width_calc` [[std_width_calc]]
 
 The facet `std_width_calc` calculates the width just as
-http://eel.is/c++draft/format.string.std#11[specified] to `std::format`.
+https://timsong-cpp.github.io/cppwp/n4868/format#string.std-11[specified] to `std::format`.
 
 
 [source,cpp,subs=normal]
@@ -547,17 +417,16 @@ public:
     static {width_t} <<std_width_calc_str_width,str_width>>
         ( Charset cs
         , {width_t} limit
-        , const typename Charset::{code_unit}* str
-        , std::size_t str_len
-        , {surrogate_policy} ) const;
+        , const typename Charset::{code_unit}{asterisk} str
+        , const typename Charset::{code_unit}{asterisk} str_end ) const;
 
     template <typename Charset>
-    static {width_and_pos} <<std_width_calc_str_width_and_pos,str_width_and_pos>>
+    static auto <<std_width_calc_str_width_and_pos,str_width_and_pos>>
         ( Charset cs
         , {width_t} limit
-        , const typename Charset::{code_unit}* str
-        , std::size_t str_len
-        , {surrogate_policy} ) const;
+        , const typename Charset::{code_unit}{asterisk} str
+        , const typename Charset::{code_unit}{asterisk} str_end ) const
+        \-> {width_and_ptr}<typename Charset::{code_unit}>;
 };
 ----
 ==== Member functions
@@ -600,17 +469,16 @@ template <typename Charset>
 static {width_t} str_width
     ( Charset cs
     , {width_t} limit
-    , const typename Charset::{code_unit}* str
-    , std::size_t str_len
-    , {surrogate_policy} surr_poli) const;
+    , const typename Charset::{code_unit}{asterisk} str
+    , const typename Charset::{code_unit}{asterisk} str_end ) const;
 ----
-Return value:: `std::min(limit, w)`, where `w` is the sum of the extimated widths
-of the grapheme clusters in the UTF-32 string obtained by converting `str`
-to UTF-32 via `cs`, __i.e.__ by calling
+Return value:: `std::min(limit, w)`, where `w` is the sum
+of the grapheme clusters widths in the UTF-32 string
+obtained by converting `str` to UTF-32 via `cs`, __i.e.__ by calling
 +
 [source,cpp,subs=normal]
 ----
-cs.<<Charset_to_u32,to_u32>>().<<Transcoder_transcode,transcode>>(..., str, str_len, {invalid_seq_notifier}{}, surr_poli )
+cs.<<Charset_to_u32,to_u32>>().<<Transcoder_transcode,transcode>>(str, str_end, /{asterisk} ... {asterisk}/, nullptr )
 ----
 +
 The width of each grapheme cluster is assumed to be equal to the width
@@ -624,28 +492,29 @@ of its first codepoints `ch32`, which is assumed to equal to
 [source,cpp,subs=normal]
 ----
 template <typename Charset>
-static {width_and_pos} str_width_and_pos
+static auto str_width_and_pos
     ( Charset cs
     , {width_t} limit
-    , const typename Charset::{code_unit}* str
-    , std::size_t str_len
-    , {surrogate_policy} surr_poli) const;
+    , const typename Charset::{code_unit}{asterisk} str
+    , const typename Charset::{code_unit}{asterisk} str_end ) const
+    \-> {width_and_ptr}<typename Charset::{code_unit}>;
 ----
 Return value:: a value `r` such that
 +
-* `r.width` is same value returned by `str_width(cs, limit, str, str_len, surr_poli)`
-* `r.pos` is greateast value such that the expression below evaluates to `true`:
+* `r.width` is same value returned by `str_width(cs, limit, str, str_end )`
+* `r.ptr` is greatest pointer not greater than `str_end` such that the expression
+below evaluates to `true`:
 +
 [source,cpp,subs=normal]
 ----
-str_width(cs, strf::width_t::max(), str, r.pos, surr_poli) \<= limit
+str_width(cs, strf::width_t::max(), str, r.ptr) \<= limit
 ----
 ====
 
 
 === Class `width_t` [[width_t]]
 
-`width_t` is an unsigned type that implements
+`width_t` is an signed type that implements
 https://en.wikipedia.org/wiki/Q_(number_format)[Q16.16] arithmetics and
 is used to represent width of textual content when
 <<alignment_format,text alignment formatting>> is used.
@@ -659,12 +528,12 @@ class width_t {
 public:
     struct from_underlying_tag{};
     constexpr width_t() noexcept;
-    constexpr width_t(std::uint16_t) noexcept;
+    constexpr width_t(std::integral auto) noexcept;
     constexpr width_t(const width_t&) noexcept;
-    constexpr width_t(from_underlying_tag, std::uint32_t) noexcept;
+    constexpr width_t(from_underlying_tag, std::int32_t) noexcept;
 
     constexpr width_t& operator=(const width_t& other) noexcept;
-    constexpr width_t& operator=(std::uint16_t& x) noexcept;
+    constexpr width_t& operator=(std::int16_t& x) noexcept;
 
     constexpr bool operator==(const width_t& other) const noexcept;
     constexpr bool operator!=(const width_t& other) const noexcept;
@@ -673,55 +542,74 @@ public:
     constexpr bool operator\<=(const width_t& other) const noexcept;
     constexpr bool operator>=(const width_t& other) const noexcept;
 
-    constexpr bool is_integral() const noexcept;
-    constexpr unsigned floor() const noexcept;
-    constexpr unsigned ceil() const noexcept;
-    constexpr std::uint16_t round() const noexcept;
+    constexpr std::int16_t floor() const noexcept;
+    constexpr std::int32_t ceil() const noexcept;
+    constexpr std::int32_t round() const noexcept;
 
     constexpr width_t operator-() const noexcept;
     constexpr width_t operator+() const noexcept;
     constexpr width_t& operator+=(width_t other) noexcept;
     constexpr width_t& operator-=(width_t other) noexcept;
-    constexpr width_t& operator{asterisk}=(std::uint16_t m) noexcept;
-    constexpr width_t& operator/=(std::uint16_t d) noexcept;
+    constexpr width_t& operator{asterisk}=(std::int16_t m) noexcept;
+    constexpr width_t& operator/=(std::int16_t d) noexcept;
     constexpr width_t& operator{asterisk}=(width_t other) noexcept;
     constexpr width_t& operator/=(width_t other) noexcept;
 
-    constexpr std::uint32_t underlying_value() const noexcept;
-    constexpr static width_t from_underlying(std::uint32_t) noexcept;
+    constexpr std::int32_t underlying_value() const noexcept;
+    constexpr static width_t from_underlying(std::int32_t) noexcept;
 
     constexpr static width_t max() noexcept; // maximum possible value
-    constexpr static width_t min() noexcept; // return zero
+    constexpr static width_t min() noexcept; // minimum possible value
 
 private:
-    std::uint32_t _underlying_value; // exposition only
+    std::int32_t _underlying_value; // exposition only
 };
 
-constexpr bool operator==(width_t lhs, std::uint16_t rhs) noexcept;
-constexpr bool operator==(std::uint16_t lhs, width_t rhs) noexcept;
-constexpr bool operator!=(width_t lhs, std::uint16_t rhs) noexcept;
-constexpr bool operator!=(std::uint16_t lhs, width_t rhs) noexcept;
-constexpr bool operator< (width_t lhs, std::uint16_t rhs) noexcept;
-constexpr bool operator< (std::uint16_t lhs, width_t rhs) noexcept;
-constexpr bool operator\<=(width_t lhs, std::uint16_t rhs) noexcept;
-constexpr bool operator\<=(std::uint16_t lhs, width_t rhs) noexcept;
-constexpr bool operator> (width_t lhs, std::uint16_t rhs) noexcept;
-constexpr bool operator> (std::uint16_t lhs, width_t rhs) noexcept;
-constexpr bool operator>=(width_t lhs, std::uint16_t rhs) noexcept;
-constexpr bool operator>=(std::uint16_t lhs, width_t rhs) noexcept;
+constexpr width_max = width_t::max();
+constexpr width_min = width_t::min();
+
+constexpr bool operator==(width_t lhs, std::int16_t rhs) noexcept;
+constexpr bool operator==(std::int16_t lhs, width_t rhs) noexcept;
+constexpr bool operator!=(width_t lhs, std::int16_t rhs) noexcept;
+constexpr bool operator!=(std::int16_t lhs, width_t rhs) noexcept;
+constexpr bool operator< (width_t lhs, std::int16_t rhs) noexcept;
+constexpr bool operator< (std::int16_t lhs, width_t rhs) noexcept;
+constexpr bool operator\<=(width_t lhs, std::int16_t rhs) noexcept;
+constexpr bool operator\<=(std::int16_t lhs, width_t rhs) noexcept;
+constexpr bool operator> (width_t lhs, std::int16_t rhs) noexcept;
+constexpr bool operator> (std::int16_t lhs, width_t rhs) noexcept;
+constexpr bool operator>=(width_t lhs, std::int16_t rhs) noexcept;
+constexpr bool operator>=(std::int16_t lhs, width_t rhs) noexcept;
 
 constexpr width_t operator+(width_t lhs, width_t rhs) noexcept;
-constexpr width_t operator+(std::uint16_t lhs, width_t rhs) noexcept;
-constexpr width_t operator+(width_t lhs, std::uint16_t rhs) noexcept;
+constexpr width_t operator+(std::int16_t lhs, width_t rhs) noexcept;
+constexpr width_t operator+(width_t lhs, std::int16_t rhs) noexcept;
 constexpr width_t operator-(width_t lhs, width_t rhs) noexcept;
-constexpr width_t operator-(std::uint16_t lhs, width_t rhs) noexcept;
-constexpr width_t operator-(width_t lhs, std::uint16_t rhs) noexcept;
-constexpr width_t operator*(width_t lhs, width_t rhs) noexcept;
-constexpr width_t operator*(std::uint16_t lhs, width_t rhs) noexcept;
-constexpr width_t operator*(width_t lhs, std::uint16_t rhs) noexcept;
+constexpr width_t operator-(std::int16_t lhs, width_t rhs) noexcept;
+constexpr width_t operator-(width_t lhs, std::int16_t rhs) noexcept;
+constexpr width_t operator{asterisk}(width_t lhs, width_t rhs) noexcept;
+constexpr width_t operator{asterisk}(std::int16_t lhs, width_t rhs) noexcept;
+constexpr width_t operator{asterisk}(width_t lhs, std::int16_t rhs) noexcept;
 constexpr width_t operator/(width_t lhs, width_t rhs) noexcept;
-constexpr width_t operator/(std::uint16_t lhs, width_t rhs) noexcept;
-constexpr width_t operator/(width_t lhs, std::uint16_t rhs) noexcept;
+constexpr width_t operator/(std::int16_t lhs, width_t rhs) noexcept;
+constexpr width_t operator/(width_t lhs, std::int16_t rhs) noexcept;
+
+
+constexpr width_t sat_add(width_t, width_t) noexcept;
+constexpr width_t sat_add(width_t w, std::integral auto i) noexcept;
+constexpr width_t sat_add(std::integral auto i, width_t w) noexcept;
+
+constexpr width_t sat_sub(width_t, width_t) noexcept;
+constexpr width_t sat_sub(width_t w, std::integral auto i) noexcept;
+constexpr width_t sat_sub(std::integral auto i, width_t w) noexcept;
+
+constexpr width_t sat_mul(width_t, width_t) noexcept;
+constexpr width_t sat_mul(width_t w, std::integral auto i) noexcept;
+constexpr width_t sat_mul(std::integral auto i, width_t w) noexcept;
+
+constexpr /{asterisk} integral type {asterisk}/ compare(width_t, width_t) noexcept;
+constexpr /{asterisk} integral type {asterisk}/ compare(width_t w, std::integral auto i) noexcept;
+constexpr /{asterisk} integral type {asterisk}/ compare(std::integral auto i, width_t w) noexcept;
 
 } // namespace strf
 ----

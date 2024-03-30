@@ -1,5 +1,5 @@
-#ifndef STRF_DETAIL_COMMMON_HPP
-#define STRF_DETAIL_COMMMON_HPP
+#ifndef STRF_DETAIL_STRF_DEF_HPP
+#define STRF_DETAIL_STRF_DEF_HPP
 
 //  Copyright (C) (See commit logs on github.com/robhz786/strf)
 //  Distributed under the Boost Software License, Version 1.0.
@@ -8,6 +8,7 @@
 
 #include <type_traits>
 #include <cstddef>
+#include <cstdint>
 
 #if ! defined(STRF_ASSERT)
 #  if ! defined(STRF_FREESTANDING) && defined(__STDC_HOSTED__) && __STDC_HOSTED__ == 1
@@ -73,10 +74,14 @@
 #if defined(__CUDACC__)
 #  if (__CUDACC_VER_MAJOR__ >= 11)
 #    define STRF_HAS_ATTR_DEPRECATED
+#    define STRF_HAS_ATTR_FALLTHROUGH
 #  endif
 #elif defined(__has_cpp_attribute)
 #  if __has_cpp_attribute(deprecated) && __cplusplus >= 201402L
 #    define STRF_HAS_ATTR_DEPRECATED
+#  endif
+#  if __has_cpp_attribute(fallthrough) && __cplusplus >= 201703L
+#    define STRF_HAS_ATTR_FALLTHROUGH
 #  endif
 #endif
 
@@ -87,6 +92,14 @@
 #  define STRF_DEPRECATED
 #  define STRF_DEPRECATED_MSG(msg)
 #endif
+
+#if defined(STRF_HAS_ATTR_FALLTHROUGH)
+#  define STRF_FALLTHROUGH [[fallthrough]]
+#else
+#  define STRF_FALLTHROUGH
+#endif
+
+
 
 #if defined(__GNUC__) || defined (__clang__)
 #  define STRF_IF_LIKELY(x)   if(__builtin_expect(!!(x), 1))
@@ -133,10 +146,12 @@
 #  define STRF_HOST    __host__
 #  define STRF_DEVICE  __device__
 #  define STRF_HD      __host__ __device__
+#  define STRF_DEFAULT_IMPL {}
 #else // __CUDACC__
 #  define STRF_HD
 #  define STRF_HOST
 #  define STRF_DEVICE
+#  define STRF_DEFAULT_IMPL = default
 #endif // __CUDACC__
 
 #ifdef __CUDA_ARCH__
@@ -148,7 +163,8 @@ namespace strf { namespace detail {
 template <typename T>
 inline STRF_HD void pretend_to_use(const T& arg) noexcept { (void)arg; }
 
-}}
+} // namespace detail
+} // namespace strf
 
 #define STRF_MAYBE_UNUSED(X) strf::detail::pretend_to_use((X));
 
@@ -270,39 +286,184 @@ template <> struct wchar_equiv_impl<4> { using type = char32_t; };
 
 using wchar_equiv = typename wchar_equiv_impl<sizeof(wchar_t)>::type;
 
+template <typename... T> struct mp_type_list
+{
+    template <typename F>
+    using add_front = mp_type_list<F, T...>;
+
+    template <typename B>
+    using add_back = mp_type_list<T..., B>;
+
+    static constexpr std::size_t size = sizeof...(T);
+};
+
+template <typename A, typename B>
+struct mp_type_pair
+{
+    using first = A;
+    using second = B;
+};
+
 } // namespace detail
 
 struct absolute_lowest_rank
 {
-    explicit constexpr STRF_HD absolute_lowest_rank() noexcept { };
+    explicit constexpr absolute_lowest_rank() noexcept = default;
 };
 
 template <std::size_t N>
 struct rank: rank<N - 1>
 {
-    explicit constexpr STRF_HD rank() noexcept { };
+    constexpr static std::size_t number = N;
+    explicit constexpr rank() noexcept = default;
 };
 
 template <>
 struct rank<0>: absolute_lowest_rank
 {
-    explicit constexpr STRF_HD rank() noexcept { }
+    constexpr static std::size_t number = 0;
+    explicit constexpr rank() noexcept = default;
 };
 
 template <typename ... >
 struct tag
 {
-    explicit constexpr STRF_HD tag() noexcept { }
+    explicit constexpr tag() noexcept = default;
 };
 
 template <typename T>
 struct tag<T>
 {
-    explicit constexpr STRF_HD tag() noexcept { }
+    explicit constexpr tag() noexcept = default;
     using type = T;
 };
 
+template <typename> struct is_char: public std::false_type {};
+
+#if defined(__cpp_char8_t)
+template <> struct is_char<char8_t>: public std::true_type {};
+#endif
+template <> struct is_char<char>: public std::true_type {};
+template <> struct is_char<char16_t>: public std::true_type {};
+template <> struct is_char<char32_t>: public std::true_type {};
+template <> struct is_char<wchar_t>: public std::true_type {};
+
+
+namespace detail {
+
+inline namespace cast_sugars {
+
+template <typename T>
+STRF_HD constexpr T zero_if_negative(T x)
+{
+    return x >= 0 ? x : 0;
+}
+
+template <typename T>
+STRF_HD constexpr std::ptrdiff_t cast_ssize(T x)
+{
+    return static_cast<std::ptrdiff_t>(x);
+}
+
+template <typename T>
+STRF_HD constexpr std::size_t safe_cast_size_t_(std::true_type, T x)
+{
+    return static_cast<std::size_t>(x >= 0 ? x : 0);
+}
+template <typename T>
+STRF_HD constexpr std::size_t safe_cast_size_t_(std::false_type, T x)
+{
+    return x;
+}
+template <typename T>
+STRF_HD constexpr std::size_t safe_cast_size_t(T x)
+{
+    return safe_cast_size_t_(std::is_signed<T>(), x);
+}
+
+template <typename IntT, typename UIntT = typename std::make_unsigned<IntT>::type>
+constexpr STRF_HD UIntT cast_unsigned(IntT x)
+{
+    return static_cast<UIntT>(x);
+}
+
+template <typename T>
+STRF_HD constexpr std::uint64_t cast_int(T x)
+{
+    return static_cast<int>(x);
+}
+
+template <typename T>
+STRF_HD constexpr std::uint64_t cast_u64(T x)
+{
+    return static_cast<std::uint64_t>(x);
+}
+
+template <typename T>
+STRF_HD constexpr std::int64_t  cast_i64(T x)
+{
+    return static_cast<std::int64_t>(x);
+}
+
+template <typename T>
+STRF_HD constexpr std::uint32_t cast_u32(T x)
+{
+    return static_cast<std::uint32_t>(x);
+}
+
+template <typename T>
+STRF_HD constexpr std::int32_t  cast_i32(T x)
+{
+    return static_cast<std::int32_t>(x);
+}
+
+template <typename T>
+STRF_HD constexpr std::uint16_t cast_u16(T x)
+{
+    return static_cast<std::uint16_t>(x);
+}
+
+template <typename T>
+STRF_HD constexpr std::int16_t  cast_i16(T x)
+{
+    return static_cast<std::int16_t>(x);
+}
+
+template <typename T>
+STRF_HD constexpr std::uint8_t cast_u8(T x)
+{
+    return static_cast<std::uint8_t>(x);
+}
+
+template <typename T>
+STRF_HD constexpr std::int8_t  cast_i8(T x)
+{
+    return static_cast<std::int8_t>(x);
+}
+
+}  // namespace cast_sugars
+
+
+template <typename T>
+STRF_HD constexpr bool ge_zero_(std::true_type, T x)
+{
+    return x >= 0;
+}
+template <typename T>
+STRF_HD constexpr bool ge_zero_(std::false_type, T)
+{
+    return true;
+}
+
+template <typename T>
+STRF_HD constexpr bool ge_zero(T x)
+{
+    return ge_zero_(std::is_signed<T>(), x);
+}
+
+} // namespace detail
+
 } // namespace strf
 
-#endif  // STRF_DETAIL_COMMMON_HPP
+#endif // STRF_DETAIL_STRF_DEF_HPP
 

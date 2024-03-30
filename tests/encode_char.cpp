@@ -10,9 +10,9 @@ struct fixture
 {
     static constexpr std::size_t buff_size = 100;
     CharT buff[buff_size];
-    CharT* const dest_begin = buff;
+    CharT* dest_begin = buff;
     CharT* dest_it = buff;
-    CharT* const dest_end = buff + buff_size;
+    CharT* dest_end = buff + buff_size;
 };
 
 template <typename CharT, typename Charset>
@@ -22,14 +22,19 @@ STRF_TEST_FUNC void test_char
     , strf::detail::simple_string_view<CharT> encoded_char )
 {
     TEST_SCOPE_DESCRIPTION( "encoding: ", charset.name()
-                          , "; char: \\u'", strf::hex((unsigned)ch), '\'');
+                          , "; char: \\u'", strf::hex(static_cast<unsigned>(ch)), '\'');
 
     CharT buff[100];
-    auto it = charset.encode_char(buff, ch);
+    auto *it = charset.encode_char(buff, ch);
 
     TEST_EQ(std::size_t(it - buff), encoded_char.size());
+    // clang-tidy says the pointer inside test_utils::test_scope::first_test_scope_()
+    // is dangling, while I think is not.
+    // Anyway, even if it is dangling, that's not a bug in the library itself,
+    // just in the test.
+    // NOLINTNEXTLINE(clang-analyzer-core.StackAddressEscape)
     TEST_TRUE(strf::detail::str_equal(encoded_char.data(), buff, encoded_char.size()));
-}
+} // NOLINT(clang-analyzer-core.StackAddressEscape)
 
 STRF_TEST_FUNC void test_encode_char()
 {
@@ -79,4 +84,4 @@ STRF_TEST_FUNC void test_encode_char()
     }
 }
 
-REGISTER_STRF_TEST(test_encode_char);
+REGISTER_STRF_TEST(test_encode_char)

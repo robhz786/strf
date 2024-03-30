@@ -10,36 +10,30 @@
 
 void sample()
 {
-    //[ range_sample
     int array[] = { 11, 22, 33 };
 
     auto str = strf::to_string("[", strf::separated_range(array, ", "), "]");
 
     assert(str == "[11, 22, 33]");
-    //]
 }
 
 
 void sample2()
 {
-    //[ range_sample_2
     int array[] = { 250, 251, 252 };
 
     auto str = strf::to_string("[", *strf::hex(strf::separated_range(array, ", ")), "]");
 
     assert(str == "[0xfa, 0xfb, 0xfc]");
-    //]
 }
 
 void sample3()
 {
-    //[ range_sample_3
     int array[] = { 11, 22, 33 };
 
     auto str = strf::to_string("[", +strf::fmt_separated_range(array, " ;") > 4, "]");
 
     assert(str == "[ +11 ; +22 ; +33]");
-    //]
 }
 
 void sample4()
@@ -54,7 +48,7 @@ void sample4()
 
 void sample5()
 {
-    std::map<int, const char*> m = {
+    const std::map<int, const char*> m = {
         {1, "one"},
         {2, "two"},
         {1000, "a thousand"}

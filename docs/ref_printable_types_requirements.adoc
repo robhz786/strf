@@ -1,0 +1,595 @@
+////
+Copyright (C) (See commit logs on github.com/robhz786/strf)
+Distributed under the Boost Software License, Version 1.0.
+(See accompanying file LICENSE_1_0.txt or copy at
+http://www.boost.org/LICENSE_1_0.txt)
+////
+
+:printable_def:  <<printable_def,printable_def>>
+
+:premeasurements: <<premeasurements, premeasurements>>
+:facets_pack: <<facets_pack, facets_pack>>
+:value_and_format: <<value_and_format, value_and_format>>
+
+:PrintableDef: <<PrintableDef,PrintableDef>>
+:Printable: <<Printable,Printable>>
+:printable_def_of: <<printable_def_of,printable_def_of>>
+:printable_overrider_c: <<printable_overrider_c,printable_overrider_c>>
+:make_printer: <<make_printer,make_printer>>
+:representative_of_printable: <<representative_of_printable,representative_of_printable>>
+:is_printable_and_overridable: <<is_printable_and_overridable,is_printable_and_overridable>>
+
+:width_accumulator: <<width_accumulator,width_accumulator>>
+:size_accumulator: <<size_accumulator,size_accumulator>>
+
+:constrain: <<constrain,constrain>>
+:constrained_fpe: <<constrained_fpe,constrained_fpe>>
+:get_facet: <<get_facet,get_facet>>
+:tag: <<tag,tag>>
+:rank: <<rank,rank>>
+:join: <<join,join>>
+
+== Requirements of printable types
+
+This section provides what one needs to be known to add a new printable type
+or override an existing one.
+
+[[Printable]]
+=== Type requirement _Printable_
+
+A type `T` is _Printable_ if:
+
+* `printable_def_of<T>` is defined and is a  _{PrintableDef}_ type
+* `printable_def_of<T>::<<PrintableDef_forwarded_type,forwarded_type>>` is implicitly convertible from `T`
+
+[[printable_def_of]]
+=== Type alias template `printable_def_of`
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+struct printable_tag;
+
+template <typename T> struct printable_def;
+
+template <typename T> using printable_def_of = /{asterisk} see below\... {asterisk}/;
+
+} // namespace strf
+----
+
+`printable_def_of<T>` is:
+
+*  `printable_def_of<std::remove_cvref<T>>`, if `T` is a reference type or has any cv-qualifier
+*  otherwise, it is `PrintableDef`, when `T` is `{value_and_format}<PrintableDef, /{asterisk}\... {asterisk}/>`
+*  otherwise, it is `printable_def<T>` if such template specialization is defined
+*  otherwise, it is `decltype(get_printable_def(printable_tag{}, std::declval<T>()))`
+
+[[PrintableDef]]
+=== Type requirement _PrintableDef_
+
+Given
+
+* `T`, a _PrintableDef_ type.
+* `P`, a _{Printable}_ type such that `{printable_def_of}<P>` is `T`.
+
+==== Member types
+
+[[PrintableDef_representative]]
+====
+[source,cpp]
+----
+T::representative
+----
+The type used as the template argument in `{get_facet}`.
+This means it is the type that is tested by the
+the __UnaryTypeTrait__ template argument passed to
+`{constrain}` or `{constrained_fpe}`.
+
+`T::representative` is optional if `T` is an intance of `prinatable_def`.
+When `prinatable_def<R>` does not define `representative`,
+it assumed to be `R`.
+
+====
+
+[[PrintableDef_forwarded_type]]
+====
+[source,cpp]
+----
+T::forwarded_type
+----
+`forwarded_type` must be implicitly convertible from `P`,
+and must be copy-constructible. And its copy-constructor should be fast.
+( `forwarded_type` is usually `P` or `const P&` )
+
+`forwarded_type` is used intead of `P` as the storage type in some
+situations ( for example, the objects created by `fmt` and `{join}` ).
+====
+
+[[PrintableDef_is_overridable]]
+====
+.( Optional )
+[source,cpp]
+----
+T::is_overridable
+----
+A type alias to either `std::true_type` or `std::false_type`.
+It influences the behavior of `{make_printer}`.
+Assumed to be `std::false_type` if not defined.
+====
+
+[[PrintableDef_format_specifiers]]
+====
+.( Optional )
+[source,cpp]
+----
+T::format_specifiers
+----
+A type alias to `{tag}<F\...>`, where all types in `F\...` satisfy
+__<<FormatSpecifier,FormatSpecifier>>__.
+It affects the return type of `<<fmt,fmt>>`.
+Assumed to be `{tag}<>` if not defined.
+====
+
+[[PrintableDef_functions]]
+==== Member static function templates
+
+Given
+
+* `T`, a _PrintableDef_ type.
+* `CharT`, a character type
+* `fpack`, a value of type `{facets_pack}</{asterisk}\... {asterisk}/>`
+* `pre`, a value of type `{premeasurements}</{asterisk}\... {asterisk}/>`
+* `dst`, an non-const lvalue reference of type `{destination}<CharT>`
+* `v`, a value of type `T::forwarded_type` or `{value_and_format}<T, F\...>`,
+   where `F\...` is such that `T::format_specifiers` is an alias to `{tag}<F\...>`.
+
+At least one of the function templates below must be defined:
+
+====
+.( Optional )
+[source,cpp,subs=normal]
+----
+T::print(dst, fpack, v);
+----
+[horizontal]
+Return Type:: void
+Effect:: Prints `v` into `dst` taking into account the facets in `fpack`
+====
+
+====
+.( Optional )
+[source,cpp,subs=normal]
+----
+auto c = T::make_printer({tag}<CharT>{}, pre, fpack, v);
+----
+The `make_printer` function has two purposes:
+
+. to return a callable object `c` such that `c(dst)` prints `v` into `dst`
+  taking into account the facets in `fpack`
+. To measure the size and/or width (or none, depeding on the type `pre` )
+  of the content that `c` prints when invoked.
+
+`pre` acts as an output variable:
+If `pre\-><<premeasurements,width_demanded>>` is `true`, then the width of content
+that `c` prints shall be added to the <<width_accumulator,accumulated_size>> of `pre`.
+
+If `pre\-><<premeasurements,size_demanded>>` is `true`, then the size of content that
+`c` prints ( or a value greater than that ) shall be added into the
+<<size_accumulator,accumulated_size>> of `pre`.
+
+`c(dst)` must not call `dst.recycle()`
+if the value of `dst.space()` immediately before calling `c(dst)`
+is greater than or equal to such calculated size.
+====
+
+=== Type alias template `representative_of_printable` [[representative_of_printable]]
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template <typename T>
+using representative_of_printable = /{asterisk} see bellow {asterisk}/ ;
+
+} // namespace strf
+----
+
+Given `__PDef__`, the type `{printable_def_of}<T>`, `representative_of_printable<T>` is an alias to
+`PDef::<<PrintableDef_representative,representative>>`, assuming such
+type member alias is defined.
+Otherwise, it is `__R__`, if `PDef` is `printable_def<R>`.
+
+=== Variable template `is_printable_and_overridable` [[is_printable_and_overridable]]
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template <typename T>
+using is_printable_and_overridable = ... /{asterisk}see below{asterisk}/;
+
+template <typename T>
+constexpr bool is_printable_and_overridable_v = is_printable_and_overridable<T>::value;
+
+} // namespace strf
+----
+
+`is_printable_and_overridable<T>` is an alias to
+`{printable_def_of}<T>::<<PrintableDef_is_overridable,is_overridable>>`
+if such type is defined, otherwise it is an alias to `std::false_type`.
+
+=== Type alias template `forwarded_printable_type` [[forwarded_printable_type]]
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template <typename T>
+using forwarded_printable_type = typename {printable_def_of}<T>::<<PrintableDef_forwarded_type,forwarded_type>>;
+
+} // namespace strf
+----
+
+=== Template facet category `printable_overrider_c` [[printable_overrider_c]]
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template <typename R>
+struct printable_overrider_c {
+    static constexpr bool constrainable = true;
+
+    constexpr static <<dont_override,dont_override>><R> get_default() noexcept {
+        return {};
+    }
+};
+
+} // namespace strf
+----
+
+The template parameter `R` shall be the same as the `{representative_of_printable}<P>`,
+where `P` the printable type to be overriden.
+
+=== Type alias `printable_overrider_c_of` [[printable_overrider_c_of]]
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+template <typename Printable>
+using printable_overrider_c_of =
+    printable_overrider_c< representative_of_printable<Printable> >;
+}
+----
+
+=== Struct template `dont_override` [[dont_override]]
+
+
+`dont_override<_T_>` is the default facet of `printable_overrider_c<_T>` category.
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template <typename T>
+struct dont_override {
+    using category = printable_overrider_c<R>;
+};
+
+} // namespace strf
+----
+
+=== Function template `make_printer` [[make_printer]]
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template <typename CharT, typename Pre, typename FPack, typename Arg>
+constexpr /{asterisk}\...{asterisk}/ make_printer(Pre* pre, const FPack& facets, const Arg& arg);
+
+} // namespace strf
+----
+
+If `{printable_def_of}<Arg>::<<PrintableDef_is_overridable,is_overridable>>::value` is `true`,
+`make_printer` returns
+[source,cpp,subs=normal]
+----
+{get_facet}
+    < {printable_overrider_c}<{representative_of_printable}<Arg>>
+    , {representative_of_printable}<Arg> >
+    (facets)
+    .make_printer({tag}<CharT>{}, pre, facets, arg);
+----
+
+Otherwise, it returns
+
+[source,cpp,subs=normal]
+----
+{printable_def  _of}<Arg>::make_printer({tag}<CharT>{}, pre, facets, arg)
+----
+
+=== Class template `premeasurements` [[premeasurements]]
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+enum class width_presence: bool { no = false, yes = true };
+enum class size_presence : bool { no = false, yes = true };
+
+template <size_presence SizePresence, width_presence WidthPresence>
+class premeasurements
+    : public {size_accumulator}<static_cast<bool>(SizePresence)>
+    , public {width_accumulator}<static_cast<bool>(WidthPresence)>
+{
+public:
+
+    static constexpr bool size_demanded = static_cast<bool>(SizePresence);
+    static constexpr bool width_demanded = static_cast<bool>(WidthPresence);
+    static constexpr bool no_demands  = ! size_demanded && ! width_demanded;    
+    static constexpr bool something_demanded = size_demanded || width_demanded;
+    static constexpr bool size_and_width_demanded = size_demanded && width_demanded;
+
+    constexpr premeasurements() noexcept = default;
+    constexpr explicit premeasurements(<<width_t,width_t>> initial_width) noexcept;
+
+    ~premeasurements() = default;
+};
+
+} // namespace strf
+----
+==== Constructors
+====
+[source,cpp,subs=normal]
+----
+constexpr premeasurements() noexcept;
+----
+[horizontal]
+Effect:: Default-construct each of the base classes.
+====
+====
+[source,cpp,subs=normal]
+----
+constexpr explicit premeasurements(<<width_t,width_t>> width_limit) noexcept;
+----
+Compile-time requirement:: `WidthPresence` is `width_presence::yes`, otherwise this constructor
+does not participate in overload resolution.
+Effect:: Initializes `{width_accumulator}` base
+with `width_limit`.
+====
+[[size_accumulator]]
+=== Class template `size_accumulator`
+[source,cpp,subs=normal]
+----
+namespace strf {
+template <bool Active>
+class size_accumulator
+{
+public:
+    explicit constexpr size_accumulator() noexcept;
+    explicit constexpr size_accumulator(std::integral auto initial_size) noexcept;
+
+    constexpr void add_size(std::integral auto s) noexcept;
+
+    constexpr std::ptrdiff_t accumulated_ssize() const noexcept;
+    constexpr std::size_t accumulated_usize() const noexcept;
+};
+} // namespace strf
+----
+
+==== Member functions
+====
+[source,cpp]
+----
+explicit constexpr size_accumulator() noexcept;
+----
+Postcondition:: `accumulated_ssize() == 0`
+====
+====
+[source,cpp]
+----
+explicit constexpr size_accumulator(std::integral auto initial_size) noexcept;
+----
+Compile-time requirement:: `Active` is `true`, otherwise this constructor
+does not participate in overload resolution.
+Postcondition:: `accumulated_ssize() == initial_size >= 0 ? initial_size : 0`
+====
+[[size_accumulator_add_size]]
+====
+[source,cpp]
+----
+constexpr void add_size(std::integral auto s) noexcept;
+----
+Effects::
+When `Active` is `false`::: None
+When `Active` is `true` ::: The internally stored size value ( that is returned by `accumulated_ssize()` ) is incremented by the value `(s >= 0 ? s : 0)`.
+====
+
+[[size_accumulator_accumulated_usize]]
+====
+[source,cpp]
+----
+constexpr std::size_t accumulated_usize() const noexcept;
+----
+When `Active` is `false`::: `0`
+When `Active` is `true` ::: The internally stored size value.
+====
+
+[[size_accumulator_accumulated_ssize]]
+====
+[source,cpp]
+----
+constexpr std::ptrdiff_t accumulated_ssize() const noexcept;
+----
+Return value:: `static_cast<std::ptrdiff_t>(accumulated_usize())`
+====
+
+
+[[width_accumulator]]
+=== Class template `width_accumulator`
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+template <bool Active>
+class width_accumulator
+{
+public:
+    constexpr width_accumulator() noexcept;
+
+    constexpr explicit width_accumulator(<<width_t,width_t>> width_limit) noexcept;
+
+    constexpr void add_width(<<width_t,width_t>>) noexcept;
+
+    constexpr void checked_add_width(<<width_t,width_t>>) noexcept;
+
+    constexpr <<width_t,width_t>> accumlated_width() const noexcept;
+
+    constexpr <<width_t,width_t>> remaining_width() const noexcept;
+
+    constexpr bool has_remaining_width() const noexcept;
+
+    constexpr bool remaining_width_greater_than(width_t w) const noexcept
+
+    constexpr saturate_width(width_t w) noexcept;
+
+private:
+    width_t limit_ = width_max; // exposition-only
+    width_t width_ = 0;         // exposition-only
+}
+} // namespace strf
+----
+
+==== Member functions
+
+
+====
+[source,cpp,subs=normal]
+----
+constexpr explicit width_accumulator(<<width_t,width_t>> width_limit) noexcept;
+----
+Compile-time requiment:: `Active` is `true`, otherwise this constructor
+does not participate in overload resolution.
+Postcondition:: `remaining_width() == width_limit > 0 ? width_limit : 0`
+====
+
+
+====
+[source,cpp]
+----
+constexpr width_accumulator() noexcept;
+----
+Postcondition:: `remaining_width() == (Active ? <<width_t,width_max>> : 0)`
+====
+
+====
+[source,cpp,subs=normal]
+----
+constexpr void  checked_add_width(<<width_t,width_t>> w) noexcept;
+----
+Effect::
+None if `Active` is `false`, otherwise does
++
+[source,cpp]
+----
+if (w > 0 && width_ < limit_) {
+    width_ = ( w >= limit_ - width_
+             ? limit_
+             : width_ + w );
+}
+----
+
+====
+
+====
+[source,cpp,subs=normal]
+----
+constexpr void add_width(<<width_t,width_t>> w) noexcept;
+----
+Effect::
+None if `Active` is `false`, otherwise does `width_ += w`
+====
+
+
+====
+[source,cpp,subs=normal]
+----
+constexpr width_t accumulated_width() noexcept;
+----
+Return value:: `Active ? (width_ <= limit_ ? width_ : limit_) : 0`
+====
+
+====
+[source,cpp,subs=normal]
+----
+constexpr width_t remaining_width() noexcept;
+----
+Return value:: `Active ? (width_ < limit_ ? limit_ - width_ : 0) : 0`
+====
+
+====
+[source,cpp,subs=normal]
+----
+constexpr bool has_remaining_width() noexcept;
+----
+Return value:: `Active && width_ < limit_`
+====
+
+====
+[source,cpp,subs=normal]
+----
+constexpr bool remaining_width_greater_than(strf::width_t w) const noexcept
+----
+Return value:: `Active && width_ + w < limit_`
+====
+
+
+====
+[source,cpp,subs=normal]
+----
+constexpr saturate_width(width_t w) noexcept;
+----
+Effect: None if `Active` is `false`, otherwise do `width_ = limit_`
+Postcondition:: `remaining_width() == 0` 
+====
+
+
+=== Function template `measure` [[measure]]
+
+[source,cpp,subs=normal]
+----
+template < typename CharT
+         , <<premeasurements,size_presence>> SizePresence
+         , <<premeasurements,width_presence>> WidthPresence
+         , typename\... FPE
+         , typename\... Args >
+void measure
+    ( {premeasurements}<SizePresence, WidthPresence>* pre
+    , const {facets_pack}<FPE\...>& facets
+    , const Args&\... args );
+----
+
+Calculates the size and/or width of the result of printing the arguments `args\...`
+
+Compile-time requirements::
+* All types in `Args\...` are __{Printable}__
+* All types in `FPE\...` are __<<FacetsPackElement,FacetsPackElement>>__
+  ( since this is a requirement of `{facets_pack}` ).
+
+Effects::
+* When `SizePresence` is `size_presence::yes`, do the equivalent to the following
+  https://en.cppreference.com/w/cpp/language/fold[fold expression]:
++
+[source,cpp,subs=normal]
+----
+(\..., {make_printer}<CharT>(pre, facets, args) );
+----
+* When `WidthPresence` is `width_presence::yes` but `SizePresence` is `size_presence::no`,
+  do  `{make_printer}<CharT>(pre, facets, a)` for each argument  `a` in `args`
+  `pre\-><<width_accumulator,has_remaining_width>>()` returns `false`.
+  This implies that not necessarily all arguments in `args\...` are used.
+* Does nothing if `SizePresence` is `size_presence::no` and `WidthPresence` is `width_presence::no`
+  
+

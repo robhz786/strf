@@ -3,49 +3,51 @@
 [![Build Status](https://ci.appveyor.com/api/projects/status/github/robhz786/strf?branch=main&svg=true)](https://ci.appveyor.com/project/robhz786/strf/branch/main)
 [![codecov](https://codecov.io/gh/robhz786/strf/branch/main/graph/badge.svg?token=d5DIZzYv5O)](https://codecov.io/gh/robhz786/strf)
 
-Strf is a C++11 text formatting library that
+A C++ text formatting and transcoding library.
 
-* [is fast](http://robhz786.github.io/strf-benchmarks/v0.15.3/results.html)
-* [is highly extensible](http://robhz786.github.io/strf/v0.15.3/versus_fmtlib.html#_extensibility)
-* [can do some things that others can't](https://robhz786.github.io/strf/v0.15.3/versus_fmtlib.html#_strf)
-
-__Attention__ : Branch `master` was renamed to `main` at the time of release 0.15.0.
+Header-only by default, but can be used as a static library as well ( see [details](http://robhz786.github.io/strf/v0.16.0/install.html) ).
 
 ## Documentation
 
-* Overview
-  * [Tutorial](http://robhz786.github.io/strf/v0.15.3/tutorial.html)
-  * [Quick reference](http://robhz786.github.io/strf/v0.15.3/quick_reference.html)
-  * [Strf versus {fmt}](http://robhz786.github.io/strf/v0.15.3/versus_fmtlib.html)
-* How to extend strf:
-  * [Adding destination](http://robhz786.github.io/strf/v0.15.3/howto_add_destination.html)
-  * [Adding printable types](http://robhz786.github.io/strf/v0.15.3/howto_add_printable_types.html)
-  * [Overriding printable types](http://robhz786.github.io/strf/v0.15.3/howto_override_printable_types.html)
-* Header references:
-  * [`<strf.hpp>`](http://robhz786.github.io/strf/v0.15.3/strf_hpp.html) is the main header. This document is big and covers many details you will probably never need to know. So it's not the best starting point.
-  * [`<strf/destination.hpp>`](http://robhz786.github.io/strf/v0.15.3/destination_hpp.html) is a lightweight and freestanding header that defines the `destination` class template. All other headers depend on this one.
-  * [`<strf/to_string.hpp>`](http://robhz786.github.io/strf/v0.15.3/to_string_hpp.html) adds support for writting to `std::basic_string`. It includes `<strf.hpp>`.
-  * [`<strf/to_cfile.hpp>`](http://robhz786.github.io/strf/v0.15.3/to_cfile_hpp.html)  adds support for writting to `FILE*`. It includes `<strf.hpp>`.
-  * [`<strf/to_streambuf.hpp>`](http://robhz786.github.io/strf/v0.15.3/to_streambuf_hpp.html) adds support for writting to `std::basic_streambuf`. It includes `<strf.hpp>`.
-* Miscellaneous
-  * [How to use strf on CUDA devices](http://robhz786.github.io/strf/v0.15.3/cuda.html)
-  * [Benchmarks](http://robhz786.github.io/strf-benchmarks/v0.15.3/results.html)
+
+* [Learn by examples](#code-samples) ( if you just wanna have an glance )
+* [Tutorial](http://robhz786.github.io/strf/v0.16.0/tutorial.html) ( good starting point, if you actually want learn about it )
+* [Quick reference](http://robhz786.github.io/strf/v0.16.0/quick_reference.html) ( if you are already using it )
+* Full Header references ( if you need to get into the details )
+  * [`<strf/destination.hpp>`](http://robhz786.github.io/strf/v0.16.0/destination_hpp.html) is a lightweight and freestanding header that defines the `destination` class template. All other headers depend on this one.
+  * [`<strf.hpp>`](http://robhz786.github.io/strf/v0.16.0/strf_hpp.html) is the main header. It can be used in a freestanding environment, whereas the headers bellow can not.
+  * [`<strf/iterator.hpp>`](http://robhz786.github.io/strf/v0.16.0/iterator_hpp.html) defines an output iterator adapter for the `destination` class template.
+  * [`<strf/to_string.hpp>`](http://robhz786.github.io/strf/v0.16.0/to_string_hpp.html) adds support for writting to `std::basic_string`. It includes `<strf.hpp>`.
+  * [`<strf/to_cfile.hpp>`](http://robhz786.github.io/strf/v0.16.0/to_cfile_hpp.html) adds support for writting to `FILE*`. It includes `<strf.hpp>`.
+  * [`<strf/to_streambuf.hpp>`](http://robhz786.github.io/strf/v0.16.0/to_streambuf_hpp.html) adds support for writting to `std::basic_streambuf`. It includes `<strf.hpp>`.
+  * `strf/all.hpp` include all of the headers above.
+* HOWTOs
+  * [Integrate strf in your environment](http://robhz786.github.io/strf/v0.16.0/install.html)
+  * Extending:
+    * [Adding a destination](http://robhz786.github.io/strf/v0.16.0/howto_add_destination.html)
+    * [Adding a printable type](http://robhz786.github.io/strf/v0.16.0/howto_add_printable_types.html)
+    * [Overriding a printable type](http://robhz786.github.io/strf/v0.16.0/howto_override_printable_types.html)
+  * [Using strf on CUDA devices (experimental) ](http://robhz786.github.io/strf/v0.16.0/cuda.html)
+
+* [Benchmarks](http://robhz786.github.io/strf-benchmarks/v0.16.0/results.html) ( versus {fmt} )
 
 ## Requirements
 
+From version 0.16 onwards, C++11 is no longer supported. The compiler must support C++14 or above.
+
 Strf has been tested in the following compilers:
 
-* Clang 3.8.1
-* GCC 6.3.0
+* Clang 6.0
+* GCC 6.5.0
 * Visual Studio 2019 16
-* NVCC 11.0
+* NVCC 11.8
 
-## Examples
+## Code samples
 
 - [Basic examples](#basic-examples)
 - [Alignment formatting](#alignment-formatting)
 - [Single character argument](#single-character-argument)
-- [Numeric Formmating](#numeric-formmating)
+- [Numeric Formatting](#numeric-formatting)
 - [Numeric Punctuation](#numeric-punctuation)
 - [Transcoding](#transcoding)
 - [Joining arguments](#joining-arguments)
@@ -63,7 +65,7 @@ void basic_samples()
 {
     // Creating a std::string
     auto str = strf::to_string(x, " in hexadecimal is ", *strf::hex(x), '.');
-    assert("255 in hexadecimal is 0xff.");
+    assert(str == "255 in hexadecimal is 0xff.");
 
     // Alternative syntax to enable i18n
     auto str_tr = strf::to_string.tr("{} in hexadecimal is {}.", x, *strf::hex(x));
@@ -111,10 +113,8 @@ void alignment_formatting()
     assert(strf::to_u8string(right(123, 8, U'‥')) == u8"‥‥‥‥‥123");
 }
 ```
-**Note**: Strf calculates string width the same way it is
-[specified to `std::format`](http://eel.is/c++draft/format.string.std#11),
-which takes [grapheme clustering](http://eel.is/c++draft/format.string.std#11)
-into account.
+**Note**: Strf calculates string width the same way as
+[specified to `std::format` in C++20](https://timsong-cpp.github.io/cppwp/n4868/format#string.std-11), which takes into account grapheme clustering.
 
 ### Single character argument
 
@@ -141,7 +141,7 @@ void single_character_argument()
 }
 ```
 
-### Numeric Formmating
+### Numeric Formatting
 
 ```c++
 #include <strf/to_string.hpp>
@@ -240,11 +240,18 @@ void numeric_punctuation()
         , "  ", strf::punct(10000), "  ", 100000 );
     assert(s == "1.000.000,5  1000000.5  10.000  100000");
 
-    // Extracting punctuation from locale
-    if (setlocale(LC_NUMERIC, "as_IN")) {
-        auto loc_punct = strf::locale_numpunct(); // provided by header <strf/locale.hpp>
-        auto s_loc = strf::to_string.with(loc_punct) (*!strf::fixed(1e+16));
-        assert(s_loc == "10,00,00,00,00,00,00,000.");
+    // Use strf::locale_numpunct to get the
+    // punctuation of current global locale
+    try {
+        const std::locale loc("en_US.UTF-8");
+        const auto previous_loc = std::locale::global(loc);
+        const auto loc_punct = strf::locale_numpunct(); // from <strf/locale.hpp>
+        std::locale::global(previous_loc); // this does not affect loc_punt
+
+        const auto result = strf::to_string.with(loc_punct) (*!strf::fixed(1000000.5));
+        assert(result == "1,000,000.5");
+    } catch (std::runtime_error&) {
+        // locale not supported
     }
 
     // Manually specifing a punctuation
@@ -277,36 +284,37 @@ void numeric_punctuation()
 void transcoding()
 {
     // Converting UTF-16 to UTF-8
-    auto str_narrow = strf::to_string("He was born in ", strf::conv(u"خنيفرة"), '.');
+    auto str_narrow = strf::to_string("He was born in ", strf::transcode(u"خنيفرة"), '.');
     assert(str_narrow == "He was born in \xd8\xae\xd9\x86\xd9\x8a\xd9\x81\xd8\xb1\xd8\xa9.");
 
-    auto str_u8 = strf::to_u8string(u8"He was born in ", strf::conv(u"خنيفرة"), u8'.');
+    auto str_u8 = strf::to_u8string(u8"He was born in ", strf::transcode(u"خنيفرة"), u8'.');
     assert(str_u8 == u8"He was born in خنيفرة.");
 
 
     // Converting UTF-8 to UTF-16
-    assert(strf::to_u16string(strf::conv(str_narrow)) == u"He was born in خنيفرة.");
-    assert(strf::to_u16string(strf::conv(str_u8)) == u"He was born in خنيفرة.");
+    assert(strf::to_u16string(strf::transcode(str_narrow)) == u"He was born in خنيفرة.");
+    assert(strf::to_u16string(strf::transcode(str_u8)) == u"He was born in خنيفرة.");
 
 
     // Converting UTF-16 to ISO-8859-6
     auto str_narrow_2 = strf::to_string.with(strf::iso_8859_6<char>)
-        ( "He was born in ", strf::conv(u"خنيفرة"), '.');
+        ( "He was born in ", strf::transcode(u"خنيفرة"), '.');
     assert(str_narrow_2 == "He was born in \xce\xe6\xea\xe1\xd1\xc9.");
 
 
     // Converting char8_t string to ISO-8859-6
     auto str_narrow_3 = strf::to_string.with(strf::iso_8859_6<char>)
-        ( "He was born in ", strf::conv(u8"خنيفرة"), '.');
+        ( "He was born in ", strf::transcode(u8"خنيفرة"), '.');
     assert(str_narrow_3 == str_narrow_2);
 
 
     // Converting UTF-8 to ISO-8859-6
     // ( if the source character type is the same as the destination
-    //   character type, the charset must be specified inside strf::conv() )
+    //   character type, the charset must be specified inside strf::transcode() )
     auto str_narrow_4 = strf::to_string.with(strf::iso_8859_6<char>)
         ( "He was born in "
-        , strf::conv("\xd8\xae\xd9\x86\xd9\x8a\xd9\x81\xd8\xb1\xd8\xa9", strf::utf8<char>)
+        , strf::transcode( "\xd8\xae\xd9\x86\xd9\x8a\xd9\x81\xd8\xb1\xd8\xa9"
+                         , strf::utf8<char> )
         , '.' );
     assert(str_narrow_4 == str_narrow_2);
 
@@ -314,23 +322,23 @@ void transcoding()
     // Converting ISO-8859-6 to UTF-16
     auto str_u16 = strf::to_u16string
         ( u"He was born in "
-        , strf::conv("\xce\xe6\xea\xe1\xd1\xc9", strf::iso_8859_6<char>)
+        , strf::transcode("\xce\xe6\xea\xe1\xd1\xc9", strf::iso_8859_6<char>)
         , u'.' );
     assert(str_u16 == u"He was born in خنيفرة.");
 
     // or
     str_u16 = strf::to_u16string.with(strf::iso_8859_6<char>)
         ( u"He was born in "
-        , strf::conv("\xce\xe6\xea\xe1\xd1\xc9")
+        , strf::transcode("\xce\xe6\xea\xe1\xd1\xc9")
         , u'.' );
     assert(str_u16 == u"He was born in خنيفرة.");
 
 
     // Several transcodings in a single statemet
-    auto str = strf::to_u8string( strf::conv(u"aaa--")
-                                , strf::conv(U"bbb--")
-                                , strf::conv( "\x80\xA4"
-                                            , strf::windows_1252<char> ) );
+    auto str = strf::to_u8string( strf::transcode(u"aaa--")
+                                , strf::transcode(U"bbb--")
+                                , strf::transcode( "\x80\xA4"
+                                                 , strf::windows_1252<char> ) );
     assert(str == u8"aaa--bbb--\u20AC\u00A4");
 }
 ```
@@ -347,15 +355,14 @@ void joins()
     const char* filename = "tmp1234";
     auto s = strf::to_string.tr( "Could not open file {}"
                                , strf::join(dirname, '/', filename) );
-
     assert(s == "Could not open file /tmp/tmp1234");
-
 
     // join_left, join_center and join_right align several arguments as one
     const int value = 255;
-    s = strf::to_string( strf::join_center(40, U'.')( value
-                                                    , " in hexadecimal is "
-                                                    , strf::hex(value) ) );
+    s = strf::to_string
+        ( strf::join_center(40, U'.')
+            ( value, " in hexadecimal is ", strf::hex(value) ) );
+
     assert(s == "........255 in hexadecimal is ff........");
 
 
@@ -387,7 +394,7 @@ void ranges()
 
     // With separator and formatting
     str = strf::to_string( "--["
-                         , *strf::hex(strf::separated_range(array, " / ")).p(4)
+                         , *strf::fmt_separated_range(array, " / ").hex().p(4)
                          , "]--");
     assert(str == "--[0x000a / 0x0014 / 0x001e / 0x0028]--");
 

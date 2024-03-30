@@ -5,8 +5,8 @@ Distributed under the Boost Software License, Version 1.0.
 http://www.boost.org/LICENSE_1_0.txt)
 ////
 
-:cstr_writer: <<destination_hpp#basic_cstr_writer,cstr_writer>>
-:basic_cstr_writer: <<destination_hpp#basic_cstr_writer,basic_cstr_writer>>
+:cstr_destination: <<destination_hpp#basic_cstr_destination,cstr_destination>>
+:basic_cstr_destination: <<destination_hpp#basic_cstr_destination,basic_cstr_destination>>
 
 :strf-revision: develop
 :strf-src-root: https://github.com/robhz786/strf/blob/{strf-revision}
@@ -33,7 +33,7 @@ pointing to where the content is to be written.
 
 &#95;&#95;global&#95;&#95; void sample(char* dest, std::size_t dest_size)
 {
-    strf::{cstr_writer} writer{dest, dest_size};
+    strf::{cstr_destination} writer{dest, dest_size};
     auto print = strf::to(writer);
 
     print("Hello World!\n");
@@ -50,7 +50,7 @@ You can also take a look at the unit tests that run on CUDA device
 == Static link and CMake
 
 To build Strf as static library for CUDA, you only need to compile the file
-`{strf-src-root}/src/strf.cu[strf/strf.cu]`. And your code 
+`{strf-src-root}/src/strf.cu[strf/strf.cu]`. And your code
 shall define the macro `STRF_CUDA_SEPARATE_COMPILATION`.
 
 Alternatively, you can use Strf CMake project. In this case, you need
@@ -63,7 +63,7 @@ cmake -G __<generator-name>__ -DSTRF_CUDA_SEPARATE_COMPILATION=ON ... __<path-to
 As explained in <<install#,another document>>, it is possible to
 integrate Strf using `add_subdirectory`, or
 exporting and importing. Both solution gives you the
-`strf::strf-cuda` CMake target, which represents the Srtf static
+`Strf::StrfCuda` CMake target, which represents the Srtf static
 library for CUDA.
 
 == Unsupported features on CUDA devices

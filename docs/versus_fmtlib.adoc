@@ -5,6 +5,9 @@ Distributed under the Boost Software License, Version 1.0.
 http://www.boost.org/LICENSE_1_0.txt)
 ////
 
+:output_buffer: <<destination_hpp#output_buffer,output_buffer>>
+:destination: <<destination_hpp#destination,destination>>
+:string_maker: <<to_string_hpp#basic_string_maker,string_maker>>
 
 :fmt_print_to: link:https://fmt.dev/latest/api.html#_CPPv2N3fmt9format_toE8OutputItRK1SDpRR4Args[fmt::print_to]
 :fmt_print_to_n: link:https://fmt.dev/latest/api.html#_CPPv2N3fmt11format_to_nE8OutputIt6size_tRK1SDpRK4Args[fmt::print_to_n]
@@ -19,6 +22,8 @@ http://www.boost.org/LICENSE_1_0.txt)
 :toc: left
 
 A non-exhaustive comparison between Strf {strf-version} and {fmt} 8.0.1.
+
+WARNING: This article is out-dated
 
 // == Usability
 //
@@ -65,13 +70,13 @@ A non-exhaustive comparison between Strf {strf-version} and {fmt} 8.0.1.
 Some things that are directly supported by {fmt}, but not by Strf:
 
 - Printing date and time ( link:https://fmt.dev/latest/api.html#chrono-api[link] )
+- Printing `std::tuple` ( https://fmt.dev/latest/api.html#ranges-api[link] )
 - Printing any type that can be printed by `std::ostream` ( link:https://fmt.dev/latest/api.html#std-ostream-support[link] )
-- Printing `std::tuples` ( https://fmt.dev/latest/api.html#ranges-api[link] )
-- Specifying colors ( https://fmt.dev/latest/api.html#color-api[link] )
+- Specifying colors and text styles ( https://fmt.dev/latest/api.html#color-api[link] )
 - Writing to output iterators ( https://fmt.dev/latest/api.html#output-iterator-support[link] )
-- Named arguments in the format string. ( https://fmt.dev/latest/api.html#named-arguments[link] )
+- Named arguments in the format string ( https://fmt.dev/latest/api.html#named-arguments[link] )
 - Alternative functions that follow the `std::printf` format string syntax. ( link:https://fmt.dev/latest/api.html#printf-formatting[link] )
-
+- Dynamic argument list ( link:https://fmt.dev/latest/api.html#args-api[link] )
 
 === Strf
 Some things that are directly supported by Strf, but not by {fmt}:
@@ -81,28 +86,18 @@ Some things that are directly supported by Strf, but not by {fmt}:
 [source,cpp]
 ----
 auto str = strf::to_string( "aaa-"
-                          , strf::conv(u"bbb-")
-                          , strf::conv(U"ccc-")
-                          , strf::conv(L"ddd") );
+                          , strf::transcode(u"bbb-")
+                          , strf::transcode(U"ccc-")
+                          , strf::transcode(L"ddd") );
 
 assert(str   ==  "aaa-bbb-ccc-ddd");
 ----
 [source,cpp]
 ----
 auto str_utf8 = strf::to_u8string
-        ( strf::conv("--\xA4--", strf::iso_8859_1<char>)
-        , strf::conv("--\xA4--", strf::iso_8859_15<char>));
+        ( strf::transcode("--\xA4--", strf::iso_8859_1<char>)
+        , strf::transcode("--\xA4--", strf::iso_8859_15<char>));
 assert(str_utf8 == u8"--\u00A4----\u20AC--");
-----
-
-* Printing `char32_t`
-
-[source,cpp]
-----
-char32_t ch = 0x20AC;
-assert(strf::to_string.with(strf::utf<char>)         (ch) == "\xE2\x82\xAC");
-assert(strf::to_string.with(strf::iso_8859_15<char>) (ch) == "\xA4");
-assert(strf::to_string.with(strf::iso_8859_1<char>)  (ch) == "?");
 ----
 
 * Aligning a group of arguments as if they were one
@@ -132,19 +127,16 @@ assert(str == "[..0xfa / ..0xfb / ..0xfc]");
 ----
 std::map<int, const char*> table = { {1, "one"}, {2, "two"}, {1000, "a thousand"} };
 auto op = [](auto p) {
-    // transforming a std::pair into somthing printable
+    // transforming a std::pair into something printable
     return strf::join(p.first, " -> '", p.second, '\'');
 };
 auto str = strf::to_string('[', strf::separated_range(table, "; ", op), ']');
 assert(str == "[1 -> 'one'; 2 -> 'two'; 1000 -> 'a thousand']");
 ----
 
-// == Format options
-// - In Strf the right alignment is the default, in {fmt} it depends on the type
-// - In Strf the string precision is the width, in {fmt} is the size
-// - float precision
-// - In Strf, the `operator~` format function inserts a fill character before non-negative numbers, in {fmt} the `' '` format flag inserts instead a space
-// -
+* In contrast to {fmt} that uses to output iterators,
+  which requires the use of templates, Strf defines a abstract class to work as its
+  universal destination type (see more <<polymorphic_destination,below>>). 
 
 == Floating-points
 
@@ -247,7 +239,7 @@ strf::to(dest).tr( tr_failed_to_connect_to_server_X()
 
 == Width calculation
 
-:std_width: pass:n[http://eel.is/c++draft/format.string.std#11]
+:std_width: pass:n[https://timsong-cpp.github.io/cppwp/n4868/format#string.std-11]
 
 When alignment formatting is applied over a input string,
 the formatting library needs to estimate how wide that string is
@@ -276,7 +268,7 @@ which is the default <<quick_reference#width_calculator,width calculation facet>
 However there is obviouly a performance price for more accuracy.
 And that's the advatange of Strf: width calculation is customizable.
 You can choose a less accurate but faster algorithm if you want.
-Or, you can try to implement one which is actually more accurate,
+Or, you can try to implement one which is even more accurate,
 or tailored to the environment the string is printed, __i.e.__
 that takes into account the language, the font, etc.
 
@@ -284,191 +276,14 @@ that takes into account the language, the font, etc.
 // ( like the font or the laguage ), you can implement your one
 // width calculation facet with a lailored algorithm.
 
-== Extensibility
 
-=== Adding printable types
-
-It may be a little bit more difficult to learn how to add a printable type in Strf
-than how it is in {fmt}. There are more things to learn, more concepts to grasp.
-However, once have this knowledge, you will find it easier to deal with the
-real cases scenarious.
-
-For instance, the {fmt} documentation provides
-link:https://fmt.dev/latest/api.html#formatting-user-defined-types[an example]
-of how to do it with a struct named `point` that contains two `double` variables.
-If you compare it with the snippet below,
-which does the similar thing in Strf, you may find that the Strf's way
-is more complicated, since the code is larger and it requires more
-specific knowledge about the library.
-But you must take into account that this sample supports all
-formatting options that would be expected in a real case scenario:
-all the <<strf_hpp#float_formatter,floating-point formatting options>>,
-as well the <<strf_hpp#alignment_formatter,alignment formatting options>>,
-while the {fmt} sample handles only the `'f'` or `'g'` format flags.
-Also, the code below is generic, in the sense that it works with all characters
-types as well as all character encodings:
-
-[source,cpp]
-----
-template <typename FloatT>
-struct point{ FloatT x, y; };
-
-template <typename FloatT>
-struct strf::print_traits<point<FloatT>> {
-    using forwarded_type = point<FloatT>;
-    using formatters = strf::tag<strf::alignment_formatter, strf::float_formatter>; // <1>
-
-    template <typename CharT, typename Preview, typename FPack, typename... T>
-    constexpr static auto make_printer_input
-        ( strf::tag<CharT>
-        , Preview& preview
-        , const FPack& fp
-        , strf::value_with_formatters<T...> arg ) noexcept
-    {
-        point<FloatT> p = arg.value();
-        auto arg2 = strf::join
-            ( (CharT)'('
-            , strf::fmt(p.x).set_float_format(arg.get_float_format()) // <2>
-            , strf::conv(", ")                                        // <3>
-            , strf::fmt(p.y).set_float_format(arg.get_float_format()) // <4>
-            , (CharT)')' )
-            .set_alignment_format(arg.get_alignment_format());        // <5>
-        return strf::make_printer_input<CharT>(preview, fp, arg2);
-    }
-};
-----
-<1> This line defines what are the formatting options applicable to `point<FloatT>` :
-    alignment as well as floating-point formatting. You can, of course,
-    also create your own _formatters_.
-<2> Here we forward the floating-point formatting to `p.x`.
-<3> Converting the string `", "` to whatever the destination encoding is.
-<4> Forwarding floating-point formatting to `p.y`.
-<5> Applying the alignment formatting.
-
-However, it must be acknowledged that this example is facilitated by the fact that
-it is possible to convert a `point` into another value ( a `join` object )
-that the library already knows how to print. If this was not case,
-we needed to implement a _printer_ class that do things in a more low-level way.
-This is explained in the <<howto_add_printable_types#,documentation>>.
-It starts with a simple case, and gradually moves towards more challenging
-examples.
-
-=== Adding destinations
-
-// // The discussion about extensibility involves not only
-//
-// // there is another extensibility aspect consider
-//
-// Extensibility is not just about what can be printed,
-// but also where the content is printed to ( as well as other things ).
-//
-// For example, it is common for codebases to define a string class of its own,
-// instead of using `std::string`. In this case, it would naturally be desirable
-//
-// to be able to use the formatting library to write into such string type.
-//
-// the formatting library to be able to write into d
-//
-// You can extend Strf not only by adding new printable types
-// but in other aspects as well.
-//
-// Strf can be extended not only in regard of what can be printed,
-// but also where the content is printed to.
-//
-// When one talks about extending a formatting library, it usually
-// means
-//
-// Extend what can be printed by a formatting library,
-// but also
-//
-// It is good think when a formatting library allows you to extend
-// what it can printed, but it is also desirable to be to change
-// where the content can be printed to.
-//
-// But there is another aspect that is also important: to be able to
-// customize where the content is printed to.
-//
-// We want a formatting library to be extensible, but not only in regard
-// of what can it print, but also where can it print to.
-//
-//
-// Both Strf and {fmt} are extensible, but not only in regard
-// of what they can print, but also where can the content is printed to.
-//
-// <<howto_add_destination#,This document>> explains
-//
-// If you want {fmt} to print to an alternative destination,
-// you need to have or define a type that satisfies the
-// __OutputIterator__ requirements.
-//
-
-// If you want Strf to print to an alternative destination,
-// you need to create a class that derives from
-// `strf::<<destination_hpp#destination,destination>>`.
-// Having an object of such type, you can print things to it with the
-// `strf::<<quick_reference#to_destination_ref,to>>(strf::destination<__CharT__>&)`
-// function template.
-//
-// In the case of {fmt}, you need to have (or create) a type that satisfies the
-// __OutputIterator__ requirements. With that, you can use the `{fmt_print_to}`
-// and `{fmt_print_to_n}` function templates.
-
-Both libraries support the usual destinations: `FILE*`, `std::ostream&`, `std::string`,
-and `char*`. In case you need to send the content to somewhere else, {fmt} provides
-the generic function `fmt::format_to` that writes to output iterators. This
-way, all you have to do is to create an adapter that conforms to the
-OutputIterator requirements and that writes to your desired target.
-
-In Strf, what you do instead is to create a concrete class that derives from
-the `strf::destination` abstract class template. Having an object of such type,
-you can print things to it with the
-`strf::<<quick_reference#to_destination_ref,to>>(strf::destination<__CharT__>&)`
-function template.
-
-However, in Strf you can go a bit further and create your own
-__destination expression__ to be used in the <<tutorial#syntax,basic usage syntax>>
-of the library. For example, suppose a codebase uses a string class of its own
-instead of `std::string`. Suppose it's name is `xstring`:
-just like there is `<<quick_reference#destinations,strf::to_string>>`, it is possible to define
-a __destination expression__ named `to_xstring` intended to
-create `xstring` objects. If desirable, it is possible to implement it
-in such a way that the size of the content is always pre-calculated
-before the the `xstring` object is constructed, so that the adequate
-amount of memory can be allocated.
-
-This is all explained in <<howto_add_destination#,this guide>>.
-
-== Polymorphic destination
-
-But you are not only suppose to use `strf::destination` when you want to
-extend Strf, but also any time you want to write a code that
-creates a textual content ( or even a binary content ) without concerning
-about where the such content goes.
-[source,cpp]
-----
-void write_some_text(strf::destination<char>& dest, /* ...args... */);
-----
-In that sense, `strf::destination` is similar to `std::basic_ostream`,
-but with several advantages.
-
-* It has better performance.
-* It's easier to derive from.
-* It can be used in a https://en.cppreference.com/w/cpp/freestanding[freestanding] environment
-* Among its <<quick_reference#destination_types,specializations>>, you can find one
-  ( actually two ) that can safely and efficiently write to `char*`
-  ( which, by the way, it what the library uses internally ).
-
-As far as I know, {fmt} doesn't have anyting equivalent to `strf::destination`.
-You could, of course, write instead a generic code terms of output iterators
-using `fmt::format_to` or `fmt::format_to_n`.
-But that would force things to be template, which is not always
-possible or can lead to code-bloat
 
 == Error handling policy
 
 Neither {fmt} nor Strf ever change the value of `errno`.
 
 {fmt} throws an exception when it founds someting wrong at run-time.
+
 // A run-time error can be something wrong in the format string
 // ( which can be avoided at compile-time if you use `FMT_STRING` or `FMT_COMPILE` )
 // or some system error.
@@ -482,43 +297,293 @@ Instead of throwing, Strf's policy is to print the replacement character `U'\uFF
 ( or `'?'`, depending on the charset ) indicating where the error occured.
 This can happen when parsing the {tr-string} or in
 <<quick_reference#charset_conversion,charset conversion>> or sanitization.
-Optionally, you can set a callback to be invoked in such errors
-( see `<<strf_hpp#tr_error_notifier_c,tr_error_notifier_c>>`
-and `<<strf_hpp#invalid_seq_notifier_c,invalid_seq_notifier_c>>` )
-which can then throw an exception, if that's what you want.
+However, in case you want it to do something more than just that ( like an
+to throw, or to log a message ), this can be specified with the
+`<<strf_hpp#tr_error_notifier_c,tr_error_notifier_c>>` and/or
+`<<strf_hpp#transcoding_error_notifier_c,transcoding_error_notifier_c>>`
+facets.
 
-In addition to that, depending on the <<quick_reference#destinators,destination>>,
+In addition to that, depending on the <<quick_reference#destinations,destination>>,
 the return type of the <<tutorial#syntax,basic usage syntax>> may contain an error
 indication. For example, when writing to a `char*`, the returned object contains
 a `bool` member `truncated` that tells whether the destination memory
 is too small.
 
 //  == Performance
-//  
+//
 //  If you look at the
 //  http://robhz786.github.io/strf-benchmarks/v{strf-version}/results.html[benchmarks],
 //  you can see that the performances of Strf and {fmt} depend on several things,
 //  like what you are printing, how you do it, what are the formatting options,
 //  the compiler, the destination type, etc. There are situations where {fmt} is faster,
 //  and others when others where it is Strf. However it is possible to take some general conclusions.
-//  
+//
 //  When it comes to writting to `char*`, we can conclude that:
-//  
+//
 //  * `strf::to` is faster than `fmt::format_to_n`
 //  * `strf::to` is faster than `fmt::format_to`, except in the following two situations:
 //  ** `fmt::format_to` is invoked with `FMT_COMPILE` and no formatting option is applied
 //  ** `fmt::format_to` is invoked with `FMT_COMPILE` and `strf::to` is invoked with the tr-string
-//  
+//
 //  When comparing `strf::to_string` against `fmt::format`,
 //  we conclude `strf::to_string` is faster than `fmt::format`,
 //  except when `strf::to_string` is invoked with the tr-string
 //  at the same time that no formatting option is applied.
-//  
-//  
+//
+//
 //  Of course, it's very possible to be
 //  exceptions for the above conclusions, since these
 //  http://robhz786.github.io/strf-benchmarks/v{strf-version}/results.html[benchmarks]
 //  are far of covering all possible situations.
 
+//     == Extensibility
+//     
+//     === Adding printable types
+//     
+//     If you compare how printables types are added <<howto_add_printable_types#,in Strf>>
+//     to how this is done
+//     link:https://fmt.dev/latest/api.html#formatting-user-defined-types[in {fmt}],
+//     at first, you find {fmt} easier, specially if `format_as` meets your needs,
+//     {fmt} is certainly simpler when handling the easy cases.
+//     However, you may find it harder as you move to the difficult ones.
+//     
+//     // like when you are to support many formatting options while you
+//     // want to be sure that the implementation has a good performance.
+//     
+//     For example, the {fmt} documentation provides
+//     link:https://fmt.dev/latest/api.html#formatting-user-defined-types[an example]
+//     of how to do it with a struct named `point` whixh contains two `double` member
+//     variables (`x` and `y`).
+//     Let's compare it with the snippet below, which does the similar thing in Strf.
+//     
+//     [source,cpp]
+//     ----
+//     template <typename FloatT>
+//     struct point{ FloatT x, y; };
+//     
+//     template <typename FloatT>
+//     struct strf::printable_def<point<FloatT>> {
+//         using forwarded_type = point<FloatT>;
+//         using format_specifiers = strf::tag<strf::alignment_format_specifier, strf::float_format_specifier>; // <1>
+//     
+//         template <typename CharT, typename Pre, typename FPack, typename... T>
+//         constexpr static auto make_printer
+//             ( strf::tag<CharT>
+//             , Pre* pre
+//             , const FPack& fp
+//             , strf::value_and_format<T...> arg ) noexcept
+//         {
+//             point<FloatT> p = arg.value();
+//             auto arg2 = strf::join
+//                 ( (CharT)'('
+//                 , strf::fmt(p.x).set_float_format(arg.get_float_format()) // <2>
+//                 , strf::unsafe_transcode(", ")                            // <3>
+//                 , strf::fmt(p.y).set_float_format(arg.get_float_format()) // <4>
+//                 , (CharT)')' )
+//                 .set_alignment_format(arg.get_alignment_format());        // <5>
+//             return strf::make_printer<CharT>(pre, fp, arg2);
+//         }
+//     };
+//     ----
+//     <1> specifies the formatting options applicable to `point<FloatT>`:
+//          alignment and floating-point formatting.
+//     <2> forwards the floating-point formatting options to `point::x`.
+//     <3> converts the string `", "` to destination character encoding, whatever it is.
+//     <4> forwards floating-point formatting options to `point::y`.
+//     <5> applies alignment formatting.
+//     
+//     Ok, I agree that that understanding this code is more difficult, since
+//     it requires more specific knowledge about the library.
+//     However, notice that it supports all the formatting options that are
+//     expected in a real case scenario:
+//     all the <<strf_hpp#float_format_specifier,floating-point formatting options>>,
+//     as well the <<strf_hpp#alignment_format_specifier,alignment formatting options>>,
+//     while the {fmt} sample handles only the `'f'` or `'g'` format flags.
+//     
+//     In {fmt}, to support a alignment, you usually need
+//     to write the content to a `std::string` object, for
+//     then print it with the proper alignment, which you know could
+//     cost a memory allocation.
+//     
+//     The sample above does not allocate memory anywhere.
+//     It is also generic, in the sense that it works with all characters
+//     types as well as all character encodings:
+//     
+//     However, it must be acknowledged that this example is facilitated by the fact that
+//     it is possible to convert a `point` into something else ( a `join` object )
+//     that the library already knows how to print. If that were not case,
+//     we needed to do a lower-level implementation.
+//     This is explained in the <<howto_add_printable_types#,documentation>>.
+//     It starts with a simple case, and gradually moves towards more challenging
+//     examples.
+//     
+//     === Adding destinations
+//     
+//     // // The discussion about extensibility involves not only
+//     //
+//     // // there is another extensibility aspect consider
+//     //
+//     // Extensibility is not just about what can be printed,
+//     // but also where the content is printed to ( as well as other things ).
+//     //
+//     // For example, it is common for codebases to define a string class of its own,
+//     // instead of using `std::string`. In this case, it would naturally be desirable
+//     //
+//     // to be able to use the formatting library to write into such string type.
+//     //
+//     // the formatting library to be able to write into d
+//     //
+//     // You can extend Strf not only by adding new printable types
+//     // but in other aspects as well.
+//     //
+//     // Strf can be extended not only in regard of what can be printed,
+//     // but also where the content is printed to.
+//     //
+//     // When one talks about extending a formatting library, it usually
+//     // means
+//     //
+//     // Extend what can be printed by a formatting library,
+//     // but also
+//     //
+//     // It is good think when a formatting library allows you to extend
+//     // what it can printed, but it is also desirable to be to change
+//     // where the content can be printed to.
+//     //
+//     // But there is another aspect that is also important: to be able to
+//     // customize where the content is printed to.
+//     //
+//     // We want a formatting library to be extensible, but not only in regard
+//     // of what can it print, but also where can it print to.
+//     //
+//     //
+//     // Both Strf and {fmt} are extensible, but not only in regard
+//     // of what they can print, but also where can the content is printed to.
+//     //
+//     // <<howto_add_destination#,This document>> explains
+//     //
+//     // If you want {fmt} to print to an alternative destination,
+//     // you need to have or define a type that satisfies the
+//     // __OutputIterator__ requirements.
+//     //
+//     
+//     // If you want Strf to print to an alternative destination,
+//     // you need to create a class that derives from
+//     // `strf::<<destination_hpp#destination,destination>>`.
+//     // Having an object of such type, you can print things to it with the
+//     // `strf::<<quick_reference#to_destination_ref,to>>(strf::destination<__CharT__>&)`
+//     // function template.
+//     //
+//     // In the case of {fmt}, you need to have (or create) a type that satisfies the
+//     // __OutputIterator__ requirements. With that, you can use the `{fmt_print_to}`
+//     // and `{fmt_print_to_n}` function templates.
+//     
+//     Both libraries support the usual destinations: `FILE*`, `std::ostream&`, `std::string`,
+//     and `char*`. In case you need to send the content to somewhere else, {fmt} provides
+//     the generic function `fmt::format_to` that writes to output iterators. This
+//     way, all you have to do is to create an adapter that conforms to the
+//     OutputIterator requirements and that writes to your desired target.
+//     
+//     In Strf, what you do instead is to create a concrete class that derives from
+//     the `{destination}` abstract class template. Having an object of such type,
+//     you can print things to it with the
+//     `strf::<<quick_reference#to_destination_ref,to>>(strf::destination<__CharT__>&)`
+//     function template.
+//     
+//     However, in Strf you can go a bit further and create your own
+//     __target expression__ to be used in the <<tutorial#syntax,basic usage syntax>>
+//     of the library. For example, suppose a codebase uses a string class of its own
+//     instead of `std::string`. Suppose it's name is `xstring`:
+//     just like there is `<<quick_reference#targets,strf::to_string>>`,
+//     it is possible to define
+//     a __target expression__ named `to_xstring` intended to
+//     create `xstring` objects.
+//     
+//     This is all explained in <<howto_add_destination#,this guide>>.
 
+== A polymorphic destination [[polymorphic_destination]]
+
+Both Strf and {fmt} can write to `std::basic_ostream`.
+However, `std::basic_ostream` has some problems:
+
+* It can not be used in https://en.cppreference.com/w/cpp/freestanding[freestanding] environments.
+* It is difficult for most people to implement specializations.
+* Although it has a specialization that writes to `std::string`, it has bad performance.
+* It has no specialization to write to `char*`.
+
+That's why Strf has its own abraction for output streams:
+`strf::{destination}`. Initially created for internal use,
+after many redesigns and renamings it's now part of the public API,
+and is an alternative to `strf::basic_ostream` and/or `strf::basic_streambuf`
+without the issues mentioned above.
+
+If you need to create a function aimed to
+provide some textual content ( or even binary content ),
+you can make it write it into a `strf::destination` object taken by reference
+as a parameter:
+
+[source,cpp]
+----
+void get_message(strf::destination<char>& dest) {
+    strf::to(dest) (...);
+}
+----
+But why not just return a `std::string` instead? Because, despite being
+the usual approach, it's not suitable or possible in some situations.
+In embedded, one would probably prefer `get_message` to write to
+`char*`, which, conversely, is not what one would want if
+using `std::string` is not an issue. Doesn't it bothers you that
+there is no good universal solution for such a common task?
+So, maybe `strf::destination` can be the one.
+It satisfies both worlds by leading to the caller the decision
+of which `strf::destination` specialization to use:
+it can be `<<to_string_hpp#basic_string_maker,basic_string_maker>>`
+if one wants the content be stored in a `std::string`,
+or `<<destination_hpp#basic_cstr_destination,basic_cstr_destination>>`
+or `<<destination_hpp#array_destination,array_destination>>`
+if one wants it into a `char*`. There are
+<<quick_reference#destination_types,other specializations>> as well,
+and it's easy to <<howto_add_destination#,create a new one>>.
+
+But what's performance overhead ? I mean, writing to
+`<<destination_hpp#basic_cstr_destination,basic_cstr_destination>>` or
+`<<destination_hpp#array_destination,array_destination>>` can not
+be as fast as writing directly to `char*`, or is it? Well, actually, yes,
+it should be, at least if you are using Strf, because what
+`strf::to(__char_ptr__, __size__)(...)` internally does is to create
+a `basic_cstr_destination` object then write into it. Similarly,
+`strf::to_string` internally uses `strf::string_maker`.
+
+As far as I know, {fmt} doesn't provide anything equivalent
+to `strf::destination`. Yes, it can write to generic output
+iterators (with `fmt::format_to` and `fmt::format_to_n`), but
+that's not as good &mdash; you can't have a function that writes into
+a generic output iterator, unless it's actually a function template,
+and some can't be.
+
+However, I must acknowledge that `strf::destination` doesn't
+count so much as an advantage of Strf over {fmt}, because you can
+use it with {fmt} too!
+You just need to create an output iterator adapter, which can be
+done with the `<<iterator_hpp#make_iterator,make_iterator>>`
+function template, defined in `<<iterator_hpp#,<strf/iterator.hpp>>>`
+( a small header that impacts very little the compilation time ):
+
+[source,cpp,subs=normal]
+----
+#include <strf/iterator.hpp>
+#include <fmt/core.h>
+
+void get_message(strf::destination<char>& dest) {
+    auto it = make_iterator(dest);
+    fmt::format_to(it, ...);
+    // ...
+}
+----
+
+So, even if you are not willing use Strf as a formatting library instead of {fmt}
+or std::format, you might still consider `strf::destination`.
+In this case, however, there is some overhead ( using {fmt} to write to an
+`strf::destination` object tends to be slower than when {fmt} writes directly
+to the actual final destination ), as shown in the
+http://robhz786.github.io/strf-benchmarks/v{strf-version}/results.html[benchmarks].
 

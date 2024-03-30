@@ -47,13 +47,14 @@ strf::numpunct<10> make_numpunct
 
 namespace detail {
 
+// NOLINTNEXTLINE(misc-definitions-in-headers)
 STRF_FUNC_IMPL strf::digits_grouping parse_win_grouping(const wchar_t* str)
 {
     if (str[0] == L'\0') {
         return {};
     }
     strf::digits_grouping_creator creator;
-    auto it = str;
+    const auto *it = str;
     while (true) {
         if (strf::detail::not_digit(*it)) {
             return {}; // invalid input
@@ -81,15 +82,16 @@ STRF_FUNC_IMPL strf::digits_grouping parse_win_grouping(const wchar_t* str)
     }
 }
 
+// NOLINTNEXTLINE(misc-definitions-in-headers)
 STRF_FUNC_IMPL char32_t decode_first_char_from_utf16(const wchar_t* src)
 {
-    char32_t ch0 = src[0];
-    if (ch0 != '\0') {
+    const auto ch0 = static_cast<char32_t>(src[0]);
+    if (ch0 != 0) {
         if (strf::detail::not_surrogate(ch0)) {
             return ch0;
         }
         if (strf::detail::is_high_surrogate(ch0)) {
-            char32_t ch1 = src[1];
+            const auto ch1 = static_cast<char32_t>(src[1]);
             if (strf::detail::is_low_surrogate(ch1)) {
                 return 0x10000 + (((ch0 & 0x3FF) << 10) | (ch1 & 0x3FF));
             }
@@ -100,28 +102,31 @@ STRF_FUNC_IMPL char32_t decode_first_char_from_utf16(const wchar_t* src)
 
 #if ! defined (_WIN32)
 
-STRF_FUNC_IMPL char32_t decode_first_char(strf::transcode_f<char, char32_t>& decode, const char* str)
+// NOLINTNEXTLINE(misc-definitions-in-headers)
+STRF_FUNC_IMPL char32_t decode_first_char(strf::transcode_f<char, char32_t> decode, const char* str)
 {
     char32_t buff32[2] = { 0xFFFD, 0 };
-    strf::u32cstr_writer dest(buff32);
-    decode(dest, str, strlen(str), {}, strf::surrogate_policy::strict);
+    decode(str, str + strlen(str), buff32, buff32 + 1, nullptr, strf::transcode_flags::none);
     return buff32[0];
 }
 
+// NOLINTNEXTLINE(misc-definitions-in-headers)
 STRF_FUNC_IMPL strf::transcode_f<char, char32_t> get_decoder(const char* charset_name)
 {
     if (0 == strcmp(charset_name, "UTF-8")) {
         return strf::utf8_to_utf32<char, char32_t>::transcode;
     }
-    else if (0 == strcmp(charset_name, "ISO-8859-1")) {
+    if (0 == strcmp(charset_name, "ISO-8859-1")) {
         return strf::static_transcoder
             < char, char32_t, strf::csid_iso_8859_1, strf::csid_utf32 >
             ::transcode_func();
-    } else if (0 == strcmp(charset_name, "ISO-8859-3")) {
+    }
+    if (0 == strcmp(charset_name, "ISO-8859-3")) {
         return strf::static_transcoder
             < char, char32_t, strf::csid_iso_8859_3, strf::csid_utf32 >
             ::transcode_func();
-    } else if (0 == strcmp(charset_name, "ISO-8859-15")) {
+    }
+    if (0 == strcmp(charset_name, "ISO-8859-15")) {
         return strf::static_transcoder
             < char, char32_t, strf::csid_iso_8859_15, strf::csid_utf32 >
             ::transcode_func();
@@ -129,6 +134,7 @@ STRF_FUNC_IMPL strf::transcode_f<char, char32_t> get_decoder(const char* charset
     return nullptr;
 }
 
+// NOLINTNEXTLINE(misc-definitions-in-headers)
 STRF_FUNC_IMPL strf::numpunct<10> make_numpunct
     ( const char* encoding_name
     , const char* decimal_point_str
@@ -142,7 +148,7 @@ STRF_FUNC_IMPL strf::numpunct<10> make_numpunct
     if (decimal_point_str[0] == '\0') {
         punct.decimal_point(0xFFFD);
     } else if (0 == (decimal_point_str[0] & 0x80)) {
-        punct.decimal_point(decimal_point_str[0]);
+        punct.decimal_point(static_cast<char32_t>(decimal_point_str[0]));
     } else {
         decoder_func_searched = true;
         decoder_func = strf::detail::get_decoder(encoding_name);
@@ -156,7 +162,7 @@ STRF_FUNC_IMPL strf::numpunct<10> make_numpunct
         if (thousands_sep_str[0] == '\0') {
             punct.grouping(strf::digits_grouping());
         } else if (0 == (thousands_sep_str[0] & 0x80)){
-            punct.thousands_sep(thousands_sep_str[0]);
+            punct.thousands_sep(static_cast<char32_t>(thousands_sep_str[0]));
         } else {
             if (! decoder_func_searched) {
                 decoder_func = strf::detail::get_decoder(encoding_name);
@@ -180,6 +186,7 @@ STRF_FUNC_IMPL strf::numpunct<10> make_numpunct
 
 } // namespace detail
 
+// NOLINTNEXTLINE(misc-definitions-in-headers)
 STRF_FUNC_IMPL strf::numpunct<10> locale_numpunct() noexcept
 {
 #if defined(_WIN32)
@@ -204,9 +211,9 @@ STRF_FUNC_IMPL strf::numpunct<10> locale_numpunct() noexcept
 
 #else // defined(_WIN32)
 
-    auto loc = localeconv();
+    auto *loc = localeconv(); // NOLINT(concurrency-mt-unsafe)
     return strf::detail::make_numpunct
-        ( nl_langinfo(CODESET)
+        ( nl_langinfo(CODESET)  // NOLINT(concurrency-mt-unsafe)
         , loc->decimal_point
         , loc->thousands_sep
         , strf::digits_grouping(loc->grouping) );

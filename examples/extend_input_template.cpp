@@ -9,7 +9,7 @@ namespace xxx {
 
 template <typename T>
 struct base {
-    base(const T& t) : value(t) {}
+    explicit base(const T& t) : value(t) {}
     T value;
 };
 } // namespace xxx
@@ -18,22 +18,22 @@ namespace strf {
 
 template <typename T>
 struct base_printing {
-    using override_tag = const xxx::base<T>&;
-    using forwarded_type = const xxx::base<T>&;
+    using representative = xxx::base<T>;
+    using forwarded_type = strf::reference_wrapper<const xxx::base<T>>;
 
-    template <typename CharT, typename Preview, typename FPack>
-    static auto make_printer_input
+    template <typename CharT, typename PreMeasurements, typename FPack>
+    static auto make_printer
         ( strf::tag<CharT>
-        , Preview& preview
+        , PreMeasurements* pre
         , const FPack& fp
-        , forwarded_type x ) noexcept
+        , const xxx::base<T>& x ) noexcept
     {
-        return strf::make_default_printer_input<CharT>(preview, fp, x.value);
+        return strf::make_printer<CharT>(pre, fp, x.value);
     }
 };
 
 template <typename T>
-inline base_printing<T> tag_invoke(strf::print_traits_tag, const xxx::base<T>&)
+inline base_printing<T> get_printable_def(strf::printable_tag, const xxx::base<T>&)
     { return {}; }
 
 } // namespace strf
@@ -42,7 +42,7 @@ namespace yyy {
 
 template <typename T>
 struct derived: xxx::base<T> {
-    derived(const T& t): xxx::base<T>{t} {}
+    explicit derived(const T& t): xxx::base<T>{t} {}
 };
 
 } // namespace yyy

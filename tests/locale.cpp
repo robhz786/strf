@@ -3,36 +3,71 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#define _CRT_SECURE_NO_WARNINGS
+#define _CRT_SECURE_NO_WARNINGS // NOLINT(bugprone-reserved-identifier,cert-dcl37-c,cert-dcl51-cpp)
 
-#include <strf/locale.hpp>
+#include <strf/all.hpp>
 #include "test_utils.hpp"
+#include <cstdio>
+#include <locale>
+#include <sstream>
+#include <iomanip>
+#include <iostream>
 
-#if defined(_WIN32)
-#define LOCALE_NAME(lang, region) #lang "-" #region
+namespace {
+
+void test_locale_numpunct(const char* locale_name)
+{
+#if defined __cpp_exceptions
+    try{
+        constexpr double sample = 1.0e+10;
+
+        const std::locale loc(locale_name);
+
+        std::wostringstream tmp;
+        tmp.imbue(loc);
+        tmp << std::setprecision(0) << std::showpoint << std::fixed
+            << sample;
+        const auto expected_result = tmp.str();
+
+        auto previous_loc = std::locale::global(loc);
+        auto punct = strf::locale_numpunct();
+
+        TEST_SCOPE_DESCRIPTION(locale_name);
+        TEST(expected_result.c_str()) .with(punct) (*!strf::fixed(sample));
+
+        std::locale::global(previous_loc);
+    }
+    catch (std::runtime_error&) {
+        std::cerr << "skipped `test_locale_numpunct(\"" << locale_name
+                  << "\")` from file " << __FILE__
+                  << ", because the locale is not supported\n";
+
+    }
 #else
-#define LOCALE_NAME(lang, region) #lang "_" #region
+    std::cerr << "skipped `test_locale_numpunct(\"" << locale_name
+              << "\")` from file " << __FILE__
+              << ", because exceptions are disabled\n";
 #endif
+}
 
 void test_locale()
 {
-    if (setlocale(LC_NUMERIC, LOCALE_NAME(en, US))) {
-        auto punct = strf::locale_numpunct();
-        TEST("10,000,000,000,000,000.") .with(punct) (*!strf::fixed(1e+16));
-    }
-    if (setlocale(LC_NUMERIC, LOCALE_NAME(de, DE))) {
-        auto punct = strf::locale_numpunct();
-        TEST("10.000.000.000.000.000,") .with(punct) (*!strf::fixed(1e+16));
-    }
-    if (setlocale(LC_NUMERIC, LOCALE_NAME(as, IN))) {
-        auto punct = strf::locale_numpunct();
-        TEST("10,00,00,00,00,00,00,000.") .with(punct) (*!strf::fixed(1e+16));
-    }
+
+#if defined(_WIN32)
+    test_locale_numpunct("en-US");
+    test_locale_numpunct("de-DE");
+    test_locale_numpunct("as-IN");
+#else
+    test_locale_numpunct("en_US.UTF8");
+    test_locale_numpunct("de_DE.UTF8");
+    test_locale_numpunct("as_IN.UTF8");
+#endif
+
 #if ! defined(_WIN32)
     {
         using strf::detail::make_numpunct;
-        strf::digits_grouping empty_grouping{-1};
-        strf::digits_grouping non_empty_grouping{1, 2, 3};
+        const strf::digits_grouping empty_grouping{-1};
+        const strf::digits_grouping non_empty_grouping{1, 2, 3};
         {
             auto p = make_numpunct("unknown_encoding", ".xx", ",yy", non_empty_grouping);
             TEST_TRUE(p.decimal_point() == U'.');
@@ -151,3 +186,7 @@ void test_locale()
         TEST_TRUE(parse_win_grouping(L"9;32;2;0")  == digits_grouping());
     }
 }
+
+} // namespace
+
+REGISTER_STRF_TEST(test_locale)

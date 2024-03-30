@@ -86,5 +86,5 @@ STRF_TEST_FUNC void test_join()
                                  , "}--" ) > 8);
 }
 
-REGISTER_STRF_TEST(test_join);
+REGISTER_STRF_TEST(test_join)
 

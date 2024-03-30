@@ -20,39 +20,39 @@ STRF_TEST_FUNC void test_input_ptr()
         (strf::right(ptr, 8, '.'));
 }
 
-STRF_TEST_FUNC void test_input_int_no_punct()
+STRF_TEST_FUNC void test_input_int_no_punct() // NOLINT(google-readability-function-size,hicpp-function-size)
 {
-    TEST_EQ(1,  strf::detail::count_digits<10>(1ull));
-    TEST_EQ(2,  strf::detail::count_digits<10>(10ull));
-    TEST_EQ(3,  strf::detail::count_digits<10>(100ull));
-    TEST_EQ(4,  strf::detail::count_digits<10>(1000ull));
-    TEST_EQ(5,  strf::detail::count_digits<10>(10000ull));
-    TEST_EQ(6,  strf::detail::count_digits<10>(100000ull));
-    TEST_EQ(7,  strf::detail::count_digits<10>(1000000ull));
-    TEST_EQ(8,  strf::detail::count_digits<10>(10000000ull));
-    TEST_EQ(9,  strf::detail::count_digits<10>(100000000ull));
-    TEST_EQ(10, strf::detail::count_digits<10>(1000000000ull));
-    TEST_EQ(11, strf::detail::count_digits<10>(10000000000ull));
-    TEST_EQ(12, strf::detail::count_digits<10>(100000000000ull));
-    TEST_EQ(13, strf::detail::count_digits<10>(1000000000000ull));
-    TEST_EQ(14, strf::detail::count_digits<10>(10000000000000ull));
-    TEST_EQ(15, strf::detail::count_digits<10>(100000000000000ull));
-    TEST_EQ(16, strf::detail::count_digits<10>(1000000000000000ull));
-    TEST_EQ(17, strf::detail::count_digits<10>(10000000000000000ull));
-    TEST_EQ(18, strf::detail::count_digits<10>(100000000000000000ull));
-    TEST_EQ(19, strf::detail::count_digits<10>(1000000000000000000ull));
-    TEST_EQ(20, strf::detail::count_digits<10>(10000000000000000000ull));
+    TEST_EQ(1,  strf::detail::count_digits<10>(1ULL));
+    TEST_EQ(2,  strf::detail::count_digits<10>(10ULL));
+    TEST_EQ(3,  strf::detail::count_digits<10>(100ULL));
+    TEST_EQ(4,  strf::detail::count_digits<10>(1000ULL));
+    TEST_EQ(5,  strf::detail::count_digits<10>(10000ULL));
+    TEST_EQ(6,  strf::detail::count_digits<10>(100000ULL));
+    TEST_EQ(7,  strf::detail::count_digits<10>(1000000ULL));
+    TEST_EQ(8,  strf::detail::count_digits<10>(10000000ULL));
+    TEST_EQ(9,  strf::detail::count_digits<10>(100000000ULL));
+    TEST_EQ(10, strf::detail::count_digits<10>(1000000000ULL));
+    TEST_EQ(11, strf::detail::count_digits<10>(10000000000ULL));
+    TEST_EQ(12, strf::detail::count_digits<10>(100000000000ULL));
+    TEST_EQ(13, strf::detail::count_digits<10>(1000000000000ULL));
+    TEST_EQ(14, strf::detail::count_digits<10>(10000000000000ULL));
+    TEST_EQ(15, strf::detail::count_digits<10>(100000000000000ULL));
+    TEST_EQ(16, strf::detail::count_digits<10>(1000000000000000ULL));
+    TEST_EQ(17, strf::detail::count_digits<10>(10000000000000000ULL));
+    TEST_EQ(18, strf::detail::count_digits<10>(100000000000000000ULL));
+    TEST_EQ(19, strf::detail::count_digits<10>(1000000000000000000ULL));
+    TEST_EQ(20, strf::detail::count_digits<10>(10000000000000000000ULL));
 
-    TEST_EQ(1,  strf::detail::count_digits<10>((std::uint32_t)1ul));
-    TEST_EQ(2,  strf::detail::count_digits<10>((std::uint32_t)10ul));
-    TEST_EQ(3,  strf::detail::count_digits<10>((std::uint32_t)100ul));
-    TEST_EQ(4,  strf::detail::count_digits<10>((std::uint32_t)1000ul));
-    TEST_EQ(5,  strf::detail::count_digits<10>((std::uint32_t)10000ul));
-    TEST_EQ(6,  strf::detail::count_digits<10>((std::uint32_t)100000ul));
-    TEST_EQ(7,  strf::detail::count_digits<10>((std::uint32_t)1000000ul));
-    TEST_EQ(8,  strf::detail::count_digits<10>((std::uint32_t)10000000ul));
-    TEST_EQ(9,  strf::detail::count_digits<10>((std::uint32_t)100000000ul));
-    TEST_EQ(10, strf::detail::count_digits<10>((std::uint32_t)1000000000ul));
+    TEST_EQ(1,  strf::detail::count_digits<10>((std::uint32_t)1UL));
+    TEST_EQ(2,  strf::detail::count_digits<10>((std::uint32_t)10UL));
+    TEST_EQ(3,  strf::detail::count_digits<10>((std::uint32_t)100UL));
+    TEST_EQ(4,  strf::detail::count_digits<10>((std::uint32_t)1000UL));
+    TEST_EQ(5,  strf::detail::count_digits<10>((std::uint32_t)10000UL));
+    TEST_EQ(6,  strf::detail::count_digits<10>((std::uint32_t)100000UL));
+    TEST_EQ(7,  strf::detail::count_digits<10>((std::uint32_t)1000000UL));
+    TEST_EQ(8,  strf::detail::count_digits<10>((std::uint32_t)10000000UL));
+    TEST_EQ(9,  strf::detail::count_digits<10>((std::uint32_t)100000000UL));
+    TEST_EQ(10, strf::detail::count_digits<10>((std::uint32_t)1000000000UL));
 
     TEST_EQ(1,  strf::detail::count_digits<10>((std::uint16_t)1));
     TEST_EQ(2,  strf::detail::count_digits<10>((std::uint16_t)10));
@@ -64,35 +64,35 @@ STRF_TEST_FUNC void test_input_int_no_punct()
     TEST_EQ(2,  strf::detail::count_digits<10>((std::uint8_t)10));
     TEST_EQ(3,  strf::detail::count_digits<10>((std::uint8_t)100));
 
-    TEST_EQ(1,  strf::detail::count_digits<16>(0ull));
-    TEST_EQ(1,  strf::detail::count_digits<16>(0x1ull));
-    TEST_EQ(2,  strf::detail::count_digits<16>(0x10ull));
-    TEST_EQ(3,  strf::detail::count_digits<16>(0x100ull));
-    TEST_EQ(4,  strf::detail::count_digits<16>(0x1000ull));
-    TEST_EQ(5,  strf::detail::count_digits<16>(0x10000ull));
-    TEST_EQ(6,  strf::detail::count_digits<16>(0x100000ull));
-    TEST_EQ(7,  strf::detail::count_digits<16>(0x1000000ull));
-    TEST_EQ(8,  strf::detail::count_digits<16>(0x10000000ull));
-    TEST_EQ(9,  strf::detail::count_digits<16>(0x100000000ull));
-    TEST_EQ(10, strf::detail::count_digits<16>(0x1000000000ull));
-    TEST_EQ(11, strf::detail::count_digits<16>(0x10000000000ull));
-    TEST_EQ(12, strf::detail::count_digits<16>(0x100000000000ull));
-    TEST_EQ(13, strf::detail::count_digits<16>(0x1000000000000ull));
-    TEST_EQ(14, strf::detail::count_digits<16>(0x10000000000000ull));
-    TEST_EQ(15, strf::detail::count_digits<16>(0x100000000000000ull));
-    TEST_EQ(16, strf::detail::count_digits<16>(0x1000000000000000ull));
-    TEST_EQ(16, strf::detail::count_digits<16>(0xFFFFFFFFFFFFFFFFull));
+    TEST_EQ(1,  strf::detail::count_digits<16>(0ULL));
+    TEST_EQ(1,  strf::detail::count_digits<16>(0x1ULL));
+    TEST_EQ(2,  strf::detail::count_digits<16>(0x10ULL));
+    TEST_EQ(3,  strf::detail::count_digits<16>(0x100ULL));
+    TEST_EQ(4,  strf::detail::count_digits<16>(0x1000ULL));
+    TEST_EQ(5,  strf::detail::count_digits<16>(0x10000ULL));
+    TEST_EQ(6,  strf::detail::count_digits<16>(0x100000ULL));
+    TEST_EQ(7,  strf::detail::count_digits<16>(0x1000000ULL));
+    TEST_EQ(8,  strf::detail::count_digits<16>(0x10000000ULL));
+    TEST_EQ(9,  strf::detail::count_digits<16>(0x100000000ULL));
+    TEST_EQ(10, strf::detail::count_digits<16>(0x1000000000ULL));
+    TEST_EQ(11, strf::detail::count_digits<16>(0x10000000000ULL));
+    TEST_EQ(12, strf::detail::count_digits<16>(0x100000000000ULL));
+    TEST_EQ(13, strf::detail::count_digits<16>(0x1000000000000ULL));
+    TEST_EQ(14, strf::detail::count_digits<16>(0x10000000000000ULL));
+    TEST_EQ(15, strf::detail::count_digits<16>(0x100000000000000ULL));
+    TEST_EQ(16, strf::detail::count_digits<16>(0x1000000000000000ULL));
+    TEST_EQ(16, strf::detail::count_digits<16>(0xFFFFFFFFFFFFFFFFULL));
 
-    TEST_EQ(1,  strf::detail::count_digits<16>((std::uint32_t)0x0ul));
-    TEST_EQ(1,  strf::detail::count_digits<16>((std::uint32_t)0x1ul));
-    TEST_EQ(2,  strf::detail::count_digits<16>((std::uint32_t)0x10ul));
-    TEST_EQ(3,  strf::detail::count_digits<16>((std::uint32_t)0x100ul));
-    TEST_EQ(4,  strf::detail::count_digits<16>((std::uint32_t)0x1000ul));
-    TEST_EQ(5,  strf::detail::count_digits<16>((std::uint32_t)0x10000ul));
-    TEST_EQ(6,  strf::detail::count_digits<16>((std::uint32_t)0x100000ul));
-    TEST_EQ(7,  strf::detail::count_digits<16>((std::uint32_t)0x1000000ul));
-    TEST_EQ(8,  strf::detail::count_digits<16>((std::uint32_t)0x10000000ul));
-    TEST_EQ(8,  strf::detail::count_digits<16>((std::uint32_t)0xFFFFFFFFul));
+    TEST_EQ(1,  strf::detail::count_digits<16>((std::uint32_t)0x0UL));
+    TEST_EQ(1,  strf::detail::count_digits<16>((std::uint32_t)0x1UL));
+    TEST_EQ(2,  strf::detail::count_digits<16>((std::uint32_t)0x10UL));
+    TEST_EQ(3,  strf::detail::count_digits<16>((std::uint32_t)0x100UL));
+    TEST_EQ(4,  strf::detail::count_digits<16>((std::uint32_t)0x1000UL));
+    TEST_EQ(5,  strf::detail::count_digits<16>((std::uint32_t)0x10000UL));
+    TEST_EQ(6,  strf::detail::count_digits<16>((std::uint32_t)0x100000UL));
+    TEST_EQ(7,  strf::detail::count_digits<16>((std::uint32_t)0x1000000UL));
+    TEST_EQ(8,  strf::detail::count_digits<16>((std::uint32_t)0x10000000UL));
+    TEST_EQ(8,  strf::detail::count_digits<16>((std::uint32_t)0xFFFFFFFFUL));
 
     TEST_EQ(1,  strf::detail::count_digits<16>((std::uint16_t) 0x0));
     TEST_EQ(1,  strf::detail::count_digits<16>((std::uint16_t) 0x1));
@@ -105,41 +105,41 @@ STRF_TEST_FUNC void test_input_int_no_punct()
     TEST_EQ(1,  strf::detail::count_digits<16>((std::uint8_t) 0x1));
     TEST_EQ(2,  strf::detail::count_digits<16>((std::uint8_t) 0xFF));
 
-    TEST_EQ(1,  strf::detail::count_digits<8>(01ull));
-    TEST_EQ(2,  strf::detail::count_digits<8>(010ull));
-    TEST_EQ(3,  strf::detail::count_digits<8>(0100ull));
-    TEST_EQ(4,  strf::detail::count_digits<8>(01000ull));
-    TEST_EQ(5,  strf::detail::count_digits<8>(010000ull));
-    TEST_EQ(6,  strf::detail::count_digits<8>(0100000ull));
-    TEST_EQ(7,  strf::detail::count_digits<8>(01000000ull));
-    TEST_EQ(8,  strf::detail::count_digits<8>(010000000ull));
-    TEST_EQ(9,  strf::detail::count_digits<8>(0100000000ull));
-    TEST_EQ(10, strf::detail::count_digits<8>(01000000000ull));
-    TEST_EQ(11, strf::detail::count_digits<8>(010000000000ull));
-    TEST_EQ(12, strf::detail::count_digits<8>(0100000000000ull));
-    TEST_EQ(13, strf::detail::count_digits<8>(01000000000000ull));
-    TEST_EQ(14, strf::detail::count_digits<8>(010000000000000ull));
-    TEST_EQ(15, strf::detail::count_digits<8>(0100000000000000ull));
-    TEST_EQ(16, strf::detail::count_digits<8>(01000000000000000ull));
-    TEST_EQ(17, strf::detail::count_digits<8>(010000000000000000ull));
-    TEST_EQ(18, strf::detail::count_digits<8>(0100000000000000000ull));
-    TEST_EQ(19, strf::detail::count_digits<8>(01000000000000000000ull));
-    TEST_EQ(20, strf::detail::count_digits<8>(010000000000000000000ull));
-    TEST_EQ(21, strf::detail::count_digits<8>(0100000000000000000000ull));
-    TEST_EQ(22, strf::detail::count_digits<8>(01000000000000000000000ull));
-    TEST_EQ(22, strf::detail::count_digits<8>(0xFFFFFFFFFFFFFFFFull));
+    TEST_EQ(1,  strf::detail::count_digits<8>(01ULL));
+    TEST_EQ(2,  strf::detail::count_digits<8>(010ULL));
+    TEST_EQ(3,  strf::detail::count_digits<8>(0100ULL));
+    TEST_EQ(4,  strf::detail::count_digits<8>(01000ULL));
+    TEST_EQ(5,  strf::detail::count_digits<8>(010000ULL));
+    TEST_EQ(6,  strf::detail::count_digits<8>(0100000ULL));
+    TEST_EQ(7,  strf::detail::count_digits<8>(01000000ULL));
+    TEST_EQ(8,  strf::detail::count_digits<8>(010000000ULL));
+    TEST_EQ(9,  strf::detail::count_digits<8>(0100000000ULL));
+    TEST_EQ(10, strf::detail::count_digits<8>(01000000000ULL));
+    TEST_EQ(11, strf::detail::count_digits<8>(010000000000ULL));
+    TEST_EQ(12, strf::detail::count_digits<8>(0100000000000ULL));
+    TEST_EQ(13, strf::detail::count_digits<8>(01000000000000ULL));
+    TEST_EQ(14, strf::detail::count_digits<8>(010000000000000ULL));
+    TEST_EQ(15, strf::detail::count_digits<8>(0100000000000000ULL));
+    TEST_EQ(16, strf::detail::count_digits<8>(01000000000000000ULL));
+    TEST_EQ(17, strf::detail::count_digits<8>(010000000000000000ULL));
+    TEST_EQ(18, strf::detail::count_digits<8>(0100000000000000000ULL));
+    TEST_EQ(19, strf::detail::count_digits<8>(01000000000000000000ULL));
+    TEST_EQ(20, strf::detail::count_digits<8>(010000000000000000000ULL));
+    TEST_EQ(21, strf::detail::count_digits<8>(0100000000000000000000ULL));
+    TEST_EQ(22, strf::detail::count_digits<8>(01000000000000000000000ULL));
+    TEST_EQ(22, strf::detail::count_digits<8>(0xFFFFFFFFFFFFFFFFULL));
 
-    TEST_EQ(1,  strf::detail::count_digits<8>((std::uint32_t)01ul));
-    TEST_EQ(2,  strf::detail::count_digits<8>((std::uint32_t)010ul));
-    TEST_EQ(3,  strf::detail::count_digits<8>((std::uint32_t)0100ul));
-    TEST_EQ(4,  strf::detail::count_digits<8>((std::uint32_t)01000ul));
-    TEST_EQ(5,  strf::detail::count_digits<8>((std::uint32_t)010000ul));
-    TEST_EQ(6,  strf::detail::count_digits<8>((std::uint32_t)0100000ul));
-    TEST_EQ(7,  strf::detail::count_digits<8>((std::uint32_t)01000000ul));
-    TEST_EQ(8,  strf::detail::count_digits<8>((std::uint32_t)010000000ul));
-    TEST_EQ(9,  strf::detail::count_digits<8>((std::uint32_t)0100000000ul));
-    TEST_EQ(10, strf::detail::count_digits<8>((std::uint32_t)01000000000ul));
-    TEST_EQ(11, strf::detail::count_digits<8>((std::uint32_t)0xFFFFFFFFul));
+    TEST_EQ(1,  strf::detail::count_digits<8>((std::uint32_t)01UL));
+    TEST_EQ(2,  strf::detail::count_digits<8>((std::uint32_t)010UL));
+    TEST_EQ(3,  strf::detail::count_digits<8>((std::uint32_t)0100UL));
+    TEST_EQ(4,  strf::detail::count_digits<8>((std::uint32_t)01000UL));
+    TEST_EQ(5,  strf::detail::count_digits<8>((std::uint32_t)010000UL));
+    TEST_EQ(6,  strf::detail::count_digits<8>((std::uint32_t)0100000UL));
+    TEST_EQ(7,  strf::detail::count_digits<8>((std::uint32_t)01000000UL));
+    TEST_EQ(8,  strf::detail::count_digits<8>((std::uint32_t)010000000UL));
+    TEST_EQ(9,  strf::detail::count_digits<8>((std::uint32_t)0100000000UL));
+    TEST_EQ(10, strf::detail::count_digits<8>((std::uint32_t)01000000000UL));
+    TEST_EQ(11, strf::detail::count_digits<8>((std::uint32_t)0xFFFFFFFFUL));
 
     TEST_EQ(1,  strf::detail::count_digits<8>((std::uint16_t)01));
     TEST_EQ(2,  strf::detail::count_digits<8>((std::uint16_t)010));
@@ -152,58 +152,58 @@ STRF_TEST_FUNC void test_input_int_no_punct()
     TEST_EQ(2,  strf::detail::count_digits<8>((std::uint8_t)010));
     TEST_EQ(3,  strf::detail::count_digits<8>((std::uint8_t)0100));
 
-    TEST_EQ(64, strf::detail::count_digits<2>(0xFFFFFFFFFFFFFFFFull));
-    TEST_EQ(63, strf::detail::count_digits<2>(0x7FFFFFFFFFFFFFFFull));
-    TEST_EQ(32, strf::detail::count_digits<2>(0xFFFFFFFFull));
-    TEST_EQ(31, strf::detail::count_digits<2>(0x7FFFFFFFull));
-    TEST_EQ(16, strf::detail::count_digits<2>(0xFFFFull));
-    TEST_EQ(15, strf::detail::count_digits<2>(0x7FFFull));
-    TEST_EQ(8,  strf::detail::count_digits<2>(0xFFull));
-    TEST_EQ(7,  strf::detail::count_digits<2>(0x7Full));
-    TEST_EQ(4,  strf::detail::count_digits<2>(0xFull));
-    TEST_EQ(3,  strf::detail::count_digits<2>(0x7ull));
-    TEST_EQ(2,  strf::detail::count_digits<2>(0x3ull));
-    TEST_EQ(1,  strf::detail::count_digits<2>(0x1ull));
-    TEST_EQ(1,  strf::detail::count_digits<2>(0x0ull));
+    TEST_EQ(64, strf::detail::count_digits<2>(0xFFFFFFFFFFFFFFFFULL));
+    TEST_EQ(63, strf::detail::count_digits<2>(0x7FFFFFFFFFFFFFFFULL));
+    TEST_EQ(32, strf::detail::count_digits<2>(0xFFFFFFFFULL));
+    TEST_EQ(31, strf::detail::count_digits<2>(0x7FFFFFFFULL));
+    TEST_EQ(16, strf::detail::count_digits<2>(0xFFFFULL));
+    TEST_EQ(15, strf::detail::count_digits<2>(0x7FFFULL));
+    TEST_EQ(8,  strf::detail::count_digits<2>(0xFFULL));
+    TEST_EQ(7,  strf::detail::count_digits<2>(0x7FULL));
+    TEST_EQ(4,  strf::detail::count_digits<2>(0xFULL));
+    TEST_EQ(3,  strf::detail::count_digits<2>(0x7ULL));
+    TEST_EQ(2,  strf::detail::count_digits<2>(0x3ULL));
+    TEST_EQ(1,  strf::detail::count_digits<2>(0x1ULL));
+    TEST_EQ(1,  strf::detail::count_digits<2>(0x0ULL));
 
-    TEST_EQ(32, strf::detail::count_digits<2>((std::uint32_t)0xFFFFFFFFul));
-    TEST_EQ(31, strf::detail::count_digits<2>((std::uint32_t)0x7FFFFFFFul));
-    TEST_EQ(16, strf::detail::count_digits<2>((std::uint32_t)0xFFFFul));
-    TEST_EQ(15, strf::detail::count_digits<2>((std::uint32_t)0x7FFFul));
-    TEST_EQ(8,  strf::detail::count_digits<2>((std::uint32_t)0xFFul));
-    TEST_EQ(7,  strf::detail::count_digits<2>((std::uint32_t)0x7Ful));
-    TEST_EQ(4,  strf::detail::count_digits<2>((std::uint32_t)0xFul));
-    TEST_EQ(3,  strf::detail::count_digits<2>((std::uint32_t)0x7ul));
-    TEST_EQ(2,  strf::detail::count_digits<2>((std::uint32_t)0x3ul));
-    TEST_EQ(1,  strf::detail::count_digits<2>((std::uint32_t)0x1ul));
-    TEST_EQ(1,  strf::detail::count_digits<2>((std::uint32_t)0x0ul));
+    TEST_EQ(32, strf::detail::count_digits<2>((std::uint32_t)0xFFFFFFFFUL));
+    TEST_EQ(31, strf::detail::count_digits<2>((std::uint32_t)0x7FFFFFFFUL));
+    TEST_EQ(16, strf::detail::count_digits<2>((std::uint32_t)0xFFFFUL));
+    TEST_EQ(15, strf::detail::count_digits<2>((std::uint32_t)0x7FFFUL));
+    TEST_EQ(8,  strf::detail::count_digits<2>((std::uint32_t)0xFFUL));
+    TEST_EQ(7,  strf::detail::count_digits<2>((std::uint32_t)0x7FUL));
+    TEST_EQ(4,  strf::detail::count_digits<2>((std::uint32_t)0xFUL));
+    TEST_EQ(3,  strf::detail::count_digits<2>((std::uint32_t)0x7UL));
+    TEST_EQ(2,  strf::detail::count_digits<2>((std::uint32_t)0x3UL));
+    TEST_EQ(1,  strf::detail::count_digits<2>((std::uint32_t)0x1UL));
+    TEST_EQ(1,  strf::detail::count_digits<2>((std::uint32_t)0x0UL));
 
-    TEST_EQ(16, strf::detail::count_digits<2>((std::uint16_t)0xFFFFul));
-    TEST_EQ(15, strf::detail::count_digits<2>((std::uint16_t)0x7FFFul));
-    TEST_EQ(8,  strf::detail::count_digits<2>((std::uint16_t)0xFFul));
-    TEST_EQ(7,  strf::detail::count_digits<2>((std::uint16_t)0x7Ful));
-    TEST_EQ(4,  strf::detail::count_digits<2>((std::uint16_t)0xFul));
-    TEST_EQ(3,  strf::detail::count_digits<2>((std::uint16_t)0x7ul));
-    TEST_EQ(2,  strf::detail::count_digits<2>((std::uint16_t)0x3ul));
-    TEST_EQ(1,  strf::detail::count_digits<2>((std::uint16_t)0x1ul));
-    TEST_EQ(1,  strf::detail::count_digits<2>((std::uint16_t)0x0ul));
+    TEST_EQ(16, strf::detail::count_digits<2>((std::uint16_t)0xFFFFUL));
+    TEST_EQ(15, strf::detail::count_digits<2>((std::uint16_t)0x7FFFUL));
+    TEST_EQ(8,  strf::detail::count_digits<2>((std::uint16_t)0xFFUL));
+    TEST_EQ(7,  strf::detail::count_digits<2>((std::uint16_t)0x7FUL));
+    TEST_EQ(4,  strf::detail::count_digits<2>((std::uint16_t)0xFUL));
+    TEST_EQ(3,  strf::detail::count_digits<2>((std::uint16_t)0x7UL));
+    TEST_EQ(2,  strf::detail::count_digits<2>((std::uint16_t)0x3UL));
+    TEST_EQ(1,  strf::detail::count_digits<2>((std::uint16_t)0x1UL));
+    TEST_EQ(1,  strf::detail::count_digits<2>((std::uint16_t)0x0UL));
 
-    TEST_EQ(8,  strf::detail::count_digits<2>((std::uint8_t)0xFFul));
-    TEST_EQ(7,  strf::detail::count_digits<2>((std::uint8_t)0x7Ful));
-    TEST_EQ(4,  strf::detail::count_digits<2>((std::uint8_t)0xFul));
-    TEST_EQ(3,  strf::detail::count_digits<2>((std::uint8_t)0x7ul));
-    TEST_EQ(2,  strf::detail::count_digits<2>((std::uint8_t)0x3ul));
-    TEST_EQ(1,  strf::detail::count_digits<2>((std::uint8_t)0x1ul));
-    TEST_EQ(1,  strf::detail::count_digits<2>((std::uint8_t)0x0ul));
+    TEST_EQ(8,  strf::detail::count_digits<2>((std::uint8_t)0xFFUL));
+    TEST_EQ(7,  strf::detail::count_digits<2>((std::uint8_t)0x7FUL));
+    TEST_EQ(4,  strf::detail::count_digits<2>((std::uint8_t)0xFUL));
+    TEST_EQ(3,  strf::detail::count_digits<2>((std::uint8_t)0x7UL));
+    TEST_EQ(2,  strf::detail::count_digits<2>((std::uint8_t)0x3UL));
+    TEST_EQ(1,  strf::detail::count_digits<2>((std::uint8_t)0x1UL));
+    TEST_EQ(1,  strf::detail::count_digits<2>((std::uint8_t)0x0UL));
 
     TEST ( "0") ( 0 );
     TEST (u"0") ( 0 );
     TEST (U"0") ( 0 );
     TEST (L"0") ( 0 );
-    TEST ( "0") ( (unsigned)0 );
-    TEST (u"0") ( (unsigned)0 );
-    TEST (U"0") ( (unsigned)0 );
-    TEST (L"0") ( (unsigned)0 );
+    TEST ( "0") ( static_cast<unsigned>(0) );
+    TEST (u"0") ( static_cast<unsigned>(0) );
+    TEST (U"0") ( static_cast<unsigned>(0) );
+    TEST (L"0") ( static_cast<unsigned>(0) );
     TEST ( "123") ( 123 );
     TEST (u"123") ( 123 );
     TEST (U"123") ( 123 );
@@ -217,10 +217,10 @@ STRF_TEST_FUNC void test_input_int_no_punct()
     TEST (u"0") ( strf::fmt(0) );
     TEST (U"0") ( strf::fmt(0) );
     TEST (L"0") ( strf::fmt(0) );
-    TEST ( "0") ( strf::fmt((unsigned)0) );
-    TEST (u"0") ( strf::fmt((unsigned)0) );
-    TEST (U"0") ( strf::fmt((unsigned)0) );
-    TEST (L"0") ( strf::fmt((unsigned)0) );
+    TEST ( "0") ( strf::fmt(static_cast<unsigned>(0)) );
+    TEST (u"0") ( strf::fmt(static_cast<unsigned>(0)) );
+    TEST (U"0") ( strf::fmt(static_cast<unsigned>(0)) );
+    TEST (L"0") ( strf::fmt(static_cast<unsigned>(0)) );
     TEST ( "123") ( strf::fmt(123) );
     TEST (u"123") ( strf::fmt(123) );
     TEST (U"123") ( strf::fmt(123) );
@@ -232,20 +232,20 @@ STRF_TEST_FUNC void test_input_int_no_punct()
 
     TEST ( "2147483647")   (2147483647);                //  INT32_MAX
     TEST ("-2147483648")   (-2147483647 - 1);           //  INT32_MIN
-    TEST ( "4294967295")   (4294967295u);               // UINT32_MAX
+    TEST ( "4294967295")   (4294967295U);               // UINT32_MAX
     TEST ("-2147483648")   (-2147483647 - 1);           //  INT32_MIN
-    TEST ( "4294967295")   (strf::fmt(4294967295u));    // UINT32_MAX
+    TEST ( "4294967295")   (strf::fmt(4294967295U));    // UINT32_MAX
 
     TEST ( L"2147483647")  (2147483647);                 //  INT32_MAX
     TEST (L"-2147483648")  (-2147483647 - 1);            //  INT32_MIN
-    TEST ( L"4294967295")  (4294967295u);                // UINT32_MAX
+    TEST ( L"4294967295")  (4294967295U);                // UINT32_MAX
     TEST (L"-2147483648")  (strf::fmt(-2147483647 - 1)); //  INT32_MIN
-    TEST ( L"4294967295")  (strf::fmt(4294967295u));     // UINT32_MAX
+    TEST ( L"4294967295")  (strf::fmt(4294967295U));     // UINT32_MAX
 
     TEST("f")                        ( strf::hex(0xf) );
     TEST("ff")                       ( strf::hex(0xff) );
     TEST("ffff")                     ( strf::hex(0xffff) );
-    TEST("fffff")                    ( strf::hex(0xfffffl) );
+    TEST("fffff")                    ( strf::hex(0xfffffL) );
     TEST("fffffffff")                ( strf::hex(0xfffffffffLL) );
     TEST("ffffffffffffffff")         ( strf::hex(0xffffffffffffffffLL) );
     TEST("0xffffffffffffffff")       (*strf::hex(0xffffffffffffffffLL) );
@@ -253,13 +253,15 @@ STRF_TEST_FUNC void test_input_int_no_punct()
     TEST("1")                        ( strf::hex(0x1) );
     TEST("10")                       ( strf::hex(0x10) );
     TEST("100")                      ( strf::hex(0x100) );
-    TEST("10000")                    ( strf::hex(0x10000l) );
+    TEST("10000")                    ( strf::hex(0x10000L) );
     TEST("100000000")                ( strf::hex(0x100000000LL) );
     TEST("1000000000000000")         ( strf::hex(0x1000000000000000LL) );
+    TEST("80000000")                 ( strf::hex((std::int32_t)(0x80000000)));
+
     TEST("7")                        ( strf::oct(07) );
     TEST("77")                       ( strf::oct(077) );
     TEST("7777")                     ( strf::oct(07777) );
-    TEST("777777777")                ( strf::oct(0777777777l) );
+    TEST("777777777")                ( strf::oct(0777777777L) );
     TEST("7777777777777777")         ( strf::oct(07777777777777777LL) );
     TEST("777777777777777777777")    ( strf::oct(0777777777777777777777LL) );
     TEST("0777777777777777777777")   (*strf::oct(0777777777777777777777LL) );
@@ -269,7 +271,7 @@ STRF_TEST_FUNC void test_input_int_no_punct()
     TEST("10")                       ( strf::oct(010) );
     TEST("100")                      ( strf::oct(0100) );
     TEST("10000")                    ( strf::oct(010000) );
-    TEST("100000000")                ( strf::oct(0100000000l) );
+    TEST("100000000")                ( strf::oct(0100000000L) );
     TEST("10000000000000000")        ( strf::oct(010000000000000000LL) );
     TEST("1000000000000000000000")   ( strf::oct(01000000000000000000000LL) );
     TEST("1777777777777777777777")   ( strf::oct(01777777777777777777777LL) );
@@ -285,7 +287,10 @@ STRF_TEST_FUNC void test_input_int_no_punct()
     TEST("0b1010101010101010101010101010101010101010101010101010101010101010")
         (*strf::bin(0xaaaaaaaaaaaaaaaaLL) );
 
-    TEST_CALLING_RECYCLE_AT<4,3, 5> ("111100001111") (strf::bin(0xf0f));
+    TEST_CALLING_RECYCLE_AT( 4, "111100001111") (strf::bin(0xf0f));
+    TEST_CALLING_RECYCLE_AT( 7, "111100001111") (strf::bin(0xf0f));
+    TEST_CALLING_RECYCLE_AT(11, "111100001111") (strf::bin(0xf0f));
+
 
     TEST("1111111111111111111111111111111111111111111111111111111111111111")
         ( strf::bin(0xffffffffffffffffLL) );
@@ -293,26 +298,26 @@ STRF_TEST_FUNC void test_input_int_no_punct()
     TEST("9")                    ( 9 );
     TEST("99")                   ( 99 );
     TEST("9999")                 ( 9999 );
-    TEST("99999999")             ( 99999999l );
+    TEST("99999999")             ( 99999999L );
     TEST("999999999999999999")   ( 999999999999999999LL );
     TEST("-9")                   ( -9 );
     TEST("-99")                  ( -99 );
     TEST("-9999")                ( -9999 );
-    TEST("-99999999")            ( -99999999l );
+    TEST("-99999999")            ( -99999999L );
     TEST("-999999999999999999")  ( -999999999999999999LL );
     TEST("0")                    ( 0 );
     TEST("1")                    ( 1 );
     TEST("10")                   ( 10 );
     TEST("100")                  ( 100 );
     TEST("10000")                ( 10000 );
-    TEST("100000000")            ( 100000000l );
+    TEST("100000000")            ( 100000000L );
     TEST("1000000000000000000")  ( 1000000000000000000LL );
-    TEST("10000000000000000000") ( 10000000000000000000uLL );
+    TEST("10000000000000000000") ( 10000000000000000000ULL );
     TEST("-1")                   ( -1 );
     TEST("-10")                  ( -10 );
     TEST("-100")                 ( -100 );
     TEST("-10000")               ( -10000 );
-    TEST("-100000000")           ( -100000000l );
+    TEST("-100000000")           ( -100000000L );
     TEST("-1000000000000000000") ( -1000000000000000000LL );
 
     // decimal formatting
@@ -321,18 +326,18 @@ STRF_TEST_FUNC void test_input_int_no_punct()
     TEST ("......-123")  ( strf::join_right(10, '.')(+strf::dec(-123)) );
     TEST ("......-123")  ( strf::join_right(10, '.')(strf::dec(-123)) );
 
-    TEST ("_____1234567890") ( strf::right(1234567890l, 15, U'_') );
+    TEST ("_____1234567890") ( strf::right(1234567890L, 15, U'_') );
 
     TEST ("       123")  (  strf::right(123 , 10) );
     TEST (".......123")  (  strf::right(123 , 10, '.') );
     TEST ("......-123")  (  strf::right(-123, 10, '.') );
     TEST (".........0")  (  strf::right(0   , 10, '.') );
-    TEST (".......123")  (  strf::right(123u, 10, '.') );
+    TEST (".......123")  (  strf::right(123U, 10, '.') );
 
     TEST ("......+123")  ( +strf::right(123 , 10, '.') );
     TEST ("......-123")  ( +strf::right(-123, 10, '.') );
     TEST ("........+0")  ( +strf::right(0   , 10, '.') );
-    TEST (".......123")  (  strf::right(123u, 10, '.') );
+    TEST (".......123")  (  strf::right(123U, 10, '.') );
 
     TEST ("................-32768") (+strf::right(strf::detail::int_min<std::int16_t>(), 22, '.'));
     TEST ("...........-2147483648") (+strf::right(strf::detail::int_min<std::int32_t>(), 22, '.'));
@@ -343,14 +348,14 @@ STRF_TEST_FUNC void test_input_int_no_punct()
     TEST ("-123......")  ( +strf::left(-123, 10, '.') );
     TEST ("+0........")  ( +strf::left(0,    10, '.') );
     TEST ("0.........")  (  strf::left(0,    10, '.') );
-    TEST ("123.......")  (  strf::left(123u, 10, '.') );
+    TEST ("123.......")  (  strf::left(123U, 10, '.') );
 
     TEST ("...123....")  (  strf::center(123,  10, '.') );
     TEST ("...+123...")  ( +strf::center(123,  10, '.') );
     TEST ("...-123...")  ( +strf::center(-123, 10, '.') );
     TEST ("....+0....")  ( +strf::center(0,    10, '.') );
     TEST ("....0.....")  (  strf::center(0,    10, '.') );
-    TEST ("...123....")  (  strf::center(123u, 10, '.') );
+    TEST ("...123....")  (  strf::center(123U, 10, '.') );
 
     // decimal with pad0
     TEST (".........1")  (  strf::right(   1, 10, '.').pad0(1) );
@@ -362,14 +367,14 @@ STRF_TEST_FUNC void test_input_int_no_punct()
     TEST ("......-123")  (  strf::right(-123, 10, '.').pad0(4) );
     TEST ("....+00000")  ( +strf::right(0   , 10, '.').pad0(6) );
     TEST ("........+0")  ( +strf::right(0   , 10, '.').pad0(2) );
-    TEST (".......123")  (  strf::right(123u, 10, '.').pad0(3) );
-    TEST ("....000123")  (  strf::right(123u, 10, '.').pad0(6) );
+    TEST (".......123")  (  strf::right(123U, 10, '.').pad0(3) );
+    TEST ("....000123")  (  strf::right(123U, 10, '.').pad0(6) );
 
-    TEST (".000000123")   (  strf::right(123u, 10, '.').pad0(9) );
+    TEST (".000000123")   (  strf::right(123U, 10, '.').pad0(9) );
     TEST (".000000123")   (  strf::right(123 , 10, '.').pad0(9) );
-    TEST ("0000000123")   (  strf::right(123u, 10, '.').pad0(10) );
+    TEST ("0000000123")   (  strf::right(123U, 10, '.').pad0(10) );
     TEST ("0000000123")   (  strf::right(123 , 10, '.').pad0(10) );
-    TEST ("00000000123")  (  strf::right(123u, 10, '.').pad0(11) );
+    TEST ("00000000123")  (  strf::right(123U, 10, '.').pad0(11) );
     TEST ("00000000123")  (  strf::right(123 , 10, '.').pad0(11) );
 
     // hexadecimal letter case
@@ -558,7 +563,7 @@ STRF_TEST_FUNC void test_input_int_no_punct()
 template <int Base>
 struct numpunct_maker {
 
-    STRF_HD numpunct_maker(char32_t sep)
+    STRF_HD explicit numpunct_maker(char32_t sep)
         : separator(sep)
     {
     }
@@ -698,45 +703,61 @@ STRF_TEST_FUNC void test_input_int_punct()
     }
 
     {
-        numpunct_maker<10> punct2(0x10FFFF);
+        const numpunct_maker<10> punct2(0x10FFFF);
 
         TEST(u8"18\U0010FFFF" u8"446\U0010FFFF" u8"744\U0010FFFF" u8"073\U0010FFFF"
              u8"709\U0010FFFF" u8"551\U0010FFFF" u8"61\U0010FFFF" u8"5")
-            .with(punct2(1, 2, 3)) (strf::punct(18446744073709551615ull));
+            .with(punct2(1, 2, 3)) (strf::punct(18446744073709551615ULL));
 
         TEST(u8"18446744073709551615")
-            .with(punct2(-1)) (strf::punct(18446744073709551615ull));
+            .with(punct2(-1)) (strf::punct(18446744073709551615ULL));
 
         TEST(u8"18446744073709\U0010FFFF" u8"5\U0010FFFF" u8"51\U0010FFFF" u8"615")
-            .with(punct2(3, 2, 1, -1)) (strf::punct(18446744073709551615ull));
+            .with(punct2(3, 2, 1, -1)) (strf::punct(18446744073709551615ULL));
 
         TEST(u8"1\U0010FFFF" u8"8\U0010FFFF" u8"4\U0010FFFF" u8"4\U0010FFFF"
              u8"6\U0010FFFF" u8"7\U0010FFFF" u8"4\U0010FFFF" u8"4\U0010FFFF"
              u8"0\U0010FFFF" u8"7\U0010FFFF" u8"3\U0010FFFF" u8"7\U0010FFFF"
              u8"0\U0010FFFF" u8"9\U0010FFFF" u8"5\U0010FFFF" u8"51\U0010FFFF" u8"615")
-            .with(punct2(3, 2, 1)) (strf::punct(18446744073709551615ull));
+            .with(punct2(3, 2, 1)) (strf::punct(18446744073709551615ULL));
 
         TEST(u8"1\U0010FFFF" u8"8\U0010FFFF" u8"4\U0010FFFF" u8"4\U0010FFFF"
              u8"6\U0010FFFF"
              u8"7\U0010FFFF" u8"4\U0010FFFF" u8"4\U0010FFFF" u8"0\U0010FFFF"
              u8"7\U0010FFFF"
              u8"3\U0010FFFF" u8"7\U0010FFFF" u8"09\U0010FFFF" u8"551\U0010FFFF" u8"615")
-            .with(punct2(3, 3, 2, 1)) (strf::punct(18446744073709551615ull));
+            .with(punct2(3, 3, 2, 1)) (strf::punct(18446744073709551615ULL));
 
         TEST(u8"18\U0010FFFF" u8"44\U0010FFFF" u8"67\U0010FFFF" u8"44\U0010FFFF"
              u8"07\U0010FFFF"
              u8"37\U0010FFFF" u8"09\U0010FFFF" u8"55\U0010FFFF" u8"1615")
-            .with(punct2(4, 2)) (strf::punct(18446744073709551615ull));
+            .with(punct2(4, 2)) (strf::punct(18446744073709551615ULL));
 
         TEST(u8"1\U0010FFFF" u8"84\U0010FFFF" u8"46\U0010FFFF" u8"74\U0010FFFF"
              u8"40\U0010FFFF" u8"73\U0010FFFF" u8"70\U0010FFFF" u8"95\U0010FFFF"
              u8"51\U0010FFFF" u8"615")
-            .with(punct2(3, 2)) (strf::punct(18446744073709551615ull));
+            .with(punct2(3, 2)) (strf::punct(18446744073709551615ULL));
 
-        TEST_CALLING_RECYCLE_AT <2, 5, 5, 6, 4>
-            ("10\xCB\x9A" "000\xCB\x9A" "000\xCB\x9A" "0000\xCB\x9A" "00")
+        TEST_CALLING_RECYCLE_AT
+            (2, "10\xCB\x9A" "000\xCB\x9A" "000\xCB\x9A" "0000\xCB\x9A" "00")
             .with(strf::numpunct<10>{2,4,3}.thousands_sep(0x2DA))
-            (strf::punct(10000000000000ull));
+            (strf::punct(10000000000000ULL));
+        TEST_CALLING_RECYCLE_AT
+            (7, "10\xCB\x9A" "000\xCB\x9A" "000\xCB\x9A" "0000\xCB\x9A" "00")
+            .with(strf::numpunct<10>{2,4,3}.thousands_sep(0x2DA))
+            (strf::punct(10000000000000ULL));
+        TEST_CALLING_RECYCLE_AT
+            (12, "10\xCB\x9A" "000\xCB\x9A" "000\xCB\x9A" "0000\xCB\x9A" "00")
+            .with(strf::numpunct<10>{2,4,3}.thousands_sep(0x2DA))
+            (strf::punct(10000000000000ULL));
+        TEST_CALLING_RECYCLE_AT
+            (18, "10\xCB\x9A" "000\xCB\x9A" "000\xCB\x9A" "0000\xCB\x9A" "00")
+            .with(strf::numpunct<10>{2,4,3}.thousands_sep(0x2DA))
+            (strf::punct(10000000000000ULL));
+        TEST_CALLING_RECYCLE_AT
+            (21, "10\xCB\x9A" "000\xCB\x9A" "000\xCB\x9A" "0000\xCB\x9A" "00")
+            .with(strf::numpunct<10>{2,4,3}.thousands_sep(0x2DA))
+            (strf::punct(10000000000000ULL));
     }
 
     {
@@ -744,7 +765,7 @@ STRF_TEST_FUNC void test_input_int_punct()
 
         TEST("0").with(punct) (strf::punct(0));
         TEST("1,000").with(punct) (strf::punct(1000));
-        TEST("   1,000").with(punct) (strf::join_right(8)(strf::punct(1000ul)));
+        TEST("   1,000").with(punct) (strf::join_right(8)(strf::punct(1000UL)));
         TEST("-1,000").with(punct) (strf::punct(-1000));
 
         TEST("       0").with(punct) (!strf::right(0, 8));
@@ -784,25 +805,25 @@ STRF_TEST_FUNC void test_input_int_punct()
         TEST("1,234") .with(punct(3, 1))  (strf::punct(1234));
 
         TEST("18,446,744,073,709,551,615")           .with(punct(3))
-            (strf::punct(18446744073709551615ull));
+            (strf::punct(18446744073709551615ULL));
         TEST("8,446,744,073,709,551,615")            .with(punct(3))
-            (strf::punct(8446744073709551615ull));
+            (strf::punct(8446744073709551615ULL));
         TEST("446,744,073,709,551,615")              .with(punct(3))
-            (strf::punct(446744073709551615ull));
+            (strf::punct(446744073709551615ULL));
         TEST("18,446,744,073,709,551,61,5")          .with(punct(1, 2, 3))
-            (strf::punct(18446744073709551615ull));
+            (strf::punct(18446744073709551615ULL));
         TEST("18446744073709551615")                 .with(punct(-1))
-            (strf::punct(18446744073709551615ull));
+            (strf::punct(18446744073709551615ULL));
         TEST("18446744073709,5,51,615")              .with(punct(3, 2, 1, -1))
-            (strf::punct(18446744073709551615ull));
+            (strf::punct(18446744073709551615ULL));
         TEST("1,8,4,4,6,7,4,4,0,7,3,7,0,9,5,51,615") .with(punct(3, 2, 1))
-            (strf::punct(18446744073709551615ull));
+            (strf::punct(18446744073709551615ULL));
         TEST("1,8,4,4,6,7,4,4,0,7,3,7,09,551,615")   .with(punct(3, 3, 2, 1))
-            (strf::punct(18446744073709551615ull));
+            (strf::punct(18446744073709551615ULL));
         TEST("18,44,67,44,07,37,09,55,1615")         .with(punct(4, 2))
-            (strf::punct(18446744073709551615ull));
+            (strf::punct(18446744073709551615ULL));
         TEST("1,84,46,74,40,73,70,95,51,615")        .with(punct(3, 2))
-            (strf::punct(18446744073709551615ull));
+            (strf::punct(18446744073709551615ULL));
 
 
     }
@@ -819,47 +840,47 @@ STRF_TEST_FUNC void test_input_int_punct()
         TEST("1,23,456") .with(punct(3, 2)) (!strf::hex(0x123456));
 
         TEST("1,234,567,89a,bcd,ef0")       .with(punct(3))
-            (!strf::hex(0x123456789abcdef0ull));
+            (!strf::hex(0x123456789abcdef0ULL));
         TEST("123,456,789,abc,def")         .with(punct(3))
-            (!strf::hex(0x123456789abcdefull));
+            (!strf::hex(0x123456789abcdefULL));
         TEST("12,345,678,9ab,cde")          .with(punct(3))
-            (!strf::hex(0x123456789abcdeull));
+            (!strf::hex(0x123456789abcdeULL));
         TEST("1,234,567,89a,bcd,ef,0")      .with(punct(1, 2, 3))
-            (!strf::hex(0x123456789abcdef0ull));
+            (!strf::hex(0x123456789abcdef0ULL));
         TEST("123456789abcdef0")            .with(punct(-1))
-            (!strf::hex(0x123456789abcdef0ull));
+            (!strf::hex(0x123456789abcdef0ULL));
         TEST("123456789a,b,cd,ef0")         .with(punct(3, 2, 1, -1))
-            (!strf::hex(0x123456789abcdef0ull));
+            (!strf::hex(0x123456789abcdef0ULL));
         TEST("1,2,3,4,5,6,7,8,9,a,b,cd,ef0").with(punct(3, 2, 1))
-            (!strf::hex(0x123456789abcdef0ull));
+            (!strf::hex(0x123456789abcdef0ULL));
         TEST("1,2,3,4,5,6,7,8,9a,bcd,ef0")  .with(punct(3, 3, 2, 1))
-            (!strf::hex(0x123456789abcdef0ull));
+            (!strf::hex(0x123456789abcdef0ULL));
         TEST("12,34,56,78,9a,bc,def0")      .with(punct(4, 2))
-            (!strf::hex(0x123456789abcdef0ull));
+            (!strf::hex(0x123456789abcdef0ULL));
         TEST("1,23,45,67,89,ab,cd,ef0")     .with(punct(3, 2))
-            (!strf::hex(0x123456789abcdef0ull));
+            (!strf::hex(0x123456789abcdef0ULL));
 
         const numpunct_maker<16> punct2(0x10FFFF);
 
         TEST(u8"1\U0010FFFF" u8"234\U0010FFFF" u8"567\U0010FFFF" u8"89a\U0010FFFF"
              u8"bcd\U0010FFFF" u8"ef0")
             .with(punct2(3))
-            (!strf::hex(0x123456789abcdef0ull));
+            (!strf::hex(0x123456789abcdef0ULL));
 
         TEST(u8"123\U0010FFFF" u8"456\U0010FFFF" u8"789\U0010FFFF" u8"abc\U0010FFFF"
              u8"def")
             .with(punct2(3))
-            (!strf::hex(0x123456789abcdefull));
+            (!strf::hex(0x123456789abcdefULL));
 
         TEST(u8"12\U0010FFFF" u8"345\U0010FFFF" u8"678\U0010FFFF"
              u8"9ab\U0010FFFF" u8"cde")
             .with(punct2(3))
-            (!strf::hex(0x123456789abcdeull));
+            (!strf::hex(0x123456789abcdeULL));
 
         TEST(u8"1\U0010FFFF" u8"234\U0010FFFF" u8"567\U0010FFFF"
              u8"89a\U0010FFFF" u8"bcd\U0010FFFF" u8"ef\U0010FFFF" u8"0")
             .with(punct2(1, 2, 3))
-            (!strf::hex(0x123456789abcdef0ull));
+            (!strf::hex(0x123456789abcdef0ULL));
     }
     {
         using punct = strf::numpunct<8>;
@@ -874,24 +895,24 @@ STRF_TEST_FUNC void test_input_int_punct()
         TEST("1,23,456") .with(punct(3, 2)) (!strf::oct(0123456));
 
         TEST("1,234,567,123,456,712")       .with(punct(3))
-            (!strf::oct(01234567123456712ull));
+            (!strf::oct(01234567123456712ULL));
         TEST("123,456,712,345,671")         .with(punct(3))
-            (!strf::oct(0123456712345671ull));
+            (!strf::oct(0123456712345671ULL));
         TEST("12,345,671,234,567")          .with(punct(3))
-            (!strf::oct(012345671234567ull));
+            (!strf::oct(012345671234567ULL));
         TEST("12,345,671,234,56,7")         .with(punct(1, 2, 3))
-            (!strf::oct(012345671234567ull));
+            (!strf::oct(012345671234567ULL));
         TEST("1234567")                    .with(punct(-1))
-            (!strf::oct(01234567ull));
+            (!strf::oct(01234567ULL));
         TEST("12345671,2,34,567")           .with(punct(3, 2, 1, -1))
-            (!strf::oct(012345671234567ull));
-        TEST("1,2,3,4,5,6,7,1,2,34,567").with(punct(3, 2, 1))   (!strf::oct(012345671234567ull));
-        TEST("1,2,3,4,5,6,71,234,567")  .with(punct(3, 3, 2, 1))(!strf::oct(012345671234567ull));
+            (!strf::oct(012345671234567ULL));
+        TEST("1,2,3,4,5,6,7,1,2,34,567").with(punct(3, 2, 1))   (!strf::oct(012345671234567ULL));
+        TEST("1,2,3,4,5,6,71,234,567")  .with(punct(3, 3, 2, 1))(!strf::oct(012345671234567ULL));
         TEST("1,23,4567") .with(punct(4, 2)) (!strf::oct(01234567));
         TEST("12,34,567") .with(punct(3, 2)) (!strf::oct(01234567));
     }
     {
-        numpunct_maker<2> punct('\'');
+        const numpunct_maker<2> punct('\'');
 
         TEST("0") .with(punct(1)) (!strf::bin(0));
         TEST("1'0") .with(punct(1)) (!strf::bin(2));
@@ -899,10 +920,18 @@ STRF_TEST_FUNC void test_input_int_punct()
         TEST("1010'1010'1010'10'10") .with(punct(2,2,4)) (!strf::bin(0xAAAA));
         TEST("10'1010'1010'10'10") .with(punct(2,2,4)) (!strf::bin(0x2AAA));
         TEST("1'0101'0101'01'01") .with(punct(2,2,4)) (!strf::bin(0x1555));
-        TEST_CALLING_RECYCLE_AT<7,3,2,5,7,3>  ("10'1010'1010'101010'10")
-            .with(punct(2,6,4)) (!strf::bin(0x2AAAAull));
+        TEST_CALLING_RECYCLE_AT(7,  "10'1010'1010'101010'10")
+            .with(punct(2,6,4)) (!strf::bin(0x2AAAAULL));
+        TEST_CALLING_RECYCLE_AT(10, "10'1010'1010'101010'10")
+            .with(punct(2,6,4)) (!strf::bin(0x2AAAAULL));
+        TEST_CALLING_RECYCLE_AT(12, "10'1010'1010'101010'10")
+            .with(punct(2,6,4)) (!strf::bin(0x2AAAAULL));
+        TEST_CALLING_RECYCLE_AT(17, "10'1010'1010'101010'10")
+            .with(punct(2,6,4)) (!strf::bin(0x2AAAAULL));
+        TEST_CALLING_RECYCLE_AT(21, "10'1010'1010'101010'10")
+            .with(punct(2,6,4)) (!strf::bin(0x2AAAAULL));
 
-        numpunct_maker<2> grp_big(0x10FFFF);
+        const numpunct_maker<2> grp_big(0x10FFFF);
 
         TEST(u8"0") .with(grp_big(1)) (!strf::bin(0));
         TEST(u8"1\U0010FFFF" u8"0") .with(grp_big(1)) (!strf::bin(2));
@@ -918,10 +947,30 @@ STRF_TEST_FUNC void test_input_int_punct()
              u8"01\U0010FFFF" u8"01")
             .with(grp_big(2,2,4)) (!strf::bin(0x1555));
 
-        TEST_CALLING_RECYCLE_AT<10,6,5,5,8,5,6>
-            (u8"10\U0010FFFF" u8"1010\U0010FFFF" u8"1010\U0010FFFF"
-             u8"101010\U0010FFFF" u8"10")
-            .with(grp_big(2,6,4)) (!strf::bin(0x2AAAAull));
+        TEST_CALLING_RECYCLE_AT
+            (10, u8"10\U0010FFFF" u8"1010\U0010FFFF" u8"1010\U0010FFFF"
+                 u8"101010\U0010FFFF" u8"10")
+            .with(grp_big(2,6,4)) (!strf::bin(0x2AAAAULL));
+        TEST_CALLING_RECYCLE_AT
+            (16, u8"10\U0010FFFF" u8"1010\U0010FFFF" u8"1010\U0010FFFF"
+                 u8"101010\U0010FFFF" u8"10")
+            .with(grp_big(2,6,4)) (!strf::bin(0x2AAAAULL));
+        TEST_CALLING_RECYCLE_AT
+            (21, u8"10\U0010FFFF" u8"1010\U0010FFFF" u8"1010\U0010FFFF"
+                 u8"101010\U0010FFFF" u8"10")
+            .with(grp_big(2,6,4)) (!strf::bin(0x2AAAAULL));
+        TEST_CALLING_RECYCLE_AT
+            (26, u8"10\U0010FFFF" u8"1010\U0010FFFF" u8"1010\U0010FFFF"
+                 u8"101010\U0010FFFF" u8"10")
+            .with(grp_big(2,6,4)) (!strf::bin(0x2AAAAULL));
+        TEST_CALLING_RECYCLE_AT
+            (31, u8"10\U0010FFFF" u8"1010\U0010FFFF" u8"1010\U0010FFFF"
+                 u8"101010\U0010FFFF" u8"10")
+            .with(grp_big(2,6,4)) (!strf::bin(0x2AAAAULL));
+        TEST_CALLING_RECYCLE_AT
+            (33, u8"10\U0010FFFF" u8"1010\U0010FFFF" u8"1010\U0010FFFF"
+                 u8"101010\U0010FFFF" u8"10")
+            .with(grp_big(2,6,4)) (!strf::bin(0x2AAAAULL));
     }
     {
         auto punct = strf::numpunct<10>{3}.thousands_sep(0x10FFFF);
@@ -1070,5 +1119,5 @@ STRF_TEST_FUNC void test_input_int()
     test_input_int_punct();
 }
 
-REGISTER_STRF_TEST(test_input_int);
+REGISTER_STRF_TEST(test_input_int)
 
