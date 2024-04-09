@@ -34,11 +34,25 @@ public:
     }
 
     basic_string_appender() = delete;
-    ~basic_string_appender() override = default;
     basic_string_appender(const basic_string_appender&) = delete;
     basic_string_appender(basic_string_appender&&) = delete;
     basic_string_appender& operator=(const basic_string_appender&) = delete;
     basic_string_appender& operator=(basic_string_appender&&) = delete;
+
+    ~basic_string_appender() override
+    {
+        if (this->good()) {
+            const auto* const begin_ptr = buf_;
+            const auto* const end_ptr = this->buffer_ptr();
+#if defined __cpp_exceptions
+            try {
+                str_.append(begin_ptr, end_ptr);
+            } catch(...) {} // NOLINT(bugprone-empty-catch)
+#else
+            str_.append(begin_ptr, end_ptr);
+#endif
+        }
+    }
 
     void recycle() override
     {

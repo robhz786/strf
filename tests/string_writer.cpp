@@ -60,6 +60,35 @@ void test_string_appender()
 
         TEST_TRUE(str == tiny_str + first_append + half_str);
     }
+    {   // writing stuff after finish() is called
+        std::basic_string<CharT> str = tiny_str;
+        strf::basic_string_appender<CharT> dst(str);
+
+        to(dst) (half_str);
+        dst.finish();
+        TEST_FALSE(dst.good());
+        to(dst) (half_str2); // should have no effect
+        dst.finish();
+        TEST_TRUE(str == tiny_str + half_str);
+    }
+    {   // testing dtor when finish() has not been called
+        std::basic_string<CharT> str = tiny_str;
+        {
+            strf::basic_string_appender<CharT> dst(str);
+            dst.write(&tiny_str2[0], tiny_str2.size());
+        }
+        TEST_TRUE(str == tiny_str + tiny_str2);
+    }
+    {   // testing dtor when finish() has been called
+        std::basic_string<CharT> str = tiny_str;
+        {
+            strf::basic_string_appender<CharT> dst(str);
+            to(dst) (tiny_str2);
+            dst.finish();
+            to(dst) (tiny_str); // should have no effect
+        }
+        TEST_TRUE(str == tiny_str + tiny_str2);
+    }
 
     {   // testing strf::append
         std::basic_string<CharT> str = tiny_str;

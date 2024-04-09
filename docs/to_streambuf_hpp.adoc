@@ -84,7 +84,8 @@ using wstreambuf_writer
 ~basic_streambuf_writer();
 ----
 [horizontal]
-Effect:: Calls `recycle()`
+Effect:: Calls `recycle()`. If any exception is thrown in the process, it
+is caught and discarded.
 ====
 
 ====

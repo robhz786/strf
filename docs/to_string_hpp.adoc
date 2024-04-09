@@ -94,7 +94,7 @@ constexpr auto to_wstring       = to_basic_string<wchar_t>;
 [[basic_string_maker]]
 == Class template `basic_string_maker`
 === Synopsis
-[source,cpp]
+[source,cpp,subs=normal]
 ----
 namespace strf {
 
@@ -206,6 +206,7 @@ public:
     explicit basic_string_appender(basic_string<CharT, Traits, Allocator>& dest);
     basic_string_appender(const basic_string_appender&) = delete;
     basic_string_appender(basic_string_appender&&) = delete;
+    ~basic_string_appender();
     void recycle() override;
     void finish();
 };
@@ -241,6 +242,17 @@ void finish()
 Effects:: Calls `recycle()` and `set_good(false)`.
 Postcondition:: `good() == false`
 ====
+
+====
+[source,cpp]
+----
+~basic_string_appender()
+----
+[horizontal]
+Effects:: Calls `recycle()`. If any exception is thrown in the process, it
+is caught and discarded.
+====
+
 
 [[std_string_append]]
 == Function template `append`
