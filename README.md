@@ -5,31 +5,31 @@
 
 A C++ text formatting and transcoding library.
 
-Header-only by default, but can be used as a static library as well ( see [details](http://robhz786.github.io/strf/v0.16.0/install.html) ).
+Header-only by default, but can be used as a static library as well ( see [details](http://robhz786.github.io/strf/v0.16.1/install.html) ).
 
 ## Documentation
 
 
 * [Learn by examples](#code-samples) ( if you just wanna have an glance )
-* [Tutorial](http://robhz786.github.io/strf/v0.16.0/tutorial.html) ( good starting point, if you actually want learn about it )
-* [Quick reference](http://robhz786.github.io/strf/v0.16.0/quick_reference.html) ( if you are already using it )
+* [Tutorial](http://robhz786.github.io/strf/v0.16.1/tutorial.html) ( good starting point, if you actually want learn about it )
+* [Quick reference](http://robhz786.github.io/strf/v0.16.1/quick_reference.html) ( if you are already using it )
 * Full Header references ( if you need to get into the details )
-  * [`<strf/destination.hpp>`](http://robhz786.github.io/strf/v0.16.0/destination_hpp.html) is a lightweight and freestanding header that defines the `destination` class template. All other headers depend on this one.
-  * [`<strf.hpp>`](http://robhz786.github.io/strf/v0.16.0/strf_hpp.html) is the main header. It can be used in a freestanding environment, whereas the headers bellow can not.
-  * [`<strf/iterator.hpp>`](http://robhz786.github.io/strf/v0.16.0/iterator_hpp.html) defines an output iterator adapter for the `destination` class template.
-  * [`<strf/to_string.hpp>`](http://robhz786.github.io/strf/v0.16.0/to_string_hpp.html) adds support for writting to `std::basic_string`. It includes `<strf.hpp>`.
-  * [`<strf/to_cfile.hpp>`](http://robhz786.github.io/strf/v0.16.0/to_cfile_hpp.html) adds support for writting to `FILE*`. It includes `<strf.hpp>`.
-  * [`<strf/to_streambuf.hpp>`](http://robhz786.github.io/strf/v0.16.0/to_streambuf_hpp.html) adds support for writting to `std::basic_streambuf`. It includes `<strf.hpp>`.
+  * [`<strf/destination.hpp>`](http://robhz786.github.io/strf/v0.16.1/destination_hpp.html) is a lightweight and freestanding header that defines the `destination` class template. All other headers depend on this one.
+  * [`<strf.hpp>`](http://robhz786.github.io/strf/v0.16.1/strf_hpp.html) is the main header. It can be used in a freestanding environment, whereas the headers bellow can not.
+  * [`<strf/iterator.hpp>`](http://robhz786.github.io/strf/v0.16.1/iterator_hpp.html) defines an output iterator adapter for the `destination` class template.
+  * [`<strf/to_string.hpp>`](http://robhz786.github.io/strf/v0.16.1/to_string_hpp.html) adds support for writting to `std::basic_string`. It includes `<strf.hpp>`.
+  * [`<strf/to_cfile.hpp>`](http://robhz786.github.io/strf/v0.16.1/to_cfile_hpp.html) adds support for writting to `FILE*`. It includes `<strf.hpp>`.
+  * [`<strf/to_streambuf.hpp>`](http://robhz786.github.io/strf/v0.16.1/to_streambuf_hpp.html) adds support for writting to `std::basic_streambuf`. It includes `<strf.hpp>`.
   * `strf/all.hpp` include all of the headers above.
 * HOWTOs
-  * [Integrate strf in your environment](http://robhz786.github.io/strf/v0.16.0/install.html)
+  * [Integrate strf in your environment](http://robhz786.github.io/strf/v0.16.1/install.html)
   * Extending:
-    * [Adding a destination](http://robhz786.github.io/strf/v0.16.0/howto_add_destination.html)
-    * [Adding a printable type](http://robhz786.github.io/strf/v0.16.0/howto_add_printable_types.html)
-    * [Overriding a printable type](http://robhz786.github.io/strf/v0.16.0/howto_override_printable_types.html)
-  * [Using strf on CUDA devices (experimental) ](http://robhz786.github.io/strf/v0.16.0/cuda.html)
+    * [Adding a destination](http://robhz786.github.io/strf/v0.16.1/howto_add_destination.html)
+    * [Adding a printable type](http://robhz786.github.io/strf/v0.16.1/howto_add_printable_types.html)
+    * [Overriding a printable type](http://robhz786.github.io/strf/v0.16.1/howto_override_printable_types.html)
+  * [Using strf on CUDA devices (experimental) ](http://robhz786.github.io/strf/v0.16.1/cuda.html)
 
-* [Benchmarks](http://robhz786.github.io/strf-benchmarks/v0.16.0/results.html) ( versus {fmt} )
+* [Benchmarks](http://robhz786.github.io/strf-benchmarks/v0.16.1/results.html) ( versus {fmt} )
 
 ## Requirements
 
