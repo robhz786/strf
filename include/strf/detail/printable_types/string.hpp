@@ -1784,21 +1784,15 @@ constexpr STRF_HD auto get_printable_def
     -> strf::detail::string_printing<CharIn>
     { return {}; }
 
-#if defined(STRF_HAS_STD_STRING_DECLARATION)
-
-template <typename CharIn, typename Traits, typename Allocator>
-constexpr STRF_HD auto get_printable_def
-    (strf::printable_tag, const std::basic_string<CharIn, Traits, Allocator>&) noexcept
-    -> strf::detail::string_printing<CharIn>
-    { return {}; }
-
-#endif // defined(STRF_HAS_STD_STRING_DECLARATION)
-
 #if defined(STRF_HAS_STD_STRING_VIEW)
 
-template <typename CharIn, typename Traits>
-constexpr STRF_HD auto get_printable_def
-    (strf::printable_tag, std::basic_string_view<CharIn, Traits>) noexcept
+template < typename StringT
+         , typename CharIn = typename StringT::value_type
+         , typename Traits = typename StringT::traits_type
+         , std::enable_if_t
+             < std::is_convertible<StringT, std::basic_string_view<CharIn, Traits>>::value
+             , int > = 0>
+constexpr STRF_HD auto get_printable_def(strf::printable_tag, const StringT&) noexcept
     -> strf::detail::string_printing<CharIn>
     { return {}; }
 
@@ -1830,10 +1824,18 @@ constexpr STRF_HD auto get_printable_def(strf::printable_tag, std::basic_string_
     -> strf::detail::string_printing<wchar_t>
     { return {}; }
 
+
+#elif defined(STRF_HAS_STD_STRING_DECLARATION)
+
+template <typename CharIn, typename Traits, typename Allocator>
+constexpr STRF_HD auto get_printable_def
+    (strf::printable_tag, const std::basic_string<CharIn, Traits, Allocator>&) noexcept
+    -> strf::detail::string_printing<CharIn>
+    { return {}; }
+
 #endif // defined(STRF_HAS_STD_STRING_VIEW)
 
 #if defined(__cpp_char8_t)
-
 
 constexpr STRF_HD auto get_printable_def(strf::printable_tag, const char8_t*) noexcept
     -> strf::detail::string_printing<char8_t>

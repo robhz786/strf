@@ -26,15 +26,12 @@
 #    include <functional>
 #    define STRF_HAS_STD_ALGORITHM
 #    if defined(__cpp_lib_string_view)
+#        include <string_view>
 #        define STRF_HAS_STD_STRING_VIEW
-#        define STRF_HAS_STD_STRING_DECLARATION
 #        define STRF_CONSTEXPR_CHAR_TRAITS constexpr
-#        include <string_view> //for char_traits
 #    else
+#        include <string>
 #        define STRF_HAS_STD_STRING_DECLARATION
-#        define STRF_HAS_STD_STRING_DEFINITION
-#        include <string>      //for char_traits
-
 #    endif // defined(__cpp_lib_string_view)
 #endif
 

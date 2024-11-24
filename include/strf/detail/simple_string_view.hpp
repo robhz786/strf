@@ -24,33 +24,37 @@ public:
     simple_string_view(const simple_string_view&) = default;
     simple_string_view(simple_string_view&&) = default;
 
-#if defined(STRF_HAS_STD_STRING_DECLARATION)
+
+#if defined(STRF_HAS_STD_STRING_VIEW)
+
+    //template <typename CharTraits>
+    struct string_view_tag {};
+
+    template <typename Traits>
+    constexpr STRF_HD simple_string_view
+        ( string_view_tag, std::basic_string_view<CharIn, Traits> s )
+        : begin_(s.data())
+        , len_(s.size())
+    {
+    }
+
+    template < typename StringT
+             , typename Traits = typename StringT::traits_type
+             , std::enable_if_t
+               < std::is_convertible<StringT, std::basic_string_view<CharIn, Traits>>::value
+               , int > = 0>
+    constexpr STRF_HD simple_string_view(const StringT& s)
+        : simple_string_view
+            ( string_view_tag{}
+            , static_cast<std::basic_string_view<CharIn, Traits>>(s) )
+    {
+    }
+
+#elif defined(STRF_HAS_STD_STRING_DECLARATION)
 
     template < typename CharTraits, typename Allocator >
     constexpr STRF_HD simple_string_view
         ( const std::basic_string<CharIn, CharTraits, Allocator>& s )
-        : begin_(s.data())
-        , len_(s.size())
-    {
-    }
-
-#endif // defined(STRF_HAS_STD_STRING_DECLARATION)
-
-#if defined(STRF_HAS_STD_STRING_VIEW)
-
-    constexpr STRF_HD simple_string_view
-        ( std::basic_string_view<CharIn, std::char_traits<CharIn> > s )
-        : begin_(s.data())
-        , len_(s.size())
-    {
-    }
-
-    template
-        < typename Traits
-        , strf::detail::enable_if_t
-            < std::is_same<Traits, std::char_traits<CharIn>>::value, int> = 0 >
-    constexpr STRF_HD simple_string_view
-        ( std::basic_string_view<CharIn, Traits> s ) noexcept
         : begin_(s.data())
         , len_(s.size())
     {
@@ -192,21 +196,20 @@ constexpr STRF_HD simple_string_view<CharT> to_simple_string_view(const CharT* c
     return simple_string_view<CharT>{cstr};
 }
 
-#if defined(STRF_HAS_STD_STRING_DECLARATION)
-
-template <typename CharT, typename Traits, typename Allocator>
-constexpr STRF_HD strf::detail::simple_string_view<CharT> to_simple_string_view
-    (const std::basic_string<CharT, Traits, Allocator>& s) noexcept
-    { return {s.data(), s.size()}; }
-
-#endif // defined(STRF_HAS_STD_STRING_DECLARATION)
-
 #if defined(STRF_HAS_STD_STRING_VIEW)
 
-template <typename CharT, typename Traits>
+template < typename StringT
+         , typename CharT = typename StringT::value_type
+         , typename Traits = typename StringT::traits_type
+         , std::enable_if_t
+             < std::is_convertible<StringT, std::basic_string_view<CharT, Traits>>::value
+             , int > = 0>
 constexpr STRF_HD strf::detail::simple_string_view<CharT> to_simple_string_view
-    ( std::basic_string_view<CharT, Traits> s ) noexcept
-    { return {s.data(), s.size()}; }
+    ( const StringT& s ) noexcept
+{
+    return { typename simple_string_view<CharT>::string_view_tag{}
+           , static_cast< std::basic_string_view<CharT, Traits> >(s) };
+}
 
 #if defined(__cpp_char8_t)
 
@@ -230,6 +233,13 @@ constexpr STRF_HD strf::detail::simple_string_view<char32_t> to_simple_string_vi
 
 constexpr STRF_HD strf::detail::simple_string_view<wchar_t> to_simple_string_view
     (std::basic_string_view<wchar_t> s) noexcept
+    { return {s.data(), s.size()}; }
+
+#elif defined(STRF_HAS_STD_STRING_DECLARATION)
+
+template <typename CharT, typename Traits, typename Allocator>
+constexpr STRF_HD strf::detail::simple_string_view<CharT> to_simple_string_view
+    (const std::basic_string<CharT, Traits, Allocator>& s) noexcept
     { return {s.data(), s.size()}; }
 
 #endif // defined(STRF_HAS_STD_STRING_VIEW)
