@@ -1,5 +1,5 @@
 
-StrfVersion = 0.16.1
+StrfVersion = 0.16.2
 StrfRev = v$(StrfVersion)
 ifdef STRF_LOCAL_DOCS
 	StrfRootLink = link:../..
