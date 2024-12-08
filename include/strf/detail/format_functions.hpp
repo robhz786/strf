@@ -6,8 +6,10 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <strf/detail/printable_def.hpp>
+#include <strf/detail/printing_aliases.hpp>
+#include <strf/detail/value_and_format.hpp>
 #include <strf/detail/facets/charset.hpp> // detail::is_charset
+#include <strf/width_t.hpp>
 
 namespace strf {
 
@@ -332,7 +334,76 @@ struct quantity_format_specifier
 };
 
 
+namespace detail {
+
+template <typename T>
+struct is_value_and_format : std::false_type
+{ };
+
+template <typename... T>
+struct is_value_and_format<strf::value_and_format<T...>>: std::true_type
+{ };
+
+template <typename T>
+struct is_value_and_format<const T> : is_value_and_format<T>
+{ };
+
+template <typename T>
+struct is_value_and_format<volatile T> : is_value_and_format<T>
+{ };
+
+template <typename T>
+struct is_value_and_format<T&> : is_value_and_format<T>
+{ };
+
+template <typename T>
+struct is_value_and_format<T&&> : is_value_and_format<T>
+{ };
+
+} // namespace detail
+
 inline namespace format_functions {
+
+#if defined (STRF_NO_GLOBAL_CONSTEXPR_VARIABLE)
+
+template <typename T>
+constexpr STRF_HD fmt_type<T> fmt(T&& value)
+    noexcept(noexcept(fmt_type<T>{fmt_value_type<T>{value}}))
+{
+    return fmt_type<T>{fmt_value_type<T>{value}};
+}
+
+#else //defined (STRF_NO_GLOBAL_CONSTEXPR_VARIABLE)
+
+namespace detail_format_functions {
+
+struct fmt_fn
+{
+    template < typename T
+             , bool IsVWF = detail::is_value_and_format<T>::value
+             , strf::detail::enable_if_t<!IsVWF, int> = 0
+             , typename FmtType = fmt_type<T>
+             , typename FmtValueType = typename FmtType::value_type >
+    constexpr STRF_HD fmt_type<T> operator()(T&& value) const
+        noexcept(noexcept(FmtType{FmtValueType{(T&&)value}}))
+    {
+        return FmtType{FmtValueType{(T&&)value}};
+    }
+
+    template < typename T
+             , bool IsVWF = detail::is_value_and_format<T>::value
+             , strf::detail::enable_if_t<IsVWF, int> = 0 >
+    constexpr STRF_HD T&& operator()(T&& value) const
+    {
+        return static_cast<T&&>(value);
+    }
+};
+
+} // namespace detail_format_functions
+
+constexpr detail_format_functions::fmt_fn fmt {};
+
+#endif
 
 #if defined (STRF_NO_GLOBAL_CONSTEXPR_VARIABLE)
 

@@ -10,6 +10,7 @@
 #include <strf/detail/facets/numpunct.hpp>
 #include <strf/detail/facets/charset.hpp>
 #include <strf/detail/int_digits.hpp>
+#include <strf/detail/polymorphic_printer.hpp>
 
 // todo: optimize as in:
 // https://pvk.ca/Blog/2017/12/22/appnexus-common-framework-its-out-also-how-to-print-integers-faster/

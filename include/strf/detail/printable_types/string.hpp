@@ -9,8 +9,9 @@
 #include <strf/detail/facets/width_calculator.hpp>
 #include <strf/detail/facets/charset.hpp>
 #include <strf/detail/format_functions.hpp>
-#include <strf/detail/polymorphic_printer.hpp>
 #include <strf/detail/simple_string_view.hpp>
+#include <strf/detail/polymorphic_printer.hpp>
+#include <strf/detail/premeasurements.hpp>
 
 namespace strf {
 namespace detail {

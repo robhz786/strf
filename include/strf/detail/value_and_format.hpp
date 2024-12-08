@@ -6,7 +6,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <strf/detail/strf_def.hpp>
+#include <strf/detail/printable_info.hpp>
 
 namespace strf {
 
@@ -235,66 +235,13 @@ using value_with_formatters
 STRF_DEPRECATED_MSG("value_with_formatters renamed to value_and_format")
 = value_and_format<PrintableDef, Fmts...>;
 
-namespace detail {
-
-template <typename T>
-struct is_value_and_format : std::false_type
-{ };
-
-template <typename... T>
-struct is_value_and_format<strf::value_and_format<T...>>: std::true_type
-{ };
-
-template <typename T>
-struct is_value_and_format<const T> : is_value_and_format<T>
-{ };
-
-template <typename T>
-struct is_value_and_format<volatile T> : is_value_and_format<T>
-{ };
-
-template <typename T>
-struct is_value_and_format<T&> : is_value_and_format<T>
-{ };
-
-template <typename T>
-struct is_value_and_format<T&&> : is_value_and_format<T>
-{ };
-
-
-template <typename... T>
-struct are_empty;
-
-template <>
-struct are_empty<> : std::true_type {};
-
-template <typename First, typename... Others>
-struct are_empty<First, Others...>
-    : std::integral_constant
-        < bool
-        , std::is_empty<First>::value
-       && are_empty<Others...>::value >
-{
-};
-
-template <typename ValueAndFormat>
-struct all_base_fmtfn_classes_are_empty;
-
-template <typename PrintableDef, typename... Fmts>
-struct all_base_fmtfn_classes_are_empty< value_and_format<PrintableDef, Fmts...> >
-    : are_empty<typename Fmts::template fn<value_and_format<PrintableDef, Fmts...>> ...>
-{
-};
-
-} // namespace detail
-
 template <typename PrintableDef, class... Fmts>
 class value_and_format
     : public Fmts::template fn<value_and_format<PrintableDef, Fmts...>> ...
 {
 public:
     using printable_def = PrintableDef;
-    using value_type = typename PrintableDef::forwarded_type;
+    using value_type = detail::extract_printable_forwarded_type<PrintableDef>;
 
     template <typename... OtherFmts>
     using replace_fmts = strf::value_and_format<PrintableDef, OtherFmts ...>;
@@ -381,7 +328,8 @@ public:
 
         , detail::enable_if_t
             < std::is_constructible
-                < value_type, const typename SrcPrintableDef::forwarded_type&>::value
+                < value_type
+                , typename value_and_format<SrcPrintableDef, SrcFmts...>::value_type>::value
             , int > = 0
 
         , detail::enable_if_t

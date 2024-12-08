@@ -11,6 +11,45 @@
 namespace strf {
 namespace detail {
 
+template <typename T>
+struct has_get_printable_def_tester
+{
+    template < typename U
+             , typename = decltype(get_printable_def(strf::printable_tag{}, std::declval<U>())) >
+    static STRF_HD std::true_type test_(const U*);
+
+    template <typename U>
+    static STRF_HD std::false_type test_(...);
+
+    using result = decltype(test_<T>((T*)nullptr));
+};
+
+template <typename T>
+using has_get_printable_def =
+    typename has_get_printable_def_tester<strf::detail::remove_cvref_t<T>>::result;
+
+template <bool HasPrintableDef, typename T>
+struct is_printable_tester_2;
+
+template <typename T>
+struct is_printable_tester_2<true, T> : std::true_type
+{
+};
+
+template <typename T>
+struct is_printable_tester_2<false, T>: has_get_printable_def<T>
+{
+};
+
+template <typename T>
+struct is_printable_tester
+    : is_printable_tester_2<strf::detail::has_printable_def_specialization<T>::value, T>
+{
+};
+
+template <typename T>
+using is_printable = is_printable_tester< strf::detail::remove_cvref_t<T> >;
+
 template <typename Arg>
 struct assert_is_printable
 {

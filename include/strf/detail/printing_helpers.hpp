@@ -6,7 +6,9 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <strf/detail/printable_def.hpp>
+#include <strf/detail/printing_aliases.hpp>
+#include <strf/detail/polymorphic_printer.hpp>
+#include <strf/facets_pack.hpp>
 
 namespace strf {
 namespace detail {
@@ -59,6 +61,12 @@ struct printable_arg_invalid
     }
 };
 
+template <typename PrintableDef>
+using default_value_and_format_of_printable_def = typename
+    strf::detail::mp_define_value_and_format
+        < PrintableDef
+        , extract_format_specifiers_from_printable_def<PrintableDef> >
+    :: type;
 
 template < typename PrintableDef
          , typename DefOrFacet
@@ -597,8 +605,53 @@ struct helper_for_tr_printing_without_premeasurements
 {
 };
 
-} // namespace detail
+template <typename CharT, typename FPack, typename Printable, typename... Printables>
+inline STRF_HD void print_one_printable
+    ( strf::destination<CharT>& dst
+    , const FPack& fp
+    , const Printable& printable )
+{
+    using helper = helper_for_printing_without_premeasurements
+        <CharT, FPack, Printable>;
+    helper::print(helper::get_printable_def_or_facet(fp), dst, fp, printable);
+}
 
+template <typename CharT>
+inline STRF_HD void call_printers(strf::destination<CharT>&)
+{
+}
+
+template <typename CharT, typename Printer, typename... Printers>
+inline STRF_HD void call_printers
+    ( strf::destination<CharT>& dst
+    , const Printer& printer0
+    , const Printers&... printers )
+{
+    printer0(dst);
+    if (dst.good()) {
+        call_printers<CharT>(dst, printers...);
+    }
+}
+
+template <typename CharT, typename FPack>
+inline STRF_HD void print_printables(strf::destination<CharT>&, const FPack&)
+{
+}
+
+template <typename CharT, typename FPack, typename Printable, typename... Printables>
+inline STRF_HD void print_printables
+    ( strf::destination<CharT>& dst
+    , const FPack& fp
+    , const Printable& printable
+    , const Printables&... printables )
+{
+    print_one_printable(dst, fp, printable);
+    if (dst.good()) {
+        print_printables<CharT>(dst, fp, printables...);
+    }
+}
+
+} // namespace detail
 } // namespace strf
 
 #endif  // STRF_DETAIL_PRINTING_HELPERS_HPP
