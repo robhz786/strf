@@ -151,8 +151,10 @@ template <typename CharT, typename FPack, typename Iterator>
 STRF_HD void range_printer<CharT, FPack, Iterator>::operator()
     ( strf::destination<CharT>& dst ) const
 {
+    using printable_info_ = detail::get_printable_info<decltype(std::declval<value_type>())>;
+
     for(iterator it = begin_; it != end_ && dst.good(); ++it) {
-        detail::print_one_printable(dst, fp_, *it);
+        detail::args_printer<printable_info_>::print(dst, fp_, *it);
     }
 }
 
@@ -239,12 +241,14 @@ template <typename CharT, typename FPack, typename Iterator>
 STRF_HD void separated_range_printer<CharT, FPack, Iterator>::operator()
     ( strf::destination<CharT>& dst ) const
 {
+    using printable_info_ = detail::get_printable_info<decltype(std::declval<value_type>())>;
+
     auto it = begin_; // NOLINT (llvm-qualified-auto)
     if (it != end_) {
-        detail::print_one_printable(dst, fp_, *it);
+        args_printer<printable_info_>::print(dst, fp_, *it);
         while (++it != end_ && dst.good()) {
             dst.write(sep_begin_, sep_len_);
-            detail::print_one_printable(dst, fp_, *it);
+            args_printer<printable_info_>::print(dst, fp_, *it);
         }
     }
 }
@@ -320,9 +324,12 @@ template< typename CharT
 STRF_HD void fmt_range_printer<CharT, FPack, Iterator, Fmts ...>::operator()
     ( strf::destination<CharT>& dst ) const
 {
+    using printable_info_ = detail::get_printable_info<
+        decltype(std::declval<value_fmt_type_adapted_>())>;
+
     auto r = fmt_.value();
     for(Iterator it = r.begin; it != r.end && dst.good(); ++it) {
-        detail::print_one_printable(dst, fp_, value_fmt_type_adapted_{{*it}, fmt_});
+        args_printer<printable_info_>::print(dst, fp_, value_fmt_type_adapted_{{*it}, fmt_});
     }
 }
 
@@ -421,13 +428,16 @@ template< typename CharT
 STRF_HD void fmt_separated_range_printer<CharT, FPack, Iterator, Fmts ...>
 ::operator()( strf::destination<CharT>& dst ) const
 {
+    using printable_info_ =
+        detail::get_printable_info<decltype(std::declval<value_fmt_type_adapted_>())>;
+
     auto r = fmt_.value();
     Iterator it = r.begin;
     if (it != r.end) {
-        detail::print_one_printable(dst, fp_, value_fmt_type_adapted_{{*it}, fmt_});
+        args_printer<printable_info_>::print(dst, fp_, value_fmt_type_adapted_{{*it}, fmt_});
         while(++it != r.end && dst.good()) {
             dst.write(r.sep_begin, r.sep_len);
-            detail::print_one_printable(dst, fp_, value_fmt_type_adapted_{{*it}, fmt_});
+            args_printer<printable_info_>::print(dst, fp_, value_fmt_type_adapted_{{*it}, fmt_});
         }
     }
 }
@@ -489,8 +499,11 @@ template <typename CharT, typename FPack, typename Iterator, typename UnaryOp>
 STRF_HD void transformed_range_printer<CharT, FPack, Iterator, UnaryOp>::operator()
     ( strf::destination<CharT>& dst ) const
 {
+    using printable_info_ = detail::get_printable_info<
+        decltype(std::declval<UnaryOp>()(std::declval<value_type>())) >;
+
     for(iterator it = begin_; it != end_ && dst.good(); ++it) {
-        detail::print_one_printable(dst, fp_, op_(*it));
+        args_printer<printable_info_>::print(dst, fp_, op_(*it));
     }
 }
 
@@ -578,12 +591,15 @@ template <typename CharT, typename FPack, typename Iterator, typename UnaryOp>
 STRF_HD void sep_transformed_range_printer<CharT, FPack, Iterator, UnaryOp>::operator()
     ( strf::destination<CharT>& dst ) const
 {
+    using printable_info_ = detail::get_printable_info<
+        decltype(std::declval<UnaryOp>()(std::declval<value_type>())) >;
+
     auto it = begin_;
     if (it != end_) {
-        detail::print_one_printable(dst, fp_, op_(*it));
+        args_printer<printable_info_>::print(dst, fp_, op_(*it));
         while (++it != end_ && dst.good()) {
             dst.write(sep_begin_, sep_len_);
-            detail::print_one_printable(dst, fp_, op_(*it));
+            args_printer<printable_info_>::print(dst, fp_, op_(*it));
         }
     }
 }

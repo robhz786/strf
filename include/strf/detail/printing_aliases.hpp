@@ -19,33 +19,12 @@ using print_traits_of
 STRF_DEPRECATED_MSG("print_traits_of renamed to printable_def_of")
 = printable_def_of<T>;
 
-template <typename Representative>
-struct printable_overrider_c;
-
-template <typename Representative>
-struct dont_override;
-
 namespace detail {
 
-template <typename PrintableDef>
-struct get_is_overridable_helper {
-    template <typename U>
-    static STRF_HD typename U::is_overridable test_(const U*);
-
-    template <typename U>
-    static STRF_HD std::false_type test_(...);
-
-    using result = decltype(test_<PrintableDef>((PrintableDef*)nullptr));
-};
-
-template <typename PrintableDef>
-using get_is_overridable = typename
-    get_is_overridable_helper<PrintableDef>::result;
-
-template <typename CharT, typename PreMeasurements, typename FPack, typename Arg>
+template <typename CharT, typename PreMeasurements, typename FPack, typename PrintableInfo>
 struct helper_for_printing_with_premeasurements;
 
-} // namespace detail
+} //
 
 template < typename CharT
          , typename PreMeasurements
@@ -53,7 +32,7 @@ template < typename CharT
          , typename Arg
          , typename Helper
              = detail::helper_for_printing_with_premeasurements
-                 < CharT, PreMeasurements, FPack, Arg >
+                 < CharT, PreMeasurements, FPack, detail::get_printable_info<Arg> >
          , typename ChTag = strf::tag<CharT> >
 STRF_DEPRECATED_MSG("make_arg_printer_input was renamed to make_printer")
 constexpr STRF_HD decltype(auto) make_arg_printer_input
@@ -69,7 +48,7 @@ template < typename CharT
          , typename Arg
          , typename Helper
              = detail::helper_for_printing_with_premeasurements
-                 < CharT, PreMeasurements, FPack, Arg >
+           < CharT, PreMeasurements, FPack, detail::get_printable_info<Arg> >
          , typename ChTag = strf::tag<CharT> >
 constexpr STRF_HD decltype(auto) make_printer
     ( PreMeasurements* p, const FPack& fp, const Arg& arg )
@@ -77,6 +56,9 @@ constexpr STRF_HD decltype(auto) make_printer
     return Helper::get_printable_def_or_facet(fp)
         .make_printer(ChTag{}, p, fp, Helper::convert_printable_arg(arg));
 }
+
+template <typename Representative>
+struct printable_overrider_c;
 
 template <typename Representative>
 struct dont_override
@@ -147,6 +129,11 @@ struct representative_from_printable_def<printable_def<P>>
 template <typename PrintableDef>
 using extract_representative = typename representative_from_printable_def<PrintableDef>::type;
 
+template <typename CharT, typename PreMeasurements, typename FPack, typename PrintableInfo>
+using printer_type_pi = typename
+    detail::helper_for_printing_with_premeasurements<CharT, PreMeasurements, FPack, PrintableInfo>
+    ::printer_type;
+
 } // namespace detail
 
 template <typename T>
@@ -157,13 +144,8 @@ using printable_overrider_c_of =
     printable_overrider_c< representative_of_printable<Printable> >;
 
 template <typename CharT, typename PreMeasurements, typename FPack, typename Arg>
-using printer_type = typename
-    detail::helper_for_printing_with_premeasurements
-    < CharT, PreMeasurements, FPack, Arg >
-    ::printer_type;
-
-
-
+using printer_type =
+    detail::printer_type_pi<CharT, PreMeasurements, FPack, detail::get_printable_info<Arg>>;
 
 namespace detail {
 

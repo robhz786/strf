@@ -88,28 +88,29 @@ public:
 
 namespace detail {
 
-template <typename ReservePolicy, typename CharT, typename FpeList, typename PrintablesList>
+template <typename ReservePolicy, typename CharT, typename FpeList, typename PrintablesInfoList>
 struct printing_without_tr_string;
 
-template <typename CharT, typename... Fpes, typename... Printables>
+template <typename CharT, typename... Fpes, typename... PrintablesInfo>
 struct printing_without_tr_string
     < strf::no_reserve
     , CharT
     , mp_type_list<Fpes...>
-    , mp_type_list<Printables...> >
+    , mp_type_list<PrintablesInfo...> >
 {
     template <bool AddEndOfLine, typename ReturnType, typename DestCreator>
     static STRF_HD ReturnType create_destination_and_print
         ( strf::no_reserve
         , DestCreator&& dest_creator
         , Fpes... fpes
-        , Printables... printables )
+        , typename PrintablesInfo::forwarded_type... printables )
     {
         using dest_creator_t = detail::remove_cvref_t<DestCreator>;
         using dest_type = typename dest_creator_t::destination_type;
 
         dest_type dst{((DestCreator&&)dest_creator).create()};
-        detail::print_printables(dst, strf::pack((Fpes&&)fpes...), printables...);
+        detail::args_printer<PrintablesInfo...>::print
+            (dst, strf::pack((Fpes&&)fpes...), printables...);
 
         STRF_IF_CONSTEXPR (AddEndOfLine) {
             strf::put<CharT>(dst, static_cast<CharT>('\n'));
@@ -118,25 +119,26 @@ struct printing_without_tr_string
     }
 };
 
-template <typename CharT, typename... Fpes, typename... Printables>
+template <typename CharT, typename... Fpes, typename... PrintablesInfo>
 struct printing_without_tr_string
     < strf::reserve_given_space
     , CharT
     , mp_type_list<Fpes...>
-    , mp_type_list<Printables...> >
+    , mp_type_list<PrintablesInfo...> >
 {
     template <bool AddEndOfLine, typename ReturnType, typename DestCreator>
     static STRF_HD ReturnType create_destination_and_print
         ( strf::reserve_given_space given_space
         , DestCreator&& dest_creator
         , Fpes... fpes
-        , Printables... printables )
+        , typename PrintablesInfo::forwarded_type... printables )
     {
         using dest_creator_t = detail::remove_cvref_t<DestCreator>;
         using dest_type = typename dest_creator_t::sized_destination_type;
 
         dest_type dst{((DestCreator&&)dest_creator).create(given_space.space)};
-        detail::print_printables(dst, strf::pack((Fpes&&)fpes...), printables...);
+        detail::args_printer<PrintablesInfo...>::print
+            (dst, strf::pack((Fpes&&)fpes...), printables...);
 
         STRF_IF_CONSTEXPR (AddEndOfLine) {
             strf::put<CharT>(dst, static_cast<CharT>('\n'));
@@ -171,19 +173,19 @@ STRF_HD ReturnType reserve_calculated_size_and_call_printables
 template
     < typename CharT
     , typename FpesList
-    , typename PrintablesList
+    , typename PrintablesInfoList
     , typename PrintingHelperList >
 struct reserve_calc_printer_base;
 
 template
     < typename CharT
     , typename... Fpes
-    , typename... Printables
+    , typename... PrintablesInfo
     , typename... Helpers >
 struct reserve_calc_printer_base
     < CharT
     , mp_type_list<Fpes...>
-    , mp_type_list<Printables...>
+    , mp_type_list<PrintablesInfo...>
     , mp_type_list<Helpers...> >
 {
     template <bool AddEndOfLine, typename ReturnType, typename DestCreator>
@@ -191,7 +193,7 @@ struct reserve_calc_printer_base
         ( strf::reserve_calc
         , DestCreator&& dest_creator
         , Fpes... fpes
-        , Printables... printables )
+        , typename PrintablesInfo::forwarded_type... printables )
     {
         strf::premeasurements<strf::size_presence::yes, strf::width_presence::no> pre;
 
@@ -201,38 +203,38 @@ struct reserve_calc_printer_base
             , &pre
             , Helpers::get_printable_def_or_facet(fp).make_printer
                 ( strf::tag<CharT>{}, &pre, fp
-                , Helpers::convert_printable_arg((Printables&&)printables))... );
+                , Helpers::convert_printable_arg(printables))... );
     }
 };
 
-template <typename CharT, typename... Fpes, typename... Printables>
+template <typename CharT, typename... Fpes, typename... PrintablesInfo>
 struct printing_without_tr_string
     < strf::reserve_calc
     , CharT
     , mp_type_list<Fpes...>
-    , mp_type_list<Printables...> >
+    , mp_type_list<PrintablesInfo...> >
 
     : reserve_calc_printer_base
         < CharT
         , mp_type_list<Fpes...>
-        , mp_type_list<Printables...>
+        , mp_type_list<PrintablesInfo...>
         , mp_type_list
             < detail::helper_for_printing_with_premeasurements
                 < CharT
                 , strf::premeasurements<strf::size_presence::yes, strf::width_presence::no>
                 , decltype(strf::pack(std::declval<Fpes>()...))
-                , Printables >... > >
+                , PrintablesInfo >... > >
 {
 };
 
 template <typename CharT, typename FpeList, typename PrintableList, typename HelperList>
 struct printing_with_tr_string_no_premeasurements;
 
-template <typename CharT, typename... Fpes, typename... Printables, typename... Helpers>
+template <typename CharT, typename... Fpes, typename... PrintablesInfo, typename... Helpers>
 struct printing_with_tr_string_no_premeasurements
     < CharT
     , mp_type_list<Fpes...>
-    , mp_type_list<Printables...>
+    , mp_type_list<PrintablesInfo...>
     , mp_type_list<Helpers...> >
 {
     template <bool AddEndOfLine, typename ReturnType, typename DestCreator>
@@ -241,7 +243,7 @@ struct printing_with_tr_string_no_premeasurements
         , DestCreator&& dest_creator
         , Fpes... fpes
         , detail::simple_string_view<CharT> tr_string
-        , Printables... printables )
+        , typename PrintablesInfo::forwarded_type... printables )
     {
         using dest_creator_t = detail::remove_cvref_t<DestCreator>;
         using dest_type = typename dest_creator_t::destination_type;
@@ -258,7 +260,7 @@ struct printing_with_tr_string_no_premeasurements
         , DestCreator&& dest_creator
         , Fpes... fpes
         , detail::simple_string_view<CharT> tr_string
-        , Printables... printables )
+        , typename PrintablesInfo::forwarded_type... printables )
     {
         using dest_creator_t = detail::remove_cvref_t<DestCreator>;
         using dest_type = typename dest_creator_t::sized_destination_type;
@@ -276,7 +278,7 @@ private:
         ( strf::destination<CharT>& dst
         , Fpes... fpes
         , detail::simple_string_view<CharT> tr_string
-        , Printables... printables )
+        , typename PrintablesInfo::forwarded_type... printables )
     {
         auto fp = strf::pack((Fpes&&)fpes...);
 
@@ -290,7 +292,7 @@ private:
             ( dst, charset, err_handler, tr_string.begin(), tr_string.end()
             , { & static_cast< const detail::polymorphic_printer<CharT>& >
                   ( typename Helpers::polymorphic_printer_type
-                      ( Helpers::make_polymorphic_printer
+                      ( Helpers::make_polymorphic_printer_input
                           ( Helpers::get_printable_def_or_facet(fp), fp, printables) ) )... } );
 
         STRF_IF_CONSTEXPR (AddEndOfLine) {
@@ -301,18 +303,18 @@ private:
 
 
 template < typename CharT, typename FpeList, typename PrintableList, typename HelperList
-         , typename PrintablesIndexSequence >
+         , typename PrintablesInfoIndexSequence >
 struct printing_with_tr_string_reserve_calc;
 
 template < typename CharT
          , typename... Fpes
-         , typename... Printables
+         , typename... PrintablesInfo
          , typename... Helpers
          , std::size_t... I >
 struct printing_with_tr_string_reserve_calc
     < CharT
     , mp_type_list<Fpes...>
-    , mp_type_list<Printables...>
+    , mp_type_list<PrintablesInfo...>
     , mp_type_list<Helpers...>
     , strf::detail::index_sequence<I...> >
 {
@@ -325,10 +327,10 @@ struct printing_with_tr_string_reserve_calc
         , DestCreator&& dest_creator
         , Fpes... fpes
         , detail::simple_string_view<CharT> tr_string
-        , Printables... printables )
+        , typename PrintablesInfo::forwarded_type... printables )
     {
         auto fp = strf::pack((Fpes&&)fpes...);
-        premeasurements_type pre_array[sizeof...(Printables) + 1];
+        premeasurements_type pre_array[sizeof...(PrintablesInfo) + 1];
 
         return do_create_destination_and_print_<AddEndOfLine, ReturnType>
             ( (DestCreator&&) dest_creator
@@ -341,7 +343,7 @@ struct printing_with_tr_string_reserve_calc
                           ( strf::tag<CharT>{}
                           , &pre_array[I]
                           , fp
-                          , Helpers::convert_printable_arg((Printables&&)printables))))... } );
+                          , Helpers::convert_printable_arg(printables))))... } );
     }
 
 private:
@@ -382,44 +384,44 @@ private:
     }
 };
 
-template <typename ReservePolicy, typename CharT, typename FpeList, typename PrintablesList>
+template <typename ReservePolicy, typename CharT, typename FpeList, typename PrintablesInfoList>
 struct printing_with_tr_string;
 
-template <typename ReservePolicy, typename CharT, typename... Fpes, typename... Printables>
+template <typename ReservePolicy, typename CharT, typename... Fpes, typename... PrintablesInfo>
 struct printing_with_tr_string
     < ReservePolicy
     , CharT
     , mp_type_list<Fpes...>
-    , mp_type_list<Printables...> >
+    , mp_type_list<PrintablesInfo...> >
     : printing_with_tr_string_no_premeasurements
         < CharT
         , mp_type_list<Fpes...>
-        , mp_type_list<Printables...>
+        , mp_type_list<PrintablesInfo...>
         , mp_type_list
             < detail::helper_for_tr_printing_without_premeasurements
                 < CharT
                 , decltype(strf::pack(std::declval<Fpes>()...))
-                , Printables >... > >
+                , PrintablesInfo >... > >
 {
 };
 
-template <typename CharT, typename... Fpes, typename... Printables>
+template <typename CharT, typename... Fpes, typename... PrintablesInfo>
 struct printing_with_tr_string
     < strf::reserve_calc
     , CharT
     , mp_type_list<Fpes...>
-    , mp_type_list<Printables...> >
+    , mp_type_list<PrintablesInfo...> >
     : printing_with_tr_string_reserve_calc
         < CharT
         , mp_type_list<Fpes...>
-        , mp_type_list<Printables...>
+        , mp_type_list<PrintablesInfo...>
         , mp_type_list
             < detail::helper_for_printing_with_premeasurements
                 < CharT
                 , strf::premeasurements<strf::size_presence::yes, strf::width_presence::no>
                 , decltype(strf::pack(std::declval<Fpes>()...))
-                , Printables >... >
-        , strf::detail::make_index_sequence<sizeof...(Printables)> >
+                , PrintablesInfo >... >
+        , strf::detail::make_index_sequence<sizeof...(PrintablesInfo)> >
 {
 };
 

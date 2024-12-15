@@ -153,7 +153,7 @@ struct printable_def<std::complex<FloatT>>
         auto v = ::complex_coordinates(arg.value(), form);
         const bool has_brackets = form != complex_form::polar;
         if (has_brackets) {
-            to(dst) (static_cast<CharT>('('));            
+            to(dst) (static_cast<CharT>('('));
         }
         to(dst).with(facets)
             ( strf::fmt(v.first).set_float_format(arg.get_float_format())

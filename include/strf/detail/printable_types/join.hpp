@@ -18,14 +18,22 @@ namespace strf {
 
 namespace detail {
 
-template <typename... FwdArgs>
-struct join_printing;
+template <typename... PrintablesInfo>
+using tuple_of_printables_pi = simple_tuple<typename PrintablesInfo::as_member_type ...>;
 
-template <typename... FwdArgs>
+template <typename... PrintablesInfo>
 struct join_t
 {
-    strf::detail::simple_tuple<FwdArgs...> args;
+    STRF_HD join_t(typename PrintablesInfo::forwarded_type... a)
+        : args(strf::detail::simple_tuple_from_args{}, a...)
+    {
+    }
+
+    tuple_of_printables_pi<PrintablesInfo...> args;
 };
+
+template <typename... PrintablesInfo>
+using join_printable_def = strf::printable_def<join_t<PrintablesInfo...>>;
 
 } // namespace detail
 
@@ -58,16 +66,16 @@ struct aligned_join_maker
     char32_t fillchar = U' ';
 
     template<typename... Args>
-    constexpr STRF_HD strf::value_and_format
-        < strf::detail::join_printing<strf::forwarded_printable_type<Args>...>
-        , strf::alignment_format_specifier_q<true> >
-    operator()(const Args&... args) const
+    constexpr STRF_HD auto operator()(const Args&... args) const
     {
-        return { { strf::detail::simple_tuple<strf::forwarded_printable_type<Args>...>
-                     { strf::detail::simple_tuple_from_args{}
-                     , static_cast<strf::forwarded_printable_type<Args>>(args)... } }
-               , strf::tag< strf::alignment_format_specifier_q<true> > {}
-               , strf::alignment_format {fillchar, width, align}};
+        using joint_t_ = detail::join_t<detail::get_printable_info<Args>...>;
+        using printable_def_ = strf::printable_def<joint_t_>;
+        using afmt_t = strf::alignment_format_specifier_q<true>;
+
+        return strf::value_and_format<printable_def_, afmt_t>
+            { joint_t_{args... }
+            , strf::tag< strf::alignment_format_specifier_q<true> > {}
+            , strf::alignment_format {fillchar, width, align} };
     }
 };
 
@@ -112,25 +120,29 @@ struct aligned_join_printer
     int fillcount_ = 0;
 };
 
-template < typename CharT, strf::size_presence SizePresence, typename FPack, typename... Args >
+template < typename CharT, strf::size_presence SizePresence, typename FPack
+         , typename... PrintableInfos >
 using aligned_join_printer_of = strf::detail::aligned_join_printer
     < CharT
-    , strf::printer_type
-        < CharT, strf::premeasurements<SizePresence, strf::width_presence::yes>, FPack, Args >
-        ... >;
+    , detail::printer_type_pi
+        < CharT
+        , strf::premeasurements<SizePresence, strf::width_presence::yes>
+        , FPack
+        , PrintableInfos > ... >;
 
-
-template <typename CharT, typename PreMeasurements, typename FPack, typename... FwdArgs>
+template <typename CharT, typename PreMeasurements, typename FPack, typename... PrintablesInfo>
 class join_printer;
 
-template <typename CharT, typename FPack, typename... FwdArgs>
-class join_printer<CharT, strf::no_premeasurements, FPack, FwdArgs...>
+template <typename CharT, typename FPack, typename... PrintablesInfo>
+class join_printer<CharT, strf::no_premeasurements, FPack, PrintablesInfo...>
 {
+    using tuple_t_ = tuple_of_printables_pi<PrintablesInfo...>;
+
 public:
     STRF_HD join_printer
         ( strf::no_premeasurements*
         , const FPack& facets
-        , const strf::detail::simple_tuple<FwdArgs...>& printables )
+        , const tuple_of_printables_pi<PrintablesInfo...>& printables )
         : printables_{printables}
         , facets_(facets)
     {
@@ -138,32 +150,33 @@ public:
 
     STRF_HD void operator()(strf::destination<CharT>& dst) const
     {
-        do_print_(printables_, dst);
+        do_print_(dst, printables_);
     }
 
 private:
 
     template <std::size_t... I>
     STRF_HD void do_print_
-        ( const strf::detail::simple_tuple_impl
-              < strf::detail::index_sequence<I...>, FwdArgs... >& args_tuple
-        , strf::destination<CharT>& dst ) const
+        ( strf::destination<CharT>& dst
+        , const strf::detail::simple_tuple_impl
+              < strf::detail::index_sequence<I...>
+              , typename PrintablesInfo::as_member_type... >& args_tuple ) const
     {
-        detail::print_printables(dst, facets_, args_tuple.template get<I>()...);
+        args_printer<PrintablesInfo...>::print(dst, facets_, args_tuple.template get<I>()...);
     }
 
-    strf::detail::simple_tuple<FwdArgs...> printables_;
+    tuple_t_ printables_;
     FPack facets_;
 };
 
-template <typename CharT, typename PreMeasurements, typename FPack, typename... FwdArgs>
+template <typename CharT, typename PreMeasurements, typename FPack, typename... PrintablesInfo>
 class join_printer
 {
 public:
     STRF_HD join_printer
         ( PreMeasurements* pre
         , const FPack& facets
-        , const strf::detail::simple_tuple<FwdArgs...>& printables )
+        , const tuple_of_printables_pi<PrintablesInfo...>& printables )
         : printers_{printables, pre, facets}
     {
     }
@@ -174,18 +187,21 @@ public:
     }
 
     strf::detail::printers_tuple
-        <CharT, strf::printer_type<CharT, PreMeasurements, FPack, FwdArgs>...>
+        < CharT, detail::printer_type_pi<CharT, PreMeasurements, FPack, PrintablesInfo>... >
         printers_;
 };
 
-template <typename... FwdArgs>
-struct join_printing
+} // namespace detail
+
+template <typename... PrintablesInfo>
+struct printable_def<detail::join_t<PrintablesInfo...>>
 {
-    using forwarded_type = strf::detail::join_t<FwdArgs...>;
+    using join_t_ = detail::join_t<PrintablesInfo...>;
+    using forwarded_type = join_t_;
 
     template <bool HasAlignment>
     using fmt_tmpl = strf::value_and_format
-        < join_printing<FwdArgs...>
+        < printable_def
         , strf::alignment_format_specifier_q<HasAlignment> >;
 
     using format_specifiers = strf::tag<strf::alignment_format_specifier>;
@@ -196,7 +212,7 @@ struct join_printing
         , PreMeasurements* pre
         , const FPack& facets
         , fmt_tmpl<false> x )
-        -> join_printer<CharT, PreMeasurements, FPack, FwdArgs...>
+        -> detail::join_printer<CharT, PreMeasurements, FPack, PrintablesInfo...>
     {
         return {pre, facets, x.value().args};
     }
@@ -209,7 +225,8 @@ struct join_printing
         , fmt_tmpl<true> arg )
     {
         using sub_pre_t = strf::premeasurements<SizePresence, strf::width_presence::yes>;
-        using pf_type = detail::aligned_join_printer_of<CharT, SizePresence, FPack, FwdArgs...>;
+        using pf_type = detail::aligned_join_printer_of
+            <CharT, SizePresence, FPack, PrintablesInfo...>;
 
         auto charset = get_facet<strf::charset_c<CharT>, void>(facets);
         const auto afmt = arg.get_alignment_format();
@@ -238,7 +255,8 @@ struct join_printing
         , fmt_tmpl<true> arg )
     {
         using sub_pre_t = strf::premeasurements<SizePresence, strf::width_presence::yes>;
-        using pf_type = detail::aligned_join_printer_of<CharT, SizePresence, FPack, FwdArgs...>;
+        using pf_type = detail::aligned_join_printer_of
+            <CharT, SizePresence, FPack, PrintablesInfo...>;
 
         const auto charset = get_facet<strf::charset_c<CharT>, void>(facets);
         const auto afmt = arg.get_alignment_format();
@@ -273,7 +291,7 @@ struct join_printing
     STRF_HD static void print
         ( strf::destination<CharT>& dst
         , const FPack& fp
-        , const strf::detail::join_t<FwdArgs...>& j )
+        , const strf::detail::join_t<PrintablesInfo...>& j )
     {
         do_print_(dst, fp, j.args);
     }
@@ -285,34 +303,22 @@ private:
         ( strf::destination<CharT>& dst
         , const FPack& fp
         , const strf::detail::simple_tuple_impl
-            < strf::detail::index_sequence<I...>, FwdArgs... >& args_tuple )
+            < strf::detail::index_sequence<I...>
+            , typename PrintablesInfo::as_member_type... >& args_tuple )
     {
-        detail::print_printables(dst, fp, args_tuple.template get<I>()...);
+        detail::args_printer<PrintablesInfo...>::print(dst, fp, args_tuple.template get<I>()...);
     }
-};
-
-} // namespace detail
-
-template <typename... FwdArgs>
-struct printable_def<strf::detail::join_t<FwdArgs...>>
-    : strf::detail::join_printing<FwdArgs...>
-{
 };
 
 
 template<typename... Args>
-constexpr STRF_HD strf::value_and_format
-    < strf::detail::join_printing<strf::forwarded_printable_type<Args>...>
-    , strf::alignment_format_specifier_q<false> >
-join(const Args&... args)
+constexpr STRF_HD auto join(const Args&... args)
 {
-    return strf::value_and_format
-        < strf::detail::join_printing<strf::forwarded_printable_type<Args>...>
-        , strf::alignment_format_specifier_q<false> >
-        { strf::detail::join_t<strf::forwarded_printable_type<Args>...>
-            { strf::detail::simple_tuple<strf::forwarded_printable_type<Args>...>
-                { strf::detail::simple_tuple_from_args{}
-                , static_cast<strf::forwarded_printable_type<Args>>(args)... } } };
+    using joint_t_ = detail::join_t<detail::get_printable_info<Args>...>;
+    using printable_def_ = strf::printable_def<joint_t_>;
+    using afmt_t = strf::alignment_format_specifier_q<false>;
+
+    return strf::value_and_format<printable_def_, afmt_t>{joint_t_{args...}};
 }
 
 constexpr STRF_HD strf::aligned_join_maker join_align

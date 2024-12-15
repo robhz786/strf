@@ -11,69 +11,7 @@
 namespace strf {
 namespace detail {
 
-template <typename T>
-struct has_get_printable_def_tester
-{
-    template < typename U
-             , typename = decltype(get_printable_def(strf::printable_tag{}, std::declval<U>())) >
-    static STRF_HD std::true_type test_(const U*);
-
-    template <typename U>
-    static STRF_HD std::false_type test_(...);
-
-    using result = decltype(test_<T>((T*)nullptr));
-};
-
-template <typename T>
-using has_get_printable_def =
-    typename has_get_printable_def_tester<strf::detail::remove_cvref_t<T>>::result;
-
-template <bool HasPrintableDef, typename T>
-struct is_printable_tester_2;
-
-template <typename T>
-struct is_printable_tester_2<true, T> : std::true_type
-{
-};
-
-template <typename T>
-struct is_printable_tester_2<false, T>: has_get_printable_def<T>
-{
-};
-
-template <typename T>
-struct is_printable_tester
-    : is_printable_tester_2<strf::detail::has_printable_def_specialization<T>::value, T>
-{
-};
-
-template <typename T>
-using is_printable = is_printable_tester< strf::detail::remove_cvref_t<T> >;
-
-template <typename Arg>
-struct assert_is_printable
-{
-    static_assert(strf::detail::is_printable<Arg>::value, "Type is not Printable");
-    using type = Arg;
-};
-
-template <typename Arg>
-using assert_is_printable_t = typename assert_is_printable<Arg>::type;
-
 namespace args_without_tr {
-
-template <typename Arg>
-struct print_arg_validator
-{
-    static constexpr bool is_fpe       = strf::detail::is_fpe<Arg>::value;
-    static constexpr bool is_printable = strf::detail::is_printable<Arg>::value;
-
-    static_assert( ! (is_fpe && is_printable)
-                 , "type is both Printable and FacetPackElement");
-
-    static_assert( ! (! is_fpe && ! is_printable)
-                 , "type is not Printable nor FacetPackElement");
-};
 
 template <bool FirstArgIsFpe, typename... Args>
 struct separate_args_2;
@@ -82,28 +20,27 @@ template <typename... Args>
 struct separate_args_2<false, Args...>
 {
     using fpes = mp_type_list<>;
-    using printables = mp_type_list<assert_is_printable_t<Args>...>;
+    using printables_info = mp_type_list<detail::get_printable_info<Args>...>;
 };
 
 template <typename Arg>
 struct separate_args_2<true, Arg>
 {
     using fpes = mp_type_list<Arg>;
-    using printables = mp_type_list<>;
+    using printables_info = mp_type_list<>;
 };
 
 template <typename Arg0, typename Arg1, typename... OtherArgs>
 struct separate_args_2<true, Arg0, Arg1, OtherArgs...>
 {
-    using validator = print_arg_validator<strf::detail::remove_cvref_t<Arg1>>;
-    static constexpr bool arg1_is_fpe = validator::is_fpe;
+    static constexpr bool arg1_is_fpe = strf::detail::is_fpe<Arg1>::value;
 
     using continuation = separate_args_2<arg1_is_fpe, Arg1, OtherArgs...>;
 
     using continuation_fpes = typename continuation::fpes;
     using fpes = typename continuation_fpes::template add_front<Arg0>;
 
-    using printables = typename continuation::printables;
+    using printables_info = typename continuation::printables_info;
 };
 
 
@@ -114,19 +51,18 @@ template <>
 struct separate_args<>
 {
     using fpes = mp_type_list<>;
-    using printables = mp_type_list<>;
+    using printables_info = mp_type_list<>;
 };
 
 template <typename Arg0, typename... OtherArgs>
 struct separate_args<Arg0, OtherArgs...>
 {
-    using validator = print_arg_validator<strf::detail::remove_cvref_t<Arg0>>;
-    static constexpr bool arg0_is_fpe = validator::is_fpe;
+    static constexpr bool arg0_is_fpe = strf::detail::is_fpe<Arg0>::value;
 
     using helper = separate_args_2<arg0_is_fpe, Arg0, OtherArgs...>;
 
     using fpes = typename helper::fpes;
-    using printables = typename helper::printables;
+    using printables_info = typename helper::printables_info;
 };
 
 } // namespace args_without_tr
@@ -164,7 +100,7 @@ private:
 
 public:
     using fpes = typename continuation_fpes_::template add_front<Arg0>;
-    using printables = typename continuation_::printables;
+    using printables_info = typename continuation_::printables_info;
     using tr_string = typename continuation_::tr_string;
 };
 
@@ -172,7 +108,7 @@ template <typename Arg0, typename... Args>
 struct separate_args_2<false, Arg0, Args...>
 {
     using fpes = mp_type_list<>;
-    using printables = mp_type_list<Args...>;
+    using printables_info = mp_type_list<detail::get_printable_info<Args>...>;
     using tr_string = Arg0;
 };
 
@@ -183,7 +119,7 @@ template <>
 struct separate_args<>
 {
     using fpes = mp_type_list<>;
-    using printables = mp_type_list<>;
+    using printables_info = mp_type_list<>;
 };
 
 template <typename Arg0, typename... OtherArgs>
@@ -195,7 +131,7 @@ struct separate_args<Arg0, OtherArgs...>
     using helper = separate_args_2<arg0_is_fpe, Arg0, OtherArgs...>;
 
     using fpes = typename helper::fpes;
-    using printables = typename helper::printables;
+    using printables_info = typename helper::printables_info;
     using tr_string = typename helper::tr_string;
 };
 
@@ -227,7 +163,7 @@ STRF_HD auto separate_args_and_print
             < ReservePolicy
             , typename dest_creator_t::char_type
             , typename args_separator_t::fpes
-            , typename args_separator_t::printables >;
+            , typename args_separator_t::printables_info >;
 
     return impl::template create_destination_and_print<AddEndOfLine, return_type>
         (reserve_policy, (DestCreatorArg&&)dest_creator, (Args&&)args...);
@@ -255,7 +191,7 @@ STRF_HD auto separate_tr_args_and_print
             < ReservePolicy
             , char_type
             , typename args_separator_t::fpes
-            , typename args_separator_t::printables >;
+            , typename args_separator_t::printables_info >;
 
     return impl::template create_destination_and_print<AddEndOfLine, return_type>
         ( reserve_policy, (DestCreatorArg&&)dest_creator, (Args&&)args...);

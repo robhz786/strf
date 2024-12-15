@@ -383,7 +383,7 @@ struct fmt_fn
              , bool IsVWF = detail::is_value_and_format<T>::value
              , strf::detail::enable_if_t<!IsVWF, int> = 0
              , typename FmtType = fmt_type<T>
-             , typename FmtValueType = typename FmtType::value_type >
+             , typename FmtValueType = typename FmtType::forwarded_type >
     constexpr STRF_HD fmt_type<T> operator()(T&& value) const
         noexcept(noexcept(FmtType{FmtValueType{(T&&)value}}))
     {

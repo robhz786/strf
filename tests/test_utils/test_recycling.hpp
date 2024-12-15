@@ -73,24 +73,24 @@ STRF_HD void test_printables_recycling
         , strf::make_printer<CharT>(&pre, fp, (Printables&&)printables)... );
 }
 
-template <typename FpesList, typename PrintablesList>
+template <typename FpesList, typename PrintablesInfoList>
 struct deep_arg_tester;
 
-template <typename... Fpes, typename... Printables>
+template <typename... Fpes, typename... PrintablesInfo>
 struct deep_arg_tester
     < strf::detail::mp_type_list<Fpes...>
-    , strf::detail::mp_type_list<Printables...> >
+    , strf::detail::mp_type_list<PrintablesInfo...> >
 {
     template <typename CharT>
     static STRF_HD void test
         ( strf::destination<char>& failure_notifier
         , strf::detail::simple_string_view<CharT> expected
         , Fpes... fpes
-        , Printables... printables )
+        , typename PrintablesInfo::forwarded_type... printables )
     {
         test_printables_recycling<CharT>
             ( failure_notifier, expected
-            , strf::pack((Fpes&&)fpes...), (Printables&&)printables... );
+            , strf::pack((Fpes&&)fpes...), printables... );
     }
 };
 
@@ -113,8 +113,8 @@ public:
     {
         using separated_arg_types = strf::detail::args_without_tr::separate_args<Args...>;
         using fpes_type_list = typename separated_arg_types::fpes;
-        using printables_type_list = typename separated_arg_types::printables;
-        using impl = deep_arg_tester<fpes_type_list, printables_type_list>;
+        using printables_info_type_list = typename separated_arg_types::printables_info;
+        using impl = deep_arg_tester<fpes_type_list, printables_info_type_list>;
 
         impl::test(notifier_, expected_, (Args&&) args...);
     }

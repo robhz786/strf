@@ -241,19 +241,21 @@ class value_and_format
 {
 public:
     using printable_def = PrintableDef;
-    using value_type = detail::extract_printable_forwarded_type<PrintableDef>;
+    using info_of_value_type_ = typename detail::rm_fmt_info_finder<PrintableDef>::type;
+    using forwarded_type = typename info_of_value_type_::forwarded_type;
+    using value_as_member_type = typename info_of_value_type_::as_member_type;
 
     template <typename... OtherFmts>
     using replace_fmts = strf::value_and_format<PrintableDef, OtherFmts ...>;
 
-    explicit constexpr STRF_HD value_and_format(const value_type& v)
+    explicit constexpr STRF_HD value_and_format(forwarded_type v)
         : value_(v)
     {
     }
 
     template <typename OtherPrintableDef>
     constexpr STRF_HD value_and_format
-        ( const value_type& v
+        ( forwarded_type v
         , const strf::value_and_format<OtherPrintableDef, Fmts...>& f )
         : Fmts::template fn<value_and_format<PrintableDef, Fmts...>>
             ( static_cast
@@ -266,20 +268,20 @@ public:
 
     template <typename OtherPrintableDef>
     constexpr STRF_HD value_and_format
-        ( const value_type& v
+        ( forwarded_type v
         , strf::value_and_format<OtherPrintableDef, Fmts...>&& f )
         : Fmts::template fn<value_and_format<PrintableDef, Fmts...>>
             ( static_cast
               < typename Fmts
              :: template fn<value_and_format<OtherPrintableDef, Fmts...>> &&>(std::move(f)) )
         ...
-        , value_(static_cast<value_type&&>(v))
+        , value_(v)
     {
     }
 
     template <typename... F, typename... FInit>
     constexpr STRF_HD value_and_format
-        ( const value_type& v
+        ( forwarded_type v
         , strf::tag<F...>
         , FInit&&... finit )
         : F::template fn<value_and_format<PrintableDef, Fmts...>>
@@ -309,7 +311,7 @@ public:
               < typename OtherFmts
               :: template fn<value_and_format<PrintableDef, OtherFmts ...>>&& >(std::move(f)) )
         ...
-        , value_(static_cast<value_type&&>(f.value()))
+        , value_(f.value())
     {
     }
 
@@ -328,8 +330,8 @@ public:
 
         , detail::enable_if_t
             < std::is_constructible
-                < value_type
-                , typename value_and_format<SrcPrintableDef, SrcFmts...>::value_type>::value
+                < value_as_member_type
+                , typename value_and_format<SrcPrintableDef, SrcFmts...>::forwarded_type >::value
             , int > = 0
 
         , detail::enable_if_t
@@ -394,19 +396,14 @@ private:
 
 public:
 
-    constexpr STRF_HD const value_type& value() const
+    constexpr STRF_HD forwarded_type value() const
     {
-        return value_;
-    }
-
-    STRF_CONSTEXPR_IN_CXX14 STRF_HD value_type& value()
-    {
-        return value_;
+        return static_cast<forwarded_type>(value_);
     }
 
 private:
 
-    value_type value_; // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
+    value_as_member_type value_;
 };
 
 } // namespace strf

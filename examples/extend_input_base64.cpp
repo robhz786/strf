@@ -259,7 +259,7 @@ struct printable_def<xxx::base64_input>
 
     using input_with_fmt =
         strf::value_and_format<printable_def<xxx::base64_input>, xxx::base64_format_specifier>;
-    
+
     template <typename CharT, typename FPack>
     static auto make_printer
         ( strf::tag<CharT>
@@ -293,7 +293,7 @@ inline auto base64(const void* bytes, std::size_t num_bytes)
 {
     const base64_input data{ static_cast<const unsigned char*>(bytes)
                            , static_cast<std::ptrdiff_t>(num_bytes) };
-    
+
     return strf::fmt(data);
 }
 

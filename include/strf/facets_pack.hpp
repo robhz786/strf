@@ -133,6 +133,26 @@ struct is_fpe<strf::constrained_fpe<Filter, FPE>> : std::true_type
 {
 };
 
+template <typename T>
+struct is_fpe<T&>: is_fpe<T>
+{
+};
+
+template <typename T>
+struct is_fpe<const T&>: is_fpe<T>
+{
+};
+
+template <typename T>
+struct is_fpe<const T>: is_fpe<T>
+{
+};
+
+template <typename T>
+struct is_fpe<volatile T>: is_fpe<T>
+{
+};
+
 } // namespace detail
 
 template <typename FPE>
